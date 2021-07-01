@@ -539,12 +539,12 @@ function oracleGetAllTableIndexes($schema=''){
 	SELECT 
 		a.table_name,
        	a.index_name,
-       	JSON_ARRAYAGG(b.column_name order by column_position RETURNING VARCHAR2(100)) as index_keys,
+       	'["' || listAGG(b.column_name,'","') within group (order by column_position) || '"]' as index_keys,
        	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique,
        	a.generated
 	FROM sys.all_indexes a
 		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
-	WHERE a.owner = '{$schema}'
+	WHERE a.table_owner = '{$schema}'
 	GROUP BY 
 		a.table_name,
 	    a.index_name,
@@ -630,11 +630,11 @@ function oracleGetDBTableIndexes($tablename=''){
 	SELECT 
 		a.table_name,
        	a.index_name,
-       	JSON_ARRAYAGG(b.column_name order by column_position RETURNING VARCHAR2(100)) as index_keys,
+       	'["' || listAGG(b.column_name,'","') within group (order by column_position) || '"]' as index_keys,
        	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique
 	FROM sys.all_indexes a
 		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
-	WHERE a.owner = '{$schema}' and a.table_name='{$tablename}'
+	WHERE a.table_owner = '{$schema}' and a.table_name='{$tablename}'
 	GROUP BY 
 		a.table_name,
 	    a.index_name,
@@ -642,6 +642,7 @@ function oracleGetDBTableIndexes($tablename=''){
 	ORDER BY 1,2
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
+	//echo $query.printValue($recs);exit;
 	$xrecs=array();
 	foreach($recs as $rec){
 		$cols=json_decode($rec['index_keys'],true);
