@@ -9,7 +9,7 @@
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div data-content="tables and fields">
 		<div class="w_bold w_big"><translate>Tables & Fields</translate></div>
-		<div id="table_fields" style="max-width:300px;overflow: auto;">
+		<div id="table_fields" style="max-width:300px;overflow: auto;" class="w_nowrap">
 			<?=renderView('tables_fields',$tables,'tables');?>
 		</div>
 		<view:monitor_tools>
@@ -58,7 +58,7 @@
 <div style="max-height:40vh;overflow:auto;padding-right:5px">
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
-			<li><a href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><span class="icon-square-plus" id="<?=$table;?>_icon"></span> <?=$table;?></a>
+			<li><a style="display:flex;" href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><span class="icon-square-plus" id="<?=$table;?>_icon" style="margin-right:5px;"></span> <?=$table;?></a>
 				<div id="<?=$table;?>_fields" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></div>
 			</li>
 		</view:table>
