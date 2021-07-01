@@ -566,7 +566,7 @@ var wacss = {
 						//check for canvas
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){	
-							if(labels.length > 0){
+							if(undefined != labels && labels.length > 0){
 								wacss.chartjs[list[i].id].config.data.labels=labels;
 							}
 							let udatasets=datadiv.querySelectorAll('dataset');
@@ -611,7 +611,7 @@ var wacss = {
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
 		        			}
 		        			wacss.chartjs[list[i].id].config.options=options;
-		        			if(labels.length==0 && datasetLabels.length > 0){
+		        			if((undefined == labels || labels.length==0) && undefined != datasetLabels && datasetLabels.length > 0){
 								wacss.chartjs[list[i].id].config.data.labels=datasetLabels;
 							}
 							if(undefined != list[i].getAttribute('data-stacked') && list[i].getAttribute('data-stacked')==1){
@@ -693,7 +693,7 @@ var wacss = {
 							}
 							lconfig.data.datasets.push(dataset);
 	        			}
-	        			if(labels.length==0 && datasetLabels.length > 0){
+	        			if((undefined == labels || labels.length==0) && undefined != datasetLabels && datasetLabels.length > 0){
 	        				lconfig.data.labels=datasetLabels;	
 	        			}
 	        			//
@@ -760,7 +760,7 @@ var wacss = {
 		        				data.push(json[tval]);
 		        			}
 		        			wacss.chartjs[list[i].id].config.data.datasets[0].data=data;
-		        			if(labels.length > 0){
+		        			if(undefined != labels && labels.length > 0){
 								wacss.chartjs[list[i].id].config.data.labels=labels;
 							}
 		        			else{
@@ -815,7 +815,7 @@ var wacss = {
 							    }
 	        				}
 	        			};
-	        			if(labels.length > 0){
+	        			if(undefined != labels && labels.length > 0){
 							pconfig.data.labels=labels;
 						}
 	        			let pcanvas=document.createElement('canvas');
