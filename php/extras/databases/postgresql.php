@@ -1378,7 +1378,7 @@ ENDOFQUERY;
 		a.attname as column_name,
 		a.attnum as ordinal_position,
 		pg_get_expr(d.adbin, d.adrelid) AS column_default,
-		a.attnotnull as is_nullable,
+		a.attnotnull as not_null,
 		pg_catalog.format_type(a.atttypid, a.atttypmod) as data_type,
 		a.attlen as character_maximum_length,
 		a.attnum as numeric_precision,
@@ -1398,13 +1398,9 @@ ENDOFQUERY;
 		AND s.nspname = '{$schema}' 	--<< schema name 
 	ORDER BY a.attnum
 ENDOFQUERYNEW;
-	//echo $query;exit;
 	$recs=postgresqlQueryResults($query);
 	$fields=array();
 	foreach($recs as $rec){
-		if($rec['data_type']=='character varying'){
-			$rec['data_type']='varchar';
-		}
 		$field=array(
 			'_dbtable'	=> $rec['table_name'],
 		 	'_dbfield'	=> strtolower($rec['column_name']),
@@ -1416,16 +1412,42 @@ ENDOFQUERYNEW;
 			'length'	=> $rec['character_maximum_length'],
 			'num'		=> $rec['numeric_precision'],
 			'size'		=> $rec['numeric_precision_radix'],
-			'nullable'	=> strtolower($rec['is_nullable'])=='yes'?1:0,
 			'identity'	=> strtolower($rec['is_identity'])=='yes'?1:0,
 		);
+		//nullable
+		switch(strtolower($rec['not_null'])){
+			case 't':
+				$field['nullable']=0;
+			break;
+			default:
+				$field['nullable']=1;
+			break;
+
+		}
+		//dbtype
+		switch(strtolower($field['_dbtype'])){
+			case 'timestamp without time zone':
+				$rec['data_type']=$field['_dbtype']='timestamp';
+			break;
+		}
+		//echo printValue($field);
 		//_dbtype_ex
-		if(strlen($rec['character_maximum_length']) && $rec['character_maximum_length'] != '-1'){
-			$field['_dbtype_ex']="{$rec['data_type']}({$rec['character_maximum_length']})";
+		switch(strtolower($field['_dbtype'])){
+			case 'bigint':
+			case 'integer':
+			case 'timestamp':
+				$field['_dbtype_ex']=$field['_dbtype'];
+			break;
+			default:
+				if(strlen($rec['character_maximum_length']) && $rec['character_maximum_length'] != '-1'){
+					$field['_dbtype_ex']="{$rec['data_type']}({$rec['character_maximum_length']})";
+				}
+				else{
+					$field['_dbtype_ex']=$field['_dbtype'];
+				}
+			break;
 		}
-		else{
-			$field['_dbtype_ex']=$field['_dbtype'];
-		}
+		
 		//default
 		if(strlen($rec['column_default'])){
 			$field['_dbdef']=$field['default']=$rec['column_default'];

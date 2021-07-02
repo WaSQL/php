@@ -3,12 +3,34 @@
 	 * the current database is the master. Get the slave - the database to sync with
 	 * */
 	global $CONFIG;
+	global $ALLCONFIG;
+	//sync_target
+	if(!isset($_SESSION['sync_target']) && isset($CONFIG['wasql_synchronize_slave'])){
+		$_SESSION['sync_target']=$CONFIG['wasql_synchronize_slave'];
+	}
+	//sync_target_url
+	if(!isset($_SESSION['sync_target_url']) || !strlen($_SESSION['sync_target_url'])){
+		$target=$_SESSION['sync_target'];
+		$uhost=getUniqueHost($ALLCONFIG[$target]['name']);
+		$base=$ALLCONFIG[$target]['name'];
+		if($uhost==$ALLCONFIG[$target]['name'] && stringContains($uhost,'.')){$base="www.{$base}";}
+		if(isset($ALLCONFIG[$target]['admin_url']) && strlen($ALLCONFIG[$target]['admin_url'])){
+			$_SESSION['sync_target_url']=$ALLCONFIG[$target]['admin_url'];
+		}
+		elseif(isset($ALLCONFIG[$target]['admin_insecure']) && $ALLCONFIG[$target]['admin_insecure']==1){
+			$_SESSION['sync_target_url']="http://{$base}/php/admin.php";
+		}
+		else{
+			$_SESSION['sync_target_url']="https://{$base}/php/admin.php";
+		}
+	}
+	//echo printValue($_SESSION);exit;
 	if(!isset($_SESSION['sync_target'])){
 		$_SESSION['sync_target']=syncronizeGetTarget();
 	}
 	if(!strlen($_SESSION['sync_target'])){
 		//not setup for syncronize
-		$error="Not setup for syncronize. No target specified.";
+		$error="Not setup for syncronize. No target specified.".printValue($CONFIG);
 		setView('error',1);
 		return;
 	}
@@ -25,7 +47,6 @@
 			$synctables=adminGetSynchronizeTables();
 			$_SESSION['sync_target']=syncronizeGetTarget();
 			unset($_SESSION['sync_target_auth']);
-			unset($_SESSION['sync_target_url']);
 			unset($json['body']);
 			setView('sync_auth',1);
 			return;
@@ -37,7 +58,6 @@
 		$synctables=adminGetSynchronizeTables();
 		$_SESSION['sync_target']=syncronizeGetTarget();
 		unset($_SESSION['sync_target_auth']);
-		unset($_SESSION['sync_target_url']);
 		setView('sync_auth',1);
 		return;
 	}
@@ -46,7 +66,6 @@
 		case 'unauth':
 			$_SESSION['sync_target']=syncronizeGetTarget();
 			unset($_SESSION['sync_target_auth']);
-			unset($_SESSION['sync_target_url']);
 			$synctables=adminGetSynchronizeTables();
 			setView('sync_auth',1);
 			return;
