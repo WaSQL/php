@@ -106,7 +106,22 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			$val='NULL';
 			if(isset($rec[$field]) && strlen($rec[$field])){
 				$val=postgresqlEscapeString($rec[$field]);
-				$val="'{$val}'";
+				switch($fieldinfo[$field]['_dbtype']){
+					case 'date':
+					case 'time':
+					case 'datetime':
+					case 'timestamp':
+						if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+							//val is a function - do not put quotes around it
+						}
+						else{
+							$val="'{$val}'";
+						}
+					break;
+					default:
+						$val="'{$val}'";
+					break;
+				}
 			}
 			$vals[]=$val;
 		}
