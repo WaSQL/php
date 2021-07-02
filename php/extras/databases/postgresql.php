@@ -114,6 +114,9 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 						if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
 							//val is a function - do not put quotes around it
 						}
+						elseif(preg_match('/^(current_timestamp)$/is',$val)){
+							//val is a function - do not put quotes around it
+						}
 						else{
 							$val="'{$val}'";
 						}
