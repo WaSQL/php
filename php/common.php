@@ -2547,6 +2547,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 	elseif(strlen($params['data-start_value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['data-start_value'],$m)){
 		$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
+	$params['readonly']=1;
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
 	//make sure wacss and google map api are loaded
