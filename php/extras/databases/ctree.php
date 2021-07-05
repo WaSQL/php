@@ -158,9 +158,12 @@ function ctreeDBConnect(){
 		return $dbh_ctree;
 	}
 	catch (Exception $e) {
-		$error=array("ctreeDBConnect Exception",$e,$params);
-	    debugValue($error);
-	    return json_encode($error);
+		$error=array(
+			"ctreeDBConnect Exception"=>"Failed to connecto to cTREE. Try restarting Apache.",
+			'Error Message'=>$e,
+			'Connect Params'=>$params
+		);
+	    echo printValue($error);exit;
 	}
 }
 //---------- begin function ctreeExecuteSQL ----------
