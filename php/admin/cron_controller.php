@@ -92,6 +92,7 @@ switch(strtolower($_REQUEST['func'])){
 	default:
 		//echo "default";exit;
 		$ok=commonCronCheckSchema();
+		$ok=commonCronLogCheckSchema();
 		setView('default');
 	break;
 }

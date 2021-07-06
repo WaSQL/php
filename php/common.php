@@ -314,6 +314,28 @@ function commonCronError($err,$email='',$params=array()){
 	}
 	return 1;
 }
+/**  --- function commonCronCheckSchema
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function commonCronLogCheckSchema(){
+	$cronfields=getDBFieldInfo('_cronlog');
+	//run_now
+	if(!isset($cronfields['delete_me'])){
+		$query="ALTER TABLE _cronlog ADD delete_me ".databaseDataType('integer(1)')." NOT NULL Default 0";
+		$ok=executeSQL($query);
+		$id=addDBRecord(array('-table'=>'_fielddata',
+			'tablename'		=> '_cronlog',
+			'fieldname'		=> 'delete_me',
+			'inputtype'		=> 'checkbox',
+			'synchronize'	=> 0,
+			'tvals'			=> '1',
+			'defaultval'	=> 0,
+			'required'		=> 0,
+			'-upsert'		=> 'inputtype,synchronize,tvals,required,defaultval'
+		));
+		$ok=addDBIndex(array('-table'=>'_cronlog','-fields'=>"delete_me"));
+	}
+}
 //---------- begin function commonCronLogInit
 /**
 * @describe initializes the cron log
@@ -326,6 +348,7 @@ function commonCronLogInit($id=0){
 	global $CRONTHRU;
 	global $cronlog_id;
 	global $commonCronLogCache;
+	$ok=commonCronLogCheckSchema();
 	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){return $CRONTHRU['cronlog_id'];}
 	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){return $_REQUEST['cronlog_id'];}
 	$id=(integer)$id;
@@ -358,6 +381,8 @@ function commonCronLogInit($id=0){
 	$_REQUEST['cronlog_id']=$CRONTHRU['cronlog_id']=$cronlog_id;
 	$ok=editDBRecordById('_cron',$rec['_id'],array('cronlog_id'=>$id));
 	$commonCronLogCache['start']=microtime(true);
+	//remove any deleted records
+	$ok=delDBRecord(array('-table'=>'_cronlog','-where'=>"delete_me=1"));
 	return $cronlog_id;
 	// if(!isset($_REQUEST['cron_id'])){return false;}
 	// $id=(integer)$_REQUEST['cron_id'];
@@ -370,23 +395,15 @@ function commonCronLogInit($id=0){
 	// return true;
 }
 function commonCronLogDelete(){
-	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
-		$err="commonCronLogDelete error: REQUEST['cron_id'] not set";
-		debugValue($err);
-		return $err;
+	global $CRONTHRU;
+	if(isset($CRONTHRU['cronlog_id'])){
+		$cronlog_id=$CRONTHRU['cronlog_id'];
 	}
-	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$_REQUEST['cron_id'],'-nocache'=>1));
-	if(!isset($rec['_id'])){
-		$err="commonCronLogDelete error: No cron found";
-		debugValue($err);
-		return $err;
+	elseif(isset($_REQUEST['cronlog_id'])){
+		$cronlog_id=$_REQUEST['cronlog_id'];
 	}
-	if(!isset($rec['cronlog_id']) || !isNum($rec['cronlog_id'])){
-		$err="commonCronLogDelete error: cronlog_id is empty";
-		debugValue($err);
-		return $err;
-	}
-	$ok=delDBRecordById('_cronlog',$rec['cronlog_id']);
+	$cronlog_id=(integer)$cronlog_id;
+	$ok=editDBRecordById('_cronlog',$cronlog_id,array('delete_me'=>1));
 	return true;
 }
 //---------- begin function commonCronLog
@@ -945,7 +962,8 @@ function commonSearchFiltersForm($params=array()){
 				'egt'	=> 'Equals or Greater than',
 				'elt'	=> 'Less than or Equals',
 				'ib'	=> 'Is Blank',
-				'nb'	=> 'Is Not Blank'
+				'nb'	=> 'Is Not Blank',
+				'db'	=> 'Is Between (date1,date2)'
 			);
 			if(!empty($params['-searchopers'])){
 				if(!is_array($params['-searchopers'])){

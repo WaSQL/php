@@ -2443,6 +2443,22 @@ function databaseParseFilters($params=array()){
 					}
 				}
 			break;
+			case 'db':
+				//date between
+				$dates=preg_split('/\,/',$val);
+				if(count($dates)==2){
+					switch(strtolower($params['-database'])){
+						case 'hana':
+						case 'oracle':
+							$wheres[]="to_date({$field}) between '{$dates[0]}' and '{$dates[1]}'";
+						break;
+						default:
+							$wheres[]="date({$field}) between '{$dates[0]}' and '{$dates[1]}'";
+						break;
+					}
+				}
+				//echo printValue($wheres);
+			break;
 		}
 	}
 	return $wheres;

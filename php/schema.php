@@ -258,6 +258,7 @@ function createWasqlTable($table=''){
 			$fields['name']=databaseDataType('varchar(150)')." NOT NULL";
 			$fields['cron_id']=databaseDataType('integer')." NOT NULL";
 			$fields['cron_pid']=databaseDataType('integer')." NOT NULL";
+			$fields['delete_me']=databaseDataType('integer')." NOT NULL";
 			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
 			$fields['run_date']=databaseDataType('datetime')." NOT NULL";
 			$fields['run_result']=databaseDataType('mediumtext')." NULL";
@@ -268,6 +269,7 @@ function createWasqlTable($table=''){
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"cron_id"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"delete_me"));
 			//Add tabledata
 			$addopts=array('-table'=>"_tabledata",
 				'tablename'		=> $table,
