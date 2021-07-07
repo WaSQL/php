@@ -110,13 +110,15 @@ foreach($ConfigXml as $name=>$host){
 		}
 	}
 	//ksort($CONFIG);
-	//echo printValue($CONFIG);
+	if($CONFIG['cron']==0){
+		continue;
+	}
 	//connect to this database.
 	$dbh='';
 	//cronMessage("connecting");
 	$ok=cronDBConnect();
 	if($ok != 1){
-    	//cronMessage("failed to connect: {$ok}");
+    	cronMessage("failed to connect: {$ok}");
     	unset($ConfigXml[$name]);
     	continue;
 	}
