@@ -2569,9 +2569,18 @@ function buildFormGeoLocationMap($name,$params=array()){
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
 	//make sure wacss and google map api are loaded
-	loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}",'wacss'));
+	global $buildFormGeoLocationMapLoaded;
+	if(!isset($buildFormGeoLocationMapLoaded) || $buildFormGeoLocationMapLoaded!=1){
+		$buildFormGeoLocationMapLoaded=1;
+		$tag=<<<ENDOFLOAD
+	<script async
+    src="https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}&callback=initMap">
+</script>
+ENDOFLOAD;
+	}
+	//loadExtrasJs(array("https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}",'wacss'));
 	//return printValue($_SESSION);
-	$tag='<div';
+	$tag.='<div';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
