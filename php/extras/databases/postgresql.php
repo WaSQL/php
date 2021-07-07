@@ -153,7 +153,6 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$ok=postgresqlExecuteSQL($query);
-	//echo printValue($ok).$query;exit;
 	if(isset($ok['error'])){
 		$ok['query']=$query;
 		debugValue($ok);
@@ -368,7 +367,6 @@ function postgresqlAddDBRecord($params=array()){
 		if(is_array($precs)){
 			$pflds=array();
 			foreach($precs as $prec){
-				//echo printValue($prec);exit;
 				if($prec['is_unique']=='t'){
 					//echo printValue($prec);
 					$rflds=json_decode($prec['index_keys']);
@@ -448,7 +446,6 @@ ENDOFQUERY;
 			'params'=>$params
 		));
 		pg_close($dbh_postgresql);
-		//exit;
 		return null;
 	}
 	$recs = postgresqlEnumQueryResults($result,$params);
@@ -591,8 +588,6 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 		$table="{$schema}.{$table}";
 	}
 	$query="create table {$table} (".PHP_EOL;
-
-	//echo printValue($fields);exit;
 	$lines=array();
 	foreach($fields as $field=>$attributes){
 		//datatype conversions
@@ -719,12 +714,10 @@ function postgresExceptionErrorHandler($errno, $errstr, $errfile, $errline ) {
 */
 function postgresqlDBConnect(){
 	$params=postgresqlParseConnectParams();
-	//echo "postgresqlDBConnect".printValue($params);exit;
 	if(!isset($params['-connect'])){
-		echo "postgresqlDBConnect error: No connect params".printValue($params);
-		exit;
+		debugValue("postgresqlDBConnect error: No connect params".printValue($params));
+		return '';
 	}
-	//echo printValue($params);exit;
 	global $dbh_postgresql;
 	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	set_error_handler('postgresExceptionErrorHandler');
@@ -735,19 +728,28 @@ function postgresqlDBConnect(){
 		$err=$e->getMessage();
 		restore_error_handler();
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-		echo "postgresqlDBConnect exception: {$err}" . printValue($params);
-		exit;
+		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 2 seconds" . printValue($params));
 	}
 	restore_error_handler();
 	if(!is_resource($dbh_postgresql)){
-		$err=@pg_last_error();
-		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-		echo "postgresqlDBConnect error:{$err}".printValue($params);
-		exit;
-
+		//try one more time after a couple of seconds
+		sleep(2);
+		set_error_handler('postgresExceptionErrorHandler');
+		try{
+			$dbh_postgresql = pg_connect($params['-connect']);
+		}
+		catch (Exception $e) {
+			$err=$e->getMessage();
+			restore_error_handler();
+			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+			debugValue("postgresqlDBConnect retry exception : {$err}" . printValue($params));
+		}
+		restore_error_handler();
 	}
-	//$umeta=pg_meta_data($dbh_postgresql,'_users');
-	//echo "Connected".printValue($umeta);exit;
+
+	if(!is_resource($dbh_postgresql)){
+		return '';
+	}
 	return $dbh_postgresql;
 	
 }
@@ -859,7 +861,6 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 		WHERE {$params['-where']}
 		{$output}
 ENDOFQUERY;
-	//echo $query;exit;
 	global $dbh_postgresql;
 	if(!is_resource($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
@@ -995,14 +996,12 @@ function postgresqlGetDBCount($params=array()){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
 	}
-	//echo printValue($params);exit;
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
 	//$params['-debug']=1;
 	$recs=postgresqlGetDBRecords($params);
-	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
 		debugValue(array(
 			'function'=>'postgresqlGetDBCount',
@@ -1518,7 +1517,6 @@ ENDOFQUERY;
 		}
 		$query .= " and idx.indrelid ='{$tablename}' :: REGCLASS ";
 	}
-	//echo $query;exit;
 	$recs=postgresqlQueryResults($query);
 	$xrecs=array();
 	foreach($recs as $rec){
@@ -1538,7 +1536,6 @@ ENDOFQUERY;
 			$xrecs[]=$xrec;
 		}
 	}
-	//echo printValue($recs).printValue($xrecs);exit;
 	$databaseCache[$cachekey]=$xrecs;
 	return $databaseCache[$cachekey];
 }
@@ -1588,7 +1585,6 @@ function postgresqlGetDBRecords($params){
 			$params=array();
 		}
 		else{
-			echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
 			$ok=postgresqlExecuteSQL($params);
 			return $ok;
 		}
@@ -1879,7 +1875,6 @@ function postgresqlGetDBTables($params=array()){
 		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables order by tablename";
 	}
 	$recs = postgresqlQueryResults($query);
-	//echo $query;exit;
 	foreach($recs as $rec){
 		$databaseCache[$cachekey][]=strtolower($rec['tablename']);
 	}
@@ -2015,7 +2010,6 @@ function postgresqlParseConnectParams($params=array()){
 			}
 		}
 	}
-	//echo "HERE".printValue($params);exit;
 	if(isPostgreSQL()){
 		$params['-dbhost']=$CONFIG['dbhost'];
 		if(isset($CONFIG['dbname'])){
@@ -2149,7 +2143,6 @@ function postgresqlParseConnectParams($params=array()){
 		else{
 			//build connect - http://php.net/manual/en/function.pg-connect.php
 			//$conn_string = "host=sheep port=5432 dbname=test user=lamb password=bar";
-			//echo printValue($CONFIG);exit;
 			$params['-connect']="host={$CONFIG['postgresql_dbhost']} port={$CONFIG['postgresql_dbport']} dbname={$CONFIG['postgresql_dbname']} user={$CONFIG['postgresql_dbuser']} password={$CONFIG['postgresql_dbpass']}";
 			//$params['-connect_source']="manual";
 		}
@@ -2169,7 +2162,7 @@ function postgresqlParseConnectParams($params=array()){
 		}
 		//add connect_timeout
 		if(!stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=" connect_timeout=5";
+			$params['-connect'].=" connect_timeout=10";
 		}
 		//add sslmode=disable
 		if(!stringContains($params['-connect'],'sslmode')){
@@ -2179,7 +2172,6 @@ function postgresqlParseConnectParams($params=array()){
 	else{
 		//$params['-connect_source']="passed in";
 	}
-	//echo printValue($params);exit;
 	return $params;
 }
 //---------- begin function postgresqlQueryResults ----------
@@ -2287,8 +2279,8 @@ function postgresqlEnumQueryResults($data,$params=array()){
 		}
     	if(!isset($fh) || !is_resource($fh)){
 			pg_free_result($result);
-			return 'postgresqlEnumQueryResults error: Failed to open '.$params['-filename'];
-			exit;
+			debugValue('postgresqlEnumQueryResults error: Failed to open '.$params['-filename']);
+			return array();
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
