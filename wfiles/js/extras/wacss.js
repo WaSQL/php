@@ -1969,6 +1969,18 @@ var wacss = {
 		catch(e){}
 	    return false;
 	},
+	scrollToBottom: function(el){
+		el=wacss.getObject(el);
+		if(undefined == el){return false;}
+		if(undefined == el.scrollHeight){return false;}
+		if(undefined != el.clientHeight){
+			el.scrollTop = el.scrollHeight - el.clientHeight;
+		}
+		else{
+			el.scrollTop = el.scrollHeight;
+		}
+		return false;
+	},
 	setActiveTab: function(el){
 	    let p=wacss.getParent(el,'ul','nav-tabs');
 	    if(p === null){return false;}
