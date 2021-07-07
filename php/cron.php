@@ -438,9 +438,9 @@ foreach($ConfigXml as $name=>$host){
 			$eopts=array(
 				'running'		=> 0,
 				'cron_pid'		=> 0,
-				'run_length'	=> $run_length,
+				'run_length'	=> str_replace(',','',$run_length),
 				'run_result'	=> $cron_result,
-				'run_memory'	=> $run_memory
+				'run_memory'	=> str_replace(',','',$run_memory)
 			);
 			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 			//
@@ -449,8 +449,8 @@ foreach($ConfigXml as $name=>$host){
 				$eopts=array(
 					'running'		=> 0,
 					'cron_pid'		=> 0,
-					'run_length'	=> $run_length,
-					'run_memory'	=> $run_memory
+					'run_length'	=> str_replace(',','',$run_length),
+					'run_memory'	=> str_replace(',','',$run_memory)
 				);
 				$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 			}
