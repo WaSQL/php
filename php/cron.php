@@ -446,6 +446,13 @@ foreach($ConfigXml as $name=>$host){
 			//
 			if(!isNum($ok)){
 				cronMessage("FINISH ERROR".printValue($ok).printValue($eopts));
+				$eopts=array(
+					'running'		=> 0,
+					'cron_pid'		=> 0,
+					'run_length'	=> $run_length,
+					'run_memory'	=> $run_memory
+				);
+				$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 			}
 			
 			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
