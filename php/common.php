@@ -2574,7 +2574,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$buildFormGeoLocationMapLoaded=1;
 		$tag=<<<ENDOFLOAD
 	<script async
-    src="https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key={$params['-apikey']}">
 </script>
 ENDOFLOAD;
 	}
