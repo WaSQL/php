@@ -217,14 +217,6 @@ foreach($ConfigXml as $name=>$host){
             		$run=0;
             	}
 			}
-			//reset running if it has been over post timeout
-			if($rec['running']==1){
-				if(strlen($rec['last_run']) && isNum($rec['last_run'])){
-	            	if($rec['last_run'] > $posturl_timeout){
-                    	$ok=editDBRecordById('_cron',$rec['_id'],array('running'=>0));
-					}
-				}
-			}
 			//get record again to insure another process is not running it.
 			$rec=getDBRecord(array(
 				'-table'	=> '_cron',
@@ -245,6 +237,7 @@ foreach($ConfigXml as $name=>$host){
 				'cron_pid'	=> $cron_pid,
 				'running'	=> 1,
 				'run_now'	=> 0,
+				'stop_now'	=> 0,
 				'run_date'	=> 'NOW()',
 				'run_error'	=> '',
 			);
@@ -271,7 +264,6 @@ foreach($ConfigXml as $name=>$host){
 			));
 			$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
 			$CRONTHRU['cron_pid']=$cron_pid;
-			$CRONTHRU['cron_id']=$rec['_id'];
 			$CRONTHRU['cronlog_id']=$cronlog_id;
 			$CRONTHRU['cron_run_date']=$rec['run_date'];
 			$CRONTHRU['cron_name']=$rec['name'];
@@ -448,8 +440,8 @@ foreach($ConfigXml as $name=>$host){
 				'run_result'	=> $cron_result,
 				'run_memory'	=> $run_memory
 			);
-			$ok=editDBRecordById('_cron',$rec['_id'],$eopts);
-			//echo PHP_EOL."OK".printValue($ok)."ID".$rec['_id'].printValue($eopts).PHP_EOL.PHP_EOL;
+			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
+			//
 			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
 			if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
 				$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
@@ -478,7 +470,7 @@ function cronBuildWhere(){
 	return <<<ENDOFWHERE
 run_now = 1 or 
 (
-	active=1 
+	active = 1 
 	and paused != 1 
 	and running != 1 
 	and run_cmd is not null
