@@ -430,8 +430,8 @@ foreach($ConfigXml as $name=>$host){
             $cron_result .= PHP_EOL;
             $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
             //limit $cron_result to 65535 chars
-            if(strlen($cron_result) > 65535){
-            	$cron_result=substr($cron_result,0,65535);
+            if(strlen($cron_result) > 65000){
+            	$cron_result=substr($cron_result,0,65000).PHP_EOL.'***RUN RESULT TRUNCATED***';
             }
 			//update record to show we are now finished
 			$run_memory=memory_get_usage();
@@ -444,6 +444,10 @@ foreach($ConfigXml as $name=>$host){
 			);
 			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 			//
+			if(!isNum($ok)){
+				cronMessage("FINISH ERROR".printValue($ok).printValue($eopts));
+			}
+			
 			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
 			if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
 				$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
