@@ -203,6 +203,7 @@ function commonCronCheckSchema(){
 	return true;
 }
 function commonCronCleanup(){
+	return;
 	loadExtras('system');
 	global $CONFIG;
 	//look for killfiles
