@@ -756,6 +756,7 @@ function cronDBConnect(){
 	global $CONFIG;
 	global $dbh;
 	global $sel;
+	$ok=cronMessage("{$CONFIG['name']} - Connecting to {$CONFIG['dbname']} on {$CONFIG['dbhost']}");
 	try{
 		$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
 	}
