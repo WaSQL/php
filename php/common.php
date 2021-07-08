@@ -3831,7 +3831,7 @@ function buildFormFrequency($name,$params=array()){
 	$sectionstr=implode("','",$sections);
 	$rtn=<<<ENDOFRTN
 	<div id="{$params['id']}_container" data-display="block" {$displayif}>
-		<div><textarea name="{$params['name']}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
+		<div><textarea name="{$name}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" data-sections="{$sectionstr}" class="w_frequency_wizard" style="display:none;min-height:100px;">
 			<div style="display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;" data-type="section" style="border-top:0px;">
 ENDOFRTN;
