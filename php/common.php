@@ -3790,10 +3790,18 @@ function buildFormFile_old($name,$params=array()){
 */
 function buildFormFrequency($name,$params=array()){
 	//return printValue($params);
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(!isset($params['-formname']) || !strlen(trim($params['-formname']))){
+		$params['-formname']='addedit';
+	}
+	if(isset($params['name']) && strlen(trim($params['name']))){
+		$name=$params['name'];
+	}
+	if(!isset($params['id']) || !strlen(trim($params['id']))){
+		$params['id']=$params['-formname'].'_'.$name;
+	}
+	if(isset($params['requiredif']) && strlen(trim($params['requiredif']))){
+		$params['data-requiredif']=$params['requiredif'];
+	}
 	$class=isset($params['class'])?' '.$params['class']:'';
 	$style=isset($params['style'])?' style="'.$params['style'].'"':' style="width:100%;height:31px;overflow:hidden;"';
 	$placeholder=isset($params['placeholder'])?' placeholder="'.$params['placeholder'].'"':'';
