@@ -279,7 +279,7 @@ var wacss = {
 			  	infoWindow = new google.maps.InfoWindow({
 			    	position: mapsMouseEvent.latLng,
 			  	});
-			  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="return wacss.geoLocationMapSetValue(this);"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
+			  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-lat="'+latlon.lat+'" data-lon="'+latlon.lng+'" data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="return wacss.geoLocationMapSetValue(this);"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
 			  	infoWindow.setContent(chtm);
 			  	infoWindow.open(map);
 			});
@@ -288,7 +288,11 @@ var wacss = {
 	geoLocationMapSetValue: function(el){
 		let inp=wacss.getObject(el.dataset.input);
 		inp.value=el.dataset.latlon;
-		inp.setAttribute('data-start_value',el.dataset.latlon);
+		let clickdiv=wacss.getObject(el.dataset.input+'_clickdiv');
+		if(undefined != clickdiv){
+			clickdiv.dataset.lat=el.dataset.lat;
+			clickdiv.dataset.lon=el.dataset.lon;
+		}
 		removeId('geolocationmap_popup');
 		return false;
 	},

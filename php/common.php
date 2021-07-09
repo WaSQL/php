@@ -2547,9 +2547,11 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$params['value']=$_REQUEST[$name];
 	}
 	$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});";
+	$latlon=array();
 	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
 		if(strlen($params['value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['value'],$m)){
-			$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',readonly:1});";
+			$latlon=array($m[1],$m[3]);
+			$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',readonly:1});";
 		}
 		else{
 			$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}',readonly:1});";
@@ -2557,14 +2559,17 @@ function buildFormGeoLocationMap($name,$params=array()){
 		}
 	}
 	elseif(strlen($params['value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['value'],$m)){
-		$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
+		$latlon=array($m[1],$m[3]);
+		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
 	elseif(strlen($params['start_value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['start_value'],$m)){
-		$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
+		$latlon=array($m[1],$m[3]);
+		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 		$params['data-start_value']=$params['start_value'];
 	}
 	elseif(strlen($params['data-start_value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['data-start_value'],$m)){
-		$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
+		$latlon=array($m[1],$m[3]);
+		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
 	$params['readonly']=1;
 	unset($params['onclick']);
@@ -2592,7 +2597,7 @@ ENDOFLOAD;
 		unset($params['data-displayif']);
 	}
 	$tag .=<<<ENDOFTAG
-	><div onclick="{$onclick}" style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
+	><div id="{$params['id']}_clickdiv" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}" style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
 	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
 	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
 </div>
