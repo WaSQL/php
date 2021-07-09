@@ -279,11 +279,18 @@ var wacss = {
 			  	infoWindow = new google.maps.InfoWindow({
 			    	position: mapsMouseEvent.latLng,
 			  	});
-			  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="setText(wacss.getObject(this.dataset.input),this.dataset.latlon);removeId(\'geolocationmap_popup\');"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
+			  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="return wacss.geoLocationMapSetValue(this);"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
 			  	infoWindow.setContent(chtm);
 			  	infoWindow.open(map);
 			});
 		}
+	},
+	geoLocationMapSetValue: function(el){
+		let inp=wacss.getObject(el.dataset.input);
+		inp.value=el.dataset.latlon;
+		inp.setAttribute('data-start_value',el.dataset.latlon);
+		removeId('geolocationmap_popup');
+		return false;
 	},
 	getObject: function(obj){
 		//info: returns the object identified by the object or id passed in
