@@ -2567,6 +2567,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$onclick="wacss.geoLocationMap({$m[1]},{$m[3]},{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
 	$params['readonly']=1;
+	unset($params['onclick']);
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
 	//make sure wacss and google map api are loaded
@@ -2591,9 +2592,9 @@ ENDOFLOAD;
 		unset($params['data-displayif']);
 	}
 	$tag .=<<<ENDOFTAG
-	><div style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
+	><div onclick="{$onclick}" style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
 	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
-	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;" onclick="{$onclick}">&nbsp;</button>
+	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
 </div>
 </div>
 ENDOFTAG;
