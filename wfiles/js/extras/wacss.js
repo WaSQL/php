@@ -201,8 +201,12 @@ var wacss = {
 		return false;
 	},
 	geoLocationMap: function(lat,long,params){
-		//console.log('geoLocationMap');
-		//console.log(params);
+		console.log('geoLocationMap');
+		lat=parseFloat(lat);
+		long=parseFloat(long);
+		console.log(lat);
+		console.log(long);
+		console.log(params);
 		if(undefined == params){params={};}
 		if(undefined == params.displayname){params.displayname='Click on map to select';}
 		params.lat=lat;
