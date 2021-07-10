@@ -1470,7 +1470,7 @@ ENDOFX;
 			echo 'Usage: call loadExtrasCss(materials) - <span class="material-directions_run"></span> <xmp style="display:inline;"><span class="material-directions_run"></span></xmp>'.PHP_EOL;
 			echo '<hr size="1" />'.PHP_EOL;
 			$icons=wasqlFontIcons('extras/materials','material');
-			loadExtrasCSS('material');
+			loadExtrasCSS('materials');
 			$sets=arrayColumns($icons,4);
 			echo '<div class="row">'.PHP_EOL;
 			foreach($sets as $icons){
