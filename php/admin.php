@@ -1446,6 +1446,42 @@ ENDOFX;
 			}
 			echo '</div>'.PHP_EOL;
 		break;
+		case 'font_brands':
+			//Server Variables
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> Brands Font Icons</div>'.PHP_EOL;
+			echo 'Usage: call loadExtrasCss(brands) -  <span class="brand-apache"></span> <xmp style="display:inline;"><span class="brand-apache"></span></xmp>'.PHP_EOL;
+			echo '<hr size="1" />'.PHP_EOL;
+			$icons=wasqlFontIcons('extras/brands','brand');
+			loadExtrasCSS('brands');
+			$sets=arrayColumns($icons,4);
+			echo '<div class="row">'.PHP_EOL;
+			foreach($sets as $icons){
+				echo '		<div class="col-sm-3 w_nowrap">'.PHP_EOL;
+            	foreach($icons as $icon){
+                	echo '			<div class="w_biggest w_dblue"><span class="'.$icon.'"></span> '.$icon.'</div>'.PHP_EOL;
+				}
+				echo '		</div>'.PHP_EOL;
+			}
+			echo '</div>'.PHP_EOL;
+		break;
+		case 'font_materials':
+			//Server Variables
+			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> Materials Font Icons</div>'.PHP_EOL;
+			echo 'Usage: call loadExtrasCss(materials) - <span class="material-directions_run"></span> <xmp style="display:inline;"><span class="material-directions_run"></span></xmp>'.PHP_EOL;
+			echo '<hr size="1" />'.PHP_EOL;
+			$icons=wasqlFontIcons('extras/materials','material');
+			loadExtrasCSS('material');
+			$sets=arrayColumns($icons,4);
+			echo '<div class="row">'.PHP_EOL;
+			foreach($sets as $icons){
+				echo '		<div class="col-sm-3 w_nowrap">'.PHP_EOL;
+            	foreach($icons as $icon){
+                	echo '			<div class="w_biggest w_dblue"><span class="'.$icon.'"></span> '.$icon.'</div>'.PHP_EOL;
+				}
+				echo '		</div>'.PHP_EOL;
+			}
+			echo '</div>'.PHP_EOL;
+		break;
 		case 'system_old':
 			$ok=loadExtras('system');
 			//Server Variables

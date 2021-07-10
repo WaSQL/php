@@ -1661,13 +1661,14 @@ function wasqlVersion(){
  * @author slloyd
  * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function wasqlFontIcons($x=''){
+function wasqlFontIcons($name='wasql_icons',$prefix='icon'){
 	$wfiles_path=getWfilesPath();
-	$file="{$wfiles_path}/css/wasql_icons{$x}.css";
+	$file="{$wfiles_path}/css/{$name}.css";
 	$lines=file($file);
+	//echo printValue($lines);exit;
 	$icons=array();
 	foreach($lines as $line){
-    	if(preg_match('/^\.(icon\-.+?)\:/',$line,$m)){
+    	if(preg_match('/^\.('.$prefix.'\-.+?)\:/',$line,$m)){
         	$icons[]=$m[1];
 		}
 	}
