@@ -1099,6 +1099,48 @@ function mssqlGetServerInfo($params=array()){
 	}
 	return $info;
 }
+//---------- begin function mssqlIsDBTable ----------
+/**
+* @describe returns true if table already exists
+* @param table string
+* @return boolean
+* @usage if(mssqlIsDBTable('_users')){...}
+*/
+function mssqlIsDBTable($table='',$force=0){
+	$table=strtolower($table);
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mssqlIsDBTable'.$table);
+	if($force==0 && isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$schema=mssqlGetDBSchema();
+	if(!strlen($schema)){
+		debugValue("missing dbschema in config.xml");
+		return false;
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		SELECT
+			table_name
+		FROM
+			information_schema.tables
+		WHERE
+			table_type='BASE TABLE'
+			and table_catalog='{$schema}'
+			and table_name='{$table}'
+ENDOFQUERY;
+	$recs = mssqlQueryResults($query);
+	//echo $query.printValue($recs);exit;
+	if(isset($recs[0]['table_name'])){
+		$databaseCache[$cachekey]=true;
+	}
+	else{
+		$databaseCache[$cachekey]=false;
+	}
+	return $databaseCache[$cachekey];
+}
 //---------- begin function mssqlGetDBTables ----------
 /**
 * @describe returns an array of tables
@@ -1112,6 +1154,7 @@ function mssqlGetServerInfo($params=array()){
 */
 function mssqlGetDBTables($params=array()){
 	$params=mssqlParseConnectParams($params);
+	$schema=mssqlGetDBSchema();
 	$query="
 	SELECT
 		table_catalog as dbname
@@ -1128,7 +1171,7 @@ function mssqlGetDBTables($params=array()){
 	";
 	$recs = mssqlQueryResults($query,$params);
 	$tables=array();
-	foreach($recs as $rec){$tables[]=$rec['name'];}
+	foreach($recs as $rec){$tables[]=$rec['owner'].'.'.$rec['name'];}
 	return $tables;
 }
 
@@ -1367,7 +1410,7 @@ function mssqlEnumQueryResults($data,$params=array()){
 		}
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
-			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			return 'mssqlEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){

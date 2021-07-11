@@ -165,7 +165,14 @@ function hanaEscapeString($str){
 */
 function hanaGetTableDDL($table,$schema=''){
 	if(!strlen($schema)){
-		$schema=hanaGetDBSchema();
+		$parts=preg_split('/\./',$table,2);
+		if(count($parts)==2){
+			$schema=$parts[0];
+			$table=$parts[1];
+		}
+		else{
+			$schema=hanaGetDBSchema();
+		}
 	}
 	if(!strlen($schema)){
 		debugValue('hanaGetTableDDL error: schema is not defined in config.xml');
@@ -287,6 +294,66 @@ function hanaGetDBSchema(){
 	elseif(isset($CONFIG['hana_dbschema'])){return $CONFIG['hana_dbschema'];}
 	elseif(isset($CONFIG['hana_schema'])){return $CONFIG['hana_schema'];}
 	return '';
+}
+function hanaGetDBIndexes($tablename=''){
+	return hanaGetDBTableIndexes($tablename);
+}
+function hanaGetDBTableIndexes($table=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'hanaGetDBTableIndexes'.$table);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$parts=preg_split('/\./',$table,2);
+	if(count($parts)==2){
+		$schema=$parts[0];
+		$table=$parts[1];
+	}
+	else{
+		$schema=hanaGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('hanaGetDBTableIndexes error: schema is not defined in config.xml');
+		return array('hanaGetDBTableIndexes ERROR');
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	//key_name,column_name,is_primary,is_unique,seq_in_index
+	$query=<<<ENDOFQUERY
+	SELECT
+		lower(constraint_name) as key_name,
+		lower(column_name) as column_name,
+		is_primary_key as is_primary,
+		is_unique_key as is_unique,
+		position as seq_in_index
+	FROM sys.constraints
+	WHERE
+		schema_name='{$schema}'
+		and table_name='{$table}'
+	ORDER BY 
+		constraint_name,
+		position
+ENDOFQUERY;
+	$recs=hanaQueryResults($query);
+	foreach($recs as $i=>$rec){
+		switch(strtolower($rec['is_primary'])){
+			case 't':
+			case 'true':
+			case 1:
+				$recs[$i]['is_primary']=1;
+			break;
+		}
+		switch(strtolower($rec['is_unique'])){
+			case 't':
+			case 'true':
+			case 1:
+				$recs[$i]['is_unique']=1;
+			break;
+		}
+	}
+	$databaseCache[$cachekey]=$recs;
+	return $databaseCache[$cachekey];
 }
 //---------- begin function hanaGetDBRecordById--------------------
 /**
@@ -713,59 +780,41 @@ function hanaDBConnect($params=array()){
 *	loadExtras('hana');
 *	if(hanaIsDBTable('abc','abcschema')){...}
 */
-function hanaIsDBTable($table,$params=array()){
-	if(!strlen($table)){
-		echo "hanaIsDBTable error: No table";
-		exit;
+function hanaIsDBTable($table,$force=0){
+	$table=strtolower($table);
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'hanaIsDBTable'.$table);
+	if($force==0 && isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
 	}
-	//split out table and schema
-	$parts=preg_split('/\./',$table);
-	switch(count($parts)){
-		case 1:
-			echo "hanaIsDBTable error: no schema defined in tablename";
-			exit;
-		break;
-		case 2:
-			$schema=$parts[0];
-			$table=$parts[1];
-		break;
-		default:
-			echo "hanaIsDBTable error: to many parts";
-		break;
+	$parts=preg_split('/\./',$table,2);
+	if(count($parts)==2){
+		$schema=$parts[0];
+		$table=$parts[1];
 	}
-	$dbh_hana=hanaDBConnect($params);
-	if(!is_resource($dbh_hana)){
-		$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-		echo "hanaDBConnect error".printValue($params);
-		exit;
+	else{
+		$schema=hanaGetDBSchema();
 	}
-	try{
-		$result=odbc_tables($dbh_hana);
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana)
-			);
-			echo "hanaIsDBTable error: No result".printValue($err);
-			exit;
-		}
+	if(!strlen($schema)){
+		debugValue("hanaIsDBTable error: no schema");
+		return false;
 	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "hanaIsDBTable error: exception".printValue($err);
-		exit;
+	$table=strtoupper($table);
+	$schema=strtoupper($schema);
+	$query=<<<ENDOFQUERY
+		SELECT table_name
+		FROM sys.tables
+		where schema_name='{$schema}' and table_name='{$table}'
+ENDOFQUERY;
+	$recs=hanaQueryResults($query);
+	if(isset($recs[0]['table_name'])){
+		$databaseCache[$cachekey]=true;
 	}
-	while(odbc_fetch_row($result)){
-		if(odbc_result($result,"TABLE_TYPE")!="TABLE"){continue;}
-		if(strlen($schema) && odbc_result($result,"TABLE_SCHEM") != strtoupper($schema)){continue;}
-		$schem=odbc_result($result,"TABLE_SCHEM");
-		$name=odbc_result($result,"TABLE_NAME");
-		if(strtolower($table) == strtolower($name)){
-			odbc_free_result($result);
-			return true;
-		}
+	else{
+		$databaseCache[$cachekey]=false;
 	}
-	odbc_free_result($result);
-    return false;
+	return $databaseCache[$cachekey];
 }
 //---------- begin function hanaClearConnection ----------
 /**
@@ -1308,140 +1357,151 @@ function hanaGetDBSystemTables($params=array()){
 *	loadExtras('hana'); 
 *	$schemas=hanaGetDBSchemas();
 */
-function hanaGetDBSchemas($params=array()){
-	$dbh_hana=hanaDBConnect($params);
-	if(!$dbh_hana){
-    	$e=odbc_errormsg();
-    	debugValue(array("hanaGetDBSchemas Connect Error",$e));
-    	return;
+function hanaGetDBSchemas($has_privileges=1){
+	$query=<<<ENDOFQUERY
+		SELECT 
+			schema_name
+		FROM sys.schemas 
+		WHERE 
+			schema_owner not in ( 'SYS','SYSTEM')
+			and schema_owner not like '_SYS_%'
+			and schema_owner not like '%_AUTO_USER_%'
+ENDOFQUERY;
+	if($has_privileges==1){
+		$query.= "			and has_privileges='TRUE'".PHP_EOL;
 	}
-	try{
-		$result=odbc_tables($dbh_hana);
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana)
-			);
-			echo "hanaIsDBTable error: No result".printValue($err);
-			exit;
-		}
+	$query.= "ORDER BY schema_name";
+	$recs=hanaQueryResults($query);
+	$schemas=array();
+	foreach($recs as $rec){
+		$schemas[]=$rec['schema_name'];
 	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "hanaIsDBTable error: exception".printValue($err);
-		exit;
-	}
-	$recs=array();
-	while(odbc_fetch_row($result)){
-		if(odbc_result($result,"TABLE_TYPE")!="TABLE"){continue;}
-		$schem=odbc_result($result,"TABLE_SCHEM");
-		if(in_array($schem,$recs)){continue;}
-		$recs[]=$schem;
-	}
-	odbc_free_result($result);
-    return $recs;
+	return $schemas;
 }
 //---------- begin function hanaGetDBTables ----------
 /**
 * @describe returns an array of tables
-* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
+
 * @return boolean returns true on success
 * @usage 
 *	loadExtras('hana');
 *	$tables=hanaGetDBTables();
 */
-function hanaGetDBTables($params=array()){
-	$dbh_hana=hanaDBConnect($params);
-	if(!$dbh_hana){
-    	$e=odbc_errormsg();
-    	debugValue(array("hanaGetDBSchemas Connect Error",$e));
-    	return;
-	}
-	try{
-		$result=odbc_tables($dbh_hana);
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana)
-			);
-			echo "hanaIsDBTable error: No result".printValue($err);
-			exit;
-		}
-	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "hanaIsDBTable error: exception".printValue($err);
-		exit;
-	}
+function hanaGetDBTables($schema=''){
+	$schemas=hanaGetDBSchemas(1);
+	if(!count($schemas)){return array();}
+	$schemastr=implode("','",$schemas);
+	$query=<<<ENDOFQUERY
+		SELECT
+			schema_name,
+			table_name
+		FROM public.tables
+		WHERE schema_name in ('{$schemastr}')
+		ORDER BY table_name
+ENDOFQUERY;
+	$recs=hanaQueryResults($query);
 	$tables=array();
-	while(odbc_fetch_row($result)){
-		if(odbc_result($result,"TABLE_TYPE")!="TABLE"){continue;}
-		if(isset($params['-schema']) && strlen($params['-schema']) && strtoupper(odbc_result($result,"TABLE_SCHEM")) != strtoupper($params['-schema'])){continue;}
-		$schem=odbc_result($result,"TABLE_SCHEM");
-		$name=odbc_result($result,"TABLE_NAME");
-		$tables[]="{$schem}.{$name}";
+	foreach($recs as $rec){
+		$tables[]=strtolower($rec['schema_name']).'.'.strtolower($rec['table_name']);
 	}
-	odbc_free_result($result);
-    return $tables;
+	return $tables;
 }
 //---------- begin function hanaGetDBFieldInfo ----------
 /**
 * @describe returns an array of field info. fieldname is the key, Each field returns name,type,scale, precision, length, num are
-* @param $params array - These can also be set in the CONFIG file with dbname_hana,dbuser_hana, and dbpass_hana
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return boolean returns true on success
 * @usage
 *	loadExtras('hana'); 
 *	$fieldinfo=hanaGetDBFieldInfo('abcschema.abc');
 */
 function hanaGetDBFieldInfo($table,$params=array()){
-	$dbh_hana=hanaDBConnect($params);
-	if(!$dbh_hana){
-    	$e=odbc_errormsg();
-    	debugValue(array("hanaGetDBSchemas Connect Error",$e));
-    	return;
+	$parts=preg_split('/\./',$table,2);
+	if(count($parts)==2){
+		$schema=$parts[0];
+		$table=$parts[1];
 	}
-	$query="select * from {$table} where 1=0";
-	try{
-		$result = odbc_prepare($dbh_hana,$query);
-		odbc_setoption($result, 2, 0, 30);
-		odbc_execute($result);
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana),
-        		'query'	=> $query
-			);
-			echo "hanaGetDBFieldInfo error: No result".printValue($err);
-			exit;
-		}
+	else{
+		$schema=hanaGetDBSchema();
 	}
-	catch (Exception $e) {
-		$err=$e->errorInfo;
-		echo "hanaGetDBFieldInfo error: exception".printValue($err);
-		exit;
+	if(!strlen($schema)){
+		debugValue('hanaGetDBFieldInfo error: schema is not defined in config.xml');
+		return array('hanaGetDBTables ERROR');
 	}
-	$recs=array();
-	for($i=1;$i<=odbc_num_fields($result);$i++){
-		$field=strtolower(odbc_field_name($result,$i));
-        $recs[$field]=array(
-        	'table'		=> $table,
-        	'_dbtable'	=> $table,
-			'name'		=> $field,
-			'_dbfield'	=> $field,
-			'type'		=> strtolower(odbc_field_type($result,$i)),
-			'scale'		=> strtolower(odbc_field_scale($result,$i)),
-			'precision'	=> strtolower(odbc_field_precision($result,$i)),
-			'length'	=> strtolower(odbc_field_len($result,$i)),
-			'num'		=> strtolower(odbc_field_num($result,$i))
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERYNEW
+	SELECT
+		tc.schema_name as table_schema, 
+		tc.table_name,
+		tc.column_name,
+		tc.position as ordinal_position,
+		tc.default_value column_default,
+		tc.is_nullable,
+		tc.data_type_name as data_type,
+		tc.length as character_maximum_length,
+		tc.scale as numeric_precision,
+		c.is_primary_key,
+		c.is_unique_key
+	FROM
+		sys.table_columns tc
+		LEFT OUTER JOIN sys.constraints c on c.schema_name=tc.schema_name and c.table_name=tc.table_name and c.column_name=tc.column_name
+	WHERE
+		tc.schema_name='{$schema}'
+		and tc.table_name='{$table}'
+ENDOFQUERYNEW;
+	$recs=hanaQueryResults($query);
+	$fields=array();
+	foreach($recs as $rec){
+		$field=array(
+			'_dbtable'	=> $rec['table_name'],
+		 	'_dbfield'	=> strtolower($rec['column_name']),
+		 	'_dbtype'	=> strtolower($rec['data_type']),
+		 	'_dblength' => $rec['character_maximum_length'],
+		 	'table'		=> $rec['table_name'],
+		 	'name'		=> strtolower($rec['column_name']),
+		 	'type'		=> strtolower($rec['data_type']),
+			'length'	=> $rec['character_maximum_length'],
+			'num'		=> $rec['numeric_precision'],
+			'size'		=> $rec['numeric_precision_radix'],
+			'identity'	=> strtolower($rec['is_identity'])=='true'?1:0,
+			'primary'	=> strtolower($rec['is_primary_key'])=='true'?1:0,
+			'unique'	=> strtolower($rec['is_unique_key'])=='true'?1:0,
 		);
-		$recs[$field]['_dbtype']=$recs[$field]['type'];
-		$recs[$field]['_dblength']=$recs[$field]['length'];
-    }
-    odbc_free_result($result);
-	return $recs;
+		//nullable
+		switch(strtolower($rec['not_null'])){
+			case 't':
+				$field['nullable']=0;
+			break;
+			default:
+				$field['nullable']=1;
+			break;
+
+		}
+		//_dbtype_ex
+		switch(strtolower($field['_dbtype'])){
+			case 'bigint':
+			case 'integer':
+			case 'timestamp':
+				$field['_dbtype_ex']=$field['_dbtype'];
+			break;
+			default:
+				if(strlen($field['_dblength']) && $field['_dblength'] != '-1'){
+					$field['_dbtype_ex']="{$field['_dbtype']}({$field['_dblength']})";
+				}
+				else{
+					$field['_dbtype_ex']=$field['_dbtype'];
+				}
+			break;
+		}
+		
+		//default
+		if(strlen($rec['column_default'])){
+			$field['_dbdef']=$field['default']=$rec['column_default'];
+		}
+		$fields[$field['_dbfield']]=$field;
+	}
+	//echo $table.printValue($fields).'<hr>'.PHP_EOL;
+	return $fields;
 }
 //---------- begin function hanaGetDBCount--------------------
 /**
@@ -1482,7 +1542,7 @@ function hanaQueryHeader($query,$params=array()){
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
     	$e=odbc_errormsg();
-    	debugValue(array("hanaGetDBSchemas Connect Error",$e));
+    	debugValue(array("hanaQueryHeader Connect Error",$e));
     	return;
 	}
 	if(!preg_match('/limit\ /is',$query)){

@@ -65,17 +65,26 @@
 			$table=addslashes($_REQUEST['table']);
 			switch(strtolower($db['dbtype'])){
 				case 'ctree':
-					$sql="select count(*) cnt from admin.{$table} order by 1 desc";
+					$sql="select count(*) as cnt from admin.{$table} order by 1 desc";
 				break;
 				case 'mysql':
 				case 'mysqli':
-					$sql="select count(*) cnt from {$table}";
+					$sql="select count(*) as cnt from {$table}";
 				break;
 				default:
-					if(strlen($db['dbschema'])){
-						$table="{$db['dbschema']}.{$table}";
+					$parts=preg_split('/\./',$table,2);
+					if(count($parts)==2){
+						$schema=$parts[0];
+						$table=$parts[1];
 					}
-					$sql="select count(*) cnt from {$table}";
+					else{
+						$schema=$db['dbschema'];
+					}
+					
+					if(strlen($schema)){
+						$table="{$schema}.{$table}";
+					}
+					$sql="select count(*) as cnt from {$table}";
 				break;
 			}
 			setView('monitor_sql',1);

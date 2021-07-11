@@ -505,9 +505,19 @@ function ctreeIsDBTable($table='',$force=0){
 	if($force==0 && isset($databaseCache['ctreeIsDBTable'][$table])){
 		return $databaseCache['ctreeIsDBTable'][$table];
 	}
-	$tables=ctreeGetDBTables();
-	if(in_array($table,$tables)){return true;}
-	return false;
+	$query=<<<ENDOFQUERY
+		SELECT tbl
+		FROM admin.systables
+		where tbl='{$table}'
+ENDOFQUERY;
+	$recs=ctreeQueryResults($query);
+	if(isset($recs[0]['tbl'])){
+		$databaseCache['ctreeIsDBTable'][$table]=true;
+	}
+	else{
+		$databaseCache['ctreeIsDBTable'][$table]=false;
+	}
+	return $databaseCache['ctreeIsDBTable'][$table];
 }
 
 //---------- begin function ctreeGetDBTables ----------

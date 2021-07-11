@@ -1840,14 +1840,21 @@ function postgresqlIsDBTable($table='',$force=0){
 	if($force==0 && isset($databaseCache[$cachekey])){
 		return $databaseCache[$cachekey];
 	}
-
-	$tables=postgresqlGetDBTables();
-	if(in_array($table,$tables)){
-		$databaseCache[$cachekey]=true;
-		return true;
+	$schema=postgresqlGetDBSchema();
+	if(strlen($schema)){
+		$query="SELECT tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' and tablename='{$table}'";
 	}
-	$databaseCache[$cachekey]=false;
-	return false;
+	else{
+		$query="SELECT tablename FROM pg_catalog.pg_tables where tablename='{$table}'";
+	}
+	$recs = postgresqlQueryResults($query);
+	if(isset($recs[0]['tablename'])){
+		$databaseCache[$cachekey]=true;
+	}
+	else{
+		$databaseCache[$cachekey]=false;
+	}
+	return $databaseCache[$cachekey];
 }
 
 //---------- begin function postgresqlGetDBTables ----------

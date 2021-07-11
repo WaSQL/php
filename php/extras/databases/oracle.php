@@ -1727,17 +1727,20 @@ function oracleGetDBRecords($params){
 function oracleGetDBTables($params=array()){
 	global $CONFIG;
 	global $DATABASE;
-	$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
-	if(!strlen($owner)){
-		return array("ERROR: No dbschema specified");
+	$schema=oracleGetDBSchema();
+	if(!strlen($schema)){
+		debugValue("missing dbschema in config.xml");
+		return array();
 	}
+	$schema=strtoupper($schema);
+	$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 	$query=<<<ENDOFQUERY
 		SELECT 
 			owner,table_name,last_analyzed,num_rows,pct_free 
 		FROM 
 			all_tables 
 		WHERE 
-			owner ='{$owner}' 
+			owner ='{$schema}' 
 			and status='VALID'
 		ORDER BY 
 			owner,table_name
@@ -1906,6 +1909,49 @@ function oracleEnumQueryResults($res,$params=array()){
 		return $i;
 	}
 	return $recs;
+}
+//---------- begin function oracleIsDBTable ----------
+/**
+* @describe returns true if table already exists
+* @param table string
+* @return boolean
+* @usage if(oracleIsDBTable('_users')){...}
+*/
+function oracleIsDBTable($table='',$force=0){
+	$table=strtolower($table);
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'oracleIsDBTable'.$table);
+	if($force==0 && isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$schema=oracleGetDBSchema();
+	if(!strlen($schema)){
+		debugValue("missing dbschema in config.xml");
+		return false;
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		SELECT 
+			table_name 
+		FROM 
+			all_tables 
+		WHERE 
+			owner ='{$schema}' 
+			and status='VALID'
+			and table_name='{$table}'
+		offset 0 rows fetch next 1 rows only
+ENDOFQUERY;
+	$recs = oracleQueryResults($query);
+	//echo $query.printValue($recs);exit;
+	if(isset($recs[0]['table_name'])){
+		$databaseCache[$cachekey]=true;
+	}
+	else{
+		$databaseCache[$cachekey]=false;
+	}
+	return $databaseCache[$cachekey];
 }
 //---------- begin function oracleListRecords
 /**

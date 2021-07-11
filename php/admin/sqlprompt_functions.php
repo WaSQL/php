@@ -101,7 +101,11 @@ function sqlpromptListFields($recs){
 		'-listfields'=>'_dbfield,_dbtype_ex',
 		'-thclass'=>'w_smaller',
 		'-tdclass'=>'w_smaller',
-		'_dbfield_displayname'=>'Field',
+		'_dbfield_options'=>array(
+			'displayname'=>'Field',
+			'style'=>'max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
+			'title'=>'%_dbfield%'
+		),
 		'_dbtype_ex_displayname'=>'Type'
 	);
 	return databaseListRecords($opts);
@@ -120,7 +124,11 @@ function sqlpromptListIndexes($recs){
 		'-tdclass'=>'w_smaller',
 		'is_primary_displayname'=>'Pk',
 		'is_primary_checkmark'=>1,
-		'key_name_displayname'=>'Index',
+		'key_name_options'=>array(
+			'displayname'=>'Index',
+			'style'=>'max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
+			'title'=>'%key_name%'
+		),
 		'is_unique_displayname'=>'Un',
 		'is_unique_checkmark'=>1,
 		'column_name_displayname'=>'Column',

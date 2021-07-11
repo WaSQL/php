@@ -571,24 +571,42 @@ function snowflakeDBConnect($params=array()){
 }
 //---------- begin function snowflakeIsDBTable ----------
 /**
-* @describe returns true if table exists
-* @param $tablename string - table name
-* @param $schema string - schema name
-* @param $params array - These can also be set in the CONFIG file with dbname_snowflake,dbuser_snowflake, and dbpass_snowflake
-* 	[-dbname] - name of snowflake connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return boolean returns true if table exists
-* @usage 
-*	loadExtras('snowflake');
-*	if(snowflakeIsDBTable('abc','abcschema')){...}
+* @describe returns true if table already exists
+* @param table string
+* @return boolean
+* @usage if(snowflakeIsDBTable('_users')){...}
 */
-function snowflakeIsDBTable($table){
-	$tables=snowflakeGetDBTables();
-	$tables = array_map('strtolower', $tables);
+function snowflakeIsDBTable($table='',$force=0){
 	$table=strtolower($table);
-	if(in_array($table,$tables)){return true;}
-	return false;
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'snowflakeIsDBTable'.$table);
+	if($force==0 && isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$schema=snowflakeGetDBSchema();
+	if(!strlen($schema)){
+		debugValue("no schema set");
+		return false;
+	}
+	$schema=strtoupper($schema);
+	$table=strtoupper($table);
+	$query=<<<ENDOFQUERY
+		SELECT table_name
+		FROM information_schema.tables 
+		WHERE 
+			table_type = 'BASE TABLE'
+			and  table_schema='{$schema}'
+			and table_name='{$table}' 
+ENDOFQUERY;
+	$recs = snowflakeQueryResults($query);
+	if(isset($recs[0]['table_name'])){
+		$databaseCache[$cachekey]=true;
+	}
+	else{
+		$databaseCache[$cachekey]=false;
+	}
+	return $databaseCache[$cachekey];
 }
 //---------- begin function snowflakeClearConnection ----------
 /**
@@ -938,6 +956,7 @@ function snowflakeGetDBRecords($params){
 	if(isset($params['-debug'])){return $query;}
 	return snowflakeQueryResults($query,$params);
 }
+
 //---------- begin function snowflakeGetDBTables ----------
 /**
 * @describe returns an array of tables
