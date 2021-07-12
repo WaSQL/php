@@ -168,7 +168,10 @@ function sqlpromptBuildQuery($db,$name){
 			return trim(hanaNamedQuery($name));
 		break;
 		case 'sqlite':
-			return '';
+			loadExtras('sqlite');
+			global $dbh_sqlite;
+			$dbh_sqlite='';
+			return trim(sqliteNamedQuery($name));
 		break;
 		default:
 			loadExtras('mysql');

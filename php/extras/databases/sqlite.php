@@ -559,6 +559,38 @@ function sqliteDBConnect($params=array()){
 		}
 		
 		$dbh_sqlite->busyTimeout(5000);
+		//register some PHP functions so we can use them in queries
+		if(!$dbh_sqlite->createFunction("config_value", "configValue", 1)){
+			debugValue("unable to create config_value function");
+		}
+		if(!$dbh_sqlite->createFunction("user_value", "userValue", 1)){
+			debugValue("unable to create user_value function");
+		}
+		if(!$dbh_sqlite->createFunction("is_user", "isUser", 0)){
+			debugValue("unable to create is_user function");
+		}
+		if(!$dbh_sqlite->createFunction("is_admin", "isAdmin", 0)){
+			debugValue("unable to create is_admin function");
+		}
+		if(!$dbh_sqlite->createFunction("verbose_size", "verboseSize", -1)){
+			debugValue("unable to create verbose_size function");
+		}
+		if(!$dbh_sqlite->createFunction("verbose_time", "verboseTime", -1)){
+			debugValue("unable to create verbose_time function");
+		}
+		if(!$dbh_sqlite->createFunction("verbose_number", "verboseNumber", -1)){
+			debugValue("unable to create verbose_number function");
+		}
+		if(!$dbh_sqlite->createFunction("format_phone", "commonFormatPhone", 1)){
+			debugValue("unable to create format_phone function");
+		}
+		if(!$dbh_sqlite->createFunction("string_contains", "stringContains", 2)){
+			debugValue("unable to create string_contains function");
+		}
+		if(!$dbh_sqlite->createFunction("php_version", "phpversion")){
+			debugValue("unable to create php_version function");
+		}
+
 		// WAL mode has better control over concurrency.
 		// Source: https://www.sqlite.org/wal.html
 		$dbh_sqlite->exec('PRAGMA journal_mode = wal;');
@@ -1290,4 +1322,38 @@ function sqliteGetDBRecordsCount($params=array()){
 	if(isset($params['-offset'])){unset($params['-offset']);}
 	$recs=sqliteGetDBRecords($params);
 	return $recs[0]['cnt'];
+}
+//---------- begin function sqliteNamedQuery ----------
+/**
+* @describe returns pre-build queries based on name
+* @param name string
+*	[running_queries]
+*	[table_locks]
+* @return query string
+*/
+function sqliteNamedQuery($name){
+	$schema=sqliteGetDBSchema();
+	switch(strtolower($name)){
+		case 'list':
+			return array(
+				array(
+					'cmd'=>'tables',
+					'icon'=>'icon-table',
+					'name'=>'Tables'
+				)
+			);
+		break;
+		case 'tables':
+			return <<<ENDOFQUERY
+SELECT 
+    name as table_name
+FROM 
+    sqlite_master 
+WHERE 
+    type ='table' AND 
+    name NOT LIKE 'sqlite_%'
+ORDER BY name
+ENDOFQUERY;
+		break;
+	}
 }
