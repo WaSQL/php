@@ -2571,7 +2571,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$latlon=array($m[1],$m[3]);
 		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
-	$params['readonly']=1;
+	//$params['readonly']=1;
 	unset($params['onclick']);
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
