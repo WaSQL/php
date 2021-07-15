@@ -2601,9 +2601,9 @@ ENDOFLOAD;
 		unset($params['data-displayif']);
 	}
 	$tag .=<<<ENDOFTAG
-	><div  style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
+	><div id="{$params['id']}_clickdiv" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}"  style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
 	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
-	<button type="button" id="{$params['id']}_clickdiv" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
+	<button type="button"  class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
 </div>
 </div>
 ENDOFTAG;
