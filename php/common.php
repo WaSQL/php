@@ -2572,10 +2572,8 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$latlon=array($m[1],$m[3]);
 		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
 	}
-	//$params['pattern']='\[[+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\]';
-	$params['pattern']='\[[+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\]';
-	$params['title']=$params['data-tip']='[latitude,longitude] -- click on map icon to select a location from Google Maps';
-	$params['data-tip_position']='bottom';
+	//$params['pattern']='/\[[+-]?([0-9]*[.])?[0-9]+\,[+-]?([0-9]*[.])?[0-9]+$/';
+	$params['title']='[latitude,longitude]';
 	unset($params['onclick']);
 	$atts = setTagAttributes($params);
 	//return $atts.printValue($params);
@@ -2601,9 +2599,9 @@ ENDOFLOAD;
 		unset($params['data-displayif']);
 	}
 	$tag .=<<<ENDOFTAG
-	><div id="{$params['id']}_clickdiv" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}"  style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
+	><div id="{$params['id']}_clickdiv" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}" style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
 	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
-	<button type="button"  class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
+	<button type="button" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
 </div>
 </div>
 ENDOFTAG;
