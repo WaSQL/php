@@ -1180,6 +1180,21 @@ function initDisplayif(){
 		}
 	}
 }
+/* set custom required message using data-required_msg in form fields */
+function initCustomValidity(){
+	els = document.querySelectorAll('textarea[data-required_msg],input[data-required_msg],select[data-required_msg]');
+    	for (let i = 0; i < els.length; i++) {
+        els[i].oninvalid = function(e) {
+            e.target.setCustomValidity('');
+            if (!e.target.validity.valid) {
+                e.target.setCustomValidity(e.dataset.required_msg);
+            }
+        };
+        els[i].oninput = function(e) {
+            e.target.setCustomValidity('');
+        };
+    }
+}
 function initQuill(){
 	let quills=document.querySelectorAll('textarea[data-behavior="quill"],textarea[data-behavior="richtext"],textarea[data-behavior="nicedit"]');
 	//console.log(quills.length);
@@ -1360,6 +1375,9 @@ function initBehaviors(ajaxdiv){
 	try{initQuill();}catch(e){}
 	try{initCarousels();}catch(e){}
 	try{f_tcalInit();}catch(e){}
+	//init custom required messages
+	try{initCustomValidity();}catch(e){}
+	//init drag sort
 	try{dragSortEnable('[data-behavior="dragsort"]');}catch(e){}
 	//check for data-navigate
 	let navel = document.querySelector('[data-navigate]');
