@@ -1187,7 +1187,7 @@ function initCustomValidity(){
         els[i].oninvalid = function(e) {
             e.target.setCustomValidity('');
             if (!e.target.validity.valid) {
-                e.target.setCustomValidity(e.dataset.required_msg);
+                e.target.setCustomValidity(this.dataset.required_msg);
             }
         };
         els[i].oninput = function(e) {
