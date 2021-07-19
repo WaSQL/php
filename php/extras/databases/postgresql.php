@@ -561,29 +561,18 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	if(strlen($table)==0){return "postgresqlCreateDBTable error: No table";}
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
 	//check for schema name
+	$schema=postgresqlGetDBSchema();
 	if(!stringContains($table,'.')){
-		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
 			$table="{$schema}.{$table}";
 		}
 	}
 	if(postgresqlIsDBTable($table)){return 0;}
-	global $CONFIG;
-	//verify the wasql fields are there. if not add them
-	if(!isset($fields['_id'])){$fields['_id']=databasePrimaryKeyFieldString();}
-	if(!isset($fields['_cdate'])){
-		$fields['_cdate']=databaseDataType('datetime').databaseDateTimeNow();
-	}
-	if(!isset($fields['_cuser'])){$fields['_cuser']="INT NOT NULL";}
-	if(!isset($fields['_edate'])){
-		$fields['_edate']=databaseDataType('datetime')." NULL";
-	}
-	if(!isset($fields['_euser'])){$fields['_euser']="INT NULL";}
+	global $CONFIG;	
 	//lowercase the tablename and replace spaces with underscores
 	$table=strtolower(trim($table));
 	$table=str_replace(' ','_',$table);
 	$ori_table=$table;
-	$schema=postgresqlGetDBSchema();
 	if(strlen($schema) && !stringContains($table,$schema)){
 		$table="{$schema}.{$table}";
 	}
@@ -595,50 +584,14 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 		$attributes=str_replace('mediumint','integer',$attributes);
 		$attributes=str_replace('datetime','timestamp',$attributes);
 		$attributes=str_replace('float','real',$attributes);
-		$attributes=str_replace('tinyint','smallint',$attributes);
-		//handle virual generated json field shortcut
-		if(preg_match('/^(.+?)\ from\ (.+?)$/i',$attributes,$m)){
-			list($efield,$jfield)=preg_split('/\./',$m[2],2);
-			if(!strlen($jfield)){$jfield=$field;}
-            $attributes="{$m[1]} GENERATED ALWAYS AS (TRIM(BOTH '\"' FROM json_extract({$efield},'$.{$jfield}')))";
-		}
 		//lowercase the fieldname and replace spaces with underscores
-
 		$field=strtolower(trim($field));
 		$field=str_replace(' ','_',$field);
 		$lines[]= "	{$field} {$attributes}";
    	}
     $query .= implode(','.PHP_EOL,$lines).PHP_EOL;
     $query .= ")".PHP_EOL;
-
-    global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect();
-	}
-	if(!$dbh_postgresql){
-		debugValue(array(
-			'function'=>'postgresqlCreateDBTable',
-			'message'=>'connect failed',
-			'error'=>pg_last_error(),
-			'query'=>$query
-		));
-    	return;
-	}
-	$query_result=pg_query($dbh_postgresql,$query);
-	//echo $query . printValue($query_result).PHP_EOL.PHP_EOL;
-	//clear the cache
-	clearDBCache(array('postgresqlGetDBTables','postgresqlGetDBFieldInfo','postgresqlIsDBTable'));
-  	if(!isset($query_result['error']) && $query_result==true){
-		//success creating table.  Now go through the fields and create any instant meta data found
-		foreach($fields as $field=>$attributes){
-        	instantDBMeta($ori_table,$field,$attributes);
-		}
-		return 1;
-	}
-  	else{
-		return setWasqlError(debug_backtrace(),getDBError(),$query);
-	}
-	return 1;
+    return postgresqlExecuteSQL($query);
 }
 //---------- begin function postgresqlDropDBIndex--------------------
 /**
@@ -759,7 +712,6 @@ function postgresqlDBConnect(){
 * @param params array
 *	-table string - name of table
 *	-where string - where clause to filter what records are deleted
-*	[-model] boolean - set to false to disable model functionality
 * @return boolean
 * @usage $id=postgresqlDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
 */
@@ -1088,14 +1040,14 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
-/*
-ALTER TABLE table_name 
-ADD (
-    column_name_1 data_type constraint,
-    column_name_2 data_type constraint,
-    ...
-);
-
+//---------- begin function postgresqlAlterDBTable--------------------
+/**
+* @describe alters fields in given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=postgresqlAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function postgresqlAlterDBTable($table,$fields=array()){
 	$info=postgresqlGetDBFieldInfo($table);

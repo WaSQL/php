@@ -150,6 +150,101 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	}
 	return count($values);
 }
+//---------- begin function hanaAlterDBTable--------------------
+/**
+* @describe alters fields in given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @param [maintain_order] boolean - try to maintain field order - defaults to 1
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=hanaAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function hanaAlterDBTable($table,$fields=array(),$maintain_order=1){
+	$info=hanaGetDBFieldInfo($table);
+	if(!is_array($info) || !count($info)){
+		debugValue("hanaAlterDBTable - {$table} is missing or has no fields".printValue($table));
+		return false;
+	}
+	$rtn=array();
+	//$rtn[]=$info;
+	$addfields=array();
+	foreach($fields as $name=>$type){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
+		$addfields[]="{$name} {$type}";
+	}
+	$dropfields=array();
+	foreach($info as $name=>$finfo){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
+			$dropfields[]=$name;
+		}
+	}
+	if(count($dropfields)){
+		$fieldstr=implode(', ',$dropfields);
+		$query="ALTER TABLE {$table} DROP ({$fieldstr})";
+		$ok=hanaExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	if(count($addfields)){
+		$fieldstr=implode(', ',$addfields);
+		$query="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$ok=hanaExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	return $rtn;
+}
+//---------- begin function hanaCreateDBTable--------------------
+/**
+* @describe creates hana table with specified fields
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to add
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=hanaCreateDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
+*/
+function hanaCreateDBTable($table='',$fields=array()){
+	$function='createDBTable';
+	if(strlen($table)==0){return "hanaCreateDBTable error: No table";}
+	if(count($fields)==0){return "hanaCreateDBTable error: No fields";}
+	//check for schema name
+	$schema=hanaGetDBSchema();
+	if(!stringContains($table,'.')){
+		if(strlen($schema)){
+			$table="{$schema}.{$table}";
+		}
+	}
+	if(hanaIsDBTable($table)){return 0;}
+	global $CONFIG;	
+	//lowercase the tablename and replace spaces with underscores
+	$table=strtolower(trim($table));
+	$table=str_replace(' ','_',$table);
+	$ori_table=$table;
+	if(strlen($schema) && !stringContains($table,$schema)){
+		$table="{$schema}.{$table}";
+	}
+	$query="create table {$table} (".PHP_EOL;
+	$lines=array();
+	foreach($fields as $field=>$attributes){
+		//datatype conversions
+		$attributes=str_replace('tinyint','smallint',$attributes);
+		$attributes=str_replace('mediumint','integer',$attributes);
+		$attributes=str_replace('datetime','timestamp',$attributes);
+		$attributes=str_replace('float','real',$attributes);
+		//lowercase the fieldname and replace spaces with underscores
+		$field=strtolower(trim($field));
+		$field=str_replace(' ','_',$field);
+		$lines[]= "	{$field} {$attributes}";
+   	}
+    $query .= implode(','.PHP_EOL,$lines).PHP_EOL;
+    $query .= ")".PHP_EOL;
+    return hanaExecuteSQL($query);
+}
 function hanaEscapeString($str){
 	$str = str_replace("'","''",$str);
 	return $str;
@@ -408,6 +503,29 @@ function hanaEditDBRecordById($table='',$id=0,$params=array()){
 	$params['-where']="_id in ({$idstr})";
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	return hanaEditDBRecord($params);
+}
+//---------- begin function hanaDelDBRecord ----------
+/**
+* @describe deletes records in table that match -where clause
+* @param params array
+*	-table string - name of table
+*	-where string - where clause to filter what records are deleted
+* @return boolean
+* @usage $id=hanaDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
+*/
+function hanaDelDBRecord($params=array()){
+	global $USER;
+	if(!isset($params['-table'])){return 'hanaDelDBRecord error: No table specified.';}
+	if(!isset($params['-where'])){return 'hanaDelDBRecord Error: No where';}
+	//check for schema name
+	if(!stringContains($params['-table'],'.')){
+		$schema=hanaGetDBSchema();
+		if(strlen($schema)){
+			$params['-table']="{$schema}.{$params['-table']}";
+		}
+	}
+	$query="delete from {$params['-table']} where " . $params['-where'];
+	return hanaExecuteSQL($query);
 }
 //---------- begin function hanaDelDBRecordById--------------------
 /**

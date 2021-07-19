@@ -134,6 +134,54 @@ function snowflakeAddDBRecordsProcess($recs,$params=array()){
 	$ok=snowflakeExecuteSQL($query);
 	return count($values);
 }
+//---------- begin function snowflakeAlterDBTable--------------------
+/**
+* @describe alters fields in given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=snowflakeAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function snowflakeAlterDBTable($table,$fields=array(),$maintain_order=1){
+	$info=snowflakeGetDBFieldInfo($table);
+	if(!is_array($info) || !count($info)){
+		debugValue("snowflakeAlterDBTable - {$table} is missing or has no fields".printValue($table));
+		return false;
+	}
+	$rtn=array();
+	//$rtn[]=$info;
+	$addfields=array();
+	foreach($fields as $name=>$type){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
+		$addfields[]="{$name} {$type}";
+	}
+	$dropfields=array();
+	foreach($info as $name=>$finfo){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
+			$dropfields[]=$name;
+		}
+	}
+	if(count($dropfields)){
+		$fieldstr=implode(', ',$dropfields);
+		$query="ALTER TABLE {$table} DROP ({$fieldstr})";
+		$ok=snowflakeExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	if(count($addfields)){
+		$fieldstr=implode(', ',$addfields);
+		$query="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$ok=snowflakeExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	return $rtn;
+}
 function snowflakeEscapeString($str){
 	$str = str_replace("'","''",$str);
 	return $str;
@@ -172,7 +220,7 @@ ENDOFQUERY;
 *	-table
 *	-name
 * @return boolean
-* @usage $ok=addDBIndex(array('-table'=>$table,'-name'=>"myindex"));
+* @usage $ok=snowflakeDropDBIndex(array('-table'=>$table,'-name'=>"myindex"));
 */
 function snowflakeDropDBIndex($params=array()){
 	if(!isset($params['-table'])){return 'snowflakeDropDBIndex Error: No table';}
@@ -220,11 +268,10 @@ function snowflakeDropDBTable($table='',$meta=1){
 * @param params array
 *	-table string - name of table
 *	-where string - where clause to filter what records are deleted
-*	[-model] boolean - set to false to disable model functionality
 * @return boolean
 * @usage $id=snowflakeDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
 */
-function snowflakeDelDBRecord(){
+function snowflakeDelDBRecord($params=array()){
 	global $USER;
 	if(!isset($params['-table'])){return 'snowflakeDelDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'snowflakeDelDBRecord Error: No where';}

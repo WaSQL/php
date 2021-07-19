@@ -386,14 +386,15 @@ ENDOFQUERY;
 	}
 	return $databaseCache[$cachekey];
 }
-/*
-ALTER TABLE table_name 
-ADD (
-    column_name_1 data_type constraint,
-    column_name_2 data_type constraint,
-    ...
-);
-
+//---------- begin function oracleAlterDBTable--------------------
+/**
+* @describe alters fields in given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @param [maintain_order] boolean - try to maintain field order - defaults to 1
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=oracleAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function oracleAlterDBTable($table,$fields=array(),$maintain_order=1){
 	$info=oracleGetDBFieldInfo($table);
@@ -496,6 +497,52 @@ function oracleAddDBIndex($params=array()){
 	$query="CREATE {$fulltext}{$unique} INDEX {$params['-name']} ON {$params['-table']} ({$fieldstr})";
 	$ok=oracleExecuteSQL($query);
 	return array($ok,$query);
+}
+//---------- begin function oracleCreateDBTable--------------------
+/**
+* @describe creates oracle table with specified fields
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to add
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=oracleCreateDBTable($table,array($field=>"varchar(255) NULL",$field2=>"int NOT NULL"));
+*/
+function oracleCreateDBTable($table='',$fields=array()){
+	$function='createDBTable';
+	if(strlen($table)==0){return "oracleCreateDBTable error: No table";}
+	if(count($fields)==0){return "oracleCreateDBTable error: No fields";}
+	//check for schema name
+	$schema=oracleGetDBSchema();
+	if(!stringContains($table,'.')){
+		if(strlen($schema)){
+			$table="{$schema}.{$table}";
+		}
+	}
+	if(oracleIsDBTable($table)){return 0;}
+	global $CONFIG;	
+	//lowercase the tablename and replace spaces with underscores
+	$table=strtolower(trim($table));
+	$table=str_replace(' ','_',$table);
+	$ori_table=$table;
+	if(strlen($schema) && !stringContains($table,$schema)){
+		$table="{$schema}.{$table}";
+	}
+	$query="create table {$table} (".PHP_EOL;
+	$lines=array();
+	foreach($fields as $field=>$attributes){
+		//datatype conversions
+		$attributes=str_replace('tinyint','smallint',$attributes);
+		$attributes=str_replace('mediumint','integer',$attributes);
+		$attributes=str_replace('datetime','timestamp',$attributes);
+		$attributes=str_replace('float','real',$attributes);
+		//lowercase the fieldname and replace spaces with underscores
+		$field=strtolower(trim($field));
+		$field=str_replace(' ','_',$field);
+		$lines[]= "	{$field} {$attributes}";
+   	}
+    $query .= implode(','.PHP_EOL,$lines).PHP_EOL;
+    $query .= ")".PHP_EOL;
+    return oracleExecuteSQL($query);
 }
 //---------- begin function oracleDropDBIndex--------------------
 /**
@@ -1581,6 +1628,29 @@ function oracleEditDBRecordById($table='',$id=0,$params=array()){
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	return oracleEditDBRecord($params);
 }
+//---------- begin function oracleDelDBRecord ----------
+/**
+* @describe deletes records in table that match -where clause
+* @param params array
+*	-table string - name of table
+*	-where string - where clause to filter what records are deleted
+* @return boolean
+* @usage $id=oracleDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
+*/
+function oracleDelDBRecord($params=array()){
+	global $USER;
+	if(!isset($params['-table'])){return 'oracleDelDBRecord error: No table specified.';}
+	if(!isset($params['-where'])){return 'oracleDelDBRecord Error: No where';}
+	//check for schema name
+	if(!stringContains($params['-table'],'.')){
+		$schema=oracleGetDBSchema();
+		if(strlen($schema)){
+			$params['-table']="{$schema}.{$params['-table']}";
+		}
+	}
+	$query="delete from {$params['-table']} where " . $params['-where'];
+	return oracleExecuteSQL($query);
+}
 //---------- begin function oracleDelDBRecordById--------------------
 /**
 * @describe deletes a record with said id in said table
@@ -1842,7 +1912,7 @@ function oracleEnumQueryResults($res,$params=array()){
 	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
 	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
 	while ($row = oci_fetch_array($res, $fetchopts)) {
-		//check for postgresqlStopProcess request
+		//check for oracleStopProcess request
 		if(isset($oracleStopProcess) && $oracleStopProcess==1){
 			break;
 		}

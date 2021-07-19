@@ -5,6 +5,54 @@
 		http://php.net/manual/en/sqlite3.query.php
 		*
 */
+
+//---------- begin function sqliteAddDBIndex--------------------
+/**
+* @describe add an index to a table
+* @param params array
+*	-table
+*	-fields
+*	[-fulltext]
+*	[-unique]
+*	[-name] name of the index
+* @return boolean
+* @usage
+*	$ok=sqliteAddDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
+* 	$ok=sqliteAddDBIndex(array('-table'=>$table,'-fields'=>"name,number",'-unique'=>true));
+*/
+function sqliteAddDBIndex($params=array()){
+	if(!isset($params['-table'])){return 'sqliteAddDBIndex Error: No table';}
+	if(!isset($params['-fields'])){return 'sqliteAddDBIndex Error: No fields';}
+	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
+	//check for schema name
+	if(!stringContains($params['-table'],'.')){
+		$schema=sqliteGetDBSchema();
+		if(strlen($schema)){
+			$params['-table']="{$schema}.{$params['-table']}";
+		}
+	}
+	
+	//fulltext or unique
+	$fulltext=$params['-fulltext']?' FULLTEXT':'';
+	$unique=$params['-unique']?' UNIQUE':'';
+	//prefix
+	$prefix='';
+	if(strlen($unique)){$prefix .= 'U';}
+	if(strlen($fulltext)){$prefix .= 'F';}
+	$prefix.='IDX';
+	//name
+	$fieldstr=implode('_',$params['-fields']);
+	//index names cannot be longer than 64 chars long
+	if(strlen($fieldstr) > 60){
+    	$fieldstr=substr($fieldstr,0,60);
+	}
+	if(!isset($params['-name'])){$params['-name']=str_replace('.','_',"{$prefix}_{$params['-table']}_{$fieldstr}");}
+	//build and execute
+	$fieldstr=implode(", ",$params['-fields']);
+	$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
+	return sqliteExecuteSQL($query);
+}
+
 //---------- begin function sqliteAddDBRecords--------------------
 /**
 * @describe add multiple records into a table
@@ -110,6 +158,54 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 	}
 	$ok=sqliteExecuteSQL($query);
 	return count($values);
+}
+//---------- begin function sqliteAlterDBTable--------------------
+/**
+* @describe alters fields in given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return mixed - 1 on success, error string on failure
+* @usage
+*	$ok=sqliteAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function sqliteAlterDBTable($table,$fields=array(),$maintain_order=1){
+	$info=sqliteGetDBFieldInfo($table);
+	if(!is_array($info) || !count($info)){
+		debugValue("sqliteAlterDBTable - {$table} is missing or has no fields".printValue($table));
+		return false;
+	}
+	$rtn=array();
+	//$rtn[]=$info;
+	$addfields=array();
+	foreach($fields as $name=>$type){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
+		$addfields[]="{$name} {$type}";
+	}
+	$dropfields=array();
+	foreach($info as $name=>$finfo){
+		$lname=strtolower($name);
+		$uname=strtoupper($name);
+		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
+			$dropfields[]=$name;
+		}
+	}
+	if(count($dropfields)){
+		$fieldstr=implode(', ',$dropfields);
+		$query="ALTER TABLE {$table} DROP ({$fieldstr})";
+		$ok=sqliteExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	if(count($addfields)){
+		$fieldstr=implode(', ',$addfields);
+		$query="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$ok=sqliteExecuteSQL($query);
+		$rtn[]=$query;
+		$rtn[]=$ok;
+	}
+	return $rtn;
 }
 function sqliteEscapeString($str){
 	$str = str_replace("'","''",$str);
@@ -284,6 +380,29 @@ function sqliteEditDBRecordById($table='',$id=0,$params=array()){
 	$params['-where']="_id in ({$idstr})";
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	return sqliteEditDBRecord($params);
+}
+//---------- begin function sqliteDelDBRecord ----------
+/**
+* @describe deletes records in table that match -where clause
+* @param params array
+*	-table string - name of table
+*	-where string - where clause to filter what records are deleted
+* @return boolean
+* @usage $id=sqliteDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
+*/
+function sqliteDelDBRecord($params=array()){
+	global $USER;
+	if(!isset($params['-table'])){return 'sqliteDelDBRecord error: No table specified.';}
+	if(!isset($params['-where'])){return 'sqliteDelDBRecord Error: No where';}
+	//check for schema name
+	if(!stringContains($params['-table'],'.')){
+		$schema=sqliteGetDBSchema();
+		if(strlen($schema)){
+			$params['-table']="{$schema}.{$params['-table']}";
+		}
+	}
+	$query="delete from {$params['-table']} where " . $params['-where'];
+	return sqliteExecuteSQL($query);
 }
 //---------- begin function sqliteDelDBRecordById--------------------
 /**
@@ -1142,7 +1261,7 @@ function sqliteEnumQueryResults($data,$params=array()){
 		}
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
-			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
+			return 'sqliteQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
 		if(isset($params['-logfile'])){

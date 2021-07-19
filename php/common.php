@@ -14951,7 +14951,7 @@ function printValueIf($conditional,$v='',$exit=0){
 	if($conditional){return printValue($v,$exit);}
 	return '';
 }
-//---------- begin function printValue
+//---------- begin function printValueHidden
 /**
 * @describe returns a hidden html block showing the contents of the object,array,or variable specified
 * @param $v mixed The Variable to be examined.
