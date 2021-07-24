@@ -488,6 +488,7 @@ run_now = 1 or
 	and running != 1 
 	and run_cmd is not null
 	and length(run_cmd) > 0
+	and json_valid(run_format)=1
 	and (
 		ifnull(begin_date,'')=''
 		or date(now()) >= date(begin_date)
