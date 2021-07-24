@@ -131,6 +131,29 @@
 			setView('tables_fields',1);
 			return;
 		break;
+		case 'paginate':
+			$tpath=getWasqlPath('php/temp');
+			$shastr=sha1($_SESSION['sql_last']);
+			$filename="sqlprompt_{$shastr}.csv";
+			$afile="{$tpath}/{$filename}";
+			$begin=microtime(true);
+			$recs_count=$_SESSION['sql_last_count'];
+			$offset=(integer)$_REQUEST['offset'];
+			$limit=30;
+			$recs=getCSVRecords($afile,array(
+				'-start'=>$offset,
+				'-maxrows'=>$limit
+			));
+			$qtime=microtime(true)-$begin;
+			if($qtime < 1){
+				$qtime_verbose=number_format($qtime,3).' seconds';
+			}
+			else{
+				$qtime_verbose=verboseTime($qtime);
+			}
+			setView(array('results','success'),1);
+			return;
+		break;
 		case 'sql':
 			$view='block_results';
 			$_SESSION['debugValue_lastm']='';
@@ -180,13 +203,19 @@
 				'-logfile'=>$lfile,
 				//'-cursor'=>SQL_CUR_USE_ODBC,
 				'-query'=>$_SESSION['sql_last'],
-				'-process'=>'sqlpromptCaptureFirstRows'
+				//'-process'=>'sqlpromptCaptureFirstRows'
 			);
-
 			$recs_show=30;
 			$recs=array();
 			$begin=microtime(true);
-			$recs_count=dbGetRecords($db['name'],$params);
+			$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
+			$offset=(integer)$_REQUEST['offset'];
+			$limit=30;
+			$next=$offset+$limit;
+			$recs=getCSVRecords($afile,array(
+				'-start'=>$offset,
+				'-maxrows'=>$limit
+			));
 			$qtime=microtime(true)-$begin;
 			/* log queries? */
 			if(isset($CONFIG['log_queries'])){

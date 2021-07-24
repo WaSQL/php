@@ -27,20 +27,20 @@
 				<input type="hidden" name="_menu" value="sqlprompt">
 				<input type="hidden" name="db" value="<?=configValue('database');?>" />
 				<input type="hidden" name="func" value="sql" />
+				<input type="hidden" name="offset" value="0" />
 				<input type="hidden" name="setprocessing" value="results_count" />
 				<input type="hidden" name="sql_select" value="" />
 				<input type="hidden" name="cursor_pos" value="" />
 				<textarea class="form-control" data-behavior="loadtextfile tabs" autofocus="true" style="padding:10px;height:30vh;border-top-left-radius: 0px;" placeholder="SQL Query" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
 					<div>
-						<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"><translate>(or press F8)</translate></span>
+						<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query (or press F8). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"></span>
 					</div>
-					<div class="w_grey w_small">
-						<translate>Note: You can drag and drop .sql files onto the textarea</translate>
-					</div>
-					<div  style="flex:1;" class="align-right w_gray w_small" id="results_count"></div>
-					<div class="align-right" style="margin-left:3px;">
-						<a href="#" onclick="return sqlpromptExport();" style="display:none;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
+					<div  style="flex:1;" class="align-right w_gray w_small w_nowrap" id="results_count"></div>
+					<div class="align-right" style="padding-left:10px;display:flex;flex-wrap:nowrap;">
+						<button type="button" data-offset="0" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="prev_link" style="display:none;"><span class="icon-arrow-left"></span> Prev</button>
+						<button type="button" data-offset="30" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="next_link" style="margin-left:3px;display:none;">Next <span class="icon-arrow-right"></span></button>
+						<a href="#" onclick="return sqlpromptExport();" style="display:none;margin-left:3px;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
 					</div>
 				</div>
 			</form>
@@ -149,7 +149,7 @@
 	<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
 	<div class="w_padtop" style="overflow:auto;">
 		<view:success>
-			<?=buildOnLoad("setText('results_count','First {$recs_show} of {$recs_count} results<br> Took: {$qtime_verbose}');document.getElementById('export_link').style.display='inline-block';");?>
+			<?=buildOnLoad("sqlpromptShowLinks('{$offset}','{$limit}','{$recs_count}','{$qtime_verbose}');");?>
 		<?=sqlpromptListResults($recs);?>		
 		</view:success>
 		<view:failure>

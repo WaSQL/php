@@ -10318,7 +10318,8 @@ function getCSVRecords($file,$params=array()){
 			}
 			$linecnt++;
 			$recs[]=$rec;
-			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){
+			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && count($recs) >= $params['-maxrows']){
+				//echo "linecnt:{$linecnt}, maxrows:{$params['-maxrows']}<br>";
 				break;
 			}
 	    }
