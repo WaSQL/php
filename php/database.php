@@ -9063,6 +9063,10 @@ function getDBRecords($params=array()){
 	
 	if(isset($params['-query'])){$query=$params['-query'];}
 	elseif(isset($params['-table'])){
+		if(!isDBTable($params['-table'])){
+			debugValue("getDBRecords Error: No table: {$params['-table']}");
+			return array();
+		}
 		$query=getDBQuery($params);
 	}
 	else{
