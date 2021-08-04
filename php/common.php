@@ -9157,8 +9157,12 @@ function getAllVersions(){
 			$name=preg_replace('/\_+$/','',$name);
 			$name=preg_replace('/\_+/',' ',$name);
 			$name=ucwords($name);
+			$evalstr=<<<ENDOFEVALSTR
+			try{return {$fname}();} 
+			catch(Exception \$e){return '';}
+ENDOFEVALSTR;
 			try{
-				$ver=@eval('return '.$fname.'();');
+				$ver=@eval($evalstr);
 				if(is_array($ver)){
 					if(isset($ver['version'])){$versions[$name]=$ver['version'];}
 					foreach($ver as $key=>$val){
