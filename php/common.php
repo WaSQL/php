@@ -3180,6 +3180,8 @@ function buildFormTextarea($name,$params=array()){
 * @param params array
 *	[-formname] string - specify the form name - defaults to addedit
 *	[-interval] integer - specify the time interval. 1,5,10,15,30,60 - defaults to 30
+* 	[-begin] string - begin time in military format - defaults to 00:00
+* 	[-end] string - end time in military format - defaults to 24:00
 *	[-tformat] string - specify the time format of the true value. defaults to H:i (15:05)
 *	[-dformat] string - specify the time format of the display value. defaults to g:i a (3:05 pm)
 *	[-value] string - specify the current value
@@ -3194,6 +3196,8 @@ function buildFormTime($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['-interval'])){$params['-interval']='15';}
+	if(!isset($params['-begin'])){$params['-begin']='00:00';}
+	if(!isset($params['-end'])){$params['-end']='24:00';}
 	if(!isset($params['-tformat'])){$params['-tformat']='H:i';}
 	if(!isset($params['-dformat'])){$params['-dformat']='g:i a';}
 	if(isset($params['value'])){$params['-value']=$params['value'];}
@@ -3213,7 +3217,25 @@ function buildFormTime($name,$params=array()){
     	$params['value']=date('H:i',strtotime($params['value']));
 	}
 	$opts=array();
-	for($x=0;$x<60*24;$x+=$params['-interval']){
+	$parts=preg_split('/\:/',$params['-begin']);
+	//begin
+	$minutes=0;
+	switch(count($parts)){
+		case 1:$minutes = ($parts[0] * 60.0);break;
+		case 2:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0);break;
+		case 3:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0) + 1/$parts[2];break;
+	}
+	$begin=(integer)$minutes;
+	$parts=preg_split('/\:/',$params['-end']);
+	//end
+	$minutes=0;
+	switch(count($parts)){
+		case 1:$minutes = ($parts[0] * 60.0);break;
+		case 2:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0);break;
+		case 3:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0) + 1/$parts[2];break;
+	}
+	$end=(integer)$minutes;
+	for($x=$begin;$x<=$end;$x+=$params['-interval']){
 		$t=strtotime("midnight +{$x} minutes");
 		$v=date($params['-tformat'],$t);
 		$opts[$v]=date($params['-dformat'],$t);
