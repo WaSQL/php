@@ -2518,6 +2518,7 @@ function buildFormPassword($name,$params=array()){
 * @describe creates an Map form element where user can select latitude,longitude from a map
 * @param name string
 * @param params array
+* [zoom] integer - zoom level defaults to 13
 * @return string
 * @usage echo buildFormGeoLocationMap('work_location',$params);
 */
@@ -2537,6 +2538,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 		$params['-apikey']=$CONFIG['google_apikey'];
 	}
 	if(!isset($params['style'])){$params['style']='';}
+	if(!isset($params['zoom'])){$params['zoom']=13;}
 	$params['style'].='font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
@@ -2552,25 +2554,25 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
 		if(strlen($params['value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['value'],$m)){
 			$latlon=array($m[1],$m[3]);
-			$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',readonly:1});";
+			$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,zoom:{$params['zoom']},displayname:'{$dname}',readonly:1});";
 		}
 		else{
-			$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}',readonly:1});";
+			$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,zoom:{$params['zoom']},displayname:'{$dname}',readonly:1});";
 			//$onclick="alert('{$params['value']}');";
 		}
 	}
 	elseif(strlen($params['value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['value'],$m)){
 		$latlon=array($m[1],$m[3]);
-		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
+		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,zoom:{$params['zoom']},displayname:'{$dname}',input:'{$params['id']}'});";
 	}
 	elseif(strlen($params['start_value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['start_value'],$m)){
 		$latlon=array($m[1],$m[3]);
-		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
+		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,zoom:{$params['zoom']},displayname:'{$dname}',input:'{$params['id']}'});";
 		$params['data-start_value']=$params['start_value'];
 	}
 	elseif(strlen($params['data-start_value']) && preg_match('/([0-9\-\.]+?)([\,\ ]+?)([0-9\-\.]+)/is',$params['data-start_value'],$m)){
 		$latlon=array($m[1],$m[3]);
-		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,displayname:'{$dname}',input:'{$params['id']}'});";
+		$onclick="wacss.geoLocationMap(this.dataset.lat,this.dataset.lon,{showmap:1,zoom:{$params['zoom']},displayname:'{$dname}',input:'{$params['id']}'});";
 	}
 	$params['pattern']='\[[+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\]';
 	$params['title']='[latitude,longitude] - click on google maps icon to select a location';
