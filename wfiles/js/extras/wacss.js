@@ -259,7 +259,23 @@ var wacss = {
 			center: myLatlng,
 			mapTypeId: 'roadmap',
 			zoom: params.zoom,
+			styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }]}]
 		});
+		//add markers
+		/* markers MUST have position - json latlong - {lat:, lng:} */
+		/* markers CAN have title - hello world */
+		/* markers CAN have label - B or 2 -- single letter or number */
+		/* markers CAN have icon - https://some_url_to_png */
+		if(undefined != params['markers']){
+			if(!Array.isArray(params['markers'])){
+				params['markers']=new Array(params['markers']);
+			}
+			for(let m=0;m<params['markers'].length;m++){
+				let marker=params['markers'][m];
+				marker.map=map;
+				let mark=new google.maps.Marker(marker);
+			}
+		}
 		// Create the initial InfoWindow.
 		let infoWindow = new google.maps.InfoWindow({
 		  content: params.displayname,
