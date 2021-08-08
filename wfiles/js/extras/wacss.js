@@ -255,11 +255,24 @@ var wacss = {
 		params.zoom=params.zoom||13;
 		//return;
 		let myLatlng={ lat: params.lat, lng: params.long };
-		let map = new google.maps.Map(params.div, {
+		let map_params={
 			center: myLatlng,
 			mapTypeId: 'roadmap',
 			zoom: params.zoom,
-			styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }]}]
+			styles: []
+		};
+		if(undefined != params['hide'] && params['hide'].toLowerCase().indexOf('poi') != -1){
+			let poi={ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }]};
+			map_params.styles.push(poi);
+		}
+		
+		let map = new google.maps.Map(params.div, map_params);
+		map.addListener('click', function (event) {
+			// If the event is a POI
+		  	if (event.placeId) {
+				// Call event.stop() on the event to prevent the default info window from showing.
+		    	event.stop();
+		  	}
 		});
 		//add markers
 		/* markers MUST have position - json latlong - {lat:, lng:} */
