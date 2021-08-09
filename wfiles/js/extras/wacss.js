@@ -290,32 +290,34 @@ var wacss = {
 			}
 		}
 		// Create the initial InfoWindow.
-		let infoWindow = new google.maps.InfoWindow({
-		  content: params.displayname,
-		  position: myLatlng,
-		});
-		infoWindow.open(map);
-		let mylatlonval='['+myLatlng.lat+','+myLatlng.lng+']';
-		let htm='';
-		htm='<div class="align-center w_smallest w_gray">'+mylatlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> Location</div>';
-		infoWindow.setContent(htm);
-		if(undefined == params.readonly){			
-			map.params=params;
-			// Configure the click listener.
-			map.addListener("click", (mapsMouseEvent) => {
-				//console.log(map.params.input);
-				let latlon=mapsMouseEvent.latLng.toJSON();
-				let latlonval='['+latlon.lat+','+latlon.lng+']';
-			  	// Close the current InfoWindow.
-			  	infoWindow.close();
-			  	// Create a new InfoWindow.
-			  	infoWindow = new google.maps.InfoWindow({
-			    	position: mapsMouseEvent.latLng,
-			  	});
-			  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-lat="'+latlon.lat+'" data-lon="'+latlon.lng+'" data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="return wacss.geoLocationMapSetValue(this);"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
-			  	infoWindow.setContent(chtm);
-			  	infoWindow.open(map);
+		if(undefined == params.hideinfo){
+			let infoWindow = new google.maps.InfoWindow({
+			  content: params.displayname,
+			  position: myLatlng,
 			});
+			infoWindow.open(map);
+			let mylatlonval='['+myLatlng.lat+','+myLatlng.lng+']';
+			let htm='';
+			htm='<div class="align-center w_smallest w_gray">'+mylatlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> Location</div>';
+			infoWindow.setContent(htm);
+			if(undefined == params.readonly){			
+				map.params=params;
+				// Configure the click listener.
+				map.addListener("click", (mapsMouseEvent) => {
+					//console.log(map.params.input);
+					let latlon=mapsMouseEvent.latLng.toJSON();
+					let latlonval='['+latlon.lat+','+latlon.lng+']';
+				  	// Close the current InfoWindow.
+				  	infoWindow.close();
+				  	// Create a new InfoWindow.
+				  	infoWindow = new google.maps.InfoWindow({
+				    	position: mapsMouseEvent.latLng,
+				  	});
+				  	let chtm='<div class="align-center w_smallest w_gray">'+latlonval+'</div><div class="align-center w_padtop"><span class="icon-map-marker w_red"></span> <span data-lat="'+latlon.lat+'" data-lon="'+latlon.lng+'" data-latlon="'+latlonval+'" data-input="'+map.params.input+'" class="w_pointer" onclick="return wacss.geoLocationMapSetValue(this);"><span class="w_bigger w_gray icon-save w_pointer"></span> Save</span></div>';
+				  	infoWindow.setContent(chtm);
+				  	infoWindow.open(map);
+				});
+			}
 		}
 	},
 	geoLocationMapSetValue: function(el){
