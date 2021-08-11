@@ -945,6 +945,9 @@ function commonSearchFiltersForm($params=array()){
 			if(isset($params['-search_select_class'])){
 				$cparams['class']=$params['-search_select_class'];
 			}
+			if(isset($params['-formname'])){
+				$cparams['-formname']=$params['-formname'];
+			}
 			$rtn .= buildFormSelect('filter_field',$vals,$cparams);
 			$rtn .= '			</div>'.PHP_EOL;
 			//operators
@@ -980,6 +983,9 @@ function commonSearchFiltersForm($params=array()){
 			if(isset($params['-search_select_class'])){
 				$cparams['class']=$params['-search_select_class'];
 			}
+			if(isset($params['-formname'])){
+				$cparams['-formname']=$params['-formname'];
+			}
 			$rtn .= buildFormSelect('filter_operator',$vals,$cparams);
 			$rtn .= '			</div>'.PHP_EOL;
 
@@ -987,6 +993,9 @@ function commonSearchFiltersForm($params=array()){
 			$cparams=array();
 			if(isset($params['-search_input_class'])){
 				$cparams['class']=$params['-search_input_class'];
+			}
+			if(isset($params['-formname'])){
+				$cparams['-formname']=$params['-formname'];
 			}
 			$cparams['placeholder']='value';
 			$cparams['autofocus']='autofocus';
@@ -1008,6 +1017,9 @@ function commonSearchFiltersForm($params=array()){
 				if(isset($params['-search_select_class'])){
 					$cparams['class']=$params['-search_select_class'];
 				}
+				if(isset($params['-formname'])){
+					$cparams['-formname']=$params['-formname'];
+				}
 				$rtn .= buildFormSelect('filter_order',$vals,$cparams);
 				$rtn .= '			</div>'.PHP_EOL;	
 			}
@@ -1022,6 +1034,9 @@ function commonSearchFiltersForm($params=array()){
 			$cparams=array();
 			if(isset($params['-search_input_class'])){
 				$cparams['class']=$params['-search_input_class'];
+			}
+			if(isset($params['-formname'])){
+				$cparams['-formname']=$params['-formname'];
 			}
 			$cparams['placeholder']='value';
 			$cparams['autofocus']='autofocus';
