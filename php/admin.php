@@ -3218,6 +3218,7 @@ function adminConfigListExtra($recs){
 			elseif($rec['possible_values']=='0=Off,1=On'){
 				$cparams=array(
 					'value'=>$rec['current_value'],
+					'-formname'=>'editfieldform_'.$rec['_id']
 				);
 				$recs[$i]['cvedit']=buildFormSelectOnOff('current_value',$cparams);
 			}
@@ -3238,7 +3239,8 @@ function adminConfigListExtra($recs){
 				}
 				$cparams=array(
 					'message'=>' --- ',
-					'value'=>$rec['current_value']
+					'value'=>$rec['current_value'],
+					'-formname'=>'editfieldform_'.$rec['_id']
 				);
 				$recs[$i]['cvedit']=buildFormSelect('current_value',$copts,$cparams);
 			}

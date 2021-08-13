@@ -2119,6 +2119,9 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(!isset($params['value'])){$params['id']=$name;}
 	$elid=$params['id'];
+	if(isset($params['-formname'])){
+		$elid="{$params['-formname']}_{$elid}";
+	}
 	unset($params['id']);
 	if(!strlen($elid)){
 		$elid=str_replace(' ','_',$name.'_'.md5(microtime(true)));
