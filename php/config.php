@@ -222,11 +222,13 @@ if(isset($CONFIG['max_execution_time'])){
 	@ini_set('max_execution_time', $CONFIG['max_execution_time']);
 }
 //set encoding to UTF-8 by default, unless overridden in the config
-if(isset($CONFIG['encoding'])){
-	@mb_internal_encoding($CONFIG['encoding']);
-}
-else{
-	mb_internal_encoding("UTF-8");
+if(function_exists('mb_internal_encoding')){
+	if(isset($CONFIG['encoding'])){
+		@mb_internal_encoding($CONFIG['encoding']);
+	}
+	else{
+		mb_internal_encoding("UTF-8");
+	}
 }
 if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']]['dbicon'])){
 	$CONFIG['dbicon']=$DATABASE[$CONFIG['database']]['dbicon'];
