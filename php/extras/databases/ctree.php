@@ -156,7 +156,7 @@ function ctreeDBConnect(){
 			$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
 		}
 		if(!is_object($dbh_ctree)){
-			debugValue("Failed to connect to ctree.")
+			debugValue("Failed to connect to ctree.");
 			return false;
 		}
 		return $dbh_ctree;
@@ -177,7 +177,7 @@ function ctreeDBConnect(){
 				$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
 			}
 			if(!is_object($dbh_ctree)){
-				debugValue("Failed to connect to ctree.")
+				debugValue("Failed to connect to ctree.");
 				return false;
 			}
 			return $dbh_ctree;
