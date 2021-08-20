@@ -155,15 +155,41 @@ function ctreeDBConnect(){
 			sleep(2);
 			$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
 		}
+		if(!is_object($dbh_ctree)){
+			debugValue("Failed to connect to ctree.")
+			return false;
+		}
 		return $dbh_ctree;
 	}
 	catch (Exception $e) {
-		$error=array(
-			"ctreeDBConnect Exception"=>"Failed to connecto to cTREE. Try restarting Apache.",
-			'Error Message'=>$e,
-			'Connect Params'=>$params
-		);
-	    echo printValue($error);exit;
+		sleep(5);
+		try{
+			//set options.  https://www.php.net/manual/en/pdo.setattribute.php
+			$options=array(
+				PDO::ATTR_PERSISTENT 	=> false,
+				PDO::ATTR_ERRMODE 		=> PDO::ERRMODE_EXCEPTION,
+				PDO::ATTR_CASE 			=> PDO::CASE_NATURAL,
+	    		PDO::ATTR_ORACLE_NULLS 	=> PDO::NULL_EMPTY_STRING
+			);
+			$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
+			if(!is_object($dbh_ctree)){
+				sleep(2);
+				$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
+			}
+			if(!is_object($dbh_ctree)){
+				debugValue("Failed to connect to ctree.")
+				return false;
+			}
+			return $dbh_ctree;
+		}
+		catch (Exception $e) {
+			$error=array(
+				"ctreeDBConnect Exception"=>"Failed to connecto to cTREE. Try restarting Apache.",
+				'Error Message'=>$e,
+				'Connect Params'=>$params
+			);
+		    echo printValue($error);exit;
+		}
 	}
 }
 //---------- begin function ctreeExecuteSQL ----------
