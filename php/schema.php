@@ -2661,5 +2661,6 @@ function schemaAddFileData($table){
         	$ok=addDBRecord($rec);
 		}
 	}
+	if(!isset($tables[$table])){return 0;}
 	return count($tables[$table]);
 }
