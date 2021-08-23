@@ -7964,6 +7964,10 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 	else{$vtable=$table;}
 	$recopts=array('-query'=>$query,'-nolimit'=>1,'-index'=>'field');
 	$recs=getDBRecords($recopts);
+	if(!is_array($recs)){
+		$databaseCache['getDBFieldInfo'][$dbcachekey]=null;
+		return null;
+	}
 	$info=array();
 	foreach($recs as $key=>$rec){
     	if(preg_match('/(VIRTUAL|STORED) GENERATED/i',$rec['extra'])){
