@@ -10583,6 +10583,8 @@ function getCSVSchema($file,$params=array()){
 function fopen_utf8($filename){
 	$encoding='';
 	$handle = fopen($filename, 'rb');
+	if(!$handle){return false;}
+
 	$bom = fread($handle, 2);
 	rewind($handle);
 
