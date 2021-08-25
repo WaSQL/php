@@ -7982,7 +7982,15 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		$info[$key]['table']=$table;
 		if(preg_match('/^(.+?)\((.+)\)$/',$rec['type'],$m)){
 			$info[$key]['type']=$info[$key]['_dbtype']=$m[1];
-			list($len,$dec)=preg_split('/\,/',$m[2]);
+			$parts=preg_split('/\,/',$m[2],2);
+			$len=$parts[0];
+			if(isset($parts[1])){
+				$dec=$parts[1];
+			}
+			else{
+				$dec=0;
+			}
+			
 			$info[$key]['length']=$recs[$key]['_dblength']=$len;
 			$info[$key]['_dbtype_ex']=$rec['type'];
 		}
