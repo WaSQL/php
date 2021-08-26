@@ -133,7 +133,11 @@ function ldapAuth($params=array()){
 	//set cookie to blank - used for paging results
 	$cookie='';
 	//set paging to 1000
-	ldap_control_paged_result($ldapInfo['connection'], 500, true, $cookie);
+	//ldap_control_paged_result is only available in php 7.3 or older
+	if((float)phpversion() <=  7.3){
+		ldap_control_paged_result($ldapInfo['connection'], 500, true, $cookie);
+	}
+	//
     //now get this users record and return it
 	$rec=array();
 	//$search_filter = "(&(objectCategory=person))";
@@ -322,10 +326,40 @@ function ldapGetUsersAll(){
 	$cookie='';
 	//initialize the recs array
 	$recs=array();
+	$phpver=(float)phpversion();
 	//loop through based on page_size and get the records
 	do {
-        ldap_control_paged_result($ldapInfo['connection'], $ldapInfo['page_size'], true, $cookie);
-        $result = ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $ldapInfo['lastsearch']);
+		if($phpver <=  7.3){
+        	ldap_control_paged_result(
+        		$ldapInfo['connection'], 
+        		$ldapInfo['page_size'], 
+        		true, 
+        		$cookie
+        	);
+        	$result = ldap_search(
+        		$ldapInfo['connection'], 
+        		$ldapInfo['basedn'], 
+        		$ldapInfo['lastsearch']
+        	);
+        }
+        else{
+        	$result = ldap_search(
+        		$ldapInfo['connection'], 
+        		$ldapInfo['basedn'], 
+        		$ldapInfo['lastsearch'], 
+        		['cn'], 0, 0, 0, LDAP_DEREF_NEVER,
+        		[['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 2, 'cookie' => $cookie]]]
+    		);
+    		ldap_parse_result(
+    			$ldapInfo['connection'], 
+    			$result, 
+    			$errcode , 
+    			$matcheddn , 
+    			$errmsg , 
+    			$referrals, 
+    			$controls
+    		);
+        }
         //echo printValue($cookie).printValue($ldapInfo);exit;
         $entries = ldap_get_entries($ldapInfo['connection'], $result);
         foreach ($entries as $e) {
@@ -342,9 +376,17 @@ function ldapGetUsersAll(){
 			$rec=ldapParseEntry($e);
 			$recs[]=$rec;
         }
-    	ldap_control_paged_result_response($ldapInfo['connection'], $result, $cookie);
-    	//if(count($recs) > 400){return $recs;}
-
+        if($phpver <=  7.3){
+        	ldap_control_paged_result_response($ldapInfo['connection'], $result, $cookie);
+        }
+        else{
+        	if (isset($controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'])) {
+		        // You need to pass the cookie from the last call to the next one
+		        $cookie = $controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'];
+		    } else {
+		        $cookie = '';
+		    }
+        }
 	} while($cookie !== null && $cookie != '');
 	return $recs;
 }
