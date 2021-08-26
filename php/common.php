@@ -858,57 +858,61 @@ function commonSearchFiltersForm($params=array()){
 		$buttons=array();
 		$quickclass=isset($params['-quickfilters_class'])?$params['-quickfilters_class']:'button btn is-info btn-primary';
 		foreach($params['-quickfilters'] as $name=>$str){
-			if(is_array($str) && isset($str['class'])){
-				$class=$str['class'];
-				unset($str['class']);
-			}
-			else{$class=$quickclass;}
-			$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
-			if(is_array($str) && isset($str['onclick'])){
-				$btn .=' onclick="'.$str['onclick'].'"';
-				unset($str['onclick']);
-			}
-			elseif(stringBeginsWith($str,'javascript:')){
-				$str=str_replace('javascript:','',$str);
-				$btn .=' onclick="'.$str.'"';
-			}
-			else{
-				if(is_array($str) && isset($str['filter'])){
-					$filter=$str['filter'];
-					unset($str['filter']);
+			if(is_array($str)){
+				if(isset($str['class'])){
+					$class=$str['class'];
+					unset($str['class']);
 				}
-				else{$filter=$str;}
-				$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),\''.$filter.'\',1);"';
-			}
-			if(is_array($str) && isset($str['name'])){
+				else{$class=$quickclass;}
+				$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
+				if(isset($str['onclick'])){
+					$btn .=' onclick="'.$str['onclick'].'"';
+					unset($str['onclick']);
+				}
+				if(isset($str['name'])){
 					$cname=$str['name'];
 					unset($str['name']);
 				}
-			elseif(isNum($name)){$cname='';}
-			else{$cname=$name;}
-			if(is_array($str) && isset($str['icon'])){
-				if(strlen($cname)){
-					if(stringContains($cname,'<')){
-						$cname='<span class="'.$str['icon'].'"></span> '.$cname;
+				else{$cname=$name;}
+				if(isset($str['icon'])){
+					if(strlen($cname)){
+						if(stringContains($cname,'<')){
+							$cname='<span class="'.$str['icon'].'"></span> '.$cname;
+						}
+						else{
+							$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;
+						}	
 					}
 					else{
-						$cname='<span class="'.$str['icon'].'" style="margin-right:3px;"></span> '.$cname;
-					}	
+						$cname='<span class="'.$str['icon'].'"></span> ';
+					}
+					unset($str['icon']);
+				}
+				//add any other attributes
+				if(count($str)){
+					foreach($str as $strk=>$strv){
+						$btn.=" {$strk}=\"{$strv}\"";
+					}
+				}
+				$btn.='>'.$cname.'</button>';
+				$buttons[]=$btn;
+			}
+			else{
+				$class=$quickclass;
+				$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
+				if(stringBeginsWith($str,'javascript:')){
+					$str=str_replace('javascript:','',$str);
+					$btn .=' onclick="'.$str.'"';
 				}
 				else{
-					$cname='<span class="'.$str['icon'].'"></span> ';
+					$filter=$str;
+					$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),\''.$filter.'\',1);"';
 				}
-				
-				unset($str['icon']);
-			}
-			//add any other attributes
-			if(is_array($str) && count($str)){
-				foreach($str as $strk=>$strv){
-					$btn.=" {$strk}=\"{$strv}\"";
-				}
-			}
-			$btn.='>'.$cname.'</button>';
-			$buttons[]=$btn;		
+				if(isNum($name)){$cname='';}
+				else{$cname=$name;}
+				$btn.='>'.$cname.'</button>';
+				$buttons[]=$btn;
+			}		
 		}
 		$rtn .= '<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">'.implode(' ',$buttons).'</div>';
 	}
