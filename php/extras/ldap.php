@@ -348,7 +348,7 @@ function ldapGetUsersAll(){
         		$ldapInfo['basedn'], 
         		$ldapInfo['lastsearch'], 
         		['cn'], 0, 0, 0, LDAP_DEREF_NEVER,
-        		[['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 2, 'cookie' => $cookie]]]
+        		[['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 500, 'cookie' => $cookie]]]
     		);
     		ldap_parse_result(
     			$ldapInfo['connection'], 
@@ -470,14 +470,75 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 		debugValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields,'filter'=>$filter));
 	}
 	$recs=array();
+	$phpver=(float)phpversion();
 	//loop through based on page_size and get the records
 	do {
-        ldap_control_paged_result($ldapInfo['connection'], $ldapInfo['page_size'], true, $cookie);
-        if(count($returnfields)){
-        	$result=ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $filter,$returnfields);
+		if((float)phpversion() <=  7.3){
+        	ldap_control_paged_result(
+        		$ldapInfo['connection'], 
+        		$ldapInfo['page_size'], 
+        		true, 
+        		$cookie
+        	);
+	        if(count($returnfields)){
+	        	$result=ldap_search(
+	        		$ldapInfo['connection'], 
+	        		$ldapInfo['basedn'], 
+	        		$filter,
+	        		$returnfields
+	        	);
+	        }
+	        else{
+	        	$result=ldap_search(
+	        		$ldapInfo['connection'], 
+	        		$ldapInfo['basedn'], 
+	        		$filter
+	        	);
+	        }
         }
         else{
-        	$result=ldap_search($ldapInfo['connection'], $ldapInfo['basedn'], $filter);
+        	if(count($returnfields)){
+	        	$result = ldap_search(
+	        		$ldapInfo['connection'], 
+	        		$ldapInfo['basedn'], 
+	        		$filter, 
+	        		$returnfields, 0, 0, 0, LDAP_DEREF_NEVER,
+	        		[['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 500, 'cookie' => $cookie]]]
+	    		);
+	        }
+	        else{
+	        	$result = ldap_search(
+	        		$ldapInfo['connection'], 
+	        		$ldapInfo['basedn'], 
+	        		$filter, 
+	        		'*', 0, 0, 0, LDAP_DEREF_NEVER,
+	        		[['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 500, 'cookie' => $cookie]]]
+	    		);
+	        }
+    		ldap_parse_result(
+    			$ldapInfo['connection'], 
+    			$result, 
+    			$errcode , 
+    			$matcheddn , 
+    			$errmsg , 
+    			$referrals, 
+    			$controls
+    		);
+        }
+        if(count($returnfields)){
+        	$result=ldap_search(
+        		$ldapInfo['connection'], 
+        		$ldapInfo['basedn'], 
+        		$filter,
+        		$returnfields
+        	);
+        }
+        else{
+        	$result=ldap_search(
+        		$ldapInfo['connection'], 
+        		$ldapInfo['basedn'], 
+        		$filter
+        	);
         }
         //echo printValue($cookie).printValue($ldapInfo);exit;
         $entries = ldap_get_entries($ldapInfo['connection'], $result);
@@ -500,9 +561,17 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 			$rec=ldapParseEntry($e);
 			$recs[]=$rec;
         }
-    	ldap_control_paged_result_response($ldapInfo['connection'], $result, $cookie);
-    	//if(count($recs) > 400){return $recs;}
-
+        if((float)phpversion() <=  7.3){
+    		ldap_control_paged_result_response($ldapInfo['connection'], $result, $cookie);
+    	}
+    	else{
+        	if (isset($controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'])) {
+		        // You need to pass the cookie from the last call to the next one
+		        $cookie = $controls[LDAP_CONTROL_PAGEDRESULTS]['value']['cookie'];
+		    } else {
+		        $cookie = '';
+		    }
+        }
 	} while($cookie !== null && $cookie != '');
 	return $recs;
 }
