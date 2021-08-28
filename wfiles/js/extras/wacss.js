@@ -259,6 +259,7 @@ var wacss = {
 			center: myLatlng,
 			mapTypeId: 'roadmap',
 			zoom: params.zoom,
+			streetViewControl: false,
 			styles: []
 		};
 		if(undefined != params['hide'] && params['hide'].toLowerCase().indexOf('poi') != -1){
