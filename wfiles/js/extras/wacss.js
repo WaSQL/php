@@ -247,6 +247,11 @@ var wacss = {
 		wacss.geoLocationMapContent(params);
 		document.body.appendChild(popup);
 		centerObject(popup);
+		//reset viewport
+		let viewport=document.querySelector('meta[name="viewport"]');
+		if(undefined != viewport){
+			viewport.setAttribute('content','width=device-width, scale=1.0');
+		}
 	},
 	geoLocationMapContent:function(params){
 		//console.log('geoLocationMapContent');
