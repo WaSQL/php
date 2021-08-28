@@ -257,9 +257,10 @@ var wacss = {
 		let myLatlng={ lat: params.lat, lng: params.long };
 		let map_params={
 			center: myLatlng,
+			streetViewControl: false,
 			mapTypeId: 'roadmap',
 			zoom: params.zoom,
-			streetViewControl: false,
+
 			styles: []
 		};
 		if(undefined != params['hide'] && params['hide'].toLowerCase().indexOf('poi') != -1){
