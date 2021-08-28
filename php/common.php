@@ -2559,7 +2559,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(!isset($params['-apikey']) && isset($CONFIG['google_apikey'])){
 		$params['-apikey']=$CONFIG['google_apikey'];
 	}
-	if(!isset($params['style'])){$params['style']='';}
+	if(!isset($params['style'])){$params['style']='pointer-events: none;';}
 	if(!isset($params['zoom'])){$params['zoom']=13;}
 	$params['style'].='font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
@@ -13935,11 +13935,13 @@ function pageValue($field,$pagename=''){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function settingsValue($id=0,$field){
+function settingsValue($id=0,$field=''){
 	$getopts=array('-table'=>'_settings','-order'=>"user_id ASC",'-nocache'=>1);
 	if(isNum($id) && $id != 0){$getopts['-where'] = "user_id in (0,{$id})";}
 	else{$getopts['-where'] = "user_id=0";}
-	$getopts['-where'] .= " and key_name='{$field}'";
+	if(strlen($field)){
+		$getopts['-where'] .= " and key_name='{$field}'";
+	}
 	$rec=getDBRecord($getopts);
 	if(isset($rec['key_value'])){
 		$val=$rec['key_value'];
