@@ -2559,9 +2559,9 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(!isset($params['-apikey']) && isset($CONFIG['google_apikey'])){
 		$params['-apikey']=$CONFIG['google_apikey'];
 	}
-	if(!isset($params['style'])){$params['style']='pointer-events: none;';}
+	if(!isset($params['style'])){$params['style']='';}
 	if(!isset($params['zoom'])){$params['zoom']=13;}
-	$params['style'].='font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;';
+	$params['style'].='pointer-events: none;font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	if(!isset($params['placeholder'])){$params['placeholder']=$dname;}
