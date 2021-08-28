@@ -250,7 +250,7 @@ var wacss = {
 		//reset viewport
 		let viewport=document.querySelector('meta[name="viewport"]');
 		if(undefined != viewport){
-			viewport.setAttribute('content','width=device-width, scale=1.0');
+			viewport.setAttribute('content','width=device-width, minimum-scale=1.0, initial-scale=1.0, maximum-scale=1.0');
 		}
 	},
 	geoLocationMapContent:function(params){
