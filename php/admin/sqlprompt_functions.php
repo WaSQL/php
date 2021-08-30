@@ -68,8 +68,11 @@ function sqlpromptCaptureFirstRows($rec,$max=30){
 	return;
 }
 function sqlpromptListResults($recs){
-	if(!is_array($recs) || !count($recs)){
+	if(!is_array($recs)){
 		if(strlen($recs)){return $recs;}
+		return translateText('No Results');
+	}
+	if(!count($recs)){
 		return translateText('No Results');
 	}
 	$opts=array(

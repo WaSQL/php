@@ -1,6 +1,8 @@
 <?php
 /* Last Updated: 2017-04-08 */
 $progpath=dirname(__FILE__);
+include_once("{$progpath}/common.php");
+include_once("{$progpath}/config.php");
 //create a global variable for storing queries that have already happened
 global $databaseCache;
 if(!is_array($databaseCache)){$databaseCache=array();}
@@ -52,6 +54,7 @@ if(isset($recs[0])){
 	}
 }
 /* Load_pages as specified in the conf settings */
+if(!isset($_REQUEST['_return'])){$_REQUEST['_return']='';}
 if(isset($_REQUEST['_action']) && strtoupper($_REQUEST['_action'])=='EDIT' && strtoupper($_REQUEST['_return'])=='XML' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxml' && isset($_REQUEST['apikey'])){}
 elseif(isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxmlfromjson' && isset($_REQUEST['apikey'])){}

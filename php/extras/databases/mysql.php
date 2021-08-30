@@ -1429,7 +1429,9 @@ function mysqlOptimizations($params=array()){
 	//aria
 	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='Aria'");
 	$results['aria_index_length']=(integer)$recs[0]['val'];
-	$results['aria_keys_from_memory_pcnt']=(integer)(100 - (($results['aria_pagecache_reads']/$results['aria_pagecache_read_requests'])*100));
+	if(isset($results['aria_pagecache_read_requests'])){
+		$results['aria_keys_from_memory_pcnt']=(integer)(100 - (($results['aria_pagecache_reads']/$results['aria_pagecache_read_requests'])*100));
+	}
 	//innoDB
 	$results['innodb_buffer_pool_read_ratio']=$results['innodb_buffer_pool_reads'] * 100 / $results['innodb_buffer_pool_read_requests'];
 	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val from information_schema.TABLES where ENGINE='InnoDB'");

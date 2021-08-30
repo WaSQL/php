@@ -85,6 +85,7 @@ if(isset($minify['extras'][0])){
 	}
 }
 $minify['extras']=$extras;
+if(!isset($_REQUEST['debug'])){$_REQUEST['debug']=0;}
 if($_REQUEST['debug']==1){
 	header('Content-type: text/plain; charset=UTF-8');
 	echo printValue($minify);

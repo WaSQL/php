@@ -35,43 +35,46 @@ global $wasql_debugValueContent;
 $wasql_debugValueContent='';
 include_once("$progpath/common.php");
 $loadtimes['common']=number_format((microtime(true)-$stime),3);
+if(isset($_REQUEST['_view'])){
 //check for minify redirect
-if(preg_match('/^w_min\/minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
-	$wpath=getWasqlPath('php');
-	$file="{$wpath}/minify_css.php";
-	$_REQUEST['_minify_']=$m[1];
-	$ok=include_once($file);
-	//header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
-	exit;
+	if(preg_match('/^w_min\/minify\_(.*?)\.css$/i',$_REQUEST['_view'],$m)){
+		$wpath=getWasqlPath('php');
+		$file="{$wpath}/minify_css.php";
+		$_REQUEST['_minify_']=$m[1];
+		$ok=include_once($file);
+		//header("Location: /php/minify_css.php?_minify_={$m[1]}",TRUE,301);
+		exit;
+	}
+	if(preg_match('/^w_min\/minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
+		$wpath=getWasqlPath('php');
+		$file="{$wpath}/minify_js.php";
+		$_REQUEST['_minify_']=$m[1];
+		$ok=include_once($file);
+		//header("Location: /php/minify_js.php?_minify_={$m[1]}",TRUE,301);
+		exit;
+	}
+	//check for special user login path
+	$url_parts=preg_split('/\/+/',preg_replace('/^\/+/','',$_REQUEST['_view']));
+	if($url_parts[0]=='u'){
+		//u=user   /u/username/apikey/pagename/....
+		array_shift($url_parts);
+		$_REQUEST['username']=array_shift($url_parts);
+		$_REQUEST['apikey']=array_shift($url_parts);
+		$_REQUEST['_auth']=1;
+		$_REQUEST['_view']=implode('/',$url_parts);
+	}
+	elseif($url_parts[0]=='t'){
+		//t= template  /t/4/forms/....
+		array_shift($url_parts);
+		$_REQUEST['_template']=array_shift($url_parts);
+		$_REQUEST['_view']=implode('/',$url_parts);
+	}
 }
-if(preg_match('/^w_min\/minify\_(.*?)\.js$/i',$_REQUEST['_view'],$m)){
-	$wpath=getWasqlPath('php');
-	$file="{$wpath}/minify_js.php";
-	$_REQUEST['_minify_']=$m[1];
-	$ok=include_once($file);
-	//header("Location: /php/minify_js.php?_minify_={$m[1]}",TRUE,301);
-	exit;
-}
-//check for special user login path
-$url_parts=preg_split('/\/+/',preg_replace('/^\/+/','',$_REQUEST['_view']));
-if($url_parts[0]=='u'){
-	//u=user   /u/username/apikey/pagename/....
-	array_shift($url_parts);
-	$_REQUEST['username']=array_shift($url_parts);
-	$_REQUEST['apikey']=array_shift($url_parts);
-	$_REQUEST['_auth']=1;
-	$_REQUEST['_view']=implode('/',$url_parts);
-}
-elseif($url_parts[0]=='t'){
-	//t= template  /t/4/forms/....
-	array_shift($url_parts);
-	$_REQUEST['_template']=array_shift($url_parts);
-	$_REQUEST['_view']=implode('/',$url_parts);
-}
+else{$url_parts=array();}
 global $CONFIG;
 
 $stime=microtime(true);
-include_once("$progpath/config.php");
+include_once("{$progpath}/config.php");
 //check for timezone
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
@@ -98,7 +101,7 @@ if(!isDBTable('_users')){
 	exit;
 }
 //check for tiny urls - /y/B49Z  - checks the _tiny table
-if($url_parts[0]=='y' && count($url_parts)==2){
+if(count($url_parts)==2 && $url_parts[0]=='y'){
 	include_once("$progpath/schema.php");
 	loadExtras('tiny');
 	$url=tinyCode($url_parts[1]);

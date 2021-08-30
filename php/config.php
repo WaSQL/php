@@ -19,6 +19,9 @@ elseif(file_exists("$progpath/../config.xml")){
 else{
 	abort("Configuration Error: missing config.xml<hr>".PHP_EOL);
 }
+if(!isset($_SERVER['HTTP_HOST'])){
+		$_SERVER['HTTP_HOST']='localhost';
+	}
 //convert object to array
 $json=json_encode($xml);
 $xml=json_decode($json,true);
@@ -90,6 +93,7 @@ if(isset($xml['host'][0]['@attributes'])){
 $checkhosts=array('HTTP_HOST','UNIQUE_HOST','SERVER_NAME');
 $chost='';
 foreach($checkhosts as $env){
+	if(!isset($_SERVER[$env])){continue;}
 	$checkhost=strtolower($_SERVER[$env]);
 	if(isset($ConfigXml[$checkhost]) && is_array($ConfigXml[$checkhost])){
 		$CONFIG['_source']=$env;
@@ -135,6 +139,9 @@ foreach($ConfigXml as $name=>$host){
 	}
 }
 if(!isset($CONFIG['dbname'])){
+	if(!isset($_SERVER['HTTP_HOST'])){
+		$_SERVER['HTTP_HOST']='UNKNOWN';
+	}
 	abort("Configuration Error: missing dbname attribute in config.xml for '{$_SERVER['HTTP_HOST']}'<hr>".PHP_EOL);
 }
 if(!isset($CONFIG['database'])){

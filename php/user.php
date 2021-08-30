@@ -1,5 +1,6 @@
 <?php
 $progpath=dirname(__FILE__);
+include_once("{$progpath}/common.php");
 global $user_logfile;
 $user_scriptname=basename(__FILE__, '.php');
 $wpath=dirname( dirname(__FILE__) );

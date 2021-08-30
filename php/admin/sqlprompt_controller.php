@@ -218,7 +218,7 @@
 			));
 			$qtime=microtime(true)-$begin;
 			/* log queries? */
-			if(isset($CONFIG['log_queries'])){
+			if(isset($CONFIG['log_queries']) && isset($recs[0]) && is_array($recs[0])){
 				$log=0;
 				if($CONFIG['log_queries']==1){$log=1;}
 				$unames=preg_split('/\,/',$CONFIG['log_queries']);

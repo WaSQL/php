@@ -21,6 +21,7 @@ if(!function_exists('ImageCreate')){
 	exit;
 }
 //set $barcode to the first key
+$barcode='';
 foreach($_REQUEST as $barcode=>$val){break;}
 //set defaults
 $options=array('width'=>300,'height'=>70,'quality'=>100,'format'=>'jpg','text'=>1,'fontnum'=>3);

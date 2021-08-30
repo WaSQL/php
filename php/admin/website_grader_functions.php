@@ -302,10 +302,11 @@ function websiteGraderActivePages(){
 	if(isset($websiteGraderActivePagesCache[0])){
 		return $websiteGraderActivePagesCache;
 	}
-	$template=websiteGraderActiveTemplate();
+	$template_id=websiteGraderActiveTemplate();
+	//echo "DEBUG".printValue($template);exit;
 	$opts=array(
 		'-table'=>'_pages',
-		'_template'=>$template['_template'],
+		'_template'=>$template_id,
 		'-fields'=>'_id,name,permalink'
 	);
 	//echo printValue($template).printValue($opts);
