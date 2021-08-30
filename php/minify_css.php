@@ -113,11 +113,8 @@ $csspath=realpath("{$progpath}/../wfiles/css");
 global $files;
 $files=array();
 //load basic css files
-minifyFiles($csspath,array('wasql'));
-minifyFiles($csspath,array('wasql_icons'));
-minifyFiles($csspath,array('signature'));
-minifyFiles(realpath("{$csspath}/extras"),array('pikaday'));
-minifyFiles(realpath("{$csspath}/extras"),array('quill'));
+minifyFiles($csspath,array('wasql','wasql_icons','signature'));;
+minifyFiles(realpath("{$csspath}/extras"),array('pikaday','quill','brands','materials'));
 //Get any extras
 foreach($minify['extras'] as $extra){
 	minifyFiles(realpath("{$csspath}/extras"),$extra);
