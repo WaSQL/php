@@ -92,7 +92,7 @@
 		<td><?=$rec['changed_age'];?></td>
 		<td class="align-right w_nowrap">
 			<view:action_diff>
-			<a href="#" title="Diff" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Diff <?=$rec['id'];?>',_menu:'synchronize','func':'diff',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',marker:'<?=$rec['marker'];?>',setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
+			<a href="#" title="Diff" style="display:inline;" data-table="<?=$rec['tabname'];?>" data-marker="<?=$rec['marker'];?>" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Diff <?=$rec['id'];?>',_menu:'synchronize','func':'diff',table:this.dataset.table,id:'<?=$rec['id'];?>',marker:this.dataset.marker,setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
 			</view:action_diff>
 			<?=renderViewIf(!preg_match('/^NEW/',$rec['changes']),'action_diff',$rec,'rec');?>
 			<a href="#" title="Sync" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Sync <?=$rec['id'];?>',_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
