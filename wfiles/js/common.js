@@ -1980,19 +1980,25 @@ function showDrop(oid,h){
 	}
 /* showHide */
 function showHide(id,scr){
-	var cObj=getObject(id);
+	let cObj=getObject(id);
     if(undefined == cObj){return abort("undefined object passed to showHide:"+id);}
     if(cObj.style.display=='none'){
-		cObj.style.display='block';
+    	let dname=cObj.dataset.display || 'block';
+		cObj.style.display=dname;
 		}
     else{cObj.style.display='none';}
     if(undefined != scr && scr==1){showOnScreen(id);}
     return false;
 }
-function showHideMobile(divid){
-	var s=document.getElementById(divid).style;
-	if(s.display=='block'){s.display='none';}
-	else{s.display='block';}
+function showHideMobile(id){
+	let cObj=getObject(id);
+	if(undefined == cObj){return abort("undefined object passed to showHide:"+id);}
+	let s=cObj.style;
+	if(s.display!='none'){s.display='none';}
+	else{
+		let dname=cObj.dataset.display || 'block';
+		s.display=dname;
+	}
 	return false;
 }
 
