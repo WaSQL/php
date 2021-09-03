@@ -2215,6 +2215,19 @@ function oracleQueryResults($query='',$params=array()){
 		return false;
 	}
 	oci_rollback($dbh_oracle);
+	//set date_format?
+	if(isset($params['-date_format']) && strlen($params['-date_format'])){
+		//YYYY-MM-DD
+		$stid = oci_parse($conn, "ALTER SESSION SET NLS_DATE_FORMAT = '{$params['-date_format']}'");
+		oci_execute($stid);
+	}
+	//ignore_case?
+	if(isset($params['-ignore_case']) && in_array($params['-ignore_case'],array(1,'true'))){
+		$stid = oci_parse($dbh_oracle, "ALTER SESSION SET NLS_COMP=LINGUISTIC");
+		oci_execute($stid);
+		$stid = oci_parse($dbh_oracle, "ALTER SESSION SET NLS_SORT=BINARY_CI");
+		oci_execute($stid);
+	}
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!is_resource($stid)){

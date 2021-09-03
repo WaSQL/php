@@ -204,6 +204,7 @@
 				//'-cursor'=>SQL_CUR_USE_ODBC,
 				'-query'=>$_SESSION['sql_last'],
 				//'-process'=>'sqlpromptCaptureFirstRows'
+				'-ignore_case'=>1
 			);
 			$recs_show=30;
 			$recs=array();
