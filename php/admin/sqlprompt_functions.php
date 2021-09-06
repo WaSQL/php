@@ -114,8 +114,11 @@ function sqlpromptListFields($recs){
 	return databaseListRecords($opts);
 }
 function sqlpromptListIndexes($recs){
-	if(!is_array($recs) || !count($recs)){
+	if(!is_array($recs)){
 		if(strlen($recs)){return $recs;}
+		return translateText('No indexes defined');
+	}
+	if(!count($recs)){
 		return translateText('No indexes defined');
 	}
 	$opts=array(

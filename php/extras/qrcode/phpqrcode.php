@@ -982,7 +982,7 @@
             $imgW = $w + 2*$outerFrame;
             $imgH = $h + 2*$outerFrame;
             
-            $base_image =ImageCreate($imgW, $imgH);
+            $base_image =imagecreate($imgW, $imgH);
             
             $col[0] = ImageColorAllocate($base_image,255,255,255);
             $col[1] = ImageColorAllocate($base_image,0,0,0);
@@ -997,7 +997,7 @@
                 }
             }
             
-            $target_image =ImageCreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
+            $target_image =imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
             ImageCopyResized($target_image, $base_image, 0, 0, 0, 0, $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH);
             ImageDestroy($base_image);
             
