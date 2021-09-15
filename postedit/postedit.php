@@ -287,6 +287,7 @@ function writeFiles(){
 	    	$field=array_pop($parts);
 	    	//name
 	    	$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
+	    	$name=trim($name);
 	    	//extension
 	    	switch(strtolower($field)){
 	        	case 'js':
@@ -332,7 +333,7 @@ function writeFiles(){
 			//check content to see if it starts with php
 			if(preg_match('/^\<\?php/i',$content)){$ext='php';}
 			elseif(preg_match('/^\<\?\=/i',$content)){$ext='php';}
-			$name=trim($name);
+			
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	$changename="added";
 	    	if(file_exists($afile)){
