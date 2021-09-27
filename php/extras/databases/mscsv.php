@@ -103,10 +103,12 @@ function mscsvDBConnect(){
 		'ImportMixedTypes=Text',
 		'ReadOnly=false',
 		'IMEX=1',
+		"DelimitedBy=|",
 		'MaxScanRows=2',
 		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=2;HDR=YES"',
 	);
 	$params['-connect']=implode(';',$parts);
+	//odbc_connect('Driver={Microsoft Access Text Driver (*.txt, *.csv)};Dbq=c:/temp;FIL=text;DriverId=27;Extensions=asc,csv,tab,txt;ImportMixedTypes=Text;ReadOnly=false;IMEX=1;DelimitedBy=|;MaxScanRows=2;Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=2;HDR=YES','','');
 	$dbh_mscsv = odbc_connect($params['-connect'], '','');
 	return $dbh_mscsv;
 }

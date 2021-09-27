@@ -224,7 +224,9 @@ function writeFiles(){
 		'-xml'=>1,
 		'json'=>$json
 	);
+	//echo printValue($postopts);exit;
 	$post=postURL($url,$postopts);
+	//echo $post['body'];exit;
 	if(isset($post['body'])){
 		file_put_contents("{$progpath}/posteditxmlfromjson.txt",$post['body']);
 	}
