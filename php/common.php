@@ -16677,11 +16677,13 @@ function processFileUploads($docroot=''){
 /**
 * @describe converts an ini formatted string into an array
 * @param str str - string or filename of the ini
+* @param [multi] int - if 1 then allow multiple unique keys under an ini heading
 * @usage
 *	$settings=commonParseIni($str);
 *	$settings=commonParseIni($afile);
+* 	$multi_settings=commonParseIni($str,1);
 */
-function commonParseIni($str){
+function commonParseIni($str,$multi=0){
 	if(file_exists($str)){
 		$str=file_get_contents($str);
 	}
@@ -16696,9 +16698,15 @@ function commonParseIni($str){
 		if(!strlen($key)){continue;}
 		if(!strlen(trim($line))){continue;}
 		$parts=preg_split('/\=/',trim($line),2);
+		
 		if(count($parts)==2){
 			$subkey=strtolower(trim($parts[0]));
-			$settings[$key][$subkey]=$parts[1];
+			if($multi==1){
+				$settings[$key][$subkey][]=$parts[1];
+			}
+			else{
+				$settings[$key][$subkey]=$parts[1];
+			}
 		}
 		else{
 			$settings[$key][]=$parts[0];
