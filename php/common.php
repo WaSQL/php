@@ -16712,6 +16712,15 @@ function commonParseIni($str,$multi=0){
 			$settings[$key][]=$parts[0];
 		}
 	}
+	if($multi==1){
+		foreach($settings as $key=>$subkeys){
+			foreach($subkeys as $subval){
+				if(is_array($subval) && count($subval)==1){
+					$settings[$key][$subkey]=$subval[0];
+				}
+			}
+		}
+	}
 	return $settings;
 }
 function commonProcessFileActions($name,$afile){
