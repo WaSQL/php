@@ -36,9 +36,22 @@ function sqlpromptShowLinks(offset,limit,total,qtime){
 function sqlpromptCheckKey(e){
 	e = e || window.event;
 	//console.log(e.keyCode);
+	//keycodes: F8=119, CTRL-ENTER=10
     if (e.keyCode == 119) {
 		return sqlpromptSubmit(document.sqlprompt);
     }
+    else if (undefined != this.previousCode && e.keyCode == 13 && this.previousCode==17) {
+    	//CTRL+ENTER
+    	return sqlpromptSubmit(document.sqlprompt);
+    }
+    else if (undefined != this.previousCode && e.keyCode == 69 && this.previousCode==17) {
+    	//CTRL+e
+    	return sqlpromptSubmit(document.sqlprompt);
+    }
+    else{
+    	//console.log('Keycode:'+e.keyCode);
+    }
+    this.previousCode=e.keyCode;
 }
 function sqlpromptSetDB(db){
 	document.sqlprompt.db.value=db;
