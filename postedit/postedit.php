@@ -1,6 +1,9 @@
 <?php
 /*
 	replacement for posteditd.pl to handle secure sites
+	for sublime: subl --add
+	for notepad++: notepad++ -openFoldersAsWorkspace
+
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
 $timer=20;
@@ -371,6 +374,7 @@ function writeFiles(){
 			if($out['rtncode'] !=0){
 				echo printValue($out).PHP_EOL;
 			}
+			echo printValue($out).PHP_EOL;
 		}
 	}
 	$firsttime=0;
