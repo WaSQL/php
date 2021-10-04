@@ -81,7 +81,12 @@ function systemGetMemory(){
 }
 function systemUnixMemsize($str){
 	$str = strtr($str, array(',' => ''));
-	if (strtolower(substr($str, -1)) == 'g'){return $str * 1024 * 1024;}
+	list($size,$type)=preg_split('/\ /',$str,2);
+	$types = array("b", "kb", "mb", "gb", "tb", "pb");
+    if($key = array_search($type, $types)){
+    	return $size * pow(1024, $key);
+    }
+    elseif (strtolower(substr($str, -1)) == 'g'){return $str * 1024 * 1024;}
 	elseif (strtolower(substr($str, -1)) == 'm'){return $str * 1024;}
 	elseif (strtolower(substr($str, -1)) == 'k'){return (int) $str;}
 	else{return $str / 1024;}
