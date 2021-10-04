@@ -10,16 +10,24 @@ function systemGetMemory(){
 	}
 	$systemGetMemoryCache=array();
 	if(isWindows()){
-		$cmd='wmic ComputerSystem get TotalPhysicalMemory';
+		$cmd='wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value';
 		$out=cmdResults($cmd);
 		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$systemGetMemoryCache['total']=trim($lines[1]);
-		$cmd='wmic OS get FreePhysicalMemory';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$systemGetMemoryCache['free']=trim($lines[1]);
+		$os=array();
+		foreach($lines as $line){
+			list($k,$v)=preg_split('/\=/',trim($line),2);
+			if(!strlen($v)){continue;}
+			if(in_array(strtolower($v),array('true','false'))){
+				continue;
+			}
+			$k=strtolower($k);
+			$os[$k]=$v;
+		}
+		$systemGetMemoryCache['total']=(integer)$os['totalvisiblememorysize']*1024;
+		$systemGetMemoryCache['free']=(integer)$os['freephysicalmemory']*1024;
 		$systemGetMemoryCache['used']=$systemGetMemoryCache['total']-$systemGetMemoryCache['free'];
-		$systemGetMemoryCache['pcnt_used']=round(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100,2);
+		$systemGetMemoryCache['pcnt_used']=(integer)(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100);
+		$systemGetMemoryCache['pcnt_free']=100-$systemGetMemoryCache['pcnt_used'];
 		//$systemGetMemoryCache['pcnt_used']=number_format($systemGetMemoryCache['pcnt_used'],2);
 	}
 	else{
@@ -35,8 +43,9 @@ function systemGetMemory(){
 				}
 				$systemGetMemoryCache['total']=systemUnixMemsize($info['memtotal']);
 				$systemGetMemoryCache['free']=systemUnixMemsize($info['memfree']);
-				$systemGetMemoryCache['free_pcnt'] = round(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100,0);
+				$systemGetMemoryCache['pcnt_free'] = (integer)(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100);
 				$systemGetMemoryCache['used'] = $systemGetMemoryCache['total'] - $systemGetMemoryCache['free'];
+				$systemGetMemoryCache['pcnt_used']=100-$systemGetMemoryCache['pcnt_free'];
 			}
 			elseif (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[1], $matches)){
 				$systemGetMemoryCache['total'] = $matches[1] / 1024;

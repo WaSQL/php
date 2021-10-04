@@ -51,13 +51,25 @@ switch(strtolower($_REQUEST['tab'])){
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%free%);"
 			),
+			'free_pcnt'=>array(
+				'class'=>'align-right',
+				'eval'=>"return '%free_pcnt%'.'%';"
+			),
 			'used_options'=>array(
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%used%);"
 			),
 			'pcnt_used_options'=>array(
-				'class'=>'align-right'
-			)
+				'class'=>'align-right',
+				'displayname'=>'% Used',
+				'eval'=>"return '%pcnt_used%'.'%';"
+			),
+			'pcnt_free_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'% Free',
+				'eval'=>"return '%pcnt_free%'.'%';"
+			),
+			'-listfields'=>'total,free,pcnt_free,used,pcnt_used'
 		);
 		setView('list',1);
 		return;
