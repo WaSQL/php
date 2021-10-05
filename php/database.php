@@ -970,6 +970,7 @@ function databaseListRecords($params=array()){
 					$params=array('-list'=>getDBRecords($params));
 				break;
 			}
+			$params['-hidesearch']=1;
 		}
 	}
 	if(!empty($params['-table'])){
