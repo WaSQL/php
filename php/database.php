@@ -920,6 +920,7 @@ function databaseListRecords($params=array()){
 		if(!empty($params[0]) && is_array($params[0])){
 			//they are passing in the list without any other params.
 			$params=array('-list'=>$params);
+			$params['-hidesearch']=1;
 		}
 		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 			//they just entered a query. convert it to a list
