@@ -917,7 +917,7 @@ function databaseListRecords($params=array()){
 		unset($params['-query']);
 	}
 	if(empty($params['-table']) && empty($params['-list']) && empty($params['-csv'])){
-		if(!empty($params[0])){
+		if(!empty($params[0]) && is_array($params[0])){
 			//they are passing in the list without any other params.
 			$params=array('-list'=>$params);
 		}
