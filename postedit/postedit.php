@@ -23,7 +23,7 @@ error_reporting(E_ALL ^ E_WARNING);
 date_default_timezone_set('America/Denver');
 ini_set("allow_url_fopen",1);
 $progpath=dirname(__FILE__);
-include_once("$progpath/../php/common.php");
+include_once("{$progpath}/../php/common.php");
 // $post['body']=getFileContents("{$progpath}/posteditxmlfromjson.txt");
 // $xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 // $xml=(array)$xml;
@@ -126,11 +126,11 @@ if(isset($hosts[$chost]['git']) && $hosts[$chost]['git']==1){
 		$ok=successMessage('initialized');
 	}
 }
-echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
+//echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
 //$ok=soundAlarm('ready');
 $ok=posteditBeep(2);
 $countdown=$timer;
-
+echo PHP_EOL."Listening to files in {$afolder} for changes...".PHP_EOL;
 while(1){
 	cli_set_process_title("{$afolder} - {$countdown} seconds to next check");
 	sleep(1);
@@ -370,11 +370,14 @@ function writeFiles(){
 		elseif(isWindows()){$cmd='';}
 		if(strlen($cmd)){
 			$afolder=preg_replace('/\//',"\\",$afolder);
-			$out=cmdResults("{$cmd} \"{$afolder}\"");
+			$cmd="{$cmd} \"{$afolder}\"";
+			$out=cmdResults($cmd);
 			if($out['rtncode'] !=0){
 				echo printValue($out).PHP_EOL;
 			}
-			echo printValue($out).PHP_EOL;
+			else{
+				echo $cmd.PHP_EOL;
+			}
 		}
 	}
 	$firsttime=0;
@@ -682,10 +685,10 @@ function getXml(){
 	global $progpath;
 	global $xml;
 	if(!isset($xml['hosts'])){
-		if(!file_exists("$progpath/postedit.xml")){
+		if(!file_exists("{$progpath}/postedit.xml")){
 			abortMessage("Unable to find postedit.xml file");
 		}
-		$xmldata=getFileContents("$progpath/postedit.xml");
+		$xmldata=getFileContents("{$progpath}/postedit.xml");
 		$xml = (array)readXML("<postedit>{$xmldata}</postedit>");
 	}
 	return;
