@@ -780,6 +780,7 @@ function databaseListRecords($params=array()){
 	$info=array();
 	$allfields=0;
 	if(isset($params['-list'])){
+		$params['-hidesearch']=1;
 		$allfields=1;
 		//check for -export and filter_export
 		if(!empty($params['-export']) && !empty($params['-export_now']) && $params['-export_now']==1){
@@ -841,6 +842,7 @@ function databaseListRecords($params=array()){
 	elseif(isset($params['-csv'])){
 		$allfields=1;
 		$params['-list']=$recs=getCSVRecords($params['-csv']);
+		$params['-hidesearch']=1;
 		//strip tags
 		foreach($recs as $i=>$rec){
 			foreach($rec as $k=>$v){
