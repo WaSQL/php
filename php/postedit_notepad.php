@@ -35,11 +35,9 @@ $cmd="taskkill /IM \"notepad++.exe\" /F";
 $out=cmdResults($cmd);
 //make a arg list with each vdir wrapped in quotes
 $vdirstr='"'.implode('" "',$vdirs).'"';
-$cmd="notepad++ -openFoldersAsWorkspace {$vdirstr}";
+$cmd="notepad++.exe -nosession -openFoldersAsWorkspace {$vdirstr}";
+pclose(popen("start /B ". $cmd, "w"));
 //echo $cmd;exit;
-$out=cmdResults($cmd);
-if($out['rtncode'] !=0){
-	echo printValue($out).PHP_EOL;
-}
+
 exit;
 
