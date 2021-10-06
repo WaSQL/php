@@ -780,6 +780,7 @@ function databaseListRecords($params=array()){
 	$info=array();
 	$allfields=0;
 	if(isset($params['-list'])){
+		$params['-hidesearch']=1;
 		$allfields=1;
 		//check for -export and filter_export
 		if(!empty($params['-export']) && !empty($params['-export_now']) && $params['-export_now']==1){
@@ -841,6 +842,7 @@ function databaseListRecords($params=array()){
 	elseif(isset($params['-csv'])){
 		$allfields=1;
 		$params['-list']=$recs=getCSVRecords($params['-csv']);
+		$params['-hidesearch']=1;
 		//strip tags
 		foreach($recs as $i=>$rec){
 			foreach($rec as $k=>$v){
@@ -917,9 +919,10 @@ function databaseListRecords($params=array()){
 		unset($params['-query']);
 	}
 	if(empty($params['-table']) && empty($params['-list']) && empty($params['-csv'])){
-		if(!empty($params[0])){
+		if(!empty($params[0]) && is_array($params[0])){
 			//they are passing in the list without any other params.
 			$params=array('-list'=>$params);
+			$params['-hidesearch']=1;
 		}
 		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 			//they just entered a query. convert it to a list
@@ -970,6 +973,7 @@ function databaseListRecords($params=array()){
 					$params=array('-list'=>getDBRecords($params));
 				break;
 			}
+			$params['-hidesearch']=1;
 		}
 	}
 	if(!empty($params['-table'])){
