@@ -20,6 +20,7 @@ if(!isCLI()){
 	echo "postedit_notepad.php is a command line app only.".PHP_EOL;
 	exit;
 }
+
 //determine the postedit path
 $ppath=getWasqlPath('postedit/postEditFiles');
 //get a list of directories
@@ -34,9 +35,17 @@ foreach($dirs as $dir){
 $cmd="taskkill /IM \"notepad++.exe\" /F";
 $out=cmdResults($cmd);
 //make a arg list with each vdir wrapped in quotes
-$vdirstr='"'.implode('" "',$vdirs).'"';
-$cmd="notepad++.exe -nosession -openFoldersAsWorkspace {$vdirstr}";
-pclose(popen("start /B ". $cmd, "w"));
+$vdirstr='""'.implode('"" ""',$vdirs).'""';
+$cmd="notepad++.exe -openFoldersAsWorkspace {$vdirstr}";
+$vbs=<<<ENDOFVBS
+Set objShell = WScript.CreateObject("WScript.Shell")
+objShell.Run "{$cmd}",0,false
+Set objShell = Nothing
+ENDOFVBS;
+setFileContents("{$progpath}/pn.vbs",$vbs);
+$cmd="wscript {$progpath}/pn.vbs";
+exec($cmd);
+//pclose(popen("start /B {$cmd}  > NUL", "r"));
 //echo $cmd;exit;
 
 exit;
