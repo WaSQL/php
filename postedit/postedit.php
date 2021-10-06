@@ -77,7 +77,7 @@ file_put_contents($postedit['alock'],$postedit['pid']);
 //echo "success".PHP_EOL;
 //create the base dir
 $postedit['folder']=!empty($postedit['alias'])?$postedit['alias']:$postedit['name'];
-$basefolder=$folder;
+$basefolder=$postedit['folder'];
 //allow timer to be set in postedit.xml
 $postedit['timer']=!empty($postedit['timer'])?(integer)$postedit['timer']:20;
 //allow timezone to be set
@@ -248,7 +248,7 @@ function writeFiles(){
 		abortMessage($msg);
 	}
 	elseif(!isset($xml['WASQL_RECORD'])){
-		$msg="Error - no WaSQL RECORD";
+		$msg="Error - no WaSQL RECORD".PHP_EOL.printValue($postopts).$post['body'];
 		abortMessage($msg);
 	}
 	//fix the one record issue
