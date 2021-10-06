@@ -5239,7 +5239,7 @@ function buildUrl($parts=array()){
 		if(!is_string($val) && !isNum($val)){continue;}
 		if(!strlen(trim($val))){continue;}
 		if($val=='Array'){continue;}
-		array_push($uparts,"$key=" . encodeURL($val));
+		array_push($uparts,"{$key}=" . encodeURL($val));
     	}
     $url=implode('&',$uparts);
     return $url;
@@ -12710,6 +12710,8 @@ function listFiles($dir='.'){
 *	[-dateformat] - return date format
 *	[-perms] - limit results to files this these permissions
 *	[-lines] - return the line count of each file returned
+*	[-sha] - return the sha1 value of each file returned
+* 	[-md5] - return the md5 value of each file returned
 * @return array
 * @usage $files=listFilesEx($dir);
 */
@@ -12742,6 +12744,14 @@ function listFilesEx($dir='.',$params=array()){
         		'type'	=> filetype($afile),
         		'afile'	=> $afile
 				);
+        	//sha
+        	if(isset($params['-sha']) && $params['-sha'] && function_exists('sha1_file')){
+        		$fileinfo['sha']=sha1_file($afile);
+        	}
+        	//md5
+        	if(isset($params['-md5']) && $params['-md5'] && function_exists('md5_file')){
+        		$fileinfo['md5']=md5_file($afile);
+        	}
 			$ftype=strtolower($fileinfo['type']);
 			//skip all but dir,link, and file types.  Possible values are fifo, char, dir, block, link, file, socket and unknown.
 			if(!in_array($ftype,array('dir','link','file'))){continue;}
@@ -14220,7 +14230,7 @@ function posteditSha1($str){
 		$str=file_get_contents($str);
 	}
 	$str=preg_replace('/[\r\n]+/','',$str);
-	return sha1($str);
+	return md5($str);
 }
 //---------- begin function postEditXml---------------------------------------
 /**
@@ -14246,7 +14256,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
 	//add record to posteditlog
 	if(!isDBTable('_posteditlog')){
 		$progpath=dirname(__FILE__);
-		include_once("$progpath/schema.php");
+		include_once("{$progpath}/schema.php");
 		$ok=createWasqlTable('_posteditlog');
 	}
 	$ok=addDBRecord(array(
