@@ -15374,7 +15374,7 @@ function processActions(){
             	$_REQUEST['_fields']=preg_replace('/\,+$/','',$_REQUEST['_formfields']);
 			}
 			if(strlen($_REQUEST['_table']) && (integer)$_REQUEST['_id'] > 0 && strlen($_REQUEST['_fields'])){
-				$rec=getDBRecord(array('-table'=>$_REQUEST['_table'],'_id'=>$_REQUEST['_id'],'-nocache'=>1));
+				$rec=getDBRecord(array('-table'=>$_REQUEST['_table'],'_id'=>$_REQUEST['_id'],'-nocache'=>1,'-relate'=>array('_euser'=>'_users')));
 				$timestamp=time();
 				$_REQUEST['edit_rec']=$rec;
 				if(is_array($rec)){
@@ -15384,7 +15384,22 @@ function processActions(){
                     $_REQUEST['_fields']=strtolower(str_replace(' ','',$_REQUEST['_fields']));
 					$fields=preg_split('/\,+/',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
-					$opts=array('-table'=>$_REQUEST['_table'],'-where'=>'_id='.$_REQUEST['_id']);
+					$opts=array(
+						'-table'=>$_REQUEST['_table'],
+						'-where'=>'_id='.$_REQUEST['_id']
+					);
+					if($action=='POSTEDIT' && isset($_REQUEST['_md5']) && strlen($_REQUEST['_md5']) && count($fields)==1){
+						$fld=$fields[0];
+						$fld_md5=md5($rec[$fld]);
+						if($fld_md5 != $_REQUEST['_md5']){
+							$username=$rec['_euser_ex']['username'];
+							echo "<timestamp>{$timestamp}</timestamp>";
+							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started.</fatal_error>";
+							echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
+							echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
+							exit;
+						}
+					}
 					if(isset($_REQUEST['_collection_field'])){
 						$cfield=strtolower($_REQUEST['_collection_field']);
 						if(isset($info[$cfield])){

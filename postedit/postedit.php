@@ -108,9 +108,9 @@ writeFiles();
 $postedit['firsttime']=0;
 echo " - getting local filestamps".PHP_EOL;
 posteditSync();
-$ok=posteditBeep(2);
 $countdown=$postedit['timer'];
 echo "Listening to files in {$postedit['afolder']} for changes...".PHP_EOL;
+$ok=posteditBeep(1);
 while(1){
 	cli_set_process_title($postedit['afolder']);
 	sleep(1);
@@ -358,9 +358,25 @@ function posteditGetLocalShas(){
 	return $json;
 }
 function posteditBeep($n=1){
-	for($x=0;$x<$n;$x++){
+	for ($i = 0; $i < $n; $i++){ 
 		fprintf ( STDOUT, "%s", "\x07" );
+		sleep(1);
 	}
+}
+function posteditSpeak($msg){
+	global $postedit;
+	if(!isWindows()){return false;}
+	switch(strtolower($settings['sound']['gender'])){
+		case 'f':
+		case 'female':
+			$cmd="{$postedit['progpath']}\\voice.exe -v 60 -r 1 -f -d \"{$msg}\"";
+		break;
+		default:
+			$cmd="{$postedit['progpath']}\\voice.exe -v 60 -r 1 -m -d \"{$msg}\"";
+		break;
+	}
+	$ok=exec($cmd);
+	return true;
 }
 function posteditShaKey($afile){
 	$path=getFilePath($afile);
@@ -411,6 +427,7 @@ function fileChanged($afile){
 	}
 	$content=encodeBase64($content);
 	list($fname,$table,$field,$id,$ext)=preg_split('/\./',$filename);
+	$idx=md5($afile);
 	$postopts=array(
 		'apikey'	=>$postedit['apikey'],
 		'username'	=>$postedit['username'],
@@ -425,10 +442,11 @@ function fileChanged($afile){
 		'_return'	=>'XML',
 		'-nossl'	=>1,
 		'-follow'	=>1,
-		'-xml'		=>1
+		'-xml'		=>1,
+		'_md5'		=> $postedit['files'][$idx]['md5']
 	);
-
 	$url=buildHostUrl();
+	//echo $url.PHP_EOL.printValue($postopts);posteditSync();return true;
 	$post=postURL($url,$postopts);
 POSTFILE:
 	$xml=array();
@@ -441,7 +459,8 @@ POSTFILE:
     	abortMessage("{$post['curl_info']['http_code']} error posting file to server");
 	}
 	elseif(isset($xml['fatal_error'])){
-    	abortMessage(" - Fatal error posting");
+		$error=" - fatal error posting. ".PHP_EOL.$xml['fatal_error'];
+    	abortMessage($error);
 	}
 	elseif(isset($xml['refresh_error'])){
 		$ok=errorMessage($xml['refresh_error']." attention required");
@@ -468,24 +487,22 @@ POSTFILE:
 	return true;
 }
 function abortMessage($msg){
-	global $settings;
-	global $progpath;
-	global $lockfile;
+	global $postedit;
 	$msg=trim($msg);
 	echo "Fatal Error: {$msg}".PHP_EOL;
-	echo $progpath;
 	if(isWindows()){
-		//$ok=soundAlarm('abort');
 		$ok=posteditBeep(3);
 	}
-	if(file_exists($lockfile)){unlink($lockfile);}
+	if(isset($postedit['alock']) && file_exists($postedit['alock'])){
+		unlink($postedit['alock']);
+	}
 	exit;
 }
 function errorMessage($msg){
 	$msg=trim($msg);
 	echo " - Error: {$msg}".PHP_EOL;
 	if(isWindows()){
-		$ok=posteditBeep(3);
+		$ok=posteditBeep(2);
 	}
 	return;
 }
