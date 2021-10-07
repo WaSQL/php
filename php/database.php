@@ -7300,6 +7300,10 @@ function getDBFieldTag($params=array()){
             }
             $tag=buildFormButtonSelectMultiple($info[$field]['fieldname'],$options,$info[$field]);
 		break;
+		//select_database
+		case 'select_database':
+			$tag=buildFormSelectDatabase($info[$field]['name'],$info[$field]);
+		break;
 		//Password
 		case 'password':
 			$tag=buildFormPassword($info[$field]['name'],$info[$field]);
