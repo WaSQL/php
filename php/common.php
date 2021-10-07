@@ -15390,11 +15390,11 @@ function processActions(){
 					);
 					if($action=='POSTEDIT' && isset($_REQUEST['_md5']) && strlen($_REQUEST['_md5']) && count($fields)==1){
 						$fld=$fields[0];
-						$fld_md5=md5($rec[$fld]);
+						$fld_md5=md5(trim($rec[$fld]));
 						if($fld_md5 != $_REQUEST['_md5']){
 							$username=$rec['_euser_ex']['username'];
 							echo "<timestamp>{$timestamp}</timestamp>";
-							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started. Local MD5:{$_REQUEST['_md5']}, DB MD5:{$fld_md5}</fatal_error>";
+							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}). Local MD5:{$_REQUEST['_md5']}, DB MD5:{$fld_md5}</fatal_error>";
 							echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
 							echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
 							exit;
