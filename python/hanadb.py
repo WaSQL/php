@@ -1,14 +1,16 @@
 #! python
 """
 Installation
-    python -m pip install pyhdb
+    python -m pip install hdbcli
 References
-    https://github.com/SAP/PyHDB
+    https://pypi.org/project/hdbcli/
+    https://developers.sap.com/tutorials/hana-clients-python.html
 """
 
 #imports
 try:
-    import pyhdb
+    import hdbcli
+    from hdbcli import dbapi
     import config
     import common
 except ImportError as err:
@@ -45,7 +47,7 @@ def connect(params):
         dbconfig = {}
         #check config.CONFIG
         if 'dbhost' in config.CONFIG:
-            dbconfig['host'] = config.CONFIG['dbhost']
+            dbconfig['address'] = config.CONFIG['dbhost']
 
         if 'dbuser' in config.CONFIG:
             dbconfig['user'] = config.CONFIG['dbuser']
@@ -57,7 +59,7 @@ def connect(params):
             dbconfig['port'] = config.CONFIG['dbport']
         #check params and override any that are passed in
         if 'dbhost' in params:
-            dbconfig['host'] = params['dbhost']
+            dbconfig['address'] = params['dbhost']
 
         if 'dbuser' in params:
             dbconfig['user'] = params['dbuser']
@@ -68,13 +70,13 @@ def connect(params):
         if 'dbport' in params:
             dbconfig['port'] = params['dbport']
         # Connect
-        conn_hana = pyhdb.connect(**dbconfig)
+        conn_hana = dbapi.connect(**dbconfig)
         cur_hana = conn_hana.cursor(dictionary=True)
             
         #need to return both cur and conn so conn stays around
         return cur_hana, conn_hana
         
-    except pyhdb.Error as err:
+    except hdbcli.Error as err:
         print("hanadb.connect error: {}".format(err))
         return false
 ###########################################
@@ -86,7 +88,7 @@ def executeSQL(query,params):
         cur_hana.execute(query)
         return True
         
-    except pyhdb.Error as err:
+    except hdbcli.Error as err:
         return ("hanadb.executeSQL error: {}".format(err))
 ###########################################
 def queryResults(query,params):
@@ -103,6 +105,6 @@ def queryResults(query,params):
         else:
             return []
         
-    except hana.Error as err:
+    except hdbcli.Error as err:
         return ("hanadb.queryResults error: {}".format(err))
 ###########################################
