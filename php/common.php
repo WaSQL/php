@@ -721,8 +721,7 @@ function commonCronUnpauseGroup($group){
 * @describe formats a phone number
 * @param string phone number
 * @return string - formatted phone number (xxx) xxx-xxxx
-* @usage
-*	commonFormatPhone('8014584741');
+* @usage commonFormatPhone('8014584741');
 */
 function commonFormatPhone($phone) {
 	// note: making sure we have something
@@ -5246,18 +5245,12 @@ function buildUrl($parts=array()){
 //---------- begin function calculateDistance--------------------------------------
 /**
 * @describe distance between two longitude & latitude points
-* @param lat1 float
-*	First Latitude
-* @param lon1 float
-*	First Longitude
-* @param lat2 float
-*	Second Latitude
-* @param lon2 float
-*	Second Longitude
-* @param unit char
-*	unit of measure - K=kilometere, N=nautical miles, M=Miles
+* @param lat1 float - First Latitude
+* @param lon1 float - First Longitude
+* @param lat2 float - Second Latitude
+* @param lon2 float - Second Longitude
+* @param unit char - unit of measure - K=kilometere, N=nautical miles, M=Miles
 * @return distance float
-*	returns distance
 */
 function calculateDistance($lat1, $lon1, $lat2, $lon2, $unit='M'){
 	$theta = $lon1 - $lon2;
@@ -5306,7 +5299,7 @@ function cleanDir($dir='') {
 	return true;
 	}
 
-//---------- begin function cmdResults--------------------------------------
+//---------- begin function cmdResults---------------
 /**
 * @describe executes command and returns results
 * @param cmd string - the command to execute
@@ -5314,8 +5307,7 @@ function cleanDir($dir='') {
 * @param [dir] string - directory
 * @param [timeout] integer - seconds to let process run for. Defaults to 0 - unlimited
 * @return string - returns the results of executing the command
-* @usage 
-*		$out=cmdResults('ls -al');
+* @usage $out=cmdResults('ls -al');
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	if(!is_dir($dir)){$dir=realpath('.');}
@@ -7233,10 +7225,8 @@ function date2Mysql($str=''){
 //---------- begin function decodeBase64
 /**
 * @describe decodes a base64 encodes string - same as base64_decode
-* @param str string
-*	base64 string to decode
-* @return str string
-*	decodes a base64 encodes string - same as base64_decode
+* @param str string - base64 string to decode
+* @return str string - decodes a base64 encodes string - same as base64_decode
 * @usage $dec=decodeBase64($encoded_string);
 */
 function decodeBase64($str=''){
@@ -7252,8 +7242,7 @@ function decodeURL($str=''){
 //---------- begin function deleteDirectory
 /**
 * @describe recursively deletes directory and all directories beneath it
-* @param dir string
-*	directory to delete
+* @param dir string - directory to delete
 * @return boolean
 * @usage $ok=deleteDirectory($dir);
 */
@@ -7505,10 +7494,8 @@ function encodeJson($arr){
 //---------- begin function encodeBase64
 /**
 * @describe wrapper for base64_encode
-* @param str string
-*	string to encode
-* @return
-*	Base64 encoded string
+* @param str string - string to encode
+* @return str - Base64 encoded string
 * @usage $enc=encodeBase64($str);
 */
 function encodeBase64($str=''){
@@ -13952,15 +13939,12 @@ function configValue($field,$e=0){
 		}
 	return '';
 	}
-//---------- begin function pageValue---------------------------------------
+//---------- begin function pageValue--------------------------
 /**
 * @describe returns the value of the page
-* @param field string
-*	name of the field you wish to return
-* @param page string
-*	name (or id) of the page you wish to return - optional. Defaults to the current page
-* @return str value
-*	returns the value of the field of the page specified or the current page is a page is not specified
+* @param field string - name of the field you wish to return
+* @param page string - name (or id) of the page you wish to return - optional. Defaults to the current page
+* @return str value - returns the value of the field of the page specified or the current page is a page is not specified
 * @usage
 *	<?=pageValue('name');?> - returns the name of the current page being viewed
 *	<?=pageValue('title','about');?> - returns the title of the page named 'about'

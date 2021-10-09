@@ -45,10 +45,18 @@ def buildDir(path,mode=0o777,recurse=True):
 # @param [width] integer - width of img. defaults to 1
 # @param [height] integer - height of img. defaults to 1
 # @return string - image tag with the specified javascript string invoked onload
-# @usage <?=common.buildOnLoad("document.myform.myfield.focus();")?>
+# @usage <?py common.buildOnLoad("document.myform.myfield.focus();")?>
 def buildOnLoad(str='',img='/wfiles/clear.gif',width=1,height=1):
     return f'<img class="w_buildonload" src="{img}" alt="onload functions" width="{width}" height="{height}" style="border:0px;" onload="eventBuildOnLoad();" data-onload="{str}">'
 
+#---------- begin function calculateDistance--------------------
+# @describe distance between two longitude & latitude points
+# @param lat1 float - First Latitude
+# @param lon1 float - First Longitude
+# @param lat2 float - Second Latitude
+# @param lon2 float - Second Longitude
+# @param unit char - unit of measure - K=kilometere, N=nautical miles, M=Miles
+# @return distance float
 def calculateDistance(lat1, lon1, lat2, lon2, unit='M'):
     #Python, all the trig functions use radians, not degrees
     # approximate radius of earth in km
@@ -72,42 +80,97 @@ def calculateDistance(lat1, lon1, lat2, lon2, unit='M'):
     else:
         return distance
 
+#---------- begin function cmdResults---------------
+# @describe executes command and returns results
+# @param cmd string - the command to execute
+# @param [args] string - a string of arguments to pass to the command 
+# @param [dir] string - directory
+# @param [timeout] integer - seconds to let process run for. Defaults to 0 - unlimited
+# @return string - returns the results of executing the command
+# @usage  out=common.cmdResults('ls -al')
 def cmdResults(cmd,args='',dir='',timeout=0):
     result = subprocess.run([cmd, args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return result.stdout.decode('utf-8')
-    
+
+#---------- begin function decodeBase64
+# @describe decodes a base64 encodes string - same as base64_decode
+# @param str string - base64 string to decode
+# @return str string - decodes a base64 encodes string - same as base64_decode
+# @usage dec=common.decodeBase64(encoded_string)   
 def decodeBase64(str):
     base64_bytes = str.encode('ascii')
     message_bytes = base64.b64decode(base64_bytes)
     message = message_bytes.decode('ascii')  
     return message  
 
+#---------- begin function encodeBase64
+# @describe wrapper for base64_encode
+# @param str string - string to encode
+# @return str - Base64 encoded string
+# @usage enc=common.encodeBase64(str)
 def encodeBase64(str):
     message_bytes = str.encode('ascii')
     base64_bytes = base64.b64encode(message_bytes)
     base64_message = base64_bytes.decode('ascii')
     return base64_message
 
+
+#---------- begin function echo
+# @describe wrapper for print
+# @param str string - string to encode
+# @return null
+# @usage common.echo('hello')
 def echo(str):
     if isCLI():
         print(str,end="\n")
     else:
         print(str,end="<br />\n")
 
+#---------- begin function decodeURL
+# @describe wrapper for urllib.parse.unquote
+# @param str string - string to decode
+# @return str - decoded string
+# @usage dec=common.decodeURL(str)
 def decodeURL(str):
     return urllib.parse.unquote(urllib.parse.unquote(str))
 
+#---------- begin function encodeURL
+# @describe wrapper for urllib.parse.quote_plus
+# @param str string - string to encode
+# @return str - encoded string
+# @usage enc=common.encodeURL(str)
 def encodeURL(str):
     return urllib.parse.quote_plus(str)
 
+#---------- begin function encodeJson
+# @describe wrapper for json.dumps
+# @param arr array or list - array to list to encode
+# @return str - JSON encoded string
+# @usage print common.encodeJson(arr)
 def encodeJson(arr):
     return json.dumps(arr)
 
+#---------- begin function decodeJson
+# @describe wrapper for json.loads
+# @param str string - string to encode
+# @return list - JSON object
+# @usage json=common.decodeJson(str)
 def decodeJson(str):
     return json.loads(str)
 
-def setFileContents(filename,data):
-    f = open(filename, 'w')
+#---------- begin function setFileContents--------------------
+# @describe writes data to a file
+# @param file string - absolute path of file to write to
+# @param data string - data to write
+# @param [append] - set to true to append defaults to false
+# @return boolean
+# @usage $ok=setFileContents($file,$data);
+def setFileContents(filename,data,append=False):
+    if(append==True):
+        f = open(filename, 'a')
+    else:
+        f = open(filename, 'w')
+
     f.write(data)
     f.close()
 
@@ -134,14 +197,28 @@ def evalPython(str):
     #return
     return output
 
+#---------- begin function formatPhone
+# @describe formats a phone number
+# @param string phone number
+# @return string - formatted phone number (xxx) xxx-xxxx
+# @usage ph=common.FormatPhone('8014584741')
 def formatPhone(phone_number):
     clean_phone_number = re.sub('[^0-9]+', '', phone_number)
     formatted_phone_number = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1-", "%d" % int(clean_phone_number[:-1])) + clean_phone_number[-1]
     return formatted_phone_number
 
+#---------- begin function getParentPath
+# @describe gets the parent path
+# @param string phone number
+# @return string - formatted phone number (xxx) xxx-xxxx
+# @usage ph=common.FormatPhone('8014584741')
 def getParentPath(path):
     return os.path.abspath(os.path.join(path, os.pardir))
 
+#---------- begin function hostname
+# @describe gets document root (HTTP_HOST)
+# @return string
+# @usage host=common.hostname()
 def hostname():
     return os.environ['HTTP_HOST']
 
