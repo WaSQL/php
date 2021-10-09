@@ -8128,6 +8128,10 @@ function commonAddPrecode($lang,$evalcode){
 				array_unshift($precode,"	from urllib.parse import urlparse, parse_qs, parse_qsl");
 				array_unshift($precode,"	import requests");
 				array_unshift($precode,"	import common");
+				array_unshift($precode,"	import base64");
+				array_unshift($precode,"	import io");
+				array_unshift($precode,"	import pprint");
+				array_unshift($precode,"	import json");
 				array_unshift($precode,"try:");
 				array_unshift($precode,"sys.path.append(\"{$pypath}\")");
 				array_unshift($precode,"import sys");
@@ -12439,10 +12443,8 @@ function isEmail($str=''){
 //---------- begin function isEven ----------
 /**
 * @describe returns true if specified number is an even number
-* @param num number
-*	number to check
-* @return boolean
-*	returns true if specified number is an even number
+* @param num number - number to check
+* @return boolean - returns true if specified number is an even number
 * @usage if(isEven($num)){...}
 */
 function isEven($num=0){
@@ -12451,11 +12453,9 @@ function isEven($num=0){
 //---------- begin function isFactor ----------
 /**
 * @describe returns true if num is divisable by divisor without a remainder
-* @param num number
-*	number to check
+* @param num number - number to check
 * @param divisor number
-* @return boolean
-*	returns true if num is divisable by divisor without a remainder
+* @return boolean - returns true if num is divisable by divisor without a remainder
 * @usage if(isFactor($num,2)){echo 'number is even';}
 */
 function isFactor($num=0,$divisor=1){

@@ -130,21 +130,70 @@ def getParentPath(path):
 def hostname():
     return os.environ['HTTP_HOST']
 
+#---------- begin function isCLI ----------
+# @describe returns true if script is running from a Command Line
+# @return boolean
+# @usage if(common.isCLI()):
 def isCLI():
     if sys.stdin.isatty():
         return True
     else:
         return False 
 
-def isEmail(email):
-  return bool(re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,10}$", email))
+#---------- begin function isEmail ----------
+# @describe returns true if specified string is a valid email address
+# @param str string - string to check
+# @return boolean - returns true if specified string is a valid email address
+# @usage if(common.isEmail(str)):
+def isEmail(str):
+    if(type(obj) is str):
+        return bool(re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,10}$", str))
+    else:
+        return False
 
+#---------- begin function isEven ----------
+# @describe returns true if specified number is an even number
+# @param num number - number to check
+# @return boolean - returns true if specified number is an even number
+# @usage if(common.isEven(num)):
 def isEven(num):
   return num % 2 == 0
 
+#---------- begin function isFactor ----------
+# @describe returns true if num is divisable by divisor without a remainder
+# @param num number - number to check
+# @param divisor number
+# @return boolean - returns true if num is divisable by divisor without a remainder
+# @usage if(common.isFactor(num,2)):
 def isFactor(num,div):
     return num % div == 0
 
+#---------- begin function isJson ----------
+# @describe returns true if specified object is JSON
+# @param obj - object to check
+# @return boolean - returns true if specified object is JSON
+# @usage if(common.isJson(obj)):
+def isJson(obj):
+    if(type(obj) is list):
+        try: 
+            obj = json.dumps(obj)
+        except ValueError as e:
+            return False
+
+    if(type(obj) is str):
+        try: 
+            json_object = json.loads(obj)
+        except ValueError as e:
+            return False
+        return True
+    else:
+        return False
+    return False
+
+#---------- begin function isWindows ----------
+# @describe returns true if script is running on a Windows platform
+# @return boolean
+# @usage if(common.isWindows()):
 def isWindows():
     if sys.platform == 'win32':
         return True
@@ -157,11 +206,13 @@ def isWindows():
     else:
         return False
 
-def nl2br(string, is_xhtml= True ):
-    if is_xhtml:
-        return string.replace('\n','<br />\n')
-    else :
-        return string.replace('\n','<br>\n')
+#---------- begin function nl2br ----------
+# @describe converts new lines to <br /> tags in string
+# @param str string
+# @return str string
+# @usage print(common.nl2br(str))
+def nl2br(string):
+    return string.replace('\n','<br />\n')
 
 def parseViews(str):
     global VIEWS
@@ -225,9 +276,6 @@ def removeView(name):
     if name in VIEW:
         del VIEW[name]
 
-def printValue(obj):
-    print(pprint.pformat(obj).strip("'"))
-
 def debugValue(obj):
     global DEBUG
     DEBUG.append(obj)
@@ -242,6 +290,22 @@ def debugValues():
         onload="if(typeof(console) != 'undefined' && typeof(console.log) != 'undefined'){console.log(document.getElementById('debug_"+"{}".format(idx)+"').innerHTML);}"
         debugstr+=buildOnLoad(onload)+os.linesep
     return debugstr
+
+#---------- begin function printValue ----------
+# @describe returns an html block showing the contents of the object,array,or variable specified
+# @param obj mixed
+# @return str string
+# @usage common.printValue(recs)
+def printValue(obj):
+    if(isJson(obj)):
+        print('<pre class="printvalue" type="JSON">')
+        print(json.dumps(obj, indent=4, sort_keys=True))
+        print('</pre>')
+    else:
+        typename=type(obj).__name__
+        print('<pre class="printvalue" type="'+typename+'">')
+        print(pprint.pformat(obj).strip("'"))
+        print('</pre>')
 
 def stringContains(str,substr):
     if substr in str:
