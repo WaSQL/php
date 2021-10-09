@@ -7830,6 +7830,7 @@ function evalPHP_ob($string, $flags) {
 */
 function evalPHP($strings){
 	global $CONFIG;
+	global $PAGE;
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
@@ -7860,7 +7861,9 @@ function evalPHP($strings){
 			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
 				$lang=commonGetLangInfo($g[1]);
-				
+				$page=isset($PAGE['_id'])?$PAGE['_id']:0;
+				$pageid="p".$page;
+				$tmpfile="{$CONFIG['name']}_{$pageid}_".md5($evalcode).".{$lang['ext']}";
 				$evalcode=commonAddPrecode($lang,$evalcode);
 				//run the script:
 				if(file_exists($evalcode)){
@@ -7872,7 +7875,7 @@ function evalPHP($strings){
 				}
 				else{
 					$tmppath=getWasqlTempPath();
-					$tmpfile="{$CONFIG['name']}_".md5($evalcode).".{$lang['ext']}";
+					
 					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
 						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
 					}
@@ -7896,7 +7899,7 @@ function evalPHP($strings){
 					}
 					$out = cmdResults($command);
 					if($out['rtncode']==0){
-						unlink("{$tmppath}/{$tmpfile}");
+						//unlink("{$tmppath}/{$tmpfile}");
 						$val=$out['stdout'];
 					}	
 					else{
@@ -8121,6 +8124,9 @@ function commonAddPrecode($lang,$evalcode){
 				array_unshift($precode,"except ImportError as err:");
 				array_unshift($precode,"	import re");
 				array_unshift($precode,"	import db");
+				array_unshift($precode,"	import config");
+				array_unshift($precode,"	from urllib.parse import urlparse, parse_qs, parse_qsl");
+				array_unshift($precode,"	import requests");
 				array_unshift($precode,"	import common");
 				array_unshift($precode,"try:");
 				array_unshift($precode,"sys.path.append(\"{$pypath}\")");
