@@ -4855,8 +4855,7 @@ function buildMsnCtt($emails=array(),$push=0,$name='msn_contacts.ctt'){
 /**
 * @describe executes javascript in an ajax call by builing an image and invoking onload
 * @param str string - javascript to invoke on load
-* @return string
-*	image tag with the specified javascript string invoiked onload
+* @return string - image tag with the specified javascript string invoiked onload
 * @usage echo buildOnLoad("document.myform.myfield.focus();");
 */
 function buildOnLoad($str='',$img='/wfiles/clear.gif',$width=1,$height=1){

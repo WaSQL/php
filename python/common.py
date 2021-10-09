@@ -25,12 +25,27 @@ VIEW = {}
 DEBUG = []
 #import dateparser
 
+#---------- begin function buildDir ----------
+# @describe recursive folder creator
+# @param path string - path to create
+# @param [mode] num - create mode. defaults to 0o777
+# @param [recurse] boolean - create recursively. defaults to TRUE
+# @return boolean
+# @usage if(common.buildDir('/var/www/mystuff/temp/test')):
 def buildDir(path,mode=0o777,recurse=True):
     if recurse:
         return os.makedirs(path,mode)
     else:
         return os.mkdir(path,mode)
 
+#---------- begin function buildOnLoad
+# @describe executes javascript in an ajax call by builing an image and invoking onload
+# @param str string - javascript to invoke on load
+# @param [img] string - image to load. defaults to /wfiles/clear.gif
+# @param [width] integer - width of img. defaults to 1
+# @param [height] integer - height of img. defaults to 1
+# @return string - image tag with the specified javascript string invoked onload
+# @usage <?=common.buildOnLoad("document.myform.myfield.focus();")?>
 def buildOnLoad(str='',img='/wfiles/clear.gif',width=1,height=1):
     return f'<img class="w_buildonload" src="{img}" alt="onload functions" width="{width}" height="{height}" style="border:0px;" onload="eventBuildOnLoad();" data-onload="{str}">'
 
@@ -307,25 +322,59 @@ def printValue(obj):
         print(pprint.pformat(obj).strip("'"))
         print('</pre>')
 
+#---------- begin function stringContains ----------
+# @describe returns true if string contains substr
+# @param str string
+# @param substr string
+# @return boolean
+# @usage if(common.stringContains(str,val)):
 def stringContains(str,substr):
     if substr in str:
         return True
     else:
         return False
 
+#---------- begin function stringEndsWith ----------
+# @describe returns true if string ends with substr
+# @param str string
+# @param substr string
+# @return boolean
+# @usage if(common.stringEndsWith(str,val)):
 def stringEndsWith(str,substr):
     return str.endswith(substr)
 
+#---------- begin function stringBeginsWith ----------
+# @describe returns true if string begins with substr
+# @param str string
+# @param substr string
+# @return boolean
+# @usage if(common.stringBeginsWith(str,val)):
 def stringBeginsWith(str,substr):
     return str.startswith(substr)
 
+#---------- begin function str_replace ----------
+# @describe replaces str with str2 in str3
+# @param str string
+# @param str2 string
+# @param str3 string
+# @return string
+# @usage newstr=common.str_replace('a','b','abb')
 def str_replace(str, str2, str3):
     result = str3.replace(str,str2)
     return result
 
+#---------- begin function time ----------
+# @describe returns unix timestamp
+# @return int
+# @usage t=common.time()
 def time():
     return ttime.time()
 
+#---------- begin function verboseNumber ----------
+# @describe converts a number(seconds) to a string
+# @param int integer
+# @return str string
+# @usage print(common.verboseNumber(524))
 def verboseNumber(num):
     d = { 0 : 'zero', 1 : 'one', 2 : 'two', 3 : 'three', 4 : 'four', 5 : 'five',
           6 : 'six', 7 : 'seven', 8 : 'eight', 9 : 'nine', 10 : 'ten',
