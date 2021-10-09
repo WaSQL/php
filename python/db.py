@@ -9,7 +9,7 @@ except ImportError as err:
     sys.exit(err)
 
 
-def queryResults(dbname,query,params):
+def queryResults(dbname,query,params={}):
     if dbname in config.DATABASE:
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:

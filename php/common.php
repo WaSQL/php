@@ -8098,17 +8098,45 @@ function commonAddPrecode($lang,$evalcode){
 		switch($lang['name']){
 			case 'ruby':
 				array_unshift($precode,"require 'json'");
+				//comment header
+				array_unshift($precode,"{$lang['comment']} WaSQL Variables");
+			
 			break;
 			case 'lua':
 				//https://github.com/rxi/json.lua
 				array_unshift($precode,"json = require \"json\";");
+				//comment header
+				array_unshift($precode,"{$lang['comment']} WaSQL Variables");
+			break;
+			case 'py':
+			case 'python':
+				//comment header
+				array_unshift($precode,"{$lang['comment']} WaSQL Variables");
+				//append the python dir to sys.path and inport db
+				$pypath=getWasqlPath('python');
+				$pypath=str_replace("\\",'/',$pypath);
+				array_unshift($precode,"");
+				array_unshift($precode,"	sys.exit(err)");
+				array_unshift($precode,"	print(\"Content-type: text/plain; charset=UTF-8;\\n\\n\")");
+				array_unshift($precode,"except ImportError as err:");
+				array_unshift($precode,"	import re");
+				array_unshift($precode,"	import db");
+				array_unshift($precode,"	import common");
+				array_unshift($precode,"try:");
+				array_unshift($precode,"sys.path.append(\"{$pypath}\")");
+				array_unshift($precode,"import sys");
+				array_unshift($precode,"import os");
+				array_unshift($precode,"{$lang['comment']} WaSQL Imports");
+				
+			break;
+			default:
+				//comment header
+				array_unshift($precode,"{$lang['comment']} WaSQL Variables");
 			break;
 		}
-		$precode[]="";
-		//comment header
-		array_unshift($precode,"{$lang['comment']} BEGIN WaSQL Variable Definitions");
 		//comment footer
-		$precode[]="{$lang['comment']} END WaSQL Variable Definitions".PHP_EOL;
+		$precode[]="{$lang['comment']} Code".PHP_EOL;
+		
 		//look for CONFIG['includes']
 		if(isset($CONFIG['includes'][$lang['ext']][0])){
 			$precode[]="{$lang['comment']} BEGIN CUSTOM INCLUDES";
