@@ -43,6 +43,13 @@ switch(strtolower($_REQUEST['func'])){
 	default:
 		global $docs;
 		$docs=array();
+		$pypath=getWasqlPath('python');
+		//python
+		$files=listFilesEx($pypath,array('ext'=>'py'));
+		foreach($files as $file){
+			$ok=manualParseFile($file['afile']);
+		}
+		//php
 		$files=listFilesEx($progpath,array('ext'=>'php'));
 		foreach($files as $file){
 			$ok=manualParseFile($file['afile']);

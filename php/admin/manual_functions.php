@@ -3,9 +3,19 @@ function manualParseFile($file){
 	global $docs;
 	$lines=file($file);
 	$cnt=count($lines);
+	$ext=getFileExtension($file);
 	for($x=0;$x<$cnt;$x++){
 		$line=trim($lines[$x]);
-		if(preg_match('/^function\ (.+?)\((.*?)\)\ *\{/',$line,$m)){
+		switch(strtolower($ext)){
+			case 'py':
+				$re='/^def\ (.+?)\((.*?)\)\ *\:/';
+			break;
+			default:
+				$re='/^function\ (.+?)\((.*?)\)\ *\{/';
+			break;
+		}
+		//echo $ext.'<br>'.$re;exit;
+		if(preg_match($re,$line,$m)){
 			$doc=array(
 				'file'=>$file,
 				'folder'=>getFileName(getFilePath($file)),
