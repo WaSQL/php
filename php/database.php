@@ -6917,17 +6917,28 @@ function getDBCharset(){
 * @usage $ok=getDBCount(array('-table'=>$table,'field1'=>$val1...))
 */
 function getDBCount($params=array()){
+	global $CONFIG;
 	if(isPostgreSQL()){return postgresqlGetDBCount($table,$allfields);}
 	elseif(isSqlite()){return sqliteGetDBCount($table,$allfields);}
 	elseif(isOracle()){return oracleGetDBCount($table,$allfields);}
 	elseif(isMssql()){return mssqlGetDBCount($table,$allfields);}
 	$function='getDBCount';
 	$cnt=0;
+	//echo printValue($params);exit;
 	if(isset($params['-table'])){
+		if(!isset($params['-where'])){
+			$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+			$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+			//echo $query.printValue($recs).printValue($params);
+			if(isset($recs[0]['table_rows'])){
+				return $recs[0]['table_rows'];
+			}
+		}
 		$params['-fields']="count(*) as cnt";
 		unset($params['-order']);
 		$query=getDBQuery($params);
 		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+		//echo $query.printValue($recs).printValue($params);
 		//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 		if(!isset($recs[0]['cnt'])){
 			debugValue($recs);
