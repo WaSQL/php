@@ -6926,14 +6926,14 @@ function getDBCount($params=array()){
 	$cnt=0;
 	//echo printValue($params);exit;
 	if(isset($params['-table'])){
-		if(!isset($params['-where'])){
-			$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
-			$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
-			//echo $query.printValue($recs).printValue($params);
-			if(isset($recs[0]['table_rows'])){
-				return $recs[0]['table_rows'];
-			}
-		}
+		// if(!isset($params['-where'])){
+		// 	$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+		// 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+		// 	//echo $query.printValue($recs).printValue($params);
+		// 	if(isset($recs[0]['table_rows'])){
+		// 		return $recs[0]['table_rows'];
+		// 	}
+		// }
 		$params['-fields']="count(*) as cnt";
 		unset($params['-order']);
 		$query=getDBQuery($params);
