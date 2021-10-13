@@ -6926,20 +6926,18 @@ function getDBCount($params=array()){
 	$cnt=0;
 	//echo printValue($params);exit;
 	if(isset($params['-table'])){
-		// if(!isset($params['-where'])){
-		// 	$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
-		// 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
-		// 	//echo $query.printValue($recs).printValue($params);
-		// 	if(isset($recs[0]['table_rows'])){
-		// 		return $recs[0]['table_rows'];
-		// 	}
-		// }
 		$params['-fields']="count(*) as cnt";
 		unset($params['-order']);
 		$query=getDBQuery($params);
+		//if no where clause, get the count from information_schema.tables
+		if(!stringContains($query,'where')){
+		 	$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+		 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+		 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
+		 		return (integer)$recs[0]['table_rows'];
+		 	}
+		}
 		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
-		//echo $query.printValue($recs).printValue($params);
-		//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 		if(!isset($recs[0]['cnt'])){
 			debugValue($recs);
 			return 0;
