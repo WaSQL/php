@@ -63,6 +63,7 @@ function sqlpromptListRecords($table,$listopts=array()){
 		'-table'=>$table,
 		'-tableclass'=>'table bordered striped responsive',
 		'-sorting'=>1,
+		'-export'=>1,
 		'-onsubmit'=>"return pagingSubmit(this,'sqlprompt_results');",
 		'_menu'=>'sqlprompt',
 		'setprocessing'=>0,
