@@ -381,6 +381,7 @@ function mscsvGetDBRecords($params){
     	}
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return mscsvQueryResults($query,$params);
 }
 

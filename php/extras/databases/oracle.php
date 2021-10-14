@@ -1426,7 +1426,16 @@ function oracleGetDBCount($params=array()){
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
-	$recs=oracleGetDBRecords($params);
+	$params['-queryonly']=1;
+	$query=oracleGetDBRecords($params);
+	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
+	 	$query="SELECT owner,table_name,num_rows as cnt FROM dba_tables where owner='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	 	$recs=oracleQueryResults($query);
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 		return (integer)$recs[0]['cnt'];
+	 	}
+	}
+	$recs=oracleQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
 		$out=array(
@@ -1782,6 +1791,7 @@ function oracleGetDBRecords($params){
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return oracleQueryResults($query,$params);
 }
 //---------- begin function oracleGetDBTables ----------

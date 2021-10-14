@@ -1445,6 +1445,7 @@ function hanaGetDBRecords($params){
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return hanaQueryResults($query,$params);
 }
 //---------- begin function hanaGetDBSystemTables ----------
@@ -1636,7 +1637,16 @@ function hanaGetDBCount($params=array()){
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
-	$recs=hanaGetDBRecords($params);
+	$params['-queryonly']=1;
+	$query=hanaGetDBRecords($params);
+	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
+	 	$query="SELECT schema_name,table_name,record_count as cnt FROM dba_tables where schema_name='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	 	$recs=hanaQueryResults($query);
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 		return (integer)$recs[0]['cnt'];
+	 	}
+	}
+	$recs=hanaQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
 		debugValue($recs);

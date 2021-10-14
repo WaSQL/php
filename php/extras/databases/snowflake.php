@@ -1001,6 +1001,7 @@ function snowflakeGetDBRecords($params){
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return snowflakeQueryResults($query,$params);
 }
 
@@ -1108,7 +1109,16 @@ function snowflakeGetDBCount($params=array()){
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
-	$recs=snowflakeGetDBRecords($params);
+	$params['-queryonly']=1;
+	$query=snowflakeGetDBRecords($params);
+	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
+	 	$query="SELECT table_schema,table_name,row_count as cnt FROM information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	 	$recs=snowflakeQueryResults($query);
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 		return (integer)$recs[0]['cnt'];
+	 	}
+	}
+	$recs=snowflakeQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
 		debugValue($recs);

@@ -877,6 +877,7 @@ function odbcGetDBRecords($params){
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return odbcQueryResults($query,$params);
 }
 //---------- begin function odbcGetDBSchemas ----------

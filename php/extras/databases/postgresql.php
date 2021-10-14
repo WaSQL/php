@@ -953,7 +953,16 @@ function postgresqlGetDBCount($params=array()){
 	unset($params['-limit']);
 	unset($params['-offset']);
 	//$params['-debug']=1;
-	$recs=postgresqlGetDBRecords($params);
+	$params['-queryonly']=1;
+	$query=postgresqlGetDBRecords($params);
+	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
+	 	$query="SELECT schemaname,relname,n_live_tup as cnt FROM pg_stat_user_tables where schemaname='{$CONFIG['dbname']}' and relname='{$params['-table']}'";
+	 	$recs=postgresqlQueryResults($query);
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 		return (integer)$recs[0]['cnt'];
+	 	}
+	}
+	$recs=postgresqlQueryResults($query);
 	if(!isset($recs[0]['cnt'])){
 		debugValue(array(
 			'function'=>'postgresqlGetDBCount',
@@ -1623,6 +1632,7 @@ function postgresqlGetDBRecords($params){
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return postgresqlQueryResults($query,$params);
 }
 //---------- begin function

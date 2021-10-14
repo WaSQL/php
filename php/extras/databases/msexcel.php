@@ -377,6 +377,7 @@ function msexcelGetDBRecords($params){
     	}
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return msexcelQueryResults($query,$params);
 }
 

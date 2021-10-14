@@ -495,6 +495,7 @@ function msaccessGetDBRecords($params){
     	}
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	return msaccessQueryResults($query,$params);
 }
 

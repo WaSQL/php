@@ -122,7 +122,12 @@ def queryResults(query,params):
         #NOTE: columns names can be accessed by cur_mysql.column_names
         recs = cur_mysql.fetchall()
         #NOTE: get row count with cur_mysql.rowcount
-        if type(recs) in (tuple, list):
+        tname=type(recs).__name__;
+        #return tname
+        if tname == 'tuple':
+            recs=list(recs)
+            return recs
+        elif tname == 'list':
             return recs
         else:
             return []

@@ -1150,7 +1150,16 @@ function sqliteGetDBCount($params=array()){
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
-	$recs=sqliteGetDBRecords($params);
+	$params['-queryonly']=1;
+	$query=sqliteGetDBRecords($params);
+	if(1==2 && !stringContains($query,'where') && strlen($CONFIG['dbname'])){
+	 	$query="SELECT schema_name,table_name,record_count as cnt FROM dba_tables where schema_name='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	 	$recs=sqliteQueryResults($query);
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 		return (integer)$recs[0]['cnt'];
+	 	}
+	}
+	$recs=sqliteQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
 		debugValue($recs);
@@ -1419,6 +1428,7 @@ function sqliteGetDBRecords($params){
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
+	if(isset($params['-queryonly'])){return $query;}
 	$recs=sqliteQueryResults($query,$params);
 	//echo '<hr>'.$query.printValue($params).printValue($recs);
 	return $recs;
