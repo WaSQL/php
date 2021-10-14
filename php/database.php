@@ -1021,6 +1021,18 @@ function databaseListRecords($params=array()){
 				}
 				$info=sqliteGetDBFieldInfo($params['-table']);
 			break;
+			case 'msaccess':
+				if(!function_exists('msaccessGetDBFieldInfo')){
+					loadExtras('msaccess');
+				}
+				$info=msaccessGetDBFieldInfo($params['-table']);
+			break;
+			case 'mysql':
+				if(!function_exists('mysqlGetDBFieldInfo')){
+					loadExtras('mysql');
+				}
+				$info=mysqlGetDBFieldInfo($params['-table']);
+			break;
 			default:
 				$info=getDBFieldInfo($params['-table']);
 			break;
@@ -1098,11 +1110,23 @@ function databaseListRecords($params=array()){
 					}
 					$ok=postgresqlEditDBRecord($bulk);
 				break;
+				case 'msaccess':
+					if(!function_exists('msaccessEditDBRecord')){
+						loadExtras('msaccess');
+					}
+					$ok=msaccessEditDBRecord($bulk);
+				break;
 				case 'sqlite':
 					if(!function_exists('sqliteEditDBRecord')){
 						loadExtras('sqlite');
 					}
 					$ok=sqliteEditDBRecord($bulk);
+				break;
+				case 'mysql':
+					if(!function_exists('mysqlEditDBRecord')){
+						loadExtras('mysql');
+					}
+					$ok=mysqlEditDBRecord($bulk);
 				break;
 				default:
 					$ok=editDBRecord($bulk);
@@ -1185,6 +1209,18 @@ function databaseListRecords($params=array()){
 						loadExtras('sqlite');
 					}
 					$recs=sqliteGetDBRecords($params);
+				break;
+				case 'msaccess':
+					if(!function_exists('msaccessGetDBRecords')){
+						loadExtras('msaccess');
+					}
+					$recs=msaccessGetDBRecords($params);
+				break;
+				case 'mysql':
+					if(!function_exists('mysqlGetDBRecords')){
+						loadExtras('mysql');
+					}
+					$recs=mysqlGetDBRecords($params);
 				break;
 				default:
 					$recs=getDBRecords($params);
@@ -1281,6 +1317,18 @@ function databaseListRecords($params=array()){
 					}
 					$params['-total']=sqliteGetDBCount($params);
 				break;
+				case 'msaccess':
+					if(!function_exists('msaccessGetDBCount')){
+						loadExtras('msaccess');
+					}
+					$params['-total']=msaccessGetDBCount($params);
+				break;
+				case 'mysql':
+					if(!function_exists('mysqlGetDBCount')){
+						loadExtras('mysql');
+					}
+					$params['-total']=mysqlGetDBCount($params);
+				break;
 				default:
 					$params['-total']=getDBCount($params);
 				break;
@@ -1333,6 +1381,18 @@ function databaseListRecords($params=array()){
 					loadExtras('sqlite');
 				}
 				$params['-list']=sqliteGetDBRecords($params);
+			break;
+			case 'msaccess':
+				if(!function_exists('msaccessGetDBRecords')){
+					loadExtras('msaccess');
+				}
+				$params['-list']=msaccessGetDBRecords($params);
+			break;
+			case 'mysql':
+				if(!function_exists('mysqlGetDBRecords')){
+					loadExtras('mysql');
+				}
+				$params['-list']=mysqlGetDBRecords($params);
 			break;
 			default:
 				//echo printValue($params);exit;

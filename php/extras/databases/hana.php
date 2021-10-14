@@ -1411,11 +1411,11 @@ function hanaGetDBRecords($params){
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
-			if(!strlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
 			if(is_array($params[$k])){
 	            $params[$k]=implode(':',$params[$k]);
 			}
+			elseif(!strlen(trim($params[$k]))){continue;}
 	        $params[$k]=str_replace("'","''",$params[$k]);
 	        $v=strtoupper($params[$k]);
 	        $ands[]="upper({$k})='{$v}'";
@@ -1633,15 +1633,28 @@ ENDOFQUERYNEW;
 *	$cnt=hanaGetDBCount(array('-table'=>'states','-where'=>"code like 'M%'"));
 */
 function hanaGetDBCount($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	if(!isset($params['-table'])){return null;}
+	$parts=preg_split('/\./',$params['-table']);
+	if(count($parts)==2){
+		$dbschema=strtolower($parts[0]);
+		$table=strtolower($parts[1]);
+	}
+	else{
+		$dbschema=strtolower($DATABASE[$CONFIG['db']]['dbschema']);
+		$table=strtolower($params['-table']);
+	}
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
 	$params['-queryonly']=1;
 	$query=hanaGetDBRecords($params);
-	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
-	 	$query="SELECT schema_name,table_name,record_count as cnt FROM dba_tables where schema_name='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	if(!stringContains($query,'where') && strlen($dbschema)){
+	 	$query="SELECT schema_name,table_name,record_count as cnt FROM sys.m_tables where lower(schema_name)='{$dbschema}' and lower(table_name)='{$table}'";
 	 	$recs=hanaQueryResults($query);
+	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
 	 		return (integer)$recs[0]['cnt'];
 	 	}

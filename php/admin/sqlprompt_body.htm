@@ -171,10 +171,11 @@
 
 <view:tabledetails>
 	<div style="border-bottom:1px solid #ccc;margin-bottom:15px;">
-		<div style="margin-bottom:10px;display:flex;justify-content: space-between;align-items: center;">
-			<a href="#" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list-small"></span> Last</a>
-			<a href="#" class="w_link" onclick="return sqlpromptCountRecords('<?=$table;?>');"><span class="icon-circle-empty"></span> Count</a>
-			<a href="#" class="w_link" onclick="return sqlpromptDDL('<?=$table;?>');"><span class="icon-database-empty"></span> DDL</a>
+		<div style="margin-bottom:10px;display:flex;justify-content: flex-start;align-items: center;">
+			<a href="#" title="Last" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-last"></span></a>
+			<a href="#" title="List" class="w_link" style="margin-left:10px;" onclick="return sqlpromptListRecords('<?=$table;?>');"><span class="icon-list"></span></a>
+			<a href="#" title="Count" class="w_link" style="margin-left:10px;" onclick="return sqlpromptCountRecords('<?=$table;?>');"><span class="icon-circle-empty"></span></a>
+			<a href="#" title="DDL" class="w_link" style="margin-left:10px;" onclick="return sqlpromptDDL('<?=$table;?>');"><span class="icon-database-empty"></span></a>
 		</div>
 		<?=renderView('fields',$fields,'fields');?>
 		<?=renderView('indexes',$indexes,'indexes');?>
@@ -193,6 +194,10 @@
 <view:showlist>
 	<?=sqlpromptShowlist($recs,$listopts);?>
 </view:showlist>
+
+<view:list_records>
+	<?=sqlpromptListRecords($table);?>
+</view:list_records>
 
 <view:centerpop>
 <div class="w_centerpop_title"><?=$title;?></div>

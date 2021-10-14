@@ -58,6 +58,26 @@ function sqlpromptShowlist($recs,$listopts=array()){
 	//unset($opts['-list']);echo printValue($opts);exit;
 	return databaseListRecords($opts);
 }
+function sqlpromptListRecords($table,$listopts=array()){
+	$opts=array(
+		'-table'=>$table,
+		'-tableclass'=>'table bordered striped responsive',
+		'-sorting'=>1,
+		'-onsubmit'=>"return pagingSubmit(this,'sqlprompt_results');",
+		'_menu'=>'sqlprompt',
+		'setprocessing'=>0,
+		'func'=>'list_records',
+		'db'=>$_SESSION['db']['name'],
+		'table'=>$table
+	);
+	if(is_array($listopts) && count($listopts)){
+		foreach($listopts as $k=>$v){
+			$opts[$k]=$v;
+		}
+	}
+	//return printValue($_SESSION['db']).printValue($opts);
+	return dbListRecords($_SESSION['db']['name'],$opts);
+}
 function sqlpromptCaptureFirstRows($rec,$max=30){
 	global $recs;
 	global $sqlpromptCaptureFirstRows_count;

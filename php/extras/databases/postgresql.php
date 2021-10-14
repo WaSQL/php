@@ -933,15 +933,22 @@ function postgresqlExecuteSQL($query,$return_error=1){
 * @describe returns a record count based on params
 * @param params array - requires either -list or -table or a raw query instead of params
 *	-table string - table name.  Use this with other field/value params to filter the results
-*	[-host] -  server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array
 * @usage $cnt=postgresqlGetDBCount(array('-table'=>'states'));
 */
 function postgresqlGetDBCount($params=array()){
+	global $CONFIG;
+	global $DATABASE;
 	if(!isset($params['-table'])){return null;}
+	$parts=preg_split('/\./',$params['-table']);
+	if(count($parts)==2){
+		$dbschema=strtolower($parts[0]);
+		$table=strtolower($parts[1]);
+	}
+	else{
+		$dbschema=strtolower($DATABASE[$CONFIG['db']]['dbschema']);
+		$table=strtolower($params['-table']);
+	}
 	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetDBSchema();
 		if(strlen($schema)){
@@ -955,9 +962,10 @@ function postgresqlGetDBCount($params=array()){
 	//$params['-debug']=1;
 	$params['-queryonly']=1;
 	$query=postgresqlGetDBRecords($params);
-	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
-	 	$query="SELECT schemaname,relname,n_live_tup as cnt FROM pg_stat_user_tables where schemaname='{$CONFIG['dbname']}' and relname='{$params['-table']}'";
+	if(!stringContains($query,'where') && strlen($dbschema)){
+	 	$query="SELECT schemaname,relname,n_live_tup as cnt FROM pg_stat_user_tables where lower(schemaname)='{$dbschema}' and lower(relname)='{$table}'";
 	 	$recs=postgresqlQueryResults($query);
+	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
 	 		return (integer)$recs[0]['cnt'];
 	 	}
@@ -1583,11 +1591,11 @@ function postgresqlGetDBRecords($params){
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
-			if(!strlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
 			if(is_array($params[$k])){
 	            $params[$k]=implode(':',$params[$k]);
 			}
+			elseif(!strlen(trim($params[$k]))){continue;}	
 	        $params[$k]=str_replace("'","''",$params[$k]);
 	        switch(strtolower($fields[$k])){
 	        	case 'char':

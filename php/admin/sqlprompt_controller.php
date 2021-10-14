@@ -61,6 +61,11 @@
 			setView('monitor_sql',1);
 			return;
 		break;
+		case 'list_records':
+			$table=addslashes($_REQUEST['table']);
+			setView('list_records',1);
+			return;
+		break;
 		case 'count_records':
 			$table=addslashes($_REQUEST['table']);
 			switch(strtolower($db['dbtype'])){

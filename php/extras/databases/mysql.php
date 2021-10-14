@@ -484,6 +484,14 @@ function mysqlDelDBRecordById($table='',$id=0){
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	return mysqlDelDBRecord($params);
 }
+//---------- begin function mysqlListRecords
+/**
+* @describe returns an html table of records from a mmsql database. refer to databaseListRecords
+*/
+function mysqlListRecords($params=array()){
+	$params['-database']='mysql';
+	return databaseListRecords($params);
+}
 //---------- begin function mysqlParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
@@ -843,6 +851,40 @@ function mysqlExecuteSQL($query,$params=array()){
 	mysqli_close($dbh_mysql);
 	return true;
 }
+//---------- begin function mysqlGetDBCount--------------------
+/**
+* @describe returns a record count based on params
+* @param params array - requires either -list or -table or a raw query instead of params
+*	-table string - table name.  Use this with other field/value params to filter the results
+* @return array
+* @usage $cnt=mysqlGetDBCount(array('-table'=>'states'));
+*/
+function mysqlGetDBCount($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
+	$params['-fields']="count(*) as cnt";
+	unset($params['-order']);
+	unset($params['-limit']);
+	unset($params['-offset']);
+	$params['-queryonly']=1;
+	$query=mysqlGetDBRecords($params);
+	//echo "HERE".$query.printValue($params);exit;
+	if(!stringContains($query,'where')){
+	 	$query="select table_rows from information_schema.tables where table_schema='{$dbname}' and table_name='{$params['-table']}'";
+	 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+	 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
+	 		return (integer)$recs[0]['table_rows'];
+	 	}
+	}
+	$recs=mysqlQueryResults($query);
+	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
+	if(!isset($recs[0]['cnt'])){
+		debugValue($recs);
+		return 0;
+	}
+	return $recs[0]['cnt'];
+}
 //---------- begin function mysqlGetDBFieldInfo--------------------
 /**
 * @describe returns an array containing type,length, and flags for each field in said table
@@ -1051,6 +1093,8 @@ function mysqlGetDBRecords($params){
 	    	return null;
 		}
 		$query=mysqlGetDBQuery($params);
+		if(isset($params['-debug'])){return $query;}
+		if(isset($params['-queryonly'])){return $query;}
 		return mysqlQueryResults($query,$params);
 	}
 }

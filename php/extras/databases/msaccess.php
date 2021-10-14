@@ -210,14 +210,13 @@ function msaccessExecuteSQL($query,$return_error=1){
 * @describe returns a record count based on params
 * @param params array - requires either -list or -table or a raw query instead of params
 *	-table string - table name.  Use this with other field/value params to filter the results
-*	[-host] -  server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * @return array
 * @usage $cnt=msaccessGetDBCount(array('-table'=>'states'));
 */
 function msaccessGetDBCount($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
 	if(!isset($params['-table'])){return null;}
 	if(!stringContains($params['-table'],'.')){
 		$schema=msaccessGetDBSchema();
@@ -301,6 +300,12 @@ function msaccessGetDBFieldInfo($table){
 	try{
 		$dbh_msaccess=msaccessDBConnect();
 		$result = odbc_exec($dbh_msaccess, $query);
+		if(!$result){
+			$e=odbc_errormsg($dbh_msaccess);
+			$error=array("odbcQueryResults Error",$e,$query);
+			debugValue($error);
+			return json_encode($error);
+		}
 		$recs=array();
 		for($i=1;$i<=odbc_num_fields($result);$i++){
 			$field=strtolower(odbc_field_name($result,$i));

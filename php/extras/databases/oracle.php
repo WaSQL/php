@@ -1422,15 +1422,28 @@ function oracleGetActiveSessionCount($params=array()){
 * @usage $cnt=oracleGetDBCount(array('-table'=>'states'));
 */
 function oracleGetDBCount($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	if(!isset($params['-table'])){return null;}
+	$parts=preg_split('/\./',$params['-table']);
+	if(count($parts)==2){
+		$dbschema=strtolower($parts[0]);
+		$table=strtolower($parts[1]);
+	}
+	else{
+		$dbschema=strtolower($DATABASE[$CONFIG['db']]['dbschema']);
+		$table=strtolower($params['-table']);
+	}
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
 	$params['-queryonly']=1;
 	$query=oracleGetDBRecords($params);
-	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
-	 	$query="SELECT owner,table_name,num_rows as cnt FROM dba_tables where owner='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	if(!stringContains($query,'where') && strlen($dbschema)){
+	 	$query="SELECT owner,table_name,num_rows as cnt FROM dba_tables where lower(owner)='{$dbschema}' and lower(table_name)='{$table}'";
 	 	$recs=oracleQueryResults($query);
+	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
 	 		return (integer)$recs[0]['cnt'];
 	 	}
@@ -1749,8 +1762,11 @@ function oracleGetDBRecords($params){
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
-			if(!strlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
+			if(is_array($params[$k])){
+	            $params[$k]=implode(':',$params[$k]);
+			}
+			elseif(!strlen(trim($params[$k]))){continue;}
 			//check for lobs
 			if($fields[$k]['_dbtype']=='clob' && !isset($params['-lobs'])){$params['-lobs']=1;}
 			if(is_array($params[$k])){
