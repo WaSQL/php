@@ -673,9 +673,9 @@ function wcommerceGetProductAttributes($name){
 	$q=<<<ENDOFQ
 	select 
 		name,
-		group_concat(distinct color ORDER BY sort_color SEPARATOR ';') as colors,
-		group_concat(distinct size ORDER BY sort_size SEPARATOR ';') as sizes,
-		group_concat(distinct material ORDER BY sort_material SEPARATOR ';') as materials
+		group_concat(distinct color ORDER BY sort_color,sort_size,sort_material SEPARATOR ';') as colors,
+		group_concat(distinct size ORDER BY sort_size,sort_color,sort_material SEPARATOR ';') as sizes,
+		group_concat(distinct material ORDER BY sort_material,sort_color,sort_size SEPARATOR ';') as materials
 	from wcommerce_products
 	WHERE active=1 and quantity > 0
 	group by name
