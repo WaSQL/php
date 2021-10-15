@@ -246,6 +246,7 @@ function dbAddRecord($db,$params=array()){
 *	[-recs] - arrray of records to add
 * 	[-csv] - path to csv file of records to add
 * 	[-map] - array of key=>newkey mapping
+* 	[-upsert]  string - comma separated list of fields to update if the record already exists.  
 * @return integer returns the number of records added
 * @usage $cnt=dbAddRecords($db,array('-table'=>'abc','-list'=>$recs));
 */

@@ -99,9 +99,23 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$params['-upsert']=array('ignore');
 	}
 	$ignore='';
-	if(strtolower($params['-upsert'][0])=='ignore'){
+	if(isset($params['-upsert'][0]) && strtolower($params['-upsert'][0])=='ignore'){
 		$ignore='IGNORE';
 		unset($params['-upsert']);
+	}
+	elseif(isset($params['-upsert'][0]) && isset($fieldinfo['_euser'])){
+		//update _edate and _euser if editing the record
+		$edate=date('Y-m-d H:i:s');
+		$eu=in_array('_euser',$params['-upsert']);
+		$ed=in_array('_edate',$params['-upsert']);
+		foreach($recs as $i=>$rec){
+			if($eu && !isset($recs[$i]['_euser'])){
+				$recs[$i]['_euser']=$USER['_id'];
+			}
+			if($ed && !isset($recs[$i]['_edate'])){
+				$recs[$i]['_edate']=$edate;
+			}
+		}
 	}
 	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
