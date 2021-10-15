@@ -49,6 +49,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
+	global $USER;
 	if(!isset($params['-table'])){
 		$err="mysqlAddDBRecordsProcess Error: no table";
 		debugValue($err); 
@@ -56,6 +57,18 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	$table=$params['-table'];
 	$fieldinfo=mysqlGetDBFieldInfo($table,1);
+	//add _cdate and _cuser if table has those fields
+	if(isset($fieldinfo['_cuser'])){
+		$cdate=date('Y-m-d H:i:s');
+		foreach($recs as $i=>$rec){
+			if(!isset($recs[$i]['_cuser'])){
+				$recs[$i]['_cuser']=$USER['_id'];
+			}
+			if(!isset($recs[$i]['_cdate'])){
+				$recs[$i]['_cdate']=$cdate;
+			}
+		}
+	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
