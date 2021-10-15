@@ -197,7 +197,7 @@ function writeFiles(){
 	if($postedit['firsttime']==1){
 		echo " - Calling {$url}".PHP_EOL;
 	}
-	$tables=isset($postedit['tables'])?$postedit['tables']:'_pages,_templates,_models';
+	$tables=isset($postedit['tables'])?$postedit['tables']:'_pages,_templates,_models,_prompts';
 	$postopts=array(
 		'apikey'	=>$postedit['apikey'],
 		'username'	=>$postedit['username'],
@@ -275,6 +275,7 @@ function writeFiles(){
 	    	$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
 	    	$name=trim($name);
 	    	//extension
+	    	//echo "{$name} -- {$field}".PHP_EOL;
 	    	switch(strtolower($field)){
 	        	case 'js':
 					$ext='js';
@@ -293,7 +294,13 @@ function writeFiles(){
 					$type='models';
 				break;
 	        	default:
-	        		$ext='html';
+	        		switch(strtolower($name)){
+	        			case 'php_prompt':$ext='php';break;
+	        			case 'python_prompt':$ext='py';break;
+	        			case 'sql_prompt':$ext='sql';break;
+	        			case 'json_prompt':$ext='json';break;
+	        			default:$ext='html';break;
+	        		}
 	        		$type='views';
 	        	break;
 			}
@@ -346,7 +353,7 @@ function writeFiles(){
 }
 function posteditGetLocalShas(){
 	global $postedit;
-	$tables=isset($postedit['tables'])?$postedit['tables']:'_pages,_templates,_models';
+	$tables=isset($postedit['tables'])?$postedit['tables']:'_pages,_templates,_models,_prompts';
 	$tables=preg_split('/\,/',$tables);
 	//echo $chost.printValue($hosts[$chost]).printValue($tables);exit;
 	$json=array();

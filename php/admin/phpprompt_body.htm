@@ -6,6 +6,9 @@
 			return phppromptSubmit(document.phpprompt);
         }
 	}
+	function phppromptSetFunc(v){
+		document.phpprompt.func.value=v;
+	}
 	function phppromptFields(table){
 		var t=getText(table+'_fields');
 		if(t.length){
@@ -33,8 +36,14 @@
 				<input type="hidden" name="_menu" value="phpprompt">
 				<input type="hidden" name="func" value="php">
 				<input type="hidden" name="php_select" value="">
-				<textarea class="form-control" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;" placeholder="PHP Code" id="php_full" name="php_full"><?=$_SESSION['php_full'];?></textarea>
-				<div class="w_padtop"><button type="submit" class="btn w_blue">Run</button> <span class="w_small w_grey">(or press F8)</span></div>
+				<textarea class="form-control" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;padding:10px;" placeholder="PHP Code" id="php_full" name="php_full"><?=phppromptGetValue();?></textarea>
+				<div class="w_padtop" style="display:flex;justify-content: space-between;">
+					<button type="submit" onclick="phppromptSetFunc('php');" class="btn w_blue">Run Input Contents</button>
+					<div>
+						<button type="submit" onclick="phppromptSetFunc('php_prompt_load');" class="btn w_yellow">Load php_prompt</button>
+						<button type="submit" onclick="phppromptSetFunc('php_prompt');" class="btn w_green">Load & Run php_prompt</button>
+					</div>
+				</div>
 			</form>
 			<div id="phpprompt_results" class="w_padtop"></div>
 		</div>
@@ -43,6 +52,15 @@
 
 <view:results>
 	<pre><?=$results;?></pre>
+	<view:php_prompt>
+		<textarea id="php_prompt" style="display:none"><?=$php_full;?></textarea>
+	<?=buildOnLoad("document.phpprompt.reset();setText('php_full',getText('php_prompt'));");?>
+	</view:php_prompt>
 </view:results>
+
+<view:php_prompt_load>
+	<textarea id="php_prompt" style="display:none"><?=$php_full;?></textarea>
+	<?=buildOnLoad("document.phpprompt.reset();setText('php_full',getText('php_prompt'));");?>
+</view:php_prompt_load>
 
 

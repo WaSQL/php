@@ -1146,17 +1146,20 @@ function sqliteGetDBFieldInfo($tablename,$params=array()){
 * @usage $cnt=sqliteGetDBCount(array('-table'=>'states'));
 */
 function sqliteGetDBCount($params=array()){
+	if(!isset($params['-table'])){return null;}
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
 	$params['-queryonly']=1;
 	$query=sqliteGetDBRecords($params);
-	if(1==2 && !stringContains($query,'where') && strlen($CONFIG['dbname'])){
-	 	$query="SELECT schema_name,table_name,record_count as cnt FROM dba_tables where schema_name='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
+	if(!stringContains($query,'where')){
+	 	$query="SELECT tbl,stat FROM sqlite_stat1 where tbl='{$params['-table']}' limit 1";
 	 	$recs=sqliteQueryResults($query);
-	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
-	 		return (integer)$recs[0]['cnt'];
+	 	//echo "HERE".$query.printValue($recs);exit;
+	 	if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
+	 		$parts=preg_split('/\ /',$recs[0]['stat'],2);
+	 		return (integer)$parts[0];
 	 	}
 	}
 	$recs=sqliteQueryResults($query);

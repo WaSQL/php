@@ -284,7 +284,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_fielddata':
 			$fields['behavior']=databaseDataType('varchar(255)')." NULL";
 			$fields['defaultval']=databaseDataType('varchar(255)')." NULL";
@@ -368,7 +368,27 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
+		case '_prompts':
+			$fields['name']=databaseDataType('varchar(150)')." NOT NULL";
+			$fields['body']=databaseDataType('mediumtext')." NULL";
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser,name",'-unique'=>1));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser"));
+			//Add tabledata
+			$addopts=array('-table'=>"_tabledata",
+				'tablename'		=> $table,
+				'formfields'	=> "name\r\nbody",
+				'listfields'	=> "_cuser\r\nname",
+				'sortfields'	=> "_cuser, name",
+				'-upsert'		=> 'formfields,listfields,sortfields'
+				);
+			$id=addDBRecord($addopts);
+			addMetaData($table);
+			return 1;
+		break;
 		case '_tiny':
 			$fields['url']="varchar(2100) NOT NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
@@ -2430,6 +2450,23 @@ function addMetaData($table=''){
 				'-upsert'		=> 'inputtype,width,mask,required'
 				));
 			break;
+		case '_prompts':
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_prompts',
+				'fieldname'		=> 'name',
+				'inputtype'		=> 'text',
+				'width'			=> 600,
+				'-upsert'		=> 'inputtype,width,height'
+				));
+			$id=addDBRecord(array('-table'=>"_fielddata",
+				'tablename'		=> '_prompts',
+				'fieldname'		=> 'body',
+				'inputtype'		=> 'textarea',
+				'width'			=> 600,
+				'height'		=> 250,
+				'-upsert'		=> 'inputtype,width,height'
+				));
+		break;
 		case '_models':
 			$id=addDBRecord(array('-table'=>'_fielddata',
 				'tablename'		=> '_models',
@@ -2564,7 +2601,7 @@ function getWasqlTables(){
 		'_fielddata','_tabledata','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
-		'_reports','_models','_sessions','_html_entities','_posteditlog','_config'
+		'_reports','_models','_sessions','_html_entities','_posteditlog','_config','_prompts'
 		);
 	//include wpass table?
 	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}

@@ -14145,6 +14145,7 @@ function crc32File($afile) {            // Creates a CRC from a file
 */
 function postEditXmlFromJson($json=array()){
 	if(!is_array($json)){return null;}
+	global $USER;
 	//build XML
 	$xml=xmlHeader(array('version'=>"1.0",'encoding'=>"utf-8"));
 	$xml .= "<xmlroot>".PHP_EOL;
@@ -14187,6 +14188,11 @@ function postEditXmlFromJson($json=array()){
 		}
 		$fieldstr=implode(',',$fields);
 		$q="select _id,_cdate,_cuser,_edate,_euser,name,{$fieldstr} from {$table}";
+		switch(strtolower($table)){
+			case '_prompts':
+				$q.=" where _cuser={$USER['_id']}";
+			break;
+		}
 		$recs=getDBRecords($q);
 		if(!is_array($recs)){continue;}
 		$recs_count=count($recs);
@@ -15408,7 +15414,7 @@ function processActions(){
 					if($action=='POSTEDIT' && isset($_REQUEST['_md5']) && strlen($_REQUEST['_md5']) && count($fields)==1){
 						$fld=$fields[0];
 						$fld_md5=md5(trim($rec[$fld]));
-						if($fld_md5 != $_REQUEST['_md5']){
+						if(strtolower($_REQUEST['_table']) != '_prompts' && $fld_md5 != $_REQUEST['_md5']){
 							$username=$rec['_euser_ex']['username'];
 							echo "<timestamp>{$timestamp}</timestamp>";
 							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}). Local MD5:{$_REQUEST['_md5']}, DB MD5:{$fld_md5}</fatal_error>";
