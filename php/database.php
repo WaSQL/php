@@ -227,12 +227,8 @@ function dbAddIndex($db,$params=array()){
 /**
 * @describe adds a record
 * @param db string - database name as specified in the database section of config.xml
-* @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+* @param $params array
 *   -table - name of the table to add to
-*	[-host] - postgresql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
 * 	other field=>value pairs to add to the record
 * @return integer returns the autoincriment key
 * @usage $id=dbAddRecord($db,array('-table'=>'abc','name'=>'bob','age'=>25));
@@ -244,9 +240,12 @@ function dbAddRecord($db,$params=array()){
 /**
 * @describe adds a record
 * @param db string - database name as specified in the database section of config.xml
-* @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
+* @param $table string - table name to add records to
+* @param $params array - 
 *   -table - name of the table to add to
-*	-list - records to add
+*	[-recs] - arrray of records to add
+* 	[-csv] - path to csv file of records to add
+* 	[-map] - array of key=>newkey mapping
 * @return integer returns the number of records added
 * @usage $cnt=dbAddRecords($db,array('-table'=>'abc','-list'=>$recs));
 */
