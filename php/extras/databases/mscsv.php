@@ -219,8 +219,10 @@ function mscsvGetDBFieldInfo($table){
 		$dbh_mscsv = mscsvDBConnect();
 		$result = odbc_exec($dbh_mscsv, $query);
 		$recs=array();
+		//echo "{$query}<br>";
 		for($i=1;$i<=odbc_num_fields($result);$i++){
 			$field=strtolower(odbc_field_name($result,$i));
+			//echo "{$i}.{$field}<br>";
 	        $recs[$field]=array(
 	        	'table'		=> $table,
 	        	'_dbtable'	=> $table,
@@ -294,7 +296,7 @@ function mscsvGetDBRecords($params){
 			$params=array();
 		}
 		else{
-			echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
+			//echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
 			$ok=mscsvExecuteSQL($params);
 			return $ok;
 		}
@@ -321,8 +323,11 @@ function mscsvGetDBRecords($params){
 		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
-			if(!is_array($params['-fields'])){
+			if(!is_array($params['-fields'])){;
 				$params['-fields']=preg_split('/\,/',$params['-fields']);
+				foreach($params['-fields'] as $i=>$field){
+					$params['-fields'][$i]=trim($field);
+				}
 			}
 			$params['-fields']=implode(',',$params['-fields']);
 		}

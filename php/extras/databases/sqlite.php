@@ -1154,15 +1154,17 @@ function sqliteGetDBCount($params=array()){
 	$params['-queryonly']=1;
 	$query=sqliteGetDBRecords($params);
 	if(!stringContains($query,'where')){
-	 	$query="SELECT tbl,stat FROM sqlite_stat1 where tbl='{$params['-table']}' limit 1";
-	 	$recs=sqliteQueryResults($query);
-	 	//echo "HERE".$query.printValue($recs);exit;
+	 	$query1="SELECT tbl,stat FROM sqlite_stat1 where tbl='{$params['-table']}' limit 1";
+	 	$recs=sqliteQueryResults($query1);
+	 	//echo "HERE".$query.printValue($recs);
 	 	if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
 	 		$parts=preg_split('/\ /',$recs[0]['stat'],2);
 	 		return (integer)$parts[0];
 	 	}
 	}
+	//echo "HERE".$query.printValue($params);
 	$recs=sqliteQueryResults($query);
+	//echo "HERE2".$query.printValue($recs);exit;
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
 		debugValue($recs);
@@ -1385,9 +1387,11 @@ function sqliteGetDBRecords($params){
 	else{
 		//determine fields to return
 		if(!empty($params['-fields'])){
-			if(!is_array($params['-fields'])){
-				$params['-fields']=str_replace(' ','',$params['-fields']);
+			if(!is_array($params['-fields'])){;
 				$params['-fields']=preg_split('/\,/',$params['-fields']);
+				foreach($params['-fields'] as $i=>$field){
+					$params['-fields'][$i]=trim($field);
+				}
 			}
 			$params['-fields']=implode(',',$params['-fields']);
 		}

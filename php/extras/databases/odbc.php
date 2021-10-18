@@ -832,9 +832,11 @@ function odbcGetDBRecords($params){
 	else{
 		//determine fields to return
 		if(!empty($params['-fields'])){
-			if(!is_array($params['-fields'])){
-				$params['-fields']=str_replace(' ','',$params['-fields']);
+			if(!is_array($params['-fields'])){;
 				$params['-fields']=preg_split('/\,/',$params['-fields']);
+				foreach($params['-fields'] as $i=>$field){
+					$params['-fields'][$i]=trim($field);
+				}
 			}
 			$params['-fields']=implode(',',$params['-fields']);
 		}

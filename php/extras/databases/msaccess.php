@@ -413,7 +413,7 @@ function msaccessGetDBRecords($params){
 			$params=array();
 		}
 		else{
-			echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
+			//echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
 			$ok=msaccessExecuteSQL($params);
 			return $ok;
 		}
@@ -440,8 +440,11 @@ function msaccessGetDBRecords($params){
 		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
-			if(!is_array($params['-fields'])){
+			if(!is_array($params['-fields'])){;
 				$params['-fields']=preg_split('/\,/',$params['-fields']);
+				foreach($params['-fields'] as $i=>$field){
+					$params['-fields'][$i]=trim($field);
+				}
 			}
 			$params['-fields']=implode(',',$params['-fields']);
 		}
