@@ -1468,63 +1468,63 @@ function userGetUserCryptKey($id){
 * returns the User Login Form.
 * @return string
 * @param array $params - any additional parameters to be included.
-*	[title] text - sets a title above the login form. No Default
-*	[form_action] text - sets the action attribute in the form tag. Defauls to the current page you are viewing
-*	[form_onsubmit] text - sets the onsubmit attribute in the form tag. Default is "return submitForm(this);"
-*	[form_class] text - sets the class attribute in the form tag. Default is "w_form"
-*	[form_name] text - sets the name attribute in the form tag. Default is "login"
-*	[form_id] text - sets the id attribute in the form tag. Default is "loginform"
-*	[form_method] text - sets the method attribute in the form tag. Default is "POST"
-*	[form_style] text - sets the style attribute in the form tag. No Default
+*	[-title] text - sets a title above the login form. No Default
+*	[-form_action] text - sets the action attribute in the form tag. Defauls to the current page you are viewing
+*	[-form_onsubmit] text - sets the onsubmit attribute in the form tag. Default is "return submitForm(this);"
+*	[-form_class] text - sets the class attribute in the form tag. Default is "w_form"
+*	[-form_name] text - sets the name attribute in the form tag. Default is "login"
+*	[-form_id] text - sets the id attribute in the form tag. Default is "loginform"
+*	[-form_method] text - sets the method attribute in the form tag. Default is "POST"
+*	[-form_style] text - sets the style attribute in the form tag. No Default
 
-*	[username_name] text - sets the name for the username field. Supported options are username,email,phone. Default is "username"
-*	[username_text] text - sets the placeholder text for the username field. Default is "Username"
-*	[username_class] text - sets the class for the username field. Default is "browser-default w_input-append"
-*	[username_style] text - sets the style for the username field. No Default
-*	[username_id] text - sets the id for the username field. Default is "loginform_username"
-*	[username_title] text - sets the title attribute for the username field. No Default
+*	[-username_name] text - sets the name for the username field. Supported options are username,email,phone. Default is "username"
+*	[-username_text] text - sets the placeholder text for the username field. Default is "Username"
+*	[-username_class] text - sets the class for the username field. Default is "browser-default w_input-append"
+*	[-username_style] text - sets the style for the username field. No Default
+*	[-username_id] text - sets the id for the username field. Default is "loginform_username"
+*	[-username_title] text - sets the title attribute for the username field. No Default
 
-*	[username_pre_text] text - sets the icon prepended before the username field . Default is <span class="icon-user"></span>
-*	[username_pre_class] text - sets the icon class of the icon prepended before the username field . Default is "icon-user"
-*	[username_pre_style] text - sets the icon style of the icon prepended before the username field . No Default
-*	[username_pre_id] text - sets the icon id of the icon prepended before the username field . No Default
-*	[username_pre_title] text - sets the title attribute. No Default
+*	[-username_pre_text] text - sets the icon prepended before the username field . Default is <span class="icon-user"></span>
+*	[-username_pre_class] text - sets the icon class of the icon prepended before the username field . Default is "icon-user"
+*	[-username_pre_style] text - sets the icon style of the icon prepended before the username field . No Default
+*	[-username_pre_id] text - sets the icon id of the icon prepended before the username field . No Default
+*	[-username_pre_title] text - sets the title attribute. No Default
 
-*	[username_post_text] text - sets the icon appended after the username field . No Default
-*	[username_post_class] text - sets the icon class of the icon appended after the username field . No Default
-*	[username_post_style] text - sets the icon style of the icon appended after the username field . No Default
-*	[username_post_id] text - sets the icon id of the icon appended after the username field . No Default
-*	[username_post_title] text - sets the title attribute. No Default
+*	[-username_post_text] text - sets the icon appended after the username field . No Default
+*	[-username_post_class] text - sets the icon class of the icon appended after the username field . No Default
+*	[-username_post_style] text - sets the icon style of the icon appended after the username field . No Default
+*	[-username_post_id] text - sets the icon id of the icon appended after the username field . No Default
+*	[-username_post_title] text - sets the title attribute. No Default
 
-*	[password_text] text - sets the placeholder text for the password field. Default is "password"
-*	[password_class] text - sets the class for the password field. Default is "browser-default w_input-append"
-*	[password_style] text - sets the style for the password field. No Default
-*	[password_id] text - sets the id for the password field. Default is "loginform_password"
-*	[password_title] text - sets the title attribute. No Default
+*	[-password_text] text - sets the placeholder text for the password field. Default is "password"
+*	[-password_class] text - sets the class for the password field. Default is "browser-default w_input-append"
+*	[-password_style] text - sets the style for the password field. No Default
+*	[-password_id] text - sets the id for the password field. Default is "loginform_password"
+*	[-password_title] text - sets the title attribute. No Default
 
-*	[password_pre_text] text - sets the icon prepended before the password field . Default is <span class="icon-lock"></span>
-*	[password_pre_class] text - sets the icon class of the icon prepended before the password field . Default is "icon-lock"
-*	[password_pre_style] text - sets the icon style of the icon prepended before the password field . No Default
-*	[password_pre_id] text - sets the icon id of the icon prepended before the password field . No Default
-*	[password_pre_title] text - sets the title attribute. No Default
+*	[-password_pre_text] text - sets the icon prepended before the password field . Default is <span class="icon-lock"></span>
+*	[-password_pre_class] text - sets the icon class of the icon prepended before the password field . Default is "icon-lock"
+*	[-password_pre_style] text - sets the icon style of the icon prepended before the password field . No Default
+*	[-password_pre_id] text - sets the icon id of the icon prepended before the password field . No Default
+*	[-password_pre_title] text - sets the title attribute. No Default
 
-*	[password_post_text] text - sets the icon appended after the password field . No Default
-*	[password_post_class] text - sets the icon class of the icon appended after the password field . No Default
-*	[password_post_style] text - sets the icon style of the icon appended after the password field . No Default
-*	[password_post_id] text - sets the icon id of the icon appended after the password field . No Default
-*	[password_post_title] text - sets the title attribute. No Default
+*	[-password_post_text] text - sets the icon appended after the password field . No Default
+*	[-password_post_class] text - sets the icon class of the icon appended after the password field . No Default
+*	[-password_post_style] text - sets the icon style of the icon appended after the password field . No Default
+*	[-password_post_id] text - sets the icon id of the icon appended after the password field . No Default
+*	[-password_post_title] text - sets the title attribute. No Default
 
-*	[remind_text] text - sets the text for the "remind me" link. Default is "Remind Me". If blank then no remind link will be shown
-*	[remind_class] text - sets the class for the remind link. No Default
-*	[remind_style] text - sets the class for the remind link. No Default
-*	[remind_id] text - sets the id for the remind link. No Default
-*	[remind_title] text - sets the title attribute. Default is "Click here if you need your login information emailed to you."
+*	[-remind_text] text - sets the text for the "remind me" link. Default is "Remind Me". If blank then no remind link will be shown
+*	[-remind_class] text - sets the class for the remind link. No Default
+*	[-remind_style] text - sets the class for the remind link. No Default
+*	[-remind_id] text - sets the id for the remind link. No Default
+*	[-remind_title] text - sets the title attribute. Default is "Click here if you need your login information emailed to you."
 
-*	[login_text] text - sets the text for the login button. Default is "Login".
-*	[login_class] text - sets the class for the login button. No Default
-*	[login_style] text - sets the class for the login button. No Default
-*	[login_id] text - sets the id for the login button. No Default
-*	[login_title] text - sets the title attribute. No Default
+*	[-login_text] text - sets the text for the login button. Default is "Login".
+*	[-login_class] text - sets the class for the login button. No Default
+*	[-login_style] text - sets the class for the login button. No Default
+*	[-login_id] text - sets the id for the login button. No Default
+*	[-login_title] text - sets the title attribute. No Default
 
 *	Additional params are passed through as hidden key/value pairs
 * @usage
