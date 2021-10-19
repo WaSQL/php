@@ -156,9 +156,16 @@ function msaccessDBConnect(){
 		$connection.GetSchema('Views') 
 
 	*/
+	//Driver,Dbq,Uid,Pwd,SystemDB,Exclusive=1,ExtendedAnsiSQL=1,Locale Identifier=2057
 	$parts=array(
 		'Driver={Microsoft Access Driver (*.mdb, *.accdb)}',
 		"Dbq={$params['-dbname']}",
+		"ExtendedAnsiSQL=1",
+		"Uid=admin",
+		"Pwd=",
+		"Threads=4",
+		"MaxBufferSize=4096",
+		"PageTimeout=5"
 	);
 	$params['-connect']=implode(';',$parts);
 	$dbh_msaccess = odbc_connect($params['-connect'], $params['-dbuser'],$params['-dbpass']);
