@@ -676,7 +676,48 @@ function commonCronPauseGroup($group,$email='',$params=array()){
 	}
 	return $ok;
 }
-
+//---------- begin function commonCronRunNow
+/**
+* @describe sets cron(s) to run now
+* @param crons mixed - id, array of ids, comma separated list of ids, name, comma separated list of names, or array of names
+* @return bool boolean - 1 or 0 based on if it succeeded
+* @usage 
+*	$cnt=commonCronRunNow(1);
+* 	$cnt=commonCronRunNow(array(1,4));
+* 	$cnt=commonCronRunNow('1,5');
+* 	$cnt=commonCronRunNow('cron_one');
+* 	$cnt=commonCronRunNow(array('cron_one','cron_two'));
+* 	$cnt=commonCronRunNow('cron_one,cron_two');
+*/
+function commonCronRunNow($crons){
+	if(!is_array($crons)){
+		$crons=preg_split('/\,/',$crons);
+	}
+	if(!count($crons)){return 0;}
+	$ids=array();
+	$names=array();
+	foreach($crons as $cron){
+		$cron=trim($cron);
+		if(!strlen($cron)){continue;}
+		if(isNum($cron)){$ids[$cron]=1;}
+		else{$names[$cron]=1;}
+	}
+	$ors=array();
+	if(count($ids)){
+		$idstr=implode(',',array_keys($ids));
+		$ors[]="_id in ({$idstr})";
+	}
+	if(count($names)){
+		$namestr=implode("','",array_keys($names));
+		$ors[]="name in ('{$namestr}')";
+	}
+	if(!count($ors)){return 0;}
+	return editDBRecord(array(
+		'-table'=>'_cron',
+		'-where'=>implode(' or ',$ors),
+		'run_now'=>1
+	));
+}
 //---------- begin function commonCronUnpause
 /**
 * @describe sets pause to 0 on the cron id

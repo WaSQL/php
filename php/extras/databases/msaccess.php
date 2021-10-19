@@ -256,7 +256,7 @@ function msaccessGetDBCount($params=array()){
 */
 function msaccessGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
-	$query="select * from {$table} where 1=0";
+	$query="select top 2 * from {$table}";
 	$params=msaccessParseConnectParams();
 	//echo "msaccessDBConnect".printValue($params);exit;
 	global $dbh_msaccess;
@@ -291,7 +291,7 @@ function msaccessGetDBFields($table,$allfields=0){
 */
 function msaccessGetDBFieldInfo($table){
 	$table=strtolower($table);
-	$query="select * from {$table} where 1=0";
+	$query="select top 2 * from {$table}";
 	$params=msaccessParseConnectParams();
 	//echo "msaccessDBConnect".printValue($params);exit;
 	global $dbh_msaccess;

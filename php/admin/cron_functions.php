@@ -140,37 +140,44 @@ function cronList(){
 		'-results_eval'=>'cronListExtra',
 		'-quickfilters'=>array(
 			array(
+				'name'=>'',
 				'icon'=>'icon-file-txt w_gray',
 				'title'=>'view log',
 				'class'=>'btn w_white',
 				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron',title:'Cron Log - all crons'});",
 			),
 			array(
+				'name'=>'',
 				'icon'=>'icon-mark w_green',
 				'title'=>'active',
 				'filter'=>'active eq 1',
 				'class'=>'btn w_white'
 			),
 			array(
+				'name'=>'',
 				'icon'=>'icon-spin8 w_danger',
 				'title'=>'paused',
 				'filter'=>'paused eq 1',
 				'class'=>'btn w_white'
 			),
 			array(
+				'name'=>'',
 				'icon'=>'icon-spin4 w_primary',
 				'title'=>'running',
 				'filter'=>'running eq 1',
 				'class'=>'btn w_white'
 			),			
 			array(
+				'name'=>'',
 				'icon'=>'icon-plus w_green',
 				'title'=>'add new',
 				'onclick'=>"return cronModal('add',0,'Add New Cron');",
 				'class'=>'btn w_white'
 			),
 			array(
+				'name'=>'',
 				'icon'=>'icon-refresh w_gray',
+				'title'=>'refresh',
 				'onclick'=>"return pagingSubmit(document.cronlistform,'cron_results');",
 				'class'=>'btn w_white'
 			)

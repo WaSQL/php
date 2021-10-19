@@ -177,7 +177,7 @@ function mscsvGetDBCount($params=array()){
 */
 function mscsvGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
-	$query="select * from {$table} where 1=0";
+	$query="select top 2 * from {$table}";
 	global $dbh_mscsv;
 	$dbh_mscsv='';
 	$fields=array();
@@ -210,7 +210,7 @@ function mscsvGetDBFields($table,$allfields=0){
 */
 function mscsvGetDBFieldInfo($table){
 	$table=strtolower($table);
-	$query="select * from {$table} where 1=0";
+	$query="select top 2 * from {$table}";
 	//echo "mscsvDBConnect".printValue($params);exit;
 	global $dbh_mscsv;
 	$dbh_mscsv='';

@@ -180,7 +180,7 @@ function msexcelGetDBCount($params=array()){
 */
 function msexcelGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
-	$query="select * from {$table} where 1=0";
+	$query="select top 2 * from {$table}";
 	global $dbh_msexcel;
 	$dbh_msexcel='';
 	$fields=array();
@@ -213,7 +213,7 @@ function msexcelGetDBFields($table,$allfields=0){
 */
 function msexcelGetDBFieldInfo($table){
 	$table=strtolower($table);
-	$query="select * from {$table} where 1=0";
+	$query="select top 2 * from {$table}";
 	//echo "msexcelDBConnect".printValue($params);exit;
 	global $dbh_msexcel;
 	$dbh_msexcel='';
