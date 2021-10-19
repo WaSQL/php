@@ -370,20 +370,35 @@ function mscsvGetDBRecords($params){
 		if(count($ands)){
 			$wherestr='WHERE '.implode(' and ',$ands);
 		}
-		//offset and limit
 		$paginate='';
     	if(!isset($params['-nolimit'])){
 	    	$offset=isset($params['-offset'])?$params['-offset']:0;
 	    	$limit=25;
 	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
 	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
-	    	$paginate = "TOP {$limit} SKIP {$offset}";
+	    	$paginate=$offset+$limit;
 	    }
-
-	    $query="SELECT {$paginate} {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    //$query="SELECT {$paginate} {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    $orderby=1;
 	    if(isset($params['-order'])){
-    		$query .= " ORDER BY {$params['-order']}";
+    		$orderby = "{$params['-order']}";
     	}
+    	if(isNum($paginate)){
+    		$query=<<<ENDOFQUERY
+				SELECT *  FROM (
+					SELECT Top {$limit} * FROM (
+				        SELECT TOP {$paginate} {$params['-fields']}
+				        FROM {$params['-table']}
+				        ORDER BY {$orderby}
+				    ) sub
+				   ORDER BY {$orderby} DESC
+				) subOrdered
+				ORDER BY {$orderby}
+ENDOFQUERY;
+		}
+		else{
+			$query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+		}
 	}
 	if(isset($params['-debug'])){return $query;}
 	if(isset($params['-queryonly'])){return $query;}

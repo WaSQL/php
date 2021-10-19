@@ -1067,7 +1067,7 @@ function databaseListRecords($params=array()){
 				if(!function_exists('msexcelGetDBFieldInfo')){
 					loadExtras('msexcel');
 				}
-				$info=mscsvGetDBFieldInfo($params['-table']);
+				$info=msexcelGetDBFieldInfo($params['-table']);
 			break;
 			case 'mssql':
 				if(!function_exists('mssqlGetDBFieldInfo')){
