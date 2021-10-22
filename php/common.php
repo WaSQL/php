@@ -2673,6 +2673,79 @@ ENDOFLOAD;
 ENDOFTAG;
 	return $tag;
 }
+//---------- begin FUNCTION buildFormMultiInput-------------------
+/**
+* @describe creates an HTML multi-input control - a control where the user enters the tval and is stores as a JSON string with the dval as the key and their entry as the value
+* @param name string
+* @param opts array  tval/dval pairs. tval will be stored in the json
+* @param params array
+* @return JSON string
+* @usage echo buildFormMultiInput('states',array('carrots','peas','oranges'),$params);
+*/
+function buildFormMultiInput($name,$opts=array(),$params=array()){
+	if(isset($params['name'])){$name=$params['name'];}
+	$name=preg_replace('/[\[\]]+$/','',$name);
+	if(!is_array($opts) || !count($opts)){return 'buildFormMultiInput Error: no opts';}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
+	//remove any characters in width
+	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	//return printValue($params);
+	if(count($dvals)==1){
+		$tag  = '<div id="'.$params['id'].'"';	
+	}
+	else{
+		if(isset($params['-stretch'])){
+			$tag  = '<div id="'.$params['id'].'" style="column-count:'.$params['width'].';width:'.$params['-stretch'].';"';
+		}
+		else{
+			$tag  = '<div id="'.$params['id'].'" style="column-count:'.$params['width'].';"';
+		}
+		
+	}
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	if(isset($params['display'])){
+		$tag .= ' data-display="'.$params['display'].'"';
+		unset($params['display']);
+	}
+	elseif(isset($params['data-display'])){
+		$tag .= ' data-display="'.$params['data-display'].'"';
+		unset($params['data-display']);
+	}
+	$tag .='>'.PHP_EOL;
+	$style=count($opts) > 4?'width:100%;':'';
+	unset($params['width']);
+	if(isset($params['value'])){
+		$params['value']=json_decode($params['value'],true);
+	}
+	//data-inputwidth
+	$inputwidth='60px';
+	if(isset($params['data-inputwidth'])){
+		$inputwidth=$params['data-inputwidth'];
+	}
+	//data-inputafter
+	$inputafter=0;
+	if(isset($params['data-inputafter']) && $params['data-inputafter']){$inputafter=1;}
+	//loop through opts
+	foreach($opts as $tval=>$dval){
+		$tag.='<div style="display: flex;justify-content: flex-start;align-items: flex-end;width:100%;padding:'.$inputpadding.';break-inside: avoid;page-break-inside: avoid;-webkit-column-break-inside: avoid;">';
+		if($inputafter==1){
+			$tag.='<label class="multiinput_text w_nowrap">'.$dval.'</label>';
+		}
+		$tag.='<input name="'."{$name}>{$tval}".'" type="text" style="border:0px;border-bottom:2px solid #CCC;width:'.$inputwidth.';border-radius:0px;padding-bottom:0px;margin:0 2px;" value="'.$params['value'][$tval].'" />';
+		if($inputafter==0){
+			$tag.='<label class="multiinput_text w_nowrap">'.$dval.'</label>';
+		}
+		$tag.='</div>';
+	}
+	$tag .= '</div>'.PHP_EOL;
+	return $tag;
+}
 //---------- begin FUNCTION buildFormMultiSelect-------------------
 /**
 * @describe creates an HTML multi-select control
@@ -15457,11 +15530,14 @@ function processActions(){
 						$fld_md5=md5(trim($rec[$fld]));
 						if(strtolower($_REQUEST['_table']) != '_prompts' && $fld_md5 != $_REQUEST['_md5']){
 							$username=$rec['_euser_ex']['username'];
-							echo "<timestamp>{$timestamp}</timestamp>";
-							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}). Local MD5:{$_REQUEST['_md5']}, DB MD5:{$fld_md5}</fatal_error>";
-							echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
-							echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
-							exit;
+							if($USER['_id'] != $rec['_euser']){
+								echo "<timestamp>{$timestamp}</timestamp>";
+								echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}). Local MD5:{$_REQUEST['_md5']}, DB MD5:{$fld_md5}</fatal_error>";
+								echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
+								echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
+								exit;
+							}
+							
 						}
 					}
 					if(isset($_REQUEST['_collection_field'])){

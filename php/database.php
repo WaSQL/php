@@ -4020,26 +4020,6 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['-style_all']) && !isset($params[$field.'_style'])){$opts['style']=$params['-style_all'];}
 				if(isset($params[$field])){$opts['value']=$params[$field];}
 				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
-				//LOAD form-control if bootstrap is loaded
-				if(!isset($opts['class'])){$opts['class']='';}
-				if(isset($params[$field.'_dname'])){
-					$dname=$params[$field.'_dname'];
-					$used[$field.'_dname']=1;
-					}
-				elseif(isset($params[$field.'_displayname'])){
-					$dname=$params[$field.'_displayname'];
-					$used[$field.'_displayname']=1;
-					}
-				elseif(isset($info['fieldinfo'][$field]['displayname']) && strlen($info['fieldinfo'][$field]['displayname'])){$dname=$info['fieldinfo'][$field]['displayname'];}
-				else{
-					$dname=str_replace('_',' ',ucfirst($field));
-					}
-				//if it is a slider control build a data map from tvals and dvals if given
-				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='slider'){
-                	if(strlen($info['fieldinfo'][$field]['tvals']) && strlen($info['fieldinfo'][$field]['tvals'])){
-                    	$opts['data-labelmap']=mapDBDvalsToTvals($params['-table'],$field);
-					}
-				}
 				//opts
 				foreach($forcedatts as $copt){
 					if(isset($params[$field.'_'.$copt])){
@@ -4057,6 +4037,33 @@ function addEditDBForm($params=array(),$customcode=''){
 							}
 					}
 				}
+				//LOAD form-control if bootstrap is loaded
+				if(!isset($opts['class'])){$opts['class']='';}
+				//displayname
+				if(isset($opts['displayname'])){
+					$dname=$opts['displayname'];
+					$used[$field.'_displayname']=1;
+				}
+				elseif(isset($params[$field.'_dname'])){
+					$dname=$params[$field.'_dname'];
+					$used[$field.'_dname']=1;
+				}
+				elseif(isset($params[$field.'_displayname'])){
+					$dname=$params[$field.'_displayname'];
+					$used[$field.'_displayname']=1;
+				}
+				elseif(isset($info['fieldinfo'][$field]['displayname']) && strlen($info['fieldinfo'][$field]['displayname'])){$dname=$info['fieldinfo'][$field]['displayname'];
+				}
+				else{
+					$dname=str_replace('_',' ',ucfirst($field));
+				}
+				//if it is a slider control build a data map from tvals and dvals if given
+				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='slider'){
+                	if(strlen($info['fieldinfo'][$field]['tvals']) && strlen($info['fieldinfo'][$field]['tvals'])){
+                    	$opts['data-labelmap']=mapDBDvalsToTvals($params['-table'],$field);
+					}
+				}
+				
 				if(isset($params[$field.'_checkall'])){
 					$opts['-checkall']=1;
 					$used[$field.'_checkall']=1;
@@ -4068,7 +4075,7 @@ function addEditDBForm($params=array(),$customcode=''){
                 	$used[$field.'_displayname_class']=1;
 				}
 				elseif(isset($params['-class'])){$class=$params['-class'];}
-				else{$class="w_arial w_smaller";}
+				else{$class="w_arial w_smallerds";}
 				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='slider'){}
 				elseif(isset($info['fieldinfo'][$field]['_required']) && $info['fieldinfo'][$field]['_required']==1){
 	                $class .= ' w_required';
@@ -4205,18 +4212,31 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(isset($params['-style_all']) && !isset($params[$field.'_style'])){$opts['style']=$params['-style_all'];}
 			if(isset($params[$field])){$opts['value']=$params[$field];}
 			if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
-			if(isset($params[$field.'_dname'])){
+			//check for field_options array - the easier, new way to override options
+			if(isset($params[$field.'_options']) && is_array($params[$field.'_options'])){
+				foreach($params[$field.'_options'] as $okey=>$oval){
+					$used[$field.'_options']=1;
+					if(stringBeginsWith($okey,'data-') || in_array($okey,$forcedatts)){$opts[$okey]=$oval;}
+				}
+			}
+			//displayname
+			if(isset($opts['displayname'])){
+				$dname=$opts['displayname'];
+				$used[$field.'_displayname']=1;
+			}
+			elseif(isset($params[$field.'_dname'])){
 				$dname=$params[$field.'_dname'];
 				$used[$field.'_dname']=1;
-				}
+			}
 			elseif(isset($params[$field.'_displayname'])){
 				$dname=$params[$field.'_displayname'];
 				$used[$field.'_displayname']=1;
-				}
-			elseif(isset($info['fieldinfo'][$field]['displayname']) && strlen($info['fieldinfo'][$field]['displayname'])){$dname=$info['fieldinfo'][$field]['displayname'];}
+			}
+			elseif(isset($info['fieldinfo'][$field]['displayname']) && strlen($info['fieldinfo'][$field]['displayname'])){$dname=$info['fieldinfo'][$field]['displayname'];
+			}
 			else{
 				$dname=str_replace('_',' ',ucfirst($field));
-				}
+			}
 			//opts
 			$forcedatts=array(
 				'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
@@ -4229,13 +4249,6 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params[$field.'_'.$copt])){
 					$opts[$copt]=$params[$field.'_'.$copt];
 					$used[$field.'_'.$copt]=1;
-					}
-				}
-			//check for field_options array - the easier, new way to override options
-			if(isset($params[$field.'_options']) && is_array($params[$field.'_options'])){
-				foreach($params[$field.'_options'] as $okey=>$oval){
-					$used[$field.'_options']=1;
-					if(in_array($okey,$forcedatts)){$opts[$okey]=$oval;}
 				}
 			}
 			//displayif?
@@ -4306,7 +4319,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '		</div>'.PHP_EOL;
 				}
 			else{
-				if($info['fieldinfo'][$field]['_dbtype']=='json'){
+				if($info['fieldinfo'][$field]['_dbtype']=='json' && !isset($opts['displayname'])){
 					$rtn .= '<div class="w_right w_pointer" title="Format JSON" style="margin-right:5px;"><span class="icon-json-pretty w_primary" data-id="'.$opts['id'].'" onclick="formJsonPretty(this.dataset.id);"></span></div>';
 				}
 				if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype'] != 'signature'){
@@ -7493,6 +7506,19 @@ function getDBFieldTag($params=array()){
 				$options[$tval]=$dval;
             }
             $tag=buildFormMultiSelect($info[$field]['fieldname'],$options,$info[$field]);
+		break;
+		case 'multiinput':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+			$selections=getDBFieldSelections($info[$field]);
+			$options=array();
+			$cnt=count($selections['tvals']);
+			for($x=0;$x<$cnt;$x++){
+				$tval=$selections['tvals'][$x];
+				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+				$options[$tval]=$dval;
+            }
+            $tag=buildFormMultiInput($info[$field]['fieldname'],$options,$info[$field]);
+            //$tag=printValue($info[$field]);
 		break;
 		case 'buttonselect':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
