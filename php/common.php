@@ -905,9 +905,17 @@ function commonSearchFiltersForm($params=array()){
 				}
 				else{$class=$quickclass;}
 				$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
+				if(isset($str['filter'])){
+					$btn .=' data-filter="'.$str['filter'].'"';
+					unset($str['filter']);
+				}
 				if(isset($str['onclick'])){
 					$btn .=' onclick="'.$str['onclick'].'"';
 					unset($str['onclick']);
+				}
+				else{
+					$filter=$str;
+					$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),this.dataset.filter,1);"';
 				}
 				if(isset($str['name'])){
 					$cname=$str['name'];
@@ -946,7 +954,8 @@ function commonSearchFiltersForm($params=array()){
 				}
 				else{
 					$filter=$str;
-					$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),\''.$filter.'\',1);"';
+					$btn .=' data-filter="'.$filter.'"';
+					$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),this.dataset.filter,1);"';
 				}
 				if(isNum($name)){$cname='';}
 				else{$cname=$name;}
