@@ -1861,6 +1861,10 @@ function hanaQueryResults($query,$params=array()){
 		odbc_longreadlen($dbh_hana_result,$params['-longreadlen']);
 	}
 	$i=0;
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	while($rec=odbc_fetch_array($dbh_hana_result)){
 		//check for hanaStopProcess request
 		if(isset($hanaStopProcess) && $hanaStopProcess==1){
@@ -1868,7 +1872,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 		//lowercase the field names
 		$rec=array_change_key_case($rec);
-	    if(isset($fh) && is_resource($fh)){
+	    if($writefile==1){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1899,7 +1903,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 	}
 	odbc_free_result($dbh_hana_result);
-	if(isset($fh) && is_resource($fh)){
+	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
