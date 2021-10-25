@@ -1285,6 +1285,10 @@ function sqliteEnumQueryResults($data,$params=array()){
 	}
 	else{$recs=array();}
 	$i=0;
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	while ($xrec = $data->fetchArray(SQLITE3_ASSOC)) {
 		//check for sqliteStopProcess request
 		if(isset($sqliteStopProcess) && $sqliteStopProcess==1){
@@ -1295,7 +1299,7 @@ function sqliteEnumQueryResults($data,$params=array()){
 			$k=strtolower($k);
 			$rec[$k]=$v;
 		}
-    	if(isset($fh) && is_resource($fh)){
+    	if($writefile==1){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1326,7 +1330,7 @@ function sqliteEnumQueryResults($data,$params=array()){
 		}
 	}
 	$data->finalize();
-	if(isset($fh) && is_resource($fh)){
+	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

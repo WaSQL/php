@@ -2269,6 +2269,10 @@ function postgresqlEnumQueryResults($data,$params=array()){
 	}
 	else{$recs=array();}
 	$i=0;
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	while ($row = @pg_fetch_assoc($data)){
 		//check for postgresqlStopProcess request
 		if(isset($postgresqlStopProcess) && $postgresqlStopProcess==1){
@@ -2279,7 +2283,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 			$key=strtolower($key);
 			$rec[$key]=$val;
     	}
-    	if(isset($fh) && is_resource($fh)){
+    	if($writefile==1){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -2309,7 +2313,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 			$recs[]=$rec;
 		}
 	}
-	if(isset($fh) && is_resource($fh)){
+	if($writefile=1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

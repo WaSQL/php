@@ -1935,6 +1935,10 @@ function oracleEnumQueryResults($res,$params=array()){
 	}
 	else{$recs=array();}
 	$i=0;
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
 	if(isset($params['-lobs'])){$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS+OCI_RETURN_LOBS;}
 	while ($row = oci_fetch_array($res, $fetchopts)) {
@@ -1968,7 +1972,7 @@ function oracleEnumQueryResults($res,$params=array()){
 				$rec[$field]=$val;
 			}
 		}
-		if(isset($fh) && is_resource($fh)){
+		if($writefile==1){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1996,7 +2000,7 @@ function oracleEnumQueryResults($res,$params=array()){
 		}
 		else{$recs[]=$rec;}
 	}
-	if(isset($fh) && is_resource($fh)){
+	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

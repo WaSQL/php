@@ -1330,6 +1330,10 @@ function mysqlEnumQueryResults($data,$params=array()){
 	}
 	else{$recs=array();}
 	$i=0;
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	while ($row = @mysqli_fetch_assoc($data)){
 		//check for mysqlStopProcess request
 		if(isset($mysqlStopProcess) && $mysqlStopProcess==1){
@@ -1340,7 +1344,7 @@ function mysqlEnumQueryResults($data,$params=array()){
 			$key=strtolower($key);
 			$rec[$key]=$val;
     	}
-    	if(isset($fh) && is_resource($fh)){
+    	if($writefile==1){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1370,7 +1374,7 @@ function mysqlEnumQueryResults($data,$params=array()){
 			$recs[]=$rec;
 		}
 	}
-	if(isset($fh) && is_resource($fh)){
+	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

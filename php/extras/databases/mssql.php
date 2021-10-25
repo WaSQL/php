@@ -1550,6 +1550,10 @@ function mssqlEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$recs=array();
 	$i=0;
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		while( $row = sqlsrv_fetch_array( $data, SQLSRV_FETCH_ASSOC) ) {
@@ -1568,7 +1572,7 @@ function mssqlEnumQueryResults($data,$params=array()){
             	}
 				$rec[$key]=$val;
 			}
-			if(isset($fh) && is_resource($fh)){
+			if($writefile==1){
 	        	if($header==0){
 	            	$csv=arrays2CSV(array($rec));
 	            	$header=1;
@@ -1600,7 +1604,7 @@ function mssqlEnumQueryResults($data,$params=array()){
 	        
 		}
 		sqlsrv_free_stmt( $data);
-		if(isset($fh) && is_resource($fh)){
+		if($writefile==1){
 			@fclose($fh);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 				$elapsed=microtime(true)-$starttime;
@@ -1628,7 +1632,7 @@ function mssqlEnumQueryResults($data,$params=array()){
             	}
 				$rec[$key]=$val;
 			}
-			if(isset($fh) && is_resource($fh)){
+			if($writefile==1){
 	        	if($header==0){
 	            	$csv=arrays2CSV(array($rec));
 	            	$header=1;
@@ -1658,7 +1662,7 @@ function mssqlEnumQueryResults($data,$params=array()){
 	}
 	while ( @mssql_next_result($data) );
 	//close file?
-	if(isset($fh) && is_resource($fh)){
+	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
