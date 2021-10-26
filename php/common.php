@@ -3031,6 +3031,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag .= ' data-display="'.$params['data-display'].'"';
 		unset($params['data-display']);
 	}
+	if(isset($params['data-debug'])){
+		$tag .= ' data-debug="'.$params['data-debug'].'"';
+		unset($params['data-debug']);
+	}
 	$tag .='>'.PHP_EOL;
 	//$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
