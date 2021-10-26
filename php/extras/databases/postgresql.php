@@ -2313,7 +2313,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 			$recs[]=$rec;
 		}
 	}
-	if($writefile=1){
+	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
