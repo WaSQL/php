@@ -22,6 +22,9 @@ function formChanged(frm,debug){
 			name=parts[0];
 			vals=parts[1].split(',');
 		}
+		if(undefined != els.dataset.debug && els.dataset.debug==1){
+			debug=1;
+		}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
 		if(debug==1){console.log(' - i:'+i+', name:'+name+', form el count:'+ifel.length);}
 		if(undefined == ifel){continue;}
