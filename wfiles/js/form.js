@@ -62,18 +62,25 @@ function formChanged(frm,debug){
 			}
 			if(display==1){
 				if(undefined != els[i].dataset.display){
-					els[i].style.display=els[i].dataset.display;	
+					els[i].style.display=els[i].dataset.display;
+					if(debug==1){console.log(' - set 1 style.display:'+els[i].dataset.display);}	
 				}
-				else{els[i].style.display='initial';}
+				else{
+					els[i].style.display='initial';
+					if(debug==1){console.log(' - set 2 style.display: initial');}
+				}
 				display_count=display_count+1;
 			}
 			else{
 				els[i].style.display='none';
+				if(debug==1){console.log(' - set 3 style.display: none');}
 			}
 		}
 		else{
-			els[i].display='none';
+			els[i].style.display='none';
+			if(debug==1){console.log(' - set 4 style.display: none');}
 		}
+		if(debug==1){console.log(' ---------------------------');}
 	}
 	return display_count;
 }
