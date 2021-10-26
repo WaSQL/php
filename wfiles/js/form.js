@@ -15,6 +15,12 @@ function formChanged(frm,debug){
 	if(debug==1){console.log(' - displayif el count:'+els.length);}
 	let display_count=0;
 	for(let i=0;i<els.length;i++){
+		let edebug=0;
+		if(undefined != els.dataset.debug && parseInt(els.dataset.debug)==1){
+			edebug=1;
+			console.log('edebug set');
+			console.log(els[i]);
+		}
 		let parts=els[i].dataset.displayif.split(':');
 		let name=els[i].dataset.displayif;
 		let vals=new Array(1,'y','yes');
@@ -22,11 +28,8 @@ function formChanged(frm,debug){
 			name=parts[0];
 			vals=parts[1].split(',');
 		}
-		if(undefined != els.dataset.debug && els.dataset.debug==1){
-			debug=1;
-		}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
-		if(debug==1){console.log(' - i:'+i+', name:'+name+', form el count:'+ifel.length);}
+		if(debug==1 || edebug==1){console.log(' - i:'+i+', name:'+name+', form el count:'+ifel.length);}
 		if(undefined == ifel){continue;}
 		if(ifel.length > 0){
 			let display=0;
@@ -53,41 +56,41 @@ function formChanged(frm,debug){
 						cval=ifel[f].value;
 						for(let v=0;v<vals.length;v++){
             				if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
-            				if(debug==1){console.log('v:'+v+', cval:'+cval+', val:'+vals[v]+', display:'+display);}
+            				if(debug==1 || edebug==1){console.log('v:'+v+', cval:'+cval+', val:'+vals[v]+', display:'+display);}
             			}
 					break;
 				}
 				if(display==1){break;}
 			}
-			if(debug==1){
+			if(debug==1 || edebug==1){
 				console.log(' - display:'+display+', name:'+name+', vals:'+vals);
 				console.log(' ---------------------------');
 			}
 			if(display==1){
-				if(debug==1){
+				if(debug==1 || edebug==1){
 					console.log(els[i]);
 					console.log(els[i].style);
 				}
 				if(undefined != els[i].dataset.display){
 					els[i].style.display=els[i].dataset.display;
-					if(debug==1){console.log(' - set 1 style.display:'+els[i].dataset.display);}	
+					if(debug==1 || edebug==1){console.log(' - set 1 style.display:'+els[i].dataset.display);}	
 				}
 				else{
 					els[i].style.display='initial';
-					if(debug==1){console.log(' - set 2 style.display: initial');}
+					if(debug==1 || edebug==1){console.log(' - set 2 style.display: initial');}
 				}
 				display_count=display_count+1;
 			}
 			else{
 				els[i].style.display='none';
-				if(debug==1){console.log(' - set 3 style.display: none');}
+				if(debug==1 || edebug==1){console.log(' - set 3 style.display: none');}
 			}
 		}
 		else{
 			els[i].style.display='none';
-			if(debug==1){console.log(' - set 4 style.display: none');}
+			if(debug==1 || edebug==1){console.log(' - set 4 style.display: none');}
 		}
-		if(debug==1){console.log(' ---------------------------');}
+		if(debug==1 || edebug==1){console.log(' ---------------------------');}
 	}
 	return display_count;
 }
