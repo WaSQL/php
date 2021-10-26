@@ -61,6 +61,10 @@ function formChanged(frm,debug){
 				console.log(' ---------------------------');
 			}
 			if(display==1){
+				if(debug==1){
+					console.log(els[i]);
+					console.log(els[i].style);
+				}
 				if(undefined != els[i].dataset.display){
 					els[i].style.display=els[i].dataset.display;
 					if(debug==1){console.log(' - set 1 style.display:'+els[i].dataset.display);}	
