@@ -8,9 +8,12 @@ function formJsonPretty(id){
 /* form-based, get, post, ajax javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
-function formChanged(frm){
-	//console.log('formChanged');
+function formChanged(frm,debug){
+	if(undefined == debug){debug=0;}
+	if(debug==1){console.log('formChanged');}
 	let els=frm.querySelectorAll('[data-displayif]');
+	if(debug==1){console.log(' - els count:'+els.length);}
+	let display_count=0;
 	for(let i=0;i<els.length;i++){
 		let parts=els[i].dataset.displayif.split(':');
 		let name=els[i].dataset.displayif;
@@ -20,6 +23,7 @@ function formChanged(frm){
 			vals=parts[1].split(',');
 		}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
+		if(debug==1){console.log(' - i:'+i+', name:'+name+', count:'+ifel.length);}
 		if(undefined == ifel){continue;}
 		if(ifel.length > 0){
 			let display=0;
@@ -51,12 +55,15 @@ function formChanged(frm){
 				}
 				if(display==1){break;}
 			}
-			//console.log('data-displayif.Display:'+display+', Name:'+name+', vals:'+vals);
+			if(debug==1){
+				console.log(' - display:'+display+', name:'+name+', vals:'+vals);
+			}
 			if(display==1){
 				if(undefined != els[i].dataset.display){
 					els[i].style.display=els[i].dataset.display;	
 				}
 				else{els[i].style.display='initial';}
+				display_count=display_count+1;
 			}
 			else{
 				els[i].style.display='none';
@@ -66,6 +73,7 @@ function formChanged(frm){
 			els[i].display='none';
 		}
 	}
+	return display_count;
 }
 
 function setInputFileName(fld){
