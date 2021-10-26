@@ -12,7 +12,7 @@ function formChanged(frm,debug){
 	if(undefined == debug){debug=0;}
 	if(debug==1){console.log('formChanged');}
 	let els=frm.querySelectorAll('[data-displayif]');
-	if(debug==1){console.log(' - displayif els count:'+els.length);}
+	if(debug==1){console.log(' - displayif el count:'+els.length);}
 	let display_count=0;
 	for(let i=0;i<els.length;i++){
 		let parts=els[i].dataset.displayif.split(':');
@@ -23,7 +23,7 @@ function formChanged(frm,debug){
 			vals=parts[1].split(',');
 		}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
-		if(debug==1){console.log(' - i:'+i+', name:'+name+', count:'+ifel.length);}
+		if(debug==1){console.log(' - i:'+i+', name:'+name+', form el count:'+ifel.length);}
 		if(undefined == ifel){continue;}
 		if(ifel.length > 0){
 			let display=0;
@@ -50,6 +50,7 @@ function formChanged(frm,debug){
 						cval=ifel[f].value;
 						for(let v=0;v<vals.length;v++){
             				if(cval.toLowerCase() == vals[v]){display=1;}
+            				if(debug==1){console.log('v:'+v+', cval:'+cval+', val:'+vals[v]+', display:'+display);}
             			}
 					break;
 				}
@@ -57,6 +58,7 @@ function formChanged(frm,debug){
 			}
 			if(debug==1){
 				console.log(' - display:'+display+', name:'+name+', vals:'+vals);
+				console.log(' ---------------------------');
 			}
 			if(display==1){
 				if(undefined != els[i].dataset.display){
