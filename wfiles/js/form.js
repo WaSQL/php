@@ -16,7 +16,7 @@ function formChanged(frm,debug){
 	let display_count=0;
 	for(let i=0;i<els.length;i++){
 		let edebug=0;
-		if(undefined != els.dataset.debug && parseInt(els.dataset.debug)==1){
+		if(undefined != els[i].dataset.debug && parseInt(els[i].dataset.debug)==1){
 			edebug=1;
 			console.log('edebug set');
 			console.log(els[i]);
