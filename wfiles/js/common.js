@@ -73,6 +73,26 @@ if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentEleme
 		this.insertAdjacentElement(where,parsedText);
 		}
 	}
+//commonEmulateEvent
+/**
+* @describe emulates event on object/element.  change, click, etc.
+* @param el mixed  - object or id
+* @param ev string  - event to emulate - change,click, etc
+* @usage commonEmulateEvent(el,'change');
+*/
+function commonEmulateEvent(el,ev){
+	el=getObject(el);
+	if(undefined == el){return false;}
+	if ("createEvent" in document) {
+	    let evt = document.createEvent("HTMLEvents");
+	    evt.initEvent(ev, false, true);
+	    el.dispatchEvent(evt);
+	}
+	else{
+	    el.fireEvent("on"+ev);
+	}
+	return false;
+}
 
 //getAllAttributes
 /**

@@ -4224,6 +4224,9 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	    }
 	}
     $rtn .= '</select>'.PHP_EOL;
+    if(strlen($sval) && isset($params['onchange'])){
+    	$rtn .= buildOnLoad("commonEmulateEvent('{$params['id']}','change')");	
+    }
     return $rtn;
 }
 //---------- begin function buildFormSelectCountry--------------------
