@@ -12,7 +12,7 @@ function formChanged(frm,debug){
 	if(undefined == debug){debug=0;}
 	if(debug==1){console.log('formChanged');}
 	let els=frm.querySelectorAll('[data-displayif]');
-	if(debug==1){console.log(' - els count:'+els.length);}
+	if(debug==1){console.log(' - displayif els count:'+els.length);}
 	let display_count=0;
 	for(let i=0;i<els.length;i++){
 		let parts=els[i].dataset.displayif.split(':');
