@@ -163,7 +163,7 @@ function createWasqlTable($table=''){
 				'formfields'	=> "name current_value default_value\r\ndescription\r\npossible_values",
 				'listfields'	=> "name\r\ncurrent_value\r\ndefault_value\r\ndescription\r\npossible_values",
 				'sortfields'	=> "name",
-				'synchronize'	=> 1,
+				'synchronize'	=> 0,
 				'-upsert'		=>'ignore'
 			));
 			//populate the table 
