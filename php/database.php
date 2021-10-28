@@ -1126,6 +1126,7 @@ function databaseListRecords($params=array()){
 			$rtn .= "databaseListRecords error: No fields found for {$params['-table']}";
 			return $rtn;
 		}
+		$params['-info']=$info;
 		//look for _filters
 		if(isset($_REQUEST['_filters'])){
 			$params['-filters']=preg_split('/[\r\n\;]/',$_REQUEST['_filters']);					
@@ -1143,7 +1144,6 @@ function databaseListRecords($params=array()){
 				$params['-where']=implode(' and ',$wheres);
 			}
 		}
-		//echo printValue($params);
 		$params['-forceheader']=1;
 		//check for -bulkedit and filter_bulkedit before running query
 		if(!empty($params['-bulkedit']) && !empty($_REQUEST['filter_bulkedit']) && $_REQUEST['filter_bulkedit']==1){
@@ -2296,6 +2296,38 @@ function databaseParseFilters($params=array()){
 	if(!isset($params['-filters'])){return array();}
 	if(!is_array($params['-filters'])){
 		$params['-filters']=preg_split('/[\r\n\ ]+/',trim($params['-filters']));
+	}
+	if(count($params['-filters'])==1 && stringBeginsWith($params['-filters'][0],'1-ct-')){
+		//this is a simplesearch
+		list($field,$oper,$val)=preg_split('/\-/',$params['-filters'][0],3);
+		$val=trim($val);
+		$lval=strtolower($val);
+		$val=str_replace("'","''",$val);
+		$lval=str_replace("'","''",$lval);
+		$ors=array();
+		foreach($params['-info'] as $field=>$info){
+			switch(strtolower($params['-database'])){
+				case 'oracle':
+				case 'hana':
+				case 'odbc':
+				case 'mssql':
+				case 'sqlite':
+					$ors[]="lower({$field}) like '%{$lval}%'";
+				break;
+				case 'postgres':
+				case 'postgresql':
+					$ors[]="lower(cast({$field} as text)) like '%{$lval}%'";
+				break;
+				case 'snowflake':
+					$ors[]="{$field} ilike '%{$val}%'";
+				break;
+				default:
+					//mysql is case insensitive
+					$ors[]="{$field} like '%{$val}%'";
+				break;
+			}
+		}
+		return array(implode(' or ',$ors));
 	}
 	foreach($params['-filters'] as $filter){
 		list($field,$oper,$val)=preg_split('/\-/',$filter,3);
