@@ -2144,24 +2144,28 @@ LIST_TABLE:
 						echo '<span class="icon-users w_info w_big"></span>';
 						$recopts['-quickfilters']=array(
 							array(
+								'name'=>'',
 								'icon'=>'icon-file-txt w_gray',
 								'title'=>'view log',
 								'class'=>'btn w_white',
 								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'user',title:'User Log'});",
 							),
 							array(
+								'name'=>'',
 								'icon'=>'icon-mark w_green',
 								'title'=>'active',
 								'filter'=>'active eq 1',
 								'class'=>'btn w_white'
 							),
 							array(
+								'name'=>'',
 								'icon'=>'icon-user-admin w_red',
 								'title'=>'admins',
 								'filter'=>'utype eq 0',
 								'class'=>'btn w_white'
 							),
 							array(
+								'name'=>'',
 								'icon'=>'icon-mark w_gray',
 								'title'=>'NOT active',
 								'filter'=>'active eq 0',
@@ -2176,18 +2180,21 @@ LIST_TABLE:
 						echo '<span class="icon-users w_info w_big"></span>';
 						$recopts['-quickfilters']=array(
 							array(
+								'name'=>'',
 								'icon'=>'icon-file-txt w_gray',
 								'title'=>'view log',
 								'class'=>'btn w_white',
 								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'translate',title:'Translation Log'});",
 							),
 							array(
+								'name'=>'',
 								'icon'=>'icon-mark w_green',
 								'title'=>'confirmed',
 								'filter'=>'confirmed eq 1',
 								'class'=>'btn w_white'
 							),
 							array(
+								'name'=>'',
 								'icon'=>'icon-mark w_danger',
 								'title'=>'failed',
 								'filter'=>'failed eq 1',
