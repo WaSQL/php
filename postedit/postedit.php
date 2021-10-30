@@ -105,14 +105,12 @@ else{
 //get the files
 echo " - writing local files".PHP_EOL;
 writeFiles();
-$postedit['firsttime']=0;
-echo " - getting local filestamps".PHP_EOL;
-posteditSync();
 $countdown=$postedit['timer'];
 echo "Listening to files in {$postedit['afolder']} for changes...".PHP_EOL;
 $ok=posteditBeep(1);
+$cliname="postedit - ".getFileName($postedit['afolder']);
+cli_set_process_title($cliname);
 while(1){
-	cli_set_process_title($postedit['afolder']);
 	sleep(1);
 	shutdown_check();
 	$mypid=getmypid();
@@ -123,21 +121,103 @@ while(1){
 	//check for local changes
 	checkForChanges();
 	$countdown-=1;
-	if($postedit['timer'] != 0 && $countdown < 1){
-		posteditSync();
-	}
 }
 exit;
-function posteditSync(){
+function checkForChanges(){
 	global $postedit;
-	$files=listFilesEx($postedit['afolder'],array('-md5'=>1,'-recurse'=>1));
-	$postedit['files']=array();
+	$files=listFilesEx($postedit['afolder'],array('-md5'=>1,'-sha'=>1,'-recurse'=>1));
 	foreach($files as $file){
-		$idx=md5($file['afile']);
-		$postedit['files'][$idx]=$file;
+		$afile=$file['afile'];
+		$idx=preg_replace('/\//',"\\",$afile);
+		if(!isset($postedit['md5sha'][$idx])){
+			continue;
+		}
+		$md5sha=$file['md5'].$file['sha'];
+		if($postedit['md5sha'][$idx] != $md5sha){
+			//file changed
+			fileChanged($afile);
+		}
 	}
-	return;
+	return true;
 }
+function fileChanged($afile){
+	global $postedit;
+	$filename=getFileName($afile);
+	echo "  {$filename}";
+	$content=@file_get_contents($afile);
+	if(!strlen($content) && isWindows()){
+		$content=getContents($afile);
+		if(!strlen($content)){
+    		$ok=errorMessage(" - failed to get content");
+    		return;
+		}
+	}
+	$idx=preg_replace('/\//',"\\",$afile);
+	if(!isset($postedit['md5sha'][$idx])){
+		$ok=errorMessage("Unknown file: {$afile}");
+		return;
+	}
+	$md5sha=md5($content).sha1($content);
+	$content=encodeBase64($content);
+	list($fname,$table,$field,$id,$ext)=preg_split('/\./',$filename);
+	$postopts=array(
+		'apikey'	=>$postedit['apikey'],
+		'username'	=>$postedit['username'],
+		'_auth'		=>1,
+		'_base64'	=>1,
+		'_id'		=>$id,
+		'_action'	=>'postEdit',
+		'_table'	=>$table,
+		'_fields'	=>$field,
+		$field		=>$content,
+		'-ipv4'		=>1,
+		'_return'	=>'XML',
+		'-nossl'	=>1,
+		'-follow'	=>1,
+		'-xml'		=>1,
+		'_md5sha'	=> $postedit['md5sha'][$idx]
+	);
+	$postedit['md5sha'][$idx]=$md5sha;
+	$url=buildHostUrl();
+	$post=postURL($url,$postopts);
+POSTFILE:
+	$xml=array();
+	$json=array();
+	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] == 200){
+		$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
+		$json=json_encode($xml);
+	}
+	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
+    	abortMessage("{$post['curl_info']['http_code']} error posting file to server");
+	}
+	elseif(isset($xml['fatal_error'])){
+		$error=" - fatal error posting. ".PHP_EOL.$xml['fatal_error'];
+    	abortMessage($error);
+	}
+	elseif(isset($xml['refresh_error'])){
+		$ok=errorMessage($xml['refresh_error']." attention required");
+    	echo "   Refresh Now? Y or N: ";
+		$s = stream_get_line(STDIN, 1024, PHP_EOL);
+		$s=strtolower($s);
+		if($s != 'n'){
+        	writeFiles();
+		}
+	}
+	elseif(isset($xml['error'])){
+		$ok=errorMessage($xml['error']. "attention required");
+    	echo "   Overwrite Anyway? Y or N: ";
+		$s = stream_get_line(STDIN, 1024, PHP_EOL);
+		$s=strtolower($s);
+		if($s == 'y'){
+			$postopts['_overwrite']=1;
+        	$post=postURL($url,$postopts);
+        	goto POSTFILE;
+		}
+	}
+	$ok=successMessage(" - Successfully updated");
+	return true;
+}
+
 function posteditCopyDir( $source, $target ) {
     if ( is_dir( $source ) ) {
         @mkdir( $target,0777,true );
@@ -159,21 +239,6 @@ function posteditCopyDir( $source, $target ) {
         copy( $source, $target );
     }
 }
-function checkForChanges(){
-	global $postedit;
-	$files=listFilesEx($postedit['afolder'],array('-md5'=>1,'-recurse'=>1));
-	foreach($files as $file){
-		$idx=md5($file['afile']);
-		if(!isset($postedit['files'][$idx])){
-			continue;
-		}
-		if($postedit['files'][$idx]['md5'] != $file['md5']){
-			//file changed
-			fileChanged($file['afile']);
-		}
-	}
-	return true;
-}
 function shutdown_check(){
 	global $postedit;
 	$tpid=getFileContents($postedit['alock']);
@@ -190,6 +255,7 @@ function shutdown_check(){
 */
 function writeFiles(){
 	global $postedit;
+	$postedit['files']=array();
 	$json=posteditGetLocalShas();
 	$json=json_encode($json);
 	$url=buildHostUrl();
@@ -212,6 +278,8 @@ function writeFiles(){
 		'json'=>$json
 	);
 	$post=postURL($url,$postopts);
+	//$ok=file_put_contents("{$postedit['progpath']}\\writefiles.txt",$post['body']);
+	//echo "writeFiles - got files from server".PHP_EOL;
 	//check for failures
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code']==404){
 		abortMessage("404 Error - /php/index.php not found");
@@ -331,24 +399,25 @@ function writeFiles(){
 			
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	file_put_contents($afile,$content);
+	    	$md5sha=md5($content).sha1($content);
+	    	$idx=preg_replace('/\//',"\\",$afile);
+	    	$postedit['md5sha'][$idx]=$md5sha;
 		}
 	}
-	if($postedit['firsttime']==1){
-		//echo printValue($postedit);exit;
-		$cmd='';
-		if(isset($postedit['editor']['command'])){$cmd=$postedit['editor']['command'];}
-		elseif(isWindows()){$cmd='';}
-		if(strlen($cmd)){
+	//check for editor command to run after writing files
+	if(isset($postedit['editor']['command']) && strlen($postedit['editor']['command'])){
+		$cmd=$postedit['editor']['command'];
+		if(isWindows()){
 			$postedit['afolder']=preg_replace('/\//',"\\",$postedit['afolder']);
-			$cmd="{$cmd} \"{$postedit['afolder']}\"";
-			$out=cmdResults($cmd);
-			echo " - Running command: {$cmd}".PHP_EOL;
-			if($out['rtncode'] !=0){
-				echo printValue($out).PHP_EOL;
-			}
+		}
+		$cmd="{$cmd} \"{$postedit['afolder']}\"";
+		$out=cmdResults($cmd);
+		echo " - Running command: {$cmd}".PHP_EOL;
+		if($out['rtncode'] !=0){
+			echo printValue($out).PHP_EOL;
 		}
 	}
-	$postedit['firsttime']=0;
+	//echo printValue($postedit['md5sha']).PHP_EOL;
 	return false;
 }
 function posteditGetLocalShas(){
@@ -419,79 +488,6 @@ function buildHostUrl(){
 	else{$http='https';}
 	$url="{$http}://{$postedit['name']}/php/index.php";
 	return $url;
-}
-function fileChanged($afile){
-	global $postedit;
-	$filename=getFileName($afile);
-	echo "  {$filename}";
-	$content=@file_get_contents($afile);
-	if(!strlen($content) && isWindows()){
-		$content=getContents($afile);
-		if(!strlen($content)){
-    		$ok=errorMessage(" - failed to get content");
-    		return;
-		}
-	}
-	$content=encodeBase64($content);
-	list($fname,$table,$field,$id,$ext)=preg_split('/\./',$filename);
-	$idx=md5($afile);
-	$postopts=array(
-		'apikey'	=>$postedit['apikey'],
-		'username'	=>$postedit['username'],
-		'_auth'		=>1,
-		'_base64'	=>1,
-		'_id'		=>$id,
-		'_action'	=>'postEdit',
-		'_table'	=>$table,
-		'_fields'	=>$field,
-		$field		=>$content,
-		'-ipv4'		=>1,
-		'_return'	=>'XML',
-		'-nossl'	=>1,
-		'-follow'	=>1,
-		'-xml'		=>1,
-		'_md5'		=> $postedit['files'][$idx]['md5']
-	);
-	$url=buildHostUrl();
-	//echo $url.PHP_EOL.printValue($postopts);posteditSync();return true;
-	$post=postURL($url,$postopts);
-POSTFILE:
-	$xml=array();
-	$json=array();
-	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] == 200){
-		$xml = (array)readXML("<postedit>{$post['body']}</postedit>");
-		$json=json_encode($xml);
-	}
-	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
-    	abortMessage("{$post['curl_info']['http_code']} error posting file to server");
-	}
-	elseif(isset($xml['fatal_error'])){
-		$error=" - fatal error posting. ".PHP_EOL.$xml['fatal_error'];
-    	abortMessage($error);
-	}
-	elseif(isset($xml['refresh_error'])){
-		$ok=errorMessage($xml['refresh_error']." attention required");
-    	echo "   Refresh Now? Y or N: ";
-		$s = stream_get_line(STDIN, 1024, PHP_EOL);
-		$s=strtolower($s);
-		if($s != 'n'){
-        	writeFiles();
-		}
-	}
-	elseif(isset($xml['error'])){
-		$ok=errorMessage($xml['error']. "attention required");
-    	echo "   Overwrite Anyway? Y or N: ";
-		$s = stream_get_line(STDIN, 1024, PHP_EOL);
-		$s=strtolower($s);
-		if($s == 'y'){
-			$postopts['_overwrite']=1;
-        	$post=postURL($url,$postopts);
-        	goto POSTFILE;
-		}
-	}
-	$ok=successMessage(" - Successfully updated");
-	posteditSync();
-	return true;
 }
 function abortMessage($msg){
 	global $postedit;

@@ -14333,11 +14333,6 @@ function postEditXmlFromJson($json=array()){
 			foreach($rec as $field=>$val){
 				$val=trim($val);
 				if(isWasqlField($field) || $field=='name' || !strlen($val)){continue;}
-				$sha=posteditSha1($val);
-				//skip fields that have not changed
-				if(isset($json[$table][$id][$field]) && $sha == $json[$table][$id][$field]){
-					continue;
-				}
 				$val=encodeBase64($val);
 				$recxml .= "		<{$table}_{$field}>{$val}</{$table}_{$field}>".PHP_EOL;
 			}
@@ -15541,19 +15536,23 @@ function processActions(){
 						'-table'=>$_REQUEST['_table'],
 						'-where'=>'_id='.$_REQUEST['_id']
 					);
-					if($action=='POSTEDIT' && isset($_REQUEST['_md5']) && strlen($_REQUEST['_md5']) && count($fields)==1){
+					if($action=='POSTEDIT' && count($fields)==1){
+						if(!isset($_REQUEST['_md5sha']) || !strlen($_REQUEST['_md5sha'])){
+							echo "<timestamp>{$timestamp}</timestamp>";
+							echo "<fatal_error>Fatal Error: your postedit is out of date. update your local git repo (git pull).</fatal_error>";
+							echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
+							echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
+							exit;
+						}
 						$fld=$fields[0];
-						$fld_md5=md5(trim($rec[$fld]));
-						if(strtolower($_REQUEST['_table']) != '_prompts' && $fld_md5 != $_REQUEST['_md5']){
+						$md5sha=md5(trim($rec[$fld])).sha1(trim($rec[$fld]));
+						if(strtolower($_REQUEST['_table']) != '_prompts' && $md5sha != $_REQUEST['_md5sha']){
 							$username=$rec['_euser_ex']['username'];
-							if($USER['_id'] != $rec['_euser']){
-								echo "<timestamp>{$timestamp}</timestamp>";
-								echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}). Local MD5:{$_REQUEST['_md5']}, DB MD5:{$fld_md5}</fatal_error>";
-								echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
-								echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
-								exit;
-							}
-							
+							echo "<timestamp>{$timestamp}</timestamp>";
+							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}).</fatal_error>";
+							echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
+							echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
+							exit;
 						}
 					}
 					if(isset($_REQUEST['_collection_field'])){
@@ -16895,7 +16894,7 @@ function commonParseIni($str,$multi=0){
 	}
 	if($multi==1){
 		foreach($settings as $key=>$subkeys){
-			foreach($subkeys as $subval){
+			foreach($subkeys as $subkey=>$subval){
 				if(is_array($subval) && count($subval)==1){
 					$settings[$key][$subkey]=$subval[0];
 				}
