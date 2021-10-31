@@ -13176,6 +13176,11 @@ function loadExtrasJs($extras){
 				}
 			break;
         	case 'codemirror':
+        		//load the css required for these just in case they don't
+        		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
+        			$_SESSION['w_MINIFY']['extras_css'][]=$extra;
+				}
+        	break;
         	case 'tcal':
         	case 'alertify':
         	case 'slidy':
@@ -13197,6 +13202,24 @@ function loadExtrasJs($extras){
 		}
 		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_js'])){
         	$_SESSION['w_MINIFY']['extras_js'][]=$extra;
+		}
+		//load extra codemirror files if needed
+		if(strtolower($extra)=='codemirror'){
+			//load extra js for codemirror
+    		$cpath=getWasqlPath('wfiles/js/extras/codemirror');
+    		//echo "codemirror: {$cpath}";exit;
+    		$cfiles=listFilesEx($cpath,array('ext'=>'js'));
+    		$cnames=array();
+    		foreach($cfiles as $cfile){
+    			$cname=getFileName($cfile['name'],1);
+    			if(stringEndsWith($cname,'.min')){continue;}
+    			if(isset($cnames[$cname])){continue;}
+    			$cnames[$cname]=1;
+    			$cextra="codemirror/{$cname}";
+    			if(!in_array($cextra,$_SESSION['w_MINIFY']['extras_js'])){
+        			$_SESSION['w_MINIFY']['extras_js'][]=$cextra;
+				}
+    		}
 		}
 	}
 }

@@ -418,7 +418,7 @@ var wacss = {
 		/*wacssedit*/
 		wacss.initWacssEdit();
 		wacss.initChartJs();
-		wacss.initTruncate();
+		wacss.initCodeMirror();
 	},
 	chartjsDrawTotals: function(chart){
 		var width = chart.chart.width,
@@ -900,17 +900,79 @@ var wacss = {
 		}
 		return true;
 	},
-	initTruncate: function(){
-		/*convert texteara to contenteditable div*/
-		let list=document.querySelectorAll('.truncate');
-		for(let i=0;i<list.length;i++){
-			if(list[i].innerText.length==0){continue;}
-			//check to see if we have already initialized this element
-			if(undefined != list[i].getAttribute('data-initialized')){continue;}
-			list[i].setAttribute('data-initialized',1);
-			list[i].setAttribute('data-tooltip',list[i].innerHTML);
-			list[i].setAttribute('data-tooltip_position','bottom');
+	initCodeMirror: function(){
+		/*convert texteara to codemirror */
+		let list=document.querySelectorAll('textarea.code[data-mode]');
+		if(undefined == list || list.length==0){return false;}
+		//set some defaults
+		let defaults={
+	    	mode:'text/html',
+		    indentWithTabs: true,
+		    smartIndent: true,
+		    lineNumbers: true,
+		    lineWrapping:false,
+		    matchBrackets : true,
+		    autofocus: true,
+		    extraKeys: {"Ctrl-Space": "autocomplete"}
+	  	};
+	  	//set a cm object
+		if(undefined==this.codemirror){
+			this.codemirror={};
 		}
+		for(let i=0;i<list.length;i++){
+			//check to see if we have already initialized this element
+			if(undefined != list[i].dataset.initialized){continue;}
+			list[i].dataset.initialized=1;
+			let params={};
+			for(k in list[i].dataset){
+				if(k=='debug' || k=='initialized'){continue;}
+				let v=list[i].dataset[k];
+				if (typeof v === 'string' || v instanceof String){
+					switch(v){
+						case 'true':
+		  					v=true;
+		  				break;
+		  				case 'false':
+		  					v=false;
+		  				break;
+					}
+				}
+				params[k]=v;
+			}
+			//fix modes
+			switch(params.mode.toLowerCase()){
+				case 'sql':params.mode='text/x-sql';break;
+				case 'css':params.mode='text/css';break;
+				case 'javascript':params.mode='text/javascript';break;
+				case 'php':params.mode='application/x-httpd-php';break;
+				case 'python':params.mode={name:'python',version:3,singleLineStringErrors:false};break;
+				case 'html':
+					let mixedMode = {
+        				name: "htmlmixed",
+        				scriptTypes: [
+        					{matches: /\/x-handlebars-template|\/x-mustache/i,mode: null},
+                      		{matches: /(text|application)\/(x-)?vb(a|script)/i,mode: "vbscript"}
+                      		]
+      					};
+					params.mode=mixedMode;
+				break;
+				case 'lua':params.mode='text/x-lua';break;
+				case 'vbscript':params.mode='text/vbscript';break;
+				case 'xml':params.mode='application/xml';break;
+			}
+			for(k in defaults){
+	  			if(undefined == params[k]){
+	  				params[k]=defaults[k];
+	  			}
+	  		}
+	  		if(undefined != list[i].dataset.debug){
+	  			console.log(list[i]);
+	  			console.log(params);
+	  		}
+			let cm = CodeMirror.fromTextArea(list[i], params);
+			//save changes to textarea
+	  		cm.on('change', function(cm){cm.save();});
+	  	}
 	},
 	initWacssEdit: function(){
 		/*convert texteara to contenteditable div*/
