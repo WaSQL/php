@@ -906,7 +906,8 @@ var wacss = {
 		if(undefined == list || list.length==0){return false;}
 		//set some defaults
 		let defaults={
-	    	mode:'text/html',
+	    	mode:'text/x-sql',
+	    	indentUnit:4,
 		    indentWithTabs: true,
 		    smartIndent: true,
 		    lineNumbers: true,
@@ -941,22 +942,31 @@ var wacss = {
 			}
 			//fix modes
 			switch(params.mode.toLowerCase()){
-				case 'sql':params.mode='text/x-sql';break;
 				case 'css':params.mode='text/css';break;
-				case 'javascript':params.mode='text/javascript';break;
-				case 'php':params.mode='application/x-httpd-php';break;
-				case 'python':params.mode={name:'python',version:3,singleLineStringErrors:false};break;
 				case 'html':
-					let mixedMode = {
-        				name: "htmlmixed",
-        				scriptTypes: [
-        					{matches: /\/x-handlebars-template|\/x-mustache/i,mode: null},
-                      		{matches: /(text|application)\/(x-)?vb(a|script)/i,mode: "vbscript"}
-                      		]
-      					};
-					params.mode=mixedMode;
+					params.mode='text/html';
+					defaults.htmlMode=true;
+				break;
+				case 'javascript':
+					params.mode='text/javascript';
+					defaults.continueComments='Enter';
+					defaults.extraKeys["Ctrl-Q"]='toggleComment';
+				break;
+				case 'json':
+					params.mode='application/x-json';
+					defaults.autoCloseBrackets=true;
+					defaults.matchBrackets=true;
+					defaults.lineWrapping=true;
 				break;
 				case 'lua':params.mode='text/x-lua';break;
+				case 'perl':params.mode='text/x-perl';break;
+				case 'php':
+					params.mode='application/x-httpd-php';
+				break;
+				case 'python':
+					params.mode={name:'python',version:3,singleLineStringErrors:false};
+				break;
+				case 'sql':params.mode='text/x-sql';break;
 				case 'vbscript':params.mode='text/vbscript';break;
 				case 'xml':params.mode='application/xml';break;
 			}
