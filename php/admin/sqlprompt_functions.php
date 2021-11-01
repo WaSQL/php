@@ -200,6 +200,12 @@ function sqlpromptBuildQuery($db,$name){
 			$dbh_sqlite='';
 			return trim(sqliteNamedQuery($name));
 		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			global $dbh_snowflake;
+			$dbh_snowflake='';
+			return trim(snowflakeNamedQuery($name));
+		break;
 		default:
 			loadExtras('mysql');
 			global $dbh_mysql;

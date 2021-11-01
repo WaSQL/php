@@ -37,7 +37,7 @@ global $PAGE;
 $TEMPLATE=array('_id'=>0);
 $PAGE=array('_id'=>0);
 loadExtras('translate');
-loadExtrasJs(array('wacss','chart','pikaday','alertify','html5','nicedit'));
+loadExtrasJs(array('wacss','chart','pikaday','alertify','html5','nicedit','codemirror'));
 loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
@@ -709,8 +709,9 @@ if(isAjax()){
 						'_sort'=>$_REQUEST['_sort'],
 						'_start'=>$_REQUEST['_start']
 					);
-					//echo printValue($addopts);
+					$addopts=adminAddEditOpts($addopts);
 					echo addEditDBForm($addopts);
+					echo buildOnLoad("document.addedit.name.focus();wacss.init();");
 				}
 			}
 			else{
@@ -721,9 +722,12 @@ if(isAjax()){
 					'_menu'=>'list'
 				);
 				if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
-				if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
-				//echo printValue($addopts);
+				if(isset($_REQUEST['_start'])){
+					$addopts['_start']=$_REQUEST['_start'];
+				}
+				$addopts=adminAddEditOpts($addopts);
 	    		echo addEditDBForm($addopts);
+	    		echo buildOnLoad("document.addedit.name.focus();wacss.init();");
 			}
 			//echo '</div>'.PHP_EOL;
 			exit;
@@ -866,7 +870,7 @@ if(isAjax()){
 			    		$dname = '<span class="w_bold w_bigger w_dblue">Content for '.$rec['name'].' Page</span>'.PHP_EOL;
 
 						echo '<div style="position:relative;">'.PHP_EOL;
-						$opts=array(
+						$addopts=array(
 							'-table'=>'_pages',
 							'_id'=>$_REQUEST['id'],
 							'-action'=>$_SERVER['PHP_SELF'],
@@ -879,7 +883,8 @@ if(isAjax()){
 							'-onsubmit'=>"this._preview.value='';ajaxSubmitForm(this,'modal');return false;",
 							'-fields'=>'user_content'
 							);
-						echo addEditDBForm($opts);
+						$addopts=adminAddEditOpts($addopts);
+						echo addEditDBForm($addopts);
 						echo '</div>'.PHP_EOL;
 					}
 		    		break;
@@ -912,8 +917,9 @@ if(isAjax()){
 							'_menu'=>'contentmanager',
 							'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"
 						);
-						//echo printValue($addopts);
+						$addopts=adminAddEditOpts($addopts);
 						echo addEditDBForm($addopts);
+						echo buildOnLoad("document.addedit.name.focus();wacss.init();");
 						//echo '</div>'.PHP_EOL;
 					}
 		    		break;
@@ -961,9 +967,10 @@ if(isAjax()){
 						if($_REQUEST['table']=='_pages'){
 		                	$opts['-preview']=$_REQUEST['id'];
 						}
+						$opts=adminAddEditOpts($opts);
 						echo addEditDBForm($opts);
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
-							echo buildOnLoad("document.addedit.name.focus();");
+							echo buildOnLoad("document.addedit.name.focus();wacss.init();");
 						}
 						//echo '</div>'.PHP_EOL;
 					}
@@ -989,7 +996,7 @@ if(isAjax()){
 						//table record edit
 			    		//echo '<div class="w_centerpop_title">New Record in '.$_REQUEST['table'].' table.</div>'.PHP_EOL;
 						//echo '<div class="w_centerpop_content">'.PHP_EOL;
-						echo addEditDBForm(array(
+						$opts=array(
 							'-table'=>$_REQUEST['table'],
 							'-action'=>$_SERVER['PHP_SELF'],
 							'body_width'=>800,
@@ -1000,9 +1007,11 @@ if(isAjax()){
 							'emenu'=>'record',
 							'_menu'=>'editor',
 							'-onsubmit'=>"ajaxSubmitForm(this,'modal');return false;"
-							));
+							);
+						$opts=adminAddEditOpts($opts);
+						echo addEditDBForm();
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
-							echo buildOnLoad("document.addedit.name.focus();");
+							echo buildOnLoad("document.addedit.name.focus();wacss.init();");
 						}
 						//echo '</div>'.PHP_EOL;
 					}
@@ -1956,6 +1965,7 @@ ENDOFX;
 								'_start'=>$_REQUEST['_start']
 							);
 							if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
+							$addopts=adminAddEditOpts($addopts);
 							echo addEditDBForm($addopts);
 						}
 					}
@@ -1984,6 +1994,7 @@ ENDOFX;
 						if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
 						if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
 						if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
+						$addopts=adminAddEditOpts($addopts);
 						echo addEditDBForm($addopts);
 					}
 				}
@@ -2056,7 +2067,7 @@ ENDOFX;
 				);
 				if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
 				if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
-
+				$addopts=adminAddEditOpts($addopts);
 				echo addEditDBForm($addopts);
             }
 			break;
@@ -3130,6 +3141,52 @@ echo '</div>'.PHP_EOL;
 echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
+
+function adminAddEditOpts($addopts){
+	switch(strtolower($addopts['-table'])){
+		case '_pages':
+			$addopts['body_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'html'
+			);
+			$addopts['controller_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'php'
+			);
+			$addopts['functions_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'php'
+			);
+			$addopts['css_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'css'
+			);
+			$addopts['js_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'javascript'
+			);
+		break;
+		case '_templates':
+			$addopts['body_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'html'
+			);
+			$addopts['functions_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'php'
+			);
+			$addopts['css_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'css'
+			);
+			$addopts['js_options']=array(
+				'class'=>'textarea code',
+				'data-mode'=>'javascript'
+			);
+		break;
+	}
+	return $addopts;
+}
 //---------- begin function adminDefaultPageValues ----
 /**
  * @exclude  - this function is for internal use only and thus excluded from the manual

@@ -914,6 +914,7 @@ var wacss = {
 		    lineWrapping:false,
 		    matchBrackets : true,
 		    autofocus: true,
+		    autoRefresh: true,
 		    extraKeys: {"Ctrl-Space": "autocomplete"}
 	  	};
 	  	//set a cm object
@@ -922,11 +923,11 @@ var wacss = {
 		}
 		for(let i=0;i<list.length;i++){
 			//check to see if we have already initialized this element
-			if(undefined != list[i].dataset.initialized){continue;}
-			list[i].dataset.initialized=1;
+			if(undefined != list[i].codemirror){continue;}
+			//go through dataset to get params
 			let params={};
 			for(k in list[i].dataset){
-				if(k=='debug' || k=='initialized'){continue;}
+				if(k=='debug'){continue;}
 				let v=list[i].dataset[k];
 				if (typeof v === 'string' || v instanceof String){
 					switch(v){
@@ -942,33 +943,55 @@ var wacss = {
 			}
 			//fix modes
 			switch(params.mode.toLowerCase()){
-				case 'css':params.mode='text/css';break;
+				case 'css':
+				case 'text/css':
+					params.mode='text/css';
+				break;
 				case 'html':
+				case 'text/html':
 					params.mode='text/html';
 					defaults.htmlMode=true;
 				break;
 				case 'javascript':
+				case 'text/javascript':
 					params.mode='text/javascript';
 					defaults.continueComments='Enter';
 					defaults.extraKeys["Ctrl-Q"]='toggleComment';
 				break;
 				case 'json':
+				case 'application/x-json':
 					params.mode='application/x-json';
 					defaults.autoCloseBrackets=true;
 					defaults.matchBrackets=true;
 					defaults.lineWrapping=true;
 				break;
-				case 'lua':params.mode='text/x-lua';break;
-				case 'perl':params.mode='text/x-perl';break;
+				case 'lua':
+				case 'text/x-lua':
+					params.mode='text/x-lua';
+				break;
+				case 'perl':
+				case 'text/x-perl':
+					params.mode='text/x-perl';
+				break;
 				case 'php':
+				case 'application/x-httpd-php':
 					params.mode='application/x-httpd-php';
 				break;
 				case 'python':
 					params.mode={name:'python',version:3,singleLineStringErrors:false};
 				break;
-				case 'sql':params.mode='text/x-sql';break;
-				case 'vbscript':params.mode='text/vbscript';break;
-				case 'xml':params.mode='application/xml';break;
+				case 'sql':
+				case 'text/x-sql':
+					params.mode='text/x-sql';
+				break;
+				case 'vbscript':
+				case 'text/vbscript':
+					params.mode='text/vbscript';
+				break;
+				case 'xml':
+				case 'application/xml':
+					params.mode='application/xml';
+				break;
 			}
 			for(k in defaults){
 	  			if(undefined == params[k]){
@@ -980,6 +1003,8 @@ var wacss = {
 	  			console.log(params);
 	  		}
 			let cm = CodeMirror.fromTextArea(list[i], params);
+			//save the codemirror object to the textarea so we can find it easier
+			list[i].codemirror=cm;
 			//save changes to textarea
 	  		cm.on('change', function(cm){cm.save();});
 	  	}
