@@ -8,12 +8,15 @@
   direction: ltr;
   border: 1px solid #CCCCCC;
   min-width: 60vw;
+  background-color: #FFF;
 }
 .CodeMirror-fullscreen {
-  position: absolute !important;
-  top: 10px; left: 10px;
+  position: fixed !important;
+  top: 50px; 
+  left: 10px;
   height: 90vh !important;
-  width: 90vw;
+  width: 90vw !important;
+  border: 2px solid #b4b4b4;
   z-index: 999;
 }
 /* PADDING */
