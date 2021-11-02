@@ -9,7 +9,12 @@
   border: 1px solid #CCCCCC;
   min-width: 60vw;
 }
-
+.CodeMirror-fullscreen {
+  position: fixed !important;
+  top: 0; left: 0; right: 0; bottom: 0 !important;
+  height: auto !important;
+  z-index: 9 !important;
+}
 /* PADDING */
 
 .CodeMirror-lines {
