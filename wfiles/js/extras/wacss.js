@@ -915,7 +915,15 @@ var wacss = {
 		    matchBrackets : true,
 		    autofocus: true,
 		    autoRefresh: true,
-		    extraKeys: {"Ctrl-Space": "autocomplete"}
+		    extraKeys: {
+		    	"Ctrl-Space": "autocomplete",
+		    	"F11": function(cm) {
+		        	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+		        },
+		        "Esc": function(cm) {
+		        	if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+		        }
+		    }
 	  	};
 	  	//set a cm object
 		if(undefined==this.codemirror){
