@@ -7,7 +7,6 @@
   color: black;
   direction: ltr;
   border: 1px solid #CCCCCC;
-  min-width: 60vw;
   background-color: #FFF;
 }
 .CodeMirror-fullscreen {
