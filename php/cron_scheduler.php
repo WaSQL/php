@@ -78,7 +78,7 @@ $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
-$loop=1;
+$loop=3;
 $loop_cnt=0;
 if(isset($argv[1])){
 	$loop=(integer)$argv[1];
@@ -177,7 +177,7 @@ while(1){
 	if($loop_cnt >= $loop || $loop_cnt >= 300){
 		break;
 	}
-	sleep(1);
+	sleep(15);
 }
 exit;
 /* cron functions */
