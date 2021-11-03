@@ -71,8 +71,6 @@ global $databaseCache;
 $etime=microtime(true)-$starttime;
 $etime=(integer)$etime;
 $pid_check=1;
-$apache_log=1;
-$tail=1;
 $wherestr_all=cronBuildWhere();
 if(!count($ConfigXml)){exit;}
 //check for wasql.update file
@@ -84,6 +82,10 @@ if(file_exists("{$wpath}/php/temp/wasql.update")){
 	$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 	$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
 }
+$tpath=getWaSQLPath('php/temp');
+$cron_tail_log="{$tpath}/cron_tail.log";
+$cron_pid=getmypid();
+
 //should switch to ALLCONFIG
 foreach($ConfigXml as $name=>$host){
 	//allhost, then, sameas, then hostname
@@ -98,21 +100,9 @@ foreach($ConfigXml as $name=>$host){
     	$CONFIG[$k]=$v;
 	}
 	if(!isset($CONFIG['cron'])){$CONFIG['cron']=0;}
-	$cron_tail_log="{$wpath}/php/temp/cron_tail.log";
-	if($CONFIG['cron']==1 && $tail==1){
-		if(!file_exists($cron_tail_log)){
-			$ok=setFileContents($cron_tail_log,time());
-			$ok=cronLogTails();
-		}
-		elseif(filemtime($cron_tail_log)-time() > 60){
-			$ok=setFileContents($cron_tail_log,time());
-			$ok=cronLogTails();
-		}
-	}
-	//ksort($CONFIG);
 	if($CONFIG['cron']==0){
 		continue;
-	}
+	}	
 	//connect to this database.
 	$dbh='';
 	//cronMessage("connecting");
@@ -122,357 +112,287 @@ foreach($ConfigXml as $name=>$host){
     	unset($ConfigXml[$name]);
     	continue;
 	}
-	$ok=executeSQL("update _cron set frequency_max='minute' where frequency_max is null or frequency_max =''");
-	//check for apache_access_log
-	if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
-		$apache_log=0;
-		loadExtras('apache');
-		cronMessage("STARTED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
-		$msg=apacheParseLogFile();
-		if(strlen($msg)){
-			cronMessage(" -- [apacheParseLogFile] -- {$msg}");
+	/*
+		fix any issues with the cron table
+		fix any cron record issues
+		set any crons that are ready to run_now
+		secure a record with run_now=1 and run it
+		if no records to run check for apache_access_log 
+	*/
+	//fix any issues with the cron table
+	$ok=commonCronCheckSchema();
+	//fix any cron record issues
+	$ok=executeSQL("UPDATE _cron set frequency_max='minute' WHERE frequency_max is null or frequency_max =''");
+	//2. set any crons that are ready to run_now
+	$ok=editDBRecord(array(
+		'-table'=>'_cron',
+		'-where'=>$wherestr_all,
+		'run_now'=>1
+	));
+	//secure a cron record with run_now set to 1
+	$secureSQL=<<<ENDOFSQL
+	UPDATE _cron 
+	SET 
+		cron_pid={$cron_pid},
+		running=1,
+		run_now=0,
+		stop_now=0,
+		run_date=NOW(),
+		run_error='' 
+	WHERE 
+		run_now=1 
+		and cron_pid=0 
+		and running=0 
+	LIMIT 1
+ENDOFSQL;
+	$ok=executeSQL($secureSQL);
+	$rec=getDBRecord(array(
+		'-table'	=> '_cron',
+		'cron_pid'	=> $cron_pid,
+		'running'	=> 1,
+		'run_now'	=> 0,
+		'-nocache'	=> 1
+	));
+	//if no records to run check for apache_access_log
+	if(!isset($rec['_id'])){
+		$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
+		//cronlog tails?
+		if(!file_exists($cron_tail_log)){
+			$ok=setFileContents($cron_tail_log,time());
+			$ok=cronLogTails();
 		}
-		cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
-	}
-	if($CONFIG['cron']==0){
+		elseif(filemtime($cron_tail_log)-time() > 60){
+			$ok=setFileContents($cron_tail_log,time());
+			$ok=cronLogTails();
+		}
+		//apache?
+		if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
+			$apache_log=0;
+			loadExtras('apache');
+			cronMessage("STARTED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
+			$msg=apacheParseLogFile();
+			if(strlen($msg)){
+				cronMessage(" -- [apacheParseLogFile] -- {$msg}");
+			}
+			cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
+		}
 		continue;
 	}
-	//cronMessage("checking.  {$CONFIG['cron']}");
-	$ok=commonCronCheckSchema();
-	//update crons that say they are running but the pids are no longer active
-	//$ok=commonCronCleanup();
-	//show crons currently running
-	$runrecs=getDBRecords(array(
-		'-table'=>'_cron',
-		'-fields'=>'name,run_cmd',
-		'-index'=>'name',
-		'running'=>1
-	));
-	if(is_array($runrecs) && count($runrecs)){
-		$cnt=count($runrecs);
-		$names=implode(', ',array_keys($runrecs));
-		cronMessage("RUNNING:  Count: {$cnt}, Names: {$names}");
-	}
+	$ok=cronMessage("{$CONFIG['name']} - preparing cron #{$rec['_id']} - {$rec['name']}");
+	$CRONTHRU=array();
+	$cronlog_id=commonCronLogInit($rec['_id']);
 	//get page names to determine if cron is a page
 	$pages=getDBRecords(array(
 		'-table'	=> '_pages',
 		'-fields'	=> 'name,_id',
 		'-index'	=> 'name'
 	));
-	//echo "Checking {$CONFIG['name']}\n";
-	//see if there is file called {dbname}_runnow.txt.  If so extract
-	$wherestr=$wherestr_all;
-	$recopts=array(
-		'-table'	=> '_cron',
-		'-fields'	=> '_id,name,run_cmd,running,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,frequency,run_now,run_format,run_values',
-		'-where'	=> $wherestr,
-		'-nocache'	=> 1,
-		'-order'	=> 'run_date'
+	$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
+	$CRONTHRU['cron_pid']=$cron_pid;
+	$CRONTHRU['cronlog_id']=$cronlog_id;
+	$CRONTHRU['cron_run_date']=$rec['run_date'];
+	$CRONTHRU['cron_name']=$rec['name'];
+	$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
+	$commonCronLogFile="{$tpath}/{$CONFIG['name']}_cronlog_{$rec['_id']}.txt";
+	if(file_exists($commonCronLogFile)){
+		unlink($commonCronLogFile);
+	}
+	//cronMessage("cleaning {$rec['name']}");
+	$ok=cronCleanRecords($rec);
+	$cmd=$rec['run_cmd'];
+	$lcmd=strtolower(trim($cmd));
+	/*
+		look for passthru
+			/cron_test/a/b
+			/t/1/cron_test/a/b
+	*/
+	$crontype='';
+	global $PASSTHRU;
+	if(preg_match('/^http/i',$cmd)){
+    	//cron is a URL.
+    	$crontype='URL';
+	}
+	else{
+		$parts=preg_split('/\/+/',$lcmd);
+		if(count($parts) > 1){
+			//remove all parts before $view and set passthru
+			$stripped=0;
+			$tmp=array();
+			foreach($parts as $part){
+		        $part=trim($part);
+		        if(!strlen($part)){continue;}
+		        if(isset($pages[$part])){
+					$stripped=1;
+					$crontype='Page';
+					continue;
+				}
+				if($stripped){$tmp[]=$part;}
+			}
+			$_REQUEST['passthru']=$PASSTHRU=$tmp;
+		}
+	}
+	if(strlen($crontype)){}
+	elseif(isset($pages[$lcmd])){
+		//cronMessage("cron is a page");
+		$crontype='Page';
+	}
+	elseif(preg_match('/^<\?\=/',$cmd)){
+    	//cron is a php command
+    	$crontype='PHP Command';
+	}
+	else{
+    	//cron is a command
+    	$crontype='OS Command';
+	}
+	cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}",1);
+	$start=microtime(true);
+	$cron_result='';
+	$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
+	$cron_result .= "CronType: {$crontype} ".PHP_EOL;
+	$CRONTHRU['cron_guid']=generateGUID();
+	if(strtolower($crontype)=='page'){
+    	//cron is a page.
+    	$cmd=preg_replace('/^\/+/','',$cmd);
+    	$prefix='https';
+    	if(isset($CONFIG['insecure']) && $CONFIG['insecure']==1){
+    		$prefix='http';
+    	}
+    	$url="{$prefix}://{$CONFIG['name']}/{$cmd}";
+        $cron_result .= "CronURL: {$url}".PHP_EOL;
+        $CRONTHRU['cron_result']=$cron_result;
+    	$postopts=array(
+    		'-method'=>'GET',
+    		'-follow'=>1,
+    		'-nossl'=>1,
+    		'-timeout'=>$posturl_timeout
+    	);
+    	foreach($CRONTHRU as $k=>$v){
+    		$postopts[$k]=$v;
+    	}
+    	//if they have specified a run_as then login as that person
+    	if(isset($rec['run_as']) && isNum($rec['run_as'])){
+        	$urec=getDBRecord(array(
+				'-table'=>'_users',
+				'_id'	=> $rec['run_as'],
+				'-fields'=>'_id,username'
+			));
+			if(isset($urec['_id'])){
+            	$postopts['_tauth']=userGetTempAuthCode($urec['_id']);
+            	$postopts['_noguid']=1;
+			}
+		}
+		//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
+		cronMessage(" -- [{$rec['name']}] -- calling {$url}");
+    	$post=postURL($url,$postopts);
+    	$cron_result .= '----- Content Received -----'.PHP_EOL;
+    	$cron_result .= $post['body'].PHP_EOL;
+    	if(stringContains($post['body'],'__cronlog_delete__')){
+    		$_REQUEST['cronlog_delete']=1;
+    	}
+    	if(isset($post['headers_out'][0])){
+        	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
+        	$cron_result .= printValue($post['headers_out']).PHP_EOL;
+        }
+    	$cron_result .= '----- CURL Info -----'.PHP_EOL;
+    	$cron_result .= printValue($post['curl_info']).PHP_EOL;
+    	if(isset($post['headers'][0])){
+        	$cron_result .= '----- Headers Received -----'.PHP_EOL;
+        	$cron_result .= printValue($post['headers']).PHP_EOL;
+        }
+    	
+	}
+	elseif(strtolower($crontype)=='php command'){
+    	//cron is a php command
+    	cronMessage(" -- [{$rec['name']}] --running eval code");
+        $cron_result .= '----- Output Received -----'.PHP_EOL;
+
+    	$out=evalPHP($cmd).PHP_EOL;
+    	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
+    	else{$cron_result.=$out.PHP_EOL;}
+	}
+	elseif(strtolower($crontype)=='url'){
+    	//cron is a URL.
+    	$postopts=array(
+    		'-method'=>'GET',
+    		'-follow'=>1,
+    		'-nossl'=>1,
+    		'-timeout'=>$posturl_timeout
+    	);
+    	foreach($CRONTHRU as $k=>$v){
+    		$postopts[$k]=$v;
+    	}
+    	cronMessage(" -- [{$rec['name']}] --calling $cmd");
+    	$post=postURL($cmd,$postopts);
+    	$cron_result .= '----- Content Received -----'.PHP_EOL;
+    	$cron_result .= $post['body'].PHP_EOL;
+    	if(stringContains($post['body'],'__cronlog_delete__')){
+    		$_REQUEST['cronlog_delete']=1;
+    	}
+    	if(isset($post['headers_out'][0])){
+        	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
+			$cron_result .= printValue($post['headers_out']).PHP_EOL;
+		}
+		$cron_result .= '----- CURL Info -----'.PHP_EOL;
+    	$cron_result .= printValue($post['curl_info']).PHP_EOL;
+    	if(isset($post['headers'][0])){
+        	$cron_result .= '----- Headers Received -----'.PHP_EOL;
+        	$cron_result .= printValue($post['headers']).PHP_EOL;
+        }
+    	
+	}
+	else{
+    	//cron is an OS Command
+    	cronMessage(" -- [{$rec['name']}] --running $cmd");
+    	$out=cmdResults($cmd);
+    	$cron_result .= '----- Content Received -----'.PHP_EOL;
+    	$cron_result .= printValue($out).PHP_EOL;
+	}
+
+	$stop=microtime(true);
+	$run_length=number_format(($stop-$start),3);
+    $cron_result .= PHP_EOL;
+    $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
+    //limit $cron_result to 65535 chars
+    if(strlen($cron_result) > 65000){
+    	$cron_result=substr($cron_result,0,65000).PHP_EOL.'***RUN RESULT TRUNCATED***';
+    }
+    //log the result
+    $ok=commonCronLog($cron_result);
+	//update record to show we are now finished
+	$run_memory=memory_get_usage();
+	$eopts=array(
+		'running'		=> 0,
+		'cron_pid'		=> 0,
+		'run_length'	=> str_replace(',','',$run_length),
+		'run_result'	=> $cron_result,
+		'run_memory'	=> str_replace(',','',$run_memory)
 	);
-	//echo $wherestr;exit;
-	$cronfields=getDBFields('_cron');
-	if(!is_array($cronfields)){
-		unset($ConfigXml[$name]);
-		cronMessage("ERROR -- cronfields in _cron is empty.".PHP_EOL);
-		continue;
+	$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
+	//
+	if(!isNum($ok)){
+		cronMessage("FINISH ERROR".printValue($ok).printValue($eopts));
+		$eopts=array(
+			'running'		=> 0,
+			'cron_pid'		=> 0,
+			'run_length'	=> str_replace(',','',$run_length),
+			'run_memory'	=> str_replace(',','',$run_memory)
+		);
+		$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 	}
-	if(in_array('run_as',$cronfields)){$recopts['-fields'].=',run_as';}
-	$recs=getDBRecords($recopts);
-	//echo printValue($recs);exit;
-	if(!is_array($recs) && strlen($recs)){
-		cronMessage("ERROR -- {$recs}".PHP_EOL);
-		exit;
+	
+	cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
+	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
+		$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
 	}
-	$rcnt=is_array($recs)?count($recs):0;
-	if($rcnt==0){
-		unset($ConfigXml[$name]);
-		//cronMessage("{$rcnt} crons ready".PHP_EOL);
-        //cronMessage("No crons found.");
-        continue;
+	//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
+	if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
+	$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
+	if(file_exists($commonCronLogFile)){
+		unlink($commonCronLogFile);
 	}
-	foreach($recs as $ri=>$rec){
-		if(isset($ConfigXml[$name]['processed'][$rec['_id']])){
-			unset($recs[$ri]);
-		}
-	}
-	if(count($recs)==0){
-		unset($ConfigXml[$name]);
-		$pcnt=$rcnt=count($recs);
-		//cronMessage("{$pcnt} processed. No other crons ready".PHP_EOL);
-        //cronMessage("No crons found.");
-        continue;
-	}
-	if(is_array($recs) && count($recs)){
-		$cnt=count($recs);
-		//cronMessage("{$cnt} crons found. Checking...");
-		foreach($recs as $ri=>$rec){
-			if(isset($ConfigXml[$name]['processed'][$rec['_id']])){continue;}
-			$ConfigXml[$name]['processed'][$rec['_id']]=1;
-		
-			//skip if it has been run in the last minute
-			if(strlen($rec['run_date'])){
-				$ctime=time();
-            	$lastruntime=strtotime($rec['run_date']);
-            	$diff=$ctime-$lastruntime;
-            	if($diff < 60){
-            		//cronMessage("skipping - ran in the last minute:{$rec['name']}");
-            		$run=0;
-            	}
-			}
-			//get record again to insure another process is not running it.
-			$rec=getDBRecord(array(
-				'-table'	=> '_cron',
-				'_id'		=> $rec['_id'],
-				'-nocache'	=> 1,
-				'-fields'	=> '_id,running,cron_pid'
-			));
-			//skip if running
-			if($rec['running']==1){continue;}
-			//skip if paused
-			if($rec['paused']==1){continue;}
-			//update record to show we are now running
-			$start=$CRONTHRU['start']=microtime(true);
-			$cron_pid=getmypid();
-			$editopts=array(
-				'-table'	=> '_cron',
-				'-where'	=> "running=0 and _id={$rec['_id']}",
-				'cron_pid'	=> $cron_pid,
-				'running'	=> 1,
-				'run_now'	=> 0,
-				'stop_now'	=> 0,
-				'run_date'	=> 'NOW()',
-				'run_error'	=> '',
-			);
-			$ok=editDBRecord($editopts);
-			//echo $ok.printValue($editopts);exit;
-			//make sure only one cron runs this entry
-			$rec=getDBRecord(array(
-				'-table'	=> '_cron',
-				'_id'		=> $rec['_id'],
-				'-nocache'	=> 1,
-				'-fields'	=> '_id,running,cron_pid'
-			));
-			//echo $ok.printValue($rec);
-			if($rec['cron_pid'] != $cron_pid){
-				cronMessage("ERROR -- handshaking {$rec['name']} failed. {$rec['cron_pid']} != {$cron_pid}");
-				continue;
-			}
-			$CRONTHRU=array();
-			$cronlog_id=commonCronLogInit($rec['_id']);
-			$rec=getDBRecord(array(
-				'-table'	=> '_cron',
-				'_id'		=> $rec['_id'],
-				'-nocache'	=> 1
-			));
-			$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
-			$CRONTHRU['cron_pid']=$cron_pid;
-			$CRONTHRU['cronlog_id']=$cronlog_id;
-			$CRONTHRU['cron_run_date']=$rec['run_date'];
-			$CRONTHRU['cron_name']=$rec['name'];
-			$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
-			$path=getWaSQLPath('php/temp');
-			$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$rec['_id']}.txt";
-			if(file_exists($commonCronLogFile)){
-				unlink($commonCronLogFile);
-			}
-			//cronMessage("cleaning {$rec['name']}");
-			$ok=cronCleanRecords($rec);
-			$cmd=$rec['run_cmd'];
-			$lcmd=strtolower(trim($cmd));
-			/*
-				look for passthru
-					/cron_test/a/b
-					/t/1/cron_test/a/b
-			*/
-			$crontype='';
-			global $PASSTHRU;
-			if(preg_match('/^http/i',$cmd)){
-            	//cron is a URL.
-            	$crontype='URL';
-			}
-			else{
-				$parts=preg_split('/\/+/',$lcmd);
-				if(count($parts) > 1){
-					//remove all parts before $view and set passthru
-					$stripped=0;
-					$tmp=array();
-					foreach($parts as $part){
-				        $part=trim($part);
-				        if(!strlen($part)){continue;}
-				        if(isset($pages[$part])){
-							$stripped=1;
-							$crontype='Page';
-							continue;
-						}
-						if($stripped){$tmp[]=$part;}
-					}
-					$_REQUEST['passthru']=$PASSTHRU=$tmp;
-				}
-			}
-			if(strlen($crontype)){}
-			elseif(isset($pages[$lcmd])){
-				//cronMessage("cron is a page");
-				$crontype='Page';
-			}
-			elseif(preg_match('/^<\?\=/',$cmd)){
-            	//cron is a php command
-            	$crontype='PHP Command';
-			}
-			else{
-            	//cron is a command
-            	$crontype='OS Command';
-			}
-        	cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}",1);
-        	$cron_result='';
-			$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
-			$cron_result .= "CronType: {$crontype} ".PHP_EOL;
-			$CRONTHRU['cron_guid']=generateGUID();
-			if(strtolower($crontype)=='page'){
-            	//cron is a page.
-            	$cmd=preg_replace('/^\/+/','',$cmd);
-            	$prefix='https';
-            	if(isset($CONFIG['insecure']) && $CONFIG['insecure']==1){
-            		$prefix='http';
-            	}
-            	$url="{$prefix}://{$CONFIG['name']}/{$cmd}";
-                $cron_result .= "CronURL: {$url}".PHP_EOL;
-                $CRONTHRU['cron_result']=$cron_result;
-            	$postopts=array(
-            		'-method'=>'GET',
-            		'-follow'=>1,
-            		'-nossl'=>1,
-            		'-timeout'=>$posturl_timeout
-            	);
-            	foreach($CRONTHRU as $k=>$v){
-            		$postopts[$k]=$v;
-            	}
-            	//if they have specified a run_as then login as that person
-            	if(isset($rec['run_as']) && isNum($rec['run_as'])){
-                	$urec=getDBRecord(array(
-						'-table'=>'_users',
-						'_id'	=> $rec['run_as'],
-						'-fields'=>'_id,username'
-					));
-					if(isset($urec['_id'])){
-                    	$postopts['_tauth']=userGetTempAuthCode($urec['_id']);
-                    	$postopts['_noguid']=1;
-					}
-				}
-				//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
-				cronMessage(" -- [{$rec['name']}] -- calling {$url}");
-            	$post=postURL($url,$postopts);
-            	$cron_result .= '----- Content Received -----'.PHP_EOL;
-            	$cron_result .= $post['body'].PHP_EOL;
-            	if(stringContains($post['body'],'__cronlog_delete__')){
-            		$_REQUEST['cronlog_delete']=1;
-            	}
-            	if(isset($post['headers_out'][0])){
-	            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-	            	$cron_result .= printValue($post['headers_out']).PHP_EOL;
-	            }
-            	$cron_result .= '----- CURL Info -----'.PHP_EOL;
-            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-            	if(isset($post['headers'][0])){
-	            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	            	$cron_result .= printValue($post['headers']).PHP_EOL;
-	            }
-            	
-			}
-			elseif(strtolower($crontype)=='php command'){
-            	//cron is a php command
-            	cronMessage(" -- [{$rec['name']}] --running eval code");
-                $cron_result .= '----- Output Received -----'.PHP_EOL;
-
-            	$out=evalPHP($cmd).PHP_EOL;
-            	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
-            	else{$cron_result.=$out.PHP_EOL;}
-			}
-			elseif(strtolower($crontype)=='url'){
-            	//cron is a URL.
-            	$postopts=array(
-            		'-method'=>'GET',
-            		'-follow'=>1,
-            		'-nossl'=>1,
-            		'-timeout'=>$posturl_timeout
-            	);
-            	foreach($CRONTHRU as $k=>$v){
-            		$postopts[$k]=$v;
-            	}
-            	cronMessage(" -- [{$rec['name']}] --calling $cmd");
-            	$post=postURL($cmd,$postopts);
-            	$cron_result .= '----- Content Received -----'.PHP_EOL;
-            	$cron_result .= $post['body'].PHP_EOL;
-            	if(stringContains($post['body'],'__cronlog_delete__')){
-            		$_REQUEST['cronlog_delete']=1;
-            	}
-            	if(isset($post['headers_out'][0])){
-	            	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-					$cron_result .= printValue($post['headers_out']).PHP_EOL;
-				}
-				$cron_result .= '----- CURL Info -----'.PHP_EOL;
-            	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-            	if(isset($post['headers'][0])){
-	            	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	            	$cron_result .= printValue($post['headers']).PHP_EOL;
-	            }
-            	
-			}
-			else{
-            	//cron is an OS Command
-            	cronMessage(" -- [{$rec['name']}] --running $cmd");
-            	$out=cmdResults($cmd);
-            	$cron_result .= '----- Content Received -----'.PHP_EOL;
-            	$cron_result .= printValue($out).PHP_EOL;
-			}
-
-			$stop=microtime(true);
-			$run_length=number_format(($stop-$start),3);
-            $cron_result .= PHP_EOL;
-            $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
-            //limit $cron_result to 65535 chars
-            if(strlen($cron_result) > 65000){
-            	$cron_result=substr($cron_result,0,65000).PHP_EOL.'***RUN RESULT TRUNCATED***';
-            }
-			//update record to show we are now finished
-			$run_memory=memory_get_usage();
-			$eopts=array(
-				'running'		=> 0,
-				'cron_pid'		=> 0,
-				'run_length'	=> str_replace(',','',$run_length),
-				'run_result'	=> $cron_result,
-				'run_memory'	=> str_replace(',','',$run_memory)
-			);
-			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
-			//
-			if(!isNum($ok)){
-				cronMessage("FINISH ERROR".printValue($ok).printValue($eopts));
-				$eopts=array(
-					'running'		=> 0,
-					'cron_pid'		=> 0,
-					'run_length'	=> str_replace(',','',$run_length),
-					'run_memory'	=> str_replace(',','',$run_memory)
-				);
-				$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
-			}
-			
-			cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
-			if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
-				$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
-			}
-			//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
-			if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
-			$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
-			if(file_exists($commonCronLogFile)){
-				unlink($commonCronLogFile);
-			}
-			//clean up result before looping
-			unset($cron_result);
-			break;
-		}
-	}	
-	$etime=microtime(true)-$starttime;
-	$etime=(integer)$etime;
-	$tail=0;
+	//clean up
+	unset($cron_result);
+	break;
 }
 exit;
 /* cron functions */
@@ -481,199 +401,197 @@ exit;
 */
 function cronBuildWhere(){
 	return <<<ENDOFWHERE
-run_now = 1 or 
-(
-	active = 1 
-	and paused != 1 
-	and running != 1 
-	and run_cmd is not null
-	and length(run_cmd) > 0
-	and json_valid(run_format)=1
-	and (
-		ifnull(begin_date,'')=''
-		or date(now()) >= date(begin_date)
+active = 1 
+and paused != 1 
+and running != 1 
+and run_cmd is not null
+and cron_pid=0
+and length(run_cmd) > 0
+and json_valid(run_format)=1
+and (
+	ifnull(begin_date,'')=''
+	or date(now()) >= date(begin_date)
+	)
+and (
+	ifnull(end_date,'')=''
+	or date(end_date) <= date(now())
+	)
+and 
+	(
+	ifnull(frequency_max,'')='' 
+	or ifnull(run_date,'')=''
+	or (frequency_max='minute' and minute(run_date) != minute(now()))
+	or (frequency_max='hourly' and hour(run_date) != hour(now()))
+	or (frequency_max='daily' and date(run_date) != date(now()))
+	or (frequency_max='weekly' and week(run_date) != week(now()))
+	or (frequency_max='monthly' and month(run_date) != month(now()))
+	or (frequency_max='quarterly' and quarter(run_date) != quarter(now()))
+	or (frequency_max='yearly' and year(run_date) != year(now()))
+	)
+and
+	(
+	run_format->'\$.minute[0]'=-1
+	or MINUTE(now()) in (
+		run_format->'\$.minute[1]',
+		run_format->'\$.minute[2]',
+		run_format->'\$.minute[3]',
+		run_format->'\$.minute[4]',
+		run_format->'\$.minute[5]',
+		run_format->'\$.minute[6]',
+		run_format->'\$.minute[7]',
+		run_format->'\$.minute[8]',
+		run_format->'\$.minute[9]',
+		run_format->'\$.minute[10]',
+		run_format->'\$.minute[11]',
+		run_format->'\$.minute[12]',
+		run_format->'\$.minute[13]',
+		run_format->'\$.minute[14]',
+		run_format->'\$.minute[15]',
+		run_format->'\$.minute[16]',
+		run_format->'\$.minute[17]',
+		run_format->'\$.minute[18]',
+		run_format->'\$.minute[19]',
+		run_format->'\$.minute[20]',
+		run_format->'\$.minute[21]',
+		run_format->'\$.minute[22]',
+		run_format->'\$.minute[23]',
+		run_format->'\$.minute[24]',
+		run_format->'\$.minute[25]',
+		run_format->'\$.minute[26]',
+		run_format->'\$.minute[27]',
+		run_format->'\$.minute[28]',
+		run_format->'\$.minute[29]',
+		run_format->'\$.minute[30]',
+		run_format->'\$.minute[31]',
+		run_format->'\$.minute[32]',
+		run_format->'\$.minute[33]',
+		run_format->'\$.minute[34]',
+		run_format->'\$.minute[35]',
+		run_format->'\$.minute[36]',
+		run_format->'\$.minute[37]',
+		run_format->'\$.minute[38]',
+		run_format->'\$.minute[39]',
+		run_format->'\$.minute[40]',
+		run_format->'\$.minute[41]',
+		run_format->'\$.minute[42]',
+		run_format->'\$.minute[43]',
+		run_format->'\$.minute[44]',
+		run_format->'\$.minute[45]',
+		run_format->'\$.minute[46]',
+		run_format->'\$.minute[47]',
+		run_format->'\$.minute[48]',
+		run_format->'\$.minute[49]',
+		run_format->'\$.minute[50]',
+		run_format->'\$.minute[51]',
+		run_format->'\$.minute[52]',
+		run_format->'\$.minute[53]',
+		run_format->'\$.minute[54]',
+		run_format->'\$.minute[55]',
+		run_format->'\$.minute[56]',
+		run_format->'\$.minute[57]',
+		run_format->'\$.minute[58]',
+		run_format->'\$.minute[59]'
 		)
-	and (
-		ifnull(end_date,'')=''
-		or date(end_date) <= date(now())
+	)
+and
+	(
+	run_format->'\$.hour[0]'=-1
+	or HOUR(NOW()) in (
+		run_format->'\$.hour[0]',
+		run_format->'\$.hour[1]',
+		run_format->'\$.hour[2]',
+		run_format->'\$.hour[3]',
+		run_format->'\$.hour[4]',
+		run_format->'\$.hour[5]',
+		run_format->'\$.hour[6]',
+		run_format->'\$.hour[7]',
+		run_format->'\$.hour[8]',
+		run_format->'\$.hour[9]',
+		run_format->'\$.hour[10]',
+		run_format->'\$.hour[11]',
+		run_format->'\$.hour[12]',
+		run_format->'\$.hour[13]',
+		run_format->'\$.hour[14]',
+		run_format->'\$.hour[15]',
+		run_format->'\$.hour[16]',
+		run_format->'\$.hour[17]',
+		run_format->'\$.hour[18]',
+		run_format->'\$.hour[19]',
+		run_format->'\$.hour[20]',
+		run_format->'\$.hour[21]',
+		run_format->'\$.hour[22]',
+		run_format->'\$.hour[23]'
 		)
-	and 
-		(
-		ifnull(frequency_max,'')='' 
-		or ifnull(run_date,'')=''
-		or (frequency_max='minute' and minute(run_date) != minute(now()))
-		or (frequency_max='hourly' and hour(run_date) != hour(now()))
-		or (frequency_max='daily' and date(run_date) != date(now()))
-		or (frequency_max='weekly' and week(run_date) != week(now()))
-		or (frequency_max='monthly' and month(run_date) != month(now()))
-		or (frequency_max='quarterly' and quarter(run_date) != quarter(now()))
-		or (frequency_max='yearly' and year(run_date) != year(now()))
+	)
+and
+	(
+	run_format->'\$.day[0]'=-1
+	or DAY(curdate()) in (
+		run_format->'\$.day[0]',
+		run_format->'\$.day[1]',
+		run_format->'\$.day[2]',
+		run_format->'\$.day[3]',
+		run_format->'\$.day[4]',
+		run_format->'\$.day[5]',
+		run_format->'\$.day[6]',
+		run_format->'\$.day[7]',
+		run_format->'\$.day[8]',
+		run_format->'\$.day[9]',
+		run_format->'\$.day[10]',
+		run_format->'\$.day[11]',
+		run_format->'\$.day[12]',
+		run_format->'\$.day[13]',
+		run_format->'\$.day[14]',
+		run_format->'\$.day[15]',
+		run_format->'\$.day[16]',
+		run_format->'\$.day[17]',
+		run_format->'\$.day[18]',
+		run_format->'\$.day[19]',
+		run_format->'\$.day[20]',
+		run_format->'\$.day[21]',
+		run_format->'\$.day[22]',
+		run_format->'\$.day[23]',
+		run_format->'\$.day[24]',
+		run_format->'\$.day[25]',
+		run_format->'\$.day[26]',
+		run_format->'\$.day[27]',
+		run_format->'\$.day[28]',
+		run_format->'\$.day[29]',
+		run_format->'\$.day[30]'
 		)
-	and
-		(
-		run_format->'\$.minute[0]'=-1
-		or MINUTE(now()) in (
-			run_format->'\$.minute[1]',
-			run_format->'\$.minute[2]',
-			run_format->'\$.minute[3]',
-			run_format->'\$.minute[4]',
-			run_format->'\$.minute[5]',
-			run_format->'\$.minute[6]',
-			run_format->'\$.minute[7]',
-			run_format->'\$.minute[8]',
-			run_format->'\$.minute[9]',
-			run_format->'\$.minute[10]',
-			run_format->'\$.minute[11]',
-			run_format->'\$.minute[12]',
-			run_format->'\$.minute[13]',
-			run_format->'\$.minute[14]',
-			run_format->'\$.minute[15]',
-			run_format->'\$.minute[16]',
-			run_format->'\$.minute[17]',
-			run_format->'\$.minute[18]',
-			run_format->'\$.minute[19]',
-			run_format->'\$.minute[20]',
-			run_format->'\$.minute[21]',
-			run_format->'\$.minute[22]',
-			run_format->'\$.minute[23]',
-			run_format->'\$.minute[24]',
-			run_format->'\$.minute[25]',
-			run_format->'\$.minute[26]',
-			run_format->'\$.minute[27]',
-			run_format->'\$.minute[28]',
-			run_format->'\$.minute[29]',
-			run_format->'\$.minute[30]',
-			run_format->'\$.minute[31]',
-			run_format->'\$.minute[32]',
-			run_format->'\$.minute[33]',
-			run_format->'\$.minute[34]',
-			run_format->'\$.minute[35]',
-			run_format->'\$.minute[36]',
-			run_format->'\$.minute[37]',
-			run_format->'\$.minute[38]',
-			run_format->'\$.minute[39]',
-			run_format->'\$.minute[40]',
-			run_format->'\$.minute[41]',
-			run_format->'\$.minute[42]',
-			run_format->'\$.minute[43]',
-			run_format->'\$.minute[44]',
-			run_format->'\$.minute[45]',
-			run_format->'\$.minute[46]',
-			run_format->'\$.minute[47]',
-			run_format->'\$.minute[48]',
-			run_format->'\$.minute[49]',
-			run_format->'\$.minute[50]',
-			run_format->'\$.minute[51]',
-			run_format->'\$.minute[52]',
-			run_format->'\$.minute[53]',
-			run_format->'\$.minute[54]',
-			run_format->'\$.minute[55]',
-			run_format->'\$.minute[56]',
-			run_format->'\$.minute[57]',
-			run_format->'\$.minute[58]',
-			run_format->'\$.minute[59]'
-			)
+	)
+and
+	(
+	run_format->'\$.month[0]'=-1
+	or MONTH(curdate()) in (
+		run_format->'\$.month[0]',
+		run_format->'\$.month[1]',
+		run_format->'\$.month[2]',
+		run_format->'\$.month[3]',
+		run_format->'\$.month[4]',
+		run_format->'\$.month[5]',
+		run_format->'\$.month[6]',
+		run_format->'\$.month[7]',
+		run_format->'\$.month[8]',
+		run_format->'\$.month[9]',
+		run_format->'\$.month[10]',
+		run_format->'\$.month[11]'
 		)
-	and
-		(
-		run_format->'\$.hour[0]'=-1
-		or HOUR(NOW()) in (
-			run_format->'\$.hour[0]',
-			run_format->'\$.hour[1]',
-			run_format->'\$.hour[2]',
-			run_format->'\$.hour[3]',
-			run_format->'\$.hour[4]',
-			run_format->'\$.hour[5]',
-			run_format->'\$.hour[6]',
-			run_format->'\$.hour[7]',
-			run_format->'\$.hour[8]',
-			run_format->'\$.hour[9]',
-			run_format->'\$.hour[10]',
-			run_format->'\$.hour[11]',
-			run_format->'\$.hour[12]',
-			run_format->'\$.hour[13]',
-			run_format->'\$.hour[14]',
-			run_format->'\$.hour[15]',
-			run_format->'\$.hour[16]',
-			run_format->'\$.hour[17]',
-			run_format->'\$.hour[18]',
-			run_format->'\$.hour[19]',
-			run_format->'\$.hour[20]',
-			run_format->'\$.hour[21]',
-			run_format->'\$.hour[22]',
-			run_format->'\$.hour[23]'
-			)
+	)
+and
+	(
+	ifnull(run_format->'\$.dayname[0]','')=''
+	or run_format->'\$.dayname[0]'=-1
+	or WEEKDAY(curdate()) in (
+		run_format->'\$.dayname[0]',
+		run_format->'\$.dayname[1]',
+		run_format->'\$.dayname[2]',
+		run_format->'\$.dayname[3]',
+		run_format->'\$.dayname[4]',
+		run_format->'\$.dayname[5]',
+		run_format->'\$.dayname[6]'
 		)
-	and
-		(
-		run_format->'\$.day[0]'=-1
-		or DAY(curdate()) in (
-			run_format->'\$.day[0]',
-			run_format->'\$.day[1]',
-			run_format->'\$.day[2]',
-			run_format->'\$.day[3]',
-			run_format->'\$.day[4]',
-			run_format->'\$.day[5]',
-			run_format->'\$.day[6]',
-			run_format->'\$.day[7]',
-			run_format->'\$.day[8]',
-			run_format->'\$.day[9]',
-			run_format->'\$.day[10]',
-			run_format->'\$.day[11]',
-			run_format->'\$.day[12]',
-			run_format->'\$.day[13]',
-			run_format->'\$.day[14]',
-			run_format->'\$.day[15]',
-			run_format->'\$.day[16]',
-			run_format->'\$.day[17]',
-			run_format->'\$.day[18]',
-			run_format->'\$.day[19]',
-			run_format->'\$.day[20]',
-			run_format->'\$.day[21]',
-			run_format->'\$.day[22]',
-			run_format->'\$.day[23]',
-			run_format->'\$.day[24]',
-			run_format->'\$.day[25]',
-			run_format->'\$.day[26]',
-			run_format->'\$.day[27]',
-			run_format->'\$.day[28]',
-			run_format->'\$.day[29]',
-			run_format->'\$.day[30]'
-			)
-		)
-	and
-		(
-		run_format->'\$.month[0]'=-1
-		or MONTH(curdate()) in (
-			run_format->'\$.month[0]',
-			run_format->'\$.month[1]',
-			run_format->'\$.month[2]',
-			run_format->'\$.month[3]',
-			run_format->'\$.month[4]',
-			run_format->'\$.month[5]',
-			run_format->'\$.month[6]',
-			run_format->'\$.month[7]',
-			run_format->'\$.month[8]',
-			run_format->'\$.month[9]',
-			run_format->'\$.month[10]',
-			run_format->'\$.month[11]'
-			)
-		)
-	and
-		(
-		ifnull(run_format->'\$.dayname[0]','')=''
-		or run_format->'\$.dayname[0]'=-1
-		or WEEKDAY(curdate()) in (
-			run_format->'\$.dayname[0]',
-			run_format->'\$.dayname[1]',
-			run_format->'\$.dayname[2]',
-			run_format->'\$.dayname[3]',
-			run_format->'\$.dayname[4]',
-			run_format->'\$.dayname[5]',
-			run_format->'\$.dayname[6]'
-			)
-		)
-)
+	)
 ENDOFWHERE;
 }
 function cronCleanRecords($cron=array()){
