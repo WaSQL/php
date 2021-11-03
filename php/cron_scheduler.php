@@ -78,7 +78,7 @@ $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
-$loop=3;
+$loop=2;
 $loop_cnt=0;
 if(isset($argv[1])){
 	$loop=(integer)$argv[1];
@@ -174,11 +174,11 @@ while(1){
 			cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 		}
 	}
-	if($loop_cnt >= $loop || $loop_cnt >= 300){
+	if($loop_cnt >= $loop || $loop_cnt >= 10){
 		break;
 	}
 	cronMessage('------ sleeping ----');
-	sleep(15);
+	sleep(30);
 }
 exit;
 /* cron functions */
