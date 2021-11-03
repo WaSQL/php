@@ -913,7 +913,7 @@ var wacss = {
 		    lineNumbers: true,
 		    lineWrapping:false,
 		    matchBrackets : true,
-		    autofocus: true,
+		    autofocus: false,
 		    autoRefresh: true,
 		    extraKeys: {
 		    	"Ctrl-Space": "autocomplete",

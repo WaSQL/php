@@ -3145,44 +3145,58 @@ exit;
 function adminAddEditOpts($addopts){
 	switch(strtolower($addopts['-table'])){
 		case '_pages':
+			$addopts['-style_all']='width:100%;';
 			$addopts['body_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'html'
+				'data-mode'=>'html',
+				'style'=>'width:100%;'
 			);
 			$addopts['controller_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'php'
+				'data-mode'=>'php',
+				'style'=>'width:100%;'
 			);
 			$addopts['functions_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'php'
+				'data-mode'=>'php',
+				'style'=>'width:100%;'
 			);
 			$addopts['css_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'css'
+				'data-mode'=>'css',
+				'data-style'=>'flex:1;width:100%;'
 			);
 			$addopts['js_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'javascript'
+				'data-mode'=>'javascript',
+				'style'=>'width:100%;'
 			);
 		break;
 		case '_templates':
+			$addopts['-style_all']='width:100%;';
 			$addopts['body_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'html'
+				'data-mode'=>'html',
+				'style'=>'width:100%;'
 			);
 			$addopts['functions_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'php'
+				'data-mode'=>'php',
+				'style'=>'width:100%;'
 			);
 			$addopts['css_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'css'
+				'data-mode'=>'css',
+				'style'=>'width:100%;'
 			);
 			$addopts['js_options']=array(
 				'class'=>'textarea code',
-				'data-mode'=>'javascript'
+				'data-mode'=>'javascript',
+				'style'=>'width:100%;'
 			);
+		break;
+		default:
+			$addopts['-style_all']='width:100%;';
 		break;
 	}
 	return $addopts;

@@ -4008,19 +4008,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			$fields=array();
 		}
 		if(is_array($fields)){
-			if(count($fields)){
-				if(isset($params['-tableclass'])){
-					$rtn .= '<table class="'.$params['-tableclass'].'">'.PHP_EOL;
-				}
-				elseif(isset($params['-bootstrap'])){
-					$rtn .= '<table class="w_table" style="width:100%;">'.PHP_EOL;
-				}
-				else{
-					$rtn .= '<table class="w_table">'.PHP_EOL;
-				}
-				$rtn .= '	<tr class="w_top">'.PHP_EOL;
-			}
-
+			$rtn .= '<div style="display:flex;flex-direction:row;width:100%;flex-wrap:wrap;justify-content:flex-start;align-items:flex-start; align-content:flex-start;">'.PHP_EOL;
 			foreach($fields as $field){
 				if(!isset($field) || !strlen($field)){continue;}
 				$includeFields[$field]=1;
@@ -4115,7 +4103,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	            elseif(isset($info['fieldinfo'][$field]['required']) && $info['fieldinfo'][$field]['required']==1){
 	                $class .= ' w_required';
 	            }
-				$rtn .= '		<td class="'.$class.'">'.PHP_EOL;
+				$rtn .= '		<div style="margin:10px 10px 0 0;display:flex;flex-direction:column;flex:1;" class="'.$class.'">'.PHP_EOL;
 	            //default value for add forms
 	            if((!isset($rec) || !is_array($rec))){
 					if(isset($params[$field])){$opts['value']=$params[$field];}
@@ -4213,15 +4201,12 @@ function addEditDBForm($params=array(),$customcode=''){
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
                 	}
-				$rtn .= '		</td>'.PHP_EOL;
+				$rtn .= '		</div>'.PHP_EOL;
 				if(!isset($used[$field])){$used[$field]=1;}
 				else{$used[$field]+=1;}
 				if(!isset($params['-focus'])){$params['-focus']=$field;}
 	        	}
-				if(count($fields)){
-					$rtn .= '</tr>'.PHP_EOL;
-					$rtn .= '</table>'.PHP_EOL;
-				}
+				$rtn .= '</div>'.PHP_EOL;
 			}
         else{
 			if(isset($params['-tableclass'])){
