@@ -177,6 +177,7 @@ while(1){
 	if($loop_cnt >= $loop || $loop_cnt >= 300){
 		break;
 	}
+	cronMessage('------ sleeping ----');
 	sleep(15);
 }
 exit;
