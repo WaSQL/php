@@ -4,11 +4,11 @@
 		run cron.php from a command-line every minute as follows
 		you can run multiple to handle heavy loads - it will handle the queue
 		On linux, add to the crontab
-		* * * * * /var/www/wasql_live/php/cron.sh >/var/www/wasql_live/php/cron.log 2>&1
+		* * * * * /var/www/wasql_live/php/cron_scheduler.sh >/var/www/wasql_live/php/cron_scheduler.log 2>&1
 		On Windows, add it as a scheduled task - Command Prompt as administrator:
 			https://www.windowscentral.com/how-create-task-using-task-scheduler-command-prompt
 			Create:
-				SCHTASKS /CREATE /SC MINUTE /MO 1 /TN "WaSQL\WaSQL_Cron_1" /TR "php.exe d:\wasql\php\cron.php" /RU administrator
+				SCHTASKS /CREATE /SC MINUTE /MO 1 /TN "WaSQL\WaSQL_Cron_1" /TR "php.exe d:\wasql\php\cron_scheduler.php" /RU administrator
 			List:
 				SCHTASKS /QUERY
 			Delete:
@@ -73,15 +73,6 @@ $etime=(integer)$etime;
 $pid_check=1;
 $wherestr_all=cronBuildWhere();
 if(!count($ConfigXml)){exit;}
-//check for wasql.update file
-if(file_exists("{$wpath}/php/temp/wasql.update")){
-	cronMessage("STARTED *** WaSQL update ***",1);
-	unlink("{$wpath}/php/temp/wasql.update");
-	$out=cmdResults('git pull');
-	cronMessage("FINISHED *** WaSQL update ***",1);
-	$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
-	$ok=setFileContents("{$wpath}/php/temp/wasql.update.log",$message);
-}
 $tpath=getWaSQLPath('php/temp');
 $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
@@ -115,7 +106,7 @@ while(1){
 		//cronMessage("connecting");
 		$ok=cronDBConnect();
 		if($ok != 1){
-	    	cronMessage("failed to connect: {$ok}");
+	    	cronMessage("{$CONFIG['name']} - failed to connect: {$ok}");
 	    	unset($ConfigXml[$name]);
 	    	continue;
 		}
@@ -447,7 +438,7 @@ function cronMessage($msg,$separate=0){
 	if($cronlog_id != 0){
 		$ok=commonCronLog($msg);
 	}
-	return commonLogMessage('cron',$msg,$separate,1);
+	return commonLogMessage('cron_scheduler',$msg,$separate,1);
 }
 /** --- function cronUpdate
 * @exclude  - this function is for internal use only and thus excluded from the manual

@@ -428,7 +428,7 @@ function cronMessage($msg,$separate=0){
 	if($cronlog_id != 0){
 		$ok=commonCronLog($msg);
 	}
-	return commonLogMessage('cron',$msg,$separate,1);
+	return commonLogMessage('cron_worker',$msg,$separate,1);
 }
 /** --- function cronUpdate
 * @exclude  - this function is for internal use only and thus excluded from the manual
