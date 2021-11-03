@@ -120,21 +120,27 @@ while(1){
 		//fix any cron record issues
 		$ok=executeSQL("UPDATE _cron set frequency_max='minute' WHERE frequency_max is null or frequency_max =''");
 		//2. set any crons that are ready to run_now
-		$cnt=getDBCount(array(
+		$recs=getDBRecords(array(
 			'-table'=>'_cron',
 			'-where'=>$wherestr_all,
+			'-fields'=>'_id,name'
 		));
-		$ok=cronMessage("setting {$cnt} crons to run_now");
-		$ok=editDBRecord(array(
-			'-table'=>'_cron',
-			'-where'=>$wherestr_all,
-			'run_now'=>1
-		));
-		$ok=getDBCount(array(
-			'-table'=>'_cron',
-			'run_now'=>1
-		));
-		$cnt=cronMessage("{$cnt} crons are set to run_now");
+		if(is_array($recs)){
+			$cnt=count($recs);
+			$ok=cronMessage("setting the following crons to run_now");
+			foreach($recs as $rec){
+				$e=editDBRecordById('_cron',$rec['_id'],array('run_now'=>1));
+				if((integer)$e==1){
+					$ok=cronMessage("{$rec['_id']}-{$rec['name']} set to run_now");
+				}
+				else{
+					$ok=cronMessage("FAILED to set {$rec['_id']}-{$rec['name']} to run_now");
+					$ok=cronMessage(printValue($e));
+				}
+				
+			}
+		}
+		
 		//check for wasql.update file
 		if(file_exists("{$tpath}/wasql.update")){
 			cronMessage("STARTED *** WaSQL update ***",1);
@@ -183,6 +189,7 @@ function cronBuildWhere(){
 active = 1 
 and paused != 1 
 and running != 1 
+and run_now != 1
 and run_cmd is not null
 and cron_pid=0
 and length(run_cmd) > 0
