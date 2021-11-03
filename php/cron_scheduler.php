@@ -219,6 +219,7 @@ and
 	(
 	run_format->>'\$.minute[0]'=-1
 	or MINUTE(now()) in (
+		run_format->>'\$.minute[0]',
 		run_format->>'\$.minute[1]',
 		run_format->>'\$.minute[2]',
 		run_format->>'\$.minute[3]',
