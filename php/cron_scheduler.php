@@ -120,11 +120,21 @@ while(1){
 		//fix any cron record issues
 		$ok=executeSQL("UPDATE _cron set frequency_max='minute' WHERE frequency_max is null or frequency_max =''");
 		//2. set any crons that are ready to run_now
+		$cnt=getDBCount(array(
+			'-table'=>'_cron',
+			'-where'=>$wherestr_all,
+		));
+		$ok=cronMessage("setting {$cnt} crons to run_now");
 		$ok=editDBRecord(array(
 			'-table'=>'_cron',
 			'-where'=>$wherestr_all,
 			'run_now'=>1
 		));
+		$ok=getDBCount(array(
+			'-table'=>'_cron',
+			'run_now'=>1
+		));
+		$cnt=cronMessage("{$cnt} crons are set to run_now");
 		//check for wasql.update file
 		if(file_exists("{$tpath}/wasql.update")){
 			cronMessage("STARTED *** WaSQL update ***",1);
