@@ -960,6 +960,10 @@ var wacss = {
 					params.mode='text/html';
 					defaults.htmlMode=true;
 				break;
+				case 'ini':
+				case 'text/x-ini':
+					params.mode='text/x-ini';
+				break;
 				case 'javascript':
 				case 'text/javascript':
 					params.mode='text/javascript';
