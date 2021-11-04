@@ -1,10 +1,10 @@
 <?php
 /*
 	Instructions:
-		run cron.php from a command-line every minute as follows
-		you can run multiple to handle heavy loads - it will handle the queue
+		run cron_scheduler.php from a command-line every minute as follows
 		On linux, add to the crontab
-		* * * * * /var/www/wasql_live/php/cron_scheduler.sh >/var/www/wasql_live/php/cron_scheduler.log 2>&1
+* * * * * php /var/www/wasql/php/cron_scheduler.php >/var/www/wasql/php/cron_scheduler.log 2>&1
+* * * * * /var/www/wasql/php/cron_worker.sh >/var/www/wasql/php/cron_worker.log 2>&1
 		On Windows, add it as a scheduled task - Command Prompt as administrator:
 			https://www.windowscentral.com/how-create-task-using-task-scheduler-command-prompt
 			Create:

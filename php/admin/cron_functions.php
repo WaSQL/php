@@ -141,10 +141,24 @@ function cronList(){
 		'-quickfilters'=>array(
 			array(
 				'name'=>'',
-				'icon'=>'icon-file-txt w_gray',
-				'title'=>'view log',
+				'icon'=>'icon-file-txt w_orange',
+				'title'=>'view Cron Scheduler log',
 				'class'=>'btn w_white',
-				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron',title:'Cron Log - all crons'});",
+				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron_scheduler',title:'Cron Scheduler Log'});",
+			),
+			array(
+				'name'=>'',
+				'icon'=>'icon-file-txt w_green',
+				'title'=>'view Cron Worker log',
+				'class'=>'btn w_white',
+				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron_worker',title:'Cron Worker Log'});",
+			),
+			array(
+				'name'=>'',
+				'icon'=>'icon-file-txt w_gray',
+				'title'=>'view Old Cron log',
+				'class'=>'btn w_white',
+				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron',title:'Cron Log'});",
 			),
 			array(
 				'name'=>'',

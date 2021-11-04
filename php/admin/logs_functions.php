@@ -2,7 +2,7 @@
 function logsGetLogs($includes=array(),$excludes=array()){
 	global $CONFIG;
 	$logs=array();
-	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
+	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:500;
 	$tempdir=getWasqlPath('php/temp');
 	foreach($CONFIG as $k=>$v){
 		$lk=strtolower($k);

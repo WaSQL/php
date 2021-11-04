@@ -8,6 +8,8 @@
   direction: ltr;
   border: 1px solid #CCCCCC;
   background-color: #FFF;
+  resize: vertical;
+  overflow: auto !important;
 }
 .CodeMirror-fullscreen {
   position: fixed !important;
