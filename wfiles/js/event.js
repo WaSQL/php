@@ -1182,12 +1182,24 @@ function initDisplayif(){
 }
 /* set custom required message using data-required_msg in form fields */
 function initCustomValidity(){
-	els = document.querySelectorAll('textarea[data-required_msg],input[data-required_msg],select[data-required_msg]');
+	let els = document.querySelectorAll('textarea[data-required_msg],input[data-required_msg],select[data-required_msg]');
     	for (let i = 0; i < els.length; i++) {
         els[i].oninvalid = function(e) {
             e.target.setCustomValidity('');
             if (!e.target.validity.valid) {
                 e.target.setCustomValidity(this.dataset.required_msg);
+            }
+        };
+        els[i].oninput = function(e) {
+            e.target.setCustomValidity('');
+        };
+    }
+    els = document.querySelectorAll('input[data-pattern_msg]');
+    	for (let i = 0; i < els.length; i++) {
+        els[i].oninvalid = function(e) {
+            e.target.setCustomValidity('');
+            if (!e.target.validity.valid) {
+                e.target.setCustomValidity(this.dataset.pattern_msg);
             }
         };
         els[i].oninput = function(e) {
@@ -1375,6 +1387,7 @@ function initBehaviors(ajaxdiv){
 	try{initQuill();}catch(e){}
 	try{initCarousels();}catch(e){}
 	try{f_tcalInit();}catch(e){}
+	try{initFlatpickr();}catch(e){}
 	//init custom required messages
 	try{initCustomValidity();}catch(e){}
 	//init drag sort
@@ -2317,6 +2330,62 @@ function initEnlighterJs(){
 			els[i].dataset.enlightened=1;
 		}
 	}
+	return false;
+}
+/**
+* @describe initializes EnlighterJS elements
+* @return false
+* @usage initEnlighterJs();
+* @reference 
+*		https://enlighterjs.org/Documentation.html
+*/
+function initFlatpickr(){
+	let els=document.querySelectorAll('input[data-behavior="flatpickr"]');
+	if(els.length){
+		flatpickr.init.prototype.defaultConfig.prevArrow = "<span class='icon-arrow-left'></span>";
+          flatpickr.init.prototype.defaultConfig.nextArrow = "<span class='icon-arrow-right'></span>";
+	}
+	let nlang=navigator.language || 'en-US';
+	let lang=nlang.split('-')[0];
+	switch(lang.toLowerCase()){
+		case 'es':
+			//spanish
+			flatpickr.init.prototype.l10n.months.longhand = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+			flatpickr.init.prototype.l10n.months.shorthand = ['enero', 'feb.', 'marzo', 'abr.', 'mayo', 'jun.', 'jul.', 'agosto', 'sept.', 'oct.', 'nov.', 'dic.'];
+			flatpickr.init.prototype.l10n.weekdays.longhand = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+			flatpickr.init.prototype.l10n.weekdays.shorthand = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+			//in the spanish calendar the first day of the week is Monday
+			flatpickr.init.prototype.l10n.firstDayOfWeek = 1;
+		break;
+		case 'de':
+			//german
+			flatpickr.init.prototype.l10n.months.longhand = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+			flatpickr.init.prototype.l10n.months.shorthand = ['Jan.', 'Feb.', 'Marz', 'Apr.', 'Mai', 'Juni.', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'];
+			flatpickr.init.prototype.l10n.weekdays.longhand = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+			flatpickr.init.prototype.l10n.weekdays.shorthand = ['Son', 'Mon', 'Die', 'Mit', 'Don', 'Fre', 'Sam'];
+			//in Germany the first day of the week is Monday
+			flatpickr.init.prototype.l10n.firstDayOfWeek = 1;
+		break;
+		case 'fr':
+			//french
+			flatpickr.init.prototype.l10n.months.longhand = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+			flatpickr.init.prototype.l10n.months.shorthand = ['janv.', 'févr.', 'mars', 'avril.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+			flatpickr.init.prototype.l10n.weekdays.longhand = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+			flatpickr.init.prototype.l10n.weekdays.shorthand = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+			//in France the first day of the week is Monday
+			flatpickr.init.prototype.l10n.firstDayOfWeek = 1;
+		break;
+		case 'it':
+			//italian
+			flatpickr.init.prototype.l10n.months.longhand = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+			flatpickr.init.prototype.l10n.months.shorthand = ['genn.', 'febbr.', 'mar.', 'abr.', 'magg.', 'giugno', 'luglio', 'ag.', 'sett.', 'ott.', 'nov.', 'dic.'];
+			flatpickr.init.prototype.l10n.weekdays.longhand = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+			flatpickr.init.prototype.l10n.weekdays.shorthand = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+			//in Italy the first day of the week is Monday
+			flatpickr.init.prototype.l10n.firstDayOfWeek = 1;
+		break;
+	}
+	flatpickr('input[data-behavior="flatpickr"]');
 	return false;
 }
 /**

@@ -2414,15 +2414,19 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 * @describe creates an HTML date control
 * @param action string
 * @param params array
-*	[data-firstday] - integer - sets the first day of the week (0: Sunday, 1: Monday, etc)
-*	[data-disableweekends] - if set, disallows selection of Saturdays or Sundays
-*	[data-showalldays] - if set, renders days of the calendar grid that fall in the next or previous months and make them selectable
-*	[data-showweeknumber]-  if set renders the week number in front of the week
-*	[data-numberofmonths] - integer - set the number of visible calendar months
-*	[data-maincalendar] - left or right - sets where the main calendar is.
-*	[data-pickwholeweek] - if set, selects a whole week instead of a day
-*	[data-theme] - string - define classname so you can define your own css.
-*	[data-yearrange] - mixed - number of years or [start,end] years to show
+*	[data-enableTime] - boolean - enables a time picker, defaults to false
+*	[data-dateFormat] - string
+* 	[data-timeFormat] - string - H (00 to 23), h (1 to 12), i (00 to 59), K (AM or PM)
+* 	[data-minDate] - string
+*  	[data-maxDate] - string
+*  	[data-disable] - array - dates to disable using intervals
+*  	[data-altinput] - boolean - Show the user a readable date (as per altFormat), but return something totally different to the server.
+* 	[data-altFormat] - string
+* 	[data-inline] - boolean - Display the calendar inline.
+* 	[data-shorthandCurrentMonth] - boolean - Show the month using the shorthand version.
+* 	[data-onchange] - function name - A function that gets triggered on every date selection
+* 	[data-hourIncrement] - integer - Adjusts the step for the hour input (incl. scrolling)
+* 	[data-minuteIncrement] - integer - Adjusts the step for the minute input (incl. scrolling)
 * @return string
 * @usage echo buildFormDate('mydate');
 */
@@ -2436,21 +2440,73 @@ function buildFormDate($name,$params=array()){
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['data-mask']='date';
-	$params['data-control']='pikadate';
-	if(isset($params['mask'])){
-    	$params['data-mask']=$params['mask'];
-    	unset($params['mask']);
+	$params['data-behavior']='flatpickr';
+	$tag='';
+	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
 	}
+	$tag .='>'.PHP_EOL;
+	$tag .= '	<input type="text" autocomplete="off"';
+	$pstyle='';
+	if(isset($params['style'])){$pstyle=$params['style'];}
+	$params['style']='min-width:100px;'.$pstyle;
+	unset($params['width']);
+	$tag .= setTagAttributes($params);
+	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
+	//hide calendar icon if readonly or disabled
+	$show=1;
+	if(isset($params['readonly']) && in_array(strtolower($params['readonly']),array('1','readonly'))){$show=0;}
+	if(isset($params['disabled']) && in_array(strtolower($params['disabled']),array('1','disabled'))){$show=0;}
+	if($show==1){
+		$tag .= '	<span class="icon-calendar w_gray w_biggest w_pointer" onclick="return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
+	}
+	$tag .= '</div>'.PHP_EOL;
+	return $tag;
+}
+//---------- begin function buildFormDateOLD-------------------
+/**
+* @describe creates an HTML date control
+* @param action string
+* @param params array
+*	[data-firstday] - integer - sets the first day of the week (0: Sunday, 1: Monday, etc)
+*	[data-disableweekends] - if set, disallows selection of Saturdays or Sundays
+*	[data-showalldays] - if set, renders days of the calendar grid that fall in the next or previous months and make them selectable
+*	[data-showweeknumber]-  if set renders the week number in front of the week
+*	[data-numberofmonths] - integer - set the number of visible calendar months
+*	[data-maincalendar] - left or right - sets where the main calendar is.
+*	[data-pickwholeweek] - if set, selects a whole week instead of a day
+*	[data-theme] - string - define classname so you can define your own css.
+*	[data-yearrange] - mixed - number of years or [start,end] years to show
+* @return string
+* @usage echo buildFormDate('mydate');
+*/
+function buildFormDateOLD($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['value'])){$params['-value']=$params['value'];}
+	if(!isset($params['-value'])){$params['-value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';}
+	if($params['-value']=='NULL'){$params['-value']='';}
+	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
+	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	$params['data-control']='pikadate';
+	
 	if(!isset($params['maxlength'])){$params['maxlength']='15';}
+	if(!isset($params['pattern'])){$params['pattern']="[0-9]{4}\-[0-9]{2}\-[0-9]{2}";}
+	if(!isset($params['data-pattern_msg'])){$params['data-pattern_msg']='Enter a valid Date - Year-Month-Day (YYYY-MM-DD)';}
 	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
+
+
+	if(!isset($params['title'])){$params['title']='Year-Month-Day';}
 	if(!isset($params['class'])){$params['class']='input browser-default form-control w_form-control w_input-prepend';}
 	if(!isset($params['name'])){$params['name']=$name;}
 	if(strlen($params['-value'])){
 		//strip off any time value
 		if(isset($params['data-showtime']) && $params['data-showtime']==1){
-			unset($params['data-mask']);
-			$params['maxlength']=30;
+
 	    }
 	    else{
 	    	if(preg_match('/^(.+?)\ [0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}/',$params['-value'],$m)){
@@ -2494,7 +2550,8 @@ function buildFormDate($name,$params=array()){
 * @usage echo buildFormDateTime('mydate');
 */
 function buildFormDateTime($name,$params=array()){
-	$params['data-showtime']=1;
+	$params['data-enableTime']=1;
+	//return printValue($params);
 	return buildFormDate($name,$params);
 }
 //---------- begin function buildFormGender--------------------
@@ -5781,9 +5838,8 @@ function array2String($arr){
 		}
 	return implode("\r\n",$vals);
 	}
-//---------- begin function addEditForm---------------------------------------
+//---------- begin function array2XML---------------------------------------
 /**
-* @deprecated use addEditDBForm instead
 * @exclude  - this function is deprecated and thus excluded from the manual
 */
 function array2XML($buffer=array(),$main='main',$item='item',$skip=0){

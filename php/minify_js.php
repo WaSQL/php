@@ -119,7 +119,7 @@ global $files;
 $files=array();
 //load basic js files
 minifyFiles($jspath,array('common','event','form','colorpicker'));
-minifyFiles(realpath("{$jspath}/extras"),array('pikaday'));
+minifyFiles(realpath("{$jspath}/extras"),array('flatpickr'));
 //Get any extras
 foreach($minify['extras'] as $extra){
 	if(preg_match('/^http/i',$extra)){

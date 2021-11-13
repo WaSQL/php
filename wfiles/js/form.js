@@ -2622,18 +2622,19 @@ function submitForm(theForm,popup,debug,ajax){
 			}
         }
         //check for mask attribute - a filter to test input against
-        var mask=theForm[i].getAttribute('pattern');
+        let mask=theForm[i].getAttribute('pattern');
         if(undefined == mask){mask=theForm[i].getAttribute('mask');}
         if(undefined == mask){mask=theForm[i].getAttribute('data-mask');}
         if(undefined != mask && mask != '' && theForm[i].value != ''){
-			var fldmsg=theForm[i].getAttribute('data-pattern-msg');
+			let fldmsg=theForm[i].getAttribute('data-pattern_msg');
+			if(undefined == fldmsg){fldmsg=theForm[i].getAttribute('data-pattern-msg');}
 			if(undefined == fldmsg){fldmsg=theForm[i].getAttribute('maskmsg');}
+			if(undefined == fldmsg){fldmsg=theForm[i].getAttribute('data-mask_msg');}
             if(mask == 'ccnumber'){
 				//credit card number
 				if(isCreditCardNumber(theForm[i].value) == false){
 					//invalid card number
-                    var msg = dname+" must be of valid credit card number ";
-                    if(undefined != fldmsg){msg=fldmsg;}
+                    let msg = fldmsg || dname+" must be of valid credit card number ";
                     submitFormAlert(msg,popup,5);
                     if(debug==1){console.log(msg);}
                     theForm[i].focus();
@@ -2644,8 +2645,7 @@ function submitForm(theForm,popup,debug,ajax){
 				//date
 				if(isDate(theForm[i].value) == false){
 					//invalid date
-                    var msg = dname+" must be a valid date ";
-                    if(undefined != fldmsg){msg=fldmsg;}
+                    let msg = fldmsg || dname+" must be a valid date ";
                     submitFormAlert(msg,popup,5);
                     if(debug==1){console.log(msg);}
                     theForm[i].focus();
@@ -2656,8 +2656,7 @@ function submitForm(theForm,popup,debug,ajax){
 				//future date
 				if(isFutureDate(theForm[i].value) == false){
 					//invalid date
-                    var msg = dname+" must be of valid date in the future ";
-                    if(undefined != fldmsg){msg=fldmsg;}
+                    let msg = fldmsg || dname+" must be of valid date in the future ";
                     submitFormAlert(msg,popup,5);
                     if(debug==1){console.log(msg);}
                     theForm[i].focus();
@@ -2668,8 +2667,7 @@ function submitForm(theForm,popup,debug,ajax){
 				//past date
 				if(isPastDate(theForm[i].value) == false){
 					//invalid date
-                    var msg = dname+" must be of valid date in the past ";
-                    if(undefined != fldmsg){msg=fldmsg;}
+                    let msg = fldmsg || dname+" must be of valid date in the past ";
                     submitFormAlert(msg,popup,5);
                     if(debug==1){console.log(msg);}
                     theForm[i].focus();
@@ -2680,8 +2678,7 @@ function submitForm(theForm,popup,debug,ajax){
 				//international phone check
 				if(checkInternationalPhone(theForm[i].value) == false){
 					//invalid card number
-                    var msg = dname+" must be a valid phone number";
-                    if(undefined != fldmsg){msg=fldmsg;}
+                    let msg = fldmsg || dname+" must be a valid phone number";
                     submitFormAlert(msg,popup,5);
                     if(debug==1){console.log(msg);}
                     theForm[i].focus();
@@ -2700,8 +2697,7 @@ function submitForm(theForm,popup,debug,ajax){
                 //console.log('rmask:'+rmask);
                 var re = new RegExp(rmask, 'i');
                 if(re.test(theForm[i].value) == false){
-                    var msg = dname+" must be of type "+mask;
-                    if(undefined != fldmsg){msg=fldmsg;}
+                    let msg = fldmsg || dname+" must be of type "+mask;
                     submitFormAlert(msg,popup,5);
                     theForm[i].focus();
                     if(debug==1){console.log(msg);}
@@ -2711,10 +2707,10 @@ function submitForm(theForm,popup,debug,ajax){
             }
         //check for length attribute on textarea fields
         if(theForm[i].type == 'textarea' && theForm[i].getAttribute('maxlength')){
-            var len=theForm[i].value.length;
-            var max=Math.abs(theForm[i].getAttribute('maxlength'));
+            let len=theForm[i].value.length;
+            let max=Math.abs(theForm[i].getAttribute('maxlength'));
             if(len > max){
-                var msg = dname+" must be less than "+max+" characters\nYou entered "+len+" characters.";
+                let msg = dname+" must be less than "+max+" characters\nYou entered "+len+" characters.";
                 if(theForm[i].getAttribute('maxlengthmsg')){msg=theForm[i].getAttribute('maxlengthmsg');}
                 submitFormAlert(msg,popup,5);
                 if(debug==1){console.log(msg);}
@@ -2724,10 +2720,10 @@ function submitForm(theForm,popup,debug,ajax){
         }
         //min length
         if(theForm[i].getAttribute('minlength')){
-            var len=theForm[i].value.length;
-            var minlength=Math.abs(theForm[i].getAttribute('minlength'));
+            let len=theForm[i].value.length;
+            let minlength=Math.abs(theForm[i].getAttribute('minlength'));
             if(len < minlength){
-                var msg = dname+" must be at least "+minlength+" characters.\nYou entered "+len+" characters.";
+                let msg = dname+" must be at least "+minlength+" characters.\nYou entered "+len+" characters.";
                 if(theForm[i].getAttribute('minlengthmsg')){msg=theForm[i].getAttribute('minlengthmsg');}
                 submitFormAlert(msg,popup,5);
                 if(debug==1){console.log(msg);}
@@ -2737,10 +2733,10 @@ function submitForm(theForm,popup,debug,ajax){
         }
         //minwords
         if(theForm[i].getAttribute('minwords')){
-			var cnt=getWordCount(theForm[i]);
-            var minwords=Math.abs(theForm[i].getAttribute('minwords'));
+			let cnt=getWordCount(theForm[i]);
+            let minwords=Math.abs(theForm[i].getAttribute('minwords'));
             if(len < minwords){
-                var msg = dname+" must be at least "+minwords+" words in length.\nYou entered "+cnt+" words.";
+                let msg = dname+" must be at least "+minwords+" words in length.\nYou entered "+cnt+" words.";
                 if(theForm[i].getAttribute('minwordsmsg')){msg=theForm[i].getAttribute('minwordsmsg');}
                 submitFormAlert(msg,popup,5);
                 if(debug==1){console.log(msg);}
@@ -2750,10 +2746,10 @@ function submitForm(theForm,popup,debug,ajax){
         }
         //maxwords
         if(theForm[i].getAttribute('maxwords')){
-			var cnt=getWordCount(theForm[i]);
-            var maxwords=Math.abs(theForm[i].getAttribute('maxwords'));
+			let cnt=getWordCount(theForm[i]);
+            let maxwords=Math.abs(theForm[i].getAttribute('maxwords'));
             if(len < maxwords){
-                var msg = dname+" must be less than "+maxwords+" words in length.\nYou entered "+cnt+" words.";
+                let msg = dname+" must be less than "+maxwords+" words in length.\nYou entered "+cnt+" words.";
                 if(theForm[i].getAttribute('maxwordsmsg')){msg=theForm[i].getAttribute('maxwordsmsg');}
                 submitFormAlert(msg,popup,5);
                 if(debug==1){console.log(msg);}
@@ -2763,17 +2759,17 @@ function submitForm(theForm,popup,debug,ajax){
         }
         //check for allow for file types
         if(theForm[i].type == 'file' && theForm[i].getAttribute('accept') && theForm[i].value.length){
-			var allow=theForm[i].getAttribute('accept');
+			let allow=theForm[i].getAttribute('accept');
 			if(debug==1){
 				alert(" -- File type allowed exts:"+allow);
             	}
-			var exts=allow.split(',');
-			var valid=0;
+			let exts=allow.split(',');
+			let valid=0;
 			for(s=0;s<exts.length;s++){
 				if(theForm[i].value.lastIndexOf(exts[s])!=-1){valid++;}
                 }
             if(valid==0){
-            	var msg = dname+" must be of valid file type:  "+allow;
+            	let msg = dname+" must be of valid file type:  "+allow;
                 if(theForm[i].getAttribute('acceptmsg')){msg=theForm[i].getAttribute('acceptmsg');}
                 submitFormAlert(msg,popup,5);
                 if(debug==1){console.log(msg);}
@@ -2784,8 +2780,8 @@ function submitForm(theForm,popup,debug,ajax){
         }
     //nicEdit save
     for(var i=0;i<theForm.length;i++){
-		var behavior=theForm[i].getAttribute('data-behavior');
-		var id=theForm[i].getAttribute('id');
+		let behavior=theForm[i].getAttribute('data-behavior');
+		let id=theForm[i].getAttribute('id');
 		if(undefined != behavior && (behavior=='wysiwyg' || behavior=='richtext' || behavior=='tinymce' || behavior=='nicedit') && undefined != nicEditors[id]){
 			if(ajax==1){
             	//ajaxSubmitForm needs us to manually call saveContent()

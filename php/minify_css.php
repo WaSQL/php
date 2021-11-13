@@ -114,7 +114,7 @@ global $files;
 $files=array();
 //load basic css files
 minifyFiles($csspath,array('wasql','wasql_icons','signature'));;
-minifyFiles(realpath("{$csspath}/extras"),array('pikaday','quill','brands','materials'));
+minifyFiles(realpath("{$csspath}/extras"),array('flatpickr','quill','brands','materials'));
 //Get any extras
 foreach($minify['extras'] as $extra){
 	minifyFiles(realpath("{$csspath}/extras"),$extra);
