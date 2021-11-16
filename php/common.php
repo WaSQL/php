@@ -2447,8 +2447,9 @@ function buildFormDate($name,$params=array()){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
 	}
+	unset($params['name']);
 	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" autocomplete="off"';
+	$tag .= '	<input type="text" name="'.$params['name'].'" autocomplete="off"';
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
