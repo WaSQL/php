@@ -2432,7 +2432,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 */
 function buildFormDate($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
+	if(isset($params['name']) && strlen(trim($params['name']))){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['value'])){$params['-value']=$params['value'];}
 	if(!isset($params['-value'])){$params['-value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';}
@@ -2449,7 +2449,7 @@ function buildFormDate($name,$params=array()){
 	}
 	unset($params['name']);
 	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" name="'.$params['name'].'" autocomplete="off"';
+	$tag .= '	<input type="text" name="'.$name.'" autocomplete="off"';
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
