@@ -2449,7 +2449,7 @@ function buildFormDate($name,$params=array()){
 	}
 	unset($params['name']);
 	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" name="'.$name.'" autocomplete="off"';
+	$tag .= '	<input type="text" name="'.$name.'" autocomplete="'.getRandomString().'"';
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
