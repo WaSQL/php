@@ -1380,6 +1380,10 @@ function initSpinWheel(){
     wheels[w].wrapper.setAttribute('class','spinwheel');
     wheels[w].wrapper.setAttribute('style','width:'+width_height+'px;height:'+width_height+'px;');
     wheels[w].wrapper.dataset.wheel_index=w;
+    //displayif
+    if(undefined != wheels[w].dataset.displayif){
+    	wheels[w].wrapper.displayif=wheels[w].dataset.displayif;
+    }
     wheels[w].parentNode.insertBefore(wheels[w].wrapper, wheels[w].nextSibling);
     //canvas
     wheels[w].canvas=document.createElement('canvas');
