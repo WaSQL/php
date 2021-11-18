@@ -1395,6 +1395,7 @@ function initSpinWheel(){
     //spin button
     wheels[w].button=document.createElement('button');
     wheels[w].button.setAttribute('class','spin');
+    wheels[w].button.setAttribute('type','button');
     wheels[w].button.textContent='spin';
     wheels[w].button.style.background='#000';
     if(width_height <= 100){
