@@ -1413,6 +1413,7 @@ function initSpinWheel(){
     wheels[w].sectors=new Array();
     let c=0;
     for(let i=0;i<wheels[w].options.length;i++){
+    	 if(trim(wheels[w].options[i].value).length==0){continue;}
       let label=trim(wheels[w].options[i].text);
       if(label.length==0){continue;}
       let value=trim(wheels[w].options[i].value) || label;
