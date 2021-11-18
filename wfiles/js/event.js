@@ -1350,6 +1350,165 @@ function initQuill(){
 	}
 	decorateQuillAttachments();
 }
+/* initSpinWheel */
+function initSpinWheel(){
+  let wheels=document.querySelectorAll('select[data-behavior="spinwheel"]');
+  if(undefined == wheels || wheels.length==0){return false;}
+  const rand = (m, M) => Math.random() * (M - m) + m;
+  const PI = Math.PI;
+  const TAU = 2 * PI;
+  const audio = new Audio('/wfiles/tick.mp3');  // Create audio object and load tick.mp3 file.
+  const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
+  let angVel = 0; // Angular velocity
+  let ang = 0; // Angle in radians
+  let colors = ['#e70697', '#fff200', '#f6989d', '#ee1c24', '#3cb878','#f26522','#a186be','#00aef0'];
+  let isw=this;
+  for(let w=0;w<wheels.length;w++){
+  	//already initialized?
+  	if(undefined != wheels[w].dataset.initialized){continue;}
+  	wheels[w].dataset.initialized=1;
+    //data-colors?
+    if(undefined != wheels[w].dataset.colors){
+      wcolors=wheels[w].dataset.colors.split(',');
+    }
+    else{
+      wcolors=colors;
+    }
+    //wrapper
+    let width_height=wheels[w].dataset.width||wheels[w].dataset.height||300;
+    wheels[w].wrapper=document.createElement('div');
+    wheels[w].wrapper.setAttribute('class','spinwheel');
+    wheels[w].wrapper.setAttribute('style','width:'+width_height+'px;height:'+width_height+'px;');
+    wheels[w].wrapper.dataset.wheel_index=w;
+    wheels[w].parentNode.insertBefore(wheels[w].wrapper, wheels[w].nextSibling);
+    //canvas
+    wheels[w].canvas=document.createElement('canvas');
+    wheels[w].canvas.setAttribute('width',width_height);
+    wheels[w].canvas.setAttribute('height',width_height);
+    wheels[w].ctx = wheels[w].canvas.getContext('2d');
+    wheels[w].wrapper.appendChild(wheels[w].canvas);
+    wheels[w].canvas.dataset.wheel_index=w;
+    //spin button
+    wheels[w].button=document.createElement('button');
+    wheels[w].button.setAttribute('class','spin');
+    wheels[w].button.textContent='spin';
+    wheels[w].button.style.background='#000';
+    if(width_height <= 100){
+      wheels[w].button.style.font='0.7em/0 sans-serif';
+    }
+    else if(width_height <= 200){
+      wheels[w].button.style.font='1.0em/0 sans-serif';
+    }
+    else if(width_height <= 300){
+      wheels[w].button.style.font='1.3em/0 sans-serif';
+    }
+    else{
+      wheels[w].button.style.font='1.5em/0 sans-serif';
+    }
+    wheels[w].button.dataset.wheel_index=w;
+    wheels[w].button.addEventListener("click", clicked,false);
+    wheels[w].wrapper.appendChild(wheels[w].button);
+    
+    //build the sectors
+    wheels[w].sectors=new Array();
+    let c=0;
+    for(let i=0;i<wheels[w].options.length;i++){
+      let label=trim(wheels[w].options[i].text);
+      if(label.length==0){continue;}
+      let value=trim(wheels[w].options[i].value) || label;
+      let sector={label:label,color:wcolors[c],value:value};
+      wheels[w].sectors.push(sector);
+      c=c+1;
+      if(undefined == wcolors[c]){c=0;}
+    }
+    //draw the sectors
+    wheels[w].tot = wheels[w].sectors.length;
+    wheels[w].dia = wheels[w].ctx.canvas.width;
+    wheels[w].rad = wheels[w].dia / 2;
+    wheels[w].arc = TAU / wheels[w].sectors.length;
+    wheels[w].angVel=0;
+    for(let s=0;s<wheels[w].sectors.length;s++){
+      wheels[w].ang = wheels[w].arc * s;
+      wheels[w].ctx.save();
+      // COLOR
+      wheels[w].ctx.beginPath();
+      wheels[w].ctx.fillStyle = wheels[w].sectors[s].color;
+      wheels[w].ctx.moveTo(wheels[w].rad, wheels[w].rad);
+      wheels[w].ctx.arc(wheels[w].rad, wheels[w].rad, wheels[w].rad, wheels[w].ang, wheels[w].ang + wheels[w].arc);
+      wheels[w].ctx.lineTo(wheels[w].rad, wheels[w].rad);
+      wheels[w].ctx.fill();
+      // TEXT
+      wheels[w].ctx.translate(wheels[w].rad, wheels[w].rad);
+      wheels[w].ctx.rotate(wheels[w].ang + wheels[w].arc / 2);
+      wheels[w].ctx.textAlign = "right";
+      wheels[w].ctx.fillStyle = "#000";
+      wheels[w].ctx.font = "bold 20px sans-serif";
+      wheels[w].ctx.fillText(wheels[w].sectors[s].label, wheels[w].rad - 10, 10);
+      //restore
+      wheels[w].ctx.restore();
+    }
+  }
+  function clicked(evt){
+    let w=parseInt(evt.currentTarget.dataset.wheel_index);
+    if(undefined==wheels[w].dataset.clicked){
+      wheels[w].dataset.clicked=1;
+    }
+    else{
+      wheels[w].dataset.clicked=parseInt(wheels[w].dataset.clicked)+1;
+    }
+    if(undefined != wheels[w].dataset.max){
+      let max=parseInt(wheels[w].dataset.max);
+      if(wheels[w].dataset.clicked > max){
+        return false;
+      }
+    }
+    wheels[w].angVel = rand(0.25, 0.35);
+    
+  }
+  function rotate(w) {
+    //get the sector on top
+    let s=Math.floor(wheels[w].tot -wheels[w].ang / TAU * wheels[w].tot) % wheels[w].tot;
+    let sector = wheels[w].sectors[s];
+    wheels[w].canvas.style.transform = `rotate(${wheels[w].ang - PI / 2}rad)`;
+    let label = !wheels[w].angVel ? sector.label : sector.label;
+    if(undefined == wheels[w].label || wheels[w].label != label){
+      playSound();
+      wheels[w].label=label;
+      wheels[w].value=sector.value;
+      wheels[w].button.textContent = label;
+      wheels[w].button.style.background = sector.color;
+    }
+  }
+  function frame() {
+    for(w in wheels){
+      if(!isNum(w)){continue;}
+      if(wheels[w].angVel==0){continue;}
+      wheels[w].angVel *= friction; // Decrement velocity by friction
+      // Bring to stop
+      if (wheels[w].angVel < 0.002){
+        wheels[w].angVel = 0;
+      }
+      wheels[w].ang += wheels[w].angVel; // Update angle
+      wheels[w].ang %= TAU; // Normalize angle
+      rotate(w);
+    }
+  }
+
+  function spinwheelengine() {
+    frame();
+    requestAnimationFrame(spinwheelengine);
+  }
+
+  function playSound(){
+    // Stop and rewind the sound if it already happens to be playing.
+    audio.pause();
+    audio.currentTime = 0;
+    // Play the sound.
+    audio.play();
+  }
+  // INIT
+  spinwheelengine(); // Start engine
+}
 function decorateQuillAttachments(fname){
 	//make ql-attachment links clickable
 	let els=document.querySelectorAll('.ql-editor img[alt],.ql-editor img.ql-attachment');
@@ -1390,6 +1549,8 @@ function initBehaviors(ajaxdiv){
 	try{initFlatpickr();}catch(e){}
 	//init custom required messages
 	try{initCustomValidity();}catch(e){}
+	//initSpinWheel
+	try{initSpinWheel();}catch(e){}
 	//init drag sort
 	try{dragSortEnable('[data-behavior="dragsort"]');}catch(e){}
 	//check for data-navigate
