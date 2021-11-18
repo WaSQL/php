@@ -1464,7 +1464,7 @@ function initSpinWheel(){
       }
     }
     wheels[w].angVel = rand(0.25, 0.35);
-    
+    return false;
   }
   function rotate(w) {
     //get the sector on top
