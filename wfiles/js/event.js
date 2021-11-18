@@ -1493,6 +1493,7 @@ function initSpinWheel(){
       // Bring to stop
       if (wheels[w].angVel < 0.002){
         wheels[w].angVel = 0;
+        simulateEvent(wheels[w],'change');
       }
       wheels[w].ang += wheels[w].angVel; // Update angle
       wheels[w].ang %= TAU; // Normalize angle
