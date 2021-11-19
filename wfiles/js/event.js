@@ -1357,7 +1357,6 @@ function initSpinWheel(){
   const rand = (m, M) => Math.random() * (M - m) + m;
   const PI = Math.PI;
   const TAU = 2 * PI;
-  const audio = new Audio('/wfiles/tick.mp3');  // Create audio object and load tick.mp3 file.
   const friction = 0.991; // 0.995=soft, 0.99=mid, 0.98=hard
   let angVel = 0; // Angular velocity
   let ang = 0; // Angle in radians
@@ -1374,6 +1373,9 @@ function initSpinWheel(){
     else{
       wcolors=colors;
     }
+    //audio
+    wheels[w].audiofile=wheels[w].dataset.audio||'/wfiles/tick.mp3';
+    wheels[w].audio=new Audio(wheels[w].audiofile);
     //wrapper
     let width_height=wheels[w].dataset.width||wheels[w].dataset.height||300;
     wheels[w].wrapper=document.createElement('div');
@@ -1396,8 +1398,9 @@ function initSpinWheel(){
     wheels[w].button=document.createElement('button');
     wheels[w].button.setAttribute('class','spin');
     wheels[w].button.setAttribute('type','button');
-    wheels[w].button.textContent='spin';
-    wheels[w].button.style.background='#000';
+    wheels[w].button.textContent=wheels[w].dataset.button_text||'spin';
+    wheels[w].button.style.background=wheels[w].dataset.button_background||'#fff';
+    wheels[w].button.style.color=wheels[w].dataset.button_color||'#000';
     if(width_height <= 100){
       wheels[w].button.style.font='0.7em/0 sans-serif';
     }
@@ -1433,6 +1436,11 @@ function initSpinWheel(){
     wheels[w].rad = wheels[w].dia / 2;
     wheels[w].arc = TAU / wheels[w].sectors.length;
     wheels[w].angVel=0;
+    wheels[w].volume=0;
+    let font=wheels[w].dataset.font||'bold 20px sans-serif';
+    let fillstyle=wheels[w].dataset.fillstyle||'#000';
+    let textalign=wheels[w].dataset.textalign||'right';
+    //console.log(new Array(w,fillstyle,textalign,font));
     for(let s=0;s<wheels[w].sectors.length;s++){
       wheels[w].ang = wheels[w].arc * s;
       wheels[w].ctx.save();
@@ -1446,9 +1454,9 @@ function initSpinWheel(){
       // TEXT
       wheels[w].ctx.translate(wheels[w].rad, wheels[w].rad);
       wheels[w].ctx.rotate(wheels[w].ang + wheels[w].arc / 2);
-      wheels[w].ctx.textAlign = "right";
-      wheels[w].ctx.fillStyle = "#000";
-      wheels[w].ctx.font = "bold 20px sans-serif";
+      wheels[w].ctx.textAlign = textalign;
+      wheels[w].ctx.fillStyle = fillstyle;
+      wheels[w].ctx.font = font;
       wheels[w].ctx.fillText(wheels[w].sectors[s].label, wheels[w].rad - 10, 10);
       //restore
       wheels[w].ctx.restore();
@@ -1478,7 +1486,7 @@ function initSpinWheel(){
     wheels[w].canvas.style.transform = `rotate(${wheels[w].ang - PI / 2}rad)`;
     let label = !wheels[w].angVel ? sector.label : sector.label;
     if(undefined == wheels[w].label || wheels[w].label != label){
-      playSound();
+      playSound(w);
       wheels[w].label=label;
       wheels[w].value=sector.value;
       wheels[w].button.textContent = label;
@@ -1493,6 +1501,7 @@ function initSpinWheel(){
       // Bring to stop
       if (wheels[w].angVel < 0.002){
         wheels[w].angVel = 0;
+        wheels[w].volume=0;
         simulateEvent(wheels[w],'change');
       }
       wheels[w].ang += wheels[w].angVel; // Update angle
@@ -1506,12 +1515,22 @@ function initSpinWheel(){
     requestAnimationFrame(spinwheelengine);
   }
 
-  function playSound(){
+  function playSound(w){
+  	if(!isNum(w)){return;}
+  	if(undefined != wheels[w].dataset.volume && wheels[w].dataset.volume==0){
+  		return;
+  	}
     // Stop and rewind the sound if it already happens to be playing.
-    audio.pause();
-    audio.currentTime = 0;
+    wheels[w].audio.pause();
+    wheels[w].audio.currentTime = 0;
     // Play the sound.
-    audio.play();
+    wheels[w].audio.play();
+    wheels[w].volume=parseFloat(wheels[w].volume,3)+0.025;
+    if(wheels[w].volume > 1){wheels[w].volume=1;}
+    wheels[w].audio.v=wheels[w].dataset.volume||wheels[w].volume;
+    wheels[w].audio.onplay=function(){
+    	this.volume=this.v;
+    }
   }
   // INIT
   spinwheelengine(); // Start engine
