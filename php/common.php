@@ -15840,7 +15840,7 @@ function processActions(){
 					//update the _edate and _euser fields on edit
                     if(isUser()){$opts['_euser']=$USER['_id'];}
                     $opts['_edate']=date("Y-m-d H:i:s",$timestamp);
-
+                    //echo printValue($opts);exit;
                     //edit the record
 					$_REQUEST['edit_result']=editDBRecord($opts);
 					global $databaseCache;

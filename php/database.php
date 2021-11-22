@@ -4550,17 +4550,17 @@ function addDBRecord($params=array()){
     	if($i['_dbtype']=='json' && isset($params[$k])){
         	$jsonfields[]=$k;
         	if(is_array($params[$k])){
-        		$params[$k]=json_encode($params[$k]);
+        		$params[$k]=json_encode($params[$k],JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
         	}
         	else{
         		$jval=json_decode($params[$k],true);
 	        	if(!is_array($jval)){
 	        		if(stringContains($params[$k],':')){
 	        			$arr=preg_split('/\:/',$params[$k]);
-	        			$params[$k]=json_encode($arr);
+	        			$params[$k]=json_encode($arr,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 	        		}
 	        		else{
-	        			$params[$k]=json_encode(array($params[$k]));
+	        			$params[$k]=json_encode(array($params[$k]),JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 	        		}
 	        	}
         	}
@@ -4587,7 +4587,7 @@ function addDBRecord($params=array()){
 							case 5:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]]=$val;break;
 							case 6:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]][$parts[5]]=$val;break;
 						}
-						$params[$jfield]=json_encode($jarray);
+						$params[$jfield]=json_encode($jarray,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 					}
 
 				}
@@ -4615,7 +4615,7 @@ function addDBRecord($params=array()){
 	/* Filter the query based on params */
 	$fields=array();
 	$vals=array();
-	
+	$json_sets=array();
 	foreach($params as $key=>$val){
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
@@ -4625,6 +4625,23 @@ function addDBRecord($params=array()){
 		if(!is_array($val) && strlen($val)==0 && preg_match('/not_null/',$info[$key]['_dbflags'])){
 			return 'addDBRecord Datatype Null Error: Field "'.$key.'" cannot be null';
         }
+        //expression fields derived from json fields
+		if(isset($info[$key]['expression']) && preg_match('/json_extract\((.+?)\)/',$info[$key]['expression'],$m)){
+			//user json_set to set expression fields
+			//json_extract(`how_many`,_utf8mb4'$.ihop')
+			//json_extract(`response`,'$.shopper_id')
+			list($tfield,$jfield)=preg_split('/\,/',$m[1],2);
+			$tfield=str_replace('`','',$tfield);
+			$tfield=str_replace("'",'',$tfield);
+			if(preg_match('/\'(.+?)\'/',$jfield,$j)){
+				$jfield=$j[1];
+			}
+			$jfield=preg_replace('/^\$\./','',$jfield);
+			$jfield=str_replace('`','',$jfield);
+			$jfield=str_replace("'",'',$jfield);
+			$json_sets[$tfield][$jfield]=$val;
+			continue;
+		}
 		array_push($fields,$key);
 		//date field?
 		if(strlen($val) && preg_match('/^<sql>(.+)<\/sql>$/i',$val,$pm)){
@@ -4757,6 +4774,27 @@ function addDBRecord($params=array()){
     		$upserts[$key]='';
     	}
     }
+    if(count($json_sets)){
+    	foreach($fields as $i=>$field){
+    		if(isset($json_sets[$field])){
+    			$vals[$i]=preg_replace('/^\'/','',$vals[$i]);
+    			$vals[$i]=preg_replace('/\'$/','',$vals[$i]);
+    			$json=json_decode(stripslashes($vals[$i]),true);
+    			//echo "<div>{$field}:::{$vals[$i]}</div>".printValue($json).PHP_EOL;
+    			foreach($json_sets[$field] as $jkey=>$jval){
+    				$json[$jkey]=$jval;
+    			}
+    			$vals[$i]="'".json_encode($json,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE)."'";
+    			unset($json_sets[$field]);
+    		}
+    	}
+    }
+    if(count($json_sets)){
+    	foreach($json_sets as $tfield=>$tvals){
+    		$fields[]=$tfield;
+    		$vals[]="'".json_encode($tvals,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE)."'";
+    	}
+    }
     $fieldstr=implode(",",$fields);
     $valstr=implode(",",$vals);
     $table=$params['-table'];
@@ -4814,6 +4852,7 @@ function addDBRecord($params=array()){
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
 	}
+	//echo printValue($json_sets)."<div>{$query}</div>".PHP_EOL;
 	// execute sql - return the number of rows affected
 	$start=microtime(true);
 	$query_result=@databaseQuery($query);
@@ -6478,17 +6517,17 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
     	if($i['_dbtype']=='json' && isset($params[$k])){
         	$jsonfields[]=$k;
         	if(is_array($params[$k])){
-        		$params[$k]=json_encode($params[$k]);
+        		$params[$k]=json_encode($params[$k],JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
         	}
         	else{
         		$jval=json_decode($params[$k],true);
 	        	if(!is_array($jval)){
 	        		if(stringContains($params[$k],':')){
 	        			$arr=preg_split('/\:/',$params[$k]);
-	        			$params[$k]=json_encode($arr);
+	        			$params[$k]=json_encode($arr,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 	        		}
 	        		else{
-	        			$params[$k]=json_encode(array($params[$k]));
+	        			$params[$k]=json_encode(array($params[$k]),JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 	        		}
 	        	}
         	}
@@ -6538,7 +6577,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 									case 6:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]][$parts[5]]=$jval;break;
 								}
 							}
-							$rchanges[$jfield]=json_encode($jarray);
+							$rchanges[$jfield]=json_encode($jarray,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 						}
 					}
 					if(count($rchanges)){
@@ -6550,12 +6589,34 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			}
 		}
 	}
+	$json_sets=array();
 	foreach($params as $key=>$val){
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype'])){continue;}
 		//skip keys that begin with a dash
 		if(preg_match('/^\-/',$key)){continue;}
-		if(!is_array($val) && preg_match('/^<sql>(.+)<\/sql>$/i',$val,$pm)){
+		//expression fields derived from json fields
+		if(isset($info[$key]['expression']) && preg_match('/json_extract\((.+?)\)/',$info[$key]['expression'],$m)){
+			//user json_set to set expression fields
+			//json_extract(`how_many`,_utf8mb4'$.ihop')
+			//json_extract(`response`,'$.shopper_id')
+			list($tfield,$jfield)=preg_split('/\,/',$m[1],2);
+			$tfield=str_replace('`','',$tfield);
+			$tfield=str_replace("'",'',$tfield);
+			if(preg_match('/\'(.+?)\'/',$jfield,$j)){
+				$jfield=$j[1];
+			}
+			$jfield=str_replace('`','',$jfield);
+			$jfield=str_replace("'",'',$jfield);
+			if(isNum($val)){
+				$json_sets[$tfield][]="'{$jfield}',{$val}";
+			}
+			else{
+				$val=str_replace("'","''",$val);
+				$json_sets[$tfield][]="'{$jfield}','{$val}'";
+			}
+		}
+		elseif(!is_array($val) && preg_match('/^<sql>(.+)<\/sql>$/i',$val,$pm)){
 			array_push($updates,"{$key}={$pm[1]}");
 			}
 		else{
@@ -6650,13 +6711,19 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	        if(isset($info[$key.'_sha1']) && !isset($params[$key.'_sha1'])){
 				$sha=sha1($val);
 				array_push($updates,"{$key}_sha1='{$sha}'");
-				}
+			}
 			if(isset($info[$key.'_size']) && !isset($params[$key.'_size'])){
 				$size=strlen($val);
 				array_push($updates,"{$key}_size={$size}");
-				}
-	        }
-    	}
+			}
+	    }
+    }
+    if(count($json_sets)){
+		//update surveys_responses set response=JSON_SET(response, '$.ihop', 4,'$.wendys',7,'$.abc',55) where _id=2
+		foreach($json_sets as $tfield=>$sets){
+			$updates[]="{$tfield}=json_set({$tfield},".implode(', ',$sets).")";
+		}
+	}
     //return if no updates were found
 	if(!count($updates)){
 		if(isset($model['functions']) && !isset($params['-notrigger'])){
@@ -6668,12 +6735,12 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 		}
 		return 0;
 	}
-    $fieldstr=implode(",",$updates);
+    $fieldstr=implode(', ',$updates);
     $table=$params['-table'];
     if(isMssql()){$table="[{$table}]";}
 	$query="update {$table} set $fieldstr where " . $params['-where'];
 	if(isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
-	//echo $query.PHP_EOL;
+	//echo "<div>{$query}</div>".PHP_EOL;
 	// execute sql - return the number of rows affected
 	if(isset($params['-echo'])){echo $query;}
 	$start=microtime(true);
@@ -8024,7 +8091,7 @@ function includeDBOnce($params=array()){
 function mapDBDvalsToTvals($table,$field,$params=array()){
 	global $databaseCache;
 	$cachekey=$table.'_'.$field;
-	if(count($params)){$cachekey .= '_'.sha1(json_encode($params));}
+	if(count($params)){$cachekey .= '_'.sha1(json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE));}
 	if(isset($databaseCache['mapDBDvalsToTvals'][$cachekey])){
 		return $databaseCache['mapDBDvalsToTvals'][$cachekey];
 	}
@@ -9354,8 +9421,8 @@ function getDBRecords($params=array()){
 		$query=getDBQuery($params);
 	}
 	else{
-		setWasqlError(debug_backtrace(),"No table: ".json_encode($params));
-		return "No table. ".json_encode($params);
+		setWasqlError(debug_backtrace(),"No table: ".json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE));
+		return "No table. ".json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 	}
 	//do we already have a query for this stored?
 	$query_sha=sha1($CONFIG['dbname'].$query);
@@ -9937,7 +10004,7 @@ function listDBRecords($params=array(),$customcode=''){
 	$rtn='';
 	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '<div id="cronlist">'.PHP_EOL;}
 	elseif(isset($params['-ajax']) && (integer)$params['-ajax']==1){
-		$params['-ajaxid']='list_'.sha1(json_encode($params));
+		$params['-ajaxid']='list_'.sha1(json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE));
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
 	elseif(isset($params['-ajaxid'])){
