@@ -608,10 +608,13 @@ function ajaxEditField(table,id,fld,params){
 * @return false
 * @usage onclick="return formDictate('inputid','iconid');"
 */
-function formDictate(inp,ico,frm,continuous) {
+function formDictate(inp,ico,frm,continuous,debug) {
   	inp=getObject(inp);
+  	if(undefined == debug){debug=false;}
   	if(undefined == inp){
-  		console.log('formDictate error: undefined input '+inp);
+  		let err='formDictate error: undefined input '+inp;
+  		if(debug){alert(err);}
+  		else{console.log(err);}
   		return false;
   	}
   	ico=getObject(ico);
@@ -693,6 +696,9 @@ function formDictate(inp,ico,frm,continuous) {
 		      	}
       		} 
       	};
+    }
+    else if(debug){
+    	alert('webkitSpeechRecognition property not found on this device')
     }
     return false;
 }
