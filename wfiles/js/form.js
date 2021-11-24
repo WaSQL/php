@@ -623,6 +623,7 @@ function formDictate(inp,ico,frm,continuous,debug) {
       	recognition.continuous = continuous||false;
       	recognition.interimResults = false;
       	recognition.lang = "en-US";
+      	if(debug){alert(recognition);}
       	if(undefined != ico){
 	      	ico.classList.add('w_blink');
 	      	ico.classList.add('w_success');
@@ -633,7 +634,9 @@ function formDictate(inp,ico,frm,continuous,debug) {
 	    }
       	recognition.inp=inp;
       	recognition.start();
+      	recognition.debug=debug;
       	recognition.onresult = function(e) {
+      		if(this.debug){alert('onresult');}
       		if(undefined != this.frm && undefined != window[this.frm]){
         		try {
         			window[this.frm](e.results[0][0].transcript);
@@ -683,13 +686,16 @@ function formDictate(inp,ico,frm,continuous,debug) {
       			}
       			else{
       				console.log(e);
+      				if(this.debug){alert(e);}
       			}
 			}
       		else{
       			try {
   					this.stop();
 				}
-				catch (e) {}
+				catch (e) {
+					if(this.debug){alert(e);}
+				}
       			if(undefined != this.ico){
 		      		this.ico.classList.remove('w_blink');
 		      		this.ico.classList.remove('w_success');
