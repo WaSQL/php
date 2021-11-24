@@ -635,7 +635,6 @@ function formDictate(inp,ico,frm,continuous,debug) {
       	recognition.start();
       	recognition.debug=debug;
       	recognition.onresult = function(e) {
-      		if(this.debug){alert('onresult');}
       		if(undefined != this.frm && undefined != window[this.frm]){
         		try {
         			window[this.frm](e.results[0][0].transcript);
