@@ -633,13 +633,6 @@ function formDictate(inp,ico,frm,continuous,debug) {
 	    	recognition.frm=frm;
 	    }
       	recognition.inp=inp;
-      	recognition.start() => VM187: 1 err: SpeechRecognitionErrorEvent {
-		   isTrusted: true,
-		   error: "not-allowed",
-		   message: "",
-		   type: "error",
-		   target: SpeechRecognition
-		};
       	//recognition.start();
       	recognition.debug=debug;
       	recognition.onresult = function(e) {
