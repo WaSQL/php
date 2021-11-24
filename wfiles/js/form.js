@@ -619,8 +619,7 @@ function formDictate(inp,ico,frm,continuous,debug) {
   	}
   	ico=getObject(ico);
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
-    	let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-		var recognition = new SpeechRecognition();
+		var recognition = new webkitSpeechRecognition();
       	recognition.continuous = continuous||false;
       	recognition.interimResults = false;
       	recognition.lang = "en-US";
@@ -633,7 +632,7 @@ function formDictate(inp,ico,frm,continuous,debug) {
 	    	recognition.frm=frm;
 	    }
       	recognition.inp=inp;
-      	//recognition.start();
+      	recognition.start();
       	recognition.debug=debug;
       	recognition.onresult = function(e) {
       		if(undefined != this.frm && undefined != window[this.frm]){
