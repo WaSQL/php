@@ -619,7 +619,8 @@ function formDictate(inp,ico,frm,continuous,debug) {
   	}
   	ico=getObject(ico);
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
-		var recognition = new webkitSpeechRecognition();
+    	let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+		var recognition = new SpeechRecognition();
       	recognition.continuous = continuous||false;
       	recognition.interimResults = false;
       	recognition.lang = "en-US";
