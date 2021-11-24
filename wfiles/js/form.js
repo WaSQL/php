@@ -675,36 +675,85 @@ function formDictate(inp,ico,frm,continuous,debug) {
       		}
 		}
       	recognition.onerror = function(e) {
-      		if(this.continuous){
-      			if(undefined != e.error && e.error=='no-speech'){
-      				try {
-						this.restart();
-					}
-					catch (e) {}
-      			}
-      			else{
-      				console.log(e);
-      				if(this.debug){
-      					this.debug=false;
-      					alert('ERROR: '+e.error);
+      		if(undefined == e.error){e.error='';}
+      		switch(e.error.toLowerCase()){
+      			case 'no-speech':
+      				//No speech was detected
+      				if(this.continuous){
+      					try {this.restart();}catch(e){}
       				}
-      			}
-			}
-      		else{
-      			try {
-  					this.stop();
-				}
-				catch (e) {
-					if(this.debug){
-						this.debug=false;
-						alert('ERROR: '+e.error);
-					}
-				}
-      			if(undefined != this.ico){
-		      		this.ico.classList.remove('w_blink');
-		      		this.ico.classList.remove('w_success');
-		      	}
-      		} 
+      				else{
+      					try {this.stop();}catch(e){}
+      					if(undefined != this.ico){
+				      		this.ico.classList.remove('w_blink');
+				      		this.ico.classList.remove('w_success');
+				      	}
+      				}
+      			break;
+      			case 'aborted':
+      				//Speech input was aborted
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      			case 'audio-capture':
+      				//Audio capture failed
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      			case 'network':
+      				//Network communication required for completing the recognition failed
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      			case 'not-allowed':
+      				//The user agent disallowed any speech input from occurring for reasons of security, privacy or user preference
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      			case 'service-not-allowed':
+      				//The user agent disallowed the requested speech recognition service, either because the user agent doesn't support it or because of reasons of security, privacy or user preference. In this case it would allow another more suitable speech recognition service to be used instead
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      			case 'bad-grammar':
+      				//There was an error in the speech recognition grammar or semantic tags, or the chosen grammar format or semantic tag format was unsupported
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      			case 'language-not-supported':
+      				//The language was not supported
+      				if(undefined != this.inp.value){
+      					this.inp.value=e.message;
+      				}
+      				else{
+      					this.inp.textContent=e.message;
+      				}
+      			break;
+      		}
       	};
     }
     else if(debug){
