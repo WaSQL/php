@@ -686,7 +686,7 @@ function formDictate(inp,ico,frm,continuous,debug) {
       			}
       			else{
       				console.log(e);
-      				if(this.debug){alert(e);}
+      				if(this.debug){alert('ERROR: '+e.stack);}
       			}
 			}
       		else{
@@ -694,7 +694,7 @@ function formDictate(inp,ico,frm,continuous,debug) {
   					this.stop();
 				}
 				catch (e) {
-					if(this.debug){alert(e);}
+					if(this.debug){alert('ERROR: '+e.stack);}
 				}
       			if(undefined != this.ico){
 		      		this.ico.classList.remove('w_blink');
