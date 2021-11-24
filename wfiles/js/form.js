@@ -631,7 +631,6 @@ function formDictate(inp,ico,frm,continuous) {
 	    }
       	recognition.inp=inp;
       	recognition.start();
-      	recognition.debug=debug;
       	recognition.onresult = function(e) {
       		if(undefined != this.frm && undefined != window[this.frm]){
         		try {
@@ -646,26 +645,17 @@ function formDictate(inp,ico,frm,continuous) {
 	        	this.ico.classList.remove('w_blink');
 	        	this.ico.classList.remove('w_success');
 	        }
-        	try {
-  					this.stop();
-				}
-			catch (e) {}
+        	try{this.stop();}catch(e){}
         	if(undefined != this.frm){
         		simulateEvent(this.frm,'submit');
         	}
 		};
 		recognition.onend = function(e){
 			if(this.continuous){
-				try {
-					this.start();
-				}
-				catch (e) {}
+				try {this.start();}catch(e){}
 			}
 			else{
-      			try {
-  					this.stop();
-				}
-				catch (e) {}
+      			try {this.stop();}catch(e){}
       			if(undefined != this.ico){
 		      		this.ico.classList.remove('w_blink');
 		      		this.ico.classList.remove('w_success');
