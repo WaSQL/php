@@ -6365,7 +6365,7 @@ function removeViews($htm){
 		$sha=sha1($htm);
 		$depth++;
 		unset($removeViewMatches);
-		preg_match_all('/\<view\:(.+?)\>(.+?)\<\/view\:\1\>/ism',$htm,$removeViewMatches,PREG_PATTERN_ORDER);
+		preg_match_all('/\<view\:([a-z0-9\-\_]+?)\>(.+?)\<\/view\:\1\>/ism',$htm,$removeViewMatches,PREG_PATTERN_ORDER);
 		/* this returns an array of three arrays
 			0 = the whole tag
 			1 = the view name
