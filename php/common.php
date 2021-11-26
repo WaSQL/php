@@ -2449,7 +2449,7 @@ function buildFormDate($name,$params=array()){
 	}
 	unset($params['name']);
 	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" name="'.$name.'" autocomplete="'.getRandomString().'"';
+	$tag .= '	<input type="text" data-inputtype="date" name="'.$name.'" autocomplete="'.getRandomString().'"';
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
@@ -6208,21 +6208,29 @@ function setTagAttributes($atts=array(),$skipatts=array()){
     }
     //mask
     if(isset($atts['mask'])){
-		$atts['data-mask']=$atts['mask'];
+    	if(!isset($atts['data-mask'])){
+			$atts['data-mask']=$atts['mask'];
+    	}
 		unset($atts['mask']);
     }
     //displayname
     if(isset($atts['displayname'])){
-		$atts['data-displayname']=$atts['displayname'];
+    	if(!isset($atts['data-displayname'])){
+			$atts['data-displayname']=$atts['displayname'];
+		}
 		unset($atts['displayname']);
     }
 	//behavior
 	if(isset($atts['_behavior'])){
-		$atts['data-behavior']=$atts['_behavior'];
+		if(!isset($atts['data-behavior'])){
+			$atts['data-behavior']=$atts['_behavior'];
+		}
 		unset($atts['_behavior']);
     }
     if(isset($atts['behavior'])){
-		$atts['data-behavior']=$atts['behavior'];
+    	if(!isset($atts['data-behavior'])){
+			$atts['data-behavior']=$atts['behavior'];
+		}
 		unset($atts['behavior']);
     }
     //readonly
