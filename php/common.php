@@ -2441,6 +2441,12 @@ function buildFormDate($name,$params=array()){
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-behavior']='flatpickr';
+	switch(strtolower($params['readonly'])){
+		case 'readonly':
+		case '1':
+			$params['data-behavior']='flatpickr_readonly';
+		break;
+	}
 	$tag='';
 	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
 	if(isset($params['displayif'])){
