@@ -1935,6 +1935,7 @@ function initBehaviors(ajaxdiv){
 			email=email.replace(/[\/]/,'.',email);
 			navEls[n].href='mailto:'+email;
 			navEls[n].setAttribute('data-behavior','processed');
+			navEls[n].innerText=email;
 		}
 		if(in_array("loadtextfile",behaviors)){
 			loadTextFileInit(navEls[n]);
