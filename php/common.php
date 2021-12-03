@@ -3364,7 +3364,7 @@ function buildFormTextarea($name,$params=array()){
 	$tag='';
 	if($white_wrap==1){$tag.='<div style="background:#FFF;">'.PHP_EOL;}
 	if(isset($params['data-behavior']) && $params['data-behavior']=='autogrow' && isset($params['disabled'])){
-		$params['style']="padding:10px 15px;border:1px solid #ccc;background-color:#ebebe4;border-radius:4px;";
+		$params['style']="padding:10px 15px;border:1px solid #ccc;background-color:inherit;border-radius:4px;";
 		$tag .= '	<div';
 		$tag .= setTagAttributes($params);
 		$tag .= ' >';
