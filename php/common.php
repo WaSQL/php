@@ -2414,19 +2414,19 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 * @describe creates an HTML date control
 * @param action string
 * @param params array
-*	[data-enableTime] - boolean - enables a time picker, defaults to false
-*	[data-dateFormat] - string
-* 	[data-timeFormat] - string - H (00 to 23), h (1 to 12), i (00 to 59), K (AM or PM)
-* 	[data-minDate] - string
-*  	[data-maxDate] - string
+*	[data-enabletime] - boolean - enables a time picker, defaults to false
+*	[data-dateformat] - string
+* 	[data-timeformat] - string - H (00 to 23), h (1 to 12), i (00 to 59), K (AM or PM)
+* 	[data-mindate] - string
+*  	[data-maxdate] - string
 *  	[data-disable] - array - dates to disable using intervals
 *  	[data-altinput] - boolean - Show the user a readable date (as per altFormat), but return something totally different to the server.
-* 	[data-altFormat] - string
+* 	[data-altformat] - string
 * 	[data-inline] - boolean - Display the calendar inline.
-* 	[data-shorthandCurrentMonth] - boolean - Show the month using the shorthand version.
+* 	[data-shorthandcurrentmonth] - boolean - Show the month using the shorthand version.
 * 	[data-onchange] - function name - A function that gets triggered on every date selection
-* 	[data-hourIncrement] - integer - Adjusts the step for the hour input (incl. scrolling)
-* 	[data-minuteIncrement] - integer - Adjusts the step for the minute input (incl. scrolling)
+* 	[data-hourincrement] - integer - Adjusts the step for the hour input (incl. scrolling)
+* 	[data-minuteincrement] - integer - Adjusts the step for the minute input (incl. scrolling)
 * @return string
 * @usage echo buildFormDate('mydate');
 */
@@ -2441,6 +2441,16 @@ function buildFormDate($name,$params=array()){
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-behavior']='flatpickr';
+	//placeholder
+	if(isset($params['data-dateformat']) && !isset($params['placeholder'])){
+		$params['placeholder']=$params['data-dateformat'];
+	}
+	if(!isset($params['placeholder'])){
+		$params['placeholder']='YYYY-MM-DD';
+	}
+	if(!isset($params['data-allowInput'])){
+		$params['data-allowInput']=1;
+	}
 	switch(strtolower($params['readonly'])){
 		case 'readonly':
 		case '1':
