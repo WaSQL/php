@@ -2571,8 +2571,40 @@ function initFlatpickr(){
 				case 'enabletime':k='enableTime';break;
 				case 'enableseconds':k='enableSeconds';break;
 				case 'hourincrement':k='hourIncrement';break;
-				case 'maxdate':k='maxDate';break;
-				case 'mindate':k='minDate';break;
+				case 'maxdate':
+					k='maxDate';
+					if(!isNaN(v)){
+						if(v < 0){
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toLocaleDateString('en-CA');	
+						}
+						else if(v > 0){
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toLocaleDateString('en-CA');	
+						}	
+					}
+					else if(v.toLowerCase()=='today'){
+						v=new Date().toLocaleDateString('en-CA');
+					}
+					els[i].dataset.maxdate_value=v;
+				break;
+				case 'mindate':
+					k='minDate';
+					if(!isNaN(v)){
+						if(v < 0){
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toLocaleDateString('en-CA');	
+						}
+						else if(v > 0){
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toLocaleDateString('en-CA');	
+						}	
+					}
+					else if(v.toLowerCase()=='today'){
+						v=new Date().toLocaleDateString('en-CA');
+					}
+					els[i].dataset.mindate_value=v;
+				break;
 				case 'minuteincrement':k='minuteIncrement';break;
 				case 'nextarrow':k='nextArrow';break;
 				case 'nocalendar':k='noCalendar';break;

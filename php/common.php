@@ -2446,7 +2446,12 @@ function buildFormDate($name,$params=array()){
 		$params['placeholder']=$params['data-dateformat'];
 	}
 	if(!isset($params['placeholder'])){
-		$params['placeholder']='YYYY-MM-DD';
+		if(isset($params['data-noCalendar']) && isset($params['data-enableTime'])){
+			$params['placeholder']='HH:MM';
+		}
+		else{
+			$params['placeholder']='YYYY-MM-DD';
+		}
 	}
 	if(!isset($params['data-allowInput'])){
 		$params['data-allowInput']=1;
@@ -2476,7 +2481,10 @@ function buildFormDate($name,$params=array()){
 	$show=1;
 	if(isset($params['readonly']) && in_array(strtolower($params['readonly']),array('1','readonly'))){$show=0;}
 	if(isset($params['disabled']) && in_array(strtolower($params['disabled']),array('1','disabled'))){$show=0;}
-	if($show==1){
+	if(isset($params['data-noCalendar']) && isset($params['data-enableTime'])){
+		$tag .= '	<span class="icon-clock w_gray w_biggest w_pointer" onclick="return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
+	}
+	elseif($show==1){
 		$tag .= '	<span class="icon-calendar w_gray w_biggest w_pointer" onclick="return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
@@ -3416,6 +3424,10 @@ function buildFormTextarea($name,$params=array()){
 * @usage echo buildFormTime('mytime');
 */
 function buildFormTime($name,$params=array()){
+	$params['data-enableTime']=1;
+	$params['data-noCalendar']=1;
+	//return printValue($params);
+	return buildFormDate($name,$params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
