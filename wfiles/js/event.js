@@ -2576,32 +2576,34 @@ function initFlatpickr(){
 					if(isNum(v)){
 						if(v < 0){
 							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() - v));	
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toString();	
 						}
 						else if(v > 0){
 							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() + v));	
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toString();	
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
-						v=new Date();
+						v=new Date().toString();
 					}
+					els[i].dataset.mindate_value=v;
 				break;
 				case 'mindate':
 					k='minDate';
 					if(isNum(v)){
 						if(v < 0){
 							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() - v));	
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toString();	
 						}
 						else if(v > 0){
 							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() + v));	
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toString();	
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
-						v=new Date();
+						v=new Date().toString();
 					}
+					els[i].dataset.mindate_value=v;
 				break;
 				case 'minuteincrement':k='minuteIncrement';break;
 				case 'nextarrow':k='nextArrow';break;
