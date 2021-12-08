@@ -2573,31 +2573,31 @@ function initFlatpickr(){
 				case 'hourincrement':k='hourIncrement';break;
 				case 'maxdate':
 					k='maxDate';
-					if(isNum(v)){
+					if(!isNaN(v)){
 						if(v < 0){
-							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() - v)).toString();	
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toISOString().split('T')[0];	
 						}
 						else if(v > 0){
-							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() + v)).toString();	
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toISOString().split('T')[0];	
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
 						v=new Date().toString();
 					}
-					els[i].dataset.mindate_value=v;
+					els[i].dataset.maxdate_value=v;
 				break;
 				case 'mindate':
 					k='minDate';
-					if(isNum(v)){
+					if(!isNaN(v)){
 						if(v < 0){
-							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() - v)).toString();	
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toISOString().split('T')[0];	
 						}
 						else if(v > 0){
-							v=abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() + v)).toString();	
+							v=Math.abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toISOString().split('T')[0];	
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
