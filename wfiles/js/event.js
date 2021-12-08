@@ -2576,15 +2576,15 @@ function initFlatpickr(){
 					if(!isNaN(v)){
 						if(v < 0){
 							v=Math.abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() - v)).toISOString().split('T')[0];	
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toLocaleDateString('en-CA');	
 						}
 						else if(v > 0){
 							v=Math.abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() + v)).toISOString().split('T')[0];	
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toLocaleDateString('en-CA');	
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
-						v=new Date().toISOString().split('T')[0];
+						v=new Date().toLocaleDateString('en-CA');
 					}
 					els[i].dataset.maxdate_value=v;
 				break;
@@ -2593,15 +2593,15 @@ function initFlatpickr(){
 					if(!isNaN(v)){
 						if(v < 0){
 							v=Math.abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() - v)).toISOString().split('T')[0];	
+							v = new Date(new Date().setDate(new Date().getDate() - v)).toLocaleDateString('en-CA');	
 						}
 						else if(v > 0){
 							v=Math.abs(v);
-							v = new Date(new Date().setDate(new Date().getDate() + v)).toISOString().split('T')[0];	
+							v = new Date(new Date().setDate(new Date().getDate() + v)).toLocaleDateString('en-CA');	
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
-						v=new Date().toISOString().split('T')[0];
+						v=new Date().toLocaleDateString('en-CA');
 					}
 					els[i].dataset.mindate_value=v;
 				break;
