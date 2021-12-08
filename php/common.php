@@ -15120,8 +15120,17 @@ function postBody($url='',$body='',$params=array()) {
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
 	if(isset($params['-method'])){
 		switch(strtolower($params['-method'])){
-			case 'put':curl_setopt($process, CURLOPT_CUSTOMREQUEST,'PUT');break;
-			case 'delete':curl_setopt($process, CURLOPT_CUSTOMREQUEST,'DELETE');break;
+			case 'put':
+				curl_setopt($process, CURLOPT_POST, 0);
+				curl_setopt($process, CURLOPT_CUSTOMREQUEST,'PUT');
+			break;
+			case 'delete':
+				curl_setopt($process, CURLOPT_POST, 0);
+				curl_setopt($process, CURLOPT_CUSTOMREQUEST,'DELETE');
+			break;
+			default:
+				curl_setopt($process, CURLOPT_POST, 1);
+			break;
 		}
     }
     curl_setopt($process,CURLOPT_POSTFIELDS,$body);
