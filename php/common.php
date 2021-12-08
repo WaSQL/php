@@ -15106,7 +15106,12 @@ function postBody($url='',$body='',$params=array()) {
 
 	}
 	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
-
+	if(isset($params['-method'])){
+		switch(strtolower($params['-method'])){
+			case 'put':curl_setopt($process, CURLOPT_CUSTOMREQUEST,'PUT');break;
+			case 'delete':curl_setopt($process, CURLOPT_CUSTOMREQUEST,'DELETE');break;
+		}
+    }
     curl_setopt($process,CURLOPT_POSTFIELDS,$body);
     $return=curl_exec($process);
     $rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
