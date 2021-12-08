@@ -2571,8 +2571,38 @@ function initFlatpickr(){
 				case 'enabletime':k='enableTime';break;
 				case 'enableseconds':k='enableSeconds';break;
 				case 'hourincrement':k='hourIncrement';break;
-				case 'maxdate':k='maxDate';break;
-				case 'mindate':k='minDate';break;
+				case 'maxdate':
+					k='maxDate';
+					if(isNum(v)){
+						if(v < 0){
+							v=abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() - v));	
+						}
+						else if(v > 0){
+							v=abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() + v));	
+						}	
+					}
+					else if(v.toLowerCase()=='today'){
+						v=new Date();
+					}
+				break;
+				case 'mindate':
+					k='minDate';
+					if(isNum(v)){
+						if(v < 0){
+							v=abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() - v));	
+						}
+						else if(v > 0){
+							v=abs(v);
+							v = new Date(new Date().setDate(new Date().getDate() + v));	
+						}	
+					}
+					else if(v.toLowerCase()=='today'){
+						v=new Date();
+					}
+				break;
 				case 'minuteincrement':k='minuteIncrement';break;
 				case 'nextarrow':k='nextArrow';break;
 				case 'nocalendar':k='noCalendar';break;
