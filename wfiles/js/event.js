@@ -2584,7 +2584,7 @@ function initFlatpickr(){
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
-						v=new Date().toString();
+						v=new Date().toISOString().split('T')[0];
 					}
 					els[i].dataset.maxdate_value=v;
 				break;
@@ -2601,7 +2601,7 @@ function initFlatpickr(){
 						}	
 					}
 					else if(v.toLowerCase()=='today'){
-						v=new Date().toString();
+						v=new Date().toISOString().split('T')[0];
 					}
 					els[i].dataset.mindate_value=v;
 				break;
