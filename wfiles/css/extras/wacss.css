@@ -1838,7 +1838,7 @@ textarea.small{
   input[type="url"],
   input[type="week"], 
   textarea{
-    padding: .2rem .35rem;
+    padding: .6rem .35rem;
     font-size: 1rem;
     border-radius:4px;
   }
