@@ -5,7 +5,7 @@
 			$tail['name']=$_REQUEST['name'];
 			$path=getWaSQLPath('logs');
 			$logfile="{$path}/{$tail['name']}.log";
-			$tail['data']=tailFile($logfile,30);
+			$tail['data']=tailFile($logfile,300);
 			setView('tail',1);
 			return;
 		break;
@@ -13,7 +13,7 @@
 			$tail['name']=$_REQUEST['name'];
 			$path=getWaSQLPath('logs');
 			$logfile="{$path}/{$tail['name']}.log";
-			$tail['data']=tailFile($logfile,30);
+			$tail['data']=tailFile($logfile,300);
 			setView('tail_refresh',1);
 			return;
 		break;
