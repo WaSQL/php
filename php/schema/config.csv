@@ -3,7 +3,7 @@ access,access,,all,Require valid user before showing site.,"all=All,user=USER"
 access_log,access,,0,number of days too keep in the access_log table.,
 access_page,access,,,show this page if not logged in and access=user,
 access_template,access,,,use this template if not logged in and access=user - not needed if access_page is set.,
-admin_color,admin,,w_blue,the color of the admin menu,"w_blue=Blue,w_gray=Gray,w_green=Green,w_red=Red,w_yellow=Yellow,w_orange=Orange,w_teal=Teal,w_light=Light,w_dark=Dark"
+admin_color,admin,,w_gray,the color of the admin menu,"w_blue=Blue,w_gray=Gray,w_green=Green,w_red=Red,w_yellow=Yellow,w_orange=Orange,w_teal=Teal,w_light=Light,w_dark=Dark"
 admin_secure,admin,,1,Require SSL connection for admin access,&buildFormSelectOnOff('current_value');
 allow_credentials,headers,,0,Set Header Access-Control-Allow-Credentials:true,&buildFormSelectOnOff('current_value');
 allow_frames,headers,,,Set Header X-Frame-Options: SAMEORIGIN,&buildFormSelectOnOff('current_value');

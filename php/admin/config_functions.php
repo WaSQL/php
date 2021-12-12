@@ -13,6 +13,20 @@ function configCheckSchema(){
 	if(!isset($finfo['category'])){
 		$query="ALTER TABLE _config ADD category ".databaseDataType('varchar(200)')." NULL";
 		$ok=executeSQL($query);
+		//add the category to existing records
+		$spath=getWasqlPath('schema');
+		if(file_exists("{$spath}/config.csv")){
+			$csv=getCSVFileContents("{$spath}/config.csv");
+			$recs=$csv['items'];
+			foreach($recs as $i=>$rec){
+				$name=strtolower(trim($rec['name']));
+				$ok=editDBRecord(array(
+					'-table'=>'_config',
+					'-where'=>"name='{$name}'",
+					'category'=>$rec['category']
+				));
+			}
+		}
 	}
 }
 function configShowlist($category,$opts=array()){

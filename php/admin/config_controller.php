@@ -2,6 +2,9 @@
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
+	if(!isset($CONFIG['admin_color']) || !strlen($CONFIG['admin_color'])){
+		$CONFIG['admin_color']='w_gray';
+	}
 	switch(strtolower($_REQUEST['func'])){
 		case 'showlist':
 			$category=$_REQUEST['category'];

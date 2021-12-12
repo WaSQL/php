@@ -43,7 +43,6 @@ global $ALLCONFIG;
 //build CONFIG array
 $CONFIG=array();
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
-//make sure _config table is created
 /* Load Global configurations from allhost if it exists */
 $DATABASE=array();
 if(isset($xml['database'][0])){
