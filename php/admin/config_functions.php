@@ -11,28 +11,40 @@ function configCheckSchema(){
 	$finfo=getDBFieldInfo('_config');
 	//category
 	if(!isset($finfo['category'])){
+		global $databaseCache;
 		$query="ALTER TABLE _config ADD category ".databaseDataType('varchar(200)')." NULL";
 		$ok=executeSQL($query);
+		unset($databaseCache['getDBFieldInfo']);
+		//echo $query.printValue($ok);
 		//add the category to existing records
-		$spath=getWasqlPath('schema');
+		$spath=getWasqlPath('php/schema');
+		//echo $spath;
 		if(file_exists("{$spath}/config.csv")){
 			$csv=getCSVFileContents("{$spath}/config.csv");
-			$recs=$csv['items'];
-			foreach($recs as $i=>$rec){
+			//echo printValue($csv);
+			foreach($csv['items'] as $i=>$rec){
 				$name=strtolower(trim($rec['name']));
-				$ok=editDBRecord(array(
+				$opts=array(
 					'-table'=>'_config',
 					'-where'=>"name='{$name}'",
 					'category'=>$rec['category']
-				));
+				);
+				$ok=editDBRecord($opts);
+				//echo printValue($ok).printValue($opts);
 			}
 		}
+		$recs=getDBRecords(array(
+			'-table'=>'_config',
+			'-nocache'=>1
+		));
+		//echo printValue($recs);exit;
 	}
 }
 function configShowlist($category,$opts=array()){
 	global $configShowDifferentListCenter;
 	$listopts=array(
 		'-table'=>'_config',
+		'-nocache'=>1,
 		'category'=>$category,
 		'-tableclass'=>'table condensed striped bordered',
 		'-listview'=>getView('config_item'),
