@@ -12,6 +12,21 @@ $progpath=dirname(__FILE__);
 //http://code.google.com/apis/analytics/docs/gdata/gdataReferenceDimensionsMetrics.html
 include_once("$progpath/google/GoogleCalendarWrapper.php");
 
+
+//confirm/add google settings to _config table
+$crecs=getDBRecords(array(
+	'-table'=>'_config',
+	'-where'=>"name like google_%",
+	'-index'=>'name'
+));
+if(!isset($crecs['google_apikey'])){
+	$ok=addDBRecord(array('-table'=>'_config','name'=>'google_apikey','category'=>'extras'));
+}
+if(!isset($crecs['google_appid'])){
+	$ok=addDBRecord(array('-table'=>'_config','name'=>'google_appid','category'=>'extras'));
+}
+
+
 /*
 	go to https://console.developers.google.com for an apikey
 */

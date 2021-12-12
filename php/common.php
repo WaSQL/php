@@ -68,6 +68,7 @@ function commonLogMessage($name,$msg,$separate=0,$echo=0){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function commonCronCheckSchema(){
+	//_cron
 	$cronfields=getDBFieldInfo('_cron');
 	//run_now
 	if(!isset($cronfields['run_now'])){
@@ -14979,6 +14980,7 @@ function postJSON($url='',$json='',$params=array()) {
 		$params['-headers'][]="WaSQL-NoGUID: 1";
 		unset($params['-noguid']);
 	}
+	//return printValue($params);
 	return postBody($url,$json,$params);
 }
 
@@ -15039,12 +15041,20 @@ function postBody($url='',$body='',$params=array()) {
 		//$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 	}
+	//-follow
+	if(isset($params['-follow'])){
+		curl_setopt($process, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($process, CURLOPT_AUTOREFERER, true);
+		curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
+		curl_setopt($process, CURLOPT_POSTREDIR, 3 );
+	}
 	//encodeing
 	curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
+
 	//headers
 	if(isset($params['-contenttype'])){
 		if(!isset($params['-headers'][0])){$params['-headers']=array();}
-		$params['-headers'][]=$params['-contenttype'];
+		$params['-headers'][]="Content-type: {$params['-contenttype']}";
 	}
 	if(isset($params['-headers']) && is_array($params['-headers'])){
 		curl_setopt($process, CURLOPT_HTTPHEADER, $params['-headers']);

@@ -149,6 +149,7 @@ function createWasqlTable($table=''){
 			break;
 		case '_config':
 			$fields['name']=databaseDataType('varchar(50)')." NOT NULL UNIQUE";
+			$fields['category']=databaseDataType('varchar(200)')." NULL";
 			$fields['current_value']=databaseDataType('varchar(500)')." NULL";
 			$fields['default_value']=databaseDataType('varchar(500)')." NULL";
 			$fields['description']=databaseDataType('varchar(1000)')." NULL";

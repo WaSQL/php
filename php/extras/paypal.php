@@ -120,6 +120,21 @@ https://stackoverflow.com/questions/56414640/paypal-checkout-javascript-with-sma
 
 
 */
+//confirm/add google settings to _config table
+$crecs=getDBRecords(array(
+    '-table'=>'_config',
+    '-where'=>"name like paypal_%",
+    '-index'=>'name'
+));
+if(!isset($crecs['paypal_clientid'])){
+    $ok=addDBRecord(array('-table'=>'_config','name'=>'paypal_clientid','category'=>'extras'));
+}
+if(!isset($crecs['paypal_secret'])){
+    $ok=addDBRecord(array('-table'=>'_config','name'=>'paypal_secret','category'=>'extras'));
+}
+if(!isset($crecs['paypal_url'])){
+    $ok=addDBRecord(array('-table'=>'_config','name'=>'paypal_url','category'=>'extras'));
+}
 
 function paypalCheckout($cart=array()){
 	global $CONFIG;

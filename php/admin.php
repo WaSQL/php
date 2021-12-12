@@ -644,6 +644,7 @@ if(isAjax()){
 		case 'sync_source':
 		case 'system':
 		case 'tables':
+		case 'config':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -1317,6 +1318,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'sync_source':
 		case 'system':
 		case 'tables':
+		case 'config':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -2144,10 +2146,10 @@ LIST_TABLE:
 				switch(strtolower($_REQUEST['_table_'])){
 					case '_config':
 						echo '<span class="icon-gear w_gray w_big"></span>';
-						$recopts['-listview']=adminConfigView();
-						$recopts['-results_eval']='adminConfigListExtra';
-						$recopts['-pretable']='<div style="display:flex;justify-content:flex-start;align-items:flex-start;flex-wrap:wrap;">';
-						$recopts['-posttable']='</div>';
+						// $recopts['-listview']=adminConfigView();
+						// $recopts['-results_eval']='adminConfigListExtra';
+						// $recopts['-pretable']='<div style="display:flex;justify-content:flex-start;align-items:flex-start;flex-wrap:wrap;">';
+						// $recopts['-posttable']='</div>';
 					break;
 					case '_cron':echo '<span class="icon-cron w_success w_big"></span>';break;
 					case '_cronlog':echo '<span class="icon-cronlog w_success w_big"></span>';break;
@@ -2233,9 +2235,9 @@ LIST_TABLE:
 				//special options for some tables
 				switch(strtolower($_REQUEST['_table_'])){
 					case '_config':
-						$recopts['-editfields']='current_value';						
+						$recopts['-editfields']='current_value,category';						
 						$recopts['-searchfields']='name,description';
-						$recopts['-listfields']='_id,name,current_value,default_value,description';
+						$recopts['-listfields']='_id,category,name,current_value,default_value,description';
 						$recopts['-searchopers']='ct,eq,ca,ea,ib,nb';
 						$recopts['-quickfilters']=array(
 							'Not Blank'=>array(

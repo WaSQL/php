@@ -8,15 +8,34 @@
 
 */
 global $CONFIG;
-if(!isset($CONFIG['plivo_auth_id'])){
+//confirm/add plivo settings to _config table
+$crecs=getDBRecords(array(
+	'-table'=>'_config',
+	'-where'=>"name like plivo_%",
+	'-index'=>'name'
+));
+if(!isset($crecs['plivo_auth_id'])){
+	$ok=addDBRecord(array('-table'=>'_config','name'=>'plivo_auth_id','category'=>'extras'));
+	$CONFIG['plivo_auth_id']='';
+}
+if(!isset($crecs['plivo_auth_token'])){
+	$ok=addDBRecord(array('-table'=>'_config','name'=>'plivo_auth_token','category'=>'extras'));
+	$CONFIG['plivo_auth_token']='';
+}
+if(!isset($crecs['plivo_from'])){
+	$ok=addDBRecord(array('-table'=>'_config','name'=>'plivo_from','category'=>'extras'));
+	$CONFIG['plivo_from']='';
+}
+//require config values
+if(!isset($CONFIG['plivo_auth_id']) || !strlen($CONFIG['plivo_auth_id'])){
 	echo "plivo extra error - missing plivo_auth_id in config";
 	exit;
 }
-if(!isset($CONFIG['plivo_auth_token'])){
+if(!isset($CONFIG['plivo_auth_token']) || !strlen($CONFIG['plivo_auth_token'])){
 	echo "plivo extra error - missing plivo_auth_token in config";
 	exit;
 }
-if(!isset($CONFIG['plivo_from'])){
+if(!isset($CONFIG['plivo_from']) || !strlen($CONFIG['plivo_from'])){
 	echo "plivo extra error - missing plivo_from in config";
 	exit;
 }
