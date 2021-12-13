@@ -1,5 +1,20 @@
 <?php
 loadExtras('translate');
+
+function configAddEdit($id){
+	$opts=array(
+		'-table'=>'_config',
+		'-action'=>'/php/admin.php',
+		'-fields'=>'name:category,current_value:default_value,description,possible_values',
+		'-style_all'=>'width:100%',
+		'-onsubmit'=>"return ajaxSubmitForm(this,'main_content');",
+		'_menu'=>'config',
+		'func'=>'showlist',
+		'config_menu'=>1
+	);
+	if($id>0){$opts['_id']=$id;}
+	return addEditDBForm($opts);
+}
 /**  --- function commonCronCheckSchema
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -33,11 +48,20 @@ function configCheckSchema(){
 				//echo printValue($ok).printValue($opts);
 			}
 		}
-		$recs=getDBRecords(array(
+		//set any extras
+		$opts=array(
 			'-table'=>'_config',
-			'-nocache'=>1
-		));
-		//echo printValue($recs);exit;
+			'-where'=>"category is null and (name like 'aws%' or name like 'plivo%' or name like 'cart%' or name like 'google%' or name like 'paypal\\_%')",
+			'category'=>'extras'
+		);
+		$ok=editDBRecord($opts);
+		//remove any extras
+		$opts=array(
+			'-table'=>'_config',
+			'-where'=>"name in ('AjaxRequestUniqueId')",
+		);
+		$ok=delDBRecord($opts);
+		//echo printValue($ok).printValue($opts);exit;
 	}
 }
 function configShowlist($category,$opts=array()){
@@ -79,7 +103,8 @@ function configShowlistExtra($recs){
 		if(!strlen($rec['default_value'])){
 			$recs[$i]['default_value']='no default';
 		}
-		$recs[$i]['edit']='<a class="w_link" href="/php/admin.php?_table_=_config&_menu=edit&_id='.$rec['_id'].'"><span class="icon-edit w_small w_gray"></span></a>';
+		$recs[$i]['edit']='<a class="w_link" href="#" onclick="return configNav(this)" data-div="centerpop" data-nav="/php/admin.php" data-_menu="config" data-func="addedit" data-id="'.$rec['_id'].'"><span class="icon-edit w_small w_gray"></span></a>';
+		$recs[$i]['edit'].='<a class="w_link" style="margin-left:10px;" href="#" onclick="return configNav(this)" data-confirm="Delete this setting?" data-div="main_content" data-nav="/php/admin.php" data-_menu="config" data-func="delete" data-category="'.$rec['category'].'" data-id="'.$rec['_id'].'"><span class="icon-cancel w_small w_red"></span></a>';
 		if(strlen($rec['possible_values'])){
 			if(stringBeginsWith($rec['possible_values'],'&')){
 				$efield='current_value';

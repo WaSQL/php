@@ -3,7 +3,7 @@
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-gear"></span> <translate>WaSQL Configuration</translate></h2>
 
 <div style="margin-top: 0px;padding:0 8px 8px 0;display:flex;flex-wrap:nowrap;justify-content: flex-start;align-items: flex-start;max-width:100vw;overflow:auto;">
-	<div class="leftmenu">
+	<div id="left_content">
 		<?=renderView('config_menu',$categories,'categories');?>
 	</div>
 	<div id="main_content" style="margin-left:10px;flex:1;padding:10px;width:100%;">
@@ -24,14 +24,28 @@
 	</ul>
 </view:config_menu>
 
+<view:addedit>
+	<div class="w_centerpop_title">Add/Edit</div>
+	<div class="w_centerpop_content">
+		<?=configAddEdit($id);?>
+	</div>
+</view:addedit>
+
 <view:showlist>
 	<div id="config_showlist">
 	<?=configShowlist($category,$listopts);?>
+	<?=buildOnLoad("removeId('centerpop');");?>
+	<view:config_menu>
+		<?=buildOnLoad("ajaxGet('/php/admin.php','left_content',{'_menu':'config',func:'config_menu',setprocessing:0});");?>
+	</view:config_menu>
 	</div>
 </view:showlist>
 
 <view:showlist_ajax>
 	<?=configShowlist($category,$listopts);?>
+	<view:config_menu>
+		<?=buildOnLoad("ajaxGet('/php/admin.php','left_content',{'_menu':'config',func:'config_menu',setprocessing:0});");?>
+	</view:config_menu>
 </view:showlist_ajax>
 
 <view:config_item>
@@ -56,7 +70,7 @@
 				<input type="hidden" name="_editfield" value="current_value">
 				<div style="display:flex;align-items:flex-end;margin:0 7px 7px 0;">
 					<div style="flex:1;margin-right:3px;">[cvedit]</div>
-					<button type="submit" class="button"><span class="icon-save w_bigger"></span></button>
+					<button type="submit" class="button btn"><span class="icon-save w_bigger"></span></button>
 				</div>
 			</form>
 		</div>
