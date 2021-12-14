@@ -133,7 +133,7 @@ foreach($ConfigXml as $name=>$host){
 		));
 		//break if no records to run
 		if(!isset($rec['_id'])){
-			$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
+			//$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
 			break;
 		}
 		$ok=cronMessage("{$CONFIG['name']} - preparing cron #{$rec['_id']} - {$rec['name']}");
@@ -202,7 +202,7 @@ foreach($ConfigXml as $name=>$host){
 	    	//cron is a command
 	    	$crontype='OS Command';
 		}
-		cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}",1);
+		cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}");
 		$start=microtime(true);
 		$cron_result='';
 		$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
@@ -338,7 +338,7 @@ foreach($ConfigXml as $name=>$host){
 			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 		}
 		
-		cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds",1);
+		cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds");
 		if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
 			$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
 		}
@@ -447,7 +447,7 @@ function cronDBConnect(){
 	global $CONFIG;
 	global $dbh;
 	global $sel;
-	$ok=cronMessage("{$CONFIG['name']} - Connecting to {$CONFIG['dbname']} on {$CONFIG['dbhost']}");
+	//$ok=cronMessage("{$CONFIG['name']} - Connecting to {$CONFIG['dbname']} on {$CONFIG['dbhost']}");
 	try{
 		$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
 	}
@@ -456,7 +456,7 @@ function cronDBConnect(){
 	}
 	if(!$dbh){
 		$error=databaseError();
-		if(isPostgreSQL()){$error .= "<br>PostgreSQL does not allow CREATE DATABASE inside a transaction block. Create the database first.";}
+		$ok=cronMessage("{$CONFIG['name']} - cronDBConnect Error {$error}");
 		return $error;
 	}
 	//select database
