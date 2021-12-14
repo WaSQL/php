@@ -127,15 +127,15 @@ while(1){
 		));
 		if(is_array($recs)){
 			$cnt=count($recs);
-			$ok=cronMessage("setting the following crons to run_now");
+			//$ok=cronMessage("setting the following crons to run_now");
 			foreach($recs as $rec){
 				$e=editDBRecordById('_cron',$rec['_id'],array('run_now'=>1));
 				if((integer)$e==1){
-					$ok=cronMessage("{$rec['_id']}-{$rec['name']} set to run_now");
+					$ok=cronMessage("{$rec['_id']}-{$rec['name']}  - run_now set to 1");
 				}
 				else{
-					$ok=cronMessage("FAILED to set {$rec['_id']}-{$rec['name']} to run_now");
-					$ok=cronMessage(printValue($e));
+					//$ok=cronMessage("FAILED to edit {$rec['_id']}-{$rec['name']}");
+					//$ok=cronMessage(printValue($e));
 				}
 				
 			}
@@ -146,7 +146,6 @@ while(1){
 			cronMessage("STARTED *** WaSQL update ***",1);
 			unlink("{$tpath}/wasql.update");
 			$out=cmdResults('git pull');
-			cronMessage("FINISHED *** WaSQL update ***",1);
 			$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 			$ok=setFileContents("{$tpath}/wasql.update.log",$message);
 		}
@@ -171,13 +170,13 @@ while(1){
 			if(strlen($msg)){
 				cronMessage(" -- [apacheParseLogFile] -- {$msg}");
 			}
-			cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
+			//cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 		}
 	}
 	if($loop_cnt >= $loop || $loop_cnt >= 10){
 		break;
 	}
-	cronMessage('------ sleeping ----');
+	//cronMessage('------ sleeping ----');
 	sleep(30);
 }
 exit;
@@ -434,7 +433,7 @@ function cronLogTails(){
 			if($skip==0){
 				$results='';
 				$cmd="tail -n {$rowcount} \"{$v}\"";
-				$ok=cronMessage($cmd);
+				//$ok=cronMessage($cmd);
 				$out=cmdResults($cmd);
 				//$results=$cmd.PHP_EOL;
 				if(strlen($out['stdout'])){
@@ -476,7 +475,7 @@ function cronDBConnect(){
 	global $CONFIG;
 	global $dbh;
 	global $sel;
-	$ok=cronMessage("{$CONFIG['name']} - Connecting to {$CONFIG['dbname']} on {$CONFIG['dbhost']}");
+	//$ok=cronMessage("{$CONFIG['name']} - Connecting to {$CONFIG['dbname']} on {$CONFIG['dbhost']}");
 	try{
 		$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
 	}
