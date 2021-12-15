@@ -34,6 +34,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 		- c:\\>git clone https://github.com/WaSQL/php.git wasql
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- using an editor, edit config.xml. Change the dbname, dbuser, and dbpass if you want. 
+		- create a directory called temp in the wasql\php folder
 - **Install AppServ**
 	- you can install AppServ by going to https://www.appserv.org/en/ and downloading the latest install. This will install Apache, MySQL and PHP on your computer. 
 	- add the following to the Apache httpd.conf file located in the AppServ\Apache24\conf\ folder (changing the path to where you installed wasql):
