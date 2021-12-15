@@ -21,7 +21,7 @@ WaSQL is free for both personal and business use. Read the full license [here](l
 To use WaSQL effectively you need to know HTML5, CSS3, JavaScript, SQL, and one of the supported programming languages. At least a basic knowledge of PHP is also very helpful.
 
 ## Where to Get Help
-Documentation is built in and searchable via the backend admin Help menu. If you need additional help with your project please contact me at steve.lloyd@gmail.com. 
+You can find instructional videos at https://www.youtube.com/channel/UC9FSUWNqd6dlIUq6VbOTjmw. There is also documentation is built in and searchable via the backend admin Help menu. If you need additional help with your project please contact me at steve.lloyd@gmail.com. 
 
 ## How can I Help WaSQL become better?
 Feel free to request changes via github.  You can also help by donating to the cause.  Donations can be sent via PayPal to steve.lloyd@gmail.com
