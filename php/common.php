@@ -2771,6 +2771,7 @@ ENDOFTAG;
 * @param name string
 * @param opts array  tval/dval pairs. tval will be stored in the json
 * @param params array
+* 	[-column-width] str - sets column-width on column div
 * @return JSON string
 * @usage echo buildFormMultiInput('states',array('carrots','peas','oranges'),$params);
 */
@@ -2789,7 +2790,10 @@ function buildFormMultiInput($name,$opts=array(),$params=array()){
 		$tag  = '<div id="'.$params['id'].'"';	
 	}
 	else{
-		if(isset($params['-stretch'])){
+		if(isset($params['-column-width'])){
+			$tag  = '<div id="'.$params['id'].'" style="column-count:'.$params['width'].';column-width:'.$params['-column-width'].';"';
+		}
+		elseif(isset($params['-stretch'])){
 			$tag  = '<div id="'.$params['id'].'" style="column-count:'.$params['width'].';width:'.$params['-stretch'].';"';
 		}
 		else{
@@ -3094,7 +3098,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$tag  = '<div id="'.$params['id'].'"';	
 	}
 	else{
-		if(isset($params['-stretch'])){
+		if(isset($params['-column-width'])){
+			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';column-width:'.$params['-column-width'].';"';
+		}
+		elseif(isset($params['-stretch'])){
 			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';"';
 		}
 		else{
