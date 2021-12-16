@@ -115,8 +115,7 @@ foreach($ConfigXml as $name=>$host){
 			running=1,
 			run_now=0,
 			stop_now=0,
-			run_date=NOW(),
-			run_error='' 
+			run_date=NOW()
 		WHERE 
 			run_now=1 
 			and cron_pid=0 
