@@ -128,17 +128,26 @@ while(1){
 		if(is_array($recs)){
 			$cnt=count($recs);
 			//$ok=cronMessage("setting the following crons to run_now");
+			$ids=array();
 			foreach($recs as $rec){
-				$e=editDBRecordById('_cron',$rec['_id'],array('run_now'=>1));
-				if((integer)$e==1){
-					$ok=cronMessage("{$rec['_id']}-{$rec['name']}  - run_now set to 1");
-				}
-				else{
-					//$ok=cronMessage("FAILED to edit {$rec['_id']}-{$rec['name']}");
-					//$ok=cronMessage(printValue($e));
-				}
-				
+				$ids[]=$rec['_id'];
+				$ok=cronMessage("{$rec['_id']}-{$rec['name']}  - run_now set to 1");
 			}
+			$idstr=implode(',',$ids);
+			$query=<<<ENDOFSQL
+		UPDATE _cron 
+		SET 
+			cron_pid=0,
+			running=0,
+			run_now=1,
+			stop_now=0 
+		WHERE 
+			running=0 
+			and _id in ({$idstr})
+		LIMIT 1
+ENDOFSQL;
+			$ok=executeSQL($query);
+			//echo $query.printValue($ok);exit;
 		}
 		
 		//check for wasql.update file
