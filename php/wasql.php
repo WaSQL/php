@@ -1482,7 +1482,7 @@ function wasqlGetInputtypes($d=0){
 		'starrating'=> 'Star Rating',
 		'wysiwyg' 	=> 'WYSIWYG Editor',
 		'geolocationmap'	=> 'GEO Location Map',
-		'recorder_audio'	=> 'Recorder (Audio)'
+		//'recorder_audio'	=> 'Recorder (Audio)'
 	);
 	asort($types);
 	if($d){$vals=array_values($types);}
