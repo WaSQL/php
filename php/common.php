@@ -4724,7 +4724,7 @@ function buildFormSignature($name,$params=array()){
 	//return $name.printValue($params);
 	//$rtn .= '		'.$params['displayname'].PHP_EOL;
 	//show clear button on right
-	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;width:'.$params['width'].'px;">'.PHP_EOL;
+	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
 	//type to sign
 	if(!isset($params['data-input']) || $params['data-input'] != 0){
 		$opts=array(
@@ -4739,8 +4739,8 @@ function buildFormSignature($name,$params=array()){
 		foreach($opts as $font=>$fontname){
 			$rtn .='<div style="float:left;font-size:1px;font-family:'.$font.';">.</div>';
 		}
-		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$name.'_font','style'=>'width:170px;'));
-		$rtn .= '			<input type="text" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
+		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$name.'_font','style'=>'font-size:0.9rem;width:100px;'));
+		$rtn .= '<input type="text" style="flex:1;width:100%;min-width:150px" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
 	}
 	if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
 		$rtn .= '			<button title="sign" type="button" class="btn" id="'.$name.'_sign">'.$params['sign'].'</button>'.PHP_EOL;

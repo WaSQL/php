@@ -107,7 +107,7 @@ echo " - writing local files".PHP_EOL;
 writeFiles();
 $countdown=$postedit['timer'];
 echo "Listening to files in {$postedit['afolder']} for changes...".PHP_EOL;
-$ok=posteditBeep(1);
+$ok=sounder('success.wav');
 $cliname="postedit - ".getFileName($postedit['afolder']);
 cli_set_process_title($cliname);
 while(1){
@@ -494,7 +494,8 @@ function abortMessage($msg){
 	$msg=trim($msg);
 	echo "Fatal Error: {$msg}".PHP_EOL;
 	if(isWindows()){
-		$ok=posteditBeep(3);
+		//$ok=posteditBeep(3);
+		$ok=sounder('failure.wav');
 	}
 	if(isset($postedit['alock']) && file_exists($postedit['alock'])){
 		unlink($postedit['alock']);
@@ -505,7 +506,8 @@ function errorMessage($msg){
 	$msg=trim($msg);
 	echo " - Error: {$msg}".PHP_EOL;
 	if(isWindows()){
-		$ok=posteditBeep(2);
+		//$ok=posteditBeep(2);
+		$ok=sounder('failure.wav');
 	}
 	return;
 }
@@ -517,8 +519,15 @@ function successMessage($msg){
 	$msg .= ' - ' . date('g:i:s a');
 	echo " - Success: {$msg}".PHP_EOL;
 	if(isWindows()){
-		$ok=posteditBeep(1);
+		//$ok=posteditBeep(1);
+		$ok=sounder('success.wav');
 	}
+	return;
+}
+function sounder($sound){
+	global $progpath;
+	$cmd="{$progpath}/sounder.exe {$progpath}/$sound";
+	$out=cmdResults($cmd);
 	return;
 }
 function soundAlarm($type='success'){
