@@ -2721,7 +2721,7 @@ function buildFormRecorderAudio($name,$params=array()){
 	//audiobox
 	$tag='<div id="'.$id.'_audiobox" style="display:inline-flex;align-items:center;justify-content:flex-start;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;white-space:nowrap;font-size:1rem;">';
 	//click
-	$tag.='<a href="#record" id="'.$id.'_click" data-id="'.$id.'" data-record="'.$params['record'].'" data-stop="'.$params['stop'].'" style="display:block;text-decoration:none;padding:0.375rem 0.75rem;" onclick="return eventRecorderAudio(this);"';
+	$tag.='<a href="#record" id="'.$id.'_click" data-id="'.$id.'" data-record="'.$params['record'].'" data-stop="'.$params['stop'].'" style="display:block;text-decoration:none;padding:0.375rem 0.75rem;" onclick="return formRecorderAudio(this);"';
 	$tag .= setTagAttributes($params);
 	$tag .='>'.$params['record'].'</a>';
 	//mic
@@ -2729,8 +2729,7 @@ function buildFormRecorderAudio($name,$params=array()){
 	//play
 	$params['value']=preg_replace('/^\/\//','/',$params['value']);
 	if(strlen($params['value'])){
-		$tag .= '<span id="'.$id.'_play" title="play" data-id="'.$id.'" class="icon-play w_pointer" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;" onclick="eventRecorderAudioControl(this);"></span>';
-		//$tag .= '<span id="'.$id.'_reset" data-id="'.$id.'" class="icon-reset w_pointer" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;" onclick="eventRecorderAudioControl(this);"></span>';
+		$tag .= '<span id="'.$id.'_play" title="play" data-id="'.$id.'" class="icon-play w_pointer" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;" onclick="formRecorderAudioControl(this);"></span>';
 	}
 	$tag.=buildFormHidden($name,array('value'=>1));
 	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
