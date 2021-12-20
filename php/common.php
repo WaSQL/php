@@ -2702,6 +2702,7 @@ function buildFormRecorderAudio($name,$params=array()){
 	$params['data-audio']=$params['id'].'_audio';
 	$params['data-audiobox']=$params['id'].'_audiobox';
 	$params['style'].='display:flex;justify-content:center;align-items:center';
+	$params['value']=preg_replace('/^\/\//','/',$params['value']);
 	//set path of where to store this file in
 	if(!isset($params['path'])){
     	if(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
@@ -2721,13 +2722,25 @@ function buildFormRecorderAudio($name,$params=array()){
 	//audiobox
 	$tag='<div id="'.$id.'_audiobox" style="display:inline-flex;align-items:center;justify-content:flex-start;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;white-space:nowrap;font-size:1rem;">';
 	//click
-	$tag.='<a href="#record" id="'.$id.'_click" data-id="'.$id.'" data-record="'.$params['record'].'" data-stop="'.$params['stop'].'" style="display:block;text-decoration:none;padding:0.375rem 0.75rem;" onclick="return formRecorderAudio(this);"';
-	$tag .= setTagAttributes($params);
-	$tag .='>'.$params['record'].'</a>';
+	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
+		$tag.='<a href="#record" id="'.$id.'_click" data-id="'.$id.'" style="display:block;text-decoration:none;padding:0.375rem 0.75rem;" onclick="return false;"';
+		$tag .= setTagAttributes($params);
+		if(strlen($params['value'])){
+			$tag .='>'.getFileName($params['value']).'</a>';
+		}
+		else{
+			$tag .='>'.$params['record'].'</a>';
+		}
+	}
+	else{
+		$tag.='<a href="#record" id="'.$id.'_click" data-id="'.$id.'" data-record="'.$params['record'].'" data-stop="'.$params['stop'].'" style="display:block;text-decoration:none;padding:0.375rem 0.75rem;" onclick="return formRecorderAudio(this);"';
+		$tag .= setTagAttributes($params);
+		$tag .='>'.$params['record'].'</a>';
+	}
+	
 	//mic
 	$tag .= '<span id="'.$id.'_mic" data-id="'.$id.'" class="icon-mic" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;"></span>';
 	//play
-	$params['value']=preg_replace('/^\/\//','/',$params['value']);
 	if(strlen($params['value'])){
 		$tag .= '<span id="'.$id.'_play" title="play" data-id="'.$id.'" class="icon-play w_pointer" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;" onclick="formRecorderAudioControl(this);"></span>';
 	}
