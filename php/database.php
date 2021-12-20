@@ -7350,6 +7350,7 @@ function getDBFieldTag($params=array()){
     $info[$field]=array();
     $info=getDBFieldInfo($params['-table'],1,$field);
     if(!is_array($info) && strlen($info)){return $info;}
+    //return printValue($params).printValue($info);
     //echo printValue($info);
     //echo printValue($params);
     $styles=array();
@@ -7568,6 +7569,9 @@ function getDBFieldTag($params=array()){
 			$tag=buildFormFile($info[$field]['name'],$info[$field]);
 		break;
 		case 'formula':
+		break;
+		case 'recorder_audio':
+			$tag=buildFormRecorderAudio($info[$field]['name'],$info[$field]);
 		break;
 		case 'geolocationmap':
 			$tag=buildFormGeoLocationMap($info[$field]['name'],$info[$field]);

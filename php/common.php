@@ -2667,6 +2667,96 @@ function buildFormPassword($name,$params=array()){
 
 	return $tag;
 }
+//---------- begin function buildFormRecorderAudio--------------------
+/**
+* @describe creates an HTML recorder-audio field
+* @param name string
+* @param params array
+* 	[-formname] - name of the parent form  - used to set a default id if one is not given
+* 	[name] - name of the input if you want to override the one passed in
+* 	[id] - id of the input - defaults to formname_name
+* 	[requiredif] - set required based on another field
+* 	[record] - text to display when NOT recording - defaults to Click to Record
+* 	[stop] - text to display when IS recording - defaults to Click to Stop
+* 	[value] - set value    
+* 	[data-mix] - url of mp3 to play in the background during recording
+* @return string
+* @usage echo buildFormRecorderAudio('my_speach',$params);
+*/
+function buildFormRecorderAudio($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+	if(!isset($params['value'])){$params['value']='';}
+	if(!isset($params['style'])){$params['style']='';}
+	if(!isset($params['record']) || !strlen($params['record'])){$params['record']='Click To Record';}
+	if(!isset($params['stop']) || !strlen($params['stop'])){$params['stop']='Click To Stop';}
+	if(!isset($params['class']) || !strlen($params['class'])){$params['class']='w_black';}
+	$params['name']=$name.'_button';
+	$params['data-behavior']='recorder_audio';
+	$params['data-id']=$params['id'];
+	$params['data-base64']=$params['id'].'_base64';
+	$params['data-audio']=$params['id'].'_audio';
+	$params['data-audiobox']=$params['id'].'_audiobox';
+	$params['style'].='display:flex;justify-content:center;align-items:center';
+	//set path of where to store this file in
+	if(!isset($params['path'])){
+    	if(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
+    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
+    	else{$params['path']="/files/{$name}";}
+	}
+	$params['path']=preg_replace('/^\/+/','',$params['path']);
+	//create path if it does not exist
+	$apath="{$_SERVER['DOCUMENT_ROOT']}/{$params['path']}";
+	if(!is_dir($apath)){
+		buildDir($apath);
+	}
+	unset($params['onclick']);
+	$id=$params['id'];
+	unset($params['id']);
+	//return $name.printValue($params);
+	//audiobox
+	$tag='<div id="'.$id.'_audiobox" style="display:inline-flex;align-items:center;justify-content:flex-start;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;white-space:nowrap;font-size:1rem;">';
+	//click
+	$tag.='<a href="#record" id="'.$id.'_click" data-id="'.$id.'" data-record="'.$params['record'].'" data-stop="'.$params['stop'].'" style="display:block;text-decoration:none;padding:0.375rem 0.75rem;" onclick="return eventRecorderAudio(this);"';
+	$tag .= setTagAttributes($params);
+	$tag .='>'.$params['record'].'</a>';
+	//mic
+	$tag .= '<span id="'.$id.'_mic" data-id="'.$id.'" class="icon-mic" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;"></span>';
+	//play
+	$params['value']=preg_replace('/^\/\//','/',$params['value']);
+	if(strlen($params['value'])){
+		$tag .= '<span id="'.$id.'_play" title="play" data-id="'.$id.'" class="icon-play w_pointer" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;" onclick="eventRecorderAudioControl(this);"></span>';
+		//$tag .= '<span id="'.$id.'_reset" data-id="'.$id.'" class="icon-reset w_pointer" style="padding:0.375rem 0.75rem;border-left:1px solid #CCC;" onclick="eventRecorderAudioControl(this);"></span>';
+	}
+	$tag.=buildFormHidden($name,array('value'=>1));
+	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
+	//autonumber?
+	if(isset($params['autonumber']) || isset($params['data-autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
+    }
+    //resize after upload?
+    if(isset($params['resize']) || isset($params['data-resize'])){
+    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
+		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
+		unset($params['data-resize']);
+    }
+    $params['name']=$name.'_base64';
+	$params['style']='display:none;';
+	$params['id']=$id.'_base64';
+	$tag.=buildFormTextarea($name,$params);
+	if(strlen($params['value'])){
+		$params['name']=$name.'_prev';
+		$params['style']='display:none;';
+		$params['id']=$id.'_prev';
+		$tag.=buildFormTextarea($name,$params);
+	}
+	$tag .= '</div>';
+	return $tag;
+}
 //---------- begin FUNCTION buildFormGeoLocationMap-------------------
 /**
 * @describe creates an Map form element where user can select latitude,longitude from a map

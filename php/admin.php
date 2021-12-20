@@ -2658,7 +2658,7 @@ LIST_TABLE:
 				$val=isset($tinfo['fieldinfo'][$field]['displayname'])?$tinfo['fieldinfo'][$field]['displayname']:'';
 				echo '		<td class="w_gray w_smaller" class="w_nowrap">'.$val.'</td>'.PHP_EOL;
 				if(isset($tinfo['fieldinfo'][$field]['inputtype']) && strlen($tinfo['fieldinfo'][$field]['inputtype'])){
-					echo '		<td class="w_gray w_smaller w_nowrap" data-tooltip="'.$tinfo['fieldinfo'][$field]['inputtype'].'"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" width="16" height="16"></td>'.PHP_EOL;
+					echo '		<td class="w_gray w_smaller w_nowrap" data-tooltip="'.$tinfo['fieldinfo'][$field]['inputtype'].'"><img style="vertical-align:middle" src="/wfiles/icons/form/'.$tinfo['fieldinfo'][$field]['inputtype'].'.png" alt="'.$tinfo['fieldinfo'][$field]['inputtype'].'" height="16"></td>'.PHP_EOL;
 				}
 				else{
                 	echo '		<td></td>'.PHP_EOL;
