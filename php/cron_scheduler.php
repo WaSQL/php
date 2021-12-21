@@ -144,7 +144,6 @@ while(1){
 		WHERE 
 			running=0 
 			and _id in ({$idstr})
-		LIMIT 1
 ENDOFSQL;
 			$ok=executeSQL($query);
 			//echo $query.printValue($ok);exit;
