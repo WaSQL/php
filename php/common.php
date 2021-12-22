@@ -4872,9 +4872,6 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
 		$rtn .= ' height="'.$params['height'].'"';
 	}
-	if(isset($params['data-autoresize'])){
-		$rtn .= ' data-autoresize="'.$params['data-autoresize'].'"';
-	}
 	if(isset($params['data-pencolor'])){
 		$rtn .= ' data-color="'.$params['data-pencolor'].'"';
 	}
