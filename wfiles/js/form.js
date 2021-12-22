@@ -169,15 +169,15 @@ async function formRecorderAudio(el){
 	    	if(undefined != el.stream){
 	    		el.recorder = new MediaRecorder(el.stream);
 	    		el.recorder.el=el;
-			el.recorder.ondataavailable = function(e) {
+				el.recorder.ondataavailable = function(e) {
 				if (e.data.size > 0) {
 			    		this.el.recordedchunks.push(e.data);
 				    	let blob = new Blob(this.el.recordedchunks, {
 					      type: "audio/webm"
 					   	});
 					let url = URL.createObjectURL(blob);
-				      //set value in form field
-				     let reader = new FileReader();
+				    //set value in form field
+				    let reader = new FileReader();
 					reader.readAsDataURL(blob);
 					reader.el=this.el;
 					reader.onloadend = function () {
@@ -236,7 +236,7 @@ async function formRecorderAudio(el){
 			if(undefined != el.dataset.stop){
 				el.textContent=el.dataset.stop;
 			}
-	    	}
+	    }
     }
 }
 function setInputFileName(fld){

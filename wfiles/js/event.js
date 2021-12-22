@@ -4376,11 +4376,21 @@ function wasqlMarkerInit(el,cl){
 	});
 }
 function resizeSignatureWidthHeight(){
-	var list=document.querySelectorAll('.w_signature');
+	var list=document.querySelectorAll('.w_signature[data-autoresize]');
 	for(var i=0;i<list.length;i++){
 		var pwh=getWidthHeight(list[i]);
-		list[i].width=pwh[0];
-		list[i].height=pwh[1];
+		switch(list[i].dataset.autoresize.toLowerCase()){
+			case 'width':
+				list[i].width=pwh[0];
+			break;
+			case 'height':
+				list[i].height=pwh[1];
+			break;
+			default:
+				list[i].width=pwh[0];
+				list[i].height=pwh[1];
+			break;		
+		}
 	}
 }
 /*

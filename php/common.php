@@ -4776,6 +4776,7 @@ function buildFormSelectYear($name,$params=array()){
 *	- [width]. Defaults to 300
 *	- [height]. Defaults to 75
 * 	- [style] - set width or height in style to override defaults
+* 	- [data-autoresize] - width, height, both 
 * @return
 *	HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
 */
@@ -4870,6 +4871,9 @@ function buildFormSignature($name,$params=array()){
 	}
 	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
 		$rtn .= ' height="'.$params['height'].'"';
+	}
+	if(isset($params['data-autoresize'])){
+		$rtn .= ' data-autoresize="'.$params['data-autoresize'].'"';
 	}
 	if(isset($params['data-pencolor'])){
 		$rtn .= ' data-color="'.$params['data-pencolor'].'"';
