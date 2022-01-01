@@ -19,6 +19,10 @@ function pauseSelected(func){
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
 }
+function cronSetFieldValue(cron_id,fld,val){
+	let params={_menu:'cron',func:'set_field_value',setprocessing:'setprocessing',cron_id:cron_id,fld:fld,val:val};
+	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
+}
 function cronFilterByGroup(name){
 	pagingClearFilters(document.cronlistform);
 	document.cronlistform.filter_field.value='groupname';
@@ -73,6 +77,7 @@ function cronLogRefreshTimer(){
 <div id="cron_results" class="w_padtop">
 	<?=renderView('list');?>
 </div>
+<div style="display: none"><div id="cron_null"></div></div>
 </view:default>
 
 <view:list>

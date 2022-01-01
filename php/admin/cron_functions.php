@@ -100,7 +100,7 @@ function cronList(){
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
-		'-editfields'=>'stop_now,run_now,frequency_max',
+		'-editfields'=>'frequency_max,cron_pid,groupname',
 		'-export'=>1,
 		'-sorting'=>1,
 		'setprocessing'=>0,
@@ -112,6 +112,19 @@ function cronList(){
 		'last_run_options'=>array(
 			'class'=>'align-right',
 			'verbosetime'=>1
+		),
+		'run_now_options'=>array(
+			'class'=>'align-center '.configValue('admin_color'),
+			'checkbox'=>1,
+			'data-id'=>'%_id%',
+			'data-type'=>'checkbox',
+			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'run_now',this.checked)"
+		),
+		'stop_now_options'=>array(
+			'class'=>'align-center '.configValue('admin_color'),
+			'checkbox'=>1,
+			'data-id'=>'%_id%',
+			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'stop_now',this.checked)"
 		),
 		'groupname_displayname'=>'Group',
 		'run_format_displayname'=>'Frequency',
@@ -227,12 +240,12 @@ function cronListExtra($recs){
 	}
 	//echo printValue($recs);exit;
 	foreach($recs as $i=>$rec){
-		$id=$recs[$i]['_id'];
+		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" title="Cron Details - '.$name.'"><span class="icon-info-circled"></span> '.$name.'</a>';
+		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" class="w_bigger" title="Cron Details - '.$name.'"><span class="icon-info-circled"></span> '.$name.'</a>';
 	}
 	return $recs;
 }

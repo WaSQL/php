@@ -59,6 +59,13 @@ switch(strtolower($_REQUEST['func'])){
 		setView('details',1);
 		return;
 	break;
+	case 'set_field_value':
+		$cron_id=(integer)$_REQUEST['cron_id'];
+		$fld=$_REQUEST['fld'];
+		$val=$_REQUEST['val'];
+		$ok=editDBRecordById('_cron',$cron_id,array($fld=>$val));
+		echo printValue($ok);exit;
+	break;
 	case 'cron_result':
 		//echo "cron_result";exit;
 		$id=(integer)$_REQUEST['id'];

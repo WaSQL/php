@@ -1977,6 +1977,28 @@ function databaseListRecords($params=array()){
 	                }
 				}
 				$value='<input type="checkbox" data-group="'.$fld.'_checkbox" id="'.$checkbox_id.'" name="'.$fld.'[]" value="'.$checkbox_value.'"';
+				//data-
+				if(isset($params[$fld.'_options']) && is_array($params[$fld.'_options'])){
+					$used[$fld.'_options']=1;
+					//echo printValue($params[$fld.'_options']);exit;
+					foreach($params[$fld.'_options'] as $okey=>$oval){
+						if($okey=='class'){
+							$value.=" {$okey}=\"{$oval}\"";
+							$used[$fld.'_'.$okey]=1;
+						}
+						elseif(stringBeginsWith($okey,'data-')){
+							$data=$oval;
+							foreach($rec as $recfld=>$recval){
+								if(is_array($recfld) || is_array($recval)){continue;}
+								$replace='%'.$recfld.'%';
+			                    $data=str_replace($replace,strip_tags($rec[$recfld]),$data);
+			                }
+			                $data=trim($data);
+							$value.=" {$okey}=\"{$data}\"";
+							$used[$fld.'_'.$okey]=1;
+						}
+					}
+				}
 				if(!empty($params[$fld."_checkbox_onclick"])){
 					$onclick=$params[$fld."_checkbox_onclick"];
 					//substitute and %{field}% with its value in this record
@@ -1989,7 +2011,7 @@ function databaseListRecords($params=array()){
 				}
 				if(!empty($params[$fld."_checkbox_checked"])){
 					$checkbox_checked=$params[$fld."_checkbox_checked"];
-					//substitute and %{field}% with its value in this record
+					//substitute %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
 						if(is_array($recfld) || is_array($recval)){continue;}
 						$replace='%'.$recfld.'%';
@@ -1998,6 +2020,9 @@ function databaseListRecords($params=array()){
 	                if($checkbox_checked==$checkbox_id){
 	                	$value .= ' checked';
 	                }
+				}
+				elseif($cval==1){
+					$value .= ' checked';
 				}
 				$value.=' /> ';
 				if(!isNum($cval)){$value .= '<label for="'.$checkbox_id.'">'.$cval.'</label>';}
@@ -2025,6 +2050,28 @@ function databaseListRecords($params=array()){
 	                }
 				}
 				$value='<input type="radio" data-group="'.$fld.'_radio" id="'.$radio_id.'" name="'.$fld.'[]" value="'.$radio_value.'"';
+				//data-
+				if(isset($params[$fld.'_options']) && is_array($params[$fld.'_options'])){
+					$used[$fld.'_options']=1;
+					foreach($params[$fld.'_options'] as $okey=>$oval){
+						if($okey=='class'){
+							$value.=" {$okey}=\"{$oval}\"";
+							$used[$fld.'_'.$okey]=1;
+						}
+						elseif(stringBeginsWith($okey,'data-')){
+							$data=$oval;
+							foreach($rec as $recfld=>$recval){
+								if(is_array($recfld) || is_array($recval)){continue;}
+								$replace='%'.$recfld.'%';
+			                    $data=str_replace($replace,strip_tags($rec[$recfld]),$data);
+			                }
+			                $data=trim($data);
+							$value.=" {$okey}=\"{$data}\"";
+							$used[$fld.'_'.$okey]=1;
+						}
+					}
+				}
+				//onclick
 				if(!empty($params[$fld."_radio_onclick"])){
 					$onclick=$params[$fld."_radio_onclick"];
 					//substitute and %{field}% with its value in this record
@@ -2047,6 +2094,9 @@ function databaseListRecords($params=array()){
 	                	$value .= ' checked';
 	                }
 				}
+				elseif($cval==1){
+					$value .= ' checked';
+				}
 				$value.=' /> ';
 				if(!isNum($cval)){$value .= '<label for="'.$radio_id.'">'.$cval.'</label>';}
 			}
@@ -2064,6 +2114,27 @@ function databaseListRecords($params=array()){
                 if(!empty($params[$fld."_target"])){
                 	$value .= ' target="'.$params[$fld."_target"].'"';
                 }
+                //data-
+				if(isset($params[$fld.'_options']) && is_array($params[$fld.'_options'])){
+					$used[$fld.'_options']=1;
+					foreach($params[$fld.'_options'] as $okey=>$oval){
+						if($okey=='class'){
+							$value.=" {$okey}=\"{$oval}\"";
+							$used[$fld.'_'.$okey]=1;
+						}
+						elseif(stringBeginsWith($okey,'data-')){
+							$data=$oval;
+							foreach($rec as $recfld=>$recval){
+								if(is_array($recfld) || is_array($recval)){continue;}
+								$replace='%'.$recfld.'%';
+			                    $data=str_replace($replace,strip_tags($rec[$recfld]),$data);
+			                }
+			                $data=trim($data);
+							$value.=" {$okey}=\"{$data}\"";
+							$used[$fld.'_'.$okey]=1;
+						}
+					}
+				}
                 $value .= '>'.$hvalue.'</a>';
                 unset($hvalue);
 			}
