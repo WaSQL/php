@@ -47,17 +47,11 @@ function cronDetails($id){
 		'-table'=>'_cronlog',
 		'cron_id'=>$id,
 		'-order'=>'_id desc',
-		'-limit'=>100,
-		'-fields'=>'_id,run_date,run_length,run_error'
+		'-limit'=>100
 	));
+	//echo $id.printValue($cron['logs']);exit;
 	foreach($cron['logs'] as $i=>$log){
 		$cron['logs'][$i]['cron_id']=$id;
-		if(strlen($log['run_error'])){
-			$cron['logs'][$i]['color']='#d9534f';
-		}
-		else{
-			$cron['logs'][$i]['color']='#5cb85c';
-		}
 	}
 	$path=getWaSQLPath('php/temp');
 	$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
@@ -101,7 +95,7 @@ function cronList(){
 		'-table'=>'_cron',
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now,stop_now',
-		'-listfields'=>'_id,groupname,name,active,paused,running,stop_now,run_now,last_run,run_length,run_format,frequency_max',
+		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,last_run,run_length,run_format,frequency_max',
 		'-fields'=>'_id,groupname,name,active,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,

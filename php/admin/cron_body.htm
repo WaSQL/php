@@ -157,17 +157,17 @@ function cronLogRefreshTimer(){
 <view:details>
 <div class="row">
 	<div class="col s12">
-		<table class="table condensed striped bordered <?=configValue('admin_color');?>">
+		<table class="table condensed striped bordered <?=configValue('admin_color');?>" style="margin-bottom:0px;">
 			<tr>
 				<th><translate>ID</translate></th>
 				<th><translate>Group</translate></th>
 				<th><translate>Name</translate></th>
 				<th><translate>Active</translate></th>
+				<th>PID</th>
 				<th><translate>Paused</translate></th>
 				<th><translate>Running</translate></th>
 				<th><translate>LogMax</translate></th>
 				<th><translate>Cmd</translate></th>
-				<th><translate>Frequency</translate></th>
 				<th><translate>Actions</translate></th>
 			</tr>
 			<tr>
@@ -175,11 +175,11 @@ function cronLogRefreshTimer(){
 				<td class="w_small"><?=$cron['groupname'];?></td>
 				<td class="w_small"><?=$cron['name'];?></td>
 				<td class="w_small align-center"><?=cronIsActive($cron);?></td>
+				<td class="w_small"><?=$cron['cron_pid'];?></td>
 				<td class="w_small align-center"><?=cronIsPaused($cron);?></td>
 				<td class="w_small align-center" id="is_running"><?=cronIsRunning($cron);?></td>
 				<td class="w_small"><?=$cron['records_to_keep'];?></td>
 				<td class="w_small"><?=$cron['run_cmd'];?></td>
-				<td class="w_small"><?=$cron['run_format'];?></td>
 				<td class="w_nowrap">
 					<a href="#" class="w_link w_block" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
@@ -191,6 +191,7 @@ function cronLogRefreshTimer(){
 				</td>
 			</tr>
 		</table>
+		<div><span class="w_bold w_small"><translate>Frequency</translate>:</span> <?=$cron['run_format'];?></div>
 	</div>
 </div>
 <div class="row">
@@ -198,15 +199,13 @@ function cronLogRefreshTimer(){
 		<div style="max-height:400px;overflow:auto;padding-right:20px;">
 		<table class="table condensed striped bordered <?=configValue('admin_color');?> hover">
 		<tr>
-			<th><translate>RunDate</translate></th>
-			<th><translate>RunTime</translate></th>
-			<th></th>
+			<th class="w_nowrap"><translate>Date</translate></th>
+			<th class="w_nowrap"><translate>Length</translate></th>
 		</tr>
 		<view:log>
 		<tr class="w_pointer" onclick="return cronRefreshResult(<?=$log['cron_id'];?>,<?=$log['_id'];?>);">
 			<td class="w_nowrap" id="run_date_<?=$log['_id'];?>"><?=$log['run_date'];?></td>
-			<td class="" id="run_length_<?=$log['_id'];?>"><?=verboseTime($log['run_length']);?></td>
-			<td><div class="align-middle" style="margin-top:2px;background-color:<?=$log['color'];?>;height:12px;width:12px;border-radius:6px;"></div></span></td>
+			<td class="" id="run_length_<?=$log['_id'];?>"><?=verboseTime($log['run_length'],0,1);?></td>
 		</tr>
 		</view:log>
 		<?=renderEach('log',$cron['logs'],'log');?>
@@ -229,6 +228,8 @@ function cronLogRefreshTimer(){
 </view:error>
 <?=renderViewIf(strlen($log['run_error']),'error',$log,'log');?>
 <textarea id="cron_result_textarea" style="border:1px solid #f1f1f1;border-right:0px;border-bottom:0px;width:100%;height:400px;font-size:0.9rem;color:#000000CC" wrap="off">
+<?=$log['run_date'];?>  --  <?=verboseTime($log['run_length'],0,1);?>
+--------------------------------
 <?=$log['run_result'];?>
 </textarea>
 <view:bottom>
