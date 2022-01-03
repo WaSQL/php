@@ -118,12 +118,14 @@ function cronList(){
 			'checkbox'=>1,
 			'data-id'=>'%_id%',
 			'data-type'=>'checkbox',
+			'title'=>'Mark cron to Run Now',
 			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'run_now',this.checked)"
 		),
 		'stop_now_options'=>array(
 			'class'=>'align-center '.configValue('admin_color'),
 			'checkbox'=>1,
 			'data-id'=>'%_id%',
+			'title'=>'Attempt to stop cron',
 			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'stop_now',this.checked)"
 		),
 		'groupname_displayname'=>'Group',
@@ -245,7 +247,7 @@ function cronListExtra($recs){
 		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
 		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';
 		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" class="w_bigger" title="Cron Details - '.$name.'"><span class="icon-info-circled"></span> '.$name.'</a>';
+		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" class="w_bigger" title="Cron Details - '.$name.'"><span class="icon-info-circled '.configValue('admin_color').'"></span> '.$name.'</a>';
 	}
 	return $recs;
 }
