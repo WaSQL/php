@@ -57,6 +57,26 @@ function sqlpromptSetDB(db){
 	document.sqlprompt.db.value=db;
 	return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
 }
+function sqlpromptSetValue(v){
+	document.sqlprompt.sql_select.value='';
+	let sql=v;
+	let doc = new DOMParser().parseFromString(sql, "text/html");
+	sql=doc.documentElement.textContent;
+	let obj=getObject('sql_full');
+	if(undefined != obj.codemirror){
+		obj.codemirror.getDoc().setValue(sql);
+		obj.codemirror.save();
+	}
+	else{
+		setText('sql_full','');
+		setText('sql_full',sql);
+	}
+	return false;
+}
+function sqlpromptLoadPrompt(db){
+	document.sqlprompt.db.value=db;
+	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'load_prompt',db:db,setprocessing:0})
+}
 function sqlpromptMonitor(type){
 	var db=document.sqlprompt.db.value;
 	document.sqlprompt.reset();

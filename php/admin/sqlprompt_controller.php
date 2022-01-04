@@ -133,7 +133,19 @@
 			//echo printValue($db);exit;
 			$tables=sqlpromptGetTables($db['name']);
 			//echo "setdb".printValue($tables);exit;
-			setView('tables_fields',1);
+			setView(array('tables_fields','prompt_load'),1);
+			return;
+		break;
+		case 'load_prompt':
+			$prompt='sql_prompt_'.$_REQUEST['db'];
+			$rec=getDBRecord(array('-table'=>'_prompts','_cuser'=>$USER['_id'],'name'=>$prompt));
+			if(isset($rec['_id'])){
+				$load_prompt=$rec['body'];
+			}
+			else{
+				$load_prompt='';
+			}
+			setView('load_prompt',1);
 			return;
 		break;
 		case 'paginate':
@@ -165,6 +177,19 @@
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);
+			if(strlen($sql_full)){
+				$prompt='sql_prompt_'.$db['name'];
+				$ok=addDBRecord(array(
+					'-table'=>'_prompts',
+					'name'=>$prompt,
+					'body'=>$sql_full,
+					'-upsert'=>'body'
+				));
+				if(isset($rec['_id'])){
+					$_SESSION['sql_full']=$rec['body'];
+				}
+			}
+			
 			if(strlen($sql_select) && $sql_select != $sql_full){
 				$_SESSION['sql_last']=$sql_select;
 				$view='block_results';

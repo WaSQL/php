@@ -56,7 +56,7 @@
 </view:default>
 
 <view:tables_fields>
-<div class="w_bigger"><span class="<?=$_SESSION['db']['dbicon'];?>"></span> <?=$_SESSION['db']['displayname'];?></div>
+<div class="w_bigger"><span class="<?=$_SESSION['db']['dbicon'];?>"></span> <?=$db['displayname'];?></div>
 <div style="max-height:40vh;overflow:auto;padding-right:5px">
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
@@ -67,7 +67,15 @@
 		<?=renderEach('table',$tables,'table');?>
 	</ul>
 </div>
+<view:prompt_load>
+<?=buildOnLoad("sqlpromptLoadPrompt('{$db['name']}');");?>
+</view:prompt_load>
 </view:tables_fields>
+
+<view:load_prompt>
+	<div id="load_prompt"><?=$load_prompt;?></div>
+	<?=buildOnLoad("sqlpromptSetValue(getText('load_prompt'));");?>
+</view:load_prompt>
 
 <view:monitor>
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
