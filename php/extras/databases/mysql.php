@@ -43,7 +43,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 		$chunks=array_chunk($params['-recs'], $params['-chunk']);
 		$rtn=array();
 		foreach($chunks as $chunk){
-			$rtn[]=mysqlAddDBRecordsProcess($params['-recs'],$params);
+			$rtn[]=mysqlAddDBRecordsProcess($chunk,$params);
 		}
 		return $rtn;
 	}
