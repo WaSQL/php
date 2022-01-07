@@ -83,7 +83,7 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 	}
 	foreach($country_codes as $country){
 		$country=strtoupper($country);
-		$remote_file="http://download.geonames.org/export/zip/{$country}.zip";
+		$remote_file="https://download.geonames.org/export/zip/{$country}.zip";
 		$local_file="{$progpath}/temp/zipcodes_{$country}.zip";
 		if(copy($remote_file,$local_file)){
 			if(!$truncate){
