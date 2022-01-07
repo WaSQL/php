@@ -85,7 +85,9 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 		$country=strtoupper($country);
 		$remote_file="https://download.geonames.org/export/zip/{$country}.zip";
 		$local_file="{$progpath}/temp/zipcodes_{$country}.zip";
-		if(copy($remote_file,$local_file)){
+		$cmd="wget --no-check-certificate -O \"{$local_file}\" {$remote_file}";
+		$out=cmdResults($cmd);
+		if(file_exists($local_file)){
 			if(!$truncate){
 				//clean out the zipcodes for this country
 				$ok=executeSQL("delete from zipcodes where country_code='{$country}'");
