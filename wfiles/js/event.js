@@ -2563,7 +2563,10 @@ function initFlatpickr(){
 				case 'conjunction':k='conjunction';break;
 				case 'clickopens':k='clickOpens';break;
 				case 'dateformat':k='dateFormat';break;
-				case 'defaultdate':k='defaultDate';break;
+				case 'defaultdate':
+					if(el.value.length){k='';}
+					else{k='defaultDate';}
+				break;
 				case 'defaulthour':k='defaultHour';break;
 				case 'defaultminute':k='defaultMinute';break;
 				case 'disablemobile':k='disableMobile';break;
@@ -2624,7 +2627,7 @@ function initFlatpickr(){
 					v=false;
 				break;
 			}
-			config[k]=v;
+			if(k.strlen > 0){config[k]=v;}
 		}
 		switch(lang.toLowerCase()){
 			case 'es':
@@ -2751,7 +2754,7 @@ function initFlatpickr(){
       			config.locale.toggleTitle = "点击切换 12/24 小时时制";
 			break;
 		}
-		//console.log(config);
+		console.log(config);
 		flatpickr(els[i],config);
 	}
 	return false;
