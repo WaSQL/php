@@ -2431,7 +2431,7 @@ var wacss = {
 		str=str.replace(/\#/g,"%23");
 		//str=str.replace(/\s/g,"+");
 	    return str;
-	}
+	},
 	wacsseditHandleFiles(el){
 		for(let f=0;f<el.files.length;f++){
 			let reader = new FileReader();
