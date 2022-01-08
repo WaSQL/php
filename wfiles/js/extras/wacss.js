@@ -91,6 +91,19 @@ var wacss = {
 			wacss.removeObj(el);
 		},1000);
 	},
+	emulateEvent: function(el,ev){
+		el=wacss.getObject(el);
+		if(undefined == el){return false;}
+		if ("createEvent" in document) {
+		    let evt = document.createEvent("HTMLEvents");
+		    evt.initEvent(ev, false, true);
+		    el.dispatchEvent(evt);
+		}
+		else{
+		    el.fireEvent("on"+ev);
+		}
+		return false;
+	},
 	function_exists: function(function_name){   
     	if (typeof function_name == 'string'){  
         	return (typeof window[function_name] == 'function');  
@@ -1910,6 +1923,9 @@ var wacss = {
 			}
 		}
 	},
+	isNum: function(n) {
+	  return !isNaN(parseFloat(n)) && isFinite(n);
+	},
 	listen: function(evnt, elem, func) {
 	    if (elem.addEventListener){ 
 	    	// W3C DOM
@@ -1923,6 +1939,23 @@ var wacss = {
 	    else{
 	    	console.log('wacss.listen failed. Browser does not support event listeners');
 	    }
+	},
+	loadCSS: function(file,notify) {
+	    let link = document.createElement('link');
+	    if(undefined != notify && notify==1){
+	    	link.onload = function () {
+		    //do stuff with the script
+		    wacss.toast(this.getAttribute('href')+' loaded successfully');
+			};
+	    }
+	    link.setAttribute("rel", "stylesheet");
+  		link.setAttribute("type", "text/css");
+  		link.setAttribute("href", file);
+		document.head.appendChild(link);
+		return true;
+	},
+	loadJs: function(file,notify) {
+		return wacss.loadScript(file,notify);
 	},
 	loadScript: function(file,notify) {
 	    let script = document.createElement('script');
@@ -2208,6 +2241,15 @@ var wacss = {
 		document.body.appendChild(v);
 
 	},
+	simulateEvent: function(element, eventName){
+		element=getObject(element);
+		if(undefined == element){return false;}
+		//info: simulate an event without it actually happening
+	    let evObj = document.createEvent('Event');
+	    evObj.initEvent(eventName, true, false);
+	    element.dispatchEvent(evObj);
+	  	return true;
+	},
 	speak: function(txt,params){
 		if(undefined == params){params={};}
 		params.txt=txt;
@@ -2262,6 +2304,28 @@ var wacss = {
 			console.log('wacss.speak error: speechSynthesis is not supported in your browser or OS');
 		}
 		return false;
+	},
+	str_replace: function(search, replace, str) {
+	    let f = search, r = replace, s = str;
+	    let ra = r instanceof Array, sa = s instanceof Array, f = [].concat(f), r = [].concat(r), i = (s = [].concat(s)).length;
+
+	    while (j = 0, i--) {
+	        if (s[i]) {
+	            while (s[i] = s[i].split(f[j]).join(ra ? r[j] || "" : r[0]), ++j in f){};
+	        }
+	    };
+
+	    return sa ? s : s[0];
+	},
+	strtolower: function(str) {
+	    // info: Makes a string lowercase
+	    //source: http://phpjs.org/functions
+	    return (str + '').toLowerCase();
+	},
+	strtoupper: function(str) {
+	    // info: Makes a string uppercase
+	    //source: http://phpjs.org/functions
+	    return (str + '').toUpperCase();
 	},
 	toast: function(msg,params){
 		if(undefined == params){
@@ -2335,12 +2399,33 @@ var wacss = {
 			}
 		else{return "";}
 	},
+	ucfirst: function(str) {
+	    //info: Makes a string's first character uppercase
+	    //source: http://phpjs.org/functions
+	    let f = str.charAt(0).toUpperCase();
+	    return f + str.substr(1);
+	},
 	ucwords: function(str){
 		str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
 		    return letter.toUpperCase();
 		});
 		return str;
 	},
+	urlEncode: function(str) {
+		//info: URL encode string
+		//usage: $encoded=urlEncode('address=122 east way');
+		str=str+'';
+		str=str.replace(/\//g,"%2F");
+		str=str.replace(/\?/g,"%3F");
+		str=str.replace(/\</g,"%3C");
+		str=str.replace(/\>/g,"%3E");
+		str=str.replace(/\"/g,"%22");
+		str=str.replace(/=/g,"%3D");
+		str=str.replace(/&/g,"%26");
+		str=str.replace(/\#/g,"%23");
+		//str=str.replace(/\s/g,"+");
+	    return str;
+	}
 	wacsseditHandleFiles(el){
 		for(let f=0;f<el.files.length;f++){
 			let reader = new FileReader();

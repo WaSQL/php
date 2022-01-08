@@ -85,8 +85,10 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 		$country=strtoupper($country);
 		$remote_file="https://download.geonames.org/export/zip/{$country}.zip";
 		$local_file="{$progpath}/temp/zipcodes_{$country}.zip";
-		$cmd="wget --no-check-certificate -O \"{$local_file}\" {$remote_file}";
-		$out=cmdResults($cmd);
+		//use the WaSQL wget function instead of linux wget so it works on windows
+		$ok=wget($remote_file,$local_file);
+		//$cmd="wget --no-check-certificate -O \"{$local_file}\" {$remote_file}";
+		//$out=cmdResults($cmd);
 		if(file_exists($local_file)){
 			if(!$truncate){
 				//clean out the zipcodes for this country
@@ -119,6 +121,9 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 			$addopts=array('-recs'=>$zipcodesRecs,'-ignore'=>1);
 			$ok=dbAddRecords($CONFIG['database'],'zipcodes',$addopts);
 			//echo "dbAddRecords".printValue($ok).printValue($addopts);exit;
+		}
+		else{
+			return "download Failed:".printValue($out);
 		}
 	}
 	return $country_codes;

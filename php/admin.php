@@ -1678,6 +1678,9 @@ ENDOFX;
 				if(file_exists("{$tempdir}/wasql.update.log")){
 					//echo "Results of {$tempdir}/wasql.update.log<br>".PHP_EOL;
 					$results=getFileContents("{$tempdir}/wasql.update.log");
+					if(stringContains($results,'.js') || stringContains($results,'.css')){
+						wasqlClearMinCache();
+					}
 					echo $results;
 					exit;
 				}

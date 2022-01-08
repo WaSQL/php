@@ -73,7 +73,7 @@ if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentEleme
 		this.insertAdjacentElement(where,parsedText);
 		}
 	}
-//commonEmulateEvent
+//commonEmulateEvent - moved to wacss.emulateEvent
 /**
 * @describe emulates event on object/element.  change, click, etc.
 * @param el mixed  - object or id
@@ -211,7 +211,7 @@ function commonModalPopup(htm,title,overlay) {
 	}
 	return modal;
 }
-//commonCopyToClipboard
+//commonCopyToClipboard - moved to wacss.copy2Clipboard
 /**
 * @describe copies txt to clipboard
 * @param txt string  - the content you want in the clipboard
@@ -364,9 +364,11 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 	if (!document.all && document.getElementById && !window.opera){this.initFFengine();}
 }
 var loadJsCssFiles=new Array();
+//moved to wacss.loadJs
 function loadJsFile(fname){
 	return loadJsCss(fname, 'js');
 	}
+//moved to wacss.loadCSS
 function loadCssFile(fname){
 	return loadJsCss(fname, 'css');
 	}
@@ -437,6 +439,7 @@ function simulateTab(){
 	document.dispatchEvent(keyboardEvent);
 	return true;
 }
+//moved to wacss.function_exists
 function function_exists( function_name ) {    
     if (typeof function_name == 'string'){  
         return (typeof window[function_name] == 'function');  
@@ -444,6 +447,7 @@ function function_exists( function_name ) {
         return (function_name instanceof Function);  
     }  
 }
+//moved to wacss.simulateEvent
 /* simulateEvent without actually having the event happen */
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){
@@ -463,7 +467,7 @@ function simulateEvent(element, eventName){
 * @usage if(isDate(txt)){...}
 */
 function isDate(str){
-	//fix for safare
+	//fix for safari
 	var d = new Date(str.replace(/-/g, "/"));
 	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
   		// it is a date
@@ -565,7 +569,7 @@ function isFunction(functionToCheck) {
 	var getType = {};
 	return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
 }
-//isNum validation
+//isNum validation - moved to wacss.isNum
 function isNum(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -1476,6 +1480,7 @@ function getObject(obj){
 * @return object
 * @usage var obj=getParent(divid);
 */
+//moved to wacss.getParent
 function getParent(obj,name){
 	if(undefined != name){
 		var count = 1;
@@ -2050,6 +2055,7 @@ function showProperties(obj,id,v){
 		setText(id,str);
     	}
   	}
+//moved to wacss.str_replace
 function str_replace(search, replace, str) {
     var f = search, r = replace, s = str;
     var ra = r instanceof Array, sa = s instanceof Array, f = [].concat(f), r = [].concat(r), i = (s = [].concat(s)).length;
@@ -2100,7 +2106,7 @@ function trim(str){
 		}
 	else{return "";}
 	}
-// urlEncode
+// urlEncode - moved to wacss.urlEncode
 function urlEncode(str) {
 	//info: URL encode string
 	//usage: $encoded=urlEncode('address=122 east way');
@@ -2145,16 +2151,19 @@ function getTableRowValues(tr,s) {
 	if(s==1){return str;}
 	return row;
 	}
+//moved to wacss.strtolower
 function strtolower (str) {
     // info: Makes a string lowercase
     //source: http://phpjs.org/functions
     return (str + '').toLowerCase();
 	}
+//moved to wacss.strtoupper
 function strtoupper (str) {
     // info: Makes a string uppercase
     //source: http://phpjs.org/functions
     return (str + '').toUpperCase();
 	}
+//moved to wacss.ucfirst
 function ucfirst (str) {
     //info: Makes a string's first character uppercase
     //source: http://phpjs.org/functions

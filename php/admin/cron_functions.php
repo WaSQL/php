@@ -96,7 +96,7 @@ function cronList(){
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now,stop_now',
 		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,last_run,run_length,run_format,frequency_max',
-		'-fields'=>'_id,groupname,name,active,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
+		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -113,8 +113,11 @@ function cronList(){
 			'class'=>'align-right',
 			'verbosetime'=>1
 		),
+		'cron_pid_options'=>array(
+			'class'=>'align-right'
+		),
 		'run_now_options'=>array(
-			'class'=>'align-center '.configValue('admin_color'),
+			'class'=>'w_green align-center ',
 			'checkbox'=>1,
 			'data-id'=>'%_id%',
 			'data-type'=>'checkbox',
@@ -122,7 +125,7 @@ function cronList(){
 			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'run_now',this.checked)"
 		),
 		'stop_now_options'=>array(
-			'class'=>'align-center '.configValue('admin_color'),
+			'class'=>'w_red align-center',
 			'checkbox'=>1,
 			'data-id'=>'%_id%',
 			'title'=>'Attempt to stop cron',

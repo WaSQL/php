@@ -15795,7 +15795,12 @@ function processActions(){
 							exit;
 						}
 						$fld=$fields[0];
-						$md5sha=md5(trim($rec[$fld])).sha1(trim($rec[$fld]));
+						$tpath=getWasqlTempPath();
+						$t=time();
+						$tfile="{$tpath}/postedit_{$fld}_{$t}.tmp";
+						setFileContents($tfile,$rec[$fld]);
+						$md5sha=md5_file($tfile).sha1_file($tfile);
+						unlink($tfile);
 						if(strtolower($_REQUEST['_table']) != '_prompts' && $md5sha != $_REQUEST['_md5sha']){
 							$username=$rec['_euser_ex']['username'];
 							echo "<timestamp>{$timestamp}</timestamp>";
@@ -18392,12 +18397,14 @@ function wget($url,$localfile){
 	    $ch = curl_init();
 	    curl_setopt($ch, CURLOPT_URL, $url);
 	    curl_setopt($ch, CURLOPT_HEADER, 0);
+	    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	    $content = curl_exec($ch);
+	    $contents = curl_exec($ch);
 	    curl_close($ch);
 	  	}
 	else{
-	    $content = file_get_contents($url);
+	    $contents = file_get_contents($url);
 	  	}
 	if(strlen($localfile)){
 		$path=getFilePath($localfile);
@@ -18405,7 +18412,7 @@ function wget($url,$localfile){
 		setFileContents($localfile,$contents);
 		return array($localfile,$path);
 		}
-  	return $content;
+  	return $contents;
 	}
 //---------- begin function getRemoteImage--------------------
 /**

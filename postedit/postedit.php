@@ -157,7 +157,7 @@ function fileChanged($afile){
 		$ok=errorMessage("Unknown file: {$afile}");
 		return;
 	}
-	$md5sha=md5($content).sha1($content);
+	$md5sha=md5_file($afile).sha1_file($afile);
 	$content=encodeBase64($content);
 	list($fname,$table,$field,$id,$ext)=preg_split('/\./',$filename);
 	$postopts=array(
@@ -399,7 +399,7 @@ function writeFiles(){
 			
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	file_put_contents($afile,$content);
-	    	$md5sha=md5($content).sha1($content);
+			$md5sha=md5_file($afile).sha1_file($afile);
 	    	$idx=preg_replace('/\//',"\\",$afile);
 	    	$postedit['md5sha'][$idx]=$md5sha;
 		}
