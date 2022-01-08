@@ -2306,8 +2306,14 @@ var wacss = {
 		return false;
 	},
 	str_replace: function(search, replace, str) {
-	    let f = search, r = replace, s = str;
-	    let ra = r instanceof Array, sa = s instanceof Array, f = [].concat(f), r = [].concat(r), i = (s = [].concat(s)).length;
+	    let f = search;
+	    let r = replace;
+	    let s = str;
+	    let ra = r instanceof Array;
+	    let sa = s instanceof Array;
+	    f = [].concat(f);
+	    r = [].concat(r);
+	    let i = (s = [].concat(s)).length;
 
 	    while (j = 0, i--) {
 	        if (s[i]) {
