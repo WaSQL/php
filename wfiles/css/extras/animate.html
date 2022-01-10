@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head style="width: 100%;height:100%;">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Primary Meta Tags -->
+    <title>Animate.css | A cross-browser library of CSS animations.</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./animate.min.css">
+    <script>
+
+      function setClass(el){
+        if(undefined != document.classtimer){
+          clearTimeout(document.classtimer);
+        }
+        let sample=document.querySelector('#sample');
+        let samplename=document.querySelector('#samplename');
+        let txt=el.innerText;
+        sample.className='animate__animated animate__'+txt;
+        samplename.innerText=sample.className;
+        document.classtimer=setTimeout(resetClass,10000);
+      }
+      function resetClass(){
+        let sample=document.querySelector('#sample');
+        let samplename=document.querySelector('#samplename');
+        sample.className='';
+        samplename.innerText='';
+      }
+    </script>
+</head>
+  <body style="width:100%;height:100%;">
+    <div style="display:flex;align-items: flex-start;position: relative;">
+      <div style="flex:1;align-self:center;display:flex;flex-direction: column;align-items: center;">
+          <div id="sample" style="font-size:3rem;">Sample Element</div>
+          
+          <div style="border-bottom:1px solid #000;width:50vw;"></div>
+          <xmp>
+            You can load this framework as follows:
+            <?php
+              loadExtrasCss('animate');
+            ?>
+          </xmp>
+          <div>Once loaded, add the following to the element you want to animate:</div>
+          <div id="samplename"></div>
+      </div>
+      <div style="align-self:flex-top;font-size:1.2rem;height:95vh;padding-right: 30px;margin-right: 10px;overflow:auto;">
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Attention seekers</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounce</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">flash</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">pulse</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rubberBand</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">shakeX</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">shakeY</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">headShake</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">swing</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">tada</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">wobble</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">jello</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">heartBeat</div>
+
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Back entrances</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backInDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backInLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backInRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backInUp</div>
+
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Back exits</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backOutDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backOutLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backOutRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">backOutUp</div>
+
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Bouncing entrances</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceIn</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceInDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceInLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceInRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceInUp</div>
+
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Bouncing exits</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceOut</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceOutDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceOutLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceOutRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">bounceOutUp</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Fading entrances</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeIn</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInDownBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInLeftBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInRightBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInUp</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInUpBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInTopLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInTopRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInBottomLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeInBottomRight</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Fading exits</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOut</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutDownBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutLeftBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutRightBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutUp</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutUpBig</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutTopLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutTopRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutBottomRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">fadeOutBottomLeft</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Flippers</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">flip</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">flipInX</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">flipInY</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">flipOutX</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">flipOutY</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Lightspeed</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">lightSpeedInRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">lightSpeedInLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">lightSpeedOutRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">lightSpeedOutLeft</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Rotating entrances</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateIn</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateInDownLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateInDownRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateInUpLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateInUpRight</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Rotating exits</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateOut</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateOutDownLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateOutDownRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateOutUpLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rotateOutUpRight</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Specials</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">hinge</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">jackInTheBox</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rollIn</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">rollOut</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Zooming entrances</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomIn</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomInDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomInLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomInRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomInUp</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Zooming exits</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomOut</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomOutDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomOutLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomOutRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">zoomOutUp</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Sliding entrances</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideInDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideInLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideInRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideInUp</div>
+        
+        <div style="font-weight: bold;font-size: 1.2rem;margin-top:10px;">Sliding exits</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideOutDown</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideOutLeft</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideOutRight</div>
+        <div style="cursor: pointer;margin-left:10px;" onclick="setClass(this);">slideOutUp</div>
+      </div>
+    </div>
+  </body>
+</html>
+
+

@@ -39,14 +39,16 @@ function formChanged(frm,debug){
 					case 'select-one':
             			cval=ifel[f].options[ifel[f].selectedIndex].value;
             			for(let v=0;v<vals.length;v++){
-            				if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){display=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
             			}
 					break;
 					case 'radio':
 					case 'checkbox':
 						if(ifel[f].checked){cval=ifel[f].value||1;}
 						for(let v=0;v<vals.length;v++){
-            				if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){display=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
             			}
 					break;
 					case 'textarea':
@@ -55,8 +57,8 @@ function formChanged(frm,debug){
 					default:
 						cval=ifel[f].value;
 						for(let v=0;v<vals.length;v++){
-            				if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
-            				if(debug==1 || edebug==1){console.log('v:'+v+', cval:'+cval+', val:'+vals[v]+', display:'+display);}
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){display=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
             			}
 					break;
 				}
