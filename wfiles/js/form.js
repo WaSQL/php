@@ -11,6 +11,7 @@ function formJsonPretty(id){
 function formChanged(frm,debug){
 	if(undefined == debug){debug=0;}
 	if(debug==1){console.log('formChanged');}
+	//data-displayif
 	let els=frm.querySelectorAll('[data-displayif]');
 	if(debug==1){console.log(' - displayif el count:'+els.length);}
 	let display_count=0;
@@ -94,7 +95,67 @@ function formChanged(frm,debug){
 		}
 		if(debug==1 || edebug==1){console.log(' ---------------------------');}
 	}
-	return display_count;
+	//data-hideif
+	let els=frm.querySelectorAll('[data-hideif]');
+	if(debug==1){console.log(' - hideif el count:'+els.length);}
+	let hide_count=0;
+	for(let i=0;i<els.length;i++){
+		let parts=els[i].dataset.hideif.split(':');
+		let name=els[i].dataset.hideif;
+		let vals=new Array(1,'y','yes');
+		if(parts.length==2){
+			name=parts[0];
+			vals=parts[1].split(',');
+		}
+		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
+		if(undefined == ifel){continue;}
+		if(ifel.length > 0){
+			let hide=0;
+			for(let f=0;f<ifel.length;f++){
+				let cval='';
+				switch(ifel[f].type.toLowerCase()){
+					case 'select-one':
+            			cval=ifel[f].options[ifel[f].selectedIndex].value;
+            			for(let v=0;v<vals.length;v++){
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){hide=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){hide=1;}
+            			}
+					break;
+					case 'radio':
+					case 'checkbox':
+						if(ifel[f].checked){cval=ifel[f].value||1;}
+						for(let v=0;v<vals.length;v++){
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){hide=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){hide=1;}
+            			}
+					break;
+					case 'textarea':
+						if(trim(ifel.innerText).length){hide=1;}
+					break;
+					default:
+						cval=ifel[f].value;
+						for(let v=0;v<vals.length;v++){
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){hide=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){hide=1;}
+            			}
+					break;
+				}
+				if(hide==1){break;}
+			}
+			if(hide==0){
+				if(undefined != els[i].dataset.display){
+					els[i].style.display=els[i].dataset.display;	
+				}
+				else{
+					els[i].style.display='initial';
+				}
+			}
+			else{
+				els[i].style.display='none';
+			}
+		}
+	}
+	return;
 }
 function formRecorderAudioControl(el){
 	let textbox=document.querySelector('#'+el.dataset.id+'_base64');
