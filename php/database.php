@@ -3854,6 +3854,10 @@ function addEditDBForm($params=array(),$customcode=''){
     $onsubmit='return submitForm(this);';
 	if(isset($params['-onsubmit'])){$onsubmit=$params['-onsubmit'];}
 	elseif(isset($params['-ajax']) && strlen($params['-ajax'])){$onsubmit="ajaxSubmitForm(this,'{$params['-ajax']}');return false;";}
+	//onchange
+	if(!isset($params['-onchange'])){
+		$params['-onchange']="formChanged(document.{$formname});";
+	}
     //form enctype
     if(isset($params['-enctype'])){$enctype=$params['-enctype'];}
 	else{$enctype="application/x-www-form-urlencoded";}
@@ -3919,6 +3923,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		}
 	}
 	$rtn .= ' onsubmit="'.$onsubmit.'"';
+	$rtn .= ' onchange="'.$params['-onchange'].'"';
 	$rtn .= '>'.PHP_EOL;
 	//upload progress
 	$upload_progress_enabled=ini_get("session.upload_progress.enabled");

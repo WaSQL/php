@@ -11,7 +11,6 @@ function formJsonPretty(id){
 function formChanged(frm,debug){
 	if(undefined == debug){debug=0;}
 	if(debug==1){console.log('formChanged');}
-	//data-displayif
 	let els=frm.querySelectorAll('[data-displayif]');
 	if(debug==1){console.log(' - displayif el count:'+els.length);}
 	let display_count=0;
@@ -96,7 +95,7 @@ function formChanged(frm,debug){
 		if(debug==1 || edebug==1){console.log(' ---------------------------');}
 	}
 	//data-hideif
-	let els=frm.querySelectorAll('[data-hideif]');
+	els=frm.querySelectorAll('[data-hideif]');
 	if(debug==1){console.log(' - hideif el count:'+els.length);}
 	let hide_count=0;
 	for(let i=0;i<els.length;i++){
