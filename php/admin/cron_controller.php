@@ -66,6 +66,19 @@ switch(strtolower($_REQUEST['func'])){
 		$ok=editDBRecordById('_cron',$cron_id,array($fld=>$val));
 		echo printValue($ok);exit;
 	break;
+	case 'set_multiple':
+		$ids=$_REQUEST['ids'];
+		$field=$_REQUEST['field'];
+		if(is_array($ids)){$ids=implode(',',$ids);}
+		$val=$_REQUEST['value'];
+		$opts=array(
+			'-table'=>'_cron',
+			'-where'=>"_id in ({$ids})",
+			$field	=> $val
+		);
+		$ok=editDBRecord($opts);
+		echo printValue($ok).printValue($opts);exit;
+	break;
 	case 'cron_result':
 		//echo "cron_result";exit;
 		$id=(integer)$_REQUEST['id'];

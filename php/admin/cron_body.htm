@@ -19,6 +19,31 @@ function pauseSelected(func){
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
 }
+function cronSetMultiple(fld,val){
+	var clist=document.querySelectorAll('input[type="checkbox"][name="cronid[]"]:checked');
+	if(clist.length==0){return false;}
+	let ids=new Array();
+	for(let i=0;i<clist.length;i++){
+		ids.push(clist[i].value);
+		let p=getParent(clist[i],'tr');
+		let el=p.querySelector('input[type="checkbox"][name="'+fld+'[]"]');
+		if(undefined != el){
+			if(val==1){el.checked=true;}
+			else{el.checked=false;}
+		}
+	}
+	
+	let params = {_menu:'cron',func:'set_multiple',field:fld,value:val,ids:ids,setprocessing:0};
+	if(undefined != document.cronlistform){
+		if(undefined != document.cronlistform._filters){
+			params._filters=document.cronlistform._filters.innerText;
+		}
+		if(undefined != document.cronlistform.filter_order){
+			params.filter_order=document.cronlistform.filter_order.value;
+		}	
+	}
+	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
+}
 function cronSetFieldValue(cron_id,fld,val){
 	let params={_menu:'cron',func:'set_field_value',setprocessing:'setprocessing',cron_id:cron_id,fld:fld,val:val};
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
@@ -83,8 +108,15 @@ function cronLogRefreshTimer(){
 <view:list>
 	<?=cronList();?>
 	<div class="align-left">
-		<button type="button" class="button btn <?=configValue('admin_color');?>" onclick="pauseSelected('pause')"><span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span> Pause Selected</button>
-		<button type="button" class="button btn <?=configValue('admin_color');?>" onclick="pauseSelected('unpause')"><span class="icon-spin8 w_danger" style="border-radius:15px;background:#fefcab;"></span> Unpause Selected</button>
+		<button type="button" class="button btn w_green" onclick="cronSetMultiple('active',1)">Set Active</button>
+		<button type="button" class="button btn w_green" onclick="cronSetMultiple('active',0)">Unset Active</button>
+		<button type="button" class="button btn w_orange" onclick="cronSetMultiple('paused',1)">Set Paused</button>
+		<button type="button" class="button btn w_orange" onclick="cronSetMultiple('paused',0)">Unset Paused</button>
+		<button type="button" class="button btn w_red" onclick="cronSetMultiple('stop_now',1)">Set Stop Now</button>
+		<button type="button" class="button btn w_red" onclick="cronSetMultiple('stop_now',0)">Unset Stop Now</button>
+		<button type="button" class="button btn w_blue" onclick="cronSetMultiple('run_now',1)">Set Run Now</button>
+		<button type="button" class="button btn w_blue" onclick="cronSetMultiple('run_now',0)">Unset Run Now</button>
+		
 	</div>
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>

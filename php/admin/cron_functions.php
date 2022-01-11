@@ -116,21 +116,6 @@ function cronList(){
 		'cron_pid_options'=>array(
 			'class'=>'align-right'
 		),
-		'run_now_options'=>array(
-			'class'=>'w_green align-center ',
-			'checkbox'=>1,
-			'data-id'=>'%_id%',
-			'data-type'=>'checkbox',
-			'title'=>'Mark cron to Run Now',
-			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'run_now',this.checked)"
-		),
-		'stop_now_options'=>array(
-			'class'=>'w_red align-center',
-			'checkbox'=>1,
-			'data-id'=>'%_id%',
-			'title'=>'Attempt to stop cron',
-			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'stop_now',this.checked)"
-		),
 		'groupname_displayname'=>'Group',
 		'run_format_displayname'=>'Frequency',
 		'name_class'=>'w_nowrap w_link',
@@ -139,15 +124,41 @@ function cronList(){
 			'checkmark'=>1,
 			'checkmark_icon'=>'icon-mark w_success'
 		),
+		'active_options'=>array(
+			'class'=>'w_green align-center ',
+			'checkbox'=>1,
+			'data-id'=>'%_id%',
+			'data-type'=>'checkbox',
+			'title'=>'Paused',
+			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'active',this.checked)"
+		),
 		'paused_options'=>array(
-			'class'=>'align-center',
-			'checkmark'=>1,
-			'checkmark_icon'=>'icon-spin8 w_danger'
+			'class'=>'w_orange align-center ',
+			'checkbox'=>1,
+			'data-id'=>'%_id%',
+			'data-type'=>'checkbox',
+			'title'=>'Paused',
+			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'paused',this.checked)"
 		),
 		'running_options'=>array(
 			'class'=>'align-center',
 			'checkmark'=>1,
-			'checkmark_icon'=>'icon-spin4 w_spin w_primary'
+			'checkmark_icon'=>'icon-spin4 w_spin w_blue'
+		),
+		'stop_now_options'=>array(
+			'class'=>'w_red align-center',
+			'checkbox'=>1,
+			'data-id'=>'%_id%',
+			'title'=>'Attempt to stop cron',
+			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'stop_now',this.checked)"
+		),
+		'run_now_options'=>array(
+			'class'=>'w_blue align-center',
+			'checkbox'=>1,
+			'data-id'=>'%_id%',
+			'data-type'=>'checkbox',
+			'title'=>'Mark cron to Run Now',
+			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'run_now',this.checked)"
 		),
 		'-results_eval'=>'cronListExtra',
 		'-quickfilters'=>array(
@@ -247,8 +258,13 @@ function cronListExtra($recs){
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
-		$recs[$i]['_id']='<input type="checkbox" data-groupname="'.$rec['groupname'].'" name="cronid[]" value="'.$id.'" /> '.$id;
-		$recs[$i]['_id'].='<a href="#" class="w_right w_link w_block" onclick="return cronModal(\'edit\',\''.$id.'\',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>';
+		$recs[$i]['_id']=<<<ENDOFID
+		<div style="display:flex;justify-content:space-between;align-items:center;">
+			<input type="checkbox" data-type="checkbox" class="w_gray align-center"  style="align-self:center;" data-groupname="{$rec['groupname']}" name="cronid[]" value="{$id}" />
+			<span style="margin-left:5px;align-self:center;">{$id}</span>
+			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return cronModal('edit','{$id}',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>
+		</div>
+ENDOFID;
 		$name=$rec['name'];
 		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" class="w_bigger" title="Cron Details - '.$name.'"><span class="icon-info-circled '.configValue('admin_color').'"></span> '.$name.'</a>';
 	}
