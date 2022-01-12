@@ -1248,6 +1248,7 @@ if(isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='logs'){
 	switch(strtolower($_REQUEST['func'])){
 		case 'tail':
 		case 'tail_refresh':
+		case 'filter':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;

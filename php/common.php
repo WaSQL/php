@@ -49,14 +49,14 @@ function commonLogMessage($name,$msg,$separate=0,$echo=0){
 	$logfile="{$logpath}/{$name}.log";
 	$mypid=getmypid();
 	$cdate=date('Y-m-d h:i:s');
-	$msg="{$cdate},{$mypid},{$CONFIG['name']},{$caller['file']}#{$caller['line']}->{$caller['function']},{$msg}".PHP_EOL;
+	$msg="time:{$cdate}, {$msg}".PHP_EOL;
 	if($separate==1){
 		$msg = PHP_EOL.$msg.PHP_EOL;
 	}
 	if($echo==1){
     	echo $msg;
     }
-	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+	if(!file_exists($logfile) || filesize($logfile) > 5000000 ){
         setFileContents($logfile,$msg);
     }
     else{
@@ -450,6 +450,7 @@ function commonCronLog($msg,$echomsg=1){
 	if(!isset($lrec['_id'])){
 		return;
 	}
+	$CRONTHRU['cronlog_id']=$_REQUEST['cronlog_id']=$lrec['_id'];
 	if(!isset($commonCronLogCache['start'])){
 		$commonCronLogCache['start']=microtime(true);
 	}
@@ -5835,6 +5836,26 @@ function tailFile($afile, $lines = 10, $adaptive = true) {
 	// Close file and return
 	fclose($f);
 	return trim($output);
+}
+//---------- begin function filterFile--------------------------------------
+/**
+* @describe returns only lines that contail search
+* @param afile string - text file to read
+* @param search string - string to search for
+* @return lines array - array of lines that contain search string
+* @usage $lines=filterFile($afile,'help');
+*/
+function filterFile($afile, $search) {
+	$lines=array();
+	if ($fh = fopen($afile,'r')) {
+		while (!feof($fh)) {
+			//stream_get_line is significantly faster than fgets
+			$line = stream_get_line($fh, 1000000, "\n");
+			if(stringContains($line,$search)){$lines[]=rtrim($line);}
+		}
+		fclose($fh);
+	}
+	return $lines;
 }
 //---------- begin function containsPHP--------------------------------------
 /**

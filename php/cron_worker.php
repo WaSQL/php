@@ -8,11 +8,11 @@
 		On Windows, add it as a scheduled task - Command Prompt as administrator:
 			https://www.windowscentral.com/how-create-task-using-task-scheduler-command-prompt
 			Create:
-				SCHTASKS /CREATE /SC MINUTE /MO 1 /TN "WaSQL\WaSQL_Cron_1" /TR "php.exe c:\wasql\php\cron_worker.php" /RU administrator
+				SCHTASKS /CREATE /SC MINUTE /MO 1 /TN "WaSQL\WaSQL_Worder_10" /TR "php.exe c:\wasql\php\cron_worker.php" /RU administrator
 			List:
 				SCHTASKS /QUERY
 			Delete:
-				SCHTASKS /DELETE /TN "WaSQL\WaSQL_Cron_1"
+				SCHTASKS /DELETE /TN "WaSQL\WaSQL_Worder_10"
 
 
 	Note: cron_worker.php cannot be run from a URL, it is a command line app only.
@@ -135,8 +135,9 @@ foreach($ConfigXml as $name=>$host){
 			//$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
 			break;
 		}
-		$ok=cronMessage("{$CONFIG['name']} - preparing cron #{$rec['_id']} - {$rec['name']}");
+		$ok=cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: preparing");
 		$CRONTHRU=array();
+		unset($_REQUEST['cronlog_id']);
 		$cronlog_id=commonCronLogInit($rec['_id']);
 		//get page names to determine if cron is a page
 		$pages=getDBRecords(array(
@@ -154,7 +155,6 @@ foreach($ConfigXml as $name=>$host){
 		if(file_exists($commonCronLogFile)){
 			unlink($commonCronLogFile);
 		}
-		//cronMessage("cleaning {$rec['name']}");
 		$ok=cronCleanRecords($rec);
 		$cmd=$rec['run_cmd'];
 		$lcmd=strtolower(trim($cmd));
@@ -190,7 +190,7 @@ foreach($ConfigXml as $name=>$host){
 		}
 		if(strlen($crontype)){}
 		elseif(isset($pages[$lcmd])){
-			//cronMessage("cron is a page");
+			//cron is a page
 			$crontype='Page';
 		}
 		elseif(preg_match('/^<\?\=/',$cmd)){
@@ -201,7 +201,7 @@ foreach($ConfigXml as $name=>$host){
 	    	//cron is a command
 	    	$crontype='OS Command';
 		}
-		cronMessage("STARTED  *** {$rec['name']} *** - Crontype: {$crontype}");
+		cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, crontype: {$crontype}, msg: Starting");
 		$start=microtime(true);
 		$cron_result='';
 		$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
@@ -239,28 +239,28 @@ foreach($ConfigXml as $name=>$host){
 				}
 			}
 			//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
-			cronMessage(" -- [{$rec['name']}] -- calling {$url}");
+			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: calling {$url}");
 	    	$post=postURL($url,$postopts);
 	    	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	    	$cron_result .= $post['body'].PHP_EOL;
 	    	if(stringContains($post['body'],'__cronlog_delete__')){
 	    		$_REQUEST['cronlog_delete']=1;
 	    	}
-	    	if(isset($post['headers_out'][0])){
-	        	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-	        	$cron_result .= printValue($post['headers_out']).PHP_EOL;
-	        }
-	    	$cron_result .= '----- CURL Info -----'.PHP_EOL;
-	    	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-	    	if(isset($post['headers'][0])){
-	        	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	        	$cron_result .= printValue($post['headers']).PHP_EOL;
-	        }
+	    	// if(isset($post['headers_out'][0])){
+	     //    	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
+	     //    	$cron_result .= printValue($post['headers_out']).PHP_EOL;
+	     //    }
+	    	// $cron_result .= '----- CURL Info -----'.PHP_EOL;
+	    	// $cron_result .= printValue($post['curl_info']).PHP_EOL;
+	    	// if(isset($post['headers'][0])){
+	     //    	$cron_result .= '----- Headers Received -----'.PHP_EOL;
+	     //    	$cron_result .= printValue($post['headers']).PHP_EOL;
+	     //    }
 	    	
 		}
 		elseif(strtolower($crontype)=='php command'){
 	    	//cron is a php command
-	    	cronMessage(" -- [{$rec['name']}] --running eval code");
+	    	cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: running evalPHP");
 	        $cron_result .= '----- Output Received -----'.PHP_EOL;
 
 	    	$out=evalPHP($cmd).PHP_EOL;
@@ -278,7 +278,7 @@ foreach($ConfigXml as $name=>$host){
 	    	foreach($CRONTHRU as $k=>$v){
 	    		$postopts[$k]=$v;
 	    	}
-	    	cronMessage(" -- [{$rec['name']}] --calling $cmd");
+	    	cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: calling {$cmd}");
 	    	$post=postURL($cmd,$postopts);
 	    	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	    	$cron_result .= $post['body'].PHP_EOL;
@@ -299,7 +299,7 @@ foreach($ConfigXml as $name=>$host){
 		}
 		else{
 	    	//cron is an OS Command
-	    	cronMessage(" -- [{$rec['name']}] --running $cmd");
+	    	cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: {$cmd}");
 	    	$out=cmdResults($cmd);
 	    	$cron_result .= '----- Content Received -----'.PHP_EOL;
 	    	$cron_result .= printValue($out).PHP_EOL;
@@ -327,7 +327,6 @@ foreach($ConfigXml as $name=>$host){
 		$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 		//
 		if(!isNum($ok)){
-			cronMessage("FINISH ERROR".printValue($ok).printValue($eopts));
 			$eopts=array(
 				'running'		=> 0,
 				'cron_pid'		=> 0,
@@ -337,7 +336,7 @@ foreach($ConfigXml as $name=>$host){
 			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
 		}
 		
-		cronMessage("FINISHED *** {$rec['name']} *** - Run Length: {$run_length} seconds");
+		cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: Finished in {$run_length} seconds");
 		if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
 			$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
 		}

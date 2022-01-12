@@ -1,19 +1,44 @@
 <?php
 	global $CONFIG;
 	switch(strtolower($_REQUEST['func'])){
-		case 'tail':
+		case 'filter':
 			$tail['name']=$_REQUEST['name'];
+			$tail['filter']=$_REQUEST['filter'];
 			$path=getWaSQLPath('logs');
 			$logfile="{$path}/{$tail['name']}.log";
-			$tail['data']=tailFile($logfile,300);
+			$lines=filterFile($logfile,$tail['filter']);
+			$tail['data']=implode(PHP_EOL,$lines);
+			setView('tail',1);
+			return;
+		break;
+		case 'tail':
+			$tail['name']=$_REQUEST['name'];
+			$tail['filter']=$_REQUEST['filter'];
+			$path=getWaSQLPath('logs');
+			$logfile="{$path}/{$tail['name']}.log";
+			if(strlen($tail['filter'])){
+				$lines=filterFile($logfile,$tail['filter']);
+				$tail['data']=implode(PHP_EOL,$lines);
+			}
+			else{
+				$tail['data']=tailFile($logfile,1000);
+			}
+			
 			setView('tail',1);
 			return;
 		break;
 		case 'tail_refresh':
 			$tail['name']=$_REQUEST['name'];
+			$tail['filter']=$_REQUEST['filter'];
 			$path=getWaSQLPath('logs');
 			$logfile="{$path}/{$tail['name']}.log";
-			$tail['data']=tailFile($logfile,300);
+			if(strlen($tail['filter'])){
+				$lines=filterFile($logfile,$tail['filter']);
+				$tail['data']=implode(PHP_EOL,$lines);
+			}
+			else{
+				$tail['data']=tailFile($logfile,300);
+			}
 			setView('tail_refresh',1);
 			return;
 		break;

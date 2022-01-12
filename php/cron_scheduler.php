@@ -63,7 +63,7 @@ include_once("{$progpath}/extras/system.php");
 $dbversion=getDBVersion();
 //cronMessage("Mysql Version: {$dbversion}");
 if($dbversion < 5.7){
-	cronMessage("ERROR - running mysql version {$dbversion}. Cron.php now requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
+	cronMessage("ERROR - running mysql version {$dbversion}. cron_scheduler.php requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
 	exit;
 }
 
@@ -131,7 +131,7 @@ while(1){
 			$ids=array();
 			foreach($recs as $rec){
 				$ids[]=$rec['_id'];
-				$ok=cronMessage("{$rec['_id']}-{$rec['name']}  - run_now set to 1");
+				$ok=cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg:  - run_now set to 1");
 			}
 			$idstr=implode(',',$ids);
 			$query=<<<ENDOFSQL
@@ -151,7 +151,7 @@ ENDOFSQL;
 		
 		//check for wasql.update file
 		if(file_exists("{$tpath}/wasql.update")){
-			cronMessage("STARTED *** WaSQL update ***",1);
+			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: WaSQL update",1);
 			unlink("{$tpath}/wasql.update");
 			$out=cmdResults('git pull');
 			$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
@@ -173,10 +173,10 @@ ENDOFSQL;
 		if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
 			$apache_log=0;
 			loadExtras('apache');
-			cronMessage("STARTED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
+			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: apacheParseLogFile");
 			$msg=apacheParseLogFile();
 			if(strlen($msg)){
-				cronMessage(" -- [apacheParseLogFile] -- {$msg}");
+				cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: apacheParseLogFile -- {$msg}");
 			}
 			//cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 		}
