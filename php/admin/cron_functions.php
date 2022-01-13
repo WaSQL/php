@@ -119,6 +119,7 @@ function cronList(){
 		'groupname_displayname'=>'Group',
 		'run_format_displayname'=>'Frequency',
 		'name_class'=>'w_nowrap w_link',
+		'_id_displayname'=>"ID / Action",
 		'active_options'=>array(
 			'class'=>'align-center',
 			'checkmark'=>1,
@@ -257,18 +258,21 @@ function cronListExtra($recs){
 	//echo printValue($recs);exit;
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
+		$name=$rec['name'];
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['_id']=<<<ENDOFID
 		<div style="display:flex;justify-content:space-between;align-items:center;">
-			<input type="checkbox" data-type="checkbox" class="w_gray align-center"  style="align-self:center;" data-groupname="{$rec['groupname']}" name="cronid[]" value="{$id}" />
-			<span style="margin-left:5px;align-self:center;">{$id}</span>
+			<span style="align-self:center;">{$id}</span>
+			<input type="checkbox" data-type="checkbox" class="w_gray align-center"  style="margin-left:10px;margin-right:0px;align-self:center;" data-groupname="{$rec['groupname']}" name="cronid[]" value="{$id}" />
 			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return cronModal('edit','{$id}',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>
+
 			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_scheduler',filter:'cron_id:{$id}',title:'Scheduler Log Entries'});" title="View Scheduler Log Entries"><span class="icon-file-txt w_orange"></span></a>
+
 			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_worker',filter:'cron_id:{$id}',title:'Worker Log Entries'});" title="View Worker Log Entries"><span class="icon-file-txt w_green"></span></a>
+			
+			<a style="margin-left:10px;align-self:center;" href="#" onclick="return cronModal('details','{$id}',this.title);" class="w_bigger" title="Cron Details - {$name}"><span class="icon-info-circled  w_gray"></span></a>
 		</div>
 ENDOFID;
-		$name=$rec['name'];
-		$recs[$i]['name']='<a href="#" onclick="return cronModal(\'details\',\''.$id.'\',this.title);" class="w_bigger" title="Cron Details - '.$name.'"><span class="icon-info-circled '.configValue('admin_color').'"></span> '.$name.'</a>';
 	}
 	return $recs;
 }

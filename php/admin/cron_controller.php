@@ -55,7 +55,6 @@ switch(strtolower($_REQUEST['func'])){
 		$cron=cronDetails($id);
 		$cronlog=getDBRecord(array('-table'=>'_cronlog','cron_id'=>$id,'-order'=>'_id desc'));
 		$cronlog_id=(integer)$cronlog['_id'];
-		$ok=commonCronCleanup();
 		setView('details',1);
 		return;
 	break;
@@ -113,6 +112,7 @@ switch(strtolower($_REQUEST['func'])){
 		//echo "default";exit;
 		$ok=commonCronCheckSchema();
 		$ok=commonCronLogCheckSchema();
+		$ok=commonCronCleanup();
 		setView('default');
 	break;
 }
