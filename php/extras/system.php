@@ -174,9 +174,9 @@ function systemGetNetworkAdapters(){
 				'name'=>$rec['description'],
 				'enabled'=>strtolower($rec['ipenabled'])=='true'?1:0,
 				'mac_address'=>$rec['macaddress'],
-				'ip_address'=>$rec['ipaddress'],
-				'ip_subnet'=>$rec['ipsubnet'],
-				'dhcp_server'=>$rec['dhcpserver']
+				'ip_address'=>preg_replace('/[\{\}]+/is','',$rec['ipaddress']),
+				'ip_subnet'=>preg_replace('/[\{\}]+/is','',$rec['ipsubnet']),
+				'dhcp_server'=>preg_replace('/[\{\}]+/is','',$rec['dhcpserver'])
 			);
 		}
 	}

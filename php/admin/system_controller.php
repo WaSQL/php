@@ -81,6 +81,9 @@ switch(strtolower($_REQUEST['tab'])){
 			'speed_options'=>array(
 				'class'=>'align-right'
 			),
+			'mac_address_options'=>array(
+				'class'=>'align-right'
+			),
 			'enabled_checkmark'=>1,
 		);
 		setView('list',1);
