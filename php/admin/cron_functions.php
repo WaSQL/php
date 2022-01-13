@@ -118,7 +118,6 @@ function cronList(){
 		),
 		'groupname_displayname'=>'Group',
 		'run_format_displayname'=>'Frequency',
-		'name_class'=>'w_nowrap w_link',
 		'_id_displayname'=>"ID / Action",
 		'active_options'=>array(
 			'class'=>'align-center',
@@ -269,7 +268,7 @@ function cronListExtra($recs){
 			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_scheduler',filter:'cron_id:{$id}',title:'Scheduler Log Entries'});" title="View Scheduler Log Entries"><span class="icon-file-txt w_orange"></span></a>
 
 			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_worker',filter:'cron_id:{$id}',title:'Worker Log Entries'});" title="View Worker Log Entries"><span class="icon-file-txt w_green"></span></a>
-			
+
 			<a style="margin-left:10px;align-self:center;" href="#" onclick="return cronModal('details','{$id}',this.title);" class="w_bigger" title="Cron Details - {$name}"><span class="icon-info-circled  w_gray"></span></a>
 		</div>
 ENDOFID;
