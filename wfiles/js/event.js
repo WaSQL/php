@@ -2627,7 +2627,7 @@ function initFlatpickr(){
 					v=false;
 				break;
 			}
-			if(k.strlen > 0){config[k]=v;}
+			if(k != ''){config[k]=v;}
 		}
 		switch(lang.toLowerCase()){
 			case 'es':
@@ -2754,7 +2754,7 @@ function initFlatpickr(){
       			config.locale.toggleTitle = "点击切换 12/24 小时时制";
 			break;
 		}
-		console.log(config);
+		//console.log(config);
 		flatpickr(els[i],config);
 	}
 	return false;
