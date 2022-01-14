@@ -152,6 +152,12 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
 	}
+	if(isset($params['-return'])){
+		if(is_array($params['-return'])){
+			$params['-return']=implode(',',$params['-return']);
+		}
+		$query.=PHP_EOL."RETURNING {$params['-return']}";
+	}
 	$ok=postgresqlExecuteSQL($query);
 	if(isset($ok['error'])){
 		$ok['query']=$query;
@@ -344,18 +350,18 @@ function postgresqlAddDBRecord($params=array()){
 	*/
 	$output='';
 	if(isset($params['-return'])){
-		$output=" returning {$params['-return']}";
+		$output=" RETURNING {$params['-return']}";
 		$output_field=$params['-return'];
 	}
 	else{
 		foreach($finfo as $field=>$info){
 			if($info['identity']==1){
-				$output=" returning {$field}";
+				$output=" RETURNING {$field}";
 				$output_field=$field;
 				break;
 			}
 			elseif($info['sequence']==1){
-				$output=" returning {$field}";
+				$output=" RETURNING {$field}";
 				$output_field=$field;
 				break;
 			}
@@ -793,17 +799,17 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	$output_field='_id';
 	foreach($finfo as $field=>$info){
 		if($info['identity']==1){
-			$output=" returning {$field}";
+			$output=" RETURNING {$field}";
 			$output_field=$field;
 			break;
 		}
 		elseif($info['sequence']==1){
-			$output=" returning {$field}";
+			$output=" RETURNING {$field}";
 			$output_field=$field;
 			break;
 		}
 		elseif($field=='_id'){
-			$output=" returning {$field}";
+			$output=" RETURNING {$field}";
 			break;
 		}
 	}
