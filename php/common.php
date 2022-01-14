@@ -4392,6 +4392,10 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	$params['name']=$name;
 	$skip=array();
 	if(isset($params['-noname'])){$skip[]='name';}
+	//select does not honor readonly so lets fix that
+	if(isset($params['readonly'])){
+		$params['style']="pointer-events: none;cursor: not-allowed;color:#a8a8a8;".$params['style'];
+	}
 	$rtn = '<select data-value="'.$sval.'"';
 	$rtn .= setTagAttributes($params,$skip);
 	$rtn .= '>';
