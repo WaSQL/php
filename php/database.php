@@ -724,7 +724,9 @@ function dbQueryResults($db,$query,$params=array()){
 *   [-translate] - translate column names (displaynames)
 *	[-anchormap] - str - field name to build an achormap from based on first letter or number of the value
 *	[-sorting] - 1 - allow columns to be sorted
+*	[-export] - 1 - show export option  
 *	[-exportfields] -  subset of fields to export.
+* 	[-export_displaynames] - 1 - use displaynames in csv header row
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
 *	[-ajaxid] str - ajax id to wrap the table in
@@ -825,9 +827,13 @@ function databaseListRecords($params=array()){
 					$recs[$i][$k]=strip_tags($v);
 				}
 			}
-
 			//create a csv file
-			$csv=arrays2csv($recs);
+			if(isset($params['-export_displaynames'])){
+				$csv=arrays2csv($recs,$params);
+			}
+			else{
+				$csv=arrays2csv($recs);
+			}
 			//add UTF-8 byte order mark to the beginning of the csv
 			$csv="\xEF\xBB\xBF".$csv;
 			$epath=getWasqlTempPath();
@@ -1370,11 +1376,17 @@ function databaseListRecords($params=array()){
 					$recs[$i][$k]=strip_tags($v);
 				}
 			}
+			
 			//set limit back
 			$params['-limit']=$limit;
 			$params['-fields']=$fields;
 			//create a csv file
-			$csv=arrays2csv($recs);
+			if(isset($params['-export_displaynames'])){
+				$csv=arrays2csv($recs,$params);
+			}
+			else{
+				$csv=arrays2csv($recs);
+			}
 			//add UTF-8 byte order mark to the beginning of the csv
 			$csv="\xEF\xBB\xBF".$csv;
 			$epath=getWasqlTempPath();

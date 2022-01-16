@@ -2121,6 +2121,7 @@ LIST_TABLE:
 					'-bulkedit'		=> 1,
 					'-translate'	=> 1,
 					'-export'		=> 1,
+					//'-export_displaynames'=>1,
 					'_table_'=>$_REQUEST['_table_'],
 					'-table'=>$_REQUEST['_table_'],
 					'-formaction'=>'/php/admin.php',
