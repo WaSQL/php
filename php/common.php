@@ -3810,6 +3810,9 @@ function buildFormFile($name,$params=array()){
 		$params['value']=$_REQUEST[$name];
 	}
 	$params['name']=$name;
+	if(isset($params['value']) && strlen($params['value']) && strtoupper($params['value'])=='NULL'){
+		$params['value']='';
+	}
 	//ksort($params);return printValue($params);
 	$tag='';
 	$viewer='';
