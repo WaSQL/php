@@ -6678,6 +6678,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 		}
 	}
 	$json_sets=array();
+	$json_removes=array();
 	foreach($params as $key=>$val){
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype'])){continue;}
@@ -6698,6 +6699,9 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			$jfield=str_replace("'",'',$jfield);
 			if(isNum($val)){
 				$json_sets[$tfield][]="'{$jfield}',{$val}";
+			}
+			elseif(strtoupper($val)=='NULL'){
+				$json_removes[$tfield][]=$jfield;
 			}
 			else{
 				$val=str_replace("'","''",$val);
@@ -6810,6 +6814,12 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 		//update surveys_responses set response=JSON_SET(response, '$.ihop', 4,'$.wendys',7,'$.abc',55) where _id=2
 		foreach($json_sets as $tfield=>$sets){
 			$updates[]="{$tfield}=json_set({$tfield},".implode(', ',$sets).")";
+		}
+	}
+	if(count($json_removes)){
+		//update test set data=json_remove(data,'$.b','$.c') where id=2
+		foreach($json_removes as $tfield=>$sets){
+			$updates[]="{$tfield}=json_remove({$tfield},".implode(', ',$sets).")";
 		}
 	}
     //return if no updates were found
