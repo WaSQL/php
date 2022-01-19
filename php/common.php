@@ -4804,7 +4804,7 @@ function buildFormSignature($name,$params=array()){
 	if(isset($params['value']) && strlen($params['value'])){
 		$params['-value']=$params['value'];
 	}
-	if(isset($params['readonly']) && $params['readonly']==1){
+	if(isset($params['readonly']) && ($params['readonly']==1 || $params['readonly']=='readonly')){
 		if(isset($params['-value']) && strlen($params['-value'])){
 			$src=$params['-value'];
 		}
