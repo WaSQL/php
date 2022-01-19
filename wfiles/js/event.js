@@ -2574,9 +2574,12 @@ function initFlatpickr(){
 				case 'enableseconds':k='enableSeconds';break;
 				case 'firstdayofweek':
 				case 'firstday':
-					//config.locale.firstDayOfWeek=v;
-					//continue;
-					k='firstDayOfWeek';
+					if(undefined == config.locale){
+						config.locale={};
+					}
+					config.locale.firstDayOfWeek=v;
+					continue;
+					//k='firstDayOfWeek';
 				break;
 				case 'hourincrement':k='hourIncrement';break;
 				case 'maxdate':
