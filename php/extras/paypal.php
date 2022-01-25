@@ -496,7 +496,7 @@ function paypalSendPayout($params=array()){
 		}
 		$payout['items'][]=$citem;
 	}
-	$url=paypalUrl().'/v2/payments/payouts';
+	$url=paypalUrl().'/v1/payments/payouts';
 	$json=json_encode($payout);
 	//echo $url.printValue($payout);exit;
 	$token=paypalGetAccessToken();
