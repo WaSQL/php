@@ -2572,6 +2572,15 @@ function initFlatpickr(){
 				case 'disablemobile':k='disableMobile';break;
 				case 'enabletime':k='enableTime';break;
 				case 'enableseconds':k='enableSeconds';break;
+				case 'firstdayofweek':
+				case 'firstday':
+					if(undefined == config.locale){
+						config.locale={};
+					}
+					config.locale.firstDayOfWeek=v;
+					continue;
+					//k='firstDayOfWeek';
+				break;
 				case 'hourincrement':k='hourIncrement';break;
 				case 'maxdate':
 					k='maxDate';
@@ -2613,7 +2622,10 @@ function initFlatpickr(){
 				case 'prevarrow':k='prevArrow';break;
 				case 'shorthandcurrentmonth':k='shorthandCurrentMonth';break;
 				case 'showmonths':k='showMonths';break;
-				case 'weeknumbers':k='weekNumbers';break;
+				case 'weeknumbers':
+				case 'showweeknumber':
+					k='weekNumbers';
+				break;
 				case 'monthselectortype':k='monthSelectorType';break;
 				default:continue;break;
 			}
