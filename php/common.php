@@ -3928,7 +3928,7 @@ function buildFormFile($name,$params=array()){
 	}
 	unset($label_params['width']);
 	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
-	$label_params['style'].=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;';
+	$label_params['style'].=';width:300px;';
 	//return printValue($label_params);
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
 	$tag .= setTagAttributes($params);
@@ -11492,7 +11492,8 @@ function getFileContentType($file=''){
 		'docx'	=> 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		'pptx'	=> 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 		'xlsx'	=> 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-		'pdf'	=> 'application/pdf'
+		'pdf'	=> 'application/pdf',
+		'svg'	=> 'image/svg+xml'
 		);
 	if(isset($custom[$ext])){return $custom[$ext];}
 	$common=array(
@@ -15829,7 +15830,7 @@ function processActions(){
 						setFileContents($tfile,$rec[$fld]);
 						$md5sha=md5_file($tfile).sha1_file($tfile);
 						unlink($tfile);
-						if(strtolower($_REQUEST['_table']) != '_prompts' && $md5sha != $_REQUEST['_md5sha']){
+						if(strlen($rec['_euser_ex']['username']) && strtolower($_REQUEST['_table']) != '_prompts' && $md5sha != $_REQUEST['_md5sha']){
 							$username=$rec['_euser_ex']['username'];
 							echo "<timestamp>{$timestamp}</timestamp>";
 							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}).</fatal_error>";
