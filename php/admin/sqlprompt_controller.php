@@ -240,6 +240,11 @@
 			$recs=array();
 			$begin=microtime(true);
 			$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
+			if($recs_count==0){
+				$recs=array();
+				setView(array('no_results'),1);
+				return;
+			}
 			$offset=(integer)$_REQUEST['offset'];
 			$limit=30;
 			$next=$offset+$limit;
