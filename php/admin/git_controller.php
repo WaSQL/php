@@ -5,6 +5,9 @@
 */
 	//get path
 	if(!isset($_SESSION['git_path']) || !strlen($_SESSION['git_path'])){
+		$_SESSION['git_path']=getWasqlPath();
+	}
+	if(!isset($_SESSION['git_path']) || !strlen($_SESSION['git_path'])){
 		$p=gitGetPath();
 		switch(strtolower($p)){
 			case 'not_enabled':
