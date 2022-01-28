@@ -161,7 +161,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			//echo printValue($params);exit;
 		}
 		else{
-			//before mysql version 8
+			//before mysql version 8.0.20
 			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
 			$flds=array();
 			foreach($params['-upsert'] as $fld){
@@ -1240,7 +1240,29 @@ function mysqlGetDBTables($params=array()){
 	}
 	$dbname=strtolower($DATABASE[$CONFIG['db']]['dbname']);
 	$tables=array();
-	$query="show tables from {$dbname}";
+	$query="show FULL tables FROM {$dbname} WHERE TABLE_TYPE = 'BASE TABLE'";
+	$recs=mysqlQueryResults($query);
+	$k="tables_in_{$dbname}";
+	foreach($recs as $rec){
+		$tables[]=strtolower($rec[$k]);
+	}
+	return $tables;
+}
+//---------- begin function mysqlGetDBViews ----------
+/**
+* @describe returns an array of views
+* @return array returns array of table views
+* @usage $views=mysqlGetDBViews();
+*/
+function mysqlGetDBViews($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	if(!isset($CONFIG['db']) && isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
+		$CONFIG['db']=$_REQUEST['db'];
+	}
+	$dbname=strtolower($DATABASE[$CONFIG['db']]['dbname']);
+	$tables=array();
+	$query="show FULL tables FROM {$dbname} WHERE TABLE_TYPE = 'VIEW'";
 	$recs=mysqlQueryResults($query);
 	$k="tables_in_{$dbname}";
 	foreach($recs as $rec){
