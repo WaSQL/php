@@ -1866,6 +1866,35 @@ function postgresqlGetDBTables($params=array()){
 	}
 	return $databaseCache[$cachekey];
 }
+//---------- begin function postgresqlGetDBViews ----------
+/**
+* @describe returns an array of views
+* @return array returns array of views
+* @usage $views=postgresqlGetDBViews();
+*/
+function postgresqlGetDBViews($params=array()){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'postgresqlGetDBViews');
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	$databaseCache[$cachekey]=array();
+	global $CONFIG;
+	$include_schema=1;
+	$schema=postgresqlGetDBSchema();
+	if(strlen($schema)){
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_views where schemaname='{$schema}' order by tablename";
+	}
+	else{
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_views order by tablename";
+	}
+	$recs = postgresqlQueryResults($query);
+	foreach($recs as $rec){
+		$databaseCache[$cachekey][]=strtolower($rec['tablename']);
+	}
+	return $databaseCache[$cachekey];
+}
 //---------- begin function postgresqlGetDBTablePrimaryKeys ----------
 /**
 * @describe returns an array of primary key fields for the specified table
