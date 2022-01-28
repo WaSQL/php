@@ -2220,7 +2220,14 @@ LIST_TABLE:
 							),
 						);
 					break;
-					case '_pages':echo '<span class="icon-file-doc w_big"></span>';break;
+					case '_pages':
+						echo '<span class="icon-file-doc w_big"></span>';
+						$recopts['name_options']=array(
+							'href'=>"/%name%",
+							'target'=>'blank',
+							'title'=>"open in new tab"
+						);
+					break;
 					case '_queries':echo '<span class="icon-database-empty w_danger w_big"></span>';break;
 					default:
 						$img=getImageSrc(strtolower($_REQUEST['_table_']));
