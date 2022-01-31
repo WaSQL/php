@@ -1,7 +1,7 @@
 #! python
 """
 Installation
-    python -m pip install pymssql
+    python3 -m pip install pymssql
 References
     https://docs.microsoft.com/en-us/sql/connect/python/pymssql/step-3-proof-of-concept-connecting-to-sql-using-pymssql?view=sql-server-ver15
     https://pythonhosted.org/pymssql/pymssql_examples.html
@@ -81,7 +81,7 @@ def connect(params):
 
         # Connect
         conn_mssql = pymssql.connect(**dbconfig)
-        cur_mssql = conn_mssql.cursor(as_dict=True)
+        cur_mssql = conn_mssql.cursor(as_dict=True,buffered=True)
             
         #need to return both cur and conn so conn stays around
         return cur_mssql, conn_mssql
@@ -107,6 +107,10 @@ def executeSQL(query,params):
     except pymssql.Error as err:
         return ("mssqldb.executeSQL error: {}".format(err))
 ###########################################
+#conversion function to convert objects in recordsets
+def convertStr(o):
+    return f"{o}"
+###########################################
 def queryResults(query,params):
     try:
         #connect
@@ -120,9 +124,11 @@ def queryResults(query,params):
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write("\n")
             #write records
             for rec in cur_mssql.fetchall():
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+                f.write("\n")
             f.close()
             cur_mssql.close()
             conn_mssql.close()

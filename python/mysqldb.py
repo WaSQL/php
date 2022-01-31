@@ -1,7 +1,7 @@
 #! python
 """
 Installation
-    python -m pip install mysql.connector-python
+    python3 -m pip install mysql.connector-python
        If it errors try these first
            python -m pip install -U setuptools
            python -m pip install -U wheel
@@ -90,10 +90,10 @@ def connect(params):
         # Get connection object from a pool if possible, otherwise just connect
         conn_mysql = pool_mysql.get_connection()
         if conn_mysql.is_connected():
-            cur_mysql = conn_mysql.cursor(dictionary=True)
+            cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
         else:
             conn_mysql = mysql.connector.connect(**dbconfig)
-            cur_mysql = conn_mysql.cursor(dictionary=True)
+            cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
         #need to return both cur and conn so conn stays around
         return cur_mysql, conn_mysql
         
@@ -135,9 +135,11 @@ def queryResults(query,params):
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write("\n")
             #write records
             for rec in cur_mysql.fetchall():
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+                f.write("\n")
             f.close()
             cur_mysql.close()
             conn_mysql.close()

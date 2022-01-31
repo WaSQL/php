@@ -718,6 +718,9 @@ function pyQueryResults($db,$query,$params=array()){
 	if(!file_exists($jsvfile)){
 		return $jsvfile;
 	}
+	if(isset($params['-jsv'])){
+		return $jsvfile;	
+	}
 	$csvfile=commonJSV2CSV($jsvfile);
 	if(isset($params['-csv'])){
 		return $csvfile;	

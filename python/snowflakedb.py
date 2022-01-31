@@ -115,7 +115,7 @@ def connect(params):
 
         try:
             conn_snowflake = sfc.connect(**conn_dict)
-            cur_snowflake = conn_snowflake.cursor()
+            cur_snowflake = conn_snowflake.cursor(buffered=True)
         except:
             print('snowflake connect failed')
             return false
@@ -144,6 +144,10 @@ def executeSQL(query,params):
     except:
         return ("snowflakedb.executeSQL")
 ###########################################
+#conversion function to convert objects in recordsets
+def convertStr(o):
+    return f"{o}"
+###########################################
 def queryResults(query,params):
     try:
         #connect
@@ -160,9 +164,11 @@ def queryResults(query,params):
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write("\n")
             #write records
             for rec in cur_snowflake.fetchall():
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+                f.write("\n")
             f.close()
             cur_snowflake.close()
             conn_snowflake.close()

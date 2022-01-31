@@ -1,7 +1,7 @@
 #! python
 """
 Installation
-    python -m pip install psycopg2-binary
+    python3 -m pip install psycopg2-binary
        If it errors try these first
            python -m pip install -U setuptools
            python -m pip install -U wheel
@@ -87,10 +87,10 @@ def connect(params):
         # Get connection object from a pool if possible, otherwise just connect
         conn_postgres = pool_postgres.getconn()
         if conn_postgres:
-            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory)
+            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory,buffered=True)
         else:
             conn_postgres = psycopg2.connect(**dbconfig)
-            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory)
+            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory,buffered=True)
         #need to return both cur and conn so conn stays around
         return cur_postgres, conn_postgres
         
@@ -115,6 +115,10 @@ def executeSQL(query,params):
     except psycopg2.Error as err:
         return ("postgresdb.executeSQL error: {}".format(err))
 ###########################################
+#conversion function to convert objects in recordsets
+def convertStr(o):
+    return f"{o}"
+###########################################
 def queryResults(query,params):
     try:
         #connect
@@ -128,9 +132,11 @@ def queryResults(query,params):
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write("\n")
             #write records
             for rec in cur_postgres.fetchall():
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+                f.write("\n")
             f.close()
             cur_postgres.close()
             conn_postgres.close()

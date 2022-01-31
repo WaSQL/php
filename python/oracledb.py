@@ -1,7 +1,7 @@
 #! python
 """
 Installation
-    python -m pip install cx_Oracle
+    python3 -m pip install cx_Oracle
 References
     https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html#connpool
     https://cx-oracle.readthedocs.io/en/latest/user_guide/connection_handling.html
@@ -150,10 +150,10 @@ def connect(params):
         # Get connection object from a pool if possible, otherwise just connect
         conn_oracle = pool_oracle.acquire()
         if conn_oracle:
-            cur_oracle = conn_oracle.cursor()
+            cur_oracle = conn_oracle.cursor(buffered=True)
         else:
             conn_oracle = cx_Oracle.connect(**cconfig)
-            cur_oracle = conn_oracle.cursor()
+            cur_oracle = conn_oracle.cursor(buffered=True)
         cur_oracle.rowfactory = dictFactory
         #need to return both cur and conn so conn stays around
         return cur_oracle, conn_oracle
@@ -179,6 +179,10 @@ def executeSQL(query,params):
     except cx_Oracle.Error as err:
         return ("oracledb.executeSQL error: {}".format(err))
 ###########################################
+#conversion function to convert objects in recordsets
+def convertStr(o):
+    return f"{o}"
+###########################################
 def queryResults(query,params):
     try:
         #connect
@@ -192,9 +196,11 @@ def queryResults(query,params):
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write("\n")
             #write records
             for rec in cur_oracle.fetchall():
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+                f.write("\n")
             f.close()
             cur_oracle.close()
             conn_oracle.close()

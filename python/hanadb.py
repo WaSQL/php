@@ -1,7 +1,7 @@
 #! python
 """
 Installation
-    python -m pip install hdbcli
+    python3 -m pip install hdbcli
 References
     https://pypi.org/project/hdbcli/
     https://developers.sap.com/tutorials/hana-clients-python.html
@@ -78,7 +78,7 @@ def connect(params):
             dbconfig['port'] = params['dbport']
         # Connect
         conn_hana = dbapi.connect(**dbconfig)
-        cur_hana = conn_hana.cursor(dictionary=True)
+        cur_hana = conn_hana.cursor(dictionary=True,buffered=True)
             
         #need to return both cur and conn so conn stays around
         return cur_hana, conn_hana
@@ -98,6 +98,10 @@ def executeSQL(query,params):
     except hdbcli.Error as err:
         return ("hanadb.executeSQL error: {}".format(err))
 ###########################################
+#conversion function to convert objects in recordsets
+def convertStr(o):
+    return f"{o}"
+###########################################
 def queryResults(query,params):
     try:
         #connect
@@ -111,9 +115,11 @@ def queryResults(query,params):
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write("\n")
             #write records
             for rec in cur_hana.fetchall():
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+                f.write("\n")
             f.close()
             cur_hana.close()
             conn_hana.close()
