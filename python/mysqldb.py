@@ -11,9 +11,6 @@ References
 
 
 #imports
-import json
-import sys
-import os
 try:
     import mysql.connector
     from mysql.connector import Error
@@ -114,10 +111,7 @@ def executeSQL(query,params):
         
     except mysql.connector.Error as err:
         return ("mysqldb.executeSQL error: {}".format(err))
-###########################################
-#conversion function to convert objects in recordsets
-def convertStr(o):
-    return f"{o}"
+
 ###########################################
 def queryResults(query,params):
     try:
@@ -125,44 +119,19 @@ def queryResults(query,params):
         cur_mysql, conn_mysql =  connect(params)
         #now execute the query
         cur_mysql.execute(query)
-        if 'filename' in params.keys():
-            jsv_file=params['filename']
-            #get column names
-            fields = [field_md[0] for field_md in cur_mysql.description]
-            #write file
-            f = open(jsv_file, "w")
-            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
-            #write records
-            for rec in cur_mysql.fetchall():
-                f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
-            f.close()
-            cur_mysql.close()
-            conn_mysql.close()
-            return params['filename']
+        #NOTE: columns names can be accessed by cur_mysql.column_names
+        recs = cur_mysql.fetchall()
+        #NOTE: get row count with cur_mysql.rowcount
+        tname=type(recs).__name__;
+        #return tname
+        if tname == 'tuple':
+            recs=list(recs)
+            return recs
+        elif tname == 'list':
+            return recs
         else:
-            recs = cur_mysql.fetchall()
-            #NOTE: get row count with cur_mysql.rowcount
-            tname=type(recs).__name__;
-            #return tname
-            if tname == 'tuple':
-                recs=list(recs)
-                cur_mysql.close()
-                conn_mysql.close()
-                return recs
-            elif tname == 'list':
-                cur_mysql.close()
-                conn_mysql.close()
-                return recs
-            else:
-                cur_mysql.close()
-                conn_mysql.close()
-                return []
-
-    except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        cur_mysql.close()
-        conn_mysql.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
-          
+            return []
+        
+    except mysql.connector.Error as err:
+        return ("mysqldb.queryResults error: {}".format(err))
 ###########################################
