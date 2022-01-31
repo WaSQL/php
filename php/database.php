@@ -701,7 +701,29 @@ function dbQueryResults($db,$query,$params=array()){
 	}
 	return $recs;
 }
-
+//use python to query a database and return the results
+function pyQueryResults($db,$query,$params=array()){
+	//echo "commonSnowflakeQueryResults";exit;
+	$sha=sha1($query);
+	$path=getWasqlPath();
+	$path=str_replace("\\",'/',$path);
+	$path=preg_replace('/\/$/','',$path);
+	$afile="{$path}/php/temp/{$sha}.sql";
+	$ok=file_put_contents($afile, $query);
+	$args="\"/{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
+	$out=cmdResults('python3',$args);
+	unlink($afile);
+	$jsvfile=$out['stdout'];
+	//success with spit out the jsv file, otherwise err message
+	if(!file_exists($jsvfile)){
+		return $jsvfile;
+	}
+	$csvfile=commonJSV2CSV($jsvfile);
+	if(isset($params['-csv'])){
+		return $csvfile;	
+	}
+	return csv2Arrays($csvfile);
+}
 
 //---------- begin function databaseListRecords
 /**
