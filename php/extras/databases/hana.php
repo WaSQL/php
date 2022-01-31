@@ -1759,6 +1759,9 @@ function hanaQueryResults($query,$params=array()){
 		$params['-longreadlen']=131027;
 	}
 	try{
+
+		odbc_exec($dbh_hana, "SET NAMES 'UTF8'");
+		odbc_exec($dbh_hana, "SET client_encoding='UTF-8'");
 		//check for -timeout
 		if(isset($params['-timeout']) && isNum($params['-timeout'])){
 			//sets the query to timeout after X seconds

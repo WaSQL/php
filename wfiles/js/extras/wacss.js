@@ -432,6 +432,7 @@ var wacss = {
 		wacss.initWacssEdit();
 		wacss.initChartJs();
 		wacss.initCodeMirror();
+		wacss.initEditor();
 	},
 	chartjsDrawTotals: function(chart){
 		var width = chart.chart.width,
@@ -1033,6 +1034,47 @@ var wacss = {
 			//save changes to textarea
 	  		cm.on('change', function(cm){cm.save();});
 	  	}
+	},
+	initEditor: function(){
+		let els=document.querySelectorAll('textarea[data-behavior="editor"]');
+		if(els.length==0){return false;}
+		for(e=0;e<els.length;e++){
+			if(undefined != els[e].getAttribute('data-initialized')){continue;}
+			els[e].setAttribute('data-initialized',1);
+			let mh=els[e].style.minHeight || '200px';
+			els[e].style.display='none';
+			let editor=document.createElement('div');
+			editor.setAttribute('contenteditable','true');
+			editor.style.minHeight=mh;
+			editor.saveto=els[e];
+			els[e].editor=editor;
+			//enable tabs
+			editor.onkeydown=function(e){
+				//enable tabs
+				if (e.keyCode == 9){
+		    		e.preventDefault();  // prevent default behaviour, which is "blur"
+				    let sel = document.getSelection();
+				    let range = sel.getRangeAt(0);
+				    let tabNodeValue = '\u0009' // with 4 spaces: Array(4).join('\u00a0')
+				    let tabNode = document.createTextNode(tabNodeValue);
+				    range.insertNode(tabNode);
+				    range.setStartAfter(tabNode);
+				    range.setEndAfter(tabNode);
+				    return false;
+				}
+			}
+			//update the textarea anytime it changes
+			editor.addEventListener("input", function(ie) {
+				this.saveto.textContent=this.textContent;
+			});
+			editor.save=function() {
+				this.saveto.textContent=this.textContent;
+			};
+			//set initial value the same as textarea
+			editor.textContent=els[e].textContent;
+			//setEditorMarkup(editor);
+			els[e].parentNode.insertBefore(editor, els[e].nextSibling);
+		}
 	},
 	initWacssEdit: function(){
 		/*convert texteara to contenteditable div*/

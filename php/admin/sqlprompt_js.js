@@ -58,6 +58,7 @@ function sqlpromptSetDB(db){
 	return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
 }
 function sqlpromptSetValue(v){
+	console.log(v);
 	document.sqlprompt.sql_select.value='';
 	let sql=v;
 	let doc = new DOMParser().parseFromString(sql, "text/html");
@@ -66,6 +67,11 @@ function sqlpromptSetValue(v){
 	if(undefined != obj.codemirror){
 		obj.codemirror.getDoc().setValue(sql);
 		obj.codemirror.save();
+	}
+	else if(undefined != obj.editor){
+		setText(obj.editor,'');
+		setText(obj.editor,v);
+		obj.editor.save();
 	}
 	else{
 		setText('sql_full','');
@@ -98,6 +104,12 @@ function sqlpromptMonitorSQL(){
 	if(undefined != obj.codemirror){
 		obj.codemirror.getDoc().setValue(sql);
 		obj.codemirror.save();
+		sqlpromptSubmit(document.sqlprompt);
+	}
+	else if(undefined != obj.editor){
+		setText(obj.editor,'');
+		setText(obj.editor,sql);
+		obj.editor.save();
 		sqlpromptSubmit(document.sqlprompt);
 	}
 	else{
@@ -155,6 +167,23 @@ function sqlpromptSubmit(frm){
 		frm.sql_select.value='';
 		return ajaxSubmitForm(frm,'sqlprompt_results');
 	}
+	else if(undefined != obj.editor){
+		//if the user has selected a section, run just the selection
+		let str='';
+		if (window.getSelection) {
+	        str = window.getSelection().toString();
+	    } else if (document.getSelection) {
+	        str = document.getSelection().toString();
+	    } else if (document.selection) {
+	        str = document.selection.createRange().text;
+	    }
+		if(str.length){
+			frm.sql_select.value=str;
+			return ajaxSubmitForm(frm,'sqlprompt_results');
+		}
+		frm.sql_select.value='';
+		return ajaxSubmitForm(frm,'sqlprompt_results');
+	}
 	//no longer used now that we are using codemirror
 	frm.sql_select.value=getSelText(frm.sql_full);
 	frm.offset.value=0;
@@ -180,3 +209,5 @@ function sqlpromptPaginate(offset){
 	return false;
 }
 document.onkeydown = sqlpromptCheckKey;
+let db=document.querySelector('#nulldiv[data-db]').dataset.db;
+sqlpromptLoadPrompt(db);

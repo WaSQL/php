@@ -1,5 +1,25 @@
 <view:default>
-<?=buildOnLoad("wacss.loadScript('/php/admin/sqlprompt_js.js');");?>
+<style>
+	textarea[data-behavior="editor"] + div[contenteditable]{
+		display: block;
+		padding: 0.5em;
+		border: 1px solid #ccc;
+		border-radius: 2px;
+		height: 200px;
+		background: #fff;
+		color: #444;
+		font-family: Consolas, Monaco, monospace;
+		tab-size: 4;
+		white-space: pre-wrap;
+		overflow: auto;
+		resize: both;
+		padding-left: 5px;
+	}
+	textarea[data-behavior="editor"] + div[contenteditable]:focus{
+		outline: 0px solid transparent;
+		border: 1px solid #555;
+	}
+</style>
 <div>
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
 		<span class="icon-prompt"></span> 
@@ -31,8 +51,8 @@
 				<input type="hidden" name="setprocessing" value="results_count" />
 				<input type="hidden" name="sql_select" value="" />
 				<input type="hidden" name="cursor_pos" value="" />
-				<div style="position: relative;max-width:100%">
-				<textarea class="form-control code" data-mode="sql" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+				<div style="position: relative;max-width:100%;">
+				<textarea class="form-control" data-behavior="editor" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 				</div>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
 					<div>
@@ -50,7 +70,7 @@
 		<div id="sqlprompt_results" style="display:grid;">
 			<div id="setprocessing"></div>
 		</div>
-		<div style="display:none"><div id="nulldiv"><?=buildOnLoad("wacss.init();");?></div></div>
+		<div style="display:none"><div data-db="<?=$db['name'];?>" id="nulldiv"><?=buildOnLoad("wacss.loadScript('/php/admin/sqlprompt_js.js');wacss.init();");?></div></div>
 	</div>
 </div>
 </view:default>
