@@ -10547,18 +10547,18 @@ function processFileLines($file,$func_name,$params=array()){
 	}
 	return $linecnt;
 }
-function commonJSV2CSV($csvfile){
-	global $jsvfile;
-	$jsvfile=str_replace('.jsv','.csv',$csvfile);
-	$num=processFileLines($csvfile,'commonJSV2CSVLine');
-	return $num;
+function commonJSV2CSV($jsvfile){
+	global $jsvcsvfile;
+	$jsvcsvfile=str_replace('.jsv','.csv',$jsvfile);
+	$num=processFileLines($jsvfile,'commonJSV2CSVLine');
+	return $jsvcsvfile;
 }
 function commonJSV2CSVLine($line){
-	global $jsvfile;
-	//echo printValue($line);exit;
-	if($line['line_number']==1){
+	global $jsvcsvfile;
+	//echo $jsvcsvfile.printValue($line);exit;
+	if($line['line_number']==0){
 		$fields=json_decode($line['line'],true);
-		$ok=file_put_contents($jsvfile,implode(',',$fields).PHP_EOL);
+		$ok=file_put_contents($jsvcsvfile,implode(',',$fields).PHP_EOL);
 	}
 	else{
 		$vals=json_decode($line['line'],true);
@@ -10569,7 +10569,7 @@ function commonJSV2CSVLine($line){
 			}
 		}
 		$row=csvImplode($vals);
-		$ok=file_put_contents($jsvfile,$row.PHP_EOL,FILE_APPEND);
+		$ok=file_put_contents($jsvcsvfile,$row.PHP_EOL,FILE_APPEND);
 	}
 }
 //---------- begin function processCSVFileLines---------------------------------------
