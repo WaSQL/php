@@ -1,12 +1,17 @@
 #! python
-import json
-import sys
-import os
+
+#imports
 try:
+    import json
+    import sys
+    import os
     import config
     import common
-except ImportError as err:
-    sys.exit(err)
+except Exception as err:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    sys.exit()
 
 #get query_file from command line arg
 if(len(sys.argv) < 3):
