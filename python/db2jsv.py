@@ -43,6 +43,7 @@ try:
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:
             params[k] = config.DATABASE[dbname][k]
+        outfile=''
         #HANA
         if config.DATABASE[dbname]['dbtype'].startswith('hana'):
             import hanadb
