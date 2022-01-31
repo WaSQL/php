@@ -712,20 +712,20 @@ function pyQueryResults($db,$query,$params=array()){
 	$ok=file_put_contents($afile, $query);
 	$args="\"/{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
 	$out=cmdResults('python3',$args);
+	//return printValue($out);
 	unlink($afile);
 	$jsvfile=$out['stdout'];
 	//success with spit out the jsv file, otherwise err message
 	if(!file_exists($jsvfile)){
 		return $jsvfile;
 	}
-	if(isset($params['-jsv'])){
-		return $jsvfile;	
-	}
 	$csvfile=commonJSV2CSV($jsvfile);
+	//echo $csvfile;
 	if(isset($params['-csv'])){
 		return $csvfile;	
 	}
-	return csv2Arrays($csvfile);
+	$csv=getCSVFileContents($csvfile);
+	return $csv['items'];
 }
 
 //---------- begin function databaseListRecords
