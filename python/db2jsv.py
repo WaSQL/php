@@ -77,14 +77,6 @@ except Exception as err:
     sys.stderr.flush()
     exit()
 # try:
-#     snowCon = snowflake.connector.connect(
-#         user='ETL_ACCOUNT',
-#         password='AM<}Xf8f2H;_S]Y@',
-#         account='doterra',
-#         warehouse='COMPUTE_HUMAN',
-#         database='DIS_PROD',
-#         role='INTEGRATION_ETL_ROLE'
-#         )
 # except Exception as err:
 #     exc_type, exc_obj, exc_tb = sys.exc_info()
 #     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
