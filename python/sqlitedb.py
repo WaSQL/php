@@ -18,9 +18,9 @@ except ImportError as err:
 def addIndex(params):
     #check required
     if '-table' not in params:
-        return ("mysqldb.addIndex error: No Table Specified")
+        return ("sqlitedb.addIndex error: No Table Specified")
     if '-fields' not in params:
-        return ("mysqldb.addIndex error: No Fields Specified")
+        return ("sqlitedb.addIndex error: No Fields Specified")
     #check for unique and fulltext
     fulltext = ''
     unique = ''
@@ -88,14 +88,41 @@ def queryResults(query,params):
         cur_sqlite, conn_sqlite =  connect(params)
         #now execute the query
         cur_sqlite.execute(query)
-        #NOTE: columns names can be accessed by cur_sqlite.column_names
-        recs = cur_sqlite.fetchall()
-        #NOTE: get row count with cur_sqlite.rowcount
-        if type(recs) in (tuple, list):
-            return recs
+        if 'filename' in params.keys():
+            jsv_file=params['filename']
+            #get column names
+            fields = [field_md[0] for field_md in cur_sqlite.description]
+            #write file
+            f = open(jsv_file, "w")
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            #write records
+            for rec in cur_sqlite.fetchall():
+                f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+            f.close()
+            cur_sqlite.close()
+            conn_sqlite.close()
+            return params['filename']
         else:
-            return []
+            recs = cur_sqlite.fetchall()
+            tname=type(recs).__name__
+            if tname == 'tuple':
+                recs=list(recs)
+                cur_sqlite.close()
+                conn_sqlite.close()
+                return recs
+            elif tname == 'list':
+                cur_sqlite.close()
+                conn_sqlite.close()
+                return recs
+            else:
+                cur_sqlite.close()
+                conn_sqlite.close()
+                return []
         
-    except Error as err:
-        return ("sqlitedb.queryResults error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_sqlite.close()
+        conn_sqlite.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################

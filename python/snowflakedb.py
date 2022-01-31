@@ -143,16 +143,46 @@ def queryResults(query,params):
     try:
         #connect
         cur_snowflake, conn_snowflake =  connect(params)
+        if 'warehouse' in params.keys():
+            q = f"use warehouse {params['filename']}"
+            cur_snowflake.execute(q)
         #now execute the query
         cur_snowflake.execute(query)
-        #NOTE: columns names can be accessed by cur_snowflake.column_names
-        recs = cur_snowflake.fetchall()
-        #NOTE: get row count with cur_snowflake.rowcount
-        if type(recs) in (tuple, list):
-            return recs
+        if 'filename' in params.keys():
+            jsv_file=params['filename']
+            #get column names
+            fields = [field_md[0] for field_md in cur_snowflake.description]
+            #write file
+            f = open(jsv_file, "w")
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            #write records
+            for rec in cur_snowflake.fetchall():
+                f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+            f.close()
+            cur_snowflake.close()
+            conn_snowflake.close()
+            return params['filename']
         else:
-            return []
+            recs = cur_snowflake.fetchall()
+            tname=type(recs).__name__
+            if tname == 'tuple':
+                recs=list(recs)
+                cur_snowflake.close()
+                conn_snowflake.close()
+                return recs
+            elif tname == 'list':
+                cur_snowflake.close()
+                conn_snowflake.close()
+                return recs
+            else:
+                cur_snowflake.close()
+                conn_snowflake.close()
+                return []
         
-    except:
-        return ("snowflakedb.queryResults error")
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_mysql.close()
+        conn_mysql.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################

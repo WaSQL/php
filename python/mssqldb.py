@@ -21,9 +21,9 @@ except ImportError as err:
 def addIndex(params):
     #check required
     if '-table' not in params:
-        return ("mysqldb.addIndex error: No Table Specified")
+        return ("mssqldb.addIndex error: No Table Specified")
     if '-fields' not in params:
-        return ("mysqldb.addIndex error: No Fields Specified")
+        return ("mssqldb.addIndex error: No Fields Specified")
     #check for unique and fulltext
     fulltext = ''
     unique = ''
@@ -107,14 +107,42 @@ def queryResults(query,params):
         cur_mssql, conn_mssql =  connect(params)
         #now execute the query
         cur_mssql.execute(query)
-        #NOTE: columns names can be accessed by cur_mssql.column_names
-        recs = cur_mssql.fetchall()
-        #NOTE: get row count with cur_mssql.rowcount
-        if type(recs) in (tuple, list):
-            return recs
+        if 'filename' in params.keys():
+            jsv_file=params['filename']
+            #get column names
+            fields = [field_md[0] for field_md in cur_mssql.description]
+            #write file
+            f = open(jsv_file, "w")
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            #write records
+            for rec in cur_mssql.fetchall():
+                f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+            f.close()
+            cur_mssql.close()
+            conn_mssql.close()
+            return params['filename']
         else:
-            return []
+            recs = cur_mssql.fetchall()
+            tname=type(recs).__name__
+            if tname == 'tuple':
+                recs=list(recs)
+                cur_mssql.close()
+                conn_mssql.close()
+                return recs
+            elif tname == 'list':
+                cur_mssql.close()
+                conn_mssql.close()
+                return recs
+            else:
+                cur_mssql.close()
+                conn_mssql.close()
+                return []
+
         
-    except pymssql.Error as err:
-        return ("mssqldb.queryResults error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_mssql.close()
+        conn_mssql.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################

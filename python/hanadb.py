@@ -19,9 +19,9 @@ except ImportError as err:
 def addIndex(params):
     #check required
     if '-table' not in params:
-        return ("mysqldb.addIndex error: No Table Specified")
+        return ("hanadb.addIndex error: No Table Specified")
     if '-fields' not in params:
-        return ("mysqldb.addIndex error: No Fields Specified")
+        return ("hanadb.addIndex error: No Fields Specified")
     #check for unique and fulltext
     fulltext = ''
     unique = ''
@@ -97,14 +97,41 @@ def queryResults(query,params):
         cur_hana, conn_hana =  connect(params)
         #now execute the query
         cur_hana.execute(query)
-        #NOTE: columns names can be accessed by cur_hana.column_names
-        recs = cur_hana.fetchall()
-        #NOTE: get row count with cur_hana.rowcount
-        if type(recs) in (tuple, list):
-            return recs
+        if 'filename' in params.keys():
+            jsv_file=params['filename']
+            #get column names
+            fields = [field_md[0] for field_md in cur_hana.description]
+            #write file
+            f = open(jsv_file, "w")
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            #write records
+            for rec in cur_hana.fetchall():
+                f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+            f.close()
+            cur_hana.close()
+            conn_hana.close()
+            return params['filename']
         else:
-            return []
-        
-    except hdbcli.Error as err:
-        return ("hanadb.queryResults error: {}".format(err))
+            recs = cur_hana.fetchall()
+            tname=type(recs).__name__
+            if tname == 'tuple':
+                recs=list(recs)
+                cur_hana.close()
+                conn_hana.close()
+                return recs
+            elif tname == 'list':
+                cur_hana.close()
+                conn_hana.close()
+                return recs
+            else:
+                cur_hana.close()
+                conn_hana.close()
+                return []
+
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_hana.close()
+        conn_hana.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################
