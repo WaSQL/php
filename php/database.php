@@ -4730,10 +4730,28 @@ function addDBRecord($params=array()){
 	$vals=array();
 	$json_sets=array();
 	foreach($params as $key=>$val){
-		//ignore params that do not match a field
-		if(!isset($info[$key]['_dbtype']) || !strlen($info[$key]['_dbtype'])){continue;}
 		//skip keys that begin with a dash
 		if(preg_match('/^\-/',$key)){continue;}
+		//ignore params that do not match a field
+		if(!isset($info[$key]['_dbtype'])){
+			if(isset($params["{$key}_field"])){
+				$keyfield=$params["{$key}_field"];
+				if(isset($info[$keyfield]['_dbtype']) && strtolower($info[$keyfield]['_dbtype'])=='json'){
+					if(isNum($val)){
+						$json_sets[$keyfield][]="'\$.{$key}',{$val}";
+					}
+					elseif(strtoupper($val)=='NULL'){
+						//do nothing
+					}
+					else{
+						$val=str_replace("'","''",$val);
+						$json_sets[$keyfield][]="'\$.{$key}','{$val}'";
+					}
+				}
+			}
+			//echo "HERE:{$key}={$val}, keyfield={$keyfield}<br>".printValue($info);exit;
+			continue;
+		}
 		//null check
 		if(!is_array($val) && strlen($val)==0 && preg_match('/not_null/',$info[$key]['_dbflags'])){
 			return 'addDBRecord Datatype Null Error: Field "'.$key.'" cannot be null';
