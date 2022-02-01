@@ -3359,13 +3359,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		$tag .= ' /> '.PHP_EOL;
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
-		elseif($params['data-toplabel']){
-			$xstyle=isset($params['style'])?$params['style']:'';
-			$tag .= '<label style="display:flex;flex-direction:column;flex-wrap:nowrap;justify-content:center;">'.PHP_EOL;
-			$tag .= ' 	<label for="'.$id.'"> '.$dval.'</label>'.PHP_EOL;
-			$tag .= ' 	<label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$xstyle.'"></label>'.PHP_EOL;
-			$tag .= '</label>';
-		}
 		else{
 			$xstyle=isset($params['style'])?$params['style']:'';
 			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$xstyle.'"> '.$dval.'</label>'.PHP_EOL;
@@ -10553,31 +10546,6 @@ function processFileLines($file,$func_name,$params=array()){
 		fclose($fh);
 	}
 	return $linecnt;
-}
-function commonJSV2CSV($jsvfile){
-	global $jsvcsvfile;
-	$jsvcsvfile=str_replace('.jsv','.csv',$jsvfile);
-	$num=processFileLines($jsvfile,'commonJSV2CSVLine');
-	return $jsvcsvfile;
-}
-function commonJSV2CSVLine($line){
-	global $jsvcsvfile;
-	//echo $jsvcsvfile.printValue($line);exit;
-	if($line['line_number']==0){
-		$fields=json_decode($line['line'],true);
-		$ok=file_put_contents($jsvcsvfile,implode(',',$fields).PHP_EOL);
-	}
-	else{
-		$vals=json_decode($line['line'],true);
-		//fix utf-8
-		foreach($vals as $i=>$val){
-			if(stringContains($val,"\\u")){
-				$vals[$i]=iconv('ASCII', 'UTF-8//IGNORE', $val);
-			}
-		}
-		$row=csvImplode($vals);
-		$ok=file_put_contents($jsvcsvfile,$row.PHP_EOL,FILE_APPEND);
-	}
 }
 //---------- begin function processCSVFileLines---------------------------------------
 /**
