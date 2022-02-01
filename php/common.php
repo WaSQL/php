@@ -3361,8 +3361,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
 		elseif($params['data-toplabel']){
 			$xstyle=isset($params['style'])?$params['style']:'';
-			$tag .= ' <label for="'.$id.'"> '.$dval.'</label>'.PHP_EOL;
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$xstyle.'"></label>'.PHP_EOL;
+			$tag .= '<div style="display:flex;flex-direction:column;flex-wrap:nowrap;">'.PHP_EOL;
+			$tag .= ' 	<label for="'.$id.'"> '.$dval.'</label>'.PHP_EOL;
+			$tag .= ' 	<label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$xstyle.'"></label>'.PHP_EOL;
+			$tag .= '</div>';
 		}
 		else{
 			$xstyle=isset($params['style'])?$params['style']:'';
