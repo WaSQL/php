@@ -710,8 +710,9 @@ function pyQueryResults($db,$query,$params=array()){
 	$path=preg_replace('/\/$/','',$path);
 	$afile="{$path}/php/temp/{$sha}.sql";
 	$ok=file_put_contents($afile, $query);
-	$args="\"/{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
+	$args="\"{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
 	$out=cmdResults('python3',$args);
+	//echo printValue($out);exit;
 	//return printValue($out);
 	unlink($afile);
 	$jsvfile=$out['stdout'];

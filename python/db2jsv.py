@@ -38,12 +38,12 @@ query = f.read()
 f.close()
 params={}
 params['filename']=sql_file.replace('.sql','.jsv')
+outfile=''
 try:
     if dbname in config.DATABASE:
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:
             params[k] = config.DATABASE[dbname][k]
-        outfile=''
         #HANA
         if config.DATABASE[dbname]['dbtype'].startswith('hana'):
             import hanadb

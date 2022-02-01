@@ -10547,6 +10547,31 @@ function processFileLines($file,$func_name,$params=array()){
 	}
 	return $linecnt;
 }
+function commonJSV2CSV($jsvfile){
+	global $jsvcsvfile;
+	$jsvcsvfile=str_replace('.jsv','.csv',$jsvfile);
+	$num=processFileLines($jsvfile,'commonJSV2CSVLine');
+	return $jsvcsvfile;
+}
+function commonJSV2CSVLine($line){
+	global $jsvcsvfile;
+	//echo $jsvcsvfile.printValue($line);exit;
+	if($line['line_number']==0){
+		$fields=json_decode($line['line'],true);
+		$ok=file_put_contents($jsvcsvfile,implode(',',$fields).PHP_EOL);
+	}
+	else{
+		$vals=json_decode($line['line'],true);
+		//fix utf-8
+		foreach($vals as $i=>$val){
+			if(stringContains($val,"\\u")){
+				$vals[$i]=iconv('ASCII', 'UTF-8//IGNORE', $val);
+			}
+		}
+		$row=csvImplode($vals);
+		$ok=file_put_contents($jsvcsvfile,$row.PHP_EOL,FILE_APPEND);
+	}
+}
 //---------- begin function processCSVFileLines---------------------------------------
 /**
 * @describe alias to processCSVLines for backward compatibility

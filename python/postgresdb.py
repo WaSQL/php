@@ -87,16 +87,19 @@ def connect(params):
         # Get connection object from a pool if possible, otherwise just connect
         conn_postgres = pool_postgres.getconn()
         if conn_postgres:
-            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory,buffered=True)
+            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory)
         else:
             conn_postgres = psycopg2.connect(**dbconfig)
-            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory,buffered=True)
+            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory)
         #need to return both cur and conn so conn stays around
         return cur_postgres, conn_postgres
         
-    except psycopg2.Error as err:
-        print("postgresdb.connect error: {}".format(err))
-        return false
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_postgres.close()
+        conn_postgres.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################
 def dictFactory(cursor, row):
     d = {}
@@ -111,9 +114,12 @@ def executeSQL(query,params):
         #now execute the query
         cur_postgres.execute(query)
         return True
-        
-    except psycopg2.Error as err:
-        return ("postgresdb.executeSQL error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_postgres.close()
+        conn_postgres.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):

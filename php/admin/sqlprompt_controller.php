@@ -217,33 +217,45 @@
 					$view='results';
 				}
 			}
-			$tpath=getWasqlPath('php/temp');
-			$shastr=sha1($_SESSION['sql_last']);
-			$filename="sqlprompt_{$shastr}.csv";
-			$afile="{$tpath}/{$filename}";
-			$logname="sqlprompt_{$shastr}.log";
-			$lfile="{$tpath}/{$logname}";
-			if(file_exists($afile)){
-				unlink($afile);
+			if(isset($_REQUEST['py']) && $_REQUEST['py']==1){
+				$begin=microtime(true);
+				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
+				if(!file_exists($afile)){
+					echo nl2br($afile);
+					exit;
+				}
+				$recs_count=1;
+				//echo $afile;exit;
 			}
-			$params=array(
-				//'-binmode'=>ODBC_BINMODE_PASSTHRU,
-				'-longreadlen'=>131027,
-				'-filename'=>$afile,
-				'-logfile'=>$lfile,
-				//'-cursor'=>SQL_CUR_USE_ODBC,
-				'-query'=>$_SESSION['sql_last'],
-				//'-process'=>'sqlpromptCaptureFirstRows'
-				'-ignore_case'=>1
-			);
-			$recs_show=30;
-			$recs=array();
-			$begin=microtime(true);
-			$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
-			if($recs_count==0){
+			else{
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$filename="sqlprompt_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				$logname="sqlprompt_{$shastr}.log";
+				$lfile="{$tpath}/{$logname}";
+				if(file_exists($afile)){
+					unlink($afile);
+				}
+				$params=array(
+					//'-binmode'=>ODBC_BINMODE_PASSTHRU,
+					'-longreadlen'=>131027,
+					'-filename'=>$afile,
+					'-logfile'=>$lfile,
+					//'-cursor'=>SQL_CUR_USE_ODBC,
+					'-query'=>$_SESSION['sql_last'],
+					//'-process'=>'sqlpromptCaptureFirstRows'
+					'-ignore_case'=>1
+				);
+				$recs_show=30;
 				$recs=array();
-				setView(array('no_results'),1);
-				return;
+				$begin=microtime(true);
+				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
+				if($recs_count==0){
+					$recs=array();
+					setView(array('no_results'),1);
+					return;
+				}
 			}
 			$offset=(integer)$_REQUEST['offset'];
 			$limit=30;
@@ -252,6 +264,7 @@
 				'-start'=>$offset,
 				'-maxrows'=>$limit
 			));
+			//echo $afile.printValue($recs);exit;
 			$qtime=microtime(true)-$begin;
 			/* log queries? */
 			if(isset($CONFIG['log_queries']) && isset($recs[0]) && is_array($recs[0])){
