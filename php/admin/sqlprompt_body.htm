@@ -51,12 +51,13 @@
 				<input type="hidden" name="setprocessing" value="results_count" />
 				<input type="hidden" name="sql_select" value="" />
 				<input type="hidden" name="cursor_pos" value="" />
+				<input type="hidden" name="editor_content" value="" />
 				<div style="position: relative;max-width:100%;">
 				<textarea class="form-control" data-behavior="editor" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
 				</div>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
 					<div>
-						<button type="submit" class="btn <?=configValue('admin_color');?>" data-tooltip="Run Query (or press F8, CTRL+ENTER or CTRL+e). Note: You can drag and drop .sql files onto the textarea" data-tooltip_position="bottom"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"></span>
+						<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run Query (or press F8, CTRL+ENTER or CTRL+e). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"></span>
 					</div>
 					<div title="Check to execute with Python libraries">
 						<input type="checkbox" name="py" id="py" value="1" /><label for="py" class="brand-python"></label>

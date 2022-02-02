@@ -1048,21 +1048,71 @@ var wacss = {
 			editor.style.minHeight=mh;
 			editor.saveto=els[e];
 			els[e].editor=editor;
-			//enable tabs
+			//enable special keys
 			editor.onkeydown=function(e){
-				//enable tabs
-				if (e.keyCode == 9){
-		    		e.preventDefault();  // prevent default behaviour, which is "blur"
-				    let sel = document.getSelection();
-				    let range = sel.getRangeAt(0);
-				    let tabNodeValue = '\u0009' // with 4 spaces: Array(4).join('\u00a0')
-				    let tabNode = document.createTextNode(tabNodeValue);
-				    range.insertNode(tabNode);
-				    range.setStartAfter(tabNode);
-				    range.setEndAfter(tabNode);
-				    return false;
-				}
+				let evt = e || window.event;
+			    let keyCode = evt.charCode || evt.keyCode;
+			    //console.log(evt.ctrlKey)
+			    //console.log(keyCode);
+			    //get the selected text, if any
+			    let sel = '';
+			    if (window.getSelection) {
+			        sel = window.getSelection().toString();
+			    } else if (document.selection && document.selection.type != "Control") {
+			        sel = document.selection.createRange().text;
+			    }
+			    switch(keyCode){
+			    	case 9:
+			    		//tab
+			    		evt.preventDefault();
+			    		document.execCommand('insertHTML', false, '\u0009');
+			    	break;
+			    	case 85:
+			    		if(evt.altKey && sel.length){
+			    			//Alt+U => uppercase
+			    			evt.preventDefault();
+
+			    			document.execCommand('insertHTML', false, sel.toUpperCase());
+			    		}
+			    	break;
+			    	case 76:
+			    		if(evt.altKey && sel.length){
+			    			//Alt+l => lowercase
+			    			evt.preventDefault();
+			    			document.execCommand('insertHTML', false, sel.toLowerCase());
+			    		}
+			    	break;
+			    	case 72:
+			    		if(evt.altKey){
+			    			//Alt+h => help
+			    			evt.preventDefault();
+			    			let help='EDITOR COMMAND REFERENCE:\r\n\r\n';
+			    			help+='Alt+u => uppercase selection\r\n';
+			    			help+='Alt+l => lowercase selection\r\n';
+			    			help+='Ctrl+b => bold selection\r\n';
+			    			help+='Ctrl+i => italic selection\r\n';
+			    			help+='Ctrl+u => underline selection\r\n';
+			    			help+='Alt+c => clear all formatting';
+			    			alert(help);
+			    		}
+			    	break;
+			    	case 67:
+			    		if(evt.altKey){
+			    			//Alt+c => clear formatting
+			    			if(confirm('Clear all formatting?')){
+			    				evt.preventDefault();
+			    				this.textContent=this.innerText;
+			    			}
+			    		}
+			    	break;
+			    }
 			}
+			//paste text as plain text
+			editor.addEventListener("paste", function(e) {
+				e.preventDefault();
+  				let text = e.clipboardData.getData('text/plain');
+  				document.execCommand("insertHTML", false, text);
+			});
 			//update the textarea anytime it changes
 			editor.addEventListener("input", function(ie) {
 				this.saveto.textContent=this.textContent;

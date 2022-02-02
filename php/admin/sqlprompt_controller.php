@@ -179,10 +179,11 @@
 			$sql_full=stripslashes($_REQUEST['sql_full']);
 			if(strlen($sql_full)){
 				$prompt='sql_prompt_'.$db['name'];
+				$editor_content=$_REQUEST['editor_content'];
 				$ok=addDBRecord(array(
 					'-table'=>'_prompts',
 					'name'=>$prompt,
-					'body'=>$sql_full,
+					'body'=>$editor_content,
 					'-upsert'=>'body'
 				));
 				if(isset($rec['_id'])){

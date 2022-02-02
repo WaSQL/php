@@ -168,6 +168,9 @@ function sqlpromptSubmit(frm){
 		return ajaxSubmitForm(frm,'sqlprompt_results');
 	}
 	else if(undefined != obj.editor){
+		//store editor_content
+		frm.editor_content.value=obj.editor.innerHTML;
+		
 		//if the user has selected a section, run just the selection
 		let str='';
 		if (window.getSelection) {
