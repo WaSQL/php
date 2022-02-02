@@ -19,7 +19,7 @@ try:
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
     sys.exit()
 
 ###########################################
@@ -49,43 +49,55 @@ def addIndex(params):
     return executeSQL(query) 
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
+#For HANA tenant databases, you can use the port number 3NN13 (where NN is the SAP instance number).
+#For HANA single-tenant databases, the port number is 3NN15.
 def connect(params):
+    dbconfig = {}
+    #check config.CONFIG
+    if 'dbhost' in config.CONFIG:
+        dbconfig['address'] = config.CONFIG['dbhost']
+
+    if 'dbuser' in config.CONFIG:
+        dbconfig['user'] = config.CONFIG['dbuser']
+
+    if 'dbpass' in config.CONFIG:
+        dbconfig['password'] = config.CONFIG['dbpass']
+
+    if 'dbport' in config.CONFIG:
+        dbconfig['port'] = config.CONFIG['dbport']
+
+    #check params and override any that are passed in
+    if 'dbhost' in params:
+        dbconfig['address'] = params['dbhost']
+
+    if 'dbuser' in params:
+        dbconfig['user'] = params['dbuser']
+
+    if 'dbpass' in params:
+        dbconfig['password'] = params['dbpass']
+
+    if 'dbport' in params:
+        dbconfig['port'] = params['dbport']
+
     try:
-        dbconfig = {}
-        #check config.CONFIG
-        if 'dbhost' in config.CONFIG:
-            dbconfig['address'] = config.CONFIG['dbhost']
-
-        if 'dbuser' in config.CONFIG:
-            dbconfig['user'] = config.CONFIG['dbuser']
-
-        if 'dbpass' in config.CONFIG:
-            dbconfig['password'] = config.CONFIG['dbpass']
-
-        if 'dbport' in config.CONFIG:
-            dbconfig['port'] = config.CONFIG['dbport']
-        #check params and override any that are passed in
-        if 'dbhost' in params:
-            dbconfig['address'] = params['dbhost']
-
-        if 'dbuser' in params:
-            dbconfig['user'] = params['dbuser']
-
-        if 'dbpass' in params:
-            dbconfig['password'] = params['dbpass']
-
-        if 'dbport' in params:
-            dbconfig['port'] = params['dbport']
-        # Connect
         conn_hana = dbapi.connect(**dbconfig)
-        cur_hana = conn_hana.cursor(dictionary=True,buffered=True)
-            
-        #need to return both cur and conn so conn stays around
-        return cur_hana, conn_hana
+    except Exception as err:
+        conn_hana=None
+
+    if conn_hana != None:
+        try:
+            cur_hana = conn_hana.cursor()
+        except Exception as err:
+            cur_hana=None
+
+        if cur_hana != None:
+            return cur_hana, conn_hana
         
-    except hdbcli.Error as err:
-        print("hanadb.connect error: {}".format(err))
-        return false
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    sys.exit()
+
 ###########################################
 def executeSQL(query,params):
     try:
@@ -95,12 +107,18 @@ def executeSQL(query,params):
         cur_hana.execute(query)
         return True
         
-    except hdbcli.Error as err:
-        return ("hanadb.executeSQL error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_hana.close()
+        conn_hana.close()
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
     return f"{o}"
+
 ###########################################
 def queryResults(query,params):
     try:
@@ -108,16 +126,19 @@ def queryResults(query,params):
         cur_hana, conn_hana =  connect(params)
         #now execute the query
         cur_hana.execute(query)
+
         if 'filename' in params.keys():
             jsv_file=params['filename']
             #get column names
             fields = [field_md[0] for field_md in cur_hana.description]
             #write file
             f = open(jsv_file, "w")
-            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
             f.write("\n")
             #write records
             for rec in cur_hana.fetchall():
+                #convert to a dictionary manually since it is not built into the driver
+                rec=dict(zip(fields, rec))
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
                 f.write("\n")
             f.close()

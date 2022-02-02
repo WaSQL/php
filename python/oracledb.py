@@ -20,7 +20,7 @@ try:
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
     sys.exit()
 ###########################################
 def addIndex(params):
@@ -50,117 +50,140 @@ def addIndex(params):
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
+    pconfig = {
+        'min':2,
+        'max':10,
+        'increment':1,
+        'encoding':'UTF-8'
+    }
+    dbconfig = {}
+    dbconfig['port'] = 1521
+    dbconfig['host'] = 'localhost'
+    #check config.CONFIG
+    if 'dbconnect' in config.CONFIG:
+        dbconfig['connect'] = config.CONFIG['dbconnect']
+    elif 'connect' in config.CONFIG:
+        dbconfig['connect'] = config.CONFIG['connect']
+
+    if 'dbport' in config.CONFIG:
+        dbconfig['port'] = config.CONFIG['dbport']
+    elif 'port' in config.CONFIG:
+        dbconfig['port'] = config.CONFIG['port']
+
+    if 'dbhost' in config.CONFIG:
+        dbconfig['host'] = config.CONFIG['dbhost']
+
+    if 'dbuser' in config.CONFIG:
+        dbconfig['user'] = config.CONFIG['dbuser']
+
+    if 'dbpass' in config.CONFIG:
+        dbconfig['password'] = config.CONFIG['dbpass']
+
+    if 'dbname' in config.CONFIG:
+        dbconfig['database'] = config.CONFIG['dbname']
+
+    if 'sid' in config.CONFIG:
+        dbconfig['service_name'] = config.CONFIG['sid']
+    elif 'service_name' in config.CONFIG:
+        dbconfig['service_name'] = config.CONFIG['service_name']
+
+    if 'dbserver' in config.CONFIG:
+        dbconfig['server'] = config.CONFIG['dbserver']
+    elif 'server' in config.CONFIG:
+        dbconfig['server'] = config.CONFIG['server']
+
+    #check params and override any that are passed in
+    if 'dbconnect' in params:
+        dbconfig['connect'] = params['dbconnect']
+    elif 'connect' in params:
+        dbconfig['connect'] = params['connect']
+
+    if 'dbport' in params:
+        dbconfig['port'] = params['dbport']
+    elif 'port' in params:
+        dbconfig['port'] = params['port']
+
+    if 'dbhost' in params:
+        dbconfig['host'] = params['dbhost']
+
+    if 'dbuser' in params:
+        dbconfig['user'] = params['dbuser']
+
+    if 'dbpass' in params:
+        dbconfig['password'] = params['dbpass']
+
+    if 'dbname' in params:
+        dbconfig['database'] = params['dbname']
+
+    if 'sid' in params:
+        dbconfig['service_name'] = params['sid']
+    elif 'service_name' in params:
+        dbconfig['service_name'] = params['service_name']
+
+    if 'dbserver' in params:
+        dbconfig['server'] = params['dbserver']
+    elif 'server' in params:
+        dbconfig['server'] = params['server']
+
+    #create a dsn object
+    dsnconfig={}
+    if 'service_name' in dbconfig:
+        dsnconfig['service_name'] = dbconfig['service_name']
+
+    dsn = cx_Oracle.makedsn(dbconfig['host'],dbconfig['port'],**dsnconfig)
+    #setup connection config
+    cconfig = {}
+    if 'user' in dbconfig:
+        cconfig['user'] = dbconfig['user']
+    if 'password' in dbconfig:
+        cconfig['password'] = dbconfig['password']
+    cconfig['dsn'] = dsn
+    #setup the connection pool
+    if 'user' in dbconfig:
+        pconfig['user'] = dbconfig['user']
+    if 'password' in dbconfig:
+        pconfig['password'] = dbconfig['password']
+    pconfig['dsn'] = dsn
     try:
-        pconfig = {
-            'min':2,
-            'max':10,
-            'increment':1,
-            'encoding':'UTF-8'
-        }
-        dbconfig = {}
-        dbconfig['port'] = 1521
-        dbconfig['host'] = 'localhost'
-        #check config.CONFIG
-        if 'dbconnect' in config.CONFIG:
-            dbconfig['connect'] = config.CONFIG['dbconnect']
-        elif 'connect' in config.CONFIG:
-            dbconfig['connect'] = config.CONFIG['connect']
-
-        if 'dbport' in config.CONFIG:
-            dbconfig['port'] = config.CONFIG['dbport']
-        elif 'port' in config.CONFIG:
-            dbconfig['port'] = config.CONFIG['port']
-
-        if 'dbhost' in config.CONFIG:
-            dbconfig['host'] = config.CONFIG['dbhost']
-
-        if 'dbuser' in config.CONFIG:
-            dbconfig['user'] = config.CONFIG['dbuser']
-
-        if 'dbpass' in config.CONFIG:
-            dbconfig['password'] = config.CONFIG['dbpass']
-
-        if 'dbname' in config.CONFIG:
-            dbconfig['database'] = config.CONFIG['dbname']
-
-        if 'sid' in config.CONFIG:
-            dbconfig['service_name'] = config.CONFIG['sid']
-        elif 'service_name' in config.CONFIG:
-            dbconfig['service_name'] = config.CONFIG['service_name']
-
-        if 'dbserver' in config.CONFIG:
-            dbconfig['server'] = config.CONFIG['dbserver']
-        elif 'server' in config.CONFIG:
-            dbconfig['server'] = config.CONFIG['server']
-
-        #check params and override any that are passed in
-        if 'dbconnect' in params:
-            dbconfig['connect'] = params['dbconnect']
-        elif 'connect' in params:
-            dbconfig['connect'] = params['connect']
-
-        if 'dbport' in params:
-            dbconfig['port'] = params['dbport']
-        elif 'port' in params:
-            dbconfig['port'] = params['port']
-
-        if 'dbhost' in params:
-            dbconfig['host'] = params['dbhost']
-
-        if 'dbuser' in params:
-            dbconfig['user'] = params['dbuser']
-
-        if 'dbpass' in params:
-            dbconfig['password'] = params['dbpass']
-
-        if 'dbname' in params:
-            dbconfig['database'] = params['dbname']
-
-        if 'sid' in params:
-            dbconfig['service_name'] = params['sid']
-        elif 'service_name' in params:
-            dbconfig['service_name'] = params['service_name']
-
-        if 'dbserver' in params:
-            dbconfig['server'] = params['dbserver']
-        elif 'server' in params:
-            dbconfig['server'] = params['server']
-
-        #create a dsn object
-        dsnconfig={}
-        if 'service_name' in dbconfig:
-            dsnconfig['service_name'] = dbconfig['service_name']
-
-        dsn = cx_Oracle.makedsn(dbconfig['host'],dbconfig['port'],**dsnconfig)
-        #setup connection config
-        cconfig = {}
-        if 'user' in dbconfig:
-            cconfig['user'] = dbconfig['user']
-        if 'password' in dbconfig:
-            cconfig['password'] = dbconfig['password']
-        cconfig['dsn'] = dsn
-        #setup the connection pool
-        if 'user' in dbconfig:
-            pconfig['user'] = dbconfig['user']
-        if 'password' in dbconfig:
-            pconfig['password'] = dbconfig['password']
-        pconfig['dsn'] = dsn
         pool_oracle = cx_Oracle.SessionPool(**pconfig)
+    except Exception as err:
+        pool_oracle=None 
 
-        # Get connection object from a pool if possible, otherwise just connect
-        conn_oracle = pool_oracle.acquire()
-        if conn_oracle:
-            cur_oracle = conn_oracle.cursor(buffered=True)
-        else:
+    if pool_oracle != None:
+        try:
+            conn_oracle = pool_oracle.acquire()
+        except Exception as err:
+            conn_oracle=None
+
+        if conn_oracle != None:
+            try:
+                cur_oracle = conn_oracle.cursor()
+            except Exception as err:
+                cur_oracle=None
+
+            if cur_oracle != None:
+                cur_oracle.rowfactory = dictFactory
+                return cur_oracle, conn_oracle
+    else:
+        try:
             conn_oracle = cx_Oracle.connect(**cconfig)
-            cur_oracle = conn_oracle.cursor(buffered=True)
-        cur_oracle.rowfactory = dictFactory
-        #need to return both cur and conn so conn stays around
-        return cur_oracle, conn_oracle
+        except Exception as err:
+            conn_oracle=None
+
+        if conn_oracle != None:
+            try:
+                cur_oracle = conn_oracle.cursor()
+            except Exception as err:
+                cur_oracle=None
+
+            if cur_oracle != None:
+                cur_oracle.rowfactory = dictFactory
+                return cur_oracle, conn_oracle
         
-    except cx_Oracle.Error as err:
-        print("oracledb.connect error: {}".format(err))
-        return False
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    sys.exit()
 ###########################################
 def dictFactory(cursor, row):
     d = {}
@@ -228,5 +251,5 @@ def queryResults(query,params):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_oracle.close()
         conn_oracle.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
 ###########################################

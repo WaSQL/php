@@ -1,4 +1,5 @@
 #! python
+# -*- coding: utf-8 -*-
 """
 Installation
     python3 -m pip install psycopg2-binary
@@ -18,14 +19,13 @@ try:
     import sys
     import os
     import psycopg2
-    from psycopg2 import pool
     import psycopg2.extras
     import config
     import common
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
     sys.exit()
 ###########################################
 def addIndex(params):
@@ -55,57 +55,59 @@ def addIndex(params):
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
+    dbconfig = {}
+    #check config.CONFIG
+    if 'dbhost' in config.CONFIG:
+        dbconfig['host'] = config.CONFIG['dbhost']
+
+    if 'dbuser' in config.CONFIG:
+        dbconfig['user'] = config.CONFIG['dbuser']
+
+    if 'dbpass' in config.CONFIG:
+        dbconfig['password'] = config.CONFIG['dbpass']
+
+    if 'dbname' in config.CONFIG:
+        dbconfig['database'] = config.CONFIG['dbname']
+    #check params and override any that are passed in
+    if 'dbhost' in params:
+        dbconfig['host'] = params['dbhost']
+
+    if 'dbuser' in params:
+        dbconfig['user'] = params['dbuser']
+
+    if 'dbpass' in params:
+        dbconfig['password'] = params['dbpass']
+
+    if 'dbname' in params:
+        dbconfig['database'] = params['dbname']
+
     try:
-        dbconfig = {}
-        #check config.CONFIG
-        if 'dbhost' in config.CONFIG:
-            dbconfig['host'] = config.CONFIG['dbhost']
-
-        if 'dbuser' in config.CONFIG:
-            dbconfig['user'] = config.CONFIG['dbuser']
-
-        if 'dbpass' in config.CONFIG:
-            dbconfig['password'] = config.CONFIG['dbpass']
-
-        if 'dbname' in config.CONFIG:
-            dbconfig['database'] = config.CONFIG['dbname']
-        #check params and override any that are passed in
-        if 'dbhost' in params:
-            dbconfig['host'] = params['dbhost']
-
-        if 'dbuser' in params:
-            dbconfig['user'] = params['dbuser']
-
-        if 'dbpass' in params:
-            dbconfig['password'] = params['dbpass']
-
-        if 'dbname' in params:
-            dbconfig['database'] = params['dbname']
-        #setup the connection pool
-        pool_postgres = psycopg2.pool.SimpleConnectionPool(1,20,**dbconfig)
-
-        # Get connection object from a pool if possible, otherwise just connect
-        conn_postgres = pool_postgres.getconn()
-        if conn_postgres:
-            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory)
-        else:
-            conn_postgres = psycopg2.connect(**dbconfig)
-            cur_postgres = conn_postgres.cursor(cursor_factory=dictFactory)
-        #need to return both cur and conn so conn stays around
-        return cur_postgres, conn_postgres
-        
+        conn_postgres = psycopg2.connect(**dbconfig)
     except Exception as err:
+        conn_postgres=None
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        cur_postgres.close()
-        conn_postgres.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
-###########################################
-def dictFactory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
+        print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+        sys.exit()
+
+    if conn_postgres != None:
+        try:
+            cur_postgres = conn_postgres.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        except Exception as err:
+            cur_postgres=None
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+            sys.exit()
+
+        if cur_postgres != None:
+            return cur_postgres, conn_postgres
+    
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    sys.exit()
+       
 ###########################################
 def executeSQL(query,params):
     try:
@@ -119,16 +121,19 @@ def executeSQL(query,params):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_postgres.close()
         conn_postgres.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
     return f"{o}"
+
 ###########################################
 def queryResults(query,params):
     try:
         #connect
         cur_postgres, conn_postgres =  connect(params)
+
         #now execute the query
         cur_postgres.execute(query)
         if 'filename' in params.keys():
@@ -137,7 +142,7 @@ def queryResults(query,params):
             fields = [field_md[0] for field_md in cur_postgres.description]
             #write file
             f = open(jsv_file, "w")
-            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
             f.write("\n")
             #write records
             for rec in cur_postgres.fetchall():
@@ -169,5 +174,5 @@ def queryResults(query,params):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_postgres.close()
         conn_postgres.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
 ###########################################

@@ -16,14 +16,13 @@ try:
     import sys
     import os
     import mysql.connector
-    from mysql.connector import Error
     from mysql.connector import pooling
     import config
     import common
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
     sys.exit()
 ###########################################
 def addIndex(params):
@@ -53,59 +52,79 @@ def addIndex(params):
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
+    dbconfig = {
+        'pool_name':'wasql_pool',
+        'pool_size':10,
+        'pool_reset_session':True,
+        'auth_plugin':'mysql_native_password'
+    }
+    #check config.CONFIG
+    if 'dbhost' in config.CONFIG:
+        dbconfig['host'] = config.CONFIG['dbhost']
+
+    if 'dbuser' in config.CONFIG:
+        dbconfig['user'] = config.CONFIG['dbuser']
+
+    if 'dbpass' in config.CONFIG:
+        dbconfig['password'] = config.CONFIG['dbpass']
+
+    if 'dbname' in config.CONFIG:
+        dbconfig['database'] = config.CONFIG['dbname']
+    #check params and override any that are passed in
+    if 'dbhost' in params:
+        dbconfig['host'] = params['dbhost']
+
+    if 'dbuser' in params:
+        dbconfig['user'] = params['dbuser']
+
+    if 'dbpass' in params:
+        dbconfig['password'] = params['dbpass']
+
+    if 'dbname' in params:
+        dbconfig['database'] = params['dbname']
+
+    #setup the connection pool
     try:
-        dbconfig = {
-            'pool_name':'wasql_pool',
-            'pool_size':10,
-            'pool_reset_session':True,
-            'auth_plugin':'mysql_native_password'
-        }
-        #check config.CONFIG
-        if 'dbhost' in config.CONFIG:
-            dbconfig['host'] = config.CONFIG['dbhost']
-
-        if 'dbuser' in config.CONFIG:
-            dbconfig['user'] = config.CONFIG['dbuser']
-
-        if 'dbpass' in config.CONFIG:
-            dbconfig['password'] = config.CONFIG['dbpass']
-
-        if 'dbname' in config.CONFIG:
-            dbconfig['database'] = config.CONFIG['dbname']
-        #check params and override any that are passed in
-        if 'dbhost' in params:
-            dbconfig['host'] = params['dbhost']
-
-        if 'dbuser' in params:
-            dbconfig['user'] = params['dbuser']
-
-        if 'dbpass' in params:
-            dbconfig['password'] = params['dbpass']
-
-        if 'dbname' in params:
-            dbconfig['database'] = params['dbname']
-        #setup the connection pool
         pool_mysql = mysql.connector.pooling.MySQLConnectionPool(**dbconfig)
+    except Exception as err:
+        pool_mysql=None
 
-        # Get connection object from a pool if possible, otherwise just connect
-        conn_mysql = pool_mysql.get_connection()
-        if conn_mysql.is_connected():
-            cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
-        else:
-            conn_mysql = mysql.connector.connect(**dbconfig)
-            cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
-        #need to return both cur and conn so conn stays around
+    if pool_mysql != None:
+        try:
+            conn_mysql = pool_mysql.get_connection()
+        except Exception as err:
+            conn_mysql = None
+
+    if conn_mysql != None:
+        try:
+            cur_mysql = conn_mysql.cursor(dictionary=True, buffered=True)
+        except Exception as err:
+            cur_mysql=None
+
+    #connection pool failed. try to normal connect
+    if cur_mysql != None:
         return cur_mysql, conn_mysql
-        
-    except mysql.connector.Error as err:
-        print("mysqldb.connect error: {}".format(err))
-        return false
-###########################################
-def dictFactory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
+    else:
+        try:
+            conn_mysql = mysql.connector.connect(**dbconfig)
+        except Exception as err:
+            conn_mysql=None
+
+        if conn_mysql != None:
+            try:
+                cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
+            except Exception as err:
+                cur_mysql=None 
+
+        if cur_mysql != None:
+            return cur_mysql, conn_mysql
+
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    sys.exit()
+
+
 ###########################################
 def executeSQL(query,params):
     try:
@@ -115,8 +134,13 @@ def executeSQL(query,params):
         cur_mysql.execute(query)
         return True
         
-    except mysql.connector.Error as err:
-        return ("mysqldb.executeSQL error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_mysql.close()
+        conn_mysql.close()
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
@@ -128,13 +152,14 @@ def queryResults(query,params):
         cur_mysql, conn_mysql =  connect(params)
         #now execute the query
         cur_mysql.execute(query)
+        
         if 'filename' in params.keys():
             jsv_file=params['filename']
             #get column names
             fields = [field_md[0] for field_md in cur_mysql.description]
             #write file
             f = open(jsv_file, "w")
-            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
             f.write("\n")
             #write records
             for rec in cur_mysql.fetchall():
@@ -166,6 +191,6 @@ def queryResults(query,params):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_mysql.close()
         conn_mysql.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
           
 ###########################################

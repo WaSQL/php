@@ -51,44 +51,55 @@ def addIndex(params):
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
+    dbconfig = {}
+    #check config.CONFIG
+    if 'dbhost' in config.CONFIG:
+        dbconfig['server'] = config.CONFIG['dbhost']
+
+    if 'dbuser' in config.CONFIG:
+        dbconfig['user'] = config.CONFIG['dbuser']
+
+    if 'dbpass' in config.CONFIG:
+        dbconfig['password'] = config.CONFIG['dbpass']
+
+    if 'dbname' in config.CONFIG:
+        dbconfig['database'] = config.CONFIG['dbname']
+
+    #check params and override any that are passed in
+    if 'dbhost' in params:
+        dbconfig['server'] = params['dbhost']
+
+    if 'dbuser' in params:
+        dbconfig['user'] = params['dbuser']
+
+    if 'dbpass' in params:
+        dbconfig['password'] = params['dbpass']
+
+    if 'dbname' in params:
+        dbconfig['database'] = params['dbname']
+
     try:
-        dbconfig = {}
-        #check config.CONFIG
-        if 'dbhost' in config.CONFIG:
-            dbconfig['server'] = config.CONFIG['dbhost']
-
-        if 'dbuser' in config.CONFIG:
-            dbconfig['user'] = config.CONFIG['dbuser']
-
-        if 'dbpass' in config.CONFIG:
-            dbconfig['password'] = config.CONFIG['dbpass']
-
-        if 'dbname' in config.CONFIG:
-            dbconfig['database'] = config.CONFIG['dbname']
-
-        #check params and override any that are passed in
-        if 'dbhost' in params:
-            dbconfig['server'] = params['dbhost']
-
-        if 'dbuser' in params:
-            dbconfig['user'] = params['dbuser']
-
-        if 'dbpass' in params:
-            dbconfig['password'] = params['dbpass']
-
-        if 'dbname' in params:
-            dbconfig['database'] = params['dbname']
-
-        # Connect
         conn_mssql = pymssql.connect(**dbconfig)
-        cur_mssql = conn_mssql.cursor(as_dict=True,buffered=True)
+    except Exception as err:
+        conn_mssql=None
+
+    if conn_mssql != None:
+        try:
+            cur_mssql = conn_mssql.cursor(as_dict=True)
+        except Exception as err:
+            cur_mssql=None
+
+        if cur_mssql != None:
+            return cur_mssql, conn_mssql
             
         #need to return both cur and conn so conn stays around
-        return cur_mssql, conn_mssql
         
-    except pymssql.Error as err:
-        print("mssqldb.connect error: {}".format(err))
-        return false
+        
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    sys.exit()
+
 ###########################################
 def dictFactory(cursor, row):
     d = {}
@@ -104,12 +115,16 @@ def executeSQL(query,params):
         cur_mssql.execute(query)
         return True
         
-    except pymssql.Error as err:
-        return ("mssqldb.executeSQL error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
     return f"{o}"
+    
 ###########################################
 def queryResults(query,params):
     try:
@@ -117,13 +132,14 @@ def queryResults(query,params):
         cur_mssql, conn_mssql =  connect(params)
         #now execute the query
         cur_mssql.execute(query)
+
         if 'filename' in params.keys():
             jsv_file=params['filename']
             #get column names
             fields = [field_md[0] for field_md in cur_mssql.description]
             #write file
             f = open(jsv_file, "w")
-            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
             f.write("\n")
             #write records
             for rec in cur_mssql.fetchall():
@@ -154,7 +170,5 @@ def queryResults(query,params):
     except Exception as err:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        cur_mssql.close()
-        conn_mssql.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
 ###########################################
