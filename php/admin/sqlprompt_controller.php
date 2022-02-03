@@ -6,6 +6,7 @@
 	global $recs;
 	global $sqlpromptCaptureFirstRows_count;
 	$sqlpromptCaptureFirstRows_count=0;
+	global $wasql_debugValueContent;
 	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
@@ -251,7 +252,17 @@
 				$recs_show=30;
 				$recs=array();
 				$begin=microtime(true);
+				$_SESSION['debugValue']=1;
+				$_SESSION['debugValue_lastm']='';
+				$wasql_debugValueContent='';
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
+				unset($_SESSION['debugValue']);
+				if(strlen($_SESSION['debugValue_lastm'])){
+					//show error
+					$error=$_SESSION['debugValue_lastm'];
+					setView(array('error'),1);
+					return;
+				}
 				if($recs_count==0){
 					$recs=array();
 					setView(array('no_results'),1);
