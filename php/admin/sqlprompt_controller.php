@@ -223,8 +223,9 @@
 				$begin=microtime(true);
 				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
 				if(!file_exists($afile)){
-					echo nl2br($afile);
-					exit;
+					$error=$afile;
+					setView(array('error'),1);
+					return;
 				}
 				$recs_count=1;
 				//echo $afile;exit;
@@ -254,12 +255,12 @@
 				$begin=microtime(true);
 				$_SESSION['debugValue']=1;
 				$_SESSION['debugValue_lastm']='';
-				$wasql_debugValueContent='';
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
 				unset($_SESSION['debugValue']);
 				if(strlen($_SESSION['debugValue_lastm'])){
 					//show error
 					$error=$_SESSION['debugValue_lastm'];
+					$_SESSION['debugValue_lastm']='';
 					setView(array('error'),1);
 					return;
 				}
