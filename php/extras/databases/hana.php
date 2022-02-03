@@ -49,6 +49,7 @@ function hanaAddDBRecords($table='',$params=array()){
 	}
 }
 function hanaAddDBRecordsProcess($recs,$params=array()){
+	global $dbh_hana;
 	if(!isset($params['-table'])){
 		return debugValue("hanaAddDBRecordsProcess Error: no table"); 
 	}
@@ -145,6 +146,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo $query;exit;
 	$ok=hanaExecuteSQL($query);
+	if(!$ok){
+		$errstr=odbc_errormsg($dbh_hana);
+		if(strlen($errstr)){
+			debugValue($errstr);
+		}
+		return 0;
+	}
 	if(isset($params['-debug'])){
 		return printValue($ok).$query;
 	}

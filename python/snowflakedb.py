@@ -53,12 +53,16 @@ def addIndex(params):
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
+
+
     dbconfig = {}
     #need account,user,password,database,schema,warehouse,role
 
     #check config.CONFIG
     if 'dbaccount' in config.CONFIG:
-        dbconfig['account'] = config.CONFIG['dbaccount']
+        dbconfig['account'] = config.CONFIG['dbaccount'].replace(".snowflakecomputing.com","",1)
+    elif 'dbhost' in config.CONFIG:
+        dbconfig['account'] = config.CONFIG['dbhost'].replace(".snowflakecomputing.com","",1)
 
     if 'dbuser' in config.CONFIG:
         dbconfig['user'] = config.CONFIG['dbuser']
@@ -80,7 +84,9 @@ def connect(params):
     
     #check params and override any that are passed in
     if 'dbaccount' in params:
-        dbconfig['account'] = params['dbaccount']
+        dbconfig['account'] = params['dbaccount'].replace(".snowflakecomputing.com","",1)
+    elif 'dbhost' in params:
+        dbconfig['account'] = params['dbhost'].replace(".snowflakecomputing.com","",1)
 
     if 'dbuser' in params:
         dbconfig['user'] = params['dbuser']
@@ -99,19 +105,9 @@ def connect(params):
 
     if 'dbrole' in params:
         dbconfig['role'] = params['dbrole']
-        #test
-    
-    conn_dict = {}
-    conn_dict.update({'account': dbconfig['account']})
-    conn_dict.update({'user': dbconfig['user']})
-    conn_dict.update({'password': dbconfig['password']})
-    conn_dict.update({'database': dbconfig['database']})
-    conn_dict.update({'schema': dbconfig['schema']})
-    conn_dict.update({'warehouse': dbconfig['warehouse']})
-    conn_dict.update({'role': dbconfig['role']})
 
     try:
-        conn_snowflake = sfc.connect(**conn_dict)
+        conn_snowflake = sfc.connect(**dbconfig)
     except Exception as err:
         conn_snowflake=None
 
@@ -128,13 +124,6 @@ def connect(params):
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
     sys.exit()
-
-###########################################
-def dictFactory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
 
 ###########################################
 def executeSQL(query,params):
@@ -161,10 +150,6 @@ def queryResults(query,params):
         #connect
         cur_snowflake, conn_snowflake =  connect(params)
 
-        if 'warehouse' in params.keys():
-            q = f"use warehouse {params['filename']}"
-            cur_snowflake.execute(q)
-
         #now execute the query
         cur_snowflake.execute(query)
         if 'filename' in params.keys():
@@ -177,8 +162,8 @@ def queryResults(query,params):
             f.write("\n")
             #write records
             for rec in cur_snowflake.fetchall():
-                print(rec)
-                sys.exit()
+                #convert to a dictionary manually since it is not built into the driver
+                rec=dict(zip(fields, rec))
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
                 f.write("\n")
             f.close()
@@ -205,7 +190,7 @@ def queryResults(query,params):
     except Exception as err:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        cur_mysql.close()
-        conn_mysql.close()
+        cur_snowflake.close()
+        conn_snowflake.close()
         return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
 ###########################################

@@ -12,7 +12,6 @@ try:
     import sys
     import os
     import sqlite3
-    from sqlite3 import Error
     import config
     import common
 except Exception as err:
@@ -20,6 +19,7 @@ except Exception as err:
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
     sys.exit()
+
 ###########################################
 def addIndex(params):
     #check required
@@ -45,37 +45,38 @@ def addIndex(params):
     query="CREATE {} INDEX IF NOT EXISTS {} on {} ({})".format(unique,params['-name'],params['-table'],fieldstr);
     #execute query
     return executeSQL(query) 
+
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
+    dbconfig = {}
+    #check config.CONFIG
+    if 'dbname' in config.CONFIG:
+        dbconfig['database'] = config.CONFIG['dbname']
+
+    #check params and override any that are passed in
+    if 'dbname' in params:
+        dbconfig['database'] = params['dbname']
+
     try:
-        dbconfig = {}
-        #check config.CONFIG
-        if 'dbname' in config.CONFIG:
-            dbconfig['database'] = config.CONFIG['dbname']
-
-        #check params and override any that are passed in
-        if 'dbname' in params:
-            dbconfig['database'] = params['dbname']
-
-        # Connect
         conn_sqlite = sqlite3.connect(dbconfig['database'])
-        conn_sqlite.row_factory = dictFactory
-        conn_sqlite.text_factory = sqlite3.OptimizedUnicode
-        cur_sqlite = conn_sqlite.cursor(buffered=True)
-            
-        #need to return both cur and conn so conn stays around
-        return cur_sqlite, conn_sqlite
-        
-    except sqlite3.Error as err:
-        print("sqlitedb.connect error: {}".format(err))
-        return false
-###########################################
-def dictFactory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
+    except Exception as err:
+        conn_sqlite=None
+
+    if conn_sqlite != None:
+        try:
+            cur_sqlite=conn_sqlite.cursor()
+        except Exception as err:
+            cur_sqlite=None
+
+        if cur_sqlite != None:
+            return cur_sqlite, conn_sqlite
+
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Error Connecting: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    sys.exit()
+
 ###########################################
 def executeSQL(query,params):
     try:
@@ -85,12 +86,18 @@ def executeSQL(query,params):
         cur_sqlite.execute(query)
         return True
         
-    except Error as err:
-        return ("sqlitedb.executeSQL error: {}".format(err))
+    except Exception as err:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        cur_sqlite.close()
+        conn_sqlite.close()
+        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
     return f"{o}"
+    
 ###########################################
 def queryResults(query,params):
     try:
@@ -104,10 +111,12 @@ def queryResults(query,params):
             fields = [field_md[0] for field_md in cur_sqlite.description]
             #write file
             f = open(jsv_file, "w")
-            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
+            f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
             f.write("\n")
             #write records
             for rec in cur_sqlite.fetchall():
+                #convert to a dictionary manually since it is not built into the driver
+                rec=dict(zip(fields, rec))
                 f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
                 f.write("\n")
             f.close()

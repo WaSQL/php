@@ -703,6 +703,8 @@ function dbQueryResults($db,$query,$params=array()){
 }
 //use python to query a database and return the results
 function pyQueryResults($db,$query,$params=array()){
+	global $CONFIG;
+	if(!isset($CONFIG['python'])){}
 	//echo "commonSnowflakeQueryResults";exit;
 	$sha=sha1($query);
 	$path=getWasqlPath();
@@ -712,7 +714,11 @@ function pyQueryResults($db,$query,$params=array()){
 	$ok=file_put_contents($afile, $query);
 	$args="\"{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
 	$out=cmdResults('python3',$args);
-	//echo printValue($out);exit;
+	if($out['rtncode'] != 0){
+		echo "Failed to process<br>";
+		echo printValue($out);
+		exit;
+	}
 	//return printValue($out);
 	unlink($afile);
 	$jsvfile=$out['stdout'];

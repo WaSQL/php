@@ -91,21 +91,12 @@ def connect(params):
 
         if cur_mssql != None:
             return cur_mssql, conn_mssql
-            
-        #need to return both cur and conn so conn stays around
-        
-        
+              
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
     sys.exit()
 
-###########################################
-def dictFactory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
 ###########################################
 def executeSQL(query,params):
     try:
