@@ -88,6 +88,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				$rec[$k]='NULL';
 			}
 			else{
+				$v=iconv("ISO-8859-1", "UTF-8//TRANSLIT", $v);
 				$v=hanaEscapeString($v);
 				$rec[$k]="'{$v}'";
 			}
