@@ -72,6 +72,14 @@ try:
         if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
             import postgresdb
             outfile=postgresdb.queryResults(query,params)
+        #MSACCESS
+        if config.DATABASE[dbname]['dbtype'].startswith('msaccess'):
+            import msaccessdb
+            outfile=msaccessdb.queryResults(query,params)
+        #MSCSV
+        if config.DATABASE[dbname]['dbtype'].startswith('mscsv'):
+            import mscsvdb
+            outfile=mscsvdb.queryResults(query,params)
         print(outfile)
     else:
         print(f"Error: invalid database: {dbname}")

@@ -719,8 +719,8 @@ function pyQueryResults($db,$query,$params=array()){
 		echo printValue($out);
 		exit;
 	}
-	//return printValue($out);
-	unlink($afile);
+	return printValue($out);
+	//unlink($afile);
 	$jsvfile=$out['stdout'];
 	//success with spit out the jsv file, otherwise err message
 	if(!file_exists($jsvfile)){
