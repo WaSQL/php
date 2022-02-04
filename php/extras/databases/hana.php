@@ -21,12 +21,18 @@
 * @return count int
 * @usage $ok=hanaAddDBRecords('comments',array('-csv'=>$afile);
 * @usage $ok=hanaAddDBRecords('comments',array('-recs'=>$recs);
+* 
+* $conn = odbc_connect("CData ODBC SAPHANA Source","user","password");
+* $query = odbc_prepare($conn, "SELECT * FROM Buckets WHERE Name = ?");
+* $success = odbc_execute($query, array('TestBucket'));
+*
 */
 function hanaAddDBRecords($table='',$params=array()){
 	if(!strlen($table)){
 		return debugValue("hanaAddDBRecords Error: No Table");
 	}
-	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	if(!isset($params['-chunk']) || (integer)$params['-chunk'] > 1000){$params['-chunk']=1000;}
+	$params['-chunk']=(integer)$params['-chunk'];
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
@@ -76,7 +82,8 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	//values
+	//values and pvalues
+	$pvalues=array();
 	$values=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -86,11 +93,12 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			}
 			if(!strlen($v)){
 				$rec[$k]='NULL';
+				$pvalues[]=NULL;
 			}
 			else{
 				$v=iconv("ISO-8859-1", "UTF-8//TRANSLIT", $v);
-				$v=hanaEscapeString($v);
-				$rec[$k]="'{$v}'";
+				$rec[$k]="?";
+				$pvalues[]=$v;
 			}
 		}
 		$recstr=implode(',',array_values($rec));
@@ -145,8 +153,18 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
 		$query.=')';
 	}
+	if(!is_resource($dbh_hana)){
+		$dbh_hana=hanaDBConnect($params);
+	}
+	if(!$dbh_hana){
+    	$e=odbc_errormsg();
+    	debugValue(array("hanaExecuteSQL Connect Error",$e));
+    	return false;
+	}
+	$prepared_query = odbc_prepare($dbh_hana, $q);
+	$ok = odbc_execute($prepared_query, $pvalues);
 	//echo $query;exit;
-	$ok=hanaExecuteSQL($query);
+	//$ok=hanaExecuteSQL($query);
 	if(!$ok){
 		$errstr=odbc_errormsg($dbh_hana);
 		if(strlen($errstr)){
