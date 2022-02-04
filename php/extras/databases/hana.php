@@ -23,7 +23,7 @@
 * @usage $ok=hanaAddDBRecords('comments',array('-recs'=>$recs);
 * 
 * $conn = odbc_connect("CData ODBC SAPHANA Source","user","password");
-* $query = odbc_prepare($conn, "SELECT * FROM Buckets WHERE Name = ?");
+* $query = odbc_prepare($conn, "SELECT * FROM Buckets WHERE Name = ?,?,?");
 * $success = odbc_execute($query, array('TestBucket'));
 *
 */
@@ -86,22 +86,23 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	$pvalues=array();
 	$values=array();
 	foreach($recs as $i=>$rec){
+		$pvals=array();
 		foreach($rec as $k=>$v){
 			if(!in_array($k,$fields)){
 				unset($rec[$k]);
 				continue;
 			}
 			if(!strlen($v)){
-				$rec[$k]='NULL';
+				$pvals[]='?';
 				$pvalues[]=NULL;
 			}
 			else{
 				$v=iconv("ISO-8859-1", "UTF-8//TRANSLIT", $v);
-				$rec[$k]="?";
+				$pvals[]='?';
 				$pvalues[]=$v;
 			}
 		}
-		$recstr=implode(',',array_values($rec));
+		$recstr=implode(',',$pvals);
 		$values[]="select {$recstr} from dummy";
 	}
 	if(isset($params['-upsert']) && isset($params['-upserton'])){
@@ -161,7 +162,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
     	debugValue(array("hanaExecuteSQL Connect Error",$e));
     	return false;
 	}
-	$prepared_query = odbc_prepare($dbh_hana, $q);
+	$prepared_query = odbc_prepare($dbh_hana, $query);
 	$ok = odbc_execute($prepared_query, $pvalues);
 	//echo $query;exit;
 	//$ok=hanaExecuteSQL($query);
