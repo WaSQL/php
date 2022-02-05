@@ -11,6 +11,7 @@ function formJsonPretty(id){
 function formChanged(frm,debug){
 	if(undefined == debug){debug=0;}
 	if(debug==1){console.log('formChanged');}
+	//displayif
 	let els=frm.querySelectorAll('[data-displayif]');
 	if(debug==1){console.log(' - displayif el count:'+els.length);}
 	let display_count=0;
@@ -23,11 +24,15 @@ function formChanged(frm,debug){
 		}
 		let parts=els[i].dataset.displayif.split(':');
 		let name=els[i].dataset.displayif;
-		let vals=new Array(1,'y','yes');
+		let vals=new Array('1','y','yes','notblank');
 		if(parts.length==2){
 			name=parts[0];
 			vals=parts[1].split(',');
 		}
+		//convert any integers to string
+		for(let v=0;v<vals.length;v++){
+           if(Number.isInteger(vals[v])){vals[v]=vals[v].toString();}
+       }
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
 		if(debug==1 || edebug==1){console.log(' - i:'+i+', name:'+name+', form el count:'+ifel.length);}
 		if(undefined == ifel){continue;}
@@ -40,6 +45,7 @@ function formChanged(frm,debug){
             			cval=ifel[f].options[ifel[f].selectedIndex].value;
             			for(let v=0;v<vals.length;v++){
             				if(vals[v].toLowerCase()=='null' && cval.length==0){display=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){display=1;}
             				else if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
             			}
 					break;
@@ -48,6 +54,7 @@ function formChanged(frm,debug){
 						if(ifel[f].checked){cval=ifel[f].value||1;}
 						for(let v=0;v<vals.length;v++){
             				if(vals[v].toLowerCase()=='null' && cval.length==0){display=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){display=1;}
             				else if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
             			}
 					break;
@@ -58,6 +65,7 @@ function formChanged(frm,debug){
 						cval=ifel[f].value;
 						for(let v=0;v<vals.length;v++){
             				if(vals[v].toLowerCase()=='null' && cval.length==0){display=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){display=1;}
             				else if(cval.toLowerCase() == vals[v].toLowerCase()){display=1;}
             			}
 					break;
@@ -101,11 +109,15 @@ function formChanged(frm,debug){
 	for(let i=0;i<els.length;i++){
 		let parts=els[i].dataset.hideif.split(':');
 		let name=els[i].dataset.hideif;
-		let vals=new Array(1,'y','yes');
+		let vals=new Array('1','y','yes','notblank');
 		if(parts.length==2){
 			name=parts[0];
 			vals=parts[1].split(',');
 		}
+		//convert any integers to string
+		for(let v=0;v<vals.length;v++){
+           if(Number.isInteger(vals[v])){vals[v]=vals[v].toString();}
+       	}
 		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
 		if(undefined == ifel){continue;}
 		if(ifel.length > 0){
@@ -117,6 +129,7 @@ function formChanged(frm,debug){
             			cval=ifel[f].options[ifel[f].selectedIndex].value;
             			for(let v=0;v<vals.length;v++){
             				if(vals[v].toLowerCase()=='null' && cval.length==0){hide=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){hide=1;}
             				else if(cval.toLowerCase() == vals[v].toLowerCase()){hide=1;}
             			}
 					break;
@@ -125,6 +138,7 @@ function formChanged(frm,debug){
 						if(ifel[f].checked){cval=ifel[f].value||1;}
 						for(let v=0;v<vals.length;v++){
             				if(vals[v].toLowerCase()=='null' && cval.length==0){hide=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){hide=1;}
             				else if(cval.toLowerCase() == vals[v].toLowerCase()){hide=1;}
             			}
 					break;
@@ -135,6 +149,7 @@ function formChanged(frm,debug){
 						cval=ifel[f].value;
 						for(let v=0;v<vals.length;v++){
             				if(vals[v].toLowerCase()=='null' && cval.length==0){hide=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){hide=1;}
             				else if(cval.toLowerCase() == vals[v].toLowerCase()){hide=1;}
             			}
 					break;
