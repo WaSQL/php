@@ -1,0 +1,8 @@
+reference,mysql,postgresql,mssql,oracle,snowflake,hana,sqlite,ctree,msaccess
+case sensitive search,0,1,1,1,1,1,1,fld contains 'val' ctoption(icontains),1
+LIMIT 100 OFFSET 10,1,1,0,0,1,1,1,0,0
+OFFSET 10 ROWS FETCH NEXT 100 ROWS ONLY,0,1,1,1,1,1,0,0,1
+SELECT SKIP 10 TOP 100,0,0,0,0,0,0,0,1,0
+SELECT TOP 100,0,0,1,0,1,1,0,1,0
+IFNULL(),1,COALESCE(),ISNULL(),NVL(),1,1,1,1,ISNULL()
+COALESCE(),1,1,,,,,,,

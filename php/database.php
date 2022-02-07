@@ -2183,7 +2183,10 @@ function databaseListRecords($params=array()){
                 unset($hvalue);
 			}
 			elseif(isset($params[$fld."_checkmark"]) && $params[$fld."_checkmark"]==1){
-				if($value==0){
+				//
+				if(!in_array($rec[$fld],array('','1','0'))){
+				}
+				elseif($value==0){
 					$mark='';
 					if(isset($params[$fld."_checkmark_icon_0"])){
 						$mark=$params[$fld."_checkmark_icon_0"];

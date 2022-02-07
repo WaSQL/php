@@ -31,7 +31,7 @@ function hanaAddDBRecords($table='',$params=array()){
 	if(!strlen($table)){
 		return debugValue("hanaAddDBRecords Error: No Table");
 	}
-	if(!isset($params['-chunk']) || (integer)$params['-chunk'] > 1000){$params['-chunk']=1000;}
+	if(!isset($params['-chunk']) || (integer)$params['-chunk'] > 500){$params['-chunk']=500;}
 	$params['-chunk']=(integer)$params['-chunk'];
 	$params['-table']=$table;
 	//require either -recs or -csv
@@ -162,6 +162,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
     	debugValue(array("hanaExecuteSQL Connect Error",$e));
     	return false;
 	}
+	//echo $query;exit;
 	$prepared_query = odbc_prepare($dbh_hana, $query);
 	$ok = odbc_execute($prepared_query, $pvalues);
 	//echo $query;exit;
