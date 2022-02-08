@@ -12227,8 +12227,8 @@ function commonIncludeFunctionCode($content,$name=''){
 			$evalstring .= 'try{'.PHP_EOL;
 			$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
 			$evalstring .= '	}'.PHP_EOL;
-			$evalstring .= 'catch(Exception $e){'.PHP_EOL;
-			$evalstring .= '	debugValue($e);'.PHP_EOL;
+			$evalstring .= 'catch(Exception \$e){'.PHP_EOL;
+			$evalstring .= '	debugValue(\$e);'.PHP_EOL;
 			$evalstring .= '	}'.PHP_EOL;
 			@eval($evalstring);
 			$e=error_get_last();
@@ -12298,8 +12298,8 @@ function commonIncludeFunctionCode($content,$name=''){
 				$evalstring .= 'try{'.PHP_EOL;
 				$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
 				$evalstring .= '	}'.PHP_EOL;
-				$evalstring .= 'catch(Exception $e){'.PHP_EOL;
-				$evalstring .= '	debugValue($e);'.PHP_EOL;
+				$evalstring .= 'catch(Exception \$e){'.PHP_EOL;
+				$evalstring .= '	debugValue(\$e);'.PHP_EOL;
 				$evalstring .= '	}'.PHP_EOL;
 				//echo $evalstring;exit;
 				@eval($evalstring);
@@ -13326,8 +13326,8 @@ function loadExtras($extras){
 		$evalstring .= 'try{'.PHP_EOL;
 		$evalstring .= '	include_once(\''.$phpfile.'\');'.PHP_EOL;
 		$evalstring .= '	}'.PHP_EOL;
-		$evalstring .= 'catch(Exception $e){'.PHP_EOL;
-		$evalstring .= '	debugValue($e);'.PHP_EOL;
+		$evalstring .= 'catch(Exception \$e){'.PHP_EOL;
+		$evalstring .= '	debugValue(\$e);'.PHP_EOL;
 		$evalstring .= '	}'.PHP_EOL;
 		@eval($evalstring);
 		$e=error_get_last();
