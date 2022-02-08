@@ -84,29 +84,14 @@ def connect(params):
     try:
         conn_postgres = psycopg2.connect(**dbconfig)
     except Exception as err:
-        conn_postgres=None
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-        sys.exit()
+        common.abort(sys.exc_info(),err)
 
-    if conn_postgres != None:
-        try:
-            cur_postgres = conn_postgres.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        except Exception as err:
-            cur_postgres=None
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-            sys.exit()
+    try:
+        cur_postgres = conn_postgres.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if cur_postgres != None:
-            return cur_postgres, conn_postgres
-    
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    return cur_postgres, conn_postgres
        
 ###########################################
 def executeSQL(query,params):
@@ -118,10 +103,9 @@ def executeSQL(query,params):
         return True
     except Exception as err:
         exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_postgres.close()
         conn_postgres.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -170,9 +154,7 @@ def queryResults(query,params):
                 return []
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_postgres.close()
         conn_postgres.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 ###########################################

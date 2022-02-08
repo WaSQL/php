@@ -16,7 +16,6 @@ try:
     import sys
     import os
     import mysql.connector
-    from mysql.connector import pooling
     import config
     import common
 except Exception as err:
@@ -53,9 +52,6 @@ def addIndex(params):
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.
 def connect(params):
     dbconfig = {
-        'pool_name':'wasql_pool',
-        'pool_size':10,
-        'pool_reset_session':True,
         'auth_plugin':'mysql_native_password'
     }
     #check config.CONFIG
@@ -83,47 +79,17 @@ def connect(params):
     if 'dbname' in params:
         dbconfig['database'] = params['dbname']
 
-    #setup the connection pool
     try:
-        pool_mysql = mysql.connector.pooling.MySQLConnectionPool(**dbconfig)
+        conn_mysql = mysql.connector.connect(**dbconfig)
     except Exception as err:
-        pool_mysql=None
+        common.abort(sys.exc_info(),err)
 
-    if pool_mysql != None:
-        try:
-            conn_mysql = pool_mysql.get_connection()
-        except Exception as err:
-            conn_mysql = None
+    try:
+        cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
+    except Exception as err:
+        common.abort(sys.exc_info(),err) 
 
-    if conn_mysql != None:
-        try:
-            cur_mysql = conn_mysql.cursor(dictionary=True, buffered=True)
-        except Exception as err:
-            cur_mysql=None
-
-    #connection pool failed. try to normal connect
-    if cur_mysql != None:
-        return cur_mysql, conn_mysql
-    else:
-        try:
-            conn_mysql = mysql.connector.connect(**dbconfig)
-        except Exception as err:
-            conn_mysql=None
-
-        if conn_mysql != None:
-            try:
-                cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
-            except Exception as err:
-                cur_mysql=None 
-
-        if cur_mysql != None:
-            return cur_mysql, conn_mysql
-
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
-
+    return cur_mysql, conn_mysql
 
 ###########################################
 def executeSQL(query,params):
@@ -135,11 +101,9 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_mysql.close()
         conn_mysql.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -187,10 +151,8 @@ def queryResults(query,params):
                 return []
 
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_mysql.close()
         conn_mysql.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
           
 ###########################################

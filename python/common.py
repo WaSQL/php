@@ -25,6 +25,25 @@ VIEW = {}
 DEBUG = []
 #import dateparser
 
+#---------- begin function abort ----------
+# @describe recursive folder creator
+# @param sys.exc_info() -- exc_type, exc_obj, exc_tb
+# @param err
+# @usage common.abort(sys.exc_info(),err)
+def abort(exc_tuple,err):
+    fname = os.path.split(exc_tuple[2].tb_frame.f_code.co_filename)[1]
+    print(f"Error: {err}. ExeptionType: {exc_tuple[0]}, Filename: {fname}, Linenumber: {exc_tuple[2].tb_lineno}")
+    sys.exit(123)
+
+#---------- begin function debug ----------
+# @describe recursive folder creator
+# @param sys.exc_info() -- exc_type, exc_obj, exc_tb
+# @param err
+# @usage common.debug(sys.exc_info(),err)
+def debug(exc_tuple,err):
+    fname = os.path.split(exc_tuple[2].tb_frame.f_code.co_filename)[1]
+    return f"Error: {err}. ExeptionType: {exc_tuple[0]}, Filename: {fname}, Linenumber: {exc_tuple[2].tb_lineno}"
+
 #---------- begin function buildDir ----------
 # @describe recursive folder creator
 # @param path string - path to create

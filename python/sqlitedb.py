@@ -61,21 +61,14 @@ def connect(params):
     try:
         conn_sqlite = sqlite3.connect(dbconfig['database'])
     except Exception as err:
-        conn_sqlite=None
+        common.abort(sys.exc_info(),err)
 
-    if conn_sqlite != None:
-        try:
-            cur_sqlite=conn_sqlite.cursor()
-        except Exception as err:
-            cur_sqlite=None
+    try:
+        cur_sqlite=conn_sqlite.cursor()
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if cur_sqlite != None:
-            return cur_sqlite, conn_sqlite
-
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error Connecting: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    return cur_sqlite, conn_sqlite
 
 ###########################################
 def executeSQL(query,params):
@@ -87,11 +80,9 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_sqlite.close()
         conn_sqlite.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -141,9 +132,7 @@ def queryResults(query,params):
                 return []
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_sqlite.close()
         conn_sqlite.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return common.debug(sys.exc_info(),err)
 ###########################################

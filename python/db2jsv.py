@@ -16,7 +16,7 @@ except Exception as err:
 #get query_file from command line arg
 if(len(sys.argv) < 3):
     print("db2jsv usage: python db2jsv dbname sqlfile")
-    exit()
+    exit(2)
 
 sys.stdout.flush()
 sys.stderr.flush()
@@ -84,9 +84,6 @@ try:
     else:
         print(f"Error: invalid database: {dbname}")
 except Exception as err:
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}, Params: {params}")
     sys.stdout.flush()
     sys.stderr.flush()
-    exit()
+    common.abort(sys.exc_info(),err)

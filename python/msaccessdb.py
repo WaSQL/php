@@ -47,21 +47,14 @@ def connect(params):
     try:
         conn_msaccess = pyodbc.connect(conn_str)
     except Exception as err:
-        conn_msaccess=None
+        common.abort(sys.exc_info(),err)
 
-    if conn_msaccess != None:
-        try:
-            cur_msaccess = conn_msaccess.cursor()
-        except Exception as err:
-            cur_msaccess=None
+    try:
+        cur_msaccess = conn_msaccess.cursor()
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if cur_msaccess != None:
-            return cur_msaccess, conn_msaccess
-        
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    return cur_msaccess, conn_msaccess
 
 ###########################################
 def executeSQL(query,params):
@@ -73,11 +66,9 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_msaccess.close()
         conn_msaccess.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -128,9 +119,7 @@ def queryResults(query,params):
                 return []
 
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_msaccess.close()
         conn_msaccess.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return common.debug(sys.exc_info(),err)
 ###########################################

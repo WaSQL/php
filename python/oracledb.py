@@ -144,46 +144,20 @@ def connect(params):
     if 'password' in dbconfig:
         pconfig['password'] = dbconfig['password']
     pconfig['dsn'] = dsn
+
     try:
-        pool_oracle = cx_Oracle.SessionPool(**pconfig)
+        conn_oracle = cx_Oracle.connect(**cconfig)
     except Exception as err:
-        pool_oracle=None 
+        common.abort(sys.exc_info(),err)
 
-    if pool_oracle != None:
-        try:
-            conn_oracle = pool_oracle.acquire()
-        except Exception as err:
-            conn_oracle=None
+    try:
+        cur_oracle = conn_oracle.cursor()
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if conn_oracle != None:
-            try:
-                cur_oracle = conn_oracle.cursor()
-            except Exception as err:
-                cur_oracle=None
-
-            if cur_oracle != None:
-                cur_oracle.rowfactory = dictFactory
-                return cur_oracle, conn_oracle
-    else:
-        try:
-            conn_oracle = cx_Oracle.connect(**cconfig)
-        except Exception as err:
-            conn_oracle=None
-
-        if conn_oracle != None:
-            try:
-                cur_oracle = conn_oracle.cursor()
-            except Exception as err:
-                cur_oracle=None
-
-            if cur_oracle != None:
-                cur_oracle.rowfactory = dictFactory
-                return cur_oracle, conn_oracle
+    cur_oracle.rowfactory = dictFactory
+    return cur_oracle, conn_oracle
         
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
 ###########################################
 def dictFactory(cursor, row):
     d = {}
@@ -199,8 +173,8 @@ def executeSQL(query,params):
         cur_oracle.execute(query)
         return True
         
-    except cx_Oracle.Error as err:
-        return ("oracledb.executeSQL error: {}".format(err))
+    except Exception as err:
+        return common.debug(sys.exc_info(),err)
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
@@ -247,9 +221,7 @@ def queryResults(query,params):
 
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_oracle.close()
         conn_oracle.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 ###########################################

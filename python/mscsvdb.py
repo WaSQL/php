@@ -59,25 +59,14 @@ def connect(params):
     try:
         conn_mscsv = pyodbc.connect(conn_str)
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-        sys.exit()
+        common.abort(sys.exc_info(),err)
 
+    try:
+        cur_mscsv = conn_mscsv.cursor()
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-    if conn_mscsv != None:
-        try:
-            cur_mscsv = conn_mscsv.cursor()
-        except Exception as err:
-            cur_mscsv=None
-
-        if cur_mscsv != None:
-            return cur_mscsv, conn_mscsv
-        
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    return cur_mscsv, conn_mscsv
 
 ###########################################
 def executeSQL(query,params):
@@ -89,11 +78,9 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_mscsv.close()
         conn_mscsv.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -144,9 +131,7 @@ def queryResults(query,params):
                 return []
 
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_mscsv.close()
         conn_mscsv.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return common.debug(sys.exc_info(),err)
 ###########################################

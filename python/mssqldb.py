@@ -81,21 +81,14 @@ def connect(params):
     try:
         conn_mssql = pymssql.connect(**dbconfig)
     except Exception as err:
-        conn_mssql=None
+        common.abort(sys.exc_info(),err)
 
-    if conn_mssql != None:
-        try:
-            cur_mssql = conn_mssql.cursor(as_dict=True)
-        except Exception as err:
-            cur_mssql=None
+    try:
+        cur_mssql = conn_mssql.cursor(as_dict=True)
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if cur_mssql != None:
-            return cur_mssql, conn_mssql
-              
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    return cur_mssql, conn_mssql
 
 ###########################################
 def executeSQL(query,params):
@@ -107,9 +100,7 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -159,7 +150,7 @@ def queryResults(query,params):
 
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        cur_mssql.close()
+        conn_mssql.close()
+        return common.debug(sys.exc_info(),err)
 ###########################################

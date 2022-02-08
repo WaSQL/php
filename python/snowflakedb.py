@@ -109,21 +109,14 @@ def connect(params):
     try:
         conn_snowflake = sfc.connect(**dbconfig)
     except Exception as err:
-        conn_snowflake=None
+        common.abort(sys.exc_info(),err)
 
-    if conn_snowflake != None:
-        try:
-            cur_snowflake = conn_snowflake.cursor()
-        except Exception as err:
-            cur_snowflake=None
+    try:
+        cur_snowflake = conn_snowflake.cursor()
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if cur_snowflake != None:
-            return cur_snowflake, conn_snowflake
-        
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    return cur_snowflake, conn_snowflake
 
 ###########################################
 def executeSQL(query,params):
@@ -135,9 +128,9 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        cur_snowflake.close()
+        conn_snowflake.close()
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -188,9 +181,7 @@ def queryResults(query,params):
                 return []
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_snowflake.close()
         conn_snowflake.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return common.debug(sys.exc_info(),err)
 ###########################################

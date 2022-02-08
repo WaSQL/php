@@ -82,22 +82,15 @@ def connect(params):
     try:
         conn_hana = dbapi.connect(**dbconfig)
     except Exception as err:
-        conn_hana=None
+        common.abort(sys.exc_info(),err)
 
-    if conn_hana != None:
-        try:
-            cur_hana = conn_hana.cursor()
-        except Exception as err:
-            cur_hana=None
+    try:
+        cur_hana = conn_hana.cursor()
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
 
-        if cur_hana != None:
-            return cur_hana, conn_hana
+    return cur_hana, conn_hana
         
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
-
 ###########################################
 def executeSQL(query,params):
     try:
@@ -108,11 +101,9 @@ def executeSQL(query,params):
         return True
         
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_hana.close()
         conn_hana.close()
-        return f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}"
+        return common.debug(sys.exc_info(),err)
 
 ###########################################
 #conversion function to convert objects in recordsets
@@ -163,9 +154,7 @@ def queryResults(query,params):
                 return []
 
     except Exception as err:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         cur_hana.close()
         conn_hana.close()
-        return (f"Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+        return common.debug(sys.exc_info(),err)
 ###########################################
