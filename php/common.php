@@ -9594,7 +9594,7 @@ function getAllVersions(){
 			$name=ucwords($name);
 			$evalstr=<<<ENDOFEVALSTR
 			try{return {$fname}();} 
-			catch(Exception \$e){return '';}
+			catch(Exception $e){return '';}
 ENDOFEVALSTR;
 			try{
 				$ver=@eval($evalstr);
