@@ -2564,7 +2564,7 @@ function initFlatpickr(){
 				case 'clickopens':k='clickOpens';break;
 				case 'dateformat':k='dateFormat';break;
 				case 'defaultdate':
-					if(el.value.length){k='';}
+					if(undefined != els[i].value && els[i].value.length){k='';}
 					else{k='defaultDate';}
 				break;
 				case 'defaulthour':k='defaultHour';break;
