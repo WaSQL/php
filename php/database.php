@@ -9534,6 +9534,7 @@ function editDBRecordById($table='',$id=0,$params=array(),$debug=0){
 	$idstr=implode(',',$ids);
 	$params['-table']=$table;
 	$params['-where']="_id in ({$idstr})";
+	$params['-nocache']=1;
 	if($debug==1){return "Debug editDBRecordById: ".printValue($params);}
 	return editDBRecord($params);
 }
