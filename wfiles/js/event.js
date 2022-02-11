@@ -1947,7 +1947,7 @@ function initBehaviors(ajaxdiv){
 			/* Signature */
 			let pencolor=navEls[n].getAttribute('data-color') || '#000';
 			signaturePad = new SignaturePad(navEls[n],{penColor:pencolor});
-			//console.log(navEls[n]);
+			signaturePad.saveSignature();
 		}
 		if(in_array("tab_enable",behaviors)){
 			/* Enable tabs - */
