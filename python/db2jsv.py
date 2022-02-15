@@ -1,5 +1,13 @@
 #! python
+"""
+Converts a database results to jsv (json separated value)
+    ["_id", "_cdate", "_cuser", "_edate", "_euser", "code", "name", "country", "longitude", "latitude"]
+    {"_id": 4892, "_cdate": null, "_cuser": 0, "_edate": null, "_euser": null, "code": "MI", "name": "Midlands Province", "country": "ZW", "longitude": "29.60354950", "latitude": "-19.05520090"}
 
+Usage:
+    python3 db2jsv.py dbname sqlfile
+
+"""
 #imports
 import os
 import sys
