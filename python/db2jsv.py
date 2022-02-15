@@ -1,6 +1,8 @@
 #! python
 
 #imports
+import os
+import sys
 try:
     import json
     import sys
@@ -11,7 +13,7 @@ except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    sys.exit(3)
 
 #get query_file from command line arg
 if(len(sys.argv) < 3):

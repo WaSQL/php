@@ -7,23 +7,20 @@ References
 """
 
 #imports
+import os
+import sys
 try:
     import json
-    import sys
-    import os
     sys.path.append('c:/users/slloy/appdata/roaming/python/python38/site-packages')
     import pyodbc
     import config
     import common
 
-    #print(pyodbc.drivers())
-    #sys.exit()
-
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    sys.exit(3)
 
 ###########################################
 #Python’s default arguments are evaluated once when the function is defined, not each time the function is called.

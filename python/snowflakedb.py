@@ -9,11 +9,12 @@ Installation
     python -m pip install snowflake-sqlalchemy
 
 """
+
 #imports
+import os
+import sys
 try:
     import json
-    import sys
-    import os
     import snowflake.connector as sfc
     from sqlalchemy import create_engine
     import config
@@ -22,7 +23,7 @@ except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    sys.exit(3)
 
 ###########################################
 def addIndex(params):

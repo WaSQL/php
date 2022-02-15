@@ -3,9 +3,9 @@
     modules list
         https://docs.python.org/3/py-modindex.html
 '''
+import os
+import sys
 try:
-    import os
-    import sys
     import pprint
     import re
     import io
@@ -17,8 +17,11 @@ try:
     import base64
     import urllib.parse
     import json
-except ImportError as err:
-    sys.exit(err)
+except Exception as err:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    sys.exit(3)
 
 VIEWS = {}
 VIEW = {}

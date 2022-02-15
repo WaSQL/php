@@ -16,9 +16,12 @@ try:
     import re
     from importlib import import_module
     #common.echo("common imported")
-except ImportError as err:
+except Exception as err:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print("Content-type: text/plain; charset=UTF-8;\n\n")
-    sys.exit(err)
+    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    sys.exit(3)
 
 #header
 if not common.isCLI():

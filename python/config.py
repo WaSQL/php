@@ -5,13 +5,19 @@
         https://www.guru99.com/manipulating-xml-with-python.html
     Installs needed
         pip install xmltodict
-        php install pprint
 '''
-
+#imports
 import os
-import common
 import sys
-import xmltodict
+try:
+    import common
+    import xmltodict
+except Exception as err:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    sys.exit(3)
+
 
 mypath = os.path.dirname(os.path.realpath(__file__))
 parpath = common.getParentPath(mypath)

@@ -7,10 +7,10 @@ References
 """
 
 #imports
+import os
+import sys
 try:
     import json
-    import sys
-    import os
     import sqlite3
     import config
     import common
@@ -18,7 +18,7 @@ except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
-    sys.exit()
+    sys.exit(3)
 
 ###########################################
 def addIndex(params):
