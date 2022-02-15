@@ -8,10 +8,10 @@ References
 """
 
 #imports
+import os
+import sys
 try:
     import json
-    import sys
-    import os
     import hdbcli
     from hdbcli import dbapi
     import config

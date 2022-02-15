@@ -13,8 +13,6 @@ import os
 import sys
 try:
     import json
-    import sys
-    import os
     import config
     import common
 except Exception as err:
@@ -56,39 +54,74 @@ try:
             params[k] = config.DATABASE[dbname][k]
         #HANA
         if config.DATABASE[dbname]['dbtype'].startswith('hana'):
-            import hanadb
+            try:
+                import hanadb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=hanadb.queryResults(query,params)
         #MSSQL
         if config.DATABASE[dbname]['dbtype'].startswith('mssql'):
-            import mssqldb
+            try:
+                import mssqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=mssqldb.queryResults(query,params)
         #Mysql
         if config.DATABASE[dbname]['dbtype'].startswith('mysql'):
-            import mysqldb
+            try:
+                import mysqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=mysqldb.queryResults(query,params)
         #ORACLE
         if config.DATABASE[dbname]['dbtype'].startswith('oracle'):
-            import oracledb
+            try:
+                import oracledb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=oracledb.queryResults(query,params)
         #SNOWFLAKE
         if config.DATABASE[dbname]['dbtype'].startswith('snowflake'):
-            import snowflakedb
+            try:
+                import snowflakedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=snowflakedb.queryResults(query,params)
         #SQLITE
         if config.DATABASE[dbname]['dbtype'].startswith('sqlite'):
-            import sqlitedb
+            try:
+                import sqlitedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=sqlitedb.queryResults(query,params)
         #POSTGRES
         if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
-            import postgresdb
+            try:
+                import postgresdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=postgresdb.queryResults(query,params)
         #MSACCESS
         if config.DATABASE[dbname]['dbtype'].startswith('msaccess'):
-            import msaccessdb
+            try:
+                import msaccessdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
             outfile=msaccessdb.queryResults(query,params)
         #MSCSV
         if config.DATABASE[dbname]['dbtype'].startswith('mscsv'):
-            import mscsvdb
+            try:
+                import mscsvdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
             outfile=mscsvdb.queryResults(query,params)
         print(outfile)
     else:
