@@ -3120,8 +3120,261 @@ function buildFormRadio($name, $opts=array(), $params=array()){
 //---------- begin function buildFormRadioCheckbox
 /**
 * @exclude  - this function in only used internally
+* $opts options are as follows:
+* 	tval=>dval
+* 	Optional way to customize - only display is not optional
+* 	tval=>array(
+* 		'display'=>'...',
+* 		'format'=>'...', 
+*		'color'=>'#...',
+*		'bgcolor'=>'#...',
+*		'checked_color'=>'#...',
+*		'checked_bgcolor'=>'#...',
+*		'image'=>'/...'
+* 	)
+* @params options are as follows:
+* 	[name] name
+* 	[-formname]
+* 	[id]
+* 	[group]
+* 	[-format] top, bottom, topbottom, left, right, oval, button. Defaults to right
+* 	[-display] flex or column. Defaults to column
+* 	[-values]
+* 	[displayif]
+* 	[display]
+* 	[requiredif]
+* 	[readonly]
+* 	[disabled]
 */
 function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
+	//return printValue($params);
+	if(isset($params['data-type'])){$params['-type']=$params['data-type'];}
+	if(!isset($params['-type'])){return 'buildFormRadioCheckbox Error: no type';}
+	if(!strlen(trim($name))){return 'buildFormRadioCheckbox Error: no name';}
+	if(isset($params['name'])){$name=$params['name'];}
+	$name=preg_replace('/[\[\]]+$/','',$name);
+	if(!is_array($opts) || !count($opts)){return 'buildFormRadioCheckbox Error: no opts';}
+	if(isset($params['data-formname'])){$params['-formname']=$params['data-formname'];}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['data-id'])){$params['-id']=$params['data-id'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['data-group'])){$params['-group']=$params['data-group'];}
+	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
+	//format: top, bottom, topbottom, left, right, oval, button
+	if(isset($params['data-format'])){$params['-format']=$params['data-format'];}
+	if(!isset($params['-format'])){$params['-format']='right';}
+	//display:  flex or column
+	if(isset($params['data-display'])){$params['-display']=$params['data-display'];}
+	if(!isset($params['-display'])){$params['-display']=count($opts)==1?'flex':'column';}
+	if(isset($params['data-style'])){$params['style']=$params['data-style'];}
+	if(!isset($params['style'])){$params['style']='';}
+	if(isset($params['data-values'])){$params['-values']=$params['data-values'];}
+	switch(strtolower($params['-display'])){
+		case 'flex':
+			$params['style'].='display:flex; justify-content: flex-start;flex-wrap:wrap;align-items:flex-start;';
+		break;
+		case 'column':
+			if(isset($params['-column-width'])){
+				$params['style'].='column-count:'.$params['width'].';column-width:'.$params['-column-width'].';';
+			}
+			elseif(isset($params['-stretch'])){
+				$params['style'].='column-count:'.$params['width'].';width:'.$params['-stretch'].';';
+			}
+			else{
+				$params['style'].='column-count:'.$params['width'].';';
+			}
+		break;
+	}
+	//values
+	if(isset($params['value'])){
+		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$params['value']=json_decode($params['value'],true);
+		}
+     	if(!is_array($params['value'])){
+        	$params['-values']=preg_split('/\:/',trim($params['value']));
+      	}
+      	else{$params['-values']=$params['value'];}
+      	unset($params['value']);
+    }
+	if(isset($params['-values'])){
+		if(!is_array($params['-values']) && isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$params['-values']=json_decode($params['-values'],true);
+		}
+    	if(!is_array($params['-values'])){
+        	$params['-values']=array($params['-values']);
+		}
+	}
+	elseif(isset($_REQUEST[$oname])){
+		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$_REQUEST[$oname]=json_decode($_REQUEST[$oname],true);
+		}
+    	if(!is_array($_REQUEST[$oname])){
+        	$params['-values']=array($_REQUEST[$oname]);
+		}
+		else{
+        	$params['-values']=$_REQUEST[$oname];
+		}
+	}
+	elseif(isset($_REQUEST[$name])){
+		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
+			$_REQUEST[$name]=json_decode($_REQUEST[$name],true);
+		}
+    	if(!is_array($_REQUEST[$name])){
+        	$params['-values']=array($_REQUEST[$name]);
+		}
+		else{
+        	$params['-values']=$_REQUEST[$name];
+		}
+	}
+	else{
+    	$params['-values']=array();
+	}
+	//remove blank values
+	foreach($params['-values'] as $i=>$v){
+		if(!strlen(trim($v))){
+			unset($params['-values'][$i]);
+		}
+	}
+	$rtn='';
+	$rtn.='<div style="'.$params['style'].'"';
+	//displayif
+	if(isset($params['displayif'])){
+		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	if(isset($params['display'])){
+		$rtn .= ' data-display="'.$params['display'].'"';
+		unset($params['display']);
+	}
+	elseif(isset($params['data-display'])){
+		$rtn .= ' data-display="'.$params['data-display'].'"';
+		unset($params['data-display']);
+	}
+	$rtn.='>'.PHP_EOL;
+	$input_name=$params['-type']=='radio'?$name:"{$name}[]";
+	$i=0;
+	foreach($opts as $tval=>$dval){
+		$display='';
+		$color='';
+		$bgcolor='';
+		$checked_color='';
+		$checked_bgcolor='';
+		$image='';
+		$format=$params['-format'];
+		$displayif='';
+		//look for data-checked_color_10 for backward compatibility
+		if(isset($params["data-color_{$tval}"])){
+			$color=$params["data-color_{$tval}"];
+		}
+		if(isset($params["data-bgcolor_{$tval}"])){
+			$bgcolor=$params["data-bgcolor_{$tval}"];
+		}
+		if(isset($params["data-checked_color_{$tval}"])){
+			$checked_color=$params["data-checked_color_{$tval}"];
+		}
+		if(isset($params["data-checked_bgcolor_{$tval}"])){
+			$checked_bgcolor=$params["data-checked_bgcolor_{$tval}"];
+		}
+		//check for dval array for custom options
+		if(is_array($dval)){
+			//display
+			if(isset($dval['dval'])){$display=$dval['dval'];}
+			elseif(isset($dval['display'])){$display=$dval['display'];}
+			//color
+			if(isset($dval['color'])){$color=$dval['color'];}
+			//bgcolor
+			if(isset($dval['bgcolor'])){$color=$dval['bgcolor'];}
+			//checked_color
+			if(isset($dval['checked_color'])){$checked_color=$dval['checked_color'];}
+			//checked_bgcolor
+			if(isset($dval['checked_bgcolor'])){$checked_color=$dval['checked_bgcolor'];}
+			//displayif
+			if(isset($dval['displayif'])){$displayif=$dval['displayif'];}
+			//image
+			if(isset($dval['image'])){$image=$dval['image'];}
+			//icon
+			if(isset($dval['icon'])){$icon=$dval['icon'];}
+			//format
+			if(isset($dval['format'])){$format=$dval['format'];}
+		}
+		else{
+			$display=$dval;
+		}
+
+		if(!strlen($display)){$display=$tval;}
+		$opt_id=$params['id'].'_'.$tval;
+		$opt_id=preg_replace('/[^a-z0-9\_]+/i','',$opt_id);
+		//topbottom
+		if(strtolower($format)=='topbottom'){
+			$format=$i%2==0?'top':'bottom';
+		}
+		$rtn.='	<div data-type="checkradio" data-format="'.$format.'"';
+		if(strlen($color) && stringBeginsWith($color,'w_')){
+			$rtn.=' data-color="'.$color.'"';
+		}
+		if(strlen($image)){
+			$rtn.=' data-image="1"';
+		}
+		//displayif
+		if(strlen($displayif)){
+			$rtn .= ' data-displayif="'.$displayif.'"';
+		}
+		$rtn.='>'.PHP_EOL;
+		$rtn.='		<input type="'.$params['-type'].'" id="'.$opt_id.'" name="'.$input_name.'" value="'.$tval.'"';
+		//requiredif
+		if(isset($params['requiredif'])){
+			$rtn .= ' data-requiredif="'.$params['requiredif'].'"';
+			unset($params['requiredif']);
+		}
+		//checked?
+		if(in_array($tval,$params['-values'])){
+    		$rtn .= ' checked';
+    		$checked_cnt++;
+		}
+		//readonly?
+		if(isset($params['readonly'])){
+			$rtn .= ' onclick="return false;"';
+		}
+		//disabled?
+		if(isset($params['disabled'])){
+			$rtn .= ' disabled="disabled"';
+		}
+		$rtn.=' />'.PHP_EOL;
+		//styles
+		$styles=array();
+		if(strlen($color) && !stringBeginsWith($color,'w_')){
+			$styles[]="--color:{$color}";
+		}
+		if(strlen($bgcolor) && !stringBeginsWith($bgcolor,'w_')){
+			$styles[]="--bgcolor:{$bgcolor}";
+		}
+		if(strlen($checked_color) && !stringBeginsWith($checked_color,'w_')){
+			$styles[]="--checked_color:{$checked_color}";
+		}
+		if(strlen($checked_bgcolor) && !stringBeginsWith($checked_bgcolor,'w_')){
+			$styles[]="--checked_bgcolor:{$checked_bgcolor}";
+		}
+		if(strlen($image)){
+			$styles[]="background-image:url('{$image}')";
+		}
+		//label
+		$rtn.='		<label for="'.$opt_id.'"';
+		if(count($styles)){
+			$stylestr=implode(';',$styles);
+			$rtn .= ' style="'.$stylestr.'"';
+		}
+		$rtn.= '>'.$display.'</label>'.PHP_EOL;
+		$rtn.='	</div>'.PHP_EOL;
+		$i+=1;
+	}
+	$rtn.='</div>'.PHP_EOL;
+	return $rtn;
+}
+//---------- begin function buildFormRadioCheckbox_OLD
+/**
+* @exclude  - this function in only used internally
+*/
+function buildFormRadioCheckbox_OLD($name, $opts=array(), $params=array()){
 	if(!isset($params['-type'])){return 'buildFormRadioCheckbox Error: no type';}
 	if(!strlen(trim($name))){return 'buildFormRadioCheckbox Error: no name';}
 	if(isset($params['name'])){$name=$params['name'];}
@@ -15858,11 +16111,13 @@ function processActions(){
 						unlink($tfile);
 						if(strlen($rec['_euser_ex']['username']) && strtolower($_REQUEST['_table']) != '_prompts' && $md5sha != $_REQUEST['_md5sha']){
 							$username=$rec['_euser_ex']['username'];
-							echo "<timestamp>{$timestamp}</timestamp>";
-							echo "<fatal_error>Fatal Error: The {$fld} field was changed by {$username} since you started ({$rec['_edate']}).</fatal_error>";
-							echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
-							echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
-							exit;
+							if($USER['username'] != $username){
+								echo "<timestamp>{$timestamp}</timestamp>";
+								echo "<fatal_error>Fatal Error:Your are {$USER['username']}. The {$fld} field was changed by {$username} since you started ({$rec['_edate']}).</fatal_error>";
+								echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
+								echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
+								exit;
+							}
 						}
 					}
 					if(isset($_REQUEST['_collection_field'])){
