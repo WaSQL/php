@@ -8500,7 +8500,7 @@ function evalPHP($strings){
 					}
 					$out = cmdResults($command);
 					if($out['rtncode']==0){
-						//unlink("{$tmppath}/{$tmpfile}");
+						unlink("{$tmppath}/{$tmpfile}");
 						$val=$out['stdout'];
 					}	
 					else{
@@ -8695,6 +8695,9 @@ function commonAddPrecode($lang,$evalcode){
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//$_SESSION
 	$tmp=commonGetPrecodeForVar($lang,$_SESSION,'SESSION');
+	if(count($tmp)){$precode=array_merge($precode,$tmp);}
+	//$CRONTHRU
+	$tmp=commonGetPrecodeForVar($lang,$CRONTHRU,'CRONTHRU');
 	if(count($tmp)){$precode=array_merge($precode,$tmp);}
 	//add precode to evalcode
 	if(count($precode)){
