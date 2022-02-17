@@ -8568,7 +8568,7 @@ function commonGetLangInfo($lang){
 				'name'=>'python',
 				'comment'=>'#',
 				'ext'=>'py',
-				'exe'=>'python -B',
+				'exe'=>'python3 -B',
 				'shebang'=>'#!/usr/bin/env python'
 			);
 		break;
