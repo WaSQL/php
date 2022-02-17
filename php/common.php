@@ -3176,13 +3176,13 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		break;
 		case 'column':
 			if(isset($params['-column-width'])){
-				$params['style'].='column-count:'.$params['width'].';column-width:'.$params['-column-width'].';';
+				$params['style'].='height:auto;column-count:'.$params['width'].';column-width:'.$params['-column-width'].';';
 			}
 			elseif(isset($params['-stretch'])){
-				$params['style'].='column-count:'.$params['width'].';width:'.$params['-stretch'].';';
+				$params['style'].='height:auto;column-count:'.$params['width'].';width:'.$params['-stretch'].';';
 			}
 			else{
-				$params['style'].='column-count:'.$params['width'].';';
+				$params['style'].='height:auto;column-count:'.$params['width'].';';
 			}
 		break;
 	}
