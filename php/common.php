@@ -8758,7 +8758,7 @@ function commonAddPrecode($lang,$evalcode){
 				case 'py':
 					foreach($CONFIG['includes'][$lang['ext']] as $afile){
 						$name=getFileName($afile,1);
-						$precode[]="import {$name} as page";
+						$precode[]="import r\"{$name}\" as page";
 					}
 				break;
 				case 'pl':
@@ -12515,7 +12515,9 @@ function commonIncludeFunctionCode($content,$name=''){
 				break;
 			}
 			$content_md5=md5($evalcode);
-			$tmpfile="{$CONFIG['name']}_{$lang}_{$content_md5}.{$lang}";
+			$tname="{$CONFIG['name']}_{$lang}_{$content_md5}";
+			$tname=preg_replace('/[^a-z0-9\_]+/','_',$tname);
+			$tmpfile="{$tname}.{$lang}";
 			$afile="{$tmppath}/{$tmpfile}";
 			$afile=str_replace("\\","/",$afile);
 			//echo $afile.PHP_EOL;
