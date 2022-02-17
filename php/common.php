@@ -8758,7 +8758,7 @@ function commonAddPrecode($lang,$evalcode){
 				case 'py':
 					foreach($CONFIG['includes'][$lang['ext']] as $afile){
 						$name=getFileName($afile,1);
-						$precode[]="import r\"{$name}\" as page";
+						$precode[]="import {$name} as page";
 					}
 				break;
 				case 'pl':
