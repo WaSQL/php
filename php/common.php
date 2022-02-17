@@ -3169,6 +3169,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(isset($params['data-style'])){$params['style']=$params['data-style'];}
 	if(!isset($params['style'])){$params['style']='';}
 	if(isset($params['data-values'])){$params['-values']=$params['data-values'];}
+	if(strlen($params['style']) && !stringEndsWith($params['style'],';')){$params['style'].=';';}
 	switch(strtolower($params['-display'])){
 		case 'flex':
 			$params['style'].='display:flex; justify-content: flex-start;flex-wrap:wrap;align-items:flex-start;';
