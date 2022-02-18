@@ -9,8 +9,8 @@
 	Note: cron_old.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the cron does not time out
-ini_set('max_execution_time', 72000);
-set_time_limit(72000);
+ini_set('max_execution_time', 86400);
+set_time_limit(86400);
 error_reporting(E_ALL & ~E_NOTICE);
 $posturl_timeout=36000; //allow crons that call posturl to run for up to 10 hours
 $starttime=microtime(true);

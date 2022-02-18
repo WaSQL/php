@@ -6,6 +6,10 @@
 		https://www.yumpu.com/en/document/read/30279025/sql-reference-guide-cove-systems
 		https://docs.faircom.com/doc/sqlref/sqlref.pdf
 */
+
+ini_set('max_execution_time', 86400);
+set_time_limit(86400);
+
 //---------- begin function ctreeGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index

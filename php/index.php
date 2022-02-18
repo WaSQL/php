@@ -22,8 +22,8 @@ if(!function_exists('curl_init')){
 //Set Post Max Size
 ini_set('POST_MAX_SIZE', '128M');
 ini_set('UPLOAD_MAX_FILESIZE', '120M');
-ini_set('max_execution_time', 20000);
-set_time_limit(11000);
+ini_set('max_execution_time', 86400);
+set_time_limit(86400);
 error_reporting(E_ALL & ~E_NOTICE);
 $_SERVER['TIME_START']=microtime(true);
 $progpath=dirname(__FILE__);
@@ -81,6 +81,10 @@ if(isset($CONFIG['timezone'])){
 }
 else{
 	@date_default_timezone_set('America/Denver');
+}
+if(isset($CONFIG['max_execution_time'])){
+	ini_set('max_execution_time', $CONFIG['max_execution_time']);
+	set_time_limit($CONFIG['max_execution_time']);
 }
 $loadtimes['config']=number_format((microtime(true)-$stime),3);
 $stime=microtime(true);
