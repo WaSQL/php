@@ -8433,6 +8433,7 @@ function evalPHP_ob($string, $flags) {
 function evalPHP($strings){
 	global $CONFIG;
 	global $PAGE;
+	$getWasqlTempPath=getWasqlTempPath();
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
@@ -8463,6 +8464,32 @@ function evalPHP($strings){
 			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
 				$lang=commonGetLangInfo($g[1]);
+				$lang['evalcode_md5']=md5($evalcode);
+				switch(strtolower($lang['name'])){
+					case 'python':
+						$val=evalPythonCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						continue;
+					break;
+					case 'perl':
+						$val=evalPerlCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						continue;
+					break;
+					case 'lua':
+						//https://www.educba.com/lua-json/
+						$val=evalLuaCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						continue;
+					break;
+					case 'nodejs':
+						//https://www.educba.com/lua-json/
+						$val=evalNodejsCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						continue;
+					break;
+				}
+				//handle other languages
 				$page=isset($PAGE['_id'])?$PAGE['_id']:0;
 				$pageid="p".$page;
 				$tmpfile="{$CONFIG['name']}_{$pageid}_".md5($evalcode).".{$lang['ext']}";
@@ -8480,16 +8507,6 @@ function evalPHP($strings){
 					
 					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
 						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
-					}
-					if($lang['ext'] == 'lua'){
-						//get the json.lua file 
-						//https://github.com/rxi/json.lua
-						$lua_dest=getWasqlPath('php/json.lua');
-						//copy json.lua to the tmppath
-						if(!file_exists($lua_dest)){
-							$lua_source=getWasqlPath('php/extras/json.lua');
-							copyFile($lua_source,$lua_dest);
-						}
 					}
 					if(isWindows()){
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
@@ -8555,7 +8572,726 @@ function evalPHP($strings){
 	showErrors();
 	return implode('',$strings);
 }
+//---------- begin function evalNodejsCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalNodejsCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$wasqlPythonPath=getWasqlPath('python');
+	$wasqlPythonPath=str_replace("\\","/",$wasqlPythonPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.js",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.js",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(lua)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.js";
+		$pagecode="var page = require('./page_{$lang['evalcode_md5']}.js');";
+		$content=<<<ENDOFCONTENT
+#! nodejs
 
+{$code}
+
+ENDOFCONTENT;
+	setFileContents($files['page'],$content);
+		//{$lang['evalcode_md5']}
+	}
+	//create a wasql.py file
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	/*
+		$json=json_encode($arr,JSON_UNESCAPED_SLASHES);
+			$json=str_replace('\\"','',$json);
+			$precode[]="local {$varname} = json.decode('".$json."');";
+	*/
+	$wasql=array(
+		'USER'=>"let USER = ".json_encode(evalCleanupGlobal($USER)).";",
+		'CONFIG'=>"let CONFIG = ".json_encode(evalCleanupGlobal($CONFIG)).";",
+		'PAGE'=>"let PAGE = ".json_encode(evalCleanupGlobal($p)).";",
+		'TEMPLATE'=>"let TEMPLATE = ".json_encode(evalCleanupGlobal($t)).";",
+		'PASSTHRU'=>"let PASSTHRU = ".json_encode(evalCleanupGlobal($PASSTHRU)).";",
+		'DATABASE'=>"let DATABASE = ".json_encode(evalCleanupGlobal($db)).";",
+		'REQUEST'=>"let REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST)).";",
+		'SESSION'=>"let SESSION = ".json_encode(evalCleanupGlobal($_SESSION)).";",
+		'CRONTHRU'=>"let CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU)).";"
+	);
+	$content=<<<ENDOFCONTENT
+#! nodejs
+
+exports.user = function(k){
+	{$wasql['USER']}
+	return USER[k] || "";
+}
+exports.config = function(k){
+	{$wasql['CONFIG']}
+	return CONFIG[k] || "";
+}
+exports.page = function(k){
+	{$wasql['PAGE']}
+	return PAGE[k] || "";
+}
+exports.template = function(k){
+	{$wasql['TEMPLATE']}
+	return TEMPLATE[k] || "";
+}
+exports.passthru = function(k){
+	{$wasql['PASSTHRU']}
+	return PASSTHRU[k] || "";
+}
+exports.database = function(k){
+	{$wasql['DATABASE']}
+	return DATABASE[k] || "";
+}
+exports.request = function(k){
+	{$wasql['REQUEST']}
+	return REQUEST[k] || "";
+}
+exports.session = function(k){
+	{$wasql['SESSION']}
+	return SESSION[k] || "";
+}
+exports.cronthru = function(k){
+	{$wasql['CRONTHRU']}
+	return CRONTHRU[k] || "";
+}
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#! nodejs
+
+var wasql = require("./wasql_{$lang['evalcode_md5']}.js");
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\"";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
+	//remove the temp files
+	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'nodejs'){
+		foreach($files as $name=>$afile){
+			unlink($afile);
+		}
+	}
+	if($out['rtncode']==0){
+		return $out['stdout'];
+	}	
+	elseif(isset($out['stderr']) && strlen($out['stderr'])){
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Nodejs Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stderr']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+	else{
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Nodejs Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stdout']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalLuaCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalLuaCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$wasqlPythonPath=getWasqlPath('python');
+	$wasqlPythonPath=str_replace("\\","/",$wasqlPythonPath);
+	$json_lua_dest=getWasqlPath('php/temp/json.lua');
+	//copy json.lua to the tmppath
+	if(!file_exists($json_lua)){
+		$json_lua_source=getWasqlPath('php/extras/json.lua');
+		copyFile($json_lua_source,$json_lua_dest);
+	}
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.lua",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.lua",
+		'json'=>"{$wasqlTempPath}/json.lua",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(lua)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.lua";
+		$pagecode="require \"page_{$lang['evalcode_md5']}\";";
+		$content=<<<ENDOFCONTENT
+#! lua
+
+json = require "json";
+
+{$code}
+
+ENDOFCONTENT;
+	setFileContents($files['page'],$content);
+		//{$lang['evalcode_md5']}
+	}
+	//create a wasql.py file
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	/*
+		$json=json_encode($arr,JSON_UNESCAPED_SLASHES);
+			$json=str_replace('\\"','',$json);
+			$precode[]="local {$varname} = json.decode('".$json."');";
+	*/
+	$wasql=array(
+		'USER'=>"local USER = json.decode('".json_encode(evalCleanupGlobal($USER))."');",
+		'CONFIG'=>"local CONFIG = json.decode('".json_encode(evalCleanupGlobal($CONFIG))."');",
+		'PAGE'=>"local PAGE = json.decode('".json_encode(evalCleanupGlobal($p))."');",
+		'TEMPLATE'=>"local TEMPLATE = json.decode('".json_encode(evalCleanupGlobal($t))."');",
+		'PASSTHRU'=>"local PASSTHRU = json.decode('".json_encode(evalCleanupGlobal($PASSTHRU))."');",
+		'DATABASE'=>"local DATABASE = json.decode('".json_encode(evalCleanupGlobal($db))."');",
+		'REQUEST'=>"local REQUEST = json.decode('".json_encode(evalCleanupGlobal($_REQUEST))."');",
+		'SESSION'=>"local SESSION = json.decode('".json_encode(evalCleanupGlobal($_SESSION))."');",
+		'CRONTHRU'=>"local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($CRONTHRU))."');"
+	);
+	$content=<<<ENDOFCONTENT
+#! lua
+
+json = require "json";
+
+function wasqlUser(k)
+	{$wasql['USER']}
+	return USER[k];
+end
+function wasqlConfig(k)
+	{$wasql['CONFIG']}
+	return CONFIG[k];
+end
+function wasqlPage(k)
+	{$wasql['PAGE']}
+	return PAGE[k];
+end
+function wasqlTemplate(k)
+	{$wasql['TEMPLATE']}
+	return TEMPLATE[k];
+end
+function wasqlPassthru(k)
+	{$wasql['PASSTHRU']}
+	return PASSTHRU[k];
+end
+function wasqlDatabase(k)
+	{$wasql['DATABASE']}
+	return DATABASE[k];
+end
+function wasqlRequest(k)
+	{$wasql['REQUEST']}
+	return REQUEST[k];
+end
+function wasqlSession(k)
+	{$wasql['SESSION']}
+	return SESSION[k];
+end
+function wasqlCronthru(k)
+	{$wasql['CRONTHRU']}
+	return CRONTHRU[k];
+end
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#! lua
+
+json = require "json";
+
+require "wasql_{$lang['evalcode_md5']}";
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\"";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
+	//remove the temp files
+	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'lua'){
+		foreach($files as $name=>$afile){
+			unlink($afile);
+		}
+	}
+	if($out['rtncode']==0){
+		return $out['stdout'];
+	}	
+	elseif(isset($out['stderr']) && strlen($out['stderr'])){
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Lua Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stderr']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+	else{
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Lua Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stdout']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalPerlCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalPerlCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$wasqlPythonPath=getWasqlPath('python');
+	$wasqlPythonPath=str_replace("\\","/",$wasqlPythonPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.pl",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.pl",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(pl|perl)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.pl";
+		$pagecode="require \"page_{$lang['evalcode_md5']}.pl\";";
+		$content=<<<ENDOFCONTENT
+#! perl
+
+{$code}
+
+return 1;
+ENDOFCONTENT;
+	setFileContents($files['page'],$content);
+		//{$lang['evalcode_md5']}
+	}
+	//create a wasql.py file
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	/*
+		$json=json_encode($arr,JSON_UNESCAPED_SLASHES);
+			$json=str_replace('\\"','',$json);
+			$precode[]="local {$varname} = json.decode('".$json."');";
+	*/
+	$wasql=array(
+		'USER'=>"my %USER = ".evalGlobal2Perl($USER),
+		'CONFIG'=>"my %CONFIG = ".evalGlobal2Perl($CONFIG),
+		'PAGE'=>"my %PAGE = ".evalGlobal2Perl($p),
+		'TEMPLATE'=>"my %TEMPLATE = ".evalGlobal2Perl($t),
+		'PASSTHRU'=>"my %PASSTHRU = ".evalGlobal2Perl($PASSTHRU),
+		'DATABASE'=>"my %DATABASE = ".evalGlobal2Perl($db),
+		'REQUEST'=>"my %REQUEST = ".evalGlobal2Perl($_REQUEST),
+		'SESSION'=>"my %SESSION = ".evalGlobal2Perl($_SESSION),
+		'CRONTHRU'=>"my %CRONTHRU = ".evalGlobal2Perl($CRONTHRU)
+	);
+	$content=<<<ENDOFCONTENT
+#! perl
+
+sub wasqlUser{
+	my (\$k) = @_;
+	{$wasql['USER']}
+	return \$USER{\$k} || "";
+}
+sub wasqlConfig{
+	my (\$k) = @_;
+	{$wasql['CONFIG']}
+	return \$CONFIG{\$k} || "";
+}
+sub wasqlPage{
+	my (\$k) = @_;
+	{$wasql['PAGE']}
+	return \$PAGE{\$k} || "";
+}
+sub wasqlTemplate{
+	my (\$k) = @_;
+	{$wasql['TEMPLATE']}
+	return \$TEMPLATE{\$k} || "";
+}
+sub wasqlPassthru{
+	my (\$k) = @_;
+	{$wasql['PASSTHRU']}
+	return \$PASSTHRU{\$k} || "";
+}
+sub wasqlDatabase{
+	my (\$k) = @_;
+	{$wasql['DATABASE']}
+	return \$DATABASE{\$k} || "";
+}
+sub wasqlRequest{
+	my (\$k) = @_;
+	{$wasql['REQUEST']}
+	return \$REQUEST{\$k} || "";
+}
+sub wasqlSession{
+	my (\$k) = @_;
+	{$wasql['SESSION']}
+	return \$SESSION{\$k} || "";
+}
+sub wasqlCronthru{
+	my (\$k) = @_;
+	{$wasql['CRONTHRU']}
+	return \$CRONTHRU{\$k} || "";
+}
+
+return 1;
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#! perl
+
+require "wasql_{$lang['evalcode_md5']}.pl";
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\"";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
+	//remove the temp files
+	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'perl'){
+		foreach($files as $name=>$afile){
+			unlink($afile);
+		}
+	}
+	if($out['rtncode']==0){
+		return $out['stdout'];
+	}	
+	elseif(isset($out['stderr']) && strlen($out['stderr'])){
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Perl Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stderr']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+	else{
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Perl Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stdout']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalPythonCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalGlobal2Perl($arr){
+	$sets=array();
+	foreach($arr as $k=>$v){
+		if(stringContains($k,"'")){continue;}
+		$v=str_replace("'","\\'",$v);
+		$sets[]="'{$k}'=>'{$v}'";
+	}
+	return '('.implode(', ',$sets).');';
+}
+//---------- begin function evalPythonCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalPythonCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$wasqlPythonPath=getWasqlPath('python');
+	$wasqlPythonPath=str_replace("\\","/",$wasqlPythonPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.py",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.py",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(py|python)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.py";
+		$pagecode="import page_{$lang['evalcode_md5']} as page";
+		$content=<<<ENDOFCONTENT
+#! python
+
+try:
+	import json
+	import pprint
+	import io
+	import base64
+	import common
+	import requests
+	from urllib.parse import urlparse, parse_qs, parse_qsl
+	import config
+	import db
+	import re
+	import wasql_{$lang['evalcode_md5']} as wasql
+except Exception as err:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    sys.exit(31)
+
+{$code}
+ENDOFCONTENT;
+	setFileContents($files['page'],$content);
+		//{$lang['evalcode_md5']}
+	}
+	//create a wasql.py file
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	
+	$wasql=array(
+		'USER'=>"USER = ".json_encode(evalCleanupGlobal($USER)),
+		'CONFIG'=>"CONFIG = ".json_encode(evalCleanupGlobal($CONFIG)),
+		'PAGE'=>"PAGE = ".json_encode(evalCleanupGlobal($p)),
+		'TEMPLATE'=>"TEMPLATE = ".json_encode(evalCleanupGlobal($t)),
+		'PASSTHRU'=>"PASSTHRU = ".json_encode(evalCleanupGlobal($PASSTHRU)),
+		'DATABASE'=>"DATABASE = ".json_encode(evalCleanupGlobal($db)),
+		'REQUEST'=>"REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST)),
+		'SESSION'=>"SESSION = ".json_encode(evalCleanupGlobal($_SESSION)),
+		'CRONTHRU'=>"CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU))
+	);
+	$content=<<<ENDOFCONTENT
+#! python
+
+def user(k):
+	{$wasql['USER']}
+	if k in USER:
+		return USER[k]
+	else:
+		return ""
+
+def config(k):
+	{$wasql['CONFIG']}
+	if k in CONFIG:
+		return CONFIG[k]
+	else:
+		return ""
+
+def page(k):
+	{$wasql['PAGE']}
+	if k in PAGE:
+		return PAGE[k]
+	else:
+		return ""
+
+def template(k):
+	{$wasql['TEMPLATE']}
+	if k in TEMPLATE:
+		return TEMPLATE[k]
+	else:
+		return ""
+
+def passthru(k):
+	{$wasql['PASSTHRU']}
+	if k in PASSTHRU:
+		return PASSTHRU[k]
+	else:
+		return ""
+
+def database(k):
+	{$wasql['DATABASE']}
+	if k in DATABASE:
+		return DATABASE[k]
+	else:
+		return ""
+
+def request(k):
+	{$wasql['REQUEST']}
+	if k in REQUEST:
+		return REQUEST[k]
+	else:
+		return ""
+
+def session(k):
+	{$wasql['SESSION']}
+	if k in SESSION:
+		return SESSION[k]
+	else:
+		return ""
+
+def cronthru(k):
+	{$wasql['CRONTHRU']}
+	if k in CRONTHRU:
+		return CRONTHRU[k]
+	else:
+		return ""
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#! python
+
+import os
+import sys
+sys.path.append("{$wasqlPythonPath}")
+try:
+	import json
+	import pprint
+	import io
+	import base64
+	import common
+	import requests
+	from urllib.parse import urlparse, parse_qs, parse_qsl
+	import config
+	import db
+	import re
+	import wasql_{$lang['evalcode_md5']} as wasql
+	{$pagecode}
+except Exception as err:
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    sys.exit(32)
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\"";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
+	//remove the temp files
+	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'python'){
+		foreach($files as $name=>$afile){
+			unlink($afile);
+		}
+	}
+	if($out['rtncode']==0){
+		return $out['stdout'];
+	}	
+	elseif(isset($out['stderr']) && strlen($out['stderr'])){
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stderr']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+	else{
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
+<pre style="color:#5f5f5f;margin-left:20px;">
+{$out['stdout']}
+</pre>
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalCleanupGlobal
+/**
+* @exclude  - this function is internal thus excluded from the manual
+*/
+function evalCleanupGlobal($arr){
+	if(!is_array($arr) || count($arr)==0){return array('_isempty'=>1);}
+	foreach($arr as $k=>$v){
+		if(!strlen($v) || $v=='null'){
+			unset($arr[$k]);
+		}
+	}
+	if(!is_array($arr) || count($arr)==0){return array('_isempty'=>1);}
+	return $arr;
+}
 //---------- begin function commonGetPrecode
 /**
 * @exclude  - this function is depreciated thus excluded from the manual
