@@ -689,14 +689,16 @@
 		<td>
 			<div class="w_pre">
 			&lt;?php
-				echo &#39;Hello, world!&#39;;
+				echo &#39;Hello, world!&lt;br&gt;&#39;;
+				echo userValue(&#39;username&#39;);
 			?&gt;
 			</div>
 		</td>
 		<td>
 			<div class="w_pre">
 			<?php
-				echo 'Hello, world!';
+				echo 'Hello, world!<br>';
+				echo userValue('username');
 			?>
 			</div>
 		</td>
@@ -714,6 +716,7 @@ print(platform.python_version())
 			<div class="w_pre">
 			&lt;?python
 				print (&#39;Hello, world!&#39;)
+				print(wasql.user(&#39;username&#39;))
 			?&gt;
 			</div>
 		</td>
@@ -721,6 +724,7 @@ print(platform.python_version())
 			<div class="w_pre">
 			<?python
 				print ('Hello, world!')
+print(wasql.user('username'))
 			?>
 			</div>
 		</td>
@@ -729,21 +733,25 @@ print(platform.python_version())
 		<th>
 			<h3>NodeJs</h3>
 			<?node
-				console.log(process.version)
+				console.log(process.version);
 			?>
 			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button></div>
 		</th>
 		<td>
 			<div class="w_pre">
 			&lt;?node
-				console.log(&#39;Hello, world!&#39;)
+				console.log(&#39;Hello, world!&#39;);
+				let v2=wasql.user(&#39;username&#39;);
+				console.log(v2);
 			?&gt;
 			</div>
 		</td>
 		<td>
 			<div class="w_pre">
 			<?node
-				console.log('Hello, world!')
+				console.log('Hello, world!');
+				let v2=wasql.user('username');
+				console.log(v2);
 			?>
 			</div>
 		</td>
@@ -759,14 +767,16 @@ print(platform.python_version())
 		<td>
 			<div class="w_pre">
 			&lt;?perl
-				print (&#39;Hello, world!&#39;);
+				print (&#39;Hello, world!&lt;br&gt;&#39;);
+				print wasqlUser(&#39;username&#39;);
 			?&gt;
 			</div>
 		</td>
 		<td>
 			<div class="w_pre">
 			<?perl
-				print ('Hello, world!');
+				print ('Hello, world!<br>');
+				print wasqlUser('username');
 			?>
 			</div>
 		</td>
@@ -783,6 +793,8 @@ print(platform.python_version())
 			<div class="w_pre">
 			&lt;?lua
 				print (&#39;Hello, world!&#39;);
+				var2=wasqlUser(&#39;username&#39;);
+				print(var2);
 			?&gt;
 			</div>
 		</td>
@@ -790,6 +802,8 @@ print(platform.python_version())
 			<div class="w_pre">
 <?lua
 	print('Hello, world!');
+	var2=wasqlUser('username');
+	print(var2);
 ?>
 			</div>
 		</td>
