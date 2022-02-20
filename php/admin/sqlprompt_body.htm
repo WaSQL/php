@@ -85,7 +85,7 @@
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
 			<li><a style="display:flex;" href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><span class="icon-square-plus" id="<?=$table;?>_icon" style="margin-right:5px;"></span> <?=$table;?></a>
-				<div id="<?=$table;?>_fields" style="margin-left:20px;padding-left:10px;border-left:1px solid #CCC;"></div>
+				<div id="<?=$table;?>_fields" style="margin-left:15px;padding-left:0px;border-left:1px solid #CCC;"></div>
 			</li>
 		</view:table>
 		<?=renderEach('table',$tables,'table');?>

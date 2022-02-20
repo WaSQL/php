@@ -52,6 +52,14 @@ try:
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:
             params[k] = config.DATABASE[dbname][k]
+        #FIREBIRD
+        if config.DATABASE[dbname]['dbtype'].startswith('firebird'):
+            try:
+                import firebirddb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            outfile=firebirddb.queryResults(query,params)
         #HANA
         if config.DATABASE[dbname]['dbtype'].startswith('hana'):
             try:

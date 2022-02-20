@@ -112,6 +112,7 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 	global $dbh_msaccess;
 	global $dbh_msexcel;
 	global $dbh_mscsv;
+	global $dbh_firebird;
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -173,6 +174,11 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('mscsv');
 			$dbh_mscsv='';
 			$func="mscsv".ucfirst($func);
+		break;
+		case 'firebird':
+			loadExtras('firebird');
+			$dbh_firebird='';
+			$func="firebird".ucfirst($func);
 		break;
 		default:
 			loadExtras('mysql');
@@ -712,7 +718,7 @@ function pyQueryResults($db,$query,$params=array()){
 	$path=preg_replace('/\/$/','',$path);
 	$afile="{$path}/php/temp/{$sha}.sql";
 	$ok=file_put_contents($afile, $query);
-	$args="\"{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
+	$args=" -B \"{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
 	$out=cmdResults('python3',$args);
 	if($out['rtncode'] != 0){
 		echo "Failed to process<br>";
@@ -914,6 +920,12 @@ function databaseListRecords($params=array()){
 				}
 				$params['-list']=ctreeQueryResults($params['-query']);
 			break;
+			case 'firebird':
+				if(!function_exists('firebirdQueryResults')){
+					loadExtras('firebird');
+				}
+				$params['-list']=firebirdQueryResults($params['-query']);
+			break;
 			case 'hana':
 				if(!function_exists('hanaQueryResults')){
 					loadExtras('hana');
@@ -1001,6 +1013,12 @@ function databaseListRecords($params=array()){
 					}
 					$params=array('-list'=>ctreeGetDBRecords($params));
 				break;
+				case 'firebird':
+					if(!function_exists('firebirdGetDBRecords')){
+						loadExtras('firebird');
+					}
+					$params=array('-list'=>firebirdGetDBRecords($params));
+				break;
 				case 'hana':
 					if(!function_exists('hanaGetDBRecords')){
 						loadExtras('hana');
@@ -1082,6 +1100,12 @@ function databaseListRecords($params=array()){
 					loadExtras('ctree');
 				}
 				$info=ctreeGetDBFieldInfo($params['-table']);
+			break;
+			case 'firebird':
+				if(!function_exists('firebirdGetDBFieldInfo')){
+					loadExtras('firebird');
+				}
+				$info=firebirdGetDBFieldInfo($params['-table']);
 			break;
 			case 'hana':
 				if(!function_exists('hanaGetDBFieldInfo')){
@@ -1196,6 +1220,12 @@ function databaseListRecords($params=array()){
 					}
 					$ok=ctreeEditDBRecord($bulk);
 				break;
+				case 'firebird':
+					if(!function_exists('firebirdEditDBRecord')){
+						loadExtras('firebird');
+					}
+					$ok=firebirdEditDBRecord($bulk);
+				break;
 				case 'hana':
 					if(!function_exists('hanaEditDBRecord')){
 						loadExtras('hana');
@@ -1307,6 +1337,12 @@ function databaseListRecords($params=array()){
 						loadExtras('ctree');
 					}
 					$recs=ctreeGetDBRecords($params);
+				break;
+				case 'firebird':
+					if(!function_exists('firebirdGetDBRecords')){
+						loadExtras('firebird');
+					}
+					$recs=firebirdGetDBRecords($params);
 				break;
 				case 'hana':
 					if(!function_exists('hanaGetDBRecords')){
@@ -1439,6 +1475,12 @@ function databaseListRecords($params=array()){
 					}
 					$params['-total']=ctreeGetDBCount($params);
 				break;
+				case 'firebird':
+					if(!function_exists('firebirdGetDBCount')){
+						loadExtras('firebird');
+					}
+					$params['-total']=firebirdGetDBCount($params);
+				break;
 				case 'hana':
 					if(!function_exists('hanaGetDBCount')){
 						loadExtras('hana');
@@ -1521,6 +1563,12 @@ function databaseListRecords($params=array()){
 					loadExtras('ctree');
 				}
 				$params['-list']=ctreeGetDBRecords($params);
+			break;
+			case 'firebird':
+				if(!function_exists('firebirdQueryResults')){
+					loadExtras('firebird');
+				}
+				$params['-list']=firebirdGetDBRecords($params);
 			break;
 			case 'hana':
 				if(!function_exists('hanaGetDBRecords')){
@@ -11891,7 +11939,7 @@ function isSqlite(){
 /**
 * @describe returns true if database driver is cTREE
 * @return boolean
-* @usage if(isSqlite()){...}
+* @usage if(isCtree()){...}
 */
 function isCtree(){
 	global $isCtreeCache;
@@ -11904,6 +11952,24 @@ function isCtree(){
 	}
 	else{$isCtreeCache=false;}
 	return $isCtreeCache;
+}
+//---------- begin function isFirebird ----------
+/**
+* @describe returns true if database driver is cTREE
+* @return boolean
+* @usage if(isFirebird()){...}
+*/
+function isFirebird(){
+	global $isFirebirdCache;
+	if(isset($isFirebirdCache)){return $isFirebirdCache;}
+	global $CONFIG;
+	$dbtype=strtolower(trim($CONFIG['dbtype']));
+	if($dbtype=='firebird'){
+		loadExtras('firebird');
+		$isFirebirdCache=true;
+	}
+	else{$isFirebirdCache=false;}
+	return $isFirebirdCache;
 }
 //---------- begin function isMsaccess ----------
 /**

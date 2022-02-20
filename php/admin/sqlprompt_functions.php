@@ -123,8 +123,8 @@ function sqlpromptListFields($recs){
 		'-hidesearch'=>1,
 		'-tableclass'=>'table striped condensed responsive',
 		'-listfields'=>'_dbfield,_dbtype_ex',
-		'-thclass'=>'w_smaller',
-		'-tdclass'=>'w_smaller',
+		'-thclass'=>'w_smallest',
+		'-tdclass'=>'w_smallest',
 		'_dbfield_options'=>array(
 			'displayname'=>'Field',
 			'style'=>'max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
@@ -147,8 +147,8 @@ function sqlpromptListIndexes($recs){
 		'-hidesearch'=>1,
 		'-tableclass'=>'table striped condensed responsive',
 		'-listfields'=>'key_name,column_name,is_primary,is_unique,seq_in_index',
-		'-thclass'=>'w_smaller',
-		'-tdclass'=>'w_smaller',
+		'-thclass'=>'w_smallest',
+		'-tdclass'=>'w_smallest',
 		'is_primary_displayname'=>'Pk',
 		'is_primary_checkmark'=>1,
 		'key_name_options'=>array(

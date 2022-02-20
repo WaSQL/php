@@ -168,6 +168,9 @@ foreach($DATABASE as $d=>$db){
 		case 'ctree':
 			$DATABASE[$d]['dbicon']='icon-database-faircom';
 		break;
+		case 'firebird':
+			$DATABASE[$d]['dbicon']='icon-database-firebird';
+		break;
 		case 'msaccess':
 			$DATABASE[$d]['dbicon']='icon-database-msaccess';
 		break;

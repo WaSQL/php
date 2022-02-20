@@ -40,6 +40,9 @@
 				case 'oracle':
 					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
 				break;
+				case 'firebird':
+					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
+				break;
 				case 'ctree':
 					$sql="select top 5 * from admin.{$table} order by 1 desc";
 				break;
