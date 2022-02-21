@@ -8465,30 +8465,32 @@ function evalPHP($strings){
 				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
 				$lang=commonGetLangInfo($g[1]);
 				$lang['evalcode_md5']=md5($evalcode);
+				$c=0;
 				switch(strtolower($lang['name'])){
 					case 'python':
 						$val=evalPythonCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						continue;
+						$c=1;
 					break;
 					case 'perl':
 						$val=evalPerlCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						continue;
+						$c=1;;
 					break;
 					case 'lua':
 						//https://www.educba.com/lua-json/
 						$val=evalLuaCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						continue;
+						$c=1;
 					break;
 					case 'nodejs':
 						//https://www.educba.com/lua-json/
 						$val=evalNodejsCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						continue;
+						$c=1;
 					break;
 				}
+				if($c==1){continue;}
 				//handle other languages
 				$page=isset($PAGE['_id'])?$PAGE['_id']:0;
 				$pageid="p".$page;
