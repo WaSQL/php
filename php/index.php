@@ -34,6 +34,15 @@ $stime=microtime(true);
 global $wasql_debugValueContent;
 $wasql_debugValueContent='';
 include_once("$progpath/common.php");
+//make sure the temp folder it available
+$temp_path=getWasqlTempPath();
+if(!file_exists($temp_path)){
+	buildDir($temp_path);
+}
+if(!file_exists($temp_path)){
+	echo "Error: unable to create {$temp_path} directory.  You will need to create this folder.";exit;
+}
+
 $loadtimes['common']=number_format((microtime(true)-$stime),3);
 if(isset($_REQUEST['_view'])){
 //check for minify redirect
