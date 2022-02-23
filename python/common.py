@@ -320,6 +320,37 @@ def isWindows():
     else:
         return False
 
+#---------- begin function loadExtras ----------
+# @describe loads extra modules found in the python/extras folder
+# @param str string
+# @return str string
+# @usage common.loadExtras('mymodule')
+def loadExtras(file):
+    extra_path = common.scriptPath('extras')
+    afile = f"{extra_path}/databases/{file}"
+    if os.path.exists(afile):
+        try:
+            sys.path.append(extra_path)
+            #__import__(name, globals=None, locals=None, fromlist=(), level=0)
+            __import__(file, globals(), locals(), [], 0) 
+            return True
+        except Exception as err:
+            common.abort(sys.exc_info(),err)    
+
+    else:
+        afile = f"{extra_path}/{file}"
+        if os.path.exists(afile):
+            try:
+                sys.path.append(extra_path)
+                #__import__(name, globals=None, locals=None, fromlist=(), level=0)
+                __import__(file, globals(), locals(), [], 0) 
+                return True
+            except Exception as err:
+                common.abort(sys.exc_info(),err)    
+
+        else:
+            return False 
+
 #---------- begin function nl2br ----------
 # @describe converts new lines to <br /> tags in string
 # @param str string
@@ -380,6 +411,10 @@ def setView(name,clear=0):
         if clear == 1:
             VIEW = {}
         VIEW[name]=VIEWS[name]
+
+def scriptPath(d=''):
+        spath = os.path.dirname(os.path.realpath(__file__))
+        return os.path.realpath(f"{spath}/{d}")
 
 def createView(name,val):
     global VIEW
