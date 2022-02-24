@@ -53,7 +53,7 @@
 				<input type="hidden" name="cursor_pos" value="" />
 				<input type="hidden" name="editor_content" value="" />
 				<div style="position: relative;max-width:100%;">
-				<textarea class="form-control" data-behavior="editor" id="sql_full" name="sql_full"><?=$_SESSION['sql_full'];?></textarea>
+				<textarea class="form-control" data-behavior="editor" id="sql_full" name="sql_full"></textarea>
 				</div>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
 					<div>
@@ -61,6 +61,9 @@
 					</div>
 					<div title="Check to execute with Python libraries">
 						<input type="checkbox" name="py" id="py" value="1" /><label for="py" class="brand-python"></label>
+					</div>
+					<div onclick="sqlpromptLoadPrompt();" class="w_pointer" title="reload previous" style="margin-left:10px;">
+						<span class="icon-history w_gray"></span>
 					</div>
 					<div  style="flex:1;" class="align-right w_gray w_small w_nowrap" id="results_count"></div>
 					<div class="align-right" style="padding-left:10px;display:flex;flex-wrap:nowrap;">
@@ -74,7 +77,7 @@
 		<div id="sqlprompt_results" style="display:grid;">
 			<div id="setprocessing"></div>
 		</div>
-		<div style="display:none"><div data-db="<?=$db['name'];?>" id="nulldiv"><?=buildOnLoad("wacss.loadScript('/php/admin/sqlprompt_js.js');wacss.init();");?></div></div>
+		<div style="display:none"><div data-db="<?=configValue('database');?>" id="nulldiv"><?=buildOnLoad("wacss.loadScript('/php/admin/sqlprompt_js.js');wacss.init();document.sqlprompt.db.value='".configValue('database')."';");?></div></div>
 	</div>
 </div>
 </view:default>
@@ -91,9 +94,6 @@
 		<?=renderEach('table',$tables,'table');?>
 	</ul>
 </div>
-<view:prompt_load>
-<?=buildOnLoad("sqlpromptLoadPrompt('{$db['name']}');");?>
-</view:prompt_load>
 </view:tables_fields>
 
 <view:load_prompt>

@@ -79,8 +79,8 @@ function sqlpromptSetValue(v){
 	}
 	return false;
 }
-function sqlpromptLoadPrompt(db){
-	document.sqlprompt.db.value=db;
+function sqlpromptLoadPrompt(){
+	let db=document.sqlprompt.db.value;
 	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'load_prompt',db:db,setprocessing:0})
 }
 function sqlpromptMonitor(type){
@@ -212,5 +212,3 @@ function sqlpromptPaginate(offset){
 	return false;
 }
 document.onkeydown = sqlpromptCheckKey;
-let db=document.querySelector('#nulldiv[data-db]').dataset.db;
-sqlpromptLoadPrompt(db);
