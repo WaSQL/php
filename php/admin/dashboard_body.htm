@@ -44,7 +44,7 @@
 <view:stat>
 	<a class="statbox" href="/php/admin.php?_menu=list&_table_=<?=$stat['name'];?>">
 		<div class="name" title="<?=$stat['name'];?>"><span class="<?=$stat['icon'];?>"></span><?=$stat['name'];?></div>
-		<div class="count"><?=$stat['counts']['cnt'];?></div>
+		<div class="count"><?=number_format($stat['counts']['cnt'],0);?></div>
 		<div class="counts" style="margin-bottom:5px;">
 			<div style="text-align: left;">Counts</div>
 			<table title="Access" class="table condensed bordered">
