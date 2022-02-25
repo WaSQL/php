@@ -9,6 +9,9 @@
 	text-align: center;
 	color: #a4a5a7;
 	text-decoration: none;
+	display: flex; 
+	flex-direction: column;
+	justify-content: space-between;
 }
 .statbox:hover{
 	box-shadow: rgba(0, 0, 0, 0.09) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
@@ -16,17 +19,21 @@
 .statbox .name{
 	font-size: 30px;
 }
+.statbox .name span {
+	font-size: 20px;
+	margin-right: 5px;
+}
 .statbox .count{
 	font-size: 50px;
 }
-.statbox .create,
-.statbox .edit{
-	display: flex;
-	justify-content: space-between;
-	align-content: center;
-	font-size: 12px;
+.statbox .counts table td{
+	font-size: 11px;
+	color: #a4a5a7;
 }
 </style>
+<div class="align-right w_small" style="margin-top:10px;color:#CCC;">
+	Note: to add custom tables to this page set dashboard_tables to config.xml to the tables you want to see.
+</div>
 <div style="padding:50px 25px;display:flex;flex-wrap: wrap;justify-content: center;">
 	<?=renderEach('stat',$stats,'stat');?>
 </div>
@@ -34,18 +41,44 @@
 
 <view:stat>
 	<a class="statbox" href="/php/admin.php?_menu=list&_table_=_<?=$stat['name'];?>">
-		<div class="name"><?=$stat['name'];?></div>
-		<div class="count"><?=$stat['cnt'];?></div>
-		<div class="create">
-			<div style="flex:1;text-align: left;"><span class="icon-plus"></span> <?=$stat['crec']['_id'];?></div> 
-			<div style="flex:2;"><?=$stat['crec']['_cdate'];?></div>
-			<div style="flex:1;text-align: right"><?=$stat['crec']['_cuser_ex']['username'];?></div>
+		<div class="name"><span class="<?=$stat['icon'];?>"></span><?=$stat['name'];?></div>
+		<div class="count"><?=$stat['counts']['cnt'];?></div>
+		<div class="counts" style="margin-bottom:5px;">
+			<div style="text-align: left;">Counts</div>
+			<table title="Access" class="table condensed bordered">
+				<tr><td class="align-left"></td><td>Min</td><td>Hr</td><td>Day</td><td>Wk</td><td>Mon</td></tr>
+				<tr>
+					<td class="align-left">Creates</td>
+					<td><?=$stat['counts']['cdate_minute'];?></td>
+					<td><?=$stat['counts']['cdate_hour'];?></td>
+					<td><?=$stat['counts']['cdate_day'];?></td>
+					<td><?=$stat['counts']['cdate_week'];?></td>
+					<td><?=$stat['counts']['cdate_month'];?></td>
+				</tr>
+				<tr>
+					<td class="align-left">Edits</td>
+					<td><?=$stat['counts']['edate_minute'];?></td>
+					<td><?=$stat['counts']['edate_hour'];?></td>
+					<td><?=$stat['counts']['edate_day'];?></td>
+					<td><?=$stat['counts']['edate_week'];?></td>
+					<td><?=$stat['counts']['edate_month'];?></td>
+				</tr>
+				<view:access>
+				<tr>
+					<td class="align-left">Access</td>
+					<td><?=$stat['counts']['adate_minute'];?></td>
+					<td><?=$stat['counts']['adate_hour'];?></td>
+					<td><?=$stat['counts']['adate_day'];?></td>
+					<td><?=$stat['counts']['adate_week'];?></td>
+					<td><?=$stat['counts']['adate_month'];?></td>
+				</tr>
+				</view:access>
+				<?=renderViewIf(isset($stat['counts']['adate_minute']),'access',$stat,'stat');?>
+			</table>
 		</div>
-		<div class="edit" style="margin-top:10px;">
-			<div style="flex:1;text-align: left"><span class="icon-edit"></span> <?=$stat['erec']['_id'];?></div> 
-			<div style="flex:2;"><?=$stat['erec']['_edate'];?></div>
-			<div style="flex:1;text-align: right;"><?=$stat['erec']['_euser_ex']['username'];?></div>
-		</div>
+		
+		
+		
 	</a>
 </view:stat>
 

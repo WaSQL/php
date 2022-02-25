@@ -4,6 +4,7 @@
 		<!-- WaSQL -->
 		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
 			<ul  style="padding-bottom:5px;">
+				<li><a href="/php/admin.php?_menu=dashboard"><span class="icon-th-thumb-empty"></span> <translate>Table Stats</translate></a></li>
 				<li><a href="/php/admin.php?_menu=config"><span class="icon-gear"></span> <translate>Config</translate></a></li>
 				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<translate>Update WaSQL? Are you sure?</translate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <translate>Update</translate> WaSQL</a></li>
 				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><translate>Clear Min</translate></span></a></li>
