@@ -59,31 +59,31 @@
 				</tr>
 				<tr>
 					<td class="align-left">Creates</td>
-					<td title="Minute"><?=$stat['counts']['cdate_minute'];?></td>
-					<td title="Hour"><?=$stat['counts']['cdate_hour'];?></td>
-					<td title="Day"><?=$stat['counts']['cdate_day'];?></td>
-					<td title="Week"><?=$stat['counts']['cdate_week'];?></td>
-					<td title="Month"><?=$stat['counts']['cdate_month'];?></td>
-					<td title="Year"><?=$stat['counts']['cdate_year'];?></td>
+					<td title="Minute"><?=number_format($stat['counts']['cdate_minute'],0);?></td>
+					<td title="Hour"><?=number_format($stat['counts']['cdate_hour'],0);?></td>
+					<td title="Day"><?=number_format($stat['counts']['cdate_day'],0);?></td>
+					<td title="Week"><?=number_format($stat['counts']['cdate_week'],0);?></td>
+					<td title="Month"><?=number_format($stat['counts']['cdate_month'],0);?></td>
+					<td title="Year"><?=number_format($stat['counts']['cdate_year'],0);?></td>
 				</tr>
 				<tr>
 					<td class="align-left">Edits</td>
-					<td title="Minute"><?=$stat['counts']['edate_minute'];?></td>
-					<td title="Hour"><?=$stat['counts']['edate_hour'];?></td>
-					<td title="Day"><?=$stat['counts']['edate_day'];?></td>
-					<td title="Week"><?=$stat['counts']['edate_week'];?></td>
-					<td title="Month"><?=$stat['counts']['edate_month'];?></td>
-					<td title="Year"><?=$stat['counts']['edate_year'];?></td>
+					<td title="Minute"><?=number_format($stat['counts']['edate_minute'],0);?></td>
+					<td title="Hour"><?=number_format($stat['counts']['edate_hour'],0);?></td>
+					<td title="Day"><?=number_format($stat['counts']['edate_day'],0);?></td>
+					<td title="Week"><?=number_format($stat['counts']['edate_week'],0);?></td>
+					<td title="Month"><?=number_format($stat['counts']['edate_month'],0);?></td>
+					<td title="Year"><?=number_format($stat['counts']['edate_year'],0);?></td>
 				</tr>
 				<view:access>
 				<tr>
 					<td class="align-left">Access</td>
-					<td title="Minute"><?=$stat['counts']['adate_minute'];?></td>
-					<td title="Hour"><?=$stat['counts']['adate_hour'];?></td>
-					<td title="Day"><?=$stat['counts']['adate_day'];?></td>
-					<td title="Week"><?=$stat['counts']['adate_week'];?></td>
-					<td title="Month"><?=$stat['counts']['adate_month'];?></td>
-					<td title="Year"><?=$stat['counts']['adate_year'];?></td>
+					<td title="Minute"><?=number_format($stat['counts']['adate_minute'],0);?></td>
+					<td title="Hour"><?=number_format($stat['counts']['adate_hour'],0);?></td>
+					<td title="Day"><?=number_format($stat['counts']['adate_day'],0);?></td>
+					<td title="Week"><?=number_format($stat['counts']['adate_week'],0);?></td>
+					<td title="Month"><?=number_format($stat['counts']['adate_month'],0);?></td>
+					<td title="Year"><?=number_format($stat['counts']['adate_year'],0);?></td>
 				</tr>
 				</view:access>
 				<?=renderViewIf(isset($stat['counts']['adate_minute']),'access',$stat,'stat');?>
