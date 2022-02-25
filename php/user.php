@@ -940,7 +940,7 @@ function userSetUserInfo($rec=array()){
 	if(!isset($rec['_id']) || !isNum($rec['_id'])){return 'No ID';}
 	$changes=array();
 	/* update access date */
-	$changes['_adate']=$rec['_adate']=date("Y-m-d H:i:s");
+	$changes['_adate']=$rec['_adate']='NOW()';
 	$finfo=getDBFieldInfo("_users");
 	if(!isset($finfo['_sid'])){
 		$query="ALTER TABLE _users ADD _sid varchar(150) NULL;";
