@@ -11,6 +11,7 @@ function dashboardGetStats(){
 	$now=date('Y-m-d H:i:s');
 	foreach($tables as $table){
 		$table=strtolower(trim($table));
+		if(!isDBTable($table)){continue;}
 		//some tables have an _adate field
 		switch($table){
 			case '_pages':
