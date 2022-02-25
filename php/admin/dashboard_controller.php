@@ -1,0 +1,9 @@
+<?php
+	switch(strtolower($_REQUEST['func'])){
+		default:
+			$stats=dashboardGetStats();
+			setView('default',1);
+		break;
+	}
+	setView('default',1);
+?>

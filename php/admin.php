@@ -645,6 +645,7 @@ if(isAjax()){
 		case 'system':
 		case 'tables':
 		case 'config':
+		case 'dashboard':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -1320,6 +1321,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'system':
 		case 'tables':
 		case 'config':
+		case 'dashboard':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;

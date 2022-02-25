@@ -1,0 +1,51 @@
+<view:default>
+<style>
+.statbox{
+	width: 200px;
+	border-radius: 5px;
+	box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
+	margin: 0 50px 50px 0;
+	padding: 3px 5px;
+	text-align: center;
+	color: #a4a5a7;
+	text-decoration: none;
+}
+.statbox:hover{
+	box-shadow: rgba(0, 0, 0, 0.09) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+}
+.statbox .name{
+	font-size: 30px;
+}
+.statbox .count{
+	font-size: 50px;
+}
+.statbox .create,
+.statbox .edit{
+	display: flex;
+	justify-content: space-between;
+	align-content: center;
+	font-size: 12px;
+}
+</style>
+<div style="padding:50px 25px;display:flex;flex-wrap: wrap;justify-content: center;">
+	<?=renderEach('stat',$stats,'stat');?>
+</div>
+</view:default>
+
+<view:stat>
+	<a class="statbox" href="/php/admin.php?_menu=list&_table_=_<?=$stat['name'];?>">
+		<div class="name"><?=$stat['name'];?></div>
+		<div class="count"><?=$stat['cnt'];?></div>
+		<div class="create">
+			<div style="flex:1;text-align: left;"><span class="icon-plus"></span> <?=$stat['crec']['_id'];?></div> 
+			<div style="flex:2;"><?=$stat['crec']['_cdate'];?></div>
+			<div style="flex:1;text-align: right"><?=$stat['crec']['_cuser_ex']['username'];?></div>
+		</div>
+		<div class="edit" style="margin-top:10px;">
+			<div style="flex:1;text-align: left"><span class="icon-edit"></span> <?=$stat['erec']['_id'];?></div> 
+			<div style="flex:2;"><?=$stat['erec']['_edate'];?></div>
+			<div style="flex:1;text-align: right;"><?=$stat['erec']['_euser_ex']['username'];?></div>
+		</div>
+	</a>
+</view:stat>
+
