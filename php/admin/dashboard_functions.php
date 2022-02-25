@@ -50,7 +50,7 @@ ENDOFQUERY;
 				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 DAY) THEN 1 ELSE 0 END) AS cdate_day,
 				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 WEEK) THEN 1 ELSE 0 END) AS cdate_week,
 				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS cdate_month,
-				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 YEAR) THEN 1 ELSE 0 END) AS cdate_year
+				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 YEAR) THEN 1 ELSE 0 END) AS cdate_year,
 
 				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 MINUTE) THEN 1 ELSE 0 END) AS edate_minute,
 				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 HOUR) THEN 1 ELSE 0 END) AS edate_hour,
