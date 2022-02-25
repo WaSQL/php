@@ -23,7 +23,8 @@ function dashboardGetStats(){
 						SUM(CASE WHEN _adate >= DATE_SUB('{$now}', INTERVAL 1 HOUR) THEN 1 ELSE 0 END) AS adate_hour,
 						SUM(CASE WHEN _adate >= DATE_SUB('{$now}', INTERVAL 1 DAY) THEN 1 ELSE 0 END) AS adate_day,
 						SUM(CASE WHEN _adate >= DATE_SUB('{$now}', INTERVAL 1 WEEK) THEN 1 ELSE 0 END) AS adate_week,
-						SUM(CASE WHEN _adate >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS adate_month
+						SUM(CASE WHEN _adate >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS adate_month,
+						SUM(CASE WHEN _adate >= DATE_SUB('{$now}', INTERVAL 1 YEAR) THEN 1 ELSE 0 END) AS adate_year
 ENDOFQUERY;
 			break;
 			case '_cron':
@@ -32,7 +33,8 @@ ENDOFQUERY;
 						SUM(CASE WHEN run_date >= DATE_SUB('{$now}', INTERVAL 1 HOUR) THEN 1 ELSE 0 END) AS adate_hour,
 						SUM(CASE WHEN run_date >= DATE_SUB('{$now}', INTERVAL 1 DAY) THEN 1 ELSE 0 END) AS adate_day,
 						SUM(CASE WHEN run_date >= DATE_SUB('{$now}', INTERVAL 1 WEEK) THEN 1 ELSE 0 END) AS adate_week,
-						SUM(CASE WHEN run_date >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS adate_month
+						SUM(CASE WHEN run_date >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS adate_month,
+						SUM(CASE WHEN run_date >= DATE_SUB('{$now}', INTERVAL 1 YEAR) THEN 1 ELSE 0 END) AS adate_year
 ENDOFQUERY;
 			break;
 			default:
@@ -48,12 +50,14 @@ ENDOFQUERY;
 				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 DAY) THEN 1 ELSE 0 END) AS cdate_day,
 				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 WEEK) THEN 1 ELSE 0 END) AS cdate_week,
 				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS cdate_month,
+				SUM(CASE WHEN _cdate >= DATE_SUB('{$now}', INTERVAL 1 YEAR) THEN 1 ELSE 0 END) AS cdate_year
 
 				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 MINUTE) THEN 1 ELSE 0 END) AS edate_minute,
 				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 HOUR) THEN 1 ELSE 0 END) AS edate_hour,
 				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 DAY) THEN 1 ELSE 0 END) AS edate_day,
 				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 WEEK) THEN 1 ELSE 0 END) AS edate_week,
-				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS edate_month
+				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS edate_month,
+				SUM(CASE WHEN _edate >= DATE_SUB('{$now}', INTERVAL 1 YEAR) THEN 1 ELSE 0 END) AS edate_year
 
 				{$adate_query}
 			FROM {$table}
