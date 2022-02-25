@@ -40,7 +40,7 @@
 </view:default>
 
 <view:stat>
-	<a class="statbox" href="/php/admin.php?_menu=list&_table_=_<?=$stat['name'];?>">
+	<a class="statbox" href="/php/admin.php?_menu=list&_table_=<?=$stat['name'];?>">
 		<div class="name"><span class="<?=$stat['icon'];?>"></span><?=$stat['name'];?></div>
 		<div class="count"><?=$stat['counts']['cnt'];?></div>
 		<div class="counts" style="margin-bottom:5px;">
