@@ -20,7 +20,7 @@ try:
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+    print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
 
 VIEWS = {}
@@ -35,7 +35,7 @@ DEBUG = []
 # @usage common.abort(sys.exc_info(),err)
 def abort(exc_tuple,err):
     fname = os.path.split(exc_tuple[2].tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}. ExeptionType: {exc_tuple[0]}, Filename: {fname}, Linenumber: {exc_tuple[2].tb_lineno}")
+    print("Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_tuple[0],fname,exc_tuple[2].tb_lineno))
     sys.exit(123)
 
 #---------- begin function debug ----------
@@ -45,7 +45,7 @@ def abort(exc_tuple,err):
 # @usage common.debug(sys.exc_info(),err)
 def debug(exc_tuple,err):
     fname = os.path.split(exc_tuple[2].tb_frame.f_code.co_filename)[1]
-    return f"Error: {err}. ExeptionType: {exc_tuple[0]}, Filename: {fname}, Linenumber: {exc_tuple[2].tb_lineno}"
+    return "Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_tuple[0],fname,exc_tuple[2].tb_lineno)
 
 #---------- begin function buildDir ----------
 # @describe recursive folder creator
@@ -69,7 +69,7 @@ def buildDir(path,mode=0o777,recurse=True):
 # @return string - image tag with the specified javascript string invoked onload
 # @usage <?py common.buildOnLoad("document.myform.myfield.focus();")?>
 def buildOnLoad(str='',img='/wfiles/clear.gif',width=1,height=1):
-    return f'<img class="w_buildonload" src="{img}" alt="onload functions" width="{width}" height="{height}" style="border:0px;" onload="eventBuildOnLoad();" data-onload="{str}">'
+    return '<img class="w_buildonload" src="{}" alt="onload functions" width="{}" height="{}" style="border:0px;" onload="eventBuildOnLoad();" data-onload="{}">'.format(img,width,height,str)
 
 #---------- begin function calculateDistance--------------------
 # @describe distance between two longitude & latitude points
@@ -327,7 +327,7 @@ def isWindows():
 # @usage common.loadExtras('mymodule')
 def loadExtras(file):
     extra_path = common.scriptPath('extras')
-    afile = f"{extra_path}/databases/{file}"
+    afile = "{}/databases/{}".format(extra_path,file)
     if os.path.exists(afile):
         try:
             sys.path.append(extra_path)
@@ -338,7 +338,7 @@ def loadExtras(file):
             common.abort(sys.exc_info(),err)    
 
     else:
-        afile = f"{extra_path}/{file}"
+        afile = "{}/{}".format(extra_path,file)
         if os.path.exists(afile):
             try:
                 sys.path.append(extra_path)
@@ -414,7 +414,7 @@ def setView(name,clear=0):
 
 def scriptPath(d=''):
         spath = os.path.dirname(os.path.realpath(__file__))
-        return os.path.realpath(f"{spath}/{d}")
+        return os.path.realpath("{}/{}".format(spath,d))
 
 def createView(name,val):
     global VIEW

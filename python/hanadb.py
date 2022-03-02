@@ -19,7 +19,7 @@ try:
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Error: {err}\nFilename: {fname}\nLinenumber: {exc_tb.tb_lineno}")
+    print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
 
 ###########################################
@@ -108,7 +108,7 @@ def executeSQL(query,params):
 ###########################################
 #conversion function to convert objects in recordsets
 def convertStr(o):
-    return f"{o}"
+    return "{}".format(o)
 
 ###########################################
 def queryResults(query,params):
