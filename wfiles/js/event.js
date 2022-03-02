@@ -1928,14 +1928,24 @@ function initBehaviors(ajaxdiv){
         }
         if(in_array("email-link",behaviors)){
 			/* email link:  /info/wasql/com/  */
-			var email=navEls[n].dataset.value || navEls[n].innerText;
-			email=email.replace(/^[\/]+/,'',email);
-			email=email.replace(/[\/]+$/,'',email);
-			email=email.replace(/[\/]/,'@',email);
-			email=email.replace(/[\/]/,'.',email);
-			navEls[n].href='mailto:'+email;
 			navEls[n].setAttribute('data-behavior','processed');
-			navEls[n].innerText=email;
+			if(undefined != navEls[n].dataset.href){
+				let email=navEls[n].dataset.href;
+				email=email.replace(/^[\/]+/,'',email);
+				email=email.replace(/[\/]+$/,'',email);
+				email=email.replace(/[\/]/,'@',email);
+				email=email.replace(/[\/]/,'.',email);
+				navEls[n].href='mailto:'+email;
+			}
+			else{
+				let email=navEls[n].dataset.value || navEls[n].innerText;
+				email=email.replace(/^[\/]+/,'',email);
+				email=email.replace(/[\/]+$/,'',email);
+				email=email.replace(/[\/]/,'@',email);
+				email=email.replace(/[\/]/,'.',email);
+				navEls[n].href='mailto:'+email;
+				navEls[n].innerText=email;
+			}
 		}
 		if(in_array("loadtextfile",behaviors)){
 			loadTextFileInit(navEls[n]);
