@@ -1347,7 +1347,7 @@ function getWebsiteMeta($url){
 function parseHtmlTagAttributes($text) {
     $attributes = array();
     $pattern = '#(?(DEFINE)
-            (?<name>[a-zA-Z][a-zA-Z0-9-:]*)
+            (?<name>[a-zA-Z][a-zA-Z0-9\-\:\_]*)
             (?<value_double>"[^"]+")
             (?<value_single>\'[^\']+\')
             (?<value_none>[^\s>]+)
