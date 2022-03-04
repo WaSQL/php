@@ -11703,6 +11703,7 @@ function processCSVLines($file,$func_name,$params=array()){
 *	[-separator] char - defaults to ,
 *	[-enclose] char - defaults to "
 *	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+* 	[-listfields] mixed - comman separated list of fields to return
 *	[-start|skiprows] int - line to start on
 *	[-maxrows|stop] int - max number of rows to return
 *	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
@@ -11717,6 +11718,15 @@ function getCSVRecords($file,$params=array()){
 	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
 	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
+	//backward compatibility
+	if(isset($params['fields'])){$params['-fields']=$params['fields'];}
+	if(isset($params['-fields'])){
+		if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,/',$params['-fields']);}
+	}
+	if(isset($params['-listfields'])){
+		if(!is_array($params['-listfields'])){$params['-listfields']=preg_split('/\,/',$params['-listfields']);}
+	}
+	else{$params['-listfields']=array();}
 	ini_set('auto_detect_line_endings',TRUE);
 	$recs=array();
 	$linecnt = 0;
@@ -11724,8 +11734,8 @@ function getCSVRecords($file,$params=array()){
 	setlocale(LC_ALL, 'en_US.UTF-8');
 	if($fh = fopen_utf8($file,'r')){
 		//get the fields
-		if(isset($params['fields']) && is_array($params['fields'])){
-			$fields=$params['fields'];
+		if(isset($params['-fields']) && is_array($params['-fields'])){
+			$fields=$params['-fields'];
 		}
 		else{
 			$fields=array();
@@ -11769,6 +11779,7 @@ function getCSVRecords($file,$params=array()){
             	$rec[$key]=$val;
 			}
 			foreach($fields as $x=>$field){
+				if(count($params['-listfields']) && !in_array($field,$params['-listfields'])){continue;}
 				$val=$lineparts[$x];
 				$rec[$field]=$lineparts[$x];
 			}
