@@ -8564,6 +8564,7 @@ function evalPHP($strings){
 					$strings[$sIndex]=str_replace($evalmatches[0][$ex],$ob,$strings[$sIndex]);
 				}
 				else{
+					if(is_null($val)){$val='';}
 					$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 		        }
 			}
@@ -16484,6 +16485,24 @@ function printValueIf($conditional,$v='',$exit=0){
 		return '';
 	}
 	if($conditional){return printValue($v,$exit);}
+	return '';
+}
+//---------- begin function printValueIfUser---------------------------------------
+/**
+* @describe printValueIfUser is a Conditional printValue based on current user
+* @param username string - username
+* @param $v mixed The Variable to be examined.
+* @param [$exit] boolean - if set to true, then it will echo the result and exit. defaults to false
+* @return string
+*	returns an html block showing the contents of the object,array,or variable specified.
+* @usage
+*	echo printValueIf('slloyd',$sampleArray);
+*/
+function printValueIfUser($username,$v='',$exit=0){
+	if(!isUser()){return '';}
+	global $USER;
+	if($username != $USER['username']){return '';}
+	return printValue($v,$exit);
 	return '';
 }
 //---------- begin function printValueHidden
