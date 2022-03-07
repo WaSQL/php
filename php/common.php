@@ -16141,7 +16141,7 @@ function postURL($url,$params=array()) {
 */
 function postJSON($url='',$json='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: application/json; charset=UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='application/json; charset=UTF-8';}
 	if(!isset($params['-json'])){$params['-json']=1;}
 	if(isset($params['username']) && isset($params['apikey'])){
 		if(!is_array($params['-headers'])){$params['-headers']=array();}
