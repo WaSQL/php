@@ -1,11 +1,47 @@
 <view:default>
 <h2 style="margin:0px;"><span class="icon-feather"></span> Apache Bench</h2>
 ApacheBench (ab) is a single-threaded command line computer program for measuring the performance of HTTP web servers. This is a front-end to that command.
-<div class="w_flex w_flexrow w_flexstart w_flexnowrap w_rowtop">
-	<div>
-		<?=apachebenchForm();?>
+<div style="display:flex;justify-content: flex-start;align-content: flex-start;flex-wrap:wrap;">
+	<div style="width:350px;">
+		<form method="post" action="/php/admin.php" onsubmit="return ajaxPost(this,'ab_results');">
+			<input type="hidden" name="_menu" value="ab" />
+			<input type="hidden" name="func" value="run" />
+			<div style="display:flex;justify-content: flex-start;align-content: flex-start;margin-top:20px;">
+				<div>
+					<label>Total Requests</label>
+					<input type="number" class="input browser-default" name="requests" value="" required="required" />
+				</div>
+				<div style="margin-left:10px;">
+					<label>Concurent Requests</label>
+					<input type="number" class="input browser-default" name="concurrency" value="" required="required" />
+				</div>
+			</div>
+			<div style="margin-top:20px;">
+				<label>URL/Endpoint ([https://]hostname[:port]/path)</label>
+				<input type="text" class="input browser-default" name="url" value="" required="required" />
+			</div>
+			<div style="margin-top:20px;">
+				<label>Basic Authentication - optional (username:password)</label>
+				<input type="text" class="input browser-default" name="basic_auth" value="" />
+			</div>
+			<div style="margin-top:20px;">
+				<label>Payload - optional</label>
+				<textarea class="textarea browser-default" name="payload"></textarea>
+			</div>
+			<div style="margin-top:20px;">
+				<label>Proxy Server - optional (server:port)</label>
+				<input type="text" class="input browser-default" name="proxy" value="" />
+			</div>
+			<div style="margin-top:20px;">
+				<label>Proxy Authentication - optional (username:password)</label>
+				<input type="text" class="input browser-default" name="proxy_auth" value="" />
+			</div>
+			<div style="margin-top:20px;">
+				<button type="submit" class="button btn">Run Test</button>
+			</div>
+		</form>
 	</div>
-	<div id="ab_results" class="w_padleft">
+	<div id="ab_results" style="flex:4;padding-left:20px;">
 	</div>
 </div>
 </view:default>
