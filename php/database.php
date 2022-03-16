@@ -745,9 +745,11 @@ function pyQueryResults($db,$query,$params=array()){
 /**
 * @describe returns an html table of records
 * @param params array - requires either -list or -table or a raw query instead of params
-*	[-list] array - getDBRecords array to use
-*	[-csv] file - csv file to load 
 *	[-table] string - table name.  Use this with other field/value params to filter the results
+*	[-list] array - getDBRecords array to use
+*	[-query] string - query to run instead of -list or passing in -table
+*	[-csv] file - csv file to load 
+
 *	[-tableheight] string - sets max height of table (i.e 80vh)
 *	[-table{class|style|id|...}] string - sets specified attribute on table
 *	[-thead{class|style|id|...}] string - sets specified attribute on thead
@@ -765,6 +767,8 @@ function pyQueryResults($db,$query,$params=array()){
 *	[-export] - 1 - show export option  
 *	[-exportfields] -  subset of fields to export.
 * 	[-export_displaynames] - 1 - use displaynames in csv header row
+* 	[-action] string - set action of pagination form
+* 	[-onsubmit] string - set onsubmit of pagination form. Defaults to pagingSubmit(this). set to pagingSubmit(this,'{divid}') when using ajax
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
 *	[-ajaxid] str - ajax id to wrap the table in

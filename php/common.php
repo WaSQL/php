@@ -4658,7 +4658,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	$rtn .= '>';
 	if(isset($params['message'])){
 		$rtn .= '	<option value="">'.$params['message'].'</option>'.PHP_EOL;
-    	}
+    }
 	if(isset($params['-groups'])){
 		foreach($pairs as $group=>$opts){
 			$rtn .= '	<optgroup label="'.$group.'">'.PHP_EOL;

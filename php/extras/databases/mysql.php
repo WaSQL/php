@@ -822,6 +822,7 @@ function mysqlDBConnect($params=array()){
 			exit;
 
 		}
+		$dbh_mysql->set_charset("utf8mb4");
 		return $dbh_mysql;
 	}
 	catch (Exception $e) {
