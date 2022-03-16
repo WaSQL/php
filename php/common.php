@@ -9152,6 +9152,7 @@ ENDOFCONTENT;
 		'DATABASE'=>"DATABASE = ".json_encode(evalCleanupGlobal($db)),
 		'REQUEST'=>"REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST)),
 		'SESSION'=>"SESSION = ".json_encode(evalCleanupGlobal($_SESSION)),
+		'SERVER'=>"SERVER = ".json_encode(evalCleanupGlobal($_SERVER)),
 		'CRONTHRU'=>"CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU))
 	);
 	$content=<<<ENDOFCONTENT
@@ -9210,6 +9211,13 @@ def session(k):
 	{$wasql['SESSION']}
 	if k in SESSION:
 		return SESSION[k]
+	else:
+		return ""
+
+def server(k):
+	{$wasql['SERVER']}
+	if k in SERVER:
+		return SERVER[k]
 	else:
 		return ""
 
