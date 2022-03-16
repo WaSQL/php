@@ -9152,7 +9152,7 @@ ENDOFCONTENT;
 		'DATABASE'=>"DATABASE = ".json_encode(evalCleanupGlobal($db)),
 		'REQUEST'=>"REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST)),
 		'SESSION'=>"SESSION = ".json_encode(evalCleanupGlobal($_SESSION)),
-		'SERVER'=>"SERVER = ".json_encode(evalCleanupGlobal($_SERVER)),
+		'SERVER'=>"SERVER = ".json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'CRONTHRU'=>"CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU))
 	);
 	$content=<<<ENDOFCONTENT
@@ -9299,7 +9299,6 @@ function evalCleanupGlobal($arr){
 		if(!strlen($v) || $v=='null'){
 			unset($arr[$k]);
 		}
-		$arr[$k]=stripslashes(stripslashes($v));
 	}
 	if(!is_array($arr) || count($arr)==0){return array('_isempty'=>1);}
 	return $arr;
