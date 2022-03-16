@@ -9299,6 +9299,7 @@ function evalCleanupGlobal($arr){
 		if(!strlen($v) || $v=='null'){
 			unset($arr[$k]);
 		}
+		$arr[$k]=stripslashes(stripslashes($v));
 	}
 	if(!is_array($arr) || count($arr)==0){return array('_isempty'=>1);}
 	return $arr;
