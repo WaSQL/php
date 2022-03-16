@@ -14,7 +14,7 @@
 				<div style="flex-grow:1;margin-left:5px;"><button type="submit" class="button btn browser-default" style="width:100%;">Run</button></div>
 			</div>
 		</form>
-		<div id="stdout"  style="margin:5px 0 0 0 !important;font-size:0.9em;padding:5px;background:#282923;color:#f8f8f2;min-height:300px;max-height:85vh;overflow:auto;width:100%;z-index: 9999;">
+		<div id="stdout"  style="margin:5px 0 0 0 !important;font-size:0.9em;padding:5px;background:#282923;color:#f8f8f2;min-height:300px;max-height:80vh;overflow:auto;width:100%;z-index: 9999;">
 		</div>
 	</div>
 </div>
@@ -23,13 +23,15 @@
 
 <view:results>
 	<div><?=$out['dir'];?>> <?=$out['cmd'];?></div>
-	<view:success>
-		<div style="margin:5px 0 0 12px;"><?=nl2br($out['stdout']);?></div>
-	</view:success>
-	<view:failure>
-			<div style="margin:5px 0 0 12px;color:#e7db74;"><?=nl2br($out['stderr']);?></div>
-	</view:failure>
-	<?=renderViewIfElse($out['rtncode']==0,'success','failure',$out,'out');?>
+	<div style="margin:5px 0 0 12px;">
+		<div style="padding: 5px;border-top:1px dashed #f8f8f2;border-bottom: 1px dashed #f8f8f2;">STDOUT</div>
+		<?=nl2br($out['stdout']);?>
+	</div>
+	<div style="margin:5px 0 0 12px;color:#e7db74;">
+		<div style="padding: 5px;border-top:1px dashed #e7db74;border-bottom: 1px dashed #e7db74;">STDERR</div>
+		<?=nl2br($out['stderr']);?>
+	</div>
+
 
 	<datalist id="cmds">
 		<view:command>
