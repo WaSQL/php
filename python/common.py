@@ -9,6 +9,7 @@ try:
     import pprint
     import re
     import io
+    import csv
     from contextlib import redirect_stdout
     from math import sin, cos, sqrt, atan2, radians
     import subprocess
@@ -236,6 +237,28 @@ def formatPhone(phone_number):
 # @usage ph=common.FormatPhone('8014584741')
 def getParentPath(path):
     return os.path.abspath(os.path.join(path, os.pardir))
+
+#---------- begin function getCSVRecords
+# @describe returns csv file contents as recordsets
+# @param afile string - full path to csv file
+def getCSVRecords(afile):
+    #read a small portion to determine the dialect
+    with open(afile, 'r') as csvfile:
+        sample = csvfile.read(1024)
+        has_header = csv.Sniffer().has_header(sample)
+        deduced_dialect = csv.Sniffer().sniff(sample)
+    recs=[]
+    with open(afile, 'r') as csvfile:
+        reader = csv.reader(csvfile, deduced_dialect)
+        # list to store the names of columns
+        fields = next(reader)
+        for row in reader:
+            #convert row to dictionary
+            rec=dict(zip(fields, row))
+            #append row to recs list
+            recs.append(rec)
+    #return recs list
+    return recs
 
 #---------- begin function hostname
 # @describe gets document root (HTTP_HOST)
