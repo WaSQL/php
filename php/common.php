@@ -3316,14 +3316,26 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($image)){
 			$rtn.=' data-image="1"';
 		}
+
 		//displayif
 		if(strlen($displayif)){
 			$rtn .= ' data-displayif="'.$displayif.'"';
 		}
 		$rtn.='>'.PHP_EOL;
 		$rtn.='		<input type="'.$params['-type'].'" id="'.$opt_id.'" name="'.$input_name.'" value="'.$tval.'"';
+		//required
+		if(isset($params['required']) && $params['required']){
+			$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';
+		}
+		elseif(isset($params['_required']) && $params['_required']){
+			$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';
+		}
+		//onchange
+		if(isset($params['onchange']) && strlen($params['onchange'])){
+			$rtn .= ' onchange="'.$params['onchange'].'"';
+		}
 		//requiredif
-		if(isset($params['requiredif'])){
+		if($params['requiredif']){
 			$rtn .= ' data-requiredif="'.$params['requiredif'].'"';
 			unset($params['requiredif']);
 		}
