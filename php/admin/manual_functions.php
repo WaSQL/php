@@ -1,8 +1,70 @@
 <?php
+function manualGetCategories(){
+	$query=<<<ENDOFQUERY
+	SELECT
+		category,
+		COUNT(*) as cnt
+	FROM _docs
+	GROUP BY category
+	ORDER BY category
+ENDOFQUERY;
+	$recs=getDBRecords($query);
+	foreach($recs as $i=>$rec){
+		switch(strtolower($rec['category'])){
+			default:
+				$recs[$i]['icon']='brand-'.strtolower($rec['category']);
+			break;
+		}
+	}
+	return $recs;
+}
+function manualGetFileNames($category){
+	$query=<<<ENDOFQUERY
+	SELECT
+		COUNT(*) as cnt,
+		afile
+	FROM _docs
+	WHERE category='{$category}'
+	GROUP BY afile
+	ORDER BY afile
+ENDOFQUERY;
+	$recs=getDBRecords($query);
+	return $recs;
+}
+function manualGetNames($afile){
+	$query=<<<ENDOFQUERY
+	SELECT
+		_id,
+		name,
+		afile_line
+	FROM _docs
+	where afile='{$afile}'
+	order by name
+ENDOFQUERY;
+	$recs=getDBRecords($query);
+	return $recs;
+}
 function manualParseFile($file){
-	global $docs;
+	$mrec=getDBRecord(array(
+		'-table'=>'_docs_files',
+		'afile'=>$file
+	));
+	$md5=md5_file($file);
+	if(isset($mrec['afile_md5']) && $mrec['afile_md5']==$md5){
+		return;
+	}
+	$ok=addDBRecord(array(
+		'-table'=>'_docs_files',
+		'afile'=>$file,
+		'afile_md5'=>$md5,
+		'-upsert'=>'afile_md5'
+	));
+	//echo "here".printValue($ok);exit;
+	global $CONFIG;
+	$recs=array();
 	$lines=file($file);
 	$cnt=count($lines);
+	//echo "{$file}<br>";
 	$ext=getFileExtension($file);
 	for($x=0;$x<$cnt;$x++){
 		$line=trim($lines[$x]);
@@ -16,13 +78,32 @@ function manualParseFile($file){
 		}
 		//echo $ext.'<br>'.$re;exit;
 		if(preg_match($re,$line,$m)){
-			$doc=array(
-				'file'=>$file,
-				'folder'=>getFileName(getFilePath($file)),
-				'line'=>$x+1,
-				'name'=>$m[1],
-				'call'=>$m[0].'}'
+			if(stringBeginsWith($m[1],'_')){continue;}
+			if(stringBeginsWith($m[1],'$')){continue;}
+			if(strlen($m[1])==1){continue;}
+			$rec=array(
+				'afile'=>base64_encode($file),
+				'afile_line'=>$x+1,
+				'name'=>$m[1]
 			);
+			switch(strtolower($ext)){
+				case 'py':
+					$rec['caller']=$m[0];
+					$rec['category']='Python';
+				break;
+				case 'js':
+					$rec['category']='Javascript';
+					$rec['caller']=$m[0].'...}';
+				break;
+				case 'php':
+					$rec['category']='PHP';
+					$rec['caller']=$m[0].'...}';
+				break;
+				default:
+					$rec['category']=$ext;
+					$rec['caller']=$m[0].'...}';
+				break;
+			}
 			//backup to read phpdoc comments before the function name
 			$p=$x-1;
 			$comments=array();
@@ -34,43 +115,41 @@ function manualParseFile($file){
 				if($p==0){break;}
 				$p--;
 			}
-			$doc['comments']=array_reverse($comments);
+			$rec['comments']=array_reverse($comments);
 			$key='';
-			//if(1==1 || $doc['name']=='commonCronUnpause'){echo printValue($doc);}
-			foreach($doc['comments'] as $cline){
+			foreach($rec['comments'] as $cline){
 				$cline=trim($cline);
 
 				if(preg_match('/\@([a-z]+)(.*)$/i',$cline,$c)){
-					//if($doc['name']=='arrayAverage'){echo $key.printValue($c);}
 					$key=$c[1];
 					$v=trim($c[2]);
 					if(strlen($v)){
 						$v=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;',$v);
 						$v=preg_replace('/^\*/','&nbsp;',$v);
-						$doc[$key][]=$v;
+						$rec['info'][$key][]=base64_encode($v);
 					}
 				}
 				elseif(strlen($key) && preg_match('/^\*(.*)$/',$cline,$c)){
-					//if($doc['name']=='arrayAverage'){echo $key.printValue($c);}
 					$v=trim($c[1]);
 					if($v != '/' && strlen($v)){
 						$v=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;',$v);
 						$v=preg_replace('/^\*/','&nbsp;',$v);
-						$doc[$key][]=$v;
+						$rec['info'][$key][]=base64_encode($v);
 					}
 				}
 			}
-			//if($doc['name']=='arrayAverage'){echo printValue($doc);exit;}
-			if(!isset($doc['exclude'])){
-				$docs[$file][]=$doc;
+			if(!isset($rec['info']['exclude'])){
+				$rec['comments']=implode(PHP_EOL,$rec['comments']);
+				$rec['info']=json_encode($rec['info'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+				$rec['hash']=md5($rec['name'].$rec['afile']);
+				$recs[]=$rec;
 			}
 
 		}
 	}
-	//sort docs by file and by function name
-	foreach($docs as $k=>$v){
-		$docs[$k]=sortArrayByKey($docs[$k],'name');
-	}
+	if(!count($recs)){return 0;}
+	$ok=dbAddRecords($CONFIG['database'],'_docs',array('-recs'=>$recs,'-upsert'=>'caller,afile_line,comments,info'));
+	return count($recs);
 }
 
 

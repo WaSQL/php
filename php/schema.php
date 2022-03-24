@@ -864,6 +864,40 @@ function createWasqlTable($table=''){
 			}
 			return 1;
 		break;
+		case '_docs':
+			$fields['afile']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['afile_line']=databaseDataType('int').' NOT NULL';
+			$fields['category']=databaseDataType('varchar(150)');
+			$fields['name']=databaseDataType('varchar(200)');
+			$fields['caller']=databaseDataType('varchar(255)');
+			$fields['hash']=databaseDataType('varchar(200)').' NOT NULL';
+			$fields['comments']=databaseDataType('text');
+			$fields['info']=databaseDataType('json');
+
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){
+				echo printValue($ok);exit;
+				break;
+			}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"hash",'-unique'=>true));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"category"));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"afile"));
+			addMetaData($table);
+            return 1;
+		break;
+		case '_docs_files':
+			$fields['afile']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['afile_md5']=databaseDataType('varchar(200)').' NOT NULL';
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){
+				echo printValue($ok);exit;
+				break;
+			}
+			//indexes
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"afile",'-unique'=>true));
+            return 1;
+		break;
 		case 'cities':
 			$fields['name']=databaseDataType('varchar(50)')." NOT NULL";
 			$fields['country']=databaseDataType('varchar(3)');

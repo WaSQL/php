@@ -4,7 +4,9 @@
 	mysql Database functions
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
+		https://dev.mysql.com/doc/apis-php/en/apis-php-mysqli-stmt.bind-param.html
 */
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 //---------- begin function mysqlAddDBRecords--------------------
 /**
 * @describe add multiple records into a table
@@ -21,7 +23,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 	if(!strlen($table)){
 		return debugValue("mysqlAddDBRecords Error: No Table");
 	}
-	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
+	if(!isset($params['-chunk'])){$params['-chunk']=250;}
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
@@ -49,6 +51,9 @@ function mysqlAddDBRecords($table='',$params=array()){
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
+	$_REQUEST['debug_count']+=count($recs);
+	//echo "{$_REQUEST['debug_count']}<br>";
+	//return;
 	global $USER;
 	if(!isset($params['-table'])){
 		$err="mysqlAddDBRecordsProcess Error: no table";
@@ -65,7 +70,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				$recs[$i]['_cuser']=$USER['_id'];
 			}
 			if(!isset($recs[$i]['_cdate'])){
-				$recs[$i]['_cdate']=$cdate;
+				$recs[$i]['_cdate']='now()';
 			}
 		}
 	}
@@ -117,31 +122,21 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
-	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES   ".PHP_EOL;
 	$values=array();
+	$pvals=array();
+	$tvals=array();
 	foreach($recs as $i=>$rec){
 		$vals=array();
 		foreach($fields as $field){
-			$val='NULL';
-			if(isset($rec[$field]) && strlen($rec[$field])){
-				$val=mysqlEscapeString($rec[$field]);
-				switch($fieldinfo[$field]['_dbtype']){
-					case 'date':
-					case 'time':
-					case 'datetime':
-						if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-							//val is a function - do not put quotes around it
-						}
-						else{
-							$val="'{$val}'";
-						}
-					break;
-					default:
-						$val="'{$val}'";
-					break;
-				}
+			if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$rec[$field])){
+				//val is a function - do not put quotes around it
+				$vals[]=$rec[$field];
 			}
-			$vals[]=$val;
+			else{
+				$vals[]='?';
+				$pvals[]=strval($rec[$field]);
+			}
 		}
 		$values[]='('.implode(',',$vals).')';
 	}
@@ -170,13 +165,58 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
 	}
-	//echo printValue($params).$query;exit;
-	$ok=mysqlExecuteSQL($query);
-	//echo printValue($ok).$query;exit;
-	if(isset($params['-debug'])){
-		return printValue($ok).$query;
+	//prepare and execute
+	
+	//$dbh_mysql = new mysqli("localhost", "wasql_dbuser", "wasql_dbpass", "localdb");
+	$dbh_mysql=mysqlDBConnect();
+	if(!is_object($dbh_mysql)){
+		debugValue(array(
+			'function'=>'mysqlQueryResults',
+			'message'=>'connect failed',
+			'error'=>htmlspecialchars($dbh_mysql->error),
+			'query'=>$query
+		));
+    	return;
 	}
-	return count($values);
+	$pcount=count($pvals);
+	$stmt = $dbh_mysql->prepare($query);
+	if(false == $stmt){
+		debugValue(array(
+			'function'=>'mysqlAddDBRecordsProcess',
+			'message'=>'prepare failed',
+			'error'=>htmlspecialchars($dbh_mysql->error),
+			'mysql_version'=>$version['value'],
+			'query'=>$query,
+			'pvals'=>$pvals
+		));
+    	return;
+	}
+	$typestr=str_repeat('s',$pcount);
+	if(!$stmt->bind_param($typestr, ...$pvals)){
+		debugValue(array(
+			'function'=>'mysqlAddDBRecordsProcess',
+			'message'=>'bind failed',
+			'error'=>htmlspecialchars($dbh_mysql->error),
+			'mysql_version'=>$version['value'],
+			'query'=>$query,
+			'pvals'=>$pvals
+		));
+		$stmt->close();
+		return;
+	}
+	if(!$stmt->execute()){
+		debugValue(array(
+			'function'=>'mysqlAddDBRecordsProcess',
+			'message'=>'execute failed',
+			'error'=>htmlspecialchars($dbh_mysql->error),
+			'mysql_version'=>$version['value'],
+			'query'=>$query,
+			'pvals'=>$pvals
+		));
+		$stmt->close();
+		return;
+	}
+	return $pcount;
 }
 //---------- begin function mysqlGetDDL ----------
 /**
@@ -713,67 +753,6 @@ function mysqlParseConnectParams($params=array()){
 	//echo printValue($params);exit;
 	return $params;
 }
-function mysqlParseConnectParamsOLD($params=array()){
-	global $CONFIG;
-	global $DATABASE;
-	global $USER;
-	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
-		foreach($CONFIG as $k=>$v){
-			if(preg_match('/^mysql/i',$k)){unset($CONFIG[$k]);}
-		}
-		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
-			$params["-{$k}"]=$v;
-		}
-	}
-	//check for user specific
-	if(isUser() && strlen($USER['username'])){
-		foreach($params as $k=>$v){
-			if(stringEndsWith($k,"_{$USER['username']}")){
-				$nk=str_replace("_{$USER['username']}",'',$k);
-				unset($params[$k]);
-				$params[$nk]=$v;
-			}
-		}
-	}
-	//dbname
-	if(!isset($params['-dbname'])){
-		if(isset($CONFIG['dbname_mysql'])){
-			$params['-dbname']=$CONFIG['dbname_mysql'];
-			$params['-dbname_source']="CONFIG dbname_mysql";
-		}
-		elseif(isset($CONFIG['mysql_dbname'])){
-			$params['-dbname']=$CONFIG['mysql_dbname'];
-			$params['-dbname_source']="CONFIG mysql_dbname";
-		}
-		elseif(isset($CONFIG['dbname'])){
-			$params['-dbname']=$CONFIG['dbname'];
-			$params['-dbname_source']="CONFIG dbname";
-		}
-		else{return 'mysqlParseConnectParams Error: No dbname set'.printValue($CONFIG);}
-	}
-	else{
-		$params['-dbname_source']="passed in";
-	}
-	//readonly
-	if(!isset($params['-mysql_readonly']) && isset($CONFIG['mysql_readonly'])){
-		$params['-readonly']=$CONFIG['mysql_readonly'];
-	}
-	//dbmode
-	if(!isset($params['-dbmode'])){
-		if(isset($CONFIG['dbmode_mysql'])){
-			$params['-dbmode']=$CONFIG['dbmode_mysql'];
-			$params['-dbmode_source']="CONFIG dbname_mysql";
-		}
-		elseif(isset($CONFIG['mysql_dbmode'])){
-			$params['-dbmode']=$CONFIG['mysql_dbmode'];
-			$params['-dbmode_source']="CONFIG mysql_dbname";
-		}
-	}
-	else{
-		$params['-dbmode_source']="passed in";
-	}
-	return $params;
-}
 //---------- begin function mysqlDBConnect ----------
 /**
 * @describe connects to a mysql database and returns the handle resource
@@ -809,16 +788,16 @@ function mysqlDBConnect($params=array()){
 		return null;
 	}
 	global $dbh_mysql;
-	if($dbh_mysql){return $dbh_mysql;}
+	if(is_object($dbh_mysql)){return $dbh_mysql;}
 	try{
 		if($params['-dbhost']=='localhost'){$host='127.0.0.1';}
 		else{$host=$params['-dbhost'];}
 		if(!strlen($host)){$host='127.0.0.1';}
 		$host=gethostbyname($host);
-		$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
+		$dbh_mysql =new mysqli($host, $params['-dbuser'], $params['-dbpass'], $params['-dbname']);
+		//$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
 		if(!is_object($dbh_mysql)){
-			$err=@mysqli_connect_error();
-			echo "mysqlDBConnect error:{$err}".printValue($params);
+			echo "mysqlDBConnect error:".printValue($params);
 			exit;
 
 		}
@@ -826,7 +805,7 @@ function mysqlDBConnect($params=array()){
 		return $dbh_mysql;
 	}
 	catch (Exception $e) {
-		echo "dbh_mysql exception" . printValue($e);
+		echo "mysqlDBConnect exception" . printValue($e);
 		exit;
 	}
 }
@@ -848,35 +827,36 @@ function mysqlExecuteSQL($query,$params=array()){
 	global $dbh_mysql;
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
-	if(!$dbh_mysql){
+	if(!is_object($dbh_mysql)){
 		debugValue(array(
 			'function'=>'mysqlExecuteSQL',
 			'message'=>'connect failed',
-			'error'=>mysqli_connect_error(),
+			'error'=>htmlspecialchars($dbh_mysql->error),
 			'query'=>$query
 		));
     	return;
 	}
-	$result=@mysqli_query($dbh_mysql,$query);
-	$err=mysqli_error($dbh_mysql);
-	if(is_array($err) || strlen($err)){
+	try{
+		$result=$dbh_mysql->query($query);
+	}
+	catch (Exception $e) {
 		debugValue(array(
 			'function'=>'mysqlExecuteSQL',
-			'message'=>'mysqli_query failed',
-			'error'=>$err,
+			'message'=>'query failed',
+			'error'=>htmlspecialchars($dbh_mysql->error),
 			'query'=>$query
 		));
-		mysqli_close($dbh_mysql);
+		$dbh_mysql->close();
 		return false;
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
-    	mysqli_close($dbh_mysql);
+    	$dbh_mysql->close();
     	return $id;
 	}
 	$results = mysqlEnumQueryResults($result,$params);
-	mysqli_close($dbh_mysql);
+	$dbh_mysql->close();
 	return true;
 }
 //---------- begin function mysqlGetDBCount--------------------
@@ -1179,10 +1159,10 @@ function mysqlEscapeString($str){
 	global $dbh_mysql;
 	if(is_resource($dbh_mysql)){
 		if(function_exists('mysqli_real_escape_string')){
-			$str=mysqli_real_escape_string($dbh_mysql,$str);
+			$str=$dbh_mysql->real_escape_string($str);
 		}
 		elseif(function_exists('mysqli_escape_string')){
-			$str=mysqli_escape_string($dbh_mysql,$str);
+			$str=$dbh_mysql->escape_string($str);
 		}
 		else{
 			$str = str_replace("'","''",$str);
@@ -1286,48 +1266,48 @@ function mysqlQueryResults($query='',$params=array()){
 	global $dbh_mysql;
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
-	if(!$dbh_mysql){
+	if(!is_object($dbh_mysql)){
 		debugValue(array(
 			'function'=>'mysqlQueryResults',
 			'message'=>'connect failed',
-			'error'=>mysqli_connect_error(),
-			'query'=>$query
 		));
     	return;
 	}
-	$result=@mysqli_query($dbh_mysql,$query);
-	$err=mysqli_error($dbh_mysql);
-	if(is_array($err) || strlen($err)){
+	try{
+		$result=$dbh_mysql->query($query);
+	}
+	catch (Exception $e) {
 		debugValue(array(
 			'function'=>'mysqlQueryResults',
-			'message'=>'mysqli_query failed',
-			'error'=>$err,
+			'message'=>'query failed',
+			'error'=>htmlspecialchars($dbh_mysql->error),
 			'query'=>$query
 		));
-		mysqli_close($dbh_mysql);
+		$dbh_mysql->close();
 		return null;
 	}
+
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
-    	mysqli_close($dbh_mysql);
+    	$dbh_mysql->close();
     	return $id;
 	}
 	$results = mysqlEnumQueryResults($result,$params);
-	mysqli_close($dbh_mysql);
+	$dbh_mysql->close();
 	return $results;
 }
 //---------- begin function mysqlEnumQueryResults ----------
 /**
-* @describe enumerates through the data from a mysqli_query call
+* @describe enumerates through the data from a query call
 * @exclude - used for internal user only
 * @param data resource
 * @return array
 *	returns records
 */
-function mysqlEnumQueryResults($data,$params=array()){
+function mysqlEnumQueryResults($result,$params=array()){
 	global $mysqlStopProcess;
-	if(!$data){return null;}
+	if(!$result){return null;}
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
@@ -1342,9 +1322,14 @@ function mysqlEnumQueryResults($data,$params=array()){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			mysqli_free_result($result);
-			return 'mysqlEnumQueryResults error: Failed to open '.$params['-filename'];
-			exit;
+    		debugValue(array(
+				'function'=>'mysqlEnumQueryResults',
+				'message'=>"Failed to open File: {$params['-filename']}",
+				'error'=>htmlspecialchars($dbh_mysql->error),
+				'params'=>$params
+			));
+			$result->free_result();
+			return null;
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
@@ -1357,7 +1342,7 @@ function mysqlEnumQueryResults($data,$params=array()){
 	if(isset($fh) && is_resource($fh)){
 		$writefile=1;
 	}
-	while ($row = @mysqli_fetch_assoc($data)){
+	while ($row = $result->fetch_assoc()){
 		//check for mysqlStopProcess request
 		if(isset($mysqlStopProcess) && $mysqlStopProcess==1){
 			break;
@@ -1403,8 +1388,10 @@ function mysqlEnumQueryResults($data,$params=array()){
 			$elapsed=microtime(true)-$starttime;
 			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
+		$result->free();
 		return $i;
 	}
+	$result->free();
 	return $recs;
 }
 
@@ -1582,7 +1569,7 @@ function mysqlOptimizations($params=array()){
 	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='MyISAM'");
 	$results['myisam_index_length']=$recs[0]['val'];
 	
-	echo printValue($results);exit;
+	//echo printValue($results);exit;
 	$recs=array();
 	//order by priority
 	$recs=sortArrayByKeys($recs,array('priority'=>SORT_ASC));

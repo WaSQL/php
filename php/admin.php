@@ -3157,7 +3157,10 @@ echo '</div>'.PHP_EOL;
 echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
-
+//---------- begin function adminAddEditOpts
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function adminAddEditOpts($addopts){
 	switch(strtolower($addopts['-table'])){
 		case '_pages':
@@ -3255,6 +3258,9 @@ ENDOFDEFAULT;
 .pagesamplecss{}
 ENDOFDEFAULT;
 	$_REQUEST['js'] = <<<ENDOFDEFAULT
+/**
+* @exclude  - this function is excluded from the manual
+*/
 function pageSampleJs(){}
 ENDOFDEFAULT;
 }
@@ -3293,6 +3299,10 @@ function adminConfigView(){
 </div>
 ENDOFCONFIGVIEW;
 }
+//---------- begin function adminConfigListExtra ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function adminConfigListExtra($recs){
 	$elid=0;
 	foreach($recs as $i=>$rec){
@@ -3350,6 +3360,10 @@ function adminConfigListExtra($recs){
 	}
 	return $recs;
 }
+//---------- begin function adminDefaultTemplateValues ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function adminDefaultTemplateValues(){
 	$_REQUEST['body'] = <<<ENDOFDEFAULT
 <!DOCTYPE HTML>
@@ -3411,6 +3425,10 @@ ENDOFDEFAULT;
 function templateSampleJs(){}
 ENDOFDEFAULT;
 }
+//---------- begin function adminListDataTypes ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function adminListDataTypes(){
 	if(isPostgreSQL()){return postgresqlListDBDataTypes($params);}
 	elseif(isSqlite()){return sqliteListDBDataTypes($params);}
@@ -3468,6 +3486,10 @@ function adminShowSessionLog($sessionID){
 	$rtn .= getFileContents($errfile);
 	return $rtn;
 }
+//---------- begin function adminSetPageName ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function adminSetPageName(){
 	global $PAGE;
 	$PAGE['name']='php/admin.php';

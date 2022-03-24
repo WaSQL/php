@@ -8,108 +8,84 @@
 	}
 
 </style>
-<div class="container-fluid">
-	<div class="row">
-		<div class="col-sm-12">
-			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-help-circled"></span> WaSQL Documentation</h2>
-		</div>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-help-circled"></span> WaSQL Documentation</h2>
+<div style="display:flex;justify-content: flex-start;">
+	<div style="height:85vh;overflow:auto;">
+		<form method="post" name="manualsearchform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
+			<input type="hidden" name="_menu" value="manual" />
+			<input type="hidden" name="func" value="search" />
+			<div class="btn-group">
+				<input type="text" autofocus="true" class="form-control" name="search" placeholder="search for what ..." required="required" />
+				<button type="submit" class="btn <?=configValue('admin_color');?>">Search</button>
+			</div>
+		</form>
+		<h4 class="<?=configValue('admin_color');?>">Code Files</h4>
+		<ul class="nav-list buttons <?=configValue('admin_color');?>" id="ul_files">
+			
+			<?=renderEach('category',$categories,'rec');?>
+		</ul>
 	</div>
-	<div class="row">
-		<div class="col-sm-3">
-			<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
-				<input type="hidden" name="_menu" value="manual" />
-				<input type="hidden" name="func" value="search" />
-				<div class="btn-group">
-					<input type="text" autofocus="true" class="form-control" name="search" placeholder="search for what ..." />
-					<button type="submit" class="btn <?=configValue('admin_color');?>">Search</button>
-				</div>
-			</form>
-			<div class="table-responsive well" style="background-color:inherit;margin-top:15px;padding-left:0px;padding-right:0px;max-height:700px;overflow:auto;">
-				<h4 class="<?=configValue('admin_color');?>">Code Files</h4>
-				<ul class="nav-list buttons <?=configValue('admin_color');?>" id="ul_files">
-					<view:file>
-					<li><a href="#" data-toggle="collapse" data-target="#filenav_<?=sha1($key);?>" data-parent="#ul_files" class="collapsed">
-						<?=getFileName(getFilePath($key));?>::<?=getFileName($key);?> (<?=count($functions);?>)<span class="icon-dir-down w_right" style="margin-top:8px;"></span></a>
-					  <div class="collapse" style="background:#FFF;padding-left:15px;border-left:1px solid #ccc;border-bottom:1px solid #ccc;margin-left:10px;" id="filenav_<?=sha1($key);?>" style="height: 0px;">
-						<ul class="nav-list <?=configValue('admin_color');?>">
-							<view:function>
-							<li><a href="#" onclick="return ajaxGet('/php/admin.php','results',{_menu:'manual',func:'search',search:'<?=$function['name'];?>'})" style="padding:5px 10px;"><span class="w_right icon-dir-right"></span><?=$function['name'];?></a></li>
-							</view:function>
-							<?=renderEach('function',$functions,'function');?>
-						</ul>
-					  </div>
-					</li>
-					</view:file>
-					<?=renderEach('file',$docs,'functions');?>
-				</ul>
-			</div>
-		</div>
-		<div class="col-sm-9">
-			<div class="table-responsive well" id="results" style="background-color:inherit;margin-top:15px;max-height:700px;overflow:auto;">
-				<div>WaSQL Documention Results go here</div>
-			</div>
-		</div>
+	<div id="results" style="height:85vh;overflow:auto;padding:0 15px 20px 15px;">
+		<?=buildOnLoad("wacss.loadScript('/php/admin/manual_js.js');wacss.init();");?>
 	</div>
 </div>
 </view:default>
 
-<view:search>
-	<view:function>
-	<div class="row w_padtop">
-		<div class="col-sm-12">
-			<div class="w_grey w_small w_right">
-				found on line <?=$function['line'];?> in <?=$function['file'];?>
-			</div>
-			<h3 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><?=$function['name'];?></h3>
-		</div>
-	</div>
-	<view:describes>
-	<div class="row">
-		<div class="col-sm-12 w_grey">
-			<div style="margin-left:25px;border-left:1px solid #ccc;padding-left:10px;">
-				<view:describe>
-					<xmp><?=html_entity_decode($describe, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp>
-				</view:describe>
-				<?=renderEach('describe',$function['describe'],'describe');?></div>
-		</div>
-	</div>
-	</view:describes>
-	<?=renderViewIf(isset($function['describe']),'describes',$function,'function');?>
-	<div class="row">
-		<div class="col-sm-12">
-			<div style="margin-left:35px;">
-				<view:usagediv>
-				<label>Usage</label>
-				<div class="well">
-					<view:usage><xmp><?=html_entity_decode($value, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp></view:usage>
-					<?=renderEach('usage',$function['usage'],'value');?>
-				</div>
-				</view:usagediv>
-				<?=renderViewIf(isset($function['usage']),'usagediv',$function,'function');?>
+<view:category>
+	<li><a href="#" onclick="return manualNav(this);" data-div="filenames_<?=$rec['category'];?>" data-func="filenames" data-category="<?=$rec['category'];?>"><icon class="<?=$rec['icon'];?>"></icon> <?=$rec['category'];?> (<?=$rec['cnt'];?>)</a>
+		<div id="filenames_<?=$rec['category'];?>" style="margin-left:20px;padding-left:5px;border-left:1px solid #ccc;"></div>
 
-				<view:returndiv>
-				<label>Return</label>
-				<div class="well">
-					<view:return><xmp><?=html_entity_decode($value, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp></view:return>
-					<?=renderEach('return',$function['return'],'value');?>
-				</div>
-				</view:returndiv>
-				<?=renderViewIf(isset($function['return']),'returndiv',$function,'function');?>
+	</li>
+</view:category>
 
-				<view:comments>
-				<label>Comments</label>
-				<div class="well">
-					<view:comment>
-						<xmp><?=html_entity_decode($comment, ENT_QUOTES | ENT_XML1, 'UTF-8');?></xmp>
-					</view:comment>
-					<?=renderEach('comment',$function['comments'],'comment');?>
-				</div>
-				</view:comments>
-				<?=renderViewIf(isset($function['comments']),'comments',$function,'function');?>
-			</div>
+<view:filenames>
+	<view:filename>
+		<div>
+			<a href="#" onclick="return manualNav(this);" data-div="names_<?=sha1($rec['afile']);?>" data-func="names" data-afile="<?=$rec['afile'];?>" class="btn" style="margin-bottom:3px;"><?=base64_decode($rec['afile']);?> (<?=$rec['cnt'];?>)</a>
+			<div id="names_<?=sha1($rec['afile']);?>" style="margin-left:20px;"></div>
 		</div>
+	</view:filename>
+	<?=renderEach('filename',$filenames,'rec');?>
+</view:filenames>
+
+<view:names>
+	<view:name>
+		<div><a href="#" data-docid="<?=$rec['_id'];?>" onclick="return manualNav(this);" data-div="results" data-func="docid" class="w_link w_block" style="margin-bottom:3px;"><?=$rec['name'];?> (Line <?=$rec['afile_line'];?>)</a></div>
+	</view:name>
+	<?=renderEach('name',$names,'rec');?>
+</view:names>
+
+<view:search_results>
+	<view:rec>
+	<div style="display:flex;justify-content:space-between;flex-wrap: wrap;align-content: flex-start;">
+		<div class="w_bold w_bigger"><span class="w_biggest brand-<?=strtolower($rec['category']);?>"></span> <?=$rec['name'];?></div>
+		<div class="w_gray w_smaller">found on line <?=$rec['afile_line'];?> in <?=base64_decode($rec['afile']);?></div>
 	</div>
-	</view:function>
-	<?=renderEach('function',$sdocs,'function');?>
-</view:search>
+	<div style="margin-left:30px;">
+		<div class="w_gray w_smaller"><?=$rec['caller'];?></div>
+		<div class="w_bold w_big">Usage</div>
+		<div class="well">
+		<view:usage>
+			<div><?=base64_decode($usage);?></div>
+		</view:usage>
+		<?=renderEach('usage',$rec['info_ex']['usage'],'usage');?>
+		</div>
+		<div class="w_bold w_big">Return</div>
+		<div class="well">
+		<view:return>
+			<div><?=base64_decode($return);?></div>
+		</view:return>
+		<?=renderEach('return',$rec['info_ex']['return'],'return');?>
+		</div>
+		<div class="w_bold w_bigger">Comments</div>
+		<div class="well w_pre"><?=$rec['comments'];?></div>
+	</div>
+	<?=debugValue($rec);?>
+	</view:rec>
+	<?=renderEach('rec',$recs,'rec');?>
+</view:search_results>
+
+<view:no_results>
+	<div class="w_red w_big">No Search Results</div>
+</view:no_results>
 
