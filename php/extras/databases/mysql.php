@@ -182,11 +182,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$query.=PHP_EOL.implode(', ',$flds);
 		}
 	}
-	//prepare and execute
-	
-	$dbh_mysql = new mysqli("localhost", "wasql_dbuser", "wasql_dbpass", "localdb");
-	// 
-
+	//prepare and execute 
 	$pcount=count($pvals);
 	$typestr=implode('',$tvals);
 	try{
