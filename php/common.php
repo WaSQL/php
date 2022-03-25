@@ -13226,6 +13226,32 @@ function includePage($val='',$params=array()){
     return $rtn;
 }
 
+//---------- begin function includePageIf---------------------------------------
+/**
+* @describe includePageIf is a Conditional includePage
+* @param condition - condition can be a boolean or an array of boolean=>view sets
+* @param page_true string - page name if true
+* @param params array
+* @see includePage();
+*/
+function includePageIf($conditional,$page_true, $params=array()){
+	if($conditional){return includePage($page_true,$params);}
+	return '';
+}
+
+//---------- begin function includePageIfElse---------------------------------------
+/**
+* @describe includePageIfElse is a Conditional includePage
+* @param condition mixed - condition can be a boolean
+* @param page_true string - page name if true
+* @param page_false string - page name if false.
+* @param params array
+* @see includePage();
+*/
+function includePageIfElse($conditional,$page_true, $page_false, $params=array()){
+	if($conditional){return includePage($page_true,$params);}
+	else{return includePage($page_false,$params);}
+}
 //---------- begin function includePHPOnce--------------------
 /**
 * @describe provides a method to dynamically load functions
