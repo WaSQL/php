@@ -4598,7 +4598,10 @@ function addEditDBForm($params=array(),$customcode=''){
 			if(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Edit';
 				//$rtn .= '		<td><input class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';" value="'.$save.'"></td>'.PHP_EOL;
-				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+				if(isset($params['disable_on_submit']) && $params['disable_on_submit'] != 0){
+					$class.= " w_disable_on_submit";
+				}
+				$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
 				$reset=isset($params['-reset'])?$params['-reset']:'Reset';
