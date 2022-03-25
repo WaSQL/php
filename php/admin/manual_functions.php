@@ -140,7 +140,12 @@ function manualParseFile($file){
 			}
 			if(!isset($rec['info']['exclude'])){
 				$rec['comments']=implode(PHP_EOL,$rec['comments']);
+				$rec['comments']=base64_encode($rec['comments']);
 				$rec['info']=json_encode($rec['info'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+				if(!strlen($rec['info'])){
+					$rec['info']='{}';
+				}
+				$rec['info']='{}';
 				$rec['hash']=md5($rec['name'].$rec['afile']);
 				$recs[]=$rec;
 			}

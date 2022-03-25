@@ -1,12 +1,16 @@
 <?php
-
+// ini_set("display_errors", 1);
+// ini_set("track_errors", 1);
+// ini_set("html_errors", 1);
+// error_reporting(E_ALL);
+// mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 /*
 	mysql Database functions
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
 		https://dev.mysql.com/doc/apis-php/en/apis-php-mysqli-stmt.bind-param.html
 */
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+global $dbh_mysql;
 //---------- begin function mysqlAddDBRecords--------------------
 /**
 * @describe add multiple records into a table
@@ -23,7 +27,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 	if(!strlen($table)){
 		return debugValue("mysqlAddDBRecords Error: No Table");
 	}
-	if(!isset($params['-chunk'])){$params['-chunk']=250;}
+	if(!isset($params['-chunk'])){$params['-chunk']=100;}
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
@@ -51,7 +55,9 @@ function mysqlAddDBRecords($table='',$params=array()){
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
-	$_REQUEST['debug_count']+=count($recs);
+	global $dbh_mysql;
+	$dbh_mysql='';
+	//$_REQUEST['debug_count']+=count($recs);
 	//echo "{$_REQUEST['debug_count']}<br>";
 	//return;
 	global $USER;
@@ -67,7 +73,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$cdate=date('Y-m-d H:i:s');
 		foreach($recs as $i=>$rec){
 			if(!isset($recs[$i]['_cuser'])){
-				$recs[$i]['_cuser']=$USER['_id'];
+				$recs[$i]['_cuser']=(integer)$USER['_id'];
 			}
 			if(!isset($recs[$i]['_cdate'])){
 				$recs[$i]['_cdate']='now()';
@@ -133,12 +139,23 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				//val is a function - do not put quotes around it
 				$vals[]=$rec[$field];
 			}
+			elseif(strtolower($rec[$field])=='null'){
+				$vals[]='NULL';
+			}
 			else{
 				$vals[]='?';
-				$pvals[]=strval($rec[$field]);
+				if(isNum($rec[$field])){
+					$tvals[]='i';
+					$pvals[]=$rec[$field];
+				}
+				else{
+					$tvals[]='s';
+					$pvals[]=strval($rec[$field]);
+				}
+				
 			}
 		}
-		$values[]='('.implode(',',$vals).')';
+		$values[]='('.implode(', ',$vals).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
 	if(isset($params['-upsert'][0])){
@@ -167,54 +184,20 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//prepare and execute
 	
-	//$dbh_mysql = new mysqli("localhost", "wasql_dbuser", "wasql_dbpass", "localdb");
-	$dbh_mysql=mysqlDBConnect();
-	if(!is_object($dbh_mysql)){
-		debugValue(array(
-			'function'=>'mysqlQueryResults',
-			'message'=>'connect failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
-			'query'=>$query
-		));
-    	return;
-	}
+	$dbh_mysql = new mysqli("localhost", "wasql_dbuser", "wasql_dbpass", "localdb");
+	// 
+
 	$pcount=count($pvals);
-	$stmt = $dbh_mysql->prepare($query);
-	if(false == $stmt){
-		debugValue(array(
-			'function'=>'mysqlAddDBRecordsProcess',
-			'message'=>'prepare failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
-			'mysql_version'=>$version['value'],
-			'query'=>$query,
-			'pvals'=>$pvals
-		));
-    	return;
-	}
-	$typestr=str_repeat('s',$pcount);
-	if(!$stmt->bind_param($typestr, ...$pvals)){
-		debugValue(array(
-			'function'=>'mysqlAddDBRecordsProcess',
-			'message'=>'bind failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
-			'mysql_version'=>$version['value'],
-			'query'=>$query,
-			'pvals'=>$pvals
-		));
+	$typestr=implode('',$tvals);
+	try{
+		$dbh_mysql=mysqlDBConnect();
+		$stmt = $dbh_mysql->prepare($query);
+		$stmt->bind_param($typestr, ...$pvals);
+		$stmt->execute();
 		$stmt->close();
-		return;
-	}
-	if(!$stmt->execute()){
-		debugValue(array(
-			'function'=>'mysqlAddDBRecordsProcess',
-			'message'=>'execute failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
-			'mysql_version'=>$version['value'],
-			'query'=>$query,
-			'pvals'=>$pvals
-		));
-		$stmt->close();
-		return;
+	} catch (mysqli_sql_exception $e) {
+		echo "mysqlAddDBRecordsProcess Exception:".$e->__toString();
+		exit;
 	}
 	return $pcount;
 }
@@ -793,8 +776,13 @@ function mysqlDBConnect($params=array()){
 		if($params['-dbhost']=='localhost'){$host='127.0.0.1';}
 		else{$host=$params['-dbhost'];}
 		if(!strlen($host)){$host='127.0.0.1';}
-		$host=gethostbyname($host);
+		//$host=gethostbyname($host);
+		//echo $host;exit;
+		/* activate reporting */
+		$driver = new mysqli_driver();
+		$driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
 		$dbh_mysql =new mysqli($host, $params['-dbuser'], $params['-dbpass'], $params['-dbname']);
+		//echo $host.printValue($params);exit;
 		//$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
 		if(!is_object($dbh_mysql)){
 			echo "mysqlDBConnect error:".printValue($params);
@@ -831,7 +819,7 @@ function mysqlExecuteSQL($query,$params=array()){
 		debugValue(array(
 			'function'=>'mysqlExecuteSQL',
 			'message'=>'connect failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
+			'error'=>$dbh_mysql->error,
 			'query'=>$query
 		));
     	return;
@@ -843,7 +831,7 @@ function mysqlExecuteSQL($query,$params=array()){
 		debugValue(array(
 			'function'=>'mysqlExecuteSQL',
 			'message'=>'query failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
+			'error'=>$dbh_mysql->error,
 			'query'=>$query
 		));
 		$dbh_mysql->close();
@@ -1280,7 +1268,7 @@ function mysqlQueryResults($query='',$params=array()){
 		debugValue(array(
 			'function'=>'mysqlQueryResults',
 			'message'=>'query failed',
-			'error'=>htmlspecialchars($dbh_mysql->error),
+			'error'=>$dbh_mysql->error,
 			'query'=>$query
 		));
 		$dbh_mysql->close();
@@ -1325,7 +1313,7 @@ function mysqlEnumQueryResults($result,$params=array()){
     		debugValue(array(
 				'function'=>'mysqlEnumQueryResults',
 				'message'=>"Failed to open File: {$params['-filename']}",
-				'error'=>htmlspecialchars($dbh_mysql->error),
+				'error'=>$dbh_mysql->error,
 				'params'=>$params
 			));
 			$result->free_result();
