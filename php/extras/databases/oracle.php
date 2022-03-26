@@ -1998,7 +1998,12 @@ function oracleEnumQueryResults($res,$params=array()){
 			$x++;
 			continue;
 		}
-		else{$recs[]=$rec;}
+		elseif(isset($params['-index']) && isset($rec[$params['-index']])){
+			$recs[$rec[$params['-index']]]=$rec;
+		}
+		else{
+			$recs[]=$rec;
+		}
 	}
 	if($writefile==1){
 		@fclose($fh);

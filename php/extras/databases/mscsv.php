@@ -746,6 +746,9 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 			$i++;
 			continue;
 		}
+		elseif(isset($params['-index']) && isset($rec[$params['-index']])){
+			$recs[$rec[$params['-index']]]=$rec;
+		}
 		else{
 			$recs[]=$rec;
 		}

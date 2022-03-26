@@ -1598,10 +1598,12 @@ function mssqlEnumQueryResults($data,$params=array()){
 				$x++;
 				continue;
 			}
-			else{
-				$recs[] = $rec;
+			elseif(isset($params['-index']) && isset($rec[$params['-index']])){
+				$recs[$rec[$params['-index']]]=$rec;
 			}
-	        
+			else{
+				$recs[]=$rec;
+			}
 		}
 		sqlsrv_free_stmt( $data);
 		if($writefile==1){

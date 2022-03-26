@@ -1186,6 +1186,9 @@ function pdoQueryResults($query,$params=array()){
 			$x++;
 			continue;
 		}
+		elseif(isset($params['-index']) && isset($rec[$params['-index']])){
+			$recs[$rec[$params['-index']]]=$rec;
+		}
 		else{
 			$recs[]=$rec;
 		}

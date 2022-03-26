@@ -661,17 +661,6 @@ function dbIsTable($db,$table=''){
 function dbListRecords($db,$params){
 	return dbFunctionCall('listRecords',$db,$params);
 }
-//---------- begin function dbQueryResults
-/**
-* @describe returns an records set from a database
-* @param db string - database name as specified in the database section of config.xml
-* @param query string - SQL query
-
-* @return array recordsets
-* @usage
-*	$recs=dbQueryResults('pg_local',$query);
-*	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
-*/
 //---------- begin function dbOptimizations
 /**
 * @describe returns a list of items to consider when optimizing the db
@@ -694,6 +683,18 @@ function dbOptimizations($db,$params=array()){
 	}
 	return $recs;
 }
+//---------- begin function dbQueryResults
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param query string - SQL query
+
+* @return array recordsets
+* @usage
+*	$recs=dbQueryResults('pg_local',$query);
+*	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
+*/
+
 function dbQueryResults($db,$query,$params=array()){
 	$recs=dbFunctionCall('queryResults',$db,$query,$params);
 	//check for single ref cursor that returns a table
