@@ -212,7 +212,12 @@ function translateMapText($text){
 		$mapindex=array_search($tag,$map['map']);
 		$map['maptext']=str_replace($tag,'{'.$mapindex.'}',$map['maptext']);
 	}
-	$map['identifier']=sha1(trim($map['maptext']));
+	if(stringContains($text,'<img')){
+		$map['identifier']=sha1(trim($text));	
+	}
+	else{
+		$map['identifier']=sha1(trim($map['maptext']));
+	}
 	return $map;
 }
 function translateUnmapText($source,$target){
