@@ -6,11 +6,15 @@
 	div.row{
 		margin-bottom:5px;
 	}
+	.well{
+		overflow: auto;
+	}
 
 </style>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-help-circled"></span> WaSQL Documentation</h2>
 <div style="display:flex;justify-content: flex-start;">
-	<div style="height:85vh;overflow:auto;">
+	<div style="height:85vh;flex: 1;flex-wrap: nowrap;" class="w_nowrap">
+		<img src="/wfiles/clear.gif" style="width:250px;height:1px;border:1px solid red;" />
 		<form method="post" name="manualsearchform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
 			<input type="hidden" name="_menu" value="manual" />
 			<input type="hidden" name="func" value="search" />
@@ -25,7 +29,7 @@
 			<?=renderEach('category',$categories,'rec');?>
 		</ul>
 	</div>
-	<div id="results" style="height:85vh;overflow:auto;padding:0 15px 20px 15px;">
+	<div id="results" style="height:85vh;flex: 4;overflow:auto;padding:0 15px 20px 15px;">
 		<?=buildOnLoad("wacss.loadScript('/php/admin/manual_js.js');wacss.init();");?>
 	</div>
 </div>
@@ -78,7 +82,7 @@
 		<?=renderEach('return',$rec['info_ex']['return'],'return');?>
 		</div>
 		<div class="w_bold w_bigger">Comments</div>
-		<div class="well w_pre"><?=$rec['comments'];?></div>
+		<div class="well"><?=nl2br(base64_decode($rec['comments']));?></div>
 	</div>
 	<?=debugValue($rec);?>
 	</view:rec>
