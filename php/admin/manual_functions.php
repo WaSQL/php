@@ -42,6 +42,7 @@ function manualGetNames($afile){
 		_id,
 		name,
 		afile_line,
+		info,
 		length(info) as info_length
 	FROM _docs
 	where afile='{$afile}'
@@ -49,11 +50,20 @@ function manualGetNames($afile){
 ENDOFQUERY;
 	$recs=getDBRecords($query);
 	foreach($recs as $i=>$rec){
+			
+		}
+	foreach($recs as $i=>$rec){
 		if($rec['info_length'] < 10 ){
 			$recs[$i]['class']='w_red';
 		}
 		else{
-			$recs[$i]['class']='';
+			$rec['info_ex']=json_decode($rec['info'],true);
+			if(!isset($rec['info_ex']['usage'])){
+				$recs[$i]['class']='w_red';
+			}
+			else{
+				$recs[$i]['class']='';
+			}
 		}
 	}
 	//echo printValue($recs);exit;

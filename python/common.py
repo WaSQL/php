@@ -80,6 +80,7 @@ def buildOnLoad(str='',img='/wfiles/clear.gif',width=1,height=1):
 # @param lon2 float - Second Longitude
 # @param unit char - unit of measure - K=kilometere, N=nautical miles, M=Miles
 # @return distance float
+# @usage dist = common.calculateDistance(lat1, lon1, lat2, lon2)
 def calculateDistance(lat1, lon1, lat2, lon2, unit='M'):
     #Python, all the trig functions use radians, not degrees
     # approximate radius of earth in km
@@ -244,6 +245,7 @@ def getParentPath(path):
 #---------- begin function getCSVRecords
 # @describe returns csv file contents as recordsets
 # @param afile string - full path to csv file
+# @usage recs = common.getCSVRecords(afile)
 def getCSVRecords(afile):
     #read a small portion to determine the dialect
     with open(afile, 'r') as csvfile:

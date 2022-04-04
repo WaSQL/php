@@ -1479,6 +1479,8 @@ function arrayAverage($arr=array(),$decimal=2){
 *	the number of columns
 * @return
 *	an array of c length, each with an equal number of items from arr
+* @usage
+* $colsets=arrayColumns($list,3);
 */
 function arrayColumns( $list, $c=2, $preserve_keys=false ) {
 	if(!isNum($c) || $c < 1){return "arrayColumns error: invalid number of colums".printValue($c);}
@@ -1580,6 +1582,7 @@ function asciiArt($file,$force=false){
 //---------- begin function asciiEncode--------------------------------------
 /**
 * @deprecated use encodeAscii instead
+* @exclude - depreciated
 */
 function asciiEncode($str=''){return encodeAscii($str);}
 
@@ -2338,6 +2341,8 @@ function buildFormCheckAll($att,$attval,$params=array()){
 * 	[size] string - size of button. Valid options are small, smaller, smallest, tiny, big, bigger, biggest, huge.
 * @return
 *	HTML Form checkbox for each pair passed in
+* @usage
+* <?=buildFormCheckbox('colors',$opts);?>
 */
 function buildFormCheckbox($name, $opts=array(), $params=array()){
 	$params['-type']='checkbox';
@@ -3119,6 +3124,8 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 *   [size] string - size of button. Valid options are small, smaller, smallest, tiny, big, bigger, biggest, huge.
 * @return
 *	HTML Form radio button for each pair passed in
+* @usage
+* <?=buildFormRadio('color',$opts);?>
 */
 function buildFormRadio($name, $opts=array(), $params=array()){
 	$params['-type']='radio';
@@ -3892,6 +3899,8 @@ function buildFormTime($name,$params=array()){
 *	- [height]. Defaults to 75
 * 	- [style] - set width or height in style to override defaults
 * @return HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
+* @usage
+* <?=buildFormWhiteboard('board',$params);?>
 */
 function buildFormWhiteboard($name,$params=array()){
 	if(!isset($params['displayname'])){$params['displayname']='Draw Below:';}
@@ -5060,6 +5069,8 @@ function buildFormSelectYear($name,$params=array()){
 * 	- [data-autoresize] - width, height, both 
 * @return
 *	HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
+* @usage
+* <?=buildFormSignature('sign',$params);?>
 */
 function buildFormSignature($name,$params=array()){
 	//return $name.printValue($params);
@@ -5182,6 +5193,8 @@ function buildFormSignature($name,$params=array()){
 *	- max_displayname. Defaults to 10
 * @return
 *	HTML Form slider field
+* @usage
+* <?=buildFormSlider('age',$params);?>
 */
 function buildFormSlider($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
@@ -5257,6 +5270,8 @@ function buildFormSlider($name, $params=array()){
 *	[name]. overrides name
 *	[value]. Defaults to 0
 * @return string - return HTML star rating field
+* @usage
+* <?=buildFormStarRating('rating',$params);?>
 */
 function buildFormStarRating($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
@@ -5859,6 +5874,8 @@ function buildUrl($parts=array()){
 * @param lon2 float - Second Longitude
 * @param unit char - unit of measure - K=kilometere, N=nautical miles, M=Miles
 * @return distance float
+* @usage
+*  $dist=calculateDistance($lat1, $lon1, $lat2, $lon2);
 */
 function calculateDistance($lat1, $lon1, $lat2, $lon2, $unit='M'){
 	$theta = $lon1 - $lon2;
@@ -5887,6 +5904,8 @@ function calculateDistance($lat1, $lon1, $lat2, $lon2, $unit='M'){
 *	the absolute path tho the directory to clean
 * @return bolean
 *	returns true on success
+* @usage
+* $ok=cleanDir($path);
 */
 function cleanDir($dir='') {
 	if(!is_dir($dir)){return false;}
@@ -6014,6 +6033,8 @@ function copyFile($src, $dest){
 *	function to stream stderr to - defaults to echo. If set, the the buffer and the pstatus array from proc_get_status will be passed to it
 * @return integer
 *	returns the exit code
+* @usage
+* $ok=streamCmdResults('dir','processDirLines');
 */
 function streamCmdResults($cmd,$func='',$errfunc=''){
 	//setup constants
@@ -6238,6 +6259,8 @@ function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
 *	preserve the quotes
 * @return string
 *	returns an array
+* @usage
+* $parts=csvParseLine($line);
 */
 function csvParseLine($str,$delim=',', $enclose='"', $preserve=false){
 	$resArr = array();
@@ -6476,6 +6499,8 @@ function arrays2CSV($recs=array(),$params=array()){
 *	[-noheader] - do not include a header row
 * @return string
 *	csv formatted output based on the recs array passed in
+* @usage
+* $csv=arrays2TAB($recs);
 */
 function arrays2TAB($recs=array(),$params=array()){
 	//$delim=',', $enclose='"',$force=0
@@ -6531,6 +6556,8 @@ function arrays2TAB($recs=array(),$params=array()){
 *		[header] - include xml header - defaults to 1
 * @return string
 *	xml based on the recs array passed in
+* @usage
+* $xml=arrays2XML($recs);
 */
 function arrays2XML($recs=array(),$params=array()){
 	if(!isset($params['main'])){$params['main']='main';}
@@ -6892,6 +6919,16 @@ function processTranslateTags($htm){
 *	Returns View with PHP already evaluated
 * @see renderEach();
 * @author Jeremy Despain, jeremy.despain@gmail.com
+* @usage
+* <view:items>
+* 	<div class="items">
+* 	<view:item>
+* 		<div class="item"><?=$rec['item'];?></div>
+* 	</view:item>
+* 	<?=renderEach('item',$items,'rec');?>
+* 	</div>
+* </view:items>
+* <?=renderView('items',$items,'items');?>
 */
 function renderView($view, $params=array(), $opts=array()){
 	global $VIEWS;
@@ -6987,6 +7024,16 @@ function renderView($view, $params=array(), $opts=array()){
 * @see renderView();
 * @author
 *	Brady Barten, brady.barten@zipsmart.com
+* @usage
+* <view:items>
+* 	<div class="items">
+* 	<view:item>
+* 		<div class="item"><?=$rec['item'];?></div>
+* 	</view:item>
+* 	<?=renderEach('item',$items,'rec');?>
+* 	</div>
+* </view:items>
+* <?=renderViewIf(isUser(),'items',$items,'items');?>
 */
 function renderViewIf($conditional,$view, $params=array(), $opts=array()){
 	if(is_array($conditional) && count($conditional)){
@@ -7011,6 +7058,19 @@ function renderViewIf($conditional,$view, $params=array(), $opts=array()){
 * @param options array
 * @see renderView();
 * @author Brady Barten, brady.barten@zipsmart.com
+* @usage
+* <view:items>
+* 	<div class="items">
+* 	<view:item>
+* 		<div class="item"><?=$rec['item'];?></div>
+* 	</view:item>
+* 	<?=renderEach('item',$items,'rec');?>
+* 	</div>
+* </view:items>
+* <view:no_items>
+* 	<h1>No User Found</h1>
+* </view:no_items>
+* <?=renderViewIfElse(isUser(),'items','no_items',$items,'items');?>
 */
 function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=array()){
 	if(is_array($conditional) && count($conditional)){
@@ -7082,6 +7142,11 @@ function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 *	Returns Views for each array row with PHP already evaluated
 * @see renderView();
 * @author Jeremy Despain, jeremy.despain@gmail.com
+* @usage
+* <view:item>
+* <div><?=$rec['name'];?></div>
+* </view:item>
+* <?=renderEach('item',$items,'rec');?>
 */
 function renderEach($view, $rows, $opts=array()){
 	//allow you to shortcut opts and just pass in the alias
@@ -7882,6 +7947,8 @@ function decodeBase64($str=''){
 //---------- begin function decodeURL
 /**
 * @describe - wrapper for urldecode function
+* @usage
+* $url=decodeURL($str);
 */
 function decodeURL($str=''){
 	return urldecode($str);
@@ -8109,6 +8176,8 @@ function simpleDiff($old, $new){
 *	the string you want encoded
 * @return
 *	an ASCII encoded string
+* @usage
+* $ascii=encodeAscii($str);
 */
 function encodeAscii($str=''){
 	//encodes every letter into its ascii equivilent
@@ -11623,6 +11692,7 @@ function commonJSV2CSVLine($line){
 //---------- begin function processCSVFileLines---------------------------------------
 /**
 * @describe alias to processCSVLines for backward compatibility
+* @exclude - alias
 */
 function processCSVFileLines($file,$func_name,$params=array()){
 	if(isset($params['fields']) && !isset($params['-fields'])){$params['-fields']=$params['fields'];}
@@ -13145,7 +13215,8 @@ function includeModule($name,$params=array()){
 *    additional $_REQUEST key/value pairs you want sent to the page
 * @return string
 *    returns the specified page and loads any functions, etc of that page
-* @usage echo includePage('test',array('foo'=>25));
+* @usage
+* <?=includePage('test',array('foo'=>25));?>
 * @author slloyd
 * @history
 *	slloyd 2014-01-07 added -dbname, and -fieldname controling parameters.
@@ -13264,6 +13335,8 @@ function includePage($val='',$params=array()){
 * @param condition - condition can be a boolean or an array of boolean=>view sets
 * @param page_true string - page name if true
 * @param params array
+* @usage
+* <?=includePageIf(isUser(),'topmenu');?>
 * @see includePage();
 */
 function includePageIf($conditional,$page_true, $params=array()){
@@ -13278,6 +13351,8 @@ function includePageIf($conditional,$page_true, $params=array()){
 * @param page_true string - page name if true
 * @param page_false string - page name if false.
 * @param params array
+* @usage
+* <?=includePageIfElse(isUser(),'topmenu_user','topmenu_nouser');?>
 * @see includePage();
 */
 function includePageIfElse($conditional,$page_true, $page_false, $params=array()){
@@ -14059,6 +14134,7 @@ function isSpider($agent='',$return_name=0){
 //---------- begin function isSearchBot---------------------------------------
 /**
 * @deprecated use isSpider() instead
+* @exclude - depreciated
 */
 function isSearchBot($agent='',$return_name=0){
 	return isSpider($agent,$return_name);
@@ -19034,6 +19110,8 @@ function trimRequestArray($request=array()){
 *	the maximum length
 * @return
 *	a string
+* @usage
+* $str=truncateWords($longstr,300);
 */
 function truncateWords($wordstr,$maxlen,$dots=0){
 	$words=preg_split('/\ /',$wordstr);
@@ -19057,6 +19135,8 @@ function truncateWords($wordstr,$maxlen,$dots=0){
 * @param maxlen int
 *	the maximum length
 * @return array
+* @usage
+* $word_groups=splitWords($str,500);
 */
 function splitWords($sentence,$maxlen){
 	//return strlen($sentence);
