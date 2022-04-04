@@ -26,9 +26,14 @@ function manualGetFileNames($category){
 	FROM _docs
 	WHERE category='{$category}'
 	GROUP BY afile
-	ORDER BY afile
 ENDOFQUERY;
 	$recs=getDBRecords($query);
+	foreach($recs as $i=>$rec){
+		$recs[$i]['afile_decoded']=base64_decode($rec['afile']);
+		$recs[$i]['file_path']=getFilePath($recs[$i]['afile_decoded']);
+		$recs[$i]['file_name']=getFileName($recs[$i]['afile_decoded']);
+	}
+	$recs=sortArrayByKeys($recs,array('afile_path'=>SORT_ASC,'afile_name'=>SORT_ASC));
 	return $recs;
 }
 function manualGetNames($afile){
@@ -86,44 +91,72 @@ function manualParseFile($file){
 	$cnt=count($lines);
 	//echo "{$file}<br>";
 	$ext=getFileExtension($file);
+	$lang=array();
+	switch(strtolower($ext)){
+		case 'py':
+			$lang['function_begin']='/^def\ (.+?)\((.*?)\)\ *\:/';
+			$lang['function_end']='/^[\t\s]+$/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Python';
+			$lang['caller_end']='...';
+		break;
+		case 'js':
+			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\/\*]/';
+			$lang['comment_more']='/^[\/\*]+(.*)$/';
+			$lang['category']='Javascript';
+			$lang['caller_end']='...}';
+		break;
+		case 'php':
+			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\/\*]/';
+			$lang['comment_more']='/^[\/\*]+(.*)$/';
+			$lang['category']='PHP';
+			$lang['caller_end']='...}';
+		break;
+		case 'pl':
+			$lang['function_begin']='/^sub\ (.+?)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Perl';
+			$lang['caller_end']='...}';
+		break;
+		case 'lua':
+			$lang['function_begin']='/^function\ (.+?)\((.*?)\)/';
+			$lang['function_end']='/^end/';
+			$lang['comment']='/^\-\-/';
+			$lang['comment_more']='/^\-\-(.*)$/';
+			$lang['category']='Lua';
+			$lang['caller_end']='...';
+		break;
+		default:
+			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\#\/\*]/';
+			$lang['comment_more']='/^[\#\/\*]+(.*)$/';
+			$lang['category']='Other';
+			$lang['caller_end']='...}';
+		break;
+	}
 	for($x=0;$x<$cnt;$x++){
 		$line=trim($lines[$x]);
-		switch(strtolower($ext)){
-			case 'py':
-				$re='/^def\ (.+?)\((.*?)\)\ *\:/';
-			break;
-			default:
-				$re='/^function\ (.+?)\((.*?)\)\ *\{/';
-			break;
-		}
 		//echo $ext.'<br>'.$re;exit;
-		if(preg_match($re,$line,$m)){
+		if(preg_match($lang['function_begin'],$line,$m)){
 			if(stringBeginsWith($m[1],'_')){continue;}
 			if(stringBeginsWith($m[1],'$')){continue;}
 			if(strlen($m[1])==1){continue;}
 			$rec=array(
 				'afile'=>base64_encode($file),
 				'afile_line'=>$x+1,
-				'name'=>$m[1]
+				'name'=>$m[1],
+				'category'=>$lang['category'],
+				'caller'=>$m[0].$lang['caller_end']
 			);
-			switch(strtolower($ext)){
-				case 'py':
-					$rec['caller']=$m[0];
-					$rec['category']='Python';
-				break;
-				case 'js':
-					$rec['category']='Javascript';
-					$rec['caller']=$m[0].'...}';
-				break;
-				case 'php':
-					$rec['category']='PHP';
-					$rec['caller']=$m[0].'...}';
-				break;
-				default:
-					$rec['category']=$ext;
-					$rec['caller']=$m[0].'...}';
-				break;
-			}
+			
 			//backup to read phpdoc comments before the function name
 			$p=$x-1;
 			$comments=array();
@@ -132,9 +165,11 @@ function manualParseFile($file){
 				$xline=str_replace('[tab]','',$pline);
 				$xline=trim($xline);
 				if(!strlen($pline) || !strlen($xline)){break;}
-				if(!preg_match('/^(\*|\#|\/\*|\*\/)/',$xline)){break;}
-				if(preg_match('/^\}/',$pline)){break;}
-				$comments[]=encodeHtml($pline);
+				if(!preg_match($lang['comment'],$xline)){break;}
+				if(preg_match($lang['function_end'],$pline)){break;}
+				$pline=encodeHtml($pline);
+				$pline=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$pline);
+				$comments[]=$pline;
 				if($p==0){break;}
 				$p--;
 			}
@@ -147,14 +182,12 @@ function manualParseFile($file){
 					$key=$c[1];
 					$v=trim($c[2]);
 					if(strlen($v)){
-						$v=preg_replace('/^(\*/','&nbsp;',$v);
 						$rec['info'][$key][]=base64_encode($v);
 					}
 				}
-				elseif(strlen($key) && preg_match('/^(\*|\#)(.*)$/',$cline,$c)){
-					$v=trim($c[2]);
-					if($v != '/' && strlen($v)){
-						$v=preg_replace('/^\*/','&nbsp;',$v);
+				elseif(strlen($key) && preg_match($lang['comment_more'],$cline,$c)){
+					$v=trim($c[1]);
+					if(strlen($v)){
 						$rec['info'][$key][]=base64_encode($v);
 					}
 				}

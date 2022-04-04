@@ -94,6 +94,7 @@ switch(strtolower($_REQUEST['func'])){
 			if(stringEndsWith($file['name'],'min.js')){continue;}
 			$ok=manualParseFile($file['afile']);
 		}
+		//get categories
 		$categories=manualGetCategories();
 		setView('default',1);
 	break;
