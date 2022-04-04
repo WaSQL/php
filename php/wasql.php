@@ -1,7 +1,7 @@
 <?php
 /*functions only used by wasql*/
 register_shutdown_function('gracefulShutdown');
-//---------- begin function wasqlIsCurrent--------------------------------------
+
 /**
 * @describe returns true if your WaSQL version is current
 * @usage if(!wasqlIsCurrent()){....update....}
@@ -17,7 +17,6 @@ function wasqlIsCurrent(){
 	if($version_local == $version_remote){return true;}
 	return false;
 }
-//---------- begin function wasqlClearMinCache--------------------------------------
 /**
 * @describe removes all files in the w_min cache directory
 * @usage $ok=wasqlClearMinCache();
@@ -30,9 +29,8 @@ function wasqlClearMinCache(){
     $ok=cleanDir("{$docroot}/w_min");
     return $ok;
 }
-//---------- begin function wasqlRebuildManual
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - depricated
 */
 function wasqlRebuildManual(){
 	global $Manual;
@@ -123,7 +121,7 @@ function wasqlRebuildManual(){
 }
 //---------- begin function wasqlParseHelp
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - depricated
 */
 function wasqlParseHelp($file,$location=''){
 	global $Manual;
@@ -282,7 +280,7 @@ function wasqlParseHelp($file,$location=''){
 }
 //---------- begin function wasqlBuildManualList
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - depricated
 */
 function wasqlBuildManualList(){
 	global $Manual;
@@ -376,7 +374,7 @@ function wasqlBuildManualList(){
 }
 //---------- begin function wasqlBuildManualTree
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - depricated
 */
 function wasqlBuildManualTree(){
 	//exclude: true
@@ -424,7 +422,7 @@ function wasqlBuildManualTree(){
 }
 //---------- begin function wasqlMagicQuotesFix - depreciated as of v7.4
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - depricated
 */
 function wasqlMagicQuotesFix(){
 	//exclude: true
@@ -606,7 +604,7 @@ function gracefulShutdown(){
 //---------- begin function apiRequest---------------------------------------
 /**
 * @deprecated use postXML instead
-* @exclude  - this function is deprecated and thus excluded from the manual
+* @exclude  - depricated
 */
 function apiRequest($url='',$opts=array()){
 	$results=array('opts_in'=>$opts,'url_in'=>$url);
@@ -865,6 +863,9 @@ function minifyJsFile($v=''){
 	$_SESSION['w_MINIFY']['js_filename']="minify_{$prefix}_{$hash}.js";
 	return "/w_min/minify_{$prefix}_{$hash}.js";
 }
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function minifyCleanMin(){
 	global $CONFIG;
 	if(isset($CONFIG['database'])){
@@ -883,9 +884,8 @@ function minifyCleanMin(){
 	}
 	return;
 }
-//---------- begin function wasqlSetMinify
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function wasqlSetMinify($backend=0){
 	if(isAjax()){return;}
@@ -984,9 +984,8 @@ function wasqlSetMinify($backend=0){
 	//page
 	if(isset($PAGE['name'])){$_SESSION['w_MINIFY']['page_name']=$PAGE['name'];}
 }
-//---------- begin function wasqlUpdateCheck
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function wasqlUpdateCheck(){
 	//only run once
@@ -1193,9 +1192,8 @@ function attachManagerShowFiles($startdir='',$params=array()){
 	$rtn .= '</table>'."\n";
 	return $rtn;
 	}
-//---------- begin function setWasqlError
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function setWasqlError($debug,$e,$q=''){
 	//exclude: true
@@ -1229,10 +1227,8 @@ function setWasqlError($debug,$e,$q=''){
     	}
 	return false;
 	}
-//---------- begin function showWasqlErrors
 /**
-* @describe - returns a nice div showing errors and clears the errors.
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function showWasqlErrors($top=50,$right=50,$close=2){
 	return '';
@@ -1322,10 +1318,8 @@ function showWasqlErrors($top=50,$right=50,$close=2){
 	unset($_SERVER['WASQL_ERRORS']);
 	return $rtn;
 	}
-//---------- begin function wasqlErrorHandler
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-* @usage set_error_handler("wasqlErrorHandler");
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function wasqlErrorHandler($errno, $errstr, $errfile, $errline){
 	global $dbh;
@@ -1379,9 +1373,8 @@ function wasqlErrorHandler($errno, $errstr, $errfile, $errline){
     /* Don't execute PHP internal error handler */
     return false;
 	}
-//---------- begin function wasqlGetBehaviors
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function wasqlGetBehaviors($d=0){
 	//exclude: true

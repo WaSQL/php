@@ -189,7 +189,7 @@ ENDOFSQL;
 }
 exit;
 /* cron functions */
-/** --- function cronCleanRecords
+/** --- function cronBuildWhere
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function cronBuildWhere(){
@@ -389,6 +389,9 @@ and
 	)
 ENDOFWHERE;
 }
+/** --- function cronCleanRecords
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function cronCleanRecords($cron=array()){
 	if(!isset($cron['_id'])){return false;}
 	if(!isNum($cron['records_to_keep'])){return false;}

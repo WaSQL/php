@@ -3414,16 +3414,9 @@ function adminDefaultTemplateValues(){
 </body>
 </html>
 ENDOFDEFAULT;
-	$_REQUEST['controller'] = $_REQUEST['functions'] = <<<ENDOFDEFAULT
-<?php
-?>
-ENDOFDEFAULT;
-	$_REQUEST['css'] = <<<ENDOFDEFAULT
-.templatesamplecss{}
-ENDOFDEFAULT;
-	$_REQUEST['js'] = <<<ENDOFDEFAULT
-function templateSampleJs(){}
-ENDOFDEFAULT;
+	$_REQUEST['controller'] = $_REQUEST['functions'] = '<?'.'php'.PHP_EOL.'?>';
+	$_REQUEST['css'] = '.templatesamplecss{}';
+	$_REQUEST['js'] = 'function templateSampleJs(){}';
 }
 //---------- begin function adminListDataTypes ----
 /**

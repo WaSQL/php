@@ -172,7 +172,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo printValue($params).$query;exit;
 	$ok=mysqlExecuteSQL($query);
-	//echo printValue($ok).$query;exit;
+	//echo printValue($ok).printValue($params).$query;exit;
 	if(isset($params['-debug'])){
 		return printValue($ok).$query;
 	}

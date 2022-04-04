@@ -220,10 +220,8 @@ if(isset($USER['_id'])){
 	$uid=isset($USER['_id'])?$USER['_id']:0;
 	$SETTINGS=settingsValues($uid);
 }
-//****************************************************************************************************************************//
-//---------- begin function userGetApikey ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userGetApikey($rec=array()){
 	global $CONFIG;
@@ -247,11 +245,8 @@ function userGetApikey($rec=array()){
 	    );
 	return encodeBase64(implode(':',$auth));
 }
-//---------- begin function userGetApikey ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-* @infor    - returns dbname,username,password
-
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userDecodeApikey($apikey,$rec=array()){
 	global $CONFIG;
@@ -277,9 +272,8 @@ function userDecodeApikey($apikey,$rec=array()){
 		'password'=>decrypt(decodeBase64($parts[2]),$cryptkey)
 	);
 }
-//---------- begin function userDecodeApikeyAuth ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userDecodeApikeyAuth($apikey,$user){
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($user)));
@@ -293,9 +287,8 @@ function userDecodeApikeyAuth($apikey,$user){
 	}
 	return $rec;
 }
-//---------- begin function userGetAuthCode ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userGetAuthCode($rec=array()){
 	global $USER;
@@ -316,9 +309,8 @@ function userGetAuthCode($rec=array()){
 	$auth=encrypt("{$rec['username']}:{$rec['apikey']}",$cryptkey);
 	return base64_encode("{$rec['_id']}.{$auth}");
 }
-//---------- begin function userGetAuthCode ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userDecodeAuthCode($authcode){
 	//decode authcode to id.auth
@@ -351,9 +343,8 @@ function userDecodeAuthCode($authcode){
 	}
 	return $rec;
 }
-//---------- begin function userGetTempAuthCode ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userGetTempAuthCode($rec=array()){
 	global $USER;
@@ -372,9 +363,8 @@ function userGetTempAuthCode($rec=array()){
 	$auth=encrypt("{$rec['username']}:{$rtime}:{$rec['apikey']}",$cryptkey);
 	return base64_encode("{$rec['_id']}.{$auth}");
 }
-//---------- begin function userDecodeTempAuthCode ----
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function userDecodeTempAuthCode($authcode){
 	global $CONFIG;
@@ -689,6 +679,9 @@ function userGetTempAuthLinkTimout(){
 	$minutes=isset($CONFIG['auth_timeout'])?$CONFIG['auth_timeout']:30;
 	return $minutes;
 }
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function userGetTimeout($type,$rec=array()){
 	switch(strtolower($type)){
 		case 'auth':
@@ -980,8 +973,9 @@ function userSetUserInfo($rec=array()){
 	return $rec;
 }
 
-/************************************************************************************/
-/************************************************************************************/
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function userSetWaSQLGUID(){
 	global $USER;
 	global $CONFIG;
@@ -1006,7 +1000,9 @@ function userSetWaSQLGUID(){
 	setUserInfo();
 	return $guid;
 }
-
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function userAuthorizeWASQLGUID(){
 	if(!isset($_COOKIE['WASQLGUID']) || !strlen($_COOKIE['WASQLGUID'])){
 		return false;
@@ -1404,9 +1400,8 @@ function userValue($fields){
 * returns  true if a user is logged in
 * @return boolean
 * @usage
-*	if(isUser()){}
+*	if(isUser()){...}
 * @author slloyd
-* @history - bbarten 2014-01-02 added documentation
 */
 function isUser(){
 	global $USER;

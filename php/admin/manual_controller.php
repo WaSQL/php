@@ -1,6 +1,9 @@
 <?php
 global $progpath;
 global $CONFIG;
+
+
+$docs_files='';
 $docfile="{$progpath}/temp/docfile.json";
 switch(strtolower($_REQUEST['func'])){
 	case 'docid':
@@ -25,6 +28,11 @@ switch(strtolower($_REQUEST['func'])){
 			setView('no_results',1);
 			return;
 		}
+		//echo printValue($recs);
+		foreach($recs as $i=>$rec){
+			$recs[$i]['info_ex']=json_decode($rec['info'],true);
+		}
+		//echo printValue($recs);exit;
 		setView('search_results',1);
 		return;
 	break;

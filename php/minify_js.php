@@ -285,6 +285,9 @@ else{
 
 exit;
 /* ------------ Functions needed ---------------- */
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function minifyFiles($path,$names){
 	global $files;
 	global $CONFIG;
@@ -320,7 +323,9 @@ function minifyFiles($path,$names){
 		else{echo "/* Minify_js Error: NO SUCH NAME:{$name}, Path:{$path} */".PHP_EOL.PHP_EOL;}
 	}
 }
-
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function minifyGetExternal($url){
 	$lines=file($url);
 	$rtn='';
@@ -333,6 +338,9 @@ function minifyGetExternal($url){
 	}
 	return $rtn;
 }
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function compress($buffer) {
 	/*set an etag based on the combined file data */
 	global $lastmodifiedtime;
@@ -355,7 +363,9 @@ function compress($buffer) {
 	header('Content-Disposition: inline; filename="'.$filename.'"');
 	return $buffer;
 }
-//--------------------
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function minifyLines($lines) {
 	global $jslines;
 	if(!is_array($lines)){

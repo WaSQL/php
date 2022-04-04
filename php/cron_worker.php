@@ -350,7 +350,9 @@ foreach($ConfigXml as $name=>$host){
 	}
 }
 exit;
-/* cron functions */
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
 function cronCleanRecords($cron=array()){
 	if(!isset($cron['_id'])){return false;}
 	if(!isNum($cron['records_to_keep'])){return false;}
@@ -373,8 +375,8 @@ function cronCleanRecords($cron=array()){
 	));
 	return $ok;
 }
-/** --- function cronLogTails
-* @exclude  - this function is for internal use only and thus excluded from the manual
+/**
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function cronLogTails(){
 	global $CONFIG;
@@ -418,8 +420,8 @@ function cronLogTails(){
 	}
 }
 
-/** --- function cronMessage
-* @exclude  - this function is for internal use only and thus excluded from the manual
+/**
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function cronMessage($msg,$separate=0){
 	global $cronlog_id;
@@ -428,8 +430,8 @@ function cronMessage($msg,$separate=0){
 	}
 	return commonLogMessage('cron_worker',$msg,$separate,1);
 }
-/** --- function cronUpdate
-* @exclude  - this function is for internal use only and thus excluded from the manual
+/**
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function cronUpdate($id,$params){
 	$params['-table']='_cron';
@@ -438,8 +440,8 @@ function cronUpdate($id,$params){
 	//echo "cronUpdate".printValue($ok).printValue($params);
 	return $ok;
 }
-/** --- function cronDBConnect
-* @exclude  - this function is for internal use only and thus excluded from the manual
+/**
+* @exclude  - this function is for internal use only- excluded from docs
 */
 function cronDBConnect(){
 	global $CONFIG;

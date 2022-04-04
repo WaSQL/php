@@ -196,7 +196,10 @@ def setFileContents(filename,data,append=False):
 
     f.write(data)
     f.close()
-
+#---------- begin function evalPython ----------
+# @describe compiles string and returns result
+# @param str
+# @usage $ok=common.evalPython(str)
 def evalPython(str):
     str = str.strip()
     #point stdout to a variable
@@ -382,6 +385,8 @@ def loadExtras(file):
 def nl2br(string):
     return string.replace('\n','<br />\n')
 
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
 def parseViews(str):
     global VIEWS
     VIEWS = {}
@@ -390,6 +395,8 @@ def parseViews(str):
         VIEWS[viewname]=viewbody
     return True
 
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
 def parseViewsOnly(str):
     views = {}
     matches = re.findall(r'<view:(.*?)>(.+?)</view:\1>', str,re.MULTILINE|re.IGNORECASE|re.DOTALL)
@@ -397,6 +404,8 @@ def parseViewsOnly(str):
         views[viewname]=viewbody
     return views
 
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
 def parseCodeBlocks(str):
     matches = re.findall(r'<\?=(.*?)\?>', str,re.MULTILINE|re.IGNORECASE|re.DOTALL)
     for match in matches:
@@ -428,6 +437,8 @@ def parseCodeBlocks(str):
         str = str_replace(repstr,rtn,str)
     return str
 
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
 def setView(name,clear=0):
     global VIEW
     if name in VIEWS:
@@ -435,23 +446,39 @@ def setView(name,clear=0):
             VIEW = {}
         VIEW[name]=VIEWS[name]
 
+#---------- begin function scriptPath ----------
+# @describe returns script path
+# @param [dirs] str - subdirs
+# @return str string
+# @usage path=common.scriptPath()
+# @usage path=common.scriptPath('/temp')
 def scriptPath(d=''):
         spath = os.path.dirname(os.path.realpath(__file__))
         return os.path.realpath("{}/{}".format(spath,d))
 
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
 def createView(name,val):
     global VIEW
     VIEW[name] = val
-        
+
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs      
 def removeView(name):
     global VIEW
     if name in VIEW:
         del VIEW[name]
 
+#---------- begin function debugValue ----------
+# @describe shows errors in developer console
+# @param obj mixed
+# @usage common.debugValue(recs)
 def debugValue(obj):
     global DEBUG
     DEBUG.append(obj)
 
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs 
 def debugValues():
     global DEBUG
     debugstr=''

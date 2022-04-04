@@ -11,7 +11,12 @@ except Exception as err:
     print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
 
-
+#---------- begin function queryResults ----------
+# @describe returns a dictionary of records returned from query
+# @param dbname str - database name from database tag in config.xml
+# @param query str - SQL query to run
+# @return dictionary - recordsets
+# @usage recs=db.queryResults('dbtest','select * from states')
 def queryResults(dbname,query,params={}):
     if dbname in config.DATABASE:
         #add DATABASE settings to params

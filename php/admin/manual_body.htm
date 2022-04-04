@@ -13,7 +13,7 @@
 </style>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-help-circled"></span> WaSQL Documentation</h2>
 <div style="display:flex;justify-content: flex-start;">
-	<div style="height:85vh;flex: 1;flex-wrap: nowrap;" class="w_nowrap">
+	<div style="height:85vh;flex: 1;flex-wrap: nowrap;overflow:auto;" class="w_nowrap">
 		<img src="/wfiles/clear.gif" style="width:250px;height:1px;" />
 		<form method="post" name="manualsearchform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
 			<input type="hidden" name="_menu" value="manual" />
@@ -54,7 +54,7 @@
 
 <view:names>
 	<view:name>
-		<div><a href="#" data-docid="<?=$rec['_id'];?>" onclick="return manualNav(this);" data-div="results" data-func="docid" class="w_link w_block" style="margin-bottom:3px;"><?=$rec['name'];?> (Line <?=$rec['afile_line'];?>)</a></div>
+		<div><a href="#" data-docid="<?=$rec['_id'];?>" onclick="return manualNav(this);" data-div="results" data-func="docid" class="<?=$rec['class'];?> w_link w_block" style="margin-bottom:3px;"><?=$rec['name'];?> (Line <?=$rec['afile_line'];?>)</a></div>
 	</view:name>
 	<?=renderEach('name',$names,'rec');?>
 </view:names>
@@ -69,10 +69,10 @@
 		<div class="w_gray w_smaller"><?=$rec['caller'];?></div>
 		<div class="w_bold w_big">Usage</div>
 		<div class="well">
-		<view:usage>
+			<view:usage>
 			<div><?=base64_decode($usage);?></div>
-		</view:usage>
-		<?=renderEach('usage',$rec['info_ex']['usage'],'usage');?>
+			</view:usage>
+			<?=renderEach('usage',$rec['info_ex']['usage'],'usage');?>
 		</div>
 		<div class="w_bold w_big">Return</div>
 		<div class="well">

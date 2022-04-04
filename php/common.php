@@ -4,6 +4,7 @@
 * @exclude  - this function is excluded from the manual
 */
 if (!function_exists('getallheaders')) {
+	/* @exclude  - this function is excluded from the manual */
     function getallheaders() {
     $headers = [];
     foreach ($_SERVER as $name => $value) {
@@ -203,6 +204,9 @@ function commonCronCheckSchema(){
 	}
 	return true;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function commonCronCleanup(){
 	return;
 	loadExtras('system');
@@ -396,6 +400,9 @@ function commonCronLogInit($id=0){
 	// }
 	// return true;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function commonCronLogDelete(){
 	global $CRONTHRU;
 	if(isset($CRONTHRU['cronlog_id'])){
@@ -6071,6 +6078,15 @@ function streamCmdResults($cmd,$func='',$errfunc=''){
     }
 	return ($ret + 256) % 256;
 }
+//---------- begin function tailFile--------------------------------------
+/**
+* @describe returns last x lines of file
+* @param afile string - full path to file to tail
+* @param [lines] int - number of lines. defaults to 10
+* @param adaptive boolean - set to false to give a performance boost
+* @return string
+* @usage $last=tailFile($afile);
+*/
 function tailFile($afile, $lines = 10, $adaptive = true) {
 	// Open file
 	$f = @fopen($afile, "rb");
@@ -6785,6 +6801,9 @@ function setView($name='',$clear=0){
 	$PAGE['setView'][$name]+=1;
 	return 1;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function setViewNames(){
 	global $PAGE;
 	if(!isset($PAGE['setView'])){return array('');}
@@ -8212,6 +8231,13 @@ function encodeHtml($string='',$convert_tabs=0){
 	$string=str_ireplace("\t",$tabspace,$string);
 	return $string;
 	}
+//---------- begin function utf2Html
+/**
+* @describe converts utf8 chars to ascii codes
+* @param str string - utf8 string to convert
+* @return string
+* @usage $html=utf2Html($str);
+*/
 function utf2Html($utf2html_string){
     $f = 0xffff;
     $convmap = array(
@@ -11563,12 +11589,18 @@ function processFileLines($file,$func_name,$params=array()){
 	}
 	return $linecnt;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function commonJSV2CSV($jsvfile){
 	global $jsvcsvfile;
 	$jsvcsvfile=str_replace('.jsv','.csv',$jsvfile);
 	$num=processFileLines($jsvfile,'commonJSV2CSVLine');
 	return $jsvcsvfile;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function commonJSV2CSVLine($line){
 	global $jsvcsvfile;
 	//echo $jsvcsvfile.printValue($line);exit;
@@ -13263,6 +13295,9 @@ function includePageIfElse($conditional,$page_true, $page_false, $params=array()
 function includePHPOnce($php_content,$name=''){
 	return commonIncludeFunctionCode($php_content,$name);
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function commonIncludeFunctionCode($content,$name=''){
 	global $CONFIG;
 	$tmppath=getWasqlTempPath();
@@ -15492,6 +15527,7 @@ function settingsValues($id=0,$fields=array()){
 * @describe postEditSha is used to communicate with postedit.exe
 * @param $tables array - key is tablename and value is an array of fields to check
 * @return $recs array - list of shas foreach table and field
+* @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function postEditSha($pextables=array()){
 	global $USER;
@@ -15545,6 +15581,9 @@ function postEditSha($pextables=array()){
 
 $GLOBALS['crc32Table']=array();        // Lookup table array
 crc32InitTable();
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function crc32InitTable() {            // Builds lookup table array
     // This is the official polynomial used by CRC-32 in PKZip, WinZip and Ethernet.
     $polynomial = 0x04c11db7;
@@ -15557,6 +15596,9 @@ function crc32InitTable() {            // Builds lookup table array
         $GLOBALS['crc32Table'][$i] = crc32Reflect($GLOBALS['crc32Table'][$i], 32);
     }
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function crc32Reflect($ref, $ch) {        // Reflects CRC bits in the lookup table
 	$value=0;
 	// Swap bit 0 for bit 7, bit 1 for bit 6, etc.
@@ -15566,7 +15608,9 @@ function crc32Reflect($ref, $ch) {        // Reflects CRC bits in the lookup tab
 	}
 	return $value;
 }
-
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function crc32String($text) {        // Creates a CRC from a text string
 	// Once the lookup table has been filled in by the two functions above,
 	// this function creates all CRCs using only the lookup table.
@@ -15589,7 +15633,9 @@ function crc32String($text) {        // Creates a CRC from a text string
 	// Exclusive OR the result with the beginning value.
 	return $crc ^ 0xffffffff;
 }
-
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function crc32File($afile) {            // Creates a CRC from a file
 	// Info: look at __crc32_string
 
@@ -15616,6 +15662,7 @@ function crc32File($afile) {            // Creates a CRC from a file
 *	database name - defaults to current database
 * @return string xml
 *	returns xml for postedit.exe to parse
+* @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function postEditXmlFromJson($json=array()){
 	if(!is_array($json)){return null;}
@@ -15717,6 +15764,9 @@ function postEditXmlFromJson($json=array()){
     $xml .= "</xmlroot>".PHP_EOL;
     return $xml;
 }
+/*
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function posteditSha1($str){
 	if(is_file($str)){
 		$str=file_get_contents($str);
@@ -15733,6 +15783,7 @@ function posteditSha1($str){
 *	database name - defaults to current database
 * @return string xml
 *	returns xml for postedit.exe to parse
+* @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function postEditXml($pextables=array(),$dbname='',$encoding=''){
 	global $USER;
@@ -18295,6 +18346,9 @@ function commonParseIni($str,$multi=0){
 	}
 	return $settings;
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function commonProcessFileActions($name,$afile){
 	global $CONFIG;
 	$adir=getFilePath($afile);

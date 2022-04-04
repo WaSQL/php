@@ -36,33 +36,53 @@ function manualGetNames($afile){
 	SELECT
 		_id,
 		name,
-		afile_line
+		afile_line,
+		length(info) as info_length
 	FROM _docs
 	where afile='{$afile}'
 	order by name
 ENDOFQUERY;
 	$recs=getDBRecords($query);
+	foreach($recs as $i=>$rec){
+		if($rec['info_length'] < 10 ){
+			$recs[$i]['class']='w_red';
+		}
+		else{
+			$recs[$i]['class']='';
+		}
+	}
+	//echo printValue($recs);exit;
 	return $recs;
 }
 function manualParseFile($file){
-	$mrec=getDBRecord(array(
-		'-table'=>'_docs_files',
-		'afile'=>$file
-	));
+	global $docs_files;
+	if(!is_array($docs_files)){
+		$docs_files=getDBRecords(array(
+			'-table'=>'_docs_files',
+			'-index'=>'afile'
+		));
+		//echo $file.printValue($docs_files);exit;
+	}
+	$file=strtolower(realpath($file));
+	//echo $file;exit;
 	$md5=md5_file($file);
-	if(isset($mrec['afile_md5']) && $mrec['afile_md5']==$md5){
+	if(isset($docs_files[$file]['afile_md5']) && $docs_files[$file]['afile_md5']==$md5){
 		return;
 	}
+	//echo $file;exit;
 	$ok=addDBRecord(array(
 		'-table'=>'_docs_files',
 		'afile'=>$file,
 		'afile_md5'=>$md5,
 		'-upsert'=>'afile_md5'
 	));
-	//echo "here".printValue($ok);exit;
+	
 	global $CONFIG;
 	$recs=array();
 	$lines=file($file);
+	foreach($lines as $i=>$line){
+		$lines[$i]=preg_replace('/\t/','[tab]',$line);
+	}
 	$cnt=count($lines);
 	//echo "{$file}<br>";
 	$ext=getFileExtension($file);
@@ -109,7 +129,10 @@ function manualParseFile($file){
 			$comments=array();
 			while(1){
 				$pline=trim($lines[$p]);
-				if(!strlen($pline)){break;}
+				$xline=str_replace('[tab]','',$pline);
+				$xline=trim($xline);
+				if(!strlen($pline) || !strlen($xline)){break;}
+				if(!preg_match('/^(\*|\#|\/\*|\*\/)/',$xline)){break;}
 				if(preg_match('/^\}/',$pline)){break;}
 				$comments[]=encodeHtml($pline);
 				if($p==0){break;}
@@ -119,20 +142,18 @@ function manualParseFile($file){
 			$key='';
 			foreach($rec['comments'] as $cline){
 				$cline=trim($cline);
-
+				$cline=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$cline);
 				if(preg_match('/\@([a-z]+)(.*)$/i',$cline,$c)){
 					$key=$c[1];
 					$v=trim($c[2]);
 					if(strlen($v)){
-						$v=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;',$v);
-						$v=preg_replace('/^\*/','&nbsp;',$v);
+						$v=preg_replace('/^(\*/','&nbsp;',$v);
 						$rec['info'][$key][]=base64_encode($v);
 					}
 				}
-				elseif(strlen($key) && preg_match('/^\*(.*)$/',$cline,$c)){
-					$v=trim($c[1]);
+				elseif(strlen($key) && preg_match('/^(\*|\#)(.*)$/',$cline,$c)){
+					$v=trim($c[2]);
 					if($v != '/' && strlen($v)){
-						$v=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;',$v);
 						$v=preg_replace('/^\*/','&nbsp;',$v);
 						$rec['info'][$key][]=base64_encode($v);
 					}
@@ -145,7 +166,6 @@ function manualParseFile($file){
 				if(!strlen($rec['info'])){
 					$rec['info']='{}';
 				}
-				$rec['info']='{}';
 				$rec['hash']=md5($rec['name'].$rec['afile']);
 				$recs[]=$rec;
 			}
@@ -153,7 +173,8 @@ function manualParseFile($file){
 		}
 	}
 	if(!count($recs)){return 0;}
-	$ok=dbAddRecords($CONFIG['database'],'_docs',array('-recs'=>$recs,'-upsert'=>'caller,afile_line,comments,info'));
+	$ok=dbAddRecords($CONFIG['database'],'_docs',array('-recs'=>$recs,'-upsert'=>'afile_line,caller,category,comments,info'));
+	//echo printValue($ok).printValue($recs);exit;
 	return count($recs);
 }
 

@@ -69,6 +69,16 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 		if(!isNum($ok) || $ok==0){abort("Load_Pages failed to load {$load} - {$ok}");}
 	}
 }
+//---------- begin function dbISQL
+/**
+* @describe calls isql command line to execute query and returns results
+* @param dsn string - dsn
+* @param user string - username
+* @param pass string - password
+* @param query string - query
+* @return recs array
+* @usage $recs=dbISQL($dsn,$user,$pass,$query);
+*/
 function dbISQL($dsn,$user,$pass,$query){
 	//isql prd3t1hana tableau T8bl3au123 -d| -c </var/www/wasql_stage/php/temp/q.sql
 	$path=getWasqlPath('php/temp');
@@ -98,6 +108,9 @@ function dbISQL($dsn,$user,$pass,$query){
 	return $recs;
 }
 //---------- db functions that allow you to pass in what database first
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 	global $CONFIG;
 	global $DATABASE;
@@ -542,7 +555,14 @@ function dbNamedQuery($db,$name){
 	return dbFunctionCall('namedQuery',$db,$name);
 }
 
-
+//---------- begin function dbGetAllProcedures
+/**
+* @describe returns all procedures
+* @param db string - database name as specified in the database section of config.xml
+* @return array
+* @usage
+*	$procs=dbGetAllProcedures($db);
+*/
 function dbGetAllProcedures($db){
 	return dbFunctionCall('getAllProcedures',$db);
 }
@@ -694,7 +714,6 @@ function dbOptimizations($db,$params=array()){
 *	$recs=dbQueryResults('pg_local',$query);
 *	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
-
 function dbQueryResults($db,$query,$params=array()){
 	$recs=dbFunctionCall('queryResults',$db,$query,$params);
 	//check for single ref cursor that returns a table
@@ -708,7 +727,17 @@ function dbQueryResults($db,$query,$params=array()){
 	}
 	return $recs;
 }
-//use python to query a database and return the results
+//---------- begin function pyQueryResults
+/**
+* @describe returns an records set from a database using python
+* @param db string - database name as specified in the database section of config.xml
+* @param query string - SQL query
+
+* @return array recordsets
+* @usage
+*	$recs=pyQueryResults('pg_local',$query);
+*	$recs=pyQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
+*/
 function pyQueryResults($db,$query,$params=array()){
 	global $CONFIG;
 	if(!isset($CONFIG['python'])){}
@@ -5253,6 +5282,9 @@ ENDOFSQL;
 	}
 	return '';
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function databaseAddMultipleTables($schemas=''){
 	$lines=preg_split('/[\r\n]+/',trim($schemas));
 	if(!count($lines)){
@@ -8791,6 +8823,9 @@ function getDBFormRecords($params=array()){
 function getDBTableIndexes($table){
 	return getDBIndexes($table);
 }
+/**
+* @exclude  - depricated - use getDBTableIndexes
+*/
 function getDBIndexes($tables=array(),$dbname=''){
 	if(!is_array($tables)){$tables=array($tables);}
 	$indexes=array();
@@ -11924,6 +11959,9 @@ function isPostgreSQL(){
 	else{$isPostgreSQLCache=false;}
 	return $isPostgreSQLCache;
 }
+/**
+* @exclude  - depricated - use isPostgreSQL
+*/
 function isPostgres(){return isPostgreSQL();}
 //---------- begin function isSqlite ----------
 /**
