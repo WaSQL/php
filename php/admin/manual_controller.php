@@ -94,6 +94,35 @@ switch(strtolower($_REQUEST['func'])){
 			if(stringEndsWith($file['name'],'min.js')){continue;}
 			$ok=manualParseFile($file['afile']);
 		}
+		//get functions in pages
+		$recs=getDBRecords(array(
+			'-table'=>'_pages',
+			'-where'=>"length(functions) > 20",
+			'-fields'=>'_id,name'
+		));
+		foreach($recs as $rec){
+			$afile="_pages:{$rec['_id']}:functions:{$rec['name']}";
+			$ok=manualParseFile($afile);
+		}
+		$recs=getDBRecords(array(
+			'-table'=>'_pages',
+			'-where'=>"body like '<?php%'",
+			'-fields'=>'_id,name'
+		));
+		foreach($recs as $rec){
+			$afile="_pages:{$rec['_id']}:body:{$rec['name']}";
+			$ok=manualParseFile($afile);
+		}
+		//get functions in templates
+		$recs=getDBRecords(array(
+			'-table'=>'_templates',
+			'-where'=>"length(functions) > 20",
+			'-fields'=>'_id,name'
+		));
+		foreach($recs as $rec){
+			$afile="_templates:{$rec['_id']}:functions:{$rec['name']}";
+			$ok=manualParseFile($afile);
+		}
 		//get categories
 		$categories=manualGetCategories();
 		setView('default',1);

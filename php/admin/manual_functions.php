@@ -11,6 +11,16 @@ ENDOFQUERY;
 	$recs=getDBRecords($query);
 	foreach($recs as $i=>$rec){
 		switch(strtolower($rec['category'])){
+			case 'template php':
+			case 'template python':
+			case 'template perl':
+				$recs[$i]['icon']='icon-file-docs';
+			break;
+			case 'page php':
+			case 'page python':
+			case 'page perl':
+				$recs[$i]['icon']='icon-file-doc';
+			break;
 			default:
 				$recs[$i]['icon']='brand-'.strtolower($rec['category']);
 			break;
@@ -76,31 +86,52 @@ function manualParseFile($file){
 			'-table'=>'_docs_files',
 			'-index'=>'afile'
 		));
-		//echo $file.printValue($docs_files);exit;
 	}
-	$file=strtolower(realpath($file));
-	//echo $file;exit;
-	$md5=md5_file($file);
-	if(isset($docs_files[$file]['afile_md5']) && $docs_files[$file]['afile_md5']==$md5){
-		return;
+	
+	global $CONFIG;
+	$recs=array();
+	$lines=array();
+	if(file_exists($file)){
+		$file=strtolower(realpath($file));
+		$md5=md5_file($file);
+		if(isset($docs_files[$file]['afile_md5']) && $docs_files[$file]['afile_md5']==$md5){
+			return;
+		}
+		$lines=file($file);
+		$ext=getFileExtension($file);
 	}
-	//echo $file;exit;
+	else{
+		//table:record_id:fieldname:name
+		list($table,$id,$field,$name)=preg_split('/\:/',$file,4);
+		$rec=getDBRecord(array(
+			'-table'=>$table,
+			'_id'=>$id,
+			'-fields'=>"_id,{$field}"
+		));
+		//echo $file.printValue($rec);exit;
+		$lines=preg_split('/[\r\n]+/',$rec[$field]);
+		$md5=md5($rec[$field]);
+		if(stringContains($rec[$field],'<?php')){
+			$ext="{$table}_php";
+		}
+		elseif(stringContains($rec[$field],'<?py')){
+			$ext="{$table}_py";
+		}
+		elseif(stringContains($rec[$field],'<?pl')){
+			$ext="{$table}_pl";
+		}
+	}
 	$ok=addDBRecord(array(
 		'-table'=>'_docs_files',
 		'afile'=>$file,
 		'afile_md5'=>$md5,
 		'-upsert'=>'afile_md5'
 	));
-	
-	global $CONFIG;
-	$recs=array();
-	$lines=file($file);
 	foreach($lines as $i=>$line){
 		$lines[$i]=preg_replace('/\t/','[tab]',$line);
 	}
 	$cnt=count($lines);
-	//echo "{$file}<br>";
-	$ext=getFileExtension($file);
+	//echo $file.printValue($lines);exit;
 	$lang=array();
 	switch(strtolower($ext)){
 		case 'py':
@@ -109,6 +140,22 @@ function manualParseFile($file){
 			$lang['comment']='/^[\#]/';
 			$lang['comment_more']='/^[\#]+(.*)$/';
 			$lang['category']='Python';
+			$lang['caller_end']='...';
+		break;
+		case '_pages_py':
+			$lang['function_begin']='/^def\ (.+?)\((.*?)\)\ *\:/';
+			$lang['function_end']='/^[\t\s]+$/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Page Python';
+			$lang['caller_end']='...';
+		break;
+		case '_templates_py':
+			$lang['function_begin']='/^def\ (.+?)\((.*?)\)\ *\:/';
+			$lang['function_end']='/^[\t\s]+$/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Template Python';
 			$lang['caller_end']='...';
 		break;
 		case 'js':
@@ -127,12 +174,44 @@ function manualParseFile($file){
 			$lang['category']='PHP';
 			$lang['caller_end']='...}';
 		break;
+		case '_pages_php':
+			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\/\*]/';
+			$lang['comment_more']='/^[\/\*]+(.*)$/';
+			$lang['category']='Page PHP';
+			$lang['caller_end']='...}';
+		break;
+		case '_templates_php':
+			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\/\*]/';
+			$lang['comment_more']='/^[\/\*]+(.*)$/';
+			$lang['category']='Template PHP';
+			$lang['caller_end']='...}';
+		break;
 		case 'pl':
 			$lang['function_begin']='/^sub\ (.+?)\ *\{/';
 			$lang['function_end']='/^\}/';
 			$lang['comment']='/^[\#]/';
 			$lang['comment_more']='/^[\#]+(.*)$/';
 			$lang['category']='Perl';
+			$lang['caller_end']='...}';
+		break;
+		case '_pages_pl':
+			$lang['function_begin']='/^sub\ (.+?)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Page Perl';
+			$lang['caller_end']='...}';
+		break;
+		case '_templates_pl':
+			$lang['function_begin']='/^sub\ (.+?)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Template Perl';
 			$lang['caller_end']='...}';
 		break;
 		case 'lua':
