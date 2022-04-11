@@ -4224,7 +4224,7 @@ function buildFormFile($name,$params=array()){
 	}
 	$tag .=' for="'.$params['id'].'"';
 	$tag .= setTagAttributes($label_params);
-	$tag .= ' ><span class="'.$params['-icon'].'"></span><span class="input_file_text" style="margin-left:5px;display:inline-flex;justify-content:center;align-items:center;">';
+	$tag .= ' ><span class="'.$params['-icon'].'"></span><span id="'.$params['id'].'_text" class="input_file_text" style="margin-left:5px;display:inline-flex;justify-content:center;align-items:center;">';
 	//check for value
 	if(strlen($params['value'])){
 		$val=encodeHtml($params['value']);	
@@ -4267,7 +4267,10 @@ function buildFormFile($name,$params=array()){
 			}
 		}
 		//clear button
-		$tag .= '<span class="w_danger icon-erase" style="font-size:16px;margin-left:15px;" title="Clear" onclick="document.getElementById(\''.$params['id'].'\').value=\'\';document.getElementById(\''.$params['id'].'_remove\').value=1;document.querySelector(\'label[for='.$params['id'].'] span.input_file_text\').innerText=\''.$params['text'].'\';return false;"></span>'.PHP_EOL;
+		$tag .= <<<ENDOFTAG
+<span class="w_danger icon-erase" data-id="{$params['id']}" data-remove="{$params['id']}_remove" data-text="{$params['id']}_text" style="font-size:16px;margin-left:15px;" title="Clear" onclick="document.getElementById(this.dataset.id).value='';document.getElementById(this.dataset.remove).value=1;document.getElementById(this.dataset.text).innerText='';return false;">
+</span>
+ENDOFTAG;
 		//download
 		$tag .= '<a href="'.$params['value'].'" target="_blank" title="Download" style="text-decoration:none;font-size:16px;margin-left:15px;"><span class="w_info icon-download"></span></a>'.PHP_EOL;
 	}
