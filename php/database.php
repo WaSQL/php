@@ -7609,7 +7609,8 @@ function getDBFieldTag($params=array()){
     $styles=array();
     //overrides that are passed in
     foreach($params as $key=>$val){
-		if(preg_match('/^\-/',$key)){continue;}
+		if($key=='-table'){continue;}
+		if($key=='-field'){continue;}
 		$info[$field][$key]=$val;
     }
     if(isset($params['-formname'])){$info[$field]['-formname']=$params['-formname'];}
