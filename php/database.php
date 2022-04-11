@@ -4152,10 +4152,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
 					$used[$cfield.'_options']=1;
 					foreach($params[$cfield.'_options'] as $okey=>$oval){
-						if(stringBeginsWith($okey,'data-') || in_array($okey,$forcedatts)){
-							$opts[$okey]=$oval;
-							$used[$cfield.'_'.$okey]=1;
-						}
+						$opts[$okey]=$oval;
+						$used[$cfield.'_'.$okey]=1;
 					}
 				}
 				if(isset($params[$cfield.'_checkall'])){
@@ -4256,10 +4254,8 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params[$field.'_options']) && is_array($params[$field.'_options'])){
 					$used[$field.'_options']=1;
 					foreach($params[$field.'_options'] as $okey=>$oval){
-						if(stringBeginsWith($okey,'data-') || in_array($okey,$forcedatts)){
-							$opts[$okey]=$oval;
-							$used[$field.'_'.$okey]=1;
-							}
+						$opts[$okey]=$oval;
+						$used[$field.'_'.$okey]=1;
 					}
 				}
 				//LOAD form-control if bootstrap is loaded
