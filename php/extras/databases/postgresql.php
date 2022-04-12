@@ -886,40 +886,28 @@ function postgresqlExecuteSQL($query,$return_error=1){
     	return 0;
 	}
 	try{
-		$result=@pg_query($dbh_postgresql,$query);
-		if(!$result){
-			$err=array(
-				'function'=>'postgresqlExecuteSQL',
-				'message'=>'pg_query failed',
-				'error'=>pg_last_error(),
-				'query'=>$query
-			);
-			debugValue($err);
+		$result=pg_query($dbh_postgresql,$query);
+		if(!$result && stringContains(pg_last_error($dbh_postgresql),'server closed the connection unexpectedly')){
 			pg_close($dbh_postgresql);
-			if(stringContains($err['error'],'server closed the connection unexpectedly')){
-				//try one more time
-				usleep(100);
-				$dbh_postgresql='';
-				$dbh_postgresql=postgresqlDBConnect();
-				$result=@pg_query($dbh_postgresql,$query);
-				if(!$result){
-					$err=array(
-						'function'=>'postgresqlExecuteSQL',
-						'message'=>'pg_query failed twice',
-						'error'=>pg_last_error(),
-						'query'=>$query
-					);
-					debugValue($err);
-					pg_close($dbh_postgresql);
-					if($return_error==1){return $err;}
-					return 0;
-				}
-			}
-			if($return_error==1){return $err;}
-			return 0;
+			usleep(200);
+			$dbh_postgresql='';
+			$dbh_postgresql=postgresqlDBConnect();
+			$result=pg_query($dbh_postgresql,$query);
+		}
+		if(!$result){
+			$err=pg_last_error($dbh_postgresql);
+			debugValue(array(
+				'function'=>'postgresqlExecuteSQL',
+				'message'=>'query failed',
+				'error'=>$err,
+				'query'=>$query,
+				'params'=>$params
+			));
+			pg_close($dbh_postgresql);
+			return false;
 		}
 		pg_close($dbh_postgresql);
-		return 0;
+		return true;
 	}
 	catch (Exception $e) {
 		$err=array(
@@ -2218,41 +2206,25 @@ function postgresqlQueryResults($query='',$params=array()){
 		));
     	return;
 	}
-	$data=@pg_query($dbh_postgresql,$query);
-	$err=pg_result_error($data);
-	//echo printValue(array($err,$query,$data,$dbh_postgresql));
-	if(strlen($err)){
-		debugValue(array(
-			'function'=>'postgresqlQueryResults',
-			'message'=>'pq_query failed',
-			'error'=>$err,
-			'query'=>$query,
-			'values'=>$values,
-		));
-		pg_close($dbh_postgresql);
-		return null;
-	}
-	if(!$data){
+	$data=pg_query($dbh_postgresql,$query);
+	if(!$data && stringContains(pg_last_error($dbh_postgresql),'server closed the connection unexpectedly')){
 		//lets try one more time
 		usleep(200);
 		$dbh_postgresql='';
 		$dbh_postgresql=postgresqlDBConnect();
-		$data=@pg_query($dbh_postgresql,$query);
-		$err=pg_result_error($data);
-		//echo printValue(array($err,$query,$data,$dbh_postgresql));
-		if(strlen($err)){
-			debugValue(array(
-				'function'=>'postgresqlQueryResults',
-				'message'=>'pq_query failed twice',
-				'error'=>$err,
-				'query'=>$query,
-				'values'=>$values,
-			));
-			pg_close($dbh_postgresql);
-			return null;
-		}
+		$data=pg_query($dbh_postgresql,$query);
 	}
-	if(!$data){return "postgresqlQueryResults Query Error: " . pg_last_error();}
+	if(!$data){
+		$err=pg_last_error($dbh_postgresql);
+		debugValue(array(
+			'function'=>'postgresqlQueryResults',
+			'message'=>'query failed',
+			'error'=>$err,
+			'query'=>$query,
+			'params'=>$params
+		));
+		return array();
+	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
 

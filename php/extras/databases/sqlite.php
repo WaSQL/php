@@ -777,23 +777,21 @@ function sqliteClearConnection(){
 */
 function sqliteExecuteSQL($query,$params=array()){
 	$dbh_sqlite=sqliteDBConnect($params);
+	//enable exceptions
+	$dbh_sqlite->enableExceptions(true);
 	try{
 		$result=$dbh_sqlite->exec($query);
-		if(!$result){
-			$err=array(
-				'msg'=>"sqliteExecuteSQL error",
-				'error'	=> $dbh_sqlite->lastErrorMsg(),
-				'query'	=> $query
-				);
-			debugValue($err);
-			return false;
-		}
-
 		return true;
 	}
 	catch (Exception $e) {
-		$err=$e->getMessage();
-		debugValue("sqliteExecuteSQL error: {$err}");
+		$msg=$e->getMessage();
+		debugValue(array(
+			'function'=>'sqliteExecuteSQL',
+			'message'=>'query failed',
+			'error'=>$msg,
+			'query'=>$query,
+			'params'=>$params
+		));
 		return false;
 	}
 	return true;
@@ -864,18 +862,10 @@ ENDOFQUERY;
     	debugValue(array("sqliteAddDBRecord Connect Error",$err));
     	return;
 	}
+	//enable exceptions
+	$dbh_sqlite->enableExceptions(true);
 	try{
 		$stmt=$dbh_sqlite->prepare($query);
-		if(!$stmt){
-			$err=array(
-				'msg'=>"sqliteAddDBRecord error",
-				'error'	=> $dbh_sqlite->lastErrorMsg(),
-				'query'	=> $query,
-				'vals'	=> $vals
-				);
-			debugValue($err);
-			return null;
-		}
 		foreach($vals as $i=>$v){
 			$fld=$flds[$i];
 			$x=$i+1;
@@ -902,8 +892,14 @@ ENDOFQUERY;
 		return $dbh_sqlite->lastInsertRowID();;
 	}
 	catch (Exception $e) {
-		$err=$e->getMessage();
-		debugValue("sqliteAddDBRecord error: {$err}");
+		$msg=$e->getMessage();
+		debugValue(array(
+			'function'=>'sqliteAddDBRecord',
+			'message'=>'query failed',
+			'error'=>$msg,
+			'query'=>$query,
+			'params'=>$params
+		));
 		return null;
 	}
 	return 0;
@@ -977,17 +973,10 @@ ENDOFQUERY;
     	debugValue(array("sqliteEditDBRecord Connect Error",$err));
     	return;
 	}
+	//enable exceptions
+	$dbh_sqlite->enableExceptions(true);
 	try{
 		$stmt=$dbh_sqlite->prepare($query);
-		if(!$stmt){
-			$err=array(
-				'msg'=>"sqliteEditDBRecord prepare error",
-				'error'	=> $dbh_sqlite->lastErrorMsg(),
-				'query'	=> $query
-				);
-			debugValue($err);
-			return;
-		}
 		foreach($vals as $i=>$v){
 			$fld=$flds[$i];
 			$x=$i+1;
@@ -1026,8 +1015,14 @@ ENDOFQUERY;
 		return 1;
 	}
 	catch (Exception $e) {
-		$err=$e->getMessage();
-		debugValue("sqliteEditDBRecord exception: {$err}");
+		$msg=$e->getMessage();
+		debugValue(array(
+			'function'=>'sqliteEditDBRecord',
+			'message'=>'query failed',
+			'error'=>$msg,
+			'query'=>$query,
+			'params'=>$params
+		));
 		return null;
 	}
 	return 0;
@@ -1206,7 +1201,7 @@ function sqliteTruncateDBTable($table){
 	else{$tables=array($table);}
 	foreach($tables as $table){
 		if(!sqliteIsDBTable($table)){return "No such table: {$table}.";}
-		$result=executeSQL("DELETE FROM {$table}");
+		$result=sqliteExecuteSQL("DELETE FROM {$table}");
 		if(isset($result['error'])){
 			return $result['error'];
 	        }
@@ -1234,18 +1229,26 @@ function sqliteQueryResults($query,$params=array()){
     	//echo "Cannot Connect";exit;
     	return array();
 	}
+	//enable exceptions
+	$dbh_sqlite->enableExceptions(true);
 	try{
 		$results=$dbh_sqlite->query($query);
 		if(!is_object($results)){
-			//echo $query.printValue($results);exit;
+			echo $query.printValue($results);exit;
 			return array();
 		}
 		$recs=sqliteEnumQueryResults($results,$params);
 		return $recs;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		debugValue("sqliteQueryResults error: exception".printValue($err));
+		$msg=$e->getMessage();
+		debugValue(array(
+			'function'=>'sqliteQueryResults',
+			'message'=>'query failed',
+			'error'=>$msg,
+			'query'=>$query,
+			'params'=>$params
+		));
 		return array();
 	}
 }
