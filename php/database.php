@@ -839,6 +839,8 @@ function pyQueryResults($db,$query,$params=array()){
 *	[-presearch]  - HTML/text content to add just before the search form
 *	[-pretable]  - HTML/text content to add just before the table begins
 *	[-posttable]  - HTML/text to add just after the table ends
+*   [-prehead]  - HTML/text content to add before the TR header row - needs to be a valid <tr> HTML row
+* 	[-posthead]  - HTML/text content to add after the TR header row - needs to be a valid <tr> HTML row
 *	[-listview] - HTML/text to use instead of building a table row for each recordset.  Use [field] in your HTML to show value
 *	[-hidesearch] integer - 1 hide search completely
 *	[-simplesearch] str - search field - shows simple search bar - only supports one field
@@ -1846,6 +1848,10 @@ function databaseListRecords($params=array()){
 	}
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
+	//look for -prehead
+	if(isset($params['-prehead'])){
+		$rtn.=$params['-prehead'];
+	}
 	$rtn .= '		<tr>'.PHP_EOL;
 	foreach($params['-listfields'] as $field){
 		//check for field options
@@ -1921,6 +1927,9 @@ function databaseListRecords($params=array()){
 		$rtn .='</th>'.PHP_EOL;
 	}
 	$rtn .= '		</tr>'.PHP_EOL;
+	if(isset($params['-posthead'])){
+		$rtn.=$params['-posthead'];
+	}
 	$rtn .= '	</thead>'.PHP_EOL;
 	if(!is_array($params['-list']) || !count($params['-list'])){
 		if(isset($params['-results_eval']) && function_exists($params['-results_eval'])){
