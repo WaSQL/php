@@ -2884,6 +2884,32 @@ function submitForm(theForm,popup,debug,ajax){
 		            return false;
 				}
 			}
+			else if(theForm[i].type=='file'){
+				//check for files[0]
+            	var cval=theForm[i].files[0];
+            	if(cval.length==0){
+            		//look for existing value
+            		let tmp=theForm.querySelector('span#'+theForm[i].name+'_text a');
+            		if(undefined != tmp){
+            			cval=tmp.getAttribute('href');
+            		}
+            	}
+            	if(cval.length==0){
+                	var msg=dname+" is required";
+		            if(undefined != requiredmsg){msg=requiredmsg;}
+				 	if(typeof wacss.blink === "function" && undefined != theForm[i].getAttribute('data-blink')){
+				 		if(typeof wacss.toast === "function"){
+				 			wacss.toast(msg);
+				 		}
+		            	wacss.blink(theForm[i].getAttribute('data-blink'));
+		            }
+		            else{
+		            	submitFormAlert(msg,popup,5);	
+		            }
+		            if(debug==1){console.log(msg);}
+		            return false;
+				}
+			}
 			else if(theForm[i].value == ''){
 	            var msg=dname+" is required";
 	            if(undefined != requiredmsg){msg=requiredmsg;}

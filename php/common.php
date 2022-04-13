@@ -4211,8 +4211,16 @@ function buildFormFile($name,$params=array()){
 	unset($label_params['width']);
 	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
 	$label_params['style'].=';width:300px;';
-	//return printValue($label_params);
+	//return printValue($params);
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
+	if(isset($params['required'])){
+		$tag.=' data-required="1" ';
+		unset($params['required']);
+	}
+	elseif(isset($params['_required'])){
+		$tag.=' data-required="1" ';
+		unset($params['_required']);
+	}
 	$tag .= setTagAttributes($params);
 	if(isset($params['multiple']) && $params['multiple']){
     	$tag .= ' multiple ';
