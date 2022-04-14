@@ -17039,6 +17039,7 @@ function processActions(){
 		    	return 0;
 			}
 			$ok=processInlineFiles();
+			$ok=processFileUploads();
 			//echo "EDIT" . printValue($_FILES).printValue($_REQUEST);exit;
 			$_REQUEST['process_action']='edit';
 			if(!isset($_REQUEST['_fields']) && isset($_REQUEST['_formfields'])){
@@ -17051,7 +17052,6 @@ function processActions(){
 				if(is_array($rec)){
 					$tinymce=array();
 					$ruser=(isNum($rec['_euser']) && $rec['_euser'] > 0)?$rec['_euser']:$rec['_cuser'];
-					
                     $_REQUEST['_fields']=strtolower(str_replace(' ','',$_REQUEST['_fields']));
 					$fields=preg_split('/\,+/',$_REQUEST['_fields']);
 					$info=getDBFieldInfo($_REQUEST['_table'],1);
@@ -17127,27 +17127,68 @@ function processActions(){
 							}
 						}
 					}
+					//if($_REQUEST['_table']=='test'){echo printValue($fields).printValue($_REQUEST);exit;}
 					//echo "EDIT".printValue($fields).printValue($_REQUEST);exit;
+					$jsonmaps=array();
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
-						if(!isset($info[$field])){continue;}
+						//look for json fields  meta>file1  meta>1>file
+						$inputtype='';
+		    			$dbtype='';
+		    			$jfield='';
+		    			if(preg_match('/^([a-z0-9\_\-]+?)\>/i',$field,$jm)){
+		    				$jfield=$jm[1];
+		    			}
+		    			if(isset($_REQUEST["{$field}_prev"]) || isset($_REQUEST["{$field}_remove"])){
+		    				$inputtype=file;
+		    				$dbtype='json';
+		    			}
+						elseif(isset($info[$field])){
+							$inputtype=$info[$field]['inputtype'];
+							$dbtype=$info[$field]['_dbtype'];
+						}
+						elseif(isset($info[$jfield])){
+							$inputtype=$info[$jfield]['inputtype'];
+							$dbtype=$info[$jfield]['_dbtype'];
+						}
+						if(!strlen($inputtype)){continue;}
+						//echo "Field:{$field}, dbtype:{$dbtype}<br>".PHP_EOL;
+						//echo "Field:{$field}, jfield:{$jfield}, fieldval:{$_REQUEST[$field]}<br>".PHP_EOL;
 						//json
-						if($info[$field]['_dbtype']=='json'){
+						if($dbtype=='json'){
 							//look for field:attr:attr2... and eval this $field['attr']['attr2']=$v
 							global $_jsonval_;
 							$jval=array();
 							foreach($_REQUEST as $k=>$v){
-								if(!stringBeginsWith($k,"{$field}>")){continue;}
+								if(strlen($jfield) && !stringBeginsWith($k,"{$jfield}>")){continue;}
+								elseif(!strlen($jfield) && !stringBeginsWith($k,"{$field}>")){continue;}
 								$keys=preg_split('/\>/',$k);
 								array_shift($keys);
 								$keystr=implode("']['",$keys);
 								$_jsonval_=$v;
 								$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+								//echo "{$str}<br>".PHP_EOL;
 								eval($str);
 							}
 							unset($_jsonval_);
+							//echo "jval".printValue($jval);
 							if(is_array($jval) && count($jval)){
-								$_REQUEST[$field]=json_encode($jval);
+								if(strlen($jfield)){
+									if(isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
+										$_REQUEST[$jfield]=json_decode($_REQUEST[$jfield],true);
+										foreach($jval as $jk=>$jv){
+											$_REQUEST[$jfield][$jk]=$jv;
+										}
+										$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
+									}
+									else{
+										$_REQUEST[$jfield]=json_encode($jval);
+									}
+									//echo "{$field}::SET {$jfield} to {$_REQUEST[$jfield]}<br>".PHP_EOL;
+								}
+								else{
+									$_REQUEST[$field]=json_encode($jval);
+								}
 							}
 						}
 						//decode it if needs be
@@ -17173,7 +17214,7 @@ function processActions(){
 							}
 						}
 						//markdown?
-						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
+						if($inputtype=='textarea' && isset($CONFIG['markdown']) && isset($info["{$field}_mdml"]) && !isset($_REQUEST["{$field}_mdml"])){
 							if(!strlen(trim($_REQUEST[$field]))){
                             	$opts["{$field}_mdml"]='NULL';
 							}
@@ -17192,27 +17233,86 @@ function processActions(){
 							elseif($info[$field]['behavior']=='quill'){$tinymce[]=$field;}
 						}
 						//file type
-						if(isset($info[$field]['inputtype']) && $info[$field]['inputtype']=='file'){
-							
+						if($inputtype=='file'){
 							if(isset($_REQUEST[$field.'_remove']) && $_REQUEST[$field.'_remove'] == 1){
-								if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=null;}
-								if(isset($info[$field.'_size'])){$opts[$field.'_size']=null;}
-								if(isset($info[$field.'_width'])){$opts[$field.'_width']=null;}
-								if(isset($info[$field.'_height'])){$opts[$field.'_height']=null;}
-								if(isset($info[$field.'_type'])){$opts[$field.'_type']=null;}
-								$opts[$field]=null;
+								$suffixes=array('remove','autonumber','path','sha1','size','width','height','type','prev');
+								if(strlen($jfield) && isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
+									$_REQUEST[$jfield]=json_decode($_REQUEST[$jfield],true);
+									//echo printValue($_REQUEST[$jfield]);
+									$jval=array();
+									$keys=preg_split('/\>/',$field);
+									array_shift($keys);
+									$keystr=implode("']['",$keys);
+									global $_jsonval_;
+									$_jsonval_=$_REQUEST[$field.'_prev'];
+									//echo "jsonval: {$_jsonval_}<br>";
+									$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+									//echo "{$str}<br>".PHP_EOL;
+									eval($str);
+									if(count($jval)){
+										//echo printValue($jval);
+										foreach($jval as $jk=>$jv){
+											unset($_REQUEST[$jfield][$jk]);
+											foreach($suffixes as $suffix){
+												unset($_REQUEST[$jfield]["{$jk}_{$suffix}"]);
+											}
+										}
+									}
+									//echo printValue($_REQUEST[$jfield]);
+									$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
+								}
+								else{
+									$opts[$field]=null;
+								}
+								
+								unset($_REQUEST[$field]);
+								foreach($suffixes as $suffix){
+									if(isset($info["{$field}_{$suffix}"])){$opts["{$field}_{$suffix}"]=null;}
+									unset($_REQUEST["{$field}_{$suffix}"]);
+								}	
 							}
-							else{
+							else{					
 								if(isset($_REQUEST[$field])){
 									$afile=$_SERVER['DOCUMENT_ROOT'].$_REQUEST[$field];
+									//echo "afile:{$afile}<br>".PHP_EOL;
 									if(is_dir($afile) || !file_exists($afile)){
+										//echo "unsetting {$field} - file does not exist".PHP_EOL;
 										unset($_REQUEST[$field]);
 									}
 								}
 								//echo "EDIT".printValue($opts).printValue($_REQUEST);exit;
 								if((!isset($_REQUEST[$field]) || !strlen($_REQUEST[$field])) && isset($_REQUEST[$field.'_prev'])){
-									$opts[$field]=$_REQUEST[$field.'_prev'];
+									if(strlen($jfield) && isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
+										$_REQUEST[$jfield]=json_decode($_REQUEST[$jfield],true);
+										//echo $field.printValue($_REQUEST[$jfield]);
+										$jval=array();
+										$keys=preg_split('/\>/',$field);
+										array_shift($keys);
+										$keystr=implode("']['",$keys);
+										global $_jsonval_;
+										$_jsonval_=$_REQUEST[$field.'_prev'];
+										//echo "jsonval: {$_jsonval_}<br>";
+										$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+										//echo "{$str}<br>".PHP_EOL;
+										eval($str);
+										if(count($jval)){
+											//echo printValue($jval);
+											foreach($jval as $jk=>$jv){
+												$_REQUEST[$jfield][$jk]=$jv;
+											}
+										}
+										//echo "{$field}={$_REQUEST[$field.'_prev']}".printValue($_REQUEST[$jfield]);exit;
+										$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
+									}
+									else{
+										$opts[$field]=$_REQUEST[$field.'_prev'];
+									}
 									//echo "A ".printValue($opts).printValue($_REQUEST);exit;
+								}
+								elseif(strlen($jfield)){
+									if(!isset($opts[$jfield]) && isset($_REQUEST[$jfield])){
+										$opts[$jfield]=$_REQUEST[$jfield];
+									}
 								}
 								else{
 									if(!isset($opts[$field]) && isset($_REQUEST[$field])){
@@ -17234,6 +17334,7 @@ function processActions(){
 										}
 										//echo "B ".printValue($opts).printValue($_REQUEST);exit;
 									}
+
 								}
 							}
 						}
@@ -18377,6 +18478,7 @@ function processFileUploads($docroot=''){
                 }
             }
         }
+
         //ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
 		return 1;
 	}

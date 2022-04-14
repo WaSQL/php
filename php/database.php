@@ -4118,6 +4118,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			unset($cm);
 			preg_match_all('/\[(.+?)\]/sm',$customrow,$cm);
 			$cnt=count($cm[1]);
+			$jsonmaps=array();
 			for($ex=0;$ex<$cnt;$ex++){
 				$cfield=$cm[1][$ex];
 				if(!isset($params['-geolocation']) && in_array($cfield,array('latlong','geolocation'))){
@@ -4128,6 +4129,26 @@ function addEditDBForm($params=array(),$customcode=''){
 				if($editmode==0 && isset($info['fieldinfo'][$cfield]['defaultval'])){
     				$_REQUEST[$cfield]=$info['fieldinfo'][$cfield]['defaultval'];
     			}
+    			//look for json fields  meta>file1  meta>1>file
+    			if(preg_match('/^([a-z0-9\_\-]+?)\>([a-z0-9\_\-]+?)$/i',$cfield,$jm)){
+    				//meta>file1
+    				if(!isset($jsonmaps[$jm[1]])){
+    					$jsonmaps[$jm[1]]=json_decode($_REQUEST[$jm[1]],true);
+    				}
+    				if(isset($jsonmaps[$jm[1]][$jm[2]])){
+    					$_REQUEST[$cfield]=$jsonmaps[$jm[1]][$jm[2]];
+    				}
+    			}
+    			elseif(preg_match('/^([a-z0-9\_\-]+?)\>([a-z0-9\_\-]+?)\>([a-z0-9\_\-]+?)$/i',$cfield,$jm)){
+    				//meta>1>file
+    				if(!isset($jsonmaps[$jm[1]])){
+    					$jsonmaps[$jm[1]]=json_decode($_REQUEST[$jm[1]],true);
+    				}
+    				if(isset($jsonmaps[$jm[1]][$jm[2]][$jm[3]])){
+    					$_REQUEST[$cfield]=$jsonmaps[$jm[1]][$jm[2]][$jm[3]];
+    				}
+    			}
+    			//echo $cfield.printValue($_REQUEST);exit;
 				$value=isset($params[$cfield])?$params[$cfield]:$_REQUEST[$cfield];
 				
 				$opts=array('-table'=>$params['-table'],'-field'=>$cfield,'-formname'=>$formname,'value'=>$value);
@@ -6692,6 +6713,8 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-where'])){return 'editDBRecord Error: No where <br>' . printValue($params);}
 	global $USER;
 	$table=$params['-table'];
+	//if($params['-table']=='test'){echo printValue($params);exit;}
+	
 	//model
 	if(!isset($params['-model']) || ($params['-model'])){
 		$model=getDBTableModel($table);
@@ -6784,6 +6807,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 						}
 					}
 				}
+				//echo "jchanges".printValue($jchanges).printValue($_REQUEST);exit;
 				if(count($jchanges)){
 					$rchanges=array();
                 	foreach($jchanges as $jfield=>$jchange){
@@ -6805,6 +6829,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 							$rchanges[$jfield]=json_encode($jarray,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 						}
 					}
+					//echo "rchanges".printValue($rchanges);exit;
 					if(count($rchanges)){
                     	$rchanges['-table']=$params['-table'];
                     	$rchanges['-where']="_id={$rec['_id']}";

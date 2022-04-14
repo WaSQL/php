@@ -55,8 +55,10 @@ if(!isset($_REQUEST['_minify_'])){
 global $filename;
 $docroot=$_SERVER['DOCUMENT_ROOT'];
 list($prefix,$hash)=preg_split('/\_/',$_REQUEST['_minify_'],2);
+
 $afile="{$docroot}/w_min/{$hash}_js.json";
 $filename="minify_{$_REQUEST['_minify_']}.js";
+
 if(!file_exists($afile)){
 	header('Content-type: application/javascript; charset=UTF-8');
 	echo '/*missing _minify_ json file*/';
@@ -85,15 +87,19 @@ if(isset($minify['extras'][0])){
 	}
 }
 $minify['extras']=$extras;
-if(!isset($_REQUEST['debug'])){$_REQUEST['debug']=0;}
-if($_REQUEST['debug']==1){
-	header('Content-type: text/plain; charset=UTF-8');
-	echo printValue($minify);
-	exit;
+if(!is_array($minify['extras'])){$minify['extras']=array();}
+if(!is_array($minify['jsfiles'])){$minify['jsfiles']=array();}
+if(!is_array($minify['includepages'])){$minify['includepages']=array();}
+//check for any includePage calls that happened later
+if(isset($_SESSION['w_MINIFY']['includepages'][0])){
+	foreach($_SESSION['w_MINIFY']['includepages'] as $id){
+		if(!in_array($id,$minify['includepages'])){
+			$minify['includepages'][]=$id;
+		}
+	}
 }
-if(!isset($minify['extras'])){$minify['extras']=array();}
-if(!isset($minify['jsfiles'])){$minify['jsfiles']=array();}
-if(!isset($minify['includepages'])){$minify['includepages']=array();}
+$xfile="{$docroot}/w_min/{$hash}_js.minify";
+setFileContents($xfile,printValue($minify));
 //set proper javascript content-type header
 header('Content-type: application/javascript; charset=UTF-8');
 //enable caching of responses for IE8 and others even on https

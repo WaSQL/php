@@ -81,14 +81,19 @@ if(isset($minify['extras'][0])){
 }
 $minify['extras']=$extras;
 //echo printValue($minify);exit;
-if($_REQUEST['debug']==1){
-	header('Content-type: text/plain; charset=UTF-8');
-	echo printValue($minify);
-	exit;
+if(!is_array($minify['extras'])){$minify['extras']=array();}
+if(!is_array($minify['cssfiles'])){$minify['cssfiles']=array();}
+if(!is_array($minify['includepages'])){$minify['includepages']=array();}
+//check for any includePage calls that happened later
+if(isset($_SESSION['w_MINIFY']['includepages'][0])){
+	foreach($_SESSION['w_MINIFY']['includepages'] as $id){
+		if(!in_array($id,$minify['includepages'])){
+			$minify['includepages'][]=$id;
+		}
+	}
 }
-if(!isset($minify['extras'])){$minify['extras']=array();}
-if(!isset($minify['cssfiles'])){$minify['cssfiles']=array();}
-if(!isset($minify['includepages'])){$minify['includepages']=array();}
+$xfile="{$docroot}/w_min/{$hash}_css.minify";
+setFileContents($xfile,printValue($minify));
 //set proper javascript content-type header
 header('Content-type: text/css; charset=UTF-8');
 //enable caching of responses for IE8 and others even on https
