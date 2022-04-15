@@ -1016,7 +1016,7 @@ function snowflakeGetDBFieldInfo($table,$params=array()){
 			case 'date':
 			case 'datetime':
 			case 'time':
-			case 'timestampntz'
+			case 'timestampntz':
 				$recs[$field]['_dbtype_ex']=$recs[$field]['_dbtype'];
 			break;
 			case 'decimal':
