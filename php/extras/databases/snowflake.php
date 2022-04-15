@@ -1008,6 +1008,25 @@ function snowflakeGetDBFieldInfo($table,$params=array()){
 		);
 		$recs[$field]['_dbtype']=$recs[$field]['type'];
 		$recs[$field]['_dblength']=$recs[$field]['length'];
+		//_dbtype_ex
+		switch(strtolower($recs[$field]['_dbtype'])){
+			case 'bigint':
+			case 'integer':
+			case 'timestamp':
+			case 'date':
+			case 'datetime':
+			case 'time':
+			case 'timestampntz'
+				$recs[$field]['_dbtype_ex']=$recs[$field]['_dbtype'];
+			break;
+			case 'decimal':
+			case 'number':
+				$recs[$field]['_dbtype_ex']="{$recs[$field]['_dbtype']}({$recs[$field]['precision']},{$recs[$field]['scale']})";
+			break;
+			default:
+				$recs[$field]['_dbtype_ex']="{$recs[$field]['_dbtype']}({$recs[$field]['precision']})";
+			break;
+		}
     }
     odbc_free_result($result);
 	return $recs;
