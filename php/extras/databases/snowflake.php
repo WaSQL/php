@@ -911,6 +911,23 @@ function snowflakeGetDBSchemas($params=array()){
 *	$tables=snowflakeGetDBTables();
 */
 function snowflakeGetDBTables($params=array()){
+	global $CONFIG;
+	global $DATABASE;
+	//best way is to use information_schema.tables
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema']) && isset($DATABASE[$CONFIG['db']]['dbname'])){
+		$table_schema=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
+		$table_catalog=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
+		$query="select table_name from information_schema.tables where table_catalog='{$table_catalog}' and table_schema='{$table_schema}'";
+		$recs=snowflakeQueryResults($query,$params);
+		$tables=array();
+		foreach($recs as $rec){
+			$tables[]=strtolower("{$table_schema}.{$rec['table_name']}");
+		}
+		return $tables;
+	}
+
+
+
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
 	if(!is_resource($dbh_snowflake)){
@@ -949,6 +966,7 @@ function snowflakeGetDBTables($params=array()){
 		elseif(isset($row['TABLE_SCHEMA'])){
 			$schema=$row['TABLE_SCHEMA'];
 		}
+		echo printValue($row);exit;
 		$name=$row['TABLE_NAME'];
 		$tables[]="{$schema}.{$name}";
 	}
