@@ -4127,6 +4127,7 @@ function buildFormFile($name,$params=array()){
 			case 'jpg':
 			case 'jpeg':
 			case 'svg':
+			case 'avif':
 				$mime=getFileMimeType($afile);
 				if(!isset($params['view_width'])){
 					$params['view_width']=300;
@@ -14194,7 +14195,7 @@ function getBrowserInfo(){
 function isImage($file=''){
 	$mimetype=getFileMimeType($file);
 	if(stringContains($mimetype,'image')){return true;}
-	$exts=array('jpg','jpeg','gif','png','bmp','tif','tiff');
+	$exts=array('jpg','jpeg','gif','png','bmp','tif','tiff','avif');
     $ext=getFileExtension($file);
     if(in_array($ext,$exts)){return true;}
     //if getimagesize succeeds then it is an image
