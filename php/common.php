@@ -4239,14 +4239,13 @@ function buildFormFile($name,$params=array()){
 		$val=encodeHtml($params['value']);	
 		$ext=getFileExtension($params['value']);
 		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
-		$mime=getFileMimeType($afile);
-		if(stringBeginsWith($mime,'image/')){
+		if(isImageFile($afile)){
 			$tag .= '<img style="display:inline;height:24px;" src="'.$params['value'].'" />'.PHP_EOL;
 		}
-		elseif(stringBeginsWith($mime,'audio/')){
+		elseif(isAudioFile($afile)){
 			$tag .= '<span class="w_gray icon-file-audio" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
 		}
-		elseif(stringBeginsWith($mime,'video/')){
+		elseif(isVideoFile($afile)){
 			$tag .= '<span class="w_gray icon-file-video" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
 		}
 		else{
@@ -10174,7 +10173,7 @@ function fileManager($startdir='',$params=array()){
                 	case 'filename':
                 		$class=' icon-file-doc';
 	                	$ext=strtolower(getFileExtension($file));
-						if(isImage($file)){$class=' icon-file-image';}
+						if(isImageFile($file)){$class=' icon-file-image';}
 						elseif(isAudioFile($file)){$class=' icon-file-audio';}
 						elseif(isVideoFile($file)){$class=' icon-file-video';}
 						else{
@@ -11083,7 +11082,7 @@ function getHolidayList($params=array()){
 * @usage $img=getImageWidthHeight($afile);
 */
 function getImageWidthHeight($afile){
-	if(isImage($afile)){
+	if(isImageFile($afile)){
 		$exif=getFileExif($afile);
 		//height
 		if(isNum($exif['file']['imageheight'])){$exif['height']=$exif['file']['imageheight'];}
@@ -13539,6 +13538,8 @@ function isAjax(){
 * @usage if(isAudioFile($filename)){...}
 */
 function isAudioFile($file=''){
+	$mimetype=getFileMimeType($file);
+	if(stringContains($mimetype,'audio')){return true;}
 	$ext=getFileExtension($file);
 	$exts=array('aac','aif','iff','m3u','mid','midi','mp3','mpa','ra','ram','wav','wma');
 	if(in_array($ext,$exts)){return true;}
@@ -13964,6 +13965,8 @@ function isTextFile($file=''){
 * @usage if(isVideoFile($filename)){...}
 */
 function isVideoFile($file=''){
+	$mimetype=getFileMimeType($file);
+	if(stringContains($mimetype,'video')){return true;}
 	$ext=getFileExtension($file);
 	$exts=array('3gp','asf','asx','avi','flv','mov','mp4','mpg','qt','rm','swf','wmv','vdo');
 	if(in_array($ext,$exts)){return true;}
@@ -14185,14 +14188,21 @@ function getBrowserInfo(){
 	}
 //---------- begin function isImage ----------
 /**
+* @exclude depreciated - kept for backwards compatibility. Replaced with isImageFile
+*/
+function isImage($file=''){
+	return isImageFile($file);
+}
+//---------- begin function isImage ----------
+/**
 * @describe returns true if specified filename is an image - based on file extension and getimagesize
 * @param filename string
 *	name of the file
 * @return boolean
 *	returns true if specified filename is an image
-* @usage if(isImage($filename)){...}
+* @usage if(isImageFile($filename)){...}
 */
-function isImage($file=''){
+function isImageFile($file=''){
 	$mimetype=getFileMimeType($file);
 	if(stringContains($mimetype,'image')){return true;}
 	$exts=array('jpg','jpeg','gif','png','bmp','tif','tiff','avif');
@@ -18457,7 +18467,7 @@ function processFileUploads($docroot=''){
 				//Perhaps we should extract the exif info from the file.
 				// /cgi-bin/exif.pl?file=$afile
             	//if the uploaded file is an image - get its width and height
-            	if(isImage($abspath)){
+            	if(isImageFile($abspath)){
 					$info=@getimagesize($abspath);
 					if(is_array($info)){
                         $_REQUEST[$name.'_width']=$info[0];
@@ -19531,7 +19541,7 @@ function sendSMTPMail($params=array()){
   				if(strlen($cid) && !isset($attachincluded[$cid])){
 					$attachincluded[$cid]+=1;
 					//$name=getFileName($file);
-					if(isImage($file)){
+					if(isImageFile($file)){
 						$mime->addHTMLImage($file, $ctype);
 						}
 					else{
