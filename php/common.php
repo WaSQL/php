@@ -17167,7 +17167,6 @@ function processActions(){
 								$keystr=implode("']['",$keys);
 								$_jsonval_=$v;
 								$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
-								//echo "{$str}<br>".PHP_EOL;
 								eval($str);
 							}
 							unset($_jsonval_);
@@ -17177,7 +17176,14 @@ function processActions(){
 									if(isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
 										$_REQUEST[$jfield]=json_decode($_REQUEST[$jfield],true);
 										foreach($jval as $jk=>$jv){
-											$_REQUEST[$jfield][$jk]=$jv;
+											if(is_array($_REQUEST[$jfield][$jk])){
+												foreach($jv as $jvk=>$jvv){
+													$_REQUEST[$jfield][$jk][$jvk]=$jvv;
+												}
+											}
+											else{
+												$_REQUEST[$jfield][$jk]=$jv;
+											}
 										}
 										$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
 									}
@@ -18446,6 +18452,7 @@ function processFileUploads($docroot=''){
             	$_REQUEST[$name.'_webpath']=$webpath;
 				$_REQUEST[$name.'_sha1']=sha1_file($abspath);
 				$_REQUEST[$name.'_size']=filesize($abspath);
+				//echo $name.printValue($_REQUEST);exit;
 				//Perhaps we should extract the exif info from the file.
 				// /cgi-bin/exif.pl?file=$afile
             	//if the uploaded file is an image - get its width and height
