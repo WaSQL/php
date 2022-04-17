@@ -3857,6 +3857,8 @@ function dropDBIndex($indexname,$tablename){
 *	[-action] string - action attribute for form tag - defaults to $PAGE['name']
 *	[-onsubmit] string - onsubmit attribute for form tag - defaults to 'return submitForm(this);'
 *	[-ajax] string - changes the onsubmit attribute to ajaxSubmitForm(this,'{$params['-ajax']}');return false;"
+* 	[-preform] string - prepends string before form tag
+* 	[-postform] string - appends string after form tag
 *	[-enctype] string - defaults to application/x-www-form-urlencoded. If the form has an file upload field changes to multipart/form-data
 *	[-autocomplete] string - sets the autocomplete attribute for form tag (off|on)
 *	[-id] string - sets the id attribute for form tag
@@ -4018,7 +4020,10 @@ function addEditDBForm($params=array(),$customcode=''){
 	        break;
 	    }
 		if($enctype=="multipart/form-data"){break;}
-		}
+	}
+	if(isset($params['-preform'])){
+    	$rtn.=$params['-preform'];
+    }
     $rtn .= '<form name="'.$formname.'" class="'.$formclass.'" method="'.$method.'" action="'.$action.'" ';
     //id
     if(isset($params['-id']) && $params['-id']){
@@ -4695,6 +4700,10 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
     $rtn .= $customcode;
     $rtn .= '</form>'.PHP_EOL;
+    //-postform
+    if(isset($params['-postform'])){
+    	$rtn.=$params['-postform'];
+    }
     //initBehaviors?
     if($hasBehaviors && isset($_REQUEST['AjaxRequestUniqueId'])){
 		$rtn .= buildOnLoad("initBehaviors();");
