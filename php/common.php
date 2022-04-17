@@ -17129,11 +17129,19 @@ function processActions(){
 	                    }
 					}
 					//check for json fields
+					//echo printValue($info).printValue($fields);
+					$xfields=$fields;
+					$jsonfieldmap=array();
 					foreach($info as $ffield=>$finfo){
 						if($finfo['_dbtype']=='json'){
-							foreach($fields as $field){
-								if(stringBeginsWith($field,"{$ffield}>") && !in_array($ffield,$fields)){
-									$fields[]=$ffield;
+							foreach($xfields as $field){
+								if(stringBeginsWith($field,"{$ffield}>")){
+									if(!in_array($ffield,$fields)){
+										$fields[]=$ffield;
+									}
+									if($finfo['_dbtype']=='json'){
+										$jsonfieldmap[$field]='json';
+									}
 								}
 							}
 						}
@@ -17156,13 +17164,13 @@ function processActions(){
 		    			}
 						elseif(isset($info[$field])){
 							$inputtype=$info[$field]['inputtype'];
-							$dbtype=$info[$field]['_dbtype'];
+							$dbtype=isset($jsonfieldmap[$field])?$jsonfieldmap[$field]:$info[$field]['_dbtype'];
 						}
 						elseif(isset($info[$jfield])){
 							$inputtype=$info[$jfield]['inputtype'];
-							$dbtype=$info[$jfield]['_dbtype'];
+							$dbtype=isset($jsonfieldmap[$field])?$jsonfieldmap[$field]:$info[$jfield]['_dbtype'];
 						}
-						if(!strlen($inputtype)){continue;}
+						if(!strlen($inputtype)){$inputtype='text';}
 						//echo "Field:{$field}, dbtype:{$dbtype}<br>".PHP_EOL;
 						//echo "Field:{$field}, jfield:{$jfield}, fieldval:{$_REQUEST[$field]}<br>".PHP_EOL;
 						//json
