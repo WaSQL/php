@@ -31,31 +31,6 @@ if(isset($CONFIG['session_domain'])){
 }
 //start the session
 @session_start();
-/********************************************************/
-/**
- * @author slloyd
- * @exclude  - this function is for internal use only and thus excluded from the manual
- */
-function sessionTable(){
-	global $CONFIG;
-	switch(strtolower($CONFIG['dbtype'])){
-		case 'mysql':
-		case 'mysqli':
-			return '_sessions';
-		break;
-		case 'postgres':
-		case 'postgresql':
-			$schema=postgresqlGetConfigValue('dbschema');
-			if(strlen($schema)){
-				return "{$schema}._sessions";
-			}
-			return '_sessions';
-		break;
-		default:
-			return '_sessions';
-		break;
-	}
-}
 /**
  * @author slloyd
  * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -82,26 +57,18 @@ function sessionClose() {
 */
 function sessionRead($session_id) {
 	global $USER;
-	global $CONFIG;
-	$table=sessionTable();
-	$rec=getDBRecord(array('-query'=>"select _id,session_id,session_data,json from {$table} where session_id = '{$session_id}';"));
-	$ctime = time();
+	$rec=getDBRecord(array('-query'=>"SELECT _id,session_id,session_data,json FROM _sessions WHERE session_id = '{$session_id}';"));
+	//$ctime = time();
 	if(isset($rec['session_data'])){
 		//custom decode if session is stored in JSON
 		$_SESSION=json_decode($rec['session_data'],true);
 		//update touchtime
-		executeSQL("UPDATE {$table} SET touchtime = {$ctime} WHERE session_id = '{$session_id}';");
+		executeSQL("UPDATE _sessions SET touchtime = UNIX_TIMESTAMP(now()) WHERE session_id = '{$session_id}';");
 		return $rec['session_data'];
 	}
 	//no session found  - add a blank record
-	$cuser=0;$cdate=date('Y-m-d H:i:s');
-	if(isset($CUSER['_id']) && isNum($CUSER['_id'])){$cuser=$CUSER['_id'];}
-	if($CONFIG['dbtype']=='mysql' || $CONFIG['dbtype']=='mysqli'){
-		$ok=executeSQL("INSERT IGNORE INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
-	}
-	else{
-		$ok=executeSQL("INSERT INTO {$table} (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}','{$cdate}','{$session_id}', {$ctime},1);");
-	}
+	$cuser=(integer)$CUSER['_id'];
+	$ok=executeSQL("INSERT IGNORE INTO _sessions (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}',now(),'{$session_id}', UNIX_TIMESTAMP(now()),1);");
 	return '';
 }
 /**
@@ -121,10 +88,9 @@ function sessionWrite($session_id, $session_data) {
 	@session_decode($session_data);
 	$session_data = json_encode($_SESSION);
 	if(preg_match('/minify\_(css|js)/',$_SERVER['PHP_SELF'])){return true;}
-	$table=sessionTable();
-	$ctime = time();
+	//$ctime = time();
 	$session_data=databaseEscapeString($session_data);
-	$query="UPDATE {$table} SET session_data = '{$session_data}', touchtime = {$ctime}, json=1 WHERE session_id = '{$session_id}';";
+	$query="UPDATE _sessions SET session_data = '{$session_data}', touchtime = UNIX_TIMESTAMP(now()), json=1 WHERE session_id = '{$session_id}';";
 	executeSQL($query);
 	return true;
 }
@@ -134,8 +100,7 @@ function sessionWrite($session_id, $session_data) {
  */
 function sessionDestroy($session_id) {
 	if(preg_match('/minify\_(css|js)/',$_SERVER['PHP_SELF'])){return true;}
-	$table=sessionTable();
-    executeSQL("DELETE FROM {$table} WHERE session_id = '{$session_id}';");
+    executeSQL("DELETE FROM _sessions WHERE session_id = '{$session_id}';");
     return true;
 }
 /**
@@ -148,8 +113,7 @@ function sessionDestroy($session_id) {
  *	Return value should be TRUE for success, FALSE for failure.
 */
 function sessionGarbageCollect($sess_maxlifetime) {
-	$table=sessionTable();
-    $ctime = time();
-    executeSQL("DELETE FROM {$table} WHERE touchtime + {$sess_maxlifetime} < {$ctime};");
+    //$ctime = time();
+    executeSQL("DELETE FROM _sessions WHERE touchtime + {$sess_maxlifetime} < UNIX_TIMESTAMP(now());");
     return true;
 }
