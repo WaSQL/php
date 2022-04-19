@@ -64,6 +64,10 @@ if(!file_exists($afile)){
 	echo '/*missing _minify_ json file*/';
 	exit;
 }
+//load the blank template so any functions in the blank template are also loaded
+$trec=getDBRecordById('_templates',1);
+$ok=evalPHP($trec['body']);
+//parse jstr
 $jstr=getFileContents($afile);
 $extras=array();
 if(isset($_SESSION['w_MINIFY']['extras_js'][0])){
