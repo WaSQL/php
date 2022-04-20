@@ -73,7 +73,8 @@
 
 <view:view_file>
 	<div class="w_centerpop_title">Temp File Details - <?=$file;?></div>
-	<div class="w_centerpop_content w_nowrap" style="max-width:70vw;overflow:auto;">
+	<div class="w_centerpop_content w_nowrap" style="overflow:auto;">
+		<div style="float:right;margin:15px 15px 0 0;"><span class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(document.querySelector('pre#view_file').innerText);"></span></div>
 	<style>
 		pre.viewfile{
     		counter-reset: thecodenumbering;
@@ -81,14 +82,18 @@
 		}
 		pre.viewfile code{
     		counter-increment: thecodenumbering;
+    		width: 100%;
+		}
+		pre.viewfile code:nth-child(even){
+			background-color: #f0f0f0;
 		}
 		pre.viewfile code:before{
-		    padding-right:5px;
+		    padding-right:10px;
 		    content: counter(thecodenumbering);
 		    color: #999;
 		}
 	</style>
-	<pre class="viewfile"><?=tempfilesShowFileLines($content);?></pre>
+	<pre class="viewfile" id="view_file"><?=tempfilesShowFileLines($content);?></pre>
 		<?=buildOnLoad("centerObject('centerpop');");?>
 	</div>
 </view:view_file>

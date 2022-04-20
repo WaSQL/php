@@ -4,8 +4,6 @@ function tempfilesShowFileLines($content){
 	$lines=preg_split('/[\r\n]+/',$content);
 	$outlines=array();
 	foreach($lines as $i=>$line){
-		$r=$i+1;
-		$line=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',$line);
 		$outlines[]="<code>{$line}</code>";
 	}
 	return implode(PHP_EOL,$outlines);
