@@ -73,7 +73,8 @@
 
 <view:view_file>
 	<div class="w_centerpop_title">Temp File Details - <?=$file;?></div>
-	<div class="w_centerpop_content">
-		<textarea style="margin-top:10px;width:700px;height:400px;" wrap="off" data-behavior="<?=$behavior;?>"><?=encodeHtml($content);?></textarea>
+	<div class="w_centerpop_content w_nowrap" style="max-width:70vw;overflow:auto;">
+		<?=tempfilesShowFileLines($content);?>
+		<?=buildOnLoad("centerObject('centerpop');");?>
 	</div>
 </view:view_file>

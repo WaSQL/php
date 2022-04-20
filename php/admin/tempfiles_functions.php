@@ -1,4 +1,20 @@
 <?php
+function tempfilesShowFileLines($content){
+	$content=encodeHtml($content);
+	$lines=preg_split('/[\r\n]+/',$content);
+	$outlines=array();
+	foreach($lines as $i=>$line){
+		$r=$i+1;
+		$line=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',$line);
+		$outlines[]=<<<ENDOFOUTLINE
+		<div style="display:flex;justify-content:flex:end">
+			<div style="width:30px;color:#999;">{$r}</div>
+			<div style="flex:1">{$line}</div>
+		</div>
+ENDOFOUTLINE;
+	}
+	return implode(PHP_EOL,$outlines);
+}
 function tempfilesGetTabs(){
 	global $path;
 	$files=listFiles($path);
