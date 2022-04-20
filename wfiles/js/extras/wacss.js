@@ -1071,7 +1071,6 @@ var wacss = {
 			    		if(evt.altKey && sel.length){
 			    			//Alt+U => uppercase
 			    			evt.preventDefault();
-
 			    			document.execCommand('insertHTML', false, sel.toUpperCase());
 			    		}
 			    	break;
@@ -1115,10 +1114,13 @@ var wacss = {
 			});
 			//update the textarea anytime it changes
 			editor.addEventListener("input", function(ie) {
-				this.saveto.textContent=this.textContent;
+				//console.log(this.innerHTML);
+				//console.log(this.innerText);
+				//console.log(this.textContent);
+				this.saveto.innerHTML=this.innerText;
 			});
 			editor.save=function() {
-				this.saveto.textContent=this.textContent;
+				this.saveto.innerHTML=this.innerText;
 			};
 			//set initial value the same as textarea
 			editor.textContent=els[e].textContent;

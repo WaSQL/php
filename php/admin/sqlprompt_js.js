@@ -35,40 +35,36 @@ function sqlpromptShowLinks(offset,limit,total,qtime){
 }
 function sqlpromptCheckKey(e){
 	e = e || window.event;
-	//console.log(e.keyCode);
+	// console.log(e.keyCode);
+	// console.log(e.ctrlKey)
 	//keycodes: F8=119, CTRL-ENTER=10
     if (e.keyCode == 119) {
 		return sqlpromptSubmit(document.sqlprompt);
     }
-    else if (undefined != this.previousCode && e.keyCode == 13 && this.previousCode==17) {
+    else if (e.ctrlKey && e.keyCode === 13) {
     	//CTRL+ENTER
     	return sqlpromptSubmit(document.sqlprompt);
     }
-    else if (undefined != this.previousCode && e.keyCode == 69 && this.previousCode==17) {
+    else if (e.ctrlKey && e.keyCode === 69) {
     	//CTRL+e
     	return sqlpromptSubmit(document.sqlprompt);
     }
     else{
     	//console.log('Keycode:'+e.keyCode);
     }
-    this.previousCode=e.keyCode;
 }
 function sqlpromptSetDB(db){
 	document.sqlprompt.db.value=db;
 	return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
 }
 function sqlpromptSetValue(v){
-	console.log(v);
+	//console.log(v);
 	document.sqlprompt.sql_select.value='';
 	let sql=v;
 	let doc = new DOMParser().parseFromString(sql, "text/html");
-	sql=doc.documentElement.textContent;
+	sql=doc.documentElement.innerText;
 	let obj=getObject('sql_full');
-	if(undefined != obj.codemirror){
-		obj.codemirror.getDoc().setValue(sql);
-		obj.codemirror.save();
-	}
-	else if(undefined != obj.editor){
+	if(undefined != obj.editor){
 		setText(obj.editor,'');
 		setText(obj.editor,v);
 		obj.editor.save();
@@ -99,14 +95,9 @@ function sqlpromptMonitorSQL(){
 	document.sqlprompt.sql_select.value='';
 	let sql=getText('monitor_sql_query');
 	let doc = new DOMParser().parseFromString(sql, "text/html");
-	sql=doc.documentElement.textContent;
+	sql=doc.documentElement.innerText;
 	let obj=getObject('sql_full');
-	if(undefined != obj.codemirror){
-		obj.codemirror.getDoc().setValue(sql);
-		obj.codemirror.save();
-		sqlpromptSubmit(document.sqlprompt);
-	}
-	else if(undefined != obj.editor){
+	if(undefined != obj.editor){
 		setText(obj.editor,'');
 		setText(obj.editor,sql);
 		obj.editor.save();
@@ -157,20 +148,10 @@ function sqlpromptFields(table){
 }
 function sqlpromptSubmit(frm){
 	let obj=getObject('sql_full');
-	if(undefined != obj.codemirror){
-		//if the user has selected a section, run just the selection
-		let str=obj.codemirror.getSelection();
-		if(str.length){
-			frm.sql_select.value=str;
-			return ajaxSubmitForm(frm,'sqlprompt_results');
-		}
-		frm.sql_select.value='';
-		return ajaxSubmitForm(frm,'sqlprompt_results');
-	}
-	else if(undefined != obj.editor){
+	if(undefined != obj.editor){
 		//store editor_content
 		frm.editor_content.value=obj.editor.innerHTML;
-		
+		console.log(frm.sql_full);
 		//if the user has selected a section, run just the selection
 		let str='';
 		if (window.getSelection) {
@@ -181,20 +162,15 @@ function sqlpromptSubmit(frm){
 	        str = document.selection.createRange().text;
 	    }
 		if(str.length){
+			//console.log('section selected: length:'+str.length);
+			//console.log(str);
 			frm.sql_select.value=str;
 			return ajaxSubmitForm(frm,'sqlprompt_results');
 		}
 		frm.sql_select.value='';
 		return ajaxSubmitForm(frm,'sqlprompt_results');
 	}
-	//no longer used now that we are using codemirror
-	frm.sql_select.value=getSelText(frm.sql_full);
-	frm.offset.value=0;
-	var pos=getCursorPos(frm.sql_full);
-	if(undefined != pos.start){
-		frm.cursor_pos.value=pos.start;
-	}
-	return ajaxSubmitForm(frm,'sqlprompt_results');
+	return false;
 }
 function sqlpromptExport(){
 	document.sqlprompt.func.value='export';
