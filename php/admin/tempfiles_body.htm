@@ -77,19 +77,22 @@
 		<div style="float:right;margin:15px 15px 0 0;"><span class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(document.querySelector('pre#view_file').innerText);"></span></div>
 	<style>
 		pre.viewfile{
-    		counter-reset: thecodenumbering;
+    		counter-reset: viewfilelinenumber;
     		padding: 15px 0;
 		}
 		pre.viewfile code{
-    		counter-increment: thecodenumbering;
+    		counter-increment: viewfilelinenumber;
     		width: 100%;
 		}
 		pre.viewfile code:nth-child(even){
 			background-color: #f0f0f0;
 		}
 		pre.viewfile code:before{
-		    padding-right:10px;
-		    content: counter(thecodenumbering);
+		    width:35px;
+		    display: inline-block;
+		    margin-right: 5px;
+		    border-right: 1px solid #ccc;
+		    content: counter(viewfilelinenumber);
 		    color: #999;
 		}
 	</style>
