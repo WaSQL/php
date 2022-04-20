@@ -6,12 +6,7 @@ function tempfilesShowFileLines($content){
 	foreach($lines as $i=>$line){
 		$r=$i+1;
 		$line=preg_replace('/\t/','&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',$line);
-		$outlines[]=<<<ENDOFOUTLINE
-		<div style="display:flex;justify-content:flex:end">
-			<div style="width:30px;color:#999;">{$r}</div>
-			<div style="flex:1">{$line}</div>
-		</div>
-ENDOFOUTLINE;
+		$outlines[]="<code>{$line}</code>";
 	}
 	return implode(PHP_EOL,$outlines);
 }

@@ -74,7 +74,21 @@
 <view:view_file>
 	<div class="w_centerpop_title">Temp File Details - <?=$file;?></div>
 	<div class="w_centerpop_content w_nowrap" style="max-width:70vw;overflow:auto;">
-		<?=tempfilesShowFileLines($content);?>
+	<style>
+		pre.viewfile{
+    		counter-reset: thecodenumbering;
+    		padding: 15px 0;
+		}
+		pre.viewfile code{
+    		counter-increment: thecodenumbering;
+		}
+		pre.viewfile code:before{
+		    padding-right:5px;
+		    content: counter(thecodenumbering);
+		    color: #999;
+		}
+	</style>
+	<pre class="viewfile"><?=tempfilesShowFileLines($content);?></pre>
 		<?=buildOnLoad("centerObject('centerpop');");?>
 	</div>
 </view:view_file>
