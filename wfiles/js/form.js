@@ -169,6 +169,170 @@ function formChanged(frm,debug){
 			}
 		}
 	}
+	//changeif
+	//		data-changeif="type=1 and age=6,1"
+	//		data-changeif="type=1 or age=6,1"
+	//		data-changeif="type=1,1"
+	els=frm.querySelectorAll('[data-changeif]');
+	if(debug==1){console.log(' - changeif el count:'+els.length);}
+	let change_count=0;
+	for(let i=0;i<els.length;i++){
+		if(undefined == els[i].dataset.value){
+			if(debug==1){console.log(' - setting dataset.value for: '+els[i].type.toLowerCase());}
+			switch(els[i].type.toLowerCase()){
+				case 'select-one':
+        			els[i].dataset.value = els[i].options[els[i].selectedIndex].value || '';
+				break;
+				case 'textarea':
+					els[i].dataset.value = els[i].innerText || '';
+				break;
+				default:
+					els[i].dataset.value = els[i].value || '';
+				break;
+			}
+		}
+		let changeif=els[i].dataset.changeif;
+		let matches = changeif.split(',');
+		if(undefined != matches){
+			let matchvalue=matches[1];
+			let conditionstr=matches[0];
+			//and conditions
+			let conditions=conditionstr.split(' and ');
+			if(conditions.length > 1){
+				//multiple and conditions
+				let fail=0;
+				let success=0;
+				for(let c=0;c<conditions.length;c++){
+					let parts=conditions[c].split('=');
+					let field=parts.shift();
+					let fieldval=parts.join('=');
+					let fieldobj=frm.querySelector('[name="'+field+'"], [name="'+field+'[]"]');
+					if(undefined == fieldobj){
+						fails=1;
+						break;
+					}
+					switch(fieldobj.type.toLowerCase()){
+						case 'select-one':
+	            			if(fieldval == fieldobj.options[fieldobj.selectedIndex].value){
+	            				success=1;
+	            			}
+	            			else{
+	            				fail=1;
+	            			}
+						break;
+						case 'textarea':
+							if(fieldval.toLowerCase() == trim(fieldobj.innerText.toLowerCase())){
+								success=1;
+							}
+							else{
+								fail=1;
+							}
+						break;
+						default:
+							if(fieldval.toLowerCase() == fieldobj.value.toLowerCase()){
+								success=1;
+							}
+							else{
+								fail=1;
+							}
+						break;
+					}
+				}
+				//console.log('ANDS: success:'+success+', fail:'+fail);
+				if(success==1 && fail==0){
+					if(debug==1){console.log(' - AND set value for '+els[i].name+' to '+matchvalue);}
+					els[i].value=matchvalue;
+				}
+				else{
+					if(debug==1){console.log(' - AND set value for '+els[i].name+' to '+els[i].dataset.value);}
+					els[i].value=els[i].dataset.value;
+				}
+			}
+			else{
+				//check for or conditions
+				conditions=conditionstr.split(' or ');
+				if(conditions.length > 1){
+					//multiple or conditions
+					let success=0;
+					for(let c=0;c<conditions.length;c++){
+						let parts=conditions[c].split('=');
+						let field=parts.shift();
+						let fieldval=parts.join('=');
+						let fieldobj=frm.querySelector('[name="'+field+'"], [name="'+field+'[]"]');
+						if(undefined == fieldobj){
+							break;
+						}
+						switch(fieldobj.type.toLowerCase()){
+							case 'select-one':
+		            			if(fieldval == fieldobj.options[fieldobj.selectedIndex].value){
+		            				success=1;
+		            			}
+							break;
+							case 'textarea':
+								if(fieldval.toLowerCase() == trim(fieldobj.innerText.toLowerCase())){
+									success=1;
+								}
+							break;
+							default:
+								if(fieldval.toLowerCase() == fieldobj.value.toLowerCase()){
+									success=1;
+								}
+							break;
+						}
+					}
+					//console.log('ORS: success:'+success);
+					if(success==1){
+						if(debug==1){console.log(' - OR set value for '+els[i].name+' to '+matchvalue);}
+						els[i].value=matchvalue;
+					}
+					else{
+						if(debug==1){console.log(' - OR set value for '+els[i].name+' to '+els[i].dataset.value);}
+						els[i].value=els[i].dataset.value;
+					}
+				}
+				else{
+					//single condition
+					success=0;
+					let parts=conditions[0].split('=');
+					let field=parts.shift();
+					let fieldval=parts.join('=');
+					let fieldobj=frm.querySelector('[name="'+field+'"], [name="'+field+'[]"]');
+					if(debug==1){console.log(' - SINGLE field:'+field+', fieldval:'+fieldval);}
+					if(undefined == fieldobj){
+						break;
+					}
+					switch(fieldobj.type.toLowerCase()){
+						case 'select-one':
+							let cval=fieldobj.options[fieldobj.selectedIndex].value;
+							if(debug==1){console.log(' - SINGLE cval:'+cval);}
+	            			if(fieldval == cval){
+	            				success=1;
+	            			}
+						break;
+						case 'textarea':
+							if(fieldval.toLowerCase() == trim(fieldobj.innerText.toLowerCase())){
+								success=1;
+							}
+						break;
+						default:
+							if(fieldval.toLowerCase() == fieldobj.value.toLowerCase()){
+								success=1;
+							}
+						break;
+					}
+					if(debug==1){console.log(' - SINGLE success:'+success);}
+					if(success==1){
+						if(debug==1){console.log(' - SINGLE 1 set value for '+els[i].name+' to '+matchvalue);}
+						els[i].value=matchvalue;
+					}
+					else{
+						if(debug==1){console.log(' - SINGLE 0 set value for '+els[i].name+' to '+els[i].dataset.value);}
+						els[i].value=els[i].dataset.value;
+					}
+				}
+			}
+		}
+	}
 	return;
 }
 function formRecorderAudioControl(el){
