@@ -44,6 +44,8 @@ if(isset($CONFIG['timezone'])){
 include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/sessions.php");
+include_once("{$progpath}/schema.php");
+include_once("{$progpath}/user.php");
 //parse SERVER vars to get additional SERVER params
 parseEnv();
 $guid=getGUID();
