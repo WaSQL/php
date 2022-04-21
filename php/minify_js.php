@@ -67,14 +67,11 @@ if(!file_exists($afile)){
 	exit;
 }
 //load the blank template so any functions in the blank template are also loaded
-$trec=getDBRecord(array(
+$ok=includeDBOnce(array(
 	'-table'=>'_templates',
 	'-where'=>"name='blank'",
-	'-fields'=>'_id,functions'
+	'-field'=>'functions'
 ));
-if(strlen($trec['functions'])){
-	$ok=evalPHP($trec['functions']);
-}
 //parse jstr
 $jstr=getFileContents($afile);
 $extras=array();

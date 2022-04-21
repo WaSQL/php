@@ -261,13 +261,13 @@ function dbAddRecord($db,$params=array()){
 * @param db string - database name as specified in the database section of config.xml
 * @param $table string - table name to add records to
 * @param $params array - 
-*   -table - name of the table to add to
 *	[-recs] - arrray of records to add
 * 	[-csv] - path to csv file of records to add
 * 	[-map] - array of key=>newkey mapping
 * 	[-upsert]  string - comma separated list of fields to update if the record already exists.  
+* 	[-upserton]  string - comma separated list of primary fields (needed for some databases and not others).
 * @return integer returns the number of records added
-* @usage $cnt=dbAddRecords($db,array('-table'=>'abc','-list'=>$recs));
+* @usage $cnt=dbAddRecords($db,$table,array('-recs'=>$recs));
 */
 function dbAddRecords($db,$table='',$params=array()){
 	return dbFunctionCall('addDBRecords',$db,$table,$params);
