@@ -11981,6 +11981,10 @@ function getCSVSchema($file,$params=array()){
 				$bomchecked=1;
 			}
 			if(count($fields)==0){
+				// Using iconv to convert CSV header row to ASCII with TRANSLIT//IGNORE will remove/transliterate diacritics. There is no need to detect $from_encoding because the internal method fopen_utf8 (used above) yields UTF-8 data. NOTE: Locale must be set using setlocale (already done above) for consistent results across platforms/installs/versions, otherwise transliteration will replace characters with "?".
+				$lineparts=implode($params['-separator'], $lineparts);
+				$lineparts=iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $lineparts); // NOTE: Warning: This will break the delimited string if the separator is not an ASCII character!
+				$lineparts=explode($params['-separator'], $lineparts);
 				$fields=$lineparts;
 				//remove spaces and weird chars
 				foreach($fields as $x=>$field){
