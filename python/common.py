@@ -127,6 +127,21 @@ def decodeBase64(str):
     message = message_bytes.decode('ascii')  
     return message  
 
+def decrypt(string, salt):
+    result = ''
+    str = base64.b64decode(string)
+    i=0;
+    while(i < len(str)):
+        charord = str[i]
+        ki=(i % len(salt))-1
+        keychar = salt[ki]
+        chrval=charord-ord(keychar)
+        char = chr(chrval)
+        result=result+char
+        i=i+1;
+
+    return result
+
 #---------- begin function encodeBase64
 # @describe wrapper for base64_encode
 # @param str string - string to encode
