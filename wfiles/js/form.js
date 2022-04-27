@@ -2849,8 +2849,15 @@ function submitForm(theForm,popup,debug,ajax){
 		else if(undefined != theForm[i].getAttribute('data-requiredif')){requiredif=theForm[i].getAttribute('data-requiredif');}
 		else if(undefined != theForm[i].getAttribute('requiredif')){requiredif=theForm[i].getAttribute('requiredif');}
         if(requiredif.length > 0){
-        	//support specifying the value  data-requiredif="age:9,10,11,12"
+        	//supports the following  
+        	//		data-requiredif="age"
+        	//		data-requiredif="age:9"
+        	//		data-requiredif="age:9,10,11,12"
+        	//future support options
+        	//		data-requiredif="age!9"  - age not equal 9
+        	//		data-requiredif="age!9,12" - age not equal 9 or 12
         	let parts=requiredif.split(':');
+        	let notparts=requiredif.split('!');
         	let rval='';
         	requiredif=theForm.querySelector('[name="'+parts[0]+'"]');
         	if(parts.length==1){
@@ -2892,15 +2899,28 @@ function submitForm(theForm,popup,debug,ajax){
 				}
         	}
         	else{
-        		cvals=parts[1].split(',');
+        		let not=0;
+        		let cvals=parts[1].split(',');
+        		if(notparts.length==2){
+        			not=1;
+        			cvals=notparts[1].split(',');
+        		}
         		if(undefined != requiredif){
         			switch(requiredif.type.toLowerCase()){
         				case 'select-one':
         					rval=requiredif.options[requiredif.selectedIndex].value;
         					for(let c=0;c<cvals.length;c++){
-        						if(rval==cvals[c]){
-        							required=1;
-        							break;
+        						if(not==1){
+        							if(rval!=cvals[c]){
+        								required=1;
+        								break;
+        							}
+        						}
+        						else{
+        							if(rval==cvals[c]){
+        								required=1;
+        								break;
+        							}
         						}
         					}
         				break;
@@ -2909,9 +2929,17 @@ function submitForm(theForm,popup,debug,ajax){
         					for(let r=0;r<rvals.length;r++){
         						rval=rvals[r];
         						for(let c=0;c<cvals.length;c++){
-	        						if(rval==cvals[c]){
-	        							required=1;
-	        							break;
+	        						if(not==1){
+	        							if(rval!=cvals[c]){
+	        								required=1;
+	        								break;
+	        							}
+	        						}
+	        						else{
+	        							if(rval==cvals[c]){
+	        								required=1;
+	        								break;
+	        							}
 	        						}
 	        					}
         					}
@@ -2923,9 +2951,17 @@ function submitForm(theForm,popup,debug,ajax){
         						if(rels[r].checked){
         							rval=rels[r].value||1;
         							for(let c=0;c<cvals.length;c++){
-		        						if(rval==cvals[c]){
-		        							required=1;
-		        							break;
+		        						if(not==1){
+		        							if(rval!=cvals[c]){
+		        								required=1;
+		        								break;
+		        							}
+		        						}
+		        						else{
+		        							if(rval==cvals[c]){
+		        								required=1;
+		        								break;
+		        							}
 		        						}
 		        					}
         						}
@@ -2934,19 +2970,35 @@ function submitForm(theForm,popup,debug,ajax){
         				case 'textarea':
         					rval=requiredif.innerText;
         					for(let c=0;c<cvals.length;c++){
-        						if(rval==cvals[c]){
-        							required=1;
-        							break;
+        						if(not==1){
+        							if(rval!=cvals[c]){
+	        							required=1;
+	        							break;
+	        						}
         						}
+        						else{
+	        						if(rval==cvals[c]){
+	        							required=1;
+	        							break;
+	        						}
+	        					}
         					}
         				break
         				default:
         					rval=requiredif.value;
         					for(let c=0;c<cvals.length;c++){
-        						if(rval==cvals[c]){
-        							required=1;
-        							break;
-        						}
+        						if(not==1){
+	        						if(rval!=cvals[c]){
+	        							required=1;
+	        							break;
+	        						}
+	        					}
+	        					else{
+	        						if(rval==cvals[c]){
+	        							required=1;
+	        							break;
+	        						}
+	        					}
         					}
         				break;
         			}
