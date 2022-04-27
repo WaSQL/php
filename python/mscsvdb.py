@@ -31,9 +31,6 @@ except Exception as err:
 #	cur_mssql, conn_mssql =  mscsvdb.connect(params)
 def connect(params):
 	dbconfig = {}
-	#check config.CONFIG
-	if 'dbname' in config.CONFIG:
-		dbconfig['dbq'] = config.CONFIG['dbname']
 
 	#check params and override any that are passed in
 	if 'dbname' in params:

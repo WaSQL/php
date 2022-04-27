@@ -76,21 +76,11 @@ def connect(params):
 	dbconfig = {
 		'auth_plugin':'mysql_native_password'
 	}
-	#check config.CONFIG
-	if 'dbhost' in config.CONFIG:
-		dbconfig['host'] = config.CONFIG['dbhost']
-
-	if 'dbuser' in config.CONFIG:
-		dbconfig['user'] = config.CONFIG['dbuser']
-
-	if 'dbpass' in config.CONFIG:
-		dbconfig['password'] = config.CONFIG['dbpass']
-
-	if 'dbname' in config.CONFIG:
-		dbconfig['database'] = config.CONFIG['dbname']
 	#check params and override any that are passed in
 	if 'dbhost' in params:
 		dbconfig['host'] = params['dbhost']
+	else:
+		dbconfig['host'] = 'localhost'
 
 	if 'dbuser' in params:
 		dbconfig['user'] = params['dbuser']

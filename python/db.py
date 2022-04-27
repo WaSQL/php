@@ -19,11 +19,12 @@ except Exception as err:
 # @usage recs=db.queryResults('dbtest','select * from states')
 def queryResults(dbname,query,params={}):
     if dbname in config.DATABASE:
+        dbtype=config.DATABASE[dbname]['dbtype']
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:
             params[k] = config.DATABASE[dbname][k]
         #HANA
-        if config.DATABASE[dbname]['dbtype'].startswith('hana'):
+        if dbtype.startswith('hana'):
             try:
                 import hanadb
             except Exception as err:
@@ -31,7 +32,7 @@ def queryResults(dbname,query,params={}):
             
             return hanadb.queryResults(query,params)
         #MSSQL
-        if config.DATABASE[dbname]['dbtype'].startswith('mssql'):
+        if dbtype.startswith('mssql'):
             try:
                 import mssqldb
             except Exception as err:
@@ -39,7 +40,7 @@ def queryResults(dbname,query,params={}):
 
             return mssqldb.queryResults(query,params)
         #Mysql
-        if config.DATABASE[dbname]['dbtype'].startswith('mysql'):
+        if dbtype.startswith('mysql'):
             try:
                 import mysqldb
             except Exception as err:
@@ -47,7 +48,7 @@ def queryResults(dbname,query,params={}):
 
             return mysqldb.queryResults(query,params)
         #ORACLE
-        if config.DATABASE[dbname]['dbtype'].startswith('oracle'):
+        if dbtype.startswith('oracle'):
             try:
                 import oracledb
             except Exception as err:
@@ -55,7 +56,7 @@ def queryResults(dbname,query,params={}):
 
             return oracledb.queryResults(query,params)
         #SNOWFLAKE
-        if config.DATABASE[dbname]['dbtype'].startswith('snowflake'):
+        if dbtype.startswith('snowflake'):
             try:
                 import snowflakedb
             except Exception as err:
@@ -63,7 +64,7 @@ def queryResults(dbname,query,params={}):
             
             return snowflakedb.queryResults(query,params)
         #SQLITE
-        if config.DATABASE[dbname]['dbtype'].startswith('sqlite'):
+        if dbtype.startswith('sqlite'):
             try:
                 import sqlitedb
             except Exception as err:
@@ -71,7 +72,7 @@ def queryResults(dbname,query,params={}):
 
             return sqlitedb.queryResults(query,params)
         #POSTGRES
-        if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
+        if dbtype.startswith('postgre'):
             try:
                 import postgresdb
             except Exception as err:

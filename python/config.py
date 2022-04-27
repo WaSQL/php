@@ -54,9 +54,3 @@ for chost in ALLCONFIG['hosts']['host']:
             #load the host keys
             for k in chost:
                 CONFIG[k] = chost[k]
-            #load the database keys if specified
-            if 'database' in CONFIG:
-                dbkey = CONFIG['database']
-                if dbkey in DATABASE:
-                    for k in DATABASE[dbkey]:
-                        CONFIG[k] = DATABASE[dbkey][k]

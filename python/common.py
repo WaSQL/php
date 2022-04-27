@@ -36,7 +36,9 @@ DEBUG = []
 # @usage common.abort(sys.exc_info(),err)
 def abort(exc_tuple,err):
     fname = os.path.split(exc_tuple[2].tb_frame.f_code.co_filename)[1]
-    print("Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_tuple[0],fname,exc_tuple[2].tb_lineno))
+    abort_err = "Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_tuple[0],fname,exc_tuple[2].tb_lineno)    
+    raise Exception(abort_err)
+    print(abort_err)
     sys.exit(123)
 
 #---------- begin function debug ----------
@@ -127,6 +129,12 @@ def decodeBase64(str):
     message = message_bytes.decode('ascii')  
     return message  
 
+#---------- begin function decrypt
+# @describe decrypt a string that was encoded with the encrypt function
+# @param enc string - string to decrypt
+# @param salt string - salt used during encrypt
+# @return str - decrypted string
+# @usage str=common.decrypt(enc,salt)
 def decrypt(string, salt):
     result = ''
     str = base64.b64decode(string)

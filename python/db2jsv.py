@@ -49,11 +49,12 @@ params['filename']=sql_file.replace('.sql','.jsv')
 outfile=''
 try:
     if dbname in config.DATABASE:
+        dbtype = config.DATABASE[dbname]['dbtype']
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:
             params[k] = config.DATABASE[dbname][k]
         #FIREBIRD
-        if config.DATABASE[dbname]['dbtype'].startswith('firebird'):
+        if dbtype.startswith('firebird'):
             try:
                 import firebirddb
             except Exception as err:
@@ -61,7 +62,7 @@ try:
 
             outfile=firebirddb.queryResults(query,params)
         #HANA
-        if config.DATABASE[dbname]['dbtype'].startswith('hana'):
+        if dbtype.startswith('hana'):
             try:
                 import hanadb
             except Exception as err:
@@ -69,7 +70,7 @@ try:
 
             outfile=hanadb.queryResults(query,params)
         #MSSQL
-        if config.DATABASE[dbname]['dbtype'].startswith('mssql'):
+        if dbtype.startswith('mssql'):
             try:
                 import mssqldb
             except Exception as err:
@@ -77,7 +78,7 @@ try:
 
             outfile=mssqldb.queryResults(query,params)
         #Mysql
-        if config.DATABASE[dbname]['dbtype'].startswith('mysql'):
+        if dbtype.startswith('mysql'):
             try:
                 import mysqldb
             except Exception as err:
@@ -85,7 +86,7 @@ try:
 
             outfile=mysqldb.queryResults(query,params)
         #ORACLE
-        if config.DATABASE[dbname]['dbtype'].startswith('oracle'):
+        if dbtype.startswith('oracle'):
             try:
                 import oracledb
             except Exception as err:
@@ -93,7 +94,7 @@ try:
 
             outfile=oracledb.queryResults(query,params)
         #SNOWFLAKE
-        if config.DATABASE[dbname]['dbtype'].startswith('snowflake'):
+        if dbtype.startswith('snowflake'):
             try:
                 import snowflakedb
             except Exception as err:
@@ -101,7 +102,7 @@ try:
 
             outfile=snowflakedb.queryResults(query,params)
         #SQLITE
-        if config.DATABASE[dbname]['dbtype'].startswith('sqlite'):
+        if dbtype.startswith('sqlite'):
             try:
                 import sqlitedb
             except Exception as err:
@@ -109,7 +110,7 @@ try:
 
             outfile=sqlitedb.queryResults(query,params)
         #POSTGRES
-        if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
+        if dbtype.startswith('postgre'):
             try:
                 import postgresdb
             except Exception as err:
@@ -117,7 +118,7 @@ try:
 
             outfile=postgresdb.queryResults(query,params)
         #MSACCESS
-        if config.DATABASE[dbname]['dbtype'].startswith('msaccess'):
+        if dbtype.startswith('msaccess'):
             try:
                 import msaccessdb
             except Exception as err:
@@ -125,7 +126,7 @@ try:
 
             outfile=msaccessdb.queryResults(query,params)
         #MSCSV
-        if config.DATABASE[dbname]['dbtype'].startswith('mscsv'):
+        if dbtype.startswith('mscsv'):
             try:
                 import mscsvdb
             except Exception as err:

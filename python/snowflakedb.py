@@ -78,34 +78,15 @@ def connect(params):
 	#need account,user,password,database,schema,warehouse,role
 
 	#check config.CONFIG
-	if 'dbaccount' in config.CONFIG:
-		dbconfig['account'] = config.CONFIG['dbaccount'].replace(".snowflakecomputing.com","",1)
-	elif 'dbhost' in config.CONFIG:
-		dbconfig['account'] = config.CONFIG['dbhost'].replace(".snowflakecomputing.com","",1)
-
-	if 'dbuser' in config.CONFIG:
-		dbconfig['user'] = config.CONFIG['dbuser']
-
-	if 'dbpass' in config.CONFIG:
-		dbconfig['password'] = config.CONFIG['dbpass']
-
-	if 'dbname' in config.CONFIG:
-		dbconfig['database'] = config.CONFIG['dbname']
-
-	if 'dbschema' in config.CONFIG:
-		dbconfig['schema'] = config.CONFIG['dbschema']
-
-	if 'dbwarehouse' in config.CONFIG:
-		dbconfig['warehouse'] = config.CONFIG['dbwarehouse']
-
-	if 'dbrole' in config.CONFIG:
-		dbconfig['role'] = config.CONFIG['dbrole']
 	
 	#check params and override any that are passed in
 	if 'dbaccount' in params:
 		dbconfig['account'] = params['dbaccount'].replace(".snowflakecomputing.com","",1)
 	elif 'dbhost' in params:
 		dbconfig['account'] = params['dbhost'].replace(".snowflakecomputing.com","",1)
+	else:
+		print("Missing dbhost or dbaccount attribute in database tag named '{}'".format(params['name']))
+		sys.exit(123)
 
 	if 'dbuser' in params:
 		dbconfig['user'] = params['dbuser']

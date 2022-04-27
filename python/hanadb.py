@@ -77,22 +77,12 @@ def addIndex(params):
 #	cur_mssql, conn_mssql =  hanadb.connect(params)
 def connect(params):
 	dbconfig = {}
-	#check config.CONFIG
-	if 'dbhost' in config.CONFIG:
-		dbconfig['address'] = config.CONFIG['dbhost']
-
-	if 'dbuser' in config.CONFIG:
-		dbconfig['user'] = config.CONFIG['dbuser']
-
-	if 'dbpass' in config.CONFIG:
-		dbconfig['password'] = config.CONFIG['dbpass']
-
-	if 'dbport' in config.CONFIG:
-		dbconfig['port'] = config.CONFIG['dbport']
-
 	#check params and override any that are passed in
 	if 'dbhost' in params:
 		dbconfig['address'] = params['dbhost']
+	else:
+		print("Missing dbhost attribute in database tag named '{}'".format(params['name']))
+		sys.exit(123)
 
 	if 'dbuser' in params:
 		dbconfig['user'] = params['dbuser']

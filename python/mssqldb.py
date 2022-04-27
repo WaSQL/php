@@ -73,22 +73,13 @@ def addIndex(params):
 #	cur_mssql, conn_mssql =  mssqldb.connect(params)
 def connect(params):
 	dbconfig = {}
-	#check config.CONFIG
-	if 'dbhost' in config.CONFIG:
-		dbconfig['server'] = config.CONFIG['dbhost']
-
-	if 'dbuser' in config.CONFIG:
-		dbconfig['user'] = config.CONFIG['dbuser']
-
-	if 'dbpass' in config.CONFIG:
-		dbconfig['password'] = config.CONFIG['dbpass']
-
-	if 'dbname' in config.CONFIG:
-		dbconfig['database'] = config.CONFIG['dbname']
 
 	#check params and override any that are passed in
 	if 'dbhost' in params:
 		dbconfig['server'] = params['dbhost']
+	else:
+		print("Missing dbhost attribute in database tag named '{}'".format(params['name']))
+		sys.exit(123)
 
 	if 'dbuser' in params:
 		dbconfig['user'] = params['dbuser']

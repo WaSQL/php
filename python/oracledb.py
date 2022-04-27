@@ -81,38 +81,6 @@ def connect(params):
 	dbconfig = {}
 	dbconfig['port'] = 1521
 	dbconfig['host'] = 'localhost'
-	#check config.CONFIG
-	if 'dbconnect' in config.CONFIG:
-		dbconfig['connect'] = config.CONFIG['dbconnect']
-	elif 'connect' in config.CONFIG:
-		dbconfig['connect'] = config.CONFIG['connect']
-
-	if 'dbport' in config.CONFIG:
-		dbconfig['port'] = config.CONFIG['dbport']
-	elif 'port' in config.CONFIG:
-		dbconfig['port'] = config.CONFIG['port']
-
-	if 'dbhost' in config.CONFIG:
-		dbconfig['host'] = config.CONFIG['dbhost']
-
-	if 'dbuser' in config.CONFIG:
-		dbconfig['user'] = config.CONFIG['dbuser']
-
-	if 'dbpass' in config.CONFIG:
-		dbconfig['password'] = config.CONFIG['dbpass']
-
-	if 'dbname' in config.CONFIG:
-		dbconfig['database'] = config.CONFIG['dbname']
-
-	if 'sid' in config.CONFIG:
-		dbconfig['service_name'] = config.CONFIG['sid']
-	elif 'service_name' in config.CONFIG:
-		dbconfig['service_name'] = config.CONFIG['service_name']
-
-	if 'dbserver' in config.CONFIG:
-		dbconfig['server'] = config.CONFIG['dbserver']
-	elif 'server' in config.CONFIG:
-		dbconfig['server'] = config.CONFIG['server']
 
 	#check params and override any that are passed in
 	if 'dbconnect' in params:
