@@ -133,6 +133,14 @@ try:
                 common.abort(sys.exc_info(),err)
             outfile=mscsvdb.queryResults(query,params)
         print(outfile)
+        #MSEXCEL
+        if dbtype.startswith('msexcel'):
+            try:
+                import msexceldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+            outfile=msexceldb.queryResults(query,params)
+        print(outfile)
     else:
         print("Error: invalid database: {}".format(dbname))
 except Exception as err:

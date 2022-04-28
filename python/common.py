@@ -36,8 +36,7 @@ DEBUG = []
 # @usage common.abort(sys.exc_info(),err)
 def abort(exc_tuple,err):
     fname = os.path.split(exc_tuple[2].tb_frame.f_code.co_filename)[1]
-    abort_err = "Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_tuple[0],fname,exc_tuple[2].tb_lineno)    
-    raise Exception(abort_err)
+    abort_err = "Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_tuple[0],fname,exc_tuple[2].tb_lineno)
     print(abort_err)
     sys.exit(123)
 

@@ -79,3 +79,27 @@ def queryResults(dbname,query,params={}):
                 common.abort(sys.exc_info(),err)
 
             return postgresdb.queryResults(query,params)
+        #MSACCESS
+        if dbtype.startswith('msaccess'):
+            try:
+                import msaccessdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return msaccessdb.queryResults(query,params)
+        #MSCSV
+        if dbtype.startswith('mscsv'):
+            try:
+                import mscsvdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mscsvdb.queryResults(query,params)
+        #MSEXCEL
+        if dbtype.startswith('msexcel'):
+            try:
+                import msexceldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return msexceldb.queryResults(query,params)

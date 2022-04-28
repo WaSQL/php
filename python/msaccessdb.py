@@ -3,8 +3,8 @@
 Installation
 	python3 -m pip install pyodbc
 References
-	https://pypi.org/project/hdbcli/
 	https://developers.sap.com/tutorials/msaccess-clients-python.html
+	https://code.google.com/archive/p/pyodbc/wikis/FAQs.wiki
 """
 
 #imports
@@ -45,7 +45,7 @@ def connect(params):
 
 
 	try:
-		conn_msaccess = pyodbc.connect(conn_str)
+		conn_msaccess = pyodbc.connect(conn_str, readonly=True, autocommit=True)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 

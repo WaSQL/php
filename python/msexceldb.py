@@ -39,14 +39,12 @@ def connect(params):
 
 	#build connection string list
 	conn_list = [
-		"Driver=Microsoft Access Text Driver (*.txt, *.csv)",
-		'FIL=text',
-		'DriverId=27',
-		'Extensions=asc,csv,tab,txt',
+		"Driver=Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)",
+		'FIL=Excel 12.0',
+		'DriverId=1046',
 		'ImportMixedTypes=Text',
 		'ReadOnly=false',
 		'IMEX=1',
-		"DelimitedBy=|",
 		'MaxScanRows=2',
 		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=2;HDR=YES"',
 		]
