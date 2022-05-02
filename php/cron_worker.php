@@ -121,7 +121,7 @@ foreach($ConfigXml as $name=>$host){
 			and cron_pid=0 
 			and running=0 
 		LIMIT 1
-	ENDOFSQL;
+ENDOFSQL;
 		$ok=executeSQL($secureSQL);
 		$rec=getDBRecord(array(
 			'-table'	=> '_cron',
