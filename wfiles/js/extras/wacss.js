@@ -1,5 +1,5 @@
 var wacss = {
-	version: '1.1',
+	version: '2022.0501',
 	author: 'WaSQL.com',
 	chartjs:{},
 	addClass: function(element, classToAdd) {
@@ -9,7 +9,7 @@ var wacss = {
 			element.className=classToAdd;
 			return true;
 		}
-	    var currentClassValue = element.className;
+	    let currentClassValue = element.className;
 
 	    if (currentClassValue.indexOf(classToAdd) == -1) {
 	        if ((currentClassValue == null) || (currentClassValue === "")) {
@@ -113,9 +113,9 @@ var wacss = {
 	},
 	getAllAttributes: function(obj){
 		//info: get all attributes of a specific object or id
-		var node=wacss.getObject(obj);
-		var rv = {};
-	    for(var i=0; i<node.attributes.length; i++){
+		let node=wacss.getObject(obj);
+		let rv = {};
+	    for(let i=0; i<node.attributes.length; i++){
 	        if(node.attributes.item(i).specified){
 	            rv[node.attributes.item(i).nodeName]=node.attributes.item(i).nodeValue;
 				}
@@ -358,7 +358,7 @@ var wacss = {
 	    	//try getElementById
 			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
 			else if(undefined != document.getElementsByName(obj)){
-				var els=document.getElementsByName(obj);
+				let els=document.getElementsByName(obj);
 				if(els.length ==1){return els[0];}
 	        	}
 			else if(undefined != document.all[obj]){return document.all[obj];}
@@ -369,7 +369,7 @@ var wacss = {
 		if(undefined == obj){return null;}
 		if(undefined == classname){classname='';}
 		if(undefined != name){
-			var count = 1;
+			let count = 1;
 			while(count < 1000) {
 				if(undefined == obj.parentNode){return null;}
 				obj = obj.parentNode;
@@ -389,17 +389,17 @@ var wacss = {
 			}
 			return null;	
 		}
-		var cObj=wacss.getObject(obj);
+		let cObj=wacss.getObject(obj);
 		if(undefined == cObj){return abort("undefined object passed to getParent");}
 		if(undefined == cObj.parentNode){return cObj;}
-		var pobj=cObj.parentNode;
+		let pobj=cObj.parentNode;
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 		else{return wacss.getParent(pobj);}
 	},
 	getSiblings: function (elem) {
 		// Setup siblings array and get the first sibling
-		var siblings = [];
-		var sibling = elem.parentNode.firstChild;
+		let siblings = [];
+		let sibling = elem.parentNode.firstChild;
 
 		// Loop through each sibling and push to the array
 		while (sibling) {
@@ -414,7 +414,7 @@ var wacss = {
 	},
 	guid: function () {
 	    function _p8(s) {
-	        var p = (Math.random().toString(16)+"000000000").substr(2,8);
+	        let p = (Math.random().toString(16)+"000000000").substr(2,8);
 	        return s ? "-" + p.substr(0,4) + "-" + p.substr(4,4) : p ;
 	    }
 	    return _p8() + _p8(true) + _p8(true) + _p8();
@@ -435,23 +435,206 @@ var wacss = {
 		wacss.initEditor();
 	},
 	chartjsDrawTotals: function(chart){
-		var width = chart.chart.width,
+		let width = chart.chart.width,
 	    height = chart.chart.height,
 	    ctx = chart.chart.ctx;
 	 
 	    ctx.restore();
-	    var fontSize = (height / 60).toFixed(2);
+	    let fontSize = (height / 60).toFixed(2);
 	    ctx.font = fontSize + "em sans-serif";
 	    ctx.textBaseline = "middle";
 	 
-	    var text = chart.config.centerText.text,
+	    let text = chart.config.centerText.text,
 	    textX = Math.round((width - ctx.measureText(text).width) / 2),
 	    textY = height-20;
 	 
 	    ctx.fillText(text, textX, textY);
 	    ctx.save();
 	},
+	initChartJsBehavior: function(chartid){
+		let list=document.querySelectorAll('[data-behavior="chartjs"]');
+		if(undefined != chartid){
+			list=document.querySelectorAll('#'+chartid);
+		}
+		if(list.length==0){return;}
+		let gcolors = new Array(
+	        'rgb(255, 159, 64)',
+	        'rgb(75, 192, 192)',
+	        'rgb(255, 99, 132)',
+	        'rgb(54, 162, 235)',
+	        'rgb(153, 102, 255)',
+	        'rgb((218,165,32)',
+	        'rgb(233,150,122)',
+	        'rgb(189,183,107)',
+	        'rgb(154,205,50)',
+	        'rgb(255,228,196)',
+	        'rgb(244,164,96)',
+	        'rgb(176,196,222)',
+	        'rgb(188,143,143)',
+	        'rgb(255,228,225)',
+	        'rgb(201, 203, 207)'
+	    );
+		for(let i=0;i<list.length;i++){
+			if(undefined==list[i].id){
+				console.log('Error in initChartJsBehavior: missing id attribute');
+				conso.log(list[i]);
+				continue;
+			}
+			if(undefined==list[i].dataset.type){
+				console.log('Error in initChartJsBehavior: missing data-type attribute');
+				conso.log(list[i]);
+				continue;
+			}
+			if(undefined==chartid && undefined!=list[i].dataset.initialized){continue;}
+			list[i].dataset.initialized=1;
+			let datadiv=document.querySelector('#'+list[i].id+'_data');
+			if(undefined==datadiv){
+				console.log('Error in initChartJsBehavior: missing data div attribute');
+				conso.log(list[i]);
+				continue;
+			}
+			//setup the config: type, data, options
+			let lconfig = {
+				type:list[i].dataset.type,
+				data:{
+					labels:[],
+					datasets:[]
+				},
+				options:{
+					responsive: true,
+            		events: false,
+            		animation: {animateScale:false,animateRotate:true},
+            		title:{display:false},
+            		tooltips: {enabled:false,intersect: false,mode:'index'},
+            		plugins:{
+            			labels:{
+            				fontColor:function (data) {
+								let rgb = {};
+								rgb=wacss.hexToRgb(data.dataset.backgroundColor[data.index]);
+								if(undefined == rgb.r){return '#FFF';}
+								let threshold = 140;
+								let luminance = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+								return luminance > threshold ? 'black' : 'white';
+								},
+							precision:0,
+							showActualPercentages:true
+            			}
+            		}
+				}
+			};
+			//labels
+			let labelsdiv=datadiv.querySelector('labels');
+			if(undefined != labelsdiv){
+				let labelsjson=wacss.trim(labelsdiv.innerText);
+				lconfig.data.labels=JSON.parse(labelsjson);
+			}
+			//colors
+			let colorsdiv=datadiv.querySelector('colors');
+			if(undefined != colorsdiv){
+				let colorsjson=wacss.trim(colorsdiv.innerText);
+				colors=JSON.parse(colorsjson);
+			}
+			else{
+				colors=gcolors;
+			}
+			//datasets
+			let datasets=datadiv.querySelectorAll('dataset');
+			for(let d=0;d<datasets.length;d++){
+				let json=JSON.parse(datasets[d].innerText);   		
+				let dataset={
+					label:datasets[d].dataset.label || datasets[d].dataset.title || '',
+					backgroundColor: datasets[d].dataset.backgroundcolor || colors,
+                    type:datasets[d].dataset.type || lconfig.type,
+					data: json
+				};
+				//fill
+				if(undefined != datasets[d].dataset.fill && datasets[d].dataset.fill.toLowerCase()=='false'){
+					dataset.fill=false;
+				}
+				else if(undefined != list[i].dataset.fill && list[i].dataset.fill.toLowerCase()=='false'){
+					dataset.fill=false;
+				}
+				lconfig.data.datasets.push(dataset);
+			}
+			//options - responsive
+			if(undefined != list[i].dataset.responsive && list[i].dataset.responsive.toLowerCase()=='false'){
+				lconfig.options.responsive=false;
+			}
+			//options - title
+			if(undefined != list[i].dataset.title){
+				lconfig.options.title={display:true,text:list[i].dataset.title};
+			}
+			//options - plugins - legend - display
+			if(undefined != list[i].dataset.legenddisplay && list[i].dataset.legenddisplay.toLowerCase()=='false'){
+				lconfig.options.legend={display:false};
+			}
+			//options - plugins - labels - render
+			if(undefined != list[i].dataset.render){
+				lconfig.options.plugins.labels.render=list[i].dataset.render;
+			}
+			//options - plugins - labels - fontColor
+			if(undefined != list[i].dataset.fontcolor){
+				lconfig.options.plugins.labels.fontColor=list[i].dataset.fontcolor;
+			}
+			//options - plugins - labels - precision
+			if(undefined != list[i].dataset.precision){
+				lconfig.options.plugins.labels.precision=list[i].dataset.precision;
+			}
+			//options - plugins - labels - position
+			if(undefined != list[i].dataset.position){
+				lconfig.options.plugins.labels.position=list[i].dataset.position;
+			}
+			//options - plugins - labels - outsidePadding
+			if(undefined != list[i].dataset.outsidepadding){
+				lconfig.options.plugins.labels.outsidePadding=list[i].dataset.outsidepadding;
+			}
+			//options - plugins - labels - textMargin
+			if(undefined != list[i].dataset.textmargin){
+				lconfig.options.plugins.labels.textMargin=list[i].dataset.textmargin;
+			}
+			//options - plugins - labels - textMargin
+			if(undefined != list[i].dataset.centertext){
+				lconfig.options.plugins.doughnutlabel={
+					color:list[i].dataset.centertextcolor || '#000',
+					labels:[{
+						text: list[i].dataset.centertext,
+						font:{size:list[i].dataset.centertextfontsize || 30}
+					}]
+				};
+			}
+			let lcanvas=document.createElement('canvas');
+			list[i].appendChild(lcanvas);
+			let lctx = lcanvas.getContext('2d');
+			wacss.chartjs[list[i].id] = new Chart(lctx, lconfig);
+			//onclick
+			if(undefined != list[i].dataset.onclick){
+				lcanvas.parentobj=list[i];
+				lcanvas.chartobj=wacss.chartjs[list[i].id];
+				lcanvas.onclick_func=list[i].dataset.onclick;
+				lcanvas.clicked=0;
+				lcanvas.onclick = function(evt){
+					if(this.clicked==0){
+						this.clicked=1;
+				        //set clicked back to 0 in 250 ms (this prevents duplicate click events)
+				        this.timeout=setTimeout(function(obj){obj.clicked=0;}, 250,this);
+						let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
+				        if(activePoints.length > 0){
+					        let firstPoint = activePoints[0];
+					        let params={};
+					        params.parent=this.parentobj;
+					        params.chart=this.chartobj;
+					        params.type=this.parentobj.getAttribute('data-type');
+					        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+					        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+					        window[this.onclick_func](params);
+					    }
+				    }
+				};
+			}
+		}
+	},
 	initChartJs: function(initid){
+		wacss.initChartJsBehavior();
 		let list=document.querySelectorAll('div.chartjs');
 		let gcolors = new Array(
 	        'rgb(255, 159, 64)',
@@ -516,6 +699,11 @@ var wacss = {
 				//lconfig.options=JSON.parse(optionsjson);
 				options=JSON.parse(optionsjson);
 			}
+			else{
+				options={
+					responsive:true
+				};
+			}
 			let foundchart=0;
 			switch(type){
 				case 'guage':
@@ -560,7 +748,25 @@ var wacss = {
 	                			circumference: Math.PI,
 	                			rotation: -1 * Math.PI,
 	                			responsive: true,
-	                			plugins:{datalabels:{display:true}},
+	                			plugins:{
+	                				labels: {
+										render: list[i].dataset.render || 'label', //label,percentage,value
+										fontColor: list[i].dataset.fontcolor || function (data) {
+											let rgb = {};
+											rgb=wacss.hexToRgb(data.dataset.backgroundColor[data.index]);
+											if(undefined == rgb.r){
+												return 'white';
+											}
+											let threshold = 140;
+											let luminance = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+											return luminance > threshold ? 'black' : 'white';
+											},
+										precision: list[i].dataset.precision || 2,
+										position: list[i].dataset.position || 'outside',
+										outsidePadding: list[i].dataset.outsidepadding || 4,
+										textMargin: list[i].dataset.textmargin || 4
+									}
+	                			},
 	                			legend:{display:false},
 	                    		animation: {animateScale:false,animateRotate:true}
 	            			},
@@ -609,6 +815,8 @@ var wacss = {
 							       	if(activePoints.length > 0){
 								        let firstPoint = activePoints[0];
 								        let params={};
+								        params.parent=this.parentobj;
+								        params.chart=this.chartobj;
 								        params.type=this.parentobj.getAttribute('data-type');
 								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
@@ -740,17 +948,17 @@ var wacss = {
 							}
 							//check for fillColor in dataset itself
 							for(let ds=0;ds<dataset.data.length;ds++){
-								if(undefined != dataset.data[ds].pointBackgroundColor){
-									dataset.pointBackgroundColor[ds]=dataset.data[ds].pointBackgroundColor;
+								if(undefined != dataset.data[ds].pointbackgroundcolor){
+									dataset.pointBackgroundColor[ds]=dataset.data[ds].pointbackgroundcolor;
 								}
-								if(undefined != dataset.data[ds].pointBorderColor){
-									dataset.pointBorderColor[ds]=dataset.data[ds].pointBorderColor;
+								if(undefined != dataset.data[ds].pointbordercolor){
+									dataset.pointBorderBolor[ds]=dataset.data[ds].pointbordercolor;
 								}
-								if(undefined != dataset.data[ds].backgroundColor){
-									dataset.backgroundColor[ds]=dataset.data[ds].backgroundColor;
+								if(undefined != dataset.data[ds].backgroundcolor){
+									dataset.backgroundColor[ds]=dataset.data[ds].backgroundcolor;
 								}
-								if(undefined != dataset.data[ds].borderColor){
-									dataset.borderColor[ds]=dataset.data[ds].borderColor;
+								if(undefined != dataset.data[ds].bordercolor){
+									dataset.borderColor[ds]=dataset.data[ds].bordercolor;
 								}
 							}
 							lconfig.data.datasets.push(dataset);
@@ -784,6 +992,8 @@ var wacss = {
 								       	let label = clickedDatasetPoint.label;
 								       	let value = clickedDatasetPoint.data[clickedElementIndex]["y"];  
 								       	let params={};
+								       	params.parent=this.parentobj;
+								        params.chart=this.chartobj;
 								       	params.type=this.parentobj.getAttribute('data-type');
 								       	params.label = this.chartobj.data.labels[firstPoint._index] || clickedDatasetPoint.label;
 								       	params.value = clickedDatasetPoint.data[firstPoint._index] || clickedDatasetPoint.data[clickedElementIndex]["y"];
@@ -795,6 +1005,8 @@ var wacss = {
 										if(activePoints.length > 0){
 									        let firstPoint = activePoints[0];
 									        let params={};
+									        params.parent=this.parentobj;
+								        	params.chart=this.chartobj;
 									        params.type=this.parentobj.getAttribute('data-type');
 									        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 									        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
@@ -858,25 +1070,33 @@ var wacss = {
 	                    		events: false,
 	                    		animation: {animateScale:false,animateRotate:true},
 	        					title:{
-	        						display: false
+	        						display: list[i].dataset.label?true:false,
+	        						text: list[i].dataset.label || ''
 	        					},
 	        					rotation: -0.7 * Math.PI,
 	        					plugins: {
-							        datalabels: {
-							            formatter: (value, ctx) => {
-							                let sum = 0;
-							                let dataArr = ctx.chart.data.datasets[0].data;
-							                dataArr.map(data => {
-							                    sum += data;
-							                });
-							                let percentage = (value*100 / sum).toFixed(2)+"%";
-							                return percentage;
-							            },
-							            color: '#fff',
-							        }
+	        						labels: {
+										render: list[i].dataset.render || 'label', //label,percentage,value
+										fontColor: list[i].dataset.fontcolor || function (data) {
+											let rgb = {};
+											rgb=wacss.hexToRgb(data.dataset.backgroundColor[data.index]);
+											if(undefined == rgb.r){
+												return 'white';
+											}
+											let threshold = 140;
+											let luminance = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+											return luminance > threshold ? 'black' : 'white';
+											},
+										precision: list[i].dataset.precision || 0,
+										position: list[i].dataset.position || 'outside',
+										outsidePadding: list[i].dataset.outsidepadding || 4,
+										textMargin: list[i].dataset.textmargin || 4,
+										showActualPercentages: true
+									}
 							    }
 	        				}
 	        			};
+	        			console.log(pconfig.options.plugins);
 	        			if(undefined != labels && labels.length > 0){
 							pconfig.data.labels=labels;
 						}
@@ -900,6 +1120,8 @@ var wacss = {
 							        if(activePoints.length > 0){
 								        let firstPoint = activePoints[0];
 								        let params={};
+								        params.parent=this.parentobj;
+								        params.chart=this.chartobj;
 								        params.type=this.parentobj.getAttribute('data-type');
 								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
@@ -914,6 +1136,38 @@ var wacss = {
 		}
 		return true;
 	},
+	hexToRgb: function(hex) {
+		if(undefined==hex){
+			return {
+				r:255,
+				g:255,
+				b:255
+			};
+		}
+		//check for rgb(r,g,b) string;
+		let rgb_regex=/rgb\(([0-9]+?),\ ([0-9]+?),\ ([0-9]+?)\)/;
+		let rgb_match=hex.toString().match(rgb_regex);
+		if(undefined != rgb_match && undefined != rgb_match[1]){
+			return {r:rgb_match[1],g:rgb_match[2],b:rgb_match[3]};
+		}
+		// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+		let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+		hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+			return r + r + g + g + b + b;
+		});
+
+		let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return result ? {
+			r: parseInt(result[1], 16),
+			g: parseInt(result[2], 16),
+			b: parseInt(result[3], 16)
+		} : {
+			r:255,
+			g:255,
+			b:255
+		}
+		;
+    },
 	initCodeMirror: function(){
 		/*convert texteara to codemirror */
 		let list=document.querySelectorAll('textarea.code[data-mode]');
@@ -1914,7 +2168,7 @@ var wacss = {
 						return false;
 					break;
 					case 'print':
-						var oPrntWin = window.open("","_blank","width=450,height=470,left=400,top=100,menubar=yes,toolbar=no,location=no,scrollbars=yes");
+						let oPrntWin = window.open("","_blank","width=450,height=470,left=400,top=100,menubar=yes,toolbar=no,location=no,scrollbars=yes");
 						oPrntWin.document.open();
 						oPrntWin.document.write("<!doctype html><html><head><title>Print<\/title><\/head><body onload=\"print();\">" + dobj.innerHTML + "<\/body><\/html>");
 						oPrntWin.document.close();
@@ -2027,7 +2281,7 @@ var wacss = {
 	    }  
 	    else if (elem.attachEvent) { 
 	    	// IE DOM
-	         var r = elem.attachEvent("on"+evnt, func);
+	         let r = elem.attachEvent("on"+evnt, func);
 	         return r;
 	    }
 	    else{
@@ -2200,7 +2454,7 @@ var wacss = {
 	removeClass: function(element, classToRemove) {
 		element=wacss.getObject(element);
 		if(undefined == element.className){return;}
-	    var currentClassValue = element.className;
+	    let currentClassValue = element.className;
 
 	    // removing a class value when there is more than one class value present
 	    // and the class you want to remove is not the first one
@@ -2465,7 +2719,7 @@ var wacss = {
 		);
 	},
 	toggleClass: function(id,class1,class2,myid,myclass1,myclass2){
-		var obj=wacss.getObject(id);
+		let obj=wacss.getObject(id);
 		if(undefined == obj){return;}
 		if(obj.className.indexOf(class1) != -1){
 	    	wacss.removeClass(obj,class1);
@@ -2478,7 +2732,7 @@ var wacss = {
 		else{wacss.addClass(obj,class1);}
 		//a second set may be set to also modify the caller
 		if(undefined != myid){
-			var obj=wacss.getObject(myid);
+			obj=wacss.getObject(myid);
 			if(undefined == obj){return;}
 			if(obj.className.indexOf(myclass1) != -1){
 		    	wacss.removeClass(obj,myclass1);
@@ -2493,7 +2747,7 @@ var wacss = {
 	},
 	trim: function(str){
 		if (null != str && undefined != str && "" != str){
-			var rval=str.replace(/^[\ \s\0\r\n\t]*/g,"");
+			let rval=str.replace(/^[\ \s\0\r\n\t]*/g,"");
 			rval=rval.replace(/[\ \s\0\r\n\t]*$/g,"");
 		    return rval;
 			}

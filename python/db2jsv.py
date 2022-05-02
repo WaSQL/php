@@ -61,6 +61,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=firebirddb.queryResults(query,params)
+            print(outfile)
         #HANA
         if dbtype.startswith('hana'):
             try:
@@ -69,6 +70,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=hanadb.queryResults(query,params)
+            print(outfile)
         #MSSQL
         if dbtype.startswith('mssql'):
             try:
@@ -77,6 +79,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=mssqldb.queryResults(query,params)
+            print(outfile)
         #Mysql
         if dbtype.startswith('mysql'):
             try:
@@ -85,6 +88,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=mysqldb.queryResults(query,params)
+            print(outfile)
         #ORACLE
         if dbtype.startswith('oracle'):
             try:
@@ -93,6 +97,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=oracledb.queryResults(query,params)
+            print(outfile)
         #SNOWFLAKE
         if dbtype.startswith('snowflake'):
             try:
@@ -101,6 +106,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=snowflakedb.queryResults(query,params)
+            print(outfile)
         #SQLITE
         if dbtype.startswith('sqlite'):
             try:
@@ -109,6 +115,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=sqlitedb.queryResults(query,params)
+            print(outfile)
         #POSTGRES
         if dbtype.startswith('postgre'):
             try:
@@ -117,6 +124,7 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=postgresdb.queryResults(query,params)
+            print(outfile)
         #MSACCESS
         if dbtype.startswith('msaccess'):
             try:
@@ -125,22 +133,25 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=msaccessdb.queryResults(query,params)
+            print(outfile)
         #MSCSV
         if dbtype.startswith('mscsv'):
             try:
                 import mscsvdb
             except Exception as err:
                 common.abort(sys.exc_info(),err)
+            
             outfile=mscsvdb.queryResults(query,params)
-        print(outfile)
+            print(outfile)
         #MSEXCEL
         if dbtype.startswith('msexcel'):
             try:
                 import msexceldb
             except Exception as err:
                 common.abort(sys.exc_info(),err)
+            
             outfile=msexceldb.queryResults(query,params)
-        print(outfile)
+            print(outfile)
     else:
         print("Error: invalid database: {}".format(dbname))
 except Exception as err:

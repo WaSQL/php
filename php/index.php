@@ -1236,6 +1236,8 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	$htm=evalPHP(array($controller,$htm));
 	//check for translate tags
 	$htm=processTranslateTags($htm);
+	//check for chartjs tags
+	$htm=commonProcessChartjsTags($htm);
 	echo $htm;
 	echo $wasql_debugValueContent;
 	if(is_array($CONFIG['includes'])){
@@ -1245,27 +1247,8 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 			}
 		}
 	}
-	exit;
-    //if the page name or permalink ends in .html then write the static file.
-    if(preg_match('/\.(htm|html)$/i',$PAGE['name'])){
-		$afile="{$_SERVER['DOCUMENT_ROOT']}/{$PAGE['name']}";
-		setFileContents($afile,$htm);
-	}
-	elseif(strlen($PAGE['permalink']) && preg_match('/\.(htm|html)$/i',$PAGE['permalink'])){
-		$afile="{$_SERVER['DOCUMENT_ROOT']}/{$PAGE['permalink']}";
-		setFileContents($afile,$htm);
-	}
-	if($PAGE['_cache']==1 && !isUser() && count($_REQUEST)==2){
-		$progpath=dirname(__FILE__);
-		$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$TEMPLATE['_id']}.htm";
-		setFileContents($cachefile,$htm);
-	}
-	echo trim($htm);
-    	unset($htm);
-    	global $USER;
-    	$adate=date("Y-m-d H:i:s");
-    	//template_tracking
-    	if(!isset($CONFIG['template_tracking']) || $CONFIG['template_tracking']==1){
+	//template_tracking
+	if(!isset($CONFIG['template_tracking']) || $CONFIG['template_tracking']==1){
     	//update _adate,_auser, and _aip in the templates table
 		$updateopts=array(
 			'-table'	=> "_templates",
@@ -1279,7 +1262,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 			$updateopts['_auser']=$USER['_id'];
 		}
 		if(in_array('_adate',array_keys($TEMPLATE))){
-			$updateopts['_adate']=$adate;
+			$updateopts['_adate']='current_timestamp()';
 		}
 		if(count($updateopts) > 3){
 			$ok=editDBRecord($updateopts);
@@ -1302,7 +1285,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 			$updateopts['_auser']=$USER['_id'];
 		}
 		if(in_array('_adate',array_keys($PAGE))){
-			$updateopts['_adate']=$adate;
+			$updateopts['_adate']='current_timestamp()';
 		}
 		//update the _env int the _pages table if it exists
 		if(in_array('_env',array_keys($PAGE))){
@@ -1328,9 +1311,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		    }
 		}
 	}
-	unset($adate);
-    //add _access Record
-    addDBAccess();
+	exit;
 }
 else{
 	$PAGE=array('body'=>"PAGE NOT FOUND" . printValue($_REQUEST));

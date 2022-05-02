@@ -6910,6 +6910,132 @@ function processTranslateTags($htm){
 	}
 	return $htm;
 }
+//---------- begin function commonProcessChartjsTags
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* Every chartjs needs three things: type, data, and options
+* 	Type
+* 		bar, line, bubble, doughnut, pie, polarArea, radar, scatter
+* 
+* 	Datasets can have
+* 		data
+* 		label
+* 		borderColor
+* 		backgroundColor
+* 		fill
+* 		type
+* 		order
+* 
+*/
+function commonProcessChartjsTags($htm){
+	global $CONFIG;
+	if(!stringContains($htm,'<chartjs')){return $htm;}
+	loadExtrasJs(array('chart','chartjs-plugin-labels','chartjs-plugin-doughnutlabel'));
+	preg_match_all('/\<chartjs(.*?)\>(.+?)\<\/chartjs\>/ism',$htm,$chartjs,PREG_PATTERN_ORDER);
+	/* this returns an array of three arrays
+		0 = the whole chartjs tag
+		1 = the chartjs attributes
+		2 = the contents inside the chartjs tag - <dataset
+	*/
+	foreach($chartjs[0] as $i=>$chartjs_tag){
+		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
+		if(!isset($chartjs_attributes['id'])){
+			$chartjs_attributes['id']='chartjs_'.$i;
+		}
+		$chartjs_contents=$chartjs[2][$i];
+		//get dataset tags inside
+		preg_match_all('/\<(div|dataset|colors|options|labels)(.*?)\>(.+?)\<\/\1\>/ism',$chartjs_contents,$chartjs_inner,PREG_PATTERN_ORDER);
+		//echo printValue($chartjs_tags);exit;
+		/* this returns an array of three arrays
+			0 = the whole dataset tag
+			1 = the dataset attributes
+			2 = the contents inside the dataset tag - SQL, JSON are supported
+		*/
+		$replace_str='';
+		//replace the chartjs tag with HTML that will render the chart specified
+		foreach($chartjs_inner[0] as $t=>$chartjs_innertag){
+			$innertag_name=$chartjs_inner[1][$t];
+			if($innertag_name != 'div'){continue;}
+			$replace_str.=$chartjs_innertag;
+		}
+		$replace_str.='<div data-behavior="chartjs"';
+		$replace_str .= setTagAttributes($chartjs_attributes);
+		$replace_str .= '></div>'.PHP_EOL;
+		$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
+		$labels=array();
+		$colors=array();
+		foreach($chartjs_inner[0] as $t=>$chartjs_innertag){
+			$innertag_name=$chartjs_inner[1][$t];
+			$innertag_attributes=parseHtmlTagAttributes($chartjs_inner[2][$t]);
+			if(!isset($innertag_attributes['id'])){
+				$innertag_attributes['id']="chartjs_{$i}_{$innertag_name}_{$t}";
+			}
+			$innertag_contents=$chartjs_inner[3][$t];
+			$replace_str.='<'.$innertag_name;
+			$replace_str .= setTagAttributes($innertag_attributes);
+			$replace_str.='>';
+			if(preg_match('/^(select|with)/is',trim($innertag_contents))){
+				$db=$CONFIG['database'];
+				if(isset($chartjs_attributes['data-db'])){
+					$db=$chartjs_attributes['data-db'];
+				}
+				$recs=dbQueryResults($db,$innertag_contents);
+				if(isset($recs[0])){
+					$vals=array();
+					foreach($recs as $rec){
+						if(isset($rec['y']) && isset($rec['x'])){
+							$labels[]=$rec['x'];
+							$vals[]=$rec['y'];
+						}
+						elseif(isset($rec['value']) && isset($rec['label'])){
+							$labels[]=$rec['label'];
+							$vals[]=$rec['value'];
+						}
+						else{
+							foreach($rec as $k=>$v){
+								$vals[]=$v;
+							}
+						}
+						if(isset($rec['color'])){
+							$colors[]=$rec['color'];
+						}
+					}
+					$replace_str.=json_encode($vals);
+				}
+				else{
+					$replace_str.='[]';
+				}
+			}
+			else{
+				if($innertag_name=='options'){
+					$json=json_decode($innertag_contents,true);
+					if(is_array($json)){
+						$replace_str.=json_encode($json,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+					}
+					else{
+						$replace_str.=$innertag_contents;
+					}
+				}
+				else{
+					$replace_str.=$innertag_contents;
+				}
+			}
+			$replace_str.="</{$innertag_name}>".PHP_EOL;
+		}
+		if(count($labels)){
+			$replace_str .= '<labels>'.json_encode(array_values($labels)).'</labels>'.PHP_EOL;
+		}
+		if(count($colors)){
+			$replace_str .= '<colors>'.json_encode(array_values($colors)).'</colors>'.PHP_EOL;
+		}
+		$replace_str.='</div>'.PHP_EOL;
+		$htm=str_replace($chartjs_tag,$replace_str,$htm);
+	}
+	if(stringContains($htm,'<chartjs')){
+    	debugValue("chartjs Tag Error detected - perhaps a malformed 'chartjs' tag");
+	}
+	return $htm;
+}
 
 //---------- begin function renderView---------------------------------------
 /**

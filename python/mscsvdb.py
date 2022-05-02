@@ -55,7 +55,7 @@ def connect(params):
 	conn_str=s.join(conn_list)
 
 	try:
-		conn_mscsv = pyodbc.connect(conn_str, readonly=True, autocommit=True)
+		conn_mscsv = pyodbc.connect(conn_str,readonly=False, autocommit=True)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 

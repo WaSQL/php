@@ -755,6 +755,7 @@ function pyQueryResults($db,$query,$params=array()){
 		echo printValue($out);
 		exit;
 	}
+	//echo printValue($out);exit;
 	//return printValue($out);
 	//unlink($afile);
 	$jsvfile=$out['stdout'];
