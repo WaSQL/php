@@ -477,12 +477,12 @@ var wacss = {
 		for(let i=0;i<list.length;i++){
 			if(undefined==list[i].id){
 				console.log('Error in initChartJsBehavior: missing id attribute');
-				conso.log(list[i]);
+				console.log(list[i]);
 				continue;
 			}
 			if(undefined==list[i].dataset.type){
 				console.log('Error in initChartJsBehavior: missing data-type attribute');
-				conso.log(list[i]);
+				console.log(list[i]);
 				continue;
 			}
 			if(undefined==chartid && undefined!=list[i].dataset.initialized){continue;}
@@ -490,7 +490,7 @@ var wacss = {
 			let datadiv=document.querySelector('#'+list[i].id+'_data');
 			if(undefined==datadiv){
 				console.log('Error in initChartJsBehavior: missing data div attribute');
-				conso.log(list[i]);
+				console.log(list[i]);
 				continue;
 			}
 			//setup the config: type, data, options
