@@ -6913,18 +6913,10 @@ function processTranslateTags($htm){
 //---------- begin function commonProcessChartjsTags
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
-* Every chartjs needs three things: type, data, and options
+* Every chartjs needs three things: data-type, data, and options
 * 	Type
 * 		bar, line, bubble, doughnut, pie, polarArea, radar, scatter
 * 
-* 	Datasets can have
-* 		data
-* 		label
-* 		borderColor
-* 		backgroundColor
-* 		fill
-* 		type
-* 		order
 * 
 */
 function commonProcessChartjsTags($htm){
@@ -7033,6 +7025,81 @@ function commonProcessChartjsTags($htm){
 	}
 	if(stringContains($htm,'<chartjs')){
     	debugValue("chartjs Tag Error detected - perhaps a malformed 'chartjs' tag");
+	}
+	return $htm;
+}
+//---------- begin function commonProcessDatalistTags
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* Every chartjs needs three things: data-type, data, and options
+* 	Type
+* 		bar, line, bubble, doughnut, pie, polarArea, radar, scatter
+* 
+* 
+*/
+function commonProcessDBListRecordsTags($htm){
+	global $CONFIG;
+	global $PAGE;
+	if(!stringContains($htm,'<dblistrecords')){return $htm;}
+	preg_match_all('/\<dblistrecords(.*?)\>(.+?)\<\/dblistrecords\>/ism',$htm,$dblistrecords,PREG_PATTERN_ORDER);
+	/* this returns an array of three arrays
+		0 = the whole datalist tag
+		1 = the datalist attributes
+		2 = the contents inside the datalist tag
+	*/
+	foreach($dblistrecords[0] as $i=>$dblistrecords_tag){
+		$dblistrecords_attributes=array();
+		if(preg_match_all('/([a-z\-\_0-9]+?)\=\"(.+?)\"/',$dblistrecords[1][$i],$matches,PREG_PATTERN_ORDER)){
+			foreach($matches[1] as $m=>$akey){
+				$dblistrecords_attributes[$akey]=$matches[2][$m];
+			}
+		}
+		$divid='dblistrecords_'.$i;
+		$dblistrecords_contents=$dblistrecords[2][$i];
+		$replace_str='';
+		$replace_str.='<div id="'.$divid.'">'.PHP_EOL;
+		$opts=array(
+			'-action'=>'/php/index.php',
+			'-onsubmit'=>"return pagingSubmit(this,'{$divid}');",
+			'-formname'=>"dblistrecordsform_{$i}",
+			'setprocessing'=>0
+		);
+		foreach($dblistrecords_attributes as $k=>$v){
+			if(!isset($opts[$k])){
+				$opts[$k]=$v;
+			}
+		}
+		
+		if(isset($opts['db'])){
+			$db=$opts['db'];
+			unset($opts['db']);
+		}
+		else{
+			$db=$CONFIG['database'];
+		}
+		if(isset($opts['-table'])){
+
+		}
+		elseif(preg_match('/^(select|with)/is',trim($dblistrecords_contents))){
+				$opts['-query']=trim($dblistrecords_contents);
+		}
+		else{
+			$opts['-list']=json_decode($dblistrecords_contents,true);
+		}
+		$json=array(
+			'db'=>$db,
+			'opts'=>$opts,
+			'id'=>$dblistrecords_attributes['id']
+		);
+		$opts['_dblistrecords']=1;
+		$opts['_dblistrecords_params']=base64_encode(json_encode($json));
+		$replace_str.=dbListRecords($db,$opts);
+		//$replace_str.=printValue($opts).printValue($dblistrecords_attributes);
+		$replace_str.='</div>'.PHP_EOL;
+		$htm=str_replace($dblistrecords_tag,$replace_str,$htm);
+	}
+	if(stringContains($htm,'<dblistrecords')){
+    	debugValue("dblistrecords Tag Error detected - perhaps a malformed 'dblistrecords' tag");
 	}
 	return $htm;
 }

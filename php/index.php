@@ -245,6 +245,21 @@ if(isset($_REQUEST['_pushfile'])){
 	}
  	$ok=pushFile($afile,$params);
 }
+//_dblistrecords
+if(isset($_REQUEST['_dblistrecords']) && $_REQUEST['_dblistrecords']==1 && isset($_REQUEST['_dblistrecords_params'])){
+	$params=json_decode(base64_decode($_REQUEST['_dblistrecords_params']),true);
+	$opts=$params['opts'];
+	$db=$params['db'];
+	$json=array(
+		'db'=>$params['db'],
+		'opts'=>$params['opts'],
+		'id'=>$params['id']
+	);
+	$opts['_dblistrecords']=1;
+	$opts['_dblistrecords_params']=base64_encode(json_encode($json));
+	echo dbListRecords($db,$opts);
+	exit;
+}
 //push export
 if(isset($_REQUEST['_pushexport']) && $_REQUEST['_pushexport']==1 && isset($_REQUEST['_pushparams'])){
 	$params=json_decode(base64_decode($_REQUEST['_pushparams']),true);
@@ -1238,6 +1253,8 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	$htm=processTranslateTags($htm);
 	//check for chartjs tags
 	$htm=commonProcessChartjsTags($htm);
+	//check for datalist tags
+	$htm=commonProcessDBListRecordsTags($htm);
 	echo $htm;
 	echo $wasql_debugValueContent;
 	if(is_array($CONFIG['includes'])){

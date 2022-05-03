@@ -564,6 +564,13 @@ var wacss = {
 			if(undefined != list[i].dataset.title){
 				lconfig.options.title={display:true,text:list[i].dataset.title};
 			}
+			//options - scales - x,y - stacked
+			if(undefined != list[i].dataset.stacked && list[i].dataset.stacked.toLowerCase()=='true'){
+				lconfig.options.scales={
+					xAxes:[{stacked:true}],
+					yAxes:[{stacked:true}]
+				};
+			}
 			//options - plugins - legend - display
 			if(undefined != list[i].dataset.legenddisplay && list[i].dataset.legenddisplay.toLowerCase()=='false'){
 				lconfig.options.legend={display:false};
