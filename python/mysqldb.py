@@ -117,6 +117,7 @@ def executeSQL(query,params):
 		cur_mysql, conn_mysql =  connect(params)
 		#now execute the query
 		cur_mysql.execute(query)
+		conn_mysql.commit()
 		return True
 		
 	except Exception as err:

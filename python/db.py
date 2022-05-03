@@ -103,3 +103,71 @@ def queryResults(dbname,query,params={}):
                 common.abort(sys.exc_info(),err)
 
             return msexceldb.queryResults(query,params)
+
+#---------- begin function executeSQL ----------
+# @describe returns a dictionary of records returned from query
+# @param dbname str - database name from database tag in config.xml
+# @param query str - SQL query to run
+# @return dictionary - recordsets
+# @usage recs=db.executeSQL('dbtest','select * from states')
+def executeSQL(dbname,query,params={}):
+    if dbname in config.DATABASE:
+        #add DATABASE settings to params
+        for k in config.DATABASE[dbname]:
+            params[k] = config.DATABASE[dbname][k]
+        #HANA
+        if config.DATABASE[dbname]['dbtype'].startswith('hana'):
+            try:
+                import hanadb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+            
+            return hanadb.executeSQL(query,params)
+        #MSSQL
+        if config.DATABASE[dbname]['dbtype'].startswith('mssql'):
+            try:
+                import mssqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mssqldb.executeSQL(query,params)
+        #Mysql
+        if config.DATABASE[dbname]['dbtype'].startswith('mysql'):
+            try:
+                import mysqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mysqldb.executeSQL(query,params)
+        #ORACLE
+        if config.DATABASE[dbname]['dbtype'].startswith('oracle'):
+            try:
+                import oracledb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return oracledb.executeSQL(query,params)
+        #SNOWFLAKE
+        if config.DATABASE[dbname]['dbtype'].startswith('snowflake'):
+            try:
+                import snowflakedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+            
+            return snowflakedb.executeSQL(query,params)
+        #SQLITE
+        if config.DATABASE[dbname]['dbtype'].startswith('sqlite'):
+            try:
+                import sqlitedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return sqlitedb.executeSQL(query,params)
+        #POSTGRES
+        if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
+            try:
+                import postgresdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return postgresdb.executeSQL(query,params)
