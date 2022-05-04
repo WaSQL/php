@@ -70,6 +70,7 @@ def executeSQL(query,params):
 		cur_msaccess, conn_msaccess =  connect(params)
 		#now execute the query
 		cur_msaccess.execute(query)
+		conn_msaccess.commit()
 		return True
 		
 	except Exception as err:

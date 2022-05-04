@@ -175,6 +175,7 @@ def executeSQL(query,params):
 		cur_oracle, conn_oracle =  connect(params)
 		#now execute the query
 		cur_oracle.execute(query)
+		conn_oracle.commit()
 		return True
 		
 	except Exception as err:

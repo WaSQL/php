@@ -120,6 +120,7 @@ def executeSQL(query,params):
 		cur_postgres, conn_postgres =  connect(params)
 		#now execute the query
 		cur_postgres.execute(query)
+		conn_postgres.commit()
 		return True
 	except Exception as err:
 		exc_type, exc_obj, exc_tb = sys.exc_info()

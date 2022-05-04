@@ -116,6 +116,7 @@ def executeSQL(query,params):
 		cur_mssql, conn_mssql =  connect(params)
 		#now execute the query
 		cur_mssql.execute(query)
+		conn_mssql.commit()
 		return True
 		
 	except Exception as err:

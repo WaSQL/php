@@ -78,6 +78,7 @@ def executeSQL(query,params):
 		cur_mscsv, conn_mscsv =  connect(params)
 		#now execute the query
 		cur_mscsv.execute(query)
+		conn_mscsv.commit()
 		return True
 		
 	except Exception as err:

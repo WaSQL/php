@@ -119,6 +119,7 @@ def executeSQL(query,params):
 		cur_hana, conn_hana =  connect(params)
 		#now execute the query
 		cur_hana.execute(query)
+		conn_hana.commit()
 		return True
 		
 	except Exception as err:

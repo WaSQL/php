@@ -103,6 +103,7 @@ def executeSQL(query,params):
 		cur_sqlite, conn_sqlite =  connect(params)
 		#now execute the query
 		cur_sqlite.execute(query)
+		conn_sqlite.commit()
 		return True
 		
 	except Exception as err:

@@ -78,6 +78,7 @@ def executeSQL(query,params):
         cur_firebird, conn_firebird =  connect(params)
         #now execute the query
         cur_firebird.execute(query)
+        conn_firebird.commit()
         return True
         
     except Exception as err:

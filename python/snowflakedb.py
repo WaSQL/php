@@ -132,6 +132,7 @@ def executeSQL(query,params):
 		cur_snowflake, conn_snowflake =  connect(params)
 		#now execute the query
 		cur_snowflake.execute(query)
+		conn_snowflake.commit()
 		return True
 		
 	except Exception as err:

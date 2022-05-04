@@ -1122,18 +1122,6 @@ function commonSearchFiltersForm($params=array()){
 		    	$rtn .= '			</div>'.PHP_EOL;
 			}
 		}
-		//export
-		if(!empty($params['-export'])){
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
-	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="'.$btnclass.'" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_bold"></span></button>'.PHP_EOL;
-	    	$rtn .= '			</div>'.PHP_EOL;
-	    	$rtn .= '			<div style="margin:0 3px;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
-	    	// if(!empty($params['-export_file'])){
-	    	// 	$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
-		    // 	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
-		    // 	$rtn .= '			</div>'.PHP_EOL;
-	    	// }
-		}
 		$rtn .= '		</div>'.PHP_EOL;
 	}
 
@@ -1178,7 +1166,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '		</div>'.PHP_EOL;
-		if(isset($params['-navonly']) && !empty($params['-export'])){
+		if(!empty($params['-export'])){
 			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
 	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="'.$btnclass.'" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_bold"></span></button>'.PHP_EOL;
 	    	$rtn .= '			</div>'.PHP_EOL;
