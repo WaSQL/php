@@ -1605,32 +1605,8 @@ function buildIECompatible($version=0){
 	}
 //---------- begin function buildChartJsData--------------------
 /**
-* @describe
-*	returns a JSON data structure to use with ChartJs charts
-* @param recs array - array of record sets. each record set needs three fields: xval, yval, and setval
-* @param [params] - optional parameters
-*		{setval}_attribute will set for the following attributes
-*			fill 	Boolean 	If true, fill the area under the line
-*			lineTension 	Number 	Bezier curve tension of the line. Set to 0 to draw straightlines. Note This was renamed from 'tension' but the old name still works.
-*			backgroundColor 	Color 	The fill color under the line. You can specify the color as a string in hexadecimal, RGB, or HSL notations
-*			borderWidth 	Number 	The width of the line in pixels
-*			borderColor 	Color 	The color of the line.
-*			borderCapStyle 	String 	Cap style of the line.
-*			borderDash 	Array<Number> 	Length and spacing of dashes.
-*			borderDashOffset 	Number 	Offset for line dashes.
-*			borderJoinStyle 	String 	Line joint style.
-*			pointBorderColor 	Color or Array<Color> 	The border color for points.
-*			pointBackgroundColor 	Color or Array<Color> 	The fill color for points
-*			pointBorderWidth 	Number or Array<Number> 	The width of the point border in pixels
-*			pointRadius 	Number or Array<Number> 	The radius of the point shape. If set to 0, nothing is rendered.
-*			pointHoverRadius 	Number or Array<Number> 	The radius of the point when hovered
-*			hitRadius 	Number or Array<Number> 	The pixel size of the non-displayed point that reacts to mouse events
-*			pointHoverBackgroundColor 	Color or Array<Color> 	Point background color when hovered
-*			pointHoverBorderColor 	Color or Array<Color> 	Point border color when hovered
-*			pointHoverBorderWidth 	Number or Array<Number> 	Border width of point when hovered
-*			pointStyle 	String or Array<String> 	The style of point. Options include 'circle', 'triangle', 'rect', 'rectRot', 'cross', 'crossRot', 'star', 'line', and 'dash'
-* @return json string
-* @usage $buildChartJsData($recs);
+* @deprecated use chartjs tag instead
+* @exclude - depreciated
 */
 function buildChartJsData($recs,$params=array()){
 	//if the first parameter is a string, assume it is a query
@@ -5084,7 +5060,7 @@ function buildFormSelectYear($name,$params=array()){
 * <?=buildFormSignature('sign',$params);?>
 */
 function buildFormSignature($name,$params=array()){
-	//return $name.printValue($params);
+	loadExtrasJs('html5');
 	global $USER;
 	$rtn='';
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -5133,6 +5109,10 @@ function buildFormSignature($name,$params=array()){
 	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
 	//type to sign
 	if(!isset($params['data-input']) || $params['data-input'] != 0){
+		if(isset($params['data-font'])){
+			$rtn.='<div style="display:none;">'.PHP_EOL;
+			$_REQUEST["{$name}_font"]=$params['data-font'];
+		}
 		$opts=array(
 			'andragogy'=>'Andragogy',
 			'high_summit'=>'High Summit',
@@ -5146,6 +5126,9 @@ function buildFormSignature($name,$params=array()){
 			$rtn .='<div style="float:left;font-size:1px;font-family:'.$font.';">.</div>';
 		}
 		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$name.'_font','style'=>'font-size:0.9rem;width:100px;'));
+		if(isset($params['data-font'])){
+			$rtn.='</div>'.PHP_EOL;
+		}
 		$rtn .= '<input type="text" style="flex:1;width:100%;min-width:150px" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
 	}
 	if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
@@ -6912,11 +6895,14 @@ function processTranslateTags($htm){
 }
 //---------- begin function commonProcessChartjsTags
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-* Every chartjs needs three things: data-type, data, and options
-* 	Type
-* 		bar, line, bubble, doughnut, pie, polarArea, radar, scatter
-* 
+* @describe function to process chartjs tags. called automatically. 
+* @return htm - html for the chartjs module
+* @usage
+* <chartjs data-type="bar" data-bordercolor="#000">
+* 	<dataset data-label="State counts per country">
+* 		select count(*) as value,country as value from states group by country
+* 	</dataset>
+* </chartjs>
 * 
 */
 function commonProcessChartjsTags($htm){
@@ -7028,14 +7014,17 @@ function commonProcessChartjsTags($htm){
 	}
 	return $htm;
 }
-//---------- begin function commonProcessDatalistTags
+//---------- begin function commonProcessDBListRecordsTags
 /**
-* @exclude  - this function is for internal use only and thus excluded from the manual
-* Every chartjs needs three things: data-type, data, and options
-* 	Type
-* 		bar, line, bubble, doughnut, pie, polarArea, radar, scatter
-* 
-* 
+* @describe function to process dblistrecords tags. called automatically. 
+* @return htm - table
+* @usage
+* <dblistrecords -table="states" -tableclass="table striped">
+* </dblistrecords>
+*  OR
+* <dblistrecords -tableclass="table striped">
+* select name,code from states
+* </dblistrecords>
 */
 function commonProcessDBListRecordsTags($htm){
 	global $CONFIG;
