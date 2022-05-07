@@ -5097,7 +5097,7 @@ function buildFormSignature($name,$params=array()){
 	$clear_id=$name.'_clear';
 	$base64image='';
 	$barid=$params['id'].'_topbar';
-	$rtn .= '	<div id="'.$barid.'"';
+	$rtn .= '	<div style="position:relative;" id="'.$barid.'"';
 	if(isset($params['displayif'])){
 		$rtn .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
