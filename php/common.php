@@ -6949,6 +6949,8 @@ function commonProcessChartjsTags($htm){
 				$innertag_attributes['id']="chartjs_{$i}_{$innertag_name}_{$t}";
 			}
 			$innertag_contents=$chartjs_inner[3][$t];
+			//process?
+			$process='';
 			if(isset($innertag_attributes['data-process'])){
 				$process=$innertag_attributes['data-process'];
 			}
@@ -6956,6 +6958,9 @@ function commonProcessChartjsTags($htm){
 				$process=$innertag_attributes['-results_eval'];
 				unset($innertag_attributes['-results_eval']);
 				$innertag_attributes['data-process']=$process;
+			}
+			elseif(isset($chartjs_attributes['data-process'])){
+				$process=$chartjs_attributes['data-process'];
 			}
 			else{
 				$process='';
