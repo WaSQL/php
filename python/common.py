@@ -18,6 +18,7 @@ try:
     import base64
     import urllib.parse
     import json
+    import smtplib
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -460,6 +461,73 @@ def parseCodeBlocks(str):
         repstr = "<?py{}?>".format(match)
         str = str_replace(repstr,rtn,str)
     return str
+
+#---------- begin function sendMail ----------
+# @describe sends email
+# @param dictionary or parameters
+#   smtp - string - SMTP server address
+#   [port] - integer - optional port 
+#   to - string - email addresses to send to
+#   [cc] - string - email addresses to cc
+#   [bcc] - string - email addresses to bcc
+#   from - string - email address to send from
+#   subject - string - email subject
+#   message - string - email message
+#   [attach] - string -  full file path to file to attach
+# @return mixed true or error message
+# @usage ok=common.sendmail(**params)
+# @reference https://www.tutorialspoint.com/python/python_sending_email.htm
+def sendMail(params):
+    #confirm required info
+
+    #create a unique marker
+    marker = "WASQLPYTHONSENDMAILMARKER"
+
+    # Define the main headers.
+    part1 =  "From: <{}>".format(params['from'])+os.linesep
+    part1 += "To: <{}>".format(params['to'])+os.linesep
+    part1 += "Subject: {}".format(params['subject'])+os.linesep
+    part1 += "MIME-Version: 1.0"+os.linesep
+    part1 += "Content-Type: multipart/mixed; boundary={}".format(marker)+os.linesep
+    part1 += "--{}".format(marker)+os.linesep
+
+    # Define the message action
+    part2 = "Content-Type: text/plain"+os.linesep
+    part2 += "Content-Transfer-Encoding:8bit"+os.linesep+os.linesep
+    part2 += params['message']+os.linesep
+    part2 += "--{}".format(marker)
+
+    message = part1 + part2
+
+    if(attach in params):
+        message += os.linesep
+        # Read a file and encode it into base64 format
+        open(params['attach'], "rb")
+        filecontent = fo.read()
+        fo.close()
+        encodedcontent = base64.b64encode(filecontent)  # base64
+        # Define the attachment section
+        part3 =  "Content-Type: multipart/mixed; name=\"{}\"".format(params['attach'])+os.linesep
+        part3 += "Content-Transfer-Encoding:base64"+os.linesep
+        part3 += "Content-Disposition: attachment; filename={}".format(params['attach'])+os.linesep
+        part3 += encodedcontent+os.linesep
+        part3 += "--{}".format(marker)
+        message += part3
+
+    message += "--"+os.linesep
+
+    try:
+        if(port in params):
+            smtpObj = smtplib.SMTP(params['smtp'],params['port'])
+        else:
+            smtpObj = smtplib.SMTP(params['smtp'])
+
+        smtpObj.sendmail(params['from'], params['to'], message)
+        return 1
+
+    except Exception as err:
+        common.abort(sys.exc_info(),err)
+        return err
 
 #---------- begin function  ----------
 # @exclude internal use and excluded from docs
