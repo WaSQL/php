@@ -6949,6 +6949,22 @@ function commonProcessChartjsTags($htm){
 				$innertag_attributes['id']="chartjs_{$i}_{$innertag_name}_{$t}";
 			}
 			$innertag_contents=$chartjs_inner[3][$t];
+			//process?
+			$process='';
+			if(isset($innertag_attributes['data-process'])){
+				$process=$innertag_attributes['data-process'];
+			}
+			elseif(isset($innertag_attributes['-results_eval'])){
+				$process=$innertag_attributes['-results_eval'];
+				unset($innertag_attributes['-results_eval']);
+				$innertag_attributes['data-process']=$process;
+			}
+			elseif(isset($chartjs_attributes['data-process'])){
+				$process=$chartjs_attributes['data-process'];
+			}
+			else{
+				$process='';
+			}
 			$replace_str.='<'.$innertag_name;
 			$replace_str .= setTagAttributes($innertag_attributes);
 			$replace_str.='>';
@@ -6958,6 +6974,9 @@ function commonProcessChartjsTags($htm){
 					$db=$chartjs_attributes['data-db'];
 				}
 				$recs=dbQueryResults($db,$innertag_contents);
+				if(strlen($process)){
+					$recs=call_user_func($process,$recs,$innertag_attributes,$chartjs_attributes);
+				}
 				if(isset($recs[0])){
 					$vals=array();
 					foreach($recs as $rec){
@@ -6988,6 +7007,9 @@ function commonProcessChartjsTags($htm){
 				if($innertag_name=='options'){
 					$json=json_decode($innertag_contents,true);
 					if(is_array($json)){
+						if(strlen($process)){
+							$json=call_user_func($process,$json,$innertag_attributes,$chartjs_attributes);
+						}
 						$replace_str.=json_encode($json,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
 					else{
@@ -7053,6 +7075,10 @@ function commonProcessDBListRecordsTags($htm){
 			'-formname'=>"dblistrecordsform_{$i}",
 			'setprocessing'=>0
 		);
+		if(isset($dblistrecords_attributes['data-process'])){
+			$dblistrecords_attributes['-results_eval']=$dblistrecords_attributes['data-process'];
+			unset($dblistrecords_attributes['data-process']);
+		}
 		foreach($dblistrecords_attributes as $k=>$v){
 			if(!isset($opts[$k])){
 				$opts[$k]=$v;
