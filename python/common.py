@@ -277,7 +277,7 @@ def getCSVRecords(afile,params={}):
     #read a small portion to determine the dialect
     with open(afile, mode="r", encoding="utf-8") as csvfile:
         sample = csvfile.read(1024)
-        has_header = csv.Sniffer().has_header(sample)
+        has_header = csv.Sniffer().has_header(sample) # this variable isn't used, is it supposed to?
         deduced_dialect = csv.Sniffer().sniff(sample)
     recs=[]
     rownum=0
@@ -286,14 +286,14 @@ def getCSVRecords(afile,params={}):
         # list to store the names of columns
         fields = next(reader)
         for row in reader:
-            rownum=rownum+1
-            if(start in params && params['start'] > rownum):
+            rownum+=1
+            if ('start' in params and params['start'] > rownum):
                 continue
             #convert row to dictionary
             rec=dict(zip(fields, row))
             #append row to recs list
             recs.append(rec)
-            if(stop in params && params['stop'] <= rownum):
+            if ('stop' in params and params['stop'] <= rownum):
                 break
     #return recs list
     return recs
