@@ -277,12 +277,17 @@ def getCSVRecords(afile,params={}):
     #read a small portion to determine the dialect
     with open(afile, mode="r", encoding="utf-8") as csvfile:
         sample = csvfile.read(1024)
-        has_header = csv.Sniffer().has_header(sample) # this variable isn't used, is it supposed to?
-        deduced_dialect = csv.Sniffer().sniff(sample)
+         try:
+            deduced_dialect = csv.Sniffer().sniff(sample)
+        except Exception as err:
+            deduced_dialect = None
     recs=[]
     rownum=0
     with open(afile, mode="r", encoding="utf-8") as csvfile:
-        reader = csv.reader(csvfile, deduced_dialect)
+        if(type(deduced_dialect)==None):
+            reader = csv.reader(csvfile, delimiter=',')
+        else:
+            reader = csv.reader(csvfile, deduced_dialect)
         # list to store the names of columns
         fields = next(reader)
         for row in reader:
