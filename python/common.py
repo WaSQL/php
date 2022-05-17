@@ -273,7 +273,7 @@ def getParentPath(path):
 #   [stop]  - int - row number to stop at
 # @usage recs = common.getCSVRecords(afile)
 # @usage recs = common.getCSVRecords(afile,**params)
-def getCSVRecords(afile,params):
+def getCSVRecords(afile,params={}):
     #read a small portion to determine the dialect
     with open(afile, mode="r", encoding="utf-8") as csvfile:
         sample = csvfile.read(1024)
