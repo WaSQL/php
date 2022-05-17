@@ -171,3 +171,95 @@ def executeSQL(dbname,query,params={}):
                 common.abort(sys.exc_info(),err)
 
             return postgresdb.executeSQL(query,params)
+
+#---------- begin function connect ----------
+# @describe returns an object with db connection and cursor
+# @param dbname str - database name from database tag in config.xml
+# @return object - connection details
+# @usage cursor, conn, cursor=db.connect('dbtest')
+def connect(dbname,params={}):
+    if dbname in config.DATABASE:
+        dbtype=config.DATABASE[dbname]['dbtype']
+        #add DATABASE settings to params
+        for k in config.DATABASE[dbname]:
+            params[k] = config.DATABASE[dbname][k]
+        #HANA
+        if dbtype.startswith('hana'):
+            try:
+                import hanadb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return hanadb.connect(params)
+        #MSSQL
+        if dbtype.startswith('mssql'):
+            try:
+                import mssqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mssqldb.connect(params)
+        #Mysql
+        if dbtype.startswith('mysql'):
+            try:
+                import mysqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mysqldb.connect(params)
+        #ORACLE
+        if dbtype.startswith('oracle'):
+            try:
+                import oracledb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return oracledb.connect(params)
+        #SNOWFLAKE
+        if dbtype.startswith('snowflake'):
+            try:
+                import snowflakedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return snowflakedb.connect(params)
+        #SQLITE
+        if dbtype.startswith('sqlite'):
+            try:
+                import sqlitedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return sqlitedb.connect(params)
+        #POSTGRES
+        if dbtype.startswith('postgre'):
+            try:
+                import postgresdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return postgresdb.connect(params)
+        #MSACCESS
+        if dbtype.startswith('msaccess'):
+            try:
+                import msaccessdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return msaccessdb.connect(params)
+        #MSCSV
+        if dbtype.startswith('mscsv'):
+            try:
+                import mscsvdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mscsvdb.connect(params)
+        #MSEXCEL
+        if dbtype.startswith('msexcel'):
+            try:
+                import msexceldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return msexceldb.connect(params)
