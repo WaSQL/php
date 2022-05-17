@@ -275,13 +275,13 @@ def getParentPath(path):
 # @usage recs = common.getCSVRecords(afile,**params)
 def getCSVRecords(afile,params):
     #read a small portion to determine the dialect
-    with open(afile, , mode="r", encoding="utf-8") as csvfile:
+    with open(afile, mode="r", encoding="utf-8") as csvfile:
         sample = csvfile.read(1024)
         has_header = csv.Sniffer().has_header(sample)
         deduced_dialect = csv.Sniffer().sniff(sample)
     recs=[]
     rownum=0
-    with open(afile, , mode="r", encoding="utf-8") as csvfile:
+    with open(afile, mode="r", encoding="utf-8") as csvfile:
         reader = csv.reader(csvfile, deduced_dialect)
         # list to store the names of columns
         fields = next(reader)
