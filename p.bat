@@ -1,1 +1,1 @@
-php postedit\postedit.php %1
+C:\Users\mdidericksen\php\php.exe postedit\postedit.php %1
