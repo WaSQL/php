@@ -277,7 +277,7 @@ def getCSVRecords(afile,params={}):
     #read a small portion to determine the dialect
     with open(afile, mode="r", encoding="utf-8") as csvfile:
         sample = csvfile.read(1024)
-         try:
+        try:
             deduced_dialect = csv.Sniffer().sniff(sample)
         except Exception as err:
             deduced_dialect = None
