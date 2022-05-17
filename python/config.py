@@ -33,13 +33,16 @@ with open(configfile) as fd:
 #DATABASE
 DATABASE = {}
 for db in ALLCONFIG['hosts']['database']:
+    if type(db) == str:
+        db = ALLCONFIG['hosts']['database'][db]
     key = db['name']
     DATABASE[key] = db
 
 #CONFIG 
 CONFIG = {}
 for chost in ALLCONFIG['hosts']['host']:
-    chost = ALLCONFIG['hosts']['host'][chost]
+    if type(chost) == str:
+        chost = ALLCONFIG['hosts']['host'][chost]
     if 'name' in chost:
         if chost['name'] == HTTP_HOST:
             #load the allhost keys 
