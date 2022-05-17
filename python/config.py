@@ -39,6 +39,7 @@ for db in ALLCONFIG['hosts']['database']:
 #CONFIG 
 CONFIG = {}
 for chost in ALLCONFIG['hosts']['host']:
+    chost = ALLCONFIG['hosts']['host'][chost]
     if 'name' in chost:
         if chost['name'] == HTTP_HOST:
             #load the allhost keys 
