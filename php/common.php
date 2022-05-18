@@ -3043,7 +3043,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$checked_cnt++;
         	$checked_vals[]=$dval;
 		}
-    	$litags .= ' /><label for="'.$id.'" style="margin-left:10px;"> '.$dval.'</label></div>'.PHP_EOL;
+    	$litags .= ' /><label for="'.$id.'" style="margin-left:10px;white-space:nowrap"> '.$dval.'</label></div>'.PHP_EOL;
 	}
 
 
