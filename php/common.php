@@ -3015,7 +3015,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$checked_vals=array();
 	foreach($pairs as $tval=>$dval){
 		$id=$params['id'].'_'.$tval;
-    	$litags .= '		<div class="dropdown-item">';
+    	$litags .= '		<div style="display:flex;justify-content:flex-start;align-items:center;">';
     	if(!isNum($tval) && $tval=='--'){
 			$litags .= '--------</div>'.PHP_EOL;
 			continue;
@@ -3043,7 +3043,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$checked_cnt++;
         	$checked_vals[]=$dval;
 		}
-    	$litags .= ' /><label for="'.$id.'"> '.$dval.'</label></div>'.PHP_EOL;
+    	$litags .= ' /><label for="'.$id.'" style="margin-left:10px;"> '.$dval.'</label></div>'.PHP_EOL;
 	}
 
 
@@ -3881,6 +3881,15 @@ function buildFormTime($name,$params=array()){
 function buildFormWhiteboard($name,$params=array()){
 	if(!isset($params['displayname'])){$params['displayname']='Draw Below:';}
 	if(!isset($params['erase'])){$params['clear']='<span class="icon-erase"></span> Erase';}
+	if(!isset($params['style'])){
+		$params['style']='position:relative;';
+	}
+	elseif(!stringContains($params['style'],'position')){
+		$params['style'].=';position:relative;';
+	}
+	$params['style']='width:100%;height:100%;position:relative;';
+	$params['data-input']=0;
+	//return printValue($params);
 	return buildFormSignature($name,$params);
 }
 //---------- begin function buildFormYesNo--------------------
@@ -5130,10 +5139,10 @@ function buildFormSignature($name,$params=array()){
 			$rtn.='</div>'.PHP_EOL;
 		}
 		$rtn .= '<input type="text" style="flex:1;width:100%;min-width:150px" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
-	}
-	if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
-		$rtn .= '			<button title="sign" type="button" class="btn" id="'.$name.'_sign">'.$params['sign'].'</button>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="'.$USER['signature'].'" alt="my signature" name="'.$name.'_user" id="'.$name.'_user" /></div>'.PHP_EOL;
+		if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
+			$rtn .= '			<button title="sign" type="button" class="btn" id="'.$name.'_sign">'.$params['sign'].'</button>'.PHP_EOL;
+			$rtn .= '			<div style="display:none;"><img src="'.$USER['signature'].'" alt="my signature" name="'.$name.'_user" id="'.$name.'_user" /></div>'.PHP_EOL;
+		}
 	}
 	if(isset($params['-value']) && strlen($params['-value'])){
 		$reset_id=$name.'_reset';
@@ -5144,18 +5153,17 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
 		$rtn .= '			<button title="clear" type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;
 	}
-
-
 	$rtn .= '		</div>'.PHP_EOL;
 	$rtn .= '	</div>'.PHP_EOL;
+	$rtn .= '<div style="width:800px;height:300px;">'.PHP_EOL;
 	$rtn .= '    <canvas';
 	if(isset($params['style'])){
 		$rtn .= ' style="'.$params['style'].'"';
 	}
-	if(!isset($params['style']) || !preg_match('/width/i',$params['style'])){
+	if(!isset($params['style']) || !stringContains($params['style'],'width')){
 		$rtn .= ' width="'.$params['width'].'"';
 	}
-	if(!isset($params['style']) || !preg_match('/height/i',$params['style'])){
+	if(!isset($params['style']) || !stringContains($params['style'],'height')){
 		$rtn .= ' height="'.$params['height'].'"';
 	}
 	if(isset($params['data-pencolor'])){
@@ -5165,6 +5173,7 @@ function buildFormSignature($name,$params=array()){
 		$rtn .= ' data-color="'.$params['data-color'].'"';
 	}
 	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" data-barid="'.$barid.'" class="w_signature"></canvas>'.PHP_EOL;
+	$rtn .= '	</div>'.PHP_EOL;
 	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$name.'"></textarea></div>'.PHP_EOL;
 	$rtn .= '    <input type="hidden" name="'.$name.'_inline" value="1" />'.PHP_EOL;
 	$rtn .= buildOnLoad("resizeSignatureWidthHeight();");
