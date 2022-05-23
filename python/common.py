@@ -514,10 +514,10 @@ def sendMail(params):
 
     message = part1 + part2
 
-    if(attach in params):
+    if('attach' in params):
         message += os.linesep
         # Read a file and encode it into base64 format
-        open(params['attach'], "rb")
+        fo = open(params['attach'], "rb")
         filecontent = fo.read()
         fo.close()
         encodedcontent = base64.b64encode(filecontent)  # base64
@@ -532,7 +532,7 @@ def sendMail(params):
     message += "--"+os.linesep
 
     try:
-        if(port in params):
+        if('port' in params):
             smtpObj = smtplib.SMTP(params['smtp'],params['port'])
         else:
             smtpObj = smtplib.SMTP(params['smtp'])
