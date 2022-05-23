@@ -85,9 +85,11 @@ def connect(params):
 	elif 'dbhost' in params:
 		dbconfig['account'] = params['dbhost'].replace(".snowflakecomputing.com","",1)
 	else:
-		print("Missing dbhost or dbaccount attribute in database tag named '{}'".format(params['name']))
-		sys.exit(123)
-
+		try:
+			dbconfig['account'] = params['name']
+		except:
+			print("Missing dbhost or dbaccount attribute in database tag named '{}'".format(params['name']))
+			sys.exit(123)
 	if 'dbuser' in params:
 		dbconfig['user'] = params['dbuser']
 
@@ -107,9 +109,14 @@ def connect(params):
 		dbconfig['role'] = params['dbrole']
 
 	try:
-		conn_snowflake = sfc.connect(**dbconfig)
+		conn_snowflake = sfc.connect(account=params['account'], user=params['user'],
+               password=params['password'], database=params['database'],
+               schema=params['schema'], warehouse=params['warehouse'], role=params['role'])
 	except Exception as err:
-		common.abort(sys.exc_info(),err)
+		try:
+			conn_snowflake = sfc.connect(**dbconfig)
+		except Exception as err:
+			common.abort(sys.exc_info(),err)
 
 	try:
 		cur_snowflake = conn_snowflake.cursor()

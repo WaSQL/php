@@ -179,7 +179,7 @@ def executeSQL(dbname,query,params={}):
 # @usage cursor, conn, cursor=db.connect('dbtest')
 def connect(dbname,params={}):
     if dbname in config.DATABASE:
-        dbtype=config.DATABASE[dbname]['dbtype']
+        dbtype=config.DATABASE[dbname]['dbtype'].lower()
         #add DATABASE settings to params
         for k in config.DATABASE[dbname]:
             params[k] = config.DATABASE[dbname][k]
