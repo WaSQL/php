@@ -53,6 +53,82 @@ var wacss = {
 			break;
 		}
 	},
+	buildFormColor: function(fieldname,params){
+		if(undefined == params){params={};}
+		if(undefined == params['-formname']){params['-formname']='addedit';}
+		if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+		var iconid=params.id+'_icon';
+		//force witdh
+		params.width=115;
+		var iconcolor='#c0c0c0';
+		if(undefined != params.value){iconcolor=params.value;}
+		if(undefined == params.placeholder){params.placeholder='#HEXVAL';}
+		if(undefined == params.classname){params.classname='form-control input';}
+		params['maxlength']=7;
+		var tagdiv = document.createElement("div");
+		tagdiv.className="input-group";
+		tagdiv.style.width=params.width+'px';
+		var tag = document.createElement("input");
+		tag.type='text';
+		tag.maxlength=7;
+		tag.className=params.classname;
+		tag.style.fontSize='11px';
+		tag.style.fontFamily='arial';
+		tag.name=fieldname;
+		tag.id=params.id;
+		if(params.required){tag.setAttribute('required',params.required);}
+		if(undefined != params.value){
+			tag.setAttribute('value',params.value);
+		}
+		else{tag.setAttribute('value','');}
+		tag.classname=params.classname;
+		tag.placeholder=params.placeholder;
+		tagdiv.appendChild(tag);
+		var tagspan = document.createElement("span");
+		tagspan.id=iconid;
+		tagspan.setAttribute('onclick',"return colorSelector('"+params.id+"');");
+		tagspan.className="icon-color-adjust w_bigger w_pointer input-group-addon";
+		tagspan.style.color=iconcolor+';padding-left:3px !important;padding-right:6px !important;';
+		tagspan.title='Color Selector';
+		tagdiv.appendChild(tagspan);
+		if(undefined != params['-parent']){
+			var pobj=getObject(params['-parent']);
+			if(undefined != pobj){
+				pobj.appendChild(tagdiv);
+			}
+			else{console.log(params['-parent']+' does not exist');}
+		}
+		return tagdiv;
+	},
+	buildFormSelect: function(fieldname, opts, params){
+		if(undefined == fieldname || !fieldname.length){alert('buildFormSelect Error: no name');return undefined;}
+		fieldname=fieldname.replace('/[\[\]]+$/','');
+		if(undefined == params){params={};}
+		if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
+		if(undefined == params['-formname']){params['-formname']='addedit';}
+		if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
+	    var tag = document.createElement("select");
+		if(undefined != params.required){tag.setAttribute('required',params.required);}
+		if(undefined != params.class){tag.setAttribute('class',params.class);}
+		if(undefined != params.style){tag.setAttribute('style',params.style);}
+		tag.name=fieldname;
+		tag.id=params.id;
+		for(var tval in opts){
+			var coption = document.createElement("OPTION");
+			coption.value=tval;
+			coption.innerHTML=opts[tval];
+			if(undefined != params.value && tval==params.value){coption.setAttribute('selected',true);}
+			tag.appendChild(coption);
+		}
+		if(undefined != params['-parent']){
+			var pobj=getObject(params['-parent']);
+			if(undefined != pobj){
+				pobj.appendChild(tag);
+			}
+			else{console.log(params['-parent']+' does not exist');}
+		}
+		return tag;
+	},
 	copy2Clipboard: function(str,msg){
 		if(undefined==msg){msg='Copy Successful';}
 		const el = document.createElement('textarea');
@@ -433,6 +509,7 @@ var wacss = {
 		wacss.initChartJs();
 		wacss.initCodeMirror();
 		wacss.initEditor();
+		wacss.initWhiteboard();
 	},
 	chartjsDrawTotals: function(chart){
 		let width = chart.chart.width,
@@ -2276,6 +2353,380 @@ var wacss = {
 			for(let x=0;x<lis.length;x++){
 				lis[x].className='wacssform_many';
 			}
+		}
+	},
+	initWhiteboard:function(){
+		let list=document.querySelectorAll('textarea[data-behavior="whiteboard"]');
+		for(let i=0;i<list.length;i++){
+			//console.log(list[i]);
+			let wrapper = document.createElement('div');
+			wrapper.style.width = list[i].style.width;
+			wrapper.style.height = list[i].style.height;
+			wrapper.style.display='block';
+			wrapper.style.position='relative';
+			wrapper.style.boxShadow='rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px';
+			wrapper.id='whiteboard_wrapper_1';
+			wrapper.style.backgroundColor=list[i].dataset.fill||'#fff';
+			wrapper.shapes=new Array();
+			wrapper.drawShapes=function(){
+				//clear canvas
+				this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		    	this.canvas.txtarea.innerText='';
+		    	let dshapes=this.shapes;
+		    	//console.log(this.shapes);
+		    	dshapes.push(this.canvas.shape);
+		    	//console.log(this.shapes.length,dshapes.length);
+		    	//draw shapes
+				for(let i=0;i<dshapes.length;i++){
+					let shape=dshapes[i];
+					//console.log(shape);
+					switch(shape.shape){
+						case 'circle':
+							//circle fields: shape,x,y,radius,fillcolor
+							this.canvas.ctx.beginPath();
+				            this.canvas.ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2);
+				       		
+				            if(shape.fillcolor.length){
+				            	this.canvas.ctx.fillStyle=shape.fillcolor;
+				            	this.canvas.ctx.lineWidth=shape.size;
+				            	this.canvas.ctx.fill();	
+				            }
+				            else{
+				            	//no fill
+				            	this.canvas.ctx.lineWidth=shape.size;
+				            	this.canvas.ctx.stroke();
+				            }
+						break;
+						case 'rectangle':
+							//rectangle fields: shape,x,y,width,fillcolor
+							if(shape.fillcolor.length){
+				            	this.canvas.ctx.fillStyle=shape.fillcolor;
+				            	this.canvas.ctx.lineWidth=shape.size;
+	            				this.canvas.ctx.fillRect(shape.x,shape.y,shape.width,shape.height);	
+				            }
+				            else{
+				            	//no fill
+				            	this.canvas.ctx.strokeStyle=shape.pencolor;
+				            	this.canvas.ctx.lineWidth=shape.size;
+				            	this.canvas.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
+				            }
+						break;
+						case 'line':
+							//pencil fields: shape,x,y,x2,y2,pencolor
+							this.canvas.ctx.beginPath();
+							this.canvas.ctx.moveTo(shape.x, shape.y);
+							this.canvas.ctx.strokeStyle=shape.pencolor;
+			            	this.canvas.ctx.lineTo(shape.x2, shape.y2);
+			            	this.canvas.ctx.lineWidth=shape.size;
+							this.canvas.ctx.stroke();
+							this.canvas.ctx.closePath();
+						break;
+						default: //pencil is the default
+							//pencil fields: shape,x,y,x2,y2,pencolor
+							//console.log(shape);
+							this.canvas.ctx.beginPath();
+							this.canvas.ctx.moveTo(shape.x, shape.y);
+							this.canvas.ctx.strokeStyle=shape.pencolor;
+							this.canvas.ctx.lineWidth=shape.size;
+			            	this.canvas.ctx.lineTo(shape.x2, shape.y2);
+			            	
+							this.canvas.ctx.stroke();
+							this.canvas.ctx.closePath();
+						break;
+					}
+				}
+				dshapes=[];
+			}
+			list[i].parentNode.insertBefore(wrapper, list[i].nextSibling);
+			let wcanvas = document.createElement('canvas');
+			let toolbar = document.createElement('div');
+			let params={};
+			wrapper.canvas=wcanvas;
+			toolbar.canvas=wcanvas;
+			toolbar.wrapper=wrapper;
+			toolbar.style='display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;';
+			//shape
+			//default to pencil
+			wrapper.dataset.shape='pencil';
+			let shapes={
+				'pencil':'Pencil',
+				'line':'Line',
+				'circle':'Circle',
+				'rectangle':'Rectangle',
+			};
+			params={style:'margin-left:10px;width:100px;padding:3px;'}
+			toolbar.shape=wacss.buildFormSelect('shape',shapes,params);
+			toolbar.shape.onchange=function(){
+				let shape=this.options[this.selectedIndex].value;
+				this.parentNode.wrapper.dataset.shape=shape;
+			};
+			toolbar.shape.title="Shape";
+			toolbar.appendChild(toolbar.shape);
+
+			//size
+			wrapper.dataset.size='1';
+			let sizes={
+				'1':'1px',
+				'3':'3px',
+				'5':'5px',
+				'7':'7px',
+				'9':'9px',
+				'11':'11px',
+				'13':'13px',
+				'15':'15px',
+				'17':'17px',
+				'19':'19px'
+			};
+			params={style:'margin-left:10px;width:100px;padding:3px;'}
+			toolbar.size=wacss.buildFormSelect('size',sizes,params);
+			toolbar.size.onchange=function(){
+				let size=this.options[this.selectedIndex].value;
+				this.parentNode.wrapper.dataset.size=size;
+			};
+			toolbar.size.title="Pen Size";
+			toolbar.appendChild(toolbar.size);	
+
+			//pencolor
+			wrapper.dataset.pencolor='#000';
+			let pencolors={
+				'#000':'Black',
+				'#213a9a':'Blue',
+				'#05abff':'Light Blue',
+				'#05a04d':'Green',
+				'#66d81f':'Light Green',
+				'#ff0081':'Pink',
+				'#f16115':'Orange',
+				'#f43940':'Red',
+				'#fee213':'Yellow'
+			};
+			params={style:'margin-left:10px;width:100px;padding:3px;'}
+			toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
+			toolbar.pencolor.onchange=function(){
+				let pencolor=this.options[this.selectedIndex].value;
+				this.parentNode.wrapper.dataset.pencolor=pencolor;
+			};
+			toolbar.pencolor.title="Pen Color";
+			toolbar.appendChild(toolbar.pencolor);
+			//fillcolor
+			let fillcolors={
+				'':'None',
+				'#000':'Black',
+				'#213a9a':'Blue',
+				'#05abff':'Light Blue',
+				'#05a04d':'Green',
+				'#66d81f':'Light Green',
+				'#ff0081':'Pink',
+				'#f16115':'Orange',
+				'#f43940':'Red',
+				'#fee213':'Yellow'
+			};
+			wrapper.dataset.fillcolor='';
+			params={style:'margin-left:10px;width:100px;padding:3px;'}
+			toolbar.fillcolor=wacss.buildFormSelect('fillcolor',fillcolors,params);
+			toolbar.fillcolor.onchange=function(){
+				let fillcolor=this.options[this.selectedIndex].value;
+				this.parentNode.wrapper.dataset.fillcolor=fillcolor;
+			};
+			toolbar.fillcolor.title="Fill Color";
+			toolbar.appendChild(toolbar.fillcolor);
+			//clear
+			toolbar.clear=document.createElement('span');
+			toolbar.clear.className='icon-erase w_pointer';
+			toolbar.clear.setAttribute('style','margin-left:10px;margin-right:10px;');
+			toolbar.clear.title='Erase Whiteboard';
+			toolbar.appendChild(toolbar.clear);
+			toolbar.clear.onclick=function(e){
+				if(!confirm('Erase Whiteboard?')){return false;}
+				this.parentNode.canvas.ctx.clearRect(0, 0, this.parentNode.canvas.width, this.parentNode.canvas.height);
+		    	this.parentNode.canvas.txtarea.innerText='';
+		    	this.parentNode.parentNode.shapes=new Array();
+			};
+
+			wrapper.canvas=wcanvas;
+			wrapper.roinit=0;
+			wcanvas.txtarea=list[i];
+			wrapper.ro = new ResizeObserver(entries => {
+				for (let entry of entries) {
+					if(undefined != entry.target.canvas && undefined!=entry.target.clientWidth){
+						if(entry.target.roinit==1){
+							entry.target.canvas.setAttribute('width',entry.target.clientWidth);
+							entry.target.canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
+						}
+						entry.target.roinit=1;
+					}
+			 	}
+			});
+			wrapper.ro.observe(wrapper);
+		    // Fill Window Width and Height
+		    wcanvas.width = wrapper.clientWidth;
+		    let h=parseInt(wrapper.clientHeight)-parseInt(toolbar.style.height)-2;
+			wcanvas.height=h;
+			wcanvas.style.position='relative';
+			wcanvas.style.cursor='crosshair';
+			
+
+			//console.log(wcanvas);
+			// context (ctx)
+			wcanvas.ctx = wcanvas.getContext("2d");
+			wcanvas.ctx.strokeStyle = "#000";
+			
+		    // Mouse Event Handlers
+			wcanvas.isDown = false;
+			wcanvas.canvasX=0;
+			wcanvas.canvasY=0;
+			wcanvas.lineWidth = list[i].dataset.size || 1;
+			
+			wcanvas.onmousedown = function(e){
+				e = e || window.event;
+				let rect = e.target.getBoundingClientRect();
+			    this.x = parseInt(e.pageX - rect.left); //x position within the element.
+			    this.y = parseInt(e.pageY - rect.top);  //y position within the element.
+				this.isDown = true;
+				switch(this.parentNode.dataset.shape){
+					default: //pencil is the default
+						this.shape={
+							shape:'pencil',
+							x:this.x,
+							y:this.y,
+							pencolor:this.parentNode.dataset.pencolor,
+							size:this.parentNode.dataset.size
+						};
+					break;
+					case 'line':
+						this.shape={
+							shape:'line',
+							x:this.x,
+							y:this.y,
+							pencolor:this.parentNode.dataset.pencolor,
+							size:this.parentNode.dataset.size
+						};
+					break;
+					case 'circle':
+						//circle
+						//circle fields: shape,x,y,radius,fillcolor
+						this.shape={
+							shape:'circle',
+							x:this.x,
+							y:this.y,
+							pencolor:this.parentNode.dataset.pencolor,
+							size:this.parentNode.dataset.size
+						};
+			            if(this.parentNode.dataset.fillcolor.length){
+			            	this.shape.fillcolor=this.parentNode.dataset.fillcolor;	
+			            }
+			            else{
+			            	//no fill
+			            	this.shape.fillcolor='';
+			            }
+					break;
+					case 'rectangle':
+						this.shape={
+							shape:'rectangle',
+							x:this.x,
+							y:this.y,
+							pencolor:this.parentNode.dataset.pencolor,
+							size:this.parentNode.dataset.size
+						};
+			            if(this.parentNode.dataset.fillcolor.length){
+			            	this.shape.fillcolor=this.parentNode.dataset.fillcolor;	
+			            }
+			            else{
+			            	//no fill
+			            	this.shape.fillcolor='';
+			            }
+					break;
+				}
+				//console.log(this.shape);
+			};
+			wcanvas.onmousemove=function(e){
+				e = e || window.event;
+				if(this.isDown !== false) {
+					let rect = e.target.getBoundingClientRect();
+					let x = parseInt(e.pageX - rect.left); //x position within the element.
+				    let y = parseInt(e.pageY - rect.top);  //y position within the element.
+
+				    switch(this.parentNode.dataset.shape){
+						default: //pencil is the default
+							this.shape.x2=x;
+							this.shape.y2=y;
+				    		this.parentNode.shapes.push(this.shape);
+				    		this.shape={
+								shape:'pencil',
+								x:x,
+								y:y,
+								pencolor:this.parentNode.dataset.pencolor
+							};
+							//console.log(this.parentNode.shapes);
+						break;
+						case 'line':
+							this.shape.x2=x;
+				    		this.shape.y2=y;
+						break;
+						case 'circle':
+							let r1=Math.abs(x-this.shape.x);
+							let r2=Math.abs(y-this.shape.y);
+							if(r1 > r2){this.shape.radius=r1;}
+							else{this.shape.radius=r2;}
+						break;
+						case 'rectangle':
+							this.shape.width=Math.abs(x-this.shape.x);
+							this.shape.height=Math.abs(y-this.shape.y);
+						break;
+					}
+					this.parentNode.drawShapes();
+				}
+				
+			};
+			wcanvas.onmouseup=function(e){
+				e = e || window.event;
+				this.isDown = false;
+				switch(this.parentNode.dataset.shape){
+					default: //pencil is the default
+						this.parentNode.shapes.push(this.shape);
+					break;
+					case 'line':
+					break;
+					case 'circle':
+						this.parentNode.shapes.push(this.shape);
+					break;
+					case 'rectangle':
+						this.parentNode.shapes.push(this.shape);
+					break;
+				}
+				
+				this.parentNode.drawShapes();
+				//save to textarea
+				if (this.isDown == true && typeof this.toDataURL === 'function') {
+					this.txtarea.innerText=this.toDataURL('image/png');
+				}
+			};
+			wrapper.onmouseout=function(e){
+				e = e || window.event;
+				this.canvas.isDown = false;
+				switch(this.parentNode.dataset.shape){
+					default: //pencil is the default
+						
+					break;
+					case 'line':
+					break;
+					case 'circle':
+					break;
+					case 'rectangle':
+					break;
+				}
+				//save to textarea
+				if (this.canvas.isDown == true && typeof this.canvas.toDataURL === 'function') {
+					this.canvas.txtarea.innerText=this.canvas.toDataURL('image/png');
+				}
+			}
+			// Disable Page Move
+			document.body.addEventListener('touchmove',function(e){
+				e = e || window.event;
+				e.preventDefault();
+			},false);
+			wrapper.appendChild(wcanvas);
+			wrapper.appendChild(toolbar);
+			list[i].style.display='none';
 		}
 	},
 	isNum: function(n) {
