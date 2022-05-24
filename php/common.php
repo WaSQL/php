@@ -3879,18 +3879,8 @@ function buildFormTime($name,$params=array()){
 * <?=buildFormWhiteboard('board',$params);?>
 */
 function buildFormWhiteboard($name,$params=array()){
-	if(!isset($params['displayname'])){$params['displayname']='Draw Below:';}
-	if(!isset($params['erase'])){$params['clear']='<span class="icon-erase"></span> Erase';}
-	if(!isset($params['style'])){
-		$params['style']='position:relative;';
-	}
-	elseif(!stringContains($params['style'],'position')){
-		$params['style'].=';position:relative;';
-	}
-	$params['style']='width:100%;height:100%;position:relative;';
-	$params['data-input']=0;
-	//return printValue($params);
-	return buildFormSignature($name,$params);
+	$params['data-behavior']="whiteboard";
+	return buildFormTextarea($name,$params).buildOnLoad("wacss.init();");
 }
 //---------- begin function buildFormYesNo--------------------
 /**
