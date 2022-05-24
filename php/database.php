@@ -4218,6 +4218,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						case 'combo':
 						case 'multiselect':
 						case 'signature':
+						case 'whiteboard':
 							$opts['style']='width:100%';
 						break;
 					}
@@ -4266,6 +4267,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						case 'combo':
 						case 'multiselect':
 						case 'signature':
+						case 'whiteboard':
 							$opts['style']='width:100%';
 						break;
 					}
@@ -4426,14 +4428,14 @@ function addEditDBForm($params=array(),$customcode=''){
 						$rtn .= $params[$field.'_group_custom'];
 						$used[$field.'_group_custom']=1;
 						}
-					if($info['fieldinfo'][$field]['inputtype']!='signature'){
+					if(!in_array($info['fieldinfo'][$field]['inputtype'],array('signature','whiteboard'))){
 						$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
 					$rtn .= '		</div>'.PHP_EOL;
 					}
 				else{
-					if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype']!='signature'){
+					if(!isset($info['fieldinfo'][$field]['inputtype']) || !in_array($info['fieldinfo'][$field]['inputtype'],array('signature','whiteboard'))){
 						$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 					}
 					$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
@@ -4566,7 +4568,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$rtn .= $params[$field.'_group_custom'];
 					$used[$field.'_group_custom']=1;
 					}
-				if($info['fieldinfo'][$field]['inputtype']!='signature'){
+				if(!in_array($info['fieldinfo'][$field]['inputtype'],array('signature','whiteboard'))){
 					$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
@@ -4576,7 +4578,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if($info['fieldinfo'][$field]['_dbtype']=='json' && !isset($opts['displayname'])){
 					$rtn .= '<div class="w_right w_pointer" title="Format JSON" style="margin-right:5px;"><span class="icon-json-pretty w_primary" data-id="'.$opts['id'].'" onclick="formJsonPretty(this.dataset.id);"></span></div>';
 				}
-				if(!isset($info['fieldinfo'][$field]['inputtype']) || $info['fieldinfo'][$field]['inputtype'] != 'signature'){
+				if(!isset($info['fieldinfo'][$field]['inputtype']) || !in_array($info['fieldinfo'][$field]['inputtype'],array('signature','whiteboard'))){
 					$rtn .= '			<label class="control-label"'.$displayif.' id="'.$field_dname.'">'.$dname.'</label>'.PHP_EOL;
 				}
 				$rtn .= '			<div id="'.$field_content.'">'.getDBFieldTag($opts).'</div>'.PHP_EOL;
@@ -5808,7 +5810,19 @@ function instantDBMeta($tablename,$fieldname,$attributes){
 				'defaultval'	=> '',
 				));
 			return 1;
-			break;
+		break;
+		case 'whiteboard':
+			$id=addDBRecord(array('-table'=>'_fielddata',
+				'tablename'		=> $tablename,
+				'fieldname'		=> $fieldname,
+				'required'		=> $required,
+				'inputtype'		=> 'whiteboard',
+				'width'			=> 600,
+				'height'		=> 300,
+				'defaultval'	=> '',
+				));
+			return 1;
+		break;
 		case 'zip':
 		case 'zipcode':
 		case 'zip_code':
@@ -8014,7 +8028,10 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'signature':
 			$tag=buildFormSignature($info[$field]['name'],$info[$field]);
-			break;
+		break;
+		case 'whiteboard':
+			$tag=buildFormWhiteboard($info[$field]['name'],$info[$field]);
+		break;
 		case 'slider':
 		case 'range':
 			//load html5slider.js to enable slider support in FF, etc. Still will not work in IE.
