@@ -713,7 +713,7 @@ if(isAjax()){
 					);
 					$addopts=adminAddEditOpts($addopts);
 					echo addEditDBForm($addopts);
-					echo buildOnLoad("document.addedit.name.focus();wacss.init();");
+					echo buildOnLoad("wacss.init();");
 				}
 			}
 			else{
@@ -729,7 +729,7 @@ if(isAjax()){
 				}
 				$addopts=adminAddEditOpts($addopts);
 	    		echo addEditDBForm($addopts);
-	    		echo buildOnLoad("document.addedit.name.focus();wacss.init();");
+	    		echo buildOnLoad("wacss.init();");
 			}
 			//echo '</div>'.PHP_EOL;
 			exit;
@@ -921,7 +921,7 @@ if(isAjax()){
 						);
 						$addopts=adminAddEditOpts($addopts);
 						echo addEditDBForm($addopts);
-						echo buildOnLoad("document.addedit.name.focus();wacss.init();");
+						echo buildOnLoad("wacss.init();");
 						//echo '</div>'.PHP_EOL;
 					}
 		    		break;
@@ -972,7 +972,7 @@ if(isAjax()){
 						$opts=adminAddEditOpts($opts);
 						echo addEditDBForm($opts);
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
-							echo buildOnLoad("document.addedit.name.focus();wacss.init();");
+							echo buildOnLoad("wacss.init();");
 						}
 						//echo '</div>'.PHP_EOL;
 					}
@@ -1013,7 +1013,7 @@ if(isAjax()){
 						$opts=adminAddEditOpts($opts);
 						echo addEditDBForm();
 						if(preg_match('/^\_(pages|templates)$/i',$_REQUEST['table'])){
-							echo buildOnLoad("document.addedit.name.focus();wacss.init();");
+							echo buildOnLoad("wacss.init();");
 						}
 						//echo '</div>'.PHP_EOL;
 					}

@@ -58,3 +58,27 @@ for chost in ALLCONFIG['hosts']['host']:
             #load the host keys
             for k in chost:
                 CONFIG[k] = chost[k]
+
+#---------- begin function config.value
+# @describe returns a specific key value or the whole config dict
+# @param [str] string - key
+# @return mixed - value for key if key is passed in, else returns the config dict
+# @usage v=config.value('name')
+# @usage c=config.value()
+def value(k=''):
+    if(k in CONFIG):
+        return CONFIG[k]
+    return CONFIG
+
+#---------- begin function config.database
+# @describe returns a specific key value or the whole DATABASE dict
+# @param [str] string - key
+# @return mixed - value for key if key is passed in, else returns the DATABASE dict
+# @usage v=config.database('name')
+# @usage c=config.database()
+def database(k='',sk=''):
+    if(k in DATABASE):
+        if(sk in DATABASE[k]):
+            return DATABASE[k][sk]
+        return DATABASE[k]
+    return DATABASE

@@ -3880,7 +3880,11 @@ function buildFormTime($name,$params=array()){
 */
 function buildFormWhiteboard($name,$params=array()){
 	$params['data-behavior']="whiteboard";
-	return buildFormTextarea($name,$params).buildOnLoad("wacss.init();");
+	$rtn=buildFormHidden("{$name}_inline",array('value'=>1));
+	$rtn.=buildFormHidden("{$name}_autonumber",array('value'=>1));
+	//return printValue($params);
+	$rtn.=buildFormTextarea($name,$params).buildOnLoad("wacss.init();");
+	return $rtn;
 }
 //---------- begin function buildFormYesNo--------------------
 /**
@@ -17077,7 +17081,7 @@ function processInlineImage($img,$fld='inline'){
 	debugValue("processInlineImage error: unable to save file: {$afile}");
 	return 0;
 }
-//---------- begin function processInlineImage---------------------------------------
+//---------- begin function processInlineFiles---------------------------------------
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */

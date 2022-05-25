@@ -2358,6 +2358,11 @@ var wacss = {
 	initWhiteboard:function(){
 		let list=document.querySelectorAll('textarea[data-behavior="whiteboard"]');
 		for(let i=0;i<list.length;i++){
+			if(undefined != list[i].dataset.initialized){
+				continue;
+			}
+			list[i].dataset.initialized+=1;
+			list[i].style.display='none';
 			//console.log(list[i]);
 			let wrapper = document.createElement('div');
 			wrapper.style.width = list[i].style.width;
@@ -2377,10 +2382,20 @@ var wacss = {
 		    	dshapes.push(this.canvas.shape);
 		    	//console.log(this.shapes.length,dshapes.length);
 		    	//draw shapes
+		    	let simg=undefined;
 				for(let i=0;i<dshapes.length;i++){
 					let shape=dshapes[i];
-					//console.log(shape);
+					if(undefined == shape){continue;}
+					if(undefined == shape.shape){continue;}
+					console.log(i);
 					switch(shape.shape){
+						case 'image':
+							simg = new Image();
+					        //drawing of the test image - img1
+					        simg.canvas=this.canvas;
+					        simg.crossOrigin = 'anonymous';
+					        simg.src = shape.src;
+						break;
 						case 'circle':
 							//circle fields: shape,x,y,radius,fillcolor
 							this.canvas.ctx.beginPath();
@@ -2394,6 +2409,7 @@ var wacss = {
 				            else{
 				            	//no fill
 				            	this.canvas.ctx.lineWidth=shape.size;
+				            	this.canvas.ctx.strokeStyle=shape.pencolor;
 				            	this.canvas.ctx.stroke();
 				            }
 						break;
@@ -2436,12 +2452,34 @@ var wacss = {
 					}
 				}
 				dshapes=[];
+				
+				if (typeof this.canvas.toDataURL === 'function') {
+					if(simg){
+						simg.onload = function () {
+				            //draw background image
+				            this.canvas.ctx.drawImage(this, 0, 0);
+				            this.canvas.txtarea.innerText=this.canvas.toDataURL('image/png');
+				            //console.log('saved 1');
+				        };
+					}
+					else{
+						this.canvas.txtarea.innerText=this.canvas.toDataURL('image/png');
+						//console.log('saved 2');
+					}
+				}
+				else{
+					//console.log('NOT saved');
+				}
 			}
 			list[i].parentNode.insertBefore(wrapper, list[i].nextSibling);
 			let wcanvas = document.createElement('canvas');
 			let toolbar = document.createElement('div');
 			let params={};
 			wrapper.canvas=wcanvas;
+			wcanvas.onload=function(){
+				console.log('canvas load');
+				console.log(this);
+			}
 			toolbar.canvas=wcanvas;
 			toolbar.wrapper=wrapper;
 			toolbar.style='display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;';
@@ -2569,6 +2607,15 @@ var wacss = {
 			// context (ctx)
 			wcanvas.ctx = wcanvas.getContext("2d");
 			wcanvas.ctx.strokeStyle = "#000";
+			//load image?
+			if(list[i].innerHTML.length){
+		        let wshape={
+		        	shape:'image',
+		        	src:list[i].innerHTML
+		        }
+		        wrapper.shapes.push(wshape);
+		        wrapper.drawShapes();
+			}
 			
 		    // Mouse Event Handlers
 			wcanvas.isDown = false;
@@ -2693,12 +2740,7 @@ var wacss = {
 						this.parentNode.shapes.push(this.shape);
 					break;
 				}
-				
 				this.parentNode.drawShapes();
-				//save to textarea
-				if (this.isDown == true && typeof this.toDataURL === 'function') {
-					this.txtarea.innerText=this.toDataURL('image/png');
-				}
 			};
 			wrapper.onmouseout=function(e){
 				e = e || window.event;
@@ -2714,10 +2756,6 @@ var wacss = {
 					case 'rectangle':
 					break;
 				}
-				//save to textarea
-				if (this.canvas.isDown == true && typeof this.canvas.toDataURL === 'function') {
-					this.canvas.txtarea.innerText=this.canvas.toDataURL('image/png');
-				}
 			}
 			// Disable Page Move
 			document.body.addEventListener('touchmove',function(e){
@@ -2726,7 +2764,6 @@ var wacss = {
 			},false);
 			wrapper.appendChild(wcanvas);
 			wrapper.appendChild(toolbar);
-			list[i].style.display='none';
 		}
 	},
 	isNum: function(n) {

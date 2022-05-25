@@ -86,6 +86,7 @@ import os
 import sys
 try:
     import common
+    import config
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -94,5 +95,9 @@ except Exception as err:
 #header
 if not common.isCLI():
     print("Content-type: text/html; charset=UTF-8;\n\n")
+
+# print(config.value('name'))
+# print(config.value())
+
 #show message
 common.echo("test successful")

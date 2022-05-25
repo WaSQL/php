@@ -476,6 +476,9 @@ button.wacssedit{
 button.wacssedit:hover{
   color:#000;
 }
+textarea[data-behavior="whiteboard"]{
+  display: none;
+}
 [contenteditable] .wacssform_date,
 [contenteditable] .wacssform_raten5,
 [contenteditable] .wacssform_raten10,
