@@ -120,9 +120,19 @@ function synchronizePost($load,$plain=0){
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
 	//echo printValue($load).printValue($postopts).$post['body'];exit;
 	if(isset($post['error'])){
+		foreach($_SESSION as $k=>$v){
+			if(stringBeginsWith($k,'sync')){
+				unset($_SESSION[$k]);
+			}
+		}
 		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
 	}
 	elseif(!strlen($post['body'])){
+		foreach($_SESSION as $k=>$v){
+			if(stringBeginsWith($k,'sync')){
+				unset($_SESSION[$k]);
+			}
+		}
 		return array('error'=>$_SESSION['sync_target_url'].printValue($post));
 	}
 	else{
@@ -135,10 +145,20 @@ function synchronizePost($load,$plain=0){
 		if(!is_array($json)){
 			$json=json_decode(trim($post['body']),true);
 			if(!is_array($json)){
+				foreach($_SESSION as $k=>$v){
+					if(stringBeginsWith($k,'sync')){
+						unset($_SESSION[$k]);
+					}
+				}
 				return array('error'=>"Failed to decode response.<br />".$post['body']);
 			}
 		}
 		return $json;
+	}
+	foreach($_SESSION as $k=>$v){
+		if(stringBeginsWith($k,'sync')){
+			unset($_SESSION[$k]);
+		}
 	}
 	return array('error'=>$_SESSION['sync_target_url'].'<br>'.json_encode($post));
 }
