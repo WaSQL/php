@@ -61,8 +61,23 @@ elseif(isset($_REQUEST['_logoff']) && $_REQUEST['_logoff']==1 && (!isset($_REQUE
 	userLogout();
 }
 $USER=array();
+if(isset($CONFIG['okta_client_id'])){
+	$rec=userOktaAuth();
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+		$ok=commonLogMessage('user',"Okta Auth passed for user {$rec['username']}");
+		if($rec['utype']==0){
+			$ok=commonLogMessage('user'," -- {$rec['username']} is an admin");
+		}
+	}
+	else{
+		$_REQUEST['login_failed']=1;
+		$ok=commonLogMessage('user',"OKTA Auth failed: {$_SESSION['okta']['error']}");
+	}
+}
 //check for login request via multiple ways - _auth, _tauth, ldap, user/pass
-if(isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 && isset($_REQUEST['username']) && strlen($_REQUEST['username']) && isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])){
+elseif(isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 && isset($_REQUEST['username']) && strlen($_REQUEST['username']) && isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])){
 	//apikey code
 	$rec=userDecodeApikeyAuth($_REQUEST['apikey'],$_REQUEST['username']);
 	//confirm record is valid and active
@@ -499,6 +514,151 @@ function userDecodeSessionAuthCode($authcode){
 		return null;
 	}
 	return $rec;
+}
+
+function userOktaAuth(){
+	global $CONFIG;
+	global $PAGE;
+	//echo printValue($CONFIG);exit;
+	//check CONFIG for okta_client_id
+	if(!isset($CONFIG['okta_client_id'])){
+		return 'Error: no okta_client_id in config';
+	}
+	//check CONFIG for okta_client_secret
+	if(!isset($CONFIG['okta_client_secret'])){
+		return 'Error: no okta_client_secret in config';
+	}
+	//check CONFIG for okta_metadata_url
+	if(!isset($CONFIG['okta_metadata_url'])){
+		return 'Error: no okta_metadata_url in config';
+	}
+	//check CONFIG for okta_login_page
+	if(!isset($CONFIG['okta_redirect_uri'])){
+		return 'Error: no okta_redirect_uri in config';
+	}
+	if(isset($_SESSION['okta']['error'])){
+		unset($_SESSION['okta']['error']);
+	}
+	if(isset($_SESSION['okta']['error'])){
+		unset($_SESSION['okta']['error']);
+	}
+	loadExtras('okta');
+	//define constants
+	define('OKTA_CLIENT_ID',$CONFIG['okta_client_id']);
+	define('OKTA_CLIENT_SECRET',$CONFIG['okta_client_secret']);
+	define('OKTA_METADATA_URL',$CONFIG['okta_metadata_url']);
+	//time out after 8 hours
+
+	define('OKTA_RESTRICT_AUTO_LOGIN_DURATION',15);
+	//define the redirect url dynamically
+	//echo "HERE:".$CONFIG['okta_redirect_uri'];exit;
+	if(isset($CONFIG['okta_redirect_uri'])){
+		define('OKTA_REDIRECT_URI',$CONFIG['okta_redirect_uri']);
+	}
+	else{
+		$okta_redirect_uri='http';
+		if(isSSL()){$okta_redirect_uri.='s';}
+		$okta_redirect_uri.='://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		$okta_redirect_uri=preg_replace('/\?.+$/','',$okta_redirect_uri);
+		define('OKTA_REDIRECT_URI',$okta_redirect_uri);
+	}
+	//echo $okta_redirect_uri;exit;
+	// Instantiate the Okta Singleton
+
+    $okta = Okta::getInstance();
+    if(isset($_SESSION['okta']['username']) && isset($_SESSION['okta']['profile'])){
+    	$profile=$_SESSION['okta']['profile'];
+    	//get record from LDAP?
+    	if(isset($CONFIG['ldap_host']) && isset($CONFIG['ldap_username']) && isset($CONFIG['ldap_password'])){
+    		loadExtras('ldap');
+    		$authopts=array(
+				'-host'		=> $CONFIG['ldap_host'],
+				'-username'	=> $CONFIG['ldap_username'],
+				'-password'	=> $CONFIG['ldap_password'],
+			);
+			if(isset($CONFIG['ldap_domain'])){
+		    	$authopts['-domain']=$CONFIG['ldap_domain'];
+			}
+			if(isset($CONFIG['ldap_secure'])){
+		    	$authopts['-secure']=$CONFIG['ldap_secure'];
+			}
+			if(isset($CONFIG['ldap_checkmemberof'])){
+		    	$authopts['-checkmemberof']=$CONFIG['ldap_checkmemberof'];
+			}
+			$ok=ldapAuth($authopts);
+			if(isset($CONFIG['ldap_basedn'])){
+				$ldapInfo['basedn']=$CONFIG['ldap_basedn'];
+			}
+			$mail=$_SESSION['okta']['username'];
+			$search="(|(mail={$mail})(samaccountname={$mail}))";
+			$ldaprecs=ldapSearch($search, 'samaccountname,mail','*');
+			if(isset($ldaprecs[0])){
+				foreach($ldaprecs[0] as $k=>$v){
+					$profile[$k]=$v;
+				}
+			}
+    	}
+    	$finfo=getDBFieldInfo('_users');
+	   	$addopts=array();
+	   	//convert some fields to JSON if the field type is json
+	   	$upserts=array('utype');
+	   	foreach($finfo as $field=>$info){
+	   		if(!isset($profile[$field])){continue;}
+	   		if($field != 'username' && !stringBeginsWith($field,'_')){$upserts[]=$field;}
+	   		if($info['_dbtype']=='json'){
+	        	switch(strtolower($field)){
+	        		case 'memberof_cn':
+	        		case 'memberof_ou':
+	        		case 'distinguishedname_ou':
+	        		case 'objectcategory':
+	        		case 'objectclass':
+	        			$addopts[$field]=json_encode(preg_split('/\,/',$profile[$field]));
+	        		break;
+	        		default:
+	        			$addopts[$field]=$profile[$field];
+	        		break;
+	        	}
+	        }
+	        else{
+	        	switch($field){
+	        		case 'password':
+	        			$addopts[$field]=userEncryptPW($profile['password']);
+	        		break;
+	        		default:
+	        			$addopts[$field]=$profile[$field];
+	        		break;
+	        	}
+	        }
+	    }
+	    $addopts['utype']=1;
+	    if(isset($CONFIG['authldap_admin'])){
+	       	$admins=preg_split('/[\,\;\:]+/',$CONFIG['authldap_admin']);
+	       	if(in_array($profile['username'],$admins)){
+	       		$addopts['utype']=0;
+	       	}
+		}
+	  	//add or update this user record
+	  	$addopts['-upsert']=implode(',',$upserts);
+	  	$addopts['-table']='_users';
+	  	$ok=addDBRecord($addopts);
+
+	  	if(!isNum($ok)){
+	  		$ok=commonLogMessage('user',"userOktaAuth addDBRecord Failed.".printValue($ok));	
+
+	  		echo printValue($ok).printValue($addopts);exit;
+	  	}
+	  	
+	  	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$profile['username']}' or email='{$profile['email']}'"));
+	  	if(isset($rec['_id'])){
+	  		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
+	  		return $rec;
+	  	}
+	  	else{
+	  		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed for {$user}");
+	  		return null;
+	  	}
+    }
+    return null;
 }
 //---------- begin function userDecodeLDAPAuth ----
 /**
