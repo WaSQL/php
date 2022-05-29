@@ -12464,7 +12464,7 @@ function csv2Arrays($lines,$params=array()){
 */
 function getCSVFileContents($file,$params=array()){
 	if(!isset($params['maxrows'])){$params['maxrows']=2000000;}
-	if(!isset($params['maxlen'])){$params['maxlen']=4096;}
+	if(!isset($params['maxlen'])){$params['maxlen']=0;}
 	$results=array('file'=>$file,'params'=>$params);
 	if(!file_exists($file)){
 		$results['error']="No such file [$file]";
@@ -12507,7 +12507,7 @@ function getCSVFileContents($file,$params=array()){
 		if(isset($params['map']) && is_array($params['map']) && strlen($params['map'][$fields[$x]])){
 			$fields[$x]=$params['map'][$fields[$x]];
 			$mapfield[$fields[$x]]=1;
-			}
+		}
 		else{
 			if($fields[$x]=='#'){$fields[$x]='row';}
 			$fields[$x]=preg_replace('/\#$/','number',$fields[$x]);
@@ -12515,8 +12515,8 @@ function getCSVFileContents($file,$params=array()){
 			$fields[$x]=preg_replace('/\s+/','_',$fields[$x]);
 			$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
 			$fields[$x]=strtolower($fields[$x]);
-			}
-    	}
+		}
+    }
     $results['count']=0;
     $results['field_properties']=array();
     $row_ptr=0;
@@ -12533,7 +12533,8 @@ function getCSVFileContents($file,$params=array()){
 	    for ($c=0; $c < count($data); $c++) {
 			$val=trim($data[$c]);
 			$field=$fields[$c];
-			if(isset($params['map']) && isset($params['maponly']) && $params['maponly'] && !isset($mapfield[$field])){continue;}
+			if(isset($params['map']) && isset($params['maponly']) && $params['maponly'] && !isset($mapfield[$field])){continue;
+			}
 			if(strlen($val)){
 				if(isset($params["{$field}_eval"])){
 					$evalstr=$params[$field."_eval"];
@@ -12549,21 +12550,21 @@ function getCSVFileContents($file,$params=array()){
 				if(!isset($row[$kmatch[1]])){$collect=0;}
 				if(is_array($val)){
 					if(!in_array($row[$kmatch[1]],$val)){$collect=0;}
-                	}
+                }
 				elseif($row[$kmatch[1]] != $val){$collect=0;}
-            	}
+            }
             if(preg_match('/^(.+?)\_min$/i',$key,$kmatch)){
 				if(!isset($row[$kmatch[1]])){$collect=0;}
 				if($row[$kmatch[1]] < $val){$collect=0;}
-            	}
+            }
             if(preg_match('/^(.+?)\_required$/i',$key,$kmatch)){
 				if(!isset($row[$kmatch[1]])){$collect=0;}
-            	}
+            }
             if(preg_match('/^(.+?)\_max$/i',$key,$kmatch)){
 				if(!isset($row[$kmatch[1]])){$collect=0;}
 				if($row[$kmatch[1]] > $val){$collect=0;}
-            	}
-        	}
+            }
+        }
         $row_ptr++;
         //determine the maxlength of each field
         if(isset($params['startrow']) && isNum($params['startrow']) && $params['startrow'] > $row_ptr){continue;}
@@ -12578,11 +12579,11 @@ function getCSVFileContents($file,$params=array()){
 						$ok=addDBRecord($row);
 						if(isset($params['echo']) && $params['echo']){echo "record {$ok}<br />\n";}
 						$results['addtable_results'][]=$ok;
-	                	}
+	                }
 	                else{
 						foreach($row as $field=>$val){
 							if(isset($params["{$field}_counts"])){$results['counts'][$field][$val]+=1;}
-			            	}
+			            }
 			            //field_properties
 						foreach($row as $field=>$val){
 							//maxlength
@@ -12590,25 +12591,28 @@ function getCSVFileContents($file,$params=array()){
 								$results['field_properties'][$field]['maxlength']=strlen($val);
 								$results['field_properties'][$field]['maxlength_value']=$val;
 								$results['field_properties'][$field]['maxlength_rownum']=count($rows);
-								}
+							}
 							//minlength
 							if(!isNum($results['field_properties'][$field]['minlength']) || strlen($val) < $results['field_properties'][$field]['minlength']){
 								$results['field_properties'][$field]['minlength']=strlen($val);
 								$results['field_properties'][$field]['minlength_value']=$val;
 								$results['field_properties'][$field]['minlength_rownum']=count($rows);
-								}
-			            	//numeric vs text
-			            	if(!isset($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']=isNum($results['field_properties'][$field]['type'])?'numeric':'text';}
-							else{
-								if($results['field_properties'][$field]['type']=='numeric' && !isNum($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']='text';}
-
-                            	}
 							}
+			            	//numeric vs text
+			            	if(!isset($results['field_properties'][$field]['type'])){
+			            		$results['field_properties'][$field]['type']=isNum($results['field_properties'][$field]['type'])?'numeric':'text';
+			            	}
+							else{
+								if($results['field_properties'][$field]['type']=='numeric' && !isNum($results['field_properties'][$field]['type'])){
+									$results['field_properties'][$field]['type']='text';
+								}
+                            }
+						}
 						if(isset($params['ksort']) && $params['ksort']){ksort($row);}
 						array_push($rows,$row);
-						}
 					}
 				}
+			}
 			else{
 				$results['count']++;
 				if(isset($params['addtable']) && strlen($params['addtable'])){
@@ -12617,11 +12621,11 @@ function getCSVFileContents($file,$params=array()){
 					$ok=addDBRecord($row);
 					if(isset($params['echo']) && $params['echo']){echo "record {$ok}<br />\n";}
 					$results['addtable_results'][]=$ok;
-                	}
+                }
                 else{
 					foreach($row as $field=>$val){
 						if(isset($params["{$field}_counts"])){$results['counts'][$field][$val]+=1;}
-		            	}
+		            }
 		            //field_properties
 					foreach($row as $field=>$val){
 						//maxlength
@@ -12641,18 +12645,21 @@ function getCSVFileContents($file,$params=array()){
 							}
 						}
 		            	//numeric vs text
-		            	if(!isset($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']='text';}
+		            	if(!isset($results['field_properties'][$field]['type'])){
+		            		$results['field_properties'][$field]['type']='text';
+		            	}
 						else{
-							if($results['field_properties'][$field]['type']=='numeric' && !isNum($results['field_properties'][$field]['type'])){$results['field_properties'][$field]['type']='text';}
-
-                            }
-						}
+							if($results['field_properties'][$field]['type']=='numeric' && !isNum($results['field_properties'][$field]['type'])){
+								$results['field_properties'][$field]['type']='text';
+							}
+                        }
+					}
 					if(isset($params['ksort']) && $params['ksort']){ksort($row);}
 					array_push($rows,$row);
-					}
-            	}
-			}
+				}
+        	}
 		}
+	}
 	fclose($handle);
 	if(isset($results['counts'])){
 		if(is_array($results['counts'])){
@@ -12664,10 +12671,10 @@ function getCSVFileContents($file,$params=array()){
 	}
     if(isset($params['map']) && isset($params['maponly']) && $params['maponly']){
 		$results['fields']=array_keys($mapfield);
-		}
+	}
 	else{
 		$results['fields']=$fields;
-		}
+	}
 	sort($results['fields']);
 	//determine suggested schema
 	$fields=array(
@@ -12701,11 +12708,11 @@ function getCSVFileContents($file,$params=array()){
     $results['schema']=$fields;
 	if(!isset($params['count_only'])){
 		$results['items'] = $rows;
-		}
+	}
 	unset($fields);
 	unset($rows);
 	return $results;
-	}
+}
 //---------- begin function arrays2SchemaFields-------------------
 /**
 * @describe returns the schema needed for the records in recs
