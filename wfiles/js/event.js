@@ -4403,7 +4403,10 @@ function wasqlMarkerInit(el,cl){
 function resizeSignatureWidthHeight(){
 	var list=document.querySelectorAll('.w_signature');
 	for(var i=0;i<list.length;i++){
-		list[i].style.width='100%';
+		let w=parseInt(list[i].parentNode.style.width);
+		let h=parseInt(list[i].parentNode.style.height);
+		list[i].setAttribute('width',w);
+		list[i].setAttribute('height',h);
 	}
 }
 /*
