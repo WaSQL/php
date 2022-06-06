@@ -94,6 +94,9 @@ def connect(params):
 	if 'dbname' in params:
 		dbconfig['database'] = params['dbname']
 
+	if 'dbport' in params:
+		dbconfig['port'] = params['dbport']
+
 	try:
 		conn_postgres = psycopg2.connect(**dbconfig)
 	except Exception as err:
