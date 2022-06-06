@@ -2146,26 +2146,23 @@ function parseWacssEditFormTags($body,$params=array()){
 * @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
 */
 function buildFormButtonSelect($name,$opts=array(),$params=array()){
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
-	if(!isset($params['-button'])){
-		$params['-button']='btn-default';
-	}
+	$params['-format']="button";
+	$params['-type']='radio';
+	$params['-display']='flex';
+	return buildFormRadioCheckbox($name,$opts,$params);
+	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	if(!isset($params['-button'])){$params['-button']='btn-default';}
 	//override name
 	if(isset($params['name'])){
 		$name=$params['name'];
 		unset($params['name']);
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(!isset($params['value'])){$params['id']=$name;}
 	$elid=$params['id'];
-	if(isset($params['-formname'])){
-		$elid="{$params['-formname']}_{$elid}";
-	}
+	if(isset($params['-formname'])){$elid="{$params['-formname']}_{$elid}";}
 	unset($params['id']);
 	if(!strlen($elid)){
-		$elid=str_replace(' ','_',$name.'_'.md5(microtime(true)));
+		$elid=str_replace(' ','_',trim($name).'_'.md5(microtime(true)));
 	}
 	$params['data-elid']=$elid;
 	$tag='<div class="w_flexgroup" data-display="inline-flex"';
@@ -2180,10 +2177,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			$checked=' checked';
 		}
 		$cid=strtolower(str_replace(' ','_',"{$elid}_{$tval}"));
-		$class='';
-		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
-		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
-		elseif(isset($params['class'])){$class=$params['class'];}
+		
 		$tag .= '<input type="radio" data-type="radio" class="btn '.$class.'" style="display:none"';
 		if(isset($params['onclick'])){
 			$tag .= ' onclick="'.$params['onclick'].'"';
@@ -2195,7 +2189,11 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 			}
 		}
 		$tag .= ' name="'.$name.'"  id="'.$cid.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
-        $tag .= '<label for="'.$cid.'">'.$dval.'</label>'.PHP_EOL;
+		$class='';
+		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
+		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
+		elseif(isset($params['class'])){$class=$params['class'];}
+        $tag .= '<label for="'.$cid.'" class="'.$class.'">'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
@@ -10919,38 +10917,16 @@ function getAllVersions(){
 		);
 	$funcs=get_defined_functions();
 	foreach($funcs['internal'] as $fname){
-		if(preg_match('/^(mysqli_get_server_version|ming_useswfversion)/i',$fname)){continue;}
+		//if(preg_match('/^(mysqli_get_server_version|ming_useswfversion)/i',$fname)){continue;}
 		if(preg_match('/(.+?)version/i',$fname,$fmatch)){
-			$name=preg_replace('/get\_+$/i','',$fmatch[1]);
-			$name=preg_replace('/\_+$/','',$name);
-			$name=preg_replace('/\_+/',' ',$name);
-			$name=ucwords($name);
-			$evalstr=<<<ENDOFEVALSTR
-			try{return {$fname}();} 
-			catch(Exception $e){return '';}
-ENDOFEVALSTR;
-			try{
-				$ver=@eval($evalstr);
-				if(is_array($ver)){
-					if(isset($ver['version'])){$versions[$name]=$ver['version'];}
-					foreach($ver as $key=>$val){
-						unset($fmatch);
-						if(preg_match('/(.+?)version/i',$key,$fmatch)){
-							$name=preg_replace('/get\_+$/i','',$fmatch[1]);
-							$name=preg_replace('/\_+$/','',$name);
-							$name=preg_replace('/\_$/',' ',$name);
-							$name=ucwords($name);
-							$versions[$name]=$val;
-							}
-	                	}
-					}
-				else{$versions[$name]=$ver;}
-	        	}
-			catch(Exception $e){
-				//
-            	}
-	    	}
+			$val=$fname();
+			//echo "{$fname}<br>".printValue($val).'<hr>';
+			if(is_array($val)){
+				$versions[$fname]=json_encode($val);
+			}
+			else{$versions[$fname]=$val;}
 		}
+	}
 	//GD Version
 	if(function_exists('gd_info')){
 		$info=gd_info();
@@ -10959,7 +10935,8 @@ ENDOFEVALSTR;
 			$versions['GD (Graphics)']=$info['GD Version'];
         	}
     	}
-	ksort($versions);
+	ksort($versions,SORT_STRING );
+	//echo printValue($versions);exit;
 	return $versions;
 	}
 //---------- begin function getMemoryUsage-----------------
@@ -11950,7 +11927,7 @@ function processCSVLines($file,$func_name,$params=array()){
 	if(!function_exists($func_name)){
 		return 'invalid function:'.$func_name;
 		}
-	if(!isset($params['-maxlen'])){$params['-maxlen']=1000000;}
+	if(!isset($params['-maxlen'])){$params['-maxlen']=0;}
 	if(!isset($params['-separator'])){$params['-separator']=',';}
 	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
@@ -12043,7 +12020,7 @@ function processCSVLines($file,$func_name,$params=array()){
 *	full path and name of the file to inspect
 * @param params array
 *	[-function] str - function to send each rec to as it processes the csv file
-*	[-maxlen] int - max row length. defaults to 1000000
+*	[-maxlen] int - max row length. defaults to 0
 *	[-separator] char - defaults to ,
 *	[-enclose] char - defaults to "
 *	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
@@ -12465,6 +12442,7 @@ function csv2Arrays($lines,$params=array()){
 function getCSVFileContents($file,$params=array()){
 	if(!isset($params['maxrows'])){$params['maxrows']=2000000;}
 	if(!isset($params['maxlen'])){$params['maxlen']=0;}
+	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	$results=array('file'=>$file,'params'=>$params);
 	if(!file_exists($file)){
 		$results['error']="No such file [$file]";
@@ -12485,7 +12463,8 @@ function getCSVFileContents($file,$params=array()){
 	}
 	if(!isset($params['separator'])){$params['separator']=',';}
 	if(isset($params['fields']) && is_array($params['fields'])){$xfields=$params['fields'];}
-	else{$xfields = fgetcsv($handle, $params['maxlen'], $params['separator']);}
+	else{$xfields = fgetcsv($handle, $params['maxlen'], $params['separator'],$params['-enclose']);}
+	//echo printValue($xfields);exit;
 	if(!is_array($xfields) || count($xfields)==0){
 		$results['error']="No Fields found: " . printValue($xfields);
 		fclose($handle);
@@ -12494,7 +12473,7 @@ function getCSVFileContents($file,$params=array()){
 	//skip rows if requested
 	if(isset($params['skiprows']) && isNum($params['skiprows'])){
 		for($x=0;$x<$params['skiprows'];$x++){
-			$junk = fgetcsv($handle, $params['maxlen'], $params['separator']);
+			$junk = fgetcsv($handle, $params['maxlen'], $params['separator'],$params['-enclose']);
 			}
 		}
 	$fields=array();
@@ -12512,7 +12491,7 @@ function getCSVFileContents($file,$params=array()){
 			if($fields[$x]=='#'){$fields[$x]='row';}
 			$fields[$x]=preg_replace('/\#$/','number',$fields[$x]);
 			$fields[$x]=preg_replace('/\-+/','_',$fields[$x]);
-			$fields[$x]=preg_replace('/\s+/','_',$fields[$x]);
+			$fields[$x]=preg_replace('/[\s\.]+/','_',$fields[$x]);
 			$fields[$x]=preg_replace('/[^a-z0-9\_]+/i','',$fields[$x]);
 			$fields[$x]=strtolower($fields[$x]);
 		}
@@ -12521,18 +12500,21 @@ function getCSVFileContents($file,$params=array()){
     $results['field_properties']=array();
     $row_ptr=0;
     if(isset($params['unique'])){$unique=array();}
-	while (($data = fgets($handle, $params['maxlen'])) !== FALSE) {
-		if(isset($params['-utf8_encode']) && $params['-utf8_encode']){
-			$data=utf8_encode($data);
-		}
-		$data=csvParseLine($data,$params['separator'],$params['enclose']);
+
+	while (($data = fgetcsv($handle, $params['maxlen'],$params['separator'],$params['-enclose'])) !== FALSE) {
+		//$data=csvParseLine($data,$params['separator'],$params['enclose']);
+		//echo "data".printValue($data);exit;
 		if($results['count'] > $params['maxrows']){break;}
 		$row=array();
 	    $num = count($data);
 	    $collect=1;
 	    for ($c=0; $c < count($data); $c++) {
 			$val=trim($data[$c]);
+			if(isset($params['-utf8_encode']) && $params['-utf8_encode']){
+				$val=utf8_encode($val);
+			}
 			$field=$fields[$c];
+			//echo "c:{$c}, Field:{$field}, val:{$val}";exit;
 			if(isset($params['map']) && isset($params['maponly']) && $params['maponly'] && !isset($mapfield[$field])){continue;
 			}
 			if(strlen($val)){

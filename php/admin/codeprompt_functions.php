@@ -1,9 +1,9 @@
 <?php
-function phppromptGetValue(){
+function codepromptGetValue(){
 	global $USER;
 	$rec=getDBRecord(array(
 		'-table'=>'_prompts',
-		'name'=>'php_prompt',
+		'name'=>'code_prompt',
 		'_cuser'=>$USER['_id']
 	));
 	if(isset($rec['_id'])){
@@ -11,11 +11,11 @@ function phppromptGetValue(){
 	}
 	return '<?'.'php'.PHP_EOL.PHP_EOL.'?'.'>'.PHP_EOL;
 }
-function phppromptSetValue($val){
+function codepromptSetValue($val){
 	global $USER;
 	$ok=addDBRecord(array(
 		'-table'=>'_prompts',
-		'name'=>'php_prompt',
+		'name'=>'code_prompt',
 		'body'=>$val,
 		'-upsert'=>'body'
 	));

@@ -1,6 +1,166 @@
 <?php
 loadExtras('translate');
-
+function configSave(){
+	foreach($_REQUEST as $k=>$v){
+		if(isWasqlField($k)){continue;}
+		if(is_array($v)){$v=implode(':',$v);}
+		if(!strlen(trim($v))){$v='NULL';}
+		$ok=addDBRecord(array(
+			'-table'=>'_config',
+			'name'=>$k,
+			'current_value'=>$v,
+			'-upsert'=>'current_value'
+		));
+		if(!isNum($ok)){
+			echo $ok;exit;
+		}
+	}
+	return 1;
+}
+function configBuildFormField($field,$cparams=array()){
+	global $CONFIG;
+	if(!is_array($cparams)){$cparams=array();}
+	switch(strtolower($field)){
+		case 'auth_method':
+			$opts=array(
+				'wasql'=>'WaSQL',
+				'ldap'=>'LDAP',
+				'okta'=>'OKTA',
+				'okta_ldap'=>'OKTA+LDAP'
+			);
+			$params=array(
+				'id'=>'config_auth_method',
+				'class'=>'select',
+				'required'=>1,
+				'onchange'=>"return configAuthMethodChanged(this);",
+				'data-nav'=>"/php/admin.php",
+				'data-div'=>'config_users',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormSelect($field,$opts,$params);
+		break;
+		case 'admin_color':
+			//w_blue,w_gray,w_green,w_red,w_yellow,w_orange,w_teal,w_light,w_dark
+			$opts=array(
+				'w_blue'=>'Blue',
+				'w_gray'=>'Gray',
+				'w_green'=>'Green',
+				'w_red'=>'Red',
+				'w_yellow'=>'Yellow',
+				'w_orange'=>'Orange',
+				'w_teal'=>'Teal',
+				'w_light'=>'Light',
+				'w_dark'=>'Dark'
+			);
+			$params=array(
+				'id'=>'config_auth_method',
+				'class'=>'select',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormSelect($field,$opts,$params);
+		break;
+		case 'databases':
+			global $DATABASE;
+			$opts=array();
+			$recs=sortArrayByKeys($DATABASE,array('dbtype'=>SORT_ASC,'name'=>SORT_ASC));
+			foreach($recs as $db){
+				$opts[$db['name']]="{$db['name']} ({$db['dbtype']})";
+			}
+			$params=array(
+				'value'=>$CONFIG[$field],
+				'-display'=>'column',
+				'width'=>4
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormCheckbox($field,$opts,$params);
+		break;
+		default:
+			$params=array(
+				'class'=>'input',
+				'required'=>1,
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormText($field,$params);
+		break;
+		case 'ldap_password':
+		case 'smtppass':
+			$params=array(
+				'class'=>'input',
+				'required'=>1,
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormPassword($field,$params);
+		break;
+		case 'smtpport':
+			$params=array(
+				'class'=>'input',
+				'type'=>'number',
+				'required'=>1,
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormText($field,$params);
+		break;
+		case 'authldap_checkmemberof':
+		case 'authldap_secure':
+		case 'ldap_checkmemberof':
+		case 'ldap_secure':
+		case 'wasql_synchronize':
+		case 'phpmailer':
+		case 'cron':
+		case 'userlog':
+		case 'log_queries':
+		case 'stage':
+			$opts=array(
+				'1'=>'Yes',
+				'0'=>'No'
+			);
+			$params=array(
+				'1_class'=>'btn w_green',
+				'0_class'=>'btn w_red',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormButtonSelect($field,$opts,$params);
+		break;
+		case 'login_title':
+			$params=array(
+				'class'=>'input',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormText($field,$params);
+		break;
+	}
+}
 function configAddEdit($id){
 	$opts=array(
 		'-table'=>'_config',

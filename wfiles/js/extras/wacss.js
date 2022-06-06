@@ -2356,6 +2356,7 @@ var wacss = {
 		}
 	},
 	initWhiteboard:function(){
+		//@reference https://stackoverflow.com/questions/3008635/html5-canvas-element-multiple-layers
 		let list=document.querySelectorAll('textarea[data-behavior="whiteboard"]');
 		for(let i=0;i<list.length;i++){
 			if(undefined != list[i].dataset.initialized){
@@ -2363,7 +2364,7 @@ var wacss = {
 			}
 			list[i].dataset.initialized+=1;
 			list[i].style.display='none';
-			//console.log(list[i]);
+			//wrapper
 			let wrapper = document.createElement('div');
 			wrapper.style.width = list[i].style.width;
 			wrapper.style.height = list[i].style.height;
@@ -2372,98 +2373,97 @@ var wacss = {
 			wrapper.style.boxShadow='rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px';
 			wrapper.id='whiteboard_wrapper_1';
 			wrapper.style.backgroundColor=list[i].dataset.fill||'#fff';
-			wrapper.shapes=new Array();
-			wrapper.drawShapes=function(){
+			wrapper.shapesBottom=new Array();
+			wrapper.shapesTop=new Array();
+			wrapper.shape={};
+			wrapper.drawShapesBottom=function(){
 				//clear canvas
-				this.canvas.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		    	this.canvas.txtarea.innerText='';
-		    	let dshapes=this.shapes;
-		    	//console.log(this.shapes);
-		    	dshapes.push(this.canvas.shape);
-		    	//console.log(this.shapes.length,dshapes.length);
+				this.bottom_canvas.ctx.clearRect(0, 0, this.bottom_canvas.width, this.bottom_canvas.height);
+		    	this.txtarea.innerText='';
+		    	let dshapes=this.shapesBottom;
 		    	//draw shapes
 		    	let simg=undefined;
 				for(let i=0;i<dshapes.length;i++){
 					let shape=dshapes[i];
 					if(undefined == shape){continue;}
 					if(undefined == shape.shape){continue;}
-					console.log(i);
 					switch(shape.shape){
 						case 'image':
 							simg = new Image();
 					        //drawing of the test image - img1
-					        simg.canvas=this.canvas;
+					        simg.bottom_canvas=this.bottom_canvas;
+					        simg.txtarea=this.txtarea;
 					        simg.crossOrigin = 'anonymous';
 					        simg.src = shape.src;
 						break;
 						case 'circle':
 							//circle fields: shape,x,y,radius,fillcolor
-							this.canvas.ctx.beginPath();
-				            this.canvas.ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2);
+							this.bottom_canvas.ctx.beginPath();
+				            this.bottom_canvas.ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2);
 				       		
 				            if(shape.fillcolor.length){
-				            	this.canvas.ctx.fillStyle=shape.fillcolor;
-				            	this.canvas.ctx.lineWidth=shape.size;
-				            	this.canvas.ctx.fill();	
+				            	this.bottom_canvas.ctx.fillStyle=shape.fillcolor;
+				            	this.bottom_canvas.ctx.lineWidth=shape.size;
+				            	this.bottom_canvas.ctx.fill();	
 				            }
 				            else{
 				            	//no fill
-				            	this.canvas.ctx.lineWidth=shape.size;
-				            	this.canvas.ctx.strokeStyle=shape.pencolor;
-				            	this.canvas.ctx.stroke();
+				            	this.bottom_canvas.ctx.lineWidth=shape.size;
+				            	this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
+				            	this.bottom_canvas.ctx.stroke();
 				            }
 						break;
 						case 'rectangle':
 							//rectangle fields: shape,x,y,width,fillcolor
 							if(shape.fillcolor.length){
-				            	this.canvas.ctx.fillStyle=shape.fillcolor;
-				            	this.canvas.ctx.lineWidth=shape.size;
-	            				this.canvas.ctx.fillRect(shape.x,shape.y,shape.width,shape.height);	
+				            	this.bottom_canvas.ctx.fillStyle=shape.fillcolor;
+				            	this.bottom_canvas.ctx.lineWidth=shape.size;
+	            				this.bottom_canvas.ctx.fillRect(shape.x,shape.y,shape.width,shape.height);	
 				            }
 				            else{
 				            	//no fill
-				            	this.canvas.ctx.strokeStyle=shape.pencolor;
-				            	this.canvas.ctx.lineWidth=shape.size;
-				            	this.canvas.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
+				            	this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
+				            	this.bottom_canvas.ctx.lineWidth=shape.size;
+				            	this.bottom_canvas.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
 				            }
 						break;
 						case 'line':
 							//pencil fields: shape,x,y,x2,y2,pencolor
-							this.canvas.ctx.beginPath();
-							this.canvas.ctx.moveTo(shape.x, shape.y);
-							this.canvas.ctx.strokeStyle=shape.pencolor;
-			            	this.canvas.ctx.lineTo(shape.x2, shape.y2);
-			            	this.canvas.ctx.lineWidth=shape.size;
-							this.canvas.ctx.stroke();
-							this.canvas.ctx.closePath();
+							this.bottom_canvas.ctx.beginPath();
+							this.bottom_canvas.ctx.moveTo(shape.x, shape.y);
+							this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
+			            	this.bottom_canvas.ctx.lineTo(shape.x2, shape.y2);
+			            	this.bottom_canvas.ctx.lineWidth=shape.size;
+							this.bottom_canvas.ctx.stroke();
+							this.bottom_canvas.ctx.closePath();
 						break;
 						default: //pencil is the default
 							//pencil fields: shape,x,y,x2,y2,pencolor
 							//console.log(shape);
-							this.canvas.ctx.beginPath();
-							this.canvas.ctx.moveTo(shape.x, shape.y);
-							this.canvas.ctx.strokeStyle=shape.pencolor;
-							this.canvas.ctx.lineWidth=shape.size;
-			            	this.canvas.ctx.lineTo(shape.x2, shape.y2);
+							this.bottom_canvas.ctx.beginPath();
+							this.bottom_canvas.ctx.moveTo(shape.x, shape.y);
+							this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
+							this.bottom_canvas.ctx.lineWidth=shape.size;
+			            	this.bottom_canvas.ctx.lineTo(shape.x2, shape.y2);
 			            	
-							this.canvas.ctx.stroke();
-							this.canvas.ctx.closePath();
+							this.bottom_canvas.ctx.stroke();
+							this.bottom_canvas.ctx.closePath();
 						break;
 					}
 				}
 				dshapes=[];
 				
-				if (typeof this.canvas.toDataURL === 'function') {
+				if (typeof this.bottom_canvas.toDataURL === 'function') {
 					if(simg){
 						simg.onload = function () {
 				            //draw background image
-				            this.canvas.ctx.drawImage(this, 0, 0);
-				            this.canvas.txtarea.innerText=this.canvas.toDataURL('image/png');
+				            this.bottom_canvas.ctx.drawImage(this, 0, 0);
+				            this.txtarea.innerText=this.bottom_canvas.toDataURL('image/png');
 				            //console.log('saved 1');
 				        };
 					}
 					else{
-						this.canvas.txtarea.innerText=this.canvas.toDataURL('image/png');
+						this.txtarea.innerText=this.bottom_canvas.toDataURL('image/png');
 						//console.log('saved 2');
 					}
 				}
@@ -2471,20 +2471,113 @@ var wacss = {
 					//console.log('NOT saved');
 				}
 			}
-			list[i].parentNode.insertBefore(wrapper, list[i].nextSibling);
-			let wcanvas = document.createElement('canvas');
-			let toolbar = document.createElement('div');
-			let params={};
-			wrapper.canvas=wcanvas;
-			wcanvas.onload=function(){
-				console.log('canvas load');
-				console.log(this);
+			wrapper.drawShapesTop=function(){
+				//clear canvas
+				//this.top_canvas.ctx.clearRect(0, 0, this.bottom_canvas.width, this.bottom_canvas.height);
+		    	let dshapes=new Array();
+		    	dshapes.push(this.shape);
+		    	//console.log(dshapes);
+		    	//draw shapes
+		    	let simg=undefined;
+				for(let i=0;i<dshapes.length;i++){
+					let shape=dshapes[i];
+					if(undefined == shape){continue;}
+					if(undefined == shape.shape){continue;}
+					switch(shape.shape){
+						case 'image':
+							simg = new Image();
+					        //drawing of the test image - img1
+					        simg.top_canvas=this.top_canvas;
+					        simg.txtarea=this.txtarea;
+					        simg.crossOrigin = 'anonymous';
+					        simg.src = shape.src;
+						break;
+						case 'circle':
+							//circle fields: shape,x,y,radius,fillcolor
+							this.top_canvas.ctx.beginPath();
+				            this.top_canvas.ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2);
+				       		
+				            if(shape.fillcolor.length){
+				            	this.top_canvas.ctx.fillStyle=shape.fillcolor;
+				            	this.top_canvas.ctx.lineWidth=shape.size;
+				            	this.top_canvas.ctx.fill();	
+				            }
+				            else{
+				            	//no fill
+				            	this.top_canvas.ctx.lineWidth=shape.size;
+				            	this.top_canvas.ctx.strokeStyle=shape.pencolor;
+				            	this.top_canvas.ctx.stroke();
+				            }
+						break;
+						case 'rectangle':
+							//rectangle fields: shape,x,y,width,fillcolor
+							if(shape.fillcolor.length){
+				            	this.top_canvas.ctx.fillStyle=shape.fillcolor;
+				            	this.top_canvas.ctx.lineWidth=shape.size;
+	            				this.top_canvas.ctx.fillRect(shape.x,shape.y,shape.width,shape.height);	
+				            }
+				            else{
+				            	//no fill
+				            	this.top_canvas.ctx.strokeStyle=shape.pencolor;
+				            	this.top_canvas.ctx.lineWidth=shape.size;
+				            	this.top_canvas.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
+				            }
+						break;
+						case 'line':
+							//pencil fields: shape,x,y,x2,y2,pencolor
+							this.top_canvas.ctx.beginPath();
+							this.top_canvas.ctx.moveTo(shape.x, shape.y);
+							this.top_canvas.ctx.strokeStyle=shape.pencolor;
+			            	this.top_canvas.ctx.lineTo(shape.x2, shape.y2);
+			            	this.top_canvas.ctx.lineWidth=shape.size;
+							this.top_canvas.ctx.stroke();
+							this.top_canvas.ctx.closePath();
+						break;
+						default: //pencil is the default
+							//pencil fields: shape,x,y,x2,y2,pencolor
+							this.top_canvas.ctx.beginPath();
+							this.top_canvas.ctx.moveTo(shape.x, shape.y);
+							this.top_canvas.ctx.strokeStyle=shape.pencolor;
+			            	this.top_canvas.ctx.lineTo(shape.x2, shape.y2);
+			            	this.top_canvas.ctx.lineWidth=shape.size;
+							this.top_canvas.ctx.stroke();
+							this.top_canvas.ctx.closePath();
+						break;
+					}
+				}
+				dshapes=[];
+				
+				if (typeof this.top_canvas.toDataURL === 'function') {
+					if(simg){
+						simg.onload = function () {
+				            //draw background image
+				            this.top_canvastop_canvas.ctx.drawImage(this, 0, 0);
+				            this.txtarea.innerText=this.top_canvas.toDataURL('image/png');
+				            //console.log('saved 1');
+				        };
+					}
+					else{
+						this.txtarea.innerText=this.top_canvas.toDataURL('image/png');
+						//console.log('saved 2');
+					}
+				}
+				else{
+					//console.log('NOT saved');
+				}
 			}
-			toolbar.canvas=wcanvas;
-			toolbar.wrapper=wrapper;
-			toolbar.style='display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;';
-			//shape
-			//default to pencil
+			//put wrapper in the DOM
+			list[i].parentNode.insertBefore(wrapper, list[i].nextSibling);
+			//bottom_canvas for the base
+			wrapper.bottom_canvas = document.createElement('canvas');
+			wrapper.bottom_canvas.style.zIndex=5000;
+			//top_canvas for the top (temp)
+			wrapper.top_canvas = document.createElement('canvas');
+			wrapper.top_canvas.style.zIndex=6000;
+			//toolbar
+			let params={};
+			let toolbar = document.createElement('div');
+			toolbar.style='position:absolute;bottom:0px;left:0px;display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;';
+			//toolbar.shape - pencil,line,circle,rectangle - default to pencil
 			wrapper.dataset.shape='pencil';
 			let shapes={
 				'pencil':'Pencil',
@@ -2496,12 +2589,11 @@ var wacss = {
 			toolbar.shape=wacss.buildFormSelect('shape',shapes,params);
 			toolbar.shape.onchange=function(){
 				let shape=this.options[this.selectedIndex].value;
-				this.parentNode.wrapper.dataset.shape=shape;
+				this.parentNode.parentNode.dataset.shape=shape;
 			};
 			toolbar.shape.title="Shape";
 			toolbar.appendChild(toolbar.shape);
-
-			//size
+			//toolbar.size - default to 1
 			wrapper.dataset.size='1';
 			let sizes={
 				'1':'1px',
@@ -2519,12 +2611,11 @@ var wacss = {
 			toolbar.size=wacss.buildFormSelect('size',sizes,params);
 			toolbar.size.onchange=function(){
 				let size=this.options[this.selectedIndex].value;
-				this.parentNode.wrapper.dataset.size=size;
+				this.parentNode.parentNode.dataset.size=size;
 			};
 			toolbar.size.title="Pen Size";
 			toolbar.appendChild(toolbar.size);	
-
-			//pencolor
+			//toolbar.pencolor - default to black
 			wrapper.dataset.pencolor='#000';
 			let pencolors={
 				'#000':'Black',
@@ -2541,11 +2632,11 @@ var wacss = {
 			toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
 			toolbar.pencolor.onchange=function(){
 				let pencolor=this.options[this.selectedIndex].value;
-				this.parentNode.wrapper.dataset.pencolor=pencolor;
+				this.parentNode.parentNode.dataset.pencolor=pencolor;
 			};
 			toolbar.pencolor.title="Pen Color";
 			toolbar.appendChild(toolbar.pencolor);
-			//fillcolor
+			//toolbar.fillcolor - default to none
 			let fillcolors={
 				'':'None',
 				'#000':'Black',
@@ -2563,11 +2654,11 @@ var wacss = {
 			toolbar.fillcolor=wacss.buildFormSelect('fillcolor',fillcolors,params);
 			toolbar.fillcolor.onchange=function(){
 				let fillcolor=this.options[this.selectedIndex].value;
-				this.parentNode.wrapper.dataset.fillcolor=fillcolor;
+				this.parentNode.parentNode.dataset.fillcolor=fillcolor;
 			};
 			toolbar.fillcolor.title="Fill Color";
 			toolbar.appendChild(toolbar.fillcolor);
-			//clear
+			//toolbar.clear
 			toolbar.clear=document.createElement('span');
 			toolbar.clear.className='icon-erase w_pointer';
 			toolbar.clear.setAttribute('style','margin-left:10px;margin-right:10px;');
@@ -2575,63 +2666,53 @@ var wacss = {
 			toolbar.appendChild(toolbar.clear);
 			toolbar.clear.onclick=function(e){
 				if(!confirm('Erase Whiteboard?')){return false;}
-				this.parentNode.canvas.ctx.clearRect(0, 0, this.parentNode.canvas.width, this.parentNode.canvas.height);
-		    	this.parentNode.canvas.txtarea.innerText='';
+				this.parentNode.parentNode.bottom_canvas.ctx.clearRect(0, 0, this.parentNode.bottom_canvas.width, this.parentNode.bottom_canvas.height);
+		    	this.parentNode.parentNode.txtarea.innerText='';
 		    	this.parentNode.parentNode.shapes=new Array();
 			};
-
-			wrapper.canvas=wcanvas;
-			wrapper.roinit=0;
-			wcanvas.txtarea=list[i];
+			wrapper.txtarea=list[i];
 			wrapper.ro = new ResizeObserver(entries => {
 				for (let entry of entries) {
-					if(undefined != entry.target.canvas && undefined!=entry.target.clientWidth){
-						if(entry.target.roinit==1){
-							entry.target.canvas.setAttribute('width',entry.target.clientWidth);
-							entry.target.canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
-						}
-						entry.target.roinit=1;
+					if(undefined != entry.target.bottom_canvas && undefined!=entry.target.clientWidth){
+						entry.target.bottom_canvas.setAttribute('width',entry.target.clientWidth);
+						entry.target.bottom_canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
+						entry.target.top_canvas.setAttribute('width',entry.target.clientWidth);
+						entry.target.top_canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
 					}
 			 	}
 			});
 			wrapper.ro.observe(wrapper);
 		    // Fill Window Width and Height
-		    wcanvas.width = wrapper.clientWidth;
-		    let h=parseInt(wrapper.clientHeight)-parseInt(toolbar.style.height)-2;
-			wcanvas.height=h;
-			wcanvas.style.position='relative';
-			wcanvas.style.cursor='crosshair';
+			wrapper.bottom_canvas.style.position='absolute';
+			wrapper.top_canvas.style.position='absolute';
+			wrapper.top_canvas.style.cursor='crosshair';
 			
 
 			//console.log(wcanvas);
 			// context (ctx)
-			wcanvas.ctx = wcanvas.getContext("2d");
-			wcanvas.ctx.strokeStyle = "#000";
+			wrapper.bottom_canvas.ctx = wrapper.bottom_canvas.getContext("2d");
+			wrapper.top_canvas.ctx = wrapper.top_canvas.getContext("2d");
 			//load image?
 			if(list[i].innerHTML.length){
 		        let wshape={
 		        	shape:'image',
 		        	src:list[i].innerHTML
 		        }
-		        wrapper.shapes.push(wshape);
-		        wrapper.drawShapes();
+		        wrapper.shapesBottom.push(wshape);
+		        wrapper.drawShapesBottom();
 			}
 			
 		    // Mouse Event Handlers
-			wcanvas.isDown = false;
-			wcanvas.canvasX=0;
-			wcanvas.canvasY=0;
-			wcanvas.lineWidth = list[i].dataset.size || 1;
-			
-			wcanvas.onmousedown = function(e){
+			wrapper.isDown = false;
+			wrapper.top_canvas.onmousedown = function(e){
 				e = e || window.event;
 				let rect = e.target.getBoundingClientRect();
 			    this.x = parseInt(e.pageX - rect.left); //x position within the element.
 			    this.y = parseInt(e.pageY - rect.top);  //y position within the element.
-				this.isDown = true;
+				this.parentNode.isDown = true;
 				switch(this.parentNode.dataset.shape){
 					default: //pencil is the default
-						this.shape={
+						this.parentNode.shape={
 							shape:'pencil',
 							x:this.x,
 							y:this.y,
@@ -2640,7 +2721,7 @@ var wacss = {
 						};
 					break;
 					case 'line':
-						this.shape={
+						this.parentNode.shape={
 							shape:'line',
 							x:this.x,
 							y:this.y,
@@ -2651,7 +2732,7 @@ var wacss = {
 					case 'circle':
 						//circle
 						//circle fields: shape,x,y,radius,fillcolor
-						this.shape={
+						this.parentNode.shape={
 							shape:'circle',
 							x:this.x,
 							y:this.y,
@@ -2659,15 +2740,15 @@ var wacss = {
 							size:this.parentNode.dataset.size
 						};
 			            if(this.parentNode.dataset.fillcolor.length){
-			            	this.shape.fillcolor=this.parentNode.dataset.fillcolor;	
+			            	this.parentNode.shape.fillcolor=this.parentNode.dataset.fillcolor;	
 			            }
 			            else{
 			            	//no fill
-			            	this.shape.fillcolor='';
+			            	this.parentNode.shape.fillcolor='';
 			            }
 					break;
 					case 'rectangle':
-						this.shape={
+						this.parentNode.shape={
 							shape:'rectangle',
 							x:this.x,
 							y:this.y,
@@ -2675,29 +2756,29 @@ var wacss = {
 							size:this.parentNode.dataset.size
 						};
 			            if(this.parentNode.dataset.fillcolor.length){
-			            	this.shape.fillcolor=this.parentNode.dataset.fillcolor;	
+			            	this.parentNode.shape.fillcolor=this.parentNode.dataset.fillcolor;	
 			            }
 			            else{
 			            	//no fill
-			            	this.shape.fillcolor='';
+			            	this.parentNode.shape.fillcolor='';
 			            }
 					break;
 				}
 				//console.log(this.shape);
 			};
-			wcanvas.onmousemove=function(e){
+			wrapper.top_canvas.onmousemove=function(e){
 				e = e || window.event;
-				if(this.isDown !== false) {
+				if(this.parentNode.isDown !== false) {
 					let rect = e.target.getBoundingClientRect();
 					let x = parseInt(e.pageX - rect.left); //x position within the element.
 				    let y = parseInt(e.pageY - rect.top);  //y position within the element.
 
 				    switch(this.parentNode.dataset.shape){
 						default: //pencil is the default
-							this.shape.x2=x;
-							this.shape.y2=y;
-				    		this.parentNode.shapes.push(this.shape);
-				    		this.shape={
+							this.parentNode.shape.x2=x;
+							this.parentNode.shape.y2=y;
+				    		this.parentNode.shapesTop.push(this.parentNode.shape);
+				    		this.parentNode.shape={
 								shape:'pencil',
 								x:x,
 								y:y,
@@ -2706,45 +2787,45 @@ var wacss = {
 							//console.log(this.parentNode.shapes);
 						break;
 						case 'line':
-							this.shape.x2=x;
-				    		this.shape.y2=y;
+							this.parentNode.shape.x2=x;
+				    		this.parentNode.shape.y2=y;
 						break;
 						case 'circle':
-							let r1=Math.abs(x-this.shape.x);
-							let r2=Math.abs(y-this.shape.y);
-							if(r1 > r2){this.shape.radius=r1;}
-							else{this.shape.radius=r2;}
+							let r1=Math.abs(x-this.parentNode.shape.x);
+							let r2=Math.abs(y-this.parentNode.shape.y);
+							if(r1 > r2){this.parentNode.shape.radius=r1;}
+							else{this.parentNode.shape.radius=r2;}
 						break;
 						case 'rectangle':
-							this.shape.width=Math.abs(x-this.shape.x);
-							this.shape.height=Math.abs(y-this.shape.y);
+							this.parentNode.shape.width=Math.abs(x-this.parentNode.shape.x);
+							this.parentNode.shape.height=Math.abs(y-this.parentNode.shape.y);
 						break;
 					}
-					this.parentNode.drawShapes();
+					this.parentNode.drawShapesTop();
 				}
 				
 			};
-			wcanvas.onmouseup=function(e){
+			wrapper.top_canvas.onmouseup=function(e){
 				e = e || window.event;
-				this.isDown = false;
+				this.parentNode.isDown = false;
 				switch(this.parentNode.dataset.shape){
 					default: //pencil is the default
-						this.parentNode.shapes.push(this.shape);
+						this.parentNode.shapesTop.push(this.shape);
 					break;
 					case 'line':
 					break;
 					case 'circle':
-						this.parentNode.shapes.push(this.shape);
+						this.parentNode.shapesTop.push(this.shape);
 					break;
 					case 'rectangle':
-						this.parentNode.shapes.push(this.shape);
+						this.parentNode.shapesTop.push(this.shape);
 					break;
 				}
-				this.parentNode.drawShapes();
+				this.parentNode.drawShapesTop();
 			};
-			wrapper.onmouseout=function(e){
+			wrapper.top_canvas.onmouseout=function(e){
 				e = e || window.event;
-				this.canvas.isDown = false;
+				this.parentNode.isDown = false;
 				switch(this.parentNode.dataset.shape){
 					default: //pencil is the default
 						
@@ -2762,7 +2843,8 @@ var wacss = {
 				e = e || window.event;
 				e.preventDefault();
 			},false);
-			wrapper.appendChild(wcanvas);
+			wrapper.appendChild(wrapper.bottom_canvas);
+			wrapper.appendChild(wrapper.top_canvas);
 			wrapper.appendChild(toolbar);
 		}
 	},

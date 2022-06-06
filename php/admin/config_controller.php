@@ -1,4 +1,43 @@
 <?php
+/*
+	User authentication: 
+		Method: ldap
+			host
+			domain
+			checkmemberof
+			admins
+		Method: OKTA
+			okta_client_id="0oa51shizpAKNJdjS5d7"
+        	okta_client_secret="tS3s7hN66E8b-vzfkMKenqds5AUju4fcjqbgvL_9"
+        	okta_metadata_url="https://dev-67363231.okta.com/oauth2/default/.well-known/openid-configuration"
+        	okta_redirect_uri="https://localhost/"
+        	okta_restrict_auto_login_duration="30"
+        	ldap_username="serviceterra"
+        	ldap_password="0nG@dm1ns!"
+        	ldap_host="ldap.corp.doterra.net"
+        	ldap_domain="corp.doterra.net"
+        	ldap_secure="0"
+        	ldap_checkmemberof="0"
+        	ldap_basedn="DC=corp,DC=doterra,DC=net"
+        	admins
+        login_title
+        userlog
+
+	Sendmail authentication
+		Method: aws
+		Method: smtp
+			user
+			pass
+			port
+		from
+		encrypt
+		phpmailer
+	file conversions
+		convert
+		convert_command
+		reencode
+		reencode_command	
+*/
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
@@ -6,39 +45,35 @@
 		$CONFIG['admin_color']='w_gray';
 	}
 	switch(strtolower($_REQUEST['func'])){
-		case 'delete':
-			$id=(integer)$_REQUEST['id'];
-			$ok=delDBRecordById('_config',$id);
-			setView(array('showlist_ajax','config_menu'),1);
+		case 'config_users':
+		case 'config_sync':
+		case 'config_mail':
+		case 'config_uploads':
+		case 'config_misc':
+			setView($_REQUEST['func'],1);
 			return;
 		break;
-		case 'addedit':
-			$id=(integer)$_REQUEST['id'];
-			setView('addedit',1);
-			return;
-		break;
-		case 'showlist':
-			$category=$_REQUEST['category'];
-			setView('showlist',1);
-			if(isset($_REQUEST['config_menu'])){
-				setView('config_menu');
+		case 'config_users_wasql':
+		case 'config_users_ldap':
+		case 'config_users_okta':
+		case 'config_users_okta_ldap':
+		case 'config_sync_form':
+		case 'config_mail_form':
+		case 'config_uploads_form':
+		case 'config_misc_form':
+			switch(strtolower($_REQUEST['process'])){
+				case 'save':
+					$ok=configSave();
+					setView('config_users_save',1);
+					return;
+				break;
 			}
-			return;
-		break;
-		case 'showlist_ajax':
-			$category=$_REQUEST['category'];
-			setView('showlist_ajax',1);
-			return;
-		break;
-		case 'config_menu':
-			$categories=getDBRecords("select count(*) cnt,ifnull(category,'misc') as name from _config group by category order by ifnull(category,'misc')");
-			setView('config_menu',1);
+			setView($_REQUEST['func'],1);
 			return;
 		break;
 		default:
 			$ok=configCheckSchema();
 			setView('default',1);
-			$categories=getDBRecords("select count(*) cnt,ifnull(category,'misc') as name from _config group by category order by ifnull(category,'misc')");
 		break;
 	}
 	setView('default',1);

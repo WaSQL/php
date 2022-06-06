@@ -406,8 +406,11 @@
 		break;
 		default:
 			$showtabs=array();
-			if(isset($CONFIG['sql_prompt_dbs'])){
-				$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
+			if(isset($CONFIG['sql_prompt_dbs']) && strlen($CONFIG['sql_prompt_dbs'])){
+				$showtabs=preg_split('/[\:\,]+/',$CONFIG['sql_prompt_dbs']);
+			}
+			elseif(isset($CONFIG['databases']) && strlen($CONFIG['databases'])){
+				$showtabs=preg_split('/[\:\,]+/',$CONFIG['databases']);
 			}
 			$tabs=array();
 			$groups=array();

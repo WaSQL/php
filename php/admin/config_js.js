@@ -1,3 +1,10 @@
+function configAuthMethodChanged(){
+	let el=document.querySelector('#config_auth_method');
+	let auth=el.options[el.selectedIndex].value;
+	el.dataset.func='config_users_'+auth;
+	configNav(el);
+	return true;
+}
 function configNav(el,opts){
 	if(undefined != el.dataset.confirm){
 		if(!confirm(el.dataset.confirm)){return false;}

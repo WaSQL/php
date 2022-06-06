@@ -768,10 +768,9 @@ if(isAjax()){
 			echo $wasql_debugValueContent;
 			exit;
 		break;
+		case 'codeprompt':
 		case 'phpprompt':
-			echo '<div class="container-fluid">'.PHP_EOL;
-			echo adminViewPage('phpprompt');
-			echo '</div>'.PHP_EOL;
+			echo adminViewPage('codeprompt');
 			exit;
 		break;
     	case 'tabledetails':
@@ -1697,25 +1696,16 @@ ENDOFX;
 			global $CONFIG;
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-info-circled"></span> About WaSQL</h2>'.PHP_EOL;
 			echo '<div class="row"><div class="col s12 m6">';
-			echo '<table class="table striped bordered">'.PHP_EOL;
-			//Database Information
-			echo '<tr><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'.PHP_EOL;
-			ksort($CONFIG);
-			foreach($CONFIG as $key=>$val){
-				if(preg_match('/^\_/',$key)){continue;}
-				if(preg_match('/pass$/i',$key)){
-					$val=preg_replace('/./','*',$val);
-				}
-				echo "<tr><th align=\"left\">{$key}:</th><td>{$val}</td></tr>\n";
-            	}
-			//Version Information
-			//$cver=curl_version();
+			echo '<table class="table striped">'.PHP_EOL;
+			//versions
 			$versions=getAllVersions();
-			echo '<tr><th colspan="2">Version Information</th></tr>'.PHP_EOL;
+			echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Version Information</th></tr>'.PHP_EOL;
 			foreach($versions as $key=>$version){
 				if(!strlen($version)){continue;}
 				echo "<tr><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
-            	}
+            }
+			//Version Information
+			//$cver=curl_version();
             //Server information
             $versions=array(
 				'OS'			=> php_uname('s'),
@@ -1723,13 +1713,13 @@ ENDOFX;
 				'Release'		=> php_uname('r'),
 				'Version'		=> php_uname('v'),
 				'Machine Type'	=> php_uname('m'),
-				);
+			);
 			ksort($versions);
-            echo '<tr><th colspan="2">Server Information</th></tr>'.PHP_EOL;
+            echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Server Information</th></tr>'.PHP_EOL;
             foreach($versions as $key=>$version){
 				if(!strlen($version)){continue;}
 				echo "<tr><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
-            	}
+            }
             //Loaded Extensions
          //   $exts=get_loaded_extensions();
             //Other information
@@ -1743,12 +1733,22 @@ ENDOFX;
 				'PHP Temp Dir'		=> sys_get_temp_dir(),
 				'PHP SAPI Name'		=> php_sapi_name(),
 				'PHP Ini Path'		=> php_ini_loaded_file()
-				);
+			);
 			ksort($versions);
-            echo '<tr><th colspan="2">Other Information</th></tr>'.PHP_EOL;
+            echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Other Information</th></tr>'.PHP_EOL;
             foreach($versions as $key=>$version){
 				if(!strlen($version)){continue;}
 				echo "<tr valign=\"top\"><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
+            }
+            //CONFIG Information
+			echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'.PHP_EOL;
+			ksort($CONFIG);
+			foreach($CONFIG as $key=>$val){
+				if(preg_match('/^\_/',$key)){continue;}
+				if(preg_match('/pass$/i',$key)){
+					$val=preg_replace('/./','*',$val);
+				}
+				echo "<tr><th align=\"left\">{$key}:</th><td>{$val}</td></tr>\n";
             	}
             echo '</table>'.PHP_EOL;
             echo '</div></div>';
@@ -2794,9 +2794,10 @@ LIST_TABLE:
 			echo $wasql_debugValueContent;
 			exit;
 		break;
+		case 'codeprompt':
 		case 'phpprompt':
 			echo '<div class="container-fluid">'.PHP_EOL;
-			echo adminViewPage('phpprompt');
+			echo adminViewPage('codeprompt');
 			echo '</div>'.PHP_EOL;
 			exit;
 		break;

@@ -1,0 +1,91 @@
+<view:default>
+<script type="text/javascript">
+	function codepromptCheckKey(e){
+		e = e || window.event;
+        //keycodes: F8=119, CTRL-ENTER=10
+	    if (e.keyCode == 119) {
+			codepromptSetFunc('code')
+			return codepromptSubmit(document.codeprompt);
+	    }
+	    else if (e.ctrlKey && e.keyCode === 13) {
+	    	//CTRL+ENTER
+	    	codepromptSetFunc('code')
+			return codepromptSubmit(document.codeprompt);
+	    }
+	    else if (e.ctrlKey && e.keyCode === 69) {
+	    	//CTRL+e
+	    	codepromptSetFunc('code')
+			return codepromptSubmit(document.codeprompt);
+	    }
+	    else{
+	    	//console.log('Keycode:'+e.keyCode);
+	    }
+	}
+	function codepromptSetFunc(v){
+		document.codeprompt.func.value=v;
+	}
+	function codepromptFields(table){
+		var t=getText(table+'_fields');
+		if(t.length){
+			setText(table+'_fields','');
+			return;
+		}
+		var db=document.sqlprompt.db.value;
+		return ajaxGet('/php/admin.php',table+'_fields',{_menu:'codeprompt',func:'fields',table:table,db:db})
+	}
+	function codepromptSetLang(lang){
+		let func='setlang_'+lang;
+		return ajaxGet('/php/admin.php','code_full',{_menu:'codeprompt',func:func,setprocessing:0})
+	}
+	function codepromptSubmit(frm){
+		frm.code_select.value=getSelText(frm.code_full);
+		return ajaxSubmitForm(frm,'codeprompt_results');
+	}
+	document.onkeydown = codepromptCheckKey;
+</script>
+
+	<div class="row">
+		<div class="col-sm-12" style="margin-bottom:10px;">
+			<h2 style="margin:0px;padding:10px 0 0 0;" class="<?=configValue('admin_color');?>"><span class="icon-code"></span> Code Prompt
+				<span class="icon-program-php w_pointer" title="PHP" style="margin-left:10px;font-size:1.3em;" onclick="codepromptSetLang('php')"></span> 
+				<span class="icon-program-python w_pointer" title="Python" style="margin-left:10px;" onclick="codepromptSetLang('py')"></span>
+				<span class="icon-program-perl w_pointer" title="Perl" style="margin-left:10px;" onclick="codepromptSetLang('pl')"></span>
+				<span class="icon-program-nodejs w_pointer" title="NodeJs" style="margin-left:10px;" onclick="codepromptSetLang('node')"></span>
+				<span class="icon-program-lua w_pointer" title="Lua" style="margin-left:10px;" onclick="codepromptSetLang('lua')"></span>
+			</h2>
+			
+		</div>
+	</div>
+	<div class="row w_padtop">
+		<div class="col-sm-12">
+			<form method="post" action="<?=$CONFIG['codeprompt_path'];?>" name="codeprompt" onsubmit="return codepromptSubmit(this);">
+				<input type="hidden" name="_menu" value="codeprompt">
+				<input type="hidden" name="func" value="code">
+				<input type="hidden" name="code_select" value="">
+				<textarea class="form-control" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;padding:10px;" placeholder="Code" id="code_full" name="code_full"><?=codepromptGetValue();?></textarea>
+				<div class="w_padtop" style="display:flex;justify-content: space-between;">
+					<button type="submit" onclick="codepromptSetFunc('code');" class="btn w_blue">Run Input Contents</button>
+					<div>
+						<button type="submit" onclick="codepromptSetFunc('code_prompt_load');" class="btn w_yellow">Load code_prompt</button>
+						<button type="submit" onclick="codepromptSetFunc('code_prompt');" class="btn w_green">Load & Run code_prompt</button>
+					</div>
+				</div>
+			</form>
+			<div id="codeprompt_results" class="w_padtop"></div>
+		</div>
+	</div>
+</view:default>
+
+<view:results>
+	<pre><?=$results;?></pre>
+	<view:code_prompt>
+		<textarea id="code_prompt" style="display:none"><?=$code_full;?></textarea>
+	<?=buildOnLoad("document.codeprompt.reset();setText('code_full',getText('code_prompt'));");?>
+	</view:code_prompt>
+</view:results>
+
+<view:code_prompt_load>
+	<textarea id="code_prompt" style="display:none"><?=$code_full;?></textarea>
+	<?=buildOnLoad("document.codeprompt.reset();setText('code_full',getText('code_prompt'));");?>
+</view:code_prompt_load>
+
