@@ -363,6 +363,7 @@ function writeFiles(){
 				break;
 	        	default:
 	        		switch(strtolower($name)){
+	        			case 'code_prompt':$ext='php';break;
 	        			case 'php_prompt':$ext='php';break;
 	        			case 'python_prompt':$ext='py';break;
 	        			case 'sql_prompt':$ext='sql';break;
