@@ -123,7 +123,8 @@ while(1){
 		$recs=getDBRecords(array(
 			'-table'=>'_cron',
 			'-where'=>$wherestr_all,
-			'-fields'=>'_id,name'
+			'-fields'=>'_id,name',
+			'-nocache'=>1
 		));
 		if(is_array($recs)){
 			$cnt=count($recs);
@@ -401,7 +402,8 @@ function cronCleanRecords($cron=array()){
 		'-order'=>'_id desc',
 		'-limit'=>$cron['records_to_keep'],
 		'-fields'=>'_id',
-		'cron_id'=>$cron['_id']
+		'cron_id'=>$cron['_id'],
+		'-nocache'=>1
 	));
 	if(!isset($recs[0])){return;}
 	$min=0;
