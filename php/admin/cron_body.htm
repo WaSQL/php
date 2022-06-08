@@ -99,6 +99,7 @@ function cronLogRefreshTimer(){
 }
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
+
 <div id="cron_results" class="w_padtop">
 	<?=renderView('list');?>
 </div>
@@ -116,7 +117,6 @@ function cronLogRefreshTimer(){
 		<button type="button" class="button btn w_red" onclick="cronSetMultiple('stop_now',0)">Unset Stop Now</button>
 		<button type="button" class="button btn w_blue" onclick="cronSetMultiple('run_now',1)">Set Run Now</button>
 		<button type="button" class="button btn w_blue" onclick="cronSetMultiple('run_now',0)">Unset Run Now</button>
-		
 	</div>
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>

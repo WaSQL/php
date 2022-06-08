@@ -95,8 +95,8 @@ function cronList(){
 		'-table'=>'_cron',
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'_id,groupname,name,active,paused,running,run_now,stop_now',
-		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,last_run,run_length,run_format,frequency_max',
-		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
+		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,last_run,run_length,run_memory,run_format,frequency_max',
+		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_memory,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -108,24 +108,30 @@ function cronList(){
 		'-onsubmit'=>"return pagingSubmit(this,'cron_results');",
 		'run_date_dateage'=>1,
 		'run_length_class'=>'align-right',
-		'run_length_verbosetime'=>1,
+		'run_length_options'=>array(
+			'verbosetime'=>1,
+			'displayname'=>'Runtime'
+		),
 		'last_run_options'=>array(
 			'class'=>'align-right',
 			'verbosetime'=>1
 		),
+		'run_memory_options'=>array(
+			'displayname'=>'Mem',
+			'title'=>'Memory',
+			'class'=>'w_nowrap align-right',
+			'eval'=>"return verboseSize('%run_memory%');"
+		),
 		'cron_pid_options'=>array(
-			'class'=>'align-right'
+			'class'=>'align-right',
+			'displayname'=>'PID',
+			'title'=>'Process ID'
 		),
 		'groupname_displayname'=>'Group',
 		'run_format_displayname'=>'Frequency',
 		'_id_displayname'=>"ID / Action",
 		'active_options'=>array(
-			'class'=>'align-center',
-			'checkmark'=>1,
-			'checkmark_icon'=>'icon-mark w_success'
-		),
-		'active_options'=>array(
-			'class'=>'w_green align-center ',
+			'class'=>'w_success align-center ',
 			'checkbox'=>1,
 			'data-id'=>'%_id%',
 			'data-type'=>'checkbox',
@@ -222,8 +228,9 @@ function cronList(){
 	);
 	//predata
 	$recs=getDBRecords("select count(*) cnt, groupname from _cron where groupname is not null group by groupname order by groupname");
+	$opts['-predata']='<div class="w_gray w_smaller w_right">Server Time: '.date('Y-m-d H:i:s').'</div>';
 	if(isset($recs[0])){
-		$opts['-predata']=renderView('groupnames',$recs,'recs');
+		$opts['-predata'].=renderView('groupnames',$recs,'recs');
 	}
 	return databaseListRecords($opts);
 }
@@ -258,6 +265,9 @@ function cronListExtra($recs){
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
 		$name=$rec['name'];
+		if(!is_object(json_decode($rec['run_format']))){
+			$recs[$i]['run_format']='<span class="w_danger">'.$rec['run_format'].'</span>';
+		} 
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['_id']=<<<ENDOFID
 		<div style="display:flex;justify-content:space-between;align-items:center;">
