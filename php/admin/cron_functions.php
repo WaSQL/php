@@ -269,10 +269,10 @@ function cronListExtra($recs){
 			$recs[$i]['run_format']='<span class="w_danger">MISSING</span>';
 		}
 		elseif(!stringBeginsWith($rec['run_format'],'{')){
-			$recs[$i]['run_format']='<span class="w_danger">'.$rec['run_format'].'</span>';
+			$recs[$i]['run_format']='<span title="Invalid JSON" class="w_danger">'.$rec['run_format'].'</span>';
 		}
 		elseif(!is_object(json_decode($rec['run_format']))){
-			$recs[$i]['run_format']='<span class="w_danger">'.$rec['run_format'].'</span>';
+			$recs[$i]['run_format']='<span title="Invalid JSON" class="w_danger">'.$rec['run_format'].'</span>';
 		} 
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['_id']=<<<ENDOFID
