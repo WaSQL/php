@@ -265,7 +265,13 @@ function cronListExtra($recs){
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
 		$name=$rec['name'];
-		if(!is_object(json_decode($rec['run_format']))){
+		if(!strlen($rec['run_format'])){
+			$recs[$i]['run_format']='<span class="w_danger">MISSING</span>';
+		}
+		elseif(!stingBeginsWith($rec['run_format'],'{')){
+			$recs[$i]['run_format']='<span class="w_danger">'.$rec['run_format'].'</span>';
+		}
+		elseif(!is_object(json_decode($rec['run_format']))){
 			$recs[$i]['run_format']='<span class="w_danger">'.$rec['run_format'].'</span>';
 		} 
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
