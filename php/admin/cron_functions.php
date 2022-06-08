@@ -268,7 +268,7 @@ function cronListExtra($recs){
 		if(!strlen($rec['run_format'])){
 			$recs[$i]['run_format']='<span class="w_danger">MISSING</span>';
 		}
-		elseif(!stingBeginsWith($rec['run_format'],'{')){
+		elseif(!stringBeginsWith($rec['run_format'],'{')){
 			$recs[$i]['run_format']='<span class="w_danger">'.$rec['run_format'].'</span>';
 		}
 		elseif(!is_object(json_decode($rec['run_format']))){
