@@ -25,6 +25,13 @@ switch(strtolower($_REQUEST['func'])){
 		setView('details',1);
 		return;
 	break;
+	case 'clear':
+		$id=(integer)$_REQUEST['id'];
+		$ok=delDBRecord(array('-table'=>'_cronlog','-where'=>"cron_id={$id}"));
+		$cron=cronDetails($id);
+		setView('details',1);
+		return;
+	break;
 	case 'add':
 		//echo "add";exit;
 		$id=0;

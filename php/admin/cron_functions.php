@@ -118,7 +118,7 @@ function cronList(){
 		),
 		'run_memory_options'=>array(
 			'displayname'=>'Mem',
-			'title'=>'Memory',
+			'title'=>'Memory Used',
 			'class'=>'w_nowrap align-right',
 			'eval'=>"return verboseSize('%run_memory%');"
 		),
@@ -128,7 +128,7 @@ function cronList(){
 			'title'=>'Process ID'
 		),
 		'groupname_displayname'=>'Group',
-		'run_format_displayname'=>'Frequency',
+		'run_format_displayname'=>'Frequency <div class="w_gray w_smaller">(min, hr, mon, day, dayname)</div>',
 		'_id_displayname'=>"ID / Action",
 		'active_options'=>array(
 			'class'=>'w_success align-center ',
@@ -279,6 +279,11 @@ function cronListExtra($recs){
 		elseif(!is_object(json_decode($rec['run_format']))){
 			$recs[$i]['run_format']='<span title="Invalid JSON" class="w_danger">'.$rec['run_format'].'</span>';
 		} 
+		else{
+			$freq=json_decode($rec['run_format'],true);
+			$vals=array($freq['minute'][0],$freq['hour'][0],$freq['month'][0],$freq['day'][0],$freq['dayname'][0]);
+			$recs[$i]['run_format']=implode(', ',$vals);
+		}
 		$recs[$i]['groupname']='<span class="w_pointer" onclick="checkAllElements(\'data-groupname\',\''.$rec['groupname'].'\',true);">'.$rec['groupname'].'</span>';
 		$recs[$i]['_id']=<<<ENDOFID
 		<div style="display:flex;justify-content:space-between;align-items:center;">

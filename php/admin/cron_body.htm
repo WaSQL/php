@@ -77,6 +77,11 @@ function cronResultScroll(cron_id,id,run_length){
 	setText('run_length_'+id,run_length);
 }
 function cronModal(func,id,title){
+	switch(func){
+		case 'clear':
+			if(!confirm('Clear Cron Logs?')){return false;}
+		break;
+	}
 	let params = {_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'};
 	if(undefined != document.cronlistform){
 		if(undefined != document.cronlistform._filters){
@@ -222,8 +227,14 @@ function cronLogRefreshTimer(){
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
 
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('run',<?=$cron['_id'];?>,this.title);" title="Run Now"><span class="icon-play w_success"></span></a>
-
+					<view:killpid>
 					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('kill',<?=$cron['_id'];?>,this.title);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
+					</view:killpid>
+					<?=renderViewIf((integer)$cron['cron_pid'] > 0,'killpid',$cron,'cron');?>
+					<view:clearlogs>
+					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('clear',<?=$cron['_id'];?>,this.title);" title="Clear Logs for this cron"><span class="icon-erase w_warning"></span></a>
+					</view:clearlogs>
+					<?=renderViewIf(isset($cron['logs'][0]),'clearlogs',$cron,'cron');?>
 					<span id="cron_processing"></span>
 				</td>
 			</tr>
