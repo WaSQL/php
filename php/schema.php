@@ -36,6 +36,7 @@ function createWasqlTable($table=''){
 				$ok=executeSQL("rename table _models to _triggers");
 				$ok=executeSQL("update _tabledata set tablename='_triggers' where tablename='_models'");
 				$ok=executeSQL("update _fielddata set tablename='_triggers' where tablename='_models'");
+				$ok=executeSQL("update _fielddata set onchange='changeTriggerType(this)' where tablename='_triggers' and fieldname='mtype'");
 				return;
 			}
 		break;
