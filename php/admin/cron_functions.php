@@ -265,6 +265,11 @@ function cronListExtra($recs){
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
 		$name=$rec['name'];
+		//if cron_pid and not running something is wrong.
+		if((integer)$rec['cron_pid'] !=0 && (integer)$rec['running']==0){
+			$recs[$i]['cron_pid']='<span class="w_danger">'.$rec['cron_pid'].'</span>';
+		}
+		//check for valid run_format
 		if(!strlen($rec['run_format'])){
 			$recs[$i]['run_format']='<span class="w_danger">MISSING</span>';
 		}
