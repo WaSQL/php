@@ -31,10 +31,11 @@ function createWasqlTables($wtables=array()){
 function createWasqlTable($table=''){
 	switch(strtolower($table)){
 		case '_triggers':
+			//_triggers used to be called _models. Change to _triggers if it still exists
 			if(isDBTable('_models')){
 				$ok=executeSQL("rename table _models to _triggers");
-				$ok=executeSQL("update _tabledata set _tablename='_triggers' where _tablename='_models'");
-				$ok=executeSQL("update _fielddata set _tablename='_triggers' where _tablename='_models'");
+				$ok=executeSQL("update _tabledata set tablename='_triggers' where tablename='_models'");
+				$ok=executeSQL("update _fielddata set tablename='_triggers' where tablename='_models'");
 				return;
 			}
 		break;
@@ -2530,7 +2531,7 @@ function addMetaData($table=''){
 				'inputtype'		=> 'select',
 				'tvals'			=> "0\r\n1",
 				'dvals'			=> "Class\r\nFunctions",
-				'onchange'		=> "changeModelType(this)",
+				'onchange'		=> "changeTriggerType(this)",
 				'required'		=> 1,
 				'defaultval'	=> 1,
 				'-upsert'		=> 'inputtype,displayname,tvals,dvals,onchange,defaultval,required'
