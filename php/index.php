@@ -776,7 +776,7 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
     }
 	switch(strtolower($_REQUEST['apimethod'])){
 		case 'posteditsha':
-			$tables=array('_pages','_templates','_models');
+			$tables=array('_pages','_templates','_triggers');
 			if(strlen($_REQUEST['postedittables'])){
 				$moretables=preg_split('/[\,\;\:]+/',$_REQUEST['postedittables']);
 				foreach($moretables as $mtable){
@@ -827,7 +827,7 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		break;
 		case 'posteditxml':
 			//return xml of pages and templates
-			$tables=array('_pages','_templates','_models');
+			$tables=array('_pages','_templates','_triggers');
 			if(strlen($_REQUEST['postedittables'])){
 				$moretables=preg_split('/[\,\;\:]+/',$_REQUEST['postedittables']);
 				foreach($moretables as $mtable){

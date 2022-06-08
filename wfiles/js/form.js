@@ -2277,7 +2277,7 @@ function redrawField(fieldname,srcObj){
 	return false;
 }
 //--------------------------
-function changeModelType(srcObj){
+function changeTriggerType(srcObj){
 	let theForm=getElementForm(srcObj);
 	let content='';
 	if(undefined != theForm["_id"]){
@@ -2298,8 +2298,9 @@ function changeModelType(srcObj){
 		content +=''+"\r\n";
 		switch(tablename.toLowerCase()){
 			case '_users':
-				content +='	//User Login/Logout triggers'+"\r\n";
+				content +='	//_usersLogin -(user rec is passed in)'+"\r\n";
 				content +='	function '+tablename+'Login($user_rec=array()){}'+"\r\n";
+				content +='	//_usersLogout -(user rec is passed in)'+"\r\n";
 				content +='	function '+tablename+'Logout($user_rec=array()){}'+"\r\n";
 				content +=''+"\r\n";
 			break;

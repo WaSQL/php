@@ -566,7 +566,7 @@ global $USER;
 $_SERVER['WaSQL_AdminUserID']=$USER['_id'];
 //Verify all the WaSQL internal tables are built
 if(!isDBTable('_users')){$ok=createWasqlTable('_users');}
-if(!isDBTable('_models')){$ok=createWasqlTable('_models');}
+if(!isDBTable('_triggers')){$ok=createWasqlTable('_triggers');}
 if(!isDBTable('_minify')){$ok=createWasqlTable('_minify');}
 
 //uncomment below to see hidden debug statements in output
@@ -1972,7 +1972,7 @@ ENDOFX;
 								'_sort'=>$_REQUEST['_sort'],
 								'_start'=>$_REQUEST['_start']
 							);
-							if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
+							if($addopts['-table']=='_triggers'){$addopts['mtype_defaultval']='';}
 							$addopts=adminAddEditOpts($addopts);
 							echo addEditDBForm($addopts);
 						}
@@ -2001,7 +2001,7 @@ ENDOFX;
 						);
 						if(isset($_REQUEST['_sort'])){$addopts['_sort']=$_REQUEST['_sort'];}
 						if(isset($_REQUEST['_start'])){$addopts['_start']=$_REQUEST['_start'];}
-						if($addopts['-table']=='_models'){$addopts['mtype_defaultval']='';}
+						if($addopts['-table']=='_triggers'){$addopts['mtype_defaultval']='';}
 						$addopts=adminAddEditOpts($addopts);
 						echo addEditDBForm($addopts);
 					}
@@ -3620,7 +3620,7 @@ function tableOptions($table='',$params=array()){
 	*/
 	global $wtables;
 	if(!isset($params['-format'])){$params['-format']='li';}
-	if(!isset($params['-options'])){$params['-options']='drop,rebuild,rebuild_meta,truncate,backup,grep,model,indexes,properties,list,add';}
+	if(!isset($params['-options'])){$params['-options']='drop,rebuild,rebuild_meta,truncate,backup,grep,trigger,indexes,properties,list,add';}
 	if(!is_array($params['-options'])){$params['-options']=preg_split('/[\,\:]+/',$params['-options']);}
 	global $PAGE;
 	//Bootstrap Colors: default, primary, success, info, warning, danger, black, grey
@@ -3629,7 +3629,7 @@ function tableOptions($table='',$params=array()){
 		'truncate'	=> array("Truncate Table",'icon-blank w_warning w_big'),
 		'indexes'	=> array("Show Indexes",'icon-optimize w_gold w_big'),
 		'backup'	=> array("Backup Table",'icon-save w_black w_big'),
-		'model'		=> array("Triggers",'icon-toggle-on w_grey w_big'),
+		'trigger'	=> array("Triggers",'icon-toggle-on w_grey w_big'),
 //		'schema'	=> array("Schema",'table_truncate'),
 		'properties'=> array("Properties",'icon-properties w_grey w_big'),
 		'list'		=> array("List Records",'icon-list w_default w_big'),
@@ -3642,8 +3642,8 @@ function tableOptions($table='',$params=array()){
 	if(in_array($table,$wtables)){
     	$tableoptions['rebuild_meta']=array('Rebuild Meta','icon-refresh w_warning w_big');
 	}
-	//check for _models for this table
-	$model=getDBTableModel($table);
+	//check for _triggers for this table
+	$trigger=getDBTableTrigger($table);
 	//if($table=='states'){echo "HERE".printValue($tableoptions);exit;}
 	$rtn='';
 	switch(strtolower($params['-format'])){
@@ -3655,12 +3655,12 @@ function tableOptions($table='',$params=array()){
 				$title=$tableoptions[$option][0];
 				$spanclass=$tableoptions[$option][1];
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
-				if($option == 'model'){
-                	if(isset($model['_id'])){
-                    	$href="/php/admin.php?_menu=edit&_table_=_models&_id={$model['_id']}";
+				if($option == 'trigger'){
+                	if(isset($trigger['_id'])){
+                    	$href="/php/admin.php?_menu=edit&_table_=_triggers&_id={$trigger['_id']}";
 					}
 					else{
-						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
+						$href="/php/admin.php?_menu=add&_table_=_triggers&name={$table}";
 					}
 				}
 				$rtn .= '						<li><a title="'.$title.'" class="w_link" href="'.$href.'"';
@@ -3715,12 +3715,12 @@ function tableOptions($table='',$params=array()){
 				$spanclass=$tableoptions[$option][1];
 				$class='btn';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
-				if($option == 'model'){
-                	if(isset($model['_id'])){
-                    	$href="/php/admin.php?_menu=edit&_table_=_models&_id={$model['_id']}";
+				if($option == 'trigger'){
+                	if(isset($trigger['_id'])){
+                    	$href="/php/admin.php?_menu=edit&_table_=_triggers&_id={$trigger['_id']}";
 					}
 					else{
-						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
+						$href="/php/admin.php?_menu=add&_table_=_triggers&name={$table}";
 					}
 				}
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class.=' active';}
@@ -3760,12 +3760,12 @@ function tableOptions($table='',$params=array()){
 				$spanclass=$tableoptions[$option][1];
 				$class='';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
-				if($option == 'model'){
-                	if(isset($model['_id'])){
-                    	$href="/php/admin.php?_menu=edit&_table_=_models&_id={$model['_id']}";
+				if($option == 'trigger'){
+                	if(isset($trigger['_id'])){
+                    	$href="/php/admin.php?_menu=edit&_table_=_triggers&_id={$trigger['_id']}";
 					}
 					else{
-						$href="/php/admin.php?_menu=add&_table_=_models&name={$table}";
+						$href="/php/admin.php?_menu=add&_table_=_triggers&name={$table}";
 					}
 				}
 				if(isset($_REQUEST['_menu']) && $option==$_REQUEST['_menu']){$class='current';}

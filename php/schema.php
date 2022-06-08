@@ -29,6 +29,16 @@ function createWasqlTables($wtables=array()){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function createWasqlTable($table=''){
+	switch(strtolower($table)){
+		case '_triggers':
+			if(isDBTable('_models')){
+				$ok=executeSQL("rename table _models to _triggers");
+				$ok=executeSQL("update _tabledata set _tablename='_triggers' where _tablename='_models'");
+				$ok=executeSQL("update _fielddata set _tablename='_triggers' where _tablename='_models'");
+				return;
+			}
+		break;
+	}
 	global $CONFIG;
 	//common fields to all wasql tables
 	$fields=array(
@@ -475,7 +485,7 @@ function createWasqlTable($table=''){
 			}
 			return 1;
 			break;
-		case '_models':
+		case '_triggers':
 			$fields['name']=databaseDataType('varchar(100)')." NOT NULL UNIQUE";
 			$fields['mtype']=databaseDataType('integer(1)')." NOT NULL Default 1";
 			$fields['active']=databaseDataType('tinyint(1)')." NOT NULL Default 1";
@@ -2502,9 +2512,9 @@ function addMetaData($table=''){
 				'-upsert'		=> 'inputtype,width,height'
 				));
 		break;
-		case '_models':
+		case '_triggers':
 			$id=addDBRecord(array('-table'=>'_fielddata',
-				'tablename'		=> '_models',
+				'tablename'		=> '_triggers',
 				'fieldname'		=> 'name',
 				'inputtype'		=> 'select',
 				'width'			=> 150,
@@ -2514,7 +2524,7 @@ function addMetaData($table=''){
 				'-upsert'		=> 'inputtype,width,tvals,dvals,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
-				'tablename'		=> '_models',
+				'tablename'		=> '_triggers',
 				'fieldname'		=> 'mtype',
 				'displayname'	=> 'Type',
 				'inputtype'		=> 'select',
@@ -2526,7 +2536,7 @@ function addMetaData($table=''){
 				'-upsert'		=> 'inputtype,displayname,tvals,dvals,onchange,defaultval,required'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
-				'tablename'		=> '_models',
+				'tablename'		=> '_triggers',
 				'fieldname'		=> 'functions',
 				'inputtype'		=> 'textarea',
 				'width'			=> '600',
@@ -2534,7 +2544,7 @@ function addMetaData($table=''){
 				'-upsert'		=> 'inputtype,width,height'
 				));
 			$id=addDBRecord(array('-table'=>'_fielddata',
-				'tablename'		=> '_models',
+				'tablename'		=> '_triggers',
 				'fieldname'		=> 'active',
 				'inputtype'		=> 'checkbox',
 				'defaultval'	=> 1,
@@ -2542,7 +2552,7 @@ function addMetaData($table=''){
 				'-upsert'		=> 'inputtype,tvals,defaultval'
 				));
 			$id=addDBRecord(array('-table'=>'_tabledata',
-				'tablename'		=> '_models',
+				'tablename'		=> '_triggers',
 				'formfields'	=> "name mtype active\r\nfunctions",
 				'listfields'	=> 'name mtype active',
 				'sortfields'	=> 'name',
@@ -2636,7 +2646,7 @@ function getWasqlTables(){
 		'_fielddata','_tabledata','_errors',
 		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
-		'_reports','_models','_sessions','_html_entities','_posteditlog','_config','_prompts'
+		'_reports','_triggers','_sessions','_html_entities','_posteditlog','_config','_prompts'
 		);
 	//include wpass table?
 	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}

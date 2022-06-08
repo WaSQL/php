@@ -345,7 +345,7 @@ function dbCreateTable($db,$table,$fields=array()){
 * @param params array
 *	-table string - name of table
 *	-where string - where clause to filter what records are deleted
-*	[-model] boolean - set to false to disable model functionality
+*	[-trigger] boolean - set to false to disable trigger functionality
 * @return boolean
 * @usage $id=dbDelRecord($db,array('-table'=> '_tabledata','-where'=>"_id=4"));
 */
@@ -4728,7 +4728,7 @@ function addEditDBForm($params=array(),$customcode=''){
 *	-table string - name of table
 *	[-ignore] boolean - set to 1 to ignore if record already exists
 *	[-upsert] mixed - list of fields to update if record already exits. comma separated list or array of fields.
-*	[-model] boolean - set to false to disable model functionality
+*	[-trigger] boolean - set to false to disable trigger functionality
 *	treats other params as field/value pairs
 * @return array
 * @usage
@@ -4754,31 +4754,31 @@ function addDBRecord($params=array()){
 	}
 	global $USER;
 	global $CONFIG;
-	//model
-	if(!isset($params['-model']) || ($params['-model'])){
-		$model=getDBTableModel($table);
-		$model_table=$table;
+	//trigger
+	if(!isset($params['-trigger']) || ($params['-trigger'])){
+		$trigger=getDBTableTrigger($table);
+		$trigger_table=$table;
 	}
 	//check to see if they passed a databasename with table
 	$table_parts=preg_split('/\./', $table);
 	if(count($table_parts) > 1){
 		$params['-dbname']=array_shift($table_parts);
-		$model_table=implode('.',$table_parts);
+		$trigger_table=implode('.',$table_parts);
 		}
-	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
-    	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
+	if(isset($trigger['functions']) && !isset($params['-notrigger']) && strlen(trim($trigger['functions']))){
+    	$ok=includePHPOnce($trigger['functions'],"{$trigger_table}-trigger_functions");
     	//look for Before trigger
-    	$model['check']=1;
-    	if(function_exists("{$model_table}AddBefore")){
+    	$trigger['check']=1;
+    	if(function_exists("{$trigger_table}AddBefore")){
 			unset($params['-error']);
-        	$params=call_user_func("{$model_table}AddBefore",$params);
+        	$params=call_user_func("{$trigger_table}AddBefore",$params);
         	if(isset($params['-error'])){
 				if(!isset($params['-nodebug'])){
 					debugValue($params['-error']);
 				}
 				return $params['-error'];
 			}
-        	if(!isset($params['-table'])){return "{$model_table}AddBefore Error: No Table".printValue($params);}
+        	if(!isset($params['-table'])){return "{$trigger_table}AddBefore Error: No Table".printValue($params);}
 		}
 	}
 	//wpass?
@@ -5011,11 +5011,11 @@ function addDBRecord($params=array()){
     //return if no updates were found
 	if(!count($fields)){
 		//failure
-		if(isset($model['functions']) && !isset($params['-notrigger'])){
+		if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
-	    	if(function_exists("{$model_table}AddFailure")){
+	    	if(function_exists("{$trigger_table}AddFailure")){
 				$params['-error']="addDBRecord Error: No Fields";
-	        	$params=call_user_func("{$model_table}AddFailure",$params);
+	        	$params=call_user_func("{$trigger_table}AddFailure",$params);
 			}
 		}
 		return "addDBRecord Error: No Fields" . printValue($params) . printValue($info);
@@ -5126,7 +5126,7 @@ function addDBRecord($params=array()){
     	databaseFreeResult($query_result);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
-		if((isset($tinfo['websockets']) && $tinfo['websockets']==1) || isset($model['functions'])){
+		if((isset($tinfo['websockets']) && $tinfo['websockets']==1) || isset($trigger['functions'])){
 			$params['-record']=getDBRecord(array('-table'=>$table,'_id'=>$id));
 		}
 		//check for websockets
@@ -5136,11 +5136,11 @@ function addDBRecord($params=array()){
         	$wrec['_action']='add';
         	wsSendDBRecord($params['-table'],$wrec);
 		}
-    	if(isset($model['functions']) && !isset($params['-notrigger'])){
+    	if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Success trigger
-	    	if(function_exists("{$model_table}AddSuccess") && !isset($params['-notrigger'])){
+	    	if(function_exists("{$trigger_table}AddSuccess") && !isset($params['-notrigger'])){
 				unset($params['-error']);
-	        	$params=call_user_func("{$model_table}AddSuccess",$params);
+	        	$params=call_user_func("{$trigger_table}AddSuccess",$params);
 	        	if(isset($params['-error'])){
 					if(!isset($params['-nodebug'])){
 						debugValue($params['-error']);
@@ -5156,11 +5156,11 @@ function addDBRecord($params=array()){
   	}
   	else{
 		$error=getDBError();
-		if(isset($model['functions']) && !isset($params['-notrigger'])){
+		if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
-	    	if(function_exists("{$model_table}AddFailure")){
+	    	if(function_exists("{$trigger_table}AddFailure")){
 				$params['-error']="addDBRecord Error:".printValue($error);
-	        	$params=call_user_func("{$model_table}AddFailure",$params);
+	        	$params=call_user_func("{$trigger_table}AddFailure",$params);
 			}
 		}
 		if(!isset($params['-nodebug'])){
@@ -6398,7 +6398,7 @@ function buildDBWhere($params=array()){
 * @param params array
 *	-table string - name of table
 *	-where string - where clause to filter what records are deleted
-*	[-model] boolean - set to false to disable model functionality
+*	[-trigger] boolean - set to false to disable trigger functionality
 * @return boolean
 * @usage
 *	$id=delDBRecord(array(
@@ -6415,30 +6415,30 @@ function delDBRecord($params=array()){
 	if(!isset($params['-table'])){return 'editDBRecord Error: No table';}
 	if(!isset($params['-where'])){return 'editDBRecord Error: No where';}
 	$table=$params['-table'];
-	//model
-	if(!isset($params['-model']) || ($params['-model'])){
-		$model=getDBTableModel($table);
-		$model_table=$table;
+	//trigger
+	if(!isset($params['-trigger']) || ($params['-trigger'])){
+		$trigger=getDBTableTrigger($table);
+		$trigger_table=$table;
 	}
 	//check to see if they passed a databasename with table
 	$table_parts=preg_split('/\./', $table);
 	if(count($table_parts) > 1){
 		$params['-dbname']=array_shift($table_parts);
-		$model_table=implode('.',$table_parts);
+		$trigger_table=implode('.',$table_parts);
 	}
-	//echo printValue($model);exit;
-	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
-    	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
+	//echo printValue($trigger);exit;
+	if(isset($trigger['functions']) && !isset($params['-notrigger']) && strlen(trim($trigger['functions']))){
+    	$ok=includePHPOnce($trigger['functions'],"{$trigger_table}-trigger_functions");
     	//look for Before trigger
-    	if(function_exists("{$model_table}DeleteBefore")){
-			$model['check']=1;
+    	if(function_exists("{$trigger_table}DeleteBefore")){
+			$trigger['check']=1;
 			unset($params['-error']);
-        	$params=call_user_func("{$model_table}DeleteBefore",$params);
+        	$params=call_user_func("{$trigger_table}DeleteBefore",$params);
         	if(isset($params['-error'])){
 				debugValue($params['-error']);
 				return $params['-error'];
 			}
-        	if(!isset($params['-table'])){return "{$model_table}DeleteBefore Error: No Table".printValue($params);}
+        	if(!isset($params['-table'])){return "{$trigger_table}DeleteBefore Error: No Table".printValue($params);}
 		}
 	}
 	if(isMssql()){$table="[{$table}]";}
@@ -6449,11 +6449,11 @@ function delDBRecord($params=array()){
   	if($query_result){
 		databaseFreeResult($query_result);
 		if(!isset($params['-nolog']) || $params['-nolog'] != 1){logDBQuery($query,$start,$function,$params['-table']);}
-    	if(isset($model['functions']) && !isset($params['-notrigger'])){
+    	if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Success trigger
-	    	if(function_exists("{$model_table}DeleteSuccess")){
+	    	if(function_exists("{$trigger_table}DeleteSuccess")){
 				unset($params['-error']);
-	        	$params=call_user_func("{$model_table}DeleteSuccess",$params);
+	        	$params=call_user_func("{$trigger_table}DeleteSuccess",$params);
 	        	if(isset($params['-error'])){
 					debugValue($params['-error']);
 				}
@@ -6463,11 +6463,11 @@ function delDBRecord($params=array()){
   		}
   	else{
 		$error=getDBError();
-		if(isset($model['functions']) && !isset($params['-notrigger'])){
+		if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
-	    	if(function_exists("{$model_table}DeleteFailure")){
+	    	if(function_exists("{$trigger_table}DeleteFailure")){
 				$params['-error']="No updates found";
-	        	$params=call_user_func("{$model_table}DeleteFailure",$params);
+	        	$params=call_user_func("{$trigger_table}DeleteFailure",$params);
 			}
 		}
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
@@ -6717,7 +6717,7 @@ function optimizeDB(){
 * @param params array
 *	-table string - name of table
 *	-where string - where clause to determine what record(s) to edit
-*	[-model] boolean - set to false to disable model functionality
+*	[-trigger] boolean - set to false to disable trigger functionality
 *	treats other params as field/value pairs to edit
 * @return array
 * @usage
@@ -6748,29 +6748,29 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	$table=$params['-table'];
 	//if($params['-table']=='test'){echo printValue($params);exit;}
 	
-	//model
-	if(!isset($params['-model']) || ($params['-model'])){
-		$model=getDBTableModel($table);
-		$model_table=$table;
+	//trigger
+	if(!isset($params['-trigger']) || ($params['-trigger'])){
+		$trigger=getDBTableTrigger($table);
+		$trigger_table=$table;
 	}
 	//check to see if they passed a databasename with table
 	$table_parts=preg_split('/\./', $table);
 	if(count($table_parts) > 1){
 		$params['-dbname']=array_shift($table_parts);
-		$model_table=implode('.',$table_parts);
+		$trigger_table=implode('.',$table_parts);
 	}
-	if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
-    	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
+	if(isset($trigger['functions']) && !isset($params['-notrigger']) && strlen(trim($trigger['functions']))){
+    	$ok=includePHPOnce($trigger['functions'],"{$trigger_table}-trigger_functions");
     	//look for Before trigger
-    	if(function_exists("{$model_table}EditBefore")){
-			$model['check']=1;
+    	if(function_exists("{$trigger_table}EditBefore")){
+			$trigger['check']=1;
 			unset($params['-error']);
-        	$params=call_user_func("{$model_table}EditBefore",$params);
+        	$params=call_user_func("{$trigger_table}EditBefore",$params);
         	if(isset($params['-error'])){
 				debugValue($params['-error']);
 				return $params['-error'];
 			}
-        	if(!isset($params['-table'])){return "{$model_table}EditBefore Error: No Table".printValue($params);}
+        	if(!isset($params['-table'])){return "{$trigger_table}EditBefore Error: No Table".printValue($params);}
 		}
 	}
 	//wpass?
@@ -7037,11 +7037,11 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	}
     //return if no updates were found
 	if(!count($updates)){
-		if(isset($model['functions']) && !isset($params['-notrigger'])){
+		if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
-	    	if(function_exists("{$model_table}EditFailure")){
+	    	if(function_exists("{$trigger_table}EditFailure")){
 				$params['-error']="No updates found";
-	        	$params=call_user_func("{$model_table}EditFailure",$params);
+	        	$params=call_user_func("{$trigger_table}EditFailure",$params);
 			}
 		}
 		return 0;
@@ -7074,7 +7074,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
     	//addDBHistory('edit',$params['-table'],$params['-where']);
     	//get table info
 		$tinfo=getDBTableInfo(array('-table'=>$params['-table'],'-fieldinfo'=>0));
-		if((isset($tinfo['websockets']) && $tinfo['websockets']==1) || isset($model['functions'])){
+		if((isset($tinfo['websockets']) && $tinfo['websockets']==1) || isset($trigger['functions'])){
 			$params['-records']=getDBRecords(array('-table'=>$table,'-where'=>$params['-where']));
 		}
 		//check for websockets
@@ -7085,12 +7085,12 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
         	$wrec['where']=$params['-where'];
         	wsSendDBRecord($params['-table'],$wrec);
 		}
-    	if(isset($model['functions']) && !isset($params['-notrigger'])){
+    	if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Success trigger
-	    	if(function_exists("{$model_table}EditSuccess")){
+	    	if(function_exists("{$trigger_table}EditSuccess")){
 				unset($params['-error']);
 
-	        	$params=call_user_func("{$model_table}EditSuccess",$params);
+	        	$params=call_user_func("{$trigger_table}EditSuccess",$params);
 	        	if(isset($params['-error'])){
 					debugValue($params['-error']);
 				}
@@ -7100,11 +7100,11 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
   		}
   	else{
 		$error=getDBError();
-		if(isset($model['functions']) && !isset($params['-notrigger'])){
+		if(isset($trigger['functions']) && !isset($params['-notrigger'])){
 	    	//look for Failure trigger
-	    	if(function_exists("{$model_table}EditFailure")){
+	    	if(function_exists("{$trigger_table}EditFailure")){
 				$params['-error']=$error;
-	        	$params=call_user_func("{$model_table}EditFailure",$params);
+	        	$params=call_user_func("{$trigger_table}EditFailure",$params);
 			}
 		}
 		return setWasqlError(debug_backtrace(),getDBError(),$query);
@@ -7376,37 +7376,37 @@ function exportDBRecords($params=array()){
 	return;
 }
 
-//---------- begin function getDBTableModel
+//---------- begin function getDBTableTrigger
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function getDBTableModel($table){
+function getDBTableTrigger($table){
 	global $databaseCache;
-	if(!isset($databaseCache['getDBTableModel'])){
-		$databaseCache['getDBTableModel']=array();
+	if(!isset($databaseCache['getDBTableTrigger'])){
+		$databaseCache['getDBTableTrigger']=array();
 	}
-	if(isset($databaseCache['getDBTableModel'][$table])){
-		return $databaseCache['getDBTableModel'][$table];
+	if(isset($databaseCache['getDBTableTrigger'][$table])){
+		return $databaseCache['getDBTableTrigger'][$table];
 	}
 	//check to see if they passed a databasename with table
 	$table_parts=preg_split('/\./', $table);
 	$originaltable=$table;
-	$model_table='_models';
+	$trigger_table='_triggers';
 	if(count($table_parts) > 1){
 		$dbname=array_shift($table_parts);
 		$table=implode('.',$table_parts);
-		$model_table="{$dbname}._models";
+		$trigger_table="{$dbname}._triggers";
 		}
 
-	if(!isDBTable($model_table)){
-		$databaseCache['getDBTableModel'][$table]=null;
-		return $databaseCache['getDBTableModel'][$table];
+	if(!isDBTable($trigger_table)){
+		$databaseCache['getDBTableTrigger'][$table]=null;
+		return $databaseCache['getDBTableTrigger'][$table];
 	}
-	$recopts=array('-table'=>$model_table,'name'=>$table,'active'=>1);
+	$recopts=array('-table'=>$trigger_table,'name'=>$table,'active'=>1);
 	$recs=getDBRecord($recopts);
 	if(!is_array($recs)){$recs='';}
-	$databaseCache['getDBTableModel'][$table]=$recs;
-	return $databaseCache['getDBTableModel'][$table];
+	$databaseCache['getDBTableTrigger'][$table]=$recs;
+	return $databaseCache['getDBTableTrigger'][$table];
 }
 
 //---------- begin function getDBAdminSettings
@@ -9589,7 +9589,7 @@ function getDBFiltersString($table,$filters){
 *	[-index] string - field to use as index.  i.e  '-index'=>'_id'
 *	[-json] array - fields to decode as json.  returns decoded json values into field_json key
 *	[-random] integer  - number of random records to return from the results
-*	[-model] boolean - process results through the GetRecord model function
+*	[-trigger] boolean - process results through the GetRecord trigger function
 *	[-relate] mixed - field/table pairs of fields to get related records from other tables
 *	Other key value pairs passed in are used to filter the results.  i.e. 'active'=>1
 * @return array
@@ -9720,10 +9720,10 @@ function processDBRecords($func_name,$params=array()){
 *	[-index] string - field to use as index.  i.e  '-index'=>'_id'
 *	[-json] array - fields to decode as json.  returns decoded json values into field_json key
 *	[-random] integer  - number of random records to return from the results
-*	[-model] boolean - process results through the GetRecord model function
+*	[-trigger] boolean - process results through the GetRecord trigger function
 *	[-relate] mixed - field/table pairs of fields to get related records from other tables
 *	[-notimestamp] boolean - if true disables adding extra _utime data to date and datetime fields. Defaults to false
-*	[-model] boolean - set to false to disable model functionality
+*	[-trigger] boolean - set to false to disable trigger functionality
 * 	[-process] string - function to run results through instead of returning them.  If this is set the number of records processed will be returned
 *	Other key value pairs passed in are used to filter the results.  i.e. 'active'=>1
 * @return array
@@ -10044,22 +10044,22 @@ function getDBRecords($params=array()){
             return $newlist;
 		}
 
-		//process GetRecord model functions as long as -model is not false
-		if(isset($params['-table']) && (!isset($params['-model']) || ($params['-model']))){
-			$model=getDBTableModel($params['-table']);
-			$model_table=$params['-table'];
+		//process GetRecord trigger functions as long as -trigger is not false
+		if(isset($params['-table']) && (!isset($params['-trigger']) || ($params['-trigger']))){
+			$trigger=getDBTableTrigger($params['-table']);
+			$trigger_table=$params['-table'];
 			//check to see if they passed a databasename with table
-			$table_parts=preg_split('/\./', $model_table);
+			$table_parts=preg_split('/\./', $trigger_table);
 			if(count($table_parts) > 1){
 				$dbname=array_shift($table_parts);
-				$model_table=implode('.',$table_parts);
+				$trigger_table=implode('.',$table_parts);
 				}
-			if(isset($model['functions']) && !isset($params['-notrigger']) && strlen(trim($model['functions']))){
-		    	$ok=includePHPOnce($model['functions'],"{$model_table}-model_functions");
+			if(isset($trigger['functions']) && !isset($params['-notrigger']) && strlen(trim($trigger['functions']))){
+		    	$ok=includePHPOnce($trigger['functions'],"{$trigger_table}-trigger_functions");
 		    	//look for Before trigger
-		    	if(function_exists("{$model_table}GetRecord")){
+		    	if(function_exists("{$trigger_table}GetRecord")){
 					foreach($list as $i=>$rec){
-		        		$rec=call_user_func("{$model_table}GetRecord",$rec);
+		        		$rec=call_user_func("{$trigger_table}GetRecord",$rec);
 		        		$list[$i]=$rec;
 					}
 				}
