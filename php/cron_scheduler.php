@@ -78,12 +78,12 @@ $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
-$loop=2;
+$loop_max=4;
 $loop_cnt=0;
 if(isset($argv[1])){
 	$loop=(integer)$argv[1];
 }
-while(1){
+while(microtime(true)-$starttime < 55){
 	$loop_cnt+=1;
 	foreach($ConfigXml as $name=>$host){
 		//allhost, then, sameas, then hostname
@@ -182,13 +182,15 @@ ENDOFSQL;
 			//cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 		}
 	}
-	if($loop_cnt >= $loop || $loop_cnt >= 10){
+	if(isCLI()){
+		echo "Loop: {$loop_cnt}".PHP_EOL;
+	}
+	if($loop_cnt >= $loop_max || $loop_cnt >= 100){
 		break;
 	}
-	//cronMessage('------ sleeping ----');
-	sleep(30);
+	sleep(12);
 }
-exit;
+exit(0);
 /* cron functions */
 /** --- function cronBuildWhere
 * @exclude  - this function is for internal use only and thus excluded from the manual
