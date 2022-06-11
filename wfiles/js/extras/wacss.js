@@ -576,8 +576,17 @@ var wacss = {
 				data:{
 					labels:[],
 					datasets:[]
-				},
-				options:{
+				}
+			};
+			//options
+			let optionsdiv=datadiv.querySelector('options');
+			if(undefined != optionsdiv){
+				let optionsjson=wacss.trim(optionsdiv.innerText);
+				//lconfig.options=JSON.parse(optionsjson);
+				lconfig.options=JSON.parse(optionsjson);
+			}
+			else{
+				lconfig.options={
 					responsive: true,
             		events: false,
             		animation: {animateScale:false,animateRotate:true},
@@ -597,8 +606,8 @@ var wacss = {
 							showActualPercentages:true
             			}
             		}
-				}
-			};
+				};
+			}
 			//labels
 			let labelsdiv=datadiv.querySelector('labels');
 			if(undefined != labelsdiv){
