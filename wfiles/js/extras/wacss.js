@@ -698,6 +698,9 @@ var wacss = {
 			let lcanvas=document.createElement('canvas');
 			list[i].appendChild(lcanvas);
 			let lctx = lcanvas.getContext('2d');
+			if(undefined != list[i].dataset.debug){
+				console.log(lconfig);
+			}
 			wacss.chartjs[list[i].id] = new Chart(lctx, lconfig);
 			//onclick
 			if(undefined != list[i].dataset.onclick){
