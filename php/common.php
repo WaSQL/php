@@ -5076,6 +5076,7 @@ function buildFormSignature($name,$params=array()){
 	if(isset($params['value']) && strlen($params['value'])){
 		$params['-value']=$params['value'];
 	}
+	$params['id']=str_replace('>','_',$params['id']);
 	if(isset($params['readonly']) && ($params['readonly']==1 || $params['readonly']=='readonly')){
 		if(isset($params['-value']) && strlen($params['-value'])){
 			$src=$params['-value'];
@@ -5094,8 +5095,8 @@ function buildFormSignature($name,$params=array()){
 		$rtn .= ' /></div>';
 		return $rtn;
 	}
-	$canvas_id=$name.'_canvas';
-	$clear_id=$name.'_clear';
+	$canvas_id=$params['id'].'_canvas';
+	$clear_id=$params['id'].'_clear';
 	$base64image='';
 	$barid=$params['id'].'_topbar';
 	$rtn .= '	<div style="position:relative;" id="'.$barid.'"';
@@ -5104,7 +5105,7 @@ function buildFormSignature($name,$params=array()){
 		unset($params['displayif']);
 	}
 	$rtn .='>'.PHP_EOL;
-	//return $name.printValue($params);
+	//return $params['id'].printValue($params);
 	//$rtn .= '		'.$params['displayname'].PHP_EOL;
 	//show clear button on right
 	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
@@ -5126,24 +5127,24 @@ function buildFormSignature($name,$params=array()){
 		foreach($opts as $font=>$fontname){
 			$rtn .='<div style="float:left;font-size:1px;font-family:'.$font.';">.</div>';
 		}
-		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$name.'_font','style'=>'font-size:0.9rem;width:100px;'));
+		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$params['id'].'_font','style'=>'font-size:0.9rem;width:100px;'));
 		if(isset($params['data-font'])){
 			$rtn.='</div>'.PHP_EOL;
 		}
-		$rtn .= '<input type="text" style="flex:1;width:100%;min-width:150px" autocomplete="off" name="'.$name.'_input" id="'.$name.'_input" placeholder="type to sign" />'.PHP_EOL;
+		$rtn .= '<input type="text" style="flex:1;width:100%;min-width:150px" autocomplete="off" name="'.$name.'_input" id="'.$params['id'].'_input" placeholder="type to sign" />'.PHP_EOL;
 		if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
-			$rtn .= '			<button title="sign" type="button" class="btn" id="'.$name.'_sign">'.$params['sign'].'</button>'.PHP_EOL;
-			$rtn .= '			<div style="display:none;"><img src="'.$USER['signature'].'" alt="my signature" name="'.$name.'_user" id="'.$name.'_user" /></div>'.PHP_EOL;
+			$rtn .= '			<button title="sign" type="button" class="btn" id="'.$params['id'].'_sign">'.$params['sign'].'</button>'.PHP_EOL;
+			$rtn .= '			<div style="display:none;"><img src="'.$USER['signature'].'" alt="my signature" name="'.$name.'_user" id="'.$params['id'].'_user" /></div>'.PHP_EOL;
 		}
 	}
 	if(isset($params['-value']) && strlen($params['-value'])){
-		$reset_id=$name.'_reset';
-		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$name.'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$name.'_reset" title="reset"><span class="icon-reset"></span></button>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="current signature" name="'.$name.'_edit" id="'.$name.'_edit" /></div>'.PHP_EOL;
+		$reset_id=$params['id'].'_reset';
+		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$params['id'].'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
+		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$params['id'].'_reset" title="reset"><span class="icon-reset"></span></button>'.PHP_EOL;
+		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="current signature" name="'.$name.'_edit" id="'.$params['id'].'_edit" /></div>'.PHP_EOL;
 	}
 	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
-		$rtn .= '			<button title="clear" type="button" class="btn" name="'.$name.'_clear" id="'.$name.'_clear">'.$params['clear'].'</button>'.PHP_EOL;
+		$rtn .= '			<button title="clear" type="button" class="btn" name="'.$name.'_clear" id="'.$params['id'].'_clear">'.$params['clear'].'</button>'.PHP_EOL;
 	}
 	$rtn .= '		</div>'.PHP_EOL;
 	$rtn .= '	</div>'.PHP_EOL;
@@ -5166,7 +5167,7 @@ function buildFormSignature($name,$params=array()){
 	}
 	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" data-barid="'.$barid.'" class="w_signature"></canvas>'.PHP_EOL;
 	$rtn .= '	</div>'.PHP_EOL;
-	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$name.'"></textarea></div>'.PHP_EOL;
+	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$params['id'].'"></textarea></div>'.PHP_EOL;
 	$rtn .= '    <input type="hidden" name="'.$name.'_inline" value="1" />'.PHP_EOL;
 	$rtn .= buildOnLoad("resizeSignatureWidthHeight();");
 	return $rtn;
