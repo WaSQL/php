@@ -2386,7 +2386,7 @@ var wacss = {
 			}
 			//initialize this object so we only build it once
 			if(undefined != list[i].dataset.initialized){continue;}
-			list[i].dataset.initialized+=1;
+			list[i].dataset.initialized=1;
 			//hide the textarea
 			list[i].style.display='none';
 			//wrapper
@@ -2425,7 +2425,14 @@ var wacss = {
 			});
 			wrapper.ro.observe(wrapper);
 			// call signature_pad
-			wrapper.pad=new SignaturePad(wrapper.canvas);
+			try{
+				wrapper.pad=new SignaturePad(wrapper.canvas);
+			}
+			catch(e){
+				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
+				console.log(e);
+				continue;
+			}
 			if(undefined = wrapper.pad){
 				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
 				console.log(list[i]);
