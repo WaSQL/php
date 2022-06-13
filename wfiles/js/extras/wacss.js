@@ -2414,6 +2414,8 @@ var wacss = {
 			wrapper.canvas.style.top='0px';
 			wrapper.canvas.style.left='0px';
 			wrapper.canvas.id=list[i].id+'_canvas';
+			wrapper.canvas.width='400';
+			wrapper.canvas.height='200';
 			wrapper.appendChild(wrapper.canvas);
 			//build a resize observer to make it responsive
 			wrapper.ro = new ResizeObserver(entries => {
@@ -2426,10 +2428,10 @@ var wacss = {
 			});
 			wrapper.ro.observe(wrapper);
 			// call signature_pad
-			wrapper.pad=new SignaturePad(document.getElementById(wrapper.canvas.id));
+			wrapper.pad=new SignaturePad(wrapper.canvas);
 			if(undefined = wrapper.pad){
 				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
-				console.log(list[i]);
+				console.log(wrapper.canvas);
 				continue;
 			}
 			//load image?
