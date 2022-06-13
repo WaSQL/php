@@ -5061,6 +5061,44 @@ function buildFormSelectYear($name,$params=array()){
 * <?=buildFormSignature('sign',$params);?>
 */
 function buildFormSignature($name,$params=array()){
+	loadExtrasJs(array('wacss','signature_pad'));
+	global $USER;
+	$rtn='';
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
+	if(!isset($params['clear'])){$params['clear']='<span class="icon-erase"></span>';}
+	if(!isset($params['sign'])){$params['sign']='<span class="icon-signature"></span>';}
+	if(!isset($params['width'])){$params['width']=600;}
+	if(!isset($params['height'])){$params['height']=90;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['value']) && strlen($params['value'])){
+		$params['-value']=$params['value'];
+	}
+	$params['id']=str_replace('>','_',$params['id']);
+	if(isset($params['readonly']) && ($params['readonly']==1 || $params['readonly']=='readonly')){
+		if(isset($params['-value']) && strlen($params['-value'])){
+			$src=$params['-value'];
+		}
+		else{
+			$src='/wfiles/clear.gif';
+		}
+		$rtn='';
+		$rtn .= '<div class="w_signature"><img src="'.$src.'" alt="current signature"';
+		if(isset($params['style']) && strlen($params['style'])){
+			$rtn .= ' style="'.$params['style'].'"';
+		}
+		else{
+			$rtn .= ' style="width:'.$params['width'].'px;height:'.$params['height'].'px;"';
+		}
+		$rtn .= ' /></div>';
+		return $rtn;
+	}
+	$params['data-behavior']='signature_pad';
+	return buildFormTextarea($name,$params);
+}
+function buildFormSignatureOLD($name,$params=array()){
 	loadExtrasJs('html5');
 	global $USER;
 	$rtn='';
