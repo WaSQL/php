@@ -2425,7 +2425,12 @@ var wacss = {
 			});
 			wrapper.ro.observe(wrapper);
 			// call signature_pad
-			wrapper.pad=new SignaturePad(wrapper.canvas,{dotSize:1.0});
+			wrapper.pad=new SignaturePad(wrapper.canvas);
+			if(undefined = wrapper.pad){
+				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
+				console.log(list[i]);
+				continue;
+			}
 			//load image?
 			if(list[i].innerHTML.length){
 				wrapper.hide_undo=true;
