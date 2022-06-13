@@ -2426,14 +2426,7 @@ var wacss = {
 			});
 			wrapper.ro.observe(wrapper);
 			// call signature_pad
-			try{
-				wrapper.pad=new SignaturePad(wrapper.canvas);
-			}
-			catch(e){
-				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
-				console.log(e);
-				continue;
-			}
+			wrapper.pad=new SignaturePad(document.getElementById(wrapper.canvas.id));
 			if(undefined = wrapper.pad){
 				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
 				console.log(list[i]);
