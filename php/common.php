@@ -17050,22 +17050,25 @@ function processInlineImage($img,$fld='inline'){
 			break;
 	}
 	if(!strlen($ext)){return;}
-    $file=$fld.'_'.encodeCRC(sha1($encodedString)).".{$ext}";
-	$decoded=base64_decode($encodedString);
 	//make sure the path exists or create it.
 	$path="{$_SERVER['DOCUMENT_ROOT']}/{$fld}_files";
-	if(!is_dir($path)){buildDir($path);}
-	if(!is_dir($path)){
-		debugValue("processInlineImage error: unable to find or create path: {$path}");
-		return 0;
-		}
+	$path=str_replace('>','_',$path);
+	$file=$fld.'_'.encodeCRC(sha1($encodedString)).".{$ext}";
+	$file=str_replace('>','_',$file);
+	$decoded=base64_decode($encodedString);
 	$afile="{$path}/{$file}";
+	if(!file_exists($path)){buildDir($path);}
+	if(!file_exists($path)){
+		debugValue("processInlineImage error: unable to find or create path: {$path}, Field:{$fld}, afile:{$afile}");
+		return 0;
+	}
 	//remove the file if it exists already
 	if(file_exists($afile)){unlink($afile);}
 	//save the file
 	file_put_contents($afile,$decoded);
 	if(file_exists($afile)){
         $_REQUEST[$fld]="/{$fld}_files/{$file}";
+        $_REQUEST[$fld]=str_replace('>','_',$_REQUEST[$fld]);
         return $_REQUEST[$fld];
 	}
 	debugValue("processInlineImage error: unable to save file: {$afile}");
@@ -17580,6 +17583,9 @@ function processActions(){
 							$opts[$field]=userEncryptPW($_REQUEST[$field]);
 						}
 						//echo "Field:{$field}, opts:{$opts[$field]}, req: {$_REQUEST[$field]}, type:{$info[$field]['inputtype']}<br>";
+						if(strlen($jfield) && isset($_REQUEST[$jfield])){
+							$opts[$jfield]=$_REQUEST[$jfield];
+						}
 						if(!isset($opts[$field])){
 							if(isset($_REQUEST[$field])){
 								$opts[$field]=$_REQUEST[$field];
