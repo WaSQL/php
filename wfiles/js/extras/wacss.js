@@ -2413,6 +2413,7 @@ var wacss = {
 			wrapper.canvas.style.position='absolute';
 			wrapper.canvas.style.top='0px';
 			wrapper.canvas.style.left='0px';
+			wrapper.canvas.id=list[i].id+'_canvas';
 			wrapper.appendChild(wrapper.canvas);
 			//build a resize observer to make it responsive
 			wrapper.ro = new ResizeObserver(entries => {
