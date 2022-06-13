@@ -2429,7 +2429,7 @@ var wacss = {
 			wrapper.ro.observe(wrapper);
 			// call signature_pad
 			wrapper.pad=new SignaturePad(wrapper.canvas);
-			if(undefined = wrapper.pad){
+			if(undefined == wrapper.pad){
 				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
 				console.log(wrapper.canvas);
 				continue;
