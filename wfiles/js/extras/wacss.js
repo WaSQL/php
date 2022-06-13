@@ -2386,7 +2386,6 @@ var wacss = {
 			}
 			//initialize this object so we only build it once
 			if(undefined != list[i].dataset.initialized){continue;}
-			list[i].dataset.initialized=1;
 			//hide the textarea
 			list[i].style.display='none';
 			//wrapper
@@ -2434,6 +2433,7 @@ var wacss = {
 				console.log(wrapper.canvas);
 				continue;
 			}
+			list[i].dataset.initialized=1;
 			//load image?
 			if(list[i].innerHTML.length){
 				wrapper.hide_undo=true;
