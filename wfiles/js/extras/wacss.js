@@ -2469,7 +2469,7 @@ var wacss = {
 				'#f43940':'Red',
 				'#fee213':'Yellow'
 			};
-			params={class:'select',style:'color:#999;margin-left:2px;width:100px;padding:3px;'};
+			params={style:'color:#999;margin-left:2px;width:100px;padding:3px;'};
 			wrapper.toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
 			wrapper.toolbar.pencolor.onchange=function(){
 				let pencolor=this.options[this.selectedIndex].value;
