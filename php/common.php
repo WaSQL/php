@@ -13914,15 +13914,28 @@ function isGDEnabled(){
         	}
     	}
 	return false;
-	}
-//---------- begin function jsonCheck ----------
+}
+//---------- begin function isJSON ----------
 /**
 * @describe returns true if string is a valid JSON. returns error if not.
-* @return mixed
-*	returns 1 if string is valid json
-* @usage $ck=jsonCheck($str);if($ck==1){...}
+* @return mixed returns 1 if valid json, else error
+* @usage $ck=isJSON($str);if($ck==1){...}
+*/
+function isJSON($string){
+	try {  
+	  json_decode($string, false, 512, JSON_THROW_ON_ERROR);  
+	}  
+	catch (\JsonException $exception) {  
+	  return $exception->getMessage(); // displays "Syntax error"  
+	}
+	return 1;
+}
+//---------- begin function jsonCheck ----------
+/**
+* @exclude  - this function is depreciated and thus excluded from the manual. user isJSON instead
 */
 function jsonCheck($string){
+	return isJSON($string);
     // decode the JSON data
     $result = json_decode($string);
     // switch and check possible JSON errors
