@@ -13922,11 +13922,38 @@ function isGDEnabled(){
 * @usage $ck=isJSON($str);if($ck==1){...}
 */
 function isJSON($string){
+	if(!is_string($string)){
+		$error=array(
+			'error'=>"NOT a string",
+			'code'=>-1,
+			'type'=>gettype($string)
+		);
+	  return json_encode($error,JSON_PRETTY_PRINT);
+	}
+	if(!strlen(trim($string))){
+		$error=array(
+			'error'=>"Empty JSON string",
+			'code'=>-1
+		);
+	  return json_encode($error,JSON_PRETTY_PRINT);
+	}
 	try {  
 	  json_decode($string, false, 512, JSON_THROW_ON_ERROR);  
 	}  
 	catch (\JsonException $exception) {  
-	  return $exception->getMessage(); // displays "Syntax error"  
+		$error=array(
+			'error'=>$exception->getMessage(),
+			'code'=>$exception->getCode()
+		);
+	  return json_encode($error,JSON_PRETTY_PRINT);
+	}
+	$enc=json_encode($string);
+	if(is_null(json_decode($string))){
+		$error=array(
+			'error'=>"Empty JSON string",
+			'code'=>-1
+		);
+	  return json_encode($error,JSON_PRETTY_PRINT);
 	}
 	return 1;
 }
@@ -13936,6 +13963,10 @@ function isJSON($string){
 */
 function jsonCheck($string){
 	return isJSON($string);
+
+	if(!strlen(trim($string))){
+		return 'empty string';
+	}
     // decode the JSON data
     $result = json_decode($string);
     // switch and check possible JSON errors
