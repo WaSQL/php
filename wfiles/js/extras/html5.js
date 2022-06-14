@@ -189,8 +189,14 @@ var SignaturePad = function (t) {
                 ifobj.a=a;
                 ifobj.addEventListener("input", function () {
                     let fontid = this.a._canvas.id.replace("_canvas", "_font");
+                    //console.log("fontid:"+fontid);
                     let fontobj=document.querySelector('#'+fontid);
-                    let fontname=fontobj.options[fontobj.selectedIndex].value;
+                    //console.log(fontobj);
+                    let fontname='andragogy';
+                    if(undefined != fontobj){
+                        fontname=fontobj.options[fontobj.selectedIndex].value;
+                    }
+                    
                     this.a.clear();
                     let w=this.a._canvas.width;
                     let h=this.a._canvas.height;

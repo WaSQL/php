@@ -510,6 +510,7 @@ var wacss = {
 		wacss.initCodeMirror();
 		wacss.initEditor();
 		wacss.initWhiteboard();
+		wacss.initSignaturePad();
 	},
 	chartjsDrawTotals: function(chart){
 		let width = chart.chart.width,
@@ -576,8 +577,17 @@ var wacss = {
 				data:{
 					labels:[],
 					datasets:[]
-				},
-				options:{
+				}
+			};
+			//options
+			let optionsdiv=datadiv.querySelector('options');
+			if(undefined != optionsdiv){
+				let optionsjson=wacss.trim(optionsdiv.innerText);
+				//lconfig.options=JSON.parse(optionsjson);
+				lconfig.options=JSON.parse(optionsjson);
+			}
+			else{
+				lconfig.options={
 					responsive: true,
             		events: false,
             		animation: {animateScale:false,animateRotate:true},
@@ -597,8 +607,8 @@ var wacss = {
 							showActualPercentages:true
             			}
             		}
-				}
-			};
+				};
+			}
 			//labels
 			let labelsdiv=datadiv.querySelector('labels');
 			if(undefined != labelsdiv){
@@ -689,6 +699,9 @@ var wacss = {
 			let lcanvas=document.createElement('canvas');
 			list[i].appendChild(lcanvas);
 			let lctx = lcanvas.getContext('2d');
+			if(undefined != list[i].dataset.debug){
+				console.log(lconfig);
+			}
 			wacss.chartjs[list[i].id] = new Chart(lctx, lconfig);
 			//onclick
 			if(undefined != list[i].dataset.onclick){
@@ -2353,6 +2366,155 @@ var wacss = {
 			for(let x=0;x<lis.length;x++){
 				lis[x].className='wacssform_many';
 			}
+		}
+	},
+	initSignaturePad:function(){
+		let list=document.querySelectorAll('textarea[data-behavior="signature_pad"]');
+		//console.log("initSignaturePad found "+list.length);
+		for(let i=0;i<list.length;i++){
+			//require id
+			if(undefined == list[i].id){
+				console.log("wacss.initSignaturePad Error - No ID");
+				console.log(list[i]);
+				continue;
+			}
+			//require name
+			if(undefined == list[i].name){
+				console.log("wacss.initSignaturePad Error - No name");
+				console.log(list[i]);
+				continue;
+			}
+			//initialize this object so we only build it once
+			if(undefined != list[i].dataset.initialized){continue;}
+			list[i].dataset.initialized=1;
+			//hide the textarea
+			list[i].style.display='none';
+			//wrapper
+			let wrapper = document.createElement('div');
+			wrapper.style.width = list[i].style.width;
+			wrapper.style.height = list[i].style.height;
+			wrapper.style.display='block';
+			wrapper.style.position='relative';
+			wrapper.style.border='1px solid #ccc';
+			wrapper.style.borderRadius='3px';
+			wrapper.id=list[i].id+'_wrapper';
+			wrapper.style.backgroundColor=list[i].dataset.fill||'#fff';
+			//put wrapper in the DOM
+			list[i].parentNode.insertBefore(wrapper, list[i].nextSibling);
+			//make an _inline hidden field to tell WaSQL to process this as an inline image
+			wrapper.inline = document.createElement('input');
+			wrapper.inline.type='hidden';
+			wrapper.inline.name=list[i].name+'_inline';
+			wrapper.inline.value=1;
+			wrapper.appendChild(wrapper.inline);
+			//build a canvas
+			wrapper.canvas = document.createElement('canvas');
+			wrapper.canvas.style.zIndex=5000;
+			wrapper.canvas.style.position='absolute';
+			wrapper.canvas.style.top='0px';
+			wrapper.canvas.style.left='0px';
+			wrapper.canvas.id=list[i].id+'_canvas';
+			wrapper.canvas.width='400';
+			wrapper.canvas.height='200';
+			wrapper.appendChild(wrapper.canvas);
+			//build a resize observer to make it responsive
+			wrapper.ro = new ResizeObserver(entries => {
+				for (let entry of entries) {
+					if(undefined != entry.target.canvas && undefined!=entry.target.clientWidth){
+						entry.target.canvas.setAttribute('width',parseInt(entry.target.clientWidth));
+						entry.target.canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
+					}
+			 	}
+			});
+			wrapper.ro.observe(wrapper);
+			// call signature_pad
+			wrapper.pad=new SignaturePad(wrapper.canvas);
+			if(undefined == wrapper.pad){
+				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
+				console.log(wrapper.canvas);
+				continue;
+			}
+			//load image?
+			if(list[i].innerHTML.length){
+				wrapper.hide_undo=true;
+		        wrapper.pad.fromDataURL(list[i].innerHTML,{ ratio: 1, width: wrapper.clientWidth, height: wrapper.clientHeight, xOffset: 0, yOffset: 0 });
+			}
+			//assign the textarea to the wrapper
+			wrapper.pad.txtarea=list[i];
+			//save to the textarea so we can upload it as an inline field
+			wrapper.pad.addEventListener('endStroke', function(){
+  				this.txtarea.innerText=this.toDataURL('image/png');
+			});
+			//build toolbar
+			wrapper.toolbar = document.createElement('div');
+			wrapper.toolbar.style.position='absolute';
+			wrapper.toolbar.style.bottom='0px';
+			wrapper.toolbar.style.left='0px';
+			wrapper.toolbar.style.display='flex';
+			wrapper.toolbar.style.justifyContent='flex-end';
+			wrapper.toolbar.style.alignItems='center';
+			wrapper.toolbar.style.width='100%';
+			wrapper.toolbar.style.height='30px';
+			wrapper.appendChild(wrapper.toolbar);
+			//toolbar.pencolor - default to black
+			wrapper.dataset.pencolor='#000';
+			let pencolors={
+				'#000000':'Black',
+				'#213a9a':'Blue',
+				'#05abff':'Light Blue',
+				'#05a04d':'Green',
+				'#66d81f':'Light Green',
+				'#ff0081':'Pink',
+				'#f16115':'Orange',
+				'#f43940':'Red',
+				'#fee213':'Yellow'
+			};
+			params={style:'color:#999;margin-left:2px;width:100px;padding:3px;'};
+			wrapper.toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
+			wrapper.toolbar.pencolor.onchange=function(){
+				let pencolor=this.options[this.selectedIndex].value;
+				this.parentNode.parentNode.pad.penColor=pencolor;
+				this.parentNode.parentNode.dataset.pencolor=pencolor;
+				this.style.borderColor=pencolor;
+			};
+			wrapper.toolbar.pencolor.onfocus=function(){
+				this.style.outline='none';
+			}
+			wrapper.toolbar.pencolor.title="Pen Color";
+			wrapper.toolbar.pencolor.style.borderColor='#000000';
+			wrapper.toolbar.appendChild(wrapper.toolbar.pencolor);
+			//toolbar.undo
+			wrapper.toolbar.undo=document.createElement('span');
+			wrapper.toolbar.undo.className='btn btn-small w_blue icon-undo';
+			wrapper.toolbar.undo.title="Undo";
+			wrapper.toolbar.undo.style.marginLeft='2px';
+			wrapper.toolbar.undo.onclick=function(){
+				let data = this.parentNode.parentNode.pad.toData();
+				if (data) {
+					data.pop(); // remove the last dot or line
+					this.parentNode.parentNode.pad.fromData(data);
+				}
+				//reset the pencolor
+				this.parentNode.parentNode.pad.penColor=this.parentNode.parentNode.dataset.pencolor;
+			}
+			if(undefined!=wrapper.hide_undo){
+				wrapper.toolbar.undo.style.display='none';
+			}
+			wrapper.toolbar.appendChild(wrapper.toolbar.undo);
+
+			//toolbar.clear
+			wrapper.toolbar.clear=document.createElement('span');
+			wrapper.toolbar.clear.className='btn btn-small w_red icon-erase';
+			wrapper.toolbar.clear.title='Clear';
+			wrapper.toolbar.clear.style.marginLeft='2px';
+			wrapper.toolbar.clear.onclick=function(){
+				if(!confirm('Clear?')){return false;}
+				this.parentNode.parentNode.pad.clear();
+				this.parentNode.undo.style.display='inline-block';
+				//reset the pencolor
+				this.parentNode.parentNode.pad.penColor=this.parentNode.parentNode.dataset.pencolor;
+			}
+			wrapper.toolbar.appendChild(wrapper.toolbar.clear);
 		}
 	},
 	initWhiteboard:function(){
