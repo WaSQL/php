@@ -611,6 +611,12 @@ var wacss = {
 				let optionsjson=wacss.trim(optionsdiv.innerText);
 				//lconfig.options=JSON.parse(optionsjson);
 				lconfig.options=JSON.parse(optionsjson);
+				if(undefined != list[i].dataset.debug){
+					console.log('optionsjson');
+					console.log(optionsjson);
+					console.log('options');
+					console.log(lconfig.options);
+				}
 			}
 			else{
 				lconfig.options={
@@ -634,6 +640,9 @@ var wacss = {
             			}
             		}
 				};
+				if(undefined != list[i].dataset.debug){
+					console.log('no options div - setting default');
+				}
 			}
 			//labels
 			let labelsdiv=datadiv.querySelector('labels');
@@ -645,6 +654,11 @@ var wacss = {
 					console.log(labelsjson);
 					console.log('labels');
 					console.log(lconfig.data.labels);
+				}
+			}
+			else{
+				if(undefined != list[i].dataset.debug){
+					console.log('no labels div');
 				}
 			}
 			//colors
@@ -664,11 +678,15 @@ var wacss = {
 			}
 			//datasets
 			let datasets=datadiv.querySelectorAll('dataset');
+			if(undefined != list[i].dataset.debug){
+				console.log('datasets');
+				console.log(datasets);
+			} 
 			for(let d=0;d<datasets.length;d++){
 				let datasetjson=wacss.trim(datasets[d].innerText);
 				let json=JSON.parse(datasetjson);
 				if(undefined != list[i].dataset.debug){
-					console.log('datasetjson');
+					console.log(d+': datasetjson');
 					console.log(datasetjson);
 					console.log('json');
 					console.log(json);
