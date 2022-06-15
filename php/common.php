@@ -7010,7 +7010,13 @@ function commonProcessChartjsTags($htm){
 			$replace_str.='>';
 			if(preg_match('/^(select|with)/is',trim($innertag_contents))){
 				$db=$CONFIG['database'];
-				if(isset($chartjs_attributes['db'])){
+				if(isset($innertag_attributes['db'])){
+					$db=$innertag_attributes['db'];
+				}
+				elseif(isset($innertag_attributes['data-db'])){
+					$db=$innertag_attributes['data-db'];
+				}
+				elseif(isset($chartjs_attributes['db'])){
 					$db=$chartjs_attributes['db'];
 				}
 				elseif(isset($chartjs_attributes['data-db'])){
