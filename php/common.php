@@ -6955,6 +6955,10 @@ function commonProcessChartjsTags($htm){
 		1 = the chartjs attributes
 		2 = the contents inside the chartjs tag - <dataset
 	*/
+	$colors=array(
+		'#11b7af','#403aca','#f68300','#de2b80','#7e7dfa','#72e56d',
+		'#1473f3','#7300d3','#e8c800','#cb5a00','#01925f','#bcee35'
+	);
 	foreach($chartjs[0] as $i=>$chartjs_tag){
 		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
 		if(!isset($chartjs_attributes['id'])){
@@ -7006,12 +7010,15 @@ function commonProcessChartjsTags($htm){
 					$labels[]=$rec['label'];
 				}
 			}
+			$i=0;
 			foreach($values as $dataset=>$vals){
 				$atts=$chartjs_attributes;
 				$atts['data-label']=$dataset;
+				$atts['data-backgroundcolor']=$colors[$i];
 				$replace_str.='<dataset ';
 				$replace_str .= setTagAttributes($atts);
 				$replace_str.='>'.json_encode($vals).'</dataset>'.PHP_EOL;
+				$i+=1;
 			}
 			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
 			$replace_str.='</div>'.PHP_EOL;
