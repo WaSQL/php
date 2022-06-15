@@ -591,11 +591,15 @@ var wacss = {
 			}
 			if(undefined==chartid && undefined!=list[i].dataset.initialized){continue;}
 			list[i].dataset.initialized=1;
-			let datadiv=document.querySelector('#'+list[i].id+'_data');
+			let datadiv=document.querySelector('#'+list[i].id+'_data'); 
 			if(undefined==datadiv){
 				console.log('Error in initChartJsBehavior: missing data div attribute');
 				console.log(list[i]);
 				continue;
+			}
+			if(undefined != list[i].dataset.debug){
+				console.log('datadiv');
+				console.log(datadiv);
 			}
 			//setup the config: type, data, options
 			let lconfig = {
@@ -679,8 +683,7 @@ var wacss = {
 			//datasets
 			let datasets=datadiv.querySelectorAll('dataset');
 			if(undefined != list[i].dataset.debug){
-				console.log('datasets');
-				console.log(datasets);
+				console.log(datasets.length+' dataset tags found');
 			} 
 			for(let d=0;d<datasets.length;d++){
 				let datasetjson=wacss.trim(datasets[d].innerText);
