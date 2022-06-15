@@ -6961,6 +6961,63 @@ function commonProcessChartjsTags($htm){
 			$chartjs_attributes['id']='chartjs_'.$i.strtolower(generateGUID(false,false));
 		}
 		$chartjs_contents=$chartjs[2][$i];
+		//look for just a query
+		if(preg_match('/^(select|with)/is',trim($chartjs_contents))){
+			$process='';
+			if(isset($chartjs_attributes['data-process'])){
+				$process=$chartjs_attributes['data-process'];
+			}
+			$db=$CONFIG['database'];
+			if(isset($chartjs_attributes['db'])){
+				$db=$chartjs_attributes['db'];
+			}
+			elseif(isset($chartjs_attributes['data-db'])){
+				$db=$chartjs_attributes['data-db'];
+			}
+			//select date(_cdate) as label, code as dataset,count(*) as value
+			$recs=dbQueryResults($db,$chartjs_contents);
+			if(strlen($process)){
+				$recs=call_user_func($process,$recs,$chartjs_attributes);
+			}
+			if(!isset($recs[0])){
+				$replace_str='<error>No Records</error>';
+				$replace_str.="<query>{$chartjs_contents}</query>";
+				$htm=str_replace($chartjs_tag,$replace_str,$htm);
+				continue;
+			}
+			if(!isset($recs[0]['label'])){
+				$replace_str='<error>Query Must return label, and value</error>';
+				$replace_str.="<query>{$chartjs_contents}</query>";
+				$htm=str_replace($chartjs_tag,$replace_str,$htm);
+				continue;
+			}
+			$datasets=array();
+			$labels=array();
+			$values=array();
+			$replace_str='';
+			$replace_str.='<div data-behavior="chartjs" ';
+			$replace_str .= setTagAttributes($chartjs_attributes);
+			$replace_str .= '></div>'.PHP_EOL;
+			$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
+			foreach($recs as $rec){
+				$dataset=$rec['dataset'] ?? 'data';
+				$values[$dataset][]=$rec['value'];
+				if(!in_array($rec['label'],$labels)){
+					$labels[]=$rec['label'];
+				}
+			}
+			foreach($values as $dataset=>$vals){
+				$atts=$chartjs_attributes;
+				$atts['data-label']=$dataset;
+				$replace_str.='<dataset ';
+				$replace_str .= setTagAttributes($atts);
+				$replace_str.='>'.json_encode($vals).'</dataset>'.PHP_EOL;
+			}
+			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
+			$replace_str.='</div>'.PHP_EOL;
+			$htm=str_replace($chartjs_tag,$replace_str,$htm);
+			continue;
+		}
 		//get dataset tags inside
 		preg_match_all('/\<(div|dataset|colors|options|labels)(.*?)\>(.+?)\<\/\1\>/ism',$chartjs_contents,$chartjs_inner,PREG_PATTERN_ORDER);
 		//echo printValue($chartjs_tags);exit;
@@ -7026,21 +7083,13 @@ function commonProcessChartjsTags($htm){
 				if(strlen($process)){
 					$recs=call_user_func($process,$recs,$innertag_attributes,$chartjs_attributes);
 				}
+				//select date(_cdate) as label, code as dataset,count(*) as value
 				if(isset($recs[0])){
 					$vals=array();
 					foreach($recs as $rec){
-						if(isset($rec['y']) && isset($rec['x'])){
-							$labels[]=$rec['x'];
-							$vals[]=$rec['y'];
-						}
-						elseif(isset($rec['value']) && isset($rec['label'])){
+						if(isset($rec['value']) && isset($rec['label'])){
 							$labels[]=$rec['label'];
 							$vals[]=$rec['value'];
-						}
-						else{
-							foreach($rec as $k=>$v){
-								$vals[]=$v;
-							}
 						}
 						if(isset($rec['color'])){
 							$colors[]=$rec['color'];
