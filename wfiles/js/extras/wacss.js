@@ -129,6 +129,32 @@ var wacss = {
 		}
 		return tag;
 	},
+	buildFormText:function (fieldname,params){
+		if(undefined == fieldname){alert('buildFormText requires fieldname');return undefined;}
+		if(undefined == params){params={};}
+		if(undefined == params['-formname']){params['-formname']='addedit';}
+		if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
+		if(undefined == params.classname){params.classname='form-control input';}
+		var tag = document.createElement("input");
+		tag.className=params.classname;
+		if(undefined != params.required){tag.setAttribute('required',params.required);}
+		if(undefined != params.class){tag.setAttribute('class',params.class);}
+		if(undefined != params.style){tag.setAttribute('style',params.style);}
+		if(undefined != params.value){
+	    	tag.setAttribute('value',params.value);
+		}
+		else{tag.setAttribute('value','');}
+		tag.name=fieldname;
+		tag.id=params.id;
+		if(undefined != params['-parent']){
+			var pobj=getObject(params['-parent']);
+			if(undefined != pobj){
+				pobj.appendChild(tag);
+			}
+			else{console.log(params['-parent']+' does not exist');}
+		}
+		return tag;
+	},
 	copy2Clipboard: function(str,msg){
 		if(undefined==msg){msg='Copy Successful';}
 		const el = document.createElement('textarea');
@@ -2455,7 +2481,78 @@ var wacss = {
 			wrapper.toolbar.style.alignItems='center';
 			wrapper.toolbar.style.width='100%';
 			wrapper.toolbar.style.height='30px';
+			wrapper.toolbar.style.borderTop='1px solid #ccc';
 			wrapper.appendChild(wrapper.toolbar);
+			//toolbar.text
+			params={style:'flex:1;color:#999;font-size:0.8rem;height:2.1em;',class:'input w_small'};
+			wrapper.toolbar.txt=wacss.buildFormText('txt',params);
+			wrapper.toolbar.txt.onkeyup=function(){
+				let fontname=this.parentNode.parentNode.dataset.font;
+				let pad=this.parentNode.parentNode.pad;
+				let ctx=pad._ctx;
+				let w=pad.canvas.width;
+                let h=pad.canvas.height;
+                let px=parseInt(h/2)+5;
+                pad.clear();
+                ctx.font = px+'px '+fontname;
+				ctx.textAlign='start';
+				let x=15;
+                let y=parseInt(h/2)+10;
+                let m=w-10;
+				ctx.fillText(this.value,x, y, m);
+				return true;
+			};
+			wrapper.toolbar.txt.onfocus=function(){
+				this.style.outline='none';
+			}
+			wrapper.toolbar.txt.title="Signature";
+			wrapper.toolbar.txt.style.borderColor='transparent';
+			wrapper.toolbar.txt.style.borderRight='1px solid #ccc';
+			wrapper.toolbar.appendChild(wrapper.toolbar.txt);
+			//toolbar.font - default to black
+			wrapper.dataset.font='andragogy';
+			let fonts={
+				'andragogy':'Andragogy',
+				'high_summit':'High Summit',
+				'julialauren':'Julia Lauren',
+				'katrineholland':'Katrine Holland',
+				'sandrabelhock':'Sandra Belhock',
+				'yasminerothem':'Yasmine Rothem',
+			};
+			//load the fonts so they are available when selected.
+			Object.keys(fonts).forEach(function(fontname) {
+			  let el=document.createElement('div');
+			  el.style.float='left';
+			  el.style.fontSize='1px';
+			  el.style.fontFamily=fontname;
+			  el.innerText='.';
+			  wrapper.toolbar.appendChild(el);
+			});
+			params={style:'border-color:transparent;border-right:1px solid #ccc;color:#999;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;'};
+			wrapper.toolbar.font=wacss.buildFormSelect('font',fonts,params);
+			wrapper.toolbar.font.onchange=function(){
+				let fontname=this.options[this.selectedIndex].value;
+				this.parentNode.parentNode.dataset.font=fontname;
+				let pad=this.parentNode.parentNode.pad;
+				let ctx=pad._ctx;
+				let w=pad.canvas.width;
+                let h=pad.canvas.height;
+                let px=parseInt(h/2)+5;
+                pad.clear();
+                ctx.font = px+'px '+fontname;
+				ctx.textAlign='start';
+				let x=15;
+                let y=parseInt(h/2)+10;
+                let m=w-10;
+				ctx.fillText(this.parentNode.txt.value,x, y, m);
+				return true;
+			};
+			wrapper.toolbar.font.onfocus=function(){
+				this.style.outline='none';
+			}
+			wrapper.toolbar.font.title="Signature Font";
+			wrapper.toolbar.font.style.borderColor='#000000';
+			wrapper.toolbar.appendChild(wrapper.toolbar.font);
 			//toolbar.pencolor - default to black
 			wrapper.dataset.pencolor='#000';
 			let pencolors={
@@ -2469,13 +2566,14 @@ var wacss = {
 				'#f43940':'Red',
 				'#fee213':'Yellow'
 			};
-			params={style:'color:#999;margin-left:2px;width:100px;padding:3px;'};
+			params={style:'background-color:#000;color:#fff;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;'};
 			wrapper.toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
 			wrapper.toolbar.pencolor.onchange=function(){
 				let pencolor=this.options[this.selectedIndex].value;
 				this.parentNode.parentNode.pad.penColor=pencolor;
 				this.parentNode.parentNode.dataset.pencolor=pencolor;
 				this.style.borderColor=pencolor;
+				this.style.backgroundColor=pencolor;
 			};
 			wrapper.toolbar.pencolor.onfocus=function(){
 				this.style.outline='none';

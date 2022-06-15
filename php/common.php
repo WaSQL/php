@@ -5071,7 +5071,7 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['clear'])){$params['clear']='<span class="icon-erase"></span>';}
 	if(!isset($params['sign'])){$params['sign']='<span class="icon-signature"></span>';}
 	if(!isset($params['width'])){$params['width']=600;}
-	if(!isset($params['height'])){$params['height']=90;}
+	if(!isset($params['height'])){$params['height']=150;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['value']) && strlen($params['value'])){
 		$params['-value']=$params['value'];
@@ -7010,7 +7010,10 @@ function commonProcessChartjsTags($htm){
 			$replace_str.='>';
 			if(preg_match('/^(select|with)/is',trim($innertag_contents))){
 				$db=$CONFIG['database'];
-				if(isset($chartjs_attributes['data-db'])){
+				if(isset($chartjs_attributes['db'])){
+					$db=$chartjs_attributes['db'];
+				}
+				elseif(isset($chartjs_attributes['data-db'])){
 					$db=$chartjs_attributes['data-db'];
 				}
 				$recs=dbQueryResults($db,$innertag_contents);
@@ -7128,6 +7131,10 @@ function commonProcessDBListRecordsTags($htm){
 		if(isset($opts['db'])){
 			$db=$opts['db'];
 			unset($opts['db']);
+		}
+		elseif(isset($opts['data-db'])){
+			$db=$opts['data-db'];
+			unset($opts['data-db']);
 		}
 		else{
 			$db=$CONFIG['database'];
