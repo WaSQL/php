@@ -640,12 +640,24 @@ var wacss = {
 			if(undefined != labelsdiv){
 				let labelsjson=wacss.trim(labelsdiv.innerText);
 				lconfig.data.labels=JSON.parse(labelsjson);
+				if(undefined != list[i].dataset.debug){
+					console.log('labelsjson'):
+					console.log(labelsjson);
+					console.log('labels');
+					console.log(lconfig.data.labels);
+				}
 			}
 			//colors
 			let colorsdiv=datadiv.querySelector('colors');
 			if(undefined != colorsdiv){
 				let colorsjson=wacss.trim(colorsdiv.innerText);
 				colors=JSON.parse(colorsjson);
+				if(undefined != list[i].dataset.debug){
+					console.log('colorsjson'):
+					console.log(colorsjson);
+					console.log('colors');
+					console.log(colors);
+				}
 			}
 			else{
 				colors=gcolors;
@@ -653,7 +665,14 @@ var wacss = {
 			//datasets
 			let datasets=datadiv.querySelectorAll('dataset');
 			for(let d=0;d<datasets.length;d++){
-				let json=JSON.parse(datasets[d].innerText);   		
+				let datasetjson=wacss.trim(datasets[d].innerText);
+				let json=JSON.parse(datasetjson);
+				if(undefined != list[i].dataset.debug){
+					console.log('datasetjson'):
+					console.log(datasetjson);
+					console.log('json');
+					console.log(json);
+				}   		
 				let dataset={
 					label:datasets[d].dataset.label || datasets[d].dataset.title || '',
 					backgroundColor: datasets[d].dataset.backgroundcolor || colors,
