@@ -641,7 +641,7 @@ var wacss = {
 				let labelsjson=wacss.trim(labelsdiv.innerText);
 				lconfig.data.labels=JSON.parse(labelsjson);
 				if(undefined != list[i].dataset.debug){
-					console.log('labelsjson'):
+					console.log('labelsjson');
 					console.log(labelsjson);
 					console.log('labels');
 					console.log(lconfig.data.labels);
@@ -653,7 +653,7 @@ var wacss = {
 				let colorsjson=wacss.trim(colorsdiv.innerText);
 				colors=JSON.parse(colorsjson);
 				if(undefined != list[i].dataset.debug){
-					console.log('colorsjson'):
+					console.log('colorsjson');
 					console.log(colorsjson);
 					console.log('colors');
 					console.log(colors);
@@ -668,7 +668,7 @@ var wacss = {
 				let datasetjson=wacss.trim(datasets[d].innerText);
 				let json=JSON.parse(datasetjson);
 				if(undefined != list[i].dataset.debug){
-					console.log('datasetjson'):
+					console.log('datasetjson');
 					console.log(datasetjson);
 					console.log('json');
 					console.log(json);
