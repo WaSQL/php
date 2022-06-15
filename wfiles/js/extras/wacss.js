@@ -599,7 +599,7 @@ var wacss = {
 			}
 			if(undefined != list[i].dataset.debug){
 				console.log('datadiv');
-				console.log(datadiv);
+				console.log(datadiv.innerText);
 			}
 			//setup the config: type, data, options
 			let lconfig = {
