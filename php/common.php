@@ -6958,7 +6958,7 @@ function commonProcessChartjsTags($htm){
 	foreach($chartjs[0] as $i=>$chartjs_tag){
 		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
 		if(!isset($chartjs_attributes['id'])){
-			$chartjs_attributes['id']='chartjs_'.$i.generateGUID(false,false);
+			$chartjs_attributes['id']='chartjs_'.$i.strtolower(generateGUID(false,false));
 		}
 		$chartjs_contents=$chartjs[2][$i];
 		//get dataset tags inside
@@ -7013,8 +7013,8 @@ function commonProcessChartjsTags($htm){
 				if(isset($innertag_attributes['db'])){
 					$db=$innertag_attributes['db'];
 				}
-				elseif(isset($chartjs_attributes['data-db'])){
-					$db=$chartjs_attributes['data-db'];
+				elseif(isset($innertag_attributes['data-db'])){
+					$db=$innertag_attributes['data-db'];
 				}
 				elseif(isset($chartjs_attributes['db'])){
 					$db=$chartjs_attributes['db'];
