@@ -2480,7 +2480,7 @@ var wacss = {
 			wrapper.canvas.style.top='0px';
 			wrapper.canvas.style.left='0px';
 			wrapper.canvas.id=list[i].id+'_canvas';
-			wrapper.canvas.width='400';
+			wrapper.canvas.width='500';
 			wrapper.canvas.height='200';
 			wrapper.appendChild(wrapper.canvas);
 			//build a resize observer to make it responsive
@@ -2527,31 +2527,39 @@ var wacss = {
 			params={style:'flex:1;color:#999;font-size:0.8rem;height:2.1em;',class:'input w_small'};
 			wrapper.toolbar.txt=wacss.buildFormText('txt',params);
 			wrapper.toolbar.txt.onkeyup=function(){
-				let fontname=this.parentNode.parentNode.dataset.font;
-				let pad=this.parentNode.parentNode.pad;
+				return this.parentNode.parentNode.typeText();
+			};
+			wrapper.toolbar.txt.onfocus=function(){
+				this.style.outline='none';
+			}
+			wrapper.typeText=function(){
+				let pad=this.pad;
+				let txt=wacss.trim(this.toolbar.txt.value);
+				if(txt.length==0){return true;}
+				pad.clear();
+				let fontname=this.dataset.font;
 				let ctx=pad._ctx;
 				let w=pad.canvas.width;
                 let h=pad.canvas.height;
                 let px=parseInt(h/2)+5;
                 pad.clear();
+                pad.penColor=this.dataset.pencolor;
                 ctx.font = px+'px '+fontname;
 				ctx.textAlign='start';
 				let x=15;
                 let y=parseInt(h/2)+10;
-                let m=w-10;
-				ctx.fillText(this.value,x, y, m);
+                let m=w-20;
+				ctx.fillText(txt,x, y, m);
 				return true;
 			};
-			wrapper.toolbar.txt.onfocus=function(){
-				this.style.outline='none';
-			}
 			wrapper.toolbar.txt.title="Signature";
 			wrapper.toolbar.txt.style.borderColor='transparent';
 			wrapper.toolbar.txt.style.borderRight='1px solid #ccc';
 			wrapper.toolbar.appendChild(wrapper.toolbar.txt);
 			//toolbar.font - default to black
-			wrapper.dataset.font='andragogy';
+			wrapper.dataset.font=list[i].dataset.font || 'andragogy';
 			let fonts={
+				'arial':'Arial',
 				'andragogy':'Andragogy',
 				'high_summit':'High Summit',
 				'julialauren':'Julia Lauren',
@@ -2568,45 +2576,35 @@ var wacss = {
 			  el.innerText='.';
 			  wrapper.toolbar.appendChild(el);
 			});
-			params={style:'border-color:transparent;border-right:1px solid #ccc;color:#999;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;'};
+			params={
+				style:'border-color:transparent;border-right:1px solid #ccc;color:#999;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;',
+				value:wrapper.dataset.font
+			};
 			wrapper.toolbar.font=wacss.buildFormSelect('font',fonts,params);
 			wrapper.toolbar.font.onchange=function(){
 				let fontname=this.options[this.selectedIndex].value;
 				this.parentNode.parentNode.dataset.font=fontname;
-				let pad=this.parentNode.parentNode.pad;
-				let ctx=pad._ctx;
-				let w=pad.canvas.width;
-                let h=pad.canvas.height;
-                let px=parseInt(h/2)+5;
-                pad.clear();
-                ctx.font = px+'px '+fontname;
-				ctx.textAlign='start';
-				let x=15;
-                let y=parseInt(h/2)+10;
-                let m=w-10;
-				ctx.fillText(this.parentNode.txt.value,x, y, m);
-				return true;
+				return this.parentNode.parentNode.typeText();
 			};
 			wrapper.toolbar.font.onfocus=function(){
 				this.style.outline='none';
 			}
 			wrapper.toolbar.font.title="Signature Font";
-			wrapper.toolbar.font.style.borderColor='#000000';
+			wrapper.toolbar.font.style.borderColor='#ccc';
 			wrapper.toolbar.appendChild(wrapper.toolbar.font);
 			//toolbar.pencolor - default to black
-			wrapper.dataset.pencolor='#000';
+			wrapper.dataset.pencolor=list[i].dataset.pencolor || list[i].dataset.color || '#000000';
 			let pencolors={
 				'#000000':'Black',
-				'#213a9a':'Blue',
-				'#05abff':'Light Blue',
-				'#05a04d':'Green',
-				'#66d81f':'Light Green',
-				'#ff0081':'Pink',
-				'#f16115':'Orange',
-				'#f43940':'Red',
-				'#fee213':'Yellow'
+				'#002B59':'Cyan Blue',
+				'#545AA7':'Purple',
+				'#EC1C24':'Verizon Red',
+				'#91A3B0':'Cadet Grey'
 			};
-			params={style:'background-color:#000;color:#fff;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;'};
+			params={
+				style:'background-color:#000;color:#fff;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;',
+				value:list[i].dataset.pencolor
+			};
 			wrapper.toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
 			wrapper.toolbar.pencolor.onchange=function(){
 				let pencolor=this.options[this.selectedIndex].value;
@@ -2614,6 +2612,7 @@ var wacss = {
 				this.parentNode.parentNode.dataset.pencolor=pencolor;
 				this.style.borderColor=pencolor;
 				this.style.backgroundColor=pencolor;
+				return this.parentNode.parentNode.typeText();
 			};
 			wrapper.toolbar.pencolor.onfocus=function(){
 				this.style.outline='none';
@@ -2646,7 +2645,7 @@ var wacss = {
 			wrapper.toolbar.clear.title='Clear';
 			wrapper.toolbar.clear.style.marginLeft='2px';
 			wrapper.toolbar.clear.onclick=function(){
-				if(!confirm('Clear?')){return false;}
+				this.parentNode.txt.value='';
 				this.parentNode.parentNode.pad.clear();
 				this.parentNode.undo.style.display='inline-block';
 				//reset the pencolor
