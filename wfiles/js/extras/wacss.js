@@ -2550,6 +2550,7 @@ var wacss = {
                 let y=parseInt(h/2)+10;
                 let m=w-20;
 				ctx.fillText(txt,x, y, m);
+				pad.txtarea.innerText=pad.toDataURL('image/png');
 				return true;
 			};
 			wrapper.toolbar.txt.title="Signature";
