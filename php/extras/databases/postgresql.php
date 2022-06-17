@@ -2194,7 +2194,7 @@ function postgresqlQueryResults($query='',$params=array()){
 		'time'=>0,
 		'error'=>'',
 		'query'=>$query,
-		'function'=>'postgresqlExecuteSQL',
+		'function'=>'postgresqlQueryResults',
 		'params'=>$params
 	);
 	$query=trim($query);
@@ -2205,7 +2205,7 @@ function postgresqlQueryResults($query='',$params=array()){
 	if(!$dbh_postgresql){
 		$DATABASE['_lastquery']['error']='connect failed: '.pg_last_error();
 		debugValue($DATABASE['_lastquery']);
-    	return;
+    	return array();
 	}
 	$data=pg_query($dbh_postgresql,$query);
 	if(!$data && stringContains(pg_last_error($dbh_postgresql),'server closed the connection unexpectedly')){

@@ -990,14 +990,24 @@ function hanaClearConnection(){
 *	$ok=hanaExecuteSQL("truncate table abc");
 */
 function hanaExecuteSQL($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'hanaExecuteSQL',
+		'params'=>$params
+	);
 	global $dbh_hana;
 	if(!is_resource($dbh_hana)){
 		$dbh_hana=hanaDBConnect($params);
 	}
 	if(!$dbh_hana){
-    	$e=odbc_errormsg();
-    	debugValue(array("hanaExecuteSQL Connect Error",$e));
-    	return false;
+		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	try{
 		//check for -timeout
@@ -1013,10 +1023,6 @@ function hanaExecuteSQL($query,$params=array()){
 		if(!$result){
 			$errstr=odbc_errormsg($dbh_hana);
 			if(!strlen($errstr)){return array();}
-        	$err=array(
-        		'error'	=> $errstr,
-        		'query' => $query
-			);
 			if(stringContains($errstr,'session not connected')){
 				//lets retry
 				odbc_close($dbh_hana);
@@ -1035,27 +1041,26 @@ function hanaExecuteSQL($query,$params=array()){
 				if(!$result){
 					$errstr=odbc_errormsg($dbh_hana);
 					if(!strlen($errstr)){return array();}
-					$err=array(
-						'error'	=> $errstr,
-						'query' => $query,
-						'retry'	=> 1
-					);
-					debugValue($err);
-					return false;
+					$DATABASE['_lastquery']['error']='connect failed: '.$errstr;
+					debugValue($DATABASE['_lastquery']);
+			    	return 0;
 				}
 			}
 			else{
-				debugValue($err);
-				return false;
+				$DATABASE['_lastquery']['error']='connect failed: '.$errstr;
+				debugValue($DATABASE['_lastquery']);
+    			return 0;
 			}
 		}
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		debugValue($err);
-		return false;
+		$DATABASE['_lastquery']['error']=$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+		return 0;
 	}
-	return true;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function hanaAddDBRecord ----------
 /**
@@ -1772,6 +1777,16 @@ function hanaQueryHeader($query,$params=array()){
 *	$recs=hanaQueryResults('select top 50 * from abcschema.abc');
 */
 function hanaQueryResults($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'hanaQueryResults',
+		'params'=>$params
+	);
 	global $hanaStopProcess;
 	global $dbh_hana;
 	$starttime=microtime(true);
@@ -1780,15 +1795,14 @@ function hanaQueryResults($query,$params=array()){
 	}
 	$dbh_hana_result='';
 	if(!$dbh_hana){
-    	$e=odbc_errormsg();
-    	debugValue(array("hanaQueryResults Connect Error",$e));
-    	return json_encode($e);
+		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
+		debugValue($DATABASE['_lastquery']);
+    	return array();
 	}
 	if(!isset($params['-longreadlen'])){
 		$params['-longreadlen']=131027;
 	}
 	try{
-
 		odbc_exec($dbh_hana, "SET NAMES 'UTF8'");
 		odbc_exec($dbh_hana, "SET client_encoding='UTF-8'");
 		//check for -timeout
@@ -1802,6 +1816,7 @@ function hanaQueryResults($query,$params=array()){
 			$dbh_hana_result=odbc_exec($dbh_hana,$query);	
 		}
 		if(!$dbh_hana_result){
+
 			$errstr=odbc_errormsg($dbh_hana);
 			if(!strlen($errstr)){return array();}
         	$err=array(
@@ -1826,22 +1841,23 @@ function hanaQueryResults($query,$params=array()){
 				if(!$dbh_hana_result){
 					$errstr=odbc_errormsg($dbh_hana);
 					if(!strlen($errstr)){return array();}
-					$err=array(
-						'error'	=> $errstr,
-						'query' => $query,
-						'retry'	=> 1
-					);
-					return json_encode($err);
+					$DATABASE['_lastquery']['error']='connect failed: '.$errstr;
+					debugValue($DATABASE['_lastquery']);
+			    	return array();
 				}
 			}
 			else{
-				return json_encode($err);
+				$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg($dbh_hana);
+				debugValue($DATABASE['_lastquery']);
+		    	return array();
 			}
 		}
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		return json_encode($err);
+		$DATABASE['_lastquery']['error']='connect failed: '.$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+    	return array();
 	}
 	$rowcount=odbc_num_rows($dbh_hana_result);
 	if($rowcount==0 && isset($params['-forceheader'])){
@@ -1877,8 +1893,9 @@ function hanaQueryResults($query,$params=array()){
 		
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($dbh_hana_result);
-			return 'hanaQueryResults error: Failed to open '.$params['-filename'];
-			exit;
+			$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
+			debugValue($DATABASE['_lastquery']);
+	    	return array();
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],"Rowcount:".$rowcount.PHP_EOL.$query.PHP_EOL.PHP_EOL);
@@ -1946,6 +1963,8 @@ function hanaQueryResults($query,$params=array()){
 		}
 		return $i;
 	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $recs;
 }
 //---------- begin function hanaGetDBTablePrimaryKeys ----------

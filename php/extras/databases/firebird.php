@@ -882,40 +882,46 @@ function firebirdDBConnect($params=array()){
 * @usage $ok=firebirdExecuteSQL("truncate table abc");
 */
 function firebirdExecuteSQL($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'firebirdExecuteSQL',
+		'params'=>$params
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_firebird;
 	$dbh_firebird='';
 	$dbh_firebird=firebirdDBConnect();
 	if(!$dbh_firebird){
-		debugValue(array(
-			'function'=>'firebirdExecuteSQL',
-			'message'=>'connect failed',
-			'error'=>ibase_errmsg(),
-			'query'=>$query
-		));
-    	return;
+		$DATABASE['_lastquery']['error']=ibase_errmsg();
+		debugValue($DATABASE['_lastquery']);
+    	return array();
 	}
 	$result=@ibase_query($dbh_firebird,$query);
 	$err=ibase_errmsg();
 	if(is_array($err) || strlen($err)){
-		debugValue(array(
-			'function'=>'firebirdExecuteSQL',
-			'message'=>'ibase_query failed',
-			'error'=>$err,
-			'query'=>$query
-		));
 		ibase_close($dbh_firebird);
-		return false;
+		$DATABASE['_lastquery']['error']=$err;
+		debugValue($DATABASE['_lastquery']);
+    	return array();
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
     	ibase_close($dbh_firebird);
+    	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = firebirdEnumQueryResults($result,$params);
 	ibase_close($dbh_firebird);
+	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return true;
 }
 //---------- begin function firebirdGetDBCount--------------------
@@ -1330,40 +1336,46 @@ function firebirdGetDBViews($params=array()){
 
 */
 function firebirdQueryResults($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'firebirdExecuteSQL',
+		'params'=>$params
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_firebird;
 	$dbh_firebird='';
 	$dbh_firebird=firebirdDBConnect();
 	if(!$dbh_firebird){
-		debugValue(array(
-			'function'=>'firebirdQueryResults',
-			'message'=>'connect failed',
-			'error'=>ibase_errmsg(),
-			'query'=>$query
-		));
-    	return;
+		$DATABASE['_lastquery']['error']='connect failed: '.ibase_errmsg();
+		debugValue($DATABASE['_lastquery']);
+		return array();
 	}
 	$result=@ibase_query($dbh_firebird,$query);
 	$err=ibase_errmsg();
 	if(is_array($err) || strlen($err)){
-		debugValue(array(
-			'function'=>'firebirdQueryResults',
-			'message'=>'ibase_query failed',
-			'error'=>$err,
-			'query'=>$query
-		));
 		ibase_close($dbh_firebird);
-		return null;
+		$DATABASE['_lastquery']['error']=$err;
+		debugValue($DATABASE['_lastquery']);
+		return array();
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
     	ibase_close($dbh_firebird);
+    	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = firebirdEnumQueryResults($result,$params);
 	ibase_close($dbh_firebird);
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $results;
 }
 //---------- begin function firebirdEnumQueryResults ----------

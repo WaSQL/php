@@ -151,7 +151,7 @@ function sqlpromptSubmit(frm){
 	if(undefined != obj.editor){
 		//store editor_content
 		frm.editor_content.value=obj.editor.innerHTML;
-		console.log(frm.sql_full);
+		//console.log(frm.sql_full);
 		//if the user has selected a section, run just the selection
 		let str='';
 		if (window.getSelection) {
