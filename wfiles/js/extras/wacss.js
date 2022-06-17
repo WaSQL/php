@@ -2624,7 +2624,7 @@ var wacss = {
 			wrapper.toolbar.appendChild(wrapper.toolbar.pencolor);
 			//toolbar.undo
 			wrapper.toolbar.undo=document.createElement('span');
-			wrapper.toolbar.undo.className='btn btn-small w_blue icon-undo';
+			wrapper.toolbar.undo.className='w_biggest w_pointer w_blue icon-undo';
 			wrapper.toolbar.undo.title="Undo";
 			wrapper.toolbar.undo.style.marginLeft='2px';
 			wrapper.toolbar.undo.onclick=function(){
@@ -2643,7 +2643,7 @@ var wacss = {
 
 			//toolbar.clear
 			wrapper.toolbar.clear=document.createElement('span');
-			wrapper.toolbar.clear.className='w_bigger w_pointer w_red icon-erase';
+			wrapper.toolbar.clear.className='w_biggest w_pointer w_red icon-erase';
 			wrapper.toolbar.clear.title='Clear';
 			wrapper.toolbar.clear.style.marginLeft='2px';
 			wrapper.toolbar.clear.onclick=function(){
