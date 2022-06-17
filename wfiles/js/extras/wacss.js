@@ -2579,7 +2579,7 @@ var wacss = {
 			  wrapper.toolbar.appendChild(el);
 			});
 			params={
-				style:'border-color:transparent;border-right:1px solid #ccc;color:#999;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;',
+				style:'border-color:transparent;border-right:1px solid #ccc;color:#999;margin-left:2px;width:80px;font-size:0.8rem;padding:3px;',
 				value:wrapper.dataset.font
 			};
 			wrapper.toolbar.font=wacss.buildFormSelect('font',fonts,params);
@@ -2604,7 +2604,7 @@ var wacss = {
 				'#91A3B0':'Cadet Grey'
 			};
 			params={
-				style:'background-color:#000;color:#fff;margin-left:2px;width:60px;font-size:0.8rem;padding:3px;',
+				style:'background-color:#000;color:#fff;margin-left:2px;width:70px;font-size:0.8rem;padding:3px;',
 				value:list[i].dataset.pencolor
 			};
 			wrapper.toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
