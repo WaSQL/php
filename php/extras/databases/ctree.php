@@ -205,16 +205,21 @@ function ctreeDBConnect(){
 * @usage $ok=ctreeExecuteSQL("truncate table abc");
 */
 function ctreeExecuteSQL($query,$return_error=1){
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'ctreeExecuteSQL',
+		'params'=>$params
+	);
 	global $dbh_ctree;
 	$dbh_ctree=ctreeDBConnect();
 	if(!is_object($dbh_ctree)){
-		$err=array(
-			'function'=>'ctreeExecuteSQL',
-			'message'=>'connect failed',
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
+		$DATABASE['_lastquery']['error']='connect failed';
+		debugValue($DATABASE['_lastquery']);
+		if($return_error==1){return $DATABASE['_lastquery'];}
     	return 0;
 	}
 	try{
@@ -225,17 +230,14 @@ function ctreeExecuteSQL($query,$return_error=1){
 		$dbh_ctree = null;
 	}
 	catch (Exception $e) {
-		$err=array(
-			'function'=>'ctreeExecuteSQL',
-			'message'=>'try catch failed',
-			'error'=>$e->errorInfo,
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
+		$DATABASE['_lastquery']['error']=$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+		if($return_error==1){return $DATABASE['_lastquery'];}
 		return 0;
 	}
-	return 0;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function ctreeGetDBCount--------------------
 /**
@@ -829,6 +831,15 @@ function ctreeParseConnectParams($params=array()){
 * @return array - returns records
 */
 function ctreeQueryResults($query='',$params=array()){
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'ctreeExecuteSQL',
+		'params'=>$params
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_ctree;
@@ -836,9 +847,10 @@ function ctreeQueryResults($query='',$params=array()){
 		$dbh_ctree=ctreeDBConnect();
 	}
 	if(!$dbh_ctree){
+		$DATABASE['_lastquery']['error']='connect error';
 		$error=array("ctreeQueryResults Connect Error",$query);
-	    debugValue($error);
-	    return json_encode($error);
+	    debugValue($DATABASE['_lastquery']);
+	    return array();
 	}
 	try{
 		$data = $dbh_ctree->query($query);	
@@ -852,19 +864,21 @@ function ctreeQueryResults($query='',$params=array()){
 				$data = $dbh_ctree->query($query);
 			}
 			catch (Exception $e) {
-				$error=array("ctreeQueryResults Query Failed after 2nd attempt",$e,$query);
-			    debugValue($error);
-			    return json_encode($error);
+				$DATABASE['_lastquery']['error']=$e;
+			    debugValue($DATABASE['_lastquery']);
+			    return array();
 			}
 		}
 		else{
-			$error=array("ctreeQueryResults Query Error",$e,$query);
-		    debugValue($error);
-		    return json_encode($error);
+			$DATABASE['_lastquery']['error']=$e;
+		    debugValue($DATABASE['_lastquery']);
+		    return array();
 		}
 	}
 	$recs = ctreeEnumQueryResults($data,$params,$query);
 	$dbh_ctree=null;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $recs;
 }
 //---------- begin function ctreeEnumQueryResults ----------

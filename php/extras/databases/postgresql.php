@@ -873,17 +873,22 @@ ENDOFQUERY;
 */
 function postgresqlExecuteSQL($query,$return_error=1){
 	global $dbh_postgresql;
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'postgresqlExecuteSQL'
+	);
+
 	$dbh_postgresql=postgresqlDBConnect();
 	if(!$dbh_postgresql){
-		$err=array(
-			'function'=>'postgresqlExecuteSQL',
-			'message'=>'connect failed',
-			'error'=>pg_last_error(),
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
-    	return 0;
+		$DATABASE['_lastquery']['error']='connect failed: '.pg_last_error();
+		debugValue($DATABASE['_lastquery']);
+		if($return_error==1){return $DATABASE['_lastquery'];}
+		return 0;
 	}
 	try{
 		$result=pg_query($dbh_postgresql,$query);
@@ -895,29 +900,21 @@ function postgresqlExecuteSQL($query,$return_error=1){
 			$result=pg_query($dbh_postgresql,$query);
 		}
 		if(!$result){
-			$err=pg_last_error($dbh_postgresql);
-			debugValue(array(
-				'function'=>'postgresqlExecuteSQL',
-				'message'=>'query failed',
-				'error'=>$err,
-				'query'=>$query,
-				'params'=>$params
-			));
+			$DATABASE['_lastquery']['error']=pg_last_error($dbh_postgresql);
+			debugValue($DATABASE['_lastquery']);
 			pg_close($dbh_postgresql);
-			return false;
+			if($return_error==1){return $DATABASE['_lastquery'];}
+			return 0;
 		}
 		pg_close($dbh_postgresql);
-		return true;
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		return 1;
 	}
 	catch (Exception $e) {
-		$err=array(
-			'function'=>'postgresqlExecuteSQL',
-			'message'=>'try catch failed',
-			'error'=>$e->errorInfo,
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
+		$DATABASE['_lastquery']['error']=$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+		if($return_error==1){return $DATABASE['_lastquery'];}
 		return 0;
 	}
 	return 1;
@@ -2190,20 +2187,24 @@ function postgresqlParseConnectParams($params=array()){
 * @return array - returns records
 */
 function postgresqlQueryResults($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'postgresqlExecuteSQL',
+		'params'=>$params
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_postgresql;
 	$dbh_postgresql='';
-	//if(!is_resource($dbh_postgresql)){
-		$dbh_postgresql=postgresqlDBConnect();
-	//}
+	$dbh_postgresql=postgresqlDBConnect();
 	if(!$dbh_postgresql){
-		debugValue(array(
-			'function'=>'postgresqlQueryResults',
-			'message'=>'connect failed',
-			'error'=>pg_last_error(),
-			'query'=>$query
-		));
+		$DATABASE['_lastquery']['error']='connect failed: '.pg_last_error();
+		debugValue($DATABASE['_lastquery']);
     	return;
 	}
 	$data=pg_query($dbh_postgresql,$query);
@@ -2215,29 +2216,29 @@ function postgresqlQueryResults($query='',$params=array()){
 		$data=pg_query($dbh_postgresql,$query);
 	}
 	if(!$data){
-		$err=pg_last_error($dbh_postgresql);
-		debugValue(array(
-			'function'=>'postgresqlQueryResults',
-			'message'=>'query failed',
-			'error'=>$err,
-			'query'=>$query,
-			'params'=>$params
-		));
+		$DATABASE['_lastquery']['error']=pg_last_error($dbh_postgresql);
+		debugValue($DATABASE['_lastquery']);
 		return array();
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
-
     	$id=databaseAffectedRows($data);
     	pg_close($dbh_postgresql);
+    	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
-
 	$results = postgresqlEnumQueryResults($data,$params);
 	pg_close($dbh_postgresql);
+
 	if(!is_array($results) && stringContains($results,'server closed the connection unexpectedly')){
-		$results .= " **NOTICE** make sure pgsql.auto_reset_persistent in php.ini is set to On. This usually resolved this issue.";
+		$DATABASE['_lastquery']['error']=$results." **NOTICE** make sure pgsql.auto_reset_persistent in php.ini is set to On. This usually resolved this issue.";
+		debugValue($DATABASE['_lastquery']);
+		return array();
+		
 	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $results;
 }
 //---------- begin function postgresqlEnumQueryResults ----------
