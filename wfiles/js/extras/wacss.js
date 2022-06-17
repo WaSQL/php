@@ -2643,7 +2643,7 @@ var wacss = {
 
 			//toolbar.clear
 			wrapper.toolbar.clear=document.createElement('span');
-			wrapper.toolbar.clear.className='w_red icon-erase';
+			wrapper.toolbar.clear.className='w_bigger w_pointer w_red icon-erase';
 			wrapper.toolbar.clear.title='Clear';
 			wrapper.toolbar.clear.style.marginLeft='2px';
 			wrapper.toolbar.clear.onclick=function(){
