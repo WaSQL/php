@@ -2579,7 +2579,7 @@ var wacss = {
 			  wrapper.toolbar.appendChild(el);
 			});
 			params={
-				style:'border-color:transparent;border-right:1px solid #ccc;color:#999;margin-left:2px;width:80px;font-size:0.8rem;padding:3px;',
+				style:'border-color:transparent;color:#999;margin-left:2px;width:80px;font-size:0.8rem;padding:3px;',
 				value:wrapper.dataset.font
 			};
 			wrapper.toolbar.font=wacss.buildFormSelect('font',fonts,params);
