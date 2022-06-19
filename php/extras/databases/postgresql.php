@@ -863,12 +863,7 @@ ENDOFQUERY;
 /**
 * @describe executes a query and returns without parsing the results
 * @param $query string - query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
-*	[-host] - postgresql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return boolean returns true if query succeeded
+* @return int returns 1 if query succeeded, else 0
 * @usage $ok=postgresqlExecuteSQL("truncate table abc");
 */
 function postgresqlExecuteSQL($query,$return_error=1){

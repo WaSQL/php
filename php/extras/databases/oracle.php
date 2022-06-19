@@ -1285,25 +1285,25 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 * @usage $ok=oracleExecuteSQL($query);
 */
 function oracleExecuteSQL($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'oracleExecuteSQL'
+	);
 	global $USER;
 	//connect
 	$dbh_oracle=oracleDBConnect($params);
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
-	if (!$stid) {
-		$out=array(
-    		'function'=>"oracleExecuteSQL",
-    		'connection'=>$dbh_oracle,
-    		'action'=>'oci_parse',
-    		'error'=>oci_error($dbh_oracle),
-    		'query'=>$query
-    	);
-    	oci_close($dbh_oracle);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return;
+	if(!$stid){
+		$DATABASE['_lastquery']['error']='parse failed: '.oci_error($dbh_oracle);
+		debugValue($DATABASE['_lastquery']);
+		oci_close($dbh_oracle);
+		return 0;
 	}
 	if($params['setmodule']){
 		if(!isset($params['module'])){$params['module']='waSQL';}
@@ -1331,24 +1331,17 @@ function oracleExecuteSQL($query='',$params=array()){
 			oci_set_client_identifier($dbh_oracle, 'idle');
 		}
 		if (!$r){
-			$out=array(
-	    		'function'=>"oracleExecuteSQL",
-	    		'connection'=>$dbh_oracle,
-	    		'action'=>'oci_execute',
-	    		'error'=>$e,
-	    		'query'=>$query
-	    	);
+			$DATABASE['_lastquery']['error']=$e;
+			debugValue($DATABASE['_lastquery']);
 	    	oci_free_statement($stid);
 	    	oci_close($dbh_oracle);
-	    	if(isset($params['-return_errors'])){
-	    		return $out;
-	    	}
-			debugValue($out);
-	    	return false;
+		 	return 0;
 		}
 		oci_free_statement($stid);
-	    oci_close($dbh_oracle);
-		return true;
+	   oci_close($dbh_oracle);
+	   $DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		return 1;
 	}
 	$r = oci_execute($stid);
 	$e=oci_error($stid);
@@ -1361,24 +1354,17 @@ function oracleExecuteSQL($query='',$params=array()){
 		oci_set_client_identifier($dbh_oracle, 'idle');
 	}
 	if (!$r){
-		$out=array(
-    		'function'=>"oracleExecuteSQL",
-    		'connection'=>$dbh_oracle,
-    		'action'=>'oci_execute',
-    		'error'=>$e,
-    		'query'=>$query
-    	);
+		$DATABASE['_lastquery']['error']=$e;
+		debugValue($DATABASE['_lastquery']);
     	oci_free_statement($stid);
 		oci_close($dbh_oracle);
-		if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
+    	return 0;
 	}
 	oci_free_statement($stid);
 	oci_close($dbh_oracle);
-	return true;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function oracleGetActiveSessionCount
 /**
@@ -2231,23 +2217,24 @@ function oracleParseConnectParams($params=array()){
 * @return array - returns records
 */
 function oracleQueryResults($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'oracleQueryResults',
+		'params'=>$params
+	);
 	global $USER;
 	//connect
 	$dbh_oracle=oracleDBConnect($params);
 	//check for -process
 	if(isset($params['-process']) && !function_exists($params['-process'])){
-		$out=array(
-    		'function'=>"oracleQueryResults",
-    		'connection'=>$dbh_oracle,
-    		'error'=>'Invalid process function',
-    		'function'=>$params['-process'],
-    		'query'=>$query
-    	);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-		return false;
+		$DATABASE['_lastquery']['error']='invalid process';
+		debugValue($DATABASE['_lastquery']);
+		return 0;
 	}
 	oci_rollback($dbh_oracle);
 	//set date_format?
@@ -2266,19 +2253,10 @@ function oracleQueryResults($query='',$params=array()){
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!is_resource($stid)){
-		$out=array(
-    		'function'=>"oracleQueryResults",
-    		'connection'=>$dbh_oracle,
-    		'action'=>'oci_parse',
-    		'error'=>oci_error($dbh_oracle),
-    		'query'=>$query
-    	);
+		$DATABASE['_lastquery']['error']='oci_parse error: '.oci_error($dbh_oracle);
+		debugValue($DATABASE['_lastquery']);
     	oci_close($dbh_oracle);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
+    	return 0;
 	}
 	if($params['setmodule']){
 		if(!isset($params['module'])){$params['module']='waSQL';}
@@ -2310,19 +2288,12 @@ function oracleQueryResults($query='',$params=array()){
 		}
 		oci_close($dbh_oracle);
 		if (!$r){
-			$out=array(
-	    		'function'=>"oracleQueryResults",
-	    		'connection'=>$dbh_oracle,
-	    		'action'=>'oci_execute',
-	    		'error'=>$e,
-	    		'query'=>$query
-	    	);
-	    	if(isset($params['-return_errors'])){
-	    		return $out;
-	    	}
-			debugValue($out);
-	    	return false;
+			$DATABASE['_lastquery']['error']='oci_parse error: '.oci_error($stid);
+			debugValue($DATABASE['_lastquery']);
+	    	return 0;
 		}
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return true;
 	}
 	$r = oci_execute($stid);
@@ -2336,20 +2307,11 @@ function oracleQueryResults($query='',$params=array()){
 		oci_set_client_identifier($dbh_oracle, 'idle');
 	}
 	if (!$r) {
-		$out=array(
-    		'function'=>"oracleQueryResults",
-    		'connection'=>$dbh_oracle,
-    		'action'=>'oci_execute',
-    		'error'=>$e,
-    		'query'=>$query
-    	);
+		$DATABASE['_lastquery']['error']='oci_parse error: '.oci_error($stid);
+		debugValue($DATABASE['_lastquery']);
     	oci_free_statement($stid);
 		oci_close($dbh_oracle);
-    	if(isset($params['-return_errors'])){
-    		return $out;
-    	}
-		debugValue($out);
-    	return false;
+    	return 0;
 	}
 	//read results into a recordset array	
 	$recs=oracleEnumQueryResults($stid,$params);
@@ -2368,6 +2330,8 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	oci_free_statement($stid);
 	oci_close($dbh_oracle);
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $recs;
 }
 //---------- begin function oracleNamedQuery ----------

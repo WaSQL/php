@@ -1464,27 +1464,31 @@ ENDOFDATATYPES;
 function mssqlQueryResults($query='',$params=array()){
 	global $USER;
 	global $dbh_mssql;
-	if(!is_resource($dbh_mssql)){
-		$dbh_mssql=mssqlDBConnect($params);
-	}
-	if(!$dbh_mssql){
-    	$e=mssql_get_last_message();
-    	debugValue(array("mssqlQueryResults Connect Error",$e));
-    	return;
-	}
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'mssqlQueryResults'
+	);
+	$dbh_mssql=mssqlDBConnect($params);
+	
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
+		if(!$dbh_mssql){
+			$DATABASE['_lastquery']['error']='connect failed: '.sqlsrv_errors();
+			debugValue($DATABASE['_lastquery']);
+	    	return 0;
+		}
 		$data = sqlsrv_query($dbh_mssql,"SET ANSI_NULLS ON");
 		$data = sqlsrv_query($dbh_mssql,"SET ANSI_WARNINGS ON");
 		$data = sqlsrv_query($dbh_mssql,$query);
 		if( $data === false ) {
-			$errs=sqlsrv_errors();
-			if(isset($errs[0]['message'])){
-				debugValue(array($errs[0]['message'],$params));
-				return $errs[0]['message'];
-			}
-			debugValue(array($errs,$params));
-			return printValue(array($errs,$params));
+			$DATABASE['_lastquery']['error']='query failed: '.sqlsrv_errors();
+			debugValue($DATABASE['_lastquery']);
+			return array();
 		}
 		if(preg_match('/^insert /i',$query)){
 			$stmt=sqlsrv_query($dbh_mssql,"SELECT @@rowcount as rows");
@@ -1493,23 +1497,41 @@ function mssqlQueryResults($query='',$params=array()){
 				break;
 			}
 			sqlsrv_free_stmt( $stmt);
+			$DATABASE['_lastquery']['stop']=microtime(true);
+			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 			return $id;
 		}
 		$results = mssqlEnumQueryResults($data,$params);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;
+	}
+	if(!$dbh_mssql){
+		$DATABASE['_lastquery']['error']='connect failed: '.mssql_get_last_message();
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	mssql_query("SET ANSI_NULLS ON",$dbh_mssql);
 	mssql_query("SET ANSI_WARNINGS ON",$dbh_mssql);
 	$data=@mssql_query($query,$dbh_mssql);
-	if(!$data){return "MS SQL Query Error: " . mssql_get_last_message();}
+	if(!$data){
+		$DATABASE['_lastquery']['error']='connect failed: '.mssql_get_last_message();
+		debugValue($DATABASE['_lastquery']);
+		mssql_close($dbh_mssql);
+		return array();
+	}
 	if(preg_match('/^insert /i',$query)){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($data);
     	mssql_close($dbh_mssql);
+    	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = mssqlEnumQueryResults($data,$params);
 	mssql_close($dbh_mssql);
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $results;
 }
 //---------- begin function mssqlEnumQueryResults ----------
@@ -1678,69 +1700,75 @@ function mssqlEnumQueryResults($data,$params=array()){
 /**
 * @describe executes a query and returns without parsing the results
 * @param $query string - query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
-*	[-host] - mssql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return boolean returns true if query succeeded
+* @return int returns 1 if query succeeded, else 0
 * @usage $ok=mssqlExecuteSQL("truncate table abc");
 */
-function mssqlExecuteSQL($query,$params=array()){
+function mssqlExecuteSQL($query){
+	global $dbh_mssql;
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'mysqlExecuteSQL'
+	);
+	$dbh_mssql=mssqlDBConnect();
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
-		$dbh_mssql=mssqlDBConnect($params);
+		if(!$dbh_mssql){
+			$DATABASE['_lastquery']['error']='prepare failed: '.sqlsrv_errors();
+			debugValue($DATABASE['_lastquery']);
+	    	sqlsrv_close($dbh_mssql);
+	    	return 0;
+	    }
+		$dbh_mssql=mssqlDBConnect();
+
 		$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
 		if (!($stmt)){
-	    	debugValue(array(
-	    		'function'=>"mssqlExecuteSQL",
-	    		'connection'=>$dbh_mssql,
-	    		'action'=>'oci_parse',
-	    		'mssql_error'=>sqlsrv_errors(),
-	    		'query'=>$query
-	    	));
-	    	oci_close($dbh_mssql);
-	    	return false;
+			$DATABASE['_lastquery']['error']='prepare failed: '.sqlsrv_errors();
+			debugValue($DATABASE['_lastquery']);
+	    	sqlsrv_close($dbh_mssql);
+	    	return 0;
 	    }
 		if( sqlsrv_execute( $stmt ) === false ) {
-			debugValue(array(
-	    		'function'=>"mssqlExecuteSQL",
-	    		'connection'=>$dbh_mssql,
-	    		'action'=>'oci_execute',
-	    		'stmt'=>$stmt,
-	    		'mssql_error'=>sqlsrv_errors(),
-	    		'query'=>$query
-	    	));
-	    	return false;
+			$DATABASE['_lastquery']['error']='execute failed: '.sqlsrv_errors();
+			debugValue($DATABASE['_lastquery']);
+			sqlsrv_close($dbh_mssql);
+	    	return 0;
 		}
-		return true;
-	}
-	global $dbh_mssql;
-	if(!is_resource($dbh_mssql)){
-		$dbh_mssql=mssqlDBConnect($params);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		return 1;
 	}
 	if(!$dbh_mssql){
-    	$e=mssql_get_last_message();
-    	debugValue(array("mssqlExecuteSQL Connect Error",$e));
-    	return;
+		$DATABASE['_lastquery']['error']='connect failed: '.mssql_get_last_message();
+		debugValue($DATABASE['_lastquery']);
+		mssql_close($dbh_mssql);
+    	return 0;
 	}
 	try{
 		$result=@mssql_query($query,$dbh_mssql);
 		if(!$result){
-			$e=mssql_get_last_message();
+			$DATABASE['_lastquery']['error']='connect failed: '.mssql_get_last_message();
+			debugValue($DATABASE['_lastquery']);
 			mssql_close($dbh_mssql);
-			debugValue(array("mssqlExecuteSQL Connect Error",$e));
-			return;
+			return 0;
 		}
 		mssql_close($dbh_mssql);
-		return true;
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		return 1;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		debugValue($err);
-		return false;
+		$DATABASE['_lastquery']['error']='try catch failed: '.$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+		return 0;
 	}
-	return true;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function mssqlNamedQuery ----------
 /**

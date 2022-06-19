@@ -255,15 +255,9 @@
 				);
 				$recs_show=30;
 				$recs=array();
-				$begin=microtime(true);
-				$_SESSION['debugValue']=1;
-				$_SESSION['debugValue_lastm']='';
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
-				unset($_SESSION['debugValue']);
-				if(strlen($_SESSION['debugValue_lastm'])){
-					//show error
-					$error=$_SESSION['debugValue_lastm'];
-					$_SESSION['debugValue_lastm']='';
+				$lastquery=dbLastQuery();
+				if(strlen($lastquery['error'])){
 					setView(array('error'),1);
 					return;
 				}
@@ -273,6 +267,7 @@
 					return;
 				}
 			}
+			$qtime=$lastquery['time'];
 			$offset=(integer)$_REQUEST['offset'];
 			$limit=30;
 			$next=$offset+$limit;
@@ -281,7 +276,7 @@
 				'-maxrows'=>$limit
 			));
 			//echo $afile.printValue($recs);exit;
-			$qtime=microtime(true)-$begin;
+			
 			/* log queries? */
 			if(isset($CONFIG['log_queries']) && isset($recs[0]) && is_array($recs[0])){
 				$log=0;

@@ -776,25 +776,32 @@ function sqliteClearConnection(){
 * @usage $ok=sqliteExecuteSQL("truncate table abc");
 */
 function sqliteExecuteSQL($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'sqliteExecuteSQL'
+	);
 	$dbh_sqlite=sqliteDBConnect($params);
 	//enable exceptions
 	$dbh_sqlite->enableExceptions(true);
 	try{
 		$result=$dbh_sqlite->exec($query);
-		return true;
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		return 1;
 	}
 	catch (Exception $e) {
-		$msg=$e->getMessage();
-		debugValue(array(
-			'function'=>'sqliteExecuteSQL',
-			'message'=>'query failed',
-			'error'=>$msg,
-			'query'=>$query,
-			'params'=>$params
-		));
-		return false;
+		$DATABASE['_lastquery']['error']='connect failed: '.$e->getMessage();
+		debugValue($DATABASE['_lastquery']);
+		return 0;
 	}
-	return true;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function sqliteAddDBRecord ----------
 /**
@@ -1220,13 +1227,22 @@ function sqliteTruncateDBTable($table){
 * @usage $recs=sqliteQueryResults('select top 50 * from abcschema.abc');
 */
 function sqliteQueryResults($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'sqliteQueryResults'
+	);
 	global $dbh_sqlite;
 	if(!$dbh_sqlite){
 		$dbh_sqlite=sqliteDBConnect($params);
 	}
 	if(!$dbh_sqlite){
-    	debugValue(array("sqliteQueryResults Connect Error"));
-    	//echo "Cannot Connect";exit;
+		$DATABASE['_lastquery']['error']='connect error';
+		debugValue($DATABASE['_lastquery']);
     	return array();
 	}
 	//enable exceptions
@@ -1234,21 +1250,18 @@ function sqliteQueryResults($query,$params=array()){
 	try{
 		$results=$dbh_sqlite->query($query);
 		if(!is_object($results)){
-			echo $query.printValue($results);exit;
+			$DATABASE['_lastquery']['error']='query error';
+			debugValue($DATABASE['_lastquery']);
 			return array();
 		}
 		$recs=sqliteEnumQueryResults($results,$params);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $recs;
 	}
 	catch (Exception $e) {
-		$msg=$e->getMessage();
-		debugValue(array(
-			'function'=>'sqliteQueryResults',
-			'message'=>'query failed',
-			'error'=>$msg,
-			'query'=>$query,
-			'params'=>$params
-		));
+		$DATABASE['_lastquery']['error']=$e->getMessage();
+		debugValue($DATABASE['_lastquery']);
 		return array();
 	}
 }

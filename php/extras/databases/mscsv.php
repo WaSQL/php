@@ -121,19 +121,30 @@ function mscsvDBConnect(){
 * @usage $ok=mscsvExecuteSQL("truncate table abc");
 */
 function mscsvExecuteSQL($query,$return_error=1){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'mscsvExecuteSQL'
+	);
 	global $dbh_msexcel;
 	$dbh_msexcel='';
 	try{
 		$dbh_msexcel = mscsvDBConnect();
 		$cols = odbc_exec($dbh_msexcel, $query);
 		$dbh_msexcel='';
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return 1;
 	}
 	catch (Exception $e) {
-		$error=array("mscsvExecuteSQL Exception",$e,$params);
-	    debugValue($error);
+		$DATABASE['_lastquery']['error']=$e;
+		debugValue($DATABASE['_lastquery']);
 	    $dbh_msexcel='';
-	    return json_encode($error);
+	    return 0;
 	}
 	$dbh_msexcel='';
 	return 0;
@@ -656,6 +667,16 @@ function mscsvParseConnectParams($params=array()){
 * @return array - returns records
 */
 function mscsvQueryResults($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'mscsvQueryResults',
+		'params'=>$params
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_mscsv;
@@ -663,19 +684,22 @@ function mscsvQueryResults($query='',$params=array()){
 	try{
 		$result=odbc_exec($dbh_mscsv,$query);
 		if(!$result){
-			$e=odbc_errormsg($dbh_mscsv);
-			$error=array("mscsvQueryResults Error",$e,$query);
-			debugValue($error);
-			return json_encode($error);
+			$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg($dbh_mscsv);
+			debugValue($DATABASE['_lastquery']);
+			return array();
 		}
 		$results=mscsvEnumQueryResults($result,$params);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;
 	}
 	catch (Exception $e) {
-		$error=array("mscsvQueryResults Connect Error",$e,$query);
-	    debugValue($error);
-	    return json_encode($error);
+		$DATABASE['_lastquery']['error']='try/catch failed: '.$e;
+		debugValue($DATABASE['_lastquery']);
+		return array();
 	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return array();
 }
 //---------- begin function mscsvEnumQueryResults ----------

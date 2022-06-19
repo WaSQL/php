@@ -119,26 +119,38 @@ function msexcelDBConnect(){
 /**
 * @describe executes a query and returns without parsing the results
 * @param $query string - query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_msexcel,dbuser_msexcel, and dbpass_msexcel
-* @return boolean returns true if query succeeded
+* @param @return int returns 1 if query succeeded, else 0
 * @usage $ok=msexcelExecuteSQL("truncate table abc");
 */
-function msexcelExecuteSQL($query,$return_error=1){
+function msexcelExecuteSQL($query){
 	global $dbh_msexcel;
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'msexcelExecuteSQL'
+	);
 	$dbh_msexcel='';
 	try{
 		$dbh_msexcel = msexcelDBConnect();
 		$cols = odbc_exec($dbh_msexcel, $query);
 		$dbh_msexcel='';
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return 1;
 	}
 	catch (Exception $e) {
-		$error=array("msexcelExecuteSQL Exception",$e,$params);
-	    debugValue($error);
+		$DATABASE['_lastquery']['error']=$e;
+		debugValue($DATABASE['_lastquery']);
 	    $dbh_msexcel='';
-	    return json_encode($error);
+	    return 0;
 	}
 	$dbh_msexcel='';
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return 0;
 }
 //---------- begin function msexcelGetDBCount--------------------
@@ -703,6 +715,15 @@ function msexcelParseConnectParams($params=array()){
 * @return array - returns records
 */
 function msexcelQueryResults($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'msexcelExecuteSQL'
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_msexcel;
@@ -710,19 +731,22 @@ function msexcelQueryResults($query='',$params=array()){
 	try{
 		$result=odbc_exec($dbh_msexcel,$query);
 		if(!$result){
-			$e=odbc_errormsg($dbh_msexcel);
-			$error=array("msexcelQueryResults Error",$e,$query);
-			debugValue($error);
-			return json_encode($error);
+			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_msexcel);
+			debugValue($DATABASE['_lastquery']);
+			return array();
 		}
 		$results=msexcelEnumQueryResults($result,$params);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;
 	}
 	catch (Exception $e) {
-		$error=array("msexcelQueryResults Connect Error",$e,$query);
-	    debugValue($error);
-	    return json_encode($error);
+		$DATABASE['_lastquery']['error']=$e;
+		debugValue($DATABASE['_lastquery']);
+		return array();
 	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return array();
 }
 //---------- begin function msexcelEnumQueryResults ----------

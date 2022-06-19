@@ -668,6 +668,32 @@ function dbGrep($db,$search,$tables=array()){
 function dbIsTable($db,$table=''){
 	return dbFunctionCall('isDBTable',$db,$table);
 }
+//---------- begin function dbLastQuery([key])
+/**
+* @describe returns the last query info: keys are start, stop, time, error, query, function, params
+* @param key string - key to return, otherwise it return the entire set
+* @return mixed - key value or the entire set
+
+* @return array recordset
+* @usage
+* 	$recs=dbQueryResult('mydb','select * from abc');
+* 	if(strlen(dbLastQuery('error'))){
+* 		echo "Query Error: ".dbLastQuery('error');
+* 	}
+* 	else{
+*		echo "Query Time: ".dbLastQuery('time');
+* 	}
+* 
+* 	or
+* 
+* 	$last=dbLastQuery();
+* 	echo "Query Time: {$last['time']}";
+*/
+function dbLastQuery($key=''){
+	global $DATABASE;
+	if(strlen($key)){return $DATABASE['_lastquery'][$key];}
+	return $DATABASE['_lastquery'];
+}
 //---------- begin function dbListRecords
 /**
 * @describe returns an records set from a database

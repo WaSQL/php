@@ -834,50 +834,50 @@ function mysqlDBConnect($params=array()){
 /**
 * @describe executes a query and returns without parsing the results
 * @param $query string - query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_mysql,dbuser_mysql, and dbpass_mysql
-*	[-host] - mysql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return boolean returns true if query succeeded
+* @return int - returns 1 if query succeeded, else 0
 * @usage $ok=mysqlExecuteSQL("truncate table abc");
 */
-function mysqlExecuteSQL($query,$params=array()){
+function mysqlExecuteSQL($query){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'mysqlExecuteSQL'
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_mysql;
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
 	if(!$dbh_mysql){
-		debugValue(array(
-			'function'=>'mysqlExecuteSQL',
-			'message'=>'connect failed',
-			'error'=>mysqli_connect_error(),
-			'query'=>$query
-		));
-    	return;
+		$DATABASE['_lastquery']['error']='connect failed: '.mysqli_connect_error();
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	$result=@mysqli_query($dbh_mysql,$query);
 	$err=mysqli_error($dbh_mysql);
 	if(is_array($err) || strlen($err)){
-		debugValue(array(
-			'function'=>'mysqlExecuteSQL',
-			'message'=>'mysqli_query failed',
-			'error'=>$err,
-			'query'=>$query
-		));
+		$DATABASE['_lastquery']['error']='query err: '.$err;
+		debugValue($DATABASE['_lastquery']);
 		mysqli_close($dbh_mysql);
-		return false;
+		return 0;
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
     	mysqli_close($dbh_mysql);
+    	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = mysqlEnumQueryResults($result,$params);
 	mysqli_close($dbh_mysql);
-	return true;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function mysqlGetDBCount--------------------
 /**
@@ -1281,40 +1281,51 @@ function mysqlGetDBViews($params=array()){
 
 */
 function mysqlQueryResults($query='',$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'mysqlQueryResults',
+		'params'=>$params
+	);
 	$query=trim($query);
 	global $USER;
 	global $dbh_mysql;
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
 	if(!$dbh_mysql){
-		debugValue(array(
-			'function'=>'mysqlQueryResults',
-			'message'=>'connect failed',
-			'error'=>mysqli_connect_error(),
-			'query'=>$query
-		));
-    	return;
+		$DATABASE['_lastquery']['error']='connect failed: '.mysqli_connect_error();
+		debugValue($DATABASE['_lastquery']);
+    	return array();
 	}
 	$result=@mysqli_query($dbh_mysql,$query);
 	$err=mysqli_error($dbh_mysql);
 	if(is_array($err) || strlen($err)){
-		debugValue(array(
-			'function'=>'mysqlQueryResults',
-			'message'=>'mysqli_query failed',
-			'error'=>$err,
-			'query'=>$query
-		));
+		$DATABASE['_lastquery']['error']='query error: '.$err;
+		debugValue($DATABASE['_lastquery']);
 		mysqli_close($dbh_mysql);
-		return null;
+		return array();
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
     	mysqli_close($dbh_mysql);
+    	$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = mysqlEnumQueryResults($result,$params);
 	mysqli_close($dbh_mysql);
+	if(!is_array($results) && !isNum($results)){
+		$DATABASE['_lastquery']['error']='query error: '.$results;
+		debugValue($DATABASE['_lastquery']);
+		return array();
+	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $results;
 }
 //---------- begin function mysqlEnumQueryResults ----------
@@ -1322,8 +1333,7 @@ function mysqlQueryResults($query='',$params=array()){
 * @describe enumerates through the data from a mysqli_query call
 * @exclude - used for internal user only
 * @param data resource
-* @return array
-*	returns records
+* @return array - returns recordset array
 */
 function mysqlEnumQueryResults($data,$params=array()){
 	global $mysqlStopProcess;

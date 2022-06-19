@@ -440,6 +440,15 @@ function snowflakeClearConnection(){
 *	$ok=snowflakeExecuteSQL("truncate table abc");
 */
 function snowflakeExecuteSQL($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'snowflakeExecuteSQL'
+	);
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
 	if(!is_resource($dbh_snowflake)){
@@ -448,24 +457,26 @@ function snowflakeExecuteSQL($query,$params=array()){
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
 	if(!is_resource($dbh_snowflake)){
-    	$e=odbc_errormsg();
-    	debugValue(array("snowflakeExecuteSQL Connect Error",$e));
-    	return json_encode($e);
+		$DATABASE['_lastquery']['error']=odbc_errormsg();
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	try{
 		$result=odbc_exec($dbh_snowflake,$query);
 		if(!$result){
-			$err=odbc_errormsg($dbh_snowflake);
-			debugValue($err);
-			return false;
+			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_snowflake);
+			debugValue($DATABASE['_lastquery']);
+	    	return 0;
 		}
 		odbc_free_result($result);
-		return true;
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		return 1;
 	}
 	catch (Exception $e) {
-		$err=$e->errorInfo;
-		debugValue($err);
-		return false;
+		$DATABASE['_lastquery']['error']=$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	return true;
 }
@@ -1136,6 +1147,15 @@ function snowflakeQueryHeader($query,$params=array()){
 *	$recs=snowflakeQueryResults('select top 50 * from abcschema.abc');
 */
 function snowflakeQueryResults($query,$params=array()){
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'snowflakeQueryResults'
+	);
 	global $snowflakeStopProcess;
 	$starttime=microtime(true);
 	global $dbh_snowflake;
@@ -1146,16 +1166,15 @@ function snowflakeQueryResults($query,$params=array()){
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
 	if(!is_resource($dbh_snowflake)){
-    	$e=odbc_errormsg();
-    	debugValue(array("snowflakeQueryResults Connect Error",$e));
-    	return json_encode($e);
+		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	try{
 		$result=odbc_exec($dbh_snowflake,$query);
 		if(!$result){
 			$e=odbc_errormsg($dbh_snowflake);
 			$error=array("snowflakeQueryResults Error",$e,$query);
-			debugValue($error);
 			if(!strlen($e)){return json_encode($error);}
 			if(stringContains($e,'session not connected') || stringContains($e,'Receive Error')){
 				$dbh_snowflake='';
@@ -1164,21 +1183,22 @@ function snowflakeQueryResults($query,$params=array()){
 				$dbh_snowflake=snowflakeDBConnect($params);
 				$result=odbc_exec($dbh_snowflake,$query);
 				if(!$result){
-					$e=odbc_errormsg($dbh_snowflake);
-					$error=array("snowflakeQueryResults Error",$e,$query);
-					debugValue($error);
-					return json_encode($error);
+					$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg($dbh_snowflake);
+					debugValue($DATABASE['_lastquery']);
+			    	return 0;
 				}
 			}
 			else{
-				return json_encode($error);
+				$DATABASE['_lastquery']['error']='exec failed: '.$error;
+				debugValue($DATABASE['_lastquery']);
+		    	return 0;
 			}
 		}
 	}
 	catch (Exception $e) {
-		$error=array("snowflakeQueryResults Error",$e,$query);
-		debugValue($error);
-		return json_encode($error);
+		$DATABASE['_lastquery']['error']='exec failed: '.$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+    	return 0;
 	}
 	$rowcount=odbc_num_rows($result);
 	if($rowcount==0 && isset($params['-forceheader'])){
@@ -1193,10 +1213,14 @@ function snowflakeQueryResults($query,$params=array()){
 			$rec[$field]='';
 		}
 		$recs=array($rec);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $recs;
 	}
 	if(isset($params['-count'])){
 		odbc_free_result($result);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $rowcount;
 	}
 	$header=0;
@@ -1214,9 +1238,9 @@ function snowflakeQueryResults($query,$params=array()){
 		
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
-			$error=array("snowflakeQueryResults Error",'Failed to open file',$query,$params);
-			debugValue($error);
-			return json_encode($error);
+			$DATABASE['_lastquery']['error']='failed to open file';
+			debugValue($DATABASE['_lastquery']);
+	    	return 0;
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],"Rowcount:".$rowcount.PHP_EOL.$query.PHP_EOL.PHP_EOL);
@@ -1281,8 +1305,12 @@ function snowflakeQueryResults($query,$params=array()){
 			$elapsed=microtime(true)-$starttime;
 			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $i;
 	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $recs;
 }
 function snowflakeConvert2UTF8($content) { 

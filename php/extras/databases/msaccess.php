@@ -175,21 +175,29 @@ function msaccessDBConnect(){
 /**
 * @describe executes a query and returns without parsing the results
 * @param $query string - query to execute
-* @param [$params] array - These can also be set in the CONFIG file with dbname_msaccess,dbuser_msaccess, and dbpass_msaccess
-* @return boolean returns true if query succeeded
+* @return int returns 1 if query succeeded, else 0
 * @usage $ok=msaccessExecuteSQL("truncate table abc");
 */
 function msaccessExecuteSQL($query,$return_error=1){
 	global $dbh_msaccess;
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'msaccessExecuteSQL'
+	);
 	$dbh_msaccess=msaccessDBConnect();
 	if(!is_object($dbh_msaccess)){
+		$DATABASE['_lastquery']['error']='connect failed';
+		debugValue($DATABASE['_lastquery']);
 		$err=array(
 			'function'=>'msaccessExecuteSQL',
 			'message'=>'connect failed',
 			'query'=>$query
 		);
-		debugValue($err);
-		if($return_error==1){return $err;}
     	return 0;
 	}
 	try{
@@ -200,17 +208,13 @@ function msaccessExecuteSQL($query,$return_error=1){
 		$dbh_msaccess = null;
 	}
 	catch (Exception $e) {
-		$err=array(
-			'function'=>'msaccessExecuteSQL',
-			'message'=>'try catch failed',
-			'error'=>$e->errorInfo,
-			'query'=>$query
-		);
-		debugValue($err);
-		if($return_error==1){return $err;}
+		$DATABASE['_lastquery']['error']='try/catch failed: '.$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
 		return 0;
 	}
-	return 0;
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return 1;
 }
 //---------- begin function msaccessGetDBCount--------------------
 /**
@@ -823,6 +827,14 @@ function msaccessQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_msaccess;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'msaccessQueryResults'
+	);
 	$dbh_msaccess=msaccessDBConnect();
 	try{
 		$result=odbc_exec($dbh_msaccess,$query);
@@ -833,13 +845,17 @@ function msaccessQueryResults($query='',$params=array()){
 			return json_encode($error);
 		}
 		$results=msaccessEnumQueryResults($result,$params);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;
 	}
 	catch (Exception $e) {
-		$error=array("msaccessQueryResults Connect Error",$e,$query);
-	    debugValue($error);
-	    return json_encode($error);
+		$DATABASE['_lastquery']['error']=$e->errorInfo;
+		debugValue($DATABASE['_lastquery']);
+	    return array();
 	}
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return array();
 }
 //---------- begin function msaccessEnumQueryResults ----------
