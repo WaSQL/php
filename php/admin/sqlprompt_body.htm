@@ -65,6 +65,7 @@
 					<div onclick="sqlpromptLoadPrompt();" class="w_pointer" title="reload previous" style="margin-left:10px;">
 						<span class="icon-history w_gray"></span>
 					</div>
+					<span style="margin-left:10px;" title="copy SQL to clipboard" class="icon-copy w_pointer" onclick="wacss.copy2Clipboard(document.sqlprompt.sql_full.innerText);"></span>
 					<div  style="flex:1;" class="align-right w_gray w_small w_nowrap" id="results_count"></div>
 					<div class="align-right" style="padding-left:10px;display:flex;flex-wrap:nowrap;">
 						<button type="button" data-offset="0" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="prev_link" style="display:none;"><span class="icon-arrow-left"></span> Prev</button>
@@ -240,7 +241,6 @@
 <view:error>
 <div style="padding: 10px 0" class="w_small">
 	<div class="w_red"><span class="icon-warning"></span> <?=$lastquery['error'];?></div>
-	<pre class="w_gray w_padtop"><?=$lastquery['query'];?></pre>
 </div>
 </view:error>
 
