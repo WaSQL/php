@@ -169,6 +169,82 @@ function formChanged(frm,debug){
 			}
 		}
 	}
+	//readonlyif
+	let els=frm.querySelectorAll('[data-readonlyif]');
+	if(debug==1){console.log(' - readonlyif el count:'+els.length);}
+	let readonly_count=0;
+	for(let i=0;i<els.length;i++){
+		let edebug=0;
+		if(undefined != els[i].dataset.debug && parseInt(els[i].dataset.debug)==1){
+			edebug=1;
+			console.log('edebug set');
+			console.log(els[i]);
+		}
+		let parts=els[i].dataset.readonlyif.split(':');
+		let name=els[i].dataset.readonlyif;
+		let vals=new Array('1','y','yes','notblank');
+		if(parts.length==2){
+			name=parts[0];
+			vals=parts[1].split(',');
+		}
+		//convert any integers to string
+		for(let v=0;v<vals.length;v++){
+           if(Number.isInteger(vals[v])){vals[v]=vals[v].toString();}
+       }
+		let ifel=frm.querySelectorAll('[name="'+name+'"], [name="'+name+'[]"]');
+		if(debug==1 || edebug==1){console.log(' - i:'+i+', name:'+name+', form el count:'+ifel.length);}
+		if(undefined == ifel){continue;}
+		if(ifel.length > 0){
+			let readonly=0;
+			for(let f=0;f<ifel.length;f++){
+				let cval='';
+				switch(ifel[f].type.toLowerCase()){
+					case 'select-one':
+            			cval=ifel[f].options[ifel[f].selectedIndex].value;
+            			for(let v=0;v<vals.length;v++){
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){readonly=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){readonly=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){readonly=1;}
+            			}
+					break;
+					case 'radio':
+					case 'checkbox':
+						if(ifel[f].checked){cval=ifel[f].value||1;}
+						for(let v=0;v<vals.length;v++){
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){readonly=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){readonly=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){readonly=1;}
+            			}
+					break;
+					case 'textarea':
+						if(trim(ifel.innerText).length){readonly=1;}
+					break;
+					default:
+						cval=ifel[f].value;
+						for(let v=0;v<vals.length;v++){
+            				if(vals[v].toLowerCase()=='null' && cval.length==0){readonly=1;}
+            				else if(vals[v].toLowerCase()=='notblank' && cval.length>0){readonly=1;}
+            				else if(cval.toLowerCase() == vals[v].toLowerCase()){readonly=1;}
+            			}
+					break;
+				}
+				if(readonly==1){break;}
+			}
+			if(debug==1 || edebug==1){
+				console.log(' - readonly:'+readonly+', name:'+name+', vals:'+vals);
+				console.log(' ---------------------------');
+			}
+			if(readonly==1){
+				els[i].setAttribute('readonly','readonly');
+			}
+			else{
+				els[i].removeAttribute('readonly');
+			}
+		}
+		else{
+			els[i].removeAttribute('readonly');
+		}
+	}
 	//changeif
 	//		data-changeif="type=1 and age=6,1"
 	//		data-changeif="type=1 or age=6,1"
