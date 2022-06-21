@@ -170,7 +170,7 @@ function formChanged(frm,debug){
 		}
 	}
 	//readonlyif
-	let els=frm.querySelectorAll('[data-readonlyif]');
+	els=frm.querySelectorAll('[data-readonlyif]');
 	if(debug==1){console.log(' - readonlyif el count:'+els.length);}
 	let readonly_count=0;
 	for(let i=0;i<els.length;i++){
