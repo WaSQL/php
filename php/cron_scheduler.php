@@ -78,7 +78,7 @@ $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
-$loop_max=4;
+$loop_max=20;
 $loop_cnt=0;
 if(isset($argv[1])){
 	$loop=(integer)$argv[1];
@@ -126,8 +126,12 @@ while(microtime(true)-$starttime < 55){
 			'-fields'=>'_id,name',
 			'-nocache'=>1
 		));
-		if(is_array($recs)){
-			$cnt=count($recs);
+		$cnt=is_array($recs)?count($recs):0;
+		if(isCLI()){
+			$ymdhis=date('Ymd H:i:s');
+			echo "Loop: {$loop_cnt}, Ymdhis: {$ymdhis}, Count: {$cnt}".PHP_EOL;
+		}
+		if($cnt > 0){
 			//$ok=cronMessage("setting the following crons to run_now");
 			$ids=array();
 			foreach($recs as $rec){
@@ -143,7 +147,9 @@ while(microtime(true)-$starttime < 55){
 			run_now=1,
 			stop_now=0 
 		WHERE 
-			running=0 
+			run_now=0
+			and running=0 
+			and stop_now=0
 			and _id in ({$idstr})
 ENDOFSQL;
 			$ok=executeSQL($query);
@@ -181,9 +187,6 @@ ENDOFSQL;
 			}
 			//cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
 		}
-	}
-	if(isCLI()){
-		echo "Loop: {$loop_cnt}".PHP_EOL;
 	}
 	if($loop_cnt >= $loop_max || $loop_cnt >= 100){
 		break;
