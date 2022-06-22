@@ -16,6 +16,7 @@
 		$db=$DATABASE[$CONFIG['database']];
 		$_SESSION['db']=$db;
 	}
+	ksort($DATABASE); 
 	if(!isset($db['name'])){
 		$db=array(
 			'name'=>$CONFIG['dbname'],
