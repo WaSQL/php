@@ -78,7 +78,7 @@ $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
-$loop_max=20;
+$loop_max=5;
 $loop_cnt=0;
 if(isset($argv[1])){
 	$loop=(integer)$argv[1];
