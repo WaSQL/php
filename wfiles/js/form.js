@@ -235,14 +235,26 @@ function formChanged(frm,debug){
 				console.log(' ---------------------------');
 			}
 			if(readonly==1){
+				if(!els[i].hasAttribute('onclick')){
+					els[i].setAttribute('onclick','return false');
+					els[i].setAttribute('onclickx','1');
+				}
 				els[i].setAttribute('readonly','readonly');
 			}
 			else{
 				els[i].removeAttribute('readonly');
+				if(els[i].hasAttribute('onclickx')){
+					els[i].removeAttribute('onclick');
+					els[i].removeAttribute('onclickx');
+				}
 			}
 		}
 		else{
 			els[i].removeAttribute('readonly');
+			if(els[i].hasAttribute('onclickx')){
+				els[i].removeAttribute('onclick');
+				els[i].removeAttribute('onclickx');
+			}
 		}
 	}
 	//changeif

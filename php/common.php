@@ -2360,7 +2360,11 @@ function buildFormColor($name,$params=array()){
 	$tag .= '	<input type="text" name="'.$name.'" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.';padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"></span>'.PHP_EOL;
+	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.';padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"';
+	if(isset($params['data-readonlyif'])){
+		$tag .= ' data-readonlyif="'.$params['data-readonlyif'].'"';
+	}
+	$tag.='></span>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
@@ -2465,15 +2469,19 @@ function buildFormDate($name,$params=array()){
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
 	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
+	$attrs='';
+	if(isset($params['data-readonlyif'])){
+		$attrs.=' data-readonlyif="'.$params['data-readonlyif'].'"';
+	}
 	//hide calendar icon if readonly or disabled
 	$show=1;
 	if(isset($params['readonly']) && in_array(strtolower($params['readonly']),array('1','readonly'))){$show=0;}
 	if(isset($params['disabled']) && in_array(strtolower($params['disabled']),array('1','disabled'))){$show=0;}
 	if(isset($params['data-noCalendar']) && isset($params['data-enableTime'])){
-		$tag .= '	<span class="icon-clock w_gray w_biggest w_pointer" onclick="return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
+		$tag .= '	<span class="icon-clock w_gray w_biggest w_pointer" '.$attrs.' onclick="if(this.hasAttribute(\'readonly\')){return false;} return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
 	}
 	elseif($show==1){
-		$tag .= '	<span class="icon-calendar w_gray w_biggest w_pointer" onclick="return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
+		$tag .= '	<span class="icon-calendar w_gray w_biggest w_pointer" '.$attrs.' onclick="if(this.hasAttribute(\'readonly\')){return false;} return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
@@ -3325,7 +3333,12 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		//requiredif
 		if($params['requiredif']){
 			$rtn .= ' data-requiredif="'.$params['requiredif'].'"';
-			unset($params['requiredif']);
+			//unset($params['requiredif']);
+		}
+		//readonlyif
+		if($params['data-readonlyif']){
+			$rtn .= ' data-readonlyif="'.$params['data-readonlyif'].'"';
+			//unset($params['readonlyif']);
 		}
 		//checked?
 		if(in_array($tval,$params['-values'])){
@@ -3793,73 +3806,7 @@ function buildFormTime($name,$params=array()){
 	$params['data-noCalendar']=1;
 	//return printValue($params);
 	return buildFormDate($name,$params);
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['-interval'])){$params['-interval']='15';}
-	if(!isset($params['-begin'])){$params['-begin']='00:00';}
-	if(!isset($params['-end'])){$params['-end']='24:00';}
-	if(!isset($params['-tformat'])){$params['-tformat']='H:i';}
-	if(!isset($params['-dformat'])){$params['-dformat']='g:i a';}
-	if(isset($params['value'])){$params['-value']=$params['value'];}
-	if(!isset($params['-value'])){$params['-value']=$_REQUEST[$name];}
-	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(!isset($params['message'])){$params['message']=' --:-- ';}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
 	
-	if(!isset($params['data-type'])){$params['data-type']='time';}
-	if(!isset($params['data-icon'])){$params['data-icon']='&#128348;';}
-	if(!isset($params['name'])){$params['name']=$name;}
-	if(strlen($params['-value'])){
-    	$params['value']=date('H:i',strtotime($params['-value']));
-	}
-	elseif(strlen($params['value'])){
-    	$params['value']=date('H:i',strtotime($params['value']));
-	}
-	$opts=array();
-	$parts=preg_split('/\:/',$params['-begin']);
-	//begin
-	$minutes=0;
-	switch(count($parts)){
-		case 1:$minutes = ($parts[0] * 60.0);break;
-		case 2:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0);break;
-		case 3:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0) + 1/$parts[2];break;
-	}
-	$begin=(integer)$minutes;
-	$parts=preg_split('/\:/',$params['-end']);
-	//end
-	$minutes=0;
-	switch(count($parts)){
-		case 1:$minutes = ($parts[0] * 60.0);break;
-		case 2:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0);break;
-		case 3:$minutes = ($parts[0] * 60.0 + $parts[1] * 1.0) + 1/$parts[2];break;
-	}
-	$end=(integer)$minutes;
-	for($x=$begin;$x<=$end;$x+=$params['-interval']){
-		$t=strtotime("midnight +{$x} minutes");
-		$v=date($params['-tformat'],$t);
-		$opts[$v]=date($params['-dformat'],$t);
-	}
-	//return printValue($opts).printValue($params);
-	$tag='<span';
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	$tag.= '>';
-	if(strlen($params['data-icon'])){
-
-		$tag .= '<label class="timeselector" data-icon="'.$params['data-icon'].'">'.PHP_EOL;
-		$tag .= buildFormSelect($params['name'],$opts,$params);
-		$tag .= '</label>'.PHP_EOL;
-	}
-	else{
-		unset($params['data-icon']);
-		$tag .= buildFormSelect($params['name'],$opts,$params);
-	}
-	$tag .= '</span>';
-	return $tag;
 }
 //---------- begin function buildFormWhiteboard --------------------------------------
 /**
@@ -3939,6 +3886,9 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	$onclick='';
 	if(isset($params['-onclick'])){
     	$onclick=' onclick="'.$params['-onclick'].'"';
+	}
+	if(isset($params['data-readonlyif'])){
+    	$onclick.=' data-readonlyif="'.$params['data-readonlyif'].'"';
 	}
 	$title='';
 	if(isset($params['title'])){
@@ -5321,6 +5271,10 @@ function buildFormStarRating($name, $params=array()){
 		$rtn .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
 	}
+	if(isset($params['data-readonlyif'])){
+		$rtn .= ' data-readonlyif="'.$params['data-readonlyif'].'"';
+		unset($params['data-readonlyif']);
+	}
 	$rtn .= '>'.PHP_EOL;
 	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'"';
 	if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
@@ -5338,7 +5292,7 @@ function buildFormStarRating($name, $params=array()){
 		$class .= ' '.$params['class'];
 		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;" title="'.$x.'"><span class="'.$class.'"';
 		if(!isset($params['readonly'])){
-			$rtn .= ' onclick="setStarRating(\''.$params['id'].'\','.$x.');"';
+			$rtn .= ' onclick="if(this.parentNode.hasAttribute(\'readonly\')){return false;} setStarRating(\''.$params['id'].'\','.$x.');"';
 		}
 		if(isset($params['style'])){
 			$rtn .= ' style="'.$params['style'].'"';

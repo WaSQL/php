@@ -65,39 +65,45 @@
 </view:default>
 
 <view:form-elements>
-<form>
-	<div class="row"><div class="col s2">ButtonSelect</div><div class="col s4"><?=buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
-	<div class="row"><div class="col s2">Date</div><div class="col s4"><?=buildFormDate('mydate');?></div></div>
-	<div class="row"><div class="col s2">Checkbox</div><div class="col s8" style="font-size:1.3em;"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
-	<div class="row"><div class="col s2">Color</div><div class="col s4"><?=buildFormColor('x2');?></div></div>
-	<div class="row"><div class="col s2">Combo</div><div class="col s4"><?=buildFormCombo('x3',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4));?></div></div>
-	<div class="row"><div class="col s2">DateTime</div><div class="col s4"><?=buildFormDateTime('xyz');?></div></div>
-	<div class="row"><div class="col s2">Gender</div><div class="col s4"><?=buildFormGender('x4');?></div></div>
-	<div class="row"><div class="col s2" onclick="wacss.blink('x5');">Password</div><div class="col s4"><?=buildFormPassword('x5',array('id'=>'x5','autocomplete'=>'current-password'));?></div></div>
-	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
-	<div class="row"><div class="col s2">Radio</div><div class="col s8" style="font-size:1.3em;"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
-	<div class="row"><div class="col s2">Text</div><div class="col s4"><?=buildFormText('x8');?></div></div>
-	<div class="row"><div class="col s2">Textarea</div><div class="col s4"><?=buildFormTextarea('x');?></div></div>
-	<div class="row"><div class="col s2">Time</div><div class="col s4"><?=buildFormTime('x9');?></div></div>
-	<div class="row"><div class="col s2">Whiteboard</div><div class="col s4"><?=buildFormWhiteboard('wb');?></div></div>
-	<div class="row"><div class="col s2">YesNo</div><div class="col s4"><?=buildFormYesNo('x12');?></div></div>
-	<div class="row"><div class="col s2">ToggleRound</div><div class="col s4"><?=buildFormToggleButton('x13',array('a'=>'Man','b'=>'Woman'),array('-format'=>'round'));?></div></div>
-	<div class="row"><div class="col s2">ToggleFlip</div><div class="col s4"><?=buildFormToggleButton('x13b',array('a'=>'Man','b'=>'Woman'),array('-format'=>'flip'));?></div></div>
-	<div class="row"><div class="col s2">Image</div><div class="col s4"><?=buildFormImage('/wfiles/wasql.png','x');?></div></div>
-	<div class="row"><div class="col s2">Select</div><div class="col s4"><?=buildFormSelect('x14',array(1=>'One',2=>'Two'));?></div></div>
-	<div class="row"><div class="col s2">SelectCountry</div><div class="col s4"><?=buildFormSelectCountry('x15');?></div></div>
-	<div class="row"><div class="col s2">SelectMonth</div><div class="col s4"><?=buildFormSelectMonth('x16');?></div></div>
-	<div class="row"><div class="col s2">SelectState</div><div class="col s4"><?=buildFormSelectState('x17');?></div></div>
-	<div class="row"><div class="col s2">SelectTimezone</div><div class="col s4"><?=buildFormSelectTimezone('x18');?></div></div>
-	<div class="row"><div class="col s2">SelectYear</div><div class="col s4"><?=buildFormSelectYear('x19');?></div></div>
-	<div class="row"><div class="col s2">Signature</div><div class="col s4"><?=buildFormSignature('x20');?></div></div>
-	<div class="row"><div class="col s2">Slider</div><div class="col s4"><?=buildFormSlider('x20');?></div></div>
-	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22');?></div></div>
+<form name="addedit" onchange="return formChanged(this);">
+	<div style="display:flex;">
+		<div class="w_nowrap" style="width: 200px;">ReadonlyIf</div>
+		<div style="flex:5;"><input data-type="checkbox" type="checkbox" value="1" name="formreadonly" id="readonlyif" /> <label for="readonlyif" class="w_pointer" style="user-select:none !important;">Make form elements readonly</label></div>
+	</div>
+	<div style="display:flex;margin-top:15px;">
+		<div class="w_nowrap" style="width: 200px;">ButtonSelect</div>
+		<div style="flex:5;"><?=buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('value'=>'red','data-readonlyif'=>'formreadonly:1','red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div>
+	</div>
+	<div style="display:flex;">
+		<div class="w_nowrap" style="width: 200px;">Date</div>
+		<div style="flex:5;"><?=buildFormDate('mydate',array('data-readonlyif'=>'formreadonly:1'));?></div>
+	</div>
+	<div class="row"><div class="col s2">Checkbox</div><div class="col s8" style="font-size:1.3em;"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
+	<div class="row"><div class="col s2">Color</div><div class="col s4"><?=buildFormColor('x2',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Combo</div><div class="col s4"><?=buildFormCombo('x3',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4,'data-readonlyif'=>'formreadonly:1'));?></div></div>
+	
+	<div class="row"><div class="col s2">Gender</div><div class="col s4"><?=buildFormGender('x4',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2" onclick="wacss.blink('x5');">Password</div><div class="col s4"><?=buildFormPassword('x5',array('id'=>'x5','autocomplete'=>'current-password','data-readonlyif'=>'formreadonly:1','value'=>''));?></div></div>
+	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
+	<div class="row"><div class="col s2">Radio</div><div class="col s8" style="font-size:1.3em;"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
+	<div class="row"><div class="col s2">Text</div><div class="col s4"><?=buildFormText('x8',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Textarea</div><div class="col s4"><?=buildFormTextarea('x',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Time</div><div class="col s4"><?=buildFormTime('x9',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">YesNo</div><div class="col s4"><?=buildFormYesNo('x12',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">ToggleRound</div><div class="col s4"><?=buildFormToggleButton('x13',array('a'=>'Man','b'=>'Woman'),array('-format'=>'round','data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">ToggleFlip</div><div class="col s4"><?=buildFormToggleButton('x13b',array('a'=>'Man','b'=>'Woman'),array('-format'=>'flip','data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Select</div><div class="col s4"><?=buildFormSelect('x14',array(1=>'One',2=>'Two'),array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">SelectCountry</div><div class="col s4"><?=buildFormSelectCountry('x15',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">SelectMonth</div><div class="col s4"><?=buildFormSelectMonth('x16',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">SelectState</div><div class="col s4"><?=buildFormSelectState('x17',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">SelectTimezone</div><div class="col s4"><?=buildFormSelectTimezone('x18',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">SelectYear</div><div class="col s4"><?=buildFormSelectYear('x19',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Signature</div><div class="col s4"><?=buildFormSignature('x20',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Slider</div><div class="col s4"><?=buildFormSlider('x21',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">WYSIWYG</div><div class="col s10">
-		<textarea id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
+		<textarea data-readonlyif="formreadonly:1" id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
 		<?=buildOnLoad("wacss.initWacssEdit();");?>
-		<?=buildOnLoad("console.log('TWO');");?>
-		<?=buildOnLoad("console.log('TWO-2');");?>
 	</div></div>
 </form>
 </view:form-elements>

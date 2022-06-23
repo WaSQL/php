@@ -58,6 +58,9 @@ select[data-behavior="spinwheel"] +div.spinwheel button::after {
 /*********************************************************/
 /* form inputs  */
 /*********************************************************/
+[readonly="readonly"]{
+		pointer-events:none !important;
+	}
 textarea.w_frequency{
 	width:100%;
 	border-bottom-left-radius:0px;

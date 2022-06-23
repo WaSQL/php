@@ -1613,6 +1613,10 @@ a.btn{text-decoration: none;}
 
 
 /* -------------------- Form Controls compatible with bootstrap and materialize ------------*/
+[readonly="readonly"]{
+    pointer-events:none !important;
+}
+
 .input-field{
   position:relative;
   margin-top:22px;
