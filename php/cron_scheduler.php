@@ -79,6 +79,9 @@ $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
 $loop_max=5;
+if(in_array('once',$argv)){
+	$loop_max=1;
+}
 $loop_cnt=0;
 if(isset($argv[1])){
 	$loop=(integer)$argv[1];
