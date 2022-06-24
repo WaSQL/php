@@ -471,6 +471,9 @@ ENDOFQUERY;
 				if(!in_array('_id',$fieldset)){$fieldset[]='_id';}
 				$fieldstr=implode(',',$fieldset);
 				$rtn[$table]=getDBRecords(array('-table'=>$table,'-fields'=>$fieldstr,'-eval'=>'md5','-noeval'=>'_id,_cuser,_cdate,_euser,_edate,_marker_','-index'=>'_id'));
+				if(!is_array($rtn[$table])){
+					$rtn[$table]=array();
+				}
 			}
 			//schema
 			//get _dbtype_ex
@@ -1917,6 +1920,9 @@ ENDOFX;
 		break;
 		case 'add':
 			if(isset($_REQUEST['_table_'])){
+				if($_REQUEST['_table_']=='_triggers'){
+					$ok=executeSQL("update _fielddata set onchange='changeTriggerType(this)' where fieldname='mtype' and onchange='changeModelType(this)'");
+				}
 				if($_REQUEST['_table_']=='_new_' || isset($_REQUEST['_schema'])){
 					//add new table
 					$error=0;
@@ -2042,6 +2048,9 @@ ENDOFX;
 			echo $dropResult;
 			break;
 		case 'edit':
+			if($_REQUEST['_table_']=='_triggers'){
+				$ok=executeSQL("update _fielddata set onchange='changeTriggerType(this)' where fieldname='mtype' and onchange='changeModelType(this)'");
+			}
 			if(isset($_REQUEST['_table_']) && isNum($_REQUEST['_id'])){
 				echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">Edit Record #'.$_REQUEST['_id'].' in '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;

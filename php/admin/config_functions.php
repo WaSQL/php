@@ -67,6 +67,25 @@ function configBuildFormField($field,$cparams=array()){
 			}
 			return buildFormSelect($field,$opts,$params);
 		break;
+		case 'wasql_synchronize_slave':
+			global $ALLCONFIG;
+			//return printValue($ALLCONFIG);
+			$opts=array();
+			foreach($ALLCONFIG as $host=>$info){
+				$opts[$host]="{$info['name']} ({$info['database']})";
+			}
+			$params=array(
+				'id'=>'wasql_synchronize_slave',
+				'message'=>' -- Target Host --',
+				'class'=>'select',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormSelect($field,$opts,$params);
+		break;
 		case 'databases':
 			global $DATABASE;
 			$opts=array();

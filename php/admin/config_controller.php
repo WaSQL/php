@@ -25,6 +25,7 @@
 			switch(strtolower($_REQUEST['process'])){
 				case 'save':
 					$ok=configSave();
+					$_SESSION=array();
 					setView('config_users_save',1);
 					return;
 				break;
