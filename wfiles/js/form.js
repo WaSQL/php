@@ -3623,7 +3623,7 @@ function pagingAddFilters(frm,filters,clear){
 			d.setAttribute('data-field',dfield);
 			d.setAttribute('data-operator',doper);
 			d.setAttribute('data-value',dvalue);
-			d.id=id;
+			d.id=did;
 			let dval='\''+dvalue+'\'';
 			switch(doper){
 	        	case 'ct': 	doper='Contains';break;
