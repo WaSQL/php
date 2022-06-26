@@ -3611,20 +3611,19 @@ function pagingAddFilters(frm,filters,clear){
 		}
 		let did=dfield+doper+dvalue;
 		did=did.replace(/[^a-zA-Z0-9\_]+/g,"");
-		did='id'+did.toLowerCase();	
-		//console.log(did);	
+		did='id_'+did.toLowerCase();		
 		let obj=frm.querySelector('#'+did);
 		let filters=new Array();
 		if(undefined != obj){
 			obj.style.display='inline-block';
 		}
 		else{
-			let d=document.createElement('div');
-			d.className='w_pagingfilter';
-			d.setAttribute('data-field',dfield);
-			d.setAttribute('data-operator',doper);
-			d.setAttribute('data-value',dvalue);
-			d.id=did;
+			let filter_element=document.createElement('div');
+			filter_element.className='w_pagingfilter';
+			filter_element.setAttribute('data-field',dfield);
+			filter_element.setAttribute('data-operator',doper);
+			filter_element.setAttribute('data-value',dvalue);
+			filter_element.setAttribute('id',did);
 			let dval='\''+dvalue+'\'';
 			switch(doper){
 	        	case 'ct': 	doper='Contains';break;
@@ -3635,16 +3634,18 @@ function pagingAddFilters(frm,filters,clear){
 				case 'neq': doper='Not Equals';break;
 				case 'ea': 	doper='Equals Any of These';break;
 				case 'nea': doper='Not Equals Any of These';break;
-				case 'gt': doper='Greater Than';break;
-				case 'lt': doper='Less Than';break;
+				case 'gt':  doper='Greater Than';break;
+				case 'lt':  doper='Less Than';break;
 				case 'egt': doper='Equals or Greater than';break;
 				case 'elt': doper='Less than or Equals';break;
-				case 'ib': doper='Is Blank';dval='';break;
-				case 'nb': doper='Is Not Blank';dval='';break;
+				case 'ib':  doper='Is Blank';dval='';break;
+				case 'nb':  doper='Is Not Blank';dval='';break;
 			}
-			d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+did+'\');"></span>';
+			filter_element.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+filter_element.id+'\');"></span>';
 			let p=frm.querySelector('#send_to_filters');
-			p.appendChild(d);
+			console.log('appending');
+			console.log(filter_element.id);
+			p.appendChild(filter_element);
 		}
 		let f=frm.querySelectorAll('.w_pagingfilter');
 		let filter_count=0;

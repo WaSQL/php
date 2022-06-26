@@ -1200,10 +1200,12 @@ function commonSearchFiltersForm($params=array()){
         	if($field=='null' || $val=='null' || $oper=='null' || strlen($field)==0 || strlen($oper)==0 || strlen($val)==0){
         		if(!strlen($oper) || !in_array($oper,array('ib','nb'))){continue;}
         	}
-        	$fid=$field.$oper.$val;
         	$dfield=$field;
 			if($dfield=='*'){$dfield='Any Field';}
         	$doper=$oper;
+        	$fid=$field.$oper.$val;
+        	$fid=preg_replace('/[^a-zA-Z0-9\_]+/','',$fid);
+        	$fid='id_'.strtolower($fid);
 			$dval="'{$val}'";
 			switch($oper){
 	        	case 'ct': $doper='Contains';break;
