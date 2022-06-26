@@ -3601,7 +3601,7 @@ function pagingAddFilters(frm,filters,clear){
 	let sets=filters.split(";");
 	//console.log(sets);
 	for(let s=0;s<sets.length;s++){
-		let fltrs=sets[s].split(" ");
+		let fltrs=sets[s].split(" ",3);
 		let id='id'+fltrs[0]+fltrs[1];		
 		if(undefined != fltrs[2]){
 			id=id+fltrs[2].replace(/[\W_]+/g,"");
