@@ -4210,6 +4210,14 @@ function addEditDBForm($params=array(),$customcode=''){
 						$used[$cfield.'_'.$copt]=1;
 					}
 				}
+				//check for -class_all
+				if(isset($params['-class_all']) && !isset($params[$cfield.'_class'])){
+					$opts['class']=$params['-class_all'];
+				}
+				//checkfor -style_all
+				if(isset($params['-style_all']) && !isset($params[$cfield.'_style'])){
+					$opts['style']=$params['-style_all'];
+				}
 				//check for field_options array - the easier, new way to override options
 				if(isset($params[$cfield.'_options']) && is_array($params[$cfield.'_options'])){
 					$used[$cfield.'_options']=1;
@@ -4249,12 +4257,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						break;
 					}
 				}
-				if(isset($params['-class_all']) && !isset($params[$cfield.'_class'])){
-					$opts['class']=$params['-class_all'];
-				}
-				if(isset($params['-style_all']) && !isset($params[$cfield.'_style'])){
-					$opts['style']=$params['-style_all'];
-				}
+				
 				if(!isset($params['-focus'])){$params['-focus']=$cfield;}
 				$cval=getDBFieldTag($opts);
 				//$cval= $cfield.printValue($_REQUEST).printValue($opts);
@@ -4303,8 +4306,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					foreach($dataopts[$field] as $k=>$v){$opts[$k]=$v;}
 				}
 				if(isset($params['_id']) && isNum($params['_id'])){$opts['-editmode']=true;}
-				if(isset($params['-class_all']) && !isset($params[$cield.'_class'])){$opts['class']=$params['-class_all'];}
-				if(isset($params['-style_all']) && !isset($params[$field.'_style'])){$opts['style']=$params['-style_all'];}
+				
 				if(isset($params[$field])){$opts['value']=$params[$field];}
 				if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
 				//opts
@@ -4314,6 +4316,10 @@ function addEditDBForm($params=array(),$customcode=''){
 						$used[$field.'_'.$copt]=1;
 					}
 				}
+				//check for -class_all
+				if(isset($params['-class_all']) && !isset($params[$cield.'_class'])){$opts['class']=$params['-class_all'];}
+				//check for -style_all
+				if(isset($params['-style_all']) && !isset($params[$field.'_style'])){$opts['style']=$params['-style_all'];}
 				//check for field_options array - the easier, new way to override options
 				if(isset($params[$field.'_options']) && is_array($params[$field.'_options'])){
 					$used[$field.'_options']=1;
@@ -4490,7 +4496,9 @@ function addEditDBForm($params=array(),$customcode=''){
 			}
 			$opts=array('-table'=>$params['-table'],'-field'=>$field,'-formname'=>$formname);
 			if(isset($params['_id']) && isNum($params['_id'])){$opts['-editmode']=true;}
+			//check for -class_all
 			if(isset($params['-class_all']) && !isset($params[$field.'_class'])){$opts['class']=$params['-class_all'];}
+			//check for -style_all
 			if(isset($params['-style_all']) && !isset($params[$field.'_style'])){$opts['style']=$params['-style_all'];}
 			if(isset($params[$field])){$opts['value']=$params[$field];}
 			if(!isset($params['-readonly']) && !isset($params[$field.'_viewonly'])){$fieldlist[]=$field;}
