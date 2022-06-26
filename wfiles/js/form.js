@@ -3599,7 +3599,7 @@ function pagingAddFilters(frm,filters,clear){
 		pagingClearFilters(frm);
 	}
 	let sets=filters.split(";");
-	console.log(sets);
+	//console.log('SETS'+sets);
 	for(let s=0;s<sets.length;s++){
 		let fltrs=sets[s].split(" ");
 		let dfield=fltrs.shift();
@@ -3610,8 +3610,9 @@ function pagingAddFilters(frm,filters,clear){
 			dvalue=fltrs.join(" ");
 		}
 		let did=dfield+doper+dvalue;
-		did=did.replace(/[^a-zA-Z0-9\_]+/g,"").toLowerCase();
-		did='id'+did;		
+		did=did.replace(/[^a-zA-Z0-9\_]+/g,"");
+		did='id'+did.toLowerCase();	
+		//console.log(did);	
 		let obj=frm.querySelector('#'+did);
 		let filters=new Array();
 		if(undefined != obj){
