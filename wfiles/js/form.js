@@ -3643,8 +3643,6 @@ function pagingAddFilters(frm,filters,clear){
 			}
 			filter_element.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+filter_element.id+'\');"></span>';
 			let p=frm.querySelector('#send_to_filters');
-			console.log('appending');
-			console.log(filter_element.id);
 			p.appendChild(filter_element);
 		}
 		let f=frm.querySelectorAll('.w_pagingfilter');
