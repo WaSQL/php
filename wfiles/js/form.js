@@ -3612,7 +3612,7 @@ function pagingAddFilters(frm,filters,clear){
 		let did=dfield+doper+dvalue;
 		did=did.replace(/[^a-zA-Z0-9\_]+/g,"").toLowerCase();
 		did='id'+did;		
-		let obj=frm.querySelector('#'+id);
+		let obj=frm.querySelector('#'+did);
 		let filters=new Array();
 		if(undefined != obj){
 			obj.style.display='inline-block';
