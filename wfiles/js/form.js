@@ -3641,7 +3641,7 @@ function pagingAddFilters(frm,filters,clear){
 				case 'ib': doper='Is Blank';dval='';break;
 				case 'nb': doper='Is Not Blank';dval='';break;
 			}
-			d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+id+'\');"></span>';
+			d.innerHTML='<span class="icon-filter w_grey"></span> '+dfield+' '+doper+' '+dval+' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''+did+'\');"></span>';
 			let p=frm.querySelector('#send_to_filters');
 			p.appendChild(d);
 		}
