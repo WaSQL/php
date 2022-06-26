@@ -3609,8 +3609,9 @@ function pagingAddFilters(frm,filters,clear){
 		if(fltrs.length){
 			dvalue=fltrs.join(" ");
 		}
-		let id='id'+dfield+doper+dvalue;
-		id=id.replace(/[^a-zA-Z0-9\_]+/g,"");		
+		let did=dfield+doper+dvalue;
+		did=did.replace(/[^a-zA-Z0-9\_]+/g,"").toLowerCase();
+		did='id'+did;		
 		let obj=frm.querySelector('#'+id);
 		let filters=new Array();
 		if(undefined != obj){
