@@ -3599,13 +3599,18 @@ function pagingAddFilters(frm,filters,clear){
 		pagingClearFilters(frm);
 	}
 	let sets=filters.split(";");
-	//console.log(sets);
+	console.log(sets);
 	for(let s=0;s<sets.length;s++){
-		let fltrs=sets[s].split(" ",3);
-		let id='id'+fltrs[0]+fltrs[1];		
-		if(undefined != fltrs[2]){
-			id=id+fltrs[2].replace(/[\W_]+/g,"");
+		let fltrs=sets[s].split(" ");
+		let dfield=fltrs.shift();
+		if(dfield=='*'){dfield='Any Field';}
+		let doper=fltrs.shift();
+		let dvalue='';
+		if(fltrs.length){
+			dvalue=fltrs.join(" ");
 		}
+		let id='id'+dfield+doper+dvalue;
+		id=id.replace(/[^a-zA-Z0-9\_]+/g,"");		
 		let obj=frm.querySelector('#'+id);
 		let filters=new Array();
 		if(undefined != obj){
@@ -3614,14 +3619,11 @@ function pagingAddFilters(frm,filters,clear){
 		else{
 			let d=document.createElement('div');
 			d.className='w_pagingfilter';
-			d.setAttribute('data-field',fltrs[0]);
-			d.setAttribute('data-operator',fltrs[1]);
-			d.setAttribute('data-value',fltrs[2]);
+			d.setAttribute('data-field',dfield);
+			d.setAttribute('data-operator',doper);
+			d.setAttribute('data-value',dvalue);
 			d.id=id;
-			let dfield=fltrs[0];
-			if(dfield=='*'){dfield='Any Field';}
-			let doper=fltrs[1];
-			let dval='\''+fltrs[2]+'\'';
+			let dval='\''+dvalue+'\'';
 			switch(doper){
 	        	case 'ct': 	doper='Contains';break;
 	        	case 'nct': doper='Not Contains';break;
