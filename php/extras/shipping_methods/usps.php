@@ -12,7 +12,7 @@ function uspsServices($params=array()){
 	if(isset($params['-intl']) && $params['-intl']){
 		//International rate request
 		if(!isset($params['-country'])){return "No country. Required for intl requests";}
-		$api='IntlRate';
+		$api='IntlRateV2';
 		$request='IntlRateRequest';
 		}
 	else{
@@ -51,7 +51,7 @@ ENDOFXML;
 	//Note:they provide you a secure url but this is only used with Label printing
 	$urls=array(
 		'test'	=> 'http://testing.shippingapis.com/ShippingAPITest.dll',
-		'live'	=> 'http://Production.ShippingAPIs.com/ShippingAPI.dll',
+		'live'	=> 'https://secure.shippingapis.com/ShippingAPI.dll',
 		);
 	$rtn=array(
 		'params'=>$params,
