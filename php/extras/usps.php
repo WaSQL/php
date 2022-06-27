@@ -17,17 +17,17 @@ function uspsServices($params=array()){
 	if(!isset($params['-weight'])){return "No weight";}
 	$api='RateV4';
 	$request='RateV4Request';
-	if(isset($params['-intl']) && $params['-intl']){
+	if(isset($params['-intl']) && $params['-intl']==1){
 		//International rate request
 		if(!isset($params['-country'])){return "No country. Required for intl requests";}
 		$api='IntlRateV2';
 		$request='IntlRateRequest';
-		}
+	}
 	else{
 		if(!isset($params['-service'])){$params['-service']='ALL';}
 		if(!isset($params['-zip_orig'])){return "No zip_orig";}
 		if(!isset($params['-zip_dest'])){return "No zip_dest";}
-    	}
+    }
 	$xml = '<'.$request.' USERID="'.$params['-userid'].'">';
 	$xml .= 	'<Package ID="1ST">';
 	$xml .= 		'<Pounds>'.$params['-weight'].'</Pounds>';
