@@ -190,7 +190,7 @@ function uspsExpressMailLabel($params=array()){
 	//Note:they provide you a secure url but this is only used with Label printing
 	$urls=array(
 		'test'	=> 'http://production.shippingapis.com/ShippingAPITest.dll',
-		'live'	=> 'http://Production.ShippingAPIs.com/ShippingAPI.dll',
+		'live'	=> 'https://secure.ShippingAPIs.com/ShippingAPI.dll',
 		);
 	$rtn=array(
 		'params'		=>$params,
@@ -232,7 +232,7 @@ function uspsTrack($params=array()){
 	//Note:they provide you a secure url but this is only used with Label printing
 	$urls=array(
 		'test'	=> 'http://production.shippingapis.com/ShippingAPITest.dll',
-		'live'	=> 'http://Production.ShippingAPIs.com/ShippingAPI.dll',
+		'live'	=> 'https://secure.ShippingAPIs.com/ShippingAPI.dll',
 		);
 	$rtn=array(
 		'params'		=>$params,
@@ -341,7 +341,7 @@ function uspsVerifyAddress($params=array()){
 	$urls=array(
 		'test_standard'	=> "http://testing.shippingapis.com/ShippingAPITest.dll",
 		'test_secure'	=> "https://secure.shippingapis.com/ShippingAPITest.dll",
-		'live'	=> 'http://Production.ShippingAPIs.com/ShippingAPI.dll'
+		'live'	=> 'https://secure.ShippingAPIs.com/ShippingAPI.dll'
 		);
 	$api="Verify";
 	$xml= '<AddressValidateRequest%20USERID="'.$params['-userid'].'"%20PASSWORD="'.$params['-password'].'">';
