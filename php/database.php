@@ -2699,6 +2699,10 @@ function databaseParseFilters($params=array()){
 						if(isNum($val)){
 							$wheres[]="{$field} = {$val}";
 						}
+						elseif(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
+							$wheres[]="{$field} = {$val}";
+						}
 						else{
 							$wheres[]="lower(cast({$field} as text)) = '{$lval}'";
 						}
@@ -2706,6 +2710,10 @@ function databaseParseFilters($params=array()){
 					case 'postgres':
 					case 'postgresql':
 						if(isNum($val)){
+							$wheres[]="{$field} = {$val}";
+						}
+						elseif(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
 							$wheres[]="{$field} = {$val}";
 						}
 						else{
@@ -2716,13 +2724,23 @@ function databaseParseFilters($params=array()){
 						if(isNum($val)){
 							$wheres[]="{$field} = {$val}";
 						}
+						elseif(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
+							$wheres[]="{$field} = {$val}";
+						}
 						else{
 							$wheres[]="{$field} ilike '{$val}'";
 						}
 					break;
 					default:
-						//mysql is case insensitive
-						$wheres[]="{$field} = '{$val}'";
+						if(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
+							$wheres[]="{$field} = {$val}";
+						}
+						else{
+							//mysql is case insensitive
+							$wheres[]="{$field} = '{$val}'";
+						}
 					break;
 				}
 			break;
@@ -2737,6 +2755,10 @@ function databaseParseFilters($params=array()){
 						if(isNum($val)){
 							$wheres[]="{$field} != {$val}";
 						}
+						elseif(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
+							$wheres[]="{$field} != {$val}";
+						}
 						else{
 							$wheres[]="lower({$field}) != '{$lval}'";
 						}
@@ -2744,6 +2766,10 @@ function databaseParseFilters($params=array()){
 					case 'postgres':
 					case 'postgresql':
 						if(isNum($val)){
+							$wheres[]="{$field} != {$val}";
+						}
+						elseif(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
 							$wheres[]="{$field} != {$val}";
 						}
 						else{
@@ -2754,13 +2780,23 @@ function databaseParseFilters($params=array()){
 						if(isNum($val)){
 							$wheres[]="{$field} != {$val}";
 						}
+						elseif(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
+							$wheres[]="{$field} != {$val}";
+						}
 						else{
 							$wheres[]="{$field} not ilike '{$val}'";
 						}
 					break;
 					default:
-						//mysql is case insensitive
-						$wheres[]="{$field} != '{$val}'";
+						if(stringContains($val,'(') && stringContains($val,')')){
+							//val is a function
+							$wheres[]="{$field} != {$val}";
+						}
+						else{
+							//mysql is case insensitive
+							$wheres[]="{$field} != '{$val}'";
+						}
 					break;
 				}
 			break;
@@ -2880,10 +2916,18 @@ function databaseParseFilters($params=array()){
 				if(isNum($val)){
 					$wheres[]="{$field} > {$val}";
 				}
+				elseif(stringContains($val,'(') && stringContains($val,')')){
+					//val is a function
+					$wheres[]="{$field} > {$val}";
+				}
 			break;
 			case 'lt':
 				//less than
 				if(isNum($val)){
+					$wheres[]="{$field} < {$val}";
+				}
+				elseif(stringContains($val,'(') && stringContains($val,')')){
+					//val is a function
 					$wheres[]="{$field} < {$val}";
 				}
 			break;
@@ -2892,10 +2936,18 @@ function databaseParseFilters($params=array()){
 				if(isNum($val)){
 					$wheres[]="{$field} >= {$val}";
 				}
+				elseif(stringContains($val,'(') && stringContains($val,')')){
+					//val is a function
+					$wheres[]="{$field} >= {$val}";
+				}
 			break;
 			case 'elt':
 				//equals or less than
 				if(isNum($val)){
+					$wheres[]="{$field} <= {$val}";
+				}
+				elseif(stringContains($val,'(') && stringContains($val,')')){
+					//val is a function
 					$wheres[]="{$field} <= {$val}";
 				}
 			break;
@@ -2934,10 +2986,23 @@ function databaseParseFilters($params=array()){
 					switch(strtolower($params['-database'])){
 						case 'hana':
 						case 'oracle':
-							$wheres[]="to_date({$field}) between '{$dates[0]}' and '{$dates[1]}'";
+							if(stringContains($val,'(') && stringContains($val,')')){
+								//val is a function
+								$wheres[]="to_date({$field}) between {$dates[0]} and {$dates[1]}";
+							}
+							else{
+								$wheres[]="to_date({$field}) between '{$dates[0]}' and '{$dates[1]}'";
+							}
+							
 						break;
 						default:
-							$wheres[]="date({$field}) between '{$dates[0]}' and '{$dates[1]}'";
+							if(stringContains($val,'(') && stringContains($val,')')){
+								//val is a function
+								$wheres[]="date({$field}) between {$dates[0]} and {$dates[1]}";
+							}
+							else{
+								$wheres[]="date({$field}) between '{$dates[0]}' and '{$dates[1]}'";
+							}
 						break;
 					}
 				}
