@@ -2079,10 +2079,11 @@ function databaseListRecords($params=array()){
 		}
 		$rtn .='>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
-			$value=$rec[$fld];
-			if(is_array($value)){
-				$value=json_encode($value,JSON_INVALID_UTF8_SUBSTITUTE);
+			if(is_array($rec[$fld])){
+				$rec[$fld]=json_encode($rec[$fld],JSON_INVALID_UTF8_SUBSTITUTE);
 			}
+			$value=$rec[$fld];
+
 			// is this a sum field?
 			if(isset($sums[$fld])){
 				$sval=str_replace(',','',$value);
