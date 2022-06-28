@@ -6467,6 +6467,9 @@ function arrays2CSV($recs=array(),$params=array()){
 	foreach($recs as $rec) {
 		$vals=array();
 		foreach($fieldmap as $field=>$dval){
+			if(is_array($rec[$field])){
+				$rec[$field]=json_encode($rec[$field],JSON_INVALID_UTF8_SUBSTITUTE);
+			}
         	$vals[]=$rec[$field];
 		}
 		if(isset($params['-force']) && $params['-force']){
