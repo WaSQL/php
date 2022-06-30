@@ -2558,8 +2558,8 @@ var wacss = {
 			wrapper.toolbar.txt.style.borderRight='1px solid #ccc';
 			wrapper.toolbar.appendChild(wrapper.toolbar.txt);
 			//toolbar.font - default to andragogy
-			list[i].dataset.font=list[i].dataset.font.replace('_','');
 			wrapper.dataset.font=list[i].dataset.font || 'andragogy';
+			wrapper.dataset.font=wrapper.dataset.font.replace('_','');
 			let fonts={
 				'arial':'Arial',
 				'andragogy':'Andragogy',
