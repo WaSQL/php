@@ -10125,15 +10125,21 @@ function fileExplorer($startdir='',$param=array()){
 *	-height=600
 *	-icons=1  shows icons for known file extensions
 *	-actions=download,edit,delete
-*	-fields=name,description,size,modified,perms
+*	-fields=name,size,modified,perms
 * @return
 *	Web-based File Manager/Explorer application
 * @usage <?=fileManager('/var/www/shared/test');?>
 */
 function fileManager($startdir='',$params=array()){
-	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
+	global $CONFIG;
+	if(!strlen($startdir)){$startdir=$CONFIG['filemanager_startdir'] ?? $CONFIG['filemanager_path'] ?? $_SERVER['DOCUMENT_ROOT'];}
 	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	loadExtrasJs('html5');
+	foreach($CONFIG as $k=>$v){
+		if(preg_match('/^filemanager_(.+)$/',$k,$m)){
+			$params[$m[1]]=$v;
+		}
+	}
 	global $PAGE;
 	if(isset($params['rights'])){$params['-rights']=$params['rights'];}
 	if(!isset($params['-rights'])){$params['-rights']='all';}
@@ -10143,7 +10149,7 @@ function fileManager($startdir='',$params=array()){
 	if(!isset($params['-view'])){$params['-view']='table';}
 	if(!isset($params['-icons'])){$params['-icons']=1;}
 	if(!isset($params['-actions'])){$params['-actions']='download,edit,delete';}
-	if(!isset($params['-fields'])){$params['-fields']='name,desc,size,modified,owner,perms';}
+	if(!isset($params['-fields'])){$params['-fields']='name,size,modified,owner,perms';}
 	$action=isset($params['-action'])?$params['-action']:"/{$PAGE['name']}";
 	$params['-rights']=strtolower($params['-rights']);
 
@@ -10332,27 +10338,16 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</div>'.PHP_EOL;
 		}
 	if($params['-rights'] != 'readonly'){
-		if(!isset($params['-hide']) || !stringContains($params['-hide'],'browse')){
-			$rtn .= '	<div class="row">'.PHP_EOL;
-			$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
-			$rtn .= '			<div class="w_bold">New File</div>'.PHP_EOL;
-			$rtn .= buildFormFile('file',array('id'=>'file'));
-			$rtn .= '		</div>'.PHP_EOL;
-			$rtn .= '	</div>'.PHP_EOL;
-			$rtn .= '	<div class="row">'.PHP_EOL;
-			$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
-			$rtn .= '			<label for="description">Description</label>'.PHP_EOL;
-			$rtn .= '			<textarea name="description" id="description" class="w_form-control" onkeypress="autoGrow(this,200);"></textarea>'.PHP_EOL;
-			$rtn .= '		</div>'.PHP_EOL;
-			$rtn .= '	</div>'.PHP_EOL;
-		}
-
-		$rtn .= '	<div class="row" align="right" style="padding-top:15px;">'.PHP_EOL;
-		$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
-		$rtn .= '			<button type="submit" class="w_btn w_btn-primary">Save</button>'.PHP_EOL;
+		$rtn .= '	<div class="row">'.PHP_EOL;
+		$rtn .= '		<div class="col-sm-7">'.PHP_EOL;
+		$rtn .= '			<div class="w_bold">New File</div>'.PHP_EOL;
+		$rtn .= buildFormFile('file',array('id'=>'file'));
 		$rtn .= '		</div>'.PHP_EOL;
-		$rtn .= '	</div>'.PHP_EOL;
-		}
+		$rtn .= '		<div class="col-sm-5">'.PHP_EOL;
+		$rtn .= '			<div class="w_bold">&nbsp;</div>'.PHP_EOL;
+		$rtn .= '			<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
+		$rtn .= '		</div>'.PHP_EOL;
+	}
 	$rtn .= '	</form>'.PHP_EOL;
 	if(isset($_REQUEST['file_error'])){
     	$rtn .= '<div class="w_danger icon-warning"> '.$_REQUEST['file_error'].'</div>'.PHP_EOL;
@@ -10390,7 +10385,7 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'.PHP_EOL;
 	}
 	$fields=preg_split('/\,/',$params['-fields']);
-	$rtn .= '<table class="table table-condensed table-striped table-bordered">'.PHP_EOL;
+	$rtn .= '<table class="table table-striped table-bordered">'.PHP_EOL;
 	if($params['-view']=='table'){
 		$rtn .= '	<tr>'.PHP_EOL;
 		foreach($fields as $field){
