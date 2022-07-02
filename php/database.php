@@ -836,6 +836,9 @@ function pyQueryResults($db,$query,$params=array()){
 *	[{field}_eval] - php code to return based on current record values.  i.e "return setClassBasedOnAge('%age%');"
 *	[{field}_onclick] - wrap in onclick anchor tag, replacing any %{field}% values   i.e "return pageShowThis('%age%');"
 *	[{field}_href] - wrap in anchor tag, replacing any %{field}% values   i.e "/abc/def/%age%"
+* 	[{field}_image] - create thumbnail image 
+* 	[{field}_image_size] - sets thumnail image size - defaults to 28px
+* 	[{field}_image_radius] - sets thumnail image borde radius - defaults to 18px
 *	[{field}_checkbox] - 1 - adds a checkbox before the field value that holds the field value
 *	[{field}_checkbox_onclick] - string - adds a onclick value if checkbox was specifid
 *	[{field}_checkbox_id] - string - sets id of checkbox
@@ -2371,7 +2374,9 @@ function databaseListRecords($params=array()){
 				elseif(isNum($value)){$value=verboseSize($value);}
             }
 			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1 && strlen($value)){
-				$style="max-height:28px;max-width:28px;border-radius:18px;box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);";
+				$image_size=$params[$fld."_image_size"] ?? $params['-image_size'] ?? '28px';
+				$image_radius=$params[$fld."_image_radius"] ?? $params['-image_radius'] ?? '18px';
+				$style="max-height:{$image_size};max-width:{$image_size};border-radius:{$image_radius};box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);";
 				if(isset($params[$fld."_style"])){$style=$params[$fld."_image"];}
                 $value='<img src="'.$value.'" alt="" style="'.$style.'" />';
 			}
