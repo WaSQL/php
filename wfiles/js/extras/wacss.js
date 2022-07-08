@@ -700,12 +700,54 @@ var wacss = {
                     type:datasets[d].dataset.type || lconfig.type,
 					data: json
 				};
-				//fill
+				/* --  fill  -- */
 				if(undefined != datasets[d].dataset.fill && datasets[d].dataset.fill.toLowerCase()=='false'){
 					dataset.fill=false;
 				}
 				else if(undefined != list[i].dataset.fill && list[i].dataset.fill.toLowerCase()=='false'){
 					dataset.fill=false;
+				}
+				/* --  borderColor  -- */
+				if(undefined != datasets[d].dataset.bordercolor){
+					dataset.borderColor=datasets[d].dataset.bordercolor;
+				}
+				else if(undefined != datasets[d].dataset.borderColor){
+					dataset.borderColor=datasets[d].dataset.borderColor;
+				}
+				/* --  borderDash  -- */
+				if(undefined != datasets[d].dataset.borderdash){
+					dataset.borderDash=datasets[d].dataset.borderdash;
+				}
+				else if(undefined != datasets[d].dataset.borderDash){
+					dataset.borderDash=datasets[d].dataset.borderDash;
+				}
+				/* --  yAxisID  -- */
+				if(undefined != datasets[d].dataset.yaxis){
+					dataset.yAxisID=datasets[d].dataset.yaxis;
+				}
+				else if(undefined != datasets[d].dataset.yAxisID){
+					dataset.yAxisID=datasets[d].dataset.yAxisID;
+				}
+				/* --  showLine  -- */
+				if(undefined != datasets[d].dataset.showline && datasets[d].dataset.showline =='false'){
+					dataset.showLine=false;
+				}
+				else if(undefined != datasets[d].dataset.showLine && datasets[d].dataset.showLine =='false'){
+					dataset.showLine=false;
+				}
+				/* --  pointHoverBackgroundColor  -- */
+				if(undefined != datasets[d].dataset.pointhoverbackgroundcolor){
+					dataset.pointHoverBackgroundColor=datasets[d].dataset.pointhoverbackgroundcolor;
+				}
+				else if(undefined != datasets[d].dataset.pointHoverBackgroundColor){
+					dataset.pointHoverBackgroundColor=datasets[d].dataset.pointHoverBackgroundColor;
+				}
+				/* --  pointHoverBorderColor  -- */
+				if(undefined != datasets[d].dataset.pointhoverbordercolor){
+					dataset.pointHoverBorderColor=datasets[d].dataset.pointhoverbordercolor;
+				}
+				else if(undefined != datasets[d].dataset.pointHoverBorderColor){
+					dataset.pointHoverBorderColor=datasets[d].dataset.pointHoverBorderColor;
 				}
 				lconfig.data.datasets.push(dataset);
 			}
@@ -1296,7 +1338,7 @@ var wacss = {
 							    }
 	        				}
 	        			};
-	        			console.log(pconfig.options.plugins);
+	        			//console.log(pconfig.options.plugins);
 	        			if(undefined != labels && labels.length > 0){
 							pconfig.data.labels=labels;
 						}
