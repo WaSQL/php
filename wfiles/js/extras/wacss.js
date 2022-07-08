@@ -1083,7 +1083,7 @@ var wacss = {
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
 	        				let json=JSON.parse(datasets[d].innerText);   
-	        				let fill=datasets[d].getAttribute('data-fill') || list[i].getAttribute('data-fill');
+	        				let fill=datasets[d].dataset.fill || list[i].dataset.fill || false;
 							if(undefined != fill){
 								if(fill.indexOf('true') != -1){fill=true;}
 								else if(fill == '1'){fill=true;}
@@ -1091,22 +1091,59 @@ var wacss = {
 							}   
 							else{fill=false;}				
 							let dataset={
-								backgroundColor: datasets[d].getAttribute('data-backgroundColor') || colors[d],
-	                            type:datasets[d].getAttribute('data-type') || list[i].getAttribute('data-type'),
+								backgroundColor: datasets[d].dataset.backgroundcolor || datasets[d].dataset.backgroundColor || colors[d],
+	                            type:datasets[d].dataset.type || list[i].dataset.type || 'line',
 								data: json,
 								fill:fill,
-								pointBackgroundColor:[],
-								pointBorderColor: []
+								pointBackgroundColor:datasets[d].dataset.pointbackgroundcolor || datasets[d].dataset.pointBackgroundColor || [],
+								pointBorderColor: datasets[d].dataset.pointbordercolor || datasets[d].dataset.pointBorderColor || []
 							};
-							if(undefined != datasets[d].getAttribute('data-yaxis')){
-								dataset.yAxisID=datasets[d].getAttribute('data-yaxis');
+							/* --  borderColor  -- */
+							if(undefined != datasets[d].dataset.bordercolor){
+								dataset.borderColor=datasets[d].dataset.bordercolor;
 							}
-							if(undefined != datasets[d].getAttribute('data-showLine') && datasets[d].getAttribute('data-showLine')=='false'){
+							else if(undefined != datasets[d].dataset.borderColor){
+								dataset.borderColor=datasets[d].dataset.borderColor;
+							}
+							/* --  borderDash  -- */
+							if(undefined != datasets[d].dataset.borderdash){
+								dataset.borderDash=datasets[d].dataset.borderdash;
+							}
+							else if(undefined != datasets[d].dataset.borderDash){
+								dataset.borderDash=datasets[d].dataset.borderDash;
+							}
+							/* --  yAxisID  -- */
+							if(undefined != datasets[d].dataset.yaxis){
+								dataset.yAxisID=datasets[d].dataset.yaxis;
+							}
+							else if(undefined != datasets[d].dataset.yAxisID){
+								dataset.yAxisID=datasets[d].dataset.yAxisID;
+							}
+							/* --  showLine  -- */
+							if(undefined != datasets[d].dataset.showline && datasets[d].dataset.showline =='false'){
 								dataset.showLine=false;
 							}
-							if(undefined != datasets[d].getAttribute('data-label')){
-								dataset.label=datasets[d].getAttribute('data-label');
-								let dlabel=datasets[d].getAttribute('data-label');
+							else if(undefined != datasets[d].dataset.showLine && datasets[d].dataset.showLine =='false'){
+								dataset.showLine=false;
+							}
+							/* --  pointHoverBackgroundColor  -- */
+							if(undefined != datasets[d].dataset.pointhoverbackgroundcolor){
+								dataset.pointHoverBackgroundColor=datasets[d].dataset.pointhoverbackgroundcolor;
+							}
+							else if(undefined != datasets[d].dataset.pointHoverBackgroundColor){
+								dataset.pointHoverBackgroundColor=datasets[d].dataset.pointHoverBackgroundColor;
+							}
+							/* --  pointHoverBorderColor  -- */
+							if(undefined != datasets[d].dataset.pointhoverbordercolor){
+								dataset.pointHoverBorderColor=datasets[d].dataset.pointhoverbordercolor;
+							}
+							else if(undefined != datasets[d].dataset.pointHoverBorderColor){
+								dataset.pointHoverBorderColor=datasets[d].dataset.pointHoverBorderColor;
+							}
+							/* --  label  -- */
+							if(undefined != datasets[d].dataset.label){
+								dataset.label=datasets[d].dataset.label;
+								let dlabel=datasets[d].dataset.label;
 	        					datasetLabels.push(dlabel); 
 							}
 							//check for fillColor in dataset itself
@@ -1135,10 +1172,10 @@ var wacss = {
 	        			let lctx = lcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(lctx, lconfig);
 						/* check for data-onclick */
-						if(undefined != list[i].getAttribute('data-onclick')){
+						if(undefined != list[i].dataset.onclick){
 							lcanvas.parentobj=list[i];
 							lcanvas.chartobj=wacss.chartjs[list[i].id];
-							lcanvas.onclick_func=list[i].getAttribute('data-onclick');
+							lcanvas.onclick_func=list[i].dataset.onclick;
 							lcanvas.clicked=0;
 							lcanvas.onclick = function(evt){
 								if(this.clicked==0){
@@ -1157,7 +1194,7 @@ var wacss = {
 								       	let params={};
 								       	params.parent=this.parentobj;
 								        params.chart=this.chartobj;
-								       	params.type=this.parentobj.getAttribute('data-type');
+								       	params.type=this.parentobj.dataset.type;
 								       	params.label = this.chartobj.data.labels[firstPoint._index] || clickedDatasetPoint.label;
 								       	params.value = clickedDatasetPoint.data[firstPoint._index] || clickedDatasetPoint.data[clickedElementIndex]["y"];
 								       	params.axis = clickedDatasetPoint.yAxisID || 'default';
@@ -1170,7 +1207,7 @@ var wacss = {
 									        let params={};
 									        params.parent=this.parentobj;
 								        	params.chart=this.chartobj;
-									        params.type=this.parentobj.getAttribute('data-type');
+									        params.type=this.parentobj.dataset.type;
 									        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 									        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
 									        params.axis = this.chartobj.data.datasets[firstPoint._datasetIndex].yAxisID || 'default';
@@ -1269,10 +1306,10 @@ var wacss = {
 						wacss.chartjs[list[i].id]  = new Chart(pctx, pconfig);
 						//console.log(pconfig);
 						/* check for data-onclick */
-						if(undefined != list[i].getAttribute('data-onclick')){
+						if(undefined != list[i].dataset.onclick){
 							pcanvas.parentobj=list[i];
 							pcanvas.chartobj=wacss.chartjs[list[i].id];
-							pcanvas.onclick_func=list[i].getAttribute('data-onclick');
+							pcanvas.onclick_func=list[i].dataset.onclick;
 							pcanvas.clicked=0;
 							pcanvas.onclick = function(evt){
 								if(this.clicked==0){
@@ -1285,7 +1322,7 @@ var wacss = {
 								        let params={};
 								        params.parent=this.parentobj;
 								        params.chart=this.chartobj;
-								        params.type=this.parentobj.getAttribute('data-type');
+								        params.type=this.parentobj.dataset.type;
 								        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 								        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
 								        window[this.onclick_func](params);
@@ -1456,7 +1493,7 @@ var wacss = {
 		let els=document.querySelectorAll('textarea[data-behavior="editor"]');
 		if(els.length==0){return false;}
 		for(e=0;e<els.length;e++){
-			if(undefined != els[e].getAttribute('data-initialized')){continue;}
+			if(undefined != els[e].dataset.initialized){continue;}
 			els[e].setAttribute('data-initialized',1);
 			let mh=els[e].style.minHeight || '200px';
 			els[e].style.display='none';
@@ -1551,7 +1588,7 @@ var wacss = {
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
 			//check to see if we have already initialized this element
-			if(undefined != list[i].getAttribute('data-initialized')){continue;}
+			if(undefined != list[i].dataset.initialized){continue;}
 			list[i].setAttribute('data-initialized',1);
 			let editor_id=list[i].id+'_wacsseditor';
 			//does it already exist?
@@ -1568,7 +1605,7 @@ var wacss = {
 				d.setAttribute(k,attrs[k]);
 			}
 			d.addEventListener('input', function() {
-				let eid=this.getAttribute('data-editor');
+				let eid=this.dataset.editor;
 				let tobj=wacss.getObject(eid);
 				if(undefined == tobj){
 					console.log('textarea update failed: no eid: '+eid);
