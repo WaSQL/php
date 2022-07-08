@@ -2435,6 +2435,15 @@ function buildFormDate($name,$params=array()){
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-behavior']='flatpickr';
+	if(strlen($params['-value'])){
+		if(preg_match('/^[a-z\-\+]/i',$params['-value'])){
+			//+21 days  or +3 months
+			$params['-value']=date('Y-m-d',strtotime($params['-value']));
+		}
+		elseif(isNum($params['-value'])){
+			$params['-value']=date('Y-m-d',$params['-value']);
+		}
+	}
 	//placeholder
 	if(isset($params['data-dateformat']) && !isset($params['placeholder'])){
 		$params['placeholder']=$params['data-dateformat'];
