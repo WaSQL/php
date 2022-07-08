@@ -7054,7 +7054,9 @@ function commonProcessChartjsTags($htm){
 					$vals=array();
 					foreach($recs as $rec){
 						if(isset($rec['value']) && isset($rec['label'])){
-							$labels[]=$rec['label'];
+							if(!in_array($rec['label'],$labels)){
+								$labels[]=$rec['label'];
+							}
 							$vals[]=$rec['value'];
 						}
 						if(isset($rec['color'])){
