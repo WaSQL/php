@@ -3831,24 +3831,20 @@ function buildFormTranslate($params=array()){
 	loadExtras('translate');
 	$locales=translateGetLocalesUsed();
 	//return printValue($locales);
-	$tag=<<<ENDOFTAG
-<div class="nav" style="background:transparent;">
-  <ul>
-      <li><a name="language" class="dropdown"><span class="icon-translate"></span> Lang</a>
-        <ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">
-ENDOFTAG;
+	$tag='<div class="nav" style="background:transparent;">'.PHP_EOL;
+  	$tag.='	<ul>'.PHP_EOL;
+    $tag.='		<li><a name="language" class="dropdown"><span class="icon-translate"></span> Lang</a>'.PHP_EOL;
+    $tag.='			<ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">'.PHP_EOL;
 	$opts=array();
 	foreach($locales as $locale){
 		$img='<img src="'.$locale['flag4x3'].'" style="height:16px;width:auto;border-radius:2px;" />';
 		$lang="{$img} {$locale['name']}";
-		$tag.='		<li><a href="?_local_='.$locale['locale'].'">'.$lang.'</a></li>'.PHP_EOL;
+		$tag.='		<li><a href="?_local_='.$locale['locale'].'" onclick="return false;">'.$lang.'</a></li>'.PHP_EOL;
 	}
-	$tag.=<<<ENDOFTAG
-        </ul>
-      </li>
-  </ul>
-</div>
-ENDOFTAG;
+	$tag.='			</ul>'.PHP_EOL;
+	$tag.='		</li>'.PHP_EOL;
+	$tag.='	</ul>'.PHP_EOL;
+	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormWhiteboard --------------------------------------
