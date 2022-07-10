@@ -232,6 +232,10 @@ if(isset($CONFIG['valid_uhosts'])){
 		}
 	}
 }
+//_locale_
+if(isset($_REQUEST['_locale_'])){
+	$_SESSION['REMOTE_LANG']=$_REQUEST['_locale_'];
+}
 //push file?
 if(isset($_REQUEST['_pushfile'])){
 	$params=array();

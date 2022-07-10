@@ -3819,6 +3819,38 @@ function buildFormTime($name,$params=array()){
 	return buildFormDate($name,$params);
 	
 }
+//---------- begin function buildFormTranslate--------------------
+/**
+* @describe creates a language Selection
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormTextarea('name',$params);
+*/
+function buildFormTranslate($params=array()){
+	loadExtras('translate');
+	$locales=translateGetLocalesUsed();
+	//return printValue($locales);
+	$tag=<<<ENDOFTAG
+<div class="nav" style="background:transparent;">
+  <ul>
+      <li><a name="language" class="dropdown"><span class="icon-translate"></span> Lang</a>
+        <ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;">
+ENDOFTAG;
+	$opts=array();
+	foreach($locales as $locale){
+		$img='<img src="'.$locale['flag4x3'].'" style="height:16px;width:auto;border-radius:2px;" />';
+		$lang="{$img} {$locale['name']}";
+		$tag.='		<li><a href="?_local_='.$locale['locale'].'" onclick="return false;">'.$lang.'</a></li>'.PHP_EOL;
+	}
+	$tag.=<<<ENDOFTAG
+        </ul>
+      </li>
+  </ul>
+</div>
+ENDOFTAG;
+	return $tag;
+}
 //---------- begin function buildFormWhiteboard --------------------------------------
 /**
 * @describe creates an HTML whiteboard field the works on mobile and PC - user can use the mouse or finger to draw
@@ -17583,8 +17615,8 @@ function processActions(){
 						}
 						//file type
 						if($inputtype=='file'){
+							$suffixes=array('remove','autonumber','path','sha1','size','width','height','type','prev');
 							if(isset($_REQUEST[$field.'_remove']) && $_REQUEST[$field.'_remove'] == 1){
-								$suffixes=array('remove','autonumber','path','sha1','size','width','height','type','prev');
 								if(strlen($jfield) && isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
 									$_REQUEST[$jfield]=json_decode($_REQUEST[$jfield],true);
 									//echo printValue($_REQUEST[$jfield]);
