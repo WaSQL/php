@@ -3839,7 +3839,7 @@ function buildFormTranslate($params=array()){
 	foreach($locales as $locale){
 		$img='<img src="'.$locale['flag4x3'].'" style="height:16px;width:auto;border-radius:2px;" />';
 		$lang="{$img} {$locale['name']}";
-		$tag.='		<li><a href="?_local_='.$locale['locale'].'" onclick="return false;">'.$lang.'</a></li>'.PHP_EOL;
+		$tag.='		<li><a href="?_locale_='.$locale['locale'].'">'.$lang.'</a></li>'.PHP_EOL;
 	}
 	$tag.='			</ul>'.PHP_EOL;
 	$tag.='		</li>'.PHP_EOL;
