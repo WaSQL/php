@@ -3835,7 +3835,7 @@ function buildFormTranslate($params=array()){
 <div class="nav" style="background:transparent;">
   <ul>
       <li><a name="language" class="dropdown"><span class="icon-translate"></span> Lang</a>
-        <ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;">
+        <ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">
 ENDOFTAG;
 	$opts=array();
 	foreach($locales as $locale){
