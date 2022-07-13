@@ -292,6 +292,7 @@ exit;
 function minifyFiles($path,$names){
 	global $files;
 	global $CONFIG;
+	$wpath=getWasqlPath();
 	if(!is_array($names)){$names=array($names);}
 	//echo $path.implode(',',$names).PHP_EOL;return;
 	foreach($names as $name){
@@ -320,6 +321,14 @@ function minifyFiles($path,$names){
 		}
 		elseif(is_file("{$path}/{$name}/{$name}.css")){
 	    	$file=realpath("{$path}/{$name}/{$name}.css");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
+		elseif(is_file("{$wpath}/{$name}.css")){
+	    	$file=realpath("{$wpath}/{$name}.css");
+			if(!in_array($file,$files)){$files[]=$file;}
+		}
+		elseif(is_file("{$name}.css")){
+	    	$file=realpath("{$name}.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
 		else{echo "/* Minify_css Error: NO SUCH NAME:{$name}, Path:{$path} */".PHP_EOL.PHP_EOL;}

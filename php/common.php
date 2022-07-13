@@ -4932,15 +4932,16 @@ function buildFormSelectFont($name,$params=array()){
 	$fontdir=getWasqlPath('wfiles/fonts/extras');
 	$files=listFilesEx($fontdir,array('ext'=>'css'));
 	$opts=array();
+	$fonts=array();
 	$tag='<select name="'.$name.'">'.PHP_EOL;
 	foreach($files as $file){
 		$tval=str_replace('.css','',$file['name']);
+		$fonts[]=$tval;
 		$dval=ucwords(str_replace('-',' ',$tval));
 		$opts[$tval]=$dval;
-		$params["{$tval}_style"]="font-family:{$dval}";
-		//load the font
-		loadExtrasFont($tval);
+		$params["{$tval}_style"]="font-family:{$tval}";
 	}
+	loadExtrasFont($fonts);
 	if(isset($params['-checkbox'])){
 		return buildFormCheckbox($name,$opts,$params);
 	}

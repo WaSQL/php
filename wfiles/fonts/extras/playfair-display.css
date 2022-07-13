@@ -1,8 +1,8 @@
 @font-face {
-  font-family: "Playfair Display";
-  src:  url("/fonts/extras/playfair-display.ttf") format("truetype"), /* Safari, Android, iOS */
-        url("/fonts/extras/playfair-display.woff") format("woff"), /* Modern Browsers */
-        url("/fonts/extras/playfair-display.woff2") format("woff2"); /* Modern Browsers */
+  font-family: "playfair-display";
+  src:  url("/wfiles/fonts/extras/playfair-display.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/wfiles/fonts/extras/playfair-display.woff") format("woff"), /* Modern Browsers */
+        url("/wfiles/fonts/extras/playfair-display.woff2") format("woff2"); /* Modern Browsers */
   font-weight: normal;
   font-weight: normal;
   font-style: normal;

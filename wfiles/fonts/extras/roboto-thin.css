@@ -1,8 +1,8 @@
 @font-face {
-  font-family: "Roboto Thin";
-  src:  url("/fonts/extras/roboto-thin.ttf") format("truetype"), /* Safari, Android, iOS */
-        url("/fonts/extras/roboto-thin.woff") format("woff"), /* Modern Browsers */
-        url("/fonts/extras/roboto-thin.woff2") format("woff2"); /* Modern Browsers */
+  font-family: "roboto-thin";
+  src:  url("/wfiles/fonts/extras/roboto-thin.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/wfiles/fonts/extras/roboto-thin.woff") format("woff"), /* Modern Browsers */
+        url("/wfiles/fonts/extras/roboto-thin.woff2") format("woff2"); /* Modern Browsers */
   font-weight: normal;
   font-weight: normal;
   font-style: normal;

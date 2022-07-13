@@ -1,8 +1,8 @@
 @font-face {
-  font-family: "Open Sans";
-  src:  url("/fonts/extras/open-sans.ttf") format("truetype"), /* Safari, Android, iOS */
-        url("/fonts/extras/open-sans.woff") format("woff"), /* Modern Browsers */
-        url("/fonts/extras/open-sans.woff2") format("woff2"); /* Modern Browsers */
+  font-family: "open-sans";
+  src:  url("/wfiles/fonts/extras/open-sans.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/wfiles/fonts/extras/open-sans.woff") format("woff"), /* Modern Browsers */
+        url("/wfiles/fonts/extras/open-sans.woff2") format("woff2"); /* Modern Browsers */
   font-weight: normal;
   font-style: normal;
 }
