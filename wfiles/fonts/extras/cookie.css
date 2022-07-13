@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Cookie";
+  src:  url("/fonts/extras/cookie.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/cookie.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/cookie.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}

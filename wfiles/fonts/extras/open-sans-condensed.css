@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Open Sans Condensed";
+  src:  url("/fonts/extras/open-sans-condensed.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/open-sans-condensed.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/open-sans-condensed.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}

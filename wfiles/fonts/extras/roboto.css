@@ -1,0 +1,9 @@
+@font-face {
+  font-family: "Roboto";
+  src:  url("/fonts/extras/roboto.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/roboto.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/roboto.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-weight: normal;
+  font-style: normal;
+}

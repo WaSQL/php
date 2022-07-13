@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Karla";
+  src:  url("/fonts/extras/karla.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/karla.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/karla.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}

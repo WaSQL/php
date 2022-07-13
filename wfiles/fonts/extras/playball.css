@@ -1,0 +1,9 @@
+@font-face {
+  font-family: "Playball";
+  src:  url("/fonts/extras/playball.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/playball.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/playball.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-weight: normal;
+  font-style: normal;
+}

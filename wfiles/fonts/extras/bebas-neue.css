@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Bebas Neue";
+  src:  url("/fonts/extras/bebas-neue.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/bebas-neue.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/bebas-neue.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}

@@ -1,0 +1,9 @@
+@font-face {
+  font-family: "Yellowtail";
+  src:  url("/fonts/extras/yellowtail.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/yellowtail.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/yellowtail.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-weight: normal;
+  font-style: normal;
+}

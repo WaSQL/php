@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Alex Brush";
+  src:  url("/fonts/extras/alex-brush.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("/fonts/extras/alex-brush.woff") format("woff"), /* Modern Browsers */
+        url("/fonts/extras/alex-brush.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}
