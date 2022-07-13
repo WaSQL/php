@@ -3365,7 +3365,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			$rtn .= ' disabled="disabled"';
 		}
 		$rtn.=' />'.PHP_EOL;
-		//styles
+		//styles and classes
+		$classes=array();
 		$styles=array();
 		if(strlen($color) && !stringBeginsWith($color,'w_')){
 			$styles[]="--color:{$color}";
@@ -3382,11 +3383,21 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($image)){
 			$styles[]="background-image:url('{$image}')";
 		}
+		if(isset($params["{$tval}_style"])){
+			$styles[]=$params["{$tval}_style"];
+		}
+		if(isset($params["{$tval}_class"])){
+			$classes[]=$params["{$tval}_class"];
+		}
 		//label
 		$rtn.='		<label for="'.$opt_id.'"';
 		if(count($styles)){
 			$stylestr=implode(';',$styles);
 			$rtn .= ' style="'.$stylestr.'"';
+		}
+		if(count($classes)){
+			$classestr=implode(';',$classes);
+			$rtn .= ' class="'.$classestr.'"';
 		}
 		$rtn.= '>'.$display.'</label>'.PHP_EOL;
 		$rtn.='	</div>'.PHP_EOL;
@@ -3829,11 +3840,13 @@ function buildFormTime($name,$params=array()){
 */
 function buildFormTranslate($params=array()){
 	loadExtras('translate');
+	if(!isset($params['-icon'])){$params['-icon']='icon-translate';}
+	if(!isset($params['-class'])){$params['-class']='dropdown';}
 	$locales=translateGetLocalesUsed();
 	//return printValue($locales);
 	$tag='<div class="nav" style="background:transparent;">'.PHP_EOL;
   	$tag.='	<ul>'.PHP_EOL;
-    $tag.='		<li><a name="language" class="dropdown"><span class="icon-translate"></span> Lang</a>'.PHP_EOL;
+    $tag.='		<li><a name="language" class="'.$params['-class'].'"><span class="'.$params['-icon'].'"></span> Lang</a>'.PHP_EOL;
     $tag.='			<ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">'.PHP_EOL;
 	$opts=array();
 	foreach($locales as $locale){
@@ -4670,6 +4683,12 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 			foreach($opts as $tval=>$dval){
 				if(!isset($dval) || !strlen($dval)){$dval=$tval;}
 				$rtn .= '		<option value="'.$tval.'"';
+				if(isset($params["{$tval}_style"])){
+					$rtn .= ' style="'.$params["{$tval}_style"].'"';
+				}
+				if(isset($params["{$tval}_class"])){
+					$rtn .= ' class="'.$params["{$tval}_class"].'"';
+				}
 				if(strlen($sval)){
 					if($sval==$tval){$rtn .= ' selected';}
 					elseif($sval==$dval){$rtn .= ' selected';}
@@ -4683,6 +4702,12 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 		foreach($pairs as $tval=>$dval){
 			if(!isset($dval) || !strlen($dval)){$dval=$tval;}
 			$rtn .= '	<option value="'.$tval.'"';
+			if(isset($params["{$tval}_style"])){
+				$rtn .= ' style="'.$params["{$tval}_style"].'"';
+			}
+			if(isset($params["{$tval}_class"])){
+				$rtn .= ' class="'.$params["{$tval}_class"].'"';
+			}
 			if(strlen($sval)){
 				if($sval==$tval){$rtn .= ' selected';}
 				elseif($sval==$dval){$rtn .= ' selected';}
@@ -4894,6 +4919,32 @@ function buildFormSelectDatabase($name,$params=array()){
 	}
 	$tag.='</select>';
 	return $tag;
+}
+//---------- begin function buildFormSelectFont--------------------
+/**
+* @describe creates an select list of available fonts found in /wfiles/fonts/extras
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormSelectFont('myfont',array('style'=>'font-size:1.2rem'));
+*/
+function buildFormSelectFont($name,$params=array()){
+	$fontdir=getWasqlPath('wfiles/fonts/extras');
+	$files=listFilesEx($fontdir,array('ext'=>'css'));
+	$opts=array();
+	$tag='<select name="'.$name.'">'.PHP_EOL;
+	foreach($files as $file){
+		$tval=str_replace('.css','',$file['name']);
+		$dval=ucwords(str_replace('-',' ',$tval));
+		$opts[$tval]=$dval;
+		$params["{$tval}_style"]="font-family:{$dval}";
+		//load the font
+		loadExtrasFont($tval);
+	}
+	if(isset($params['-checkbox'])){
+		return buildFormCheckbox($name,$opts,$params);
+	}
+	return buildFormSelect($name,$opts,$params);
 }
 //---------- begin function buildFormSelectHost--------------------
 /**
@@ -14929,6 +14980,32 @@ function loadExtrasCss($extras){
 		}
 	}
 }
+//---------- begin function loadExtrasFont--------------------
+/**
+* @describe loads additional fonts found in /wfiles/fonts/extras folder
+* @param extras mixed
+*	to load a single extra just pass in the extra name
+*	to load multiple extras pass in an array of names
+* @return null
+* @usage
+*	<?=loadExtrasFont('arizona');?>
+*	<?=loadExtrasFont(array('arizona','alex-brush','great-vibes'));?>
+*/
+function loadExtrasFont($extras){
+	if(!is_array($extras)){$extras=array($extras);}
+	if(!isset($_SESSION['w_MINIFY']['extras_css'][0])){
+    	$_SESSION['w_MINIFY']['extras_css']=array();
+	}
+	if(!isset($_SESSION['w_MINIFY']['extras_js'][0])){
+    	$_SESSION['w_MINIFY']['extras_js']=array();
+	}
+	foreach($extras as $extra){
+		$extra="/wfiles/fonts/extras/{$extra}";
+		if(!in_array($extra,$_SESSION['w_MINIFY']['extras_css'])){
+        	$_SESSION['w_MINIFY']['extras_css'][]=$extra;
+		}
+	}
+}
 //---------- begin function loadExtrasJs--------------------
 /**
 * @describe loads additional javascript files found in /wfiles/js/extras folder
@@ -17499,7 +17576,7 @@ function processActions(){
 						}
 					}
 					//if($_REQUEST['_table']=='test'){echo printValue($fields).printValue($_REQUEST);exit;}
-					//echo "EDIT".printValue($fields).printValue($_REQUEST);exit;
+					//echo "EDIT".printValue($jsonfieldmap).printValue($_FILES).printValue($_REQUEST['data>company>favicon']);exit;
 					$jsonmaps=array();
 					foreach($fields as $field){
 						if(preg_match('/^\_(c|e)(user|date)$/i',$field)){continue;}
@@ -17523,25 +17600,29 @@ function processActions(){
 							$dbtype=isset($jsonfieldmap[$field])?$jsonfieldmap[$field]:$info[$jfield]['_dbtype'];
 						}
 						if(!strlen($inputtype)){$inputtype='text';}
-						//echo "Field:{$field}, dbtype:{$dbtype}<br>".PHP_EOL;
+						//echo "Field:{$field}, inputtype:{$inputtype}<br>".PHP_EOL;
 						//echo "Field:{$field}, jfield:{$jfield}, fieldval:{$_REQUEST[$field]}<br>".PHP_EOL;
 						//json
 						if($dbtype=='json'){
 							//look for field:attr:attr2... and eval this $field['attr']['attr2']=$v
 							global $_jsonval_;
 							$jval=array();
+							//echo printValue($_REQUEST['data>company>favicon']);
 							foreach($_REQUEST as $k=>$v){
+								//echo "-{$k}-<br>";
 								if(strlen($jfield) && !stringBeginsWith($k,"{$jfield}>")){continue;}
 								elseif(!strlen($jfield) && !stringBeginsWith($k,"{$field}>")){continue;}
+								//echo "----{$k}-<br>";
 								$keys=preg_split('/\>/',$k);
 								array_shift($keys);
 								$keystr=implode("']['",$keys);
 								$_jsonval_=$v;
 								$str="global \$_jsonval_;\$jval['{$keystr}']=\$_jsonval_;";
+								//echo "{$str}<br>";
 								eval($str);
 							}
 							unset($_jsonval_);
-							//echo "jval".printValue($jval);
+							
 							if(is_array($jval) && count($jval)){
 								if(strlen($jfield)){
 									if(isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
@@ -17567,6 +17648,7 @@ function processActions(){
 									$_REQUEST[$field]=json_encode($jval);
 								}
 							}
+							//echo "EDIT".printValue($jsonfieldmap).printValue($_FILES).printValue($_REQUEST['data>company>favicon']);exit;
 						}
 						//decode it if needs be
 						if(isset($_REQUEST[$field])){
@@ -17635,14 +17717,14 @@ function processActions(){
 											}
 										}
 									}
-									//echo printValue($_REQUEST[$jfield]);
+									//echo "HERE".printValue($_REQUEST[$jfield]);exit;
 									$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
 								}
 								else{
 									$opts[$field]=null;
 								}
 								
-								unset($_REQUEST[$field]);
+								//unset($_REQUEST[$field]);
 								foreach($suffixes as $suffix){
 									if(isset($info["{$field}_{$suffix}"])){$opts["{$field}_{$suffix}"]=null;}
 									unset($_REQUEST["{$field}_{$suffix}"]);
@@ -17653,7 +17735,7 @@ function processActions(){
 									$afile=$_SERVER['DOCUMENT_ROOT'].$_REQUEST[$field];
 									//echo "afile:{$afile}<br>".PHP_EOL;
 									if(is_dir($afile) || !file_exists($afile)){
-										//echo "unsetting {$field} - file does not exist".PHP_EOL;
+										//echo "unsetting {$field} - afile does not exist::{$afile}".PHP_EOL;
 										unset($_REQUEST[$field]);
 									}
 								}
@@ -17762,7 +17844,7 @@ function processActions(){
 								}
 							}
 						}
-						unset($_REQUEST[$field]);
+						#unset($_REQUEST[$field]);
 					}
 					$_REQUEST['edit_opts']=$opts;
 					unset($_REQUEST['_fields']);
