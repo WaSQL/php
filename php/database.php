@@ -8006,10 +8006,6 @@ function getDBFieldTag($params=array()){
 		case 'geolocationmap':
 			$tag=buildFormGeoLocationMap($info[$field]['name'],$info[$field]);
 		break;
-		case 'timezone':
-			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Time Zone --';}
-			$tag=buildFormSelectTimezone($info[$field]['name'],$info[$field]);
-		break;
 		case 'hidden':
 			$tag=buildFormHidden($info[$field]['name'],$info[$field]);
 			break;
@@ -8103,6 +8099,7 @@ function getDBFieldTag($params=array()){
             $tag=buildFormSelect($name,$options,$info[$field]);
 		break;
 		case 'selectcustom':
+		case 'select_custom':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
@@ -8117,7 +8114,73 @@ function getDBFieldTag($params=array()){
             $dname=ucwords(str_replace('_',' ',$name));
             $info[$field]['message']="-- {$dname} --";
             $tag=buildFormSelectCustom($name,$options,$info[$field]);
-			break;
+		break;
+		case 'select_country':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Country --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectCountry($name,$info[$field]);
+		break;
+		case 'select_database':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Database --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectDatabase($name,$info[$field]);
+		break;
+		case 'select_font':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Font --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectFont($name,$info[$field]);
+		break;
+		case 'select_host':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Host --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectHost($name,$info[$field]);
+		break;
+		case 'select_month':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Month --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectMonth($name,$info[$field]);
+		break;
+		case 'select_onoff':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectOnOff($name,$info[$field]);
+		break;
+		case 'select_state':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- State --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectState($name,$info[$field]);
+		break;
+		case 'select_timezone':
+		case 'timezone':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Time Zone --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];} 
+            $tag=buildFormSelectTimezone($name,$info[$field]);
+		break;
+		case 'select_year':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $dname=ucwords(str_replace('_',' ',$name));
+            if(!isset($info[$field]['message'])){
+            	$info[$field]['message']="-- {$dname} --";
+            }
+            $tag=buildFormSelectYear($name,$info[$field]);
+		break;
         case 'starrating':
 			$tag=buildFormStarRating($info[$field]['name'],$info[$field]);
 		break;
