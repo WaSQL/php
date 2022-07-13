@@ -7025,6 +7025,10 @@ function commonProcessChartjsTags($htm){
 			elseif(isset($chartjs_attributes['data-db'])){
 				$db=$chartjs_attributes['data-db'];
 			}
+			//replace any [asdfsa] tags with inputs
+			foreach($_REQUEST as $k=>$v){
+				$chartjs_contents=str_replace("[{$k}]",$v,$chartjs_contents);
+			}
 			//select date(_cdate) as label, code as dataset,count(*) as value
 			$recs=dbQueryResults($db,$chartjs_contents);
 			if(strlen($process)){
@@ -7132,6 +7136,10 @@ function commonProcessChartjsTags($htm){
 				}
 				elseif(isset($chartjs_attributes['data-db'])){
 					$db=$chartjs_attributes['data-db'];
+				}
+				//replace any [asdfsa] tags with inputs
+				foreach($_REQUEST as $k=>$v){
+					$innertag_contents=str_replace("[{$k}]",$v,$innertag_contents);
 				}
 				$recs=dbQueryResults($db,$innertag_contents);
 				if(strlen($process)){
@@ -7254,7 +7262,11 @@ function commonProcessDBListRecordsTags($htm){
 
 		}
 		elseif(preg_match('/^(select|with)/is',trim($dblistrecords_contents))){
-				$opts['-query']=trim($dblistrecords_contents);
+			//replace any [asdfsa] tags with inputs
+			foreach($_REQUEST as $k=>$v){
+				$dblistrecords_contents=str_replace("[{$k}]",$v,$dblistrecords_contents);
+			}
+			$opts['-query']=trim($dblistrecords_contents);
 		}
 		else{
 			$opts['-list']=json_decode($dblistrecords_contents,true);
