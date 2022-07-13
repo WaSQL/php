@@ -1889,6 +1889,7 @@ function databaseListRecords($params=array()){
 			foreach($params[$field."_options"] as $k=>$v){
 				$params[$field."_{$k}"]=$v;
 			}
+			unset($params[$field."_options"]);
 		}
 		if(!empty($params[$field."_displayname"])){
 			$name=$params[$field."_displayname"];
@@ -2167,6 +2168,7 @@ function databaseListRecords($params=array()){
 							$used[$fld.'_'.$okey]=1;
 						}
 					}
+					unset($params[$fld.'_options']);
 				}
 				if(!empty($params[$fld."_checkbox_onclick"])){
 					$onclick=$params[$fld."_checkbox_onclick"];
@@ -2239,6 +2241,7 @@ function databaseListRecords($params=array()){
 							$used[$fld.'_'.$okey]=1;
 						}
 					}
+					unset($params[$fld.'_options']);
 				}
 				//onclick
 				if(!empty($params[$fld."_radio_onclick"])){
@@ -2303,6 +2306,7 @@ function databaseListRecords($params=array()){
 							$used[$fld.'_'.$okey]=1;
 						}
 					}
+					unset($params[$fld.'_options']);
 				}
                 $value .= '>'.$hvalue.'</a>';
                 unset($hvalue);
@@ -4299,6 +4303,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						$opts[$okey]=$oval;
 						$used[$cfield.'_'.$okey]=1;
 					}
+					unset($params[$cfield.'_options']);
 				}
 				if(isset($params[$cfield.'_checkall'])){
 					$opts['-checkall']=1;
@@ -4401,6 +4406,7 @@ function addEditDBForm($params=array(),$customcode=''){
 						$opts[$okey]=$oval;
 						$used[$field.'_'.$okey]=1;
 					}
+					unset($params[$field.'_options']);
 				}
 				//LOAD form-control if bootstrap is loaded
 				if(!isset($opts['class'])){$opts['class']='';}
@@ -4582,6 +4588,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					$used[$field.'_options']=1;
 					if(stringBeginsWith($okey,'data-') || in_array($okey,$forcedatts)){$opts[$okey]=$oval;}
 				}
+				unset($params[$field.'_options']);
 			}
 			//displayname
 			if(isset($opts['displayname'])){
@@ -4725,6 +4732,9 @@ function addEditDBForm($params=array(),$customcode=''){
 				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
+			elseif(stringContains($key,'>')){
+				continue;
+			}
 			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
 				//$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
 				continue;
@@ -4773,7 +4783,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['disable_on_submit']) && $params['disable_on_submit'] != 0){
 					$class.= " w_disable_on_submit";
 				}
-				$rtn .= '		<td><button class="'.$class.'" type="submit" id="savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button data-navigate-focus="Ctrl+s" data-navigate="1" class="'.$class.'" type="submit" id="savebutton" onclick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
 				$reset=isset($params['-reset'])?$params['-reset']:'Reset';
