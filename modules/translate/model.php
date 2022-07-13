@@ -157,7 +157,7 @@ function translateListLocalesExtra($recs){
 function translateEditRec($rec){
 	global $MODULE;
 	$opts=array(
-		'-action'		=> "/t/1/{$MODULE['page']}/list/{$rec['locale']}",
+		'-action'		=> "/{$MODULE['page']}/list/{$rec['locale']}",
 		'-onsubmit'		=> "return ajaxSubmitForm(this,'translate_results');",
 		'-name'			=> 'translateEditForm',
 		'setprocessing'	=> 0,
