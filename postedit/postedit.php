@@ -3,12 +3,9 @@
 	replacement for posteditd.pl to handle secure sites
 	for sublime: subl --add
 	for notepad++: notepad++ -openFoldersAsWorkspace
-
 	Process:
 		get host based on alias passed in
 		get records from server
-
-
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
 global $postedit;
