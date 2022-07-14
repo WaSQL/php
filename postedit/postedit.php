@@ -440,21 +440,6 @@ function posteditBeep($n=1){
 		sleep(1);
 	}
 }
-function posteditSpeak($msg){
-	global $postedit;
-	if(!isWindows()){return false;}
-	switch(strtolower($settings['sound']['gender'])){
-		case 'f':
-		case 'female':
-			$cmd="{$postedit['progpath']}\\voice.exe -v 60 -r 1 -f -d \"{$msg}\"";
-		break;
-		default:
-			$cmd="{$postedit['progpath']}\\voice.exe -v 60 -r 1 -m -d \"{$msg}\"";
-		break;
-	}
-	$ok=exec($cmd);
-	return true;
-}
 function posteditShaKey($afile){
 	$path=getFilePath($afile);
 	$path=realpath($path);
@@ -527,41 +512,14 @@ function successMessage($msg){
 }
 function sounder($sound){
 	global $progpath;
-	$cmd="{$progpath}/sounder.exe {$progpath}/$sound";
-	$out=cmdResults($cmd);
+	if(isWindows()){
+		$cmd="powershell -c (New-Object Media.SoundPlayer '{$progpath}\\{$sound}').PlaySync();";
+		$out=cmdResults($cmd);
+	}
+	
 	return;
 }
-function soundAlarm($type='success'){
-	global $settings;
-	global $progpath;
-	global $chost;
-	if(isset($settings['sound'][$type])){
-		if(is_file("{$progpath}/{$settings['sound'][$type]}")){
-			$cmd="{$progpath}\\sounder.exe {$progpath}\\{$settings['sound'][$type]}";
-			$ok=exec($cmd);
-			return;
-		}
-		elseif(isset($settings['sound']['gender'])){
-			$soundmsg=$settings['sound'][$type];
-			$soundmsg=str_replace('%name%',$chost,$soundmsg);
-			switch(strtolower($settings['sound']['gender'])){
-				case 'f':
-				case 'female':
-					$cmd="{$progpath}\\voice.exe -v 75 -r 1 -f -d \"{$soundmsg}\"";
-				break;
-				default:
-					$cmd="{$progpath}\\voice.exe -v 75 -r 1 -m -d \"{$soundmsg}\"";
-				break;
-			}
-			$ok=exec($cmd);
-			return;;
-		}
-		else{
-			echo "\x07";
-			return;
-		}
-	}
-}
+
 function getContents($file){
 	$file=preg_replace('/\//',"\\",$file);
 	$cmd="file_get_contents.exe \"{$file}\"";
