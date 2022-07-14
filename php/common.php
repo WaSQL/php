@@ -3850,7 +3850,7 @@ function buildFormTranslate($params=array()){
     $tag.='			<ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">'.PHP_EOL;
 	$opts=array();
 	foreach($locales as $locale){
-		$img='<img src="'.$locale['flag4x3'].'" style="height:16px;width:auto;border-radius:2px;" />';
+		$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;" />';
 		$lang="{$img} {$locale['name']}";
 		$tag.='		<li><a href="?_locale_='.$locale['locale'].'">'.$lang.'</a></li>'.PHP_EOL;
 	}
@@ -17743,6 +17743,9 @@ function processActions(){
 									unset($_REQUEST["{$field}_{$suffix}"]);
 								}	
 							}
+							elseif(isset($_REQUEST[$field.'_prev']) && strlen($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] == 0){
+								$_REQUEST[$field]=$_REQUEST[$field.'_prev'];
+							}
 							else{					
 								if(isset($_REQUEST[$field])){
 									$afile=$_SERVER['DOCUMENT_ROOT'].$_REQUEST[$field];
@@ -17866,6 +17869,8 @@ function processActions(){
 					//update the _edate and _euser fields on edit
                     if(isUser()){$opts['_euser']=$USER['_id'];}
                     $opts['_edate']=date("Y-m-d H:i:s",$timestamp);
+                    //$opts['data']=json_decode($opts['data'],true);
+                    //ksort($opts['data']['website']);
                     //echo printValue($opts);exit;
                     //edit the record
 					$_REQUEST['edit_result']=editDBRecord($opts);
