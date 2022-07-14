@@ -333,7 +333,7 @@ function websiteGraderGetPageBody($name){
 	}
 	$baseurl=websiteGraderGetBaseURL();
 	$url="{$baseurl}/{$name}";
-	$post=postURL($url,array('-method'=>'GET'));
+	$post=postURL($url,array('-method'=>'GET','-nossl'=>1));
 	$websiteGraderGetPageBodyCache[$name]=$post['body'];
 	return $websiteGraderGetPageBodyCache[$name];
 }
