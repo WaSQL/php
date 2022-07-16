@@ -23,17 +23,17 @@
 <div>
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
 		<span class="icon-prompt"></span> 
-		<translate>SQL Prompt</translate>
+		<wtranslate>SQL Prompt</wtranslate>
 	</h2>
 </div>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div data-content="tables and fields">
-		<div class="w_bold w_big"><translate>Tables & Fields</translate></div>
+		<div class="w_bold w_big"><wtranslate>Tables & Fields</wtranslate></div>
 		<div id="table_fields" style="max-width:300px;overflow: auto;" class="w_nowrap">
 			<?=renderView('tables_fields',$tables,'tables');?>
 		</div>
 		<view:monitor_tools>
-		<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><translate>Admin Tools</translate></div>
+		<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><wtranslate>Admin Tools</wtranslate></div>
 		<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
 			<?=renderView('monitor',$tables,'tables');?>
 		</div>
@@ -57,7 +57,7 @@
 				</div>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
 					<div>
-						<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run Query (or press F8, CTRL+ENTER or CTRL+e). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <translate>Execute</translate></button> <span class="w_small w_grey"></span>
+						<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run Query (or press F8, CTRL+ENTER or CTRL+e). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <wtranslate>Execute</wtranslate></button> <span class="w_small w_grey"></span>
 					</div>
 					<div title="Check to execute with Python libraries">
 						<input type="checkbox" name="py" id="py" value="1" /><label for="py" class="brand-python"></label>
@@ -70,7 +70,7 @@
 					<div class="align-right" style="padding-left:10px;display:flex;flex-wrap:nowrap;">
 						<button type="button" data-offset="0" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="prev_link" style="display:none;"><span class="icon-arrow-left"></span> Prev</button>
 						<button type="button" data-offset="30" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="next_link" style="margin-left:3px;display:none;">Next <span class="icon-arrow-right"></span></button>
-						<a href="#" onclick="return sqlpromptExport();" style="display:none;margin-left:3px;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <translate>export</translate></a>
+						<a href="#" onclick="return sqlpromptExport();" style="display:none;margin-left:3px;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <wtranslate>export</wtranslate></a>
 					</div>
 				</div>
 			</form>
@@ -235,7 +235,7 @@
 </view:list_records>
 
 <view:no_results>
-<div style="padding: 10px 0"><translate>No Results</translate></div>
+<div style="padding: 10px 0"><wtranslate>No Results</wtranslate></div>
 </view:no_results>
 
 <view:error>

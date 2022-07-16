@@ -9,7 +9,7 @@
 	global $MODULE;
 	global $CONFIG;
 	if(!isset($MODULE['title'])){
-		$MODULE['title']='<span class="icon-translate w_success"></span> <translate>Translation Manager</translate>';
+		$MODULE['title']='<span class="icon-translate w_success"></span> <wtranslate>Translation Manager</wtranslate>';
 	}
 	if(!isset($MODULE['page'])){
 		$MODULE['page']=$PAGE['name'];
@@ -136,14 +136,15 @@
 			$source_locale=translateGetSourceLocale();
 			$opts=array(
 				'-table'=>'_translations',
-				'locale'=>$source_locale
+				'locale'=>$source_locale,
+				'wasql'=>0
 			);
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-				$dopts['-where'].= " and source_id={$CONFIG['translate_source_id']}";
+				$opts['source_id'].= $CONFIG['translate_source_id'];
 			}
 			$recs=getDBRecords($opts);
 			foreach($recs as $rec){
-				translateText($rec['translation'],$locale);
+				translateText($rec['translation'],$locale,0);
 			}
 			setView('addlang',1);
 			return;

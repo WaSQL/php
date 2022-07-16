@@ -103,7 +103,7 @@ function cronLogRefreshTimer(){
 	cronLogRefresh_timer=setTimeout(cronLogRefresh,10000);
 }
 </script>
-<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <translate>Cron Manager</translate></h2>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <wtranslate>Cron Manager</wtranslate></h2>
 
 <div id="cron_results" class="w_padtop">
 	<?=renderView('list');?>
@@ -132,58 +132,58 @@ function cronLogRefreshTimer(){
 
 <view:add_fields>
 <div class="row">
-	<div class="col s12 m6"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
-	<div class="col s12 m6"><label><translate>Groupname</translate></label>[groupname]</div>
+	<div class="col s12 m6"><label class="w_red"><wtranslate>Cron Name</wtranslate></label>[name]</div>
+	<div class="col s12 m6"><label><wtranslate>Groupname</wtranslate></label>[groupname]</div>
 </div>
 <div class="row">
-	<div class="col s6 m1"><label><translate>Paused</translate></label>[paused]</div>
-	<div class="col s6 m1"><label><translate>Active</translate></label>[active]</div>
-	<div class="col s6 m2"><label><translate>Records To Keep</translate></label>[records_to_keep]</div>
-	<div class="col s6 m3"><label><translate>Begin Date</translate></label>[begin_date]</div>
-	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
+	<div class="col s6 m1"><label><wtranslate>Paused</wtranslate></label>[paused]</div>
+	<div class="col s6 m1"><label><wtranslate>Active</wtranslate></label>[active]</div>
+	<div class="col s6 m2"><label><wtranslate>Records To Keep</wtranslate></label>[records_to_keep]</div>
+	<div class="col s6 m3"><label><wtranslate>Begin Date</wtranslate></label>[begin_date]</div>
+	<div class="col s6 m3"><label><wtranslate>End Date</wtranslate></label>[end_date]</div>
 </div>
 <div class="row">
-	<div class="col s12 m3"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
-	<div class="col s12 m6"><label><translate>Custom Frequency</translate></label>[run_format]</div>
-	<div class="col s12 m3"><label><translate>Frequency Max</translate></label>[frequency_max]</div>
+	<div class="col s12 m3"><label><wtranslate>Quick Pick Frequency</wtranslate></label>[frequency]</div>
+	<div class="col s12 m6"><label><wtranslate>Custom Frequency</wtranslate></label>[run_format]</div>
+	<div class="col s12 m3"><label><wtranslate>Frequency Max</wtranslate></label>[frequency_max]</div>
 </div>
 <div class="row">
-	<div class="col s12 m9"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
-	<div class="col s12 m3"><label><translate>Run As</translate></label>[run_as]</div>
+	<div class="col s12 m9"><label class="w_red"><wtranslate>Run Cmd: (command, page name, or url)</wtranslate></label>[run_cmd]</div>
+	<div class="col s12 m3"><label><wtranslate>Run As</wtranslate></label>[run_as]</div>
 </div>
 </view:add_fields>
 
 <view:edit_fields>
 <div class="row">
-	<div class="col s12 m6"><label class="w_red"><translate>Cron Name</translate></label>[name]</div>
-	<div class="col s12 m6"><label><translate>Groupname</translate></label>[groupname]</div>
+	<div class="col s12 m6"><label class="w_red"><wtranslate>Cron Name</wtranslate></label>[name]</div>
+	<div class="col s12 m6"><label><wtranslate>Groupname</wtranslate></label>[groupname]</div>
 </div>
 <div class="row">
-	<div class="col s6 m1"><label><translate>Paused</translate></label>[paused]</div>
-	<div class="col s6 m1"><label><translate>Active</translate></label>[active]</div>
-	<div class="col s6 m3"><label><translate>Records To Keep</translate></label>[records_to_keep]</div>
-	<div class="col s6 m3"><label><translate>Begin Date</translate></label>[begin_date]</div>
-	<div class="col s6 m3"><label><translate>End Date</translate></label>[end_date]</div>
+	<div class="col s6 m1"><label><wtranslate>Paused</wtranslate></label>[paused]</div>
+	<div class="col s6 m1"><label><wtranslate>Active</wtranslate></label>[active]</div>
+	<div class="col s6 m3"><label><wtranslate>Records To Keep</wtranslate></label>[records_to_keep]</div>
+	<div class="col s6 m3"><label><wtranslate>Begin Date</wtranslate></label>[begin_date]</div>
+	<div class="col s6 m3"><label><wtranslate>End Date</wtranslate></label>[end_date]</div>
 </div>
 <div class="row">
-	<div class="col s12 m3"><label><translate>Quick Pick Frequency</translate></label>[frequency]</div>
-	<div class="col s12 m6"><label><translate>Custom Frequency</translate></label>[run_format]</div>
-	<div class="col s12 m3"><label><translate>Frequency Max</translate></label>[frequency_max]</div>
+	<div class="col s12 m3"><label><wtranslate>Quick Pick Frequency</wtranslate></label>[frequency]</div>
+	<div class="col s12 m6"><label><wtranslate>Custom Frequency</wtranslate></label>[run_format]</div>
+	<div class="col s12 m3"><label><wtranslate>Frequency Max</wtranslate></label>[frequency_max]</div>
 </div>
 <div class="row">
-	<div class="col s12"><label class="w_red"><translate>Run Cmd: (command, page name, or url)</translate></label>[run_cmd]</div>
+	<div class="col s12"><label class="w_red"><wtranslate>Run Cmd: (command, page name, or url)</wtranslate></label>[run_cmd]</div>
 </div>
 <div class="row">
-	<div class="col s6 m5"><label><translate>Run As</translate></label>[run_as]</div>
-	<div class="col s6 m1"><label class="w_gray"><translate>Running</translate></label>[running]</div>
-	<div class="col s6 m3"><label class="w_gray"><translate>Last Run Date</translate></label>[run_date]</div>
-	<div class="col s6 m3"><label class="w_gray"><translate>Last Run Length</translate></label>[run_length]</div>
+	<div class="col s6 m5"><label><wtranslate>Run As</wtranslate></label>[run_as]</div>
+	<div class="col s6 m1"><label class="w_gray"><wtranslate>Running</wtranslate></label>[running]</div>
+	<div class="col s6 m3"><label class="w_gray"><wtranslate>Last Run Date</wtranslate></label>[run_date]</div>
+	<div class="col s6 m3"><label class="w_gray"><wtranslate>Last Run Length</wtranslate></label>[run_length]</div>
 </div>
 <div class="row">
-	<div class="col s12"><label class="w_gray"><translate>Last Run Result</translate></label>[run_result]</div>
+	<div class="col s12"><label class="w_gray"><wtranslate>Last Run Result</wtranslate></label>[run_result]</div>
 </div>
 <div class="row">
-	<div class="col s12"><label class="w_gray"><translate>Last Error (if any)</translate></label>[run_error]</div>
+	<div class="col s12"><label class="w_gray"><wtranslate>Last Error (if any)</wtranslate></label>[run_error]</div>
 </div>
 </view:edit_fields>
 
@@ -201,16 +201,16 @@ function cronLogRefreshTimer(){
 	<div class="col s12">
 		<table class="table condensed striped bordered <?=configValue('admin_color');?>" style="margin-bottom:0px;">
 			<tr>
-				<th><translate>ID</translate></th>
-				<th><translate>Group</translate></th>
-				<th><translate>Name</translate></th>
-				<th><translate>Active</translate></th>
+				<th><wtranslate>ID</wtranslate></th>
+				<th><wtranslate>Group</wtranslate></th>
+				<th><wtranslate>Name</wtranslate></th>
+				<th><wtranslate>Active</wtranslate></th>
 				<th>PID</th>
-				<th><translate>Paused</translate></th>
-				<th><translate>Running</translate></th>
-				<th><translate>LogMax</translate></th>
-				<th><translate>Cmd</translate></th>
-				<th><translate>Actions</translate></th>
+				<th><wtranslate>Paused</wtranslate></th>
+				<th><wtranslate>Running</wtranslate></th>
+				<th><wtranslate>LogMax</wtranslate></th>
+				<th><wtranslate>Cmd</wtranslate></th>
+				<th><wtranslate>Actions</wtranslate></th>
 			</tr>
 			<tr>
 				<td class="w_small"><?=$cron['_id'];?></td>
@@ -239,7 +239,7 @@ function cronLogRefreshTimer(){
 				</td>
 			</tr>
 		</table>
-		<div><span class="w_bold w_small"><translate>Frequency</translate>:</span> <?=$cron['run_format'];?></div>
+		<div><span class="w_bold w_small"><wtranslate>Frequency</wtranslate>:</span> <?=$cron['run_format'];?></div>
 	</div>
 </div>
 <div class="row">
@@ -247,8 +247,8 @@ function cronLogRefreshTimer(){
 		<div style="max-height:400px;overflow:auto;padding-right:20px;">
 		<table class="table condensed striped bordered <?=configValue('admin_color');?> hover">
 		<tr>
-			<th class="w_nowrap"><translate>Date</translate></th>
-			<th class="w_nowrap"><translate>Length</translate></th>
+			<th class="w_nowrap"><wtranslate>Date</wtranslate></th>
+			<th class="w_nowrap"><wtranslate>Length</wtranslate></th>
 		</tr>
 		<view:log>
 		<tr class="w_pointer" onclick="return cronRefreshResult(<?=$log['cron_id'];?>,<?=$log['_id'];?>);">

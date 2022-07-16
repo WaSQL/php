@@ -3836,7 +3836,7 @@ function buildFormTime($name,$params=array()){
 * @param name string
 * @param params array
 * @return string
-* @usage echo buildFormTextarea('name',$params);
+* @usage echo buildFormTranslate($params);
 */
 function buildFormTranslate($params=array()){
 	loadExtras('translate');
@@ -6965,7 +6965,7 @@ function removeViews($htm){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function processTranslateTags($htm){
-	if(!stringContains($htm,'<translate>')){return $htm;}
+	if(!stringContains($htm,'<translate>') && !stringContains($htm,'<wtranslate>')){return $htm;}
 	loadExtras('translate');
 	preg_match_all('/\<translate\>(.+?)\<\/translate\>/ism',$htm,$m,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
@@ -6978,6 +6978,19 @@ function processTranslateTags($htm){
 	}
 	if(stringContains($htm,'<translate>')){
     	debugValue("Translate Tag Error detected - perhaps a malformed 'translate' tag");
+	}
+	//wtranslate
+	preg_match_all('/\<wtranslate\>(.+?)\<\/wtranslate\>/ism',$htm,$wm,PREG_PATTERN_ORDER);
+	/* this returns an array of three arrays
+		0 = the whole tag
+		1 = the tag text
+	*/
+	foreach($wm[1] as $i=>$text){
+		$replace_str=translateText($text,'',1);
+		$htm=str_replace($wm[0][$i],$replace_str,$htm);
+	}
+	if(stringContains($htm,'<wtranslate>')){
+    	debugValue("wTranslate Tag Error detected - perhaps a malformed 'wtranslate' tag");
 	}
 	return $htm;
 }

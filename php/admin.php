@@ -37,6 +37,8 @@ global $PAGE;
 $TEMPLATE=array('_id'=>0);
 $PAGE=array('_id'=>0);
 loadExtras('translate');
+
+
 loadExtrasJs(array('wacss','chart','pikaday','alertify','html5','nicedit','codemirror'));
 loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
@@ -2130,7 +2132,6 @@ LIST_TABLE:
 					'_menu'			=>$_REQUEST['_menu'],
 					'-tableclass'	=> "table table-responsive table-bordered table-striped",
 					'-bulkedit'		=> 1,
-					'-translate'	=> 1,
 					'-export'		=> 1,
 					//'-export_displaynames'=>1,
 					'_table_'=>$_REQUEST['_table_'],

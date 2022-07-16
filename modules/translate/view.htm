@@ -3,8 +3,8 @@
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
 			<div class="w_big w_bold"><?=$MODULE['title'];?></div>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><translate>My Locale</translate>: <?=$_SESSION['REMOTE_LANG'];?></button>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><translate>Add Locale</translate></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><wtranslate>My Locale</wtranslate>: <?=$_SESSION['REMOTE_LANG'];?></button>
+			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><wtranslate>Add Locale</wtranslate></button>
 		</div>
 		<div style="margin-top:10px;">
 		<?=translateListLocales();?>
@@ -18,9 +18,9 @@
 <?=buildOnLoad("wacss.modalClose();");?>
 </view:default>
 <view:instructions>
-<h2><translate>Instructions</translate></h2>
-<translate>To use the translate feature on  your website, simply add translate tags to what  you want translated, as follows:</translate>
-<p><span style="font-size:1.2rem;">&#60;translate&#62;</span><translate>This will be translated into whatever language the end user in on.</translate><span style="font-size:1.2rem;">&#60;/translate&#62;</span></p>
+<h2><wtranslate>Instructions</wtranslate></h2>
+<wtranslate>To use the translate feature on  your website, simply add translate tags to what  you want translated, as follows:</wtranslate>
+<p><span style="font-size:1.2rem;">&#60;translate&#62;</span><wtranslate>This will be translated into whatever language the end user in on.</wtranslate><span style="font-size:1.2rem;">&#60;/translate&#62;</span></p>
 
 </view:instructions>
 <view:list>
@@ -35,15 +35,15 @@
 
 <view:bulktranslate>
 <div>
-	<div class="w_bold w_bigger"><translate>Instructions:</translate></div> 
-	<div> - <translate>Click on the copy icon below to copy the source language to your clipboard.</translate></div>
-	<div> - <translate>Go to <a href="https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?>" target="_blank">https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?></a></translate></div>
-	<div> - <translate>Make sure the target lang on the right side is <?=$target['name'];?></translate></div>
-	<div> - <translate>Paste the clipboard contents into the source area on the left side. You should see the translated version on the right side now.</translate></div>
-	<div> - <translate>Click on the copy icon on the bottom of the target language window to copy to your clipboard</translate></div>
-	<div> - <translate>Paste the new clipboard contents into the target language field in this window.</translate></div>
-	<div> - <translate>Check to make sure the translations on the right line up with the strings on the left</translate></div>
-	<div> - <translate>Click the Process button</translate></div>
+	<div class="w_bold w_bigger"><wtranslate>Instructions:</wtranslate></div> 
+	<div> - <wtranslate>Click on the copy icon below to copy the source language to your clipboard.</wtranslate></div>
+	<div> - <wtranslate>Go to <a href="https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?>" target="_blank">https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?></a></wtranslate></div>
+	<div> - <wtranslate>Make sure the target lang on the right side is <?=$target['name'];?></wtranslate></div>
+	<div> - <wtranslate>Paste the clipboard contents into the source area on the left side. You should see the translated version on the right side now.</wtranslate></div>
+	<div> - <wtranslate>Click on the copy icon on the bottom of the target language window to copy to your clipboard</wtranslate></div>
+	<div> - <wtranslate>Paste the new clipboard contents into the target language field in this window.</wtranslate></div>
+	<div> - <wtranslate>Check to make sure the translations on the right line up with the strings on the left</wtranslate></div>
+	<div> - <wtranslate>Click the Process button</wtranslate></div>
 </div>
 <form method="post" action="/<?=$MODULE['page'];?>/bulktranslate_process/<?=$locale;?>" onsubmit="return ajaxSubmitForm(this,'bulktranslate_result');" style="width:800px;">
 	<input type="hidden" name="source_locale" value="<?=$source['locale'];?>" />
@@ -60,7 +60,7 @@
 	</div>
 	<div class="row">
 		<div class="col s6" id="bulktranslate_result"></div>
-		<div class="col s6 align-right"><button class="btn w_white" type="submit"><translate>Process</translate></button></div>
+		<div class="col s6 align-right"><button class="btn w_white" type="submit"><wtranslate>Process</wtranslate></button></div>
 	</div>
 </form>
 </view:bulktranslate>
@@ -71,19 +71,19 @@
 </view:selectlocale>
 
 <view:setlocale>
-	<span class="w_mark w_green"></span><translate>Locale set</translate>: <?=$_SESSION['REMOTE_LANG'];?>
-	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><translate>Refresh</translate></a></div>
+	<span class="w_mark w_green"></span><wtranslate>Locale set</wtranslate>: <?=$_SESSION['REMOTE_LANG'];?>
+	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><wtranslate>Refresh</wtranslate></a></div>
 </view:setlocale>
 
 <view:deletelocale>
-	<h3 class="align-center"><translate>Are you sure you want to delete translation records for this locale?<br>Click YES to confirm.</translate></h3>
+	<h3 class="align-center"><wtranslate>Are you sure you want to delete translation records for this locale?<br>Click YES to confirm.</wtranslate></h3>
 	<h3 class="align-center"><?=$info['name'];?></h3>
 
 	<div style="display: flex;flex-direction: row;justify-content: space-between;">
-		<a href="/<?=$MODULE['page'];?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>"><translate>YES</translate></a>
-		<a href="#" onclick="wacss.modalClose();return false;" class="btn <?=configValue('admin_color');?>"><translate>NO</translate></a>
+		<a href="/<?=$MODULE['page'];?>/deletelocale_confirmed/<?=$info['locale'];?>" class="btn <?=configValue('admin_color');?>"><wtranslate>YES</wtranslate></a>
+		<a href="#" onclick="wacss.modalClose();return false;" class="btn <?=configValue('admin_color');?>"><wtranslate>NO</wtranslate></a>
 	</div>
-	<div id="deletelocale_title" style="display:none;"><translate>Confirm Deletion</translate>:</div>
+	<div id="deletelocale_title" style="display:none;"><wtranslate>Confirm Deletion</wtranslate>:</div>
 	<?=buildOnLoad("wacss.modalTitle(getText('deletelocale_title'));");?>
 </view:deletelocale>
 
@@ -92,21 +92,21 @@
 </view:selectlang>
 
 <view:addlang>
-	<span class="w_mark w_green"></span><translate>Language Added</translate>: <?=$locale;?>
-	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><translate>Refresh</translate></a></div>
+	<span class="w_mark w_green"></span><wtranslate>Language Added</wtranslate>: <?=$locale;?>
+	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><wtranslate>Refresh</wtranslate></a></div>
 </view:addlang>
 
 <view:edit>
 	<div class="row" style="max-width:100%;">
 		<div class="col-sm-5 align-left">
-			<div><translate>Source</translate></div>
+			<div><wtranslate>Source</wtranslate></div>
 			<div style="position:relative;">
 				<div class="form-control" id="translate_source"><?=$rec['source'];?></div>
-				<a href="#copy2clipboard" style="position:absolute;top:0px;right:0px;padding:0 0 1px 3px;background:#FFF;border-bottom-left-radius:8px;border-left:1px solid #999;border-bottom:1px solid #999;text-decoration: none;color:#999;z-index:9999;" onclick="return commonCopyToClipboard(getText('translate_source'));"><span class="icon-file-docs" title="<translate>Copy to clipboard</translate>"></span></a>
+				<a href="#copy2clipboard" style="position:absolute;top:0px;right:0px;padding:0 0 1px 3px;background:#FFF;border-bottom-left-radius:8px;border-left:1px solid #999;border-bottom:1px solid #999;text-decoration: none;color:#999;z-index:9999;" onclick="return commonCopyToClipboard(getText('translate_source'));"><span class="icon-file-docs" title="<wtranslate>Copy to clipboard</wtranslate>"></span></a>
 			</div>
 		</div>
 		<div class="col-sm-7 align-left">
-			<div><translate>Translation</translate></div>
+			<div><wtranslate>Translation</wtranslate></div>
 			<?=translateEditRec($rec);?>
 		</div>
 	</div>
@@ -115,10 +115,10 @@
 			<div id="edit_title" style="display:none;">#<?=$rec['_id'];?> <?=$source['name'];?> => <?=$dest['name'];?></div>
 			<?=buildOnLoad("wacss.modalTitle(getText('edit_title'));");?>
 			<div style="margin-top:10px;vertical-align: middle;">
-				<div class="w_gray align-middle" style="display:inline-block;"><translate>Translators</translate>: </div>
-				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <translate>Google</translate></a>
-				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <translate>Yandex</translate></a>
-				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <translate>Bing</translate></a>
+				<div class="w_gray align-middle" style="display:inline-block;"><wtranslate>Translators</wtranslate>: </div>
+				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <wtranslate>Google</wtranslate></a>
+				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <wtranslate>Yandex</wtranslate></a>
+				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <wtranslate>Bing</wtranslate></a>
 			</div>
 		</div>
 	</div>

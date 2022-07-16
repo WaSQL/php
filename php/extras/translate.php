@@ -95,13 +95,13 @@ function translateGetLocales($filters=array()){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function translateGetLocalesUsed($ibl=0){
+function translateGetLocalesUsed($ibl=0,$wasql=0){
 	global $CONFIG;
 	$locales=translateGetLocales();
 	$source_local=translateGetSourceLocale();
-	$wherestr='';
+	$wherestr="where wasql={$wasql}";
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-		$wherestr="where source_id={$CONFIG['translate_source_id']}";
+		$wherestr=" and source_id={$CONFIG['translate_source_id']}";
 	}
 	$q=<<<ENDOFQ
 		SELECT
@@ -152,6 +152,10 @@ function translateCheckSchema(){
 	global $CONFIG;
 	$table='_translations';
 	if(isDBTable($table)){
+		$fields=getDBFields($table);
+		if(!in_array('wasql',$fields)){
+			$ok=executeSQL("alter table {$table} add wasql integer NOT NULL Default 0");
+		}
 		return false;
 	}
 	$fields=array(
@@ -166,6 +170,7 @@ function translateCheckSchema(){
 		'identifier'	=> databaseDataType('char(40)')." NULL",
 		'confirmed'		=> databaseDataType('int')." NOT NULL Default 0",
 		'failed'		=> databaseDataType('int')." NOT NULL Default 0",
+		'wasql'		=> databaseDataType('int')." NOT NULL Default 0",
 		);
 	$ok = createDBTable($table,$fields,'InnoDB');
 	if($ok != 1){
@@ -237,7 +242,7 @@ function translateUnmapText($source,$target){
 // http://www.lingoes.net/en/translator/langcode.htm
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function translateText($text,$locale=''){
+function translateText($text,$locale='',$wasql=0){
 	global $CONFIG;
 	$map=translateMapText($text);
 	if(!isset($map['identifier'])){return $text;}
@@ -260,9 +265,12 @@ function translateText($text,$locale=''){
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
 	$topts=array(
 		'-table'	=> '_translations',
-		'-where'	=> "locale ='{$locale}'",
+		'-where'	=> "wasql=0 and locale ='{$locale}'",
 		'-fields'	=> 'locale,identifier,translation'
 	);
+	if($wasql==1){
+		$topts['-where']="wasql= and locale ='{$locale}'";
+	}
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
 	}
@@ -299,7 +307,8 @@ function translateText($text,$locale=''){
 		'-ignore'		=> 1,
 		'locale'		=> $locale,
 		'identifier'	=> $map['identifier'],
-		'translation'	=> $translation
+		'translation'	=> $translation,
+		'wasql'=>$wasql
 	);
 	if($source_locale == $locale){
 		$taddopts['confirmed']=1;

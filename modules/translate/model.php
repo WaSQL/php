@@ -71,6 +71,7 @@ function translateListRecords($locale){
 		'confirmed_style'=>'text-align:center',
 		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/edit/%_id%','modal',{setprocessing:0})",
 		'locale'=>$locale,
+		'wasql'=>0,
 		'-order'=>'confirmed,_id',
 		'-results_eval'=>'translateAddExtraInfo'
 	);
@@ -100,7 +101,7 @@ function translateAddExtraInfo($recs){
 	$source_locale=translateGetSourceLocale();	
 	$opts=array(
 		'-table'=>'_translations',
-		'-where'=>"locale='{$source_locale}' and identifier in (select identifier from _translations where locale='{$locale}' and _id in ({$idstr}))",
+		'-where'=>"wasql=0 and locale='{$source_locale}' and identifier in (select identifier from _translations where wasql=0 and locale='{$locale}' and _id in ({$idstr}))",
 		'-index'=>'identifier',
 		'-fields'=>'identifier,translation'
 	);
@@ -123,16 +124,16 @@ function translateAddExtraInfo($recs){
 function translateListLocales(){
 	global $MODULE;
 	$opts=array(
-		'-list'=>translateGetLocalesUsed(),
+		'-list'=>translateGetLocalesUsed(0,0),
 		'-hidesearch'=>1,
 		'-anchormap'=>'locale',
 		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover',
 		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt',
 		'locale_onclick'=>"return ajaxGet('/{$MODULE['page']}/list/%locale%','translate_results',{setprocessing:'processing'});",
 		'entry_cnt_onclick'=>"return ajaxGet('/{$MODULE['page']}/list/%locale%','translate_results',{setprocessing:'processing'});",
-		'entry_cnt_displayname'=>translateText('Entries'),
+		'entry_cnt_displayname'=>translateText('Entries','',1),
 		'entry_cnt_style'=>'text-align:right;',
-		'flag4x3_displayname'=>translateText('Location'),
+		'flag4x3_displayname'=>translateText('Location','',1),
 		'confirmed_cnt_displayname'=>'<span class="icon-mark w_success"></span>',
 		'confirmed_cnt_class'=>'align-right',
 		'-results_eval'=>'translateListLocalesExtra'
