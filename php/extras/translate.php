@@ -99,6 +99,7 @@ function translateGetLocalesUsed($ibl=0,$wasql=0){
 	global $CONFIG;
 	$locales=translateGetLocales();
 	$source_local=translateGetSourceLocale();
+	$wasql=(integer)$wasql;
 	$wherestr="where wasql={$wasql}";
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$wherestr=" and source_id={$CONFIG['translate_source_id']}";
@@ -246,6 +247,7 @@ function translateText($text,$locale='',$wasql=0){
 	global $CONFIG;
 	$map=translateMapText($text);
 	if(!isset($map['identifier'])){return $text;}
+	$wasql=(integer)$wasql;
 	//set the identifier as the sha of the text
 	$identifier=$map['identifier'];
 	//determine source locale
@@ -265,12 +267,9 @@ function translateText($text,$locale='',$wasql=0){
 	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
 	$topts=array(
 		'-table'	=> '_translations',
-		'-where'	=> "wasql=0 and locale ='{$locale}'",
+		'-where'	=> "wasql={$wasql} and locale ='{$locale}'",
 		'-fields'	=> 'locale,identifier,translation'
 	);
-	if($wasql==1){
-		$topts['-where']="wasql= and locale ='{$locale}'";
-	}
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
 	}
