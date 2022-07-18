@@ -261,6 +261,7 @@ if(isset($_REQUEST['_dblistrecords']) && $_REQUEST['_dblistrecords']==1 && isset
 	);
 	$opts['_dblistrecords']=1;
 	$opts['_dblistrecords_params']=base64_encode(json_encode($json));
+	//echo $db.printValue($opts);exit;
 	echo dbListRecords($db,$opts);
 	exit;
 }

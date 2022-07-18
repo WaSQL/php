@@ -7241,7 +7241,7 @@ function commonProcessDBListRecordsTags($htm){
 				$dblistrecords_attributes[$akey]=$matches[2][$m];
 			}
 		}
-		$divid='dblistrecords_'.$i;
+		$divid=$dblistrecords_attributes['-divid'] ?? 'dblistrecords_'.$i;
 		$dblistrecords_contents=$dblistrecords[2][$i];
 		$replace_str='';
 		$replace_str.='<div id="'.$divid.'">'.PHP_EOL;

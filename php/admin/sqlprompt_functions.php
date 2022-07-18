@@ -91,10 +91,10 @@ function sqlpromptCaptureFirstRows($rec,$max=30){
 function sqlpromptListResults($recs){
 	if(!is_array($recs)){
 		if(strlen($recs)){return $recs;}
-		return translateText('No Results');
+		return translateText('No Results','',1);
 	}
 	if(!count($recs)){
-		return translateText('No Results');
+		return translateText('No Results','',1);
 	}
 	$opts=array(
 		'-list'=>$recs,
@@ -116,7 +116,7 @@ function sqlpromptListResults($recs){
 function sqlpromptListFields($recs){
 	if(!is_array($recs) || !count($recs)){
 		if(strlen($recs)){return $recs;}
-		return translateText('No fields defined');
+		return translateText('No fields defined','',1);
 	}
 	$opts=array(
 		'-list'=>$recs,
@@ -137,10 +137,10 @@ function sqlpromptListFields($recs){
 function sqlpromptListIndexes($recs){
 	if(!is_array($recs)){
 		if(strlen($recs)){return $recs;}
-		return translateText('No indexes defined');
+		return translateText('No indexes defined','',1);
 	}
 	if(!count($recs)){
-		return translateText('No indexes defined');
+		return translateText('No indexes defined','',1);
 	}
 	$opts=array(
 		'-list'=>$recs,

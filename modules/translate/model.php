@@ -19,7 +19,7 @@ function translateShowLocaleSelections(){
 		'-hidesearch'=>1
 	));
 }
-function translateShowLangSelections(){
+function translateGetLangSelections(){
 	global $MODULE;
 	$recs=translateGetLocales();
 	$used=translateGetLocalesUsed(1);
@@ -33,18 +33,9 @@ function translateShowLangSelections(){
 		}
 	}
 	$recs=sortArrayByKeys($recs,array('name'=>SORT_ASC,'locale'=>SORT_ASC));
-	return databaseListRecords(array(
-		'-list'=>$recs,
-		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
-		'-listfields'=>'locale,name,country',
-		'-anchormap'=>'name',
-		'-trclass'=>'w_pointer',
-		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/addlang/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
-		'-hidesearch'=>1,
-		'-results_eval'=>'translateShowLangSelectionsExtra'
-	));
+	return $recs;
 }
-function translateShowLangSelectionsExtra($recs){
+function translateGetLangSelectionsExtra($recs){
 	//echo printValue($used);exit;
 	foreach($recs as $i=>$rec){
 
@@ -143,12 +134,21 @@ function translateListLocales(){
 function translateListLocalesExtra($recs){
 	global $MODULE;
 	$current_locale=isset($_SESSION['REMOTE_LANG'])?strtolower($_SESSION['REMOTE_LANG']):strtolower($_SERVER['REMOTE_LANG']);
+	$confirm_msg=translateText('Delete?','',1);
 	foreach($recs as $i=>$rec){
-		$flag = '<div>';
-		$flag .= "	<div style=\"float:right\"><a href=\"#remove\" onclick=\"return ajaxGet('/{$MODULE['page']}/deletelocale/{$rec['locale']}','modal');\"><span class=\"icon-close w_red\"></span></a></div>";
-		$flag .="	<div><a href=\"#\" onclick=\"return ajaxGet('/{$MODULE['page']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});\">{$rec['name']}</a></div>";
-		$flag .="	</div>";
-		$recs[$i]['flag4x3']=$flag;
+		//echo printValue($rec);exit;
+
+		$recs[$i]['flag4x3'] = <<<ENDOFFLAG
+<div style="display:flex;justify-content:space-between;align-items:center">
+	<img src="{$rec['flag4x3']}" style="height:20px;width:auto" />
+	<div style="margin-left:5px;flex:1;align-self:left;">
+		<a href="#" onclick="return ajaxGet('/{$MODULE['page']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});" class="w_gray w_smaller">{$rec['name']}</a>
+	</div>
+	<div>
+		<a href="#remove" data-confirm="{$confirm_msg} -- {$rec['name']}" onclick="if(!confirm(this.dataset.confirm)){return false;}return ajaxGet('/{$MODULE['ajaxpage']}/deletelocale_confirmed/{$rec['locale']}','translate_nulldiv');"><span class="icon-close w_smallest w_red"></span></a>
+	</div>
+</div>
+ENDOFFLAG;
 		if($current_locale ==strtolower($rec['locale'])){
 			$recs[$i]['locale'].=' <span class="icon-mark w_green"></span>';
 		}

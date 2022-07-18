@@ -115,8 +115,7 @@
 				$dopts['-where'].= " and source_id={$CONFIG['translate_source_id']}";
 			}
 			$ok=delDBRecord($dopts);
-			$locales=translateGetLocalesUsed();
-			setView('default');
+			setView('deletelang',1);
 		break;
 		case 'selectlocale':
 			setView('selectlocale',1);
