@@ -1,4 +1,13 @@
 <?php
+function translateHasPermission($perm){
+	global $MODULE;
+	if(!isset($MODULE['-hide'])){return true;}
+	$hides=preg_split('/\,+/',$MODULE['-hide']);
+	foreach($hides as $hide){
+		if(strtolower($perm)==strtolower($hide)){return false;}
+	}
+	return true;
+}
 function translateShowLocaleSelections(){
 	global $MODULE;
 	$recs=translateGetLocalesUsed(1);
@@ -15,10 +24,11 @@ function translateShowLocaleSelections(){
 		'-tableclass'=>'table table-condensed table-bordered table-striped table-hover',
 		'-listfields'=>'locale,name,country',
 		'-trclass'=>'w_pointer',
-		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/setlocale/%locale%','modal',{setprocessing:0,cp_title:'Locale Set'})",
+		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/setlocale/%locale%','translate_nulldiv',{setprocessing:0,cp_title:'Locale Set'})",
 		'-hidesearch'=>1
 	));
 }
+/* translateGetLangSelections return recs for json string selectlang dblistrecords */
 function translateGetLangSelections(){
 	global $MODULE;
 	$recs=translateGetLocales();
@@ -41,45 +51,6 @@ function translateGetLangSelectionsExtra($recs){
 
 	}
 	return $recs;
-}
-function translateListRecords($locale){
-	global $MODULE;
-	global $CONFIG;
-	$source_locale=translateGetSourceLocale();
-	$opts=array(
-		'-table'=>'_translations',
-		'-formaction'=>"/{$MODULE['page']}/locale/{$locale}",
-		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered',
-		'-trclass'=>'w_pointer',
-		'-listfields'=>'_id,source,translation,confirmed',
-		'confirmed_displayname'=>'<span class="icon-mark w_success"></span>',
-		'-searchfields'=>'source,translation',
-		'-searchopers'=>'ct',
-		'source_displayname'=>"Source ({$source_locale})",
-		'source_style'=>'white-space: normal;',
-		'translation_displayname'=>"Translation ({$locale})",
-		'translation_style'=>'white-space: normal;',
-		'confirmed_style'=>'text-align:center',
-		'-onclick'=>"return ajaxGet('/{$MODULE['page']}/edit/%_id%','modal',{setprocessing:0})",
-		'locale'=>$locale,
-		'wasql'=>0,
-		'-order'=>'confirmed,_id',
-		'-results_eval'=>'translateAddExtraInfo'
-	);
-	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-		$opts['source_id']=$CONFIG['translate_source_id'];
-	}
-	if(isset($_REQUEST['filter_field'])){
-		switch(strtolower($_REQUEST['filter_field'])){
-			case 'source':
-				unset($_REQUEST['filter_field']);
-				$v=str_replace('source-ct-','',$_REQUEST['_filters']);
-				unset($_REQUEST['_filters']);
-				$opts['-where']="identifier in (select identifier from _translations where locale='{$source_locale}' and translation like '%{$v}%')";
-		}
-	}
-	//return printValue($_REQUEST);
-	return databaseListRecords($opts);
 }
 function translateAddExtraInfo($recs){
 	$locale=$recs[0]['locale'];
@@ -112,25 +83,40 @@ function translateAddExtraInfo($recs){
 	}
 	return $recs;
 }
+
+/* translateListLocales returns recs for json in dblistrecords */
 function translateListLocales(){
 	global $MODULE;
-	$opts=array(
-		'-list'=>translateGetLocalesUsed(0,0),
-		'-hidesearch'=>1,
-		'-anchormap'=>'locale',
-		'-tableclass'=>'table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover',
-		'-listfields'=>'flag4x3,locale,entry_cnt,confirmed_cnt',
-		'locale_onclick'=>"return ajaxGet('/{$MODULE['page']}/list/%locale%','translate_results',{setprocessing:'processing'});",
-		'entry_cnt_onclick'=>"return ajaxGet('/{$MODULE['page']}/list/%locale%','translate_results',{setprocessing:'processing'});",
-		'entry_cnt_displayname'=>translateText('Entries','',1),
-		'entry_cnt_style'=>'text-align:right;',
-		'flag4x3_displayname'=>translateText('Location','',1),
-		'confirmed_cnt_displayname'=>'<span class="icon-mark w_success"></span>',
-		'confirmed_cnt_class'=>'align-right',
-		'-results_eval'=>'translateListLocalesExtra'
-	);
-	return databaseListRecords($opts);
+	$recs=translateGetLocalesUsed(0,0);
+	$localesmap=array();
+	foreach(translateGetLocales() as $locale){
+		$localesmap[$locale['lang']][]=$locale;
+		$localesmap[$locale['locale']][]=$locale;
+	}
+	if(isset($MODULE['-locales'])){
+		if(!is_array($MODULE['-locales'])){
+			$MODULE['-locales']=preg_split('/\,+/',$MODULE['-locales']);
+		}
+		$filtermap=array();
+		foreach($MODULE['-locales'] as $i=>$val){
+			$val=strtolower(trim($val));
+			if(isset($localesmap[$val])){
+				foreach($localesmap[$val] as $lval){
+					$filtermap[$lval['locale']]=$lval['locale'];
+				}
+			}
+		}
+		if(count($filtermap)){
+			foreach($recs as $i=>$rec){
+				if(!isset($filtermap[$rec['locale']])){
+					unset($recs[$i]);
+				}
+			}
+		}
+	}
+	return $recs;
 }
+
 function translateListLocalesExtra($recs){
 	global $MODULE;
 	$current_locale=isset($_SESSION['REMOTE_LANG'])?strtolower($_SESSION['REMOTE_LANG']):strtolower($_SERVER['REMOTE_LANG']);
@@ -139,10 +125,12 @@ function translateListLocalesExtra($recs){
 		//echo printValue($rec);exit;
 
 		$recs[$i]['flag4x3'] = <<<ENDOFFLAG
-<div style="display:flex;justify-content:space-between;align-items:center">
-	<img src="{$rec['flag4x3']}" style="height:20px;width:auto" />
-	<div style="margin-left:5px;flex:1;align-self:left;">
-		<a href="#" onclick="return ajaxGet('/{$MODULE['page']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});" class="w_gray w_smaller">{$rec['name']}</a>
+<div style="display:flex;justify-content:space-between;align-items:center;width:max-content;">
+	<div style="margin-right:10px;flex:1;align-self:left;">
+		<a href="#" onclick="return ajaxGet('/{$MODULE['page']}/list/{$rec['locale']}','translate_results',{setprocessing:'processing'});" class="w_gray w_smaller">
+			<img src="{$rec['flag4x3']}" style="height:20px;width:auto;margin-right:5px;" />
+			{$rec['name']}
+		</a>
 	</div>
 	<div>
 		<a href="#remove" data-confirm="{$confirm_msg} -- {$rec['name']}" onclick="if(!confirm(this.dataset.confirm)){return false;}return ajaxGet('/{$MODULE['ajaxpage']}/deletelocale_confirmed/{$rec['locale']}','translate_nulldiv');"><span class="icon-close w_smallest w_red"></span></a>
@@ -158,7 +146,7 @@ ENDOFFLAG;
 function translateEditRec($rec){
 	global $MODULE;
 	$opts=array(
-		'-action'		=> "/{$MODULE['page']}/list/{$rec['locale']}",
+		'-action'		=> "/{$MODULE['ajaxpage']}/list/{$rec['locale']}",
 		'-onsubmit'		=> "return ajaxSubmitForm(this,'translate_results');",
 		'-name'			=> 'translateEditForm',
 		'setprocessing'	=> 0,
@@ -176,9 +164,9 @@ function translateEditRec($rec){
 		'confirmed'		=> 1,
 		'_id'			=> $rec['_id'],
 		'-hide'			=> 'clone',
-		'-save'			=> translateText('Save'),
-		'-reset'		=> translateText('Reset'),
-		'-delete'		=> translateText('Delete')
+		'-save'			=> translateText('Save','',1),
+		'-reset'		=> translateText('Reset','',1),
+		'-delete'		=> translateText('Delete','',1)
 	);
 	//return $opts['-fields'];
 	return addEditDBForm($opts);

@@ -3,8 +3,14 @@
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
 			<div class="w_big w_bold w_nowrap"><?=$MODULE['title'];?></div>
+			<view:set_locale_button>
 			<button type="button" style="margin-left: 5px;white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><wtranslate>Set Locale</wtranslate></button>
+			</view:set_locale_button>
+			<?=renderViewIf(translateHasPermission('set_locale'),'set_locale_button');?>
+			<view:add_locales_button>
 			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><wtranslate>Add Locales</wtranslate></button>
+			</view:add_locales_button>
+			<?=renderViewIf(translateHasPermission('add_locale'),'add_locales_button');?>
 		</div>
 		<div style="margin-top:10px;" id="translate_locales">
 			<?=renderView('translate_locales');?>
@@ -29,8 +35,10 @@
 		entry_cnt_style="text-align:right;" 
 		flag4x3_displayname="<wtranslate>Location</wtranslate>" 
 		confirmed_cnt_displayname="Confirmed" 
-		confirmed_cnt_class="align-right">
-		<?=json_encode(translateGetLocalesUsed(0,0));?>
+		confirmed_cnt_class="align-right"
+
+		>
+		<?=json_encode(translateListLocales());?>
 	</dblistrecords>
 </view:translate_locales>
 
@@ -43,7 +51,10 @@
 <view:list>
 	<div style="display: flex;justify-content: space-between; align-items:center;margin-bottom:10px;">
 		<h3><?=$info['name'];?></h3>
+		<view:google_translate_button>
 		<button onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/bulktranslate/<?=$locale;?>','modal',{cp_title:this.innerText});" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
+		</view:google_translate_button>
+		<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button');?>
 	</div>
 	<dblistrecords
 		-divid="list_translations"
@@ -53,7 +64,7 @@
 		-listfields="_id,source,translation,confirmed"
 		-navonly="1"
 		-searchopers="ct"
-		source_displayname="Source (<?=$source_locale;?>)"
+		source_displayname="Source (<?=translateGetSourceLocale();?>)"
 		source_style="white-space: normal"
 		translation_displayname="Translation (<?=$locale;?>)"
 		translation_style="white-space: normal;"
@@ -110,8 +121,8 @@
 </view:selectlocale>
 
 <view:setlocale>
-	<span class="w_mark w_green"></span><wtranslate>Locale set</wtranslate>: <?=$_SESSION['REMOTE_LANG'];?>
-	<div class="align-right"><a class="btn <?=configValue('admin_color');?>" href="/<?=$MODULE['page'];?>"><wtranslate>Refresh</wtranslate></a></div>
+	<div id="translate_setlocale" style="display: none;"><wtranslate>Locale set</wtranslate> -- <?=$_SESSION['REMOTE_LANG'];?> -- <wtranslate>Refresh to see changes</wtranslate></div>
+	<?=buildOnLoad("wacss.toast(getText('translate_setlocale'),{color:'w_green',timer:5});wacss.modalClose();");?>
 </view:setlocale>
 
 
@@ -172,9 +183,18 @@
 			<?=buildOnLoad("wacss.modalTitle(getText('edit_title'));");?>
 			<div style="margin-top:10px;vertical-align: middle;">
 				<div class="w_gray align-middle" style="display:inline-block;"><wtranslate>Translators</wtranslate>: </div>
+				<view:google_translate_button>
 				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <wtranslate>Google</wtranslate></a>
+				</view:google_translate_button>
+				<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button');?>
+				<view:yandex_translate_button>
 				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <wtranslate>Yandex</wtranslate></a>
+				</view:yandex_translate_button>
+				<?=renderViewIf(translateHasPermission('yandex_translate'),'yandex_translate_button');?>
+				<view:bing_translate_button>
 				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <wtranslate>Bing</wtranslate></a>
+				</view:bing_translate_button>
+				<?=renderViewIf(translateHasPermission('bing_translate'),'bing_translate_button');?>
 			</div>
 		</div>
 	</div>
