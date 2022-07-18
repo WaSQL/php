@@ -11479,7 +11479,7 @@ function databaseConnect($host,$user,$pass,$dbname=''){
 	//Open a connection to a dabase Server - supports multiple database types
 	if(isMysqli()){
 		try{
-			$host=gethostbyname($host);
+			//$host=gethostbyname($host);
 			$dbh=@mysqli_connect($host, $user, $pass, $dbname);
 		}
 		catch(Exception $e){
