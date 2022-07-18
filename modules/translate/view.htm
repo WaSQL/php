@@ -4,10 +4,12 @@
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
 			<div class="w_big w_bold w_nowrap"><?=$MODULE['title'];?></div>
 			<view:set_locale_button>
+				<? global $MODULE;?>
 			<button type="button" style="margin-left: 5px;white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><wtranslate>Set Locale</wtranslate></button>
 			</view:set_locale_button>
 			<?=renderViewIf(translateHasPermission('set_locale'),'set_locale_button');?>
 			<view:add_locales_button>
+				<? global $MODULE;?>
 			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><wtranslate>Add Locales</wtranslate></button>
 			</view:add_locales_button>
 			<?=renderViewIf(translateHasPermission('add_locale'),'add_locales_button');?>
@@ -52,6 +54,7 @@
 	<div style="display: flex;justify-content: space-between; align-items:center;margin-bottom:10px;">
 		<h3><?=$info['name'];?></h3>
 		<view:google_translate_button>
+			<? global $MODULE;?>
 		<button onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/bulktranslate/<?=$locale;?>','modal',{cp_title:this.innerText});" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
 		</view:google_translate_button>
 		<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button');?>
@@ -184,14 +187,17 @@
 			<div style="margin-top:10px;vertical-align: middle;">
 				<div class="w_gray align-middle" style="display:inline-block;"><wtranslate>Translators</wtranslate>: </div>
 				<view:google_translate_button>
+					<? global $MODULE;?>
 				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['google'];?>" target="translate_google"><span class="icon-site-google"></span> <wtranslate>Google</wtranslate></a>
 				</view:google_translate_button>
 				<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button');?>
 				<view:yandex_translate_button>
+					<? global $MODULE;?>
 				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['yandex'];?>" target="translate_yandex"><span class="icon-translate w_red"></span> <wtranslate>Yandex</wtranslate></a>
 				</view:yandex_translate_button>
 				<?=renderViewIf(translateHasPermission('yandex_translate'),'yandex_translate_button');?>
 				<view:bing_translate_button>
+					<? global $MODULE;?>
 				<a class="btn w_white" style="white-space: normal;display:inline-block;" href="<?=$rec['bing'];?>" target="translate_bing"><span class="icon-site-bing w_white"></span> <wtranslate>Bing</wtranslate></a>
 				</view:bing_translate_button>
 				<?=renderViewIf(translateHasPermission('bing_translate'),'bing_translate_button');?>
