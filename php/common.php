@@ -13586,12 +13586,16 @@ function includeModule($name,$params=array()){
 	}
 	if(file_exists("{$modulePath}/controller.php")){
 		$body=getFileContents("{$modulePath}/view.htm");
+		$body=commonProcessDBListRecordsTags($body);
+		$body=commonProcessChartjsTags($body);
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
 		$controller.=getFileContents("{$modulePath}/controller.php");
 		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
 	else{
 		$body=getFileContents("{$modulePath}/view.htm");
+		$body=commonProcessDBListRecordsTags($body);
+		$body=commonProcessChartjsTags($body);
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
 		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
