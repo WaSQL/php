@@ -7283,7 +7283,7 @@ function commonProcessDBListRecordsTags($htm){
 			$opts['-query']=trim($dblistrecords_contents);
 		}
 		else{
-			$opts['-list']=json_decode($dblistrecords_contents,true);
+			$opts['-list']=json_decode($dblistrecords_contents,true,JSON_INVALID_UTF8_IGNORE);
 		}
 		$json=array(
 			'db'=>$db,
@@ -9083,7 +9083,10 @@ function evalPHP($strings){
 	ob_clean();
 	ob_flush();
 	showErrors();
-	return implode('',$strings);
+	$rtn=implode('',$strings);
+	$rtn=commonProcessDBListRecordsTags($rtn);
+	$rtn=commonProcessChartjsTags($rtn);
+	return $rtn;
 }
 //---------- begin function evalNodejsCode
 /**
@@ -13586,16 +13589,12 @@ function includeModule($name,$params=array()){
 	}
 	if(file_exists("{$modulePath}/controller.php")){
 		$body=getFileContents("{$modulePath}/view.htm");
-		$body=commonProcessDBListRecordsTags($body);
-		$body=commonProcessChartjsTags($body);
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
 		$controller.=getFileContents("{$modulePath}/controller.php");
 		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
 	else{
 		$body=getFileContents("{$modulePath}/view.htm");
-		$body=commonProcessDBListRecordsTags($body);
-		$body=commonProcessChartjsTags($body);
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
 		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
