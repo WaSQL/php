@@ -113,6 +113,7 @@ function translateGetLocalesUsed($ibl=0,$wasql=0){
 		{$wherestr}	
 		GROUP BY locale
 ENDOFQ;
+echo $q;exit;
 	$recs=getDBRecords(array(
 		'-query'=>$q,
 		'-index'=>'locale'
@@ -197,13 +198,16 @@ function translateGetSourceLocale(){
 	return $source_locale;
 }
 function translateMapText($text){
-	preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim($text), $m);
 	$map=array(
 		'text'=>$text,
-		'identifier'=>'',
+		'identifier'=>sha1(trim($text)),
 		'map'=>array(),
 		'maptext'=>$text,
 	);
+	return $map;
+	preg_match_all('/<(.+?)[\s]*\/?[\s]*>/si', trim($text), $m);
+	
+
 	$map['map'][]="\r\n";
 	$map['map'][]="\n";
 	$map['map'][]="\t";
@@ -262,7 +266,8 @@ function translateText($text,$locale='',$wasql=0){
 	}
 	global $translateTextCache;
 	$locale=strtolower($locale);
-	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
+	if(isset($translateTextCache[$wasql][$locale][$identifier])){return $translateTextCache[$wasql][$locale][$identifier];}
+	if(isset($_SESSION['translateTextCache'][$wasql][$locale][$identifier])){return $_SESSION['translateTextCache'][$wasql][$locale][$identifier];}
 	$topts=array(
 		'-table'	=> '_translations',
 		'-where'	=> "wasql={$wasql} and locale='{$locale}'",
@@ -272,31 +277,32 @@ function translateText($text,$locale='',$wasql=0){
 		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
 	}
 	$trecs=getDBRecords($topts);
+	//echo printValue($map).printValue($topts).printValue($trecs);exit;
 	foreach($trecs as $rec){
 		$rec['locale']=strtolower($rec['locale']);
 		$rec['identifier']=strtolower($rec['identifier']);
-		$translateTextCache[$rec['locale']][$rec['identifier']]=$rec['translation'];
+		$_SESSION['translateTextCache'][$wasql][$rec['locale']][$rec['identifier']]=$rec['translation'];
 	}
-	if(isset($translateTextCache[$locale][$identifier])){return $translateTextCache[$locale][$identifier];}
+	if(isset($_SESSION['translateTextCache'][$wasql][$locale][$identifier])){return $_SESSION['translateTextCache'][$wasql][$locale][$identifier];}
 	global $CONFIG;
 	list($target_lang,$target_country)=translateParseLocale($locale);
 	$translation=$text;
 	//replace HTML TAGS with {1}
 
-	if($target_lang != $source_lang && isset($CONFIG['translate_source'])){
-		if(!isset($CONFIG['translate_key'])){
-			debugValue('Missing Translate Key in config');
-			return $text;
-		}
-		switch(strtolower($CONFIG['translate_source'])){
-			case 'yandex':
-				$translation=translateYandex($translation,$source_lang,$target_lang);
-			break;
-			case 'google':
-				$translation=translateGoogle($translation,$source_lang,$target_lang);
-			break;
-		}
-	}
+	// if($target_lang != $source_lang && isset($CONFIG['translate_source'])){
+	// 	if(!isset($CONFIG['translate_key'])){
+	// 		debugValue('Missing Translate Key in config');
+	// 		return $text;
+	// 	}
+	// 	switch(strtolower($CONFIG['translate_source'])){
+	// 		case 'yandex':
+	// 			$translation=translateYandex($translation,$source_lang,$target_lang);
+	// 		break;
+	// 		case 'google':
+	// 			$translation=translateGoogle($translation,$source_lang,$target_lang);
+	// 		break;
+	// 	}
+	// }
 	$map=translateMapText($translation);
 
 	$taddopts=array(
@@ -316,6 +322,7 @@ function translateText($text,$locale='',$wasql=0){
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$taddopts['source_id']=$CONFIG['translate_source_id'];
 	}
+	$_SESSION['translateTextCache'][$wasql][$locale][$map['identifier']]=$translation;
 	//echo $source_locale.printValue($taddopts);exit;
 	$tid=addDBRecord($taddopts);
 	$ok=commonLogMessage('translate',"addDBRecord - {$tid} - {$locale} - {$translation}");
