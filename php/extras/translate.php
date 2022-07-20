@@ -113,7 +113,6 @@ function translateGetLocalesUsed($ibl=0,$wasql=0){
 		{$wherestr}	
 		GROUP BY locale
 ENDOFQ;
-echo $q;exit;
 	$recs=getDBRecords(array(
 		'-query'=>$q,
 		'-index'=>'locale'
