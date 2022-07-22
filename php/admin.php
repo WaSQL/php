@@ -651,13 +651,17 @@ if(isAjax()){
 		case 'tables':
 		case 'config':
 		case 'dashboard':
-			echo adminViewPage($_REQUEST['_menu']);
-			echo $wasql_debugValueContent;
-			exit;
-		break;
 		case 'cron':
-			echo adminViewPage('cron');
-			echo $wasql_debugValueContent;
+		case 'export':
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+			$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'clearmin':
@@ -666,18 +670,20 @@ if(isAjax()){
 			echo buildOnLoad("window.location=window.location;");
 			exit;
 		break;
-		case 'export':
-			echo adminViewPage('export');
-			echo $wasql_debugValueContent;
-			exit;
-		break;
     	case 'updatecheck':
     		echo wasqlUpdateCheck();
     		exit;
     		break;
     	case 'explore':
-    		echo fileExplorer();
-    		echo $wasql_debugValueContent;
+    		$htm=fileExplorer();
+    		//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
     		exit;
     		break;
     	case 'add':
@@ -740,42 +746,92 @@ if(isAjax()){
 			exit;
     		break;
     	case 'decode':
-			echo adminViewPage('decode');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('decode');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
     	break;
     	case 'ab':
-			echo adminViewPage('apachebench');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('apachebench');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
     	break;
     	case 'sysmon':
     		adminSetPageName();
-    		echo includeModule('sysmon');
-    		echo $wasql_debugValueContent;
+    		$htm=includeModule('sysmon');
+    		//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
     		exit;
 			//echo adminViewPage('translate');exit;
     	break;
     	case 'translate':
     		adminSetPageName();
-    		echo includeModule('translate');
-    		echo $wasql_debugValueContent;
+    		$htm=includeModule('translate');
+    		//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
     		exit;
 			//echo adminViewPage('translate');exit;
     	break;
     	case 'manual':
-			echo adminViewPage('manual');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('manual');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
     	case 'sqlprompt':
-			echo adminViewPage('sqlprompt');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('sqlprompt');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'codeprompt':
 		case 'phpprompt':
-			echo adminViewPage('codeprompt');
+			$htm=adminViewPage('codeprompt');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
     	case 'tabledetails':
@@ -1326,18 +1382,17 @@ if(isset($_REQUEST['_menu'])){
 		case 'tables':
 		case 'config':
 		case 'dashboard':
-			echo adminViewPage($_REQUEST['_menu']);
-			echo $wasql_debugValueContent;
-			exit;
-		break;
 		case 'cron':
-			echo adminViewPage('cron');
-			echo $wasql_debugValueContent;
-			exit;
-		break;
 		case 'export':
-			echo adminViewPage('export');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'editor':
@@ -1599,37 +1654,79 @@ ENDOFX;
 			goto LIST_TABLE;
 		break;
 		case 'decode':
-			echo adminViewPage('decode');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('decode');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'meta':
-			echo adminViewPage('meta');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('meta');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'ab':
-			echo adminViewPage('apachebench');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('apachebench');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'sysmon':
 			adminSetPageName();
-			echo includeModule('sysmon');
-			echo $wasql_debugValueContent;
+			$htm=includeModule('sysmon');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 			//echo adminViewPage('translate');exit;
 		break;
 		case 'translate':
 			adminSetPageName();
-			echo includeModule('translate');
-			echo $wasql_debugValueContent;
+			$htm=includeModule('translate');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 			//echo adminViewPage('translate');exit;
 		break;
 		case 'manual':
-			echo adminViewPage('manual');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('manual');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'profile':
@@ -1668,8 +1765,15 @@ ENDOFX;
             echo buildTableEnd();
 		break;
 		case 'settings':
-			echo adminViewPage('settings');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('settings');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'update_wasql':
@@ -2372,8 +2476,15 @@ LIST_TABLE:
             	}
 			break;
 		case 'synchronize':
-			echo adminViewPage('synchronize');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('synchronize');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'schema':
@@ -2800,14 +2911,29 @@ LIST_TABLE:
 			echo '</table>'.PHP_EOL;
 			break;
 		case 'sqlprompt':
-			echo adminViewPage('sqlprompt');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('sqlprompt');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'codeprompt':
 		case 'phpprompt':
 			echo '<div class="container-fluid">'.PHP_EOL;
-			echo adminViewPage('codeprompt');
+			$htm=adminViewPage('codeprompt');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			echo '</div>'.PHP_EOL;
 			exit;
 		break;
@@ -3137,18 +3263,39 @@ LIST_TABLE:
 			}
 		break;
 		case 'import':
-			echo adminViewPage('import');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('import');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'export':
-			echo adminViewPage('export');
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage('export');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		break;
 		case 'datasync':
-			echo adminViewPage($_REQUEST['_menu']);
-			echo $wasql_debugValueContent;
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
 			exit;
 		case 'searchreplace':
 			echo '<div class="w_lblue w_bold w_bigger">Search & Replace</div>'.PHP_EOL;

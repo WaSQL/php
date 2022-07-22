@@ -9084,8 +9084,6 @@ function evalPHP($strings){
 	ob_flush();
 	showErrors();
 	$rtn=implode('',$strings);
-	$rtn=commonProcessDBListRecordsTags($rtn);
-	$rtn=commonProcessChartjsTags($rtn);
 	return $rtn;
 }
 //---------- begin function evalNodejsCode

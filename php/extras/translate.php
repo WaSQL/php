@@ -266,7 +266,6 @@ function translateText($text,$locale='',$wasql=0){
 	global $translateTextCache;
 	$locale=strtolower($locale);
 	if(isset($translateTextCache[$wasql][$locale][$identifier])){return $translateTextCache[$wasql][$locale][$identifier];}
-	if(isset($_SESSION['translateTextCache'][$wasql][$locale][$identifier])){return $_SESSION['translateTextCache'][$wasql][$locale][$identifier];}
 	$topts=array(
 		'-table'	=> '_translations',
 		'-where'	=> "wasql={$wasql} and locale='{$locale}'",
@@ -280,9 +279,9 @@ function translateText($text,$locale='',$wasql=0){
 	foreach($trecs as $rec){
 		$rec['locale']=strtolower($rec['locale']);
 		$rec['identifier']=strtolower($rec['identifier']);
-		$_SESSION['translateTextCache'][$wasql][$rec['locale']][$rec['identifier']]=$rec['translation'];
+		$translateTextCache[$wasql][$rec['locale']][$rec['identifier']]=$rec['translation'];
 	}
-	if(isset($_SESSION['translateTextCache'][$wasql][$locale][$identifier])){return $_SESSION['translateTextCache'][$wasql][$locale][$identifier];}
+	if(isset($translateTextCache[$wasql][$locale][$identifier])){return $translateTextCache[$wasql][$locale][$identifier];}
 	global $CONFIG;
 	list($target_lang,$target_country)=translateParseLocale($locale);
 	$translation=$text;
@@ -321,7 +320,7 @@ function translateText($text,$locale='',$wasql=0){
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$taddopts['source_id']=$CONFIG['translate_source_id'];
 	}
-	$_SESSION['translateTextCache'][$wasql][$locale][$map['identifier']]=$translation;
+	$translateTextCache[$wasql][$locale][$map['identifier']]=$translation;
 	//echo $source_locale.printValue($taddopts);exit;
 	$tid=addDBRecord($taddopts);
 	$ok=commonLogMessage('translate',"addDBRecord - {$tid} - {$locale} - {$translation}");
