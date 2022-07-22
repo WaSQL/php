@@ -785,7 +785,7 @@ if(isAjax()){
     	break;
     	case 'translate':
     		adminSetPageName();
-    		$htm=includeModule('translate');
+    		$htm=includeModule('translate',array('wasql'=>1));
     		//check for translate tags
 			$htm=processTranslateTags($htm);
 			//check for chartjs tags
@@ -1705,7 +1705,7 @@ ENDOFX;
 		break;
 		case 'translate':
 			adminSetPageName();
-			$htm=includeModule('translate');
+			$htm=includeModule('translate',array('wasql'=>1));
 			//check for translate tags
 			$htm=processTranslateTags($htm);
 			//check for chartjs tags

@@ -117,7 +117,7 @@ ENDOFQ;
 		'-query'=>$q,
 		'-index'=>'locale'
 	));
-	//echo printValue($recs);
+	//echo $q.printValue($recs);exit;
 	foreach($locales as $i=>$rec){
 		$locale=strtolower(str_replace('_','-',$rec['locale']));
 		if(!isset($recs[$locale])){

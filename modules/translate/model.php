@@ -83,11 +83,17 @@ function translateAddExtraInfo($recs){
 	}
 	return $recs;
 }
-
+function translateGetWasqlValue(){
+	global $MODULE;
+	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
+	return $wasql;
+}
 /* translateListLocales returns recs for json in dblistrecords */
 function translateListLocales(){
 	global $MODULE;
-	$recs=translateGetLocalesUsed(0,0);
+	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
+	$recs=translateGetLocalesUsed(0,$wasql);
+	//echo 'recs'.printValue($recs).printValue($MODULE);exit;
 	$localesmap=array();
 	foreach(translateGetLocales() as $locale){
 		$localesmap[$locale['lang']][]=$locale;

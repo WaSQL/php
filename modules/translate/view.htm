@@ -1,4 +1,19 @@
 <view:default>
+<script>
+	function translateBulkGoogleTranslate(locale){
+		let els=document.querySelectorAll('input[type="checkbox"][data-group="_id_checkbox"]:checked');
+		if(els.length==0){
+			alert('Select rows to translate');
+			return false;
+		}
+		let vals=new Array();
+		for(let i=0;i<els.length;i++){
+			vals.push(els[i].value);
+		}
+		let valstr=implode(':',vals);
+		return ajaxGet('/<?=$MODULE['ajaxpage'];?>/bulktranslate/'+locale+'/'+valstr,'modal',{cp_title:this.innerText});
+	}
+</script>
 <div style="margin-top:10px;display: flex;flex-direction: row;justify-content: flex-start;">
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
@@ -55,7 +70,7 @@
 		<h3><?=$info['name'];?></h3>
 		<view:google_translate_button>
 			<? global $MODULE;?>
-		<button onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/bulktranslate/<?=$locale;?>','modal',{cp_title:this.innerText});" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
+		<button onclick="return translateBulkGoogleTranslate('<?=$locale;?>');" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
 		</view:google_translate_button>
 		<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button',$locale,'locale');?>
 	</div>
@@ -63,7 +78,6 @@
 		-divid="list_translations"
 		-table="_translations" 
 		-tableclass="table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover"
-		-trclass="w_pointer"
 		-listfields="_id,source,translation,confirmed"
 		-navonly="1"
 		-searchopers="ct"
@@ -72,9 +86,14 @@
 		translation_displayname="Translation (<?=$locale;?>)"
 		translation_style="white-space: normal;"
 		confirmed_style="text-align:center"
-		-onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/edit/%_id%','modal',{setprocessing:0})"
+		confirmed_checkmark="1"
+		confirmed_checkmark_icon="icon-mark w_success"
+		translation_onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/edit/%_id%','modal',{setprocessing:0})"
+		_id_checkbox="1"
+		_id_checkbox_value="%_id%"
+		_id_checkbox_id="trid_%_id%"
 		locale="<?=$locale;?>"
-		wasql="0"
+		wasql="<?=translateGetWasqlValue();?>"
 		-order="confirmed,_id"
 		-results_eval="translateAddExtraInfo"
 	> </dblistrecords>

@@ -4,6 +4,8 @@
 			page - defaults to page name
 			passthru_index - defaults to 0.  If the page name is t/1/bob/translate then passthru_index should be set to 1
 
+		includeModule('translate',array('page'=>'manage/translations','ajaxpage'=>'t/1/manage/translations','passthru_index'=>1,'-hide'=>'bing_translate,yandex_translate'));
+
 	*/
 	global $PAGE;
 	global $MODULE;
@@ -32,20 +34,23 @@
 	switch(strtolower($_REQUEST['passthru'][$p])){
 		case 'bulktranslate':
 			$locale=addslashes($_REQUEST['passthru'][$p1]);
+			$idstr=str_replace(':',',',$_REQUEST['passthru'][$p2]);
 			$target=translateGetLocaleInfo($locale);
 			$locale=translateGetSourceLocale();
 			$source=translateGetLocaleInfo($locale);
+			//echo printValue($_REQUEST);exit;
 			//get the source texts
 			$topts=array(
 				'-table'	=> '_translations',
-				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}')",
+				'-where'	=> "locale ='{$source['locale']}' and _id in ({$idstr})",
 				'-fields'	=> 'locale,translation',
 				'-order'	=> '_id'
 			);
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-				$topts['-where']="locale ='{$source['locale']}' and  source_id in (0,{$CONFIG['translate_source_id']}) and identifier in (select identifier from _translations where confirmed=0 and locale='{$target['locale']}' and  source_id in (0,{$CONFIG['translate_source_id']}))";
+				$topts['-where']="locale ='{$source['locale']}' and _id in ({$idstr}) and  source_id in (0,{$CONFIG['translate_source_id']})";
 			}
 			$trecs=getDBRecords($topts);
+			//echo printValue($topts).printValue($trecs);exit;
 			$source['lines']=array();
 			foreach($trecs as $trec){
 				$map=translateMapText($trec['translation']);
