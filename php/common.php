@@ -15365,6 +15365,7 @@ function minifyCode($code,$type) {
 	if(!strlen($type)){return 'no type';}
 	switch(strtolower($type)){
 		case 'js':
+		case 'css':
 			//strip out multi-line comments first
 			$code=preg_replace('/\/\*(.+?)\*\//s','',$code);
 			//check each line and remove single line comments
@@ -15375,6 +15376,7 @@ function minifyCode($code,$type) {
 			}
 			//recombine without carriage returns
 			$code=implode('',$lines);
+			return $code;
 			break;
 		case 'css':
 			require_once("min-css.php");
@@ -15396,33 +15398,9 @@ function minifyCode($code,$type) {
 			else{
 				$code = CssMin::minify($code);
 			}
-			return $code;
 			break;
 	}
-	//changed to post to handle ssl urls now
-	$post=postURL($url,array('input'=>$code));
-	if(preg_match('/^HTTP/',$post['body'])){
-		$parts=preg_split('/\r\n\r\n/',trim($post['body']));
-		return $parts[1];
-	}
-	return $post['body'];
-
-	$process = curl_init($url);
-	curl_setopt($process, CURLOPT_ENCODING, 'UTF-8');
-    curl_setopt($process, CURLOPT_HEADER, 0);
-    curl_setopt($process,CURLOPT_POST,1);
-    curl_setopt($process,CURLOPT_TIMEOUT, 10);
-    curl_setopt($process,CURLOPT_RETURNTRANSFER,1);
-    curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
-	curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
-	$postfields=http_build_query(array('input'=>$code));
-    curl_setopt($process,CURLOPT_POSTFIELDS,$postfields);
-    $rtn=curl_exec($process);
-	curl_close($process);
-	if(strlen($code) && !strlen(trim($rtn))){return "/*{$url}*/".PHP_EOL.$code;}
-	//check to see if the service failed
-	if(stringContains($rtn,'502 Bad Gateway')){return "/*{$url}*/".PHP_EOL."/*MinifyCode Service Failed*/".PHP_EOL.$code;}
-	return $rtn;
+	return $code;
 }
 //---------- begin function monthName--------------------
 /**
