@@ -7275,7 +7275,7 @@ function commonProcessDBListRecordsTags($htm){
 		if(isset($opts['-table'])){
 
 		}
-		elseif(preg_match('/^(select|with)/is',trim($dblistrecords_contents))){
+		elseif(preg_match('/^(show|select|with)/is',trim($dblistrecords_contents))){
 			//replace any [asdfsa] tags with inputs
 			foreach($_REQUEST as $k=>$v){
 				$dblistrecords_contents=str_replace("[{$k}]",$v,$dblistrecords_contents);
