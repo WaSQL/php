@@ -13597,6 +13597,25 @@ function includeModule($name,$params=array()){
 		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
 }
+function includeAdminPage($name,$params=array()){
+	global $ADMINPAGE;
+	$ADMINPAGE=$params;
+	if(!strlen($name)){return 'includeAdminPage ERROR - no name';}
+	$ADMINPAGE['name']=$name;
+	$progpath=getWasqlPath('php');
+	$name=strtolower($name);
+	if(!file_exists("{$progpath}/admin/{$name}_body.htm")){
+		return 'No such page: '.$name;
+	}
+	if(is_file("{$progpath}/admin/{$name}_functions.php")){
+    	include_once("{$progpath}/admin/{$name}_functions.php");
+	}
+	$body=getFileContents("{$progpath}/admin/{$name}_body.htm");
+	$controller=getFileContents("{$progpath}/admin/{$name}_controller.php");
+	$rtn = evalPHP(array($controller,$body));
+	$rtn=processTranslateTags($rtn);
+    return $rtn;
+}
 //---------- begin function includePage---------------------------------------
 /**
 * @describe returns the specified page and loads any functions, etc of that page

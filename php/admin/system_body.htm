@@ -3,13 +3,13 @@
 	function systemNavTab(el){
 		wacss.setActiveTab(el);
 		document.system_form.tab.value=el.dataset.tab;
-		return ajaxSubmitForm(document.system_form,'system_content');
+		return ajaxSubmitForm(document.system_form,'<?=$ADMINPAGE['ajaxdiv'];?>');
 	}
 </script>
 <h2 style="margin:10px 0 0 0;padding:6px;" class="<?=configValue('admin_color');?>">
-	<span class="icon-server"></span><wtranslate>System</wtranslate>
+	<span class="icon-server"></span> <wtranslate>System</wtranslate>
 </h2>
-<form method="post" name="system_form" action="/php/admin.php">
+<form method="post" name="system_form" action="<?=$ADMINPAGE['ajaxpage'];?>">
 	<input type="hidden" name="_menu" value="system" />
 	<input type="hidden" name="tab" value="info" />
 	<input type="hidden" name="setprocessing" value="0" />

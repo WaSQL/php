@@ -1,5 +1,17 @@
 <?php
 loadExtras('system');
+loadExtrasCss('wacss');
+loadExtrasJs('wacss');
+global $ADMINPAGE;
+if(!isset($ADMINPAGE['page'])){
+	$ADMINPAGE['page']='/php/admin.php';
+}
+if(!isset($ADMINPAGE['ajaxpage'])){
+	$ADMINPAGE['ajaxpage']='/php/admin.php';
+}
+if(!isset($ADMINPAGE['ajaxdiv'])){
+	$ADMINPAGE['ajaxdiv']='system_content';
+}
 switch(strtolower($_REQUEST['tab'])){
 	case 'info':
 		$recs=systemGetInfo();
