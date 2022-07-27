@@ -45,7 +45,8 @@ switch(strtolower($_REQUEST['tab'])){
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%available%);"
 			),
-			'use%_class'=>'align-left w_nowrap'
+			'use%_class'=>'align-left w_nowrap',
+			'-results_eval'=>'systemGetDriveSpaceExtra'
 		);
 		setView('list',1);
 		return;
@@ -120,6 +121,7 @@ switch(strtolower($_REQUEST['tab'])){
 				'class'=>'align-right w_nowrap',
 				'displayname'=>'Mem %'
 			),
+			'-results_eval'=>'systemGetProcessListExtra'
 		);
 		setView('list',1);
 		return;

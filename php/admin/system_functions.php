@@ -1,4 +1,29 @@
 <?php
+function systemGetProcessListExtra($recs){
+	global $ADMINPAGE;
+	foreach($recs as $i=>$rec){
+		$recs[$i]['command']='<div style="max-width:200px;text-overflow: ellipsis;overflow:hidden;white-space:nowrap;" title="'.$rec['command'].'">'.$rec['command'].'</div>';
+	}
+	return $recs;
+}
+function systemGetDriveSpaceExtra($recs){
+	global $ADMINPAGE;
+	foreach($recs as $i=>$rec){
+		if(isset($ADMINPAGE["{$rec['mounted']}_hide"])){
+			unset($recs[$i]);
+			continue;
+		}
+		elseif(isset($ADMINPAGE["{$rec['filesystem']}_hide"])){
+			unset($recs[$i]);
+			continue;
+		}
+		if(isset($ADMINPAGE["{$rec['mounted']}_icon"])){
+			$recs[$i]['filesystem']='<span class="'.$ADMINPAGE["{$rec['mounted']}_icon"].'"></span> '.$rec['filesystem'];
+		}
+
+	}
+	return $recs;
+}
 function systemShowList($recs,$listopts=array()){
 	$opts=array(
 		'-list'=>$recs,
