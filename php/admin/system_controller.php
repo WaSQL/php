@@ -159,7 +159,8 @@ switch(strtolower($_REQUEST['tab'])){
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%available%);"
 			),
-			'use%_class'=>'align-left w_nowrap'
+			'use%_class'=>'align-left w_nowrap',
+			'-results_eval'=>'systemGetDriveSpaceExtra'
 		);
 		setView('default');
 	break;
