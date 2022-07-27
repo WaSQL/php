@@ -9,16 +9,16 @@ function systemGetProcessListExtra($recs){
 function systemGetDriveSpaceExtra($recs){
 	global $ADMINPAGE;
 	foreach($recs as $i=>$rec){
-		if(isset($ADMINPAGE["{$rec['mounted']}_hide"])){
+		if(isset($ADMINPAGE["mounted_{$rec['mounted']}_hide"])){
 			unset($recs[$i]);
 			continue;
 		}
-		elseif(isset($ADMINPAGE["{$rec['filesystem']}_hide"])){
+		elseif(isset($ADMINPAGE["filesystem_{$rec['filesystem']}_hide"])){
 			unset($recs[$i]);
 			continue;
 		}
-		if(isset($ADMINPAGE["{$rec['mounted']}_icon"])){
-			$recs[$i]['filesystem']='<span class="'.$ADMINPAGE["{$rec['mounted']}_icon"].'"></span> '.$rec['filesystem'];
+		if(isset($ADMINPAGE["mounted_{$rec['mounted']}_icon"])){
+			$recs[$i]['filesystem']='<span class="'.$ADMINPAGE["mounted_{$rec['mounted']}_icon"].'"></span> '.$rec['filesystem'];
 		}
 
 	}
