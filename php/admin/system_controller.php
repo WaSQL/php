@@ -14,8 +14,21 @@ if(!isset($ADMINPAGE['ajaxdiv'])){
 }
 switch(strtolower($_REQUEST['tab'])){
 	case 'info':
-		$recs=systemGetInfo();
+		$info=getServerUptime();
+		$recs=array();
+		foreach($info as $k=>$v){
+			$recs[]=array(
+				'name'=>$k,
+				'value'=>$v
+			);
+		}
 		$listopts=array('tab'=>'info',);
+		setView('list',1);
+		return;
+	break;
+	case 'uptime':
+		$recs=systemGetInfo();
+		$listopts=array('tab'=>'uptime',);
 		setView('list',1);
 		return;
 	break;

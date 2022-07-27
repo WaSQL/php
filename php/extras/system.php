@@ -472,6 +472,55 @@ function getServerInfo(){
 	if (strpos(strtolower(PHP_OS), 'win') === 0){return getServerInfoWindows();}
 	else{return getServerInfoLinux();}
 }
+//---------- begin function getServerInfo
+function getServerUptime(){
+	//info: returns a array structure of load averages,
+	if (strpos(strtolower(PHP_OS), 'win') === 0){
+		$context=array();
+		//current time 
+		$context['current_time'] = strftime('%B %d, %Y, %I:%M:%S %p');
+		//get uptime from net statistics workstation
+		$rtn = @`net statistics workstation`;
+		$lines=preg_split('/[\r\n]+/',trim($rtn));
+		foreach($lines as $line){
+			if(preg_match('/^Statistics\ since\ (.+)$/is',trim($line),$m)){
+				$context['since']=trim($m[1]);
+				$context['since_timestamp']=strtotime($context['since']);
+				$context['since_date']=date('Y-m-d H:i:s',$context['since_timestamp']);
+				$context['time']=time();
+				$context['time_date']=date('Y-m-d H:i:s',$context['time']);
+				$context['uptime']=$context['time']-$context['since_timestamp'];
+				$context['uptime_verbose']=trim(verboseTime($context['uptime']));
+				break;
+			}
+		}
+	}
+	else{
+		$context=array();
+		//current time
+		$context['current_time'] = strftime('%B %d, %Y, %I:%M:%S %p');
+		//load averages
+		$context['load_averages'] = @implode('', @getServerInfoFileData('/proc/loadavg'));
+		if (!empty($context['load_averages']) && preg_match('~^([^ ]+?) ([^ ]+?) ([^ ]+)~', $context['load_averages'], $matches) != 0){
+			$context['load_averages'] = array($matches[1], $matches[2], $matches[3]);
+		}
+		elseif (($context['load_averages'] = @`uptime 2>/dev/null`) != null && preg_match('~load average[s]?: (\d+\.\d+), (\d+\.\d+), (\d+\.\d+)~i', $context['load_averages'], $matches) != 0){
+			$context['load_averages'] = array($matches[1], $matches[2], $matches[3]);
+		}
+		else{
+			unset($context['load_averages']);
+		}
+		//uptime
+		$uptime = @implode('', @getServerInfoFileData('/proc/uptime'));
+		if (!empty($uptime)){
+			list($uptime,$idletime)=preg_split('/\ /',$uptime);
+			$uptime=(integer)$uptime;
+			$context['uptime']=$uptime;
+			$context['uptime_verbose']=verboseTime($uptime);
+		}
+	}
+	return $context;
+}
 //---------- begin function getServerInfoLinux
 function getServerInfoLinux($show_process=0){
 	$context=array();
