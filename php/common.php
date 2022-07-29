@@ -3850,6 +3850,8 @@ function buildFormTranslate($params=array()){
   	$tag.='	<ul>'.PHP_EOL;
     $tag.='		<li><a name="language" class="'.$params['-class'].'"><span class="'.$params['-icon'].'"></span> '.$params['-text'].'</a>'.PHP_EOL;
     $tag.='			<ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">'.PHP_EOL;
+    //remove dropdown from class
+    $params['-class']=str_replace('dropdown','',$params['-class']);
 	$opts=array();
 	foreach($locales as $locale){
 		if($params['-showflag']==1){
