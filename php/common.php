@@ -3842,17 +3842,24 @@ function buildFormTranslate($params=array()){
 	loadExtras('translate');
 	if(!isset($params['-icon'])){$params['-icon']='icon-translate';}
 	if(!isset($params['-class'])){$params['-class']='dropdown';}
+	if(!isset($params['-text'])){$params['-text']='Lang';}
+	if(!isset($params['-showflag'])){$params['-showflag']=1;}
 	$locales=translateGetLocalesUsed();
 	//return printValue($locales);
-	$tag='<div class="nav" style="background:transparent;">'.PHP_EOL;
+	$tag='<div class="nav w_formtranslate" style="background:transparent;">'.PHP_EOL;
   	$tag.='	<ul>'.PHP_EOL;
-    $tag.='		<li><a name="language" class="'.$params['-class'].'"><span class="'.$params['-icon'].'"></span> Lang</a>'.PHP_EOL;
+    $tag.='		<li><a name="language" class="'.$params['-class'].'"><span class="'.$params['-icon'].'"></span> '.$params['-text'].'</a>'.PHP_EOL;
     $tag.='			<ul style="left: calc(-100% - 100px);padding:10px 0;background:#fff;box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;min-width:auto;right:0px;">'.PHP_EOL;
 	$opts=array();
 	foreach($locales as $locale){
-		$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;" />';
-		$lang="{$img} {$locale['name']}";
-		$tag.='		<li><a href="?_locale_='.$locale['locale'].'">'.$lang.'</a></li>'.PHP_EOL;
+		if($params['-showflag']==1){
+			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;" />';
+			$lang="{$img} {$locale['name']}";
+		}
+		else{
+			$lang=$locale['name'];
+		}
+		$tag.='		<li><a class="'.$params['-class'].'" href="?_locale_='.$locale['locale'].'">'.$lang.'</a></li>'.PHP_EOL;
 	}
 	$tag.='			</ul>'.PHP_EOL;
 	$tag.='		</li>'.PHP_EOL;
