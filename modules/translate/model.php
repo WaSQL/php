@@ -85,6 +85,7 @@ function translateAddExtraInfo($recs){
 }
 function translateGetWasqlValue(){
 	global $MODULE;
+	//echo printValue($MODULE);exit;
 	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
 	return $wasql;
 }
