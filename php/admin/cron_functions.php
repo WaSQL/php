@@ -133,18 +133,18 @@ function cronList(){
 		'active_options'=>array(
 			'class'=>'w_success align-center ',
 			'checkbox'=>1,
-			'data-id'=>'%_id%',
+			'data-id'=>'%_id_ori%',
 			'data-type'=>'checkbox',
 			'title'=>'Paused',
-			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'active',this.checked)"
+			'checkbox_onclick'=>"cronSetFieldValue(this,'active',this.checked)"
 		),
 		'paused_options'=>array(
 			'class'=>'w_orange align-center ',
 			'checkbox'=>1,
-			'data-id'=>'%_id%',
+			'data-id'=>'%_id_ori%',
 			'data-type'=>'checkbox',
 			'title'=>'Paused',
-			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'paused',this.checked)"
+			'checkbox_onclick'=>"cronSetFieldValue(this,'paused',this.checked)"
 		),
 		'running_options'=>array(
 			'class'=>'align-center',
@@ -154,17 +154,17 @@ function cronList(){
 		'stop_now_options'=>array(
 			'class'=>'w_red align-center',
 			'checkbox'=>1,
-			'data-id'=>'%_id%',
+			'data-id'=>'%_id_ori%',
 			'title'=>'Attempt to stop cron',
-			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'stop_now',this.checked)"
+			'checkbox_onclick'=>"cronSetFieldValue(this,'stop_now',this.checked)"
 		),
 		'run_now_options'=>array(
 			'class'=>'w_blue align-center',
 			'checkbox'=>1,
-			'data-id'=>'%_id%',
+			'data-id'=>'%_id_ori%',
 			'data-type'=>'checkbox',
 			'title'=>'Mark cron to Run Now',
-			'checkbox_onclick'=>"cronSetFieldValue(this.dataset.id,'run_now',this.checked)"
+			'checkbox_onclick'=>"cronSetFieldValue(this,'run_now',this.checked)"
 		),
 		'-results_eval'=>'cronListExtra',
 		'-quickfilters'=>array(

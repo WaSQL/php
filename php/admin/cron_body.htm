@@ -44,7 +44,13 @@ function cronSetMultiple(fld,val){
 	}
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
 }
-function cronSetFieldValue(cron_id,fld,val){
+function cronSetFieldValue(el,fld,val){
+	let ptr=getParent(el,'tr');
+	let ptd=getParent(el,'td');
+	let cron_id=el.dataset.id || ptd.dataset.id || ptr.dataset.id || 0;
+	if(cron_id==0){
+		return false;
+	}
 	let params={_menu:'cron',func:'set_field_value',setprocessing:'setprocessing',cron_id:cron_id,fld:fld,val:val};
 	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
 }
