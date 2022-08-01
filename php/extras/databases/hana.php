@@ -154,6 +154,9 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
 		$query.=')';
 	}
+	if(isset($params['-debug'])){
+		return $query;
+	}
 	if(!is_resource($dbh_hana)){
 		$dbh_hana=hanaDBConnect($params);
 	}
