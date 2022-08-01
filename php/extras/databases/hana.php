@@ -93,7 +93,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				continue;
 			}
 			if(!strlen($v)){
-				$pvals[]='?';
+				$pvals[]='? as '.$k;
 				$pvalues[]=NULL;
 			}
 			else{
@@ -143,7 +143,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		$query.=PHP_EOL.implode(', ',$flds);
 		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
 		$flds=array();
-		foreach($params['-upsert'] as $fld){
+		foreach($fields as $fld){
 			$flds[]="T2.{$fld}";
 		}
 		$query.=PHP_EOL.implode(', ',$flds);
