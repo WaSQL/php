@@ -78,7 +78,7 @@ $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
 
 //should switch to ALLCONFIG
-$loop_max=5;
+$loop_max=10;
 if(in_array('once',$argv)){
 	$loop_max=1;
 }
@@ -132,7 +132,7 @@ while(microtime(true)-$starttime < 55){
 		$cnt=is_array($recs)?count($recs):0;
 		if(isCLI()){
 			$ymdhis=date('Ymd H:i:s');
-			echo "Loop: {$loop_cnt}, Ymdhis: {$ymdhis}, Count: {$cnt}".PHP_EOL;
+			echo "Host:{$CONFIG['name']}, Loop: {$loop_cnt}, Ymdhis: {$ymdhis}, Count: {$cnt}".PHP_EOL;
 		}
 		if($cnt > 0){
 			//$ok=cronMessage("setting the following crons to run_now");
@@ -198,6 +198,31 @@ ENDOFSQL;
 }
 exit(0);
 /* cron functions */
+function cronBuildFieldstr(){
+	return <<<ENDOFFIELDS
+	_id,active, paused, running, run_now,run_cmd,cron_pid,json_valid(run_format) as json_valid,frequency_max, 
+        minute(now()) as minute_now,
+        hour(now()) as hour_now,
+        date(now()) as date_now,
+        week(now()) as week_now,
+        month(now()) as month_now,
+        quarter(now()) as quarter_now,
+        year(now()) as year_now,
+        minute(run_date) as minute_run_date,
+        hour(run_date) as hour_run_date,
+        date(run_date) as date_run_date,
+        week(run_date) as week_run_date,
+        month(run_date) as month_run_date,
+        quarter(run_date) as quarter_run_date,
+        year(run_date) as year_run_date,
+        run_format->>'$.minute[0]' as run_format_minute_0,
+        run_format->>'$.hour[0]' as run_format_hour_0,
+        run_format->>'$.day[0]' as run_format_day_0,
+        run_format->>'$.month[0]' as run_format_month_0,
+        run_format->>'$.dayname[0]' as run_format_dayname_0,
+        run_format
+ENDOFFIELDS;
+}
 /** --- function cronBuildWhere
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -221,16 +246,16 @@ and (
 	)
 and 
 	(
-	ifnull(frequency_max,'')='' 
-	or ifnull(run_date,'')=''
-	or (frequency_max='minute' and minute(run_date) != minute(now()))
-	or (frequency_max='hourly' and hour(run_date) != hour(now()))
-	or (frequency_max='daily' and date(run_date) != date(now()))
-	or (frequency_max='weekly' and week(run_date) != week(now()))
-	or (frequency_max='monthly' and month(run_date) != month(now()))
-	or (frequency_max='quarterly' and quarter(run_date) != quarter(now()))
-	or (frequency_max='yearly' and year(run_date) != year(now()))
-	)
+        ifnull(frequency_max,'')=''
+        or ifnull(run_date,'')=''
+        or (frequency_max='minute' and minute(run_date) != minute(now()) and frequency_max='hourly' and hour(run_date) != hour(now()) and frequency_max='daily' and date(run_date) != date(now()))
+        or (frequency_max='hourly' and hour(run_date) != hour(now()) and frequency_max='daily' and date(run_date) != date(now()))
+        or (frequency_max='daily' and date(run_date) != date(now()))
+        or (frequency_max='weekly' and week(run_date) != week(now()) and frequency_max='yearly' and year(run_date) != year(now()))
+        or (frequency_max='monthly' and month(run_date) != month(now()) and frequency_max='yearly' and year(run_date) != year(now()))
+        or (frequency_max='quarterly' and quarter(run_date) != quarter(now()) and frequency_max='yearly' and year(run_date) != year(now()))
+        or (frequency_max='yearly' and year(run_date) != year(now()))
+    )
 and
 	(
 	run_format->>'\$.minute[0]'=-1
