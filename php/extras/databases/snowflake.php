@@ -217,6 +217,7 @@ function snowflakeParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
+	if(!is_array($params)){$params=array();}
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^snowflake/i',$k)){unset($CONFIG[$k]);}
