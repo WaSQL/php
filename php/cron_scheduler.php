@@ -248,12 +248,12 @@ and
 	(
         ifnull(frequency_max,'')=''
         or ifnull(run_date,'')=''
-        or (frequency_max='minute' and minute(run_date) != minute(now()) and frequency_max='hourly' and hour(run_date) != hour(now()) and frequency_max='daily' and date(run_date) != date(now()))
-        or (frequency_max='hourly' and hour(run_date) != hour(now()) and frequency_max='daily' and date(run_date) != date(now()))
-        or (frequency_max='daily' and date(run_date) != date(now()))
-        or (frequency_max='weekly' and week(run_date) != week(now()) and frequency_max='yearly' and year(run_date) != year(now()))
-        or (frequency_max='monthly' and month(run_date) != month(now()) and frequency_max='yearly' and year(run_date) != year(now()))
-        or (frequency_max='quarterly' and quarter(run_date) != quarter(now()) and frequency_max='yearly' and year(run_date) != year(now()))
+        or (frequency_max='minute' and to_seconds(now())-to_seconds(run_date) > 60) 
+        or (frequency_max='hourly' and to_seconds(now())-to_seconds(run_date) > 3600)
+        or (frequency_max='daily' and to_days(now())-to_days(run_date) > 0)
+        or (frequency_max='weekly' and YEARWEEK(now()) != YEARWEEK(run_date))
+        or (frequency_max='monthly' and extract(YEAR_MONTH from run_date) != extract(YEAR_MONTH from now()))
+        or (frequency_max='quarterly' and concat(YEAR(now()),quarter(now())) != concat(YEAR(run_date),quarter(run_date)))
         or (frequency_max='yearly' and year(run_date) != year(now()))
     )
 and
