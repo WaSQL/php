@@ -3038,7 +3038,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 			continue;
 		}
     	$litags .= '<input data-id="'.$params['id'].'" data-group="'.$params['group'].'" id="'.$id.'" data-type="checkbox" type="checkbox" name="'.$name.'[]" value="'.$tval.'"';
-    	if((isset($params['required']) && $params['required']) || (isset($params['_required']) && $params['_required'])){$tag.=' data-required="1"';}
+    	if((isset($params['required']) && $params['required']) || (isset($params['_required']) && $params['_required'])){$litags.=' data-required="1"';}
     	//add class
 		$class='';
 		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
