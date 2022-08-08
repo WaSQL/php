@@ -42,7 +42,15 @@ if(!file_exists($temp_path)){
 if(!file_exists($temp_path)){
 	echo "Error: unable to create {$temp_path} directory.  You will need to create this folder.";exit;
 }
-
+//Rewrite and redirect SimpleSAMLphp requests here as an alternative to using a rewrite rule in the .htaccess file
+$simplesaml_alias='simplesaml/';
+$simplesaml_webroot='/php/extras/simplesamlphp/www/';
+if(isset($_REQUEST['_view']) && ($pos=strpos($_REQUEST['_view'],$simplesaml_alias))===0){
+	$simplesamlphp_url=$simplesaml_webroot;
+	$url=substr_replace($_REQUEST['_view'],$simplesamlphp_url,$pos,strlen($simplesaml_alias)); // Replace first occurrence of the alias only
+	header('Location: '.$url);
+	exit;
+}
 $loadtimes['common']=number_format((microtime(true)-$stime),3);
 if(isset($_REQUEST['_view'])){
 //check for minify redirect
@@ -160,7 +168,7 @@ if(!isset($CONFIG['xss_protection']) || !$CONFIG['xss_protection']){
 }
 //check for url_eval
 if(isset($CONFIG['url_eval'])){
-	$out=includePage($CONFIG['url_eval'],array());	
+	$out=includePage($CONFIG['url_eval'],array());
 }
 //X-Content-Type-Options
 @header('X-Content-Type-Options: nosniff');
@@ -318,7 +326,7 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 		$json['loadavg_1']=$parts[0];
 		$json['loadavg_5']=$parts[1];
 		$json['loadavg_15']=$parts[2];
-		
+
 		//contains two numbers: the uptime of the system (seconds), and the amount of time spent in idle process
 		$out=cmdResults('cat /proc/uptime');
 		list($uptime,$idle)=preg_split('/\ /',trim($out['stdout']));
@@ -343,7 +351,7 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 
 //Check for upload_progress
 if(isset($_REQUEST['get_upload_progress_json']) && $_REQUEST['get_upload_progress_json']==1){
-	$key = ini_get("session.upload_progress.prefix") . $_REQUEST[ini_get("session.upload_progress.name")];	
+	$key = ini_get("session.upload_progress.prefix") . $_REQUEST[ini_get("session.upload_progress.name")];
 	$msg="Key:{$key}<br>".PHP_EOL;
 	$msg.=printValue($_REQUEST).PHP_EOL;
 	if(isset($_SESSION[$key])){
@@ -352,7 +360,7 @@ if(isset($_REQUEST['get_upload_progress_json']) && $_REQUEST['get_upload_progres
 	}
 	else{
 		echo "Upload Complete";
-		//echo buildOnLoad("removeId('centerpop99');");	
+		//echo buildOnLoad("removeId('centerpop99');");
 		echo buildOnLoad("setTimeout('formShowUploadProgress(\\'{$_REQUEST['name']}\\')',3000);");
 	}
 	$msg.=printValue($_SESSION).PHP_EOL.PHP_EOL;
@@ -789,7 +797,7 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 						//require name field
 						$finfo=getDBFieldInfo($mtable,1);
 						if(isset($finfo['name'])){
-							array_push($tables,$mtable);	
+							array_push($tables,$mtable);
 						}
 					}
                 }
