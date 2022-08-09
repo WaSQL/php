@@ -55,6 +55,15 @@
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
 	</div>
+	<?=renderView('config_users_ldap_settings');?>
+	<div style="display:flex;">
+		<button type="submit" class="btn w_success">Save</button>
+		<div id="config_users_save" style="margin-left:15px;"></div>
+	</div>
+</form>
+</view:config_users_ldap>
+
+<view:config_users_ldap_settings>
 	<div class="w_grayback w_bold w_white" style="padding:5px 9px;"><span class="icon-ldap"></span> LDAP Settings</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:3;"><label>Host</label><?=configBuildFormField('authldap');?></div>
@@ -65,33 +74,36 @@
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Admins (comma separated)</label><?=configBuildFormField('authldap_admin');?></div>
 	</div>
-	<div style="display:flex;">
-		<button type="submit" class="btn w_success">Save</button>
-		<div id="config_users_save" style="margin-left:15px;"></div>
+</view:config_users_ldap_settings>
+
+<view:config_users_okta_ldap_settings>
+	<div class="w_grayback w_bold w_white" style="padding:5px 9px;"><span class="icon-ldap"></span> LDAP Settings</div>
+	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:3;"><label>Host</label><?=configBuildFormField('authldap');?></div>
+		<div style="flex:3;margin-left:15px;"><label>Domain</label><?=configBuildFormField('authldap_domain');?></div>
+		<div style="flex:2;margin-left:15px;"><label>LDAPS (secure)?</label><?=configBuildFormField('authldap_secure');?></div>
+		<div style="flex:2;margin-left:15px;"><label>Require memberof entry?</label><?=configBuildFormField('authldap_checkmemberof');?></div>
 	</div>
-</form>
-</view:config_users_ldap>
+	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:3;"><label>Username</label><?=configBuildFormField('authldap_username');?></div>
+		<div style="flex:3;margin-left:15px;"><label>Password</label><?=configBuildFormField('authldap_password');?></div>
+		<div style="flex:3;margin-left:15px;"><label>BaseDN</label><?=configBuildFormField('authldap_basedn');?></div>
+	</div>
+	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>Admins (comma separated)</label><?=configBuildFormField('authldap_admin');?></div>
+	</div>
+</view:config_users_okta_ldap_settings>
 
 <view:config_users_okta>
 <form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_users_okta" />
-	<input type="hidden" name="auth_method" value="okta" />
+	<input type="hidden" name="auth_method" value="okta" /
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+	<div style="display:flex; justify-content:flex-start; align-items:flex-start; margin:5px 0 10px 0; display:none;">
 		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
 	</div>
-	<div class="w_grayback w_bold w_white" style="padding:5px 9px;">OKTA Settings</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Client ID</label><?=configBuildFormField('okta_client_id');?></div>
-		<div style="flex:1;margin-left:15px;"><label>Client Secret</label><?=configBuildFormField('okta_client_secret');?></div>
-	</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Metadata URL</label><?=configBuildFormField('okta_metadata_url');?></div>
-	</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Redirect URI</label><?=configBuildFormField('okta_redirect_uri');?></div>
-	</div>
+	<?=renderView('config_users_okta_settings');?>
 	<div style="display:flex;">
 		<button type="submit" class="btn w_success">Save</button>
 		<div id="config_users_save" style="margin-left:15px;"></div>
@@ -105,13 +117,39 @@
 	<input type="hidden" name="func" value="config_users_okta_ldap" />
 	<input type="hidden" name="auth_method" value="okta_ldap" />
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+	<div style="display:flex; justify-content:flex-start; align-items:flex-start; margin:5px 0 10px 0; display:none;">
 		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
 	</div>
+	<?=renderView('config_users_okta_settings');?>
+	<?=renderView('config_users_okta_ldap_settings');?>
+	<div style="display:flex;">
+		<button type="submit" class="btn w_success">Save</button>
+		<div id="config_users_save" style="margin-left:15px;"></div>
+	</div>
+</form>
+</view:config_users_okta_ldap>
+
+<view:config_users_okta_settings>
 	<div class="w_grayback w_bold w_white" style="padding:5px 9px;">OKTA Settings</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Client ID</label><?=configBuildFormField('okta_client_id');?></div>
-		<div style="flex:1;margin-left:15px;"><label>Client Secret</label><?=configBuildFormField('okta_client_secret');?></div>
+		<div style="flex:1;"><label>Okta Authentication Method</label><?=configBuildFormField('okta_auth_method');?></div>
+	</div>
+	<!-- OAuth-only settings -->
+	<div data-displayif="okta_auth_method:oauth2">
+		<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+			<div style="flex:1;"><label>Client ID</label><?=configBuildFormField('okta_client_id');?></div>
+			<div style="flex:1;margin-left:15px;"><label>Client Secret</label><?=configBuildFormField('okta_client_secret');?></div>
+		</div>
+	</div>
+	<!-- SAML-only settings -->
+	<div data-displayif="okta_auth_method:saml">
+		<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+			<div style="flex:1;"><label>Service Provider ID</label><?=configBuildFormField('okta_simplesamlphp_service_provider_id');?></div>
+		</div>
+		<div style="margin:5px 0 10px 0;">
+			<p>For SAML authentication, add the following directives for SimpleSAMLphp to the WaSQL virtual host (Apache directives shown):</p>
+			<pre>SetEnv SIMPLESAMLPHP_CONFIG_DIR /var/www/wasql_stage/php/extras/simplesamlphp/config<br>Alias /simplesaml /var/www/wasql_stage/php/extras/simplesamlphp/www<br>&lt;Directory /var/www/wasql_stage/php/extras/simplesamlphp&gt;<br>    Require all granted<br>&lt;/Directory&gt;</pre>
+		</div>
 	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Metadata URL</label><?=configBuildFormField('okta_metadata_url');?></div>
@@ -119,26 +157,7 @@
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Redirect URI</label><?=configBuildFormField('okta_redirect_uri');?></div>
 	</div>
-	<div class="w_grayback w_bold w_white" style="padding:5px 9px;"><span class="icon-ldap"></span> LDAP Settings</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:3;"><label>Host</label><?=configBuildFormField('ldap_host');?></div>
-		<div style="flex:3;margin-left:15px;"><label>Domain</label><?=configBuildFormField('ldap_domain');?></div>
-		<div style="flex:1;margin-left:15px;"><label>LDAPS (secure)?</label><?=configBuildFormField('ldap_secure');?></div>
-		<div style="flex:2;margin-left:15px;"><label>Require memberof entry?</label><?=configBuildFormField('ldap_checkmemberof');?></div>
-	</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Username</label><?=configBuildFormField('ldap_username');?></div>
-		<div style="flex:1;margin-left:15px;"><label>Password</label><?=configBuildFormField('ldap_password');?></div>
-	</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Admins (comma separated)</label><?=configBuildFormField('ldap_admins');?></div>
-	</div>
-	<div style="display:flex;">
-		<button type="submit" class="btn w_success">Save</button>
-		<div id="config_users_save" style="margin-left:15px;"></div>
-	</div>
-</form>
-</view:config_users_okta_ldap>
+</view:config_users_okta_settings>
 
 <view:config_sync>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-sync"></span> Syncronize Settings</div>
@@ -156,9 +175,6 @@
 	</div>
 </form>
 </view:config_sync>
-
-
-
 
 <view:config_mail>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-mail"></span> SendMail Settings</div>
