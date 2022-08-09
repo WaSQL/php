@@ -5,12 +5,13 @@ function configSave(){
 		if(isWasqlField($k)){continue;}
 		if(is_array($v)){$v=implode(':',$v);}
 		if(!strlen(trim($v))){$v='NULL';}
-		$ok=addDBRecord(array(
+		$addopts=array(
 			'-table'=>'_config',
 			'name'=>$k,
 			'current_value'=>$v,
 			'-upsert'=>'current_value'
-		));
+		);
+		$ok=addDBRecord($addopts);
 		if(!isNum($ok)){
 			echo $ok;exit;
 		}
@@ -33,6 +34,26 @@ function configBuildFormField($field,$cparams=array()){
 				'class'=>'select',
 				'required'=>1,
 				'onchange'=>"return configAuthMethodChanged(this);",
+				'data-nav'=>"/php/admin.php",
+				'data-div'=>'config_users',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormSelect($field,$opts,$params);
+		break;
+		case 'okta_auth_method':
+			$opts=array(
+				'oauth2'=>'OAuth 2.0',
+				'saml'=>'SAML',
+			);
+			$params=array(
+				'id'=>'config_okta_auth_method',
+				'class'=>'select',
+				'required'=>1,
+				// 'onchange'=>"return configOktaAuthMethodChanged(this);",
 				'data-nav'=>"/php/admin.php",
 				'data-div'=>'config_users',
 				'value'=>$CONFIG[$field]
