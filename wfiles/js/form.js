@@ -4425,6 +4425,13 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					tinyMCE.execCommand('mceRemoveControl', false, cid);
 					//console.log('ajaxPost - removed tinyMCE for '+cid+' found in '+dname);
 				}
+				//load scripts in response 
+				let rel = document.createElement( 'html' );
+				rel.innerHTML = req.responseText;
+				let scripts=rel.getElementsByTagName('script');
+				for(let s=0;s<scripts.length;s++){
+					eval(scripts[s].innerHTML);
+				}
 				if(undefined != theform.setprocessing){
 					setText(theform.setprocessing.value,'');
 					}
@@ -4794,6 +4801,13 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 					var cid=ajaxids[i].id;
 					tinyMCE.execCommand('mceRemoveControl', false, cid);
 					//console.log('ajaxPost - removed tinyMCE for '+cid+' found in '+dname);
+				}
+				//load scripts in response 
+				let rel = document.createElement( 'html' );
+				rel.innerHTML = req.responseText;
+				let scripts=rel.getElementsByTagName('script');
+				for(let s=0;s<scripts.length;s++){
+					eval(scripts[s].innerHTML);
 				}
 				//update the url and history if requested
 				//http://stackoverflow.com/questions/11932869/how-to-dynamically-change-url-without-reloading

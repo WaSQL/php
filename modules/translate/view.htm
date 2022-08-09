@@ -1,6 +1,6 @@
 <view:default>
 <script>
-	function translateBulkGoogleTranslate(locale){
+	window['translateBulkGoogleTranslate'] = function(locale){
 		let els=document.querySelectorAll('input[type="checkbox"][data-group="_id_checkbox"]:checked');
 		if(els.length==0){
 			alert('Select rows to translate');

@@ -92,7 +92,7 @@ function translateGetWasqlValue(){
 /* translateListLocales returns recs for json in dblistrecords */
 function translateListLocales(){
 	global $MODULE;
-	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
+	$wasql=translateGetWasqlValue();
 	$recs=translateGetLocalesUsed(0,$wasql);
 	//echo 'recs'.printValue($recs).printValue($MODULE);exit;
 	$localesmap=array();

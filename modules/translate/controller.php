@@ -42,7 +42,7 @@
 			//get the source texts
 			$topts=array(
 				'-table'	=> '_translations',
-				'-where'	=> "locale ='{$source['locale']}' and _id in ({$idstr})",
+				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where _id in ({$idstr})",
 				'-fields'	=> 'locale,translation',
 				'-order'	=> '_id'
 			);

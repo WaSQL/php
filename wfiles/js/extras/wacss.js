@@ -2,6 +2,13 @@ var wacss = {
 	version: '2022.0501',
 	author: 'WaSQL.com',
 	chartjs:{},
+	loadJsText:function(name,body){
+		console.log(name);
+		console.log(body);
+		var code = 'this.f = function ' + name + '() {'+body+'}';
+		eval(code);
+		 return true;
+	},
 	addClass: function(element, classToAdd) {
 		element=wacss.getObject(element);
 		if(undefined == element){return false;}
