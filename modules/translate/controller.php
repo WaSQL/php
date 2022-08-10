@@ -42,12 +42,12 @@
 			//get the source texts
 			$topts=array(
 				'-table'	=> '_translations',
-				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where _id in ({$idstr})",
+				'-where'	=> "locale ='{$source['locale']}' and identifier in (select identifier from _translations where _id in ({$idstr}))",
 				'-fields'	=> 'locale,translation',
 				'-order'	=> '_id'
 			);
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-				$topts['-where']="locale ='{$source['locale']}' and _id in ({$idstr}) and  source_id in (0,{$CONFIG['translate_source_id']})";
+				$topts['-where']="locale ='{$source['locale']}' and identifier in (select identifier from _translations where _id in ({$idstr})) and  source_id in (0,{$CONFIG['translate_source_id']})";
 			}
 			$trecs=getDBRecords($topts);
 			//echo printValue($topts).printValue($trecs);exit;
