@@ -101,7 +101,7 @@ function translateGetLocalesUsed($ibl=0,$wasql=0){
 	$source_local=translateGetSourceLocale();
 	$wherestr="where wasql={$wasql}";
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-		$wherestr=" and source_id={$CONFIG['translate_source_id']}";
+		$wherestr.=" and source_id={$CONFIG['translate_source_id']}";
 	}
 	$q=<<<ENDOFQ
 		SELECT
