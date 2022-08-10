@@ -55,7 +55,7 @@
 		confirmed_cnt_class="align-right"
 
 		>
-		<?=json_encode(translateListLocales());?>
+		<?=json_encode(translateListLocales(),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_IGNORE);?>
 	</dblistrecords>
 </view:translate_locales>
 
@@ -173,7 +173,7 @@
 		locale_class="w_small w_nowrap"
 		country_class="w_small w_nowrap"
 		-results_eval="translateGetLangSelectionsExtra"
-	><?=json_encode(translateGetLangSelections());?></dblistrecords>
+	><?=json_encode(translateGetLangSelections(),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_IGNORE);?></dblistrecords>
 </view:selectlang>
 
 <view:addlang>
