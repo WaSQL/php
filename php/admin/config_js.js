@@ -38,3 +38,9 @@ function configNav(el,opts){
 	}
 	return ajaxGet(nav,div,params);
 }
+function configUpdateSessionCookieLifetimeInputValue(el){
+	// Make input for okta_simplesamlphp_config_session__cookie__lifetime the same value as the input this event is attached to (el) + 1 hour
+	var val=parseInt(el.value);
+	val+=(60*60);
+	document.querySelector('[name="okta_simplesamlphp_config_session__cookie__lifetime_int"]').value=val;
+}
