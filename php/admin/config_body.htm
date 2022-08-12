@@ -140,15 +140,41 @@
 			<div style="flex:1;"><label>Client ID</label><?=configBuildFormField('okta_client_id');?></div>
 			<div style="flex:1;margin-left:15px;"><label>Client Secret</label><?=configBuildFormField('okta_client_secret');?></div>
 		</div>
+		<!-- Okta OAuth 2.0 application configuration instructions -->
+		<div style="display:none;">
+			<p>Use the following values to setup the Okta application:</p>
+			<div style="margin:5px 0 10px 30px;">
+				<p>&nbsp;</p>
+			</div>
+		</div>
 	</div>
 	<!-- SAML-only settings -->
 	<div data-displayif="okta_auth_method:saml">
 		<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 			<div style="flex:1;"><label>Service Provider ID</label><?=configBuildFormField('okta_simplesamlphp_service_provider_id');?></div>
 		</div>
-		<div style="margin:5px 0 10px 0;">
-			<p>For SAML authentication, add the following directives for SimpleSAMLphp to the WaSQL virtual host (Apache directives shown):</p>
-			<pre>SetEnv SIMPLESAMLPHP_CONFIG_DIR /var/www/wasql_stage/php/extras/simplesamlphp/config<br>Alias /simplesaml /var/www/wasql_stage/php/extras/simplesamlphp/www<br>&lt;Directory /var/www/wasql_stage/php/extras/simplesamlphp&gt;<br>    Require all granted<br>&lt;/Directory&gt;</pre>
+		<!-- SimpleSAMLphp configuration settings -->
+		<div style="display:flex; flex-wrap:wrap; gap:10px 15px; justify-content:flex-start; align-items:flex-start; margin:5px 0 10px 0;">
+			<input type="hidden" name="okta_simplesamlphp_config_secretsalt" value="wasqllqsawwasqllqsaw" />
+			<?=configBuildFormField('okta_simplesamlphp_config_session__cookie__domain');?>
+			<?=configBuildFormField('okta_simplesamlphp_config_session__cookie__lifetime_int');?>
+			<input type="hidden" name="okta_simplesamlphp_config_store__type" value="sql" />
+			<?=configBuildFormField('okta_simplesamlphp_config_store__sql__dsn');?>
+			<div style="width:calc((100% - 15px) / 2);"><label>Auth. Admin Password</label><?=configBuildFormField('okta_simplesamlphp_config_auth__adminpassword');?></div>
+			<div style="width:calc((100% - 15px) / 2);"><label>Session Duration (Seconds)</label><?=configBuildFormField('okta_simplesamlphp_config_session__duration_int');?></div>
+			<div style="width:calc((100% - 15px) / 2);"><label>Technical Contact Name</label><?=configBuildFormField('okta_simplesamlphp_config_technicalcontact_name');?></div>
+			<div style="width:calc((100% - 15px) / 2);"><label>Technical Contact Email</label><?=configBuildFormField('okta_simplesamlphp_config_technicalcontact_email');?></div>
+		</div>
+		<!-- Okta SAML application configuration instructions -->
+		<p>Use the following values to setup the Okta application:</p>
+		<div style="margin:5px 0 10px 30px;">
+			<p>Single sign on/ACS URL: <span style="font-family:monospace;"><?=configGetOktaSAMLACSURL();?></span></p>
+			<p>Audience URI/SP Entity ID: <span style="font-family:monospace;"><?=configGetOktaSAMLSPEntityID();?></span></p>
+		</div>
+		<!-- SimpleSAMLphp server configuration instructions -->
+		<p>For SAML authentication, add the following directives for SimpleSAMLphp to the WaSQL virtual host (Apache directives shown):</p>
+		<div style="margin:5px 0 10px 30px;">
+			<pre style="font-family:monospace;"><?=configGetSimpleSAMLphpVirtualHostDirectives();?></pre>
 		</div>
 	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">

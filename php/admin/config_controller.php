@@ -14,10 +14,23 @@
 			setView($_REQUEST['func'],1);
 			return;
 		break;
-		case 'config_users_wasql':
-		case 'config_users_ldap':
 		case 'config_users_okta':
 		case 'config_users_okta_ldap':
+			switch(strtolower($_REQUEST['process'])){
+				case 'save':
+					$ok=configSave();
+					$_SESSION=array();
+					if(isset($_REQUEST['okta_auth_method']) && strtolower($_REQUEST['okta_auth_method']) == 'saml'){
+						$ok=configOktaSAMLWriteConfig();
+					}
+					setView('config_users_save',1);
+					return;
+					break;
+				default:
+					// Continue evaluating parent switch cases
+			}
+		case 'config_users_wasql':
+		case 'config_users_ldap':
 		case 'config_sync_form':
 		case 'config_mail_form':
 		case 'config_uploads_form':
@@ -28,7 +41,8 @@
 					$_SESSION=array();
 					setView('config_users_save',1);
 					return;
-				break;
+					break;
+				default:
 			}
 			setView($_REQUEST['func'],1);
 			return;

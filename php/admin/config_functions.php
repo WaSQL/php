@@ -125,6 +125,78 @@ function configBuildFormField($field,$cparams=array()){
 			}
 			return buildFormCheckbox($field,$opts,$params);
 		break;
+		//********************************
+		// OKTA FORM INPUT BUILDERS
+		//********************************
+		// Misc. inputs requiredif Okta OAuth 2.0
+		case 'okta_client_id':
+		case 'okta_client_secret':
+			$params=array(
+				'class'=>'input',
+				'requiredif'=>'okta_auth_method:oauth2',
+				'value'=>$CONFIG[$field],
+			);
+			return buildFormText($field,$params);
+			break;
+		// Custom params for specific Okta OAuth 2.0 inputs
+		/* Intentionally blank */
+		// Misc. inputs requiredif Okta SAML
+		case 'okta_simplesamlphp_service_provider_id':
+		case 'okta_simplesamlphp_config_auth__adminpassword':
+		case 'okta_simplesamlphp_config_technicalcontact_name':
+		case 'okta_simplesamlphp_config_technicalcontact_email':
+			$params=array(
+				'class'=>'input',
+				'requiredif'=>'okta_auth_method:saml',
+				'value'=>$CONFIG[$field],
+			);
+			return buildFormText($field,$params);
+			break;
+		// Custom params for specific Okta SAML inputs
+		case 'okta_simplesamlphp_config_session__duration_int':
+			$params=array(
+				'class'=>'input',
+				'requiredif'=>'okta_auth_method:saml',
+				'value'=>$CONFIG[$field],
+				'onchange'=>'configUpdateSessionCookieLifetimeInputValue(this);',
+			);
+			return buildFormText($field,$params);
+			break;
+		// Custom params for hidden OKTA SAML SimpleSAMLphp configuration inputs
+		case 'okta_simplesamlphp_config_session__cookie__domain':
+			$params=array(
+				'value'=>'.'.$_SERVER['UNIQUE_HOST'],
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormHidden($field,$params);
+			break;
+		case 'okta_simplesamlphp_config_session__cookie__lifetime_int':
+			$params=array(
+				'value'=>$CONFIG[$field],
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormHidden($field,$params);
+			break;
+		case 'okta_simplesamlphp_config_store__sql__dsn':
+			$simplesamlphp_dir=getWasqlPath('php/extras/simplesamlphp');
+			$sqlite_file='sqlite:'.$simplesamlphp_dir.'/simplesaml.sq3';
+			$params=array(
+				'value'=>$sqlite_file,
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormHidden($field,$params);
+		//********************************
+		// DEFAULT FORM INPUT BUILDER
+		//********************************
 		default:
 			$params=array(
 				'class'=>'input',
@@ -137,6 +209,10 @@ function configBuildFormField($field,$cparams=array()){
 			}
 			return buildFormText($field,$params);
 		break;
+		//********************************
+		// END DEFAULT FORM INPUT BUILDER
+		//********************************
+		// More special form inputs builders
 		case 'ldap_password':
 		case 'smtppass':
 			$params=array(
@@ -354,5 +430,64 @@ function configShowlistExtra($recs){
 		}
 	}
 	return $recs;
+}
+function configGetOktaSAMLACSURL() {
+	global $CONFIG;
+	$tmpl="https://%s%s/simplesaml/module.php/saml/sp/saml2-acs.php/<span id=\"okta_simplesamlphp_service_provider_id_acs\">%s</span>";
+	$subdomain=$_SERVER['SUBDOMAIN']?$_SERVER['SUBDOMAIN'].'.':'';
+	$sp=$CONFIG['okta_simplesamlphp_service_provider_id'];
+	$url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], $sp);
+	echo $url;
+}
+function configGetOktaSAMLSPEntityID() {
+	global $CONFIG;
+	$tmpl="https://%s%s/simplesaml/module.php/saml/sp/metadata.php/%s";
+	$subdomain=$_SERVER['SUBDOMAIN']?$_SERVER['SUBDOMAIN'].'.':'';
+	$sp=$CONFIG['okta_simplesamlphp_service_provider_id'];
+	$url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], $sp);
+	echo $url;
+}
+function configGetSimpleSAMLphpVirtualHostDirectives() {
+	// Output dynamically-generated virtual host directive(s) that match the following example:
+	/*
+	SetEnv SIMPLESAMLPHP_CONFIG_DIR /var/www/wasql_stage/php/extras/simplesamlphp/config
+	Alias /simplesaml /var/www/wasql_stage/php/extras/simplesamlphp/www
+	<Directory /var/www/wasql_stage/php/extras/simplesamlphp>
+	    Require all granted
+	</Directory>
+	*/
+	$simplesamlphp_dir=getWasqlPath('php/extras/simplesamlphp');
+	$simplesamlphp_config_dir=getWasqlPath('php/extras/simplesamlphp/config');
+	$simplesamlphp_alias_dir=getWasqlPath('php/extras/simplesamlphp/www');
+	$directives=<<<EOF
+SetEnv SIMPLESAMLPHP_CONFIG_DIR {$simplesamlphp_config_dir}<br>Alias /simplesaml {$simplesamlphp_alias_dir}<br>&lt;Directory {$simplesamlphp_dir}&gt;<br>    Require all granted<br>&lt;/Directory&gt;
+EOF;
+	echo $directives;
+}
+function configOktaSAMLWriteConfig(){
+	loadExtras('okta');
+	// Put Okta SAML config values from configuration form inputs in array
+	// All input names with the prefix "okta_simplesamlphp_config_" are SimpleSAMLphp configuration $config array properties
+	$config=array();
+	foreach($_REQUEST as $key=>$value){
+		if(strpos($key, 'okta_simplesamlphp_config_')===0){
+			$k=str_replace('okta_simplesamlphp_config_', '', $key); // Remove the prefix
+			$k=str_replace('__', '.', $k);
+			// If key ends in "_int", convert the value to an integer
+			if(strpos($k, '_int', -4)===(strlen($k)-4)){
+				$k=substr($k, 0, -4); // Remove the data type suffix
+				$config[$k]=intval($value);
+			}
+			else{
+				$config[$k]=$value;
+			}
+		}
+	}
+	$result=Okta::writeSAMLConfig($config);
+	if ($result !== true) {
+		// TODO: Set view with error message
+		echo "<p style=\"margin:6px 0 0 0; color:red;\"><span class=\"icon-close\"></span> {$result} SimpleSAMLphp config.php file not written.</p>";
+		commonLogMessage('user', "Okta SAML configuration was".($ok ? "" : " not")." written. {$result}");
+	}
 }
 ?>
