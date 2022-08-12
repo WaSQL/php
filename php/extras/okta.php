@@ -6,7 +6,7 @@
 
 class Okta {
 	const DEFAULT_DEBUG = false;
-	// const SIMPLESAMLPHP_CONFIG_WASQL_PATH = 'php/extras/simplesamlphp/config';
+	const SIMPLESAMLPHP_CONFIG_WASQL_PATH = 'php/extras/simplesamlphp/config';
 	// const SIMPLESAMLPHP_AUTOLOADER_PATH = '../../simplesamlphp/lib/_autoload.php'; // Absolute path: /var/www/simplesamlphp/lib/_autoload.php
 	const SIMPLESAMLPHP_AUTOLOADER_WASQL_PATH = 'php/extras/simplesamlphp/lib/_autoload.php';
 
@@ -524,6 +524,49 @@ class Okta {
 			commonLogMessage('user', $debugStr);
 		}
 		if ($die) die;
+	}
+
+	/**
+	 * Write a SimpleSAMLphp config.php file in the SimpleSAMLphp directory using a copy of the default config.php and the values in $config, typically provided by WaSQL Configuration > User Authentication inputs
+	 * @param array $config_wasql_auth A key-value array where the key is a named SimpleSAMLphp configuration property.
+	 * @return boolean|string Returns true if the configuration file was written successfully or an error message on failure
+	 */
+	public function writeSAMLConfig($config_wasql_auth) {
+		$error_msg = null;
+		$config_dir_path = getWasqlPath(self::SIMPLESAMLPHP_CONFIG_WASQL_PATH);
+		$default_config_path = $config_dir_path.'/config_default.php';
+		$config_path = $config_dir_path.'/config.php';
+		// Get the default configuration file, config_default.php, and read it into the $config array
+		if (!is_file($default_config_path)) {
+			return "Error: SimpleSAMLphp default config.php file does not exist.";
+		}
+		if (!is_readable($default_config_path)) {
+			return "Error: SimpleSAMLphp default config.php file is not readable.";
+		}
+		// Load config_default.php as a string and append our configuration values and code to merge them into $config and save it as config.php. SimpleSAMLphp will evalute the file as usual, but additionalyl use the configuration values from the WaSQL Configuration > User Authentication GUI.
+		$config_php_str = file_get_contents($default_config_path);
+		$config_wasql_auth_export = var_export($config_wasql_auth, true);
+		$config_php_str .= <<<EOF
+// Merge WaSQL SimpleSAMLphp configuration into default configuration
+\$config_wasql = {$config_wasql_auth_export};
+\$config = array_merge(\$config, \$config_wasql);
+unset(\$config_wasql);
+EOF;
+		if (!is_dir($config_dir_path)) {
+		  return "Error: SimpleSAMLphp config directory {$config_dir_path} does not exist.";
+		}
+		elseif (!is_writable($config_dir_path)) {
+			return "Error: SimpleSAMLphp config directory {$config_dir_path} is not writable.";
+		}
+		elseif (is_file($config_path) && !is_writable($config_path)) {
+		  return "Error: SimpleSAMLphp config.php file already exists and is not writable.";
+		}
+		// File/directory exists and is writable
+		$result = file_put_contents($config_path, $config_php_str);
+		if ($result === false) {
+			return "Error: SimpleSAMLphp config.php file could not be written.";
+		}
+		return true;
 	}
 
 }
