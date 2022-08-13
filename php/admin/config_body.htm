@@ -168,8 +168,8 @@
 		<!-- Okta SAML application configuration instructions -->
 		<p>Use the following values to setup the Okta application:</p>
 		<div style="margin:5px 0 10px 30px;">
-			<p>Single sign on/ACS URL: <span style="font-family:monospace;"><?=configGetOktaSAMLACSURL();?></span></p>
-			<p>Audience URI/SP Entity ID: <span style="font-family:monospace;"><?=configGetOktaSAMLSPEntityID();?></span></p>
+			<p>Single sign on/ACS URL: <span style="font-family:monospace;"><?=configGetOktaSAMLACSURL();?></span><span data-behavior="copyvalue" data-id="okta_simplesamlphp_service_provider_id"></span></p>
+			<p>Audience URI/SP Entity ID: <span style="font-family:monospace;"><?=configGetOktaSAMLSPEntityID();?></span><span data-behavior="copyvalue" data-id="okta_simplesamlphp_service_provider_id"></span></p>
 		</div>
 		<!-- SimpleSAMLphp server configuration instructions -->
 		<p>For SAML authentication, add the following directives for SimpleSAMLphp to the WaSQL virtual host (Apache directives shown):</p>

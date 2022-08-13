@@ -1876,7 +1876,46 @@ function initBehaviors(ajaxdiv){
             	setText(chart_image,img);
 			}
 		}
-        if(in_array("clock",behaviors)){
+		if(in_array("copyvalue",behaviors)){
+			/* copyvalue - */
+			if(undefined != navEls[n].dataset.id){
+				let copyel=document.querySelector('#'+navEls[n].dataset.id);
+				if(undefined != copyel && undefined==copyel.dataset.copyvalue_init){
+					copyel.dataset.copyvalue_init=1;
+					//copy the current value
+					let els=document.querySelectorAll('[data-behavior="copyvalue"][data-id="'+copyel.id+'"]');
+					let v=copyel.value || copyel.textContent
+					for(let i=0;i<els.length;i++){
+						els[i].textContent=v;
+						//simulate the change event
+						simulateEvent(els[i],'change');
+					}
+					//copy any changes
+					copyel.addEventListener("keyup", function(event){
+						let els=document.querySelectorAll('[data-behavior="copyvalue"][data-id="'+this.id+'"]');
+						let v=this.value || this.textContent
+						for(let i=0;i<els.length;i++){
+							els[i].textContent=v;
+							//simulate the change event
+							simulateEvent(els[i],'change');
+						}
+					});
+					copyel.addEventListener("change", function(event){
+						let els=document.querySelectorAll('[data-behavior="copyvalue"][data-id="'+this.id+'"]');
+						let v=this.value || this.textContent
+						for(let i=0;i<els.length;i++){
+							els[i].textContent=v;
+							//simulate the change event
+							simulateEvent(els[i],'change');
+						}
+					});
+				}
+			}
+			else{
+				console.log("data-copyvalue error - missing data-id attribute");
+			}
+		}
+        	if(in_array("clock",behaviors)){
 			/*CLOCK - */
   			var id=navEls[n].getAttribute('id');
 			if(id){startClock(id,1);}

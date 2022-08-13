@@ -149,6 +149,7 @@ function configBuildFormField($field,$cparams=array()){
 				'class'=>'input',
 				'requiredif'=>'okta_auth_method:saml',
 				'value'=>$CONFIG[$field],
+				'id'=>strtolower($field)
 			);
 			return buildFormText($field,$params);
 			break;
