@@ -475,13 +475,24 @@
 		<div id="utcclock_code" style="width:100px;"><div class="align-right" id="utcclock_x" data-behavior="utcclock"></div></div>
 	</div>
 	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
+		<div class="w_bigger">copyvalue
+			<sup title="copy code" class="w_pointer" onclick="setText('copyvalue_x','');wacss.trim(wacss.copy2Clipboard(getText('copyvalue_code')));return false;"><span class="icon-copy"></span></sup>
+		</div>
+		<div id="copyvalue_code">
+			<input type="text" id="inpsrv" value="hello" />
+			<div id="cpsrc" data-behavior="copyvalue" data-id="inpsrv">wassup</div>
+			<div data-behavior="copyvalue" data-id="cpsrc"></div>
+			<span data-behavior="copyvalue" data-id="cpsrc"></span>
+		</div>
+	</div>
+	<div  class="align-left" style="margin-top:10px;padding-top:10px;border-top:1px dashed #ccc;">
 		<div class="w_bigger">raid
 			<sup title="copy code" class="w_pointer" onclick="setText('raid_x','');wacss.trim(wacss.copy2Clipboard(getText('raid_code')));return false;"><span class="icon-copy"></span></sup>
 		</div>
 		<div id="raid_code">
-<form><textarea id="raid_txt" data-behavior="@raid(raid_x)" class="textarea" placeholder="type here to raid below"></textarea></form>
-
-<div class="align-left" class="w_bigger" id="raid_x"></div></div>
+			<form><textarea id="raid_txt" data-behavior="@raid(raid_x)" class="textarea" placeholder="type here to raid below"></textarea></form>
+			<div class="align-left" class="w_bigger" id="raid_x"></div>
+		</div>
 	</div>
 </view:behaviors>
 
