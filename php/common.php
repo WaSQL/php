@@ -3894,7 +3894,7 @@ function buildFormTranslateBulma($params=array()){
 		$lang=$info['lang'];
 	}
 	$tag.=' 	<a class="navbar-link">'.$lang.'</a>'.PHP_EOL;
-	$tag.=' 	<div class="navbar-dropdown">'.PHP_EOL;
+	$tag.=' 	<div class="navbar-dropdown is-right">'.PHP_EOL;
 	foreach($locales as $locale){
 		if($params['-showflag']==1){
 			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" />';
