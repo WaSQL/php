@@ -3839,6 +3839,11 @@ function buildFormTime($name,$params=array()){
 * @usage echo buildFormTranslate($params);
 */
 function buildFormTranslate($params=array()){
+	switch(strtolower($params['-framework'])){
+		case 'bulma':
+			return buildFormTranslateBulma($params);
+		break;
+	}
 	loadExtras('translate');
 	if(!isset($params['-icon'])){$params['-icon']='icon-translate';}
 	if(!isset($params['-class'])){$params['-class']='dropdown';}
@@ -3866,6 +3871,41 @@ function buildFormTranslate($params=array()){
 	$tag.='			</ul>'.PHP_EOL;
 	$tag.='		</li>'.PHP_EOL;
 	$tag.='	</ul>'.PHP_EOL;
+	$tag.='</div>'.PHP_EOL;
+	return $tag;
+}
+function buildFormTranslateBulma($params=array()){
+	loadExtras('translate');
+	if(!isset($params['-icon'])){$params['-icon']='icon-translate';}
+	if(!isset($params['-class'])){$params['-class']='dropdown';}
+	if(!isset($params['-text'])){$params['-text']='Lang';}
+	if(!isset($params['-showflag'])){$params['-showflag']=1;}
+	$locales=translateGetLocalesUsed();
+	$locale=$params['-locale'] ?? $_SESSION['REMOTE_LANG'] ?? $_SERVER['REMOTE_LANG'] ?? 'en-us';
+	$info=translateGetLocaleInfo($locale);
+	//echo printValue($info);exit;
+	$tag='';
+	$tag.='<div class="navbar-item has-dropdown is-hoverable">'.PHP_EOL;
+	if($params['-showflag']==1){
+		$img='<img src="'.$info['flag4x3'].'" alt="Language: '.$info['lang'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" />';
+		$lang="{$img} {$info['lang']}";
+	}
+	else{
+		$lang=$info['lang'];
+	}
+	$tag.=' 	<a class="navbar-link">'.$lang.'</a>'.PHP_EOL;
+	$tag.=' 	<div class="navbar-dropdown">'.PHP_EOL;
+	foreach($locales as $locale){
+		if($params['-showflag']==1){
+			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" />';
+			$lang="{$img} {$locale['name']}";
+		}
+		else{
+			$lang=$locale['name'];
+		}
+		$tag.='		<a class="navbar-item" href="?_locale_='.$locale['locale'].'">'.$lang.'</a>'.PHP_EOL;
+	}
+    $tag.='    </div>'.PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
