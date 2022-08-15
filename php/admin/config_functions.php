@@ -436,16 +436,18 @@ function configGetOktaSAMLACSURL() {
 	global $CONFIG;
 	$tmpl="https://%s%s/simplesaml/module.php/saml/sp/saml2-acs.php/<span id=\"okta_simplesamlphp_service_provider_id_acs\">%s</span>";
 	$subdomain=$_SERVER['SUBDOMAIN']?$_SERVER['SUBDOMAIN'].'.':'';
-	$sp=$CONFIG['okta_simplesamlphp_service_provider_id'];
-	$url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], $sp);
+	// $sp=$CONFIG['okta_simplesamlphp_service_provider_id'];
+	// $url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], $sp);
+	$url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], '');
 	echo $url;
 }
 function configGetOktaSAMLSPEntityID() {
 	global $CONFIG;
 	$tmpl="https://%s%s/simplesaml/module.php/saml/sp/metadata.php/%s";
 	$subdomain=$_SERVER['SUBDOMAIN']?$_SERVER['SUBDOMAIN'].'.':'';
-	$sp=$CONFIG['okta_simplesamlphp_service_provider_id'];
-	$url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], $sp);
+	// $sp=$CONFIG['okta_simplesamlphp_service_provider_id'];
+	// $url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], $sp);
+	$url=sprintf($tmpl, $subdomain, $_SERVER['UNIQUE_HOST'], '');
 	echo $url;
 }
 function configGetSimpleSAMLphpVirtualHostDirectives() {

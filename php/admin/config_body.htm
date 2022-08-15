@@ -168,13 +168,18 @@
 		<!-- Okta SAML application configuration instructions -->
 		<p>Use the following values to setup the Okta application:</p>
 		<div style="margin:5px 0 10px 30px;">
-			<p>Single sign on/ACS URL: <span style="font-family:monospace;"><?=configGetOktaSAMLACSURL();?></span><span data-behavior="copyvalue" data-id="okta_simplesamlphp_service_provider_id"></span></p>
-			<p>Audience URI/SP Entity ID: <span style="font-family:monospace;"><?=configGetOktaSAMLSPEntityID();?></span><span data-behavior="copyvalue" data-id="okta_simplesamlphp_service_provider_id"></span></p>
+			<div data-displayif="okta_simplesamlphp_service_provider_id:notblank">
+				<p>Single sign on/ACS URL: <span style="font-family:monospace; font-size:13px;"><?=configGetOktaSAMLACSURL();?><span data-behavior="copyvalue" data-id="okta_simplesamlphp_service_provider_id"></span></span></p>
+				<p>Audience URI/SP Entity ID: <span style="font-family:monospace; font-size:13px;"><?=configGetOktaSAMLSPEntityID();?><span data-behavior="copyvalue" data-id="okta_simplesamlphp_service_provider_id"></span></span></p>
+			</div>
+			<div data-hideif="okta_simplesamlphp_service_provider_id:notblank">
+				<p>Please enter a value for Service Provider ID to see the Okta application configuration URLs.</p>
+			</div>
 		</div>
 		<!-- SimpleSAMLphp server configuration instructions -->
 		<p>For SAML authentication, add the following directives for SimpleSAMLphp to the WaSQL virtual host (Apache directives shown):</p>
 		<div style="margin:5px 0 10px 30px;">
-			<pre style="font-family:monospace;"><?=configGetSimpleSAMLphpVirtualHostDirectives();?></pre>
+			<pre style="font-family:monospace; font-size:13px;"><?=configGetSimpleSAMLphpVirtualHostDirectives();?></pre>
 		</div>
 	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
