@@ -1268,6 +1268,11 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	$htm=commonProcessChartjsTags($htm);
 	//check for datalist tags
 	$htm=commonProcessDBListRecordsTags($htm);
+	//check for markdown
+	if(isset($PAGE['markdown']) && $PAGE['markdown']==1){
+		loadExtras('markdown');
+		$htm=markdown2Html($htm);
+	}
 	echo $htm;
 	echo $wasql_debugValueContent;
 	if(is_array($CONFIG['includes'])){
