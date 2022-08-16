@@ -3735,7 +3735,7 @@ function buildFormTextarea($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['wrapper_id'])){$params['wrapper_id']=$params['id'].'_wrapper';}
-	if(!isset($params['wrapper_style'])){$params['wrapper_style']='display:inline-block;width:100%;';}
+	if(!isset($params['wrapper_style'])){$params['wrapper_style']='';}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){
 		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
