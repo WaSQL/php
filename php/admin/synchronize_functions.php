@@ -137,7 +137,7 @@ function synchronizePost($load,$plain=0){
 	}
 	else{
 		//remove debug errors if they exist
-		if(stringBeginsWith($post['body'],'http:/') && stringContains($post['body'],'Content-Type:')){
+		if(stringBeginsWith($post['body'],'HTTP/') && stringContains($post['body'],'Content-Type:')){
 			$parts=preg_split('/[\r\n][\r\n]/',trim($post['body']),2);
 			$post['body']=trim($parts[1]);
 		}
