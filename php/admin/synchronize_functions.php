@@ -137,6 +137,11 @@ function synchronizePost($load,$plain=0){
 	}
 	else{
 		//remove debug errors if they exist
+		if(stringBeginsWith($post['body'],'http:/') && stringContains($post['body'],'Content-Type:')){
+			$parts=preg_split('/[\r\n][\r\n]/',trim($post['body']),2);
+			$post['body']=trim($parts[1]);
+		}
+
 		$json=json_decode(base64_decode($post['body']),true);
 		if(!is_array($json)){
 			$json=json_decode(base64_decode(trim($post['body'])),true);
@@ -155,7 +160,7 @@ function synchronizePost($load,$plain=0){
 						unset($_SESSION[$k]);
 					}
 				}
-				return array('error'=>"Failed to decode response.<hr />".printValue($post).PHP_EOL.'<hr />'.printValue($postopts));
+				return array('error'=>"Failed to decode response.<hr />".PHP_EOL.printValue($post).PHP_EOL.'<hr />'.printValue($postopts));
 			}
 		}
 		return $json;
