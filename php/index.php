@@ -1253,6 +1253,13 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	unset($tid);
 	$viewfield=isset($_REQUEST['_viewfield'])?$_REQUEST['_viewfield']:'body';
 	$controller=strlen(trim($PAGE['controller']))?trim($PAGE['controller']):'';
+	//check for markdown
+	if(isset($PAGE['markdown']) && $PAGE['markdown']==1){
+		loadExtras('markdown');
+		$PAGE[$viewfield]=markdown2Html($PAGE[$viewfield]);
+		$PAGE[$viewfield]=str_replace('&lt;','<',$PAGE[$viewfield]);
+		$PAGE[$viewfield]=str_replace('&gt;','>',$PAGE[$viewfield]);
+	}
 	//add controller before viewfield content
 	$htm='';
 	if($viewfield=='body'){
@@ -1261,11 +1268,6 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		$htm=evalPHP(array($htm));
 	}
 	else{$htm=$PAGE[$viewfield];}
-	//check for markdown
-	if(isset($PAGE['markdown']) && $PAGE['markdown']==1){
-		loadExtras('markdown');
-		$htm=markdown2Html($htm);
-	}
 	$htm=evalPHP(array($controller,$htm));
 	//check for translate tags
 	$htm=processTranslateTags($htm);
