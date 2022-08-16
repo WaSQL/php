@@ -150,7 +150,7 @@ function synchronizePost($load,$plain=0){
 						unset($_SESSION[$k]);
 					}
 				}
-				return array('error'=>"Failed to decode response.<br />".$post['body']);
+				return array('error'=>"Failed to decode response.<hr />".PHP_EOL.$body.PHP_EOL."<hr />".PHP_EOL.printValue($post));
 			}
 		}
 		return $json;

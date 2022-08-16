@@ -3726,6 +3726,7 @@ function buildFormText($name,$params=array()){
 * @describe creates an HTML textarea field
 * @param name string
 * @param params array
+* [-background]
 * @return string
 * @usage echo buildFormTextarea('name',$params);
 */
@@ -3733,6 +3734,8 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['wrapper_id'])){$params['wrapper_id']=$params['id'].'_wrapper';}
+	if(!isset($params['wrapper_style'])){$params['wrapper_style']='display:inline-block;';}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(!isset($params['value'])){
 		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
@@ -3748,7 +3751,6 @@ function buildFormTextarea($name,$params=array()){
 			$params['style'].=";height:{$params['height']};";
 		}
 	}
-	$white_wrap=0;
 	if(isset($params['behavior']) && strlen($params['behavior'])){
 		$params['data-behavior']=strtolower($params['behavior']);
 		
@@ -3766,21 +3768,28 @@ function buildFormTextarea($name,$params=array()){
 			case 'richtext':
 			case 'wysiwyg':
 			case 'quill':
-				$white_wrap=1;
+				$params['wrapper_style'].='background:#FFF;';
 				$params['data-behavior']="quill";
 				loadExtrasJs(array('quill'));
 				$params['wrap']="off";
 			break;
 			default:
 				loadExtrasJs(array('codemirror'));
-				$white_wrap=1;
+				$params['wrapper_style'].='background:#FFF;';
 			break;
 		}
 	}
 	if(!isset($params['wrap'])){$params['wrap']="off";}
 	$params['name']=$name;
 	$tag='';
-	if($white_wrap==1){$tag.='<div style="background:#FFF;">'.PHP_EOL;}
+	$tag.='<div ';
+	foreach($params as $k=>$v){
+		if(preg_match('/^wrapper_(.+)$/',$k,$m)){
+			$tag.=" {$m[1]}=\"{$v}\"";
+			unset($params[$k]);
+		}
+	}
+	$tag.='>'.PHP_EOL;
 	if(isset($params['data-behavior']) && $params['data-behavior']=='autogrow' && isset($params['disabled'])){
 		$params['style']="padding:10px 15px;border:1px solid #ccc;background-color:inherit;border-radius:4px;";
 		$tag .= '	<div';
@@ -3802,7 +3811,8 @@ function buildFormTextarea($name,$params=array()){
 		$tag .= encodeHtml($params['value']);
 		$tag .= '</textarea>'.PHP_EOL;
 	}
-	if($white_wrap==1){$tag.='</div>'.PHP_EOL;}
+	$tag.='</div>'.PHP_EOL;
+	//return printValue($params);
 	return $tag;
 }
 //---------- begin function buildFormTime-------------------
