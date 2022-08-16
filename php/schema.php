@@ -160,7 +160,7 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_config':
-			$fields['name']=databaseDataType('varchar(50)')." NOT NULL UNIQUE";
+			$fields['name']=databaseDataType('varchar(200)')." NOT NULL UNIQUE";
 			$fields['category']=databaseDataType('varchar(200)')." NULL";
 			$fields['current_value']=databaseDataType('varchar(500)')." NULL";
 			$fields['default_value']=databaseDataType('varchar(500)')." NULL";

@@ -301,6 +301,9 @@ function configCheckSchema(){
 	}
 	//_config
 	$finfo=getDBFieldInfo('_config');
+	if(stringContains($finfo['name']['_dbtype_ex'],'varchar(50)')){
+		$ok=executeSQL("alter table _config modify name varchar(200) NOT NULL UNIQUE");
+	}
 	//category
 	if(!isset($finfo['category'])){
 		global $databaseCache;
