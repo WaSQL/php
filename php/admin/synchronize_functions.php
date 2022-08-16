@@ -137,10 +137,15 @@ function synchronizePost($load,$plain=0){
 	}
 	else{
 		//remove debug errors if they exist
-		$post['body']=preg_replace('/\<div(.+?)\<\/div\>/is','',$post['body']);
-		$post['body']=preg_replace('/\<img(.+?)\>/is','',$post['body']);
-		$body=base64_decode(trim($post['body']));
-		$json=json_decode($body,true);
+		$json=json_decode(base64_decode($post['body']),true);
+		if(!is_array($json)){
+			$json=json_decode(base64_decode(trim($post['body'])),true);
+		}
+		if(!is_array($json)){
+			$post['body']=preg_replace('/\<div(.+?)\<\/div\>/is','',$post['body']);
+			$post['body']=preg_replace('/\<img(.+?)\>/is','',$post['body']);
+			$json=json_decode(base64_decode(trim($post['body'])),true);
+		}
 		//echo $_SESSION['sync_target_url'].printValue($postopts).printValue($json);exit;
 		if(!is_array($json)){
 			$json=json_decode(trim($post['body']),true);
@@ -150,7 +155,7 @@ function synchronizePost($load,$plain=0){
 						unset($_SESSION[$k]);
 					}
 				}
-				return array('error'=>"Failed to decode response.<hr />".PHP_EOL.$body.PHP_EOL."<hr />".PHP_EOL.printValue($post).PHP_EOL.'<hr />'.printValue($postopts));
+				return array('error'=>"Failed to decode response.<hr />".printValue($post).PHP_EOL.'<hr />'.printValue($postopts));
 			}
 		}
 		return $json;
