@@ -3345,7 +3345,12 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(isset($params['onclick']) && strlen($params['onclick'])){
 			$rtn .= ' onclick="'.$params['onclick'].'"';
 		}
-
+		//data-
+		foreach($params as $k=>$v){
+			if(stringBeginsWith($k,'data-')){
+				$rtn .=" {$k}=\"{$v}\"";
+			}
+		}
 		//requiredif
 		if($params['requiredif']){
 			$rtn .= ' data-requiredif="'.$params['requiredif'].'"';
