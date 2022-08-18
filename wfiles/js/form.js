@@ -2948,7 +2948,7 @@ function submitForm(theForm,popup,debug,ajax){
         	let parts=requiredif.split(':');
         	let notparts=requiredif.split('!');
         	let rval='';
-        	requiredif=theForm.querySelector('[name="'+parts[0]+'"]');
+        	requiredif=theForm.querySelector('[name="'+parts[0]+'"],[name="'+parts[0]+'[]"]');
         	if(parts.length==1){
         		if(undefined != requiredif){
         			switch(requiredif.type.toLowerCase()){
