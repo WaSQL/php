@@ -73,7 +73,7 @@ function dbTuner($db=''){
 	global $CONFIG;
 	global $DATABASE;
 	if(!strlen($db)){$db=$CONFIG['database'];}
-	if(!isset($DATABASE[$db])){return "Invalid db";}
+	if(!isset($DATABASE[$db])){return "Invalid db:{$db}";}
 	$db=$DATABASE[$db];
 	$path=getWasqlPath('php/extras/databases');
 	$cmd_args=array();
