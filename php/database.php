@@ -72,7 +72,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 function dbTuner($db=''){
 	global $CONFIG;
 	global $DATABASE;
-	$db=$db ?? $CONFIG['database'];
+	if(!strlen($db)){$db=$CONFIG['database'];}
 	if(!isset($DATABASE[$db])){return "Invalid db";}
 	$db=$DATABASE[$db];
 	$path=getWasqlPath('php/extras/databases');
