@@ -106,6 +106,7 @@ function dbTuner($db=''){
 		return printValue($out);
 	}
 	$lines=preg_split('/[\r\n]+/',$out['stdout']);
+	array_unshift($lines,$cmd);
 	foreach($lines as $i=>$line){
 		if(stringBeginsWith($line,'[--]')){
 			$lines[$i]='<div style="color:#bfbfbf;">'.$line.'</div>';
