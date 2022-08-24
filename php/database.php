@@ -69,6 +69,59 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 		if(!isNum($ok) || $ok==0){abort("Load_Pages failed to load {$load} - {$ok}");}
 	}
 }
+function dbTuner($db=''){
+	global $CONFIG;
+	global $DATABASE;
+	$db=$db ?? $CONFIG['database'];
+	if(!isset($DATABASE[$db])){return "Invalid db";}
+	$db=$DATABASE[$db];
+	$path=getWasqlPath('php/extras/databases');
+	$cmd_args=array();
+	switch(strtolower($db['dbtype'])){
+		case 'mysql':
+		case 'mysqli':
+			$cmd_args[]="\"{$path}/mysqltuner.pl\"";
+		break;
+		case 'postgres':
+		case 'postgresql':
+			$cmd_args[]="\"{$path}/postgresqltuner.pl\"";
+		break;
+		default:
+			return "invalid db type";
+		break;
+	}
+	if(isset($db['dbuser'])){
+		$cmd_args[]="--user={$db['dbuser']}";
+	}
+	if(isset($db['dbpass'])){
+		$cmd_args[]="--pass={$db['dbpass']}";
+	}
+	if(isset($db['dbhost']) && !in_array($db['dbhost'],array('127.0.0.1','localhost'))){
+		$cmd_args[]="--host={$db['dbhost']}";
+	}
+	$cmd_argstr=implode(' ',$cmd_args);
+	$cmd="perl {$cmd_argstr}";
+	$out=cmdResults($cmd);
+	$lines=preg_split('/[\r\n]+/',$out['stdout']);
+	foreach($lines as $i=>$line){
+		if(stringBeginsWith($line,'[--]')){
+			$lines[$i]='<div style="color:#bfbfbf;">'.$line.'</div>';
+		}
+		elseif(stringBeginsWith($line,'[OK]')){
+			$lines[$i]='<div style="color:#17bf17;">'.$line.'</div>';
+		}
+		elseif(stringBeginsWith($line,'[!!]')){
+			$lines[$i]='<div style="color:#c60000;">'.$line.'</div>';
+		}
+		elseif(stringBeginsWith($line,'-------- Recommendations')){
+			$lines[$i]='<div style="font-weight:bold;font-size:1.2rem;">'.$line.'</div>';
+		}
+		else{
+			$lines[$i]='<div>'.$line.'</div>';
+		}
+	}
+	return implode(PHP_EOL,$lines);
+}
 //---------- begin function dbISQL
 /**
 * @describe calls isql command line to execute query and returns results
