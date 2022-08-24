@@ -84,10 +84,14 @@ function dbTuner($db='',$pargs=array()){
 		case 'mysql':
 		case 'mysqli':
 			$cmd_args[]="\"{$path}/mysqltuner.pl\"";
+			$cmd_args[]='--noinfo';
+			$cmd_args[]='--nocolor';
 		break;
 		case 'postgres':
 		case 'postgresql':
-			$cmd_args[]="\"{$path}/postgresqltuner.pl\" --nocolor";
+			$cmd_args[]="\"{$path}/postgresqltuner.pl\"";
+			$cmd_args[]='--noinfo';
+			$cmd_args[]='--nocolor';
 		break;
 		default:
 			return "invalid db type";
