@@ -91,17 +91,20 @@ function dbTuner($db=''){
 		break;
 	}
 	if(isset($db['dbuser'])){
-		$cmd_args[]="--user={$db['dbuser']}";
+		$cmd_args[]="\"--user={$db['dbuser']}\"";
 	}
 	if(isset($db['dbpass'])){
-		$cmd_args[]="--pass={$db['dbpass']}";
+		$cmd_args[]="\"--pass={$db['dbpass']}\"";
 	}
-	if(isset($db['dbhost']) && !in_array($db['dbhost'],array('127.0.0.1','localhost'))){
-		$cmd_args[]="--host={$db['dbhost']}";
+	if(isset($db['dbhost'])){
+		$cmd_args[]="\"--host={$db['dbhost']}\"";
 	}
 	$cmd_argstr=implode(' ',$cmd_args);
 	$cmd="perl {$cmd_argstr}";
 	$out=cmdResults($cmd);
+	if(strlen($out['stderr'])){
+		return printValue($out);
+	}
 	$lines=preg_split('/[\r\n]+/',$out['stdout']);
 	foreach($lines as $i=>$line){
 		if(stringBeginsWith($line,'[--]')){
