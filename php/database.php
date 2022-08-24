@@ -70,6 +70,9 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 	}
 }
 function dbTuner($db='',$pargs=array()){
+	if(!is_array($pargs) && strlen($pargs)){
+		$pargs=array($pargs);
+	}
 	global $CONFIG;
 	global $DATABASE;
 	if(!strlen($db)){$db=$CONFIG['database'];}
