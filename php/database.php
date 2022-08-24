@@ -69,7 +69,7 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 		if(!isNum($ok) || $ok==0){abort("Load_Pages failed to load {$load} - {$ok}");}
 	}
 }
-function dbTuner($db=''){
+function dbTuner($db='',$pargs=array()){
 	global $CONFIG;
 	global $DATABASE;
 	if(!strlen($db)){$db=$CONFIG['database'];}
@@ -89,6 +89,9 @@ function dbTuner($db=''){
 		default:
 			return "invalid db type";
 		break;
+	}
+	foreach($pargs as $parg){
+		$cmd_args[]=$parg;
 	}
 	if(isset($db['dbuser'])){
 		$cmd_args[]="\"--user={$db['dbuser']}\"";
