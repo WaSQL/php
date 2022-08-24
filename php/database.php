@@ -108,13 +108,16 @@ function dbTuner($db=''){
 	$lines=preg_split('/[\r\n]+/',$out['stdout']);
 	array_unshift($lines,$cmd);
 	foreach($lines as $i=>$line){
-		if(stringBeginsWith($line,'[--]')){
+		if(stringBeginsWith($line,'[--]') || stringBeginsWith($line,'[INFO]')){
 			$lines[$i]='<div style="color:#bfbfbf;">'.$line.'</div>';
 		}
 		elseif(stringBeginsWith($line,'[OK]')){
 			$lines[$i]='<div style="color:#17bf17;">'.$line.'</div>';
 		}
-		elseif(stringBeginsWith($line,'[!!]')){
+		elseif(stringBeginsWith($line,'[WARN]')){
+			$lines[$i]='<div style="color:#e49b03;">'.$line.'</div>';
+		}
+		elseif(stringBeginsWith($line,'[!!]') || stringBeginsWith($line,'[BAD]')){
 			$lines[$i]='<div style="color:#c60000;">'.$line.'</div>';
 		}
 		elseif(stringBeginsWith($line,'-------- Recommendations')){
