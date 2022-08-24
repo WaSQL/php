@@ -84,7 +84,7 @@ function dbTuner($db=''){
 		break;
 		case 'postgres':
 		case 'postgresql':
-			$cmd_args[]="\"{$path}/postgresqltuner.pl\"";
+			$cmd_args[]="\"{$path}/postgresqltuner.pl\" --nocolor";
 		break;
 		default:
 			return "invalid db type";
