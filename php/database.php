@@ -90,7 +90,6 @@ function dbTuner($db='',$pargs=array()){
 		case 'postgres':
 		case 'postgresql':
 			$cmd_args[]="\"{$path}/postgresqltuner.pl\"";
-			$cmd_args[]='--noinfo';
 			$cmd_args[]='--nocolor';
 		break;
 		default:
