@@ -4,6 +4,55 @@
 	mysql Database functions
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
+
+
+$xrecs=dbQueryResults('gidgetgadget',"select * from snap");
+$CONFIG['db']='wasql';
+$recs=array();
+$params=mysqlParseConnectParams($params);
+mysqli_report(MYSQLI_REPORT_ERROR);
+$dbh_mysql = mysqli_connect('localhost',$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
+
+//$dbh_mysql='';
+//$dbh_mysql=mysqlDBConnect();
+if(!$dbh_mysql){
+	$DATABASE['_lastquery']['error']='connect failed: '.mysqli_connect_error();
+	debugValue($DATABASE['_lastquery']);
+	return 0;
+}
+$dbh_mysql->set_charset("utf8mb4");
+$cuser=$USER['_id'];
+$query="INSERT INTO snap_people (_cdate,_cuser,meta) VALUES (current_timestamp, {$cuser}, ?)";
+$stmt=mysqli_prepare($dbh_mysql,$query);
+if(!$stmt){
+	printf("Error message: %s", mysqli_error($dbh_mysql));
+	exit;
+}
+foreach($xrecs as $i=>$rec){
+	$meta=json_decode($rec['person'],true);
+	$meta['stake']=$rec['stake'];
+	$meta['ward']=$rec['ward'];
+	$jrec=json_decode($rec['guardian'],true);
+	foreach($jrec as $k=>$v){
+		$meta["guardian_{$k}"]=$v;
+	}
+	$jrec=json_decode($rec['bishop'],true);
+	foreach($jrec as $k=>$v){
+		$meta["bishop_{$k}"]=$v;
+	}
+	$jrec=json_decode($rec['snap'],true);
+	foreach($jrec as $k=>$v){
+		$meta["snap_{$k}"]=$v;
+	}
+	$meta=json_encode($meta,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_IGNORE); 
+	mysqli_stmt_bind_param($stmt, "s",$meta);
+	mysqli_stmt_execute($stmt);
+}
+$cnt=getDBCount(array('-table'=>'snap_people','-nocache'=>1));
+echo printValue($cnt)."done";exit;
+
+
+		
 */
 //---------- begin function mysqlAddDBRecords--------------------
 /**

@@ -246,7 +246,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'ldap_secure':
 		case 'wasql_synchronize':
 		case 'phpmailer':
-		case 'cron':
+		case 'wasql_crons':
 		case 'userlog':
 		case 'log_queries':
 		case 'stage':

@@ -7,9 +7,10 @@
 		<ul class="nav-list buttons <?=configValue('admin_color');?>" style="width:200px;">
 			<li><a href="#config_users" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_users"><span class="icon-users"></span> User Authentication</a></li>
 			<li><a href="#config_sync" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_sync"><span class="icon-sync"></span> Sync Settings</a></li>
+			<li><a href="#config_crons" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_crons"><span class="icon-cron"></span> Cron Settings</a></li>
 			<li><a href="#config_mail" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_mail"><span class="icon-mail"></span> SendMail Settings</a></li>
 			<li><a href="#config_uploads" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_uploads"><span class="icon-upload"></span> File Uploads</a></li>
-			<li><a href="#config_uploads" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_misc"><span class="icon-dots"></span> Misc Settings</a></li>
+			<li><a href="#config_misc" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_misc"><span class="icon-dots"></span> Misc Settings</a></li>
 		</ul>
 	</div>
 	<div id="main_content" style="margin-left:15px;flex:1;width:100%;">
@@ -207,6 +208,22 @@
 </form>
 </view:config_sync>
 
+<view:config_crons>
+<div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-cron"></span> Cron Settings</div>
+<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+	<input type="hidden" name="_menu" value="config" />
+	<input type="hidden" name="func" value="config_sync_form" />
+	<input type="hidden" name="process" value="save" />
+	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>Enable Crons?</label><?=configBuildFormField('wasql_crons');?></div>
+	</div>
+	<div style="display:flex;">
+		<button type="submit" class="btn w_success">Save</button>
+		<div id="config_users_save" style="margin-left:15px;"></div>
+	</div>
+</form>
+</view:config_crons>
+
 <view:config_mail>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-mail"></span> SendMail Settings</div>
 <form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
@@ -271,7 +288,6 @@
 	<input type="hidden" name="process" value="save" />
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Is Stage?</label><?=configBuildFormField('stage');?></div>
-		<div style="flex:1;"><label>Enable Cron?</label><?=configBuildFormField('cron');?></div>
 		<div style="flex:1;"><label>User Log?</label><?=configBuildFormField('userlog');?></div>
 		<div style="flex:1;"><label>Log Queries?</label><?=configBuildFormField('log_queries');?></div>
 	</div>

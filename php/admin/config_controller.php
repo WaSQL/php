@@ -8,9 +8,11 @@
 	switch(strtolower($_REQUEST['func'])){
 		case 'config_users':
 		case 'config_sync':
+		case 'config_crons':
 		case 'config_mail':
 		case 'config_uploads':
 		case 'config_misc':
+
 			setView($_REQUEST['func'],1);
 			return;
 		break;
