@@ -1145,7 +1145,7 @@ function mysqlGetDBRecords($params){
 	//echo "mysqlGetDBRecords".printValue($params);exit;
 	if(empty($params['-table']) && !is_array($params)){
 		$params=trim($params);
-		if(preg_match('/^(desc|select|exec|with|explain|returning|show|call)[\t\s\ \r\n]/i',$params)){
+		if(preg_match('/^(desc|select|analyze|exec|with|explain|returning|show|call)[\t\s\ \r\n]/i',$params)){
 			//they just entered a query
 			$query=$params;
 			$params=array();
