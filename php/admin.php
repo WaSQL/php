@@ -2261,6 +2261,9 @@ LIST_TABLE:
 					}
 					$recopts['-order']=$tinfo['listfields'];
 				}
+				if(stringBeginsWith($_REQUEST['_table_'],'_')){
+					$recopts['-truecount']=1;
+				}
 				//table Options header
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
 				echo '<div class="w_lblue w_bold w_bigger">List Records in ';

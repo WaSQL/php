@@ -87,12 +87,14 @@ function cronIsActive($rec){
 }
 function cronList(){
 	global $CONFIG;
+	$CONFIG['paging']=3;
 	$url=configValue('admin_form_url');
 	if(!stringContains($url,'admin.php')){
 		$url='/t/1'.$url;
 	}
 	$opts=array(
 		'-table'=>'_cron',
+		'-truecount'=>1,
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'name,groupname,_id,cron_pid,active,paused,running,run_now,stop_now',
 		'-searchopers'=>'ct,eq,neq,ca,ea,ib,nb',

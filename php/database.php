@@ -1647,6 +1647,7 @@ function databaseListRecords($params=array()){
 					$params['-total']=mssqlGetDBCount($params);
 				break;
 				case 'mysql':
+				case 'mysqli':
 					if(!function_exists('mysqlGetDBCount')){
 						loadExtras('mysql');
 					}
@@ -7717,15 +7718,17 @@ function getDBCharset(){
 /**
 * @describe returns number of records that match params criteria
 * @param param array
+* -table|-countquery|-query - either a table or a count query
+*  [-truecount] if set, use count(*) to determine the table count instead of sys tables
 * @return integer - number of records
 * @usage $ok=getDBCount(array('-table'=>$table,'field1'=>$val1...))
 */
 function getDBCount($params=array()){
 	global $CONFIG;
-	if(isPostgreSQL()){return postgresqlGetDBCount($table,$allfields);}
-	elseif(isSqlite()){return sqliteGetDBCount($table,$allfields);}
-	elseif(isOracle()){return oracleGetDBCount($table,$allfields);}
-	elseif(isMssql()){return mssqlGetDBCount($table,$allfields);}
+	if(isPostgreSQL()){return postgresqlGetDBCount($params);}
+	elseif(isSqlite()){return sqliteGetDBCount($params);}
+	elseif(isOracle()){return oracleGetDBCount($params);}
+	elseif(isMssql()){return mssqlGetDBCount($params);}
 	$function='getDBCount';
 	$cnt=0;
 	//echo printValue($params);exit;
@@ -7734,14 +7737,15 @@ function getDBCount($params=array()){
 		unset($params['-order']);
 		$query=getDBQuery($params);
 		//if no where clause, get the count from information_schema.tables
-		if(!stringContains($query,'where')){
+		if(!isset($params['-truecount']) && !stringContains($query,'where')){
 		 	$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
-		 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+		 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1,'-nocache'=>1));
+		 	//echo $query.printValue($recs);exit;
 		 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
 		 		return (integer)$recs[0]['table_rows'];
 		 	}
 		}
-		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
+		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1,'-nocache'=>1));
 		if(!isset($recs[0]['cnt'])){
 			debugValue($recs);
 			return 0;
