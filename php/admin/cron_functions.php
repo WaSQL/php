@@ -87,7 +87,9 @@ function cronIsActive($rec){
 }
 function cronList(){
 	global $CONFIG;
-	$CONFIG['paging']=3;
+	if(!isset($CONFIG['paging'])){
+		$CONFIG['paging']=20;
+	}
 	$url=configValue('admin_form_url');
 	if(!stringContains($url,'admin.php')){
 		$url='/t/1'.$url;
