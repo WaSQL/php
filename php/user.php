@@ -124,7 +124,11 @@ elseif(isset($CONFIG['auth_method']) && strpos(strtolower($CONFIG['auth_method']
 	}
 }
 //check for login request via multiple ways - _auth, _tauth, ldap, user/pass
-elseif(isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 && isset($_REQUEST['username']) && strlen($_REQUEST['username']) && isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])){
+elseif(
+	isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 
+	&& isset($_REQUEST['username']) && strlen($_REQUEST['username']) 
+	&& isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])
+	){
 	//apikey code
 	$rec=userDecodeApikeyAuth($_REQUEST['apikey'],$_REQUEST['username']);
 	//confirm record is valid and active
