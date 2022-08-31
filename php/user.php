@@ -61,8 +61,54 @@ elseif(isset($_REQUEST['_logoff']) && $_REQUEST['_logoff']==1 && (!isset($_REQUE
 	userLogout();
 }
 $USER=array();
+// Check for postedit write
+if(
+	isset($_REQUEST['_action']) && $_REQUEST['_action']=='postEdit' 
+	&& isset($_REQUEST['_base64']) && $_REQUEST['_base64']==1 
+	&& isset($_REQUEST['_return']) && $_REQUEST['_return']=='XML'
+	&& isset($_REQUEST['_md5sha']) && strlen($_REQUEST['_md5sha'])
+	&& isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 
+	&& isset($_REQUEST['username']) && strlen($_REQUEST['username']) 
+	&& isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])
+	){
+	//apikey code
+	$rec=userDecodeApikeyAuth($_REQUEST['apikey'],$_REQUEST['username']);
+	//confirm record is valid and active
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+		$ok=commonLogMessage('user',"Apikey Auth passed for user {$rec['username']}");
+	}
+	else{
+		$_REQUEST['login_failed']=1;
+		$ok=commonLogMessage('user',"Apikey Auth failed for user {$_REQUEST['username']}");
+	}
+}
+// Check for postedit read
+elseif(
+	isset($_REQUEST['apimethod']) && $_REQUEST['apimethod']=='posteditxmlfromjson' 
+	&& isset($_REQUEST['encoding']) && $_REQUEST['encoding']=='base64'  
+	&& isset($_REQUEST['postedittables']) && strlen($_REQUEST['postedittables']) 
+	&& isset($_REQUEST['json']) && strlen($_REQUEST['json'])
+	&& isset($_REQUEST['_auth']) && $_REQUEST['_auth']==1 
+	&& isset($_REQUEST['username']) && strlen($_REQUEST['username']) 
+	&& isset($_REQUEST['apikey']) && strlen($_REQUEST['apikey'])
+	){
+	//apikey code
+	$rec=userDecodeApikeyAuth($_REQUEST['apikey'],$_REQUEST['username']);
+	//confirm record is valid and active
+	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
+		$USER=$rec;
+		$ok=userSetCookie($rec);
+		$ok=commonLogMessage('user',"Apikey Auth passed for user {$rec['username']}");
+	}
+	else{
+		$_REQUEST['login_failed']=1;
+		$ok=commonLogMessage('user',"Apikey Auth failed for user {$_REQUEST['username']}");
+	}
+}
 // Check for Okta SSO user/session
-if(isset($CONFIG['auth_method']) && strpos(strtolower($CONFIG['auth_method']), 'okta') !== false){
+elseif(isset($CONFIG['auth_method']) && strpos(strtolower($CONFIG['auth_method']), 'okta') !== false){
 	$rec=userOktaAuth();
 	if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
 		$USER=$rec;
