@@ -207,6 +207,9 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=new.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$query.=" WHERE {$params['-upsertwhere']}";
+			}
 			//echo printValue($params);exit;
 		}
 		else{
@@ -217,6 +220,9 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=VALUES({$fld})";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$query.=" WHERE {$params['-upsertwhere']}";
+			}
 		}
 	}
 	//echo printValue($params).$query;exit;

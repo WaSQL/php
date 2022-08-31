@@ -173,7 +173,9 @@ function firebirdAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=new.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
-			//echo printValue($params);exit;
+			if(isset($params['-upsertwhere'])){
+				$query.=" WHERE {$params['-upsertwhere']}";
+			}
 		}
 		else{
 			//before firebird version 8.0.20
@@ -183,6 +185,9 @@ function firebirdAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=VALUES({$fld})";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$query.=" WHERE {$params['-upsertwhere']}";
+			}
 		}
 	}
 	//echo printValue($params).$query;exit;

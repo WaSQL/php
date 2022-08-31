@@ -154,6 +154,9 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=excluded.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$query.=" WHERE {$params['-upsertwhere']}";
+			}
 		}
 	}
 	$ok=sqliteExecuteSQL($query);

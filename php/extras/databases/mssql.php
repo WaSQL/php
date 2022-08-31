@@ -137,6 +137,9 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 			$flds[]="T1.{$fld}=T2.{$fld}";
 		}
 		$query.=PHP_EOL.implode(', ',$flds);
+		if(isset($params['-upsertwhere'])){
+			$query.=" WHERE {$params['-upsertwhere']}";
+		}
 		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
 		$flds=array();
 		foreach($params['-upsert'] as $fld){

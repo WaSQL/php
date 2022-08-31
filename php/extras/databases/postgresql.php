@@ -150,6 +150,9 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=EXCLUDED.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$query.=" WHERE {$params['-upsertwhere']}";
+			}
 		}
 	}
 	if(isset($params['-return'])){
@@ -406,6 +409,9 @@ function postgresqlAddDBRecord($params=array()){
 				$flds[]="{$fld}=EXCLUDED.{$fld}";
 			}
 			$more.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$more.=" WHERE {$params['-upsertwhere']}";
+			}
 		}
 	}
     $query=<<<ENDOFQUERY
