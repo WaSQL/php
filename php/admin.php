@@ -1473,7 +1473,7 @@ ENDOFX;
 				echo <<<ENDOFX
 				<div style="padding-top:10px;display:flex;flex-wrap:wrap;justify-content: space-between;">
 					<div class="w_padtop" style="padding-right:15px;">
-						<div class="w_biggest w_underline">{$module_count} Modules installed</div>
+						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
 						{$linkstr}
 					</div>
 					<div style="flex-grow:1">{$m[1]}</div>
