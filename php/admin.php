@@ -1416,7 +1416,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<td width="100%"><div id="w_editor_main">'.PHP_EOL;
 			echo '	</div></td>'.PHP_EOL;
 			echo '</tr></table>'.PHP_EOL;
-			break;
+		break;
 		case 'phpinfo':
 			//Server Variables
 			$data=adminGetPHPInfo();
@@ -1456,7 +1456,35 @@ ENDOFX;
 			else{
 				echo $data;
 			}
-			break;
+		break;
+		case 'pythoninfo':
+			$pypath=getWasqlPath('python');
+			$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\"");
+			$data=$out['stdout'];
+			if(preg_match('/\<section\>(.+)\<\/section\>/ism',$data,$m)){
+				//parse out modules to build a list
+				preg_match_all('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$data,$modules);
+				$links=array();
+				foreach($modules[1] as $module){
+					$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$module.'">'.ucwords(str_replace('_',' ',$module)).'</a></div>';
+				}
+				$module_count=count($modules[1]);
+				$linkstr=implode(PHP_EOL,$links);
+				echo <<<ENDOFX
+				<div style="padding-top:10px;display:flex;flex-wrap:wrap;justify-content: space-between;">
+					<div class="w_padtop" style="padding-right:15px;">
+						<div class="w_biggest w_underline">{$module_count} Modules installed</div>
+						{$linkstr}
+					</div>
+					<div style="flex-grow:1">{$m[1]}</div>
+				</div>
+ENDOFX;
+			}
+			else{
+				echo "HERE";
+				echo $data;
+			}
+		break;
 		case 'env':
 			//Server Variables
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_grey"></span> Server Variables</div>'.PHP_EOL;
