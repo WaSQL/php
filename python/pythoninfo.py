@@ -14,8 +14,8 @@ Loop through the installed packages and get info on each. pip show {module} retu
 	Required-by: oscrypto, snowflake-connector-python
 """
 import pkg_resources
-import common
 import subprocess
+import sys
 
 for p in pkg_resources.working_set:
 	print(p.project_name)
@@ -23,6 +23,9 @@ for p in pkg_resources.working_set:
 		continue
 	try:     
 		for line in subprocess.check_output(['python3','-m','pip','show',p.project_name]).decode('utf-8').split('\n'):
+			if "no module named pip" in line:
+				print("pip is not installed. aborting")
+				sys.exit(123)
 			parts=line.split(':',1)
 			partscount=len(parts)
 			if partscount != 2:
