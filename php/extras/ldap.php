@@ -405,7 +405,7 @@ function ldapGetUsersAll(){
 function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnfields=array(),$debug=0){
 	global $ldapInfo;
 	if($debug){
-		debugValue('ldapSearch');
+		debugValue('ldapSearch - debug is on');
 		debugValue($ldapInfo);
 		debugValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields));
 	}

@@ -112,8 +112,10 @@ function sessionDestroy($session_id) {
  *	The value of lifetime which is passed to this callback can be set in session.gc_maxlifetime.
  *	Return value should be TRUE for success, FALSE for failure.
 */
-function sessionGarbageCollect($sess_maxlifetime) {
+function sessionGarbageCollect($sess_maxlifetime='') {
     //$ctime = time();
+    //default to 1 day
+    if(!strlen($sess_maxlifetime)){$sess_maxlifetime=86400;}
     executeSQL("DELETE FROM _sessions WHERE touchtime + {$sess_maxlifetime} < UNIX_TIMESTAMP(now());");
     return true;
 }
