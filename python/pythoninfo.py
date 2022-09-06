@@ -1,20 +1,6 @@
 #! python
-"""
-Loop through the installed packages and get info on each. pip show {module} returns the folloiwng
-	Name: asn1crypto
-	Version: 1.5.1
-	Summary: Fast ASN.1 parser and serializer with definitions for private keys, public keys, certificates, CRL, OCSP, CMS,
-	PKCS#3, PKCS#7, PKCS#8, PKCS#12, PKCS#5, X.509 and TSP
-	Home-page: https://github.com/wbond/asn1crypto
-	Author: wbond
-	Author-email: will@wbond.net
-	License: MIT
-	Location: c:\program files\python310\lib\site-packages
-	Requires:
-	Required-by: oscrypto, snowflake-connector-python
-"""
+
 import pkg_resources
-import subprocess
 import sys
 
 prows=''
