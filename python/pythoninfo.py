@@ -2,9 +2,11 @@
 
 import pkg_resources
 import sys
-
-sys.stdin.reconfigure(encoding='utf-8')
-sys.stdout.reconfigure(encoding='utf-8')
+try:
+	sys.stdin.reconfigure(encoding='utf-8')
+	sys.stdout.reconfigure(encoding='utf-8')
+except Exception as err:
+	nothing=''
 
 prows=''
 for p in pkg_resources.working_set:
