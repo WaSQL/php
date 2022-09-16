@@ -1444,12 +1444,12 @@ if(isset($_REQUEST['_menu'])){
 				.v {background-color: #ddd; max-width: 300px; overflow-x: auto; word-wrap: break-word;}
 				.v i {color: #999;}
 				</style>
-				<div style="display:flex;flex-wrap:wrap;justify-content: space-between;">
-					<div class="w_padtop" style="padding-right:15px;">
-						<div class="w_biggest w_underline">{$module_count} Modules installed</div>
+				<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
+					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;">
+						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
 						{$linkstr}
 					</div>
-					<div style="flex-grow:1">{$m[1]}</div>
+					<div style="flex:1">{$m[1]}</div>
 				</div>
 ENDOFX;
 			}
@@ -1465,24 +1465,24 @@ ENDOFX;
 				//parse out modules to build a list
 				preg_match_all('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$data,$modules);
 				$links=array();
+				sort($modules[1]);
 				foreach($modules[1] as $module){
 					$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$module.'">'.ucwords(str_replace('_',' ',$module)).'</a></div>';
 				}
 				$module_count=count($modules[1]);
 				$linkstr=implode(PHP_EOL,$links);
 				echo <<<ENDOFX
-				<div style="padding-top:10px;display:flex;flex-wrap:wrap;justify-content: space-between;">
-					<div class="w_padtop" style="padding-right:15px;">
+				<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
+					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;">
 						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
 						{$linkstr}
 					</div>
-					<div style="flex-grow:1">{$m[1]}</div>
+					<div style="flex:1">{$m[1]}</div>
 				</div>
 ENDOFX;
 			}
 			else{
-				echo "HERE";
-				echo $data;
+				echo printValue($out);
 			}
 		break;
 		case 'env':
