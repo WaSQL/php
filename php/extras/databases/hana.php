@@ -1777,6 +1777,11 @@ function hanaQueryHeader($query,$params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
+* 	[-filename_partitions] - number of files you want to create. Appends number to each one.
+* 	[-filename_maxsize] - max filesize. Appends number to each file created
+* 	[-filename_maxrows] - max rows. Appends number to each file created
+*   [-process] - function name to call for each record
+* 	[-logfile] - logfile to write to
 * @return $recs array
 * @usage
 *	loadExtras('hana'); 
@@ -1887,6 +1892,22 @@ function hanaQueryResults($query,$params=array()){
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
+	//-filename=>'/var/www/temp/myfilename.csv'
+	$maxrows=0;
+	if(isset($params['-filename_partitions'])){
+		$maxrows=ceil($rowcount/$params['-filename_partitions']);
+	}
+	elseif(isset($params['-filename_maxrows'])){
+		$maxrows=$params['-filename_maxrows'];
+	}
+	if($maxrows > 0 && isset($params['-filename'])){
+		//rename the file 
+		$ext=getFileExtension($params['-filename']);
+		$filename=getFileName($params['-filename'],1);
+		$path=getFilePath($params['-filename']);
+		$file_counter=1;
+		$params['-filename']="{$path}/{$filename}_{$file_counter}/{$ext}";
+	}
 	if(isset($params['-filename'])){
 		if(isset($params['-append'])){
 			//append
@@ -1916,6 +1937,7 @@ function hanaQueryResults($query,$params=array()){
 		odbc_longreadlen($dbh_hana_result,$params['-longreadlen']);
 	}
 	$i=0;
+
 	$writefile=0;
 	if(isset($fh) && is_resource($fh)){
 		$writefile=1;
@@ -1945,6 +1967,26 @@ function hanaQueryResults($query,$params=array()){
 			}
 			if(isset($params['-process'])){
 				$ok=call_user_func($params['-process'],$rec);
+			}
+			//check to see if we need to increment the filename based on maxrows
+			if($maxrows > 0 && $i % $maxrows==0){
+				@fclose($fh);
+				//time to open a new file
+				$header=0;
+				$file_counter+=1;
+				$params['-filename']="{$path}/{$filename}_{$file_counter}/{$ext}";
+				if(file_exists($params['-filename'])){unlink($params['-filename']);}
+		    	$fh = fopen($params['-filename'],"wb");
+				
+		    	if(!isset($fh) || !is_resource($fh)){
+					odbc_free_result($dbh_hana_result);
+					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
+					debugValue($DATABASE['_lastquery']);
+			    	return array();
+				}
+				if(isset($params['-logfile'])){
+					setFileContents($params['-logfile'],"New File:".$params['-filename'].PHP_EOL);
+				}
 			}
 			continue;
 		}
