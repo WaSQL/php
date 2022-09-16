@@ -205,10 +205,11 @@ def queryResults(query,params):
 		cur_oracle, conn_oracle =  connect(params)
 		#now execute the query
 		cur_oracle.execute(query)       
+		#get column names - lowercase them for consistency
+		fields = [field_md[0].lower() for field_md in cur_oracle.description]
 		if 'filename' in params.keys():
 			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_oracle.description]
+			
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=False, default=str).lower())
@@ -222,22 +223,16 @@ def queryResults(query,params):
 			conn_oracle.close()
 			return params['filename']
 		else:
-			recs = cur_oracle.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_oracle.close()
-				conn_oracle.close()
-				return recs
-			elif tname == 'list':
-				cur_oracle.close()
-				conn_oracle.close()
-				return recs
-			else:
-				cur_oracle.close()
-				conn_oracle.close()
-				return []
-
+			recs = []
+			for rec in cur_oracle.fetchall():
+				#convert to a dictionary manually since it is not built into the driver
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			curr_oracle.close()
+			conn_oracle.close()
+			return recs
 		
 	except Exception as err:
 		cur_oracle.close()

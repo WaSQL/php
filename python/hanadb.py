@@ -151,11 +151,10 @@ def queryResults(query,params):
 		cur_hana, conn_hana =  connect(params)
 		#now execute the query
 		cur_hana.execute(query)
-
+		#get column names - lowercase them for consistency
+		fields = [field_md[0].lower() for field_md in cur_hana.description]
 		if 'filename' in params.keys():
 			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_hana.description]
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
@@ -164,6 +163,7 @@ def queryResults(query,params):
 			for rec in cur_hana.fetchall():
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
 				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				f.write("\n")
 			f.close()
@@ -171,21 +171,16 @@ def queryResults(query,params):
 			conn_hana.close()
 			return params['filename']
 		else:
-			recs = cur_hana.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_hana.close()
-				conn_hana.close()
-				return recs
-			elif tname == 'list':
-				cur_hana.close()
-				conn_hana.close()
-				return recs
-			else:
-				cur_hana.close()
-				conn_hana.close()
-				return []
+			recs = []
+			for rec in cur_hana.fetchall():
+				#convert to a dictionary manually since it is not built into the driver
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			cur_hana.close()
+			conn_hana.close()
+			return recs
 
 	except Exception as err:
 		cur_hana.close()

@@ -146,11 +146,12 @@ def queryResults(query,params):
 		cur_mssql, conn_mssql =  connect(params)
 		#now execute the query
 		cur_mssql.execute(query)
+		#get column names - lowercase them for consistency
+		fields = [field_md[0].lower for field_md in cur_mssql.description]
 
 		if 'filename' in params.keys():
 			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_mssql.description]
+			
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
@@ -164,21 +165,16 @@ def queryResults(query,params):
 			conn_mssql.close()
 			return params['filename']
 		else:
-			recs = cur_mssql.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_mssql.close()
-				conn_mssql.close()
-				return recs
-			elif tname == 'list':
-				cur_mssql.close()
-				conn_mssql.close()
-				return recs
-			else:
-				cur_mssql.close()
-				conn_mssql.close()
-				return []
+			recs = []
+			for rec in cur_msexcel.fetchall():
+				#convert to a dictionary manually since it is not built into the driver
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			cur_mssql.close()
+			conn_mssql.close()
+			return recs
 
 		
 	except Exception as err:

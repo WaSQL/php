@@ -102,11 +102,11 @@ def queryResults(query,params):
 		cur_msaccess, conn_msaccess =  connect(params)
 		#now execute the query
 		cur_msaccess.execute(query)
+		#get column names - lowercase them for consistency
+		fields = [field_md[0].lower for field_md in cur_msaccess.description]
 
 		if 'filename' in params.keys():
-			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_msaccess.description]
+			jsv_file=params['filename']		
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
@@ -122,21 +122,16 @@ def queryResults(query,params):
 			conn_msaccess.close()
 			return params['filename']
 		else:
-			recs = cur_msaccess.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_msaccess.close()
-				conn_msaccess.close()
-				return recs
-			elif tname == 'list':
-				cur_msaccess.close()
-				conn_msaccess.close()
-				return recs
-			else:
-				cur_msaccess.close()
-				conn_msaccess.close()
-				return []
+			recs = []
+			for rec in cur_msaccess.fetchall():
+				#convert to a dictionary
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			cur_msaccess.close()
+			conn_msaccess.close()
+			return recs
 
 	except Exception as err:
 		cur_msaccess.close()

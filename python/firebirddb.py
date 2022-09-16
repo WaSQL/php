@@ -110,11 +110,10 @@ def queryResults(query,params):
         cur_firebird, conn_firebird =  connect(params)
         #now execute the query
         cur_firebird.execute(query)
-        
+        #get column names
+        fields = [field_md[0].lower() for field_md in cur_firebird.description]
         if 'filename' in params.keys():
-            jsv_file=params['filename']
-            #get column names
-            fields = [field_md[0] for field_md in cur_firebird.description]
+            jsv_file=params['filename']   
             #write file
             f = open(jsv_file, "w")
             f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
@@ -132,21 +131,16 @@ def queryResults(query,params):
             conn_firebird.close()
             return params['filename']
         else:
-            recs = cur_firebird.fetchall()
-            tname=type(recs).__name__
-            if tname == 'tuple':
-                recs=list(recs)
-                cur_firebird.close()
-                conn_firebird.close()
-                return recs
-            elif tname == 'list':
-                cur_firebird.close()
-                conn_firebird.close()
-                return recs
-            else:
-                cur_firebird.close()
-                conn_firebird.close()
-                return []
+            recs = []
+            for rec in cur_firebird.fetchall():
+                #convert to a dictionary manually since it is not built into the driver
+                rec=dict(zip(fields, rec))
+                #call json.dumps to convert date objects to strings in results
+                rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+                recs.append(rec)
+            cur_firebird.close()
+            cur_firebird.close()
+            return recs
 
     except Exception as err:
         cur_firebird.close()

@@ -29,7 +29,7 @@ except Exception as err:
 # @return 
 #	cur_mssql, conn_mssql array
 # @usage 
-#	cur_mssql, conn_mssql =  mscsvdb.connect(params)
+#	cur_mssql, conn_mssql =  msexceldb.connect(params)
 def connect(params):
 	dbconfig = {}
 
@@ -53,16 +53,16 @@ def connect(params):
 	conn_str=s.join(conn_list)
 
 	try:
-		conn_mscsv = pyodbc.connect(conn_str, readonly=True, autocommit=True)
+		conn_msexcel = pyodbc.connect(conn_str, readonly=True, autocommit=True)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
 	try:
-		cur_mscsv = conn_mscsv.cursor()
+		cur_msexcel = conn_msexcel.cursor()
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
-	return cur_mscsv, conn_mscsv
+	return cur_msexcel, conn_msexcel
 
 #---------- begin function executeSQL ----------
 # @describe executes a query
@@ -71,19 +71,19 @@ def connect(params):
 # @return 
 #	boolean
 # @usage 
-#	recs =  mscsvdb.executeSQL(query,params)
+#	recs =  msexceldb.executeSQL(query,params)
 def executeSQL(query,params):
 	try:
 		#connect
-		cur_mscsv, conn_mscsv =  connect(params)
+		cur_msexcel, conn_msexcel =  connect(params)
 		#now execute the query
-		cur_mscsv.execute(query)
-		conn_mscsv.commit()
+		cur_msexcel.execute(query)
+		conn_msexcel.commit()
 		return True
 		
 	except Exception as err:
-		cur_mscsv.close()
-		conn_mscsv.close()
+		cur_msexcel.close()
+		conn_msexcel.close()
 		return common.debug(sys.exc_info(),err)
 
 #---------- begin function convertStr ----------
@@ -92,7 +92,7 @@ def executeSQL(query,params):
 # @return 
 #   str string
 # @usage 
-#   str =  mscsvdb.convertStr(o)
+#   str =  msexceldb.convertStr(o)
 def convertStr(o):
 	return "{}".format(o)
 
@@ -103,51 +103,46 @@ def convertStr(o):
 # @return 
 #   recordsets list
 # @usage 
-#   recs =  mscsvdb.queryResults(query,params)
+#   recs =  msexceldb.queryResults(query,params)
 def queryResults(query,params):
 	try:
 		#connect
-		cur_mscsv, conn_mscsv =  connect(params)
+		cur_msexcel, conn_msexcel =  connect(params)
 		#now execute the query
-		cur_mscsv.execute(query)
+		cur_msexcel.execute(query)
+		#get column names - lowercase them for consistency
+		fields = [field_md[0].lower() for field_md in cur_msexcel.description]
 
 		if 'filename' in params.keys():
-			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_mscsv.description]
+			jsv_file=params['filename']			
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
 			f.write("\n")
 			#write records
-			for rec in cur_mscsv.fetchall():
+			for rec in cur_msexcel.fetchall():
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				f.write("\n")
 			f.close()
-			cur_mscsv.close()
-			conn_mscsv.close()
+			cur_msexcel.close()
+			conn_msexcel.close()
 			return params['filename']
 		else:
-			recs = cur_mscsv.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_mscsv.close()
-				conn_mscsv.close()
-				return recs
-			elif tname == 'list':
-				cur_mscsv.close()
-				conn_mscsv.close()
-				return recs
-			else:
-				cur_mscsv.close()
-				conn_mscsv.close()
-				return []
+			recs = []
+			for rec in cur_msexcel.fetchall():
+				#convert to a dictionary manually since it is not built into the driver
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			cur_msexcel.close()
+			conn_msexcel.close()
+			return recs
 
 	except Exception as err:
-		cur_mscsv.close()
-		conn_mscsv.close()
+		cur_msexcel.close()
+		conn_msexcel.close()
 		return common.debug(sys.exc_info(),err)
 ###########################################

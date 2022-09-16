@@ -156,10 +156,10 @@ def queryResults(query,params):
 
 		#now execute the query
 		cur_postgres.execute(query)
+		#get column names - lowercase them for consistency
+		fields = [field_md[0].lower() for field_md in cur_postgres.description]
 		if 'filename' in params.keys():
 			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_postgres.description]
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
@@ -173,21 +173,16 @@ def queryResults(query,params):
 			conn_postgres.close()
 			return params['filename']
 		else:
-			recs = cur_postgres.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_postgres.close()
-				conn_postgres.close()
-				return recs
-			elif tname == 'list':
-				cur_postgres.close()
-				conn_postgres.close()
-				return recs
-			else:
-				cur_postgres.close()
-				conn_postgres.close()
-				return []
+			recs = []
+			for rec in cur_postgres.fetchall():
+				#convert to a dictionary manually since it is not built into the driver
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			cur_postgres.close()
+			conn_postgres.close()
+			return recs
 		
 	except Exception as err:
 		cur_postgres.close()

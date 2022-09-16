@@ -135,10 +135,11 @@ def queryResults(query,params):
 		cur_sqlite, conn_sqlite =  connect(params)
 		#now execute the query
 		cur_sqlite.execute(query)
+		#get column names - lowercase them for consistency
+		fields = [field_md[0] for field_md in cur_sqlite.description]
+
 		if 'filename' in params.keys():
 			jsv_file=params['filename']
-			#get column names
-			fields = [field_md[0] for field_md in cur_sqlite.description]
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
@@ -154,21 +155,16 @@ def queryResults(query,params):
 			conn_sqlite.close()
 			return params['filename']
 		else:
-			recs = cur_sqlite.fetchall()
-			tname=type(recs).__name__
-			if tname == 'tuple':
-				recs=list(recs)
-				cur_sqlite.close()
-				conn_sqlite.close()
-				return recs
-			elif tname == 'list':
-				cur_sqlite.close()
-				conn_sqlite.close()
-				return recs
-			else:
-				cur_sqlite.close()
-				conn_sqlite.close()
-				return []
+			recs = []
+			for rec in cur_sqlite.fetchall():
+				#convert to a dictionary manually since it is not built into the driver
+				rec=dict(zip(fields, rec))
+				#call json.dumps to convert date objects to strings in results
+				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				recs.append(rec)
+			cur_sqlite.close()
+			conn_sqlite.close()
+			return recs
 		
 	except Exception as err:
 		cur_sqlite.close()
