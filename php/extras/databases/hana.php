@@ -1906,7 +1906,7 @@ function hanaQueryResults($query,$params=array()){
 		$filename=getFileName($params['-filename'],1);
 		$path=getFilePath($params['-filename']);
 		$file_counter=1;
-		$params['-filename']="{$path}/{$filename}_{$file_counter}/{$ext}";
+		$params['-filename']="{$path}/{$filename}_{$file_counter}.{$ext}";
 	}
 	if(isset($params['-filename'])){
 		if(isset($params['-append'])){
@@ -1974,7 +1974,7 @@ function hanaQueryResults($query,$params=array()){
 				//time to open a new file
 				$header=0;
 				$file_counter+=1;
-				$params['-filename']="{$path}/{$filename}_{$file_counter}/{$ext}";
+				$params['-filename']="{$path}/{$filename}_{$file_counter}.{$ext}";
 				if(file_exists($params['-filename'])){unlink($params['-filename']);}
 		    	$fh = fopen($params['-filename'],"wb");
 				
