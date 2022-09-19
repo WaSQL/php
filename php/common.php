@@ -6609,7 +6609,9 @@ function arrays2CSV($recs=array(),$params=array()){
 		elseif(isset($params["{$field}_displayname"])){
 			$field=$params["{$field}_displayname"];
 		}
-		else($field=strtolower(str_replace(' ','_',$field)));
+		else{
+			$field=strtolower(str_replace(' ','_',$field));
+		}
 		$fieldmap[$key]=$field;
 	}
 	$csvlines=array();
