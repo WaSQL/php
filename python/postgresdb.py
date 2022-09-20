@@ -3,10 +3,14 @@
 """
 Installation
 	python3 -m pip install psycopg2-binary
-	   If it errors try these first
-		   python -m pip install -U setuptools
-		   python -m pip install -U wheel
-		   then try again
+		If it errors try these first
+			Try upgrading pip:
+				python3 -m pip install --upgrade pip
+				then try again
+			and if it still fails try
+				python3 -m pip install -U setuptools
+				python3 -m pip install -U wheel
+		   		then try again
 References
 	https://www.psycopg.org/docs/
 	https://pynative.com/psycopg2-python-postgresql-connection-pooling/
@@ -178,7 +182,7 @@ def queryResults(query,params):
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
-				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				recs.append(rec)
 			cur_postgres.close()
 			conn_postgres.close()

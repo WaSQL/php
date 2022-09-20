@@ -228,7 +228,7 @@ def queryResults(query,params):
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
-				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				recs.append(rec)
 			curr_oracle.close()
 			conn_oracle.close()

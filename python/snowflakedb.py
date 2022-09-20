@@ -1,12 +1,12 @@
 #! python
 """
 Installation
-	python -m pip install --upgrade snowflake-connector-python
+	python3 -m pip install --upgrade snowflake-connector-python
 	   If it fails then go to https://visualstudio.microsoft.com/visual-cpp-build-tools/
 		   download build tools
 		   install c++ build tools
 		   reboot and try again
-	python -m pip install snowflake-sqlalchemy
+	python3 -m pip install snowflake-sqlalchemy
 
 """
 
@@ -196,7 +196,7 @@ def queryResults(query,params):
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
-				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				recs.append(rec)
 			cur_snowflake.close()
 			conn_snowflake.close()

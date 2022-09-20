@@ -2,9 +2,12 @@
 """
 Installation
 	python3 -m pip install mysql.connector-python
-	   If it errors try these first
-		   python -m pip install -U setuptools
-		   python -m pip install -U wheel
+		Try upgrading pip:
+			python3 -m pip install --upgrade pip
+			then try again
+		and if it still fails try
+	   		python -m pip install -U setuptools
+	   		python -m pip install -U wheel
 References
 	https://dev.mysql.com/doc/connector-python/en/connector-python-cext-reference.html
 """
@@ -172,7 +175,7 @@ def queryResults(query,params):
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
-				rec=json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr)
+				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				recs.append(rec)
 			cur_mysql.close()
 			conn_mysql.close()

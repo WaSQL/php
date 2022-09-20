@@ -9681,7 +9681,10 @@ function evalPythonCode($lang,$evalcode){
 		$code=preg_replace('/\?\>$/is','',ltrim($code));
 		$code=trim($code);
 		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.py";
-		$pagecode="import page_{$lang['evalcode_md5']} as page";
+		if(!isset($CONFIG['includes_import_name'])){
+			$CONFIG['includes_import_name']='page';
+		}
+		$pagecode="import page_{$lang['evalcode_md5']} as {$CONFIG['includes_import_name']}";
 		$content=<<<ENDOFCONTENT
 #! python
 
@@ -9850,7 +9853,10 @@ ENDOFCONTENT;
 		}
 	}
 	if($out['rtncode']==0){
-		return $out['stdout'];
+		if(strlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		return $out['stderr'];
 	}	
 	elseif(isset($out['stderr']) && strlen($out['stderr'])){
 		$err=<<<ENDOFERR
