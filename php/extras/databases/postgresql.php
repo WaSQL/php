@@ -2185,6 +2185,11 @@ function postgresqlParseConnectParams($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
+* 	[-filename_partitions] - number of files you want to create. Appends number to each one. This requires you to set a row_count field in each record returned. (use a CTE - with as)
+* 	[-filename_maxsize] - max filesize. Appends number to each file created
+* 	[-filename_maxrows] - max rows. Appends number to each file created. Can be used instead of -filename_partitions if you are unable to use a CTE and/or already know how many rows per file
+*   [-process] - function name to call for each record
+* 	[-logfile] - logfile to write to
 * @return array - returns records
 */
 function postgresqlQueryResults($query='',$params=array()){
@@ -2256,6 +2261,22 @@ function postgresqlEnumQueryResults($data,$params=array()){
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
+	//-filename=>'/var/www/temp/myfilename.csv'
+	$maxrows=0;
+	if(isset($params['-filename_partitions']) && $rowcount > 0){
+		$maxrows=ceil($rowcount/$params['-filename_partitions']);
+	}
+	elseif(isset($params['-filename_maxrows'])){
+		$maxrows=$params['-filename_maxrows'];
+	}
+	if($maxrows > 0 && isset($params['-filename'])){
+		//rename the file 
+		$ext=getFileExtension($params['-filename']);
+		$filename=getFileName($params['-filename'],1);
+		$path=getFilePath($params['-filename']);
+		$file_counter=1;
+		$params['-filename']="{$path}/{$filename}_{$file_counter}.{$ext}";
+	}
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
 		if(isset($params['-append'])){
@@ -2282,16 +2303,46 @@ function postgresqlEnumQueryResults($data,$params=array()){
 	if(isset($fh) && is_resource($fh)){
 		$writefile=1;
 	}
-	while ($row = @pg_fetch_assoc($data)){
+	while ($rec = @pg_fetch_assoc($data)){
 		//check for postgresqlStopProcess request
-		if(isset($postgresqlStopProcess) && $postgresqlStopProcess==1){
-			break;
+		$rec=array_change_key_case($rec);
+		if(isset($params['-filename']) && $maxrows==0 && isset($params['-filename_partitions']) && isset($rec['row_count'])){
+			$rowcount=$rec['row_count'];
+			$maxrows=ceil($rowcount/$params['-filename_partitions']);
+			if($maxrows > 0){
+				unlink($params['-filename']);
+				//rename the file 
+				$ext=getFileExtension($params['-filename']);
+				$filename=getFileName($params['-filename'],1);
+				$path=getFilePath($params['-filename']);
+				$file_counter=1;
+				$params['-filename']="{$path}/{$filename}_{$file_counter}.{$ext}";
+			}
+			if(isset($params['-filename'])){
+				if(isset($params['-append'])){
+					//append
+		    		$fh = fopen($params['-filename'],"ab");
+				}
+				else{
+					if(file_exists($params['-filename'])){unlink($params['-filename']);}
+		    		$fh = fopen($params['-filename'],"wb");
+				}
+		    	if(!isset($fh) || !is_resource($fh)){
+					odbc_free_result($dbh_hana_result);
+					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
+					debugValue($DATABASE['_lastquery']);
+			    	return array();
+				}
+				if(isset($params['-logfile'])){
+					setFileContents($params['-logfile'],"Rowcount:".$rowcount.PHP_EOL.$query.PHP_EOL.PHP_EOL);
+				}
+			}
 		}
-		$rec=array();
-		foreach($row as $key=>$val){
-			$key=strtolower($key);
-			$rec[$key]=$val;
-    	}
+		if(isset($params['-filename']) && isset($params['-filename_partitions']) && isset($rec['row_count'])){
+			//remove row_count this from the result set
+			unset($rec['row_count']);
+		}
+		
     	if($writefile==1){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
@@ -2310,6 +2361,26 @@ function postgresqlEnumQueryResults($data,$params=array()){
 			}
 			if(isset($params['-process'])){
 				$ok=call_user_func($params['-process'],$rec);
+			}
+			//check to see if we need to increment the filename based on maxrows
+			if($maxrows > 0 && $i % $maxrows==0){
+				@fclose($fh);
+				//time to open a new file
+				$header=0;
+				$file_counter+=1;
+				$params['-filename']="{$path}/{$filename}_{$file_counter}.{$ext}";
+				if(file_exists($params['-filename'])){unlink($params['-filename']);}
+		    	$fh = fopen($params['-filename'],"wb");
+				
+		    	if(!isset($fh) || !is_resource($fh)){
+					odbc_free_result($dbh_hana_result);
+					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
+					debugValue($DATABASE['_lastquery']);
+			    	return array();
+				}
+				if(isset($params['-logfile'])){
+					setFileContents($params['-logfile'],"New File:".$params['-filename'].PHP_EOL);
+				}
 			}
 			continue;
 		}
@@ -2330,6 +2401,9 @@ function postgresqlEnumQueryResults($data,$params=array()){
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
 			appendFileContents($params['-logfile'],"Line count:{$i}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+		if(file_exists($params['-filename']) && filesize($params['-filename'])==0){
+			unlink($params['-filename']);
 		}
 		return $i;
 	}
