@@ -44,8 +44,20 @@ function systemGetMemory(){
 				$systemGetMemoryCache['total']=systemUnixMemsize($info['memtotal']);
 				$systemGetMemoryCache['free']=systemUnixMemsize($info['memfree']);
 				$systemGetMemoryCache['pcnt_free'] = (integer)(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100);
+				if(isset($info['memavailable'])){
+					$systemGetMemoryCache['available']=systemUnixMemsize($info['memavailable']);
+					$systemGetMemoryCache['pcnt_available'] = (integer)(($systemGetMemoryCache['available']/$systemGetMemoryCache['total'])*100);
+				}
 				$systemGetMemoryCache['used'] = $systemGetMemoryCache['total'] - $systemGetMemoryCache['free'];
 				$systemGetMemoryCache['pcnt_used']=100-$systemGetMemoryCache['pcnt_free'];
+				if(isset($info['buffers'])){
+					$systemGetMemoryCache['buffers']=systemUnixMemsize($info['buffers']);
+					$systemGetMemoryCache['pcnt_buffers'] = (integer)(($systemGetMemoryCache['buffers']/$systemGetMemoryCache['total'])*100);
+				}
+				if(isset($info['cached'])){
+					$systemGetMemoryCache['cached']=systemUnixMemsize($info['cached']);
+					$systemGetMemoryCache['pcnt_cached'] = (integer)(($systemGetMemoryCache['cached']/$systemGetMemoryCache['total'])*100);
+				}
 			}
 			elseif (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[1], $matches)){
 				$systemGetMemoryCache['total'] = $matches[1] / 1024;
