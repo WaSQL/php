@@ -16966,6 +16966,21 @@ function postBody($url='',$body='',$params=array()) {
 	else{
 		curl_setopt ($process, CURLOPT_HTTPHEADER, array($params['-contenttype']));
 	}
+	//filename?
+	if(isset($params['-filename'])){
+		if(file_exists($params['-filename'])){
+			unlink($params['-filename']);
+		}
+		$fh = fopen($params['-filename'], "wb");
+		if($fh){
+			curl_setopt($process, CURLOPT_SSL_VERIFYPEER, false);
+		    curl_setopt($process, CURLOPT_RETURNTRANSFER, 1);
+		    curl_setopt($process, CURLOPT_BINARYTRANSFER, 1);
+		    curl_setopt($process, CURLOPT_FOLLOWLOCATION, 1);
+		    curl_setopt($process, CURLOPT_BUFFERSIZE, 8096);
+			curl_setopt($process, CURLOPT_FILE, $fh);
+		}
+	}
 	//cookiefile?
 	if(isset($params['-cookiefile'])){
 		curl_setopt ($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
@@ -17105,6 +17120,7 @@ function postBody($url='',$body='',$params=array()) {
     }
     //close the handle
 	curl_close($process);
+	if(isset($params['-filename']) && $fh){fclose($fh);}
 	$rtn['body']=trim($rtn['body']);
 	if($ofx==1){
 		//OFX is returned in SGML - fix it up to be valid XML
@@ -17612,6 +17628,8 @@ function processActions(){
 						$tpath=getWasqlTempPath();
 						$t=time();
 						$tfile="{$tpath}/postedit_{$fld}_{$t}.tmp";
+						//remove any ending carriage returns so the hash will match
+						$rec[$fld]=preg_replace('/[\r\n]+$/','',$rec[$fld]);
 						setFileContents($tfile,$rec[$fld]);
 						$md5sha=md5_file($tfile).sha1_file($tfile);
 						unlink($tfile);
@@ -17619,7 +17637,7 @@ function processActions(){
 							$username=$rec['_euser_ex']['username'];
 							if($USER['username'] != $username){
 								echo "<timestamp>{$timestamp}</timestamp>";
-								echo "<fatal_error>Fatal Error:Your are {$USER['username']}. The {$fld} field was changed by {$username} since you started ({$rec['_edate']}).</fatal_error>";
+								echo "<fatal_error>Fatal Error:Your are {$USER['username']}. The {$fld} field was changed by {$username} since you started ({$rec['_edate']})</fatal_error>";
 								echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
 								echo "<wasql_host>{$_SERVER['WaSQL_HOST']}</wasql_host>";
 								exit;
