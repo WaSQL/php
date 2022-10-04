@@ -97,6 +97,15 @@ switch(strtolower($_REQUEST['tab'])){
 			),
 			'-listfields'=>'total,free,pcnt_free,used,pcnt_used'
 		);
+		if(isset($rec['available'])){
+			$listopts['-listfields'].=',available,pcnt_available';
+		}
+		if(isset($rec['buffers'])){
+			$listopts['-listfields'].=',buffers,pcnt_buffers';
+		}
+		if(isset($rec['cached'])){
+			$listopts['-listfields'].=',cached,pcnt_cached';
+		}
 		setView('list',1);
 		return;
 	break;
