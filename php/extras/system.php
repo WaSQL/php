@@ -183,10 +183,23 @@ function systemGetNetworkAdapters(){
 	else{
 		$cmd='ip -j addr show';
 		$out=cmdResults($cmd);
+		if($out['rtncode'] > 0 && !strlen($out['stdout'])){
+			$cmd='sudo ip -j addr show';
+			$out=cmdResults($cmd);
+		}
+		if($out['rtncode'] > 0 && !strlen($out['stdout'])){
+			echo "Network command failed. May be a permissions issue.";
+			echo printValue($out);
+			exit;
+		}
 		$nics=json_decode($out['stdout'],true);
 		if(!is_array($nics)){
 			$cmd='ip addr show';
 			$out=cmdResults($cmd);
+			if($out['rtncode'] > 0 && !strlen($out['stdout'])){
+				$cmd='sudo ip addr show';
+				$out=cmdResults($cmd);
+			}
 			echo nl2br($out['stdout']);
 			exit;
 		}
