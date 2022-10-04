@@ -99,12 +99,39 @@ switch(strtolower($_REQUEST['tab'])){
 		);
 		if(isset($rec['available'])){
 			$listopts['-listfields'].=',available,pcnt_available';
+			$listopts['available_options']=array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%available%);"
+			);
+			$listopts['pcnt_available_options']=array(
+				'class'=>'align-right',
+				'displayname'=>'% Available',
+				'eval'=>"return '%pcnt_available%'.'%';"
+			);
 		}
 		if(isset($rec['buffers'])){
 			$listopts['-listfields'].=',buffers,pcnt_buffers';
+			$listopts['buffers_options']=array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%buffers%);"
+			);
+			$listopts['pcnt_buffers_options']=array(
+				'class'=>'align-right',
+				'displayname'=>'% Buffers',
+				'eval'=>"return '%pcnt_buffers%'.'%';"
+			);
 		}
 		if(isset($rec['cached'])){
 			$listopts['-listfields'].=',cached,pcnt_cached';
+			$listopts['cached_options']=array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%cached%);"
+			);
+			$listopts['pcnt_cached_options']=array(
+				'class'=>'align-right',
+				'displayname'=>'% Cached',
+				'eval'=>"return '%pcnt_cached%'.'%';"
+			);
 		}
 		setView('list',1);
 		return;
