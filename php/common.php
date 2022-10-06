@@ -7299,7 +7299,7 @@ function commonProcessDBListRecordsTags($htm){
 	global $CONFIG;
 	global $PAGE;
 	if(!stringContains($htm,'<dblistrecords')){return $htm;}
-	preg_match_all('/\<dblistrecords(.*?)\>(.+?)\<\/dblistrecords\>/ism',$htm,$dblistrecords,PREG_PATTERN_ORDER);
+	preg_match_all('/\<dblistrecords(.*?)\>(.*?)\<\/dblistrecords\>/ism',$htm,$dblistrecords,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole datalist tag
 		1 = the datalist attributes
