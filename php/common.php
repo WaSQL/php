@@ -7081,7 +7081,7 @@ function commonProcessChartjsTags($htm){
 	global $CONFIG;
 	if(!stringContains($htm,'<chartjs')){return $htm;}
 	loadExtrasJs(array('chart','chartjs-plugin-labels','chartjs-plugin-doughnutlabel'));
-	preg_match_all('/\<chartjs(.*?)\>(.+?)\<\/chartjs\>/ism',$htm,$chartjs,PREG_PATTERN_ORDER);
+	preg_match_all('/\<chartjs(.*?)\>(.*?)\<\/chartjs\>/ism',$htm,$chartjs,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole chartjs tag
 		1 = the chartjs attributes
