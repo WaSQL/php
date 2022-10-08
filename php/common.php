@@ -10517,30 +10517,25 @@ function fileManager($startdir='',$params=array()){
 	$rtn .= '  			return false;'.PHP_EOL;
 	$rtn .= '  			}'.PHP_EOL;
 	$rtn .= '  </script>'.PHP_EOL;
-	$rtn .= '  <div style="width:600px;padding:25px;">'.PHP_EOL;
+	$rtn .= '  <div>'.PHP_EOL;
 	//$rtn .= $action;
 	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'.PHP_EOL;
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'.PHP_EOL;
 	$rtn .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'.PHP_EOL;
 	$rtn .= '		<input type="hidden" name="file_path" value="/'.$relpath.'">'.PHP_EOL;
 	if($params['-rights'] == 'all'){
-		$rtn .= '	<div class="row">'.PHP_EOL;
-		$rtn .= '		<div class="col-sm-12">'.PHP_EOL;
+		$rtn .= '	<div style="display:flex;flex-direction:column;margin-top:10px;">'.PHP_EOL;
 		$rtn .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
-		$rtn .= '			<input type="text" id="_newdir" class="w_form-control" name="_newdir" value="" />'.PHP_EOL;
-		$rtn .= '		</div>'.PHP_EOL;
+		$rtn .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" />'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 		}
 	if($params['-rights'] != 'readonly'){
-		$rtn .= '	<div class="row">'.PHP_EOL;
-		$rtn .= '		<div class="col-sm-7">'.PHP_EOL;
-		$rtn .= '			<div class="w_bold">New File</div>'.PHP_EOL;
-		$rtn .= buildFormFile('file',array('id'=>'file'));
+		$rtn .= '	<div style="display:flex;margin:10px 0;">'.PHP_EOL;
+		$rtn .= '		<div style="margin-right:5px;">'.PHP_EOL;
+		$rtn .= 			buildFormFile('file',array('id'=>'file'));
 		$rtn .= '		</div>'.PHP_EOL;
-		$rtn .= '		<div class="col-sm-5">'.PHP_EOL;
-		$rtn .= '			<div class="w_bold">&nbsp;</div>'.PHP_EOL;
-		$rtn .= '			<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
-		$rtn .= '		</div>'.PHP_EOL;
+		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
+		$rtn .= '	</div>'.PHP_EOL;
 	}
 	$rtn .= '	</form>'.PHP_EOL;
 	if(isset($_REQUEST['file_error'])){
