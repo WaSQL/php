@@ -17702,7 +17702,7 @@ function processActions(){
 		    				$jfield=$jm[1];
 		    			}
 		    			if(isset($_REQUEST["{$field}_prev"]) || isset($_REQUEST["{$field}_remove"])){
-		    				$inputtype=file;
+		    				$inputtype='file';
 		    				$dbtype='json';
 		    			}
 						elseif(isset($info[$field])){
