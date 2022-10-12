@@ -14867,7 +14867,7 @@ function listFilesEx($dir='.',$params=array()){
 				);
         	$ftype=strtolower($fileinfo['type']);
 			//skip all but dir,link, and file types.  Possible values are fifo, char, dir, block, link, file, socket and unknown.
-			if(is_dir($afile)){continue;}
+			//if(is_dir($afile)){continue;}
 			if(!in_array($ftype,array('dir','link','file'))){continue;}
         	//sha
         	if(isset($params['-sha']) && $params['-sha'] && function_exists('sha1_file')){
