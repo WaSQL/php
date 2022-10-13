@@ -55,7 +55,7 @@ function cronDetails($id){
 	}
 	$path=getWaSQLPath('php/temp');
 	$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	if(file_exists($commonCronLogFile)){
+	if(is_file($commonCronLogFile)){
 		$t=time()-filectime($commonCronLogFile);
 		$run_length=verboseTime($t);
 		$bottom="{$id},0,'{$run_length}'";

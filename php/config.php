@@ -9,11 +9,11 @@
 $progpath=dirname(__FILE__);
 //require common to be loaded first
 //Read in the WaSQL configuration xml file to determine what database to connect to
-if(file_exists("$progpath/config.xml")){
+if(is_file("$progpath/config.xml")){
 	//found confix.xml in the php directory
 	$xml = readXML("$progpath/config.xml");
 	}
-elseif(file_exists("$progpath/../config.xml")){
+elseif(is_file("$progpath/../config.xml")){
 	$xml = readXML("$progpath/../config.xml");
 	}
 else{

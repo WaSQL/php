@@ -9,7 +9,7 @@
     Reference: https://stackoverflow.com/questions/19503653/how-to-extract-text-from-word-file-doc-docx-xlsx-pptx-php
 */
 function ms2txtConvert($afile) {
-    if(!file_exists($afile)){
+    if(!is_file($afile)){
         return "Error: file does not exist. {$afile}";
     }
     $info=pathinfo($afile);

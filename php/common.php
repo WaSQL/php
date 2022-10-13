@@ -57,7 +57,7 @@ function commonLogMessage($name,$msg,$separate=0,$echo=0){
 	if($echo==1){
     	echo $msg;
     }
-	if(!file_exists($logfile) || filesize($logfile) > 5000000 ){
+	if(!is_file($logfile) || filesize($logfile) > 5000000 ){
         setFileContents($logfile,$msg);
     }
     else{
@@ -231,7 +231,7 @@ function commonCronCleanup(){
 			foreach($precs as $prec){
 				$logfile="{$path}/{$CONFIG['name']}_cronlog_{$prec['_id']}.txt";
 				$killfile="{$path}/{$CONFIG['name']}_cronkill_{$prec['_id']}.txt";
-				if($prec['cron_pid'] != 0 && file_exists($killfile)){
+				if($prec['cron_pid'] != 0 && is_file($killfile)){
 					if(isWindows()){
 						$cmd="taskkill /F /PID {$prec['cron_pid']}";
 					}
@@ -395,7 +395,7 @@ function commonCronLogInit($id=0){
 	// if($id==0){return false;}
 	// $path=getWaSQLPath('php/temp');
 	// $logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	// if(file_exists($logfile)){
+	// if(is_file($logfile)){
 	// 	unlink($logfile);
 	// }
 	// return true;
@@ -505,7 +505,7 @@ function commonCronLog($msg,$echomsg=1){
 	// $logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 	// if(!is_string($msg)){$msg=json_encode($msg);}
 	// $msg=rtrim($msg);
-	// if(!file_exists($logfile)){
+	// if(!is_file($logfile)){
 	// 	$ok=appendFileContents($logfile,"timestamp,elapsed,diff,message".PHP_EOL);
 	// 	if($echomsg==1){
 	// 		echo "timestamp,elapsed,diff,message";
@@ -9078,7 +9078,7 @@ function evalPHP($strings){
 				$tmpfile="{$CONFIG['name']}_{$pageid}_".md5($evalcode).".{$lang['ext']}";
 				$evalcode=commonAddPrecode($lang,$evalcode);
 				//run the script:
-				if(file_exists($evalcode)){
+				if(is_file($evalcode)){
 					$pfile=$evalcode;
 					$command = "{$lang['exe']} \"{$pfile}\"";
 					$out = cmdResults($command);
@@ -9178,7 +9178,7 @@ function evalNodejsCode($lang,$evalcode){
 		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.js",
 	);
 	$pagecode='';
-	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
 		$files['include']=$CONFIG['includes'][$lang['ext']][0];
 		$code=getFileContents($files['include']);
 		$code=preg_replace('/^\<\?(lua)/is','',rtrim($code));
@@ -9338,7 +9338,7 @@ function evalLuaCode($lang,$evalcode){
 		'json'=>"{$wasqlTempPath}/json.lua",
 	);
 	$pagecode='';
-	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
 		$files['include']=$CONFIG['includes'][$lang['ext']][0];
 		$code=getFileContents($files['include']);
 		$code=preg_replace('/^\<\?(lua)/is','',rtrim($code));
@@ -9497,7 +9497,7 @@ function evalPerlCode($lang,$evalcode){
 		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.pl",
 	);
 	$pagecode='';
-	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
 		$files['include']=$CONFIG['includes'][$lang['ext']][0];
 		$code=getFileContents($files['include']);
 		$code=preg_replace('/^\<\?(pl|perl)/is','',rtrim($code));
@@ -9674,7 +9674,7 @@ function evalPythonCode($lang,$evalcode){
 		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.py",
 	);
 	$pagecode='';
-	if(isset($CONFIG['includes'][$lang['ext']][0]) && file_exists($CONFIG['includes'][$lang['ext']][0])){
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
 		$files['include']=$CONFIG['includes'][$lang['ext']][0];
 		$code=getFileContents($files['include']);
 		$code=preg_replace('/^\<\?(py|python)/is','',rtrim($code));
@@ -10256,7 +10256,7 @@ function evalErrorWrapper($e=array(),$title='evalPHP Error!'){
 * @exclude  - this function will be depreciated and thus excluded from the manual
 */
 function exportFile2Array($file=''){
-	if(!file_exists($file)){return null;}
+	if(!is_file($file)){return null;}
 	$data=getFileContents($file);
 	$data=removeComments($data);
 	$xml = new SimpleXmlElement($data);
@@ -11364,7 +11364,7 @@ function getFileIcon($file=''){
 	$iconpath=preg_replace('/php$/i','',$progpath) . "wfiles/icons/files";
 	$iconpath=str_replace("\\","/",$iconpath);
 	$ext=strtolower(getFileExtension($file));
-	if(file_exists("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
+	if(is_file("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
 	elseif(is_file("{$iconpath}/{$ext}.png")){$icon="{$ext}.png";}
 	elseif(isAudioFile($file)){$icon="audio.gif";}
 	elseif(isVideoFile($file)){$icon="video.gif";}
@@ -11645,8 +11645,8 @@ function getStoredValue($evalstr,$force=0,$hrs=1,$debug=0,$serialize=1){
 	buildDir("{$progpath}/temp");
 	global $CONFIG;
 	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
-	if($force && file_exists($local)){unlink($local);}
-    if(file_exists($local) && filesize($local) > 50){
+	if($force && is_file($local)){unlink($local);}
+    if(is_file($local) && filesize($local) > 50){
 		$filetime=filemtime($local);
 		$ctime=time();
 		$diff_seconds=$ctime-$filetime;
@@ -11690,7 +11690,7 @@ function setStoredValue($evalstr,$data,$serialize=1){
 	buildDir("{$progpath}/temp");
 	global $CONFIG;
 	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
-	if(file_exists($local)){unlink($local);}
+	if(is_file($local)){unlink($local);}
     if($serialize){
 		setFileContents($local,serialize($data));
 	}
@@ -12695,7 +12695,7 @@ function getCSVFileContents($file,$params=array()){
 	if(!isset($params['maxlen'])){$params['maxlen']=0;}
 	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	$results=array('file'=>$file,'params'=>$params);
-	if(!file_exists($file)){
+	if(!is_file($file)){
 		$results['error']="No such file [$file]";
 		return $results;
 		}
@@ -13034,7 +13034,7 @@ function arrays2SchemaFields($recs=array()){
 * @usage $data=getEncodedFileContents($file);
 */
 function getEncodedFileContents($filename,$return_encoding=0){
-	if(!file_exists($filename)){return "getEncodedFileContents Error: No such file [$filename]";}
+	if(!is_file($filename)){return "getEncodedFileContents Error: No such file [$filename]";}
     $encoding='';
     $handle = fopen($filename, 'r');
     $bom = fread($handle, 2);
@@ -13073,7 +13073,7 @@ function getEncodedFileContents($filename,$return_encoding=0){
 * @usage $data=getFileContents($afile);
 */
 function getFileContents($file){
-	if(!file_exists($file)){return "getFileContents Error: No such file [$file]";}
+	if(!is_file($file)){return "getFileContents Error: No such file [$file]";}
 	return file_get_contents($file);
 	}
 //---------- begin function getFileMimeType--------------------
@@ -13657,7 +13657,7 @@ function includeModule($name,$params=array()){
 	if(is_file("{$modulePath}/model.php")){
     	include_once("{$modulePath}/model.php");
 	}
-	if(file_exists("{$modulePath}/controller.php")){
+	if(is_file("{$modulePath}/controller.php")){
 		$body=getFileContents("{$modulePath}/view.htm");
 		$controller='<'.'?php'.PHP_EOL.'global $'.'MODULE;'.PHP_EOL.'?>'.PHP_EOL;
 		$controller.=getFileContents("{$modulePath}/controller.php");
@@ -13676,7 +13676,7 @@ function includeAdminPage($name,$params=array()){
 	$ADMINPAGE['name']=$name;
 	$progpath=getWasqlPath('php');
 	$name=strtolower($name);
-	if(!file_exists("{$progpath}/admin/{$name}_body.htm")){
+	if(!is_file("{$progpath}/admin/{$name}_body.htm")){
 		return 'No such page: '.$name;
 	}
 	if(is_file("{$progpath}/admin/{$name}_functions.php")){
@@ -13871,12 +13871,12 @@ function commonIncludeFunctionCode($content,$name=''){
 		$afile=str_replace("\\","/",$afile);
 		//echo $afile.PHP_EOL;
 		$content_md5=md5($content);
-		if(!file_exists($afile) || md5_file($afile) != $content_md5){
+		if(!is_file($afile) || md5_file($afile) != $content_md5){
 			$fp = fopen($afile, "w");
 			fwrite($fp, $content);
 			fclose($fp);
 		}
-		if(file_exists($afile)){
+		if(is_file($afile)){
 			@trigger_error("");
 			$evalstring='showErrors();'.PHP_EOL;
 			$evalstring .= 'try{'.PHP_EOL;
@@ -13921,7 +13921,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			$afile=str_replace("\\","/",$afile);
 			//echo $afile.PHP_EOL;
 			
-			if(!file_exists($afile) || md5_file($afile) != $content_md5){
+			if(!is_file($afile) || md5_file($afile) != $content_md5){
 				$fp = fopen($afile, "w");
 				fwrite($fp, $evalcode);
 				fclose($fp);
@@ -13944,12 +13944,12 @@ function commonIncludeFunctionCode($content,$name=''){
 			//echo $afile.PHP_EOL;
 				
 			$content_md5=md5($evalcode);
-			if(!file_exists($afile) || md5_file($afile) != $content_md5){
+			if(!is_file($afile) || md5_file($afile) != $content_md5){
 				$fp = fopen($afile, "w");
 				fwrite($fp, $evalcode);
 				fclose($fp);
 			}
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				@trigger_error("");
 				$evalstring='showErrors();'.PHP_EOL;
 				$evalstring .= 'try{'.PHP_EOL;
@@ -14869,14 +14869,16 @@ function listFilesEx($dir='.',$params=array()){
 			//skip all but dir,link, and file types.  Possible values are fifo, char, dir, block, link, file, socket and unknown.
 			//if(is_dir($afile)){continue;}
 			if(!in_array($ftype,array('dir','link','file'))){continue;}
-        	//sha
-        	if(isset($params['-sha']) && $params['-sha'] && function_exists('sha1_file')){
-        		$fileinfo['sha']=sha1_file($afile);
-        	}
-        	//md5
-        	if(isset($params['-md5']) && $params['-md5'] && function_exists('md5_file')){
-        		$fileinfo['md5']=md5_file($afile);
-        	}
+			if(is_file($afile)){
+	        	//sha
+	        	if(isset($params['-sha']) && $params['-sha'] && function_exists('sha1_file')){
+	        		$fileinfo['sha']=sha1_file($afile);
+	        	}
+	        	//md5
+	        	if(isset($params['-md5']) && $params['-md5'] && function_exists('md5_file')){
+	        		$fileinfo['md5']=md5_file($afile);
+	        	}
+	        }
 			$ftype=strtolower($fileinfo['type']);
 			//skip all but dir,link, and file types.  Possible values are fifo, char, dir, block, link, file, socket and unknown.
 			if(!in_array($ftype,array('dir','link','file'))){continue;}
@@ -16967,7 +16969,7 @@ function postBody($url='',$body='',$params=array()) {
 	}
 	//filename?
 	if(isset($params['-filename'])){
-		if(file_exists($params['-filename'])){
+		if(is_file($params['-filename'])){
 			unlink($params['-filename']);
 		}
 		$fh = fopen($params['-filename'], "wb");
@@ -17329,10 +17331,10 @@ function processWysiwygPost($table,$id,$fields=array()){
 				$decoded=base64_decode($encodedString);
 				$afile="{$path}/{$file}";
 				//remove the file if it exists already
-				if(file_exists($afile)){unlink($afile);}
+				if(is_file($afile)){unlink($afile);}
 				//save the file
 				file_put_contents($afile,$decoded);
-				if(file_exists($afile)){
+				if(is_file($afile)){
 					//replace all instances of this image with the src path to the saved file
                     $src="/mce/{$table}/{$file}";
                     $rec[$field]=str_replace($part,$src,$rec[$field]);
@@ -17400,10 +17402,10 @@ function processInlineImage($img,$fld='inline'){
 		return 0;
 	}
 	//remove the file if it exists already
-	if(file_exists($afile)){unlink($afile);}
+	if(is_file($afile)){unlink($afile);}
 	//save the file
 	file_put_contents($afile,$decoded);
-	if(file_exists($afile)){
+	if(is_file($afile)){
         $_REQUEST[$fld]="/{$fld}_files/{$file}";
         $_REQUEST[$fld]=str_replace('>','_',$_REQUEST[$fld]);
         return $_REQUEST[$fld];
@@ -17450,10 +17452,10 @@ function processInlineFiles(){
 				$_REQUEST["{$key}_abspath"]=$afile;
 				//$_REQUEST["{$key}_base64_debug"]['afile']=$afile;
 				//remove the file if it exists already
-				if(file_exists($afile)){unlink($afile);}
+				if(is_file($afile)){unlink($afile);}
 				//save the file
 				file_put_contents($afile,$decoded);
-				if(file_exists($afile) && filesize($afile) > 0){
+				if(is_file($afile) && filesize($afile) > 0){
 			        $efiles[]="/{$path}/{$name}";
 			        $ok=commonProcessFileActions($key,$afile);
 				}
@@ -18033,7 +18035,7 @@ function processActions(){
 							if($rec['_cache']==1){
 								$progpath=dirname(__FILE__);
 								$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$TEMPLATE['_id']}.htm";
-								if(file_exists($cachefile)){unlink($cachefile);}
+								if(is_file($cachefile)){unlink($cachefile);}
 							}
 						}
 						//remove affected static files if table is _templates
@@ -18061,7 +18063,7 @@ function processActions(){
 								$progpath=dirname(__FILE__);
                             	foreach($pages as $p){
 									$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$p['_id']}_{$rec['_id']}.htm";
-									if(file_exists($cachefile)){unlink($cachefile);}
+									if(is_file($cachefile)){unlink($cachefile);}
 								}
 							}
 						}
@@ -19011,7 +19013,7 @@ function processFileUploads($docroot=''){
 					for($x=0;$x<$_SERVER['HTTP_X_CHUNK_TOTAL'];$x++){
 						$i=$x+1;
 						$xfile="{$absdir}/{$realname}.chunk{$i}";
-						if(!file_exists($xfile)){break;}
+						if(!is_file($xfile)){break;}
 						$xfiles[]=$xfile;
 					}
 					if(count($xfiles)==$_SERVER['HTTP_X_CHUNK_TOTAL']){
@@ -19082,7 +19084,7 @@ function processFileUploads($docroot=''){
 * 	$multi_settings=commonParseIni($str,1);
 */
 function commonParseIni($str,$multi=0){
-	if(file_exists($str)){
+	if(is_file($str)){
 		$str=file_get_contents($str);
 	}
 	$lines=preg_split('/[\r\n]+/',$str);
@@ -19237,7 +19239,7 @@ function commonProcessFileActions($name,$afile){
 			if($from==$ext){
 				$fname=getFileName($afile,1);
 				$tfile="{$adir}/{$fname}_reencoded.{$to}";
-				if(file_exists($tfile)){
+				if(is_file($tfile)){
 					unlink($tfile);
 				}
 				$cmd="{$cmd} \"{$afile}\"";
@@ -19285,7 +19287,7 @@ function mergeChunkedFiles($chunks,$name){
 	if(!is_array($chunks) || !count($chunks)){return false;}
 	$cnt=count($chunks);
 	for($x=0;$x<$cnt;$x++){
-		if(!file_exists($chunks[$x])){return false;}
+		if(!is_file($chunks[$x])){return false;}
 		$chunkdata=getFileContents($chunks[$x]);
     	// If it is the first chunk we have to create the file, othewise we append...
         $out_fp = @fopen($name, $x == 0 ? "wb" : "ab");
@@ -20156,7 +20158,7 @@ function sendSMTPMail($params=array()){
 * @usage $ok=setFileContents($file,$data);
 */
 function setFileContents($file,$data,$append=0){
-	if($append && file_exists($file)){
+	if($append && is_file($file)){
 		return file_put_contents($file,$data,FILE_APPEND);
 	}
 	return file_put_contents($file,$data);
@@ -20751,7 +20753,7 @@ function xml2Object($xmlstring){
 *	$array =  xml2array(file_get_contents('feed.xml', 1, 'attribute'));
 */
 function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
-	if (strlen($contents) < PHP_MAXPATHLEN && file_exists($contents)){$contents = file_get_contents($contents);}
+	if (strlen($contents) < PHP_MAXPATHLEN && is_file($contents)){$contents = file_get_contents($contents);}
     if(!strlen($contents)){return array('No contents');}
     if(!function_exists('xml_parser_create')) {
         //print "'xml_parser_create()' function not found!";

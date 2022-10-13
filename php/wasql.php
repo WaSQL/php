@@ -1088,7 +1088,7 @@ function attachManagerAttachFiles($startdir='',$params=array()){
 		//$rtn .= '				<tr><th colspan="2">File</th><th>Size</th><th>Modified</th><th></th></tr>'."\n";
 		$row++;
 		$ext=strtolower(getFileExtension($file));
-		if(file_exists("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
+		if(is_file("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
 		elseif(is_file("{$iconpath}/{$ext}.png")){$icon="{$ext}.png";}
 		elseif(isAudioFile($file)){$icon="audio.gif";}
 		elseif(isVideoFile($file)){$icon="video.gif";}
@@ -1170,7 +1170,7 @@ function attachManagerShowFiles($startdir='',$params=array()){
 	    else{
 			$row++;
 			$ext=strtolower(getFileExtension($file));
-			if(file_exists("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
+			if(is_file("{$iconpath}/{$ext}.gif")){$icon="{$ext}.gif";}
 			elseif(is_file("{$iconpath}/{$ext}.png")){$icon="{$ext}.png";}
 			elseif(isAudioFile($file)){$icon="audio.gif";}
 			elseif(isVideoFile($file)){$icon="video.gif";}

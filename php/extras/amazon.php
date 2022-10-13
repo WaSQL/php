@@ -161,7 +161,7 @@ function amazonConvertFilesS3($params=array()){
 	}
 	//get absolute path to file and confirm it exists
 	$afile=$_SERVER['DOCUMENT_ROOT'].$crec[$field];
-	if(!file_exists($afile)){
+	if(!is_file($afile)){
 		$ok=editDBRecordById('aws_convert_files',$rec['_id'],array(
 			'status'=>'failed',
 			'results'=>"No such file: {$afile}"
@@ -178,7 +178,7 @@ function amazonConvertFilesS3($params=array()){
 			$nfile=preg_replace('/\.'.$ext.'$/i','',$nfile);
 			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$afile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.png";
 			$cmd="heif-convert \"{$afile}\"  \"{$nfile}\"";
-			if(file_exists($nfile)){unlink($nfile);}
+			if(is_file($nfile)){unlink($nfile);}
 			$results=cmdResults($cmd);
 			$editrec['results']=json_encode($results);
 		break;
@@ -187,7 +187,7 @@ function amazonConvertFilesS3($params=array()){
 			$nfile=preg_replace('/\.'.$ext.'$/i','',$afile);
 			$nfile=preg_replace('/[^a-z0-9\.\/\_\-]+/i','',$nfile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.mp4";
 			$cmd="/usr/bin/ffmpeg -y -hide_banner -i \"{$afile}\" -vcodec copy -acodec copy  \"{$nfile}\"";
-			if(file_exists($nfile)){unlink($nfile);}
+			if(is_file($nfile)){unlink($nfile);}
 			$results=cmdResults($cmd);
 			$editrec['results']=json_encode($results);
 		break;
@@ -196,14 +196,14 @@ function amazonConvertFilesS3($params=array()){
 			$nfile=preg_replace('/\.'.$ext.'$/i','',$afile);
 			$nfile=preg_replace('/[^a-z0-9\.\:\/\_\-]+/i','',$nfile).'_'.time()."_u{$crec['_cuser']}r{$crec['_id']}.{$ext}";
 			$ok=copyFile($afile,$nfile);
-			if(!file_exists($nfile)){
+			if(!is_file($nfile)){
 				$ok=copy($afile,$nfile);
 			}
-			if(!file_exists($nfile)){
+			if(!is_file($nfile)){
 				$cmd="copy {$afile} {$nfile}";
 				$ok=cmdResults($cmd);
 			}
-			if(!file_exists($nfile)){
+			if(!is_file($nfile)){
 				$cmd="cp {$afile} {$nfile}";
 				$ok=cmdResults($cmd);
 			}
@@ -211,7 +211,7 @@ function amazonConvertFilesS3($params=array()){
 			$editrec['results']=json_encode($results,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 		break;
 	}
-	if(file_exists($nfile) && filesize($nfile) > 0){
+	if(is_file($nfile) && filesize($nfile) > 0){
 		//upload to amazon
 		$opts=array(
 			'file'=>$nfile
@@ -240,7 +240,7 @@ function amazonConvertFilesS3($params=array()){
 			));
 			//remove the local files
 			unlink($opts['file']);
-			if(file_exists($afile)){unlink($afile);}
+			if(is_file($afile)){unlink($afile);}
 			//set status
 			$editrec['status']='success';
 		}
@@ -301,7 +301,7 @@ function amazonUploadFileS3($params=array()){
 	if(!isset($params['file'])){
 		return "amazonUploadFileS3 Error: missing file param";
 	}
-	if(!file_exists($params['file'])){
+	if(!is_file($params['file'])){
 		return "amazonUploadFileS3 Error: file does not exist - {$params['file']}";
 	}
 	if(!isset($params['folder'])){

@@ -152,7 +152,7 @@ ENDOFSQL;
 		$CRONTHRU['cron_name']=$rec['name'];
 		$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
 		$commonCronLogFile="{$tpath}/{$CONFIG['name']}_cronlog_{$rec['_id']}.txt";
-		if(file_exists($commonCronLogFile)){
+		if(is_file($commonCronLogFile)){
 			unlink($commonCronLogFile);
 		}
 		$ok=cronCleanRecords($rec);
@@ -340,7 +340,7 @@ ENDOFSQL;
 		if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
 			$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
 		}
-		if(file_exists($commonCronLogFile)){
+		if(is_file($commonCronLogFile)){
 			unlink($commonCronLogFile);
 		}
 		//clean up
@@ -388,14 +388,14 @@ function cronLogTails(){
 		if(strtolower($k)=='logs_rowcount'){continue;}
 		if(strtolower($k)=='logs_refresh'){continue;}
 		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
-			if(!file_exists($v)){
+			if(!is_file($v)){
 				continue;
 			}
 			$fname=getFileName($v);
 			$afile="{$tempdir}/{$fname}";
 			//skip if file has been updated within the last 10 seconds
 			$skip=0;
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				$mtime=filemtime($afile);
 				$etime=time()-$mtime;
 				if((integer)$etime < 10){

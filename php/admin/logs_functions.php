@@ -10,13 +10,13 @@ function logsGetLogs($includes=array(),$excludes=array()){
 		if(strtolower($k)=='logs_refresh'){continue;}
 
 		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
-			if(!file_exists($v)){
+			if(!is_file($v)){
 				echo "Logs File error for {$k}  - no such file or no access: {$v}<br>";
 				continue;
 			}
 			$fname=getFileName($v);
 			$aname="{$tempdir}/{$fname}";
-			if(!file_exists($aname)){
+			if(!is_file($aname)){
 				echo "Logs File error for {$k} - cron must not be running: {$aname}<br>";
 				continue;
 			}

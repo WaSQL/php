@@ -11,7 +11,7 @@ $temp=realpath("{$phpdir}/temp");
 $temp_logfile="{$temp}/resumable.log";
 //echo $temp_logfile;
 //keep log file to 1MB in size or smaller
-if(file_exists($temp_logfile) && filesize($temp_logfile) > 1048576){
+if(is_file($temp_logfile) && filesize($temp_logfile) > 1048576){
 	file_put_contents($temp_logfile,'');
 }
 //check if request is GET and the requested chunk exists or not. this makes testChunks work
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $_GET['resumableChunkNumber']='';
     }
     $chunk_file = $temp_dir.'/'.$_GET['resumableFilename'].'.part'.$_GET['resumableChunkNumber'];
-    if(file_exists($chunk_file)){
+    if(is_file($chunk_file)){
          header("HTTP/1.0 200 Ok");
     }
     else {

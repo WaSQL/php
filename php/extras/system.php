@@ -886,7 +886,7 @@ df -B1 | awk '{print \$1","\$2","\$3","\$4","\$5","\$6","\$7","\$8}' >{$outfile}
 ENDOFCMD;
 	$cmd=trim($cmd);
 	$out=`$cmd`;
-	if(file_exists($outfile)){
+	if(is_file($outfile)){
 		$lines=file($outfile);
 		unlink($outfile);
 		foreach($lines as $i=>$line){

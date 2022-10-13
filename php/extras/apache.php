@@ -211,9 +211,9 @@ function apacheParseLogFile(){
 		apacheTableSetup();
 	}
 	$logfile=$CONFIG['apache_access_log'];
-	if(!file_exists($logfile)){return $logfile.' does not exist';}
+	if(!is_file($logfile)){return $logfile.' does not exist';}
 	copyFile($logfile, "{$logfile}.reading");
-	if(file_exists("{$logfile}.reading")){
+	if(is_file("{$logfile}.reading")){
 		setFileContents($logfile,'');
 		$logfile.='.reading';
 		if ($fh = fopen($logfile,'r')) {

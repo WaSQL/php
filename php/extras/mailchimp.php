@@ -325,7 +325,7 @@ class Mailchimp {
     public function readConfigs() {
         $paths = array('~/.mailchimp.key', '/etc/mailchimp.key');
         foreach($paths as $path) {
-            if(file_exists($path)) {
+            if(is_file($path)) {
                 $apikey = trim(file_get_contents($path));
                 if($apikey) return $apikey;
             }

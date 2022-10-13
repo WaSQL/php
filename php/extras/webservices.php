@@ -248,16 +248,16 @@ function wsGetPHPDocPath(){
 			array_push($paths,$part);
 			$path=implode('/',$paths);
 			//echo "path: {$path}<br>\n";
-			if(file_exists("{$path}/html/function.date.html")){
+			if(is_file("{$path}/html/function.date.html")){
 				return "{$path}/html";
 				}
-			if(file_exists("{$path}/shared/php/function.date.html")){
+			if(is_file("{$path}/shared/php/function.date.html")){
 				return "{$path}/shared/php";
 				}
-			if(file_exists("{$path}/php/function.date.html")){
+			if(is_file("{$path}/php/function.date.html")){
 				return "{$path}/php";
 				}
-			if(file_exists("{$path}/phpdocs/function.date.html")){
+			if(is_file("{$path}/phpdocs/function.date.html")){
 				return "{$path}/phpdocs";
 				}
 	    	}
@@ -273,7 +273,7 @@ function wsGetPHPDocPath(){
 				array_push($paths,$part);
 				$path=implode('/',$paths);
 				//echo "path: {$path}<br>\n";
-				if(file_exists("{$path}/html/function.date.html")){
+				if(is_file("{$path}/html/function.date.html")){
 					return "{$path}/html";
 					}
 		    	}

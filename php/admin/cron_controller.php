@@ -93,7 +93,7 @@ switch(strtolower($_REQUEST['func'])){
 			$path=getWaSQLPath('php/temp');
 			$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 			$log=array('run_error'=>'');
-			if(file_exists($commonCronLogFile)){
+			if(is_file($commonCronLogFile)){
 				$t=time()-filectime($commonCronLogFile);
 				$run_length=verboseTime($t);
 				$log['bottom']="{$id},0,'{$run_length}'";

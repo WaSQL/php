@@ -226,7 +226,7 @@
 			if(isset($_REQUEST['py']) && $_REQUEST['py']==1){
 				$begin=microtime(true);
 				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
-				if(!file_exists($afile)){
+				if(!is_file($afile)){
 					$error=$afile;
 					setView(array('error'),1);
 					return;
@@ -241,7 +241,7 @@
 				$afile="{$tpath}/{$filename}";
 				$logname="sqlprompt_{$shastr}.log";
 				$lfile="{$tpath}/{$logname}";
-				if(file_exists($afile)){
+				if(is_file($afile)){
 					unlink($afile);
 				}
 				$params=array(
@@ -313,7 +313,7 @@
 				$error=$recs_count;
 				$recs_count='ERROR';
 				setView(array('results','failure'),1);
-				if(file_exists($afile)){
+				if(is_file($afile)){
 					unlink($afile);
 				}
 			}
@@ -360,7 +360,7 @@
 			$tpath=getWasqlPath('php/temp');
 			$filename='wqr_'.sha1($_SESSION['sql_last']).'.csv';
 			$afile="{$tpath}/{$filename}";
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				$mtime=filemtime($afile);
 				$dtime=time()-$mtime;
 				//echo "mtime:{$mtime}, dtime:{$dtime}";exit;
@@ -369,7 +369,7 @@
 					exit;
 				}
 			}
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				unlink($afile);
 			}
 			$params=array(
@@ -381,7 +381,7 @@
 			);
 			$recs=array();
 			$recs_count=dbGetRecords($db['name'],$params);
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				pushFile($afile);
 				exit;
 			}

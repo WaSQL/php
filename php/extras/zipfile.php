@@ -123,7 +123,7 @@ function zipExtract( $zipfile,$newpath=''){
 *	?>
 */
 function zipPushFile($zip_file, $file_name) {
-	if (file_exists($zip_file)) {
+	if (is_file($zip_file)) {
 		$zip = zip_open($zip_file);
 		while ($zip_entry = zip_read($zip)) {
 			if (zip_entry_open($zip, $zip_entry, "r")) {
@@ -157,7 +157,7 @@ function zipPushFile($zip_file, $file_name) {
 */
 function zipGetFileContents($zip_file, $file_name) {
 	$content='';
-	if (file_exists($zip_file)) {
+	if (is_file($zip_file)) {
 		$zip = zip_open($zip_file);
 		while ($zip_entry = zip_read($zip)) {
 			if (zip_entry_open($zip, $zip_entry, "r")) {
@@ -186,7 +186,7 @@ function zipGetFileContents($zip_file, $file_name) {
 */
 function zipGetFileThumbnail($zip_file) {
 	$content='';
-	if (file_exists($zip_file)) {
+	if (is_file($zip_file)) {
 		$zip = zip_open($zip_file);
 		while ($zip_entry = zip_read($zip)) {
 			if (zip_entry_open($zip, $zip_entry, "r")) {

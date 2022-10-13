@@ -855,7 +855,7 @@ function pyQueryResults($db,$query,$params=array()){
 	//unlink($afile);
 	$jsvfile=$out['stdout'];
 	//success with spit out the jsv file, otherwise err message
-	if(!file_exists($jsvfile)){
+	if(!is_file($jsvfile)){
 		return $jsvfile;
 	}
 	$csvfile=commonJSV2CSV($jsvfile);

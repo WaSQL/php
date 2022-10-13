@@ -63,7 +63,7 @@
 				//echo "<div>{$url}</div>".PHP_EOL;exit;
 				$rfile=base64_decode($body);
 				//check to see if it is local
-				if(file_exists($rfile)){$afile=$rfile;}
+				if(is_file($rfile)){$afile=$rfile;}
 				else{
 					//echo "<div>{$rfile}</div>".PHP_EOL;exit;
 					$filename=getFileName($rfile);

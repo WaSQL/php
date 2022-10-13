@@ -314,7 +314,7 @@ function configCheckSchema(){
 		//add the category to existing records
 		$spath=getWasqlPath('php/schema');
 		//echo $spath;
-		if(file_exists("{$spath}/config.csv")){
+		if(is_file("{$spath}/config.csv")){
 			$csv=getCSVFileContents("{$spath}/config.csv");
 			//echo printValue($csv);
 			foreach($csv['items'] as $i=>$rec){

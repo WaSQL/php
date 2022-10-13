@@ -59,7 +59,7 @@ $docroot=$_SERVER['DOCUMENT_ROOT'];
 list($prefix,$hash)=preg_split('/\_/',$_REQUEST['_minify_'],2);
 $afile="{$docroot}/w_min/{$hash}_css.json";
 $filename="minify_{$_REQUEST['_minify_']}.css";
-if(!file_exists($afile)){
+if(!is_file($afile)){
 	header('Content-type: text/css; charset=UTF-8');
 	echo '/*missing _minify_ json file*/';
 	exit;

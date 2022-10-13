@@ -160,7 +160,7 @@ ENDOFSQL;
 		}
 		
 		//check for wasql.update file
-		if(file_exists("{$tpath}/wasql.update")){
+		if(is_file("{$tpath}/wasql.update")){
 			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: WaSQL update",1);
 			unlink("{$tpath}/wasql.update");
 			$out=cmdResults('git pull');
@@ -171,7 +171,7 @@ ENDOFSQL;
 		if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 		$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
 		//cronlog tails?
-		if(!file_exists($cron_tail_log)){
+		if(!is_file($cron_tail_log)){
 			$ok=setFileContents($cron_tail_log,time());
 			$ok=cronLogTails();
 		}
@@ -180,7 +180,7 @@ ENDOFSQL;
 			$ok=cronLogTails();
 		}
 		//apache?
-		if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
+		if($apache_log==1 && isset($CONFIG['apache_access_log']) && is_file($CONFIG['apache_access_log'])){
 			$apache_log=0;
 			loadExtras('apache');
 			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: apacheParseLogFile");
@@ -462,14 +462,14 @@ function cronLogTails(){
 		if(strtolower($k)=='logs_rowcount'){continue;}
 		if(strtolower($k)=='logs_refresh'){continue;}
 		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
-			if(!file_exists($v)){
+			if(!is_file($v)){
 				continue;
 			}
 			$fname=getFileName($v);
 			$afile="{$tempdir}/{$fname}";
 			//skip if file has been updated within the last 10 seconds
 			$skip=0;
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				$mtime=filemtime($afile);
 				$etime=time()-$mtime;
 				if((integer)$etime < 10){

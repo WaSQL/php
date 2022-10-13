@@ -68,7 +68,7 @@ $tail=1;
 while($etime < 55){
 	if(!count($ConfigXml)){break;}
 	//check for wasql.update file
-	if(file_exists("{$wpath}/php/temp/wasql.update")){
+	if(is_file("{$wpath}/php/temp/wasql.update")){
 		cronMessage("updating WaSQL..");
 		unlink("{$wpath}/php/temp/wasql.update");
 		$out=cmdResults('git pull');
@@ -94,7 +94,7 @@ while($etime < 55){
 		$runnow=0;
 		$runnow_afile="{$progpath}/temp/{$CONFIG['name']}_runnow.txt";
 		//echo $runnow_afile.PHP_EOL;
-		if(!file_exists($runnow_afile) && isset($CONFIG['cron']) && $CONFIG['cron']==0){
+		if(!is_file($runnow_afile) && isset($CONFIG['cron']) && $CONFIG['cron']==0){
 			//cronMessage("Cron set to 0");
 			unset($ConfigXml[$name]);
 	    	continue;
@@ -112,7 +112,7 @@ while($etime < 55){
 		}
 		cronMessage("checking");
 		//check for apache_access_log
-		if($apache_log==1 && isset($CONFIG['apache_access_log']) && file_exists($CONFIG['apache_access_log'])){
+		if($apache_log==1 && isset($CONFIG['apache_access_log']) && is_file($CONFIG['apache_access_log'])){
 			$apache_log=0;
 			loadExtras('apache');
 			cronMessage("running apacheParseLogFile...".$CONFIG['apache_access_log']);
@@ -137,7 +137,7 @@ while($etime < 55){
 		and (date(end_date) <= date(now()) or end_date is null or length(end_date)=0)
 	    and (run_date < date_sub(now(), interval 1 minute) or run_date is null or length(run_date)=0)
 ENDOFWHERE;
-		if(file_exists($runnow_afile)){
+		if(is_file($runnow_afile)){
 			$runid=getfileContents($runnow_afile);
 			unlink($runnow_afile);
 			$runid=(integer)$runid;
@@ -323,7 +323,7 @@ ENDOFWHERE;
 				$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
 				$path=getWaSQLPath('php/temp');
 				$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$rec['_id']}.txt";
-				if(file_exists($commonCronLogFile)){
+				if(is_file($commonCronLogFile)){
 					unlink($commonCronLogFile);
 				}
 				cronMessage("cleaning {$rec['name']}");
@@ -496,7 +496,7 @@ ENDOFWHERE;
 				//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
 				if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 				$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
-				if(file_exists($commonCronLogFile)){
+				if(is_file($commonCronLogFile)){
 					unlink($commonCronLogFile);
 				}
 				//add to the _cronlog table
@@ -579,14 +579,14 @@ function cronLogTails(){
 		if(strtolower($k)=='logs_rowcount'){continue;}
 		if(strtolower($k)=='logs_refresh'){continue;}
 		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
-			if(!file_exists($v)){
+			if(!is_file($v)){
 				continue;
 			}
 			$fname=getFileName($v);
 			$afile="{$tempdir}/{$fname}";
 			//skip if file has been updated within the last 10 seconds
 			$skip=0;
-			if(file_exists($afile)){
+			if(is_file($afile)){
 				$mtime=filemtime($afile);
 				$etime=time()-$mtime;
 				if((integer)$etime < 10){
@@ -685,7 +685,7 @@ function cronMessage($msg){
 	$cdate=date('Y-m-d h:i:s',$ctime);
 	$msg="{$cdate},{$ctime},{$mypid},{$CONFIG['name']},{$msg}".PHP_EOL;
 	echo $msg;
-	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+	if(!is_file($logfile) || filesize($logfile) > 1000000 ){
         setFileContents($logfile,$msg);
     }
     else{

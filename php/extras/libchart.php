@@ -53,7 +53,7 @@ function libchartPieChart($title='',$opts=array(),$params=array()){
 	//create an image?
 	if(isset($params['-filename'])){
 		$chart->render($params['-filename']);
-		if(file_exists($params['-filename'])){
+		if(is_file($params['-filename'])){
 			return $params['-filename'];
 		}
 		return null;

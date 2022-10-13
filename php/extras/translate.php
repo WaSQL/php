@@ -47,10 +47,10 @@ function translateGetLocaleInfo($locale){
 		'lang'=>$lang,
 		'country'=>$country
 	);
-	if(file_exists("{$flagspath}/4x3/{$country}.svg")){
+	if(is_file("{$flagspath}/4x3/{$country}.svg")){
 		$rec['flag4x3']="/wfiles/flags/4x3/{$country}.svg";
 	}
-	if(file_exists("{$flagspath}/1x1/{$country}.svg")){
+	if(is_file("{$flagspath}/1x1/{$country}.svg")){
 		$rec['flag1x1']="/wfiles/flags/1x1/{$country}.svg";
 	}
 	//echo $locale.printValue($rec);exit;
@@ -81,10 +81,10 @@ function translateGetLocales($filters=array()){
 			'country'=>$country
 		);
 
-		if(file_exists("{$flagspath}/4x3/{$country}.svg")){
+		if(is_file("{$flagspath}/4x3/{$country}.svg")){
 			$rec['flag4x3']="/wfiles/flags/4x3/{$country}.svg";
 		}
-		if(file_exists("{$flagspath}/1x1/{$country}.svg")){
+		if(is_file("{$flagspath}/1x1/{$country}.svg")){
 			$rec['flag1x1']="/wfiles/flags/1x1/{$country}.svg";
 		}
 		$recs[]=$rec;

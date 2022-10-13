@@ -71,7 +71,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -97,7 +97,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -137,7 +137,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -154,7 +154,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -181,7 +181,7 @@ function createWasqlTable($table=''){
 			));
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/config.csv")){
+			if(is_file("{$progpath}/schema/config.csv")){
 				$csv=getCSVFileContents("{$progpath}/schema/config.csv");
 				debugValue("Loading {$progpath}/schema/config.csv");
 				$recs=$csv['items'];
@@ -262,7 +262,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -293,7 +293,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -326,7 +326,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -348,7 +348,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -363,7 +363,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -377,7 +377,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -409,7 +409,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -429,7 +429,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -447,7 +447,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -466,7 +466,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -482,7 +482,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -499,7 +499,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -549,7 +549,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -582,7 +582,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -609,7 +609,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -633,7 +633,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -738,7 +738,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -765,7 +765,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -797,7 +797,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -814,7 +814,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -871,7 +871,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
@@ -924,7 +924,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
             return 1;
@@ -944,7 +944,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
             return 1;
@@ -963,7 +963,7 @@ function createWasqlTable($table=''){
             addMetaData($table);
             //populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
             return 1;
@@ -989,7 +989,7 @@ function createWasqlTable($table=''){
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
-			if(file_exists("{$progpath}/schema/{$table}.csv")){
+			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
             return 1;

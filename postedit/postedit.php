@@ -14,7 +14,7 @@ error_reporting(E_ALL ^ E_WARNING);
 ini_set("allow_url_fopen",1);
 $progpath=dirname(__FILE__);
 include_once("{$progpath}/../php/common.php");
-if(!file_exists("{$progpath}/postedit.xml")){
+if(!is_file("{$progpath}/postedit.xml")){
 	abortMessage("Missing postedit.xml.");
 }
 //get hosts
@@ -480,7 +480,7 @@ function abortMessage($msg){
 		//$ok=posteditBeep(3);
 		$ok=sounder('failure.wav');
 	}
-	if(isset($postedit['alock']) && file_exists($postedit['alock'])){
+	if(isset($postedit['alock']) && is_file($postedit['alock'])){
 		unlink($postedit['alock']);
 	}
 	exit;

@@ -28,7 +28,7 @@ $_SERVER['HTTP_HOST']='localhost';
 $scriptname=basename(__FILE__, '.php');
 $logfile="{$progpath}/{$scriptname}.log";
 $backupfile="{$progpath}/{$scriptname}.last";
-if(file_exists($backupfile)){
+if(is_file($backupfile)){
 	unlink($backupfile);
 }
 include_once("{$progpath}/common.php");
@@ -68,7 +68,7 @@ foreach($ALLCONFIG as $site=>$host){
 	$cmd="mysqldump --user={$host['dbuser']} --host={$host['dbhost']} --password={$host['dbpass']} --max_allowed_packet=128M {$host['dbname']} | gzip -9 > {$outfile}";
 	$ok=backupMessage($cmd);
 	$out=cmdResults($cmd);
-	if(file_exists($outfile)){
+	if(is_file($outfile)){
 		appendFileContents($backupfile,$filename.PHP_EOL);
 		if(isset($host['backup_email']) && isEmail($host['backup_email'])){
 			$sendopts['attach']=array($outfile);
@@ -109,7 +109,7 @@ foreach($ALLCONFIG as $site=>$host){
 					}
 					$ok=backupMessage($cmd);
 					$out=cmdResults($cmd);
-					if(file_exists($outfile)){
+					if(is_file($outfile)){
 						appendFileContents($backupfile,$filename.PHP_EOL);
 						if(isset($host['backup_email']) && isEmail($host['backup_email'])){
 							$sendopts['attach'][]=$outfile;
@@ -155,7 +155,7 @@ function backupMessage($msg){
 	$cdate=date('Y-m-d h:i:s',$ctime);
 	$msg="{$cdate},{$ctime},{$msg}".PHP_EOL;
 	echo $msg;
-	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+	if(!is_file($logfile) || filesize($logfile) > 1000000 ){
         setFileContents($logfile,$msg);
     }
     else{

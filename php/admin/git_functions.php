@@ -39,7 +39,7 @@ function gitFileInfo(){
 			'b64'=>encodeBase64($file)
 		);
 		$git['b64sha'][$rec['b64']]=$rec['sha'];
-		if(file_exists($afile)){
+		if(is_file($afile)){
 			$age=time()-filemtime($afile);
 			$rec['lines']=getFileLineCount($afile);
 			$rec['age']=$age;

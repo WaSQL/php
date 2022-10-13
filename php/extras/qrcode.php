@@ -95,7 +95,7 @@ function qrcodeCreateWithLogo($txt,$logo='',$transparent=0, $size = 4, $margin =
 	//$text, $outfile = false, $level = QR_ECLEVEL_L, $size = 3, $margin = 4
 	QRcode::png($txt,$filename,3,$size,$margin);
 	//if the logo does not exist just return the qrcode
-	if(!file_exists($logo)){
+	if(!is_file($logo)){
 		$data=file_get_contents($filename);
 		unlink($filename);
 		return $data;

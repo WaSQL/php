@@ -284,7 +284,7 @@ if(isset($_REQUEST['_pushexport']) && $_REQUEST['_pushexport']==1 && isset($_REQ
 	//echo printValue($params);exit;
 	//sleep(1);
 	$afile=databaseListRecords($params);
-	if(file_exists($afile)){
+	if(is_file($afile)){
 		$bfile=base64_encode($afile);
 		echo '<a href="/php/index.php?_pushfile='.$bfile.'" onclick="removeDiv(this);" style="text-decoration:none;padding-top:3px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>';
 	}
@@ -372,7 +372,7 @@ if(isset($_REQUEST['get_upload_progress_json']) && $_REQUEST['get_upload_progres
 	else{
 	   	$logfile="{$wpath}/logs/upload.log";
 	}
-	if(!file_exists($logfile) || filesize($logfile) > 1000000 ){
+	if(!is_file($logfile) || filesize($logfile) > 1000000 ){
         setFileContents($logfile,$msg);
     }
     else{

@@ -91,7 +91,7 @@ function manualParseFile($file){
 	global $CONFIG;
 	$recs=array();
 	$lines=array();
-	if(file_exists($file)){
+	if(is_file($file)){
 		$file=strtolower(realpath($file));
 		$md5=md5_file($file);
 		if(isset($docs_files[$file]['afile_md5']) && $docs_files[$file]['afile_md5']==$md5){

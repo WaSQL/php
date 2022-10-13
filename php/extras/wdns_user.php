@@ -20,7 +20,7 @@ $ini=array(
 	'path'	=> '/php/extras/wdns.php',
 	'port'	=> 80
 );
-if(file_exists('wdns_user.ini')){
+if(is_file('wdns_user.ini')){
 	$lines=file('wdns_user.ini');
 	foreach($lines as $line){
 		$line=trim($line);

@@ -1807,14 +1807,14 @@ ENDOFX;
 		case 'update_wasql':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Update WaSQL - </h2>'.PHP_EOL;
 			$tempdir=getWasqlPath('php/temp');
-			if(file_exists("{$tempdir}/wasql.update.log")){
+			if(is_file("{$tempdir}/wasql.update.log")){
 				unlink("{$tempdir}/wasql.update.log");
 			}
 			setFileContents("{$tempdir}/wasql.update",time());
 			//wait for the update.log file
 			$startwait=microtime(true);
 			while(microtime(true)-$startwait < 30){
-				if(file_exists("{$tempdir}/wasql.update.log")){
+				if(is_file("{$tempdir}/wasql.update.log")){
 					//echo "Results of {$tempdir}/wasql.update.log<br>".PHP_EOL;
 					$results=getFileContents("{$tempdir}/wasql.update.log");
 					if(stringContains($results,'.js') || stringContains($results,'.css')){
@@ -3030,7 +3030,7 @@ LIST_TABLE:
 					case 'download':
 						if(isset($_REQUEST['filename'])){
 							$afile=base64_decode($_REQUEST['filename']);
-							if(file_exists(($afile))){
+							if(is_file(($afile))){
 								pushFile($afile);
 							}
 						}
@@ -3040,7 +3040,7 @@ LIST_TABLE:
 						//echo "here".printValue($_REQUEST);exit;
                 		$dump=dumpDB($_REQUEST['_table_']);
 						if(isset($_REQUEST['push']) && $_REQUEST['push']=='filename'){
-							if(file_exists($dump['afile']) && filesize($dump['afile'])){
+							if(is_file($dump['afile']) && filesize($dump['afile'])){
 								echo '<backup>'.base64_encode($dump['afile']).'</backup>';
 							}
 							else{
