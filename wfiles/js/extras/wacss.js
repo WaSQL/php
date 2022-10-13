@@ -1451,9 +1451,26 @@ var wacss = {
 			if(undefined != list[i].codemirror){continue;}
 			//go through dataset to get params
 			let params={};
+			let curr_defaults=defaults;
 			for(k in list[i].dataset){
 				if(k=='debug'){continue;}
 				let v=list[i].dataset[k];
+				//look for custom keys
+				if(k.startsWith('ctrl_')){
+					k=k.toUpperCase().replace('_','-');
+					curr_defaults.extraKeys[k]=v;
+					continue;
+				}
+				else if(k.startsWith('shift_')){
+					k=k.toUpperCase().replace('_','-');
+					curr_defaults.extraKeys[k]=v;
+					continue;
+				}
+				else if(k.startsWith('f_') && k.length < 4){
+					k=k.toUpperCase().replace('_','');
+					curr_defaults.extraKeys[k]=v;
+					continue;
+				}
 				if (typeof v === 'string' || v instanceof String){
 					switch(v){
 						case 'true':
@@ -1475,7 +1492,7 @@ var wacss = {
 				case 'html':
 				case 'text/html':
 					params.mode='text/html';
-					defaults.htmlMode=true;
+					curr_defaults.htmlMode=true;
 				break;
 				case 'ini':
 				case 'text/x-ini':
@@ -1484,15 +1501,15 @@ var wacss = {
 				case 'javascript':
 				case 'text/javascript':
 					params.mode='text/javascript';
-					defaults.continueComments='Enter';
-					defaults.extraKeys["Ctrl-Q"]='toggleComment';
+					curr_defaults.continueComments='Enter';
+					curr_defaults.extraKeys["Ctrl-Q"]='toggleComment';
 				break;
 				case 'json':
 				case 'application/x-json':
 					params.mode='application/x-json';
-					defaults.autoCloseBrackets=true;
-					defaults.matchBrackets=true;
-					defaults.lineWrapping=true;
+					curr_defaults.autoCloseBrackets=true;
+					curr_defaults.matchBrackets=true;
+					curr_defaults.lineWrapping=true;
 				break;
 				case 'lua':
 				case 'text/x-lua':
@@ -1522,9 +1539,9 @@ var wacss = {
 					params.mode='application/xml';
 				break;
 			}
-			for(k in defaults){
+			for(k in curr_defaults){
 	  			if(undefined == params[k]){
-	  				params[k]=defaults[k];
+	  				params[k]=curr_defaults[k];
 	  			}
 	  		}
 	  		if(undefined != list[i].dataset.debug){
