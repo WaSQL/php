@@ -1457,18 +1457,18 @@ var wacss = {
 				let v=list[i].dataset[k];
 				//look for custom keys
 				if(k.startsWith('ctrl_')){
-					k=k.toUpperCase().replace('_','-');
-					curr_defaults.extraKeys[k]=v;
+					k=k.toUpperCase().replace('_','-').replace('CTRL','Ctrl').replace('ENTER','Enter');
+					curr_defaults.extraKeys[k]=window[v];
 					continue;
 				}
 				else if(k.startsWith('shift_')){
-					k=k.toUpperCase().replace('_','-');
-					curr_defaults.extraKeys[k]=v;
+					k=k.toUpperCase().replace('_','-').replace('SHIFT','Shift').replace('ENTER','Enter');
+					curr_defaults.extraKeys[k]=window[v];
 					continue;
 				}
 				else if(k.startsWith('f_') && k.length < 4){
 					k=k.toUpperCase().replace('_','');
-					curr_defaults.extraKeys[k]=v;
+					curr_defaults.extraKeys[k]=window[v];
 					continue;
 				}
 				if (typeof v === 'string' || v instanceof String){
