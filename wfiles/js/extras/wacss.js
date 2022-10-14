@@ -1424,14 +1424,8 @@ var wacss = {
 		//set some defaults
 		let defaults={
 	    	mode:'text/x-sql',
-	    	indentUnit:4,
-		    indentWithTabs: true,
-		    smartIndent: true,
 		    lineNumbers: true,
-		    lineWrapping:false,
-		    matchBrackets : true,
-		    autofocus: false,
-		    autoRefresh: true,
+		    viewportMargin: Infinity,
 		    extraKeys: {
 		    	"Ctrl-Space": "autocomplete",
 		    	"F11": function(cm) {
@@ -1458,17 +1452,29 @@ var wacss = {
 				//look for custom keys
 				if(k.startsWith('ctrl_')){
 					k=k.toUpperCase().replace('_','-').replace('CTRL','Ctrl').replace('ENTER','Enter');
-					curr_defaults.extraKeys[k]=window[v];
+					let key=k;
+					curr_defaults.extraKeys[k]=function(cm){
+						let p={args:[key,cm],func:v};
+						wacss.callFunc(p);
+					};
 					continue;
 				}
 				else if(k.startsWith('shift_')){
 					k=k.toUpperCase().replace('_','-').replace('SHIFT','Shift').replace('ENTER','Enter');
-					curr_defaults.extraKeys[k]=window[v];
+					let key=k;
+					curr_defaults.extraKeys[k]=function(cm){
+						let p={args:[key,cm],func:v};
+						wacss.callFunc(p);
+					};
 					continue;
 				}
 				else if(k.startsWith('f_') && k.length < 4){
 					k=k.toUpperCase().replace('_','');
-					curr_defaults.extraKeys[k]=window[v];
+					let key=k;
+					curr_defaults.extraKeys[k]=function(cm){
+						let p={args:[key,cm],func:v};
+						wacss.callFunc(p);
+					};
 					continue;
 				}
 				if (typeof v === 'string' || v instanceof String){
@@ -1554,6 +1560,15 @@ var wacss = {
 			//save changes to textarea
 	  		cm.on('change', function(cm){cm.save();});
 	  	}
+	},
+	callFunc: function(params){
+		if(undefined == params){return false;}
+		if(undefined == params.func){return false;}
+		let func=params.func;
+		if(undefined != params.args){
+			return window[func](params.args);	
+		}
+		return window[func]();
 	},
 	initEditor: function(){
 		let els=document.querySelectorAll('textarea[data-behavior="editor"]');

@@ -58,6 +58,12 @@ function sqlpromptSetDB(db){
 	return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
 }
 function sqlpromptSetValue(v){
+	let el=document.getElementById('sql_full');
+	if(undefined != el.codemirror){
+		console.log('setValue');
+		el.codemirror.setValue(v);
+		return false;
+	}
 	//console.log(v);
 	document.sqlprompt.sql_select.value='';
 	let sql=v;
@@ -92,12 +98,17 @@ function sqlpromptMonitor(type){
 	return ajaxGet('/php/admin.php',div,params)
 }
 function sqlpromptMonitorSQL(){
-	document.sqlprompt.sql_select.value='';
 	let sql=getText('monitor_sql_query');
 	let doc = new DOMParser().parseFromString(sql, "text/html");
 	sql=doc.documentElement.innerText;
-	let obj=getObject('sql_full');
-	if(undefined != obj.editor){
+	document.sqlprompt.sql_select.value='';
+	let obj=document.getElementById('sql_full');
+	if(undefined != obj.codemirror){
+		obj.codemirror.setValue(sql);
+		obj.codemirror.save();
+		sqlpromptSubmit(document.sqlprompt);
+	}
+	else if(undefined != obj.editor){
 		setText(obj.editor,'');
 		setText(obj.editor,sql);
 		obj.editor.save();
@@ -146,9 +157,43 @@ function sqlpromptFields(table){
 	icon.className='icon-square-minus';
 	return ajaxGet('/php/admin.php',table+'_fields',{_menu:'sqlprompt',func:'fields',table:table,db:db})
 }
+function sqlpromptExecute(args){
+	return sqlpromptSubmit(document.sqlprompt);
+	let cm=args[1];
+	let k=args[0];
+	let txt=cm.getSelection();
+	if(txt.length){
+		console.log('getSelection');
+		console.log(txt);
+	}
+	cm.focus();
+	txt=cm.getCursor().line;
+	if(txt.length){
+		console.log('getCursor');
+		console.log(txt);
+	}
+	txt=cm.getValue();
+	if(txt.length){
+		console.log('getValue');
+		console.log(txt);
+	}
+	return false;
+}
 function sqlpromptSubmit(frm){
 	let obj=getObject('sql_full');
-	if(undefined != obj.editor){
+	if(undefined != obj.codemirror){
+		obj.codemirror.save();
+		let str=obj.codemirror.getSelection();
+		if(str.length){
+			//console.log('section selected: length:'+str.length);
+			//console.log(str);
+			frm.sql_select.value=str;
+			return ajaxSubmitForm(frm,'sqlprompt_results');
+		}
+		frm.sql_select.value='';
+		return ajaxSubmitForm(frm,'sqlprompt_results');
+	}
+	else if(undefined != obj.editor){
 		//store editor_content
 		frm.editor_content.value=obj.editor.innerHTML;
 		//console.log(frm.sql_full);
@@ -187,4 +232,4 @@ function sqlpromptPaginate(offset){
 	document.sqlprompt.offset.value=0;
 	return false;
 }
-document.onkeydown = sqlpromptCheckKey;
+document.onkeydown=sqlpromptCheckKey;
