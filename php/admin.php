@@ -1445,7 +1445,7 @@ if(isset($_REQUEST['_menu'])){
 				.v i {color: #999;}
 				</style>
 				<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
-					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;">
+					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
 						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
 						{$linkstr}
 					</div>
@@ -1473,7 +1473,7 @@ ENDOFX;
 				$linkstr=implode(PHP_EOL,$links);
 				echo <<<ENDOFX
 				<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
-					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;">
+					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
 						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
 						{$linkstr}
 					</div>

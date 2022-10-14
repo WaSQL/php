@@ -10,7 +10,8 @@ except Exception as err:
 
 prows=''
 for p in pkg_resources.working_set:
-	prow='<div class="align-center w_bold" style="margin-top:10px;font-size:clamp(11px,2vw,24px);color:#1d415e"><a name="module_{}">{}</a></div><table class="table striped condensed" style="border:1px solid #000;margin-top:5px;">'.format(p.project_name,p.project_name)
+	prow='<div class="align-center w_bold" style="margin-top:10px;font-size:clamp(11px,2vw,24px);color:#1d415e">'
+	prow=prow+'<a name="module_{}">{}</a></div><table class="table striped condensed" style="border:1px solid #000;margin-top:5px;">'.format(p.project_name,p.project_name)
 	info=''
 	try:
 		info = pkg_resources.get_distribution(p.project_name).get_metadata('PKG-INFO')
@@ -21,16 +22,37 @@ for p in pkg_resources.working_set:
 		parts=line.split(':',1)
 		partscount=len(parts)
 		if partscount != 2:
-			continue;
+			continue
+
+		if len(parts[0])==0:
+			break
+
+		if "<" in parts[0]:
+			break
+
+		if "|" in parts[0]:
+			break
+
+		if "." in parts[0]:
+			break
+
+		if "[" in parts[0]:
+			break
+
+		if " " in parts[0]:
+			break
+
+		if "(" in parts[0]:
+			break
 
 		if parts[0]=='Metadata-Version':
-			continue;
+			continue
 
 		if parts[0]=='Description-Content-Type':
-			break;	
+			break
 
 		if parts[0]=='Classifier':
-			break;	
+			break	
 
 		if parts[0]=='Home-page':
 			parts[1]='<a href="{}" class="w_link" target="_blank">{}</a>'.format(parts[1],parts[1])
