@@ -1448,6 +1448,7 @@ if(isset($_REQUEST['_menu'])){
 					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
 						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
 						{$linkstr}
+						<br />
 					</div>
 					<div style="flex:1">{$m[1]}</div>
 				</div>
@@ -1461,29 +1462,35 @@ ENDOFX;
 			$pypath=getWasqlPath('python');
 			$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\"");
 			$data=$out['stdout'];
-			if(preg_match('/\<section\>(.+)\<\/section\>/ism',$data,$m)){
-				//parse out modules to build a list
-				preg_match_all('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$data,$modules);
-				$links=array();
-				sort($modules[1]);
-				foreach($modules[1] as $module){
-					$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$module.'">'.ucwords(str_replace('_',' ',$module)).'</a></div>';
+			preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
+			$modules=array();
+			foreach($sections[0] as $section){
+				$module='';
+				if(preg_match('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$section,$m)){
+					$k=$m[1];
+					$modules[$k]=$section;
 				}
-				$module_count=count($modules[1]);
-				$linkstr=implode(PHP_EOL,$links);
-				echo <<<ENDOFX
-				<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
-					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
-						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
-						{$linkstr}
-					</div>
-					<div style="flex:1">{$m[1]}</div>
+			}
+			//sort alphabetically, ignoring case
+			ksort($modules,SORT_NATURAL|SORT_FLAG_CASE);
+			//echo printValue(array_keys($modules));exit;
+			$links=array();
+			foreach($modules as $name=>$content){
+				$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$name.'">'.ucwords(str_replace('_',' ',$name)).'</a></div>';
+			}
+			$module_count=count($modules);
+			$linkstr=implode(PHP_EOL,$links);
+			$contentstr=implode(PHP_EOL,$modules);
+			echo <<<ENDOFX
+			<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
+				<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
+					<div class="w_biggest w_underline">{$module_count} Packages installed</div>
+					{$linkstr}
+					<br />
 				</div>
+				<div style="flex:1;padding-left:10px;">{$contentstr}</div>
+			</div>
 ENDOFX;
-			}
-			else{
-				echo printValue($out);
-			}
 		break;
 		case 'env':
 			//Server Variables
