@@ -3420,6 +3420,7 @@ var wacss = {
 			modal_close.pnode=modal;
 			document.body.appendChild(modal);
 		}
+		modal.setAttribute('data-position','initial');
 		centerObject(modal);
 		return modal;
 	},
