@@ -3360,6 +3360,10 @@ var wacss = {
 			centerObject(m);
 			return m;
 		}
+		if(undefined != document.getElementById('wacss_modal_overlay_close')){
+			params.overlay_close=1;
+		}
+
 		if(undefined == params.color){
 			params.color=wacss.color();
 		}
