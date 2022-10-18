@@ -14607,7 +14607,7 @@ function isSpider($agent='',$return_name=0){
 	$bots_contains=array(
 		'abachobot','abcdatos_botlink','acoon robot','adsbot-google','aesop_com_spiderman','ah-ha.com crawler','antibot','architextspider','ask jeeves/teoma',
     	'baiduspider','bingbot','bdfetch',
-    	'cc-rget',
+    	'cc-rget','/robot/','/bingbot',
     	'discobot',
     	'fast-webcrawler','findexa crawler','feedfetcher',
         'galaxybot','googlebot','gsa-crawler',
@@ -14650,6 +14650,38 @@ function isSpider($agent='',$return_name=0){
 		'Xaldon WebSpider',
 		'Zeus'
 		);
+	$bots=array(
+		'Bingbot'=>'bingbot',
+		'ahrefs.com'=>'ahrefs.com/robot',
+		'Twitter'=>'Twitterbot',
+		'Google'=>'Googlebot',
+		'MSN' => 'msnbot',
+		'Rambler' => 'Rambler',
+		'Yahoo' => 'Yahoo',
+		'AbachoBOT' => 'AbachoBOT',
+		'accoona' => 'Accoona',
+		'AcoiRobot' => 'AcoiRobot',
+		'ASPSeek' => 'ASPSeek',
+		'CrocCrawler' => 'CrocCrawler',
+		'Dumbot' => 'Dumbot',
+		'FAST-WebCrawler' => 'FAST-WebCrawler',
+		'GeonaBot' => 'GeonaBot',
+		'Gigabot' => 'Gigabot',
+		'Lycos spider' => 'Lycos',
+		'MSRBOT' => 'MSRBOT',
+		'Altavista robot' => 'Scooter',
+		'AltaVista robot' => 'Altavista',
+		'ID-Search Bot' => 'IDBot',
+		'eStyle Bot' => 'eStyle',
+		'Scrubby robot' => 'Scrubby',
+		'Facebook' => 'facebookexternalhit',
+	);
+	foreach($bots as $name=>$bot){
+		if(stringContains($agent,$bot)){
+			if($return_name==1){return $name;}
+			return true;
+		}
+	}
 	foreach($bots_contains as $bot){
 		if(stringContains($agent,$bot)){
 			if($return_name==1){return $bot;}
