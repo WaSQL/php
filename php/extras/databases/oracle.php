@@ -1025,8 +1025,8 @@ function oracleDBConnect($params=array()){
 	if(!isset($params['-connect'])){
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-		echo "oracleDBConnect error: no connect params".printValue($params);
-		exit;
+		debugValue("oracleDBConnect error: no connect params".printValue($params));
+		return null;
 	}
 	if(isset($params['-single'])){
 		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset'],$params['-dbsysdba']);
@@ -1034,8 +1034,8 @@ function oracleDBConnect($params=array()){
 			$err=json_encode(oci_error());
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			echo "oracleDBConnect single connect error:{$err}".printValue($params);
-			exit;
+			debugValue("oracleDBConnect single connect error:{$err}".printValue($params));
+			return null;
 		}
 		return $dbh_single;
 	}
@@ -1047,15 +1047,15 @@ function oracleDBConnect($params=array()){
 			$err=oci_error();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			echo "oracleDBConnect resource error. ".printValue($err).printValue($params);
-			exit;
+			debugValue("oracleDBConnect resource error. ".printValue($err).printValue($params));
+			return null;
 
 		}
 		return $dbh_oracle;
 	}
 	catch (Exception $e) {
-		echo "oracleDBConnect exception" . printValue($e);
-		exit;
+		debugValue("oracleDBConnect exception" . printValue($e));
+		return null;
 	}
 }
 //---------- begin function oracleEditDBRecord ----------
@@ -1915,7 +1915,6 @@ function oracleEnumQueryResults($res,$params=array()){
     	if(!isset($fh) || !is_resource($fh)){
 			odbc_free_result($result);
 			return 'oracleEnumQueryResults error: Failed to open '.$params['-filename'];
-			exit;
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
