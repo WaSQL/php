@@ -1055,6 +1055,17 @@ function databaseListRecords($params=array()){
 		}
 		//echo printValue($params);exit;
 	}
+	elseif(isset($params['-recs'])){
+		$allfields=1;
+		$params['-list']=$recs=$params['-recs'];
+		$params['-hidesearch']=1;
+		//strip tags
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				$recs[$i][$k]=encodeHtml($v);
+			}
+		}
+	}
 	elseif(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
 			case 'ctree':
@@ -1141,7 +1152,7 @@ function databaseListRecords($params=array()){
 		}
 		unset($params['-query']);
 	}
-	elseif(!empty($params['-table'])){
+	elseif(isset($params['-table'])){
 		//get the list from the table. First lets get the table fields
 		switch(strtolower($params['-database'])){
 			case 'ctree':
@@ -1356,7 +1367,7 @@ function databaseListRecords($params=array()){
 			}
 		}
 		//check for -export and filter_export
-		if(!empty($params['-export']) && !empty($params['-export_now']) && $params['-export_now']==1){
+		if(isset($params['-export']) && isset($params['-export_now']) && $params['-export_now']==1){
 			//remove limit temporarily
 			$limit=$params['-limit'];
 			$fields=$params['-fields'];
