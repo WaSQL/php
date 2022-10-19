@@ -5209,7 +5209,6 @@ function addDBRecord($params=array()){
 		//VALUES() to refer to the new row is deprecated with version 8
 		
 		$euser=(integer)$USER['_id'];
-		$edate=date('Y-m-d H:i:s');
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
 		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
@@ -5219,7 +5218,7 @@ function addDBRecord($params=array()){
 			
 			foreach($upserts as $k=>$v){
 				switch(strtolower($k)){
-					case '_edate':$flds[]="{$k}='{$edate}'";break;
+					case '_edate':$flds[]="{$k}=now()";break;
 					case '_euser':$flds[]="{$k}={$euser}";break;
 					default:$flds[]="{$k}=new.{$k}";break;
 				}
@@ -5233,7 +5232,7 @@ function addDBRecord($params=array()){
 			$flds=array();
 			foreach($upserts as $k=>$v){
 				switch(strtolower($k)){
-					case '_edate':$flds[]="{$k}='{$edate}'";break;
+					case '_edate':$flds[]="{$k}=now()";break;
 					case '_euser':$flds[]="{$k}={$euser}";break;
 					default:$flds[]="{$k}=VALUES({$k})";break;
 				}
