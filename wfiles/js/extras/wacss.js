@@ -1132,8 +1132,8 @@ var wacss = {
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
 	        				let json=JSON.parse(datasets[d].innerText);   
-	        				let fill=datasets[d].dataset.fill || list[i].dataset.fill || false;
-							if(undefined != fill){
+	        				let fill=datasets[d].dataset.fill || list[i].dataset.fill || '';
+							if(fill.length){
 								if(fill.indexOf('true') != -1){fill=true;}
 								else if(fill == '1'){fill=true;}
 								else{fill=false;}
