@@ -7320,7 +7320,7 @@ function commonProcessDBListRecordsTags($htm){
 			'-action'=>'/php/index.php',
 			'-onsubmit'=>"return pagingSubmit(this,'{$divid}');",
 			'-formname'=>"dblistrecordsform_{$i}",
-			'setprocessing'=>0
+			'setprocessing'=>0,
 		);
 		if(isset($dblistrecords_attributes['data-process'])){
 			$dblistrecords_attributes['-results_eval']=$dblistrecords_attributes['data-process'];
@@ -7331,7 +7331,9 @@ function commonProcessDBListRecordsTags($htm){
 				$opts[$k]=$v;
 			}
 		}
-		
+		if(!isset($opts['-tableclass'])){
+			$opts['-tableclass']='table striped bordered condensed';
+		}
 		if(isset($opts['db'])){
 			$db=$opts['db'];
 			unset($opts['db']);
@@ -7343,18 +7345,17 @@ function commonProcessDBListRecordsTags($htm){
 		else{
 			$db=$CONFIG['database'];
 		}
-		if(isset($opts['-table'])){
-
-		}
-		elseif(preg_match('/^(show|select|with)/is',trim($dblistrecords_contents))){
-			//replace any [asdfsa] tags with inputs
-			foreach($_REQUEST as $k=>$v){
-				$dblistrecords_contents=str_replace("[{$k}]",$v,$dblistrecords_contents);
+		if(strlen(trim($dblistrecords_contents))){
+			if(preg_match('/^(show|select|with)/is',trim($dblistrecords_contents))){
+				//replace any [asdfsa] tags with inputs
+				foreach($_REQUEST as $k=>$v){
+					$dblistrecords_contents=str_replace("[{$k}]",$v,$dblistrecords_contents);
+				}
+				$opts['-query']=trim($dblistrecords_contents);
 			}
-			$opts['-query']=trim($dblistrecords_contents);
-		}
-		else{
-			$opts['-list']=json_decode($dblistrecords_contents,true,JSON_INVALID_UTF8_IGNORE);
+			else{
+				$opts['-list']=json_decode($dblistrecords_contents,true,JSON_INVALID_UTF8_IGNORE);
+			}
 		}
 		$json=array(
 			'db'=>$db,
@@ -7362,10 +7363,15 @@ function commonProcessDBListRecordsTags($htm){
 			'id'=>$dblistrecords_attributes['id']
 		);
 		$opts['_dblistrecords']=1;
-		$opts['_dblistrecords_params']=base64_encode(json_encode($json));
-		$replace_str.=dbListRecords($db,$opts);
-		//$replace_str.=printValue($opts).printValue($dblistrecords_attributes);
-		$replace_str.='</div>'.PHP_EOL;
+		if(isset($opts['-debug']) && $opts['-debug']==1){
+			$replace_str=printValue($opts);
+		}
+		else{
+			$opts['_dblistrecords_params']=base64_encode(json_encode($json));
+			$replace_str.=dbListRecords($db,$opts);
+			//$replace_str.=printValue($opts).printValue($dblistrecords_attributes);
+			$replace_str.='</div>'.PHP_EOL;
+		}
 		$htm=str_replace($dblistrecords_tag,$replace_str,$htm);
 	}
 	if(stringContains($htm,'<dblistrecords')){

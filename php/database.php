@@ -954,6 +954,31 @@ function databaseListRecords($params=array()){
 	global $CONFIG;
 	$info=array();
 	$allfields=0;
+	//check to see if params is a query
+	if(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
+		$params=array(
+			'-query'=>$params,
+			'-tableclass'=>'table striped bordered condensed',
+			'-hidesearch'=>1
+		);
+	}
+	//check for translate
+	$translate=0;
+	if(isset($params['-translate'])){$translate=1;}
+	foreach($params as $k=>$v){
+		if(preg_match('/\_translate$/i',$k)){$translate=1;break;}
+	}
+	if($translate==1){
+		global $databaseCache;
+		if(!isset($databaseCache['loadExtras']['translate'])){
+			loadExtras('translate');
+		}
+	}
+	//require -table or -list or -query
+	if(isset($params['-db'])){
+		$CONFIG['db']=$params['-db'];
+	}
+	//get -list
 	if(isset($params['-list'])){
 		$params['-hidesearch']=1;
 		$allfields=1;
@@ -1030,24 +1055,7 @@ function databaseListRecords($params=array()){
 		}
 		//echo printValue($params);exit;
 	}
-	//check for translate
-	$translate=0;
-	if(isset($params['-translate'])){$translate=1;}
-	foreach($params as $k=>$v){
-		if(preg_match('/\_translate$/i',$k)){$translate=1;break;}
-	}
-	if($translate==1){
-		global $databaseCache;
-		if(!isset($databaseCache['loadExtras']['translate'])){
-			loadExtras('translate');
-		}
-	}
-	//require -table or -list or -query
-	if(isset($params['-db'])){
-		$CONFIG['db']=$params['-db'];
-	}
-	//echo printValue($params);exit;
-	if(!isset($params['-list']) && isset($params['-query'])){
+	elseif(isset($params['-query'])){
 		switch(strtolower($params['-database'])){
 			case 'ctree':
 				if(!function_exists('ctreeQueryResults')){
@@ -1133,101 +1141,7 @@ function databaseListRecords($params=array()){
 		}
 		unset($params['-query']);
 	}
-	if(!isset($params['-table']) && !isset($params['-list']) && !isset($params['-csv'])){
-		if(isset($params[0]) && is_array($params[0])){
-			//they are passing in the list without any other params.
-			$params=array('-list'=>$params);
-			$params['-hidesearch']=1;
-		}
-		elseif(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
-			//they just entered a query. convert it to a list
-			switch(strtolower($params['-database'])){
-				case 'ctree':
-					if(!function_exists('ctreeGetDBRecords')){
-						loadExtras('ctree');
-					}
-					$params=array('-list'=>ctreeGetDBRecords($params));
-				break;
-				case 'firebird':
-					if(!function_exists('firebirdGetDBRecords')){
-						loadExtras('firebird');
-					}
-					$params=array('-list'=>firebirdGetDBRecords($params));
-				break;
-				case 'hana':
-					if(!function_exists('hanaGetDBRecords')){
-						loadExtras('hana');
-					}
-					$params=array('-list'=>hanaGetDBRecords($params));
-				break;
-				case 'msaccess':
-					if(!function_exists('msaccessGetDBRecords')){
-						loadExtras('msaccess');
-					}
-					$params=array('-list'=>msaccessGetDBRecords($params));
-				break;
-				case 'mscsv':
-					if(!function_exists('mscsvGetDBRecords')){
-						loadExtras('mscsv');
-					}
-					$params=array('-list'=>mscsvGetDBRecords($params));
-				break;
-				case 'msexcel':
-					if(!function_exists('msexcelGetDBRecords')){
-						loadExtras('msexcel');
-					}
-					$params=array('-list'=>msexcelGetDBRecords($params));
-				break;
-				case 'mssql':
-					if(!function_exists('mssqlGetDBRecords')){
-						loadExtras('mssql');
-					}
-					$params=array('-list'=>mssqlGetDBRecords($params));
-				break;
-				case 'mysql':
-					if(!function_exists('mysqlGetDBRecords')){
-						loadExtras('mysql');
-					}
-					$params=array('-list'=>mysqlGetDBRecords($params));
-				break;
-				case 'odbc':
-					if(!function_exists('odbcGetDBRecords')){
-						loadExtras('odbc');
-					}
-					$params=array('-list'=>odbcGetDBRecords($params));
-				break;
-				case 'oracle':
-					if(!function_exists('oracleGetDBRecords')){
-						loadExtras('oracle');
-					}
-					$params=array('-list'=>oracleGetDBRecords($params));
-				break;
-				case 'postgresql':
-					if(!function_exists('postgresqlGetDBRecords')){
-						loadExtras('postgresql');
-					}
-					$params=array('-list'=>postgresqlGetDBRecords($params));
-				break;
-				case 'snowflake':
-					if(!function_exists('snowflakeGetDBRecords')){
-						loadExtras('snowflake');
-					}
-					$params=array('-list'=>snowflakeGetDBRecords($params));
-				break;
-				case 'sqlite':
-					if(!function_exists('sqliteGetDBRecords')){
-						loadExtras('sqlite');
-					}
-					$params=array('-list'=>sqliteGetDBRecords($params));
-				break;
-				default:
-					$params=array('-list'=>getDBRecords($params));
-				break;
-			}
-			$params['-hidesearch']=1;
-		}
-	}
-	if(!isset($params['-list']) && isset($params['-table'])){
+	elseif(!empty($params['-table'])){
 		//get the list from the table. First lets get the table fields
 		switch(strtolower($params['-database'])){
 			case 'ctree':
@@ -1602,7 +1516,7 @@ function databaseListRecords($params=array()){
 			return $efile;
 		}
 		//get total number of records
-		if(!isset($params['-list']) && empty($params['-total'])){
+		if(empty($params['-total'])){
 			switch(strtolower($params['-database'])){
 				case 'ctree':
 					if(!function_exists('ctreeGetDBCount')){
@@ -1692,92 +1606,90 @@ function databaseListRecords($params=array()){
 		if(!isset($params['-offset']) && !empty($_REQUEST['filter_offset'])){
 			$params['-offset']=$_REQUEST['filter_offset'];
 		}
-		if(!isset($params['-list'])){
-			//get the list of records to display
-			switch(strtolower($params['-database'])){
-				case 'ctree':
-					if(!function_exists('ctreeQueryResults')){
-						loadExtras('ctree');
-					}
-					$params['-list']=ctreeGetDBRecords($params);
-				break;
-				case 'firebird':
-					if(!function_exists('firebirdQueryResults')){
-						loadExtras('firebird');
-					}
-					$params['-list']=firebirdGetDBRecords($params);
-				break;
-				case 'hana':
-					if(!function_exists('hanaGetDBRecords')){
-						loadExtras('hana');
-					}
-					$params['-list']=hanaGetDBRecords($params);
-				break;
-				case 'msaccess':
-					if(!function_exists('msaccessGetDBRecords')){
-						loadExtras('msaccess');
-					}
-					$params['-list']=msaccessGetDBRecords($params);
-				break;
-				case 'mscsv':
-					if(!function_exists('mscsvGetDBRecords')){
-						loadExtras('mscsv');
-					}
-					$params['-list']=mscsvGetDBRecords($params);
-				break;
-				case 'msexcel':
-					if(!function_exists('msexcelGetDBRecords')){
-						loadExtras('msexcel');
-					}
-					$params['-list']=msexcelGetDBRecords($params);
-				break;
-				case 'mssql':
-					if(!function_exists('mssqlGetDBRecords')){
-						loadExtras('mssql');
-					}
-					$params['-list']=mssqlGetDBRecords($params);
-				break;
-				case 'mysql':
-					if(!function_exists('mysqlGetDBRecords')){
-						loadExtras('mysql');
-					}
-					$params['-list']=mysqlGetDBRecords($params);
-				break;
-				case 'odbc':
-					if(!function_exists('odbcGetDBRecords')){
-						loadExtras('odbc');
-					}
-					$params['-list']=odbcGetDBRecords($params);
-				break;
-				case 'oracle':
-					if(!function_exists('oracleQueryResults')){
-						loadExtras('oracle');
-					}
-					$params['-list']=oracleGetDBRecords($params);
-				break;
-				case 'postgresql':
-					if(!function_exists('postgresqlGetDBRecords')){
-						loadExtras('postgresql');
-					}
-					$params['-list']=postgresqlGetDBRecords($params);
-				break;
-				case 'snowflake':
-					if(!function_exists('snowflakeGetDBRecords')){
-						loadExtras('snowflake');
-					}
-					$params['-list']=snowflakeGetDBRecords($params);
-				break;
-				case 'sqlite':
-					if(!function_exists('sqliteGetDBRecords')){
-						loadExtras('sqlite');
-					}
-					$params['-list']=sqliteGetDBRecords($params);
-				break;
-				default:
-					//echo printValue($params);exit;
-					$params['-list']=getDBRecords($params);
-				break;
-			}
+		//get the list of records to display
+		switch(strtolower($params['-database'])){
+			case 'ctree':
+				if(!function_exists('ctreeQueryResults')){
+					loadExtras('ctree');
+				}
+				$params['-list']=ctreeGetDBRecords($params);
+			break;
+			case 'firebird':
+				if(!function_exists('firebirdQueryResults')){
+					loadExtras('firebird');
+				}
+				$params['-list']=firebirdGetDBRecords($params);
+			break;
+			case 'hana':
+				if(!function_exists('hanaGetDBRecords')){
+					loadExtras('hana');
+				}
+				$params['-list']=hanaGetDBRecords($params);
+			break;
+			case 'msaccess':
+				if(!function_exists('msaccessGetDBRecords')){
+					loadExtras('msaccess');
+				}
+				$params['-list']=msaccessGetDBRecords($params);
+			break;
+			case 'mscsv':
+				if(!function_exists('mscsvGetDBRecords')){
+					loadExtras('mscsv');
+				}
+				$params['-list']=mscsvGetDBRecords($params);
+			break;
+			case 'msexcel':
+				if(!function_exists('msexcelGetDBRecords')){
+					loadExtras('msexcel');
+				}
+				$params['-list']=msexcelGetDBRecords($params);
+			break;
+			case 'mssql':
+				if(!function_exists('mssqlGetDBRecords')){
+					loadExtras('mssql');
+				}
+				$params['-list']=mssqlGetDBRecords($params);
+			break;
+			case 'mysql':
+				if(!function_exists('mysqlGetDBRecords')){
+					loadExtras('mysql');
+				}
+				$params['-list']=mysqlGetDBRecords($params);
+			break;
+			case 'odbc':
+				if(!function_exists('odbcGetDBRecords')){
+					loadExtras('odbc');
+				}
+				$params['-list']=odbcGetDBRecords($params);
+			break;
+			case 'oracle':
+				if(!function_exists('oracleQueryResults')){
+					loadExtras('oracle');
+				}
+				$params['-list']=oracleGetDBRecords($params);
+			break;
+			case 'postgresql':
+				if(!function_exists('postgresqlGetDBRecords')){
+					loadExtras('postgresql');
+				}
+				$params['-list']=postgresqlGetDBRecords($params);
+			break;
+			case 'snowflake':
+				if(!function_exists('snowflakeGetDBRecords')){
+					loadExtras('snowflake');
+				}
+				$params['-list']=snowflakeGetDBRecords($params);
+			break;
+			case 'sqlite':
+				if(!function_exists('sqliteGetDBRecords')){
+					loadExtras('sqlite');
+				}
+				$params['-list']=sqliteGetDBRecords($params);
+			break;
+			default:
+				//echo printValue($params);exit;
+				$params['-list']=getDBRecords($params);
+			break;
 		}
 		if(!is_array($params['-list']) && empty($params['-listfields'])){
 			$params['-listfields']=array();
