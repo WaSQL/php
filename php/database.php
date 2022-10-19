@@ -870,21 +870,30 @@ function pyQueryResults($db,$query,$params=array()){
 //---------- begin function databaseListRecords
 /**
 * @describe returns an html table of records
-* @param params array - requires either -list or -table or a raw query instead of params
+* @param params array - 
+*  One of the following are required in order to generate the list of records to display
+* 	[-list] array - getDBRecords array to use
+* 	[-recs] array - getDBRecords array to use (same as -list)
+* 	[-query] string - query to run to get getDBRecords array 
+*	[-csv] file - csv file to load
 *	[-table] string - table name.  Use this with other field/value params to filter the results
-*	[-list] array - getDBRecords array to use
-*	[-query] string - query to run instead of -list or passing in -table
-*	[-csv] file - csv file to load 
-
+*
+* The following parameters adjust the css of the table
 *	[-tableheight] string - sets max height of table (i.e 80vh)
 *	[-table{class|style|id|...}] string - sets specified attribute on table
 *	[-thead{class|style|id|...}] string - sets specified attribute on thead
 *	[-tbody{class|style|id|...}] string - sets specified attribute on tbody
+* 
+* The following parameters allow custom attributes
 *	[-tr_{attr}] string - sets the tr attribute {attr}. %field% is replaced with the current field value
 *	[-td_{attr}] string - sets the td attribute {attr}. %field% is replaced with the current field value
 *	[-th_{attr}] string - sets the th attribute {attr}.
+* 
+* The following parameters set actions
 *	[-tbody_onclick] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "return pageSortByColumn('%field%');" 
 *	[-tbody_href] - wraps the column name in an anchor with onclick. %field% is replaced with the current field. i.e "/mypage/sortby/%field%"
+* 
+* The following parameters adjust the display of the table
 *	[-listfields] -  subset of fields to list from the list returned.
 *	[-hidefields] - subset of fields to exclude
 *   [-translate] - translate column names (displaynames)
@@ -893,8 +902,11 @@ function pyQueryResults($db,$query,$params=array()){
 *	[-export] - 1 - show export option  
 *	[-exportfields] -  subset of fields to export.
 * 	[-export_displaynames] - 1 - use displaynames in csv header row
+* 
+* The following parameters adjust the form attributes
 * 	[-action] string - set action of pagination form
 * 	[-onsubmit] string - set onsubmit of pagination form. Defaults to pagingSubmit(this). set to pagingSubmit(this,'{divid}') when using ajax
+* 
 *	[-limit] mixed - query record limit
 *	[-offset] mixed - query offset limit
 *	[-ajaxid] str - ajax id to wrap the table in
@@ -5197,7 +5209,7 @@ function addDBRecord($params=array()){
 		//VALUES() to refer to the new row is deprecated with version 8
 		
 		$euser=(integer)$USER['_id'];
-		$edate=date('Y-m-d');
+		$edate=date('Y-m-d H:i:s');
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
 		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
