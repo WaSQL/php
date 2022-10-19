@@ -1047,7 +1047,7 @@ function databaseListRecords($params=array()){
 		$CONFIG['db']=$params['-db'];
 	}
 	//echo printValue($params);exit;
-	if(isset($params['-query'])){
+	if(!isset($params['-list']) && isset($params['-query'])){
 		switch(strtolower($params['-database'])){
 			case 'ctree':
 				if(!function_exists('ctreeQueryResults')){
@@ -1133,8 +1133,8 @@ function databaseListRecords($params=array()){
 		}
 		unset($params['-query']);
 	}
-	if(empty($params['-table']) && empty($params['-list']) && empty($params['-csv'])){
-		if(!empty($params[0]) && is_array($params[0])){
+	if(!isset($params['-table']) && !isset($params['-list']) && !isset($params['-csv'])){
+		if(isset($params[0]) && is_array($params[0])){
 			//they are passing in the list without any other params.
 			$params=array('-list'=>$params);
 			$params['-hidesearch']=1;
@@ -1227,7 +1227,7 @@ function databaseListRecords($params=array()){
 			$params['-hidesearch']=1;
 		}
 	}
-	if(!empty($params['-table'])){
+	if(!isset($params['-list']) && isset($params['-table'])){
 		//get the list from the table. First lets get the table fields
 		switch(strtolower($params['-database'])){
 			case 'ctree':
