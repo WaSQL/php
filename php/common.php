@@ -20400,30 +20400,46 @@ function wasqlMail($opts=array(),$debug=0){
 * @param url string - url of file
 * @param localfile string - path and file to write locally
 * @return string - return url contents
-* @usage if(stringBeginsWith('beginning','beg')){...}
+* @usage 
+* 	list($localfile,$path)=wget($url,$localfile);
+* 	or
+* 	$content=wget($url);
 */
-function wget($url,$localfile){
-	if(function_exists("curl_init")){
-	    $ch = curl_init();
-	    curl_setopt($ch, CURLOPT_URL, $url);
-	    curl_setopt($ch, CURLOPT_HEADER, 0);
-	    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	    $contents = curl_exec($ch);
-	    curl_close($ch);
-	  	}
+function wget($url,$localfile=''){
+	set_time_limit(0);
+	if(!strlen($localfile)){
+		$content=1;
+		$path=wasqlTempPath();
+		$ext=getFileExtension($url);
+		$localfile=$path.'/'.sha1($url).'.'.$ext;
+	}
 	else{
-	    $contents = file_get_contents($url);
-	  	}
-	if(strlen($localfile)){
+		$content=0;
 		$path=getFilePath($localfile);
 		if(!is_dir($path)){buildDir($path);}
-		setFileContents($localfile,$contents);
-		return array($localfile,$path);
-		}
-  	return $contents;
 	}
+	//This is the file where we save the    information
+	$fp = fopen ($localfile, 'w+');
+	if(!is_resource($fp)){
+		return array("ERROR","Unable to open {$localfile}");
+	}
+	//Here is the file we are downloading, replace spaces with %20
+	$ch = curl_init(str_replace(" ","%20",$url));
+	// make sure to set timeout to a high enough value
+	// if this is too low the download will be interrupted
+	curl_setopt($ch, CURLOPT_TIMEOUT, 1200);
+	// write curl response to file
+	curl_setopt($ch, CURLOPT_FILE, $fp); 
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	// get curl response
+	curl_exec($ch); 
+	curl_close($ch);
+	fclose($fp);
+	if($content==1){
+		return file_get_contents($localfile);
+	}
+	return array($localfile,$path);
+}
 //---------- begin function getRemoteImage--------------------
 /**
 * @describe get an image on a remote website and save it locally to target file
