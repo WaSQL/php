@@ -14625,7 +14625,7 @@ function isSpider($agent='',$return_name=0){
         'naverrobot','NetcraftSurveyAgent','nuhk',
         'openbot','outfoxbot',
         'rabot',
-        'scooter','slurp','sogou spider','sosospider','spider','superpagesurlverifybot','sogou web spider',
+        'scooter','slurp','serpstatbot','sogou spider','sosospider','spider','superpagesurlverifybot','sogou web spider',
         'thunderstone.com',
 		'yahoo!slurp','yammybot','yodaobot','yandexbot',
 		'webalta','WebCollage','wget',
@@ -14681,6 +14681,7 @@ function isSpider($agent='',$return_name=0){
 		'eStyle Bot' => 'eStyle',
 		'Scrubby robot' => 'Scrubby',
 		'Facebook' => 'facebookexternalhit',
+		'Serpstat'=>'serpstatbot'
 	);
 	foreach($bots as $name=>$bot){
 		if(stringContains($agent,$bot)){
@@ -15776,6 +15777,14 @@ function parseEnv() {
 	//REMOTE_BROWSER and REMOTE_BROWSER_VERSION
 	$browser=getAgentBrowser($agent);
 	//Check for applewebkit - safari
+	if(preg_match('/MSIE/i',$agent) && !preg_match('/Opera/i',$agent)) { 
+        $_SERVER['REMOTE_BROWSER']="msie";
+		$_SERVER['REMOTE_BROWSER_VERSION']=$browser['version'];
+    }
+	elseif(preg_match('/Edge/i',$agent)){ 
+       $_SERVER['REMOTE_BROWSER']="edge";
+		$_SERVER['REMOTE_BROWSER_VERSION']=$browser['version']; 
+    } 
 	if(preg_match('/\ opr\//i',$agent)){
 		$_SERVER['REMOTE_BROWSER']="opera";
 		$_SERVER['REMOTE_BROWSER_VERSION']=$browser['version'];
