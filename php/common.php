@@ -14614,7 +14614,7 @@ function isSpider($agent='',$return_name=0){
 		'abachobot','abcdatos_botlink','acoon robot','adsbot-google','aesop_com_spiderman','ah-ha.com crawler','antibot','architextspider','ask jeeves/teoma',
     	'baiduspider','bingbot','bdfetch',
     	'cc-rget','/robot/','/bingbot',
-    	'discobot',
+    	'discobot','duckduckgo',
     	'fast-webcrawler','findexa crawler','feedfetcher',
         'galaxybot','googlebot','gsa-crawler',
         'HTTrack',
@@ -15784,6 +15784,10 @@ function parseEnv() {
     }
 	elseif(preg_match('/Edge/i',$agent)){ 
        $_SERVER['REMOTE_BROWSER']="edge";
+		$_SERVER['REMOTE_BROWSER_VERSION']=$browser['version']; 
+    } 
+    elseif(preg_match('/SkypeUriPreview/i',$agent)){ 
+       $_SERVER['REMOTE_BROWSER']="skype";
 		$_SERVER['REMOTE_BROWSER_VERSION']=$browser['version']; 
     } 
 	if(preg_match('/\ opr\//i',$agent)){
