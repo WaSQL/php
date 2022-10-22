@@ -14681,7 +14681,8 @@ function isSpider($agent='',$return_name=0){
 		'eStyle Bot' => 'eStyle',
 		'Scrubby robot' => 'Scrubby',
 		'Facebook' => 'facebookexternalhit',
-		'Serpstat'=>'serpstatbot'
+		'Serpstat'=>'serpstatbot',
+		'Blexbot'=>'blexbot'
 	);
 	foreach($bots as $name=>$bot){
 		if(stringContains($agent,$bot)){
