@@ -1770,7 +1770,7 @@ function databaseListRecords($params=array()){
 	}
 	$rtn='';
 	if(isset($params['-presearch'])){
-		$rtn .= $params['-presearch'];
+		$rtn .= '<div class="dblistrecords_presearch">'.$params['-presearch'].'</div>';
 	}
 	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
@@ -1786,8 +1786,11 @@ function databaseListRecords($params=array()){
 				$params['-searchfields'][]=$field;
 			}
 		}
+		$rtn .= '<div class="dblistrecords_search">'.PHP_EOL;
 		$rtn .= commonSearchFiltersForm($params);
+		$rtn .= '</div>'.PHP_EOL;
 	}
+	$rtn .= '<div class="dblistrecords_list">'.PHP_EOL;
 	//check for -anchormap
 	$anchor_values=array();
 	if(isset($params['-anchormap'])){
@@ -1858,6 +1861,7 @@ function databaseListRecords($params=array()){
 		elseif(isset($params['-posttable'])){
 			$rtn .= $params['-posttable'];
 		}
+		$rtn .= '</div>'.PHP_EOL;
 		return $rtn;
 	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
@@ -1991,6 +1995,7 @@ function databaseListRecords($params=array()){
 			if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 				$rtn .= '</div>'.PHP_EOL;
 			}
+			$rtn .= '</div>'.PHP_EOL;
 			return $rtn;
 		}
 	}
@@ -2537,6 +2542,7 @@ function databaseListRecords($params=array()){
 	elseif(isset($params['-posttable'])){
 		$rtn .= $params['-posttable'];
 	}
+	$rtn .= '</div>'.PHP_EOL;
 	if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
 		$rtn .= '</div>'.PHP_EOL;
 	}
