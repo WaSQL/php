@@ -60,10 +60,7 @@ function translateGetLocaleInfo($locale){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function translateGetLocales($filters=array()){
-	if(!is_array($filters)){
-		$filters=preg_split('/\,+/',$filters);
-	}
+function translateGetLocales($params=array()){
 	$path=getWasqlPath('php/schema');
 	$flagspath=getWasqlPath('wfiles/flags');
 	$jsontxt=getFileContents("{$path}/locales.json");
@@ -87,7 +84,10 @@ function translateGetLocales($filters=array()){
 		if(is_file("{$flagspath}/1x1/{$country}.svg")){
 			$rec['flag1x1']="/wfiles/flags/1x1/{$country}.svg";
 		}
-		$recs[]=$rec;
+		if(isset($params['-index']) && isset($rec[$params['-index']])){
+			$recs[$rec[$params['-index']]]=$rec;
+		}
+		else{$recs[]=$rec;}
 	}
 	return $recs;
 }
