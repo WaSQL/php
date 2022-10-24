@@ -127,10 +127,15 @@ function manualParseFile($file){
 		'afile_md5'=>$md5,
 		'-upsert'=>'afile_md5'
 	));
-	foreach($lines as $i=>$line){
-		$lines[$i]=preg_replace('/\t/','[tab]',$line);
+	if(is_array($lines)){
+		foreach($lines as $i=>$line){
+			$lines[$i]=preg_replace('/\t/','[tab]',$line);
+		}
+		$cnt=count($lines);
 	}
-	$cnt=count($lines);
+	else{
+		$cnt=0;
+	}
 	//echo $file.printValue($lines);exit;
 	$lang=array();
 	switch(strtolower($ext)){
