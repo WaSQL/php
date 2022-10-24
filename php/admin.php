@@ -1471,6 +1471,10 @@ ENDOFX;
 					$modules[$k]=$section;
 				}
 			}
+			$header='';
+			if(preg_match('/\<header\>(.+?)\<\/header\>/ism',$data,$m)){
+				$header=$m[0];
+			}
 			//sort alphabetically, ignoring case
 			ksort($modules,SORT_NATURAL|SORT_FLAG_CASE);
 			//echo printValue(array_keys($modules));exit;
@@ -1488,7 +1492,7 @@ ENDOFX;
 					{$linkstr}
 					<br />
 				</div>
-				<div style="flex:1;padding-left:10px;">{$contentstr}</div>
+				<div style="flex:1;padding-left:10px;">{$header}{$contentstr}</div>
 			</div>
 ENDOFX;
 		break;
