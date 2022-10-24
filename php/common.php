@@ -9890,7 +9890,12 @@ ENDOFERR;
 function evalCleanupGlobal($arr){
 	if(!is_array($arr) || count($arr)==0){return array('_isempty'=>1);}
 	foreach($arr as $k=>$v){
-		if(!strlen($v) || $v=='null'){
+		if(is_array($v)){
+			if(!count($v)){
+				unset($arr[$k]);
+			}
+		}
+		elseif(!strlen($v) || $v=='null'){
 			unset($arr[$k]);
 		}
 	}
