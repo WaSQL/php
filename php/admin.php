@@ -1870,8 +1870,6 @@ ENDOFX;
             $versions=array(
             	'Current Path'	=> dirname(__FILE__),
 				'Current User'	=> $USER['username'],
-				'Magic Quotes GPC' => get_magic_quotes_gpc()?'On':'Off',
-				'Magic Quotes Runtimie' => get_magic_quotes_runtime()?'On':'Off',
 				'PHP Include Path'	=> get_include_path(),
 				'PHP Script Owner'	=> get_current_user(),
 				'PHP Temp Dir'		=> sys_get_temp_dir(),

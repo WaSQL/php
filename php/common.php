@@ -11176,9 +11176,21 @@ function getAllVersions(){
 	foreach($funcs['internal'] as $fname){
 		//if(preg_match('/^(mysqli_get_server_version|ming_useswfversion)/i',$fname)){continue;}
 		if(preg_match('/(.+?)version/i',$fname,$fmatch)){
-			try{$val=$fname();}
-			catch(Exception $e){
-				$val=$e;
+			switch(strtolower($fname)){
+				case 'pg_version':
+					$out=cmdResults('psql --version');
+					$val=$out['stdout'];
+				break;
+				case 'mysqli_get_server_version':
+					$out=cmdResults('mysql --version');
+					$val=$out['stdout'];
+				break;
+				default:
+					try{$val=$fname();}
+					catch(Exception $e){
+						$val=$e;
+					}
+				break;
 			}
 			//echo "{$fname}<br>".printValue($val).'<hr>';
 			if(is_array($val)){
