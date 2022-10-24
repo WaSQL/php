@@ -727,7 +727,10 @@ v<?python
 import platform
 print(platform.python_version())
 ?>
-			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button></div>
+			<div class="align-right">
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
+			</div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -752,7 +755,10 @@ print(wasql.user('username'))
 			<?node
 				console.log(process.version);
 			?>
-			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button></div>
+			<div class="align-right">
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
+			</div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -779,7 +785,10 @@ print(wasql.user('username'))
 			<?perl
 				print "v".$];
 			?>
-			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button></div>
+			<div class="align-right">
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
+			</div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -804,7 +813,10 @@ print(wasql.user('username'))
 <?lua
 	print(_VERSION);
 ?>
-		<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button></div>
+		<div class="align-right">
+			<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button>
+			<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
+		</div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -831,7 +843,10 @@ print(wasql.user('username'))
 			v<?ruby
 				puts RUBY_VERSION
 			?>
-			<div class="align-right"><button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button></div>
+			<div class="align-right">
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
+			</div>
 		</th>
 		<td>
 			<div class="w_pre">
@@ -856,7 +871,20 @@ print(wasql.user('username'))
 <div class="w_centerpop_title"><?=$lang['name'];?> Includes</div>
 <div class="w_centerpop_content" style="max-width:80vw;overflow:auto;max-height:80vh;">
 	<pre><?=commonAddPrecode($lang,'');?></pre>
+	<?=buildOnLoad("centerObject('centerpop');");?>
 </div>
 </view:language_includes>
+
+
+<view:script>
+<div class="w_centerpop_title"><?=$lang['name'];?> Script</div>
+<div class="w_centerpop_content" style="max-width:80vw;overflow:auto;max-height:80vh;">
+<pre><xmp><?=$lang['shebang'];?>
+<?=commonAddPrecode($lang,'');?>
+<?=$lang['code'];?>		
+</xmp></pre>
+<?=buildOnLoad("centerObject('centerpop');");?>
+</div>
+</view:script>
 
 
