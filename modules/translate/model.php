@@ -68,7 +68,7 @@ function translateAddExtraInfo($recs){
 		'-fields'=>'identifier,translation'
 	);
 	$sourcemap=getDBRecords($opts);
-	if(!count($sourcemap)){return $recs;}
+	if(!is_array($sourcemap) || !count($sourcemap)){return $recs;}
 	foreach($recs as $i=>$rec){
 		$key=$rec['identifier'];
 		if(isset($sourcemap[$key])){
