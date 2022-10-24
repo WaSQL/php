@@ -11176,7 +11176,10 @@ function getAllVersions(){
 	foreach($funcs['internal'] as $fname){
 		//if(preg_match('/^(mysqli_get_server_version|ming_useswfversion)/i',$fname)){continue;}
 		if(preg_match('/(.+?)version/i',$fname,$fmatch)){
-			$val=$fname();
+			try{$val=$fname();}
+			catch(Exception $e){
+				$val=$e;
+			}
 			//echo "{$fname}<br>".printValue($val).'<hr>';
 			if(is_array($val)){
 				$versions[$fname]=json_encode($val);
