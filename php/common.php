@@ -10147,6 +10147,7 @@ function commonAddPrecode($lang,$evalcode){
 function commonGetPrecodeForVar($lang,$arr,$varname){
 	$precode=array();
 	$skips=array('HTTP_COOKIE','REMOTE_PORT','REQUEST_TIME','REQUEST_TIME_FLOAT','TIME_START','WASQLGUID','_adate','_adate_utime','_edate','_edate_utime','_tauth','_sessionid');
+	if(!is_array($arr) || !count($arr)){return array();}
 	foreach($arr as $k=>$v){
 		//remove arrays and values with a slash
 		if(is_array($v) || in_array($k,$skips) || stringContains($v,"\\") || !strlen($v) || isXML($v)){
