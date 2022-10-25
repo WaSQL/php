@@ -574,20 +574,15 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
 	//check for schema name
 	$schema=postgresqlGetDBSchema();
-	if(!stringContains($table,'.')){
-		if(strlen($schema) && !stringBeginsWith($table,"{$schema}.")){
-			$table="{$schema}.{$table}";
-		}
+	if(stringContains($table,'.')){
+		list($schema,$table)=preg_split('/\./',$table,2);
 	}
-	if(postgresqlIsDBTable($table)){return 0;}
+	$table="{$schema}.{$table}";
 	global $CONFIG;	
 	//lowercase the tablename and replace spaces with underscores
 	$table=strtolower(trim($table));
 	$table=str_replace(' ','_',$table);
 	$ori_table=$table;
-	if(strlen($schema) && !stringContains($table,$schema)){
-		$table="{$schema}.{$table}";
-	}
 	$query="create table {$table} (".PHP_EOL;
 	$lines=array();
 	foreach($fields as $field=>$attributes){
