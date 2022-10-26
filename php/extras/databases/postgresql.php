@@ -635,12 +635,12 @@ function postgresqlDropDBIndex($params=array()){
 function postgresqlDropDBTable($table='',$meta=1){
 	if(!strlen($table)){return 0;}
 	//check for schema name
-	if(!stringContains($table,'.')){
-		$schema=postgresqlGetDBSchema();
-		if(strlen($schema) && !stringBeginsWith($table,"{$schema}.")){
-			$table="{$schema}.{$table}";
-		}
+	$schema=postgresqlGetDBSchema();
+	if(stringContains($table,'.')){
+		list($schema,$table)=preg_split('/\./',$table,2);
 	}
+	$table="{$schema}.{$table}";
+	
 	//drop indexes first
 	$recs=postgresqlGetDBTableIndexes($table);
 	if(is_array($recs)){
@@ -1060,6 +1060,9 @@ function postgresqlAlterDBTable($table,$fields=array()){
 		return false;
 	}
 	$schema=postgresqlGetDBSchema();
+	if(stringContains($table,'.')){
+		list($schema,$table)=preg_split('/\./',$table,2);
+	}
 	if(!strlen($schema)){
 		debugValue('postgresqlAlterDBTable error: schema is not defined in config.xml');
 		return null;
@@ -1314,11 +1317,9 @@ function postgresqlGetDBFieldInfo($table){
 	global $databaseCache;
 	global $CONFIG;
 	//check for schema name
+	$schema=postgresqlGetDBSchema();
 	if(stringContains($table,'.')){
 		list($schema,$table)=preg_split('/\./',$table,2);
-	}
-	else{
-		$schema=postgresqlGetDBSchema();
 	}
 	/*
 
@@ -1801,6 +1802,9 @@ function postgresqlIsDBTable($table='',$force=0){
 		return $databaseCache[$cachekey];
 	}
 	$schema=postgresqlGetDBSchema();
+	if(stringContains($table,'.')){
+		list($schema,$table)=preg_split('/\./',$table,2);
+	}
 	if(strlen($schema)){
 		$query="SELECT tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' and tablename='{$table}'";
 	}
