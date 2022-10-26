@@ -96,9 +96,9 @@ if(isset($minify['extras'][0])){
 	}
 }
 $minify['extras']=$extras;
-if(!is_array($minify['extras'])){$minify['extras']=array();}
-if(!is_array($minify['jsfiles'])){$minify['jsfiles']=array();}
-if(!is_array($minify['includepages'])){$minify['includepages']=array();}
+if(!isset($minify['extras'][0])){$minify['extras']=array();}
+if(!isset($minify['jsfiles'][0])){$minify['jsfiles']=array();}
+if(!isset($minify['includepages'][0])){$minify['includepages']=array();}
 //check for any includePage calls that happened later
 if(isset($_SESSION['w_MINIFY']['includepages'][0])){
 	foreach($_SESSION['w_MINIFY']['includepages'] as $id){
