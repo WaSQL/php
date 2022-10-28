@@ -866,7 +866,9 @@ function snowflakeGetDBRecords($params){
 	}
 	if(isset($params['-debug'])){return $query;}
 	if(isset($params['-queryonly'])){return $query;}
-	return snowflakeQueryResults($query,$params);
+	$recs=snowflakeQueryResults($query,$params);
+	//echo "HERE".printValue($recs);exit;
+	return $recs;
 }
 //---------- begin function snowflakeGetDBSchemas ----------
 /**
@@ -1149,6 +1151,7 @@ function snowflakeQueryHeader($query,$params=array()){
 */
 function snowflakeQueryResults($query,$params=array()){
 	global $DATABASE;
+	global $CONFIG;
 	$DATABASE['_lastquery']=array(
 		'start'=>microtime(true),
 		'stop'=>0,
@@ -1157,6 +1160,64 @@ function snowflakeQueryResults($query,$params=array()){
 		'query'=>$query,
 		'function'=>'snowflakeQueryResults'
 	);
+	$snowsql=0;
+	$db=$CONFIG['db'];
+	//echo printValue($DATABASE[$db]);exit;
+	if(isset($params['-snowsql']) && $params['-snowsql']==1){$snowsql=1;}
+	if(isset($DATABASE[$db]['snowsql']) && $DATABASE[$db]['snowsql']==1){$snowsql=1;}
+	//echo $snowsql.printValue($params);exit;
+	if($snowsql==1){
+		//use snowsql instead of the ODBC driver
+		$wpath=getWasqlTempPath();
+		$wpath=str_replace('\\','/',$wpath);
+		$hash=sha1($query);
+		$sqlfile="{$wpath}/snowsql_{$hash}.sql";
+		$confile="{$wpath}/snowsql_{$hash}.conf";
+		$outfile="{$wpath}/snowsql_{$hash}.csv";
+		if(isset($params['-filename'])){
+			$outfile=$params['-filename'];
+		}
+		if(is_file($outfile)){
+			unlink($outfile);
+		}
+		$ok=setfileContents($sqlfile,$query);
+		$constr=<<<ENDOFCON
+[connections]
+accountname=doterra
+username={$DATABASE[$db]['dbuser']}
+password={$DATABASE[$db]['dbpass']}
+dbname={$DATABASE[$db]['dbname']}
+schemaname={$DATABASE[$db]['dbschema']}
+warehouse={$DATABASE[$db]['dbwarehouse']}
+rolename={$DATABASE[$db]['dbrole']}
+authenticator=snowflake
+ENDOFCON;
+		setFileContents($confile,$constr);
+		$cmd="snowsql --config {$confile} -f {$sqlfile}  -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file={$outfile}";
+		$starttime=microtime(true);
+		$out=cmdResults($cmd);
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		if(is_file($outfile)){
+			if(isset($params['-filename'])){
+				$cnt=getFileLineCount($outfile)-2;
+				unlink($sqlfile);
+				unlink($confile);
+				return $cnt;
+			}
+			$recs=getCSVRecords($outfile);
+			//echo printValue($out).printValue($recs);exit;
+			unlink($outfile);
+			unlink($sqlfile);
+			unlink($confile);
+			return $recs;
+		}
+		unlink($outfile);
+		unlink($sqlfile);
+		unlink($confile);
+		return array();
+		//failed - try the other way
+	}
 	global $snowflakeStopProcess;
 	$starttime=microtime(true);
 	global $dbh_snowflake;
