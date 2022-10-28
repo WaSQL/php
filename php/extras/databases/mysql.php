@@ -67,6 +67,11 @@ echo printValue($cnt)."done";exit;
 * @usage $ok=mysqlAddDBRecords('comments',array('-recs'=>$recs);
 */
 function mysqlAddDBRecords($table='',$params=array()){
+	global $mysqlAddDBRecordsArr;
+	global $mysqlAddDBRecordsResults;
+	$mysqlAddDBRecordsArr=array();
+	$mysqlAddDBRecordsResults=array();
+
 	if(!strlen($table)){
 		return debugValue("mysqlAddDBRecords Error: No Table");
 	}
@@ -74,36 +79,75 @@ function mysqlAddDBRecords($table='',$params=array()){
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
-		return debugValue("mysqlAddDBRecords Error: either -csv or -recs is required");
+		$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: either -csv or -recs is required";
+		debugValue($mysqlAddDBRecordsResults['errors']);
+		return 0;
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
-			return debugValue("mysqlAddDBRecords Error: no such file: {$params['-csv']}");
+			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no such file: {$params['-csv']}";
+			debugValue($mysqlAddDBRecordsResults['errors']);
+			return 0;
 		}
-		return processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',$params);
+		$afile=$params['-csv'];
+		unset($params['-csv']);
+		$ok=processCSVLines($afile,'mysqlAddDBRecordsCSVLine',$params);
+		if(count($mysqlAddDBRecordsArr)){
+			$mysqlAddDBRecordsResults['counts'][]=mysqlAddDBRecordsProcess($mysqlAddDBRecordsArr,$params);
+			$mysqlAddDBRecordsArr=array();
+		}
+		return array_sum($mysqlAddDBRecordsResults['counts']);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
-			return debugValue("mysqlAddDBRecords Error: no recs");
+			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no recs";
+			debugValue($mysqlAddDBRecordsResults['errors']);
+			return 0;
 		}
 		elseif(!count($params['-recs'])){
-			return debugValue("mysqlAddDBRecords Error: no recs");
+			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no recs";
+			debugValue($mysqlAddDBRecordsResults['errors']);
+			return 0;
 		}
 		$chunks=array_chunk($params['-recs'], $params['-chunk']);
 		$rtn=array();
 		foreach($chunks as $chunk){
 			$rtn[]=mysqlAddDBRecordsProcess($chunk,$params);
 		}
-		return $rtn;
+		return array_sum($rtn);
+	}
+}
+function mysqlAddDBRecordsCSVLine($line,$params){
+	global $mysqlAddDBRecordsArr;
+	global $mysqlAddDBRecordsResults;
+	//make sure this is not a blank row
+	$vcnt=0;
+	foreach($line['line'] as $k=>$v){
+		if(strlen($v)){
+			$vcnt+=1;
+			break;
+		}
+	}
+	if($vcnt==0){return;}
+	$mysqlAddDBRecordsArr[]=$line['line'];
+	unset($line['line']);
+	if(count($mysqlAddDBRecordsArr) >= (integer)$params['-chunk']){
+		$mysqlAddDBRecordsResults['counts'][]=mysqlAddDBRecordsProcess($mysqlAddDBRecordsArr,$params);
+		$mysqlAddDBRecordsArr=array();
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
 	global $USER;
+	global $dbh_mysql;
+	global $DATABASE;
+	global $mysqlAddDBRecordsResults;
 	if(!isset($params['-table'])){
 		$err="mysqlAddDBRecordsProcess Error: no table";
-		debugValue($err); 
-		return $err;
+		$mysqlAddDBRecordsResults['errors'][]=$err;
+		return 0;
 	}
+	$rec_cnt=count($recs);
+	//$dbh_mysql->set_charset("utf8mb4");
 	$table=$params['-table'];
 	$fieldinfo=mysqlGetDBFieldInfo($table,1);
 	//add _cdate and _cuser if table has those fields
@@ -166,48 +210,60 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
-	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	
+	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES ";
 	$values=array();
+	$types=array();
+	$valuesets=array();
 	foreach($recs as $i=>$rec){
-		$vals=array();
-		foreach($fields as $field){
-			$val='NULL';
-			if(isset($rec[$field]) && strlen($rec[$field])){
-				$val=mysqlEscapeString($rec[$field]);
-				switch($fieldinfo[$field]['_dbtype']){
-					case 'date':
-					case 'time':
+		$placeholders=array();
+		foreach($rec as $k=>$v){
+			if(!in_array($k,$fields)){
+				//unset($rec[$k]);
+				continue;
+			}
+			if(!strlen($v)){
+				//$rec[$k]='NULL';
+				$values[]='NULL';
+				$placeholders[]='?';
+			}
+			else{
+				switch($fieldinfo[$k]['_dbtype']){
 					case 'datetime':
-						if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-							//val is a function - do not put quotes around it
-						}
-						else{
-							$val="'{$val}'";
-						}
+						$v=date('Y-m-d H:i:s',strtotime($v));
 					break;
-					default:
-						$val="'{$val}'";
+					case 'date':
+						$v=date('Y-m-d',strtotime($v));
+					break;
+					case 'time':
+						$v=date('H:i:s',strtotime($v));
 					break;
 				}
+				$values[]=trim($v);
+				$placeholders[]='?';
+				//$v=databaseEscapeString($v);
+				//$rec[$k]="'{$v}'";
 			}
-			$vals[]=$val;
+			$types[]='s';
 		}
-		$values[]='('.implode(',',$vals).')';
+		$valuesets[]='('.implode(',',$placeholders).')';
 	}
-	$query.=implode(','.PHP_EOL,$values);
+	$query.=implode(', ',$valuesets);
 	if(isset($params['-upsert'][0])){
+		$upserts=$params['-upsert'];
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
-		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+		$recs=mysqlQueryResults('SELECT version() as value');
+		$version=$recs[0];
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
 		if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
 			//mysql version 8 and newer
 			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
-			foreach($params['-upsert'] as $fld){
+			foreach($upserts as $fld){
 				$flds[]="{$fld}=new.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere'])){
+			if(isset($params['-upsertwhere']) && strlen($params['-upsertwhere'])){
 				$query.=" WHERE {$params['-upsertwhere']}";
 			}
 			//echo printValue($params);exit;
@@ -216,22 +272,38 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			//before mysql version 8.0.20
 			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
 			$flds=array();
-			foreach($params['-upsert'] as $fld){
+			foreach($upserts as $fld){
 				$flds[]="{$fld}=VALUES({$fld})";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere'])){
-				$query.=" WHERE {$params['-upsertwhere']}";
+			if(isset($params['-upsertwhere']) && strlen($params['-upsertwhere'])){
+				//NOTE: Mysql does not support WHERE in an insert statement yet
+				//$query.=" WHERE {$params['-upsertwhere']}";
 			}
 		}
 	}
-	//echo printValue($params).$query;exit;
-	$ok=mysqlExecuteSQL($query);
-	//echo printValue($ok).printValue($params).$query;exit;
-	if(isset($params['-debug'])){
-		return printValue($ok).$query;
+	$dbh_mysql='';
+	$dbh_mysql=mysqlDBConnect();
+	if(!$dbh_mysql){
+		$mysqlAddDBRecordsResults['errors'][]=mysqli_connect_error();
+    	return 0;
 	}
-	return count($values);
+	$stmt=mysqli_prepare($dbh_mysql,$query);
+	if(!$stmt){
+		$err=array(
+			'status'=>"Mysqli Prepare ERROR",
+			'function'=>'importProcessCSVRecs',
+			'error'=> mysqli_error($dbh_mysql),
+			'query'=>$query,
+			'params'=>$params
+		);
+		$mysqlAddDBRecordsResults['errors'][]=$err;
+		return 0;
+	}
+	mysqli_stmt_bind_param($stmt, implode('',$types),...$values);
+	mysqli_stmt_execute($stmt);
+	mysqli_close($stmt);
+	return $rec_cnt;
 }
 //---------- begin function mysqlGetDDL ----------
 /**
@@ -1269,13 +1341,20 @@ function mysqlIsDBTable($table,$params=array()){
 	$table=strtolower($table);
 	$parts=preg_split('/\./',$table,2);
 	if(count($parts)==2){
-		$query="SELECT name FROM {$parts[0]}.mysql_master WHERE type='table' and name = '{$table}'";
-		$table=$parts[1];
+		$query="SHOW tables FROM {$parts[0]} WHERE tables_in_{$parts[0]} = '{$table}'";
+		$recs=mysqlQueryResults($query);
+		if(isset($recs[0])){return true;}
 	}
 	else{
-		$query="SELECT name FROM mysql_master WHERE type='table' and name = '{$table}'";
+		$query="SHOW TABLES";
+		$recs=mysqlQueryResults($query);
+		if(!isset($recs[0])){return false;}
+		foreach($recs[0] as $field=>$v){break;}
+		foreach($recs as $rec){
+			if(strtolower($rec[$field])==$table){return true;}
+		}
 	}
-	$recs=mysqlQueryResults($query);
+	
 	if(isset($recs[0]['name'])){return true;}
 	return false;
 }

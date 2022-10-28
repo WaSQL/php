@@ -17,7 +17,7 @@ switch(strtolower($_REQUEST['func'])){
 				$results=importProcessAPPS($_REQUEST);
 			break;
 		}
-		$_REQUEST=array();
+		//$_REQUEST=array();
 		setView(array('default','processed'),1);
 		return;
 	break;

@@ -8,126 +8,66 @@ function importProcessCSV($params){
 	global $results;
 	global $fieldinfo;
 	global $importrecs_total;
-	if(!strlen($params['csvtable'])){
-		return "Select a table for CSV import";
+	if(!isset($params['file_abspath']) || !is_file($params['file_abspath'])){
+		return "Select a csv file to upload. {$params['file_abspath']} does not exist.";
 	}
-	if($params['csvtable']=='Create NEW Table'){
-	 	if(!strlen($params['csvtable_name'])){
-			return "Choose a table name if you want to create a new table";
-		}
-		if(isDBTable($params['csvtable_name'])){
-			return "Table '{$params['csvtable_name']}' already exists";
-		}
+	if(!strlen($params['csvtable_db'])){
+		return "Select a database for CSV import";
 	}
-	if($params['csvtable']=='Create NEW Table'){
+	if(!strlen($params['csvtable_name'])){
+		return "Select a table name for CSV import";
+	}
+	if(!dbIsTable($params['csvtable_db'],$params['csvtable_name'])){
 		$fields=getCSVSchema($params['file_abspath']);
+		//check for upserton and make that field unique
+		if(isset($params['csvtable_upserton']) && isset($fields[$params['csvtable_upserton']])){
+			$fields[$params['csvtable_upserton']].= ' NOT NULL UNIQUE';
+		}
         //create the table
-        $params['csvtable']=$_REQUEST['csvtable']=$params['csvtable_name'];
-        $ok = createDBTable($params['csvtable'],$fields);
+        $ok = dbCreateTable($params['csvtable_db'],$params['csvtable_name'],$fields);
 		if(!isNum($ok)){
 			return array("Create Table Error: ",$ok,$fields);
 		}
 	}
+	$cparams=array();
+	$cparams['-csv']=$params['file_abspath'];
+	//upsert?
+	if(isset($_REQUEST['csvtable_upsert']) && strlen(trim($_REQUEST['csvtable_upsert']))){
+		$cparams['-upsert']=$_REQUEST['csvtable_upsert'];
+	}
+	//upserton?
+	if(isset($_REQUEST['csvtable_upserton']) && strlen(trim($_REQUEST['csvtable_upserton']))){
+		$cparams['-upserton']=$_REQUEST['csvtable_upserton'];
+	}
+	//upsertwhere?
+	if(isset($_REQUEST['csvtable_where']) && strlen(trim($_REQUEST['csvtable_where']))){
+		$cparams['-upsertwhere']=$_REQUEST['csvtable_where'];
+	}
+	//chunk?
+	if(isset($_REQUEST['csvtable_chunk']) && strlen(trim($_REQUEST['csvtable_chunk']))){
+		$cparams['-chunk']=$_REQUEST['csvtable_chunk'];
+	}
+	//import
 	$stime=microtime(true);
-	$fieldinfo=getDBFieldInfo($params['csvtable'],1);
-	$ok=processCSVLines($params['file_abspath'],'importProcessCSVLine');
-	$ok=importProcessCSVRecs();
-	$importrecs_total=number_format($importrecs_total,0);
+	$importrecs_total=dbAddRecords($params['csvtable_db'],$params['csvtable_name'],$cparams);
 	$etime=round((microtime(true)-$stime),4);
-	array_unshift($results,count($results)." import calls as follows:");
 	array_unshift($results,"Total imported time: {$etime} seconds");
 	array_unshift($results,"Total imported record count: {$importrecs_total}");
-	array_unshift($results,"Tablename: {$params['csvtable']}");
+	array_unshift($results,"Database: {$params['csvtable_db']}");
+	array_unshift($results,"Tablename: {$params['csvtable_name']}");
     return $results;
-}
-function importProcessCSVLine($line){
-	global $importrecs;
-	global $results;
-	
-	//make sure this is not a blank row
-	$vcnt=0;
-	foreach($line['line'] as $k=>$v){
-		if(strlen($v)){
-			$vcnt+=1;
-			break;
-		}
-	}
-	if($vcnt==0){return;}
-	$importrecs[]=$line['line'];
-	if(count($importrecs) >= 1000){
-		$ok=importProcessCSVRecs();
-	}
-}
-function importProcessCSVRecs($recs=array()){
-	global $importrecs;
-	global $importrecs_total;
-	global $results;
-	global $fieldinfo;
-	$stime=microtime(true);
-	//insert into table
-	$importrecs_count=count($importrecs);
-	if($importrecs_count==0){return;}
-	$importrecs_total+=$importrecs_count;
-	$table=$_REQUEST['csvtable'];
-	$fields=array();
-	foreach($importrecs as $i=>$rec){
-		if(isset($fieldinfo['_cdate']) && !isset($rec['_cdate'])){
-			$importrecs[$i]['_cdate']=$rec['_cdate']=date('Y-m-d H:i:s');
-		}
-		if(isset($fieldinfo['_cuser']) && !isset($rec['_cuser'])){
-			$importrecs[$i]['_cuser']=$rec['_cuser']=0;
-		}
-		foreach($rec as $k=>$v){
-			if(!isset($fieldinfo[$k])){continue;}
-			if(!in_array($k,$fields)){$fields[]=$k;}
-		}
-	}
-	$fieldstr=implode(',',$fields);
-	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
-	$values=array();
-	foreach($importrecs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!in_array($k,$fields)){
-				unset($rec[$k]);
-				continue;
-			}
-			if(!strlen($v)){
-				$rec[$k]='NULL';
-			}
-			else{
-				switch($fieldinfo[$k]['_dbtype']){
-					case 'datetime':
-						$v=date('Y-m-d H:i:s',strtotime($v));
-					break;
-					case 'date':
-						$v=date('Y-m-d',strtotime($v));
-					break;
-					case 'time':
-						$v=date('H:i:s',strtotime($v));
-					break;
-				}
-				$v=databaseEscapeString($v);
-				$rec[$k]="'{$v}'";
-			}
-		}
-		$values[]='('.implode(',',array_values($rec)).')';
-	}
-	$query.=implode(','.PHP_EOL,$values);
-	//echo $query;exit;
-	$ok=executeSQL($query);
-	$importrecs=array();
-	$etime=round((microtime(true)-$stime),4);
-	$results[]="imported {$importrecs_count} records in {$etime} seconds ";
 }
 function importProcessAPPS($params){
 	
 }
 function importBuildFormField($name){
+	global $CONFIG;
 	switch(strtolower($name)){
 		case 'file';
 			$params=array(
 				'accept'=>'.xml,.csv',
 				'path'=>'wasql_temp_path',
+				'text'=>'CSV or XML file to import',
 				'autonumber'=>1,
 				'acceptmsg'=>'Only valid xml or csv files are allowed',
 				'required'=>1
@@ -145,7 +85,7 @@ function importBuildFormField($name){
 			return buildFormCheckbox('xmloptions',$opts,$params);
 		break;
 		case 'xmlmerge':
-			$params=array('height'=>100);
+			$params=array('class'=>'textarea','height'=>100);
 			return buildFormTextarea('xmlmerge',$params);
 		break;
 		case 'csvtable':
@@ -156,14 +96,37 @@ function importBuildFormField($name){
 				$opts[$table]=$table;
 			}
 			$params=array(
+				'class'=>'select',
+				'required'=>'required',
 				'onchange' => "if(this.value=='Create NEW Table'){showId('newtable');hideId('picktable');}else{hideId('newtable');showId('picktable');}",
 				'message'=>'-- Table to Import Into --'
 			);
 			return buildFormSelect('csvtable',$opts,$params);
 		break;
+		case 'csvtable_db':
+			$params=array('class'=>'select','value'=>isset($_REQUEST['csvtable_db'])?$_REQUEST['csvtable_db']:$CONFIG['database']);
+			return buildFormSelectDatabase('csvtable_db',$params);
+		break;
 		case 'csvtable_name':
-			$params=array('placeholder'=>'new table name');
+			$params=array('class'=>'input','placeholder'=>'[schema_name.]table_name');
 			return buildFormText('csvtable_name',$params);
+		break;
+		case 'csvtable_chunk':
+			$params=array('class'=>'input','value'=>isset($_REQUEST['csvtable_chunk'])?$_REQUEST['csvtable_chunk']:1000);
+			return buildFormText('csvtable_chunk',$params);
+		break;
+		case 'csvtable_upsert':
+			$params=array('class'=>'input',
+				'placeholder'=>'field1,field2,...','value'=>isset($_REQUEST['csvtable_upsert'])?$_REQUEST['csvtable_upsert']:'');
+			return buildFormText('csvtable_upsert',$params);
+		break;
+		case 'csvtable_upserton':
+			$params=array('class'=>'input','placeholder'=>'pkey','value'=>isset($_REQUEST['csvtable_upserton'])?$_REQUEST['csvtable_upserton']:'');
+			return buildFormText('csvtable_upserton',$params);
+		break;
+		case 'csvtable_where':
+			$params=array('class'=>'textarea','placeholder'=>'where clause','value'=>isset($_REQUEST['csvtable_where'])?$_REQUEST['csvtable_where']:'');
+			return buildFormTextarea('csvtable_where',$params);
 		break;
 	}
 }

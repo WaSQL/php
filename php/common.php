@@ -12268,16 +12268,7 @@ function processCSVLines($file,$func_name,$params=array()){
 				$set['line'][$field]=$lineparts[$x];
 			}
 			//pass array to function
-			if(isset($params['-chunk']) && (integer)$params['-chunk'] > 0){
-				$chunk[]=$set['line'];
-				if(count($chunk)==(integer)$params['-chunk']){
-					$ok=call_user_func($func_name,$chunk,$passthru);
-					$chunk=array();
-				}
-			}
-			else{
-				$ok=call_user_func($func_name,$set,$passthru);
-			}
+			$ok=call_user_func($func_name,$set,$passthru);
 			unset($set);
 			$linecnt++;
 			if(isset($params['-maxrows']) && isNum($params['-maxrows']) && $linecnt >= $params['-maxrows']){

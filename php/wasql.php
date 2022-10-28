@@ -548,6 +548,7 @@ function gracefulShutdown(){
 	global $USER;
 	//if(!isAdmin() || isset($_SERVER['IGNORE_ERRORS'])){return true;}
 	$error = error_get_last();
+	//echo printValue($error);exit;
 	//skip errors without a type or message
 	if(!isset($error['type']) || !isset($error['message'])){return;}
 	if(!isNum($error['type']) || !strlen(trim($error['message']))){return;}

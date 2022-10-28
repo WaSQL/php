@@ -4,26 +4,32 @@
 <input type="hidden" name="func" value="process" />
 <input type="hidden" name="filetype" value="xml" />
 <div class="container">
-	<div class="row">
-		<div class="col-sm-12">
-			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-import"></span> Import</h2>
-		</div>
-	</div>
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-import"></span> Import</h2>
 	<view:processed>
-	<div class="row">
-		<div class="col-sm-12" style="border:1px dashed #ccc;padding:3px;border-radius: 3px;">
-			<div class="w_bigger <?=configValue('admin_color');?>"><wtranslate>Import Results</wtranslate></div>
-			<textarea style="height:150px;width:100%;border:0px;"><?=json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);?></textarea>
-		</div>
+	<div  style="border:1px dashed #ccc;padding:3px;border-radius: 3px;">
+		<div class="w_bigger <?=configValue('admin_color');?>"><wtranslate>Import Results</wtranslate></div>
+		<textarea style="height:150px;width:100%;border:0px;"><?=json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);?></textarea>
 	</div>
 	</view:processed>
-	<div class="row">
-		<div class="col-sm-12">
-			<?=importBuildFormField('file');?>
-		</div>
+	<div>
+		<?=importBuildFormField('file');?>
 	</div>
-	<div class="row">
-		<div class="col-sm-12 col-md-6" style="border-right:1px dashed #ccc;">
+	<div style="display:flex;align-items: flex-start;flex-wrap: wrap;border-top:1px dashed #ccc;padding-top:10px;margin-top:15px;">
+		<div style="flex:5;padding:10px;">
+			<div class="w_bold w_bigger"><span class="icon-file-txt"></span> CSV Import Options</div>
+			<div style="margin-top:5px;"><label class="w_red">Database</label><?=importBuildFormField('csvtable_db');?></div>
+			<div style="display:flex;margin-top:15px;">
+				<div style="flex:5;"><label class="w_red">Table Name</label><?=importBuildFormField('csvtable_name');?></div>
+				<div style="flex: 2;margin-left:10px;"><label class="w_red">Chunk Size</label><?=importBuildFormField('csvtable_chunk');?></div>
+			</div>
+			<div style="display:flex;margin-top:15px;">
+				<div style="flex:5;"><label>Upsert</label><?=importBuildFormField('csvtable_upsert');?></div>
+				<div style="flex: 2;margin-left:10px;"><label>Upsert On</label><?=importBuildFormField('csvtable_upserton');?></div>
+			</div>
+			<div style="margin-top:15px;"><label>Where</label><?=importBuildFormField('csvtable_where');?></div>
+			<div style="margin:15px 0;"><button type="submit" onclick="document.importform.filetype.value='csv';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
+		</div>
+		<div style="flex: 3;padding:10px;">
 			<div class="w_bold w_bigger"><span class="icon-file-code"></span> XML Import Options</div>
 			<div class="w_padtop"><?=importBuildFormField('xmltypes');?></div>
 			<div><?=importBuildFormField('xmloptions');?></div>
@@ -31,26 +37,6 @@
 			<div><?=importBuildFormField('xmlmerge');?></div>
 			<div class="w_padtop w_padbot"><button type="submit" onclick="document.importform.filetype.value='xml';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-code"></span> Import XML File</button></div>
 		</div>
-		<div class="col-sm-12 col-md-6">
-			<div class="w_bold w_bigger"><span class="icon-file-txt"></span> CSV Import Options</div>
-			<div class="w_padtop"><?=importBuildFormField('csvtable');?></div>
-			<div class="w_padtop" style="height:100px;width:100%">
-				<div id="newtable" style="display:none;position:absolute;">
-					New Tablename <?=importBuildFormField('csvtable_name');?>
-					<div>This will create a table with fields based on the data in the csv file you upload.</div>
-				</div>
-				<div id="picktable">
-					Select the table you want to import into. Make sure the first line of the csv file matches the field names of the table.
-				</div>
-			</div>
-			<div class="w_padtop"><button type="submit" onclick="document.importform.filetype.value='csv';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
-		</div>
-	</div>
-	<div class="row" style="margin-top:0px;border-top:1px dashed #ccc;">
-		<div class="col-sm-12">
-			<!-- <div class="w_bold w_bigger w_padtop" style="color:#3a3a3a;"><img src="/wfiles/wasql_admin.png" alt="wasql apps" /> Apps</div> -->
-		</div>
-	</div>
 </div>
 </form>
 </view:default>
