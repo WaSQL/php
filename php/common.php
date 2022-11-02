@@ -9849,7 +9849,7 @@ except Exception as err:
 ENDOFCONTENT;
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
-	$command = "{$lang['exe']} \"{$filename}\"";
+	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
 	//remove the temp files
