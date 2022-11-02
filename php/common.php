@@ -9851,7 +9851,7 @@ ENDOFCONTENT;
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
-	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
+	$out = cmdResults($command,'',$wasqlTempPath);
 	//remove the temp files
 	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'python'){
 		foreach($files as $name=>$afile){
@@ -9864,15 +9864,6 @@ ENDOFCONTENT;
 		}
 		return $out['stderr'];
 	}	
-	elseif(isset($out['stderr']) && strlen($out['stderr'])){
-		$err=<<<ENDOFERR
-<div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
-<pre style="color:#5f5f5f;margin-left:20px;">
-{$out['stderr']}
-</pre>
-ENDOFERR;
-		return $err;
-	}
 	else{
 		$err=<<<ENDOFERR
 <div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
