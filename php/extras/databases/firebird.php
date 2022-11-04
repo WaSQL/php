@@ -298,52 +298,52 @@ function firebirdGetAllTableFields($schema=''){
 	}
 	$query=<<<ENDOFQUERY
 	SELECT
-		RF.RDB\$RELATION_NAME as table_name,
-		RF.RDB\$FIELD_NAME as field_name,
-		CASE F.RDB\$FIELD_TYPE
+		rf.rdb\$relation_name as table_name,
+		rf.rdb\$field_name as field_name,
+		CASE f.rdb\$field_type
 		 WHEN 7 THEN
-		   CASE F.RDB\$FIELD_SUB_TYPE
-		     WHEN 0 THEN 'SMALLINT'
-		     WHEN 1 THEN 'NUMERIC(' || F.RDB\$FIELD_PRECISION || ', ' || (-F.RDB\$FIELD_SCALE) || ')'
-		     WHEN 2 THEN 'DECIMAL'
+		   CASE f.rdb\$field_sub_type
+		     WHEN 0 THEN 'smallint'
+		     WHEN 1 THEN 'numeric(' || f.rdb\$field_precision || ', ' || (-f.rdb\$field_scale) || ')'
+		     WHEN 2 THEN 'decimal'
 		   END
 		 WHEN 8 THEN
-		   CASE F.RDB\$FIELD_SUB_TYPE
-		     WHEN 0 THEN 'INTEGER'
-		     WHEN 1 THEN 'NUMERIC('  || F.RDB\$FIELD_PRECISION || ', ' || (-F.RDB\$FIELD_SCALE) || ')'
-		     WHEN 2 THEN 'DECIMAL'
+		   CASE f.rdb\$field_sub_type
+		     WHEN 0 THEN 'integer'
+		     WHEN 1 THEN 'numeric('  || f.rdb\$field_precision || ', ' || (-f.rdb\$field_scale) || ')'
+		     WHEN 2 THEN 'decimal'
 		   END
-		 WHEN 9 THEN 'QUAD'
-		 WHEN 10 THEN 'FLOAT'
-		 WHEN 12 THEN 'DATE'
-		 WHEN 13 THEN 'TIME'
-		 WHEN 14 THEN 'CHAR(' || (TRUNC(F.RDB\$FIELD_LENGTH / CH.RDB\$BYTES_PER_CHARACTER)) || ') '
+		 WHEN 9 THEN 'quad'
+		 WHEN 10 THEN 'float'
+		 WHEN 12 THEN 'date'
+		 WHEN 13 THEN 'time'
+		 WHEN 14 THEN 'char(' || (trunc(f.rdb\$field_length / ch.rdb\$bytes_per_character)) || ') '
 		 WHEN 16 THEN
-		   CASE F.RDB\$FIELD_SUB_TYPE
-		     WHEN 0 THEN 'BIGINT'
-		     WHEN 1 THEN 'NUMERIC(' || F.RDB\$FIELD_PRECISION || ', ' || (-F.RDB\$FIELD_SCALE) || ')'
-		     WHEN 2 THEN 'DECIMAL'
+		   case f.rdb\$field_sub_type
+		     WHEN 0 THEN 'bigint'
+		     WHEN 1 THEN 'numeric(' || f.rdb\$field_precision || ', ' || (-f.rdb\$field_scale) || ')'
+		     WHEN 2 THEN 'decimal'
 		   END
-		 WHEN 27 THEN 'DOUBLE'
-		 WHEN 35 THEN 'TIMESTAMP'
-		 WHEN 37 THEN 'VARCHAR(' || (TRUNC(F.RDB\$FIELD_LENGTH / CH.RDB\$BYTES_PER_CHARACTER)) || ')'
-		 WHEN 40 THEN 'CSTRING' || (TRUNC(F.RDB\$FIELD_LENGTH / CH.RDB\$BYTES_PER_CHARACTER)) || ')'
-		 WHEN 45 THEN 'BLOB_ID'
-		 WHEN 261 THEN 'BLOB SUB_TYPE ' || F.RDB\$FIELD_SUB_TYPE
-		 ELSE 'RDB\$FIELD_TYPE: ' || F.RDB\$FIELD_TYPE || '?'
+		 WHEN 27 THEN 'double'
+		 WHEN 35 THEN 'timestamp'
+		 WHEN 37 THEN 'varchar(' || (trunc(f.rdb\$field_length / ch.rdb\$bytes_per_character)) || ')'
+		 WHEN 40 THEN 'cstring' || (trunc(f.rdb\$field_length / ch.rdb\$bytes_per_character)) || ')'
+		 WHEN 45 THEN 'blob_id'
+		 WHEN 261 THEN 'blob sub_type ' || f.rdb\$field_sub_type
+		 ELSE 'rdb\$field_type: ' || f.rdb\$field_type || '?'
 		END as type_name,
-		IIF(COALESCE(RF.RDB\$NULL_FLAG, 0) = 0, NULL, 'NOT NULL') as field_null,
-		CH.RDB\$CHARACTER_SET_NAME as field_charset,
-		DCO.RDB\$COLLATION_NAME as field_collation,
-		COALESCE(RF.RDB\$DEFAULT_SOURCE, F.RDB\$DEFAULT_SOURCE) as field_default
-	FROM RDB\$RELATION_FIELDS RF
-	JOIN RDB\$FIELDS F ON (F.RDB\$FIELD_NAME = RF.RDB\$FIELD_SOURCE)
-	LEFT OUTER JOIN RDB\$CHARACTER_SETS CH ON (CH.RDB\$CHARACTER_SET_ID = F.RDB\$CHARACTER_SET_ID)
-	LEFT OUTER JOIN RDB\$COLLATIONS DCO ON ((DCO.RDB\$COLLATION_ID = F.RDB\$COLLATION_ID) AND (DCO.RDB\$CHARACTER_SET_ID = F.RDB\$CHARACTER_SET_ID))
-	WHERE (COALESCE(RF.RDB\$SYSTEM_FLAG, 0) = 0)
+		iif(coalesce(rf.rdb\$null_flag, 0) = 0, null, 'not null') AS field_null,
+		ch.rdb\$character_set_name as field_charset,
+		dco.rdb\$collation_name as field_collation,
+		coalesce(rf.rdb\$default_source, f.rdb\$default_source) AS field_default
+	FROM rdb\$relation_fields rf
+	JOIN rdb\$fields f on (f.rdb\$field_name = rf.rdb\$field_source)
+	LEFT OUTER JOIN rdb\$character_sets ch on (ch.rdb\$character_set_id = f.rdb\$character_set_id)
+	LEFT OUTER JOIN rdb\$collations dco on ((dco.rdb\$collation_id = f.rdb\$collation_id) AND (dco.rdb\$character_set_id = f.rdb\$character_set_id))
+	WHERE (coalesce(rf.rdb\$system_flag, 0) = 0)
 	ORDER BY 
-		RF.RDB\$RELATION_NAME,
-		RF.RDB\$FIELD_POSITION
+		rf.rdb\$relation_name,
+		rf.rdb\$field_position
 ENDOFQUERY;
 	$recs=firebirdQueryResults($query);
 	$databaseCache[$cachekey]=array();
@@ -1498,64 +1498,62 @@ function firebirdNamedQuery($name){
 	switch(strtolower($name)){
 		case 'running_queries':
 			return <<<ENDOFQUERY
-show processlist
+SELECT * FROM RDB\$TRANSACTIONS
 ENDOFQUERY;
 		break;
 		case 'sessions':
 			return <<<ENDOFQUERY
-SELECT 
-	id, user, host, db, command, time, state, info 
-FROM information_schema.processlist
+
 ENDOFQUERY;
 		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
-SHOW OPEN TABLES WHERE In_use > 0
+
 ENDOFQUERY;
 		break;
 		case 'functions':
 			return <<<ENDOFQUERY
-SELECT 
-	routine_catalog,
-	routine_schema,
-	routine_name,
-	created,
-	last_altered,
-	definer
-FROM information_schema.ROUTINES 
-WHERE routine_type = 'FUNCTION' and routine_schema = '{$dbname}'
+SELECT * 
+FROM RDB\$FUNCTIONS 
+WHERE RDB\$SYSTEM_FLAG = 0
 ENDOFQUERY;
 		break;
 		case 'procedures':
 			return <<<ENDOFQUERY
 SELECT 
-	routine_catalog,
-	routine_schema,
-	routine_name,
-	created,
-	last_altered,
-	definer
-FROM information_schema.ROUTINES 
-WHERE routine_type = 'PROCEDURE' and routine_schema = '{$dbname}'
+	rdb\$procedure_id as id
+	,rdb\$procedure_name as name
+	,rdb\$procedure_inputs as inputs
+	,rdb\$procedure_outputs as outputs
+	,rdb\$description as description
+	,rdb\$owner_name as owner
+FROM rdb\$procedures 
+WHERE rdb\$system_flag = 0
 ENDOFQUERY;
 		break;
 		case 'tables':
 			return <<<ENDOFQUERY
-SELECT
-	t.table_name as name,
-	t.table_rows as row_count,
-	c.field_count,
-	round(((data_length + index_length) / 1024 / 1024), 2) as mb_size,
-	t.auto_increment,
-	t.create_time,
-	t.update_time,
-	t.table_collation,
-	t.table_comment
-FROM information_schema.tables t,
-(select count(*) field_count,table_name from information_schema.columns where table_schema='{$dbname}' group by table_name ) c 
-WHERE
-	t.table_name =c.table_name 
-	and t.table_schema='{$dbname}'
+SELECT lower(rdb\$relation_name) as name
+FROM rdb\$relations
+WHERE 
+	rdb\$view_blr is null
+	AND (rdb\$system_flag is null or rdb\$system_flag = 0)
+ENDOFQUERY;
+		break;
+		case 'triggers':
+			return <<<ENDOFQUERY
+SELECT * 
+FROM RDB\$TRIGGERS 
+WHERE RDB\$SYSTEM_FLAG = 0
+ENDOFQUERY;
+		break;
+		case 'views':
+			return <<<ENDOFQUERY
+SELECT rdb\$relation_name
+FROM rdb\$relations
+WHERE 
+	rdb\$view_blr is not null
+	and (rdb\$system_flag is null or rdb\$system_flag = 0)
 ENDOFQUERY;
 		break;
 	}

@@ -206,6 +206,12 @@ function sqlpromptBuildQuery($db,$name){
 			$dbh_snowflake='';
 			return trim(snowflakeNamedQuery($name));
 		break;
+		case 'firebird':
+			loadExtras('firebird');
+			global $dbh_firebird;
+			$dbh_firebird='';
+			return trim(firebirdNamedQuery($name));
+		break;
 		default:
 			loadExtras('mysql');
 			global $dbh_mysql;
