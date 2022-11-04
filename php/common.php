@@ -20457,6 +20457,8 @@ function wget($url,$localfile=''){
 	// make sure to set timeout to a high enough value
 	// if this is too low the download will be interrupted
 	curl_setopt($ch, CURLOPT_TIMEOUT, 1200);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 	// write curl response to file
 	curl_setopt($ch, CURLOPT_FILE, $fp); 
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
