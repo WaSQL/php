@@ -7111,9 +7111,12 @@ function commonProcessChartjsTags($htm){
 				$db=$chartjs_attributes['data-db'];
 			}
 			//replace any [asdfsa] tags with inputs
-			foreach($_REQUEST as $k=>$v){
-				$chartjs_contents=str_replace("[{$k}]",$v,$chartjs_contents);
+			if(is_string($chartjs_contents)){
+				foreach($_REQUEST as $k=>$v){
+					$chartjs_contents=str_replace("[{$k}]",$v,$chartjs_contents);
+				}
 			}
+			
 			//select date(_cdate) as label, code as dataset,count(*) as value
 			$recs=dbQueryResults($db,$chartjs_contents);
 			if(strlen($process)){
@@ -18310,6 +18313,10 @@ function processActions(){
 						elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
 						elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
 					}
+				}
+				//upsert?
+				if(isset($_REQUEST['_upsert']) && strlen($_REQUEST['_upsert'])){
+					$opts['-upsert']=$_REQUEST['_upsert'];
 				}
 				$id=addDBRecord($opts);
 				$_REQUEST['add_result']=$id;
