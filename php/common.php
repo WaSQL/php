@@ -7113,6 +7113,7 @@ function commonProcessChartjsTags($htm){
 			//replace any [asdfsa] tags with inputs
 			if(is_string($chartjs_contents)){
 				foreach($_REQUEST as $k=>$v){
+					if(is_array($v)){continue;}
 					$chartjs_contents=str_replace("[{$k}]",$v,$chartjs_contents);
 				}
 			}
@@ -7228,6 +7229,7 @@ function commonProcessChartjsTags($htm){
 				//replace any [asdfsa] tags with inputs
 				if(is_string($innertag_contents)){
 					foreach($_REQUEST as $k=>$v){
+						if(is_array($v)){continue;}
 						$innertag_contents=str_replace("[{$k}]",$v,$innertag_contents);
 					}
 				}
