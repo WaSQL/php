@@ -7125,13 +7125,13 @@ function commonProcessChartjsTags($htm){
 			if(!isset($recs[0])){
 				$replace_str='<error>No Records</error>';
 				$replace_str.="<query>{$chartjs_contents}</query>";
-				$htm=str_replace($chartjs_tag,$replace_str,$htm);
+				$chartjs_contents=str_replace($chartjs_tag,$replace_str,$chartjs_contents);
 				continue;
 			}
 			if(!isset($recs[0]['label'])){
 				$replace_str='<error>Query Must return label, and value</error>';
 				$replace_str.="<query>{$chartjs_contents}</query>";
-				$htm=str_replace($chartjs_tag,$replace_str,$htm);
+				$chartjs_contents=str_replace($chartjs_tag,$replace_str,$chartjs_contents);
 				continue;
 			}
 			$datasets=array();
@@ -7226,9 +7226,12 @@ function commonProcessChartjsTags($htm){
 					$db=$chartjs_attributes['data-db'];
 				}
 				//replace any [asdfsa] tags with inputs
-				foreach($_REQUEST as $k=>$v){
-					$innertag_contents=str_replace("[{$k}]",$v,$innertag_contents);
+				if(is_string($innertag_contents)){
+					foreach($_REQUEST as $k=>$v){
+						$innertag_contents=str_replace("[{$k}]",$v,$innertag_contents);
+					}
 				}
+				
 				$recs=dbQueryResults($db,$innertag_contents);
 				if(strlen($process)){
 					$recs=call_user_func($process,$recs,$innertag_attributes,$chartjs_attributes);
