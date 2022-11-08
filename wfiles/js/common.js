@@ -1487,6 +1487,7 @@ function getParent(obj,name){
 		while(count < 1000) {
 			obj = obj.parentNode;
 			if(!typeof(obj)){return null;}
+			if(undefined==obj){return null;}
 			if(undefined != obj.nodeName){
 				if(obj.nodeName.toLowerCase() == name.toLowerCase()){
 					return obj;
