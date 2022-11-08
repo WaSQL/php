@@ -1487,15 +1487,20 @@ function getParent(obj,name){
 		while(count < 1000) {
 			obj = obj.parentNode;
 			if(!typeof(obj)){return null;}
-			if(obj.nodeName.toLowerCase() == name.toLowerCase()){
-				return obj;
+			if(undefined != obj.nodeName){
+				if(obj.nodeName.toLowerCase() == name.toLowerCase()){
+					return obj;
+				}
 			}
 			count++;
 		}
 		return null;	
 	}
 	var cObj=getObject(obj);
-	if(undefined == cObj){return abort("undefined object passed to getParent");}
+	if(undefined == cObj){
+		console.log("undefined object passed to getParent");
+		return null;
+	}
 	if(undefined == cObj.parentNode){return cObj;}
 	var pobj=cObj.parentNode;
 	if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
