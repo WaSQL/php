@@ -2255,7 +2255,7 @@ function oracleQueryResults($query='',$params=array()){
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!is_resource($stid)){
-		$DATABASE['_lastquery']['error']='oci_parse error: '.oci_error($dbh_oracle);
+		$DATABASE['_lastquery']['error']='oci_parse error: '.printValue(oci_error($dbh_oracle));
 		debugValue($DATABASE['_lastquery']);
     	oci_close($dbh_oracle);
     	return 0;
@@ -2290,7 +2290,7 @@ function oracleQueryResults($query='',$params=array()){
 		}
 		oci_close($dbh_oracle);
 		if (!$r){
-			$DATABASE['_lastquery']['error']='oci_parse error: '.oci_error($stid);
+			$DATABASE['_lastquery']['error']='oci_parse error: '.printValue(oci_error($stid));
 			debugValue($DATABASE['_lastquery']);
 	    	return 0;
 		}
@@ -2309,7 +2309,7 @@ function oracleQueryResults($query='',$params=array()){
 		oci_set_client_identifier($dbh_oracle, 'idle');
 	}
 	if (!$r) {
-		$DATABASE['_lastquery']['error']='oci_parse error: '.oci_error($stid);
+		$DATABASE['_lastquery']['error']='oci_parse error: '.printValue(oci_error($stid));
 		debugValue($DATABASE['_lastquery']);
     	oci_free_statement($stid);
 		oci_close($dbh_oracle);
@@ -2351,6 +2351,50 @@ function oracleNamedQuery($name){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
 	switch(strtolower($name)){
+		case 'names':
+			return array(
+				array(
+					'name'=>'running_queries',
+					'icon'=>'icon-spin4',
+					'displayname'=>'Running Queries'
+				),
+				array(
+					'name'=>'sessions',
+					'icon'=>'icon-spin8',
+					'displayname'=>'Sessions'
+				),
+				array(
+					'name'=>'table_locks',
+					'icon'=>'icon-lock',
+					'displayname'=>'Table Locks'
+				),
+				// array(
+				// 	'name'=>'schemas',
+				// 	'icon'=>'icon-th',
+				// 	'displayname'=>'Schemas'
+				// ),
+				array(
+					'name'=>'tables',
+					'icon'=>'icon-table',
+					'displayname'=>'Tables'
+				),
+				array(
+					'name'=>'functions',
+					'icon'=>'icon-th-thumb',
+					'displayname'=>'Functions'
+				),
+				array(
+					'name'=>'procedures',
+					'icon'=>'icon-th-thumb-empty',
+					'displayname'=>'Procedures'
+				),
+				// array(
+				// 	'name'=>'optimizations',
+				// 	'icon'=>'icon-optimize',
+				// 	'displayname'=>'Optimizations'
+				// ),
+			);
+		break;
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT
