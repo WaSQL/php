@@ -7372,14 +7372,13 @@ function commonProcessDBListRecordsTags($htm){
 		);
 		$opts['_dblistrecords']=1;
 		if(isset($opts['-debug']) && $opts['-debug']==1){
-			$replace_str=printValue($opts);
+			$replace_str.=printValue($opts);
 		}
 		else{
 			$opts['_dblistrecords_params']=base64_encode(json_encode($json));
 			$replace_str.=dbListRecords($db,$opts);
-			//$replace_str.=printValue($opts).printValue($dblistrecords_attributes);
-			$replace_str.='</div>'.PHP_EOL;
 		}
+		$replace_str.='</div>'.PHP_EOL;
 		$htm=str_replace($dblistrecords_tag,$replace_str,$htm);
 	}
 	if(stringContains($htm,'<dblistrecords')){
