@@ -702,13 +702,13 @@ function dbGetRecords($db,$params){
 function dbGetTableFields($db,$table){
 	return dbFunctionCall('getDBFieldInfo',$db,$table);
 }
-//---------- begin function dbGetTables
+//---------- begin function dbGetSchemas
 /**
-* @describe returns tables from a database
+* @describe returns schemas from a database
 * @param db string - database name as specified in the database section of config.xml
 * @return array recordsets
 * @usage
-*	$recs=dbGetTables('pg_local');
+*	$recs=dbGetSchemas('pg_local');
 */
 function dbGetTables($db){
 	return dbFunctionCall('getDBTables',$db);
@@ -1862,6 +1862,9 @@ function databaseListRecords($params=array()){
 			$rtn .= $params['-posttable'];
 		}
 		$rtn .= '</div>'.PHP_EOL;
+		if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
+			$rtn .= '</div>'.PHP_EOL;
+		}
 		return $rtn;
 	}
 	if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
@@ -1987,12 +1990,19 @@ function databaseListRecords($params=array()){
 				if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 					$rtn .= '</div>'.PHP_EOL;
 				}
+				if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
+					$rtn .= '</div>'.PHP_EOL;
+				}
+				$rtn .= '</div>'.PHP_EOL;
 				return $rtn;
 			}
 		}
 		else{
 			$rtn .= '</table>'.PHP_EOL;
 			if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
+				$rtn .= '</div>'.PHP_EOL;
+			}
+			if(isset($params['-ajaxid']) && strlen($params['-ajaxid'])){
 				$rtn .= '</div>'.PHP_EOL;
 			}
 			$rtn .= '</div>'.PHP_EOL;
