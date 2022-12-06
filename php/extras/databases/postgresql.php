@@ -96,13 +96,17 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	$fieldstr=implode(',',$fields);
 	//keep prepared statement markers under 30000
+	$fieldcount=count($fields);
+	$maxchunksize=ceil(20000/$fieldcount);
 	if(!isset($params['-chunk'])){
-		$params['-chunk']=ceil(30000/count($fields));
-		if($params['-chunk'] > 500){$params['-chunk']=500;}
+		$params['-chunk']=$maxchunksize;
 	}
+	if($params['-chunk'] > $maxchunksize){$params['-chunk']=$maxchunksize;}
+	//echo "maxchunksize: {$maxchunksize}, fieldcount:{$fieldcount}, chunk: {$params['-chunk']}<br>";exit;
 	$chunks=array_chunk($recs,$params['-chunk']);
 	$chunk_size=count($chunks[0]);
 	$total_count=0;
+	$chunk_count=count($chunks);
 	foreach($chunks as $c=>$recs){
 		//values and pvalues
 		$pvalues=array();
@@ -254,7 +258,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	if(isset($params['-debug'])){
 		echo printValue($ok).$query;exit;
 	}
-	return count($values);
+	return $total_count;
 }
 function postgresqlAddDBRecordsProcessOLD($recs,$params=array()){
 	global $CONFIG;
