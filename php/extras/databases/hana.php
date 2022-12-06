@@ -111,11 +111,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		break;
 	}
 	$fieldstr=implode(',',$fields);
-	//keep prepared statement markers under 30000
+	//keep prepared statement markers under 20000
+	$fieldcount=count($fields);
+	$maxchunksize=ceil(20000/$fieldcount);
 	if(!isset($params['-chunk'])){
-		$params['-chunk']=ceil(30000/count($fields));
-		if($params['-chunk'] > 500){$params['-chunk']=500;}
+		$params['-chunk']=$maxchunksize;
 	}
+	if($params['-chunk'] > $maxchunksize){$params['-chunk']=$maxchunksize;}
 	$chunks=array_chunk($recs,$params['-chunk']);
 	$chunk_size=count($chunks[0]);
 	$total_count=0;
@@ -148,13 +150,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			//$ok=hanaExecuteSQL($query);
 			if(!$ok){
 				$drecs=array();
-				$chunks=array_chunk($pvalues,count($fields));
-				foreach($chunks as $chunk){
+				$xchunks=array_chunk($pvalues,count($fields));
+				foreach($xchunks as $xchunk){
 					$rec=array();
 					foreach($fields as $i=>$fld){
 						//if($fld != 'dist_id'){continue;}
 						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-						$drecs[$fld][$chunk[$i]]+=1;
+						$drecs[$fld][$xchunk[$i]]+=1;
 					}
 					break;
 				}
@@ -250,13 +252,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		//$ok=hanaExecuteSQL($query);
 		if(!$ok){
 			$drecs=array();
-			$chunks=array_chunk($pvalues,count($fields));
-			foreach($chunks as $chunk){
+			$xchunks=array_chunk($pvalues,count($fields));
+			foreach($xchunks as $xchunk){
 				$rec=array();
 				foreach($fields as $i=>$fld){
 					//if($fld != 'dist_id'){continue;}
 					$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-					$drecs[$fld][$chunk[$i]]+=1;
+					$drecs[$fld][$xchunk[$i]]+=1;
 				}
 				break;
 			}
