@@ -138,13 +138,13 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			//$ok=postgresqlExecuteSQL($query);
 			if(strlen($err)){
 				$drecs=array();
-				$chunks=array_chunk($pvalues,count($fields));
-				foreach($chunks as $chunk){
+				$xchunks=array_chunk($pvalues,count($fields));
+				foreach($xchunks as $xchunk){
 					$rec=array();
 					foreach($fields as $i=>$fld){
 						//if($fld != 'dist_id'){continue;}
 						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-						$drecs[$fld][$chunk[$i]]+=1;
+						$drecs[$fld][$xchunk[$i]]+=1;
 					}
 					break;
 				}
