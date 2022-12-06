@@ -64,6 +64,199 @@ function postgresqlAddDBRecords($table='',$params=array()){
 	}
 }
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
+	global $dbh_postgresql;
+	if(!isset($params['-table'])){
+		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
+	}
+	$table=$params['-table'];
+	$fieldinfo=postgresqlGetDBFieldInfo($table,1);
+	//if -map then remap specified fields
+	if(isset($params['-map'])){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(isset($params['-map'][$k])){
+					unset($recs[$i][$k]);
+					$k=$params['-map'][$k];
+					$recs[$i][$k]=$v;
+				}
+			}
+		}
+	}
+	//fields
+	$fields=array();
+	foreach($recs as $i=>$rec){
+		foreach($rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){
+				unset($recs[$i][$k]);
+				continue;
+			}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+		break;
+	}
+	$fieldstr=implode(',',$fields);
+	//keep prepared statement markers under 30000
+	if(!isset($params['-chunk'])){
+		$params['-chunk']=ceil(30000/count($fields));
+		if($params['-chunk'] > 500){$params['-chunk']=500;}
+	}
+	$chunks=array_chunk($recs,$params['-chunk']);
+	$chunk_size=count($chunks[0]);
+	$total_count=0;
+	foreach($chunks as $c=>$recs){
+		//values and pvalues
+		$pvalues=array();
+		$values=array();
+		$p=0;
+		foreach($recs as $i=>$rec){
+			$pvals=array();
+			foreach($rec as $k=>$v){
+				if(!in_array($k,$fields)){continue;}
+				$p+=1;
+				if(!strlen($v)){
+					$pvals[]="\${$p}";
+					$pvalues[]=null;
+				}
+				else{
+					if(isset($params['-iconv'])){
+						$v=iconv("ISO-8859-1", "UTF-8//TRANSLIT", $v);
+					}
+					$pvals[]="\${$p}";
+					$pvalues[]=$v;
+				}
+			}
+			$recstr=implode(',',$pvals);
+			$values[]="({$recstr})";
+		}
+		if($c > 0 && count($recs)==$chunk_size){
+			$result = pg_execute($dbh_postgresql,'', $pvalues);
+			$err=pg_last_error($dbh_postgresql);
+			//$ok=postgresqlExecuteSQL($query);
+			if(strlen($err)){
+				$drecs=array();
+				$chunks=array_chunk($pvalues,count($fields));
+				foreach($chunks as $chunk){
+					$rec=array();
+					foreach($fields as $i=>$fld){
+						//if($fld != 'dist_id'){continue;}
+						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
+						$drecs[$fld][$chunk[$i]]+=1;
+					}
+					break;
+				}
+				debugValue(array(
+					'function'=>'postgresqlAddDBRecordsProcess',
+					'message'=>'execute error',
+					'error'=>$err,
+					'query'=>$query,
+					'params'=>$params,
+					'p'=>$p,
+					'first_record'=>$drecs
+				));
+				return $total_count;
+			}
+			$total_count+=count($recs);
+			continue;
+		}
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			if(!is_array($params['-upsert'])){
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+			if(!is_array($params['-upserton'])){
+				$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+			}
+			/*
+				INSERT INTO distributors (did, dname)
+	    		VALUES 
+	    			(5, 'Gizmo Transglobal'), 
+	    			(6, 'Associated Computing, Inc')
+	    		ON CONFLICT (did) DO UPDATE SET 
+	    			dname = EXCLUDED.dname;
+			*/
+	    	$sets=array();
+			foreach($params['-upsert'] as $fld){
+				$fld=trim($fld);
+				if(!in_array($fld,$fields)){continue;}
+				if(!isset($fieldinfo[$fld])){continue;}
+				$sets[]="{$fld} = EXCLUDED.{$fld}";
+			}
+			$query="INSERT INTO {$table} as t1 ({$fieldstr}) VALUES".PHP_EOL;
+			$query.=implode(','.PHP_EOL,$values).PHP_EOL;
+			$onstr=implode(',',$params['-upserton']);
+			$query.="ON CONFLICT ({$onstr}) DO UPDATE SET ".PHP_EOL;
+			$query.=implode(', ',$sets).PHP_EOL;
+			if(isset($params['-upsertwhere'])){
+				$query.="WHERE {$params['-upsertwhere']}".PHP_EOL;
+			}
+		}
+		else{
+			$query="INSERT INTO {$table} ({$fieldstr}) VALUES".PHP_EOL;
+			$query.=implode(','.PHP_EOL,$values).PHP_EOL;
+		}
+		if(isset($params['-debug'])){
+			return $query;
+		}
+		if(!is_resource($dbh_postgresql)){
+			$dbh_postgresql=postgresqlDBConnect($params);
+		}
+		if(!$dbh_postgresql){
+			debugValue(array(
+				'function'=>'postgresqlAddDBRecordsProcess',
+				'message'=>'postgresqlDBConnect error',
+				'error'=>"Connect Error" . pg_last_error(),
+				'query'=>$query,
+				'params'=>$params
+			));
+			return 0;
+		}
+		//echo $query;exit;
+		$stmt = pg_prepare($dbh_postgresql,'', $query);
+		if(!$stmt){
+			debugValue(array(
+				'function'=>'postgresqlAddDBRecordsProcess',
+				'message'=>'pg_prepare error',
+				'error'=>pg_last_error($dbh_postgresql),
+				'query'=>$query,
+				'params'=>$params,
+				'p'=>$p,
+				'pvalues_cnt'=>count($pvalues)
+			));
+			return 0;
+		}
+		$result = pg_execute($dbh_postgresql,'', $pvalues);
+		$err=pg_last_error($dbh_postgresql);
+		//$ok=postgresqlExecuteSQL($query);
+		if(strlen($err)){
+			$drecs=array();
+			$chunks=array_chunk($pvalues,count($fields));
+			foreach($chunks as $chunk){
+				$rec=array();
+				foreach($fields as $i=>$fld){
+					//if($fld != 'dist_id'){continue;}
+					$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
+					$drecs[$fld][$chunk[$i]]+=1;
+				}
+				break;
+			}
+			debugValue(array(
+				'function'=>'postgresqlAddDBRecordsProcess',
+				'message'=>'execute error',
+				'error'=>$err,
+				'query'=>$query,
+				'params'=>$params,
+				'p'=>$p,
+				'first_record'=>$drecs
+			));
+			return 0;
+		}
+		$total_count+=count($recs);
+	}
+	if(isset($params['-debug'])){
+		echo printValue($ok).$query;exit;
+	}
+	return count($values);
+}
+function postgresqlAddDBRecordsProcessOLD($recs,$params=array()){
 	global $CONFIG;
 	if(!isset($params['-table'])){
 		$err="postgresqlAddDBRecordsProcess Error: no table"; 
@@ -297,10 +490,6 @@ function postgresqlAddDBIndex($params=array()){
 *	[-host] - postgresql server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	other field=>value pairs to add to the record
-* @return integer returns the autoincriment key
-* @usage $id=postgresqlAddDBRecord(array('-table'=>'abc','name'=>'bob','age'=>25));
 */
 function postgresqlAddDBRecord($params=array()){
 	global $USER;
@@ -747,9 +936,6 @@ function postgresqlDelDBRecord($params=array()){
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
 * 	[-dbpass] - password
-* 	other field=>value pairs to edit
-* @return boolean returns true on success
-* @usage $id=postgresqlEditDBRecord(array('-table'=>'abc','-where'=>"id=3",'name'=>'bob','age'=>25));
 */
 function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 	//check for function overload: editDBRecord(table,id,opts());
@@ -976,9 +1162,6 @@ function postgresqlGetDBCount($params=array()){
 *	[-host] - postgresql server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return array returns array of databases
-* @usage $tables=postgresqlGetDBDatabases();
 */
 function postgresqlGetDBDatabases($params=array()){
 	$query=<<<ENDOFQUERY
@@ -995,9 +1178,6 @@ ENDOFQUERY;
 * @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return boolean returns true on success
-* @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
 function postgresqlGetDBFields($table,$allfields=0){
 	$finfo=postgresqlGetDBFieldInfo($table);
@@ -1308,9 +1488,6 @@ ENDOFQUERY;
 * @param $params array - These can also be set in the CONFIG file with dbname_postgresql,dbuser_postgresql, and dbpass_postgresql
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return boolean returns true on success
-* @usage $fieldinfo=postgresqlGetDBFieldInfo('test');
 */
 function postgresqlGetDBFieldInfo($table){
 	$table=strtolower($table);
@@ -1503,9 +1680,6 @@ ENDOFQUERY;
 * 	-table 	  - table to query
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return array recordset
-* @usage $rec=postgresqlGetDBRecord(array('-table'=>'tesl));
 */
 function postgresqlGetDBRecord($params=array()){
 	$recs=postgresqlGetDBRecords($params);
@@ -1527,9 +1701,6 @@ function postgresqlGetDBRecord($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 * @return array - set of records
-* @usage
-*	<?=postgresqlGetDBRecords(array('-table'=>'notes'));?>
-*	<?=postgresqlGetDBRecords("select * from myschema.mytable where ...");?>
 */
 function postgresqlGetDBRecords($params){
 	global $USER;
@@ -1984,9 +2155,6 @@ function postgresqlListRecords($params=array()){
 *	[-host] - postgresql server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
-* 	[-dbpass] - password
-* @return $params array
-* @usage $params=postgresqlParseConnectParams($params);
 */
 function postgresqlParseConnectParams($params=array()){
 	global $CONFIG;
@@ -2187,9 +2355,6 @@ function postgresqlParseConnectParams($params=array()){
 * 	[-filename_partitions] - number of files you want to create. Appends number to each one. This requires you to set a row_count field in each record returned. (use a CTE - with as)
 * 	[-filename_maxsize] - max filesize. Appends number to each file created
 * 	[-filename_maxrows] - max rows. Appends number to each file created. Can be used instead of -filename_partitions if you are unable to use a CTE and/or already know how many rows per file
-*   [-process] - function name to call for each record
-* 	[-logfile] - logfile to write to
-* @return array - returns records
 */
 function postgresqlQueryResults($query='',$params=array()){
 	global $DATABASE;
@@ -2327,7 +2492,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 		    		$fh = fopen($params['-filename'],"wb");
 				}
 		    	if(!isset($fh) || !is_resource($fh)){
-					odbc_free_result($dbh_hana_result);
+					pg_free_result($dbh_postgresql_result);
 					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 					debugValue($DATABASE['_lastquery']);
 			    	return array();
@@ -2372,7 +2537,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 		    	$fh = fopen($params['-filename'],"wb");
 				
 		    	if(!isset($fh) || !is_resource($fh)){
-					odbc_free_result($dbh_hana_result);
+					pg_free_result($dbh_postgresql_result);
 					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 					debugValue($DATABASE['_lastquery']);
 			    	return array();
