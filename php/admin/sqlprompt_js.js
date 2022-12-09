@@ -97,7 +97,8 @@ function sqlpromptMonitor(type){
 	}
 	return ajaxGet('/php/admin.php',div,params)
 }
-function sqlpromptMonitorSQL(){
+function sqlpromptMonitorSQL(norun){
+	if(undefined==norun){norun=0;}
 	let sql=getText('monitor_sql_query');
 	let doc = new DOMParser().parseFromString(sql, "text/html");
 	sql=doc.documentElement.innerText;
@@ -106,18 +107,25 @@ function sqlpromptMonitorSQL(){
 	if(undefined != obj.codemirror){
 		obj.codemirror.setValue(sql);
 		obj.codemirror.save();
-		sqlpromptSubmit(document.sqlprompt);
+		if(norun==0){
+			sqlpromptSubmit(document.sqlprompt);
+		}
+		
 	}
 	else if(undefined != obj.editor){
 		setText(obj.editor,'');
 		setText(obj.editor,sql);
 		obj.editor.save();
-		sqlpromptSubmit(document.sqlprompt);
+		if(norun==0){
+			sqlpromptSubmit(document.sqlprompt);
+		}
 	}
 	else{
 		setText('sql_full','');
 		setText('sql_full',sql);
-		sqlpromptSubmit(document.sqlprompt);
+		if(norun==0){
+			sqlpromptSubmit(document.sqlprompt);
+		}
 	}
 	return false;
 }
@@ -143,7 +151,7 @@ function sqlpromptDDL(table){
 	var db=document.sqlprompt.db.value;
 	document.sqlprompt.reset();
 	document.sqlprompt.db.value=db;
-	return ajaxGet('/php/admin.php','centerpop',{_menu:'sqlprompt',func:'ddl',db:db,table:table,setprocessing:0})
+	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'ddl',db:db,table:table,setprocessing:0})
 }
 function sqlpromptFields(table){
 	let icon=getObject(table+'_icon');

@@ -119,6 +119,11 @@
 	<?=buildOnLoad("sqlpromptMonitorSQL();");?>
 </view:monitor_sql>
 
+<view:monitor_sql_norun>
+	<div id="monitor_sql_query"><?=trim($sql);?></div>
+	<?=buildOnLoad("sqlpromptMonitorSQL(1);");?>
+</view:monitor_sql_norun>
+
 <view:tabs>
 <nav>
 <ul class="nav-tabs <?=configValue('admin_color');?>">

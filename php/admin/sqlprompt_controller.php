@@ -103,18 +103,17 @@
 		case 'ddl':
 			$table=addslashes($_REQUEST['table']);
 			$db=$_REQUEST['db'];
-			$title="DDL for {$table}";
 			$parts=preg_split('/\./',$table,2);
 			if(count($parts)==2){
-				$content=dbGetTableDDL($db,$parts[1],$parts[0]);
+				$sql=dbGetTableDDL($db,$parts[1],$parts[0]);
 			}
 			else{
-				$content=dbGetTableDDL($db,$table);
+				$sql=dbGetTableDDL($db,$table);
 			}
 			if(is_array($content)){
-				$content=printValue($content);
+				$sql=printValue($content);
 			}
-			setView('centerpop',1);
+			setView('monitor_sql_norun',1);
 			return;
 		break;
 		case 'monitor':
