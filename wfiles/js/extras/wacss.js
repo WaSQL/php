@@ -3542,6 +3542,45 @@ var wacss = {
 	    }
 	    return false;
 	},
+	setStarRating:function(el){
+		let p=wacss.getParent(el,'div');
+		//return false if in readonly mode
+		if(undefined==p){
+			console.log('setStarRating is missing a div parent');
+			return false;
+		}
+		if(undefined!=p.dataset.readonly){
+			console.log('setStarRating is set to readonly');
+			return false;
+		}
+	    let n=parseInt(el.dataset.value);
+		let stars=p.querySelectorAll('span');
+		//toggle first star if it is the only one marked so the user can select none
+		if(n==1 && stars[0].className.indexOf('empty') == -1 && stars[1].className.indexOf('empty') != -1){
+			n=0;
+		}
+		//set field value
+		console.log('setStarRating set to '+n);
+		console.log(stars);
+		p.querySelector('input').value=n;
+		for(let i=0;i<stars.length;i++){
+			console.log(stars[i].classList);
+			let s=parseInt(stars[i].dataset.value);
+			if(s <= n){
+				stars[i].classList.remove('icon-star-half-empty');
+				stars[i].classList.remove('icon-star-empty');
+				stars[i].classList.add('icon-star');
+				console.log(s+' star');
+			}
+			else{
+				stars[i].classList.remove('icon-star-half-empty');
+				stars[i].classList.remove('icon-star');
+	            stars[i].classList.add('icon-star-empty');
+				console.log(s+' star-empty');
+			}
+		}
+		return true;
+	},
 	showImage: function(el,z){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}

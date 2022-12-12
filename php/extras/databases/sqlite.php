@@ -1059,6 +1059,9 @@ function sqliteGetDBTables($params=array()){
 	    name NOT LIKE 'sqlite_%'
 	ORDER BY name
 ENDOFQUERY;
+	if(isset($params['-queryonly'])){
+		return $query;
+	}
 	$recs=sqliteQueryResults($query);
 	//echo $query.printValue($recs);exit;
 	foreach($recs as $rec){
@@ -1395,8 +1398,8 @@ function sqliteGetDBRecord($params=array()){
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
-*	<?=sqliteGetDBRecords(array('-table'=>'notes'));?>
-*	<?=sqliteGetDBRecords("select * from myschema.mytable where ...");?>
+*	sqliteGetDBRecords(array('-table'=>'notes'));
+*	sqliteGetDBRecords("select * from myschema.mytable where ...");
 */
 function sqliteGetDBRecords($params){
 	global $USER;
@@ -1496,6 +1499,50 @@ function sqliteGetDBRecordsCount($params=array()){
 function sqliteNamedQuery($name){
 	$schema=sqliteGetDBSchema();
 	switch(strtolower($name)){
+		case 'names':
+			return array(
+				// array(
+				// 	'name'=>'running_queries',
+				// 	'icon'=>'icon-spin4',
+				// 	'displayname'=>'Running Queries'
+				// ),
+				// array(
+				// 	'name'=>'sessions',
+				// 	'icon'=>'icon-spin8',
+				// 	'displayname'=>'Sessions'
+				// ),
+				// array(
+				// 	'name'=>'table_locks',
+				// 	'icon'=>'icon-lock',
+				// 	'displayname'=>'Table Locks'
+				// ),
+				// array(
+				// 	'name'=>'schemas',
+				// 	'icon'=>'icon-th',
+				// 	'displayname'=>'Schemas'
+				// ),
+				array(
+					'name'=>'tables',
+					'icon'=>'icon-table',
+					'displayname'=>'Tables'
+				),
+				// array(
+				// 	'name'=>'functions',
+				// 	'icon'=>'icon-th-thumb',
+				// 	'displayname'=>'Functions'
+				// ),
+				// array(
+				// 	'name'=>'procedures',
+				// 	'icon'=>'icon-th-thumb-empty',
+				// 	'displayname'=>'Procedures'
+				// ),
+				// array(
+				// 	'name'=>'optimizations',
+				// 	'icon'=>'icon-optimize',
+				// 	'displayname'=>'Optimizations'
+				// ),
+			);
+		break;
 		case 'list':
 			return array(
 				array(

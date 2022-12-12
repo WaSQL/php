@@ -22,7 +22,7 @@ if (!function_exists('getallheaders')) {
 * @param params array
 *	[-shortcuts] array - an array of shortcuts with name and cmd specified for each shortcut. These show up on the right
 * @usage
-*	<?=commonBuildTerminal(array('-shortcuts'=>$shortcuts));?>
+*	commonBuildTerminal(array('-shortcuts'=>$shortcuts));
 */
 function commonBuildTerminal($opts=array()){
 	$menu='terminal';
@@ -2317,8 +2317,7 @@ function buildFormCheckAll($att,$attval,$params=array()){
 * 	[size] string - size of button. Valid options are small, smaller, smallest, tiny, big, bigger, biggest, huge.
 * @return
 *	HTML Form checkbox for each pair passed in
-* @usage
-* <?=buildFormCheckbox('colors',$opts);?>
+* @usage buildFormCheckbox('colors',$opts);
 */
 function buildFormCheckbox($name, $opts=array(), $params=array()){
 	$params['-type']='checkbox';
@@ -3117,8 +3116,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 *   [size] string - size of button. Valid options are small, smaller, smallest, tiny, big, bigger, biggest, huge.
 * @return
 *	HTML Form radio button for each pair passed in
-* @usage
-* <?=buildFormRadio('color',$opts);?>
+* @usage buildFormRadio('color',$opts);
 */
 function buildFormRadio($name, $opts=array(), $params=array()){
 	$params['-type']='radio';
@@ -3941,8 +3939,7 @@ function buildFormTranslateBulma($params=array()){
 *	- [height]. Defaults to 75
 * 	- [style] - set width or height in style to override defaults
 * @return HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
-* @usage
-* <?=buildFormWhiteboard('board',$params);?>
+* @usage buildFormWhiteboard('board',$params);
 */
 function buildFormWhiteboard($name,$params=array()){
 	$params['data-behavior']="whiteboard";
@@ -5167,8 +5164,7 @@ function buildFormSelectYear($name,$params=array()){
 * 	- [data-autoresize] - width, height, both 
 * @return
 *	HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
-* @usage
-* <?=buildFormSignature('sign',$params);?>
+* @usage buildFormSignature('sign',$params);
 */
 function buildFormSignature($name,$params=array()){
 	loadExtrasJs(array('wacss','signature_pad'));
@@ -5337,8 +5333,7 @@ function buildFormSignatureOLD($name,$params=array()){
 *	- max_displayname. Defaults to 10
 * @return
 *	HTML Form slider field
-* @usage
-* <?=buildFormSlider('age',$params);?>
+* @usage buildFormSlider('age',$params);
 */
 function buildFormSlider($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
@@ -5414,10 +5409,63 @@ function buildFormSlider($name, $params=array()){
 *	[name]. overrides name
 *	[value]. Defaults to 0
 * @return string - return HTML star rating field
-* @usage
-* <?=buildFormStarRating('rating',$params);?>
+* @usage buildFormStarRating('rating',$params);
 */
 function buildFormStarRating($name, $params=array()){
+	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+    if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:'';}
+    if(!isset($params['max'])){$params['max']=5;}
+    if(!isset($params['class'])){$params['class']='w_biggest';}
+    if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+    if(isset($params['readonly'])){
+    	$params['-readonly']=1;
+    }
+	$rtn = '<div id="'.$params['id'].'" style="display:flex;justify-content:flex-start;align-items:center;"';
+	if(isset($params['displayif'])){
+		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		unset($params['displayif']);
+	}
+	if(isset($params['data-readonlyif'])){
+		$rtn .= ' data-readonlyif="'.$params['data-readonlyif'].'"';
+		unset($params['data-readonlyif']);
+	}
+	$rtn .= '>'.PHP_EOL;
+	
+	//return $x.printValue($params);
+	for($x=1;$x<=$params['max'];$x++){
+		$p=$x-1;
+		$vr=round($params['value'],0);
+		if($x <= $params['value']){$class='icon-star';}
+		elseif($vr != $params['value'] && $vr > $p){
+			$class='icon-star-half-empty';
+		}
+		else{$class='icon-star-empty';}
+		if(!isset($params['-readonly'])){
+			$class.=' w_pointer';
+		}
+		$class .= ' '.$params['class'];
+		$rtn .= '	<span data-value="'.$x.'" class="'.$class.'"';
+		if(!isset($params['-readonly'])){
+			$rtn .= ' onclick="return wacss.setStarRating(this);"';
+		}
+		if(isset($params['style'])){
+			$rtn .= ' style="'.$params['style'].'"';
+		}
+		$rtn .= '></span>'.PHP_EOL;
+	}
+	if(!isset($params['-readonly'])){
+	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'"';
+		if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
+		elseif(isset($params['_required']) && $params['_required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
+		$rtn .=' />'.PHP_EOL;
+	}
+	$rtn .= '</div>'.PHP_EOL;
+	return $rtn;
+}
+function buildFormStarRatingOLD($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
@@ -7389,7 +7437,7 @@ function commonProcessDBListRecordsTags($htm){
 
 //---------- begin function renderView---------------------------------------
 /**
-* @describe Calls views starting with an underscore [_] (<view:_name><?= $params['name']' ?></view:_name>) and passes in the $params value
+* @describe Calls views starting with an underscore [_] (<view:_name>...</view:_name>) and passes in the $params value
 * @param name string
 *	The name of the views (with or without the preceding underscore [_])
 * @param params object
@@ -7410,12 +7458,12 @@ function commonProcessDBListRecordsTags($htm){
 * <view:items>
 * 	<div class="items">
 * 	<view:item>
-* 		<div class="item"><?=$rec['item'];?></div>
+* 		<div class="item">&lt;?=$rec['item'];?&gt;</div>
 * 	</view:item>
-* 	<?=renderEach('item',$items,'rec');?>
+* 	&lt;?=renderEach('item',$items,'rec');?&gt;
 * 	</div>
 * </view:items>
-* <?=renderView('items',$items,'items');?>
+* &lt;?=renderView('items',$items,'items');?&gt;
 */
 function renderView($view, $params=array(), $opts=array()){
 	global $VIEWS;
@@ -7515,12 +7563,12 @@ function renderView($view, $params=array(), $opts=array()){
 * <view:items>
 * 	<div class="items">
 * 	<view:item>
-* 		<div class="item"><?=$rec['item'];?></div>
+* 		<div class="item">&lt;?=$rec['item'];?&gt;</div>
 * 	</view:item>
-* 	<?=renderEach('item',$items,'rec');?>
+* 	&lt;?=renderEach('item',$items,'rec');?&gt;
 * 	</div>
 * </view:items>
-* <?=renderViewIf(isUser(),'items',$items,'items');?>
+* &lt;?=renderViewIf(isUser(),'items',$items,'items');?&gt;
 */
 function renderViewIf($conditional,$view, $params=array(), $opts=array()){
 	if(is_array($conditional) && count($conditional)){
@@ -7549,15 +7597,15 @@ function renderViewIf($conditional,$view, $params=array(), $opts=array()){
 * <view:items>
 * 	<div class="items">
 * 	<view:item>
-* 		<div class="item"><?=$rec['item'];?></div>
+* 		<div class="item">&lt;?=$rec['item'];?&gt;</div>
 * 	</view:item>
-* 	<?=renderEach('item',$items,'rec');?>
+* 	&lt;?=renderEach('item',$items,'rec');?&gt;
 * 	</div>
 * </view:items>
 * <view:no_items>
 * 	<h1>No User Found</h1>
 * </view:no_items>
-* <?=renderViewIfElse(isUser(),'items','no_items',$items,'items');?>
+* &lt;?=renderViewIfElse(isUser(),'items','no_items',$items,'items');?&gt;
 */
 function renderViewIfElse($conditional,$view, $viewelse, $params=array(), $opts=array()){
 	if(is_array($conditional) && count($conditional)){
@@ -7614,7 +7662,7 @@ function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 
 //---------- begin function renderEach---------------------------------------
 /**
-* @describe Calls views starting with an underscore [_] (<view:_name><?= $params['name']' ?></view:_name>) and renders
+* @describe Calls views starting with an underscore [_] (<view:_name>&lt;?= $params['name']' ?&gt;</view:_name>) and renders
 * it for each item in the array $rows. Row data will be availbe in the $params variable, and the array index/key will appear as $key.
 * @param name string
 *	The name of the views (with or without the preceding underscore [_])
@@ -7631,9 +7679,9 @@ function renderViewSwitch($str,$values,$views, $params=array(), $opts=array()){
 * @author Jeremy Despain, jeremy.despain@gmail.com
 * @usage
 * <view:item>
-* <div><?=$rec['name'];?></div>
+* <div>&lt;?=$rec['name'];?&gt;</div>
 * </view:item>
-* <?=renderEach('item',$items,'rec');?>
+* &lt;?=renderEach('item',$items,'rec');?&gt;
 */
 function renderEach($view, $rows, $opts=array()){
 	//allow you to shortcut opts and just pass in the alias
@@ -8405,7 +8453,7 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 *	date string to format
 * @return
 *	date string formatted for mysql.  Date string can also be today, now, thisweek
-* @usage <?=date2Mysql('today');?>
+* @usage date2Mysql('today');
 */
 function date2Mysql($str=''){
 	if(preg_match('/^([0-9]{2,2})-([0-9]{2,2})-([0-9]{4,4})$/s',$str,$dmatch)){
@@ -9015,9 +9063,9 @@ function evalPHP_ob($string, $flags) {
 /**
 * @describe
 *	evaluates PHP, Perl, Python, Ruby, bash, or sh embeded scripts and returns the result
-*	supports short tags for PHP: <?=....?>. 
+*	supports short tags for PHP: 
 *	Perl, Python, Ruby bash, and sh scripts are passed USER, SERVER, REQUEST, PASSTHRU, and CONFIG variables
-*	<?PHP ...?>  or <?=... ?> or <?perl ....?> or <?python ...?> or <?ruby ... ?> or <?bash ...?> or <?sh ...?>
+*	&lt;?PHP ...?&gt;  or &lt;?=... ?&gt; or &lt;?perl ....?&gt; or &lt;?python ...?&gt; or &lt;?ruby ... ?&gt; or &lt;?bash ...?&gt; or &lt;?sh ...?&gt;
 * @param str string or array of strings
 *	php code or php embeded html to eval
 * @return
@@ -9032,7 +9080,7 @@ function evalPHP($strings){
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
 	ob_start();
-	/* <?php code goes here;?>  or <script type="php">php code goes here</script> */
+	
 	$cntA=count($strings);
 	for($sIndex=0;$sIndex<$cntA;$sIndex++){
 		unset($evalmatches);
@@ -10332,7 +10380,7 @@ function fileExplorer($startdir='',$param=array()){
 *	-fields=name,size,modified,perms
 * @return
 *	Web-based File Manager/Explorer application
-* @usage <?=fileManager('/var/www/shared/test');?>
+* @usage fileManager('/var/www/shared/test');
 */
 function fileManager($startdir='',$params=array()){
 	global $CONFIG;
@@ -11003,7 +11051,7 @@ function toFixed($number=0,$decimals = 2){
 *	multi-line string
 * @return
 *	formatted multi-line string
-* @usage <?=formatPre($txt);?>
+* @usage formatPre($txt);
 */
 function formatPre($str=''){
 	return nl2br(trim($str));
@@ -11382,7 +11430,7 @@ function xls2CSV($afile=''){
 *	name of the file
 * @return image path to the icon associated with file extension
 * @usage 
-*	<img src="<?=getFileIcon('info.doc');?>" />
+*	<img src="&lt;?=getFileIcon('info.doc');?&gt;" />
 */
 function getFileIcon($file=''){
 	$progpath=dirname(__FILE__);
@@ -11661,9 +11709,7 @@ function getRunTime(){
 * @return
 *	sets or returns a previously set stored value. Stored values persist like sessions but work across multiple users
 * @usage
-*	<?php
 *	$data=getStoredValue('return pageData();',0,3);
-*	?>
 */
 function getStoredValue($evalstr,$force=0,$hrs=1,$debug=0,$serialize=1){
 	$progpath=dirname(__FILE__);
@@ -11704,11 +11750,9 @@ function getStoredValue($evalstr,$force=0,$hrs=1,$debug=0,$serialize=1){
 * @param [serialize] boolean - set to true to serialize data. defaults true
 * @return boolean
 * @usage
-*	<?php
 *	$recs=getStoredValue('return pageData();',0,3);
 *	$recs[0]['color']='red';
 *	$recs=setStoredValue('return pageData();',$recs);
-*	?>
 */
 function setStoredValue($evalstr,$data,$serialize=1){
 	$progpath=dirname(__FILE__);
@@ -11858,7 +11902,7 @@ function int8ToTime($int8){
 * @describe returns the correct charset for special symbols
 * @param str string
 * @return string
-* @usage <?=getCharset('trademark');?>
+* @usage getCharset('trademark');
 */
 function getCharset($str=''){
 	$charset='';
@@ -11885,7 +11929,7 @@ function getCharset($str=''){
  *		rating - max rating, defaults to g [ g | pg | r | x ]
  * @return String containing either just a URL or a complete image tag
  * @source https://gravatar.com/site/implement/images/php/
- * @usage <img src="<?=getGravatar('some.email@gmail.com');?>" alt="gravatar" />
+ * @usage <img src="&lt;?=getGravatar('some.email@gmail.com');?&gt;" alt="gravatar" />
  */
 function getGravatar($email,$params=array()){
 	if(!isset($params['size'])){$params['size']=80;}
@@ -13716,8 +13760,7 @@ function includeAdminPage($name,$params=array()){
 *    additional $_REQUEST key/value pairs you want sent to the page
 * @return string
 *    returns the specified page and loads any functions, etc of that page
-* @usage
-* <?=includePage('test',array('foo'=>25));?>
+* @usage includePage('test',array('foo'=>25));
 * @author slloyd
 * @history
 *	slloyd 2014-01-07 added -dbname, and -fieldname controling parameters.
@@ -13836,8 +13879,7 @@ function includePage($val='',$params=array()){
 * @param condition - condition can be a boolean or an array of boolean=>view sets
 * @param page_true string - page name if true
 * @param params array
-* @usage
-* <?=includePageIf(isUser(),'topmenu');?>
+* @usage includePageIf(isUser(),'topmenu');
 * @see includePage();
 */
 function includePageIf($conditional,$page_true, $params=array()){
@@ -13852,8 +13894,7 @@ function includePageIf($conditional,$page_true, $params=array()){
 * @param page_true string - page name if true
 * @param page_false string - page name if false.
 * @param params array
-* @usage
-* <?=includePageIfElse(isUser(),'topmenu_user','topmenu_nouser');?>
+* @usage includePageIfElse(isUser(),'topmenu_user','topmenu_nouser');
 * @see includePage();
 */
 function includePageIfElse($conditional,$page_true, $page_false, $params=array()){
@@ -15121,10 +15162,9 @@ function loadExtras($extras){
 *	to load a single extra just pass in the extra name
 *	to load multiple extras pass in an array of names
 * @return null
-* @usage
-*	<?=loadExtrasCss('dropdown');?>
-*	---
-*	<?=loadExtrasCss(array('tcal','dropdown','custom'));?>
+* @usage 
+* 	loadExtrasCss('dropdown');
+*	loadExtrasCss(array('tcal','dropdown','custom'));
 */
 function loadExtrasCss($extras){
 	if(!is_array($extras)){$extras=array($extras);}
@@ -15162,8 +15202,8 @@ function loadExtrasCss($extras){
 *	to load multiple extras pass in an array of names
 * @return null
 * @usage
-*	<?=loadExtrasFont('arizona');?>
-*	<?=loadExtrasFont(array('arizona','alex-brush','great-vibes'));?>
+*	loadExtrasFont('arizona');
+*	loadExtrasFont(array('arizona','alex-brush','great-vibes'));
 */
 function loadExtrasFont($extras){
 	if(!is_array($extras)){$extras=array($extras);}
@@ -15188,9 +15228,8 @@ function loadExtrasFont($extras){
 *	to load multiple extras pass in an array of names
 * @return null
 * @usage
-*	<?=loadExtrasJs('dropdown');?>
-*	---
-*	<?=loadExtrasJs(array('iefix','html5','custom'));?>
+*	loadExtrasJs('dropdown');
+*	loadExtrasJs(array('iefix','html5','custom'));
 */
 function loadExtrasJs($extras){
 	global $CONFIG;
@@ -15362,7 +15401,7 @@ function loadPage($name='',$template='',$debug=''){
 * @describe returns fake text for use in fill during design.
 * @param len integer - the max char length to return
 * @return string
-* @usage <?=loremIpsum(500);?> creates a fake text string 500 chars long
+* @usage loremIpsum(500); creates a fake text string 500 chars long
 */
 function loremIpsum($length=300,$end='.'){
 	$wordstr="lorem ipsum dolor sit amet consectetur adipiscing elit vestibulum volutpat mollis tempus quisque in elit at lacus feugiat condimentum";
@@ -15614,7 +15653,7 @@ function numberFormat($num=0,$dec=0){
 * @describe adds the English ordinal suffix to any number. i.e. 179th or 1st
 * @param num integer
 * @return string
-* @usage <?=ordinalSuffix(15);?> birthday - returns 15th birthday
+* @usage ordinalSuffix(15); 
 */
 function ordinalSuffix($num) {
 	if (!in_array(($num % 100),array(11,12,13))){
@@ -16097,7 +16136,7 @@ function grepFiles($q, $path,$recurse=1){
 * @param params array - additional options to include in embed tag
 *	toolbar, navpanes,scrollbar, width, height
 * @return string - html embed tag
-* @usage <?=embedPDF($file)?>
+* @usage embedPDF($file);
 */
 function embedPDF($file='',$params=array()){
 	$html='<embed bgcolor="#f2f2f2" src="'.$file.'#';
@@ -16126,7 +16165,9 @@ function confValue($fld=''){
 *	run evalPHP on string before returning
 * @return str value
 *	returns the CONFIG value of the field specified
-* @usage <?=configValue('name');?>  or <?=configValue('title',true);?>
+* @usage 
+* 	configValue('name');
+* 	configValue('title',true);
 */
 function configValue($field,$e=0){
 	global $CONFIG;
@@ -16143,9 +16184,9 @@ function configValue($field,$e=0){
 * @param page string - name (or id) of the page you wish to return - optional. Defaults to the current page
 * @return str value - returns the value of the field of the page specified or the current page is a page is not specified
 * @usage
-*	<?=pageValue('name');?> - returns the name of the current page being viewed
-*	<?=pageValue('title','about');?> - returns the title of the page named 'about'
-*	<?=pageValue('title',4);?> - returns the title of the page with an id of 4
+*	pageValue('name'); - returns the name of the current page being viewed
+*	pageValue('title','about'); - returns the title of the page named 'about'
+*	pageValue('title',4); - returns the title of the page with an id of 4
 */
 function pageValue($field,$pagename=''){
 	global $PAGE;
@@ -19844,7 +19885,7 @@ function request2XMLSimple($request=array()){
 * @return str value
 *	returns the $_REQUEST value of the field specified or null
 * @usage
-*	<?=requestValue('name');?>
+*	requestValue('name');
 */
 function requestValue($k){
 	if(isset($_REQUEST[$k])){return $_REQUEST[$k];}
@@ -20675,7 +20716,7 @@ function underConstruction($note='',$login=0){
 * @describe convert a number to words
 * @param number integer
 * @return string
-* @usage <?=verboseNumber(12);?>
+* @usage verboseNumber(12);
 */
 function verboseNumber($num = false){
     $num = str_replace(array(',', ' '), '' , trim($num));
@@ -20723,7 +20764,7 @@ function verboseNumber($num = false){
 * @param bytes integer - the number of bytes
 * @param [format] string - string format to return. Defaults to '%.2f %s'
 * @return string
-* @usage <?=verboseSize($bytes);?>
+* @usage verboseSize($bytes);
 */
 function verboseSize($bytes=0,$format=''){
     $sizes=array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
@@ -20741,7 +20782,7 @@ function verboseSize($bytes=0,$format=''){
 * @param [notate] boolean - notation - defaults to false
 * @param [nosecs] boolean - include seconds - defaults to false
 * @return string
-* @usage <?=verboseTime($seconds);?>
+* @usage verboseTime($seconds);
 */
 function verboseTime($num=0,$notate=0,$nosecs=0) {
 	$years=0;$days=0;$hrs=0;$min=0;$sec=0;
