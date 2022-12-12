@@ -109,7 +109,7 @@ def calculateDistance(lat1, lon1, lat2, lon2, unit='M'):
 #---------- begin function cmdResults---------------
 # @describe executes command and returns results
 # @param cmd string - the command to execute
-# @param [args] string - a string of arguments to pass to the command 
+# @param [args] string - a string of arguments to pass to the command
 # @param [dir] string - directory
 # @param [timeout] integer - seconds to let process run for. Defaults to 0 - unlimited
 # @return string - returns the results of executing the command
@@ -122,12 +122,12 @@ def cmdResults(cmd,args='',dir='',timeout=0):
 # @describe decodes a base64 encodes string - same as base64_decode
 # @param str string - base64 string to decode
 # @return str string - decodes a base64 encodes string - same as base64_decode
-# @usage dec=common.decodeBase64(encoded_string)   
+# @usage dec=common.decodeBase64(encoded_string)
 def decodeBase64(str):
     base64_bytes = str.encode('ascii')
     message_bytes = base64.b64decode(base64_bytes)
-    message = message_bytes.decode('ascii')  
-    return message  
+    message = message_bytes.decode('ascii')
+    return message
 
 #---------- begin function decrypt
 # @describe decrypt a string that was encoded with the encrypt function
@@ -318,7 +318,7 @@ def isCLI():
     if sys.stdin.isatty():
         return True
     else:
-        return False 
+        return False
 
 #---------- begin function isEmail ----------
 # @describe returns true if specified string is a valid email address
@@ -355,13 +355,13 @@ def isFactor(num,div):
 # @usage if(common.isJson(obj)):
 def isJson(obj):
     if(type(obj) is list):
-        try: 
+        try:
             obj = json.dumps(obj)
         except ValueError as e:
             return False
 
     if(type(obj) is str):
-        try: 
+        try:
             json_object = json.loads(obj)
         except ValueError as e:
             return False
@@ -398,10 +398,10 @@ def loadExtras(file):
         try:
             sys.path.append(extra_path)
             #__import__(name, globals=None, locals=None, fromlist=(), level=0)
-            __import__(file, globals(), locals(), [], 0) 
+            __import__(file, globals(), locals(), [], 0)
             return True
         except Exception as err:
-            common.abort(sys.exc_info(),err)    
+            common.abort(sys.exc_info(),err)
 
     else:
         afile = "{}/{}".format(extra_path,file)
@@ -409,13 +409,13 @@ def loadExtras(file):
             try:
                 sys.path.append(extra_path)
                 #__import__(name, globals=None, locals=None, fromlist=(), level=0)
-                __import__(file, globals(), locals(), [], 0) 
+                __import__(file, globals(), locals(), [], 0)
                 return True
             except Exception as err:
-                common.abort(sys.exc_info(),err)    
+                common.abort(sys.exc_info(),err)
 
         else:
-            return False 
+            return False
 
 #---------- begin function nl2br ----------
 # @describe converts new lines to <br /> tags in string
@@ -481,7 +481,7 @@ def parseCodeBlocks(str):
 # @describe sends email
 # @param dictionary or parameters
 #   smtp - string - SMTP server address
-#   [port] - integer - optional port 
+#   [port] - integer - optional port
 #   to - string - email addresses to send to
 #   [cc] - string - email addresses to cc
 #   [bcc] - string - email addresses to bcc
@@ -570,7 +570,7 @@ def createView(name,val):
     VIEW[name] = val
 
 #---------- begin function  ----------
-# @exclude internal use and excluded from docs      
+# @exclude internal use and excluded from docs
 def removeView(name):
     global VIEW
     if name in VIEW:
@@ -585,7 +585,7 @@ def debugValue(obj):
     DEBUG.append(obj)
 
 #---------- begin function  ----------
-# @exclude internal use and excluded from docs 
+# @exclude internal use and excluded from docs
 def debugValues():
     global DEBUG
     debugstr=''
@@ -708,6 +708,94 @@ def verboseNumber(num):
     else: return verboseNumber(num // t) + ' trillion, ' + verboseNumber(num % t)
 
     raise AssertionError('num is too large: %s' % str(num))
+
+#---------- begin function list2CSV--------------------
+# @describe Converts a list to a CSV string. Example use: converting getDBRecords results into CSV file.
+# @param arr array - The list to convert
+# @param params array - Optional CSV formatting parameters
+# [-fields] - Comma separated list of fields to include in the CSV
+# [-fieldmap] - field=>mapname Array of fieldmaps to change the name on the first line
+# [-noheader] - Do not include a header row
+# [-delim] - Field delimiter string; defaults to comma
+# [-enclose] - Field enclosure string; defaults to quote
+# [-linedelim] - Line delimiter string; defaults to newline
+# @usage
+# 	csv=list2CSV(recs,{
+# 		'-fields':'name,age,color'
+# 	});
+# @return string - CSV-formatted output
+def list2CSV(recs = [], params = {}):
+	# Defaults
+	if '-delim' not in params:
+		params['-delim'] = ','
+	if '-enclose' not in params:
+		params['-enclose'] = '"'
+	if '-linedelim' not in params:
+		params['-linedelim'] = "\n"
+	if not isinstance(recs, list) or len(recs) == 0:
+		return "No records found"
+	# Get fields for header row
+	fields = []
+	if '-fields' in params:
+		if isinstance(params['fields'], list):
+			fields = params['-fields']
+		else:
+			fields = re.split(r'[\,\:\;]+', strip(params['-fields']))
+	else:
+		for rec in recs:
+			if not isinstance(rec, str):
+				for k in rec:
+					if k not in fields:
+						fields.append(k)
+			else:
+				fields.append(rec)
+	fieldmap = {}
+	for field in fields:
+		key = field
+		if '-fieldmap' in params and field in params['-fieldmap']:
+			field = params['-fieldmap'][field]
+		elif field+'_dname' in params:
+			field = params[field+'_dname']
+		elif field+'_displayname' in params:
+			field = params[field+'_displayname']
+		else:
+			field = field.lower().replace(' ', '_')
+		fieldmap[key] = field
+	csvlines = []
+	if '-noheader' not in params or params['-noheader'] == 0:
+		if '-force' in params and params['-force']:
+			csvlines.append(csvImplode(list(fieldmap.values()), params['-delim'], params['-enclose'], 1))
+		else:
+			csvlines.append(csvImplode(list(fieldmap.values()), params['-delim'], params['-enclose']))
+	for rec in recs:
+		vals = []
+		for field in fieldmap:
+			if isinstance(rec[field], (dict, list)):
+				rec[field] = json.dumps(rec[field], ensure_ascii=False).encode('utf-8', errors='replace').decode('utf-8') # Convert to JSON; don't force ASCII and then replace non-UTF-8 characters in the JSON string with \0xfffd Unicode replacement character
+			vals.append(rec[field])
+		if '-force' in params and params['-force']:
+			csvlines.append(csvImplode(vals, params['-delim'], params['-enclose'], 1))
+		else:
+			csvlines.append(csvImplode(vals, params['-delim'], params['-enclose']))
+	return "\r\n".join(csvlines)
+
+#---------- begin function csvImplode--------------------------------------
+# @describe Creates a csv string from an array
+# @param arr array - The array to convert to a csv string
+# @param delim char[optional] - The delimiter character - defaults to a comma
+# @param enclose char[optional] - The enclose character - defaults to a double-quote
+# @return string - Returns a csv string
+# @usage line=csvImplode(parts_array);
+def csvImplode(parts = {}, delim = ',', enclose = '"'): # UNUSED , force = 0):
+	io_stream = io.StringIO()
+	csv_writer = csv.writer(io_stream, delimiter=delim, quotechar=enclose, quoting=csv.QUOTE_MINIMAL)
+	csv_writer.writerow(parts)
+	line = io_stream.getvalue()
+	io_stream.close()
+	line = line.rstrip()
+	line.replace(r'[\r\n]+$', '') # Remove carriage return and/or newline at end of string that may have been added by writerow
+	line = line.rstrip()
+	return line
 
 
 
