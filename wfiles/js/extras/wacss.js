@@ -3560,8 +3560,8 @@ var wacss = {
 			n=0;
 		}
 		//set field value
-		console.log('setStarRating set to '+n);
-		console.log(stars);
+		//console.log('setStarRating set to '+n);
+		//console.log(stars);
 		p.querySelector('input').value=n;
 		for(let i=0;i<stars.length;i++){
 			console.log(stars[i].classList);
@@ -3570,13 +3570,13 @@ var wacss = {
 				stars[i].classList.remove('icon-star-half-empty');
 				stars[i].classList.remove('icon-star-empty');
 				stars[i].classList.add('icon-star');
-				console.log(s+' star');
+				//console.log(s+' star');
 			}
 			else{
 				stars[i].classList.remove('icon-star-half-empty');
 				stars[i].classList.remove('icon-star');
 	            stars[i].classList.add('icon-star-empty');
-				console.log(s+' star-empty');
+				//console.log(s+' star-empty');
 			}
 		}
 		return true;
