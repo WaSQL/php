@@ -2,6 +2,34 @@
 //------------ getallheaders replacement for PHP-FPM ---------------------------------------
 /**
 * @exclude  - this function is excluded from the manual
+* 
+* Functions to move to wacss.js
+		pagingAddFilters
+		pagingSetProcessing
+		pagingSetOffset
+		pagingAddFilter
+		pagingBulkEdit
+		pagingExport
+		pagingClearFilters
+		DONE: removeId
+		DONE:checkAllElements
+		colorSelector
+		DONE:simulateEvent
+		formShowPassword
+		formRecorderAudio
+		formRecorderAudioControl
+		formSetMultiSelectStatus
+		formSetFrequency
+		formSetFrequencyDisplay
+		DONE:setStarRating
+		w_shareButton
+		setCustomValidity
+		ajaxExpand
+		expand
+		filemanagerEdit
+		imagePreview
+		ajaxEditField
+* 
 */
 if (!function_exists('getallheaders')) {
 	/* @exclude  - this function is excluded from the manual */
@@ -20478,7 +20506,7 @@ function wget($url,$localfile=''){
 	set_time_limit(0);
 	if(!strlen($localfile)){
 		$content=1;
-		$path=wasqlTempPath();
+		$path=getWasqlTempPath();
 		$ext=getFileExtension($url);
 		$localfile=$path.'/'.sha1($url).'.'.$ext;
 	}
