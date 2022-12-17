@@ -1005,7 +1005,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 			$params['-webhook_count']+=count($recs);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling {$params['-webhook_url']}".PHP_EOL);
+				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling webhook".PHP_EOL);
 			}
 			$post=postJSON($params['-webhook_url'],$payload);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
@@ -1022,7 +1022,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 			$params['-webhook_count']+=count($recs);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling {$params['-webhook_url']}".PHP_EOL);
+				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling webhook".PHP_EOL);
 			}
 			$post=postJSON($params['-webhook_url'],$payload);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
