@@ -420,8 +420,8 @@ function ctreeGetDBRecord($params=array()){
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
-*	<?=ctreeGetDBRecords(array('-table'=>'notes'));?>
-*	<?=ctreeGetDBRecords("select * from myschema.mytable where ...");?>
+*	ctreeGetDBRecords(array('-table'=>'notes'));
+*	ctreeGetDBRecords("select * from myschema.mytable where ...");
 */
 function ctreeGetDBRecords($params){
 	global $USER;
@@ -828,6 +828,8 @@ function ctreeParseConnectParams($params=array()){
 * @param query string - SQL query to execute
 * @param [$params] array - These can also be set in the CONFIG file with dbname_ctree,dbuser_ctree, and dbpass_ctree
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
+* 	[-webhook_url] - specify a webhook to call instead of returning records
+* 	[-webhook_rowcount] - how many rows to send to the webhook at a time. Defaults to 1000
 * @return array - returns records
 */
 function ctreeQueryResults($query='',$params=array()){
@@ -917,6 +919,14 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		
 	}
 	else{$recs=array();}
+	if(isset($params['-webhook_url'])){
+		if(!isset($params['-webhook_rowcount'])){
+			$params['-webhook_rowcount']=1000;
+		}
+		if(!isset($params['-webhook_format'])){
+			$params['-webhook_format']='json';
+		}
+	}
 	$rowcount=0;
 	$i=0;
 	while(1){
@@ -969,8 +979,8 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 			}
 			$csv=preg_replace('/[\r\n]+$/','',$csv);
 			fwrite($fh,$csv."\r\n");
-			if(isset($params['-logfile']) && file_exists($params['-logfile']) && $rowcount % 5000 == 0){
-				appendFileContents($params['-logfile'],$i.PHP_EOL);
+			if(!isset($params['-webhook_url']) && isset($params['-logfile']) && file_exists($params['-logfile']) && $rowcount % 5000 == 0){
+				appendFileContents($params['-logfile'],date('H:i:s').",{$i}".PHP_EOL);
 			}
 			if(isset($params['-process'])){
 				$ok=call_user_func($params['-process'],$rec);
@@ -988,8 +998,37 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		else{
 			$recs[]=$rec;
 		}
+		if(isset($params['-webhook_url']) && count($recs)==$params['-webhook_rowcount']){
+			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+			$params['-webhook_count']+=count($recs);
+			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling {$params['-webhook_url']},Running Total: {$params['-webhook_count']}".PHP_EOL);
+			}
+			$post=postJSON($params['-webhook_url'],$payload);
+			
+			$recs=array();
+			
+		}
 	}
 	$data=null;
+	//send last payload to webhook if specified
+	if(isset($params['-webhook_url'])){
+		if(count($recs)){
+			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+			$params['-webhook_count']+=count($recs);
+			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling {$params['-webhook_url']},Running Total: {$params['-webhook_count']}".PHP_EOL);
+			}
+			$post=postJSON($params['-webhook_url'],$payload);
+			
+		}
+		$recs=array();
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			appendFileContents($params['-logfile'],"Total Rows Sent:{$params['-webhook_count']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+		return $params['-webhook_count'];
+	}
+	//close filehandle if -filename was given
 	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
