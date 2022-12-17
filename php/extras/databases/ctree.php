@@ -896,9 +896,9 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	if(!is_object($data)){return null;}
 	$header=0;
 	unset($fh);
+	$starttime=microtime(true);
 	//write to file or return a recordset?
 	if(isset($params['-filename'])){
-		$starttime=microtime(true);
 		if(isset($params['-append'])){
 			//append
     		$fh = fopen($params['-filename'],"ab");
@@ -1027,6 +1027,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		}
 		$recs=array();
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
 			appendFileContents($params['-logfile'],"Total Rows Sent:{$params['-webhook_count']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
 		return $params['-webhook_count'];
