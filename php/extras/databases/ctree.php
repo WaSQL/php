@@ -927,7 +927,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 			$params['-webhook_format']='json';
 		}
 		if(isset($params['-logfile'])){
-			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+			setFileContents($params['-logfile'],$params['-webhook_url'].PHP_EOL.PHP.$query.PHP_EOL.PHP_EOL);
 		}
 	}
 	$rowcount=0;
