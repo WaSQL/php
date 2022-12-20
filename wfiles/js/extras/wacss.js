@@ -162,6 +162,31 @@ var wacss = {
 		}
 		return tag;
 	},
+	checkAllElements: function(att,val,ck){
+	    //info:check/toggle all checkboxes that have an attribute of value
+	    //info: returns number of items checked
+	    //usage: <input type="checkbox" onclick="wacss.checkAllElements('cid','mylist', this.checked);">
+    	let list;
+    	switch(att.toLowerCase()){
+    		case 'class':
+    			list=document.querySelectorAll('input[type="checkbox"].'+val);
+    		break;
+    		case 'id':
+    			list=document.querySelectorAll('input[type="checkbox"]#'+val);
+    		break;
+    		default:
+    			list=document.querySelectorAll('input[type="checkbox"]['+att+'="'+val+'"]');
+    		break;
+    	}
+    	for(let i=0;i<list.length;i++){
+			//process any onclick attribute
+			if(undefined != list[i].dataset.onclick){
+				wacss.simulateEvent(list[i], 'click');
+			}
+			list[i].checked=ck;
+    	}
+		return false;
+   	},
 	copy2Clipboard: function(str,msg){
 		if(undefined==msg){msg='Copy Successful';}
 		const el = document.createElement('textarea');
@@ -357,7 +382,7 @@ var wacss = {
 		popup_title_close.className='icon-close w_red';
 		popup_title_close.style='background:#b5b5b5;padding-right:10px;height:100%;padding-top:5px;cursor:pointer;';
 		popup_title_close.onclick=function(){
-			removeId('geolocationmap_popup');
+			wacss.removeId('geolocationmap_popup');
 		}
 		popup_title.appendChild(popup_title_close);
 		popup.appendChild(popup_title);
@@ -452,7 +477,7 @@ var wacss = {
 			clickdiv.dataset.lat=el.dataset.lat;
 			clickdiv.dataset.lon=el.dataset.lon;
 		}
-		removeId('geolocationmap_popup');
+		wacss.removeId('geolocationmap_popup');
 		return false;
 	},
 	getObject: function(obj){
@@ -3475,6 +3500,12 @@ var wacss = {
 	        element.className = element.className.replace(classToRemove, "");
 	        return;
 	    }
+	},
+	removeId: function(divid){
+		//info: removes specified id
+		let obj=wacss.getObject(divid);
+		return wacss.removeObj(obj);
+	
 	},
 	removeObj: function(obj){
 		//info: removes specified id
