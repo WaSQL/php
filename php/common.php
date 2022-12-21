@@ -16985,11 +16985,13 @@ function postURL($url,$params=array()) {
 * @param url string - URL to post to
 * @param json string - JSON to post
 * @param params array
-*	-user_agent - USER AGENT to pose as
-*	-encoding - charset to set encoding to
-*	-headers - headers to set
-*	-crlf - post using carriage returns for windows servers
-*	-ssl - ignore SSL is set to true
+*	[-user_agent] - USER AGENT to pose as
+*	[-encoding] - charset to set encoding to
+*	[-headers] - headers to set
+*	[-crlf] - post using carriage returns for windows servers
+*	[-ssl] - ignore SSL is set to true
+*	[-timeout]  - The maximum number of seconds to allow cURL functions to execute.
+*	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect.
 * @return array
 * @usage $post=postJSON($url,$json);
 */
@@ -17025,11 +17027,13 @@ function postJSON($url='',$json='',$params=array()) {
 * @param url string - URL to post to
 * @param xml string - XML to post
 * @param params array
-*	-user_agent - USER AGENT to pose as
-*	-encoding - charset to set encoding to
-*	-headers - headers to set
-*	-crlf - post using carriage returns for windows servers
-*	-ssl - ignore SSL is set to true
+*	[-user_agent] - USER AGENT to pose as
+*	[-encoding] - charset to set encoding to
+*	[-headers] - headers to set
+*	[-crlf] - post using carriage returns for windows servers
+*	[-ssl] - ignore SSL is set to true
+*	[-timeout]  - The maximum number of seconds to allow cURL functions to execute.
+*	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect.
 * @return array
 * @usage $post=postXML($url,$xml);
 */
@@ -17071,10 +17075,18 @@ function postBody($url='',$body='',$params=array()) {
 	//init
 	$rtn=array('_debug'=>array(),'body'=>'','headers'=>array());
 	$process = curl_init($url);
-	//user agent
+	//user_agent?
 	if(isset($params['-user_agent'])){
 		//$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
+	}
+	//timeout_connect?
+	if(!isset($params['-timeout_connect'])){
+		curl_setopt($process, CURLOPT_CONNECTTIMEOUT, $params['-timeout_connect'] );
+	}
+	//timeout?
+	if(!isset($params['-timeout'])){
+		curl_setopt($process, CURLOPT_TIMEOUT, $params['-timeout']);
 	}
 	//-follow
 	if(isset($params['-follow'])){
