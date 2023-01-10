@@ -12261,7 +12261,8 @@ function processCSVFileLines($file,$func_name,$params=array()){
 *	[-maxlen] int - max row length. defaults to 1000000
 *	[-separator] char - defaults to ,
 *	[-enclose] char - defaults to "
-*	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
+*	[-fields]  mixed - an array of fields (or comma separated list) for the CSV.  If not specified it will use the first line of the file for field names
+*	[-fieldsmap]  mixed - an array of fields based on the first value in the CSV ROW.this allows for a single csv to have multiple different fields based on teh row.
 *	[-start|skiprows] int - line to start on
 *	[-maxrows|stop]  int - line to stop on
 *	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
@@ -12291,11 +12292,25 @@ function processCSVLines($file,$func_name,$params=array()){
 	}
 	if($fh = fopen_utf8($file,'r')){
 		//get the fields
-		if(isset($params['-fields']) && is_array($params['-fields'])){
-			$fields=$params['-fields'];
+		if(isset($params['-fields'])){
+			if(!is_array($params['-fields'])){
+				$fields=preg_split('/\,/',$params['-fields']);
+			}
+			foreach($params['-fields'] as $k=>$fld){
+				$fields[$k]=trim($fld);
+			}
 		}
 		else{
 			$fields=array();
+		}
+		//fieldsmap?
+		if(isset($params['-fieldsmap'])){
+			foreach($params['-fieldsmap'] as $k=>$v){
+				$k=strtolower($k);
+				if(!is_array($v)){
+					$params['-fieldsmap'][$k]=preg_split('/\,/',$v);
+				}
+			}
 		}
 		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
 			if($bomchecked==0){
@@ -12334,7 +12349,18 @@ function processCSVLines($file,$func_name,$params=array()){
 				if(stringBeginsWith($key,'-')){continue;}
             	$set[$key]=$val;
 			}
-			foreach($fields as $x=>$field){
+			$first_line_val=strtolower($lineparts[0]);
+			if(isset($params['-fieldsmap']) && !isset($params['-fieldsmap'][$first_line_val])){
+				unset($set);
+				continue;
+			}
+			if(isset($params['-fieldsmap']) && isset($params['-fieldsmap'][$first_line_val])){
+				$cfields=$params['-fieldsmap'][$first_line_val];
+			}
+			else{
+				$cfields=$fields;
+			}
+			foreach($cfields as $x=>$field){
 				$set['line'][$field]=$lineparts[$x];
 			}
 			//pass array to function
