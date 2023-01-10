@@ -952,21 +952,23 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 				break;
 			}
 			$key=strtolower($key);
-			$rec[$key]=trim($val);
-			$rec[$key]=preg_replace('/[\r\n]+/',' ', $rec[$key]);
-			$rec[$key]=str_replace(chr(8),'',$rec[$key]);
-			$rec[$key]=trim($val);
-			if(preg_match('/\_(id|rank|number)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
-				//these are integers
-				$rec[$key]=$m[1];
-			}
-			elseif(preg_match('/^(status)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
-				//these are integers
-				$rec[$key]=$m[1];
-			}
-			elseif(preg_match('/\_phone$/i',$key)){
-				//remove anything but numbers, dashes, periods, and plus
-				$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
+			if(is_string($val)){
+				$rec[$key]=trim($val);
+				$rec[$key]=preg_replace('/[\r\n]+/',' ', $rec[$key]);
+				$rec[$key]=str_replace(chr(8),'',$rec[$key]);
+				$rec[$key]=trim($val);
+				if(preg_match('/\_(id|rank|number)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
+					//these are integers
+					$rec[$key]=$m[1];
+				}
+				elseif(preg_match('/^(status)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
+					//these are integers
+					$rec[$key]=$m[1];
+				}
+				elseif(preg_match('/\_phone$/i',$key)){
+					//remove anything but numbers, dashes, periods, and plus
+					$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
+				}
 			}
     	}
     	$rowcount+=1;
