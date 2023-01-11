@@ -1097,8 +1097,8 @@ function mssqlGetDBRecord($params=array()){
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
-*	<?=mssqlGetDBRecords(array('-table'=>'notes'));?>
-*	<?=mssqlGetDBRecords("select * from myschema.mytable where ...");?>
+*	$recs=mssqlGetDBRecords(array('-table'=>'notes'));
+*	$recs=mssqlGetDBRecords("select * from myschema.mytable where ...");
 */
 function mssqlGetDBRecords($params){
 	global $USER;
@@ -1481,7 +1481,7 @@ function mssqlQueryResults($query='',$params=array()){
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		if(!$dbh_mssql){
-			$DATABASE['_lastquery']['error']='connect failed: '.sqlsrv_errors();
+			$DATABASE['_lastquery']['error']=sqlsrv_errors();
 			debugValue($DATABASE['_lastquery']);
 	    	return 0;
 		}
@@ -1489,7 +1489,7 @@ function mssqlQueryResults($query='',$params=array()){
 		$data = sqlsrv_query($dbh_mssql,"SET ANSI_WARNINGS ON");
 		$data = sqlsrv_query($dbh_mssql,$query);
 		if( $data === false ) {
-			$DATABASE['_lastquery']['error']='query failed: '.sqlsrv_errors();
+			$DATABASE['_lastquery']['error']=sqlsrv_errors();
 			debugValue($DATABASE['_lastquery']);
 			return array();
 		}
@@ -1721,7 +1721,7 @@ function mssqlExecuteSQL($query){
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		if(!$dbh_mssql){
-			$DATABASE['_lastquery']['error']='prepare failed: '.sqlsrv_errors();
+			$DATABASE['_lastquery']['error']=sqlsrv_errors();
 			debugValue($DATABASE['_lastquery']);
 	    	sqlsrv_close($dbh_mssql);
 	    	return 0;
@@ -1730,13 +1730,13 @@ function mssqlExecuteSQL($query){
 
 		$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
 		if (!($stmt)){
-			$DATABASE['_lastquery']['error']='prepare failed: '.sqlsrv_errors();
+			$DATABASE['_lastquery']['error']=sqlsrv_errors();
 			debugValue($DATABASE['_lastquery']);
 	    	sqlsrv_close($dbh_mssql);
 	    	return 0;
 	    }
 		if( sqlsrv_execute( $stmt ) === false ) {
-			$DATABASE['_lastquery']['error']='execute failed: '.sqlsrv_errors();
+			$DATABASE['_lastquery']['error']=sqlsrv_errors();
 			debugValue($DATABASE['_lastquery']);
 			sqlsrv_close($dbh_mssql);
 	    	return 0;
