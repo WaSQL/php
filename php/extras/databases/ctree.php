@@ -881,6 +881,7 @@ function ctreeQueryResults($query='',$params=array()){
 	$dbh_ctree=null;
 	$DATABASE['_lastquery']['stop']=microtime(true);
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	//echo "HERE".printValue($recs);exit;
 	return $recs;
 }
 //---------- begin function ctreeEnumQueryResults ----------
@@ -969,6 +970,9 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 					//remove anything but numbers, dashes, periods, and plus
 					$rec[$key]=preg_replace('/[^0-9\.\-\+]/','', $rec[$key]);
 				}
+			}
+			else{
+				$rec[$key]=$val;
 			}
     	}
     	$rowcount+=1;
