@@ -20534,13 +20534,16 @@ function wasqlMail($opts=array(),$debug=0){
 * @describe returns url contents and writes the file locally - like linux wget
 * @param url string - url of file
 * @param localfile string - path and file to write locally
+* @param array optional parameters
+* *	[-authuser] - auth username
+*	[-authpass] - auth password
 * @return string - return url contents
 * @usage 
 * 	list($localfile,$path)=wget($url,$localfile);
 * 	or
 * 	$content=wget($url);
 */
-function wget($url,$localfile=''){
+function wget($url,$localfile='',$params=array()){
 	set_time_limit(0);
 	if(!strlen($localfile)){
 		$content=1;
@@ -20565,6 +20568,13 @@ function wget($url,$localfile=''){
 	curl_setopt($ch, CURLOPT_TIMEOUT, 1200);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	//in a protected directory
+	if(isset($params['-authuser']) && strlen($params['-authuser']) && isset($params['-authpass']) && strlen($params['-authpass'])){
+		//try all possible authentication methods
+		//curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($ch, CURLOPT_USERPWD, "{$params['-authuser']}:{$params['-authpass']}");
+	}
 	// write curl response to file
 	curl_setopt($ch, CURLOPT_FILE, $fp); 
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
