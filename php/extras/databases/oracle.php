@@ -774,7 +774,7 @@ function oracleAddDBRecord($params){
 		if(is_array($params[$k])){
             	$params[$k]=implode(':',$params[$k]);
 		}
-		$bindvars[$k]=':b_'.preg_replace('/[^a-z]/i','',$k);
+		$bindvars[$k]=':b_'.preg_replace('/[^a-z0-9\_]/i','',$k);
 		switch(strtolower($fields[$k]['_dbtype'])){
         	case 'date':
 				if($k=='cdate' || $k=='_cdate'){
