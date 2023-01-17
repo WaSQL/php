@@ -25,47 +25,103 @@ global $mssql;
 $mssql=array();
 //---------- begin function mssqlAddDBRecords--------------------
 /**
-* @describe inserts a record with said id in said table
+* @describe add multiple records into a table - should be called using dbAddRecords
 * @param table string - tablename
 * @param params array - 
 *	[-recs] array - array of records to insert into specified table
 *	[-csv] array - csv file of records to insert into specified table
+*	[-map] array - old/new field map  'old_field'=>'new_field'
 * @return count int
 * @usage $ok=mssqlAddDBRecords('comments',array('-csv'=>$afile);
 * @usage $ok=mssqlAddDBRecords('comments',array('-recs'=>$recs);
 */
 function mssqlAddDBRecords($table='',$params=array()){
+	global $mssqlAddDBRecordsArr;
+	global $mssqlAddDBRecordsResults;
+	$mssqlAddDBRecordsArr=array();
+	$mssqlAddDBRecordsResults=array();
+
 	if(!strlen($table)){
 		return debugValue("mssqlAddDBRecords Error: No Table");
 	}
+	//SQL Server supports a maximum of 2100 parameters
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
-		return debugValue("mssqlAddDBRecords Error: either -csv or -recs is required");
+		$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: either -csv or -recs is required";
+		debugValue($mssqlAddDBRecordsResults['errors']);
+		return 0;
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
-			return debugValue("mssqlAddDBRecords Error: no such file: {$params['-csv']}");
+			$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: no such file: {$params['-csv']}";
+			debugValue($mssqlAddDBRecordsResults['errors']);
+			return 0;
 		}
-		return processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',$params);
+		$afile=$params['-csv'];
+		unset($params['-csv']);
+		$ok=processCSVLines($afile,'mssqlAddDBRecordsCSVLine',$params);
+		if(count($mssqlAddDBRecordsArr)){
+			$mssqlAddDBRecordsResults['counts'][]=mssqlAddDBRecordsProcess($mssqlAddDBRecordsArr,$params);
+			$mssqlAddDBRecordsArr=array();
+		}
+		return array_sum($mssqlAddDBRecordsResults['counts']);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
-			return debugValue("mssqlAddDBRecords Error: no recs");
+			$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: no recs";
+			debugValue($mssqlAddDBRecordsResults['errors']);
+			return 0;
 		}
 		elseif(!count($params['-recs'])){
-			return debugValue("mssqlAddDBRecords Error: no recs");
+			$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: no recs";
+			debugValue($mssqlAddDBRecordsResults['errors']);
+			return 0;
 		}
-		return mssqlAddDBRecordsProcess($params['-recs'],$params);
+		$chunks=array_chunk($params['-recs'], $params['-chunk']);
+		$rtn=array();
+		foreach($chunks as $chunk){
+			$rtn[]=mssqlAddDBRecordsProcess($chunk,$params);
+		}
+		return array_sum($rtn);
+	}
+}
+function mssqlAddDBRecordsCSVLine($line,$params){
+	global $mssqlAddDBRecordsArr;
+	global $mssqlAddDBRecordsResults;
+	//make sure this is not a blank row
+	$vcnt=0;
+	foreach($line['line'] as $k=>$v){
+		if(strlen($v)){
+			$vcnt+=1;
+			break;
+		}
+	}
+	if($vcnt==0){return;}
+	$mssqlAddDBRecordsArr[]=$line['line'];
+	unset($line['line']);
+	if(count($mssqlAddDBRecordsArr) >= (integer)$params['-chunk']){
+		$mssqlAddDBRecordsResults['counts'][]=mssqlAddDBRecordsProcess($mssqlAddDBRecordsArr,$params);
+		$mssqlAddDBRecordsArr=array();
 	}
 }
 function mssqlAddDBRecordsProcess($recs,$params=array()){
+	global $USER;
+	global $dbh_mssql;
+	global $DATABASE;
+	global $mssqlAddDBRecordsResults;
 	if(!isset($params['-table'])){
-		return debugValue("mssqlAddDBRecordsProcess Error: no table"); 
+		$err="mssqlAddDBRecordsProcess Error: no table";
+		$mssqlAddDBRecordsResults['errors'][]=$err;
+		return 0;
 	}
+	$rec_cnt=count($recs);
 	$table=$params['-table'];
 	$fieldinfo=mssqlGetDBFieldInfo($table,1);
+	if(!is_array($fieldinfo) || !count($fieldinfo)){
+		echo "no table fields for {$table}. Does table exist?";exit;
+	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -87,77 +143,145 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	$fieldstr=implode(',',$fields);
-	//values
+	//build values, types and valuesets
 	$values=array();
+	$types=array();
+	$valuesets=array();
+	$chunks=array();
+	//SQL Server supports a maximum of 2100 parameters
+	//2000 divided by number of fields is the max chunk size
+	$maxchunk=floor(2000/count($fields));
+	$parameters_count=0;
 	foreach($recs as $i=>$rec){
+		$placeholders=array();
 		foreach($rec as $k=>$v){
 			if(!in_array($k,$fields)){
-				unset($rec[$k]);
+				//unset($rec[$k]);
 				continue;
 			}
 			if(!strlen($v)){
-				$rec[$k]='NULL';
+				//$rec[$k]='NULL';
+				$values[]='NULL';
+				$placeholders[]='N?';
 			}
 			else{
-				$v=mssqlEscapeString($v);
-				$rec[$k]="'{$v}'";
+				switch($fieldinfo[$k]['_dbtype']){
+					case 'datetime':
+						$v=date('Y-m-d H:i:s',strtotime($v));
+					break;
+					case 'date':
+						$v=date('Y-m-d',strtotime($v));
+					break;
+					case 'time':
+						$v=date('H:i:s',strtotime($v));
+					break;
+				}
+				$values[]=trim($v);
+				$placeholders[]='?';
 			}
+			$types[]='s';
 		}
-		$values[]='('.implode(',',array_values($rec)).')';
+		$valuesets[]='('.implode(',',$placeholders).')';
+		$parameters_count+=count($placeholders);
+		if($parameters_count >= $maxchunk){
+			$chunks[]=array(
+				'valuesets'=>$valuesets,
+				'values'=>$values
+			);
+			$values=array();
+			$valuesets=array();
+			$parameters_count=0;
+		}
 	}
-	if(isset($params['-upsert']) && isset($params['-upserton'])){
-		if(!is_array($params['-upsert'])){
-			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+	$chunks[]=$chunks[]=array(
+		'valuesets'=>$valuesets,
+		'values'=>$values
+	);
+	//echo $maxchunk.printValue($chunks[0]).count($chunks);exit;
+	foreach($chunks as $chunk){
+		$valuesets=$chunk['valuesets'];
+		$values=$chunk['values'];
+		$valuesets_str=implode(','.PHP_EOL,$valuesets);
+		//echo printValue($params);exit;
+		//upsert and upserton?
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			if(!is_array($params['-upsert'])){
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+			if(!is_array($params['-upserton'])){
+				$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+			}
+			$query="MERGE INTO {$table} AS target USING ( VALUES".PHP_EOL;
+			$query.=implode(','.PHP_EOL,$valuesets).PHP_EOL;
+			$query.=") AS source".PHP_EOL;
+			$query.="({$fieldstr}) ON ".PHP_EOL;
+			$onflds=array();
+			foreach($params['-upserton'] as $fld){
+				$onflds[]="target.{$fld}=source.{$fld}";
+			}
+			$query .= implode(' AND ',$onflds).PHP_EOL;
+
+			$query.="WHEN NOT MATCHED BY TARGET THEN".PHP_EOL;
+			$query.="INSERT ({$fieldstr}) VALUES (".PHP_EOL;
+			$flds=array();
+			foreach($fields as $fld){
+				$flds[]="source.{$fld}";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+			$query .= ');';
 		}
-		if(!is_array($params['-upserton'])){
-			$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+		else{
+			$query="INSERT INTO {$table} ({$fieldstr}) VALUES".PHP_EOL;
+			$query.=implode(','.PHP_EOL,$valuesets).PHP_EOL;
 		}
-		/*
-			MERGE INTO Sales.SalesReason AS Target  
-			USING (VALUES ('Recommendation','Other'), ('Review', 'Marketing'),
-			              ('Internet', 'Promotion'))  
-			       AS Source (NewName, NewReasonType)  
-			ON Target.Name = Source.NewName  
-			WHEN MATCHED THEN  
-			UPDATE SET ReasonType = Source.NewReasonType  
-			WHEN NOT MATCHED BY TARGET THEN  
-			INSERT (Name, ReasonType) VALUES (NewName, NewReasonType)
-		*/
-		$query="MERGE INTO {$table} T1 USING ( VALUES ".PHP_EOL;
-		$query.=implode(','.PHP_EOL,$values);
-		$query.=') T2 ON ( ';
-		$onflds=array();
-		foreach($params['-upserton'] as $fld){
-			$onflds[]="T1.{$fld}=T2.{$fld}";
+		$dbh_mssql=mssqlDBConnect($params);
+		//echo $query.PHP_EOL;
+		//echo "dbh_mssql".printValue($dbh_mssql);
+		$stmt = sqlsrv_prepare($dbh_mssql, $query,$values);
+		//echo "stmt".printValue($stmt);
+		if (!($stmt)){
+			$errors=(array)sqlsrv_errors();
+			sqlsrv_close($dbh_mssql);
+			//echo printValue($errors[0]['message']);exit;
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlAddDBRecordsProcess',
+					'message'=>'prepare failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
+	    	return 0;
+	    }
+		if( sqlsrv_execute($stmt) === false ) {
+			$errors=(array)sqlsrv_errors();
+			sqlsrv_close($dbh_mssql);
+			//echo printValue($errors[0]['message']);exit;
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlAddDBRecordsProcess',
+					'message'=>'execute failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
+	    	return 0;
 		}
-		$query .= implode(' AND ',$onflds).PHP_EOL;
-		$query .= ') WHEN MATCHED THEN UPDATE SET ';
-		$flds=array();
-		foreach($params['-upsert'] as $fld){
-			$flds[]="T1.{$fld}=T2.{$fld}";
-		}
-		$query.=PHP_EOL.implode(', ',$flds);
-		if(isset($params['-upsertwhere'])){
-			$query.=" WHERE {$params['-upsertwhere']}";
-		}
-		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
-		$flds=array();
-		foreach($params['-upsert'] as $fld){
-			$flds[]="T2.{$fld}";
-		}
-		$query.=PHP_EOL.implode(', ',$flds);
-		$query .= ')';
 	}
-	else{
-		$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
-		$query.=implode(','.PHP_EOL,$values);
-	}
-	//echo $query;exit;
-	$ok=mssqlExecuteSQL($query);
-	if(isset($params['-debug'])){
-		return printValue($ok).$query;
-	}
-	return count($values);
+	
+	$DATABASE['_lastquery']['stop']=microtime(true);
+	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+	return $rec_cnt;
 }
 //---------- begin function mssqlAlterDBTable--------------------
 /**
@@ -776,106 +900,6 @@ function mssqlDBConnect($params=array()){
 		exit;
 	}
 }
-//---------- begin function mssqlAddDBRecords ----------
-/**
-* @describe add multiple records at the same time using json_table.
-*  if cdate, and cuser exists as fields then they are populated with the create date and create username
-* @param $params array - These can also be set in the CONFIG file with dbname_mssql,dbuser_mssql, and dbpass_mssql
-*   -table - name of the table to add to
-*   -list - list of records to add. Recommended list size in 500~1000 so that you keep the memory footprint small
-*	[-dateformat] - string- format of date field values. defaults to 'YYYY-MM-DD HH24:MI:SS'
-*	[-host] - mssql server to connect to
-* 	[-dbname] - name of ODBC connection
-* 	[-dbuser] - username
-* 	[-dbpass] - password
-* 	other field=>value pairs to add to the record
-* @return boolean
-* @usage $ok=mssqlAddDBRecords(array('-table'=>'abc','-list'=>$list));
-* @reference https://docs.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-2017
-*/
-function mssqlAddDBRecords_old($params=array()){
-	if(!isset($params['-table'])){
-		debugValue(array(
-    		'function'=>"mssqlAddDBRecords",
-    		'error'=>'No table specified'
-    	));
-    	return false;
-    }
-    if(!isset($params['-list']) || !is_array($params['-list'])){
-		debugValue(array(
-    		'function'=>"mssqlAddDBRecords",
-    		'error'=>'No records (list) specified'
-    	));
-    	return false;
-    }
-    //defaults
-    if(!isset($params['-dateformat'])){
-    	$params['-dateformat']='YYYY-MM-DD HH24:MI:SS';
-    }
-	$j=array("items"=>$params['-list']);
-    $json=json_encode($j);
-    $info=mssqlGetDBFieldInfo($params['-table']);
-    $fields=array();
-    $jfields=array();
-    $defines=array();
-    foreach($recs[0] as $field=>$value){
-    	if(!isset($info[$field])){continue;}
-    	$fields[]=$field;
-    	switch(strtolower($info[$field]['_dbtype'])){
-    		case 'timestamp':
-    		case 'date':
-    			//date types have to be converted into a format that mssql understands
-    			$jfields[]="to_date(substr({$field},1,19),'{$params['-dateformat']}' ) as {$field}";
-    		break;
-    		default:
-    			$jfields[]=$field;
-    		break;
-    	}
-    	$defines[]="{$field} varchar PATH '\$.{$field}'";
-    }
-    if(!count($fields)){return 'No matching Fields';}
-    $fieldstr=implode(',',$fields);
-    $jfieldstr=implode(',',$jfields);
-    $definestr=implode(','.PHP_EOL,$defines);
-    $query .= <<<ENDOFQ
-    INSERT INTO {$params['-table']}
-    	({$fieldstr})
-    SELECT 
-    	{$jfieldstr}
-	FROM OPENJSON(
-		?
-		, '\$.items'
-		WITH (
-			{$definestr}
-		)
-	)
-ENDOFQ;
-	$dbh_mssql=mssqlDBConnect($params);
-	$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
-	if (!($stmt)){
-    	debugValue(array(
-    		'function'=>"mssqlAddDBRecords",
-    		'connection'=>$dbh_mssql,
-    		'action'=>'oci_parse',
-    		'mssql_error'=>sqlsrv_errors(),
-    		'query'=>$query
-    	));
-    	oci_close($dbh_mssql);
-    	return false;
-    }
-	if( sqlsrv_execute( $stmt ) === false ) {
-		debugValue(array(
-    		'function'=>"mssqlAddDBRecords",
-    		'connection'=>$dbh_mssql,
-    		'action'=>'oci_execute',
-    		'stmt'=>$stmt,
-    		'mssql_error'=>sqlsrv_errors(),
-    		'query'=>$query
-    	));
-    	return false;
-	}
-	return true;
-}
 //---------- begin function mssqlAddDBRecord ----------
 /**
 * @describe adds a records from params passed in.
@@ -1481,16 +1505,41 @@ function mssqlQueryResults($query='',$params=array()){
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		if(!$dbh_mssql){
-			$DATABASE['_lastquery']['error']=sqlsrv_errors();
-			debugValue($DATABASE['_lastquery']);
+			$errors=(array)sqlsrv_errors();
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlQueryResults',
+					'message'=>'connect failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
 	    	return 0;
 		}
 		$data = sqlsrv_query($dbh_mssql,"SET ANSI_NULLS ON");
 		$data = sqlsrv_query($dbh_mssql,"SET ANSI_WARNINGS ON");
 		$data = sqlsrv_query($dbh_mssql,$query);
 		if( $data === false ) {
-			$DATABASE['_lastquery']['error']=sqlsrv_errors();
-			debugValue($DATABASE['_lastquery']);
+			$errors=(array)sqlsrv_errors();
+			sqlsrv_close($dbh_mssql);
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlQueryResults',
+					'message'=>'query failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
 			return array();
 		}
 		if(preg_match('/^insert /i',$query)){
@@ -1510,8 +1559,20 @@ function mssqlQueryResults($query='',$params=array()){
 		return $results;
 	}
 	if(!$dbh_mssql){
-		$DATABASE['_lastquery']['error']='connect failed: '.mssql_get_last_message();
-		debugValue($DATABASE['_lastquery']);
+		$errors=(array)sqlsrv_errors();
+		if(isset($errors[0]['message'])){
+			$errors=array(
+				'function'=>'mssqlQueryResults',
+				'message'=>'connect failed',
+				'error'=>$errors[0]['message'],
+				'query'=>$query,
+				'values'=>$values
+			);
+			debugValue($errors);
+		}
+		else{
+			debugValue($errors);
+		}
     	return 0;
 	}
 	mssql_query("SET ANSI_NULLS ON",$dbh_mssql);
@@ -1721,34 +1782,83 @@ function mssqlExecuteSQL($query){
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		if(!$dbh_mssql){
-			$DATABASE['_lastquery']['error']=sqlsrv_errors();
-			debugValue($DATABASE['_lastquery']);
-	    	sqlsrv_close($dbh_mssql);
+			$errors=(array)sqlsrv_errors();
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlExecuteSQL',
+					'message'=>'connect failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
 	    	return 0;
 	    }
 		$dbh_mssql=mssqlDBConnect();
 
 		$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
 		if (!($stmt)){
-			$DATABASE['_lastquery']['error']=sqlsrv_errors();
-			debugValue($DATABASE['_lastquery']);
-	    	sqlsrv_close($dbh_mssql);
+			$errors=(array)sqlsrv_errors();
+			sqlsrv_close($dbh_mssql);
+			//echo printValue($errors[0]['message']);exit;
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlExecuteSQL',
+					'message'=>'prepare failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
 	    	return 0;
 	    }
 		if( sqlsrv_execute( $stmt ) === false ) {
-			$DATABASE['_lastquery']['error']=sqlsrv_errors();
-			debugValue($DATABASE['_lastquery']);
+			$errors=(array)sqlsrv_errors();
 			sqlsrv_close($dbh_mssql);
+			//echo printValue($errors[0]['message']);exit;
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlExecuteSQL',
+					'message'=>'execute failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
 	    	return 0;
 		}
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return 1;
 	}
+	//for old versions
 	if(!$dbh_mssql){
-		$DATABASE['_lastquery']['error']='connect failed: '.mssql_get_last_message();
-		debugValue($DATABASE['_lastquery']);
-		mssql_close($dbh_mssql);
+		$errors=(array)sqlsrv_errors();
+		if(isset($errors[0]['message'])){
+			$errors=array(
+				'function'=>'mssqlExecuteSQL',
+				'message'=>'connect failed',
+				'error'=>$errors[0]['message'],
+				'query'=>$query,
+				'values'=>$values
+			);
+			debugValue($errors);
+		}
+		else{
+			debugValue($errors);
+		}
     	return 0;
 	}
 	try{
