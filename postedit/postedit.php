@@ -302,6 +302,7 @@ function writeFiles(){
 		$msg=str_replace('&lt;','<',$msg);
 		abortMessage($msg);
 	}
+	//echo $post['body'];exit;
 	//convert xml to array
 	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
@@ -330,12 +331,14 @@ function writeFiles(){
 		$rec=(array)$rec;
 		$info=$rec['@attributes'];
 		unset($rec['@attributes']);
+		$json_fields=array();
+		if(isset($info['json_fields'])){
+			$json_fields=preg_split('/\,/',$info['json_fields']);
+		}
 		foreach($rec as $name=>$content){
 	    	if(!strlen(trim($content))){continue;}
-	    	//determine extension
-	    	$parts=preg_split('/\_/',ltrim($name,'_'),2);
-	    	//echo $name.printValue($parts);
-	    	$field=array_pop($parts);
+	    	$field=str_replace("{$info['table']}_",'',$name);
+	    	//echo "Name: {$name}, field: {$field}";exit;
 	    	//name
 	    	$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
 	    	$name=trim($name);
@@ -370,6 +373,9 @@ function writeFiles(){
 	        		$type='views';
 	        	break;
 			}
+			if(in_array($field,$json_fields)){
+	    		$ext='json';
+	    	}
 	    	//path
 	    	$path="{$postedit['afolder']}/{$info['table']}";
 	    	switch(strtolower($postedit['groupby'])){

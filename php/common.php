@@ -16481,35 +16481,72 @@ function postEditXmlFromJson($json=array()){
 		$finfo=getDBFieldInfo($table,1);
 		//continue;
 		//skip tables that do not have a name as a field
-		if(!isset($finfo['name'])){continue;}
+		$name='';
+		if(isset($finfo['name'])){
+			$name="name";
+		}
+		elseif(isset($finfo['item_name'])){
+			$name="item_name";
+			$finfo['name']=$finfo[$name];
+		}
+		elseif(isset($finfo['title'])){
+			$name="title";
+			$finfo['name']=$finfo[$name];
+		}
+		elseif(isset($finfo['sku'])){
+			$name="sku";
+			$finfo['name']=$finfo[$name];
+		}
+		elseif(isset($finfo['code']) && stringContains($finfo['code']['_dbtype'],'char')){
+			$name="code";
+			$finfo['name']=$finfo[$name];
+		}
+		if(!strlen($name)){
+			continue;
+		}
 		$fields=array();
 		foreach($finfo as $field=>$info){
+			if($field==$name){continue;}
 			if(isWasqlField($field)){continue;}
-			if(preg_match('/^(template|name|css_min|js_min)$/i',$field)){continue;}
-			if((isset($info['inputtype']) && strlen($info['inputtype']) && $info['inputtype'] == 'textarea') || $info['_dbtype']=='blob'){
+			if(preg_match('/^(template|css_min|js_min)$/i',$field)){continue;}
+			if((isset($info['inputtype']) && strlen($info['inputtype']) && $info['inputtype'] == 'textarea') || in_array($info['_dbtype'],array('blob','json','text'))){
 				$fields[]=$field;
 			}
 		}
+		if(!count($fields)){
+			continue;
+		}
 		$fieldstr=implode(',',$fields);
-		$q="select _id,_cdate,_cuser,_edate,_euser,name,{$fieldstr} from {$table}";
+		$q="select _id,_cdate,_cuser,_edate,_euser,{$name} as name,{$fieldstr} from {$table}";
 		switch(strtolower($table)){
 			case '_prompts':
 				$q.=" where _cuser={$USER['_id']}";
 			break;
 		}
 		$recs=getDBRecords($q);
+		//echo $q;exit;
 		if(!is_array($recs)){continue;}
 		$recs_count=count($recs);
 		//build the xml for these records
+		//echo printValue($finfo);exit;
+		$json_fields=array();
 		foreach($recs as $rec){
 			$id=$rec['_id'];
 			$recxml='';
 			foreach($rec as $field=>$val){
 				$val=trim($val);
 				if(isWasqlField($field) || $field=='name' || !strlen($val)){continue;}
+				if($finfo[$field]['_dbtype']=='json'){
+					$arr=json_decode($val,true);
+					if(is_array($arr)){
+						$val=json_encode($arr,JSON_PRETTY_PRINT);
+						$json_fields[]=$field;
+					}
+				}
 				$val=encodeBase64($val);
 				$recxml .= "		<{$table}_{$field}>{$val}</{$table}_{$field}>".PHP_EOL;
 			}
+			//exit;
 			//skip records that have not changed
 			if(!strlen($recxml)){continue;}
 			$atts=array(
@@ -16518,7 +16555,9 @@ function postEditXmlFromJson($json=array()){
 				'_id'	=> $rec['_id'],
 				'name'	=> $rec['name'],
 			);
-
+			if(count($json_fields)){
+				$atts['json_fields']=implode(',',$json_fields);
+			}
 			/* JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
             if(strlen($rec['_edate']) && isNum($rec['_euser']) && isset($edit_users[$rec['_euser']])){
             	foreach($edit_users[$rec['_euser']] as $k=>$v){
