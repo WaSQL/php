@@ -48,7 +48,8 @@ if(!$sel){
 $recs=getDBRecords(array('-table'=>'_config','-fields'=>'name,current_value'));
 if(isset($recs[0])){
 	foreach($recs as $rec){
-		if(!strlen(trim($rec['current_value']))){continue;}
+		if(is_null($rec['current_value']) || !strlen(trim($rec['current_value']))){continue;}
+		if(is_null($rec['name']) || !strlen(trim($rec['name']))){continue;}
 		$key=strtolower(trim($rec['name']));
 		$CONFIG[$key]=trim($rec['current_value']);
 	}
@@ -195,6 +196,9 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 	global $dbh_msexcel;
 	global $dbh_mscsv;
 	global $dbh_firebird;
+	if(is_null($db)){
+		return "Invalid  db: null";
+	}
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -373,6 +377,9 @@ function dbConnect($db,$params=array()){
 	global $dbh_sqlite;
 	global $dbh_ctree;
 	global $dbh_msaccess;
+	if(is_null($db)){
+		return "Invalid  db: null";
+	}
 	$db=strtolower(trim($db));
 	if(!isset($DATABASE[$db])){
 		return "Invalid db: {$db}";
@@ -1849,7 +1856,12 @@ function databaseListRecords($params=array()){
 		//loop through each row 
 		foreach($params['-list'] as $rec){
 			$crow=$params['-listview'];	
+			//return printValue($rec);
 			foreach($rec as $cfield=>$cvalue){
+				if(is_array($cvalue)){
+					$cvalue=json_encode($cvalue);
+				}
+				if(!is_string($cvalue)){continue;}
 				$crow=str_replace("[{$cfield}]", $cvalue, $crow);
 			}
 			$rtn .= $crow.PHP_EOL;
