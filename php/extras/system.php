@@ -150,9 +150,21 @@ function systemGetDriveSpace(){
 	}
 	//figure out use% with a bar graph
 	foreach($recs as $i=>$rec){
-		$recs[$i]['used']=$rec['size']-$rec['available'];
-		$pcnt=round(($recs[$i]['used']/$rec['size'])*100,0);
-		$pcntstr='<div class="w_right">'.$pcnt.'%</div>';
+		$rec['size']=(integer)$rec['size'];
+		if($rec['size'] == 0){
+			unset($recs[$i]);
+			continue;
+		}
+		$rec['available']=(integer)$rec['available'];
+		$rec['used']=$recs[$i]['used']=$rec['size']-$rec['available'];
+		if($rec['size'] >0){
+			$pcnt=round(($recs[$i]['used']/$rec['size'])*100,0);
+			$pcntstr='<div class="w_right">'.$pcnt.'%</div>';
+		}
+		else{
+			$pcnt=0;
+			$pcntstr='';
+		}
 		//add bar
 		$bgcolor='#17a2b8';
 		if($pcnt > 75){

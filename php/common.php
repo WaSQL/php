@@ -10388,7 +10388,7 @@ function exportFile2Array($file=''){
 */
 function fileExplorer($startdir='',$param=array()){
 	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
-	if(!is_dir($startdir)){return "${startdir} does not exist";}
+	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	$rtn='';
 	return $rtn;
 

@@ -288,12 +288,13 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$mysqlAddDBRecordsResults['errors'][]=mysqli_connect_error();
     	return 0;
 	}
-	$stmt=mysqli_prepare($dbh_mysql,$query);
-	if(!$stmt){
+	try{$stmt=mysqli_prepare($dbh_mysql,$query);}
+	catch (Exception $e) {
 		$err=array(
 			'status'=>"Mysqli Prepare ERROR",
 			'function'=>'importProcessCSVRecs',
 			'error'=> mysqli_error($dbh_mysql),
+			'exception'=>$e,
 			'query'=>$query,
 			'params'=>$params
 		);

@@ -6390,7 +6390,6 @@ function buildDBPaging($paging=array()){
 			$rtn .= buildOnLoad("document.{$formname}._search.focus();");
 		}
 	}
-	//$rtn .= printValue($_REQUEST);
 	return $rtn;
 	}
 //---------- begin function buildDBProgressChart
@@ -6861,14 +6860,12 @@ function optimizeDB(){
 *	treats other params as field/value pairs to edit
 * @return array
 * @usage
-*	<?php
 *	$ok=editDBRecord(array(
 *		'-table'	=> 'notes',
 *		'-where'	=> "_id=3",
 *		'title'		=> 'Test Note Title',
 *		'category'	=> 'QA'
 *	));
-*	?>
 */
 function editDBRecord($params=array(),$id=0,$opts=array()){
 	if(isPostgreSQL()){return postgresqlEditDBRecord($params,$id,$opts);}
@@ -8905,7 +8902,7 @@ function getDBFieldInfo($table='',$getmeta=0,$field='',$force=0){
 		 }
 		 $info[$key]['flags']=$info[$key]['_dbflags']=implode(' ',$flags);
 		 //default
-		 if(strlen($rec['default'])){
+		 if(isset($rec['default']) && strlen($rec['default'])){
 		 	$info[$key]['_dbdef']=$info[$key]['default']=$rec['default'];
 		 	if(isNum($rec['default'])){
 		 		$info[$key]['_dbtype_ex'] .= " Default {$rec['default']}";
@@ -10142,8 +10139,8 @@ function getDBRecords($params=array()){
 			foreach($fields as $field){
 				//skip field if it is not a valid field or if it is a -norelate field
 				if(!isset($xinfo[$field]) || !is_array($xinfo[$field]) || in_array($field,$skipfields)){continue;}
-				$tvals=trim($xinfo[$field]['tvals']);
-				$dvals=trim($xinfo[$field]['dvals']);
+				$tvals=isset($xinfo[$field]['tvals'])?trim($xinfo[$field]['tvals']):'';
+				$dvals=isset($xinfo[$field]['dvals'])?trim($xinfo[$field]['dvals']):'';
 				if(preg_match('/(select|checkbox)/i',$xinfo[$field]['inputtype']) && strlen($tvals) && strlen($dvals) && !preg_match('/^select/i',$tvals)){
                 	//simple select list - not a query
                 	$tmap=array();
@@ -12020,15 +12017,27 @@ function databasePrimaryKeyFieldString(){
 function databaseQuery($query){
 	//Free result memory - supports multiple database types
 	global $dbh;
-	if(isMysqli()){return mysqli_query($dbh,$query);}
-	elseif(isMysql()){return mysql_query($query);}
+	if(isMysqli()){
+		try{return mysqli_query($dbh,$query);}
+		catch (Exception $e) {return null;}
+	}
+	elseif(isMysql()){
+		try{return mysql_query($query);}
+		catch (Exception $e) {return null;}
+	}
 	elseif(isOracle()){
 		$stid=oci_parse($dbh,$query);
 		oci_execute($stid, OCI_DEFAULT);
 		return $stid;
 	}
-	elseif(isPostgreSQL()){return pg_query($dbh,$query);}
-	elseif(isMssql()){return mssql_query($query);}
+	elseif(isPostgreSQL()){
+		try{return pg_query($dbh,$query);}
+		catch (Exception $e) {return null;}
+	}
+	elseif(isMssql()){
+		try{return mssql_query($query);}
+		catch (Exception $e) {return null;}
+	}
 	elseif(isSqlite()){
 		global $dbh_sqlite;
 		if(!$dbh_sqlite){

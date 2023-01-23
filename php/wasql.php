@@ -734,8 +734,7 @@ function minifyFilename($ext=''){
 * 	if 2 is entered, returns a compressed version of the file.
 * @return string
 * @usage
-* 	<link type="text/css" rel="stylesheet" src="<?=minifyCssFile();?>">
-* 	<link type="text/css" rel="stylesheet" src="/php/minify_css.php?abc123">
+* 	minifyCssFile()
 * @history
 *      - bbarten 2013-10-24 added documentation
 */
@@ -799,8 +798,7 @@ function minifyCssFile($v=''){
 * 	if 2 is entered, returns a compressed version of the file.
 * @return string
 * @usage
-*	<script type="text/js" src="<?=minifyJsFile();?>"></script>
-*	returns =  <script type="text/js" src="/php/minify_js.php?abc123">
+*	minifyJsFile
 * @history
 *	bbarten 2013-10-24 added documentation
 */
@@ -1016,7 +1014,7 @@ function wasqlUpdateCheck(){
 */
 function attachManager($startdir='',$params=array()){
 	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
-	if(!is_dir($startdir)){return "${startdir} does not exist";}
+	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	global $PAGE;
 	if($_REQUEST['ajax_amsf']){
 		return attachManagerShowFiles($startdir,$params);
@@ -1119,7 +1117,7 @@ function attachManagerAttachFiles($startdir='',$params=array()){
 */
 function attachManagerShowFiles($startdir='',$params=array()){
 	if(!strlen($startdir)){$startdir=$_SERVER['DOCUMENT_ROOT'];}
-	if(!is_dir($startdir)){return "${startdir} does not exist";}
+	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	if(!isset($params['attach_div'])){$params['attach_div']="attachmanager_attachfiles";}
 	global $PAGE;
 	$progpath=dirname(__FILE__);
@@ -1408,7 +1406,7 @@ function wasqlGetBehaviors($d=0){
 * @param showtype - 1=show (dbtype) after name
 * @return
 *	list of valid database tags separated by carriage return.
-* @usage <?=wasqlGetDatabases(1);?>
+* @usage wasqlGetDatabases(1);
 */
 function wasqlGetDatabases($d=0,$arr=0,$showtype=0){
 	global $DATABASE;
@@ -1442,7 +1440,7 @@ function wasqlGetDatabases($d=0,$arr=0,$showtype=0){
 *	if true returns the display values, other wise returns the true values
 * @return
 *	list of valid WaSQL input types separated by carriage return. Used in _fielddata
-* @usage <?=wasqlGetInputtypes(true);?>
+* @usage wasqlGetInputtypes(true)
 */
 function wasqlGetInputtypes($d=0){
 	//"checkbox\r\ncolor\r\ncombo\r\ndate\r\ndatetime\r\nfile\r\nformula\r\nhidden\r\n
@@ -1499,7 +1497,7 @@ function wasqlGetInputtypes($d=0){
 *	if true returns the display values, other wise returns the true values
 * @return
 *	list of valid WaSQL input masks separated by carriage return. Used in _fielddata
-* @usage <?=wasqlGetMasks(true);?>
+* @usage wasqlGetMasks(true)
 */
 function wasqlGetMasks($d=0){
 	//'alpha,alphanumeric,email,hexcolor,integer,decimal,number,phone,time,ssn,zipcode',
@@ -1530,7 +1528,7 @@ function wasqlGetMasks($d=0){
 *	country code. defaults to US
 * @return
 *	list of states separated by carriage return. Used in _fielddata
-* @usage <?=wasqlGetStates(true,'US');?>
+* @usage wasqlGetStates(true,'US')
 */
 function wasqlGetStates($d=0,$country='US'){
 	//see if they have passed in country
@@ -1575,7 +1573,7 @@ function wasqlGetStates($d=0,$country='US'){
 *	an array of country codes to place first in the list for easier access. Defaults to array('US','CA')
 * @return
 *	list of countries separated by carriage return. Used in _fielddata
-* @usage <?=wasqlGetCountries(true);?>
+* @usage wasqlGetCountries(true)
 */
 function wasqlGetCountries($d=0,$pre=array('US','CA')){
 	//get countries
