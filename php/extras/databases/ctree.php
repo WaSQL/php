@@ -958,7 +958,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 				$rec[$key]=preg_replace('/[\r\n]+/',' ', $rec[$key]);
 				$rec[$key]=str_replace(chr(8),'',$rec[$key]);
 				$rec[$key]=trim($val);
-				if(preg_match('/\_(id|rank|number)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
+				if(preg_match('/\_(id|rank)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
 					//these are integers
 					$rec[$key]=$m[1];
 				}
