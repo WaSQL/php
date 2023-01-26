@@ -47,9 +47,14 @@ function eventProcessBuildOnLoad(){
 		if(undefined != list[i].getAttribute('data-onload-ex')){continue;}
 		let str=list[i].getAttribute('data-onload');
 		list[i].setAttribute('data-onload-ex',new Date().getTime());
-		//console.log(str);
-		let strfunc=new Function(str);
-		strfunc();
+		try{
+			let strfunc=new Function(str);
+			strfunc();
+		} catch (error) {
+			console.log('eventProcessBuildOnLoad Error');
+			console.log(str);
+			console.log(error);
+		}
 	}
 }
 

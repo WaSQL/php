@@ -17628,6 +17628,7 @@ function processInlineImage($img,$fld='inline'){
 function processInlineFiles(){
 	foreach($_REQUEST as $key=>$val){
     	if(isset($_REQUEST["{$key}_base64"])){
+    		//echo "processInlineFiles".printValue($_REQUEST);exit;
     		//$_REQUEST["{$key}_base64_debug"]['processInlineFiles']=1;
         	$path=isset($_REQUEST["{$key}_path"])?$_REQUEST["{$key}_path"]:"/files/{$key}";
         	$apath="{$_SERVER['DOCUMENT_ROOT']}/{$path}";

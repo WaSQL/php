@@ -569,7 +569,6 @@ async function formRecorderAudio(el){
     }
 }
 function setInputFileName(fld){
-	//console.log(fld.files);
 	let multiple=0;
 	if(fld.multiple){multiple=1;}
 	let label=document.querySelector('label[for='+fld.id+']');
@@ -580,7 +579,7 @@ function setInputFileName(fld){
 	}
 	if(undefined == fld.files || fld.files.length==0){
 		setText(labeltxt,labeltxt.dataset.text);
-		return;
+		return true;
 	}
 	if(multiple==0){
 		setText(labeltxt,'');
