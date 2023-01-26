@@ -96,7 +96,10 @@ function mysqlAddDBRecords($table='',$params=array()){
 			$mysqlAddDBRecordsResults['counts'][]=mysqlAddDBRecordsProcess($mysqlAddDBRecordsArr,$params);
 			$mysqlAddDBRecordsArr=array();
 		}
-		return array_sum($mysqlAddDBRecordsResults['counts']);
+		if(is_array($mysqlAddDBRecordsResults['counts'])){
+			return array_sum($mysqlAddDBRecordsResults['counts']);
+		}
+		return 0;
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
@@ -301,10 +304,24 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$mysqlAddDBRecordsResults['errors'][]=$err;
 		return 0;
 	}
-	mysqli_stmt_bind_param($stmt, implode('',$types),...$values);
-	mysqli_stmt_execute($stmt);
-	mysqli_close($stmt);
-	return $rec_cnt;
+	try{
+		mysqli_stmt_bind_param($stmt, implode('',$types),...$values);
+		mysqli_stmt_execute($stmt);
+		mysqli_close($dbh_mysql);
+		return $rec_cnt;
+	}
+	catch (Exception $e) {
+		$err=array(
+			'status'=>"Mysqli Execute ERROR",
+			'function'=>'importProcessCSVRecs',
+			'error'=> mysqli_error($dbh_mysql),
+			'exception'=>$e,
+			'query'=>$query,
+			'params'=>$params
+		);
+		$mysqlAddDBRecordsResults['errors'][]=$err;
+		return 0;
+	}
 }
 //---------- begin function mysqlGetDDL ----------
 /**
@@ -1215,8 +1232,8 @@ function mysqlGetDBQuery($params=array()){
 *	[-filter] string - string to add to where clause
 * @return array - set of records
 * @usage
-*	<?=mysqlGetDBRecords(array('-table'=>'notes'));?>
-*	<?=mysqlGetDBRecords("select * from myschema.mytable where ...");?>
+*	mysqlGetDBRecords(array('-table'=>'notes'))
+*	mysqlGetDBRecords("select * from myschema.mytable where ...")
 */
 function mysqlGetDBRecords($params){
 	global $USER;

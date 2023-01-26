@@ -97,7 +97,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	$fieldstr=implode(',',$fields);
 	//keep prepared statement markers under 20000
 	$fieldcount=count($fields);
-	$maxchunksize=ceil(20000/$fieldcount);
+	$maxchunksize=ceil(18000/$fieldcount);
 	if(!isset($params['-chunk'])){
 		$params['-chunk']=$maxchunksize;
 	}
