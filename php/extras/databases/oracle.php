@@ -93,6 +93,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 				$rec[$k]="'{$v}'";
 			}
 		}
+		if(!count($rec)){continue;}
 		$recstr=implode(',',array_values($rec));
 		$values[]="select {$recstr} from dual";
 	}
