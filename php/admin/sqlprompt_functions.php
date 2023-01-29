@@ -43,6 +43,19 @@ function sqlpromptGetTables($dbname=''){
 	}
 	return $tables;
 }
+function sqlpromtFormatSQL($query){
+	$query=strtolower($query);
+	$keywords = array(
+		"create table","delete","merge",
+		"select", "from", "where", "order by", "group by", "insert into", "update"
+	);
+	foreach ($keywords as $keyword) {
+		if (preg_match("/($keyword *)/i", $query, $matches)) {
+	  		$query = str_replace($matches[1], strtoupper($matches[1]), $query);
+		}
+	}
+	return $query;
+}
 function sqlpromptShowlist($recs,$listopts=array()){
 	$opts=array(
 		'-list'=>$recs,

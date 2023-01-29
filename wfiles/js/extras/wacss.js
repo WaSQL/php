@@ -3539,6 +3539,23 @@ var wacss = {
 		catch(e){}
 	    return false;
 	},
+	scrollIntoView(el,p){
+		//behavior	Defines the transition animation. auto or smooth
+		//block 		Defines vertical alignment. start, center, end, or nearest
+		//inline 		Defines horizontal alignment. start, center, end, or nearest.
+		el=wacss.getObject(el);
+		if(undefined == el){return false;}
+		let params={behavior: 'smooth', block: 'center', inline: 'center'};
+		//allow override
+		if(undefined==p){
+			for(k in p){
+				params[k]=p[k];
+			}
+		}
+		el.scrollIntoView(params);
+		let iw=document.getElementById('image_wrapper');
+		return false;
+	},
 	scrollToBottom: function(el){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}

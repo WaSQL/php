@@ -169,6 +169,10 @@ function msaccessDBConnect(){
 	);
 	$params['-connect']=implode(';',$parts);
 	$dbh_msaccess = odbc_connect($params['-connect'], $params['-dbuser'],$params['-dbpass']);
+	if(!is_resource($dbh_msaccess)){
+		debugValue(odbc_errormsg());
+		return null;
+	}
 	return $dbh_msaccess;
 }
 //---------- begin function msaccessExecuteSQL ----------
@@ -190,16 +194,7 @@ function msaccessExecuteSQL($query,$return_error=1){
 		'function'=>'msaccessExecuteSQL'
 	);
 	$dbh_msaccess=msaccessDBConnect();
-	if(!is_object($dbh_msaccess)){
-		$DATABASE['_lastquery']['error']='connect failed';
-		debugValue($DATABASE['_lastquery']);
-		$err=array(
-			'function'=>'msaccessExecuteSQL',
-			'message'=>'connect failed',
-			'query'=>$query
-		);
-    	return 0;
-	}
+	if(!is_resource($dbh_msaccess)){return 0;}
 	try{
 		$stmt = $dbh_msaccess->prepare($query);
 		$stmt->execute();
@@ -275,6 +270,7 @@ function msaccessGetDBFields($table,$allfields=0){
 	$fields=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
+		if(!is_resource($dbh_msaccess)){return array();}
 		$cols = odbc_exec($dbh_msaccess, $query);
     	$ncols = odbc_num_fields($cols);
 		for($n=1; $n<=$ncols; $n++) {
@@ -310,6 +306,7 @@ function msaccessGetDBFieldInfo($table){
 	$fields=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
+		if(!is_resource($dbh_msaccess)){return array();}
 		$result = odbc_exec($dbh_msaccess, $query);
 		if(!$result){
 			$e=odbc_errormsg($dbh_msaccess);
@@ -361,6 +358,7 @@ function msaccessGetDBTableIndexes($table=''){
 	$fields=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
+		if(!is_resource($dbh_msaccess)){return array();}
 		$statistics = odbc_statistics($dbh_msaccess, '', '', $table, SQL_INDEX_ALL, SQL_QUICK);
 		while (($row = odbc_fetch_array($statistics))) {
 		    echo printValue($row);exit;
@@ -410,8 +408,8 @@ function msaccessGetDBRecord($params=array()){
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
-*	<?=msaccessGetDBRecords(array('-table'=>'notes'));?>
-*	<?=msaccessGetDBRecords("select * from myschema.mytable where ...");?>
+*	msaccessGetDBRecords(array('-table'=>'notes'))
+*	msaccessGetDBRecords("select * from myschema.mytable where ...")
 */
 function msaccessGetDBRecords($params){
 	global $USER;
@@ -566,6 +564,7 @@ function msaccessGetDBTables($params=array()){
 	$tables=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
+		if(!is_resource($dbh_msaccess)){return array();}
 		$result = odbc_tables($dbh_msaccess);
 		$tblRow = 1;
 		while (odbc_fetch_row($result)){
@@ -836,6 +835,7 @@ function msaccessQueryResults($query='',$params=array()){
 		'function'=>'msaccessQueryResults'
 	);
 	$dbh_msaccess=msaccessDBConnect();
+	if(!is_resource($dbh_msaccess)){return array();}
 	try{
 		$result=odbc_exec($dbh_msaccess,$query);
 		if(!$result){

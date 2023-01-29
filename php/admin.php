@@ -1422,14 +1422,22 @@ if(isset($_REQUEST['_menu'])){
 			$data=adminGetPHPInfo();
 			if(preg_match('/\<body\>(.+)\<\/body\>/ism',$data,$m)){
 				//parse out modules to build a list
-				preg_match_all('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$data,$modules);
+				preg_match_all('/\<a name\=\"module\_(.+?)\".*?\>(.+?)\<\/a\>/is',$data,$modules);
+				//echo printValue($modules);exit;
 				$links=array();
 				foreach($modules[1] as $module){
-					$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$module.'">'.ucwords(str_replace('_',' ',$module)).'</a></div>';
+					$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$module.'" onclick="return phpinfoShowModule(\''.$module.'\');">'.ucwords(str_replace('_',' ',$module)).'</a></div>';
 				}
 				$module_count=count($modules[1]);
 				$linkstr=implode(PHP_EOL,$links);
 				echo <<<ENDOFX
+				<script>
+					function phpinfoShowModule(m){
+						let el=document.querySelector('a[name="module_'+m+'"]');
+						if(undefined==el){return false;}
+						return wacss.scrollIntoView(el,{block:'start'});
+					}
+				</script>
 				<style type="text/css">
 				table {border-collapse: collapse; border: 0; width: 934px; box-shadow: 1px 2px 3px #ccc;}
 				.center {text-align: center;}

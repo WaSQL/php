@@ -1,5 +1,11 @@
 <?php
-//http://php.net/manual/en/oci8.configuration.php
+/* 
+	http://php.net/manual/en/oci8.configuration.php
+	https://www.oracle.com/database/technologies/xe-downloads.html
+		Multitenant container database localhost:1521
+		plugable database  localhost:1521/XEPDB1
+		EM Express URL https://localhost:5500/em
+*/
 //connection class to enable better connection pooling
 ini_set('oci8.connection_class','WaSQL');
 //event (FAN)
@@ -34,6 +40,7 @@ function oracleAddDBRecords($table='',$params=array()){
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		return debugValue("oracleAddDBRecords Error: either -csv or -recs is required");
 	}
+	//echo $table.printValue($params);exit;
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			return debugValue("oracleAddDBRecords Error: no such file: {$params['-csv']}");
@@ -54,6 +61,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	if(!isset($params['-table'])){
 		return debugValue("oracleAddDBRecordsProcess Error: no table"); 
 	}
+	//echo printValue($recs).printValue($params);exit;
 	$table=$params['-table'];
 	$fieldinfo=oracleGetDBFieldInfo($table,1);
 	//if -map then remap specified fields
@@ -93,7 +101,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 				$rec[$k]="'{$v}'";
 			}
 		}
-		if(!count($rec)){continue;}
+		if(!is_array($rec) || !count($rec)){continue;}
 		$recstr=implode(',',array_values($rec));
 		$values[]="select {$recstr} from dual";
 	}
@@ -1013,6 +1021,7 @@ function oracleCommit($conn=''){
 * 	oci_close($conn);
 */
 function oracleDBConnect($params=array()){
+	if(!is_array($params)){$params=array();}
 	if(!isset($params['-port'])){$params['-port']=1521;}
 	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
 	$params=oracleParseConnectParams($params);
@@ -1714,8 +1723,8 @@ function oracleDelDBRecordById($table='',$id=0){
 * 	[-dbpass] - password
 * @return array - set of records
 * @usage
-*	<?=oracleGetDBRecords(array('-table'=>'notes'));?>
-*	<?=oracleGetDBRecords("select * from myschema.mytable where ...");?>
+*	oracleGetDBRecords(array('-table'=>'notes'));
+*	oracleGetDBRecords("select * from myschema.mytable where ...");
 */
 function oracleGetDBRecords($params){
 	global $USER;
@@ -1850,7 +1859,7 @@ ENDOFQUERY;
 * 	[-dbpass] - password
 * @return array - primary key fields
 * @usage
-*	$pkeys=oracleGetDBTablePrimaryKeys('people');?>
+*	$pkeys=oracleGetDBTablePrimaryKeys('people');
 */
 function oracleGetDBTablePrimaryKeys($table,$params=array()){
 	$parts=preg_split('/\./',$table);
@@ -2318,7 +2327,7 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	//read results into a recordset array	
 	$recs=oracleEnumQueryResults($stid,$params);
-	if(!count($recs) && isset($params['-forceheader'])){
+	if((!is_array($recs) || !count($recs)) && isset($params['-forceheader'])){
 		$fields=array();
 		for($i=1;$i<=oci_num_fields($stid);$i++){
 			$field=strtolower(oci_field_name($stid,$i));
