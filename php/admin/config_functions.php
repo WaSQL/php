@@ -249,6 +249,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'wasql_crons':
 		case 'userlog':
 		case 'log_queries':
+		case 'wasql_queries':
 		case 'stage':
 			$opts=array(
 				'1'=>'Yes',
@@ -264,6 +265,29 @@ function configBuildFormField($field,$cparams=array()){
 				else{$params[$k]=$v;}
 			}
 			return buildFormButtonSelect($field,$opts,$params);
+		break;
+		case 'wasql_queries_user':
+			$params=array(
+				'class'=>'input',
+				'value'=>$CONFIG[$field]
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormText($field,$params);
+		break;
+		case 'wasql_queries_time':
+			$params=array(
+				'class'=>'input',
+				'value'=>$CONFIG[$field],
+				'inputtype'=>'number'
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormText($field,$params);
 		break;
 		case 'login_title':
 			$params=array(

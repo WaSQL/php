@@ -7,6 +7,7 @@
 		<ul class="nav-list buttons <?=configValue('admin_color');?>" style="width:200px;">
 			<li><a href="#config_users" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_users"><span class="icon-users"></span> User Authentication</a></li>
 			<li><a href="#config_sync" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_sync"><span class="icon-sync"></span> Sync Settings</a></li>
+			<li><a href="#config_database" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_database"><span class="icon-database"></span> Database Settings</a></li>
 			<li><a href="#config_crons" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_crons"><span class="icon-cron"></span> Cron Settings</a></li>
 			<li><a href="#config_mail" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_mail"><span class="icon-mail"></span> SendMail Settings</a></li>
 			<li><a href="#config_uploads" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_uploads"><span class="icon-upload"></span> File Uploads</a></li>
@@ -21,8 +22,12 @@
 
 <view:config_users>
 	<div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-users"></span> User Authentication</div>
+	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div><label>Log authentication requests?</label><?=configBuildFormField('userlog');?></div>
+		<div style="flex:1;margin-left:15px;"><label>Text to display above login form</label><?=configBuildFormField('login_title');?></div>
+	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Authentication Method</label><?=configBuildFormField('auth_method');?></div>
+		<div style="flex:1;"><label>Authentication Method to use</label><?=configBuildFormField('auth_method');?></div>
 	</div>
 	<div id="config_users">
 		<?=buildOnLoad("configAuthMethodChanged();");?>
@@ -37,9 +42,6 @@
 	<input type="hidden" name="func" value="config_users_wasql" />
 	<input type="hidden" name="auth_method" value="wasql" />
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
-	</div>
 	<div style="display:flex;">
 		<button type="submit" class="btn w_success">Save</button>
 		<div id="config_users_save" style="margin-left:15px;"></div>
@@ -53,9 +55,6 @@
 	<input type="hidden" name="func" value="config_users_ldap" />
 	<input type="hidden" name="auth_method" value="ldap" />
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
-	</div>
 	<?=renderView('config_users_ldap_settings');?>
 	<div style="display:flex;">
 		<button type="submit" class="btn w_success">Save</button>
@@ -101,9 +100,6 @@
 	<input type="hidden" name="func" value="config_users_okta" />
 	<input type="hidden" name="auth_method" value="okta" /
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex; justify-content:flex-start; align-items:flex-start; margin:5px 0 10px 0; display:none;">
-		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
-	</div>
 	<?=renderView('config_users_okta_settings');?>
 	<div style="display:flex;">
 		<button type="submit" class="btn w_success">Save</button>
@@ -118,9 +114,6 @@
 	<input type="hidden" name="func" value="config_users_okta_ldap" />
 	<input type="hidden" name="auth_method" value="okta_ldap" />
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex; justify-content:flex-start; align-items:flex-start; margin:5px 0 10px 0; display:none;">
-		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
-	</div>
 	<?=renderView('config_users_okta_settings');?>
 	<?=renderView('config_users_okta_ldap_settings');?>
 	<div style="display:flex;">
@@ -199,7 +192,7 @@
 	<input type="hidden" name="process" value="save" />
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Enable Sync?</label><?=configBuildFormField('wasql_synchronize');?></div>
-		<div style="flex:3;margin-left:15px;"><label>Target</label><?=configBuildFormField('wasql_synchronize_slave');?></div>
+		<div style="flex:3;margin-left:15px;" data-displayif="wasql_synchronize:1"><label>Target</label><?=configBuildFormField('wasql_synchronize_slave');?></div>
 	</div>
 	<div style="display:flex;">
 		<button type="submit" class="btn w_success">Save</button>
@@ -230,9 +223,6 @@
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_mail_form" />
 	<input type="hidden" name="process" value="save" />
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Login Title</label><?=configBuildFormField('login_title');?></div>
-	</div>
 	<div class="w_grayback w_bold w_white" style="padding:5px 9px;">SMTP Settings</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Host</label><?=configBuildFormField('smtp');?></div>
@@ -280,6 +270,36 @@
 </form>
 </view:config_uploads>
 
+<view:config_database>
+<div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-database"></span> Database Settings</div>
+<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+	<input type="hidden" name="_menu" value="config" />
+	<input type="hidden" name="func" value="config_database_form" />
+	<input type="hidden" name="process" value="save" />
+	<div class="w_grayback w_bold w_white" style="padding:5px 9px;">Slow Query Debugging</div>
+	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>Enable Slow Query Logging?</label><?=configBuildFormField('wasql_queries');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Enable ONLY for user</label><?=configBuildFormField('wasql_queries_user');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Only log queries that take over (seconds):</label><?=configBuildFormField('wasql_queries_time');?></div>
+	</div>
+	<div class="w_grayback w_bold w_white" style="padding:5px 9px;">Commands</div>
+	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>Mysql Backup Command</label><?=configBuildFormField('backup_cmd',array('required'=>''));?></div>
+	</div>
+	<div class="w_grayback w_bold w_white" style="padding:5px 9px;">SQL Prompt</div>
+	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>Log SQL Prompt Queries?</label><?=configBuildFormField('log_queries');?></div>
+	</div>
+	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>SQL Prompt Databases to show. Leave blank for all</label><?=configBuildFormField('databases',array('required'=>''));?></div>
+	</div>
+	<div style="display:flex;">
+		<button type="submit" class="btn w_success">Save</button>
+		<div id="config_users_save" style="margin-left:15px;"></div>
+	</div>
+</form>
+</view:config_database>
+
 <view:config_misc>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-dots"></span> Misc Settings</div>
 <form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
@@ -288,18 +308,10 @@
 	<input type="hidden" name="process" value="save" />
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Is Stage?</label><?=configBuildFormField('stage');?></div>
-		<div style="flex:1;"><label>User Log?</label><?=configBuildFormField('userlog');?></div>
-		<div style="flex:1;"><label>Log Queries?</label><?=configBuildFormField('log_queries');?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Admin Color/Theme</label><?=configBuildFormField('admin_color');?></div>
 		<div style="flex:1;margin-left:15px;"><label>Pagination Default</label><?=configBuildFormField('paging',array('class'=>'align-right'));?></div>
-	</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Mysql Backup Command</label><?=configBuildFormField('backup_cmd',array('required'=>''));?></div>
-	</div>
-	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label><span class="icon-database"></span> SQL Prompt Databases ... leave blank for all</label><?=configBuildFormField('databases',array('required'=>''));?></div>
 	</div>
 	<div style="display:flex;">
 		<button type="submit" class="btn w_success">Save</button>

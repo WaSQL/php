@@ -12,7 +12,7 @@
 		case 'config_mail':
 		case 'config_uploads':
 		case 'config_misc':
-
+		case 'config_database':
 			setView($_REQUEST['func'],1);
 			return;
 		break;
@@ -37,6 +37,7 @@
 		case 'config_mail_form':
 		case 'config_uploads_form':
 		case 'config_misc_form':
+		case 'config_database_form':
 			switch(strtolower($_REQUEST['process'])){
 				case 'save':
 					$ok=configSave();
