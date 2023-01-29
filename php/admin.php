@@ -1488,12 +1488,19 @@ ENDOFX;
 			//echo printValue(array_keys($modules));exit;
 			$links=array();
 			foreach($modules as $name=>$content){
-				$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$name.'">'.ucwords(str_replace('_',' ',$name)).'</a></div>';
+				$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$name.'" onclick="return pythoninfoShowModule(\''.$name.'\');">'.ucwords(str_replace('_',' ',$name)).'</a></div>';
 			}
 			$module_count=count($modules);
 			$linkstr=implode(PHP_EOL,$links);
 			$contentstr=implode(PHP_EOL,$modules);
 			echo <<<ENDOFX
+			<script>
+					function pythoninfoShowModule(m){
+						let el=document.querySelector('a[name="module_'+m+'"]');
+						if(undefined==el){return false;}
+						return wacss.scrollIntoView(el,{block:'start'});
+					}
+				</script>
 			<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
 				<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
 					<div class="w_biggest w_underline">{$module_count} Packages installed</div>
