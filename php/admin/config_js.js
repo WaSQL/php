@@ -5,6 +5,10 @@ function configAuthMethodChanged(){
 	configNav(el);
 	return true;
 }
+function configLogsViewFile(file){
+	let params={setprocessing:0,'_menu':'config',func:'config_logs_view_file',file:file};
+	return ajaxGet('/php/admin.php','centerpop',params);
+}
 function configNav(el,opts){
 	if(undefined != el.dataset.confirm){
 		if(!confirm(el.dataset.confirm)){return false;}

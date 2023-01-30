@@ -289,6 +289,24 @@ function configBuildFormField($field,$cparams=array()){
 			}
 			return buildFormText($field,$params);
 		break;
+		case 'mysql_error_log':
+		case 'mysql_slow_query_log':
+		case 'apache_error_log':
+		case 'apache_access_log':
+		case 'php_error_log':
+		case 'custom_log_1':
+		case 'custom_log_2':
+		case 'custom_log_3':
+			$params=array(
+				'class'=>'input',
+				'value'=>$CONFIG[$field],
+			);
+			foreach($cparams as $k=>$v){
+				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
+				else{$params[$k]=$v;}
+			}
+			return buildFormText($field,$params);
+		break;
 		case 'login_title':
 			$params=array(
 				'class'=>'input',
