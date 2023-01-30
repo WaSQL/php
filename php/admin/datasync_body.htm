@@ -95,6 +95,10 @@
 	<?=buildOnLoad("removeDiv('centerpop');");?>
 </view:results>
 
+<view:error>
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-sync w_danger"></span> Synchronize Database Records</h2>
+	<?=$error;?>
+</view:error>
 
 <view:sync_auth>
 <div class="container">

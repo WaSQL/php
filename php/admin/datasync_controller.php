@@ -5,9 +5,9 @@
 	if(!isset($_SESSION['sync_target'])){
 		$_SESSION['sync_target']=datasyncGetTarget();
 	}
-	if(!strlen($_SESSION['sync_target'])){
+	if(!isset($_SESSION['sync_target']) || !strlen($_SESSION['sync_target'])){
 		//not setup for datasync
-		$error="Not setup for datasync. No target specified.";
+		$error="Not setup for datasync. No target specified. Run syncronize first to set target.";
 		setView('error',1);
 		return;
 	}
@@ -34,6 +34,7 @@
 		setView('sync_auth',1);
 		return;
 	}
+
 	switch(strtolower($_REQUEST['func'])){
 		case 'unauth':
 			$_SESSION['sync_target']=datasyncGetTarget();
