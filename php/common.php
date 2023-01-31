@@ -20389,9 +20389,19 @@ function sendSMTPMail($params=array()){
 */
 function setFileContents($file,$data,$append=0){
 	if($append && is_file($file)){
-		return file_put_contents($file,$data,FILE_APPEND);
+		try{
+			return file_put_contents($file,$data,FILE_APPEND);
+		}
+		catch (Exception $e){
+        	return $e->faultstring;
+        }
 	}
-	return file_put_contents($file,$data);
+	try{
+		return file_put_contents($file,$data);
+	}
+	catch (Exception $e){
+    	return $e->faultstring;
+    }
 }
 //---------- begin function appendFileContents--------------------
 /**
