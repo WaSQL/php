@@ -1443,8 +1443,9 @@ function setUserInfo(){
 */
 function userLogout(){
 	global $USER;
-	if(!isset($USER['_id'])){return false;}
-	$ok=commonLogMessage('user',"userLogout - {$USER['username']}");
+	if(!isset($USER['_id'])){
+		$ok=commonLogMessage('user',"userLogout - {$USER['username']}");
+	}
 	sessionDestroy(session_id());
 	if(isset($_COOKIE['PHPSESSID'])){
 		commonSetCookie('PHPSESSID', null, -1, '/');
