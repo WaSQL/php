@@ -495,6 +495,8 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
     }
     else{
 		$ruser['apikey']=encodeUserAuthCode($ruser['_id']);
+		$rtime=time();
+		$salt='1A2K66RX94lobdRBRNzp3WBS9RQDzrIRXvIrtxmmmHXysj8cfJQVx89dyR8AaOrurFcjpxjN3BJabcCh0VNbtnHB3vMxUUOyEsf5G39A02-2y2fXyonJJnRGGucl5';
 		$auth=encrypt("{$ruser['username']}:{$rtime}:{$ruser['apikey']}",$salt);
 		$dauth=decrypt($auth,$salt);
 		//send the email.
@@ -561,7 +563,6 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
             else{
 				echo '<h4 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Technical failure.</h4>'."\n";
 				echo 'Due to technical errors, we were unable to send you a reminder.<br />'."\n";
-				echo printValue($ok);
 				exit;
             }
 		}
