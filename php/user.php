@@ -1443,7 +1443,7 @@ function setUserInfo(){
 */
 function userLogout(){
 	global $USER;
-	if(!isset($USER['_id'])){
+	if(isset($USER['_id'])){
 		$ok=commonLogMessage('user',"userLogout - {$USER['username']}");
 	}
 	sessionDestroy(session_id());
