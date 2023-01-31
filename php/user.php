@@ -1592,8 +1592,8 @@ function getUserInfo($cuser,$size=16){
 * @return mixed
 * @param field mixed - array of fields or comma separated list of field or just a field.
 * @usage
-* 	<?=userValue('username');?>
-*	<?=userValue('firstname,username');?>
+* 	userValue('username');
+*	userValue('firstname,username');
 * @author slloyd
 * @history - bbarten 2014-01-02 added documentation
 */
@@ -1629,7 +1629,7 @@ function isUser(){
 * @param array $params - any additional parameters to be included.
 * 	See AddEditDBForm for additional params
 * @usage
-*	<?=userProfileForm();?>  returns an HTML form to change profile data
+*	userProfileForm();  returns an HTML form to change profile data
 * @author slloyd
 * @history - bbarten 2014-01-02 added documentation
 */
@@ -1648,7 +1648,7 @@ function userProfileForm($params=array()){
 function encodeUserAuthCode($id=0){
 	global $USER;
 	global $CONFIG;
-	if($id==0 || $id==$USER['_id']){
+	if($id==0 || (isset($USER['_id']) && $id==$USER['_id'])){
 		$rec=$USER;
 		$id=$USER['_id'];
 	}
@@ -1727,7 +1727,7 @@ function userGetUserCryptKey($id){
 *	[-login_title] text - sets the title attribute. No Default
 *	Additional params are passed through as hidden key/value pairs
 * @usage
-*	<?=userLoginForm();?>
+*	userLoginForm();
 * @author slloyd
 * @history - bbarten 2014-01-02 updated documentation
 */
