@@ -8298,7 +8298,7 @@ function getDBFieldTag($params=array()){
 */
 function getDBFieldSelections($info=array()){
 	$selections=array();
-	if(isset($info['tvals']) && strtolower(trim($info['tvals']))=='&getdbtables'){
+	if(isset($info['tvals']) && is_string($info['tvals']) && strtolower(trim($info['tvals']))=='&getdbtables'){
 		$selections['tvals']=getDBTables();
 		$selections['dvals']=$selections['tvals'];
 		if(isset($info['-translate']) && $info['-translate']==1){

@@ -81,12 +81,14 @@ function mysqlAddDBRecords($table='',$params=array()){
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
 		$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: either -csv or -recs is required";
 		debugValue($mysqlAddDBRecordsResults['errors']);
+		$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: either -csv or -recs is required';
 		return 0;
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
 			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no such file: {$params['-csv']}";
 			debugValue($mysqlAddDBRecordsResults['errors']);
+			$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: no such file';
 			return 0;
 		}
 		$afile=$params['-csv'];
@@ -105,11 +107,13 @@ function mysqlAddDBRecords($table='',$params=array()){
 		if(!is_array($params['-recs'])){
 			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no recs";
 			debugValue($mysqlAddDBRecordsResults['errors']);
+			$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: no recs';
 			return 0;
 		}
 		elseif(!count($params['-recs'])){
 			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no recs";
 			debugValue($mysqlAddDBRecordsResults['errors']);
+			$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: no recs';
 			return 0;
 		}
 		$chunks=array_chunk($params['-recs'], $params['-chunk']);
@@ -147,6 +151,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	if(!isset($params['-table'])){
 		$err="mysqlAddDBRecordsProcess Error: no table";
 		$mysqlAddDBRecordsResults['errors'][]=$err;
+		$DATABASE['_lastquery']['error']='Error: no table';
 		return 0;
 	}
 	$rec_cnt=count($recs);
@@ -302,6 +307,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			'params'=>$params
 		);
 		$mysqlAddDBRecordsResults['errors'][]=$err;
+		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 		return 0;
 	}
 	try{
@@ -320,6 +326,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			'params'=>$params
 		);
 		$mysqlAddDBRecordsResults['errors'][]=$err;
+		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 		return 0;
 	}
 }
@@ -1454,7 +1461,26 @@ function mysqlQueryResults($query='',$params=array()){
 		debugValue($DATABASE['_lastquery']);
     	return array();
 	}
-	$result=@mysqli_query($dbh_mysql,$query);
+	try{
+		$result=@mysqli_query($dbh_mysql,$query);
+	}
+	catch (Exception $e) {
+		$err=array(
+			'status'=>"Mysqli Prepare ERROR",
+			'function'=>'importProcessCSVRecs',
+			'error'=> mysqli_error($dbh_mysql),
+			'exception'=>$e,
+			'query'=>$query,
+			'params'=>json_encode($params)
+		);
+		debugValue($err);
+		$DATABASE['_lastquery']['error']='query error: '.mysqli_error($dbh_mysql);
+		debugValue($DATABASE['_lastquery']);
+		mysqli_close($dbh_mysql);
+		//echo printValue($err);exit;
+		if(isset($params['-filename'])){return 0;}
+		return array();
+	}
 	$err=mysqli_error($dbh_mysql);
 	if(is_array($err) || strlen($err)){
 		$DATABASE['_lastquery']['error']='query error: '.$err;
@@ -1520,6 +1546,7 @@ function mysqlEnumQueryResults($data,$params=array()){
 	if(isset($fh) && is_resource($fh)){
 		$writefile=1;
 	}
+	if(is_bool($data)){return array(array('status'=>$data));}
 	while ($row = @mysqli_fetch_assoc($data)){
 		//check for mysqlStopProcess request
 		if(isset($mysqlStopProcess) && $mysqlStopProcess==1){
