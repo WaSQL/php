@@ -565,6 +565,7 @@ var wacss = {
 		/*wacssedit*/
 		wacss.initWacssEdit();
 		wacss.initChartJs();
+		wacss.initTabs();
 		wacss.initCodeMirror();
 		wacss.initEditor();
 		wacss.initWhiteboard();
@@ -1686,6 +1687,20 @@ var wacss = {
 			editor.textContent=els[e].textContent;
 			//setEditorMarkup(editor);
 			els[e].parentNode.insertBefore(editor, els[e].nextSibling);
+		}
+	},
+	initTabs: function(){
+		/* if a textarea has a class of w_tabs then enable tabs */
+		let list=document.querySelectorAll('textarea.w_tabs');
+		for(let i=0;i<list.length;i++){
+			list[i].onkeydown=function(event){
+				if(event.keyCode===9){
+					let v=this.value,s=this.selectionStart,e=this.selectionEnd;
+					this.value=v.substring(0, s)+'\t'+v.substring(e);
+					this.selectionStart=this.selectionEnd=s+1;
+					return false;
+				}
+			}
 		}
 	},
 	initWacssEdit: function(){
