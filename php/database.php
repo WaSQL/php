@@ -1861,7 +1861,9 @@ function databaseListRecords($params=array()){
 				if(is_array($cvalue)){
 					$cvalue=json_encode($cvalue);
 				}
-				if(!is_string($cvalue)){continue;}
+				if(!is_string($cvalue) && !is_numeric($cvalue)){
+					$cvalue=json_encode($cvalue);
+				}
 				$crow=str_replace("[{$cfield}]", $cvalue, $crow);
 			}
 			$rtn .= $crow.PHP_EOL;
