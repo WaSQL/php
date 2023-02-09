@@ -1488,6 +1488,52 @@ ENDOFDATATYPES;
 * 	[-filename] - if you pass in a filename then it will write the results to the csv filename you passed in
 * @return array - returns records
 */
+function mssqlGetDBTableIndexes($tablename=''){
+	global $databaseCache;
+	global $CONFIG;
+	$cachekey=sha1(json_encode($CONFIG).'mssqlGetDBTableIndexes'.$tablename);
+	if(isset($databaseCache[$cachekey])){
+		return $databaseCache[$cachekey];
+	}
+	if(stringContains($tablename,'.')){
+		list($schema,$tablename)=preg_split('/\./',$tablename,2);
+	}
+	else{$schema=mssqlGetDBSchema();}
+	if(!strlen($schema)){
+		debugValue('mssqlGetAllTableIndexes error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtoupper($schema);
+	$tablename=strtoupper($tablename);
+	$tablename=str_replace("{$schema}.",'',$tablename);
+	$query=<<<ENDOFQUERY
+	SELECT 
+	     t.name as table_name,
+	     ind.name as key_name,
+	     col.name as column_name,
+	     ind.is_primary_key as is_primary,
+	     ind.is_unique,
+	     ic.key_ordinal as seq_in_index
+	FROM 
+	     sys.indexes ind 
+	INNER JOIN 
+	     sys.index_columns ic ON  ind.object_id = ic.object_id and ind.index_id = ic.index_id 
+	INNER JOIN 
+	     sys.columns col ON ic.object_id = col.object_id and ic.column_id = col.column_id 
+	INNER JOIN 
+	     sys.tables t ON ind.object_id = t.object_id 
+	WHERE 
+	     t.is_ms_shipped = 0 
+	     and upper(schema_name(t.schema_id))='{$schema}'
+	     and upper(t.name)='{$tablename}'
+	ORDER BY 
+	     ind.is_primary_key desc,ic.key_ordinal
+ENDOFQUERY;
+	$recs=mssqlQueryResults($query);
+	//echo $query.printValue($recs).printValue($xrecs);exit;
+	$databaseCache[$cachekey]=$recs;
+	return $databaseCache[$cachekey];
+}
 function mssqlQueryResults($query='',$params=array()){
 	global $USER;
 	global $dbh_mssql;
@@ -1501,7 +1547,6 @@ function mssqlQueryResults($query='',$params=array()){
 		'function'=>'mssqlQueryResults'
 	);
 	$dbh_mssql=mssqlDBConnect($params);
-	
 	//php 7 and greater no longer use mssql_connect
 	if((integer)phpversion()>=7){
 		if(!$dbh_mssql){
@@ -1527,6 +1572,7 @@ function mssqlQueryResults($query='',$params=array()){
 		if( $data === false ) {
 			$errors=(array)sqlsrv_errors();
 			sqlsrv_close($dbh_mssql);
+			echo $query.printValue($errors);exit;
 			if(isset($errors[0]['message'])){
 				$errors=array(
 					'function'=>'mssqlQueryResults',
