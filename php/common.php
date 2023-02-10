@@ -11273,6 +11273,10 @@ function getAllVersions(){
 					$out=cmdResults('mysql --version');
 					$val=$out['stdout'];
 				break;
+				case 'oci_server_version':
+				case 'ociserverversion':
+					$val='';
+				break;
 				default:
 					try{$val=$fname();}
 					catch(Exception $e){
