@@ -164,8 +164,12 @@ function manualParseFile($file){
 			$lang['caller_end']='...';
 		break;
 		case 'js':
+			//function abc(){
 			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
 			$lang['function_end']='/^\}/';
+			//abc: function(el,ev){
+			$lang['function_begin_2']='/^(.+?)\: function\((.*?)\)\ *\{/';
+			$lang['function_end_2']='/^\}/';
 			$lang['comment']='/^[\/\*]/';
 			$lang['comment_more']='/^[\/\*]+(.*)$/';
 			$lang['category']='Javascript';
@@ -276,7 +280,10 @@ function manualParseFile($file){
 					$key=$c[1];
 					$v=trim($c[2]);
 					if(strlen($v)){
-						$rec['info'][$key][]=base64_encode($v);
+						if($key=='name' || $key=='caller'){$rec[$key]=$v;}
+						else{
+							$rec['info'][$key][]=base64_encode($v);
+						}
 					}
 				}
 				elseif(strlen($key) && preg_match($lang['comment_more'],$cline,$c)){
@@ -294,9 +301,74 @@ function manualParseFile($file){
 					$rec['info']='{}';
 				}
 				$rec['hash']=md5($rec['name'].$rec['afile']);
+				$rec['name']=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$rec['name']);
+				$rec['caller']=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$rec['caller']);
 				$recs[]=$rec;
 			}
 
+		}
+		elseif(isset($lang['function_begin_2']) && preg_match($lang['function_begin_2'],$line,$m)){
+			if(stringBeginsWith($m[1],'_')){continue;}
+			if(stringBeginsWith($m[1],'$')){continue;}
+			if(strlen($m[1])==1){continue;}
+			$rec=array(
+				'afile'=>base64_encode($file),
+				'afile_line'=>$x+1,
+				'name'=>$m[1],
+				'category'=>$lang['category'],
+				'caller'=>$m[0].$lang['caller_end']
+			);
+			
+			//backup to read phpdoc comments before the function name
+			$p=$x-1;
+			$comments=array();
+			while(1){
+				$pline=trim($lines[$p]);
+				$xline=str_replace('[tab]','',$pline);
+				$xline=trim($xline);
+				if(!strlen($pline) || !strlen($xline)){break;}
+				if(!preg_match($lang['comment'],$xline)){break;}
+				if(preg_match($lang['function_end_2'],$pline)){break;}
+				$pline=encodeHtml($pline);
+				$pline=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$pline);
+				$comments[]=$pline;
+				if($p==0){break;}
+				$p--;
+			}
+			$rec['comments']=array_reverse($comments);
+			$key='';
+			foreach($rec['comments'] as $cline){
+				$cline=trim($cline);
+				$cline=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$cline);
+				if(preg_match('/\@([a-z]+)(.*)$/i',$cline,$c)){
+					$key=$c[1];
+					$v=trim($c[2]);
+					if(strlen($v)){
+						if($key=='name' || $key=='caller'){$rec[$key]=$v;}
+						else{
+							$rec['info'][$key][]=base64_encode($v);
+						}
+					}
+				}
+				elseif(strlen($key) && preg_match($lang['comment_more'],$cline,$c)){
+					$v=trim($c[1]);
+					if(strlen($v)){
+						$rec['info'][$key][]=base64_encode($v);
+					}
+				}
+			}
+			if(!isset($rec['info']['exclude'])){
+				$rec['comments']=implode(PHP_EOL,$rec['comments']);
+				$rec['comments']=base64_encode($rec['comments']);
+				$rec['info']=json_encode($rec['info'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+				if(!strlen($rec['info'])){
+					$rec['info']='{}';
+				}
+				$rec['hash']=md5($rec['name'].$rec['afile']);
+				$rec['name']=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$rec['name']);
+				$rec['caller']=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$rec['caller']);
+				$recs[]=$rec;
+			}
 		}
 	}
 	if(!count($recs)){return 0;}

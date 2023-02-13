@@ -1595,11 +1595,13 @@ function mssqlQueryResults($query='',$params=array()){
 				break;
 			}
 			sqlsrv_free_stmt( $stmt);
+			sqlsrv_close($dbh_mssql);
 			$DATABASE['_lastquery']['stop']=microtime(true);
 			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 			return $id;
 		}
 		$results = mssqlEnumQueryResults($data,$params);
+		sqlsrv_close($dbh_mssql);
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;

@@ -66,7 +66,7 @@
 		<div class="w_gray w_smaller">found on line <?=$rec['afile_line'];?> in <?=base64_decode($rec['afile']);?></div>
 	</div>
 	<div style="margin-left:30px;">
-		<div class="w_gray w_smaller"><?=$rec['caller'];?></div>
+		<div class="w_gray" style="margin:0 0 10px 20px;"><?=$rec['describe'];?></div>
 		<div class="w_bold w_big">Usage</div>
 		<div class="well">
 			<view:usage>
@@ -84,7 +84,6 @@
 		<div class="w_bold w_bigger">Comments</div>
 		<div class="well"><?=nl2br(base64_decode($rec['comments']));?></div>
 	</div>
-	<?=debugValue($rec);?>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
 </view:search_results>

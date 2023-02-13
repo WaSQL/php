@@ -517,9 +517,9 @@ function tooltipDiv(obj,rtimer){
 	}
 	else if(txt.indexOf('js:')===0){
 		//call a function
-    	let f=trim(str_replace('js:','',txt));
-    	let jsfunc=new Function(f);
-    	txt=jsfunc();
+    		let f=trim(str_replace('js:','',txt));
+    		let jsfunc=new Function(f);
+    		txt=jsfunc();
 	}
 	else if(txt.indexOf('ajax:')===0){
 		//call a function

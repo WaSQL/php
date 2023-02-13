@@ -1,10 +1,11 @@
 var wacss = {
-	version: '2022.0501',
+	version: '2023.0211',
 	author: 'WaSQL.com',
 	chartjs:{},
+	hoverDiv:'',
 	loadJsText:function(name,body){
-		console.log(name);
-		console.log(body);
+		//console.log(name);
+		//console.log(body);
 		var code = 'this.f = function ' + name + '() {'+body+'}';
 		eval(code);
 		 return true;
@@ -60,6 +61,15 @@ var wacss = {
 			break;
 		}
 	},
+	/**
+	* @name wacss.buildFormColor
+	* @describe creates an HTML color input field - mimicks the WaSQL PHP function
+	* @param fieldname string
+	* @param params - JSON object
+	* @return HTML element
+	* @usage let el=wacss.buildFormColor('color');
+	* @usage myform.appendChild(el);
+	*/
 	buildFormColor: function(fieldname,params){
 		if(undefined == params){params={};}
 		if(undefined == params['-formname']){params['-formname']='addedit';}
@@ -107,6 +117,15 @@ var wacss = {
 		}
 		return tagdiv;
 	},
+	/**
+	* @name wacss.buildFormSelect
+	* @describe creates an HTML select field - mimicks the WaSQL PHP function
+	* @param fieldname string
+	* @param params - JSON object
+	* @return HTML element
+	* @usage let el=wacss.buildFormSelect('age_range',{10:'under 10',20:'10 to 20',30:'over 20'});
+	* @usage myform.appendChild(el);
+	*/
 	buildFormSelect: function(fieldname, opts, params){
 		if(undefined == fieldname || !fieldname.length){alert('buildFormSelect Error: no name');return undefined;}
 		fieldname=fieldname.replace('/[\[\]]+$/','');
@@ -162,10 +181,16 @@ var wacss = {
 		}
 		return tag;
 	},
+	/**
+	* @name wacss.checkAllElements
+	* @describe check/toggle all checkboxes that have an attribute of value
+	* @param att string
+	* @param val - string
+	* @param ck - 1 or 0 - check or uncheck
+	* @return false
+	* @usage <input type="checkbox" onclick="wacss.checkAllElements('cid','mylist', this.checked);">
+	*/
 	checkAllElements: function(att,val,ck){
-	    //info:check/toggle all checkboxes that have an attribute of value
-	    //info: returns number of items checked
-	    //usage: <input type="checkbox" onclick="wacss.checkAllElements('cid','mylist', this.checked);">
     	let list;
     	switch(att.toLowerCase()){
     		case 'class':
@@ -187,6 +212,14 @@ var wacss = {
     	}
 		return false;
    	},
+   	/**
+	* @name wacss.copy2Clipboard
+	* @describe copies str to the clipboard and displays message
+	* @param str string
+	* @param msg - message to display as a toast - defaults to "Copy Successful"
+	* @return false
+	* @usage <button type="button" class="button" onclick="return wacss.copy2Clipboard(document.querySelect('#stuff').innerText);">Copy</button>
+	*/
 	copy2Clipboard: function(str,msg){
 		if(undefined==msg){msg='Copy Successful';}
 		const el = document.createElement('textarea');
@@ -196,7 +229,7 @@ var wacss = {
 	  	document.execCommand('copy');
 	 	document.body.removeChild(el);
 	 	wacss.toast(msg);
-	 	return true;
+	 	return false;
 	},
 	color: function(){
 		if(undefined != document.getElementById('admin_menu')){
@@ -220,11 +253,19 @@ var wacss = {
 			);
 			return;
 		}
-		el.className='toast dismiss';
+		el.classList.add='dismiss';
 		setTimeout(function(){
 			wacss.removeObj(el);
 		},1000);
 	},
+	/**
+	* @name wacss.emulateEvent
+	* @describe emulates event on object/element.  change, click, etc.
+	* @param el mixed  - object or id
+	* @param ev string  - event to emulate - change,click, etc
+	* @return false
+	* @usage wacss.EmulateEvent(el,'change');
+	*/
 	emulateEvent: function(el,ev){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
@@ -238,6 +279,13 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.function_exists
+	* @describe returns true if the javascript function exists
+	* @param name string  - name of function to check for
+	* @return boolean
+	* @usage if(wacss.function_exists('abc')){...}
+	*/
 	function_exists: function(function_name){   
     	if (typeof function_name == 'string'){  
         	return (typeof window[function_name] == 'function');  
@@ -245,8 +293,14 @@ var wacss = {
         	return (function_name instanceof Function);  
     	}
 	},
+	/**
+	* @name wacss.getAllAttributes
+	* @describe get all attributes of a specific object or id
+	* @param el mixed  - object or id of element
+	* @return json object 
+	* @usage let atts=wacss.getAllAttributes(el); let x=atts.name;.....
+	*/
 	getAllAttributes: function(obj){
-		//info: get all attributes of a specific object or id
 		let node=wacss.getObject(obj);
 		let rv = {};
 	    for(let i=0; i<node.attributes.length; i++){
@@ -480,6 +534,13 @@ var wacss = {
 		wacss.removeId('geolocationmap_popup');
 		return false;
 	},
+	/**
+	* @name wacss.getObject
+	* @describe returns element with that selector or id
+	* @param str mixed - id or query selector or object
+	* @return element or null
+	* @usage let obj=wacss.getObject('myid')
+	*/
 	getObject: function(obj){
 		//info: returns the object identified by the object or id passed in
 		if(typeof(obj)=='object'){return obj;}
@@ -499,6 +560,15 @@ var wacss = {
 	    }
 	    return null;
 	},
+	/**
+	* @name wacss.getParent
+	* @describe walks up the DOM and returns the first parent with that name and optional class
+	* @param el obj - starting element
+	* @param name string - name of parent element (table, tr, td, div, etc...)
+	* @params [classname] string - optional classname to match
+	* @return element or null
+	* @usage let tbl=wacss.getParent(tdEl,'table');
+	*/
 	getParent: function(obj,name,classname){
 		if(undefined == obj){return null;}
 		if(undefined == classname){classname='';}
@@ -528,8 +598,33 @@ var wacss = {
 		if(undefined == cObj.parentNode){return cObj;}
 		let pobj=cObj.parentNode;
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
-		else{return wacss.getParent(pobj);}
+		else{return wacss.getParent(pobj,name,classname);}
 	},
+	getParentByAtt: function(obj,att,val){
+		if(undefined == obj){return null;}
+		if(undefined != att){
+			let count = 1;
+			while(count < 1000) {
+				if(undefined == obj.parentNode){return null;}
+				obj = obj.parentNode;
+				if(!typeof(obj)){return null;}
+				let natt=obj.getAttribute(att);
+				if(undefined != natt && (undefined==val || val.length==0 || natt.toLowerCase() == val.toLowerCase())){
+					return obj;
+				}
+				count++;
+			}
+			return null;	
+		}
+		return null;
+	},
+	/**
+	* @name wacss.getSiblings
+	* @describe returns an array of sibling elements in the DOM
+	* @param el obj - starting element
+	* @return array
+	* @usage let els=wacss.getSiblings(tdEl);
+	*/
 	getSiblings: function (elem) {
 		// Setup siblings array and get the first sibling
 		let siblings = [];
@@ -553,6 +648,16 @@ var wacss = {
 	    }
 	    return _p8() + _p8(true) + _p8(true) + _p8();
 	},
+	/**
+	* @name wacss.in_array
+	* @describe emulates PHP function
+	* @param needle string
+	* @param haystack array
+	* @return boolean
+	* @usage let arr=new Array(1,3,6);
+	* @usage if(wacss.in_array(3,arr)){....}
+	* @sourece https://phpjs.org/functions
+	*/
 	in_array: function(needle, haystack) {
 	    let length = haystack.length;
 	    for(let i = 0; i < length; i++) {
@@ -561,6 +666,12 @@ var wacss = {
 	    }
 	    return false;
 	},
+	/**
+	* @name wacss.init
+	* @describe initializer for all other wacss init functions
+	* @return false
+	* @usage wacss.init();
+	*/
 	init: function(){
 		/*wacssedit*/
 		wacss.initWacssEdit();
@@ -570,6 +681,129 @@ var wacss = {
 		wacss.initEditor();
 		wacss.initWhiteboard();
 		wacss.initSignaturePad();
+		wacss.initDrag();
+		wacss.initHovers();
+		return false;
+	},
+	/**
+	* @name wacss.initDrag
+	* @describe initializes draggable="true" elements and elements with data-ondrop set
+	* @describe example drag element:  <div draggable="true" data-dropzones="div.drop1">...</div>
+	* @describe example drop element:  <div data-ondrop="myDropFunc">...</div>
+	* @describe example drop function: function myDropFunc(dragEl,dropEl){...}
+	* @describe Note: During drag the class "dragging" is set on the dragging element
+	* @return false
+	* @usage wacss.initDrag();
+	*/
+	initDrag: function(){
+		/* <div draggable="true" dropzones="div.drop1">...</div> */
+		let draggables=document.querySelectorAll('[draggable="true"]');;
+		for(let i=0;i<draggables.length;i++){
+			//console.log(draggables[i]);
+			//check to see if we have already initialized this one
+			if(undefined != draggables[i].dataset.draggable_initialized){
+				//console.log('already initialized');
+				//console.log(draggables[i]);
+				continue;
+			}
+			draggables[i].dataset.draggable_initialized=1;
+			//generate an id if it does not already have one
+			if(undefined==draggables[i].id || draggables[i].id.length==0){
+				draggables[i].id='id_'+Math.random().toString(36).slice(2);
+			}
+			//set dragstart
+			draggables[i].ondragstart=function(ev){
+				ev.dataTransfer.clearData();
+				//get the element that has a draggable
+				let el;
+				if(undefined == this.draggable){
+					el=wacss.getParentByAtt(this,'draggable','true');
+				}
+				else{el=this;}
+				if(undefined==el){
+					console.log('wacss.initDrag ondrag start error: no el');
+				}
+				//console.log('drag start '+el.id);
+				ev.dataTransfer.setData("Text", el.id);
+				el.classList.add('dragging');
+			}
+			//set dragend
+			draggables[i].ondragend=function(ev){
+				//get the element that has a draggable
+				let el;
+				if(undefined == this.draggable){
+					el=wacss.getParentByAtt(this,'draggable','true');
+				}
+				else{el=this;}
+				if(undefined==el){
+					console.log('wacss.initDrag ondrag start error: no el');
+				}
+				//console.log('drag end '+el.id);
+				ev.dataTransfer.clearData("Text");
+				el.classList.remove('dragging');
+			}
+		}
+		//dropzones
+		let dropzones=document.querySelectorAll('[data-ondrop]');
+		for(let d=0;d<dropzones.length;d++){
+			//check to see if we have already initialized this one
+			if(undefined!=dropzones[d].dataset.ondrop_initialized){
+				continue;
+			}
+			dropzones[d].dataset.ondrop_initialized=1;
+			//generate an id if it does not already have one
+			if(undefined==dropzones[d].id || dropzones[d].id.length==0){
+				dropzones[d].id='id_'+Math.random().toString(36).slice(2);
+			}
+			//set dragover
+			dropzones[d].ondragover=function(ev){
+				ev.preventDefault();
+			}
+			//set dragenter
+			dropzones[d].ondragenter=function(ev){
+				if(undefined != this.dataset.dropmsg){
+					if(undefined != this.dataset.tip){
+						this.dataset.tip_ori=this.dataset.tip;
+					}
+					this.dataset.tip=this.dataset.dropmsg;
+				}
+			}
+			//set dragleave
+			dropzones[d].ondragleave=function(ev){
+				if(undefined != this.dataset.tip_ori){
+					this.dataset.tip_ori=this.dataset.tip_ori;
+				}
+			}
+			//set drop
+			dropzones[d].ondrop=function(ev){
+				ev.stopPropagation();
+				let dragid = ev.dataTransfer.getData("Text");
+				let dragel=document.getElementById(dragid);
+				if(undefined==dragel){
+					console.log('wacss.initDrag ondrop error: no dragel');
+					return false;
+				}
+				let tel=ev.target;
+				if(undefined == tel.dataset.ondrop){
+					console.log('getting parent');
+					tel=wacss.getParentByAtt(tel,'data-ondrop');
+				}
+				if(undefined==tel){
+					console.log('wacss.initDrag ondrop error: no tel');
+					return false;
+				}
+				if(undefined==tel.dataset.ondrop){
+					console.log('wacss.initDrag ondrop error: no ondrop in tel');
+					return false;
+				}
+				if(tel.dataset.ondrop.length==0){
+					console.log('wacss.initDrag ondrop error: ondrop is blank in tel');
+					return false;
+				}
+				window[tel.dataset.ondrop](dragel,tel);
+			}
+		}
+		return false;
 	},
 	chartjsDrawTotals: function(chart){
 		let width = chart.chart.width,
@@ -1587,6 +1821,16 @@ var wacss = {
 	  		cm.on('change', function(cm){cm.save();});
 	  	}
 	},
+	inViewport: function(elem) {
+		elem=getObject(elem);
+	    var bounding = elem.getBoundingClientRect();
+	    return (
+	        bounding.top >= 0 &&
+	        bounding.left >= 0 &&
+	        bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+	        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+	    );
+	},
 	callFunc: function(params){
 		if(undefined == params){return false;}
 		if(undefined == params.func){return false;}
@@ -1689,6 +1933,12 @@ var wacss = {
 			els[e].parentNode.insertBefore(editor, els[e].nextSibling);
 		}
 	},
+	/**
+	* @name wacss.initTabs
+	* @describe if a textarea has a class of w_tabs then enable the tab key in that textarea
+	* @return false
+	* @usage wacss.initTabs();
+	*/
 	initTabs: function(){
 		/* if a textarea has a class of w_tabs then enable tabs */
 		let list=document.querySelectorAll('textarea.w_tabs');
@@ -1702,6 +1952,7 @@ var wacss = {
 				}
 			}
 		}
+		return false;
 	},
 	initWacssEdit: function(){
 		/*convert texteara to contenteditable div*/
@@ -3307,6 +3558,13 @@ var wacss = {
 			wrapper.appendChild(toolbar);
 		}
 	},
+	/**
+	* @name wacss.isNum
+	* @describe return true if n is a number
+	* @params n mixed
+	* @return boolean
+	* @usage if(wacss.isNum(x)){...}
+	*/
 	isNum: function(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
 	},
@@ -3353,6 +3611,12 @@ var wacss = {
 		document.head.appendChild(script);
 		return true;
 	},
+	/**
+	* @name wacss.modalClose
+	* @describe closes the modal window generated by an ajax call
+	* @return boolean
+	* @usage if(x){wacs.modalClose();}
+	*/
 	modalClose: function(){
 		if(undefined != document.getElementById('wacss_modal_overlay')){
 			return wacss.removeObj(document.getElementById('wacss_modal_overlay'));
@@ -3701,6 +3965,14 @@ var wacss = {
 	    element.dispatchEvent(evObj);
 	  	return true;
 	},
+	/**
+	* @name wacss.speak
+	* @param sentence string
+	* @param params - json object. volume,name,lang,rate,pitch
+	* @return false
+	* @usage wacss.speak('hello bob');
+	* @usage wacss.speak('hello bob',{volume:0.3,name:'Sally',lang:'en-US'});
+	*/
 	speak: function(txt,params){
 		if(undefined == params){params={};}
 		params.txt=txt;
@@ -3756,6 +4028,16 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.str_replace
+	* @describe emulates PHP function
+	* @param search string
+	* @param replace string
+	* @param str string
+	* @return string
+	* @usage let newstr=wacss.str_replace(search,replace,str);
+	* @sourece https://phpjs.org/functions
+	*/
 	str_replace: function(search, replace, str) {
 	    let f = search;
 	    let r = replace;
@@ -3774,16 +4056,41 @@ var wacss = {
 
 	    return sa ? s : s[0];
 	},
+	/**
+	* @name wacss.strtolower
+	* @describe lowercases a string - emulates PHP function
+	* @param str string
+	* @return string
+	* @usage let uc=wacss.strtolower(str);
+	* @sourece https://phpjs.org/functions
+	*/
 	strtolower: function(str) {
 	    // info: Makes a string lowercase
 	    //source: http://phpjs.org/functions
 	    return (str + '').toLowerCase();
 	},
+	/**
+	* @name wacss.strtoupper
+	* @describe uppercases a string - emulates PHP trim function
+	* @param str string
+	* @return string
+	* @usage let uc=wacss.strtoupper(str);
+	* @sourece https://phpjs.org/functions
+	*/
 	strtoupper: function(str) {
 	    // info: Makes a string uppercase
 	    //source: http://phpjs.org/functions
 	    return (str + '').toUpperCase();
 	},
+	/**
+	* @name wacss.toast
+	* @describe displays a toast message for 3 seconds
+	* @param str string
+	* @param params - json obj
+	* @return false
+	* @usage wacss.toast('copy successful');
+	* @usage wacss.toast('copy successful',{color:'w_blue',timer:5});
+	*/
 	toast: function(msg,params){
 		if(undefined == params){
 			params={color:'w_red',timer:3};
@@ -3820,6 +4127,7 @@ var wacss = {
 			wacss.dismiss(t);
 			},params.timer
 		);
+		return false;
 	},
 	toggleClass: function(id,class1,class2,myid,myclass1,myclass2){
 		let obj=wacss.getObject(id);
@@ -3848,6 +4156,162 @@ var wacss = {
 			else{wacss.addClass(obj,myclass1);}
 		}
 	},
+	/**
+	* @name wacss.initHovers
+	* @describe initializes elements with data-hover="string..." - similiar to tooltips
+	* @describe if string starts with id: followed by the id of another element, the tip will be the contents of that element
+	* @describe if string starts with js: it will execute the following javascript on hover
+	* @describe tooltip position is set by data-position. Values are above,below,right, left
+	* @describe example1:  <div data-hover="this is a test">...</div>
+	* @describe example2:  <div data-hover="id:myhiddendiv" data-position="right">...</div>
+	* @return false
+	* @usage wacss.initHovers();
+	*/
+	initHovers: function(){
+		let hoverEls=document.querySelectorAll('[data-hover]');
+		if(hoverEls.length > 0){
+			if(wacss.hoverDiv == ''){
+				wacss.hoverDiv=document.createElement('div');
+				let d=document.createElement('div');
+				d.className='hover_content';
+				d.innerHTML='wacss hover default text';
+				wacss.hoverDiv.appendChild(d);
+				wacss.hoverDiv.className='wacss_hover';
+				wacss.hoverDiv.dataset.position='above';
+				//wacss.hoverDiv.style.display='none';
+				document.body.appendChild(wacss.hoverDiv);
+				wacss.hoverDiv.addEventListener('mouseout',function(){
+					if(undefined != this.hoverParent && this.hoverParent.matches(':hover')){
+						return false;
+					}
+					if(this.matches(':hover')){return false;}
+					this.querySelector('.hover_content').innerHTML='';
+					this.style.display='none';
+				},false);
+			}
+		}
+		for(let i=0;i<hoverEls.length;i++){
+			hoverEls[i].addEventListener('mouseover',function(){
+				//populate wacss.hoverDiv with 
+				let txt='';
+				wacss.hoverDiv.style.display='initial';
+				if(hoverEls[i].dataset.hover.indexOf('id:')===0){
+					console.log("hover id");
+					//get content from a different id
+					let txtid=trim(str_replace('id:','',hoverEls[i].dataset.hover));
+					let txtel=document.querySelector('#'+txtid);
+					if(undefined != txtel){
+						txt=txtel.innerHTML;		
+					}
+				}
+				else if(hoverEls[i].dataset.hover.indexOf('js:')===0){
+					//call a function
+					console.log("hover js");
+					let f=trim(str_replace('js:','',hoverEls[i].dataset.hover));
+					let jsfunc=new Function(f);
+					txt=jsfunc();
+				}
+				else{
+					//console.log("hover");
+					txt=hoverEls[i].dataset.hover;
+				}
+				wacss.hoverDiv.style.width='initial';
+				wacss.hoverDiv.style.height='initial';
+				wacss.hoverDiv.querySelector('.hover_content').innerHTML=txt;
+				wacss.hoverDiv.hoverParent=this;
+				let drect=this.getBoundingClientRect();
+				let hrect=wacss.hoverDiv.getBoundingClientRect();
+				console.log(drect);
+				console.log(hrect);
+				
+				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+				let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+				switch(this.dataset.position.toLowerCase()){
+					case 'above':
+						wacss.hoverDiv.dataset.position='above';
+						wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							console.log('not in viewport')
+							wacss.hoverDiv.dataset.position='below';
+							wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						}
+					break;
+					case 'below':
+					default:
+						wacss.hoverDiv.dataset.position='below';
+						wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							console.log('not in viewport')
+							wacss.hoverDiv.dataset.position='above';
+							wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						}
+					break;
+					case 'right':
+						wacss.hoverDiv.dataset.position='right';
+						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							console.log('not in viewport');
+							wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
+						}
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							wacss.hoverDiv.dataset.position='left';
+							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left-hrect.width-2)+'px';
+							if(!wacss.inViewport(wacss.hoverDiv)){
+								wacss.hoverDiv.style.width=parseInt(drect.left-5)+'px';
+								wacss.hoverDiv.style.left='5px';
+							}
+						}
+					break;
+					case 'left':
+						wacss.hoverDiv.dataset.position='left';
+						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left-hrect.width-2)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							wacss.hoverDiv.style.width=parseInt(drect.left-5)+'px';
+							wacss.hoverDiv.style.left='5px';
+						}
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							wacss.hoverDiv.dataset.position='right';
+							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
+							if(!wacss.inViewport(wacss.hoverDiv)){
+								console.log('not in viewport');
+								wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
+								wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
+							}
+						}
+					break;
+
+				}
+				
+				//console.log(wacss.hoverDiv.innerHTML);
+				
+			},false);
+			hoverEls[i].addEventListener('mouseout',function(){
+				//remove wacss.hoverDiv content
+				if(wacss.hoverDiv.matches(':hover') || wacss.hoverDiv.querySelector('.hover_content:hover')){
+					return false;
+				}
+				wacss.hoverDiv.querySelector('.hover_content').innerHTML='';
+				wacss.hoverDiv.style.display='none';
+			},false);
+		}
+	},
+	/**
+	* @name wacss.trim
+	* @describe trims a string - emulates PHP function
+	* @param str string
+	* @return string
+	* @usage let ucf=wacss.trim(str);
+	* @sourece https://phpjs.org/functions
+	*/
 	trim: function(str){
 		if (null != str && undefined != str && "" != str){
 			let rval=str.replace(/^[\ \s\0\r\n\t]*/g,"");
@@ -3856,18 +4320,38 @@ var wacss = {
 			}
 		else{return "";}
 	},
+	/**
+	* @name wacss.ucfirst
+	* @describe upper cases the first char of a string - emulates PHP function
+	* @param str string
+	* @return string
+	* @usage let ucf=wacss.ucfirst(str);
+	* @sourece https://phpjs.org/functions
+	*/
 	ucfirst: function(str) {
-	    //info: Makes a string's first character uppercase
-	    //source: http://phpjs.org/functions
 	    let f = str.charAt(0).toUpperCase();
 	    return f + str.substr(1);
 	},
+	/**
+	* @name wacss.ucwords
+	* @describe upper cases a string - emulates PHP function
+	* @param str string
+	* @return string
+	* @usage let uc=wacss.ucwords(str);
+	*/
 	ucwords: function(str){
 		str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
 		    return letter.toUpperCase();
 		});
 		return str;
 	},
+	/**
+	* @name wacss.urlEncode
+	* @describe URL encodes a string
+	* @param str string
+	* @return string
+	* @usage let encstr=wacss.urlEncode(str);
+	*/
 	urlEncode: function(str) {
 		//info: URL encode string
 		//usage: $encoded=urlEncode('address=122 east way');

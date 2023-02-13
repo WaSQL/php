@@ -1,10 +1,11 @@
 <?php
 global $progpath;
 global $CONFIG;
-
+$progpath=getWasqlPath();
 
 $docs_files='';
 $docfile="{$progpath}/temp/docfile.json";
+unlink($docfile);
 switch(strtolower($_REQUEST['func'])){
 	case 'docid':
 		$docid=(integer)$_REQUEST['docid'];
@@ -31,6 +32,19 @@ switch(strtolower($_REQUEST['func'])){
 		//echo printValue($recs);
 		foreach($recs as $i=>$rec){
 			$recs[$i]['info_ex']=json_decode($rec['info'],true);
+			if(isset($recs[$i]['info_ex']['describe'][0])){
+				$recs[$i]['describe']=array();
+				foreach($recs[$i]['info_ex']['describe'] as $str){
+					$recs[$i]['describe'][]=base64_decode($str);
+				}
+				$recs[$i]['describe']=implode('<br>',$recs[$i]['describe']);
+			}
+			elseif(is_string($recs[$i]['info_ex']['describe'])){
+				$recs[$i]['describe']=base64_decode($recs[$i]['info_ex']['describe']);
+			}
+			else{
+				$recs[$i]['describe']='';
+			}
 		}
 		//echo printValue($recs);exit;
 		setView('search_results',1);
