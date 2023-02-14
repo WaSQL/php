@@ -4872,7 +4872,7 @@ function addEditDBForm($params=array(),$customcode=''){
     }
     //set focus field?
     if(isset($params['-focus']) && strlen($params['-focus']) && $params['-focus'] != 0){
-		$rtn .= buildOnLoad("document.{$formname}.{$params['-focus']}.focus();");
+		$rtn .= buildOnLoad("document.{$formname}['{$params['-focus']}'].focus();");
 	}
     return $rtn;
 	}
