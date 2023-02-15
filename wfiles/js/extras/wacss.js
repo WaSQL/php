@@ -761,17 +761,12 @@ var wacss = {
 			}
 			//set dragenter
 			dropzones[d].ondragenter=function(ev){
-				if(undefined != this.dataset.dropmsg){
-					if(undefined != this.dataset.tip){
-						this.dataset.tip_ori=this.dataset.tip;
-					}
-					this.dataset.tip=this.dataset.dropmsg;
-				}
+				ev.target.classList.add("dropping");
 			}
 			//set dragleave
 			dropzones[d].ondragleave=function(ev){
-				if(undefined != this.dataset.tip_ori){
-					this.dataset.tip_ori=this.dataset.tip_ori;
+				if (ev.target.classList.contains("dropping")) {
+				    ev.target.classList.remove("dropping");
 				}
 			}
 			//set drop
@@ -792,6 +787,7 @@ var wacss = {
 					console.log('wacss.initDrag ondrop error: no tel');
 					return false;
 				}
+				tel.classList.remove('dropping');
 				if(undefined==tel.dataset.ondrop){
 					console.log('wacss.initDrag ondrop error: no ondrop in tel');
 					return false;

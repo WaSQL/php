@@ -95,14 +95,17 @@ body{
     }
 }
 /*draggable with dropzones - To prevent user selecting inside the drag source */
-[draggable="true"][dropzones],[draggable="true"][data-dropzones] {
+[draggable="true"] {
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
 }
-[draggable="true"][dropzones].dragging,[draggable="true"][data-dropzones].dragging {
+[draggable="true"].dragging {
     opacity: .25;
+}
+[data-ondrop].dropping * {
+  pointer-events: none;
 }
 /* Bulma menu overrides and addons*/
 .menu{
