@@ -2203,7 +2203,7 @@ function formSetMultiSelectStatus(fld){
 		let str='('+vals.length+') '+implode(', ',vals);
 		bobj.innerText=str;
 	}
-	return false;
+	return true;
 }
 //--------------------------
 //fielddataChange(this);
