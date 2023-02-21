@@ -12048,7 +12048,7 @@ function commonSetCookie($name,$value,$expire=''){
 	if(!strlen($expire)){
 		$expire=time()+(3600*24*365);
 	}
-	if(!strlen($value)){$value=NULL;}
+	if(!isset($value) || !strlen($value)){$value='';}
 	if(isset($CONFIG['session_domain'])){
 		//setcookie(    $name, $value, $expire, $path, $domain, $secure, $httponly )
 		/*Note: SameSite fix -  https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict */
@@ -12072,13 +12072,13 @@ function commonSetCookie($name,$value,$expire=''){
 	else{
 		$samesite=isset($CONFIG['samesite'])?$CONFIG['samesite']:'Lax';
 		if(PHP_VERSION_ID < 70300) {
-    		setcookie($name, $value, $expire, "/; samesite={$samesite}",null,isSSL(),true);
+    		setcookie($name, $value, $expire, "/; samesite={$samesite}",'',isSSL(),true);
     	}
     	else{
     		setcookie($name, $value, array(
 				'expires'	=> $expire,
 				'path'		=> '/',
-				'domain'	=> null,
+				'domain'	=> '',
 				'secure'	=> isSSL(),
 				'httponly'	=> true,
 				'samesite'	=>$samesite
