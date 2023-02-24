@@ -179,17 +179,6 @@ ENDOFSQL;
 			$ok=setFileContents($cron_tail_log,time());
 			$ok=cronLogTails();
 		}
-		//apache?
-		if($apache_log==1 && isset($CONFIG['apache_access_log']) && is_file($CONFIG['apache_access_log'])){
-			$apache_log=0;
-			loadExtras('apache');
-			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: apacheParseLogFile");
-			$msg=apacheParseLogFile();
-			if(strlen($msg)){
-				cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: apacheParseLogFile -- {$msg}");
-			}
-			//cronMessage("FINISHED *** apacheParseLogFile *** -- ".$CONFIG['apache_access_log'],1);
-		}
 	}
 	if($loop_cnt >= $loop_max || $loop_cnt >= 100){
 		break;
