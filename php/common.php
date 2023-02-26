@@ -2473,17 +2473,27 @@ function buildFormDate($name,$params=array()){
 			$params['-value']=date('Y-m-d',$params['-value']);
 		}
 	}
-	if(isset($params['data-mindate']) && isNum($params['data-mindate'])){
-		if(!stringBeginsWith($params['data-mindate'],'-')){
-			$params['data-mindate']='+ '.$params['data-mindate'];
+	if(isset($params['data-mindate'])){
+		if(isNum($params['data-mindate'])){
+			if(!stringBeginsWith($params['data-mindate'],'-')){
+				$params['data-mindate']='+ '.$params['data-mindate'];
+			}
+			$params['data-mindate']=date('Y-m-d',strtotime($params['data-mindate'].' days'));
 		}
-		$params['data-mindate']=date('Y-m-d',strtotime($params['data-mindate'].' days'));
+		elseif(strtolower($params['data-mindate'])=='today'){
+			$params['data-mindate']=date('Y-m-d');
+		}
 	}
-	if(isset($params['data-max']) && isNum($params['data-max'])){
-		if(!stringBeginsWith($params['data-max'],'-')){
-			$params['data-max']='+ '.$params['data-max'];
+	if(isset($params['data-maxdate'])){
+		if(isNum($params['data-maxdate'])){
+			if(!stringBeginsWith($params['data-maxdate'],'-')){
+				$params['data-maxdate']='+ '.$params['data-maxdate'];
+			}
+			$params['data-maxdate']=date('Y-m-d',strtotime($params['data-maxdate'].' days'));
 		}
-		$params['data-max']=date('Y-m-d',strtotime($params['data-max'].' days'));
+		elseif(strtolower($params['data-maxdate'])=='today'){
+			$params['data-maxdate']=date('Y-m-d');
+		}
 	}
 	//placeholder
 	if(isset($params['data-dateformat']) && !isset($params['placeholder'])){
