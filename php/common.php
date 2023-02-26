@@ -2473,6 +2473,18 @@ function buildFormDate($name,$params=array()){
 			$params['-value']=date('Y-m-d',$params['-value']);
 		}
 	}
+	if(isset($params['data-mindate']) && isNum($params['data-mindate'])){
+		if(!stringBeginsWith($params['data-mindate'],'-')){
+			$params['data-mindate']='+ '.$params['data-mindate'];
+		}
+		$params['data-mindate']=date('Y-m-d',strtotime($params['data-mindate'].' days'));
+	}
+	if(isset($params['data-max']) && isNum($params['data-max'])){
+		if(!stringBeginsWith($params['data-max'],'-')){
+			$params['data-max']='+ '.$params['data-max'];
+		}
+		$params['data-max']=date('Y-m-d',strtotime($params['data-max'].' days'));
+	}
 	//placeholder
 	if(isset($params['data-dateformat']) && !isset($params['placeholder'])){
 		$params['placeholder']=$params['data-dateformat'];
@@ -16540,11 +16552,10 @@ function postEditXmlFromJson($json=array()){
 		}
 		$fieldstr=implode(',',$fields);
 		$q="select _id,_cdate,_cuser,_edate,_euser,{$name} as name,{$fieldstr} from {$table}";
-		switch(strtolower($table)){
-			case '_prompts':
-				$q.=" where _cuser={$USER['_id']}";
-			break;
+		if(strtolower($table)=='_prompts' || !isAdmin()){
+			$q.=" where _cuser={$USER['_id']}";
 		}
+		
 		$recs=getDBRecords($q);
 		//echo $q;exit;
 		if(!is_array($recs)){continue;}
@@ -16690,6 +16701,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
         if(isset($finfo['postedit'])){
         	$recopts['postedit']=1;
 		}
+		if(!isAdmin()){$recopts['_cuser']=$USER['_id'];}
 		$recs=getDBRecords($recopts);
 		if(!is_array($recs)){continue;}
 		$xml .= "<!-- {$table} has ".count($recs)." records -->\n";

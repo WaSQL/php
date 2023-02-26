@@ -541,7 +541,7 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 			if($ok==true || (isNum($ok) && $ok==1)){
 				echo '<h4 class="w_success"><span class="icon-mark w_success w_bigger"></span> Account found!</h4>'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
-				echo printValue($ok);
+				//echo printValue($ok);
 				exit;
             }
             else{
@@ -778,7 +778,7 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		exit;
     }
 	//only allow administrators to use postedit
-	if(!isAdmin()){
+	if(1==2 && !isAdmin()){
 		$user=ucwords(xmlEncodeCDATA($USER['username']));
 		header('Content-type: text/xml');
 		header('X-Platform: WaSQL');
