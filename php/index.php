@@ -542,7 +542,7 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 			if($sendopts['ok']==true || (isNum($sendopts['ok']) && $sendopts['ok']==1)){
 				echo '<h4 class="w_success"><span class="icon-mark w_success w_bigger"></span> Account found!</h4>'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
-				debugValue($sendopts);
+				echo '<div style="display:none">'.printValue($sendopts).'</div>';
 				exit;
             }
             else{
