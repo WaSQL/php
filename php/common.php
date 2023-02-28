@@ -11112,6 +11112,7 @@ function toFixed($number=0,$decimals = 2){
 * @usage formatPre($txt);
 */
 function formatPre($str=''){
+	if(!is_string($str)){return printValue($str);}
 	return nl2br(trim($str));
 	}
 //---------- begin function friendlyName--------------------
