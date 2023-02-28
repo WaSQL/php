@@ -524,6 +524,7 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 		@trigger_error("");
 		//attempt to send the email
 		if(isset($CONFIG['smtp'])){
+			$sendopts=[];
 			if(isset($CONFIG['phpmailer'])){
             	loadExtras('phpmailer');
             	$sendopts=array('to'=>$to,'subject'=>$subject,'message'=>$message,'smtp'=>$CONFIG['smtp']);
@@ -533,21 +534,21 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 				if(isset($CONFIG['email_from'])){$sendopts['from']=$CONFIG['email_from'];}
 				if(isset($CONFIG['email_encrypt'])){$sendopts['encrypt']=$CONFIG['email_encrypt'];}
 				if(isset($CONFIG['email_debug'])){$sendopts['maildebug']=1;}
-				$ok=phpmailerSendMail($sendopts);
+				$sendopts['ok']=phpmailerSendMail($sendopts);
 			}
 			else{
-				$ok=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
+				$sendopts['ok']=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
 			}
-			if($ok==true || (isNum($ok) && $ok==1)){
+			if($sendopts['ok']==true || (isNum($sendopts['ok']) && $sendopts['ok']==1)){
 				echo '<h4 class="w_success"><span class="icon-mark w_success w_bigger"></span> Account found!</h4>'."\n";
 				echo 'We have sent your login information to ' . $ruser['email'];
-				//echo printValue($ok);
+				debugValue($sendopts);
 				exit;
             }
             else{
 				echo '<h4 class="w_danger"><span class="icon-warning w_warning w_bigger"></span> Technical failure.</h4>'."\n";
 				echo 'Due to technical errors, we were unable to send you a reminder.<br />'."\n";
-				echo printValue($ok);
+				echo printValue($sendopts['ok']);
 				exit;
             }
         }
