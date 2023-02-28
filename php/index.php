@@ -537,6 +537,7 @@ if(isset($_REQUEST['_remind']) && $_REQUEST['_remind']==1 && isset($_REQUEST['em
 				$sendopts['ok']=phpmailerSendMail($sendopts);
 			}
 			else{
+				$sendopts=array('to'=>$to,'subject'=>$subject,'message'=>$message);
 				$sendopts['ok']=wasqlMail(array('to'=>$to,'subject'=>$subject,'message'=>$message));
 			}
 			if($sendopts['ok']==true || (isNum($sendopts['ok']) && $sendopts['ok']==1)){

@@ -168,7 +168,7 @@ function phpmailerSendMail($params=array()){
 	}
 	//headers
 	if(isset($params['headers'])){$params['-headers']=$params['headers'];}
-	if(is_array($params['-headers'])){
+	if(isset($params['-headers']) && is_array($params['-headers'])){
 		foreach($params['-headers'] as $header){
 			$mail->addCustomHeader($header);
 		}
@@ -280,7 +280,7 @@ function phpmailerSendMail($params=array()){
 				array('/path2/filename2','cid2','name2')
 			);
 	*/
-	if(is_array($params['inline'])){
+	if(isset($params['inline']) && is_array($params['inline'])){
 		foreach($params['inline'] as $inline){
 			if(is_array($inline)){
 				//$path,$cid,$name
