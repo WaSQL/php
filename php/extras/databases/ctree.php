@@ -1042,6 +1042,13 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		}
 		return $params['-webhook_count'];
 	}
+	if(isset($params['-webhook_onfinish']) && strlen($params['-webhook_onfinish'])){
+		$post=postURL($params['-webhook_onfinish'],array('-method'=>'GET'));
+		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+			$elapsed=microtime(true)-$starttime;
+			appendFileContents($params['-logfile'],"Called webhook_onfinish:{$params['-webhook_onfinish']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		}
+	}
 	//close filehandle if -filename was given
 	if(isset($fh) && is_resource($fh)){
 		@fclose($fh);
