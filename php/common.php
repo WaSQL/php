@@ -16554,7 +16554,11 @@ function postEditXmlFromJson($json=array()){
 			if($field==$name){continue;}
 			if(isWasqlField($field)){continue;}
 			if(preg_match('/^(template|css_min|js_min)$/i',$field)){continue;}
-			if((isset($info['inputtype']) && strlen($info['inputtype']) && $info['inputtype'] == 'textarea') || in_array($info['_dbtype'],array('blob','json','text'))){
+			if(
+				(isset($info['inputtype']) && strlen($info['inputtype']) && $info['inputtype'] == 'textarea') 
+				|| in_array($info['_dbtype'],array('blob','json','text'))
+				|| preg_match('/^meta\_/i',$field)
+			){
 				$fields[]=$field;
 			}
 		}
@@ -16724,7 +16728,11 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
 				if(preg_match('/^(template|name|css_min|js_min)$/i',$key)){continue;}
 				//if(preg_match('/\_mdml$/i',$key)){continue;}
 				if(!strlen($val)){continue;}
-				if((isset($finfo[$key]['inputtype']) && strlen($finfo[$key]['inputtype']) && $finfo[$key]['inputtype'] == 'textarea') || $finfo[$key]['_dbtype']=='blob'){
+				if(
+					(isset($finfo[$key]['inputtype']) && strlen($finfo[$key]['inputtype']) && $finfo[$key]['inputtype'] == 'textarea') 
+					|| in_array($finfo[$key]['_dbtype'],array('blob','json','text'))
+					|| preg_match('/^meta\_/i',$key)
+				){
 					//skip this one if there is a filter and it does not match
 					if(isset($_REQUEST['filter']) && strlen(trim($_REQUEST['filter']))){
                 		$filename="{$rec['name']}.{$table}.{$key}.{$rec['_id']}";
