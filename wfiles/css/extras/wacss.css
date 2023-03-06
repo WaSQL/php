@@ -2304,8 +2304,8 @@ table.table {
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 table.collapsed{
-  width:unset;
-  min-width:unset;
+  width:unset !important;
+  min-width:unset !important;
 }
 table.table-responsive, table.responsive {
     width: 100%;
