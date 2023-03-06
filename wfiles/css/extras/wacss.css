@@ -2303,6 +2303,10 @@ table.table {
     overflow-x: auto;
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
+table.collapsed{
+  width:unset;
+  min-width:unset;
+}
 table.table-responsive, table.responsive {
     width: 100%;
     display:block;

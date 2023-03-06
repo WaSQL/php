@@ -3728,6 +3728,137 @@ var wacss = {
 		centerObject(modal);
 		return modal;
 	},
+	nav: function(el,opts){
+		//check to make sure that el has data-nav
+		let elobj=wacss.getObject(el);
+		if(undefined == elobj){return false;}
+		let ptr=wacss.getParent(elobj,'tr');
+		if(undefined==ptr || undefined==ptr.dataset){
+			ptr=new Object;
+			ptr.dataset={};
+			ptr.dataset.div=null;
+			ptr.dataset.confirm=null;
+			ptr.dataset.nav=null;
+			ptr.dataset.sp=null;
+			ptr.dataset.title=null;
+		}
+		let ptd=wacss.getParent(elobj,'td');
+		if(undefined==ptd || undefined==ptd.dataset){
+			ptd=new Object;
+			ptd.dataset={};
+			ptd.dataset.div=null;
+			ptd.dataset.confirm=null;
+			ptd.dataset.nav=null;
+			ptd.dataset.sp=null;
+			ptd.dataset.title=null;
+		}
+		let pli=wacss.getParent(elobj,'li');
+		if(undefined==pli || undefined==pli.dataset){
+			pli=new Object;
+			pli.dataset={};
+			pli.dataset.div=null;
+			pli.dataset.confirm=null;
+			pli.dataset.nav=null;
+			pli.dataset.sp=null;
+			pli.dataset.title=null;
+		}
+		if(undefined==opts){opts={};}
+		//find the div 
+		let div=opts.div || elobj.dataset.div || pli.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
+		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
+		if(undefined != has_confirm && has_confirm.length > 0){
+			let txt=has_confirm;
+			if(txt.indexOf('id:') == 0){
+				let cid=txt.replace('id:','');
+				let cidobj=document.querySelector('#'+cid);
+				if(undefined != cidobj){
+					txt=cidobj.innerText;
+				}
+			}
+			if(!confirm(txt)){return false;}
+		}
+		if(undefined == opts){opts={};}
+		if(undefined != elobj.dataset.tab){
+			wacss.setActiveTab(elobj);
+		}
+		if(undefined != elobj.dataset.collapse){
+			let div_content=div.innerHTML;
+			if(div_content.length > 10){
+				div.innerHTML='';
+				return;
+			}
+		}
+		let params={};
+		let checkbox=elobj.dataset.checkbox || pli.dataset.checkbox || ptd.dataset.checkbox || ptr.dataset.checkbox;
+		if(undefined != checkbox){
+			let elsearch='input[type="checkbox"][name="'+checkbox+'[]"]:checked';
+			let checkboxes=document.querySelectorAll(elsearch);
+			params.checkboxes=new Array();
+			for(let c=0;c<checkboxes.length;c++){
+				params.checkboxes.push(checkboxes[c].value);
+			}
+		}
+		if(undefined != document.searchfiltersform){
+			let filters=document.searchfiltersform._filters.innerHTML;
+			if(undefined != filters && filters.length){
+				params.searchfilters=filters.replace(/\r?\n/g, ";");
+			}
+			if(undefined != document.searchfiltersform.filter_order && document.searchfiltersform.filter_order.value.length){
+				params.searchsort=document.searchfiltersform.filter_order.value;
+			}
+			if(undefined != document.searchfiltersform.filter_offset && document.searchfiltersform.filter_offset.value.length && !isNaN(document.searchfiltersform.filter_offset.value)){
+				params.searchoffset=document.searchfiltersform.filter_offset.value;
+			}
+		}
+		if(undefined != document.tailform){
+			let els=document.tailform.querySelectorAll('input[name],select[name]');
+			for(let i=0;i<els.length;i++){
+				params[els[i].name]=els[i].value;
+			}
+		}
+		if(undefined != ptr.dataset){
+			for(k in ptr.dataset){
+				params[k]=ptr.dataset[k];
+			}
+		}
+		if(undefined != ptd.dataset){
+			for(k in ptd.dataset){
+				params[k]=ptd.dataset[k];
+			}
+		}
+		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
+		let sp=opts.sp || elobj.dataset.sp || pli.dataset.sp || ptd.dataset.sp || ptr.dataset.sp || document.querySelector('#setprocessing');
+		if(undefined != sp){
+			params.setprocessing=sp;
+		}
+		let title=opts.title || elobj.dataset.title || pli.dataset.title || ptd.dataset.title || ptr.dataset.title;
+		if(undefined != title){
+			params.title=title;
+			params.cp_title=title;
+		}
+		for(k in elobj.dataset){
+			if(k=='nav'){continue;}
+			if(k=='confirm'){continue;}
+			if(k=='div'){continue;}
+			if(k=='sp'){continue;}
+			if(k=='title'){continue;}
+			params[k]=elobj.dataset[k];
+		}
+		//override params with opts if passed in
+		for(k in opts){
+			params[k]=opts[k];
+		}
+		
+		let url=opts.url || elobj.dataset.url || pli.dataset.url || ptd.dataset.url || ptr.dataset.url;
+		if(url){
+			params.url=url;
+			params.title=title;
+			document.title=params.title;
+		}
+		//console.log(new Array(nav,div,params));
+		return ajaxGet(nav,div,params);
+
+	},
 	navMobileToggle: function(el){
 		let navs=document.querySelectorAll('.nav');
 		for(let n=0;n<navs.length;n++){
