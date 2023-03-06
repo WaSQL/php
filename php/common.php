@@ -10829,7 +10829,190 @@ function fileManager($startdir='',$params=array()){
 	}
 	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
+}
+//---------- begin function fileManagerV2--------------------
+/**
+* @describe interactive file manager - will replace filemanager in the future. requires html5 js to be loaded
+* @param path string - root path
+* @return params - array
+* -root str - root path 
+* [data-] str - adds data atributes
+* @usage return fileManagerV2($path,$params)
+*/
+function fileManagerV2($path,$params=array()){
+	loadExtrasJs('html5');
+	global $PAGE;
+	$files=listFilesEx($path,array(
+		'type'=>'all',
+		'-perms'=>1
+	));
+	if(!isset($params['-action'])){
+		$params['-action']='/t/1/'.$PAGE['name'];
 	}
+	//set icon and actions
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+	foreach($files as &$file){
+		$actions=[];
+		$afile_b64=base64_encode($file['afile']);
+		switch(strtolower($file['type'])){
+			case 'dir':
+				$file['type']='<span title="browse" class="icon-folder w_yellow w_pointer" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"></span> dir';
+				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"><span class="icon-forward w_yellow" title="browse"></span></a>';
+				if(stringContains($file['perms'],'w')){
+					$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rmdir="'.$afile_b64.'" data-confirm="Delete this folder? ARE YOU SURE?"><span class="icon-erase w_danger" title="rmdir"></span></a>';
+				}
+			break;
+			case 'file':
+				if(stringContains($file['perms'],'r') && stringBeginsWith($file['afile'],$docroot)){
+					$actions[]='<a href="/php/index.php?-attach=1&_pushfile='.$afile_b64.'" style="display:inline-block;"><span class="icon-download w_blue" title="download"></span></a>';
+				}
+				if(stringContains($file['perms'],'w')){
+					$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rm="'.$afile_b64.'" data-confirm="Delete this file? ARE YOU SURE?"><span class="icon-erase w_danger" title="rm"></span></a>';
+				}
+				$icon='';
+				switch(strtolower($file['ext'])){
+					default:
+						$icon='<span title="text" class="icon-file-txt"></span> ';
+					break;
+					case 'pdf':
+						$icon='<span title="Adobe Acrobat" class="brand-adobeacrobatreader"></span> ';
+					break;
+					case 'ai':
+						$icon='<span title="Adobe Illustrator" class="brand-adobeillustrator"></span> ';
+					break;
+					case 'ps':
+						$icon='<span title="Adobe Photoshop" class="brand-adobephotoshop"></span> ';
+					break;
+					case 'pl':
+						$icon='<span title="Perl" class="icon-program-perl"></span> ';
+					break;
+					case 'php':
+						$icon='<span title="PHP" class="icon-program-php"></span> ';
+					break;
+					case 'eml':
+						$icon='<span title="email" class="icon-mail w_red"></span> ';
+					break;
+					case 'js':
+						$icon='<span title="javascript" class="icon-program-javascript"></span> ';
+					break;
+					case 'py':
+						$icon='<span title="Python" class="icon-program-python"></span> ';
+					break;
+					case 'htm':
+					case 'html':
+						$icon='<span title="HTML" class="icon-html5"></span> ';
+					break;
+					case 'css':
+						$icon='<span title="CSS" class="icon-css3"></span> ';
+					break;
+					case 'zip':
+					case '7z':
+						$icon='<span title="compressed" class="icon-file-zip"></span> ';
+					break;
+					case 'gif':
+					case 'jpg':
+					case 'jpeg':
+					case 'webp':
+					case 'jfif':
+					case 'png':
+					case 'ico':
+						$icon='<span title="image" class="icon-file-image w_info"></span> ';
+					break;
+					case 'mp3':
+					case 'wav':
+					case 'mid':
+						$icon='<span title="audio" class="icon-file-audio w_orange"></span> ';
+					break;
+					case 'mp4':
+					case 'mpeg':
+					case 'mov':
+						$icon='<span title="video" class="icon-file-video w_blue"></span> ';
+					break;
+					case 'xls':
+					case 'xlsx':
+						$icon='<span title="excel" class="icon-application-excel"></span> ';
+					break;
+					case 'ppt':
+					case 'pptx':
+						$icon='<span title="powerpoint" class="icon-application-powerpoint"></span> ';
+					break;
+					case 'doc':
+					case 'docx':
+						$icon='<span title="word" class="icon-application-word"></span> ';
+					break;
+
+
+				}
+				$file['type']=$icon.' file';
+			break;
+		}
+		$file['actions']=implode(' ',$actions);
+	}
+
+	//Name	Size	Modified	Owner	Perms	Actions
+	if($params['-root'] == $path){
+		$pretable='<div class="w_small w_gray">'.$path.'</div>';
+	}
+	else{
+		$root=$params['-root'];
+		$navstr=str_replace($root,'',$path);
+		$navstr=preg_replace('/^[\/]/','',$navstr);
+		$parts=preg_split('/\//',$navstr);
+		$nav=array();
+		$pnav='<span class="w_pointer w_link" onclick="return wacss.nav(this);"';
+		foreach($params as $k=>$v){
+			if(stringBeginsWith($k,'data-')){
+				$pnav.=" {$k}=\"{$v}\"";
+			}
+		}
+		$pnav.=' data-path="'.base64_encode($root).'">'.$root.'</span>';
+		$nav[]=$pnav;
+		
+		foreach($parts as $part){
+			$root.="/{$part}";
+			$pnav='<span class="w_pointer w_link" onclick="return wacss.nav(this);"';
+			foreach($params as $k=>$v){
+				if(stringBeginsWith($k,'data-')){
+					$pnav.=" {$k}=\"{$v}\"";
+				}
+			}
+			$pnav.=' data-path="'.base64_encode($root).'">/'.$part.'</span>';
+			$nav[]=$pnav;
+		}
+		$path=implode('',$nav);
+		$pretable='<div class="w_gray">'.$path.'</div>';
+	}
+	//drag and drop for file upload
+	$dragpath=base64_encode($path);
+	$drag .= '<div id="filemanager_drag" title="Drag n Drop files to upload"';
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'data-')){
+			$drag.=" {$k}=\"{$v}\"";
+		}
+	}
+	$drag .= ' _onfinish="wacss.nav(document.querySelector(\'#filemanager_drag\'));" _action="/php/admin.php" style="margin:5px 0 20px 0;border:1px dashed #ccc;border-radius:30%;padding:10px;display:inline-table;width:350px;" data-behavior="fileupload" data-path="'.$dragpath.'" path="'.$dragpath.'" _menu="files" _dir="'.$dragpath.'">'.PHP_EOL;
+	$drag .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'.PHP_EOL;
+	$drag .= '</div>'.PHP_EOL;
+	
+	$opts=array(
+		'-tableclass'=>'table is-striped is-bordered is-narrow collapsed',
+		'-listfields'=>'name,type,size_verbose,perms,actions',
+		'-tableheight'=>'70vh',
+		'-pretable'=>$pretable,
+		'-posttable'=>$drag,
+		'size_verbose_displayname'=>'Size',
+		'size_verbose_class'=>'align-right',
+		'actions_class'=>'align-right'
+	);
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'data-')){
+			$k="-tr_{$k}";
+		}
+		$opts[$k]=$v;
+	}
+	$opts['-list']=$files;
+	return databaseListRecords($opts);	
+}
 //---------- begin function fileStat--------------------
 /**
 * @describe returns an array of file stats for file specified
@@ -15111,6 +15294,11 @@ function listFilesEx($dir='.',$params=array()){
 	  				$tmp=@posix_getgrgid($info['gid']);
 	  				$fileinfo['group_name']=$tmp['name'];
 				}
+				$fileinfo['perms']=[];
+				if($fileinfo['perm_read']==1){$fileinfo['perms'][]='r';}
+				if($fileinfo['perm_write']==1){$fileinfo['perms'][]='w';}
+				if($fileinfo['perm_execute']==1){$fileinfo['perms'][]='x';}
+				$fileinfo['perms']=implode('',$fileinfo['perms']);
 			}
 			$fileinfo['size']=$info['size'];
 			$fileinfo['size_verbose']=verboseSize($info['size']);
