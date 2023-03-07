@@ -10959,7 +10959,7 @@ function fileManagerV2($path,$params=array()){
 				$file['type']=$icon.' file';
 			break;
 		}
-		$file['actions']=implode(' ',$actions);
+		$file['actions']='<div style="display:flex;justify-content:space-between">'.implode(' ',$actions).'</div>';
 	}
 
 	//Name	Size	Modified	Owner	Perms	Actions
