@@ -10862,8 +10862,7 @@ function fileManagerV2($path,$params=array()){
 		mkdir($newdir,0777,1);
 	}
 	$files=listFilesEx($path,array(
-		'type'=>'all',
-		'-perms'=>1
+		'type'=>'all'
 	));
 	if(!isset($params['-action'])){
 		$params['-action']='/t/1/'.$PAGE['name'];
@@ -10877,17 +10876,11 @@ function fileManagerV2($path,$params=array()){
 			case 'dir':
 				$file['type']='<span title="browse" class="icon-folder w_yellow w_pointer" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"></span> dir';
 				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"><span class="icon-forward w_yellow" title="browse"></span></a>';
-				if(stringContains($file['perms'],'w')){
-					$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rmdir="'.$afile_b64.'" data-confirm="Delete this folder? ARE YOU SURE?"><span class="icon-erase w_danger" title="rmdir"></span></a>';
-				}
+				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rmdir="'.$afile_b64.'" data-confirm="Delete this folder? ARE YOU SURE?"><span class="icon-erase w_danger" title="rmdir"></span></a>';
 			break;
 			case 'file':
-				if(stringContains($file['perms'],'r') && stringBeginsWith($file['afile'],$docroot)){
-					$actions[]='<a href="/php/index.php?-attach=1&_pushfile='.$afile_b64.'" style="display:inline-block;"><span class="icon-download w_blue" title="download"></span></a>';
-				}
-				if(stringContains($file['perms'],'w')){
-					$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rm="'.$afile_b64.'" data-confirm="Delete this file? ARE YOU SURE?"><span class="icon-erase w_danger" title="rm"></span></a>';
-				}
+				$actions[]='<a href="/php/index.php?-attach=1&_pushfile='.$afile_b64.'" style="display:inline-block;"><span class="icon-download w_blue" title="download"></span></a>';
+				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rm="'.$afile_b64.'" data-confirm="Delete this file? ARE YOU SURE?"><span class="icon-erase w_danger" title="rm"></span></a>';
 				$icon='';
 				switch(strtolower($file['ext'])){
 					default:
