@@ -10928,6 +10928,7 @@ function fileManagerV2($path,$params=array()){
 					case 'jfif':
 					case 'png':
 					case 'ico':
+					case 'svg':
 						$icon='<span title="image" class="icon-file-image w_info"></span> ';
 					break;
 					case 'mp3':
@@ -11021,7 +11022,7 @@ function fileManagerV2($path,$params=array()){
 	
 	$opts=array(
 		'-tableclass'=>'table is-striped is-bordered is-narrow collapsed',
-		'-listfields'=>'name,type,size_verbose,perms,actions',
+		'-listfields'=>'name,type,size_verbose,actions',
 		'-tableheight'=>'70vh',
 		'-pretable'=>$pretable,
 		'-posttable'=>$drag,
