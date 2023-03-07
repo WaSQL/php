@@ -10978,7 +10978,7 @@ function fileManagerV2($path,$params=array()){
 			$pnav.=" {$k}=\"{$v}\"";
 		}
 	}
-	$pnav.=' data-prompt="New Folder Name:" data-add="'.base64_encode($path).'"><span class="icon-folder-add"></span>add</div>';
+	$pnav.=' data-prompt="New Folder Name:" data-add="'.base64_encode($path).'"><span class="icon-folder-add" style="margin-right:3px;"></span> add</div>';
 	$pretables[]=$pnav;
 	if($params['-root'] == $path){
 		$pretables[]='<div style="align-self:center;" class="w_small w_gray">'.$path.'</div>';
