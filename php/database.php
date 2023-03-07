@@ -2001,6 +2001,13 @@ function databaseListRecords($params=array()){
 			}
 			if(!is_array($params['-list']) || !count($params['-list'])){
 				$rtn .= '</table>'.PHP_EOL;
+				//check for postdata content
+				if(isset($params['-postdata'])){
+					$rtn .= $params['-postdata'];
+				}
+				elseif(isset($params['-posttable'])){
+					$rtn .= $params['-posttable'];
+				}
 				if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 					$rtn .= '</div>'.PHP_EOL;
 				}
@@ -2013,6 +2020,13 @@ function databaseListRecords($params=array()){
 		}
 		else{
 			$rtn .= '</table>'.PHP_EOL;
+			//check for postdata content
+			if(isset($params['-postdata'])){
+				$rtn .= $params['-postdata'];
+			}
+			elseif(isset($params['-posttable'])){
+				$rtn .= $params['-posttable'];
+			}
 			if(isset($params['-tableheight']) && strlen($params['-tableheight'])){
 				$rtn .= '</div>'.PHP_EOL;
 			}

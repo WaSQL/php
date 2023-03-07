@@ -11023,7 +11023,7 @@ function fileManagerV2($path,$params=array()){
 		}
 	}
 	$drag .= ' _onfinish="wacss.nav(document.querySelector(\'#filemanager_drag\'));" _action="/php/admin.php" style="margin:5px 0 20px 0;border:1px dashed #ccc;border-radius:30%;padding:10px;display:inline-table;width:350px;" data-behavior="fileupload" data-path="'.$dragpath.'" path="'.$dragpath.'" _menu="files" _dir="'.$dragpath.'">'.PHP_EOL;
-	$drag .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'.PHP_EOL;
+	$drag .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span><div style="color:#ccc;font-size:0.8rem;">drag n drop</div></div>'.PHP_EOL;
 	$drag .= '</div>'.PHP_EOL;
 	
 	$opts=array(
