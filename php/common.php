@@ -10842,6 +10842,25 @@ function fileManager($startdir='',$params=array()){
 function fileManagerV2($path,$params=array()){
 	loadExtrasJs('html5');
 	global $PAGE;
+	if(isset($_REQUEST['path'])){
+		$path=base64_decode($_REQUEST['path']);
+	}
+	elseif(isset($_REQUEST['rmdir'])){
+		$path=base64_decode($_REQUEST['rmdir']);
+		$ok=deleteDirectory($path);
+		$path=getFilePath($path);
+	}
+	elseif(isset($_REQUEST['rm'])){
+		$afile=base64_decode($_REQUEST['rm']);
+		$ok=unlink($afile);
+		$path=getFilePath($afile);
+	}
+	elseif(isset($_REQUEST['add'])){
+		$path=base64_decode($_REQUEST['add']);
+		$name=$_REQUEST['prompt'];
+		$newdir="{$path}/{$name}";
+		mkdir($newdir,0777,1);
+	}
 	$files=listFilesEx($path,array(
 		'type'=>'all',
 		'-perms'=>1
@@ -10950,8 +10969,19 @@ function fileManagerV2($path,$params=array()){
 	}
 
 	//Name	Size	Modified	Owner	Perms	Actions
+	$pretables=[];
+	$pretables[]='<div style="display:flex;margin:5px 0 2px 0;">';
+	//add folder
+	$pnav='<div style="margin-right:20px;padding:2px 7px;background:#ffc107;border-radius:3px;" class="w_pointer w_link" onclick="return wacss.nav(this);"';
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'data-')){
+			$pnav.=" {$k}=\"{$v}\"";
+		}
+	}
+	$pnav.=' data-prompt="New Folder Name:" data-add="'.base64_encode($path).'"><span class="icon-folder-add"></span>add</div>';
+	$pretables[]=$pnav;
 	if($params['-root'] == $path){
-		$pretable='<div class="w_small w_gray">'.$path.'</div>';
+		$pretables[]='<div style="align-self:center;" class="w_small w_gray">'.$path.'</div>';
 	}
 	else{
 		$root=$params['-root'];
@@ -10980,8 +11010,10 @@ function fileManagerV2($path,$params=array()){
 			$nav[]=$pnav;
 		}
 		$path=implode('',$nav);
-		$pretable='<div class="w_gray">'.$path.'</div>';
+		$pretables[]='<div style="align-self:center;" class="w_gray">'.$path.'</div>';
 	}
+	$pretables[]='</div>';
+	$pretable=implode(PHP_EOL,$pretables);
 	//drag and drop for file upload
 	$dragpath=base64_encode($path);
 	$drag .= '<div id="filemanager_drag" title="Drag n Drop files to upload"';

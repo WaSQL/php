@@ -3831,6 +3831,14 @@ var wacss = {
 		if(undefined != sp){
 			params.setprocessing=sp;
 		}
+		//prompt
+		let pmpt=opts.prompt || elobj.dataset.prompt || pli.dataset.prompt || ptd.dataset.prompt || ptr.dataset.prompt || '';
+		if(undefined != pmpt && pmpt.length > 0){
+			params.prompt=prompt(pmpt);
+			if(undefined==params.prompt || params.prompt.length==0){
+				return false;
+			}
+		}
 		let title=opts.title || elobj.dataset.title || pli.dataset.title || ptd.dataset.title || ptr.dataset.title;
 		if(undefined != title){
 			params.title=title;
@@ -3842,6 +3850,7 @@ var wacss = {
 			if(k=='div'){continue;}
 			if(k=='sp'){continue;}
 			if(k=='title'){continue;}
+			if(k=='prompt'){continue;}
 			params[k]=elobj.dataset[k];
 		}
 		//override params with opts if passed in
