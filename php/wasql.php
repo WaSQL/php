@@ -745,6 +745,41 @@ function minifyCssFile($v=''){
 	if(!isset($TEMPLATE['_id']) && !isset($PAGE['_id'])){
 		return false;
 	}
+	if(!is_array($_SESSION['w_MINIFY']['extras_css'])){
+		$_SESSION['w_MINIFY']['extras_css']=[];
+	}
+	//look for loadExtrasJs in Page controller
+	preg_match_all('/loadExtrasCss\((.+?)\)\;/is',$PAGE['controller'],$m);
+	if(isset($m[1][0])){
+		foreach($m[1] as $str){
+			$str=preg_replace('/^array\(/','',$str);
+			$str=preg_replace('/\)$/','',$str);
+			$str=preg_replace('/[\"\']+/','',$str);
+			$parts=preg_split('/\,/',$str);
+			foreach($parts as $part){
+				$part=trim($part);
+				if(strlen($part) && !in_array($part,$_SESSION['w_MINIFY']['extras_css'])){
+					$_SESSION['w_MINIFY']['extras_css'][]=$part;	
+				}
+			}
+		}
+	}
+	//look for loadExtrasJs in Page functions
+	preg_match_all('/loadExtrasCss\((.+?)\)\;/is',$PAGE['functions'],$m);
+	if(isset($m[1][0])){
+		foreach($m[1] as $str){
+			$str=preg_replace('/^array\(/','',$str);
+			$str=preg_replace('/\)$/','',$str);
+			$str=preg_replace('/[\"\']+/','',$str);
+			$parts=preg_split('/\,/',$str);
+			foreach($parts as $part){
+				$part=trim($part);
+				if(strlen($part) && !in_array($part,$_SESSION['w_MINIFY']['extras_css'])){
+					$_SESSION['w_MINIFY']['extras_css'][]=$part;	
+				}
+			}
+		}
+	}
 	$docroot=$_SERVER['DOCUMENT_ROOT'];
 	if(!is_dir("{$docroot}/w_min")){
 		buildDir("{$docroot}/w_min");
@@ -808,6 +843,45 @@ function minifyJsFile($v=''){
 	global $CONFIG;
 	if(!isset($TEMPLATE['_id']) && !isset($PAGE['_id'])){
 		return false;
+	}
+	if(!is_array($_SESSION['w_MINIFY']['extras_js'])){
+		$_SESSION['w_MINIFY']['extras_js']=[];
+	}
+	//look for loadExtrasJs in Page controller
+	preg_match_all('/loadExtrasJs\((.+?)\)\;/is',$PAGE['controller'],$m);
+	if(isset($m[1][0])){
+		foreach($m[1] as $str){
+			$str=preg_replace('/^array\(/','',$str);
+			$str=preg_replace('/\)$/','',$str);
+			$str=preg_replace('/[\"\']+/','',$str);
+			$parts=preg_split('/\,/',$str);
+			foreach($parts as $part){
+				$part=trim($part);
+				if(strlen($part) && !in_array($part,$_SESSION['w_MINIFY']['extras_js'])){
+					$_SESSION['w_MINIFY']['extras_js'][]=$part;	
+				}
+			}
+		}
+	}
+	//look for loadExtrasJs in Page functions
+	preg_match_all('/loadExtrasJs\((.+?)\)\;/is',$PAGE['functions'],$m);
+	if(isset($m[1][0])){
+		foreach($m[1] as $str){
+			$str=preg_replace('/^array\(/','',$str);
+			$str=preg_replace('/\)$/','',$str);
+			$str=preg_replace('/[\"\']+/','',$str);
+			$parts=preg_split('/\,/',$str);
+			foreach($parts as $part){
+				$part=trim($part);
+				if(strlen($part) && !in_array($part,$_SESSION['w_MINIFY']['extras_js'])){
+					$_SESSION['w_MINIFY']['extras_js'][]=$part;	
+				}
+			}
+		}
+	}
+	for($i=0;$i<count($m[0]);$i++){
+		$section_names[$i]=$m[1][$i];
+		$body=str_replace($m[0][$i],'[WACSSFORM_SECTION]',$body);
 	}
 	$docroot=$_SERVER['DOCUMENT_ROOT'];
 	if(!is_dir("{$docroot}/w_min")){
