@@ -3984,8 +3984,15 @@ var wacss = {
 		return false;
 	},
 	setActiveTab: function(el){
+		//get parent ul - can be either nav-tabs or nav-list
 	    let p=wacss.getParent(el,'ul','nav-tabs');
-	    if(p === null){return false;}
+	    if(p === null){
+	    	p=wacss.getParent(el,'ul','nav-list')
+	    }
+	    if(p === null){
+	    	return false;
+	    }
+	    //get parents li tags and unset any active class
 	    let list=p.querySelectorAll('li');
 	    for(let i=0;i<list.length;i++){
 	        wacss.removeClass(list[i],'active');
