@@ -11024,6 +11024,7 @@ function fileManagerV2($path,$params=array()){
 		'-tableclass'=>'table is-striped is-bordered is-narrow collapsed',
 		'-listfields'=>'name,type,size_verbose,actions',
 		'-tableheight'=>'70vh',
+		'-hidesearch'=>1,
 		'-pretable'=>$pretable,
 		'-posttable'=>$drag,
 		'size_verbose_displayname'=>'Size',
