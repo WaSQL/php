@@ -353,7 +353,24 @@ function snowflakeDBConnect($params=array()){
 		}
 		if(!is_resource($dbh_snowflake)){
 			//wait a few seconds and try again
-			sleep(2);
+			sleep(5);
+			if(isset($params['-cursor'])){
+				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			}
+			else{
+				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+			}
+			if(!is_resource($dbh_snowflake)){
+				$e=odbc_errormsg();
+				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
+				$error=array("snowflakeDBConnect Error",$e,$params);
+			    debugValue($error);
+			    return json_encode($error);
+			}
+		}
+		if(!is_resource($dbh_snowflake)){
+			//wait a few seconds and try a third time
+			sleep(5);
 			if(isset($params['-cursor'])){
 				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 			}
