@@ -60,11 +60,10 @@ Feel free to request changes via github.  You can also help by donating to the c
 ```
 LoadModule rewrite_module modules/mod_rewrite.so
 ```
-- search for "<Directory "C:/AppServ/www">" and make sure AllowOverride is set to "All"
-- copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension. Note: notepad will not work. Use Notepad++ or sublime.
-- rename C:\AppServ\www\index.php file to C:\AppServ\www\index_ori.php
 
-- Open up C:\AppServ\php7\php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres.  You will need php-zip and php-curl for sure.  
+- copy sample.htaccess in the wasql folder to your htdocs (DOCUMENT ROOT) folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension. Note: notepad will not work. Use Notepad++ or sublime.
+
+- Open the PHP php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres.  You will need php-zip and php-curl for sure.  
 
 - Add your new PHP bin directory path to your PATH Environment.
 - Add your new Apache bin directory path to your PATH Environment.
