@@ -35,9 +35,9 @@ Feel free to request changes via github.  You can also help by donating to the c
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- using an editor, edit config.xml. Change the dbname, dbuser, and dbpass if you want. 
 		- create a directory called temp in the wasql\php folder
-- **Install AppServ**
-	- you can install AppServ by going to https://www.appserv.org/en/ and downloading the latest install. This will install Apache, MySQL and PHP on your computer. 
-	- add the following to the Apache httpd.conf file located in the AppServ\Apache24\conf\ folder (changing the path to where you installed wasql):
+- **Install Apache, PHP, and MySQL **
+	- the easiest way I have found to install Apache, MySQL and PHP on your computer is to follow the instructions here: https://miloserdov.org/?p=7703. 
+	- once installed, add the following to the Apache httpd.conf file (changing the path to where you installed wasql):
 		- in the "IfModule alias_module" section:
 		
 ```
@@ -64,9 +64,12 @@ LoadModule rewrite_module modules/mod_rewrite.so
 - copy sample.htaccess in the wasql folder to c:\appserv\www\ folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension. Note: notepad will not work. Use Notepad++ or sublime.
 - rename C:\AppServ\www\index.php file to C:\AppServ\www\index_ori.php
 
-- Open up C:\AppServ\php7\php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres
+- Open up C:\AppServ\php7\php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres.  You will need php-zip and php-curl for sure.  
 
-- restart Apache. (Click on the windows key and search for "Apache Restart")
+- Add your new PHP bin directory path to your PATH Environment.
+- Add your new Apache bin directory path to your PATH Environment.
+
+- restart your computer
 - open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (this is going to create a username and password that Wasql will use)
 ```
 	- mysql>CREATE USER 'wasql_dbuser'@'%' IDENTIFIED with mysql_native_password BY 'wasql_dbpass';
