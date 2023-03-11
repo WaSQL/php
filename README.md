@@ -35,7 +35,7 @@ Feel free to request changes via github.  You can also help by donating to the c
 		- in the wasql folder copy sample.config.xml to config.xml 
 		- using an editor, edit config.xml. Change the dbname, dbuser, and dbpass if you want. 
 		- create a directory called temp in the wasql\php folder
-- **Install Apache, PHP, and MySQL **
+- **Install Apache, PHP, and MySQL**
 	- the easiest way I have found to install Apache, MySQL and PHP on your computer is to follow the instructions here: https://miloserdov.org/?p=7703. 
 	- once installed, add the following to the Apache httpd.conf file (changing the path to where you installed wasql):
 		- in the "IfModule alias_module" section:
