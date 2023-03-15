@@ -3855,7 +3855,7 @@ var wacss = {
 				let cid=elobj.dataset[k].replace('id:','');
 				let cidobj=document.querySelector('#'+cid);
 				if(undefined != cidobj){
-					params[k]=cidobj.innerText;
+					params[k]=cidobj.value || cidobj.innerHTML;
 				}
 				else{
 					params[k]=elobj.dataset[k];
