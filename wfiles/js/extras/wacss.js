@@ -3851,7 +3851,19 @@ var wacss = {
 			if(k=='sp'){continue;}
 			if(k=='title'){continue;}
 			if(k=='prompt'){continue;}
-			params[k]=elobj.dataset[k];
+			if(elobj.dataset[k].indexOf('id:') == 0){
+				let cid=elobj.dataset[k].replace('id:','');
+				let cidobj=document.querySelector('#'+cid);
+				if(undefined != cidobj){
+					params[k]=cidobj.innerText;
+				}
+				else{
+					params[k]=elobj.dataset[k];
+				}
+			}
+			else{
+				params[k]=elobj.dataset[k];
+			}
 		}
 		//override params with opts if passed in
 		for(k in opts){
