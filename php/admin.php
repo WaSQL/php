@@ -645,6 +645,7 @@ if(isAjax()){
 		case 'dbsync':
 		case 'ref':
 		case 'zipcodes':
+		case 'appstore':
 		case 'postedit':
 		case 'sync_source':
 		case 'system':
@@ -1376,6 +1377,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'dbsync':
 		case 'ref':
 		case 'zipcodes':
+		case 'appstore':
 		case 'postedit':
 		case 'sync_source':
 		case 'system':

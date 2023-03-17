@@ -243,6 +243,18 @@ var wacss = {
 			}
 			else{return 'w_gray';}
 	},
+	colorwheelSet: function(el){
+		let p=wacss.getParent(el,'div');
+		if(undefined==p){return false;}
+		p.querySelector('input[type="text"]').value=el.dataset.color;
+		p.querySelector('label[for]').style.backgroundColor=el.dataset.color;
+		p.querySelector('input[type="checkbox"]').checked=false;
+	},
+	colorwheelClose: function(el){
+		let p=wacss.getParent(el,'div');
+		if(undefined==p){return false;}
+		p.querySelector('input[type="checkbox"]').checked=false;
+	},
 	dismiss: function(el){
 		/* if the user is hovering over it, do not close.*/
 		if(el.parentElement.querySelector(':hover') == el){
@@ -818,6 +830,10 @@ var wacss = {
 	    ctx.fillText(text, textX, textY);
 	    ctx.save();
 	},
+	hexToRgb:function(hex) {
+    	let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    	return "rgb(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ")";
+    },
 	initChartJsBehavior: function(chartid){
 		let list=document.querySelectorAll('[data-behavior="chartjs"]');
 		if(undefined != chartid){
@@ -3966,7 +3982,15 @@ var wacss = {
 		catch(e){}
 	    return false;
 	},
-	scrollIntoView(el,p){
+	rgbToHex:function(rgb) {
+		let result = rgb.match(/\d+/g);
+		function hex(x) {
+			let digits = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F");
+			return isNaN(x) ? "00" : digits[(x - x % 16 ) / 16] + digits[x % 16];
+		}
+		return "#" + hex(result[0]) + hex(result[1]) + hex(result[2]);
+	},
+	scrollIntoView:function(el,p){
 		//behavior	Defines the transition animation. auto or smooth
 		//block 		Defines vertical alignment. start, center, end, or nearest
 		//inline 		Defines horizontal alignment. start, center, end, or nearest.

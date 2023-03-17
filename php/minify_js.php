@@ -133,7 +133,7 @@ $jspath=realpath("{$progpath}/../wfiles/js");
 global $files;
 $files=array();
 //load basic js files
-minifyFiles($jspath,array('common','event','form','colorpicker'));
+minifyFiles($jspath,array('common','event','form'));
 minifyFiles(realpath("{$jspath}/extras"),array('flatpickr'));
 //Get any extras
 foreach($minify['extras'] as $extra){

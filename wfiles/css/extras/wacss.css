@@ -42,6 +42,42 @@ body{
 .bg-teal,.wacss-bg-teal {background: #17a2b8;color: #fff;}
 .bg-white,.wacss-bg-white {background: #f8f9fa;color: #212529;}
 .bg-black,.wacss-bg-black {background: #343a40;color: #fff;}
+/* ---------------------- colorwheel ----------------- */
+div.w_colorfield{
+  position: relative;
+}
+div.w_colorfield > div{
+  display:flex;
+  width:200px;
+}
+div.w_colorfield input[type="checkbox"],
+div.w_colorfield input[type="checkbox"] + img{
+  margin-top:2px;
+  display:none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+div.w_colorfield input[type="text"]{
+  width:150px;
+  font-family:arial;
+}
+div.w_colorfield input[type="text"] + label[for]{
+  cursor:pointer;
+  width:33px;
+  height:30px;
+  border-radius:50%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+div.w_colorfield input[type="checkbox"]:checked + img{
+  display:initial;
+  position:absolute;
+  z-index: 99999;
+  background-color:#FFFFFF;
+  border-bottom-left-radius:50%;
+  border-bottom-right-radius:50%;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+}
 /* ---------------------- bulma css helpers----------------- */
 .title,.wacss-title{font-size: 2.5rem !important;}
 .title img, img.title,.wacss-title img,img.wacss-title{height: 52px;}
