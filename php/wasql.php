@@ -578,19 +578,23 @@ function gracefulShutdown(){
 				break;
 			}
 		}
-		echo printValue($error);
+		echo "ERROR (1)".printValue($error);
 		exit;
 	}
 	if(preg_match('/^(SimpleXMLElement|fsockpen|mssql_next_result|session_decode|Session is not active|Trying to get|Cannot modify header|Undefined offset|Undefined|Invalid argument supplied for foreach)/i',$error['message'])){return;}
 	//syntax errors have to be handled special
 	if(preg_match('/syntax error/is',$error['message'])){
-    	echo "<b>PHP Syntax Error:</b><br>".PHP_EOL;
-    	unset($error['type']);
+    	echo "<b>PHP Syntax Error (2):</b><br>".PHP_EOL;
+    	//?_menu=tempfiles&func=view_file&file=ctc_php_7f3f170b8f7ce9af1f3dde52ee313336.php
+    	if(isset($error['file']) && isset($error['line'])){
+    		$link="/php/admin.php?_menu=tempfiles&func=view_file&AjaxRequestUniqueId=123456&line={$error['line']}&file=".getFileName($error['file']);
+    		$error['link']='<a target="_blank" href="'.$link.'">Goto file</a>';
+    	}
     	echo printValue($error);
-    	return;
+    	return true;
     }
     elseif(preg_match('/uncaught error/is',$error['message'])){
-    	echo "<b>PHP Uncaught Error:</b><br>".PHP_EOL;
+    	echo "<b>PHP Uncaught Error (3):</b><br>".PHP_EOL;
     	unset($error['type']);
     	echo printValue($error);exit;
     	return;
