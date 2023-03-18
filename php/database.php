@@ -7991,12 +7991,14 @@ function getDBFieldTag($params=array()){
 			$selections=getDBFieldSelections($info[$field]);
 			//echo printValue($info[$field]);exit;
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormCheckbox($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		case 'color':
@@ -8006,12 +8008,14 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormCombo($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		case 'date':
@@ -8063,24 +8067,28 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormMultiSelect($info[$field]['fieldname'],$options,$info[$field]);
 		break;
 		case 'multiinput':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormMultiInput($info[$field]['fieldname'],$options,$info[$field]);
             //$tag=printValue($info[$field]);
 		break;
@@ -8088,24 +8096,28 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormButtonSelect($info[$field]['fieldname'],$options,$info[$field]);
 		break;
 		case 'buttonselect_m':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormButtonSelectMultiple($info[$field]['fieldname'],$options,$info[$field]);
 		break;
 		//select_database
@@ -8121,12 +8133,14 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $tag=buildFormRadio($info[$field]['fieldname'],$options,$info[$field]);
 			break;
 		//Select
@@ -8134,12 +8148,14 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $name=$field;
             if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
             $dname=ucwords(str_replace('_',' ',$name));
@@ -8153,12 +8169,14 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+	            }
+	        }
             $name=$field;
             if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
             $dname=ucwords(str_replace('_',' ',$name));
@@ -8242,13 +8260,15 @@ function getDBFieldTag($params=array()){
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
 			$options=array();
-			$cnt=count($selections['tvals']);
-			for($x=0;$x<$cnt;$x++){
-				$tval=$selections['tvals'][$x];
-				$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
-				$options[$tval]=$dval;
-				if(count($options)==2){break;}
-            }
+			if(is_array($selections['tvals'])){
+				$cnt=count($selections['tvals']);
+				for($x=0;$x<$cnt;$x++){
+					$tval=$selections['tvals'][$x];
+					$dval=isset($selections['dvals'][$x])?$selections['dvals'][$x]:$tval;
+					$options[$tval]=$dval;
+					if(count($options)==2){break;}
+	            }
+	        }
             $name=$field;
             if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
             switch(strtolower($info[$field]['inputtype'])){

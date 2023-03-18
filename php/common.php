@@ -2355,7 +2355,7 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 }
 //---------- begin function buildFormColor-------------------
 /**
-* @describe creates an HTML color control
+* @describe depreciated version
 * @param name string - field name
 * @param params array
 *	[-formname] string - specify the form name - defaults to addedit
@@ -2399,6 +2399,18 @@ function buildFormColorOLD($name,$params=array()){
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
+//---------- begin function buildFormColor-------------------
+/**
+* @describe creates an HTML color control
+* @param name string - field name
+* @param params array
+*	[-formname] string - specify the form name - defaults to addedit
+*	[value] string - specify the current value
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string - html color control
+* @usage echo buildFormColor('color');
+*/
 function buildFormColor($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
