@@ -578,6 +578,10 @@ function gracefulShutdown(){
 				break;
 			}
 		}
+		if(isset($error['file']) && isset($error['line'])){
+    		$link="/php/admin.php?_menu=tempfiles&func=view_file&AjaxRequestUniqueId=123456&line={$error['line']}&file=".getFileName($error['file']);
+    		$error['link']='<a target="_blank" href="'.$link.'">Goto file</a>';
+    	}
 		echo "ERROR (1)".printValue($error);
 		exit;
 	}
@@ -593,11 +597,14 @@ function gracefulShutdown(){
     	echo printValue($error);
     	return true;
     }
-    elseif(preg_match('/uncaught error/is',$error['message'])){
+    elseif(preg_match('/uncaught/is',$error['message'])){
     	echo "<b>PHP Uncaught Error (3):</b><br>".PHP_EOL;
-    	unset($error['type']);
-    	echo printValue($error);exit;
-    	return;
+    	if(isset($error['file']) && isset($error['line'])){
+    		$link="/php/admin.php?_menu=tempfiles&func=view_file&AjaxRequestUniqueId=123456&line={$error['line']}&file=".getFileName($error['file']);
+    		$error['link']='<a target="_blank" href="'.$link.'">Goto file</a>';
+    	}
+    	echo printValue($error);
+    	return true;
     }
 	$debug=debug_backtrace();
 	foreach($error as $key=>$val){
