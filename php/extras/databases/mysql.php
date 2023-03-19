@@ -127,17 +127,23 @@ function mysqlAddDBRecords($table='',$params=array()){
 function mysqlAddDBRecordsCSVLine($line,$params){
 	global $mysqlAddDBRecordsArr;
 	global $mysqlAddDBRecordsResults;
-	//make sure this is not a blank row
-	$vcnt=0;
-	foreach($line['line'] as $k=>$v){
-		if(strlen($v)){
-			$vcnt+=1;
-			break;
-		}
+	//check to see if this is an array of rows or just one
+	if(!isset($line['line']) && is_array($line)){
+		$mysqlAddDBRecordsArr=array_merge($mysqlAddDBRecordsArr,$line);
 	}
-	if($vcnt==0){return;}
-	$mysqlAddDBRecordsArr[]=$line['line'];
-	unset($line['line']);
+	else{
+		//make sure this is not a blank row
+		$vcnt=0;
+		foreach($line['line'] as $k=>$v){
+			if(strlen($v)){
+				$vcnt+=1;
+				break;
+			}
+		}
+		if($vcnt==0){return;}
+		$mysqlAddDBRecordsArr[]=$line['line'];
+		unset($line['line']);
+	}
 	if(count($mysqlAddDBRecordsArr) >= (integer)$params['-chunk']){
 		$mysqlAddDBRecordsResults['counts'][]=mysqlAddDBRecordsProcess($mysqlAddDBRecordsArr,$params);
 		$mysqlAddDBRecordsArr=array();

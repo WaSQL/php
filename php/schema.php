@@ -985,12 +985,14 @@ function createWasqlTable($table=''){
 			//indexes
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"geonameid"));
+			//$ok=addDBIndex(array('-table'=>$table,'-fields'=>"geonameid"));
 			addMetaData($table);
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$addopts=array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1);
+				$ok=dbAddRecords($CONFIG['database'],$table,$addopts);
+				//ho printValue($ok).printValue($addopts);exit;
 			}
             return 1;
 			break;
