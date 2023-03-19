@@ -3611,15 +3611,21 @@ var wacss = {
 	loadJs: function(file,notify) {
 		return wacss.loadScript(file,notify);
 	},
-	loadScript: function(file,notify) {
+	loadScript: function(file,func) {
 	    let script = document.createElement('script');
-	    if(undefined != notify && notify==1){
+	    script.src = file;
+	    //for backwards compatibility, check to see if func=1, if so toast 
+	    if(undefined != func){
+	    	script.func=func;
 	    	script.onload = function () {
-		    //do stuff with the script
-		    wacss.toast(this.src+' loaded successfully');
-			};
+	    		if(parseInt(this.func)==1){
+		    		wacss.toast(this.src+' loaded successfully');
+				}
+				else if(wacss.function_exists(func)){
+					window[func](script.src);
+				}
+			}
 	    }
-		script.src = file;
 		document.head.appendChild(script);
 		return true;
 	},
