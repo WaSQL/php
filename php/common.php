@@ -4930,6 +4930,10 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
+	if(!is_array($codes)){
+		debugValue("buildFormSelectCountry error - states table is blank");
+		return '';
+	}
 	$codes=array_keys($codes);
 	//get countries
 	$recopts=array(
@@ -5538,6 +5542,9 @@ function buildFormSlider($name, $params=array()){
 * @usage buildFormStarRating('rating',$params);
 */
 function buildFormStarRating($name, $params=array()){
+	if(isset($params) && !is_array($params) && isNum($params)){
+		$params=array('value'=>(float)$params,'-readonly'=>1);
+	}
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
@@ -5559,7 +5566,9 @@ function buildFormStarRating($name, $params=array()){
 		unset($params['data-readonlyif']);
 	}
 	$rtn .= '>'.PHP_EOL;
-	
+	if(is_string($params['value'])){
+		$params['value']=(float)$params['value'];
+	}
 	//return $x.printValue($params);
 	for($x=1;$x<=$params['max'];$x++){
 		$p=$x-1;

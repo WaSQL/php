@@ -6719,7 +6719,7 @@ function dropDBTable($table='',$meta=1){
 	}
 	$result=executeSQL("drop table {$table}");
 	if(isset($result['error'])){
-		return $result['error'];
+		debugValue($result['error']);
         }
     if($meta){
 		$ok=delDBRecord(array('-table'=>'_tabledata','-where'=>"tablename = '{$table}'"));
