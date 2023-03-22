@@ -17,7 +17,7 @@ function appstoreApps(){
 function appstoreAppsExtra($recs){
 	foreach($recs as &$rec){
 		//name
-		$rec['name']='<a href="/'.$rec['name'].'" target="_blank" class="w_link">'.$rec['name'].'</a>';
+		$rec['name']='<a href="/'.$rec['name'].'/postinstall" target="_blank" class="w_link">'.$rec['name'].'</a>';
 		//actions
 		$actions=array('<div style="display:flex;justify-content:flex-end;">');
 		//action - update
@@ -53,6 +53,7 @@ function appstoreInstall($appkey){
 		'-headers'=>array("WaSQL-appkey: ".base64_encode($appkey)),
 		'-json'=>1
 	));
+	//echo printValue($post);exit;
 	if(!isset($post['json_array']['status'])){
 		echo printValue($post);exit;
 	}
@@ -74,6 +75,7 @@ function appstoreInstall($appkey){
 		return true;
 	}
 	else{
+		echo printValue($id);exit;
 		return false;
 	}
 }
