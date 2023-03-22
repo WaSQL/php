@@ -17726,6 +17726,16 @@ function postBody($url='',$body='',$params=array()) {
 * @return img binary
 * @usage use page controller and passthrus to make a custom call like the following:
 * @usage 	<img src="/t/1/{pagename}/showzip/thumbnail.png">
+* @usage then in your controller do the following	
+* @usage 	switch(strtolower($PASSTHRU[0])){
+* @usage 		case 'showzip':
+* @usage 			$img=$PASSTHRU[1];
+* @usage 			$zipfile=$path_to_your_file;
+* @usage 			$zipfile_b64=base64_encode($zipfile);
+* @usage 			$ok=showZipfileImage($zipfile_b64,$img);
+* @usage 			return;
+* @usage 		break;
+* @usage 		}
 */
 function showZipfileImage($zipfile_b64,$img){
 	loadExtras('zipfile');
