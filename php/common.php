@@ -17736,7 +17736,7 @@ function showZipfileImage($zipfile_b64,$img){
 		return '/wfiles/clear.gif" data-error="ERROR-no such zipfile';
 	}
 	$name=getFileName($zipfile,1);
-	zipPushFile($zipfile,"{$name}/{$img}");
+	zipPushFile($zipfile,$img);
 	exit;
 }
 //---------- begin function sgml2XML--------------------
