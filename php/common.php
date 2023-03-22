@@ -17718,7 +17718,27 @@ function postBody($url='',$body='',$params=array()) {
 	ksort($rtn);
 	return $rtn;
 }
-
+//---------- begin function showZipfileImage --------------------
+/**
+* @describe extracts an image out of a zipfile and pushes to browser
+* @param zipfile_b64 string - base64 encoded absolute path to file
+* @param img string - name of image in zipfile you want to push
+* @return img binary
+* @usage use page controller and passthrus to make a custom call like the following:
+* @usage 	<img src="/t/1/{pagename}/showzip/thumbnail.png">
+*/
+function showZipfileImage($zipfile_b64,$img){
+	loadExtras('zipfile');
+	$zipfile=base64_decode($zipfile_b64);
+	$zipfile=realpath($zipfile);
+	if(!file_exists($zipfile)){
+		debugValue(array('error'=>'no such file','function'=>'showZipfileImage','file'=>$zipfile));
+		return '/wfiles/clear.gif" data-error="ERROR-no such zipfile';
+	}
+	$name=getFileName($zipfile,1);
+	zipPushFile($zipfile,"{$name}/{$img}");
+	exit;
+}
 //---------- begin function sgml2XML--------------------
 /**
 * @describe converts an SGML feed to XML for further processing as XML
