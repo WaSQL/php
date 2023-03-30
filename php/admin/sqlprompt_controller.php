@@ -10,10 +10,16 @@
 	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
+		if(isset($_REQUEST['schema']) && strlen($_REQUEST['schema']) && isset($DATABASE[$db['name']])){
+			$db['dbschema']=$DATABASE[$db['name']]['dbschema']=$_REQUEST['schema'];
+		}
 		$_SESSION['db']=$db;
 	}
 	elseif(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
 		$db=$DATABASE[$CONFIG['database']];
+		if(isset($_REQUEST['schema']) && strlen($_REQUEST['schema']) && isset($DATABASE[$db['name']])){
+			$db['dbschema']=$DATABASE[$db['name']]['dbschema']=$_REQUEST['schema'];
+		}
 		$_SESSION['db']=$db;
 	}
 	ksort($DATABASE); 
@@ -34,6 +40,7 @@
 	switch(strtolower($_REQUEST['func'])){
 		case 'last_records':
 			$table=addslashes($_REQUEST['table']);
+			//echo "TABLE: {$table}";exit;
 			switch(strtolower($db['dbtype'])){
 				case 'mssql':
 					$sql="select * from {$table} order by 1 offset 0 rows fetch next 5 rows only";
@@ -255,6 +262,7 @@
 				);
 				$recs_show=30;
 				$recs=array();
+				//echo printValue($DATABASE[$db['name']]).printValue($_REQUEST);exit;
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
 				$lastquery=dbLastQuery();
 				if(strlen($lastquery['error'])){
@@ -438,6 +446,15 @@
 					$db['group_icon']=$db['dbicon'];
 				}
 				$db['group']=$group;
+				$dbschemas=preg_split('/[\:\,\ ]+/',$db['dbschema']);
+				if(count($dbschemas) > 1){
+					$db['dbschemas']=array();
+					foreach($dbschemas as $dbschema){
+						$dbschema=trim($dbschema);
+						$db['dbschemas'][]='<a  style="display:inline" class="w_link" href="#" onclick="wacss.setActiveTab(document.querySelector(\'#db_'.$db['name'].'\'));sqlpromptSetDB('."'{$db['name']}','{$dbschema}'".')">'.$dbschema.'</a>';
+					}
+					//echo '<xmp>'.implode(PHP_EOL,$db['dbschemas']).'</xmp>';exit;
+				}
 				$groups[$group][]=$db;
 				$tabs[]=$db;
 			}

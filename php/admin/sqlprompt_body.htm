@@ -45,13 +45,14 @@
 		<div>
 			<form method="post" action="/php/admin.php" name="sqlprompt" onsubmit="return sqlpromptSubmit(this);">
 				<input type="hidden" name="_menu" value="sqlprompt">
-				<input type="hidden" name="db" value="<?=configValue('database');?>" />
-				<input type="hidden" name="func" value="sql" />
-				<input type="hidden" name="offset" value="0" />
-				<input type="hidden" name="setprocessing" value="results_count" />
-				<input type="hidden" name="sql_select" value="" />
-				<input type="hidden" name="cursor_pos" value="" />
-				<input type="hidden" name="editor_content" value="" />
+				<input type="hidden" name="db" value="<?=configValue('database');?>" >
+				<input type="hidden" name="schema" value="" >
+				<input type="hidden" name="func" value="sql" >
+				<input type="hidden" name="offset" value="0" >
+				<input type="hidden" name="setprocessing" value="results_count" >
+				<input type="hidden" name="sql_select" value="" >
+				<input type="hidden" name="cursor_pos" value="" >
+				<input type="hidden" name="editor_content" value="" >
 				<div style="position: relative;max-width:100%;">
 				<textarea class="form-control" wrap="hard" data-behavior="editor" id="sql_full" name="sql_full"></textarea>
 				</div>
@@ -88,7 +89,7 @@
 <div style="max-height:40vh;overflow:auto;padding-right:5px">
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
-			<li><a style="display:flex;" href="#" onclick="sqlpromptFields('<?=$table;?>');" draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$table;?>')"><span class="icon-square-plus" id="<?=$table;?>_icon" style="margin-right:5px;"></span> <?=$table;?></a>
+			<li><a style="display:flex;" href="#" onclick="sqlpromptFields('<?=$table;?>');"><span class="icon-square-plus" id="<?=$table;?>_icon" style="margin-right:5px;"></span> <?=$table;?></a>
 				<div id="<?=$table;?>_fields" style="margin-left:15px;padding-left:0px;border-left:1px solid #CCC;"></div>
 			</li>
 		</view:table>
@@ -177,7 +178,13 @@
 				<tr><td>DBHost</td><td><?=$db['dbhost'];?></td></tr>
 				<tr><td>DBUser</td><td><?=$db['dbuser'];?></td></tr>
 				<tr><td>DBName</td><td><?=$db['dbname'];?></td></tr>
-				<tr><td>DBSchema</td><td><?=$db['dbschema'];?></td></tr>
+				<view:dbschemas>
+					<tr><td>DBSchemas</td><td><?=implode('<br>',$db['dbschemas']);?></td></tr>
+					
+				</view:dbschemas>
+				<view:dbschema><tr><td>DBSchema</td><td><?=$db['dbschema'];?></td></tr></view:dbschema>
+				<?=renderViewIfElse(isset($db['dbschemas'][0]),'dbschemas','dbschema',$db,'db');?>
+				
 			</table>
 		</div>
 	</label>
@@ -203,7 +210,7 @@
 <view:fieldsx>
 	<ul class="nav-list <?=configValue('admin_color');?>">
 	<view:field>
-		<li><span draggable="true" ondragstart="event.dataTransfer.setData('text', '<?=$field['_dbfield'];?>')"><?=$field['_dbfield'];?></span> <span class="w_gray w_small"><?=$field['_dbtype_ex'];?></span></li>
+		<li><span><?=$field['_dbfield'];?></span> <span class="w_gray w_small"><?=$field['_dbtype_ex'];?></span></li>
 	</view:field>
 	<?=renderEach('field',$fields,'field');?>
 	</ul>

@@ -53,9 +53,15 @@ function sqlpromptCheckKey(e){
     	//console.log('Keycode:'+e.keyCode);
     }
 }
-function sqlpromptSetDB(db){
+function sqlpromptSetDB(db,schema){
 	document.sqlprompt.db.value=db;
-	return ajaxGet('/php/admin.php','table_fields',{_menu:'sqlprompt',func:'setdb',db:db})
+	let params={_menu:'sqlprompt',func:'setdb',db:db};
+	if(undefined != schema && schema.length > 0){
+		document.sqlprompt.schema.value=schema;
+		params.schema=schema;
+	}
+	else{document.sqlprompt.schema.value='';}
+	return ajaxGet('/php/admin.php','table_fields',params)
 }
 function sqlpromptSetValue(v){
 	let el=document.getElementById('sql_full');
@@ -83,14 +89,24 @@ function sqlpromptSetValue(v){
 }
 function sqlpromptLoadPrompt(){
 	let db=document.sqlprompt.db.value;
-	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'load_prompt',db:db,setprocessing:0})
+	let schema=document.sqlprompt.schema.value;
+	let params={_menu:'sqlprompt',func:'load_prompt',db:db,setprocessing:0};
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+	}
+	return ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptMonitor(type){
-	var db=document.sqlprompt.db.value;
+	let db=document.sqlprompt.db.value;
+	let schema=document.sqlprompt.schema.value;
 	document.sqlprompt.reset();
 	document.sqlprompt.db.value=db;
 	let div='nulldiv';
 	let params={_menu:'sqlprompt',func:'monitor',db:db,type:type,setprocessing:0};
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+		document.sqlprompt.schema.value=schema;
+	}
 	if(type.toLowerCase()=='optimizations'){
 		div='sqlprompt_results';
 		params.setprocessing=div;
@@ -130,28 +146,52 @@ function sqlpromptMonitorSQL(norun){
 	return false;
 }
 function sqlpromptLastRecords(table){
-	var db=document.sqlprompt.db.value;
+	let db=document.sqlprompt.db.value;
+	let schema=document.sqlprompt.schema.value;
 	document.sqlprompt.reset();
 	document.sqlprompt.db.value=db;
-	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'last_records',db:db,table:table,setprocessing:0})
+	let params={_menu:'sqlprompt',func:'last_records',db:db,table:table,setprocessing:0}
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+		document.sqlprompt.schema.value=schema;
+	}
+	return ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptListRecords(table){
-	var db=document.sqlprompt.db.value;
+	let db=document.sqlprompt.db.value;
+	let schema=document.sqlprompt.schema.value;
 	document.sqlprompt.reset();
 	document.sqlprompt.db.value=db;
-	return ajaxGet('/php/admin.php','sqlprompt_results',{_menu:'sqlprompt',func:'list_records',db:db,table:table,setprocessing:0})
+	let params={_menu:'sqlprompt',func:'list_records',db:db,table:table,setprocessing:0};
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+		document.sqlprompt.schema.value=schema;
+	}
+	return ajaxGet('/php/admin.php','sqlprompt_results',params)
 }
 function sqlpromptCountRecords(table){
-	var db=document.sqlprompt.db.value;
+	let db=document.sqlprompt.db.value;
+	let schema=document.sqlprompt.schema.value;
 	document.sqlprompt.reset();
 	document.sqlprompt.db.value=db;
-	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'count_records',db:db,table:table,setprocessing:0})
+	let params={_menu:'sqlprompt',func:'count_records',db:db,table:table,setprocessing:0};
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+		document.sqlprompt.schema.value=schema;
+	}
+	return ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptDDL(table){
-	var db=document.sqlprompt.db.value;
+	let db=document.sqlprompt.db.value;
+	let schema=document.sqlprompt.schema.value;
 	document.sqlprompt.reset();
 	document.sqlprompt.db.value=db;
-	return ajaxGet('/php/admin.php','nulldiv',{_menu:'sqlprompt',func:'ddl',db:db,table:table,setprocessing:0})
+	let params={_menu:'sqlprompt',func:'ddl',db:db,table:table,setprocessing:0};
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+		document.sqlprompt.schema.value=schema;
+	}
+	return ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptFields(table){
 	let icon=getObject(table+'_icon');
@@ -161,31 +201,15 @@ function sqlpromptFields(table){
 		setText(table+'_fields','');
 		return;
 	}
-	var db=document.sqlprompt.db.value;
+	let params={_menu:'sqlprompt',func:'fields',table:table,db:document.sqlprompt.db.value};
+	if(document.sqlprompt.schema.value.length){
+		params.schema=document.sqlprompt.schema.value;
+	}
 	icon.className='icon-square-minus';
-	return ajaxGet('/php/admin.php',table+'_fields',{_menu:'sqlprompt',func:'fields',table:table,db:db})
+	return ajaxGet('/php/admin.php',table+'_fields',params)
 }
 function sqlpromptExecute(args){
 	return sqlpromptSubmit(document.sqlprompt);
-	let cm=args[1];
-	let k=args[0];
-	let txt=cm.getSelection();
-	if(txt.length){
-		console.log('getSelection');
-		console.log(txt);
-	}
-	cm.focus();
-	txt=cm.getCursor().line;
-	if(txt.length){
-		console.log('getCursor');
-		console.log(txt);
-	}
-	txt=cm.getValue();
-	if(txt.length){
-		console.log('getValue');
-		console.log(txt);
-	}
-	return false;
 }
 function sqlpromptSubmit(frm){
 	let obj=getObject('sql_full');
