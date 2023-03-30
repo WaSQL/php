@@ -167,28 +167,38 @@
 <view:tab_db>
 <li>
 	<input type="radio" data-type="radio" style="display:none;" id="db_<?=$db['name'];?>" onclick="wacss.setActiveTab(this);sqlpromptSetDB(this.value)" name="db" value="<?=$db['name'];?>" />
-	<label class="nav-item" for="db_<?=$db['name'];?>">
-		<span data-tooltip="id:tabdetails_<?=$db['name'];?>" data-tooltip_position="right"><span class="<?=$db['dbicon'];?>"></span> <?=$db['displayname'];?></span>
-		<div id="tabdetails_<?=$db['name'];?>" style="display:none;">
-			<div class="w_bold w_big">Database Details</div>
-			<table class="table bordered striped condensed">
-				<tr><td>Group</td><td><?=$db['group'];?></td></tr>
-				<tr><td class="w_bold">Name</td><td class="w_bold"><?=$db['name'];?></td></tr>
-				<tr><td>DBType</td><td><?=$db['dbtype'];?></td></tr>
-				<tr><td>DBHost</td><td><?=$db['dbhost'];?></td></tr>
-				<tr><td>DBUser</td><td><?=$db['dbuser'];?></td></tr>
-				<tr><td>DBName</td><td><?=$db['dbname'];?></td></tr>
-				<view:dbschemas>
-					<tr><td>DBSchemas</td><td><?=implode('<br>',$db['dbschemas']);?></td></tr>
-					
-				</view:dbschemas>
-				<view:dbschema><tr><td>DBSchema</td><td><?=$db['dbschema'];?></td></tr></view:dbschema>
-				<?=renderViewIfElse(isset($db['dbschemas'][0]),'dbschemas','dbschema',$db,'db');?>
-				
-			</table>
+	<view:tab_noschemas>
+		<label class="nav-item w_pointer" for="db_<?=$db['name'];?>" style="display:flex;justify-content:space-between;">
+			<span class="<?=$db['dbicon'];?>"></span>
+			<div style="flex:1;margin-left:3px;"><?=$db['displayname'];?></div>
+			<div>
+				<span style="margin-left:10px;padding-left:5px;" data-tooltip="id:tabdetails_<?=$db['name'];?>" data-tooltip_position="right"><span class="icon-arrow-right"></span></span>
+			</div>
+		</label>
+	</view:tab_noschemas>
+	<view:tab_schemas>
+		<div style="margin-left:10px;display:flex;justify-content:space-between;">
+			<span class="<?=$db['dbicon'];?>"></span>
+			<div class="w_nowrap" style="flex:1;margin-left:3px;"><?=$db['displayname'];?></div>
+			<div>
+				<span style="margin-left:10px;padding-left:5px;" data-tooltip="id:tabdetails_<?=$db['name'];?>" data-tooltip_position="right"><span class="icon-arrow-right"></span></span>
+			</div>
 		</div>
-	</label>
+		<div style="margin-left:10px;padding:0 10px 0 15px;column-count: 2;"><?=implode(' ',$db['dbschemas']);?></div>
+	</view:tab_schemas>
+	<?=renderViewIfElse(isset($db['dbschemas']),'tab_schemas','tab_noschemas',$db,'db');?>
 </li>
+<div id="tabdetails_<?=$db['name'];?>" style="display:none;">
+	<div class="w_bold w_big">Database Details</div>
+	<table class="table bordered striped condensed">
+		<tr><td>Group</td><td><?=$db['group'];?></td></tr>
+		<tr><td class="w_bold">Name</td><td class="w_bold"><?=$db['name'];?></td></tr>
+		<tr><td>DBType</td><td><?=$db['dbtype'];?></td></tr>
+		<tr><td>DBHost</td><td><?=$db['dbhost'];?></td></tr>
+		<tr><td>DBUser</td><td><?=$db['dbuser'];?></td></tr>
+		<tr><td>DBName</td><td><?=$db['dbname'];?></td></tr>
+	</table>
+</div>
 </view:tab_db>
 
 

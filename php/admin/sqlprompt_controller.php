@@ -451,7 +451,7 @@
 					$db['dbschemas']=array();
 					foreach($dbschemas as $dbschema){
 						$dbschema=trim($dbschema);
-						$db['dbschemas'][]='<a  style="display:inline" class="w_link" href="#" onclick="wacss.setActiveTab(document.querySelector(\'#db_'.$db['name'].'\'));sqlpromptSetDB('."'{$db['name']}','{$dbschema}'".')">'.$dbschema.'</a>';
+						$db['dbschemas'][]='<a  style="text-align:center;border-radius:15px;border:1px solid #ccc;padding:3px 5px;margin-bottom:2px;" href="#" onclick="wacss.setActiveTab(document.querySelector(\'#db_'.$db['name'].'\'));sqlpromptSetDB('."'{$db['name']}','{$dbschema}'".')">'.$dbschema.'</a>';
 					}
 					//echo '<xmp>'.implode(PHP_EOL,$db['dbschemas']).'</xmp>';exit;
 				}
