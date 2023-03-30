@@ -11904,7 +11904,7 @@ function databaseFieldType($query_result,$i=-1){
 function databaseFreeResult($query_result){
 	//Free result memory - supports multiple database types
 	global $dbh;
-	if(!is_resource($query_result)){return;}
+	if(!is_resource($query_result) && !is_object($query_result)){return;}
 	if(isMysqli()){return mysqli_free_result($dbh,$query_result);}
 	elseif(isMysql()){return mysql_free_result($query_result);}
 	elseif(isOracle()){return oci_free_statement($query_result);}

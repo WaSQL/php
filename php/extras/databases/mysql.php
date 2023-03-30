@@ -1336,7 +1336,7 @@ function mysqlGetDBWhere($params,$info=array()){
 }
 function mysqlEscapeString($str){
 	global $dbh_mysql;
-	if(is_resource($dbh_mysql)){
+	if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
 		if(function_exists('mysqli_real_escape_string')){
 			$str=mysqli_real_escape_string($dbh_mysql,$str);
 		}

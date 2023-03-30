@@ -200,7 +200,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		if(isset($params['-debug'])){
 			return $query;
 		}
-		if(!is_resource($dbh_postgresql)){
+		if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 			$dbh_postgresql=postgresqlDBConnect($params);
 		}
 		if(!$dbh_postgresql){
@@ -626,7 +626,7 @@ ENDOFQUERY;
 	}
 
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
+	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
@@ -884,7 +884,7 @@ function postgresqlDBConnect(){
 		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 2 seconds" . printValue($params));
 	}
 	restore_error_handler();
-	if(!is_resource($dbh_postgresql)){
+	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		//try one more time after a couple of seconds
 		sleep(2);
 		set_error_handler('postgresExceptionErrorHandler');
@@ -900,7 +900,7 @@ function postgresqlDBConnect(){
 		restore_error_handler();
 	}
 
-	if(!is_resource($dbh_postgresql)){
+	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		return '';
 	}
 	return $dbh_postgresql;
@@ -1011,7 +1011,7 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 		{$output}
 ENDOFQUERY;
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
+	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
@@ -1815,7 +1815,7 @@ function postgresqlGetDBRecords($params){
 */
 function postgresqlGetDBVersion(){
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql)){
+	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
 	}
 	return pg_version($dbh_postgresql);	
@@ -2425,7 +2425,7 @@ function postgresqlQueryResults($query='',$params=array()){
 */
 function postgresqlEnumQueryResults($data,$params=array()){
 	global $postgresqlStopProcess;
-	if(!is_resource($data)){return null;}
+	if(!is_resource($data) && !is_object($data)){return null;}
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?

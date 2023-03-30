@@ -852,7 +852,7 @@ function mssqlDBConnect($params=array()){
 		}
 		try{
 			$dbh_mssql = sqlsrv_connect( $params['-dbhost'], $params['-connect']);
-			if(!is_resource($dbh_mssql)){
+			if(!is_resource($dbh_mssql) && !is_object($dbh_mssql)){
 				$errs=sqlsrv_errors();
 				echo "mssqlDBConnect error:".printValue($errs).printValue($params);
 				exit;
@@ -867,7 +867,7 @@ function mssqlDBConnect($params=array()){
 	//php is not 7 or greater - use mssql_connect
 	if(isset($params['-single'])){
 		$dbh_single = mssql_connect($params['-dbhost'],$params['-dbuser'],$params['-dbpass']);
-		if(!is_resource($dbh_single)){
+		if(!is_resource($dbh_single) && !is_object($dbh_single)){
 			$err=mssql_get_last_message();
 			echo "mssqlDBConnect single connect error:{$err}".printValue($params);
 			exit;
@@ -875,11 +875,11 @@ function mssqlDBConnect($params=array()){
 		return $dbh_single;
 	}
 	global $dbh_mssql;
-	if(is_resource($dbh_mssql)){return $dbh_mssql;}
+	if(is_resource($dbh_mssql) || is_object($dbh_mssql)){return $dbh_mssql;}
 
 	try{
 		$dbh_mssql = mssql_pconnect($params['-dbhost'],$params['-dbuser'],$params['-dbpass']);
-		if(!is_resource($dbh_mssql)){
+		if(!is_resource($dbh_mssql) && !is_object($dbh_mssql)){
 			$err=mssql_get_last_message();
 			echo "mssqlDBConnect error:{$err}".printValue($params);
 			exit;
