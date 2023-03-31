@@ -828,7 +828,7 @@ function mysqlParseConnectParams($params=array()){
 	else{
 		//$params['-dbuser_source']="passed in";
 	}
-	$CONFIG['mysql_dbschema']=$params['-dbschema'];
+	$CONFIG['mysql_dbschema']=isset($params['-dbschema'])?$params['-dbschema']:'';
 	//connect
 	if(!isset($params['-connect'])){
 		if(isset($CONFIG['mysql_connect'])){
@@ -996,7 +996,7 @@ function mysqlDBConnect($params=array()){
 * @return int - returns 1 if query succeeded, else 0
 * @usage $ok=mysqlExecuteSQL("truncate table abc");
 */
-function mysqlExecuteSQL($query){
+function mysqlExecuteSQL($query,$params=array()){
 	global $DATABASE;
 	$DATABASE['_lastquery']=array(
 		'start'=>microtime(true),
