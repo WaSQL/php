@@ -5096,8 +5096,8 @@ function buildFormSelectDatabase($name,$params=array()){
 			if(strtolower($group) != $db['dbtype']){
 				$addons[]= $db['dbtype'];
 			}
-			if(strlen($db['dbschema'])){
-				$addons[]= $db['dbschema'];
+			if(strlen($db['dbuser'])){
+				$addons[]= $db['dbuser'];
 			}
 			if(count($addons)){
 				$dval.=' ('.implode(' - ',$addons).')';
