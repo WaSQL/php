@@ -3789,7 +3789,7 @@ var wacss = {
 		let div=opts.div || elobj.dataset.div || pli.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
 		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
-			let txt=has_confirm;
+			let txt=has_confirm.replace(/\[newline\]/g,"\n");
 			if(txt.indexOf('id:') == 0){
 				let cid=txt.replace('id:','');
 				let cidobj=document.querySelector('#'+cid);
@@ -3797,6 +3797,7 @@ var wacss = {
 					txt=cidobj.innerText;
 				}
 			}
+
 			if(!confirm(txt)){return false;}
 		}
 		if(undefined == opts){opts={};}
