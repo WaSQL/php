@@ -7,11 +7,11 @@
 				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <wtranslate>About</wtranslate> WaSQL</a></li>
 				<li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-help-circled"></span>  <wtranslate>WaSQL Documentation</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=config"><span class="icon-gear"></span> WaSQL <wtranslate>Config</wtranslate></a></li>
-				<li><a href="/php/admin.php?_menu=appstore"><span class="icon-blank"></span> WaSQL <wtranslate>Appstore</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<wtranslate>Update WaSQL? Are you sure?</wtranslate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <wtranslate>Update</wtranslate> WaSQL</a></li>
+				<li><hr size="1" /></li>
+				<li><a href="/php/admin.php?_menu=appstore"><span class="material-storefront w_bigger"></span> WaSQL <wtranslate>Appstore</wtranslate></a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=dashboard"><span class="icon-th-thumb-empty"></span> <wtranslate>Table Stats</wtranslate></a></li>
-				
-				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<wtranslate>Update WaSQL? Are you sure?</wtranslate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <wtranslate>Update</wtranslate> WaSQL</a></li>
 				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><wtranslate>Clear Min</wtranslate></span></a></li>
 				<li><a href="/php/admin.php?_menu=translate"><span class="icon-translate"></span> <wtranslate>Translate Manager</wtranslate></a></li>
 				<li><hr size="1" /></li>
@@ -169,7 +169,7 @@
 			<ul style="left:initial;right:0px;padding-bottom:15px;padding-top:10px">
 
 				<li><a href="/php/admin.php?_menu=codeprompt"><span class="icon-code w_big"></span> Code Prompt</a></li>
-				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <wtranslate>JSON Decoder</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <wtranslate>Decoder</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> <wtranslate>Terminal</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> <wtranslate>File Manager</wtranslate></a></li>
 
@@ -203,11 +203,6 @@
 		</li>
 		</view:admin>
 	</ul>
-	<view:check_for_updates>
-	<div style="display:none"><div id="topmenu_null"></div></div>
-	<?=buildOnLoad("ajaxGet('/php/admin.php','topmenu_null',{setprocessing:0,_menu:'check_for_updates'});");?>
-	</view:check_for_updates>
-	<?=renderViewIf(!isset($_SESSION['check_for_updates']),'check_for_updates');?>
 </nav>
 </view:default>
 

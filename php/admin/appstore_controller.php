@@ -19,22 +19,7 @@
 		break;
 		case 'uninstall':
 			$appkey=trim($_REQUEST['appkey']);
-			$id=(integer)$_REQUEST['id'];
-			$opts=array(
-				'-table'=>'_pages',
-				'-where'=>"_id={$id} and _appkey='{$appkey}'"
-			);
-			$rec=getDBRecord($opts);
-			if(isset($rec['name'])){
-				$tables=getDBTables();
-				foreach($tables as $table){
-					if(strtolower($rec['name']) == strtolower($table) || stringBeginsWith($table,"{$rec['name']}_")){
-						$ok=dropDBTable($table,1);
-					}
-				}
-			}
-			$ok=delDBRecord($opts);
-			$ok=appstoreSetStatus($appkey,'uninstalled');
+			$ok=appstoreUninstall($appkey);
 			setView('appstore_apps',1);
 			return;
 		break;

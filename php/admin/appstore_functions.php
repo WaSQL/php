@@ -16,14 +16,18 @@ function appstoreApps(){
 }
 function appstoreAppsExtra($recs){
 	foreach($recs as &$rec){
+		//echo printValue($rec);exit;
 		//name
+		$name=$rec['name'];
 		$rec['name']='<a href="/'.$rec['name'].'/postinstall" target="_blank" class="w_link">'.$rec['name'].'</a>';
 		//actions
 		$actions=array('<div style="display:flex;justify-content:flex-end;">');
 		//action - update
-		$actions[]='<span class="icon-refresh w_pointer" data-confirm="Update this app?" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.nav(this);"></span>';
+		$actions[]='<button class="btn w_pointer" data-confirm="Update '.$name.'?" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.nav(this);"><span class="icon-refresh"></span> Update</button>';
+		//action - show appkey
+		$actions[]='<button class="btn w_pointer" data-appkey="'.$rec['_appkey'].'" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="alert(this.dataset.appkey);return false;"><span class="icon-lock w_gold"></span> Appkey</button>';
 		//action - uninstall
-		$actions[]='<span class="icon-erase w_pointer w_danger" style="margin-left:10px;" data-id="'.$rec['_id'].'" data-confirm="UNINSTALL this app? ARE YOU SURE?" data-_func="uninstall" data-div="appstore_content" onclick="wacss.nav(this);"></span>';
+		$actions[]='<button class="btn w_pointer w_danger" style="margin-left:10px;" data-id="'.$rec['_id'].'" data-confirm="UNINSTALL '.$name.'? [newline][newline]This will remove ALL '.$name.' related files.[newline][newline]ARE YOU SURE? Click OK to confirm." data-_func="uninstall" data-div="appstore_content" onclick="wacss.nav(this);"><span class="icon-erase w_danger"></span> Uninstall</button>';
 		$actions[]='</div>';
 		$actions[]='<div id="actions_'.$rec['_id'].'"></div>';
 		$rec['actions']=implode(PHP_EOL,$actions);
@@ -60,6 +64,25 @@ function appstoreInstall($appkey){
 	if($post['json_array']['status'] != 'success'){
 		echo printValue($post['json_array']);exit;
 	}
+	//remove files
+	$wpath=getWaSQLPath();
+	$lpath="{$wpath}/wfiles/appdata/".strtolower($post['json_array']['name']);
+	$files=listFilesEx($lpath);
+	foreach($files as $file){
+		unlink($file['afile']);
+	}
+	//add files
+	if(isset($post['json_array']['files'][0])){
+		foreach($post['json_array']['files'] as $url){
+			$name=getFileName($url);
+			$localfile="{$lpath}/{$name}";
+			if(file_exists($localfile)){
+				unlink($localfile);
+			}
+			list($localfile,$path)=wget($url,$localfile);
+		}
+	}
+	//page
 	$rec=array();
 	$fields=['name','body','controller','title','description','functions','js','css','meta','settings'];
 	foreach($fields as $field){
@@ -92,6 +115,25 @@ function appstoreUpdate($appkey){
 	if($post['json_array']['status'] != 'success'){
 		echo printValue($post['json_array']);exit;
 	}
+	//remove files
+	$wpath=getWaSQLPath();
+	$lpath="{$wpath}/wfiles/appdata/".strtolower($post['json_array']['name']);
+	$files=listFilesEx($lpath);
+	foreach($files as $file){
+		unlink($file['afile']);
+	}
+	//add files
+	if(isset($post['json_array']['files'][0])){
+		foreach($post['json_array']['files'] as $url){
+			$name=getFileName($url);
+			$localfile="{$lpath}/{$name}";
+			if(file_exists($localfile)){
+				unlink($localfile);
+			}
+			list($localfile,$path)=wget($url,$localfile);
+		}
+	}
+	//page
 	$rec=array();
 	$fields=['name','body','controller','title','description','functions','js','css','meta','settings'];
 	foreach($fields as $field){
@@ -109,6 +151,33 @@ function appstoreUpdate($appkey){
 	else{
 		echo "hmm".printValue($id);exit;
 	}
+}
+function appstoreUninstall($appkey){
+	$opts=array(
+		'-table'=>'_pages',
+		'-where'=>"_appkey='{$appkey}'"
+	);
+	$rec=getDBRecord($opts);
+	if(isset($rec['name'])){
+		//remove files
+		$wpath=getWaSQLPath();
+		$lpath="{$wpath}/wfiles/appdata/".strtolower($rec['name']);
+		$files=listFilesEx($lpath);
+		foreach($files as $file){
+			unlink($file['afile']);
+		}
+		rmdir($lpath);
+		//remove tables
+		$tables=getDBTables();
+		foreach($tables as $table){
+			if(strtolower($rec['name']) == strtolower($table) || stringBeginsWith($table,"{$rec['name']}_")){
+				$ok=dropDBTable($table,1);
+			}
+		}
+		$ok=delDBRecord($opts);
+		$ok=appstoreSetStatus($appkey,'uninstalled');
+	}
+	return true;
 }
 function appstoreSetStatus($appkey,$status){
 	$url='https://appstore.wasql.com/api/setstatus/'.$status;

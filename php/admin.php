@@ -517,7 +517,7 @@ if(count($_REQUEST)==1){
 		echo '<div class="container-fluid">'.PHP_EOL;
 		echo '	<div class="row">'.PHP_EOL;
 		echo '		<div class="col-xs-12" style="padding:25px;">'.PHP_EOL;
-		echo "			<h3><img src=\"/wfiles/wasql.png\" class=\"w_middle\" alt=\"\" /> '{$k}' requires admin access to view. Login first.</h3>".PHP_EOL;
+		echo "			<h3><img src=\"/wfiles/wasql.png\" class=\"w_middle\" alt=\"{$k}\" /> Login Required</h3>".PHP_EOL;
 		//echo printValue($USER).printValue($_COOKIE);
 		echo userLoginForm(array('-action'=>$PHP_SELF.'?'.$k));
 		echo '		</div>'.PHP_EOL;
@@ -623,14 +623,6 @@ if(isAjax()){
 	}
 
 	switch(strtolower($_REQUEST['_menu'])){
-		case 'check_for_updates':
-			$_SESSION['check_for_updates']=time();
-			if(wasqlIsCurrent()){
-				echo buildOnLoad("document.querySelector('#topmenu_help_icon').classList.add('w_warning');document.querySelector('#helpmenu_wasql_icon').classList.add('w_warning');");
-			}
-			echo PHP_EOL."check_for_updates completed. ".time();
-			exit;
-		break;
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
