@@ -11494,6 +11494,13 @@ function generateGUID($curly=false,$hyphen=true){
         return $uuid;
     }
 }
+//---------- begin function commonAKD
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function commonAKD($t){
+	$l=substr($t,-8);$r=[];$a=substr($t,0,3);$e=preg_replace('/^'.$a.'/','',$t);$e=preg_replace('/'.$l.'$/','',$e);$s=$a.$l;$e=decrypt($e,$s);$ps=preg_split('/\-/',$e);foreach($ps as $p){$k=substr($p,0,1);$p=substr($p,1);switch(strtolower($k)){case 'n':$k='app_name';break;case 'e':$k='expire_date';break;case 'b':$k='begin_date';break;case 'c':$k='create_time';break;case 'a':$k='app_id';break;case 'u':$k='user_id';break;}$r[$k]=$p;}return $r;
+}
 //---------- begin function functionList
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual

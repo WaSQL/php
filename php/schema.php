@@ -512,6 +512,7 @@ function createWasqlTable($table=''){
 			*/
 			$fields['_adate']=databaseDataType('datetime')." NULL";
 			$fields['_aip']=databaseDataType('varchar(45)')." NULL";
+			$fields['_app']=databaseDataType('json')." NULL";
 			$fields['_auser']=databaseDataType('integer')." NULL";
 			$fields['_counter']=databaseDataType('integer')." NULL";
 			$fields['_amem']=databaseDataType('bigint')." NULL";

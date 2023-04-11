@@ -15,6 +15,12 @@
 		case 'update':
 			$appkey=trim($_REQUEST['appkey']);
 			$ok=appstoreUpdate($appkey);
+			if($ok){
+				echo 'updated';exit;
+			}
+			else{
+				echo $ok;exit;
+			}
 			return;
 		break;
 		case 'uninstall':

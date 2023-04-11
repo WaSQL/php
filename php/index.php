@@ -987,6 +987,13 @@ if(is_array($recs)){
 		}
 	}
 }
+//_appkey
+if(isset($PAGE['_appkey']) && strlen($PAGE['_appkey'])){
+	$PAGE['appmeta']=commonAKD($PAGE['_appkey']);
+	if(!isset($PAGE['appmeta']['app_id']) || strtolower($PAGE['appmeta']['app_name']) != strtolower($PAGE['name'])){
+		echo "Invalid Appkey for {$PAGE['name']}";exit;
+	}
+}
 //default to passthru
 global $PASSTHRU;
 $PASSTHRU=array();
