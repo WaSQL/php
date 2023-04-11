@@ -570,7 +570,9 @@ function userDecodeSessionAuthCode($authcode){
 	}
 	return $rec;
 }
-
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function userOktaAuth(){
 	global $CONFIG;
 	// Instantiate the Okta class

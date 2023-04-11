@@ -2353,17 +2353,8 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	$params['-type']='checkbox';
 	return buildFormRadioCheckbox($name, $opts, $params);
 }
-//---------- begin function buildFormColor-------------------
 /**
-* @describe depreciated version
-* @param name string - field name
-* @param params array
-*	[-formname] string - specify the form name - defaults to addedit
-*	[value] string - specify the current value
-*	[required] boolean - make it a required field - defaults to addedit false
-*	[id] string - specify the field id - defaults to formname_fieldname
-* @return string - html color control
-* @usage echo buildFormColor('color');
+* @exclude  - this function is no longer used
 */
 function buildFormColorOLD($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -2443,6 +2434,10 @@ function buildFormColor($name,$params=array()){
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
+//---------- begin function buildFormColorMap-------------------
+/**
+* @exclude  - this function in only used internally by buildFormColor
+*/
 function buildFormColorMap($name){
 	return <<<ENDOFMAP
 <map name="{$name}">
@@ -2622,22 +2617,8 @@ function buildFormDate($name,$params=array()){
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
 }
-//---------- begin function buildFormDateOLD-------------------
 /**
-* @describe creates an HTML date control
-* @param action string
-* @param params array
-*	[data-firstday] - integer - sets the first day of the week (0: Sunday, 1: Monday, etc)
-*	[data-disableweekends] - if set, disallows selection of Saturdays or Sundays
-*	[data-showalldays] - if set, renders days of the calendar grid that fall in the next or previous months and make them selectable
-*	[data-showweeknumber]-  if set renders the week number in front of the week
-*	[data-numberofmonths] - integer - set the number of visible calendar months
-*	[data-maincalendar] - left or right - sets where the main calendar is.
-*	[data-pickwholeweek] - if set, selects a whole week instead of a day
-*	[data-theme] - string - define classname so you can define your own css.
-*	[data-yearrange] - mixed - number of years or [start,end] years to show
-* @return string
-* @usage echo buildFormDate('mydate');
+* @exclude  - this function is no longer used
 */
 function buildFormDateOLD($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -3540,9 +3521,8 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
-//---------- begin function buildFormRadioCheckbox_OLD
 /**
-* @exclude  - this function in only used internally
+* @exclude  - this function is no longer used
 */
 function buildFormRadioCheckbox_OLD($name, $opts=array(), $params=array()){
 	if(!isset($params['-type'])){return 'buildFormRadioCheckbox Error: no type';}
@@ -4018,6 +3998,9 @@ function buildFormTranslate($params=array()){
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
+/**
+* @exclude  - this function is for internal use only
+*/
 function buildFormTranslateBulma($params=array()){
 	loadExtras('translate');
 	if(!isset($params['-icon'])){$params['-icon']='icon-translate';}
@@ -4460,13 +4443,8 @@ ENDOFTAG;
 	$tag .= '</span>'.PHP_EOL;
 	return $tag;
 }
-//---------- begin function buildFormFile--------------------
 /**
-* @describe creates an HTML file upload field
-* @param name string
-* @param params array
-* @return string
-* @usage echo buildFormFile('file',$params);
+* @exclude  - this function is no longer used
 */
 function buildFormFile_old($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -5334,6 +5312,9 @@ function buildFormSignature($name,$params=array()){
 	$params['data-behavior']='signature_pad';
 	return buildFormTextarea($name,$params);
 }
+/**
+* @exclude  - this function is no longer used
+*/
 function buildFormSignatureOLD($name,$params=array()){
 	loadExtrasJs('html5');
 	global $USER;
@@ -5600,6 +5581,9 @@ function buildFormStarRating($name, $params=array()){
 	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
+/**
+* @exclude  - this function is no longer used
+*/
 function buildFormStarRatingOLD($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -14128,6 +14112,12 @@ function includeModule($name,$params=array()){
 		return processTranslateTags(evalPHP(array($controller,$body)));
 	}
 }
+/**
+ * loads an admin page
+ * @param  string $name   name of the admin page to load
+ * @param  array  $params params to pass in
+ * @return string       HTML page content
+ */
 function includeAdminPage($name,$params=array()){
 	global $ADMINPAGE;
 	$ADMINPAGE=$params;

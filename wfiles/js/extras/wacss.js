@@ -1,11 +1,29 @@
 var wacss = {
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	version: '2023.0211',
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	author: 'WaSQL.com',
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	chartjs:{},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	hoverDiv:'',
+	/**
+	* @name wacss.loadJsText
+	* @describe loads a text string as a javascript function
+	* @param string function name
+	* @param string function body
+	* @return boolean true
+	* @usage wacss.loadJsText('myfunc',str); myfunc();
+	*/
 	loadJsText:function(name,body){
-		//console.log(name);
-		//console.log(body);
 		var code = 'this.f = function ' + name + '() {'+body+'}';
 		eval(code);
 		 return true;
@@ -27,6 +45,13 @@ var wacss = {
 	        }
 	    }
 	},
+	/**
+	* @name wacss.blink
+	* @describe makes an element blink
+	* @param mixed el DOM object or ID of a DOM object
+	* @return boolean true
+	* @usage wacss.blink('myel');
+	*/
 	blink: function(el){
 		el=wacss.getObject(el);
 		if(undefined == el){return;}
@@ -155,6 +180,15 @@ var wacss = {
 		}
 		return tag;
 	},
+	/**
+	* @name wacss.buildFormText
+	* @describe creates an HTML input field - mimicks the WaSQL PHP function
+	* @param fieldname string
+	* @param params - JSON object
+	* @return HTML element
+	* @usage let el=wacss.buildFormText('age_range');
+	* @usage myform.appendChild(el);
+	*/
 	buildFormText:function (fieldname,params){
 		if(undefined == fieldname){alert('buildFormText requires fieldname');return undefined;}
 		if(undefined == params){params={};}
@@ -231,6 +265,9 @@ var wacss = {
 	 	wacss.toast(msg);
 	 	return false;
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	color: function(){
 		if(undefined != document.getElementById('admin_menu')){
 				return document.getElementById('admin_menu').getAttribute('data-color');
@@ -243,6 +280,9 @@ var wacss = {
 			}
 			else{return 'w_gray';}
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	colorwheelSet: function(el){
 		let p=wacss.getParent(el,'div');
 		if(undefined==p){return false;}
@@ -250,6 +290,9 @@ var wacss = {
 		p.querySelector('label[for]').style.backgroundColor=el.dataset.color;
 		p.querySelector('input[type="checkbox"]').checked=false;
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	colorwheelClose: function(el){
 		let p=wacss.getParent(el,'div');
 		if(undefined==p){return false;}
@@ -322,6 +365,9 @@ var wacss = {
 			}
 	    return rv;
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	geoLocation: function(fld,opts){
 		//fld can be a function: (lat,long) or an input field to set value to: [lat,long] 
 		fldObj=wacss.getObject(fld);
@@ -413,6 +459,9 @@ var wacss = {
   		} 
 		return false;
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	geoLocationMap: function(lat,long,params){
 		//console.log('geoLocationMap');
 		lat=parseFloat(lat);
@@ -461,6 +510,9 @@ var wacss = {
 		document.body.appendChild(popup);
 		centerObject(popup);
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	geoLocationMapContent:function(params){
 		//console.log('geoLocationMapContent');
 		//console.log(params);
@@ -535,6 +587,9 @@ var wacss = {
 			}
 		}
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	geoLocationMapSetValue: function(el){
 		let inp=wacss.getObject(el.dataset.input);
 		inp.value=el.dataset.latlon;
@@ -1273,6 +1328,9 @@ var wacss = {
 	        			let gctx = gcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(gctx, gconfig);
 						Chart.pluginService.register({
+							/**
+							* @exclude  - this function is for internal use only and thus excluded from the manual
+							*/
 						    afterDraw: function(chart) {
 						    	if(undefined != chart.config.centerText){
 						        	if ( undefined != chart.config.centerText.display){
@@ -1699,10 +1757,19 @@ var wacss = {
 		    lineNumbers: true,
 		    viewportMargin: Infinity,
 		    extraKeys: {
+		    	/**
+				* @exclude  - this function is for internal use only and thus excluded from the manual
+				*/
 		    	"Ctrl-Space": "autocomplete",
+		    	/**
+				* @exclude  - this function is for internal use only and thus excluded from the manual
+				*/
 		    	"F11": function(cm) {
 		        	cm.setOption("fullScreen", !cm.getOption("fullScreen"));
 		        },
+		        /**
+				* @exclude  - this function is for internal use only and thus excluded from the manual
+				*/
 		        "Esc": function(cm) {
 		        	if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
 		        }
@@ -3951,12 +4018,26 @@ var wacss = {
 	        return;
 	    }
 	},
+	/**
+	* @name wacss.removeId
+	* @describe removes specified object from the DOM
+	* @param string divid
+	* @return boolean
+	* @usage wacss.removeId('centerpop');
+	*/
 	removeId: function(divid){
 		//info: removes specified id
 		let obj=wacss.getObject(divid);
 		return wacss.removeObj(obj);
 	
 	},
+	/**
+	* @name wacss.removeObj
+	* @describe removes specified object from the DOM
+	* @param object DOM element to remove
+	* @return boolean
+	* @usage wacss.removeObj(document.querySelector('#centerpop'));
+	*/
 	removeObj: function(obj){
 		//info: removes specified id
 		if(undefined == obj){return false;}
@@ -3989,6 +4070,13 @@ var wacss = {
 		catch(e){}
 	    return false;
 	},
+	/**
+	* @name wacss.rgbToHex
+	* @describe converts rgb values string to a hex value
+	* @param string rgb
+	* @return string HEX value
+	* @usage let hex=wacss.rgbToHex(255,255,255);
+	*/
 	rgbToHex:function(rgb) {
 		let result = rgb.match(/\d+/g);
 		function hex(x) {
@@ -3997,10 +4085,19 @@ var wacss = {
 		}
 		return "#" + hex(result[0]) + hex(result[1]) + hex(result[2]);
 	},
+	/**
+	* @name wacss.scrollIntoView
+	* @describe scrolls the page so that specified element is in view
+	* @param mixed DOM element or id of element
+	* @param object params defaults to {behavior: 'smooth', block: 'center', inline: 'center'}
+	*        behavior Defines the transition animation -  auto or smooth
+	*        block Defines vertical alignment - start, center, end, or nearest
+	*        inline Defines horizontal alignment - start, center, end or nearest
+	* @return boolean false
+	* @usage wacss.scrollIntoView('#myelement');
+	* @usage wacss.scrollIntoView(document.querySelector('#myelement'));
+	*/
 	scrollIntoView:function(el,p){
-		//behavior	Defines the transition animation. auto or smooth
-		//block 		Defines vertical alignment. start, center, end, or nearest
-		//inline 		Defines horizontal alignment. start, center, end, or nearest.
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
 		let params={behavior: 'smooth', block: 'center', inline: 'center'};
@@ -4014,6 +4111,14 @@ var wacss = {
 		let iw=document.getElementById('image_wrapper');
 		return false;
 	},
+	/**
+	* @name wacss.scrollToBottom
+	* @describe converts rgb values string to a hex value
+	* @param mixed DOM element or id of element
+	* @return boolean false
+	* @usage wacss.scrollToBottom('#myelement');
+	* @usage wacss.scrollToBottom(document.querySelector('#myelement'));
+	*/
 	scrollToBottom: function(el){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
@@ -4026,7 +4131,15 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.setActiveTab
+	* @describe sets the current <ul>  <li> element to class active. Used with w_tabs
+	* @param mixed DOM element or id of element
+	* @return boolean false
+	* @usage onclick="return wacss.setActiveTab(this);"
+	*/
 	setActiveTab: function(el){
+		el=wacss.getObject(el);
 		//get parent ul - can be either nav-tabs or nav-list
 	    let p=wacss.getParent(el,'ul','nav-tabs');
 	    if(p === null){
@@ -4055,6 +4168,10 @@ var wacss = {
 	    }
 	    return false;
 	},
+	/**
+	* @name wacss.setStarRating
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	setStarRating:function(el){
 		let p=wacss.getParent(el,'div');
 		//return false if in readonly mode
@@ -4094,6 +4211,14 @@ var wacss = {
 		}
 		return true;
 	},
+	/**
+	* @name wacss.showImage
+	* @describe creates a DOM element to show image in
+	* @param mixed DOM element or id of element
+	* @param number z-index defaults to 10020
+	* @return object DOM object that is created
+	* @usage let el=wacss.showImage('#myimg',2323)
+	*/
 	showImage: function(el,z){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
@@ -4140,8 +4265,16 @@ var wacss = {
 			removeDiv(this.id);
 		};
 		document.body.appendChild(v);
-
+		return v;
 	},
+	/**
+	* @name wacss.simulateEvent
+	* @describe creates a DOM element to show image in
+	* @param mixed DOM element or id of element
+	* @param string event name - click,hover,mouseover,mouseout,etc
+	* @return boolean
+	* @usage let el=wacss.simulateEvent('#mybutton','click')
+	*/
 	simulateEvent: function(element, eventName){
 		element=getObject(element);
 		if(undefined == element){return false;}
@@ -4553,6 +4686,9 @@ var wacss = {
 		//str=str.replace(/\s/g,"+");
 	    return str;
 	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	wacsseditHandleFiles(el){
 		for(let f=0;f<el.files.length;f++){
 			let reader = new FileReader();

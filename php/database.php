@@ -70,6 +70,9 @@ elseif(isset($CONFIG['load_pages']) && strlen($CONFIG['load_pages'])){
 		if(!isNum($ok) || $ok==0){abort("Load_Pages failed to load {$load} - {$ok}");}
 	}
 }
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function dbTuner($db='',$pargs=array()){
 	if(!is_array($pargs) && strlen($pargs)){
 		$pargs=array($pargs);

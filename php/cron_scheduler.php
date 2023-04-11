@@ -186,7 +186,9 @@ ENDOFSQL;
 	sleep(12);
 }
 exit(0);
-/* cron functions */
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function cronBuildFieldstr(){
 	return <<<ENDOFFIELDS
 	_id,active, paused, running, run_now,run_cmd,cron_pid,json_valid(run_format) as json_valid,frequency_max, 
