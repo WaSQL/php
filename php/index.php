@@ -987,13 +987,7 @@ if(is_array($recs)){
 		}
 	}
 }
-//_appkey
-if(isset($PAGE['_appkey']) && strlen($PAGE['_appkey'])){
-	$PAGE['appmeta']=commonAKD($PAGE['_appkey']);
-	if(!isset($PAGE['appmeta']['app_id']) || strtolower($PAGE['appmeta']['app_name']) != strtolower($PAGE['name'])){
-		echo "Invalid Appkey for {$PAGE['name']}";exit;
-	}
-}
+
 //default to passthru
 global $PASSTHRU;
 $PASSTHRU=array();
@@ -1138,6 +1132,9 @@ if(!is_array($PAGE) && isset($CONFIG['page_404'])){
 	else{
 		$PAGE=getDBRecord(array('-table'=>'_pages','-notimestamp'=>1,'name'=>$CONFIG['page_404']));
 	}
+}
+if(isset($PAGE['_app']) && strlen($PAGE['_app'])){
+	$PAGE['_app']=json_decode($PAGE['_app'],true);if(!isset($PAGE['_app']['key'])){$ok=wasqlAKF(1);}else{$appinfo=wasqlAKD($PAGE['_app']['key']);if(!isset($appinfo['app_id']) || strtolower($appinfo['app_name']) != strtolower($PAGE['name'])){$ok=wasqlAKF(1);}else{foreach($appinfo as $k=>$v){$PAGE['_app'][$k]=$v;}if(isset($appinfo['expire_date']) && date('Ymd') > $appinfo['expire_date']){$PAGE['_app']['expired']=true;}else{$PAGE['_app']['expired']=false;}if($PAGE['_app']['type']=='temp' && $PAGE['_app']['expired']){$ok=wasqlAKF(2);}}}
 }
 if(!is_array($PAGE)){
 	if(isset($CONFIG['missing_template'])){

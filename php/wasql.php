@@ -1,7 +1,20 @@
 <?php
 /*functions only used by wasql*/
 register_shutdown_function('gracefulShutdown');
-
+//---------- begin function wasqlAKD
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wasqlAKD($t){
+	$w=1;$x=3;$y=-8;$z=0;$l=substr($t,$y);$r=[];$a=substr($t,$z,$x);$e=preg_replace('/^'.$a.'/','',$t);$e=preg_replace('/'.$l.'$/','',$e);$s=$a.$l;$e=decrypt($e,$s);$ps=preg_split('/\-/',$e);foreach($ps as $p){$k=substr($p,$z,$w);$p=substr($p,$w);switch(strtolower($k)){case 'n':$k='app_name';break;case 'e':$k='expire_date';break;case 'b':$k='begin_date';break;case 'c':$k='create_time';break;case 'a':$k='app_id';break;case 'u':$k='user_id';break;case 't':$k='type';break;}$r[$k]=$p;}return $r;
+}
+//---------- begin function wasqlAKF
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function wasqlAKF($m){
+	global $PAGE;switch((integer)$m){case 1:$m="Invalid Appkey for {$PAGE['name']}";break;case 2:$m="Your temporary Appkey for {$PAGE['name']} has expired.";break;}$t=getDBRecord(array('-table'=>'_templates','-where'=>'_id > 1','-order'=>'_id','-fields'=>'_id'));$PAGE=array('_id'=>99999,'_template'=>$t['_id'],'body'=>'<div style="margin-top:25px;font-size:1.4rem;"><span class="material-storefront w_bigger w_red"></span> '.$m.'</div>');return false;
+}
 /**
 * @describe returns true if your WaSQL version is current
 * @usage if(!wasqlIsCurrent()){....update....}
