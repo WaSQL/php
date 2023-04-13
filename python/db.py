@@ -45,7 +45,7 @@ def queryResults(dbname,query,params={}):
                 import mysqldb
             except Exception as err:
                 common.abort(sys.exc_info(),err)
-
+                
             return mysqldb.queryResults(query,params)
         #ORACLE
         if dbtype.startswith('oracle'):

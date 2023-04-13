@@ -9223,7 +9223,7 @@ function evalPHP($strings){
 			$evalcode=$evalmatches[1][$ex];
 			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
 			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua)[\ \r\n]+(.+)/ism',$evalcode,$g)){
-				$evalcode=trim(preg_replace('/^'.$g[1].'/i','',$evalcode));
+				$evalcode=preg_replace('/^'.$g[1].'/i','',$evalcode);
 				$lang=commonGetLangInfo($g[1]);
 				$lang['evalcode_md5']=md5($evalcode);
 				$c=0;
@@ -9844,6 +9844,18 @@ function evalGlobal2Perl($arr){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function evalPythonCode($lang,$evalcode){
+	$lines=preg_split('/[\r\n]+/',$evalcode);
+	$prespace='';
+	foreach($lines as $line){
+		if(strlen(trim($line)) && preg_match('/^([\s\t]+)/',$line,$m)){
+			$prespace=$m[1];
+			break;
+		}
+	}
+	foreach($lines as &$line){
+		$line=preg_replace('/^'.$prespace.'/','',rtrim($line));
+	}
+	$evalcode=implode(PHP_EOL,$lines);
 	global $USER;
 	global $CONFIG;
 	global $PAGE;
@@ -10002,7 +10014,6 @@ ENDOFCONTENT;
 	setFileContents($files['wasql'],$content);
 	$content=<<<ENDOFCONTENT
 #! python
-
 import os
 import sys
 sys.path.append("{$wasqlPythonPath}")
@@ -10020,10 +10031,10 @@ try:
 	import wasql_{$lang['evalcode_md5']} as wasql
 	{$pagecode}
 except Exception as err:
-    exc_type, exc_obj, exc_tb = sys.exc_info()
-    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
-    sys.exit(32)
+	exc_type, exc_obj, exc_tb = sys.exc_info()
+	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+	print(f"Import Error: {err}. ExeptionType: {exc_type}, Filename: {fname}, Linenumber: {exc_tb.tb_lineno}")
+	sys.exit(32)
 
 {$evalcode}
 ENDOFCONTENT;
@@ -10032,12 +10043,13 @@ ENDOFCONTENT;
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($command,'',$wasqlTempPath);
-	//remove the temp files
 	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'python'){
 		foreach($files as $name=>$afile){
 			unlink($afile);
 		}
 	}
+	//echo printValue($out);exit;
+	//remove the temp files
 	if($out['rtncode']==0){
 		if(strlen($out['stdout'])){
 			return $out['stdout'];
@@ -10045,14 +10057,54 @@ ENDOFCONTENT;
 		return $out['stderr'];
 	}	
 	else{
+		$code=commonShowCode($content);
 		$err=<<<ENDOFERR
 <div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
 <pre style="color:#5f5f5f;margin-left:20px;">
 {$out['stdout']}
+{$out['stderr']}
 </pre>
+{$code}
 ENDOFERR;
 		return $err;
 	}
+}
+function commonShowCode($code){
+	$codelines=preg_split('/[\r\n]+/',$code);
+	foreach($codelines as &$codeline){
+		$codeline='<code>'.$codeline.'</code>';
+	}
+	$codelines=implode(PHP_EOL,$codelines);
+	return <<<ENDOFCODE
+<style>
+	pre.viewfile{
+		counter-reset: viewfilelinenumber;
+		padding: 15px 0;
+		font-size:0.7rem;
+		color:#717b8a;
+	}
+	pre.viewfile code{
+		counter-increment: viewfilelinenumber;
+		display:inline-block;
+		width: 100%;
+		padding:2px 0;
+	}
+	pre.viewfile code:nth-child(even){
+		background-color: #f0f0f0;
+	}
+	pre.viewfile code:before{
+	    width:35px;
+	    display: inline-block;
+	    margin-right: 5px;
+	    border-right: 1px solid #ccc;
+	    content: counter(viewfilelinenumber);
+	    color: #999;
+	}
+</style>
+<pre class="viewfile" id="view_file">
+{$codelines}
+</pre>
+ENDOFCODE;
 }
 //---------- begin function evalCleanupGlobal
 /**

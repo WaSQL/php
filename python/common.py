@@ -779,6 +779,45 @@ def list2CSV(recs = [], params = {}):
 			csvlines.append(csvImplode(vals, params['-delim'], params['-enclose']))
 	return "\r\n".join(csvlines)
 
+#---------- begin function listFiles--------------------------------------
+# @describe returns a list of files in a directory
+# @param string adir - directory path
+# @return string - return a list of files
+# @usage files=common.listFiles(mypath);
+def listFiles(adir):
+    files = os.listdir(adir)
+    #Remove anything that is not a file
+    #files = [f for f in files if os.path.isfile(adir+'/'+f)]
+    return files 
+
+#---------- begin function listFilesEx--------------------------------------
+# @describe returns a list of files in a directory
+# @param string adir - directory path
+# @return string - return a list of files
+# @usage files=common.listFiles(mypath);
+def listFilesEx(adir):
+    files = os.listdir(adir)
+    #Remove anything that is not a file
+    #files = [f for f in files if os.path.isfile(adir+'/'+f)]
+    recs=[]
+    for f in files:
+        rec={}
+        rec['name']=f
+        rec['path']=adir
+        rec['afile']=adir+'/'+f
+        rec['ext']=os.path.splitext(rec['afile'])[1][1:]
+        info = os.lstat(rec['afile'])
+        rec['size']=info.st_size
+        rec['atime']=info.st_atime
+        rec['adate']=datetime.fromtimestamp(rec['atime']).strftime("%Y-%m-%d")
+        rec['mtime']=info.st_mtime
+        rec['mdate']=datetime.fromtimestamp(rec['mtime']).strftime("%Y-%m-%d")
+        rec['ctime']=info.st_ctime
+        rec['cdate']=datetime.fromtimestamp(rec['ctime']).strftime("%Y-%m-%d")
+        recs.append(rec)
+    #
+    return recs 
+
 #---------- begin function csvImplode--------------------------------------
 # @describe Creates a csv string from an array
 # @param arr array - The array to convert to a csv string

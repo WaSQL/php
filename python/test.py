@@ -101,3 +101,8 @@ if not common.isCLI():
 
 #show message
 common.echo("test successful")
+#test listFiles
+files=common.listFiles(os.getcwd())
+print(files)
+files=common.listFilesEx(os.getcwd())
+print(files)

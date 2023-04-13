@@ -154,7 +154,6 @@ def queryResults(query,params):
 		cur_mysql.execute(query)
 		#get column names - lowercase them for consistency
 		fields = [field_md[0] for field_md in cur_mysql.description]
-
 		if 'filename' in params.keys():
 			jsv_file=params['filename']	
 			#write file
@@ -172,8 +171,6 @@ def queryResults(query,params):
 		else:
 			recs = []
 			for rec in cur_mysql.fetchall():
-				#convert to a dictionary manually since it is not built into the driver
-				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
 				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
 				recs.append(rec)
