@@ -9008,42 +9008,23 @@ function utf2Html($utf2html_string){
 * @usage $enc=encodeLatin($str);
 */
 function encodeLatin($str='') {
-    $html_entities = array (
-        "�" =>  "&aacute;",     #latin small letter a
-        "�" =>  "&Acirc;",     #latin capital letter A
-        "�" =>  "&acirc;",     #latin small letter a
-        "�" =>  "&AElig;",     #latin capital letter AE
-        "�" =>  "&aelig;",     #latin small letter ae
-        "�" =>  "&Agrave;",     #latin capital letter A
-        "�" =>  "&agrave;",     #latin small letter a
-        "�" =>  "&Aring;",     #latin capital letter A
-        "�" =>  "&aring;",     #latin small letter a
-        "�" =>  "&Atilde;",     #latin capital letter A
-        "�" =>  "&atilde;",     #latin small letter a
-        "�" =>  "&Auml;",     #latin capital letter A
-        "�" =>  "&auml;",     #latin small letter a
-        "�" =>  "&Ccedil;",     #latin capital letter C
-        "�" =>  "&ccedil;",     #latin small letter c
-        "�" =>  "&Eacute;",     #latin capital letter E
-        "�" =>  "&eacute;",     #latin small letter e
-        "�" =>  "&Ecirc;",     #latin capital letter E
-        "�" =>  "&ecirc;",     #latin small letter e
-        "�" =>  "&Egrave;",     #latin capital letter E
-        "�" =>  "&ucirc;",     #latin small letter u
-        "�" =>  "&Ugrave;",     #latin capital letter U
-        "�" =>  "&ugrave;",     #latin small letter u
-        "�" =>  "&Uuml;",     #latin capital letter U
-        "�" =>  "&uuml;",     #latin small letter u
-        "�" =>  "&Yacute;",     #latin capital letter Y
-        "�" =>  "&yacute;",     #latin small letter y
-        "�" =>  "&yuml;",     #latin small letter y
-        "�" =>  "&Yuml;",     #latin capital letter Y
-    	);
-    foreach ($html_entities as $key => $value) {
-        $str = str_replace($key, $value, $str);
-    	}
-    return $str;
-	}
+	$str = html_entity_decode(stripslashes($str),ENT_QUOTES,'UTF-8');
+    $ar = preg_split('/(?<!^)(?!$)/u', $str );  // return array of every multi-byte character
+    $str2='';
+    foreach ($ar as $c){
+        $o = ord($c);
+        if ( (strlen($c) > 1) || /* multi-byte [unicode] */
+            ($o <32 || $o > 126) || /* <- control / latin weirdos -> */
+            ($o >33 && $o < 40) ||/* quotes + ambersand */
+            ($o >59 && $o < 63) /* html */
+        ) {
+            // convert to numeric entity
+            $c = mb_encode_numericentity($c,array (0x0, 0xffff, 0, 0xffff), 'UTF-8');
+        }
+        $str2 .= $c;
+    }
+    return $str2;
+}
 //---------- begin function encodeQP
 /**
 * @describe encode Quoted Printable - used in email sometimes
@@ -10060,7 +10041,7 @@ ENDOFCONTENT;
 		$code=commonShowCode($content);
 		$err=<<<ENDOFERR
 <div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
-<pre style="color:#5f5f5f;margin-left:20px;">
+<pre style="color:#5f5f5f;margin-left:20px;white-space:break-spaces;">
 {$out['stdout']}
 {$out['stderr']}
 </pre>
@@ -21629,16 +21610,11 @@ function xmlEncode( $string ) {
 * @usage $data=convertSpecialChars($data);
 */
 function convertSpecialChars($data){
-	$search	=preg_split('/\,/',"�,�");
-	$replace=array();
-	foreach($search as $char){$replace[]='';}
-	$data=str_replace($search,$replace,$data);
-	//replace the rest with their non-accent equivilents
-	$data = strtr($data,
-		"��������������������������������ض�������������������������������������",
-		"SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOPUUUUYsaaaaaaaceeeeiiiionooooooouuuuyy,"
-		);
-	return $data;
+	$str = htmlentities($str, ENT_NOQUOTES, $charset);
+    $str = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
+    $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
+    return $str;
 }
 //---------- begin function xmlEncodeCDATA--------------------
 /**
