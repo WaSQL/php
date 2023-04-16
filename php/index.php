@@ -248,6 +248,8 @@ if(isset($_REQUEST['_locale_'])){
 if(isset($_REQUEST['_pushfile'])){
 	$params=array();
 	if(isset($_REQUEST['-attach']) && $_REQUEST['-attach']==0){$params['-attach']=0;}
+	if(isset($_REQUEST['_filename'])){$params['-filename']=decodeBase64($_REQUEST['_filename']);}
+	if(isset($_REQUEST['_ctype'])){$params['-ctype']=decodeBase64($_REQUEST['_ctype']);}
 	$afile=decodeBase64($_REQUEST['_pushfile']);
 	//for security purposes, only push file that are in document_root or the wasql path
 	$wasqlpath=getWasqlPath();
