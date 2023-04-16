@@ -3888,6 +3888,17 @@ var wacss = {
 				params.checkboxes.push(checkboxes[c].value);
 			}
 		}
+		//load key/values from a form?
+		let frm=elobj.dataset.form || pli.dataset.form || ptd.dataset.form || ptr.dataset.form;
+		if(undefined != frm){
+			frm=wacss.getObject(frm);
+			if(undefined != frm){
+				let els=frm.querySelectorAll('input[name],select[name]');
+				for(let i=0;i<els.length;i++){
+					params[els[i].name]=els[i].value;
+				}
+			}
+		}
 		if(undefined != document.searchfiltersform){
 			let filters=document.searchfiltersform._filters.innerHTML;
 			if(undefined != filters && filters.length){
