@@ -1146,7 +1146,7 @@ function userSetUserInfo($rec=array()){
 
 	if($finfo['password']['_dblength'] != 255 && $finfo['password']['_dbtype'] != 'text'){
 		//increase password length
-		$ok=@databaseQuery('alter table _users modify password VARCHAR(255)');
+		//$ok=@databaseQuery('alter table _users modify password VARCHAR(255)');
 	}
 	if(!userIsEncryptedPW($USER['password'])){
 		$changes['password']=$rec['password']=userEncryptPW($USER['password']);
