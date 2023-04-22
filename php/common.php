@@ -4808,6 +4808,9 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	//return printValue($pairs);
+	if(!isset($pairs) || !is_array($pairs)){
+		$pairs=[];
+	}
 	$val='';
 	if(isset($params['value']) && strlen($params['value'])){
 		$val=$params['value'];
