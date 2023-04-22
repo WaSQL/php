@@ -7524,6 +7524,10 @@ function commonProcessDBListRecordsTags($htm){
 			if(preg_match('/^(show|select|with)/is',trim($dblistrecords_contents))){
 				//replace any [asdfsa] tags with inputs
 				foreach($_REQUEST as $k=>$v){
+					if(!stringContains($dblistrecords_contents,"[{$k}]")){continue;}
+					if(is_array($v)){
+						$v=implode(',',$v);
+					}
 					$dblistrecords_contents=str_replace("[{$k}]",$v,$dblistrecords_contents);
 				}
 				$opts['-query']=trim($dblistrecords_contents);
