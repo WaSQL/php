@@ -7242,7 +7242,7 @@ function processTranslateTags($htm){
 * @usage
 * <chartjs data-type="bar" data-bordercolor="#000">
 * 	<dataset data-label="State counts per country">
-* 		select count(*) as value,country as value from states group by country
+* 		select count(*) as value,country as label from states group by country
 * 	</dataset>
 * </chartjs>
 * 
@@ -7331,6 +7331,7 @@ function commonProcessChartjsTags($htm){
 				$i+=1;
 			}
 			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
+			$replace_str.='<colors>'.json_encode($colors).'</colors>'.PHP_EOL;
 			$replace_str.='</div>'.PHP_EOL;
 			$htm=str_replace($chartjs_tag,$replace_str,$htm);
 			continue;
