@@ -3948,7 +3948,7 @@ var wacss = {
 			for(let c=0;c<childs.length;c++){
 				childs[c].style.display='none';
 			}
-			target.style.display='block';
+			target.style.display=target.dataset.display || 'block';
 			return false;
 		}
 		//sp - setprocessing
