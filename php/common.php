@@ -7331,7 +7331,6 @@ function commonProcessChartjsTags($htm){
 				$i+=1;
 			}
 			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
-			$replace_str.='<colors>'.json_encode($colors).'</colors>'.PHP_EOL;
 			$replace_str.='</div>'.PHP_EOL;
 			$htm=str_replace($chartjs_tag,$replace_str,$htm);
 			continue;
