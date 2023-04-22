@@ -3942,12 +3942,10 @@ var wacss = {
 		//nav
 		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
 		if(nav=='id' && undefined != elobj.dataset.parent){
-			console.log('debug_1');
 			let target=wacss.getObject(div);
 			let ptarget=wacss.getObject(elobj.dataset.parent);
-			let childs=ptarget.querySelectorAll('[id]');
+			let childs=ptarget.querySelectorAll('div[id]');
 			for(let c=0;c<childs.length;c++){
-				console.log(childs[c]);
 				childs[c].style.display='none';
 			}
 			target.style.display='block';
