@@ -3851,10 +3851,21 @@ var wacss = {
 			pli.dataset.sp=null;
 			pli.dataset.title=null;
 		}
+		let pul=wacss.getParent(elobj,'ul');
+		if(undefined==pul || undefined==pul.dataset){
+			pul=new Object;
+			pul.dataset={};
+			pul.dataset.div=null;
+			pul.dataset.confirm=null;
+			pul.dataset.nav=null;
+			pul.dataset.sp=null;
+			pul.dataset.title=null;
+		}
 		if(undefined==opts){opts={};}
 		//find the div 
-		let div=opts.div || elobj.dataset.div || pli.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
-		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
+		let div=opts.div || elobj.dataset.div || pli.dataset.div || pul.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
+		//confirm?
+		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || pul.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
 			let txt=has_confirm.replace(/\[newline\]/g,"\n");
 			if(txt.indexOf('id:') == 0){
@@ -3879,7 +3890,8 @@ var wacss = {
 			}
 		}
 		let params={};
-		let checkbox=elobj.dataset.checkbox || pli.dataset.checkbox || ptd.dataset.checkbox || ptr.dataset.checkbox;
+		//checkbox
+		let checkbox=elobj.dataset.checkbox || pli.dataset.checkbox || pul.dataset.checkbox || ptd.dataset.checkbox || ptr.dataset.checkbox;
 		if(undefined != checkbox){
 			let elsearch='input[type="checkbox"][name="'+checkbox+'[]"]:checked';
 			let checkboxes=document.querySelectorAll(elsearch);
@@ -3889,7 +3901,7 @@ var wacss = {
 			}
 		}
 		//load key/values from a form?
-		let frm=elobj.dataset.form || pli.dataset.form || ptd.dataset.form || ptr.dataset.form;
+		let frm=elobj.dataset.form || pli.dataset.form || pul.dataset.form || ptd.dataset.form || ptr.dataset.form;
 		if(undefined != frm){
 			frm=wacss.getObject(frm);
 			if(undefined != frm){
@@ -3927,20 +3939,34 @@ var wacss = {
 				params[k]=ptd.dataset[k];
 			}
 		}
-		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
-		let sp=opts.sp || elobj.dataset.sp || pli.dataset.sp || ptd.dataset.sp || ptr.dataset.sp || document.querySelector('#setprocessing');
+		//nav
+		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
+		if(nav=='id' && undefined != elobj.dataset.parent){
+			console.log('debug_1');
+			let target=wacss.getObject(div);
+			let ptarget=wacss.getObject(elobj.dataset.parent);
+			let childs=ptarget.querySelectorAll('[id]');
+			for(let c=0;c<childs.length;c++){
+				console.log(childs[c]);
+				childs[c].style.display='none';
+			}
+			target.style.display='block';
+			return false;
+		}
+		//sp - setprocessing
+		let sp=opts.sp || elobj.dataset.sp || pli.dataset.sp || pul.dataset.sp || ptd.dataset.sp || ptr.dataset.sp || document.querySelector('#setprocessing');
 		if(undefined != sp){
 			params.setprocessing=sp;
 		}
 		//prompt
-		let pmpt=opts.prompt || elobj.dataset.prompt || pli.dataset.prompt || ptd.dataset.prompt || ptr.dataset.prompt || '';
+		let pmpt=opts.prompt || elobj.dataset.prompt || pli.dataset.prompt || pul.dataset.prompt || ptd.dataset.prompt || ptr.dataset.prompt || '';
 		if(undefined != pmpt && pmpt.length > 0){
 			params.prompt=prompt(pmpt);
 			if(undefined==params.prompt || params.prompt.length==0){
 				return false;
 			}
 		}
-		let title=opts.title || elobj.dataset.title || pli.dataset.title || ptd.dataset.title || ptr.dataset.title;
+		let title=opts.title || elobj.dataset.title || pli.dataset.title || pul.dataset.title || ptd.dataset.title || ptr.dataset.title;
 		if(undefined != title){
 			params.title=title;
 			params.cp_title=title;
