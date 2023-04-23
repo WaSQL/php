@@ -7509,6 +7509,8 @@ function commonProcessDBListRecordsTags($htm){
 				$opts[$k]=$v;
 			}
 		}
+		$opts['-pretable']='<div style="display:flex;justify-content:flex-end;align-content:flex-start;">'.PHP_EOL;
+		$opts['-posttable']='</div>'.PHP_EOL;
 		if(!isset($opts['-tableclass'])){
 			$opts['-tableclass']='table striped bordered condensed';
 		}
