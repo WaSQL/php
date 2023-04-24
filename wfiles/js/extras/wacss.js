@@ -3907,7 +3907,24 @@ var wacss = {
 			if(undefined != frm){
 				let els=frm.querySelectorAll('input[name],select[name]');
 				for(let i=0;i<els.length;i++){
-					params[els[i].name]=els[i].value;
+					switch(els[i].type){
+						case 'checkbox':
+							if(els[i].checked){
+								if(undefined == params[els[i].name]){
+									params[els[i].name]=array();
+								}
+								params[els[i].name].push(els[i].value);
+							}
+						break;
+						case 'radio':
+							if(els[i].checked){
+								params[els[i].name]=els[i].value;
+							}
+						break;
+						default:
+							params[els[i].name]=els[i].value;
+						break;
+					}
 				}
 			}
 		}
