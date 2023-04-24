@@ -3911,7 +3911,7 @@ var wacss = {
 						case 'checkbox':
 							if(els[i].checked){
 								if(undefined == params[els[i].name]){
-									params[els[i].name]=array();
+									params[els[i].name]=new Array();
 								}
 								params[els[i].name].push(els[i].value);
 							}
