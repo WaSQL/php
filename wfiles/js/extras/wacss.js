@@ -3961,9 +3961,9 @@ var wacss = {
 		if(nav=='id' && undefined != elobj.dataset.parent){
 			let target=wacss.getObject(div);
 			let ptarget=wacss.getObject(elobj.dataset.parent);
-			let childs=ptarget.querySelectorAll('div[id]');
-			for(let c=0;c<childs.length;c++){
-				childs[c].style.display='none';
+			for(let c=0;c<ptarget.childNodes.length;c++){
+				if(undefined==ptarget.childNodes[c].id){continue;}
+				ptarget.childNodes[c].style.display='none';
 			}
 			target.style.display=target.dataset.display || 'block';
 			return false;
