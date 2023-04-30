@@ -3368,26 +3368,7 @@ function submitForm(theForm,popup,debug,ajax){
             }
         }
         //check for allow for file types
-        if(theForm[i].type == 'file' && theForm[i].getAttribute('accept') && theForm[i].value.length){
-			let allow=theForm[i].getAttribute('accept');
-			if(debug==1){
-				alert(" -- File type allowed exts:"+allow);
-            	}
-			let exts=allow.split(',');
-			let valid=0;
-			for(s=0;s<exts.length;s++){
-				if(theForm[i].value.lastIndexOf(exts[s])!=-1){valid++;}
-                }
-            if(valid==0){
-            	let msg = dname+" must be of valid file type:  "+allow;
-                if(theForm[i].getAttribute('acceptmsg')){msg=theForm[i].getAttribute('acceptmsg');}
-                submitFormAlert(msg,popup,5);
-                if(debug==1){console.log(msg);}
-                theForm[i].focus();
-                return false;
-                }
-            }
-        }
+    }
     //nicEdit save
     for(var i=0;i<theForm.length;i++){
 		let behavior=theForm[i].getAttribute('data-behavior');
