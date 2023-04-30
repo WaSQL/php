@@ -2156,7 +2156,7 @@ var wacss = {
 						mfilebox.style.marginTop='10px';
 						let mfile=document.createElement('input');
 						mfile.type='file';
-						mfile.accept='audio/*,video/*,image/*';
+						mfile.accept='image/*';
 						mfile.id='mediafile';
 						mfile.setAttribute('multiple','multiple');
 						mfile.style.position='fixed';
