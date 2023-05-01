@@ -2158,6 +2158,7 @@ var wacss = {
 						mfile.type='file';
 						mfile.accept='audio/*,video/*,image/*';
 						mfile.id='mediafile';
+						mfile.name='mediafile';
 						mfile.setAttribute('multiple','multiple');
 						mfile.style.position='fixed';
 						mfile.style.top='-1000px';
