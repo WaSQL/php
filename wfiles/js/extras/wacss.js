@@ -2300,12 +2300,12 @@ var wacss = {
 						}
 						mreset.style.marginRight='5px';
 						msrbox.appendChild(mreset);
-						/* save */
+						/* insert */
 						let msave=document.createElement('button');
 						msave.style.flex='1 1 auto';
-						msave.title='Reset';
+						msave.title='Insert at cursor';
 						msave.type='button';
-						msave.innerText='Save';
+						msave.innerText='Insert';
 						msave.className='btn w_green';
 						msave.style.marginRight='5px';
 						msave.mwidth=mwidth;
@@ -2334,19 +2334,19 @@ var wacss = {
 							/* image */
 							let list=this.mfiles.querySelectorAll('img');	
 							for(let y=0;y<list.length;y++){
-								let htm='<div style="text-align:'+align+';"><img src="'+list[y].src+'" style="'+style+'" /></div>';
+								let htm='<div style="float:'+align+';"><img src="'+list[y].src+'" style="'+style+'" /></div>';
 							 	document.execCommand("insertHTML", false, htm);
 							}
 							/* audio */
 							list=this.mfiles.querySelectorAll('audio');	
 							for(let y=0;y<list.length;y++){
-								let htm='<div style="text-align:'+align+';"><audio src="'+list[y].src+'" style="'+style+'" controls="controls" /></div>';
+								let htm='<div style="float:'+align+';"><audio src="'+list[y].src+'" style="'+style+'" controls="controls" /></div>';
 							 	document.execCommand("insertHTML", false, htm);
 							}
 							/* video */
 							list=this.mfiles.querySelectorAll('video');	
 							for(let y=0;y<list.length;y++){
-								let htm='<div style="text-align:'+align+';"><video src="'+list[y].src+'" style="'+style+'" controls="controls" /></div>';
+								let htm='<div style="float:'+align+';"><video src="'+list[y].src+'" style="'+style+'" controls="controls" /></div>';
 							 	document.execCommand("insertHTML", false, htm);
 							}
 							/* url */
@@ -2360,15 +2360,15 @@ var wacss = {
 									case 'jpeg':
 									case 'gif':
 									case 'svg':
-										htm='<div style="text-align:'+align+';"><img src="'+this.murl.value+'" style="'+style+'" /></div>';
+										htm='<div style="float:'+align+';"><img src="'+this.murl.value+'" style="'+style+'" /></div>';
 									 	document.execCommand("insertHTML", false, htm);
 									break;
 									case 'mp3':
-										htm='<div style="text-align:'+align+';"><audio src="'+this.murl.value+'" style="'+style+'" controls="controls" /></div>';
+										htm='<div style="float:'+align+';"><audio src="'+this.murl.value+'" style="'+style+'" controls="controls" /></div>';
 									 	document.execCommand("insertHTML", false, htm);
 									break;
 									case 'mp4':
-										htm='<div style="text-align:'+align+';"><video src="'+this.murl.value+'" style="'+style+'" controls="controls" /></div>';
+										htm='<div style="float:'+align+';"><video src="'+this.murl.value+'" style="'+style+'" controls="controls" /></div>';
 									 	document.execCommand("insertHTML", false, htm);
 									break;
 									default:
@@ -2376,10 +2376,10 @@ var wacss = {
 										if(this.murl.value.indexOf('youtube.com') != -1){
 											/* https://www.youtube.com/watch?v=_DmM_6pa-TI replaced with  https://www.youtube.com/embed/_DmM_6pa-TI */
 											let src=this.murl.value.replace('watch?v=','embed/');
-											htm='<div style="text-align:'+align+';"><iframe src="'+src+'" style="'+style+'" ></iframe></div>';
+											htm='<div style="float:'+align+';"><iframe src="'+src+'" style="'+style+'" ></iframe></div>';
 										}
 										else{
-											htm='<div style="text-align:'+align+';"><embed src="'+this.murl.value+'" style="'+style+'" controls="controls" ></embed></div>';	
+											htm='<div style="float:'+align+';"><embed src="'+this.murl.value+'" style="'+style+'" controls="controls" ></embed></div>';	
 										}
 										
 									 	document.execCommand("insertHTML", false, htm);

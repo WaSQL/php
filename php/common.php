@@ -21433,8 +21433,8 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
     	xml_parser_free($parser);
     }
 	catch(Exception $e){
-    	debugValue($e);
-		return;
+    	//debugValue($e);
+		return $e;
 	}
 
     if(!$xml_values){return $contents;}
