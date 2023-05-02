@@ -8550,7 +8550,7 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 	$icon='<span class="icon-plus" title="expand" style="border:1px solid #999;"></span>';
 	$display='none';
 	if($open){
-		$icon='<span class="icon-minus" style="border:1px solid #999;"></span>';
+		$icon='<span class="icon-minus" style="border:1px solid #999;margin-right:5px;"></span>';
 		$display='block';
     }
 	//begin div

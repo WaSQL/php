@@ -985,11 +985,11 @@ function expand(divid){
 	var icon=document.getElementById('expand_icon_'+divid);
 	if(section.style.display=='none'){
     	section.style.display='block';
-        icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;margin-right:3px;"></span>';
+        icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;margin-right:5px;"></span>';
         }
     else{
 		section.style.display='none';
-        icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;margin-right:3px;"></span>';
+        icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;margin-right:5px;"></span>';
         }
     return false;
     }
@@ -1006,11 +1006,11 @@ function ajaxExpand(divid,url,opts){
 			ajaxGet(url,'expand_section_'+divid,opts);
 		}
     	section.style.display='block';
-        icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;margin-right:3px;"></span>';
+        icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;margin-right:5px;"></span>';
         }
     else{
 		section.style.display='none';
-        icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;margin-right:3px;"></span>';
+        icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;margin-right:5px;"></span>';
         }
     return false;
     }
