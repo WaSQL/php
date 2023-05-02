@@ -480,6 +480,7 @@ function buildHostUrl(){
 }
 function abortMessage($msg){
 	global $postedit;
+	if(!is_string($msg)){$msg=json_encode($msg);}
 	$msg=trim($msg);
 	echo "Fatal Error: {$msg}".PHP_EOL;
 	if(isWindows()){

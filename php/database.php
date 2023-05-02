@@ -10216,8 +10216,9 @@ function getDBRecords($params=array()){
 						$ids=array();
 						reset($list);
 						foreach($list as $i=>$r){
+							if(!isset($r[$field])){continue;}
 							if(isNum($r[$field]) && $r[$field] > 0 && !in_array($r[$field],$ids)){$ids[]=$r[$field];}
-							elseif(strlen($r[$field]) && preg_match('/\:/',$r[$field])){
+							elseif(is_string($r[$field]) && strlen($r[$field]) && preg_match('/\:/',$r[$field])){
 	                        	$rvals=preg_split('/\:/',$r[$field]);
 	                        	$dvals=array();
 	                        	foreach($rvals as $rval){
