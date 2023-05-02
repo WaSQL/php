@@ -8547,7 +8547,7 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 	$iconId='expand_icon_' . $id;
 	$linkId='expand_link_' . $id;
 	$sectionId='expand_section_' . $id;
-	$icon='<span class="icon-plus" title="expand" style="border:1px solid #999;"></span>';
+	$icon='<span class="icon-plus" title="expand" style="border:1px solid #999;margin-right:5px;"></span>';
 	$display='none';
 	if($open){
 		$icon='<span class="icon-minus" style="border:1px solid #999;margin-right:5px;"></span>';
