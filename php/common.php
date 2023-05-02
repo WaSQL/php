@@ -8557,13 +8557,13 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 	$html='<div style="margin-bottom:3px;" class="w_align_left">' . "\n";
 	if(strlen($ajaxurl)){
     	//build the +/- link
-		$html .= "\t<div id=\"{$iconId}\" onClick=\"ajaxExpand('{$id}','{$ajaxurl}','{$ajaxopts}')\" style=\"float:left;font-size:13pt;width:13px;color:'.$color.';cursor:pointer;\">{$icon}</div>\n";
+		$html .= "\t<div id=\"{$iconId}\" onClick=\"ajaxExpand('{$id}','{$ajaxurl}','{$ajaxopts}')\" style=\"float:left;font-size:13pt;color:'.$color.';cursor:pointer;\">{$icon}</div>\n";
 		//add title
 		$html .= '<a href="#" id="'.$linkId.'" class="w_link" onClick="return ajaxExpand(\''.$id.'\',\''.$ajaxurl.'\',\''.$ajaxopts.'\');" style="color:'.$color.';">'.$title.'</a>' . "\n";
 	}
 	else{
 		//build the +/- link
-		$html .= "\t<div id=\"{$iconId}\" onClick=\"expand('{$id}')\" style=\"float:left;font-size:13pt;width:13px;color:{$color};cursor:pointer;\">{$icon}</div>\n";
+		$html .= "\t<div id=\"{$iconId}\" onClick=\"expand('{$id}')\" style=\"float:left;font-size:13pt;color:{$color};cursor:pointer;\">{$icon}</div>\n";
 		//add title
 		$html .= '<a href="#" id="'.$linkId.'" class="w_link" onClick="return expand(\''.$id.'\');" style="color:'.$color.';">'.$title.'</a>' . "\n";
 	}
