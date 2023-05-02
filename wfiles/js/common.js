@@ -1006,11 +1006,11 @@ function ajaxExpand(divid,url,opts){
 			ajaxGet(url,'expand_section_'+divid,opts);
 		}
     	section.style.display='block';
-        icon.innerHTML='<img src="/wfiles/minus.gif" alt="minus" />';
+        icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;"></span>';
         }
     else{
 		section.style.display='none';
-        icon.innerHTML='<img src="/wfiles/plus.gif" alt="plus" />';
+        icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;"></span>';
         }
     return false;
     }

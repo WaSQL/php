@@ -8547,10 +8547,10 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 	$iconId='expand_icon_' . $id;
 	$linkId='expand_link_' . $id;
 	$sectionId='expand_section_' . $id;
-	$icon='<img src="/wfiles/plus.gif" alt="Expand" style="vertical-align:middle;" />';
+	$icon='<span class="icon-plus" title="expand" style="border:1px solid #999;"></span>';
 	$display='none';
 	if($open){
-		$icon='<img src="/wfiles/minus.gif" alt="Hide" style="vertical-align:middle;" />';
+		$icon='<span class="icon-minus" style="border:1px solid #999;"></span>';
 		$display='block';
     }
 	//begin div
