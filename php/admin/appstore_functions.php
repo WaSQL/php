@@ -113,7 +113,7 @@ function appstoreInstall($appkey,$update=0){
 	}
 	$rec['-table']='_pages';
 	if($update==1){
-		$rec['-upsert']='body,controller,title,description,functions,js,css,_template,meta,settings';
+		$rec['-upsert']='body,controller,title,description,functions,js,css,meta,settings';
 	}
 	else{
 		$rec['-upsert']='body,controller,title,description,functions,js,css,_app,_template,meta,settings';
