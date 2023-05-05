@@ -11,7 +11,8 @@
 			return;
 		break;
 		case 'json':
-			$decoded=json_decode(trim($_REQUEST['json']),1);
+			$json = preg_replace('/[[:cntrl:]]/', '', trim($_REQUEST['json']));
+			$decoded=json_decode($json,1,512,JSON_INVALID_UTF8_SUBSTITUTE);
 			if(!is_array($decoded)){
 				$decoded=json_last_error_msg();
 			}
