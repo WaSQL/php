@@ -2822,9 +2822,20 @@ var wacss = {
 					 	return false;
 					break;
 					case 'link':
-						let lurl=prompt('ENTER URL');
-						if(lurl.length){
-					 		document.execCommand("CreateLink", false, lurl);
+						let sel=document.getSelection();
+						if(sel.type.toLowerCase()!='range'){
+							alert('Select text first');
+							return false;
+						}
+						let lurl=prompt('ENTER URL','https://');
+						if(undefined != lurl && lurl.length){
+							let target=prompt('ENTER TARGET (optional)');
+							if(undefined != target && target.length){
+								document.execCommand("insertHTML", false, '<a href=\"'+lurl+'\" target=\"'+target+'\">'+sel+'</a>');	
+							}
+							else{
+								document.execCommand("insertHTML", false, '<a href=\"'+lurl+'\">'+sel+'</a>');
+							}
 						}
 					 	wacss.initWacssEditElements();
 					 	return false;
