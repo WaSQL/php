@@ -2091,6 +2091,7 @@ var wacss = {
 				'Font':['fontName','','',''],
 				'Size':['fontSize','','',''],
 				'Color':['','','icon-color-adjust',''],
+				'Link':['link','','icon-link',''],
 				'Media':['','','icon-image',''],
 				'Justify':['justify','','',''],
 				'Form':['form','','',''],
@@ -2809,6 +2810,14 @@ var wacss = {
 						let arg=this.getAttribute('data-arg');
 						document.execCommand('removeFormat',false);
 					 	document.execCommand("insertHTML", false, "<span class='wacssform_"+arg+"'>"+ document.getSelection()+'</span>');
+					 	wacss.initWacssEditElements();
+					 	return false;
+					break;
+					case 'link':
+						let lurl=prompt('ENTER URL');
+						if(lurl.length){
+					 		document.execCommand("CreateLink", false, lurl);
+						}
 					 	wacss.initWacssEditElements();
 					 	return false;
 					break;
