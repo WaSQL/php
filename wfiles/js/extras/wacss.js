@@ -2066,12 +2066,20 @@ var wacss = {
 			});
 			d.setAttribute('contenteditable','true');
 			d.innerHTML = list[i].value;
+			d.style.display='inherit';
+			d.style.borderTopRightRadius=0;
+			d.style.borderTopLeftRadius=0;
 			list[i].original = list[i].value;
 			//hide the textarea and show the contenteditable div in its place
 			list[i].style.display='none';
 			//wacssedit_bar
 			let nav = document.createElement('nav');
 			nav.className='nav w_white';
+			nav.style.borderLeftColor='#a6a6a6';
+			nav.style.borderTopColor='#a6a6a6';
+			nav.style.borderRightColor='#a6a6a6';
+			nav.style.borderTopRightRadius='4px';
+			nav.style.borderTopLeftRadius='4px';
 			if(undefined != list[i].getAttribute('data-bar-color')){
 				nav.className='nav '+list[i].getAttribute('data-bar-color');
 			}
@@ -2084,19 +2092,19 @@ var wacss = {
 				'Italic':['italic','','icon-italic','i'],
 				'Underline':['underline','','icon-underline','u'],
 				'Delete':['delete','','icon-delete',''],
-				'Cut':['cut','','icon-scissors',''],
+				'Cut':['cut','','icon-scissors','t'],
 				'Copy':['copy','','icon-copy','c'],
 				'Quote':['formatBlock','blockquote','icon-code','q'],
 				'Heading':['heading','','',''],
 				'Font':['fontName','','',''],
 				'Size':['fontSize','','',''],
 				'Color':['','','icon-color-adjust',''],
-				'Link':['link','','icon-link',''],
+				'Link':['link','','icon-link','l'],
 				'Media':['','','icon-image',''],
 				'Justify':['justify','','',''],
 				'Form':['form','','',''],
-				'Unordered List':['insertUnorderedList','','icon-list-ul',''],
-				'Ordered List':['insertOrderedList','','icon-list-ol',''],
+				'Unordered List':['insertUnorderedList','','icon-list-ul','u'],
+				'Ordered List':['insertOrderedList','','icon-list-ol','o'],
 				'Redo':['redo','','icon-redo','y'],
 				'Undo':['undo','','icon-undo','z'],
 				'Remove':['removeFormat','','icon-erase','-'],

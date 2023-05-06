@@ -500,7 +500,7 @@ body{
 }
 div[id$="_wacsseditor"]{
     padding: .375rem .75rem;
-    font-size: 1rem;
+    font-size: 1.1rem;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
     border: 1px solid #adadad;
@@ -516,14 +516,14 @@ div[id$="_wacsseditor"]:focus,textarea.wacssedit{
 button.wacssedit{
   border:0px;
   background:inherit;
-  padding: .175rem .35rem !important;
+  padding: .175rem .45rem !important;
   font-size:1.2rem;
   text-align: center;
   color:#4a4a4a;
   cursor:pointer;
 }
 button.wacssedit:hover{
-  color:#000;
+  background:#dbe0e6;
 }
 textarea[data-behavior="whiteboard"]{
   display: none;
