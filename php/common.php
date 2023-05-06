@@ -9403,6 +9403,16 @@ ENDOFCONTENT;
 		'SESSION'=>"let SESSION = ".json_encode(evalCleanupGlobal($_SESSION)).";",
 		'CRONTHRU'=>"let CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU)).";"
 	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]="let CRONTHRU = ".json_encode(evalCleanupGlobal($$var)).";";
+		}
+	}
 	$content=<<<ENDOFCONTENT
 #! nodejs
 
@@ -9565,6 +9575,16 @@ ENDOFCONTENT;
 		'SESSION'=>"local SESSION = json.decode('".json_encode(evalCleanupGlobal($_SESSION))."');",
 		'CRONTHRU'=>"local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($CRONTHRU))."');"
 	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]="local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($$var))."');";
+		}
+	}
 	$content=<<<ENDOFCONTENT
 #! lua
 
@@ -9723,6 +9743,16 @@ ENDOFCONTENT;
 		'SESSION'=>"my %SESSION = ".evalGlobal2Perl($_SESSION),
 		'CRONTHRU'=>"my %CRONTHRU = ".evalGlobal2Perl($CRONTHRU)
 	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]="my %CRONTHRU = ".evalGlobal2Perl($$var);
+		}
+	}
 	$content=<<<ENDOFCONTENT
 #! perl
 
@@ -9928,6 +9958,16 @@ ENDOFCONTENT;
 		'SERVER'=>"SERVER = ".json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'CRONTHRU'=>"CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)
 	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]="{$var} = ".json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+		}
+	}
 	$content=<<<ENDOFCONTENT
 #! python
 
