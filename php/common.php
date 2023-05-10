@@ -8606,7 +8606,30 @@ function date2Mysql($str=''){
 */
 function decodeBase64($str=''){
 	return base64_decode($str);
+}
+//---------- begin function decodeJson
+/**
+* @describe wrapper for json_decode, if it failes it converts the string to utf-8 and tries again
+* @param str string - JSON string to decode
+* @param arr boolean - return an array by default
+* @return arr array
+* @usage $js=decodeJson($str);
+*/
+function decodeJson($str,$arr=true){
+	if(!is_string($str)){return array('error'=>'decodeJson error - only supports strings');}
+	//remove control characters that may interfere
+	$json = preg_replace('/[[:cntrl:]]/', '', trim($str));
+	$decoded=json_decode($json,$arr,512,JSON_INVALID_UTF8_SUBSTITUTE);
+	if(!is_array($decoded)){
+		//JSON_INVALID_UTF8_SUBSTITUTE flag was added in php 7.2
+		$json = mb_convert_encoding($json, 'UTF-8', 'UTF-8');
+		$decoded=json_decode($json,$arr,512);
 	}
+	if(!is_array($decoded)){
+		$decoded=json_last_error_msg();
+	}
+	return $decoded;
+}
 //---------- begin function decodeURL
 /**
 * @describe - wrapper for urldecode function
@@ -8865,7 +8888,7 @@ function encodeAscii($str=''){
 function encodeJson($arr){
 	$str=json_encode($arr);
 	if(!strlen($str)){
-		$arr=array_map('utf8_encode', $arr);
+		$arr = mb_convert_encoding($arr, 'UTF-8', 'UTF-8');
 		$str=json_encode($arr);
 	}
 	return $str;

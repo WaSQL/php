@@ -12,10 +12,7 @@
 		break;
 		case 'json':
 			$json = preg_replace('/[[:cntrl:]]/', '', trim($_REQUEST['json']));
-			$decoded=json_decode($json,1,512,JSON_INVALID_UTF8_SUBSTITUTE);
-			if(!is_array($decoded)){
-				$decoded=json_last_error_msg();
-			}
+			$decoded=decodeJSON($json);
 			$decoded=printValue($decoded);
 			setView('decoded',1);
 			return;
