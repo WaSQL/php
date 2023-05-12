@@ -2143,7 +2143,8 @@ function databaseListRecords($params=array()){
 
 			// is this a sum field?
 			if(isset($sums[$fld])){
-				$sval=str_replace(',','',$value);
+				$sval=trim(removeHtml($value));
+				$sval=str_replace(',','',$sval);
 				$sval=str_replace('$','',$sval);
 				if(isNum($sval)){$sums[$fld]+=$sval;}
 			}
@@ -11120,7 +11121,8 @@ function listDBRecords($params=array(),$customcode=''){
     		}
     	if(isset($params['-sumfields']) && is_array($params['-sumfields'])){
 			foreach($params['-sumfields'] as $sumfield){
-				$amt=(float)str_replace(',','',$rec[$sumfield]);
+				$amt=trim(removeHtml($rec[$sumfield]));
+				$amt=(float)str_replace(',','',$amt);
 				$sums[$sumfield]+=$amt;
 			}
 		}
