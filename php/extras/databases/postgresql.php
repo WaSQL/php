@@ -69,7 +69,21 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
 	}
 	$table=$params['-table'];
-	$fieldinfo=postgresqlGetDBFieldInfo($table,1);
+	if(isset($params['-fieldinfo']) && is_array($params['-fieldinfo'])){
+		$fieldinfo=$params['-fieldinfo'];
+	}
+	else{
+		$tries=0;
+		while($tries < 10){
+			$fieldinfo=postgresqlGetDBFieldInfo($table,1);
+			if(is_array($fieldinfo) && count($fieldinfo)){
+				break;
+			}
+			$tries+=1;
+			sleep(5);	
+		}
+	}
+	
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
