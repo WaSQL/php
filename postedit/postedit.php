@@ -8,6 +8,13 @@
 		get records from server
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
+if(!isset($argv[1]) || in_array($argv[1],array('?','--help'))){
+	echo "postEdit Usage: ".PHP_EOL;
+	echo " - from a CMD prompt in the WaSQL direcory".PHP_EOL;
+	echo " - p {alias name} [{filter1} {filter2}...]".PHP_EOL;
+	echo PHP_EOL;
+	exit;
+}
 global $postedit;
 global $hosts;
 error_reporting(E_ALL ^ E_WARNING);
@@ -48,6 +55,16 @@ if(!isset($hosts[$argv[1]])){
 }
 $postedit=$hosts[$argv[1]];
 $postedit['host']=$argv[1];
+$postedit['filters']=array();
+if(isset($argv[2])){
+	$postedit['filters']=$argv;
+	array_shift($postedit['filters']);
+	array_shift($postedit['filters']);
+	foreach($postedit['filters'] as $i=>$filter){
+		$postedit['filters'][$i]=strtolower(trim($filter));
+	}
+	echo " - Filters set: ".implode(', ',$postedit['filters']).PHP_EOL;
+}
 $postedit['progpath']=$progpath;
 //settings?
 if(isset($xml['settings'])){
@@ -92,6 +109,7 @@ if(!is_dir($postedit['afolder'])){
 }
 else{
 	cli_set_process_title("{$postedit['afolder']} - cleaning");
+	echo " - cleaning".PHP_EOL;
 	if(file_exists($postedit['bfolder'])){
 		postEditCleanDir($postedit['bfolder']);
 		@rmdir($postedit['bfolder']);
@@ -334,6 +352,14 @@ function writeFiles(){
 		$json_fields=array();
 		if(isset($info['json_fields'])){
 			$json_fields=preg_split('/\,/',$info['json_fields']);
+		}
+		if(
+			isset($postedit['filters'][0]) 
+			&& isset($info['name']) 
+			&& !in_array(strtolower($info['name']),$postedit['filters'])
+		){
+			//echo "skipping {$info['name']}".PHP_EOL;
+			continue;
 		}
 		foreach($rec as $name=>$content){
 	    	if(!strlen(trim($content))){continue;}
