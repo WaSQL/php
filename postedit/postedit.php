@@ -353,14 +353,14 @@ function writeFiles(){
 		if(isset($info['json_fields'])){
 			$json_fields=preg_split('/\,/',$info['json_fields']);
 		}
-		if(
-			isset($postedit['filters'][0]) 
-			&& isset($info['name']) 
-			&& !in_array(strtolower($info['name']),$postedit['filters'])
-		){
-			//echo "skipping {$info['name']}".PHP_EOL;
-			continue;
+		$skip=0;
+		if(isset($postedit['filters'][0])){
+			$skip=1;
+			foreach($postedit['filters'] as $filter){
+				if(isset($info['name']) && stringContains($info['name'],$filter)){$skip=0;}
+			}
 		}
+		if($skip==1){continue;}
 		foreach($rec as $name=>$content){
 	    	if(!strlen(trim($content))){continue;}
 	    	$field=str_replace("{$info['table']}_",'',$name);
