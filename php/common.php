@@ -8616,7 +8616,7 @@ function decodeBase64($str=''){
 * @usage $js=decodeJson($str);
 */
 function decodeJson($str,$arr=true){
-	if(!is_string($str)){return array('error'=>'decodeJson error - only supports strings');}
+	if(!is_string($str)){$str=encodeJson($str);}
 	//remove control characters that may interfere
 	$json = preg_replace('/[[:cntrl:]]/', '', trim($str));
 	$decoded=json_decode($json,$arr,512,JSON_INVALID_UTF8_SUBSTITUTE);
@@ -8885,11 +8885,11 @@ function encodeAscii($str=''){
 * @return str json string
 * @usage $json_string=encodeJson($arr);
 */
-function encodeJson($arr){
-	$str=json_encode($arr);
+function encodeJson($arr,$flags=0){
+	$str=json_encode($arr,$flags);
 	if(!strlen($str)){
 		$arr = mb_convert_encoding($arr, 'UTF-8', 'UTF-8');
-		$str=json_encode($arr);
+		$str=json_encode($arr,$flags);
 	}
 	return $str;
 }
@@ -9896,7 +9896,7 @@ function evalPythonCode($lang,$evalcode){
 		}
 	}
 	foreach($lines as &$line){
-		$line=preg_replace('/^'.$prespace.'/','',rtrim($line));
+	//	$line=preg_replace('/^'.$prespace.'/','',rtrim($line));
 	}
 	$evalcode=implode(PHP_EOL,$lines);
 	global $USER;
@@ -10070,6 +10070,7 @@ ENDOFCONTENT;
 import os
 import sys
 sys.path.append("{$wasqlPythonPath}")
+sys.path.append("{$wasqlTempPath}")
 try:
 	import json
 	import pprint
@@ -10096,14 +10097,14 @@ ENDOFCONTENT;
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($command,'',$wasqlTempPath);
-	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'python'){
-		foreach($files as $name=>$afile){
-			unlink($afile);
-		}
-	}
 	//echo printValue($out);exit;
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','py');
 	//remove the temp files
 	if($out['rtncode']==0){
+		//remove the temp files on success
+		foreach($files as $name=>$afile){
+	 		unlink($afile);
+	 	}
 		if(strlen($out['stdout'])){
 			return $out['stdout'];
 		}
@@ -10113,7 +10114,11 @@ ENDOFCONTENT;
 		$code=commonShowCode($content);
 		$err=<<<ENDOFERR
 <div style="color:#d70000;">!! Embedded Python Script Error. Return Code: {$out['rtncode']} !!</div>
-<pre style="color:#5f5f5f;margin-left:20px;white-space:break-spaces;">
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
 {$out['stdout']}
 {$out['stderr']}
 </pre>
@@ -11568,7 +11573,7 @@ function generateGUID($curly=false,$hyphen=true){
         else { return trim( com_create_guid(), '{}' ); }
     }
     else {
-        mt_srand( (double)microtime() * 10000 );    // optional for php 4.2.0 and up.
+        mt_srand( (integer)microtime() * 10000 );    // optional for php 4.2.0 and up.
         $charid = strtoupper( md5(uniqid(rand(), true)) );
         $dash = $hyphen ? chr( 45 ) : "";    // "-"
         $left_curly = $curly ? chr(123) : "";     //  "{"
@@ -14532,7 +14537,7 @@ function commonIncludeFunctionCode($content,$name=''){
 */
 function isAdmin(){
 	global $USER;
-	if(is_array($USER) && isNum($USER['_id']) && $USER['utype']==0){return true;}
+	if(isset($USER) && is_array($USER) && isset($USER['_id']) && isNum($USER['_id']) && $USER['utype']==0){return true;}
 	return false;
 	}
 //---------- begin function isAjax ----------
