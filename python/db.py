@@ -263,3 +263,6 @@ def connect(dbname,params={}):
                 common.abort(sys.exc_info(),err)
 
             return msexceldb.connect(params)
+
+def convertStr(o):
+    return "{}".format(o)
