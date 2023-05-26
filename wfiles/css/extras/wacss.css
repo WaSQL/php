@@ -1692,6 +1692,7 @@ ul.nav-list.buttons.w_black > li > a:hover{background:rgba(35, 39, 43, 1.0);colo
   z-index: 9040;
   text-align: left;
   overflow:auto;
+  resize:both;
 }
 
 /* ---------------------- Button controls ------------------------- */

@@ -97,7 +97,15 @@ function cronModal(func,id,title){
 			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
-	return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
+	let wmc=document.querySelector('div.wacss_modal_content');
+	if(undefined != wmc){
+		wmc.id='wacss_modal_content';
+		return ajaxGet('<?=configValue('admin_form_url');?>',wmc.id,params);
+	}
+	else{
+		return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
+	}
+	
 }
 function cronLogRefresh(){
 	let params = {_menu:'cron',func:'log_refresh',setprocessing:'cronlog_refreshing'};
@@ -109,6 +117,17 @@ function cronLogRefreshTimer(){
 	cronLogRefresh_timer=setTimeout(cronLogRefresh,10000);
 }
 </script>
+<style>
+	#cron_details_list{
+		min-width:250px;
+		overflow-y: scroll;
+	}
+	#cron_details_content{
+		flex:1;
+		width:60vw;
+		height:60vh;
+	}
+</style>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-cron"></span> <wtranslate>Cron Manager</wtranslate></h2>
 
 <div id="cron_results" class="w_padtop">
@@ -203,76 +222,97 @@ function cronLogRefreshTimer(){
 
 
 <view:details>
-<div class="row">
-	<div class="col s12">
-		<table class="table condensed striped bordered <?=configValue('admin_color');?>" style="margin-bottom:0px;">
-			<tr>
-				<th><wtranslate>ID</wtranslate></th>
-				<th><wtranslate>Group</wtranslate></th>
-				<th><wtranslate>Name</wtranslate></th>
-				<th><wtranslate>Active</wtranslate></th>
-				<th>PID</th>
-				<th><wtranslate>Paused</wtranslate></th>
-				<th><wtranslate>Running</wtranslate></th>
-				<th><wtranslate>LogMax</wtranslate></th>
-				<th><wtranslate>Cmd</wtranslate></th>
-				<th><wtranslate>Actions</wtranslate></th>
-			</tr>
-			<tr>
-				<td class="w_small"><?=$cron['_id'];?></td>
-				<td class="w_small"><?=$cron['groupname'];?></td>
-				<td class="w_small"><?=$cron['name'];?></td>
-				<td class="w_small align-center"><?=cronIsActive($cron);?></td>
-				<td class="w_small"><?=$cron['cron_pid'];?></td>
-				<td class="w_small align-center"><?=cronIsPaused($cron);?></td>
-				<td class="w_small align-center" id="is_running"><?=cronIsRunning($cron);?></td>
-				<td class="w_small"><?=$cron['records_to_keep'];?></td>
-				<td class="w_small"><?=$cron['run_cmd'];?></td>
-				<td class="w_nowrap">
-					<a href="#" class="w_link w_block" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
-					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
-
-					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('run',<?=$cron['_id'];?>,this.title);" title="Run Now"><span class="icon-play w_success"></span></a>
-					<view:killpid>
-					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('kill',<?=$cron['_id'];?>,this.title);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
-					</view:killpid>
-					<?=renderViewIf((integer)$cron['cron_pid'] > 0,'killpid',$cron,'cron');?>
-					<view:clearlogs>
-					<a href="#" style="margin-left:5px;" class="w_link w_block" onclick="return cronModal('clear',<?=$cron['_id'];?>,this.title);" title="Clear Logs for this cron"><span class="icon-erase w_warning"></span></a>
-					</view:clearlogs>
-					<?=renderViewIf(isset($cron['logs'][0]),'clearlogs',$cron,'cron');?>
-					<span id="cron_processing"></span>
-				</td>
-			</tr>
-		</table>
-		<div><span class="w_bold w_small"><wtranslate>Frequency</wtranslate>:</span> <?=$cron['run_format'];?></div>
-	</div>
-</div>
-<div class="row">
-	<div class="col s4">
-		<div style="max-height:400px;overflow:auto;padding-right:20px;">
-		<table class="table condensed striped bordered <?=configValue('admin_color');?> hover">
-		<tr>
-			<th class="w_nowrap"><wtranslate>Date</wtranslate></th>
-			<th class="w_nowrap"><wtranslate>Length</wtranslate></th>
-		</tr>
-		<view:log>
-		<tr class="w_pointer" onclick="return cronRefreshResult(<?=$log['cron_id'];?>,<?=$log['_id'];?>);">
-			<td class="w_nowrap" id="run_date_<?=$log['_id'];?>"><?=$log['run_date'];?></td>
-			<td class="" id="run_length_<?=$log['_id'];?>"><?=verboseTime($log['run_length'],0,1);?></td>
-		</tr>
-		</view:log>
-		<?=renderEach('log',$cron['logs'],'log');?>
-		</table>
-		</div>
-	</div>
-	<div class="col s8"><div id="cron_result" style="width:560px;">
-		<textarea id="cron_result_textarea" style="border:1px solid #f1f1f1;border-right:0px;border-bottom:0px;width:100%;height:400px;font-size:0.9rem;color:#000000CC" wrap="off">
-<?=$cronlog['run_result'];?>
-</textarea>
-	</div></div>
+<table class="table condensed striped bordered <?=configValue('admin_color');?>" style="margin-bottom:0px;">
+	<tr>
+		<th><wtranslate>ID</wtranslate></th>
+		<th><wtranslate>Group</wtranslate></th>
+		<th><wtranslate>Name</wtranslate></th>
+		<th><wtranslate>Active</wtranslate></th>
+		<th>PID</th>
+		<th><wtranslate>Paused</wtranslate></th>
+		<th><wtranslate>Run Now</wtranslate></th>
+		<th><wtranslate>Running</wtranslate></th>
+		<th><wtranslate>LogMax</wtranslate></th>
+		<th><wtranslate>Cmd</wtranslate></th>
+		<th><wtranslate>Actions</wtranslate></th>
+	</tr>
+	<tr>
+		<td class="w_small"><?=$cron['_id'];?></td>
+		<td class="w_small"><?=$cron['groupname'];?></td>
+		<td class="w_small"><?=$cron['name'];?></td>
+		<td class="w_small align-center"><?=cronIsActive($cron);?></td>
+		<td class="w_small"><?=$cron['cron_pid'];?></td>
+		<td class="w_small align-center"><?=cronIsPaused($cron);?></td>
+		<td class="w_small"><?=cronRunNow($cron);?></td>
+		<td class="w_small align-center" id="is_running"><?=cronIsRunning($cron);?></td>
+		<td class="w_small"><?=$cron['records_to_keep'];?></td>
+		<td class="w_small"><?=$cron['run_cmd'];?></td>
+		<td class="w_nowrap" style="display:flex;">
+			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
+			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
+			<view:killpid>
+			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('kill',<?=$cron['_id'];?>,this.title);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
+			</view:killpid>
+			<?=renderViewIf((integer)$cron['cron_pid'] > 0,'killpid',$cron,'cron');?>
+			<div id="cron_processing" style="align-self:center;margin-left:5px;font-size:12px;display:inline-block;width:50px;height:12px;overflow:hidden;"></div>
+		</td>
+	</tr>
+</table>
+<div style="display:flex;justify-content: flex-start;align-content: flex-start;">
+	<div id="cron_details_list"><?=cronDetailsList($id);?></div>
+	<div id="cron_details_content" style="overflow: scroll;"></div>
 </div>
 </view:details>
+
+<view:details_log><?=cronDetailsLog($id,$field);?></view:details_log>
+<view:details_body_url>
+	<span style="float:right;cursor: pointer;margin:8px 6px 0 0;" class="icon-copy w_gray" title="copy" onclick="wacss.copy2Clipboard(document.querySelector('#details_body_url_content').innerHTML);"></span>
+	<ul class="nav-tabs" style="border-bottom:1px solid #ccc;">
+		<li class="active"><a href="#" data-tab="1" data-nav="id:details_body_url_body" data-div="details_body_url_content" onclick="return wacss.nav(this);">Body</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_url_params" data-div="details_body_url_content" onclick="return wacss.nav(this);">Params</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_url_headers" data-div="details_body_url_content" onclick="return wacss.nav(this);">Headers</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_url_curl" data-div="details_body_url_content" onclick="return wacss.nav(this);">Curl</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_url_raw" data-div="details_body_url_content" onclick="return wacss.nav(this);">Raw</a></li>
+	</ul>
+	<div id="details_body_url_content" style="padding:3px 5px;font-size:0.9rem;font-family:arial;color:#555;white-space:pre;"><?=encodeHTML($json['body']);?></div>
+	<div style="display:none;">
+		<div id="details_body_url_body"><?=encodeHTML($json['body']);?></div>
+		<div id="details_body_url_params"><?=encodeJson($json['_params'],JSON_PRETTY_PRINT);?></div>
+		<div id="details_body_url_headers"><?=encodeJson($json['headers'],JSON_PRETTY_PRINT);?></div>
+		<div id="details_body_url_curl"><?=encodeJson($json['curl_info'],JSON_PRETTY_PRINT);?></div>
+		<div id="details_body_url_raw"><?=encodeHTML(encodeJson($json,JSON_PRETTY_PRINT));?></div>
+	</div>
+</view:details_body_url>
+
+<view:details_body_cmd>
+	<span style="float:right;cursor: pointer;margin:8px 6px 0 0;" class="icon-copy w_gray" title="copy" onclick="wacss.copy2Clipboard(document.querySelector('#details_body_cmd_content').innerHTML);"></span>
+	<ul class="nav-tabs" style="border-bottom:1px solid #ccc;">
+		<li class="active"><a href="#" data-tab="1" data-nav="id:details_body_cmd_output" data-div="details_body_cmd_content" onclick="return wacss.nav(this);">Output</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_cmd_command" data-div="details_body_cmd_content" onclick="return wacss.nav(this);">Command</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_cmd_raw" data-div="details_body_cmd_content" onclick="return wacss.nav(this);">Raw</a></li>
+	</ul>
+	<div id="details_body_cmd_content" style="padding:3px 5px;font-size:0.9rem;font-family:arial;color:#555;white-space:pre;"><?=$json['stdout'];?></div>
+	<div style="display:none;">
+		<div id="details_body_cmd_output"><?=$json['stdout'];?></div>
+		<div id="details_body_cmd_command">Command: <?=$json['cmd'];?>
+Directory: <?=$json['dir'];?>
+Return Code: <?=$json['rtncode'];?></div>
+		<div id="details_body_cmd_raw"><?=encodeHTML(encodeJson($json,JSON_PRETTY_PRINT));?></div>
+	</div>
+</view:details_body_cmd>
+	
+<view:details_body_eval>
+	<span style="float:right;cursor: pointer;margin:8px 6px 0 0;" class="icon-copy w_gray" title="copy" onclick="wacss.copy2Clipboard(document.querySelector('#details_body_eval_content').innerHTML);"></span>
+	<ul class="nav-tabs" style="border-bottom:1px solid #ccc;">
+		<li class="active"><a href="#" data-tab="1" data-nav="id:details_body_eval_output" data-div="details_body_eval_content" onclick="return wacss.nav(this);">Output</a></li>
+		<li><a href="#" data-tab="1" data-nav="id:details_body_eval_code" data-div="details_body_eval_content" onclick="return wacss.nav(this);">Code</a></li>
+	</ul>
+	<div id="details_body_eval_content" style="padding:3px 5px;font-size:0.9rem;font-family:arial;color:#555;white-space:pre;"><?=encodeHTML($json['output']);?></div>
+	<div style="display:none;">
+		<div id="details_body_eval_output"><?=encodeHTML($json['output']);?></div>
+		<div id="details_body_eval_code"><?=encodeHTML($json['code']);?></div>
+	</div>
+</view:details_body_eval>
 
 <view:cron_result>
 <view:error>

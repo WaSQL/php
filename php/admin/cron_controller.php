@@ -10,25 +10,16 @@ switch(strtolower($_REQUEST['func'])){
 	case 'run':
 		$id=(integer)$_REQUEST['id'];
 		$ok=editDBRecordById('_cron',$id,array('run_now'=>1));
-		$cron=cronDetails($id);
+		$cron=getDBRecordById('_cron',$id);
 		setView('details',1);
 		return;
 	break;
 	case 'kill':
 		$id=(integer)$_REQUEST['id'];
-		$path=getWaSQLPath('php/temp');
-		$killfile="{$path}/{$CONFIG['name']}_cronkill_{$id}.txt";
-		setFileContents($killfile,time());
-		$ok=commonCronCleanup();
+		$out=cmdResults("kill {$id}");
 		usleep(250);
-		$cron=cronDetails($id);
-		setView('details',1);
-		return;
-	break;
-	case 'clear':
 		$id=(integer)$_REQUEST['id'];
-		$ok=delDBRecord(array('-table'=>'_cronlog','-where'=>"cron_id={$id}"));
-		$cron=cronDetails($id);
+		$cron=getDBRecordById('_cron',$id);
 		setView('details',1);
 		return;
 	break;
@@ -59,10 +50,63 @@ switch(strtolower($_REQUEST['func'])){
 	case 'details':
 		//echo "details";exit;
 		$id=(integer)$_REQUEST['id'];
-		$cron=cronDetails($id);
-		$cronlog=getDBRecord(array('-table'=>'_cronlog','cron_id'=>$id,'-order'=>'_id desc'));
-		$cronlog_id=(integer)$cronlog['_id'];
+		$cron=getDBRecordById('_cron',$id);
 		setView('details',1);
+		return;
+	break;
+	case 'details_log':
+		//echo "details";exit;
+		$id=(integer)$_REQUEST['id'];
+		$field='log';
+		setView('details_log',1);
+		return;
+	break;
+	case 'details_body':
+		//echo "details";exit;
+		$id=(integer)$_REQUEST['id'];
+		$log=getDBRecord(array(
+			'-table'=>'_cron_log',
+			'_id'=>$id,
+		));
+		$json=decodeJson($log['body']);
+		//echo printValue($json);exit;
+		if(isset($json['headers'])){
+			//this is a url
+			setView('details_body_url',1);
+		}
+		elseif(isset($json['stdout'])){
+			//this is a url command
+			//echo printValue($json);exit;
+			setView('details_body_cmd',1);
+		}
+		elseif(isset($json['output'])){
+			//this is a eval
+			//echo printValue($json);exit;
+			setView('details_body_eval',1);
+		}
+		elseif(isset($json['code'])){
+			//this is a url command
+			//echo printValue($json);exit;
+			setView('details_body_cmd',1);
+		}
+		else{
+			echo "UNKNOWN: ".printValue($json).printValue($log);exit;
+			setView('details_body_eval',1);
+		}
+		return;
+	break;
+	case 'details_body_body':
+		//echo "details";exit;
+		$id=(integer)$_REQUEST['id'];
+		$field='body';
+		setView('details_body_body',1);
+		return;
+	break;
+	case 'details_body_params':
+		//echo "details";exit;
+		$id=(integer)$_REQUEST['id'];
+		$field='body';
+		setView('details_body_params',1);
 		return;
 	break;
 	case 'set_field_value':

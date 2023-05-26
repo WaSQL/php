@@ -167,9 +167,9 @@ ENDOFSQL;
 			$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 			$ok=setFileContents("{$tpath}/wasql.update.log",$message);
 		}
-		//cleanup _cronlog older than 1 year or $CONFIG['cronlog_max']
+		//cleanup _cron_log older than 1 year or $CONFIG['cronlog_max']
 		if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
-		$ok=cleanupDBRecords('_cronlog',$CONFIG['cronlog_max']);
+		$ok=cleanupDBRecords('_cron_log',$CONFIG['cronlog_max']);
 		//cronlog tails?
 		if(!is_file($cron_tail_log)){
 			$ok=setFileContents($cron_tail_log,time());
@@ -422,7 +422,7 @@ function cronCleanRecords($cron=array()){
 	if(!isNum($cron['records_to_keep'])){return false;}
 	//get the 
 	$recs=getDBRecords(array(
-		'-table'=>'_cronlog',
+		'-table'=>'_cron_log',
 		'-order'=>'_id desc',
 		'-limit'=>$cron['records_to_keep'],
 		'-fields'=>'_id',
@@ -435,7 +435,7 @@ function cronCleanRecords($cron=array()){
 		if($min==0 || $rec['_id'] < $min){$min=$rec['_id'];}
 	}
 	$ok=delDBRecord(array(
-		'-table'=>'_cronlog',
+		'-table'=>'_cron_log',
 		'-where'=>"_id < {$min} and cron_id='{$cron['_id']}'"
 	));
 	return $ok;

@@ -2322,7 +2322,7 @@ LIST_TABLE:
 						// $recopts['-posttable']='</div>';
 					break;
 					case '_cron':echo '<span class="icon-cron w_success w_big"></span>';break;
-					case '_cronlog':echo '<span class="icon-cronlog w_success w_big"></span>';break;
+					case '_cron_log':echo '<span class="icon-cronlog w_success w_big"></span>';break;
 					case '_users':
 						echo '<span class="icon-users w_info w_big"></span>';
 						$recopts['-quickfilters']=array(
@@ -2403,9 +2403,9 @@ LIST_TABLE:
 				}
 				echo $_REQUEST['_table_'].' table.'.PHP_EOL;
 				if(strtolower($_REQUEST['_table_'])=='_cron'){
-					echo ' <a href="/php/admin.php?_menu=list&_table_=_cronlog" class="icon-cronlog w_link w_small w_grey"> View Logs</a>'.PHP_EOL;
+					echo ' <a href="/php/admin.php?_menu=list&_table_=_cron_log" class="icon-cronlog w_link w_small w_grey"> View Logs</a>'.PHP_EOL;
 				}
-				elseif(strtolower($_REQUEST['_table_'])=='_cronlog'){
+				elseif(strtolower($_REQUEST['_table_'])=='_cron_log'){
 					echo ' <a href="/php/admin.php?_menu=list&_table_=_cron" class="icon-cron w_link w_small w_grey"> View Crons</a>'.PHP_EOL;
 				}
 				echo '</div>'.PHP_EOL;
@@ -2452,7 +2452,7 @@ LIST_TABLE:
 						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd,run_as";
 						$_REQUEST['filter_field']='name';
                 	break;
-                	case '_cronlog':
+                	case '_cron_log':
                 		$_REQUEST['filter_field']='name';
                 	break;
                 	case '_forms':
@@ -4470,74 +4470,6 @@ function editorNavigation(){
 	}
 	$rtn .= createExpandDiv($title,$expand,'#0d0d7d',0);
 
-	$rtn .= '</div>'.PHP_EOL;
-	return $rtn;
-}
-
-//---------- begin function adminCronBoard ----
-/**
- * @author slloyd
- * @exclude  - this function is for internal use only and thus excluded from the manual
- */
-function adminCronBoard(){
-	$rtn='';
-	$rtn .= '<div class="w_round w_dropshadow" style="background:#FFF;border:1px solid #b9b9b9;padding:3px 0 7px 0;margin-top:0px;" align="center">'.PHP_EOL;
-	//return printValue($recs);
-	$rtn .= buildTableBegin(2,0);
-	$rtn .= '	<tr>'.PHP_EOL;
-	$rtn .= '		<td><a href="/php/admin.php?_menu=list&_table_=_cron"><span class="icon-cron w_success w_big"></span></a></td>'.PHP_EOL;
-	$rtn .= '		<td colspan="5" class="w_bold w_dblue" align="center" style="font-size:1.1em;">Cron Activity Dashboard</td>'.PHP_EOL;
-	$rtn .= '		<td align="right"><div title="Update Timer" data-behavior="countdown" class="w_lblue w_smaller" id="cronboard_countdown">31</div></td>'.PHP_EOL;
-	$rtn .= '		<td align="right"><a href="/php/admin.php?_menu=list&_table_=_cronlog"><img src="/wfiles/_cronlog.png" class="w_middle" title="goto CronLog" alt="cron log" /></a></td>'.PHP_EOL;
-	$rtn .= '	</tr>'.PHP_EOL;
-	$rtn .= buildTableTH(array('','Crons','Active','Inactive','Running','MaxRun','Listening','Logs'));
-	//base query
-	$basequery="select
-		count_crons,count_crons_active,count_crons_inactive,
-		count_crons_running,count_crons_listening,count_cronlogs
-	from _cronlog[W] order by _id desc limit 1";
-	$wheres=array(
-		'Day'	=> " where year(run_date)=year(now()) and dayofyear(run_date)=dayofyear(now())",
-		'Month'	=> " where year(run_date)=year(now()) and month(run_date)=month(now())",
-		'All Time'	=> "",
-	);
-	$pcnt=isWindows()?'n/a':getProcessCount('cron.pl');
-	foreach($wheres as $t=>$where){
-		$query="select
-			count_crons,count_crons_active,count_crons_inactive,
-			count_crons_running,count_crons_listening,count_cronlogs
-		from _cronlog {$where} order by _id desc limit 1";
-		$rec=getDBRecord(array('-query'=>$query));
-		$query="select max(count_crons_running) as maxrun from _cronlog {$where}";
-		$xrec=getDBRecord(array('-query'=>$query));
-		$rec['maxrun']=$xrec['maxrun'];
-		if(!isset($rec['maxrun'])){$rec['maxrun']=0;}
-		$rtn .= '	<tr>'.PHP_EOL;
-		$rtn .= '		<td>'.$t.'</td>'.PHP_EOL;
-		//crons
-		$bg=$rec['count_crons']==0?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons'].'</td>'.PHP_EOL;
-		//active
-		$bg=$rec['count_crons_active']==0?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_active'].'</td>'.PHP_EOL;
-		//inactive
-		$bg='';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_inactive'].'</td>'.PHP_EOL;
-		//running
-		$bg=$rec['count_crons_running'] > ($rec['count_crons']/2)?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_running'].'</td>'.PHP_EOL;
-		//MaxRun
-		$bg='';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['maxrun'].'</td>'.PHP_EOL;
-		//listening
-		$bg=$rec['count_crons_listening'] < ($rec['maxrun']*1.5)?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_crons_listening'].'</td>'.PHP_EOL;
-		//Logs
-		$bg=$rec['logs'] > 100000?' style="color:#990101;"':'';
-		$rtn .= '		<td align="center"'.$bg.'>'.$rec['count_cronlogs'].'</td>'.PHP_EOL;
-		$rtn .= '	</tr>'.PHP_EOL;
-	}
-	$rtn .= buildTableEnd();
 	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }

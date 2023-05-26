@@ -37,41 +37,111 @@ function cronAddEdit($id=0){
 	}
 	return addEditDBForm($opts);
 }
-function cronDetails($id){
-	/*
-		last_run
-	*/
-	global $CONFIG;
-	$cron=getDBRecordById('_cron',$id);
-	$cron['logs']=getDBRecords(array(
-		'-table'=>'_cronlog',
+function cronDetailsList($id){
+	$recs=getDBRecords(array(
+		'-table'=>'_cron_log',
 		'cron_id'=>$id,
 		'-order'=>'_id desc',
-		'-limit'=>100
+		'-limit'=>1000
 	));
-	//echo $id.printValue($cron['logs']);exit;
-	foreach($cron['logs'] as $i=>$log){
-		$cron['logs'][$i]['cron_id']=$id;
+	if(!isset($recs[0])){
+		return '';
 	}
-	$path=getWaSQLPath('php/temp');
-	$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	if(is_file($commonCronLogFile)){
-		$t=time()-filectime($commonCronLogFile);
-		$run_length=verboseTime($t);
-		$bottom="{$id},0,'{$run_length}'";
-		$rec=array(
-			'_id'=>0,
-			'cron_id'=>$id,
-			'run_date'=>'Running',
-			'run_length'=>$t,
-			'color'=>'#0086ff',
-			'bottom'=>$bottom
-		);
-		array_unshift($cron['logs'],$rec);
-		$cron['run_result']=getFileContents($commonCronLogFile);
-		$cron['bottom']=$bottom;
+	$rtn=databaseListRecords(array(
+		'-list'=>$recs,
+		'-tableclass'=>'table striped bordered condensed',
+		'-listfields'=>'date,time,run,action',
+		'-results_eval'=>'cronDetailsListExtra',
+		'time_class'=>'w_nowrap',
+		'run_options'=>array(
+			'class'=>'w_nowrap align-right',
+			'displayname'=>'<div class="align-center"><span class="icon-clock"></span></div>'
+		),
+		'action_options'=>array(
+			'class'=>'w_nowrap align-right',
+			'displayname'=>'<div class="align-center"><span class="icon-forward"></span></div>'
+		),
+		'-hidesearch'=>1,
+		'-tr_data-_menu'=>'cron',
+		'-tr_data-func'=>'details_log',
+		'-tr_data-nav'=>'/php/admin.php',
+		'-tr_data-div'=>'cron_details_content',
+		'-tr_data-setprocessing'=>'0',
+		'-tr_data-id'=>'%_id%',
+		'-tr_data-tr'=>'1',
+		'-tr_id'=>'tr_%_id%'
+	));
+	if(isset($recs[0]['_id'])){
+		$rtn.=buildOnLoad("wacss.nav('tr_{$recs[0]['_id']}');");
 	}
-	return $cron;
+	return $rtn;
+}
+function cronDetailsListExtra($recs){
+	foreach($recs as $i=>$rec){
+		$header=decodeJson($rec['header']);
+		$footer=decodeJson($rec['footer']);
+		$recs[$i]['date']=date('m/d/Y',$header['timestamp']);
+		$recs[$i]['time']=date('h:i a',$header['timestamp']);
+		if(isset($footer['timestamp'])){
+			$elapsed=$footer['timestamp']-$header['timestamp'];	
+			$recs[$i]['run']=(integer)$elapsed;
+		}
+		else{
+			$recs[$i]['run']=0;
+		}
+		
+		$actions=[];
+		$actions[]='<a href="#" data-func="details_log" title="view log" style="display:inline-block;margin-right:10px;" onclick="return wacss.nav(this);"><span class="icon-info-circled w_blue"></span></a>';
+		$icon='';
+		if(!isset($header['crontype'])){$header['crontype']='';}
+		switch(strtolower($header['crontype'])){
+			case 'page':$icon='icon-file-doc';break;
+			case 'php command':
+			case 'eval':
+				$icon="icon-code w_red";
+			break;
+			case 'url':$icon='icon-globe w_warning';break;
+			default:$icon='icon-prompt w_green';break;
+		}
+		$actions[]='<a href="#" data-func="details_body" title="'.$header['crontype'].': view body" style="display:inline-block;margin-right:10px;" onclick="return wacss.nav(this);"><span class="'.$icon.'"></span></a>';
+		$recs[$i]['action']=implode('',$actions);
+	}
+	return $recs;
+}
+function cronDetailsLog($id,$field='log'){
+	$log=getDBRecord(array(
+		'-table'=>'_cron_log',
+		'_id'=>$id,
+	));
+	if(!strlen($log['log'])){return 'no logs';}
+	$recs=decodeJson($log['log']);
+
+	return databaseListRecords(array(
+		'-list'=>$recs,
+		'-listfields'=>'time,elapsed,message',
+		'-tableclass'=>'table striped bordered condensed hover w_pointer sticky',
+		'-hidesearch'=>1,
+		'time_class'=>'align-right w_nowrap',
+		'-results_eval'=>'cronDetailsLogExtra',
+		'elapsed_options'=>array(
+			'class'=>'w_nowrap align-right',
+			'displayname'=>'<div class="align-center"><span class="icon-clock"></span></div>'
+		),
+	)).buildOnLoad("document.querySelector('#cron_details_content').scrollTop=document.querySelector('#cron_details_content').scrollHeight;");;
+}
+function cronDetailsLogExtra($recs){
+	$t=$recs[0]['timestamp'];
+	foreach($recs as $i=>$rec){
+		$elapsed=$rec['timestamp']-$t;
+		if($elapsed > 0){
+			$recs[$i]['elapsed']=$elapsed;
+		}
+		else{
+			$recs[$i]['elapsed']='';
+		}
+		$recs[$i]['time']=date('H:i:s',$rec['timestamp']);
+	}
+	return $recs;
 }
 function cronIsRunning($rec){
 	if($rec['running']==1){return '<span class="icon-spin4 w_spin w_primary"></span>';}
@@ -84,6 +154,12 @@ function cronIsPaused($rec){
 function cronIsActive($rec){
 	if($rec['active']==1){return '<span class="icon-mark w_success"></span>';}
 	return '';
+}
+function cronRunNow($rec){
+	if($rec['run_now']==1){return '<div class="align-center"><span class="icon-mark w_blue"></span></div>';}
+	return <<<ENDOFLINK
+<div class="align-center"><a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('run',{$rec['_id']},this.title);" title="Run Now"><span class="icon-play w_success"></span></a></div>
+ENDOFLINK;
 }
 function cronList(){
 	global $CONFIG;

@@ -257,7 +257,7 @@ function commonCronCleanup(){
 		));
 		if(isset($precs[0])){
 			foreach($precs as $prec){
-				$logfile="{$path}/{$CONFIG['name']}_cronlog_{$prec['_id']}.txt";
+				$logfile="{$path}/{$CONFIG['name']}_cron_log_{$prec['_id']}.txt";
 				$killfile="{$path}/{$CONFIG['name']}_cronkill_{$prec['_id']}.txt";
 				if($prec['cron_pid'] != 0 && is_file($killfile)){
 					if(isWindows()){
@@ -320,60 +320,32 @@ function commonCronError($err,$email='',$params=array()){
 	$stop=time();
 	$run_length=$stop-$_REQUEST['start'];
 	$opts=array(
-		'-table'	=> '_cronlog',
+		'-table'	=> '_cron_log',
 		'cron_id'	=> $_REQUEST['cron_id'],
-		'cron_pid'	=> $_REQUEST['cron_pid'],
-		'name'		=> $_REQUEST['cron_name'],
-		'run_cmd'	=> $_REQUEST['cron_run_cmd'],
-		'run_date'	=> $_REQUEST['cron_run_date']
 	);
 	$lrec=getDBRecord($opts);
-	if(isset($lrec['_id'])){
-		$opts=array(
-			'-table'=>'_cronlog'
-		);
-		$opts['-where']="_id={$lrec['_id']}";
-		$opts['run_length']=$run_length;
-		$opts['run_result']=$_REQUEST['cron_result'];
-		$ok=editDBRecord($opts);
-	}
-	else{
-		$opts['run_length']=$run_length;
-		$opts['run_result']=$_REQUEST['cron_result'];
-		$ok=addDBRecord($opts);
-	}
-	$ok=editDBRecordById('_cron',$_REQUEST['cron_id'],array('run_error'=>$err));
+	$ok=editDBRecordById('_cron',$_REQUEST['cron_id'],array('paused'=>1,'stop_now'=>1,'run_error'=>$err));
 	if(isEmail($email)){
 		$ccp=commonCronPause($email,$params);
 	}
 	return 1;
 }
-/**  --- function commonCronCheckSchema
+/**  --- function commonCronLogCheckSchema
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function commonCronLogCheckSchema(){
-	$cronfields=getDBFieldInfo('_cronlog');
+	$cronfields=getDBFieldInfo('_cron_log');
 	//run_now
 	if(!isset($cronfields['delete_me'])){
-		$query="ALTER TABLE _cronlog ADD delete_me ".databaseDataType('integer(1)')." NOT NULL Default 0";
+		$query="ALTER TABLE _cron_log ADD delete_me ".databaseDataType('integer(1)')." NOT NULL Default 0";
 		$ok=executeSQL($query);
-		$id=addDBRecord(array('-table'=>'_fielddata',
-			'tablename'		=> '_cronlog',
-			'fieldname'		=> 'delete_me',
-			'inputtype'		=> 'checkbox',
-			'synchronize'	=> 0,
-			'tvals'			=> '1',
-			'defaultval'	=> 0,
-			'required'		=> 0,
-			'-upsert'		=> 'inputtype,synchronize,tvals,required,defaultval'
-		));
-		$ok=addDBIndex(array('-table'=>'_cronlog','-fields'=>"delete_me"));
+		$ok=addDBIndex(array('-table'=>'_cron_log','-fields'=>"delete_me"));
 	}
 }
 //---------- begin function commonCronLogInit
 /**
-* @describe initializes the cron log
-* @return ok boolean
+* @describe initializes the cron log and returns the cronlog_id
+* @return id integer
 * @usage 
 *	$ok=commonCronLogInit();
 */
@@ -381,52 +353,51 @@ function commonCronLogInit($id=0){
 	global $CONFIG;
 	global $CRONTHRU;
 	global $cronlog_id;
+	global $USER;
 	global $commonCronLogCache;
 	$ok=commonCronLogCheckSchema();
 	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){return $CRONTHRU['cronlog_id'];}
-	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){return $_REQUEST['cronlog_id'];}
-	$id=(integer)$id;
-	if($id == 0){return;}
-	$CRONTHRU['cron_id']=$_REQUEST['cron_id']=$id;	
-	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-nocache'=>1));
-	if(!isset($rec['_id'])){
-		$err="commonCronLogInit error: No cron with that id";
-		debugValue($err);
-		return $err;
+	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){
+		$CRONTHRU['cronlog_id']=$_REQUEST['cronlog_id'];
+		return $CRONTHRU['cronlog_id'];
 	}
-	if(!isset($rec['cronlog_id'])){
+	$id=(integer)$id;
+	if($id == 0){
+		if(isset($_REQUEST['cron_id'])){
+			$id=(integer)$_REQUEST['cron_id'];
+		}
+		if($id == 0){return 0;}
+	}	
+	$cron=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-nocache'=>1));
+	if(!isset($cron['_id'])){
+		$CRONTHRU['init_error']="No cron with id: {$id}";
+		return 0;
+	}
+	$CRONTHRU['cron_id']=$cron['_id'];
+	if(!isset($cron['cronlog_id'])){
 		$ok=executeSQL("alter table _cron add cronlog_id int NOT NULL Default 0");
 	}
 	/* New Log method - initialize run_result */
+	$header=array(
+		'timestamp'=>getDBTime(),
+		'cron_name'=>$cron['name'],
+		'cron_id'=>$cron['_id'],
+		'user_id'=>0,
+		'cron_pid'=>getmypid()
+	);
 	$cronlog_id=addDBRecord(array(
-		'-table'=>'_cronlog',
-		'name'=>$rec['name'],
-		'cron_id'=>$rec['_id'],
-		'cron_pid'=>$rec['cron_pid'],
-		'run_cmd'=>$rec['run_cmd'],
-		'run_date'=>'now()',
-		'run_result'=>'timestamp,elapsed,diff,message'.PHP_EOL
+		'-table'=>'_cron_log',
+		'cron_id'=>$cron['_id'],
+		'delete_me'=>0,
+		'header'=>encodeJson($header)
 	));
+	//echo printValue($header).printValue($cronlog_id);exit;
 	if(!isNum($cronlog_id)){
-		$err="commonCronLogInit error: addDBRecord error: {$cronlog_id}";
-		debugValue($err);
-		return $err;
+		$CRONTHRU['init_error']="addDBRecord failed: {$cronlog_id}";
+		return 0;
 	}
-	$_REQUEST['cronlog_id']=$CRONTHRU['cronlog_id']=$cronlog_id;
-	$ok=editDBRecordById('_cron',$rec['_id'],array('cronlog_id'=>$id));
-	$commonCronLogCache['start']=microtime(true);
-	//remove any deleted records
-	$ok=delDBRecord(array('-table'=>'_cronlog','-where'=>"delete_me=1"));
-	return $cronlog_id;
-	// if(!isset($_REQUEST['cron_id'])){return false;}
-	// $id=(integer)$_REQUEST['cron_id'];
-	// if($id==0){return false;}
-	// $path=getWaSQLPath('php/temp');
-	// $logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	// if(is_file($logfile)){
-	// 	unlink($logfile);
-	// }
-	// return true;
+	$CRONTHRU['cronlog_id']=$cronlog_id;
+	return $CRONTHRU['cronlog_id'];
 }
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
@@ -440,7 +411,8 @@ function commonCronLogDelete(){
 		$cronlog_id=$_REQUEST['cronlog_id'];
 	}
 	$cronlog_id=(integer)$cronlog_id;
-	$ok=editDBRecordById('_cronlog',$cronlog_id,array('delete_me'=>1));
+	if($cronlog_id==0){return false;}
+	$ok=editDBRecordById('_cron_log',$cronlog_id,array('delete_me'=>1));
 	return true;
 }
 //---------- begin function commonCronLog
@@ -456,105 +428,37 @@ function commonCronLog($msg,$echomsg=1){
 	global $CONFIG;
 	global $commonCronLogCache;
 	global $CRONTHRU;
-	$cron_id=0;
-	if(isset($CRONTHRU['cron_id']) && isNum($CRONTHRU['cron_id'])){$cron_id=$CRONTHRU['cron_id'];}
-	elseif(isset($_REQUEST['cron_id']) && isNum($_REQUEST['cron_id'])){$cron_id=$_REQUEST['cron_id'];}
-	$cron_id=(integer)$cron_id;
-	if($cron_id==0){
-		$err="commonCronLog error: cron_id not set";
-		debugValue($err);
-		return $err;
+	if(!isset($CRONTHRU['cronlog_id'])){
+		$ok=commonCronLogInit();
 	}
-	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$cron_id,'-nocache'=>1));
-	if(!isset($rec['_id'])){
-		$err="commonCronLog error: No cron found";
-		debugValue($err);
-		return $err;
-	}
-	$id='';
-	$cronlog_id=0;
-	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){$cronlog_id=$CRONTHRU['cronlog_id'];}
-	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){$cronlog_id=$_REQUEST['cronlog_id'];}
-	elseif(isset($rec['cronlog_id']) && isNum($rec['cronlog_id'])){$cronlog_id=$rec['cronlog_id'];}
-	$cronlog_id=(integer)$cronlog_id;
+	$cronlog_id=(integer)$CRONTHRU['cronlog_id'];
 	if($cronlog_id==0){
-		$cronlog_id=commonCronLogInit($cron_id);
-	}
-	
-	$lrec=getDBRecord(array('-table'=>'_cronlog','_id'=>$cronlog_id,'-nocache'=>1));
-	if(!isset($lrec['_id'])){
-		return;
-	}
-	$CRONTHRU['cronlog_id']=$_REQUEST['cronlog_id']=$lrec['_id'];
-	if(!isset($commonCronLogCache['start'])){
-		$commonCronLogCache['start']=microtime(true);
-	}
-	if(!isset($commonCronLogCache['last'])){
-		$commonCronLogCache['last']=$commonCronLogCache['start'];
-	}
-	$ctime=microtime(true);
-	$diff=$ctime-$commonCronLogCache['last'];
-	$diff=round($diff,3);
-	$elapsed=$ctime-$commonCronLogCache['start'];
-	$elapsed=round($elapsed,2);
-	$ctime_formated=date('H:i:s');
-	$line="{$ctime_formated},{$elapsed},{$diff},{$msg}";
-	//append
-	$run_result=$lrec['run_result'].rtrim($line).PHP_EOL;
-	$editopts=array('run_result'=>$run_result);
-	$ok=editDBRecordById('_cronlog',$lrec['_id'],$editopts);
-	if($echomsg==1){
-		echo $line;
-		//line break if a browser
-		if(isset($_SERVER['REMOTE_BROWSER'])){
-			echo '<br />';
+		if($echomsg==1){
+			echo "no cronlog_id set".PHP_EOL;
 		}
-		echo PHP_EOL;
+		return false;
 	}
-	$ok=commonCronCheckStopNow();
+	$cronlog=getDBRecord(array('-table'=>'_cron_log','_id'=>$cronlog_id,'-fields'=>'_id,log','-nocache'=>1));
+	if(!isset($cronlog['_id'])){
+		if($echomsg==1){
+			echo "no cronlog record with id {$cronlog_id}".PHP_EOL;
+		}
+		return false;
+	}
+	$log=decodeJson($cronlog['log']);
+	if(!is_array($log)){$log=[];}
+	//get the current time from the DB so we are not reliant on timezone
+	$current_time=getDBTime();
+	if(!is_string($msg)){$msg=encodeJson($msg);}
+	$log[]=array(
+		'timestamp'=>$current_time,
+		'message'=>$msg
+	);
+	$ok=editDBRecordById('_cron_log',$cronlog['_id'],array('log'=>encodeJson($log)));
+	if($echomsg==1){
+		echo $msg.PHP_EOL;
+	}
 	return true;
-	// global $CONFIG;
-	// global $commonCronLogCache;
-	// if(!isset($commonCronLogCache['start'])){
-	// 	$commonCronLogCache['start']=microtime(true);
-	// }
-	// if(!isset($commonCronLogCache['last'])){
-	// 	$commonCronLogCache['last']=$commonCronLogCache['start'];
-	// }
-	// $ctime=microtime(true);
-	// $diff=$ctime-$commonCronLogCache['last'];
-	// $diff=round($diff,3);
-	// $elapsed=$ctime-$commonCronLogCache['start'];
-	// $elapsed=round($elapsed,2);
-	// $ctime_formated=date('H:i:s');
-	// if(!isset($_REQUEST['cron_id'])){return 0;}
-	// $id=(integer)$_REQUEST['cron_id'];
-	// $path=getWaSQLPath('php/temp');
-	// $logfile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
-	// if(!is_string($msg)){$msg=json_encode($msg);}
-	// $msg=rtrim($msg);
-	// if(!is_file($logfile)){
-	// 	$ok=appendFileContents($logfile,"timestamp,elapsed,diff,message".PHP_EOL);
-	// 	if($echomsg==1){
-	// 		echo "timestamp,elapsed,diff,message";
-	// 		//line break if a browser
-	// 		if(isset($_SERVER['REMOTE_BROWSER'])){
-	// 			echo '<br />';
-	// 		}
-	// 		echo PHP_EOL;
-	// 	}
-	// }
-	// $ok=appendFileContents($logfile,"{$ctime_formated},{$elapsed},{$diff},{$msg}".PHP_EOL);
-	// if($echomsg==1){
-	// 	echo "{$ctime_formated},{$elapsed},{$diff},{$msg}";
-	// 	//line break if a browser
-	// 	if(isset($_SERVER['REMOTE_BROWSER'])){
-	// 		echo '<br />';
-	// 	}
-	// 	echo PHP_EOL;
-	// }
-	// $commonCronLogCache['last']=$ctime;
-	// return 1;
 }
 //---------- begin function commonCronCheckStopNow
 /**
@@ -613,7 +517,7 @@ function commonCronPause($email='',$params=array()){
 		debugValue($err);
 		return $err;
 	}
-	$ok=editDBRecordById('_cron',$rec['_id'],array('paused'=>1));
+	$ok=editDBRecordById('_cron',$rec['_id'],array('paused'=>1,'stop_now'=>1));
 	
 	if(isEmail($email)){
 		if(isset($params['subject'])){
@@ -9869,7 +9773,7 @@ ENDOFERR;
 		return $err;
 	}
 }
-//---------- begin function evalPythonCode
+//---------- begin function evalGlobal2Perl
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -9888,6 +9792,7 @@ function evalGlobal2Perl($arr){
 */
 function evalPythonCode($lang,$evalcode){
 	$lines=preg_split('/[\r\n]+/',$evalcode);
+	//echo printValue($lines);exit;
 	$prespace='';
 	foreach($lines as $line){
 		if(strlen(trim($line)) && preg_match('/^([\s\t]+)/',$line,$m)){
@@ -10097,9 +10002,9 @@ ENDOFCONTENT;
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($command,'',$wasqlTempPath);
-	//echo printValue($out);exit;
+	//remove any py files in temp older than 1 day - wasqlTempPath
 	$ok=cleanupDirectory($wasqlTempPath,1,'days','py');
-	//remove the temp files
+	//check return code
 	if($out['rtncode']==0){
 		//remove the temp files on success
 		foreach($files as $name=>$afile){

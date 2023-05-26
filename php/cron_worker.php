@@ -18,10 +18,10 @@
 	Note: cron_worker.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the cron does not time out
-ini_set('max_execution_time', 72000);
-set_time_limit(72000);
+ini_set('max_execution_time', 86400);
+set_time_limit(86400);
 error_reporting(E_ALL & ~E_NOTICE);
-$posturl_timeout=72000; //allow crons that call posturl to run for up to 24 hours
+$posturl_timeout=86400; //allow crons that call posturl to run for up to 24 hours
 global $starttime;
 $starttime=microtime(true);
 $progpath=dirname(__FILE__);
@@ -35,7 +35,7 @@ date_default_timezone_set('America/Denver');
 include_once("{$progpath}/common.php");
 //only allow this to be run from CLI
 if(!isCLI()){
-	cronMessage("Cron.php is a command line app only.");
+	cronMessage("cron_worker.php is a command line app only.");
 	exit;
 }
 global $ConfigXml;
@@ -135,29 +135,22 @@ ENDOFSQL;
 			//$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
 			break;
 		}
-		$ok=cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: preparing");
+		$ok=cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: running");
 		$CRONTHRU=array();
+		$CRONTHRU['cron_id']=$rec['_id'];
 		unset($_REQUEST['cronlog_id']);
 		$cronlog_id=commonCronLogInit($rec['_id']);
+		//only keep the last x records
+		$ok=cronCleanRecords($rec);
+		$cmd=$rec['run_cmd'];
+		$lcmd=strtolower(trim($cmd));
+
 		//get page names to determine if cron is a page
 		$pages=getDBRecords(array(
 			'-table'	=> '_pages',
 			'-fields'	=> 'name,_id',
 			'-index'	=> 'name'
 		));
-		$cron_id=$CRONTHRU['cron_id']=$rec['_id'];
-		$CRONTHRU['cron_pid']=$cron_pid;
-		$CRONTHRU['cronlog_id']=$cronlog_id;
-		$CRONTHRU['cron_run_date']=$rec['run_date'];
-		$CRONTHRU['cron_name']=$rec['name'];
-		$CRONTHRU['cron_run_cmd']=$rec['run_cmd'];
-		$commonCronLogFile="{$tpath}/{$CONFIG['name']}_cronlog_{$rec['_id']}.txt";
-		if(is_file($commonCronLogFile)){
-			unlink($commonCronLogFile);
-		}
-		$ok=cronCleanRecords($rec);
-		$cmd=$rec['run_cmd'];
-		$lcmd=strtolower(trim($cmd));
 		/*
 			look for passthru
 				/cron_test/a/b
@@ -194,29 +187,27 @@ ENDOFSQL;
 			$crontype='Page';
 		}
 		elseif(preg_match('/^<\?\=/',$cmd)){
-	    	//cron is a php command
-	    	$crontype='PHP Command';
+	    	//cron is a eval
+	    	$crontype='eval';
 		}
 		else{
 	    	//cron is a command
 	    	$crontype='OS Command';
 		}
-		cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, crontype: {$crontype}, msg: Starting");
+		//update the cronlog header with crontype
+		$ok=executeSQL("update _cron_log set header=JSON_SET(header,'$.crontype','{$crontype}') where _id={$cronlog_id}");
+		//start the job
 		$start=microtime(true);
-		$cron_result='';
-		$cron_result .= 'StartTime: '.date('Y-m-d H:i:s').PHP_EOL; 
-		$cron_result .= "CronType: {$crontype} ".PHP_EOL;
 		$CRONTHRU['cron_guid']=generateGUID();
 		if(strtolower($crontype)=='page'){
 	    	//cron is a page.
+	    	$crontype='page';
 	    	$cmd=preg_replace('/^\/+/','',$cmd);
 	    	$prefix='https';
 	    	if(isset($CONFIG['insecure']) && $CONFIG['insecure']==1){
 	    		$prefix='http';
 	    	}
 	    	$url="{$prefix}://{$CONFIG['name']}/{$cmd}";
-	        $cron_result .= "CronURL: {$url}".PHP_EOL;
-	        $CRONTHRU['cron_result']=$cron_result;
 	    	$postopts=array(
 	    		'-method'=>'GET',
 	    		'-follow'=>1,
@@ -238,36 +229,23 @@ ENDOFSQL;
 	            	$postopts['_noguid']=1;
 				}
 			}
-			//echo $url.printValue($postopts).printValue($CRONTHRU);exit;
-			cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: calling {$url}");
 	    	$post=postURL($url,$postopts);
-	    	$cron_result .= '----- Content Received -----'.PHP_EOL;
-	    	$cron_result .= $post['body'].PHP_EOL;
-	    	if(stringContains($post['body'],'__cronlog_delete__')){
-	    		$_REQUEST['cronlog_delete']=1;
+	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($post)));
+	    	if(stringContains($post['body'],'__cron_log_delete__')){
+	    		$ok=commonCronLogDelete();
 	    	}
-	    	// if(isset($post['headers_out'][0])){
-	     //    	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-	     //    	$cron_result .= printValue($post['headers_out']).PHP_EOL;
-	     //    }
-	    	// $cron_result .= '----- CURL Info -----'.PHP_EOL;
-	    	// $cron_result .= printValue($post['curl_info']).PHP_EOL;
-	    	// if(isset($post['headers'][0])){
-	     //    	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	     //    	$cron_result .= printValue($post['headers']).PHP_EOL;
-	     //    }
-	    	
 		}
-		elseif(strtolower($crontype)=='php command'){
-	    	//cron is a php command
-	    	cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: running evalPHP");
-	        $cron_result .= '----- Output Received -----'.PHP_EOL;
-
-	    	$out=evalPHP($cmd).PHP_EOL;
-	    	if(is_array($out)){$cron_result.=printValue($out).PHP_EOL;}
-	    	else{$cron_result.=$out.PHP_EOL;}
+		elseif(strtolower($crontype)=='eval'){
+	    	//cron is a eval
+	    	$crontype='eval';
+	    	$out=array(
+	    		'code'=>$cmd,
+	    		'output'=>evalPHP($cmd)
+	    	);
+	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($out)));
 		}
 		elseif(strtolower($crontype)=='url'){
+			$crontype='url';
 	    	//cron is a URL.
 	    	$postopts=array(
 	    		'-method'=>'GET',
@@ -278,50 +256,29 @@ ENDOFSQL;
 	    	foreach($CRONTHRU as $k=>$v){
 	    		$postopts[$k]=$v;
 	    	}
-	    	cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: calling {$cmd}");
 	    	$post=postURL($cmd,$postopts);
-	    	$cron_result .= '----- Content Received -----'.PHP_EOL;
-	    	$cron_result .= $post['body'].PHP_EOL;
-	    	if(stringContains($post['body'],'__cronlog_delete__')){
-	    		$_REQUEST['cronlog_delete']=1;
+	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($post)));
+	    	if(stringContains($post['body'],'__cron_log_delete__')){
+	    		$ok=commonCronLogDelete();
 	    	}
-	    	if(isset($post['headers_out'][0])){
-	        	$cron_result .= '----- Headers Sent -----'.PHP_EOL;
-				$cron_result .= printValue($post['headers_out']).PHP_EOL;
-			}
-			$cron_result .= '----- CURL Info -----'.PHP_EOL;
-	    	$cron_result .= printValue($post['curl_info']).PHP_EOL;
-	    	if(isset($post['headers'][0])){
-	        	$cron_result .= '----- Headers Received -----'.PHP_EOL;
-	        	$cron_result .= printValue($post['headers']).PHP_EOL;
-	        }
-	    	
 		}
 		else{
 	    	//cron is an OS Command
-	    	cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: {$cmd}");
 	    	$out=cmdResults($cmd);
-	    	$cron_result .= '----- Content Received -----'.PHP_EOL;
-	    	$cron_result .= printValue($out).PHP_EOL;
+	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($out)));
 		}
-
-		$stop=microtime(true);
-		$run_length=number_format(($stop-$start),3);
-	    $cron_result .= PHP_EOL;
-	    $cron_result .= 'EndTime: '.date('Y-m-d H:i:s').PHP_EOL;
-	    //limit $cron_result to 65535 chars
-	    if(strlen($cron_result) > 65000){
-	    	$cron_result=substr($cron_result,0,65000).PHP_EOL.'***RUN RESULT TRUNCATED***';
-	    }
-	    //log the result
-	    $ok=commonCronLog($cron_result);
 		//update record to show we are now finished
+		$footer=array(
+			'timestamp'=>getDBTime(),
+			'crontype'=>$crontype
+		);
+		$ok=editDBRecordById('_cron_log',$cronlog_id,array('footer'=>encodeJson($footer)));
+		$run_length=microtime(true)-$starttime;
 		$run_memory=memory_get_usage();
 		$eopts=array(
 			'running'		=> 0,
 			'cron_pid'		=> 0,
 			'run_length'	=> str_replace(',','',$run_length),
-			'run_result'	=> $cron_result,
 			'run_memory'	=> str_replace(',','',$run_memory)
 		);
 		$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
@@ -334,19 +291,7 @@ ENDOFSQL;
 				'run_memory'	=> str_replace(',','',$run_memory)
 			);
 			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
-		}
-		
-		cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: Finished in {$run_length} seconds");
-		if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){
-			$ok=editDBRecordById('_cronlog',$CRONTHRU['cronlog_id'],array('run_length'=>$run_length));
-		}
-		if(is_file($commonCronLogFile)){
-			unlink($commonCronLogFile);
-		}
-		//clean up
-		unset($cron_result);
-		$etime=microtime(true)-$starttime;
-		$etime=(integer)$etime;
+		} 
 	}
 }
 exit;
@@ -358,7 +303,7 @@ function cronCleanRecords($cron=array()){
 	if(!isNum($cron['records_to_keep'])){return false;}
 	//get the 
 	$recs=getDBRecords(array(
-		'-table'=>'_cronlog',
+		'-table'=>'_cron_log',
 		'-order'=>'_id desc',
 		'-limit'=>$cron['records_to_keep'],
 		'-fields'=>'_id',
@@ -370,7 +315,7 @@ function cronCleanRecords($cron=array()){
 		if($min==0 || $rec['_id'] < $min){$min=$rec['_id'];}
 	}
 	$ok=delDBRecord(array(
-		'-table'=>'_cronlog',
+		'-table'=>'_cron_log',
 		'-where'=>"_id < {$min} and cron_id='{$cron['_id']}'"
 	));
 	return $ok;

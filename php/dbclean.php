@@ -68,7 +68,7 @@ foreach($ConfigXml as $name=>$host){
 		$ok=cleanupDBRecords($table,1);
 	}
 	//10 days
-	$tables=array('_cronlog');
+	$tables=array('_cron_log');
 	foreach($tables as $table){
 		if(!isDBTable($table)){continue;}
 		$ok=cleanupDBRecords($table,10);

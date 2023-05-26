@@ -728,7 +728,7 @@ function dbGetTables($db){
 * @describe searches across tables for a specified value
 * @param db string - database name as specified in the database section of config.xml
 * @param search string
-* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
+* @param tables array - optional. defaults to all tables except for _changelog,_cron_log, and _errors
 * @return  array of arrays - tablename,_id,fieldname,search_count
 * @usage $results=dbGrep($db,'searchstring');
 */
@@ -3558,27 +3558,6 @@ function checkDBTableSchema($wtable){
         //check indexes
         if(!isset($index['name'])){
         	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'active,name'));
-        	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
-		}
-    }
-    if($wtable=='_cronlog'){
-		$finfo=getDBFieldInfo($wtable);
-		if(isset($finfo['count_crons_inactive'])){
-			$drops=array();
-			foreach($finfo as $fld=>$field){
-            	if(preg_match('/^count/i',$fld)){$drops[]=$fld;}
-			}
-			$ok=dropDBColumn('_cronlog',$drops);
-			$ok=editDBRecord(array(
-				'-table'	=> '_tabledata',
-				'-where'	=> "tablename='_cronlog'",
-				'listfields'=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length",
-			));
-			$rtn .= " remove count fields from _cronlog table<br />".PHP_EOL;
-        }
-        //check indexes
-        if(!isset($index['name'])){
-        	$ok=addDBIndex(array('-table'=>$wtable,'-fields'=>'name'));
         	$rtn .= " added indexes to {$wtable} table ".printValue($ok)."<br />".PHP_EOL;
 		}
     }
@@ -9574,6 +9553,16 @@ function getDBTableStatus(){
 	$rtn .= buildTableEnd();
 	return $rtn;
 }
+//---------- begin function getDBTime--------------------
+/**
+* @describe returns the current database time
+* @return integer - timestamp
+* @usage $t=getDBTime();
+*/
+function getDBTime(){
+	$nrec=getDBRecord("select now() as now");
+	return strtotime($nrec['now']);
+}
 //---------- begin function getDBQuery--------------------
 /**
 * @describe builds a database query based on params
@@ -12488,7 +12477,7 @@ function getDBSettings($name,$userid,$collapse=0){
 /**
 * grepDBTables - searches across tables for a specified value
 * @param search string
-* @param tables array - optional. defaults to all tables except for _changelog,_cronlog, and _errors
+* @param tables array - optional. defaults to all tables except for _changelog,_cron_log, and _errors
 * @return  array of arrays - tablename,_id,fieldname,search_count
 * @usage $results=grepDBTables('searchstring');
 */
@@ -12505,7 +12494,7 @@ function grepDBTables($search,$tables=array(),$dbname=''){
 		$tables=getDBTables($dbname);
 		//ignore _changelog
 		foreach($tables as $i=>$table){
-			if(in_array($table,array('_changelog','_cronlog','_errors'))){unset($tables[$i]);}
+			if(in_array($table,array('_changelog','_cron_log','_errors'))){unset($tables[$i]);}
 		}
 	}
 	//return $tables;

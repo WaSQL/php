@@ -3987,6 +3987,22 @@ var wacss = {
 		}
 		//nav
 		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
+		//scrollto
+		let scrollto=opts.scrollto || elobj.dataset.scrollto || pli.dataset.scrollto || pul.dataset.scrollto || ptd.dataset.scrollto || ptr.dataset.scrollto || '';
+		//handle data-nav id: for cases where we are not doing ajax
+		if(nav.indexOf('id:') == 0){
+			let cid=nav.replace('id:','');
+			let cidobj=document.querySelector('#'+cid);
+			if(undefined != cidobj){
+				let content=cidobj.value || cidobj.innerHTML || cidobj.innerText || '';
+				document.querySelector('#'+div).innerHTML=content;
+				if(scrollto=='bottom'){
+					console.log('scrolling to bottom');
+					document.querySelector('#'+div).scrollTop=document.querySelector('#'+div).scrollHeight;
+				}
+				return false;
+			}
+		}
 		if(nav=='id' && undefined != elobj.dataset.parent){
 			let target=wacss.getObject(div);
 			let ptarget=wacss.getObject(elobj.dataset.parent);
@@ -4023,14 +4039,67 @@ var wacss = {
 			if(k=='title'){continue;}
 			if(k=='prompt'){continue;}
 			if(elobj.dataset[k].indexOf('id:') == 0){
-				let cid=elobj.dataset[k].replace('id:','');
-				let cidobj=document.querySelector('#'+cid);
-				if(undefined != cidobj){
-					params[k]=cidobj.value || cidobj.innerHTML;
+				let cid=elobj.dataset[k].replace('qs:','id:');
+				elobj.dataset[k]=cid;
+			}
+			if(elobj.dataset[k].indexOf('qs:') == 0){
+				let cid=elobj.dataset[k].replace('qs:','');
+				let cidobjs=document.querySelectorAll(cid);
+				let cidvals=new Array();
+				let cidv='';
+				for(let c=0;c<cidobjs.length;c++){
+					let cidobj=cidobjs[c];
+					let type='';
+					if(undefined != cidobj.nodeName){
+						switch(cidobj.nodeName.toLowerCase()){
+							case 'input':
+								type=cidobj.getAttribute('type');		
+							break;
+							case 'select':
+								type='select';
+							break;
+							case 'textarea':
+								type='textarea';
+							break;
+						}	
+					}
+					switch(type){
+						case 'checkbox':
+						case 'radio':
+							//only included checked values for radio and checkboxes
+							if(cidobj.checked){
+								cidv=cidobj.value || 1;
+								cidvals.push(cidv);
+							}
+						break;
+						case 'select':
+							//for select lists support multi-select
+							for (var j=0; j<cidobj.options.length; j++) {
+								if (cidobj.options[j].selected) {
+									cidv=cidobj.options[cidobj.selectedIndex].value;
+									cidvals.push(cidv);
+								}
+							}
+							
+						break;
+						case 'textarea':
+							//get the innerHTML of textareas
+							cidv=cidobj.innerText;
+							cidvals.push(cidv);
+						break;
+						case 'text':
+						case 'hidden':
+							//get the value of text and hidden inputs
+							cidv=cidobj.value;
+							cidvals.push(cidv);
+						break;
+						default:
+							cidv=cidobj.value || cidobj.innerHTML || cidobj.innerText;
+							cidvals.push(cidv);
+						break;
+					}
 				}
-				else{
-					params[k]=elobj.dataset[k];
-				}
+				params[k]=implode(',',cidvals);
 			}
 			else{
 				params[k]=elobj.dataset[k];
@@ -4038,6 +4107,7 @@ var wacss = {
 		}
 		//override params with opts if passed in
 		for(k in opts){
+			if(opts[k].length==0){continue;}
 			params[k]=opts[k];
 		}
 		
@@ -4047,7 +4117,6 @@ var wacss = {
 			params.title=title;
 			document.title=params.title;
 		}
-		//console.log(new Array(nav,div,params));
 		return ajaxGet(nav,div,params);
 
 	},

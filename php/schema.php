@@ -267,35 +267,18 @@ function createWasqlTable($table=''){
 			}
 			return 1;
 			break;
-		case '_cronlog':
-			$fields['name']=databaseDataType('varchar(150)')." NOT NULL";
+		case '_cron_log':
 			$fields['cron_id']=databaseDataType('integer')." NOT NULL";
-			$fields['cron_pid']=databaseDataType('integer')." NOT NULL";
-			$fields['delete_me']=databaseDataType('integer')." NOT NULL";
-			$fields['run_cmd']=databaseDataType('varchar(255)')." NOT NULL";
-			$fields['run_date']=databaseDataType('datetime')." NOT NULL";
-			$fields['run_result']=databaseDataType('mediumtext')." NULL";
-			$fields['run_length']=databaseDataType('float(10,2)')." NOT NULL Default 0";
+			$fields['header']=databaseDataType('json')." NULL";
+			$fields['body']=databaseDataType('json')." NULL";
+			$fields['log']=databaseDataType('json')." NULL";
+			$fields['footer']=databaseDataType('json')." NULL";
+			$fields['delete_me']='tinyint(1) NOT NULL Default 0';
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"cron_id"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cdate"));
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"delete_me"));
-			//Add tabledata
-			$addopts=array('-table'=>"_tabledata",
-				'tablename'		=> $table,
-				'listfields'	=> "name\r\ncron_pid\r\nrun_cmd\r\nrun_date\r\nrun_length",
-				'sortfields'	=> "_cdate desc, name",
-				);
-			$id=addDBRecord($addopts);
-			addMetaData($table);
-			//populate the table 
-			$progpath=dirname(__FILE__);
-			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
-			}
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>'cron_id'));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>'delete_me'));
 			return 1;
 		break;
 		case '_fielddata':
@@ -2649,7 +2632,7 @@ function getWasqlTables(){
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
 		'_fielddata','_tabledata','_errors',
-		'_access','_access_summary','_history','_changelog','_cron','_cronlog','_pages','_queries',
+		'_access','_access_summary','_history','_changelog','_cron','_cron_log','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_triggers','_sessions','_html_entities','_posteditlog','_config','_prompts'
 		);
