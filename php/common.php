@@ -354,6 +354,8 @@ function commonCronLogInit($id=0){
 	global $CRONTHRU;
 	global $cronlog_id;
 	global $USER;
+	global $TEMPLATE;
+	$TEMPLATE['body']='<'.'?'.'=pageValue(\'body\')'.';'.'?'.'>';
 	global $commonCronLogCache;
 	$ok=commonCronLogCheckSchema();
 	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){return $CRONTHRU['cronlog_id'];}
@@ -362,7 +364,7 @@ function commonCronLogInit($id=0){
 		return $CRONTHRU['cronlog_id'];
 	}
 	if(is_string($id) && !isNum($id)){
-		$cron=getDBRecord(array('-table'=>'_cron','run_cmd'=>$id,'-fields'=>'_id,name','-nocache'=>1));
+		$cron=getDBRecord(array('-table'=>'_cron','run_cmd'=>$id,'-fields'=>'_id,name,cronlog_id','-nocache'=>1));
 		if(!isset($cron['_id'])){
 			$CRONTHRU['init_error']="No cron with run_cmd: {$id}";
 			return 0;
@@ -376,7 +378,7 @@ function commonCronLogInit($id=0){
 			}
 			if($id == 0){return 0;}
 		}	
-		$cron=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-fields'=>'_id,name','-nocache'=>1));
+		$cron=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-fields'=>'_id,name,cronlog_id','-nocache'=>1));
 		if(!isset($cron['_id'])){
 			$CRONTHRU['init_error']="No cron with id: {$id}";
 			return 0;
