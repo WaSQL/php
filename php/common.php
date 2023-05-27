@@ -354,8 +354,6 @@ function commonCronLogInit($id=0){
 	global $CRONTHRU;
 	global $cronlog_id;
 	global $USER;
-	global $TEMPLATE;
-	$TEMPLATE['body']='<'.'?'.'=pageValue(\'body\')'.';'.'?'.'>';
 	global $commonCronLogCache;
 	$ok=commonCronLogCheckSchema();
 	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){return $CRONTHRU['cronlog_id'];}
