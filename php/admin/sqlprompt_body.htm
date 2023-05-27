@@ -32,13 +32,6 @@
 		<div id="table_fields" style="max-width:300px;overflow: auto;" class="w_nowrap">
 			<?=renderView('tables_fields',$tables,'tables');?>
 		</div>
-		<view:monitor_tools>
-		<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><wtranslate>Admin Tools</wtranslate></div>
-		<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
-			<?=renderView('monitor',$tables,'tables');?>
-		</div>
-		</view:monitor_tools>
-		<?=renderViewIf(!isset($CONFIG['hide_monitor_tools']),'monitor_tools',$tables,'tables');?>
 	</div>
 	<div data-content="sqlform" style="margin-left:5px;flex:1;">
 		<?=renderView('tabs',$tabs,'tabs');?>
@@ -96,6 +89,13 @@
 		<?=renderEach('table',$tables,'table');?>
 	</ul>
 </div>
+<view:monitor_tools>
+<? global $CONFIG;?>
+<div id="monitor" style="max-height:40vh;overflow:auto;padding-right:5px">
+	<?=sqlpromptMonitorTools();?>
+</div>
+</view:monitor_tools>
+<?=renderViewIf(!isset($CONFIG['hide_monitor_tools']),'monitor_tools');?>
 </view:tables_fields>
 
 <view:load_prompt>
@@ -103,17 +103,9 @@
 	<?=buildOnLoad("sqlpromptSetValue(getText('load_prompt'));");?>
 </view:load_prompt>
 
-<view:monitor>
-	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
-		<li><a href="#" onclick="return sqlpromptMonitor('running_queries');"><span class="icon-spin4"></span> Running Queries</a></li>
-		<li><a href="#" onclick="return sqlpromptMonitor('sessions');"><span class="icon-spin8"></span> Sessions</a></li>
-		<li><a href="#" onclick="return sqlpromptMonitor('table_locks');"><span class="icon-lock"></span> Table Locks</a></li>
-		<li><a href="#" onclick="return sqlpromptMonitor('tables');"><span class="icon-table"></span> Tables</a></li>
-		<li><a href="#" onclick="return sqlpromptMonitor('functions');"><span class="icon-th-thumb"></span> Functions</a></li>
-		<li><a href="#" onclick="return sqlpromptMonitor('procedures');"><span class="icon-th-thumb-empty"></span> Procedures</a></li>
-		<li><a href="#" onclick="return sqlpromptMonitor('optimizations');"><span class="icon-optimize"></span> Optimizations</a></li>
-	</ul>
-</view:monitor>
+<view:sqlprompt_named_query>
+	<li><a href="#" onclick="return sqlpromptMonitor('[code]');"><span class="[icon]"></span> [name]</a></li>
+</view:sqlprompt_named_query>
 
 <view:monitor_sql>
 	<div id="monitor_sql_query"><?=trim($sql);?></div>

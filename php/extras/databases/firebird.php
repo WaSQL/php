@@ -1155,8 +1155,8 @@ function firebirdGetDBQuery($params=array()){
 *	[-filter] string - string to add to where clause
 * @return array - set of records
 * @usage
-*	<?=firebirdGetDBRecords(array('-table'=>'notes'));?>
-*	<?=firebirdGetDBRecords("select * from myschema.mytable where ...");?>
+*	firebirdGetDBRecords(array('-table'=>'notes'));
+*	firebirdGetDBRecords("select * from myschema.mytable where ...");
 */
 function firebirdGetDBRecords($params){
 	global $USER;
@@ -1476,7 +1476,40 @@ function firebirdEnumQueryResults($data,$params=array()){
 	}
 	return $recs;
 }
-
+function firebirdNamedQueryList(){
+	return array(
+		array(
+			'code'=>'running_queries',
+			'icon'=>'icon-spin4',
+			'name'=>'Running Queries'
+		),
+		array(
+			'code'=>'tables',
+			'icon'=>'icon-table',
+			'name'=>'Tables'
+		),
+		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'triggers',
+			'icon'=>'icon-spin3',
+			'name'=>'Triggers'
+		),
+		array(
+			'code'=>'functions',
+			'icon'=>'icon-th-thumb',
+			'name'=>'Functions'
+		),
+		array(
+			'code'=>'procedures',
+			'icon'=>'icon-th-thumb-empty',
+			'name'=>'Procedures'
+		)
+	);
+}
 //---------- begin function firebirdNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

@@ -2335,6 +2335,25 @@ function hanaConvert2UTF8($content) {
     } 
     return $content; 
 }
+function hanaNamedQueryList(){
+	return array(
+		array(
+			'code'=>'running_queries',
+			'icon'=>'icon-spin4',
+			'name'=>'Running Queries'
+		),
+		array(
+			'code'=>'sessions',
+			'icon'=>'icon-spin8',
+			'name'=>'Sessions'
+		),
+		array(
+			'code'=>'table_locks',
+			'icon'=>'icon-lock',
+			'name'=>'Table Locks'
+		),
+	);
+}
 //---------- begin function hanaNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

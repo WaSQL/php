@@ -295,8 +295,8 @@ function msexcelGetDBRecord($params=array()){
 *	[-filter] string - string to add to where clause
 * @return array - set of records
 * @usage
-*	<?=msexcelGetDBRecords(array('-table'=>'notes'));?>
-*	<?=msexcelGetDBRecords("select * from myschema.mytable where ...");?>
+*	msexcelGetDBRecords(array('-table'=>'notes'));
+*	msexcelGetDBRecords("select * from myschema.mytable where ...");
 */
 function msexcelGetDBRecords($params){
 	global $USER;
@@ -838,7 +838,11 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 	}
 	return $recs;
 }
-
+function msexcelNamedQueryList(){
+	return array(
+		
+	);
+}
 //---------- begin function msexcelNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

@@ -1488,6 +1488,15 @@ function sqliteGetDBRecordsCount($params=array()){
 	$recs=sqliteGetDBRecords($params);
 	return $recs[0]['cnt'];
 }
+function sqliteNamedQueryList(){
+	return array(
+		array(
+			'code'=>'tables',
+			'icon'=>'icon-table',
+			'name'=>'Tables'
+		)
+	);
+}
 //---------- begin function sqliteNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name
@@ -1499,59 +1508,6 @@ function sqliteGetDBRecordsCount($params=array()){
 function sqliteNamedQuery($name){
 	$schema=sqliteGetDBSchema();
 	switch(strtolower($name)){
-		case 'names':
-			return array(
-				// array(
-				// 	'name'=>'running_queries',
-				// 	'icon'=>'icon-spin4',
-				// 	'displayname'=>'Running Queries'
-				// ),
-				// array(
-				// 	'name'=>'sessions',
-				// 	'icon'=>'icon-spin8',
-				// 	'displayname'=>'Sessions'
-				// ),
-				// array(
-				// 	'name'=>'table_locks',
-				// 	'icon'=>'icon-lock',
-				// 	'displayname'=>'Table Locks'
-				// ),
-				// array(
-				// 	'name'=>'schemas',
-				// 	'icon'=>'icon-th',
-				// 	'displayname'=>'Schemas'
-				// ),
-				array(
-					'name'=>'tables',
-					'icon'=>'icon-table',
-					'displayname'=>'Tables'
-				),
-				// array(
-				// 	'name'=>'functions',
-				// 	'icon'=>'icon-th-thumb',
-				// 	'displayname'=>'Functions'
-				// ),
-				// array(
-				// 	'name'=>'procedures',
-				// 	'icon'=>'icon-th-thumb-empty',
-				// 	'displayname'=>'Procedures'
-				// ),
-				// array(
-				// 	'name'=>'optimizations',
-				// 	'icon'=>'icon-optimize',
-				// 	'displayname'=>'Optimizations'
-				// ),
-			);
-		break;
-		case 'list':
-			return array(
-				array(
-					'cmd'=>'tables',
-					'icon'=>'icon-table',
-					'name'=>'Tables'
-				)
-			);
-		break;
 		case 'tables':
 			return <<<ENDOFQUERY
 SELECT 

@@ -293,8 +293,8 @@ function mscsvGetDBRecord($params=array()){
 *	[-filter] string - string to add to where clause
 * @return array - set of records
 * @usage
-*	<?=mscsvGetDBRecords(array('-table'=>'notes'));?>
-*	<?=mscsvGetDBRecords("select * from myschema.mytable where ...");?>
+*	mscsvGetDBRecords(array('-table'=>'notes'));
+*	mscsvGetDBRecords("select * from myschema.mytable where ...");
 */
 function mscsvGetDBRecords($params){
 	global $USER;
@@ -791,7 +791,11 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 	}
 	return $recs;
 }
-
+function mscsvNamedQueryList(){
+	return array(
+		
+	);
+}
 //---------- begin function mscsvNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

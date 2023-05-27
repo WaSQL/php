@@ -1923,7 +1923,7 @@ function oracleEnumQueryResults($res,$params=array()){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			odbc_free_result($result);
+			oci_free_result($res);
 			return 'oracleEnumQueryResults error: Failed to open '.$params['-filename'];
 		}
 		if(isset($params['-logfile'])){
@@ -2346,6 +2346,40 @@ function oracleQueryResults($query='',$params=array()){
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $recs;
 }
+function oracleNamedQueryList(){
+	return array(
+		array(
+			'code'=>'running_queries',
+			'icon'=>'icon-spin4',
+			'name'=>'Running Queries'
+		),
+		array(
+			'code'=>'sessions',
+			'icon'=>'icon-spin8',
+			'name'=>'Sessions'
+		),
+		array(
+			'code'=>'table_locks',
+			'icon'=>'icon-lock',
+			'name'=>'Table Locks'
+		),
+		array(
+			'code'=>'tables',
+			'icon'=>'icon-table',
+			'name'=>'Tables'
+		),
+		array(
+			'code'=>'functions',
+			'icon'=>'icon-th-thumb',
+			'name'=>'Functions'
+		),
+		array(
+			'code'=>'procedures',
+			'icon'=>'icon-th-thumb-empty',
+			'name'=>'Procedures'
+		)
+	);
+}
 //---------- begin function oracleNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name
@@ -2361,50 +2395,6 @@ function oracleNamedQuery($name){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
 	switch(strtolower($name)){
-		case 'names':
-			return array(
-				array(
-					'name'=>'running_queries',
-					'icon'=>'icon-spin4',
-					'displayname'=>'Running Queries'
-				),
-				array(
-					'name'=>'sessions',
-					'icon'=>'icon-spin8',
-					'displayname'=>'Sessions'
-				),
-				array(
-					'name'=>'table_locks',
-					'icon'=>'icon-lock',
-					'displayname'=>'Table Locks'
-				),
-				// array(
-				// 	'name'=>'schemas',
-				// 	'icon'=>'icon-th',
-				// 	'displayname'=>'Schemas'
-				// ),
-				array(
-					'name'=>'tables',
-					'icon'=>'icon-table',
-					'displayname'=>'Tables'
-				),
-				array(
-					'name'=>'functions',
-					'icon'=>'icon-th-thumb',
-					'displayname'=>'Functions'
-				),
-				array(
-					'name'=>'procedures',
-					'icon'=>'icon-th-thumb-empty',
-					'displayname'=>'Procedures'
-				),
-				// array(
-				// 	'name'=>'optimizations',
-				// 	'icon'=>'icon-optimize',
-				// 	'displayname'=>'Optimizations'
-				// ),
-			);
-		break;
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT

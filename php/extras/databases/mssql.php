@@ -1931,6 +1931,25 @@ function mssqlExecuteSQL($query){
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return 1;
 }
+function mssqlNamedQueryList(){
+	return array(
+		array(
+			'code'=>'running_queries',
+			'icon'=>'icon-spin4',
+			'name'=>'Running Queries'
+		),
+		array(
+			'code'=>'sessions',
+			'icon'=>'icon-spin8',
+			'name'=>'Sessions'
+		),
+		array(
+			'code'=>'table_locks',
+			'icon'=>'icon-lock',
+			'name'=>'Table Locks'
+		),
+	);
+}
 //---------- begin function mssqlNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

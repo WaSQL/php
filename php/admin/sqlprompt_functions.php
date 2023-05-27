@@ -229,6 +229,12 @@ function sqlpromptBuildQuery($db,$name){
 			$dbh_firebird='';
 			return trim(firebirdNamedQuery($name));
 		break;
+		case 'ctree':
+			loadExtras('ctree');
+			global $dbh_ctree;
+			$dbh_ctree='';
+			return trim(ctreeNamedQuery($name));
+		break;
 		default:
 			loadExtras('mysql');
 			global $dbh_mysql;
@@ -236,6 +242,94 @@ function sqlpromptBuildQuery($db,$name){
 			return trim(mysqlNamedQuery($name));
 		break;
 	}
-
+}
+function sqlpromptMonitorTools(){
+	global $DATABASE;
+	$db=$_REQUEST['db'];
+	$recs=[];
+	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'mssql':
+			loadExtras('mssql');
+			global $dbh_mssql;
+			$dbh_mssql='';
+			$recs=mssqlNamedQueryList();
+		break;
+		case 'postgresql':
+		case 'postgres':
+		case 'postgre';
+			loadExtras('postgresql');
+			global $dbh_postgresql;
+			$dbh_postgresql='';
+			$recs=postgresqlNamedQueryList();
+		break;
+		case 'oracle':
+			loadExtras('oracle');
+			global $dbh_oracle;
+			$dbh_oracle='';
+			$recs=oracleNamedQueryList();
+		break;
+		case 'hana':
+			loadExtras('hana');
+			global $dbh_hana;
+			$dbh_hana='';
+			$recs=hanaNamedQueryList();
+		break;
+		case 'sqlite':
+			loadExtras('sqlite');
+			global $dbh_sqlite;
+			$dbh_sqlite='';
+			$recs=sqliteNamedQueryList();
+		break;
+		case 'snowflake':
+			loadExtras('snowflake');
+			global $dbh_snowflake;
+			$dbh_snowflake='';
+			$recs=snowflakeNamedQueryList();
+		break;
+		case 'firebird':
+			loadExtras('firebird');
+			global $dbh_firebird;
+			$dbh_firebird='';
+			$recs=firebirdNamedQueryList();
+		break;
+		case 'ctree':
+			loadExtras('ctree');
+			global $dbh_ctree;
+			$dbh_ctree='';
+			$recs=ctreeNamedQueryList();
+		break;
+		case 'msaccess':
+			loadExtras('msaccess');
+			global $dbh_msaccess;
+			$dbh_msaccess='';
+			$recs=msaccessNamedQueryList();
+		break;
+		case 'mscsv':
+			loadExtras('mscsv');
+			global $dbh_mscsv;
+			$dbh_mscsv='';
+			$recs=mscsvNamedQueryList();
+		break;
+		case 'msexcel':
+			loadExtras('msexcel');
+			global $dbh_msexcel;
+			$dbh_msexcel='';
+			$recs=msexcelNamedQueryList();
+		break;
+		default:
+			loadExtras('mysql');
+			global $dbh_mysql;
+			$dbh_mysql='';
+			$recs=mysqlNamedQueryList();
+		break;
+	}
+	if(!count($recs)){return '';}
+	return databaseListRecords(array(
+		'-list'=>$recs,
+		'-hidesearch'=>1,
+		'-listview'=>getView('sqlprompt_named_query'),
+		'-pretable'=>'<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><wtranslate>Admin Tools</wtranslate></div><ul style="margin-top:0px;" class="nav-list '.configValue('admin_color').'"  >',
+		'-posttable'=>'</ul>'
+	));
 }
 ?>

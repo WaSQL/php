@@ -147,20 +147,19 @@ function ctreeDBConnect(){
 	global $dbh_ctree;
 	if(is_object($dbh_ctree)){return $dbh_ctree;}
 	try{
-		//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-		$options=array(
-			PDO::ATTR_PERSISTENT 	=> false,
-			PDO::ATTR_ERRMODE 		=> PDO::ERRMODE_EXCEPTION,
-			PDO::ATTR_CASE 			=> PDO::CASE_NATURAL,
-    		PDO::ATTR_ORACLE_NULLS 	=> PDO::NULL_EMPTY_STRING
-		);
-		$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
-		if(!is_object($dbh_ctree)){
+		$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
+		//echo printValue($dbh_ctree);exit;
+		if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 			sleep(2);
-			$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
+			$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
 		}
-		if(!is_object($dbh_ctree)){
-			debugValue("Failed to connect to ctree.");
+		if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
+			$err=array(
+				'status'=>'failed',
+				'function'=>'odbc_connect',
+				'error'=>odbc_errormsg()
+			);
+			debugValue($err);
 			return false;
 		}
 		return $dbh_ctree;
@@ -168,31 +167,30 @@ function ctreeDBConnect(){
 	catch (Exception $e) {
 		sleep(5);
 		try{
-			//set options.  https://www.php.net/manual/en/pdo.setattribute.php
-			$options=array(
-				PDO::ATTR_PERSISTENT 	=> false,
-				PDO::ATTR_ERRMODE 		=> PDO::ERRMODE_EXCEPTION,
-				PDO::ATTR_CASE 			=> PDO::CASE_NATURAL,
-	    		PDO::ATTR_ORACLE_NULLS 	=> PDO::NULL_EMPTY_STRING
-			);
-			$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
-			if(!is_object($dbh_ctree)){
+			$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
+			if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 				sleep(2);
-				$dbh_ctree = new PDO($params['-connect'],$params['-dbuser'],$params['-dbpass'],$options);
+				$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
 			}
-			if(!is_object($dbh_ctree)){
-				debugValue("Failed to connect to ctree.");
+			if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
+				$err=array(
+					'status'=>'failed',
+					'function'=>'odbc_connect',
+					'error'=>odbc_errormsg()
+				);
+				debugValue($err);
 				return false;
 			}
 			return $dbh_ctree;
 		}
 		catch (Exception $e) {
-			$error=array(
-				"ctreeDBConnect Exception"=>"Failed to connecto to cTREE. Try restarting Apache.",
-				'Error Message'=>$e,
-				'Connect Params'=>$params
+			$err=array(
+				'status'=>'failed',
+				'function'=>'odbc_connect',
+				'error'=>odbc_errormsg()
 			);
-		    echo printValue($error);exit;
+			debugValue($err);
+			return false;
 		}
 	}
 }
@@ -541,7 +539,7 @@ function ctreeIsDBTable($table='',$force=0){
 		return $databaseCache['ctreeIsDBTable'][$table];
 	}
 	$query=<<<ENDOFQUERY
-		SELECT tbl
+		SELECT trim(tbl) as tbl
 		FROM admin.systables
 		where tbl='{$table}'
 ENDOFQUERY;
@@ -564,7 +562,7 @@ ENDOFQUERY;
 */
 function ctreeGetDBTables($params=array()){
 	$query=<<<ENDOFQUERY
-		SELECT tbl
+		SELECT trim(tbl) as tbl
 		FROM admin.systables
 ENDOFQUERY;
 	$recs=ctreeQueryResults($query);
@@ -845,44 +843,32 @@ function ctreeQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_ctree;
-	if(!is_object($dbh_ctree)){
+	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 		$dbh_ctree=ctreeDBConnect();
 	}
-	if(!$dbh_ctree){
+	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 		$DATABASE['_lastquery']['error']='connect error';
 		$error=array("ctreeQueryResults Connect Error",$query);
 	    debugValue($DATABASE['_lastquery']);
 	    return array();
 	}
 	try{
-		$data = $dbh_ctree->query($query);	
+		$result=odbc_exec($dbh_ctree,$query);	
+		//echo "result".printValue($result);exit;
+		$recs = ctreeEnumQueryResults($result,$params,$query);
+		$dbh_ctree=null;
+		return $recs;
 	}
 	catch (Exception $e) {
-		$errstr=json_encode($e);
-		//check for 17798 CT - file is blocked, retry later
-		if(stringContains($errstr,'retry later')){
-			sleep(10);
-			try{
-				$data = $dbh_ctree->query($query);
-			}
-			catch (Exception $e) {
-				$DATABASE['_lastquery']['error']=$e;
-			    debugValue($DATABASE['_lastquery']);
-			    return array();
-			}
-		}
-		else{
-			$DATABASE['_lastquery']['error']=$e;
-		    debugValue($DATABASE['_lastquery']);
-		    return array();
-		}
+		$err=array(
+			'status'=>'failed',
+			'function'=>'odbc_exec',
+			'error'=>odbc_errormsg(),
+			'exception'=>$e
+		);
+		debugValue($err);
+		return false;
 	}
-	$recs = ctreeEnumQueryResults($data,$params,$query);
-	$dbh_ctree=null;
-	$DATABASE['_lastquery']['stop']=microtime(true);
-	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-	//echo "HERE".printValue($recs);exit;
-	return $recs;
 }
 //---------- begin function ctreeEnumQueryResults ----------
 /**
@@ -894,7 +880,7 @@ function ctreeQueryResults($query='',$params=array()){
 */
 function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	global $ctreeStopProcess;
-	if(!is_object($data)){return null;}
+	if(!is_object($data) && !is_resource($data)){return null;}
 	$header=0;
 	unset($fh);
 	$starttime=microtime(true);
@@ -935,10 +921,15 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	$i=0;
 	while(1){
 		try{
-			$row = $data->fetch(PDO::FETCH_ASSOC);
+			$row=odbc_fetch_array($data);
 		}
 		catch (Exception $e) {
-			$err=array('ctreeEnumQueryResults fetch ERROR',$e);
+			$err=array(
+				'status'=>'failed',
+				'function'=>'odbc_connect',
+				'error'=>odbc_errormsg(),
+				'exception'=>$e
+			);
 			debugValue($err);
 			break;
 		}
@@ -1021,7 +1012,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 			
 		}
 	}
-	$data=null;
+	odbc_free_result($data);
 	//send last payload to webhook if specified
 	if(isset($params['-webhook_url'])){
 		if(count($recs)){
@@ -1063,7 +1054,15 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	}
 	return $recs;
 }
-
+function ctreeNamedQueryList(){
+	return array(
+		array(
+			'code'=>'procedures',
+			'icon'=>'icon-th-thumb-empty',
+			'name'=>'Procedures'
+		)
+	);
+}
 //---------- begin function ctreeNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

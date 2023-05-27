@@ -1408,6 +1408,40 @@ function snowflakeConvert2UTF8($content) {
     } 
     return $content; 
 }
+function snowflakeNamedQueryList(){
+	return array(
+		array(
+			'code'=>'running_queries',
+			'icon'=>'icon-spin4',
+			'name'=>'Running Queries'
+		),
+		array(
+			'code'=>'sessions',
+			'icon'=>'icon-spin8',
+			'name'=>'Sessions'
+		),
+		array(
+			'code'=>'table_locks',
+			'icon'=>'icon-lock',
+			'name'=>'Table Locks'
+		),
+		array(
+			'code'=>'tables',
+			'icon'=>'icon-table',
+			'name'=>'Tables'
+		),
+		array(
+			'code'=>'functions',
+			'icon'=>'icon-th-thumb',
+			'name'=>'Functions'
+		),
+		array(
+			'code'=>'procedures',
+			'icon'=>'icon-th-thumb-empty',
+			'name'=>'Procedures'
+		)
+	);
+}
 //---------- begin function snowflakeNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name

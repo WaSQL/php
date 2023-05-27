@@ -947,7 +947,11 @@ function msaccessEnumQueryResults($result,$params=array(),$query=''){
 	}
 	return $recs;
 }
-
+function msaccessNamedQueryList(){
+	return array(
+		
+	);
+}
 //---------- begin function msaccessNamedQuery ----------
 /**
 * @describe returns pre-build queries based on name
@@ -980,16 +984,6 @@ ENDOFQUERY;
 		break;
 		case 'procedures':
 			return <<<ENDOFQUERY
-SELECT 
-	creator,
-	has_resultset,
-	has_return_val,
-	owner,
-	proc_id,
-	proc_name,
-	proc_type,
-	rssid
-FROM admin.sysprocedures
 
 ENDOFQUERY;
 		break;
