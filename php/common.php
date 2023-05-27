@@ -361,16 +361,29 @@ function commonCronLogInit($id=0){
 		$CRONTHRU['cronlog_id']=$_REQUEST['cronlog_id'];
 		return $CRONTHRU['cronlog_id'];
 	}
-	$id=(integer)$id;
-	if($id == 0){
-		if(isset($_REQUEST['cron_id'])){
-			$id=(integer)$_REQUEST['cron_id'];
+	if(is_string($id) && !isNum($id)){
+		$cron=getDBRecord(array('-table'=>'_cron','run_cmd'=>$id,'-fields'=>'_id,name','-nocache'=>1));
+		if(!isset($cron['_id'])){
+			$CRONTHRU['init_error']="No cron with run_cmd: {$id}";
+			return 0;
 		}
-		if($id == 0){return 0;}
-	}	
-	$cron=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-nocache'=>1));
+	}
+	else{
+		$id=(integer)$id;
+		if($id == 0){
+			if(isset($_REQUEST['cron_id'])){
+				$id=(integer)$_REQUEST['cron_id'];
+			}
+			if($id == 0){return 0;}
+		}	
+		$cron=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-fields'=>'_id,name','-nocache'=>1));
+		if(!isset($cron['_id'])){
+			$CRONTHRU['init_error']="No cron with id: {$id}";
+			return 0;
+		}
+	}
 	if(!isset($cron['_id'])){
-		$CRONTHRU['init_error']="No cron with id: {$id}";
+		$CRONTHRU['init_error']="No cron found";
 		return 0;
 	}
 	$CRONTHRU['cron_id']=$cron['_id'];
