@@ -119,7 +119,7 @@ function cronDetailsLog($id,$field='log'){
 	return databaseListRecords(array(
 		'-list'=>$recs,
 		'-listfields'=>'time,elapsed,message',
-		'-tableclass'=>'table striped bordered condensed hover sticky',
+		'-tableclass'=>'table striped bordered condensed sticky',
 		'-hidesearch'=>1,
 		'time_class'=>'align-right w_nowrap',
 		'-results_eval'=>'cronDetailsLogExtra',
