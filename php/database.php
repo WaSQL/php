@@ -7289,7 +7289,7 @@ function executeSQL($query=''){
 	elseif(isOracle()){return oracleExecuteSQL($query);}
 	elseif(isMssql()){return mssqlExecuteSQL($query);}
 	$rtn=array();
-	$rtn['query'] = '<div style="font-size:9pt;margin-left:15px;"><pre><xmp>'.$query.'</xmp></pre></div>'.PHP_EOL;
+	$rtn['query'] = $query;
 	$function='executeSQL';
 	$query_result=@databaseQuery($query);
   	if($query_result){
