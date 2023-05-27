@@ -15,7 +15,7 @@ try:
 	import pyodbc
 	import config
 	import common
-
+	import db
 except Exception as err:
 	exc_type, exc_obj, exc_tb = sys.exc_info()
 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -33,21 +33,21 @@ def connect(params):
 	dbconfig = {}
 
 	#check params and override any that are passed in
-	if 'connect' not in dbconfig:
+	if 'connect' not in params:
 		conn_list = [
 			"Driver={Faircom ODBC Driver}",
-			"Host={}".format(dbconfig['dbhost']),
-			"Database={}".format(dbconfig['dbname']),
-			"Port={}".format(dbconfig['dbport']),
+			"Host={}".format(params['dbhost']),
+			"Database={}".format(params['dbname']),
+			"Port={}".format(params['dbport']),
 			"charset=UTF-8",
-			"UID={}".format(dbconfig['dbuser']),
-			"PWD={}".format(dbconfig['dbpass'])
+			"UID={}".format(params['dbuser']),
+			"PWD={}".format(params['dbpass'])
 			]
 		s=';'
-		dbconfig['connect']=s.join(conn_list)
-
+		params['connect']=s.join(conn_list)
+	
 	try:
-		conn_ctree = pyodbc.connect(dbconfig['connect'], ansi=True)
+		conn_ctree = pyodbc.connect(params['connect'], ansi=True)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 

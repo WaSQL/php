@@ -12,7 +12,6 @@ import os
 import sys
 try:
 	import json
-	sys.path.append('c:/users/slloy/appdata/roaming/python/python38/site-packages')
 	import pyodbc
 	import config
 	import common

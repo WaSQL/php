@@ -283,6 +283,7 @@
 				'-start'=>$offset,
 				'-maxrows'=>$limit
 			));
+			unlink($afile);
 			//echo $afile.printValue($recs);exit;
 			
 			/* log queries? */

@@ -12561,11 +12561,14 @@ function commonJSV2CSVLine($line){
 	global $jsvcsvfile;
 	//echo $jsvcsvfile.printValue($line);exit;
 	if($line['line_number']==0){
-		$fields=json_decode($line['line'],true);
+		$fields=decodeJson($line['line'],true);
+		//echo "fields:".printValue($fields);exit;
 		$ok=file_put_contents($jsvcsvfile,implode(',',$fields).PHP_EOL);
 	}
-	else{
-		$vals=json_decode($line['line'],true);
+	elseif(strlen($line['line'])){
+		//echo "yoyo";
+		$vals=decodeJson($line['line'],true);
+		//echo "VALS:".printValue($vals);
 		//fix utf-8
 		foreach($vals as $i=>$val){
 			if(stringContains($val,"\\u")){

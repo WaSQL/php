@@ -15,6 +15,7 @@ try:
     import json
     import config
     import common
+    import db
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -115,6 +116,15 @@ try:
                 common.abort(sys.exc_info(),err)
 
             outfile=sqlitedb.queryResults(query,params)
+            print(outfile)
+        #CTREE
+        if dbtype.startswith('ctree'):
+            try:
+                import ctreedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            outfile=ctreedb.queryResults(query,params)
             print(outfile)
         #POSTGRES
         if dbtype.startswith('postgre'):

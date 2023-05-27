@@ -855,12 +855,12 @@ function pyQueryResults($db,$query,$params=array()){
 	$ok=file_put_contents($afile, $query);
 	$args=" -B \"{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
 	$out=cmdResults('python3',$args);
-	if($out['rtncode'] != 0){
+	if($out['rtncode'] != 0 || stringBeginsWith($out['stdout'],'Error')){
 		echo "Failed to process<br>";
 		echo printValue($out);
 		exit;
 	}
-	//echo printValue($out);exit;
+	unlink($afile);
 	//return printValue($out);
 	//unlink($afile);
 	$jsvfile=$out['stdout'];
@@ -868,12 +868,15 @@ function pyQueryResults($db,$query,$params=array()){
 	if(!is_file($jsvfile)){
 		return $jsvfile;
 	}
+	//echo $jsvfile;exit;
 	$csvfile=commonJSV2CSV($jsvfile);
-	//echo $csvfile;
+	unlink($jsvfile);
 	if(isset($params['-csv'])){
 		return $csvfile;	
 	}
 	$csv=getCSVFileContents($csvfile);
+	
+	unlink($csvfile);
 	return $csv['items'];
 }
 
