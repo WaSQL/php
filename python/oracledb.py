@@ -181,16 +181,6 @@ def executeSQL(query,params):
 	except Exception as err:
 		return common.debug(sys.exc_info(),err)
 
-#---------- begin function convertStr ----------
-# @describe convert objects in recordsets to string
-# @param o object
-# @return 
-#   str string
-# @usage 
-#   str =  oracledb.convertStr(o)
-def convertStr(o):
-	return "{}".format(o)
-
 #---------- begin function queryResults ----------
 # @describe executes a query and returns list of records
 # @param query str - SQL query to run
@@ -216,7 +206,7 @@ def queryResults(query,params):
 			f.write("\n")
 			#write records
 			for rec in cur_oracle.fetchall():
-				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
 				f.write("\n")
 			f.close()
 			cur_oracle.close()
@@ -228,7 +218,7 @@ def queryResults(query,params):
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
-				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
 				recs.append(rec)
 			curr_oracle.close()
 			conn_oracle.close()

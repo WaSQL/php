@@ -71,6 +71,14 @@ def queryResults(dbname,query,params={}):
                 common.abort(sys.exc_info(),err)
 
             return sqlitedb.queryResults(query,params)
+        #CTREE
+        if dbtype.startswith('ctree'):
+            try:
+                import ctreedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return ctreedb.queryResults(query,params)
         #POSTGRES
         if dbtype.startswith('postgre'):
             try:
@@ -163,6 +171,14 @@ def executeSQL(dbname,query,params={}):
                 common.abort(sys.exc_info(),err)
 
             return sqlitedb.executeSQL(query,params)
+        #CTREE
+        if config.DATABASE[dbname]['dbtype'].startswith('ctree'):
+            try:
+                import ctreedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return ctreedb.executeSQL(query,params)
         #POSTGRES
         if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
             try:
@@ -231,6 +247,14 @@ def connect(dbname,params={}):
                 common.abort(sys.exc_info(),err)
 
             return sqlitedb.connect(params)
+        #CTREE
+        if dbtype.startswith('ctree'):
+            try:
+                import ctreedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return ctreedb.connect(params)
         #POSTGRES
         if dbtype.startswith('postgre'):
             try:
@@ -264,5 +288,10 @@ def connect(dbname,params={}):
 
             return msexceldb.connect(params)
 
+#---------- begin function convertStr ----------
+# @describe returns a string from an object
+# @param o object - object to convert
+# @return str string 
+# @usage db.convertStr(o)
 def convertStr(o):
     return "{}".format(o)

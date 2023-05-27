@@ -135,16 +135,6 @@ def executeSQL(query,params):
 		conn_postgres.close()
 		return common.debug(sys.exc_info(),err)
 
-#---------- begin function convertStr ----------
-# @describe convert objects in recordsets to string
-# @param o object
-# @return 
-#   str string
-# @usage 
-#   str =  postgresdb.convertStr(o)
-def convertStr(o):
-	return "{}".format(o)
-
 #---------- begin function queryResults ----------
 # @describe executes a query and returns list of records
 # @param query str - SQL query to run
@@ -166,11 +156,11 @@ def queryResults(query,params):
 			jsv_file=params['filename']
 			#write file
 			f = open(jsv_file, "w")
-			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=convertStr).lower())
+			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=db.convertStr).lower())
 			f.write("\n")
 			#write records
 			for rec in cur_postgres.fetchall():
-				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
 				f.write("\n")
 			f.close()
 			cur_postgres.close()
@@ -182,7 +172,7 @@ def queryResults(query,params):
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
-				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=convertStr))
+				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
 				recs.append(rec)
 			cur_postgres.close()
 			conn_postgres.close()

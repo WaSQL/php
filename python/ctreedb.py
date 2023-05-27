@@ -12,7 +12,6 @@ import os
 import sys
 try:
 	import json
-	sys.path.append('c:/users/slloy/appdata/roaming/python/python38/site-packages')
 	import pyodbc
 	import config
 	import common
@@ -29,40 +28,35 @@ except Exception as err:
 # @return 
 #	cur_mssql, conn_mssql array
 # @usage 
-#	cur_mssql, conn_mssql =  msexceldb.connect(params)
+#	cur_mssql, conn_mssql =  mscsvdb.connect(params)
 def connect(params):
 	dbconfig = {}
 
 	#check params and override any that are passed in
-	if 'dbname' in params:
-		dbconfig['dbq'] = params['dbname']
-
-	#build connection string list
-	conn_list = [
-		"Driver=Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)",
-		'FIL=Excel 12.0',
-		'DriverId=1046',
-		'ImportMixedTypes=Text',
-		'ReadOnly=false',
-		'IMEX=1',
-		'MaxScanRows=2',
-		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=2;HDR=YES"',
-		]
-	conn_list.append("Dbq={}".format(dbconfig['dbq']))
-	s=';'
-	conn_str=s.join(conn_list)
+	if 'connect' not in dbconfig:
+		conn_list = [
+			"Driver={Faircom ODBC Driver}",
+			"Host={}".format(dbconfig['dbhost']),
+			"Database={}".format(dbconfig['dbname']),
+			"Port={}".format(dbconfig['dbport']),
+			"charset=UTF-8",
+			"UID={}".format(dbconfig['dbuser']),
+			"PWD={}".format(dbconfig['dbpass'])
+			]
+		s=';'
+		dbconfig['connect']=s.join(conn_list)
 
 	try:
-		conn_msexcel = pyodbc.connect(conn_str, readonly=True, autocommit=True)
+		conn_ctree = pyodbc.connect(dbconfig['connect'], ansi=True)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
 	try:
-		cur_msexcel = conn_msexcel.cursor()
+		cur_ctree = conn_ctree.cursor()
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
-	return cur_msexcel, conn_msexcel
+	return cur_ctree, conn_ctree
 
 #---------- begin function executeSQL ----------
 # @describe executes a query
@@ -71,19 +65,19 @@ def connect(params):
 # @return 
 #	boolean
 # @usage 
-#	recs =  msexceldb.executeSQL(query,params)
+#	recs =  mscsvdb.executeSQL(query,params)
 def executeSQL(query,params):
 	try:
 		#connect
-		cur_msexcel, conn_msexcel =  connect(params)
+		cur_ctree, conn_ctree =  connect(params)
 		#now execute the query
-		cur_msexcel.execute(query)
-		conn_msexcel.commit()
+		cur_ctree.execute(query)
+		conn_ctree.commit()
 		return True
 		
 	except Exception as err:
-		cur_msexcel.close()
-		conn_msexcel.close()
+		cur_ctree.close()
+		conn_ctree.close()
 		return common.debug(sys.exc_info(),err)
 
 #---------- begin function queryResults ----------
@@ -93,46 +87,46 @@ def executeSQL(query,params):
 # @return 
 #   recordsets list
 # @usage 
-#   recs =  msexceldb.queryResults(query,params)
+#   recs =  mscsvdb.queryResults(query,params)
 def queryResults(query,params):
 	try:
 		#connect
-		cur_msexcel, conn_msexcel =  connect(params)
+		cur_ctree, conn_ctree =  connect(params)
 		#now execute the query
-		cur_msexcel.execute(query)
+		cur_ctree.execute(query)
 		#get column names - lowercase them for consistency
-		fields = [field_md[0].lower() for field_md in cur_msexcel.description]
-
+		fields = [field_md[0].lower() for field_md in cur_ctree.description]
+		
 		if 'filename' in params.keys():
-			jsv_file=params['filename']			
+			jsv_file=params['filename']	
 			#write file
 			f = open(jsv_file, "w")
 			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=db.convertStr).lower())
 			f.write("\n")
 			#write records
-			for rec in cur_msexcel.fetchall():
+			for rec in cur_ctree.fetchall():
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
 				f.write("\n")
 			f.close()
-			cur_msexcel.close()
-			conn_msexcel.close()
+			cur_ctree.close()
+			conn_ctree.close()
 			return params['filename']
 		else:
 			recs = []
-			for rec in cur_msexcel.fetchall():
+			for rec in cur_ctree.fetchall():
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results
 				rec=json.loads(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
 				recs.append(rec)
-			cur_msexcel.close()
-			conn_msexcel.close()
+			cur_ctree.close()
+			conn_ctree.close()
 			return recs
 
 	except Exception as err:
-		cur_msexcel.close()
-		conn_msexcel.close()
+		cur_ctree.close()
+		conn_ctree.close()
 		return common.debug(sys.exc_info(),err)
 ###########################################
