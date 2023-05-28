@@ -901,7 +901,7 @@ function commonSearchFiltersForm($params=array()){
 			}
 			else{
 				$class=$quickclass;
-				$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
+				$btn='<button type="button" style="margin:0 4px 4px 0;" class="'.$class.'"';
 				if(stringBeginsWith($str,'javascript:')){
 					$str=str_replace('javascript:','',$str);
 					$btn .=' onclick="'.$str.'"';
@@ -917,7 +917,7 @@ function commonSearchFiltersForm($params=array()){
 				$buttons[]=$btn;
 			}		
 		}
-		$rtn .= '<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">'.implode(' ',$buttons).'</div>';
+		$rtn .= '<div style="margin-bottom:5px;display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;">'.implode(' ',$buttons).'</div>';
 	}
 	//flex wrapper
 	$rtn .= '	<div class="w_flex w_flexgroup w_flexwrap">'.PHP_EOL;
