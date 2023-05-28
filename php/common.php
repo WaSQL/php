@@ -947,7 +947,7 @@ function commonSearchFiltersForm($params=array()){
 	if(!isset($params['-navonly'])){
 		$rtn .= '	<div data-set="1" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 		if(!isset($params['-simplesearch'])){
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
 			if(isset($params['-search_select_class'])){
 				$cparams['class']=$params['-search_select_class'];
@@ -958,7 +958,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= buildFormSelect('filter_field',$vals,$cparams);
 			$rtn .= '			</div>'.PHP_EOL;
 			//operators
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$vals=array(
 				'eq'	=> 'Equals',
 				'ea'	=> 'Equals Any of These',
@@ -996,7 +996,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= buildFormSelect('filter_operator',$vals,$cparams);
 			$rtn .= '			</div>'.PHP_EOL;
 
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
 			if(isset($params['-search_input_class'])){
 				$cparams['class']=$params['-search_input_class'];
@@ -1013,7 +1013,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 			//order
 			if(!empty($params['-showorder']) && $params['-showorder']==1){
-				$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+				$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 				$vals=array();
 				foreach($params['-listfields'] as $fld){
 					$dname=ucwords(trim(str_replace('_',' ',$fld)));
@@ -1037,7 +1037,7 @@ function commonSearchFiltersForm($params=array()){
 		else{
 			$rtn .='<input type="hidden" name="filter_field" value="'.$params['-simplesearch'].'" />'.PHP_EOL;
 			$rtn .='<input type="hidden" name="filter_operator" value="ct" />'.PHP_EOL;
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
 			if(isset($params['-search_input_class'])){
 				$cparams['class']=$params['-search_input_class'];
@@ -1052,17 +1052,17 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//search button
-		$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+		$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0);return false;"><span class="icon-search" style="margin-right:5px;"></span> Search</button>'.PHP_EOL;
 		$rtn .= '			</div>'.PHP_EOL;
 		if(!isset($params['-simplesearch'])){
 			//add filter
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$rtn .= '				<button type="button" class="'.$btnclass.'" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 			//bulkedit
 			if(!empty($params['-bulkedit'])){
-				$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+				$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 		    	$rtn .= '				<button type="button" title="Bulk Edit" class="'.$btnclass.'" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_bold"></span></button>'.PHP_EOL;
 		    	$rtn .= '			</div>'.PHP_EOL;
 			}
@@ -1079,7 +1079,7 @@ function commonSearchFiltersForm($params=array()){
 		//show first if offset minus limit is not 0
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
@@ -1087,11 +1087,11 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset'] > 0){
 			$offset=$params['-offset']-$params['-limit'];
 			if($offset < 0){$offset=0;}
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
-		$rtn .= '			<div style="margin:0 3px;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
+		$rtn .= '			<div style="margin:0 4px 4px 0;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
 		$x=$params['-offset']+1;
 		$y=$x+$params['-limit']-1;
 		if($y > $params['-total']){$y=$params['-total'];}
@@ -1100,24 +1100,24 @@ function commonSearchFiltersForm($params=array()){
 		//show next if offset+limit < total
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-offset']+$params['-limit'];
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-total']-$params['-limit'];
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '		</div>'.PHP_EOL;
 		if(!empty($params['-export'])){
-			$rtn .= '			<div style="margin:0 3px;">'.PHP_EOL;
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="'.$btnclass.'" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_bold"></span></button>'.PHP_EOL;
 	    	$rtn .= '			</div>'.PHP_EOL;
-	    	$rtn .= '			<div style="margin:0 3px;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
+	    	$rtn .= '			<div style="margin:0 4px 4px 0;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
 	    	// if(!empty($params['-export_file'])){
-	    	// 	$rtn .= '			<div style="margin:0 3px;" onclick="removeDiv(this);">'.PHP_EOL;
+	    	// 	$rtn .= '			<div style="margin:0 4px 4px 0;" onclick="removeDiv(this);">'.PHP_EOL;
 		    // 	$rtn .= '				<a href="'.$params['-export_file'].'" style="text-decoration:none;padding-top:7px;" title="Download CSV Export" class="btn" ><span class="icon-download  w_warning w_bold w_blink"></span></a>'.PHP_EOL;
 		    // 	$rtn .= '			</div>'.PHP_EOL;
 	    	// }
