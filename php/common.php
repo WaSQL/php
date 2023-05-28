@@ -858,7 +858,7 @@ function commonSearchFiltersForm($params=array()){
 					unset($str['class']);
 				}
 				else{$class=$quickclass;}
-				$btn='<button type="button" style="margin-right:4px;" class="'.$class.'"';
+				$btn='<button type="button" style="margin:0 4px 4px 0;" class="'.$class.'"';
 				if(isset($str['filter'])){
 					$btn .=' data-filter="'.$str['filter'].'"';
 					unset($str['filter']);
@@ -10828,10 +10828,10 @@ function fileManager($startdir='',$params=array()){
 			//actions
 			$rtn .= '		<td class="nowrap w_flexgroup">'.PHP_EOL;
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" style="margin-right:4px;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
-				$rtn .= '			<a title="Delete" style="margin-right:4px;" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
 			}
-			$rtn .= '			<a title="Browse" style="margin-right:4px;" alt="Browse Folder" class="w_link w_bold icon-folder" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'.PHP_EOL;
+			$rtn .= '			<a title="Browse" style="margin:0 4px 4px 0;" alt="Browse Folder" class="w_link w_bold icon-folder" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'.PHP_EOL;
 			$rtn .= '		</td>'.PHP_EOL;
 			$rtn .= '	</tr>'.PHP_EOL;
 	    }
@@ -10908,10 +10908,10 @@ function fileManager($startdir='',$params=array()){
 			}
 			//actions
 			$rtn .= '		<td align="right" valign="middle" class="w_nowrap w_flexgroup">'.PHP_EOL;
-			$rtn .= '		<a title="Download" style="margin-right:4px;" alt="Download" class="w_link icon-download w_success" href="'.$previewlink.'"></a>'.PHP_EOL;
+			$rtn .= '		<a title="Download" style="margin:0 4px 4px 0;" alt="Download" class="w_link icon-download w_success" href="'.$previewlink.'"></a>'.PHP_EOL;
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" style="margin-right:4px;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
-				$rtn .= '			<a title="Delete" style="margin-right:4px;" alt="Delete File" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete File" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
 				}
 			$rtn .= '		</td>'.PHP_EOL;
 			}
