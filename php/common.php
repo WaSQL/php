@@ -4220,7 +4220,7 @@ function buildFormFile($name,$params=array()){
 		$tag .= $viewer;
 		return $tag;
 	}
-	elseif(isset($params['-viewonly']) && $params['-viewonly']==1){	
+	elseif(isset($params['readonly']) && $params['readonly']==1){	
 		if(!strlen($params['value'])){return $tag;}
 		$tag .= $viewer;
 		return $tag;
