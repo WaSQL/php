@@ -2092,8 +2092,11 @@ function databaseListRecords($params=array()){
 	}
 	if(!is_array($params['-list'])){$params['-list']=array(array('status'=>'no results'));}
 	foreach($params['-list'] as $row=>$rec){
-		$recid=removeHtml($rec['_id']);
-		$recid=(integer)$recid;
+		if(isset($rec['_id'])){
+			$recid=removeHtml($rec['_id']);
+			$recid=(integer)$recid;
+		}
+		else{$recid=0;}
 		$rtn .= '		<tr data-row="'.$row.'"';
 		if(!empty($params['-onclick'])){
 			$href=$params['-onclick'];
