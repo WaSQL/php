@@ -63,9 +63,15 @@ function phpmailerSendMail($params=array()){
 	if(!isset($params['smtpport'])){$params['smtpport']=25;}
 	if(!isset($params['-timeout'])){$params['-timeout']=300;}
 	/* Required options */
+	$missing=[];
 	$reqopts=array('to','from','subject','message');
 	foreach($reqopts as $key){
-		if(!isset($params[$key]) || strlen($params[$key])==0){return "phpmailerSendMail Error - missing required parameter: ". $key;}
+		if(!isset($params[$key]) || strlen($params[$key])==0){
+			$missing[]=$key;
+		}
+    }
+    if(count($missing)){
+    	return "phpmailerSendMail Error - missing the following required params: ". implode(', ',$missing);
     }
 	//mail object
 	$mail = new PHPMailer(true);
