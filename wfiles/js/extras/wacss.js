@@ -1434,6 +1434,22 @@ var wacss = {
 									wacss.chartjs[list[i].id].config.options.scales.xAxes[0].stacked=true;
 								}
 							}
+							if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
+								if(undefined != lconfig.options.scales){
+									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+								}
+								if(undefined != lconfig.options.scales.yAxes[0]){
+									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+								}
+								if(undefined != lconfig.options.scales.yAxes[0].ticks){
+									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+								}
+								if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
+									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+								}
+								//console.log('beginAtZero');
+								//console.log(lconfig.options.scales.yAxes[0]);
+							}
 		        			wacss.chartjs[list[i].id].update();
 		        			foundchart=1;
 		        		}
@@ -1461,8 +1477,8 @@ var wacss = {
 							}
 
 						}
-						console.log('list: '+i);
-						console.log(list[i]);
+						//console.log('list: '+i);
+						//console.log(list[i]);
 						//beginatzero
 						if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
 							if(undefined != lconfig.options.scales){
@@ -1477,8 +1493,8 @@ var wacss = {
 							if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 							}
-							console.log('beginAtZero');
-							console.log(lconfig.options.scales.yAxes[0]);
+							//console.log('beginAtZero');
+							//console.log(lconfig.options.scales.yAxes[0]);
 						}
 	        			//look for datasets;
 	        			//console.log(colors);
