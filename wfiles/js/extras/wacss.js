@@ -1102,16 +1102,12 @@ var wacss = {
 			}
 			if(undefined != list[i].dataset.beginatzero && (list[i].dataset.beginatzero==1 || list[i].dataset.beginatzero=='true')){
 				if(undefined != lconfig.options.scales){
-					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+					lconfig.options.scales={
+						yAxes:[{ticks:{beginAtZero:true}}]
+					};
 				}
-				if(undefined != lconfig.options.scales.yAxes[0]){
-					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-				}
-				if(undefined != lconfig.options.scales.yAxes[0].ticks){
-					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-				}
-				if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
-					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+				if(undefined != lconfig.options.scales.yAxes){
+					lconfig.options.scales.yAxis=[{ticks:{beginAtZero:true}}];
 				}
 			}
 			//options - plugins - legend - display
