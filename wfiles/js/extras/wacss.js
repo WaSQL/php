@@ -1094,11 +1094,25 @@ var wacss = {
 				lconfig.options.title={display:true,text:list[i].dataset.title};
 			}
 			//options - scales - x,y - stacked
-			if(undefined != list[i].dataset.stacked && list[i].dataset.stacked.toLowerCase()=='true'){
+			if(undefined != list[i].dataset.stacked && (list[i].dataset.stacked.toLowerCase()==1 || list[i].dataset.stacked.toLowerCase()=='true')){
 				lconfig.options.scales={
 					xAxes:[{stacked:true}],
 					yAxes:[{stacked:true}]
 				};
+			}
+			if(undefined != list[i].dataset.beginatzero && (list[i].dataset.beginatzero==1 || list[i].dataset.beginatzero=='true')){
+				if(undefined != lconfig.options.scales){
+					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+				}
+				if(undefined != lconfig.options.scales.yAxes[0]){
+					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+				}
+				if(undefined != lconfig.options.scales.yAxes[0].ticks){
+					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+				}
+				if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
+					lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+				}
 			}
 			//options - plugins - legend - display
 			if(undefined != list[i].dataset.legenddisplay && list[i].dataset.legenddisplay.toLowerCase()=='false'){
@@ -1244,8 +1258,6 @@ var wacss = {
 				};
 			}
 			let foundchart=0;
-			console.log('initChartJs type: '+type);
-			console.log(list[i]);
 			switch(type){
 				case 'guage':
 					if(undefined != wacss.chartjs[list[i].id]){
@@ -1449,8 +1461,6 @@ var wacss = {
 								if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
-								console.log('beginAtZero - 1');
-								console.log(lconfig.options.scales.yAxes[0]);
 							}
 		        			wacss.chartjs[list[i].id].update();
 		        			foundchart=1;
@@ -1495,8 +1505,6 @@ var wacss = {
 							if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 							}
-							console.log('beginAtZero - 2');
-							console.log(lconfig.options.scales.yAxes[0]);
 						}
 	        			//look for datasets;
 	        			//console.log(colors);
