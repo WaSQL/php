@@ -1244,6 +1244,8 @@ var wacss = {
 				};
 			}
 			let foundchart=0;
+			console.log('initChartJs type: '+type);
+			console.log(list[i]);
 			switch(type){
 				case 'guage':
 					if(undefined != wacss.chartjs[list[i].id]){
@@ -1447,8 +1449,8 @@ var wacss = {
 								if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
-								//console.log('beginAtZero');
-								//console.log(lconfig.options.scales.yAxes[0]);
+								console.log('beginAtZero - 1');
+								console.log(lconfig.options.scales.yAxes[0]);
 							}
 		        			wacss.chartjs[list[i].id].update();
 		        			foundchart=1;
@@ -1493,8 +1495,8 @@ var wacss = {
 							if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 							}
-							//console.log('beginAtZero');
-							//console.log(lconfig.options.scales.yAxes[0]);
+							console.log('beginAtZero - 2');
+							console.log(lconfig.options.scales.yAxes[0]);
 						}
 	        			//look for datasets;
 	        			//console.log(colors);
