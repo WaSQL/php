@@ -1461,6 +1461,8 @@ var wacss = {
 							}
 
 						}
+						console.log('list: '+i);
+						console.log(list[i]);
 						//beginatzero
 						if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
 							if(undefined != lconfig.options.scales){
