@@ -1475,6 +1475,8 @@ var wacss = {
 							if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 							}
+							console.log('beginAtZero');
+							console.log(lconfig.options.scales.yAxes[0]);
 						}
 	        			//look for datasets;
 	        			//console.log(colors);
