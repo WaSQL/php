@@ -1447,12 +1447,33 @@ var wacss = {
 							},
 							options:options
 						};
+						//stacked?
 						if(undefined != list[i].getAttribute('data-stacked') && list[i].getAttribute('data-stacked')==1){
-							if(undefined != undefined != lconfig.options.scales.yAxes[0]){
+							if(undefined != lconfig.options.scales){
+								lconfig.options.scales.yAxes[0].stacked=true;
+								lconfig.options.scales.xAxes[0].stacked=true;	
+							}
+							if(undefined != lconfig.options.scales.yAxes[0]){
 								lconfig.options.scales.yAxes[0].stacked=true;	
 							}
-							if(undefined != undefined != lconfig.options.scales.xAxes[0]){
+							if(undefined != lconfig.options.scales.xAxes[0]){
 								lconfig.options.scales.xAxes[0].stacked=true;
+							}
+
+						}
+						//beginatzero
+						if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
+							if(undefined != lconfig.options.scales){
+								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+							}
+							if(undefined != lconfig.options.scales.yAxes[0]){
+								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+							}
+							if(undefined != lconfig.options.scales.yAxes[0].ticks){
+								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
+							}
+							if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
+								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 							}
 						}
 	        			//look for datasets;
