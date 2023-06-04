@@ -7212,19 +7212,19 @@ function commonProcessChartjsTags($htm){
 			
 			//select date(_cdate) as label, code as dataset,count(*) as value
 			$recs=dbQueryResults($db,$chartjs_contents);
+			if(!is_array($recs)){$recs=[];}
 			if(strlen($process)){
 				$recs=call_user_func($process,$recs,$chartjs_attributes);
 			}
 			if(!isset($recs[0])){
-				$replace_str='<error>No Records</error>';
-				$replace_str.="<query>{$chartjs_contents}</query>";
-				$chartjs_contents=str_replace($chartjs_tag,$replace_str,$chartjs_contents);
+				$replace_str='';
+				$htm=str_replace($chartjs_tag,$replace_str,$htm);
 				continue;
 			}
 			if(!isset($recs[0]['label'])){
 				$replace_str='<error>Query Must return label, and value</error>';
 				$replace_str.="<query>{$chartjs_contents}</query>";
-				$chartjs_contents=str_replace($chartjs_tag,$replace_str,$chartjs_contents);
+				$htm=str_replace($chartjs_tag,$replace_str,$htm);
 				continue;
 			}
 			$datasets=array();
