@@ -1445,16 +1445,16 @@ var wacss = {
 								}
 							}
 							if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
-								if(undefined != lconfig.options.scales){
+								if(undefined == lconfig.options.scales){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
-								if(undefined != lconfig.options.scales.yAxes[0]){
+								if(undefined == lconfig.options.scales.yAxes[0]){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
-								if(undefined != lconfig.options.scales.yAxes[0].ticks){
+								if(undefined == lconfig.options.scales.yAxes[0].ticks){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
-								if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
+								if(undefined == lconfig.options.scales.yAxes[0].ticks.beginAtZero){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
 							}
