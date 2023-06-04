@@ -1101,12 +1101,12 @@ var wacss = {
 				};
 			}
 			if(undefined != list[i].dataset.beginatzero && (list[i].dataset.beginatzero==1 || list[i].dataset.beginatzero=='true')){
-				if(undefined != lconfig.options.scales){
+				if(undefined == lconfig.options.scales){
 					lconfig.options.scales={
 						yAxes:[{ticks:{beginAtZero:true}}]
 					};
 				}
-				if(undefined != lconfig.options.scales.yAxes){
+				if(undefined == lconfig.options.scales.yAxes){
 					lconfig.options.scales.yAxis=[{ticks:{beginAtZero:true}}];
 				}
 			}
