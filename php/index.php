@@ -1286,11 +1286,11 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	//check for datalist tags
 	$htm=commonProcessDBListRecordsTags($htm);
 	//check for post process
-	if(isset($TEMPLATE['post_eval']) && function_exists($TEMPLATE['post_eval'])){
-		$htm=call_user_func($TEMPLATE['post_eval'],$htm);
+	if(isset($TEMPLATE['post_render']) && function_exists($TEMPLATE['post_render'])){
+		$htm=call_user_func($TEMPLATE['post_render'],$htm);
 	}
-	if(isset($PAGE['post_eval']) && function_exists($PAGE['post_eval'])){
-		$htm=call_user_func($PAGE['post_eval'],$htm);
+	if(isset($PAGE['post_render']) && function_exists($PAGE['post_render'])){
+		$htm=call_user_func($PAGE['post_render'],$htm);
 	}
 	echo $htm;
 	echo $wasql_debugValueContent;
