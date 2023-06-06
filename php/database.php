@@ -822,7 +822,7 @@ function dbOptimizations($db,$params=array()){
 function dbQueryResults($db,$query,$params=array()){
 	$recs=dbFunctionCall('queryResults',$db,$query,$params);
 	//check for single ref cursor that returns a table
-	if(isset($recs[0]) && count(array_keys($recs[0]))==1){
+	if(isset($recs[0]) && is_array($recs[0]) && count(array_keys($recs[0]))==1){
 		foreach($recs[0] as $k=>$v){
 			if(is_array($v)){
 				$recs=$v;
