@@ -214,10 +214,16 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		if(isset($params['-debug'])){
 			return $query;
 		}
-		if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+		$dbh_postgresql='';
+		while($tries < 4){
+			$dbh_postgresql='';
 			$dbh_postgresql=postgresqlDBConnect($params);
+			if(is_resource($dbh_postgresql) || is_object($dbh_postgresql)){
+				break;
+			}
+			sleep(2);
 		}
-		if(!$dbh_postgresql){
+		if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 			debugValue(array(
 				'function'=>'postgresqlAddDBRecordsProcess',
 				'message'=>'postgresqlDBConnect error',
@@ -228,8 +234,10 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			return 0;
 		}
 		//echo $query;exit;
-		$stmt = pg_prepare($dbh_postgresql,'', $query);
-		if(!$stmt){
+		try{
+			$stmt = pg_prepare($dbh_postgresql,'', $query);
+		}
+		catch (Exception $e) {
 			debugValue(array(
 				'function'=>'postgresqlAddDBRecordsProcess',
 				'message'=>'pg_prepare error',
