@@ -9589,10 +9589,12 @@ function getDBTime(){
 function getDBTimezone(){
 	$rec=getDBRecord("SELECT @@session.time_zone as stz");
 	if($rec['stz']=='SYSTEM'){
-		if(isWindows){
-			return `tzutil /g`;
+		if(isWindows()){
+			$out=cmdResults("tzutil /g");
+			return trim($out['stdout']);
 		}
-		return `date +"%Z %z"`;
+		$out=cmdResults("date +\"%Z %z\"");
+		return trim($out['stdout']);
 	}
 	return $rec['stz'];
 }
