@@ -747,31 +747,47 @@ function dbGrep($db,$search,$tables=array()){
 function dbIsTable($db,$table=''){
 	return dbFunctionCall('isDBTable',$db,$table);
 }
-//---------- begin function dbLastQuery([key])
+//---------- begin function dbGetLast([key])
 /**
-* @describe returns the last query info: keys are start, stop, time, error, query, function, params
+* @describe returns the last query info: keys are start,stop,time,error,count,function,[p1],[p2],[p3],[p4]
 * @param key string - key to return, otherwise it return the entire set
 * @return mixed - key value or the entire set
 
 * @return array recordset
 * @usage
 * 	$recs=dbQueryResult('mydb','select * from abc');
-* 	if(strlen(dbLastQuery('error'))){
-* 		echo "Query Error: ".dbLastQuery('error');
+* 	if(strlen(dbGetLast('error'))){
+* 		echo "Query Error: ".dbGetLast('error');
 * 	}
 * 	else{
-*		echo "Query Time: ".dbLastQuery('time');
+*		echo "Query Time: ".dbGetLast('time');
 * 	}
 * 
 * 	or
 * 
-* 	$last=dbLastQuery();
+* 	$last=dbGetLast();
 * 	echo "Query Time: {$last['time']}";
 */
-function dbLastQuery($key=''){
+function dbGetLast($key=''){
 	global $DATABASE;
-	if(strlen($key)){return $DATABASE['_lastquery'][$key];}
-	return $DATABASE['_lastquery'];
+	if(strlen($key)){return $DATABASE['_last_'][$key];}
+	return $DATABASE['_last_'];
+}
+//---------- begin function dbLastError
+/**
+* @describe returns the last database error
+* @return string
+* @usage
+*	$err=dbLastError();
+*/
+function dbGetLastError(){
+	return dbGetLast('error');
+}
+function dbGetLastQuery(){
+	return dbGetLast('query');
+}
+function dbLastQuery(){
+	return dbGetLast('query');
 }
 //---------- begin function dbListRecords
 /**
@@ -9569,6 +9585,13 @@ function getDBTableStatus(){
 function getDBTime(){
 	$nrec=getDBRecord("select now() as now");
 	return strtotime($nrec['now']);
+}
+function getDBTimezone(){
+	$rec=getDBRecord("SELECT @@session.time_zone as stz");
+	if($rec['stz']=='SYSTEM'){
+		return date_default_timezone_get();
+	}
+	return $rec['stz'];
 }
 //---------- begin function getDBQuery--------------------
 /**
