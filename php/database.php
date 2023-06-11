@@ -9594,7 +9594,8 @@ function getDBTimezone(){
 			return trim($out['stdout']);
 		}
 		$out=cmdResults("date +\"%Z %z\"");
-		return trim($out['stdout']);
+		$tz=preg_replace('/[+0-9]+$/','',trim($out['stdout']));
+		return trim($tz);
 	}
 	return $rec['stz'];
 }
