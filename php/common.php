@@ -446,16 +446,10 @@ function commonCronLog($msg,$echomsg=1){
 	}
 	$cronlog_id=(integer)$CRONTHRU['cronlog_id'];
 	if($cronlog_id==0){
-		if($echomsg==1){
-			echo "no cronlog_id set".PHP_EOL;
-		}
 		return false;
 	}
 	$cronlog=getDBRecord(array('-table'=>'_cron_log','_id'=>$cronlog_id,'-fields'=>'_id,log','-nocache'=>1));
 	if(!isset($cronlog['_id'])){
-		if($echomsg==1){
-			echo "no cronlog record with id {$cronlog_id}".PHP_EOL;
-		}
 		return false;
 	}
 	$log=decodeJson($cronlog['log']);
