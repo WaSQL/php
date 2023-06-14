@@ -170,12 +170,7 @@ function ctreeDBConnect(){
 	$exc='';
 	while($tries < 3){
 		try{
-			if($params['-pool']==1){
-				$dbh_ctree = odbc_pconnect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
-			}
-			else{
-				$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);	
-			}
+			$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
 			if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
 		}
 		catch (Exception $e) {
@@ -901,12 +896,17 @@ function ctreeQueryResults($query='',$params=array()){
 }
 function ctreeDBDisconnect(){
 	global $dbh_ctree;
-	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){return false;}
+	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
+		$dbh_ctree=null;
+		return false;
+	}
 	$type = get_resource_type($dbh_ctree);
 	$wait_until = time() + 3;
 	do {
 	    odbc_close($dbh_ctree);
 	} while (get_resource_type($dbh_ctree)===$type && time()<$wait_until);
+	odbc_close_all();
+	$dbh_ctree=null;
 	return true;
 }
 //---------- begin function ctreeEnumQueryResults ----------
