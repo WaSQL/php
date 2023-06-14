@@ -161,11 +161,28 @@
 		break;
 		case 'paginate':
 			$tpath=getWasqlPath('php/temp');
-			$shastr=sha1($_SESSION['sql_last']);
+			if(isset($_REQUEST['sql_sha']) && strlen($_REQUEST['sql_sha'])){
+				$shastr=$_REQUEST['sql_sha'];
+				$recs_count=$_REQUEST['sql_cnt'];
+				//echo "REQ: {$shastr}";exit;
+			}
+			elseif(isset($_SESSION['sql_last']) && strlen($_SESSION['sql_last'])){
+				$shastr=$_SESSION['sql_last'];
+				$recs_count=$_SESSION['sql_last_count'];
+			}
+			else{
+				$lastquery['error']='Unable to find cached csv file for this query';
+				setView('error',1);
+				return;
+			}
 			$filename="sqlprompt_{$shastr}.csv";
 			$afile="{$tpath}/{$filename}";
+			if(!file_exists($afile)){
+				$lastquery['error']="Missing cached file. Unable to paginate. Try running the query again.<br><br>{$afile}";
+				setView('error',1);
+				return;
+			}
 			$begin=microtime(true);
-			$recs_count=$_SESSION['sql_last_count'];
 			$offset=(integer)$_REQUEST['offset'];
 			$limit=30;
 			$recs=getCSVRecords($afile,array(
@@ -247,9 +264,8 @@
 				$afile="{$tpath}/{$filename}";
 				$logname="sqlprompt_{$shastr}.log";
 				$lfile="{$tpath}/{$logname}";
-				if(is_file($afile)){
-					unlink($afile);
-				}
+				if(is_file($afile)){unlink($afile);}
+				if(is_file($lfile)){unlink($lfile);}
 				$params=array(
 					//'-binmode'=>ODBC_BINMODE_PASSTHRU,
 					'-longreadlen'=>131027,
@@ -283,7 +299,7 @@
 				'-start'=>$offset,
 				'-maxrows'=>$limit
 			));
-			unlink($afile);
+			//unlink($afile);
 			//echo $afile.printValue($recs);exit;
 			
 			/* log queries? */
@@ -321,9 +337,7 @@
 				$error=$recs_count;
 				$recs_count='ERROR';
 				setView(array('results','failure'),1);
-				if(is_file($afile)){
-					unlink($afile);
-				}
+				if(is_file($afile)){unlink($afile);}
 			}
 			elseif($recs_count < 30){
 				$recs_show=$recs_count;
@@ -335,6 +349,24 @@
 			return;
 		break;
 		case 'export':
+			$tpath=getWasqlPath('php/temp');
+			if(isset($_REQUEST['sql_sha']) && strlen($_REQUEST['sql_sha'])){
+				$shastr=$_REQUEST['sql_sha'];
+				$recs_count=$_REQUEST['sql_cnt'];
+				//echo "REQ: {$shastr}";exit;
+			}
+			elseif(isset($_SESSION['sql_last']) && strlen($_SESSION['sql_last'])){
+				$shastr=$_SESSION['sql_last'];
+				$recs_count=$_SESSION['sql_last_count'];
+			}
+			else{$shastr=time();}
+			$filename="sqlprompt_{$shastr}.csv";
+			$afile="{$tpath}/{$filename}";
+			if(file_exists($afile)){
+				pushFile($afile);
+				exit;
+			}
+
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);

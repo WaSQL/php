@@ -53,6 +53,10 @@ function sqlpromptCheckKey(e){
     	//console.log('Keycode:'+e.keyCode);
     }
 }
+function sqlpromptSetSha(sha,cnt){
+	document.sqlprompt.sql_sha.value=sha;
+	document.sqlprompt.sql_cnt.value=cnt;
+}
 function sqlpromptSetDB(db,schema){
 	document.sqlprompt.db.value=db;
 	let params={_menu:'sqlprompt',func:'setdb',db:db};

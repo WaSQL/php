@@ -44,6 +44,8 @@
 				<input type="hidden" name="offset" value="0" >
 				<input type="hidden" name="setprocessing" value="results_count" >
 				<input type="hidden" name="sql_select" value="" >
+				<input type="hidden" name="sql_sha" value="" >
+				<input type="hidden" name="sql_cnt" value="" >
 				<input type="hidden" name="cursor_pos" value="" >
 				<input type="hidden" name="editor_content" value="" >
 				<div style="position: relative;max-width:100%;">
@@ -198,13 +200,13 @@
 	<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
 	<div class="w_padtop" style="overflow:auto;">
 		<view:success>
-			<?=buildOnLoad("sqlpromptShowLinks('{$offset}','{$limit}','{$recs_count}','{$qtime_verbose}');");?>
-		<?=sqlpromptListResults($recs);?>		
+			<?=buildOnLoad("sqlpromptSetSha('{$shastr}','{$recs_count}');sqlpromptShowLinks('{$offset}','{$limit}','{$recs_count}','{$qtime_verbose}');");?>
+			<?=sqlpromptListResults($recs);?>		
 		</view:success>
 		<view:failure>
-		<?=buildOnLoad("setText('results_count','{$recs_count}');document.getElementById('export_link').style.display='NONE';");?>
-		<?=nl2br(printValue($error));?>
-		<pre><?=$_SESSION['debugValue_lastm'];?></pre>
+			<?=buildOnLoad("sqlpromptSetSha('');setText('results_count','{$recs_count}');document.getElementById('export_link').style.display='NONE';");?>
+			<?=nl2br(printValue($error));?>
+			<pre><?=$_SESSION['debugValue_lastm'];?></pre>
 		</view:failure>
 	</div>
 </view:results>
