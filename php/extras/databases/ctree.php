@@ -971,6 +971,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	$rowcount=0;
 	$i=0;
 	while(1){
+		$row=array();
 		try{
 			$row=odbc_fetch_array($data);
 		}
