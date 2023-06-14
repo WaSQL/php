@@ -167,17 +167,30 @@ function ctreeDBConnect(){
 	if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
 	//try a few times to connect
 	$tries=0;
+	$exc='';
 	while($tries < 3){
 		try{
-			$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
+			if($params['-pool']==1){
+				$dbh_ctree = odbc_pconnect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
+			}
+			else{
+				$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);	
+			}
 			if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
 		}
-		catch (Exception $e) {}
+		catch (Exception $e) {
+			if(!strlen($exc)){
+				$exc=$e->errorInfo;
+			}
+		}
 		$tries+=1;
 		sleep(2);
 	}
 	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 		$DATABASE['_last_']['error']=odbc_errormsg();
+		if(strlen($ext)){
+			$DATABASE['_last_']['exception']=$exc;
+		}
 		debugValue($DATABASE['_last_']);
 		return false;
 	}
@@ -637,12 +650,32 @@ function ctreeParseConnectParams($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
+	//default cursor to SQL_CUR_USE_ODBC
+	$params['-cursor']=SQL_CUR_USE_ODBC;
+	//default pool to 1
+	$params['-pool']=1;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^ctree/i',$k)){unset($CONFIG[$k]);}
 		}
 		foreach($DATABASE[$CONFIG['db']] as $k=>$v){
-			$params["-{$k}"]=$v;
+			switch(strtolower($k)){
+				case 'cursor':
+				case 'dbcursor':
+					switch(strtoupper($v)){
+						case 'SQL_CUR_USE_ODBC':$params['-cursor']=SQL_CUR_USE_ODBC;break;
+						case 'SQL_CUR_USE_IF_NEEDED':$params['-cursor']=SQL_CUR_USE_IF_NEEDED;break;
+						case 'SQL_CUR_USE_DRIVER':$params['-cursor']=SQL_CUR_USE_DRIVER;break;
+					}
+				break;
+				case 'pool':
+				case 'dbpool':
+					$params['-pool']=(integer)$v;
+				break;
+				default:
+					$params["-{$k}"]=$v;
+				break;
+			}
 		}
 	}
 	//check for user specific
@@ -656,6 +689,10 @@ function ctreeParseConnectParams($params=array()){
 		}
 	}
 	//echo "HERE".printValue($params);exit;
+	$params['-single']=0;
+	if(isset($CONFIG['dbpool'])){
+		$params['-dbname']=$CONFIG['dbname'];
+	}
 	if(isctree()){
 		$params['-dbhost']=$CONFIG['dbhost'];
 		if(isset($CONFIG['dbname'])){
