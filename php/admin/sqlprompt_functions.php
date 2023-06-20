@@ -332,4 +332,26 @@ function sqlpromptMonitorTools(){
 		'-posttable'=>'</ul>'
 	));
 }
+function sqlpromptBuildTop5Ctree($db,$table){
+	$fields=dbGetTableFields($db['name'],$table);
+	if(!is_array($fields) || !count($fields)){
+		return "select top 5 * from admin.{$table}";
+	}
+	$lines=[];
+	foreach($fields as $field=>$info){
+		if($info['_dbtype']=='tinyint'){
+			$lines[]="\tcast({$field} as int) as {$field}";
+		}
+		elseif($info['_dbtype']=='character' && $info['_dblength'] > 255){
+			$lines[]="\ttrim({$field}) as {$field}";
+		}
+		else{
+			$lines[]="\t{$field}";
+		}
+	}
+	$sql="SELECT TOP 5".PHP_EOL;
+	$sql.=implode(','.PHP_EOL,$lines).PHP_EOL;
+	$sql.="FROM admin.{$table}";
+	return $sql;
+}
 ?>

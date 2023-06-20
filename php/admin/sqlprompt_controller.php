@@ -52,7 +52,7 @@
 					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
 				break;
 				case 'ctree':
-					$sql="select top 5 * from admin.{$table} order by 1 desc";
+					$sql=sqlpromptBuildTop5Ctree($db,$table);
 				break;
 				case 'msexcel':
 				case 'mscsv':
