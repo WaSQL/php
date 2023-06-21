@@ -221,11 +221,11 @@ function ctreeExecuteSQL($query,$return_error=1){
     	return 0;
 	}
 	try{
-		$stmt = $dbh_ctree->prepare($query);
-		$stmt->execute();
-		$stmt->closeCursor(); // this is not even required
+		$stmt    = odbc_prepare($dbh_ctree, $query);
+		$success = odbc_execute($stmt);
 		$stmt = null; // doing this is mandatory for connection to get closed
-		ctreeDBDisconnect();
+		odbc_close($dbh_ctree);
+		$dbh_ctree = null;
 	}
 	catch (Exception $e) {
 		$DATABASE['_last_']['error']=$e->errorInfo;
@@ -646,7 +646,7 @@ function ctreeParseConnectParams($params=array()){
 	global $DATABASE;
 	global $USER;
 	//default cursor to SQL_CUR_USE_ODBC
-	$params['-cursor']=SQL_CUR_USE_ODBC;
+	$params['-cursor']=SQL_CUR_USE_DRIVER;
 	//default pool to 1
 	$params['-pool']=1;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
@@ -882,10 +882,16 @@ function ctreeQueryResults($query='',$params=array()){
 	    return array();
 	}
 	try{
+		if(is_resource($result) || is_object($result)){
+			odbc_free_result($result);
+		}
 		$result=odbc_exec($dbh_ctree,$query);	
-		//echo "result".printValue($result);exit;
 		$recs = ctreeEnumQueryResults($result,$params,$query);
-		ctreeDBDisconnect();
+		if(is_resource($result) || is_object($result)){
+			odbc_free_result($result);
+		}
+		odbc_close($dbh_ctree);
+		$dbh_ctree=null;
 		return $recs;
 	}
 	catch (Exception $e) {
@@ -893,21 +899,6 @@ function ctreeQueryResults($query='',$params=array()){
 	    debugValue($DATABASE['_last_']);
 		return false;
 	}
-}
-function ctreeDBDisconnect(){
-	global $dbh_ctree;
-	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$dbh_ctree=null;
-		return false;
-	}
-	$type = get_resource_type($dbh_ctree);
-	$wait_until = time() + 3;
-	do {
-	    odbc_close($dbh_ctree);
-	} while (get_resource_type($dbh_ctree)===$type && time()<$wait_until);
-	odbc_close_all();
-	$dbh_ctree=null;
-	return true;
 }
 //---------- begin function ctreeEnumQueryResults ----------
 /**
@@ -917,7 +908,7 @@ function ctreeDBDisconnect(){
 * @return array
 *	returns records
 */
-function ctreeEnumQueryResults($data,$params=array(),$query=''){
+function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	global $DATABASE;
 	$DATABASE['_last_']=array(
 		'start'=>microtime(true),
@@ -925,13 +916,10 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 		'time'=>0,
 		'error'=>'',
 		'count'=>0,
-		'function'=>'ctreeEnumQueryResults',
-		'p1'=>$data,
-		'p2'=>$params,
-		'p3'=>$query,
+		'function'=>'ctreeEnumQueryResults'
 	);
 	global $ctreeStopProcess;
-	if(!is_object($data) && !is_resource($data)){return null;}
+	if(!is_object($result) && !is_resource($result)){return null;}
 	$header=0;
 	unset($fh);
 	$starttime=microtime(true);
@@ -946,7 +934,6 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			$data=null;
 			$DATABASE['_last_']['error']="file open error";
 			debugValue($DATABASE['_last_']);
 			return array();
@@ -973,7 +960,7 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 	while(1){
 		$row=array();
 		try{
-			$row=odbc_fetch_array($data);
+			$row=odbc_fetch_array($result);
 		}
 		catch (Exception $e) {
 			$DATABASE['_last_']['error']=$e;
@@ -1059,7 +1046,6 @@ function ctreeEnumQueryResults($data,$params=array(),$query=''){
 			
 		}
 	}
-	odbc_free_result($data);
 	//send last payload to webhook if specified
 	if(isset($params['-webhook_url'])){
 		if(count($recs)){
