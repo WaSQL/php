@@ -1087,13 +1087,44 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	}
 	return $recs;
 }
+//https://docs.faircom.com/doc/sqlops/41040.htm
 function ctreeNamedQueryList(){
 	return array(
+		array(
+			'code'=>'fc_get_userlist',
+			'icon'=>'icon-users',
+			'name'=>'User List'
+		),
 		array(
 			'code'=>'procedures',
 			'icon'=>'icon-th-thumb-empty',
 			'name'=>'Procedures'
-		)
+		),
+		array(
+			'code'=>'fc_get_transtats',
+			'icon'=>'icon-transfer',
+			'name'=>'Transaction Stats'
+		),
+		array(
+			'code'=>'fc_get_lockstats',
+			'icon'=>'icon-lock',
+			'name'=>'Lock Stats'
+		),
+		array(
+			'code'=>'fc_get_connstats',
+			'icon'=>'icon-handshake',
+			'name'=>'Connection Stats'
+		),
+		array(
+			'code'=>'fc_get_memstats',
+			'icon'=>'icon-hardware-memory',
+			'name'=>'Memory Stats'
+		),
+		array(
+			'code'=>'fc_get_sqlstats',
+			'icon'=>'icon-sql',
+			'name'=>'SQL Stats'
+		),
 	);
 }
 //---------- begin function ctreeNamedQuery ----------
@@ -1106,6 +1137,19 @@ function ctreeNamedQueryList(){
 */
 function ctreeNamedQuery($name){
 	switch(strtolower($name)){
+		case 'fc_get_filestats':
+		case 'fc_get_transtats':
+		case 'fc_get_lockstats':
+		case 'fc_get_cachestats':
+		case 'fc_get_iostats':
+		case 'fc_get_isamstats':
+		case 'fc_get_sqlstats':
+		case 'fc_get_replstats':
+		case 'fc_get_memstats':
+		case 'fc_get_connstats':
+		case 'fc_get_userlist':
+			return "call {$name}()";
+		break;
 		case 'running_queries':
 			return <<<ENDOFQUERY
 
