@@ -943,6 +943,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	}
 	$rowcount=0;
 	$i=0;
+	@odbc_fetch_row($result, 0);   // reset cursor
 	while(1){
 		$row=array();
 		try{
@@ -1032,6 +1033,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			
 		}
 	}
+	@odbc_fetch_row($result, 0);   // reset cursor
 	odbc_free_result($result);
 	//send last payload to webhook if specified
 	if(isset($params['-webhook_url'])){
