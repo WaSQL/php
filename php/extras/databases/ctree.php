@@ -646,7 +646,7 @@ function ctreeParseConnectParams($params=array()){
 	global $DATABASE;
 	global $USER;
 	//default cursor to SQL_CUR_USE_ODBC
-	$params['-cursor']=SQL_CUR_USE_DRIVER;
+	$params['-cursor']=SQL_CUR_USE_IF_NEEDED;
 	//default pool to 1
 	$params['-pool']=1;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
