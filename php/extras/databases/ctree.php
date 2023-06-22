@@ -943,7 +943,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	}
 	$rowcount=0;
 	$i=0;
-	@odbc_fetch_row($result, 0);   // reset cursor
+	//@odbc_fetch_row($result, -1);   // reset cursor
 	while(1){
 		$row=array();
 		try{
