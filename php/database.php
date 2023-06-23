@@ -747,6 +747,23 @@ function dbGrep($db,$search,$tables=array()){
 function dbIsTable($db,$table=''){
 	return dbFunctionCall('isDBTable',$db,$table);
 }
+
+function dbSetLast($params=array()){
+	global $DATABASE;
+	if(!isset($DATABASE['_last_']['start'])){
+		$DATABASE['_last_']=array(
+			'start'=>microtime(true),
+			'stop'=>0,
+			'time'=>0,
+			'error'=>'',
+			'count'=>0,
+			'function'=>'',
+		);
+	}
+	foreach($params as $k=>$v){
+		$DATABASE['_last_'][$k]=$v;
+	}
+}
 //---------- begin function dbGetLast([key])
 /**
 * @describe returns the last query info: keys are start,stop,time,error,count,function,[p1],[p2],[p3],[p4]
@@ -770,7 +787,11 @@ function dbIsTable($db,$table=''){
 */
 function dbGetLast($key=''){
 	global $DATABASE;
-	if(strlen($key)){return $DATABASE['_last_'][$key];}
+	if(!isset($DATABASE['_last_'])){return '';}
+	if(strlen($key)){
+		if(!isset($DATABASE['_last_'][$key])){return '';}
+		return $DATABASE['_last_'][$key];
+	}
 	return $DATABASE['_last_'];
 }
 //---------- begin function dbLastError
@@ -6993,7 +7014,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			'-where'=>$params['-where'],
 			'-fields'=>implode(',',$jsonfields)
 		));
-		if(isset($recs[0]) && count($recs) < 1000){
+		if(is_array($recs) && isset($recs[0]) && count($recs) < 1000){
 			foreach($recs as $i=>$rec){
 				$jchanges=array();
 				foreach($params as $key=>$val){
