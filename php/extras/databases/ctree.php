@@ -187,6 +187,7 @@ function ctreeDBConnect(){
 * @usage $ok=ctreeExecuteSQL("truncate table abc");
 */
 function ctreeExecuteSQL($query,$return_error=1){
+	global $USER;
 	$ok=dbSetLast(array(
 		'function'=>'ctreeExecuteSQL',
 		'p1'=>$query,
@@ -204,25 +205,34 @@ function ctreeExecuteSQL($query,$return_error=1){
     	return 0;
 	}
 	try{
-		$stmt    = odbc_prepare($dbh_ctree, $query);
-		if(!is_resource($stmt) && !is_object($stmt)){
+
+		$resource = odbc_prepare($dbh_ctree, $query);
+
+		if(!is_resource($resource) && !is_object($resource)){
 			$ok=dbSetLast(array('error'=>odbc_errormsg()));
 			debugValue(dbGetLast());
 			odbc_close($dbh_ctree);
 			$dbh_ctree = null;
-			return 0;
+			return null;
 		}
-		$result = odbc_execute($stmt);
-		if(!is_resource($result) && !is_object($result)){
-			$ok=dbSetLast(array('error'=>odbc_errormsg()));
+		if(!odbc_execute($resource)){
+			$ok=dbSetLast(array('error'=>odbc_errormsg($resource)));
 			debugValue(dbGetLast());
 			odbc_close($dbh_ctree);
+			$resource = null;
 			$dbh_ctree = null;
-			return 0;
+			return null;
 		}
-		$stmt = null; // doing this is mandatory for connection to get closed
+
+		if(is_resource($resource) || is_object($resource)){
+			odbc_free_result($resource);
+		}
+		$resource=null;
 		odbc_close($dbh_ctree);
-		$dbh_ctree = null;
+		$dbh_ctree=null;
+		$ok=dbSetLast(array('stop'=>microtime(true)));
+		$ok=dbSetLast(array('time'=>dbGetLast('stop')-dbGetLast('start')));
+		return 1;
 	}
 	catch (Exception $e) {
 		$ok=dbSetLast(array('exception'=>$e));
@@ -230,9 +240,6 @@ function ctreeExecuteSQL($query,$return_error=1){
 		if($return_error==1){return dbGetLast();}
 		return 0;
 	}
-	$ok=dbSetLast(array('stop'=>microtime(true)));
-	$ok=dbSetLast(array('time'=>dbGetLast('stop')-dbGetLast('start')));
-	return 1;
 }
 //---------- begin function ctreeGetDBCount--------------------
 /**
@@ -637,7 +644,7 @@ function ctreeParseConnectParams($params=array()){
 	global $DATABASE;
 	global $USER;
 	//default cursor to SQL_CUR_USE_ODBC
-	$params['-cursor']=SQL_CUR_USE_IF_NEEDED;
+	$params['-cursor']=SQL_CUR_USE_ODBC;
 	//default pool to 1
 	$params['-pool']=1;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
@@ -854,21 +861,34 @@ function ctreeQueryResults($query='',$params=array()){
 	}
 	$ok=dbSetLast(array('query'=>$query));
 	try{
-		$result=odbc_exec($dbh_ctree,$query);
-		if(!is_resource($result) && !is_object($result)){
+
+		$resource = odbc_prepare($dbh_ctree, $query);
+
+		if(!is_resource($resource) && !is_object($resource)){
 			$ok=dbSetLast(array('error'=>odbc_errormsg()));
-	    	debugValue(dbGetLast());
-	    	odbc_close($dbh_ctree);
-			$dbh_ctree=null;
+			debugValue(dbGetLast());
+			odbc_close($dbh_ctree);
+			$dbh_ctree = null;
+			return null;
+		}
+		if(!odbc_execute($resource)){
+			$ok=dbSetLast(array('error'=>odbc_errormsg($resource)));
+			debugValue(dbGetLast());
+			odbc_close($dbh_ctree);
+			$resource = null;
+			$dbh_ctree = null;
 			return null;
 		}
 
-		$recs = ctreeEnumQueryResults($result,$params,$query);
-		if(is_resource($result) || is_object($result)){
-			odbc_free_result($result);
+		$recs = ctreeEnumQueryResults($resource,$params,$query);
+		if(is_resource($resource) || is_object($resource)){
+			odbc_free_result($resource);
 		}
+		$resource=null;
 		odbc_close($dbh_ctree);
 		$dbh_ctree=null;
+		$ok=dbSetLast(array('stop'=>microtime(true)));
+		$ok=dbSetLast(array('time'=>dbGetLast('stop')-dbGetLast('start')));
 		return $recs;
 	}
 	catch (Exception $e) {
@@ -930,7 +950,6 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	}
 	$rowcount=0;
 	$i=0;
-	//@odbc_fetch_row($result, -1);   // reset cursor
 	while(1){
 		$row=array();
 		try{
