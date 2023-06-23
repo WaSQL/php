@@ -31,16 +31,10 @@ syscolumns fields
 	width	integer
 */
 function ctreeGetAllTableFields($schema=''){
-	global $DATABASE;
-	$DATABASE['_last_']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'count'=>0,
+	$ok=dbSetLast(array(
 		'function'=>'ctreeGetAllTableFields',
 		'p1'=>$schema,
-	);
+	));
 	global $databaseCache;
 	global $CONFIG;
 	$cachekey=sha1(json_encode($CONFIG).'ctreeGetAllTableFields');
@@ -148,19 +142,13 @@ ENDOFQUERY;
 * @usage $dbh_ctree=ctreeDBConnect($params);
 */
 function ctreeDBConnect(){
-	global $DATABASE;
-	$DATABASE['_last_']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'count'=>0,
+	$ok=dbSetLast(array(
 		'function'=>'ctreeDBConnect',
-	);
+	));
 	$params=ctreeParseConnectParams();
 	if(!isset($params['-connect'])){
-		$DATABASE['_last_']['error']="missing -connect";
-		debugValue($DATABASE['_last_']);
+		$ok=dbSetLast(array('error'=>"missing -connect"));
+		debugValue(dbGetLast());
 		return false;
 	}
 	global $dbh_ctree;
@@ -182,11 +170,11 @@ function ctreeDBConnect(){
 		sleep(2);
 	}
 	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$DATABASE['_last_']['error']=odbc_errormsg();
+		$ok=dbSetLast(array('error'=>odbc_errormsg()));
 		if(strlen($ext)){
-			$DATABASE['_last_']['exception']=$exc;
+			$ok=dbSetLast(array('exception'=>$exc));
 		}
-		debugValue($DATABASE['_last_']);
+		debugValue(dbGetLast());
 		return false;
 	}
 }
@@ -199,42 +187,51 @@ function ctreeDBConnect(){
 * @usage $ok=ctreeExecuteSQL("truncate table abc");
 */
 function ctreeExecuteSQL($query,$return_error=1){
-	global $DATABASE;
-	$DATABASE['_last_']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'count'=>0,
+	$ok=dbSetLast(array(
 		'function'=>'ctreeExecuteSQL',
 		'p1'=>$query,
 		'p2'=>$return_error,
-	);
+	));
 	global $dbh_ctree;
 	$dbh_ctree='';
 	$dbh_ctree=ctreeDBConnect();
-	if(strlen($DATABASE['_last_']['error'])){return 0;}
+	if(strlen(dbGetLast('error'))){return 0;}
+	$ok=dbSetLast(array('query'=>$query));
 	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$DATABASE['_last_']['error']='connect failed';
-		debugValue($DATABASE['_last_']);
-		if($return_error==1){return $DATABASE['_last_'];}
+		$ok=dbSetLast(array('error'=>odbc_errormsg()));
+		debugValue(dbGetLast());
+		if($return_error==1){return dbGetLast();}
     	return 0;
 	}
 	try{
 		$stmt    = odbc_prepare($dbh_ctree, $query);
-		$success = odbc_execute($stmt);
+		if(!is_resource($stmt) && !is_object($stmt)){
+			$ok=dbSetLast(array('error'=>odbc_errormsg()));
+			debugValue(dbGetLast());
+			odbc_close($dbh_ctree);
+			$dbh_ctree = null;
+			return 0;
+		}
+		$result = odbc_execute($stmt);
+		if(!is_resource($result) && !is_object($result)){
+			$ok=dbSetLast(array('error'=>odbc_errormsg()));
+			debugValue(dbGetLast());
+			odbc_close($dbh_ctree);
+			$dbh_ctree = null;
+			return 0;
+		}
 		$stmt = null; // doing this is mandatory for connection to get closed
 		odbc_close($dbh_ctree);
 		$dbh_ctree = null;
 	}
 	catch (Exception $e) {
-		$DATABASE['_last_']['error']=$e->errorInfo;
-		debugValue($DATABASE['_last_']);
-		if($return_error==1){return $DATABASE['_last_'];}
+		$ok=dbSetLast(array('exception'=>$e));
+		debugValue(dbGetLast());
+		if($return_error==1){return dbGetLast();}
 		return 0;
 	}
-	$DATABASE['_last_']['stop']=microtime(true);
-	$DATABASE['_last_']['time']=$DATABASE['_last_']['stop']-$DATABASE['_last_']['start'];
+	$ok=dbSetLast(array('stop'=>microtime(true)));
+	$ok=dbSetLast(array('time'=>dbGetLast('stop')-dbGetLast('start')));
 	return 1;
 }
 //---------- begin function ctreeGetDBCount--------------------
@@ -416,16 +413,10 @@ function ctreeGetDBRecord($params=array()){
 *	ctreeGetDBRecords("select * from myschema.mytable where ...");
 */
 function ctreeGetDBRecords($params){
-	global $DATABASE;
-	$DATABASE['_last_']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'count'=>0,
+	$ok=dbSetLast(array(
 		'function'=>'ctreeGetDBRecords',
 		'p1'=>$params,
-	);
+	));
 	global $USER;
 	global $CONFIG;
 	if(empty($params['-table']) && !is_array($params)){
@@ -447,8 +438,8 @@ function ctreeGetDBRecords($params){
 	}
 	else{
 		if(empty($params['-table'])){
-			$DATABASE['_last_']['error']="no table";
-			debugValue($DATABASE['_last_']);
+			$ok=dbSetLast(array('error'=>"no table"));
+			debugValue(dbGetLast());
 	    	return null;
 		}
 		//check for schema name
@@ -842,36 +833,36 @@ function ctreeParseConnectParams($params=array()){
 * @return array - returns records
 */
 function ctreeQueryResults($query='',$params=array()){
-	global $DATABASE;
-	$DATABASE['_last_']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'count'=>0,
+	$ok=dbSetLast(array(
 		'function'=>'ctreeQueryResults',
 		'p1'=>$query,
 		'p2'=>$params,
-	);
+	));
 	$query=trim($query);
 	global $USER;
 	global $dbh_ctree;
 	$dbh_ctree='';
 	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 		$dbh_ctree=ctreeDBConnect();
-		if(strlen($DATABASE['_last_']['error'])){return array();}
+		if(strlen(dbGetLast('error'))){return array();}
 	}
 
 	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$DATABASE['_last_']['error']='connect error';
-	    debugValue($DATABASE['_last_']);
-	    return array();
+		$ok=dbSetLast(array('error'=>'connect error'));
+	    debugValue(dbGetLast());
+	    return null;
 	}
+	$ok=dbSetLast(array('query'=>$query));
 	try{
-		if(is_resource($result) || is_object($result)){
-			odbc_free_result($result);
+		$result=odbc_exec($dbh_ctree,$query);
+		if(!is_resource($result) && !is_object($result)){
+			$ok=dbSetLast(array('error'=>odbc_errormsg()));
+	    	debugValue(dbGetLast());
+	    	odbc_close($dbh_ctree);
+			$dbh_ctree=null;
+			return null;
 		}
-		$result=odbc_exec($dbh_ctree,$query);	
+
 		$recs = ctreeEnumQueryResults($result,$params,$query);
 		if(is_resource($result) || is_object($result)){
 			odbc_free_result($result);
@@ -881,9 +872,11 @@ function ctreeQueryResults($query='',$params=array()){
 		return $recs;
 	}
 	catch (Exception $e) {
-		$DATABASE['_last_']['error']=odbc_errormsg();
-	    debugValue($DATABASE['_last_']);
-		return false;
+		$ok=dbSetLast(array('error'=>odbc_errormsg(),'exception'=>$e));
+	    debugValue(dbGetLast());
+	    odbc_close($dbh_ctree);
+		$dbh_ctree=null;
+		return null;
 	}
 }
 //---------- begin function ctreeEnumQueryResults ----------
@@ -895,15 +888,9 @@ function ctreeQueryResults($query='',$params=array()){
 *	returns records
 */
 function ctreeEnumQueryResults($result,$params=array(),$query=''){
-	global $DATABASE;
-	$DATABASE['_last_']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'count'=>0,
+	$ok=dbSetLast(array(
 		'function'=>'ctreeEnumQueryResults'
-	);
+	));
 	global $ctreeStopProcess;
 	if(!is_object($result) && !is_resource($result)){return null;}
 	$header=0;
@@ -920,8 +907,8 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			$DATABASE['_last_']['error']="file open error";
-			debugValue($DATABASE['_last_']);
+    		$ok=dbSetLast(array('error'=>"file open error"));
+			debugValue(dbGetLast());
 			return array();
 		}
 		if(isset($params['-logfile'])){
@@ -950,8 +937,8 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			$row=odbc_fetch_array($result);
 		}
 		catch (Exception $e) {
-			$DATABASE['_last_']['error']=$e;
-			debugValue($DATABASE['_last_']);
+			$ok=dbSetLast(array('exception'=>$e));
+			debugValue(dbGetLast());
 			break;
 		}
 		if(!is_array($row) || !count($row)){
