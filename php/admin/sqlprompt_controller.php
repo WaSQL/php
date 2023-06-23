@@ -201,7 +201,6 @@
 		break;
 		case 'sql':
 			$view='block_results';
-			$_SESSION['debugValue_lastm']='';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
 			$sql_select=stripslashes($_REQUEST['sql_select']);
 			$sql_full=stripslashes($_REQUEST['sql_full']);
@@ -280,10 +279,16 @@
 				$recs=array();
 				//echo printValue($DATABASE[$db['name']]).printValue($_REQUEST);exit;
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
-				$lastquery=dbLastQuery();
-				if(strlen($lastquery['error'])){
-					setView(array('error'),1);
-					return;
+				$lastquery=dbGetLast();
+				//echo "lastquery".printValue($lastquery);exit;
+				if(isset($lastquery['error'])){
+					if(!is_string($lastquery['error'])){
+						$lastquery['error']=encodeJson($lastquery['error']);
+					}
+					if(strlen($lastquery['error'])){
+						setView(array('error'),1);
+						return;
+					}
 				}
 				if($recs_count==0){
 					$recs=array();
@@ -291,7 +296,7 @@
 					return;
 				}
 			}
-			$qtime=$lastquery['time'];
+			$qtime=isset($lastquery['time'])?$lastquery['time']:0;
 			$offset=(integer)$_REQUEST['offset'];
 			$limit=30;
 			$next=$offset+$limit;
