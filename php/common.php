@@ -315,16 +315,11 @@ function commonCronCleanup(){
 *	if(!$success){$ok=commonCronError($msg,'bob@mysite.com');}
 */
 function commonCronError($err,$email='',$params=array()){
-	$id='';
-	if(!isset($_REQUEST['cron_id'])){return 0;}
-	$stop=time();
-	$run_length=$stop-$_REQUEST['start'];
-	$opts=array(
-		'-table'	=> '_cron_log',
-		'cron_id'	=> $_REQUEST['cron_id'],
-	);
-	$lrec=getDBRecord($opts);
-	$ok=editDBRecordById('_cron',$_REQUEST['cron_id'],array('paused'=>1,'stop_now'=>1,'run_error'=>$err));
+	$cron=commonCronGetCronByPid();
+	if(!isset($cron['_id']) || !isNum($cron['_id'])){
+		return false;
+	}
+	$ok=editDBRecordById('_cron',$cron['_id'],array('paused'=>1,'stop_now'=>1,'run_error'=>$err));
 	if(isEmail($email)){
 		$ccp=commonCronPause($email,$params);
 	}
@@ -349,54 +344,18 @@ function commonCronLogCheckSchema(){
 * @usage 
 *	$ok=commonCronLogInit();
 */
-function commonCronLogInit($id=0){
-	global $CONFIG;
-	global $CRONTHRU;
-	global $cronlog_id;
-	global $USER;
-	global $commonCronLogCache;
-	$ok=commonCronLogCheckSchema();
-	if(isset($CRONTHRU['cronlog_id']) && isNum($CRONTHRU['cronlog_id'])){return $CRONTHRU['cronlog_id'];}
-	elseif(isset($_REQUEST['cronlog_id']) && isNum($_REQUEST['cronlog_id'])){
-		$CRONTHRU['cronlog_id']=$_REQUEST['cronlog_id'];
-		return $CRONTHRU['cronlog_id'];
-	}
-	if(is_string($id) && !isNum($id)){
-		$cron=getDBRecord(array('-table'=>'_cron','run_cmd'=>$id,'-fields'=>'_id,name,cronlog_id','-nocache'=>1));
-		if(!isset($cron['_id'])){
-			$CRONTHRU['init_error']="No cron with run_cmd: {$id}";
-			return 0;
-		}
-	}
-	else{
-		$id=(integer)$id;
-		if($id == 0){
-			if(isset($_REQUEST['cron_id'])){
-				$id=(integer)$_REQUEST['cron_id'];
-			}
-			if($id == 0){return 0;}
-		}	
-		$cron=getDBRecord(array('-table'=>'_cron','_id'=>$id,'-fields'=>'_id,name,cronlog_id','-nocache'=>1));
-		if(!isset($cron['_id'])){
-			$CRONTHRU['init_error']="No cron with id: {$id}";
-			return 0;
-		}
-	}
-	if(!isset($cron['_id'])){
-		$CRONTHRU['init_error']="No cron found";
-		return 0;
-	}
-	$CRONTHRU['cron_id']=$cron['_id'];
-	if(!isset($cron['cronlog_id'])){
-		$ok=executeSQL("alter table _cron add cronlog_id int NOT NULL Default 0");
-	}
+function commonCronLogInit(){
+	$cron=commonCronGetCronByPid();
+	if(isset($cron['cronlog_id']) &&  isNum($cron['cronlog_id'])){
+		return false;
+	}	
 	/* New Log method - initialize run_result */
 	$header=array(
 		'timestamp'=>getDBTime(),
 		'cron_name'=>$cron['name'],
 		'cron_id'=>$cron['_id'],
 		'user_id'=>0,
-		'cron_pid'=>getmypid()
+		'cron_pid'=>$cron['cron_pid']
 	);
 	$cronlog_id=addDBRecord(array(
 		'-table'=>'_cron_log',
@@ -404,28 +363,19 @@ function commonCronLogInit($id=0){
 		'delete_me'=>0,
 		'header'=>encodeJson($header)
 	));
-	//echo printValue($header).printValue($cronlog_id);exit;
-	if(!isNum($cronlog_id)){
-		$CRONTHRU['init_error']="addDBRecord failed: {$cronlog_id}";
-		return 0;
+	if(isNum($rec['cronlog_id'])){
+		$ok=editDBRecordById('_cron',$cron['_id'],array('cronlog_id'=>$rec['cronlog_id']));
 	}
-	$CRONTHRU['cronlog_id']=$cronlog_id;
-	return $CRONTHRU['cronlog_id'];
 }
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function commonCronLogDelete(){
-	global $CRONTHRU;
-	if(isset($CRONTHRU['cronlog_id'])){
-		$cronlog_id=$CRONTHRU['cronlog_id'];
+	$cron=commonCronGetCronByPid();
+	if(!isset($cron['cronlog_id']) &&  !isNum($cron['cronlog_id'])){
+		return false;
 	}
-	elseif(isset($_REQUEST['cronlog_id'])){
-		$cronlog_id=$_REQUEST['cronlog_id'];
-	}
-	$cronlog_id=(integer)$cronlog_id;
-	if($cronlog_id==0){return false;}
-	$ok=editDBRecordById('_cron_log',$cronlog_id,array('delete_me'=>1));
+	$ok=editDBRecordById('_cron_log',$cron['cronlog_id'],array('delete_me'=>1));
 	return true;
 }
 //---------- begin function commonCronLog
@@ -438,18 +388,37 @@ function commonCronLogDelete(){
 *	$ok=commonCronLog($PASSTHRU);
 */
 function commonCronLog($msg,$echomsg=1){
-	global $CONFIG;
-	global $commonCronLogCache;
-	global $CRONTHRU;
-	if(!isset($CRONTHRU['cronlog_id'])){
-		$ok=commonCronLogInit();
+	$cron=commonCronGetCronByPid();
+	//echo "commonCronLog".printValue($cron);exit;
+	if(isset($cron['stop_now']) && $cron['stop_now']==1){
+		$editopts=array();
+		$editopts['run_result'].="processed stop_now action".PHP_EOL;
+		$editopts['stop_now']=0;
+		$editopts['running']=0;
+		$editopts['cron_pid']=0;
+		$editopts['cronlog_id']=0;
+		$run_memory=memory_get_usage();
+		$editopts['run_memory']=$run_memory;
+		$editopts['run_length']=microtime(true)-$CRONTHRU['start'];
+		$ok=editDBRecordById('_cron',$cron['_id'],$editopts);
+		exit;
 	}
-	$cronlog_id=(integer)$CRONTHRU['cronlog_id'];
-	if($cronlog_id==0){
+	if(!isset($cron['cronlog_id']) || !isNum($cron['cronlog_id'])){
+		if($echomsg==1){
+			echo $msg.PHP_EOL;
+		}
 		return false;
-	}
-	$cronlog=getDBRecord(array('-table'=>'_cron_log','_id'=>$cronlog_id,'-fields'=>'_id,log','-nocache'=>1));
+	}	
+	$cronlog=getDBRecord(array(
+		'-table'=>'_cron_log',
+		'_id'=>$cron['cronlog_id'],
+		'-fields'=>'_id,log',
+		'-nocache'=>1
+	));
 	if(!isset($cronlog['_id'])){
+		if($echomsg==1){
+			echo $msg.PHP_EOL;
+		}
 		return false;
 	}
 	$log=decodeJson($cronlog['log']);
@@ -467,6 +436,15 @@ function commonCronLog($msg,$echomsg=1){
 	}
 	return true;
 }
+function commonCronGetCronByPid(){
+	$cron_pid=getmypid();
+	return getDBRecord(array(
+		'-table'=>'_cron',
+		'-where'=>"cron_pid={$cron_pid}",
+		'-fields'=>'_id,run_cmd,cron_pid,cronlog_id,stop_now',
+		'-nocache'=>1
+	));
+}
 //---------- begin function commonCronCheckStopNow
 /**
 * @describe checks for stop_now=1 and exits processs
@@ -474,22 +452,14 @@ function commonCronLog($msg,$echomsg=1){
 * @usage 
 *	$ok=commonCronStopCheck();
 */
-function commonCronCheckStopNow(){
-	global $CONFIG;
-	global $CRONTHRU;
-	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
-		return;
+function commonCronCheckStopNow($cron=array()){
+	if(!isset($cron['_id'])){
+		$cron=commonCronGetCronByPid();
 	}
-	$rec=getDBRecord(array(
-		'-table'=>'_cron',
-		'_id'=>$_REQUEST['cron_id'],
-		'-nocache'=>1,
-		'-fields'=>'_id,name,stop_now'
-	));
-	if(!isset($rec['_id'])){
-		return;
+	if(!isset($cron['stop_now'])){
+		return false;
 	}
-	if($rec['stop_now']==1){
+	if($cron['stop_now']==1){
 		$editopts=array();
 		$editopts['run_result'].="processed stop_now action".PHP_EOL;
 		$editopts['stop_now']=0;
@@ -513,12 +483,7 @@ function commonCronCheckStopNow(){
 *	if(!$success){$ok=commonCronPause('bob@mysite.com');}
 */
 function commonCronPause($email='',$params=array()){
-	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
-		$err="commonCronPause error: REQUEST['cron_id'] not set";
-		debugValue($err);
-		return $err;
-	}
-	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$_REQUEST['cron_id'],'-nocache'=>1));
+	$rec=commonCronGetCronByPid();
 	if(!isset($rec['_id'])){
 		$err="commonCronPause error: No cron found";
 		debugValue($err);
@@ -674,12 +639,7 @@ function commonCronRunNow($crons){
 *	$ok=commonCronUnpause();
 */
 function commonCronUnpause(){
-	if(!isset($_REQUEST['cron_id']) || !isNum($_REQUEST['cron_id'])){
-		$err="commonCronUnpause error: REQUEST['cron_id'] not set";
-		debugValue($err);
-		return $err;
-	}
-	$rec=getDBRecord(array('-table'=>'_cron','_id'=>$_REQUEST['cron_id'],'-nocache'=>1));
+	$rec=commonCronGetCronByPid();
 	if(!isset($rec['_id'])){
 		$err="commonCronUnpause error: No cron found";
 		debugValue($err);
@@ -2075,7 +2035,61 @@ function parseWacssEditFormTags($body,$params=array()){
 	//replace the tags in the body
 	
 }
-
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function buildFormValueParam($params=array(),$arr=0){
+	if(!isset($params['value'])){
+		if(isset($params['-value'])){$params['value']=$params['-value'];}
+		elseif(isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+	}
+	if($arr==1){
+		$val=[];
+		if(isset($params['value'])){
+			if(is_array($params['value']) && count($params['value'])){
+				$val=$params['value'];
+			}
+			elseif(is_string($params['value']) && strlen($params['value'])){
+				//json?
+				$json=decodeJson($params['value']);
+				if(is_array($json)){
+					$val=$json;
+				}
+				else{
+					if(stringContains($params['value'],':')){
+						$val=preg_split('/\:/',$params['value']);
+					}
+					else{
+						$val=array($params['value']);
+					}
+				}
+			}
+		}
+		//remove blank values
+		foreach($val as $i=>$v){
+			if(!is_string($v) || !strlen(trim($v))){
+				unset($val[$i]);
+			}
+		}
+	}
+	else{
+		$val='';
+		if(!isset($params['value'])){
+			if(isset($params['-value'])){$params['value']=$params['-value'];}
+			elseif(isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+		}
+		if(isset($params['value'])){
+			if(is_array($params['value']) && count($params['value'])){
+				$val=$params['value'][0];
+			}
+			elseif(is_string($params['value']) && strlen($params['value'])){
+				$val=$params['value'];
+			}
+		}
+		if(strtoupper($val)=='NULL'){$val='';}
+	}
+	return $val;
+}
 //---------- begin function buildFormButtonSelect--------------------
 /**
 * @describe creates an button selection field
@@ -2093,53 +2107,6 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 	$params['-type']='radio';
 	$params['-display']='flex';
 	return buildFormRadioCheckbox($name,$opts,$params);
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	if(!isset($params['-button'])){$params['-button']='btn-default';}
-	//override name
-	if(isset($params['name'])){
-		$name=$params['name'];
-		unset($params['name']);
-	}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$elid=$params['id'];
-	if(isset($params['-formname'])){$elid="{$params['-formname']}_{$elid}";}
-	unset($params['id']);
-	if(!strlen($elid)){
-		$elid=str_replace(' ','_',trim($name).'_'.md5(microtime(true)));
-	}
-	$params['data-elid']=$elid;
-	$tag='<div class="w_flexgroup" data-display="inline-flex"';
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	$tag .='>'.PHP_EOL;
-	foreach($opts as $tval=>$dval){
-		$checked='';
-		if($tval==$params['value'] || $dval==$params['value']){
-			$checked=' checked';
-		}
-		$cid=strtolower(str_replace(' ','_',"{$elid}_{$tval}"));
-		
-		$tag .= '<input type="radio" data-type="radio" class="btn '.$class.'" style="display:none"';
-		if(isset($params['onclick'])){
-			$tag .= ' onclick="'.$params['onclick'].'"';
-		}
-		//look for any data- params
-		foreach($params as $pk=>$pv){
-			if(stringBeginsWith($pk,'data-')){
-				$tag.=" {$pk}=\"{$pv}\"";
-			}
-		}
-		$tag .= ' name="'.$name.'"  id="'.$cid.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
-		$class='';
-		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
-		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
-		elseif(isset($params['class'])){$class=$params['class'];}
-        $tag .= '<label for="'.$cid.'" class="'.$class.'">'.$dval.'</label>'.PHP_EOL;
-	}
-	$tag .= '</div>'.PHP_EOL;
-	return $tag;
 }
 //---------- begin function buildFormButtonSelectMultiple--------------------
 /**
@@ -2154,26 +2121,9 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 * @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
 */
 function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params,1);
 	if(!isset($params['-button'])){
 		$params['-button']='btn-default';
-	}
-	//check for json value
-	if(!is_array($params['value']) && strlen($params['value'])){
-		$json=json_decode($params['value'],true);
-		if(is_array($json)){
-			$params['value']=$json;
-		}
-		else{
-			if(stringContains($params['value'],':')){
-				$params['value']=preg_split('/\:/',$params['value']);
-			}
-			else{
-				$params['value']=array($params['value']);
-			}
-		}
 	}
 	//override name
 	if(isset($params['name'])){
@@ -2264,43 +2214,6 @@ function buildFormCheckbox($name, $opts=array(), $params=array()){
 	$params['-type']='checkbox';
 	return buildFormRadioCheckbox($name, $opts, $params);
 }
-/**
-* @exclude  - this function is no longer used
-*/
-function buildFormColorOLD($name,$params=array()){
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$iconid=$params['id'].'_icon';
-	//force witdh
-	$params['width']=115;
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
-	$iconcolor='#c0c0c0';
-	if(strlen($params['value'])){$iconcolor=$params['value'];}
-	if(!isset($params['placeholder'])){$params['placeholder']='#HEXVAL';}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['maxlength']=7;
-	$tag='';
-	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;width:'.$params['width'].'px;"';
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" name="'.$name.'" value="'.encodeHtml($params['value']).'"';
-	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<span id="'.$iconid.'" class="icon-color-adjust w_bigger w_pointer input-group-addon" style="color:'.$iconcolor.';padding-left:3px !important;padding-right:6px !important;" onclick="return colorSelector(\''.$params['id'].'\');" title="Color Selector"';
-	if(isset($params['data-readonlyif'])){
-		$tag .= ' data-readonlyif="'.$params['data-readonlyif'].'"';
-	}
-	$tag.='></span>'.PHP_EOL;
-	$tag .= '</div>'.PHP_EOL;
-	return $tag;
-}
 //---------- begin function buildFormColor-------------------
 /**
 * @describe creates an HTML color control
@@ -2319,9 +2232,7 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params);
 	$tag='';
 	$tag.='<div class="w_colorfield"';
 	if(isset($params['data-displayif']) && is_string($params['data-displayif']) && strlen($params['data-displayif'])){
@@ -2398,9 +2309,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['list']=$params['id'].'_datalist';
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params,1);
 	$params['name']=$name;
 	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -2437,20 +2346,18 @@ function buildFormDate($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name']) && strlen(trim($params['name']))){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(isset($params['value'])){$params['-value']=$params['value'];}
-	if(!isset($params['-value'])){$params['-value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';}
-	if($params['-value']=='NULL'){$params['-value']='';}
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-behavior']='flatpickr';
-	if(strlen($params['-value'])){
+	$params['value']=buildFormValueParam($params);
+	if(strlen($params['value'])){
 		if(preg_match('/^[a-z\-\+]/i',$params['-value'])){
 			//+21 days  or +3 months
-			$params['-value']=date('Y-m-d',strtotime($params['-value']));
+			$params['value']=date('Y-m-d',strtotime($params['-value']));
 		}
 		elseif(isNum($params['-value'])){
-			$params['-value']=date('Y-m-d',$params['-value']);
+			$params['value']=date('Y-m-d',$params['-value']);
 		}
 	}
 	if(isset($params['data-mindate'])){
@@ -2510,7 +2417,7 @@ function buildFormDate($name,$params=array()){
 	$params['style']='min-width:100px;'.$pstyle;
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
-	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
+	$tag .= '  value="'.encodeHtml($params['value']).'" />'.PHP_EOL;
 	$attrs='';
 	if(isset($params['data-readonlyif'])){
 		$attrs.=' data-readonlyif="'.$params['data-readonlyif'].'"';
@@ -2524,68 +2431,6 @@ function buildFormDate($name,$params=array()){
 	}
 	elseif($show==1){
 		$tag .= '	<span class="icon-calendar w_gray w_biggest w_pointer" '.$attrs.' onclick="if(this.hasAttribute(\'readonly\')){return false;} return simulateEvent(getObject(\''.$params['id'].'\'),\'focus\');"></span>'.PHP_EOL;
-	}
-	$tag .= '</div>'.PHP_EOL;
-	return $tag;
-}
-/**
-* @exclude  - this function is no longer used
-*/
-function buildFormDateOLD($name,$params=array()){
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(isset($params['value'])){$params['-value']=$params['value'];}
-	if(!isset($params['-value'])){$params['-value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';}
-	if($params['-value']=='NULL'){$params['-value']='';}
-	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
-	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['data-control']='pikadate';
-	
-	if(!isset($params['maxlength'])){$params['maxlength']='15';}
-	if(!isset($params['pattern'])){$params['pattern']="[0-9]{4}\-[0-9]{2}\-[0-9]{2}";}
-	if(!isset($params['data-pattern_msg'])){$params['data-pattern_msg']='Enter a valid Date - Year-Month-Day (YYYY-MM-DD)';}
-	if(!isset($params['placeholder'])){$params['placeholder']='YYYY-MM-DD';}
-
-
-	if(!isset($params['title'])){$params['title']='Year-Month-Day';}
-	if(!isset($params['class'])){$params['class']='input browser-default form-control w_form-control w_input-prepend';}
-	if(!isset($params['name'])){$params['name']=$name;}
-	if(strlen($params['-value'])){
-		//strip off any time value
-		if(isset($params['data-showtime']) && $params['data-showtime']==1){
-
-	    }
-	    else{
-	    	if(preg_match('/^(.+?)\ [0-9]{2,2}\:[0-9]{2,2}\:[0-9]{2,2}/',$params['-value'],$m)){
-				$params['-value']=$m[1];
-			}
-	    	$params['-value']=date('Y-m-d',strtotime($params['-value']));
-	    }
-	}
-	$tag='';
-	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" autocomplete="off"';
-	$pstyle='';
-	if(isset($params['style'])){$pstyle=$params['style'];}
-	$params['style']='min-width:100px;'.$pstyle;
-	unset($params['width']);
-	$tag .= setTagAttributes($params);
-	$tag .= '  value="'.encodeHtml($params['-value']).'" />'.PHP_EOL;
-	//hide calendar icon if readonly or disabled
-	$show=1;
-	if(isset($params['readonly']) && in_array(strtolower($params['readonly']),array('1','readonly'))){$show=0;}
-	if(isset($params['disabled']) && in_array(strtolower($params['disabled']),array('1','disabled'))){$show=0;}
-	if($show==1){
-		$tag .= '	<span id="'.$params['id'].'_icon" data-id="'.$params['id'].'"';
-		$tag .= ' title="Date Selector"><span class="icon-calendar w_pointer w_biggest"></span></span>'.PHP_EOL;
-		$tag.=buildOnload("initPikadayCalendar('{$params['id']}','{$params['id']}_icon');");
 	}
 	$tag .= '</div>'.PHP_EOL;
 	return $tag;
@@ -2635,9 +2480,7 @@ function buildFormHidden($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(!isset($params['value'])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params);
 	$params['name']=$name;
 	$tag .= '	<input type="hidden" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -2668,8 +2511,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
-	if(!isset($params['value'])){$params['value']='';}
+	$params['value']=buildFormValueParam($params);
 	$params['name']=$name;
 	$tag='<div class="flexbutton" data-display="inline-flex" style="display:flex;flex-direction:row;justify-content:flex-start;"';
 	if(isset($params['displayif'])){
@@ -2712,12 +2554,11 @@ function buildFormRecorderAudio($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
-	if(!isset($params['value'])){$params['value']='';}
 	if(!isset($params['style'])){$params['style']='';}
 	if(!isset($params['record']) || !strlen($params['record'])){$params['record']='Click To Record';}
 	if(!isset($params['stop']) || !strlen($params['stop'])){$params['stop']='Click To Stop';}
 	if(!isset($params['class']) || !strlen($params['class'])){$params['class']='w_black';}
+	$params['value']=buildFormValueParam($params);
 	$params['name']=$name.'_button';
 	$params['data-behavior']='recorder_audio';
 	$params['data-id']=$params['id'];
@@ -2822,12 +2663,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	if(!isset($params['placeholder'])){$params['placeholder']=$dname;}
-	if(!isset($params['value']) && isset($params['-value'])){
-		$params['value']=$params['-value'];
-	}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params);
 	$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});";
 	$latlon=array();
 	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
@@ -2907,6 +2743,7 @@ function buildFormMultiInput($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
+	$params['value']=buildFormValueParam($params,1);
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -2941,9 +2778,7 @@ function buildFormMultiInput($name,$opts=array(),$params=array()){
 	$tag .='>'.PHP_EOL;
 	$style=count($opts) > 4?'width:100%;':'';
 	unset($params['width']);
-	if(isset($params['value'])){
-		$params['value']=json_decode($params['value'],true);
-	}
+	
 	//data-inputwidth
 	$inputwidth='60px';
 	if(isset($params['data-inputwidth'])){
@@ -2998,29 +2833,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		break;
 	}
 	$mid=$name.'_options';
-	if(isset($params['value'])){
-      if(!is_array($params['value']) && strlen($params['value'])){
-        $params['-values']=preg_split('/\:/',trim($params['value']));
-      }
-      elseif(strlen($params['value'])){$params['-values']=$params['value'];}
-      unset($params['value']);
-    }
-	if(isset($params['-values'])){
-    	if(!is_array($params['-values'])){
-        	$params['-values']=array($params['-values']);
-		}
-	}
-	elseif(isset($_REQUEST[$name])){
-    	if(!is_array($_REQUEST[$name])){
-        	$params['-values']=array($_REQUEST[$name]);
-		}
-		else{
-        	$params['-values']=$_REQUEST[$name];
-		}
-	}
-	else{
-    	$params['-values']=array();
-	}
+	$params['value']=buildFormValueParam($params,1);
 	if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
 	$icon=isset($checked_cnt) && $checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
@@ -3072,7 +2885,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$onclick .= $params['onchange'];
 		}
 		$litags .= ' onclick="'.$onclick.'"';
-    	if(in_array($tval,$params['-values'])){
+    	if(in_array($tval,$params['value'])){
         	$litags .= ' checked';
         	$checked_cnt++;
         	$checked_vals[]=$dval;
@@ -3191,8 +3004,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['-display'])){$params['-display']=count($opts)==1?'flex':'column';}
 	if(isset($params['data-style'])){$params['style']=$params['data-style'];}
 	if(!isset($params['style'])){$params['style']='';}
-	if(isset($params['data-values'])){$params['-values']=$params['data-values'];}
+	if(isset($params['data-values'])){$params['value']=$params['data-values'];}
 	if(strlen($params['style']) && !stringEndsWith($params['style'],';')){$params['style'].=';';}
+	$params['value']=buildFormValueParam($params,1);
 	switch(strtolower($params['-display'])){
 		case 'flex':
 			$params['style'].='display:flex; justify-content: flex-start;flex-wrap:wrap;align-items:flex-start;';
@@ -3208,56 +3022,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 				$params['style'].='height:auto;column-count:'.$params['width'].';';
 			}
 		break;
-	}
-	//values
-	if(isset($params['value'])){
-		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$params['value']=json_decode($params['value'],true);
-		}
-     	if(!is_array($params['value'])){
-        	$params['-values']=preg_split('/\:/',trim($params['value']));
-      	}
-      	else{$params['-values']=$params['value'];}
-      	unset($params['value']);
-    }
-	if(isset($params['-values'])){
-		if(!is_array($params['-values']) && isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$params['-values']=json_decode($params['-values'],true);
-		}
-    	if(!is_array($params['-values'])){
-        	$params['-values']=array($params['-values']);
-		}
-	}
-	elseif(isset($_REQUEST[$oname])){
-		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$_REQUEST[$oname]=json_decode($_REQUEST[$oname],true);
-		}
-    	if(!is_array($_REQUEST[$oname])){
-        	$params['-values']=array($_REQUEST[$oname]);
-		}
-		else{
-        	$params['-values']=$_REQUEST[$oname];
-		}
-	}
-	elseif(isset($_REQUEST[$name])){
-		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$_REQUEST[$name]=json_decode($_REQUEST[$name],true);
-		}
-    	if(!is_array($_REQUEST[$name])){
-        	$params['-values']=array($_REQUEST[$name]);
-		}
-		else{
-        	$params['-values']=$_REQUEST[$name];
-		}
-	}
-	else{
-    	$params['-values']=array();
-	}
-	//remove blank values
-	foreach($params['-values'] as $i=>$v){
-		if(!strlen(trim($v))){
-			unset($params['-values'][$i]);
-		}
 	}
 	$rtn='';
 	$rtn.='<div style="'.$params['style'].'"';
@@ -3378,7 +3142,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			//unset($params['readonlyif']);
 		}
 		//checked?
-		if(in_array($tval,$params['-values'])){
+		if(in_array($tval,$params['value'])){
     		$rtn .= ' checked';
     		$checked_cnt++;
 		}
@@ -3432,256 +3196,6 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
-/**
-* @exclude  - this function is no longer used
-*/
-function buildFormRadioCheckbox_OLD($name, $opts=array(), $params=array()){
-	if(!isset($params['-type'])){return 'buildFormRadioCheckbox Error: no type';}
-	if(!strlen(trim($name))){return 'buildFormRadioCheckbox Error: no name';}
-	if(isset($params['name'])){$name=$params['name'];}
-	$name=preg_replace('/[\[\]]+$/','',$name);
-	if(!is_array($opts) || !count($opts)){return 'buildFormRadioCheckbox Error: no opts';}
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
-	if(!isset($params['width'])){$params['width']=count($opts)<6?count($opts):6;}
-	if(!isset($params['-icon'])){$params['-icon']='mark';}
-	//return printValue($params);
-	//for checkboxes allow multiple valuse
-	$oname=$name;
-	if($params['-type']=='checkbox'){
-		$name.='[]';
-	}
-	//return printValue($params);
-	//remove any characters in width
-	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['value'])){
-		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$params['value']=json_decode($params['value'],true);
-		}
-     	if(!is_array($params['value'])){
-        	$params['-values']=preg_split('/\:/',trim($params['value']));
-      	}
-      	else{$params['-values']=$params['value'];}
-      	unset($params['value']);
-    }
-	if(isset($params['-values'])){
-		if(!is_array($params['-values']) && isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$params['-values']=json_decode($params['-values'],true);
-		}
-    	if(!is_array($params['-values'])){
-        	$params['-values']=array($params['-values']);
-		}
-	}
-	elseif(isset($_REQUEST[$oname])){
-		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$_REQUEST[$oname]=json_decode($_REQUEST[$oname],true);
-		}
-    	if(!is_array($_REQUEST[$oname])){
-        	$params['-values']=array($_REQUEST[$oname]);
-		}
-		else{
-        	$params['-values']=$_REQUEST[$oname];
-		}
-	}
-	elseif(isset($_REQUEST[$name])){
-		if(isset($params['_dbtype']) && $params['_dbtype']=='json'){
-			$_REQUEST[$name]=json_decode($_REQUEST[$name],true);
-		}
-    	if(!is_array($_REQUEST[$name])){
-        	$params['-values']=array($_REQUEST[$name]);
-		}
-		else{
-        	$params['-values']=$_REQUEST[$name];
-		}
-	}
-	else{
-    	$params['-values']=array();
-	}
-	//remove blank values
-	foreach($params['-values'] as $i=>$v){
-		if(!strlen(trim($v))){
-			unset($params['-values'][$i]);
-		}
-	}
-	//return printValue($params);
-	//check for dragsort
-	if(isset($params['behavior']) && preg_match('/dragsort/i',$params['behavior'])){
-		$dragsort=' data-behavior="dragsort"';
-	}
-	else{$dragsort='';}
-	if(count($opts)==1){
-		$tag  = '<div id="'.$params['id'].'"';	
-	}
-	else{
-		if(isset($params['-column-width'])){
-			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';column-width:'.$params['-column-width'].';"';
-		}
-		elseif(isset($params['-stretch'])){
-			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';width:'.$params['-stretch'].';"';
-		}
-		else{
-			$tag  = '<div id="'.$params['id'].'"'.$dragsort.' style="column-count:'.$params['width'].';"';
-		}
-		
-	}
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	if(isset($params['display'])){
-		$tag .= ' data-display="'.$params['display'].'"';
-		unset($params['display']);
-	}
-	elseif(isset($params['data-display'])){
-		$tag .= ' data-display="'.$params['data-display'].'"';
-		unset($params['data-display']);
-	}
-	if(isset($params['data-debug'])){
-		$tag .= ' data-debug="'.$params['data-debug'].'"';
-		unset($params['data-debug']);
-	}
-	$tag .='>'.PHP_EOL;
-	//$tag .= '<div style="display:none" data-name="'.$name.'" data-values="1">'.json_encode($params['-values']).'</div>'.PHP_EOL;
-	$style=count($opts) > 4?'width:100%;':'';
-	unset($params['width']);
-	foreach($opts as $tval=>$dval){
-		$id=$params['-formname'].'_'.$name.'_'.$tval;
-		$minwidth=floor(strlen($dval)*10)+25;
-		$tag .= '		<div style="white-space: nowrap;'.$style;
-		if(strlen($dragsort)){$tag .= 'margin-bottom:2px;user-select:all;border:1px dotted #ccc;white-space: nowrap;';}
-		$tag .= '">'.PHP_EOL;
-		$tag .= '			<input data-group="'.$params['group'].'" id="'.$id.'" data-type="'.$params['-type'].'" type="'.$params['-type'].'" name="'.$name.'" value="'.$tval.'"';
-		if(isset($params['required']) && $params['required']){$tag .= ' data-required="1" data-blink="'.$params['id'].'"';}
-		elseif(isset($params['_required']) && $params['_required']){$tag .= ' data-required="1" data-blink="'.$params['id'].'"';}
-		//add class
-		$class='';
-		if(isset($params["{$tval}_class"])){$class=$params["{$tval}_class"];}
-		elseif(isset($params["{$dval}_class"])){$class=$params["{$dval}_class"];}
-		elseif(isset($params['class'])){$class=$params['class'];}
-		if(strlen($class)){
-			$tag .= ' class="'.$class.'"';
-		}
-		//create variables to use with the var() function in css  - place them in both the input and the label
-		$styles=array();
-		$stylestr='';
-		$utval=strtolower($tval);
-		if(isset($params['-shape'])){
-			switch(strtolower($params['-shape'])){
-				case 'btn':
-				case 'button':
-					$styles[] = "--shape:button";
-				break;
-				case 'circle':
-				case 'round':
-					$styles[] = "--shape:circle";
-				break;
-			}	
-		}
-		elseif(isset($params['data-shape'])){
-			switch(strtolower($params['data-shape'])){
-				case 'btn':
-				case 'button':
-					$styles[] = "--shape:button";
-				break;
-				case 'circle':
-				case 'round':
-					$styles[] = "--shape:circle";
-				break;
-			}	
-		}
-		elseif(isset($params["data-shape_{$utval}"])){
-			switch(strtolower($params["data-shape_{$utval}"])){
-				case 'btn':
-				case 'button':
-					$styles[] = "--shape:button";
-				break;
-				case 'circle':
-				case 'round':
-					$styles[] = "--shape:circle";
-				break;
-			}	
-		}
-		elseif(isset($params["data-shape_{$tval}"])){
-			switch(strtolower($params["data-shape_{$tval}"])){
-				case 'btn':
-				case 'button':
-					$styles[] = "--shape:button";
-				break;
-				case 'circle':
-				case 'round':
-					$styles[] = "--shape:circle";
-				break;
-			}	
-		}
-		if(isset($params["data-color_{$utval}"])){
-			$styles[]="--color:{$params["data-color_{$utval}"]}";
-			unset($params["data-color_{$utval}"]);
-		}
-		elseif(isset($params["data-color_{$tval}"])){
-			$styles[]="--color:{$params["data-color_{$tval}"]}";
-			unset($params["data-color_{$tval}"]);
-		}
-		if(isset($params["data-bgcolor_{$utval}"])){
-			$styles[]="--bgcolor:{$params["data-bgcolor_{$utval}"]}";
-			unset($params["data-bgcolor_{$utval}"]);
-		}
-		elseif(isset($params["data-bgcolor_{$tval}"])){
-			$styles[]="--bgcolor:{$params["data-bgcolor_{$tval}"]}";
-			unset($params["data-bgcolor_{$tval}"]);
-		}
-		if(isset($params["data-checked_color_{$utval}"])){
-			$styles[]="--checked_color:{$params["data-checked_color_{$utval}"]}";
-			unset($params["data-checked_color_{$utval}"]);
-		}
-		elseif(isset($params["data-checked_color_{$tval}"])){
-			$styles[]="--checked_color:{$params["data-checked_color_{$tval}"]}";
-			unset($params["data-checked_color_{$tval}"]);
-		}
-		if(isset($params["data-checked_bgcolor_{$utval}"])){
-			$styles[]="--checked_bgcolor:{$params["data-checked_bgcolor_{$utval}"]}";
-			unset($params["data-checked_bgcolor_{$utval}"]);
-		}
-		elseif(isset($params["data-checked_bgcolor_{$tval}"])){
-			$styles[]="--checked_bgcolor:{$params["data-checked_bgcolor_{$tval}"]}";
-			unset($params["data-checked_bgcolor_{$tval}"]);
-		}
-		if(count($styles)){
-			$stylestr=implode(';',$styles).';';
-			$tag .= ' style="'.$stylestr.'"';	
-		}
-		//add any data params
-		foreach($params as $pk=>$pv){
-			if(preg_match('/^data\-(color|bgcolor|checked_color|checked_bgcolor)\_/i',$pk)){continue;}
-			if(preg_match('/^data\-/i',$pk)){
-				$tag .= " {$pk}=\"{$pv}\"";
-			}
-		}
-		if(isset($params['onchange']) && strlen($params['onchange'])){$tag .= ' onchange="'.$params['onchange'].'"';}
-		elseif($params['requiredif']){$tag .= ' data-requiredif="'.$params['requiredif'].'"';}
-		if(in_array($tval,$params['-values'])){
-    		$tag .= ' checked';
-    		$checked_cnt++;
-		}
-		//readonly?
-		if(isset($params['readonly'])){
-			$tag .= ' onclick="return false;"';
-		}
-		elseif(isset($params['disabled'])){
-			$tag .= ' disabled="disabled"';
-		}
-		$tag .= ' /> '.PHP_EOL;
-		if($params['-nolabel'] || ($tval==1 && $dval==1 && count($opts)==1)){}
-		else{
-			$xstyle=isset($params['style'])?$params['style']:'';
-			$tag .= ' <label for="'.$id.'" style="white-space: nowrap;'.$stylestr.$xstyle.'"> '.$dval.'</label>'.PHP_EOL;
-		}
-		$tag .= '</div>'.PHP_EOL;
-	}
-	$tag .= '</div>'.PHP_EOL;
-	return $tag;
-}
 //---------- begin function buildFormText--------------------
 /**
 * @describe creates an HTML text field
@@ -3698,27 +3212,11 @@ function buildFormText($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value']) && isset($params['-value'])){
-		$params['value']=$params['-value'];
-	}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params);
 	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['name']=$name;
-	$val='';
-	if(isset($params['value']) && strlen($params['value'])){
-		$val=$params['value'];
-	}
-	elseif(isset($params['-value']) && strlen($params['-value'])){
-		$val=$params['-value'];
-	}
-	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
-		$val=$_REQUEST[$name];
-	}
-	$params['value']=$val;
 	//ksort($params);return printValue($params);
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
@@ -3762,9 +3260,7 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['wrapper_id'])){$params['wrapper_id']=$params['id'].'_wrapper';}
 	if(!isset($params['wrapper_style'])){$params['wrapper_style']='';}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value'])){
-		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
-	}
+	$params['value']=buildFormValueParam($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(isset($params['-bootstrap'])){
@@ -4011,7 +3507,7 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['value']=buildFormValueParam($params);
 	if(strtolower($params['value'])==strtolower($tvals[0])){$checked=' checked';}
 	else{$checked='';}
 	if($params['required']){$required=' required';}
@@ -4152,14 +3648,9 @@ function buildFormFile($name,$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
-	if(isset($params['-value'])){$params['value']=$params['-value'];}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params);
 	$params['name']=$name;
-	if(isset($params['value']) && strlen($params['value']) && strtoupper($params['value'])=='NULL'){
-		$params['value']='';
-	}
+	
 	//ksort($params);return printValue($params);
 	$tag='';
 	$viewer='';
@@ -4357,170 +3848,6 @@ ENDOFTAG;
 	}
 	$tag .='</span></label>'.PHP_EOL;
 	$tag .= '</span>'.PHP_EOL;
-	return $tag;
-}
-/**
-* @exclude  - this function is no longer used
-*/
-function buildFormFile_old($name,$params=array()){
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
-	if(!isset($params['text'])){
-		if(isset($params['multiple'])){$params['text']='files to upload';}
-		else{$params['text']='file to upload';}
-	}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
-	$params['name']=$name;
-	//set path of where to store this file in
-	if(!isset($params['path'])){
-    	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
-    	elseif(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
-    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
-    	else{$params['path']="/files/{$params['name']}";}
-	}
-	$tag='';
-	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
-	if(isset($params['autonumber']) || isset($params['data-autonumber'])|| $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
-		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
-    }
-    if(isset($params['resize']) || isset($params['data-resize'])){
-    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
-		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
-		unset($params['data-resize']);
-    }
-    if(isset($params['disabled']) || isset($params['readonly'])){
-    	$style=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
-		$style.=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;margin-bottom:5px;';
-    	$tag .= '<div class="btn btn-default w_white" style="'.$style.'">'.PHP_EOL;
-    	if(strlen($params['value'])){
-    		$val=encodeHtml($params['value']);
-    		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;	
-    		$ext=getFileExtension($params['value']);
-    		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
-			switch(strtolower($ext)){
-				case 'mp3':
-					$mime=getFileMimeType($afile);
-					$tag .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
-					$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-					$tag .= '</audio></div>'.PHP_EOL;
-				break;
-				case 'mp4':
-					$mime=getFileMimeType($afile);
-					$tag .= '<div style="margin:5px 1px"><video height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
-					$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-					$tag .= '</video></div>'.PHP_EOL;
-				break;
-				case 'gif':
-				case 'png':
-				case 'jpg':
-				case 'jpeg':
-				case 'svg':
-					$mime=getFileMimeType($afile);
-					$tag .= '<div style="margin:5px 1px"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;" height="36" src="'.$params['value'].'" /></a>'.PHP_EOL;
-					$tag .= '</div>'.PHP_EOL;
-				break;
-				default:
-					$tag .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
-				break;
-			}
-    	}
-    	else{
-    		$tag .= '<span class="'.$params['-icon'].'"></span> ' . $params['text'];
-    	}
-		$tag .= '</div>'.PHP_EOL;
-		return $tag;
-    }
-    elseif(strlen($params['value']) && $params['value'] != $params['defaultval']){
-		$val=encodeHtml($params['value']);
-		/*
-		<input id="addedit_synchronize_1" data-group="addedit_synchronize_group" style="display:none;" data-type="checkbox" name="synchronize[]" value="1" type="checkbox">
-		<label class="icon-mark " for="addedit_synchronize_1"></label>
-		*/
-		$tag .= '<div class="w_smallest w_lblue" style="display:flex;">'.PHP_EOL;
-		$ext=getFileExtension($params['value']);
-		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
-		switch(strtolower($ext)){
-			case 'mp3':
-				$mime=getFileMimeType($afile);
-				$tag .= '<div id="'.$params['id'].'_remove_display" style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
-				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-				$tag .= '</audio></div>'.PHP_EOL;
-				$params['data-remove_display']=$params['id'].'_remove_display';
-			break;
-			case 'mp4':
-				$mime=getFileMimeType($afile);
-				$tag .= '<div id="'.$params['id'].'_remove_display" style="margin:5px 1px"><video style="border-radius:3px;" height="36" onmouseover="this.setAttribute(\'height\',150);" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
-				$tag .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
-				$tag .= '</video></div>'.PHP_EOL;
-				$params['data-remove_display']=$params['id'].'_remove_display';
-			break;
-			case 'gif':
-			case 'png':
-			case 'jpg':
-			case 'jpeg':
-			case 'svg':
-				$mime=getFileMimeType($afile);
-				$tag .= '<div id="'.$params['id'].'_remove_display" style="margin:5px 1px"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;" height="36" src="'.$params['value'].'" /></a>'.PHP_EOL;
-				$tag .= '</div>'.PHP_EOL;
-				$params['data-remove_display']=$params['id'].'_remove_display';
-			break;
-			default:
-				$tag .= '	<a id="'.$params['id'].'_remove_display" class="w_link w_lblue" href="'.$val.'" target="_blank">'.$val.'</a>'.PHP_EOL;
-				$params['data-remove_display']=$params['id'].'_remove_display';
-			break;
-		}
-		//remove checkbox
-		$tag .= '	<div style="text-align:center;">'.PHP_EOL;
-		$checked='';
-		if(isset($params["{$name}_remove"]) && $params["{$name}_remove"]==1){$checked=' checked';}
-		elseif(isset($_REQUEST["{$name}_remove"]) && $_REQUEST["{$name}_remove"]==1){$checked=' checked';}
-		$tag .= '		<div><label for="'.$params['id'].'_remove"><span class="icon-cancel-squared w_gray"></span></label></div>'.PHP_EOL;
-		$tag .= '		<input type="checkbox" style="display:initial;height:initial;padding:initial;margin-right:initial;" value="1" class="w_red" name="'.$name.'_remove" data-type="checkbox" id="'.$params['id'].'_remove"'.$checked.'>'.PHP_EOL;
-		$params['data-remove_checkbox']=$params['id'].'_remove';
-		$tag .= '		<input type="hidden" name="'.$name.'_prev" value="'.$val.'">'.PHP_EOL;
-		$tag .= '	</div>'.PHP_EOL;
-		$tag .= '</div>'.PHP_EOL;
-	}
-    //remove style attribute since it is not supported
-    $params['data-type']='file';
-    $params['data-formname']=$params['-formname'];
-    $params['-thumbnail']=1;
-    if(isset($params['-thumbnail'])){
-    	$params['data-thumbnail']=$params['-thumbnail'];
-    }
-    $params['onchange']="setInputFileName(this);";
-
-    if(!isset($params['style'])){
-		unset($params['style']);
-	}
-	if(!isset($params['type'])){
-		unset($params['type']);
-	}
-	$label_params=array('class'=>'btn btn-default w_white');
-	if(isset($params['style'])){
-		$label_params['style']=$params['style'];
-		unset($params['style']);
-	}
-	$params['style']='width:1px;max-width:1px;';
-	if(isset($params['class']) && strlen($params['class'])){
-		$label_params['class']=$params['class'];
-		unset($params['class']);
-	}
-	unset($label_params['width']);
-	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
-	$label_params['style'].=';width:95%;width:-webkit-fill-available;width:-moz-available;width:fill-available;';
-	//return printValue($label_params);
-	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
-	$tag .= setTagAttributes($params);
-	if(isset($params['multiple']) && $params['multiple']){
-    	$tag .= ' multiple ';
-	}
-	$tag .= ' />'.PHP_EOL;
-	$tag .= '	<label for="'.$params['id'].'"';
-	$tag .= setTagAttributes($label_params);
-	$tag .= ' ><span class="'.$params['-icon'].'"></span> '.$params['text'].'</label>'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormFrequency --------------------
@@ -4727,17 +4054,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($pairs) || !is_array($pairs)){
 		$pairs=[];
 	}
-	$val='';
-	if(isset($params['value']) && strlen($params['value'])){
-		$val=$params['value'];
-	}
-	elseif(isset($params['-value']) && strlen($params['-value'])){
-		$val=$params['-value'];
-	}
-	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
-		$val=$_REQUEST[$name];
-	}
-	$params['value']=$val;
+	$params['value']=buildFormValueParam($params);
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
@@ -4823,7 +4140,7 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['value']=buildFormValueParam($params);
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
@@ -4882,14 +4199,7 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
     	return buildFormText($name,$params);
 	}
-	//return $pcnt;
-	if(isset($params['value'])){
-		if(strlen($params['value'])){$sval=$params['value'];}
-	}
-	elseif(isset($_REQUEST[$name])){
-		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
-	}
-	$sval=isset($sval)?$sval:'';
+	$params['value']=buildFormValueParam($params);
 	$params['name']=$name;
 	$skip=array();
 	$rtn='';
@@ -4906,7 +4216,7 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 		$txtval=removeHtml($dval);
 		$id=$params['id'].'_'.$cnt;
 		$checked='';
-		if($sval==$tval){$checked=' checked';}
+		if($params['value']==$tval){$checked=' checked';}
 		$rtn .= '			<li><input type="radio"  name="'.$params['name'].'" id="'.$id.'" value="'.$tval.'" onclick="event.stopPropagation();this.parentNode.parentNode.parentNode.className=\'select\';"'.$checked.' /><span data-value="'.$txtval.'"></span><label for="'.$id.'">'.$dval.'</label></li>'.PHP_EOL;
 		$cnt++;
 	}	
@@ -4935,17 +4245,7 @@ function buildFormSelectDatabase($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
-	$val='';
-	if(isset($params['value']) && strlen($params['value'])){
-		$val=$params['value'];
-	}
-	elseif(isset($params['-value']) && strlen($params['-value'])){
-		$val=$params['-value'];
-	}
-	elseif(isset($_REQUEST[$name]) && strlen($_REQUEST[$name])){
-		$val=$_REQUEST[$name];
-	}
-	$params['value']=$val;
+	$params['value']=buildFormValueParam($params);
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
@@ -5050,8 +4350,9 @@ function buildFormSelectHost($name,$params=array()){
 	global $ALLCONFIG;
 	global $CONFIG;
 	if(!isset($params['message'])){$params['message']=' -- select --';}
+	$params['value']=buildFormValueParam($params);
 	if(!isset($params['value'])){
-		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:$CONFIG['host'];
+		$params['value']=$CONFIG['host'];
 	}
 	$opts=array();
 	foreach($ALLCONFIG as $host=>$conf){
@@ -5073,7 +4374,7 @@ function buildFormSelectMonth($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['value']=buildFormValueParam($params);
 	$opts=array(
 		1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'May',6=>'Jun',
 		7=>'Jul',8=>'Aug',9=>'Sep',10=>'Oct',11=>'Nov',12=>'Dec'
@@ -5095,9 +4396,7 @@ function buildFormSelectOnOff($name,$params=array()){
 	);
 	if(!isset($params['0_class'])){$params['0_class']='w_red';}
 	if(!isset($params['1_class'])){$params['1_class']='w_green';}
-	if(!isset($params['value']) && isset($_REQUEST[$name])){
-		$params['value']=$_REQUEST[$name];
-	}
+	$params['value']=buildFormValueParam($params);
 	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormSelectState--------------------
@@ -5114,7 +4413,7 @@ function buildFormSelectState($name='state',$country='US',$params=array('message
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['value']=buildFormValueParam($params);
 	//get a list of country codes that exist in the states table - place these first
 	$recopts=array(
 		'-table'=>"states",
@@ -5145,7 +4444,7 @@ function buildFormSelectTimezone($name='timezone',$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['value']=buildFormValueParam($params);
 	$zones=timezoneList($params);
 	//groups
 	foreach($zones as $tval=>$dval){
@@ -5170,7 +4469,7 @@ function buildFormSelectYear($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['value'])){$params['value']=$_REQUEST[$name];}
+	$params['value']=buildFormValueParam($params);
 	$tvals=selectYears($params['-years'],2,$params['-backwards']);
 	$dvals=selectYears($params['-years'],4,$params['-backwards']);
 	$opts=array();
@@ -5206,9 +4505,7 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['width'])){$params['width']=600;}
 	if(!isset($params['height'])){$params['height']=150;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['value']) && strlen($params['value'])){
-		$params['-value']=$params['value'];
-	}
+	$params['value']=buildFormValueParam($params);
 	$params['id']=str_replace('>','_',$params['id']);
 	if(isset($params['readonly']) && ($params['readonly']==1 || $params['readonly']=='readonly')){
 		if(isset($params['-value']) && strlen($params['-value'])){
@@ -5230,121 +4527,6 @@ function buildFormSignature($name,$params=array()){
 	}
 	$params['data-behavior']='signature_pad';
 	return buildFormTextarea($name,$params);
-}
-/**
-* @exclude  - this function is no longer used
-*/
-function buildFormSignatureOLD($name,$params=array()){
-	loadExtrasJs('html5');
-	global $USER;
-	$rtn='';
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['displayname'])){$params['displayname']='Please Sign Below:';}
-	if(!isset($params['clear'])){$params['clear']='<span class="icon-erase"></span>';}
-	if(!isset($params['sign'])){$params['sign']='<span class="icon-signature"></span>';}
-	if(!isset($params['width'])){$params['width']=600;}
-	if(!isset($params['height'])){$params['height']=90;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	if(isset($params['value']) && strlen($params['value'])){
-		$params['-value']=$params['value'];
-	}
-	$params['id']=str_replace('>','_',$params['id']);
-	if(isset($params['readonly']) && ($params['readonly']==1 || $params['readonly']=='readonly')){
-		if(isset($params['-value']) && strlen($params['-value'])){
-			$src=$params['-value'];
-		}
-		else{
-			$src='/wfiles/clear.gif';
-		}
-		$rtn='';
-		$rtn .= '<div class="w_signature"><img src="'.$src.'" alt="current signature"';
-		if(isset($params['style']) && strlen($params['style'])){
-			$rtn .= ' style="'.$params['style'].'"';
-		}
-		else{
-			$rtn .= ' style="width:'.$params['width'].'px;height:'.$params['height'].'px;"';
-		}
-		$rtn .= ' /></div>';
-		return $rtn;
-	}
-	$canvas_id=$params['id'].'_canvas';
-	$clear_id=$params['id'].'_clear';
-	$base64image='';
-	$barid=$params['id'].'_topbar';
-	$rtn .= '	<div style="position:relative;" id="'.$barid.'"';
-	if(isset($params['displayif'])){
-		$rtn .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	$rtn .='>'.PHP_EOL;
-	//return $params['id'].printValue($params);
-	//$rtn .= '		'.$params['displayname'].PHP_EOL;
-	//show clear button on right
-	$rtn .= '		<div style="display:flex;justify-content;flex-end;align-items:center;">'.PHP_EOL;
-	//type to sign
-	if(!isset($params['data-input']) || $params['data-input'] != 0){
-		if(isset($params['data-font'])){
-			$rtn.='<div style="display:none;">'.PHP_EOL;
-			$_REQUEST["{$name}_font"]=$params['data-font'];
-		}
-		$opts=array(
-			'andragogy'=>'Andragogy',
-			'high_summit'=>'High Summit',
-			'julialauren'=>'Julia Lauren',
-			'katrineholland'=>'Katrine Holland',
-			'sandrabelhock'=>'Sandra Belhock',
-			'yasminerothem'=>'Yasmine Rothem'
-		);
-		//load the fonts
-		foreach($opts as $font=>$fontname){
-			$rtn .='<div style="float:left;font-size:1px;font-family:'.$font.';">.</div>';
-		}
-		$rtn .= buildFormSelect($name.'_font',$opts,array('id'=>$params['id'].'_font','style'=>'font-size:0.9rem;width:100px;'));
-		if(isset($params['data-font'])){
-			$rtn.='</div>'.PHP_EOL;
-		}
-		$rtn .= '<input type="text" style="flex:1;width:100%;min-width:150px" autocomplete="off" name="'.$name.'_input" id="'.$params['id'].'_input" placeholder="type to sign" />'.PHP_EOL;
-		if(isUser() && isset($USER['signature']) && strlen($USER['signature'])){
-			$rtn .= '			<button title="sign" type="button" class="btn" id="'.$params['id'].'_sign">'.$params['sign'].'</button>'.PHP_EOL;
-			$rtn .= '			<div style="display:none;"><img src="'.$USER['signature'].'" alt="my signature" name="'.$name.'_user" id="'.$params['id'].'_user" /></div>'.PHP_EOL;
-		}
-	}
-	if(isset($params['-value']) && strlen($params['-value'])){
-		$reset_id=$params['id'].'_reset';
-		$rtn .= '    		<input type="hidden" name="'.$name.'_dataurl" id="'.$params['id'].'_dataurl" value="'.$params['-value'].'" />'.PHP_EOL;
-		$rtn .= '			<button type="button" class="btn" name="'.$name.'_reset" id="'.$params['id'].'_reset" title="reset"><span class="icon-reset"></span></button>'.PHP_EOL;
-		$rtn .= '			<div style="display:none;"><img src="'.$params['-value'].'" alt="current signature" name="'.$name.'_edit" id="'.$params['id'].'_edit" /></div>'.PHP_EOL;
-	}
-	if(!isset($params['data-clear']) || $params['data-clear'] != 0){
-		$rtn .= '			<button title="clear" type="button" class="btn" name="'.$name.'_clear" id="'.$params['id'].'_clear">'.$params['clear'].'</button>'.PHP_EOL;
-	}
-	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '	</div>'.PHP_EOL;
-	$rtn .= '<div style="width:800px;height:300px;">'.PHP_EOL;
-	$rtn .= '    <canvas';
-	if(isset($params['style'])){
-		$rtn .= ' style="'.$params['style'].'"';
-	}
-	if(!isset($params['style']) || !stringContains($params['style'],'width')){
-		$rtn .= ' width="'.$params['width'].'"';
-	}
-	if(!isset($params['style']) || !stringContains($params['style'],'height')){
-		$rtn .= ' height="'.$params['height'].'"';
-	}
-	if(isset($params['data-pencolor'])){
-		$rtn .= ' data-color="'.$params['data-pencolor'].'"';
-	}
-	elseif(isset($params['data-color'])){
-		$rtn .= ' data-color="'.$params['data-color'].'"';
-	}
-	$rtn .= ' id="'.$canvas_id.'" data-behavior="signature" data-barid="'.$barid.'" class="w_signature"></canvas>'.PHP_EOL;
-	$rtn .= '	</div>'.PHP_EOL;
-	$rtn .= '    <div style="display:none"><textarea name="'.$name.'" id="'.$params['id'].'"></textarea></div>'.PHP_EOL;
-	$rtn .= '    <input type="hidden" name="'.$name.'_inline" value="1" />'.PHP_EOL;
-	$rtn .= buildOnLoad("resizeSignatureWidthHeight();");
-	return $rtn;
 }
 //---------- begin function buildFormSlider--------------------------------------
 /**
@@ -5373,6 +4555,7 @@ function buildFormSlider($name, $params=array()){
 	if(!isset($params['min'])){$params['min']=1;}
 	if(!isset($params['max'])){$params['max']=10;}
 	if(!isset($params['step'])){$params['step']=1;}
+	$params['value']=buildFormValueParam($params);
 	if(!isset($params['value'])){$params['value']=5;}
 	if(!isset($params['label'])){$params['label']=$params['formname'].'_'.$name.'_value';}
 	if(!isset($params['min_displayname'])){$params['min_displayname']=$params['min'];}
@@ -5449,7 +4632,7 @@ function buildFormStarRating($name, $params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-    if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:'';}
+    $params['value']=buildFormValueParam($params);
     if(!isset($params['max'])){$params['max']=5;}
     if(!isset($params['class'])){$params['class']='w_biggest';}
     if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -5500,54 +4683,6 @@ function buildFormStarRating($name, $params=array()){
 	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
-/**
-* @exclude  - this function is no longer used
-*/
-function buildFormStarRatingOLD($name, $params=array()){
-	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-    if(!isset($params['value'])){$params['value']=isNum($_REQUEST[$name])?$_REQUEST[$name]:'';}
-    if(!isset($params['max'])){$params['max']=5;}
-    if(!isset($params['class'])){$params['class']='w_biggest';}
-    if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$rtn = '<ul id="'.$params['id'].'" style="padding-left:0px;margin:0;"';
-	if(isset($params['displayif'])){
-		$rtn .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	if(isset($params['data-readonlyif'])){
-		$rtn .= ' data-readonlyif="'.$params['data-readonlyif'].'"';
-		unset($params['data-readonlyif']);
-	}
-	$rtn .= '>'.PHP_EOL;
-	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'"';
-	if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
-	elseif(isset($params['_required']) && $params['_required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
-	$rtn .=' />'.PHP_EOL;
-	//return $x.printValue($params);
-	for($x=1;$x<=$params['max'];$x++){
-		$p=$x-1;
-		$vr=round($params['value'],0);
-		if($x <= $params['value']){$class='icon-star w_pointer';}
-		elseif($vr != $params['value'] && $vr > $p){
-			$class='icon-star-half-empty w_pointer';
-		}
-		else{$class='icon-star-empty w_pointer';}
-		$class .= ' '.$params['class'];
-		$rtn .= '	<li style="display:inline-block;padding:0px;margin:0px;" title="'.$x.'"><span class="'.$class.'"';
-		if(!isset($params['readonly'])){
-			$rtn .= ' onclick="if(this.parentNode.hasAttribute(\'readonly\')){return false;} setStarRating(\''.$params['id'].'\','.$x.');"';
-		}
-		if(isset($params['style'])){
-			$rtn .= ' style="'.$params['style'].'"';
-		}
-		$rtn .= '></span></li>'.PHP_EOL;
-	}
-	$rtn .= '</ul>'.PHP_EOL;
-	return $rtn;
-}
 //---------- begin function buildFormSubmit-------------------
 /**
 * @describe creates an HTML submit tag
@@ -5583,10 +4718,7 @@ function buildFormWYSIWYG($name,$params=array()){
 	else{
 		$params['class'] .= ' wacssedit';
 	}
-	//return printValue($params);
-	if(!isset($params['value'])){
-		$params['value']=isset($_REQUEST[$name])?$_REQUEST[$name]:'';
-	}
+	$params['value']=buildFormValueParam($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['height'])){
 		if(isNum($params['height'])){$params['height'].='px';}
@@ -6171,6 +5303,7 @@ function cleanDir($dir='') {
 * @usage $out=cmdResults('ls -al');
 */
 function cmdResults($cmd,$args='',$dir='',$timeout=0){
+	$starttime=microtime(true);
 	if(!is_dir($dir)){$dir=realpath('.');}
 	if(strlen($args)){$cmd .= ' '.trim($args);}
 	//windows OS requires the stderr pipe to be write
@@ -6191,6 +5324,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 				'cmd'=>$cmd,
 				'dir'=>$dir,
 				'rtncode'=>123,
+				'runtime'=>microtime(true)-$starttime,
 				'stderr'=>'Create Process Failed - Verify cmd exists'
 			);
 		}
@@ -6224,6 +5358,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
     	'dir'	=> $dir,
 		'stdout'=>$stdout,
         'stderr'=>$stderr,
+        'runtime'=>microtime(true)-$starttime,
         'rtncode'=>$rtncode
     );
     //remove blank vals
@@ -9239,6 +8374,7 @@ function evalPHP($strings){
 			else{
 				@trigger_error('');
 				$val=@eval($evalcode);
+				if(is_null($val)){$val='';}
 				$ob=ob_get_contents();
 				ob_clean();
 				ob_flush();
@@ -12608,10 +11744,12 @@ function processCSVFileLines($file,$func_name,$params=array()){
 *	[-start|skiprows] int - line to start on
 *	[-maxrows|stop]  int - line to stop on
 *	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
+*	[-mod] string - mod,val  only process lines that have a mod of value
 *	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
 * @usage
 *	$num=processCSVLines($afile,'processLine');
+*	$num=processCSVLines($afile,'processLine',array('-mod'=>'4,1'));
 */
 function processCSVLines($file,$func_name,$params=array()){
 	//validate function exists
@@ -12623,6 +11761,12 @@ function processCSVLines($file,$func_name,$params=array()){
 	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
 	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
+	if(isset($params['-mod'])){
+		if(is_string($params['-mod'])){
+			list($m,$v)=preg_split('/\,/',$params['-mod'],2);
+			$params['-mod']=array('mod'=>$m,'val'=>$v);
+		}
+	}
 	ini_set('auto_detect_line_endings',TRUE);
 	$linecnt = 0;
 	$bomchecked=0;
@@ -12655,6 +11799,10 @@ function processCSVLines($file,$func_name,$params=array()){
 			}
 		}
 		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+			if(isset($params['-mod']['mod']) && $linecnt % $params['-mod']['mod'] != $params['-mod']['val']){
+				$linecnt++;
+				continue;
+			}
 			if($bomchecked==0){
 				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
 				$bomchecked=1;
