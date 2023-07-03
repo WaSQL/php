@@ -4495,11 +4495,15 @@ var wacss = {
 		if ('speechSynthesis' in window) {	
 			/* cancel any speach already playing */
 			if(undefined == params.multiple){
+				if(undefined != params.debug){
+					console.log('canceling any speach already playing');
+				}
 				window.speechSynthesis.cancel();
 			}
 			/* check to see if voices are loaded already */
 			let voices = window.speechSynthesis.getVoices();
 			if(undefined != params.debug){
+				console.log('voices');
 				console.log(voices);
 			}
 			if(voices.length > 0){
