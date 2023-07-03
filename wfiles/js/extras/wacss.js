@@ -4494,7 +4494,7 @@ var wacss = {
 		params.txt=txt;
 		if ('speechSynthesis' in window) {	
 			/* cancel any speach already playing */
-			if(undefined != params.multiple){
+			if(undefined == params.multiple){
 				window.speechSynthesis.cancel();
 			}
 			/* check to see if voices are loaded already */
