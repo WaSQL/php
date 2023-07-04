@@ -157,6 +157,15 @@ function appstoreUninstall($appkey){
 			}
 		}
 		$ok=delDBRecord($opts);
+		//remove tabledata,fielddata, and triggers
+		$queries=array(
+			"delete from _tabledata where tablename like '{$rec['name']}_%'",
+			"delete from _fielddata where tablename like '{$rec['name']}_%'",
+			"delete from _triggers where name like '{$rec['name']}_%'",
+		);
+		foreach($queries as $query){
+			$ok=executeSQL($query);
+		}
 		$ok=appstoreSetStatus($appkey,'uninstalled');
 	}
 	else{
