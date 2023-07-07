@@ -6207,7 +6207,7 @@ function setView($name='',$clear=0){
 */
 function setViewNames(){
 	global $PAGE;
-	if(!isset($PAGE['setView'])){return array('');}
+	if(!isset($PAGE['setView']) || !is_array($PAGE['setView'])){return array('');}
 	return array_keys($PAGE['setView']);
 }
 //---------- begin function
