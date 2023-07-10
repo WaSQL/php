@@ -1292,7 +1292,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	if(isset($PAGE['post_render']) && function_exists($PAGE['post_render'])){
 		$htm=call_user_func($PAGE['post_render'],$htm);
 	}
-	echo $htm;
+	echo trim($htm);
 	echo $wasql_debugValueContent;
 	if(is_array($CONFIG['includes'])){
 		foreach($CONFIG['includes'] as $lang=>$afiles){
