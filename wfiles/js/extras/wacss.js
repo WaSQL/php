@@ -4502,7 +4502,7 @@ var wacss = {
 			}
 			/* check to see if voices are loaded already */
 			let voices = window.speechSynthesis.getVoices();
-			if(undefined != params.debug){
+			if(undefined != params.debug || undefined != params.showvoices){
 				console.log('voices');
 				console.log(voices);
 			}
