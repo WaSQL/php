@@ -4508,7 +4508,7 @@ var wacss = {
 			}
 			if(voices.length > 0){
 				let msg = new SpeechSynthesisUtterance();
-				/* set any custom options */
+				/* if params.name then pick a voice with that name */
 				if(undefined != params.name){
 					for(let i=0;i<voices.length;i++){
 						if(voices[i].name.toLowerCase().indexOf(params.name.toLowerCase()) != -1){
@@ -4529,7 +4529,65 @@ var wacss = {
 				if(undefined != params.pitch){
 					msg.pitch=params.pitch;
 				}
-				msg.text=params.txt;
+				//event: boundary
+				if(undefined != params.onboundary){
+					msg.func_boundary=params.onboundary;
+					msg.func_event='boundary';
+					msg.addEventListener('boundary',function(){
+						window[this.func_boundary](event);
+					});
+				}
+				//event: end
+				if(undefined != params.onend){
+					msg.func_end=params.onend;
+					msg.addEventListener('end',function(){
+						window[this.func_end](event);
+					});
+				}
+				//event: error
+				if(undefined != params.onerror){
+					msg.func_error=params.onerror;
+					msg.addEventListener('error',function(){
+						window[this.func_error](event.utterance);
+					});
+				}
+				//event: mark
+				if(undefined != params.onmark){
+					msg.func_mark=params.onmark;
+					msg.addEventListener('mark',function(){
+						window[this.func_mark](event.utterance);
+					});
+				}
+				//event: pause
+				if(undefined != params.onpause){
+					msg.func_pause=params.onpause;
+					msg.addEventListener('pause',function(){
+						window[this.func_pause](event.utterance);
+					});
+				}
+				//event: resume
+				if(undefined != params.onresume){
+					msg.func_resume=params.onresume;
+					msg.addEventListener('resume',function(){
+						window[this.func_resume](event.utterance);
+					});
+				}
+				//event: start
+				if(undefined != params.onstart){
+					msg.func_start=params.onstart;
+					msg.addEventListener('start',function(event){
+						window[this.func_start](event.utterance);
+					});
+				}
+				if(params.txt.indexOf('<') != -1){
+					console.log('ssml');
+					msg.input={ssml:params.txt};
+				}
+				else{
+					//console.log('txt');
+					msg.text=params.txt;
+				}
+				//console.log(msg);
 				if(undefined != params.debug){
 					console.log(msg);
 				}
