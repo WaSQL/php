@@ -4507,7 +4507,7 @@ var wacss = {
 				console.log(voices);
 			}
 			if(voices.length > 0){
-				let msg = new SpeechSynthesisUtterance();
+				var msg = new SpeechSynthesisUtterance();
 				/* if params.name then pick a voice with that name */
 				if(undefined != params.name){
 					for(let i=0;i<voices.length;i++){
@@ -4591,6 +4591,7 @@ var wacss = {
 				if(undefined != params.debug){
 					console.log(msg);
 				}
+				window.utterances.push(msg);
 				window.speechSynthesis.speak(msg);
 				return false;
 			}
@@ -4599,6 +4600,7 @@ var wacss = {
 				window.speechSynthesis.params=params;
 				window.speechSynthesis.onvoiceschanged = function(){
 					let params=window.speechSynthesis.params;
+					window.utterances = [];
 					wacss.speak(params.txt,params);
 				};
 			}
