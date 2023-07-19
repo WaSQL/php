@@ -2352,12 +2352,12 @@ function buildFormDate($name,$params=array()){
 	$params['data-behavior']='flatpickr';
 	$params['value']=buildFormValueParam($params);
 	if(strlen($params['value'])){
-		if(preg_match('/^[a-z\-\+]/i',$params['-value'])){
+		if(preg_match('/^[a-z\-\+]/i',$params['value'])){
 			//+21 days  or +3 months
-			$params['value']=date('Y-m-d',strtotime($params['-value']));
+			$params['value']=date('Y-m-d',strtotime($params['value']));
 		}
-		elseif(isNum($params['-value'])){
-			$params['value']=date('Y-m-d',$params['-value']);
+		elseif(isNum($params['value'])){
+			$params['value']=date('Y-m-d',$params['value']);
 		}
 	}
 	if(isset($params['data-mindate'])){
