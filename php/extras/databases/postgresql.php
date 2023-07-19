@@ -66,7 +66,6 @@ function postgresqlAddDBRecords($table='',$params=array()){
 function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	global $dbh_postgresql;
 	global $pg_query_name_counter;
-	$pg_query_name_counter+=1;
 	if(!isset($params['-table'])){
 		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
 	}
@@ -126,6 +125,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	//create a query_name based on my process ID
 	
 	foreach($chunks as $c=>$recs){
+		$pg_query_name_counter+=1;
 		$query_name="pg_prepare_{$pg_query_name_counter}_".getmypid();
 		//values and pvalues
 		$pvalues=array();
