@@ -127,11 +127,19 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		//values and pvalues
 		$pvalues=array();
 		$values=array();
+		$skip_keys=array();
 		$p=0;
+		$pval_counts=array();
+		$pval_keys=array();
 		foreach($recs as $i=>$rec){
 			$pvals=array();
-			foreach($rec as $k=>$v){
-				if(!in_array($k,$fields)){continue;}
+			$pkeys=array();
+			foreach($fields as $k){
+				//make sure this record has a value for every field in fields
+				if(!isset($rec[$k])){$rec[$k]='';}
+				//set value and keys
+				$v=$rec[$k];
+				$pkeys[]=$k;
 				$p+=1;
 				if(!strlen($v)){
 					$pvals[]="\${$p}";
@@ -145,37 +153,10 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 					$pvalues[]=$v;
 				}
 			}
+			$pval_counts[]=count($pvals);
+			$pval_keys[]=$pkeys;
 			$recstr=implode(',',$pvals);
 			$values[]="({$recstr})";
-		}
-		if($c > 0 && count($recs)==$chunk_size){
-			$result = pg_execute($dbh_postgresql,$query_name, $pvalues);
-			$err=pg_last_error($dbh_postgresql);
-			//$ok=postgresqlExecuteSQL($query);
-			if(strlen($err)){
-				$drecs=array();
-				$xchunks=array_chunk($pvalues,count($fields));
-				foreach($xchunks as $xchunk){
-					$rec=array();
-					foreach($fields as $i=>$fld){
-						//if($fld != 'dist_id'){continue;}
-						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-						$drecs[$fld][$xchunk[$i]]+=1;
-					}
-					break;
-				}
-				debugValue(array(
-					'function'=>'postgresqlAddDBRecordsProcess',
-					'message'=>'execute error',
-					'error'=>$err,
-					'query'=>$query,
-					'p'=>$p,
-					'first_record'=>$drecs
-				));
-				return $total_count;
-			}
-			$total_count+=count($recs);
-			continue;
 		}
 		if(isset($params['-upsert']) && isset($params['-upserton'])){
 			if(!is_array($params['-upsert'])){
@@ -235,7 +216,46 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		//echo $query;exit;
 		try{
-			$stmt = pg_prepare($dbh_postgresql,$query_name, $query);
+			$pg_adddbrecords_stmt = pg_prepare($dbh_postgresql,$query_name, $query);
+			if(!is_resource($pg_adddbrecords_stmt) && !is_object($pg_adddbrecords_stmt)){
+				debugValue(array(
+					'function'=>'postgresqlAddDBRecordsProcess',
+					'message'=>'pg_prepare error',
+					'error'=>pg_last_error($dbh_postgresql),
+					'query'=>$query,
+					'pval_counts'=>$pval_counts,
+					'pval_keys'=>$pval_keys,
+					'p'=>$p,
+					'pvalues_cnt'=>count($pvalues)
+				));
+				return $total_count;
+			}
+			$result = pg_execute($dbh_postgresql,$query_name, $pvalues);
+			$err=pg_last_error($dbh_postgresql);
+			//$ok=postgresqlExecuteSQL($query);
+			if(strlen($err)){
+				$drecs=array();
+				$xchunks=array_chunk($pvalues,count($fields));
+				foreach($xchunks as $xchunk){
+					$rec=array();
+					foreach($fields as $i=>$fld){
+						//if($fld != 'dist_id'){continue;}
+						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
+						$drecs[$fld][$xchunk[$i]]+=1;
+					}
+					break;
+				}
+				debugValue(array(
+					'function'=>'postgresqlAddDBRecordsProcess',
+					'message'=>'execute error',
+					'error'=>$err,
+					'query'=>$query,
+					'p'=>$p,
+					'first_record'=>$drecs
+				));
+				return 0;
+			}
+			$total_count+=count($recs);
 		}
 		catch (Exception $e) {
 			debugValue(array(
@@ -248,33 +268,6 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			));
 			return 0;
 		}
-		$result = pg_execute($dbh_postgresql,$query_name, $pvalues);
-		$err=pg_last_error($dbh_postgresql);
-		//$ok=postgresqlExecuteSQL($query);
-		if(strlen($err)){
-			$drecs=array();
-			$xchunks=array_chunk($pvalues,count($fields));
-			foreach($xchunks as $xchunk){
-				$rec=array();
-				foreach($fields as $i=>$fld){
-					//if($fld != 'dist_id'){continue;}
-					$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-					$drecs[$fld][$xchunk[$i]]+=1;
-				}
-				break;
-			}
-			debugValue(array(
-				'function'=>'postgresqlAddDBRecordsProcess',
-				'message'=>'execute error',
-				'error'=>$err,
-				'query'=>$query,
-				'params'=>$params,
-				'p'=>$p,
-				'first_record'=>$drecs
-			));
-			return 0;
-		}
-		$total_count+=count($recs);
 	}
 	if(isset($params['-debug'])){
 		echo printValue($ok).$query;exit;
