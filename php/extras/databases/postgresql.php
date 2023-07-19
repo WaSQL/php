@@ -121,6 +121,8 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	$chunk_size=count($chunks[0]);
 	$total_count=0;
 	$chunk_count=count($chunks);
+	//create a query_name based on my process ID
+	$query_name="pg_adddbrecords_".getmypid();
 	foreach($chunks as $c=>$recs){
 		//values and pvalues
 		$pvalues=array();
@@ -147,7 +149,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			$values[]="({$recstr})";
 		}
 		if($c > 0 && count($recs)==$chunk_size){
-			$result = pg_execute($dbh_postgresql,'', $pvalues);
+			$result = pg_execute($dbh_postgresql,$query_name, $pvalues);
 			$err=pg_last_error($dbh_postgresql);
 			//$ok=postgresqlExecuteSQL($query);
 			if(strlen($err)){
@@ -167,7 +169,6 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 					'message'=>'execute error',
 					'error'=>$err,
 					'query'=>$query,
-					'params'=>$params,
 					'p'=>$p,
 					'first_record'=>$drecs
 				));
@@ -229,13 +230,12 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 				'message'=>'postgresqlDBConnect error',
 				'error'=>"Connect Error" . pg_last_error(),
 				'query'=>$query,
-				'params'=>$params
 			));
-			return 0;
+			return $total_count;
 		}
 		//echo $query;exit;
 		try{
-			$stmt = pg_prepare($dbh_postgresql,'', $query);
+			$stmt = pg_prepare($dbh_postgresql,$query_name, $query);
 		}
 		catch (Exception $e) {
 			debugValue(array(
@@ -243,13 +243,12 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 				'message'=>'pg_prepare error',
 				'error'=>pg_last_error($dbh_postgresql),
 				'query'=>$query,
-				'params'=>$params,
 				'p'=>$p,
 				'pvalues_cnt'=>count($pvalues)
 			));
 			return 0;
 		}
-		$result = pg_execute($dbh_postgresql,'', $pvalues);
+		$result = pg_execute($dbh_postgresql,$query_name, $pvalues);
 		$err=pg_last_error($dbh_postgresql);
 		//$ok=postgresqlExecuteSQL($query);
 		if(strlen($err)){
@@ -1045,7 +1044,8 @@ ENDOFQUERY;
 		));
     	return;
 	}
-	if(!pg_prepare($dbh_postgresql,'',$query)){
+	$query_name='pg_editdbrecord_'.getmypid();
+	if(!pg_prepare($dbh_postgresql,$query_name,$query)){
 		debugValue(array(
 			'function'=>'postgresqlEditDBRecord',
 			'message'=>'pg_prepare failed',
@@ -1055,7 +1055,7 @@ ENDOFQUERY;
 		pg_close($dbh_postgresql);
 		return;
 	}
-	$data=pg_execute($dbh_postgresql,'',$values);
+	$data=pg_execute($dbh_postgresql,$query_name,$values);
 	$err=pg_result_error($data);
 	if(strlen($err)){
 		debugValue(array(
