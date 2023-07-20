@@ -237,6 +237,9 @@ ENDOFSQL;
 			//echo "PAGE: [{$cmd}]".printValue($_REQUEST);exit;
 			$ctime=microtime(true);
 			//$ok=commonCronLog("<b>LOADING PAGE:</b> {$cmd}");
+			//load any functions in the blank template
+			$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"name='blank' or _id=1"));
+			//load the page
 			$out=includePage($cmd,$_REQUEST);
 			$rtime=microtime(true)-$ctime;
 	    	//$ok=commonCronLog("<b>RETURNED.</b>  Runtime:{$rtime}");
