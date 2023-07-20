@@ -357,8 +357,9 @@ function cronListExtra($recs){
 		}
 		//pid lookup
 		if($pid != 0){
-			$recs[$i]['cron_pid']='<a style="margin-left:10px;align-self:center;magin-right:10px;display:inline-block" href="#" class="w_right w_link" onclick="return cronModal(\'pid\',this.dataset.cron_pid,this.title);" data-cron_pid="'.$rec['cron_pid'].'" title="check process">'.$recs[$i]['cron_pid'].'</a>';
+			$recs[$i]['cron_pid']='<a style="margin-left:10px;align-self:center;magin-right:10px;display:inline" href="#" class="w_right w_link" onclick="return cronModal(\'pid\',this.dataset.cron_pid,this.title);" data-cron_pid="'.$rec['cron_pid'].'" title="check process">'.$recs[$i]['cron_pid'].'</a>';
 		}
+		else{$recs[$i]['cron_pid']='';}
 		//logcount
 		if(isset($logcounts[$id]['cnt'])){
 			$recs[$i]['logcount']=$logcounts[$id]['cnt'];
