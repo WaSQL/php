@@ -176,8 +176,8 @@ function cronList(){
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'name,groupname,_id,cron_pid,active,paused,running,run_now,stop_now',
 		'-searchopers'=>'ct,eq,neq,ca,ea,ib,nb',
-		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,last_run,run_length,run_memory,run_format,frequency_max',
-		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_memory,run_format,frequency_max',
+		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,logcount,last_run,run_length,run_memory,run_format,frequency_max',
+		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
 		'-tableclass'=>'table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -246,6 +246,10 @@ function cronList(){
 			'data-type'=>'checkbox',
 			'title'=>'Mark cron to Run Now',
 			'checkbox_onclick'=>"cronSetFieldValue(this,'run_now',this.checked)"
+		),
+		'logcount_options'=>array(
+			'class'=>'align-right',
+			'displayname'=>'Logs'
 		),
 		'-results_eval'=>'cronListExtra',
 		'-quickfilters'=>array(
@@ -349,6 +353,13 @@ function cronListExtra($recs){
 		//if cron_pid and not running something is wrong.
 		if((integer)$rec['cron_pid'] !=0 && (integer)$rec['running']==0){
 			$recs[$i]['cron_pid']='<span class="w_danger">'.$rec['cron_pid'].'</span>';
+		}
+		//logcount
+		if(isset($logcounts[$id]['cnt'])){
+			$recs[$i]['logcount']=$logcounts[$id]['cnt'];
+		}
+		else{
+			$recs[$i]['logcount']=0;
 		}
 		//check for valid run_format
 		if(!strlen($rec['run_format'])){
