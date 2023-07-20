@@ -153,12 +153,19 @@ function cronLogRefreshTimer(){
 
 
 <view:pid>
+<div class="w_centerpop_title">Process <?=$pid;?></div>
+<div class="w_centerpop_content">
 	<?=printValue($rec);?>
+</div>
 </view:pid>
 
 <view:nopid>
+<div class="w_centerpop_title">Process <?=$pid;?></div>
+<div class="w_centerpop_content">
 	<h3>No process found with pid of <?=$pid;?></h3>
 	<div>Updated cron to reflect it is not running</div>
+	<?=buildOnLoad("setText('process_{$pid}','');");?>
+</div>
 </view:nopid>
 
 <view:addedit>
