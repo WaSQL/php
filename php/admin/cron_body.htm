@@ -151,6 +151,16 @@ function cronLogRefreshTimer(){
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>
 
+
+<view:pid>
+	<?=printValue($rec);?>
+</view:pid>
+
+<view:nopid>
+	<h3>No process found with pid of <?=$pid;?></h3>
+	<div>Updated cron to reflect it is not running</div>
+</view:nopid>
+
 <view:addedit>
 	<?=cronAddEdit($id);?>
 </view:addedit>

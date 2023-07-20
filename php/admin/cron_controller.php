@@ -41,10 +41,17 @@ switch(strtolower($_REQUEST['func'])){
 		$recs=systemGetProcessList();
 		foreach($recs as $rec){
 			if($rec['pid']==$pid){
-				echo printValue($rec);exit;
+				setView('pid',1);
+				return;
 			}
 		}
-		echo "no process running with pid of {$pid}";exit;
+		$ok=editDBRecord(array(
+			'-table'=>'_cron',
+			'-where'=>"cron_pid={$pid}",
+			'running'=>0,
+			'cron_pid'=>0
+		));
+		setView('nopid',1);
 		return;
 	break;
 	case 'pause':
