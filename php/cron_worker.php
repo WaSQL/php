@@ -63,7 +63,7 @@ include_once("{$progpath}/extras/system.php");
 $dbversion=getDBVersion();
 //cronMessage("Mysql Version: {$dbversion}");
 if($dbversion < 5.7){
-	cronMessage("ERROR - running mysql version {$dbversion}. Cron.php now requires mysql version 5.7 or greater.  For older mysql versions run cron_old.php instead.");
+	cronMessage("ERROR - running mysql version {$dbversion}. Cron_worker.php now requires mysql version 5.7 or greater.  For older mysql versions run cron.php instead.");
 	exit;
 }
 
@@ -135,21 +135,34 @@ ENDOFSQL;
 			//$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
 			break;
 		}
-		$ok=cronMessage("db:{$CONFIG['name']}, cron_id:{$rec['_id']}, cron_name:{$rec['name']}, msg: running");
-		$CRONTHRU=array();
-		$CRONTHRU['cron_id']=$rec['_id'];
-		unset($_REQUEST['cronlog_id']);
-		$cronlog_id=commonCronLogInit($rec['_id']);
+		//add a cronlog
+		$header=array(
+			'timestamp'=>getDBTime(),
+			'cron_name'=>$rec['name'],
+			'cron_id'=>$rec['_id'],
+			'user_id'=>0,
+			'cron_pid'=>$cron_pid
+		);
+		$rec['cronlog_id']=addDBRecord(array(
+			'-table'=>'_cron_log',
+			'cron_id'=>$rec['_id'],
+			'delete_me'=>0,
+			'header'=>encodeJson($header)
+		));
+		if(isNum($rec['cronlog_id'])){
+			cronUpdate(array('cronlog_id'=>$rec['cronlog_id']));
+		}
 		//only keep the last x records
 		$ok=cronCleanRecords($rec);
+		//set cmd
 		$cmd=$rec['run_cmd'];
 		$lcmd=strtolower(trim($cmd));
-
 		//get page names to determine if cron is a page
 		$pages=getDBRecords(array(
 			'-table'	=> '_pages',
 			'-fields'	=> 'name,_id',
-			'-index'	=> 'name'
+			'-index'	=> 'name',
+			'-nocache'=>1
 		));
 		/*
 			look for passthru
@@ -173,6 +186,7 @@ ENDOFSQL;
 			        if(!strlen($part)){continue;}
 			        if(isset($pages[$part])){
 						$stripped=1;
+						$_REQUEST['_view']=$part;
 						$crontype='Page';
 						continue;
 					}
@@ -195,7 +209,9 @@ ENDOFSQL;
 	    	$crontype='OS Command';
 		}
 		//update the cronlog header with crontype
-		$ok=executeSQL("update _cron_log set header=JSON_SET(header,'$.crontype','{$crontype}') where _id={$cronlog_id}");
+		$header['crontype']=$crontype;
+		echo "{$rec['_id']} - Name:{$rec['name']}, cronlog_id:{$rec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}".PHP_EOL;
+		$ok=cronLogUpdate(array('header'=>encodeJson($header)));
 		//start the job
 		$start=microtime(true);
 		$CRONTHRU['cron_guid']=generateGUID();
@@ -203,46 +219,46 @@ ENDOFSQL;
 	    	//cron is a page.
 	    	$crontype='page';
 	    	$cmd=preg_replace('/^\/+/','',$cmd);
-	    	$prefix='https';
-	    	if(isset($CONFIG['insecure']) && $CONFIG['insecure']==1){
-	    		$prefix='http';
-	    	}
-	    	$url="{$prefix}://{$CONFIG['name']}/{$cmd}";
-	    	$postopts=array(
-	    		'-method'=>'GET',
-	    		'-follow'=>1,
-	    		'-nossl'=>1,
-	    		'-timeout'=>$posturl_timeout
-	    	);
-	    	foreach($CRONTHRU as $k=>$v){
-	    		$postopts[$k]=$v;
-	    	}
 	    	//if they have specified a run_as then login as that person
 	    	if(isset($rec['run_as']) && isNum($rec['run_as'])){
+	    		global $USER;
 	        	$urec=getDBRecord(array(
 					'-table'=>'_users',
 					'_id'	=> $rec['run_as'],
-					'-fields'=>'_id,username'
+					'-fields'=>'_id,username',
+					'-nocache'=>1
 				));
 				if(isset($urec['_id'])){
-	            	$postopts['_tauth']=userGetTempAuthCode($urec['_id']);
-	            	$postopts['_noguid']=1;
+					$USER=$urec;
 				}
 			}
-	    	$post=postURL($url,$postopts);
-	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($post)));
-	    	if(stringContains($post['body'],'__cron_log_delete__')){
+			global $PAGE;
+			$PAGE=array('_id'=>0,'name'=>'--cron--','permalink'=>'--cron--');
+			//echo "PAGE: [{$cmd}]".printValue($_REQUEST);exit;
+			$ctime=microtime(true);
+			//$ok=commonCronLog("<b>LOADING PAGE:</b> {$cmd}");
+			$out=includePage($cmd,$_REQUEST);
+			$rtime=microtime(true)-$ctime;
+	    	//$ok=commonCronLog("<b>RETURNED.</b>  Runtime:{$rtime}");
+			$out=array('body'=>$out);
+	    	$ok=cronLogUpdate(array('body'=>encodeJson($out)));
+	    	if(stringContains($out,'__cron_log_delete__')){
 	    		$ok=commonCronLogDelete();
 	    	}
 		}
 		elseif(strtolower($crontype)=='eval'){
 	    	//cron is a eval
 	    	$crontype='eval';
+	    	$ctime=microtime(true);
+	    	$ok=commonCronLog("<b>RUNNING EVAL:</b> <xmp>{$cmd}</xmp>");
 	    	$out=array(
 	    		'code'=>$cmd,
 	    		'output'=>evalPHP($cmd)
 	    	);
-	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($out)));
+	    	$ok=commonCronLog($out['output']);
+	    	$out['runtime']=microtime(true)-$ctime;
+	    	$ok=commonCronLog("<b>RETURNED.</b>  Runtime:{$out['runtime']}");
+	    	$ok=cronLogUpdate(array('body'=>encodeJson($out)));
 		}
 		elseif(strtolower($crontype)=='url'){
 			$crontype='url';
@@ -256,43 +272,51 @@ ENDOFSQL;
 	    	foreach($CRONTHRU as $k=>$v){
 	    		$postopts[$k]=$v;
 	    	}
+	    	$ok=commonCronLog("<b>CALLING URL:</b> {$cmd}");
 	    	$post=postURL($cmd,$postopts);
-	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($post)));
+	    	$ok=commonCronLog("<b>RETURNED.</b> HTTP Code: {$post['curl_info']['http_code']}. Total Time:{$post['curl_info']['total_time']}");
+	    	if(isXML($post['body'])){
+	    		$post['body']='<xmp>'.PHP_EOL.$post['body'].PHP_EOL.'</xmp>';
+	    	}
+	    	$ok=cronLogUpdate(array('body'=>encodeJson($post)));
 	    	if(stringContains($post['body'],'__cron_log_delete__')){
 	    		$ok=commonCronLogDelete();
 	    	}
 		}
 		else{
 	    	//cron is an OS Command
+	    	$ok=commonCronLog("<b>RUNNING OS COMMAND:</b> {$cmd}");
 	    	$out=cmdResults($cmd);
-	    	$ok=editDBRecordById('_cron_log',$cronlog_id,array('body'=>encodeJson($out)));
+	    	if($out['rtncode']==0){
+	    		$ok=commonCronLog($out['stdout']);	
+	    	}
+	    	else{
+	    		$ok=commonCronLog($out['stderr']);
+	    	}
+	    	$ok=commonCronLog("<b>RETURNED:</b> Rtncode: {$out['rtncode']}. Runtime:{$out['runtime']}");
+	    	$ok=cronLogUpdate(array('body'=>encodeJson($out)));
 		}
 		//update record to show we are now finished
 		$footer=array(
 			'timestamp'=>getDBTime(),
 			'crontype'=>$crontype
 		);
-		$ok=editDBRecordById('_cron_log',$cronlog_id,array('footer'=>encodeJson($footer)));
+		$ok=cronLogUpdate(array('footer'=>encodeJson($footer)));
+    	
 		$run_length=microtime(true)-$starttime;
 		$run_memory=memory_get_usage();
 		$eopts=array(
 			'running'		=> 0,
 			'cron_pid'		=> 0,
+			'cronlog_id'	=> 0,
 			'run_length'	=> str_replace(',','',$run_length),
 			'run_memory'	=> str_replace(',','',$run_memory)
 		);
-		$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
-		//
-		if(!isNum($ok)){
-			$eopts=array(
-				'running'		=> 0,
-				'cron_pid'		=> 0,
-				'run_length'	=> str_replace(',','',$run_length),
-				'run_memory'	=> str_replace(',','',$run_memory)
-			);
-			$ok=editDBRecordById('_cron',$CRONTHRU['cron_id'],$eopts);
-		} 
+		$ok=cronUpdate($eopts);
+		$etime=microtime(true)-$starttime;
+		$etime=(integer)$etime;
 	}
+	if($etime > 60){break;}
 }
 exit;
 /**
@@ -307,7 +331,8 @@ function cronCleanRecords($cron=array()){
 		'-order'=>'_id desc',
 		'-limit'=>$cron['records_to_keep'],
 		'-fields'=>'_id',
-		'cron_id'=>$cron['_id']
+		'cron_id'=>$cron['_id'],
+		'-nocache'=>1
 	));
 	if(!isset($recs[0])){return;}
 	$min=0;
@@ -320,69 +345,48 @@ function cronCleanRecords($cron=array()){
 	));
 	return $ok;
 }
-/**
-* @exclude  - this function is for internal use only- excluded from docs
-*/
-function cronLogTails(){
-	global $CONFIG;
-	$logs=array();
-	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
-	$tempdir=getWasqlPath('php/temp');
-	foreach($CONFIG as $k=>$v){
-		$lk=strtolower($k);
-		if(strtolower($k)=='logs_rowcount'){continue;}
-		if(strtolower($k)=='logs_refresh'){continue;}
-		if(preg_match('/^logs\_(.+)$/is',$k,$m)){
-			if(!is_file($v)){
-				continue;
-			}
-			$fname=getFileName($v);
-			$afile="{$tempdir}/{$fname}";
-			//skip if file has been updated within the last 10 seconds
-			$skip=0;
-			if(is_file($afile)){
-				$mtime=filemtime($afile);
-				$etime=time()-$mtime;
-				if((integer)$etime < 10){
-					$skip=1;
-				}
-			}
-			if($skip==0){
-				$results='';
-				$cmd="tail -n {$rowcount} \"{$v}\"";
-				$ok=cronMessage($cmd);
-				$out=cmdResults($cmd);
-				//$results=$cmd.PHP_EOL;
-				if(strlen($out['stdout'])){
-					$results.=$out['stdout'];
-				}
-				if(strlen($out['stderr'])){
-					$results.=PHP_EOL.$out['stderr'];
-				}
-				setFileContents($afile,$results);
-			}
-		}
-	}
-}
 
 /**
 * @exclude  - this function is for internal use only- excluded from docs
 */
 function cronMessage($msg,$separate=0){
-	global $cronlog_id;
-	if($cronlog_id != 0){
-		$ok=commonCronLog($msg);
-	}
 	return commonLogMessage('cron_worker',$msg,$separate,1);
 }
 /**
 * @exclude  - this function is for internal use only- excluded from docs
 */
-function cronUpdate($id,$params){
+function cronUpdate($params=array()){
+	if(!is_array($params) || !count($params)){
+		return false;
+	}
+	$cron_pid=getmypid();
 	$params['-table']='_cron';
-	$params['-where']="_id={$id}";
+	$params['-where']="cron_pid={$cron_pid}";
 	$ok=editDBRecord($params);
 	//echo "cronUpdate".printValue($ok).printValue($params);
+	return $ok;
+}
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
+function cronLogUpdate($params=array()){
+	if(!is_array($params) || !count($params)){
+		return false;
+	}
+	$cron_pid=getmypid();
+	$cron=getDBRecord(array(
+		'-table'=>'_cron',
+		'-where'=>"cron_pid={$cron_pid}",
+		'-fields'=>'_id,cron_pid,cronlog_id',
+		'-nocache'=>1
+	));
+	if(!isset($cron['cronlog_id']) || !isNum($cron['cronlog_id'])){
+		return false;
+	}
+	$params['-table']='_cron_log';
+	$params['-where']="_id={$cron['cronlog_id']}";
+	//echo "cronLogUpdate".printValue($params);exit;
+	$ok=editDBRecord($params);
 	return $ok;
 }
 /**
@@ -392,7 +396,6 @@ function cronDBConnect(){
 	global $CONFIG;
 	global $dbh;
 	global $sel;
-	//$ok=cronMessage("{$CONFIG['name']} - Connecting to {$CONFIG['dbname']} on {$CONFIG['dbhost']}");
 	try{
 		$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
 	}

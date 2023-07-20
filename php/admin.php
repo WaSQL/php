@@ -2927,7 +2927,7 @@ LIST_TABLE:
 			echo '					'.buildFormField('_tabledata','tablegroup').PHP_EOL;
 			echo '			</div>'.PHP_EOL;
 			echo '		</td>'.PHP_EOL;
-			if(isset($tinfo['tabledesc']) && is_array($tinfo['tabledesc'])){$_REQUEST['tabledesc']=array2String($tinfo['tabledesc']);}
+			if(isset($tinfo['tabledesc'])){$_REQUEST['tabledesc']=$tinfo['tabledesc'];}
 			echo '		<td>'.PHP_EOL;
 			echo '			<div class="w_dblue"><span class="icon-info"></span> Table Description:</div>'.PHP_EOL;
 			echo '					'.buildFormField('_tabledata','tabledesc').PHP_EOL;

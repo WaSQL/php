@@ -69,7 +69,7 @@ switch(strtolower($_REQUEST['func'])){
 			'_id'=>$id,
 		));
 		$json=decodeJson($log['body']);
-		//echo printValue($json);exit;
+		echo printValue($json);exit;
 		if(isset($json['headers'])){
 			//this is a url
 			setView('details_body_url',1);

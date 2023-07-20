@@ -57,7 +57,7 @@ include_once("{$progpath}/extras/system.php");
 $dbversion=getDBVersion();
 cronMessage("Mysql Version: {$dbversion}");
 if($dbversion >= 5.7){
-	cronMessage("NOTICE - running mysql version {$dbversion}. For best resuts run cron.php for this version of mysql");
+	cronMessage("NOTICE - running mysql version {$dbversion}. For best resuts run cron_worker.php instead.");
 }
 global $databaseCache;
 $etime=microtime(true)-$starttime;
