@@ -316,7 +316,7 @@ ENDOFSQL;
 		$etime=microtime(true)-$starttime;
 		$etime=(integer)$etime;
 		$cron_pid=getmypid();
-		cronMessage("cron: {$rec['_id'], pid: {$cron_pid} finished");
+		cronMessage("cron_id: {$rec['_id']}, process_pid: {$cron_pid} finished");
 	}
 	if($etime > 60){break;}
 }
