@@ -315,10 +315,28 @@ ENDOFSQL;
 		$ok=cronUpdate($eopts);
 		$etime=microtime(true)-$starttime;
 		$etime=(integer)$etime;
+		$cron_pid=getmypid();
+		cronMessage("cron: {$rec['_id'], pid: {$cron_pid} finished");
 	}
 	if($etime > 60){break;}
 }
 exit;
+
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+*/
+function cronUpdate($params=array()){
+	if(!is_array($params) || !count($params)){
+		return false;
+	}
+	$cron_pid=getmypid();
+	$params['-table']='_cron';
+	$params['-where']="cron_pid={$cron_pid}";
+	$ok=editDBRecord($params);
+
+	//echo "cronUpdate".printValue($ok).printValue($params);
+	return $ok;
+}
 /**
 * @exclude  - this function is for internal use only- excluded from docs
 */
@@ -351,20 +369,6 @@ function cronCleanRecords($cron=array()){
 */
 function cronMessage($msg,$separate=0){
 	return commonLogMessage('cron_worker',$msg,$separate,1);
-}
-/**
-* @exclude  - this function is for internal use only- excluded from docs
-*/
-function cronUpdate($params=array()){
-	if(!is_array($params) || !count($params)){
-		return false;
-	}
-	$cron_pid=getmypid();
-	$params['-table']='_cron';
-	$params['-where']="cron_pid={$cron_pid}";
-	$ok=editDBRecord($params);
-	//echo "cronUpdate".printValue($ok).printValue($params);
-	return $ok;
 }
 /**
 * @exclude  - this function is for internal use only- excluded from docs
