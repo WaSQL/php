@@ -349,10 +349,15 @@ function cronListExtra($recs){
 	//echo printValue($recs);exit;
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
+		$pid=$recs[$i]['cron_pid_ori']=(integer)$recs[$i]['cron_pid'];
 		$name=$rec['name'];
 		//if cron_pid and not running something is wrong.
-		if((integer)$rec['cron_pid'] !=0 && (integer)$rec['running']==0){
+		if($pid != 0 && (integer)$rec['running']==0){
 			$recs[$i]['cron_pid']='<span class="w_danger">'.$rec['cron_pid'].'</span>';
+		}
+		//pid lookup
+		if($pid != 0){
+			$recs[$i]['cron_pid']='<a style="margin-left:10px;align-self:center;magin-right:10px;" href="#" class="w_right w_link" onclick="return cronModal(\'pid\',this.dataset.cron_pid,this.title);" data-cron_pid="'.$rec['cron_pid'].'" title="check process">'.$recs[$i]['cron_pid'].'</a>';
 		}
 		//logcount
 		if(isset($logcounts[$id]['cnt'])){
@@ -361,6 +366,7 @@ function cronListExtra($recs){
 		else{
 			$recs[$i]['logcount']=0;
 		}
+	
 		//check for valid run_format
 		if(!strlen($rec['run_format'])){
 			$recs[$i]['run_format']='<span class="w_danger">MISSING</span>';

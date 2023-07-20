@@ -35,6 +35,18 @@ switch(strtolower($_REQUEST['func'])){
 		setView('addedit',1);
 		return;
 	break;
+	case 'pid':
+		loadExtras('system');
+		$pid=(integer)$_REQUEST['id'];
+		$recs=systemGetProcessList();
+		foreach($recs as $rec){
+			if($rec['pid']==$pid){
+				echo printValue($rec);exit;
+			}
+		}
+		echo "no process running with pid of {$pid}";exit;
+		return;
+	break;
 	case 'pause':
 		$idstr=$_REQUEST['ids'];
 		$ok=editDBRecordById('_cron',$idstr,array('paused'=>1));
