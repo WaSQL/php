@@ -329,7 +329,7 @@ function cronListExtra($recs){
 		$cron_ids[]=$rec['_id'];
 	}
 	$logcounts=getDBRecords(array(
-		'-query'=>"select count(*) cnt, cron_id from _cronlog group by cron_id",
+		'-query'=>"select count(*) cnt, cron_id from _cron_log group by cron_id",
 		'-index'=>'cron_id'
 	));
 	$umap=array();
