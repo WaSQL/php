@@ -4489,24 +4489,35 @@ var wacss = {
 	* @usage wacss.speak('hello bob');
 	* @usage wacss.speak('hello bob',{volume:0.3,name:'Sally',lang:'en-US'});
 	*/
+	speakStop: function(vol){
+		window.speechSynthesis.cancel();
+		return true;
+	},
+	speakPause: function(vol){
+		window.speechSynthesis.pause();
+		return true;
+	},
+	speakResume: function(r){
+		window.speechSynthesis.resume();
+		return true;
+	},
 	speak: function(txt,params){
 		if(undefined == params){params={};}
 		params.txt=txt;
 		if ('speechSynthesis' in window) {	
 			/* cancel any speach already playing */
-			if(undefined == params.multiple){
-				if(undefined != params.debug){
-					console.log('canceling any speach already playing');
-				}
-				window.speechSynthesis.cancel();
-			}
+			window.speechSynthesis.cancel();
 			/* check to see if voices are loaded already */
 			let voices = window.speechSynthesis.getVoices();
-			if(undefined != params.debug || undefined != params.showvoices){
-				console.log('voices');
-				console.log(voices);
+			if(voices.length == 0){
+				/* no voices loaded. Setup a promise and then call wacss.speak */
+				window.speechSynthesis.params=params;
+				window.speechSynthesis.onvoiceschanged = function(){
+					let params=window.speechSynthesis.params;
+					wacss.speak(params.txt,params);
+				};
 			}
-			if(voices.length > 0){
+			else{
 				var msg = new SpeechSynthesisUtterance();
 				/* if params.name then pick a voice with that name */
 				if(undefined != params.name){
@@ -4517,15 +4528,19 @@ var wacss = {
 						}
 					}
 				}
+				//check for lang
 				if(undefined != params.lang){
 					msg.lang=params.lang;
 				}
+				//volume - between 0 and 1
 				if(undefined != params.volume){
 					msg.volume=params.volume;
 				}
+				//rate (speed) - works best between 0.1 and 2
 				if(undefined != params.rate){
 					msg.rate=params.rate;
 				}
+				//pitch - works best between 0.1 and 2
 				if(undefined != params.pitch){
 					msg.pitch=params.pitch;
 				}
@@ -4535,6 +4550,29 @@ var wacss = {
 					msg.func_event='boundary';
 					msg.addEventListener('boundary',function(){
 						window[this.func_boundary](event);
+					});
+				}
+				//to fix a bug with long texts call resume every 5 seconds
+				msg.addEventListener('start',function(event){
+					this.speak_timer=setInterval(wacss.speakResume, 5000);
+				});
+				msg.addEventListener('resume',function(event){
+					this.speak_timer=setInterval(wacss.speakResume, 5000);
+				});
+				msg.addEventListener('end',function(event){
+					clearTimeout(this.speak_timer);
+				});
+				msg.addEventListener('error',function(event){
+					clearTimeout(this.speak_timer);
+				});
+				msg.addEventListener('pause',function(event){
+					clearTimeout(this.speak_timer);
+				});
+				//event: start
+				if(undefined != params.onstart){
+					msg.func_start=params.onstart;
+					msg.addEventListener('start',function(event){
+						window[this.func_start](event.utterance);
 					});
 				}
 				//event: end
@@ -4572,37 +4610,18 @@ var wacss = {
 						window[this.func_resume](event.utterance);
 					});
 				}
-				//event: start
-				if(undefined != params.onstart){
-					msg.func_start=params.onstart;
-					msg.addEventListener('start',function(event){
-						window[this.func_start](event.utterance);
-					});
-				}
+				
 				if(params.txt.indexOf('<') != -1){
 					console.log('ssml');
 					msg.input={ssml:params.txt};
+					window.speechSynthesis.speak(msg);
+					return true;
 				}
 				else{
-					//console.log('txt');
 					msg.text=params.txt;
+					window.speechSynthesis.speak(msg);
+					return true;
 				}
-				//console.log(msg);
-				if(undefined != params.debug){
-					console.log(msg);
-				}
-				window.utterances.push(msg);
-				window.speechSynthesis.speak(msg);
-				return false;
-			}
-			else{
-				/* no voices loaded. Setup a promise and then call wacss.speak */
-				window.speechSynthesis.params=params;
-				window.speechSynthesis.onvoiceschanged = function(){
-					let params=window.speechSynthesis.params;
-					window.utterances = [];
-					wacss.speak(params.txt,params);
-				};
 			}
 		}
 		else{

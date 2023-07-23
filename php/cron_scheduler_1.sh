@@ -8,7 +8,7 @@ fi
 SDIR=$(dirname $ME)
 #start the cron servers
 cd $SDIR
-#Launch one scheduler every 5 seconds - if you need more use the _1, _3, or _5 scheduler.sh
+#Launch one scheduler every 5 seconds
 php cron_scheduler.php once &
 sleep 5
 php cron_scheduler.php once &
@@ -32,7 +32,3 @@ sleep 5
 php cron_scheduler.php once &
 sleep 5
 php cron_scheduler.php once &
-
-
-
-
