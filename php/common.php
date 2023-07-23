@@ -2042,6 +2042,7 @@ function buildFormValueParam($params=array(),$arr=0){
 	if(!isset($params['value'])){
 		if(isset($params['-value'])){$params['value']=$params['-value'];}
 		elseif(isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+		elseif(isset($_REQUEST["{$name}[]"])){$params['value']=$_REQUEST["{$name}[]"];}
 	}
 	if($arr==1){
 		$val=[];
@@ -2077,6 +2078,7 @@ function buildFormValueParam($params=array(),$arr=0){
 		if(!isset($params['value'])){
 			if(isset($params['-value'])){$params['value']=$params['-value'];}
 			elseif(isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
+			elseif(isset($_REQUEST["{$name}[]"])){$params['value']=$_REQUEST["{$name}[]"];}
 		}
 		if(isset($params['value'])){
 			if(is_array($params['value']) && count($params['value'])){
@@ -13397,7 +13399,11 @@ function includePage($val='',$params=array()){
 		if(isset($_REQUEST[$key])){$prev[$key]=$_REQUEST[$key];}
 		$_REQUEST[$key]=$pval;
 	}
-	//load  functions
+	//load any functions in the page template
+	if(isset($rec['_template']) && isNum($rec['_template'])){
+		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$rec['_template']}"));
+	}
+	//load functions in the page record
     if(isset($rec['functions']) && strlen(trim($rec['functions']))){
     	$fname="p{$rec['_id']}";
 		$ok=includePHPOnce(trim($rec['functions']),$fname);
