@@ -2038,7 +2038,7 @@ function parseWacssEditFormTags($body,$params=array()){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function buildFormValueParam($params=array(),$arr=0){
+function buildFormValueParam($name,$params=array(),$arr=0){
 	if(!isset($params['value'])){
 		if(isset($params['-value'])){$params['value']=$params['-value'];}
 		elseif(isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
@@ -2059,6 +2059,9 @@ function buildFormValueParam($params=array(),$arr=0){
 				else{
 					if(stringContains($params['value'],':')){
 						$val=preg_split('/\:/',$params['value']);
+					}
+					elseif(stringContains($params['value'],',')){
+						$val=preg_split('/\,/',$params['value']);
 					}
 					else{
 						$val=array($params['value']);
@@ -2123,7 +2126,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 * @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
 */
 function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
-	$params['value']=buildFormValueParam($params,1);
+	$params['value']=buildFormValueParam($name,$params,1);
 	if(!isset($params['-button'])){
 		$params['-button']='btn-default';
 	}
@@ -2234,7 +2237,7 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$tag='';
 	$tag.='<div class="w_colorfield"';
 	if(isset($params['data-displayif']) && is_string($params['data-displayif']) && strlen($params['data-displayif'])){
@@ -2311,7 +2314,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['list']=$params['id'].'_datalist';
-	$params['value']=buildFormValueParam($params,1);
+	$params['value']=buildFormValueParam($name,$params,1);
 	$params['name']=$name;
 	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -2352,7 +2355,7 @@ function buildFormDate($name,$params=array()){
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['data-behavior']='flatpickr';
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(strlen($params['value'])){
 		if(preg_match('/^[a-z\-\+]/i',$params['value'])){
 			//+21 days  or +3 months
@@ -2482,7 +2485,7 @@ function buildFormHidden($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name;
 	$tag .= '	<input type="hidden" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -2513,7 +2516,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name;
 	$tag='<div class="flexbutton" data-display="inline-flex" style="display:flex;flex-direction:row;justify-content:flex-start;"';
 	if(isset($params['displayif'])){
@@ -2560,7 +2563,7 @@ function buildFormRecorderAudio($name,$params=array()){
 	if(!isset($params['record']) || !strlen($params['record'])){$params['record']='Click To Record';}
 	if(!isset($params['stop']) || !strlen($params['stop'])){$params['stop']='Click To Stop';}
 	if(!isset($params['class']) || !strlen($params['class'])){$params['class']='w_black';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name.'_button';
 	$params['data-behavior']='recorder_audio';
 	$params['data-id']=$params['id'];
@@ -2665,7 +2668,7 @@ function buildFormGeoLocationMap($name,$params=array()){
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
 	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
 	if(!isset($params['placeholder'])){$params['placeholder']=$dname;}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$onclick="wacss.geoLocation('{$params['id']}',{showmap:1,displayname:'{$dname}'});";
 	$latlon=array();
 	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
@@ -2745,7 +2748,7 @@ function buildFormMultiInput($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['group'])){$params['group']=$params['-formname'].'_'.$name.'_group';}
-	$params['value']=buildFormValueParam($params,1);
+	$params['value']=buildFormValueParam($name,$params,1);
 	//remove any characters in width
 	$params['width']=preg_replace('/[^0-9]+/','',$params['width']);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -2835,7 +2838,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		break;
 	}
 	$mid=$name.'_options';
-	$params['value']=buildFormValueParam($params,1);
+	$params['value']=buildFormValueParam($name,$params,1);
 	if(isset($params['-formname'])){$mid .= "_{$params['-formname']}";}
 	$icon=isset($checked_cnt) && $checked_cnt>0?'icon-checkbox':'icon-checkbox-empty';
 	if(isset($params['displayname'])){$dname=$params['displayname'];}
@@ -3008,7 +3011,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['style'])){$params['style']='';}
 	if(isset($params['data-values'])){$params['value']=$params['data-values'];}
 	if(strlen($params['style']) && !stringEndsWith($params['style'],';')){$params['style'].=';';}
-	$params['value']=buildFormValueParam($params,1);
+	$params['value']=buildFormValueParam($name,$params,1);
 	switch(strtolower($params['-display'])){
 		case 'flex':
 			$params['style'].='display:flex; justify-content: flex-start;flex-wrap:wrap;align-items:flex-start;';
@@ -3214,7 +3217,7 @@ function buildFormText($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
@@ -3262,7 +3265,7 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['wrapper_id'])){$params['wrapper_id']=$params['id'].'_wrapper';}
 	if(!isset($params['wrapper_style'])){$params['wrapper_style']='';}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(isset($params['-bootstrap'])){
@@ -3509,7 +3512,7 @@ function buildFormToggleButton($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(strtolower($params['value'])==strtolower($tvals[0])){$checked=' checked';}
 	else{$checked='';}
 	if($params['required']){$required=' required';}
@@ -3650,7 +3653,7 @@ function buildFormFile($name,$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name;
 	
 	//ksort($params);return printValue($params);
@@ -4056,7 +4059,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($pairs) || !is_array($pairs)){
 		$pairs=[];
 	}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
@@ -4142,7 +4145,7 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
 	$codes=getDBRecords(array('-query'=>$query,'-index'=>'code'));
@@ -4201,7 +4204,7 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
     	return buildFormText($name,$params);
 	}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name;
 	$skip=array();
 	$rtn='';
@@ -4247,7 +4250,7 @@ function buildFormSelectDatabase($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
@@ -4352,7 +4355,7 @@ function buildFormSelectHost($name,$params=array()){
 	global $ALLCONFIG;
 	global $CONFIG;
 	if(!isset($params['message'])){$params['message']=' -- select --';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(!isset($params['value'])){
 		$params['value']=$CONFIG['host'];
 	}
@@ -4376,7 +4379,7 @@ function buildFormSelectMonth($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$opts=array(
 		1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'May',6=>'Jun',
 		7=>'Jul',8=>'Aug',9=>'Sep',10=>'Oct',11=>'Nov',12=>'Dec'
@@ -4398,7 +4401,7 @@ function buildFormSelectOnOff($name,$params=array()){
 	);
 	if(!isset($params['0_class'])){$params['0_class']='w_red';}
 	if(!isset($params['1_class'])){$params['1_class']='w_green';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	return buildFormButtonSelect($name,$opts,$params);
 }
 //---------- begin function buildFormSelectState--------------------
@@ -4415,7 +4418,7 @@ function buildFormSelectState($name='state',$country='US',$params=array('message
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	//get a list of country codes that exist in the states table - place these first
 	$recopts=array(
 		'-table'=>"states",
@@ -4446,7 +4449,7 @@ function buildFormSelectTimezone($name='timezone',$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$zones=timezoneList($params);
 	//groups
 	foreach($zones as $tval=>$dval){
@@ -4471,7 +4474,7 @@ function buildFormSelectYear($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$tvals=selectYears($params['-years'],2,$params['-backwards']);
 	$dvals=selectYears($params['-years'],4,$params['-backwards']);
 	$opts=array();
@@ -4507,7 +4510,7 @@ function buildFormSignature($name,$params=array()){
 	if(!isset($params['width'])){$params['width']=600;}
 	if(!isset($params['height'])){$params['height']=150;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	$params['id']=str_replace('>','_',$params['id']);
 	if(isset($params['readonly']) && ($params['readonly']==1 || $params['readonly']=='readonly')){
 		if(isset($params['-value']) && strlen($params['-value'])){
@@ -4557,7 +4560,7 @@ function buildFormSlider($name, $params=array()){
 	if(!isset($params['min'])){$params['min']=1;}
 	if(!isset($params['max'])){$params['max']=10;}
 	if(!isset($params['step'])){$params['step']=1;}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(!isset($params['value'])){$params['value']=5;}
 	if(!isset($params['label'])){$params['label']=$params['formname'].'_'.$name.'_value';}
 	if(!isset($params['min_displayname'])){$params['min_displayname']=$params['min'];}
@@ -4634,7 +4637,7 @@ function buildFormStarRating($name, $params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-    $params['value']=buildFormValueParam($params);
+    $params['value']=buildFormValueParam($name,$params);
     if(!isset($params['max'])){$params['max']=5;}
     if(!isset($params['class'])){$params['class']='w_biggest';}
     if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -4720,7 +4723,7 @@ function buildFormWYSIWYG($name,$params=array()){
 	else{
 		$params['class'] .= ' wacssedit';
 	}
-	$params['value']=buildFormValueParam($params);
+	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['height'])){
 		if(isNum($params['height'])){$params['height'].='px';}
