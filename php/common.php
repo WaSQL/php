@@ -4067,14 +4067,6 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if($pcnt==0 || ($pcnt==1 && isset($pairs[0]) && $pairs[0]=='')){
     	return buildFormText($name,$params);
 	}
-	//return $pcnt;
-	if(isset($params['value'])){
-		if(strlen($params['value'])){$sval=$params['value'];}
-	}
-	elseif(isset($_REQUEST[$name])){
-		if(strlen($_REQUEST[$name])){$sval=$_REQUEST[$name];}
-	}
-	$sval=isset($sval)?$sval:'';
 	$params['name']=$name;
 	$skip=array();
 	if(isset($params['-noname'])){$skip[]='name';}
@@ -4082,7 +4074,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['readonly'])){
 		$params['style']="pointer-events: none;cursor: not-allowed;color:#a8a8a8;".$params['style'];
 	}
-	$rtn = '<select data-value="'.$sval.'"';
+	$rtn = '<select data-value="'.$params['value'].'"';
 	$rtn .= setTagAttributes($params,$skip);
 	$rtn .= '>';
 	if(isset($params['message'])){
@@ -4100,9 +4092,9 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 				if(isset($params["{$tval}_class"])){
 					$rtn .= ' class="'.$params["{$tval}_class"].'"';
 				}
-				if(strlen($sval)){
-					if($sval==$tval){$rtn .= ' selected';}
-					elseif($sval==$dval){$rtn .= ' selected';}
+				if(strlen($params['value'])){
+					if($params['value']==$tval){$rtn .= ' selected';}
+					elseif($params['value']==$dval){$rtn .= ' selected';}
 				}
 				$rtn .= '>'.$dval.'</option>'.PHP_EOL;
 		    }
@@ -4119,9 +4111,9 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 			if(isset($params["{$tval}_class"])){
 				$rtn .= ' class="'.$params["{$tval}_class"].'"';
 			}
-			if(strlen($sval)){
-				if($sval==$tval){$rtn .= ' selected';}
-				elseif($sval==$dval){$rtn .= ' selected';}
+			if(strlen($params['value'])){
+				if($params['value']==$tval){$rtn .= ' selected';}
+				elseif($params['value']==$dval){$rtn .= ' selected';}
 			}
 			$rtn .= '>'.$dval.'</option>'.PHP_EOL;
 	    }
