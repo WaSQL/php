@@ -266,19 +266,21 @@ function translateText($text,$locale='',$wasql=0){
 	global $translateTextCache;
 	$locale=strtolower($locale);
 	if(isset($translateTextCache[$wasql][$locale][$identifier])){return $translateTextCache[$wasql][$locale][$identifier];}
-	$topts=array(
-		'-table'	=> '_translations',
-		'-where'	=> "wasql={$wasql} and locale='{$locale}'",
-		'-fields'	=> 'locale,identifier,translation'
-	);
-	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
-		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
-	}
 	if(isset($CONFIG['translate_cache_hours']) && isNum($CONFIG['translate_cache_hours'])){
-		$evalstr="return getDBRecords(\$topts);";
+		$evalstr="return translateGetCachedRecs('{$locale}',{$wasql});";
 		$trecs=getStoredValue($evalstr,0,$CONFIG['translate_cache_hours']);
 	}
-	else{$trecs=getDBRecords($topts);}
+	else{
+		$topts=array(
+			'-table'	=> '_translations',
+			'-where'	=> "wasql={$wasql} and locale='{$locale}'",
+			'-fields'	=> 'locale,identifier,translation'
+		);
+		if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+			$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
+		}
+		$trecs=getDBRecords($topts);
+	}
 	//echo printValue($map).printValue($topts).printValue($trecs);exit;
 	foreach($trecs as $rec){
 		$rec['locale']=strtolower($rec['locale']);
@@ -337,6 +339,22 @@ function translateText($text,$locale='',$wasql=0){
 	//echo "{$target_lang} != {$source_lang}<br>{$translation}<br>{$text}".printValue($addopts);exit;
 	//$id=addDBRecord($addopts);
 	return $translation;
+}
+//---------- begin function translateYandex
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function translateGetCachedRecs($locale,$wasql){
+	global $CONFIG;
+	$topts=array(
+		'-table'	=> '_translations',
+		'-where'	=> "wasql={$wasql} and locale='{$locale}'",
+		'-fields'	=> 'locale,identifier,translation'
+	);
+	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
+		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
+	}
+	return getDBRecords($topts);
 }
 //---------- begin function translateYandex
 /**
