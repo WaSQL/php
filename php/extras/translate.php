@@ -274,7 +274,11 @@ function translateText($text,$locale='',$wasql=0){
 	if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 		$topts['-where'].=" and source_id={$CONFIG['translate_source_id']}";
 	}
-	$trecs=getDBRecords($topts);
+	if(isset($CONFIG['translate_cache_hours']) && isNum($CONFIG['translate_cache_hours'])){
+		$evalstr="return getDBRecords(\$topts);";
+		$trecs=getStoredValue('return pageData();',0,$CONFIG['translate_cache_hours']);
+	}
+	else{$trecs=getDBRecords($topts);}
 	//echo printValue($map).printValue($topts).printValue($trecs);exit;
 	foreach($trecs as $rec){
 		$rec['locale']=strtolower($rec['locale']);
