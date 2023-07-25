@@ -276,7 +276,7 @@ function translateText($text,$locale='',$wasql=0){
 	}
 	if(isset($CONFIG['translate_cache_hours']) && isNum($CONFIG['translate_cache_hours'])){
 		$evalstr="return getDBRecords(\$topts);";
-		$trecs=getStoredValue('return pageData();',0,$CONFIG['translate_cache_hours']);
+		$trecs=getStoredValue($evalstr,0,$CONFIG['translate_cache_hours']);
 	}
 	else{$trecs=getDBRecords($topts);}
 	//echo printValue($map).printValue($topts).printValue($trecs);exit;
