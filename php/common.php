@@ -2068,6 +2068,9 @@ function buildFormValueParam($name,$params=array(),$arr=0){
 					}
 				}
 			}
+			elseif(isNum($params['value'])){
+				$val=array($params['value']);
+			}
 		}
 		//remove blank values
 		foreach($val as $i=>$v){
@@ -2088,6 +2091,9 @@ function buildFormValueParam($name,$params=array(),$arr=0){
 				$val=$params['value'][0];
 			}
 			elseif(is_string($params['value']) && strlen($params['value'])){
+				$val=$params['value'];
+			}
+			elseif(isNum($params['value'])){
 				$val=$params['value'];
 			}
 		}
