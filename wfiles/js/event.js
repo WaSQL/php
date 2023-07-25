@@ -45,15 +45,18 @@ function eventProcessBuildOnLoad(){
 	let list=document.querySelectorAll('[data-onload]');
 	for(let i=0;i<list.length;i++){
 		if(undefined != list[i].getAttribute('data-onload-ex')){continue;}
-		let str=list[i].getAttribute('data-onload');
 		list[i].setAttribute('data-onload-ex',new Date().getTime());
-		try{
-			let strfunc=new Function(str);
-			strfunc();
-		} catch (error) {
-			console.log('eventProcessBuildOnLoad Error');
-			console.log(str);
-			console.log(error);
+		let strs=list[i].getAttribute('data-onload').split(';');
+		for(let s=0;s<strs.length;s++){
+			let str=strs[s];
+			try{
+				let strfunc=new Function(str);
+				strfunc();
+			} catch (error) {
+				console.log('eventProcessBuildOnLoad Error #'+s);
+				console.log(str);
+				console.log(error);
+			}
 		}
 	}
 }
