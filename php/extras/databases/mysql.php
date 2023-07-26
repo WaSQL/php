@@ -192,9 +192,13 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	$fields=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
-			if(!isset($fieldinfo[$k])){continue;}
+			if(!isset($fieldinfo[$k])){
+				unset($recs[$i][$k]);
+				continue;
+			}
 			if(!in_array($k,$fields)){$fields[]=$k;}
 		}
+		break;
 	}
 	$fieldstr=implode(',',$fields);
 	if(isset($params['-upsert'])){
@@ -231,11 +235,11 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	$valuesets=array();
 	foreach($recs as $i=>$rec){
 		$placeholders=array();
-		foreach($rec as $k=>$v){
-			if(!in_array($k,$fields)){
-				//unset($rec[$k]);
-				continue;
-			}
+		foreach($fields as $k){
+			//make sure this record has a value for every field in fields
+			if(!isset($rec[$k])){$rec[$k]='';}
+			//set value and keys
+			$v=$rec[$k];
 			if(!strlen($v)){
 				//$rec[$k]='NULL';
 				$values[]='NULL';
@@ -296,13 +300,18 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+		mysqli_close($dbh_mysql);
+	}
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
-	if(!$dbh_mysql){
+	if(!is_resource($dbh_mysql) && !is_object($dbh_mysql)){
 		$mysqlAddDBRecordsResults['errors'][]=mysqli_connect_error();
     	return 0;
 	}
-	try{$stmt=mysqli_prepare($dbh_mysql,$query);}
+	try{
+		$stmt=mysqli_prepare($dbh_mysql,$query);
+	}
 	catch (Exception $e) {
 		$err=array(
 			'status'=>"Mysqli Prepare ERROR",
@@ -313,7 +322,10 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			'params'=>$params
 		);
 		$mysqlAddDBRecordsResults['errors'][]=$err;
-		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+			mysqli_close($dbh_mysql);
+		}
 		return 0;
 	}
 	try{
@@ -332,7 +344,10 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			'params'=>$params
 		);
 		$mysqlAddDBRecordsResults['errors'][]=$err;
-		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+			mysqli_close($dbh_mysql);
+		}
 		return 0;
 	}
 }
