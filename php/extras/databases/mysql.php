@@ -331,7 +331,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	try{
 		mysqli_stmt_bind_param($stmt, implode('',$types),...$values);
 		mysqli_stmt_execute($stmt);
-		mysqli_close($dbh_mysql);
+		//mysqli_close($dbh_mysql);
 		return $rec_cnt;
 	}
 	catch (Exception $e) {
@@ -1036,19 +1036,19 @@ function mysqlExecuteSQL($query,$params=array()){
 	if(is_array($err) || strlen($err)){
 		$DATABASE['_lastquery']['error']='query err: '.$err;
 		debugValue($DATABASE['_lastquery']);
-		mysqli_close($dbh_mysql);
+		//mysqli_close($dbh_mysql);
 		return 0;
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
-    	mysqli_close($dbh_mysql);
+    	//mysqli_close($dbh_mysql);
     	$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = mysqlEnumQueryResults($result,$params);
-	mysqli_close($dbh_mysql);
+	//mysqli_close($dbh_mysql);
 	$DATABASE['_lastquery']['stop']=microtime(true);
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return 1;
@@ -1497,7 +1497,7 @@ function mysqlQueryResults($query='',$params=array()){
 		debugValue($err);
 		$DATABASE['_lastquery']['error']='query error: '.mysqli_error($dbh_mysql);
 		debugValue($DATABASE['_lastquery']);
-		mysqli_close($dbh_mysql);
+		//mysqli_close($dbh_mysql);
 		//echo printValue($err);exit;
 		if(isset($params['-filename'])){return 0;}
 		return array();
@@ -1506,19 +1506,19 @@ function mysqlQueryResults($query='',$params=array()){
 	if(is_array($err) || strlen($err)){
 		$DATABASE['_lastquery']['error']='query error: '.$err;
 		debugValue($DATABASE['_lastquery']);
-		mysqli_close($dbh_mysql);
+		//mysqli_close($dbh_mysql);
 		return array();
 	}
 	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
     	//return the id inserted on insert statements
     	$id=databaseAffectedRows($result);
-    	mysqli_close($dbh_mysql);
+    	//mysqli_close($dbh_mysql);
     	$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
     	return $id;
 	}
 	$results = mysqlEnumQueryResults($result,$params);
-	mysqli_close($dbh_mysql);
+	//mysqli_close($dbh_mysql);
 	if(!is_array($results) && !isNum($results)){
 		$DATABASE['_lastquery']['error']='query error: '.$results;
 		debugValue($DATABASE['_lastquery']);
