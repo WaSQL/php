@@ -301,7 +301,8 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
-		mysqli_close($dbh_mysql);
+		try{mysqli_close($dbh_mysql);}
+		catch (Exception $e) {}	
 	}
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
@@ -324,7 +325,8 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$mysqlAddDBRecordsResults['errors'][]=$err;
 		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
 			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-			mysqli_close($dbh_mysql);
+			try{mysqli_close($dbh_mysql);}
+			catch (Exception $e) {}
 		}
 		return 0;
 	}
@@ -346,7 +348,8 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$mysqlAddDBRecordsResults['errors'][]=$err;
 		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
 			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-			mysqli_close($dbh_mysql);
+			try{mysqli_close($dbh_mysql);}
+			catch (Exception $e) {}
 		}
 		return 0;
 	}
