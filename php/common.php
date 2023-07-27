@@ -43,7 +43,11 @@ if (!function_exists('getallheaders')) {
     return $headers;
     }
 }
-
+function commonStrlen($s){
+	if(is_string($s) || is_numeric($s)){return strlen($s);}
+	if(is_array($s) || is_object($s)){$s=encodeJson($s);}
+	return strlen($s);
+}
 //---------- begin function commonBuildTerminal
 /**
 * @describe returns an HTML5 based terminal window to the server. requires websocketd path to be set in config.xml
