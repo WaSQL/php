@@ -43,6 +43,14 @@ if (!function_exists('getallheaders')) {
     return $headers;
     }
 }
+//---------- begin function commonStrlen
+/**
+* @describe wrapper for strlen function to handle arrays, objects, etc.
+* @param params str mixed
+* @return integer
+* @usage
+*	if(commonStrlen($x)){...}
+*/
 function commonStrlen($s){
 	if(is_string($s) || is_numeric($s)){return strlen($s);}
 	if(is_array($s) || is_object($s)){$s=encodeJson($s);}
