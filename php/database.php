@@ -12118,9 +12118,8 @@ function databaseQuery($query){
 	//Free result memory - supports multiple database types
 	global $dbh;
 	global $CONFIG;
-	if(!$dbh){
-		$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
-	}
+	$dbh='';
+	$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
 	if(!$dbh){return null;}
 	if(isMysqli()){
 		try{return mysqli_query($dbh,$query);}

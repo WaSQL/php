@@ -3190,7 +3190,10 @@ function submitForm(theForm,popup,debug,ajax){
 			}
 			else if(theForm[i].type=='file'){
 				//check for files[0]
-            	var cval=theForm[i].files[0];
+            	var cval='';
+            	if(undefined != theForm[i].files[0]){
+            		$cval=theForm[i].files[0];
+            	}
             	if(cval.length==0){
             		//look for existing value
             		let tmp=theForm.querySelector('span#'+theForm[i].name+'_text a');
