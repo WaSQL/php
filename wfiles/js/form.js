@@ -3192,7 +3192,7 @@ function submitForm(theForm,popup,debug,ajax){
 				//check for files[0]
             	var cval='';
             	if(undefined != theForm[i].files[0]){
-            		$cval=theForm[i].files[0];
+            		cval=theForm[i].files[0];
             	}
             	if(cval.length==0){
             		//look for existing value
