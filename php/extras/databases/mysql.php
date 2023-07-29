@@ -982,10 +982,9 @@ function mysqlDBConnect($params=array()){
 		return null;
 	}
 	global $dbh_mysql;
-	if(is_object($dbh_mysql) || is_resource($dbh_mysql)){
-		//return $dbh_mysql;
-		$dbh_mysql='';
-	}
+	global $dbh;
+	$dbh_mysql='';
+	$dbh='';
 	try{
 		if($params['-dbhost']=='localhost'){$host='127.0.0.1';}
 		else{$host=$params['-dbhost'];}
