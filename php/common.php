@@ -426,6 +426,9 @@ function commonCronLogDelete(){
 *	$ok=commonCronLog($PASSTHRU);
 */
 function commonCronLog($msg,$echomsg=1){
+	if(!is_string($msg) && !isNum($msg)){
+		$msg=encodeJson($msg);
+	}
 	$cron=commonCronGetCronByPid();
 	//echo "commonCronLog".printValue($cron);exit;
 	if(isset($cron['stop_now']) && $cron['stop_now']==1){
