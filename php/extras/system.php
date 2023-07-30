@@ -179,7 +179,60 @@ function systemGetDriveSpace(){
 	}
 	return $recs;
 }
+
+/*
+
+Array object:
+{
+    "description": "Realtek PCIe GbE Family Controller",
+    "mac": "98:FA:9B:2F:BC:99",
+    "mtu": 1500,
+    "unicast": [
+        {
+            "flags": 197,
+            "family": 2,
+            "address": "169.254.147.254",
+            "netmask": "255.255.0.0"
+        }
+    ],
+    "up": false
+}
+
+
+ */
 function systemGetNetworkAdapters(){
+	$nics=net_get_interfaces();
+	//echo printValue($nics);exit;
+	if(is_array($nics)){
+		$recs=array();
+		foreach($nics as $id=>$nic){
+			$rec=array();
+			//name
+			if(isset($nic['name'])){$rec['name']=$nic['name'];}
+			elseif(isset($nic['description'])){$rec['name']=$nic['description'];}
+			else{$rec['name']=$id;}
+			//enabled
+			if(isset($nic['up']) && $nic['up']){$rec['enabled']=1;}
+			else{$rec['enabled']=0;}
+			//mac_address
+			if(isset($nic['mac_address'])){$rec['mac_address']=$nic['mac_address'];}
+			elseif(isset($nic['mac'])){$rec['mac_address']=$nic['mac'];}
+			//ip_address(es)
+			if(isset($nic['unicast'][0])){
+				foreach($nic['unicast'] as $ip){
+					if(!isset($ip['address'])){continue;}
+					$rec['ip_address'][]=$ip['address'];
+					$rec['ip_netmask'][]=$ip['netmask'];
+				}
+				$rec['ip_address']=implode('<br>'.PHP_EOL,$rec['ip_address']);
+				$rec['ip_netmask']=implode('<br>'.PHP_EOL,$rec['ip_netmask']);
+			}
+			$recs[]=$rec;
+		}
+		return $recs;
+	}
+
+
 	$space=array();
 	if(isWindows()){
 		$cmd='wmic NICCONFIG GET IPEnabled, IPAddress, MacAddress, Description, DHCPServer, IPSubnet /format:csv';
