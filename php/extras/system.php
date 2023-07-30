@@ -216,20 +216,13 @@ function systemGetNetworkAdapters(){
 			if(isset($nic['up']) && $nic['up']){$rec['enabled']=1;}
 			else{$rec['enabled']=0;}
 			//mac_address
-			if(isset($nic['mac_address'])){$rec['mac_address']=$nic['mac_address'];}
-			elseif(isset($nic['mac'])){$rec['mac_address']=$nic['mac'];}
+			if(isset($nic['mac'])){$rec['mac_address']=$nic['mac'];}
 			//ip_address(es)
 			if(isset($nic['unicast'][0])){
 				$rec['ip_address']=array();
 				$rec['ip_netmask']=array();
 				foreach($nic['unicast'] as $ip){
 					if(!isset($ip['address'])){continue;}
-					if(!isset($nic['mac_address'])){
-						$cmd=cmdResults("arp -a {$ip['address']}");
-						if(preg_match('/\ at\ (.+?)\ [ether]\ on '.$rec['name'].'/is',$cmd['stdout'],$m)){
-							$nic['mac_address']=$m[1];
-						}
-					}
 					$rec['ip_address'][]=$ip['address'];
 					$rec['ip_netmask'][]=$ip['netmask'];
 				}
