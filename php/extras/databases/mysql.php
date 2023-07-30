@@ -241,8 +241,10 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			//set value and keys
 			$v=$rec[$k];
 			if(!strlen($v)){
-				//$rec[$k]='NULL';
-				$values[]='NULL';
+				if(isset($fieldinfo[$k]['default'])){
+					$values[]=$fieldinfo[$k]['default'];
+				}
+				else{$values[]=null;}
 				$placeholders[]='?';
 			}
 			else{
@@ -303,11 +305,13 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
 		//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
 	}
+
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
 	if(!is_resource($dbh_mysql) && !is_object($dbh_mysql)){
 		$mysqlAddDBRecordsResults['errors'][]=mysqli_connect_error();
-    	return 0;
+		debugValue(mysqli_connect_error());
+    		return 0;
 	}
 	try{
 		$stmt=mysqli_prepare($dbh_mysql,$query);
@@ -326,6 +330,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 			//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
 		}
+		debugValue($err);
 		return 0;
 	}
 	try{
@@ -348,6 +353,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 			//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
 		}
+		debugValue($err);
 		return 0;
 	}
 }
