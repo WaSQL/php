@@ -229,6 +229,9 @@ function systemGetNetworkAdapters(){
 				$rec['ip_address']=implode('<br>'.PHP_EOL,$rec['ip_address']);
 				$rec['ip_netmask']=implode('<br>'.PHP_EOL,$rec['ip_netmask']);
 			}
+			if(!isset($rec['ip_address']) || !strlen($rec['ip_address'])){
+				continue;
+			}
 			$recs[]=$rec;
 		}
 		return $recs;
