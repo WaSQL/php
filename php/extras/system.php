@@ -205,6 +205,7 @@ function systemGetNetworkAdapters(){
 	//echo printValue($nics);exit;
 	if(is_array($nics)){
 		$recs=array();
+		ksort($nics);
 		foreach($nics as $id=>$nic){
 			$rec=array();
 			//name
@@ -217,6 +218,9 @@ function systemGetNetworkAdapters(){
 			//mac_address
 			if(isset($nic['mac_address'])){$rec['mac_address']=$nic['mac_address'];}
 			elseif(isset($nic['mac'])){$rec['mac_address']=$nic['mac'];}
+			if(!isset($rec['mac_address']) || !strlen($rec['mac_address'])){
+				continue;
+			}
 			//ip_address(es)
 			if(isset($nic['unicast'][0])){
 				$rec['ip_address']=array();
