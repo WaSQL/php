@@ -11829,7 +11829,12 @@ function databaseError(){
 */
 function databaseEscapeString($str){
 	global $dbh;
+	global $CONFIG;
+	$info=commonObjectInfo($dbh);
 	if(isMysqli()){
+		if($info['class']!='mysqli'){
+			$dbh=databaseConnect($CONFIG['dbhost'], $CONFIG['dbuser'], $CONFIG['dbpass'], $CONFIG['dbname']);
+		};
 		$str = function_exists('mysqli_real_escape_string')?mysqli_real_escape_string($dbh,$str):mysqli_escape_string($dbh,$str);
 	}
 	elseif(isMysql()){

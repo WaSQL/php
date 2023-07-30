@@ -43,6 +43,32 @@ if (!function_exists('getallheaders')) {
     return $headers;
     }
 }
+//---------- begin function commonObjectInfo
+/**
+* @describe returns type, class, and parent_class of an object.
+* @param params str mixed
+* @return array
+* @usage
+*	$info=commonObjectInfo($obj);
+*/
+function commonObjectInfo($obj){
+	if(!is_object($obj)){
+		$info=array(
+			'type'=>gettype($obj),
+			'class'=>'na',
+			'parent_class'=>'na'
+		);
+	}
+	else{
+		$info=array(
+			'type'=>gettype($obj),
+			'class'=>get_class($obj),
+			'parent_class'=>get_parent_class($obj)
+		);
+	}
+	
+	return $info;
+}
 //---------- begin function commonStrlen
 /**
 * @describe wrapper for strlen function to handle arrays, objects, etc.
