@@ -219,6 +219,8 @@ function systemGetNetworkAdapters(){
 			elseif(isset($nic['mac'])){$rec['mac_address']=$nic['mac'];}
 			//ip_address(es)
 			if(isset($nic['unicast'][0])){
+				$rec['ip_address']=array();
+				$rec['ip_netmask']=array();
 				foreach($nic['unicast'] as $ip){
 					if(!isset($ip['address'])){continue;}
 					$rec['ip_address'][]=$ip['address'];
