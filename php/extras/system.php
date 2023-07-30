@@ -220,14 +220,14 @@ function systemGetNetworkAdapters(){
 			//ip_address(es)
 			if(isset($nic['unicast'][0])){
 				$rec['ip_address']=array();
-				$rec['ip_netmask']=array();
+				$rec['netmask']=array();
 				foreach($nic['unicast'] as $ip){
 					if(!isset($ip['address'])){continue;}
 					$rec['ip_address'][]=$ip['address'];
-					$rec['ip_netmask'][]=$ip['netmask'];
+					$rec['netmask'][]=$ip['netmask'];
 				}
 				$rec['ip_address']=implode('<br>'.PHP_EOL,$rec['ip_address']);
-				$rec['ip_netmask']=implode('<br>'.PHP_EOL,$rec['ip_netmask']);
+				$rec['netmask']=implode('<br>'.PHP_EOL,$rec['netmask']);
 			}
 			if(!isset($rec['ip_address']) || !strlen($rec['ip_address'])){
 				continue;
