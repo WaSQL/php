@@ -9746,7 +9746,7 @@ function fileManager($startdir='',$params=array()){
 	$iconpath=str_replace("\\","/",$iconpath);
 	//change to sub dir if requested
 	$cdir=$startdir;
-	if(isset($_REQUEST['_dir']) && stristr(decodeBase64($_REQUEST['_dir']),$startdir)){
+	if(isset($_REQUEST['_dir']) && stringContains(decodeBase64($_REQUEST['_dir']),$startdir)){
 		$cdir =decodeBase64($_REQUEST['_dir']);
 	}
 	//check to see if this current dir has override optrions
@@ -10748,7 +10748,7 @@ function functionSearch($str,$internal=1,$wasql=1){
 	foreach($functions as $function){
 		$found=0;
 		foreach($searchfields as $searchfield){
-			if(stristr($function[$searchfield],$str)){$found=1;}
+			if(stringContains($function[$searchfield],$str)){$found=1;}
 			}
 		if($found > 0){
 			$fname=$function['name'];
@@ -14217,7 +14217,7 @@ function isFactor($num=0,$divisor=1){
 */
 function isMobileDevice(){
 	// check if the user agent value claims to be windows but not windows mobile
-	if(isset($_SERVER['HTTP_USER_AGENT']) && stristr($_SERVER['HTTP_USER_AGENT'],'windows') && !stristr($_SERVER['HTTP_USER_AGENT'],'windows ce')){
+	if(isset($_SERVER['HTTP_USER_AGENT']) && stringContains($_SERVER['HTTP_USER_AGENT'],'windows') && !stringContains($_SERVER['HTTP_USER_AGENT'],'windows ce')){
 		return false;
 		}
 	// check if the user agent gives away any tell tale signs it's a mobile browser
@@ -14225,7 +14225,7 @@ function isMobileDevice(){
 		return true;
 		}
 	// check the http accept header to see if wap.wml or wap.xhtml support is claimed
-	if(isset($_SERVER['HTTP_ACCEPT']) && stristr($_SERVER['HTTP_ACCEPT'],'text/vnd.wap.wml')||stristr($_SERVER['HTTP_ACCEPT'],'application/vnd.wap.xhtml+xml')){
+	if(isset($_SERVER['HTTP_ACCEPT']) && (stringContains($_SERVER['HTTP_ACCEPT'],'text/vnd.wap.wml')||stringContains($_SERVER['HTTP_ACCEPT'],'application/vnd.wap.xhtml+xml'))){
 		return true;
 		}
 	// check if there are any tell tales signs it's a mobile device from the _server headers
@@ -15713,7 +15713,7 @@ function getWfilesPath(){
 * @usage $files=grepFiles($query,$path,0);
 */
 function grepFiles($q, $path,$recurse=1){
-	$slash=stristr($_SERVER['SERVER_SOFTWARE'], "win")?"\\":"/";
+	$slash=stringContains($_SERVER['SERVER_SOFTWARE'], "win")?"\\":"/";
 	$rtn=array();
 	$fp = opendir($path);
 	while($f = readdir($fp)){
@@ -15727,14 +15727,14 @@ function grepFiles($q, $path,$recurse=1){
 				}
 			}
 		elseif(is_file($afile)){
-			if(stristr(file_get_contents($afile),$q)){
+			if(stringContains(file_get_contents($afile),$q)){
 				$row=0;
 				//$rtn[$afile][$row]="FOUND";
 				$lines=file($afile);
 				foreach($lines as $line){
 					$row++;
 					if(!strlen(trim($line))){continue;}
-					if(stristr($line,$q)){
+					if(stringContains($line,$q)){
 						$rtn[$afile][$row]=$line;
 	                	}
 	            	}
