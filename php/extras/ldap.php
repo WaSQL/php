@@ -764,6 +764,7 @@ function ldapParseMemberOf($str){
 		//echo $cn.printValue($parts);exit;
 		$cnparts=array();
 		foreach($parts as $part){
+			if(!stringContains($part,'=')){continue;}
 			list($k,$v)=preg_split('/\=/',$part,2);
 			$cnparts[$k][]=strtolower(trim($v));
 		}
