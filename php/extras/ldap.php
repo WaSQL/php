@@ -679,7 +679,9 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
             	$tmp=preg_split('/\,/',$rec[$key]);
                 $parts=array();
                 foreach($tmp as $part){
+                	if(!stringContains($part,'=')){continue;}
 					list($k,$v)=preg_split('/\=/',$part,2);
+					if(!strlen($k) || !strlen($v)){continue;}
 					if(!is_array($parts[$k])){$parts[$k]=array();}
                     if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
 				}
@@ -696,7 +698,9 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
                 $tmp=preg_split('/\,/',ldapValue($val));
                 $parts=array();
                 foreach($tmp as $part){
+                	if(!stringContains($part,'=')){continue;}
 					list($k,$v)=preg_split('/\=/',$part,2);
+					if(!strlen($k) || !strlen($v)){continue;}
 					if(!isset($parts[$k]) || !is_array($parts[$k])){$parts[$k]=array();}
                     if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
 				}
@@ -766,6 +770,7 @@ function ldapParseMemberOf($str){
 		foreach($parts as $part){
 			if(!stringContains($part,'=')){continue;}
 			list($k,$v)=preg_split('/\=/',$part,2);
+			if(!strlen($k) || !strlen($v)){continue;}
 			$cnparts[$k][]=strtolower(trim($v));
 		}
 		if(isset($cnparts['ou'][0])){
