@@ -46,17 +46,16 @@ function eventProcessBuildOnLoad(){
 	for(let i=0;i<list.length;i++){
 		if(undefined != list[i].getAttribute('data-onload-ex')){continue;}
 		list[i].setAttribute('data-onload-ex',new Date().getTime());
-		let strs=list[i].getAttribute('data-onload').split(';');
-		for(let s=0;s<strs.length;s++){
-			let str=strs[s];
-			try{
-				let strfunc=new Function(str);
-				strfunc();
-			} catch (error) {
-				console.log('eventProcessBuildOnLoad Error #'+s);
-				console.log(str);
-				console.log(error);
-			}
+		let str=list[i].getAttribute('data-onload');
+		try{
+			let strfunc=new Function(str);
+			strfunc();
+		} catch (error) {
+			console.log('eventProcessBuildOnLoad Javascript Failed:');
+			console.log(' - Dynamic function:');
+			console.log(str);
+			console.log(' - Error message:');
+			console.log(error);
 		}
 	}
 }

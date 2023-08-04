@@ -338,7 +338,7 @@ function amazonUploadFileS3($params=array()){
 	$policy = base64_encode(json_encode([
 	    'expiration' => gmdate('Y-m-d\TH:i:s\Z', time() + 86400),
 	    'conditions' => [
-	        ['acl' => $acl],
+	        //['acl' => $acl],
 	        ['bucket' => $bucket],
 	        ['starts-with', '$Content-Type', ''],
 	        ['starts-with', '$key', ''],
@@ -376,7 +376,7 @@ function amazonUploadFileS3($params=array()){
 	// curl_setopt($ch, CURLOPT_CUSTOMREQUEST,'PUT');
 	$postfields=array(
 		'Content-Type' =>  $fileType,
-	    'acl' => $acl,
+	    //'acl' => $acl,
 	    'key' => "{$params['folder']}{$fileName}",
 	    'policy' =>  $policy,
 	    'x-amz-algorithm' => 'AWS4-HMAC-SHA256',
