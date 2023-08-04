@@ -4861,7 +4861,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				if(isset($params['disable_on_submit']) && $params['disable_on_submit'] != 0){
 					$class.= " w_disable_on_submit";
 				}
-				$rtn .= '		<td><button data-navigate-focus="Ctrl+s" data-navigate="1" class="'.$class.'" type="submit" id="savebutton" onclick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button data-navigate-focus="Ctrl+s" data-navigate="1" class="'.$class.'" type="submit" id="'.$formname.'_savebutton" onclick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
 				$reset=isset($params['-reset'])?$params['-reset']:'Reset';
@@ -6172,7 +6172,7 @@ function buildDBPaging($paging=array()){
 	}
 	//hide other inputs
 	if(!isset($paging['-formname'])){
-		$rtn .= '<div style="display:none;" id="inputs">'.PHP_EOL;
+		$rtn .= '<div style="display:none;" id="'.$formname.'_inputs">'.PHP_EOL;
 		foreach($paging as $pkey=>$pval){
 			if(preg_match('/^\-/',$pkey)){continue;}
 			if($pkey=='_action' && $pval=='multi_update'){continue;}
@@ -6227,7 +6227,7 @@ function buildDBPaging($paging=array()){
 				$opts=array('class'=>'form-control input-sm');
 				$rtn .= buildFormSelect('filter_operator',$vals,$opts);
 				//value
-				$rtn .= '	<input name="filter_value" id="filter_value" type="text" placeholder="Value" class="w_form-control input-sm" />'.PHP_EOL;
+				$rtn .= '	<input name="filter_value" id="'.$formname.'_filter_value" type="text" placeholder="Value" class="w_form-control input-sm" />'.PHP_EOL;
 				$rtn .= '	<button type="submit" class="btn w_btn-sm icon-search"> Search</button>'.PHP_EOL;
 				$rtn .= '	<button type="button" class="btn w_btn-sm" title="Add Filter" onclick="pagingAddFilter(document.'.$formname.');"><span class="icon-filter-add w_big w_grey"></span></button>'.PHP_EOL;
 				if(isset($paging['-bulkedit'])){
@@ -6279,7 +6279,7 @@ function buildDBPaging($paging=array()){
 				}
 				$rtn .= '</div>'.PHP_EOL;
 				$rtn .= '<div class="row" style="min-height:30px;max-height:90px;overflow:auto;">'.PHP_EOL;
-				$rtn .= '	<div id="send_to_filters">'.PHP_EOL;
+				$rtn .= '	<div id="'.$formname.'_send_to_filters">'.PHP_EOL;
 				if(strlen($paging['-filters']) && $paging['-filters'] != 1){
                 	//field-oper-value
                 	$sets=preg_split('/[\r\n]+/',$paging['-filters']);
@@ -6310,7 +6310,7 @@ function buildDBPaging($paging=array()){
 						$dstr="{$dfield} {$doper} {$dval}";
                     	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 					}
-					$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
+					$rtn .= '<div id="'.$formname.'_paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters();"></div>'.PHP_EOL;
 				}
 				$rtn .= '	</div>'.PHP_EOL;
 				$rtn .= '</div>'.PHP_EOL;
