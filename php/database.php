@@ -4865,7 +4865,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				}
 			if(!isset($params['-hide']) || !preg_match('/reset/i',$params['-hide'])){
 				$reset=isset($params['-reset'])?$params['-reset']:'Reset';
-				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="reset" id="resetbutton">'.$reset.'</button></td>'.PHP_EOL;
+				$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="reset" id="'.$formname.'_resetbutton">'.$reset.'</button></td>'.PHP_EOL;
 				}
 			if(!isset($params['-hide']) || !preg_match('/delete/i',$params['-hide'])){
 				$action=isset($params['-nosave'])?'':'Delete';
