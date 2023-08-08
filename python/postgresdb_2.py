@@ -1,12 +1,19 @@
 #! python
 # -*- coding: utf-8 -*-
 """
-Installation
-	python3 -m pip install "psycopg3[binary]"
-		NOTE: you MUST put quotes around the name
+OLD - Installation method for backward compatibility
+	python3 -m pip install psycopg2-binary
+		If it errors try these first
+			Try upgrading pip:
+				python3 -m pip install --upgrade pip
+				then try again
+			and if it still fails try
+				python3 -m pip install -U setuptools
+				python3 -m pip install -U wheel
+		   		then try again
 References
-	https://www.psycopg.org/psycopg3/docs/basic/usage.html
-
+	https://www.psycopg.org/docs/
+	https://pynative.com/psycopg2-python-postgresql-connection-pooling/
 """
 
 
@@ -15,7 +22,8 @@ import os
 import sys
 try:
 	import json
-	import psycopg
+	import psycopg2
+	import psycopg2.extras
 	import config
 	import common
 	import db
@@ -89,18 +97,18 @@ def connect(params):
 		dbconfig['password'] = params['dbpass']
 
 	if 'dbname' in params:
-		dbconfig['dbname'] = params['dbname']
+		dbconfig['database'] = params['dbname']
 
 	if 'dbport' in params:
 		dbconfig['port'] = params['dbport']
 
 	try:
-		conn_postgres = psycopg.connect(**dbconfig)
+		conn_postgres = psycopg2.connect(**dbconfig)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
 	try:
-		cur_postgres = conn_postgres.cursor()
+		cur_postgres = conn_postgres.cursor(cursor_factory=psycopg2.extras.DictCursor)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
@@ -109,41 +117,17 @@ def connect(params):
 #---------- begin function executeSQL ----------
 # @describe executes a query
 # @param query str - SQL query to run
+# @param params tuple - parameters to override
 # @return 
 #	boolean
 # @usage 
-#	ok =  postgresdb.executeSQL(query)
-def executeSQL(query):
+#	ok =  postgresdb.executeSQL(query,params)
+def executeSQL(query,params):
 	try:
 		#connect
-		cur_postgres, conn_postgres =  connect()
+		cur_postgres, conn_postgres =  connect(params)
 		#now execute the query
 		cur_postgres.execute(query)
-		conn_postgres.commit()
-		return True
-	except Exception as err:
-		exc_type, exc_obj, exc_tb = sys.exc_info()
-		cur_postgres.close()
-		conn_postgres.close()
-		return common.debug(sys.exc_info(),err)
-
-#---------- begin function executePS ----------
-# @describe executes a prepared statement and passes in params
-# @param query str - SQL query to run
-# @param params tuple - parameters for prepared statement
-# @note When parameters are used, in order to include a literal % in the query you can use the %% string:
-# @return 
-#	boolean
-# @usage 
-# 	query = "INSERT INTO some_table (id, last_name) VALUES (%(id)s,  %(name)s);"
-# 	params =  {'name': "O'Reilly",'id': 10}
-#	ok =  postgresdb.executeSQL(query,params)
-def executePS(query,params):
-	try:
-		#connect
-		cur_postgres, conn_postgres =  connect()
-		#now execute the query
-		cur_postgres.execute(query,params)
 		conn_postgres.commit()
 		return True
 	except Exception as err:
