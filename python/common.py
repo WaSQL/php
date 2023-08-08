@@ -118,6 +118,20 @@ def cmdResults(cmd,args='',dir='',timeout=0):
     result = subprocess.run([cmd, args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return result.stdout.decode('utf-8')
 
+#---------- begin function cronLog---------------
+# @describe adds a log to the _cron_log table
+# @param str string - message to log
+# @return boolean
+# @usage  ok=common.cronLog('running loop now');
+def cronLog(host,pid,str):
+    host="{}".format(host)
+    pid="{}".format(pid)
+    str="{}".format(str)
+    ppath=getParentPath(scriptPath());
+    cronlog=os.path.abspath(ppath+'/php/cronlog.php');
+    result = subprocess.run(['php',cronlog,host,pid,str], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return result.stdout.decode('utf-8')
+
 #---------- begin function decodeBase64
 # @describe decodes a base64 encodes string - same as base64_decode
 # @param str string - base64 string to decode
@@ -612,6 +626,14 @@ def printValue(obj):
         print('<pre class="printvalue" type="'+typename+'">')
         print(pprint.pformat(obj).strip("'"))
         print('</pre>')
+
+#---------- begin function sleep ----------
+# @describe sleeps x seconds
+# @param x number  seconds
+# @return boolean
+# @usage common.sleep(3):
+def sleep(x):
+    return ttime.sleep(x)
 
 #---------- begin function stringContains ----------
 # @describe returns true if string contains substr

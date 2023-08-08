@@ -114,7 +114,7 @@ function commonLogMessage($name,$msg,$separate=0,$echo=0){
 	$caller['file']=getFileName($caller['file']);
 	$logpath=getWasqlPath('logs');
 	$logfile="{$logpath}/{$name}.log";
-	$mypid=getmypid();
+	$mypid=commonGetMyPid();
 	$cdate=date('Y-m-d h:i:s');
 	$msg="time:{$cdate}, {$msg}".PHP_EOL;
 	if($separate==1){
@@ -477,8 +477,18 @@ function commonCronLog($msg,$echomsg=1){
 	}
 	return true;
 }
+function commonGetMyPid(){
+	global $CRONTHRU;
+	if(isset($CRONTHRU['pid']) && isNum($CRONTHRU['pid'])){
+		return (integer)$CRONTHRU['pid'];
+	}
+	else{
+		return getmypid();
+	}
+}
 function commonCronGetCronByPid(){
-	$cron_pid=getmypid();
+	$cron_pid=commonGetMyPid();
+	
 	return getDBRecord(array(
 		'-table'=>'_cron',
 		'-where'=>"cron_pid={$cron_pid}",
@@ -8465,6 +8475,7 @@ function evalNodejsCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
 	$wasqlPythonPath=getWasqlPath('python');
@@ -8628,6 +8639,7 @@ function evalLuaCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
 	$wasqlPythonPath=getWasqlPath('python');
@@ -8804,6 +8816,7 @@ function evalPerlCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
 	$wasqlPythonPath=getWasqlPath('python');
@@ -9004,6 +9017,7 @@ function evalPythonCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
 	$wasqlPythonPath=getWasqlPath('python');
@@ -9066,7 +9080,7 @@ ENDOFCONTENT;
 	foreach($removes as $fld){
 		if(isset($t[$fld])){unset($t[$fld]);}
 	}
-	
+	if(!isset($_SESSION)){$_SESSION=[];}
 	$wasql=array(
 		'USER'=>"USER = ".json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'CONFIG'=>"CONFIG = ".json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
@@ -9198,15 +9212,18 @@ ENDOFCONTENT;
 	//remove any py files in temp older than 1 day - wasqlTempPath
 	$ok=cleanupDirectory($wasqlTempPath,1,'days','py');
 	//check return code
-	if($out['rtncode']==0){
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
 		//remove the temp files on success
 		foreach($files as $name=>$afile){
 	 		unlink($afile);
 	 	}
-		if(strlen($out['stdout'])){
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
 			return $out['stdout'];
 		}
-		return $out['stderr'];
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
 	}	
 	else{
 		$code=commonShowCode($content);

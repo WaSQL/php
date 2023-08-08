@@ -137,7 +137,7 @@ def executeSQL(query):
 # @usage 
 # 	query = "INSERT INTO some_table (id, last_name) VALUES (%(id)s,  %(name)s);"
 # 	params =  {'name': "O'Reilly",'id': 10}
-#	ok =  postgresdb.executeSQL(query,params)
+#	ok =  postgresdb.executePS(query,params)
 def executePS(query,params):
 	try:
 		#connect
