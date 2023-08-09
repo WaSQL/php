@@ -876,7 +876,7 @@ function formSetFrequency(fid,v){
 			else{days[x].checked=false;}
 		}
 		/*daynames*/
-		console.log(v);
+		//console.log(v);
 		for(let x=0;x<daynames.length;x++){
 			let hval=parseInt(daynames[x].value);
 			if(undefined != v.dayname && undefined != v.dayname[0] && v.dayname[0]==-1){
@@ -947,7 +947,7 @@ function formSetFrequency(fid,v){
 		/*daynames*/
 		for(let x=0;x<daynames.length;x++){
 			let hval=parseInt(daynames[x].value);
-			console.log(daynames[x]);
+			//console.log(daynames[x]);
 			if(daynames[x].checked){
 				nv.dayname.push(hval);
 			}
