@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Installation
-	python3 -m pip install "psycopg3[binary]"
+	python3 -m pip install "psycopg[binary]"
 		NOTE: you MUST put quotes around the name
 References
 	https://www.psycopg.org/psycopg3/docs/basic/usage.html
@@ -93,6 +93,18 @@ def connect(params):
 
 	if 'dbport' in params:
 		dbconfig['port'] = params['dbport']
+
+	if 'dbkeepalives' in params:
+		dbconfig['keepalives'] = params['dbkeepalives']
+
+	if 'dbkeepalives_idle' in params:
+		dbconfig['keepalives_idle'] = params['dbkeepalives_idle']
+
+	if 'dbkeepalives_interval' in params:
+		dbconfig['keepalives_interval'] = params['dbkeepalives_interval']
+
+	if 'dbkeepalives_count' in params:
+		dbconfig['keepalives_count'] = params['dbkeepalives_count']
 
 	try:
 		conn_postgres = psycopg.connect(**dbconfig)
