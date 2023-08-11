@@ -196,9 +196,6 @@ def executeSQL(dbname,query,params={}):
 # @usage recs=db.executePS('dbtest','select * from states')
 def executePS(dbname,query,params={}):
     if dbname in config.DATABASE:
-        #add DATABASE settings to params
-        for k in config.DATABASE[dbname]:
-            params[k] = config.DATABASE[dbname][k]
         #HANA
         if config.DATABASE[dbname]['dbtype'].startswith('hana'):
             try:
@@ -263,7 +260,7 @@ def executePS(dbname,query,params={}):
                 common.abort(sys.exc_info(),err)
 
             return postgresdb.executePS(query,params)
-            
+
 #---------- begin function connect ----------
 # @describe returns an object with db connection and cursor
 # @param dbname str - database name from database tag in config.xml
