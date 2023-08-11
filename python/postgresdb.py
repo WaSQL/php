@@ -125,7 +125,7 @@ def connect(params):
 #	boolean
 # @usage 
 #	ok =  postgresdb.executeSQL(query)
-def executeSQL(query,params):
+def executeSQL(query,params={}):
 	try:
 		#connect
 		cur_postgres, conn_postgres =  connect(params)
@@ -150,7 +150,7 @@ def executeSQL(query,params):
 # 	query = "INSERT INTO some_table (id, last_name) VALUES (%(id)s,  %(name)s);"
 # 	params =  {'name': "O'Reilly",'id': 10}
 #	ok =  postgresdb.executePS(query,params)
-def executePS(query,args,params):
+def executePS(query,args,params={}):
 	try:
 		#connect
 		cur_postgres, conn_postgres =  connect(params)
@@ -172,10 +172,10 @@ def executePS(query,args,params):
 #   recordsets list
 # @usage 
 #   recs =  postgresdb.queryResults(query,params)
-def queryResults(query,params):
+def queryResults(query,params={}):
 	try:
 		#connect
-		cur_postgres, conn_postgres =  connect()
+		cur_postgres, conn_postgres =  connect(params)
 
 		#now execute the query
 		cur_postgres.execute(query)
