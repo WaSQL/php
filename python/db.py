@@ -188,6 +188,82 @@ def executeSQL(dbname,query,params={}):
 
             return postgresdb.executeSQL(query,params)
 
+#---------- begin function executePS ----------
+# @describe returns a dictionary of records returned from query
+# @param dbname str - database name from database tag in config.xml
+# @param query str - SQL query to run
+# @return dictionary - recordsets
+# @usage recs=db.executePS('dbtest','select * from states')
+def executePS(dbname,query,params={}):
+    if dbname in config.DATABASE:
+        #add DATABASE settings to params
+        for k in config.DATABASE[dbname]:
+            params[k] = config.DATABASE[dbname][k]
+        #HANA
+        if config.DATABASE[dbname]['dbtype'].startswith('hana'):
+            try:
+                import hanadb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+            
+            return hanadb.executePS(query,params)
+        #MSSQL
+        if config.DATABASE[dbname]['dbtype'].startswith('mssql'):
+            try:
+                import mssqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mssqldb.executePS(query,params)
+        #Mysql
+        if config.DATABASE[dbname]['dbtype'].startswith('mysql'):
+            try:
+                import mysqldb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return mysqldb.executePS(query,params)
+        #ORACLE
+        if config.DATABASE[dbname]['dbtype'].startswith('oracle'):
+            try:
+                import oracledb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return oracledb.executePS(query,params)
+        #SNOWFLAKE
+        if config.DATABASE[dbname]['dbtype'].startswith('snowflake'):
+            try:
+                import snowflakedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+            
+            return snowflakedb.executePS(query,params)
+        #SQLITE
+        if config.DATABASE[dbname]['dbtype'].startswith('sqlite'):
+            try:
+                import sqlitedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return sqlitedb.executePS(query,params)
+        #CTREE
+        if config.DATABASE[dbname]['dbtype'].startswith('ctree'):
+            try:
+                import ctreedb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return ctreedb.executePS(query,params)
+        #POSTGRES
+        if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
+            try:
+                import postgresdb
+            except Exception as err:
+                common.abort(sys.exc_info(),err)
+
+            return postgresdb.executePS(query,params)
+            
 #---------- begin function connect ----------
 # @describe returns an object with db connection and cursor
 # @param dbname str - database name from database tag in config.xml
