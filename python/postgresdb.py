@@ -125,10 +125,10 @@ def connect(params):
 #	boolean
 # @usage 
 #	ok =  postgresdb.executeSQL(query)
-def executeSQL(query):
+def executeSQL(query,params):
 	try:
 		#connect
-		cur_postgres, conn_postgres =  connect()
+		cur_postgres, conn_postgres =  connect(params)
 		#now execute the query
 		cur_postgres.execute(query)
 		conn_postgres.commit()
@@ -150,12 +150,12 @@ def executeSQL(query):
 # 	query = "INSERT INTO some_table (id, last_name) VALUES (%(id)s,  %(name)s);"
 # 	params =  {'name': "O'Reilly",'id': 10}
 #	ok =  postgresdb.executePS(query,params)
-def executePS(query,params):
+def executePS(query,args,params):
 	try:
 		#connect
-		cur_postgres, conn_postgres =  connect()
+		cur_postgres, conn_postgres =  connect(params)
 		#now execute the query
-		cur_postgres.execute(query,params)
+		cur_postgres.execute(query,args)
 		conn_postgres.commit()
 		return True
 	except Exception as err:
@@ -175,7 +175,7 @@ def executePS(query,params):
 def queryResults(query,params):
 	try:
 		#connect
-		cur_postgres, conn_postgres =  connect(params)
+		cur_postgres, conn_postgres =  connect()
 
 		#now execute the query
 		cur_postgres.execute(query)

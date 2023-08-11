@@ -194,7 +194,7 @@ def executeSQL(dbname,query,params={}):
 # @param query str - SQL query to run
 # @return dictionary - recordsets
 # @usage recs=db.executePS('dbtest','select * from states')
-def executePS(dbname,query,params={}):
+def executePS(dbname,query,args={},params={}):
     if dbname in config.DATABASE:
         #HANA
         if config.DATABASE[dbname]['dbtype'].startswith('hana'):
@@ -203,7 +203,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
             
-            return hanadb.executePS(query,params)
+            return hanadb.executePS(query,args,params)
         #MSSQL
         if config.DATABASE[dbname]['dbtype'].startswith('mssql'):
             try:
@@ -211,7 +211,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
 
-            return mssqldb.executePS(query,params)
+            return mssqldb.executePS(query,args,params)
         #Mysql
         if config.DATABASE[dbname]['dbtype'].startswith('mysql'):
             try:
@@ -219,7 +219,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
 
-            return mysqldb.executePS(query,params)
+            return mysqldb.executePS(query,args,params)
         #ORACLE
         if config.DATABASE[dbname]['dbtype'].startswith('oracle'):
             try:
@@ -227,7 +227,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
 
-            return oracledb.executePS(query,params)
+            return oracledb.executePS(query,args,params)
         #SNOWFLAKE
         if config.DATABASE[dbname]['dbtype'].startswith('snowflake'):
             try:
@@ -235,7 +235,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
             
-            return snowflakedb.executePS(query,params)
+            return snowflakedb.executePS(query,args,params)
         #SQLITE
         if config.DATABASE[dbname]['dbtype'].startswith('sqlite'):
             try:
@@ -243,7 +243,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
 
-            return sqlitedb.executePS(query,params)
+            return sqlitedb.executePS(query,args,params)
         #CTREE
         if config.DATABASE[dbname]['dbtype'].startswith('ctree'):
             try:
@@ -251,7 +251,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
 
-            return ctreedb.executePS(query,params)
+            return ctreedb.executePS(query,args,params)
         #POSTGRES
         if config.DATABASE[dbname]['dbtype'].startswith('postgre'):
             try:
@@ -259,7 +259,7 @@ def executePS(dbname,query,params={}):
             except Exception as err:
                 common.abort(sys.exc_info(),err)
 
-            return postgresdb.executePS(query,params)
+            return postgresdb.executePS(query,args,params)
 
 #---------- begin function connect ----------
 # @describe returns an object with db connection and cursor
