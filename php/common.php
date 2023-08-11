@@ -4319,14 +4319,14 @@ function buildFormSelectDatabase($name,$params=array()){
 			$showtabs=$params['-dbs'];
 		}
 		else{
-			$showtabs=preg_split('/\,/',$params['-dbs']);
+			$showtabs=preg_split('/[\,\:]+/',$params['-dbs']);
 		}
 	}
 	elseif(isset($CONFIG['databases'])){
-		$showtabs=preg_split('/\,/',$CONFIG['databases']);
+		$showtabs=preg_split('/[\,\:]+/',$CONFIG['databases']);
 	}
 	elseif(isset($CONFIG['sql_prompt_dbs'])){
-		$showtabs=preg_split('/\,/',$CONFIG['sql_prompt_dbs']);
+		$showtabs=preg_split('/[\,\:]+/',$CONFIG['sql_prompt_dbs']);
 	}
 	$dbtypes=array();
 	foreach($DATABASE as $dbkey=>$db){
@@ -4337,6 +4337,8 @@ function buildFormSelectDatabase($name,$params=array()){
 	}
 	ksort($dbtypes);
 	$tag='<select ';
+	if(count($showtabs)){$tag.= ' data-showtabs="1"';}
+	if(isset($db['group'])){$tag.= ' data-group="'.$db['group'].'"';}
 	$tag.=setTagAttributes($params);
 	$tag.='>'.PHP_EOL;
 	$tag.='	<option value="">-- '.ucfirst($params['message']).' --</option>'.PHP_EOL;
