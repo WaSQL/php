@@ -313,49 +313,18 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		debugValue(mysqli_connect_error());
     		return 0;
 	}
-	try{
-		$stmt=mysqli_prepare($dbh_mysql,$query);
-	}
-	catch (Exception $e) {
-		$err=array(
-			'status'=>"Mysqli Prepare ERROR",
-			'function'=>'importProcessCSVRecs',
-			'error'=> mysqli_error($dbh_mysql),
-			'exception'=>$e,
-			'query'=>$query,
-			'params'=>$params
-		);
-		$mysqlAddDBRecordsResults['errors'][]=$err;
-		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
-			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-			//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
-		}
-		debugValue($err);
+	$stmt=mysqli_prepare($dbh_mysql,$query);
+	if(!is_resource($stmt) &&  !is_object($stmt)){
+		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+		debugValue(array($DATABASE['_lastquery']['error'],$query));
 		return 0;
 	}
-	try{
-		mysqli_stmt_bind_param($stmt, implode('',$types),...$values);
+	//echo "HERE".printValue($stmt).mysqli_error($dbh_mysql).printValue($types).printValue($values);exit;
+	if(mysqli_stmt_bind_param($stmt, implode('',$types),...$values)){
 		mysqli_stmt_execute($stmt);
-		//mysqli_close($dbh_mysql);
 		return $rec_cnt;
 	}
-	catch (Exception $e) {
-		$err=array(
-			'status'=>"Mysqli Execute ERROR",
-			'function'=>'importProcessCSVRecs',
-			'error'=> mysqli_error($dbh_mysql),
-			'exception'=>$e,
-			'query'=>$query,
-			'params'=>$params
-		);
-		$mysqlAddDBRecordsResults['errors'][]=$err;
-		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
-			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-			//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
-		}
-		debugValue($err);
-		return 0;
-	}
+	return 0;
 }
 //---------- begin function mysqlGetDDL ----------
 /**
