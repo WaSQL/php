@@ -84,7 +84,13 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			sleep(5);	
 		}
 	}
-	
+	if(!is_array($fieldinfo) || !count(($fieldinfo))){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecordsProcess',
+			'message'=>'No fieldinfo'
+		));
+		return 0;
+	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -109,6 +115,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		break;
 	}
+
 	$fieldstr=implode(',',$fields);
 	//keep prepared statement markers under 20000
 	$fieldcount=count($fields);
@@ -146,7 +153,17 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 				$p+=1;
 				if(!strlen($v)){
 					$pvals[]="\${$p}";
-					$pvalues[]=null;
+					switch(strtolower($fieldinfo[$k]['_dbtype'])){
+						case 'time':
+						case 'date':
+						case 'timestamp':
+							$pvalues[]=null;
+						break;
+						default:
+							$pvalues[]='';
+						break;
+					}
+					
 				}
 				else{
 					if(isset($params['-iconv'])){
