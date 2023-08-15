@@ -8461,7 +8461,7 @@ function evalPHP($strings){
 	}
 	ob_clean();
 	ob_flush();
-	showErrors();
+	showAllErrors();
 	$rtn=implode('',$strings);
 	return $rtn;
 }
@@ -13563,7 +13563,7 @@ function commonIncludeFunctionCode($content,$name=''){
 		}
 		if(is_file($afile)){
 			@trigger_error("");
-			$evalstring='showErrors();'.PHP_EOL;
+			$evalstring='showAllErrors();'.PHP_EOL;
 			$evalstring .= 'try{'.PHP_EOL;
 			$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
 			$evalstring .= '	}'.PHP_EOL;
@@ -13636,7 +13636,7 @@ function commonIncludeFunctionCode($content,$name=''){
 			}
 			if(is_file($afile)){
 				@trigger_error("");
-				$evalstring='showErrors();'.PHP_EOL;
+				$evalstring='showAllErrors();'.PHP_EOL;
 				$evalstring .= 'try{'.PHP_EOL;
 				$evalstring .= '	include_once(\''.$afile.'\');'.PHP_EOL;
 				$evalstring .= '	}'.PHP_EOL;
@@ -14765,7 +14765,7 @@ function loadExtras($extras){
 		//debugValue("loadExtras[{$extra}]:".$phpfile);
     	@trigger_error("");
 		//$evalstring='error_reporting(E_ERROR | E_PARSE);'.PHP_EOL;
-		$evalstring='showErrors();'.PHP_EOL;
+		$evalstring='showAllErrors();'.PHP_EOL;
 		$evalstring .= 'try{'.PHP_EOL;
 		$evalstring .= '	include_once(\''.$phpfile.'\');'.PHP_EOL;
 		$evalstring .= '	}'.PHP_EOL;
