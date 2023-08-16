@@ -2092,6 +2092,8 @@ function parseWacssEditFormTags($body,$params=array()){
 function buildFormValueParam($name,$params=array(),$arr=0){
 	if(!isset($params['value'])){
 		if(isset($params['-value'])){$params['value']=$params['-value'];}
+		elseif(isset($params[$name])){$params['value']=$params[$name];}
+		elseif(isset($params["{$name}[]"])){$params['value']=$params["{$name}[]"];}
 		elseif(isset($_REQUEST[$name])){$params['value']=$_REQUEST[$name];}
 		elseif(isset($_REQUEST["{$name}[]"])){$params['value']=$_REQUEST["{$name}[]"];}
 	}
@@ -2125,7 +2127,7 @@ function buildFormValueParam($name,$params=array(),$arr=0){
 		}
 		//remove blank values
 		foreach($val as $i=>$v){
-			if(isNum($val)){continue;}
+			if(isNum($v)){continue;}
 			if(!is_string($v) || !strlen(trim($v))){
 				unset($val[$i]);
 			}
