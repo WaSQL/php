@@ -1,5 +1,6 @@
 #! python
-
+# python3 -m ensurepip --upgrade
+# python3 -m pip install setuptools
 import pkg_resources
 import sys
 try:
