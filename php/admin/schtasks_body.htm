@@ -15,63 +15,85 @@
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>
 
-<view:addedit>
-	<?=schtasksAddEdit($id);?>
-</view:addedit>
 
-<view:add_fields>
-<div class="row">
-	<div class="col s12 m6"><label class="w_red"><wtranslate>schtasks Name</wtranslate></label>[name]</div>
-	<div class="col s12 m6"><label><wtranslate>Groupname</wtranslate></label>[groupname]</div>
+<view:details>
+<div style="max-width:90vw;">
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Task Name</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['taskname'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Location</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['location'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Author</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['author'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Description</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['comment'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Task To Run</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['task_to_run'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Start In</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['start_in'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Run as User</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['run_as_user'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Next Run Time</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['next_run_time'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Last Run Time</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['last_run_time'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Last Result</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['last_result'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Scheduled Task State</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['scheduled_task_state'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Status</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['status'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Idle Time</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['idle_time'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Power Management</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['power_management'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Schedule Type</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['schedule_type'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Months</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['months'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Days</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['days'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>Start Date/Time</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['start_date'];?> <?=$rec['start_time'];?></div>
+	</div>
+	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
+		<label style="flex:3;"><wtranslate>End Date</wtranslate>:</label>
+		<div style="flex:9;"><?=$rec['end_date'];?></div>
+	</div>
 </div>
-<div class="row">
-	<div class="col s6 m1"><label><wtranslate>Paused</wtranslate></label>[paused]</div>
-	<div class="col s6 m1"><label><wtranslate>Active</wtranslate></label>[active]</div>
-	<div class="col s6 m2"><label><wtranslate>Records To Keep</wtranslate></label>[records_to_keep]</div>
-	<div class="col s6 m3"><label><wtranslate>Begin Date</wtranslate></label>[begin_date]</div>
-	<div class="col s6 m3"><label><wtranslate>End Date</wtranslate></label>[end_date]</div>
-</div>
-<div class="row">
-	<div class="col s12 m3"><label><wtranslate>Quick Pick Frequency</wtranslate></label>[frequency]</div>
-	<div class="col s12 m6"><label><wtranslate>Custom Frequency</wtranslate></label>[run_format]</div>
-	<div class="col s12 m3"><label><wtranslate>Frequency Max</wtranslate></label>[frequency_max]</div>
-</div>
-<div class="row">
-	<div class="col s12 m9"><label class="w_red"><wtranslate>Run Cmd: (command, page name, or url)</wtranslate></label>[run_cmd]</div>
-	<div class="col s12 m3"><label><wtranslate>Run As</wtranslate></label>[run_as]</div>
-</div>
-</view:add_fields>
-
-<view:edit_fields>
-<div class="row">
-	<div class="col s12 m6"><label class="w_red"><wtranslate>schtasks Name</wtranslate></label>[name]</div>
-	<div class="col s12 m6"><label><wtranslate>Groupname</wtranslate></label>[groupname]</div>
-</div>
-<div class="row">
-	<div class="col s6 m1"><label><wtranslate>Paused</wtranslate></label>[paused]</div>
-	<div class="col s6 m1"><label><wtranslate>Active</wtranslate></label>[active]</div>
-	<div class="col s6 m3"><label><wtranslate>Records To Keep</wtranslate></label>[records_to_keep]</div>
-	<div class="col s6 m3"><label><wtranslate>Begin Date</wtranslate></label>[begin_date]</div>
-	<div class="col s6 m3"><label><wtranslate>End Date</wtranslate></label>[end_date]</div>
-</div>
-<div class="row">
-	<div class="col s12 m3"><label><wtranslate>Quick Pick Frequency</wtranslate></label>[frequency]</div>
-	<div class="col s12 m6"><label><wtranslate>Custom Frequency</wtranslate></label>[run_format]</div>
-	<div class="col s12 m3"><label><wtranslate>Frequency Max</wtranslate></label>[frequency_max]</div>
-</div>
-<div class="row">
-	<div class="col s12"><label class="w_red"><wtranslate>Run Cmd: (command, page name, or url)</wtranslate></label>[run_cmd]</div>
-</div>
-<div class="row">
-	<div class="col s6 m5"><label><wtranslate>Run As</wtranslate></label>[run_as]</div>
-	<div class="col s6 m1"><label class="w_gray"><wtranslate>Running</wtranslate></label>[running]</div>
-	<div class="col s6 m3"><label class="w_gray"><wtranslate>Last Run Date</wtranslate></label>[run_date]</div>
-	<div class="col s6 m3"><label class="w_gray"><wtranslate>Last Run Length</wtranslate></label>[run_length]</div>
-</div>
-<div class="row">
-	<div class="col s12"><label class="w_gray"><wtranslate>Last Run Result</wtranslate></label>[run_result]</div>
-</div>
-<div class="row">
-	<div class="col s12"><label class="w_gray"><wtranslate>Last Error (if any)</wtranslate></label>[run_error]</div>
-</div>
-</view:edit_fields>
+<?=buildOnLoad("centerObject('centerpop');");?>
+</view:details>

@@ -1,44 +1,54 @@
 <?php
 function schtasksEnable($id){
-	$recs=schtasksGetRecs();
-	foreach($recs as $rec){
-		if($rec['id']==$id){
-			$cmd="schtasks.exe /change /tn \"{$rec['taskname']}\" /enable";
-			$out=cmdResults($cmd);
-			$_REQUEST['refresh']=1;
-			return true;
-		}
-	}
-	return false;
+	$rec=schtasksGetTask($id);
+	if(!isset($rec['id'])){return false;}
+	$cmd="schtasks.exe /change /tn \"{$rec['taskname']}\" /enable";
+	$out=cmdResults($cmd);
+	$_REQUEST['refresh']=1;
+	return true;
 }
 function schtasksDisable($id){
-	$recs=schtasksGetRecs();
-	foreach($recs as $rec){
-		if($rec['id']==$id){
-			$cmd="schtasks.exe /change /tn \"{$rec['taskname']}\" /disable";
-			$out=cmdResults($cmd);
-			$_REQUEST['refresh']=1;
-			return true;
-		}
-	}
-	return false;
+	$rec=schtasksGetTask($id);
+	if(!isset($rec['id'])){return false;}
+	$cmd="schtasks.exe /change /tn \"{$rec['taskname']}\" /disable";
+	$out=cmdResults($cmd);
+	$_REQUEST['refresh']=1;
+	return true;
 }
 function schtasksDelete($id){
+	$rec=schtasksGetTask($id);
+	if(!isset($rec['id'])){return false;}
+	$cmd="schtasks.exe /delete /f /tn \"{$rec['taskname']}\"";
+	$out=cmdResults($cmd);
+	$_REQUEST['refresh']=1;
+	return true;
+}
+function schtasksGetTask($id){
 	$recs=schtasksGetRecs();
 	foreach($recs as $rec){
 		if($rec['id']==$id){
-			$cmd="schtasks.exe /delete /f /tn \"{$rec['taskname']}\"";
-			$out=cmdResults($cmd);
-			$_REQUEST['refresh']=1;
-			return true;
+			return $rec;
 		}
 	}
 	return false;
 }
 function schtasksGetRecs(){
 	$tpath=getWasqlPath();
-	$rfile="{$tpath}php/temp/schtasks.raw";
-	$afile="{$tpath}php/temp/schtasks.json";
+	$rfile="{$tpath}php/temp/admin_schtasks.raw";
+	$afile="{$tpath}php/temp/admin_schtasks.json";
+	$maxage=60*15;
+	if(file_exists($afile)){
+		$ctime=filemtime($afile);
+		$ttime=time();
+		$age=$ttime-$ctime;
+		//if file is older than 15 min then delete it
+		if($age > $maxage){
+		    unlink($afile);
+		    unlink($rfile);
+		    //debugValue(array('afile'=>$afile,'age'=>$age,'ttime'=>$ttime,'ctime'=>$ctime,'maxage'=>$maxage));
+		}
+	}
+	//return $recs;
 	if(!file_exists($afile) || !filesize($afile) || isset($_REQUEST['refresh'])){
 		$cmd = "schtasks /query /v /fo list";
 		$out=cmdResults($cmd);
@@ -60,7 +70,7 @@ function schtasksGetRecs(){
 			if($k=='folder'){continue;}
 			$lastfield=$k;
 			if($k=='hostname' && count($rec)){
-				$hash=encodeBase64($rec['taskname'].$rec['groupname'].$rec['task_to_run']);
+				$hash=encodeBase64($rec['taskname'].$rec['location'].$rec['task_to_run']);
 				if(!isset($recs[$hash])){
 					$cnt+=1;
 					$rec['id']=$cnt;
@@ -72,14 +82,14 @@ function schtasksGetRecs(){
 			$rec[$k]=$v;
 		}
 		if(count($rec)){
-			$hash=encodeBase64($rec['taskname'].$rec['groupname'].$rec['task_to_run']);
+			$hash=encodeBase64($rec['taskname'].$rec['location'].$rec['task_to_run']);
 			if(!isset($recs[$hash])){
 				$cnt+=1;
 				$rec['id']=$cnt;
 				$recs[$hash]=$rec;
 			}
 		}
-		//extract groupname from taskname
+		//extract location from taskname
 		foreach($recs as $i=>$rec){
 			$rec['taskname']=str_replace("\\",'::',$rec['taskname']);
 			$parts=preg_split('/\:\:/',$rec['taskname']);
@@ -88,10 +98,10 @@ function schtasksGetRecs(){
 			}
 			$recs[$i]['taskname']=array_pop($parts);
 			if(count($parts)){
-				$recs[$i]['groupname']=implode('/',$parts);
+				$recs[$i]['location']=implode('/',$parts);
 			}
 			else{
-				$recs[$i]['groupname']='';
+				$recs[$i]['location']='';
 			}
 		}
 		//exit;
@@ -102,7 +112,7 @@ function schtasksGetRecs(){
 		$json=getFileContents($afile);
 		$recs=decodeJson($json);
 	}
-	$recs=sortArrayByKeys($recs,array('scheduled_task_state'=>SORT_DESC,'groupname'=>SORT_ASC,'taskname'=>SORT_ASC));
+	$recs=sortArrayByKeys($recs,array('scheduled_task_state'=>SORT_DESC,'location'=>SORT_ASC,'taskname'=>SORT_ASC));
 	return $recs;
 }
 function schtasksList(){
@@ -134,7 +144,7 @@ ENDOFPRETABLE;
 		'-list'=>$recs,
 		'-truecount'=>1,
 		'-pretable'=>$pretable,
-		'-listfields'=>'taskname,groupname,status,scheduled_task_state,task_to_run,schedule_type,last_status,run_as_user,comment',
+		'-listfields'=>'taskname,location,status,scheduled_task_state,task_to_run,schedule_type,last_status,run_as_user,comment',
 		'-tableclass'=>'table striped bordered sticky',
 		'_menu'=>'schtasks',
 		'-tableheight'=>'75vh',
@@ -159,6 +169,13 @@ function schtasksListExtra($recs){
 				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="enable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Enable this task?" class="icon-block w_bold w_danger w_pointer" title="click to enable"></span> '.$rec['scheduled_task_state'];
 			break;
 		}
+		//clicking on taskname gives full details
+		$recs[$i]['taskname']=<<<ENDOFTASKNAME
+<div style="display:flex;align-items: flex-start;">
+	<div style="flex:1">{$rec['taskname']}</div>
+	<span style="margin-left:5px;" data-id="{$rec['id']}" data-div="centerpop" data-_menu="schtasks" data-func="details" data-nav="{$CONFIG['admin_form_url']}" onclick="wacss.nav(this);" data-title="Details - {$rec['taskname']}" class="icon-export w_pointer" title="click to enable"></span>
+</div>
+ENDOFTASKNAME;
 		//status
 		switch(strtolower($rec['status'])){
 			case 'ready':
@@ -176,8 +193,8 @@ function schtasksListExtra($recs){
 		}
 		$brands=array('microsoft','lenovo','dell','samsung','hp','apple','google','mozilla');
 		foreach($brands as $brand){
-			if(stringBeginsWith($rec['groupname'],"{$brand}")){
-				$recs[$i]['groupname']='<span class="brand-'.$brand.'"></span> '.$rec['groupname'];
+			if(stringBeginsWith($rec['location'],"{$brand}")){
+				$recs[$i]['location']='<span class="brand-'.$brand.'"></span> '.$rec['location'];
 				break;
 			}
 		}
