@@ -645,6 +645,7 @@ if(isAjax()){
 		case 'config':
 		case 'dashboard':
 		case 'cron':
+		case 'schtasks':
 		case 'export':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
@@ -1377,6 +1378,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'config':
 		case 'dashboard':
 		case 'cron':
+		case 'schtasks':
 		case 'export':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
@@ -1463,6 +1465,55 @@ ENDOFX;
 		case 'pythoninfo':
 			$pypath=getWasqlPath('python');
 			$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\"");
+			$data=$out['stdout'];
+			preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
+			$modules=array();
+			foreach($sections[0] as $section){
+				$module='';
+				if(preg_match('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$section,$m)){
+					$k=$m[1];
+					$modules[$k]=$section;
+				}
+			}
+			$header='';
+			if(preg_match('/\<header\>(.+?)\<\/header\>/ism',$data,$m)){
+				$header=$m[0];
+			}
+			//sort alphabetically, ignoring case
+			ksort($modules,SORT_NATURAL|SORT_FLAG_CASE);
+			//echo printValue(array_keys($modules));exit;
+			$links=array();
+			foreach($modules as $name=>$content){
+				$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$name.'" onclick="return pythoninfoShowModule(\''.$name.'\');">'.ucwords(str_replace('_',' ',$name)).'</a></div>';
+			}
+			$module_count=count($modules);
+			$linkstr=implode(PHP_EOL,$links);
+			$contentstr=implode(PHP_EOL,$modules);
+			echo <<<ENDOFX
+			<script>
+					function pythoninfoShowModule(m){
+						let el=document.querySelector('a[name="module_'+m+'"]');
+						if(undefined==el){return false;}
+						return wacss.scrollIntoView(el,{block:'start'});
+					}
+				</script>
+			<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
+				<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
+					<div class="w_biggest w_underline">{$module_count} Packages installed</div>
+					{$linkstr}
+					<br />
+				</div>
+				<div style="flex:1;padding-left:10px;">{$header}{$contentstr}</div>
+			</div>
+ENDOFX;
+		break;
+		case 'luainfo':
+			$lua=array();
+			$lua['version_out']=cmdResults("lua -v");
+			$lua['version']=$lua['version_out']['stdout'];
+			$lua['rocks_out']=cmdResults("luarocks list");
+			$lua['rocks']=preg_split('/[\r\n]+/',$lua['rocks_out']['stdout']);
+			echo printValue($lua);exit;
 			$data=$out['stdout'];
 			preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
 			$modules=array();

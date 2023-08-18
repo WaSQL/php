@@ -1,6 +1,10 @@
 #! python
-# python3 -m ensurepip --upgrade
-# python3 -m pip install setuptools
+"""
+Installation
+	python3 -m pip install setuptools
+		if pip is not installed run the following first to install pip
+			python3 -m ensurepip --upgrade
+"""
 import pkg_resources
 import sys
 try:

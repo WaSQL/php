@@ -1,0 +1,77 @@
+<view:default>
+<div style="display:flex;align-items: center;">
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-clock"></span> <wtranslate>Windows Scheduled Tasks</wtranslate></h2>
+	<span title="Repull the list" class="icon-refresh w_gray w_pointer" style="margin-left:20px;" data-div="schtasks_results" data-_menu="schtasks" data-refresh="1" data-func="list" data-nav="<?=$CONFIG['admin_form_url'];?>" onclick="wacss.nav(this);"></span>
+</div>
+
+<div id="schtasks_results" class="w_padtop">
+	<?=renderView('list');?>
+</div>
+<div style="display: none"><div id="schtasks_null"></div></div>
+</view:default>
+
+<view:list>
+	<?=schtasksList();?>
+	<?=buildOnLoad("wacss.modalClose();");?>
+</view:list>
+
+<view:addedit>
+	<?=schtasksAddEdit($id);?>
+</view:addedit>
+
+<view:add_fields>
+<div class="row">
+	<div class="col s12 m6"><label class="w_red"><wtranslate>schtasks Name</wtranslate></label>[name]</div>
+	<div class="col s12 m6"><label><wtranslate>Groupname</wtranslate></label>[groupname]</div>
+</div>
+<div class="row">
+	<div class="col s6 m1"><label><wtranslate>Paused</wtranslate></label>[paused]</div>
+	<div class="col s6 m1"><label><wtranslate>Active</wtranslate></label>[active]</div>
+	<div class="col s6 m2"><label><wtranslate>Records To Keep</wtranslate></label>[records_to_keep]</div>
+	<div class="col s6 m3"><label><wtranslate>Begin Date</wtranslate></label>[begin_date]</div>
+	<div class="col s6 m3"><label><wtranslate>End Date</wtranslate></label>[end_date]</div>
+</div>
+<div class="row">
+	<div class="col s12 m3"><label><wtranslate>Quick Pick Frequency</wtranslate></label>[frequency]</div>
+	<div class="col s12 m6"><label><wtranslate>Custom Frequency</wtranslate></label>[run_format]</div>
+	<div class="col s12 m3"><label><wtranslate>Frequency Max</wtranslate></label>[frequency_max]</div>
+</div>
+<div class="row">
+	<div class="col s12 m9"><label class="w_red"><wtranslate>Run Cmd: (command, page name, or url)</wtranslate></label>[run_cmd]</div>
+	<div class="col s12 m3"><label><wtranslate>Run As</wtranslate></label>[run_as]</div>
+</div>
+</view:add_fields>
+
+<view:edit_fields>
+<div class="row">
+	<div class="col s12 m6"><label class="w_red"><wtranslate>schtasks Name</wtranslate></label>[name]</div>
+	<div class="col s12 m6"><label><wtranslate>Groupname</wtranslate></label>[groupname]</div>
+</div>
+<div class="row">
+	<div class="col s6 m1"><label><wtranslate>Paused</wtranslate></label>[paused]</div>
+	<div class="col s6 m1"><label><wtranslate>Active</wtranslate></label>[active]</div>
+	<div class="col s6 m3"><label><wtranslate>Records To Keep</wtranslate></label>[records_to_keep]</div>
+	<div class="col s6 m3"><label><wtranslate>Begin Date</wtranslate></label>[begin_date]</div>
+	<div class="col s6 m3"><label><wtranslate>End Date</wtranslate></label>[end_date]</div>
+</div>
+<div class="row">
+	<div class="col s12 m3"><label><wtranslate>Quick Pick Frequency</wtranslate></label>[frequency]</div>
+	<div class="col s12 m6"><label><wtranslate>Custom Frequency</wtranslate></label>[run_format]</div>
+	<div class="col s12 m3"><label><wtranslate>Frequency Max</wtranslate></label>[frequency_max]</div>
+</div>
+<div class="row">
+	<div class="col s12"><label class="w_red"><wtranslate>Run Cmd: (command, page name, or url)</wtranslate></label>[run_cmd]</div>
+</div>
+<div class="row">
+	<div class="col s6 m5"><label><wtranslate>Run As</wtranslate></label>[run_as]</div>
+	<div class="col s6 m1"><label class="w_gray"><wtranslate>Running</wtranslate></label>[running]</div>
+	<div class="col s6 m3"><label class="w_gray"><wtranslate>Last Run Date</wtranslate></label>[run_date]</div>
+	<div class="col s6 m3"><label class="w_gray"><wtranslate>Last Run Length</wtranslate></label>[run_length]</div>
+</div>
+<div class="row">
+	<div class="col s12"><label class="w_gray"><wtranslate>Last Run Result</wtranslate></label>[run_result]</div>
+</div>
+<div class="row">
+	<div class="col s12"><label class="w_gray"><wtranslate>Last Error (if any)</wtranslate></label>[run_error]</div>
+</div>
+</view:edit_fields>

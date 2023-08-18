@@ -171,7 +171,10 @@
 				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <wtranslate>Decoder</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> <wtranslate>Terminal</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> <wtranslate>File Manager</wtranslate></a></li>
-
+				<view:schtasks_menu>
+				<li><a href="/php/admin.php?_menu=schtasks"><span class="brand-windows"></span> <wtranslate>Scheduled Tasks</wtranslate></a></li>
+				</view:schtasks_menu>
+				<?=renderViewIf(isWindows(),'schtasks_menu');?>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=font_brands"><span class="icon-slideshow"></span> <wtranslate>Brand Icons</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=font_materials"><span class="icon-slideshow"></span> <wtranslate>Material Icons</wtranslate></a></li>
