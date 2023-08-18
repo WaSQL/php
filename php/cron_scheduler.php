@@ -82,10 +82,14 @@ $loop_max=10;
 if(in_array('once',$argv)){
 	$loop_max=1;
 }
-$loop_cnt=0;
-if(isset($argv[1])){
-	$loop=(integer)$argv[1];
+elseif(in_array('twice',$argv)){
+	$loop_max=2;
 }
+elseif(isset($argv[1]) && isNum($argv[1])){
+	$loop_max=(integer)$argv[1];
+}
+$loop_cnt=0;
+
 while(microtime(true)-$starttime < 55){
 	$loop_cnt+=1;
 	foreach($ConfigXml as $name=>$host){
