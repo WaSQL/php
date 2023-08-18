@@ -153,7 +153,7 @@ function schtasksListExtra($recs){
 		//scheduled_task_state
 		switch(strtolower($rec['scheduled_task_state'])){
 			case 'enabled':
-				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="disable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Disable this task?" class="icon-mark w_bold w_success w_pointer" title="click to disable"></span> '.$rec['scheduled_task_state'];
+				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="disable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Disable this task?" class="icon-mark w_bold w_success w_pointer" title="click to disablee"></span> '.$rec['scheduled_task_state'];
 			break;
 			case 'disabled':
 				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="enable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Enable this task?" class="icon-block w_bold w_danger w_pointer" title="click to enable"></span> '.$rec['scheduled_task_state'];
