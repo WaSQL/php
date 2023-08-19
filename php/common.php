@@ -78,6 +78,7 @@ function commonObjectInfo($obj){
 *	if(commonStrlen($x)){...}
 */
 function commonStrlen($s){
+	if(is_null($s)){return 0;}
 	if(is_string($s) || is_numeric($s)){return strlen($s);}
 	if(is_array($s) || is_object($s)){$s=encodeJson($s);}
 	return strlen($s);

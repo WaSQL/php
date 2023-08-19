@@ -72,7 +72,7 @@ function mysqlAddDBRecords($table='',$params=array()){
 	$mysqlAddDBRecordsArr=array();
 	$mysqlAddDBRecordsResults=array();
 
-	if(!strlen($table)){
+	if(!commonStrlen($table)){
 		return debugValue("mysqlAddDBRecords Error: No Table");
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
@@ -135,7 +135,7 @@ function mysqlAddDBRecordsCSVLine($line,$params){
 		//make sure this is not a blank row
 		$vcnt=0;
 		foreach($line['line'] as $k=>$v){
-			if(strlen($v)){
+			if(commonStrlen($v)){
 				$vcnt+=1;
 				break;
 			}
@@ -240,7 +240,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			if(!isset($rec[$k])){$rec[$k]='';}
 			//set value and keys
 			$v=$rec[$k];
-			if(!strlen($v)){
+			if(!commonStrlen($v)){
 				if(isset($fieldinfo[$k]['default'])){
 					$values[]=$fieldinfo[$k]['default'];
 				}
@@ -283,7 +283,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=new.{$fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere']) && strlen($params['-upsertwhere'])){
+			if(isset($params['-upsertwhere']) && commonStrlen($params['-upsertwhere'])){
 				$query.=" WHERE {$params['-upsertwhere']}";
 			}
 			//echo printValue($params);exit;
@@ -296,7 +296,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				$flds[]="{$fld}=VALUES({$fld})";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere']) && strlen($params['-upsertwhere'])){
+			if(isset($params['-upsertwhere']) && commonStrlen($params['-upsertwhere'])){
 				//NOTE: Mysql does not support WHERE in an insert statement yet
 				//$query.=" WHERE {$params['-upsertwhere']}";
 			}
@@ -417,10 +417,10 @@ function mysqlGetAllTableFields($schema=''){
 	if(isset($databaseCache[$cachekey])){
 		return $databaseCache[$cachekey];
 	}
-	if(!strlen($schema)){
+	if(!commonStrlen($schema)){
 		$schema=mysqlGetDBSchema();
 	}
-	if(!strlen($schema)){
+	if(!commonStrlen($schema)){
 		debugValue('mysqlGetAllTableFields error: schema is not defined in config.xml');
 		return null;
 	}
@@ -458,10 +458,10 @@ function mysqlGetAllTableIndexes($schema=''){
 	if(isset($databaseCache[$cachekey])){
 		return $databaseCache[$cachekey];
 	}
-	if(!strlen($schema)){
+	if(!commonStrlen($schema)){
 		$schema=mysqlGetDBSchema();
 	}
-	if(!strlen($schema)){
+	if(!commonStrlen($schema)){
 		debugValue('mysqlGetAllTableIndexes error: schema is not defined in config.xml');
 		return null;
 	}
@@ -511,10 +511,10 @@ function mysqlGetAllProcedures($dbname=''){
 	if(isset($databaseCache[$cachekey])){
 		return $databaseCache[$cachekey];
 	}
-	if(!strlen($dbname)){
+	if(!commonStrlen($dbname)){
 		$dbname=mysqlGetDBName();
 	}
-	if(!strlen($dbname)){
+	if(!commonStrlen($dbname)){
 		debugValue('mysqlGetAllProcedures error: dbname is not defined in config.xml');
 		return null;
 	}
@@ -583,11 +583,11 @@ function mysqlGetDBName(){
 * @usage $rec=mysqlGetDBRecordById('comments',7);
 */
 function mysqlGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
-	if(!strlen($table)){return "mysqlGetDBRecordById Error: No Table";}
+	if(!commonStrlen($table)){return "mysqlGetDBRecordById Error: No Table";}
 	if($id == 0){return "mysqlGetDBRecordById Error: No ID";}
 	$recopts=array('-table'=>$table,'_id'=>$id);
 	if($relate){$recopts['-relate']=1;}
-	if(strlen($fields)){$recopts['-fields']=$fields;}
+	if(commonStrlen($fields)){$recopts['-fields']=$fields;}
 	$rec=mysqlGetDBRecord($recopts);
 	return $rec;
 }
@@ -601,7 +601,7 @@ function mysqlGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
 * @usage $ok=mysqlEditDBRecordById('comments',7,array('name'=>'bob'));
 */
 function mysqlEditDBRecordById($table='',$id=0,$params=array()){
-	if(!strlen($table)){
+	if(!commonStrlen($table)){
 		return debugValue("mysqlEditDBRecordById Error: No Table");
 	}
 	//allow id to be a number or a set of numbers
@@ -635,7 +635,7 @@ function mysqlEditDBRecordById($table='',$id=0,$params=array()){
 * @usage $ok=mysqlDelDBRecordById('comments',7,array('name'=>'bob'));
 */
 function mysqlDelDBRecordById($table='',$id=0){
-	if(!strlen($table)){
+	if(!commonStrlen($table)){
 		return debugValue("mysqlDelDBRecordById Error: No Table");
 	}
 	//allow id to be a number or a set of numbers
@@ -690,7 +690,7 @@ function mysqlParseConnectParams($params=array()){
 		}
 	}
 	//check for user specific
-	if(isUser() && strlen($USER['username'])){
+	if(isUser() && commonStrlen($USER['username'])){
 		foreach($params as $k=>$v){
 			if(stringEndsWith($k,"_{$USER['username']}")){
 				$nk=str_replace("_{$USER['username']}",'',$k);
@@ -874,7 +874,7 @@ function mysqlParseConnectParamsOLD($params=array()){
 		}
 	}
 	//check for user specific
-	if(isUser() && strlen($USER['username'])){
+	if(isUser() && commonStrlen($USER['username'])){
 		foreach($params as $k=>$v){
 			if(stringEndsWith($k,"_{$USER['username']}")){
 				$nk=str_replace("_{$USER['username']}",'',$k);
@@ -963,7 +963,7 @@ function mysqlDBConnect($params=array()){
 	try{
 		if($params['-dbhost']=='localhost'){$host='127.0.0.1';}
 		else{$host=$params['-dbhost'];}
-		if(!strlen($host)){$host='127.0.0.1';}
+		if(!commonStrlen($host)){$host='127.0.0.1';}
 		$host=gethostbyname($host);
 		$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
 		if(!is_object($dbh_mysql)){
@@ -1010,7 +1010,7 @@ function mysqlExecuteSQL($query,$params=array()){
 	}
 	$result=@mysqli_query($dbh_mysql,$query);
 	$err=mysqli_error($dbh_mysql);
-	if(is_array($err) || strlen($err)){
+	if(is_array($err) || commonStrlen($err)){
 		$DATABASE['_lastquery']['error']='query err: '.$err;
 		debugValue($DATABASE['_lastquery']);
 		//mysqli_close($dbh_mysql);
@@ -1092,8 +1092,8 @@ function mysqlGetDBFieldInfo($table=''){
 		$info[$key]['table']=$table;
 		if(preg_match('/^(.+?)\((.+)\)$/',$rec['type'],$m)){
 			$info[$key]['type']=$info[$key]['_dbtype']=$m[1];
-			list($len,$dec)=preg_split('/\,/',$m[2]);
-			$info[$key]['length']=$recs[$key]['_dblength']=$len;
+			$mparts=preg_split('/\,/',trim($m[2]),2);
+			$info[$key]['length']=$recs[$key]['_dblength']=$mparts[0];
 			$info[$key]['_dbtype_ex']=$rec['type'];
 		}
 		else{
@@ -1132,7 +1132,7 @@ function mysqlGetDBFieldInfo($table=''){
 		 }
 		 $info[$key]['flags']=$info[$key]['_dbflags']=implode(' ',$flags);
 		 //default
-		 if(strlen($rec['default'])){
+		 if(commonStrlen($rec['default'])){
 		 	$info[$key]['_dbdef']=$info[$key]['default']=$rec['default'];
 		 	if(isNum($rec['default'])){
 		 		$info[$key]['_dbtype_ex'] .= " Default {$rec['default']}";
@@ -1213,7 +1213,7 @@ function mysqlGetDBQuery($params=array()){
 	$query .= implode(',',$fields).' from ' . $params['-table'];
 	//build where clause
 	$where = mysqlGetDBWhere($params);
-	if(strlen($where)){$query .= " where {$where}";}
+	if(commonStrlen($where)){$query .= " where {$where}";}
 	//Set order by if defined
     if(isset($params['-group'])){$query .= ' group by '.$params['-group'];}
 	//Set order by if defined
@@ -1298,7 +1298,7 @@ function mysqlGetDBWhere($params,$info=array()){
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
-		if(!strlen(trim($params[$k]))){continue;}
+		if(!commonStrlen(trim($params[$k]))){continue;}
 		if(!isset($info[$k])){continue;}
         $params[$k]=str_replace("'","''",$params[$k]);
         $v=mysqlEscapeString($params[$k]);
@@ -1357,7 +1357,7 @@ function mysqlEscapeString($str){
 * @usage if(mysqlIsDBTable('abc')){...}
 */
 function mysqlIsDBTable($table,$params=array()){
-	if(!strlen($table)){
+	if(!commonStrlen($table)){
 		echo "mysqlIsDBTable error: No table";
 		return null;
 	}
@@ -1480,7 +1480,7 @@ function mysqlQueryResults($query='',$params=array()){
 		return array();
 	}
 	$err=mysqli_error($dbh_mysql);
-	if(is_array($err) || strlen($err)){
+	if(is_array($err) || commonStrlen($err)){
 		$DATABASE['_lastquery']['error']='query error: '.$err;
 		debugValue($DATABASE['_lastquery']);
 		//mysqli_close($dbh_mysql);

@@ -156,24 +156,14 @@ function ctreeDBConnect(){
 	//try a few times to connect
 	$tries=0;
 	$exc='';
-	while($tries < 3){
-		try{
-			$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
-			if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
-		}
-		catch (Exception $e) {
-			if(!strlen($exc)){
-				$exc=$e->errorInfo;
-			}
-		}
+	while($tries < 5){
+		$dbh_ctree = odbc_pconnect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
+		if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
 		$tries+=1;
-		sleep(2);
+		sleep(5);
 	}
 	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
 		$ok=dbSetLast(array('error'=>odbc_errormsg()));
-		if(strlen($ext)){
-			$ok=dbSetLast(array('exception'=>$exc));
-		}
 		debugValue(dbGetLast());
 		return false;
 	}
@@ -187,6 +177,7 @@ function ctreeDBConnect(){
 * @usage $ok=ctreeExecuteSQL("truncate table abc");
 */
 function ctreeExecuteSQL($query,$return_error=1){
+	if(!commonStrlen($query)){return 0;}
 	global $USER;
 	$ok=dbSetLast(array(
 		'function'=>'ctreeExecuteSQL',
@@ -194,52 +185,19 @@ function ctreeExecuteSQL($query,$return_error=1){
 		'p2'=>$return_error,
 	));
 	global $dbh_ctree;
-	$dbh_ctree='';
 	$dbh_ctree=ctreeDBConnect();
-	if(strlen(dbGetLast('error'))){return 0;}
+	if(commonStrlen(dbGetLast('error'))){return 0;}
 	$ok=dbSetLast(array('query'=>$query));
-	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$ok=dbSetLast(array('error'=>odbc_errormsg()));
-		debugValue(dbGetLast());
-		if($return_error==1){return dbGetLast();}
-    	return 0;
-	}
-	try{
-
-		$resource = odbc_prepare($dbh_ctree, $query);
-
-		if(!is_resource($resource) && !is_object($resource)){
-			$ok=dbSetLast(array('error'=>odbc_errormsg()));
-			debugValue(dbGetLast());
-			odbc_close($dbh_ctree);
-			$dbh_ctree = null;
-			return null;
-		}
-		if(!odbc_execute($resource)){
-			$ok=dbSetLast(array('error'=>odbc_errormsg($resource)));
-			debugValue(dbGetLast());
-			odbc_close($dbh_ctree);
+	if($resource = odbc_prepare($dbh_ctree, $query)){
+		if(odbc_execute($resource)){
+			odbc_free_result($result);
 			$resource = null;
-			$dbh_ctree = null;
-			return null;
+			return true;
 		}
-
-		if(is_resource($resource) || is_object($resource)){
-			odbc_free_result($resource);
-		}
-		$resource=null;
-		odbc_close($dbh_ctree);
-		$dbh_ctree=null;
-		$ok=dbSetLast(array('stop'=>microtime(true)));
-		$ok=dbSetLast(array('time'=>dbGetLast('stop')-dbGetLast('start')));
-		return 1;
 	}
-	catch (Exception $e) {
-		$ok=dbSetLast(array('exception'=>$e));
-		debugValue(dbGetLast());
-		if($return_error==1){return dbGetLast();}
-		return 0;
-	}
+	$ok=dbSetLast(array('error'=>odbc_errormsg()));
+	debugValue(dbGetLast());
+	return null;
 }
 //---------- begin function ctreeGetDBCount--------------------
 /**
@@ -257,7 +215,7 @@ function ctreeGetDBCount($params=array()){
 	if(!isset($params['-table'])){return null;}
 	if(!stringContains($params['-table'],'.')){
 		$schema=ctreeGetDBSchema();
-		if(strlen($schema)){
+		if(commonStrlen($schema)){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
 	}
@@ -314,6 +272,7 @@ ENDOFQUERY;
 */
 function ctreeGetDBFieldInfo($table){
 	$table=strtolower($table);
+	$table=str_replace('admin.','',$table);
 	$query=<<<ENDOFQUERY
 	SELECT
 		c.col
@@ -452,7 +411,7 @@ function ctreeGetDBRecords($params){
 		//check for schema name
 		if(!stringContains($params['-table'],'.')){
 			$schema=ctreeGetDBSchema();
-			if(strlen($schema)){
+			if(commonStrlen($schema)){
 				$params['-table']="{$schema}.{$params['-table']}";
 			}
 		}
@@ -472,7 +431,7 @@ function ctreeGetDBRecords($params){
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
-			if(!strlen(trim($v))){continue;}
+			if(!commonStrlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
 			if(is_array($params[$k])){
 	            $params[$k]=implode(':',$params[$k]);
@@ -672,7 +631,7 @@ function ctreeParseConnectParams($params=array()){
 		}
 	}
 	//check for user specific
-	if(isUser() && strlen($USER['username'])){
+	if(isUser() && commonStrlen($USER['username'])){
 		foreach($params as $k=>$v){
 			if(stringEndsWith($k,"_{$USER['username']}")){
 				$nk=str_replace("_{$USER['username']}",'',$k);
@@ -840,6 +799,9 @@ function ctreeParseConnectParams($params=array()){
 * @return array - returns records
 */
 function ctreeQueryResults($query='',$params=array()){
+	if(!commonStrlen($query)){
+		return null;
+	}
 	$ok=dbSetLast(array(
 		'function'=>'ctreeQueryResults',
 		'p1'=>$query,
@@ -848,56 +810,19 @@ function ctreeQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_ctree;
-	$dbh_ctree='';
-	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$dbh_ctree=ctreeDBConnect();
-		if(strlen(dbGetLast('error'))){return array();}
-	}
-
-	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
-		$ok=dbSetLast(array('error'=>'connect error'));
-	    debugValue(dbGetLast());
-	    return null;
-	}
+	$dbh_ctree=ctreeDBConnect();
+	if(commonStrlen(dbGetLast('error'))){return array();}
 	$ok=dbSetLast(array('query'=>$query));
-	try{
-
-		$resource = odbc_prepare($dbh_ctree, $query);
-
-		if(!is_resource($resource) && !is_object($resource)){
-			$ok=dbSetLast(array('error'=>odbc_errormsg()));
-			debugValue(dbGetLast());
-			odbc_close($dbh_ctree);
-			$dbh_ctree = null;
-			return null;
+	if($resource = odbc_prepare($dbh_ctree, $query)){
+		if(odbc_execute($resource)){
+			$recs = ctreeEnumQueryResults($resource,$params,$query);
+			$resource=null;
+			return $recs;
 		}
-		if(!odbc_execute($resource)){
-			$ok=dbSetLast(array('error'=>odbc_errormsg($resource)));
-			debugValue(dbGetLast());
-			odbc_close($dbh_ctree);
-			$resource = null;
-			$dbh_ctree = null;
-			return null;
-		}
-
-		$recs = ctreeEnumQueryResults($resource,$params,$query);
-		if(is_resource($resource) || is_object($resource)){
-			odbc_free_result($resource);
-		}
-		$resource=null;
-		odbc_close($dbh_ctree);
-		$dbh_ctree=null;
-		$ok=dbSetLast(array('stop'=>microtime(true)));
-		$ok=dbSetLast(array('time'=>dbGetLast('stop')-dbGetLast('start')));
-		return $recs;
 	}
-	catch (Exception $e) {
-		$ok=dbSetLast(array('error'=>odbc_errormsg(),'exception'=>$e));
-	    debugValue(dbGetLast());
-	    odbc_close($dbh_ctree);
-		$dbh_ctree=null;
-		return null;
-	}
+	$ok=dbSetLast(array('error'=>odbc_errormsg()));
+	debugValue(dbGetLast());
+	return null;
 }
 //---------- begin function ctreeEnumQueryResults ----------
 /**
@@ -951,15 +876,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	$rowcount=0;
 	$i=0;
 	while(1){
-		$row=array();
-		try{
-			$row=odbc_fetch_array($result);
-		}
-		catch (Exception $e) {
-			$ok=dbSetLast(array('exception'=>$e));
-			debugValue(dbGetLast());
-			break;
-		}
+		$row=odbc_fetch_array($result);
 		if(!is_array($row) || !count($row)){
 			break;
 		}
@@ -1041,6 +958,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	}
 	@odbc_fetch_row($result, 0);   // reset cursor
 	odbc_free_result($result);
+	$result=null;
 	//send last payload to webhook if specified
 	if(isset($params['-webhook_url'])){
 		if(count($recs)){
@@ -1061,7 +979,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 		return $params['-webhook_count'];
 	}
-	if(isset($params['-webhook_onfinish']) && strlen($params['-webhook_onfinish'])){
+	if(isset($params['-webhook_onfinish']) && commonStrlen($params['-webhook_onfinish'])){
 		$post=postURL($params['-webhook_onfinish'],array('-method'=>'GET'));
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
