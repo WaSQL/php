@@ -10246,6 +10246,7 @@ function getDBRecords($params=array()){
                 	reset($list);
 					foreach($list as $i=>$r){
 						$rval=$r[$field];
+						if(is_null($rval)){$rval='';}
 						if(isset($tmap[$rval])){$related[$field][$rval]=$tmap[$rval];}
 						elseif(strlen($rval) && preg_match('/\:/',$rval)){
                         	$rvals=preg_split('/\:/',$rval);

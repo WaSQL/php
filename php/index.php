@@ -596,7 +596,7 @@ if(isAjax() && isUser()){
     	echo buildOnLoad("facebook_id='{$id}';facebook_email='{$email}';facebookLinked();");
     	exit;
 	}
-	if(isNum($_REQUEST['_wpass'])){
+	if(isset($_REQUEST['_wpass']) && isNum($_REQUEST['_wpass'])){
 		echo wpassInfo($_REQUEST['_wpass']);
 		exit;
 	}

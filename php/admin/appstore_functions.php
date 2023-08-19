@@ -157,11 +157,14 @@ function appstoreUninstall($appkey){
 			}
 		}
 		$ok=delDBRecord($opts);
-		//remove tabledata,fielddata, and triggers
+		//remove tabledata,fielddata, and triggers, and _crons
 		$queries=array(
 			"delete from _tabledata where tablename like '{$rec['name']}_%'",
 			"delete from _fielddata where tablename like '{$rec['name']}_%'",
+			"delete from _queries where tablename like '{$rec['name']}_%'",
+			"delete from _queries where function_name='sql_prompt' and query like '%from {$rec['name']}_%'",
 			"delete from _triggers where name like '{$rec['name']}_%'",
+			"delete from _cron where groupname = '{$rec['name']}'",
 		);
 		foreach($queries as $query){
 			$ok=executeSQL($query);
