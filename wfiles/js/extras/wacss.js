@@ -3855,6 +3855,7 @@ var wacss = {
 		}
 		let modal_content=document.createElement('div');
 		modal_content.className='wacss_modal_content';
+		modal_content.id='wacss_modal_content';
 		modal_content.innerHTML=htm;
 		modal.appendChild(modal_content);
 		if(undefined != params.overlay){

@@ -82,40 +82,6 @@ function cronResultScroll(cron_id,id,run_length){
 	setTimeout(function(){cronRefreshResult(cron_id,id);},11000);
 	setText('run_length_'+id,run_length);
 }
-function cronModal(func,id,title){
-	switch(func){
-		case 'clear':
-			if(!confirm('Clear Cron Logs?')){return false;}
-		break;
-	}
-	let params = {_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'};
-	if(undefined != document.cronlistform){
-		if(undefined != document.cronlistform._filters){
-			params._filters=document.cronlistform._filters.innerText;
-		}
-		if(undefined != document.cronlistform.filter_order){
-			params.filter_order=document.cronlistform.filter_order.value;
-		}	
-	}
-	let wmc=document.querySelector('div.wacss_modal_content');
-	if(undefined != wmc){
-		wmc.id='wacss_modal_content';
-		return ajaxGet('<?=configValue('admin_form_url');?>',wmc.id,params);
-	}
-	else{
-		return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
-	}
-	
-}
-function cronLogRefresh(){
-	let params = {_menu:'cron',func:'log_refresh',setprocessing:'cronlog_refreshing'};
-	return ajaxGet('<?=configValue('admin_form_url');?>','cronlog_data',params); 
-}
-var cronLogRefresh_timer;
-function cronLogRefreshTimer(){
-	window.clearTimeout(cronLogRefresh_timer);
-	cronLogRefresh_timer=setTimeout(cronLogRefresh,10000);
-}
 </script>
 <style>
 	#cron_details_list{
@@ -266,10 +232,10 @@ function cronLogRefreshTimer(){
 		<td class="w_small"><?=$cron['records_to_keep'];?></td>
 		<td class="w_small"><?=$cron['run_cmd'];?></td>
 		<td class="w_nowrap" style="display:flex;">
-			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('edit',<?=$cron['_id'];?>,this.title);" title="Edit Cron"><span class="icon-edit w_gray"></span></a>
-			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('details',<?=$cron['_id'];?>,this.title);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
+			<a href="#edit" id="detail_edit" style="align-self:center;margin-left:10px;" class="w_link" data-setprocessing="cron_processing" data-_menu="cron" data-nav="/php/admin.php" data-div="wacss_modal_content" data-func="edit" data-id="<?=$cron['_id'];?>" data-title="Edit Cron" onclick="return wacss.nav(this);"  title="Edit Cron"><span class="icon-edit w_gray"></span></a>
+			<a href="#refresh" style="align-self:center;margin-left:10px;" class="w_link" data-setprocessing="cron_processing" data-_menu="cron" data-nav="/php/admin.php" data-div="wacss_modal_content" data-func="details" data-id="<?=$cron['_id'];?>" data-title="Edit Cron" onclick="return wacss.nav(this);" title="Refresh"><span class="icon-refresh w_primary"></span></a>
 			<view:killpid>
-			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" onclick="return cronModal('kill',<?=$cron['_id'];?>,this.title);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
+			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" data-setprocessing="cron_processing" data-_menu="cron" data-nav="/php/admin.php" data-div="wacss_modal_content" data-func="kill" data-id="<?=$cron['_id'];?>" data-title="Edit Cron" onclick="return wacss.nav(this);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
 			</view:killpid>
 			<?=renderViewIf((integer)$cron['cron_pid'] > 0,'killpid',$cron,'cron');?>
 			<div id="cron_processing" style="align-self:center;margin-left:5px;font-size:12px;display:inline-block;width:50px;height:12px;overflow:hidden;"></div>
