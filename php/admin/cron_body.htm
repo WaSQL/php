@@ -82,6 +82,40 @@ function cronResultScroll(cron_id,id,run_length){
 	setTimeout(function(){cronRefreshResult(cron_id,id);},11000);
 	setText('run_length_'+id,run_length);
 }
+function cronModal(func,id,title){
+	switch(func){
+		case 'clear':
+			if(!confirm('Clear Cron Logs?')){return false;}
+		break;
+	}
+	let params = {_menu:'cron',func:func,id:id,title:title,setprocessing:'cron_processing'};
+	if(undefined != document.cronlistform){
+		if(undefined != document.cronlistform._filters){
+			params._filters=document.cronlistform._filters.innerText;
+		}
+		if(undefined != document.cronlistform.filter_order){
+			params.filter_order=document.cronlistform.filter_order.value;
+		}	
+	}
+	let wmc=document.querySelector('div.wacss_modal_content');
+	if(undefined != wmc){
+		wmc.id='wacss_modal_content';
+		return ajaxGet('<?=configValue('admin_form_url');?>',wmc.id,params);
+	}
+	else{
+		return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
+	}
+	
+}
+function cronLogRefresh(){
+	let params = {_menu:'cron',func:'log_refresh',setprocessing:'cronlog_refreshing'};
+	return ajaxGet('<?=configValue('admin_form_url');?>','cronlog_data',params); 
+}
+var cronLogRefresh_timer;
+function cronLogRefreshTimer(){
+	window.clearTimeout(cronLogRefresh_timer);
+	cronLogRefresh_timer=setTimeout(cronLogRefresh,10000);
+}
 </script>
 <style>
 	#cron_details_list{
