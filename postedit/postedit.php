@@ -160,9 +160,9 @@ function fileChanged($afile){
 	$filename=getFileName($afile);
 	echo "  {$filename}";
 	$content=@file_get_contents($afile);
-	if(!strlen($content) && isWindows()){
+	if(!commonStrlen($content) && isWindows()){
 		$content=getContents($afile);
-		if(!strlen($content)){
+		if(!commonStrlen($content)){
     		$ok=errorMessage(" - failed to get content");
     		return;
 		}
@@ -302,7 +302,7 @@ function writeFiles(){
 	if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
     	abortMessage("{$post['curl_info']['http_code']} error retrieving files");
 	}
-	if(isset($post['error']) && strlen($post['error'])){
+	if(isset($post['error']) && commonStrlen($post['error'])){
 		abortMessage("POST ERROR".$post['error']);
 	}
 	if(stringBeginsWith($post['body'],'error:')){
@@ -362,7 +362,7 @@ function writeFiles(){
 		}
 		if($skip==1){continue;}
 		foreach($rec as $name=>$content){
-	    	if(!strlen(trim($content))){continue;}
+	    	if(!commonStrlen(trim($content))){continue;}
 	    	$field=str_replace("{$info['table']}_",'',$name);
 	    	//echo "Name: {$name}, field: {$field}";exit;
 	    	//name
@@ -435,7 +435,7 @@ function writeFiles(){
 		}
 	}
 	//check for editor command to run after writing files
-	if(isset($postedit['editor']['command']) && strlen($postedit['editor']['command'])){
+	if(isset($postedit['editor']['command']) && commonStrlen($postedit['editor']['command'])){
 		$cmd=$postedit['editor']['command'];
 		if(isWindows()){
 			$postedit['afolder']=preg_replace('/\//',"\\",$postedit['afolder']);
