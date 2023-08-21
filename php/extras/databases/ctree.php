@@ -157,7 +157,7 @@ function ctreeDBConnect(){
 	$tries=0;
 	$exc='';
 	while($tries < 5){
-		$dbh_ctree = odbc_pconnect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
+		$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
 		if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
 		$tries+=1;
 		sleep(5);
@@ -190,11 +190,14 @@ function ctreeExecuteSQL($query,$return_error=1){
 	$ok=dbSetLast(array('query'=>$query));
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		if(odbc_execute($resource)){
-			odbc_free_result($result);
+			odbc_free_result($resource);
+			$resource=null;
+			odbc_close($dbh_ctree);
 			$resource = null;
 			return true;
 		}
 	}
+	odbc_close($dbh_ctree);
 	$ok=dbSetLast(array('error'=>odbc_errormsg()));
 	debugValue(dbGetLast());
 	return null;
@@ -816,7 +819,10 @@ function ctreeQueryResults($query='',$params=array()){
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		if(odbc_execute($resource)){
 			$recs = ctreeEnumQueryResults($resource,$params,$query);
+			odbc_free_result($resource);
 			$resource=null;
+			odbc_close($dbh_ctree);
+			$dbh_ctree=null;
 			return $recs;
 		}
 	}
