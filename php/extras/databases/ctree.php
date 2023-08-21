@@ -190,10 +190,10 @@ function ctreeExecuteSQL($query,$return_error=1){
 	$ok=dbSetLast(array('query'=>$query));
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		if(odbc_execute($resource)){
-			odbc_free_result($resource);
+			if(is_resource($resource)){odbc_free_result($resource);}
 			$resource=null;
-			odbc_close($dbh_ctree);
-			$resource = null;
+			if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
+			$dbh_ctree=null;
 			return true;
 		}
 	}
@@ -819,9 +819,9 @@ function ctreeQueryResults($query='',$params=array()){
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		if(odbc_execute($resource)){
 			$recs = ctreeEnumQueryResults($resource,$params,$query);
-			odbc_free_result($resource);
+			if(is_resource($resource)){odbc_free_result($resource);}
 			$resource=null;
-			odbc_close($dbh_ctree);
+			if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
 			$dbh_ctree=null;
 			return $recs;
 		}
@@ -963,7 +963,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	@odbc_fetch_row($result, 0);   // reset cursor
-	odbc_free_result($result);
+	if(is_resource($resource)){odbc_free_result($result);}
 	$result=null;
 	//send last payload to webhook if specified
 	if(isset($params['-webhook_url'])){
