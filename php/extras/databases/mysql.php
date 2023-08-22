@@ -1533,9 +1533,6 @@ function mysqlEnumQueryResults($data,$params=array()){
 			return 'mysqlEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
-		if(isset($params['-logfile'])){
-			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
-		}
 		
 	}
 	else{$recs=array();}
