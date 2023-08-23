@@ -6768,8 +6768,13 @@ function dumpDB($table=''){
 	if(!is_dir($dump['path'])){buildDir($dump['path']);}
 	$dump['file'] = $CONFIG['dbname'].'__' . date("Y-m-d_H-i-s")  . '.sql';
 	$dump['afile']=isWindows()?"{$dump['path']}\\{$dump['file']}":"{$dump['path']}/{$dump['file']}";
+	$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
+	list($v1,$v2,$v3)=preg_split('/\./',$version['value']);
 	if(isset($CONFIG['backup_command'])){
 		$dump['command'] = $CONFIG['backup_command'];
+		if($v1 >=8 && ($v2>0 || $v3>=32)){
+			$dump['command'] .= " --single-transaction=TRUE";
+		}
 		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
@@ -6784,9 +6789,7 @@ function dumpDB($table=''){
 			
 		}
 		//if version 8 or greater
-		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
-		$version=(integer)$version['value'];
-		if($version >=8){
+		if($v1 >=8){
 			$dump['command'] .= " --set-gtid-purged=OFF --column-statistics=0";
 		}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
@@ -6799,6 +6802,9 @@ function dumpDB($table=''){
 	elseif(isMysql() || isMysqli()){
 		//mysqldump
 		$dump['command'] = isWindows()?'mysqldump.exe':'mysqldump';
+		if($v1 >=8 && ($v2>0 || $v3>=32)){
+			$dump['command'] .= " --single-transaction=TRUE";
+		}
 		$dump['command'] .= " -h {$CONFIG['dbhost']}";
 		if(strlen($CONFIG['dbuser'])){
 			$dump['command'] .= " -u {$CONFIG['dbuser']}";
@@ -6812,9 +6818,7 @@ function dumpDB($table=''){
 			}
 		}
 		//if version 8 or greater
-		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
-		$version=(integer)$version['value'];
-		if($version >=8){
+		if($v1 >=8){
 			$dump['command'] .= " --set-gtid-purged=OFF --column-statistics=0";
 		}
 		$dump['command'] .= " --max_allowed_packet=128M {$CONFIG['dbname']}";
