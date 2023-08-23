@@ -6249,8 +6249,7 @@ function setView($name='',$clear=0){
 		}
 		if(!isset($PAGE['setView']) || !is_array($PAGE['setView'])){$PAGE['setView']=array();}
 		foreach($name as $sname){
-			if(!isset($PAGE['setView'][$sname])){$PAGE['setView'][$sname]=1;}
-			else{$PAGE['setView'][$sname]+=1;}
+			$PAGE['setView'][$sname]+=1;
 		}
 		return count($name);
 	}
@@ -11830,7 +11829,7 @@ function processCSVLines($file,$func_name,$params=array()){
 	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
 	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
 	if(isset($params['-mod'])){
-		if(is_string($params['-mod'])){
+		if(!is_array($params['-mod'])){
 			list($m,$v)=preg_split('/\,/',$params['-mod'],2);
 			$params['-mod']=array('mod'=>$m,'val'=>$v);
 		}
@@ -11981,7 +11980,7 @@ function getCSVRecords($file,$params=array()){
 		if(!is_array($params['-listfields'])){$params['-listfields']=preg_split('/\,/',$params['-listfields']);}
 	}
 	else{$params['-listfields']=array();}
-	//ini_set('auto_detect_line_endings',TRUE);
+	ini_set('auto_detect_line_endings',TRUE);
 	$recs=array();
 	$linecnt = 0;
 	$bomchecked=0;
