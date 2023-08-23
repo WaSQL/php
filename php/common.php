@@ -12282,7 +12282,9 @@ function fopen_utf8($filename){
 		$encoding = 'UTF-16';
 	} else {
 		try{
-			if((float)phpversion() <  8.0){
+			$parts=explode('.',phpversion());
+			$phpver=(float)"{$parts[0]}.{$parts[1]}";
+			if($phpver <  8.0){
 				$file_sample = @fread($handle, 1000) + 'e'; //read first 1000 bytes
 				// + e is a workaround for mb_string bug
 			}
