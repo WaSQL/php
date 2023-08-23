@@ -11866,10 +11866,6 @@ function processCSVLines($file,$func_name,$params=array()){
 			}
 		}
 		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
-			if(isset($params['-mod']['mod']) && $linecnt % $params['-mod']['mod'] != $params['-mod']['val']){
-				$linecnt++;
-				continue;
-			}
 			if($bomchecked==0){
 				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
 				$bomchecked=1;
@@ -11890,6 +11886,10 @@ function processCSVLines($file,$func_name,$params=array()){
 						$fields[$x]=strtolower($fields[$x]);
 					}
 				}
+				continue;
+			}
+			if(isset($params['-mod']['mod']) && $linecnt % $params['-mod']['mod'] != $params['-mod']['val']){
+				$linecnt++;
 				continue;
 			}
 	        if(isset($params['-start']) && $linecnt < $params['-start']-1){
