@@ -11801,6 +11801,7 @@ function processCSVFileLines($file,$func_name,$params=array()){
 *	It will send an array with the following keys:
 *		file - name of file
 *		line_number - line number in file
+*		processtime - microtime of when the row was processed
 *		line - CSV array based on first fields
 * @param params array
 *	[-maxlen] int - max row length. defaults to 1000000
