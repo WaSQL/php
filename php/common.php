@@ -11812,6 +11812,7 @@ function processCSVFileLines($file,$func_name,$params=array()){
 *	[-maxrows|stop]  int - line to stop on
 *	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
 *	[-mod] string - mod,val  only process lines that have a mod of value
+*	[-addfields] array key/value pairs - add these to each row in the line array as if it were in the csv
 *	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
 * @usage
@@ -11905,6 +11906,12 @@ function processCSVLines($file,$func_name,$params=array()){
 			foreach($params as $key=>$val){
 				if(stringBeginsWith($key,'-')){continue;}
             	$set[$key]=$val;
+			}
+			if(isset($params['-addfields']) && is_array($params['-addfields'])){
+				foreach($params['-addfields'] as $key=>$val){
+					if(isset($set['line'][$key]) && strlen($set['line'][$key])){continue;}
+					$set['line'][$key]=$val;		
+				}
 			}
 			$first_line_val=strtolower($lineparts[0]);
 			if(isset($params['-fieldsmap']) && !isset($params['-fieldsmap'][$first_line_val])){
