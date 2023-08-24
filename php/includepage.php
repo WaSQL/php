@@ -1,8 +1,11 @@
 <?php
 /*
 	Instructions:
-		run dbclean.php from a command-line 
-	Note: dbclean.php cannot be run from a URL, it is a command line app only.
+		run includpage.php from a command-line 
+	Usage:
+		php includepage.php {hostname} {pagename}/{passthru} [x=1,y=2] &
+	Note: 
+		includpage.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the dbclean does not time out
 ini_set('max_execution_time', 72000);
