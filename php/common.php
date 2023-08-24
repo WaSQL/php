@@ -1335,6 +1335,11 @@ function parseHtmlTagAttributes($text) {
 */
 function abort($obj,$title='',$subtitle=''){
 	global $CONFIG;
+	//just print the message if on command line
+	if(isCLI()){
+		echo removeHTML(printValue($obj));
+		exit(361);
+	}
 	if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 		if(is_string($obj)){
 			$obj=preg_replace('/[\r\n\"\']+/','',$obj);
@@ -1357,7 +1362,7 @@ function abort($obj,$title='',$subtitle=''){
 		
 		header("Content-Type: application/json; charset=UTF-8");
 		echo json_encode($json, JSON_PRETTY_PRINT);
-		exit;
+		exit(362);
 	}
 
 	$rtn='';
@@ -1392,7 +1397,7 @@ function abort($obj,$title='',$subtitle=''){
 	$rtn .= '</div>'.PHP_EOL;
 	$rtn .= '</body></html>'.PHP_EOL;
 	echo $rtn;
-	exit(1);
+	exit(363);
 	}
 
 //---------- begin function addEditForm---------------------------------------
