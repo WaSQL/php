@@ -12,20 +12,19 @@ include_once("{$progpath}/zipfile/CreateZipFile.inc.php");
 * @param zipname string - name of the zipfile - defaults to zipfile.zip
 * @return boolean
 * @usage
-*	<?php
 *	$files=array('/var/www/temp/file1.php','/var/www/temp/file2.txt','/var/www/temp/file3.png');
 *	$bool=zipCreate($files,'myfiles.zip');
-*	?>
 */
-function zipCreate($files=array(),$zipname='zipfile.zip'){
-	$zip = new CreateZipFile;
-	foreach($files as $file){
-		$zip->addFile(getFileContents($file), getFileName($file));
+function zipCreate($files=array(),$zipfile='zipfile.zip'){
+	$zip = new ZipArchive;
+	if ($zip->open($zipfile) == TRUE) {
+		foreach($files as $file){
+			$zip->addFile($file);
+		}
+		$zip->close();
+		return true;
 	}
-	$fd=fopen($zipname, "wb");
-	$out=fwrite($fd,$zip->getZippedfile());
-	fclose($fd);
-	return true;
+	return false;
 }
 //---------- begin function zipPushData ----------
 /**
@@ -34,22 +33,19 @@ function zipCreate($files=array(),$zipname='zipfile.zip'){
 * @param zipname string - name of the zipfile - defaults to zipfile.zip
 * @return file - pushes zipfile to browser and exits
 * @usage
-*	<?php
 *	$files=array('/var/www/temp/file1.php','/var/www/temp/file2.txt','/var/www/temp/file3.png');
 *	zipPushData($files,'myfiles.zip');
-*	?>
 */
-function zipPushData($files=array(),$zipname='zipfile.zip'){
-	$zip = new CreateZipFile;
-	foreach($files as $filename=>$data){
-		$zip->addFile($data, $filename);
+function zipPushData($files=array(),$zipfile='zipfile.zip'){
+	$zip = new ZipArchive;
+	if ($zip->open($zipfile) == TRUE) {
+		foreach($files as $file){
+			$zip->addFile($file);
+		}
+		$zip->close();
+		return true;
 	}
-	//$zip->addFile('anyfiledata2', 'anyfolder/anyfilename.anyext');
-	//$zip->addDirectory('anyemptydirwouldbecreatedinthiszipfile');
-	header('Content-disposition: attachment; filename='.$zipname.'');
-	header('Content-type: application/octetstream');
-	echo $zip->getZippedfile();
-	exit();
+	return false;
 }
 //---------- begin function zipExtract ----------
 /**
@@ -59,34 +55,29 @@ function zipPushData($files=array(),$zipname='zipfile.zip'){
 * @param newpath string - name of new path.  default is to create a new dir with the same name as the zipfile
 * @return array - an array of files written (full path)
 * @usage
-*	<?php
 *	$files=zipExtract('/var/www/temp/myfiles.zip','myfiles');
-*	?>
 */
 function zipExtract( $zipfile,$newpath=''){
-	//info:
-	//info:returns an array of files written (full path)
-    $zippath=getFilePath($zipfile);
+	$zippath=getFilePath($zipfile);
     $zipname=getFileName($zipfile,1);
     $slash=isWindows()?"\\":'/';
     $rtn=array();
     //default new path to same path zipfile is located in if not specified
     if(!strlen($newpath)){$newpath="{$zippath}/{$zipname}";}
-    $zip = zip_open($zipfile);
-    if(is_resource($zip)){
-		//loop through the files in the zipfile
-        while ($zip_entry = zip_read($zip)){
-			$entryname=zip_entry_name($zip_entry);
-			$size=zip_entry_filesize($zip_entry);
-			if($size==0){
-				$apath="{$newpath}/{$entryname}";
+	$zip = new ZipArchive;
+	$files=array();
+	if ($zip->open($zipfile) == TRUE) {
+ 		for ($i = 0; $i < $zip->numFiles; $i++) {
+     		$file= $zip->statIndex($i);
+     		if($file['size']==0){
+				$apath="{$newpath}/{$file['name']}";
 				if(!is_dir($apath)){buildDir($apath);}
 				continue;
 			}
 			else{
-				$entrydir=getFilePath($entryname);
+				$entrydir=getFilePath($file['name']);
 				$apath = "{$newpath}/{$entrydir}";
-				$filename=getFileName($entryname);
+				$filename=getFileName($file['name']);
 				$afile = "{$apath}/{$filename}";
 			}
             $afile=preg_replace('/\/+/',$slash,$afile);
@@ -94,23 +85,16 @@ function zipExtract( $zipfile,$newpath=''){
             //build the directory if it does not exist
             if(!is_dir($apath)){buildDir($apath);}
             //open the file and write it
-            if (zip_entry_open($zip, $zip_entry, "r")){
-				if(is_file($afile)){unlink($afile);}
-                if ($fd = @fopen($afile, 'w+')){
-                    fwrite($fd, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry)));
-                    fclose($fd);
-                    if(is_file($afile)){$rtn[]=$afile;}
-                }
-                else {
-                    // probably an empty directory
-                    echo "Failed to write<br>Entry Name: {$entryname}<br />Entry Dir: {$entrydir}<br />Apath: {$apath}<br />Afile:{$afile}<br />Size:{$size}<br /> <br />".PHP_EOL;exit;
-                }
-                zip_entry_close($zip_entry);
+			if(is_file($afile)){unlink($afile);}
+            if ($fd = @fopen($afile, 'w+')){
+            	fwrite($fd, $zip->getFromIndex($i));
+                fclose($fd);
+                if(is_file($afile)){$files[]=$afile;}
             }
         }
-        zip_close($zip);
-    }
-    return $rtn;
+	}
+	$zip->close();
+	return $files;
 }
 //---------- begin function zipPushFile ----------
 /**
@@ -118,33 +102,27 @@ function zipExtract( $zipfile,$newpath=''){
 * @param zipfile string - path and zipfile
 * @param filename string - filename inside of zip file to push
 * @usage
-*	<?php
 *	zipPushFile('/var/www/temp/myfiles.zip','sample.png');
-*	?>
 */
-function zipPushFile($zip_file, $file_name) {
-	if (is_file($zip_file)) {
-		$zip = zip_open($zip_file);
-		while ($zip_entry = zip_read($zip)) {
-			if (zip_entry_open($zip, $zip_entry, "r")) {
-				if (zip_entry_name($zip_entry) == $file_name) {
-					$ctype=getFileContentType($file_name);
-					$size=zip_entry_filesize($zip_entry);
-					header("Content-Type: {$ctype}");
-					header("Content-length: {$size}");
-					echo zip_entry_read($zip_entry, $size);
-					zip_entry_close($zip_entry);
-					exit;
-				}
-			}
-		}
-		zip_close($zip);
-		echo "zipPushFile Error: {$file_name} does not exist in {$zip_file}".PHP_EOL;
-	}
-	else{
-		echo "zipPushFile Error: {$zip_file} does not exist".PHP_EOL;
-	}
-	exit;
+function zipPushFile($zipfile, $filename) {
+	$content='';
+	$zip = new ZipArchive;
+	if ($zip->open($zipfile) == TRUE) {
+ 		for ($i = 0; $i < $zip->numFiles; $i++) {
+     		$file= $zip->statIndex($i);
+     		if ($file['name']==$filename) {
+     			$ctype=getFileContentType($file['name']);
+				$size=$file['size'];
+				header("Content-Type: {$ctype}");
+				header("Content-length: {$size}");
+				echo $zip->getFromIndex($i);
+				$zip->close();
+				exit;
+     		}
+ 		}
+ 	}
+	$zip->close();
+	return $content;
 }
 //---------- begin function zipGetFileContents ----------
 /**
@@ -153,25 +131,20 @@ function zipPushFile($zip_file, $file_name) {
 * @param filename string - filename inside of zip file to push
 * @return mixed
 * @usage
-*	<?=zipGetFileContents('/var/www/temp/myfiles.zip','description.txt');?>
+*	zipGetFileContents('/var/www/temp/myfiles.zip','description.txt');
 */
-function zipGetFileContents($zip_file, $file_name) {
+function zipGetFileContents($zipfile, $filename) {
 	$content='';
-	if (is_file($zip_file)) {
-		$zip = zip_open($zip_file);
-		while ($zip_entry = zip_read($zip)) {
-			if (zip_entry_open($zip, $zip_entry, "r")) {
-				if (zip_entry_name($zip_entry) == $file_name) {
-					$ctype=getFileContentType($file_name);
-					$size=zip_entry_filesize($zip_entry);
-					$content=zip_entry_read($zip_entry, $size);
-					zip_entry_close($zip_entry);
-					break;
-				}
-			}
-		}
-		zip_close($zip);
-	}
+	$zip = new ZipArchive;
+	if ($zip->open($zipfile) == TRUE) {
+ 		for ($i = 0; $i < $zip->numFiles; $i++) {
+     		$file= $zip->statIndex($i);
+     		if ($file['name']==$filename) {
+				$content=$zip->getFromIndex($i);
+     		}
+ 		}
+ 	}
+	$zip->close();
 	return $content;
 }
 
@@ -182,26 +155,23 @@ function zipGetFileContents($zip_file, $file_name) {
 * @param filename string - filename inside of zip file to push
 * @return raw
 * @usage
-*	<?=zipGetFileThumbnail('/var/www/temp/myfiles.zip');?>
+*	zipGetFileThumbnail('/var/www/temp/myfiles.zip');
 */
-function zipGetFileThumbnail($zip_file) {
+function zipGetFileThumbnail($zipfile) {
 	$content='';
-	if (is_file($zip_file)) {
-		$zip = zip_open($zip_file);
-		while ($zip_entry = zip_read($zip)) {
-			if (zip_entry_open($zip, $zip_entry, "r")) {
-				$name=zip_entry_name($zip_entry);
-				if (preg_match('/\.(jpg|png|jpeg|gif)$/i',$name)) {
-					$ctype=getFileContentType($file_name);
-					$size=zip_entry_filesize($zip_entry);
-					$content=zip_entry_read($zip_entry, $size);
-					zip_entry_close($zip_entry);
-					break;
-				}
-			}
-		}
-		zip_close($zip);
+	$zip = new ZipArchive;
+	if ($zip->open($zipfile) == TRUE) {
+ 		for ($i = 0; $i < $zip->numFiles; $i++) {
+     		$file= $zip->statIndex($i);
+     		if (preg_match('/\.(jpg|png|jpeg|gif|svg)$/i',$file['name'])) {
+     			$ctype=getFileContentType($file['name']);
+				$size=$file['size'];
+				$content=$zip->getFromIndex($i);
+     			
+     		}
+ 		}
 	}
+	$zip->close();
 	header('Content-Description: File Transfer');
 	header("Content-Type: {$ctype}");
     header('Content-Disposition: attachment; filename='.basename($name));
@@ -228,31 +198,17 @@ function zipGetFileThumbnail($zip_file) {
 * @param zipfile string - path and zipfile to extract
 * @return array - an array of files
 * @usage
-*	<?php
 *	$files=zipListFiles('/var/www/temp/myfiles.zip');
-*	?>
 */
 function zipListFiles( $zipfile){
-	//info:
-	//info:returns an array of files written (full path)
-    $zippath=getFilePath($zipfile);
-    $zipname=getFileName($zipfile,1);
-    $slash=isWindows()?"\\":'/';
-    $rtn=array();
-    //default new path to same path zipfile is located in if not specified
-    if(!strlen($newpath)){$newpath="{$zippath}/{$zipname}";}
-    $zip = zip_open($zipfile);
-    $list=array();
-    if(is_resource($zip)){
-		//loop through the files in the zipfile
-        while ($zip_entry = zip_read($zip)){
-			$file=zip_entry_name($zip_entry);
-            $file=preg_replace('/\/+/',$slash,$file);
-            $file=preg_replace('/\\+/',$slash,$file);
-            $list[]=$file;
-        }
-        zip_close($zip);
-    }
-    return $list;
+	$zip = new ZipArchive;
+	$files=array();
+	if ($zip->open($zipfile) == TRUE) {
+ 		for ($i = 0; $i < $zip->numFiles; $i++) {
+     		$files[]= $zip->getNameIndex($i);
+ 		}	
+	}
+	$zip->close();
+	return $files;
 }
 ?>
