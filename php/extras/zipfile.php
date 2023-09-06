@@ -4,7 +4,7 @@
 */
 //load the common functions library
 $progpath=dirname(__FILE__);
-include_once("{$progpath}/zipfile/CreateZipFile.inc.php");
+//include_once("{$progpath}/zipfile/CreateZipFile.inc.php");
 //---------- begin function zipCreate ----------
 /**
 * @describe creates a zip file and returns the name
@@ -21,7 +21,7 @@ function zipCreate($files=array(),$zipfile='zipfile.zip'){
 		foreach($files as $file){
 			$zip->addFile($file);
 		}
-		$zip->close();
+		@$zip->close();
 		return true;
 	}
 	return false;
@@ -42,7 +42,7 @@ function zipPushData($files=array(),$zipfile='zipfile.zip'){
 		foreach($files as $file){
 			$zip->addFile($file);
 		}
-		$zip->close();
+		@$zip->close();
 		return true;
 	}
 	return false;
@@ -92,8 +92,8 @@ function zipExtract( $zipfile,$newpath=''){
                 if(is_file($afile)){$files[]=$afile;}
             }
         }
+        @$zip->close();
 	}
-	$zip->close();
 	return $files;
 }
 //---------- begin function zipPushFile ----------
@@ -120,8 +120,8 @@ function zipPushFile($zipfile, $filename) {
 				exit;
      		}
  		}
+ 		@$zip->close();
  	}
-	$zip->close();
 	return $content;
 }
 //---------- begin function zipGetFileContents ----------
@@ -143,8 +143,8 @@ function zipGetFileContents($zipfile, $filename) {
 				$content=$zip->getFromIndex($i);
      		}
  		}
+ 		@$zip->close();
  	}
-	$zip->close();
 	return $content;
 }
 
@@ -167,11 +167,10 @@ function zipGetFileThumbnail($zipfile) {
      			$ctype=getFileContentType($file['name']);
 				$size=$file['size'];
 				$content=$zip->getFromIndex($i);
-     			
      		}
  		}
+ 		@$zip->close();
 	}
-	$zip->close();
 	header('Content-Description: File Transfer');
 	header("Content-Type: {$ctype}");
     header('Content-Disposition: attachment; filename='.basename($name));
@@ -201,14 +200,22 @@ function zipGetFileThumbnail($zipfile) {
 *	$files=zipListFiles('/var/www/temp/myfiles.zip');
 */
 function zipListFiles( $zipfile){
+	$slash=isWindows()?"\\":'/';
+	$zipfile=preg_replace('/\/+/',$slash,$zipfile);
+    $zipfile=preg_replace('/\\+/',$slash,$zipfile);
+    echo "zipfile:{$zipfile}<br>".PHP_EOL;
+	if(!file_exists($zipfile)){return false;}
 	$zip = new ZipArchive;
 	$files=array();
-	if ($zip->open($zipfile) == TRUE) {
- 		for ($i = 0; $i < $zip->numFiles; $i++) {
+	if ($zip->open($zipfile,ZipArchive::RDONLY) == true) {
+		echo "zip:".printValue($zip);
+		$filecnt=$zip->numFiles;
+		echo "Filecnt:{$filecnt}<br>".PHP_EOL;
+ 		for ($i = 0; $i < $filecnt; $i++) {
      		$files[]= $zip->getNameIndex($i);
- 		}	
+ 		}
+ 		if($filecnt > 0){$zip->close();}
 	}
-	$zip->close();
 	return $files;
 }
 ?>
