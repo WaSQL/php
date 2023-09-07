@@ -3974,8 +3974,8 @@ function addDBIndex($params=array()){
 	if(!isset($params['-fields'])){return 'addDBIndex Error: No fields';}
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
 	//fulltext or unique
-	$fulltext=$params['-fulltext']?' FULLTEXT':'';
-	$unique=$params['-unique']?' UNIQUE':'';
+	$fulltext=isset($params['-fulltext'])?' FULLTEXT':'';
+	$unique=isset($params['-unique'])?' UNIQUE':'';
 	//prefix
 	$prefix='';
 	if(strlen($unique)){$prefix .= 'U';}
@@ -10304,7 +10304,7 @@ function getDBRecords($params=array()){
 		foreach($related as $rfield=>$recs){
 			reset($list);
 			foreach($list as $i=>&$r){
-				if(!strlen(trim($r[$rfield]))){continue;}
+				if(!isset($r[$rfield]) || is_null($r[$rfield]) || !strlen(trim($r[$rfield]))){continue;}
 				$rval=$r[$rfield];
 				if(strlen($rval) && preg_match('/\:/',$rval)){
 					$xrvals=preg_split('/\:/',$rval);

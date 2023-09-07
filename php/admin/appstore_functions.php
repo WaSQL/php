@@ -112,7 +112,13 @@ function appstoreInstall($appkey,$update=0){
 		$rec[$field]=base64_decode(base64_decode($post['json_array']['page'][$field]));
 	}
 	$rec['-table']='_pages';
-	if($update==1){
+	//does this app already exist?
+	$arec=getDBRecord(array('-table'=>'_pages','name'=>$rec['name']));
+	if($update != 1 && isset($arec['_id']) && isNum($arec['_id'])){
+		$ok=editDBRecordById('_pages',$arec['_id'],array('active'=>1,'_app'=>json_encode($app)));
+		return true;
+	}
+	elseif($update==1){
 		$rec['-upsert']='body,controller,description,functions,js,css,meta';
 	}
 	else{

@@ -6254,6 +6254,7 @@ function setView($name='',$clear=0){
 		}
 		if(!isset($PAGE['setView']) || !is_array($PAGE['setView'])){$PAGE['setView']=array();}
 		foreach($name as $sname){
+			if(!isset($PAGE['setView'][$sname])){$PAGE['setView'][$sname]=0;}
 			$PAGE['setView'][$sname]+=1;
 		}
 		return count($name);
@@ -11993,7 +11994,7 @@ function getCSVRecords($file,$params=array()){
 		if(!is_array($params['-listfields'])){$params['-listfields']=preg_split('/\,/',$params['-listfields']);}
 	}
 	else{$params['-listfields']=array();}
-	ini_set('auto_detect_line_endings',TRUE);
+	//ini_set('auto_detect_line_endings',TRUE);
 	$recs=array();
 	$linecnt = 0;
 	$bomchecked=0;
