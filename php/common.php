@@ -3002,7 +3002,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$tag .= <<<ENDOFDIV
 		<div class="align-center" style="white-space:nowrap;font-size:1.0rem;line-height:1.2;color:#343a4080;display:flex;">
 			<div style="flex:1">{$dname}</div>
-			<input type="checkbox" onclick="checkAllElements('data-group','{$params['group']}',this.checked);">
+			<input type="checkbox" data-id="{$params['id']}" onclick="checkAllElements('data-group','{$params['group']}',this.checked);formSetMultiSelectStatus(this);">
 		</div>
 ENDOFDIV;
 	$tag .= $litags;
