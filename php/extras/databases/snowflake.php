@@ -1211,7 +1211,7 @@ rolename={$DATABASE[$db]['dbrole']}
 authenticator=snowflake
 ENDOFCON;
 		setFileContents($confile,$constr);
-		$cmd="snowsql --config {$confile} -f {$sqlfile}  -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file={$outfile} -o log_file={$logfile} 2>&1";
+		$cmd="snowsql --config {$confile} -f {$sqlfile}  -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file={$outfile} -o log_file={$logfile} -o log_level=ERROR 2>&1";
 		$starttime=microtime(true);
 		$out=cmdResults($cmd);
 		$DATABASE['_lastquery']['stop']=microtime(true);
