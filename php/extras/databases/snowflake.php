@@ -1191,7 +1191,8 @@ function snowflakeQueryResults($query,$params=array()){
 		$sqlfile="{$wpath}/snowsql_{$hash}.sql";
 		$confile="{$wpath}/snowsql_{$hash}.conf";
 		$outfile="{$wpath}/snowsql_{$hash}.csv";
-		$logfile="{$wpath}/snowsql.log";
+		$logfile="{$wpath}/snowsql_{$hash}.log";
+		$bsfile="{$wpath}/snowsql_{$hash}.log_bootstrap";
 		if(isset($params['-filename'])){
 			$outfile=$params['-filename'];
 		}
@@ -1211,7 +1212,7 @@ rolename={$DATABASE[$db]['dbrole']}
 authenticator=snowflake
 ENDOFCON;
 		setFileContents($confile,$constr);
-		$cmd="snowsql --config {$confile} -f {$sqlfile}  -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file={$outfile} -o log_file={$logfile} 2>&1";
+		$cmd="snowsql --config {$confile} -f {$sqlfile}  -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file={$outfile} -o log_file={$logfile} -o log_level=CRITICAL";
 		$starttime=microtime(true);
 		$out=cmdResults($cmd);
 		$DATABASE['_lastquery']['stop']=microtime(true);
@@ -1219,8 +1220,11 @@ ENDOFCON;
 		if(is_file($outfile)){
 			if(isset($params['-filename'])){
 				$cnt=getFileLineCount($outfile)-2;
+				unlink($outfile);
 				unlink($sqlfile);
 				unlink($confile);
+				unlink($logfile);
+				unlink($bsfile);
 				return $cnt;
 			}
 			$recs=getCSVRecords($outfile);
@@ -1228,12 +1232,16 @@ ENDOFCON;
 			unlink($outfile);
 			unlink($sqlfile);
 			unlink($confile);
+			unlink($logfile);
+			unlink($bsfile);
 			return $recs;
 		}
 		debugValue($out);
 		unlink($outfile);
 		unlink($sqlfile);
 		unlink($confile);
+		unlink($logfile);
+		unlink($bsfile);
 		return array();
 		//failed - try the other way
 	}
