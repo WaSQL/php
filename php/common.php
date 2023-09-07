@@ -2999,7 +2999,12 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 		$onclose="commonCloseDropdownMenu(this);";
 	}
 	$tag .= ' 	<div id="'.$params['id'].'_options" class="dropdown-menu" onmouseleave="'.$onclose.'">'.PHP_EOL;
-	$tag .= '<div class="align-center" style="white-space:nowrap;font-size:1.0rem;line-height:1.2;color:#343a4080;"> -- '.$dname.' --</div>';
+	$tag .= <<<ENDOFDIV
+		<div class="align-center" style="white-space:nowrap;font-size:1.0rem;line-height:1.2;color:#343a4080;display:flex;">
+			<div style="flex:1">{$dname}</div>
+			<input type="checkbox" onclick="checkAllElements('data-group','{$params['group']}',this.checked);">
+		</div>
+ENDOFDIV;
 	$tag .= $litags;
 	$tag .= '	</div>'.PHP_EOL;
 	$tag .= '</div>'.PHP_EOL;
