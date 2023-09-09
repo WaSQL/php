@@ -59,6 +59,24 @@ Script:
 		update_time,
 		script
 	FROM script
+	LIMIT 10
+
+idx_job_status:
+	SELECT
+		site_id,
+		host_name,
+		dataflow_name,
+		start_time,
+		end_time,
+		frequency_type,
+		success_email_notification,
+		failure_email_notification,
+		processed_records,
+		attempt_number,
+		status
+	FROM idx_job_status
+	ORDER BY updateTime
+	LIMIT 10
 
 */
 
