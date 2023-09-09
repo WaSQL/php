@@ -132,7 +132,6 @@ function sqlpromptListResults($recs){
 }
 function sqlpromptListFields($recs){
 	if(!is_array($recs) || !count($recs)){
-		if(strlen($recs)){return $recs;}
 		return translateText('No fields defined','',1);
 	}
 	$opts=array(
@@ -279,6 +278,10 @@ function sqlpromptMonitorTools(){
 			global $dbh_sqlite;
 			$dbh_sqlite='';
 			$recs=sqliteNamedQueryList();
+		break;
+		case 'gigya':
+			loadExtras('gigya');
+			$recs=gigyaNamedQueryList();
 		break;
 		case 'snowflake':
 			loadExtras('snowflake');

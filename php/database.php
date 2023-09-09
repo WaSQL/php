@@ -244,6 +244,10 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			$dbh_sqlite='';
 			$func="sqlite".ucfirst($func);
 		break;
+		case 'gigya':
+			loadExtras('gigya');
+			$func="gigya".ucfirst($func);
+		break;
 		case 'ctree':
 			loadExtras('ctree');
 			$dbh_ctree='';
@@ -1208,6 +1212,12 @@ function databaseListRecords($params=array()){
 				}
 				$params['-list']=sqliteQueryResults($params['-query']);
 			break;
+			case 'gigya':
+				if(!function_exists('gigyaQueryResults')){
+					loadExtras('gigya');
+				}
+				$params['-list']=gigyaQueryResults($params['-query']);
+			break;
 			default:
 				$params['-list']=getDBRecords($params['-query']);
 			break;
@@ -1294,6 +1304,12 @@ function databaseListRecords($params=array()){
 					loadExtras('sqlite');
 				}
 				$info=sqliteGetDBFieldInfo($params['-table']);
+			break;
+			case 'gigya':
+				if(!function_exists('gigyaGetDBFieldInfo')){
+					loadExtras('gigya');
+				}
+				$info=gigyaGetDBFieldInfo($params['-table']);
 			break;
 			default:
 				$info=getDBFieldInfo($params['-table']);

@@ -66,6 +66,9 @@
 					}
 					$sql="select * from {$table} order by 1 desc limit 5";
 				break;
+				case 'gigya':
+					$sql="select * from {$table} limit 5";
+				break;
 				default:
 					$sql="select * from {$table} order by 1 desc limit 5";
 				break;
