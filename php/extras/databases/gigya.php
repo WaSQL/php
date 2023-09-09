@@ -12,7 +12,54 @@
 	        dbpass="{secretKey}"
 	        dbkey="{apiKey}"
 	    />
-		
+Auditlog:
+	SELECT
+		call_id,
+		timestamp,
+		err_code,
+		err_details,
+		err_message,
+		endpoint,
+		http_req.country as country,
+		ip,
+		params.loginID as login_id,
+		params.pageURL as url,
+		user_agent.os as os,
+		user_agent.browser as browser,
+		user_agent.platform as platform,
+		auth_type,
+		uid
+	FROM auditLog 
+	WHERE endpoint = "accounts.login" 
+	ORDER BY @timestamp 
+	limit 10
+
+Accounts:
+	SELECT
+		uid as dist_id,
+		profile.firstname as firstname,
+		profile.lastname as lastname,
+		profile.email as email,
+		profile.username as username,
+		is_verified,
+		is_registered,
+		is_active,
+		last_login
+	FROM accounts
+	ORDER BY @lastUpdated
+	limit 10
+
+Script:
+	SELECT
+		id,
+		description,
+		input,
+		output,
+		create_time,
+		update_time,
+		script
+	FROM script
+
 */
 
 function gigyaEscapeString($str){
@@ -206,7 +253,20 @@ function gigyaQueryResults($query,$params=array()){
 		}
 	}
 	if(!strlen($table)){return "Invalid Table name: ".printValue($m);}
-	//echo "gigyaQueryResults".$query.printValue();exit;
+	//get fields to return
+	$fields=array();
+	if(preg_match('/SELECT(.+?)FROM/is',$query,$m)){
+		//echo printValue($m);exit;
+		$rtag=$m[0];
+		if(trim($m[1])!='*'){
+			$xfields=preg_split('/\,/',trim($m[1]));
+			foreach($xfields as $f=>$field){
+				$fields[]=strtolower(trim($field));
+			}
+			$query=str_replace($rtag,'SELECT * FROM',$query);
+		}
+	}
+	//echo "gigyaQueryResults: ".$query.printValue($fields);exit;
 	$url="https://{$table}.us1.gigya.com/{$table}.search";
 	/*
 		"totalCount": 10109796,
@@ -283,19 +343,62 @@ ENDOFERROR;
 		}
 		if(isset($post['json_array']['results'])){
 			foreach($post['json_array']['results'] as $result){
-				$rec=array();
+				//fix fields
+				$xrec=array();
 				foreach($result as $k=>$v){
 					switch(strtolower($k)){
 						case 'count':
 						case 'count(*)':
 							$k='count';
 						break;
+						case 'serverip':$k='server_ip';break;
+						case '@timestamp':$k='timestamp';break;
+						case 'uid':$k='uid';break;
 					}
-					$k=str_replace('UID','uid',$k);
 					$k=str_replace('ID','Id',$k);
 					$k = strtolower(preg_replace('/([A-Z])/', '_$1', $k));
-					if(is_array($v)){$v=encodeJson($v);}
-					$rec[$k]=$v;
+					$xrec[$k]=$v;
+					if(is_array($xrec[$k])){
+						$xrec[$k]=array_change_key_case($xrec[$k]);
+					}
+				}
+				$rec=array();
+				if(count($fields)){
+					foreach($fields as $fieldstr){
+						$aname='';
+						if(preg_match('/([\s\r\n]+)AS([\s\r\n]+)(.+)$/is',$fieldstr,$m)){
+							$aname=$m[3];
+							$fieldstr=str_replace($m[0],'',$fieldstr);
+						}
+						$parts=preg_split('/\./',$fieldstr,2);
+						$field=$parts[0];
+						if(isset($xrec[$field])){
+							if(count($parts)==1){
+								$val=$xrec[$field];
+							}
+							else{
+								$subfield=$parts[1];
+								$val=$xrec[$field][$subfield];
+							}
+							if(is_array($val)){$val=encodeJson($val);}
+							if(strlen($aname)){
+								$rec[$aname]=$val;
+							}
+							else{
+								$field=implode('_',$parts);
+								$rec[$field]=$val;
+							}
+						}
+						else{
+							$xrec[$field]='';
+						}
+					}
+				}
+				else{
+					foreach($xrec as $k=>$v){
+						if(is_array($v)){$v=encodeJson($v);}
+						$rec[$k]=$v;
+					}
 				}
 				$recs[]=$rec;
 				$recs_count+=1;
