@@ -14,7 +14,8 @@
 	    />
 Auditlog:
 	SELECT
-		call_id,
+		uid as dist_id,
+		params.loginid as loginid,
 		timestamp,
 		err_code,
 		err_details,
@@ -27,10 +28,10 @@ Auditlog:
 		user_agent.os as os,
 		user_agent.browser as browser,
 		user_agent.platform as platform,
-		auth_type,
-		uid
+		auth_type
 	FROM auditLog 
-	WHERE endpoint = "accounts.login" 
+	WHERE 
+		endpoint = "accounts.login" 
 	ORDER BY @timestamp 
 	limit 10
 
@@ -408,7 +409,12 @@ ENDOFERROR;
 							}
 						}
 						else{
-							$xrec[$field]='';
+							if(strlen($aname)){
+								$rec[$aname]='';
+							}
+							else{
+								$rec[$field]='';
+							}
 						}
 					}
 				}
