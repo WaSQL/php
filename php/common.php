@@ -14537,7 +14537,7 @@ function isWasqlTable($table){
 * @usage if(isXML($str)){...}
 */
 function isXML($str=''){
-	if(is_array($str)){return false;}
+	if(is_array($str) || is_null($str)){return false;}
 	if(strlen($str)==0){return false;}
 	if(preg_match('/\<.+?\>/i',$str)){return true;}
 	if(preg_match('/[\<\>]/s',$str)){return true;}
