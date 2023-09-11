@@ -13575,7 +13575,7 @@ function commonIncludeFunctionCode($content,$name=''){
 	preg_match_all('/\<\?(.+?)\?\>/sm',$content,$evalmatches,PREG_PATTERN_ORDER);
 	if(!count($evalmatches[1])){
 		//assume just PHP without an end marker
-		$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($evalcode).".php";
+		$tmpfile="{$CONFIG['name']}_{$name}_".'php_'.sha1($content).".php";
 		$afile="{$tmppath}/{$tmpfile}";
 		$afile=str_replace("\\","/",$afile);
 		//echo $afile.PHP_EOL;
