@@ -363,6 +363,10 @@ function ldapGetUsersAll(){
         //echo printValue($cookie).printValue($ldapInfo);exit;
         $entries = ldap_get_entries($ldapInfo['connection'], $result);
         foreach ($entries as $e) {
+        	if(!is_array($e)){
+        		debugValue($e);
+        		continue;
+        	}
 			//lowercase the keys
 			$e=array_change_key_case($e,CASE_LOWER);
 			//do not include Service Accounts
@@ -546,7 +550,11 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
         	$cnt=count($entries);
         	debugValue(" - found {$cnt} entries");
         }
-        foreach ($entries as $e) {
+        foreach ($entries as $e){
+        	if(!is_array($e)){
+        		debugValue($e);
+        		continue;
+        	}
 			//lowercase the keys
 			$e=array_change_key_case($e,CASE_LOWER);
 			//do not include Service Accounts
@@ -586,6 +594,7 @@ function ldapConvert2UserRecord($rec){
 * @usage $active=ldapIsActiveRecord($lrec);
 */
 function ldapIsActiveRecord($lrec=array()){
+	if(!is_array($lrec)){return 0;}
 	//lowercase the keys, if not already
 	if(!isset($lrec['memberof'])){
 		$lrec=array_change_key_case($lrec,CASE_LOWER);
@@ -629,6 +638,7 @@ function ldapMapField($field){
 * @usage $lrec=ldapParseEntry($lrec);
 */
 function ldapParseEntry($lrec=array(),$checkmemberof=1){
+	if(!is_array($lrec)){return $lrec;}
 	//lowercase the keys, if not already
 	if(!isset($lrec['memberof'])){
 		$lrec=array_change_key_case($lrec,CASE_LOWER);
