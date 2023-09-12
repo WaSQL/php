@@ -1,7 +1,7 @@
 <?php
 
 /*
-	https://help.sap.com/docs/SAP_CUSTOMER_DATA_CLOUD/8b8d6fffe113457094a17701f63e3d6a/4143815a70b21014bbc5a10ce4041860.html
+	
 	gigya can be queried using SQL like a database.
 	Usage:
 		<database
@@ -13,6 +13,8 @@
 	        dbkey="{apiKey}"
 	    />
 Auditlog:
+	https://help.sap.com/docs/SAP_CUSTOMER_DATA_CLOUD/8b8d6fffe113457094a17701f63e3d6a/4143815a70b21014bbc5a10ce4041860.html
+
 	SELECT
 		uid as dist_id,
 		params.loginid as loginid,
@@ -36,6 +38,8 @@ Auditlog:
 	limit 10
 
 Accounts:
+	https://help.sap.com/docs/SAP_CUSTOMER_DATA_CLOUD/8b8d6fffe113457094a17701f63e3d6a/b32ce0918af44c3ebd7e96650fa6cc1d.html
+
 	SELECT
 		uid as dist_id,
 		profile.firstname as firstname,
@@ -49,6 +53,8 @@ Accounts:
 	FROM accounts
 	ORDER BY @lastUpdated
 	limit 10
+
+https://help.sap.com/docs/SAP_CUSTOMER_DATA_CLOUD/8b8d6fffe113457094a17701f63e3d6a/415f681b70b21014bbc5a10ce4041860.html
 
 Script:
 	SELECT
@@ -81,10 +87,6 @@ idx_job_status:
 
 */
 
-function gigyaEscapeString($str){
-	$str = str_replace("'","''",$str);
-	return $str;
-}
 //---------- begin function gigyaGetTableDDL ----------
 /**
 * @describe returns create script for specified table
@@ -96,41 +98,6 @@ function gigyaEscapeString($str){
 function gigyaGetTableDDL($table,$schema=''){
 	$recs=array();
 	return $recs;
-}
-//---------- begin function gigyaGetAllTableFields ----------
-/**
-* @describe returns fields of all tables with the table name as the index
-* @param [$schema] string - schema. defaults to dbschema specified in config
-* @return array
-* @usage $allfields=gigyaGetAllTableFields();
-*/
-function gigyaGetAllTableFields($schema=''){
-	return array();
-}
-//---------- begin function gigyaGetAllTableIndexes ----------
-/**
-* @describe returns indexes of all tables with the table name as the index
-* @param [$schema] string - schema. defaults to dbschema specified in config
-* @return array
-* @usage $allindexes=gigyaGetAllTableIndexes();
-*/
-function gigyaGetAllTableIndexes($schema=''){
-	return array();
-}
-function gigyaGetDBSchema(){
-	global $CONFIG;
-	global $DATABASE;
-	$params=gigyaParseConnectParams();
-	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
-		return $DATABASE[$CONFIG['db']]['dbschema'];
-	}
-	elseif(isset($CONFIG['dbschema'])){return $CONFIG['dbschema'];}
-	elseif(isset($CONFIG['-dbschema'])){return $CONFIG['-dbschema'];}
-	elseif(isset($CONFIG['schema'])){return $CONFIG['schema'];}
-	elseif(isset($CONFIG['-schema'])){return $CONFIG['-schema'];}
-	elseif(isset($CONFIG['gigya_dbschema'])){return $CONFIG['gigya_dbschema'];}
-	elseif(isset($CONFIG['gigya_schema'])){return $CONFIG['gigya_schema'];}
-	return '';
 }
 
 function gigyaGetDBIndexes($tablename=''){
@@ -203,19 +170,14 @@ function gigyaGetDBTables($params=array()){
 * @usage $fieldinfo=gigyaGetDBFieldInfo('abcschema.abc');
 */
 function gigyaGetDBFieldInfo($tablename,$params=array()){
-	$xrecs=gigyaQueryResults("SELECT * FROM {$tablename} limit 1");
+	$fieldinfo=gigyaQueryResults("SELECT * FROM {$tablename} limit 1",array('-fieldinfo'=>1));
+	//echo printValue($fieldinfo);exit;
 	$recs=array();
-	foreach($xrecs[0] as $k=>$v){
+	foreach($fieldinfo as $k=>$type){
 		$rec=array(
-			'_dbfield'=>$k
+			'_dbfield'=>$k,
+			'_dbtype_ex'=>$type
 		);
-		$jv=decodeJson($v);
-		if(is_array($jv)){
-			$rec['_dbtype_ex']='json';
-		}
-		else{
-			$rec['_dbtype_ex']='string';
-		}
 		$recs[]=$rec;
 	}
 	return $recs;
@@ -325,6 +287,7 @@ function gigyaQueryResults($query,$params=array()){
     	unlink($params['-filename']);
     }
     $loop=0;
+    $fieldinfo=array();
     while($loop < $maxloops){
     	$loop+=1;
     	$cquery=$query." START {$poffset} LIMIT {$plimit}";
@@ -365,21 +328,44 @@ ENDOFERROR;
 				//fix fields
 				$xrec=array();
 				foreach($result as $k=>$v){
-					switch(strtolower($k)){
-						case 'count':
-						case 'count(*)':
-							$k='count';
-						break;
-						case 'serverip':$k='server_ip';break;
-						case '@timestamp':$k='timestamp';break;
-						case 'uid':$k='uid';break;
+					if(!isset($fieldinfo[$k])){
+						$fieldinfo[$k]=array(
+							'_dbfield'=>$k
+						);
+						$jv=decodeJson($v);
+						if(is_array($jv)){
+							$fieldinfo[$k]['_dbtype_ex']='json';
+							$v=$jv;
+						}
+						elseif(isDate($v)){
+							$fieldinfo[$k]['_dbtype_ex']='date';	
+						}
+						elseif($v=='1' || $v=='0'){
+							$fieldinfo[$k]['_dbtype_ex']='int';	
+						}
+						elseif(preg_match('/^[0-9]+$/',$v)){
+							$fieldinfo[$k]['_dbtype_ex']='bigint';
+						}
+						else{
+							$fieldinfo[$k]['_dbtype_ex']='string';
+						}
 					}
-					$k=str_replace('ID','Id',$k);
-					$k = strtolower(preg_replace('/([A-Z])/', '_$1', $k));
 					$xrec[$k]=$v;
-					if(is_array($xrec[$k])){
-						$xrec[$k]=array_change_key_case($xrec[$k]);
-					}
+					// switch(strtolower($k)){
+					// 	case 'count':
+					// 	case 'count(*)':
+					// 		$k='count';
+					// 	break;
+					// 	case 'serverip':$k='server_ip';break;
+					// 	case '@timestamp':$k='timestamp';break;
+					// 	case 'uid':$k='uid';break;
+					// }
+					// $k=str_replace('ID','Id',$k);
+					// $k = strtolower(preg_replace('/([A-Z])/', '_$1', $k));
+					// $xrec[$k]=$v;
+					// if(is_array($xrec[$k])){
+					// 	$xrec[$k]=array_change_key_case($xrec[$k]);
+					// }
 				}
 				$rec=array();
 				if(count($fields)){
@@ -455,6 +441,9 @@ ENDOFERROR;
 	}
 	if(isset($params['-filename'])){
 		return $recs_count;
+	}
+	elseif(isset($params['-fieldinfo'])){
+		return $fieldinfo;
 	}
 	return $recs;
 }
@@ -578,7 +567,6 @@ function gigyaNamedQueryList(){
 * @return query string
 */
 function gigyaNamedQuery($name){
-	$schema=gigyaGetDBSchema();
 	switch(strtolower($name)){
 		case 'tables':
 			return <<<ENDOFQUERY
