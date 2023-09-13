@@ -173,11 +173,7 @@ function gigyaGetDBFieldInfo($tablename,$params=array()){
 	$fieldinfo=gigyaQueryResults("SELECT * FROM {$tablename} limit 1",array('-fieldinfo'=>1));
 	//echo printValue($fieldinfo);exit;
 	$recs=array();
-	foreach($fieldinfo as $k=>$type){
-		$rec=array(
-			'_dbfield'=>$k,
-			'_dbtype_ex'=>$type
-		);
+	foreach($fieldinfo as $k=>$rec){
 		$recs[]=$rec;
 	}
 	return $recs;
@@ -328,13 +324,34 @@ ENDOFERROR;
 				//fix fields
 				$xrec=array();
 				foreach($result as $k=>$v){
-					if(!isset($fieldinfo[$k])){
+					$xk=$k;
+					switch(strtolower($xk)){
+						case 'count':
+						case 'count(*)':
+							$xk='count';
+						break;
+						case 'serverip':$xk='server_ip';break;
+						case '@timestamp':$xk='timestamp';break;
+						case 'uid':$xk='uid';break;
+					}
+					$xk=str_replace('ID','Id',$xk);
+					$xk = strtolower(preg_replace('/([A-Z])/', '_$1', $xk));
+					if(!isset($fieldinfo[$xk])){
 						$fieldinfo[$k]=array(
+							'field'=>$xk,
 							'_dbfield'=>$k
 						);
 						$jv=decodeJson($v);
 						if(is_array($jv)){
-							$fieldinfo[$k]['_dbtype_ex']='json';
+							if(!isset($jv[0])){
+								$jv=array_change_key_case($jv);
+								$jfields=array_keys($jv);
+								$fieldinfo[$k]['_dbtype_ex']=implode(',<br>',$jfields);
+							}
+							else{
+								$fieldinfo[$k]['_dbtype_ex']='JSON';
+							}
+							
 							$v=$jv;
 						}
 						elseif(isDate($v)){
@@ -350,22 +367,8 @@ ENDOFERROR;
 							$fieldinfo[$k]['_dbtype_ex']='string';
 						}
 					}
-					$xrec[$k]=$v;
-					// switch(strtolower($k)){
-					// 	case 'count':
-					// 	case 'count(*)':
-					// 		$k='count';
-					// 	break;
-					// 	case 'serverip':$k='server_ip';break;
-					// 	case '@timestamp':$k='timestamp';break;
-					// 	case 'uid':$k='uid';break;
-					// }
-					// $k=str_replace('ID','Id',$k);
-					// $k = strtolower(preg_replace('/([A-Z])/', '_$1', $k));
-					// $xrec[$k]=$v;
-					// if(is_array($xrec[$k])){
-					// 	$xrec[$k]=array_change_key_case($xrec[$k]);
-					// }
+					$k=strtolower($k);
+					$xrec[$k]=$xrec[$xk]=$v;
 				}
 				$rec=array();
 				if(count($fields)){
@@ -377,6 +380,7 @@ ENDOFERROR;
 						}
 						$parts=preg_split('/\./',$fieldstr,2);
 						$field=$parts[0];
+						//echo $field.printValue($xrec[$field]);exit;
 						if(isset($xrec[$field])){
 							if(count($parts)==1){
 								$val=$xrec[$field];
