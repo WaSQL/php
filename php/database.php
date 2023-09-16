@@ -5294,8 +5294,7 @@ function addDBRecord($params=array()){
    //  }
     if(count($upserts)){
 		//VALUES() to refer to the new row is deprecated with version 8
-		
-		$euser=(integer)$USER['_id'];
+		$euser=isset($USER['_id'])?(integer)$USER['_id']:0;
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
 		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
@@ -9624,6 +9623,9 @@ function getDBTableStatus(){
 * @usage $t=getDBTime();
 */
 function getDBTime(){
+	return dbGetTime();
+}
+function dbGetTime(){
 	$nrec=getDBRecord("select now() as now");
 	return strtotime($nrec['now']);
 }
