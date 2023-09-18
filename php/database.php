@@ -2583,10 +2583,10 @@ function databaseListRecords($params=array()){
 	                    $editv=str_replace($replace,strip_tags($rec[$recfld]),$editv);
 	                }
 	                $editv=str_replace('"','',$editv);
-	                $rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="'.$editv.'"></sup>';
+	                $rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" style="margin-left:4px;" onclick="'.$editv.'"></sup>';
 				}
 				else{
-					$rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$recid.'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
+					$rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" style="margin-left:4px;" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$recid.'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
 				}
 				
 			}
