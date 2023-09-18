@@ -16,12 +16,15 @@ $progpath=dirname(__FILE__);
 *	$bool=zipCreate($files,'myfiles.zip');
 */
 function zipCreate($files=array(),$zipfile='zipfile.zip'){
+	if(file_exists($zipfile)){unlink($zipfile);}
 	$zip = new ZipArchive;
-	if ($zip->open($zipfile) == TRUE) {
+	if ($zip->open($zipfile,ZIPARCHIVE::CREATE) == TRUE) {
 		foreach($files as $file){
-			$zip->addFile($file);
+			//The 2nd parameter in addFile is the name of the file inside the zip
+			$filename=getFileName($file);
+			$zip->addFile($file,$filename);
 		}
-		@$zip->close();
+		$zip->close();
 		return true;
 	}
 	return false;
@@ -40,9 +43,11 @@ function zipPushData($files=array(),$zipfile='zipfile.zip'){
 	$zip = new ZipArchive;
 	if ($zip->open($zipfile) == TRUE) {
 		foreach($files as $file){
-			$zip->addFile($file);
+			//The 2nd parameter in addFile is the name of the file inside the zip
+			$filename=getFileName($file);
+			$zip->addFile($file,$filename);
 		}
-		@$zip->close();
+		$zip->close();
 		return true;
 	}
 	return false;
