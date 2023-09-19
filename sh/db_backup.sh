@@ -46,6 +46,6 @@ db=$1
 NOW="$(date +"%m-%d-%Y")"
 DASH="__"
 FILE="$BackupDir/$db$DASH$NOW.sql.gz"
-echo -e "$MYSQLDUMP --user=$MyUSER --host=$MyHOST --password=$MyPASS --max_allowed_packet=128M $db > $FILE\n"
-"$MYSQLDUMP" --user=$MyUSER --host=$MyHOST --password=$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE
+echo -e "$MYSQLDUMP --single-transaction=TRUE --user=$MyUSER --host=$MyHOST --password=$MyPASS --max_allowed_packet=128M $db > $FILE\n"
+"$MYSQLDUMP" --single-transaction=TRUE --user=$MyUSER --host=$MyHOST --password=$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE
 

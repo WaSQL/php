@@ -79,8 +79,8 @@ do
 	# do all inone job in pipe,
 	# connect to mysql using mysqldump for select mysql database
 	# and pipe it out to gz file in backup dir :)
-        echo -e "mysqldump -u $MyUSER -h $MyHOST -p$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE\n"
-        mysqldump -u $MyUSER -h $MyHOST -p$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE
+        echo -e "mysqldump --single-transaction=TRUE -u $MyUSER -h $MyHOST -p$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE\n"
+        mysqldump --single-transaction=TRUE -u $MyUSER -h $MyHOST -p$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE
     fi
 done
 #remove backups older than 90 days
