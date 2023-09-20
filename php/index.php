@@ -310,7 +310,12 @@ foreach($_REQUEST as $key=>$val){
 	}
 }
 //Check for ping
-if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
+$request_count=0;
+foreach($_REQUEST as $k=>$v){
+	if(stringBeginsWith($k,'_')){continue;}
+	$request_count+=1;
+}
+if(isset($_REQUEST['ping']) && $request_count==1){
 	$json=array(
 		'status'=>'success',
 		'time'=>number_format((microtime(true)-$starttime),3),
@@ -346,7 +351,8 @@ if(isset($_REQUEST['ping']) && count($_REQUEST)==1){
 		$json['uptime_verbose']=verboseTime($json['uptime']);
 	}
 	$json=json_encode($json);
-	echo base64_encode(encrypt($json,$_SERVER['HTTP_HOST']));
+	//echo $json;exit;
+	echo "WaSQL".base64_encode(encrypt($json,$_SERVER['HTTP_HOST']));
 	//header("Content-Type: application/json; charset=UTF-8");
 	exit;
 }
