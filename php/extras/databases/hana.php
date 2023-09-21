@@ -146,9 +146,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		}
 		if($c > 0 && count($recs)==$chunk_size){
 			$ok = odbc_execute($stmt, $pvalues);
-			//they just entered a query
-			//$ok=hanaExecuteSQL($query);
-			if(!$ok){
+			if (odbc_error()){
 				$drecs=array();
 				$xchunks=array_chunk($pvalues,count($fields));
 				foreach($xchunks as $xchunk){
@@ -248,9 +246,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			return 0;
 		}
 		$ok = odbc_execute($stmt, $pvalues);
-		//echo $query;exit;
-		//$ok=hanaExecuteSQL($query);
-		if(!$ok){
+		if (odbc_error()){
 			$drecs=array();
 			$xchunks=array_chunk($pvalues,count($fields));
 			foreach($xchunks as $xchunk){
@@ -1120,7 +1116,7 @@ function hanaExecuteSQL($query,$params=array()){
 		else{
 			$result=odbc_exec($dbh_hana,$query);	
 		}
-		if(!$result){
+		if (odbc_error()){
 			$errstr=odbc_errormsg($dbh_hana);
 			if(!strlen($errstr)){return array();}
 			if(stringContains($errstr,'session not connected')){
@@ -1250,7 +1246,7 @@ ENDOFQUERY;
 		}
 		
 		$success = odbc_execute($hanaAddDBRecordCache[$params['-table']]['stmt'],$opts['values']);
-		if(!$success){
+		if (odbc_error()){
 			$e=odbc_errormsg();
 			debugValue(array("hanaAddDBRecord Execute Error",$e,$opts));
     		return "hanaAddDBRecord Execute Error".printValue($e);
@@ -1357,6 +1353,15 @@ ENDOFQUERY;
     		return 1;
 		}
 		$success = odbc_execute($hana_stmt,$vals);
+		if (odbc_error()){
+			debugValue(array(
+				'function'=>'hanaEditDBRecord',
+				'message'=>'odbc execute error',
+				'error'=>odbc_errormsg($hana_stmt),
+				'query'=>$query,
+				'params'=>$params
+			));
+		}
 		//echo $vals[5].$query.printValue($success).printValue($vals);
 	}
 	catch (Exception $e) {
@@ -1836,19 +1841,27 @@ function hanaQueryHeader($query,$params=array()){
 		else{
 			$result=odbc_exec($dbh_hana,$query);	
 		}
-		if(!$result){
-        	$err=array(
-        		'error'	=> odbc_errormsg($dbh_hana),
-        		'query'	=> $query
-			);
-			echo "hanaQueryHeader error:".printValue($err);
-			exit;
+		if (odbc_error()){
+			debugValue(array(
+				'function'=>'hanaEditDBRecord',
+				'message'=>'odbc execute error',
+				'error'=>odbc_errormsg($dbh_hana),
+				'query'=>$query,
+				'params'=>$params
+			));
+			return array();
 		}
 	}
 	catch (Exception $e) {
 		$err=$e->errorInfo;
-		echo "hanaQueryHeader error: exception".printValue($err);
-		exit;
+		debugValue(array(
+			'function'=>'hanaEditDBRecord',
+			'message'=>'try catch Exception',
+			'error'=>$err,
+			'query'=>$query,
+			'params'=>$params
+		));
+		return array();
 	}
 	$fields=array();
 	for($i=1;$i<=odbc_num_fields($result);$i++){
@@ -1921,42 +1934,15 @@ function hanaQueryResults($query,$params=array()){
 		else{
 			$dbh_hana_result=odbc_exec($dbh_hana,$query);	
 		}
-		if(!$dbh_hana_result){
-
-			$errstr=odbc_errormsg($dbh_hana);
-			if(!strlen($errstr)){return array();}
-        	$err=array(
-        		'error'	=> $errstr,
-        		'query' => $query
-			);
-			if(stringContains($errstr,'session not connected')){
-				//lets retry
-				odbc_close($dbh_hana);
-				sleep(1);
-				$dbh_hana='';
-				$dbh_hana=hanaDBConnect($params);
-				if(isset($params['-timeout']) && isNum($params['-timeout'])){
-					//sets the query to timeout after X seconds
-					$dbh_hana_result = odbc_prepare($dbh_hana,$query);
-					odbc_setoption($dbh_hana_result, 2, 0, $params['-timeout']);
-					odbc_execute($dbh_hana_result);
-				}
-				else{
-					$dbh_hana_result=odbc_exec($dbh_hana,$query);	
-				}
-				if(!$dbh_hana_result){
-					$errstr=odbc_errormsg($dbh_hana);
-					if(!strlen($errstr)){return array();}
-					$DATABASE['_lastquery']['error']='connect failed: '.$errstr;
-					debugValue($DATABASE['_lastquery']);
-			    	return array();
-				}
-			}
-			else{
-				$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg($dbh_hana);
-				debugValue($DATABASE['_lastquery']);
-		    	return array();
-			}
+		if (odbc_error()){
+			debugValue(array(
+				'function'=>'hanaQueryResults',
+				'message'=>'odbc execute error',
+				'error'=>odbc_errormsg($dbh_hana),
+				'query'=>$query,
+				'params'=>$params
+			));
+			return array();
 		}
 	}
 	catch (Exception $e) {
@@ -2222,8 +2208,11 @@ function hanaBuildPreparedInsertStatement($table,$fieldinfo=array(),$params=arra
 */
 function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
-		echo "hanaBuildPreparedReplaceStatement error - missing keys.  Table: {$table}";
-		exit;
+		debugValue(array(
+			'function'=>'hanaBuildPreparedReplaceStatement',
+			'message'=>'missing keys',
+		));
+		return '';
 	}
 	if(!is_array($fieldinfo)){
 		$fieldinfo=hanaGetDBFieldInfo($table,$params);
@@ -2261,8 +2250,11 @@ function hanaBuildPreparedReplaceStatement($table,$fieldinfo=array(),$keys=array
 */
 function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
-		echo "hanaBuildPreparedUpdateStatement error - missing keys.  Table: {$table}";
-		exit;
+		debugValue(array(
+			'function'=>'hanaBuildPreparedUpdateStatement',
+			'message'=>'missing keys',
+		));
+		return '';
 	}
 	if(!is_array($fieldinfo)){
 		$fieldinfo=hanaGetDBFieldInfo($table,$params);
@@ -2300,8 +2292,11 @@ function hanaBuildPreparedUpdateStatement($table,$fieldinfo=array(),$keys=array(
 */
 function hanaBuildPreparedDeleteStatement($table,$fieldinfo=array(),$keys=array(),$params=array()){
 	if(!is_array($keys) || !count($keys)){
-		echo "hanaBuildPreparedDeleteStatement error - missing keys.  Table: {$table}";
-		exit;
+		debugValue(array(
+			'function'=>'hanaBuildPreparedDeleteStatement',
+			'message'=>'missing keys',
+		));
+		return '';
 	}
 	if(!is_array($fieldinfo)){
 		$fieldinfo=hanaGetDBFieldInfo($table,$params);
