@@ -49,9 +49,10 @@ Accounts:
 		is_verified,
 		is_registered,
 		is_active,
-		last_login
+		last_login,
+		lastUpdatedTimestamp as last_updated_timestamp
 	FROM accounts
-	ORDER BY @lastUpdated
+	ORDER BY lastUpdatedTimestamp desc
 	limit 10
 
 https://help.sap.com/docs/SAP_CUSTOMER_DATA_CLOUD/8b8d6fffe113457094a17701f63e3d6a/415f681b70b21014bbc5a10ce4041860.html
@@ -322,7 +323,6 @@ ENDOFERROR;
 		if(isset($post['json_array']['results'])){
 			foreach($post['json_array']['results'] as $result){
 				//fix fields
-				$xrec=array();
 				foreach($result as $k=>$v){
 					$xk=$k;
 					switch(strtolower($xk)){
@@ -344,15 +344,12 @@ ENDOFERROR;
 						$jv=decodeJson($v);
 						if(is_array($jv)){
 							if(!isset($jv[0])){
-								$jv=array_change_key_case($jv);
 								$jfields=array_keys($jv);
 								$fieldinfo[$k]['_dbtype_ex']=implode(',<br>',$jfields);
 							}
 							else{
 								$fieldinfo[$k]['_dbtype_ex']='JSON';
 							}
-							
-							$v=$jv;
 						}
 						elseif(isDate($v)){
 							$fieldinfo[$k]['_dbtype_ex']='date';	
@@ -367,6 +364,25 @@ ENDOFERROR;
 							$fieldinfo[$k]['_dbtype_ex']='string';
 						}
 					}
+				}
+			}
+			$post['json_array']['results']=gigyaLowerKeys($post['json_array']['results']);
+			foreach($post['json_array']['results'] as $result){
+				//fix fields
+				$xrec=array();
+				foreach($result as $k=>$v){
+					$xk=$k;
+					switch(strtolower($xk)){
+						case 'count':
+						case 'count(*)':
+							$xk='count';
+						break;
+						case 'serverip':$xk='server_ip';break;
+						case '@timestamp':$xk='timestamp';break;
+						case 'uid':$xk='uid';break;
+					}
+					$xk=str_replace('ID','Id',$xk);
+					$xk = strtolower(preg_replace('/([A-Z])/', '_$1', $xk));
 					$k=strtolower($k);
 					$xrec[$k]=$xrec[$xk]=$v;
 				}
@@ -450,6 +466,16 @@ ENDOFERROR;
 		return $fieldinfo;
 	}
 	return $recs;
+}
+
+function gigyaLowerKeys($arr, $case = CASE_LOWER)
+{
+    return array_map(function($item) use($case) {
+        if(is_array($item)){
+            $item = gigyaLowerKeys($item, $case);
+        }
+        return $item;
+    },array_change_key_case($arr, $case));
 }
 
 //---------- begin function gigyaGetDBRecords
