@@ -8,31 +8,57 @@ import requests
 import urllib3
 import configparser
 #read query.ini for settings
-user=os.environ["USERNAME"].lower()
 config = configparser.ConfigParser()
 config.read("query.ini")
-authkey = config.get(user, "authkey")
-base_url = config.get(user, "base_url")
-output_format = config.get(user, "output_format")
+authkey = ''
+base_url = 'http://localhost'
+output_format = 'json'
+db=''
+query=''
+
+if(config.has_section('global')):
+    if(config.has_option('global','authkey')):
+        authkey=config.get('global', "authkey")
+    if(config.has_option('global','base_url')):
+        base_url=config.get('global', "base_url")
+    if(config.has_option('global','output_format')):
+        output_format=config.get('global', "output_format")
+    if(config.has_option('global','db')):
+        db=config.get('global', "db")
+    if(config.has_option('global','query')):
+        query=config.get('global', "query")
+
+section=sys.argv[1]
+if(config.has_section(section)):
+    if(config.has_option(section,'authkey')):
+        authkey=config.get(section, "authkey")
+    if(config.has_option(section,'base_url')):
+        base_url=config.get(section, "base_url")
+    if(config.has_option(section,'output_format')):
+        output_format=config.get(section, "output_format")
+    if(config.has_option(section,'db')):
+        db=config.get(section, "db")
+    if(config.has_option(section,'query')):
+        query=config.get(section, "query")
+
 #create a prepared request object
 p = requests.models.PreparedRequest()
-#build the SQL query from the args
-sql = '';  
-for arg in sys.argv[2:]:
-    sql+="{}  ".format(arg)      
+if(len(query)==0):
+    for arg in sys.argv[2:]:
+        query+="{}  ".format(arg)      
 #prepare the key/value pairs to pass to ctreepo
 data={
     '_auth': authkey, 
-    'db': sys.argv[1],
+    'db': db,
     '_menu': 'sqlprompt',
     'func':'sql',
     'format':output_format,
     '-nossl':1,
     'offset':0,
-    'username':user,
+    'username':os.environ["USERNAME"].lower(),
     'computername':os.environ["COMPUTERNAME"],
     'AjaxRequestUniqueId':'query.py',
-    'sql_full':sql
+    'sql_full':query
 }
 #prepare the url with the key/value pairs
 p.prepare_url(url=base_url+'/php/admin.php', params=data)

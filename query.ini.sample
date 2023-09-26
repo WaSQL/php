@@ -1,9 +1,30 @@
 #README
-#This file is for use with query.py and sets the authkey, base_url,and outputformat for a specifice the ENV variable USERNAME
-#You could also create batch scripts that pass in the db, i.e.:
-#SET subject=%*
-#python3 query.py my_db_name %subject%
-#[{username}]
+#This file is for use with query.py and sets the up shortcuts. global is applied to all shortcuts first
+#[global]
 #authkey=
 #base_url=
-#output_format=
+#output_format=csv or json
+#db=
+#query=
+
+[global]
+authkey={YOUR WaSQL Auth KEY}
+base_url={WaSQL Server}
+output_format=csv
+
+[t2]
+db=db_t2
+query=select id,name from people limit 10
+
+[t2x]
+db=db_t2
+
+[t1]
+db=db_t1
+query=select id,amount,sku from orderitems order by 1 desc limit 5
+
+
+
+
+
+
