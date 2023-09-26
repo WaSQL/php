@@ -289,6 +289,7 @@
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
 				$qstop=microtime(true);
 				$lastquery=dbGetLast();
+				if(!is_array($lastquery)){$lastquery=array();}
 				$lastquery['time']=round(($qstop-$qstart),3);
 				//echo "lastquery".printValue($lastquery);exit;
 				if(isset($lastquery['error'])){
