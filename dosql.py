@@ -1,15 +1,15 @@
 #! python
 '''
-    command line way to query any database setup in WaSQL
+    doSQL: command line way to query any database setup in WaSQL
 '''
 import sys
 import os
 import requests
 import urllib3
 import configparser
-#read query.ini for settings
+#read dosql.ini for settings
 config = configparser.ConfigParser()
-config.read("query.ini")
+config.read("dosql.ini")
 authkey = ''
 base_url = 'http://localhost'
 output_format = 'json'
@@ -57,7 +57,7 @@ data={
     'offset':0,
     'username':os.environ["USERNAME"].lower(),
     'computername':os.environ["COMPUTERNAME"],
-    'AjaxRequestUniqueId':'query.py',
+    'AjaxRequestUniqueId':'dosql.py',
     'sql_full':query
 }
 #prepare the url with the key/value pairs

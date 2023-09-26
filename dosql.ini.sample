@@ -1,5 +1,5 @@
 #README
-#This file is for use with query.py and sets the up shortcuts. global is applied to all shortcuts first
+#This file is for use with dosql.py and sets the up shortcuts. global is applied to all shortcuts first
 #[global]
 #authkey=
 #base_url=
