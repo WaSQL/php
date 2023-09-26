@@ -10,4 +10,4 @@ p.bat
 c.bat
 php.bat
 php_errors.log
-query.ini
+dosql.ini
