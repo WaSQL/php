@@ -1,5 +1,8 @@
 #README
 #This file is for use with query.py and sets the authkey, base_url,and outputformat for a specifice the ENV variable USERNAME
+#You could also create batch scripts that pass in the db, i.e.:
+#SET subject=%*
+#python3 query.py my_db_name %subject%
 #[{username}]
 #authkey=
 #base_url=

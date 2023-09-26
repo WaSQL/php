@@ -1,3 +1,7 @@
+#! python
+'''
+    command line way to query any database setup in WaSQL
+'''
 import sys
 import os
 import requests
@@ -25,7 +29,7 @@ data={
     'format':output_format,
     '-nossl':1,
     'offset':0,
-    'username':os.environ["USERNAME"],
+    'username':user,
     'computername':os.environ["COMPUTERNAME"],
     'AjaxRequestUniqueId':'query.py',
     'sql_full':sql
