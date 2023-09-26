@@ -7,6 +7,7 @@
 	global $sqlpromptCaptureFirstRows_count;
 	$sqlpromptCaptureFirstRows_count=0;
 	global $wasql_debugValueContent;
+	//echo printValue($_REQUEST);exit;
 	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
@@ -305,6 +306,18 @@
 					$recs=array();
 					setView(array('no_results'),1);
 					return;
+				}
+			}
+			if(isset($_REQUEST['format'])){
+				switch(strtolower($_REQUEST['format'])){
+					case 'json':
+						echo encodeJson(getCSVRecords($afile));
+						exit;
+					break;
+					case 'csv':
+						readfile($afile);
+						exit;
+					break;
 				}
 			}
 			$qtime=isset($lastquery['time'])?$lastquery['time']:0;
