@@ -8625,7 +8625,11 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	if(preg_match('/\_(queries|fielddata)/i',$query)){return;}
 	if(preg_match('/^desc /i',$query)){return;}
 	//only run if user?
-	if(isset($CONFIG['wasql_queries_user']) && isNum($CONFIG['wasql_queries_user']) && (!isset($USER['_id']) || $CONFIG['wasql_queries_user'] != $USER['_id'])){return;}
+	if(isset($CONFIG['wasql_queries_user']) && strlen($CONFIG['wasql_queries_user'])){
+		if(!isset($USER['_id'])){return;}
+		$query_users=preg_split('/[\r\n\s\,\;]+/',strtolower($CONFIG['wasql_queries_user']));
+		if(!in_array($USER['_id'],$query_users) || !in_array($USER['username'],$query_users)){return;}
+	}
 	$stop=microtime(true);
 	$run_length=round(($stop-$start),3);
 	if(isNum($CONFIG['wasql_queries_time']) && $run_length < $CONFIG['wasql_queries_time']){return;}
@@ -8643,11 +8647,13 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	if(isNum($USER['_id'])){$addopts['user_id']=$USER['_id'];}
 	if(isNum($PAGE['_id'])){$addopts['page_id']=$PAGE['_id'];}
 	$ok=addDBRecord($addopts);
-	//remove records older than $CONFIG['wasql_queries_age'] days. Default to 10 days
-	$days=setValue(array($CONFIG['wasql_queries_days'],10));
-	if(!isset($_SERVER['logDBQuery'])){
-		$ok=cleanupDBRecords('_queries',$days);
-		$_SERVER['logDBQuery']=1;
+
+	//wasql_queries_days
+	$qdays=(integer)$CONFIG['wasql_queries_days'];
+	if($qdays==0){$qdays=10;}
+	if($qdays > 0){
+		$query="DELETE FROM _queries WHERE function_name!='sql_prompt' and _cdate < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL {$qdays} DAY))";
+		$ok=executeSQL($query);
 	}
 	return $ok;
 }

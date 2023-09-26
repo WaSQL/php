@@ -16,7 +16,7 @@
 		</ul>
 	</div>
 	<div id="main_content" style="margin-left:15px;flex:1;width:100%;">
-    	&nbsp;
+    	<?=renderView($_REQUEST['submenu']);?>
   	</div>
 </div>
 </view:default>
@@ -208,19 +208,23 @@
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_database_form" />
 	<input type="hidden" name="process" value="save" />
-	<div class="w_lgrayback w_bold" style="padding:5px 9px;">Slow Query Debugging</div>
-	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
-		<div style="flex:1;"><label>Enable Slow Query Logging?</label><?=configBuildFormField('wasql_queries');?></div>
-		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Enable ONLY for user</label><?=configBuildFormField('wasql_queries_user');?></div>
-		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Only log queries that take over (seconds):</label><?=configBuildFormField('wasql_queries_time');?></div>
-	</div>
 	<div class="w_lgrayback w_bold" style="padding:5px 9px;">Commands</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Mysql Backup Command</label><?=configBuildFormField('backup_cmd',array('required'=>''));?></div>
 	</div>
-	<div class="w_lgrayback w_bold" style="padding:5px 9px;">SQL Prompt</div>
+	<div class="w_lgrayback w_bold" style="padding:5px 9px;">Slow Query Logging</div>
+	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
+		<div style="flex:1;"><label>Enable Slow Query Logging?</label><?=configBuildFormField('wasql_queries');?></div>
+		<div style="flex:2;margin-left:15px;" data-displayif="wasql_queries:1"><label>Enable ONLY for user(s) - usernames and/or ids</label><?=configBuildFormField('wasql_queries_user');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Days to keep</label><?=configBuildFormField('wasql_queries_days');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Only log queries that take over (seconds):</label><?=configBuildFormField('wasql_queries_time');?></div>
+	</div>
+	<div class="w_lgrayback w_bold" style="padding:5px 9px;"><span class="icon-prompt"></span> SQL Prompt Query Logging</div>
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Log SQL Prompt Queries?</label><?=configBuildFormField('log_queries');?></div>
+		<div style="flex:2;margin-left:15px;" data-displayif="log_queries:1"><label>Enable ONLY for user(s) - usernames and/or ids</label><?=configBuildFormField('log_queries_user');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="log_queries:1"><label>Days to keep</label><?=configBuildFormField('log_queries_days');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="log_queries:1"><label>Only log queries that take over (seconds):</label><?=configBuildFormField('log_queries_time');?></div>
 	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>SQL Prompt Databases to show. Leave blank for all</label><?=configBuildFormField('databases',array('required'=>''));?></div>

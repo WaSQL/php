@@ -267,6 +267,7 @@ function configBuildFormField($field,$cparams=array()){
 			return buildFormButtonSelect($field,$opts,$params);
 		break;
 		case 'wasql_queries_user':
+		case 'log_queries_user':
 			$params=array(
 				'class'=>'input',
 				'value'=>$CONFIG[$field]
@@ -278,6 +279,9 @@ function configBuildFormField($field,$cparams=array()){
 			return buildFormText($field,$params);
 		break;
 		case 'wasql_queries_time':
+		case 'wasql_queries_days':
+		case 'log_queries_time':
+		case 'log_queries_days':
 			$params=array(
 				'class'=>'input',
 				'value'=>$CONFIG[$field],

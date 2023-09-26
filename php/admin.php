@@ -2559,7 +2559,7 @@ LIST_TABLE:
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&explain=1\');"><span class="icon-optimize w_gold w_big" alt="Show Indexes" data-tooltip="Explain Query"></span></a>','function','getDBRecords'),
 							array('<a href="#" onclick="return ajaxGet(\'/php/index.php\',\'centerpopIDX\',\'ajaxid=centerpopIDX&_queryid_=%_id%&view=1\');"><img src="/wfiles/iconsets/16/sql.png" data-tooltip="View This Query" class="w_middle" alt="view query" /></a>')
 						);
-						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=settings">Query Settings:</a> Days: '.$CONFIG['wasql_queries_days'].', Time:'.$CONFIG['wasql_queries_time'].' seconds</div>'.PHP_EOL;
+						echo '<div class="w_small w_lblue" style="margin-left:20px;"><a class="w_lblue w_link" href="?_menu=config&submenu=config_database">Query Settings:</a> Days: '.$CONFIG['wasql_queries_days'].', Time:'.$CONFIG['wasql_queries_time'].' seconds</div>'.PHP_EOL;
                 	break;
 				}
 				if(isset($_REQUEST['add_result']['error'])){

@@ -248,9 +248,14 @@
 					$view='results';
 				}
 			}
+			//Run the Query
+			//is this query python?
 			if(isset($_REQUEST['py']) && $_REQUEST['py']==1){
-				$begin=microtime(true);
+				$qstart=microtime(true);
 				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
+				$qstop=microtime(true);
+				$lastquery=array();
+				$lastquery['time']=round(($qstop-$qstart),3);
 				if(!is_file($afile)){
 					$error=$afile;
 					setView(array('error'),1);
@@ -280,9 +285,11 @@
 				);
 				$recs_show=30;
 				$recs=array();
-				//echo printValue($DATABASE[$db['name']]).printValue($_REQUEST);exit;
+				$qstart=microtime(true);
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
+				$qstop=microtime(true);
 				$lastquery=dbGetLast();
+				$lastquery['time']=round(($qstop-$qstart),3);
 				//echo "lastquery".printValue($lastquery);exit;
 				if(isset($lastquery['error'])){
 					if(!is_string($lastquery['error'])){
@@ -311,13 +318,23 @@
 			//echo $afile.printValue($recs);exit;
 			
 			/* log queries? */
-			if(isset($CONFIG['log_queries']) && isset($recs[0]) && is_array($recs[0])){
-				$log=0;
-				if($CONFIG['log_queries']==1){$log=1;}
-				$unames=preg_split('/\,/',$CONFIG['log_queries']);
-				foreach($unames as $uname){
-					$uname=strtolower(trim($uname));
-					if($USER['username']==$uname){$log=1;}
+			if(isset($CONFIG['log_queries']) && $CONFIG['log_queries']==1 && isset($recs[0]) && is_array($recs[0])){
+				$log=1;
+				//log_queries_user?
+				if(isset($CONFIG['log_queries_user']) && strlen($CONFIG['log_queries_user'])){
+					if(!isset($USER['_id'])){$log=0;}
+					$query_users=preg_split('/[\r\n\s\,\;]+/',strtolower($CONFIG['log_queries_user']));
+					if(!in_array($USER['_id'],$query_users) || !in_array($USER['username'],$query_users)){$log=0;}
+				}
+				//log_queries_time?
+				if(isNum($CONFIG['log_queries_time']) && $lastquery['time'] < $CONFIG['log_queries_time']){$log=0;}
+				//log_queries_days
+				if(isNum($CONFIG['log_queries_days'])){
+					$qdays=(integer)$CONFIG['log_queries_days'];
+					if($qdays > 0){
+						$query="DELETE FROM _queries WHERE function_name='sql_prompt' and _cdate < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL {$qdays} DAY))";
+						$ok=executeSQL($query);
+					}
 				}
 				if($log==1){
 					$id=addDBRecord(array(
