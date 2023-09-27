@@ -28,6 +28,8 @@ if(config.has_section('global')):
     if(config.has_option('global','query')):
         query=config.get('global', "query")
 
+arg_query=''
+
 section=sys.argv[1]
 if(config.has_section(section)):
     if(config.has_option(section,'authkey')):
@@ -40,12 +42,15 @@ if(config.has_section(section)):
         db=config.get(section, "db")
     if(config.has_option(section,'query')):
         query=config.get(section, "query")
-
+    for arg in sys.argv[2:]:
+        arg_query+="{}  ".format(arg)
+else:
+    for arg in sys.argv[1:]:
+        arg_query+="{}  ".format(arg)
 #create a prepared request object
 p = requests.models.PreparedRequest()
-arg_query=''
-for arg in sys.argv[2:]:
-    arg_query+="{}  ".format(arg)
+
+
 if(len(arg_query) > 0):
     query=arg_query
 
