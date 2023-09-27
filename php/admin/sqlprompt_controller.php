@@ -314,6 +314,29 @@
 						echo encodeJson(getCSVRecords($afile));
 						exit;
 					break;
+					case 'xml':
+						echo arrays2XML(getCSVRecords($afile));
+						exit;
+					break;
+					case 'table':
+						echo databaseListRecords(array(
+							'-csv'=>$afile,
+							'-hidesearch'=>1,
+							'-tableclass'=>'table striped bordered condensed'
+						));
+						exit;
+					break;
+					case 'html':
+						echo sqlpromptHTMLHead();
+						echo databaseListRecords(array(
+							'-csv'=>$afile,
+							'-hidesearch'=>1,
+							'-tableclass'=>'table striped bordered condensed'
+						));
+						echo '</body>'.PHP_EOL;
+						echo '</html>'.PHP_EOL;
+						exit;
+					break;
 					case 'csv':
 						readfile($afile);
 						exit;

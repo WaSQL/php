@@ -1,15 +1,15 @@
 #! python
 '''
-    doSQL: command line way to query any database setup in WaSQL
+    DaSQL: DOS Access to SQL -  command line way to query any database setup in WaSQL
 '''
 import sys
 import os
 import requests
 import urllib3
 import configparser
-#read dosql.ini for settings
+#read dasql.ini for settings
 config = configparser.ConfigParser()
-config.read("dosql.ini")
+config.read("dasql.ini")
 authkey = ''
 base_url = 'http://localhost'
 output_format = 'json'
@@ -43,9 +43,12 @@ if(config.has_section(section)):
 
 #create a prepared request object
 p = requests.models.PreparedRequest()
-if(len(query)==0):
-    for arg in sys.argv[2:]:
-        query+="{}  ".format(arg)      
+arg_query=''
+for arg in sys.argv[2:]:
+    arg_query+="{}  ".format(arg)
+if(len(arg_query) > 0):
+    query=arg_query
+
 #prepare the key/value pairs to pass to ctreepo
 data={
     '_auth': authkey, 
@@ -57,9 +60,10 @@ data={
     'offset':0,
     'username':os.environ["USERNAME"].lower(),
     'computername':os.environ["COMPUTERNAME"],
-    'AjaxRequestUniqueId':'dosql.py',
+    'AjaxRequestUniqueId':'dasql.py',
     'sql_full':query
 }
+#print(data)
 #prepare the url with the key/value pairs
 p.prepare_url(url=base_url+'/php/admin.php', params=data)
 #disable ssl cert warnings since this is just an internal url anyway

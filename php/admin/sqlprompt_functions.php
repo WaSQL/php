@@ -1,5 +1,24 @@
 <?php
 loadExtras('translate');
+function sqlpromptHTMLHead($title=''){
+	$cssfile=minifyCssFile('wacss,bulma');
+	$jsfile=minifyJsFile('wacss,bulma');
+	return <<<ENDOFHTML
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>{$title}</title>
+	<meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link type="text/css" rel="stylesheet" href="{$cssfile}" />
+  	<script type="text/javascript" src="{$jsfile}"></script>
+</head>
+<body>
+	<div class="content">
+ENDOFHTML;
+}
 function sqlpromptGetTables($dbname=''){
 	global $CONFIG;
 	global $DATABASE;

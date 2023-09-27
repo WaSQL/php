@@ -6041,8 +6041,7 @@ function arrays2XML($recs=array(),$params=array()){
 					}
 				else{
 					if(strlen($value)==0){continue;}
-					$val=utf8_encode($value);
-					$val=xmlEncodeCDATA($val);
+					$val=xmlEncodeCDATA($value);
 	            	$xml .= "        <{$key}>".$val."</{$key}>\n";
 	            	}
 	        	}
@@ -20846,7 +20845,7 @@ function xmlEncode( $string ) {
 * @return string
 * @usage $data=convertSpecialChars($data);
 */
-function convertSpecialChars($data){
+function convertSpecialChars($str,$charset=null){
 	$str = htmlentities($str, ENT_NOQUOTES, $charset);
     $str = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
     $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
