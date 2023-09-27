@@ -1,8 +1,8 @@
 <?php
 loadExtras('translate');
 function sqlpromptHTMLHead($title=''){
-	$cssfile=minifyCssFile('wacss,bulma');
-	$jsfile=minifyJsFile('wacss,bulma');
+	$cssfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyCssFile('wacss,bulma');
+	$jsfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyJsFile('wacss,bulma');
 	return <<<ENDOFHTML
 <!DOCTYPE HTML>
 <html lang="en">
@@ -16,7 +16,7 @@ function sqlpromptHTMLHead($title=''){
   	<script type="text/javascript" src="{$jsfile}"></script>
 </head>
 <body>
-	<div class="content">
+	<div class="container">
 ENDOFHTML;
 }
 function sqlpromptGetTables($dbname=''){

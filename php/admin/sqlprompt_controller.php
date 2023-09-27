@@ -333,6 +333,7 @@
 							'-hidesearch'=>1,
 							'-tableclass'=>'table striped bordered condensed'
 						));
+						echo '</div>'.PHP_EOL;
 						echo '</body>'.PHP_EOL;
 						echo '</html>'.PHP_EOL;
 						exit;
