@@ -1,11 +1,17 @@
 #README
 #DaSQL: DOS Access to SQL -  config file. Note: global is the only reserved ini section name
 #[global]
-#authkey=
 #base_url=
 #output_format=csv,json,xml,table or html
 #db=
 #query=
+#DaSQL supports all 6 WaSQL authentications methods
+#	authkey 	
+#	tauthkey  	(temporary authkey)
+#	apikey,username
+#	username,password
+#	email,password
+#	phone,password
 
 [global]
 authkey={YOUR WaSQL Auth KEY} ~found under the profile menu in the WaSQL admin portal
