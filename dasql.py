@@ -10,69 +10,76 @@ import configparser
 #read dasql.ini for settings
 config = configparser.ConfigParser()
 config.read("dasql.ini")
-authkey = ''
-base_url = 'http://localhost'
-output_format = 'json'
-db=''
-query=''
 
-if(config.has_section('global')):
-    if(config.has_option('global','authkey')):
-        authkey=config.get('global', "authkey")
-    if(config.has_option('global','base_url')):
-        base_url=config.get('global', "base_url")
-    if(config.has_option('global','output_format')):
-        output_format=config.get('global', "output_format")
-    if(config.has_option('global','db')):
-        db=config.get('global', "db")
-    if(config.has_option('global','query')):
-        query=config.get('global', "query")
+#set params to keys in global
+params=dict(config.items('global'))
 
-arg_query=''
+#set arg_query to blank
+params['arg_query']=''
 
-section=sys.argv[1]
-if(config.has_section(section)):
-    if(config.has_option(section,'authkey')):
-        authkey=config.get(section, "authkey")
-    if(config.has_option(section,'base_url')):
-        base_url=config.get(section, "base_url")
-    if(config.has_option(section,'output_format')):
-        output_format=config.get(section, "output_format")
-    if(config.has_option(section,'db')):
-        db=config.get(section, "db")
-    if(config.has_option(section,'query')):
-        query=config.get(section, "query")
+#check for section_name
+section_name=sys.argv[1]
+if(config.has_section(section_name)):
+    #overide any params from section
+    section=dict(config.items(section_name))
+    for key in section:
+        params[key]=section[key]
+    #load the rest of args as the arg_query
     for arg in sys.argv[2:]:
-        arg_query+="{}  ".format(arg)
+        params['arg_query']+="{}  ".format(arg)
 else:
+    #load all the args as the arg_query
     for arg in sys.argv[1:]:
-        arg_query+="{}  ".format(arg)
+        params['arg_query']+="{}  ".format(arg)
+
 #create a prepared request object
 p = requests.models.PreparedRequest()
+if(len(params['arg_query']) > 0):
+    params['query']=params['arg_query']
 
-
-if(len(arg_query) > 0):
-    query=arg_query
-
-#prepare the key/value pairs to pass to ctreepo
+#prepare the key/value pairs to pass to WaSQL base_url
 data={
-    '_auth': authkey, 
-    'db': db,
+    '_auth': params['authkey'], 
+    'db': params['db'],
     '_menu': 'sqlprompt',
     'func':'sql',
-    'format':output_format,
+    'format':params['output_format'],
     '-nossl':1,
     'offset':0,
     'username':os.environ["USERNAME"].lower(),
     'computername':os.environ["COMPUTERNAME"],
     'AjaxRequestUniqueId':'dasql.py',
-    'sql_full':query
+    'sql_full':params['query']
 }
-#print(data)
+
+#WaSQL supports multiple authentication methods: set auth method based on params
+if 'apikey' in params:
+    data['apikey']=params['apikey']
+    data['username']=params['username']
+    data['_auth']=1
+elif 'authkey' in params:
+    data['_auth']=params['authkey']
+elif 'tauthkey' in params:
+    data['_tauth']=params['tauthkey']
+elif 'username' in params:
+    data['_login']=1
+    data['username']=params['username']
+    data['password']=params['password']
+elif 'email' in params:
+    data['_login']=1
+    data['email']=params['email']
+    data['password']=params['password']
+elif 'phone' in params:
+    data['_login']=1
+    data['phone']=params['phone']
+    data['password']=params['password']
+
 #prepare the url with the key/value pairs
-p.prepare_url(url=base_url+'/php/admin.php', params=data)
+p.prepare_url(url=params['base_url']+'/php/admin.php', params=data)
+
 #disable ssl cert warnings since this is just an internal url anyway
 urllib3.disable_warnings()
+
 #call localhost to run the query
 r = requests.get(p.url,verify=False)
 print(r.content.decode('utf-8'))
