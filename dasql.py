@@ -7,9 +7,12 @@ import os
 import requests
 import urllib3
 import configparser
+#get the script path
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 #read dasql.ini for settings
+inifile="{}/dasql.ini".format(script_directory)
 config = configparser.ConfigParser()
-config.read("dasql.ini")
+config.read(inifile)
 
 #set params to keys in global
 params=dict(config.items('global'))
@@ -32,10 +35,33 @@ else:
     for arg in sys.argv[1:]:
         params['arg_query']+="{}  ".format(arg)
 
+params['arg_query']=params['arg_query'].strip()
 #create a prepared request object
 p = requests.models.PreparedRequest()
 if(len(params['arg_query']) > 0):
-    params['query']=params['arg_query']
+    if os.path.isfile(params['arg_query']):
+        #check for a section with this name
+        #os.path.basename(path).split('/')[0]
+        file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
+        if(config.has_section(file_name)):
+            #reset from global
+            #overide any params from section
+            section=dict(config.items('global'))
+            for key in section:
+                params[key]=section[key]
+            #overide any params from section
+            section=dict(config.items(file_name))
+            for key in section:
+                params[key]=section[key]
+        #set query to file contents
+        file = open(params['arg_query'], mode='r')
+        params['query'] = file.read()
+        file.close()
+    else:
+        params['query']=params['arg_query']
+
+#check to see if they are passing in a file
+print(params)
 
 #prepare the key/value pairs to pass to WaSQL base_url
 data={
