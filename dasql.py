@@ -39,9 +39,9 @@ params['arg_query']=params['arg_query'].strip()
 #create a prepared request object
 p = requests.models.PreparedRequest()
 if(len(params['arg_query']) > 0):
+    #check to see if they are passing in a file
     if os.path.isfile(params['arg_query']):
         #check for a section with this name
-        #os.path.basename(path).split('/')[0]
         file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
         if(config.has_section(file_name)):
             #reset from global
@@ -59,9 +59,6 @@ if(len(params['arg_query']) > 0):
         file.close()
     else:
         params['query']=params['arg_query']
-
-#check to see if they are passing in a file
-print(params)
 
 #prepare the key/value pairs to pass to WaSQL base_url
 data={
@@ -108,5 +105,5 @@ urllib3.disable_warnings()
 
 #call localhost to run the query
 r = requests.get(p.url,verify=False)
-print(r.content.decode('utf-8'))
+print(r.content.decode('utf-8-sig'))
 
