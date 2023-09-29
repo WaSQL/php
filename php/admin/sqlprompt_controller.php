@@ -287,19 +287,64 @@
 				$recs_show=30;
 				$recs=array();
 				$qstart=microtime(true);
+				$_SESSION['debugValue_lastm']=array();
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
 				$qstop=microtime(true);
 				$lastquery=dbGetLast();
 				if(!is_array($lastquery)){$lastquery=array();}
 				$lastquery['time']=round(($qstop-$qstart),3);
-				//echo "lastquery".printValue($lastquery);exit;
+				if(is_array($_SESSION['debugValue_lastm'])){$_SESSION['debugValue_lastm']=encodeJson($_SESSION['debugValue_lastm']);}
+				if(strlen($_SESSION['debugValue_lastm'])){
+					$lastquery['error']=$_SESSION['debugValue_lastm'];
+				}
 				if(isset($lastquery['error'])){
-					if(!is_string($lastquery['error'])){
-						$lastquery['error']=encodeJson($lastquery['error']);
+					if(isset($_REQUEST['format'])){
+						switch(strtolower($_REQUEST['format'])){
+							case 'json':
+								echo encodeJson($lastquery);
+								exit;
+							break;
+							case 'xml':
+								echo arrays2XML(array($lastquery));
+								exit;
+							break;
+							case 'table':
+								echo databaseListRecords(array(
+									'-list'=>array($lastquery),
+									'-hidesearch'=>1,
+									'-tableclass'=>'table striped bordered condensed'
+								));
+								exit;
+							break;
+							case 'html':
+								echo sqlpromptHTMLHead();
+								echo databaseListRecords(array(
+									'-list'=>array($lastquery),
+									'-hidesearch'=>1,
+									'-tableclass'=>'table striped bordered condensed'
+								));
+								echo '</div>'.PHP_EOL;
+								echo '</body>'.PHP_EOL;
+								echo '</html>'.PHP_EOL;
+								exit;
+							break;
+							case 'csv':
+								if(!is_string($lastquery['error'])){
+									$lastquery['error']=encodeJson($lastquery['error']);
+								}
+								echo $lastquery['error'];
+								exit;
+							break;
+						}
 					}
-					if(strlen($lastquery['error'])){
-						setView(array('error'),1);
-						return;
+					else{
+						if(!is_string($lastquery['error'])){
+							$lastquery['error']=encodeJson($lastquery['error']);
+						}
+						if(strlen($lastquery['error'])){
+							setView(array('error'),1);
+							return;
+						}
 					}
 				}
 				if($recs_count==0){
