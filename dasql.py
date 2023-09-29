@@ -14,52 +14,67 @@ inifile="{}/dasql.ini".format(script_directory)
 config = configparser.ConfigParser()
 config.read(inifile)
 
+
+
 #set params to keys in global
 params=dict(config.items('global'))
-
-#set arg_query to blank
-params['arg_query']=''
-
-#check for section_name
-section_name=sys.argv[1]
-if(config.has_section(section_name)):
-    #overide any params from section
-    section=dict(config.items(section_name))
-    for key in section:
-        params[key]=section[key]
-    #load the rest of args as the arg_query
-    for arg in sys.argv[2:]:
-        params['arg_query']+="{}  ".format(arg)
-else:
-    #load all the args as the arg_query
-    for arg in sys.argv[1:]:
-        params['arg_query']+="{}  ".format(arg)
-
+#check to see if the args are a filename
+params['arg_query']='';
+for arg in sys.argv[1:]:
+    params['arg_query']+="{}  ".format(arg)
 params['arg_query']=params['arg_query'].strip()
-#create a prepared request object
-p = requests.models.PreparedRequest()
-if(len(params['arg_query']) > 0):
-    #check to see if they are passing in a file
-    if os.path.isfile(params['arg_query']):
-        #check for a section with this name
-        file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
-        if(config.has_section(file_name)):
-            #reset from global
-            #overide any params from section
-            section=dict(config.items('global'))
-            for key in section:
-                params[key]=section[key]
-            #overide any params from section
-            section=dict(config.items(file_name))
-            for key in section:
-                params[key]=section[key]
+if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
+    #check for a section with this name
+    file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
+    if(config.has_section(file_name)):
+        #overide any params from section
+        section=dict(config.items(file_name))
+        for key in section:
+            params[key]=section[key]
         #set query to file contents
         file = open(params['arg_query'], mode='r')
         params['query'] = file.read()
         file.close()
+    params['arg_query']=''
+else:
+    #check for section_name
+    section_name=sys.argv[1]
+    if(config.has_section(section_name)):
+        #overide any params from section
+        section=dict(config.items(section_name))
+        for key in section:
+            params[key]=section[key]
+        #load the rest of args as the arg_query
+        params['arg_query']='';
+        for arg in sys.argv[2:]:
+            params['arg_query']+="{}  ".format(arg)
+        params['arg_query']=params['arg_query'].strip()
+        #check to see if the args are a filename
+        if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
+            #check for a section with this name
+            file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
+            if(config.has_section(file_name)):
+                #overide any params from section
+                section=dict(config.items(file_name))
+                for key in section:
+                    params[key]=section[key]
+                #set query to file contents
+                file = open(params['arg_query'], mode='r')
+                params['query'] = file.read()
+                file.close()
+            params['arg_query']=''
     else:
-        params['query']=params['arg_query']
+        #load the rest of args as the arg_query
+        params['arg_query']='';
+        for arg in sys.argv[1:]:
+            params['arg_query']+="{}  ".format(arg)
 
+params['arg_query']=params['arg_query'].strip()
+if(len(params['arg_query']) > 0):
+    params['query']=params['arg_query']
+
+#create a prepared request object
+p = requests.models.PreparedRequest()
 #prepare the key/value pairs to pass to WaSQL base_url
 data={
     '_auth': params['authkey'], 
@@ -105,5 +120,10 @@ urllib3.disable_warnings()
 
 #call localhost to run the query
 r = requests.get(p.url,verify=False)
-print(r.content.decode('utf-8-sig'))
+for line in r.content.decode('utf-8-sig').splitlines():
+    line=line.strip()
+    if len(line):
+        print(line)
+# content=r.content.decode('utf-8-sig')
+# print(content)
 

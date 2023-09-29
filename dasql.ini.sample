@@ -12,11 +12,15 @@
 #	username,password
 #	email,password
 #	phone,password
-#you can also pass a filename with SQL in it
+#There are three ways you can call dasql.py
+#	>python3 dasql.py msa
+#	>python3 dasql.py msa select name from table
+#	>python3 dasql.py c:\temp\msa.sql
 #If you are using sublime 3 as your editor you can create a custom build file so you run SQL and see the results right in sublime
-#DaSQL.submile-build
+#	The filename has to match a [section] in your ini
+#DaSQL.sublime-build
 #{
-#	"shell_cmd": "python3 dasql.py abc \"$file\"",
+#	"shell_cmd": "python3 dasql.py \"$file\"",
 #	"working_dir":"c:\\wasql",
 #	"quiet":true,
 #	"save_untitled_files":true
