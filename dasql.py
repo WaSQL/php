@@ -18,6 +18,7 @@ config.read(inifile)
 
 #set params to keys in global
 params=dict(config.items('global'))
+params['query']=''
 #check to see if the args are a filename
 params['arg_query']='';
 for arg in sys.argv[1:]:
@@ -70,60 +71,61 @@ else:
             params['arg_query']+="{}  ".format(arg)
 
 params['arg_query']=params['arg_query'].strip()
-if(len(params['arg_query']) > 0):
+if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
+params['query']=params['query'].strip()
+if len(params['query']) > 0:
+    #create a prepared request object
+    p = requests.models.PreparedRequest()
+    #prepare the key/value pairs to pass to WaSQL base_url
+    data={
+        '_auth': params['authkey'], 
+        'db': params['db'],
+        '_menu': 'sqlprompt',
+        'func':'sql',
+        'format':params['output_format'],
+        '-nossl':1,
+        'offset':0,
+        'username':os.environ["USERNAME"].lower(),
+        'computername':os.environ["COMPUTERNAME"],
+        'AjaxRequestUniqueId':'dasql.py',
+        'sql_full':params['query']
+    }
 
-#create a prepared request object
-p = requests.models.PreparedRequest()
-#prepare the key/value pairs to pass to WaSQL base_url
-data={
-    '_auth': params['authkey'], 
-    'db': params['db'],
-    '_menu': 'sqlprompt',
-    'func':'sql',
-    'format':params['output_format'],
-    '-nossl':1,
-    'offset':0,
-    'username':os.environ["USERNAME"].lower(),
-    'computername':os.environ["COMPUTERNAME"],
-    'AjaxRequestUniqueId':'dasql.py',
-    'sql_full':params['query']
-}
+    #WaSQL supports multiple authentication methods: set auth method based on params
+    if 'apikey' in params:
+        data['apikey']=params['apikey']
+        data['username']=params['username']
+        data['_auth']=1
+    elif 'authkey' in params:
+        data['_auth']=params['authkey']
+    elif 'tauthkey' in params:
+        data['_tauth']=params['tauthkey']
+    elif 'username' in params:
+        data['_login']=1
+        data['username']=params['username']
+        data['password']=params['password']
+    elif 'email' in params:
+        data['_login']=1
+        data['email']=params['email']
+        data['password']=params['password']
+    elif 'phone' in params:
+        data['_login']=1
+        data['phone']=params['phone']
+        data['password']=params['password']
 
-#WaSQL supports multiple authentication methods: set auth method based on params
-if 'apikey' in params:
-    data['apikey']=params['apikey']
-    data['username']=params['username']
-    data['_auth']=1
-elif 'authkey' in params:
-    data['_auth']=params['authkey']
-elif 'tauthkey' in params:
-    data['_tauth']=params['tauthkey']
-elif 'username' in params:
-    data['_login']=1
-    data['username']=params['username']
-    data['password']=params['password']
-elif 'email' in params:
-    data['_login']=1
-    data['email']=params['email']
-    data['password']=params['password']
-elif 'phone' in params:
-    data['_login']=1
-    data['phone']=params['phone']
-    data['password']=params['password']
+    #prepare the url with the key/value pairs
+    p.prepare_url(url=params['base_url']+'/php/admin.php', params=data)
 
-#prepare the url with the key/value pairs
-p.prepare_url(url=params['base_url']+'/php/admin.php', params=data)
+    #disable ssl cert warnings since this is just an internal url anyway
+    urllib3.disable_warnings()
 
-#disable ssl cert warnings since this is just an internal url anyway
-urllib3.disable_warnings()
-
-#call localhost to run the query
-r = requests.get(p.url,verify=False)
-for line in r.content.decode('utf-8-sig').splitlines():
-    line=line.strip()
-    if len(line):
-        print(line)
-# content=r.content.decode('utf-8-sig')
-# print(content)
+    #call localhost to run the query
+    r = requests.get(p.url,verify=False)
+    for line in r.content.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
+else:
+    print('DaSQL: No Query to run')
 
