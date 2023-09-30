@@ -1,23 +1,25 @@
 <view:default>
 <div class="container-fluid">
-	<div class="row">
+	<div class="row w_noprint">
 		<div class="col-sm-12">
 			<ul class="nav-tabs <?=configValue('admin_color');?>">
 				<li class="active"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'json_forms',showprocessing:false});">JSON</a></li>
 				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'base64_forms',showprocessing:false});">BASE64</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'qrcode_form',showprocessing:false});"><span class="icon-qrcode"></span> QRCode Generator</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'barcode_form',showprocessing:false});"><span class="icon-barcode"></span> Barcode Generator</a></li>
 			</ul>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-sm-12" id="forms">
-			<?=renderView('forms',$type,'type');?>
+			<?=renderView('decode_forms',$type,'type');?>
 		</div>
 	</div>
 </div>
 </view:default>
 
-<view:forms>
-<div class="row">
+<view:decode_forms>
+<div class="row w_noprint">
 	<div class="col-sm-6">
 		<h3><?=$type;?> Decoder 1</h3>
 		<form method="POST" name="decoder_form1" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'decoder1');">
@@ -41,9 +43,26 @@
 	<div class="col-sm-6" id="decoder1"></div>
 	<div class="col-sm-6" id="decoder2"></div>
 </div>
-</view:forms>
+</view:decode_forms>
+
+<view:encode_form>
+<h3 class="w_noprint"><?=$type;?> Generater</h3>
+<div class="w_noprint">
+<form method="POST" name="encode_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
+	<input type="hidden" name="_menu" value="decode">
+	<input type="hidden" name="func" value="<?=$type;?>">
+	<textarea cols="7" rows="10" wrap="off" autofocus="true" name="content" class="form-control" placeholder="One per line"></textarea>
+	<div class="w_padtop text-right"><button class="btn <?=configValue('admin_color');?>" type="submit">Generate</button></div>
+</form>
+</div>
+<div id="results">
+</div>
+</view:encode_form>
 
 <view:decoded>
 	<?=$decoded;?>
 </view:decoded>
 
+<view:results>
+	<?=$results;?>
+</view:results>

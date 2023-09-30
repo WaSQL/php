@@ -1,6 +1,6 @@
 <view:default>
-<nav class="nav topmenu <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
-	<ul>
+<nav class="nav w_noprint topmenu <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
+	<ul class="w_noprint">
 		<!-- WaSQL -->
 		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
 			<ul  style="padding-bottom:15px;padding-top:10px;">
@@ -168,7 +168,7 @@
 			<ul style="left:initial;right:0px;padding-bottom:15px;padding-top:10px">
 
 				<li><a href="/php/admin.php?_menu=codeprompt"><span class="icon-code w_big"></span> Code Prompt</a></li>
-				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <wtranslate>Decoder</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> <wtranslate>Decode/Encode</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> <wtranslate>Terminal</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> <wtranslate>File Manager</wtranslate></a></li>
 				<view:schtasks_menu>
