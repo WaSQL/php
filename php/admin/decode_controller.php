@@ -5,11 +5,6 @@
 			setView('decode_forms',1);
 			return;
 		break;
-		case 'base64_forms':
-			$type='base64';
-			setView('decode_forms',1);
-			return;
-		break;
 		case 'json':
 			$json = preg_replace('/[[:cntrl:]]/', '', trim($_REQUEST['json']));
 			$decoded=decodeJSON($json);
@@ -17,9 +12,44 @@
 			setView('decoded',1);
 			return;
 		break;
+		case 'base64_forms':
+			$type='base64';
+			setView('decode_forms',1);
+			return;
+		break;
 		case 'base64':
 			$decoded=base64_decode($_REQUEST['base64']);
 			setView('decoded',1);
+			return;
+		break;
+		case 'url_forms':
+			$type='url';
+			setView('encode_decode_forms',1);
+			return;
+		break;
+		case 'url_encode':
+			$results=encodeURL($_REQUEST['str']);
+			setView('results',1);
+			return;
+		break;
+		case 'url_decode':
+			$results=decodeURL($_REQUEST['str']);
+			setView('results',1);
+			return;
+		break;
+		case 'html_forms':
+			$type='html';
+			setView('encode_decode_forms',1);
+			return;
+		break;
+		case 'html_encode':
+			$results='<xmp style="text-wrap:pretty">'.htmlspecialchars($_REQUEST['str'],ENT_NOQUOTES | ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', /*double_encode*/false).'</xmp style="text-wrap:pretty">';
+			setView('results',1);
+			return;
+		break;
+		case 'html_decode':
+			$results=htmlspecialchars_decode($_REQUEST['str'],ENT_NOQUOTES | ENT_HTML5 | ENT_SUBSTITUTE);
+			setView('results',1);
 			return;
 		break;
 		case 'qrcode_form':

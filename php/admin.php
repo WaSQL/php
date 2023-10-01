@@ -4672,9 +4672,13 @@ function adminSynchronizeRecord($table,$id,$stage=1){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function adminSetHeaders(){
+	global $CONFIG;
 	@header("Pragma: no-cache");
 	@header("Cache-Control: no-cache, no-store, must-revalidate");
 	@header("Expires: 0");
-	@header('X-Platform: WaSQL');
 	@header('X-Frame-Options: SAMEORIGIN');
+	if(!isset($CONFIG['show_server'])){
+		@header("Server: noyb v3.2.1 (magic)");
+		@header('X-Powered-By: fairydust');
+	}
 }

@@ -92,6 +92,11 @@ global $CONFIG;
 
 $stime=microtime(true);
 include_once("{$progpath}/config.php");
+//hide server?
+if(!isset($CONFIG['show_server'])){
+	@header("Server: noyb v3.2.1 (magic)");
+	@header('X-Powered-By: fairydust');
+}
 //check for timezone
 if(isset($CONFIG['timezone'])){
 	@date_default_timezone_set($CONFIG['timezone']);
@@ -710,7 +715,6 @@ if(!is_array($rec)){
 			$cfile="{$_SERVER['DOCUMENT_ROOT']}{$_SERVER['REQUEST_URI']}/index.{$ext}";
 			$cfile=preg_replace('/\/+/','/',$cfile);
 			if(is_file($cfile)){
-				header('X-Platform: WaSQL');
 				if($ext=='php'){
 					$phpdata=getFileContents($cfile);
 					echo evalPHP($phpdata);
@@ -734,7 +738,6 @@ if(!is_array($rec)){
 			$cfile=preg_replace('/\.+$/','',$cfile);
 			$ext=getFileExtension($cfile);
 			if(is_file($cfile)){
-				header('X-Platform: WaSQL');
 				switch($ext){
 					case 'js':header("Content-type: text/javascript");break;
 					case 'css':header("Content-type: text/css");break;
@@ -779,7 +782,6 @@ if(isset($_REQUEST['_action'])){
 if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 	if(!isUser()){
 		header('Content-type: text/xml');
-		header('X-Platform: WaSQL');
 		echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
 		$error=xmlEncodeCDATA("User Authentication Failed for {$_REQUEST['username']}".printValue($_REQUEST));
 		echo "<result>\r\n";
@@ -791,7 +793,6 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 	if(1==2 && !isAdmin()){
 		$user=ucwords(xmlEncodeCDATA($USER['username']));
 		header('Content-type: text/xml');
-		header('X-Platform: WaSQL');
 		echo xmlHeader(array('version'=>'1.0','encoding'=>'utf-8'));
 		$error=xmlEncodeCDATA("{$user}, you do not have sufficient rights. Sorry.");
 		echo "<result>\r\n";
@@ -860,7 +861,6 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
                     }
                 }
 			header('Content-type: text/xml');
-			header('X-Platform: WaSQL');
 			$dbname=isset($_REQUEST['dbname'])?$_REQUEST['dbname']:'';
 			$encoding=isset($_REQUEST['encoding'])?$_REQUEST['encoding']:'';
 			echo postEditXml($tables,$dbname,$encoding);
@@ -869,7 +869,6 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		case 'posteditupload':
 			//upload
 			header('Content-type: text/plain');
-			header('X-Platform: WaSQL');
 			echo "PostEdit Upload:\n";
 			echo printValue($_REQUEST) . printValue($_FILES);
 			exit;
@@ -877,7 +876,6 @@ if(isset($_REQUEST['apimethod']) && strlen($_REQUEST['apimethod'])){
 		case 'posteditlist':
 			//list files in a specific path off of document root
 			header('Content-type: text/plain');
-			header('X-Platform: WaSQL');
 			$listdir="{$_SERVER['DOCUMENT_ROOT']}/{$_REQUEST['_path']}";
 			$files=listFiles($listdir);
 			sort($files);
@@ -1245,7 +1243,6 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 		$cachefile="{$progpath}/temp/cachedpage_{$CONFIG['dbname']}_{$PAGE['_id']}_{$PAGE['_template']}.htm";
 		if(is_file($cachefile)){
 			$cdate=strlen($PAGE['_edate'])?$PAGE['_edate']:$PAGE['_cdate'];
-			header('X-Platform: WaSQL');
 			header('X-Cached: '.$cdate);
 			if($ext=='php'){
 				$phpdata=getFileContents($cachefile);
