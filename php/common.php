@@ -2380,7 +2380,8 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['list']=$params['id'].'_datalist';
-	$params['value']=buildFormValueParam($name,$params,1);
+	$params['value']=buildFormValueParam($name,$params,0);
+
 	$params['name']=$name;
 	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
@@ -4302,7 +4303,7 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 *	[-group] string - only show this database group
 *	[-dbs] mixed - only show this database list - comma separated or an array
 * @return string
-* @usage echo buildFormCombo('mydate',$opts,$params);
+* @usage echo buildFormSelectDatabase('mydate',$opts,$params);
 */
 function buildFormSelectDatabase($name,$params=array()){
 	if(!isset($params['class'])){$params['class']='select browser-default';}
