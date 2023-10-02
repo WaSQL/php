@@ -3483,6 +3483,7 @@ function adminAddEditOpts($addopts){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function adminDefaultPageValues(){
+	$_REQUEST['name']='';
 	$_REQUEST['body'] = <<<ENDOFDEFAULT
 <view:default>
 </view:default>
