@@ -9268,6 +9268,12 @@ ENDOFERR;
 * @usage
 *	$info=commonCertInfo('google.com');
 *	echo printValue($info);
+*	-----------------------
+*		"issuer_name": "Google Trust Services LLC",
+*   	"issuer_country": "US",
+*   	"issue_date": "2023-09-18",
+*   	"expire_date": "2023-12-11",
+*   	"expire_in_days": "70"
 */
 function commonCertInfo($host,$field=''){
 	$get = stream_context_create(array("ssl" => array("capture_peer_cert" => TRUE)));
