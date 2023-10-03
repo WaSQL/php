@@ -9258,6 +9258,17 @@ ENDOFERR;
 		return $err;
 	}
 }
+//---------- begin function commonCertInfo
+/**
+* @describe queries a domains SSL or TLS cert and returns info like:
+* issuer_country, issuer_state, issuer_city, issuer_name
+* issue_date, expire_date, expire_in_days
+* @param params host string - host/domain name to check
+* @return array
+* @usage
+*	$info=commonCertInfo('google.com');
+*	echo printValue($info);
+*/
 function commonCertInfo($host,$field=''){
 	$get = stream_context_create(array("ssl" => array("capture_peer_cert" => TRUE)));
 	stream_context_set_option($get, 'ssl', 'verify_host', false);
