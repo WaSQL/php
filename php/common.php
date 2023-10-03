@@ -9258,6 +9258,74 @@ ENDOFERR;
 		return $err;
 	}
 }
+function commonCertInfo($host,$field=''){
+	$get = stream_context_create(array("ssl" => array("capture_peer_cert" => TRUE)));
+	stream_context_set_option($get, 'ssl', 'verify_host', false);
+	stream_context_set_option($get, 'ssl', 'verify_peer', false);
+	stream_context_set_option($get, 'ssl', 'verify_peer_name', false);
+	$wpath=getWasqlPath('php');
+	$ca_info=array("{$wpath}/curl-ca-bundle.crt");
+	$errno=0;
+	$errstr='                                                                                                   '; 
+	$read = stream_socket_client("ssl://".$host.":443", $errno, $errstr,60,STREAM_CLIENT_CONNECT,$get);
+	if(!$read){
+		//try reading TLS
+		$read = stream_socket_client("tls://".$host.":443", $errno, $errstr,60,STREAM_CLIENT_CONNECT,$get);
+	} 
+	$cert = stream_context_get_params($read);
+	$certinfo = openssl_x509_parse($cert['options']['ssl']['peer_certificate']);
+	if(!is_array($certinfo)){return array();}
+	$certinfo=array_change_key_case($certinfo);
+	//check certificate chaining - https://www.php.net/manual/en/function.openssl-x509-checkpurpose.php
+	$purpose=0;
+	$x509_res = openssl_x509_read($cert['options']['ssl']['peer_certificate']);
+	// checkpurpose returns false if either the purpose is invalid OR
+    // the certificate is untrusted, so we should validate the
+    // trust before we send back any errors.
+	$certinfo['chain'] = openssl_x509_checkpurpose($x509_res,X509_PURPOSE_SSL_SERVER,$ca_info);
+	//issuer_name
+	if(isset($certinfo['issuer']['O'])){
+		$certinfo['issuer_name']=$certinfo['issuer']['O'];
+	}
+	//issuer_country
+	if(isset($certinfo['issuer']['C'])){
+		$certinfo['issuer_country']=$certinfo['issuer']['C'];
+	}
+	//issuer_state
+	if(isset($certinfo['issuer']['ST'])){
+		$certinfo['issuer_state']=$certinfo['issuer']['ST'];
+	}
+	//issuer_city
+	if(isset($certinfo['issuer']['L'])){
+		$certinfo['issuer_city']=$certinfo['issuer']['L'];
+	}
+	//issuer_url
+	if(isset($certinfo['issuer']['OU'])){
+		$certinfo['issuer_url']=$certinfo['issuer']['OU'];
+	}
+	//issue_date
+	if(isset($certinfo['validfrom_time_t'])){
+		$certinfo['issue_date']=date('Y-m-d',$certinfo['validfrom_time_t']);
+	}
+	else{
+		$certinfo['issue_date']='UNKNOWN';
+	}
+	//expire_date
+	if(isset($certinfo['validto_time_t'])){
+		$certinfo['expire_date']=date('Y-m-d',$certinfo['validto_time_t']);
+		$earlier = new DateTime($certinfo['expire_date']);
+		$later = new DateTime(date('Y-m-d'));
+		$certinfo['expire_in_days'] = $later->diff($earlier)->format("%a"); //3
+	}
+	else{
+		$certinfo['expire_date']='UNKNOWN';
+	}
+	if(strlen($field)){
+		if(isset($certinfo[$field])){return $certinfo[$field];}
+		return '';
+	}
+	return $certinfo;
+}
 function commonShowCode($code){
 	$codelines=preg_split('/[\r\n]+/',$code);
 	foreach($codelines as &$codeline){
