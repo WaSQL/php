@@ -284,12 +284,16 @@
 					//'-process'=>'sqlpromptCaptureFirstRows'
 					'-ignore_case'=>1
 				);
+				$grade=databaseGradeSQL($params['-query'],0);
+				//echo $grade.PHP_EOL;
 				$recs_show=30;
 				$recs=array();
 				$qstart=microtime(true);
 				$_SESSION['debugValue_lastm']=array();
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
 				$qstop=microtime(true);
+				
+
 				$lastquery=dbGetLast();
 				if(!is_array($lastquery)){$lastquery=array();}
 				$lastquery['time']=round(($qstop-$qstart),3);

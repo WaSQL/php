@@ -920,7 +920,91 @@ function pyQueryResults($db,$query,$params=array()){
 	unlink($csvfile);
 	return $csv['items'];
 }
-
+//---------- begin function databaseGradeSQL
+/**
+* @describe returns a SQL Grade for your query
+* @param query string - SQL query
+* @param htm int - if 1 then returns html bar instead of pcnt
+* @return mixed - percent or html bar 
+* @usage
+*	$pcnt=databaseGradeSQL($query);
+*	$htm=databaseGradeSQL($query,1);
+*/
+function databaseGradeSQL($sql,$htm=1){
+	$words=preg_split('/[^a-zA-Z0-9\_\.]+/is',$sql);
+	$ucwords=array(
+		'ABS','ACOS','ADD_MONTHS','ALL','AND','AS','ASC','ASIN','ATAN','AVG',
+		'BETWEEN','BY',
+		'CASE','CAST','CEIL','CHAR_LENGTH','COALESCE','CONCAT','CONCAT_WS','COS','COT','COUNT','CURRENT_DATE','CURRENT_TIME',
+		'DAYS_BETWEEN','DECODE','DEGREES','DESC','DISTINCT',
+		'ELSE','END','EXP','EXTRACT',
+		'FETCH','FIND_IN_SET',
+		'FLOOR','FORMAT','FOUND_ROWS','FROM','FROM_DAYS','FROM_UNIXTIME',
+		'GET_LOCK','GREATEST','GROUP',
+		'HAVING','HEX','IF',
+		'IFNULL','IN','INET_ATON','INET_NTOA','INITCAP','INNER','INSTR','INTERVAL','ISNULL',
+		'JOIN',
+		'LAG','LAST_DAY','LAST_INSERT_ID','LEAST','LEFT','LENGTH','LIKE','LIMIT','LN','LOCATE','LOG','LOWER','LPAD','LTRIM',
+		'MAKE_SET','MATCH','MAX','MD','MICROSECOND','MID','MIN','MINUTE','MOD','MONTH','MONTHNAME','MONTHS_BETWEEN',
+		'NEW_TIME','NEXT','NEXT_DAY','NOT','NOW','NULLIF','NUMTODSINTERVAL','NVL',
+		'OCT','OFFSET','ON','ONLY','ORD','ORDER','OUTER','OVER',
+		'PARTITION','PASSWORD','PI','POSITION','POW','POWER',
+		'QUALIFY','QUARTER','QUOTE',
+		'RADIANS','RAND','RELEASE_LOCK','REPEAT','REPLACE','REVERSE','RIGHT','ROUND','ROWS','ROW_COUNT','ROW_NUMBER','RPAD','RTRIM',
+		'SECOND','SEC_TO_TIME','SELECT','SHA','SIGN','SIN','SOUNDEX','SPACE','SQRT','STRCMP','STR_TO_DATE','SUBDATE','SUBSTR','SUBSTRING','SUM','SYSDATE',
+		'TAN','THEN','TIME','TIMESTAMPADD','TIMESTAMPDIFF','TOP','TO_CHAR','TO_DATE','TO_DAYS','TO_NUMBER','TO_SECONDS','TO_TIMESTAMP','TO_VARCHAR','TRANSLATE','TRIM','TRUNC','TRUNCATE',
+		'UCASE','UNHEX','UNION','UNIX_TIMESTAMP','UPPER','USER',
+		'VERSION',
+		'WEEK','WEEKDAY','WHEN','WHERE','WITH',
+		'YEAR'
+	);
+	$possible=0;
+	$wrong=0;
+	$wrong_words=array();
+	$pcnt=0;
+	for($i=0;$i<count($words);$i++){
+		if(in_array(strtoupper($words[$i]),$ucwords)){
+			//words in ucwords array should be upper case
+			$possible+=1;
+			if($words[$i] !=strtoupper($words[$i])){
+				if(!in_array($words[$i],$wrong_words)){
+					$wrong_words[]=$words[$i];
+				}
+				$wrong+=1;
+			}
+		}
+		elseif(strtolower($words[$i]) != $words[$i]){
+			//other words should be lower case
+			$possible+=1;
+			if(!in_array($words[$i],$wrong_words)){
+				$wrong_words[]=$words[$i];
+			}
+			$wrong+=1;
+		}
+	}
+	//console.log('posible: '+possible+', wrong:'+wrong);
+	if($possible > 0){
+		$pcnt=round((($possible-$wrong)/$possible)*100,0);
+	}
+	if($htm==0){return $pcnt;}
+	$color='is-light';
+	if($pcnt > 90){$color='is-success';}
+	else if($pcnt > 70){$color='is-warning';}
+	else{$color='is-danger';}
+	$bar='';
+	if($pcnt < 55){
+		$bar.='<span style="margin-right:10px;font-size:1.2rem;" class="icon-emo-unhappy w_danger"></span>';
+	}
+	$bar.='<progress style="width:200px;height:14px;display:inline-flex;margin-bottom:0px;" class="show-value progress '+$color+'" value="'+$pcnt+'" max="100">'+$pcnt+'%</progress>';
+	if($pcnt==100){
+		$bar.='<span style="margin-left:10px;font-size:1.2rem;" class="icon-emo-happy w_success"></span>';
+		$bar.='<span style="margin-left:2px;color:#1d5484;font-size:1.2rem;" class="icon-award-filled"></span>';
+	}
+	else{
+		$bar.='	 <span data-tip="id:query_standards" data-tip_position="bottom" class="w_danger w_bold" style="margin-left:10px;">Fix These:</span> '+implode(', ',$wrong_words);
+	}
+	return $bar;
+}
 //---------- begin function databaseListRecords
 /**
 * @describe returns an html table of records

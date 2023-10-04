@@ -128,4 +128,5 @@ if len(params['query']) > 0:
             print(line)
 else:
     print('DaSQL: No Query to run')
+    print(sys.argv)
 
