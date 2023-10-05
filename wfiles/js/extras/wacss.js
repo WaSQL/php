@@ -1035,10 +1035,14 @@ var wacss = {
 					data: json
 				};
 				/* --  fill  -- */
-				if(undefined != datasets[d].dataset.fill && datasets[d].dataset.fill.toLowerCase()=='false'){
+				if(undefined != datasets[d].dataset.fill && 
+					(datasets[d].dataset.fill.toLowerCase()=='0' || datasets[d].dataset.fill.toLowerCase()=='false')
+					){
 					dataset.fill=false;
 				}
-				else if(undefined != list[i].dataset.fill && list[i].dataset.fill.toLowerCase()=='false'){
+				else if(undefined != list[i].dataset.fill && 
+					(list[i].dataset.fill.toLowerCase()=='0' || list[i].dataset.fill.toLowerCase()=='false')
+					){
 					dataset.fill=false;
 				}
 				/* --  borderColor  -- */
@@ -1063,10 +1067,14 @@ var wacss = {
 					dataset.yAxisID=datasets[d].dataset.yAxisID;
 				}
 				/* --  showLine  -- */
-				if(undefined != datasets[d].dataset.showline && datasets[d].dataset.showline =='false'){
+				if(undefined != datasets[d].dataset.showline && 
+					(datasets[d].dataset.showline =='0' || datasets[d].dataset.showline.toLowerCase()=='false')
+					){
 					dataset.showLine=false;
 				}
-				else if(undefined != datasets[d].dataset.showLine && datasets[d].dataset.showLine =='false'){
+				else if(undefined != datasets[d].dataset.showLine && 
+					(datasets[d].dataset.showLine =='0' || datasets[d].dataset.showLine.toLowerCase()=='false')
+					){
 					dataset.showLine=false;
 				}
 				/* --  pointHoverBackgroundColor  -- */
@@ -1086,7 +1094,9 @@ var wacss = {
 				lconfig.data.datasets.push(dataset);
 			}
 			//options - responsive
-			if(undefined != list[i].dataset.responsive && list[i].dataset.responsive.toLowerCase()=='false'){
+			if(undefined != list[i].dataset.responsive && 
+				(list[i].dataset.responsive=='0' || list[i].dataset.responsive.toLowerCase()=='false')
+				){
 				lconfig.options.responsive=false;
 			}
 			//options - title
@@ -1100,7 +1110,7 @@ var wacss = {
 					yAxes:[{stacked:true}]
 				};
 			}
-			if(undefined != list[i].dataset.beginatzero && (list[i].dataset.beginatzero==1 || list[i].dataset.beginatzero=='true')){
+			if(undefined != list[i].dataset.beginatzero && (list[i].dataset.beginatzero==1 || list[i].dataset.beginatzero.toLowerCase()=='true')){
 				if(undefined == lconfig.options.scales){
 					lconfig.options.scales={
 						yAxes:[{ticks:{beginAtZero:true}}]
@@ -1111,7 +1121,9 @@ var wacss = {
 				}
 			}
 			//options - plugins - legend - display
-			if(undefined != list[i].dataset.legenddisplay && list[i].dataset.legenddisplay.toLowerCase()=='false'){
+			if(undefined != list[i].dataset.legenddisplay && 
+				(list[i].dataset.legenddisplay=='0'|| list[i].dataset.legenddisplay.toLowerCase()=='false')
+				){
 				lconfig.options.legend={display:false};
 			}
 			//options - plugins - labels - render
@@ -1324,7 +1336,9 @@ var wacss = {
 	            				text: gv1
 	            			}
 	        			};
-	        			if(undefined != list[i].dataset.labels && list[i].dataset.labels=='false'){
+	        			if(undefined != list[i].dataset.labels && 
+	        				(list[i].dataset.labels=='0' || list[i].dataset.labels.toLowerCase()=='false')
+	        				){
 	        				gconfig.options.plugins.datalabels.display=false;
 	        			}
 	        			if(undefined != list[i].dataset.title){
@@ -1404,7 +1418,9 @@ var wacss = {
 									pointBackgroundColor:[],
 									pointBorderColor: []
 								};
-								if(undefined != udatasets[ud].getAttribute('data-showLine') && udatasets[ud].getAttribute('data-showLine')=='false'){
+								if(undefined != udatasets[ud].getAttribute('data-showLine') && 
+									(udatasets[ud].getAttribute('data-showLine')=='0' || udatasets[ud].getAttribute('data-showLine').toLowerCase()=='false')
+									){
 									udataset.showLine=false;
 								}
 								if(undefined != udatasets[ud].getAttribute('data-yaxis')){
@@ -1436,7 +1452,9 @@ var wacss = {
 		        			if((undefined == labels || labels.length==0) && undefined != datasetLabels && datasetLabels.length > 0){
 								wacss.chartjs[list[i].id].config.data.labels=datasetLabels;
 							}
-							if(undefined != list[i].getAttribute('data-stacked') && list[i].getAttribute('data-stacked')==1){
+							if(undefined != list[i].getAttribute('data-stacked') && 
+								(list[i].getAttribute('data-stacked')==1 || list[i].getAttribute('data-stacked').toLowerCase()=='true')
+								){
 								if(undefined != wacss.chartjs[list[i].id].config.options.scales.yAxes[0]){
 									wacss.chartjs[list[i].id].config.options.scales.yAxes[0].stacked=true;
 								}
@@ -1444,7 +1462,9 @@ var wacss = {
 									wacss.chartjs[list[i].id].config.options.scales.xAxes[0].stacked=true;
 								}
 							}
-							if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
+							if(undefined != list[i].getAttribute('data-beginatzero') && 
+								(list[i].getAttribute('data-beginatzero')==1 || list[i].getAttribute('data-beginatzero').toLowerCase()=='true')
+								){
 								if(undefined == lconfig.options.scales){
 									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 								}
@@ -1472,7 +1492,9 @@ var wacss = {
 							options:options
 						};
 						//stacked?
-						if(undefined != list[i].getAttribute('data-stacked') && list[i].getAttribute('data-stacked')==1){
+						if(undefined != list[i].getAttribute('data-stacked') && 
+							(list[i].getAttribute('data-stacked')==1 || list[i].getAttribute('data-stacked').toLowerCase()=='true')
+							){
 							if(undefined != lconfig.options.scales){
 								lconfig.options.scales.yAxes[0].stacked=true;
 								lconfig.options.scales.xAxes[0].stacked=true;	
@@ -1488,7 +1510,9 @@ var wacss = {
 						//console.log('list: '+i);
 						//console.log(list[i]);
 						//beginatzero
-						if(undefined != list[i].getAttribute('data-beginatzero') && list[i].getAttribute('data-beginatzero')==1){
+						if(undefined != list[i].getAttribute('data-beginatzero') && 
+							(list[i].getAttribute('data-beginatzero')==1 || list[i].getAttribute('data-beginatzero').toLowerCase()=='true')
+							){
 							if(undefined != lconfig.options.scales){
 								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
 							}
@@ -1546,10 +1570,14 @@ var wacss = {
 								dataset.yAxisID=datasets[d].dataset.yAxisID;
 							}
 							/* --  showLine  -- */
-							if(undefined != datasets[d].dataset.showline && datasets[d].dataset.showline =='false'){
+							if(undefined != datasets[d].dataset.showline && 
+								(datasets[d].dataset.showline =='0' || datasets[d].dataset.showline.toLowerCase()=='false')
+								){
 								dataset.showLine=false;
 							}
-							else if(undefined != datasets[d].dataset.showLine && datasets[d].dataset.showLine =='false'){
+							else if(undefined != datasets[d].dataset.showLine && 
+								(datasets[d].dataset.showLine =='0' || datasets[d].dataset.showLine.toLowerCase()=='false')
+								){
 								dataset.showLine=false;
 							}
 							/* --  pointHoverBackgroundColor  -- */
