@@ -1,0 +1,9 @@
+{
+	"target": "execute_selection_exec",
+	"cancel": {"kill":true},
+
+	"shell_cmd": "python3 dasql.py \"\\$selection\"",
+	"working_dir":"d:\\wasql\\dasql",
+	"quiet":true,
+	"save_untitled_files":true
+}

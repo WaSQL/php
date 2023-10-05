@@ -1,0 +1,40 @@
+#custom_exec.py  - used in sublime text
+#On Windows it is saved in C:\Users\{YOUR USER}\AppData\Roaming\Sublime Text 3\Packages\User
+import sublime
+import sublime_plugin
+import os
+import tempfile
+
+from Default.exec import ExecCommand
+
+class ExecuteSelectionExecCommand(ExecCommand):
+	def run(self,**kwargs):
+		view = self.window.active_view()
+		# if nothing is selected, pass in full filename
+		if view.sel()[0].empty():
+			variables = {"selection": view.file_name()}
+		else:
+			# create a temp file with just the selection and pass that
+			self.tmp_file = self.get_selection(view)
+			variables = {"selection": self.tmp_file}
+		# expand the variables
+		kwargs = sublime.expand_variables(kwargs,variables)
+		# run
+		super().run(**kwargs)
+
+	# get the selected text in the current window - first cursor only
+	def get_selection(self, view):
+		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		handle, name = tempfile.mkstemp(suffix="_sql",prefix=fname+".",text=True)
+		handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+		handle.write(view.substr(view.sel()[0]))
+		handle.close()
+		return name
+
+	# remove temp file if exists
+	def finish(self,proc):
+		super().finish(proc)
+		try:
+			os.remove(self.tmp_file)
+		finally:
+			self.tmp_file = None
