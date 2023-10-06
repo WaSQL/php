@@ -276,6 +276,8 @@ function gigyaQueryResults($query,$params=array()){
     if(isset($CONFIG['gigya_limit'])){
     	$plimit=(integer)$CONFIG['gigya_limit'];
     }
+    //max plimit is 10,000 per API
+    if($plimit > 10000){$plimit=10000;}
     //set a maxloops as a safety precaution - this will limit the total number of records to 50M rows
     $maxloops=5000;
     if(isset($CONFIG['gigya_maxloops'])){
