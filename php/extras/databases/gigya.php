@@ -312,7 +312,7 @@ function gigyaQueryResults($query,$params=array()){
 			'-json'=>1,
 		);
 		if(!strlen($nextcursorid)){
-			$postopts['openCusor']='true';
+			$postopts['openCursor']='true';
 			$postopts['query']=$cquery;
 			if(isset($params['-logfile'])){
 		    	appendFileContents($params['-logfile'],time().",openCURSOR: true,  POSTING: LOOP {$loop}".PHP_EOL);
@@ -500,17 +500,26 @@ function gigyaQueryResults($query,$params=array()){
 		}
 		if(!isset($post['json_array']['nextCursorId'])){
 			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", No nextCursorId".PHP_EOL.encodeJson($post['json_array']).PHP_EOL);
+		    	appendFileContents($params['-logfile'],time().", No nextCursorId - DONE".PHP_EOL);
 		    }
 			break;
 		}
 		if(stringContains($query,'count(*)')){
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", Count detected - DONE".PHP_EOL);
+		    }
 			break;
 		}
 		if(isset($post['json_array']['objectsCount']) && $post['json_array']['objectsCount'] < $plimit){
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", ObjectsCount is less - DONE".PHP_EOL);
+		    }
 			break;
 		}
 		if($limit > 0 and $recs_count >= $limit){
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", hit limit - DONE".PHP_EOL);
+		    }
 			break;
 		}
 		$poffset+=$plimit;
