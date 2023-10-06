@@ -294,6 +294,9 @@ function gigyaQueryResults($query,$params=array()){
     if(isset($params['-logfile'])){
     	setFileContents($params['-logfile'],printValue($params));
     }
+    if(isset($params['-logfile'])){
+    	appendFileContents($params['-logfile'],time().", PLIMIT: {$plimit}, MAXLOOPS: {$maxloops}".PHP_EOL);
+    }
     $nextcursorid='';
     //echo "<pre>{$query}</pre>";exit;
     while($loop < $maxloops){
@@ -311,14 +314,17 @@ function gigyaQueryResults($query,$params=array()){
 		if(!strlen($nextcursorid)){
 			$postopts['openCusor']='true';
 			$postopts['query']=$cquery;
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().",openCURSOR: true,  POSTING: LOOP {$loop}".PHP_EOL);
+		    }
 		}
 		else{
 			$postopts['cusrorId']=$nextcursorid;
+			if(isset($params['-logfile'])){
+	    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL.$nextcursorid.PHP_EOL);
+	    }
 		}
 		//echo printValue($postopts);exit;
-		if(isset($params['-logfile'])){
-	    	appendFileContents($params['-logfile'],time().", POSTING: LOOP {$loop}".PHP_EOL);
-	    }
 		$post=postURL($url,$postopts);
 		if(isset($post['json_array']['nextCursorId'])){
 			$nextcursorid=$post['json_array']['nextCursorId'];
