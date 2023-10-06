@@ -321,7 +321,7 @@ function gigyaQueryResults($query,$params=array()){
 		else{
 			$postopts['cursorId']=$nextcursorid;
 			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL.$nextcursorid.PHP_EOL);
+		    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL);
 		    }
 		}
 		//echo printValue($postopts);exit;
@@ -360,13 +360,21 @@ function gigyaQueryResults($query,$params=array()){
 			$post['json_array']['results']=$post['json_array']['result'];
 		}
 		if(isset($post['json_array']['resultCount']) && $post['json_array']['resultCount']==0){
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", no resultCount:".PHP_EOL);
+		    }
 			break;
 		}
 		if(!isset($post['json_array']['results'][0])){
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", results are empty:".PHP_EOL);
+		    }
 			break;
 		}
 		if(!isset($post['json_array']['statusCode']) || $post['json_array']['statusCode'] != 200){
-			echo printValue($post);exit;
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", statusCode not 200:".PHP_EOL.decodeJson($post['json_array']).PHP_EOL);
+		    }
 			break;
 		}
 		if(isset($post['json_array']['results'])){
