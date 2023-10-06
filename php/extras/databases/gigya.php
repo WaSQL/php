@@ -236,7 +236,7 @@ function gigyaQueryResults($query,$params=array()){
 	if(preg_match('/SELECT(.+?)FROM/is',$query,$m)){
 		//echo printValue($m);exit;
 		$rtag=$m[0];
-		if(trim($m[1])!='*'){
+		if(!stringContains(trim($m[1]),'count(') && trim($m[1])!='*'){
 			$xfields=preg_split('/\,/',trim($m[1]));
 			foreach($xfields as $f=>$field){
 				$fields[]=strtolower(trim($field));
@@ -289,6 +289,7 @@ function gigyaQueryResults($query,$params=array()){
     	setFileContents($params['-logfile'],printValue($params));
     }
     $nextcursorid='';
+    //echo "<pre>{$query}</pre>";exit;
     while($loop < $maxloops){
     	$loop+=1;
     	//$cquery=$query." START {$poffset} LIMIT {$plimit}";
@@ -316,6 +317,7 @@ function gigyaQueryResults($query,$params=array()){
 		if(isset($post['json_array']['nextCursorId'])){
 			$nextcursorid=$post['json_array']['nextCursorId'];
 		}
+
 		if(isset($params['-logfile'])){
 	    	appendFileContents($params['-logfile'],time().", RETURNED:".PHP_EOL);
 	    }
@@ -483,6 +485,9 @@ function gigyaQueryResults($query,$params=array()){
 				}
 				$recs=array();
 			}
+		}
+		if(!isset($post['json_array']['nextCursorId'])){
+			break;
 		}
 		if(stringContains($query,'count(*)')){
 			break;
