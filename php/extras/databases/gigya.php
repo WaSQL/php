@@ -319,7 +319,7 @@ function gigyaQueryResults($query,$params=array()){
 		    }
 		}
 		else{
-			$postopts['cusrorId']=$nextcursorid;
+			$postopts['cursorId']=$nextcursorid;
 			if(isset($params['-logfile'])){
 		    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL.$nextcursorid.PHP_EOL);
 		    }
