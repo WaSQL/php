@@ -321,8 +321,8 @@ function gigyaQueryResults($query,$params=array()){
 		else{
 			$postopts['cusrorId']=$nextcursorid;
 			if(isset($params['-logfile'])){
-	    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL.$nextcursorid.PHP_EOL);
-	    }
+		    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL.$nextcursorid.PHP_EOL);
+		    }
 		}
 		//echo printValue($postopts);exit;
 		$post=postURL($url,$postopts);
@@ -499,6 +499,9 @@ function gigyaQueryResults($query,$params=array()){
 			}
 		}
 		if(!isset($post['json_array']['nextCursorId'])){
+			if(isset($params['-logfile'])){
+		    	appendFileContents($params['-logfile'],time().", No nextCursorId".PHP_EOL.encodeJson($post['json_array']).PHP_EOL);
+		    }
 			break;
 		}
 		if(stringContains($query,'count(*)')){
