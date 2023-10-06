@@ -273,8 +273,14 @@ function gigyaQueryResults($query,$params=array()){
     }
     $poffset=0;
     $plimit=5000;
+    if(isset($CONFIG['gigya_limit'])){
+    	$plimit=(integer)$CONFIG['gigya_limit'];
+    }
     //set a maxloops as a safety precaution - this will limit the total number of records to 50M rows
     $maxloops=5000;
+    if(isset($CONFIG['gigya_maxloops'])){
+    	$maxloops=(integer)$CONFIG['gigya_maxloops'];
+    }
     if($limit > 0 && $limit < $plimit){
     	$plimit=$limit;
     }
