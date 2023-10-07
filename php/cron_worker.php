@@ -210,7 +210,7 @@ ENDOFSQL;
 		}
 		//update the cronlog header with crontype
 		$header['crontype']=$crontype;
-		cronMessage("{$rec['_id']} - Name:{$rec['name']}, cronlog_id:{$rec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
+		cronMessage("Cron ID:{$rec['_id']} - Name:{$rec['name']}, cronlog_id:{$rec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
 		$ok=cronLogUpdate(array('header'=>encodeJson($header)));
 		//start the job
 		$start=microtime(true);
@@ -319,7 +319,7 @@ ENDOFSQL;
 		$etime=microtime(true)-$starttime;
 		$etime=(integer)$etime;
 		$cron_pid=getmypid();
-		cronMessage("cron_id: {$rec['_id']}, process_pid: {$cron_pid} finished");
+		cronMessage("Cron ID:{$rec['_id']} - Name:{$rec['name']}, process_pid: {$cron_pid} finished");
 	}
 	if($etime > 60){break;}
 }
