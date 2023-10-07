@@ -210,7 +210,7 @@ ENDOFSQL;
 		}
 		//update the cronlog header with crontype
 		$header['crontype']=$crontype;
-		echo "{$rec['_id']} - Name:{$rec['name']}, cronlog_id:{$rec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}".PHP_EOL;
+		cronMessage("{$rec['_id']} - Name:{$rec['name']}, cronlog_id:{$rec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
 		$ok=cronLogUpdate(array('header'=>encodeJson($header)));
 		//start the job
 		$start=microtime(true);
