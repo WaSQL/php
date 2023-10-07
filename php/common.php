@@ -13504,7 +13504,7 @@ function includePage($val='',$params=array()){
 	global $PASSTHRU;
 	global $PAGE;
 	$prevpass=$PASSTHRU;
-	$prevview=$_REQUEST['_view'];
+	$prevview=isset($_REQUEST['_view'])?$_REQUEST['_view']:'';
 	//check to make sure this is not an infinite loop - includePage of the page you on with same passthrus
 	$parts=preg_split('/\/+/',$val);
 	$val=$_REQUEST['_view']=array_shift($parts);
