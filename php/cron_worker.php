@@ -218,6 +218,7 @@ ENDOFSQL;
 		if(strtolower($crontype)=='page'){
 	    	//cron is a page.
 	    	$crontype='page';
+	    	$cmd=preg_replace('/^\/t\/1+/','',$cmd);
 	    	$cmd=preg_replace('/^\/+/','',$cmd);
 	    	//if they have specified a run_as then login as that person
 	    	if(isset($rec['run_as']) && isNum($rec['run_as'])){
