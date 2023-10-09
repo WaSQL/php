@@ -37,7 +37,12 @@ switch(strtolower($_REQUEST['func'])){
 	case 'view_file':
 		$file=$_REQUEST['file'];
 		$afile="{$path}/{$file}";
-		$content=getFileContents($afile);
+		if(filesize($afile) > 2000000){
+			$content=tailFile($afile,300);
+		}
+		else{
+			$content=getFileContents($afile);
+		}
 		setView('view_file',1);
 		return;
 	break;
