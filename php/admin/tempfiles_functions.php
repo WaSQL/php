@@ -13,6 +13,7 @@ function tempfilesGetTabs(){
 	$files=listFiles($path);
 	$exts=array();
 	foreach($files as $file){
+		if(is_dir("{$path}/{$file}")){continue;}
 		$ext=getFileExtension($file);
 		$exts[$ext]+=1;
 	}
