@@ -223,9 +223,8 @@
 <view:tabledetails>
 	<div style="border-bottom:1px solid #ccc;margin-bottom:15px;">
 		<div style="margin-bottom:10px;display:flex;justify-content: flex-start;align-items: center;">
-			<a href="#" title="Last" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-last"></span></a>
-			<a href="#" title="List" class="w_link" style="margin-left:10px;" onclick="return sqlpromptListRecords('<?=$table;?>');"><span class="icon-list"></span></a>
-			<a href="#" title="Count" class="w_link" style="margin-left:10px;" onclick="return sqlpromptCountRecords('<?=$table;?>');"><span class="icon-circle-empty"></span></a>
+			<a href="#" title="Last" class="w_link" onclick="return sqlpromptLastRecords('<?=$table;?>');"><span class="icon-list"></span></a>
+			<a href="#" title="Count" class="w_link" style="margin-left:10px;" onclick="return sqlpromptCountRecords('<?=$table;?>');"><span class="icon-hashtag"></span></a>
 			<a href="#" title="DDL" class="w_link" style="margin-left:10px;" onclick="return sqlpromptDDL('<?=$table;?>');"><span class="icon-database-empty"></span></a>
 		</div>
 		<?=renderView('fields',$fields,'fields');?>

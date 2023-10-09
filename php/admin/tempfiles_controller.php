@@ -24,6 +24,13 @@ switch(strtolower($_REQUEST['func'])){
 		$ext=$_REQUEST['ext'];
 		$file=$_REQUEST['file'];
 		$afile="{$path}/{$file}";
+		if($ext != 'log'){
+			//matching logfile?
+			$logfile=preg_replace('/\.'.$ext.'$/','.log',$afile);
+			if(file_exists($logfile)){
+				unlink($logfile);
+			}
+		}
 		unlink($afile);
 		setView('list',1);
 	break;
@@ -43,6 +50,9 @@ switch(strtolower($_REQUEST['func'])){
 	case 'list':
 		$ext=$_REQUEST['ext'];
 		$sort='name';
+		if(isset($_REQUEST['sort']) && strlen($_REQUEST['sort'])){
+			$sort=$_REQUEST['sort'];
+		}
 		setView('list',1);
 		return;
 	break;

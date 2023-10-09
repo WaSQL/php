@@ -5,14 +5,14 @@
 <div style="margin-top: 0px;padding:0 8px 8px 0;display:flex;flex-wrap:wrap;justify-content: flex-start;align-items: flex-start;max-width:90vw;overflow:auto;">
 	<div id="left_content">
 		<ul class="nav-list buttons <?=configValue('admin_color');?>" style="width:200px;">
-			<li><a href="#config_users" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_users"><span class="icon-users"></span> User Authentication</a></li>
-			<li><a href="#config_sync" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_sync"><span class="icon-sync"></span> Sync Settings</a></li>
-			<li><a href="#config_database" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_database"><span class="icon-database"></span> Database Settings</a></li>
-			<li><a href="#config_crons" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_crons"><span class="icon-cron"></span> Cron Settings</a></li>
-			<li><a href="#config_logs" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_logs"><span class="icon-file-txt"></span> Logs</a></li>
-			<li><a href="#config_mail" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_mail"><span class="icon-mail"></span> SendMail Settings</a></li>
-			<li><a href="#config_uploads" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_uploads"><span class="icon-upload"></span> File Uploads</a></li>
-			<li><a href="#config_misc" onclick="return configNav(this);" data-nav="/php/admin.php" data-func="config_misc"><span class="icon-dots"></span> Misc Settings</a></li>
+			<li><a href="#config_users" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_users"><span class="icon-users"></span> User Authentication</a></li>
+			<li><a href="#config_sync" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_sync"><span class="icon-sync"></span> Sync Settings</a></li>
+			<li><a href="#config_database" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_database"><span class="icon-database"></span> Database Settings</a></li>
+			<li><a href="#config_crons" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_crons"><span class="icon-cron"></span> Cron Settings</a></li>
+			<li><a href="#config_logs" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_logs"><span class="icon-file-txt"></span> Logs</a></li>
+			<li><a href="#config_mail" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_mail"><span class="icon-mail"></span> SendMail Settings</a></li>
+			<li><a href="#config_uploads" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_uploads"><span class="icon-upload"></span> File Uploads</a></li>
+			<li><a href="#config_misc" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_misc"><span class="icon-dots"></span> Misc Settings</a></li>
 		</ul>
 	</div>
 	<div id="main_content" style="margin-left:15px;flex:1;width:100%;">
@@ -217,14 +217,14 @@
 		<div style="flex:1;"><label>Enable Slow Query Logging?</label><?=configBuildFormField('wasql_queries');?></div>
 		<div style="flex:2;margin-left:15px;" data-displayif="wasql_queries:1"><label>Enable ONLY for user(s) - usernames and/or ids</label><?=configBuildFormField('wasql_queries_user');?></div>
 		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Days to keep</label><?=configBuildFormField('wasql_queries_days');?></div>
-		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Only log queries that take over (seconds):</label><?=configBuildFormField('wasql_queries_time');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="wasql_queries:1"><label>Only log if over (seconds):</label><?=configBuildFormField('wasql_queries_time');?></div>
 	</div>
 	<div class="w_lgrayback w_bold" style="padding:5px 9px;"><span class="icon-prompt"></span> SQL Prompt Query Logging</div>
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Log SQL Prompt Queries?</label><?=configBuildFormField('log_queries');?></div>
 		<div style="flex:2;margin-left:15px;" data-displayif="log_queries:1"><label>Enable ONLY for user(s) - usernames and/or ids</label><?=configBuildFormField('log_queries_user');?></div>
 		<div style="flex:1;margin-left:15px;" data-displayif="log_queries:1"><label>Days to keep</label><?=configBuildFormField('log_queries_days');?></div>
-		<div style="flex:1;margin-left:15px;" data-displayif="log_queries:1"><label>Only log queries that take over (seconds):</label><?=configBuildFormField('log_queries_time');?></div>
+		<div style="flex:1;margin-left:15px;" data-displayif="log_queries:1"><label>Only log if over (seconds):</label><?=configBuildFormField('log_queries_time');?></div>
 	</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>SQL Prompt Databases to show. Leave blank for all</label><?=configBuildFormField('databases',array('required'=>''));?></div>

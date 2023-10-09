@@ -2081,6 +2081,7 @@ function databaseListRecords($params=array()){
 			}
 		}
 		foreach($params as $k=>$v){
+			$v=str_replace('%field%',$field,$v);
 			if(preg_match('/^\-th\_(.+)$/i',$k,$m)){
 				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 			}

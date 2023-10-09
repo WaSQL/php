@@ -44,13 +44,13 @@
 			//echo "TABLE: {$table}";exit;
 			switch(strtolower($db['dbtype'])){
 				case 'mssql':
-					$sql="select * from {$table} order by 1 offset 0 rows fetch next 5 rows only";
+					$sql="select * from {$table} offset 0 rows fetch next 5 rows only";
 				break;
 				case 'oracle':
-					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
+					$sql="select * from {$table} offset 0 rows fetch next 5 rows only";
 				break;
 				case 'firebird':
-					$sql="select * from {$table} order by 1 desc offset 0 rows fetch next 5 rows only";
+					$sql="select * from {$table} offset 0 rows fetch next 5 rows only";
 				break;
 				case 'ctree':
 					$sql=sqlpromptBuildTop5Ctree($db,$table);
@@ -65,13 +65,13 @@
 					if(strlen($db['dbschema'])){
 						$table="{$db['dbschema']}.{$table}";
 					}
-					$sql="select * from {$table} order by 1 desc limit 5";
+					$sql="select * from {$table} limit 5";
 				break;
 				case 'gigya':
 					$sql="select * from {$table} limit 5";
 				break;
 				default:
-					$sql="select * from {$table} order by 1 desc limit 5";
+					$sql="select * from {$table} limit 5";
 				break;
 			}
 			setView('monitor_sql',1);
@@ -86,7 +86,7 @@
 			$table=addslashes($_REQUEST['table']);
 			switch(strtolower($db['dbtype'])){
 				case 'ctree':
-					$sql="select count(*) as cnt from admin.{$table} order by 1 desc";
+					$sql="select count(*) as cnt from admin.{$table}";
 				break;
 				case 'mysql':
 				case 'mysqli':
@@ -268,9 +268,10 @@
 			else{
 				$tpath=getWasqlPath('php/temp');
 				$shastr=sha1($_SESSION['sql_last']);
-				$filename="sqlprompt_{$shastr}.csv";
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$logname="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.log";
 				$afile="{$tpath}/{$filename}";
-				$logname="sqlprompt_{$shastr}.log";
 				$lfile="{$tpath}/{$logname}";
 				if(is_file($afile)){unlink($afile);}
 				if(is_file($lfile)){unlink($lfile);}
@@ -414,9 +415,9 @@
 					if(!in_array($USER['_id'],$query_users) || !in_array($USER['username'],$query_users)){$log=0;}
 				}
 				//log_queries_time?
-				if(isNum($CONFIG['log_queries_time']) && $lastquery['time'] < $CONFIG['log_queries_time']){$log=0;}
+				if(isset($CONFIG['log_queries_time']) && isNum($CONFIG['log_queries_time']) && $lastquery['time'] < $CONFIG['log_queries_time']){$log=0;}
 				//log_queries_days
-				if(isNum($CONFIG['log_queries_days'])){
+				if(isset($CONFIG['log_queries_days']) && isNum($CONFIG['log_queries_days'])){
 					$qdays=(integer)$CONFIG['log_queries_days'];
 					if($qdays > 0){
 						$query="DELETE FROM _queries WHERE function_name='sql_prompt' and _cdate < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL {$qdays} DAY))";
