@@ -2081,11 +2081,18 @@ function databaseListRecords($params=array()){
 			}
 		}
 		foreach($params as $k=>$v){
-			$v=str_replace('%field%',$field,$v);
-			if(preg_match('/^\-th\_(.+)$/i',$k,$m)){
+			if(is_array($v)){continue;}
+			if(stringContains($v,'</')){continue;}
+			if(preg_match('/^\-th\_'.$field.'\_(.+)$/i',$k,$m)){
+				$v=str_replace('%field%',$field,$v);
+				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
+			}
+			elseif(preg_match('/^\-th\_(.+)$/i',$k,$m)){
+				$v=str_replace('%field%',$field,$v);
 				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 			}
 			elseif(preg_match('/^-th(.+)$/',$k,$m)){
+				$v=str_replace('%field%',$field,$v);
 				if(!isset($atts[$m[1]])){$atts[$m[1]]=$v;}
 			}
 		}
