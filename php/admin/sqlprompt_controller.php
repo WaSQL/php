@@ -179,7 +179,8 @@
 				setView('error',1);
 				return;
 			}
-			$filename="sqlprompt_{$shastr}.csv";
+			$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+			$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 			$afile="{$tpath}/{$filename}";
 			if(!file_exists($afile)){
 				$lastquery['error']="Missing cached file. Unable to paginate. Try running the query again.<br><br>{$afile}";
@@ -473,7 +474,8 @@
 				$recs_count=$_SESSION['sql_last_count'];
 			}
 			else{$shastr=time();}
-			$filename="sqlprompt_{$shastr}.csv";
+			$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+			$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 			$afile="{$tpath}/{$filename}";
 			if(file_exists($afile)){
 				pushFile($afile);
