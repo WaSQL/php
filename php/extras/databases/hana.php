@@ -87,7 +87,6 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	$table=$params['-table'];
 	if(isset($params['-fieldinfo'])){
 		$fieldinfo=$params['-fieldinfo'];
-		unset($params['-fieldinfo']);
 	}
 	else{
 		$fieldinfo=hanaGetDBFieldInfo($table,1);
@@ -224,7 +223,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			$query.=')';
 		}
 		if(isset($params['-debug'])){
-			return $query;
+			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL;
 		}
 		if(!is_resource($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
