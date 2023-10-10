@@ -6201,10 +6201,10 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 function getView($name){
 	global $PAGE;
 	global $VIEWS;
-	if(isset($VIEWS[$name])){return $VIEWS[$name];}
 	if(preg_match('/\<view\:'.$name.'\>(.+?)\<\/view\:'.$name.'\>/ism',$PAGE['body'],$m)){
 		return $m[1];
 	}
+	if(isset($VIEWS[$name])){return $VIEWS[$name];}
 	return '';
 }
 //---------- begin function setValue--------------------
