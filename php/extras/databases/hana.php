@@ -85,7 +85,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		return debugValue("hanaAddDBRecordsProcess Error: no table"); 
 	}
 	$table=$params['-table'];
-	$fieldinfo=hanaGetDBFieldInfo($table,1);
+	if(isset($params['-fieldinfo'])){
+		$fieldinfo=$params['-fieldinfo'];
+		unset($params['-fieldinfo']);
+	}
+	else{
+		$fieldinfo=hanaGetDBFieldInfo($table,1);
+	}
 	//echo printValue($fieldinfo);exit;
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
