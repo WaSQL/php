@@ -105,8 +105,8 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	}
 	//fields
 	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
 			if(!isset($fieldinfo[$k])){
 				unset($recs[$i][$k]);
 				continue;
@@ -114,6 +114,15 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			if(!in_array($k,$fields)){$fields[]=$k;}
 		}
 		break;
+	}
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'hanaAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
 	}
 	$fieldstr=implode(',',$fields);
 	//keep prepared statement markers under 20000
