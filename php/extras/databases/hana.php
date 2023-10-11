@@ -85,7 +85,12 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		return debugValue("hanaAddDBRecordsProcess Error: no table"); 
 	}
 	$table=$params['-table'];
-	$fieldinfo=hanaGetDBFieldInfo($table,1);
+	if(isset($params['-fieldinfo'])){
+		$fieldinfo=$params['-fieldinfo'];
+	}
+	else{
+		$fieldinfo=hanaGetDBFieldInfo($table,1);
+	}
 	//echo printValue($fieldinfo);exit;
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -100,8 +105,8 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	}
 	//fields
 	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
 			if(!isset($fieldinfo[$k])){
 				unset($recs[$i][$k]);
 				continue;
@@ -109,6 +114,15 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			if(!in_array($k,$fields)){$fields[]=$k;}
 		}
 		break;
+	}
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'hanaAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
 	}
 	$fieldstr=implode(',',$fields);
 	//keep prepared statement markers under 20000
@@ -218,7 +232,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			$query.=')';
 		}
 		if(isset($params['-debug'])){
-			return $query;
+			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL;
 		}
 		if(!is_resource($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
