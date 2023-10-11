@@ -4082,13 +4082,13 @@ function addDBIndex($params=array()){
 	if(!isset($params['-fields'])){return 'addDBIndex Error: No fields';}
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
 	//fulltext or unique
-	$fulltext=isset($params['-fulltext'])?' FULLTEXT':'';
-	$unique=isset($params['-unique'])?' UNIQUE':'';
+	$fulltext=isset($params['-fulltext']) && $params['-fulltext']?' FULLTEXT':'';
+	$unique=isset($params['-unique']) && $params['-unique']?' UNIQUE':'';
 	//prefix
 	$prefix='';
-	if(strlen($unique)){$prefix .= 'U';}
-	if(strlen($fulltext)){$prefix .= 'F';}
-	$prefix.='IDX';
+	if(strlen($unique)){$prefix .= 'u';}
+	if(strlen($fulltext)){$prefix .= 'f';}
+	$prefix.='idx';
 	//name
 	$fieldstr=implode('_',$params['-fields']);
 	//index names cannot be longer than 64 chars long
@@ -4107,7 +4107,8 @@ function addDBIndex($params=array()){
 	}
 	//build and execute
 	$fieldstr=implode(", ",$params['-fields']);
-	$query="alter table {$params['-table']} add{$fulltext}{$unique} index {$params['-name']} ({$fieldstr})";
+	$query="CREATE {$unique}{$fulltext} INDEX {$params['-name']} ON {$params['-table']}({$fieldstr})";
+	//echo $query.printValue($params);exit;
 	return executeSQL($query);
 }
 //---------- begin function dropDBIndex--------------------
