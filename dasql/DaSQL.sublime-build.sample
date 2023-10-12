@@ -4,6 +4,7 @@
 
 	"shell_cmd": "python3 dasql.py \"\\$selection\"",
 	"working_dir":"d:\\wasql\\dasql",
+	"word_wrap": false,
 	"quiet":true,
 	"save_untitled_files":true
 }

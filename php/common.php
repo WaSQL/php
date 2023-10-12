@@ -6439,11 +6439,23 @@ function commonProcessChartjsTags($htm){
 			$replace_str .= '></div>'.PHP_EOL;
 			$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
 			$dataset_name=isset($chartjs_attributes['data-dataset'])?$chartjs_attributes['data-dataset']:'data';
+			//get a list labels and datasets
+			$xrecs=array();
 			foreach($recs as $rec){
-				$dataset=$rec['dataset'] ?? $dataset_name;
-				$values[$dataset][]=isset($rec['value'])?$rec['value']:0;
+				$dataset=isset($rec['dataset'])?$rec['dataset']:$dataset_name;
 				if(isset($rec['label']) && strlen($rec['label']) && !in_array($rec['label'],$labels)){
 					$labels[]=$rec['label'];
+				}
+				if(!in_array($dataset,$datasets)){
+					$datasets[]=$dataset;
+				}
+				$xrecs[$rec['label']][$dataset]=isset($rec['value'])?$rec['value']:0;
+			}
+			foreach($datasets as $dataset){
+				foreach($labels as $label){
+					if(isset($xrecs[$label][$dataset])){$v=$xrecs[$label][$dataset];}
+					else{$v=0;}
+					$values[$dataset][]=$v;
 				}
 			}
 			$i=0;
@@ -6458,6 +6470,7 @@ function commonProcessChartjsTags($htm){
 			}
 			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
 			$replace_str.='</div>'.PHP_EOL;
+			//echo "<xmp>{$replace_str}</xmp>".printValue($values).printValue($recs);exit;
 			$htm=str_replace($chartjs_tag,$replace_str,$htm);
 			continue;
 		}
