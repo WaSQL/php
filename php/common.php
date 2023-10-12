@@ -6421,11 +6421,14 @@ function commonProcessChartjsTags($htm){
 				$htm=str_replace($chartjs_tag,$replace_str,$htm);
 				continue;
 			}
-			if(!isset($recs[0]['label'])){
+			if(!isset($recs[0]['label']) || !isset($recs[0]['value'])){
 				$replace_str='<error>Query Must return label, and value</error>';
 				$replace_str.="<query>{$chartjs_contents}</query>";
 				$htm=str_replace($chartjs_tag,$replace_str,$htm);
 				continue;
+			}
+			if(isset($chartjs_attributes['data-name'])){
+				$CHARTJS[$chartjs_attributes['data-name']]=$recs;
 			}
 			$datasets=array();
 			$labels=array();
@@ -6435,8 +6438,9 @@ function commonProcessChartjsTags($htm){
 			$replace_str .= setTagAttributes($chartjs_attributes);
 			$replace_str .= '></div>'.PHP_EOL;
 			$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
+			$dataset_name=isset($chartjs_attributes['data-dataset'])?$chartjs_attributes['data-dataset']:'data';
 			foreach($recs as $rec){
-				$dataset=$rec['dataset'] ?? 'data';
+				$dataset=$rec['dataset'] ?? $dataset_name;
 				$values[$dataset][]=isset($rec['value'])?$rec['value']:0;
 				if(isset($rec['label']) && strlen($rec['label']) && !in_array($rec['label'],$labels)){
 					$labels[]=$rec['label'];
@@ -6538,7 +6542,7 @@ function commonProcessChartjsTags($htm){
 							if(!in_array($rec['label'],$labels)){
 								$labels[]=$rec['label'];
 							}
-							$vals[]=$rec['value'];
+							$vals[]=isset($rec['value'])?$rec['value']:0;
 						}
 						if(isset($rec['color'])){
 							$colors[]=$rec['color'];
