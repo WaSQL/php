@@ -6437,8 +6437,8 @@ function commonProcessChartjsTags($htm){
 			$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
 			foreach($recs as $rec){
 				$dataset=$rec['dataset'] ?? 'data';
-				$values[$dataset][]=$rec['value'];
-				if(!in_array($rec['label'],$labels)){
+				$values[$dataset][]=isset($rec['value'])?$rec['value']:0;
+				if(isset($rec['label']) && strlen($rec['label']) && !in_array($rec['label'],$labels)){
 					$labels[]=$rec['label'];
 				}
 			}
