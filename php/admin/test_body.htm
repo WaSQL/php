@@ -564,14 +564,19 @@
 </view:c3charts>
 
 <view:chartjs>
-	<chartjs data-type="bar" data-name="Countries" data-title="States Per Country" data-dataset="count">
+	<chartjs data-type="bar" data-recs="myrectest" data-name="Countries" data-title="States Per Country" data-dataset="count">
 		SELECT
 	count(*) as value
 	,country as label
+	,'x' as ex
 FROM states
 GROUP BY country
 ORDER BY 1 DESC
 	</chartjs>
+	<dblistrecords data-recs="myrectest" -hidesearch="1" -listfields="label,ex">
+		
+	</dblistrecords>
+	<hr>
 	<div class="chartjs" id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart" data-onclick="chartJsOnclick" data-stacked="1" style="width:100%;" data-type="bar"></div>
 	<div id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart_data" style="display:none;">
 		<options>{

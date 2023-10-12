@@ -6469,7 +6469,14 @@ function commonProcessChartjsTags($htm){
 				$i+=1;
 			}
 			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
+			if(isset($chartjs_attributes['data-recs'])){
+				$id=$chartjs_attributes['data-recs'];
+				$replace_str.='<recs id="'.$id.'">'.json_encode($recs).'</recs>'.PHP_EOL;
+			}
 			$replace_str.='</div>'.PHP_EOL;
+			if(isset($chartjs_attributes['data-debug']) && $chartjs_attributes['data-debug']==1){
+				$replace_str="<xmp>{$replace_str}</xmp>";
+			}
 			//echo "<xmp>{$replace_str}</xmp>".printValue($values).printValue($recs);exit;
 			$htm=str_replace($chartjs_tag,$replace_str,$htm);
 			continue;
@@ -6631,6 +6638,12 @@ function commonProcessDBListRecordsTags($htm){
 		}
 		$divid=$dblistrecords_attributes['-divid'] ?? 'dblistrecords_'.$i;
 		$dblistrecords_contents=$dblistrecords[2][$i];
+		if(isset($dblistrecords_attributes['data-recs'])){
+			$id=$dblistrecords_attributes['data-recs'];
+			if(preg_match('/\<recs id\=\"'.$id.'\"\>(.+?)\<\/recs\>/ism',$htm,$m)){
+				$dblistrecords_contents=$m[1];
+			}
+		}
 		$replace_str='';
 		$replace_str.='<div id="'.$divid.'">'.PHP_EOL;
 		$opts=array(
