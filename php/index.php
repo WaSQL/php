@@ -1297,7 +1297,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 	}
 	echo trim($htm);
 	echo $wasql_debugValueContent;
-	if(is_array($CONFIG['includes'])){
+	if(isset($CONFIG['includes']) && is_array($CONFIG['includes'])){
 		foreach($CONFIG['includes'] as $lang=>$afiles){
 			foreach($afiles as $afile){
 				//unlink($afile);
