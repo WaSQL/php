@@ -15,29 +15,29 @@ $progpath=dirname(__FILE__);
 	));
 */
 //confirm/add aws settings to _config table
-$crecs=getDBRecords(array(
-	'-table'=>'_config',
-	'-where'=>"name like aws_%",
-	'-index'=>'name'
-));
-if(!isset($crecs['aws_accesskey'])){
-	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_accesskey','category'=>'extras'));
-}
-if(!isset($crecs['aws_secretkey'])){
-	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_secretkey','category'=>'extras'));
-}
-if(!isset($crecs['aws_acl'])){
-	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_acl','category'=>'extras'));
-}
-if(!isset($crecs['aws_bucket'])){
-	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_bucket','category'=>'extras'));
-}
-if(!isset($crecs['aws_folder'])){
-	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_folder','category'=>'extras'));
-}
-if(!isset($crecs['aws_region'])){
-	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_region','category'=>'extras'));
-}
+// $crecs=getDBRecords(array(
+// 	'-table'=>'_config',
+// 	'-where'=>"name like aws_%",
+// 	'-index'=>'name'
+// ));
+// if(!isset($crecs['aws_accesskey'])){
+// 	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_accesskey','category'=>'extras'));
+// }
+// if(!isset($crecs['aws_secretkey'])){
+// 	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_secretkey','category'=>'extras'));
+// }
+// if(!isset($crecs['aws_acl'])){
+// 	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_acl','category'=>'extras'));
+// }
+// if(!isset($crecs['aws_bucket'])){
+// 	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_bucket','category'=>'extras'));
+// }
+// if(!isset($crecs['aws_folder'])){
+// 	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_folder','category'=>'extras'));
+// }
+// if(!isset($crecs['aws_region'])){
+// 	$ok=addDBRecord(array('-table'=>'_config','name'=>'aws_region','category'=>'extras'));
+// }
 
 function amazonConvertCheckTable(){
 	if(!isDBTable('aws_convert_files')){
