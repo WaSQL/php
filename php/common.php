@@ -11266,9 +11266,9 @@ function getHolidayList($params=array()){
 		"Veterans Day"=>
 			array('code'=>'VET','fed'=>true,'country'=>'US','timestr'=>"November 11th"),
 		"Thanksgiving"=>
-			array('code'=>'THA','icon'=>'/wfiles/icons/holidays/tha.gif','fed'=>false,'country'=>'US','note'=>'4th Thursday of November','timestr'=>"+4 week thu nov"),
+			array('code'=>'THA','icon'=>'/wfiles/icons/holidays/tha.gif','fed'=>false,'country'=>'US','note'=>'4th Thursday of November','timestr'=>"fourth thursday of november"),
 		"Black Friday"=>
-			array('code'=>'BLA','icon'=>'/wfiles/icons/holidays/bla.png','fed'=>false,'country'=>'US','note'=>'Friday after Thanksgiving Day','timestr'=>"+3 week thu nov",'offset'=>86400),
+			array('code'=>'BLA','icon'=>'/wfiles/icons/holidays/bla.png','fed'=>false,'country'=>'US','note'=>'Friday after Thanksgiving Day','timestr'=>"fourth friday of november",'offset'=>86400),
 		"Pearl Harbor Remembrance Day"=>
 			array('code'=>'PHR','fed'=>false,'country'=>'US','timestr'=>"December 7th"),
 		"Christmas Eve"=>
