@@ -11211,72 +11211,41 @@ function getHolidayList($params=array()){
 		"New Year's Day" =>
 			array('code'=>'NYD','icon'=>'/wfiles/icons/holidays/nyd.png','fed'=>true,'country'=>'US','timestr'=>"January 1st"),
 		"Martin Luther King, Jr. Day" =>
-			array('code'=>'MLK','fed'=>true,'country'=>'US','note'=>'3rd Monday of January','timestr'=>"+2 week mon jan"),
-		"Groundhog Day" =>
-			array('code'=>'GRO','fed'=>false,'country'=>'US','timestr'=>"February 2nd"),
-		"Super Bowl Sunday"=>
-			array('code'=>'SBS','icon'=>'/wfiles/icons/holidays/sbs.png','fed'=>false,'country'=>'US','note'=>"first Sunday of February",'timestr'=>"+0 week sun feb"),
+			array('code'=>'MLK','fed'=>true,'country'=>'US','note'=>'3rd Monday of January','timestr'=>"third monday of january"),
+		//"Groundhog Day" =>array('code'=>'GRO','fed'=>false,'country'=>'US','timestr'=>"February 2nd"),
+		//"Super Bowl Sunday"=>array('code'=>'SBS','icon'=>'/wfiles/icons/holidays/sbs.png','fed'=>false,'country'=>'US','note'=>"first Sunday of February",'timestr'=>"+0 week sun feb"),
 		"Valentine's Day"=>
 			array('code'=>'VAL','icon'=>'/wfiles/icons/holidays/val.png','fed'=>false,'country'=>'US','timestr'=>"February 14th"),
 		"Presidents Day"=>
-			array('code'=>'PRE','icon'=>'/wfiles/icons/holidays/pre.gif','fed'=>true,'country'=>'US','note'=>"3rd Monday of February",'timestr'=>"+2 week mon feb"),
-		"April Fools' Day"=>
-			array('code'=>'AFD','fed'=>false,'country'=>'US','timestr'=>"April 1st"),
-		"Easter"=>
-			array('code'=>'EAS','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])),'note'=>"First Sunday after full moon after March 21st"),
-		"Palm Sunday"=>
-			array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])-7*86400),'note'=>"7 days before Easter"),
-		"Ash Wednesday"=>
-			array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])-46*86400),'note'=>"46 days before Easter"),
-		"Good Friday"=>
-			array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])-2*86400),'note'=>"2 days before Easter"),
-		"Corpus Christi"=>
-			array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])+60*86400),'note'=>"60 days after Easter"),
-
-		"St. patrick's Day"=>
-			array('code'=>'SPD','fed'=>false,'country'=>'US','timestr'=>"March 17th"),
-		"Patriot's Day"=>
-			array('code'=>'PAT','fed'=>false,'country'=>'US','note'=>'3rd Monday of April','timestr'=>"+2 week mon apr"),
-		"Arbor Day"=>
-			array('code'=>'ARB','fed'=>false,'country'=>'US','note'=>'last Friday of April','timestr'=>"-1 week fri may"),
-		"Cinco De Mayo"=>
-			array('code'=>'CIN','fed'=>false,'country'=>'US','timestr'=>"May 5th"),
-		"Mother's Day"=>
-			array('code'=>'MOT','icon'=>'/wfiles/icons/holidays/mot.gif','fed'=>false,'country'=>'US','timestr'=>"+1 week sun may"),
-		"Memorial Day"=>
-			array('code'=>'MEM','icon'=>'/wfiles/icons/holidays/mem.png','fed'=>true,'country'=>'US','note'=>'last Monday of May','timestr'=>"-1 week mon jun"),
-		"Flag Day"=>
-			array('code'=>'FLA','fed'=>false,'country'=>'US','timestr'=>"June 14th"),
-		"Father's Day"=>
-			array('code'=>'FAT','fed'=>false,'country'=>'US','note'=>'3rd Sunday of June','timestr'=>"+2 week sun jun"),
-		"Independence Day"=>
-			array('code'=>'IND','icon'=>'/wfiles/icons/holidays/ind.png','fed'=>true,'country'=>'US','timestr'=>"July 4th"),
-		"Pioneer Day"=>
-			array('code'=>'PIO','icon'=>'/wfiles/icons/holidays/pio.png','fed'=>false,'country'=>'US','timestr'=>"July 24th"),
-		"Labor Day"=>
-			array('code'=>'LAB','icon'=>'/wfiles/icons/holidays/lab.png','fed'=>true,'country'=>'US','note'=>'first Monday of September','timestr'=>"+0 week mon sep"),
-		"Leif Erikson Day"=>
-			array('code'=>'LEI','fed'=>false,'country'=>'US','timestr'=>"October 9th"),
-		"Columbus Day"=>
-			array('code'=>'COL','fed'=>true,'country'=>'US','note'=>'2nd Monday of October','timestr'=>"+1 week mon oct"),
-		"Halloween"=>
-			array('code'=>'HAL','icon'=>'/wfiles/icons/holidays/hal.png','fed'=>false,'country'=>'US','timestr'=>"October 31st"),
-		"All Saints Day"=>
-			array('code'=>'ASD','fed'=>false,'country'=>'US','timestr'=>"November 1st"),
-		"Veterans Day"=>
-			array('code'=>'VET','fed'=>true,'country'=>'US','timestr'=>"November 11th"),
-		"Thanksgiving"=>
-			array('code'=>'THA','icon'=>'/wfiles/icons/holidays/tha.gif','fed'=>false,'country'=>'US','note'=>'4th Thursday of November','timestr'=>"fourth thursday of november"),
-		"Black Friday"=>
-			array('code'=>'BLA','icon'=>'/wfiles/icons/holidays/bla.png','fed'=>false,'country'=>'US','note'=>'Friday after Thanksgiving Day','timestr'=>"fourth friday of november",'offset'=>86400),
-		"Pearl Harbor Remembrance Day"=>
-			array('code'=>'PHR','fed'=>false,'country'=>'US','timestr'=>"December 7th"),
-		"Christmas Eve"=>
-			array('code'=>'CHE','icon'=>'/wfiles/icons/holidays/che.png','fed'=>false,'country'=>'US','timestr'=>"December 24th"),
-		"Christmas Day"=>
-			array('code'=>'CHD','icon'=>'/wfiles/icons/holidays/chd.png','fed'=>true,'country'=>'US','timestr'=>"December 25th"),
-		"New Year's Eve"=>
-			array('code'=>'NYE','fed'=>false,'country'=>'US','timestr'=>"December 31st"),
+			array('code'=>'PRE','icon'=>'/wfiles/icons/holidays/pre.gif','fed'=>true,'country'=>'US','note'=>"3rd Monday of February",'timestr'=>"third monday of february"),
+		//"April Fools' Day"=>array('code'=>'AFD','fed'=>false,'country'=>'US','timestr'=>"April 1st"),
+		"Easter"=>array('code'=>'EAS','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])),'note'=>"First Sunday after full moon after March 21st"),
+		"Palm Sunday"=>array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])-7*86400),'note'=>"7 days before Easter"),
+		"Ash Wednesday"=>array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])-46*86400),'note'=>"46 days before Easter"),
+		"Good Friday"=>array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])-2*86400),'note'=>"2 days before Easter"),
+		"Corpus Christi"=>array('code'=>'PSU','fed'=>false,'country'=>'US','timestr'=>date("F jS",easter_date($params['year'])+60*86400),'note'=>"60 days after Easter"),
+		"St. patrick's Day"=>array('code'=>'SPD','fed'=>false,'country'=>'US','timestr'=>"March 17th"),
+		"Patriot's Day"=>array('code'=>'PAT','fed'=>false,'country'=>'US','note'=>'3rd Monday of April','timestr'=>"third monday of april"),
+		//"Arbor Day"=>array('code'=>'ARB','fed'=>false,'country'=>'US','note'=>'last Friday of April','timestr'=>"-1 week fri may"),
+		"Cinco De Mayo"=>array('code'=>'CIN','fed'=>false,'country'=>'US','timestr'=>"May 5th"),
+		"Mother's Day"=>array('code'=>'MOT','icon'=>'/wfiles/icons/holidays/mot.gif','fed'=>false,'country'=>'US','timestr'=>"+1 week sun may"),
+		"Memorial Day"=>array('code'=>'MEM','icon'=>'/wfiles/icons/holidays/mem.png','fed'=>true,'country'=>'US','note'=>'last Monday of May','timestr'=>"-1 week mon jun"),
+		"Flag Day"=>array('code'=>'FLA','fed'=>false,'country'=>'US','timestr'=>"June 14th"),
+		"Father's Day"=>array('code'=>'FAT','fed'=>false,'country'=>'US','note'=>'3rd Sunday of June','timestr'=>"+2 week sun jun"),
+		"Independence Day"=>array('code'=>'IND','icon'=>'/wfiles/icons/holidays/ind.png','fed'=>true,'country'=>'US','timestr'=>"July 4th"),
+		"Pioneer Day"=>array('code'=>'PIO','icon'=>'/wfiles/icons/holidays/pio.png','fed'=>false,'country'=>'US','timestr'=>"July 24th"),
+		"Labor Day"=>array('code'=>'LAB','icon'=>'/wfiles/icons/holidays/lab.png','fed'=>true,'country'=>'US','note'=>'first Monday of September','timestr'=>"+0 week mon sep"),
+		//"Leif Erikson Day"=>array('code'=>'LEI','fed'=>false,'country'=>'US','timestr'=>"October 9th"),
+		"Columbus Day"=>array('code'=>'COL','fed'=>true,'country'=>'US','note'=>'2nd Monday of October','timestr'=>"+1 week mon oct"),
+		"Halloween"=>array('code'=>'HAL','icon'=>'/wfiles/icons/holidays/hal.png','fed'=>false,'country'=>'US','timestr'=>"October 31st"),
+		"All Saints Day"=>array('code'=>'ASD','fed'=>false,'country'=>'US','timestr'=>"November 1st"),
+		"Veterans Day"=>array('code'=>'VET','fed'=>true,'country'=>'US','timestr'=>"November 11th"),
+		"Thanksgiving"=>array('code'=>'THA','icon'=>'/wfiles/icons/holidays/tha.gif','fed'=>false,'country'=>'US','note'=>'4th Thursday of November','timestr'=>"fourth thursday of november"),
+		"Black Friday"=>array('code'=>'BLA','icon'=>'/wfiles/icons/holidays/bla.png','fed'=>false,'country'=>'US','note'=>'Friday after Thanksgiving Day','timestr'=>"fourth friday of november",'offset'=>86400),
+		"Pearl Harbor Remembrance Day"=>array('code'=>'PHR','fed'=>false,'country'=>'US','timestr'=>"December 7th"),
+		"Christmas Eve"=>array('code'=>'CHE','icon'=>'/wfiles/icons/holidays/che.png','fed'=>false,'country'=>'US','timestr'=>"December 24th"),
+		"Christmas Day"=>array('code'=>'CHD','icon'=>'/wfiles/icons/holidays/chd.png','fed'=>true,'country'=>'US','timestr'=>"December 25th"),
+		"New Year's Eve"=>array('code'=>'NYE','fed'=>false,'country'=>'US','timestr'=>"December 31st"),
 		);
 	return $holidays;
 	}
