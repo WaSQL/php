@@ -1081,7 +1081,7 @@ function mysqlGetDBFieldInfo($table=''){
 	foreach($recs as $i=>$rec){
 		$key=strtolower($rec['field']);
     	if(preg_match('/(VIRTUAL|STORED) GENERATED/i',$rec['extra'])){
-			$info[$key]['expression']=mysqlGetDBExpression($vtable,$rec['field']);
+			$info[$key]['expression']=mysqlGetDBExpression($table,$rec['field']);
 		}
 		$info[$key]['_dbfield']=$rec['field'];
 		$info[$key]['name']=$rec['field'];
