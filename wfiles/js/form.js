@@ -203,12 +203,12 @@ function formChanged(frm,debug){
 			}
 		}
 	}
-	//data-classif="w_bold:age:12"
+	//data-classif="w_bold:age:12"  data-classif="w_bold:age:12,3 and color:red"
 	els=frm.querySelectorAll('[data-classif]');
 	for(let i=0;i<els.length;i++){
 		let parts=els[i].dataset.classif.split(':');
-		let eclass=parts[0];
-		let ifstr=parts[1]+':'+parts[2];
+		let eclass=parts.shift();
+		let ifstr=parts.join(':');
 		if(formIsIfTrue(frm,ifstr)){
 			els[i].classList.add(eclass);
 		}
