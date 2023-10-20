@@ -27,6 +27,7 @@ function cronAddEdit($id=0){
 		$opts['-fields']=getView('edit_fields');
 	}
 	else{
+		$opts['name']='';
 		$opts['-fields']=getView('add_fields');
 	}
 	if(isset($_REQUEST['filter_order']) && strlen($_REQUEST['filter_order'])){
