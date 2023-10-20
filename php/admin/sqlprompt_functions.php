@@ -125,6 +125,7 @@ function sqlpromptCaptureFirstRows($rec,$max=30){
 	return;
 }
 function sqlpromptListResults($recs){
+	global $db;
 	if(!is_array($recs)){
 		if(strlen($recs)){return $recs;}
 		return translateText('No Results','',1);
@@ -133,7 +134,6 @@ function sqlpromptListResults($recs){
 		return translateText('No Results','',1);
 	}
 	$opts=array(
-		'-list'=>$recs,
 		'-hidesearch'=>1,
 		'-tableclass'=>'table striped bordered condensed responsive'
 	);
@@ -147,6 +147,52 @@ function sqlpromptListResults($recs){
 	if(count($sumfields)){
 		$opts['-sumfields']=implode(',',$sumfields);
 	}
+	if(isset($db['dbtype'])){
+		switch(strtolower($db['dbtype'])){
+			case 'postgres':
+				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'pg_stat_activity')){
+					foreach($recs as $i=>$rec){
+						if(!isset($rec['pid'])){continue;}
+						$recs[$i]['pid']='<div style="display:flex;"><a href="#" data-query="SELECT pg_cancel_backend('.$rec['pid'].')" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['pid'].'</div></div>';
+					}
+				}
+			break;
+			case 'mysql':
+			case 'mysqli':
+				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'processlist')){
+					foreach($recs as $i=>$rec){
+						if(!isset($rec['id'])){continue;}
+						$recs[$i]['id']='<div style="display:flex;"><a href="#" data-query="KILL '.$rec['id'].'" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['id'].'</div></div>';
+					}
+				}
+			break;
+			case 'hana':
+				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'m_connections')){
+					foreach($recs as $i=>$rec){
+						if(!isset($rec['connection_id'])){continue;}
+						$recs[$i]['connection_id']='<div style="display:flex;"><a href="#" data-query="ALTER SYSTEM CANCEL SESSION \''.$rec['connection_id'].'\'" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['connection_id'].'</div></div>';
+					}
+				}
+			break;
+			case 'oracle':
+				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'v$session')){
+					foreach($recs as $i=>$rec){
+						if(!isset($rec['sid'])){continue;}
+						$recs[$i]['sid']='<div style="display:flex;"><a href="#" data-query="ALTER SYSTEM KILL SESSION \''.$rec['sid'].'\'" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['sid'].'</div></div>';
+					}
+				}
+			break;
+			case 'snowflake':
+				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'query_history')){
+					foreach($recs as $i=>$rec){
+						if(!isset($rec['query_id'])){continue;}
+						$recs[$i]['query_id']='<div style="display:flex;"><a href="#" data-query="SELECT SYSTEM$CANCEL_QUERY(\''.$rec['query_id'].'\')" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['query_id'].'</div></div>';
+					}
+				}
+			break;
+		}
+	}
+	$opts['-list']=$recs;
 	return databaseListRecords($opts);
 }
 function sqlpromptListFields($recs){

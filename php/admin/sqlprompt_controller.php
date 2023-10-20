@@ -7,6 +7,7 @@
 	global $sqlpromptCaptureFirstRows_count;
 	$sqlpromptCaptureFirstRows_count=0;
 	global $wasql_debugValueContent;
+	global $db;
 	//echo printValue($_REQUEST);exit;
 	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
