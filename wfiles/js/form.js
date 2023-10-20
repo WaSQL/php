@@ -12,6 +12,15 @@ function formIsIfTrue(frm,ifstr){
 	//age:5 or color:red
 	//age:5,12 and color:red,green
 	//Step 1. split ifstr into sets
+	if(undefined==ifstr || ifstr.length==0){
+		//console.error('formIsIfTrue Error - ifstr not defined');
+		return false;
+	}
+	ifstr=trim(ifstr);
+	if(ifstr.length==0){
+		//console.error('formIsIfTrue Error - ifstr is empty');
+		return false;
+	}
 	let oper='';
 	let sets=ifstr.split(' and ');
 	if(sets.length){oper='and';}
@@ -31,6 +40,7 @@ function formIsIfTrue(frm,ifstr){
 		sets.push(ifstr);
 	}
 	let tvals=new Array();
+	let fvals=new Array();
 	for(let i=0;i<sets.length;i++){
 		let parts=sets[i].split(':');
 		let fld=parts[0];
@@ -38,7 +48,7 @@ function formIsIfTrue(frm,ifstr){
 		let formels=frm.querySelectorAll('[name="'+fld+'"],[name="'+fld+'[]"],[id="'+fld+'"]');
 		if(formels.length==0){continue;}
 		if(formels.length==1 && undefined==formels[0].type){continue;}
-		let fvals=new Array();
+		fvals=new Array();
 		for(let f=0;f<formels.length;f++){
 			if(undefined==formels[f].type){continue;}
 			let fel=formels[f];
@@ -81,10 +91,18 @@ function formIsIfTrue(frm,ifstr){
 		}
 	}
 	if(oper=='or'){
-		if(tvals.length > 0){return true;}
+		if(tvals.length > 0){
+			console.log(ifstr+' = true (or)');
+			return true;
+		}
+		console.log(ifstr+' = false (or)');
 		return false;
 	}
-	if(tvals.length==sets.length){return true;}
+	if(tvals.length==sets.length){
+		console.log(ifstr+' = true (and)');
+		return true;
+	}
+	console.log(ifstr+' = false (and)');
 	return false;
 }
 /* form-based, get, post, ajax javascript routines*/
@@ -163,7 +181,8 @@ function formChanged(frm,debug){
 			switch(els[i].type.toLowerCase()){
 				case 'radio':
 				case 'checkbox':
-					//not supported
+					//store all checked values into blankx
+					//els[i].dataset.blankx=new Array();
 					console.error('blankif does not support checkbox and radio inputs');
 				break;
 				case 'textarea':
