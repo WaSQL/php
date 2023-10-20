@@ -3441,13 +3441,16 @@ function adminAddEditOpts($addopts){
 			$addopts['css_options']=array(
 				'class'=>'textarea code',
 				'data-mode'=>'css',
+				'data-blankif'=>'_template:1',
 				'data-style'=>'flex:1;width:100%;'
 			);
 			$addopts['js_options']=array(
 				'class'=>'textarea code',
 				'data-mode'=>'javascript',
+				'data-blankif'=>'_template:1',
 				'style'=>'width:100%;'
 			);
+			
 		break;
 		case '_templates':
 			$addopts['-style_all']='width:100%;';

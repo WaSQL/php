@@ -5,7 +5,7 @@ function formJsonPretty(id){
 	setText(id,ptxt);
 
 }
-function isIf(frm,ifstr){
+function formIsIfTrue(frm,ifstr){
 	//age:5
 	//age:5,12
 	//age:5 and color:red
@@ -34,36 +34,49 @@ function isIf(frm,ifstr){
 	for(let i=0;i<sets.length;i++){
 		let parts=sets[i].split(':');
 		let fld=parts[0];
-		if(undefined == frm[fld]){continue;}
-		if(undefined == frm[fld].type){continue;}
-		let fval='';
-		switch(frm[fld].type.toLowerCase()){
-			case 'select-one':
-    			fval=frm[fld].options[frm[fld].selectedIndex].value;
-			break;
-			case 'radio':
-			case 'checkbox':
-				if(frm[fld].checked){fval=frm[fld].value||1;}
-			break;
-			case 'textarea':
-				fval=trim(frm[fld].innerText);
-			break;
-			default:
-				fval=frm[fld].value;
-			break;
+		//get fvals for this field - may be one or many
+		let formels=frm.querySelectorAll('[name="'+fld+'"],[name="'+fld+'[]"],[id="'+fld+'"]');
+		if(formels.length==0){continue;}
+		if(formels.length==1 && undefined==formels[0].type){continue;}
+		let fvals=new Array();
+		for(let f=0;f<formels.length;f++){
+			if(undefined==formels[f].type){continue;}
+			let fel=formels[f];
+			switch(fel.type.toLowerCase()){
+				case 'select-one':
+	    			fvals.push(fel.options[fel.selectedIndex].value);
+				break;
+				case 'radio':
+				case 'checkbox':
+					if(fel.checked){
+						let fv=fel.value || 1;
+						fvals.push(fv);
+					}
+				break;
+				case 'textarea':
+					fvals.push(trim(fel.innerText));
+				break;
+				default:
+					fvals.push(fel.value);
+				break;
+			}
 		}
 		if(undefined != parts[1]){
 			let vals=parts[1].split(',');
 			for(let v=0;v<vals.length;v++){
-				if(fval==vals[v]){
-					tvals.push(1);
-					break;	
+				for(let f=0;f<fvals.length;f++){
+					if(fvals[f]==vals[v]){
+						tvals.push(1);
+						break;	
+					}
 				}
 			}
 		}
 		else{
-			if(fval.length){
-				tvals.push(1);
+			for(let f=0;f<fvals.length;f++){
+				if(fvals[f].length){
+					tvals.push(1);
+				}
 			}
 		}
 	}
@@ -85,7 +98,7 @@ function formChanged(frm,debug){
 	//data-displayif
 	let els=frm.querySelectorAll('[data-displayif]');
 	for(let i=0;i<els.length;i++){
-		if(isIf(frm,els[i].dataset.displayif)){
+		if(formIsIfTrue(frm,els[i].dataset.displayif)){
 			if(undefined != els[i].dataset.display){
 				els[i].style.display=els[i].dataset.display;
 			}
@@ -100,7 +113,7 @@ function formChanged(frm,debug){
 	//data-hideif
 	els=frm.querySelectorAll('[data-hideif]');
 	for(let i=0;i<els.length;i++){
-		if(isIf(frm,els[i].dataset.hideif)){
+		if(formIsIfTrue(frm,els[i].dataset.hideif)){
 			els[i].style.display='none';
 		}
 		else{
@@ -115,7 +128,7 @@ function formChanged(frm,debug){
 	//data-readonlyif
 	els=frm.querySelectorAll('[data-readonlyif]');
 	for(let i=0;i<els.length;i++){
-		if(isIf(frm,els[i].dataset.readonlyif)){
+		if(formIsIfTrue(frm,els[i].dataset.readonlyif)){
 			if(!els[i].hasAttribute('onclick')){
 				els[i].setAttribute('onclick','return false');
 				els[i].setAttribute('onclickx','1');
@@ -133,13 +146,10 @@ function formChanged(frm,debug){
 	//data-requiredif
 	els=frm.querySelectorAll('[data-requiredif]');
 	for(let i=0;i<els.length;i++){
-		console.log(els[i]);
-		if(isIf(frm,els[i].dataset.requiredif)){
-			console.log('true');
+		if(formIsIfTrue(frm,els[i].dataset.requiredif)){
 			els[i].setAttribute('required','required');
 		}
 		else{
-			console.log('false');
 			els[i].removeAttribute('required');
 			if(els[i].hasAttribute('data-required')){
 				els[i].removeAttribute('data-required');
@@ -149,14 +159,19 @@ function formChanged(frm,debug){
 	//data-blankif
 	els=frm.querySelectorAll('[data-blankif]');
 	for(let i=0;i<els.length;i++){
-		if(isIf(frm,els[i].dataset.blankif)){
+		if(formIsIfTrue(frm,els[i].dataset.blankif)){
 			switch(els[i].type.toLowerCase()){
 				case 'radio':
 				case 'checkbox':
-					if(els[i].checked){els[i].dataset.blankx=els[i].value||1;}
+					//not supported
+					console.error('blankif does not support checkbox and radio inputs');
 				break;
 				case 'textarea':
 					els[i].dataset.blankx=trim(els[i].innerHTML);
+					//is this textarea a codemirror
+					if(undefined != els[i].codemirror){
+						els[i].codemirror.getDoc().setValue('');
+					}
 					els[i].innerHTML='';
 				break;
 				default:
@@ -170,9 +185,14 @@ function formChanged(frm,debug){
 				switch(els[i].type.toLowerCase()){
 					case 'radio':
 					case 'checkbox':
-						//coming
+						//not supported
+						console.error('blankif does not support checkbox and radio inputs');
 					break;
 					case 'textarea':
+						//is this textarea a codemirror
+						if(undefined != els[i].codemirror){
+							els[i].codemirror.getDoc().setValue(els[i].dataset.blankx);
+						}
 						els[i].innerHTML='';
 						els[i].innerHTML=els[i].dataset.blankx;
 					break;
@@ -186,19 +206,13 @@ function formChanged(frm,debug){
 	//data-classif="w_bold:age:12"
 	els=frm.querySelectorAll('[data-classif]');
 	for(let i=0;i<els.length;i++){
-		console.log(els[i]);
 		let parts=els[i].dataset.classif.split(':');
-		console.log(parts);
 		let eclass=parts[0];
 		let ifstr=parts[1]+':'+parts[2];
-		console.log(eclass);
-		console.log(ifstr);
-		if(isIf(frm,ifstr)){
-			console.log('true');
+		if(formIsIfTrue(frm,ifstr)){
 			els[i].classList.add(eclass);
 		}
 		else{
-			console.log('false');
 			els[i].classList.remove(eclass);
 		}
 	}
