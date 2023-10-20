@@ -2376,6 +2376,7 @@ function hanaNamedQuery($name){
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT
+	c.connection_id,
 	c.host, 
 	c.user_name, 
 	c.connection_status, 

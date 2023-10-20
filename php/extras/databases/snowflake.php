@@ -1455,7 +1455,8 @@ function snowflakeNamedQuery($name){
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT 
-	database_name
+	query_id
+	,database_name
 	,schema_name
 	,query_type
 	,user_name
