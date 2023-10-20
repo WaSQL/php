@@ -6473,6 +6473,10 @@ function commonProcessChartjsTags($htm){
 				$id=$chartjs_attributes['data-recs'];
 				$replace_str.='<recs id="'.$id.'">'.json_encode($recs).'</recs>'.PHP_EOL;
 			}
+			if(isset($chartjs_attributes['data-sql'])){
+				$id=$chartjs_attributes['data-sql'];
+				$replace_str.='<sql id="'.$id.'">'.$chartjs_contents.'</sql>'.PHP_EOL;
+			}
 			$replace_str.='</div>'.PHP_EOL;
 			if(isset($chartjs_attributes['data-debug']) && $chartjs_attributes['data-debug']==1){
 				$replace_str="<xmp>{$replace_str}</xmp>";
