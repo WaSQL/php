@@ -4990,7 +4990,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		elseif(!isset($params['-hide']) || !preg_match('/save/i',$params['-hide'])){
 			$class=isset($params['-save_class'])?$params['-save_class']:'btn';
 			$action=isset($params['-nosave'])?'':'Add';
-	    	$rtn .= '		<td><button class="'.$class.' w_disable_on_submit" type="submit" id="'.$formname.'_savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
+	    	$rtn .= '		<td><button data-navigate-focus="Ctrl+s" data-navigate="1" class="'.$class.' w_disable_on_submit" type="submit" id="'.$formname.'_savebutton" onClick="document.'.$formname.'._action.value=\''.$action.'\';">'.$save.'</button></td>'.PHP_EOL;
 	    	//$rtn .= '		<td><input type="reset" value="Reset"></td>'.PHP_EOL;
 	    	}
 	    //add custom button(s)
