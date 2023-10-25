@@ -6383,6 +6383,7 @@ function commonProcessChartjsTags($htm){
 		'#11b7af','#403aca','#f68300','#de2b80','#7e7dfa','#72e56d',
 		'#1473f3','#7300d3','#e8c800','#cb5a00','#01925f','#bcee35'
 	);
+	$colorstr='';
 	foreach($chartjs[0] as $i=>$chartjs_tag){
 		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
 		if(!isset($chartjs_attributes['id'])){
@@ -6409,7 +6410,10 @@ function commonProcessChartjsTags($htm){
 					$chartjs_contents=str_replace("[{$k}]",$v,$chartjs_contents);
 				}
 			}
-			
+			if(preg_match('/\<colors\>(.*?)\<\/colors\>/',$chartjs_contents,$m)){
+				$colorstr=$m[1];
+				$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
+			}
 			//select date(_cdate) as label, code as dataset,count(*) as value
 			$recs=dbQueryResults($db,$chartjs_contents);
 			if(!is_array($recs)){$recs=[];}
@@ -6459,10 +6463,13 @@ function commonProcessChartjsTags($htm){
 				}
 			}
 			$i=0;
+			$values_count=count($values);
 			foreach($values as $dataset=>$vals){
 				$atts=$chartjs_attributes;
 				$atts['data-label']=$dataset;
-				$atts['data-backgroundcolor']=$colors[$i];
+				if($values_count > 1){
+					$atts['data-backgroundcolor']=$colors[$i];
+				}
 				$replace_str.='<dataset ';
 				$replace_str .= setTagAttributes($atts);
 				$replace_str.='>'.json_encode($vals).'</dataset>'.PHP_EOL;
@@ -6476,6 +6483,9 @@ function commonProcessChartjsTags($htm){
 			if(isset($chartjs_attributes['data-sql'])){
 				$id=$chartjs_attributes['data-sql'];
 				$replace_str.='<sql id="'.$id.'">'.$chartjs_contents.'</sql>'.PHP_EOL;
+			}
+			if(strlen($colorstr)){
+				$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
 			}
 			$replace_str.='</div>'.PHP_EOL;
 			if(isset($chartjs_attributes['data-debug']) && $chartjs_attributes['data-debug']==1){
