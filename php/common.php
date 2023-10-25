@@ -385,6 +385,7 @@ function commonCronLogCheckSchema(){
 */
 function commonCronLogInit(){
 	$cron=commonCronGetCronByPid();
+	if(!isset($cron['_id'])){return false;}
 	if(isset($cron['cronlog_id']) &&  isNum($cron['cronlog_id'])){
 		return false;
 	}	
@@ -402,8 +403,8 @@ function commonCronLogInit(){
 		'delete_me'=>0,
 		'header'=>encodeJson($header)
 	));
-	if(isNum($rec['cronlog_id'])){
-		$ok=editDBRecordById('_cron',$cron['_id'],array('cronlog_id'=>$rec['cronlog_id']));
+	if(isNum($cronlog_id)){
+		$ok=editDBRecordById('_cron',$cron['_id'],array('cronlog_id'=>$cronlog_id));
 	}
 }
 /**
@@ -411,6 +412,7 @@ function commonCronLogInit(){
 */
 function commonCronLogDelete(){
 	$cron=commonCronGetCronByPid();
+	if(!isset($cron['_id'])){return false;}
 	if(!isset($cron['cronlog_id']) &&  !isNum($cron['cronlog_id'])){
 		return false;
 	}
@@ -431,6 +433,10 @@ function commonCronLog($msg,$echomsg=1){
 		$msg=encodeJson($msg);
 	}
 	$cron=commonCronGetCronByPid();
+	if(!isset($cron['_id'])){
+		echo "no_cron:{$msg}".PHP_EOL;
+		return false;
+	}
 	//echo "commonCronLog".printValue($cron);exit;
 	if(isset($cron['stop_now']) && $cron['stop_now']==1){
 		$editopts=array();
