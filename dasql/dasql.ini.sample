@@ -2,7 +2,7 @@
 #DaSQL: DOS Access to SQL -  config file. Note: global is the only reserved ini section name
 #[global]
 #base_url=
-#output_format=csv,json,xml,table or html
+#output_format=dos,csv,json,xml,table or html
 #db=
 #query=
 #DaSQL supports all 6 WaSQL authentications methods

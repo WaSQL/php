@@ -336,6 +336,7 @@
 								exit;
 							break;
 							case 'csv':
+							case 'dos':
 								if(!is_string($lastquery['error'])){
 									$lastquery['error']=encodeJson($lastquery['error']);
 								}
@@ -392,6 +393,36 @@
 					break;
 					case 'csv':
 						readfile($afile);
+						exit;
+					break;
+					case 'dos':
+						$recs=getCSVRecords($afile);
+						$maxlengths=array();
+						foreach($recs as $i=>$rec){
+							foreach($rec as $k=>$v){
+								if(!isset($maxlengths[$k])){
+									$maxlengths[$k]=strlen($k);
+								}
+								if(strlen($k) > $maxlengths[$k]){
+									$maxlengths[$k]=strlen($k);
+								}
+								if(strlen($v) > $maxlengths[$k]){
+									$maxlengths[$k]=strlen($v);
+								}
+							}
+						}
+						$fields=array_keys($maxlengths);
+						$tlen=array_sum($maxlengths)+count($maxlengths)*3;
+						echo implode(' | ',$fields).PHP_EOL;
+						echo str_repeat('=',$tlen).PHP_EOL;
+						foreach($recs as $i=>$rec){
+							$vals=array();
+							foreach($rec as $k=>$v){
+								$v=str_pad($v,$maxlengths[$k]);
+								$vals[]=$v;
+							}
+							echo implode(' | ',$vals).PHP_EOL;
+						}
 						exit;
 					break;
 				}
