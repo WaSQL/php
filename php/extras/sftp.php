@@ -36,9 +36,9 @@
 $progpath=dirname(__FILE__);
 $incpath=get_include_path() . PATH_SEPARATOR . "{$progpath}/phpseclib";
 set_include_path($incpath);
-include_once("{$progpath}/phpseclib/Net/SFTP.php");
-include_once("{$progpath}/phpseclib/Net/SSH2.php");
-include_once("{$progpath}/phpseclib/Crypt/RSA.php");
+include_once('Net/SSH2.php');
+include_once('Net/SFTP.php');
+include_once('Crypt/RSA.php');
 
 //---------- begin function sftpListFiles
 /**
@@ -50,14 +50,12 @@ include_once("{$progpath}/phpseclib/Crypt/RSA.php");
 *	[-remote_dir] string - name of remote directory to list. Defaults to .
 * @return array - array of file names
 * @usage
-*	<?php
 *	$remote_files=ftpListFiles(array(
 *		'-server'	=> 'ftp.myserver.com',
 *		'-user'		=> 'myusername',
 *		'-pass'		=> 'mypassword',
 *		'-remote_dir'=>'/var/home/temp'
 *	));
-*	?>
 */
 function sftpListFiles($params=array()){
 	//backward compatibility
@@ -94,7 +92,6 @@ function sftpListFiles($params=array()){
 *	[-delete] boolean - delete the remote file to after fetching it
 * @return filepath string - location of the local file
 * @usage 
-*	<?php
 *	$file=ftpGetFile(array(
 *		'-server'	=> 'ftp.myserver.com',
 *		'-user'		=> 'myusername',
@@ -102,7 +99,6 @@ function sftpListFiles($params=array()){
 *		'-remote_dir'=>'/var/home/temp',
 *		'-local_file'=>'myfile.txt'
 *	));
-*	?>
 */
 function sftpGetFile($params=array()){
 	//backward compatibility
@@ -170,7 +166,6 @@ function sftpGetFile($params=array()){
 *	[-delete] boolean - delete the remote file to after fetching it
 * @return string - contents of the remote file
 * @usage 
-*	<?php
 *	$file=sftpGetFileContents(array(
 *		'-server'	=> 'ftp.myserver.com',
 *		'-user'		=> 'myusername',
@@ -178,7 +173,6 @@ function sftpGetFile($params=array()){
 *		'-remote_dir'=>'/var/home/temp',
 *		'-remote_file'=>'myfile.txt'
 *	));
-*	?>
 */
 function sftpGetFileContents($params=array()){
 	//backward compatibility

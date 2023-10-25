@@ -2678,6 +2678,11 @@ function postgresqlNamedQueryList(){
 			'name'=>'Running Queries'
 		),
 		array(
+			'code'=>'long_running_queries',
+			'icon'=>'icon-spin5',
+			'name'=>'Long Running Queries'
+		),
+		array(
 			'code'=>'sessions',
 			'icon'=>'icon-spin8',
 			'name'=>'Sessions'
@@ -2741,6 +2746,21 @@ GROUP BY
 	l.mode,
 	l.locktype,
 	l.granted
+ENDOFQUERY;
+		break;
+		case 'long_running_queries':
+			return <<<ENDOFQUERY
+	SELECT
+	  pid,
+	  client_addr,
+	  application_name,
+	  usename,
+	  now() - pg_stat_activity.query_start AS duration,
+	  query
+	FROM pg_stat_activity
+	WHERE 
+		(now() - pg_stat_activity.query_start) > interval '2 minutes'
+		AND state != 'idle'
 ENDOFQUERY;
 		break;
 		case 'sessions':
