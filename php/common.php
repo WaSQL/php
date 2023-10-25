@@ -6389,13 +6389,22 @@ function commonProcessChartjsTags($htm){
 		'#11b7af','#403aca','#f68300','#de2b80','#7e7dfa','#72e56d',
 		'#1473f3','#7300d3','#e8c800','#cb5a00','#01925f','#bcee35'
 	);
-	$colorstr='';
 	foreach($chartjs[0] as $i=>$chartjs_tag){
 		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
 		if(!isset($chartjs_attributes['id'])){
 			$chartjs_attributes['id']='chartjs_'.$i.strtolower(generateGUID(false,false));
 		}
 		$chartjs_contents=$chartjs[2][$i];
+		//check for custom colors
+		$colorstr='';
+		if(isset($chartjs_attributes['data-colors'])){
+			$arr=preg_split('/\,+/',$chartjs_attributes['data-colors']);
+			$colorstr=encodeJSON($arr);
+		}
+		elseif(preg_match('/\<colors\>(.*?)\<\/colors\>/',$chartjs_contents,$m)){
+			$colorstr=$m[1];
+			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
+		}
 		//look for just a query
 		if(preg_match('/^(select|with)/is',trim($chartjs_contents))){
 			$process='';
@@ -6416,10 +6425,7 @@ function commonProcessChartjsTags($htm){
 					$chartjs_contents=str_replace("[{$k}]",$v,$chartjs_contents);
 				}
 			}
-			if(preg_match('/\<colors\>(.*?)\<\/colors\>/',$chartjs_contents,$m)){
-				$colorstr=$m[1];
-				$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
-			}
+			
 			//select date(_cdate) as label, code as dataset,count(*) as value
 			$recs=dbQueryResults($db,$chartjs_contents);
 			if(!is_array($recs)){$recs=[];}
