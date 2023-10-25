@@ -6449,6 +6449,7 @@ function commonProcessChartjsTags($htm){
 			$datasets=array();
 			$labels=array();
 			$values=array();
+			$rcolors=array();
 			$replace_str='';
 			$replace_str.='<div data-behavior="chartjs" ';
 			$replace_str .= setTagAttributes($chartjs_attributes);
@@ -6462,10 +6463,16 @@ function commonProcessChartjsTags($htm){
 				if(isset($rec['label']) && strlen($rec['label']) && !in_array($rec['label'],$labels)){
 					$labels[]=$rec['label'];
 				}
+				if(isset($rec['color'])){
+					$rcolors[]=$rec['color'];
+				}
 				if(!in_array($dataset,$datasets)){
 					$datasets[]=$dataset;
 				}
 				$xrecs[$rec['label']][$dataset]=isset($rec['value'])?$rec['value']:0;
+			}
+			if(count($rcolors)){
+				$colorstr=encodeJSON($rcolors);
 			}
 			foreach($datasets as $dataset){
 				foreach($labels as $label){
