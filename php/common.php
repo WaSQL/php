@@ -6726,6 +6726,9 @@ function commonProcessDBListRecordsTags($htm){
 				$opts['-list']=json_decode($dblistrecords_contents,true,JSON_INVALID_UTF8_IGNORE);
 			}
 		}
+		if(!isset($dblistrecords_attributes['id'])){
+			$dblistrecords_attributes['id']='id_'.time();
+		}
 		$json=array(
 			'db'=>$db,
 			'opts'=>$opts,
@@ -7329,6 +7332,11 @@ function getCalendar($monthyear='',$params=array()){
 		}
 		elseif($params['-view']=='day'){
         	$recopts['-where'].=" AND DAYOFMONTH(startdate)={$calendar['current']['mday']}";
+		}
+		if(isset($params['-event_table_filters']) && is_array($params['-event_table_filters'])){
+			foreach($params['-event_table_filters'] as $k=>$v){
+				$recopts[$k]=$v;
+			}
 		}
     	$recs=getDBRecords($recopts);
 
@@ -19061,6 +19069,7 @@ function commonParseIni($str,$multi=0){
 	$settings=array();
 	$key='';
 	foreach($lines as $line){
+		if(preg_match('/^\#/',trim($line))){continue;}
 		if(preg_match('/^\[(.+)\]$/',trim($line),$m)){
 			$key=strtolower($m[1]);
 			continue;
@@ -19071,6 +19080,7 @@ function commonParseIni($str,$multi=0){
 		
 		if(count($parts)==2){
 			$subkey=strtolower(trim($parts[0]));
+			if(stringBeginsWith($subkey,'#')){continue;}
 			if($multi==1){
 				$settings[$key][$subkey][]=$parts[1];
 			}
