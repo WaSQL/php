@@ -201,6 +201,7 @@ function langLuaInfo(){
 ENDOFHEADER;
 	foreach($lines as $line){
 		list($module,$version,$status,$path)=preg_split('/\s+/is',trim($line));
+		if(!strlen($module)){continue;}
 		$k=strtolower($module);
 		$info='';
 		$modules[$k]=<<<ENDOFSECTION
