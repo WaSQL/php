@@ -55,9 +55,42 @@ function langPythonInfo(){
 function langPerlInfo(){
 	$modules=array();
 	$menu=array();
-	//get pythoninfo contents
-	$out=cmdResults('perl -MFile::Find=find -MFile::Spec::Functions -Tlwe "find { wanted => sub { print canonpath $_ if /\.pm\z/ }, no_chdir => 1 }, @INC"');
+	$out=cmdResults('perl -V');
 	$lines=preg_split('/[\r\n]+/',$out['stdout']);
+	$perlinfo=array();
+	$section='';
+	$incpaths=array();
+	foreach($lines as $line){
+		$line=trim($line);
+		if(preg_match('/^(.+?)\:$/',$line,$m)){
+			$section=$m[1];
+			continue;
+		}
+		if(!strlen($section)){continue;}
+		list($k,$v)=preg_split('/\=/',$line,2);
+		if($section=='@INC' && $k!='.'){$incpaths[]=$k;}
+		if(!strlen($v)){continue;}
+		//echo $section.'<br>'.$line;exit;
+		$perlinfo[$section][$k]=$v;
+	}
+	if(count($incpaths)){
+		$perlinfo['Platform']['incpaths']=implode('<br>',$incpaths);
+		foreach($incpaths as $incpath){
+			$files=listFilesEx($incpath,array('ext'=>'pm'));
+			foreach($files as $file){
+				$section=getFileName($file['name'],1);
+				$k=strtolower($section);
+				$menu[$k]=$section;
+				$perlinfo[$section]=array(
+					'Name'=>$file['name'],
+					'Location'=>$file['path'],
+					'Install Date'=>$file['_cdate'],
+					'Size'=>$file['size_verbose']
+				);
+			}
+			//echo $incpath.printValue($files);exit;
+		}
+	}
 	$out=cmdResults("perl -v");
 	$version='';
 	if(preg_match('/\(v([0-9\.]+?)\)/',$out['stdout'],$m)){
@@ -74,53 +107,19 @@ function langPerlInfo(){
 	</div>
 </header>
 ENDOFHEADER;
-	foreach($lines as $line){
-		$line=str_replace("\\","/",trim($line));
-		if(!stringEndsWith($line,'.pm')){continue;}
-		$line=preg_replace('/\.pm$/i','',$line);
-		$parts=preg_split('/\/+/is',$line);
-		while(count($parts)){
-			$p=array_shift($parts);
-			if(strtolower($p)=='lib'){
-				break;
-			}
+	$sections=array();
+	foreach($perlinfo as $name=>$info){
+		$section="<h2><a name=\"module_{$name}\">{$name}</a></h2>";
+		$section.='<table>'.PHP_EOL;
+		foreach($info as $k=>$v){
+			$section.='<tr><td class="align-left w_small w_nowrap" style="background-color:#003e624D;width:300px;">'.$k.'</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">'.$v.'</td></tr>'.PHP_EOL;
 		}
-		if(!count($parts)){continue;}
-		$module=implode('::',$parts);
-		$k=strtolower($module);
-		$info='';
-		$version='';
-		$modules[$k]=array('key'=>$k,'name'=>$module,'parts'=>$parts,'submodules'=>array());
-		$menu[$k]=$module;
-	}
-	ksort($modules);
-	foreach($modules as $k=>$info){
-		if(count($info['parts'])==1){continue;}
-		$parts=$info['parts'];
-		while(count($parts)){
-			$last=array_pop($parts);
-			$pkey=strtolower(implode('::',$parts));
-			if(isset($modules[$pkey])){
-				$modules[$pkey]['submodules'][]=$modules[$k]['name'];
-				unset($modules[$k]);
-				unset($menu[$k]);
-				break;
-			}
-		}
+		$section.='</table>'.PHP_EOL;
+		$sections[]=$section;
 	}
 	$data='<div class="align-center" style="width:934px;">';
 	$data.=$header;
-	ksort($menu);
-	foreach($modules as $module=>$info){
-		$submodules=implode('<br>',$info['submodules']);
-		$data.=<<<ENDOFSECTION
-<h2><a name="module_{$info['name']}">{$info['name']}</a></h2>
-<table>
-<tr><td class="align-left w_small w_nowrap" style="background-color:#003e624D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$info['name']}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background-color:#003e624D;width:300px;">Submodules</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$submodules}</td></tr>
-</table>
-ENDOFSECTION;
-	}
+	$data.=implode('',$sections);
 	$data.='</div>';
 	return array($data,$menu);
 }
