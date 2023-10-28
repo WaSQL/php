@@ -1369,6 +1369,9 @@ if(isset($_REQUEST['_menu'])){
 		break;
 	}
 }
+else{
+	echo adminViewPage('topmenu');
+}
 
 echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.PHP_EOL;
 //process _menu request
