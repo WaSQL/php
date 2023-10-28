@@ -1,0 +1,24 @@
+<view:default>
+<?=buildOnLoad("wacss.loadScript('/php/admin/lang_js.js');");?>
+<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
+	<div class="w_nowrap is-hidden-mobile" style="margin-top:20px;min-width:250px;">
+		<form class="w_form" name="moduleform" method="post" action="/php/admin.php" style="width:100%;">
+			<input type="hidden" name="_menu" value="<?=$_REQUEST['_menu'];?>">
+			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
+				<input  style="flex:1;" class="input" name="module" type="text" placeholder="module to install" required autofocus>
+				<button type="submit" class="btn">Install</button>
+			</div>
+		</form>
+		<div class="w_gray w_smallest"><?=printValue($install);?></div>
+		<h3><?=count($modules);?> Modules Installed</h3>
+		<?=renderEach('module',$modules,'name');?>
+	</div>
+	<div style="margin-left:5px;flex:1;">
+		<?=$body;?>
+	</div>
+</div>
+</view:default>
+
+<view:module>
+	<div><a href="#module_<?=$name;?>" class="w_link" style="color:#999999;"><?=$name;?></a></div>
+</view:module>
