@@ -17,10 +17,8 @@ prows=''
 for p in pkg_resources.working_set:
 	prow='''
 		<section>
-		<div class="align-center w_bold" style="margin-top:10px;font-size:clamp(11px,2vw,24px);color:#1d415e">
-			<a name="module_{}">{}</a>
-		</div>
-		<table class="table striped condensed" style="border:1px solid #000;margin-top:5px;">
+		<h2><a name="module_{}">{}</a></h2>
+		<table>
 		'''.format(p.project_name,p.project_name)
 	info=''
 	try:
@@ -72,7 +70,7 @@ for p in pkg_resources.working_set:
 
 		key=parts[0]
 		val=parts[1]
-		trow='	<tr><td style="background:#1d415e;color:#FFF;white-space:nowrap;padding-right:0.4rem;">{}</td><td style="width:100%;">{}</td></tr>'.format(key,val)
+		trow='	<tr><td class="align-left w_small w_nowrap" style="width:300px;background:#1d415e4D;">{}</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{}</td></tr>'.format(key,val)
 		trow=trow+"\n"
 		prow=prow+trow
 

@@ -19,24 +19,7 @@ function langPHPInfo(){
 		}
 	}
 	ksort($menu);
-	$data=<<<ENDOFDATA
-	<style type="text/css">
-	table {border-collapse: collapse; border: 0; width: 934px; box-shadow: 1px 2px 3px #ccc;}
-	.center {text-align: center;}
-	.center table {margin: 1em auto; text-align: left;}
-	.center th {text-align: center !important;}
-	td, th {border: 1px solid #666; font-size: 75%; vertical-align: baseline; padding: 4px 5px;}
-	h1 {font-size: 150%;}
-	h2 {font-size: 125%;}
-	.p {text-align: left;}
-	.e {background-color: #ccf; width: 300px; font-weight: bold;}
-	.h {background-color: #99c; font-weight: bold;}
-	.v {background-color: #ddd; max-width: 300px; overflow-x: auto; word-wrap: break-word;}
-	.v i {color: #999;}
-	</style>
-	{$body}
-ENDOFDATA;
-	return array($data,$menu);
+	return array($body,$menu);
 }
 function langPythonInfo(){
 	//get pythoninfo contents
@@ -59,8 +42,8 @@ function langPythonInfo(){
 			$menu[$k]=$m[1];
 		}
 	}
-	$data=$header;
-	$data.='<div class="align-center">';
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
 	ksort($modules);
 	ksort($menu);
 	foreach($modules as $k=>$section){
@@ -84,7 +67,7 @@ function langPerlInfo(){
 		$version=$m[1];
 	}
 	$header=<<<ENDOFHEADER
-<header>
+<header class="align-left">
 	<div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
 		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
@@ -107,22 +90,36 @@ ENDOFHEADER;
 		$k=strtolower($module);
 		$info='';
 		$version='';
-		$modules[$k]=<<<ENDOFSECTION
-<div class="align-center w_bold w_big">{$module}</div>
-<table class="table condensed bordered" style="margin-bottom:15px;">
-<tr><td class="align-left w_small w_nowrap" style="background:#003e62;color:#FFF;">Name</td><td class="align-left w_small" style="width:90%;">{$module}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background:#003e62;color:#FFF;">Version</td><td class="align-left w_small" style="width:90%;">{$version}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background:#003e62;color:#FFF;">Info</td><td class="align-left w_small" style="width:90%;">{$info}</td></tr>
-</table>
-ENDOFSECTION;
+		$modules[$k]=array('key'=>$k,'name'=>$module,'parts'=>$parts,'submodules'=>array());
 		$menu[$k]=$module;
 	}
-	$data=$header;
-	$data.='<div class="align-center">';
 	ksort($modules);
+	foreach($modules as $k=>$info){
+		if(count($info['parts'])==1){continue;}
+		$parts=$info['parts'];
+		while(count($parts)){
+			$last=array_pop($parts);
+			$pkey=strtolower(implode('::',$parts));
+			if(isset($modules[$pkey])){
+				$modules[$pkey]['submodules'][]=$modules[$k]['name'];
+				unset($modules[$k]);
+				unset($menu[$k]);
+				break;
+			}
+		}
+	}
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
 	ksort($menu);
-	foreach($modules as $k=>$section){
-		$data.=$section;
+	foreach($modules as $module=>$info){
+		$submodules=implode('<br>',$info['submodules']);
+		$data.=<<<ENDOFSECTION
+<h2><a name="module_{$info['name']}">{$info['name']}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background-color:#003e624D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$info['name']}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background-color:#003e624D;width:300px;">Submodules</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$submodules}</td></tr>
+</table>
+ENDOFSECTION;
 	}
 	$data.='</div>';
 	return array($data,$menu);
@@ -143,28 +140,35 @@ function langNodeInfo(){
 	$out=cmdResults("node -v");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
-<header>
-	<div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+<header class="align-left">
+	<div style="background-color:#000000;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
 		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-node-dot-js"></span> Node</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
 	</div>
 </header>
 ENDOFHEADER;
 	foreach($json['dependencies'] as $module=>$info){
-		//echo $module.printValue($info);exit;
 		$k=strtolower($module);
 		$version=isset($info['version'])?$info['version']:'';
+		$dependencies=array();
+		if(isset($info['dependencies']) && is_array($info['dependencies'])){
+			foreach($info['dependencies'] as $dname=>$dinfo){
+				$dependencies[]="{$dname} - v{$dinfo['version']}";
+			}
+		}
+		$dependencies=implode('<br>',$dependencies);
 		$modules[$k]=<<<ENDOFSECTION
-<div class="align-center w_bold w_big">{$module}</div>
-<table class="table condensed bordered" style="margin-bottom:15px;">
-<tr><td class="align-left w_small w_nowrap" style="background:#003e62;color:#FFF;">Name</td><td class="align-left w_small" style="width:90%;">{$module}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background:#003e62;color:#FFF;">Version</td><td class="align-left w_small" style="width:90%;">{$version}</td></tr>
+<h2><a name="module_{$module}">{$module}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Name</td><td style="text-align:left;min-width:300px;background-color:#CCCCCC80;">{$module}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Version</td><td style="text-align:left;min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Dependencies</td><td style="text-align:left;min-width:300px;background-color:#CCCCCC80;">{$dependencies}</td></tr>
 </table>
 ENDOFSECTION;
 		$menu[$k]=$module;
 	}
-	$data=$header;
-	$data.='<div class="align-center">';
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
 	ksort($modules);
 	ksort($menu);
 	foreach($modules as $k=>$section){
@@ -188,10 +192,10 @@ function langLuaInfo(){
 	$out=cmdResults("lua -v");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
-<header>
-	<div style="background:#FFF;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#00007c;"><span class="brand-lua"></span> Lua</div>
-		<div style="font-size:clamp(11px,2vw,18px);color:#00007c;">Version {$version}</div>
+<header class="align-left">
+	<div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Version {$version}</div>
 	</div>
 </header>
 ENDOFHEADER;
@@ -200,17 +204,16 @@ ENDOFHEADER;
 		$k=strtolower($module);
 		$info='';
 		$modules[$k]=<<<ENDOFSECTION
-<div class="align-center w_bold w_big">{$module}</div>
-<table class="table condensed bordered" style="margin-bottom:15px;">
-<tr><td class="align-left w_small w_nowrap" style="background:#00007c;color:#FFF;">Name</td><td class="align-left w_small" style="width:90%;">{$module}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background:#00007c;color:#FFF;">Version</td><td class="align-left w_small" style="width:90%;">{$version}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background:#00007c;color:#FFF;">Info</td><td class="align-left w_small" style="width:90%;">{$info}</td></tr>
+<h2><a name="module_{$module}">{$module}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$module}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
 </table>
 ENDOFSECTION;
 		$menu[$k]=$module;
 	}
-	$data=$header;
-	$data.='<div class="align-center">';
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
 	ksort($modules);
 	ksort($menu);
 	foreach($modules as $k=>$section){

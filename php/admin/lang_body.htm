@@ -1,12 +1,26 @@
 <view:default>
 <?=buildOnLoad("wacss.loadScript('/php/admin/lang_js.js');");?>
+<style type="text/css">
+	table {border-collapse: collapse; border: 0; width: 934px; box-shadow: 1px 2px 3px #ccc;}
+	.center {text-align: center;}
+	.center table {margin: 1em auto; text-align: left;}
+	.center th {text-align: center !important;}
+	td, th {border: 1px solid #666; font-size: 75%; vertical-align: baseline; padding: 4px 5px;}
+	h1 {font-size: 150%;}
+	h2 {font-size: 125%;margin-top:0.5rem;}
+	.p {text-align: left;}
+	.e {background-color: #ccf; width: 300px; font-weight: bold;}
+	.h {background-color: #99c; font-weight: bold;}
+	.v {background-color: #ddd; max-width: 300px; overflow-x: auto; word-wrap: break-word;}
+	.v i {color: #999;}
+</style>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div class="w_nowrap is-hidden-mobile" style="margin-top:20px;min-width:250px;">
-		<form class="w_form" name="moduleform" method="post" action="/php/admin.php" style="width:100%;">
+		<form class="w_form" name="moduleform" method="post" action="/php/admin.php" style="width:100%;margin-bottom:10px;">
 			<input type="hidden" name="_menu" value="<?=$_REQUEST['_menu'];?>">
 			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 				<input  style="flex:1;" class="input" name="module" type="text" placeholder="module to install" required autofocus>
-				<button type="submit" class="btn">Install</button>
+				<button style="margin-left:5px;" type="submit" class="btn">Install</button>
 			</div>
 		</form>
 		<div class="w_gray w_smallest"><?=printValue($install);?></div>
