@@ -1352,7 +1352,23 @@ $params=array(
 	'title'=>$_SERVER['HTTP_HOST'].' Admin'
 	);
 echo buildHtmlBegin($params);
-echo adminViewPage('topmenu');
+if(isset($_REQUEST['_menu'])){
+	switch(strtolower($_REQUEST['_menu'])){
+		case 'phpinfo':
+		case 'pythoninfo':
+		case 'perlinfo':
+		case 'nodeinfo':
+		case 'perlinfo':
+		case 'luainfo':
+			if(!isset($_REQUEST['module'])){
+				echo adminViewPage('topmenu');
+			}
+		break;
+		default:
+			echo adminViewPage('topmenu');
+		break;
+	}
+}
 
 echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.PHP_EOL;
 //process _menu request

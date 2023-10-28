@@ -17,8 +17,9 @@
 </style>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div class="w_nowrap is-hidden-mobile" style="margin-top:20px;min-width:250px;">
-		<form class="w_form" name="moduleform" method="post" action="/php/admin.php" style="width:100%;margin-bottom:10px;">
+		<form class="w_form" name="moduleform" method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');" style="width:100%;margin-bottom:10px;">
 			<input type="hidden" name="_menu" value="<?=$_REQUEST['_menu'];?>">
+			<input type="hidden" name="title" value="Install <?=$_REQUEST['lang'];?> module">
 			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 				<input  style="flex:1;" class="input" name="module" type="text" placeholder="module to install" required autofocus>
 				<button style="margin-left:5px;" type="submit" class="btn">Install</button>
@@ -33,6 +34,10 @@
 	</div>
 </div>
 </view:default>
+
+<view:install>
+	<?=$install;?>
+</view:install>
 
 <view:module>
 	<div><a href="#module_<?=$name;?>" class="w_link" style="color:#999999;"><?=$name;?></a></div>

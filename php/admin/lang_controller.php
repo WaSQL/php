@@ -12,6 +12,7 @@
 				$module=trim($_REQUEST['module']);
 				if(isWindows()){
 					$install="Unable to auto install PHP modules on windows.";
+					$install.='<br><br><a href="https://www.php.net/manual/en/install.pecl.windows.php" target="_blank"><span class="icon-php"></span> Click for instructions.</a>';
 				}
 				else{
 					$out=cmdResults('cat /etc/os-release');
@@ -35,6 +36,8 @@
 					}
 					$install=cmdResults($cmd);
 				}
+				setView('install',1);
+				return;
 			}
 			list($body,$modules)=langPHPInfo();
 		break;
@@ -45,6 +48,8 @@
 				//install this module
 				$cmd="python3 -m pip install {$module}";
 				$install=cmdResults($cmd);
+				setView('install',1);
+				return;
 			}
 			list($body,$modules)=langPythonInfo();
 		break;
@@ -55,6 +60,8 @@
 				//install this module
 				$cmd="perl -MCPAN -e \"install {$module}\"";
 				$install=cmdResults($cmd);
+				setView('install',1);
+				return;
 			}
 			list($body,$modules)=langPerlInfo();
 		break;
@@ -65,6 +72,8 @@
 				//install this module
 				$cmd="npm -g install {$module}";
 				$install=cmdResults($cmd);
+				setView('install',1);
+				return;
 			}
 			list($body,$modules)=langNodeInfo();
 		break;
@@ -75,6 +84,8 @@
 				//install this module
 				$cmd="luarocks install {$module}";
 				$install=cmdResults($cmd);
+				setView('install',1);
+				return;
 			}
 			list($body,$modules)=langLuaInfo();
 		break;
