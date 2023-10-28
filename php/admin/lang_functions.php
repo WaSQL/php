@@ -83,10 +83,106 @@ function langPerlInfo(){
 				$menu[$k]=$section;
 				$perlinfo[$section]=array(
 					'Name'=>$file['name'],
-					'Location'=>$file['path'],
-					'Install Date'=>$file['_cdate'],
-					'Size'=>$file['size_verbose']
+					'Location'=>$file['afile']
 				);
+				//parse the file a bit to figure out version, author etc
+				// Open the file for reading
+				$maxloops=1000;
+				$loops=0;
+				$pod=array();
+				if($fh = fopen($file['afile'], 'rb')){
+					$head='';
+					$items=array();
+					$list=0;
+					while( $line = fgets($fh)){
+						//version?
+						if(!isset($perlinfo[$section]['Version']) && preg_match('/VERSION[\s\t]*?\=[\s\t]*?([0-9\'\"\.\_]+?)\;/is',$line,$m)){
+							$perlinfo[$section]['Version']=preg_replace('/(\'|\")/','',$m[1]);
+							continue;
+						}
+						if(preg_match('/^\=head[0-9](.+)$/',trim($line),$m)){
+							if(strlen($head) && is_array($items) && count($items)){
+								//echo printValue($items);exit;
+								$pod[$head][]='<ul>'.PHP_EOL;
+								foreach($items as $lv){
+									$pod[$head][]='<li>'.$lv.'</li>';
+								}
+								$pod[$head][]='</ul>'.PHP_EOL;
+								$items=array();
+							}
+							$head=strtolower(trim($m[1]));
+							$pod[$head]=array();
+							$list=0;
+							continue;
+						}
+						if(!strlen($head)){continue;}
+						if(!strlen(trim($line))){continue;}
+						if(preg_match('/^\=cut/',trim($line))){
+							$maxloops=25;
+							$loops=0;
+							$head='';
+							$item='';
+							$list=0;
+							continue;
+						}
+						if(preg_match('/^\=over/',trim($line))){
+							$list=1;
+							continue;
+						}
+						if(preg_match('/^\=back/',trim($line))){
+							if(strlen($head) && is_array($items) && count($items)){
+								//echo printValue($items);exit;
+								$pod[$head][]='<ul>'.PHP_EOL;
+								foreach($items as $lv){
+									$pod[$head][]='<li>'.$lv.'</li>';
+								}
+								$pod[$head][]='</ul>'.PHP_EOL;
+								$items=array();
+							}
+							$list=0;
+							$item='';
+							continue;
+						}
+						if(preg_match('/^\=item(.+)$/',trim($line),$m)){
+							$items=array();
+							continue;
+						}
+						$line=trim($line);
+						$line=preg_replace('/I\<(.+?)\>/','<i>\1</i>',$line);
+						$line=preg_replace('/B\<(.+?)\>/','<b>\1</b>',$line);
+						$line=preg_replace('/L\<(.+?)\>/','\1',$line);
+						$line=preg_replace('/E\<(.+?)\>/','&\1;',$line);
+						$line=preg_replace('/F\<(.+?)\>/','<u>\1</u>',$line);
+						$line=preg_replace('/S\<(.+?)\>/','<span class="w_nowrap">\1</span>',$line);
+						$line=preg_replace('/C\<(.+?)\>/','<code>\1</code>',$line);
+						if($list==1){
+							$items[]=utf8_encode($line);
+							continue;
+						}
+						$pod[$head][]=utf8_encode($line);
+						$loops+=1;
+						if($loops >= $maxloops){break;}
+					}
+					fclose($fh);
+				}
+				if(isset($pod['name'][0])){
+					$perlinfo[$section]['Name']=implode(' '.PHP_EOL,$pod['name']);
+				}
+				if(isset($pod['description'][0])){
+					$perlinfo[$section]['Description']=implode(' '.PHP_EOL,$pod['description']);
+				}
+				if(isset($pod['caveats'][0])){
+					$perlinfo[$section]['Caveats']=implode(' '.PHP_EOL,$pod['caveats']);
+				}
+				if(isset($pod['notes'][0])){
+					$perlinfo[$section]['Notes']=implode(' '.PHP_EOL,$pod['notes']);
+				}
+				if(isset($pod['author'][0])){
+					$perlinfo[$section]['Author(s)']=implode(' '.PHP_EOL,$pod['author']);
+				}
+				elseif(isset($pod['authors'][0])){
+					$perlinfo[$section]['Author(s)']=implode(' '.PHP_EOL,$pod['authors']);
+				}
 			}
 			//echo $incpath.printValue($files);exit;
 		}

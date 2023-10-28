@@ -5593,6 +5593,44 @@ function tailFile($afile, $lines = 10, $adaptive = true) {
 	fclose($f);
 	return trim($output);
 }
+//---------- begin function headFile--------------------------------------
+/**
+* @describe returns first x lines of file
+* @param afile string - full path to file to tail
+* @param [lines] int - number of lines. defaults to 10
+* @param adaptive boolean - set to false to give a performance boost
+* @return array
+* @usage $first=headFile($afile);
+*/
+function headFile($afile, $linecnt = 10, $adaptive = true) {
+	// Open the file for reading
+	$fh = fopen($afile, 'rb');
+	// Handle failure
+	if ($fh === false) {
+	    return array('Could not open file: '.$file);
+	}
+	$lines=array();
+	// Loop 3 times
+	for ($i = 0; $i < $linecnt; $i++) {
+	    // Read a line
+	    $line = fgets($fh);
+
+	    // If a line was read then include it, otherwise
+	    // show an error
+	    if ($line !== false) {
+	        $lines[]=$line;
+	    } else {
+	        break;
+	    }
+	}
+	// Close the file handle; when you are done using a
+	// resource you should always close it immediately
+	if (fclose($fh) === false) {
+	    return array('Could not close file: '.$file);
+	}
+	return $lines;
+}
+
 //---------- begin function filterFile--------------------------------------
 /**
 * @describe returns only lines that contail search
