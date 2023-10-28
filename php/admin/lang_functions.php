@@ -69,7 +69,7 @@ function langPerlInfo(){
 		if(!strlen($section)){continue;}
 		list($k,$v)=preg_split('/\=/',$line,2);
 		if($section=='@INC' && $k!='.'){$incpaths[]=$k;}
-		if(!strlen($v)){continue;}
+		if(!strlen($v) || stringContains($k,':')){continue;}
 		//echo $section.'<br>'.$line;exit;
 		$perlinfo[$section][$k]=$v;
 	}
