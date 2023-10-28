@@ -91,6 +91,7 @@ function langPerlInfo(){
 			//echo $incpath.printValue($files);exit;
 		}
 	}
+	ksort($menu);
 	$out=cmdResults("perl -v");
 	$version='';
 	if(preg_match('/\(v([0-9\.]+?)\)/',$out['stdout'],$m)){
