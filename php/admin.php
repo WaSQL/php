@@ -39,7 +39,7 @@ $PAGE=array('_id'=>0);
 loadExtras('translate');
 
 
-loadExtrasJs(array('wacss','chart','pikaday','alertify','html5','nicedit','codemirror'));
+loadExtrasJs(array('wacss','chartist','pikaday','alertify','html5','nicedit','codemirror'));
 loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
 set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
 
@@ -1391,6 +1391,24 @@ if(isset($_REQUEST['_menu'])){
 			echo $htm;
 			exit;
 		break;
+		case 'phpinfo':
+		case 'pythoninfo':
+		case 'perlinfo':
+		case 'nodeinfo':
+		case 'perlinfo':
+		case 'luainfo':
+			$_REQUEST['lang']=str_replace('info','',$_REQUEST['_menu']);
+			$htm=adminViewPage('lang');
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
+			exit;
+		break;
 		case 'editor':
 			echo '<table class="table table-responsive table-striped table-bordered" width="100%"><tr valign="top">'.PHP_EOL;
 			echo '	<td class="nowrap">'.PHP_EOL;
@@ -1412,100 +1430,6 @@ if(isset($_REQUEST['_menu'])){
 			echo '	<td width="100%"><div id="w_editor_main">'.PHP_EOL;
 			echo '	</div></td>'.PHP_EOL;
 			echo '</tr></table>'.PHP_EOL;
-		break;
-		case 'phpinfo':
-			//Server Variables
-			$data=adminGetPHPInfo();
-			if(preg_match('/\<body\>(.+)\<\/body\>/ism',$data,$m)){
-				//parse out modules to build a list
-				preg_match_all('/\<a name\=\"module\_(.+?)\".*?\>(.+?)\<\/a\>/is',$data,$modules);
-				//echo printValue($modules);exit;
-				$links=array();
-				foreach($modules[1] as $module){
-					$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$module.'" onclick="return phpinfoShowModule(\''.$module.'\');">'.ucwords(str_replace('_',' ',$module)).'</a></div>';
-				}
-				$module_count=count($modules[1]);
-				$linkstr=implode(PHP_EOL,$links);
-				echo <<<ENDOFX
-				<script>
-					function phpinfoShowModule(m){
-						let el=document.querySelector('a[name="module_'+m+'"]');
-						if(undefined==el){return false;}
-						return wacss.scrollIntoView(el,{block:'start'});
-					}
-				</script>
-				<style type="text/css">
-				table {border-collapse: collapse; border: 0; width: 934px; box-shadow: 1px 2px 3px #ccc;}
-				.center {text-align: center;}
-				.center table {margin: 1em auto; text-align: left;}
-				.center th {text-align: center !important;}
-				td, th {border: 1px solid #666; font-size: 75%; vertical-align: baseline; padding: 4px 5px;}
-				h1 {font-size: 150%;}
-				h2 {font-size: 125%;}
-				.p {text-align: left;}
-				.e {background-color: #ccf; width: 300px; font-weight: bold;}
-				.h {background-color: #99c; font-weight: bold;}
-				.v {background-color: #ddd; max-width: 300px; overflow-x: auto; word-wrap: break-word;}
-				.v i {color: #999;}
-				</style>
-				<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
-					<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
-						<div class="w_biggest w_underline">{$module_count} Packages installed</div>
-						{$linkstr}
-						<br />
-					</div>
-					<div style="flex:1">{$m[1]}</div>
-				</div>
-ENDOFX;
-			}
-			else{
-				echo $data;
-			}
-		break;
-		case 'pythoninfo':
-			$pypath=getWasqlPath('python');
-			$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\"");
-			$data=$out['stdout'];
-			preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
-			$modules=array();
-			foreach($sections[0] as $section){
-				$module='';
-				if(preg_match('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$section,$m)){
-					$k=$m[1];
-					$modules[$k]=$section;
-				}
-			}
-			$header='';
-			if(preg_match('/\<header\>(.+?)\<\/header\>/ism',$data,$m)){
-				$header=$m[0];
-			}
-			//sort alphabetically, ignoring case
-			ksort($modules,SORT_NATURAL|SORT_FLAG_CASE);
-			//echo printValue(array_keys($modules));exit;
-			$links=array();
-			foreach($modules as $name=>$content){
-				$links[]='<div style="margin-left:15px;"><a class="w_link w_gray" href="#module_'.$name.'" onclick="return pythoninfoShowModule(\''.$name.'\');">'.ucwords(str_replace('_',' ',$name)).'</a></div>';
-			}
-			$module_count=count($modules);
-			$linkstr=implode(PHP_EOL,$links);
-			$contentstr=implode(PHP_EOL,$modules);
-			echo <<<ENDOFX
-			<script>
-					function pythoninfoShowModule(m){
-						let el=document.querySelector('a[name="module_'+m+'"]');
-						if(undefined==el){return false;}
-						return wacss.scrollIntoView(el,{block:'start'});
-					}
-				</script>
-			<div style="padding-top:10px;display:flex;justify-content: flex-start;align-items:flex-start">
-				<div class="w_padtop" style="padding-right:15px;white-space:nowrap;position:sticky;top:50px;height:88vh;overflow:auto;">
-					<div class="w_biggest w_underline">{$module_count} Packages installed</div>
-					{$linkstr}
-					<br />
-				</div>
-				<div style="flex:1;padding-left:10px;">{$header}{$contentstr}</div>
-			</div>
-ENDOFX;
 		break;
 		case 'luainfo':
 			$lua=array();
