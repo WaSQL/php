@@ -432,9 +432,10 @@ function commonCronLog($msg,$echomsg=1){
 	if(!is_string($msg) && !isNum($msg)){
 		$msg=encodeJson($msg);
 	}
+	$current_time=getDBTime();
 	$cron=commonCronGetCronByPid();
 	if(!isset($cron['_id'])){
-		echo "no_cron:{$msg}".PHP_EOL;
+		echo "{$current_time}:{$msg}".PHP_EOL;
 		return false;
 	}
 	//echo "commonCronLog".printValue($cron);exit;
@@ -453,7 +454,7 @@ function commonCronLog($msg,$echomsg=1){
 	}
 	if(!isset($cron['cronlog_id']) || !isNum($cron['cronlog_id'])){
 		if($echomsg==1){
-			echo $msg.PHP_EOL;
+			echo "{$current_time}:{$msg}".PHP_EOL;
 		}
 		return false;
 	}	
@@ -465,22 +466,21 @@ function commonCronLog($msg,$echomsg=1){
 	));
 	if(!isset($cronlog['_id'])){
 		if($echomsg==1){
-			echo $msg.PHP_EOL;
+			echo "{$current_time}:{$msg}".PHP_EOL;
 		}
 		return false;
 	}
 	$log=decodeJson($cronlog['log']);
 	if(!is_array($log)){$log=[];}
 	//get the current time from the DB so we are not reliant on timezone
-	$current_time=getDBTime();
-	if(!is_string($msg)){$msg=encodeJson($msg);}
+	
 	$log[]=array(
 		'timestamp'=>$current_time,
 		'message'=>$msg
 	);
 	$ok=editDBRecordById('_cron_log',$cronlog['_id'],array('log'=>encodeJson($log)));
 	if($echomsg==1){
-		echo $msg.PHP_EOL;
+		echo "{$current_time}:{$msg}".PHP_EOL;
 	}
 	return true;
 }
