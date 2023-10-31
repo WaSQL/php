@@ -7,6 +7,8 @@ import os
 import requests
 import urllib3
 import configparser
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #get the script path
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 #read dasql.ini for settings
