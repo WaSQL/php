@@ -5,11 +5,22 @@ import sys
 try:
     import config
     import common
+    import subprocess
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
+#---------- begin function db.dasql ----------
+# @describe returns the results of a dasql query
+# @param tag str - dasql.ini tag
+# @param query str - SQL query to run
+# @usage recs=db.queryResults('dbtest','select * from states')
+def dasql(tag,query=''):
+    ppath=common.getParentPath(common.scriptPath());
+    dasql=os.path.abspath(ppath+'/dasql/dasql.py');
+    out = subprocess.call("python3 {} {} {}".format(dasql,tag,query), shell=True)
+    return out
 
 #---------- begin function queryResults ----------
 # @describe returns a dictionary of records returned from query

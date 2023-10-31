@@ -87,6 +87,7 @@ import sys
 try:
     import common
     import config
+    import db
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -98,11 +99,13 @@ if not common.isCLI():
 
 # print(config.value('name'))
 # print(config.value())
+out=db.dasql('msa','select top 2 firstname,lastname,gender,totalchildren from DimCustomer')
+print(out)
 
-#show message
-common.echo("test successful")
-#test listFiles
-files=common.listFiles(os.getcwd())
-print(files)
-files=common.listFilesEx(os.getcwd())
-print(files)
+# #show message
+# common.echo("test successful")
+# #test listFiles
+# files=common.listFiles(os.getcwd())
+# print(files)
+# files=common.listFilesEx(os.getcwd())
+# print(files)
