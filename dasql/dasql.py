@@ -87,7 +87,6 @@ if len(params['query']) > 0:
         '-nossl':1,
         'offset':0,
         'username':os.environ["USERNAME"].lower(),
-        'computername':os.environ["COMPUTERNAME"],
         'AjaxRequestUniqueId':'dasql.py',
         'sql_full':params['query']
     }
