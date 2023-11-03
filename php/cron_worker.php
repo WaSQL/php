@@ -123,7 +123,7 @@ foreach($ConfigXml as $name=>$host){
 		LIMIT 1
 ENDOFSQL;
 		$ok=executeSQL($secureSQL);
-		$rec=getDBRecord(array(
+		$cronrec=getDBRecord(array(
 			'-table'	=> '_cron',
 			'cron_pid'	=> $cron_pid,
 			'running'	=> 1,
@@ -131,31 +131,31 @@ ENDOFSQL;
 			'-nocache'	=> 1
 		));
 		//break if no records to run
-		if(!isset($rec['_id'])){
+		if(!isset($cronrec['_id'])){
 			//$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
 			break;
 		}
 		//add a cronlog
 		$header=array(
 			'timestamp'=>getDBTime(),
-			'cron_name'=>$rec['name'],
-			'cron_id'=>$rec['_id'],
+			'cron_name'=>$cronrec['name'],
+			'cron_id'=>$cronrec['_id'],
 			'user_id'=>0,
 			'cron_pid'=>$cron_pid
 		);
-		$rec['cronlog_id']=addDBRecord(array(
+		$cronrec['cronlog_id']=addDBRecord(array(
 			'-table'=>'_cron_log',
-			'cron_id'=>$rec['_id'],
+			'cron_id'=>$cronrec['_id'],
 			'delete_me'=>0,
 			'header'=>encodeJson($header)
 		));
-		if(isNum($rec['cronlog_id'])){
-			cronUpdate(array('cronlog_id'=>$rec['cronlog_id']));
+		if(isNum($cronrec['cronlog_id'])){
+			$ok=editDBRecordById('_cron',$cronrec['_id'],array('cronlog_id'=>$cronrec['cronlog_id']));
 		}
 		//only keep the last x records
-		$ok=cronCleanRecords($rec);
+		$ok=cronCleanRecords($cronrec);
 		//set cmd
-		$cmd=$rec['run_cmd'];
+		$cmd=$cronrec['run_cmd'];
 		$lcmd=strtolower(trim($cmd));
 		//get page names to determine if cron is a page
 		$pages=getDBRecords(array(
@@ -210,7 +210,7 @@ ENDOFSQL;
 		}
 		//update the cronlog header with crontype
 		$header['crontype']=$crontype;
-		cronMessage("Cron ID:{$rec['_id']} - Name:{$rec['name']}, cronlog_id:{$rec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
+		cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, cronlog_id:{$cronrec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
 		$ok=cronLogUpdate(array('header'=>encodeJson($header)));
 		//start the job
 		$start=microtime(true);
@@ -221,11 +221,11 @@ ENDOFSQL;
 	    	$cmd=preg_replace('/^\/t\/1+/','',$cmd);
 	    	$cmd=preg_replace('/^\/+/','',$cmd);
 	    	//if they have specified a run_as then login as that person
-	    	if(isset($rec['run_as']) && isNum($rec['run_as'])){
+	    	if(isset($cronrec['run_as']) && isNum($cronrec['run_as'])){
 	    		global $USER;
 	        	$urec=getDBRecord(array(
 					'-table'=>'_users',
-					'_id'	=> $rec['run_as'],
+					'_id'	=> $cronrec['run_as'],
 					'-fields'=>'_id,username',
 					'-nocache'=>1
 				));
@@ -316,31 +316,16 @@ ENDOFSQL;
 			'run_length'	=> str_replace(',','',$run_length),
 			'run_memory'	=> str_replace(',','',$run_memory)
 		);
-		$ok=cronUpdate($eopts);
+		$ok=editDBRecordById('_cron',$cronrec['_id'],$eopts);
 		$etime=microtime(true)-$starttime;
 		$etime=(integer)$etime;
 		$cron_pid=getmypid();
-		cronMessage("Cron ID:{$rec['_id']} - Name:{$rec['name']}, process_pid: {$cron_pid} finished");
+		cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, process_pid: {$cron_pid} finished");
 	}
 	if($etime > 60){break;}
 }
 exit;
 
-/**
-* @exclude  - this function is for internal use only- excluded from docs
-*/
-function cronUpdate($params=array()){
-	if(!is_array($params) || !count($params)){
-		return false;
-	}
-	$cron_pid=getmypid();
-	$params['-table']='_cron';
-	$params['-where']="cron_pid={$cron_pid}";
-	$ok=editDBRecord($params);
-
-	//echo "cronUpdate".printValue($ok).printValue($params);
-	return $ok;
-}
 /**
 * @exclude  - this function is for internal use only- excluded from docs
 */
