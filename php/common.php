@@ -20503,12 +20503,17 @@ function sortArrayByKeys($array=array(), $cols=array()){
     $colarr = array();
     foreach ($cols as $col => $order) {
         $colarr[$col] = array();
-        foreach ($array as $k => $row) { $colarr[$col]['_'.$k] = strtolower($row[$col]); }
-    	}
+        foreach ($array as $k => $row) { 
+        	if(is_array($row[$col]) || is_object($row[$col])){
+        		$row[$col]=encodeJSON($row[$col]);
+        	}
+        	$colarr[$col]['_'.$k] = strtolower($row[$col]); 
+        }
+    }
     $eval = 'array_multisort(';
     foreach ($cols as $col => $order) {
         $eval .= '$colarr[\''.$col.'\'],'.$order.',';
-    	}
+    }
     $eval = substr($eval,0,-1).');';
     eval($eval);
     $ret = array();
@@ -20517,10 +20522,10 @@ function sortArrayByKeys($array=array(), $cols=array()){
             $k = substr($k,1);
             if (!isset($ret[$k])) $ret[$k] = $array[$k];
             $ret[$k][$col] = $array[$k][$col];
-        	}
-    	}
+        }
+    }
     return $ret;
-	}
+}
 //---------- begin function sortArrayByLength--------------------
 /**
 * @describe sorts and array by length
