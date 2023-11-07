@@ -16765,6 +16765,8 @@ function postURL($url,$params=array()) {
 	$return = curl_exec($process);
 	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
 	$rtn['curl_info']=curl_getinfo($process);
+	$rtn['headers']=array();
+	//echo "<xmp>{$return}</xmp>".printValue($params).printValue($rtn);exit;
 	//check for errors
 	if ( curl_errno($process) ) {
 		$rtn['error_number'] = curl_errno($process);
@@ -16795,11 +16797,29 @@ function postURL($url,$params=array()) {
         	else{$rtn['headers'][$k]=$v;}
 		}
     }
+    //close the handle
+	curl_close($process);
+	//echo printValue($rtn);exit;
     //decode it if gzipped
 	if(isset($rtn['headers']['content-encoding']) && $rtn['headers']['content-encoding']=='gzip'){
-		$rtn['headers']['content-encoding-decoded']='text/html';
-		$rtn['body']=gzdecode($rtn['body']);
-		$rtn['headers']['content-length-decoded']=strlen($rtn['body']);
+		//try gzdecode first
+		$body='';
+		if(function_exists('gzdecode')){
+			$body=gzdecode($rtn['body']);
+		}
+		if(strlen($body)){
+			$rtn['headers']['content-length-decoded']=strlen($body);
+			$rtn['headers']['content-encoding-decoded']='text/html';
+			$rtn['body']=$body;
+		}
+		else{
+			$body=file_get_contents('compress.zlib://data:who/cares;base64,'. base64_encode($rtn['body']));
+			if(strlen($body)){
+				$rtn['headers']['content-length-decoded2']=strlen($body);
+				$rtn['headers']['content-encoding-decoded2']='text/html';
+				$rtn['body']=$body;
+			}
+		}	
 	}
 	$rtn['url']=$url;
 	if(isset($params['-xml']) && $params['-xml']==1 && isset($rtn['body']) && strlen($rtn['body'])){
@@ -16822,8 +16842,7 @@ function postURL($url,$params=array()) {
 		echo "<b>Error Message:</b> {$rtn['error']}<br>\n";
 		exit;
     }
-    //close the handle
-	curl_close($process);
+    
 	return $rtn;
 }
 //---------- begin function postJSON--------------------
