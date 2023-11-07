@@ -29,6 +29,7 @@ def dasql(tag,query=''):
 # @return dictionary - recordsets
 # @usage recs=db.queryResults('dbtest','select * from states')
 def queryResults(dbname,query,params={}):
+    params={}
     if dbname in config.DATABASE:
         dbtype=config.DATABASE[dbname]['dbtype']
         #add DATABASE settings to params
@@ -39,6 +40,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import hanadb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
             
             return hanadb.queryResults(query,params)
@@ -47,6 +49,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import mssqldb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return mssqldb.queryResults(query,params)
@@ -55,6 +58,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import mysqldb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
                 
             return mysqldb.queryResults(query,params)
@@ -63,6 +67,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import oracledb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return oracledb.queryResults(query,params)
@@ -71,6 +76,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import snowflakedb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
             
             return snowflakedb.queryResults(query,params)
@@ -79,6 +85,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import sqlitedb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return sqlitedb.queryResults(query,params)
@@ -87,6 +94,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import ctreedb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return ctreedb.queryResults(query,params)
@@ -95,6 +103,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import postgresdb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return postgresdb.queryResults(query,params)
@@ -103,6 +112,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import msaccessdb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return msaccessdb.queryResults(query,params)
@@ -111,6 +121,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import mscsvdb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return mscsvdb.queryResults(query,params)
@@ -119,6 +130,7 @@ def queryResults(dbname,query,params={}):
             try:
                 import msexceldb
             except Exception as err:
+                print(params)
                 common.abort(sys.exc_info(),err)
 
             return msexceldb.queryResults(query,params)
