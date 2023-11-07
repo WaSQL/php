@@ -16759,6 +16759,9 @@ function postURL($url,$params=array()) {
 	else{
 		curl_setopt ($process, CURLOPT_CRLF, 0);
 	}
+	if(isset($params['-encoding'])){
+		curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
+	}
 	$return = curl_exec($process);
 	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($process,CURLINFO_HEADER_OUT));
 	$rtn['curl_info']=curl_getinfo($process);
@@ -16792,6 +16795,12 @@ function postURL($url,$params=array()) {
         	else{$rtn['headers'][$k]=$v;}
 		}
     }
+    //decode it if gzipped
+	if(isset($rtn['headers']['content-encoding']) && $rtn['headers']['content-encoding']=='gzip'){
+		$rtn['headers']['content-encoding-decoded']='text/html';
+		$rtn['body']=gzdecode($rtn['body']);
+		$rtn['headers']['content-length-decoded']=strlen($rtn['body']);
+	}
 	$rtn['url']=$url;
 	if(isset($params['-xml']) && $params['-xml']==1 && isset($rtn['body']) && strlen($rtn['body'])){
 		if(isset($params['-soap']) && $params['-soap']==1){
@@ -16816,8 +16825,7 @@ function postURL($url,$params=array()) {
     //close the handle
 	curl_close($process);
 	return $rtn;
-	}
-
+}
 //---------- begin function postJSON--------------------
 /**
 * @describe post an JSON string to a URL and return the results.
