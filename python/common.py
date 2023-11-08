@@ -559,7 +559,7 @@ def sendMail(params):
     part1 += "--{}".format(marker)+os.linesep
 
     # Define the message action
-    part2 = "Content-Type: text/plain"+os.linesep
+    part2 = "Content-Type: text/html"+os.linesep
     part2 += "Content-Transfer-Encoding:8bit"+os.linesep+os.linesep
     part2 += params['message']+os.linesep
     part2 += "--{}".format(marker)
