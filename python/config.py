@@ -10,7 +10,6 @@
 import os
 import sys
 try:
-    import common
     import xmltodict
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -20,7 +19,7 @@ except Exception as err:
 
 
 mypath = os.path.dirname(os.path.realpath(__file__))
-parpath = common.getParentPath(mypath)
+parpath = os.path.abspath(os.path.join(mypath, os.pardir))
 configfile = parpath+os.path.sep+"config.xml"
 #HTTP_HOST - default to localhost for command line stuff
 HTTP_HOST = 'localhost'

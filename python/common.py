@@ -19,6 +19,7 @@ try:
     import urllib.parse
     import json
     import smtplib
+    import config
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -495,6 +496,8 @@ def parseCodeBlocks(str):
 # @describe sends email
 # @param dictionary or parameters
 #   smtp - string - SMTP server address
+#   smtpuser - string - SMTP username - will default to Config smtpuser
+#   smtppass - string - SMTP password - will default to Config smtppass
 #   [port] - integer - optional port
 #   to - string - email addresses to send to
 #   [cc] - string - email addresses to cc
@@ -507,6 +510,41 @@ def parseCodeBlocks(str):
 # @usage ok=common.sendmail(**params)
 # @reference https://www.tutorialspoint.com/python/python_sending_email.htm
 def sendMail(params):
+    if('smtppass' not in params):
+        if('smtppass' in config.CONFIG):
+            params['smtppass']=config.CONFIG['smtppass']
+        else:
+            print('missing smtppass')
+            sys.exit(123)
+
+    if('smtpuser' not in params):
+        if('smtpuser' in config.CONFIG):
+            params['smtpuser']=config.CONFIG['smtpuser']
+        else:
+            print('missing smtpuser')
+            sys.exit(123)
+
+    if('smtp' not in params):
+        if('smtp' in config.CONFIG):
+            params['smtp']=config.CONFIG['smtp']
+        else:
+            print('missing smtp')
+            sys.exit(123)
+
+    if('smtpport' not in params):
+        if('smtpport' in config.CONFIG):
+            params['smtpport']=config.CONFIG['smtpport']
+        else:
+            print('missing smtpport')
+            sys.exit(123)
+
+    if('from' not in params):
+        if('email_from' in config.CONFIG):
+            params['from']=config.CONFIG['email_from']
+        else:
+            print('missing from')
+            sys.exit(123)
+
     #confirm required info
 
     #create a unique marker
@@ -546,16 +584,18 @@ def sendMail(params):
     message += "--"+os.linesep
 
     try:
-        if('port' in params):
-            smtpObj = smtplib.SMTP(params['smtp'],params['port'])
+        if('smtpport' in params):
+            smtpObj = smtplib.SMTP(params['smtp'],params['smtpport'])
         else:
             smtpObj = smtplib.SMTP(params['smtp'])
 
+        smtpObj.starttls()
+        smtpObj.login(params['smtpuser'],params['smtppass'])
         smtpObj.sendmail(params['from'], params['to'], message)
         return 1
 
     except Exception as err:
-        common.abort(sys.exc_info(),err)
+        abort(sys.exc_info(),err)
         return err
 
 #---------- begin function  ----------
