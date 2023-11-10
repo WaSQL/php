@@ -4044,7 +4044,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 	//Pass form through validation before calling ajax
 	if(undefined != tmeout && tmeout=='novalidation'){
 		//default to 60 minutes
-		tmeout=3600000;
+		tmeout=36000000;
 	}
 	else{
 		var ok=submitForm(theform,1,0,1);
@@ -4067,7 +4067,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		else{abort_callback='';}
 	}
 	//default timeout to 60 minutes with a 3 minute minimum
-	if(undefined == tmeout){tmeout=3600000;}
+	if(undefined == tmeout){tmeout=36000000;}
 	if(tmeout < 180000){tmeout=180000;}
 	var lcsid=sid.toLowerCase();
 	var cb=callback.toLowerCase();
@@ -4084,6 +4084,12 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
     	}
     if(typeof(AjaxRequest.ActiveAjaxGroupRequests[sid]) != 'undefined'){
 		ajaxAbort(sid);
+	}
+	//returnid
+	let returnid=false;
+	if(undefined != theform.returnid){
+		if(theform.returnid.value.toLowerCase()=='true'){returnid=true;}
+		if(theform.returnid.value.toLowerCase()=='1'){returnid=true;}
 	}
 	//show processing?
 	var showprocessing=true;
@@ -4303,6 +4309,7 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
   			}
 	  	);
 	if(returnreq){return getReq;}
+	if(returnid){return getReq.AjaxRequestUniqueId;}
 	return false;
 	}
 //-------------------------
@@ -4444,6 +4451,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 	var showprocessingdiv=sid;
 	//show processing
 	var showprocessing=true;
+	let returnid=false;
 	if(typeof(xparams) == 'object'){
     	if(undefined != xparams.callback){callback=xparams.callback;}
 		if(undefined != xparams.abort_callback){abort_callback=xparams.abort_callback;}
@@ -4451,6 +4459,8 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
     	if(undefined != xparams.url){newurl=xparams.url;}
     	if(undefined != xparams.title){newtitle=xparams.title;}
     	if(undefined != xparams.append){append=xparams.append;}
+    	if(undefined != xparams.returnreq){returnreq=xparams.returnreq;}
+    	if(undefined != xparams.returnid){returnid=xparams.returnid;}
     	if(undefined != xparams.nosetprocess){
 			if(xparams.nosetprocess){showprocessing=false;}
 		}
@@ -4478,6 +4488,8 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 			if(key == 'setprocessing'){continue;}
 			if(key == 'showprocessingdiv'){continue;}
 			if(key == 'cp_title'){continue;}
+			if(key == 'returnreq'){continue;}
+			if(key == 'returnid'){continue;}
         	params=params+key+'='+xparams[key]+'&';
 		}
 	}
@@ -4696,6 +4708,7 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
   			}
 		);
 	if(returnreq){return getReq;}
+	if(returnid){return getReq.AjaxRequestUniqueId;}
 	return false;
 	}
 //--------------------------
