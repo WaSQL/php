@@ -4097,7 +4097,8 @@ var wacss = {
 		//prompt
 		let pmpt=opts.prompt || elobj.dataset.prompt || pli.dataset.prompt || pul.dataset.prompt || ptd.dataset.prompt || ptr.dataset.prompt || '';
 		if(undefined != pmpt && pmpt.length > 0){
-			params.prompt=prompt(pmpt);
+			let pmpt_default=opts.prompt_default || elobj.dataset.prompt_default || pli.dataset.prompt_default || pul.dataset.prompt_default || ptd.dataset.prompt_default || ptr.dataset.prompt_default || '';
+			params.prompt=prompt(pmpt,pmpt_default);
 			if(undefined==params.prompt || params.prompt.length==0){
 				return false;
 			}
