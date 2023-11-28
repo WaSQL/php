@@ -122,7 +122,10 @@ if len(params['query']) > 0:
     urllib3.disable_warnings()
 
     #call localhost to run the query
-    r = requests.get(p.url,verify=False)
+    try:
+        r = requests.get(p.url,verify=False)
+    except requests.exceptions.RequestException as e:  # This is the correct syntax
+        raise SystemExit(e)
     for line in r.content.decode('utf-8-sig').splitlines():
         line=line.strip()
         if len(line):

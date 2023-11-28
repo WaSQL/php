@@ -413,7 +413,12 @@
 						}
 						$fields=array_keys($maxlengths);
 						$tlen=array_sum($maxlengths)+count($maxlengths)*3;
-						echo implode(' | ',$fields).PHP_EOL;
+						$vals=array();
+						foreach($fields as $k){
+							$v=str_pad($k,$maxlengths[$k]);
+							$vals[]=$v;
+						}
+						echo implode(' | ',$vals).PHP_EOL;
 						echo str_repeat('=',$tlen).PHP_EOL;
 						foreach($recs as $i=>$rec){
 							$vals=array();
