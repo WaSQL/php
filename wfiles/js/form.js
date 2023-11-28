@@ -399,6 +399,24 @@ function setInputFileName(fld){
 		setText(labeltxt,'');
 	}
 	for(let f=0;f<fld.files.length;f++){
+		if(undefined != fld.files[f].size && fld.files[f].size > 500000){
+			setText(labeltxt,fld.files[f].name);
+			let span=document.createElement('span');
+			span.className='w_danger icon-erase';
+			span.style.fontSize='16px';
+			span.style.marginLeft='25px';
+			span.title='Clear';
+			span.fld=fld;
+			span.labeltxt=labeltxt;
+			span.onclick=function(e){
+				cancelBubble(e);
+				this.fld.value='';
+				setText(this.labeltxt,this.labeltxt.dataset.text);
+			}
+			labeltxt.appendChild(span);
+			console.log('setInputFileName: skipping due to size: '+fld.files[f].name);
+			continue;
+		}
 		let reader = new FileReader();
 		reader.label=label;
 		reader.labeltxt=labeltxt;
@@ -473,7 +491,7 @@ function setInputFileName(fld){
 				let span=document.createElement('span');
 				span.className='w_danger icon-erase';
 				span.style.fontSize='16px';
-				span.style.marginLeft='10px';
+				span.style.marginLeft='25px';
 				span.title='Clear';
 				span.fld=fld;
 				span.labeltxt=labeltxt;
