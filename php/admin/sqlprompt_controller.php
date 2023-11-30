@@ -287,6 +287,7 @@
 					//'-process'=>'sqlpromptCaptureFirstRows'
 					'-ignore_case'=>1
 				);
+
 				$grade=databaseGradeSQL($params['-query'],0);
 				//echo $grade.PHP_EOL;
 				$recs_show=30;
@@ -298,13 +299,15 @@
 				
 
 				$lastquery=dbGetLast();
+
 				if(!is_array($lastquery)){$lastquery=array();}
 				$lastquery['time']=round(($qstop-$qstart),3);
 				if(is_array($_SESSION['debugValue_lastm'])){$_SESSION['debugValue_lastm']=encodeJson($_SESSION['debugValue_lastm']);}
 				if(strlen($_SESSION['debugValue_lastm']) && $_SESSION['debugValue_lastm'] != '[]'){
 					$lastquery['error']=$_SESSION['debugValue_lastm'];
 				}
-				if(isset($lastquery['error'])){
+				//echo printValue($lastquery);exit;
+				if(isset($lastquery['error']) && strlen($lastquery['error'])){
 					if(isset($_REQUEST['format'])){
 						switch(strtolower($_REQUEST['format'])){
 							case 'json':
