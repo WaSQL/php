@@ -251,9 +251,103 @@
 					$view='results';
 				}
 			}
+			$afile='';
+			$nrecs=sqlpromptNamedQueries();
+			$names=array();
+			foreach($nrecs as $n=>$nrec){
+				unset($nrecs[$n]['icon']);
+				$k=strtolower(trim($nrec['name']));
+				$names[$k]=1;
+				$k=strtolower(trim($nrec['code']));
+				$names[$k]=1;
+			}
+			
+			
+			
+			//echo printValue($nrecs);exit;
 			//Run the Query
 			//is this query python?
-			if(isset($_REQUEST['py']) && $_REQUEST['py']==1){
+			$skip=0;
+			$lcq=strtolower(trim($_SESSION['sql_last']));
+			switch($lcq){
+				case 'help':
+				case 'commands':
+					$recs=array(
+						array(
+							'command'=>'help',
+							'description'=>'Display this help menu'
+						),
+						array(
+							'command'=>'db',
+							'description'=>'Display database connection info'
+						),
+						array(
+							'command'=>'grade {query}',
+							'description'=>'Grades selected query for correct format and returns the grade'
+						),
+						array(
+							'command'=>'ddl {tablename}',
+							'description'=>'Return DDL (create statement) for specified table'
+						)
+					);
+					foreach($nrecs as $nrec){
+						$recs[]=array(
+							'command'=>$nrec['code'],
+							'description'=>$nrec['name']
+						);
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'db':
+					$recs=array();
+					foreach($db as $k=>$v){
+						if(strtolower($k)=='dbpass'){
+							$v=str_repeat('*',strlen($v));
+						}
+						$recs[]=array('name'=>$k,'value'=>$v);
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+			}
+			if($skip==0 && preg_match('/^ddl\ (.+)$/is',$lcq,$m)){
+				$parts=preg_split('/\./',$m[1],2);
+				if(count($parts)==2){
+					$sql=dbGetTableDDL($db['name'],$parts[1],$parts[0]);
+				}
+				else{
+					$sql=dbGetTableDDL($db['name'],$m[1]);
+				}
+				echo $sql;exit;
+			}
+			elseif($skip==0 && preg_match('/^grade(.+)$/is',$lcq,$m)){
+				$_SESSION['sql_last']=preg_replace('/^grade/is','',trim($_SESSION['sql_last']));
+				$grade=databaseGradeSQL($_SESSION['sql_last'],0);
+				echo "Grade: {$grade}%";exit;
+			}
+			elseif($skip==0 && isset($names[$lcq])){
+				$_SESSION['sql_last']=sqlpromptBuildQuery($db['name'],$lcq);
+			}
+			if($skip==0 && isset($_REQUEST['py']) && $_REQUEST['py']==1){
 				$qstart=microtime(true);
 				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
 				$qstop=microtime(true);
@@ -267,7 +361,7 @@
 				$recs_count=1;
 				//echo $afile;exit;
 			}
-			else{
+			elseif($skip==0){
 				$tpath=getWasqlPath('php/temp');
 				$shastr=sha1($_SESSION['sql_last']);
 				$uid=isset($USER['_id'])?$USER['_id']:'unknown';

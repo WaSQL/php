@@ -307,10 +307,10 @@ function sqlpromptBuildQuery($db,$name){
 		break;
 	}
 }
-function sqlpromptMonitorTools(){
+function sqlpromptNamedQueries(){
 	global $DATABASE;
 	$db=$_REQUEST['db'];
-	$recs=[];
+	$recs=array();
 	switch(strtolower($DATABASE[$db]['dbtype'])){
 		case 'mssql':
 			loadExtras('mssql');
@@ -391,6 +391,11 @@ function sqlpromptMonitorTools(){
 			$recs=mysqlNamedQueryList();
 		break;
 	}
+	return $recs;
+}
+function sqlpromptMonitorTools(){
+	$recs=sqlpromptNamedQueries();
+
 	if(!count($recs)){return '';}
 	return databaseListRecords(array(
 		'-list'=>$recs,
