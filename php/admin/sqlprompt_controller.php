@@ -278,6 +278,10 @@
 							'description'=>'Display this help menu'
 						),
 						array(
+							'command'=>'commands',
+							'description'=>'show only commands without descriptions'
+						),
+						array(
 							'command'=>'db',
 							'description'=>'Display database connection info'
 						),
@@ -295,6 +299,11 @@
 							'command'=>$nrec['code'],
 							'description'=>$nrec['name']
 						);
+					}
+					if($lcq=='commands'){
+						foreach($recs as $i=>$rec){
+							unset($recs[$i]['description']);
+						}
 					}
 					$csv=arrays2CSV($recs);
 					$tpath=getWasqlPath('php/temp');
