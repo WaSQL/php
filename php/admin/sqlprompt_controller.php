@@ -337,7 +337,12 @@
 				else{
 					$sql=dbGetTableDDL($db['name'],$m[1]);
 				}
-				echo $sql;exit;
+				if(is_array($sql)){echo printValue($sql);}
+				else{
+					if(!isset($_REQUEST['format'])){$sql=nl2br($sql);}
+					echo $sql;
+				}
+				exit;
 			}
 			elseif($skip==0 && preg_match('/^grade(.+)$/is',$lcq,$m)){
 				$_SESSION['sql_last']=preg_replace('/^grade/is','',trim($_SESSION['sql_last']));
