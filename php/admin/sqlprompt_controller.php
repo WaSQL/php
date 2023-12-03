@@ -321,6 +321,10 @@
 							'description'=>'show only commands without descriptions'
 						),
 						array(
+							'command'=>'history',
+							'description'=>'show history of commands you have ran'
+						),
+						array(
 							'command'=>'db',
 							'description'=>'Display database connection info'
 						),
@@ -369,7 +373,7 @@
 							'description'=>"Admins only: show server memory"
 						);
 						$recs[]=array(
-							'command'=>'os',
+							'command'=>'server (os)',
 							'description'=>"Admins only: show server os info"
 						);
 						$recs[]=array(
@@ -404,6 +408,38 @@
 							'version'=>$v
 						);
 					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'last':
+				case 'last_query':
+					$rec=getDBRecord(array('-table'=>'_queries','_cuser'=>$USER['_id'],'function_name'=>'dasql_prompt','-fields'=>'_id,query'));
+					if(isset($rec['_id'])){
+						echo $rec['query'];
+						exit;
+					}
+					echo "No last query found for {$USER['_id']}";
+					exit;
+				break;
+				case 'history':
+					$recs=getDBRecords(array(
+						'-table'=>'_queries',
+						'_cuser'=>$USER['_id'],
+						'function_name'=>'dasql_prompt',
+						'-fields'=>'_id,_cdate,query',
+						'-limit'=>100,
+						'-notimestamp'=>1
+					));
+					$recs=sortArrayByKeys($recs,array('_id'=>SORT_DESC));
 					$csv=arrays2CSV($recs);
 					$tpath=getWasqlPath('php/temp');
 					$shastr=sha1($_SESSION['sql_last']);
@@ -494,6 +530,7 @@
 					$skip=1;
 					$recs_count=count($recs);
 				break;
+				case 'server':
 				case 'os':
 					if(!isAdmin()){
 						echo "You must have admin rights to show OS info on this server";
@@ -689,6 +726,16 @@
 				}
 			}
 			if(isset($_REQUEST['format'])){
+				$opts=array(
+					'-table'=>'_queries',
+					'page_id'=>0,
+					'query'=>$_SESSION['sql_last'],
+					'function_name'=>'dasql_prompt',
+					'user_id'=>$USER['_id'],
+					'tablename'=>"DB:{$db['name']}",
+				);
+				$id=addDBRecord($opts);
+				//echo printValue($id).printValue($opts);exit;
 				switch(strtolower($_REQUEST['format'])){
 					case 'json':
 						echo encodeJson(getCSVRecords($afile));
