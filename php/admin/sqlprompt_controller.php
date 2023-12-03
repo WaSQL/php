@@ -356,6 +356,26 @@
 							'command'=>'cmd>{some command}',
 							'description'=>"Admins only: run command on the server and return the results"
 						);
+						$recs[]=array(
+							'command'=>'drives (df)',
+							'description'=>"Admins only: show server drive info"
+						);
+						$recs[]=array(
+							'command'=>'uptime (top)',
+							'description'=>"Admins only: show server uptime and load"
+						);
+						$recs[]=array(
+							'command'=>'memory (mem)',
+							'description'=>"Admins only: show server memory"
+						);
+						$recs[]=array(
+							'command'=>'os',
+							'description'=>"Admins only: show server os info"
+						);
+						$recs[]=array(
+							'command'=>'processes (ps)',
+							'description'=>"Admins only: show server drive info"
+						);
 					}
 					if($lcq=='commands'){
 						foreach($recs as $i=>$rec){
@@ -384,6 +404,123 @@
 							'version'=>$v
 						);
 					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'uptime':
+				case 'top':
+					if(!isAdmin()){
+						echo "You must have admin rights to show uptime on this server";
+						exit;
+					}
+					loadExtras('system');
+					$recs=array();
+					$info=getServerUptime();
+					foreach($info as $k=>$v){
+						$recs[]=array(
+							'name'=>$k,
+							'value'=>$v
+						);
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'drives':
+				case 'df':
+					if(!isAdmin()){
+						echo "You must have admin rights to show drive info on this server";
+						exit;
+					}
+					loadExtras('system');
+					$recs=systemGetDriveSpace(1);
+					foreach($recs as $i=>$rec){
+						if(isset($rec['size'])){$recs[$i]['size']=verboseSize($rec['size']);}
+						if(isset($rec['used'])){$recs[$i]['used']=verboseSize($rec['used']);}
+						if(isset($rec['available'])){$recs[$i]['available']=verboseSize($rec['available']);}
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'memory':
+				case 'mem':
+					if(!isAdmin()){
+						echo "You must have admin rights to show memory info on this server";
+						exit;
+					}
+					loadExtras('system');
+					$rec=systemGetMemory();
+					$recs=array($rec);
+					foreach($recs as $i=>$rec){
+						if(isset($rec['total'])){$recs[$i]['total']=verboseSize($rec['total']);}
+						if(isset($rec['free'])){$recs[$i]['free']=verboseSize($rec['free']);}
+						if(isset($rec['used'])){$recs[$i]['used']=verboseSize($rec['used']);}
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'os':
+					if(!isAdmin()){
+						echo "You must have admin rights to show OS info on this server";
+						exit;
+					}
+					loadExtras('system');
+					$recs=systemGetOSInfo();
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'ps':
+				case 'processes':
+					if(!isAdmin()){
+						echo "You must have admin rights to show processes on this server";
+						exit;
+					}
+					loadExtras('system');
+					$recs=systemGetProcessList();
 					$csv=arrays2CSV($recs);
 					$tpath=getWasqlPath('php/temp');
 					$shastr=sha1($_SESSION['sql_last']);

@@ -121,7 +121,7 @@ function systemGetLoadAverage(){
 	}
 	return $systemGetMemoryCache;
 }
-function systemGetDriveSpace(){
+function systemGetDriveSpace($nohtml=0){
 	$space=array();
 	if(isWindows()){
 		$cmd='wmic logicaldisk get Caption,Description,Size,Freespace /format:csv';
@@ -140,7 +140,7 @@ function systemGetDriveSpace(){
 				'size'=>$rec['size'],
 				'used'=>'',
 				'available'=>$rec['freespace'],
-				'use%'=>'',
+				'used_pcnt'=>'',
 				'mounted'=>$rec['caption']
 			);
 		}
@@ -148,7 +148,7 @@ function systemGetDriveSpace(){
 	else{
 		$recs=systemMountsList();
 	}
-	//figure out use% with a bar graph
+	//figure out used_pcnt with a bar graph
 	foreach($recs as $i=>$rec){
 		$rec['size']=(integer)$rec['size'];
 		if($rec['size'] == 0){
@@ -165,17 +165,22 @@ function systemGetDriveSpace(){
 			$pcnt=0;
 			$pcntstr='';
 		}
-		//add bar
-		$bgcolor='#17a2b8';
-		if($pcnt > 75){
-			$bgcolor='#dc3545';
+		if($nohtml==0){
+			//add bar
+			$bgcolor='#17a2b8';
+			if($pcnt > 75){
+				$bgcolor='#dc3545';
+			}
+			elseif($pcnt > 60){
+				$bgcolor='#ffc107';
+			}
+			$recs[$i]['used_pcnt']='<div style="border:1px solid #ccd2d9;height:15px;width:150px;display:inline-block;">';
+			$recs[$i]['used_pcnt'].='<div style="disply:inline-block;height:15px;width:'.$pcnt.'%;background-color:'.$bgcolor.';"></div>';
+			$recs[$i]['used_pcnt'].='</div>'.$pcntstr;
 		}
-		elseif($pcnt > 60){
-			$bgcolor='#ffc107';
+		else{
+			$recs[$i]['used_pcnt']=$pcnt;
 		}
-		$recs[$i]['use%']='<div style="border:1px solid #ccd2d9;height:15px;width:150px;display:inline-block;">';
-		$recs[$i]['use%'].='<div style="disply:inline-block;height:15px;width:'.$pcnt.'%;background-color:'.$bgcolor.';"></div>';
-		$recs[$i]['use%'].='</div>'.$pcntstr;
 	}
 	return $recs;
 }
@@ -991,12 +996,12 @@ ENDOFCMD;
 		'-list'=>$recs,
 		'-tableclass'=>'table table-responsive responsive bordered striped is-bordered is-striped is-fullwidth',
 		'-hidesearch'=>1,
-		'-listfields'=>'filesystem,1b-blocks,used,available,use%,mounted',
+		'-listfields'=>'filesystem,1b-blocks,used,available,used_pcnt,mounted',
 		'1b-blocks_displayname'=>'Size',
 		'size_class'=>'align-right w_nowrap',
 		'used_class'=>'align-right w_nowrap',
 		'available_class'=>'align-right w_nowrap',
-		'use%_class'=>'align-left w_nowrap'
+		'used_pcnt_class'=>'align-left w_nowrap'
 	);
 	return databaseListRecords($opts);
 }
