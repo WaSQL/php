@@ -325,6 +325,10 @@
 							'description'=>'Display database connection info'
 						),
 						array(
+							'command'=>'versions',
+							'description'=>'Show software versions on server'
+						),
+						array(
 							'command'=>'grade {query}',
 							'description'=>'Grades selected query for correct format and returns the grade'
 						),
@@ -357,6 +361,28 @@
 						foreach($recs as $i=>$rec){
 							unset($recs[$i]['description']);
 						}
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					$lfile="{$tpath}/{$logname}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+				break;
+				case 'versions':
+					$recs=array();
+					$versions=getAllVersions();
+					foreach($versions as $k=>$v){
+						if(in_array($k,array('curl_version'))){continue;}
+						$recs[]=array(
+							'name'=>$k,
+							'version'=>$v
+						);
 					}
 					$csv=arrays2CSV($recs);
 					$tpath=getWasqlPath('php/temp');
