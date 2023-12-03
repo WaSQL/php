@@ -266,7 +266,11 @@
 			
 			//echo printValue($nrecs);exit;
 			//Run the Query
-			//is this query python?
+			//if this is code and
+			if(stringBeginsWith(trim($_SESSION['sql_last']),'<?')){
+				echo evalPHP($_SESSION['sql_last']);
+				exit;
+			}
 			$skip=0;
 			$lcq=strtolower(trim($_SESSION['sql_last']));
 			switch($lcq){

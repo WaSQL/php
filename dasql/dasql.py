@@ -124,6 +124,20 @@ if len(params['query']) > 0:
     #call localhost to run the query
     try:
         r = requests.get(p.url,verify=False)
+    except requests.exceptions.Timeout:
+        # Maybe set up for a retry, or continue in a retry loop
+        print('DaSQL: Timeout error')
+        sys.exit(1)
+    except requests.exceptions.TooManyRedirects:
+        # Tell the user their URL was bad and try a different one
+        print('DaSQL: TooManyRedirects error')
+        sys.exit(2)
+    except requests.exceptions.HTTPError as errh:
+        print ("DaSQL: Http Error:")
+        sys.exit(3)
+    except requests.exceptions.ConnectionError as errc:
+        print ("DaSQL: ConnectionError trying to connect to {}".format(params['base_url']))
+        sys.exit(4)
     except requests.exceptions.RequestException as e:  # This is the correct syntax
         raise SystemExit(e)
     for line in r.content.decode('utf-8-sig').splitlines():
