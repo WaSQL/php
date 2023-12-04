@@ -1,0 +1,49 @@
+<view:default>
+<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-dasql"></span> DaSQL</h2>
+<p>
+	 DaSQL stands for DOS Access to SQL and is a python script that allows you to query ANY database from a simple DOS/command prompt. The query results can be formatted as DOS, CSV, JSON, XML, or HTML.  There are a ton of use cases for DaSQL. For instance, DaSQL allows you to get results from a database as part of automation scripting. 
+</p>
+<p>
+	If you have WaSQL on your local computer then the dasql program is already installed. If not, you will need to download it via git.
+</p>
+<p>
+	DaSQL requires a ini file called dasql.ini. This file contains authentication information for each domain/website you want to connect to. Add the following entry to dasql.ini found in the dasql directory to authenticate to this domain as the current user:
+</p>
+<div style="display:flex;justify-content: flex-start;align-items: flex-start;">
+<pre id="dasql_ini_entry" class="w_smaller w_gray" style="margin-top:0px;padding-top:0px;">
+[<?=$_SERVER['UNIQUE_HOST'];?>]
+db=pdqdb
+authkey=<?=userValue('_auth');?>
+base_url=https://<?=$_SERVER['HTTP_HOST'];?>
+output_format=dos
+</pre>
+<span style="margin-left:15px;" class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(trim(getText('dasql_ini_entry')));"></span>
+</div>
+<p>
+	Possible host attributes and their explanations are as follows :
+	<ul>
+		<li>db - this is the hostname you want to connect to. It should correlate to the host name in your config.xml file</li>
+		<li>authkey - your users auth key.</li>
+		<li>base_url - the webserver to call</li>
+		<li>output_format - dos,csv,json,xml,table or html</li>
+	</ul>
+</p>
+<p class="w_bold w_big"><span class="brand-sublimetext"></span> Sublime Text Integration</p>
+<p>
+	Adding DaSQL as a custom build option in Sublime Text creates a powerful way to query without leaving your editor. Here is how:
+	<ol>
+		<li>In Sublime Text navigate to Tools->Build System->New Build System</li>
+		<li>Replace the contents with the contents found in DaSQL.sublime-build.sample file in the dasql directory. Change the working_dir to the location where you have installed dasql.py</li>
+		<li>Save and name this DaSQL.sublime-build</li>
+		<li>In Sublime Text navigate to Tools->Developer->New Plugin</li>
+		<li>Replace the contents with the contents found in custom_exec.py.sample file in the dasql directory.</li>
+		<li>Save and name this custom_exec.py</li>
+		<li>create a file called <?=$_SERVER['UNIQUE_HOST'];?>.sql and place it in the same dasql directory</li>
+		<li>Open <?=$_SERVER['UNIQUE_HOST'];?>.sql in Sublime and write a query</li>
+		<li>Enter CTRL-B to execute the query</li>
+	</ol>
+</p>
+
+</view:default>
+
+

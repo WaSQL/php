@@ -639,6 +639,7 @@ if(isAjax()){
 		case 'zipcodes':
 		case 'appstore':
 		case 'postedit':
+		case 'dasql':
 		case 'sync_source':
 		case 'system':
 		case 'tables':
@@ -1391,6 +1392,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'zipcodes':
 		case 'appstore':
 		case 'postedit':
+		case 'dasql':
 		case 'sync_source':
 		case 'system':
 		case 'tables':

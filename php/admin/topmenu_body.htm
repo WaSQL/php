@@ -1,4 +1,14 @@
 <view:default>
+<style>
+	.icon-dasql:before {
+  		content: "\e978";
+	}
+	.icon-dasql:after {
+  		content: "\e90e";
+  		position:relative;
+  		top:1px;
+	}
+</style>
 <nav class="nav w_noprint topmenu <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
 	<ul class="w_noprint">
 		<!-- WaSQL -->
@@ -200,7 +210,8 @@
 		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down"><?=$USER['username'];?></span></a>
 			<ul style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=profile"><span class="icon-user-portal"></span> <wtranslate>Profile</wtranslate></a></li>
-				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-table-add"></span> postEdit</a></li>
+				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit"></span> postEdit</a></li>
+				<li><a href="/php/admin.php?_menu=dasql"><span class="icon-dasql"></span> DaSQL</a></li>
 				<li><a href="/php/admin.php?_logout=1"><span class="icon-logout"></span> <wtranslate>Log Off</wtranslate></a></li>
 			</ul>
 		</li>
