@@ -339,6 +339,10 @@
 						array(
 							'command'=>'ddl {tablename}',
 							'description'=>'Return DDL (create statement) for specified table'
+						),
+						array(
+							'command'=>'idx {tablename}',
+							'description'=>'Return indexes for specified table'
 						)
 					);
 					foreach($nrecs as $nrec){
@@ -605,6 +609,26 @@
 					echo $sql;
 				}
 				exit;
+			}
+			elseif($skip==0 && preg_match('/^idx\ (.+)$/is',$lcq,$m)){
+				$parts=preg_split('/\./',$m[1],2);
+				if(count($parts)==2){
+					$recs=dbGetTableIndexes($db['name'],$parts[1],$parts[0]);
+				}
+				else{
+					$recs=dbGetTableIndexes($db['name'],$m[1]);
+				}
+				$csv=arrays2CSV($recs);
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				$lfile="{$tpath}/{$logname}";
+				if(is_file($afile)){unlink($afile);}
+				$ok=setFileContents($afile,$csv);
+				$skip=1;
+				$recs_count=count($recs);
 			}
 			elseif($skip==0 && preg_match('/^grade(.+)$/is',$lcq,$m)){
 				$_SESSION['sql_last']=preg_replace('/^grade/is','',trim($_SESSION['sql_last']));
