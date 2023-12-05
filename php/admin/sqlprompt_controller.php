@@ -338,11 +338,15 @@
 						),
 						array(
 							'command'=>'ddl {tablename}',
-							'description'=>'Return DDL (create statement) for specified table'
+							'description'=>'Returns DDL (create statement) for specified table'
+						),
+						array(
+							'command'=>'fields (fld) {tablename}',
+							'description'=>'Returns fields for specified table'
 						),
 						array(
 							'command'=>'idx {tablename}',
-							'description'=>'Return indexes for specified table'
+							'description'=>'Returns indexes for specified table'
 						)
 					);
 					foreach($nrecs as $nrec){
@@ -396,7 +400,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -418,7 +421,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -450,7 +452,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -477,7 +478,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -502,7 +502,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -528,7 +527,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -548,7 +546,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -568,7 +565,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -588,7 +584,6 @@
 					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 					$afile="{$tpath}/{$filename}";
-					$lfile="{$tpath}/{$logname}";
 					if(is_file($afile)){unlink($afile);}
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
@@ -610,6 +605,33 @@
 				}
 				exit;
 			}
+			elseif($skip==0 && preg_match('/^(fields|fld)\ (.+)$/is',$lcq,$m)){
+				$finfo=dbGetTableFields($db['name'],$m[2]);
+				$recs=array();
+				foreach($finfo as $k=>$info){
+					$rec=array();
+					//name
+					if(isset($info['name'])){$rec['name']=$info['name'];}
+					elseif(isset($info['_dbfield'])){$rec['name']=$info['_dbfield'];}
+					else{$rec['name']='';}
+					//type
+					if(isset($info['_dbtype_ex'])){$rec['type']=$info['_dbtype_ex'];}
+					elseif(isset($info['_dbtype'])){$rec['type']=$info['_dbtype'];}
+					elseif(isset($info['type'])){$rec['type']=$info['type'];}
+					else{$rec['type']='';}
+					$recs[]=$rec;
+				}
+				$csv=arrays2CSV($recs);
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				if(is_file($afile)){unlink($afile);}
+				$ok=setFileContents($afile,$csv);
+				$skip=1;
+				$recs_count=count($recs);
+			}
 			elseif($skip==0 && preg_match('/^idx\ (.+)$/is',$lcq,$m)){
 				$parts=preg_split('/\./',$m[1],2);
 				if(count($parts)==2){
@@ -624,7 +646,6 @@
 				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 				$afile="{$tpath}/{$filename}";
-				$lfile="{$tpath}/{$logname}";
 				if(is_file($afile)){unlink($afile);}
 				$ok=setFileContents($afile,$csv);
 				$skip=1;
