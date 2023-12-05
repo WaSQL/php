@@ -250,7 +250,7 @@ function ctreeGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
 	$query=<<<ENDOFQUERY
 		SELECT
-			sc.tbl as table, 
+			sc.tbl as tablename, 
 			sc.col as column,
 			sc.coltype as datatype, 
 			sc.width as datasize
@@ -260,11 +260,67 @@ function ctreeGetDBFields($table,$allfields=0){
 		ORDER BY sc.tbl, sc.col
 ENDOFQUERY;
 	$recs=ctreeQueryResults($query);
+	//echo $query.printValue($recs)
 	$fields=array();
 	foreach($recs as $rec){
 		$fields[]=$rec['column'];
 	}
 	return $fields;
+}
+//---------- begin function ctreeGetTableDDL ----------
+/**
+* @describe returns create script for specified table
+* @param table string - tablename
+* @param [schema] string - schema. defaults to dbschema specified in config
+* @return string
+* @usage $createsql=ctreeGetTableDDL('admin.sample');
+*/
+function ctreeGetTableDDL($table,$schema='admin'){
+	$table=strtoupper($table);
+	if(!strlen($schema)){
+		$schema=ctreeGetDBSchema();
+	}
+	if(!strlen($schema)){
+		debugValue('ctreeGetTableDDL error: schema is not defined in config.xml');
+		return null;
+	}
+	$schema=strtolower($schema);
+	$table=strtolower($table);
+
+	$fieldinfo=ctreeGetDBFieldInfo($table);
+	$fields=array();
+	foreach($fieldinfo as $field=>$info){
+		$fld=" {$info['_dbfield']} {$info['_dbtype_ex']}";
+		//primary key
+		if(isset($info['findex']) && strtoupper($info['findex'])=='P'){
+			$fld.=' PRIMARY KEY';
+		}
+		//nullable
+		if(isset($info['nullable']) && strtoupper($info['nullable'])=='N'){
+			$fld.=' NOT NULL';
+		}
+		else{
+			$fld.=' NULL';
+		}
+		if(strlen($info['default'])){
+			if(stringBeginsWith($info['default'],'nextval(')){
+				if($info['_dbtype']=='bigint'){
+					$fld=str_replace(' bigint',' bigserial',$fld);
+				}
+				elseif($info['_dbtype']=='int'){
+					$fld=str_replace(' int',' serial',$fld);
+				}
+			}
+			else{
+				$fld.=" DEFAULT {$info['default']}";
+			}
+		}
+		$fields[]=$fld;
+	}
+	$ddl="CREATE TABLE {$schema}.{$table} (".PHP_EOL;
+	$ddl.=implode(','.PHP_EOL,$fields);
+	$ddl.=PHP_EOL.')'.PHP_EOL;
+	return $ddl;
 }
 //---------- begin function ctreeGetDBFieldInfo ----------
 /**
@@ -550,7 +606,12 @@ function ctreeGetDBTablePrimaryKeys($table){
 			tbl='{$table}'
 			and idxtype='U'
 ENDOFQUERY;
-	return ctreeQueryResults($query);
+	$recs=ctreeQueryResults($query);
+	$pkeys=array();
+	foreach($recs as $rec){
+		$pkeys[]=$rec['colname'];
+	}
+	return $recs;
 	
 }
 function ctreeGetDBSchema(){
