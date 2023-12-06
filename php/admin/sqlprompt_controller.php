@@ -600,7 +600,8 @@
 				}
 				if(is_array($sql)){echo printValue($sql);}
 				else{
-					if(!isset($_REQUEST['format'])){$sql=nl2br($sql);}
+					$sql=sqlpromtFormatSQL($sql);
+					if(!isset($_REQUEST['format'])){$sql="<pre style=\"font-size:0.8rem;margin-top:15px;\">{$sql}</pre>";}
 					echo $sql;
 				}
 				exit;
@@ -655,6 +656,12 @@
 				$_SESSION['sql_last']=preg_replace('/^grade/is','',trim($_SESSION['sql_last']));
 				$grade=databaseGradeSQL($_SESSION['sql_last'],0);
 				echo "Grade: {$grade}%";exit;
+			}
+			elseif($skip==0 && preg_match('/^format(.+)$/is',$lcq,$m)){
+				$_SESSION['sql_last']=preg_replace('/^format/is','',trim($_SESSION['sql_last']));
+				$sql=sqlpromtFormatSQL($_SESSION['sql_last']);
+				if(!isset($_REQUEST['format'])){$sql="<pre style=\"font-size:0.8rem;margin-top:15px;\">{$sql}</pre>";}
+				echo $sql;exit;
 			}
 			elseif($skip==0 && isset($names[$lcq])){
 				$_SESSION['sql_last']=sqlpromptBuildQuery($db['name'],$lcq);

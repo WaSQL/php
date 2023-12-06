@@ -399,14 +399,12 @@ function hanaEscapeString($str){
 */
 function hanaGetTableDDL($table,$schema=''){
 	if(!strlen($schema)){
-		$parts=preg_split('/\./',$table,2);
-		if(count($parts)==2){
-			$schema=$parts[0];
-			$table=$parts[1];
-		}
-		else{
-			$schema=hanaGetDBSchema();
-		}
+		$schema=hanaGetDBSchema();
+	}
+	$parts=preg_split('/\./',$table,2);
+	if(count($parts)==2){
+		$schema=$parts[0];
+		$table=$parts[1];
 	}
 	if(!strlen($schema)){
 		debugValue('hanaGetTableDDL error: schema is not defined in config.xml');
@@ -415,13 +413,16 @@ function hanaGetTableDDL($table,$schema=''){
 	$schema=strtoupper($schema);
 	$table=strtoupper($table);
 	$query=<<<ENDOFQUERY
-		SELECT get_object_definition('schema_name','{$schema}.{$table}') as ddl from dummy
+		call get_object_definition('{$schema}','{$table}')
 ENDOFQUERY;
 	$recs=hanaQueryResults($query);
+	if(isset($recs[0]['object_creation_statement'])){
+		return $recs[0]['object_creation_statement'];
+	}
 	if(isset($recs[0]['ddl'])){
 		return $recs[0]['ddl'];
 	}
-	return $recs;
+	return printValue($recs);
 }
 //---------- begin function hanaGetAllTableFields ----------
 /**

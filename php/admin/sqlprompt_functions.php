@@ -68,16 +68,34 @@ function sqlpromptGetTables($dbname=''){
 }
 function sqlpromtFormatSQL($query){
 	$query=strtolower($query);
+	$query=str_replace("\"",'',$query);
+	$query=preg_replace('/\,/',','.PHP_EOL,$query);
+	$query=preg_replace('/\,[\r\n]{0,2}([0-9])/is',',\1',$query);
 	$keywords = array(
-		"create table","delete","merge",
+		'create table','create or replace table','create column table','create or replace column table','create view','create or replace view',
+		'as','on','not','null','primary key',"delete","merge",
 		"select", "from", "where", "order by", "group by", "insert into", "update"
 	);
+	$newlinewords=array(
+		'from','order by','group by'
+	);
 	foreach ($keywords as $keyword) {
-		if (preg_match("/($keyword *)/i", $query, $matches)) {
-	  		$query = str_replace($matches[1], strtoupper($matches[1]), $query);
+		if (preg_match("/($keyword *)/is", $query, $matches)) {
+			$newval=strtoupper($matches[1]);
+			if(in_array($keyword,$newlinewords)){$newval.=PHP_EOL;}
+	  		$query = str_replace($matches[1], $newval, $query);
 		}
 	}
-	return $query;
+	$lines=preg_split('/[\r\n]/',$query);
+	foreach($lines as $i=>$line){
+		$line=trim($line);
+		if(!strlen($line)){unset($lines[$i]);continue;}
+		if(stringEndsWith($line,',')){
+			$lines[$i]="\t{$line}";
+		}
+	}
+	$query=implode(PHP_EOL,$lines);
+	return trim($query);
 }
 function sqlpromptShowlist($recs,$listopts=array()){
 	$opts=array(

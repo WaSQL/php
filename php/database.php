@@ -546,7 +546,7 @@ function dbGetCount($db,$params){
 * @param db string - database name as specified in the database section of config.xml
 * @param table string - name of table to alter
 * @return string
-* @usage $createsql=dbGetTableDDL($db,$table);
+* @usage $createsql=dbGetProcedureText($db,$table);
 */
 function dbGetProcedureText($db,$name,$type,$schema=''){
 	return dbFunctionCall('getProcedureText',$db,$name,$type,$schema);
@@ -560,8 +560,8 @@ function dbGetProcedureText($db,$name,$type,$schema=''){
 * @return string
 * @usage $createsql=dbGetDDL($db,$table);
 */
-function dbGetDDL($db,$type,$name){
-	return dbFunctionCall('getDDL',$db,$type,$name);
+function dbGetDDL($db,$table,$schema){
+	return dbFunctionCall('getDDL',$db,$table,$schema);
 }
 //---------- begin function dbGetTableDDL
 /**
@@ -571,8 +571,8 @@ function dbGetDDL($db,$type,$name){
 * @return string
 * @usage $createsql=dbGetTableDDL($db,$table);
 */
-function dbGetTableDDL($db,$table){
-	return dbFunctionCall('getTableDDL',$db,$table);
+function dbGetTableDDL($db,$table,$schema){
+	return dbFunctionCall('getTableDDL',$db,$table,$schema);
 }
 //---------- begin function dbGetTableIndexes
 /**
