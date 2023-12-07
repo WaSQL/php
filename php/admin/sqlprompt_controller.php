@@ -341,8 +341,12 @@
 							'description'=>'Returns DDL (create statement) for specified table'
 						),
 						array(
-							'command'=>'fields (fld) {tablename}',
-							'description'=>'Returns fields for specified table'
+							'command'=>'tables [{filter}]',
+							'description'=>'Returns tables [filtered by filter]'
+						),
+						array(
+							'command'=>'fields (fld) {tablename} [{filter}]',
+							'description'=>'Returns fields for specified table  [filtered by filter]'
 						),
 						array(
 							'command'=>'idx {tablename}',
@@ -606,8 +610,53 @@
 				}
 				exit;
 			}
+			elseif($skip==0 && preg_match('/^tables(.*)$/is',$lcq,$m)){
+				$filter=trim($m[1]);
+				$recs=array();
+				if(isset($names['tables'])){
+					$query=sqlpromptBuildQuery($db['name'],'tables');
+					$xrecs=dbGetRecords($db['name'],$query);
+					foreach($xrecs as $rec){
+						if(strlen($filter) && !stringContains($rec['name'],$filter)){continue;}
+						$recs[]=array(
+							'name'=>$rec['name'],
+							'row_count'=>$rec['row_count'],
+							'field_count'=>$rec['field_count'],
+							'mb_size'=>$rec['mb_size']
+						);
+					}
+				}
+				else{
+					$xrecs=dbGetTables($db['name']);
+					foreach($xrecs as $name){
+						if(strlen($filter) && !stringContains($name,$filter)){continue;}
+						$recs[]=array(
+							'name'=>$name
+						);
+					}
+				}
+				$csv=arrays2CSV($recs);
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				if(is_file($afile)){unlink($afile);}
+				$ok=setFileContents($afile,$csv);
+				$skip=1;
+				$recs_count=count($recs);
+			}
 			elseif($skip==0 && preg_match('/^(fields|fld)\ (.+)$/is',$lcq,$m)){
-				$finfo=dbGetTableFields($db['name'],$m[2]);
+				$parts=preg_split('/\ /',$m[2],2);
+				$filter='';
+				if(count($parts)==2){
+					$table=$parts[0];
+					$filter=$parts[1];
+				}
+				else{
+					$table=$m[2];
+				}
+				$finfo=dbGetTableFields($db['name'],$table);
 				$recs=array();
 				foreach($finfo as $k=>$info){
 					$rec=array();
@@ -615,11 +664,13 @@
 					if(isset($info['name'])){$rec['name']=$info['name'];}
 					elseif(isset($info['_dbfield'])){$rec['name']=$info['_dbfield'];}
 					else{$rec['name']='';}
+
 					//type
 					if(isset($info['_dbtype_ex'])){$rec['type']=$info['_dbtype_ex'];}
 					elseif(isset($info['_dbtype'])){$rec['type']=$info['_dbtype'];}
 					elseif(isset($info['type'])){$rec['type']=$info['type'];}
 					else{$rec['type']='';}
+					if(strlen($filter) && (!stringContains($rec['name'],$filter) && !stringContains($rec['type'],$filter))){continue;}
 					$recs[]=$rec;
 				}
 				$csv=arrays2CSV($recs);

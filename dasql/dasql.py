@@ -76,7 +76,9 @@ params['arg_query']=params['arg_query'].strip()
 if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
-if len(params['query']) > 0:
+if len(params['query']) > 0 and params['query'].startswith('http'):
+    os.system("start {}".format( params['query']))
+elif len(params['query']) > 0:
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
         '_auth': params['authkey'], 
