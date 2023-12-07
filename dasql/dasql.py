@@ -77,8 +77,6 @@ if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
 if len(params['query']) > 0:
-    #create a prepared request object
-    p = requests.models.PreparedRequest()
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
         '_auth': params['authkey'], 
@@ -115,15 +113,14 @@ if len(params['query']) > 0:
         data['phone']=params['phone']
         data['password']=params['password']
 
-    #prepare the url with the key/value pairs
-    p.prepare_url(url=params['base_url']+'/php/admin.php', params=data)
-
+    #set the url to post to
+    url=params['base_url']+'/php/admin.php'
     #disable ssl cert warnings since this is just an internal url anyway
     urllib3.disable_warnings()
 
     #call localhost to run the query
     try:
-        r = requests.get(p.url,verify=False)
+        r = requests.post(url,data,verify=False)
     except requests.exceptions.Timeout:
         # Maybe set up for a retry, or continue in a retry loop
         print('DaSQL: Timeout error')

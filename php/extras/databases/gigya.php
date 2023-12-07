@@ -37,6 +37,11 @@ Auditlog:
 	ORDER BY @timestamp 
 	limit 10
 
+	select count(*) as cnt from auditlog
+WHERE 
+	@timestamp >= '2023-01-01T00:00:00.000Z'
+	and @timestamp <= '2023-12-31T23:59:59.000Z'
+
 Accounts:
 	https://help.sap.com/docs/SAP_CUSTOMER_DATA_CLOUD/8b8d6fffe113457094a17701f63e3d6a/b32ce0918af44c3ebd7e96650fa6cc1d.html
 
