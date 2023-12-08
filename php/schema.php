@@ -46,7 +46,7 @@ function createWasqlTable($table=''){
 	$fields=array(
 		'_id'	=> databasePrimaryKeyFieldString(),
 		'_cdate'=> databaseDataType('datetime').databaseDateTimeNow(),
-		'_cuser'=> databaseDataType('int')." NOT NULL",
+		'_cuser'=> databaseDataType('int')." NOT NULL DEFAULT 0",
 		'_edate'=> databaseDataType('datetime')." NULL",
 		'_euser'=> databaseDataType('int')." NULL",
 		);
@@ -841,14 +841,14 @@ function createWasqlTable($table=''){
 			//Add admin user as the default admin
 			$addopts=array();
 			foreach($fields as $field=>$type){
-				if(strlen($CONFIG["default_{$field}"])){$addopts[$field]=$CONFIG["default_{$field}"];}
+				if(isset($CONFIG["default_{$field}"]) && strlen($CONFIG["default_{$field}"])){$addopts[$field]=$CONFIG["default_{$field}"];}
             	}
-            if(!strlen($addopts['username'])){$addopts['username']='admin';}
-			if(strlen($addopts['password'])){
+            if(!isset($addopts['username']) || !strlen($addopts['username'])){$addopts['username']='admin';}
+			if(isset($addopts['password']) && strlen($addopts['password'])){
 				if(!userIsEncryptedPW($addopts['password'])){$addopts['password']=userEncryptPW($addopts['password']);}
 				}
 			else{$addopts['password']=userEncryptPW('admin');}
-			if(!strlen($addopts['email'])){$addopts['email']='admin@'.strtolower($_SERVER['UNIQUE_HOST']);}
+			if(!isset($addopts['email']) || !strlen($addopts['email'])){$addopts['email']='admin@'.strtolower($_SERVER['UNIQUE_HOST']);}
             $addopts['-table']=$table;
             $addopts['utype']=0;
 			$id=addDBRecord($addopts);
@@ -2631,7 +2631,7 @@ function getWasqlTables(){
 	global $CONFIG;
 	//info: returns an array of internal WaSQL table names
 	$tables=array(
-		'_fielddata','_tabledata','_errors',
+		'_fielddata','_tabledata',
 		'_access','_access_summary','_history','_changelog','_cron','_cron_log','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
 		'_reports','_triggers','_sessions','_html_entities','_posteditlog','_config','_prompts'

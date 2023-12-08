@@ -12010,7 +12010,7 @@ function processCSVLines($file,$func_name,$params=array()){
 			$params['-mod']=array('mod'=>$m,'val'=>$v);
 		}
 	}
-	ini_set('auto_detect_line_endings',TRUE);
+	//ini_set('auto_detect_line_endings',TRUE);
 	$linecnt = 0;
 	$bomchecked=0;
 	setlocale(LC_ALL, 'en_US.UTF-8');
@@ -12042,6 +12042,7 @@ function processCSVLines($file,$func_name,$params=array()){
 			}
 		}
 		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+			if(is_null($lineparts[0])){continue;}
 			if($bomchecked==0){
 				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
 				$bomchecked=1;
@@ -12100,6 +12101,7 @@ function processCSVLines($file,$func_name,$params=array()){
 				$cfields=$fields;
 			}
 			foreach($cfields as $x=>$field){
+				if(!isset($lineparts[$x])){continue;}
 				$set['line'][$field]=$lineparts[$x];
 			}
 			//pass array to function

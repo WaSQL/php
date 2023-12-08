@@ -11829,6 +11829,7 @@ function databaseDateTimeNow(){
 		if(stringBeginsWith($version,'5.6')){
 			return " NOT NULL Default NOW()";
 		}
+		return " NOT NULL Default CURRENT_TIMESTAMP";
 	}
 	elseif(isPostgreSQL()){
 		return " NOT NULL Default CURRENT_DATE";

@@ -120,8 +120,8 @@
 		}
 	}
 	else{
-		include_once("$progpath/user.php");
-		include_once("$progpath/schema.php");
+		include_once("{$progpath}/user.php");
+		include_once("{$progpath}/schema.php");
 		loadExtras('zipfile');
 		$CONFIG['starttype']=$_REQUEST['starttype'];
 		$spath=realpath("{$progpath}/schema/");
@@ -133,7 +133,12 @@
 		$ok=createWasqlTables();
 		cleanDir($tdir);
 		rmdir($tdir);
-		header('Location: /');
-		$message='<h1 class="w_success">'.$_REQUEST['starttype'].' Site Created.</h1>';
+		$okmsg=printValue($ok);
+		$message=<<<ENDOFMESSAGE
+<h1 class="w_success">{$_REQUEST['starttype']} Site Created.</h1>
+{$okmsg}
+<div><a href="/" class="btn button is-success" style="font-size:1.5rem;border:1px solid #c7c7c7;padding:3px 5px;text-decoration:none;font-weight:bold;background:#f0f0f0;border-radius:3px;">Goto Homepage</a></div>
+ENDOFMESSAGE;
+		echo $message;exit;
 	}
 ?>

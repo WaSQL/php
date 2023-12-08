@@ -169,7 +169,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$cdate=date('Y-m-d H:i:s');
 		foreach($recs as $i=>$rec){
 			if(!isset($recs[$i]['_cuser'])){
-				$recs[$i]['_cuser']=$USER['_id'];
+				$recs[$i]['_cuser']=isset($USER['_id'])?$USER['_id']:0;
 			}
 			if(!isset($recs[$i]['_cdate'])){
 				$recs[$i]['_cdate']=$cdate;

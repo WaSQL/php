@@ -51,7 +51,7 @@
 						<form method="post" action="/" onsubmit="return setupSubmitForm(this);">
 							<?=renderEach('template',$templates,'template');?>
 							<div class="text-right w_padtop">
-								<button id="begin_button" type="submit" class="btn btn-primary btn-lg">Install <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+								<button type="submit" class="btn btn-primary btn-lg">Install <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
 							</div>
 						</form>
 					</div>
@@ -76,7 +76,7 @@
 								<?=buildFormPassword('clone_pw',array('required'=>1,'class'=>'form-control input-lg'));?>
 							</div>
 							<div class="text-right w_padtop">
-								<button id="begin_button" type="submit" class="btn btn-success btn-lg">Clone <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+								<button type="submit" class="btn btn-success btn-lg">Clone <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
 							</div>
 						</form>
 					</div>
