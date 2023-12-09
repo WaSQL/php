@@ -949,6 +949,7 @@ function createWasqlTable($table=''){
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				//echo "States".printValue($ok);exit;
 			}
             return 1;
 		break;
@@ -2634,7 +2635,8 @@ function getWasqlTables(){
 		'_fielddata','_tabledata',
 		'_access','_access_summary','_history','_changelog','_cron','_cron_log','_pages','_queries',
 		'_templates','_settings','_synchronize','_users','_forms','_files','_minify',
-		'_reports','_triggers','_sessions','_html_entities','_posteditlog','_config','_prompts'
+		'_reports','_triggers','_sessions','_html_entities','_posteditlog','_config','_prompts',
+		'states','countries'
 		);
 	//include wpass table?
 	//if(isset($CONFIG['wpass']) && $CONFIG['wpass']){$tables[]='_wpass';}
