@@ -565,6 +565,10 @@ function gracefulShutdown(){
 	//skip errors without a type or message
 	if(!isset($error['type']) || !isset($error['message'])){return;}
 	if(!isNum($error['type']) || !strlen(trim($error['message']))){return;}
+	if(isset($error['file'])){
+    	$error['message']=str_replace("\\",'/',$error['message']);
+    }
+    $error['file']=str_replace("\\",'/',$error['file']);
 	if(preg_match('/^Call to undefined function (.+)$/',$error['message'],$m)){
 		$function=trim($m[1]);
 		$function=str_replace('()','',$function);
@@ -596,7 +600,7 @@ function gracefulShutdown(){
     		$error['link']='<a target="_blank" href="'.$link.'">Goto file</a>';
     	}
 		echo "ERROR (1)".printValue($error);
-		exit;
+		return true;
 	}
 	if(preg_match('/^(SimpleXMLElement|fsockpen|mssql_next_result|session_decode|Session is not active|Trying to get|Cannot modify header|Undefined offset|Undefined|Invalid argument supplied for foreach)/i',$error['message'])){return;}
 	//syntax errors have to be handled special
