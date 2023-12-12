@@ -1,12 +1,25 @@
 <?php
-function tempfilesShowFileLines($content){
+function tempfilesShowFileLines($content,$scrollto=0){
 	$content=encodeHtml($content);
 	$lines=preg_split('/[\r\n]+/',$content);
 	$outlines=array();
 	foreach($lines as $i=>$line){
-		$outlines[]="<code>{$line}</code>";
+		$n=$i+1;
+		$outlines[]="<code id=\"line_{$n}\">{$line}</code>";
 	}
-	return implode(PHP_EOL,$outlines);
+	$rtn=implode(PHP_EOL,$outlines);
+	if((integer)$scrollto > 0){
+		$rtn.=<<<ENDOFSCRIPT
+<script>
+		let el=document.getElementById('line_{$scrollto}');
+		if(undefined != el){
+			el.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+			el.style.backgroundColor='#f9f999';
+		}
+</script>
+ENDOFSCRIPT;
+	}
+	return $rtn;
 }
 function tempfilesGetTabs(){
 	global $path;

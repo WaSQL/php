@@ -102,7 +102,6 @@
 		    color: #999;
 		}
 	</style>
-	<pre class="viewfile" id="view_file"><?=tempfilesShowFileLines($content);?></pre>
-		<?=buildOnLoad("centerObject('centerpop');");?>
+	<pre class="viewfile" id="view_file"><?=tempfilesShowFileLines($content,(integer)$_REQUEST['line']);?></pre>
 	</div>
 </view:view_file>
