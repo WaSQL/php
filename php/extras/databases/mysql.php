@@ -1637,7 +1637,7 @@ function mysqlNamedQueryList(){
 *	[table_locks]
 * @return query string
 */
-function mysqlNamedQuery($name){
+function mysqlNamedQuery($name,$str=''){
 	global $CONFIG;
 	global $DATABASE;
 	$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
@@ -1648,6 +1648,11 @@ function mysqlNamedQuery($name){
 		$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
 	}
 	switch(strtolower($name)){
+		case 'kill':
+			return "KILL {$str}";
+		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 show processlist

@@ -171,7 +171,7 @@ function sqlpromptListResults($recs){
 				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'pg_stat_activity')){
 					foreach($recs as $i=>$rec){
 						if(!isset($rec['pid'])){continue;}
-						$recs[$i]['pid']='<div style="display:flex;"><a href="#" data-query="SELECT pg_cancel_backend('.$rec['pid'].')" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['pid'].'</div></div>';
+						$recs[$i]['pid']='<div style="display:flex;"><a href="#" data-query="SELECT pg_cancel_backend('.$rec['pid'].')" data-div="nulldiv" data-nav="/php/admin.php" data-_menu="sqlprompt" data-func="toast_query" data-db="'.$db['name'].'" data-confirm="Kill this query?" onclick="return wacss.nav(this);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['pid'].'</div></div>';
 					}
 				}
 			break;
@@ -180,7 +180,7 @@ function sqlpromptListResults($recs){
 				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'processlist')){
 					foreach($recs as $i=>$rec){
 						if(!isset($rec['id'])){continue;}
-						$recs[$i]['id']='<div style="display:flex;"><a href="#" data-query="KILL '.$rec['id'].'" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['id'].'</div></div>';
+						$recs[$i]['id']='<div style="display:flex;"><a href="#" data-query="KILL '.$rec['id'].'" data-div="nulldiv" data-nav="/php/admin.php" data-_menu="sqlprompt" data-func="toast_query" data-db="'.$db['name'].'" data-confirm="Kill this query?" onclick="return wacss.nav(this);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['id'].'</div></div>';
 					}
 				}
 			break;
@@ -188,7 +188,7 @@ function sqlpromptListResults($recs){
 				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'m_connections')){
 					foreach($recs as $i=>$rec){
 						if(!isset($rec['connection_id'])){continue;}
-						$recs[$i]['connection_id']='<div style="display:flex;"><a href="#" data-query="ALTER SYSTEM CANCEL SESSION \''.$rec['connection_id'].'\'" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['connection_id'].'</div></div>';
+						$recs[$i]['connection_id']='<div style="display:flex;"><a href="#" data-query="ALTER SYSTEM CANCEL SESSION \''.$rec['connection_id'].'\'" data-div="nulldiv" data-nav="/php/admin.php" data-_menu="sqlprompt" data-func="toast_query" data-db="'.$db['name'].'" data-confirm="Kill this query?" onclick="return wacss.nav(this);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['connection_id'].'</div></div>';
 					}
 				}
 			break;
@@ -196,7 +196,7 @@ function sqlpromptListResults($recs){
 				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'v$session')){
 					foreach($recs as $i=>$rec){
 						if(!isset($rec['sid'])){continue;}
-						$recs[$i]['sid']='<div style="display:flex;"><a href="#" data-query="ALTER SYSTEM KILL SESSION \''.$rec['sid'].'\'" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['sid'].'</div></div>';
+						$recs[$i]['sid']='<div style="display:flex;"><a href="#" data-query="ALTER SYSTEM KILL SESSION \''.$rec['sid'].'\'" data-div="nulldiv" data-nav="/php/admin.php" data-_menu="sqlprompt" data-func="toast_query" data-db="'.$db['name'].'" data-confirm="Kill this query?" onclick="return wacss.nav(this);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['sid'].'</div></div>';
 					}
 				}
 			break;
@@ -204,7 +204,7 @@ function sqlpromptListResults($recs){
 				if(isset($_SESSION['sql_last']) && stringContains($_SESSION['sql_last'],'query_history')){
 					foreach($recs as $i=>$rec){
 						if(!isset($rec['query_id'])){continue;}
-						$recs[$i]['query_id']='<div style="display:flex;"><a href="#" data-query="SELECT SYSTEM$CANCEL_QUERY(\''.$rec['query_id'].'\')" onclick="return sqlpromptSetValue(this.dataset.query);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['query_id'].'</div></div>';
+						$recs[$i]['query_id']='<div style="display:flex;"><a href="#" data-query="SELECT SYSTEM$CANCEL_QUERY(\''.$rec['query_id'].'\')" data-div="nulldiv" data-nav="/php/admin.php" data-_menu="sqlprompt" data-func="toast_query" data-db="'.$db['name'].'" data-confirm="Kill this query?" onclick="return wacss.nav(this);"><span class="icon-erase w_danger w_small" style="margin-right:5px;"></span></a><div>'.$rec['query_id'].'</div></div>';
 					}
 				}
 			break;
@@ -263,7 +263,7 @@ function sqlpromptListIndexes($recs){
 	);
 	return databaseListRecords($opts);
 }
-function sqlpromptBuildQuery($db,$name){
+function sqlpromptBuildQuery($db,$name,$str=''){
 	global $DATABASE;
 	//echo printValue($DATABASE[$db]);exit;
 	switch(strtolower($DATABASE[$db]['dbtype'])){
@@ -271,7 +271,7 @@ function sqlpromptBuildQuery($db,$name){
 			loadExtras('mssql');
 			global $dbh_mssql;
 			$dbh_mssql='';
-			return trim(mssqlNamedQuery($name));
+			return trim(mssqlNamedQuery($name,$str));
 		break;
 		case 'postgresql':
 		case 'postgres':
@@ -279,49 +279,49 @@ function sqlpromptBuildQuery($db,$name){
 			loadExtras('postgresql');
 			global $dbh_postgresql;
 			$dbh_postgresql='';
-			return trim(postgresqlNamedQuery($name));
+			return trim(postgresqlNamedQuery($name,$str));
 		break;
 		case 'oracle':
 			loadExtras('oracle');
 			global $dbh_oracle;
 			$dbh_oracle='';
-			return trim(oracleNamedQuery($name));
+			return trim(oracleNamedQuery($name,$str));
 		break;
 		case 'hana':
 			loadExtras('hana');
 			global $dbh_hana;
 			$dbh_hana='';
-			return trim(hanaNamedQuery($name));
+			return trim(hanaNamedQuery($name,$str));
 		break;
 		case 'sqlite':
 			loadExtras('sqlite');
 			global $dbh_sqlite;
 			$dbh_sqlite='';
-			return trim(sqliteNamedQuery($name));
+			return trim(sqliteNamedQuery($name,$str));
 		break;
 		case 'snowflake':
 			loadExtras('snowflake');
 			global $dbh_snowflake;
 			$dbh_snowflake='';
-			return trim(snowflakeNamedQuery($name));
+			return trim(snowflakeNamedQuery($name,$str));
 		break;
 		case 'firebird':
 			loadExtras('firebird');
 			global $dbh_firebird;
 			$dbh_firebird='';
-			return trim(firebirdNamedQuery($name));
+			return trim(firebirdNamedQuery($name,$str));
 		break;
 		case 'ctree':
 			loadExtras('ctree');
 			global $dbh_ctree;
 			$dbh_ctree='';
-			return trim(ctreeNamedQuery($name));
+			return trim(ctreeNamedQuery($name,$str));
 		break;
 		default:
 			loadExtras('mysql');
 			global $dbh_mysql;
 			$dbh_mysql='';
-			return trim(mysqlNamedQuery($name));
+			return trim(mysqlNamedQuery($name,$str));
 		break;
 	}
 }

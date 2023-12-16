@@ -2717,9 +2717,14 @@ function postgresqlNamedQueryList(){
 *	[table_locks]
 * @return query string
 */
-function postgresqlNamedQuery($name){
+function postgresqlNamedQuery($name,$str=''){
 	$schema=postgresqlGetDBSchema();
 	switch(strtolower($name)){
+		case 'kill':
+			return "SELECT pg_cancel_backend({$str})";
+		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT

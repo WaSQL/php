@@ -1529,6 +1529,8 @@ function firebirdNamedQuery($name){
 		$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
 	}
 	switch(strtolower($name)){
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT * FROM RDB\$TRANSACTIONS

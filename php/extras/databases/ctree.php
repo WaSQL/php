@@ -1130,6 +1130,8 @@ function ctreeNamedQuery($name){
 		case 'fc_get_userlist':
 			return "call {$name}()";
 		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 

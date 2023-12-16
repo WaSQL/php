@@ -1958,8 +1958,13 @@ function mssqlNamedQueryList(){
 *	[table_locks]
 * @return query string
 */
-function mssqlNamedQuery($name){
+function mssqlNamedQuery($name,$str=''){
 	switch(strtolower($name)){
+		case 'kill':
+			return "KILL {$str}";
+		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT

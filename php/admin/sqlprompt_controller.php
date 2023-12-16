@@ -40,6 +40,11 @@
 		$_SESSION['db']=$db;
 	}
 	switch(strtolower($_REQUEST['func'])){
+		case 'toast_query':
+			$recs=dbQueryResults($_REQUEST['db'],$_REQUEST['query']);
+			setView('toast_query',1);
+			return;
+		break;
 		case 'last_records':
 			$table=addslashes($_REQUEST['table']);
 			//echo "TABLE: {$table}";exit;
@@ -260,6 +265,10 @@
 				$names[$k]=1;
 				$k=strtolower(trim($nrec['code']));
 				$names[$k]=1;
+				if($k=='running_queries'){
+					$names['running']=1;
+					$names['queries']=1;
+				}
 			}
 			
 			
@@ -351,6 +360,10 @@
 						array(
 							'command'=>'idx {tablename}',
 							'description'=>'Returns indexes for specified table'
+						),
+						array(
+							'command'=>'calc>{math expression}',
+							'description'=>'Returns the value of a math expression'
 						)
 					);
 					foreach($nrecs as $nrec){
@@ -360,6 +373,10 @@
 						);
 					}
 					if(isAdmin()){
+						$recs[]=array(
+							'command'=>'kill {sessionID}',
+							'description'=>"kills the query session specified"
+						);
 						$recs[]=array(
 							'command'=>'php>{PHP code}',
 							'description'=>"Admins only: run PHP code on the server and return the results"
@@ -646,6 +663,29 @@
 				$skip=1;
 				$recs_count=count($recs);
 			}
+			elseif($skip==0 && preg_match('/^(calc|math)\>(.*)$/is',$lcq,$m)){
+				$ok=loadExtras('evalmath.class');
+				$recs=array();
+				$em = new EvalMath;
+				$em->suppress_errors = true;
+				$recs[]=array(
+					'expression'=>$m[2],
+					'result'=>$em->evaluate($m[2])
+				);
+				$csv=arrays2CSV($recs);
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				if(is_file($afile)){unlink($afile);}
+				$ok=setFileContents($afile,$csv);
+				$skip=1;
+				$recs_count=count($recs);
+			}
+			elseif($skip==0 && preg_match('/^kill\ (.+)$/is',$lcq,$m)){
+				$_SESSION['sql_last']=sqlpromptBuildQuery($db['name'],'kill',$m[1]);
+			}
 			elseif($skip==0 && preg_match('/^(fields|fld)\ (.+)$/is',$lcq,$m)){
 				$parts=preg_split('/\ /',$m[2],2);
 				$filter='';
@@ -824,8 +864,36 @@
 				}
 				if($recs_count==0){
 					$recs=array();
-					setView(array('no_results'),1);
-					return;
+					if(isset($_REQUEST['format'])){
+						switch(strtolower($_REQUEST['format'])){
+							case 'json':
+								echo encodeJson("{\"result\":\"no results\"}");
+								exit;
+							break;
+							case 'xml':
+								echo arrays2XML(array("{\"result\":\"no results\"}"));
+								exit;
+							break;
+							case 'table':
+								setView('no_results_table',1);
+								return;
+							break;
+							case 'html':
+								setView('no_results_html',1);
+								return;
+							break;
+							case 'csv':
+							case 'dos':
+								setView('no_results_dos',1);
+								return;
+							break;
+						}
+					}
+					else{
+						setView('no_results',1);
+						return;
+					}
+					
 				}
 			}
 			if(isset($_REQUEST['format'])){

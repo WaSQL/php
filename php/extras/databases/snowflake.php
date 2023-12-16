@@ -1450,8 +1450,13 @@ function snowflakeNamedQueryList(){
 *	[table_locks]
 * @return query string
 */
-function snowflakeNamedQuery($name){
+function snowflakeNamedQuery($name,$str=''){
 	switch(strtolower($name)){
+		case 'kill':
+			return "SELECT SYSTEM\$CANCEL_QUERY({$str})";
+		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT 

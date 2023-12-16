@@ -2388,13 +2388,18 @@ function oracleNamedQueryList(){
 *	[table_locks]
 * @return query string
 */
-function oracleNamedQuery($name){
+function oracleNamedQuery($name,$str=''){
 	global $CONFIG;
 	global $DATABASE;
 	if(!isset($CONFIG['db']) && isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
 	switch(strtolower($name)){
+		case 'kill':
+			return "ALTER SYSTEM KILL SESSION '{$str}'";
+		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT

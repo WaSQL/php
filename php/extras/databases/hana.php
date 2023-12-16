@@ -2372,8 +2372,13 @@ function hanaNamedQueryList(){
 *	[table_locks]
 * @return query string
 */
-function hanaNamedQuery($name){
+function hanaNamedQuery($name,$str=''){
 	switch(strtolower($name)){
+		case 'kill':
+			return "ALTER SYSTEM CANCEL SESSION '{$str}'";
+		break;
+		case 'running':
+		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT
