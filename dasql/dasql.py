@@ -77,7 +77,10 @@ if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
 if len(params['query']) > 0 and params['query'].startswith('http'):
-    os.system("start {}".format( params['query']))
+    #use ^ to escape & in the command line. 
+    #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
+    url=params['query'].replace('&','^&');
+    os.system("start {}".format(url))
 elif len(params['query']) > 0:
     #prepare the key/value pairs to pass to WaSQL base_url
     data={

@@ -757,6 +757,41 @@
 			elseif($skip==0 && isset($names[$lcq])){
 				$_SESSION['sql_last']=sqlpromptBuildQuery($db['name'],$lcq);
 			}
+			if($skip==1 && $recs_count==0){
+				if($recs_count==0){
+					$recs=array();
+					if(isset($_REQUEST['format'])){
+						switch(strtolower($_REQUEST['format'])){
+							case 'json':
+								echo encodeJson("{\"result\":\"no results\"}");
+								exit;
+							break;
+							case 'xml':
+								echo arrays2XML(array("{\"result\":\"no results\"}"));
+								exit;
+							break;
+							case 'table':
+								setView('no_results_table',1);
+								return;
+							break;
+							case 'html':
+								setView('no_results_html',1);
+								return;
+							break;
+							case 'csv':
+							case 'dos':
+								setView('no_results_dos',1);
+								return;
+							break;
+						}
+					}
+					else{
+						setView('no_results',1);
+						return;
+					}
+					
+				}
+			}
 			if($skip==0 && isset($_REQUEST['py']) && $_REQUEST['py']==1){
 				$qstart=microtime(true);
 				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
