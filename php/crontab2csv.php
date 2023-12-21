@@ -17,27 +17,32 @@ include_once("{$progpath}/common.php");
 $settings=array();
 $settings_file="{$progpath}/crontab2csv.conf";
 if(file_exists($settings_file)){
-  $settings=commonParseIni($settings_file);
+  $settings=commonParseIni($settings_file,1);
 }
 if(isWindows()){
-	echo "This does not run on Windows";exit;
+	echo "This does not run on Windows";
+	echo printValue($settings);
+	exit;
 }
 else{
 	//linux
 	$out=cmdResults('cut -f1 -d: /etc/passwd');
-	$users=preg_split('/[\r\n]+/',$out['stdout']);
+	$cusers=preg_split('/[\r\n]+/',$out['stdout']);
+	//echo printValue($cusers).printValue($out);exit;
 	$server_name=php_uname("n");
 	$host= gethostname();
 	$ip = gethostbyname($host);
-	foreach($users as $user){
-		if(isset($settings['users_exclude'][$user])){continue;}
-		if(isset($settings['users']) && !isset($settings['users'][$user])){continue;}
-		$out=cmdResults("crontab -u {$user} -l 2>&1");
+	$fields=array('server_name','server_ip','user_name','status','min','hour','dom','mon','dow','command');
+	$csvlines=array();
+	$csvlines[]=implode(',',$fields);
+	$recs=array();
+	foreach($cusers as $cuser){
+		if(isset($settings['users_exclude'][$cuser])){continue;}
+		if(isset($settings['users']) && !isset($settings['users'][$cuser])){continue;}
+		$out=cmdResults("crontab -u {$cuser} -l 2>&1");
+		if(!isset($out['stdout']) || !strlen($out['stdout']) || stringContains($out['stdout'],'no crontab')){continue;}
 		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$csvlines=array();
-		$fields=array('server_name','server_ip','user_name','status','min','hour','dom','mon','dow','command');
-		$csvlines[]=implode(',',$fields);
-		$recs=array();
+		if(!count($lines)){continue;}
 		foreach($lines as $line){
 			#skip comments
 			if(preg_match('/^\#/',trim($line))){
@@ -50,14 +55,15 @@ else{
 			#split the current line 6 ways
 			$parts=preg_split('/\s/',$line,6);
 			array_unshift($parts, $status);
-			array_unshift($parts, $user);
+			array_unshift($parts, $cuser);
 			array_unshift($parts, $ip);
 			array_unshift($parts, $server_name);
 			#convert parts to a csv delimited string
 			$csvlines[]=csvImplode($parts);
 			$rec=array();
 			foreach($fields as $f=>$field){
-				$rec[$field]=$parts[$f];
+				if(isset($parts[$f])){$rec[$field]=$parts[$f];}
+				else{$rec[$field]='';}
 			}
 			$recs[]=$rec;
 		}
@@ -79,10 +85,15 @@ if(isset($settings['webhook']['url'])){
 		setFileContents($hash_file,$hash);
 		$params=$settings['webhook'];
 		unset($params['url']);
-		//echo $json.PHP_EOL;exit;
 		$post=postJSON($settings['webhook']['url'],$json,$params);
+		if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
+			unlink($hash_file);
+			echo "Webhook failed to return a success http code.".PHP_EOL.printValue($post);exit;
+		}
 	}
 }
-echo implode(PHP_EOL,$csvlines);
+if(!isset($settings['csv']['stdout']) || $settings['csv']['stdout'] != 'off'){
+	echo implode(PHP_EOL,$csvlines);
+}
 
 ?>
