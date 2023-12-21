@@ -16949,11 +16949,11 @@ function postBody($url='',$body='',$params=array()) {
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 	}
 	//timeout_connect?
-	if(!isset($params['-timeout_connect'])){
+	if(isset($params['-timeout_connect'])){
 		curl_setopt($process, CURLOPT_CONNECTTIMEOUT, $params['-timeout_connect'] );
 	}
 	//timeout?
-	if(!isset($params['-timeout'])){
+	if(isset($params['-timeout'])){
 		curl_setopt($process, CURLOPT_TIMEOUT, $params['-timeout']);
 	}
 	//-follow
@@ -16967,6 +16967,9 @@ function postBody($url='',$body='',$params=array()) {
 	curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
 
 	//headers
+	if(isset($params['-headers']) && !is_array($params['-headers'])){
+		$params['-headers']=array($params['-headers']);
+	}
 	if(isset($params['-contenttype'])){
 		if(!isset($params['-headers'][0])){$params['-headers']=array();}
 		$params['-headers'][]="Content-type: {$params['-contenttype']}";

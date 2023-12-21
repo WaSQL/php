@@ -1,11 +1,8 @@
 <?php
 //---------- crontab2csv.php
-//Features to add
-//  - read a config file 
-//  - store a hash of the last list
-//  - when the list changes then push to a webhook (dexpdq)
-//  - get crontabs for all users
-//  for user in $(cut -f1 -d: /etc/passwd); do crontab -u $user -l 2>/dev/null | grep -v '^#'; done
+// Sample crontab entry
+// * * * * * php /var/www/wasql_stage/php/crontab2csv.php 2>&1
+//  
 /**
 * @describe converts the crontab -l output into csv format
 * returns csv data with header min,hour,dom,mon,dow,command
