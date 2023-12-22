@@ -9,13 +9,17 @@
 		zipPushFile($zipfile,"{$name}/thumbnail.png");
 		exit;
 	}
+	if(isset($CONFIG['setup_template'])){
+		$_REQUEST['starttype']=$CONFIG['setup_template'];
+	}
+	//echo printValue($CONFIG).printValue($_REQUEST);exit;
+
 	if(!isset($_REQUEST['starttype'])){
 		$templates=setupGetTemplates();
 		//echo printValue($templates);exit;
 		setView('default',1);
 		return;
 	}
-	
 	if(strtolower($_REQUEST['starttype'])=='clone'){
 		setView('default');
 		//make sure url, user, and pass are there
@@ -136,8 +140,11 @@
 		$okmsg=printValue($ok);
 		$message=<<<ENDOFMESSAGE
 <h1 class="w_success">{$_REQUEST['starttype']} Site Created.</h1>
-{$okmsg}
+<div style="font-size:0.7rem;padding:15px;">{$okmsg}</div>
 <div><a href="/" class="btn button is-success" style="font-size:1.5rem;border:1px solid #c7c7c7;padding:3px 5px;text-decoration:none;font-weight:bold;background:#f0f0f0;border-radius:3px;">Goto Homepage</a></div>
+<script>
+setTimeout(function(){location.reload();}, 5000);
+</script>
 ENDOFMESSAGE;
 		echo $message;exit;
 	}
