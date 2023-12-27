@@ -88,6 +88,9 @@ if(isset($settings['webhook']['url'])){
 			echo "Webhook failed to return a success http code.".PHP_EOL.printValue($post);exit;
 		}
 	}
+	elseif(!isset($settings['csv']['stdout']) || $settings['csv']['stdout'] != 'off'){
+		echo "Nothing has changed".PHP_EOL;
+	}
 }
 if(!isset($settings['csv']['stdout']) || $settings['csv']['stdout'] != 'off'){
 	echo implode(PHP_EOL,$csvlines);
