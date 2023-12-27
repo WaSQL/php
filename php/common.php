@@ -12090,9 +12090,6 @@ function processCSVLines($file,$func_name,$params=array()){
 				}
 			}
 			//process function?
-			if(isset($params['-process']) && function_exists($params['-process'])){
-				$set['line']=call_user_func($params['-process'],$set['line']);
-			}
 			$first_line_val=strtolower($lineparts[0]);
 			if(isset($params['-fieldsmap']) && !isset($params['-fieldsmap'][$first_line_val])){
 				unset($set);
