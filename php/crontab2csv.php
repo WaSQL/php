@@ -56,32 +56,85 @@ else{
 			array_unshift($parts, $ip);
 			array_unshift($parts, $server_name);
 			#convert parts to a csv delimited string
-			$csvlines[]=csvImplode($parts);
+			//$csvlines[]=csvImplode($parts);
 			$rec=array();
 			foreach($fields as $f=>$field){
 				if(isset($parts[$f])){$rec[$field]=$parts[$f];}
 				else{$rec[$field]='';}
 			}
+			$rec['uid']=sha1($server_name.$cuser.$rec['command']);
 			$recs[]=$rec;
 		}
 	}
+	//check from /var/log/cron log
+	if(file_exists('/var/log/cron')){
+		$cnt=count($recs)*2;
+		//Dec 27 07:30:01 dca32007 CROND[23673]: (root) CMD (ssh 'slloyd@den22005.co.doterra.net' uptime >/var/www/uptime_postgres.txt 2>&1)
+		$cmd="tail -n 1000 /var/log/cron|grep CROND";
+		$out=cmdResults($cmd);
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		if(count($lines)){
+			$runtimes=array();
+			foreach($lines as $line){
+				if(preg_match('/^(.+?)CROND\[([0-9]+?)\]\:\ \(([a-z]+?)\)\ CMD\ \((.+)\)$/',$line,$m)){
+					$parts=preg_split('/\s/',trim($m[1]));
+					$server_name=array_pop($parts);
+					$runtime=implode(' ',$parts);
+					$cuser=$m[3];
+					$cmd=$m[4];
+					if(isset($runtimes[$cuser][$cmd])){continue;}
+					$runtimes[$cuser][$cmd]=array(
+						'datetime'=>date('Y-m-d H:i:s',strtotime($runtime)),
+						'datestr'=>$runtime,
+						'server'=>$server_name,
+						'cmd'=>$cmd,
+						'pid'=>$m[2]
+					);
+					#echo printValue($m).$line;exit;
+				}
+			}
+			foreach($recs as $i=>$rec){
+				$cmd=$rec['command'];
+				$cuser=$rec['user_name'];
+				if(isset($runtimes[$cuser][$cmd])){
+					$recs[$i]['last_run']=$runtimes[$cuser][$cmd]['datetime'];
+				}
+				else{
+					$recs[$i]['last_run']='';
+				}
+			}
+			//echo printValue($runtimes);exit;
+		}
+	}
+}
+if(!isset($settings['csv']['stdout']) || $settings['csv']['stdout'] != 'off'){
+	$csv=arrays2CSV($recs);
+	echo $csv.PHP_EOL;
 }
 #check for webhook
 if(isset($settings['webhook']['url'])){
-	#determine the payload format
-	$json=encodeJSON($recs);
+	$hashes=array();
 	#use a hash file to only push changes from last time
-	$hash_file="{$progpath}/crontab2csv.hash";
-	$hash=sha1($json);
-	$skip=0;
+	$hash_file="{$progpath}/crontab2csv.json";
 	if(file_exists($hash_file)){
-		$prev_hash=getFileContents($hash_file);
-		if($prev_hash==$hash){$skip=1;}
+		$data=getFileContents($hash_file);
+		$hashes=decodeJSON($data);
 	}
-	if($skip==0){
-		setFileContents($hash_file,$hash);
+	$wrecs=array();
+	foreach($recs as $i=>$rec){
+		ksort($rec);
+		$hash=sha1(encodeJSON($rec));
+		$uid=$rec['uid'];
+		if(!isset($hashes[$uid]) || $hashes[$uid]!=$hash){
+			$wrecs[]=$rec;
+		}
+		$hashes[$uid]=$hash;
+	}
+	if(count($wrecs)){
+		setFileContents($hash_file,encodeJSON($hashes));
 		$params=$settings['webhook'];
 		unset($params['url']);
+		$json=encodeJSON($wrecs);
 		$post=postJSON($settings['webhook']['url'],$json,$params);
 		if(isset($post['curl_info']['http_code']) && $post['curl_info']['http_code'] != 200){
 			unlink($hash_file);
@@ -92,8 +145,6 @@ if(isset($settings['webhook']['url'])){
 		echo "Nothing has changed".PHP_EOL;
 	}
 }
-if(!isset($settings['csv']['stdout']) || $settings['csv']['stdout'] != 'off'){
-	echo implode(PHP_EOL,$csvlines);
-}
+
 
 ?>
