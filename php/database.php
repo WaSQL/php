@@ -1983,6 +1983,10 @@ function databaseListRecords($params=array()){
 	}
 	//check for listview
 	if(isset($params['-listview'])){
+		//view name or content?
+		if($params['-listview'] == strip_tags($params['-listview'])){
+			$params['-listview']=getView($params['-listview']);
+		}
 		if(!is_array($params['-list']) || !count($params['-list'])){
 			$params['-list']=array();
 		}
