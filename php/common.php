@@ -6694,6 +6694,7 @@ function commonProcessDBListRecordsTags($htm){
 	global $CONFIG;
 	global $PAGE;
 	if(!stringContains($htm,'<dblistrecords')){return $htm;}
+	$htm_ori=$htm;
 	preg_match_all('/\<dblistrecords(.*?)\>(.*?)\<\/dblistrecords\>/ism',$htm,$dblistrecords,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole datalist tag
@@ -6730,6 +6731,13 @@ function commonProcessDBListRecordsTags($htm){
 		foreach($dblistrecords_attributes as $k=>$v){
 			if(!isset($opts[$k])){
 				$opts[$k]=$v;
+			}
+		}
+		if(isset($opts['-listview'])){
+			$lvname=$opts['-listview'];
+			if(preg_match('/\<view:'.$lvname.'\>(.*?)\<\/view:'.$lvname.'\>/ism',$htm,$vm)){
+				$opts['-listview']=$vm[1];
+				$htm=str_replace($vm[0],'',$htm);
 			}
 		}
 		$opts['-pretable']='<div style="display:flex;justify-content:flex-end;align-content:flex-start;">'.PHP_EOL;
