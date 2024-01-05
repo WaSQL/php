@@ -138,7 +138,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 			    INSERT(ID,DATE,VALUE) 
 			      VALUES(T2.ID,'23.09.2020',T2.VALUE);
 		*/
-		$query="MERGE /*+ parallel(20) */ INTO {$table} T1 USING ( ".PHP_EOL;
+		$query="MERGE /*+ enable_parallel_dml parallel(20) */ INTO {$table} T1 USING ( ".PHP_EOL;
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
 		$query.=PHP_EOL.') T2 ON ( '.PHP_EOL;
 		$onflds=array();
