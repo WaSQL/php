@@ -140,25 +140,25 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 		*/
 		$query="MERGE INTO {$table} T1 USING ( ".PHP_EOL;
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
-		$query.=') T2 ON ( ';
+		$query.=PHP_EOL.') T2 ON ( '.PHP_EOL;
 		$onflds=array();
 		foreach($params['-upserton'] as $fld){
-			$onflds[]="T1.{$fld}=T2.{$fld}";
+			$onflds[]="	T1.{$fld}=T2.{$fld}".PHP_EOL;
 		}
-		$query .= implode(' AND ',$onflds).PHP_EOL;
-		$query .= ') WHEN MATCHED THEN UPDATE SET ';
+		$query .= implode(' AND ',$onflds).')';
+		$query .= PHP_EOL.'WHEN MATCHED THEN UPDATE SET'.PHP_EOL;
 		$flds=array();
 		foreach($params['-upsert'] as $fld){
-			$flds[]="T1.{$fld}=T2.{$fld}";
+			$flds[]="	T1.{$fld}=T2.{$fld}".PHP_EOL;
 		}
 		$query.=PHP_EOL.implode(', ',$flds);
 		if(isset($params['-upsertwhere'])){
-			$query.=" WHERE {$params['-upsertwhere']}";
+			$query.=PHP_EOL."WHERE {$params['-upsertwhere']}";
 		}
-		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
+		$query .= PHP_EOL."WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
 		$flds=array();
 		foreach($fields as $fld){
-			$flds[]="T2.{$fld}";
+			$flds[]="	T2.{$fld}".PHP_EOL;
 		}
 		$query.=PHP_EOL.implode(', ',$flds);
 		$query .= ')';
