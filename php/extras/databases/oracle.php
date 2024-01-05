@@ -94,11 +94,11 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 				continue;
 			}
 			if(!strlen($v)){
-				$rec[$k]='NULL';
+				$rec[$k]="NULL as {$k}";
 			}
 			else{
 				$v=oracleEscapeString($v);
-				$rec[$k]="'{$v}'";
+				$rec[$k]="'{$v}' as {$k}";
 			}
 		}
 		if(!is_array($rec) || !count($rec)){continue;}
