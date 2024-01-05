@@ -157,7 +157,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 		}
 		$query .= " WHEN NOT MATCHED THEN INSERT ({$fieldstr}) VALUES ( ";
 		$flds=array();
-		foreach($params['-upsert'] as $fld){
+		foreach($fields as $fld){
 			$flds[]="T2.{$fld}";
 		}
 		$query.=PHP_EOL.implode(', ',$flds);
