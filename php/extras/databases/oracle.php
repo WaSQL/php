@@ -63,7 +63,25 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo printValue($recs).printValue($params);exit;
 	$table=$params['-table'];
-	$fieldinfo=oracleGetDBFieldInfo($table,1);
+	$fields=array();
+	if(!isset($params['-fields'])){
+		$fieldinfo=oracleGetDBFieldInfo($table,1);
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(!isset($fieldinfo[$k])){continue;}
+				if(!in_array($k,$fields)){$fields[]=$k;}
+			}
+		}
+	}
+	else{
+		if(!is_array($params['-fields'])){
+			$params['-fields']=preg_split('/\,/',$params['-fields']);
+			foreach($params['-fields'] as $i=>$v){
+				$params['-fields'][$i]=trim($v);
+			}
+		}
+		$fields=$params['-fields'];
+	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -77,13 +95,6 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 		}
 	}
 	//fields
-	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!isset($fieldinfo[$k])){continue;}
-			if(!in_array($k,$fields)){$fields[]=$k;}
-		}
-	}
 	$fieldstr=implode(',',$fields);
 	//values
 	$values=array();
