@@ -3344,6 +3344,7 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['wrapper_style'])){$params['wrapper_style']='';}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['value']=buildFormValueParam($name,$params);
+	//echo '<textarea class="textarea">'.$params['value'].'</textarea>';exit;
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(isset($params['-bootstrap'])){
@@ -8207,23 +8208,36 @@ function encodeData($data='', $encoding=''){
 */
 function encodeHtml($string='',$convert_tabs=0){
 	if(strlen($string)==0){return $string;}
-	//Mar 30 2015 - additional UTF-8 fix
+	//doing this a different way since htmlspecialchars also decodes UTF-8 characters which is not needed.
 	$string=str_replace('?','[[!Q!]]',$string);
-	if(function_exists('mb_encode_numericentity')){
-		$string=utf2Html($string);
-	}
+	$string=str_replace(
+		array('<','>','"'),
+		array('&lt;','&gt;','&quot;'),
+		$string
+	);
 	$string=str_replace('?',' ',$string);
 	$string=str_replace('[[!Q!]]','?',$string);
-	//Apr 2018 - no longer seem to need the UTF-8 fix
-	//return $string;
-	//Aug 7 2012: fix for UTF-8 characters to show properly in textarea
-	$string = str_replace(array('{','}'),array('{','}'),htmlspecialchars($string,ENT_QUOTES));
-	
-	if($convert_tabs==0){return $string;}
-	//Mar 5 2013: replace tabs with emsp if requested
-	$tabspace='&'.'emsp'.';';
-	$string=str_ireplace("\t",$tabspace,$string);
 	return $string;
+
+	// //Mar 30 2015 - additional UTF-8 fix
+	
+	// if(function_exists('mb_encode_numericentity')){
+	// 	$string=utf2Html($string);
+	// }
+	// //echo '<textarea style="width:1000px;height:200px;">'.$string.'</div>';exit;
+	// $string=str_replace('?',' ',$string);
+	// $string=str_replace('[[!Q!]]','?',$string);
+	// //Apr 2018 - no longer seem to need the UTF-8 fix
+	// //return $string;
+	// //Aug 7 2012: fix for UTF-8 characters to show properly in textarea
+	// //echo '<textarea style="width:1000px;height:200px;">'.$string.'</div>';
+	// $string = str_replace(array('{','}'),array('{','}'),htmlspecialchars($string,ENT_QUOTES,'UTF-8',true));
+	// //echo '<textarea style="width:1000px;height:200px;">'.htmlspecialchars_decode($string).'</textarea>';exit;
+	// if($convert_tabs==0){return htmlspecialchars_decode($string);}
+	// //Mar 5 2013: replace tabs with emsp if requested
+	// $tabspace='&'.'emsp'.';';
+	// $string=str_ireplace("\t",$tabspace,$string);
+	// return htmlspecialchars_decode($string);
 	}
 //---------- begin function utf2Html
 /**
