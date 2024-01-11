@@ -2133,14 +2133,14 @@ function postgresqlGetDBTablePrimaryKeys($table){
 		FROM  
 		    information_schema.table_constraints tc,  
 		    information_schema.key_column_usage kc  
-		where 
+		WHERE 
 		    tc.constraint_type = 'PRIMARY KEY' 
 		    and kc.table_name = tc.table_name 
 		    and kc.table_schema = tc.table_schema
 		    and tc.table_catalog = '{$dbname}'
 		    and kc.constraint_name = tc.constraint_name
 		    {$where}
-		order by kc.ordinal_position
+		ORDER BY kc.ordinal_position
 ENDOFQUERY;
 	$tmp = postgresqlQueryResults($query);
 	foreach($tmp as $rec){
@@ -2728,77 +2728,86 @@ function postgresqlNamedQuery($name,$str=''){
 		case 'running_queries':
 			return <<<ENDOFQUERY
 SELECT
-	s.pid,
-	s.client_addr,
-	s.application_name,
-	s.state,
-	s.usename,
-	s.query,
-	l.mode,
-	l.locktype,
-	l.granted
-FROM pg_stat_activity s
-inner join pg_locks l on s.pid = l.pid
-where query not like '%l.granted%'
-and query not like 'autovacuum%'
-GROUP BY
-	s.pid,
-	s.client_addr,
-	s.application_name,
-	s.state,
-	s.usename,
-	s.query,
-	l.mode,
-	l.locktype,
-	l.granted
+	psa.pid
+	,psa.client_addr
+	,psa.application_name
+	,psa.usename
+	,now() - psa.query_start AS duration
+	,now() - psa.state_change AS last_change
+	,psa.state
+	,psa.query
+FROM pg_stat_activity psa
+WHERE 
+	psa.state='active'
+	AND length(psa.query) > 0
+	and psa.query not like '%psa.query not like%' 
+ORDER BY 5 desc
 ENDOFQUERY;
 		break;
 		case 'long_running_queries':
 			return <<<ENDOFQUERY
-	SELECT
-	  pid,
-	  client_addr,
-	  application_name,
-	  usename,
-	  now() - pg_stat_activity.query_start AS duration,
-	  query
-	FROM pg_stat_activity
-	WHERE 
-		(now() - pg_stat_activity.query_start) > interval '2 minutes'
-		AND state != 'idle'
+SELECT
+	psa.pid
+	,psa.client_addr
+	,psa.application_name
+	,psa.usename
+	,now() - psa.query_start AS duration
+	,now() - psa.state_change AS last_change
+	,psa.state
+	,psa.query
+FROM pg_stat_activity psa
+WHERE 
+	(now() - psa.query_start) > interval '2 minutes'
+	AND psa.state='active'
+	AND length(psa.query) > 0
+	and psa.query not like '%psa.query not like%' 
+ORDER BY 5 desc
 ENDOFQUERY;
 		break;
 		case 'sessions':
 			return <<<ENDOFQUERY
-select pid as process_id, 
-       usename as username, 
-       datname as database_name, 
-       client_addr as client_address, 
-       application_name,
-       backend_start,
-       state,
-       state_change
-from pg_stat_activity
-order by state,application_name,database_name,username
+SELECT
+	psa.pid
+	,psa.client_addr
+	,psa.application_name
+	,psa.usename
+	,now() - psa.query_start AS duration
+	,now() - psa.state_change AS last_change
+	,psa.state
+	,psa.query
+FROM pg_stat_activity psa
+WHERE 
+	psa.query not like '%psa.query not like%' 
+ORDER BY 5 desc
 ENDOFQUERY;
 		break;
 		case 'tables':
-			if(strlen($schema)){
-				$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
-			}
-			else{
-				$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables order by tablename";
-			}
-			return $query;
+			return <<<ENDOFQUERY
+SELECT 
+	schemaname
+	,tablename 
+FROM pg_catalog.pg_tables 
+WHERE
+	schemaname NOT IN ('information_schema','pg_catalog')
+ORDER BY 1,2
+ENDOFQUERY;
 		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
-select pid, 
-       usename, 
-       pg_blocking_pids(pid) as blocked_by, 
-       query as blocked_query
-from pg_stat_activity
-where cardinality(pg_blocking_pids(pid)) > 0
+SELECT
+	psa.pid
+	,pg_blocking_pids(pid) as blocked_by
+	,psa.client_addr
+	,psa.application_name
+	,psa.usename
+	,now() - psa.query_start AS duration
+	,now() - psa.state_change AS last_change
+	,psa.state
+	,psa.query
+FROM pg_stat_activity psa
+WHERE 
+	cardinality(pg_blocking_pids(pid)) > 0 
+ORDER BY 6 desc
 ENDOFQUERY;
 		break;
 		case 'functions':
@@ -2840,28 +2849,28 @@ function postgresqlOptimizations($params=array()){
 	$db_user=$DATABASE[$db]['dbuser'];
 	$postgres=array();
 	//get pg_settings
-	$recs=postgresqlQueryResults("select name,setting from pg_settings");
+	$recs=postgresqlQueryResults("SELECT name,setting FROM pg_settings");
 	foreach($recs as $rec){
 		$key=strtolower($rec['name']);
 		$postgres[$key]=$rec['setting'];
 	}
 	//all_databases_size
-	$recs=postgresqlQueryResults('select sum(pg_database_size(datname)) as val from pg_database');
+	$recs=postgresqlQueryResults('SELECT SUM(pg_database_size(datname)) AS val FROM pg_database');
 	$postgres['all_databases_size']=$recs[0]['val'];
 	//uptime
-	$recs=postgresqlQueryResults('select extract(epoch from now()-pg_postmaster_start_time()) as val');
+	$recs=postgresqlQueryResults('SELECT EXTRACT(epoch FROM NOW()-PG_POSTMASTER_START_TIME()) AS val');
 	$postgres['uptime']=$recs[0]['val'];
 	//current_connections
-	$recs=postgresqlQueryResults('select count(1) as val from pg_stat_activity');
+	$recs=postgresqlQueryResults('SELECT COUNT(1) AS val FROM pg_stat_activity');
 	$postgres['current_connections']=$recs[0]['val'];
 	//pg_backend_pid
-	$recs=postgresqlQueryResults('select pg_backend_pid() as val');
+	$recs=postgresqlQueryResults('SELECT PG_BACKEND_PID() AS val');
 	$postgres['pg_backend_pid']=$recs[0]['val'];
 	//prepared_xact_count
-	$recs=postgresqlQueryResults('select count(1) as val from pg_prepared_xacts');
+	$recs=postgresqlQueryResults('SELECT COUNT(1) AS val FROM pg_prepared_xacts');
 	$postgres['prepared_xact_count']=$recs[0]['val'];
 	//prepared_xact_lock_count
-	$recs=postgresqlQueryResults('select count(1) as val from pg_locks where transactionid in (select transaction from pg_prepared_xacts)');
+	$recs=postgresqlQueryResults('SELECT COUNT(1) as val from pg_locks where transactionid in (select transaction from pg_prepared_xacts)');
 	$postgres['prepared_xact_lock_count']=$recs[0]['val'];
 	//connection_age_average
 	$recs=postgresqlQueryResults('select extract(epoch from avg(now()-backend_start)) as val from pg_stat_activity');
