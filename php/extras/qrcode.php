@@ -5,7 +5,8 @@
 	https://stackoverflow.com/questions/45520988/creating-a-qr-code-with-a-centered-logo-in-php-with-php-qr-code-generator
 	//example of inline image
 	qrcodeCreate("{$url}",'','H',5)
-	<img src="data:image/png;base64,<?=encodeBase64(qrcodeCreate('http://www.yoursite.com'));?>">
+	$b64=encodeBase64(qrcodeCreate('http://www.yoursite.com'));
+	echo <<<ENDOFSTR<img src="data:image/png;base64,{$b64}">ENDOFSTR;
 */
 $progpath=dirname(__FILE__);
 require_once("{$progpath}/qrcode/phpqrcode.php");
@@ -18,7 +19,9 @@ require_once("{$progpath}/qrcode/phpqrcode.php");
 * @param [size] int - size of QRCode. Defaults to 3
 * @param [margin] int - margin of QRCode. Defaults to 4
 * @return binary - binary qrcode
-* @usage <img src="data:image/png;base64,<?=encodeBase64(qrcodeCreate('http://www.yoursite.com'));?>" />
+* @usage 
+* 	$b64=encodeBase64(qrcodeCreate('http://www.yoursite.com'));
+* 	echo <<<ENDOFSTR<img src="data:image/png;base64,{$b64}">ENDOFSTR;
 */
 function qrcodeCreate($txt,$filename='',$eclevel=1, $size = 3, $margin = 4){
 	switch(strtolower($eclevel)){
@@ -56,8 +59,6 @@ function qrcodeCreate($txt,$filename='',$eclevel=1, $size = 3, $margin = 4){
 
 }
 /*
-<img src="data:image/png;base64,<?=encodeBase64(qrcodeCreateWithLogo($url,$logo));?>" alt="qrcode" />
-*/
 //---------- begin function qrcodeCreateWithLogo--------------------
 /**
 * @describe creates QR codes from text and places logo file in center
@@ -67,7 +68,9 @@ function qrcodeCreate($txt,$filename='',$eclevel=1, $size = 3, $margin = 4){
 * @param [size] int - size of QRCode. Defaults to 5
 * @param [margin] int - margin of QRCode. Defaults to 4
 * @return binary - binary qrcode
-* @usage <img src="data:image/png;base64,<?=encodeBase64(qrcodeCreate('http://www.yoursite.com'));?>" />
+* @usage 
+* 	$b64=encodeBase64(qrcodeCreateWithLogo('http://www.yoursite.com'),$logofile);
+*	echo <<<ENDOFSTR<img src="data:image/png;base64,{$b64}">ENDOFSTR;
 */
 function qrcodeCreateWithLogo($txt,$logo='',$transparent=0, $size = 4, $margin = 4){
 	switch(strtolower($eclevel)){
@@ -118,7 +121,7 @@ function qrcodeCreateWithLogo($txt,$logo='',$transparent=0, $size = 4, $margin =
 			}
 		break;
 		default:
-		echo $logo."HERE".$source_type;exit;
+		echo $logo." -- Unsupported logo source type: ".$source_type;exit;
 			$logo = imagecreatefromstring(file_get_contents($logo));
 		break;
 	}

@@ -4923,7 +4923,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
-			elseif(stringContains($key,'>')){
+			elseif(stringContains($key,'<')){
 				continue;
 			}
 			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
