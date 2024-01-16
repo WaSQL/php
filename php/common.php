@@ -5328,11 +5328,22 @@ function calculateDistance($lat1, $lon1, $lat2, $lon2, $unit='M'){
 	$dist = rad2deg($dist);
 	$miles = $dist * 60 * 1.1515;
 	switch(strtoupper($unit)){
+		case 'F':
+		case 'FEET':
+			//feet - 5280 feet in a mile
+			return round(($miles*5280),2);
+			break;
+		case 'METERS':
+			//feet - 1609.34 meters in a mile
+			return round(($miles*1609.34),2);
+			break;
 		case 'K':
+		case 'KILOMETERS':
 			//kilometers
-			return ($miles * 1.609344);
+			return ($miles*1.609344);
 			break;
 		case 'N':
+		case 'NAUTICAL MILES':
 			//nautical miles
 			return ($miles * 0.8684);
 			break;
@@ -5340,6 +5351,29 @@ function calculateDistance($lat1, $lon1, $lat2, $lon2, $unit='M'){
 			//miles
 			return $miles;
 	}
+}
+function calculateBearing($lat1, $lon1, $lat2, $lon2){
+	// Convert degrees to radians
+    $lat1 = deg2rad($lat1);
+    $lon1 = deg2rad($lon1);
+    $lat2 = deg2rad($lat2);
+    $lon2 = deg2rad($lon2);    
+        
+    $dlon = $lon2 - $lon1;
+    $x = cos($lat2) * sin($dlon);
+    $y = cos($lat1) * sin($lat2) - sin($lat1) * cos($lat2) * cos($dlon);
+    
+    $heading = atan2($x,$y);
+    
+    // We want heading in degrees, not radians.
+    $heading = rad2deg($heading);
+  	
+    // We want a uniform heading of >=0 and <360
+    if ($heading < 0){
+        $heading = 360.0 + $heading;
+    }
+    
+    return array($x,$y,$heading);
 }
 //---------- begin function cleanDir--------------------------------------
 /**

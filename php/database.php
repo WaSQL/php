@@ -2590,7 +2590,8 @@ function databaseListRecords($params=array()){
 			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1 && strlen($value)){
 				$image_size=$params[$fld."_image_size"] ?? $params['-image_size'] ?? '28px';
 				$image_radius=$params[$fld."_image_radius"] ?? $params['-image_radius'] ?? '18px';
-				$style="max-height:{$image_size};max-width:{$image_size};border-radius:{$image_radius};box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);";
+				$image_shadow=$params[$fld."_image_shadow"] ?? $params['-image_shadow'] ?? '0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19)';
+				$style="max-height:{$image_size};max-width:{$image_size};border-radius:{$image_radius};box-shadow:{$image_shadow};";
 				if(isset($params[$fld."_style"])){$style=$params[$fld."_image"];}
                 $value='<img src="'.$value.'" alt="" style="'.$style.'" />';
 			}
@@ -4920,14 +4921,15 @@ function addEditDBForm($params=array(),$customcode=''){
 	    		continue;
 	    	}
 			elseif(isset($used[$key])){
-				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
+				$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			elseif(stringContains($key,'<')){
+				$rtn .= '<!--Skipped LT:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
-				//$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
+				$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(preg_match('/^(GUID|PHPSESSID|AjaxRequestUniqueId)$/i',$key)){
@@ -4935,7 +4937,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				continue;
 			}
 			if(!is_array($val) && strlen(trim($val))==0){
-				$rtn .= '	<!--skipped '.$key.': blank value -->'.PHP_EOL;
+				$rtn .= '<!--Skipped Blank:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			//check for geolocation
