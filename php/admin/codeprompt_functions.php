@@ -7,7 +7,7 @@ function codepromptGetValue(){
 		'_cuser'=>$USER['_id']
 	));
 	if(isset($rec['_id'])){
-		return $rec['body'];
+		return encodeHTML($rec['body']);
 	}
 	return '<?'.'php'.PHP_EOL.PHP_EOL.'?'.'>'.PHP_EOL;
 }
