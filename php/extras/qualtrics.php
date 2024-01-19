@@ -21,7 +21,7 @@ function qualtricsListDirectories(){
 	$url=qualtricsBaseURL().'/directories/';
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsDirectories Error:".printValue($recs);exit;
+		echo "qualtricsListDirectories Error:".printValue($recs);exit;
 	}
 	return $recs;
 }
@@ -32,7 +32,7 @@ function qualtricsListDirectoryContacts($directoryID){
 	$url=qualtricsBaseURL()."/directories/{$directoryID}/contacts";
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsDirectoryContacts Error:".printValue($recs);exit;
+		echo "qualtricsListDirectoryContacts Error:".printValue($recs);exit;
 	}
 	return $recs;
 }
@@ -43,7 +43,7 @@ function qualtricsListSMSDistributions($surveyID){
 	$url=qualtricsBaseURL()."/distributions/sms";
 	$recs=qualtricsGetList($url,array('surveyId'=>$surveyID));
 	if(isset($recs['curl_info'])){
-		echo "qualtricsDistributionsSMS Error:".printValue($recs);exit;
+		echo "qualtricsListSMSDistributions Error:".printValue($recs);exit;
 	}
 	return $recs;
 }
@@ -54,7 +54,7 @@ function qualtricsListGroups(){
 	$url=qualtricsBaseURL().'/groups/';
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsGroups Error:".printValue($recs);exit;
+		echo "qualtricsListGroups Error:".printValue($recs);exit;
 	}
 	return $recs;
 }
@@ -76,7 +76,7 @@ function qualtricsListSubscriptions(){
 function qualtricsDeleteSubscription($subscriptionID){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "ERROR: missing qualtrics_token in config.xml";
+		echo "qualtricsDeleteSubscription ERROR: missing qualtrics_token in config.xml";
 		exit;
 	}
 	$post=postURL(
@@ -90,7 +90,7 @@ function qualtricsDeleteSubscription($subscriptionID){
 	if(isset($post['json_array']['meta'])){
 		return $post['json_array']['meta'];
 	}
-	echo "Failed to get subscriptions".printValue($post);exit;
+	echo "qualtricsDeleteSubscription Error: Failed to get subscriptions".printValue($post);exit;
 	return $post['json_array'];
 }
 /*
@@ -99,7 +99,7 @@ function qualtricsDeleteSubscription($subscriptionID){
 function qualtricsGetSubscription($subscriptionID){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "ERROR: missing qualtrics_token in config.xml";
+		echo "qualtricsGetSubscription ERROR: missing qualtrics_token in config.xml";
 		exit;
 	}
 	$post=postURL(
@@ -113,7 +113,7 @@ function qualtricsGetSubscription($subscriptionID){
 	if(isset($post['json_array'])){
 		return $post['json_array'];
 	}
-	echo "Failed to get subscriptions".printValue($post);exit;
+	echo "qualtricsGetSubscription Error: Failed to get subscription".printValue($post);exit;
 	return $post['json_array'];
 }
 /*
@@ -122,7 +122,7 @@ function qualtricsGetSubscription($subscriptionID){
 function qualtricsCreateSubscription($surveyID,$endpoint){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "ERROR: missing qualtrics_token in config.xml";
+		echo "qualtricsCreateSubscription ERROR: missing qualtrics_token in config.xml";
 		exit;
 	}
 	$arr=array(
@@ -143,7 +143,7 @@ function qualtricsCreateSubscription($surveyID,$endpoint){
 	if(isset($post['json_array'])){
 		return $post['json_array'];
 	}
-	echo "Failed to subscribe".printValue($post);exit;
+	echo "qualtricsCreateSubscription Error: Failed to subscribe".printValue($post);exit;
 }
 /*
 * @reference https://api.qualtrics.com/1179a68b7183c-retrieve-a-survey-response
@@ -151,7 +151,7 @@ function qualtricsCreateSubscription($surveyID,$endpoint){
 function qualtricsSurveyResponse($surveyID,$responseID){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "ERROR: missing qualtrics_token in config.xml";
+		echo "qualtricsSurveyResponse ERROR: missing qualtrics_token in config.xml";
 		exit;
 	}
 	$post=postURL(
@@ -165,7 +165,7 @@ function qualtricsSurveyResponse($surveyID,$responseID){
 	if(isset($post['json_array']['result'])){
 		return $post['json_array']['result'];
 	}
-	echo "Failed to get response".printValue($post);exit;
+	echo "qualtricsSurveyResponse Error: Failed to get response".printValue($post);exit;
 	return $post['json_array'];
 }
 /*
@@ -175,7 +175,7 @@ function qualtricsListUsers(){
 	$url=qualtricsBaseURL().'/users/';
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsUsers Error: Failed to get users list".printValue($recs);exit;
+		echo "qualtricsListUsers Error: Failed to get users list".printValue($recs);exit;
 	}
 	return $recs;
 }
@@ -195,7 +195,7 @@ function qualtricsBaseURL(){
 function qualtricsGetList($url,$opts=array()){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "ERROR: missing qualtrics_token in config.xml";
+		echo "qualtricsGetList ERROR: missing qualtrics_token in config.xml";
 		exit;
 	}
 	$recs=array();
