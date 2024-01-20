@@ -4215,6 +4215,16 @@ var wacss = {
 			let winWidth=parseInt(w/systemZoom);
 			let winHeight=parseInt(h/systemZoom);
 
+			let pairs=new Array();
+			for(k in params){
+				if(k=='passthru'){continue};
+				pairs.push(k+'='+params[k]);
+			}
+			if(pairs.length){
+				let pairstr=pairs.join('&');
+				nav=nav+'?'+pairstr;	
+			}
+			
 			let win = window.open(nav,title,'width='+winWidth+',height='+winHeight+',left='+left+',top='+top+',menubar=no,toolbar=no,location=no,scrollbars=yes');
 			return false;
 		}
