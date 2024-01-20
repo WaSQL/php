@@ -4194,6 +4194,30 @@ var wacss = {
 			params.title=title;
 			document.title=params.title;
 		}
+		//if div is "window", pop up a new window.
+		if(div=='window'){
+			if(undefined==title || title.length==0){
+				title='Print';
+			}
+			let w=params.width||600;
+			let h=params.height||400;
+			// Fixes dual-screen position                             Most browsers      Firefox
+		    let dualScreenLeft = window.screenLeft !==  undefined ? window.screenLeft : window.screenX;
+		    let dualScreenTop = window.screenTop !==  undefined   ? window.screenTop  : window.screenY;
+
+		    let width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+		    let height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+		    let systemZoom = width / window.screen.availWidth;
+		    let left = (width - w) / 2 / systemZoom + dualScreenLeft
+		    let top = (height - h) / 2 / systemZoom + dualScreenTop
+		    
+			let winWidth=parseInt(w/systemZoom);
+			let winHeight=parseInt(h/systemZoom);
+
+			let win = window.open(nav,title,'width='+winWidth+',height='+winHeight+',left='+left+',top='+top+',menubar=no,toolbar=no,location=no,scrollbars=yes');
+			return false;
+		}
 		return ajaxGet(nav,div,params);
 
 	},

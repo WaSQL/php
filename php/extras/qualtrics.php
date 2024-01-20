@@ -99,8 +99,7 @@ function qualtricsDeleteSubscription($subscriptionID){
 function qualtricsGetSubscription($subscriptionID){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "qualtricsGetSubscription ERROR: missing qualtrics_token in config.xml";
-		exit;
+		return array('status'=>'failed','error'=>"missing qualtrics_token in config.xml");
 	}
 	$post=postURL(
 	    qualtricsBaseURL()."/eventsubscriptions/{$subscriptionID}",
@@ -122,8 +121,10 @@ function qualtricsGetSubscription($subscriptionID){
 function qualtricsCreateSubscription($surveyID,$endpoint){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "qualtricsCreateSubscription ERROR: missing qualtrics_token in config.xml";
-		exit;
+		return array('status'=>'failed','error'=>"missing qualtrics_token in config.xml");
+	}
+	if(strlen($endpoint) > 255){
+		return array('status'=>'failed','error'=>"endpoint cannot be longer than 255 characters");
 	}
 	$arr=array(
 		"topics"=>"surveyengine.completedResponse.{$surveyID}",
@@ -151,8 +152,7 @@ function qualtricsCreateSubscription($surveyID,$endpoint){
 function qualtricsSurveyResponse($surveyID,$responseID){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "qualtricsSurveyResponse ERROR: missing qualtrics_token in config.xml";
-		exit;
+		return array('status'=>'failed','error'=>"missing qualtrics_token in config.xml");
 	}
 	$post=postURL(
 	    qualtricsBaseURL()."/surveys/{$surveyID}/responses/{$responseID}",
@@ -195,8 +195,7 @@ function qualtricsBaseURL(){
 function qualtricsGetList($url,$opts=array()){
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
-		echo "qualtricsGetList ERROR: missing qualtrics_token in config.xml";
-		exit;
+		return array('status'=>'failed','error'=>"missing qualtrics_token in config.xml");
 	}
 	$recs=array();
 	$params=array(
