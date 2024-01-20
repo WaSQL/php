@@ -4217,7 +4217,12 @@ var wacss = {
 
 			let pairs=new Array();
 			for(k in params){
-				if(k=='passthru'){continue};
+				if(k=='nav'){continue;}
+				if(k=='confirm'){continue;}
+				if(k=='div'){continue;}
+				if(k=='sp'){continue;}
+				if(k=='title'){continue;}
+				if(k=='prompt'){continue;}
 				pairs.push(k+'='+params[k]);
 			}
 			if(pairs.length){
