@@ -92,17 +92,17 @@ function formIsIfTrue(frm,ifstr){
 	}
 	if(oper=='or'){
 		if(tvals.length > 0){
-			console.log(ifstr+' = true (or)');
+			//console.log(ifstr+' = true (or)');
 			return true;
 		}
-		console.log(ifstr+' = false (or)');
+		//console.log(ifstr+' = false (or)');
 		return false;
 	}
 	if(tvals.length==sets.length){
-		console.log(ifstr+' = true (and)');
+		//console.log(ifstr+' = true (and)');
 		return true;
 	}
-	console.log(ifstr+' = false (and)');
+	//console.log(ifstr+' = false (and)');
 	return false;
 }
 /* form-based, get, post, ajax javascript routines*/
