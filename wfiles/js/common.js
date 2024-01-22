@@ -1,18 +1,21 @@
-/*common javascript routines*/
-var agt=navigator.userAgent.toLowerCase();
-var isFirefox=(agt.indexOf('firefox')!=-1);
-var isIE=(agt.indexOf('msie')!=-1);
-var isNetscape=(agt.indexOf('netscape')!=-1);
-var isOpera = agt.indexOf("opera")!=-1;
-var isIE = agt.indexOf("msie")!=-1 && !isOpera;
-var isMoz = agt.indexOf("mozilla/5.") == 0 && !isOpera;
-/* add dst to the date object */
-Date.prototype.stdTimezoneOffset = function() {
-    var jan = new Date(this.getFullYear(), 0, 1);
-    var jul = new Date(this.getFullYear(), 6, 1);
-    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-}
-/*
+function commonJSInit(){
+	if(undefined != this.common_initialized){return false;}
+	this.common_initialized=1;
+	/*common javascript routines*/
+	// var agt=navigator.userAgent.toLowerCase();
+	// var isFirefox=(agt.indexOf('firefox')!=-1);
+	// var isIE=(agt.indexOf('msie')!=-1);
+	// var isNetscape=(agt.indexOf('netscape')!=-1);
+	// var isOpera = agt.indexOf("opera")!=-1;
+	// var isIE = agt.indexOf("msie")!=-1 && !isOpera;
+	// var isMoz = agt.indexOf("mozilla/5.") == 0 && !isOpera;
+	/* add dst to the date object */
+	Date.prototype.stdTimezoneOffset = function() {
+	    var jan = new Date(this.getFullYear(), 0, 1);
+	    var jul = new Date(this.getFullYear(), 6, 1);
+	    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+	}
+	/*
 		In the United States Daylight Saving Time begins at 2:00 a.m. local time
 		on the second Sunday in March. On the first Sunday in November areas on
 		Daylight Saving Time return to Standard Time at 2:00 a.m.
@@ -22,57 +25,71 @@ Date.prototype.stdTimezoneOffset = function() {
 		else if mon >1 && mon < 11  then true
 		else false
 	*/
-Date.prototype.isDST = function() {
-	if(this.getTimezoneOffset() == this.stdTimezoneOffset()){return false;}
-	var mon=this.getMonth();
-	var hr=this.getHours();
-	var m=this.getMinutes();
-    if(mon==2 && hr > 2){return true;}
-	else if(mon==10 && hr < 2){return true;}
-	else if(mon >1 && mon < 11){return true;}
-	return false;
-}
-/* Define document.getElementById for Internet Explorer 4 */
-if (typeof(document.getElementById) == "undefined"){
-	document.getElementById = function (id){
-		// Just return the corresponding index of all.
-		return document.all[id];
+	Date.prototype.isDST = function() {
+		if(this.getTimezoneOffset() == this.stdTimezoneOffset()){return false;}
+		var mon=this.getMonth();
+		var hr=this.getHours();
+		var m=this.getMinutes();
+	    if(mon==2 && hr > 2){return true;}
+		else if(mon==10 && hr < 2){return true;}
+		else if(mon >1 && mon < 11){return true;}
+		return false;
 	}
-}
-/* Code so that insertAdjacentHTML works in Mozilla Browsers*/
-if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentElement){
-	HTMLElement.prototype.insertAdjacentElement = function(where,parsedNode){
-		switch (where){
-			case 'beforeBegin':
-				this.parentNode.insertBefore(parsedNode,this);
+	/* Define document.getElementById for Internet Explorer 4 */
+	if (typeof(document.getElementById) == "undefined"){
+		document.getElementById = function (id){
+			// Just return the corresponding index of all.
+			return document.all[id];
+		}
+	}
+	/* Code so that insertAdjacentHTML works in Mozilla Browsers*/
+	if(typeof HTMLElement!='undefined' && !HTMLElement.prototype.insertAdjacentElement){
+		HTMLElement.prototype.insertAdjacentElement = function(where,parsedNode){
+			switch (where){
+				case 'beforeBegin':
+					this.parentNode.insertBefore(parsedNode,this);
 				break;
-			case 'afterBegin':
-				this.insertBefore(parsedNode,this.firstChild);
+				case 'afterBegin':
+					this.insertBefore(parsedNode,this.firstChild);
 				break;
-			case 'beforeEnd':
-				this.appendChild(parsedNode);
+				case 'beforeEnd':
+					this.appendChild(parsedNode);
 				break;
-			case 'afterEnd':
-				if (this.nextSibling){
-					this.parentNode.insertBefore(parsedNode,this.nextSibling);
-					}
-				else{this.parentNode.appendChild(parsedNode);}
+				case 'afterEnd':
+					if (this.nextSibling){
+						this.parentNode.insertBefore(parsedNode,this.nextSibling);
+						}
+					else{this.parentNode.appendChild(parsedNode);}
 				break;
 			}
 		}
-	if(typeof Ext == 'undefined'){
-		HTMLElement.prototype.insertAdjacentHTML = function(where,htmlStr){
-			var r = this.ownerDocument.createRange();
-			r.setStartBefore(this);
-			var parsedHTML = r.createContextualFragment(htmlStr);
-			this.insertAdjacentElement(where,parsedHTML);
+		if(typeof Ext == 'undefined'){
+			HTMLElement.prototype.insertAdjacentHTML = function(where,htmlStr){
+				var r = this.ownerDocument.createRange();
+				r.setStartBefore(this);
+				var parsedHTML = r.createContextualFragment(htmlStr);
+				this.insertAdjacentElement(where,parsedHTML);
 			}
 		}
-	HTMLElement.prototype.insertAdjacentText = function(where,txtStr){
-		var parsedText = document.createTextNode(txtStr);
-		this.insertAdjacentElement(where,parsedText);
+		HTMLElement.prototype.insertAdjacentText = function(where,txtStr){
+			var parsedText = document.createTextNode(txtStr);
+			this.insertAdjacentElement(where,parsedText);
 		}
 	}
+}
+commonJSInit();
+function commonIsFirefox(){
+	let agt=navigator.userAgent.toLowerCase();
+	return (agt.indexOf('firefox')!=-1);
+}
+function commonOpera(){
+	let agt=navigator.userAgent.toLowerCase();
+	return agt.indexOf("opera")!=-1;
+}
+function commonIsIE(){
+	let agt=navigator.userAgent.toLowerCase();
+	return agt.indexOf("msie")!=-1 && !commonIsOpera;
+}
 //commonEmulateEvent - moved to wacss.emulateEvent
 /**
 * @describe emulates event on object/element.  change, click, etc.
@@ -400,7 +417,7 @@ function loadJsCss(fname, filetype){
 /*Mobile Functions */
 function mobileHideAddressBar(){
 	window.scrollTo(0,1);
-	}
+}
 /* showClock - shows current time based on offset in hrs */
 function showClock(divid,offset){
 	//info: creates a javascript clock at the specified id ofset by offset hours
@@ -415,7 +432,7 @@ function showClock(divid,offset){
     var t = nd.toLocaleString();
     setText(divid,t);
     setTimeout("showClock('"+divid+"',"+offset+")",1000);
-	}
+}
 //
 function simulateTab(){
 	var keyboardEvent = document.createEvent("KeyboardEvent");
@@ -559,11 +576,11 @@ function isDST(){
 	if (today >= dst_start && today < dst_end){
 		//does today fall inside of DST period?
 		return true; //if so then return true
-		}
+	}
 	else{
 		return false; //if not then return false
-		}
 	}
+}
 //isFunction
 function isFunction(functionToCheck) {
 	var getType = {};
@@ -573,7 +590,6 @@ function isFunction(functionToCheck) {
 function isNum(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-
 /* abort - shows alert msg and returns false */
 function abort(msg){
 	//info: shows alert msg and returns false
@@ -583,22 +599,22 @@ function abort(msg){
 //includeScript - a way to include a js file in a js file
 function includeScript(url){
 	document.write('<script type="text/javascript" src="'+ url + '"></script>');
-	}
+}
 
 //apendText(fld,$val)
 function appendText(obj,val,lf){
-	var cObj=getObject(obj);
+	let cObj=getObject(obj);
 	if(undefined == cObj){return abort("undefined object passed to appendText");}
-	var cval=trim(getText(obj));
+	let cval=trim(getText(obj));
 	if(lf && cval.length > 0){
 		cval += "\r\n";
-		}
-	var newval = cval + val;
+	}
+	let newval = cval + val;
 	if(lf){
 		newval += "\r\n";
-		}
-	setText(obj,newval);
 	}
+	setText(obj,newval);
+}
 //Clone Div
 function cloneDiv(div,c){
 	//info: use to clone a div and all form elements in the div.  It will automatically incriment any names, ids, and tabindexes
@@ -645,7 +661,7 @@ function cloneDiv(div,c){
 		var clone=divObj.cloneNode(true);
 		clone.setAttribute('id',divObj.id+'_'+count);
 		//incriment id, name, and for attributes
-		var list=clone.querySelectorAll("*");
+		let list=clone.querySelectorAll("*");
 		for(var i=0;i<list.length;i++){
 			//id
 			if(undefined != list[i].id){
@@ -697,8 +713,8 @@ function cloneDiv(div,c){
 		}
 
 		//hide all but the last clone button
-		var list=clone.querySelectorAll("[id=clonebutton]");
-		for(var i=0;i<list.length;i++){
+		list=clone.querySelectorAll("[id=clonebutton]");
+		for(let i=0;i<list.length;i++){
 			list[i].style.visibility='hidden';
 		}
 		divObj.insertAdjacentElement('afterEnd',clone);
@@ -815,7 +831,7 @@ function cloneTableRow(tid,opts){
 function delTableRow(source,tid){
 	//info: use to delete current table row
 	//usage: <td><img src="/wfiles/iconsets/16/cancel.png" style="cursor:pointer" onclick="delTableRow(this,'mytableid');" /></td>
-	var oRow = source.parentNode.parentNode;
+	let oRow = source.parentNode.parentNode;
     document.getElementById(tid).deleteRow(oRow.rowIndex);
 }
 //containsHtml - returns true if txt contains HTML tags
@@ -827,7 +843,7 @@ function delTableRow(source,tid){
 */
 function containsHtml(txt){
 	return (/[\<\>]/.test(txt));
-	}
+}
 //containsSpaces - returns true if txt contains spaces
 /**
 * @describe returns true if txt contains spaces
@@ -837,7 +853,7 @@ function containsHtml(txt){
 */
 function containsSpaces(txt){
 	return (/[\ ]/.test(trim(txt)));
-	}
+}
 //setActiveTab
 function setActiveTab(t){
 	var lid=t.parentNode.id;
@@ -885,13 +901,13 @@ function setActiveNav(aobj,ajaxurl,ajaxdiv,ajaxparams){
 */
 function setOpacity(obj,level) {
 	//info: sets the transparency level of object or id specified. Level is in pcnt
-	var cObj=getObject(obj);
+	let cObj=getObject(obj);
 	cObj.style.opacity = level;
 	cObj.style.MozOpacity = level;
 	cObj.style.KhtmlOpacity = level;
 	cObj.style.filter = "alpha(opacity=" + (level * 100) + ");";
 	return false;
-	}
+}
 //w_setStarRating
 /**
 * @describe sets the number of stars to fill in
@@ -900,17 +916,17 @@ function setOpacity(obj,level) {
 * @return boolean
 */
 function setStarRating(id,n){
-	var obj=getObject(id);
+	let obj=getObject(id);
     n=parseInt(n);
-	var list=obj.querySelectorAll('span');
+	let list=obj.querySelectorAll('span');
 	//toggle first star if it is the only one marked so the user can select none
 	if(n==1 && list[0].className.indexOf('empty') == -1 && list[1].className.indexOf('empty') != -1){
 		n=0;
 	}
 	//set field value
 	obj.querySelector('input').value=n;
-	for(var i=0;i<list.length;i++){
-		var s=i+1;
+	for(let i=0;i<list.length;i++){
+		let s=i+1;
 		if(s <= n){
 			list[i].className='icon-star w_biggest w_pointer';
 		}
@@ -921,13 +937,13 @@ function setStarRating(id,n){
 	return true;
 }
 function fadeIn(id){
-	for (i = 0; i <= 1; i += (1 / 20)) {
+	for(let i=0;i<=1;i+=(1/20)){
 		setTimeout("setOpacity('"+id+"'," + i + ")", i * 200);
-  		}
-	}
+  	}
+}
 
 function fadeOut(id) {
-	for (i = 0; i <= 1; i += (1 / 20)) {
+	for(let i=0;i<=1;i+=(1/20)){
 		setTimeout("setOpacity('"+id+"'," + (1 - i) + ")", i * 200);
 	}
 }
@@ -941,18 +957,18 @@ function fadeOut(id) {
 function fontIconCursor(el,cl){
 	fontdiv=document.createElement('div');
 	fontdiv.className=cl;
-	var filltext = window.getComputedStyle(fontdiv, ':before').getPropertyValue('content');
-	var canvas = document.createElement("canvas");
+	let filltext = window.getComputedStyle(fontdiv, ':before').getPropertyValue('content');
+	let canvas = document.createElement("canvas");
     canvas.width = 22;
     canvas.height = 24;
     //document.body.appendChild(canvas);
-    var ctx = canvas.getContext("2d");
+    let ctx = canvas.getContext("2d");
     ctx.fillStyle = "#000000";
     ctx.font = "18px wasql_icons";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(filltext,11,16);
-    var dataURL = canvas.toDataURL('image/png')
+    let dataURL = canvas.toDataURL('image/png')
     el=getObject(el);
     el.style.cursor='url('+dataURL+'), auto';
 }
@@ -975,31 +991,31 @@ function formatCurrency(num) {
 * @usage stripHtml(str)
 */
 function stripHtml(str){
-	var re = /(<([^>]+)>)/gi;
+	let re = /(<([^>]+)>)/gi;
 	newstr=str.replace(re, "");
 	return newstr;
-	}
+}
 //expand - used to create expanding divs - createExpandDiv
 function expand(divid){
-	var section=document.getElementById('expand_section_'+divid);
-	var icon=document.getElementById('expand_icon_'+divid);
+	let section=document.getElementById('expand_section_'+divid);
+	let icon=document.getElementById('expand_icon_'+divid);
 	if(section.style.display=='none'){
     	section.style.display='block';
         icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;margin-right:5px;"></span>';
-        }
+    }
     else{
 		section.style.display='none';
         icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;margin-right:5px;"></span>';
-        }
-    return false;
     }
+    return false;
+}
 //ajaxExpand - used to create expanding divs with ajax content - createExpandDiv
 function ajaxExpand(divid,url,opts){
-	var section=document.getElementById('expand_section_'+divid);
-	var icon=document.getElementById('expand_icon_'+divid);
-	var linkid=document.getElementById('expand_link_'+divid);
+	let section=document.getElementById('expand_section_'+divid);
+	let icon=document.getElementById('expand_icon_'+divid);
+	let linkid=document.getElementById('expand_link_'+divid);
 	if(section.style.display=='none'){
-		var sectionTxt=getText('expand_section_'+divid);
+		let sectionTxt=getText('expand_section_'+divid);
 		//alert(sectionTxt.length+', '+url);
 		if(sectionTxt.length < 5){
 			linkid.style.fontWeight='bold';
@@ -1007,32 +1023,32 @@ function ajaxExpand(divid,url,opts){
 		}
     	section.style.display='block';
         icon.innerHTML='<span class="icon-minus" style="border:1px solid #999;margin-right:5px;"></span>';
-        }
+    }
     else{
 		section.style.display='none';
         icon.innerHTML='<span class="icon-plus" style="border:1px solid #999;margin-right:5px;"></span>';
-        }
-    return false;
     }
+    return false;
+}
 //function goToAnchor
 function scrollToDivId(pdiv,sdiv){
 	//info:scroll to a div id inside of a scrollable div
-	var t=document.getElementById(sdiv).offsetTop-10;
+	let t=document.getElementById(sdiv).offsetTop-10;
 	if(t < 0){t=0;}
 	document.getElementById(pdiv).scrollTop = t;
 	return false;
-	}
+}
 // fixE - Fix event object
 function fixE(e){
 	if (typeof e == 'undefined'){e = window.event;}
 	if (typeof e.layerX == 'undefined'){e.layerX = e.offsetX;}
 	if (typeof e.layerY == 'undefined'){e.layerY = e.offsetY;}
 	return e;
-	}
+}
 //getBrowserHeight
 function getBrowserHeight() {
 	//info: returns current browser height
-	var myHeight = 0;
+	let myHeight = 0;
 	if( typeof( window.innerWidth ) == 'number' ) {
 		myHeight = window.innerHeight;
 		}
@@ -1040,30 +1056,30 @@ function getBrowserHeight() {
 		if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
 			//IE 6+ in 'standards compliant mode'
 		    myHeight = document.documentElement.clientHeight;
-		    }
+		}
 		else{
 			if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
 		        myHeight = document.body.clientHeight;
-		      	}
-			}
+		    }
 		}
-	return myHeight;
 	}
+	return myHeight;
+}
 //get Cookie with said name
 function getCookie(name){
 	//info: get Cookie with said name
 	name = trim(name);
-	var cookies = document.cookie.split(";");
-	var tmp;
-	for (var i=0; i<cookies.length; i++){
+	let cookies = document.cookie.split(";");
+	let tmp;
+	for (let i=0; i<cookies.length; i++){
 		tmp = cookies[i].split("=");
-		var cname=trim(tmp[0]);
-		var cval=trim(tmp[1]);
+		let cname=trim(tmp[0]);
+		let cval=trim(tmp[1]);
 		//alert('Looking for ['+name+']\nName: ['+cname+']\nValue: ['+cval+']');
 		if (cname == name){return unescape(cval);}
-		}
-	return null;
 	}
+	return null;
+}
 function commonConsoleLog(m){
 	if (typeof console != 'undefined' && typeof console.log != 'undefined'){
 		console.log(m);
@@ -1120,7 +1136,7 @@ function parseJSONString( data ) {
 // (c) Steven Levithan <stevenlevithan.com>
 // MIT License
 function parseUri (str) {
-	var parseUri = new Object;
+	let parseUri = new Object;
 	parseUri.options = {
 		strictMode: false,
 		key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
@@ -1133,7 +1149,7 @@ function parseUri (str) {
 			loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
 		}
 	}
-	var	o   = parseUri.options,
+	let	o   = parseUri.options,
 		m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
 		uri = {},
 		i   = 14;
@@ -1259,7 +1275,7 @@ function popText(x,txt_body,txt_title){
 	return true;
 }
 function popMaximize(x){
-	var obj=getObject(x);
+	let obj=getObject(x);
 	if(undefined==obj){obj=getObject('w_pop_body_'+x);}
 	if(undefined==obj){return;}
 	obj.style.height='';
@@ -1268,23 +1284,23 @@ function preloadImages(images) {
 	//info: Preload images passed in
 	//usage: preloadImages('image1.jpg,image2.jpg,image3.jpg');
     if (document.images){
-        var i = 0;
-        var imageArray = new Array();
+        let i = 0;
+        let imageArray = new Array();
         imageArray = images.split(',');
-        var imageObj = new Image();
-        for(i=0; i<=imageArray.length-1; i++) {
+        let imageObj = new Image();
+        for(let i=0; i<=imageArray.length-1; i++) {
             imageObj.src=images[i];
-        	}
-    	}
-	}
+        }
+    }
+}
 function pxToInt(px){
 	//info: returns the integer value of a CSS px string (width, height, etc);
-	//usage: var pxi=pxToInt('454px'); or var pxi=pxToInt(this.style.width);
+	//usage: let pxi=pxToInt('454px'); or let pxi=pxToInt(this.style.width);
 	// Set valid characters for numeric number.
-    var validChars = "0123456789.";
-    var convertedValue = 0;
+    let validChars = "0123456789.";
+    let convertedValue = 0;
 	// Loop all characters of
-    for (i = 0; i < px.length; i++) {
+    for(let i=0;i<px.length;i++){
 		// Stop search for valid numeric characters,  when a none numeric number is found.
         if (validChars.indexOf(px.charAt(i)) == -1) {
 			// Start conversion if at least one character is valid.
@@ -1292,17 +1308,15 @@ function pxToInt(px){
                 // Convert validnumbers to int and return result.
                 convertedValue = parseInt(px.substring(0, i));
                 return convertedValue;
-                }
             }
         }
-
-    return convertedValue;
     }
+    return convertedValue;
+}
 function anchorExists(aname){
-	var list=GetElementsByAttribute('a', 'href', '#'+aname);
+	let list=GetElementsByAttribute('a', 'href', '#'+aname);
 	if(list.count==1){return true;}
 	return false;
-
 }
 function GetElementsByAttribute(tag, att, val){
 	//info: GetElementsByAttribute - returns an array of tags that have an attribute of value.
@@ -2158,43 +2172,43 @@ function getTableRowValues(tr,s) {
 	return row;
 	}
 //moved to wacss.strtolower
-function strtolower (str) {
+function strtolower(str){
     // info: Makes a string lowercase
     //source: http://phpjs.org/functions
     return (str + '').toLowerCase();
-	}
+}
 //moved to wacss.strtoupper
-function strtoupper (str) {
+function strtoupper(str){
     // info: Makes a string uppercase
     //source: http://phpjs.org/functions
     return (str + '').toUpperCase();
-	}
+}
 //moved to wacss.ucfirst
-function ucfirst (str) {
+function ucfirst(str){
     //info: Makes a string's first character uppercase
     //source: http://phpjs.org/functions
-    var f = str.charAt(0).toUpperCase();
+    let f = str.charAt(0).toUpperCase();
     return f + str.substr(1);
-	}
+}
 function verboseTime(s){
 	if(isNaN(s)){return s;}
-	var secs = parseInt(s, 10);
+	let secs = parseInt(s, 10);
 	//console.log("seconds",seconds);
-	var years = Math.floor(secs / (3600*24*365));
+	let years = Math.floor(secs / (3600*24*365));
 	secs  -= years*3600*24*365;
-	var months = Math.floor(secs / (3600*24*30));
+	let months = Math.floor(secs / (3600*24*30));
 	secs  -= months*3600*24*30;
-	var days = Math.floor(secs / (3600*24));
+	let days = Math.floor(secs / (3600*24));
 	//console.log("days",days);
 	secs  -= days*3600*24;
-	var hrs   = Math.floor(secs / 3600);
+	let hrs   = Math.floor(secs / 3600);
 	//console.log("hrs",hrs);
 	secs  -= hrs*3600;
-	var mins = Math.floor(secs / 60);
+	let mins = Math.floor(secs / 60);
 	//console.log("mnts",mnts);
 	secs  -= mins*60;
 	//console.log("----------------------");
-	var parts=new Array();
+	let parts=new Array();
 	if(years > 0){parts.push(years+' years');}
 	if(months > 0){parts.push(months+' months');}
 	if(days > 0){parts.push(days+' days');}
@@ -2203,29 +2217,28 @@ function verboseTime(s){
 	parts.push(secs+' secs');
 	return implode(' ',parts);
 }
-function ucwords (str) {
+function ucwords(str){
     //info: Uppercase the first character of every word in a string
     //source: http://phpjs.org/functions
     return (str + '').replace(/^([a-z])|\s+([a-z])/g, function ($1) {
         return $1.toUpperCase();
     });
-	}
-function array_values (arr) {
+}
+function array_values(arr){
     //info: Return just the values from an array
     //source: http://phpjs.org/functions
-    var tmp_arr = [],
+    let tmp_arr = [],
         cnt = 0;    var key = '';
-
     for (key in arr) {
         tmp_arr[cnt] = arr[key];
-        cnt++;    }
-
+        cnt++;    
+    }
     return tmp_arr;
-	}
-function array_keys (arr, search_value, argStrict) {
+}
+function array_keys(arr,search_value,argStrict){
     //info: Return just the keys from an array, optionally only for the specified search_value
     //source: http://phpjs.org/functions
-    var searchstr = typeof search_value !== 'undefined',
+    let searchstr = typeof search_value !== 'undefined',
         tmp_arr = [],
         strict = !!argStrict,        include = true,
         key = '';
@@ -2236,34 +2249,34 @@ function array_keys (arr, search_value, argStrict) {
             if (searchstr) {
                 if (strict && arr[key] !== search_value) {include = false;}
 				else if (arr[key] != search_value) {include = false;}
-            	}
+            }
              if (include) {tmp_arr[tmp_arr.length] = key;}
-        	}
-    	}
+        }
+    }
     return tmp_arr;
-	}
-function in_array (needle, haystack, argStrict) {
+}
+function in_array(needle,haystack,argStrict){
     //info: Checks if the given value exists in the array
-    //usage: var tf=in_array('van', ['Kevin', 'van', 'Zonneveld']); - returns true
-    //usage: var tf=in_array('vlado', {0: 'Kevin', vlado: 'van', 1: 'Zonneveld'}); - returns false
-    //usage: var tf=in_array(1, ['1', '2', '3'], true); - returns false since argStrict is used and there is a type mismatch
+    //usage: let tf=in_array('van', ['Kevin', 'van', 'Zonneveld']); - returns true
+    //usage: let tf=in_array('vlado', {0: 'Kevin', vlado: 'van', 1: 'Zonneveld'}); - returns false
+    //usage: let tf=in_array(1, ['1', '2', '3'], true); - returns false since argStrict is used and there is a type mismatch
 	//source: http://phpjs.org/functions
-    var key = '', strict = !! argStrict;
+    let key = '', strict = !! argStrict;
     if (strict) {
         for (key in haystack) {
             if (haystack[key] === needle) {return true;}
-        	}
-    	}
+        }
+    }
 	else {
         for (key in haystack) {
 			if (haystack[key] == needle) {return true;}
-        	}
-    	}
+        }
+    }
     return false;
-	}
-function array_walk (array, funcname, userdata) {
+}
+function array_walk(array,funcname,userdata){
     //usage: Apply a user function to every member of an array
-    //usage: var tf=array_walk ({'a':'b'}, 'void', 'userdata');
+    //usage: let tf=array_walk ({'a':'b'}, 'void', 'userdata');
     //source: http://phpjs.org/functions
     if (typeof array !== 'object' || array === null) {
         return false;
@@ -2271,40 +2284,40 @@ function array_walk (array, funcname, userdata) {
     for (key in array) {
         if (typeof(userdata) !== 'undefined') {
             eval(funcname + '( array [key] , key , userdata  )');
-        	}
+        }
 		else{
 			eval(funcname + '(  userdata ) ');
-        	}
-    	}
+        }
+    }
     return true;
-	}
-function nl2br (str, is_xhtml) {
+}
+function nl2br(str,is_xhtml){
     //info: Converts newlines to HTML line breaks
     //source: http://phpjs.org/functions
-	var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '' : '<br>';
+	let breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '' : '<br>';
     return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
-	}
-function implode (glue, pieces) {
+}
+function implode(glue,pieces){
     //info: Joins array elements placing glue string between items and return one string
     //source: http://phpjs.org/functions
-    var i = '', retVal = '', tGlue = '';
+    let i='',retVal='',tGlue='';
     if (arguments.length === 1) {
-        pieces = glue;
-        glue = '';
-    	}
+        pieces=glue;
+        glue='';
+    }
 	if (typeof(pieces) === 'object') {
         if (pieces instanceof Array) {
 			return pieces.join(glue);
-    		}
+    	}
 		else {
             for (i in pieces) {
 				retVal += tGlue + pieces[i];
                 tGlue = glue;
-            	}
+            }
             return retVal;
-        	}
-		}
+        }
+	}
 	else {
         return pieces;
-    	}
-	}
+    }
+}

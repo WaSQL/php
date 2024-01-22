@@ -1,29 +1,36 @@
 /* event based javascript routines*/
 /* - Required dependancies: common.js 			 */
 /*----------------------------------------------*/
-
-/* Capture mouse movement and set MouseX and MouseY to its x,y corordinates */
 var MouseX=0;
 var MouseY=0;
 var cursor = {x:0, y:0};
-if(document.onmousemove){
-	document.onmousemove = mouseMove;
-	}
-else if(document.addEventListener){
-	/* Firefox model */
-	document.addEventListener("mousedown",mouseMove,commonPassiveEventListener(false));
-    document.addEventListener("mouseup",mouseMove,commonPassiveEventListener(false));
-    document.addEventListener("mousemove",mouseMove,commonPassiveEventListener(false));
-	}
-else if(document.attachEvent){
-	/* IE model */
-	document.attachEvent("onmousedown",mouseMove);
-    document.attachEvent("onmouseup",mouseMove);
-    document.attachEvent("onmousemove",mouseMove);
-	}
-else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
-
-
+function eventJSInit(){
+	if(undefined != this.event_initialized){return false;}
+	this.event_initialized=1;
+	/* Capture mouse movement and set MouseX and MouseY to its x,y corordinates */
+	
+	if(document.onmousemove){
+		document.onmousemove = mouseMove;
+		}
+	else if(document.addEventListener){
+		/* Firefox model */
+		document.addEventListener("mousedown",mouseMove,commonPassiveEventListener(false));
+	    document.addEventListener("mouseup",mouseMove,commonPassiveEventListener(false));
+	    document.addEventListener("mousemove",mouseMove,commonPassiveEventListener(false));
+		}
+	else if(document.attachEvent){
+		/* IE model */
+		document.attachEvent("onmousedown",mouseMove);
+	    document.attachEvent("onmouseup",mouseMove);
+	    document.attachEvent("onmousemove",mouseMove);
+		}
+	else if(document.captureEvents){document.captureEvents(Event.MOUSEDOWN | Event.MOUSEMOVE | Event.MOUSEUP);}
+	/*
+	 * add event handler to resize any signature canvas
+	 * */
+	 //console.log('adding resize');
+	addEventHandler(window,'resize',function(){resizeSignatureWidthHeight();});
+}
 function eventBuildOnLoad() {
 	if(document.readyState === "complete") {
 		//console.log('eventBuildOnLoad ready');
@@ -4455,8 +4462,5 @@ function resizeSignatureWidthHeight(){
 		list[i].setAttribute('height',h);
 	}
 }
-/*
- * add event handler to resize any signature canvas
- * */
- //console.log('adding resize');
-addEventHandler(window,'resize',function(){resizeSignatureWidthHeight();});
+
+eventJSInit();
