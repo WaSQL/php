@@ -1,9 +1,14 @@
 <?php
 //---------- crontab2csv.php
-// Sample crontab entry
-// * * * * * php /var/www/wasql_stage/php/crontab2csv.php 2>&1
+// 
+// 
 //  
 /**
+ * Sample crontab entry
+ * 		* * * * * php /var/www/wasql_stage/php/crontab2csv.php 2>&1
+ * Sample crontab2csv.conf file (optional)
+ * 		[webhook]
+ * 		url=https://some.site.com/v1/add_records
 * @describe converts the crontab -l output into csv format
 * returns csv data with header min,hour,dom,mon,dow,command
 * @usage php crontab2csv.php
