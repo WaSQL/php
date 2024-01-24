@@ -803,7 +803,13 @@
 					setView(array('error'),1);
 					return;
 				}
-				$recs_count=1;
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				if(rename($afile,"{$tpath}/{$filename}")){
+					$afile="{$tpath}/{$filename}";
+				}
+				$recs_count=getFileLineCount($afile)-1;
 				//echo $afile;exit;
 			}
 			elseif($skip==0){

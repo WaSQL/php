@@ -12513,7 +12513,9 @@ function getCSVSchema($file,$params=array()){
 function fopen_utf8($filename){
 	$encoding='';
 	$handle = fopen($filename, 'rb');
-	if(!$handle){return ;}
+	if(!$handle){
+		return null;
+	}
 
 	$bom = fread($handle, 2);
 	rewind($handle);
@@ -12534,7 +12536,7 @@ function fopen_utf8($filename){
 			}
 			
 			rewind($handle);
-			$encoding = mb_detect_encoding($file_sample , 'UTF-8, UTF-7, ASCII, EUC-JP,SJIS, eucJP-win, SJIS-win, JIS, ISO-2022-JP');
+			$encoding = mb_detect_encoding($file_sample , mb_detect_order(),true);
 		}
 		catch(Exception $e){
 			$encoding = 'UTF-8';

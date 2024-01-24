@@ -894,8 +894,9 @@ function pyQueryResults($db,$query,$params=array()){
 	$path=preg_replace('/\/$/','',$path);
 	$afile="{$path}/php/temp/{$sha}.sql";
 	$ok=file_put_contents($afile, $query);
-	$args=" -B \"{$path}/python/db2jsv.py\" \"{$db}\" \"{$afile}\"";
+	$args=" -B \"{$path}/python/db2csv.py\" \"{$db}\" \"{$afile}\"";
 	$out=cmdResults('python3',$args);
+	//echo printValue($out);exit;
 	if($out['rtncode'] != 0 || stringBeginsWith($out['stdout'],'Error')){
 		echo "Failed to process<br>";
 		echo printValue($out);
@@ -904,21 +905,17 @@ function pyQueryResults($db,$query,$params=array()){
 	unlink($afile);
 	//return printValue($out);
 	//unlink($afile);
-	$jsvfile=$out['stdout'];
-	//success with spit out the jsv file, otherwise err message
-	if(!is_file($jsvfile)){
-		return $jsvfile;
+	$csvfile=$out['stdout'];
+	//success with spit out the csv file, otherwise err message
+	if(!is_file($csvfile)){
+		return $csvfile;
 	}
-	//echo $jsvfile;exit;
-	$csvfile=commonJSV2CSV($jsvfile);
-	unlink($jsvfile);
 	if(isset($params['-csv'])){
 		return $csvfile;	
 	}
-	$csv=getCSVFileContents($csvfile);
-	
+	$recs=getCSVRecords($csvfile);
 	unlink($csvfile);
-	return $csv['items'];
+	return $recs;
 }
 //---------- begin function databaseGradeSQL
 /**
