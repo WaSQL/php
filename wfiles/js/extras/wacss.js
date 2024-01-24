@@ -1822,6 +1822,30 @@ var wacss = {
 		}
 		;
     },
+    implode:function(glue,pieces){
+	    //info: Joins array elements placing glue string between items and return one string
+	    //source: http://phpjs.org/functions
+	    let i='',retVal='',tGlue='';
+	    if (arguments.length === 1) {
+	        pieces=glue;
+	        glue='';
+	    }
+		if (typeof(pieces) === 'object') {
+	        if (pieces instanceof Array) {
+				return pieces.join(glue);
+	    	}
+			else {
+	            for (i in pieces) {
+					retVal += tGlue + pieces[i];
+	                tGlue = glue;
+	            }
+	            return retVal;
+	        }
+		}
+		else {
+	        return pieces;
+	    }
+	},
 	initCodeMirror: function(){
 		/*convert texteara to codemirror */
 		let list=document.querySelectorAll('textarea.code[data-mode]');
@@ -4176,7 +4200,7 @@ var wacss = {
 						break;
 					}
 				}
-				params[k]=implode(',',cidvals);
+				params[k]=wacss.implode(',',cidvals);
 			}
 			else{
 				params[k]=elobj.dataset[k];
