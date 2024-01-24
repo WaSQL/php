@@ -12516,7 +12516,8 @@ function fopen_utf8($filename){
 	if(!$handle){
 		return null;
 	}
-
+	return  ($handle);
+	
 	$bom = fread($handle, 2);
 	rewind($handle);
 
@@ -12543,6 +12544,7 @@ function fopen_utf8($filename){
 		}	
 	}
 	if ($encoding  && strtoupper($encoding) != 'UTF-8'){
+		return ($handle);
 		stream_filter_append($handle, 'convert.iconv.'.$encoding.'/UTF-8');
 	}
 	return  ($handle);
