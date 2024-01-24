@@ -45,6 +45,51 @@ var wacss = {
 	        }
 	    }
 	},
+	ajaxGet: function(url,div,params) {
+	    let xmlhttp = new XMLHttpRequest();
+	    xmlhttp.div=div;
+	    xmlhttp.onreadystatechange = function () {
+	        if (this.readyState == XMLHttpRequest.DONE) {
+	        	let div=document.getElementById(this.div);
+	            if (this.status == 200 || this.status == 201) {
+	                div.innerHTML = this.responseText;
+	            } else {
+	                div.innerHTML = JSON.stringify(this);
+	            }
+	        }
+	    };
+	    if(url.indexOf('http')==-1){
+	    	url=window.location.origin+url;
+	    }
+		let aurl = new URL(url);
+		let aparams = aurl.searchParams;
+		for(k in params){
+	    	if(undefined==typeof(params[k]) || params[k]===null || params[k].length==0){continue;}
+			aparams.append(k, params[k]);
+		}
+	    xmlhttp.open("GET", aurl.toString(), true);
+	    xmlhttp.send();
+	    return false;
+	},
+	ajaxPost: function(frm,div) {
+	    let xmlhttp = new XMLHttpRequest();
+	    let url=frm.getAttribute('action');
+	    xmlhttp.div=div;
+	    xmlhttp.onreadystatechange = function () {
+	        if (this.readyState == XMLHttpRequest.DONE) {
+	        	let div=document.getElementById(this.div);
+	            if (this.status == 200 || this.status == 201) {
+	                div.innerHTML = this.responseText;
+	            } else {
+	                div.innerHTML = JSON.stringify(this);
+	            }
+	        }
+	    };
+	    let data = new FormData(frm);
+	    xmlhttp.open("POST", url, true);
+	    xmlhttp.send(data);
+	    return false;
+	},
 	/**
 	* @name wacss.blink
 	* @describe makes an element blink
@@ -4257,7 +4302,7 @@ var wacss = {
 			let win = window.open(nav,title,'width='+winWidth+',height='+winHeight+',left='+left+',top='+top+',menubar=no,toolbar=no,location=no,scrollbars=yes');
 			return false;
 		}
-		return ajaxGet(nav,div,params);
+		return wacss.ajaxGet(nav,div,params);
 
 	},
 	navMobileToggle: function(el){
