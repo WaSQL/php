@@ -4032,6 +4032,20 @@ function ajaxSubmitMultipartForm(theform,sid,params){
 //--------------------------
 //--Submit form using ajax
 function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
+	//verify that they passed in the form object
+	if(undefined == theform){
+		alert("No form object passed to ajaxPost");
+		return false;
+	}
+	//Pass form through validation before calling ajax
+	if(undefined != tmeout && tmeout=='novalidation'){
+		//default to 60 minutes
+		tmeout=36000000;
+	}
+	else{
+		let ok=submitForm(theform,1,0,1);
+		if(!ok){return false;}
+	}
 	//check for file fields and append content to ajax request
 	let fields=theform.querySelectorAll('input[type="file"]');
 	for(let i=0;i<fields.length;i++){
@@ -4054,20 +4068,8 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 		h.value=name;
 		theform.appendChild(h);
 	}
-	//verify that they passed in the form object
-	if(undefined == theform){
-		alert("No form object passed to ajaxPost");
-		return false;
-		}
-	//Pass form through validation before calling ajax
-	if(undefined != tmeout && tmeout=='novalidation'){
-		//default to 60 minutes
-		tmeout=36000000;
-	}
-	else{
-		var ok=submitForm(theform,1,0,1);
-		if(!ok){return false;}
-	}
+	
+	
 	//verify that the sid exists
 	if(undefined == callback){
 		//check hidden fields in the form
