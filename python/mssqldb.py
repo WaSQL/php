@@ -139,7 +139,7 @@ def queryResults(query,params):
 		#now execute the query
 		cur_mssql.execute(query)
 		#get column names - lowercase them for consistency
-		fields = [field_md[0].lower for field_md in cur_mssql.description]
+		fields = [field_md[0].lower() for field_md in cur_mssql.description]
 
 		if 'filename' in params.keys():
 			csv_file=params['filename']

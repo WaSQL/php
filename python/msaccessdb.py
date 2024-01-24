@@ -92,8 +92,7 @@ def queryResults(query,params):
 		#now execute the query
 		cur_msaccess.execute(query)
 		#get column names - lowercase them for consistency
-		fields = [field_md[0].lower for field_md in cur_msaccess.description]
-
+		fields = [field_md[0].lower() for field_md in cur_msaccess.description]
 		if 'filename' in params.keys():
 			csv_file=params['filename']
 			f = open(csv_file, 'w', newline='', encoding='utf-8')

@@ -146,7 +146,7 @@ def queryResults(query,params):
 		#now execute the query
 		cur_mysql.execute(query)
 		#get column names - lowercase them for consistency
-		fields = [field_md[0] for field_md in cur_mysql.description]
+		fields = [field_md[0].lower() for field_md in cur_mysql.description]
 		if 'filename' in params.keys():
 			csv_file=params['filename']	
 			#write the fields row

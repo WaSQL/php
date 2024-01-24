@@ -128,7 +128,7 @@ def queryResults(query,params):
 		#now execute the query
 		cur_sqlite.execute(query)
 		#get column names - lowercase them for consistency
-		fields = [field_md[0] for field_md in cur_sqlite.description]
+		fields = [field_md[0].lower() for field_md in cur_sqlite.description]
 
 		if 'filename' in params.keys():
 			csv_file=params['filename']
