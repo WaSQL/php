@@ -16,6 +16,7 @@ try:
 	import config
 	import common
 	import db
+	import csv
 except Exception as err:
 	exc_type, exc_obj, exc_tb = sys.exc_info()
 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -103,17 +104,20 @@ def queryResults(query,params):
 		fields = [field_md[0].lower() for field_md in cur_msexcel.description]
 
 		if 'filename' in params.keys():
-			jsv_file=params['filename']			
-			#write file
-			f = open(jsv_file, "w")
-			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=db.convertStr).lower())
-			f.write("\n")
+			csv_file=params['filename']
+			f = open(csv_file, 'w', newline='', encoding='utf-8')
+			csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			csvwriter.writerow(fields)
+			#write records row, fetching them 1000 at a time
+			csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
 			#write records
-			for rec in cur_msexcel.fetchall():
-				#convert to a dictionary manually since it is not built into the driver
-				rec=dict(zip(fields, rec))
-				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
-				f.write("\n")
+			fetch_size = 1000
+			while True:
+			    rows = cur_msexcel.fetchmany(fetch_size)
+			    if not rows:
+			        break
+			    else:
+			        csvwriter.writerows(rows)
 			f.close()
 			cur_msexcel.close()
 			conn_msexcel.close()

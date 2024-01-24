@@ -22,6 +22,7 @@ try:
 	import config
 	import common
 	import db
+	import csv
 except Exception as err:
 	exc_type, exc_obj, exc_tb = sys.exc_info()
 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -101,7 +102,7 @@ def connect(params):
 		common.abort(sys.exc_info(),err)
 
 	try:
-		cur_mysql = conn_mysql.cursor(dictionary=True,buffered=True)
+		cur_mysql = conn_mysql.cursor(dictionary=False,buffered=True)
 	except Exception as err:
 		common.abort(sys.exc_info(),err) 
 
@@ -147,15 +148,21 @@ def queryResults(query,params):
 		#get column names - lowercase them for consistency
 		fields = [field_md[0] for field_md in cur_mysql.description]
 		if 'filename' in params.keys():
-			jsv_file=params['filename']	
-			#write file
-			f = open(jsv_file, "w")
-			f.write(json.dumps(fields,sort_keys=False, ensure_ascii=True, default=db.convertStr).lower())
-			f.write("\n")
+			csv_file=params['filename']	
+			#write the fields row
+			f = open(csv_file, 'w', newline='', encoding='utf-8')
+			csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			csvwriter.writerow(fields)
+			#write records row, fetching them 1000 at a time
+			csvwriter = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
 			#write records
-			for rec in cur_mysql.fetchall():
-				f.write(json.dumps(rec,sort_keys=False, ensure_ascii=True, default=db.convertStr))
-				f.write("\n")
+			fetch_size = 1000
+			while True:
+			    rows = cur_mysql.fetchmany(fetch_size)
+			    if not rows:
+			        break
+			    else:
+			        csvwriter.writerows(rows)
 			f.close()
 			cur_mysql.close()
 			conn_mysql.close()

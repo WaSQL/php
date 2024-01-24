@@ -85,27 +85,70 @@ References
 import os
 import sys
 try:
+    import json
+    import mysql.connector
     import common
     import config
     import db
+    import csv
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
-#header
-if not common.isCLI():
-    print("Content-type: text/html; charset=UTF-8;\n\n")
 
-# print(config.value('name'))
-# print(config.value())
-out=db.dasql('msa','select top 2 firstname,lastname,gender,totalchildren from DimCustomer')
-print(out)
+dbconfig = {
+    'auth_plugin':'mysql_native_password',
+    'host':'localhost',
+    'user':'wasql_dbuser',
+    'password':'wasql_dbpass',
+    'database':'wasql_test_15'
+}
 
-# #show message
-# common.echo("test successful")
-# #test listFiles
-# files=common.listFiles(os.getcwd())
-# print(files)
-# files=common.listFilesEx(os.getcwd())
-# print(files)
+query = 'select _id,code,name,_cdate from countries'
+
+try:
+    conn_mysql = mysql.connector.connect(**dbconfig)
+except Exception as err:
+    common.abort(sys.exc_info(),err)
+
+try:
+    #dictionary=False it critical here so we only get the values back
+    cur_mysql = conn_mysql.cursor(dictionary=False,buffered=True)
+except Exception as err:
+    common.abort(sys.exc_info(),err) 
+
+cur_mysql.execute(query)
+"""
+    cursor.description returns: 
+        column name, column type, none, none, none, none, null_ok, column_flags
+    Column types:
+
+"""
+print(mysql.connector.FieldFlag.desc)
+fields = [field_md[0] for field_md in cur_mysql.description]
+csvfile='d:/wasql/python/test.csv' 
+#write file
+f = open(csvfile,'w', newline='', encoding='utf-8')
+"""
+    csv.QUOTE_MINIMAL - quote fields only if they contain the delimiter or the quotechar - default
+    csv.QUOTE_ALL - quote all fields
+    csv.QUOTE_NONNUMERIC - quote all fields containing text data and convert all numeric fields to the float data type
+    csv.QUOTE_NONE - escape delimiters instead of quoting them - requires escapechar to be set
+"""
+#do not quote fields
+csvwriter = csv.writer(f, delimiter=',', quotechar='"', escapechar='\\', quoting=csv.QUOTE_MINIMAL)
+csvwriter.writerow(fields)
+#quote the values
+csvwriter = csv.writer(f, delimiter=',', quotechar='"', escapechar='\\', quoting=csv.QUOTE_MINIMAL)
+#write records
+fetch_size = 1000
+while True:
+    rows = cur_mysql.fetchmany(fetch_size)
+    if not rows:
+        break
+    else:
+        csvwriter.writerows(rows)
+f.close()
+cur_mysql.close()
+conn_mysql.close()
