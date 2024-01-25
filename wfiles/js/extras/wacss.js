@@ -36,9 +36,9 @@ var wacss = {
 	* @usage wacss.loadJsText('myfunc',str); myfunc();
 	*/
 	loadJsText:function(name,body){
-		var code = 'this.f = function ' + name + '() {'+body+'}';
+		let code = 'this.f = function ' + name + '() {'+body+'}';
 		eval(code);
-		 return true;
+		return true;
 	},
 	/**
 	* @name wacss.addClass
@@ -254,18 +254,18 @@ var wacss = {
 		if(undefined == params){params={};}
 		if(undefined == params['-formname']){params['-formname']='addedit';}
 		if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
-		var iconid=params.id+'_icon';
+		let iconid=params.id+'_icon';
 		//force witdh
 		params.width=115;
-		var iconcolor='#c0c0c0';
+		let iconcolor='#c0c0c0';
 		if(undefined != params.value){iconcolor=params.value;}
 		if(undefined == params.placeholder){params.placeholder='#HEXVAL';}
 		if(undefined == params.classname){params.classname='form-control input';}
 		params['maxlength']=7;
-		var tagdiv = document.createElement("div");
+		let tagdiv = document.createElement("div");
 		tagdiv.className="input-group";
 		tagdiv.style.width=params.width+'px';
-		var tag = document.createElement("input");
+		let tag = document.createElement("input");
 		tag.type='text';
 		tag.maxlength=7;
 		tag.className=params.classname;
@@ -281,7 +281,7 @@ var wacss = {
 		tag.classname=params.classname;
 		tag.placeholder=params.placeholder;
 		tagdiv.appendChild(tag);
-		var tagspan = document.createElement("span");
+		let tagspan = document.createElement("span");
 		tagspan.id=iconid;
 		tagspan.setAttribute('onclick',"return colorSelector('"+params.id+"');");
 		tagspan.className="icon-color-adjust w_bigger w_pointer input-group-addon";
@@ -289,7 +289,7 @@ var wacss = {
 		tagspan.title='Color Selector';
 		tagdiv.appendChild(tagspan);
 		if(undefined != params['-parent']){
-			var pobj=getObject(params['-parent']);
+			let pobj=getObject(params['-parent']);
 			if(undefined != pobj){
 				pobj.appendChild(tagdiv);
 			}
@@ -313,21 +313,21 @@ var wacss = {
 		if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
 		if(undefined == params['-formname']){params['-formname']='addedit';}
 		if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
-	    var tag = document.createElement("select");
+	    let tag = document.createElement("select");
 		if(undefined != params.required){tag.setAttribute('required',params.required);}
 		if(undefined != params.class){tag.setAttribute('class',params.class);}
 		if(undefined != params.style){tag.setAttribute('style',params.style);}
 		tag.name=fieldname;
 		tag.id=params.id;
-		for(var tval in opts){
-			var coption = document.createElement("OPTION");
+		for(let tval in opts){
+			let coption = document.createElement("OPTION");
 			coption.value=tval;
 			coption.innerHTML=opts[tval];
 			if(undefined != params.value && tval==params.value){coption.setAttribute('selected',true);}
 			tag.appendChild(coption);
 		}
 		if(undefined != params['-parent']){
-			var pobj=getObject(params['-parent']);
+			let pobj=getObject(params['-parent']);
 			if(undefined != pobj){
 				pobj.appendChild(tag);
 			}
@@ -350,7 +350,7 @@ var wacss = {
 		if(undefined == params['-formname']){params['-formname']='addedit';}
 		if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
 		if(undefined == params.classname){params.classname='form-control input';}
-		var tag = document.createElement("input");
+		let tag = document.createElement("input");
 		tag.className=params.classname;
 		if(undefined != params.required){tag.setAttribute('required',params.required);}
 		if(undefined != params.class){tag.setAttribute('class',params.class);}
@@ -362,7 +362,7 @@ var wacss = {
 		tag.name=fieldname;
 		tag.id=params.id;
 		if(undefined != params['-parent']){
-			var pobj=getObject(params['-parent']);
+			let pobj=getObject(params['-parent']);
 			if(undefined != pobj){
 				pobj.appendChild(tag);
 			}
@@ -424,11 +424,21 @@ var wacss = {
     	}
 		return false;
    	},
+   	/**
+	* @name wacss.checkMouseLeave
+	* @describe checks to see if mouse is still over element
+	* @param mixed  orject or selector or id
+	* @param event 
+	* @return boolean
+	* @usage if(wacss.checkMouseLeave(this,e)){...}
+	*/
    	checkMouseLeave: function(element, evt){
-		if (element.contains && undefined != evt.toElement) {
+   		element=wacss.getObject(element);
+   		if(undefined==element){return false;}
+		if(element.contains && undefined != evt.toElement){
 			return !element.contains(evt.toElement);
 		}
-		else if (evt.relatedTarget) {
+		else if(evt.relatedTarget){
 			return !containsDOM(element, evt.relatedTarget);
 		}
 	},
@@ -484,6 +494,14 @@ var wacss = {
 		if(undefined==p){return false;}
 		p.querySelector('input[type="checkbox"]').checked=false;
 	},
+	/**
+	* @name wacss.createCenterpop
+	* @describe creates an html centerpop object and returns the content element
+	* @param title string
+	* @param x number  either blank or 1,2,or 3
+	* @return object
+	* @usage let cp=wacss.createCenterpop;cp.innerHTML='<h1>Hello</h1>';
+	*/
 	createCenterpop: function(title,x){
 		if(undefined==x){x='';}
 		let cp=wacss.getObject('wacss_centerpop'+x);
@@ -600,13 +618,20 @@ var wacss = {
 			}
 	    return rv;
 	},
+	/**
+	* @name wacss.getViewportSize
+	* @describe return width and height of viewport
+	* @param [w] object defaults to window
+	* @return object {w:12,h:332}
+	* @usage let vp=wacss.getViewportSize();
+	*/
 	getViewportSize: function(w) {
 	    // Use the specified window or the current window if no argument
 	    w = w || window;
 	    // This works for all browsers except IE8 and before
 	    if (w.innerWidth != null) return { w: w.innerWidth, h: w.innerHeight };
 	    // For IE (or any browser) in Standards mode
-	    var d = w.document;
+	    let d = w.document;
 	    if (document.compatMode == "CSS1Compat")
 	        return { w: d.documentElement.clientWidth,
 	           h: d.documentElement.clientHeight };
@@ -2247,7 +2272,7 @@ var wacss = {
 	},
 	inViewport: function(elem) {
 		elem=getObject(elem);
-	    var bounding = elem.getBoundingClientRect();
+	    let bounding = elem.getBoundingClientRect();
 	    return (
 	        bounding.top >= 0 &&
 	        bounding.left >= 0 &&
@@ -4465,7 +4490,7 @@ var wacss = {
 						break;
 						case 'select':
 							//for select lists support multi-select
-							for (var j=0; j<cidobj.options.length; j++) {
+							for (let j=0; j<cidobj.options.length; j++) {
 								if (cidobj.options[j].selected) {
 									cidv=cidobj.options[cidobj.selectedIndex].value;
 									cidvals.push(cidv);
@@ -4901,7 +4926,7 @@ var wacss = {
 				};
 			}
 			else{
-				var msg = new SpeechSynthesisUtterance();
+				let msg = new SpeechSynthesisUtterance();
 				/* if params.name then pick a voice with that name */
 				if(undefined != params.name){
 					for(let i=0;i<voices.length;i++){
