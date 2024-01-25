@@ -806,6 +806,7 @@
 				$shastr=sha1($_SESSION['sql_last']);
 				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
 				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$tpath=getWasqlPath('php/temp');
 				if(rename($afile,"{$tpath}/{$filename}")){
 					$afile="{$tpath}/{$filename}";
 				}

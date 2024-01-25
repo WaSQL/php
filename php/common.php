@@ -12516,7 +12516,6 @@ function fopen_utf8($filename){
 	if(!$handle){
 		return null;
 	}
-	return  ($handle);
 	
 	$bom = fread($handle, 2);
 	rewind($handle);
@@ -12543,11 +12542,16 @@ function fopen_utf8($filename){
 			$encoding = 'UTF-8';
 		}	
 	}
-	if ($encoding  && strtoupper($encoding) != 'UTF-8'){
-		return ($handle);
-		stream_filter_append($handle, 'convert.iconv.'.$encoding.'/UTF-8');
+
+	switch(strtoupper($encoding)){
+		case 'UTF-8':
+		case 'ASCII':
+			return ($handle);
+		break;
 	}
-	return  ($handle);
+	stream_filter_append($handle, 'convert.iconv.'.$encoding.'/UTF-8');
+	return ($handle);
+
 }
 	//---------- begin function csv2Arrays--------------------
 /**

@@ -20,6 +20,50 @@ body{
     -ms-flex-pack: center !important;
     justify-content: center !important;
 }
+/* ---------------------- centerpop ------------------------- */
+
+div.wacss_centerpop{
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+  position: fixed;
+  border-radius: 6px;
+  max-width:90vw;
+  max-height:80vh;
+  z-index: 99990;
+  margin-right:15px;
+}
+div.wacss_centerpop div.wacss_centerpop_title{
+  display:flex;
+  align-items: center;
+  justify-content: space-between;
+  color:#ffffff;
+  background:#696969;
+  padding:10px 20px;
+  font-size:1.2rem;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+div.wacss_centerpop div.wacss_centerpop_processing{
+  font-size:0.8rem;
+  color:#FFF;
+  align-self: center;
+  margin:0 10px;
+}
+div.wacss_centerpop div.wacss_centerpop_close{
+  font-size:0.8rem;
+  color:#FFF;
+  align-self: center;
+}
+div.wacss_centerpop div.wacss_centerpop_close:hover{
+  color:#d00212;
+  cursor:pointer;
+}
+div.wacss_centerpop div.wacss_centerpop_content{
+  padding:10px 25px 20px 25px;
+  display:block;
+  background:#FFF;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
 
 /* ---------------------- colors ------------------------- */
 

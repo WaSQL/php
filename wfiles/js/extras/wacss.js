@@ -2,7 +2,7 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	version: '2023.0211',
+	version: '2024.0124',
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -11,6 +11,18 @@ var wacss = {
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	chartjs:{},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	EOL: '\n',
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	CRLF: '\r\n',
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	processing: '<span class="icon-spin4 w_spin"></span>',
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -28,6 +40,14 @@ var wacss = {
 		eval(code);
 		 return true;
 	},
+	/**
+	* @name wacss.addClass
+	* @describe adds a class to an element
+	* @param mixed element object or id
+	* @param string class name
+	* @return boolean true
+	* @usage wacss.addClass(el,'active');
+	*/
 	addClass: function(element, classToAdd) {
 		element=wacss.getObject(element);
 		if(undefined == element){return false;}
@@ -44,20 +64,108 @@ var wacss = {
 	            element.className += " " + classToAdd;
 	        }
 	    }
+	    return true;
 	},
+	/**
+	* @name wacss.ajaxGet
+	* @describe calls url in an httpd AJAX request and sends results to div
+	* @param string url 
+	* @param string div
+	* @param obj key/value pairs to pass through
+	* @return boolean false
+	* @usage wacss.ajaxGet('/t/1/index/show,'mydiv',{color:"red",age:35});
+	*/
 	ajaxGet: function(url,div,params) {
 	    let xmlhttp = new XMLHttpRequest();
-	    xmlhttp.div=div;
+	    xmlhttp.recenter='';
+	    if(typeof(div)==='string'){
+	    	switch(div.toLowerCase()){
+	    		case 'centerpop':
+	    		case 'wacss_centerpop':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop';}
+	    			xmlhttp.div=wacss.createCenterpop(params.title);
+	    		break;
+	    		case 'centerpop1':
+	    		case 'wacss_centerpop1':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop1');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop1';}
+	    			xmlhttp.div=wacss.createCenterpop(params.title,1);
+	    		break;
+	    		case 'centerpop2':
+	    		case 'wacss_centerpop2':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop2');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			xmlhttp.div=wacss.createCenterpop(params.title,2);
+	    		break;
+	    		case 'centerpop3':
+	    		case 'wacss_centerpop3':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop3');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			xmlhttp.div=wacss.createCenterpop(params.title,3);
+	    		break;
+	    	}
+	    }
+	    
 	    xmlhttp.onreadystatechange = function () {
 	        if (this.readyState == XMLHttpRequest.DONE) {
-	        	let div=document.getElementById(this.div);
 	            if (this.status == 200 || this.status == 201) {
-	                div.innerHTML = this.responseText;
+	            	// Success: if div does not exist, write it to the console window
+	            	if(undefined == this.div){console.log(this.responseText);}
+	                else{
+	                	if(undefined != this.processing){
+	                		this.processing.innerHTML=this.processing.previous;
+	                	}
+	                	this.div.innerHTML = this.responseText;
+	                	if(undefined != this.recenter && this.recenter.length > 0){
+	                		wacss.centerObject(this.recenter);
+	                	}
+	                }
 	            } else {
-	                div.innerHTML = JSON.stringify(this);
+	            	// Failed: if div does not exist, write it to the console window
+	            	if(undefined == this.div){console.log(JSON.stringify(this));}
+	                else{
+	                	if(undefined != this.processing){
+	                		this.processing.innerHTML=this.processing.previous;
+	                	}
+	                	this.div.innerHTML = JSON.stringify(this);
+	                	if(undefined != this.recenter && this.recenter.length > 0){
+	                		wacss.centerObject(this.recenter);
+	                	}
+	                }
 	            }
 	        }
 	    };
+		//set processing
+		if(undefined==params.setprocessing){
+			xmlhttp.div.innerHTML=wacss.processing;
+			if(undefined != xmlhttp.recenter && xmlhttp.recenter.length > 0){
+        		wacss.centerObject(xmlhttp.recenter);
+        	}
+		}
+		else if (params.setprocessing.toString()!='0'){
+			switch(params.setprocessing.toString().toLowerCase()){
+				case 'centerpop_processing':
+					params.setprocessing='wacss_centerpop_processing';
+				break;
+				case 'centerpop1_processing':
+					params.setprocessing='wacss_centerpop1_processing';
+				break;
+				case 'centerpop2_processing':
+					params.setprocessing='wacss_centerpop2_processing';
+				break;
+				case 'centerpop3_processing':
+					params.setprocessing='wacss_centerpop3_processing';
+				break;
+			}
+			pdiv=wacss.getObject(params.setprocessing);
+			if(undefined != pdiv){
+				pdiv.previous=pdiv.innerHTML;
+				xmlhttp.processing=pdiv;
+				pdiv.innerHTML=wacss.processing;
+			}
+		}
+		//get base URL if needed
 	    if(url.indexOf('http')==-1){
 	    	url=window.location.origin+url;
 	    }
@@ -67,8 +175,10 @@ var wacss = {
 	    	if(undefined==typeof(params[k]) || params[k]===null || params[k].length==0){continue;}
 			aparams.append(k, params[k]);
 		}
+		//make the request
 	    xmlhttp.open("GET", aurl.toString(), true);
 	    xmlhttp.send();
+	    //always return false
 	    return false;
 	},
 	ajaxPost: function(frm,div) {
@@ -261,6 +371,29 @@ var wacss = {
 		return tag;
 	},
 	/**
+	* @name wacss.centerObject
+	* @describe centers specified object or id
+	* @param mixed object, qs string, or id
+	* @return false
+	* @usage wacss.centerObject('centerpop')
+	*/
+	centerObject: function(obj){
+		//info: centers specified object or id
+		let sObj=wacss.getObject(obj);
+		if(undefined == sObj){return false;}
+		sObj.style.position=sObj.dataset.position || 'fixed';
+		let w=sObj.offsetWidth || sObj.innerWidth || getWidth(sObj) || 100;
+		let h=sObj.offsetHeight || sObj.innerHeight || getHeight(sObj) || 100;
+		let vp=wacss.getViewportSize();
+		let x = Math.round((vp.w / 2) - (w / 2));
+	  	let y = Math.round((vp.h / 2) - (h / 2));
+	  	sObj.style.left=x+'px';
+	  	if(undefined == y){y=10;}
+		if(y < 10){y=10;}
+	  	sObj.style.top=y+'px';
+	  	return new Array(x,y);
+	},
+	/**
 	* @name wacss.checkAllElements
 	* @describe check/toggle all checkboxes that have an attribute of value
 	* @param att string
@@ -291,6 +424,14 @@ var wacss = {
     	}
 		return false;
    	},
+   	checkMouseLeave: function(element, evt){
+		if (element.contains && undefined != evt.toElement) {
+			return !element.contains(evt.toElement);
+		}
+		else if (evt.relatedTarget) {
+			return !containsDOM(element, evt.relatedTarget);
+		}
+	},
    	/**
 	* @name wacss.copy2Clipboard
 	* @describe copies str to the clipboard and displays message
@@ -342,6 +483,55 @@ var wacss = {
 		let p=wacss.getParent(el,'div');
 		if(undefined==p){return false;}
 		p.querySelector('input[type="checkbox"]').checked=false;
+	},
+	createCenterpop: function(title,x){
+		if(undefined==x){x='';}
+		let cp=wacss.getObject('wacss_centerpop'+x);
+		if(undefined != cp){
+			return cp.querySelector('div.wacss_centerpop_content');
+		}
+		//centerpop
+		cp=document.createElement('div');
+		cp.id='wacss_centerpop'+x;
+		cp.className='wacss_centerpop';
+		cp.setAttribute('data-movable','true');
+		//title
+		let cpt=document.createElement('div');
+		cpt.className='wacss_centerpop_title';
+		//title text
+		let cpt_text=document.createElement('div');
+		cpt_text.style.flex=1;
+		cpt_text.innerHTML=title;
+		cpt.appendChild(cpt_text);
+		//title processing
+		let cpt_processing=document.createElement('div');
+		cpt_processing.id=cp.id+'_processing';
+		cpt_processing.className='wacss_centerpop_processing';
+		cpt_processing.innerText='*';
+		cpt.appendChild(cpt_processing);
+		//title close
+		let cpt_close=document.createElement('div');
+		cpt_close.className='icon-close wacss_centerpop_close';
+		cpt_close.title='Close';
+		cpt_close.closeid=cp.id;
+		cpt_close.onclick=function(){
+			wacss.removeId(this.closeid);
+		}
+		cpt.appendChild(cpt_close);
+		//content
+		let cpc=document.createElement('div');
+		cpc.id='centerpop'+x+'_content';
+		cpc.className='wacss_centerpop_content';
+		cpc.innerHTML='<div class="align-center">......</div>';
+		//appends
+		cp.appendChild(cpt);
+		cp.appendChild(cpc);
+		document.body.appendChild(cp);
+		//center
+		wacss.centerObject(cp);
+		//make movable
+		wacss.makeMovable(cp,cpt);
+		return cpc;
 	},
 	dismiss: function(el){
 		/* if the user is hovering over it, do not close.*/
@@ -409,6 +599,19 @@ var wacss = {
 				}
 			}
 	    return rv;
+	},
+	getViewportSize: function(w) {
+	    // Use the specified window or the current window if no argument
+	    w = w || window;
+	    // This works for all browsers except IE8 and before
+	    if (w.innerWidth != null) return { w: w.innerWidth, h: w.innerHeight };
+	    // For IE (or any browser) in Standards mode
+	    var d = w.document;
+	    if (document.compatMode == "CSS1Compat")
+	        return { w: d.documentElement.clientWidth,
+	           h: d.documentElement.clientHeight };
+	    // For browsers in Quirks mode
+	    return { w: d.body.clientWidth, h: d.body.clientHeight };
 	},
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
@@ -814,8 +1017,6 @@ var wacss = {
 			//console.log(draggables[i]);
 			//check to see if we have already initialized this one
 			if(undefined != draggables[i].dataset.draggable_initialized){
-				//console.log('already initialized');
-				//console.log(draggables[i]);
 				continue;
 			}
 			draggables[i].dataset.draggable_initialized=1;
@@ -2113,12 +2314,12 @@ var wacss = {
 			    		if(evt.altKey){
 			    			//Alt+h => help
 			    			evt.preventDefault();
-			    			let help='EDITOR COMMAND REFERENCE:\r\n\r\n';
-			    			help+='Alt+u => uppercase selection\r\n';
-			    			help+='Alt+l => lowercase selection\r\n';
-			    			help+='Ctrl+b => bold selection\r\n';
-			    			help+='Ctrl+i => italic selection\r\n';
-			    			help+='Ctrl+u => underline selection\r\n';
+			    			let help='EDITOR COMMAND REFERENCE:'+wacss.CRLF+wacss.CRLF;
+			    			help+='Alt+u => uppercase selection'+wacss.CRLF;
+			    			help+='Alt+l => lowercase selection'+wacss.CRLF;
+			    			help+='Ctrl+b => bold selection'+wacss.CRLF;
+			    			help+='Ctrl+i => italic selection'+wacss.CRLF;
+			    			help+='Ctrl+u => underline selection'+wacss.CRLF;
 			    			help+='Alt+c => clear all formatting';
 			    			alert(help);
 			    		}
@@ -3869,6 +4070,50 @@ var wacss = {
 		document.head.appendChild(script);
 		return true;
 	},
+	makeMovable: function(obj,hdr) {
+		obj=wacss.getObject(obj);
+		hdr=wacss.getObject(hdr);
+		obj.pos1 = 0;
+		obj.pos2 = 0;
+		obj.pos3 = 0;
+		obj.pos4 = 0;
+		if (undefined != hdr) {
+			//the header is where you move the DIV from:
+			hdr.onmousedown = makeMovableMouseDown;
+			hdr.style.cursor='move';
+		} else {
+		// otherwise, move the DIV from anywhere inside the DIV:
+			obj.onmousedown = makeMovableMouseDown;
+			obj.style.cursor='move';
+		}
+  		function makeMovableMouseDown(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// get the mouse cursor position at startup:
+			obj.pos3 = e.clientX;
+			obj.pos4 = e.clientY;
+			document.onmouseup = makeMovableStop;
+			// call a function whenever the cursor moves:
+			document.onmousemove = makeMovableDrag;
+  		}
+		function makeMovableDrag(e) {
+			e = e || window.event;
+			e.preventDefault();
+			// calculate the new cursor position:
+			obj.pos1 = obj.pos3 - e.clientX;
+			obj.pos2 = obj.pos4 - e.clientY;
+			obj.pos3 = e.clientX;
+			obj.pos4 = e.clientY;
+			// set the element's new position:
+			obj.style.top = (obj.offsetTop - obj.pos2) + "px";
+			obj.style.left = (obj.offsetLeft - obj.pos1) + "px";
+		}
+		function makeMovableStop() {
+			// stop moving when mouse button is released:
+			document.onmouseup = null;
+			document.onmousemove = null;
+		}
+	},
 	/**
 	* @name wacss.modalClose
 	* @describe closes the modal window generated by an ajax call
@@ -4041,7 +4286,7 @@ var wacss = {
 		//confirm?
 		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || pul.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
-			let txt=has_confirm.replace(/\[newline\]/g,"\n");
+			let txt=has_confirm.replace(/\[newline\]/g,wacss.EOL);
 			if(txt.indexOf('id:') == 0){
 				let cid=txt.replace('id:','');
 				let cidobj=document.querySelector('#'+cid);
