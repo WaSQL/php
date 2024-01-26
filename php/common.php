@@ -12196,6 +12196,7 @@ function processCSVLines($file,$func_name,$params=array()){
 *	[-maxlen] int - max row length. defaults to 0
 *	[-separator] char - defaults to ,
 *	[-enclose] char - defaults to "
+*	[-escape] char - defaults to blank
 *	[-fields]  array - an array of fields for the CSV.  If not specified it will use the first line of the file for field names
 * 	[-listfields] mixed - comman separated list of fields to return
 *	[-start|skiprows] int - line to start on
@@ -12210,6 +12211,7 @@ function getCSVRecords($file,$params=array()){
 	if(!isset($params['-maxlen'])){$params['-maxlen']=1000000;}
 	if(!isset($params['-separator'])){$params['-separator']=',';}
 	if(!isset($params['-enclose'])){$params['-enclose']='"';}
+	if(!isset($params['-escape'])){$params['-escape']='';}
 	if(isset($params['-skiprows']) && !isset($params['-start'])){$params['-start']=$params['-skiprows'];}
 	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
 	//backward compatibility
@@ -12234,7 +12236,7 @@ function getCSVRecords($file,$params=array()){
 		else{
 			$fields=array();
 		}
-		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose'],$params['-escape']) ) !== FALSE ) {
 			if($bomchecked==0){
 				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
 				$bomchecked=1;
