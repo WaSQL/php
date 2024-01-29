@@ -4925,6 +4925,10 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '<!--Skipped LT:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
+			elseif(stringEndsWith($key,'_options') && is_array($val)){
+				$rtn .= '<!--Skipped Options:'.$key.'-->'.PHP_EOL;
+				continue;
+			}
 			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
 				$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
 				continue;
