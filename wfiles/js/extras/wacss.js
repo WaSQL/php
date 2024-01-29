@@ -78,6 +78,7 @@ var wacss = {
 	ajaxGet: function(url,div,params) {
 	    let xmlhttp = new XMLHttpRequest();
 	    xmlhttp.recenter='';
+	    xmlhttp.div=div;
 	    if(typeof(div)==='string'){
 	    	switch(div.toLowerCase()){
 	    		case 'centerpop':
@@ -110,8 +111,12 @@ var wacss = {
 	    xmlhttp.onreadystatechange = function () {
 	        if (this.readyState == XMLHttpRequest.DONE) {
 	            if (this.status == 200 || this.status == 201) {
+	            	this.div=wacss.getObject(this.div);
 	            	// Success: if div does not exist, write it to the console window
-	            	if(undefined == this.div){console.log(this.responseText);}
+	            	if(undefined == this.div){
+	            		console.log(this.div+' does not exist');
+	            		console.log(this.responseText);
+	            	}
 	                else{
 	                	if(undefined != this.processing){
 	                		this.processing.innerHTML=this.processing.previous;
