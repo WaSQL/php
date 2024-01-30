@@ -12212,6 +12212,7 @@ function getCSVRecords($file,$params=array()){
 	if(!isset($params['-separator'])){$params['-separator']=',';}
 	if(!isset($params['-enclose'])){$params['-enclose']='"';}
 	if(!isset($params['-escape'])){$params['-escape']='';}
+	$parts=explode('.',phpversion());
 	$phpver=(float)"{$parts[0]}.{$parts[1]}";
 	if($phpver <=  7.3){
 		$params['-escape']='\\';

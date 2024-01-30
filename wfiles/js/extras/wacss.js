@@ -891,10 +891,16 @@ var wacss = {
 		if(typeof(obj)=='object'){return obj;}
 	    else if(typeof(obj)=='string'){
 	    	//try querySelector
-	    	let qso=document.querySelector('#'+obj);
-	    	if(typeof(qso)=='object'){return qso;}
-	    	qso=document.querySelector(obj);
-	    	if(typeof(qso)=='object'){return qso;}
+	    	try{
+	    		let qso=document.querySelector('#'+obj);
+	    		if(typeof(qso)=='object'){return qso;}
+	    	}
+			catch(e){}
+			try{
+	    		qso=document.querySelector(obj);
+	    		if(typeof(qso)=='object'){return qso;}
+	    	}
+			catch(e){}
 	    	//try getElementById
 			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
 			else if(undefined != document.getElementsByName(obj)){
@@ -1019,6 +1025,7 @@ var wacss = {
 	*/
 	init: function(){
 		/*wacssedit*/
+		wacss.initOnloads();
 		wacss.initWacssEdit();
 		wacss.initChartJs();
 		wacss.initTabs();
@@ -2385,6 +2392,82 @@ var wacss = {
 			editor.textContent=els[e].textContent;
 			//setEditorMarkup(editor);
 			els[e].parentNode.insertBefore(editor, els[e].nextSibling);
+		}
+	},
+	initOnloads: function(){
+		let onloads=document.querySelectorAll('div.onload');
+		for(let i=0;i<onloads.length;i++){
+			let funcstr=onloads[i].innerText;
+			let wacssstr=funcstr.replace('wacss.','');
+			let dsetlen=Object.keys(onloads[i].dataset).length;
+			if(typeof window[funcstr] === 'function'){
+				//console.log(funcstr+' is a windows function');
+				switch(dsetlen){
+					case 0:
+						window[funcstr]();
+					break;
+					case 1:
+						window[funcstr](onloads[i].dataset.arg1);
+					break;
+					case 2:
+						window[funcstr](onloads[i].dataset.arg1,onloads[i].dataset.arg2);
+					break;
+					case 3:
+						window[funcstr](onloads[i].dataset.arg1,onloads[i].dataset.arg2,onloads[i].dataset.arg3);
+					break;
+					default:
+						console.log('initOnloads invalid function: '+wacssstr+'. Only three args is allowed');
+					break;
+				}
+				
+			}
+			else if(typeof wacss[wacssstr] === 'function'){
+				//console.log(wacssstr+' is a wacss function');
+				switch(dsetlen){
+					case 0:
+						wacss[wacssstr]();
+					break;
+					case 1:
+						wacss[wacssstr](onloads[i].dataset.arg1);
+					break;
+					case 2:
+						wacss[wacssstr](onloads[i].dataset.arg1,onloads[i].dataset.arg2);
+					break;
+					case 3:
+						wacss[wacssstr](onloads[i].dataset.arg1,onloads[i].dataset.arg2,onloads[i].dataset.arg3);
+					break;
+					default:
+						//eval(wacssstr);
+						console.log('initOnloads invalid wacss function: '+wacssstr+'. Only three args is allowed');
+					break;
+				}
+				
+			}
+			else if(typeof funcstr === 'function'){
+				//console.log(funcstr+' is a function');
+				let func=new Function(funcstr);
+				switch(dsetlen){
+					case 0:
+						func();
+					break;
+					case 1:
+						func(onloads[i].dataset.arg1);
+					break;
+					case 2:
+						func(onloads[i].dataset.arg1,onloads[i].dataset.arg2);
+					break;
+					case 3:
+						func(onloads[i].dataset.arg1,onloads[i].dataset.arg2,onloads[i].dataset.arg3);
+					break;
+					default:
+						func();
+					break;
+				}
+				
+			}
+			else{
+				console.log('initOnloads error: '+funcstr+' is NOT a function');
+			}
 		}
 	},
 	/**

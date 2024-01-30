@@ -5,7 +5,8 @@ function appstoreApps(){
 		'-tableclass'=>'table striped bordered sticky collapsed',
 		'-where'=>"coalesce(_app->>'\$.key','') != ''",
 		'-fields'=>'_id,_app,name,_cdate,_edate,title,description',
-		'-listfields'=>'_id,name,title,description,actions',
+		'-listfields'=>'_id,name,actions',
+		'name_displayname'=>'Name/Description',
 		'-simplesearch'=>1,
 		'-results_eval'=>'appstoreAppsExtra',
 		'-tr_data-nav'=>'/php/admin.php',
@@ -21,19 +22,23 @@ function appstoreAppsExtra($recs){
 		//name
 		$name=$rec['name'];
 		$rec['name']=<<<ENDOFNAME
-		<div style="display:flex;">
-			<div style="align-self:center;flex:1;">{$name}</div>
-			<a href="/{$name}/postinstall" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;">Setup</a>
-		</div>
+		<div class="w_big w_bold">{$name} - {$rec['title']}</div>
+		<div class="w_small w_gray" style="margin-left:10px;">: {$rec['description']}</div>
 ENDOFNAME;
 		//actions
-		$actions=array('<div style="display:flex;justify-content:flex-end;">');
+		$actions=array('<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;">');
+		//action - setup
+		$actions[]='<a href="/'.$name.'/postinstall" title="Run once after install" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-circle w_green"></span> Post Install Setup</a>';
+		//action - settings
+		$actions[]='<a href="/'.$name.'/settings" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-gear w_blue"></span> App Settings</a>';
+		//action - settings
+		$actions[]='<a href="/'.$name.'/documentation" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-help-circled w_teal"></span> App Documentation</a>';
 		//action - update
-		$actions[]='<button class="btn w_pointer" data-confirm="Update '.$name.'?" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.nav(this);"><span class="icon-refresh"></span> Update</button>';
+		$actions[]='<button class="btn w_pointer" style="margin-bottom:5px;" data-confirm="Update '.$name.'?" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.nav(this);"><span class="icon-refresh"></span> Update App</button>';
 		//action - show appkey
-		$actions[]='<button class="btn w_pointer" data-appkey="'.$rec['appkey'].'" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.copy2Clipboard(this.dataset.appkey);return false;"><span class="icon-lock w_gold"></span> Appkey</button>';
+		$actions[]='<button class="btn w_pointer" style="margin-bottom:5px;" data-appkey="'.$rec['appkey'].'" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.copy2Clipboard(this.dataset.appkey);return false;"><span class="icon-lock w_gold"></span> Copy Appkey</button>';
 		//action - uninstall
-		$actions[]='<button class="btn w_pointer w_danger" style="margin-left:10px;" data-id="'.$rec['_id'].'" data-confirm="UNINSTALL '.$name.'? [newline][newline]This will remove ALL '.$name.' related files.[newline][newline]ARE YOU SURE? Click OK to confirm." data-_func="uninstall" data-div="appstore_content" onclick="wacss.nav(this);"><span class="icon-erase w_danger"></span> Uninstall</button>';
+		$actions[]='<button class="btn w_pointer w_danger" style="margin-left:10px;" data-id="'.$rec['_id'].'" data-confirm="UNINSTALL '.$name.'? [newline][newline]This will remove ALL '.$name.' related files.[newline][newline]ARE YOU SURE? Click OK to confirm." data-_func="uninstall" data-div="appstore_content" onclick="wacss.nav(this);"><span class="icon-erase w_danger"></span> Uninstall App</button>';
 		$actions[]='</div>';
 		$actions[]='<div id="actions_'.$rec['_id'].'"></div>';
 		$rec['actions']=implode(PHP_EOL,$actions);
