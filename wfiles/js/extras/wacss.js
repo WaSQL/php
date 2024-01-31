@@ -79,31 +79,41 @@ var wacss = {
 	    let xmlhttp = new XMLHttpRequest();
 	    xmlhttp.recenter='';
 	    xmlhttp.div=div;
+	    let cp={};
 	    if(typeof(div)==='string'){
 	    	switch(div.toLowerCase()){
 	    		case 'centerpop':
 	    		case 'wacss_centerpop':
 	    			xmlhttp.div=wacss.getObject('wacss_centerpop');
 	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop';}
-	    			xmlhttp.div=wacss.createCenterpop(params.title);
+	    			cp=wacss.createCenterpop(params.title);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop1':
 	    		case 'wacss_centerpop1':
 	    			xmlhttp.div=wacss.getObject('wacss_centerpop1');
 	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop1';}
-	    			xmlhttp.div=wacss.createCenterpop(params.title,1);
+	    			cp=wacss.createCenterpop(params.title,1);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop2':
 	    		case 'wacss_centerpop2':
 	    			xmlhttp.div=wacss.getObject('wacss_centerpop2');
 	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
-	    			xmlhttp.div=wacss.createCenterpop(params.title,2);
+	    			cp=wacss.createCenterpop(params.title,2);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop3':
 	    		case 'wacss_centerpop3':
 	    			xmlhttp.div=wacss.getObject('wacss_centerpop3');
 	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
-	    			xmlhttp.div=wacss.createCenterpop(params.title,3);
+	    			cp=wacss.createCenterpop(params.title,3);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    		break;
+	    		case 'modal':
+	    			params.overlay=1;
+	    			let modal=wacss.modalPopup(wacss.setprocessing,params.title,params)
+	    			xmlhttp.div=modal.querySelector('#wacss_modal_content');
 	    		break;
 	    	}
 	    }
@@ -511,7 +521,9 @@ var wacss = {
 		if(undefined==x){x='';}
 		let cp=wacss.getObject('wacss_centerpop'+x);
 		if(undefined != cp){
-			return cp.querySelector('div.wacss_centerpop_content');
+			let cpt_txt=cp.querySelector('.wacss_centerpop_title_text');
+			if(undefined != cpt_txt){cpt_txt.innerHTML=title;}
+			return cp;
 		}
 		//centerpop
 		cp=document.createElement('div');
@@ -524,6 +536,7 @@ var wacss = {
 		//title text
 		let cpt_text=document.createElement('div');
 		cpt_text.style.flex=1;
+		cpt_text.className='wacss_centerpop_title_text';
 		cpt_text.innerHTML=title;
 		cpt.appendChild(cpt_text);
 		//title processing
@@ -554,7 +567,7 @@ var wacss = {
 		wacss.centerObject(cp);
 		//make movable
 		wacss.makeMovable(cp,cpt);
-		return cpc;
+		return cp;
 	},
 	dismiss: function(el){
 		/* if the user is hovering over it, do not close.*/
@@ -4396,6 +4409,7 @@ var wacss = {
 		if(undefined==opts){opts={};}
 		//find the div 
 		let div=opts.div || elobj.dataset.div || pli.dataset.div || pul.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
+		//console.log('wacss.nav - div: '+div);
 		//confirm?
 		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || pul.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
@@ -4490,6 +4504,7 @@ var wacss = {
 		}
 		//nav
 		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
+		//console.log('wacss.nav - nav: '+nav);
 		//scrollto
 		let scrollto=opts.scrollto || elobj.dataset.scrollto || pli.dataset.scrollto || pul.dataset.scrollto || ptd.dataset.scrollto || ptr.dataset.scrollto || '';
 		//handle data-nav id: for cases where we are not doing ajax
