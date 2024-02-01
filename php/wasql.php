@@ -1558,6 +1558,7 @@ function wasqlGetInputtypes($d=0){
 		'file'			=> 'File Upload',
 		'formula'		=> 'Formula',
 		'hidden'		=> 'Hidden',
+		'latlon'		=> 'Latitude/Longitude',
 		'multiselect'	=> 'Select Multiple',
 		'multiinput'	=> 'Multi Input',
 		'select'		=> 'Select',

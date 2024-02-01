@@ -8206,6 +8206,9 @@ function getDBFieldTag($params=array()){
 		case 'geolocationmap':
 			$tag=buildFormGeoLocationMap($info[$field]['name'],$info[$field]);
 		break;
+		case 'latlon':
+			$tag=buildFormLatLon($info[$field]['name'],$info[$field]);
+		break;
 		case 'hidden':
 			$tag=buildFormHidden($info[$field]['name'],$info[$field]);
 			break;
