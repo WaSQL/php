@@ -558,6 +558,8 @@ var wacss = {
 		let cpc=document.createElement('div');
 		cpc.id='centerpop'+x+'_content';
 		cpc.className='wacss_centerpop_content';
+		cpc.style.maxHeight='85vh';
+		cps.style.overflow='auto';
 		cpc.innerHTML='<div class="align-center">......</div>';
 		//appends
 		cp.appendChild(cpt);
