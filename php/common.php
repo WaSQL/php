@@ -11557,6 +11557,26 @@ function getRunTime(){
 	global $TIME_START;
 	return microtime(true)-$TIME_START;
 }
+//---------- begin function getStoredValueAge ----------
+/**
+* @describe returns the age in seconds of the stored value
+* @param eval_code string - php code to evaluate
+* @return integer seconds old
+* @usage
+*	$age=getStoredValueAge('return pageData();'); echo verboseTime($age);
+*/
+function getStoredValueAge($evalstr){
+	$progpath=dirname(__FILE__);
+	global $CONFIG;
+	$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
+    if(is_file($local) && filesize($local) > 50){
+		$filetime=filemtime($local);
+		$ctime=time();
+		$diff_seconds=$ctime-$filetime;
+		return $diff_seconds;
+	}
+	return 0;
+}
 //---------- begin function getStoredValue ----------
 /**
 * @describe sets or returns a previously set stored value. Stored values persist like sessions but work across multiple users
