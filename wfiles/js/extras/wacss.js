@@ -186,6 +186,7 @@ var wacss = {
 	    }
 		let aurl = new URL(url);
 		let aparams = aurl.searchParams;
+		params.AjaxRequestUniqueId=wacss.ajaxUniqueID();
 		for(k in params){
 	    	if(undefined==typeof(params[k]) || params[k]===null || params[k].length==0){continue;}
 			aparams.append(k, params[k]);
@@ -214,6 +215,9 @@ var wacss = {
 	    xmlhttp.open("POST", url, true);
 	    xmlhttp.send(data);
 	    return false;
+	},
+	ajaxUniqueID: function(){
+		return "10000000000000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
 	},
 	/**
 	* @name wacss.blink
@@ -4456,7 +4460,7 @@ var wacss = {
 		if(undefined==opts){opts={};}
 		//find the div 
 		let div=opts.div || elobj.dataset.div || pli.dataset.div || pul.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
-		//console.log('wacss.nav - div: '+div);
+		console.log('wacss.nav - div: '+div);
 		//confirm?
 		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || pul.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
@@ -4551,7 +4555,7 @@ var wacss = {
 		}
 		//nav
 		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
-		//console.log('wacss.nav - nav: '+nav);
+		console.log('wacss.nav - nav: '+nav);
 		//scrollto
 		let scrollto=opts.scrollto || elobj.dataset.scrollto || pli.dataset.scrollto || pul.dataset.scrollto || ptd.dataset.scrollto || ptr.dataset.scrollto || '';
 		//handle data-nav id: for cases where we are not doing ajax
