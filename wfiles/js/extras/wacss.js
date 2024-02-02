@@ -4152,40 +4152,43 @@ var wacss = {
 		ico=wacss.getObject(ico);
 		if(undefined==inp || undefined==ico){return false;}
 		ico.class_orig=ico.className;
-	    inp.style="border:2px solid red;";
+	    inp.color_orig=inp.style.borderColor;
+	    inp.style.borderColor='red';
 	    ico.className='icon-spin5 w_spin';
 	    if (navigator.geolocation) {
-	        const geoId=navigator.geolocation.watchPosition(function(position) {
+	        const latlonId=navigator.geolocation.watchPosition(
+	        function(position) {
 	            if(undefined==this.counter){this.counter=0;}
 	            this.counter=this.counter+1;
+	            console.log('Try: '+this.counter);
 	            let latitude = position.coords.latitude;
 	            let longitude = position.coords.longitude;
 	            let accuracy = position.coords.accuracy;
 	            inp.value='['+position.coords.latitude+','+position.coords.longitude+','+position.coords.accuracy+','+this.counter+']';
 	            ico.title='try: '+this.counter+', Accuracy: '+position.coords.accuracy;
-	            if(parseInt(position.coords.accuracy) <= 10){
+	            if(parseInt(position.coords.accuracy) <= 10 || this.counter > 5){
 	              	ico.className=ico.class_orig;
-	              	inp.style="border:1px solid #ccc;";
-	              	window.navigator.geolocation.clearWatch(geoId);
-	              	return;
-	            }
-	            if(this.counter > 50){
-	              	ico.className=ico.class_orig;
-	              	inp.style="border:1px solid #ccc;";
-	              	window.navigator.geolocation.clearWatch(geoId);
-	              	alert('Unable to get a very accurate location reading');
-	              	return;
+	              	inp.style.borderColor=inp.color_orig;
+	              	window.navigator.geolocation.clearWatch(latlonId);
+	              	console.log('latlon set');
+	              	console.log(position.coords);
+	              	return false;
 	            }
 	        },
 	        function error(msg){
-	          	ico.className='icon-map-marker';
-	          	inp.style="border:1px solid #ccc;";
-	          	window.navigator.geolocation.clearWatch(geoId);
-	          	alert('Get location error: '+msg.message);
+	          	ico.className=ico.class_orig;
+	          	inp.style.borderColor=inp.color_orig;
+	          	window.navigator.geolocation.clearWatch(latlonId);
+	          	ico.title=ico.title+' - ERROR: '+msg;
+	          	console.log('latlon error');
+	          	return false;
 	        },
-	        {maximumAge:2000, timeout:4000, enableHighAccuracy: true});
+	        {maximumAge:500, timeout:10000, enableHighAccuracy: true});
 	    } else {
-	        alert("Geolocation API is not supported in your browser. Unable to set LatLon");
+	    	ico.className=ico.class_orig;
+	        inp.style.borderColor=inp.color_orig;
+	        ico.title=ico.title+' - ERROR: '+"Geolocation API is not supported in your browser. Unable to set LatLon";
+	        console.log('latlon no support');
 	    }
 	    return false;
 	},
