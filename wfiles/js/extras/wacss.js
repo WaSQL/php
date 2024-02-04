@@ -28,19 +28,6 @@ var wacss = {
 	*/
 	hoverDiv:'',
 	/**
-	* @name wacss.loadJsText
-	* @describe loads a text string as a javascript function
-	* @param string function name
-	* @param string function body
-	* @return boolean true
-	* @usage wacss.loadJsText('myfunc',str); myfunc();
-	*/
-	loadJsText:function(name,body){
-		let code = 'this.f = function ' + name + '() {'+body+'}';
-		eval(code);
-		return true;
-	},
-	/**
 	* @name wacss.addClass
 	* @describe adds a class to an element
 	* @param mixed element object or id
@@ -117,40 +104,6 @@ var wacss = {
 	    		break;
 	    	}
 	    }
-	    
-	    xmlhttp.onreadystatechange = function () {
-	        if (this.readyState == XMLHttpRequest.DONE) {
-	            if (this.status == 200 || this.status == 201) {
-	            	this.div=wacss.getObject(this.div);
-	            	// Success: if div does not exist, write it to the console window
-	            	if(undefined == this.div){
-	            		console.log(this.div+' does not exist');
-	            		console.log(this.responseText);
-	            	}
-	                else{
-	                	if(undefined != this.processing){
-	                		this.processing.innerHTML=this.processing.previous;
-	                	}
-	                	this.div.innerHTML = this.responseText;
-	                	if(undefined != this.recenter && this.recenter.length > 0){
-	                		wacss.centerObject(this.recenter);
-	                	}
-	                }
-	            } else {
-	            	// Failed: if div does not exist, write it to the console window
-	            	if(undefined == this.div){console.log(JSON.stringify(this));}
-	                else{
-	                	if(undefined != this.processing){
-	                		this.processing.innerHTML=this.processing.previous;
-	                	}
-	                	this.div.innerHTML = JSON.stringify(this);
-	                	if(undefined != this.recenter && this.recenter.length > 0){
-	                		wacss.centerObject(this.recenter);
-	                	}
-	                }
-	            }
-	        }
-	    };
 		//set processing
 		if(undefined==params.setprocessing){
 			xmlhttp.div.innerHTML=wacss.processing;
@@ -191,8 +144,42 @@ var wacss = {
 	    	if(undefined==typeof(params[k]) || params[k]===null || params[k].length==0){continue;}
 			aparams.append(k, params[k]);
 		}
+		//load
+	    xmlhttp.onload = function(){
+	    	//console.log('load');
+	    	this.ajaxevent='load';
+	    	this.ajaxtext=this.responseText;
+	    	wacss.ajaxProcessResponse(this);
+	    };
+	    //error
+	    xmlhttp.onerror = function(){
+	    	//console.log('error');
+	    	this.ajaxevent='error';
+	    	this.ajaxtext='&#9888; ajax request error';
+	    	wacss.ajaxProcessResponse(this);
+	    };
+	    xmlhttp.ontimeout = function(){
+	    	//console.log('timeout');
+	    	this.ajaxevent='timeout';
+	    	this.ajaxtext='&#128359; ajax request timed out';
+	    	wacss.ajaxProcessResponse(this);
+	    };
+	    xmlhttp.onabort = function(){
+	    	//console.log('abort');
+	    	this.ajaxevent='abort';
+	    	this.ajaxtext='&#x2718; ajax request aborted';
+	    	wacss.ajaxProcessResponse(this);
+	    };
 		//make the request
 	    xmlhttp.open("GET", aurl.toString(), true);
+	    //timeout
+	    if(undefined != params.timeout){xmlhttp.timeout=parseInt(params.timeout);}
+	    else{
+	    	let divobj=wacss.getObject(div);
+	    	if(undefined != divobj && undefined != divobj.dataset.timeout){
+	    		xmlhttp.timeout=parseInt(divobj.dataset.timeout);
+	    	}
+	    }
 	    xmlhttp.send();
 	    //always return false
 	    return false;
@@ -201,20 +188,87 @@ var wacss = {
 	    let xmlhttp = new XMLHttpRequest();
 	    let url=frm.getAttribute('action');
 	    xmlhttp.div=div;
-	    xmlhttp.onreadystatechange = function () {
-	        if (this.readyState == XMLHttpRequest.DONE) {
-	        	let div=document.getElementById(this.div);
-	            if (this.status == 200 || this.status == 201) {
-	                div.innerHTML = this.responseText;
-	            } else {
-	                div.innerHTML = JSON.stringify(this);
-	            }
-	        }
+	    //load
+	    xmlhttp.onload = function(){
+	    	//console.log('load');
+	    	this.ajaxevent='load';
+	    	this.ajaxtext=this.responseText;
+	    	wacss.ajaxProcessResponse(this);
 	    };
+	    //error
+	    xmlhttp.onerror = function(){
+	    	//console.log('error');
+	    	this.ajaxevent='error';
+	    	this.ajaxtext='&#9888; ajax request error';
+	    	wacss.ajaxProcessResponse(this);
+	    };
+	    xmlhttp.ontimeout = function(){
+	    	//console.log('timeout');
+	    	this.ajaxevent='timeout';
+	    	this.ajaxtext='&#128359; ajax request timed out';
+	    	wacss.ajaxProcessResponse(this);
+	    };
+	    xmlhttp.onabort = function(){
+	    	//console.log('abort');
+	    	this.ajaxevent='abort';
+	    	this.ajaxtext='&#x2718; ajax request aborted';
+	    	wacss.ajaxProcessResponse(this);
+	    };
+	    //set processing
+	    let processing=frm.dataset.setprocessing || frm[setprocessing] || '0';
+		if (processing.toString() != '0'){
+			switch(processing.toString().toLowerCase()){
+				case 'centerpop_processing':
+					processing='wacss_centerpop_processing';
+				break;
+				case 'centerpop1_processing':
+					processing='wacss_centerpop1_processing';
+				break;
+				case 'centerpop2_processing':
+					processing='wacss_centerpop2_processing';
+				break;
+				case 'centerpop3_processing':
+					processing='wacss_centerpop3_processing';
+				break;
+			}
+			pdiv=wacss.getObject(processing);
+			if(undefined != pdiv){
+				pdiv.previous=pdiv.innerHTML;
+				xmlhttp.processing=pdiv;
+				pdiv.innerHTML=wacss.processing;
+			}
+		}
 	    let data = new FormData(frm);
+	    //add AjaxRequestUniqueId
+	    data.append('AjaxRequestUniqueId',wacss.ajaxUniqueID());
 	    xmlhttp.open("POST", url, true);
+	    //timeout
+	    if(undefined != frm.dataset.timeout){xmlhttp.timeout=parseInt(frm.dataset.timeout);}
+	    else{
+	    	let divobj=wacss.getObject(div);
+	    	if(undefined != divobj && undefined != divobj.dataset.timeout){
+	    		xmlhttp.timeout=parseInt(divobj.dataset.timeout);
+	    	}
+	    }
 	    xmlhttp.send(data);
 	    return false;
+	},
+	ajaxProcessResponse: function(obj){
+		let div=wacss.getObject(obj.div);
+		let txt=obj.ajaxtext || obj.responseText;
+		if(undefined == div){
+    		console.log('dom object does not exist');
+    		console.log(txt);
+    	}
+        else{
+        	if(undefined != obj.processing){
+        		obj.processing.innerHTML=obj.processing.previous;
+        	}
+        	div.innerHTML = txt;
+        	if(undefined != obj.recenter && obj.recenter.length > 0){
+        		wacss.centerObject(obj.recenter);
+        	}
+        }
 	},
 	ajaxUniqueID: function(){
 		return "10000000000000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
@@ -389,6 +443,15 @@ var wacss = {
 		}
 		return tag;
 	},
+	callFunc: function(params){
+		if(undefined == params){return false;}
+		if(undefined == params.func){return false;}
+		let func=params.func;
+		if(undefined != params.args){
+			return window[func](params.args);	
+		}
+		return window[func]();
+	},
 	/**
 	* @name wacss.centerObject
 	* @describe centers specified object or id
@@ -411,6 +474,23 @@ var wacss = {
 		if(y < 10){y=10;}
 	  	sObj.style.top=y+'px';
 	  	return new Array(x,y);
+	},
+	chartjsDrawTotals: function(chart){
+		let width = chart.chart.width,
+	    height = chart.chart.height,
+	    ctx = chart.chart.ctx;
+	 
+	    ctx.restore();
+	    let fontSize = (height / 60).toFixed(2);
+	    ctx.font = fontSize + "em sans-serif";
+	    ctx.textBaseline = "middle";
+	 
+	    let text = chart.config.centerText.text,
+	    textX = Math.round((width - ctx.measureText(text).width) / 2),
+	    textY = height-20;
+	 
+	    ctx.fillText(text, textX, textY);
+	    ctx.save();
 	},
 	/**
 	* @name wacss.checkAllElements
@@ -610,6 +690,324 @@ var wacss = {
 		    el.fireEvent("on"+ev);
 		}
 		return false;
+	},
+	formatAlpha: function(str){
+  		let cleaned = ('' + str).replace(/[^a-zA-Z]+/g, '');
+  		return cleaned;
+	},
+	formatAlphanumeric: function(str){
+  		let cleaned = ('' + str).replace(/[^a-zA-Z0-9]+/g, '');
+  		return cleaned;
+	},
+	formatInteger: function(str){
+  		let cleaned = ('' + str).replace(/[^0-9]+/g, '');
+  		return cleaned;
+	},
+	formatHexcolor: function(str){
+  		let cleaned = ('' + str).replace(/[^abcdef0-9]+/g, '');
+  		cleaned=cleaned.substr(0,8);
+  		let hex='#';
+  		switch(cleaned.length){
+  			case 3:return hex+cleaned+cleaned;break;
+  			case 6:return hex+cleaned;break;
+  			case 8:return hex+cleaned;break;
+  		}
+  		return '';
+	},
+	formatJSON: function(str){
+		let jsonobj=JSON.parse(str);
+		return JSON.stringify(jsonobj,null,'\t');
+	},
+	formatPhone: function(str){
+  		//Filter only numbers from the input
+  		let cleaned = ('' + str).replace(/[^0-9]+/g, '');
+  		cleaned=cleaned.substr(0,11);
+  		//Check if the input is of correct
+  		let match = cleaned.match(/^(\d{1})?(\d{3})(\d{3})(\d{4})$/);
+  		if (match) {
+    		//Remove the matched extension code
+    		//Change this to format for any country code.
+    		let intlCode = (match[1] ? '+'+match[1]+' ' : '')
+    		return [intlCode, '(', match[2], ') ', match[3], '-', match[4]].join('')
+  		}
+  		return cleaned;
+	},
+	formChanged: function(frm,debug){
+		if(undefined == debug || debug != 1){debug=0;}
+		if(debug==1){console.log('formChanged');}
+		//data-classif="w_red:age:4"
+		//data-requiredif, data-displayif, data-hideif, data-blankif, data-readonlyif
+		//data-displayif
+		let els=frm.querySelectorAll('[data-displayif]');
+		for(let i=0;i<els.length;i++){
+			if(wacss.formIsIfTrue(frm,els[i].dataset.displayif)){
+				if(undefined != els[i].dataset.display){
+					if(debug==1){console.log('displayif to display:'+els[i]);}
+					els[i].style.display=els[i].dataset.display;
+				}
+				else{
+					if(debug==1){console.log('displayif to initial:'+els[i]);}
+					els[i].style.display='initial';
+				}
+			}
+			else{
+				if(debug==1){console.log('displayif to none:'+els[i]);}
+				els[i].style.display='none';
+			}
+		}
+		//data-hideif
+		els=frm.querySelectorAll('[data-hideif]');
+		for(let i=0;i<els.length;i++){
+			if(wacss.formIsIfTrue(frm,els[i].dataset.hideif)){
+				if(debug==1){console.log('hideif to none:'+els[i]);}
+				els[i].style.display='none';
+			}
+			else{
+				if(undefined != els[i].dataset.display){
+					if(debug==1){console.log('hideif to display:'+els[i]);}
+					els[i].style.display=els[i].dataset.display;
+				}
+				else{
+					if(debug==1){console.log('hideif to initial:'+els[i]);}
+					els[i].style.display='initial';
+				}
+			}
+		}
+		//data-readonlyif
+		els=frm.querySelectorAll('[data-readonlyif]');
+		for(let i=0;i<els.length;i++){
+			if(wacss.formIsIfTrue(frm,els[i].dataset.readonlyif)){
+				if(!els[i].hasAttribute('onclick')){
+					els[i].setAttribute('onclick','return false');
+					els[i].setAttribute('onclickx','1');
+				}
+				if(debug==1){console.log('readonly set:'+els[i]);}
+				els[i].setAttribute('readonly','readonly');
+			}
+			else{
+				if(debug==1){console.log('readonly unset:'+els[i]);}
+				els[i].removeAttribute('readonly');
+				if(els[i].hasAttribute('onclickx')){
+					els[i].removeAttribute('onclick');
+					els[i].removeAttribute('onclickx');
+				}
+			}
+		}
+		//data-requiredif
+		els=frm.querySelectorAll('[data-requiredif]');
+		for(let i=0;i<els.length;i++){
+			if(wacss.formIsIfTrue(frm,els[i].dataset.requiredif)){
+				els[i].setAttribute('required','required');
+				if(debug==1){console.log('requiredif set:'+els[i]);}
+			}
+			else{
+				if(debug==1){console.log('requiredif unset:'+els[i]);}
+				els[i].removeAttribute('required');
+				if(els[i].hasAttribute('data-required')){
+					els[i].removeAttribute('data-required');
+				}
+			}
+		}
+		//data-blankif
+		els=frm.querySelectorAll('[data-blankif]');
+		for(let i=0;i<els.length;i++){
+			if(wacss.formIsIfTrue(frm,els[i].dataset.blankif)){
+				if(debug==1){console.log('blankif set:'+els[i]);}
+				switch(els[i].type.toLowerCase()){
+					case 'radio':
+					case 'checkbox':
+						//store all checked values into blankx
+						//els[i].dataset.blankx=new Array();
+						console.error('blankif does not support checkbox and radio inputs');
+					break;
+					case 'textarea':
+						els[i].dataset.blankx=trim(els[i].innerHTML);
+						//is this textarea a codemirror
+						if(undefined != els[i].codemirror){
+							els[i].codemirror.getDoc().setValue('');
+						}
+						els[i].innerHTML='';
+					break;
+					default:
+						els[i].dataset.blankx=els[i].value;
+						els[i].value='';
+					break;
+				}
+			}
+			else{
+				if(debug==1){console.log('blankif unset:'+els[i]);}
+				if(undefined != els[i].dataset.blankx){
+					switch(els[i].type.toLowerCase()){
+						case 'radio':
+						case 'checkbox':
+							//not supported
+							console.error('blankif does not support checkbox and radio inputs');
+						break;
+						case 'textarea':
+							//is this textarea a codemirror
+							if(undefined != els[i].codemirror){
+								els[i].codemirror.getDoc().setValue(els[i].dataset.blankx);
+							}
+							els[i].innerHTML='';
+							els[i].innerHTML=els[i].dataset.blankx;
+						break;
+						default:
+							els[i].value=els[i].dataset.blankx;
+						break;
+					}
+				}
+			}
+		}
+		//data-classif="w_bold:age:12"  data-classif="w_bold:age:12,3 and color:red"
+		els=frm.querySelectorAll('[data-classif]');
+		for(let i=0;i<els.length;i++){
+			let parts=els[i].dataset.classif.split(':');
+			let eclass=parts.shift();
+			let ifstr=parts.join(':');
+			if(wacss.formIsIfTrue(frm,ifstr)){
+				if(debug==1){console.log('classif added:'+els[i]);}
+				els[i].classList.add(eclass);
+			}
+			else{
+				if(debug==1){console.log('classif removed:'+els[i]);}
+				els[i].classList.remove(eclass);
+			}
+		}
+		//data-format
+		els=frm.querySelectorAll('input[data-format]');
+		if(els.length){
+			for(let i=0;i<els.length;i++){
+				switch(els[i].dataset.format.toLowerCase()){
+					case 'alpha':els[i].value=wacss.formatAlpha(els[i].value);break;
+					case 'alphanumeric':els[i].value=wacss.formatAlphanumeric(els[i].value);break;
+					case 'integer':els[i].value=wacss.formatInteger(els[i].value);break;
+					case 'hexcolor':
+						els[i].value=wacss.formatHexcolor(els[i].value);
+						if(undefined == els[i].bl_orig){
+							els[i].bl_orig=els[i].style.borderLeft;
+						}
+						if(els[i].value.length > 0){
+							els[i].style.borderLeft='6px solid '+els[i].value;
+						}
+						else{
+							els[i].style.borderLeft=els[i].bl_orig;
+						}
+					break;
+					case 'phone':els[i].value=wacss.formatPhone(els[i].value);break;	
+				}	
+			}
+		}
+		return;
+	},
+	formIsIfTrue: function(frm,ifstr){
+		//age:5
+		//age:5,12
+		//age:5 and color:red
+		//age:5 or color:red
+		//age:5,12 and color:red,green
+		//Step 1. split ifstr into sets
+		if(undefined==ifstr || ifstr.length==0){
+			//console.error('formIsIfTrue Error - ifstr not defined');
+			return false;
+		}
+		ifstr=trim(ifstr);
+		if(ifstr.length==0){
+			//console.error('formIsIfTrue Error - ifstr is empty');
+			return false;
+		}
+		let oper='';
+		let sets=ifstr.split(' and ');
+		if(sets.length){oper='and';}
+		if(oper.length==0){
+			sets=ifstr.split(' && ');
+			if(sets.length){oper='and';}
+		}
+		if(oper.length==0){
+			sets=ifstr.split(' or ');
+			if(sets.length){oper='or';}
+		}
+		if(oper.length==0){
+			sets=ifstr.split(' || ');
+			if(sets.length){oper='or';}
+		}
+		if(sets.length==0){
+			sets.push(ifstr);
+		}
+		let tvals=new Array();
+		let fvals=new Array();
+		for(let i=0;i<sets.length;i++){
+			let parts=sets[i].split(':');
+			let fld=parts[0];
+			//get fvals for this field - may be one or many
+			let formels=frm.querySelectorAll('[name="'+fld+'"],[name="'+fld+'[]"],[id="'+fld+'"]');
+			if(formels.length==0){continue;}
+			if(formels.length==1 && undefined==formels[0].type){continue;}
+			fvals=new Array();
+			for(let f=0;f<formels.length;f++){
+				if(undefined==formels[f].type){continue;}
+				let fel=formels[f];
+				switch(fel.type.toLowerCase()){
+					case 'select-one':
+		    			fvals.push(fel.options[fel.selectedIndex].value);
+					break;
+					case 'radio':
+					case 'checkbox':
+						if(fel.checked){
+							let fv=fel.value || 1;
+							fvals.push(fv);
+						}
+					break;
+					case 'textarea':
+						fvals.push(trim(fel.innerText));
+					break;
+					default:
+						fvals.push(fel.value);
+					break;
+				}
+			}
+			if(undefined != parts[1]){
+				let vals=parts[1].split(',');
+				for(let v=0;v<vals.length;v++){
+					for(let f=0;f<fvals.length;f++){
+						if(fvals[f]==vals[v]){
+							tvals.push(1);
+							break;	
+						}
+					}
+				}
+			}
+			else{
+				for(let f=0;f<fvals.length;f++){
+					if(fvals[f].length){
+						tvals.push(1);
+					}
+				}
+			}
+		}
+		if(oper=='or'){
+			if(tvals.length > 0){
+				//console.log(ifstr+' = true (or)');
+				return true;
+			}
+			//console.log(ifstr+' = false (or)');
+			return false;
+		}
+		if(tvals.length==sets.length){
+			//console.log(ifstr+' = true (and)');
+			return true;
+		}
+		//console.log(ifstr+' = false (and)');
+		return false;
+	},
+	/**
+	* @name wacss.formValidate
+	* @describe validates form with all the special attributes. i.e. data-requiredif
+	* @param frm object - form
+	* @return boolean
+	* @usage if(!wacss.formValidate(frm)){return false;}
+	*/
+	formValidate: function(frm){   
+    	
 	},
 	/**
 	* @name wacss.function_exists
@@ -1018,6 +1416,82 @@ var wacss = {
 	    }
 	    return _p8() + _p8(true) + _p8(true) + _p8();
 	},
+	hexToRgb: function(hex) {
+		if(undefined==hex){
+			return {
+				r:255,
+				g:255,
+				b:255
+			};
+		}
+		//check for rgb(r,g,b) string;
+		let rgb_regex=/rgb\(([0-9]+?),\ ([0-9]+?),\ ([0-9]+?)\)/;
+		let rgb_match=hex.toString().match(rgb_regex);
+		if(undefined != rgb_match && undefined != rgb_match[1]){
+			return {r:rgb_match[1],g:rgb_match[2],b:rgb_match[3]};
+		}
+		// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+		let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+		hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+			return r + r + g + g + b + b;
+		});
+
+		let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return result ? {
+			r: parseInt(result[1], 16),
+			g: parseInt(result[2], 16),
+			b: parseInt(result[3], 16)
+		} : {
+			r:255,
+			g:255,
+			b:255
+		}
+		;
+    },
+    /**
+	* @name wacss.loadJsText
+	* @describe loads a text string as a javascript function
+	* @param string function name
+	* @param string function body
+	* @return boolean true
+	* @usage wacss.loadJsText('myfunc',str); myfunc();
+	*/
+	loadJsText:function(name,body){
+		let code = 'this.f = function ' + name + '() {'+body+'}';
+		eval(code);
+		return true;
+	},
+	/**
+	* @name wacss.implode
+	* @describe Joins array elements placing glue string between items and return one string
+	* @param string glue
+	* @param array 
+	* @return string
+	* @usage let list=wacss.implode(', ',items);
+	* @source https://phpjs.org/functions
+	*/
+    implode:function(glue,pieces){
+	    let i='',retVal='',tGlue='';
+	    if (arguments.length === 1) {
+	        pieces=glue;
+	        glue='';
+	    }
+		if (typeof(pieces) === 'object') {
+	        if (pieces instanceof Array) {
+				return pieces.join(glue);
+	    	}
+			else {
+	            for (i in pieces) {
+					retVal += tGlue + pieces[i];
+	                tGlue = glue;
+	            }
+	            return retVal;
+	        }
+		}
+		else {
+	        return pieces;
+	    }
+	},
 	/**
 	* @name wacss.in_array
 	* @describe emulates PHP function
@@ -1170,27 +1644,6 @@ var wacss = {
 		}
 		return false;
 	},
-	chartjsDrawTotals: function(chart){
-		let width = chart.chart.width,
-	    height = chart.chart.height,
-	    ctx = chart.chart.ctx;
-	 
-	    ctx.restore();
-	    let fontSize = (height / 60).toFixed(2);
-	    ctx.font = fontSize + "em sans-serif";
-	    ctx.textBaseline = "middle";
-	 
-	    let text = chart.config.centerText.text,
-	    textX = Math.round((width - ctx.measureText(text).width) / 2),
-	    textY = height-20;
-	 
-	    ctx.fillText(text, textX, textY);
-	    ctx.save();
-	},
-	hexToRgb:function(hex) {
-    	let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    	return "rgb(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + ")";
-    },
 	initChartJsBehavior: function(chartid){
 		let list=document.querySelectorAll('[data-behavior="chartjs"]');
 		if(undefined != chartid){
@@ -2092,61 +2545,153 @@ var wacss = {
 		}
 		return true;
 	},
-	hexToRgb: function(hex) {
-		if(undefined==hex){
-			return {
-				r:255,
-				g:255,
-				b:255
-			};
+	/**
+	* @name wacss.initHovers
+	* @describe initializes elements with data-hover="string..." - similiar to tooltips
+	* @describe if string starts with id: followed by the id of another element, the tip will be the contents of that element
+	* @describe if string starts with js: it will execute the following javascript on hover
+	* @describe tooltip position is set by data-position. Values are above,below,right, left
+	* @describe example1:  <div data-hover="this is a test">...</div>
+	* @describe example2:  <div data-hover="id:myhiddendiv" data-position="right">...</div>
+	* @return false
+	* @usage wacss.initHovers();
+	*/
+	initHovers: function(){
+		let hoverEls=document.querySelectorAll('[data-hover]');
+		if(hoverEls.length > 0){
+			if(wacss.hoverDiv == ''){
+				wacss.hoverDiv=document.createElement('div');
+				let d=document.createElement('div');
+				d.className='hover_content';
+				d.innerHTML='wacss hover default text';
+				wacss.hoverDiv.appendChild(d);
+				wacss.hoverDiv.className='wacss_hover';
+				wacss.hoverDiv.dataset.position='above';
+				//wacss.hoverDiv.style.display='none';
+				document.body.appendChild(wacss.hoverDiv);
+				wacss.hoverDiv.addEventListener('mouseout',function(){
+					if(undefined != this.hoverParent && this.hoverParent.matches(':hover')){
+						return false;
+					}
+					if(this.matches(':hover')){return false;}
+					this.querySelector('.hover_content').innerHTML='';
+					this.style.display='none';
+				},false);
+			}
 		}
-		//check for rgb(r,g,b) string;
-		let rgb_regex=/rgb\(([0-9]+?),\ ([0-9]+?),\ ([0-9]+?)\)/;
-		let rgb_match=hex.toString().match(rgb_regex);
-		if(undefined != rgb_match && undefined != rgb_match[1]){
-			return {r:rgb_match[1],g:rgb_match[2],b:rgb_match[3]};
-		}
-		// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-		let shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-		hex = hex.replace(shorthandRegex, function (m, r, g, b) {
-			return r + r + g + g + b + b;
-		});
+		for(let i=0;i<hoverEls.length;i++){
+			hoverEls[i].addEventListener('mouseover',function(){
+				//populate wacss.hoverDiv with 
+				let txt='';
+				wacss.hoverDiv.style.display='initial';
+				if(hoverEls[i].dataset.hover.indexOf('id:')===0){
+					console.log("hover id");
+					//get content from a different id
+					let txtid=trim(str_replace('id:','',hoverEls[i].dataset.hover));
+					let txtel=document.querySelector('#'+txtid);
+					if(undefined != txtel){
+						txt=txtel.innerHTML;		
+					}
+				}
+				else if(hoverEls[i].dataset.hover.indexOf('js:')===0){
+					//call a function
+					console.log("hover js");
+					let f=trim(str_replace('js:','',hoverEls[i].dataset.hover));
+					let jsfunc=new Function(f);
+					txt=jsfunc();
+				}
+				else{
+					//console.log("hover");
+					txt=hoverEls[i].dataset.hover;
+				}
+				wacss.hoverDiv.style.width='initial';
+				wacss.hoverDiv.style.height='initial';
+				wacss.hoverDiv.querySelector('.hover_content').innerHTML=txt;
+				wacss.hoverDiv.hoverParent=this;
+				let drect=this.getBoundingClientRect();
+				let hrect=wacss.hoverDiv.getBoundingClientRect();
+				console.log(drect);
+				console.log(hrect);
+				
+				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+				let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+				switch(this.dataset.position.toLowerCase()){
+					case 'above':
+						wacss.hoverDiv.dataset.position='above';
+						wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							console.log('not in viewport')
+							wacss.hoverDiv.dataset.position='below';
+							wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						}
+					break;
+					case 'below':
+					default:
+						wacss.hoverDiv.dataset.position='below';
+						wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							console.log('not in viewport')
+							wacss.hoverDiv.dataset.position='above';
+							wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
+						}
+					break;
+					case 'right':
+						wacss.hoverDiv.dataset.position='right';
+						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							console.log('not in viewport');
+							wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
+						}
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							wacss.hoverDiv.dataset.position='left';
+							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left-hrect.width-2)+'px';
+							if(!wacss.inViewport(wacss.hoverDiv)){
+								wacss.hoverDiv.style.width=parseInt(drect.left-5)+'px';
+								wacss.hoverDiv.style.left='5px';
+							}
+						}
+					break;
+					case 'left':
+						wacss.hoverDiv.dataset.position='left';
+						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+						wacss.hoverDiv.style.left=parseInt(drect.left-hrect.width-2)+'px';
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							wacss.hoverDiv.style.width=parseInt(drect.left-5)+'px';
+							wacss.hoverDiv.style.left='5px';
+						}
+						if(!wacss.inViewport(wacss.hoverDiv)){
+							wacss.hoverDiv.dataset.position='right';
+							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
+							wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
+							if(!wacss.inViewport(wacss.hoverDiv)){
+								console.log('not in viewport');
+								wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
+								wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
+							}
+						}
+					break;
 
-		let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-		return result ? {
-			r: parseInt(result[1], 16),
-			g: parseInt(result[2], 16),
-			b: parseInt(result[3], 16)
-		} : {
-			r:255,
-			g:255,
-			b:255
+				}
+				
+				//console.log(wacss.hoverDiv.innerHTML);
+				
+			},false);
+			hoverEls[i].addEventListener('mouseout',function(){
+				//remove wacss.hoverDiv content
+				if(wacss.hoverDiv.matches(':hover') || wacss.hoverDiv.querySelector('.hover_content:hover')){
+					return false;
+				}
+				wacss.hoverDiv.querySelector('.hover_content').innerHTML='';
+				wacss.hoverDiv.style.display='none';
+			},false);
 		}
-		;
-    },
-    implode:function(glue,pieces){
-	    //info: Joins array elements placing glue string between items and return one string
-	    //source: http://phpjs.org/functions
-	    let i='',retVal='',tGlue='';
-	    if (arguments.length === 1) {
-	        pieces=glue;
-	        glue='';
-	    }
-		if (typeof(pieces) === 'object') {
-	        if (pieces instanceof Array) {
-				return pieces.join(glue);
-	    	}
-			else {
-	            for (i in pieces) {
-					retVal += tGlue + pieces[i];
-	                tGlue = glue;
-	            }
-	            return retVal;
-	        }
-		}
-		else {
-	        return pieces;
-	    }
 	},
 	initCodeMirror: function(){
 		/*convert texteara to codemirror */
@@ -2310,15 +2855,6 @@ var wacss = {
 	        bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
 	        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
 	    );
-	},
-	callFunc: function(params){
-		if(undefined == params){return false;}
-		if(undefined == params.func){return false;}
-		let func=params.func;
-		if(undefined != params.args){
-			return window[func](params.args);	
-		}
-		return window[func]();
 	},
 	initEditor: function(){
 		let els=document.querySelectorAll('textarea[data-behavior="editor"]');
@@ -2510,8 +3046,12 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.initWacssEdit
+	* @describe convert texteara with a wacssedit class to contenteditable div
+	* @usage wacss.initWacssEdit());
+	*/
 	initWacssEdit: function(){
-		/*convert texteara to contenteditable div*/
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){continue;}
@@ -4247,6 +4787,11 @@ var wacss = {
 		document.head.appendChild(script);
 		return true;
 	},
+	log: function(m){
+		if (typeof console != 'undefined' && typeof console.log != 'undefined'){
+			console.log(m);
+		}
+	},
 	makeMovable: function(obj,hdr) {
 		obj=wacss.getObject(obj);
 		hdr=wacss.getObject(hdr);
@@ -4295,7 +4840,7 @@ var wacss = {
 	* @name wacss.modalClose
 	* @describe closes the modal window generated by an ajax call
 	* @return boolean
-	* @usage if(x){wacs.modalClose();}
+	* @usage if(x){wacss.modalClose();}
 	*/
 	modalClose: function(){
 		if(undefined != document.getElementById('wacss_modal_overlay')){
@@ -4305,6 +4850,12 @@ var wacss = {
 			return wacss.removeObj(document.getElementById('wacss_modal'));
 		}
 	},
+	/**
+	* @name wacss.modalClose
+	* @describe sets modal title
+	* @return boolean
+	* @usage wacss.modalTitle('test');
+	*/
 	modalTitle: function(title){
 		if(undefined != document.getElementById('wacss_modal')){
 			let m=document.getElementById('wacss_modal');
@@ -4413,6 +4964,14 @@ var wacss = {
 		centerObject(modal);
 		return modal;
 	},
+	/**
+	* @name wacss.nav
+	* @describe navigation based on data-nav and data-div
+	* @param el element (this)
+	* @param opts object additional instructions not in dataset
+	* @return string placed in element specified by data-div
+	* @usage <a href="#" data-nav="/t/1/index/test" data-div="centerpop" onclick="return wacss.nav(this);">test</a>
+	*/
 	nav: function(el,opts){
 		//check to make sure that el has data-nav
 		let elobj=wacss.getObject(el);
@@ -4788,7 +5347,6 @@ var wacss = {
 		//info: removes specified id
 		let obj=wacss.getObject(divid);
 		return wacss.removeObj(obj);
-	
 	},
 	/**
 	* @name wacss.removeObj
@@ -5319,154 +5877,7 @@ var wacss = {
 			else{wacss.addClass(obj,myclass1);}
 		}
 	},
-	/**
-	* @name wacss.initHovers
-	* @describe initializes elements with data-hover="string..." - similiar to tooltips
-	* @describe if string starts with id: followed by the id of another element, the tip will be the contents of that element
-	* @describe if string starts with js: it will execute the following javascript on hover
-	* @describe tooltip position is set by data-position. Values are above,below,right, left
-	* @describe example1:  <div data-hover="this is a test">...</div>
-	* @describe example2:  <div data-hover="id:myhiddendiv" data-position="right">...</div>
-	* @return false
-	* @usage wacss.initHovers();
-	*/
-	initHovers: function(){
-		let hoverEls=document.querySelectorAll('[data-hover]');
-		if(hoverEls.length > 0){
-			if(wacss.hoverDiv == ''){
-				wacss.hoverDiv=document.createElement('div');
-				let d=document.createElement('div');
-				d.className='hover_content';
-				d.innerHTML='wacss hover default text';
-				wacss.hoverDiv.appendChild(d);
-				wacss.hoverDiv.className='wacss_hover';
-				wacss.hoverDiv.dataset.position='above';
-				//wacss.hoverDiv.style.display='none';
-				document.body.appendChild(wacss.hoverDiv);
-				wacss.hoverDiv.addEventListener('mouseout',function(){
-					if(undefined != this.hoverParent && this.hoverParent.matches(':hover')){
-						return false;
-					}
-					if(this.matches(':hover')){return false;}
-					this.querySelector('.hover_content').innerHTML='';
-					this.style.display='none';
-				},false);
-			}
-		}
-		for(let i=0;i<hoverEls.length;i++){
-			hoverEls[i].addEventListener('mouseover',function(){
-				//populate wacss.hoverDiv with 
-				let txt='';
-				wacss.hoverDiv.style.display='initial';
-				if(hoverEls[i].dataset.hover.indexOf('id:')===0){
-					console.log("hover id");
-					//get content from a different id
-					let txtid=trim(str_replace('id:','',hoverEls[i].dataset.hover));
-					let txtel=document.querySelector('#'+txtid);
-					if(undefined != txtel){
-						txt=txtel.innerHTML;		
-					}
-				}
-				else if(hoverEls[i].dataset.hover.indexOf('js:')===0){
-					//call a function
-					console.log("hover js");
-					let f=trim(str_replace('js:','',hoverEls[i].dataset.hover));
-					let jsfunc=new Function(f);
-					txt=jsfunc();
-				}
-				else{
-					//console.log("hover");
-					txt=hoverEls[i].dataset.hover;
-				}
-				wacss.hoverDiv.style.width='initial';
-				wacss.hoverDiv.style.height='initial';
-				wacss.hoverDiv.querySelector('.hover_content').innerHTML=txt;
-				wacss.hoverDiv.hoverParent=this;
-				let drect=this.getBoundingClientRect();
-				let hrect=wacss.hoverDiv.getBoundingClientRect();
-				console.log(drect);
-				console.log(hrect);
-				
-				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-				let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-				switch(this.dataset.position.toLowerCase()){
-					case 'above':
-						wacss.hoverDiv.dataset.position='above';
-						wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
-						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
-						if(!wacss.inViewport(wacss.hoverDiv)){
-							console.log('not in viewport')
-							wacss.hoverDiv.dataset.position='below';
-							wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
-							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
-						}
-					break;
-					case 'below':
-					default:
-						wacss.hoverDiv.dataset.position='below';
-						wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
-						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
-						if(!wacss.inViewport(wacss.hoverDiv)){
-							console.log('not in viewport')
-							wacss.hoverDiv.dataset.position='above';
-							wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
-							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
-						}
-					break;
-					case 'right':
-						wacss.hoverDiv.dataset.position='right';
-						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
-						wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
-						if(!wacss.inViewport(wacss.hoverDiv)){
-							console.log('not in viewport');
-							wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
-							wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
-						}
-						if(!wacss.inViewport(wacss.hoverDiv)){
-							wacss.hoverDiv.dataset.position='left';
-							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
-							wacss.hoverDiv.style.left=parseInt(drect.left-hrect.width-2)+'px';
-							if(!wacss.inViewport(wacss.hoverDiv)){
-								wacss.hoverDiv.style.width=parseInt(drect.left-5)+'px';
-								wacss.hoverDiv.style.left='5px';
-							}
-						}
-					break;
-					case 'left':
-						wacss.hoverDiv.dataset.position='left';
-						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
-						wacss.hoverDiv.style.left=parseInt(drect.left-hrect.width-2)+'px';
-						if(!wacss.inViewport(wacss.hoverDiv)){
-							wacss.hoverDiv.style.width=parseInt(drect.left-5)+'px';
-							wacss.hoverDiv.style.left='5px';
-						}
-						if(!wacss.inViewport(wacss.hoverDiv)){
-							wacss.hoverDiv.dataset.position='right';
-							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
-							wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
-							if(!wacss.inViewport(wacss.hoverDiv)){
-								console.log('not in viewport');
-								wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
-								wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
-							}
-						}
-					break;
-
-				}
-				
-				//console.log(wacss.hoverDiv.innerHTML);
-				
-			},false);
-			hoverEls[i].addEventListener('mouseout',function(){
-				//remove wacss.hoverDiv content
-				if(wacss.hoverDiv.matches(':hover') || wacss.hoverDiv.querySelector('.hover_content:hover')){
-					return false;
-				}
-				wacss.hoverDiv.querySelector('.hover_content').innerHTML='';
-				wacss.hoverDiv.style.display='none';
-			},false);
-		}
-	},
+	
 	/**
 	* @name wacss.trim
 	* @describe trims a string - emulates PHP function

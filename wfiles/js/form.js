@@ -166,6 +166,9 @@ function formChanged(frm,debug){
 	for(let i=0;i<els.length;i++){
 		if(formIsIfTrue(frm,els[i].dataset.requiredif)){
 			els[i].setAttribute('required','required');
+			if(undefined != els[i].dataset.requiredmsg){
+				els[i].setCustomValidity(els[i].dataset.requiredmsg);
+			}
 		}
 		else{
 			els[i].removeAttribute('required');
