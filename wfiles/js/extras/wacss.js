@@ -215,7 +215,7 @@ var wacss = {
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    //set processing
-	    let processing=frm.dataset.setprocessing || frm[setprocessing] || '0';
+	    let processing=frm.dataset.setprocessing || frm[setprocessing].value || '0';
 		if (processing.toString() != '0'){
 			switch(processing.toString().toLowerCase()){
 				case 'centerpop_processing':
