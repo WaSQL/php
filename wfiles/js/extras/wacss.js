@@ -219,8 +219,8 @@ var wacss = {
 	    if(undefined != frm.dataset.setprocessing){
 	    	processing=frm.dataset.setprocessing;
 	    }
-	    else if(undefined != frm[setprocessing]){
-	    	processing=frm[setprocessing].value;
+	    else if(undefined != frm['setprocessing']){
+	    	processing=frm['setprocessing'].value;
 	    }
 		if (processing.toString() != '0'){
 			switch(processing.toString().toLowerCase()){
