@@ -1353,7 +1353,7 @@ var wacss = {
 				if(undefined == obj.parentNode){return null;}
 				obj = obj.parentNode;
 				if(!typeof(obj)){return null;}
-				if(classname.length || name.length){
+				if(classname.length && name.length){
 					if(
 						obj.nodeName.toLowerCase() == name.toLowerCase()
 						&& obj.classList.contains(classname)
