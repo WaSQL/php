@@ -1345,21 +1345,29 @@ var wacss = {
 	*/
 	getParent: function(obj,name,classname){
 		if(undefined == obj){return null;}
+		if(undefined == name){name='';}
 		if(undefined == classname){classname='';}
-		if(undefined != name){
+		if(name.length > 0 || classname.length > 0){
 			let count = 1;
 			while(count < 1000) {
 				if(undefined == obj.parentNode){return null;}
 				obj = obj.parentNode;
 				if(!typeof(obj)){return null;}
-				if(obj.nodeName.toLowerCase() == name.toLowerCase()){
-					//filters
-					if(classname.length){
-						if(obj.classList.contains(classname)){
-							return obj;
-						}
+				if(classname.length || name.length){
+					if(
+						obj.nodeName.toLowerCase() == name.toLowerCase()
+						&& obj.classList.contains(classname)
+						){
+						return obj;
 					}
-					else{
+				}
+				else if(classname.length){
+					if(obj.classList.contains(classname)){
+						return obj;
+					}
+				}
+				else if(name.length){
+					if(obj.nodeName.toLowerCase() == name.toLowerCase()){
 						return obj;
 					}
 				}
