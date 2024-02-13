@@ -26,7 +26,13 @@ if(!is_file("{$progpath}/postedit.xml")){
 }
 //get hosts
 $xmldata=getFileContents("{$progpath}/postedit.xml");
+//remove any comments
+$xmldata=preg_replace('/\<\!\-\-.+?\-\-\>/is','',$xmldata);
+$xmldata=trim($xmldata);
 $xml = (array)readXML("<postedit>{$xmldata}</postedit>");
+if(!isset($xml['hosts'])){
+	abortMessage("Invalid postedit.xml - no hosts entry");
+}
 $hosts=array();
 foreach($xml['hosts']->host as $xhost){
     	$xhost=(array)$xhost;
@@ -77,7 +83,7 @@ if(isset($xml['settings'])){
 	foreach($xml['settings']->editor as $set){
 	    $set=(array)$set;
 	    foreach($set['@attributes'] as $k=>$v){
-			$postedit['editor'][$k]=$v;
+			$postedit['editor'][$k][]=$v;
 		}
 	}
 }
@@ -435,16 +441,21 @@ function writeFiles(){
 		}
 	}
 	//check for editor command to run after writing files
-	if(isset($postedit['editor']['command']) && commonStrlen($postedit['editor']['command'])){
-		$cmd=$postedit['editor']['command'];
-		if(isWindows()){
-			$postedit['afolder']=preg_replace('/\//',"\\",$postedit['afolder']);
-		}
-		$cmd="{$cmd} \"{$postedit['afolder']}\"";
-		$out=cmdResults($cmd);
-		echo " - Running command: {$cmd}".PHP_EOL;
-		if($out['rtncode'] !=0){
-			echo printValue($out).PHP_EOL;
+	if(isset($postedit['editor']['command']) && is_array($postedit['editor']['command'])){
+
+		foreach($postedit['editor']['command'] as $c=>$cmd){
+			if(!strlen($cmd)){continue;}
+			if(isWindows()){
+				$postedit['afolder']=preg_replace('/\//',"\\",$postedit['afolder']);
+				$cmd=preg_replace('/\//',"\\",$cmd);
+				$cmd=str_replace("'",'"',$cmd);
+			}
+			$cmd="{$cmd} \"{$postedit['afolder']}\"";
+			echo " - Running command: {$cmd}".PHP_EOL;
+			$out=cmdResults($cmd);
+			if($out['rtncode'] !=0){
+				echo printValue($out).PHP_EOL;
+			}
 		}
 	}
 	//echo printValue($postedit['md5sha']).PHP_EOL;
