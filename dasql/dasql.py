@@ -87,7 +87,6 @@ elif len(params['query']) > 0:
     data={
         'db': params['db'],
         'func':'sql',
-        'section':section_name,
         'format':params['output_format'],
         '-nossl':1,
         'offset':0,
