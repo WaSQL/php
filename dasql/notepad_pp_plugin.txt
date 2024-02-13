@@ -18,6 +18,6 @@ $(Python_Dir)\python3.exe $(DaSQL_Dir)\dasql.py "$(sourcefile)"
 rm -rf "$(sourcefile)
 GOTO FINISH
 :NOSELECTION
-$(Python_Dir)\python3.exe $(DaSQL_Dir)\dasql.py "$(CURRENT_LINESTR)"
+$(Python_Dir)\python3.exe $(DaSQL_Dir)\dasql.py $(NAME_PART) "$(CURRENT_LINESTR)"
 GOTO FINISH
 :FINISH

@@ -85,15 +85,16 @@ if len(params['query']) > 0 and params['query'].startswith('http'):
 elif len(params['query']) > 0:
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
-        '_auth': params['authkey'], 
         'db': params['db'],
-        '_menu': 'sqlprompt',
         'func':'sql',
+        'section':section_name,
         'format':params['output_format'],
         '-nossl':1,
         'offset':0,
         'username':os.environ["USERNAME"].lower(),
         'AjaxRequestUniqueId':'dasql.py',
+        '_auth': params['authkey'],
+        '_menu': 'sqlprompt',
         'sql_full':params['query']
     }
 
