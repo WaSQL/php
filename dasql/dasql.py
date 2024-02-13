@@ -41,7 +41,8 @@ if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
     params['arg_query']=''
 else:
     #check for section_name
-    section_name=sys.argv[1]
+    #section_name=sys.argv[1]
+    section_name=os.path.splitext(os.path.basename(sys.argv[1]))[0]
     if(config.has_section(section_name)):
         #overide any params from section
         section=dict(config.items(section_name))
