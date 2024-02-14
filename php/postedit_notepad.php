@@ -1,8 +1,8 @@
 <?php
 /*
 	Instructions:
-		run dbclean.php from a command-line 
-	Note: dbclean.php cannot be run from a URL, it is a command line app only.
+		run postedit_notepad.php from a command-line 
+	Note: postedit_notepad.php cannot be run from a URL, it is a command line app only.
 */
 //set time limit to a large number so the dbclean does not time out
 ini_set('max_execution_time', 72000);
@@ -20,23 +20,14 @@ if(!isCLI()){
 	echo "postedit_notepad.php is a command line app only.".PHP_EOL;
 	exit;
 }
-
-//determine the postedit path
-$ppath=getWasqlPath('postedit/postEditFiles');
-//get a list of directories
-$dirs=listFilesEx($ppath,array('type'=>'dir'));
-//build me a list of valid dirs
-$vdirs=array();
-foreach($dirs as $dir){
-	if(stringEndsWith($dir['name'],'_bak')){continue;}
-	$vdirs[]=$dir['afile'];
-}
 //kill notepad if it is running
 $cmd="taskkill /IM \"notepad++.exe\" /F";
 $out=cmdResults($cmd);
+$args=$argv;
+array_shift($args);
 //make a arg list with each vdir wrapped in quotes
-$vdirstr='""'.implode('"" ""',$vdirs).'""';
-$cmd="notepad++.exe -openFoldersAsWorkspace {$vdirstr}";
+$argstr='""'.implode('"" ""',$args).'""';
+$cmd="notepad++.exe -openFoldersAsWorkspace {$argstr}";
 $vbs=<<<ENDOFVBS
 Set objShell = WScript.CreateObject("WScript.Shell")
 objShell.Run "{$cmd}",0,false
@@ -45,8 +36,6 @@ ENDOFVBS;
 setFileContents("{$progpath}/pn.vbs",$vbs);
 $cmd="wscript {$progpath}/pn.vbs";
 exec($cmd);
-//pclose(popen("start /B {$cmd}  > NUL", "r"));
-//echo $cmd;exit;
-
-exit;
+//unlink("{$progpath}/pn.vbs");
+exit(0);
 

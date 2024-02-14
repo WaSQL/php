@@ -1,3 +1,20 @@
+<!-- postedit.xml - configuration file for postedit.php
+	settings
+		editor attributes:
+			command - command to run. For instance: open up sublime and load file on left
+				Sublime Command:
+					C:/Program Files/Sublime Text 3/subl.exe --add
+				Notepad++ Command
+					php d:/wasql/php/postedit_notepad.php
+	Hosts - container for mulitple host entries
+		Host attributes:
+			name - host name
+			alias - alias name to call the directory files go into
+			username - username on this
+			apikey - apikey of username
+			tables - defaults to getting _models, _pages, _tables
+			groupby - name,field, type, or extension.  Groups files by file name, field(body,controller,functions,js,css), type(models, views, controllers), or extension (html,php,js,css)
+-->
 <settings>
 	<!-- sound tag will say things -->
 	<sound
