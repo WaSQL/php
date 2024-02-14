@@ -14,6 +14,45 @@ global $dbh_snowflake;
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
+//---------- begin function snowflakeAddDBFields--------------------
+/**
+* @describe adds fields to given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return array - name,type,query,result for each field set
+* @usage
+*	$ok=snowflakeAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function snowflakeAddDBFields($table,$fields=array(),$maintain_order=1){
+	$recs=array();
+	foreach($fields as $name=>$type){
+		$crec=array('name'=>$name,'type'=>$type);
+		$fieldstr="{$name} {$type}";
+		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$crec['result']=snowflakeExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
+//---------- begin function snowflakeDropDBFields--------------------
+/**
+* @describe drops fields to given table
+* @param table string - name of table to alter
+* @param params array - list of fields
+* @return array - name,query,result for each field
+* @usage
+*	$ok=snowflakeDropDBFields('comments',array('comment','age'));
+*/
+function snowflakeDropDBFields($table,$fields=array()){
+	$recs=array();
+	foreach($fields as $name){
+		$crec=array('name'=>$name);
+		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		$crec['result']=snowflakeExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
 //---------- begin function snowflakeAddDBRecords--------------------
 /**
 * @describe add multiple records into a table

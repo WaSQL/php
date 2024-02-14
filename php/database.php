@@ -352,12 +352,36 @@ function dbAddRecord($db,$params=array()){
 function dbAddRecords($db,$table='',$params=array()){
 	return dbFunctionCall('addDBRecords',$db,$table,$params);
 }
-//---------- begin function dbAlterTable
+//---------- begin function dbAddFields
 /**
-* @describe deletes a record with said id in said table
+* @describe adds specified fields to specified table
 * @param db string - database name as specified in the database section of config.xml
 * @param table string - tablename
-* @param params array - field=>dbtype pairs to edit in this record
+* @param params array - field=>dbtype pairs to add
+* @return boolean
+* @usage $ok=dbAddFields($db,'test',array('name'=>'varchar(25) NULL'));
+*/
+function dbAddFields($db,$table,$fields=array()){
+	return dbFunctionCall('addDBFields',$db,$table,$fields);
+}
+//---------- begin function dbDropFields
+/**
+* @describe drops specified fields from specified table
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - tablename
+* @param params array - field1,field2,...
+* @return boolean
+* @usage $ok=dbDropFields($db,'test',array('name','age'));
+*/
+function dbDropFields($db,$table,$fields=array()){
+	return dbFunctionCall('dropDBFields',$db,$table,$fields);
+}
+//---------- begin function dbAlterTable
+/**
+* @describe updates a table schema
+* @param db string - database name as specified in the database section of config.xml
+* @param table string - tablename
+* @param params array - field=>dbtype pairs for this table. NOTE: Fields not specified will be dropped
 * @return boolean
 * @usage $ok=dbAlterTable($db,'test',array('name'=>'varchar(25) NULL'));
 */

@@ -162,6 +162,45 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 	$ok=sqliteExecuteSQL($query);
 	return count($values);
 }
+//---------- begin function sqliteAddDBFields--------------------
+/**
+* @describe adds fields to given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return array - name,type,query,result for each field set
+* @usage
+*	$ok=sqliteAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function sqliteAddDBFields($table,$fields=array(),$maintain_order=1){
+	$recs=array();
+	foreach($fields as $name=>$type){
+		$crec=array('name'=>$name,'type'=>$type);
+		$fieldstr="{$name} {$type}";
+		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$crec['result']=sqliteExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
+//---------- begin function sqliteDropDBFields--------------------
+/**
+* @describe drops fields to given table
+* @param table string - name of table to alter
+* @param params array - list of fields
+* @return array - name,query,result for each field
+* @usage
+*	$ok=sqliteDropDBFields('comments',array('comment','age'));
+*/
+function sqliteDropDBFields($table,$fields=array()){
+	$recs=array();
+	foreach($fields as $name){
+		$crec=array('name'=>$name);
+		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		$crec['result']=sqliteExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
 //---------- begin function sqliteAlterDBTable--------------------
 /**
 * @describe alters fields in given table

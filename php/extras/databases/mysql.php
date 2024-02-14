@@ -52,7 +52,45 @@ $cnt=getDBCount(array('-table'=>'snap_people','-nocache'=>1));
 echo printValue($cnt)."done";exit;
 
 
-		
+//---------- begin function mysqlAddDBFields--------------------
+/**
+* @describe adds fields to given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return array - name,type,query,result for each field set
+* @usage
+*	$ok=mysqlAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function mysqlAddDBFields($table,$fields=array(),$maintain_order=1){
+	$recs=array();
+	foreach($fields as $name=>$type){
+		$crec=array('name'=>$name,'type'=>$type);
+		$fieldstr="{$name} {$type}";
+		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$crec['result']=mysqlExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
+//---------- begin function mysqlDropDBFields--------------------
+/**
+* @describe drops fields to given table
+* @param table string - name of table to alter
+* @param params array - list of fields
+* @return array - name,query,result for each field
+* @usage
+*	$ok=mysqlDropDBFields('comments',array('comment','age'));
+*/
+function mysqlDropDBFields($table,$fields=array()){
+	$recs=array();
+	foreach($fields as $name){
+		$crec=array('name'=>$name);
+		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		$crec['result']=mysqlExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}		
 */
 //---------- begin function mysqlAddDBRecords--------------------
 /**

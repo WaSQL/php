@@ -8,6 +8,45 @@
 		https://stackoverflow.com/questions/29786865/showing-primary-key-via-php-and-ms-access-2010
 		https://www.xspdf.com/resolution/21251422.html
 */
+//---------- begin function msaccessAddDBFields--------------------
+/**
+* @describe adds fields to given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return array - name,type,query,result for each field set
+* @usage
+*	$ok=msaccessAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
+*/
+function msaccessAddDBFields($table,$fields=array(),$maintain_order=1){
+	$recs=array();
+	foreach($fields as $name=>$type){
+		$crec=array('name'=>$name,'type'=>$type);
+		$fieldstr="{$name} {$type}";
+		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$crec['result']=msaccessExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
+//---------- begin function msaccessDropDBFields--------------------
+/**
+* @describe drops fields to given table
+* @param table string - name of table to alter
+* @param params array - list of fields
+* @return array - name,query,result for each field
+* @usage
+*	$ok=msaccessDropDBFields('comments',array('comment','age'));
+*/
+function msaccessDropDBFields($table,$fields=array()){
+	$recs=array();
+	foreach($fields as $name){
+		$crec=array('name'=>$name);
+		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		$crec['result']=msaccessExecuteSQL($crec['query']);
+		$recs[]=$crec;
+	}
+	return $recs;
+}
 //---------- begin function msaccessGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index
