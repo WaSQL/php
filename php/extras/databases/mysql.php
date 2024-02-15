@@ -50,7 +50,7 @@ foreach($xrecs as $i=>$rec){
 }
 $cnt=getDBCount(array('-table'=>'snap_people','-nocache'=>1));
 echo printValue($cnt)."done";exit;
-
+*/
 
 //---------- begin function mysqlAddDBFields--------------------
 /**
@@ -91,7 +91,6 @@ function mysqlDropDBFields($table,$fields=array()){
 	}
 	return $recs;
 }		
-*/
 //---------- begin function mysqlAddDBRecords--------------------
 /**
 * @describe add multiple records into a table
