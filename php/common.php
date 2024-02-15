@@ -12628,10 +12628,11 @@ function fopen_utf8($filename){
 			$encoding = 'UTF-8';
 		}	
 	}
-
+	//if(!strlen($encoding)){return ($handle);}
 	switch(strtoupper($encoding)){
 		case 'UTF-8':
 		case 'ASCII':
+		case '':
 			return ($handle);
 		break;
 	}
