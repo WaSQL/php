@@ -7,6 +7,8 @@ import os
 import requests
 import urllib3
 import configparser
+import subprocess
+import tempfile
 from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #get the script path
@@ -53,6 +55,9 @@ else:
         for arg in sys.argv[2:]:
             params['arg_query']+="{}  ".format(arg)
         params['arg_query']=params['arg_query'].strip()
+        #if the line starts with two dashes, remove them.
+        if params['arg_query'].startswith('--'):
+            params['arg_query']=params['arg_query'][3:]
         #check to see if the args are a filename
         if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
             #check for a section with this name
@@ -78,10 +83,49 @@ if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
 if len(params['query']) > 0 and params['query'].startswith('http'):
-    #use ^ to escape & in the command line. 
+    #launch a URL
     #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
     url=params['query'].replace('&','^&');
     os.system("start {}".format(url))
+elif len(params['query']) > 0 and params['query'].startswith('<?php'):
+    #Run a PHP command
+    handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
+    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+    handle.write(params['query'])
+    handle.close()
+    result = subprocess.run(['php', name], stdout=subprocess.PIPE)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
+elif len(params['query']) > 0 and params['query'].startswith('<?py'):
+    #Run a lua command
+    params['query']=params['query'][4:]
+    if params['query'].endswith('?>'):
+        params['query']=params['query'][:len(params['query'])-2]
+    handle, name = tempfile.mkstemp(suffix=".py",prefix="dasql_",text=True)
+    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+    handle.write(params['query'])
+    handle.close()
+    result = subprocess.run(['python', name], stdout=subprocess.PIPE)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
+elif len(params['query']) > 0 and params['query'].startswith('<?lua'):
+    #Run a lua command
+    params['query']=params['query'][6:]
+    if params['query'].endswith('?>'):
+        params['query']=params['query'][:len(params['query'])-2]
+    handle, name = tempfile.mkstemp(suffix=".lua",prefix="dasql_",text=True)
+    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+    handle.write(params['query'])
+    handle.close()
+    result = subprocess.run(['lua', name], stdout=subprocess.PIPE)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
 elif len(params['query']) > 0:
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
