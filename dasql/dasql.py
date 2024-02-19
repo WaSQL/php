@@ -84,7 +84,20 @@ params['arg_query']=params['arg_query'].strip()
 if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
-if len(params['query']) > 0 and params['query'].startswith('http'):
+#check for shell command requests
+#c:\windows>dir
+output = re.search('^([a-z]?):(.*?)>(.+)$', params['query'], flags=re.IGNORECASE)
+if output is not None:
+    #run a windows command and show output
+    wdir="{}:{}".format(output.group(1),output.group(2))
+    cmdparts=output.group(3).split()
+    #print(cmdparts)
+    result = subprocess.run(cmdparts, cwd=wdir, stdout=subprocess.PIPE)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
+elif len(params['query']) > 0 and params['query'].startswith('http'):
     #launch a URL
     #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
     url=params['query'].replace('&','^&');
