@@ -43,6 +43,8 @@ if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
         file = open(params['arg_query'], mode='r')
         params['query'] = file.read()
         file.close()
+        if(params['arg_query'].endswith('_deleteme')):
+            os.remove(params['arg_query'])
         params['tempfile']=params['arg_query']
 
     params['arg_query']=''
@@ -76,6 +78,8 @@ else:
                 file = open(params['arg_query'], mode='r')
                 params['query'] = file.read()
                 file.close()
+                if(params['arg_query'].endswith('_deleteme')):
+                    os.remove(params['arg_query'])
                 params['tempfile']=params['arg_query']
 
             params['arg_query']=''
