@@ -64,7 +64,7 @@ else:
         params['arg_query']=params['arg_query'].strip()
         #if the line starts with two dashes, remove them.
         if params['arg_query'].startswith('--'):
-            params['arg_query']=params['arg_query'][3:]
+            params['arg_query']=params['arg_query'][2:].strip
         #check to see if the args are a filename
         if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
             #check for a section with this name
@@ -95,7 +95,7 @@ if len(params['arg_query']) > 0:
 params['query']=params['query'].strip()
 #if the line starts with two dashes, remove them.
 if params['query'].startswith('--'):
-    params['query']=params['query'][3:]
+    params['query']=params['query'][2:].strip()
 #check for shell command requests
 #c:\windows>dir
 output = re.search('^([a-z]?):(.*?)>(.+)$', params['query'], flags=re.IGNORECASE)
