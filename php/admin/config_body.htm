@@ -38,7 +38,7 @@
 <view:config_users_save><div class="w_success"><span class="icon-mark"></span> Saved</div></view:config_users_save>
 
 <view:config_users_wasql>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="userswasqlform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_users_wasql" />
 	<input type="hidden" name="auth_method" value="wasql" />
@@ -48,10 +48,11 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.userswasqlform);");?>
 </view:config_users_wasql>
 
 <view:config_users_ldap>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="usersldapform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_users_ldap" />
 	<input type="hidden" name="auth_method" value="ldap" />
@@ -62,6 +63,7 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.usersldapform);");?>
 </view:config_users_ldap>
 
 <view:config_users_ldap_settings>
@@ -96,7 +98,7 @@
 </view:config_users_okta_ldap_settings>
 
 <view:config_users_okta>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="usersoktaform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_users_okta" />
 	<input type="hidden" name="auth_method" value="okta" /
@@ -107,10 +109,11 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.usersoktaform);");?>
 </view:config_users_okta>
 
 <view:config_users_okta_ldap>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="usersoktaldapform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_users_okta_ldap" />
 	<input type="hidden" name="auth_method" value="okta_ldap" />
@@ -122,6 +125,7 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.usersoktaldapform);");?>
 </view:config_users_okta_ldap>
 
 <view:config_users_okta_settings>
@@ -187,7 +191,7 @@
 
 <view:config_sync>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-sync"></span> Syncronize Settings</div>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="syncform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_sync_form" />
 	<input type="hidden" name="process" value="save" />
@@ -200,11 +204,12 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.syncform);");?>
 </view:config_sync>
 
 <view:config_database>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-database"></span> Database Settings</div>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" action="/php/admin.php" name="databaseform" onchange="wacss.formChanged(this)" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_database_form" />
 	<input type="hidden" name="process" value="save" />
@@ -234,11 +239,12 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.databaseform);");?>
 </view:config_database>
 
 <view:config_crons>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-cron"></span> Cron Settings</div>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="cronsform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_sync_form" />
 	<input type="hidden" name="process" value="save" />
@@ -250,11 +256,12 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.cronsform);");?>
 </view:config_crons>
 
 <view:config_logs>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Logs</div>
-<form method="post" action="/php/admin.php" name="config_logs_form" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="logsform" onchange="wacss.formChanged(this);" action="/php/admin.php" name="config_logs_form" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_logs_form" />
 	<input type="hidden" name="process" value="save" />
@@ -299,6 +306,7 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.logsform);");?>
 </view:config_logs>
 
 <view:config_logs_view_file>
@@ -312,7 +320,7 @@
 
 <view:config_mail>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-mail"></span> SendMail Settings</div>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="mailform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_mail_form" />
 	<input type="hidden" name="process" value="save" />
@@ -334,11 +342,12 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.mailform);");?>
 </view:config_mail>
 
 <view:config_uploads>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-upload"></span> File Uploads</div>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="uploadsform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_uploads_form" />
 	<input type="hidden" name="process" value="save" />
@@ -361,13 +370,14 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.uploadsform);");?>
 </view:config_uploads>
 
 
 
 <view:config_misc>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-dots"></span> Misc Settings</div>
-<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
+<form method="post" name="miscform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'config_users_save');">
 	<input type="hidden" name="_menu" value="config" />
 	<input type="hidden" name="func" value="config_misc_form" />
 	<input type="hidden" name="process" value="save" />
@@ -383,6 +393,7 @@
 		<div id="config_users_save" style="margin-left:15px;"></div>
 	</div>
 </form>
+<?=buildOnLoad("wacss.formChanged(document.miscform);");?>
 </view:config_misc>
 
 </view:config_item>
