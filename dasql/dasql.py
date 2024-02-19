@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import json
 import re
+import csv
 from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #get the script path
@@ -42,6 +43,8 @@ if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
         file = open(params['arg_query'], mode='r')
         params['query'] = file.read()
         file.close()
+        params['tempfile']=params['arg_query']
+
     params['arg_query']=''
 else:
     #check for section_name
@@ -73,6 +76,8 @@ else:
                 file = open(params['arg_query'], mode='r')
                 params['query'] = file.read()
                 file.close()
+                params['tempfile']=params['arg_query']
+
             params['arg_query']=''
     else:
         #load the rest of args as the arg_query
@@ -84,15 +89,30 @@ params['arg_query']=params['arg_query'].strip()
 if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
+#if the line starts with two dashes, remove them.
+if params['query'].startswith('--'):
+    params['query']=params['query'][3:]
 #check for shell command requests
 #c:\windows>dir
 output = re.search('^([a-z]?):(.*?)>(.+)$', params['query'], flags=re.IGNORECASE)
 if output is not None:
     #run a windows command and show output
     wdir="{}:{}".format(output.group(1),output.group(2))
-    cmdparts=output.group(3).split()
-    #print(cmdparts)
-    result = subprocess.run(cmdparts, cwd=wdir, stdout=subprocess.PIPE)
+    csvlist=[]
+    csvparts=list(csv.reader(output.group(3), delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL))
+    cp=''
+    for p in csvparts:
+        if len(p) == 1 and len(p[0]) == 1:
+            cp=cp+p[0]
+        if len(p) == 2 and len(p[0]) == 0:
+            csvlist.append(cp)
+            cp=''
+        if len(p) == 1 and len(p[0]) > 1:
+            csvlist.append(p[0])
+    if len(cp):
+        csvlist.append(cp)
+    print(csvlist)
+    result = subprocess.run(csvlist, cwd=wdir, stdout=subprocess.PIPE)
     for line in result.stdout.decode('utf-8-sig').splitlines():
         line=line.strip()
         if len(line):
