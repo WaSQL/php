@@ -9,6 +9,8 @@ import urllib3
 import configparser
 import subprocess
 import tempfile
+import json
+import re
 from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #get the script path
@@ -87,6 +89,18 @@ if len(params['query']) > 0 and params['query'].startswith('http'):
     #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
     url=params['query'].replace('&','^&');
     os.system("start {}".format(url))
+elif len(params['query']) > 0 and params['query'].startswith('{') and params['query'].endswith('}'):
+    #pretty print a json string
+    jstr= re.sub('\s', '', params['query'])
+    jstr = re.sub('(\w+)', '"\g<1>"', jstr)
+    parsed = json.loads(jstr)
+    print(json.dumps(parsed, indent=4))
+elif len(params['query']) > 0 and params['query'].startswith('[') and params['query'].endswith(']'):
+    #pretty print a json string
+    jstr= re.sub('\s', '', params['query'])
+    jstr = re.sub('(\w+)', '"\g<1>"', jstr)
+    parsed = json.loads(jstr)
+    print(json.dumps(parsed, indent=4))
 elif len(params['query']) > 0 and params['query'].startswith('<?php'):
     #Run a PHP command
     handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
