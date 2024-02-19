@@ -112,7 +112,7 @@ if output is not None:
     if len(cp):
         csvlist.append(cp)
     #print(csvlist)
-    result = subprocess.run(csvlist, cwd=wdir, stdout=subprocess.PIPE)
+    result = subprocess.run(csvlist, cwd=wdir, stdout=subprocess.PIPE, stderr = subprocess.STDOUT)
     for line in result.stdout.decode('utf-8-sig').splitlines():
         line=line.strip()
         if len(line):
