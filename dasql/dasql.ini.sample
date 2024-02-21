@@ -18,13 +18,12 @@
 #	>python3 dasql.py c:\temp\msa.sql
 #If you are using sublime 3 as your editor you can create a custom build file so you run SQL and see the results right in sublime
 #	The filename has to match a [section] in your ini
-#DaSQL.sublime-build
-#{
-#	"shell_cmd": "python3 dasql.py \"$file\"",
-#	"working_dir":"c:\\wasql",
-#	"quiet":true,
-#	"save_untitled_files":true
-#}
+##############  Shortcuts ##################
+#You can also create shortcuts for a specific section or globally.  specific section will override the same global shortcut
+#[global:sqltest]
+#query:select current_date
+#[myname:sqltest]
+#query: select current_timestamp
 
 [global]
 authkey={YOUR WaSQL Auth KEY} ~found under the profile menu in the WaSQL admin portal

@@ -20,9 +20,7 @@ script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 inifile="{}/dasql.ini".format(script_directory)
 config = configparser.ConfigParser()
 config.read(inifile)
-
-
-
+section_name=''
 #set params to keys in global
 params=dict(config.items('global'))
 params['query']=''
@@ -35,6 +33,7 @@ if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
     #check for a section with this name
     file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
     if(config.has_section(file_name)):
+        section_name=file_name
         #overide any params from section
         section=dict(config.items(file_name))
         for key in section:
@@ -96,6 +95,20 @@ params['query']=params['query'].strip()
 #if the line starts with two dashes, remove them.
 if params['query'].startswith('--'):
     params['query']=params['query'][2:].strip()
+#check for shortcuts in ini file - first section then global
+global_shortcut="global:{}".format(params['query'])
+shortcut="{}:{}".format(section_name,params['query'])
+if(config.has_section(shortcut)):
+    #overide any params from section
+    shortcut_section=dict(config.items(shortcut))
+    if 'query' in shortcut_section:
+        params['query']=shortcut_section['query']
+elif(config.has_section(global_shortcut)):
+    #overide any params from section
+    shortcut_section=dict(config.items(global_shortcut))
+    if 'query' in shortcut_section:
+        params['query']=shortcut_section['query']
+
 #check for shell command requests
 #c:\windows>dir
 output = re.search('^([a-z]?):(.*?)>(.+)$', params['query'], flags=re.IGNORECASE)
