@@ -139,18 +139,18 @@ elif len(params['query']) > 0 and params['query'].startswith('http'):
     #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
     url=params['query'].replace('&','^&');
     os.system("start {}".format(url))
-elif len(params['query']) > 0 and params['query'].startswith('{') and params['query'].endswith('}'):
-    #pretty print a json string
-    jstr= re.sub('\s', '', params['query'])
-    jstr = re.sub('(\w+)', '"\g<1>"', jstr)
-    parsed = json.loads(jstr)
-    print(json.dumps(parsed, indent=4))
-elif len(params['query']) > 0 and params['query'].startswith('[') and params['query'].endswith(']'):
-    #pretty print a json string
-    jstr= re.sub('\s', '', params['query'])
-    jstr = re.sub('(\w+)', '"\g<1>"', jstr)
-    parsed = json.loads(jstr)
-    print(json.dumps(parsed, indent=4))
+elif len(params['query']) > 0 and ((params['query'].startswith('{') and params['query'].endswith('}')) or (params['query'].startswith('[') and params['query'].endswith(']'))):
+    code='<?php\r\n$jsonstr=<<<ENDOFSTR\r\n{}\r\nENDOFSTR;$json=json_decode($jsonstr);$str=json_encode($json,JSON_PRETTY_PRINT);\r\n$str=str_replace("\t","     ",$str);echo $str;\r\n?>\r\n'.format(params['query'])
+    #Run a PHP command
+    handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
+    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+    handle.write(code)
+    handle.close()
+    result = subprocess.run(['php', name], stdout=subprocess.PIPE)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
 elif len(params['query']) > 0 and params['query'].startswith('<?php'):
     #Run a PHP command
     handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
