@@ -885,6 +885,78 @@ function dbOptimizations($db,$params=array()){
 *	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
 function dbQueryResults($db,$query,$params=array()){
+	//check for shortcuts
+	if(preg_match('/^(fields|fld)\ (.+)$/is',$query,$m)){
+		$parts=preg_split('/\ /',$m[2],2);
+		$filter='';
+		if(count($parts)==2){
+			$table=$parts[0];
+			$filter=$parts[1];
+		}
+		else{
+			$table=$m[2];
+		}
+		$finfo=dbGetTableFields($db,$table);
+		$recs=array();
+		foreach($finfo as $k=>$info){
+			$rec=array();
+			//name
+			if(isset($info['name'])){$rec['name']=$info['name'];}
+			elseif(isset($info['_dbfield'])){$rec['name']=$info['_dbfield'];}
+			else{$rec['name']='';}
+
+			//type
+			if(isset($info['_dbtype_ex'])){$rec['type']=$info['_dbtype_ex'];}
+			elseif(isset($info['_dbtype'])){$rec['type']=$info['_dbtype'];}
+			elseif(isset($info['type'])){$rec['type']=$info['type'];}
+			else{$rec['type']='';}
+			if(strlen($filter) && (!stringContains($rec['name'],$filter) && !stringContains($rec['type'],$filter))){continue;}
+			if(isset($params['-index']) && isset($rec[$params['-index']])){
+				$recs[$rec[$params['-index']]]=$rec;
+			}
+			else{
+				$recs[]=$rec;
+			}
+		}
+		return $recs;
+	}
+	elseif(preg_match('/^idx\ (.+)$/is',$query,$m)){
+		$parts=preg_split('/\./',$m[1],2);
+		if(count($parts)==2){
+			$xrecs=dbGetTableIndexes($db,$parts[1],$parts[0]);
+		}
+		else{
+			$xrecs=dbGetTableIndexes($db,$m[1]);
+		}
+		$recs=array();
+		foreach($xrecs as $rec){
+			if(isset($params['-index']) && isset($rec[$params['-index']])){
+				$recs[$rec[$params['-index']]]=$rec;
+			}
+			else{
+				$recs[]=$rec;
+			}
+		}
+		return $recs;
+	}
+	elseif(preg_match('/^tables(.*)$/is',$query,$m)){
+		$filter='';
+		if(isset($m[1])){$filter=trim($m[1]);}
+		$recs=array();
+		$xrecs=dbGetTables($db);
+		foreach($xrecs as $name){
+			if(strlen($filter) && !stringContains($name,$filter)){continue;}
+			$rec=array('name'=>$name);
+			if(isset($params['-index']) && isset($rec[$params['-index']])){
+				$recs[$rec[$params['-index']]]=$rec;
+			}
+			else{
+				$recs[]=$rec;
+			}
+		}
+		return $recs;
+	}
+	//call respective DB function
 	$recs=dbFunctionCall('queryResults',$db,$query,$params);
 	//check for single ref cursor that returns a table
 	if(isset($recs[0]) && is_array($recs[0]) && count(array_keys($recs[0]))==1){
