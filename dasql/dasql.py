@@ -140,7 +140,7 @@ elif len(params['query']) > 0 and params['query'].startswith('http'):
     url=params['query'].replace('&','^&');
     os.system("start {}".format(url))
 elif len(params['query']) > 0 and ((params['query'].startswith('{') and params['query'].endswith('}')) or (params['query'].startswith('[') and params['query'].endswith(']'))):
-    code='<?php\r\n$jsonstr=<<<ENDOFSTR\r\n{}\r\nENDOFSTR;$json=json_decode($jsonstr);$str=json_encode($json,JSON_PRETTY_PRINT);\r\n$str=str_replace("\t","     ",$str);echo $str;\r\n?>\r\n'.format(params['query'])
+    code='<?php\r\n$jsonstr=<<<ENDOFSTR\r\n{}\r\nENDOFSTR;$json=json_decode($jsonstr);$str=json_encode($json,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);\r\n$str=str_replace("\t","     ",$str);echo $str;\r\n?>\r\n'.format(params['query'])
     #Run a PHP command
     handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
     handle = os.fdopen(handle, mode="wt",encoding="utf-8")
