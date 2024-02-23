@@ -14,6 +14,18 @@ import re
 import csv
 from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def dasqlEvalCode(lang,ext,code):
+    handle, name = tempfile.mkstemp(suffix=".{}".format(ext),prefix="dasql_",text=True)
+    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+    handle.write(code)
+    handle.close()
+    result = subprocess.run([lang, name], stdout=subprocess.PIPE)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
+    os.remove(name)
 #get the script path
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 #read dasql.ini for settings
@@ -141,55 +153,22 @@ elif len(params['query']) > 0 and params['query'].startswith('http'):
     os.system("start {}".format(url))
 elif len(params['query']) > 0 and ((params['query'].startswith('{') and params['query'].endswith('}')) or (params['query'].startswith('[') and params['query'].endswith(']'))):
     code='<?php\r\n$jsonstr=<<<ENDOFSTR\r\n{}\r\nENDOFSTR;$json=json_decode($jsonstr);$str=json_encode($json,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);\r\n$str=str_replace("\t","     ",$str);echo $str;\r\n?>\r\n'.format(params['query'])
-    #Run a PHP command
-    handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
-    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
-    handle.write(code)
-    handle.close()
-    result = subprocess.run(['php', name], stdout=subprocess.PIPE)
-    for line in result.stdout.decode('utf-8-sig').splitlines():
-        line=line.strip()
-        if len(line):
-            print(line)
+    dasqlEvalCode('php','php',code)
 elif len(params['query']) > 0 and params['query'].startswith('<?php'):
     #Run a PHP command
-    handle, name = tempfile.mkstemp(suffix=".php",prefix="dasql_",text=True)
-    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
-    handle.write(params['query'])
-    handle.close()
-    result = subprocess.run(['php', name], stdout=subprocess.PIPE)
-    for line in result.stdout.decode('utf-8-sig').splitlines():
-        line=line.strip()
-        if len(line):
-            print(line)
+    dasqlEvalCode('php','php',params['query'])
 elif len(params['query']) > 0 and params['query'].startswith('<?py'):
     #Run a lua command
     params['query']=params['query'][4:]
     if params['query'].endswith('?>'):
         params['query']=params['query'][:len(params['query'])-2]
-    handle, name = tempfile.mkstemp(suffix=".py",prefix="dasql_",text=True)
-    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
-    handle.write(params['query'])
-    handle.close()
-    result = subprocess.run(['python', name], stdout=subprocess.PIPE)
-    for line in result.stdout.decode('utf-8-sig').splitlines():
-        line=line.strip()
-        if len(line):
-            print(line)
+    dasqlEvalCode('python','py',params['query'])
 elif len(params['query']) > 0 and params['query'].startswith('<?lua'):
     #Run a lua command
     params['query']=params['query'][6:]
     if params['query'].endswith('?>'):
         params['query']=params['query'][:len(params['query'])-2]
-    handle, name = tempfile.mkstemp(suffix=".lua",prefix="dasql_",text=True)
-    handle = os.fdopen(handle, mode="wt",encoding="utf-8")
-    handle.write(params['query'])
-    handle.close()
-    result = subprocess.run(['lua', name], stdout=subprocess.PIPE)
-    for line in result.stdout.decode('utf-8-sig').splitlines():
-        line=line.strip()
-        if len(line):
-            print(line)
+    dasqlEvalCode('lua','lua',params['query'])
 elif len(params['query']) > 0:
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
