@@ -2451,7 +2451,7 @@ function postgresqlQueryResults($query='',$params=array()){
 	$dbh_postgresql='';
 	$dbh_postgresql=postgresqlDBConnect();
 	if(!$dbh_postgresql){
-		$DATABASE['_lastquery']['error']='connect failed: '.pg_last_error();
+		$DATABASE['_lastquery']['error']='connect failed';
 		debugValue($DATABASE['_lastquery']);
     	return array();
 	}
