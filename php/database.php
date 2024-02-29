@@ -595,7 +595,7 @@ function dbGetDDL($db,$table,$schema){
 * @return string
 * @usage $createsql=dbGetTableDDL($db,$table);
 */
-function dbGetTableDDL($db,$table,$schema){
+function dbGetTableDDL($db,$table,$schema=''){
 	return dbFunctionCall('getTableDDL',$db,$table,$schema);
 }
 //---------- begin function dbGetTableIndexes
