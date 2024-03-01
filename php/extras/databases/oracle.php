@@ -114,7 +114,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 		}
 		if(!is_array($rec) || !count($rec)){continue;}
 		$recstr=implode(',',array_values($rec));
-		$values[]="select {$recstr} from dual";
+		$values[]="SELECT {$recstr} FROM dual";
 	}
 	if(isset($params['-upsert']) && isset($params['-upserton'])){
 		if(!is_array($params['-upsert'])){
@@ -168,7 +168,7 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	else{
 		$query="INSERT INTO {$table} ({$fieldstr}) WITH vals AS ( ".PHP_EOL;
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
-		$query.=PHP_EOL.') select * from vals';
+		$query.=PHP_EOL.') SELECT * FROM vals';
 	}
 	//echo nl2br($query);exit;
 	$ok=oracleExecuteSQL($query);
@@ -203,7 +203,7 @@ function oracleGetDDL($type,$name,$schema=''){
 	$schema=strtoupper($schema);
 	$query=<<<ENDOFQUERY
 		SELECT 
-			DBMS_METADATA.GET_DDL('{$type}','{$name}','{$schema}') as ddl 
+			DBMS_METADATA.GET_DDL('{$type}','{$name}','{$schema}') AS ddl 
 		FROM DUAL
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
@@ -276,13 +276,13 @@ function oracleGetProcedureText($name='',$type='',$schema=''){
 	}
 	$schema=strtoupper($schema);
 	$query=<<<ENDOFQUERY
-		select text
-		from all_source
-		where 
+		SELECT text
+		FROM all_source
+		WHERE 
 			owner='{$schema}'
-			and name='{$name}'
-			and type='{$type}'
-		order by line
+			AND name='{$name}'
+			AND type='{$type}'
+		ORDER BY line
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
 	$lines=array();
@@ -316,10 +316,10 @@ function oracleGetAllProcedures($schema=''){
 	$schema=strtoupper($schema);
 	//get source
 	$query=<<<ENDOFQUERY
-	select name,type,sum(ora_hash(text)) as hash
-	from all_source
-	where owner='{$schema}'
-	group by owner,name,type
+	SELECT name,type,SUM(ORA_HASH(text)) AS hash
+	FROM all_source
+	WHERE owner='{$schema}'
+	GROUP BY owner,name,type
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
 	$hashes=array();
@@ -332,12 +332,12 @@ ENDOFQUERY;
     ap.object_name
     ,ap.object_type
     ,ap.overload
-    ,listagg(aa.argument_name,', ') within group (ORDER BY aa.position) args
+    ,LISTAGG(aa.argument_name,', ') WITHIN GROUP (ORDER BY aa.position) args
 FROM all_procedures ap
    LEFT OUTER JOIN all_arguments aa
-      on aa.object_name=ap.object_name
-         and nvl(aa.overload,0)=nvl(ap.overload,0)
-         and aa.owner=ap.owner
+      ON aa.object_name=ap.object_name
+         AND NVL(aa.overload,0)=NVL(ap.overload,0)
+         AND aa.owner=ap.owner
 WHERE
 	ap.owner='{$schema}'
 GROUP BY 
@@ -398,7 +398,7 @@ function oracleGetAllTableFields($schema=''){
         DECODE (NULLABLE,'N', ' NOT NULL','') type_name
    		FROM all_tab_cols
   		WHERE owner='{$schema}'
-  		and table_name in (select table_name from all_tables)
+  		and table_name in (SELECT table_name FROM all_tables)
     	ORDER BY table_name,column_id,column_name
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
@@ -650,8 +650,8 @@ function oracleGetAllTableIndexes($schema=''){
 	SELECT 
 		a.table_name,
        	a.index_name,
-       	'["' || listAGG(b.column_name,'","') within group (order by column_position) || '"]' as index_keys,
-       	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique,
+       	'["' || listAGG(b.column_name,'","') WITHIN GROUP (ORDER BY column_position) || '"]' AS index_keys,
+       	CASE a.uniqueness WHEN 'UNIQUE' THEN 1 ELSE 0 END as is_unique,
        	a.generated
 	FROM sys.all_indexes a
 		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
@@ -659,7 +659,7 @@ function oracleGetAllTableIndexes($schema=''){
 	GROUP BY 
 		a.table_name,
 	    a.index_name,
-	    case a.uniqueness when 'UNIQUE' then 1 else 0 end,
+	    CASE a.uniqueness WHEN 'UNIQUE' THEN 1 ELSE 0 END,
 	    generated
 	ORDER BY 1,2
 ENDOFQUERY;
@@ -701,15 +701,15 @@ function oracleGetAllTableConstraints($schema=''){
 		a.table_name, 
 		a.column_name, 
 		a.constraint_name,   
-       	c_pk.table_name as r_table_name, 
-       	c_pk.constraint_name as r_pk
+       	c_pk.table_name AS r_table_name, 
+       	c_pk.constraint_name AS r_pk
 	FROM all_cons_columns a
   	JOIN all_constraints c ON a.owner = c.owner
 		AND a.constraint_name = c.constraint_name
   	JOIN all_constraints c_pk ON c.r_owner = c_pk.owner
 		AND c.r_constraint_name = c_pk.constraint_name
 	WHERE c.constraint_type = 'R'
-		and a.owner='{$schema}'
+		AND a.owner='{$schema}'
 	ORDER BY 1,2,3
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
@@ -741,15 +741,15 @@ function oracleGetDBTableIndexes($tablename=''){
 	SELECT 
 		a.table_name,
        	a.index_name,
-       	'["' || listAGG(b.column_name,'","') within group (order by column_position) || '"]' as index_keys,
-       	CASE a.uniqueness WHEN 'UNIQUE' then 1 else 0 END as is_unique
+       	'["' || listAGG(b.column_name,'","') WITHIN GROUP (ORDER BY column_position) || '"]' AS index_keys,
+       	CASE a.uniqueness WHEN 'UNIQUE' THEN 1 else 0 END AS is_unique
 	FROM sys.all_indexes a
-		INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
-	WHERE a.table_owner = '{$schema}' and a.table_name='{$tablename}'
+		INNER JOIN sys.all_ind_columns b ON a.owner = b.index_owner AND a.index_name = b.index_name
+	WHERE a.table_owner = '{$schema}' AND a.table_name='{$tablename}'
 	GROUP BY 
 		a.table_name,
 	    a.index_name,
-	    case a.uniqueness when 'UNIQUE' then 1 else 0 end
+	    CASE a.uniqueness WHEN 'UNIQUE' THEN 1 ELSE 0 END
 	ORDER BY 1,2
 ENDOFQUERY;
 	$recs=oracleQueryResults($query);
@@ -1065,7 +1065,7 @@ function oracleCommit($conn=''){
 * @usage $dbh_oracle=oracleDBConnect($params);
 * @usage singe query usage
 * 	$conn=oracleDBConnect(array('-single'=>1));
-* 		$stid = oci_parse($conn, 'select 1,2,3 from dual');
+* 		$stid = oci_parse($conn, 'SELECT 1,2,3 FROM dual');
 * 		oci_execute($stid);
 * 		while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
 * 			echo printValue($row);
@@ -1492,7 +1492,7 @@ function oracleGetDBCount($params=array()){
 	$params['-queryonly']=1;
 	$query=oracleGetDBRecords($params);
 	if(!stringContains($query,'where') && strlen($dbschema)){
-	 	$query="SELECT owner,table_name,num_rows as cnt FROM dba_tables where lower(owner)='{$dbschema}' and lower(table_name)='{$table}'";
+	 	$query="SELECT owner,table_name,num_rows AS cnt FROM dba_tables WHERE LOWER(owner)='{$dbschema}' AND LOWER(table_name)='{$table}'";
 	 	$recs=oracleQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
@@ -1567,7 +1567,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
 	//primary keys
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
 	//echo $table.printValue($pkeys);exit;
-	$query="select * from {$table} where 0=".rand(1,1000);
+	$query="SELECT * FROM {$table} WHERE 0=".rand(1,1000);
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!$stid){
 		$out=array(
@@ -1776,7 +1776,7 @@ function oracleDelDBRecordById($table='',$id=0){
 * @return array - set of records
 * @usage
 *	oracleGetDBRecords(array('-table'=>'notes'));
-*	oracleGetDBRecords("select * from myschema.mytable where ...");
+*	oracleGetDBRecords("SELECT * FROM myschema.mytable WHERE ...");
 */
 function oracleGetDBRecords($params){
 	global $USER;
@@ -1888,10 +1888,10 @@ function oracleGetDBTables($params=array()){
 			all_tables 
 		WHERE 
 			owner ='{$schema}' 
-			and status='VALID'
+			AND status='VALID'
 		ORDER BY 
 			owner,table_name
-		offset 0 rows fetch next 5000 rows only
+		OFFSET 0 ROWS FETCH NEXT 5000 ROWS ONLY
 ENDOFQUERY;
 	$recs = oracleQueryResults($query,$params);
 	$tables=array();
@@ -2094,9 +2094,9 @@ function oracleIsDBTable($table='',$force=0){
 			all_tables 
 		WHERE 
 			owner ='{$schema}' 
-			and status='VALID'
-			and table_name='{$table}'
-		offset 0 rows fetch next 1 rows only
+			AND status='VALID'
+			AND table_name='{$table}'
+		OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
 ENDOFQUERY;
 	$recs = oracleQueryResults($query);
 	//echo $query.printValue($recs);exit;
@@ -2421,6 +2421,16 @@ function oracleNamedQueryList(){
 			'name'=>'Tables'
 		),
 		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'indexes',
+			'icon'=>'icon-marker',
+			'name'=>'Indexes'
+		),
+		array(
 			'code'=>'functions',
 			'icon'=>'icon-th-thumb',
 			'name'=>'Functions'
@@ -2462,8 +2472,8 @@ SELECT
 FROM v\$session a, v\$sql b
 WHERE 
 	a.sql_id = b.sql_id 
-	and a.status = 'ACTIVE' 
-	and a.username != 'SYS'
+	AND a.status = 'ACTIVE' 
+	AND a.username NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
 ENDOFQUERY;
 		break;
 		case 'sessions':
@@ -2475,7 +2485,7 @@ SELECT
     machine,
     program,
     module
-from v\$session
+FROM v\$session
 ENDOFQUERY;
 		break;
 		case 'table_locks':
@@ -2494,52 +2504,110 @@ ENDOFQUERY;
 			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 			return <<<ENDOFQUERY
 SELECT 
-	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
+	owner AS schema_name, 
+	object_name as name, 
+	object_id, 
+	data_object_id, 
+	subobject_name status,
+	created, 
+	last_ddl_time, 
+	timestamp
 FROM ALL_OBJECTS 
-WHERE OBJECT_TYPE = 'FUNCTION' 
-and owner = '{$owner}'
+WHERE 
+	OBJECT_TYPE = 'FUNCTION' 
+	AND owner NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
+	AND owner NOT LIKE '%SYS'
+ORDER BY 1,2
 ENDOFQUERY;
 		break;
 		case 'procedures':
 			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 			return <<<ENDOFQUERY
 SELECT 
-	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
+	owner AS schema_name, 
+	object_name as name, 
+	object_id, 
+	data_object_id, 
+	subobject_name status,
+	created, 
+	last_ddl_time, 
+	timestamp
 FROM ALL_OBJECTS 
-WHERE OBJECT_TYPE = 'PROCEDURE' 
-and owner = '{$owner}'
+WHERE 
+	OBJECT_TYPE = 'PROCEDURE' 
+	AND owner NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
+	AND owner NOT LIKE '%SYS'
+ORDER BY 1,2
 ENDOFQUERY;
 		break;
 		case 'packages':
 			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
 			return <<<ENDOFQUERY
 SELECT 
-	owner, object_name, object_id, data_object_id, subobject_name status,created, last_ddl_time, timestamp
+	owner AS schema_name, 
+	object_name as name, 
+	object_id, 
+	data_object_id, 
+	subobject_name status,
+	created, 
+	last_ddl_time, 
+	timestamp
 FROM ALL_OBJECTS 
-WHERE OBJECT_TYPE = 'PACKAGE' 
-and owner = '{$owner}'
+WHERE 
+	OBJECT_TYPE = 'PACKAGE' 
+	AND owner NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
+	AND owner NOT LIKE '%SYS'
+ORDER BY 1,2
 ENDOFQUERY;
 		break;
 		case 'tables':
-			$owner=strtoupper($DATABASE[$CONFIG['db']]['dbschema']);
+			$owner=strtoupper($DATABASE[$CONFIG['db']]['DBSCHEMA']);
 			return <<<ENDOFQUERY
-select 
-	t.segment_name as name,
-	r.row_count,
-	c.field_count,
-	round(t.bytes/1024/1024,2) as mb_size,
-	t.segment_type,
-	r.logging,
-	r.backed_up,
-	r.partitioned  
-from dba_segments t,
-(select count(*) field_count,table_name from all_tab_cols where owner='{$owner}' group by table_name ) c,
-(select num_rows as row_count,table_name,logging,backed_up,partitioned from dba_tables where owner='{$owner}' ) r
-where 
-	t.segment_name =c.table_name
-	and c.table_name=r.table_name
-	and owner='{$owner}' and segment_type in ('TABLE','TABLE_PARTITION') 
-order by round(bytes/1024/1024,2) desc
+SELECT 
+	owner AS schema_name, 
+	segment_name AS name, 
+	bytes/1024/1024 AS size_mb
+FROM dba_segments
+WHERE 
+	segment_type IN ('TABLE','TABLE_PARTITION')
+	AND owner NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
+	AND owner NOT LIKE '%SYS'
+	AND segment_name NOT LIKE 'BIN$%'
+ORDER BY 1,2
+ENDOFQUERY;
+		break;
+		case 'views':
+			return <<<ENDOFQUERY
+SELECT 
+	owner as schema_name,
+	view_name as name,
+	text as definition 
+FROM sys.all_views
+WHERE 
+	owner NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
+	AND owner NOT LIKE '%SYS'
+ORDER BY 1,2
+ENDOFQUERY;
+		break;
+		case 'indexes':
+			return <<<ENDOFQUERY
+SELECT 
+	a.table_name,
+	a.index_name,
+	'["' || listAGG(b.column_name,'","') WITHIN GROUP (ORDER BY column_position) || '"]' AS index_keys,
+	CASE a.uniqueness WHEN 'UNIQUE' THEN 1 ELSE 0 END as is_unique,
+	a.generated
+FROM sys.all_indexes a
+	INNER JOIN sys.all_ind_columns b on a.owner = b.index_owner and a.index_name = b.index_name
+WHERE 
+	a.table_owner NOT IN ('SYS','SYSTEM','DBSNMP','GSMADMIN_INTERNAL','XDB','ORDDATA')
+	AND a.table_owner NOT LIKE '%SYS'
+GROUP BY 
+	a.table_name,
+	a.index_name,
+	CASE a.uniqueness WHEN 'UNIQUE' THEN 1 ELSE 0 END,
+	a.generated
+ORDER BY 1,2
 ENDOFQUERY;
 		break;
 	}
