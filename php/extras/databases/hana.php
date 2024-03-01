@@ -5,9 +5,9 @@
 		http://sapbw.optimieren.de/hana/hana/html/monitor_views.html
 
 		Sequences:
-		--select * from sequences where sequence_oid like '%1157363%'
-		--select * from sequences where sequence_name like '%1157363%'
-		--select table_name,column_name, column_id from table_columns where table_name ='SAP_FLASH_CARDS' and column_name='ID'
+		--SELECT * FROM sequences WHERE sequence_oid LIKE '%1157363%'
+		--SELECT * FROM sequences WHERE sequence_name LIKE '%1157363%'
+		--SELECT table_name,column_name, column_id FROM table_columns WHERE table_name ='SAP_FLASH_CARDS' AND column_name='ID'
 		SELECT BICOMMON."_SYS_SEQUENCE_1157363_#0_#".CURRVAL FROM DUMMY;
 
 */
@@ -23,7 +23,7 @@
 * @usage $ok=hanaAddDBRecords('comments',array('-recs'=>$recs);
 * 
 * $conn = odbc_connect("CData ODBC SAPHANA Source","user","password");
-* $query = odbc_prepare($conn, "SELECT * FROM Buckets WHERE Name = ?,?,?");
+* $query = odbc_prepare($conn, "SELECT * FROM buckets WHERE Name = ?,?,?");
 * $success = odbc_execute($query, array('TestBucket'));
 *
 */
@@ -156,7 +156,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				}
 			}
 			$recstr=implode(',',$pvals);
-			$values[]="select {$recstr} from dummy";
+			$values[]="SELECT {$recstr} FROM dummy";
 		}
 		if($c > 0 && count($recs)==$chunk_size){
 			$ok = odbc_execute($stmt, $pvalues);
@@ -1102,7 +1102,9 @@ function hanaIsDBTable($table,$force=0){
 	$query=<<<ENDOFQUERY
 		SELECT table_name
 		FROM sys.tables
-		where schema_name='{$schema}' and table_name='{$table}'
+		WHERE 
+			schema_name='{$schema}' 
+			AND table_name='{$table}'
 ENDOFQUERY;
 	$recs=hanaQueryResults($query);
 	if(isset($recs[0]['table_name'])){
@@ -1306,7 +1308,7 @@ ENDOFQUERY;
     		return "hanaAddDBRecord Execute Error".printValue($e);
 		}
 		if(isset($params['-noidentity'])){return $success;}
-		$result2=odbc_exec($dbh_hana,"SELECT top 1 ifnull(CURRENT_IDENTITY_VALUE(),0) as cval from {$params['-table']};");
+		$result2=odbc_exec($dbh_hana,"SELECT TOP 1 IFNULL(CURRENT_IDENTITY_VALUE(),0) AS cval FROM {$params['-table']};");
 		$row=odbc_fetch_array($result2,0);
 		odbc_free_result($result2);
 		$row=array_change_key_case($row);
@@ -1539,7 +1541,7 @@ SELECT connection_id
 FROM M_CONNECTIONS
 WHERE
 	user_name={$username}
-	and connection_status = 'IDLE'
+	AND connection_status = 'IDLE'
 	AND connection_type = 'Remote'
 	AND idle_time > {$idle}
 ORDER BY idle_time DESC
@@ -1569,7 +1571,7 @@ ENDOFQUERY;
 * @usage
 *	loadExtras('hana');
 *	$recs=hanaGetDBRecords(array('-table'=>'notes','name'=>'bob'));
-*	$recs=hanaGetDBRecords("select * from notes where name='bob'");
+*	$recs=hanaGetDBRecords("SELECT * FROM notes WHERE name='bob'");
 */
 function hanaGetDBRecords($params){
 	global $USER;
@@ -1677,12 +1679,14 @@ function hanaGetDBSchemas($has_privileges=1){
 			schema_name
 		FROM sys.schemas 
 		WHERE 
-			schema_owner not in ( 'SYS','SYSTEM')
-			and schema_owner not like '_SYS_%'
-			and schema_owner not like '%_AUTO_USER_%'
+			schema_owner NOT IN ('SYS','UIS','SYSTEM','SYS_REPL')
+			AND schema_owner NOT LIKE '_SYS_%'
+			AND schema_owner NOT LIKE 'SAP_%'
+			AND schema_owner NOT LIKE 'HANA_%'
+			AND schema_owner NOT LIKE '%_AUTO_USER_%'
 ENDOFQUERY;
 	if($has_privileges==1){
-		$query.= "			and has_privileges='TRUE'".PHP_EOL;
+		$query.= "			AND has_privileges='TRUE'".PHP_EOL;
 	}
 	$query.= "ORDER BY schema_name";
 	$recs=hanaQueryResults($query);
@@ -1840,14 +1844,14 @@ function hanaGetDBCount($params=array()){
 		$dbschema=strtolower($DATABASE[$CONFIG['db']]['dbschema']);
 		$table=strtolower($params['-table']);
 	}
-	$params['-fields']="count(*) as cnt";
+	$params['-fields']="COUNT(*) AS cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
 	$params['-queryonly']=1;
 	$query=hanaGetDBRecords($params);
 	if(!stringContains($query,'where') && strlen($dbschema)){
-	 	$query="SELECT schema_name,table_name,record_count as cnt FROM sys.m_tables where lower(schema_name)='{$dbschema}' and lower(table_name)='{$table}'";
+	 	$query="SELECT schema_name,table_name,record_count AS cnt FROM sys.m_tables WHERE LOWER(schema_name)='{$dbschema}' AND LOWER(table_name)='{$table}'";
 	 	$recs=hanaQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
@@ -1946,7 +1950,7 @@ function hanaQueryHeader($query,$params=array()){
 * @return $recs array
 * @usage
 *	loadExtras('hana'); 
-*	$recs=hanaQueryResults('select top 50 * from abcschema.abc');
+*	$recs=hanaQueryResults('SELECT TOP 50 * FROM abcschema.abc');
 */
 function hanaQueryResults($query,$params=array()){
 	global $DATABASE;
@@ -2208,7 +2212,7 @@ function hanaGetDBTablePrimaryKeys($table,$params=array()){
 	$parts=preg_split('/\./',strtoupper($table),2);
 	$where='';
 	if(count($parts)==2){
-		$query = "SELECT column_name FROM constraints WHERE SCHEMA_NAME = '{$parts[0]}' and table_name='{$parts[1]}'";
+		$query = "SELECT column_name FROM constraints WHERE SCHEMA_NAME = '{$parts[0]}' AND table_name='{$parts[1]}'";
 	}
 	else{
 		$query = "SELECT column_name FROM constraints WHERE table_name='{$parts[1]}'";
@@ -2397,6 +2401,21 @@ function hanaNamedQueryList(){
 			'name'=>'Sessions'
 		),
 		array(
+			'code'=>'tables',
+			'icon'=>'icon-table',
+			'name'=>'Tables'
+		),
+		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'indexes',
+			'icon'=>'icon-marker',
+			'name'=>'Indexes'
+		),
+		array(
 			'code'=>'table_locks',
 			'icon'=>'icon-lock',
 			'name'=>'Table Locks'
@@ -2458,9 +2477,67 @@ FROM
 ORDER BY connection_status
 ENDOFQUERY;
 		break;
+		case 'tables':
+			return <<<ENDOFQUERY
+SELECT
+	schema_name,
+	table_name,
+	comments,
+	create_time
+FROM public.tables
+WHERE 
+	is_system_table = 'FALSE'
+	AND schema_name NOT IN ('SYS','UIS','SYSTEM','SYS_REPL')
+	AND schema_name NOT LIKE '_SYS_%'
+	AND schema_name NOT LIKE 'SAP_%'
+	AND schema_name NOT LIKE 'HANA_%'
+ORDER BY 1,2
+ENDOFQUERY;
+		break;
+		case 'views':
+			return <<<ENDOFQUERY
+SELECT
+	schema_name,
+	view_name,
+	comments,
+	definition,
+	create_time
+FROM public.views
+WHERE 
+	is_valid = 'TRUE'
+	AND schema_name NOT IN ('SYS','UIS','SYSTEM','SYS_REPL')
+	AND schema_name NOT LIKE '_SYS_%'
+	AND schema_name NOT LIKE 'SAP_%'
+	AND schema_name NOT LIKE 'HANA_%'
+ORDER BY 1,2
+ENDOFQUERY;
+		break;
+		case 'indexes':
+			return <<<ENDOFQUERY
+SELECT
+	si.schema_name,
+	si.table_name,
+	si.index_name AS name,
+	STRING_AGG(sic.column_name,',') AS keys,
+	CASE index_type WHEN 'CPBTREE UNIQUE' THEN 1 ELSE 0 END AS is_unique
+FROM sys.indexes si, sys.index_columns sic
+WHERE 
+	si.table_name = sic.table_name
+	AND si.schema_name NOT IN ('SYS','UIS','SYSTEM','SYS_REPL')
+	AND si.schema_name NOT LIKE '_SYS_%'
+	AND si.schema_name NOT LIKE 'SAP_%'
+	AND si.schema_name NOT LIKE 'HANA_%'
+GROUP BY 
+	si.schema_name,
+	si.table_name,
+	si.index_name,
+	CASE index_type WHEN 'CPBTREE UNIQUE' THEN 1 ELSE 0 END
+ORDER BY 1,2,3
+ENDOFQUERY;
+		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
-SELECT * from m_table_locks
+SELECT * FROM m_table_locks
 ENDOFQUERY;
 		break;
 	}
