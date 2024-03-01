@@ -4,52 +4,6 @@
 	mysql Database functions
 		https://dev.mysql.com/doc/refman/8.0/en/
 		https://www.php.net/manual/en/ref.mysql.php
-
-
-$xrecs=dbQueryResults('gidgetgadget',"select * from snap");
-$CONFIG['db']='wasql';
-$recs=array();
-$params=mysqlParseConnectParams($params);
-mysqli_report(MYSQLI_REPORT_ERROR);
-$dbh_mysql = mysqli_connect('localhost',$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
-
-//$dbh_mysql='';
-//$dbh_mysql=mysqlDBConnect();
-if(!$dbh_mysql){
-	$DATABASE['_lastquery']['error']='connect failed: '.mysqli_connect_error();
-	debugValue($DATABASE['_lastquery']);
-	return 0;
-}
-$dbh_mysql->set_charset("utf8mb4");
-$cuser=$USER['_id'];
-$query="INSERT INTO snap_people (_cdate,_cuser,meta) VALUES (current_timestamp, {$cuser}, ?)";
-$stmt=mysqli_prepare($dbh_mysql,$query);
-if(!$stmt){
-	printf("Error message: %s", mysqli_error($dbh_mysql));
-	exit;
-}
-foreach($xrecs as $i=>$rec){
-	$meta=json_decode($rec['person'],true);
-	$meta['stake']=$rec['stake'];
-	$meta['ward']=$rec['ward'];
-	$jrec=json_decode($rec['guardian'],true);
-	foreach($jrec as $k=>$v){
-		$meta["guardian_{$k}"]=$v;
-	}
-	$jrec=json_decode($rec['bishop'],true);
-	foreach($jrec as $k=>$v){
-		$meta["bishop_{$k}"]=$v;
-	}
-	$jrec=json_decode($rec['snap'],true);
-	foreach($jrec as $k=>$v){
-		$meta["snap_{$k}"]=$v;
-	}
-	$meta=json_encode($meta,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_IGNORE); 
-	mysqli_stmt_bind_param($stmt, "s",$meta);
-	mysqli_stmt_execute($stmt);
-}
-$cnt=getDBCount(array('-table'=>'snap_people','-nocache'=>1));
-echo printValue($cnt)."done";exit;
 */
 
 //---------- begin function mysqlAddDBFields--------------------
@@ -309,7 +263,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	if(isset($params['-upsert'][0])){
 		$upserts=$params['-upsert'];
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
-		$recs=mysqlQueryResults('SELECT version() as value');
+		$recs=mysqlQueryResults('SELECT VERSION() AS value');
 		$version=$recs[0];
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
 		if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
@@ -504,21 +458,23 @@ function mysqlGetAllTableIndexes($schema=''){
 	}
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
-	SELECT table_name,
-       index_name,
-       JSON_ARRAYAGG(column_name) as index_keys,
-       case non_unique
-            when 1 then 0
-            else 1
-            end as is_unique
+	SELECT 
+		table_name,
+       	index_name,
+       	JSON_ARRAYAGG(column_name) AS index_keys,
+       	CASE non_unique
+          	WHEN 1 THEN 0
+            	ELSE 1
+            	END AS is_unique
 	FROM information_schema.statistics
-	WHERE table_schema not in ('information_schema', 'mysql',
-	                           'performance_schema', 'sys')
-	    and index_schema = '{$schema}'
-	GROUP BY index_schema,
-	         index_name,
-	         non_unique,
-	         table_name
+	WHERE 
+		table_schema NOT IN ('information_schema','mysql','performance_schema','sys')
+	    	AND index_schema = '{$schema}'
+	GROUP BY 
+		index_schema,
+		index_name,
+		non_unique,
+		table_name
 	ORDER BY 1,2
 ENDOFQUERY;
 	$recs=mysqlQueryResults($query);
@@ -557,14 +513,12 @@ function mysqlGetAllProcedures($dbname=''){
 	}
 	$query=<<<ENDOFQUERY
 SELECT 
-    r.routine_name as object_name
-    ,r.routine_type as object_type
-    ,MD5(r.routine_definition) as hash
-    ,group_concat( distinct p.parameter_name ORDER BY p.parameter_name SEPARATOR ', ')  args
-
+    r.routine_name AS object_name
+    ,r.routine_type AS object_type
+    ,MD5(r.routine_definition) AS hash
+    ,GROUP_CONCAT( DISTINCT p.parameter_name ORDER BY p.parameter_name SEPARATOR ', ')  args
 FROM information_schema.routines r
-   LEFT OUTER JOIN information_schema.parameters p
-      on p.specific_name=r.specific_name and p.parameter_mode='IN'
+   LEFT OUTER JOIN information_schema.parameters p ON p.specific_name=r.specific_name AND p.parameter_mode='IN'
 WHERE r.routine_schema='{$dbname}'
 GROUP BY
 	r.routine_name,
@@ -1087,7 +1041,7 @@ function mysqlGetDBCount($params=array()){
 	$query=mysqlGetDBRecords($params);
 	//echo "HERE".$query.printValue($params);exit;
 	if(!stringContains($query,'where')){
-	 	$query="select table_rows from information_schema.tables where table_schema='{$dbname}' and table_name='{$params['-table']}'";
+	 	$query="SELECT table_rows FROM information_schema.tables WHERE table_schema='{$dbname}' AND table_name='{$params['-table']}'";
 	 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
 	 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
 	 		return (integer)$recs[0]['table_rows'];
@@ -1246,19 +1200,19 @@ function mysqlGetDBQuery($params=array()){
 			}
 		}
 	}
-	$query='select ';
-	$query .= implode(',',$fields).' from ' . $params['-table'];
+	$query='SELECT ';
+	$query .= implode(',',$fields).' FROM ' . $params['-table'];
 	//build where clause
 	$where = mysqlGetDBWhere($params);
-	if(commonStrlen($where)){$query .= " where {$where}";}
+	if(commonStrlen($where)){$query .= " WHERE {$where}";}
 	//Set order by if defined
-    if(isset($params['-group'])){$query .= ' group by '.$params['-group'];}
+    if(isset($params['-group'])){$query .= ' GROUP BY '.$params['-group'];}
 	//Set order by if defined
-    if(isset($params['-order'])){$query .= ' order by '.$params['-order'];}
+    if(isset($params['-order'])){$query .= ' ORDER BY '.$params['-order'];}
     //Set limit if defined
-    if(isset($params['-limit'])){$query .= ' limit '.$params['-limit'];}
+    if(isset($params['-limit'])){$query .= ' LIMIT '.$params['-limit'];}
     //Set offset if defined
-    if(isset($params['-offset'])){$query .= ' offset '.$params['-offset'];}
+    if(isset($params['-offset'])){$query .= ' OFFSET '.$params['-offset'];}
     //if($params['-table']=='events_data' && count($loopfields)>1){echo printValue($loopfields).$query;exit;}
     return $query;
 }
@@ -1275,7 +1229,7 @@ function mysqlGetDBQuery($params=array()){
 * @return array - set of records
 * @usage
 *	mysqlGetDBRecords(array('-table'=>'notes'))
-*	mysqlGetDBRecords("select * from myschema.mytable where ...")
+*	mysqlGetDBRecords("SELECT * FROM myschema.mytable WHERE ...")
 */
 function mysqlGetDBRecords($params){
 	global $USER;
@@ -1655,6 +1609,16 @@ function mysqlNamedQueryList(){
 			'name'=>'Tables'
 		),
 		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'indexes',
+			'icon'=>'icon-marker',
+			'name'=>'Indexes'
+		),
+		array(
 			'code'=>'functions',
 			'icon'=>'icon-th-thumb',
 			'name'=>'Functions'
@@ -1692,19 +1656,26 @@ function mysqlNamedQuery($name,$str=''){
 		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
-show processlist
+SHOW processlist
 ENDOFQUERY;
 		break;
 		case 'sessions':
 			return <<<ENDOFQUERY
 SELECT 
-	id, user, host, db, command, time, state, info 
+	id, 
+	user, 
+	host, 
+	db, 
+	command, 
+	time, 
+	state, 
+	info 
 FROM information_schema.processlist
 ENDOFQUERY;
 		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
-SHOW OPEN TABLES WHERE In_use > 0
+SHOW OPEN TABLES WHERE in_use > 0
 ENDOFQUERY;
 		break;
 		case 'functions':
@@ -1717,7 +1688,9 @@ SELECT
 	last_altered,
 	definer
 FROM information_schema.ROUTINES 
-WHERE routine_type = 'FUNCTION' and routine_schema = '{$dbname}'
+WHERE 
+	routine_type = 'FUNCTION' 
+	AND routine_schema = '{$dbname}'
 ENDOFQUERY;
 		break;
 		case 'procedures':
@@ -1730,26 +1703,60 @@ SELECT
 	last_altered,
 	definer
 FROM information_schema.ROUTINES 
-WHERE routine_type = 'PROCEDURE' and routine_schema = '{$dbname}'
+WHERE 
+	routine_type = 'PROCEDURE' 
+	AND routine_schema = '{$dbname}'
 ENDOFQUERY;
 		break;
 		case 'tables':
 			return <<<ENDOFQUERY
 SELECT
-	t.table_name as name,
-	t.table_rows as row_count,
+	t.table_name AS name,
+	t.table_rows AS row_count,
 	c.field_count,
-	round(((data_length + index_length) / 1024 / 1024), 2) as mb_size,
+	ROUND(((data_length + index_length) / 1024 / 1024), 2) AS mb_size,
 	t.auto_increment,
 	t.create_time,
 	t.update_time,
 	t.table_collation,
 	t.table_comment
 FROM information_schema.tables t,
-(select count(*) field_count,table_name from information_schema.columns where table_schema='{$dbname}' group by table_name ) c 
+(SELECT COUNT(*) field_count,table_name FROM information_schema.columns WHERE table_schema='{$dbname}' GROUP BY table_name ) c 
 WHERE
 	t.table_name =c.table_name 
-	and t.table_schema='{$dbname}'
+	AND t.table_schema='{$dbname}'
+ENDOFQUERY;
+		break;
+		case 'views':
+			return <<<ENDOFQUERY
+SELECT
+	table_name AS name,
+	view_definition as definition
+FROM information_schema.views
+WHERE
+	table_schema='{$dbname}'
+ENDOFQUERY;
+		break;
+		case 'indexes':
+			return <<<ENDOFQUERY
+SELECT 
+	table_name,
+  	index_name,
+  	JSON_ARRAYAGG(column_name) AS index_keys,
+  	CASE non_unique
+     	WHEN 1 THEN 0
+     	ELSE 1
+     	END AS is_unique
+FROM information_schema.statistics
+WHERE 
+	table_schema NOT IN ('information_schema', 'mysql','performance_schema', 'sys')
+	AND index_schema = '{$dbname}'
+GROUP BY 
+	index_schema,
+	index_name,
+	non_unique,
+	table_name
+ORDER BY 1,2
 ENDOFQUERY;
 		break;
 	}
@@ -1761,7 +1768,7 @@ ENDOFQUERY;
 function mysqlOptimizations($params=array()){
 	$results=array();
 	//version
-	$recs=mysqlQueryResults('SELECT version() as val');
+	$recs=mysqlQueryResults('SELECT version() AS val');
 	$results['version']=$recs[0]['val'];
 	//get status
 	$recs=mysqlQueryResults("show global status");
@@ -1783,7 +1790,7 @@ function mysqlOptimizations($params=array()){
 	$recs=mysqlQueryResults("SELECT Engine, Support, Comment, Transactions, XA, Savepoints FROM information_schema.ENGINES ORDER BY Engine ASC");
 	foreach($recs as $rec){
 		$key=strtolower($rec['engine']);
-		$xrecs=mysqlQueryResults("SELECT COUNT(*) as count FROM information_schema.tables WHERE table_type = 'BASE TABLE' and ENGINE = '{$rec['engine']}'");
+		$xrecs=mysqlQueryResults("SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND ENGINE = '{$rec['engine']}'");
 		$rec['count']=$xrecs[0]['count'];
 		$results['engines'][$key]=$rec;
 	}
@@ -1795,9 +1802,9 @@ function mysqlOptimizations($params=array()){
 	}
 	//innoDB
 	$results['innodb_buffer_pool_read_ratio']=$results['innodb_buffer_pool_reads'] * 100 / $results['innodb_buffer_pool_read_requests'];
-	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val from information_schema.TABLES where ENGINE='InnoDB'");
+	$recs=mysqlQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='InnoDB'");
 	$results['innodb_index_length']=(integer)$recs[0]['val'];
-	$recs=mysqlQueryResults("SELECT IFNULL(SUM(DATA_LENGTH),0) AS data_length from information_schema.TABLES where ENGINE='InnoDB'");
+	$recs=mysqlQueryResults("SELECT IFNULL(SUM(DATA_LENGTH),0) AS data_length FROM information_schema.TABLES WHERE ENGINE='InnoDB'");
 	$results['innodb_data_length']=(integer)$recs[0]['val'];
 	if($results['innodb_index_length'] > 0){
 		$results['innodb_buffer_pool_free_pcnt']=$results['innodb_buffer_pool_pages_free']/$results['innodb_buffer_pool_pages_total'];
