@@ -13,7 +13,7 @@
 	Json_table equivilent in PostgreSQL
 		drop TYPE json_test;
 		create  TYPE json_test AS (id_item int, id_menu varchar(100));
-		select * from json_populate_recordset(null::json_test,'[{"id_item":1,"id_menu":"34"},{"id_item":2,"id_menu":"35"}]')
+		SELECT * FROM JSON_POPULATE_RECORDSET(null::json_test,'[{"id_item":1,"id_menu":"34"},{"id_item":2,"id_menu":"35"}]')
 
 */
 //---------- begin function postgresqlAddDBRecords--------------------
@@ -1175,7 +1175,7 @@ function postgresqlGetDBCount($params=array()){
 	$params['-queryonly']=1;
 	$query=postgresqlGetDBRecords($params);
 	if(!stringContains($query,'where') && strlen($dbschema)){
-	 	$query="SELECT schemaname,relname,n_live_tup as cnt FROM pg_stat_user_tables where lower(schemaname)='{$dbschema}' and lower(relname)='{$table}'";
+	 	$query="SELECT schemaname,relname,n_live_tup AS cnt FROM pg_stat_user_tables WHERE LOWER(schemaname)='{$dbschema}' AND LOWER(relname)='{$table}'";
 	 	$recs=postgresqlQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
@@ -1204,7 +1204,7 @@ function postgresqlGetDBCount($params=array()){
 */
 function postgresqlGetDBDatabases($params=array()){
 	$query=<<<ENDOFQUERY
-		SELECT datname as name 
+		SELECT datname AS name 
 		FROM pg_database
 		WHERE datistemplate = false
 ENDOFQUERY;
@@ -1384,25 +1384,25 @@ function postgresqlGetAllProcedures($schema=''){
 	//get source
 	$query=<<<ENDOFQUERY
 	SELECT 
-		p.proname as object_name,
-		case 
-			when p.prokind = 'p' then 'PROCEDURE'
-			when p.prokind = 'f' then 'FUNCTION'
-			when p.prokind = 'a' then 'AGGREGATE FUNCTION'
-			when p.prokind = 'w' then 'WINDOW FUNCTION'
-			else 'UNKNOWN'
-		end as object_type,
-		md5(case 
-			when l.lanname = 'internal' then p.prosrc
-			else pg_get_functiondef(p.oid)
-			end
-			) as hash,
-		pg_get_function_arguments(p.oid) as args
+		p.proname AS object_name,
+		CASE 
+			WHEN p.prokind = 'p' THEN 'PROCEDURE'
+			WHEN p.prokind = 'f' THEN 'FUNCTION'
+			WHEN p.prokind = 'a' THEN 'AGGREGATE FUNCTION'
+			WHEN p.prokind = 'w' THEN 'WINDOW FUNCTION'
+			ELSE 'UNKNOWN'
+		END AS object_type,
+		MD5(CASE 
+			WHEN l.lanname = 'internal' THEN p.prosrc
+			ELSE PG_GET_FUNCTIONDEF(p.oid)
+			END
+			) AS hash,
+		PG_GET_FUNCTION_ARGUMENTS(p.oid) as args
 	FROM pg_proc p
-		LEFT JOIN pg_namespace n on p.pronamespace = n.oid
-		LEFT JOIN pg_language l on p.prolang = l.oid
-		LEFT JOIN pg_type t on t.oid = p.prorettype 
-	WHERE upper(n.nspname)='{$schema}'
+		LEFT JOIN pg_namespace n ON p.pronamespace = n.oid
+		LEFT JOIN pg_language l ON p.prolang = l.oid
+		LEFT JOIN pg_type t ON t.oid = p.prorettype 
+	WHERE UPPER(n.nspname)='{$schema}'
 	ORDER BY 1
 ENDOFQUERY;
 	$recs=postgresqlQueryResults($query);
@@ -1441,19 +1441,19 @@ function postgresqlGetProcedureText($name='',$type='',$schema=''){
 	//get source
 	$query=<<<ENDOFQUERY
 	SELECT 
-		p.proname as object_name,
-		case 
-			when l.lanname = 'internal' then p.prosrc
-			else pg_get_functiondef(p.oid)
-		end as text
+		p.proname AS object_name,
+		CASE 
+			WHEN l.lanname = 'internal' THEN p.prosrc
+			ELSE PG_GET_FUNCTIONDEF(p.oid)
+		END AS text
 	FROM pg_proc p
-		LEFT JOIN pg_namespace n on p.pronamespace = n.oid
-		LEFT JOIN pg_language l on p.prolang = l.oid
-		LEFT JOIN pg_type t on t.oid = p.prorettype 
+		LEFT JOIN pg_namespace n ON p.pronamespace = n.oid
+		LEFT JOIN pg_language l ON p.prolang = l.oid
+		LEFT JOIN pg_type t ON t.oid = p.prorettype 
 	WHERE 
-		upper(n.nspname)='{$schema}'
-		and upper(p.proname)='{$name}'
-		and p.prokind='{$type}'
+		UPPER(n.nspname)='{$schema}'
+		AND UPPER(p.proname)='{$name}'
+		AND p.prokind='{$type}'
 	ORDER BY 1
 ENDOFQUERY;
 	$recs=postgresqlQueryResults($query);
@@ -1535,14 +1535,14 @@ function postgresqlGetAllTableIndexes($schema=''){
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
 	SELECT
-	  	idx.indrelid :: REGCLASS AS table_name,
-	  	i.relname                AS index_name,
-	  	idx.indisunique          AS is_unique,
-	  	idx.indisprimary         AS is_primary,
+	  	idx.indrelid::REGCLASS AS table_name,
+	  	i.relname AS index_name,
+	  	idx.indisunique AS is_unique,
+	  	idx.indisprimary AS is_primary,
        	to_json(array(
-           SELECT pg_get_indexdef(idx.indexrelid, k + 1, TRUE)
+           SELECT PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE)
            FROM
-             generate_subscripts(idx.indkey, 1) AS k
+             GENERATE_SUBSCRIPTS(idx.indkey, 1) AS k
            ORDER BY k
        	)) AS index_keys
 	FROM pg_index AS idx
@@ -1701,16 +1701,16 @@ function postgresqlGetDBTableIndexes($tablename=''){
 	SELECT
   		U.usename AS user_name,
 	  	ns.nspname               AS schema_name,
-	  	idx.indrelid :: REGCLASS AS table_name,
+	  	idx.indrelid::REGCLASS AS table_name,
 	  	i.relname                AS index_name,
 	  	idx.indisunique          AS is_unique,
 	  	idx.indisprimary         AS is_primary,
 	  	am.amname                AS index_type,
 	  	idx.indkey,
-       	to_json(array(
-           SELECT pg_get_indexdef(idx.indexrelid, k + 1, TRUE)
+       	TO_JSON(ARRAY(
+           SELECT PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE)
            FROM
-             generate_subscripts(idx.indkey, 1) AS k
+             GENERATE_SUBSCRIPTS(idx.indkey, 1) AS k
            ORDER BY k
        	)) AS index_keys,
   		(idx.indexprs IS NOT NULL) OR (idx.indkey::int[] @> array[0]) AS is_functional,
@@ -2055,10 +2055,10 @@ function postgresqlIsDBTable($table='',$force=0){
 		list($schema,$table)=preg_split('/\./',$table,2);
 	}
 	if(strlen($schema)){
-		$query="SELECT tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' and tablename='{$table}'";
+		$query="SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='{$schema}' AND tablename='{$table}'";
 	}
 	else{
-		$query="SELECT tablename FROM pg_catalog.pg_tables where tablename='{$table}'";
+		$query="SELECT tablename FROM pg_catalog.pg_tables WHERE tablename='{$table}'";
 	}
 	$recs = postgresqlQueryResults($query);
 	if(isset($recs[0]['tablename'])){
@@ -2089,10 +2089,10 @@ function postgresqlGetDBTables($params=array()){
 	$include_schema=1;
 	$schema=postgresqlGetDBSchema();
 	if(strlen($schema)){
-		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables where schemaname='{$schema}' order by tablename";
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables WHERE schemaname='{$schema}' ORDER BY tablename";
 	}
 	else{
-		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables order by tablename";
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_tables ORDER BY tablename";
 	}
 	$recs = postgresqlQueryResults($query);
 	foreach($recs as $rec){
@@ -2118,10 +2118,10 @@ function postgresqlGetDBViews($params=array()){
 	$include_schema=1;
 	$schema=postgresqlGetDBSchema();
 	if(strlen($schema)){
-		$query="SELECT schemaname,tablename FROM pg_catalog.pg_views where schemaname='{$schema}' order by tablename";
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_views WHERE schemaname='{$schema}' ORDER BY tablename";
 	}
 	else{
-		$query="SELECT schemaname,tablename FROM pg_catalog.pg_views order by tablename";
+		$query="SELECT schemaname,tablename FROM pg_catalog.pg_views ORDER BY tablename";
 	}
 	$recs = postgresqlQueryResults($query);
 	foreach($recs as $rec){
@@ -2156,10 +2156,10 @@ function postgresqlGetDBTablePrimaryKeys($table){
 	$parts=preg_split('/\./',$table,2);
 	$where='';
 	if(count($parts)==2){
-		$where = " and kc.table_schema='{$parts[0]}' and kc.table_name='{$parts[1]}'";
+		$where = " AND kc.table_schema='{$parts[0]}' AND kc.table_name='{$parts[1]}'";
 	}
 	else{
-		$where = " and kc.table_name='{$parts[0]}'";
+		$where = " AND kc.table_name='{$parts[0]}'";
 	}
 	$dbname=postgresqlGetConfigValue('dbname');
 	$query=<<<ENDOFQUERY
@@ -2174,10 +2174,10 @@ function postgresqlGetDBTablePrimaryKeys($table){
 		    information_schema.key_column_usage kc  
 		WHERE 
 		    tc.constraint_type = 'PRIMARY KEY' 
-		    and kc.table_name = tc.table_name 
-		    and kc.table_schema = tc.table_schema
-		    and tc.table_catalog = '{$dbname}'
-		    and kc.constraint_name = tc.constraint_name
+		    AND kc.table_name = tc.table_name 
+		    AND kc.table_schema = tc.table_schema
+		    AND tc.table_catalog = '{$dbname}'
+		    AND kc.constraint_name = tc.constraint_name
 		    {$where}
 		ORDER BY kc.ordinal_position
 ENDOFQUERY;
@@ -2703,8 +2703,8 @@ function postgresqlCancelQuery($pids){
 	}
 	$json=json_encode($recs);
 	$query=<<<ENDOFQUERY
-	with x as (select * from json_array_elements('{$json}'))
-	select pg_cancel_backend(x.pid) from x
+	WITH x AS (SELECT * FROM JSON_ARRAY_ELEMENTS('{$json}'))
+	SELECT PG_CANCEL_BACKEND(x.pid) FROM x
 ENDOFQUERY;
 	return postgresqlExecuteSQL($query);
 }
@@ -2733,8 +2733,18 @@ function postgresqlNamedQueryList(){
 		),
 		array(
 			'code'=>'tables',
-			'icon'=>'icon-table',
+			'icon'=>'icon-table ',
 			'name'=>'Tables'
+		),
+		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'indexes',
+			'icon'=>'icon-marker',
+			'name'=>'Indexes'
 		),
 		array(
 			'code'=>'functions',
@@ -2760,7 +2770,7 @@ function postgresqlNamedQuery($name,$str=''){
 	$schema=postgresqlGetDBSchema();
 	switch(strtolower($name)){
 		case 'kill':
-			return "SELECT pg_cancel_backend({$str})";
+			return "SELECT PG_CANCEL_BACKEND({$str})";
 		break;
 		case 'running':
 		case 'queries':
@@ -2771,16 +2781,16 @@ SELECT
 	,psa.client_addr
 	,psa.application_name
 	,psa.usename
-	,now() - psa.query_start AS duration
-	,now() - psa.state_change AS last_change
+	,NOW() - psa.query_start AS duration
+	,NOW() - psa.state_change AS last_change
 	,psa.state
 	,psa.query
 FROM pg_stat_activity psa
 WHERE 
 	psa.state='active'
-	AND length(psa.query) > 0
-	and psa.query not like '%psa.query not like%' 
-ORDER BY 5 desc
+	AND LENGTH(psa.query) > 0
+	AND psa.query NOT LIKE '%psa.query not like%' 
+ORDER BY 5 DESC
 ENDOFQUERY;
 		break;
 		case 'long_running_queries':
@@ -2790,17 +2800,17 @@ SELECT
 	,psa.client_addr
 	,psa.application_name
 	,psa.usename
-	,now() - psa.query_start AS duration
-	,now() - psa.state_change AS last_change
+	,NOW() - psa.query_start AS duration
+	,NOW() - psa.state_change AS last_change
 	,psa.state
 	,psa.query
 FROM pg_stat_activity psa
 WHERE 
-	(now() - psa.query_start) > interval '2 minutes'
+	(NOW() - psa.query_start) > INTERVAL '2 minutes'
 	AND psa.state='active'
-	AND length(psa.query) > 0
-	and psa.query not like '%psa.query not like%' 
-ORDER BY 5 desc
+	AND LENGTH(psa.query) > 0
+	AND psa.query NOT LIKE '%psa.query not like%' 
+ORDER BY 5 DESC
 ENDOFQUERY;
 		break;
 		case 'sessions':
@@ -2810,73 +2820,117 @@ SELECT
 	,psa.client_addr
 	,psa.application_name
 	,psa.usename
-	,now() - psa.query_start AS duration
-	,now() - psa.state_change AS last_change
+	,NOW() - psa.query_start AS duration
+	,NOW() - psa.state_change AS last_change
 	,psa.state
 	,psa.query
 FROM pg_stat_activity psa
 WHERE 
-	psa.query not like '%psa.query not like%' 
-ORDER BY 5 desc
+	psa.query NOT LIKE '%psa.query not like%' 
+ORDER BY 5 DESC
 ENDOFQUERY;
 		break;
 		case 'tables':
 			return <<<ENDOFQUERY
 SELECT 
-	schemaname
-	,tablename 
+	schemaname AS schema,
+	tablename AS name
 FROM pg_catalog.pg_tables 
 WHERE
 	schemaname NOT IN ('information_schema','pg_catalog')
 ORDER BY 1,2
 ENDOFQUERY;
 		break;
+		case 'views':
+			return <<<ENDOFQUERY
+SELECT 
+	table_schema AS schema, 
+	table_name AS name,
+	view_definition::text AS definition 
+FROM information_schema.views 
+WHERE 
+	table_schema NOT IN ('information_schema', 'pg_catalog') 
+ORDER BY 1,2 
+ENDOFQUERY;
+		break;
+		case 'indexes':
+			return <<<ENDOFQUERY
+SELECT
+	ns.nspname AS schema,
+	idx.indrelid::REGCLASS AS table,
+	i.relname AS name,
+	idx.indisunique AS is_unique,
+	idx.indisprimary AS is_primary,
+	TO_JSON(ARRAY(
+		SELECT 
+			PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE) 
+		FROM GENERATE_SUBSCRIPTS(idx.indkey, 1) AS k
+		ORDER BY k
+		)) AS keys
+	FROM pg_index AS idx
+		JOIN pg_class AS i ON i.oid = idx.indexrelid
+		JOIN pg_am AS am ON i.relam = am.oid
+		JOIN pg_namespace AS ns ON i.relnamespace = ns.oid
+		JOIN pg_user AS U ON i.relowner = U.usesysid 
+	WHERE 
+		ns.nspname NOT IN ('information_schema', 'pg_catalog','pg_toast')
+ORDER BY 1,2,3 
+ENDOFQUERY;
+		break;
 		case 'table_locks':
 			return <<<ENDOFQUERY
 SELECT
 	psa.pid
-	,pg_blocking_pids(pid) as blocked_by
+	,PG_BLOCKING_PIDS(pid) as blocked_by
 	,psa.client_addr
 	,psa.application_name
 	,psa.usename
-	,now() - psa.query_start AS duration
-	,now() - psa.state_change AS last_change
+	,NOW() - psa.query_start AS duration
+	,NOW() - psa.state_change AS last_change
 	,psa.state
 	,psa.query
 FROM pg_stat_activity psa
 WHERE 
-	cardinality(pg_blocking_pids(pid)) > 0 
-ORDER BY 6 desc
+	CARDINALITY(PG_BLOCKING_PIDS(pid)) > 0 
+ORDER BY 6 DESC
 ENDOFQUERY;
 		break;
 		case 'functions':
 			return <<<ENDOFQUERY
-SELECT 
-	routines.specific_schema,
-	routines.routine_catalog,
-	routines.routine_name, 
-	parameters.data_type, 
-	parameters.ordinal_position,
-	routines.routine_definition
-FROM information_schema.routines
-    LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
-WHERE routines.routine_type='FUNCTION' and routines.specific_schema not in ('information_schema','pg_catalog')
-ORDER BY routines.routine_name, parameters.ordinal_position;
+SELECT
+	isr.specific_schema AS schema,
+	isr.routine_name AS name, 
+	STRING_AGG(isp.data_type,', ') AS data_types, 
+	isr.routine_definition
+FROM information_schema.routines isr
+    LEFT JOIN information_schema.parameters isp ON isr.specific_name=isp.specific_name
+WHERE 
+	isr.routine_type='FUNCTION' 
+	AND isr.specific_schema NOT IN ('information_schema','pg_catalog')
+GROUP BY
+	isr.specific_schema,
+	isr.routine_name,
+	isr.routine_definition
+ORDER BY 1
 ENDOFQUERY;
 		break;
 		case 'procedures':
 			return <<<ENDOFQUERY
-SELECT 
-	routines.specific_schema,
-	routines.routine_catalog,
-	routines.routine_name, 
-	parameters.data_type, 
-	parameters.ordinal_position,
-	routines.routine_definition
-FROM information_schema.routines
-    LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
-WHERE routines.routine_type='PROCEDURE' and routines.specific_schema not in ('information_schema','pg_catalog')
-ORDER BY routines.routine_name, parameters.ordinal_position;
+SELECT
+	isr.specific_schema AS schema,
+	isr.routine_name AS name, 
+	STRING_AGG(isp.data_type,', ') AS data_types, 
+	isr.routine_definition
+FROM information_schema.routines isr
+    LEFT JOIN information_schema.parameters isp ON isr.specific_name=isp.specific_name
+WHERE 
+	isr.routine_type='PROCEDURE' 
+	AND isr.specific_schema NOT IN ('information_schema','pg_catalog')
+GROUP BY
+	isr.specific_schema,
+	isr.routine_name,
+	isr.routine_definition
+ORDER BY 1
 ENDOFQUERY;
 		break;
 	}
@@ -2909,33 +2963,33 @@ function postgresqlOptimizations($params=array()){
 	$recs=postgresqlQueryResults('SELECT COUNT(1) AS val FROM pg_prepared_xacts');
 	$postgres['prepared_xact_count']=$recs[0]['val'];
 	//prepared_xact_lock_count
-	$recs=postgresqlQueryResults('SELECT COUNT(1) as val from pg_locks where transactionid in (select transaction from pg_prepared_xacts)');
+	$recs=postgresqlQueryResults('SELECT COUNT(1) as val FROM pg_locks WHERE transactionid IN (SELECT transaction FROM pg_prepared_xacts)');
 	$postgres['prepared_xact_lock_count']=$recs[0]['val'];
 	//connection_age_average
-	$recs=postgresqlQueryResults('select extract(epoch from avg(now()-backend_start)) as val from pg_stat_activity');
+	$recs=postgresqlQueryResults('SELECT EXTRACT(epoch FROM AVG(NOW()-backend_start)) AS val FROM pg_stat_activity');
 	$postgres['connection_age_average']=$recs[0]['val'];
 	//sum_total_relation_size
-	$recs=postgresqlQueryResults("select sum(pg_total_relation_size(schemaname||'.'||quote_ident(tablename))) as val from pg_tables");
+	$recs=postgresqlQueryResults("SELECT SUM(PG_TOTAL_RELATION_SIZE(schemaname||'.'||quote_ident(tablename))) AS val FROM pg_tables");
 	$postgres['sum_total_relation_size']=$recs[0]['val'];
 	//sum_table_size
-	$recs=postgresqlQueryResults("select sum(pg_table_size(schemaname||'.'||quote_ident(tablename))) as val from pg_tables");
+	$recs=postgresqlQueryResults("SELECT SUM(PG_TABLE_SIZE(schemaname||'.'||quote_ident(tablename))) AS val FROM pg_tables");
 	$postgres['sum_table_size']=$recs[0]['val'];
 	//shared_buffer_heap_hit_rate
-	$recs=postgresqlQueryResults("select sum(heap_blks_hit)*100/(sum(heap_blks_read)+sum(heap_blks_hit)+1) as val from pg_statio_all_tables");
+	$recs=postgresqlQueryResults("SELECT SUM(heap_blks_hit)*100/(SUM(heap_blks_read)+SUM(heap_blks_hit)+1) AS val FROM pg_statio_all_tables");
 	$postgres['shared_buffer_heap_hit_rate']=$recs[0]['val'];
 	//shared_buffer_toast_hit_rate
-	$recs=postgresqlQueryResults("select sum(toast_blks_hit)*100/(sum(toast_blks_read)+sum(toast_blks_hit)+1) as val from pg_statio_all_tables");
+	$recs=postgresqlQueryResults("SELECT SUM(toast_blks_hit)*100/(SUM(toast_blks_read)+SUM(toast_blks_hit)+1) AS val FROM pg_statio_all_tables");
 	$postgres['shared_buffer_toast_hit_rate']=$recs[0]['val'];
 	//shared_buffer_idx_hit_rate
-	$recs=postgresqlQueryResults("select sum(idx_blks_hit)*100/(sum(idx_blks_read)+sum(idx_blks_hit)+1) as val from pg_statio_all_tables");
+	$recs=postgresqlQueryResults("SELECT SUM(idx_blks_hit)*100/(SUM(idx_blks_read)+SUM(idx_blks_hit)+1) AS val FROM pg_statio_all_tables");
 	$postgres['shared_buffer_idx_hit_rate']=$recs[0]['val'];
 	//expiring_soon_users
-	$recs=postgresqlQueryResults("select usename from pg_user where valuntil='invalid' or valuntil < now()+interval'7 days'");
+	$recs=postgresqlQueryResults("SELECT usename FROM pg_user WHERE valuntil='invalid' OR valuntil < NOW()+INTERVAL '7 days'");
 	foreach($recs as $rec){
 		$postgres['expiring_soon_users'][]=$rec['usename'];
 	}
 	//bad_password_users
-	$recs=postgresqlQueryResults("select usename from pg_shadow where passwd='md5'||md5(usename||usename)");
+	$recs=postgresqlQueryResults("SELECT usename FROM pg_shadow WHERE passwd='md5'||MD5(usename||usename)");
 	foreach($recs as $rec){
 		$postgres['bad_password_users'][]=$rec['usename'];
 	}
@@ -2945,26 +2999,26 @@ function postgresqlOptimizations($params=array()){
 		$postgres['databases'][]=$rec['datname'];
 	}
 	//users
-	$recs=postgresqlQueryResults('select * from pg_user');
+	$recs=postgresqlQueryResults('SELECT * FROM pg_user');
 	foreach($recs as $rec){
 		$postgres['users'][$rec['usename']]=$rec;
 	}
 	//extensions
-	$recs=postgresqlQueryResults('select extname from pg_extension');
+	$recs=postgresqlQueryResults('SELECT extname FROM pg_extension');
 	foreach($recs as $rec){
 		$postgres['extensions'][]=$rec['extname'];
 	}
 	//modified_costs
-	$recs=postgresqlQueryResults("select name from pg_settings where name like '%cost%' and setting<>boot_val");
+	$recs=postgresqlQueryResults("SELECT name FROM pg_settings WHERE name LIKE '%cost%' AND setting<>boot_val");
 	foreach($recs as $rec){
 		$postgres['modified_costs'][]=$rec['name'];
 	}
 	//tablespaces_in_pgdata
-	$postgres['tablespaces_in_pgdata']=postgresqlQueryResults("select spcname,pg_tablespace_location(oid) from pg_tablespace where pg_tablespace_location(oid) like (select setting from pg_settings where name='data_directory')||'/%'");
+	$postgres['tablespaces_in_pgdata']=postgresqlQueryResults("SELECT spcname,PG_TABLESPACE_LOCATION(oid) FROM pg_tablespace WHERE PG_TABLESPACE_LOCATION(oid) LIKE (SELECT setting FROM pg_settings WHERE name='data_directory')||'/%'");
 	//Invalid_indexes
 	$q=<<<ENDOFSQL
 	SELECT
-		concat(n.nspname, '.', c.relname) as index
+		concat(n.nspname, '.', c.relname) AS index
 	FROM
 		pg_catalog.pg_class c,
 		pg_catalog.pg_namespace n,
@@ -2978,20 +3032,20 @@ ENDOFSQL;
 	//unused_indexes
 	$q=<<<ENDOFSQL
 	SELECT 
-		relname||'.'||indexrelname as index_name 
+		relname||'.'||indexrelname AS index_name 
 	FROM pg_stat_user_indexes 
 	WHERE 
-		idx_scan=0 and not exists (select 1 from pg_constraint where conindid=indexrelid) 
+		idx_scan=0 and not exists (SELECT 1 FROM pg_constraint WHERE conindid=indexrelid) 
 	ORDER BY relname, indexrelname
 ENDOFSQL;
 	$postgres['unused_indexes']=postgresqlQueryResults($q);
 	//default_cost_procs
 	$q=<<<ENDOFSQL
 	SELECT 
-		n.nspname||'.'||p.proname as proc_name 
+		n.nspname||'.'||p.proname AS proc_name 
 	FROM pg_catalog.pg_proc p 
-		left join pg_catalog.pg_namespace n on n.oid = p.pronamespace 
-	WHERE pg_catalog.pg_function_is_visible(p.oid) and n.nspname not in ('pg_catalog','information_schema','sys') and p.prorows<>1000 and p.procost<>10 and p.proname not like 'uuid_%' and p.proname != 'pg_stat_statements_reset'
+		LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace 
+	WHERE pg_catalog.PG_FUNCTION_IS_VISIBLE(p.oid) AND n.nspname NOT IN ('pg_catalog','information_schema','sys') AND p.prorows<>1000 AND p.procost<>10 AND p.proname NOT LIKE 'uuid_%' AND p.proname != 'pg_stat_statements_reset'
 ENDOFSQL;
 	$postgres['default_cost_procs']=postgresqlQueryResults($q);
 	//calculate other values based on above info
