@@ -23,6 +23,12 @@ switch(strtolower($_REQUEST['func'])){
 			}
 
 		}
+		if(strlen($_REQUEST['headers'])){
+			$headers=preg_split('/[\r\n]+/',trim($_REQUEST['headers']));
+			foreach($headers as $header){
+				$args[]="-H \"{$header}\"";
+			}
+		}
 		if(strlen($_REQUEST['proxy'])){
 			$args[]="-X \"{$_REQUEST['proxy']}\"";
 		}
