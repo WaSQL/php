@@ -364,6 +364,10 @@
 						array(
 							'command'=>'calc>{math expression}',
 							'description'=>'Returns the value of a math expression'
+						),
+						array(
+							'command'=>'cal [YearMonth]',
+							'description'=>'Returns a calendar'
 						)
 					);
 					foreach($nrecs as $nrec){
@@ -649,6 +653,35 @@
 					'expression'=>$m[2],
 					'result'=>$em->evaluate($m[2])
 				);
+				$csv=arrays2CSV($recs);
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				if(is_file($afile)){unlink($afile);}
+				$ok=setFileContents($afile,$csv);
+				$skip=1;
+				$recs_count=count($recs);
+			}
+			elseif($skip==0 && preg_match('/^cal(.*)$/is',$lcq,$m)){
+				/*
+					cal - current month
+					cal -3  last, current, next month
+					cal -y  full year 
+				*/
+				$calendar=getCalendar(trim($m[1]));
+				//echo printValue($calendar);exit;
+				$days=$calendar['daynames']['med'];
+				foreach($calendar['weeks'] as $week){
+					$rec=array();
+					foreach($days as $d=>$dayname){
+						$v=$week[$d]['day'];
+						$rec[$dayname]=$v;
+					}
+					$recs[]=$rec;
+				}
+				//echo printValue($recs);exit;
 				$csv=arrays2CSV($recs);
 				$tpath=getWasqlPath('php/temp');
 				$shastr=sha1($_SESSION['sql_last']);
