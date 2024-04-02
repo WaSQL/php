@@ -779,7 +779,9 @@ function userDecodeLDAPAuth($user,$pass){
   	if(!isNum($ok)){
   		$ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord Failed.".printValue($ok));
   	}
-
+  	else{
+  		$ok=commonLogMessage('user',"userDecodeLDAPAuth passed for {$ldap['username']}. Fields updated: {$addopts['-upsert']}");
+  	}
   	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
   	if(isset($rec['_id'])){
   		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");

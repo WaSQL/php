@@ -428,11 +428,11 @@ function writeFiles(){
 			}
 			$content=base64_decode(trim($content));
 			//check content to see if it starts with php
+			$checkstr=trim(substr($content,0,10));
 			if(stringEndsWith($info['name'],'.py')){$ext='py';}
-			elseif(preg_match('/^\<\?php/i',$content)){$ext='php';}
-			elseif(preg_match('/^\<\?py/i',$content)){$ext='py';}
-			elseif(preg_match('/^\<\?\=/i',$content)){$ext='php';}
-			
+			elseif(stringContains($checkstr,'php')){$ext='php';}
+			elseif(stringContains($checkstr,'py')){$ext='py';}
+			elseif(stringContains($checkstr,'?=')){$ext='php';}
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	file_put_contents($afile,$content);
 			$md5sha=md5_file($afile).sha1_file($afile);
