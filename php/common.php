@@ -18266,6 +18266,9 @@ function processActions(){
 					}
 					if(isset($_REQUEST['_editfield'])){
 						$fld=$_REQUEST['_editfield'];
+						if(is_array($_REQUEST['edit_opts'][$fld])){
+							$_REQUEST['edit_opts'][$fld]=encodeJSON($_REQUEST['edit_opts'][$fld]);
+						}
 						echo $_REQUEST['edit_opts'][$fld];
 						$divid="editfield_{$fld}_{$_REQUEST['edit_rec']['_id']}";
 						echo $rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$_REQUEST['_table'].'\',\''.$_REQUEST['edit_rec']['_id'].'\',\''.$fld.'\',{div:\''.$divid.'\'});"></sup>';
@@ -18847,17 +18850,18 @@ function processActions(){
 				'_id'=>$_REQUEST['id'],
 				'-fields',$_REQUEST['field']
 			));
-			$opts=array('style'=>'width:90%;','value'=>$rec[$_REQUEST['field']]);
+			$formname="editformfield_".strtolower(getRandomColor(0));
+			$opts=array('-formname'=>$formname,'style'=>'width:90%;','value'=>$rec[$_REQUEST['field']]);
 			$finfo=getDBFieldInfo($_REQUEST['table'],1);
 			//centerpop?
 			if(isset($_REQUEST['div']) && $_REQUEST['div']=='centerpop'){
 				echo '<div class="w_centerpop_title">Edit '.$_REQUEST['field'].'</div>'.PHP_EOL;
 				echo '<div class="w_centerpop_content">'.PHP_EOL;
 				$opts['style']='width:100%';
-				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="editfieldform" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
+				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
 			}
 			else{
-				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="editfieldform" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
+				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
 				echo '	<input type="hidden" name="setprocessing" value="0" />'.PHP_EOL;
 			}
 			
