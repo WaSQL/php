@@ -21,7 +21,7 @@ function qualtricsListDirectories(){
 	$url=qualtricsBaseURL().'/directories/';
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsListDirectories Error:".printValue($recs);exit;
+		return "qualtricsListDirectories Error:".printValue($recs);
 	}
 	return $recs;
 }
@@ -32,7 +32,7 @@ function qualtricsListDirectoryContacts($directoryID){
 	$url=qualtricsBaseURL()."/directories/{$directoryID}/contacts";
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsListDirectoryContacts Error:".printValue($recs);exit;
+		return "qualtricsListDirectoryContacts Error:".printValue($recs);
 	}
 	return $recs;
 }
@@ -43,7 +43,7 @@ function qualtricsListSMSDistributions($surveyID){
 	$url=qualtricsBaseURL()."/distributions/sms";
 	$recs=qualtricsGetList($url,array('surveyId'=>$surveyID));
 	if(isset($recs['curl_info'])){
-		echo "qualtricsListSMSDistributions Error:".printValue($recs);exit;
+		return "qualtricsListSMSDistributions Error:".printValue($recs);
 	}
 	return $recs;
 }
@@ -54,7 +54,7 @@ function qualtricsListGroups(){
 	$url=qualtricsBaseURL().'/groups/';
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsListGroups Error:".printValue($recs);exit;
+		return "qualtricsListGroups Error:".printValue($recs);
 	}
 	return $recs;
 }
@@ -66,7 +66,7 @@ function qualtricsListSubscriptions(){
 	$url=qualtricsBaseURL().'/eventsubscriptions/';
 	$recs=qualtricsGetList($url);
 	if(isset($recs['curl_info'])){
-		echo "qualtricsListSubscriptions Error:".printValue($recs);exit;
+		return "qualtricsListSubscriptions Error:".printValue($recs);
 	}
 	return $recs;
 }
@@ -90,7 +90,7 @@ function qualtricsDeleteSubscription($subscriptionID){
 	if(isset($post['json_array']['meta'])){
 		return $post['json_array']['meta'];
 	}
-	echo "qualtricsDeleteSubscription Error: Failed to get subscriptions".printValue($post);exit;
+	return "qualtricsDeleteSubscription Error: Failed to get subscriptions".printValue($post);
 	return $post['json_array'];
 }
 /*
@@ -112,7 +112,7 @@ function qualtricsGetSubscription($subscriptionID){
 	if(isset($post['json_array'])){
 		return $post['json_array'];
 	}
-	echo "qualtricsGetSubscription Error: Failed to get subscription".printValue($post);exit;
+	return "qualtricsGetSubscription Error: Failed to get subscription".printValue($post);
 	return $post['json_array'];
 }
 /*
@@ -144,7 +144,7 @@ function qualtricsCreateSubscription($surveyID,$endpoint){
 	if(isset($post['json_array'])){
 		return $post['json_array'];
 	}
-	echo "qualtricsCreateSubscription Error: Failed to subscribe".printValue($post);exit;
+	return "qualtricsCreateSubscription Error: Failed to subscribe".printValue($post);
 }
 /*
 * @reference https://api.qualtrics.com/1179a68b7183c-retrieve-a-survey-response
@@ -165,7 +165,7 @@ function qualtricsSurveyResponse($surveyID,$responseID){
 	if(isset($post['json_array']['result'])){
 		return $post['json_array']['result'];
 	}
-	echo "qualtricsSurveyResponse Error: Failed to get response".printValue($post);exit;
+	return "qualtricsSurveyResponse Error: Failed to get response".printValue($post);
 	return $post['json_array'];
 }
 /*
