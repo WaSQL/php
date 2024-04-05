@@ -150,6 +150,7 @@ function qualtricsCreateSubscription($surveyID,$endpoint){
 * @reference https://api.qualtrics.com/1179a68b7183c-retrieve-a-survey-response
 */
 function qualtricsSurveyResponse($surveyID,$responseID){
+	//https://sjc1.qualtrics.com/API/v3/surveys/SV_5hDTO04Y8uJo9Zc/responses
 	global $CONFIG;
 	if(!isset($CONFIG['qualtrics_token'])){
 		return array('status'=>'failed','error'=>"missing qualtrics_token in config.xml");
@@ -167,6 +168,84 @@ function qualtricsSurveyResponse($surveyID,$responseID){
 	}
 	return "qualtricsSurveyResponse Error: Failed to get response".printValue($post);
 	return $post['json_array'];
+}
+
+function qualtricsSurveyResponses($surveyID){
+	//https://api.qualtrics.com/206a07d54ca31-surveys-response-import-export-api
+	global $CONFIG;
+	if(!isset($CONFIG['qualtrics_token'])){
+		return array('status'=>'failed','error'=>"missing qualtrics_token in config.xml");
+	}
+	$json=<<<ENDOFJSON
+{
+    "format": "json"
+}
+ENDOFJSON;
+	$post=postJSON(
+	    qualtricsBaseURL()."/surveys/{$surveyID}/export-responses",
+	    $json,
+	    array(
+	        '-headers'=>array("X-API-TOKEN: {$CONFIG['qualtrics_token']}")
+	    )
+	); 
+	/*
+{
+    "result": {
+        "progressId": "ES_afJdGCwOyCEhOom",
+        "percentComplete": 0.0,
+        "status": "inProgress"
+    },
+    "meta": {
+        "requestId": "41859ce6-efcb-44c1-a3ba-c826a59e1f40",
+        "httpStatus": "200 - OK"
+    }
+}
+
+	 */
+	if(isset($post['json_array']['result']['progressId'])){
+		$progressId=$post['json_array']['result']['progressId'];
+		$loops=0;
+		while($loops < 10){
+			sleep(6);
+			$post=postURL(
+			    qualtricsBaseURL()."/surveys/{$surveyID}/export-responses/{$progressId}",
+			    array(
+			        '-method'=>"GET",
+			        '-json'=>1,
+			        '-headers'=>array("X-API-TOKEN: {$CONFIG['qualtrics_token']}")
+			    )
+			);
+			if(isset($post['json_array']['result']['fileId'])){
+				$fileId=$post['json_array']['result']['fileId'];
+				$post=postURL(
+				    qualtricsBaseURL()."/surveys/{$surveyID}/export-responses/{$fileId}/file",
+				    array(
+				        '-method'=>"GET",
+				        '-headers'=>array("X-API-TOKEN: {$CONFIG['qualtrics_token']}")
+				    )
+				);
+				//this returns a zip file
+				$tpath=getWaSQLTempPath();
+				$filename="qualtrics_surveyresponses_{$surveyID}.zip";
+				$tfile="{$tpath}/{$filename}";
+				setFileContents($tfile,$post['body']);
+				loadExtras('zipfile');
+				$files=zipExtract($tfile);
+				foreach($files as $file){
+					$json=getFileContents($file);
+					$ids=array();
+					foreach($json['responses'] as $response){
+						$ids[]=array(
+							'SurveyID'=>$surveyID,
+							'ResponseID'=>$response['responseId']
+						);
+					}
+					return $ids;
+				}
+			}
+		}
+	}
+	return array();
 }
 /*
 * @reference https://api.qualtrics.com/c9eeb409d7fe2-list-users
