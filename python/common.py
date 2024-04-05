@@ -71,7 +71,7 @@ def buildDir(path,mode=0o777,recurse=True):
 # @param [width] integer - width of img. defaults to 1
 # @param [height] integer - height of img. defaults to 1
 # @return string - image tag with the specified javascript string invoked onload
-# @usage <?py common.buildOnLoad("document.myform.myfield.focus();")?>
+# @usage <?py common.buildOnLoad("document.myform.myfield.focus()")?>
 def buildOnLoad(str='',img='/wfiles/clear.gif',width=1,height=1):
     return '<img class="w_buildonload" src="{}" alt="onload functions" width="{}" height="{}" style="border:0px;" onload="eventBuildOnLoad();" data-onload="{}">'.format(img,width,height,str)
 
@@ -102,7 +102,7 @@ def calculateDistance(lat1, lon1, lat2, lon2, unit='M'):
     distance = R * c
     #miles
     if unit == 'M':
-        miles = distance * 0.621371;
+        miles = distance * 0.621371
         return miles
     else:
         return distance
@@ -123,13 +123,13 @@ def cmdResults(cmd,args='',dir='',timeout=0):
 # @describe adds a log to the _cron_log table
 # @param str string - message to log
 # @return boolean
-# @usage  ok=common.cronLog('running loop now');
+# @usage  ok=common.cronLog('running loop now')
 def cronLog(host,pid,str):
     host="{}".format(host)
     pid="{}".format(pid)
     str="{}".format(str)
-    ppath=getParentPath(scriptPath());
-    cronlog=os.path.abspath(ppath+'/php/cronlog.php');
+    ppath=getParentPath(scriptPath())
+    cronlog=os.path.abspath(ppath+'/php/cronlog.php')
     result = subprocess.run(['php',cronlog,host,pid,str], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return result.stdout.decode('utf-8')
 
@@ -153,7 +153,7 @@ def decodeBase64(str):
 def decrypt(string, salt):
     result = ''
     str = base64.b64decode(string)
-    i=0;
+    i=0
     while(i < len(str)):
         charord = str[i]
         ki=(i % len(salt))-1
@@ -161,7 +161,7 @@ def decrypt(string, salt):
         chrval=charord-ord(keychar)
         char = chr(chrval)
         result=result+char
-        i=i+1;
+        i=i+1
 
     return result
 
@@ -226,7 +226,7 @@ def decodeJson(str):
 # @param data string - data to write
 # @param [append] - set to true to append defaults to false
 # @return boolean
-# @usage $ok=setFileContents($file,$data);
+# @usage $ok=setFileContents($file,$data)
 def setFileContents(filename,data,append=False):
     if(append==True):
         f = open(filename, 'a')
@@ -778,13 +778,13 @@ def verboseNumber(num):
 # [-fields] - Comma separated list of fields to include in the CSV
 # [-fieldmap] - field=>mapname Array of fieldmaps to change the name on the first line
 # [-noheader] - Do not include a header row
-# [-delim] - Field delimiter string; defaults to comma
-# [-enclose] - Field enclosure string; defaults to quote
-# [-linedelim] - Line delimiter string; defaults to newline
+# [-delim] - Field delimiter string defaults to comma
+# [-enclose] - Field enclosure string defaults to quote
+# [-linedelim] - Line delimiter string defaults to newline
 # @usage
 # 	csv=list2CSV(recs,{
 # 		'-fields':'name,age,color'
-# 	});
+# 	})
 # @return string - CSV-formatted output
 def list2CSV(recs = [], params = {}):
 	# Defaults
@@ -833,7 +833,7 @@ def list2CSV(recs = [], params = {}):
 		vals = []
 		for field in fieldmap:
 			if isinstance(rec[field], (dict, list)):
-				rec[field] = json.dumps(rec[field], ensure_ascii=False).encode('utf-8', errors='replace').decode('utf-8') # Convert to JSON; don't force ASCII and then replace non-UTF-8 characters in the JSON string with \0xfffd Unicode replacement character
+				rec[field] = json.dumps(rec[field], ensure_ascii=False).encode('utf-8', errors='replace').decode('utf-8') # Convert to JSON don't force ASCII and then replace non-UTF-8 characters in the JSON string with \0xfffd Unicode replacement character
 			vals.append(rec[field])
 		if '-force' in params and params['-force']:
 			csvlines.append(csvImplode(vals, params['-delim'], params['-enclose'], 1))
@@ -845,7 +845,7 @@ def list2CSV(recs = [], params = {}):
 # @describe returns a list of files in a directory
 # @param string adir - directory path
 # @return string - return a list of files
-# @usage files=common.listFiles(mypath);
+# @usage files=common.listFiles(mypath)
 def listFiles(adir):
     files = os.listdir(adir)
     #Remove anything that is not a file
@@ -856,7 +856,7 @@ def listFiles(adir):
 # @describe returns a list of files in a directory
 # @param string adir - directory path
 # @return string - return a list of files
-# @usage files=common.listFiles(mypath);
+# @usage files=common.listFiles(mypath)
 def listFilesEx(adir):
     files = os.listdir(adir)
     #Remove anything that is not a file
@@ -886,7 +886,7 @@ def listFilesEx(adir):
 # @param delim char[optional] - The delimiter character - defaults to a comma
 # @param enclose char[optional] - The enclose character - defaults to a double-quote
 # @return string - Returns a csv string
-# @usage line=csvImplode(parts_array);
+# @usage line=csvImplode(parts_array)
 def csvImplode(parts = {}, delim = ',', enclose = '"'): # UNUSED , force = 0):
 	io_stream = io.StringIO()
 	csv_writer = csv.writer(io_stream, delimiter=delim, quotechar=enclose, quoting=csv.QUOTE_MINIMAL)
