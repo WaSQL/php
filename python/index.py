@@ -55,7 +55,7 @@ if '_view' not in REQUEST:
 if '_view' in REQUEST:
     view = REQUEST['_view']
     #build query using python3+ f strings
-    query="select * from _pages where name='{}' or permalink='{}'".format(view,view);
+    query="select * from _pages where name='{}' or permalink='{}'".format(view,view)
     recs = db.queryResults(config.CONFIG['database'],query,{})
     if type(recs) in (tuple, list):
         for rec in recs:

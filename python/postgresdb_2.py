@@ -67,10 +67,10 @@ def addIndex(params):
 		prefix += 'F'
 	#build index name if not passed in
 	if '-name' not in params:
-		params['-name']="{}_{}_".format(prefix,params['-table']);
+		params['-name']="{}_{}_".format(prefix,params['-table'])
 	#create query
 	fieldstr = params['-fields'].replace(',','_')
-	query="CREATE {} INDEX IF NOT EXISTS {} on {} ({})".format(unique,params['-name'],params['-table'],fieldstr);
+	query="CREATE {} INDEX IF NOT EXISTS {} on {} ({})".format(unique,params['-name'],params['-table'],fieldstr)
 	#execute query
 	return executeSQL(query) 
 	

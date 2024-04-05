@@ -17,8 +17,8 @@ except Exception as err:
 # @param query str - SQL query to run
 # @usage recs=db.queryResults('dbtest','select * from states')
 def dasql(tag,query=''):
-    ppath=common.getParentPath(common.scriptPath());
-    dasql=os.path.abspath(ppath+'/dasql/dasql.py');
+    ppath=common.getParentPath(common.scriptPath())
+    dasql=os.path.abspath(ppath+'/dasql/dasql.py')
     out = subprocess.call("python3 {} {} {}".format(dasql,tag,query), shell=True)
     return out
 

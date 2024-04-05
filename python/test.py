@@ -50,7 +50,7 @@ References
         os.rmdir(path, *, dir_fd=None)
             Remove (delete) the directory path
         os.unlink(path, *, dir_fd=None)
-            Remove (delete) the file path. This function is semantically identical to remove();
+            Remove (delete) the file path. This function is semantically identical to remove()
         os.abort()
             Generate a SIGABRT signal to the current process. On Unix, the default behavior is to produce a core dump; on Windows, the process immediately returns an exit code of 3.
         os.system(command)
