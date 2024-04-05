@@ -1,0 +1,9 @@
+Instructions on how to setup daSQL in sublime
+	- install sublime text
+	- launceh sublime Text
+	- Tools->Build System->New Build System
+	- Replace the sample contents with the contents of DaSQL.sublime-build and save as DaSQL.sublime-build
+	- Copy custom_exec.py.sample to the Sublime users directory (C:\Users\{YOUR USER}\AppData\Roaming\Sublime Text 3\Packages\User) and rename to custom_exec.py
+	- Set the build system to DaSQL: Tools->Build System->DaSQL
+	- copy dasql.ini.sample and rename to dasql.ini
+	- create sections in dasql.ini for each database you want to connect to
