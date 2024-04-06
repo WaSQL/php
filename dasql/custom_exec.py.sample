@@ -21,7 +21,7 @@ class ExecuteSelectionExecCommand(ExecCommand):
 			variables = {"fname":fname,"selection": self.tmp_file}
 		# expand the variables
 		kwargs = sublime.expand_variables(kwargs,variables)
-		print(kwargs)
+		#print(kwargs)
 		# run
 		super().run(**kwargs)
 
