@@ -15014,7 +15014,19 @@ function listFilesEx($dir='.',$params=array()){
 				if(preg_match('/^(type)$/i',$key)){continue;}
 				$key=strtolower($key);
 				if(!isset($fileinfo[$key])){continue;}
-				if(preg_match('/^(Between|\<\=|\>\=|\<|\>|\=)(.+)$/i',$val,$m)){
+				//allow for multiple extentions: ext=>'jpg,png,jpeg'
+				if($key=='ext'){
+					$vals=preg_split('/[\|\,]+/',$val);
+					$keep=0;
+					foreach($vals as $val){
+						if(stringEquals($fileinfo[$key],$val)){
+							$keep=1;
+							break;
+						}
+					}
+					if($keep==0){$skip+=1;}
+				}
+				elseif(preg_match('/^(Between|\<\=|\>\=|\<|\>|\=)(.+)$/i',$val,$m)){
 					//$d1=date("m/d/Y",$fileinfo[$key]);
 					//$d2=date("m/d/Y",$m[2]);
 					switch(strtolower($m[1])){
