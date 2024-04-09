@@ -71,7 +71,7 @@ function xlsxreaderGetRecords($afile,$params=array()){
 	  	$reader->changeSheet($index);
 		$header = null;
 		$sheet_recs = [];
-	  foreach ($reader as $row_number => $row) {
+	  	foreach ($reader as $row_number => $row) {
 			// uncommonCronLog("Reading row {$row_number}");
 			// Skip row if less than start_row parameter
 			if (isset($params['start_row']) && $row_number < intval($params['start_row'])) continue;
