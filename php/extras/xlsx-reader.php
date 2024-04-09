@@ -23,6 +23,9 @@ $files=listFilesEx("{$progpath}/xlsx-reader/xlsx-reader-master/lib",array('ext'=
 foreach($files as $file){
 	include_once($file['afile']);
 }
+use Aspera\Spreadsheet\XLSX\Reader;
+use Aspera\Spreadsheet\XLSX\ReaderConfiguration;
+use Aspera\Spreadsheet\XLSX\ReaderSkipConfiguration;
 //---------- begin function xlsxreaderGetRecords like getCSVRecords---------------------------------------
 /**
 * @describe returns csv file contents as recordsets
