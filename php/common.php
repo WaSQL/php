@@ -11404,6 +11404,10 @@ function getHolidayList($params=array()){
 	if(!isset($params['year']) || !strlen($params['year']) || $params['year']=date('Y') < 1970){
 		$params['year']=date('Y');
 	}
+	$params['year']=(integer)$params['year'];
+	if($params['year'] < 1970 || $params['year'] > 2030){
+		$params['year']=date('Y');
+	}
 	$holidays=array(
 		"New Year's Day" =>
 			array('code'=>'NYD','icon'=>'/wfiles/icons/holidays/nyd.png','fed'=>true,'country'=>'US','timestr'=>"January 1st"),
