@@ -664,7 +664,7 @@
 				$skip=1;
 				$recs_count=count($recs);
 			}
-			elseif($skip==0 && preg_match('/^cal(.*)$/is',$lcq,$m)){
+			elseif($skip==0 && preg_match('/^cal\ (.*)$/is',$lcq,$m)){
 				/*
 					cal - current month
 					cal -3  last, current, next month
