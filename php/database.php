@@ -1157,6 +1157,8 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_checkbox_value] - string - sets value of checkbox
 *	[{field}_checkbox_checked] - string - checks the box if string equals checkbox id
 *	[{field}_badge] - wraps the value in a span class="badge"
+*	[{field}_append] - appends the specified value to the end
+*	[{field}_prepend] - prepends the specified value to the end
 *	[{field}_badge_class] - add additional class value to badge
 *	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
 *	[{field}_radio_onclick] - string - adds a onclick value if radio was specifid
@@ -2415,6 +2417,13 @@ function databaseListRecords($params=array()){
 			if(isset($params[$fld."_map"]) && is_array($params[$fld."_map"]) && isset($params[$fld."_map"][$value])){
 				$value=$params[$fld."_map"][$value];
             }
+            //append and prepend
+            if(!empty($params[$fld."_append"])){
+                $value.=$params[$fld."_append"];
+			}
+			if(!empty($params[$fld."_prepend"])){
+                $value=$params[$fld."_prepend"].$value;
+			}
 			//check for {field}_onclick and {field}_href
 			if(!empty($params[$fld."_onclick"]) && !isset($params[$fld."_checkmark"])){
 				$href=$params[$fld."_onclick"];
