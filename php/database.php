@@ -1159,6 +1159,7 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_badge] - wraps the value in a span class="badge"
 *	[{field}_append] - appends the specified value to the end
 *	[{field}_prepend] - prepends the specified value to the end
+*	[{field}_number_format] - applies the number_format function to value passing this attribute value as the number of decimals 
 *	[{field}_badge_class] - add additional class value to badge
 *	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
 *	[{field}_radio_onclick] - string - adds a onclick value if radio was specifid
@@ -2410,6 +2411,10 @@ function databaseListRecords($params=array()){
                     $evalstr=str_replace($replace,strip_tags($rec[$recfld]),$evalstr);
                 }
                 $value=evalPHP('<?' . $evalstr .'?>');
+			}
+			//number_format
+			if(!empty($params[$fld."_number_format"])){
+				$value=number_format($value,$params[$fld."_number_format"]);
 			}
 			if(!empty($params[$fld."_translate"])){
 				$value=translateText($value);
