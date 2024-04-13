@@ -2435,7 +2435,7 @@ function databaseListRecords($params=array()){
             if(!empty($params[$fld."_substr"])){
             	$sparts=preg_split('/\,/',$params[$fld."_substr"]);
             	switch(count($sparts)){
-            		case 1:$value=substr($value,$sparts[0]);break;
+            		case 1:$value=substr($value,0,$sparts[0]);break;
             		case 2:$value=substr($value,$sparts[0],$sparts[1]);break;
             	}
 			}
