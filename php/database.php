@@ -2423,7 +2423,7 @@ function databaseListRecords($params=array()){
                 $value=evalPHP('<?' . $evalstr .'?>');
 			}
 			//number_format
-			if(!empty($params[$fld."_number_format"])){
+			if(isset($params[$fld."_number_format"])){
 				$p=(integer)$params[$fld."_number_format"];
 				if($p==0){
 					if(function_exists('gmp_init')){
@@ -2442,7 +2442,7 @@ function databaseListRecords($params=array()){
 			if(isset($params[$fld."_map"]) && is_array($params[$fld."_map"]) && isset($params[$fld."_map"][$value])){
 				$value=$params[$fld."_map"][$value];
             }
-            if(!empty($params[$fld."_substr"])){
+            if(isset($params[$fld."_substr"])){
             	$sparts=preg_split('/\,/',$params[$fld."_substr"]);
             	switch(count($sparts)){
             		case 1:$value=substr($value,0,(integer)$sparts[0]);break;
@@ -2450,50 +2450,50 @@ function databaseListRecords($params=array()){
             	}
 			}
 			//phone
-            if(!empty($params[$fld."_phone"])){
+            if(isset($params[$fld."_phone"])){
                 $value=commonFormatPhone($value);
 			}
 			//ucwords
-            if(!empty($params[$fld."_ucwords"])){
+            if(isset($params[$fld."_ucwords"])){
                 $value=ucwords($value);
 			}
 			//verboseSize
-            if(!empty($params[$fld."_verboseSize"])){
+            if(isset($params[$fld."_verboseSize"])){
                 $value=verboseSize($value);
 			}
 			//verboseTime
-            if(!empty($params[$fld."_verboseTime"])){
+            if(isset($params[$fld."_verboseTime"])){
                 $value=verboseTime($value);
 			}
 			//strtolower
-            if(!empty($params[$fld."_strtolower"])){
+            if(isset($params[$fld."_strtolower"])){
                 $value=strtolower($value);
 			}
 			//strtoupper
-            if(!empty($params[$fld."_strtoupper"])){
+            if(isset($params[$fld."_strtoupper"])){
                 $value=strtoupper($value);
 			}
 			//trim
-            if(!empty($params[$fld."_trim"])){
+            if(isset($params[$fld."_trim"])){
                 $value=trim($value);
 			}
 			//rtrim
-            if(!empty($params[$fld."_rtrim"])){
+            if(isset($params[$fld."_rtrim"])){
                 $value=rtrim($value);
 			}
 			//ltrim
-            if(!empty($params[$fld."_ltrim"])){
+            if(isset($params[$fld."_ltrim"])){
                 $value=ltrim($value);
 			}
 			//ucwords
-            if(!empty($params[$fld."_ucwords"])){
+            if(isset($params[$fld."_ucwords"])){
                 $value=ucwords($value);
 			}
             //append and prepend
-            if(!empty($params[$fld."_append"])){
+            if(isset($params[$fld."_append"])){
                 $value.=$params[$fld."_append"];
 			}
-			if(!empty($params[$fld."_prepend"])){
+			if(isset($params[$fld."_prepend"])){
                 $value=$params[$fld."_prepend"].$value;
 			}
 			//check for {field}_onclick and {field}_href
