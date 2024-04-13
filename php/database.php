@@ -1159,6 +1159,14 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_badge] - wraps the value in a span class="badge"
 *	[{field}_append] - appends the specified value to the end
 *	[{field}_prepend] - prepends the specified value to the end
+*	[{field}_substr] - only returns a substring of the original value 
+*	[{field}_phone] - formats value as a phone number
+*	[{field}_ucwords] - uppercase each word in value
+*	[{field}_strtoupper] - lowercase value
+*	[{field}_strtolower] - uppercase value
+*	[{field}_trim] - trim value
+*	[{field}_rtrim] - right trim value
+*	[{field}_ltrim] - left trim value
 *	[{field}_number_format] - applies the number_format function to value passing this attribute value as the number of decimals 
 *	[{field}_badge_class] - add additional class value to badge
 *	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
@@ -2422,6 +2430,45 @@ function databaseListRecords($params=array()){
 			if(isset($params[$fld."_map"]) && is_array($params[$fld."_map"]) && isset($params[$fld."_map"][$value])){
 				$value=$params[$fld."_map"][$value];
             }
+            if(!empty($params[$fld."_substr"])){
+            	$sparts=preg_split('/\,/',$params[$fld."_substr"]);
+            	switch(count($sparts)){
+            		case 1:$value=substr($value,$sparts[0]);break;
+            		case 2:$value=substr($value,$sparts[0],$sparts[1]);break;
+            	}
+			}
+			//phone
+            if(!empty($params[$fld."_phone"])){
+                $value=commonFormatPhone($value);
+			}
+			//ucwords
+            if(!empty($params[$fld."_ucwords"])){
+                $value=ucwords($value);
+			}
+			//strtolower
+            if(!empty($params[$fld."_strtolower"])){
+                $value=strtolower($value);
+			}
+			//strtoupper
+            if(!empty($params[$fld."_strtoupper"])){
+                $value=strtoupper($value);
+			}
+			//trim
+            if(!empty($params[$fld."_trim"])){
+                $value=trim($value);
+			}
+			//rtrim
+            if(!empty($params[$fld."_rtrim"])){
+                $value=rtrim($value);
+			}
+			//ltrim
+            if(!empty($params[$fld."_ltrim"])){
+                $value=ltrim($value);
+			}
+			//ucwords
+            if(!empty($params[$fld."_ucwords"])){
+                $value=ucwords($value);
+			}
             //append and prepend
             if(!empty($params[$fld."_append"])){
                 $value.=$params[$fld."_append"];
