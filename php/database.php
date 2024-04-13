@@ -2424,7 +2424,7 @@ function databaseListRecords($params=array()){
 			}
 			//number_format
 			if(!empty($params[$fld."_number_format"])){
-				$value=number_format($value,$params[$fld."_number_format"]);
+				$value=number_format($value,(integer)$params[$fld."_number_format"]);
 			}
 			if(!empty($params[$fld."_translate"])){
 				$value=translateText($value);
