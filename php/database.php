@@ -1161,6 +1161,8 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_prepend] - prepends the specified value to the end
 *	[{field}_substr] - only returns a substring of the original value 
 *	[{field}_phone] - formats value as a phone number
+*	[{field}_verboseSize] - converts value to a verboseSize
+*	[{field}_verboseTime] - converts value to a verboseTime
 *	[{field}_ucwords] - uppercase each word in value
 *	[{field}_strtoupper] - lowercase value
 *	[{field}_strtolower] - uppercase value
@@ -2444,6 +2446,14 @@ function databaseListRecords($params=array()){
 			//ucwords
             if(!empty($params[$fld."_ucwords"])){
                 $value=ucwords($value);
+			}
+			//verboseSize
+            if(!empty($params[$fld."_verboseSize"])){
+                $value=verboseSize($value);
+			}
+			//verboseTime
+            if(!empty($params[$fld."_verboseTime"])){
+                $value=verboseTime($value);
 			}
 			//strtolower
             if(!empty($params[$fld."_strtolower"])){
