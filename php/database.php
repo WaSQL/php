@@ -2424,7 +2424,17 @@ function databaseListRecords($params=array()){
 			}
 			//number_format
 			if(!empty($params[$fld."_number_format"])){
-				$value=number_format($value,(integer)$params[$fld."_number_format"]);
+				$p=(integer)$params[$fld."_number_format"];
+				if($p==0){
+					if(function_exists('gmp_init')){
+						$bigInt = gmp_init($value);
+				   		$value = gmp_intval($bigInt);
+				   	}
+				   	else{
+						$value=(integer)$value;
+					}
+				}	
+				$value=number_format($value,$p);
 			}
 			if(!empty($params[$fld."_translate"])){
 				$value=translateText($value);
