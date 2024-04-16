@@ -8,14 +8,19 @@ function fontsGetFonts(){
 			unset($files[$i]);
 			continue;
 		}
-		$files[$i]['example']='<span style="font-family:'.$files[$i]['name'].'">Example Text</span>';
+		$files[$i]['example']='<span style="font-family:'.$files[$i]['name'].'">'.loremIpsum(300).'</span>';
 		if(stringEndsWith($files[$i]['path'],'extras')){
 			$files[$i]['wpath']='/wfiles/fonts/extras';
 		}
 		else{
 			$files[$i]['wpath']='/wfiles/fonts';
 		}
-		$files[$i]['code']="loadExtrasFont('{$files[$i]['name']}');";
+		$files[$i]['code']=<<<ENDOFCODE
+<div style="display:flex;justify-content:space-between;">
+	<div id="fontcode_{$i}">loadExtrasFont('{$files[$i]['name']}');</div>
+	<div class="w_pointer w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#fontcode_{$i}').innerText);"><span class="icon-copy"></span></div>
+</div>
+ENDOFCODE;
 	}
 	return $files;
 }
@@ -23,7 +28,15 @@ function fontsList(){
 	return databaseListRecords(array(
 		'-list'=>fontsGetFonts(),
 		'-listfields'=>'name,code,example',
-		'-tableclass'=>'table striped bordered'
+		'-tableclass'=>'table striped bordered',
+		'name_options'=>array(
+			'displayname'=>'Font Name',
+			'class'=>'w_nowrap'
+		),
+		'code_options'=>array(
+			'displayname'=>'Controller Code',
+			'class'=>'w_nowrap'
+		)
 	));
 }
 ?>
