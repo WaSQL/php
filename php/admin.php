@@ -648,6 +648,7 @@ if(isAjax()){
 		case 'cron':
 		case 'schtasks':
 		case 'export':
+		case 'fonts':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);
@@ -1401,6 +1402,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'cron':
 		case 'schtasks':
 		case 'export':
+		case 'fonts':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);

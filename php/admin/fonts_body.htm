@@ -1,0 +1,20 @@
+ <view:default>
+<style>
+<view:fontcss>
+@font-face {
+  font-family: "<?=$font['name'];?>";
+  src:  url("<?=$font['wpath'];?>/<?=$font['name'];?>.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("<?=$font['wpath'];?>/<?=$font['name'];?>.woff") format("woff"), /* Modern Browsers */
+        url("<?=$font['wpath'];?>/<?=$font['name'];?>.woff2") format("woff2"); /* Modern Browsers */
+  font-weight: normal;
+  font-style: normal;
+}
+</view:fontcss>
+<?=renderEach('fontcss',$fonts,'font');?>
+</style>
+<div class="container-fluid">
+	<h3 style="margin:0px;padding:3px;"><span class="icon-font"></span> Fonts</h3>
+	<?=fontsList();?>
+</div>
+</view:default>
+
