@@ -2357,7 +2357,7 @@ function databaseListRecords($params=array()){
 			$href=$params['-onclick'];
 			//substitute and %{field}% with its value in this record
 			foreach($rec as $recfld=>$recval){
-				if(is_array($recfld) || is_array($recval)){continue;}
+				if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 				$replace='%'.$recfld.'%';
                 $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
             }
@@ -2378,7 +2378,7 @@ function databaseListRecords($params=array()){
 				$patt_val=$pv;
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
-					if(is_array($recfld) || is_array($recval)){continue;}
+					if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 					$replace='%'.$recfld.'%';
                     $patt_val=str_replace($replace,strip_tags($rec[$recfld]),$patt_val);
                 }
@@ -2389,7 +2389,7 @@ function databaseListRecords($params=array()){
 				$patt_val=$pv;
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
-					if(is_array($recfld) || is_array($recval)){continue;}
+					if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 					$replace='%'.$recfld.'%';
                     $patt_val=str_replace($replace,strip_tags($rec[$recfld]),$patt_val);
                 }
@@ -2398,6 +2398,7 @@ function databaseListRecords($params=array()){
 		}
 		$rtn .='>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
+			if(!isset($rec[$fld])){continue;}
 			if(is_array($rec[$fld])){
 				$rec[$fld]=json_encode($rec[$fld],JSON_INVALID_UTF8_SUBSTITUTE);
 			}
@@ -2416,7 +2417,7 @@ function databaseListRecords($params=array()){
 				$evalstr=str_replace('%fieldname%',$fld,$evalstr);
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
-					if(is_array($recfld) || is_array($recval)){continue;}
+					if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 					$replace='%'.$recfld.'%';
                     $evalstr=str_replace($replace,strip_tags($rec[$recfld]),$evalstr);
                 }
@@ -2502,7 +2503,7 @@ function databaseListRecords($params=array()){
 				$href=str_replace('%fieldname%',$fld,$href);
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
-					if(is_array($recfld) || is_array($recval)){continue;}
+					if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 					$replace='%'.$recfld.'%';
                     $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
@@ -2515,7 +2516,7 @@ function databaseListRecords($params=array()){
 					$checkbox_id=$params[$fld."_checkbox_id"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $checkbox_id=str_replace($replace,strip_tags($rec[$recfld]),$checkbox_id);
 	                }
@@ -2525,7 +2526,7 @@ function databaseListRecords($params=array()){
 					$checkbox_value=$params[$fld."_checkbox_value"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $checkbox_value=str_replace($replace,strip_tags($rec[$recfld]),$checkbox_value);
 	                }
@@ -2543,7 +2544,7 @@ function databaseListRecords($params=array()){
 						elseif(stringBeginsWith($okey,'data-')){
 							$data=$oval;
 							foreach($rec as $recfld=>$recval){
-								if(is_array($recfld) || is_array($recval)){continue;}
+								if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 								$replace='%'.$recfld.'%';
 			                    $data=str_replace($replace,strip_tags($rec[$recfld]),$data);
 			                }
@@ -2558,7 +2559,7 @@ function databaseListRecords($params=array()){
 					$onclick=$params[$fld."_checkbox_onclick"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $onclick=str_replace($replace,strip_tags($rec[$recfld]),$onclick);
 	                }
@@ -2568,7 +2569,7 @@ function databaseListRecords($params=array()){
 					$checkbox_checked=$params[$fld."_checkbox_checked"];
 					//substitute %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $checkbox_checked=str_replace($replace,strip_tags($rec[$recfld]),$checkbox_checked);
 	                }
@@ -2589,7 +2590,7 @@ function databaseListRecords($params=array()){
 					$radio_id=$params[$fld."_radio_id"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $radio_id=str_replace($replace,strip_tags($rec[$recfld]),$radio_id);
 	                }
@@ -2599,7 +2600,7 @@ function databaseListRecords($params=array()){
 					$radio_value=$params[$fld."_radio_value"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $radio_value=str_replace($replace,strip_tags($rec[$recfld]),$radio_value);
 	                }
@@ -2616,7 +2617,7 @@ function databaseListRecords($params=array()){
 						elseif(stringBeginsWith($okey,'data-')){
 							$data=$oval;
 							foreach($rec as $recfld=>$recval){
-								if(is_array($recfld) || is_array($recval)){continue;}
+								if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 								$replace='%'.$recfld.'%';
 			                    $data=str_replace($replace,strip_tags($rec[$recfld]),$data);
 			                }
@@ -2632,7 +2633,7 @@ function databaseListRecords($params=array()){
 					$onclick=$params[$fld."_radio_onclick"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $onclick=str_replace($replace,strip_tags($rec[$recfld]),$onclick);
 	                }
@@ -2642,7 +2643,7 @@ function databaseListRecords($params=array()){
 					$radio_checked=$params[$fld."_radio_checked"];
 					//substitute and %{field}% with its value in this record
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $radio_checked=str_replace($replace,strip_tags($rec[$recfld]),$radio_checked);
 	                }
@@ -2661,7 +2662,7 @@ function databaseListRecords($params=array()){
 				//substitute and %{field}% with its value in this record
 				$href=str_replace('%fieldname%',$fld,$href);
 				foreach($rec as $recfld=>$recval){
-					if(is_array($recfld) || is_array($recval)){continue;}
+					if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 					$replace='%'.$recfld.'%';
                     $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
                 }
@@ -2681,7 +2682,7 @@ function databaseListRecords($params=array()){
 						elseif(stringBeginsWith($okey,'data-')){
 							$data=$oval;
 							foreach($rec as $recfld=>$recval){
-								if(is_array($recfld) || is_array($recval)){continue;}
+								if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 								$replace='%'.$recfld.'%';
 			                    $data=str_replace($replace,strip_tags($rec[$recfld]),$data);
 			                }
@@ -2712,7 +2713,7 @@ function databaseListRecords($params=array()){
 						$href=str_replace('%fieldname%',$fld,$href);
 						//substitute and %{field}% with its value in this record
 						foreach($rec as $recfld=>$recval){
-							if(is_array($recfld) || is_array($recval)){continue;}
+							if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 							$replace='%'.$recfld.'%';
 		                    $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
 		                }
@@ -2738,7 +2739,7 @@ function databaseListRecords($params=array()){
 						$href=str_replace('%fieldname%',$fld,$href);
 						//substitute and %{field}% with its value in this record
 						foreach($rec as $recfld=>$recval){
-							if(is_array($recfld) || is_array($recval)){continue;}
+							if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 							$replace='%'.$recfld.'%';
 		                    $href=str_replace($replace,strip_tags($rec[$recfld]),$href);
 		                }
@@ -2776,7 +2777,7 @@ function databaseListRecords($params=array()){
 				if(preg_match('/^'.$fld.'_(.+)$/',$k,$m)){
 					$v=str_replace('%fieldname%',$fld,$v);
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $v=str_replace($replace,strip_tags($rec[$recfld]),$v);
 	                }
@@ -2789,7 +2790,7 @@ function databaseListRecords($params=array()){
 					if(!isset($atts[$m[1]])){
 						$v=str_replace('%fieldname%',$fld,$v);
 						foreach($rec as $recfld=>$recval){
-							if(is_array($recfld) || is_array($recval)){continue;}
+							if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 							$replace='%'.$recfld.'%';
 		                    $v=str_replace($replace,strip_tags($rec[$recfld]),$v);
 		                }
@@ -2801,7 +2802,7 @@ function databaseListRecords($params=array()){
 					if(!isset($atts[$m[1]])){
 						$v=str_replace('%fieldname%',$fld,$v);
 						foreach($rec as $recfld=>$recval){
-							if(is_array($recfld) || is_array($recval)){continue;}
+							if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 							$replace='%'.$recfld.'%';
 		                    $v=str_replace($replace,strip_tags($rec[$recfld]),$v);
 		                }
@@ -2815,7 +2816,7 @@ function databaseListRecords($params=array()){
 					$editv=$params['-editid'];
 					$editv=str_replace('%fieldname%',$fld,$editv);
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $editv=str_replace($replace,strip_tags($rec[$recfld]),$editv);
 	                }
@@ -2849,7 +2850,7 @@ function databaseListRecords($params=array()){
 					$editv=$params['-editfunction'];
 					$editv=str_replace('%fieldname%',$fld,$editv);
 					foreach($rec as $recfld=>$recval){
-						if(is_array($recfld) || is_array($recval)){continue;}
+						if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
 						$replace='%'.$recfld.'%';
 	                    $editv=str_replace($replace,strip_tags($rec[$recfld]),$editv);
 	                }
@@ -2965,6 +2966,7 @@ function databaseParseFilters($params=array()){
 		return array(implode(' or ',$ors));
 	}
 	foreach($params['-filters'] as $filter){
+		if(is_array($filter) || !strlen($filter)){continue;}
 		list($field,$oper,$val)=preg_split('/\-/',$filter,3);
 		$val=trim($val);
 		$lval=strtolower($val);

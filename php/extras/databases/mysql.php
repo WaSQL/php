@@ -1287,7 +1287,8 @@ function mysqlGetDBWhere($params,$info=array()){
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(is_array($params[$k])){
-            $params[$k]=implode(':',$params[$k]);
+			//echo $k.printValue($params);exit;
+            $params[$k]=encodeJSON($params[$k]);
 		}
 		if(!commonStrlen(trim($params[$k]))){continue;}
 		if(!isset($info[$k])){continue;}

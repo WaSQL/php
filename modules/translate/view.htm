@@ -79,6 +79,8 @@
 		-table="_translations" 
 		-tableclass="table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover"
 		-listfields="_id,source,translation,confirmed"
+		-action="/<?=$MODULE['ajaxpage'];?>/listnext/<?=$locale;?>"
+		-onsubmit="return pagingSubmit(this,'list_translations')"
 		-navonly="1"
 		-searchopers="ct"
 		source_displayname="Source (<?=translateGetSourceLocale();?>)"
@@ -99,6 +101,35 @@
 	> </dblistrecords>
 	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>
+
+<view:listnext>
+	<dblistrecords
+		-divid="list_translations"
+		-table="_translations" 
+		-tableclass="table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover"
+		-listfields="_id,source,translation,confirmed"
+		-action="/<?=$MODULE['ajaxpage'];?>/listnext/<?=$locale;?>"
+		-onsubmit="return pagingSubmit(this,'list_translations')"
+		-navonly="1"
+		-searchopers="ct"
+		source_displayname="Source (<?=translateGetSourceLocale();?>)"
+		source_style="white-space: normal"
+		translation_displayname="Translation (<?=$locale;?>)"
+		translation_style="white-space: normal;"
+		confirmed_style="text-align:center"
+		confirmed_checkmark="1"
+		confirmed_checkmark_icon="icon-mark w_success"
+		translation_onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/edit/%_id%','modal',{setprocessing:0})"
+		_id_checkbox="1"
+		_id_checkbox_value="%_id%"
+		_id_checkbox_id="trid_%_id%"
+		locale="<?=$locale;?>"
+		wasql="<?=translateGetWasqlValue();?>"
+		-order="confirmed,_id"
+		-results_eval="translateAddExtraInfo"
+	> </dblistrecords>
+	<?=buildOnLoad("wacss.modalClose();");?>
+</view:listnext>
 
 <view:bulktranslate>
 <div>

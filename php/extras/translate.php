@@ -246,6 +246,7 @@ function translateUnmapText($source,$target){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateText($text,$locale='',$wasql=0){
+	if(!strlen(trim($text))){return $text;}
 	global $CONFIG;
 	$map=translateMapText($text);
 	if(!isset($map['identifier'])){return $text;}

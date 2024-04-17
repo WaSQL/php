@@ -813,7 +813,10 @@ function commonSearchFiltersForm($params=array()){
 	if(isset($params['-simplesearch']) || isset($params['-navonly'])){
 		$rtn .= '	<input type="hidden" name="filter_order" value="'.$params['-order'].'" />'.PHP_EOL;
 	}
-	$filters=is_array($params['-filters'])?implode("\r\n",$params['-filters']):$params['-filters'];
+	if(isset($params['-filters'])){
+		$filters=is_array($params['-filters'])?implode("\r\n",$params['-filters']):$params['-filters'];
+	}
+	else{$filters='';}
 	$rtn .= '	<textarea name="_filters">'.$filters.'</textarea>'.PHP_EOL;
 	if(isset($params['-bulkedit'])){
 		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" />'.PHP_EOL;
@@ -6813,7 +6816,7 @@ function commonProcessDBListRecordsTags($htm){
 		$replace_str='';
 		$replace_str.='<div id="'.$divid.'">'.PHP_EOL;
 		$opts=array(
-			'-action'=>'/php/index.php',
+			'-action'=>$dblistrecords_attributes['-action'] ?? '/php/index.php',
 			'-onsubmit'=>"return pagingSubmit(this,'{$divid}');",
 			'-formname'=>"dblistrecordsform_{$i}",
 			'setprocessing'=>0,

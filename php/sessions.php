@@ -21,7 +21,7 @@ if(!isDBTable('_sessions')){
 }
 global $CONFIG;
 if(isset($CONFIG['database_sessions']) && $CONFIG['database_sessions']==1){
-	session_set_save_handler('sessionOpen', 'sessionClose', 'sessionRead', 'sessionWrite', 'sessionDestroy', 'sessionGarbageCollect');
+	//session_set_save_handler('sessionOpen', 'sessionClose', 'sessionRead', 'sessionWrite', 'sessionDestroy', 'sessionGarbageCollect');
 }
 //Start the session but turn off session headers
 //session_cache_limiter('');

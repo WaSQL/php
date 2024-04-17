@@ -25,6 +25,7 @@
 	if(!isDBTable('countries')){
 		$ok=createWasqlTables('countries');
 	}
+	//echo "LANG:".$_SESSION['REMOTE_LANG'];exit;
 	if(!isset($_SESSION['REMOTE_LANG']) || !strlen($_SESSION['REMOTE_LANG'])){
 		$_SESSION['REMOTE_LANG']=$_SERVER['REMOTE_LANG'];
 	}
@@ -157,6 +158,12 @@
 			$locale=addslashes($_REQUEST['passthru'][$p1]);
 			$info=translateGetLocaleInfo($locale);
 			setView('list',1);
+			return;
+		break;
+		case 'listnext':
+			$locale=addslashes($_REQUEST['passthru'][$p1]);
+			$info=translateGetLocaleInfo($locale);
+			setView('listnext',1);
 			return;
 		break;
 		case 'edit':

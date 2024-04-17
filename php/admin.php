@@ -3694,6 +3694,7 @@ function adminShowSessionLog($sessionID){
 */
 function adminSetPageName(){
 	global $PAGE;
+	global $PASSTHRU;
 	$PAGE['name']='php/admin.php';
 	if(isset($_SERVER['SCRIPT_NAME'])){$PAGE['name']=$_SERVER['SCRIPT_NAME'];}
 	elseif(isset($_SERVER['PHP_SELF'])){$PAGE['name']=$_SERVER['PHP_SELF'];}
