@@ -17666,6 +17666,14 @@ function processInlineFiles(){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
 					$filename=$name=sha1($encodedString).'.jpg';
 				}
+				elseif(stringBeginsWith($base64_file,'data:image/jpeg;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.jpg';
+				}
+				elseif(stringBeginsWith($base64_file,'data:image/gif;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.gif';
+				}
 				elseif(stringBeginsWith($base64_file,'data:video/webm;codecs=vp9,opus;base64,')){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
 					$filename=$name=sha1($encodedString).'.webm';
@@ -17673,6 +17681,14 @@ function processInlineFiles(){
 				elseif(stringBeginsWith($base64_file,'data:video/webm;base64,')){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
 					$filename=$name=sha1($encodedString).'.webm';
+				}
+				elseif(stringBeginsWith($base64_file,'data:video/x-matroska;codecs=avc1,opus;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.mkv';
+				}
+				elseif(stringBeginsWith($base64_file,'data:video/x-matroska;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.mkv';
 				}
 				elseif(stringBeginsWith($base64_file,'data:video/mp4;base64,')){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
