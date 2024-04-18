@@ -17653,7 +17653,34 @@ function processInlineFiles(){
 			//$_REQUEST["{$key}_base64_debug"]=array();
 			foreach($base64_files as $base64_file){
 				if(!strlen(trim($base64_file))){continue;}
-				list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
+				/*
+					Possible
+					data:image/png;base64,iVB
+					data:video/webm;codecs=vp9,opus;base64,GkX
+				*/
+				if(stringBeginsWith($base64_file,'data:image/png;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.png';
+				}
+				elseif(stringBeginsWith($base64_file,'data:image/jpg;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.jpg';
+				}
+				elseif(stringBeginsWith($base64_file,'data:video/webm;codecs=vp9,opus;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.webm';
+				}
+				elseif(stringBeginsWith($base64_file,'data:video/webm;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.webm';
+				}
+				elseif(stringBeginsWith($base64_file,'data:video/mp4;base64,')){
+					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
+					$filename=$name=sha1($encodedString).'.mp4';
+				}
+				else{
+					list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
+				}
 				//$_REQUEST["{$key}_base64_debug"]['filename']=$filename;
 				//$_REQUEST["{$key}_base64_debug"]['name']=$name;
 				$decoded=base64_decode($encodedString);
