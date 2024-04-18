@@ -17684,11 +17684,11 @@ function processInlineFiles(){
 				}
 				elseif(stringBeginsWith($base64_file,'data:video/x-matroska;codecs=avc1,opus;base64,')){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
-					$filename=$name=sha1($encodedString).'.mkv';
+					$filename=$name=sha1($encodedString).'.mp4';
 				}
 				elseif(stringBeginsWith($base64_file,'data:video/x-matroska;base64,')){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
-					$filename=$name=sha1($encodedString).'.mkv';
+					$filename=$name=sha1($encodedString).'.mp4';
 				}
 				elseif(stringBeginsWith($base64_file,'data:video/mp4;base64,')){
 					list($jnk,$encodedString)=preg_split('/base64\,/',$base64_file,2);
