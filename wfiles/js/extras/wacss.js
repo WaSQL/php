@@ -263,8 +263,15 @@ var wacss = {
 		let div=wacss.getObject(obj.div);
 		let txt=obj.ajaxtext || obj.responseText;
 		if(undefined == div){
-    		console.log('dom object does not exist');
-    		console.log(txt);
+			switch(obj.div.toLowerCase()){
+				case 'toast':
+					wacss.toast(txt);
+				break;
+				default:
+					console.log('dom object does not exist');
+    				console.log(txt);
+				break;
+			}
     	}
         else{
         	if(undefined != obj.processing){
