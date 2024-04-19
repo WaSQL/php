@@ -2364,8 +2364,10 @@ function databaseListRecords($params=array()){
             $rtn .=" onclick=\"{$href}\"";
 		}
 		//check for -tr_class, -tr_style, -tr_data-..., -tr*
+		//echo printValue($params).printValue($rec);exit;
 		foreach($params as $pk=>$pv){
 			if($pk=='-translate'){continue;}
+			if($pk=='-truecount'){continue;}
 			if(preg_match('/^\-tr_(.+)$/i',$pk,$pm)){
 				$patt_name=$pm[1];
 				//check for [$row]
@@ -2398,7 +2400,7 @@ function databaseListRecords($params=array()){
 		}
 		$rtn .='>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
-			if(!isset($rec[$fld])){continue;}
+			if(!isset($rec[$fld])){$rec[$fld]='';}
 			if(is_array($rec[$fld])){
 				$rec[$fld]=json_encode($rec[$fld],JSON_INVALID_UTF8_SUBSTITUTE);
 			}
