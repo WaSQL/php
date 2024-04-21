@@ -8554,6 +8554,12 @@ function getDBFieldTag($params=array()){
             if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
             $tag=buildFormSelectOnOff($name,$info[$field]);
 		break;
+		case 'select_yesno':
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormYesNo($name,$info[$field]);
+		break;
 		case 'select_state':
 			if(!isset($info[$field]['message'])){$info[$field]['message']='-- State --';}
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
