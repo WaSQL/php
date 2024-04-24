@@ -5636,12 +5636,12 @@ var wacss = {
 		vid.setAttribute('controls','');
 		vid.setAttribute('autoplay','');
 		vid.setAttribute('playsinline','');
-		vid.style.maxWidth='80%';
-		vid.style.maxHeight='80%';
+		vid.style.maxWidth='100%';
+		vid.style.maxHeight='770px';
 		vid.style.width='auto';
 		vid.style.height='auto';
 		vid.d=d;
-		vid.onload=function(){
+		vid.oncanplay=function(){
 			centerObject(this.d);
 		}
 		d.appendChild(vid)
