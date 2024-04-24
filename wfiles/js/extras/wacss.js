@@ -5606,6 +5606,67 @@ var wacss = {
 		return v;
 	},
 	/**
+	* @name wacss.showVideo
+	* @describe creates a DOM element to show video in
+	* @param mixed DOM element or id of element
+	* @param number z-index defaults to 10020
+	* @return object DOM object that is created
+	* @usage let el=wacss.showImage('#myimg',2323)
+	*/
+	showVideo: function(el,z){
+		el=wacss.getObject(el);
+		if(undefined == el){return false;}
+		z=z||10020;
+		let d=document.createElement('div');
+		d.id="modal1";
+		//d.className='modal open';
+		d.tabindex=0;
+		d.style.zIndex=z;
+		d.style.display='block';
+		d.style.background='#FFF';
+		d.style.padding='15px';
+		d.style.border='1px outset #747392';
+		d.style.borderRadius='3px';
+		d.style.position='absolute';
+		d.style.maxWidth='60%';
+		d.style.maxHeight='800px';
+		d.style.transform='scaleX(1) scaleY(1)';
+		let vid=document.createElement('video');
+		vid.src=el.getAttribute('src');
+		vid.setAttribute('controls','');
+		vid.setAttribute('autoplay','');
+		vid.setAttribute('playsinline','');
+		vid.style.maxWidth='80%';
+		vid.style.maxHeight='80%';
+		vid.style.width='auto';
+		vid.style.height='auto';
+		vid.d=d;
+		vid.onload=function(){
+			centerObject(this.d);
+		}
+		d.appendChild(vid)
+		document.body.appendChild(d);
+		z=z-2;
+		// Build modal-overlay.
+		let v=document.createElement('div');
+		v.style.zIndex=z;
+		v.style.display='block';
+		v.style.width='3000px';
+		v.style.height='2000px';
+		v.style.position='absolute';
+		v.style.top='0px';
+		v.style.left='0px';
+		v.style.background='rgba(0,0,0,0.5)';
+		v.id=d.id+'_overlay';
+		v.setAttribute('data-target',d.id);
+		v.onclick=function(){
+			removeDiv(this.getAttribute('data-target'));
+			removeDiv(this.id);
+		};
+		document.body.appendChild(v);
+		return v;
+	},
+	/**
 	* @name wacss.simulateEvent
 	* @describe creates a DOM element to show image in
 	* @param mixed DOM element or id of element
