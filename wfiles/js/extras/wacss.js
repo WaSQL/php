@@ -5554,10 +5554,11 @@ var wacss = {
 	* @describe creates a DOM element to show image in
 	* @param mixed DOM element or id of element
 	* @param number z-index defaults to 10020
+	* @param string title optional title to show above image
 	* @return object DOM object that is created
 	* @usage let el=wacss.showImage('#myimg',2323)
 	*/
-	showImage: function(el,z){
+	showImage: function(el,z,title){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
 		z=z||10020;
@@ -5575,6 +5576,12 @@ var wacss = {
 		d.style.maxWidth='60%';
 		d.style.maxHeight='800px';
 		d.style.transform='scaleX(1) scaleY(1)';
+		if(undefined != title && title.length){
+			let t=document.createElement('div');
+			t.className='w_big w_bold align-center';
+			t.innerHTML=title;
+			d.appendChild(t);
+		}
 		let i=document.createElement('img');
 		i.src=el.getAttribute('src');
 		i.style.maxWidth='100%';
@@ -5583,7 +5590,7 @@ var wacss = {
 		i.onload=function(){
 			centerObject(this.d);
 		}
-		d.appendChild(i)
+		d.appendChild(i);
 		document.body.appendChild(d);
 		z=z-2;
 		// Build modal-overlay.
@@ -5610,10 +5617,11 @@ var wacss = {
 	* @describe creates a DOM element to show video in
 	* @param mixed DOM element or id of element
 	* @param number z-index defaults to 10020
+	* @param string title optional title to show above video
 	* @return object DOM object that is created
 	* @usage let el=wacss.showImage('#myimg',2323)
 	*/
-	showVideo: function(el,z){
+	showVideo: function(el,z,title){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
 		z=z||10020;
@@ -5631,6 +5639,12 @@ var wacss = {
 		d.style.maxWidth='60%';
 		d.style.maxHeight='800px';
 		d.style.transform='scaleX(1) scaleY(1)';
+		if(undefined != title && title.length){
+			let t=document.createElement('div');
+			t.className='w_big w_bold align-center';
+			t.innerHTML=title;
+			d.appendChild(t);
+		}
 		let vid=document.createElement('video');
 		vid.src=el.getAttribute('src');
 		vid.setAttribute('controls','');
