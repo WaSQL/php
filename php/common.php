@@ -27,7 +27,7 @@
 		ajaxExpand
 		expand
 		filemanagerEdit
-		imagePreview
+		DONE: imagePreview
 		ajaxEditField
 * 
 */
@@ -10400,7 +10400,15 @@ function fileManager($startdir='',$params=array()){
 						$display=preg_replace('/\_/',' ',$file);
 						if(isWebImage($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="return imagePreview(\''.$previewlink.'\',\''.$display.'\');" href="'.$previewlink.'"> '.$file.'</a></td>'.PHP_EOL;
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="wacss.showImage(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to preview" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
+			            }
+			            elseif(isAudioFile($file)){
+							//show preview on mouse over for web images
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="wacss.showAudio(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to listen" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
+			            }
+			            elseif(isVideoFile($file)){
+							//show preview on mouse over for web images
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="wacss.showVideo(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to watch" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
 			            }
 			            else{
 							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" href="'.$previewlink.'&-attach=0"> '.$display.'</a></td>'.PHP_EOL;
