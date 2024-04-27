@@ -5584,7 +5584,7 @@ var wacss = {
 			d.appendChild(t);
 		}
 		let i=document.createElement('img');
-		i.src=el.getAttribute('src');
+		i.src=el.getAttribute('src') || el.dataset.src || el.getAttribute('href');
 		i.style.maxWidth='100%';
 		i.style.maxHeight='770px';
 		i.d=d;
@@ -5648,7 +5648,7 @@ var wacss = {
 			d.appendChild(t);
 		}
 		let vid=document.createElement('video');
-		vid.src=el.getAttribute('src');
+		vid.src=el.getAttribute('src')  || el.dataset.src || el.getAttribute('href');
 		vid.setAttribute('controls','');
 		vid.setAttribute('autoplay','');
 		vid.setAttribute('playsinline','');
