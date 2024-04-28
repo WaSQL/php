@@ -6237,7 +6237,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	$htmlatts=array(
 		'id','name','class','style','title','alt','accesskey','tabindex',
 		'onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
-		'_behavior','display',
+		'_behavior','display','capture',
 		'required','requiredmsg','mask','maskmsg','displayname','size','minlength','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
 		'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg','autocomplete',
@@ -10260,7 +10260,14 @@ function fileManager($startdir='',$params=array()){
 	if($params['-rights'] != 'readonly'){
 		$rtn .= '	<div style="display:flex;margin:10px 0;">'.PHP_EOL;
 		$rtn .= '		<div style="margin-right:5px;">'.PHP_EOL;
-		$rtn .= 			buildFormFile('file',array('id'=>'file'));
+		$fileparams=array('id'=>'file');
+		if(isset($params['-accept'])){
+			$fileparams['accept']=$params['-accept'];
+		}
+		if(isset($params['-capture'])){
+			$fileparams['capture']=$params['-capture'];
+		}
+		$rtn .= 			buildFormFile('file',$fileparams);
 		$rtn .= '		</div>'.PHP_EOL;
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
