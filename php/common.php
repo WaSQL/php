@@ -10267,13 +10267,16 @@ function fileManager($startdir='',$params=array()){
 		if(isset($params['-capture'])){
 			$fileparams['capture']=$params['-capture'];
 		}
+		if(isset($params['-multiple'])){
+			$fileparams['multiple']=1;
+		}
 		$rtn .= 			buildFormFile('file',$fileparams);
 		$rtn .= '		</div>'.PHP_EOL;
 		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 	}
 	$rtn .= '	</form>'.PHP_EOL;
-	if($params['-rights'] != 'readonly'){
+	if(!isMobileDevice() && $params['-rights'] != 'readonly'){
     	//HTML5 file upload
     	$path=encodeBase64($cdir);
 		$rtn .= '<div  title="drag files to upload"';
