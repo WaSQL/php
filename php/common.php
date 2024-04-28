@@ -3796,7 +3796,9 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
 	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name;
-	
+	if(isset($params['multiple']) && !stringEndsWith($params['name'],'[]')){
+		$params['name'].='[]';
+	}
 	//ksort($params);return printValue($params);
 	$tag='';
 	$viewer='';
@@ -10260,7 +10262,7 @@ function fileManager($startdir='',$params=array()){
 	if($params['-rights'] != 'readonly'){
 		$rtn .= '	<div style="display:flex;margin:10px 0;">'.PHP_EOL;
 		$rtn .= '		<div style="margin-right:5px;">'.PHP_EOL;
-		$fileparams=array('id'=>'file');
+		$fileparams=array('id'=>'file','value'=>'');
 		if(isset($params['-accept'])){
 			$fileparams['accept']=$params['-accept'];
 		}
@@ -10272,7 +10274,7 @@ function fileManager($startdir='',$params=array()){
 		}
 		$rtn .= 			buildFormFile('file',$fileparams);
 		$rtn .= '		</div>'.PHP_EOL;
-		$rtn .= '		<button type="submit" class="btn btn-primary">Save</button>'.PHP_EOL;
+		$rtn .= '		<button type="submit" class="btn btn-primary">Upload</button>'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 	}
 	$rtn .= '	</form>'.PHP_EOL;
@@ -10458,7 +10460,10 @@ function fileManager($startdir='',$params=array()){
 * [data-] str - adds data atributes
 * @usage return fileManagerV2($path,$params)
 */
-function fileManagerV2($path,$params=array()){
+function fileManagerV2($path='',$params=array()){
+	global $CONFIG;
+	if(!strlen($path)){$path=$CONFIG['filemanager_startdir'] ?? $CONFIG['filemanager_path'] ?? $_SERVER['DOCUMENT_ROOT'];}
+	if(!is_dir($path)){return "{$path} does not exist";}
 	loadExtrasJs('html5');
 	global $PAGE;
 	if(isset($_REQUEST['path'])){
@@ -10493,13 +10498,13 @@ function fileManagerV2($path,$params=array()){
 		$afile_b64=base64_encode($file['afile']);
 		switch(strtolower($file['type'])){
 			case 'dir':
-				$file['type']='<span title="browse" class="icon-folder w_yellow w_pointer" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"></span> dir';
-				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"><span class="icon-forward w_yellow" title="browse"></span></a>';
-				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rmdir="'.$afile_b64.'" data-confirm="Delete this folder? ARE YOU SURE?"><span class="icon-erase w_danger" title="rmdir"></span></a>';
+				$file['type']='<span title="browse" class="icon-folder w_bigger w_yellow w_pointer" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"></span> dir';
+				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-path="'.$afile_b64.'"><span class="icon-forward w_bigger w_yellow" title="browse"></span></a>';
+				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rmdir="'.$afile_b64.'" data-confirm="Delete this folder? ARE YOU SURE?"><span class="icon-erase w_bigger w_danger" title="rmdir"></span></a>';
 			break;
 			case 'file':
-				$actions[]='<a href="/php/index.php?-attach=1&_pushfile='.$afile_b64.'" style="display:inline-block;"><span class="icon-download w_blue" title="download"></span></a>';
-				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rm="'.$afile_b64.'" data-confirm="Delete this file? ARE YOU SURE?"><span class="icon-erase w_danger" title="rm"></span></a>';
+				$actions[]='<a href="/php/index.php?-attach=1&_pushfile='.$afile_b64.'" style="display:inline-block;"><span class="icon-download w_bigger w_blue" title="download"></span></a>';
+				$actions[]='<a href="#" style="display:inline-block;" onclick="return wacss.nav(this);" data-rm="'.$afile_b64.'" data-confirm="Delete this file? ARE YOU SURE?"><span class="icon-erase w_bigger w_danger" title="rm"></span></a>';
 				$icon='';
 				switch(strtolower($file['ext'])){
 					default:
@@ -19099,11 +19104,30 @@ function processFileUploads($docroot=''){
 	global $USER;
 	global $CONFIG;
 	if(strlen($docroot)==0){$docroot=$_SERVER['DOCUMENT_ROOT'];}
-	//echo printValue($_FILES).printValue($_REQUEST);exit;
+	//echo "processFileUploads".printValue($_FILES).printValue($_REQUEST);exit;
 	//if(preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
 	if(is_array($_FILES) && count($_FILES) > 0){
-	 	foreach($_FILES as $name=>$file){
-	 		if(!strlen($file['name'])){
+		//build a files list to handle multiple files in a single file input field
+		$pfiles=array();
+		foreach($_FILES as $name=>$file){
+			if(is_array($file['name'])){
+				$flds=array_keys($file);
+				foreach($file['name'] as $f=>$val){
+					$pfile=array('iname'=>$name,'pname'=>$name.'_'.$f);
+					foreach($flds as $fld){
+						$pfile[$fld]=$file[$fld][$f];
+					}
+					$pfiles[]=$pfile;
+				}
+			}
+			else{
+				$file['iname']=$file['pname']=$name;
+				$pfiles[]=$file;
+			}
+		}
+		//echo "processFileUploads".printValue($_FILES).printValue($_REQUEST).printValue($pfiles);exit;
+	 	foreach($pfiles as $pi=>$file){
+	 		if((is_array($file['name']) && !count($file['name'])) || !strlen($file['name'])){
 	 			continue;
 	 		}
 	 		if($file['error'] != 0 && !strlen($file['tmp_name'])){
@@ -19144,7 +19168,7 @@ function processFileUploads($docroot=''){
 				continue;
 			}
 	 		if(strlen($file['tmp_name'])==0 && strlen($file['type'])==0 ){
-	 			unset($_FILES[$name]);
+	 			unset($pfiles[$pi]);
 	 			continue;
 	 		}
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
@@ -19153,30 +19177,30 @@ function processFileUploads($docroot=''){
 					$file['name'].='.chunk'.$_SERVER['HTTP_X_CHUNK_NUMBER'];
 				}
 			}
-            $_REQUEST[$name.'_type']=$file['type'];
-            $_REQUEST[$name.'_size']=$file['size'];
+            $_REQUEST[$file['pname'].'_type']=$file['type'];
+            $_REQUEST[$file['pname'].'_size']=$file['size'];
             //get the weburl and the abs path of the file
 			$webpath='/' . $file['name'];
 			$abspath=$docroot . $webpath;
 			//clean up filename
-			$_REQUEST[$name.'_ori']=$file['name'];
+			$_REQUEST[$file['pname'].'_ori']=$file['name'];
             $file['name']=preg_replace('/\%20+/','_',$file['name']);
 			$file['name']=preg_replace('/\,/','',$file['name']);
 			$file['name']=preg_replace('/\.\./','.',$file['name']);
 			//check for ipath directive
-			$ipathname='ipath_'.$name;
+			$ipathname='ipath_'.$file['iname'];
 			//autonumber
-			if(isset($_REQUEST[$name.'_autonumber']) && $_REQUEST[$name.'_autonumber']==1){
+			if(isset($_REQUEST[$file['iname'].'_autonumber']) && $_REQUEST[$file['iname'].'_autonumber']==1){
 				//change the filename to be unique
 				$crc=encodeCRC(sha1_file($file['tmp_name']));
 				$file['name']=getFileName($file['name'],1) . '_' . $crc . '.' . getFileExtension($file['name']);
 				$file['name']=str_replace(' ','_',$file['name']);
 			}
-			elseif(isset($_REQUEST[$name.'_rename'])){
+			elseif(isset($_REQUEST[$file['iname'].'_rename'])){
 				/*Rename specs:
 					%key% will be replace with the value of $_REQUEST[key}
 				*/
-				$rename=$_REQUEST[$name.'_rename'];
+				$rename=$_REQUEST[$file['iname'].'_rename'];
 				$ext=getFileExtension($file['name']);
 				$rename=str_replace('%time()%',time(),$rename);
 				$rename=str_replace('%sha()%',sha1($file['tmp_name']),$rename);
@@ -19192,8 +19216,8 @@ function processFileUploads($docroot=''){
 				$cpath =decodeBase64($_REQUEST['_dir']);
 				$cpath=str_replace('//','/',$cpath);
 				$abspath=$cpath .'/'. $file['name'];
-				if(!is_dir($cpath) && strlen($_REQUEST[$name.'_path'])){
-					$path=$_REQUEST[$name.'_path'];
+				if(!is_dir($cpath) && strlen($_REQUEST[$file['iname'].'_path'])){
+					$path=$_REQUEST[$file['iname'].'_path'];
 					$cpath=$docroot . $path;
 					$cpath=str_replace('//','/',$cpath);
 					if(!is_dir($cpath)){
@@ -19204,9 +19228,9 @@ function processFileUploads($docroot=''){
 					$abspath = $docroot . $webpath;
 				}
 			}
-			elseif(strlen($_REQUEST[$name.'_path'])){
+			elseif(strlen($_REQUEST[$file['iname'].'_path'])){
 				$wpath=getWasqlPath();
-				$path=$_REQUEST[$name.'_path'];
+				$path=$_REQUEST[$file['iname'].'_path'];
 				if($path=='wasql_temp_path'){
 					$cpath=getWasqlPath('php/temp');
 					$webpath="/php/temp/{$file['name']}";
@@ -19280,19 +19304,19 @@ function processFileUploads($docroot=''){
                     	if(mergeChunkedFiles($xfiles,"{$absdir}/{$realname}")){
 							$abspath="{$absdir}/{$realname}";
 							$webpath = "{$path}/{$realname}";
-							$_REQUEST[$name.'_abspath']=$abspath;
+							$_REQUEST[$file['pname'].'_abspath']=$abspath;
 						}
 
 					}
 				}
 				$ext=strtolower(getFileExtension($file['name']));
-				$ok=commonProcessFileActions($name,$abspath);
+				$ok=commonProcessFileActions($file['iname'],$abspath);
 				//
-            	$_REQUEST[$name]=$webpath;
-            	$_REQUEST[$name.'_abspath']=$abspath;
-            	$_REQUEST[$name.'_webpath']=$webpath;
-				$_REQUEST[$name.'_sha1']=sha1_file($abspath);
-				$_REQUEST[$name.'_size']=filesize($abspath);
+            	$_REQUEST[$file['pname']]=$webpath;
+            	$_REQUEST[$file['pname'].'_abspath']=$abspath;
+            	$_REQUEST[$file['pname'].'_webpath']=$webpath;
+				$_REQUEST[$file['pname'].'_sha1']=sha1_file($abspath);
+				$_REQUEST[$file['pname'].'_size']=filesize($abspath);
 				//echo $name.printValue($_REQUEST);exit;
 				//Perhaps we should extract the exif info from the file.
 				// /cgi-bin/exif.pl?file=$afile
@@ -19300,8 +19324,8 @@ function processFileUploads($docroot=''){
             	if(isImageFile($abspath)){
 					$info=@getimagesize($abspath);
 					if(is_array($info)){
-                        $_REQUEST[$name.'_width']=$info[0];
-                        $_REQUEST[$name.'_height']=$info[1];
+                        $_REQUEST[$file['pname'].'_width']=$info[0];
+                        $_REQUEST[$file['pname'].'_height']=$info[1];
                     }
                 }
             }
@@ -19309,7 +19333,7 @@ function processFileUploads($docroot=''){
 				$e=error_get_last();
 				if($e['message']!==''){
 		    		// An error occurred uploading the file
-		    		$_REQUEST[$name.'_error']=array(
+		    		$_REQUEST[$file['pname'].'_error']=array(
 						"File Upload Error (2)",
 						$e,
 						$file,
@@ -19317,7 +19341,7 @@ function processFileUploads($docroot=''){
 					);
 				}
 				else{
-					$_REQUEST[$name.'_error']=array(
+					$_REQUEST[$file['pname'].'_error']=array(
 						"File Upload Error (3)",
 						$e,
 						$file,

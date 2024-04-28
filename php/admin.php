@@ -3349,7 +3349,7 @@ LIST_TABLE:
 			break;
 		case 'files':
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-attach"></span> File Manager</div>'.PHP_EOL;
-			echo fileManager();
+			echo fileManager('',array('-multiple'=>1));
 			break;
     	}
    	}
