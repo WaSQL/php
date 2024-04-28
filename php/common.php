@@ -10245,7 +10245,7 @@ function fileManager($startdir='',$params=array()){
 
     	}
 	$files=listFiles($cdir);
-	$rtn .= '  <div style="display:flex;">'.PHP_EOL;
+	$rtn .= '  <div style="display:flex;flex-wrap:wrap;">'.PHP_EOL;
 	//$rtn .= $action;
 	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'.PHP_EOL;
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'.PHP_EOL;
