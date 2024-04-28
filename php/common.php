@@ -7893,15 +7893,15 @@ function createExpandDiv($title='',$content='',$color='',$open=false,$ajaxurl=''
 	$html='<div style="margin-bottom:3px;" class="w_align_left">' . "\n";
 	if(strlen($ajaxurl)){
     	//build the +/- link
-		$html .= "\t<div id=\"{$iconId}\" onClick=\"ajaxExpand('{$id}','{$ajaxurl}','{$ajaxopts}')\" style=\"float:left;font-size:13pt;color:'.$color.';cursor:pointer;\">{$icon}</div>\n";
+		$html .= "\t<div id=\"{$iconId}\" onclick=\"ajaxExpand('{$id}','{$ajaxurl}','{$ajaxopts}')\" style=\"float:left;font-size:13pt;color:'.$color.';cursor:pointer;\">{$icon}</div>\n";
 		//add title
-		$html .= '<a href="#" id="'.$linkId.'" class="w_link" onClick="return ajaxExpand(\''.$id.'\',\''.$ajaxurl.'\',\''.$ajaxopts.'\');" style="color:'.$color.';">'.$title.'</a>' . "\n";
+		$html .= '<a href="#" id="'.$linkId.'" class="w_link" onclick="return ajaxExpand(\''.$id.'\',\''.$ajaxurl.'\',\''.$ajaxopts.'\');" style="color:'.$color.';">'.$title.'</a>' . "\n";
 	}
 	else{
 		//build the +/- link
-		$html .= "\t<div id=\"{$iconId}\" onClick=\"expand('{$id}')\" style=\"float:left;font-size:13pt;color:{$color};cursor:pointer;\">{$icon}</div>\n";
+		$html .= "\t<div id=\"{$iconId}\" onclick=\"expand('{$id}')\" style=\"float:left;font-size:13pt;color:{$color};cursor:pointer;\">{$icon}</div>\n";
 		//add title
-		$html .= '<a href="#" id="'.$linkId.'" class="w_link" onClick="return expand(\''.$id.'\');" style="color:'.$color.';">'.$title.'</a>' . "\n";
+		$html .= '<a href="#" id="'.$linkId.'" class="w_link" onclick="return expand(\''.$id.'\');" style="color:'.$color.';">'.$title.'</a>' . "\n";
 	}
 	//add the section message
     $html .= "\t<div id=\"{$sectionId}\" style=\"display:{$display};color:{$color};margin-left:15px;font-size:11pt;\">\n{$content}\n\t</div>\n";
@@ -10347,8 +10347,8 @@ function fileManager($startdir='',$params=array()){
 			//actions
 			$rtn .= '		<td class="nowrap w_flexgroup">'.PHP_EOL;
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
-				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onclick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onclick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
 			}
 			$rtn .= '			<a title="Browse" style="margin:0 4px 4px 0;" alt="Browse Folder" class="w_link w_bold icon-folder" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'.PHP_EOL;
 			$rtn .= '		</td>'.PHP_EOL;
@@ -10437,8 +10437,8 @@ function fileManager($startdir='',$params=array()){
 			$rtn .= '		<td align="right" valign="middle" class="w_nowrap w_flexgroup">'.PHP_EOL;
 			$rtn .= '		<a title="Download" style="margin:0 4px 4px 0;" alt="Download" class="w_link icon-download w_success" href="'.$previewlink.'"></a>'.PHP_EOL;
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onClick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
-				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete File" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onClick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onclick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete File" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onclick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
 				}
 			$rtn .= '		</td>'.PHP_EOL;
 			}
