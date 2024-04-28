@@ -10339,7 +10339,7 @@ function fileManager($startdir='',$params=array()){
 			$row++;
 			$rtn .= '	<tr align="right" valign="top">'.PHP_EOL;
 			$cspan=count($fields)-2;
-			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_bold w_block icon-folder w_big" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"> '.$file.'</a></td>'.PHP_EOL;
+			$rtn .= '		<td class="w_align_left w_nowrap" colspan="'.$cspan.'"><a class="w_link w_block icon-folder w_bigger" href="'.$action.'?_menu=files&_dir='.encodeBase64($afile).'"> '.$file.'</a></td>'.PHP_EOL;
 			//owner
 			$rtn .= '		<td align="right">'.$owner.'</td>'.PHP_EOL;
 			//PERMS
@@ -10347,10 +10347,10 @@ function fileManager($startdir='',$params=array()){
 			//actions
 			$rtn .= '		<td class="nowrap w_flexgroup">'.PHP_EOL;
 			if($params['-rights'] == 'all'){
-				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onclick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
-				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete Folder" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onclick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
+				// $rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bigger icon-edit w_grey" href="#" onclick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Delete" style="margin:0 10px 4px 0;" alt="Delete Folder" class="w_link w_bigger icon-cancel w_danger" href="'.$action.'?_menu=files&_rmdir='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onclick="return confirm(\'Delete Directory: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
 			}
-			$rtn .= '			<a title="Browse" style="margin:0 4px 4px 0;" alt="Browse Folder" class="w_link w_bold icon-folder" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'.PHP_EOL;
+			$rtn .= '			<a title="Browse" style="margin:0 4px 10px 0;" alt="Browse Folder" class="w_link w_bigger icon-folder" href="/'.$PAGE['name'].'?_menu=files&_dir='.encodeBase64($afile).'"></a>'.PHP_EOL;
 			$rtn .= '		</td>'.PHP_EOL;
 			$rtn .= '	</tr>'.PHP_EOL;
 	    }
@@ -10394,18 +10394,18 @@ function fileManager($startdir='',$params=array()){
 						$display=preg_replace('/\_/',' ',$file);
 						if(isWebImage($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="wacss.showImage(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to preview" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link w_bigger'.$class.'" onclick="wacss.showImage(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to preview" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
 			            }
 			            elseif(isAudioFile($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="wacss.showAudio(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to listen" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link w_bigger'.$class.'" onclick="wacss.showAudio(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to listen" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
 			            }
 			            elseif(isVideoFile($file)){
 							//show preview on mouse over for web images
-							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" onclick="wacss.showVideo(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to watch" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link w_bigger'.$class.'" onclick="wacss.showVideo(this,10020,this.dataset.name);return false;" href="'.$previewlink.'" title="click to watch" data-name="'.$file.'"> '.$file.'</a></td>'.PHP_EOL;
 			            }
 			            else{
-							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link'.$class.'" href="'.$previewlink.'&-attach=0"> '.$display.'</a></td>'.PHP_EOL;
+							$rtn .= '		<td class="w_align_left w_nowrap"><a class="w_link w_bigger'.$class.'" href="'.$previewlink.'&-attach=0"> '.$display.'</a></td>'.PHP_EOL;
 			            }
                 	break;
                 	case 'mtime':
@@ -10435,10 +10435,11 @@ function fileManager($startdir='',$params=array()){
 			}
 			//actions
 			$rtn .= '		<td align="right" valign="middle" class="w_nowrap w_flexgroup">'.PHP_EOL;
-			$rtn .= '		<a title="Download" style="margin:0 4px 4px 0;" alt="Download" class="w_link icon-download w_success" href="'.$previewlink.'"></a>'.PHP_EOL;
+			//download
+			$rtn .= '		<a title="Download" style="margin:0 10px 4px 0;" alt="Download" class="w_link w_bigger icon-download w_success" href="'.$previewlink.'"></a>'.PHP_EOL;
 			if($params['-rights'] != 'readonly'){
-				$rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bold icon-edit w_grey" href="#" onclick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
-				$rtn .= '			<a title="Delete" style="margin:0 4px 4px 0;" alt="Delete File" class="w_link w_bold icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onclick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
+				// $rtn .= '			<a title="Edit" style="margin:0 4px 4px 0;" alt="Edit Filename and description" class="w_link w_bigger icon-edit w_grey" href="#" onclick="return filemanagerEdit(\''.$fileId.'\',\''.$action.'\',{_menu:\'files\',_edit:\''.encodeBase64($file).'\',_dir:\''.encodeBase64($cdir).'\'});"></a>'.PHP_EOL;
+				$rtn .= '			<a title="Delete" style="margin:0 10px 4px 0;" alt="Delete File" class="w_link w_bigger icon-cancel w_danger" href="'.$action.'?_menu=files&_rmfile='.encodeBase64($afile).'&_dir='.encodeBase64($cdir).'" onclick="return confirm(\'Delete File: '.$file.'? Click OK to confirm.\');"></a>'.PHP_EOL;
 				}
 			$rtn .= '		</td>'.PHP_EOL;
 			}
