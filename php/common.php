@@ -10245,15 +10245,7 @@ function fileManager($startdir='',$params=array()){
 
     	}
 	$files=listFiles($cdir);
-	$rtn .= '  <script type="text/javascript">'.PHP_EOL;
-	$rtn .= '  		function imagePreview(image,title){'.PHP_EOL;
-	$rtn .= '  			var htm=\'<div class="w_bold w_bigger">\'+title+\'</div>\'+"\n";'.PHP_EOL;
-	$rtn .= '  			htm +=\'<div><img src="\'+image+\'" alt="" /></div>\'+"\n";'.PHP_EOL;
-	$rtn .= '  			centerpopDiv(htm);'.PHP_EOL;
-	$rtn .= '  			return false;'.PHP_EOL;
-	$rtn .= '  			}'.PHP_EOL;
-	$rtn .= '  </script>'.PHP_EOL;
-	$rtn .= '  <div>'.PHP_EOL;
+	$rtn .= '  <div style="display:flex;">'.PHP_EOL;
 	//$rtn .= $action;
 	$rtn .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'.PHP_EOL;
 	$rtn .= '		<input type="hidden" name="_menu" value="files">'.PHP_EOL;
@@ -10274,23 +10266,24 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</div>'.PHP_EOL;
 	}
 	$rtn .= '	</form>'.PHP_EOL;
+	if($params['-rights'] != 'readonly'){
+    	//HTML5 file upload
+    	$path=encodeBase64($cdir);
+		$rtn .= '<div  title="drag files to upload"';
+		if(isset($params['-resize'])){
+        	$rtn .= ' data-resize="'.$params['-resize'].'"'.PHP_EOL;
+		}
+		$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="padding: 10px 75px;margin-left:15px;border-radius:6px;align-self:center;display:inline-table;width:50px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'.PHP_EOL;
+		$rtn .= '	<div align="center"><span class="icon-upload" style="font-size:50px;color:#CCC;"></span></div>'.PHP_EOL;
+		$rtn .= '	<div class="align-center w_small w_nowrap" style="color:#ccc;">Drag-n-Drop</div>'.PHP_EOL;
+		$rtn .= '</div>'.PHP_EOL;
+	}
 	if(isset($_REQUEST['file_error'])){
     	$rtn .= '<div class="w_danger icon-warning"> '.$_REQUEST['file_error'].'</div>'.PHP_EOL;
 	}
 	$rtn .= '</div>'.PHP_EOL;
 	if(!isset($params['-onfinish'])){$params['-onfinish']='window.location=window.location;';}
 	if(count($files)==0){
-		if($params['-rights'] != 'readonly'){
-	    	//HTML5 file upload
-	    	$path=encodeBase64($cdir);
-			$rtn .= '<div title="drag files to upload"';
-			if(isset($params['-resize'])){
-            	$rtn .= ' data-resize="'.$params['-resize'].'"'.PHP_EOL;
-			}
-			$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'.PHP_EOL;
-			$rtn .= '	<div align="center"><span class="icon-download" style="font-size:50px;color:#CCC;"></span></div>'.PHP_EOL;
-			$rtn .= '</div>'.PHP_EOL;
-		}
 		return $rtn;
 	}
 	sort($files);
@@ -10300,15 +10293,6 @@ function fileManager($startdir='',$params=array()){
 	else{
 		$rtn .= '<div>'.PHP_EOL;
     	}
-    if($params['-rights'] != 'readonly'){
-    	//HTML5 file upload
-    	$path=encodeBase64($cdir);
-		$rtn .= '<div title="drag files to upload"';
-		if(isset($params['-resize'])){
-            $rtn .= ' data-resize="'.$params['-resize'].'"'.PHP_EOL;
-		}
-		$rtn .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="display:inline-table;width:350px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir=="'.$path.'">'.PHP_EOL;
-	}
 	$fields=preg_split('/\,/',$params['-fields']);
 	$rtn .= '<table class="table table-striped table-bordered">'.PHP_EOL;
 	if($params['-view']=='table'){
@@ -10451,10 +10435,6 @@ function fileManager($startdir='',$params=array()){
 		$rtn .= '	</tr>'.PHP_EOL;
 		}
 	$rtn .= '</table>'.PHP_EOL;
-	if($params['-rights'] != 'readonly'){
-		$rtn .= '	<div align="center"><span class="icon-upload" style="font-size:50px;color:#CCC;"></span></div>'.PHP_EOL;
-		$rtn .= '</div>'.PHP_EOL;
-	}
 	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
 }
