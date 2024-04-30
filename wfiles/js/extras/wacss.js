@@ -5040,7 +5040,7 @@ var wacss = {
 		if(undefined==opts){opts={};}
 		//find the div 
 		let div=opts.div || elobj.dataset.div || pli.dataset.div || pul.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
-		console.log('wacss.nav - div: '+div);
+		//console.log('wacss.nav - div: '+div);
 		//confirm?
 		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || pul.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
@@ -5076,6 +5076,10 @@ var wacss = {
 			for(let c=0;c<checkboxes.length;c++){
 				params.checkboxes.push(checkboxes[c].value);
 			}
+		}
+		if(elobj.type=='checkbox' && undefined != elobj.name){
+			if(elobj.checked){params[elobj.name]=elobj.value;}
+			else{params[elobj.name]='';}
 		}
 		//load key/values from a form?
 		let frm=elobj.dataset.form || pli.dataset.form || pul.dataset.form || ptd.dataset.form || ptr.dataset.form;
