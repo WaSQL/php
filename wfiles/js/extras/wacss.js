@@ -5079,7 +5079,7 @@ var wacss = {
 		}
 		if(elobj.type=='checkbox' && undefined != elobj.name){
 			if(elobj.checked){params[elobj.name]=elobj.value;}
-			else{params[elobj.name]='';}
+			else{params[elobj.name]=0;}
 		}
 		//load key/values from a form?
 		let frm=elobj.dataset.form || pli.dataset.form || pul.dataset.form || ptd.dataset.form || ptr.dataset.form;
