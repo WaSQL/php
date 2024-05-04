@@ -24,7 +24,7 @@ then
 	cp $SDIR/sample.htaccess $SDIR/.htaccess
 fi
 #assign execute permissioins to perl and shell scripts
-chmod 755 *.pl *.sh sh/*.sh
+chmod 755 *.pl *.sh sh/*.sh php/*.sh
 
 #create the php/temp directory and set permissions if it does not exist
 if [ ! -d $SDIR/php/temp ];
