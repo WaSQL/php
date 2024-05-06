@@ -2,6 +2,42 @@
 /* References:
 	sFTP functions that use phpseclib so that it is pure PHP and will work nearly everywhere
 	http://phpseclib.sourceforge.net/sftp/examples.html
+		$sftp->login('username', 'password')
+		$sftp->put('filename.remote', 'data');
+		$sftp->put('filename.remote', 'filename.local', SFTP::SOURCE_LOCAL_FILE);
+		$sftp->get('filename.remote', 'filename.local');
+
+		$sftp->mkdir('test'); // create directory 'test'
+		$sftp->chdir('test'); // change directory to 'test'
+		$sftp->pwd(); // get working directory
+		$sftp->chdir('..'); // go back to the parent directory
+		$sftp->rmdir('test'); // delete the directory
+		$sftp->delete('test'); //recursive delete directory
+
+		$sftp->nlist()
+		$sftp->rawlist()
+
+		
+		$sftp->chmod(0777, 'dirname.remote', true); // recursively change permissions on a directory
+		$sftp->touch('filename.remote');
+		$sftp->chown('filename.remote', $uid);
+		$sftp->chown('filename.remote', $uid, true); // recursively change the owner
+		$sftp->chgrp('filename.remote', $gid);
+		$sftp->chgrp('filename.remote', $gid, true); // recursively change the group
+		$sftp->truncate('filename.remote', $size);
+		$sftp->size('filename.remote');
+		$sftp->stat('filename.remote')
+		$sftp->lstat('filename.remote')
+
+		$sftp->delete('filename.remote'); // deletes directories recursively
+		$sftp->delete('dirname.remote', false); // non-recursive delete
+		$sftp->rename('filename.remote', 'newname.remote'); // non-recursive move
+
+		define('NET_SFTP_LOGGING', $sftp->LOG_COMPLEX); //enable logging - set before login but after creating new NET_SFTP
+		$sftp->getSFTPLog(); //get the log array
+
+		NET_SFTP_VERSION //show version -- currently version 2
+
 
 	Example #1
 		loadExtras('sftp');
