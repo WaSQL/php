@@ -1,5 +1,6 @@
 <?php
 $progpath=dirname(__FILE__);
+error_reporting(E_ALL ^ (E_NOTICE | E_WARNING | E_DEPRECATED));
 include_once("{$progpath}/amqp/PhpAmqpLib/Channel/AbstractChannel.php");
 include_once("{$progpath}/amqp/PhpAmqpLib/Channel/AMQPChannel.php");
 include_once("{$progpath}/amqp/PhpAmqpLib/Connection/AbstractConnection.php");
