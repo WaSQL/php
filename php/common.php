@@ -3949,7 +3949,7 @@ function buildFormFile($name,$params=array()){
 		$ext=getFileExtension($params['value']);
 		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
 		if(isImageFile($afile)){
-			$tag .= '<img style="display:inline;height:24px;" src="'.$params['value'].'" />'.PHP_EOL;
+			$tag .= '<img style="display:inline;max-height:24px;max-width:190px;" src="'.$params['value'].'" />'.PHP_EOL;
 		}
 		elseif(isAudioFile($afile)){
 			$tag .= '<span class="w_gray icon-file-audio" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
@@ -3985,7 +3985,7 @@ function buildFormFile($name,$params=array()){
 		}
 		//clear button
 		$tag .= <<<ENDOFTAG
-<span class="w_danger icon-erase" data-id="{$params['id']}" data-remove="{$params['id']}_remove" data-text="{$params['id']}_text" style="font-size:16px;margin-left:15px;" title="Clear" onclick="document.getElementById(this.dataset.id).value='';document.getElementById(this.dataset.remove).value=1;document.getElementById(this.dataset.text).innerText='';return false;">
+<span class="w_danger icon-erase" data-id="{$params['id']}" data-remove="{$params['id']}_remove" data-text="{$params['id']}_text" style="font-size:16px;margin-left:15px;" title="Remove" onclick="document.getElementById(this.dataset.id).value='';document.getElementById(this.dataset.remove).value=1;document.getElementById(this.dataset.text).innerText='';return false;">
 </span>
 ENDOFTAG;
 		//download
