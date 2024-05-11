@@ -4989,7 +4989,7 @@ function buildMsnCtt($emails=array(),$push=0,$name='msn_contacts.ctt'){
 * @usage echo buildOnLoad("document.myform.myfield.focus();");
 */
 function buildOnLoad($str='',$img='/wfiles/clear.gif',$width=1,$height=1){
-	return '<img class="w_buildonload" src="'.$img.'" alt="onload functions" width="'.$width.'" height="'.$height.'" style="border:0px;" onload="if(typeof eventBuildOnLoad === 'function'){eventBuildOnLoad();}" data-onload="'.$str.'">'.PHP_EOL;
+	return '<img class="w_buildonload" src="'.$img.'" alt="onload functions" width="'.$width.'" height="'.$height.'" style="border:0px;" onload="if(typeof eventBuildOnLoad === \'function\'){eventBuildOnLoad();}" data-onload="'.$str.'">'.PHP_EOL;
 	}
 //---------- begin function buildShareButtons
 /**
