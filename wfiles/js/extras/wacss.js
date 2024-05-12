@@ -5139,7 +5139,7 @@ var wacss = {
 		}
 		//nav
 		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
-		console.log('wacss.nav - nav: '+nav);
+		//console.log('wacss.nav - nav: '+nav);
 		//scrollto
 		let scrollto=opts.scrollto || elobj.dataset.scrollto || pli.dataset.scrollto || pul.dataset.scrollto || ptd.dataset.scrollto || ptr.dataset.scrollto || '';
 		//handle data-nav id: for cases where we are not doing ajax
