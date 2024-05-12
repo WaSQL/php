@@ -114,6 +114,7 @@ function formChanged(frm,debug){
 	//data-classif="w_red:age:4"
 	//data-requiredif, data-displayif, data-hideif, data-blankif, data-readonlyif
 	//data-displayif
+	if(undefined==frm){return false;}
 	let els=frm.querySelectorAll('[data-displayif]');
 	for(let i=0;i<els.length;i++){
 		if(formIsIfTrue(frm,els[i].dataset.displayif)){

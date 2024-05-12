@@ -4471,7 +4471,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	elseif(isset($params['-ajax']) && strlen($params['-ajax'])){$onsubmit="ajaxSubmitForm(this,'{$params['-ajax']}');return false;";}
 	//onchange
 	if(!isset($params['-onchange'])){
-		$params['-onchange']="formChanged(document.{$formname});";
+		$params['-onchange']="formChanged(this);";
 	}
     //form enctype
     if(isset($params['-enctype'])){$enctype=$params['-enctype'];}
