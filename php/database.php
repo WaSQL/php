@@ -4707,7 +4707,7 @@ function addEditDBForm($params=array(),$customcode=''){
 					}
 				}
 				
-				if(!isset($params['-focus'])){$params['-focus']=$cfield;}
+				if(!isset($params['-focus']) && !isset($params['-nofocus'])){$params['-focus']=$cfield;}
 				$cval=getDBFieldTag($opts);
 				//$cval= $cfield.printValue($_REQUEST).printValue($opts);
 				$customrow=str_replace($cm[0][$ex],$cval,$customrow);
@@ -4925,7 +4925,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				$rtn .= '		</div>'.PHP_EOL;
 				if(!isset($used[$field])){$used[$field]=1;}
 				else{$used[$field]+=1;}
-				if(!isset($params['-focus'])){$params['-focus']=$field;}
+				if(!isset($params['-focus']) && !isset($params['-nofocus'])){$params['-focus']=$field;}
 	        	}
 				$rtn .= '</div>'.PHP_EOL;
 			}
@@ -5071,7 +5071,7 @@ function addEditDBForm($params=array(),$customcode=''){
 			$rtn .= '		</td>'.PHP_EOL;
 			if(!isset($used[$field])){$used[$field]=1;}
 			$used[$field]+=1;
-			if(!isset($params['-focus'])){$params['-focus']=$field;}
+			if(!isset($params['-focus']) && !isset($params['-nofocus'])){$params['-focus']=$field;}
 			$rtn .= '	</tr>'.PHP_EOL;
 			$rtn .= '</table>'.PHP_EOL;
             }
