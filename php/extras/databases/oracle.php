@@ -1099,6 +1099,9 @@ function oracleDBConnect($params=array()){
 			debugValue("oracleDBConnect single connect error:{$err}".printValue($params));
 			return null;
 		}
+		if(isset($params['-timeout'])){
+			oci_set_call_timeout($dbh_single, $params['-timeout']);
+		}
 		return $dbh_single;
 	}
 	global $dbh_oracle;
@@ -1112,6 +1115,9 @@ function oracleDBConnect($params=array()){
 			debugValue("oracleDBConnect resource error. ".printValue($err).printValue($params));
 			return null;
 
+		}
+		if(isset($params['-timeout'])){
+			oci_set_call_timeout($dbh_oracle, $params['-timeout']);
 		}
 		return $dbh_oracle;
 	}
