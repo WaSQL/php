@@ -1825,6 +1825,7 @@ var wacss = {
 					backgroundColor: datasets[d].dataset.backgroundcolor || colors,
 					borderColor: datasets[d].dataset.bordercolor || bcolors,
 					borderWidth:1,
+					borderRadius:3,
                     type:datasets[d].dataset.type || lconfig.type,
 					data: json
 				};
@@ -2360,6 +2361,7 @@ var wacss = {
 								backgroundColor: datasets[d].dataset.backgroundcolor || datasets[d].dataset.backgroundColor || colors[d],
 								borderColor: datasets[d].dataset.bordercolor || datasets[d].dataset.borderColor || bcolors[d],
 	                            borderWidth:1,
+	                            borderRadius:3,
 	                            type:datasets[d].dataset.type || list[i].dataset.type || 'line',
 								data: json,
 								fill:fill,
