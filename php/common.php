@@ -6523,8 +6523,38 @@ function commonProcessChartjsTags($htm){
 		2 = the contents inside the chartjs tag - <dataset
 	*/
 	$colors=array(
-		'#11b7af','#403aca','#f68300','#de2b80','#7e7dfa','#72e56d',
-		'#1473f3','#7300d3','#e8c800','#cb5a00','#01925f','#bcee35'
+		'rgba(255,159,64,0.4)',
+        'rgba(75,192,192,0.4)',
+        'rgba(255,99,132,0.4)',
+        'rgba(54,162,235,0.4)',
+        'rgba(153,102,255,0.4)',
+        'rgba(218,165,32,0.4)',
+        'rgba(233,150,122,0.4)',
+        'rgba(189,183,107,0.4)',
+        'rgba(154,205,50,0.4)',
+        'rgba(255,228,196,0.4)',
+        'rgba(244,164,96,0.4)',
+        'rgba(176,196,222,0.4)',
+        'rgba(188,143,143,0.4)',
+        'rgba(255,228,225,0.4)',
+        'rgba(201,203,207,0.4)'
+	);
+	$bcolors=array(
+		'rgb(255,159,64)',
+        'rgb(75,192,192)',
+        'rgb(255,99,132)',
+        'rgb(54,162,235)',
+        'rgb(153,102,255)',
+        'rgb(218,165,32)',
+        'rgb(233,150,122)',
+        'rgb(189,183,107)',
+        'rgb(154,205,50)',
+        'rgb(255,228,196)',
+        'rgb(244,164,96)',
+        'rgb(176,196,222)',
+        'rgb(188,143,143)',
+        'rgb(255,228,225)',
+        'rgb(201,203,204)'
 	);
 	foreach($chartjs[0] as $i=>$chartjs_tag){
 		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
@@ -6625,6 +6655,7 @@ function commonProcessChartjsTags($htm){
 				$atts['data-label']=$dataset;
 				if($values_count > 1){
 					$atts['data-backgroundcolor']=$colors[$i];
+					$atts['data-bordercolor']=$bcolors[$i];
 				}
 				$replace_str.='<dataset ';
 				$replace_str .= setTagAttributes($atts);
