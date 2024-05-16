@@ -1672,12 +1672,29 @@ var wacss = {
 		}
 		if(list.length==0){return;}
 		let gcolors = new Array(
-	        'rgb(255, 159, 64)',
-	        'rgb(75, 192, 192)',
-	        'rgb(255, 99, 132)',
-	        'rgb(54, 162, 235)',
-	        'rgb(153, 102, 255)',
-	        'rgb((218,165,32)',
+	        'rgba(255,159,64,0.4)',
+	        'rgba(75,192,192,0.4)',
+	        'rgba(255,99,132,0.4)',
+	        'rgba(54,162,235,0.4)',
+	        'rgba(153,102,255,0.4)',
+	        'rgba(218,165,32,0.4)',
+	        'rgba(233,150,122,0.4)',
+	        'rgba(189,183,107,0.4)',
+	        'rgba(154,205,50,0.4)',
+	        'rgba(255,228,196,0.4)',
+	        'rgba(244,164,96,0.4)',
+	        'rgba(176,196,222,0.4)',
+	        'rgba(188,143,143,0.4)',
+	        'rgba(255,228,225,0.4)',
+	        'rgba(201,203,207,0.4)'
+	    );
+	    let gbcolors = new Array(
+	        'rgb(255,159,64)',
+	        'rgb(75,192,192)',
+	        'rgb(255,99,132)',
+	        'rgb(54,162,235)',
+	        'rgb(153,102,255)',
+	        'rgb(218,165,32)',
 	        'rgb(233,150,122)',
 	        'rgb(189,183,107)',
 	        'rgb(154,205,50)',
@@ -1686,8 +1703,10 @@ var wacss = {
 	        'rgb(176,196,222)',
 	        'rgb(188,143,143)',
 	        'rgb(255,228,225)',
-	        'rgb(201, 203, 207)'
+	        'rgb(201,203,202)'
 	    );
+	    let colors=new Array();
+	    let bcolors=new Array();
 		for(let i=0;i<list.length;i++){
 			if(undefined==list[i].id){
 				console.log('Error in initChartJsBehavior: missing id attribute');
@@ -1780,15 +1799,18 @@ var wacss = {
 			if(undefined != colorsdiv){
 				let colorsjson=wacss.trim(colorsdiv.innerText);
 				colors=JSON.parse(colorsjson);
-				if(undefined != list[i].dataset.debug){
-					console.log('colorsjson');
-					console.log(colorsjson);
-					console.log('colors');
-					console.log(colors);
-				}
 			}
 			else{
 				colors=gcolors;
+			}
+			//bcolors
+			let bcolorsdiv=datadiv.querySelector('bcolors');
+			if(undefined != bcolorsdiv){
+				let bcolorsjson=wacss.trim(bcolorsdiv.innerText);
+				bcolors=JSON.parse(bcolorsjson);
+			}
+			else{
+				bcolors=gbcolors;
 			}
 			//datasets
 			let datasets=datadiv.querySelectorAll('dataset');
@@ -1797,19 +1819,16 @@ var wacss = {
 			} 
 			for(let d=0;d<datasets.length;d++){
 				let datasetjson=wacss.trim(datasets[d].innerText);
-				let json=JSON.parse(datasetjson);
-				if(undefined != list[i].dataset.debug){
-					console.log(d+': datasetjson');
-					console.log(datasetjson);
-					console.log('json');
-					console.log(json);
-				}   		
+				let json=JSON.parse(datasetjson);  		
 				let dataset={
 					label:datasets[d].dataset.label || datasets[d].dataset.title || '',
 					backgroundColor: datasets[d].dataset.backgroundcolor || colors,
+					borderColor: datasets[d].dataset.bordercolor || bcolors,
+					borderWidth:1,
                     type:datasets[d].dataset.type || lconfig.type,
 					data: json
 				};
+				//console.log(dataset);
 				/* --  fill  -- */
 				if(undefined != datasets[d].dataset.fill && 
 					(datasets[d].dataset.fill.toLowerCase()=='0' || datasets[d].dataset.fill.toLowerCase()=='false')
@@ -1820,13 +1839,6 @@ var wacss = {
 					(list[i].dataset.fill.toLowerCase()=='0' || list[i].dataset.fill.toLowerCase()=='false')
 					){
 					dataset.fill=false;
-				}
-				/* --  borderColor  -- */
-				if(undefined != datasets[d].dataset.bordercolor){
-					dataset.borderColor=datasets[d].dataset.bordercolor;
-				}
-				else if(undefined != datasets[d].dataset.borderColor){
-					dataset.borderColor=datasets[d].dataset.borderColor;
 				}
 				/* --  borderDash  -- */
 				if(undefined != datasets[d].dataset.borderdash){
@@ -1974,12 +1986,29 @@ var wacss = {
 		wacss.initChartJsBehavior();
 		let list=document.querySelectorAll('div.chartjs');
 		let gcolors = new Array(
-	        'rgb(255, 159, 64)',
-	        'rgb(75, 192, 192)',
-	        'rgb(255, 99, 132)',
-	        'rgb(54, 162, 235)',
-	        'rgb(153, 102, 255)',
-	        'rgb((218,165,32)',
+	        'rgba(255,159,64,0.4)',
+	        'rgba(75,192,192,0.4)',
+	        'rgba(255,99,132,0.4)',
+	        'rgba(54,162,235,0.4)',
+	        'rgba(153,102,255,0.4)',
+	        'rgba(218,165,32,0.4)',
+	        'rgba(233,150,122,0.4)',
+	        'rgba(189,183,107,0.4)',
+	        'rgba(154,205,50,0.4)',
+	        'rgba(255,228,196,0.4)',
+	        'rgba(244,164,96,0.4)',
+	        'rgba(176,196,222,0.4)',
+	        'rgba(188,143,143,0.4)',
+	        'rgba(255,228,225,0.4)',
+	        'rgba(201,203,207,0.4)'
+	    );
+	    let gbcolors = new Array(
+	        'rgb(255,159,64)',
+	        'rgb(75,192,192)',
+	        'rgb(255,99,132)',
+	        'rgb(54,162,235)',
+	        'rgb(153,102,255)',
+	        'rgb(218,165,32)',
 	        'rgb(233,150,122)',
 	        'rgb(189,183,107)',
 	        'rgb(154,205,50)',
@@ -1988,8 +2017,10 @@ var wacss = {
 	        'rgb(176,196,222)',
 	        'rgb(188,143,143)',
 	        'rgb(255,228,225)',
-	        'rgb(201, 203, 207)'
+	        'rgb(201,203,202)'
 	    );
+	    let colors=new Array();
+	    let bcolors=new Array();
 		//console.log(list);
 		for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){
@@ -2020,6 +2051,15 @@ var wacss = {
 			}
 			else{
 				colors=gcolors;
+			}
+			//bcolors
+			let bcolorsdiv=datadiv.querySelector('bcolors');
+			if(undefined != bcolorsdiv){
+				let bcolorsjson=wacss.trim(bcolorsdiv.innerText);
+				bcolors=JSON.parse(bcolorsjson);
+			}
+			else{
+				bcolors=gbcolors;
 			}
 			//labels
 			let labels=new Array();
@@ -2318,19 +2358,14 @@ var wacss = {
 							else{fill=false;}				
 							let dataset={
 								backgroundColor: datasets[d].dataset.backgroundcolor || datasets[d].dataset.backgroundColor || colors[d],
+								borderColor: datasets[d].dataset.bordercolor || datasets[d].dataset.borderColor || bcolors[d],
+	                            borderWidth:1,
 	                            type:datasets[d].dataset.type || list[i].dataset.type || 'line',
 								data: json,
 								fill:fill,
 								pointBackgroundColor:datasets[d].dataset.pointbackgroundcolor || datasets[d].dataset.pointBackgroundColor || [],
 								pointBorderColor: datasets[d].dataset.pointbordercolor || datasets[d].dataset.pointBorderColor || []
 							};
-							/* --  borderColor  -- */
-							if(undefined != datasets[d].dataset.bordercolor){
-								dataset.borderColor=datasets[d].dataset.bordercolor;
-							}
-							else if(undefined != datasets[d].dataset.borderColor){
-								dataset.borderColor=datasets[d].dataset.borderColor;
-							}
 							/* --  borderDash  -- */
 							if(undefined != datasets[d].dataset.borderdash){
 								dataset.borderDash=datasets[d].dataset.borderdash;
@@ -2606,7 +2641,7 @@ var wacss = {
 				let txt='';
 				wacss.hoverDiv.style.display='initial';
 				if(hoverEls[i].dataset.hover.indexOf('id:')===0){
-					console.log("hover id");
+					//console.log("hover id");
 					//get content from a different id
 					let txtid=trim(str_replace('id:','',hoverEls[i].dataset.hover));
 					let txtel=document.querySelector('#'+txtid);
@@ -2616,7 +2651,7 @@ var wacss = {
 				}
 				else if(hoverEls[i].dataset.hover.indexOf('js:')===0){
 					//call a function
-					console.log("hover js");
+					//console.log("hover js");
 					let f=trim(str_replace('js:','',hoverEls[i].dataset.hover));
 					let jsfunc=new Function(f);
 					txt=jsfunc();
@@ -2631,8 +2666,8 @@ var wacss = {
 				wacss.hoverDiv.hoverParent=this;
 				let drect=this.getBoundingClientRect();
 				let hrect=wacss.hoverDiv.getBoundingClientRect();
-				console.log(drect);
-				console.log(hrect);
+				//console.log(drect);
+				//console.log(hrect);
 				
 				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
 				let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
@@ -2642,7 +2677,7 @@ var wacss = {
 						wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
 						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
 						if(!wacss.inViewport(wacss.hoverDiv)){
-							console.log('not in viewport')
+							//console.log('not in viewport')
 							wacss.hoverDiv.dataset.position='below';
 							wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
@@ -2654,7 +2689,7 @@ var wacss = {
 						wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
 						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
 						if(!wacss.inViewport(wacss.hoverDiv)){
-							console.log('not in viewport')
+							//console.log('not in viewport')
 							wacss.hoverDiv.dataset.position='above';
 							wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
@@ -2665,7 +2700,7 @@ var wacss = {
 						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
 						wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
 						if(!wacss.inViewport(wacss.hoverDiv)){
-							console.log('not in viewport');
+							//console.log('not in viewport');
 							wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
 						}
@@ -2692,7 +2727,7 @@ var wacss = {
 							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
 							if(!wacss.inViewport(wacss.hoverDiv)){
-								console.log('not in viewport');
+								//console.log('not in viewport');
 								wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
 								wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
 							}
