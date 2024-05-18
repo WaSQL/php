@@ -327,6 +327,10 @@ if(isset($_REQUEST['ping']) && $request_count==1){
 		'site'=>$_SERVER['HTTP_HOST'],
 		'hostname'=>gethostname()
 	);
+	$json['days_since_activity']=getDBRecords(array(
+		'-query'=>"select utype,timestampdiff(DAY,NOW(),max(_adate)) as days_since_activity from _users group by utype",
+		'-index'=>'utype'
+	));
 	foreach($loadtimes as $k=>$v){
 		$json[$k]=$v;
 	}
@@ -356,9 +360,9 @@ if(isset($_REQUEST['ping']) && $request_count==1){
 		$json['uptime_verbose']=verboseTime($json['uptime']);
 	}
 	$json=json_encode($json);
-	//echo $json;exit;
+	//header("Content-Type: application/json; charset=UTF-8");echo $json;exit;
 	echo "WaSQL".base64_encode(encrypt($json,$_SERVER['HTTP_HOST']));
-	//header("Content-Type: application/json; charset=UTF-8");
+	//
 	exit;
 }
 

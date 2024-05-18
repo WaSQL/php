@@ -282,6 +282,13 @@ var wacss = {
         		wacss.centerObject(obj.recenter);
         	}
         }
+        if(undefined != div.id && div.id.indexOf('_modal_') != -1){
+        	wacss.modalClose();	
+        }
+        else if(undefined != div.id && div.id.indexOf('_modal_') != -1){
+        	wacss.removeId('centerpop');	
+        }
+        
 	},
 	ajaxUniqueID: function(){
 		return "10000000000000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
