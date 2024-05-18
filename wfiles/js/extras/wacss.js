@@ -282,10 +282,10 @@ var wacss = {
         		wacss.centerObject(obj.recenter);
         	}
         }
-        if(undefined != div.id && div.id.indexOf('_modal_') != -1){
+        if(undefined != div.id && div.id.indexOf('_modal_') == -1){
         	wacss.modalClose();	
         }
-        else if(undefined != div.id && div.id.indexOf('_modal_') != -1){
+        else if(undefined != div.id && div.id.indexOf('centerpop') == -1){
         	wacss.removeId('centerpop');	
         }
         
