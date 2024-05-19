@@ -286,7 +286,7 @@ var wacss = {
         	if(div.id.indexOf('_modal_') == -1){
         		wacss.modalClose();	
         	}
-        	else if div.id.indexOf('centerpop') == -1){
+        	else if(div.id.indexOf('centerpop') == -1){
         		wacss.removeId('centerpop');	
         	}
         } 
