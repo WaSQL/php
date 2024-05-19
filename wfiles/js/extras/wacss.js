@@ -99,7 +99,7 @@ var wacss = {
 	    		break;
 	    		case 'modal':
 	    			params.overlay=1;
-	    			let modal=wacss.modalPopup(wacss.setprocessing,params.title,params)
+	    			let modal=wacss.modalPopup(wacss.setprocessing,params.title,params);
 	    			xmlhttp.div=modal.querySelector('#wacss_modal_content');
 	    		break;
 	    	}
@@ -282,13 +282,14 @@ var wacss = {
         		wacss.centerObject(obj.recenter);
         	}
         }
-        if(undefined != div.id && div.id.indexOf('_modal_') == -1){
-        	wacss.modalClose();	
-        }
-        else if(undefined != div.id && div.id.indexOf('centerpop') == -1){
-        	wacss.removeId('centerpop');	
-        }
-        
+        if(undefined != div && undefined != div.id){
+        	if(div.id.indexOf('_modal_') == -1){
+        		wacss.modalClose();	
+        	}
+        	else if div.id.indexOf('centerpop') == -1){
+        		wacss.removeId('centerpop');	
+        	}
+        } 
 	},
 	ajaxUniqueID: function(){
 		return "10000000000000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
