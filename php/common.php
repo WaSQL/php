@@ -17685,9 +17685,12 @@ function processInlineFiles(){
 			$base64_files=$_REQUEST["{$key}_base64"];
 			if(!is_array($base64_files)){$base64_files=array($base64_files);}
 			$efiles=array();
-			//$_REQUEST["{$key}_base64_debug"]=array();
-			foreach($base64_files as $base64_file){
-				if(!strlen(trim($base64_file))){continue;}
+			$_REQUEST["{$key}_base64_filecount"]=count($base64_files);
+			foreach($base64_files as $b=>$base64_file){
+				if(!strlen(trim($base64_file))){
+					$_REQUEST["{$key}_base64_error"]="{$b} - processInlineFiles error: empty value";
+					continue;
+				}
 				/*
 					Possible
 					data:image/png;base64,iVB
@@ -17724,6 +17727,9 @@ function processInlineFiles(){
 				else{
 					list($filename,$name,$data,$type,$enc,$encodedString)=preg_split('/[\:;,]/',$base64_file,6);
 				}
+				$_REQUEST["{$key}_base64_filename"]=$filename;
+				$_REQUEST["{$key}_base64_name"]=$name;
+				$_REQUEST["{$key}_base64_type"]=$type;
 				//$_REQUEST["{$key}_base64_debug"]['filename']=$filename;
 				//$_REQUEST["{$key}_base64_debug"]['name']=$name;
 				$decoded=base64_decode($encodedString);
