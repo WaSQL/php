@@ -12669,7 +12669,7 @@ function getCSVSchema($file,$params=array()){
 *     _edate,_edate_age,_edate_age_verbose,_edate_utime,
 *     afile,ext,name,path,size,size_verbose,type
 *   Optional fields returned when requested
-*     lines,perm_execute,perm_read,perm_write,perms,sha,md5,exif
+*     lines,perm_execute,perm_read,perm_write,perms,sha,md5,exif,exif_count
 * @usage
 *	$recs=getDirRecords($dir);
 *	$recs=getDirRecords($dir,array('ext'=>'jpg|png','size'=>'>150000'));
