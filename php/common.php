@@ -15128,7 +15128,23 @@ function listFilesEx($dir='.',$params=array()){
 			$fileinfo['_adate']=date($params['-dateformat'],$fileinfo['_adate_utime']);
 			if($fileinfo['type']=='file'){
 				$fileinfo['ext']=getFileExtension($fileinfo['name']);
-            	}
+            }
+            //exif
+            if(isset($params['-exif']) && $params['-exif']){
+				$exif=getFileExif($fileinfo['afile']);
+				if(is_array($exif)){
+					$fileinfo['exif']=encodeJSON($exif);
+					$fileinfo['exif_count']=count($exif);
+				}
+				else{
+					$fileinfo['exif']='';
+					$fileinfo['exif_count']=0;
+				}
+			}
+            //line count
+            if(isset($params['-lines']) && $params['-lines']){
+            	$fileinfo['lines']=getFileLineCount($afile);
+			}
             //filters?
             $skip=0;
             foreach($params as $key=>$val){
@@ -15174,24 +15190,16 @@ function listFilesEx($dir='.',$params=array()){
                     	}
                 	}
 				elseif(!stringContains($fileinfo[$key],$val)){$skip++;}
-            	}
+            }
             if($skip > 0){continue;}
-            //exif
-            if(isset($params['-exif']) && $params['-exif']){
-				$fileinfo['exif']=getFileExif($fileinfo['afile']);
-			}
-            //line count
-            if(isset($params['-lines']) && $params['-lines']){
-            	$fileinfo['lines']=getFileLineCount($afile);
-			}
 			ksort($fileinfo);
         	$files[]=$fileinfo;
-    		}
+    	}
     	closedir($handle);
     	return $files;
-		}
-	return null;
 	}
+	return null;
+}
 //---------- begin function loadExtras--------------------
 /**
 * @describe loads additional functions found in the extras folder
