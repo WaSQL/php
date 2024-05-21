@@ -12673,6 +12673,7 @@ function getCSVSchema($file,$params=array()){
 * @usage
 *	$recs=getDirRecords($dir);
 *	$recs=getDirRecords($dir,array('ext'=>'jpg|png','size'=>'>150000'));
+*	$recs=getDirRecords($dir,array('-limit'=>3,'-lines'=>1,'ext'=>'php|html|md','-recurse'=>1,'lines'=>'>5000'));
 */
 function getDirRecords($dir,$params=array()){
 	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
