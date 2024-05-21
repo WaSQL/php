@@ -12326,10 +12326,11 @@ function processCSVLines($file,$func_name,$params=array()){
 *	[-start|skiprows] int - line to start on
 *	[-maxrows|stop] int - max number of rows to return
 *	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
-*	any additional key/values passed in will be added to each rec
+*	any additional key/values passed in will filter your results
 * @return array - recordsets
 * @usage
 *	$recs=getCSVRecords($afile);
+*	$recs=getCSVRecords($afile,array('age'=>37,'active'=>1));
 */
 function getCSVRecords($file,$params=array()){
 	if(!isset($params['-maxlen'])){$params['-maxlen']=1000000;}
@@ -12399,10 +12400,6 @@ function getCSVRecords($file,$params=array()){
 			if(isset($params['-file'])){
 				$rec['_file']=$file;
 			}
-			foreach($params as $key=>$val){
-				if(stringBeginsWith($key,'-')){continue;}
-            	$rec[$key]=$val;
-			}
 			foreach($fields as $x=>$field){
 				if(count($params['-listfields']) && !in_array($field,$params['-listfields'])){continue;}
 				$val=$lineparts[$x];
@@ -12412,6 +12409,16 @@ function getCSVRecords($file,$params=array()){
 				$ok=call_user_func($params['-function'],$rec);	
 				if(is_array($ok)){$rec=$ok;}
 			}
+			//filters
+			$skip=0;
+			foreach($params as $key=>$val){
+				if(stringBeginsWith($key,'-')){continue;}
+            	if(!isset($rec[$key])){$skip=1;break;}
+            	if(isset($rec[$key]) && strtolower($rec[$key]) != strtolower($val)){
+            		$skip=1;break;
+            	}
+			}
+			if($skip==1){continue;}
 			$linecnt++;
 			if(isset($params['-index'])){
 				$idx=$rec[$params['-index']];
@@ -12635,6 +12642,73 @@ function getCSVSchema($file,$params=array()){
         }
     }
 	return $fields;
+}
+//---------- begin function getDirRecords---------------------------------------
+/**
+* @describe returns files in dir  as recordsets
+* @param file string
+*	full path and name of the directory
+* @param params array
+*	[-function] str - function to send each rec to as it processes
+* 	[-fields] mixed - comman separated list of fields to return
+*	[-limit] int - max number of rows to return
+*	[-offset] int - number to skip 
+*	[-index] str - field to use as the resulting array index
+*	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
+*	[-dateformat] - return date format
+*	[-perms] - limit results to files this these permissions
+*	[-lines] - return the line count of each file returned
+*	[-sha] - return the sha1 value of each file returned
+* 	[-md5] - return the md5 value of each file returned
+*	any additional key/values passed in will filter your results. 
+*	Note: type will default to file if not specified
+* @return array - recordsets with the following fields:
+*     _adate,_adate_age,_adate_age_verbose,_adate_utime,
+*     _cdate,_cdate_age,_cdate_age_verbose,_cdate_utime,
+*     _edate,_edate_age,_edate_age_verbose,_edate_utime,
+*     afile,ext,name,path,size,size_verbose,type
+*   Optional fields returned when requested
+*     lines,perm_execute,perm_read,perm_write,perms,sha,md5
+* @usage
+*	$recs=getDirRecords($dir);
+*	$recs=getDirRecords($dir,array('ext'=>'jpg|png','size'=>'>150000'));
+*/
+function getDirRecords($dir,$params=array()){
+	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
+	$filters=array();
+	$includes=array('-dateformat','-perms','-lines','-sha','-md5','-recurse');
+	foreach($params as $key=>$val){
+		if(stringBeginsWith($key,'-') && !in_array($key,$includes)){continue;}
+		$filters[$key]=$val;
+	}
+	$allrecs=listFilesEx($dir,$filters);
+	$recs=array();
+	$linecnt = 0;
+	if(is_array($allrecs)){
+		foreach($allrecs as $rec){
+	        if(isset($params['-offset']) && $linecnt < $params['-offset']-1){
+				$linecnt++;
+				continue;
+			}
+			if(isset($params['-function']) && strlen($params['-function']) && function_exists($params['-function'])){
+				$ok=call_user_func($params['-function'],$rec);	
+				if(is_array($ok)){$rec=$ok;}
+			}
+			$linecnt++;
+			if(isset($params['-index'])){
+				$idx=$rec[$params['-index']];
+				$recs[$idx]=$rec;
+			}
+			else{
+				$recs[]=$rec;
+			}
+			
+			if(isset($params['-limit']) && isNum($params['-limit']) && count($recs) >= $params['-limit']){
+				break;
+			}
+	    }
+	}
+	return $recs;
 }
 //---------- begin function fopen_utf8 ----
 /**
