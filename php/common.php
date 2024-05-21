@@ -12657,9 +12657,10 @@ function getCSVSchema($file,$params=array()){
 *	[-map] array - fieldname map  i.e. ('first name'=>'firstname','fname'=>'firstname'.....)
 *	[-dateformat] - return date format
 *	[-perms] - limit results to files this these permissions
-*	[-lines] - return the line count of each file returned
+*	[-lines] - return the line count of each file returned (slow)
 *	[-sha] - return the sha1 value of each file returned
 * 	[-md5] - return the md5 value of each file returned
+* 	[-exif] - return the exif value of each file returned  (slow)
 *	any additional key/values passed in will filter your results. 
 *	Note: type will default to file if not specified
 * @return array - recordsets with the following fields:
@@ -12668,7 +12669,7 @@ function getCSVSchema($file,$params=array()){
 *     _edate,_edate_age,_edate_age_verbose,_edate_utime,
 *     afile,ext,name,path,size,size_verbose,type
 *   Optional fields returned when requested
-*     lines,perm_execute,perm_read,perm_write,perms,sha,md5
+*     lines,perm_execute,perm_read,perm_write,perms,sha,md5,exif
 * @usage
 *	$recs=getDirRecords($dir);
 *	$recs=getDirRecords($dir,array('ext'=>'jpg|png','size'=>'>150000'));
@@ -12676,7 +12677,7 @@ function getCSVSchema($file,$params=array()){
 function getDirRecords($dir,$params=array()){
 	if(isset($params['-stop']) && !isset($params['-maxrows'])){$params['-maxrows']=$params['-stop'];}
 	$filters=array();
-	$includes=array('-dateformat','-perms','-lines','-sha','-md5','-recurse');
+	$includes=array('-dateformat','-perms','-lines','-sha','-md5','-recurse','-exif');
 	foreach($params as $key=>$val){
 		if(stringBeginsWith($key,'-') && !in_array($key,$includes)){continue;}
 		$filters[$key]=$val;
@@ -15007,11 +15008,13 @@ function listFiles($dir='.'){
 * @param dir string - directory path - required
 * @param params array
 *	[type] - limit results to this type - defaults to file
+*	[-recurse] - recurse subdirectories
 *	[-dateformat] - return date format
 *	[-perms] - limit results to files this these permissions
 *	[-lines] - return the line count of each file returned
 *	[-sha] - return the sha1 value of each file returned
 * 	[-md5] - return the md5 value of each file returned
+* 	[-exif] - return the exif data of a file
 * @return array
 * @usage $files=listFilesEx($dir);
 */
