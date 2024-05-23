@@ -4998,6 +4998,9 @@ var wacss = {
 			let modal_overlay=document.createElement('div');
 			modal_overlay.id='wacss_modal_overlay';
 			modal_overlay.className='wacss_modal_overlay '+params.color;
+			//set the height to the 
+			modal_overlay.style.height=Math.max( document.body.scrollHeight, document.body.offsetHeight, 
+                       document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight)+'px';
 			modal_overlay.appendChild(modal);
 			modal_close.pnode=modal_overlay;
 			if(undefined != params.overlay_close){
