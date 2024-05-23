@@ -10229,7 +10229,7 @@ ENDOFHTML;
 				else{$recs[$i]['wfile']='';}
 				$recs[$i]['icon_class']=commonGetFileIconClass($rec['afile']);
 				$actions[]=$recs[$i]['action_nav']='<a title="Download" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_pushfile='.encodeBase64($rec['afile']).'"><span class="icon-download"></span></a>';
-				if($params['-rights'] == 'all'){
+				if(in_array($params['-rights'],array('all','fileonly'))){
 					$actions[]=$recs[$i]['action_del']='<a title="Delete" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($cdir).'&_rmfile='.encodeBase64($rec['afile']).'" onclick="return confirm(\'Remove this file? ARE YOU SURE?\');"><span class="icon-erase w_red"></span></a>';
 				}
 				else{$recs[$i]['action_del']='';}
