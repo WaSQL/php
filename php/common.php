@@ -3951,37 +3951,9 @@ function buildFormFile($name,$params=array()){
 		if(isImageFile($afile)){
 			$tag .= '<img style="display:inline;max-height:24px;max-width:190px;" src="'.$params['value'].'" />'.PHP_EOL;
 		}
-		elseif(isAudioFile($afile)){
-			$tag .= '<span class="w_gray icon-file-audio" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-		}
-		elseif(isVideoFile($afile)){
-			$tag .= '<span class="w_gray icon-file-video" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-		}
 		else{
-			switch(strtolower($ext)){
-				case 'pdf':
-					$tag .= '<span class="w_gray icon-file-pdf2" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-				break;
-				case 'xls':
-				case 'xlsx':
-					$tag .= '<span class="w_gray icon-file-excel" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-				break;
-				case 'doc':
-				case 'docx':
-					$tag .= '<span class="w_gray icon-file-word" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-				break;
-				case 'zip':
-				case 'gz':
-					$tag .= '<span class="w_gray icon-file-zip" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-				break;
-				case 'txt':
-				case 'csv':
-					$tag .= '<span class="w_gray icon-file-txt" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-				break;
-				default:
-					$tag .= '<span class="w_gray icon-file-doc" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
-				break;
-			}
+			$class=commonGetFileIconClass($afile);
+			$tag .= '<span class="'.$class.'" style="font-size:26px" title="'.$params['value'].'"></span>'.PHP_EOL;
 		}
 		//clear button
 		$tag .= <<<ENDOFTAG
@@ -10095,6 +10067,306 @@ function fileExplorer($startdir='',$param=array()){
 */
 function fileManager($startdir='',$params=array()){
 	global $CONFIG;
+	if(!strlen($startdir)){
+		$startdir=$CONFIG['filemanager_startdir'] ?? $CONFIG['filemanager_path'] ?? $_SERVER['DOCUMENT_ROOT'];
+	}
+	if(!is_dir($startdir)){return "{$startdir} does not exist";}
+	loadExtrasJs('html5');
+	foreach($CONFIG as $k=>$v){
+		if(preg_match('/^filemanager_(.+)$/',$k,$m)){
+			if(!isset($params[$m[1]])){$params[$m[1]]=$v;}
+		}
+	}
+	global $PAGE;
+	if(isset($params['rights'])){$params['-rights']=$params['rights'];}
+	if(!isset($params['-rights'])){$params['-rights']='all';}
+	if(isset($params['height'])){$params['-height']=$params['height'];}
+	if(!isset($params['-height'])){$params['-height']=600;}
+	if(isset($params['view'])){$params['-view']=$params['view'];}
+	if(!isset($params['-view'])){$params['-view']='table';}
+	if(!isset($params['-icons'])){$params['-icons']=1;}
+	if(!isset($params['-actions'])){$params['-actions']='download,edit,delete';}
+	if(!isset($params['-fields'])){$params['-fields']='name,size,modified,owner,perms';}
+	$action=isset($params['-action'])?$params['-action']:"/{$PAGE['name']}";
+	$params['-rights']=strtolower($params['-rights']);
+	if(!isset($params['-onfinish'])){$params['-onfinish']='window.location=window.location';}
+	//change to sub dir if requested
+	$cdir=$startdir;
+	if(isset($_REQUEST['_dir']) && stringContains(decodeBase64($_REQUEST['_dir']),$startdir)){
+		$cdir =decodeBase64($_REQUEST['_dir']);
+	}
+	//pretable: check to see if cdir is browsable
+	$pretable = '<div class="w_bigger" style="padding:20px 0;">';
+	$relpath=str_replace($startdir,'',$cdir);
+	$relpath=preg_replace('/^\/+/','',$relpath);
+	if(strlen($relpath)){
+		$pathparts=preg_split('/\/+/',$relpath);
+		$rpath=$startdir;
+		$rpathlinks=array();
+		array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">Root:</a>'."\n");
+		foreach($pathparts as $pathpart){
+			$rpath .= "/{$pathpart}";
+			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
+        }
+		$pretable .= implode(' <img src="/wfiles/crumb.gif" alt="crumb" /> ',$rpathlinks);
+	}
+	//Handle file uploads
+	 if($params['-rights'] == 'all' && is_array($_FILES) && count($_FILES) > 0){
+	 	processFileUploads($cdir);
+	}
+	//perform actions
+	if(isset($_REQUEST['_newdir']) && $params['-rights'] == 'all'){
+		$rs = @mkdir("{$cdir}/{$_REQUEST['_newdir']}", 0777);
+		$rtn .= '<div style="display:none" id="newdir" result="'.$rs.'">'.$_REQUEST['_newdir'].'</div>'.PHP_EOL;
+    }
+    elseif(isset($_REQUEST['_rmdir']) && $params['-rights'] == 'all'){
+		$ddir=decodeBase64($_REQUEST['_rmdir']);
+		//for security purposes, only push file that are in document_root or the wasql path
+		$wasqlpath=getWasqlPath();
+		if(!isAdmin() && !stringContains($ddir,$_SERVER['DOCUMENT_ROOT']) && !stringContains($ddir,$wasqlpath)){
+			echo "Error: denied delete request";
+			exit;
+		}
+		$rs = @deleteDirectory($ddir);
+		$rtn .= '<div style="display:none" id="rmdir" result="'.$rs.'">'.$ddir.'</div>'.PHP_EOL;
+    }
+    elseif(isset($_REQUEST['_rmfile']) && $params['-rights'] != 'readonly'){
+		$ddir=decodeBase64($_REQUEST['_rmfile']);
+		//for security purposes, only push file that are in document_root or the wasql path
+		$wasqlpath=getWasqlPath();
+		if(!isAdmin() && !stringContains($ddir,$_SERVER['DOCUMENT_ROOT']) && !stringContains($ddir,$wasqlpath)){
+			echo "Error: denied delete request";
+			exit;
+		}
+		$rs = @deleteDirectory($ddir);
+    }
+	//upload form
+	$pretable .= '  <div style="display:flex;flex-wrap:wrap;justify-content:center;">'.PHP_EOL;
+	//$rtn .= $action;
+	$pretable .= '	<form name="_fmfile" method="POST" action="'.$action.'"  enctype="multipart/form-data">'.PHP_EOL;
+	$pretable .= '		<input type="hidden" name="_menu" value="files">'.PHP_EOL;
+	$pretable .= '		<input type="hidden" name="_dir" value="'.encodeBase64($cdir).'">'.PHP_EOL;
+	$pretable .= '		<input type="hidden" name="file_path" value="/'.$relpath.'">'.PHP_EOL;
+	if($params['-rights'] == 'all'){
+		$pretable .= '	<div style="display:flex;flex-direction:column;margin-top:10px;">'.PHP_EOL;
+		$pretable .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
+		$pretable .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" />'.PHP_EOL;
+		$pretable .= '	</div>'.PHP_EOL;
+		}
+	if($params['-rights'] != 'readonly'){
+		$pretable .= '	<div style="display:flex;margin:10px 0;">'.PHP_EOL;
+		$pretable .= '		<div style="margin-right:5px;">'.PHP_EOL;
+		$fileparams=array('id'=>'file','value'=>'');
+		if(isset($params['-accept'])){
+			$fileparams['accept']=$params['-accept'];
+		}
+		if(isset($params['-capture'])){
+			$fileparams['capture']=$params['-capture'];
+		}
+		if(isset($params['-multiple'])){
+			$fileparams['multiple']=1;
+		}
+		$pretable .= 			buildFormFile('file',$fileparams);
+		$pretable .= '		</div>'.PHP_EOL;
+		$pretable .= '		<button type="submit" class="btn btn-primary">Upload</button>'.PHP_EOL;
+		$pretable .= '	</div>'.PHP_EOL;
+	}
+	$pretable .= '	</form>'.PHP_EOL;
+	if(!isMobileDevice() && $params['-rights'] != 'readonly'){
+    	//HTML5 file upload
+    	$path=encodeBase64($cdir);
+		$pretable .= '<div  title="drag files to upload"';
+		if(isset($params['-resize'])){
+        	$pretable .= ' data-resize="'.$params['-resize'].'"'.PHP_EOL;
+		}
+		$pretable .= ' _onfinish="'.$params['-onfinish'].'" _action="/php/admin.php" style="padding: 10px 100px;margin-left:15px;border-radius:6px;align-self:center;display:inline-table;width:72px;" data-behavior="fileupload" path="'.$path.'" _menu="files" _dir="'.$path.'">'.PHP_EOL;
+		$pretable .= '	<div align="center"><span class="icon-upload" style="font-size:50px;color:#CCC;"></span></div>'.PHP_EOL;
+		$pretable .= '	<div class="align-center w_small w_nowrap" style="color:#ccc;">Drag-n-Drop</div>'.PHP_EOL;
+		$pretable .= '</div>'.PHP_EOL;
+	}
+	if(isset($_REQUEST['file_error'])){
+    	$pretable .= '<div class="w_danger icon-warning"> '.$_REQUEST['file_error'].'</div>'.PHP_EOL;
+	}
+	$pretable .= '</div>'.PHP_EOL;
+	$pretable.='</div>'.PHP_EOL;
+	$pretable.='<div style="display:flex;flex-wrap:wrap;justify-content:center;padding-bottom:50px;">'.PHP_EOL;
+	$posttable='</div>';
+	$params['-listview']=<<<ENDOFHTML
+<div style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
+	<div style="display:flex;justify-content:space-between">
+		<div class="w_small">[action_nav]</div>
+		<div class="w_small">[action_del]</div>
+	</div>
+	<div style="flex:1;padding:10px;flex-direction:column;align-content:center;justify-content:center;">
+		<div title="[name]" style="display:flex;justify-content:center;">[preview]</div>
+		<div class="w_gray w_smallest align-center" style="margin-top:4px;overflow:hidden;white-space:nowrap;text-overflow: ellipsis;">[name]</div>
+	</div>
+	
+	<div class="align-right w_smaller w_gray">[size_verbose]</div>
+</div>
+ENDOFHTML;
+	//get the files
+	$params['type']='file,dir';
+	$recs=getDirRecords($cdir,$params);
+	$recs=sortArrayByKeys($recs,array('type'=>SORT_ASC,'name'=>SORT_ASC));
+	foreach($recs as $i=>$rec){
+		$actions=array();
+		$recs[$i]['ctype']=getFileContentType($recs[$i]['afile']);
+		switch(strtolower($rec['type'])){
+			case 'dir':
+				$recs[$i]['icon_class']='icon-folder w_yellow w_bigger';
+				$actions[]=$recs[$i]['action_nav']='<a title="Browse" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($rec['afile']).'"><span class="icon-arrow-right w_yellow"></span></a>';
+				if($params['-rights'] == 'all'){
+					$actions[]=$recs[$i]['action_del']='<a title="Remove" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($cdir).'&_rmdir='.encodeBase64($rec['afile']).'" onclick="return confirm(\'Remove this directory? ARE YOU SURE?\');"><span class="icon-erase w_red"></span></a>';
+				}
+				$recs[$i]['preview']='<a title="Browse" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($rec['afile']).'"><span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
+			break;
+			case 'file':
+				if(stringContains($rec['afile'],$_SERVER['DOCUMENT_ROOT'])){
+					$recs[$i]['wfile']=str_replace($_SERVER['DOCUMENT_ROOT'],'',$rec['afile']);
+				}
+				else{$recs[$i]['wfile']='';}
+				$recs[$i]['icon_class']=commonGetFileIconClass($rec['afile']);
+				$actions[]=$recs[$i]['action_nav']='<a title="Download" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_pushfile='.encodeBase64($rec['afile']).'"><span class="icon-download"></span></a>';
+				if($params['-rights'] == 'all'){
+					$actions[]=$recs[$i]['action_del']='<a title="Delete" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($cdir).'&_rmfile='.encodeBase64($rec['afile']).'" onclick="return confirm(\'Remove this file? ARE YOU SURE?\');"><span class="icon-erase w_red"></span></a>';
+				}
+				if(isImageFile($recs[$i]['afile'])){
+					if(isset($params['-listview']) && $recs[$i]['size'] < 500000){
+						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
+						$recs[$i]['preview']='<img onclick="wacss.showImage(this);" src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" style="cursor:pointer;max-width:100px;max-height:100px;">';
+					}
+					elseif(strlen($recs[$i]['wfile'])){
+						$recs[$i]['preview']='<span onclick="wacss.showImage(this);" data-src="'.$recs[$i]['wfile'].'" class="'.$recs[$i]['icon_class'].'" style="cursor:pointer;font-size:48px;"></span>';
+					}
+					else{
+						$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
+					}
+				}
+				elseif(isAudioFile($recs[$i]['afile'])){
+					if(isset($params['-listview']) && $recs[$i]['size'] < 500000){
+						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
+						$recs[$i]['preview']='<audio width="140" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></audio>';
+					}
+					elseif(strlen($recs[$i]['wfile'])){
+						$recs[$i]['preview']='<span onclick="wacss.showAudio(this);" data-src="'.$recs[$i]['wfile'].'" class="'.$recs[$i]['icon_class'].'" style="cursor:pointer;font-size:48px;"></span>';
+					}
+					else{
+						$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
+					}
+				}
+				elseif(isVideoFile($recs[$i]['afile'])){
+					if(isset($params['-listview']) && $recs[$i]['size'] < 500000){
+						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
+						$recs[$i]['preview']='<video width="140" height="100" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></video>';
+					}
+					elseif(strlen($recs[$i]['wfile'])){
+						$recs[$i]['preview']='<span onclick="wacss.showVideo(this);" data-src="'.$recs[$i]['wfile'].'" class="'.$recs[$i]['icon_class'].'" style="cursor:pointer;font-size:48px;"></span>';
+					}
+					else{
+						$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
+					}
+				}
+				else{
+					$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
+				}
+			break;
+		}
+		//actions
+		$recs[$i]['actions']=implode(PHP_EOL,$actions);
+		$recs[$i]['name_actions']=<<<ENDOFHTML
+<div style="display:flex;justify-content:space-between;">
+	<div style="align-self:center;"><span class="{$recs[$i]['icon_class']}" style="margin-right:5px;"></span> {$rec['name']}</div>
+	<div  style="align-self:center;display:flex;">{$recs[$i]['actions']}</div>
+</div>
+ENDOFHTML;
+	}
+	$name_action_displayname=<<<ENDOFHTML
+<div style="display:flex;justify-content:space-between;">
+	<div style="align-self:center;">Name</div>
+	<div style="align-self:center;">Action(s)</div>
+</div>
+ENDOFHTML;
+	//return printValue(array_keys($recs[0]));
+	$listopts=array(
+		'-list'=>$recs,
+		'-pretable'=>$pretable,
+		'-posttable'=>$posttable,
+		'-tableclass'=>'table striped bordered',
+		'-listfields'=>'name_actions,type,size_verbose,_cdate,_edate,_adate',
+		'name_actions_options'=>array(
+			'displayname'=>$name_action_displayname,
+		),
+		'type_options'=>array(
+			'displayname'=>'Type',
+			'class'=>'align-center'
+		),
+		'size_verbose_options'=>array(
+			'displayname'=>'Size',
+			'class'=>'align-right'
+		),
+		'_cdate_options'=>array(
+			'displayname'=>'Created',
+			'class'=>'w_small'
+		),
+		'_edate_options'=>array(
+			'displayname'=>'Edited',
+			'class'=>'w_small'
+		),
+		'_adate_options'=>array(
+			'displayname'=>'Accessed',
+			'class'=>'w_small'
+		)
+	);
+	if(isset($params['-listview'])){
+		$listopts['-listview']=$params['-listview'];
+	}
+	return databaseListRecords($listopts);
+}
+function commonGetFileIconClass($afile){
+	$class=' icon-file-doc';
+	$ext=getFileExtension($afile);
+	if(isImageFile($afile)){$class=' icon-file-image w_blue';}
+	elseif(isAudioFile($afile)){$class=' icon-file-audio w_orange';}
+	elseif(isVideoFile($afile)){$class=' icon-file-video w_yellow';}
+	else{
+    	switch(strtolower($ext)){
+        	case 'xls':
+        	case 'xlsx':
+        		$class=' icon-application-excel';
+        	break;
+        	case 'doc':
+        	case 'docx':
+        		$class=' icon-application-word';
+        	break;
+        	case 'ppt':
+        	case 'pptx':
+        		$class=' icon-application-powerpoint';
+        	break;
+        	case 'zip':
+        	case 'gz':
+        		$class=' icon-file-zip w_gray';
+        	break;
+        	case 'htm':
+        	case 'html':
+        		$class=' icon-html5';
+        	break;
+        	case 'sql':$class=' icon-sql w_teal';break;
+        	case 'css':$class=' icon-css3';break;
+        	case 'json':$class=' icon-json';break;
+        	case 'pdf':$class=' icon-file-pdf2 w_red';break;
+        	case 'js':$class=' icon-program-javascript';break;
+        	case 'php':$class=' icon-program-php';break;
+        	case 'py':$class=' icon-program-python';break;
+        	case 'pl':$class=' icon-program-perl';break;
+        	case 'lua':$class=' icon-program-lua';break;
+        	case 'rb':$class=' icon-program-ruby';break;
+		}
+	}
+	return $class;
+}
+function fileManagerOLD($startdir='',$params=array()){
+	global $CONFIG;
 	if(!strlen($startdir)){$startdir=$CONFIG['filemanager_startdir'] ?? $CONFIG['filemanager_path'] ?? $_SERVER['DOCUMENT_ROOT'];}
 	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	loadExtrasJs('html5');
@@ -10394,35 +10666,7 @@ function fileManager($startdir='',$params=array()){
             	switch(strtolower($field)){
                 	case 'name':
                 	case 'filename':
-                		$class=' icon-file-doc';
-	                	$ext=strtolower(getFileExtension($file));
-						if(isImageFile($file)){$class=' icon-file-image';}
-						elseif(isAudioFile($file)){$class=' icon-file-audio';}
-						elseif(isVideoFile($file)){$class=' icon-file-video';}
-						else{
-                        	switch($ext){
-                            	case 'xls':
-                            	case 'xlsx':
-                            		$class=' icon-file-excel';
-                            	break;
-                            	case 'doc':
-                            	case 'docx':
-                            		$class=' icon-file-word';
-                            	break;
-                            	case 'pdf':
-                            		$class=' icon-file-pdf2';
-                            	break;
-                            	case 'zip':
-                            	case 'gz':
-                            		$class=' icon-file-zip';
-                            	break;
-                            	case 'php':
-                            	case 'pl':
-                            	case 'py':
-                            		$class=' icon-file-code';
-                            	break;
-							}
-						}
+                		$class=commonGetFileIconClass($afile);
 						$previewlink='/'.$PAGE['name'].'?_pushfile='.encodeBase64($afile);
 						$display=preg_replace('/\_/',' ',$file);
 						if(isWebImage($file)){

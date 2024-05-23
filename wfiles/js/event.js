@@ -2040,27 +2040,23 @@ function initBehaviors(ajaxdiv){
 				//save original background color
 				navEls[n].setAttribute('_bgcolor',navEls[n].style.backgroundColor || '');
   				//add event listeners
-  				addEventHandler(navEls[n],"dragover",function(evt){
+				addEventHandler(navEls[n],"dragover", function(evt){
 					cancelBubble(evt);
-					}
-				);
-				addEventHandler(navEls[n],"dragexit", function(evt){
-					cancelBubble(evt);
-						var bgcolor='';
-						if(undefined != this.getAttribute('_dragcolor_out')){bgcolor=this.getAttribute('_dragcolor_out');}
-						this.style.backgroundColor=bgcolor;
-					}
-				);
+					}, false);
 				addEventHandler(navEls[n],"dragenter", function(evt){
 					cancelBubble(evt);
 					//change background of div when files are dragged over it to signify it accepts files
-					this.style.backgroundColor=this.getAttribute('data-color-over') || 'green';
+					this.style.backgroundColor=this.getAttribute('data-color-over') || 'rgba(249,249,153,0.35)';
 					}, false);
+				// addEventHandler(navEls[n],"dragleave", function(evt){
+				// 	cancelBubble(evt);
+				// 	this.style.backgroundColor=this.getAttribute('data-color-out') || this.getAttribute('_dragcolor_out') || 'initial';;
+				// 	}, false);
 				addEventHandler(navEls[n],"drop", function(evt){
 					// get window.event if e argument missing (in IE)
 					evt = evt || window.event;
 					// stops the browser from redirecting off to the image.
-		            cancelBubble(evt);
+		            	cancelBubble(evt);
 					this.style.backgroundColor=this.getAttribute('_bgcolor');
 					fileUploadBehavior(evt,this);
 					},false);

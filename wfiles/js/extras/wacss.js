@@ -692,6 +692,16 @@ var wacss = {
 		},1000);
 	},
 	/**
+	* @name wacss.documentHeight
+	* @describe returns the full height of the document.
+	* @return integer
+	* @usage let h=wacss.documentHeight();
+	*/
+	documentHeight: function(){
+		return Math.max( document.body.scrollHeight, document.body.offsetHeight, 
+                       document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
+	},
+	/**
 	* @name wacss.emulateEvent
 	* @describe emulates event on object/element.  change, click, etc.
 	* @param el mixed  - object or id
@@ -4998,9 +5008,8 @@ var wacss = {
 			let modal_overlay=document.createElement('div');
 			modal_overlay.id='wacss_modal_overlay';
 			modal_overlay.className='wacss_modal_overlay '+params.color;
-			//set the height to the 
-			modal_overlay.style.height=Math.max( document.body.scrollHeight, document.body.offsetHeight, 
-                       document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight)+'px';
+			//set the height to the full height
+			modal_overlay.style.height=wacss.documentHeight()+'px';
 			modal_overlay.appendChild(modal);
 			modal_close.pnode=modal_overlay;
 			if(undefined != params.overlay_close){
@@ -5721,7 +5730,7 @@ var wacss = {
 		v.style.zIndex=z;
 		v.style.display='block';
 		v.style.width='100vw';
-		v.style.height='100vh';
+		v.style.height=wacss.documentHeight()+'px';
 		v.style.position='absolute';
 		v.style.top='0px';
 		v.style.left='0px';
