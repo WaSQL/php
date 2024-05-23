@@ -10219,6 +10219,7 @@ ENDOFHTML;
 				if($params['-rights'] == 'all'){
 					$actions[]=$recs[$i]['action_del']='<a title="Remove" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($cdir).'&_rmdir='.encodeBase64($rec['afile']).'" onclick="return confirm(\'Remove this directory? ARE YOU SURE?\');"><span class="icon-erase w_red"></span></a>';
 				}
+				else{$recs[$i]['action_del']='';}
 				$recs[$i]['preview']='<a title="Browse" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($rec['afile']).'"><span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
 			break;
 			case 'file':
@@ -10231,6 +10232,7 @@ ENDOFHTML;
 				if($params['-rights'] == 'all'){
 					$actions[]=$recs[$i]['action_del']='<a title="Delete" style="margin-left:10px;text-decoration:none;" href="'.$action.'?_menu=files&_dir='.encodeBase64($cdir).'&_rmfile='.encodeBase64($rec['afile']).'" onclick="return confirm(\'Remove this file? ARE YOU SURE?\');"><span class="icon-erase w_red"></span></a>';
 				}
+				else{$recs[$i]['action_del']='';}
 				if(isImageFile($recs[$i]['afile'])){
 					if(isset($params['-listview']) && $recs[$i]['size'] < 500000){
 						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
