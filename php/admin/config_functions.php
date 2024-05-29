@@ -91,8 +91,10 @@ function configBuildFormField($field,$cparams=array()){
 		case 'wasql_synchronize_slave':
 			global $ALLCONFIG;
 			//return printValue($ALLCONFIG);
+			$hosts=$ALLCONFIG;
+			ksort($hosts);
 			$opts=array();
-			foreach($ALLCONFIG as $host=>$info){
+			foreach($hosts as $host=>$info){
 				$opts[$host]="{$info['name']} ({$info['database']})";
 			}
 			$params=array(
