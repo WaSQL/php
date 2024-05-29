@@ -305,6 +305,9 @@ var wacss = {
 			switch(obj.div.toLowerCase()){
 				case 'toast':
 					wacss.toast(txt);
+					if(undefined != obj.processing){
+		        		obj.processing.innerHTML=obj.processing.previous;
+		        	}
 				break;
 				default:
 					console.log('dom object does not exist');
