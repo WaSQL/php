@@ -188,6 +188,44 @@ var wacss = {
 	    let xmlhttp = new XMLHttpRequest();
 	    let url=frm.getAttribute('action');
 	    xmlhttp.div=div;
+	    let cp={};
+	    if(typeof(div)==='string'){
+	    	switch(div.toLowerCase()){
+	    		case 'centerpop':
+	    		case 'wacss_centerpop':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop';}
+	    			cp=wacss.createCenterpop(params.title);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    		break;
+	    		case 'centerpop1':
+	    		case 'wacss_centerpop1':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop1');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop1';}
+	    			cp=wacss.createCenterpop(params.title,1);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    		break;
+	    		case 'centerpop2':
+	    		case 'wacss_centerpop2':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop2');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			cp=wacss.createCenterpop(params.title,2);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    		break;
+	    		case 'centerpop3':
+	    		case 'wacss_centerpop3':
+	    			xmlhttp.div=wacss.getObject('wacss_centerpop3');
+	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			cp=wacss.createCenterpop(params.title,3);
+	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    		break;
+	    		case 'modal':
+	    			params.overlay=1;
+	    			let modal=wacss.modalPopup(wacss.setprocessing,params.title,params);
+	    			xmlhttp.div=modal.querySelector('#wacss_modal_content');
+	    		break;
+	    	}
+	    }
 	    //load
 	    xmlhttp.onload = function(){
 	    	//console.log('load');
