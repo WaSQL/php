@@ -3257,10 +3257,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		$rtn.='		<input type="'.$params['-type'].'" id="'.$opt_id.'" name="'.$input_name.'" value="'.$tval.'"';
 		//required
 		if(isset($params['required']) && $params['required']){
-			$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';
+			$rtn .= ' required="required"';
 		}
 		elseif(isset($params['_required']) && $params['_required']){
-			$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';
+			$rtn .= ' required="required"';
 		}
 		//onchange
 		if(isset($params['onchange']) && strlen($params['onchange'])){
