@@ -5051,7 +5051,8 @@ var wacss = {
 			modal_overlay.id='wacss_modal_overlay';
 			modal_overlay.className='wacss_modal_overlay '+params.color;
 			//set the height to the full height
-			modal_overlay.style.height=wacss.documentHeight()+'px';
+			//modal_overlay.style.height=wacss.documentHeight()+'px';
+			modal_overlay.style.height='100%';
 			modal_overlay.appendChild(modal);
 			modal_close.pnode=modal_overlay;
 			if(undefined != params.overlay_close){
