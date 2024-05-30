@@ -10237,8 +10237,13 @@ ENDOFHTML;
 				else{$recs[$i]['action_del']='';}
 				if(isImageFile($recs[$i]['afile'])){
 					if(isset($params['-listview']) && $recs[$i]['size'] < 1000000){
-						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
-						$recs[$i]['preview']='<img onclick="wacss.showImage(this);" src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" style="cursor:pointer;max-width:100px;max-height:100px;">';
+						if(strlen($recs[$i]['wfile'])){
+							$recs[$i]['preview']='<img onclick="wacss.showImage(this);" src="'.$recs[$i]['wfile'].'" style="cursor:pointer;max-width:100px;max-height:100px;">';
+						}
+						else{
+							$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
+							$recs[$i]['preview']='<img onclick="wacss.showImage(this);" src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" style="cursor:pointer;max-width:100px;max-height:100px;">';
+						}
 					}
 					elseif(strlen($recs[$i]['wfile'])){
 						$recs[$i]['preview']='<span onclick="wacss.showImage(this);" data-src="'.$recs[$i]['wfile'].'" class="'.$recs[$i]['icon_class'].'" style="cursor:pointer;font-size:48px;"></span>';
@@ -10249,8 +10254,13 @@ ENDOFHTML;
 				}
 				elseif(isAudioFile($recs[$i]['afile'])){
 					if(isset($params['-listview']) && $recs[$i]['size'] < 1000000){
-						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
-						$recs[$i]['preview']='<audio width="140" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></audio>';
+						if(strlen($recs[$i]['wfile'])){
+							$recs[$i]['preview']='<audio width="140" controls><source src="'.$recs[$i]['wfile'].'" type="'.$recs[$i]['ctype'].'"></source></audio>';
+						}
+						else{
+							$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
+							$recs[$i]['preview']='<audio width="140" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></audio>';
+						}
 					}
 					elseif(strlen($recs[$i]['wfile'])){
 						$recs[$i]['preview']='<span onclick="wacss.showAudio(this);" data-src="'.$recs[$i]['wfile'].'" class="'.$recs[$i]['icon_class'].'" style="cursor:pointer;font-size:48px;"></span>';
@@ -10261,8 +10271,13 @@ ENDOFHTML;
 				}
 				elseif(isVideoFile($recs[$i]['afile'])){
 					if(isset($params['-listview']) && $recs[$i]['size'] < 1000000){
-						$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
-						$recs[$i]['preview']='<video width="140" height="100" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></video>';
+						if(strlen($recs[$i]['wfile'])){
+							$recs[$i]['preview']='<video width="140" height="100" controls><source src="'.$recs[$i]['wfile'].'" type="'.$recs[$i]['ctype'].'"></source></video>';
+						}
+						else{
+							$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
+							$recs[$i]['preview']='<video width="140" height="100" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></video>';
+						}
 					}
 					elseif(strlen($recs[$i]['wfile'])){
 						$recs[$i]['preview']='<span onclick="wacss.showVideo(this);" data-src="'.$recs[$i]['wfile'].'" class="'.$recs[$i]['icon_class'].'" style="cursor:pointer;font-size:48px;"></span>';
