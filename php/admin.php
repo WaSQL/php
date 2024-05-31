@@ -2460,14 +2460,19 @@ LIST_TABLE:
                 		$_REQUEST['filter_field']='tablename';
                 	break;
                 	case '_html_entities':
-                		$recopts['entity_name_eval']="return str_replace('&','&amp;','%entity_name%');";
-                		$recopts['entity_name_class']='text-right';
-                		$recopts['entity_number_eval']="return str_replace('&','&amp;',\"%entity_number%\");";
-                		$recopts['entity_number_class']='text-right';
-                		$recopts['-listfields']=array('_id','category','description','entity_name','entity_number','display');
-                		$recopts['display_eval']="return \"%entity_number%\";";
-                		$recopts['display_class']='text-right';
-                		$_REQUEST['filter_field']='description';
+                		$recopts['entity_eval']="return str_replace('&','&amp;','%entity%');";
+                		$recopts['entity_class']='text-right';
+                		$recopts['html_code_eval']="return str_replace('&','&amp;',\"%html_code%\");";
+                		$recopts['html_code_class']='text-right';
+                		$recopts['-listfields']=array('_id','category','display','name','html_code','css_code','entity','unicode');
+                		$recopts['-editfields']=array();
+                		$recopts['display_eval']="return \"%html_code%\";";
+                		if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='name';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case '_pages':
                 		$recopts['_template_relate']="id,name";

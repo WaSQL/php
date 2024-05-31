@@ -337,10 +337,12 @@ function createWasqlTable($table=''){
 			return 1;
 			break;
 		case '_html_entities':
-			$fields['entity_name']=databaseDataType('varchar(125)')." NULL";
-			$fields['entity_number']=databaseDataType('varchar(15)')." NOT NULL UNIQUE";
 			$fields['category']=databaseDataType('varchar(100)')." NULL";
-			$fields['description']=databaseDataType('varchar(255)')." NULL";
+			$fields['html_code']=databaseDataType('varchar(125)')." NULL";
+			$fields['css_code']=databaseDataType('varchar(15)')." NOT NULL UNIQUE";
+			$fields['unicode']=databaseDataType('varchar(100)')." NULL";
+			$fields['entity']=databaseDataType('varchar(100)')." NULL";
+			$fields['name']=databaseDataType('varchar(255)')." NULL";
 			$ok=createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			addMetaData($table);
