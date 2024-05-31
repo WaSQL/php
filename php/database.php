@@ -248,6 +248,10 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('gigya');
 			$func="gigya".ucfirst($func);
 		break;
+		case 'ccv2':
+			loadExtras('ccv2');
+			$func="ccv2".ucfirst($func);
+		break;
 		case 'ctree':
 			loadExtras('ctree');
 			$dbh_ctree='';
@@ -1408,6 +1412,12 @@ function databaseListRecords($params=array()){
 				}
 				$params['-list']=gigyaQueryResults($params['-query']);
 			break;
+			case 'ccv2':
+				if(!function_exists('ccv2QueryResults')){
+					loadExtras('ccv2');
+				}
+				$params['-list']=ccv2QueryResults($params['-query']);
+			break;
 			default:
 				$params['-list']=getDBRecords($params['-query']);
 			break;
@@ -1500,6 +1510,12 @@ function databaseListRecords($params=array()){
 					loadExtras('gigya');
 				}
 				$info=gigyaGetDBFieldInfo($params['-table']);
+			break;
+			case 'ccv2':
+				if(!function_exists('ccv2GetDBFieldInfo')){
+					loadExtras('ccv2');
+				}
+				$info=ccv2GetDBFieldInfo($params['-table']);
 			break;
 			default:
 				$info=getDBFieldInfo($params['-table']);

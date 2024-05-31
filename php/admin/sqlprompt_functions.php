@@ -366,6 +366,10 @@ function sqlpromptNamedQueries(){
 			loadExtras('gigya');
 			$recs=gigyaNamedQueryList();
 		break;
+		case 'ccv2':
+			loadExtras('ccv2');
+			$recs=ccv2NamedQueryList();
+		break;
 		case 'snowflake':
 			loadExtras('snowflake');
 			global $dbh_snowflake;

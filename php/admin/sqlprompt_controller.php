@@ -76,6 +76,9 @@
 				case 'gigya':
 					$sql="select * from {$table} limit 5";
 				break;
+				case 'ccv2':
+					$sql="select top 5 * from {$table}";
+				break;
 				default:
 					$sql="select * from {$table} limit 5";
 				break;
