@@ -2435,9 +2435,10 @@ function databaseListRecords($params=array()){
 				$evalstr=str_replace('%fieldname%',$fld,$evalstr);
 				//substitute and %{field}% with its value in this record
 				foreach($rec as $recfld=>$recval){
-					if(is_array($recfld) || is_array($recval) || is_null($recval) || !strlen($recval)){continue;}
+					if(is_array($recfld) || is_array($recval)){continue;}
+					if(is_null($recval) || !strlen($recval)){$recval='';}
 					$replace='%'.$recfld.'%';
-                    $evalstr=str_replace($replace,strip_tags($rec[$recfld]),$evalstr);
+                    $evalstr=str_replace($replace,strip_tags($recval),$evalstr);
                 }
                 $value=evalPHP('<?' . $evalstr .'?>');
 			}

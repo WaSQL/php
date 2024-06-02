@@ -1,203 +1,223 @@
 category,html_code,css_code,unicode,entity,name
-asterisks,&#42;,\002A,U+0002A,&midast;,asterisk
-asterisks,&#8270;,\204E,U+0204E,,low asterisk
-asterisks,&#8273;,\2051,U+02051,,two asterisks aligned vertically
-asterisks,&#8727;,\2217,U+02217,&lowast;,asterisk operator
-asterisks,&#10018;,\2722,U+02722,,four teardrop-spoked asterisk
-asterisks,&#10019;,\2723,U+02723,,four balloon-spoked asterisk
-asterisks,&#10020;,\2724,U+02724,,heavy four balloon-spoked asterisk
-asterisks,&#10021;,\2725,U+02725,,four club-spoked asterisk
-asterisks,&#10033;,\2731,U+02731,,heavy asterisk
-asterisks,&#10034;,\2732,U+02732,,open center asterisk
-asterisks,&#10035;,\2733,U+02733,,eight spoked asterisk
-asterisks,&#10042;,\273A,U+0273A,,sixteen pointed asterisk
-asterisks,&#10043;,\273B,U+0273B,,teardrop-spoked asterisk
-asterisks,&#10044;,\273C,U+0273C,,open centre teardrop-spoked asterisk
-asterisks,&#10045;,\273D,U+0273D,,heavy teardrop-spoked asterisk
-asterisks,&#10051;,\2743,U+02743,,heavy teardrop-spoked pinwheel asterisk
-asterisks,&#10057;,\2749,U+02749,,balloon-spoked asterisk
-asterisks,&#10058;,\274A,U+0274A,,eight teardrop-spoked propeller asterisk
-asterisks,&#10059;,\274B,U+0274B,,heavy eight teardrop-spoked propeller asterisk
-asterisks,&#10694;,\29C6,U+029C6,,squared asterisk
-asterisks,&#42611;,\A673,U+0A673,,slavonic asterisk
-asterisks,&#65121;,\FE61,U+0FE61,,small asterisk
-asterisks,&#65290;,\FF0A,U+0FF0A,,fullwidth asterisk
-asterisks,&#128943;,\1F7AF,U+1F7AF,,light five spoked asterisk
-asterisks,&#128944;,\1F7B0,U+1F7B0,,medium five spoked asterisk
-asterisks,&#128945;,\1F7B1,U+1F7B1,,bold five spoked asterisk
-asterisks,&#128946;,\1F7B2,U+1F7B2,,heavy five spoked asterisk
-asterisks,&#128947;,\1F7B3,U+1F7B3,,very heavy five spoked asterisk
-asterisks,&#128948;,\1F7B4,U+1F7B4,,extremely heavy five spoked asterisk
-asterisks,&#128949;,\1F7B5,U+1F7B5,,light six spoked asterisk
-asterisks,&#128950;,\1F7B6,U+1F7B6,,medium six spoked asterisk
-asterisks,&#128951;,\1F7B7,U+1F7B7,,bold six spoked asterisk
-asterisks,&#128952;,\1F7B8,U+1F7B8,,heavy six spoked asterisk
-asterisks,&#128953;,\1F7B9,U+1F7B9,,very heavy six spoked asterisk
-asterisks,&#128954;,\1F7BA,U+1F7BA,,extremely heavy six spoked asterisk
-asterisks,&#128955;,\1F7BB,U+1F7BB,,light eight spoked asterisk
-asterisks,&#128956;,\1F7BC,U+1F7BC,,medium eight spoked asterisk
-asterisks,&#128957;,\1F7BD,U+1F7BD,,bold eight spoked asterisk
-asterisks,&#128958;,\1F7BE,U+1F7BE,,heavy eight spoked asterisk
-asterisks,&#128959;,\1F7BF,U+1F7BF,,very heavy eight spoked asterisk
+Arrows,&#8634;,\21BA,U+21BA,&olarr;,Anticlockwise Open Circle Arrow
+Arrows,&#8635;,\21BB,U+21BB,&orarr;,Clockwise Open Circle Arrow
+Arrows,&#8636;,\21BC,U+21BC,&lharu;,Leftwards Harpoon with Barb Upwards
+Arrows,&#8637;,\21BD,U+21BD,&lhard;,Leftwards Harpoon with Barb Downwards
+Arrows,&#8638;,\21BE,U+21BE,&uharr;,Upwards Harpoon with Barb Rightwards
+Arrows,&#8639;,\21BF,U+21BF,&uharl;,Upwards Harpoon with Barb Leftwards
+Arrows,&#8640;,\21C0,U+21C0,&rharu;,Rightwards Harpoon with Barb Upwards
+Arrows,&#8641;,\21C1,U+21C1,&rhard;,Rightwards Harpoon with Barb Downwards
+Arrows,&#8642;,\21C2,U+21C2,&dharr;,Downwards Harpoon with Barb Rightwards
+Arrows,&#8643;,\21C3,U+21C3,&dharl;,Downwards Harpoon with Barb Leftwards
+Arrows,&#8644;,\21C4,U+21C4,&rlarr;,Rightwards Arrow Over Leftwards Arrow
+Arrows,&#8645;,\21C5,U+21C5,&udarr;,Upwards Arrow Leftwards of Downwards Arrow
+Arrows,&#8646;,\21C6,U+21C6,&lrarr;,Leftwards Arrow Over Rightwards Arrow
+Arrows,&#8647;,\21C7,U+21C7,&llarr;,Leftwards Paired Arrows
+Arrows,&#8648;,\21C8,U+21C8,&uuarr;,Upwards Paired Arrows
+Arrows,&#8649;,\21C9,U+21C9,&rrarr;,Rightwards Paired Arrows
+Arrows,&#8650;,\21CA,U+21CA,&ddarr;,Downwards Paired Arrows
+Arrows,&#8651;,\21CB,U+21CB,&lrhar;,Leftwards Harpoon Over Rightwards Harpoon
+Arrows,&#8652;,\21CC,U+21CC,&rlhar;,Rightwards Harpoon Over Leftwards Harpoon
+Arrows,&#8653;,\21CD,U+21CD,&nlArr;,Leftwards Double Arrow with Stroke
+Arrows,&#8654;,\21CE,U+21CE,&nhArr;,Left Right Double Arrow with Stroke
+Arrows,&#8655;,\21CF,U+21CF,&nrArr;,Rightwards Double Arrow with Stroke
+Arrows,&#8656;,\21D0,U+21D0,&lArr;,Leftwards Double Arrow
+Arrows,&#8657;,\21D1,U+21D1,&uArr;,Upwards Double Arrow
+Arrows,&#8658;,\21D2,U+21D2,&rArr;,Rightwards Double Arrow
+Arrows,&#8659;,\21D3,U+21D3,&dArr;,Downwards Double Arrow
+Arrows,&#8660;,\21D4,U+21D4,&hArr;,Left Right Double Arrow
+Arrows,&#8661;,\21D5,U+21D5,&vArr;,Up Down Double Arrow
+Arrows,&#8662;,\21D6,U+21D6,&nwArr;,North West Double Arrow
+Arrows,&#8663;,\21D7,U+21D7,&neArr;,North East Double Arrow
+Arrows,&#8664;,\21D8,U+21D8,&seArr;,South East Double Arrow
+Arrows,&#8665;,\21D9,U+21D9,&swArr;,South West Double Arrow
+Arrows,&#8666;,\21DA,U+21DA,&lAarr;,Leftwards Triple Arrow
+Arrows,&#8667;,\21DB,U+21DB,&rAarr;,Rightwards Triple Arrow
+Arrows,&#8668;,\21DC,U+21DC,&ziglarr;,Leftwards Squiggle Arrow
+Arrows,&#8669;,\21DD,U+21DD,&zigrarr;,Rightwards Squiggle Arrow
+Arrows,&#8676;,\21E4,U+21E4,&larrb;,Leftwards Arrow To Bar
+Arrows,&#8677;,\21E5,U+21E5,&rarrb;,Rightwards Arrow To Bar
+Arrows,&#8693;,\21F5,U+21F5,&duarr;,Downwards Arrow Leftwards of Upwards Arrow
+Arrows,&#8703;,\21FF,U+21FF,&hoarr;,Left Right Open-Headed Arrow
+Arrows,&#8701;,\21FD,U+21FD,&loarr;,Leftwards Open-Headed Arrow
+Arrows,&#8702;,\21FE,U+21FE,&roarr;,Rightwards Open-Headed Arrow
+Arrows,&#10229;,\27F5,U+27F5,&xlarr;,Long Leftwards Arrow
+Arrows,&#10230;,\27F6,U+27F6,&xrarr;,Long Rightwards Arrow
+Arrows,&#10231;,\27F7,U+27F7,&xharr;,Long Left Right Arrow
+Arrows,&#10232;,\27F8,U+27F8,&xlArr;,Long Leftwards Double Arrow
+Arrows,&#10233;,\27F9,U+27F9,&xrArr;,Long Rightwards Double Arrow
+Arrows,&#10234;,\27FA,U+27FA,&xhArr;,Long Left Right Double Arrow
+Arrows,&#10239;,\27FF,U+27FF,&dzigrarr;,Long Rightwards Squiggle Arrow
+Arrows,&#10236;,\27FC,U+27FC,&xmap;,Long Rightwards Arrow from Bar
+Arrows,&#10498;,\2902,U+2902,&nvlArr;,Leftwards Double Arrow with Vertical Stroke
+Arrows,&#10499;,\2903,U+2903,&nvrArr;,Rightwards Double Arrow with Vertical Stroke
+Arrows,&#10500;,\2904,U+2904,&nvHarr;,Left Right Double Arrow with Vertical Stroke
+Arrows,&#10501;,\2905,U+2905,&Map;,Rightwards Two-Headed Arrow from Bar
+Arrows,&#10508;,\290C,U+290C,&lbarr;,Leftwards Double Dash Arrow
+Arrows,&#10509;,\290D,U+290D,&rbarr;,Rightwards Double Dash Arrow
+Arrows,&#10510;,\290E,U+290E,&lBarr;,Leftwards Triple Dash Arrow
+Arrows,&#10511;,\290F,U+290F,&rBarr;,Rightwards Triple Dash Arrow
+Arrows,&#10512;,\2910,U+2910,&RBarr;,Rightwards Two-Headed Triple Dash Arrow
+Arrows,&#10513;,\2911,U+2911,&DDotrahd;,Rightwards Arrow with Dotted Stem
+Arrows,&#10514;,\2912,U+2912,&UpArrowBar;,Upwards Arrow To Bar
+Arrows,&#10515;,\2913,U+2913,&DownArrowBar;,Downwards Arrow To Bar
+Arrows,&#10518;,\2916,U+2916,&Rarrtl;,Rightwards Two-Headed Arrow with Tail
+Arrows,&#10521;,\2919,U+2919,&latail;,Leftwards Arrow-Tail
+Arrows,&#10522;,\291A,U+291A,&ratail;,Rightwards Arrow-Tail
+Arrows,&#10523;,\291B,U+291B,&lAtail;,Leftwards Double Arrow-Tail
+Arrows,&#10524;,\291C,U+291C,&rAtail;,Rightwards Double Arrow-Tail
+Arrows,&#10525;,\291D,U+291D,&larrfs;,Leftwards Arrow To Black Diamond
+Arrows,&#10526;,\291E,U+291E,&rarrfs;,Rightwards Arrow To Black Diamond
+Arrows,&#10527;,\291F,U+291F,&larrbfs;,Leftwards Arrow from Bar To Black Diamond
+Arrows,&#10528;,\2920,U+2920,&rarrbfs;,Rightwards Arrow from Bar To Black Diamond
+Arrows,&#10531;,\2923,U+2923,&nwarhk;,North West Arrow with Hook
+Arrows,&#10532;,\2924,U+2924,&nearhk;,North East Arrow with Hook
+Arrows,&#10533;,\2925,U+2925,&searhk;,South East Arrow with Hook
+Arrows,&#10534;,\2926,U+2926,&swarhk;,South West Arrow with Hook
+Arrows,&#10535;,\2927,U+2927,&nwnear;,North West Arrow and North East Arrow
+Arrows,&#10536;,\2928,U+2928,&nesear;,North East Arrow and South East Arrow
+Arrows,&#10537;,\2929,U+2929,&seswar;,South East Arrow and South West Arrow
+Arrows,&#10538;,\292A,U+292A,&swnwar;,South West Arrow and North West Arrow
+Arrows,&#10549;,\2935,U+2935,&cudarrr;,Arrow Pointing Rightwards Then Curving Downwards
+Arrows,&#10550;,\2936,U+2936,&ldca;,Arrow Pointing Downwards Then Curving Leftwards
+Arrows,&#10551;,\2937,U+2937,&rdca;,Arrow Pointing Downwards Then Curving Rightwards
+Arrows,&#10552;,\2938,U+2938,&cudarrl;,Right-Side Arc Clockwise Arrow
+Arrows,&#10553;,\2939,U+2939,&larrpl;,Left-Side Arc Anticlockwise Arrow
+Arrows,&#10556;,\293C,U+293C,&curarrm;,Top Arc Clockwise Arrow with Minus
+Arrows,&#10557;,\293D,U+293D,&cularrp;,Top Arc Anticlockwise Arrow with Plus
+Arrows,&#10565;,\2945,U+2945,&rarrpl;,Rightwards Arrow with Plus Below
+Arrows,&#10568;,\2948,U+2948,&harrcir;,Left Right Arrow Through Small Circle
+Arrows,&#10569;,\2949,U+2949,&Uarrocir;,Upwards Two-Headed Arrow from Small Circle
+Arrows,&#10570;,\294A,U+294A,&lurdshar;,Left Barb Up Right Barb Down Harpoon
+Arrows,&#10571;,\294B,U+294B,&ldrushar;,Left Barb Down Right Barb Up Harpoon
+Arrows,&#10575;,\294F,U+294F,&RightUpDownVector;,Up Barb Right Down Barb Right Harpoon
+Arrows,&#10576;,\2950,U+2950,&DownLeftRightVector;,Left Barb Down Right Barb Down Harpoon
+Arrows,&#10577;,\2951,U+2951,&LeftUpDownVector;,Up Barb Left Down Barb Left Harpoon
+Arrows,&#10578;,\2952,U+2952,&LeftVectorBar;,Leftwards Harpoon with Barb Up To Bar
+Arrows,&#10579;,\2953,U+2953,&RightVectorBar;,Rightwards Harpoon with Barb Up To Bar
+Arrows,&#10580;,\2954,U+2954,&RightUpVectorBar;,Upwards Harpoon with Barb Right To Bar
+Arrows,&#10581;,\2955,U+2955,&RightDownVectorBar;,Downwards Harpoon with Barb Right To Bar
+Arrows,&#10582;,\2956,U+2956,&DownLeftVectorBar;,Leftwards Harpoon with Barb Down To Bar
+Arrows,&#10583;,\2957,U+2957,&DownRightVectorBar;,Rightwards Harpoon with Barb Down To Bar
+Arrows,&#10584;,\2958,U+2958,&LeftUpVectorBar;,Upwards Harpoon with Barb Left To Bar
+Arrows,&#10585;,\2959,U+2959,&LeftDownVectorBar;,Downwards Harpoon with Barb Left To Bar
+Arrows,&#10586;,\295A,U+295A,&LeftTeeVector;,Leftwards Harpoon with Barb Up from Bar
+Arrows,&#10587;,\295B,U+295B,&RightTeeVector;,Rightwards Harpoon with Barb Up from Bar
+Arrows,&#10588;,\295C,U+295C,&RightUpTeeVector;,Upwards Harpoon with Barb Right from Bar
+Arrows,&#10589;,\295D,U+295D,&RightDownTeeVector;,Downwards Harpoon with Barb Right from Bar
+Arrows,&#10590;,\295E,U+295E,&DownLeftTeeVector;,Leftwards Harpoon with Barb Down from Bar
+Arrows,&#10591;,\295F,U+295F,&DownRightTeeVector;,Rightwards Harpoon with Barb Down from Bar
+Arrows,&#10592;,\2960,U+2960,&LeftUpTeeVector;,Upwards Harpoon with Barb Left from Bar
+Arrows,&#10593;,\2961,U+2961,&LeftDownTeeVector;,Downwards Harpoon with Barb Left from Bar
+Arrows,&#10594;,\2962,U+2962,&lHar;,Leftwards Harpoon with Barb Up Above Leftwards Harpoon with Barb Down
+Arrows,&#10595;,\2963,U+2963,&uHar;,Upwards Harpoon with Barb Left Beside Upwards Harpoon with Barb Right
+Arrows,&#10596;,\2964,U+2964,&rHar;,Rightwards Harpoon with Barb Up Above Rightwards Harpoon with Barb Down
+Arrows,&#10597;,\2965,U+2965,&dHar;,Downwards Harpoon with Barb Left Beside Downwards Harpoon with Barb Right
+Arrows,&#10598;,\2966,U+2966,&luruhar;,Leftwards Harpoon with Barb Up Above Rightwards Harpoon with Barb Up
+Arrows,&#10599;,\2967,U+2967,&ldrdhar;,Leftwards Harpoon with Barb Down Above Rightwards Harpoon with Barb Down
+Arrows,&#10600;,\2968,U+2968,&ruluhar;,Rightwards Harpoon with Barb Up Above Leftwards Harpoon with Barb Up
+Arrows,&#10601;,\2969,U+2969,&rdldhar;,Rightwards Harpoon with Barb Down Above Leftwards Harpoon with Barb Down
+Arrows,&#10602;,\296A,U+296A,&lharul;,Leftwards Harpoon with Barb Up Above Long Dash
+Arrows,&#10603;,\296B,U+296B,&llhard;,Leftwards Harpoon with Barb Down Below Long Dash
+Arrows,&#10604;,\296C,U+296C,&rharul;,Rightwards Harpoon with Barb Up Above Long Dash
+Arrows,&#10605;,\296D,U+296D,&lrhard;,Rightwards Harpoon with Barb Down Below Long Dash
+Arrows,&#10606;,\296E,U+296E,&udhar;,Upwards Harpoon with Barb Left Beside Downwards Harpoon with Barb Right
+Arrows,&#10607;,\296F,U+296F,&duhar;,Downwards Harpoon with Barb Left Beside Upwards Harpoon with Barb Right
+Arrows,&#10608;,\2970,U+2970,&RoundImplies;,Right Double Arrow with Rounded Head
+Arrows,&#10609;,\2971,U+2971,&erarr;,Equals Sign Above Rightwards Arrow
+Arrows,&#10610;,\2972,U+2972,&simrarr;,Tilde Operator Above Rightwards Arrow
+Arrows,&#10611;,\2973,U+2973,&larrsim;,Leftwards Arrow Above Tilde Operator
+Arrows,&#10612;,\2974,U+2974,&rarrsim;,Rightwards Arrow Above Tilde Operator
+Arrows,&#10613;,\2975,U+2975,&rarrap;,Rightwards Arrow Above Almost Equal To
+Arrows,&#10614;,\2976,U+2976,&ltlarr;,Less-Than Above Leftwards Arrow
+Arrows,&#10616;,\2978,U+2978,&gtrarr;,Greater-Than Above Rightwards Arrow
+Arrows,&#10617;,\2979,U+2979,&subrarr;,Subset Above Rightwards Arrow
+Arrows,&#10619;,\297B,U+297B,&suplarr;,Superset Above Leftwards Arrow
+Arrows,&#10620;,\297C,U+297C,&lfisht;,Left Fish Tail
+Arrows,&#10621;,\297D,U+297D,&rfisht;,Right Fish Tail
+Arrows,&#10622;,\297E,U+297E,&ufisht;,Up Fish Tail
+Arrows,&#10623;,\297F,U+297F,&dfisht;,Down Fish Tail
+Arrows,&#10132;,\2794,U+02794,,Heavy Wide-headed Right Arrow
+Arrows,&#10136;,\2798,U+02798,,Heavy South East Arrow
+Arrows,&#10137;,\2799,U+02799,,Heavy Right Arrow
+Arrows,&#10138;,\279A,U+0279A,,Heavy North East Arrow
+Arrows,&#10139;,\279B,U+0279B,,Drafting Point Right Arrow
+Arrows,&#10140;,\279C,U+0279C,,Heavy Round-tipped Right Arrow
+Arrows,&#10141;,\279D,U+0279D,,Triangle-headed Right Arrow
+Arrows,&#10142;,\279E,U+0279E,,Heavy Triangle-headed Right Arrow
+Arrows,&#10143;,\279F,U+0279F,,Dashed Triangle-headed Right Arrow
+Arrows,&#10144;,\27A0,U+027A0,,Heavy Dashed Triangle-headed Right Arrow
+Arrows,&#10145;,\27A1,U+027A1,,Black Right Arrow
+Arrows,&#10146;,\27A2,U+027A2,,Three-d Top-lighted Right Arrowhead
+Arrows,&#10147;,\27A3,U+027A3,,Three-d Bottom-lighted Right Arrowhead
+Arrows,&#10148;,\27A4,U+027A4,,Black Right Arrowhead
+Arrows,&#10149;,\27A5,U+027A5,,Heavy Black Curved Down And Right Arrow
+Arrows,&#10150;,\27A6,U+027A6,,Heavy Black Curved Up And Right Arrow
+Arrows,&#10151;,\27A7,U+027A7,,Squat Black Right Arrow
+Arrows,&#10152;,\27a8,U+027A8,,Heavy Concave-pointed Black Right Arrow
+Arrows,&#10153;,\27A9,U+027A9,,Right-shaded White Right Arrow
+Arrows,&#10154;,\27AA,U+027AA,,Left-shaded White Right Arrow
+Arrows,&#10155;,\27AB,U+027AB,,Back-tilted Shadowed White Right Arrow
+Arrows,&#10156;,\27AC,U+027AC,,Front-tilted Shadowed White Right Arrow
+Arrows,&#10157;,\27AD,U+027AD,,Heavy Lower Right-shadowed White Right Arrow
+Arrows,&#10158;,\27AE,U+027AE,,Heavy Upper Right-shadowed White Right Arrow
+Arrows,&#10159;,\27AF,U+027AF,,Notched Lower Right-shadowed White Right Arrow
+Arrows,&#10161;,\27B1,U+027B1,,Notched Upper Right-shadowed White Right Arrow
+Arrows,&#10095;,\276F,U+276F,,Heavy Right-Pointing Angle Quotation Mark Ornament
+Arrows,&#10094;,\276E,U+276E,,Heavy Left-Pointing Angle Quotation Mark Ornament
+Asterisks,&#42;,\002A,U+0002A,&midast;,asterisk
+Asterisks,&#8270;,\204E,U+0204E,,low asterisk
+Asterisks,&#8273;,\2051,U+02051,,two Asterisks aligned vertically
+Asterisks,&#8727;,\2217,U+02217,&lowast;,asterisk operator
+Asterisks,&#10018;,\2722,U+02722,,four teardrop-spoked asterisk
+Asterisks,&#10019;,\2723,U+02723,,four balloon-spoked asterisk
+Asterisks,&#10020;,\2724,U+02724,,heavy four balloon-spoked asterisk
+Asterisks,&#10021;,\2725,U+02725,,four club-spoked asterisk
+Asterisks,&#10033;,\2731,U+02731,,heavy asterisk
+Asterisks,&#10034;,\2732,U+02732,,open center asterisk
+Asterisks,&#10035;,\2733,U+02733,,eight spoked asterisk
+Asterisks,&#10042;,\273A,U+0273A,,sixteen pointed asterisk
+Asterisks,&#10043;,\273B,U+0273B,,teardrop-spoked asterisk
+Asterisks,&#10044;,\273C,U+0273C,,open centre teardrop-spoked asterisk
+Asterisks,&#10045;,\273D,U+0273D,,heavy teardrop-spoked asterisk
+Asterisks,&#10051;,\2743,U+02743,,heavy teardrop-spoked pinwheel asterisk
+Asterisks,&#10057;,\2749,U+02749,,balloon-spoked asterisk
+Asterisks,&#10058;,\274A,U+0274A,,eight teardrop-spoked propeller asterisk
+Asterisks,&#10059;,\274B,U+0274B,,heavy eight teardrop-spoked propeller asterisk
+Asterisks,&#10694;,\29C6,U+029C6,,squared asterisk
+Asterisks,&#42611;,\A673,U+0A673,,slavonic asterisk
+Asterisks,&#65121;,\FE61,U+0FE61,,small asterisk
+Asterisks,&#65290;,\FF0A,U+0FF0A,,fullwidth asterisk
+Asterisks,&#128943;,\1F7AF,U+1F7AF,,light five spoked asterisk
+Asterisks,&#128944;,\1F7B0,U+1F7B0,,medium five spoked asterisk
+Asterisks,&#128945;,\1F7B1,U+1F7B1,,bold five spoked asterisk
+Asterisks,&#128946;,\1F7B2,U+1F7B2,,heavy five spoked asterisk
+Asterisks,&#128947;,\1F7B3,U+1F7B3,,very heavy five spoked asterisk
+Asterisks,&#128948;,\1F7B4,U+1F7B4,,extremely heavy five spoked asterisk
+Asterisks,&#128949;,\1F7B5,U+1F7B5,,light six spoked asterisk
+Asterisks,&#128950;,\1F7B6,U+1F7B6,,medium six spoked asterisk
+Asterisks,&#128951;,\1F7B7,U+1F7B7,,bold six spoked asterisk
+Asterisks,&#128952;,\1F7B8,U+1F7B8,,heavy six spoked asterisk
+Asterisks,&#128953;,\1F7B9,U+1F7B9,,very heavy six spoked asterisk
+Asterisks,&#128954;,\1F7BA,U+1F7BA,,extremely heavy six spoked asterisk
+Asterisks,&#128955;,\1F7BB,U+1F7BB,,light eight spoked asterisk
+Asterisks,&#128956;,\1F7BC,U+1F7BC,,medium eight spoked asterisk
+Asterisks,&#128957;,\1F7BD,U+1F7BD,,bold eight spoked asterisk
+Asterisks,&#128958;,\1F7BE,U+1F7BE,,heavy eight spoked asterisk
+Asterisks,&#128959;,\1F7BF,U+1F7BF,,very heavy eight spoked asterisk
 Currency,&#36;,\0024,U+0024,&dollar;,Dollar Sign
 Currency,&#162;,\00A2,U+00A2,&cent;,Cent Sign
 Currency,&#163;,\00A3,U+00A3,&pound;,Pound Sign
 Currency,&#164;,\00A4,U+00A4,&curren;,Currency Sign
 Currency,&#165;,\00A5,U+00A5,&yen;,Yen Sign
-Miscellaneous Symbols,&#169;,\00A9,U+00A9,&copy;,Copyright Sign
-Miscellaneous Symbols,&#174;,\00AE,U+00AE,&reg;,Registered Sign
-Miscellaneous Symbols,&#8482;,\2122,U+2122,&trade;,Trade Mark Sign
-Miscellaneous Symbols,&#64;,\0040,U+0040,&commat;,Commercial At
-Miscellaneous Symbols,&#8450;,\2102,U+2102,&Copf;,Double-Struck Capital C
-Miscellaneous Symbols,&#8453;,\2105,U+2105,&incare;,Care Of
-Miscellaneous Symbols,&#8458;,\210A,U+210A,&gscr;,Script Small G
-Miscellaneous Symbols,&#8459;,\210B,U+210B,&hamilt;,Script Capital H
-Miscellaneous Symbols,&#8460;,\210C,U+210C,&Hfr;,Black-Letter Capital H
-Miscellaneous Symbols,&#8461;,\210D,U+210D,&Hopf;,Double-Struck Capital H
-Miscellaneous Symbols,&#8462;,\210E,U+210E,&planckh;,Planck Constant
-Miscellaneous Symbols,&#8463;,\210F,U+210F,&planck;,Planck Constant Over Two Pi
-Miscellaneous Symbols,&#8464;,\2110,U+2110,&Iscr;,Script Capital I
-Miscellaneous Symbols,&#8465;,\2111,U+2111,&image;,Black-Letter Capital I
-Miscellaneous Symbols,&#8466;,\2112,U+2112,&Lscr;,Script Capital L
-Miscellaneous Symbols,&#8467;,\2113,U+2113,&ell;,Script Small L
-Miscellaneous Symbols,&#8469;,\2115,U+2115,&Nopf;,Double-Struck Capital N
-Miscellaneous Symbols,&#8470;,\2116,U+2116,&numero;,Numero Sign
-Miscellaneous Symbols,&#8471;,\2117,U+2117,&copysr;,Sound Recording Copyright
-Miscellaneous Symbols,&#8472;,\2118,U+2118,&weierp;,Script Capital P
-Miscellaneous Symbols,&#8473;,\2119,U+2119,&Popf;,Double-Struck Capital P
-Miscellaneous Symbols,&#8474;,\211A,U+211A,&Qopf;,Double-Struck Capital Q
-Miscellaneous Symbols,&#8475;,\211B,U+211B,&Rscr;,Script Capital R
-Miscellaneous Symbols,&#8476;,\211C,U+211C,&real;,Black-Letter Capital R
-Miscellaneous Symbols,&#8477;,\211D,U+211D,&Ropf;,Double-Struck Capital R
-Miscellaneous Symbols,&#8478;,\211E,U+211E,&rx;,Prescription Take
-Miscellaneous Symbols,&#8484;,\2124,U+2124,&Zopf;,Double-Struck Capital Z
-Miscellaneous Symbols,&#8487;,\2127,U+2127,&mho;,Inverted Ohm Sign
-Miscellaneous Symbols,&#8488;,\2128,U+2128,&Zfr;,Black-Letter Capital Z
-Miscellaneous Symbols,&#8489;,\2129,U+2129,&iiota;,Turned Greek Small Letter Iota
-Miscellaneous Symbols,&#8492;,\212C,U+212C,&bernou;,Script Capital B
-Miscellaneous Symbols,&#8493;,\212D,U+212D,&Cfr;,Black-Letter Capital C
-Miscellaneous Symbols,&#8495;,\212F,U+212F,&escr;,Script Small E
-Miscellaneous Symbols,&#8496;,\2130,U+2130,&Escr;,Script Capital E
-Miscellaneous Symbols,&#8497;,\2131,U+2131,&Fscr;,Script Capital F
-Miscellaneous Symbols,&#8499;,\2133,U+2133,&Mscr;,Script Capital M
-Miscellaneous Symbols,&#8500;,\2134,U+2134,&oscr;,Script Small O
-Miscellaneous Symbols,&#8501;,\2135,U+2135,&alefsym;,Alef Symbol
-Miscellaneous Symbols,&#8502;,\2136,U+2136,&beth;,Bet Symbol
-Miscellaneous Symbols,&#8503;,\2137,U+2137,&gimel;,Gimel Symbol
-Miscellaneous Symbols,&#8504;,\2138,U+2138,&daleth;,Dalet Symbol
-Miscellaneous Symbols,&#8517;,\2145,U+2145,&DD;,Double-Struck Italic Capital D
-Miscellaneous Symbols,&#8518;,\2146,U+2146,&dd;,Double-Struck Italic Small D
-Miscellaneous Symbols,&#8519;,\2147,U+2147,&ee;,Double-Struck Italic Small E
-Miscellaneous Symbols,&#8520;,\2148,U+2148,&ii;,Double-Struck Italic Small I
-Miscellaneous Symbols,&#9733;,\2605,U+2605,&starf;,Black Star
-Miscellaneous Symbols,&#9734;,\2606,U+2606,&star;,White Star
-Miscellaneous Symbols,&#9742;,\260E,U+260E,&phone;,Black Telephone
-Miscellaneous Symbols,&#9792;,\2640,U+2640,&female;,Female Sign
-Miscellaneous Symbols,&#9794;,\2642,U+2642,&male;,Male Sign
-Miscellaneous Symbols,&#9824;,\2660,U+2660,&spades;,Black Spade Suit
-Miscellaneous Symbols,&#9827;,\2663,U+2663,&clubs;,Black Club Suit
-Miscellaneous Symbols,&#9829;,\2665,U+2665,&hearts;,Black Heart Suit
-Miscellaneous Symbols,&#9830;,\2666,U+2666,&diams;,Black Diamond Suit
-Miscellaneous Symbols,&#9674;,\25CA,U+25CA,&loz;,Lozenge
-Miscellaneous Symbols,&#9834;,\266A,U+266A,&sung;,Eighth Note
-Miscellaneous Symbols,&#9837;,\266D,U+266D,&flat;,Music Flat Sign
-Miscellaneous Symbols,&#9838;,\266E,U+266E,&natural;,Music Natural Sign
-Miscellaneous Symbols,&#9839;,\266F,U+266F,&sharp;,Music Sharp Sign
-Miscellaneous Symbols,&#10003;,\2713,U+2713,&check;,Check Mark
-Miscellaneous Symbols,&#10004;,\2714,U+2714,&#x2714;,Heavy Check Mark
-Miscellaneous Symbols,&#128504;,\1F5F8,U+1F5F8,&#x1F5F8;,Light Check Mark
-Miscellaneous Symbols,&#9083;,\237B,U+237B,&#x237B;,Not Check Mark
-Miscellaneous Symbols,&#10007;,\2717,U+2717,&cross;,Ballot X
-Miscellaneous Symbols,&#10016;,\2720,U+2720,&malt;,Maltese Cross
-Miscellaneous Symbols,&#10038;,\2736,U+2736,&sext;,Six Pointed Black Star
-Miscellaneous Symbols,&#10072;,\2758,U+2758,&VerticalSeparator;,Light Vertical Bar
-Miscellaneous Symbols,&#10098;,\2772,U+2772,&lbbrk;,Light Left Tortoise Shell Bracket Ornament
-Miscellaneous Symbols,&#10099;,\2773,U+2773,&rbbrk;,Light Right Tortoise Shell Bracket Ornament
-Punctuation Symbols,&#33;,\0021,U+0021,&excl;,Exclamation Mark
-Punctuation Symbols,&#35;,\0023,U+0023,&num;,Number Sign
-Punctuation Symbols,&#37;,\0025,U+0025,&percnt;,Percent Sign
-Punctuation Symbols,&#38;,\0026,U+0026,&amp;,Ampersand
-Punctuation Symbols,&#40;,\0028,U+0028,&lpar;,Left Parenthesis
-Punctuation Symbols,&#41;,\0029,U+0029,&rpar;,Right Parenthesis
-Punctuation Symbols,&#42;,\002A,U+002A,&ast;,Asterisk
-Punctuation Symbols,&#10059;,\274B,U+274B,&#x274B;,Heavy Eight Teardrop-Spoked Propeller Asterisk
-Punctuation Symbols,&#44;,\002C,U+002C,&comma;,Comma
-Punctuation Symbols,&#46;,\002E,U+002E,&period;,Full Stop
-Punctuation Symbols,&#47;,\002F,U+002F,&sol;,Solidus
-Punctuation Symbols,&#58;,\003A,U+003A,&colon;,Colon
-Punctuation Symbols,&#59;,\003B,U+003B,&semi;,Semicolon
-Punctuation Symbols,&#63;,\003F,U+003F,&quest;,Question Mark
-Punctuation Symbols,&#91;,\005B,U+005B,&lbrack;,Left Square Bracket
-Punctuation Symbols,&#92;,\005C,U+005C,&bsol;,Reverse Solidus
-Punctuation Symbols,&#93;,\005D,U+005D,&rbrack;,Right Square Bracket
-Punctuation Symbols,&#94;,\005E,U+005E,&Hat;,Circumflex Accent
-Punctuation Symbols,&#95;,\005F,U+005F,&lowbar;,Low Line
-Punctuation Symbols,&#96;,\0060,U+0060,&grave;,Grave Accent
-Punctuation Symbols,&#123;,\007B,U+007B,&lbrace;,Left Curly Bracket
-Punctuation Symbols,&#124;,\007C,U+007C,&vert;,Vertical Line
-Punctuation Symbols,&#125;,\007D,U+007D,&rbrace;,Right Curly Bracket
-Punctuation Symbols,&#126;,\007E,U+007E,&tilde;,Tilde
-Punctuation Symbols,&#710;,\02C6,U+02C6,&circ;,Modifier Letter Circumflex Accent
-Punctuation Symbols,&#160;,\00A0,U+00A0,&nbsp;,No-Break Space
-Punctuation Symbols,&#8194;,\2002,U+2002,&ensp;,En Space
-Punctuation Symbols,&#8195;,\2003,U+2003,&emsp;,Em Space
-Punctuation Symbols,&#8201;,\2009,U+2009,&thinsp;,Thin Space
-Punctuation Symbols,&#8204;,\200C,U+200C,&zwnj;,Zero Width Non-Joiner
-Punctuation Symbols,&#8205;,\200D,U+200D,&zwj;,Zero Width Joiner
-Punctuation Symbols,&#8206;,\200E,U+200E,&lrm;,Left-To-Right Mark
-Punctuation Symbols,&#8207;,\200F,U+200F,&rlm;,Right-To-Left Mark
-Punctuation Symbols,&#161;,\00A1,U+00A1,&iexcl;,Inverted Exclamation Mark
-Punctuation Symbols,&#166;,\00A6,U+00A6,&brvbar;,Broken Bar
-Punctuation Symbols,&#167;,\00A7,U+00A7,&sect;,Section Sign
-Punctuation Symbols,&#168;,\00A8,U+00A8,&uml;,Diaeresis
-Punctuation Symbols,&#170;,\00AA,U+00AA,&ordf;,Feminine Ordinal Indicator
-Punctuation Symbols,&#172;,\00AC,U+00AC,&not;,Not Sign
-Punctuation Symbols,&#173;,\00AD,U+00AD,&shy;,Soft Hyphen
-Punctuation Symbols,&#175;,\00AF,U+00AF,&macr;,Macron
-Punctuation Symbols,&#178;,\00B2,U+00B2,&sup2;,Superscript Two
-Punctuation Symbols,&#179;,\00B3,U+00B3,&sup3;,Superscript Three
-Punctuation Symbols,&#180;,\00B4,U+00B4,&acute;,Acute Accent
-Punctuation Symbols,&#181;,\00B5,U+00B5,&micro;,Micro Sign
-Punctuation Symbols,&#182;,\00B6,U+00B6,&para;,Pilcrow Sign
-Punctuation Symbols,&#183;,\00B7,U+00B7,&middot;,Middle Dot
-Punctuation Symbols,&#184;,\00B8,U+00B8,&cedil;,Cedilla
-Punctuation Symbols,&#185;,\00B9,U+00B9,&sup1;,Superscript One
-Punctuation Symbols,&#186;,\00BA,U+00BA,&ordm;,Masculine Ordinal Indicator
-Punctuation Symbols,&#191;,\00BF,U+00BF,&iquest;,Inverted Question Mark
-Punctuation Symbols,&#8208;,\2010,U+2010,&hyphen;,Hyphen
-Punctuation Symbols,&#8211;,\2013,U+2013,&ndash;,En Dash
-Punctuation Symbols,&#8212;,\2014,U+2014,&mdash;,Em Dash
-Punctuation Symbols,&#8213;,\2015,U+2015,&horbar;,Horizontal Bar
-Punctuation Symbols,&#8214;,\2016,U+2016,&Vert;,Double Vertical Line
-Punctuation Symbols,&#8224;,\2020,U+2020,&dagger;,Dagger
-Punctuation Symbols,&#8225;,\2021,U+2021,&Dagger;,Double Dagger
-Punctuation Symbols,&#8226;,\2022,U+2022,&bull;,Bullet
-Punctuation Symbols,&#8229;,\2025,U+2025,&nldr;,Two Dot Leader
-Punctuation Symbols,&#8230;,\2026,U+2026,&hellip;,Horizontal Ellipsis
-Punctuation Symbols,&#8240;,\2030,U+2030,&;,Per Mille Sign
-Punctuation Symbols,&#8241;,\2031,U+2031,&pertenk;,Per Ten Thousand Sign
-Punctuation Symbols,&#8242;,\2032,U+2032,&prime;,Prime
-Punctuation Symbols,&#8243;,\2033,U+2033,&Prime;,Double Prime
-Punctuation Symbols,&#8244;,\2034,U+2034,&tprime;,Triple Prime
-Punctuation Symbols,&#8245;,\2035,U+2035,&bprime;,Reversed Prime
-Punctuation Symbols,&#8254;,\203E,U+203E,&oline;,Overline
-Punctuation Symbols,&#8257;,\2041,U+2041,&caret;,Caret Insertion Point
-Punctuation Symbols,&#8259;,\2043,U+2043,&hybull;,Hyphen Bullet
-Punctuation Symbols,&#8260;,\2044,U+2044,&frasl;,Fraction Slash
-Punctuation Symbols,&#8271;,\204F,U+204F,&bsemi;,Reversed Semicolon
-Punctuation Symbols,&#8279;,\2057,U+2057,&qprime;,Quadruple Prime
-Quotation Marks,&#34;,\0022,U+0022,&quot;,Quotation Mark
-Quotation Marks,&#39;,\0027,U+0027,&apos;,Apostrophe
-Quotation Marks,&#171;,\00AB,U+00AB,&laquo;,Left-Pointing Double Angle Quotation Mark
-Quotation Marks,&#187;,\00BB,U+00BB,&raquo;,Right-Pointing Double Angle Quotation Mark
-Quotation Marks,&#8216;,\2018,U+2018,&lsquo;,Left Single Quotation Mark
-Quotation Marks,&#8217;,\2019,U+2019,&rsquo;,Right Single Quotation Mark
-Quotation Marks,&#8218;,\201A,U+201A,&sbquo;,Single Low-9 Quotation Mark
-Quotation Marks,&#8220;,\201C,U+201C,&ldquo;,Left Double Quotation Mark
-Quotation Marks,&#8221;,\201D,U+201D,&rdquo;,Right Double Quotation Mark
-Quotation Marks,&#8222;,\201E,U+201E,&bdquo;,Double Low-9 Quotation Mark
-Quotation Marks,&#8249;,\2039,U+2039,&lsaquo;,Single Left-Pointing Angle Quotation Mark
-Quotation Marks,&#8250;,\203A,U+203A,&rsaquo;,Single Right-Pointing Angle Quotation Mark
+Flags,&#9872;,\2690,U+02690,,White Flag
+Flags,&#9873;,\2691,U+02691,,Black Flag
+Flags,&#128681;,\1F6A9,U+1F6A9,,Triangular Flag
+Flags,&#127884;,\1F38C,U+1F38C,,Crossed Flags
+Flags,&#127937;,\1F3C1,U+1F3C1,,Chequered Flag
+Flags,&#127988;,\1F3F4,U+1F3F4,,Waving Black Flag
+Flags,&#127987;,\1F3F3,U+1F3F3,,Waving White Flag
+Flags,&#9971;,\26F3,U+26F3,,Flag In Hole
 Fractions,&#188;,\00BC,U+00BC,&frac14;,Vulgar Fraction One Quarter
 Fractions,&#189;,\00BD,U+00BD,&frac12;,Vulgar Fraction One Half
 Fractions,&#190;,\00BE,U+00BE,&frac34;,Vulgar Fraction Three Quarters
@@ -213,6 +233,240 @@ Fractions,&#8539;,\215B,U+215B,&frac18;,Vulgar Fraction One Eighth
 Fractions,&#8540;,\215C,U+215C,&frac38;,Vulgar Fraction Three Eighths
 Fractions,&#8541;,\215D,U+215D,&frac58;,Vulgar Fraction Five Eighths
 Fractions,&#8542;,\215E,U+215E,&frac78;,Vulgar Fraction Seven Eighths
+Greek Letters,&#913;,\0391,U+0391,&Alpha;,Greek Capital Letter Alpha
+Greek Letters,&#914;,\0392,U+0392,&Beta;,Greek Capital Letter Beta
+Greek Letters,&#915;,\0393,U+0393,&Gamma;,Greek Capital Letter Gamma
+Greek Letters,&#916;,\0394,U+0394,&Delta;,Greek Capital Letter Delta
+Greek Letters,&#917;,\0395,U+0395,&Epsilon;,Greek Capital Letter Epsilon
+Greek Letters,&#918;,\0396,U+0396,&Zeta;,Greek Capital Letter Zeta
+Greek Letters,&#919;,\0397,U+0397,&Eta;,Greek Capital Letter Eta
+Greek Letters,&#920;,\0398,U+0398,&Theta;,Greek Capital Letter Theta
+Greek Letters,&#921;,\0399,U+0399,&Iota;,Greek Capital Letter Iota
+Greek Letters,&#922;,\039A,U+039A,&Kappa;,Greek Capital Letter Kappa
+Greek Letters,&#923;,\039B,U+039B,&Lambda;,Greek Capital Letter Lamda
+Greek Letters,&#924;,\039C,U+039C,&Mu;,Greek Capital Letter Mu
+Greek Letters,&#925;,\039D,U+039D,&Nu;,Greek Capital Letter Nu
+Greek Letters,&#926;,\039E,U+039E,&Xi;,Greek Capital Letter Xi
+Greek Letters,&#927;,\039F,U+039F,&Omicron;,Greek Capital Letter Omicron
+Greek Letters,&#928;,\03A0,U+03A0,&Pi;,Greek Capital Letter Pi
+Greek Letters,&#929;,\03A1,U+03A1,&Rho;,Greek Capital Letter Rho
+Greek Letters,&#931;,\03A3,U+03A3,&Sigma;,Greek Capital Letter Sigma
+Greek Letters,&#932;,\03A4,U+03A4,&Tau;,Greek Capital Letter Tau
+Greek Letters,&#933;,\03A5,U+03A5,&Upsilon;,Greek Capital Letter Upsilon
+Greek Letters,&#934;,\03A6,U+03A6,&Phi;,Greek Capital Letter Phi
+Greek Letters,&#935;,\03A7,U+03A7,&Chi;,Greek Capital Letter Chi
+Greek Letters,&#936;,\03A8,U+03A8,&Psi;,Greek Capital Letter Psi
+Greek Letters,&#937;,\03A9,U+03A9,&Omega;,Greek Capital Letter Omega
+Greek Letters,&#945;,\03B1,U+03B1,&alpha;,Greek Small Letter Alpha
+Greek Letters,&#946;,\03B2,U+03B2,&beta;,Greek Small Letter Beta
+Greek Letters,&#947;,\03B3,U+03B3,&gamma;,Greek Small Letter Gamma
+Greek Letters,&#948;,\03B4,U+03B4,&delta;,Greek Small Letter Delta
+Greek Letters,&#949;,\03B5,U+03B5,&epsilon;,Greek Small Letter Epsilon
+Greek Letters,&#950;,\03B6,U+03B6,&zeta;,Greek Small Letter Zeta
+Greek Letters,&#951;,\03B7,U+03B7,&eta;,Greek Small Letter Eta
+Greek Letters,&#952;,\03B8,U+03B8,&theta;,Greek Small Letter Theta
+Greek Letters,&#953;,\03B9,U+03B9,&iota;,Greek Small Letter Iota
+Greek Letters,&#954;,\03BA,U+03BA,&kappa;,Greek Small Letter Kappa
+Greek Letters,&#955;,\03BB,U+03BB,&lambda;,Greek Small Letter Lamda
+Greek Letters,&#956;,\03BC,U+03BC,&mu;,Greek Small Letter Mu
+Greek Letters,&#957;,\03BD,U+03BD,&nu;,Greek Small Letter Nu
+Greek Letters,&#958;,\03BE,U+03BE,&xi;,Greek Small Letter Xi
+Greek Letters,&#959;,\03BF,U+03BF,&omicron;,Greek Small Letter Omicron
+Greek Letters,&#960;,\03C0,U+03C0,&pi;,Greek Small Letter Pi
+Greek Letters,&#961;,\03C1,U+03C1,&rho;,Greek Small Letter Rho
+Greek Letters,&#962;,\03C2,U+03C2,&sigmaf;,Greek Small Letter Final Sigma
+Greek Letters,&#963;,\03C3,U+03C3,&sigma;,Greek Small Letter Sigma
+Greek Letters,&#964;,\03C4,U+03C4,&tau;,Greek Small Letter Tau
+Greek Letters,&#965;,\03C5,U+03C5,&upsilon;,Greek Small Letter Upsilon
+Greek Letters,&#966;,\03C6,U+03C6,&phi;,Greek Small Letter Phi
+Greek Letters,&#967;,\03C7,U+03C7,&chi;,Greek Small Letter Chi
+Greek Letters,&#968;,\03C8,U+03C8,&psi;,Greek Small Letter Psi
+Greek Letters,&#969;,\03C9,U+03C9,&omega;,Greek Small Letter Omega
+Greek Letters,&#977;,\03D1,U+03D1,&thetasym;,Greek Theta Symbol
+Greek Letters,&#978;,\03D2,U+03D2,&upsih;,Greek Upsilon with Hook Symbol
+Greek Letters,&#982;,\03D6,U+03D6,&piv;,Greek Pi Symbol
+Latin Letters,&#192;,\00C0,U+00C0,&Agrave;,Latin Capital Letter a with Grave
+Latin Letters,&#193;,\00C1,U+00C1,&Aacute;,Latin Capital Letter a with Acute
+Latin Letters,&#194;,\00C2,U+00C2,&Acirc;,Latin Capital Letter a with Circumflex
+Latin Letters,&#195;,\00C3,U+00C3,&Atilde;,Latin Capital Letter a with Tilde
+Latin Letters,&#196;,\00C4,U+00C4,&Auml;,Latin Capital Letter a with Diaeresis
+Latin Letters,&#197;,\00C5,U+00C5,&Aring;,Latin Capital Letter a with Ring Above
+Latin Letters,&#198;,\00C6,U+00C6,&AElig;,Latin Capital Letter Ae
+Latin Letters,&#199;,\00C7,U+00C7,&Ccedil;,Latin Capital Letter C with Cedilla
+Latin Letters,&#200;,\00C8,U+00C8,&Egrave;,Latin Capital Letter E with Grave
+Latin Letters,&#201;,\00C9,U+00C9,&Eacute;,Latin Capital Letter E with Acute
+Latin Letters,&#202;,\00CA,U+00CA,&Ecirc;,Latin Capital Letter E with Circumflex
+Latin Letters,&#203;,\00CB,U+00CB,&Euml;,Latin Capital Letter E with Diaeresis
+Latin Letters,&#204;,\00CC,U+00CC,&Lgrave;,Latin Capital Letter I with Grave
+Latin Letters,&#313;,\0139,U+0139,&Lacute;,Latin Capital Letter L with Acute
+Latin Letters,&#206;,\00CE,U+00CE,&Lcirc;,Latin Capital Letter I with Circumflex
+Latin Letters,&#207;,\00CF,U+00CF,&Luml;,Latin Capital Letter I with Diaeresis
+Latin Letters,&#208;,\00D0,U+00D0,&ETH;,Latin Capital Letter Eth
+Latin Letters,&#209;,\00D1,U+00D1,&Ntilde;,Latin Capital Letter N with Tilde
+Latin Letters,&#210;,\00D2,U+00D2,&Ograve;,Latin Capital Letter O with Grave
+Latin Letters,&#211;,\00D3,U+00D3,&Oacute;,Latin Capital Letter O with Acute
+Latin Letters,&#212;,\00D4,U+00D4,&Ocirc;,Latin Capital Letter O with Circumflex
+Latin Letters,&#213;,\00D5,U+00D5,&Otilde;,Latin Capital Letter O with Tilde
+Latin Letters,&#214;,\00D6,U+00D6,&Ouml;,Latin Capital Letter O with Diaeresis
+Latin Letters,&#216;,\00D8,U+00D8,&Oslash;,Latin Capital Letter O with Stroke
+Latin Letters,&#217;,\00D9,U+00D9,&Ugrave;,Latin Capital Letter U with Grave
+Latin Letters,&#218;,\00DA,U+00DA,&Uacute;,Latin Capital Letter U with Acute
+Latin Letters,&#219;,\00DB,U+00DB,&Ucirc;,Latin Capital Letter U with Circumflex
+Latin Letters,&#220;,\00DC,U+00DC,&Uuml;,Latin Capital Letter U with Diaeresis
+Latin Letters,&#221;,\00DD,U+00DD,&Yacute;,Latin Capital Letter Y with Acute
+Latin Letters,&#222;,\00DE,U+00DE,&THORN;,Latin Capital Letter Thorn
+Latin Letters,&#223;,\00DF,U+00DF,&szlig;,Latin Small Letter Sharp S
+Latin Letters,&#224;,\00E0,U+00E0,&agrave;,Latin Small Letter a with Grave
+Latin Letters,&#225;,\00E1,U+00E1,&aacute;,
+Latin Letters,&#226;,\00E2,U+00E2,&acirc;,
+Latin Letters,&#227;,\00E3,U+00E3,&atilde;,
+Latin Letters,&#228;,\00E4,U+00E4,&auml;,
+Latin Letters,&#229;,\00E5,U+00E5,&aring;,
+Latin Letters,&#230;,\00E6,U+00E6,&aelig;,
+Latin Letters,&#231;,\00E7,U+00E7,&ccedil;,
+Latin Letters,&#232;,\00E8,U+00E8,&egrave;,
+Latin Letters,&#233;,\00E9,U+00E9,&eacute;,
+Latin Letters,&#234;,\00EA,U+00EA,&ecirc;,Latin Small Letter E with Circumflex
+Latin Letters,&#235;,\00EB,U+00EB,&euml;,Latin Small Letter E with Diaeresis
+Latin Letters,&#236;,\00EC,U+00EC,&igrave;,Latin Small Letter I with Grave
+Latin Letters,&#237;,\00ED,U+00ED,&iacute;,Latin Small Letter I with Acute
+Latin Letters,&#238;,\00EE,U+00EE,&icirc;,Latin Small Letter I with Circumflex
+Latin Letters,&#239;,\00EF,U+00EF,&iuml;,Latin Small Letter I with Diaeresis
+Latin Letters,&#240;,\00F0,U+00F0,&eth;,Latin Small Letter Eth
+Latin Letters,&#241;,\00F1,U+00F1,&ntilde;,Latin Small Letter N with Tilde
+Latin Letters,&#242;,\00F2,U+00F2,&ograve;,Latin Small Letter O with Grave
+Latin Letters,&#243;,\00F3,U+00F3,&oacute;,Latin Small Letter O with Acute
+Latin Letters,&#244;,\00F4,U+00F4,&ocirc;,Latin Small Letter O with Circumflex
+Latin Letters,&#245;,\00F5,U+00F5,&otilde;,Latin Small Letter O with Tilde
+Latin Letters,&#246;,\00F6,U+00F6,&ouml;,Latin Small Letter O with Diaeresis
+Latin Letters,&#248;,\00F8,U+00F8,&oslash;,Latin Small Letter O with Stroke
+Latin Letters,&#249;,\00F9,U+00F9,&ugrave;,Latin Small Letter U with Grave
+Latin Letters,&#250;,\00FA,U+00FA,&uacute;,Latin Small Letter U with Acute
+Latin Letters,&#251;,\00FB,U+00FB,&ucirc;,Latin Small Letter U with Circumflex
+Latin Letters,&#252;,\00FC,U+00FC,&uuml;,U with two Dots
+Latin Letters,&#253;,\00FD,U+00FD,&yacute;,Latin Small Letter Y with Acute
+Latin Letters,&#254;,\00FE,U+00FE,&thorn;,Latin Small Letter Thorn
+Latin Letters,&#255;,\00FF,U+00FF,&yuml;,Latin Small Letter Y with Diaeresis
+Latin Letters,&#256;,\0100,U+0100,&Amacr;,Latin Capital Letter a with Macron
+Latin Letters,&#257;,\0101,U+0101,&amacr;,Latin Small Letter a with Macron
+Latin Letters,&#258;,\0102,U+0102,&Abreve;,Latin Capital Letter a with Breve
+Latin Letters,&#259;,\0103,U+0103,&abreve;,Latin Small Letter a with Breve
+Latin Letters,&#260;,\0104,U+0104,&Aogon;,Latin Capital Letter a with Ogonek
+Latin Letters,&#261;,\0105,U+0105,&aogon;,Latin Small Letter a with Ogonek
+Latin Letters,&#262;,\0106,U+0106,&Cacute;,Latin Capital Letter C with Acute
+Latin Letters,&#263;,\0107,U+0107,&cacute;,Latin Small Letter C with Acute
+Latin Letters,&#264;,\0108,U+0108,&Ccirc;,Latin Capital Letter C with Circumflex
+Latin Letters,&#265;,\0109,U+0109,&ccirc;,Latin Small Letter C with Circumflex
+Latin Letters,&#266;,\010A,U+010A,&Cdot;,Latin Capital Letter C with Dot Above
+Latin Letters,&#267;,\010B,U+010B,&cdot;,Latin Small Letter C with Dot Above
+Latin Letters,&#268;,\010C,U+010C,&Ccaron;,Latin Capital Letter C with Caron
+Latin Letters,&#269;,\010D,U+010D,&ccaron;,Latin Small Letter C with Caron
+Latin Letters,&#270;,\010E,U+010E,&Dcaron;,Latin Capital Letter D with Caron
+Latin Letters,&#271;,\010F,U+010F,&dcaron;,Latin Small Letter D with Caron
+Latin Letters,&#272;,\0110,U+0110,&Dstrok;,Latin Capital Letter D with Stroke
+Latin Letters,&#273;,\0111,U+0111,&dstrok;,Latin Small Letter D with Stroke
+Latin Letters,&#274;,\0112,U+0112,&Emacr;,Latin Capital Letter E with Macron
+Latin Letters,&#275;,\0113,U+0113,&emacr;,Latin Small Letter E with Macron
+Latin Letters,&#278;,\0116,U+0116,&Edot;,Latin Capital Letter E with Dot Above
+Latin Letters,&#279;,\0117,U+0117,&edot;,Latin Small Letter E with Dot Above
+Latin Letters,&#280;,\0118,U+0118,&Eogon;,Latin Capital Letter E with Ogonek
+Latin Letters,&#281;,\0119,U+0119,&eogon;,Latin Small Letter E with Ogonek
+Latin Letters,&#282;,\011A,U+011A,&Ecaron;,Latin Capital Letter E with Caron
+Latin Letters,&#283;,\011B,U+011B,&ecaron;,Latin Small Letter E with Caron
+Latin Letters,&#284;,\011C,U+011C,&Gcirc;,Latin Capital Letter G with Circumflex
+Latin Letters,&#285;,\011D,U+011D,&gcirc;,Latin Small Letter G with Circumflex
+Latin Letters,&#286;,\011E,U+011E,&Gbreve;,Latin Capital Letter G with Breve
+Latin Letters,&#287;,\011F,U+011F,&gbreve;,Latin Small Letter G with Breve
+Latin Letters,&#288;,\0120,U+0120,&Gdot;,Latin Capital Letter G with Dot Above
+Latin Letters,&#289;,\0121,U+0121,&gdot;,Latin Small Letter G with Dot Above
+Latin Letters,&#290;,\0122,U+0122,&Gcedil;,Latin Capital Letter G with Cedilla
+Latin Letters,&#292;,\0124,U+0124,&Hcirc;,Latin Capital Letter H with Circumflex
+Latin Letters,&#293;,\0125,U+0125,&hcirc;,Latin Small Letter H with Circumflex
+Latin Letters,&#294;,\0126,U+0126,&Hstrok;,Latin Capital Letter H with Stroke
+Latin Letters,&#295;,\0127,U+0127,&hstrok;,Latin Small Letter H with Stroke
+Latin Letters,&#296;,\0128,U+0128,&Itilde;,Latin Capital Letter I with Tilde
+Latin Letters,&#297;,\0129,U+0129,&itilde;,Latin Small Letter I with Tilde
+Latin Letters,&#298;,\012A,U+012A,&Imacr;,Latin Capital Letter I with Macron
+Latin Letters,&#299;,\012B,U+012B,&imacr;,Latin Small Letter I with Macron
+Latin Letters,&#302;,\012E,U+012E,&Iogon;,Latin Capital Letter I with Ogonek
+Latin Letters,&#303;,\012F,U+012F,&iogon;,Latin Small Letter I with Ogonek
+Latin Letters,&#304;,\0130,U+0130,&Idot;,Latin Capital Letter I with Dot Above
+Latin Letters,&#305;,\0131,U+0131,&imath;,Latin Small Letter Dotless I
+Latin Letters,&#306;,\0132,U+0132,&IJlig;,Latin Capital Ligature Ij
+Latin Letters,&#307;,\0133,U+0133,&ijlig;,Latin Small Ligature Ij
+Latin Letters,&#308;,\0134,U+0134,&Jcirc;,Latin Capital Letter J with Circumflex
+Latin Letters,&#309;,\0135,U+0135,&jcirc;,Latin Small Letter J with Circumflex
+Latin Letters,&#310;,\0136,U+0136,&Kcedil;,Latin Capital Letter K with Cedilla
+Latin Letters,&#311;,\0137,U+0137,&kcedil;,Latin Small Letter K with Cedilla
+Latin Letters,&#312;,\0138,U+0138,&kgreen;,Latin Small Letter Kra
+Latin Letters,&#314;,\013A,U+013A,&lacute;,Latin Small Letter L with Acute
+Latin Letters,&#315;,\013B,U+013B,&Lcedil;,Latin Capital Letter L with Cedilla
+Latin Letters,&#316;,\013C,U+013C,&lcedil;,Latin Small Letter L with Cedilla
+Latin Letters,&#317;,\013D,U+013D,&Lcaron;,Latin Capital Letter L with Caron
+Latin Letters,&#318;,\013E,U+013E,&lcaron;,Latin Small Letter L with Caron
+Latin Letters,&#319;,\013F,U+013F,&Lmidot;,Latin Capital Letter L with Middle Dot
+Latin Letters,&#320;,\0140,U+0140,&lmidot;,Latin Small Letter L with Middle Dot
+Latin Letters,&#321;,\0141,U+0141,&Lstrok;,Latin Capital Letter L with Stroke
+Latin Letters,&#322;,\0142,U+0142,&lstrok;,Latin Small Letter L with Stroke
+Latin Letters,&#323;,\0143,U+0143,&Nacute;,Latin Capital Letter N with Acute
+Latin Letters,&#324;,\0144,U+0144,&nacute;,Latin Small Letter N with Acute
+Latin Letters,&#325;,\0145,U+0145,&Ncedil;,Latin Capital Letter N with Cedilla
+Latin Letters,&#326;,\0146,U+0146,&ncedil;,Latin Small Letter N with Cedilla
+Latin Letters,&#327;,\0147,U+0147,&Ncaron;,Latin Capital Letter N with Caron
+Latin Letters,&#328;,\0148,U+0148,&ncaron;,Latin Small Letter N with Caron
+Latin Letters,&#329;,\0149,U+0149,&napos;,Latin Small Letter N Preceded By Apostrophe
+Latin Letters,&#330;,\014A,U+014A,&ENG;,Latin Capital Letter Eng
+Latin Letters,&#331;,\014B,U+014B,&eng;,Latin Small Letter Eng
+Latin Letters,&#332;,\014C,U+014C,&Omacr;,Latin Capital Letter O with Macron
+Latin Letters,&#333;,\014D,U+014D,&omacr;,Latin Small Letter O with Macron
+Latin Letters,&#336;,\0150,U+0150,&Odblac;,Latin Capital Letter O with Double Acute
+Latin Letters,&#337;,\0151,U+0151,&odblac;,Latin Small Letter O with Double Acute
+Latin Letters,&#338;,\0152,U+0152,&OElig;,Latin Capital Ligature Oe
+Latin Letters,&#339;,\0153,U+0153,&oelig;,Latin Small Ligature Oe
+Latin Letters,&#340;,\0154,U+0154,&Racute;,Latin Capital Letter R with Acute
+Latin Letters,&#341;,\0155,U+0155,&racute;,Latin Small Letter R with Acute
+Latin Letters,&#342;,\0156,U+0156,&Rcedil;,Latin Capital Letter R with Cedilla
+Latin Letters,&#343;,\0157,U+0157,&rcedil;,Latin Small Letter R with Cedilla
+Latin Letters,&#344;,\0158,U+0158,&Rcaron;,Latin Capital Letter R with Caron
+Latin Letters,&#345;,\0159,U+0159,&rcaron;,Latin Small Letter R with Caron
+Latin Letters,&#346;,\015A,U+015A,&Sacute;,Latin Capital Letter S with Acute
+Latin Letters,&#347;,\015B,U+015B,&sacute;,Latin Small Letter S with Acute
+Latin Letters,&#348;,\015C,U+015C,&Scirc;,Latin Capital Letter S with Circumflex
+Latin Letters,&#349;,\015D,U+015D,&scirc;,Latin Small Letter S with Circumflex
+Latin Letters,&#350;,\015E,U+015E,&Scedil;,Latin Capital Letter S with Cedilla
+Latin Letters,&#351;,\015F,U+015F,&scedil;,Latin Small Letter S with Cedilla
+Latin Letters,&#352;,\0160,U+0160,&Scaron;,Latin Capital Letter S with Caron
+Latin Letters,&#353;,\0161,U+0161,&scaron;,Latin Small Letter S with Caron
+Latin Letters,&#354;,\0162,U+0162,&Tcedil;,Latin Capital Letter T with Cedilla
+Latin Letters,&#355;,\0163,U+0163,&tcedil;,Latin Small Letter T with Cedilla
+Latin Letters,&#356;,\0164,U+0164,&Tcaron;,Latin Capital Letter T with Caron
+Latin Letters,&#357;,\0165,U+0165,&tcaron;,Latin Small Letter T with Caron
+Latin Letters,&#358;,\0166,U+0166,&Tstrok;,Latin Capital Letter T with Stroke
+Latin Letters,&#359;,\0167,U+0167,&tstrok;,Latin Small Letter T with Stroke
+Latin Letters,&#360;,\0168,U+0168,&Utilde;,Latin Capital Letter U with Tilde
+Latin Letters,&#361;,\0169,U+0169,&utilde;,Latin Small Letter U with Tilde
+Latin Letters,&#362;,\016A,U+016A,&Umacr;,Latin Capital Letter U with Macron
+Latin Letters,&#363;,\016B,U+016B,&umacr;,Latin Small Letter U with Macron
+Latin Letters,&#364;,\016C,U+016C,&Ubreve;,Latin Capital Letter U with Breve
+Latin Letters,&#365;,\016D,U+016D,&ubreve;,Latin Small Letter U with Breve
+Latin Letters,&#366;,\016E,U+016E,&Uring;,Latin Capital Letter U with Ring Above
+Latin Letters,&#367;,\016F,U+016F,&uring;,Latin Small Letter U with Ring Above
+Latin Letters,&#368;,\0170,U+0170,&Udblac;,Latin Capital Letter U with Double Acute
+Latin Letters,&#369;,\0171,U+0171,&udblac;,Latin Small Letter U with Double Acute
+Latin Letters,&#370;,\0172,U+0172,&Uogon;,Latin Capital Letter U with Ogonek
+Latin Letters,&#371;,\0173,U+0173,&uogon;,Latin Small Letter U with Ogonek
+Latin Letters,&#372;,\0174,U+0174,&Wcirc;,Latin Capital Letter W with Circumflex
+Latin Letters,&#373;,\0175,U+0175,&wcirc;,Latin Small Letter W with Circumflex
+Latin Letters,&#374;,\0176,U+0176,&Ycirc;,Latin Capital Letter Y with Circumflex
+Latin Letters,&#375;,\0177,U+0177,&ycirc;,Latin Small Letter Y with Circumflex
+Latin Letters,&#376;,\0178,U+0178,&Yuml;,Latin Capital Letter Y with Diaeresis
+Latin Letters,&#377;,\0179,U+0179,&Zacute;,Latin Capital Letter Z with Acute
+Latin Letters,&#378;,\017A,U+017A,&zacute;,Latin Small Letter Z with Acute
+Latin Letters,&#379;,\017B,U+017B,&Zdot;,Latin Capital Letter Z with Dot Above
+Latin Letters,&#380;,\017C,U+017C,&zdot;,Latin Small Letter Z with Dot Above
+Latin Letters,&#381;,\017D,U+017D,&Zcaron;,Latin Capital Letter Z with Caron
+Latin Letters,&#382;,\017E,U+017E,&zcaron;,Latin Small Letter Z with Caron
+Latin Letters,&#785;,\0311,U+0311,&DownBreve;,Combining Inverted Breve
 Math Symbols,&#43;,\002B,U+002B,&plus;,Plus Sign
 Math Symbols,&#8722;,\2212,U+2212,&minus;,Minus Sign
 Math Symbols,&#215;,\00D7,U+00D7,&times;,Multiplication Sign
@@ -466,375 +720,187 @@ Math Symbols,&#8970;,\230A,U+230A,&lfloor;,Left Floor
 Math Symbols,&#8971;,\230B,U+230B,&rfloor;,Right Floor
 Math Symbols,&#9001;,\2329,U+2329,&lang;,Left-Pointing Angle Bracket
 Math Symbols,&#9002;,\232A,U+232A,&rang;,Right-Pointing Angle Bracket
-Greek Letters,&#913;,\0391,U+0391,&Alpha;,Greek Capital Letter Alpha
-Greek Letters,&#914;,\0392,U+0392,&Beta;,Greek Capital Letter Beta
-Greek Letters,&#915;,\0393,U+0393,&Gamma;,Greek Capital Letter Gamma
-Greek Letters,&#916;,\0394,U+0394,&Delta;,Greek Capital Letter Delta
-Greek Letters,&#917;,\0395,U+0395,&Epsilon;,Greek Capital Letter Epsilon
-Greek Letters,&#918;,\0396,U+0396,&Zeta;,Greek Capital Letter Zeta
-Greek Letters,&#919;,\0397,U+0397,&Eta;,Greek Capital Letter Eta
-Greek Letters,&#920;,\0398,U+0398,&Theta;,Greek Capital Letter Theta
-Greek Letters,&#921;,\0399,U+0399,&Iota;,Greek Capital Letter Iota
-Greek Letters,&#922;,\039A,U+039A,&Kappa;,Greek Capital Letter Kappa
-Greek Letters,&#923;,\039B,U+039B,&Lambda;,Greek Capital Letter Lamda
-Greek Letters,&#924;,\039C,U+039C,&Mu;,Greek Capital Letter Mu
-Greek Letters,&#925;,\039D,U+039D,&Nu;,Greek Capital Letter Nu
-Greek Letters,&#926;,\039E,U+039E,&Xi;,Greek Capital Letter Xi
-Greek Letters,&#927;,\039F,U+039F,&Omicron;,Greek Capital Letter Omicron
-Greek Letters,&#928;,\03A0,U+03A0,&Pi;,Greek Capital Letter Pi
-Greek Letters,&#929;,\03A1,U+03A1,&Rho;,Greek Capital Letter Rho
-Greek Letters,&#931;,\03A3,U+03A3,&Sigma;,Greek Capital Letter Sigma
-Greek Letters,&#932;,\03A4,U+03A4,&Tau;,Greek Capital Letter Tau
-Greek Letters,&#933;,\03A5,U+03A5,&Upsilon;,Greek Capital Letter Upsilon
-Greek Letters,&#934;,\03A6,U+03A6,&Phi;,Greek Capital Letter Phi
-Greek Letters,&#935;,\03A7,U+03A7,&Chi;,Greek Capital Letter Chi
-Greek Letters,&#936;,\03A8,U+03A8,&Psi;,Greek Capital Letter Psi
-Greek Letters,&#937;,\03A9,U+03A9,&Omega;,Greek Capital Letter Omega
-Greek Letters,&#945;,\03B1,U+03B1,&alpha;,Greek Small Letter Alpha
-Greek Letters,&#946;,\03B2,U+03B2,&beta;,Greek Small Letter Beta
-Greek Letters,&#947;,\03B3,U+03B3,&gamma;,Greek Small Letter Gamma
-Greek Letters,&#948;,\03B4,U+03B4,&delta;,Greek Small Letter Delta
-Greek Letters,&#949;,\03B5,U+03B5,&epsilon;,Greek Small Letter Epsilon
-Greek Letters,&#950;,\03B6,U+03B6,&zeta;,Greek Small Letter Zeta
-Greek Letters,&#951;,\03B7,U+03B7,&eta;,Greek Small Letter Eta
-Greek Letters,&#952;,\03B8,U+03B8,&theta;,Greek Small Letter Theta
-Greek Letters,&#953;,\03B9,U+03B9,&iota;,Greek Small Letter Iota
-Greek Letters,&#954;,\03BA,U+03BA,&kappa;,Greek Small Letter Kappa
-Greek Letters,&#955;,\03BB,U+03BB,&lambda;,Greek Small Letter Lamda
-Greek Letters,&#956;,\03BC,U+03BC,&mu;,Greek Small Letter Mu
-Greek Letters,&#957;,\03BD,U+03BD,&nu;,Greek Small Letter Nu
-Greek Letters,&#958;,\03BE,U+03BE,&xi;,Greek Small Letter Xi
-Greek Letters,&#959;,\03BF,U+03BF,&omicron;,Greek Small Letter Omicron
-Greek Letters,&#960;,\03C0,U+03C0,&pi;,Greek Small Letter Pi
-Greek Letters,&#961;,\03C1,U+03C1,&rho;,Greek Small Letter Rho
-Greek Letters,&#962;,\03C2,U+03C2,&sigmaf;,Greek Small Letter Final Sigma
-Greek Letters,&#963;,\03C3,U+03C3,&sigma;,Greek Small Letter Sigma
-Greek Letters,&#964;,\03C4,U+03C4,&tau;,Greek Small Letter Tau
-Greek Letters,&#965;,\03C5,U+03C5,&upsilon;,Greek Small Letter Upsilon
-Greek Letters,&#966;,\03C6,U+03C6,&phi;,Greek Small Letter Phi
-Greek Letters,&#967;,\03C7,U+03C7,&chi;,Greek Small Letter Chi
-Greek Letters,&#968;,\03C8,U+03C8,&psi;,Greek Small Letter Psi
-Greek Letters,&#969;,\03C9,U+03C9,&omega;,Greek Small Letter Omega
-Greek Letters,&#977;,\03D1,U+03D1,&thetasym;,Greek Theta Symbol
-Greek Letters,&#978;,\03D2,U+03D2,&upsih;,Greek Upsilon with Hook Symbol
-Greek Letters,&#982;,\03D6,U+03D6,&piv;,Greek Pi Symbol
-Latin Letters,&#192;,\00C0,U+00C0,&Agrave;,Latin Capital Letter a with Grave
-Latin Letters,&#193;,\00C1,U+00C1,&Aacute;,Latin Capital Letter a with Acute
-Latin Letters,&#194;,\00C2,U+00C2,&Acirc;,Latin Capital Letter a with Circumflex
-Latin Letters,&#195;,\00C3,U+00C3,&Atilde;,Latin Capital Letter a with Tilde
-Latin Letters,&#196;,\00C4,U+00C4,&Auml;,Latin Capital Letter a with Diaeresis
-Latin Letters,&#197;,\00C5,U+00C5,&Aring;,Latin Capital Letter a with Ring Above
-Latin Letters,&#198;,\00C6,U+00C6,&AElig;,Latin Capital Letter Ae
-Latin Letters,&#199;,\00C7,U+00C7,&Ccedil;,Latin Capital Letter C with Cedilla
-Latin Letters,&#200;,\00C8,U+00C8,&Egrave;,Latin Capital Letter E with Grave
-Latin Letters,&#201;,\00C9,U+00C9,&Eacute;,Latin Capital Letter E with Acute
-Latin Letters,&#202;,\00CA,U+00CA,&Ecirc;,Latin Capital Letter E with Circumflex
-Latin Letters,&#203;,\00CB,U+00CB,&Euml;,Latin Capital Letter E with Diaeresis
-Latin Letters,&#204;,\00CC,U+00CC,&Lgrave;,Latin Capital Letter I with Grave
-Latin Letters,&#313;,\0139,U+0139,&Lacute;,Latin Capital Letter L with Acute
-Latin Letters,&#206;,\00CE,U+00CE,&Lcirc;,Latin Capital Letter I with Circumflex
-Latin Letters,&#207;,\00CF,U+00CF,&Luml;,Latin Capital Letter I with Diaeresis
-Latin Letters,&#208;,\00D0,U+00D0,&ETH;,Latin Capital Letter Eth
-Latin Letters,&#209;,\00D1,U+00D1,&Ntilde;,Latin Capital Letter N with Tilde
-Latin Letters,&#210;,\00D2,U+00D2,&Ograve;,Latin Capital Letter O with Grave
-Latin Letters,&#211;,\00D3,U+00D3,&Oacute;,Latin Capital Letter O with Acute
-Latin Letters,&#212;,\00D4,U+00D4,&Ocirc;,Latin Capital Letter O with Circumflex
-Latin Letters,&#213;,\00D5,U+00D5,&Otilde;,Latin Capital Letter O with Tilde
-Latin Letters,&#214;,\00D6,U+00D6,&Ouml;,Latin Capital Letter O with Diaeresis
-Latin Letters,&#216;,\00D8,U+00D8,&Oslash;,Latin Capital Letter O with Stroke
-Latin Letters,&#217;,\00D9,U+00D9,&Ugrave;,Latin Capital Letter U with Grave
-Latin Letters,&#218;,\00DA,U+00DA,&Uacute;,Latin Capital Letter U with Acute
-Latin Letters,&#219;,\00DB,U+00DB,&Ucirc;,Latin Capital Letter U with Circumflex
-Latin Letters,&#220;,\00DC,U+00DC,&Uuml;,Latin Capital Letter U with Diaeresis
-Latin Letters,&#221;,\00DD,U+00DD,&Yacute;,Latin Capital Letter Y with Acute
-Latin Letters,&#222;,\00DE,U+00DE,&THORN;,Latin Capital Letter Thorn
-Latin Letters,&#223;,\00DF,U+00DF,&szlig;,Latin Small Letter Sharp S
-Latin Letters,&#224;,\00E0,U+00E0,&agrave;,Latin Small Letter a with Grave
-Latin Letters,&#225;,\00E1,U+00E1,&aacute;,
-Latin Letters,&#226;,\00E2,U+00E2,&acirc;,
-Latin Letters,&#227;,\00E3,U+00E3,&atilde;,
-Latin Letters,&#228;,\00E4,U+00E4,&auml;,
-Latin Letters,&#229;,\00E5,U+00E5,&aring;,
-Latin Letters,&#230;,\00E6,U+00E6,&aelig;,
-Latin Letters,&#231;,\00E7,U+00E7,&ccedil;,
-Latin Letters,&#232;,\00E8,U+00E8,&egrave;,
-Latin Letters,&#233;,\00E9,U+00E9,&eacute;,
-Latin Letters,&#234;,\00EA,U+00EA,&ecirc;,Latin Small Letter E with Circumflex
-Latin Letters,&#235;,\00EB,U+00EB,&euml;,Latin Small Letter E with Diaeresis
-Latin Letters,&#236;,\00EC,U+00EC,&igrave;,Latin Small Letter I with Grave
-Latin Letters,&#237;,\00ED,U+00ED,&iacute;,Latin Small Letter I with Acute
-Latin Letters,&#238;,\00EE,U+00EE,&icirc;,Latin Small Letter I with Circumflex
-Latin Letters,&#239;,\00EF,U+00EF,&iuml;,Latin Small Letter I with Diaeresis
-Latin Letters,&#240;,\00F0,U+00F0,&eth;,Latin Small Letter Eth
-Latin Letters,&#241;,\00F1,U+00F1,&ntilde;,Latin Small Letter N with Tilde
-Latin Letters,&#242;,\00F2,U+00F2,&ograve;,Latin Small Letter O with Grave
-Latin Letters,&#243;,\00F3,U+00F3,&oacute;,Latin Small Letter O with Acute
-Latin Letters,&#244;,\00F4,U+00F4,&ocirc;,Latin Small Letter O with Circumflex
-Latin Letters,&#245;,\00F5,U+00F5,&otilde;,Latin Small Letter O with Tilde
-Latin Letters,&#246;,\00F6,U+00F6,&ouml;,Latin Small Letter O with Diaeresis
-Latin Letters,&#248;,\00F8,U+00F8,&oslash;,Latin Small Letter O with Stroke
-Latin Letters,&#249;,\00F9,U+00F9,&ugrave;,Latin Small Letter U with Grave
-Latin Letters,&#250;,\00FA,U+00FA,&uacute;,Latin Small Letter U with Acute
-Latin Letters,&#251;,\00FB,U+00FB,&ucirc;,Latin Small Letter U with Circumflex
-Latin Letters,&#252;,\00FC,U+00FC,&uuml;,U with two Dots
-Latin Letters,&#253;,\00FD,U+00FD,&yacute;,Latin Small Letter Y with Acute
-Latin Letters,&#254;,\00FE,U+00FE,&thorn;,Latin Small Letter Thorn
-Latin Letters,&#255;,\00FF,U+00FF,&yuml;,Latin Small Letter Y with Diaeresis
-Latin Letters,&#256;,\0100,U+0100,&Amacr;,Latin Capital Letter a with Macron
-Latin Letters,&#257;,\0101,U+0101,&amacr;,Latin Small Letter a with Macron
-Latin Letters,&#258;,\0102,U+0102,&Abreve;,Latin Capital Letter a with Breve
-Latin Letters,&#259;,\0103,U+0103,&abreve;,Latin Small Letter a with Breve
-Latin Letters,&#260;,\0104,U+0104,&Aogon;,Latin Capital Letter a with Ogonek
-Latin Letters,&#261;,\0105,U+0105,&aogon;,Latin Small Letter a with Ogonek
-Latin Letters,&#262;,\0106,U+0106,&Cacute;,Latin Capital Letter C with Acute
-Latin Letters,&#263;,\0107,U+0107,&cacute;,Latin Small Letter C with Acute
-Latin Letters,&#264;,\0108,U+0108,&Ccirc;,Latin Capital Letter C with Circumflex
-Latin Letters,&#265;,\0109,U+0109,&ccirc;,Latin Small Letter C with Circumflex
-Latin Letters,&#266;,\010A,U+010A,&Cdot;,Latin Capital Letter C with Dot Above
-Latin Letters,&#267;,\010B,U+010B,&cdot;,Latin Small Letter C with Dot Above
-Latin Letters,&#268;,\010C,U+010C,&Ccaron;,Latin Capital Letter C with Caron
-Latin Letters,&#269;,\010D,U+010D,&ccaron;,Latin Small Letter C with Caron
-Latin Letters,&#270;,\010E,U+010E,&Dcaron;,Latin Capital Letter D with Caron
-Latin Letters,&#271;,\010F,U+010F,&dcaron;,Latin Small Letter D with Caron
-Latin Letters,&#272;,\0110,U+0110,&Dstrok;,Latin Capital Letter D with Stroke
-Latin Letters,&#273;,\0111,U+0111,&dstrok;,Latin Small Letter D with Stroke
-Latin Letters,&#274;,\0112,U+0112,&Emacr;,Latin Capital Letter E with Macron
-Latin Letters,&#275;,\0113,U+0113,&emacr;,Latin Small Letter E with Macron
-Latin Letters,&#278;,\0116,U+0116,&Edot;,Latin Capital Letter E with Dot Above
-Latin Letters,&#279;,\0117,U+0117,&edot;,Latin Small Letter E with Dot Above
-Latin Letters,&#280;,\0118,U+0118,&Eogon;,Latin Capital Letter E with Ogonek
-Latin Letters,&#281;,\0119,U+0119,&eogon;,Latin Small Letter E with Ogonek
-Latin Letters,&#282;,\011A,U+011A,&Ecaron;,Latin Capital Letter E with Caron
-Latin Letters,&#283;,\011B,U+011B,&ecaron;,Latin Small Letter E with Caron
-Latin Letters,&#284;,\011C,U+011C,&Gcirc;,Latin Capital Letter G with Circumflex
-Latin Letters,&#285;,\011D,U+011D,&gcirc;,Latin Small Letter G with Circumflex
-Latin Letters,&#286;,\011E,U+011E,&Gbreve;,Latin Capital Letter G with Breve
-Latin Letters,&#287;,\011F,U+011F,&gbreve;,Latin Small Letter G with Breve
-Latin Letters,&#288;,\0120,U+0120,&Gdot;,Latin Capital Letter G with Dot Above
-Latin Letters,&#289;,\0121,U+0121,&gdot;,Latin Small Letter G with Dot Above
-Latin Letters,&#290;,\0122,U+0122,&Gcedil;,Latin Capital Letter G with Cedilla
-Latin Letters,&#292;,\0124,U+0124,&Hcirc;,Latin Capital Letter H with Circumflex
-Latin Letters,&#293;,\0125,U+0125,&hcirc;,Latin Small Letter H with Circumflex
-Latin Letters,&#294;,\0126,U+0126,&Hstrok;,Latin Capital Letter H with Stroke
-Latin Letters,&#295;,\0127,U+0127,&hstrok;,Latin Small Letter H with Stroke
-Latin Letters,&#296;,\0128,U+0128,&Itilde;,Latin Capital Letter I with Tilde
-Latin Letters,&#297;,\0129,U+0129,&itilde;,Latin Small Letter I with Tilde
-Latin Letters,&#298;,\012A,U+012A,&Imacr;,Latin Capital Letter I with Macron
-Latin Letters,&#299;,\012B,U+012B,&imacr;,Latin Small Letter I with Macron
-Latin Letters,&#302;,\012E,U+012E,&Iogon;,Latin Capital Letter I with Ogonek
-Latin Letters,&#303;,\012F,U+012F,&iogon;,Latin Small Letter I with Ogonek
-Latin Letters,&#304;,\0130,U+0130,&Idot;,Latin Capital Letter I with Dot Above
-Latin Letters,&#305;,\0131,U+0131,&imath;,Latin Small Letter Dotless I
-Latin Letters,&#306;,\0132,U+0132,&IJlig;,Latin Capital Ligature Ij
-Latin Letters,&#307;,\0133,U+0133,&ijlig;,Latin Small Ligature Ij
-Latin Letters,&#308;,\0134,U+0134,&Jcirc;,Latin Capital Letter J with Circumflex
-Latin Letters,&#309;,\0135,U+0135,&jcirc;,Latin Small Letter J with Circumflex
-Latin Letters,&#310;,\0136,U+0136,&Kcedil;,Latin Capital Letter K with Cedilla
-Latin Letters,&#311;,\0137,U+0137,&kcedil;,Latin Small Letter K with Cedilla
-Latin Letters,&#312;,\0138,U+0138,&kgreen;,Latin Small Letter Kra
-Latin Letters,&#314;,\013A,U+013A,&lacute;,Latin Small Letter L with Acute
-Latin Letters,&#315;,\013B,U+013B,&Lcedil;,Latin Capital Letter L with Cedilla
-Latin Letters,&#316;,\013C,U+013C,&lcedil;,Latin Small Letter L with Cedilla
-Latin Letters,&#317;,\013D,U+013D,&Lcaron;,Latin Capital Letter L with Caron
-Latin Letters,&#318;,\013E,U+013E,&lcaron;,Latin Small Letter L with Caron
-Latin Letters,&#319;,\013F,U+013F,&Lmidot;,Latin Capital Letter L with Middle Dot
-Latin Letters,&#320;,\0140,U+0140,&lmidot;,Latin Small Letter L with Middle Dot
-Latin Letters,&#321;,\0141,U+0141,&Lstrok;,Latin Capital Letter L with Stroke
-Latin Letters,&#322;,\0142,U+0142,&lstrok;,Latin Small Letter L with Stroke
-Latin Letters,&#323;,\0143,U+0143,&Nacute;,Latin Capital Letter N with Acute
-Latin Letters,&#324;,\0144,U+0144,&nacute;,Latin Small Letter N with Acute
-Latin Letters,&#325;,\0145,U+0145,&Ncedil;,Latin Capital Letter N with Cedilla
-Latin Letters,&#326;,\0146,U+0146,&ncedil;,Latin Small Letter N with Cedilla
-Latin Letters,&#327;,\0147,U+0147,&Ncaron;,Latin Capital Letter N with Caron
-Latin Letters,&#328;,\0148,U+0148,&ncaron;,Latin Small Letter N with Caron
-Latin Letters,&#329;,\0149,U+0149,&napos;,Latin Small Letter N Preceded By Apostrophe
-Latin Letters,&#330;,\014A,U+014A,&ENG;,Latin Capital Letter Eng
-Latin Letters,&#331;,\014B,U+014B,&eng;,Latin Small Letter Eng
-Latin Letters,&#332;,\014C,U+014C,&Omacr;,Latin Capital Letter O with Macron
-Latin Letters,&#333;,\014D,U+014D,&omacr;,Latin Small Letter O with Macron
-Latin Letters,&#336;,\0150,U+0150,&Odblac;,Latin Capital Letter O with Double Acute
-Latin Letters,&#337;,\0151,U+0151,&odblac;,Latin Small Letter O with Double Acute
-Latin Letters,&#338;,\0152,U+0152,&OElig;,Latin Capital Ligature Oe
-Latin Letters,&#339;,\0153,U+0153,&oelig;,Latin Small Ligature Oe
-Latin Letters,&#340;,\0154,U+0154,&Racute;,Latin Capital Letter R with Acute
-Latin Letters,&#341;,\0155,U+0155,&racute;,Latin Small Letter R with Acute
-Latin Letters,&#342;,\0156,U+0156,&Rcedil;,Latin Capital Letter R with Cedilla
-Latin Letters,&#343;,\0157,U+0157,&rcedil;,Latin Small Letter R with Cedilla
-Latin Letters,&#344;,\0158,U+0158,&Rcaron;,Latin Capital Letter R with Caron
-Latin Letters,&#345;,\0159,U+0159,&rcaron;,Latin Small Letter R with Caron
-Latin Letters,&#346;,\015A,U+015A,&Sacute;,Latin Capital Letter S with Acute
-Latin Letters,&#347;,\015B,U+015B,&sacute;,Latin Small Letter S with Acute
-Latin Letters,&#348;,\015C,U+015C,&Scirc;,Latin Capital Letter S with Circumflex
-Latin Letters,&#349;,\015D,U+015D,&scirc;,Latin Small Letter S with Circumflex
-Latin Letters,&#350;,\015E,U+015E,&Scedil;,Latin Capital Letter S with Cedilla
-Latin Letters,&#351;,\015F,U+015F,&scedil;,Latin Small Letter S with Cedilla
-Latin Letters,&#352;,\0160,U+0160,&Scaron;,Latin Capital Letter S with Caron
-Latin Letters,&#353;,\0161,U+0161,&scaron;,Latin Small Letter S with Caron
-Latin Letters,&#354;,\0162,U+0162,&Tcedil;,Latin Capital Letter T with Cedilla
-Latin Letters,&#355;,\0163,U+0163,&tcedil;,Latin Small Letter T with Cedilla
-Latin Letters,&#356;,\0164,U+0164,&Tcaron;,Latin Capital Letter T with Caron
-Latin Letters,&#357;,\0165,U+0165,&tcaron;,Latin Small Letter T with Caron
-Latin Letters,&#358;,\0166,U+0166,&Tstrok;,Latin Capital Letter T with Stroke
-Latin Letters,&#359;,\0167,U+0167,&tstrok;,Latin Small Letter T with Stroke
-Latin Letters,&#360;,\0168,U+0168,&Utilde;,Latin Capital Letter U with Tilde
-Latin Letters,&#361;,\0169,U+0169,&utilde;,Latin Small Letter U with Tilde
-Latin Letters,&#362;,\016A,U+016A,&Umacr;,Latin Capital Letter U with Macron
-Latin Letters,&#363;,\016B,U+016B,&umacr;,Latin Small Letter U with Macron
-Latin Letters,&#364;,\016C,U+016C,&Ubreve;,Latin Capital Letter U with Breve
-Latin Letters,&#365;,\016D,U+016D,&ubreve;,Latin Small Letter U with Breve
-Latin Letters,&#366;,\016E,U+016E,&Uring;,Latin Capital Letter U with Ring Above
-Latin Letters,&#367;,\016F,U+016F,&uring;,Latin Small Letter U with Ring Above
-Latin Letters,&#368;,\0170,U+0170,&Udblac;,Latin Capital Letter U with Double Acute
-Latin Letters,&#369;,\0171,U+0171,&udblac;,Latin Small Letter U with Double Acute
-Latin Letters,&#370;,\0172,U+0172,&Uogon;,Latin Capital Letter U with Ogonek
-Latin Letters,&#371;,\0173,U+0173,&uogon;,Latin Small Letter U with Ogonek
-Latin Letters,&#372;,\0174,U+0174,&Wcirc;,Latin Capital Letter W with Circumflex
-Latin Letters,&#373;,\0175,U+0175,&wcirc;,Latin Small Letter W with Circumflex
-Latin Letters,&#374;,\0176,U+0176,&Ycirc;,Latin Capital Letter Y with Circumflex
-Latin Letters,&#375;,\0177,U+0177,&ycirc;,Latin Small Letter Y with Circumflex
-Latin Letters,&#376;,\0178,U+0178,&Yuml;,Latin Capital Letter Y with Diaeresis
-Latin Letters,&#377;,\0179,U+0179,&Zacute;,Latin Capital Letter Z with Acute
-Latin Letters,&#378;,\017A,U+017A,&zacute;,Latin Small Letter Z with Acute
-Latin Letters,&#379;,\017B,U+017B,&Zdot;,Latin Capital Letter Z with Dot Above
-Latin Letters,&#380;,\017C,U+017C,&zdot;,Latin Small Letter Z with Dot Above
-Latin Letters,&#381;,\017D,U+017D,&Zcaron;,Latin Capital Letter Z with Caron
-Latin Letters,&#382;,\017E,U+017E,&zcaron;,Latin Small Letter Z with Caron
-Latin Letters,&#785;,\0311,U+0311,&DownBreve;,Combining Inverted Breve
-Arrows,&#8634;,\21BA,U+21BA,&olarr;,Anticlockwise Open Circle Arrow
-Arrows,&#8635;,\21BB,U+21BB,&orarr;,Clockwise Open Circle Arrow
-Arrows,&#8636;,\21BC,U+21BC,&lharu;,Leftwards Harpoon with Barb Upwards
-Arrows,&#8637;,\21BD,U+21BD,&lhard;,Leftwards Harpoon with Barb Downwards
-Arrows,&#8638;,\21BE,U+21BE,&uharr;,Upwards Harpoon with Barb Rightwards
-Arrows,&#8639;,\21BF,U+21BF,&uharl;,Upwards Harpoon with Barb Leftwards
-Arrows,&#8640;,\21C0,U+21C0,&rharu;,Rightwards Harpoon with Barb Upwards
-Arrows,&#8641;,\21C1,U+21C1,&rhard;,Rightwards Harpoon with Barb Downwards
-Arrows,&#8642;,\21C2,U+21C2,&dharr;,Downwards Harpoon with Barb Rightwards
-Arrows,&#8643;,\21C3,U+21C3,&dharl;,Downwards Harpoon with Barb Leftwards
-Arrows,&#8644;,\21C4,U+21C4,&rlarr;,Rightwards Arrow Over Leftwards Arrow
-Arrows,&#8645;,\21C5,U+21C5,&udarr;,Upwards Arrow Leftwards of Downwards Arrow
-Arrows,&#8646;,\21C6,U+21C6,&lrarr;,Leftwards Arrow Over Rightwards Arrow
-Arrows,&#8647;,\21C7,U+21C7,&llarr;,Leftwards Paired Arrows
-Arrows,&#8648;,\21C8,U+21C8,&uuarr;,Upwards Paired Arrows
-Arrows,&#8649;,\21C9,U+21C9,&rrarr;,Rightwards Paired Arrows
-Arrows,&#8650;,\21CA,U+21CA,&ddarr;,Downwards Paired Arrows
-Arrows,&#8651;,\21CB,U+21CB,&lrhar;,Leftwards Harpoon Over Rightwards Harpoon
-Arrows,&#8652;,\21CC,U+21CC,&rlhar;,Rightwards Harpoon Over Leftwards Harpoon
-Arrows,&#8653;,\21CD,U+21CD,&nlArr;,Leftwards Double Arrow with Stroke
-Arrows,&#8654;,\21CE,U+21CE,&nhArr;,Left Right Double Arrow with Stroke
-Arrows,&#8655;,\21CF,U+21CF,&nrArr;,Rightwards Double Arrow with Stroke
-Arrows,&#8656;,\21D0,U+21D0,&lArr;,Leftwards Double Arrow
-Arrows,&#8657;,\21D1,U+21D1,&uArr;,Upwards Double Arrow
-Arrows,&#8658;,\21D2,U+21D2,&rArr;,Rightwards Double Arrow
-Arrows,&#8659;,\21D3,U+21D3,&dArr;,Downwards Double Arrow
-Arrows,&#8660;,\21D4,U+21D4,&hArr;,Left Right Double Arrow
-Arrows,&#8661;,\21D5,U+21D5,&vArr;,Up Down Double Arrow
-Arrows,&#8662;,\21D6,U+21D6,&nwArr;,North West Double Arrow
-Arrows,&#8663;,\21D7,U+21D7,&neArr;,North East Double Arrow
-Arrows,&#8664;,\21D8,U+21D8,&seArr;,South East Double Arrow
-Arrows,&#8665;,\21D9,U+21D9,&swArr;,South West Double Arrow
-Arrows,&#8666;,\21DA,U+21DA,&lAarr;,Leftwards Triple Arrow
-Arrows,&#8667;,\21DB,U+21DB,&rAarr;,Rightwards Triple Arrow
-Arrows,&#8668;,\21DC,U+21DC,&ziglarr;,Leftwards Squiggle Arrow
-Arrows,&#8669;,\21DD,U+21DD,&zigrarr;,Rightwards Squiggle Arrow
-Arrows,&#8676;,\21E4,U+21E4,&larrb;,Leftwards Arrow To Bar
-Arrows,&#8677;,\21E5,U+21E5,&rarrb;,Rightwards Arrow To Bar
-Arrows,&#8693;,\21F5,U+21F5,&duarr;,Downwards Arrow Leftwards of Upwards Arrow
-Arrows,&#8703;,\21FF,U+21FF,&hoarr;,Left Right Open-Headed Arrow
-Arrows,&#8701;,\21FD,U+21FD,&loarr;,Leftwards Open-Headed Arrow
-Arrows,&#8702;,\21FE,U+21FE,&roarr;,Rightwards Open-Headed Arrow
-Arrows,&#10229;,\27F5,U+27F5,&xlarr;,Long Leftwards Arrow
-Arrows,&#10230;,\27F6,U+27F6,&xrarr;,Long Rightwards Arrow
-Arrows,&#10231;,\27F7,U+27F7,&xharr;,Long Left Right Arrow
-Arrows,&#10232;,\27F8,U+27F8,&xlArr;,Long Leftwards Double Arrow
-Arrows,&#10233;,\27F9,U+27F9,&xrArr;,Long Rightwards Double Arrow
-Arrows,&#10234;,\27FA,U+27FA,&xhArr;,Long Left Right Double Arrow
-Arrows,&#10239;,\27FF,U+27FF,&dzigrarr;,Long Rightwards Squiggle Arrow
-Arrows,&#10236;,\27FC,U+27FC,&xmap;,Long Rightwards Arrow from Bar
-Arrows,&#10498;,\2902,U+2902,&nvlArr;,Leftwards Double Arrow with Vertical Stroke
-Arrows,&#10499;,\2903,U+2903,&nvrArr;,Rightwards Double Arrow with Vertical Stroke
-Arrows,&#10500;,\2904,U+2904,&nvHarr;,Left Right Double Arrow with Vertical Stroke
-Arrows,&#10501;,\2905,U+2905,&Map;,Rightwards Two-Headed Arrow from Bar
-Arrows,&#10508;,\290C,U+290C,&lbarr;,Leftwards Double Dash Arrow
-Arrows,&#10509;,\290D,U+290D,&rbarr;,Rightwards Double Dash Arrow
-Arrows,&#10510;,\290E,U+290E,&lBarr;,Leftwards Triple Dash Arrow
-Arrows,&#10511;,\290F,U+290F,&rBarr;,Rightwards Triple Dash Arrow
-Arrows,&#10512;,\2910,U+2910,&RBarr;,Rightwards Two-Headed Triple Dash Arrow
-Arrows,&#10513;,\2911,U+2911,&DDotrahd;,Rightwards Arrow with Dotted Stem
-Arrows,&#10514;,\2912,U+2912,&UpArrowBar;,Upwards Arrow To Bar
-Arrows,&#10515;,\2913,U+2913,&DownArrowBar;,Downwards Arrow To Bar
-Arrows,&#10518;,\2916,U+2916,&Rarrtl;,Rightwards Two-Headed Arrow with Tail
-Arrows,&#10521;,\2919,U+2919,&latail;,Leftwards Arrow-Tail
-Arrows,&#10522;,\291A,U+291A,&ratail;,Rightwards Arrow-Tail
-Arrows,&#10523;,\291B,U+291B,&lAtail;,Leftwards Double Arrow-Tail
-Arrows,&#10524;,\291C,U+291C,&rAtail;,Rightwards Double Arrow-Tail
-Arrows,&#10525;,\291D,U+291D,&larrfs;,Leftwards Arrow To Black Diamond
-Arrows,&#10526;,\291E,U+291E,&rarrfs;,Rightwards Arrow To Black Diamond
-Arrows,&#10527;,\291F,U+291F,&larrbfs;,Leftwards Arrow from Bar To Black Diamond
-Arrows,&#10528;,\2920,U+2920,&rarrbfs;,Rightwards Arrow from Bar To Black Diamond
-Arrows,&#10531;,\2923,U+2923,&nwarhk;,North West Arrow with Hook
-Arrows,&#10532;,\2924,U+2924,&nearhk;,North East Arrow with Hook
-Arrows,&#10533;,\2925,U+2925,&searhk;,South East Arrow with Hook
-Arrows,&#10534;,\2926,U+2926,&swarhk;,South West Arrow with Hook
-Arrows,&#10535;,\2927,U+2927,&nwnear;,North West Arrow and North East Arrow
-Arrows,&#10536;,\2928,U+2928,&nesear;,North East Arrow and South East Arrow
-Arrows,&#10537;,\2929,U+2929,&seswar;,South East Arrow and South West Arrow
-Arrows,&#10538;,\292A,U+292A,&swnwar;,South West Arrow and North West Arrow
-Arrows,&#10549;,\2935,U+2935,&cudarrr;,Arrow Pointing Rightwards Then Curving Downwards
-Arrows,&#10550;,\2936,U+2936,&ldca;,Arrow Pointing Downwards Then Curving Leftwards
-Arrows,&#10551;,\2937,U+2937,&rdca;,Arrow Pointing Downwards Then Curving Rightwards
-Arrows,&#10552;,\2938,U+2938,&cudarrl;,Right-Side Arc Clockwise Arrow
-Arrows,&#10553;,\2939,U+2939,&larrpl;,Left-Side Arc Anticlockwise Arrow
-Arrows,&#10556;,\293C,U+293C,&curarrm;,Top Arc Clockwise Arrow with Minus
-Arrows,&#10557;,\293D,U+293D,&cularrp;,Top Arc Anticlockwise Arrow with Plus
-Arrows,&#10565;,\2945,U+2945,&rarrpl;,Rightwards Arrow with Plus Below
-Arrows,&#10568;,\2948,U+2948,&harrcir;,Left Right Arrow Through Small Circle
-Arrows,&#10569;,\2949,U+2949,&Uarrocir;,Upwards Two-Headed Arrow from Small Circle
-Arrows,&#10570;,\294A,U+294A,&lurdshar;,Left Barb Up Right Barb Down Harpoon
-Arrows,&#10571;,\294B,U+294B,&ldrushar;,Left Barb Down Right Barb Up Harpoon
-Arrows,&#10575;,\294F,U+294F,&RightUpDownVector;,Up Barb Right Down Barb Right Harpoon
-Arrows,&#10576;,\2950,U+2950,&DownLeftRightVector;,Left Barb Down Right Barb Down Harpoon
-Arrows,&#10577;,\2951,U+2951,&LeftUpDownVector;,Up Barb Left Down Barb Left Harpoon
-Arrows,&#10578;,\2952,U+2952,&LeftVectorBar;,Leftwards Harpoon with Barb Up To Bar
-Arrows,&#10579;,\2953,U+2953,&RightVectorBar;,Rightwards Harpoon with Barb Up To Bar
-Arrows,&#10580;,\2954,U+2954,&RightUpVectorBar;,Upwards Harpoon with Barb Right To Bar
-Arrows,&#10581;,\2955,U+2955,&RightDownVectorBar;,Downwards Harpoon with Barb Right To Bar
-Arrows,&#10582;,\2956,U+2956,&DownLeftVectorBar;,Leftwards Harpoon with Barb Down To Bar
-Arrows,&#10583;,\2957,U+2957,&DownRightVectorBar;,Rightwards Harpoon with Barb Down To Bar
-Arrows,&#10584;,\2958,U+2958,&LeftUpVectorBar;,Upwards Harpoon with Barb Left To Bar
-Arrows,&#10585;,\2959,U+2959,&LeftDownVectorBar;,Downwards Harpoon with Barb Left To Bar
-Arrows,&#10586;,\295A,U+295A,&LeftTeeVector;,Leftwards Harpoon with Barb Up from Bar
-Arrows,&#10587;,\295B,U+295B,&RightTeeVector;,Rightwards Harpoon with Barb Up from Bar
-Arrows,&#10588;,\295C,U+295C,&RightUpTeeVector;,Upwards Harpoon with Barb Right from Bar
-Arrows,&#10589;,\295D,U+295D,&RightDownTeeVector;,Downwards Harpoon with Barb Right from Bar
-Arrows,&#10590;,\295E,U+295E,&DownLeftTeeVector;,Leftwards Harpoon with Barb Down from Bar
-Arrows,&#10591;,\295F,U+295F,&DownRightTeeVector;,Rightwards Harpoon with Barb Down from Bar
-Arrows,&#10592;,\2960,U+2960,&LeftUpTeeVector;,Upwards Harpoon with Barb Left from Bar
-Arrows,&#10593;,\2961,U+2961,&LeftDownTeeVector;,Downwards Harpoon with Barb Left from Bar
-Arrows,&#10594;,\2962,U+2962,&lHar;,Leftwards Harpoon with Barb Up Above Leftwards Harpoon with Barb Down
-Arrows,&#10595;,\2963,U+2963,&uHar;,Upwards Harpoon with Barb Left Beside Upwards Harpoon with Barb Right
-Arrows,&#10596;,\2964,U+2964,&rHar;,Rightwards Harpoon with Barb Up Above Rightwards Harpoon with Barb Down
-Arrows,&#10597;,\2965,U+2965,&dHar;,Downwards Harpoon with Barb Left Beside Downwards Harpoon with Barb Right
-Arrows,&#10598;,\2966,U+2966,&luruhar;,Leftwards Harpoon with Barb Up Above Rightwards Harpoon with Barb Up
-Arrows,&#10599;,\2967,U+2967,&ldrdhar;,Leftwards Harpoon with Barb Down Above Rightwards Harpoon with Barb Down
-Arrows,&#10600;,\2968,U+2968,&ruluhar;,Rightwards Harpoon with Barb Up Above Leftwards Harpoon with Barb Up
-Arrows,&#10601;,\2969,U+2969,&rdldhar;,Rightwards Harpoon with Barb Down Above Leftwards Harpoon with Barb Down
-Arrows,&#10602;,\296A,U+296A,&lharul;,Leftwards Harpoon with Barb Up Above Long Dash
-Arrows,&#10603;,\296B,U+296B,&llhard;,Leftwards Harpoon with Barb Down Below Long Dash
-Arrows,&#10604;,\296C,U+296C,&rharul;,Rightwards Harpoon with Barb Up Above Long Dash
-Arrows,&#10605;,\296D,U+296D,&lrhard;,Rightwards Harpoon with Barb Down Below Long Dash
-Arrows,&#10606;,\296E,U+296E,&udhar;,Upwards Harpoon with Barb Left Beside Downwards Harpoon with Barb Right
-Arrows,&#10607;,\296F,U+296F,&duhar;,Downwards Harpoon with Barb Left Beside Upwards Harpoon with Barb Right
-Arrows,&#10608;,\2970,U+2970,&RoundImplies;,Right Double Arrow with Rounded Head
-Arrows,&#10609;,\2971,U+2971,&erarr;,Equals Sign Above Rightwards Arrow
-Arrows,&#10610;,\2972,U+2972,&simrarr;,Tilde Operator Above Rightwards Arrow
-Arrows,&#10611;,\2973,U+2973,&larrsim;,Leftwards Arrow Above Tilde Operator
-Arrows,&#10612;,\2974,U+2974,&rarrsim;,Rightwards Arrow Above Tilde Operator
-Arrows,&#10613;,\2975,U+2975,&rarrap;,Rightwards Arrow Above Almost Equal To
-Arrows,&#10614;,\2976,U+2976,&ltlarr;,Less-Than Above Leftwards Arrow
-Arrows,&#10616;,\2978,U+2978,&gtrarr;,Greater-Than Above Rightwards Arrow
-Arrows,&#10617;,\2979,U+2979,&subrarr;,Subset Above Rightwards Arrow
-Arrows,&#10619;,\297B,U+297B,&suplarr;,Superset Above Leftwards Arrow
-Arrows,&#10620;,\297C,U+297C,&lfisht;,Left Fish Tail
-Arrows,&#10621;,\297D,U+297D,&rfisht;,Right Fish Tail
-Arrows,&#10622;,\297E,U+297E,&ufisht;,Up Fish Tail
-Arrows,&#10623;,\297F,U+297F,&dfisht;,Down Fish Tail
+Miscellaneous Symbols,&#9985;,\2701,U+02701,,Upper Blade Scissors
+Miscellaneous Symbols,&#9986;,\2702,U+02702,,Black Scissors
+Miscellaneous Symbols,&#9987;,\2703,U+02703,,Lower Blade Scissors
+Miscellaneous Symbols,&#9988;,\2704,U+02704,,White Scissors
+Miscellaneous Symbols,&#9998;,\270E,U+0270E,,Lower Right Pencil
+Miscellaneous Symbols,&#9999;,\270F,U+0270F,,Pencil
+Miscellaneous Symbols,&#10000;,\2710,U+02710,,Upper Right Pencil
+Miscellaneous Symbols,&#169;,\00A9,U+00A9,&copy;,Copyright Sign
+Miscellaneous Symbols,&#174;,\00AE,U+00AE,&reg;,Registered Sign
+Miscellaneous Symbols,&#8482;,\2122,U+2122,&trade;,Trade Mark Sign
+Miscellaneous Symbols,&#64;,\0040,U+0040,&commat;,Commercial At
+Miscellaneous Symbols,&#8450;,\2102,U+2102,&Copf;,Double-Struck Capital C
+Miscellaneous Symbols,&#8453;,\2105,U+2105,&incare;,Care Of
+Miscellaneous Symbols,&#8458;,\210A,U+210A,&gscr;,Script Small G
+Miscellaneous Symbols,&#8459;,\210B,U+210B,&hamilt;,Script Capital H
+Miscellaneous Symbols,&#8460;,\210C,U+210C,&Hfr;,Black-Letter Capital H
+Miscellaneous Symbols,&#8461;,\210D,U+210D,&Hopf;,Double-Struck Capital H
+Miscellaneous Symbols,&#8462;,\210E,U+210E,&planckh;,Planck Constant
+Miscellaneous Symbols,&#8463;,\210F,U+210F,&planck;,Planck Constant Over Two Pi
+Miscellaneous Symbols,&#8464;,\2110,U+2110,&Iscr;,Script Capital I
+Miscellaneous Symbols,&#8465;,\2111,U+2111,&image;,Black-Letter Capital I
+Miscellaneous Symbols,&#8466;,\2112,U+2112,&Lscr;,Script Capital L
+Miscellaneous Symbols,&#8467;,\2113,U+2113,&ell;,Script Small L
+Miscellaneous Symbols,&#8469;,\2115,U+2115,&Nopf;,Double-Struck Capital N
+Miscellaneous Symbols,&#8470;,\2116,U+2116,&numero;,Numero Sign
+Miscellaneous Symbols,&#8471;,\2117,U+2117,&copysr;,Sound Recording Copyright
+Miscellaneous Symbols,&#8472;,\2118,U+2118,&weierp;,Script Capital P
+Miscellaneous Symbols,&#8473;,\2119,U+2119,&Popf;,Double-Struck Capital P
+Miscellaneous Symbols,&#8474;,\211A,U+211A,&Qopf;,Double-Struck Capital Q
+Miscellaneous Symbols,&#8475;,\211B,U+211B,&Rscr;,Script Capital R
+Miscellaneous Symbols,&#8476;,\211C,U+211C,&real;,Black-Letter Capital R
+Miscellaneous Symbols,&#8477;,\211D,U+211D,&Ropf;,Double-Struck Capital R
+Miscellaneous Symbols,&#8478;,\211E,U+211E,&rx;,Prescription Take
+Miscellaneous Symbols,&#8484;,\2124,U+2124,&Zopf;,Double-Struck Capital Z
+Miscellaneous Symbols,&#8487;,\2127,U+2127,&mho;,Inverted Ohm Sign
+Miscellaneous Symbols,&#8488;,\2128,U+2128,&Zfr;,Black-Letter Capital Z
+Miscellaneous Symbols,&#8489;,\2129,U+2129,&iiota;,Turned Greek Small Letter Iota
+Miscellaneous Symbols,&#8492;,\212C,U+212C,&bernou;,Script Capital B
+Miscellaneous Symbols,&#8493;,\212D,U+212D,&Cfr;,Black-Letter Capital C
+Miscellaneous Symbols,&#8495;,\212F,U+212F,&escr;,Script Small E
+Miscellaneous Symbols,&#8496;,\2130,U+2130,&Escr;,Script Capital E
+Miscellaneous Symbols,&#8497;,\2131,U+2131,&Fscr;,Script Capital F
+Miscellaneous Symbols,&#8499;,\2133,U+2133,&Mscr;,Script Capital M
+Miscellaneous Symbols,&#8500;,\2134,U+2134,&oscr;,Script Small O
+Miscellaneous Symbols,&#8501;,\2135,U+2135,&alefsym;,Alef Symbol
+Miscellaneous Symbols,&#8502;,\2136,U+2136,&beth;,Bet Symbol
+Miscellaneous Symbols,&#8503;,\2137,U+2137,&gimel;,Gimel Symbol
+Miscellaneous Symbols,&#8504;,\2138,U+2138,&daleth;,Dalet Symbol
+Miscellaneous Symbols,&#8517;,\2145,U+2145,&DD;,Double-Struck Italic Capital D
+Miscellaneous Symbols,&#8518;,\2146,U+2146,&dd;,Double-Struck Italic Small D
+Miscellaneous Symbols,&#8519;,\2147,U+2147,&ee;,Double-Struck Italic Small E
+Miscellaneous Symbols,&#8520;,\2148,U+2148,&ii;,Double-Struck Italic Small I
+Miscellaneous Symbols,&#9742;,\260E,U+260E,&phone;,Black Telephone
+Miscellaneous Symbols,&#9792;,\2640,U+2640,&female;,Female Sign
+Miscellaneous Symbols,&#9794;,\2642,U+2642,&male;,Male Sign
+Miscellaneous Symbols,&#9824;,\2660,U+2660,&spades;,Black Spade Suit
+Miscellaneous Symbols,&#9827;,\2663,U+2663,&clubs;,Black Club Suit
+Miscellaneous Symbols,&#9829;,\2665,U+2665,&hearts;,Black Heart Suit
+Miscellaneous Symbols,&#9830;,\2666,U+2666,&diams;,Black Diamond Suit
+Miscellaneous Symbols,&#9674;,\25CA,U+25CA,&loz;,Lozenge
+Miscellaneous Symbols,&#9834;,\266A,U+266A,&sung;,Eighth Note
+Miscellaneous Symbols,&#9837;,\266D,U+266D,&flat;,Music Flat Sign
+Miscellaneous Symbols,&#9838;,\266E,U+266E,&natural;,Music Natural Sign
+Miscellaneous Symbols,&#9839;,\266F,U+266F,&sharp;,Music Sharp Sign
+Miscellaneous Symbols,&#10003;,\2713,U+2713,&check;,Check Mark
+Miscellaneous Symbols,&#10004;,\2714,U+2714,&#x2714;,Heavy Check Mark
+Miscellaneous Symbols,&#128504;,\1F5F8,U+1F5F8,&#x1F5F8;,Light Check Mark
+Miscellaneous Symbols,&#9083;,\237B,U+237B,&#x237B;,Not Check Mark
+Miscellaneous Symbols,&#10007;,\2717,U+2717,&cross;,Ballot X
+Miscellaneous Symbols,&#10016;,\2720,U+2720,&malt;,Maltese Cross
+Miscellaneous Symbols,&#10038;,\2736,U+2736,&sext;,Six Pointed Black Star
+Miscellaneous Symbols,&#10072;,\2758,U+2758,&VerticalSeparator;,Light Vertical Bar
+Miscellaneous Symbols,&#10098;,\2772,U+2772,&lbbrk;,Light Left Tortoise Shell Bracket Ornament
+Miscellaneous Symbols,&#10099;,\2773,U+2773,&rbbrk;,Light Right Tortoise Shell Bracket Ornament
+Punctuation Symbols,&#33;,\0021,U+0021,&excl;,Exclamation Mark
+Punctuation Symbols,&#35;,\0023,U+0023,&num;,Number Sign
+Punctuation Symbols,&#37;,\0025,U+0025,&percnt;,Percent Sign
+Punctuation Symbols,&#38;,\0026,U+0026,&amp;,Ampersand
+Punctuation Symbols,&#40;,\0028,U+0028,&lpar;,Left Parenthesis
+Punctuation Symbols,&#41;,\0029,U+0029,&rpar;,Right Parenthesis
+Punctuation Symbols,&#42;,\002A,U+002A,&ast;,Asterisk
+Punctuation Symbols,&#42;,\002B,U+002B,&plus;,Plus Sign
+Punctuation Symbols,&#44;,\002C,U+002C,&comma;,Comma
+Punctuation Symbols,&#45;,\002D,U+002D,,Hyphen
+Punctuation Symbols,&#46;,\002E,U+002E,&period;,Full Stop
+Punctuation Symbols,&#47;,\002F,U+002F,&sol;,Solidus
+Punctuation Symbols,&#58;,\003A,U+003A,&colon;,Colon
+Punctuation Symbols,&#59;,\003B,U+003B,&semi;,Semicolon
+Punctuation Symbols,&#60;,\003C,U+003C,&lt;,Less Than Sign
+Punctuation Symbols,&#61;,\003D,U+003D,&equals;,Equal Sign
+Punctuation Symbols,&#62;,\003E,U+003E,&gt;,Greater Than Sign
+Punctuation Symbols,&#63;,\003F,U+003F,&quest;,Question Mark
+Punctuation Symbols,&#91;,\005B,U+005B,&lbrack;,Left Square Bracket
+Punctuation Symbols,&#92;,\005C,U+005C,&bsol;,Reverse Solidus
+Punctuation Symbols,&#93;,\005D,U+005D,&rbrack;,Right Square Bracket
+Punctuation Symbols,&#94;,\005E,U+005E,&Hat;,Circumflex Accent
+Punctuation Symbols,&#95;,\005F,U+005F,&lowbar;,Low Line
+Punctuation Symbols,&#96;,\0060,U+0060,&grave;,Grave Accent
+Punctuation Symbols,&#123;,\007B,U+007B,&lbrace;,Left Curly Bracket
+Punctuation Symbols,&#124;,\007C,U+007C,&vert;,Vertical Line
+Punctuation Symbols,&#125;,\007D,U+007D,&rbrace;,Right Curly Bracket
+Punctuation Symbols,&#126;,\007E,U+007E,&tilde;,Tilde
+Punctuation Symbols,&#710;,\02C6,U+02C6,&circ;,Modifier Letter Circumflex Accent
+Punctuation Symbols,&#160;,\00A0,U+00A0,&nbsp;,No-Break Space
+Punctuation Symbols,&#8194;,\2002,U+2002,&ensp;,En Space
+Punctuation Symbols,&#8195;,\2003,U+2003,&emsp;,Em Space
+Punctuation Symbols,&#8201;,\2009,U+2009,&thinsp;,Thin Space
+Punctuation Symbols,&#8204;,\200C,U+200C,&zwnj;,Zero Width Non-Joiner
+Punctuation Symbols,&#8205;,\200D,U+200D,&zwj;,Zero Width Joiner
+Punctuation Symbols,&#8206;,\200E,U+200E,&lrm;,Left-To-Right Mark
+Punctuation Symbols,&#8207;,\200F,U+200F,&rlm;,Right-To-Left Mark
+Punctuation Symbols,&#161;,\00A1,U+00A1,&iexcl;,Inverted Exclamation Mark
+Punctuation Symbols,&#166;,\00A6,U+00A6,&brvbar;,Broken Bar
+Punctuation Symbols,&#167;,\00A7,U+00A7,&sect;,Section Sign
+Punctuation Symbols,&#168;,\00A8,U+00A8,&uml;,Diaeresis
+Punctuation Symbols,&#170;,\00AA,U+00AA,&ordf;,Feminine Ordinal Indicator
+Punctuation Symbols,&#172;,\00AC,U+00AC,&not;,Not Sign
+Punctuation Symbols,&#173;,\00AD,U+00AD,&shy;,Soft Hyphen
+Punctuation Symbols,&#175;,\00AF,U+00AF,&macr;,Macron
+Punctuation Symbols,&#178;,\00B2,U+00B2,&sup2;,Superscript Two
+Punctuation Symbols,&#179;,\00B3,U+00B3,&sup3;,Superscript Three
+Punctuation Symbols,&#180;,\00B4,U+00B4,&acute;,Acute Accent
+Punctuation Symbols,&#181;,\00B5,U+00B5,&micro;,Micro Sign
+Punctuation Symbols,&#182;,\00B6,U+00B6,&para;,Pilcrow Sign
+Punctuation Symbols,&#183;,\00B7,U+00B7,&middot;,Middle Dot
+Punctuation Symbols,&#184;,\00B8,U+00B8,&cedil;,Cedilla
+Punctuation Symbols,&#185;,\00B9,U+00B9,&sup1;,Superscript One
+Punctuation Symbols,&#186;,\00BA,U+00BA,&ordm;,Masculine Ordinal Indicator
+Punctuation Symbols,&#191;,\00BF,U+00BF,&iquest;,Inverted Question Mark
+Punctuation Symbols,&#8208;,\2010,U+2010,&hyphen;,Hyphen
+Punctuation Symbols,&#8211;,\2013,U+2013,&ndash;,En Dash
+Punctuation Symbols,&#8212;,\2014,U+2014,&mdash;,Em Dash
+Punctuation Symbols,&#8213;,\2015,U+2015,&horbar;,Horizontal Bar
+Punctuation Symbols,&#8214;,\2016,U+2016,&Vert;,Double Vertical Line
+Punctuation Symbols,&#8224;,\2020,U+2020,&dagger;,Dagger
+Punctuation Symbols,&#8225;,\2021,U+2021,&Dagger;,Double Dagger
+Punctuation Symbols,&#8226;,\2022,U+2022,&bull;,Bullet
+Punctuation Symbols,&#8229;,\2025,U+2025,&nldr;,Two Dot Leader
+Punctuation Symbols,&#8230;,\2026,U+2026,&hellip;,Horizontal Ellipsis
+Punctuation Symbols,&#8240;,\2030,U+2030,&;,Per Mille Sign
+Punctuation Symbols,&#8241;,\2031,U+2031,&pertenk;,Per Ten Thousand Sign
+Punctuation Symbols,&#8242;,\2032,U+2032,&prime;,Prime
+Punctuation Symbols,&#8243;,\2033,U+2033,&Prime;,Double Prime
+Punctuation Symbols,&#8244;,\2034,U+2034,&tprime;,Triple Prime
+Punctuation Symbols,&#8245;,\2035,U+2035,&bprime;,Reversed Prime
+Punctuation Symbols,&#8254;,\203E,U+203E,&oline;,Overline
+Punctuation Symbols,&#8257;,\2041,U+2041,&caret;,Caret Insertion Point
+Punctuation Symbols,&#8259;,\2043,U+2043,&hybull;,Hyphen Bullet
+Punctuation Symbols,&#8260;,\2044,U+2044,&frasl;,Fraction Slash
+Punctuation Symbols,&#8271;,\204F,U+204F,&bsemi;,Reversed Semicolon
+Punctuation Symbols,&#8279;,\2057,U+2057,&qprime;,Quadruple Prime
+Quotation Marks,&#34;,\0022,U+0022,&quot;,Quotation Mark
+Quotation Marks,&#39;,\0027,U+0027,&apos;,Apostrophe
+Quotation Marks,&#171;,\00AB,U+00AB,&laquo;,Left-Pointing Double Angle Quotation Mark
+Quotation Marks,&#187;,\00BB,U+00BB,&raquo;,Right-Pointing Double Angle Quotation Mark
+Quotation Marks,&#8216;,\2018,U+2018,&lsquo;,Left Single Quotation Mark
+Quotation Marks,&#8217;,\2019,U+2019,&rsquo;,Right Single Quotation Mark
+Quotation Marks,&#8218;,\201A,U+201A,&sbquo;,Single Low-9 Quotation Mark
+Quotation Marks,&#8220;,\201C,U+201C,&ldquo;,Left Double Quotation Mark
+Quotation Marks,&#8221;,\201D,U+201D,&rdquo;,Right Double Quotation Mark
+Quotation Marks,&#8222;,\201E,U+201E,&bdquo;,Double Low-9 Quotation Mark
+Quotation Marks,&#8249;,\2039,U+2039,&lsaquo;,Single Left-Pointing Angle Quotation Mark
+Quotation Marks,&#8250;,\203A,U+203A,&rsaquo;,Single Right-Pointing Angle Quotation Mark
+Stars,&#9733;,\2605,U+2605,&starf;,Black Star
+Stars,&#9734;,\2606,U+2606,&star;,White Star
+Stars,&#10022;,\2726,U+02726,,Black Four Pointed Star
+Stars,&#10023;,\2727,U+02727,,White Four Pointed Star
+Stars,&#10025;,\2729,U+02729,,Stress Outlined White Star
+Stars,&#10026;,\272A,U+0272A,,Circled White Star
+Stars,&#10027;,\272B,U+0272B,,Open Centre Black Star
+Stars,&#10028;,\272C,U+0272C,,Black Centre White Star
+Stars,&#10029;,\272D,U+0272D,,Outlined Black Star
+Stars,&#10030;,\272E,U+0272E,,Heavy Outlined Black Star
+Stars,&#10031;,\272F,U+0272F,,Pinwheel Star
+Stars,&#10032;,\2730,U+02730,,Shadowed White Star
+Stars,&#10036;,\2734,U+02734,,Eight Pointed Black Star
+Stars,&#10037;,\2735,U+02735,,Eight Pointed Pinwheel Star
+Stars,&#10038;,\2736,U+02736,&sext;,Six Pointed Black Star
+Stars,&#10039;,\2737,U+02737,,Eight Pointed Rectilinear Black Star
+Stars,&#10040;,\2738,U+02738,,Heavy Eight Pointed Rectilinear Black Star
+Stars,&#10041;,\2739,U+02739,,Twelve Pointed Black Star
+Stars,&#10050;,\2742,U+02742,,Circled Open Centre Eight Pointed Star
+Stars,&#9885;,\269D,U+0269D,,Outlined White Star
+Stars,&#9770;,\262A,U+0262A,,Star And Crescent
