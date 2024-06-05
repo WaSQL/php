@@ -1,0 +1,7 @@
+@font-face {
+    font-family: 'chopinscript';
+    src: url('/wfiles/fonts/chopinscript.woff2') format('woff2'),
+         url('/wfiles/fonts/chopinscript.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
