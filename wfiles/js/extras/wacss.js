@@ -5086,7 +5086,7 @@ var wacss = {
 			modal_close.pnode=modal;
 			document.body.appendChild(modal);
 		}
-		modal.setAttribute('data-position','unset');
+		modal.setAttribute('data-position','inherit');
 		wacss.centerObject(modal);
 		return modal;
 	},
