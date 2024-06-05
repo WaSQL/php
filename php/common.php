@@ -4440,6 +4440,7 @@ function buildFormSelectDatabase($name,$params=array()){
 function buildFormSelectFont($name,$params=array()){
 	$fontdir=getWasqlPath('wfiles/fonts/extras');
 	$files=listFilesEx($fontdir,array('ext'=>'css'));
+	$files=sortArrayByKeys($files,array('name'=>SORT_ASC));
 	$opts=array();
 	$fonts=array();
 	$tag='<select name="'.$name.'">'.PHP_EOL;
