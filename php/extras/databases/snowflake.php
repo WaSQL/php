@@ -1262,7 +1262,7 @@ ENDOFCON;
 				unlink($confile);
 				return $cnt;
 			}
-			$recs=getCSVRecords($outfile);
+			$recs=getCSVRecords($outfile,$params);
 			//echo printValue($out).printValue($recs);exit;
 			unlink($outfile);
 			unlink($sqlfile);
