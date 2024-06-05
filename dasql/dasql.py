@@ -230,7 +230,8 @@ elif len(params['query']) > 0:
         sys.exit(4)
     except requests.exceptions.RequestException as e:  # This is the correct syntax
         raise SystemExit(e)
-    for line in r.content.decode('utf-8-sig').splitlines():
+    #changed decode from 'utf-8-sig' to 'ISO-8859-1' to get rid of invalid continuation byte error
+    for line in r.content.decode('ISO-8859-1').splitlines():
         line=line.strip()
         if len(line):
             print(line)
