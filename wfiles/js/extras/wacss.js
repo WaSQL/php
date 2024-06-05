@@ -526,7 +526,12 @@ var wacss = {
 		//info: centers specified object or id
 		let sObj=wacss.getObject(obj);
 		if(undefined == sObj){return false;}
-		sObj.style.position=sObj.dataset.position || 'fixed';
+		if(undefined != sObj.dataset.position){
+			if(sObj.dataset.position != 'unset'){
+				sObj.style.position=sObj.dataset.position;
+			}
+		}
+		else{sObj.style.position='fixed';}
 		let w=sObj.offsetWidth || sObj.innerWidth || getWidth(sObj) || 100;
 		let h=sObj.offsetHeight || sObj.innerHeight || getHeight(sObj) || 100;
 		let vp=wacss.getViewportSize();
@@ -5082,7 +5087,7 @@ var wacss = {
 			document.body.appendChild(modal);
 		}
 		modal.setAttribute('data-position','unset');
-		centerObject(modal);
+		wacss.centerObject(modal);
 		return modal;
 	},
 	/**
