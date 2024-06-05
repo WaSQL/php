@@ -10194,7 +10194,8 @@ function fileManager($startdir='',$params=array()){
 	$pretable.='</div>'.PHP_EOL;
 	$pretable.='<div style="display:flex;flex-wrap:wrap;justify-content:center;padding-bottom:50px;">'.PHP_EOL;
 	$posttable='</div>';
-	$params['-listview']=<<<ENDOFHTML
+	if(!isset($params['-listview'])){
+		$params['-listview']=<<<ENDOFHTML
 <div style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
 	<div style="display:flex;justify-content:space-between">
 		<div class="w_small">[action_nav]</div>
@@ -10208,6 +10209,7 @@ function fileManager($startdir='',$params=array()){
 	<div class="align-right w_smaller w_gray">[size_verbose]</div>
 </div>
 ENDOFHTML;
+	}
 	//get the files
 	$params['type']='file,dir';
 	$recs=getDirRecords($cdir,$params);
@@ -10237,13 +10239,16 @@ ENDOFHTML;
 				}
 				else{$recs[$i]['action_del']='';}
 				if(isImageFile($recs[$i]['afile'])){
-					if(isset($params['-listview']) && $recs[$i]['size'] < 1000000){
+					if(isset($params['-listview'])){
 						if(strlen($recs[$i]['wfile'])){
 							$recs[$i]['preview']='<img onclick="wacss.showImage(this);" src="'.$recs[$i]['wfile'].'" style="cursor:pointer;max-width:100px;max-height:100px;">';
 						}
-						else{
+						elseif($recs[$i]['size'] < 1000000){
 							$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
 							$recs[$i]['preview']='<img onclick="wacss.showImage(this);" src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" style="cursor:pointer;max-width:100px;max-height:100px;">';
+						}
+						else{
+							$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
 						}
 					}
 					elseif(strlen($recs[$i]['wfile'])){
@@ -10254,13 +10259,16 @@ ENDOFHTML;
 					}
 				}
 				elseif(isAudioFile($recs[$i]['afile'])){
-					if(isset($params['-listview']) && $recs[$i]['size'] < 1000000){
+					if(isset($params['-listview'])){
 						if(strlen($recs[$i]['wfile'])){
 							$recs[$i]['preview']='<audio width="140" controls><source src="'.$recs[$i]['wfile'].'" type="'.$recs[$i]['ctype'].'"></source></audio>';
 						}
-						else{
+						elseif($recs[$i]['size'] < 1000000){
 							$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
 							$recs[$i]['preview']='<audio width="140" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></audio>';
+						}
+						else{
+							$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
 						}
 					}
 					elseif(strlen($recs[$i]['wfile'])){
@@ -10271,13 +10279,16 @@ ENDOFHTML;
 					}
 				}
 				elseif(isVideoFile($recs[$i]['afile'])){
-					if(isset($params['-listview']) && $recs[$i]['size'] < 1000000){
+					if(isset($params['-listview'])){
 						if(strlen($recs[$i]['wfile'])){
 							$recs[$i]['preview']='<video width="140" height="100" controls><source src="'.$recs[$i]['wfile'].'" type="'.$recs[$i]['ctype'].'"></source></video>';
 						}
-						else{
+						elseif($recs[$i]['size'] < 1000000){
 							$recs[$i]['b64']=encodeBase64(getFileContents($recs[$i]['afile']));
 							$recs[$i]['preview']='<video width="140" height="100" controls><source src="data:'.$recs[$i]['ctype'].';base64,'.$recs[$i]['b64'].'" type="'.$recs[$i]['ctype'].'"></source></video>';
+						}
+						else{
+							$recs[$i]['preview']='<span class="'.$recs[$i]['icon_class'].'" style="font-size:48px;"></span>';
 						}
 					}
 					elseif(strlen($recs[$i]['wfile'])){
