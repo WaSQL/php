@@ -139,6 +139,11 @@ div.w_colorfield input[type="checkbox"]:checked + nav.colorboxmap{
   margin-bottom:20px;
   z-index: 99999;
 }
+div.w_colorfield input[type="checkbox"]:checked + nav.colorboxmap img{
+  width:15px;
+  height:15px;
+  cursor:crosshair;
+}
 /* ---------------------- bulma css helpers----------------- */
 .title,.wacss-title{font-size: 2.5rem !important;}
 .title img, img.title,.wacss-title img,img.wacss-title{height: 52px;}

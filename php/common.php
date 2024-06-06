@@ -2409,11 +2409,11 @@ function buildFormColorBox($name,$params=array()){
 	$tag.='	</div>'.PHP_EOL;
 	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
 	//$tag.='	<div style="padding:5px;"><img src="/wfiles/color_hexagon.gif" style="border-bottom-left-radius:15px;border-bottom-right-radius:15px;" usemap="#'.$name.'_map"></div>'.PHP_EOL;
-	$tag.= buildFormColorBoxMap($name.'_map').PHP_EOL;
+	$tag.= buildFormColorBoxMap($name.'_map',$params).PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
-function buildFormColorBoxMap($name){
+function buildFormColorBoxMap($name,$params){
 	$wpath=getWasqlPath('wfiles');
 	$recs=getCSVRecords("{$wpath}/color_names.csv");
 	$map='<nav class="colorboxmap" name="'.$name.'">'.PHP_EOL;
@@ -2425,7 +2425,7 @@ function buildFormColorBoxMap($name){
 	);
 	foreach($recs as $rec){
 		$map.=<<<ENDOFIMG
-<img src="/wfiles/clear.gif" title="{$rec['name']}" style="width:15px;height:15px;cursor:crosshair;background-color:{$rec['hex']};" onclick="wacss.colorboxSet(this);" data-color="{$rec['hex']}">
+<img src="/wfiles/clear.gif" title="{$rec['name']}" style="background-color:{$rec['hex']};" onclick="wacss.colorboxSet(this);" data-color="{$rec['hex']}">
 ENDOFIMG;
 		$opts[$rec['hex']]="{$rec['name']}";
 		$params["{$rec['hex']}_style"]="background-color:{$rec['hex']};color:{$rec['contrast_color']};";
