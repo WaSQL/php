@@ -5,14 +5,14 @@ hex,name,red,green,blue,hue,saturation,lightness,contrast_ratio,contrast_color,c
 #003399,Smalt,0,51,153,220,-1.0132450331126,76.5,1,#d3d3d3,Blues
 #000099,"Dark Blue",0,0,153,240,-1.0132450331126,76.5,1,#d3d3d3,Blues
 #0000CC,"Medium Blue",0,0,204,240,-1.009900990099,102,1,#d3d3d3,Blues
+#0000FF,Blue,0,0,255,240,-1.0079051383399,127.5,2,#d3d3d3,Blues
+#3333FF,"Royal Blue",51,51,255,240,-0.67105263157895,153,2,#d3d3d3,Blues
 #000066,"Navy Blue",0,0,102,240,-1.02,51,1,#d3d3d3,Blues
 #006666,"Charcoal Gray",0,102,102,180,-1.02,51,3,#d3d3d3,Blues
 #006699,"Dodger Blue",0,102,153,200,-1.0132450331126,76.5,3,#d3d3d3,Blues
 #0099CC,"Sky Blue",0,153,204,195,-1.009900990099,102,6,#d3d3d3,Blues
 #0066CC,"Science Blue",0,102,204,210,-1.009900990099,102,3,#d3d3d3,Blues
 #0033CC,"Sodalite Blue (or Dark Sapphire Blue)",0,51,204,225,-1.009900990099,102,2,#d3d3d3,Blues
-#0000FF,Blue,0,0,255,240,-1.0079051383399,127.5,2,#d3d3d3,Blues
-#3333FF,"Royal Blue",51,51,255,240,-0.67105263157895,153,2,#d3d3d3,Blues
 #333399,"Dark Slate Gray",51,51,153,240,-0.5049504950495,102,2,#d3d3d3,Blues
 #669999,"Light Slate Gray",102,153,153,180,-0.20158102766798,127.5,6,#d3d3d3,Blues
 #009999,"Cobalt Blue",0,153,153,180,-1.0132450331126,76.5,6,#d3d3d3,Blues
@@ -62,7 +62,6 @@ hex,name,red,green,blue,hue,saturation,lightness,contrast_ratio,contrast_color,c
 #66FF66,"Screamin' Green",102,255,102,120,-0.43098591549296,178.5,16,#d3d3d3,Yellows
 #99FF99,"Mint Green",153,255,153,120,-0.2512315270936,204,17,#d3d3d3,Greens
 #CCFFCC,"Light Blue",204,255,204,120,-0.11159737417943,229.5,18,#d3d3d3,Yellows
-#FFFFFF,White,255,255,255,-1,0,255,21,#d3d3d3,Grays
 #FFCCFF,"Baby Pink",255,204,255,300,-0.11159737417943,229.5,15,#d3d3d3,Blues
 #FF99FF,"Light Pink",255,153,255,300,-0.2512315270936,204,11,#d3d3d3,Magentas
 #FF66FF,"Pink Flamingo",255,102,255,300,-0.43098591549296,178.5,8,#d3d3d3,Magentas
@@ -126,13 +125,7 @@ hex,name,red,green,blue,hue,saturation,lightness,contrast_ratio,contrast_color,c
 #990000,"Blackish Brown",153,0,0,0,-1.0132450331126,76.5,2,#d3d3d3,Browns
 #800000,Maroon,128,0,0,0,-1.015873015873,64,1,#d3d3d3,Browns
 #993333,"Dark Grayish Brown",153,51,51,0,-0.5049504950495,102,2,#d3d3d3,Others
+#FFFFFF,White,255,255,255,-1,0,255,21,#d3d3d3,Grays
+#C1C1C1,Light Gray,193,193,193,160,0,182,5,#000000,Grays
 #808080,Gray,128,128,128,-1,0,128,5,#d3d3d3,Grays
 #000000,Black,0,0,0,-1,0,0,1,#d3d3d3,Grays
-,,,,,,,,,,Grays
-,,,,,,,,,,Grays
-,,,,,,,,,,Greens
-,,,,,,,,,,Greens
-,,,,,,,,,,Cyans
-,,,,,,,,,,Purples
-,,,,,,,,,,Purples
-,,,,,,,,,,Purples
