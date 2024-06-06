@@ -2416,7 +2416,6 @@ function buildFormColorBox($name,$params=array()){
 function buildFormColorBoxMap($name){
 	$wpath=getWasqlPath('wfiles');
 	$recs=getCSVRecords("{$wpath}/color_names.csv");
-	$recs=sortArrayByKeys($recs,array('hue'=>SORT_DESC,'hex'=>SORT_ASC));
 	$map='<nav class="colorboxmap" name="'.$name.'">'.PHP_EOL;
 	$opts=array();
 	$params=array(
