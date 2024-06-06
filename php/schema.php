@@ -922,6 +922,7 @@ function createWasqlTable($table=''){
 			$fields['red']=databaseDataType('int');
 			$fields['green']=databaseDataType('int');
 			$fields['blue']=databaseDataType('int');
+			$fields['contrast_ratio']=databaseDataType('int');
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes

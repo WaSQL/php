@@ -2332,15 +2332,15 @@ function buildFormColor($name,$params=array()){
 	$tag.='	</div>'.PHP_EOL;
 	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
 	$tag.='	<img src="/wfiles/color_wheel.png" usemap="#'.$name.'_map">'.PHP_EOL;
-	$tag.= buildFormColorMap($name.'_map').PHP_EOL;
+	$tag.= buildFormColorWheelMap($name.'_map').PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
-//---------- begin function buildFormColorMap-------------------
+//---------- begin function buildFormColorWheelMap-------------------
 /**
 * @exclude  - this function in only used internally by buildFormColor
 */
-function buildFormColorMap($name){
+function buildFormColorWheelMap($name){
 	return <<<ENDOFMAP
 <map name="{$name}">
     <area title="Yellow" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#fffc0d" coords="100,4,100,55,112,57,122,61,147,16,124,7" shape="poly">
@@ -2370,6 +2370,72 @@ function buildFormColorMap($name){
     <area title="Close" style="cursor:pointer;" onclick="return wacss.colorwheelClose(this);" coords="100,101,21" shape="circle">
 </map>
 ENDOFMAP;
+}
+//---------- begin function buildFormColorBox-------------------
+/**
+* @describe creates an HTML color control using the color box built from color_names.csv
+* @param name string - field name
+* @param params array
+*	[-formname] string - specify the form name - defaults to addedit
+*	[value] string - specify the current value
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string - html color control
+* @usage echo buildFormColorHexagon('color');
+*/
+function buildFormColorBox($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['value']=buildFormValueParam($name,$params);
+	$tag='';
+	$tag.='<div class="w_colorfield"';
+	if(isset($params['data-displayif']) && is_string($params['data-displayif']) && strlen($params['data-displayif'])){
+		$tag.=' data-displayif="'.$params['data-displayif'].'"';
+		unset($params['data-displayif']);
+	}
+	$tag.='>'.PHP_EOL;
+	$tag.='	<div>'.PHP_EOL;
+	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />'.PHP_EOL;
+	$tag.='		<label for="'.$name.'_check"';
+	if(isset($params['value']) && is_string($params['value']) && strlen($params['value'])){
+		$tag.=' style="background-color:'.$params['value'].'"';
+	}
+	$tag.='></label>'.PHP_EOL;
+	$tag.='	</div>'.PHP_EOL;
+	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
+	//$tag.='	<div style="padding:5px;"><img src="/wfiles/color_hexagon.gif" style="border-bottom-left-radius:15px;border-bottom-right-radius:15px;" usemap="#'.$name.'_map"></div>'.PHP_EOL;
+	$tag.= buildFormColorBoxMap($name.'_map').PHP_EOL;
+	$tag.='</div>'.PHP_EOL;
+	return $tag;
+}
+function buildFormColorBoxMap($name){
+	$wpath=getWasqlPath('wfiles');
+	$recs=getCSVRecords("{$wpath}/color_names.csv");
+	$recs=sortArrayByKeys($recs,array('hue'=>SORT_DESC,'hex'=>SORT_ASC));
+	$map='<nav class="colorboxmap" name="'.$name.'">'.PHP_EOL;
+	$opts=array();
+	$params=array(
+		'onchange'=>"wacss.colorboxSelect(this)",
+		'class'=>'select',
+		'message'=>'-- Select By Name --'
+	);
+	foreach($recs as $rec){
+		$map.=<<<ENDOFIMG
+<img src="/wfiles/clear.gif" title="{$rec['name']}" style="width:15px;height:15px;cursor:crosshair;background-color:{$rec['hex']};" onclick="wacss.colorboxSet(this);" data-color="{$rec['hex']}">
+ENDOFIMG;
+		$opts[$rec['hex']]="{$rec['name']}";
+		$params["{$rec['hex']}_style"]="background-color:{$rec['hex']};color:{$rec['contrast_color']};";
+	}
+	$map.=buildFormSelect($name.'colorbox_select',$opts,$params);
+	$map.='</nav>'.PHP_EOL;
+	
+	//return printValue($opts);
+	return $map;
 }
 
 //---------- begin function buildFormCombo--------------------
@@ -4209,6 +4275,11 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 				if(isset($params["{$tval}_class"])){
 					$rtn .= ' class="'.$params["{$tval}_class"].'"';
 				}
+				foreach($params as $k=>$v){
+					if(!stringBeginsWith($k,"{$tval}_data-")){continue;}
+					$k=str_replace("{$tval}_data-",'',$k);
+					$rtn .= " data-{$k}=\"{$v}\"";
+				}
 				if(strlen($params['value'])){
 					if($params['value']==$tval){$rtn .= ' selected';}
 					elseif($params['value']==$dval){$rtn .= ' selected';}
@@ -4227,6 +4298,11 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 			}
 			if(isset($params["{$tval}_class"])){
 				$rtn .= ' class="'.$params["{$tval}_class"].'"';
+			}
+			foreach($params as $k=>$v){
+				if(!stringBeginsWith($k,"{$tval}_data-")){continue;}
+				$k=str_replace("{$tval}_data-",'',$k);
+				$rtn .= " data-{$k}=\"{$v}\"";
 			}
 			if(strlen($params['value'])){
 				if($params['value']==$tval){$rtn .= ' selected';}
@@ -4293,6 +4369,114 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 		$opts[$rec['code']]=$rec['name'];
 	}
 	return buildFormSelect($name,$opts,$params);
+}
+//---------- begin function buildFormSelectColor--------------------
+/**
+* @describe creates an Selection list for Color
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormSelectColor('color',$params);
+*/
+function buildFormSelectColor($name='color',$params=array('message'=>'-- color --')){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['value']=buildFormValueParam($name,$params);
+	//get colors
+	$recopts=array(
+		'-table'=>'colors',
+		'-order'=>'hue,saturation,lightness,red,green,blue,name,code,_id',
+	);
+	$recs=getDBRecords($recopts);
+	if(!is_array($recs) || !count($recs)){
+		clearDBCache('databaseTables');
+		$ok=createWasqlTable('colors');
+		$recs=getDBRecords($recopts);
+	}
+	if(!is_array($recs)){return $recs;}
+	$opts=array();
+	//echo printValue($ok).printValue($recs);exit;
+	foreach($recs as $i=>$rec){
+		$key=$rec['hex'];
+		if(isset($params['-rgb'])){$key="{$rec['red']},{$rec['green']},{$rec['blue']}";}
+		elseif(isset($params['-code'])){$key=$rec['code'];}
+		if(!strlen($rec['contrast_ratio'])){
+			$rec['contrast_ratio']=$contrast_ratio=commonGetContrastRatio($rec['hex']);
+			$ok=editDBRecordById('colors',$rec['_id'],array('contrast_ratio'=>$contrast_ratio));
+		}
+		if(!strlen($rec['hue'])){
+			$hsl=commonRGBToHSL($rec['red'],$rec['green'],$rec['blue']);
+			$ok=editDBRecordById('colors',$rec['_id'],array(
+				'hue'=>$hsl['h'],
+				'saturation'=>$hsl['s'],
+				'lightness'=>$hsl['l']
+			));
+		}
+		$opts[$key]="{$rec['name']} ({$rec['contrast_ratio']})";
+		// If contrast is more than 5, return black color
+	    if ($rec['contrast_ratio'] > 3) {
+	        $color='#000000';
+	    } else { 
+	        // if not, return light gray color.
+	        $color='#d3d3d3';
+	    }
+		$params["{$key}_style"]="background-color:{$rec['hex']};color:{$color};";
+	}
+	return buildFormSelect($name,$opts,$params);
+}
+function commonRGBToHSL($r,$g,$b) {
+  $cMax = max($r, $g, $b);
+  $cMin = min($r, $g, $b);
+  $delta = $cMax - $cMin;
+
+  $h = -1; // Hue
+  $s = 0; // Saturation
+  $l = ($cMax + $cMin) / 2;
+
+  if ($delta != 0) {
+    $s = $delta / ($l <= 0.5 ? $cMax + $cMin : 2 - $cMax - $cMin);
+    $h = match ($cMax) {
+      $r => ($g - $b) / $delta + ($g < $b ? 6 : 0),
+      $g => ($b - $r) / $delta + 2,
+      $b => ($r - $g) / $delta + 4,
+    };
+    $h = round($h * 60);
+    if ($h < 0)
+      $h += 360;
+  }
+
+  return array('h' => $h, 's' => $s, 'l' => $l);
+}
+function commonGetContrastRatio($hexColor){
+    // hexColor RGB
+    $R1 = hexdec(substr($hexColor, 1, 2));
+    $G1 = hexdec(substr($hexColor, 3, 2));
+    $B1 = hexdec(substr($hexColor, 5, 2));
+
+    // Black RGB
+    $blackColor = "#000000";
+    $R2BlackColor = hexdec(substr($blackColor, 1, 2));
+    $G2BlackColor = hexdec(substr($blackColor, 3, 2));
+    $B2BlackColor = hexdec(substr($blackColor, 5, 2));
+
+     // Calc contrast ratio
+     $L1 = 0.2126 * pow($R1 / 255, 2.2) +
+           0.7152 * pow($G1 / 255, 2.2) +
+           0.0722 * pow($B1 / 255, 2.2);
+
+    $L2 = 0.2126 * pow($R2BlackColor / 255, 2.2) +
+          0.7152 * pow($G2BlackColor / 255, 2.2) +
+          0.0722 * pow($B2BlackColor / 255, 2.2);
+
+    $contrastRatio = 0;
+    if ($L1 > $L2) {
+        $contrastRatio = (int)(($L1 + 0.05) / ($L2 + 0.05));
+    } else {
+        $contrastRatio = (int)(($L2 + 0.05) / ($L1 + 0.05));
+    }
+    return $contrastRatio;
 }
 //---------- begin function buildFormSelectCustom-------------------
 /**

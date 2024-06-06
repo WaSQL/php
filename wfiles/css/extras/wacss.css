@@ -122,6 +122,23 @@ div.w_colorfield input[type="checkbox"]:checked + img{
   border-bottom-right-radius:50%;
   box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
 }
+div.w_colorfield input[type="checkbox"] + nav.colorboxmap{
+  margin-top:2px;
+  display:none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+div.w_colorfield input[type="checkbox"]:checked + nav.colorboxmap{
+  display:flex;
+  flex-wrap:wrap;
+  width:195px;
+  background-color:#FFF;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  position:absolute;
+  margin-bottom:20px;
+  z-index: 99999;
+}
 /* ---------------------- bulma css helpers----------------- */
 .title,.wacss-title{font-size: 2.5rem !important;}
 .title img, img.title,.wacss-title img,img.wacss-title{height: 52px;}

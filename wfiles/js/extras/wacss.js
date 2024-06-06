@@ -641,6 +641,27 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
+	colorboxSelect: function(el){
+		let p=wacss.getParent(el,'div');
+		if(undefined==p){return false;}
+		let v=el.options[el.selectedIndex].value;
+		p.querySelector('input[type="text"]').value=v;
+		p.querySelector('label[for]').style.backgroundColor=v;
+		p.querySelector('input[type="checkbox"]').checked=false;
+	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	colorboxSet: function(el){
+		let p=wacss.getParent(el,'div');
+		if(undefined==p){return false;}
+		p.querySelector('input[type="text"]').value=el.dataset.color;
+		p.querySelector('label[for]').style.backgroundColor=el.dataset.color;
+		p.querySelector('input[type="checkbox"]').checked=false;
+	},
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
 	colorwheelSet: function(el){
 		let p=wacss.getParent(el,'div');
 		if(undefined==p){return false;}

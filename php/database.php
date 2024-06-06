@@ -8347,7 +8347,10 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'color':
 			$tag=buildFormColor($info[$field]['name'],$info[$field]);
-			break;
+		break;
+		case 'color_box':
+			$tag=buildFormColorBox($info[$field]['name'],$info[$field]);
+		break;
 		case 'combo':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);
@@ -8529,6 +8532,13 @@ function getDBFieldTag($params=array()){
             $dname=ucwords(str_replace('_',' ',$name));
             $info[$field]['message']="-- {$dname} --";
             $tag=buildFormSelectCustom($name,$options,$info[$field]);
+		break;
+		case 'select_color':
+			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Color --';}
+			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
+            $name=$field;
+            if(isset($info[$field]['name'])){$name=$info[$field]['name'];}
+            $tag=buildFormSelectColor($name,$info[$field]);
 		break;
 		case 'select_country':
 			if(!isset($info[$field]['message'])){$info[$field]['message']='-- Country --';}
