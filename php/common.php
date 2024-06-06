@@ -4426,27 +4426,39 @@ function buildFormSelectColor($name='color',$params=array('message'=>'-- color -
 	return buildFormSelect($name,$opts,$params);
 }
 function commonRGBToHSL($r,$g,$b) {
-  $cMax = max($r, $g, $b);
-  $cMin = min($r, $g, $b);
-  $delta = $cMax - $cMin;
-
-  $h = -1; // Hue
-  $s = 0; // Saturation
-  $l = ($cMax + $cMin) / 2;
-
-  if ($delta != 0) {
-    $s = $delta / ($l <= 0.5 ? $cMax + $cMin : 2 - $cMax - $cMin);
-    $h = match ($cMax) {
-      $r => ($g - $b) / $delta + ($g < $b ? 6 : 0),
-      $g => ($b - $r) / $delta + 2,
-      $b => ($r - $g) / $delta + 4,
-    };
-    $h = round($h * 60);
-    if ($h < 0)
-      $h += 360;
-  }
-
-  return array('h' => $h, 's' => $s, 'l' => $l);
+	$oldR = $r;
+	$oldG = $g;
+	$oldB = $b;
+	$r /= 255;
+	$g /= 255;
+	$b /= 255;
+	$max = max( $r, $g, $b );
+	$min = min( $r, $g, $b );
+	$h;
+	$s;
+	$l = ( $max + $min ) / 2;
+	$d = $max - $min;
+	if( $d == 0 ){
+		$h = $s = 0; // achromatic
+	} 
+	else{
+		$s = $d / ( 1 - abs( 2 * $l - 1 ) );
+		switch( $max ){
+			case $r:
+				$h = 60 * fmod( ( ( $g - $b ) / $d ), 6 ); 
+				if ($b > $g) {
+					$h += 360;
+				}
+			break;
+			case $g: 
+				$h = 60 * ( ( $b - $r ) / $d + 2 ); 
+			break;
+			case $b: 
+				$h = 60 * ( ( $r - $g ) / $d + 4 ); 
+			break;
+		}			        	        
+	}
+	return array( 'h'=>round( $h, 2 ), 's'=>round( $s, 2 ), 'l'=>round( $l, 2 ) );
 }
 function commonGetContrastRatio($hexColor){
     // hexColor RGB
