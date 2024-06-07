@@ -916,17 +916,20 @@ function createWasqlTable($table=''){
             return 1;
 		break;
 		case 'colors':
-			$fields['code']=databaseDataType('varchar(50)')." NOT NULL";
-			$fields['name']=databaseDataType('varchar(100)');
 			$fields['hex']=databaseDataType('varchar(7)');
+			$fields['name']=databaseDataType('varchar(100)');
 			$fields['red']=databaseDataType('int');
 			$fields['green']=databaseDataType('int');
 			$fields['blue']=databaseDataType('int');
+			$fields['hue']=databaseDataType('int');
+			$fields['saturation']='decimal(12,10)';
+			$fields['lightness']='decimal(4,2)';
 			$fields['contrast_ratio']=databaseDataType('int');
+			$fields['contrast_color']=databaseDataType('varchar(7)');
 			$ok = createDBTable($table,$fields,'InnoDB');
 			if($ok != 1){break;}
 			//indexes
-			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"code",'-unique'=>true));
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"hex",'-unique'=>true));
 			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
 			addMetaData($table);
 			//populate the table 

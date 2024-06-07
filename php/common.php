@@ -2381,7 +2381,7 @@ ENDOFMAP;
 *	[required] boolean - make it a required field - defaults to addedit false
 *	[id] string - specify the field id - defaults to formname_fieldname
 * @return string - html color control
-* @usage echo buildFormColorHexagon('color');
+* @usage echo buildFormColorBox('color');
 */
 function buildFormColorBox($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -2413,24 +2413,25 @@ function buildFormColorBox($name,$params=array()){
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
-function buildFormColorBoxMap($name,$params){
+function buildFormColorBoxMap($name){
 	$wpath=getWasqlPath('wfiles');
 	$recs=getCSVRecords("{$wpath}/color_names.csv");
 	$map='<nav class="colorboxmap" name="'.$name.'">'.PHP_EOL;
 	$opts=array();
-	$params=array(
+	$sparams=array(
 		'onchange'=>"wacss.colorboxSelect(this)",
 		'class'=>'select',
-		'message'=>'-- Select By Name --'
+		'message'=>'-- Color By Name --',
+		'style'=>'border-top-right-radius:0px;border-top-left-radius:0px;'
 	);
 	foreach($recs as $rec){
 		$map.=<<<ENDOFIMG
 <img src="/wfiles/clear.gif" title="{$rec['name']}" style="background-color:{$rec['hex']};" onclick="wacss.colorboxSet(this);" data-color="{$rec['hex']}">
 ENDOFIMG;
 		$opts[$rec['hex']]="{$rec['name']}";
-		$params["{$rec['hex']}_style"]="background-color:{$rec['hex']};color:{$rec['contrast_color']};";
+		$sparams["{$rec['hex']}_style"]="background-color:{$rec['hex']};color:{$rec['contrast_color']};";
 	}
-	$map.=buildFormSelect($name.'colorbox_select',$opts,$params);
+	$map.=buildFormSelect($name.'colorbox_select',$opts,$sparams);
 	$map.='</nav>'.PHP_EOL;
 	
 	//return printValue($opts);
