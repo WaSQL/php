@@ -18926,7 +18926,9 @@ function processActions(){
 						}
 						echo $_REQUEST['edit_opts'][$fld];
 						$divid="editfield_{$fld}_{$_REQUEST['edit_rec']['_id']}";
-						echo $rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$_REQUEST['_table'].'\',\''.$_REQUEST['edit_rec']['_id'].'\',\''.$fld.'\',{div:\''.$divid.'\'});"></sup>';
+						if(!isset($_REQUEST['_noicon'])){
+							echo $rtn .= ' <sup class="icon-edit w_smallest w_gray w_pointer" onclick="ajaxEditField(\''.$_REQUEST['_table'].'\',\''.$_REQUEST['edit_rec']['_id'].'\',\''.$fld.'\',{div:\''.$divid.'\'});"></sup>';
+						}
 						exit;
 					}
 					$_REQUEST['edit_id']=$rec['_id'];
@@ -19519,7 +19521,9 @@ function processActions(){
 				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
 				echo '	<input type="hidden" name="setprocessing" value="0" />'.PHP_EOL;
 			}
-			
+			if(isset($_REQUEST['noicon'])){
+				echo '	<input type="hidden" name="_noicon" value="'.$_REQUEST['noicon'].'" />'.PHP_EOL;	
+			}
 			echo '	<input type="hidden" name="_table" value="'.$_REQUEST['table'].'" />'.PHP_EOL;
 			echo '	<input type="hidden" name="_fields" value="'.$_REQUEST['field'].'" />'.PHP_EOL;
 			echo '	<input type="hidden" name="_id" value="'.$_REQUEST['id'].'" />'.PHP_EOL;
