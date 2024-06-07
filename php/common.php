@@ -19578,7 +19578,7 @@ function processActions(){
 			
 			echo '	<button type="submit" title="save" style="padding:3px;"><span class="icon-save w_bigger"></span></button>'.PHP_EOL;
 			echo '</form>'.PHP_EOL;
-			echo buildOnLoad("document.editfieldform.{$_REQUEST['field']}.select();");
+			echo buildOnLoad("document.{$formname}.{$_REQUEST['field']}.select();");
 			//centerpop?
 			if(isset($_REQUEST['div']) && $_REQUEST['div']=='centerpop'){
 				echo '</div>'.PHP_EOL;
