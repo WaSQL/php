@@ -1426,6 +1426,7 @@ function databaseListRecords($params=array()){
 	}
 	elseif(isset($params['-table'])){
 		//get the list from the table. First lets get the table fields
+		if(!isset($params['-database'])){$params['-database']='';}
 		switch(strtolower($params['-database'])){
 			case 'ctree':
 				if(!function_exists('ctreeGetDBFieldInfo')){
@@ -1654,7 +1655,7 @@ function databaseListRecords($params=array()){
 		if(isset($params['-export']) && isset($params['-export_now']) && $params['-export_now']==1){
 			//remove limit temporarily
 			$limit=$params['-limit'];
-			$fields=$params['-fields'];
+			$fields=isset($params['-fields'])?$params['-fields']:'';
 			if(isset($params['-exportfields'])){
 				//exportfields may have non-table fields - remove them as they are enriched later
 				$params['-listfields']=$params['-exportfields'];
@@ -1768,7 +1769,7 @@ function databaseListRecords($params=array()){
 					$recs=call_user_func($params['-results_eval'],$recs);
 				}
 			}
-			if(is_array($exportfields)){
+			if(isset($exportfields) && is_array($exportfields)){
 				//only exportfields
 				$xrecs=array();
 				foreach($recs as $i=>$rec){
@@ -1785,6 +1786,7 @@ function databaseListRecords($params=array()){
 			//strip tags
 			foreach($recs as $i=>$rec){
 				foreach($rec as $k=>$v){
+					if(is_null($v)){$v='';}
 					$recs[$i][$k]=strip_tags($v);
 				}
 			}
@@ -10050,11 +10052,12 @@ function getDBWhere($params,$info=array()){
 	//echo printValue($info);exit;
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
+		if(!isset($info[$k])){continue;}
+		if(is_null($params[$k])){unset($params[$k]);continue;}
 		if(is_array($params[$k])){
             $params[$k]=implode(':',$params[$k]);
 		}
 		if(!strlen(trim($params[$k]))){continue;}
-		if(!isset($info[$k])){continue;}
         $params[$k]=str_replace("'","''",$params[$k]);
         $v=databaseEscapeString($params[$k]);
         switch(strtolower($info[$k]['_dbtype'])){
