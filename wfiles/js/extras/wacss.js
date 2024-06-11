@@ -1748,7 +1748,11 @@ var wacss = {
 					console.log('wacss.initDrag ondrop error: ondrop is blank in tel');
 					return false;
 				}
-				window[tel.dataset.ondrop](dragel,tel);
+				if(tel.dataset.ondrop.indexOf('wacss.') !=-1){
+					tel.dataset.ondrop=tel.dataset.ondrop.replace('wacss.','');
+					wacss[tel.dataset.ondrop](dragel,tel);
+				}
+				else{window[tel.dataset.ondrop](dragel,tel);}
 			}
 		}
 		return false;
