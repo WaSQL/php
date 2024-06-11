@@ -10270,6 +10270,7 @@ function fileManager($startdir='',$params=array()){
 	if(!strlen($startdir)){
 		$startdir=$CONFIG['filemanager_startdir'] ?? $CONFIG['filemanager_path'] ?? $_SERVER['DOCUMENT_ROOT'];
 	}
+	//$params['-reorder']=1;
 	if(!is_dir($startdir)){return "{$startdir} does not exist";}
 	loadExtrasJs('html5');
 	foreach($CONFIG as $k=>$v){
@@ -10389,6 +10390,9 @@ function fileManager($startdir='',$params=array()){
 	}
 	$pretable .= '</div>'.PHP_EOL;
 	$pretable.='</div>'.PHP_EOL;
+	if(isset($params['-reorder'])){
+		$pretable.='<div class="reorder_message w_small w_gray" style="margin:0 0 10px 10px;">Note: Drag and Drop to Reorder Items</div>';
+	}
 	$pretable.='<div style="display:flex;flex-wrap:wrap;justify-content:center;padding-bottom:50px;">'.PHP_EOL;
 	$posttable='</div>';
 	$reorder_file="{$cdir}/.reorder.json";
