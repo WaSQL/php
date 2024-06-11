@@ -785,6 +785,13 @@ var wacss = {
 		}
 		return false;
 	},
+	filemanagerReorder:function(dragel,dropel){
+		let action=dragel.dataset.action || dropel.dataset.action;
+		let dir=dragel.dataset.dir || dropel.dataset.dir;
+		let params={_menu:'files',_dir:dir,_reorder:1,_dragname:dragel.dataset.filename,_dropname:dropel.dataset.filename};
+		let ok=wacss.post(action,params);
+		return false;
+	},
 	formatAlpha: function(str){
   		let cleaned = ('' + str).replace(/[^a-zA-Z]+/g, '');
   		return cleaned;

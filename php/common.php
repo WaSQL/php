@@ -10411,15 +10411,7 @@ function fileManager($startdir='',$params=array()){
 		if(isset($params['-reorder']) && file_exists($reorder_file)){
 			$cdirB64=encodeBase64($cdir);
 			$params['-listview']=<<<ENDOFHTML
-<script>
-function filemanagerDrop(dragel,dropel){
-	let action='{$action}';
-	let params={_menu:'files',_dir:'{$cdirB64}',_reorder:1,_dragname:dragel.dataset.filename,_dropname:dropel.dataset.filename};
-	let ok=wacss.post(action,params);
-	return false;
-}
-</script>
-<div data-filename="[name]" data-ondrop="filemanagerDrop" draggable="true" style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
+<div data-filename="[name]" data-dir="{$cdirB64}" data-action="{$action}" data-ondrop="filemanagerReorder" draggable="true" style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
 	<div style="display:flex;justify-content:space-between">
 		<div class="w_small">[action_nav]</div>
 		<div class="w_small">[action_del]</div>
