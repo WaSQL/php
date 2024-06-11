@@ -3526,6 +3526,7 @@ function pagingClearFilters(frm){
 	for(var i=0;i<f.length;i++){
     	setText(f[i],'');
 	}
+	simulateEvent(frm,'submit');
 }
 
 

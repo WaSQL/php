@@ -2448,10 +2448,20 @@ LIST_TABLE:
 						$recopts['active_checkmark']=1;
 						$recopts['active_align']="center";
 						$recopts['-fields']="_id,name,active,running,frequency,run_date,run_length,run_cmd,run_as";
-						$_REQUEST['filter_field']='name';
+						if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='name';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case '_cron_log':
-                		$_REQUEST['filter_field']='name';
+                		if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='name';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case '_forms':
                 		$_REQUEST['filter_field']='formname';
@@ -2477,10 +2487,20 @@ LIST_TABLE:
                 	case '_pages':
                 		$recopts['_template_relate']="id,name";
                 		$recopts['-relate']=array('_template'=>'_templates');
-                		$_REQUEST['filter_field']='name';
+                		if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='name';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case '_templates':
-                		$_REQUEST['filter_field']='name';
+                		if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='name';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case '_tabledata':
                 		$_REQUEST['filter_field']='tablename';
@@ -2489,12 +2509,23 @@ LIST_TABLE:
                 		$_REQUEST['filter_field']='tablename';
                 	break;
                 	case '_reports':
-                		$_REQUEST['filter_field']='name';
+                		if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='name';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case '_users':
-                		$_REQUEST['filter_field']='lastname';
+                		if(!isset($_REQUEST['filter_field'])){
+                			$_REQUEST['filter_field']='lastname';
+                		}
+                		if(!isset($_REQUEST['filter_operator'])){
+                			$_REQUEST['filter_operator']='ct';
+                		}
                 	break;
                 	case 'states':
+                	case 'cities':
                 		$recopts['-quickfilters']=array('USA'=>"country eq US");
                 	break;
                 	case '_queries':
