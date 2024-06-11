@@ -5452,6 +5452,35 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.post
+	* @describe sends a request to the specified url from a form with params as inputs
+	* @param string form action
+	* @param json key/value pairs
+	* @return boolean false
+	* @usage wacss.post('/yourpage',{age:15,color:'blue'});
+	*/
+	post:function(path, params, method='post') {
+		// The rest of this code assumes you are not using a library.
+		// It can be made less verbose if you use one.
+		let form = document.createElement('form');
+		form.method = method;
+		form.action = path;
+
+		for (let key in params) {
+			if (params.hasOwnProperty(key)) {
+				let hiddenField = document.createElement('input');
+				hiddenField.type = 'hidden';
+				hiddenField.name = key;
+				hiddenField.value = params[key];
+				form.appendChild(hiddenField);
+			}
+		}
+		document.body.appendChild(form);
+		form.submit();
+		form.remove();
+		return false;
+	},
 	preventDefault: function(evt){
 		evt = evt || window.event;
 		if (evt.preventDefault){evt.preventDefault();}

@@ -10260,6 +10260,7 @@ function fileExplorer($startdir='',$param=array()){
 *	-icons=1  shows icons for known file extensions
 *	-actions=download,edit,delete
 *	-fields=name,size,modified,perms
+*	-reorder=1 allows user to reorder files and folders by drag-n-drop
 * @return
 *	Web-based File Manager/Explorer application
 * @usage fileManager('/var/www/shared/test');
@@ -10390,8 +10391,50 @@ function fileManager($startdir='',$params=array()){
 	$pretable.='</div>'.PHP_EOL;
 	$pretable.='<div style="display:flex;flex-wrap:wrap;justify-content:center;padding-bottom:50px;">'.PHP_EOL;
 	$posttable='</div>';
+	$reorder_file="{$cdir}/.reorder.json";
+	//get the files
+	$params['type']='file,dir';
+	$recs=getDirRecords($cdir,$params);
+	$recs=sortArrayByKeys($recs,array('type'=>SORT_ASC,'name'=>SORT_ASC));
 	if(!isset($params['-listview'])){
-		$params['-listview']=<<<ENDOFHTML
+		if(isset($params['-reorder'])){
+			if(!file_exists($reorder_file)){
+				$ordermap=array();
+				$i=0;
+				foreach($recs as $rec){
+					$i+=1;
+					$ordermap[$rec['name']]=$i;
+				}
+				setFileContents($reorder_file,encodeJSON($ordermap));
+			}
+		}
+		if(isset($params['-reorder']) && file_exists($reorder_file)){
+			$cdirB64=encodeBase64($cdir);
+			$params['-listview']=<<<ENDOFHTML
+<script>
+function filemanagerDrop(dragel,dropel){
+	let action='{$action}';
+	let params={_menu:'files',_dir:'{$cdirB64}',_reorder:1,_dragname:dragel.dataset.filename,_dropname:dropel.dataset.filename};
+	let ok=wacss.post(action,params);
+	return false;
+}
+</script>
+<div data-filename="[name]" data-ondrop="filemanagerDrop" draggable="true" style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
+	<div style="display:flex;justify-content:space-between">
+		<div class="w_small">[action_nav]</div>
+		<div class="w_small">[action_del]</div>
+	</div>
+	<div style="flex:1;padding:10px;flex-direction:column;align-content:center;justify-content:center;">
+		<div title="[name]" style="display:flex;justify-content:center;">[preview]</div>
+		<div class="w_gray w_smallest align-center" style="margin-top:4px;overflow:hidden;white-space:nowrap;text-overflow: ellipsis;">[name]</div>
+	</div>
+	
+	<div class="align-right w_smaller w_gray">[size_verbose]</div>
+</div>
+ENDOFHTML;
+		}
+		else{
+			$params['-listview']=<<<ENDOFHTML
 <div style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
 	<div style="display:flex;justify-content:space-between">
 		<div class="w_small">[action_nav]</div>
@@ -10405,11 +10448,41 @@ function fileManager($startdir='',$params=array()){
 	<div class="align-right w_smaller w_gray">[size_verbose]</div>
 </div>
 ENDOFHTML;
+		}
 	}
-	//get the files
-	$params['type']='file,dir';
-	$recs=getDirRecords($cdir,$params);
-	$recs=sortArrayByKeys($recs,array('type'=>SORT_ASC,'name'=>SORT_ASC));
+	//order the results
+	if(isset($params['-reorder']) && file_exists($reorder_file)){
+		$ordermap=decodeJSON(getFileContents($reorder_file));
+		if(isset($_REQUEST['_reorder']) && isset($_REQUEST['_dragname']) && isset($_REQUEST['_dropname'])){
+			//insert dragname just before dropname
+			$newordermap=array();
+			$i=0;
+			foreach($ordermap as $name=>$id){
+				if($name==$_REQUEST['_dragname']){continue;}
+				$i+=1;
+				if($name==$_REQUEST['_dropname']){
+					$newordermap[$_REQUEST['_dragname']]=$i;
+					$i+=1;
+					$newordermap[$_REQUEST['_dropname']]=$i;
+				}
+				else{
+					$newordermap[$name]=$i;
+				}
+			}
+			$ordermap=$newordermap;
+			setFileContents($reorder_file,encodeJSON($ordermap));
+		}
+		//{name}=>orderid
+		foreach($recs as $i=>$rec){
+			if(isset($ordermap[$rec['name']])){
+				$recs[$i]['order']=$ordermap[$rec['name']];
+			}
+			else{
+				$recs[$i]['order']=99999999;
+			}
+		}
+		$recs=sortArrayByKeys($recs,array('type'=>SORT_ASC,'order'=>SORT_ASC,'name'=>SORT_ASC));
+	}
 	foreach($recs as $i=>$rec){
 		$actions=array();
 		$recs[$i]['ctype']=getFileContentType($recs[$i]['afile']);
