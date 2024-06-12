@@ -1,4 +1,4 @@
-function commonJSInit(){
+function commonJSInit(){ 
 	if(undefined != this.common_initialized){return false;}
 	this.common_initialized=1;
 	/*common javascript routines*/

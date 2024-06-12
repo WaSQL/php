@@ -84,6 +84,7 @@
 		break;
 		default:
 			$ok=configCheckSchema();
+			$_REQUEST['submenu']='none';
 			setView('default',1);
 		break;
 	}
