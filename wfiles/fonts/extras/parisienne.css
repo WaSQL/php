@@ -1,7 +1,8 @@
 @font-face {
     font-family: 'parisienne';
     src: url('/wfiles/fonts/extras/parisienne.woff2') format('woff2'),
-         url('/wfiles/fonts/extras/parisienne.woff') format('woff');
+         url('/wfiles/fonts/extras/parisienne.woff') format('woff'),
+         url('/wfiles/fonts/extras/parisienne.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }

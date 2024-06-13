@@ -1,7 +1,8 @@
 @font-face {
     font-family: 'brockscript';
     src: url('/wfiles/fonts/extras/brockscript.woff2') format('woff2'),
-         url('/wfiles/fonts/extras/brockscript.woff') format('woff');
+         url('/wfiles/fonts/extras/brockscript.woff') format('woff'),
+         url('/wfiles/fonts/extras/brockscript.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }

@@ -8353,6 +8353,9 @@ function getDBFieldTag($params=array()){
 		case 'color_box':
 			$tag=buildFormColorBox($info[$field]['name'],$info[$field]);
 		break;
+		case 'color_hexagon':
+			$tag=buildFormColorHexagon($info[$field]['name'],$info[$field]);
+		break;
 		case 'combo':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);

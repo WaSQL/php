@@ -113,7 +113,7 @@ div.w_colorfield input[type="text"] + label[for]{
   border-radius:50%;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
-div.w_colorfield input[type="checkbox"]:checked + img{
+div.w_colorfield input[type="checkbox"]:checked + img.wheel{
   display:initial;
   position:absolute;
   z-index: 99999;
@@ -121,6 +121,16 @@ div.w_colorfield input[type="checkbox"]:checked + img{
   border-bottom-left-radius:50%;
   border-bottom-right-radius:50%;
   box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+}
+div.w_colorfield input[type="checkbox"]:checked + img.hexagon{
+  display:initial;
+  position:absolute;
+  z-index: 99999;
+  background-color:#FFFFFF;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+}
+map area[shape="poly"][data-color]{
+  cursor:crosshair;
 }
 div.w_colorfield input[type="checkbox"] + nav.colorboxmap{
   margin-top:2px;

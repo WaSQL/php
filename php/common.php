@@ -2331,7 +2331,7 @@ function buildFormColor($name,$params=array()){
 	$tag.='></label>'.PHP_EOL;
 	$tag.='	</div>'.PHP_EOL;
 	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
-	$tag.='	<img src="/wfiles/color_wheel.png" usemap="#'.$name.'_map">'.PHP_EOL;
+	$tag.='	<img class="wheel" src="/wfiles/color_wheel.png" usemap="#'.$name.'_map">'.PHP_EOL;
 	$tag.= buildFormColorWheelMap($name.'_map').PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
@@ -2368,6 +2368,61 @@ function buildFormColorWheelMap($name){
     <area title="Tuna" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#3a3a3c" coords="84,86,79,96,57,90,61,78,67,70" shape="poly">
     <area title="Black" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#000000" coords="93,80,85,85,68,69,77,62,87,57" shape="poly">
     <area title="Close" style="cursor:pointer;" onclick="return wacss.colorwheelClose(this);" coords="100,101,21" shape="circle">
+</map>
+ENDOFMAP;
+}
+//---------- begin function buildFormColorHexagon-------------------
+/**
+* @describe creates an HTML color control using the color_hexagon.gif in wfiles
+* @param name string - field name
+* @param params array
+*	[-formname] string - specify the form name - defaults to addedit
+*	[value] string - specify the current value
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string - html color control
+* @usage echo buildFormColorHexagon('color');
+*/
+function buildFormColorHexagon($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['value']=buildFormValueParam($name,$params);
+	$tag='';
+	$tag.='<div class="w_colorfield"';
+	if(isset($params['data-displayif']) && is_string($params['data-displayif']) && strlen($params['data-displayif'])){
+		$tag.=' data-displayif="'.$params['data-displayif'].'"';
+		unset($params['data-displayif']);
+	}
+	$tag.='>'.PHP_EOL;
+	$tag.='	<div>'.PHP_EOL;
+	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
+	$tag .= setTagAttributes($params);
+	$tag .= ' />'.PHP_EOL;
+	$tag.='		<label for="'.$name.'_check"';
+	if(isset($params['value']) && is_string($params['value']) && strlen($params['value'])){
+		$tag.=' style="background-color:'.$params['value'].'"';
+	}
+	$tag.='></label>'.PHP_EOL;
+	$tag.='	</div>'.PHP_EOL;
+	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
+	$tag.='	<img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#'.$name.'_map">'.PHP_EOL;
+	$tag.= buildFormColorHexagonMap($name.'_map',$params).PHP_EOL;
+	$tag.='</div>'.PHP_EOL;
+	return $tag;
+}
+//---------- begin function buildFormColorWheelMap-------------------
+/**
+* @exclude  - this function in only used internally by buildFormColor
+*/
+function buildFormColorHexagonMap($name){
+	$wpath=getWasqlPath('wfiles');
+	$body=getFileContents("{$wpath}/color_hexagon_map.htm");
+	return <<<ENDOFMAP
+<map name="{$name}">
+    {$body}
 </map>
 ENDOFMAP;
 }
