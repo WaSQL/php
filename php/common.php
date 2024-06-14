@@ -2331,7 +2331,6 @@ function buildFormColor($name,$params=array()){
 	$tag.='></label>'.PHP_EOL;
 	$tag.='	</div>'.PHP_EOL;
 	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
-	$tag.='	<img class="wheel" src="/wfiles/color_wheel.png" usemap="#'.$name.'_map">'.PHP_EOL;
 	$tag.= buildFormColorWheelMap($name.'_map').PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
@@ -2341,35 +2340,35 @@ function buildFormColor($name,$params=array()){
 * @exclude  - this function in only used internally by buildFormColor
 */
 function buildFormColorWheelMap($name){
-	return <<<ENDOFMAP
-<map name="{$name}">
-    <area title="Yellow" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#fffc0d" coords="100,4,100,55,112,57,122,61,147,16,124,7" shape="poly">
-    <area title="Orange-Yellow" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#ff9500" coords="123,61,148,17,168,32,183,51,139,76" shape="poly">
-    <area title="Orange" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#ff5f00" coords="139,78,183,52,192,74,196,99,146,100,144,88" shape="poly">
-    <area title="Red-Orange" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#ff2200" coords="145,101,196,101,193,125,184,147,139,122,144,111" shape="poly">
-    <area title="Red" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#cd0000" coords="139,124,181,149,169,167,148,183,122,140,133,133" shape="poly">
-    <area title="Violet-Red" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#990066" coords="121,141,147,184,124,193,100,197,100,146,112,146" shape="poly">
-    <area title="Violet" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#660366" coords="77,142,87,147,98,147,97,197,73,194,51,185" shape="poly">
-    <area title="Blue-Violet" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#000b66" coords="61,125,66,134,75,139,50,183,32,169,17,150" shape="poly">
-    <area title="Blue" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#003999" coords="53,102,54,113,57,125,15,147,6,127,3,102" shape="poly">
-    <area title="Blue-Green" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#006766" coords="59,79,55,89,53,100,4,99,7,74,15,54" shape="poly">
-    <area title="Green" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#349806" coords="75,61,67,68,59,76,18,51,30,32,50,17" shape="poly">
-    <area title="Yellow-Green" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#67cb0b" coords="98,54,87,55,77,59,53,16,73,7,98,3" shape="poly">
-    <area title="White" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#ffffff" coords="95,79,105,79,111,57,100,56,88,57" shape="poly">
-    <area title="Athens Gray" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#f3f3f4" coords="106,78,115,85,131,69,122,62,112,57" shape="poly">
-    <area title="Iron" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#e7e8e9" coords="116,85,122,94,142,88,138,78,131,70" shape="poly">
-    <area title="Iron" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#d1d2d4" coords="122,95,122,106,142,111,144,99,142,89" shape="poly">
-    <area title="Silver Sand" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#bdbec0" coords="122,108,116,117,131,131,137,122,142,112" shape="poly">
-    <area title="Aluminium" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#a7a9ac" coords="115,118,106,123,112,142,122,138,130,131" shape="poly">
-    <area title="Oslo Gray" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#939598" coords="105,123,95,123,89,142,99,144,111,142" shape="poly">
-    <area title="Jumbo" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#818285" coords="94,122,85,117,68,132,77,138,88,143" shape="poly">
-    <area title="Nevada" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#6d6e71" coords="85,116,79,107,57,113,61,122,67,132" shape="poly">
-    <area title="Scarpa Flow" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#58585a" coords="79,96,79,107,57,112,55,101,56,90" shape="poly">
-    <area title="Tuna" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#3a3a3c" coords="84,86,79,96,57,90,61,78,67,70" shape="poly">
-    <area title="Black" style="cursor:crosshair;" onclick="wacss.colorwheelSet(this);" data-color="#000000" coords="93,80,85,85,68,69,77,62,87,57" shape="poly">
-    <area title="Close" style="cursor:pointer;" onclick="return wacss.colorwheelClose(this);" coords="100,101,21" shape="circle">
-</map>
+	$wpath=getWasqlPath('wfiles');
+	$body=getFileContents("{$wpath}/color_wheel_map.htm");
+	preg_match_all('/title\=\"(.+?)\".+?data\-color\=\"(.+?)\"/',$body,$m);
+	$opts=array();
+	$sparams=array(
+		'onchange'=>"wacss.colorboxSelect(this)",
+		'class'=>'select',
+		'message'=>'-- Color By Name --',
+		'style'=>'border-top-right-radius:0px;border-top-left-radius:0px;'
+	);
+	//echo printValue($m);exit;
+	foreach($m[0] as $i=>$c){
+		$opts[$m[2][$i]]=$m[1][$i];
+		$contrast_ratio=commonGetContrastRatio($m[2][$i]);
+		if($contrast_ratio > 3){$contrast_color='#000000';}
+		else{$contrast_color='#FFFFFF';}
+		$sparams["{$m[2][$i]}_style"]="background-color:{$m[2][$i]};color:{$contrast_color};";
+	}
+	$selectmap=buildFormSelect($name.'_select',$opts,$sparams);
+	$map=<<<ENDOFMAP
+<nav class="colorboxmap">
+	<img class="wheel" src="/wfiles/color_wheel.png" usemap="#'.$name.'_map" style="width:100%;height:auto;">
+	{$selectmap}
+	<map name="{$name}_map">
+	    {$body}
+	</map>
+</nav>
 ENDOFMAP;
+	return $map;
 }
 //---------- begin function buildFormColorHexagon-------------------
 /**
@@ -2408,8 +2407,7 @@ function buildFormColorHexagon($name,$params=array()){
 	$tag.='></label>'.PHP_EOL;
 	$tag.='	</div>'.PHP_EOL;
 	$tag.='	<input type="checkbox" id="'.$name.'_check">'.PHP_EOL;
-	$tag.='	<img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#'.$name.'_map">'.PHP_EOL;
-	$tag.= buildFormColorHexagonMap($name.'_map',$params).PHP_EOL;
+	$tag.= buildFormColorHexagonMap($name,$params).PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
 	return $tag;
 }
@@ -2420,11 +2418,33 @@ function buildFormColorHexagon($name,$params=array()){
 function buildFormColorHexagonMap($name){
 	$wpath=getWasqlPath('wfiles');
 	$body=getFileContents("{$wpath}/color_hexagon_map.htm");
-	return <<<ENDOFMAP
-<map name="{$name}">
-    {$body}
-</map>
+	preg_match_all('/data\-color\=\"(.+?)\"\ title\=\"(.+?)\"/',$body,$m);
+	$opts=array();
+	$sparams=array(
+		'onchange'=>"wacss.colorboxSelect(this)",
+		'class'=>'select',
+		'message'=>'-- Color By Name --',
+		'style'=>'border-top-right-radius:0px;border-top-left-radius:0px;'
+	);
+	//echo printValue($m);exit;
+	foreach($m[0] as $i=>$c){
+		$opts[$m[1][$i]]=$m[2][$i];
+		$contrast_ratio=commonGetContrastRatio($m[1][$i]);
+		if($contrast_ratio > 3){$contrast_color='#000000';}
+		else{$contrast_color='#FFFFFF';}
+		$sparams["{$m[1][$i]}_style"]="background-color:{$m[1][$i]};color:{$contrast_color};";
+	}
+	$selectmap=buildFormSelect($name.'_select',$opts,$sparams);
+	$map=<<<ENDOFMAP
+<nav class="colorboxmap">
+	<img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#{$name}_map" style="width:100%;height:auto;"">
+	{$selectmap}
+	<map name="{$name}_map">
+	    {$body}
+	</map>
+</nav>
 ENDOFMAP;
+	return $map;
 }
 //---------- begin function buildFormColorBox-------------------
 /**
