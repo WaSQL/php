@@ -311,7 +311,7 @@ var wacss = {
 				break;
 				default:
 					console.log('dom object does not exist');
-    				console.log(txt);
+    				//console.log(txt);
 				break;
 			}
     	}
