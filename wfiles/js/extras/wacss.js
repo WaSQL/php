@@ -5726,7 +5726,7 @@ var wacss = {
 	showAudio: function(el,z,title){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
-		z=z||10020;
+		z=z||999980;
 		let d=document.createElement('div');
 		d.id="modal1";
 		//d.className='modal open';
@@ -5796,7 +5796,7 @@ var wacss = {
 	showImage: function(el,z,title){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
-		z=z||10020;
+		z=z||999980;
 		let d=document.createElement('div');
 		d.id="modal1";
 		//d.className='modal open';
@@ -5861,7 +5861,7 @@ var wacss = {
 	showVideo: function(el,z,title){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
-		z=z||10020;
+		z=z||999980;
 		let d=document.createElement('div');
 		d.id="modal1";
 		//d.className='modal open';
