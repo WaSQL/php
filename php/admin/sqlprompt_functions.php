@@ -67,12 +67,17 @@ function sqlpromptGetTables($dbname=''){
 	return $tables;
 }
 function sqlpromtFormatSQL($query){
+	//format is messing up fields like updated_date and lastupdated so lets skip it for not
+	return $query;
 	$query=strtolower($query);
 	$query=str_replace("\"",'',$query);
 	$query=preg_replace('/\,/',','.PHP_EOL,$query);
 	$query=preg_replace('/\,[\r\n]{0,2}([0-9])/is',',\1',$query);
-	$keywords = array(
+	$start_keywords = array(
 		'create table','create or replace table','create column table','create or replace column table','create view','create or replace view',
+		"select", "from", "where", "order by", "group by", "insert into", "update"
+	);
+	$middle_keywords = array(
 		'as','on','not','null','primary key',"delete","merge",
 		"select", "from", "where", "order by", "group by", "insert into", "update"
 	);
