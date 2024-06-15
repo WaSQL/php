@@ -19867,12 +19867,14 @@ function processFileUploads($docroot=''){
 				$pfiles[]=$file;
 			}
 		}
-		//echo "processFileUploads".printValue($_FILES).printValue($_REQUEST).printValue($pfiles);exit;
-	 	foreach($pfiles as $pi=>$file){
-	 		if((is_array($file['name']) && !count($file['name'])) || !strlen($file['name'])){
-	 			continue;
+		foreach($pfiles as $pi=>$file){
+			if((is_array($file['name']) && !count($file['name'])) || !strlen($file['name'])){
+	 			unset($pfiles[$pi]);
+	 			unset($_FILES[$file['iname']]);
 	 		}
-	 		if($file['error'] != 0 && !strlen($file['tmp_name'])){
+	 		elseif($file['error'] != 0 && !strlen($file['tmp_name'])){
+	 			unset($pfiles[$pi]);
+	 			unset($_FILES[$file['iname']]);
 	 			switch((integer)$file['error']){
 	 				case 1:
 	 					$message="The uploaded file exceeds the upload_max_filesize directive in php.ini";
@@ -19909,10 +19911,14 @@ function processFileUploads($docroot=''){
 				$_REQUEST[$name.'_error']=$error;
 				continue;
 			}
-	 		if(strlen($file['tmp_name'])==0 && strlen($file['type'])==0 ){
+			elseif(strlen($file['tmp_name'])==0 && strlen($file['type'])==0 ){
 	 			unset($pfiles[$pi]);
+	 			unset($_FILES[$file['iname']]);
 	 			continue;
 	 		}
+	 	}
+		//echo printValue($_REQUEST);
+	 	foreach($pfiles as $pi=>$file){
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
             	$file['name']=$_SERVER['HTTP_X_BLOB_NAME'];
             	if(isset($_SERVER['HTTP_X_CHUNK_NUMBER'])){
@@ -20024,14 +20030,14 @@ function processFileUploads($docroot=''){
 				mkdir($absdir,0777,1);
 			}
     		if(!file_exists($file['tmp_name'])){
-            	$_REQUEST[$name.'_upload_error']=$file['tmp_name'] . " does not exist";
+            	$_REQUEST[$file['pname'].'_upload_error']=$file['tmp_name'] . " does not exist";
             	continue;
             }
             @trigger_error("");
-            $_REQUEST[$name.'_abspath']=$abspath;
+            $_REQUEST[$file['pname'].'_abspath']=$abspath;
             @move_uploaded_file($file['tmp_name'],$abspath);
             if(is_file($abspath)){
-            	$_REQUEST[$name]=$webpath;
+            	$_REQUEST[$file['pname']]=$webpath;
             	//if this is a chunk - see if all chunks are here and combine them.
 				if(isset($_SERVER['HTTP_X_CHUNK_NUMBER']) && isset($_SERVER['HTTP_X_CHUNK_TOTAL'])){
 					$realname=preg_replace('/\.chunk([0-9]+)$/','',$file['name']);
@@ -20092,11 +20098,10 @@ function processFileUploads($docroot=''){
                 }
             }
         }
-
-        //ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
+        //ksort($_REQUEST);echo printValue($_FILES).printValue($pfiles).printValue($_REQUEST);exit;
 		return 1;
 	}
-	//ksort($_REQUEST);echo $abspath.printValue($file).printValue($_REQUEST);
+	//echo printValue($_REQUEST);exit;
     return 0;
 }
 //---------- begin function commonParseIni
