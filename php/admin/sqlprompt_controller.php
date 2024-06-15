@@ -50,13 +50,13 @@
 			//echo "TABLE: {$table}";exit;
 			switch(strtolower($db['dbtype'])){
 				case 'mssql':
-					$sql="select * from {$table} offset 0 rows fetch next 5 rows only";
+					$sql="SELECT * FROM {$table} OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY";
 				break;
 				case 'oracle':
-					$sql="select * from {$table} offset 0 rows fetch next 5 rows only";
+					$sql="SELECT * FROM {$table} OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY";
 				break;
 				case 'firebird':
-					$sql="select * from {$table} offset 0 rows fetch next 5 rows only";
+					$sql="SELECT * FROM {$table} OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY";
 				break;
 				case 'ctree':
 					$sql=sqlpromptBuildTop5Ctree($db,$table);
@@ -64,23 +64,23 @@
 				case 'msexcel':
 				case 'mscsv':
 				case 'msaccess':
-					$sql="select top 5 * from {$table}";
+					$sql="SELECT TOP 5 * FROM {$table}";
 				break;
 				case 'postgresql':
 				case 'postgres':
 					if(strlen($db['dbschema'])){
 						$table="{$db['dbschema']}.{$table}";
 					}
-					$sql="select * from {$table} limit 5";
+					$sql="SELECT * FROM {$table} LIMIT 5";
 				break;
 				case 'gigya':
-					$sql="select * from {$table} limit 5";
+					$sql="SELECT * FROM {$table} LIMIT 5";
 				break;
 				case 'ccv2':
-					$sql="select top 5 * from {$table}";
+					$sql="SELECT TOP 5 * FROM {$table}";
 				break;
 				default:
-					$sql="select * from {$table} limit 5";
+					$sql="SELECT * FROM {$table} LIMIT 5";
 				break;
 			}
 			setView('monitor_sql',1);
@@ -95,11 +95,11 @@
 			$table=addslashes($_REQUEST['table']);
 			switch(strtolower($db['dbtype'])){
 				case 'ctree':
-					$sql="select count(*) as cnt from admin.{$table}";
+					$sql="SELECT COUNT(*) AS cnt FROM admin.{$table}";
 				break;
 				case 'mysql':
 				case 'mysqli':
-					$sql="select count(*) as cnt from {$table}";
+					$sql="SELECT COUNT(*) AS cnt FROM {$table}";
 				break;
 				default:
 					$parts=preg_split('/\./',$table,2);
@@ -114,7 +114,7 @@
 					if(strlen($schema)){
 						$table="{$schema}.{$table}";
 					}
-					$sql="select count(*) as cnt from {$table}";
+					$sql="SELECT COUNT(*) AS cnt FROM {$table}";
 				break;
 			}
 			setView('monitor_sql',1);
