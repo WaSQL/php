@@ -10490,7 +10490,7 @@ function fileManager($startdir='',$params=array()){
 		if(isset($params['-reorder']) && file_exists($reorder_file)){
 			$cdirB64=encodeBase64($cdir);
 			$params['-listview']=<<<ENDOFHTML
-<div data-filename="[name]" data-dir="{$cdirB64}" data-action="{$action}" data-ondrop="wacss.filemanagerReorder" draggable="true" style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;height:170px;background:#fffff9;">	
+<div data-filename="[name]" data-dir="{$cdirB64}" data-action="{$action}" data-ondrop="wacss.filemanagerReorder" draggable="true" style="display:flex;flex-direction:column;padding:10px;box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;margin:0 25px 25px 0;border-radius:4px;width:150px;min-height:170px;background:#fffff9;">	
 	<div style="display:flex;justify-content:space-between">
 		<div class="w_small">[action_nav]</div>
 		<div class="w_small">[action_del]</div>
