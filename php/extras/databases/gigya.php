@@ -236,6 +236,10 @@ function gigyaQueryResults($query,$params=array()){
 		}
 	}
 	if(!strlen($table)){return "Invalid Table name: ".printValue($m);}
+	//set actions and urls
+	$action='select';
+	$url="https://{$table}.us1.gigya.com/{$table}.search";
+	$delete_url="";
 	//get fields to return
 	$fields=array();
 	if(preg_match('/SELECT(.+?)FROM/is',$query,$m)){
@@ -249,8 +253,20 @@ function gigyaQueryResults($query,$params=array()){
 			$query=str_replace($rtag,'SELECT * FROM',$query);
 		}
 	}
+	elseif(preg_match('/DELETE(.+?)FROM/is',$query,$m)){
+		//echo printValue($m);exit;
+		$rtag=$m[0];
+		$query=str_replace($rtag,'SELECT UID FROM',$query);
+		$action='delete';
+		switch(strtolower($table)){
+			case 'accounts':
+				$delete_url="https://accounts.us1.gigya.com/accounts.deleteAccount";
+			break;
+		}
+	}
 	//echo "gigyaQueryResults: ".$query.printValue($fields);exit;
-	$url="https://{$table}.us1.gigya.com/{$table}.search";
+	//POST https://accounts.us1.gigya.com/accounts.deleteAccount
+
 	/*
 		"totalCount": 10109796,
         "statusCode": 200,
@@ -498,6 +514,22 @@ function gigyaQueryResults($query,$params=array()){
 				$recs_count+=1;
 				if($limit > 0 and $recs_count >= $limit){
 					break;
+				}
+			}
+			if($action=='delete' && strlen($delete_url)){
+				foreach($recs as $rec){
+					if(!isset($rec['uid'])){continue;}
+					$json=array(
+						'apiKey'=>$db['dbkey'],
+						'userKey'=>$db['dbuser'],
+						'secret'=>$db['dbpass'],
+						'UID'=>$rec['uid']
+					);
+					$json=encodeJSON($json);
+					$dparams=$params;
+					$dparams['UID']=$rec['uid'];
+					$dpost=postJSON($delete_url,$json);
+					echo printValue($dpost);exit;
 				}
 			}
 			if(isset($params['-filename'])){
