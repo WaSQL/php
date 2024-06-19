@@ -586,6 +586,8 @@ function gigyaQueryResults($query,$params=array()){
 					else{
 						$recs[$r]['delete_code']='400';
 					}
+					//sleep for a 1/4 second to eliminate rate limit issues
+					usleep(250);
 					//echo printValue($dpost);exit;
 				}
 			}
