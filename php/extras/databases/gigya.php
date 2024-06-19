@@ -199,7 +199,6 @@ function gigyaGetDBFieldInfo($tablename,$params=array()){
 function gigyaQueryResults($query,$params=array()){
 	global $DATABASE;
 	global $CONFIG;
-
 	$DATABASE['_lastquery']=array(
 		'start'=>microtime(true),
 		'stop'=>0,
@@ -236,6 +235,19 @@ function gigyaQueryResults($query,$params=array()){
 		}
 	}
 	if(!strlen($table)){return "Invalid Table name: ".printValue($m);}
+	//custom_filters
+	$qlines=preg_split('/[\r\n]+/',$query);
+	$custom_filters=array();
+	foreach($qlines as $qline){
+		$qline=trim($qline);
+		if(preg_match('/^\-\-filter\:([a-z0-9\_]+?)\ (not like|like)\ (.+)$/',$qline,$m)){
+			$custom_filters[]=array(
+				'field'=>$m[1],
+				'oper'=>$m[2],
+				'val'=>$m[3]
+			);
+		}
+	}
 	//set actions and urls
 	$action='select';
 	$url="https://{$table}.us1.gigya.com/{$table}.search";
@@ -256,7 +268,14 @@ function gigyaQueryResults($query,$params=array()){
 	elseif(preg_match('/DELETE(.+?)FROM/is',$query,$m)){
 		//echo printValue($m);exit;
 		$rtag=$m[0];
-		$query=str_replace($rtag,'SELECT UID FROM',$query);
+		if(!stringContains(trim($m[1]),'count(') && trim($m[1])!='*'){
+			$xfields=preg_split('/\,/',trim($m[1]));
+			foreach($xfields as $f=>$field){
+				$fields[]=strtolower(trim($field));
+			}
+			$query=str_replace($rtag,'SELECT * FROM',$query);
+		}
+		if(!in_array('uid',$fields)){$fields[]='uid';}
 		$action='delete';
 		switch(strtolower($table)){
 			case 'accounts':
@@ -510,29 +529,67 @@ function gigyaQueryResults($query,$params=array()){
 						$rec[$k]=$v;
 					}
 				}
-				$recs[]=$rec;
-				$recs_count+=1;
+				if(is_array($custom_filters) && count($custom_filters)){
+					$matches=0;
+					foreach($custom_filters as $filter){
+						$field=$filter['field'];
+						if(!isset($rec[$field])){continue;}
+						switch(strtolower($filter['oper'])){
+							case 'like':
+								if(stringContains($rec[$field],$filter['val'])){$matches+=1;}
+							break;
+							case 'not like':
+								if(!stringContains($rec[$field],$filter['val'])){$matches+=1;}
+							break;
+						}
+					}
+					if(count($custom_filters)==$matches){
+						$recs[]=$rec;
+						$recs_count+=1;
+					}
+				}
+				else{
+					$recs[]=$rec;
+					$recs_count+=1;
+				}
 				if($limit > 0 and $recs_count >= $limit){
 					break;
 				}
 			}
+			//echo $action.printValue($delete_url);exit;
 			if($action=='delete' && strlen($delete_url)){
-				foreach($recs as $rec){
+				foreach($recs as $r=>$rec){
 					if(!isset($rec['uid'])){continue;}
 					$json=array(
 						'apiKey'=>$db['dbkey'],
 						'userKey'=>$db['dbuser'],
 						'secret'=>$db['dbpass'],
-						'UID'=>$rec['uid']
+						'UID'=>$rec['uid'],
+						'format'=>'json',
+						'httpStatusCodes'=>true,
+						'-json'=>1,
+						'-method'=>'POST'
 					);
-					$json=encodeJSON($json);
+					//$json=encodeJSON($json);
 					$dparams=$params;
 					$dparams['UID']=$rec['uid'];
-					$dpost=postJSON($delete_url,$json);
-					echo printValue($dpost);exit;
+					$dpost=postURL($delete_url,$json);
+					if(isset($dpost['json_array']['statusReason'])){
+						$recs[$r]['delete_status']=$dpost['json_array']['statusReason'];
+					}
+					else{
+						$recs[$r]['delete_status']='failed';
+					}
+					if(isset($dpost['json_array']['statusCode'])){
+						$recs[$r]['delete_code']=$dpost['json_array']['statusCode'];
+					}
+					else{
+						$recs[$r]['delete_code']='400';
+					}
+					//echo printValue($dpost);exit;
 				}
 			}
-			if(isset($params['-filename'])){
+			if(count($recs) && isset($params['-filename'])){
 				if(file_exists($params['-filename'])){
 					$csv=arrays2CSV($recs,array('-noheader'=>1)).PHP_EOL;
 					setFileContents($params['-filename'],$csv,1);
