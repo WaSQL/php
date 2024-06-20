@@ -1183,8 +1183,10 @@ function commonSearchFiltersForm($params=array()){
 				case 'ib': $doper='Is Blank';$dval='';break;
 				case 'nb': $doper='Is Not Blank';$dval='';break;
 			}
+			$dfield=ucwords(str_replace('_',' ',$dfield));
 			$dstr="{$dfield} {$doper} {$dval}";
-        	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'"><span class="icon-filter w_grey"></span> '.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
+			//$dstr='hello doob';
+        	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'">'.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
 			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters(getParent(this,\'form\'));"></div>'.PHP_EOL;
