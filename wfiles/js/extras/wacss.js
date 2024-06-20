@@ -325,7 +325,9 @@ var wacss = {
         	}
         }
         if(undefined != div && undefined != div.id){
-        	if(div.id.indexOf('_modal_') == -1){
+        	let mp=wacss.getParent(div,'div','wacss_modal')
+        	let cp=wacss.getParent(div,'div','wacss_centerpop')
+        	if(undefined == mp && div.id.indexOf('_modal_') == -1){
         		wacss.modalClose();	
         	}
         	else if(div.id.indexOf('centerpop') == -1){
