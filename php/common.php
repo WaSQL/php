@@ -2950,9 +2950,9 @@ ENDOFLOAD;
 ENDOFTAG;
 	return $tag;
 }
-//---------- begin FUNCTION buildFormGeoLocationMap-------------------
+//---------- begin FUNCTION buildFormLatLon-------------------
 /**
-* @describe creates an Map form element where user can select latitude,longitude from a map
+* @describe creates an latlon form element where user can select latitude,longitude from a map
 * @param name string
 * @param params array
 * [zoom] integer - zoom level defaults to 13
@@ -2985,8 +2985,8 @@ function buildFormLatLon($name,$params=array()){
 	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
 		$onclick="return false;";
 	}	
-	$params['pattern']='\[[+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\]';
-	$params['title']='[latitude,longitude] - click on set';
+	$params['pattern']='\[[+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\,[0-9\.]+?\,[0-9]+?\]';
+	$params['title']='[latitude,longitude,accuracy,trycount] - click to set';
 	$params['data-tip']='Click to set a location';
 	$params['data-tip_position']='bottom';
 	unset($params['onclick']);
