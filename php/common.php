@@ -17583,11 +17583,11 @@ function postURL($url,$params=array()) {
 		}
 	//cookiefile?
 	if(isset($params['-cookiefile'])){
-		curl_setopt ($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
-		curl_setopt ($process, CURLOPT_COOKIEJAR, $params['-cookiefile']);
+		curl_setopt($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
+		curl_setopt($process, CURLOPT_COOKIEJAR, $params['-cookiefile']);
 	}
 	elseif(isset($params['-cookie'])){
-		curl_setopt ($process, CURLOPT_COOKIE, $params['-cookie']);
+		curl_setopt($process, CURLOPT_COOKIE, $params['-cookie']);
 	}
 	if(isset($params['-fresh'])){
 		curl_setopt($process, CURLOPT_FRESH_CONNECT, 1);
@@ -17665,13 +17665,13 @@ function postURL($url,$params=array()) {
 		curl_setopt($process, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
 	}
 	//turn retrieving the header off
-	//curl_setopt ($process, CURLOPT_HEADER, 0);
+	//curl_setopt($process, CURLOPT_HEADER, 0);
 	//convert Unix newlines to CRLF newlines
 	if(isset($params['-crlf']) && $params['-crlf']==1){
-		curl_setopt ($process, CURLOPT_CRLF, 1);
+		curl_setopt($process, CURLOPT_CRLF, 1);
 	}
 	else{
-		curl_setopt ($process, CURLOPT_CRLF, 0);
+		curl_setopt($process, CURLOPT_CRLF, 0);
 	}
 	if(isset($params['-encoding'])){
 		curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
@@ -17855,6 +17855,10 @@ function postBody($url='',$body='',$params=array()) {
 	//init
 	$rtn=array('_debug'=>array(),'body'=>'','headers'=>array());
 	$process = curl_init($url);
+	//-http_version
+	if(isset($params['-http_version'])){
+		curl_setopt($process, CURLOPT_HTTP_VERSION, $params['-http_version']);
+	}
 	//user_agent?
 	if(isset($params['-user_agent'])){
 		//$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
@@ -17875,7 +17879,7 @@ function postBody($url='',$body='',$params=array()) {
 		curl_setopt($process, CURLOPT_MAXREDIRS, 10 );
 		curl_setopt($process, CURLOPT_POSTREDIR, 3 );
 	}
-	//encodeing
+	//encoding
 	curl_setopt($process, CURLOPT_ENCODING , $params['-encoding']);
 
 	//headers
@@ -17891,7 +17895,7 @@ function postBody($url='',$body='',$params=array()) {
 		$rtn['_debug'][]='set headers' . printValue($params['-headers']);
 	}
 	else{
-		curl_setopt ($process, CURLOPT_HTTPHEADER, array($params['-contenttype']));
+		curl_setopt($process, CURLOPT_HTTPHEADER, array($params['-contenttype']));
 	}
 	//filename?
 	if(isset($params['-filename'])){
@@ -17910,11 +17914,16 @@ function postBody($url='',$body='',$params=array()) {
 	}
 	//cookiefile?
 	if(isset($params['-cookiefile'])){
-		curl_setopt ($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
-		curl_setopt ($process, CURLOPT_COOKIEJAR, $params['-cookiefile']);
+		curl_setopt($process, CURLOPT_COOKIEFILE, $params['-cookiefile']);
+		curl_setopt($process, CURLOPT_COOKIEJAR, $params['-cookiefile']);
 	}
 	elseif(isset($params['-cookie'])){
-		curl_setopt ($process, CURLOPT_COOKIE, $params['-cookie']);
+		if(is_array($params['-cookie'])){
+			curl_setopt($process, CURLOPT_COOKIE, implode('; ',$params['-cookie']));
+		}
+		else{
+			curl_setopt($process, CURLOPT_COOKIE, $params['-cookie']);
+		}
 	}
 	if(isset($params['-authuser']) && strlen($params['-authuser']) && isset($params['-authpass']) && strlen($params['-authpass'])){
 		//try all possible authentication methods
