@@ -190,6 +190,7 @@ var wacss = {
 	    xmlhttp.div=div;
 	    let cp={};
 	    let params={};
+	    params.title=frm.title.value||frm.dataset.title||'Information';
 	    if(typeof(div)==='string'){
 	    	switch(div.toLowerCase()){
 	    		case 'centerpop':
