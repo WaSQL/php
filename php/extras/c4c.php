@@ -53,14 +53,16 @@ function c4cGetCustomerById($customerid){
 	//echo printValue($post);exit;
 	if(isset($post['json_array']['d']['results'][0])){
 		$recs=$post['json_array']['d']['results'];
+		$xrecs=array();
 		foreach($recs as $i=>$rec){
 			foreach($rec as $k=>$v){
 				if(is_array($v) || !strlen($v)){
 					unset($recs[$i][$k]);
 				}
 			}
+			$xrecs[$rec['CustomerID']]=$recs[$i];
 		}
-		return $recs;
+		return $xrecs;
 	}
 	return $post['json_array'];
 }
