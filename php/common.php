@@ -9907,7 +9907,7 @@ function evalCleanupGlobal($arr){
 	if(!is_array($arr) || count($arr)==0){return array('_isempty'=>1);}
 	return $arr;
 }
-//---------- begin function commonGetPrecode
+//---------- begin function commonGetLangInfo
 /**
 * @exclude  - this function is depreciated thus excluded from the manual
 */
@@ -10145,7 +10145,7 @@ function commonAddPrecode($lang,$evalcode){
 	}
 	return $evalcode;
 }
-//---------- begin function commonGetPrecode
+//---------- begin function commonGetPrecodeForVar
 /**
 * @exclude  - this function is depreciated thus excluded from the manual
 */

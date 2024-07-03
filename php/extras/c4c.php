@@ -11,7 +11,20 @@ function c4cGetCustomerById($customerid){
 	if(!isset($CONFIG['c4c_user']) || !isset($CONFIG['c4c_pass']) || !isset($CONFIG['c4c_hostname'])){
 		return "c4c_user or c4c_pass or c4c_hostname not found in config";
 	}
-	$url="https://{$CONFIG['c4c_hostname']}.crm.ondemand.com/sap/c4c/odata/v1/c4codataapi/IndividualCustomerQueryByElements?CustomerID=%27{$customerid}%27&\$format=json";
+	//https://my325381.crm.ondemand.com/sap/c4c/odata/v1/c4codataapi/IndividualCustomerCollection?filter=ID eq '9000000150' or ID eq '9000000141'
+	if(is_array($customerid)){
+		$url="https://{$CONFIG['c4c_hostname']}.crm.ondemand.com/sap/c4c/odata/v1/c4codataapi/IndividualCustomerCollection?\$filter=";
+		$ors=array();
+		foreach($customerid as $id){
+			$ors[]="CustomerID eq '{$id}'";
+		}
+		$orstr=implode(" or ",$ors);
+		$url.=encodeURL($orstr);
+		$url.="&\$format=json";
+	}
+	else{
+		$url="https://{$CONFIG['c4c_hostname']}.crm.ondemand.com/sap/c4c/odata/v1/c4codataapi/IndividualCustomerQueryByElements?CustomerID=%27{$customerid}%27&\$format=json";
+	}
 	//echo $url;exit;
 	$params=array(
 		'-method'=>'GET',
@@ -37,6 +50,7 @@ function c4cGetCustomerById($customerid){
 	//it returns xml
 	$params['-json']=1;
 	$post=postURL($url,$params);
+	//echo printValue($post);exit;
 	if(isset($post['json_array']['d']['results'][0])){
 		$recs=$post['json_array']['d']['results'];
 		foreach($recs as $i=>$rec){
