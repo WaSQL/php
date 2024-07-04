@@ -14,15 +14,7 @@ switch(strtolower($_REQUEST['func'])){
 		setView('details',1);
 		return;
 	break;
-	case 'kill':
-		$id=(integer)$_REQUEST['id'];
-		$out=cmdResults("kill {$id}");
-		usleep(250);
-		$id=(integer)$_REQUEST['id'];
-		$cron=getDBRecordById('_cron',$id);
-		setView('details',1);
-		return;
-	break;
+	
 	case 'add':
 		//echo "add";exit;
 		$id=0;
@@ -35,6 +27,10 @@ switch(strtolower($_REQUEST['func'])){
 		setView('addedit',1);
 		return;
 	break;
+	case 'kill':
+		$id=(integer)$_REQUEST['id'];
+		$out=cmdResults("sudo kill {$id}");
+		usleep(250);
 	case 'pid':
 		loadExtras('system');
 		$pid=(integer)$_REQUEST['id'];
