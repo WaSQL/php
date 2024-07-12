@@ -175,6 +175,38 @@ switch(strtolower($_REQUEST['tab'])){
 		setView('list',1);
 		return;
 	break;
+	case 'diskstats':
+		if(isWindows()){
+			$recs=array(
+				array('note'=>'Disk Stats is Not available on windows yet')
+			);
+		}
+		else{
+			$fieldstr='major_number,minor_number,device_name,reads_completed_successfully,reads_merged,sectors_read,time_spent,reading_ms,writes_completed,writes_merged,sectors_written,time_spent_writing_ms,ios_currently_in_progress,time_spent_doing_i/os_ms,weighted_time_spent_doing_ios_ms,discards_completed_successfully,discards_merged,sectors_discarded,time_spent_discarding,flush_requests_completed_successfully,time_spent_flushing';
+			$fields=preg_split('/\,/is',$fieldstr);
+			$out=cmdResults('cat --show-ends /proc/diskstats');
+			$lines=preg_split('/\$/ism',$out['stdout']);
+			$recs=array();
+			foreach($lines as $line){
+				$line=trim($line);
+				$line=str_replace('$','',$line);
+				$line=trim($line);
+				if(!strlen($line)){continue;}
+				$parts=preg_split('/[^a-zA-Z0-9\-]+/ism',$line);
+				//echo $line.printValue($parts);exit;
+				$rec=array();
+				foreach($fields as $i=>$field){
+					$rec[$field]=$parts[$i];
+				}
+				$recs[]=$rec;
+			}
+		}
+		$listopts=array(
+			'tab'=>'diskstats',
+		);
+		setView('list',1);
+		return;
+	break;
 	default:
 		$recs=systemGetDriveSpace();
 		$listopts=array(

@@ -9,10 +9,9 @@
 <h2 style="margin:10px 0 0 0;padding:6px;" class="<?=configValue('admin_color');?>">
 	<span class="icon-server"></span> <wtranslate>System</wtranslate>
 </h2>
-<form method="post" name="system_form" action="<?=$ADMINPAGE['ajaxpage'];?>">
+<form method="post" data-setprocessing="<?=$ADMINPAGE['ajaxdiv'];?>" name="system_form" action="<?=$ADMINPAGE['ajaxpage'];?>">
 	<input type="hidden" name="_menu" value="system" />
 	<input type="hidden" name="tab" value="info" />
-	<input type="hidden" name="setprocessing" value="0" />
 </form>
 <ul class="nav-tabs <?=configValue('admin_color');?>">
 	<li class="active">
@@ -43,6 +42,11 @@
 	<li>
 		<a href="#" onclick="return systemNavTab(this);" data-tab="processes">
 			<wtranslate>Processes</wtranslate>
+		</a>
+	</li>
+	<li>
+		<a href="#" onclick="return systemNavTab(this);" data-tab="diskstats">
+			<wtranslate>Disk Stats</wtranslate>
 		</a>
 	</li>
 </ul>
