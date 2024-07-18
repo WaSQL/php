@@ -251,6 +251,10 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		if($resource = odbc_prepare($dbh_hana, $query)){
 			if(odbc_execute($resource, $pvalues)){
 				$total_count+=count($recs);
+				if(is_resource($resource)){odbc_free_result($resource);}
+				$resource=null;
+				if(is_resource($dbh_hana) || is_object($dbh_hana)){odbc_close($dbh_hana);}
+				$dbh_hana=null;
 			}
 			else{
 				$drecs=array();
@@ -285,6 +289,9 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			));
 			return 0;
 		}
+	}
+	if(isset($params['-debug'])){
+		return printValue($ok).$query;
 	}
 	return $total_count;
 }
