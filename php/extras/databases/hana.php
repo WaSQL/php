@@ -232,7 +232,19 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			$query.=')';
 		}
 		if(isset($params['-debug'])){
-			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL;
+			$drecs=array();
+			$xchunks=array_chunk($pvalues,count($fields));
+			$errors=array();
+			foreach($xchunks as $xchunk){
+				$rec=array();
+				foreach($fields as $i=>$fld){
+					if(strlen($xchunk[$i]) > $fieldinfo[$fld]['_dblength']){
+						$errors[]="{$fld} value in record {$i} is too long";
+					}
+				}
+				break;
+			}
+			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL."errors".printValue($errors);
 		}
 
 		if(!is_resource($dbh_hana)){
