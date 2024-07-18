@@ -234,6 +234,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		if(isset($params['-debug'])){
 			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL;
 		}
+
 		if(!is_resource($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
 		}
@@ -247,9 +248,34 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			));
 			return 0;
 		}
-		//echo $query;exit;
-		$stmt = odbc_prepare($dbh_hana, $query);
-		if(!$stmt){
+		if($resource = odbc_prepare($dbh_hana, $query)){
+			if(odbc_execute($resource, $pvalues)){
+				$total_count+=count($recs);
+			}
+			else{
+				$drecs=array();
+				$xchunks=array_chunk($pvalues,count($fields));
+				foreach($xchunks as $xchunk){
+					$rec=array();
+					foreach($fields as $i=>$fld){
+						//if($fld != 'dist_id'){continue;}
+						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
+						$drecs[$fld][$xchunk[$i]]+=1;
+					}
+					break;
+				}
+				debugValue(array(
+					'function'=>'hanaAddDBRecordsProcess',
+					'message'=>'odbc execute error',
+					'error'=>odbc_errormsg($resource),
+					'query'=>$query,
+					'params'=>$params,
+					'first_record'=>$drecs
+				));
+				return 0;
+			}
+		}
+		else{
 			debugValue(array(
 				'function'=>'hanaAddDBRecordsProcess',
 				'message'=>'odbc prepare error',
@@ -259,33 +285,6 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			));
 			return 0;
 		}
-		$ok = odbc_execute($stmt, $pvalues);
-		if (odbc_error($dbh_hana)){
-			$drecs=array();
-			$xchunks=array_chunk($pvalues,count($fields));
-			foreach($xchunks as $xchunk){
-				$rec=array();
-				foreach($fields as $i=>$fld){
-					//if($fld != 'dist_id'){continue;}
-					$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-					$drecs[$fld][$xchunk[$i]]+=1;
-				}
-				break;
-			}
-			debugValue(array(
-				'function'=>'hanaAddDBRecordsProcess',
-				'message'=>'odbc execute error',
-				'error'=>odbc_errormsg($stmt),
-				'query'=>$query,
-				'params'=>$params,
-				'first_record'=>$drecs
-			));
-			return 0;
-		}
-		$total_count+=count($recs);
-	}
-	if(isset($params['-debug'])){
-		return printValue($ok).$query;
 	}
 	return $total_count;
 }
