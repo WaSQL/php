@@ -260,7 +260,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			return 0;
 		}
 		$ok = odbc_execute($stmt, $pvalues);
-		if (odbc_error()){
+		if (odbc_error($dbh_hana)){
 			$drecs=array();
 			$xchunks=array_chunk($pvalues,count($fields));
 			foreach($xchunks as $xchunk){
@@ -278,7 +278,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				'error'=>odbc_errormsg($stmt),
 				'query'=>$query,
 				'params'=>$params,
-				'fisrt_record'=>$drecs
+				'first_record'=>$drecs
 			));
 			return 0;
 		}
