@@ -241,6 +241,9 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					if(strlen($xchunk[$i]) > $fieldinfo[$fld]['_dblength']){
 						$errors[]="{$fld} value in record {$i} is too long";
 					}
+					if($fieldinfo[$fld]['nullable'] !=1 && !strlen($xchunk[$i])){
+						$errors[]="{$fld} value in record {$i} cannot be null";
+					}
 				}
 				break;
 			}
