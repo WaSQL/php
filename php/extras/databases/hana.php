@@ -244,10 +244,11 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					if($fieldinfo[$fld]['nullable'] !=1 && !strlen($xchunk[$i])){
 						$errors[]="{$fld} value in record {$i} cannot be null";
 					}
+					$rec[$fld]=$xchunk[$i];
 				}
-				break;
+				$drecs[]=$rec;
 			}
-			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL."errors".printValue($errors);
+			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL."errors".printValue($errors).PHP_EOL.'drecs'.printValue($drecs);
 		}
 
 		if(!is_resource($dbh_hana)){
