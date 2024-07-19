@@ -48,7 +48,7 @@ if (!function_exists('getallheaders')) {
 * @describe converts extended characters to ASCII equivilent
 * @param params str mixed
 * @return str
-* @ref https://docs.oracle.com/cd/E29584_01/webhelp/mdex_basicDev/src/rbdv_chars_mapping.html
+* @reference https://docs.oracle.com/cd/E29584_01/webhelp/mdex_basicDev/src/rbdv_chars_mapping.html
 * @usage
 *	$str=convertExtendedCharacters($str);
 */
@@ -1574,7 +1574,7 @@ function arraySearchKeys( $needle, $arr ){
 * @param [force] boolean - force a redraw
 * @return string
 * @usage return asciiArt($logo);
-* @author https://donatstudios.com/Damn-Simple-PHP-ASCII-Art-Generator
+* @reference https://donatstudios.com/Damn-Simple-PHP-ASCII-Art-Generator
 */
 function asciiArt($file,$force=false){
 	$path=getWasqlPath();
@@ -6101,7 +6101,7 @@ function convertString ( $source, $target_encoding ){
 * @param [format] string - format to return the new date/datetime/time string in. Defaults to Y-m-d H:i:s
 * @return string
 * @usage $cdate=convertTimezone('2021-05-10 13:15:00','UTC','America/Denver','Y-m-d H:i:s');
-* @refernence https://dragosholban.com/2018/04/11/how-to-convert-date-and-time-from-one-time-zone-to-another-in-php/
+* @reference https://dragosholban.com/2018/04/11/how-to-convert-date-and-time-from-one-time-zone-to-another-in-php/
 */
 function convertTimezone($ds,$from_timezone,$to_timezone,$format='Y-m-d H:i:s'){
 	$date = new DateTime($ds, new DateTimeZone($from_timezone));
@@ -16510,7 +16510,7 @@ function parseSimpleAttributes($obj=object){
 /**
 * @describe parses the user_agent and returns the browser name
 * @param [agent] string - defaults to $_SERVER['HTTP_USER_AGENT']
-* @reference - http://us.php.net/manual/en/function.get-browser.php
+* @reference - https://us.php.net/manual/en/function.get-browser.php
 * @return string - browser name
 * @usage $browser=getAgentBrowser();
 */
