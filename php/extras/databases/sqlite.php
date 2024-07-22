@@ -115,6 +115,56 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 			if(!in_array($k,$fields)){$fields[]=$k;}
 		}
 	}
+	//if possible use the JSON way so we can insert more efficiently
+	$jsonstr=encodeJSON($recs);
+	if(strlen($jsonstr)){
+		$fieldstr=implode(',',$fields);
+		$extracts=array();
+		foreach($fields as $fld){
+			$extracts[]="JSON_EXTRACT(value,'\$.{$fld}') as {$fld}";
+		}
+		$extractstr=implode(','.PHP_EOL,$extracts);
+		$query=<<<ENDOFQUERY
+			INSERT OR REPLACE INTO {$table} ($fieldstr)
+			  SELECT
+			    {$extractstr}
+			  FROM JSON_EACH(?)
+			RETURNING *;
+ENDOFQUERY;
+		$dbh_sqlite=sqliteDBConnect($params);
+		if(!$dbh_sqlite){
+			$err=array(
+				'msg'=>"sqliteAddDBRecordsProcess error",
+				'error'	=> $dbh_sqlite->lastErrorMsg(),
+				'query'	=> $query
+			);
+	    	debugValue(array("sqliteAddDBRecord Connect Error",$err));
+	    	return 0;
+		}
+		//enable exceptions
+		$dbh_sqlite->enableExceptions(true);
+		try{
+			$stmt=$dbh_sqlite->prepare($query);
+			//bind the jsonstring to the prepared statement
+			$stmt->bindParam(1,$jsonstr,SQLITE3_TEXT);
+			$results=$stmt->execute();
+			$recs=sqliteEnumQueryResults($results,$params);
+			return count($recs);
+		}
+		catch (Exception $e) {
+			$msg=$e->getMessage();
+			debugValue(array(
+				'function'=>'sqliteAddDBRecordsProcess',
+				'message'=>'query failed',
+				'error'=>$msg,
+				'query'=>$query,
+				'params'=>$params
+			));
+			return 0;
+		}
+	}
+
+
 	$fieldstr=implode(',',$fields);
 	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
@@ -1305,7 +1355,7 @@ function sqliteQueryResults($query,$params=array()){
 		return $recs;
 	}
 	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']=$e->getMessage();
+		$DATABASE['_lastquery']['error']='HERE'.$e->getMessage();
 		debugValue($DATABASE['_lastquery']);
 		return array();
 	}
