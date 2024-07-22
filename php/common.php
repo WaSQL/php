@@ -6867,7 +6867,7 @@ function commonProcessChartjsTags($htm){
 		$chartjs_contents=$chartjs[2][$i];
 		//check for options
 		$options='';
-		if(preg_match('/\<options\>(.*?)\<\/options\>/',$chartjs_contents,$m)){
+		if(preg_match('/\<options\>(.*?)\<\/options\>/ism',$chartjs_contents,$m)){
 			$options=$m[1];
 			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
 		}
@@ -6877,7 +6877,7 @@ function commonProcessChartjsTags($htm){
 			$arr=preg_split('/\,+/',$chartjs_attributes['data-colors']);
 			$colorstr=encodeJSON($arr);
 		}
-		elseif(preg_match('/\<colors\>(.*?)\<\/colors\>/',$chartjs_contents,$m)){
+		elseif(preg_match('/\<colors\>(.*?)\<\/colors\>/ism',$chartjs_contents,$m)){
 			$colorstr=$m[1];
 			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
 		}
