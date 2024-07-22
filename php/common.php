@@ -6866,9 +6866,9 @@ function commonProcessChartjsTags($htm){
 		}
 		$chartjs_contents=$chartjs[2][$i];
 		//check for options
-		$options='';
+		$optionstr='';
 		if(preg_match('/\<options\>(.*?)\<\/options\>/ism',$chartjs_contents,$m)){
-			$options=$m[1];
+			$optionstr=$m[1];
 			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
 		}
 		//check for custom colors
@@ -6983,8 +6983,8 @@ function commonProcessChartjsTags($htm){
 			if(strlen($colorstr)){
 				$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
 			}
-			if(strlen($options)){
-				$replace_str.='<options>'.$options.'</options>'.PHP_EOL;
+			if(strlen($optionstr)){
+				$replace_str.='<options>'.$optionstr.'</options>'.PHP_EOL;
 			}
 			$replace_str.='</div>'.PHP_EOL;
 			if(isset($chartjs_attributes['data-debug']) && $chartjs_attributes['data-debug']==1){
