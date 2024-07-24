@@ -91,7 +91,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	else{
 		$fieldinfo=hanaGetDBFieldInfo($table,1);
 	}
-	//echo printValue($fieldinfo);exit;
+	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
 			foreach($rec as $k=>$v){
@@ -101,6 +101,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					$recs[$i][$k]=$v;
 				}
 			}
+		}
+	}
+	//if -map2json then map the whole record to this field
+	if(isset($params['-map2json'])){
+		$jsonkey=$params['-map2json'];
+		foreach($recs as $i=>$rec){
+			$recs[$i]=array($jsonkey=>$rec);
 		}
 	}
 	//fields
@@ -125,6 +132,146 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	$fieldstr=implode(',',$fields);
+	$field_defs=array();
+	foreach($fields as $field){
+		switch(strtolower($fieldinfo[$field]['_dbtype'])){
+			case 'char':
+			case 'varchar':
+			case 'nchar':
+			case 'nvarchar':
+				$type=$fieldinfo[$field]['_dbtype_ex'];
+			break;
+			default:
+				$type=$fieldinfo[$field]['_dbtype'];
+			break;
+		}
+		$field_defs[]="		{$field} {$type} PATH '\$.{$field}'";
+	}
+	//if possible use the JSON way so we can insert more efficiently
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
+	if(strlen($jsonstr)){
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			if(!is_array($params['-upsert'])){
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+			if(!is_array($params['-upserton'])){
+				$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+			}
+			$query="MERGE INTO {$table} T1 USING ( ".PHP_EOL;
+			$query.="SELECT {$fieldstr} FROM JSON_TABLE(?,'\$[*]' COLUMNS (".PHP_EOL;
+			//insert field_defs into query 
+        	$query.=implode(','.PHP_EOL,$field_defs); 
+        	$query.="		)".PHP_EOL; 
+    		$query.="	) jt".PHP_EOL;
+			$query.=') T2'.PHP_EOL.'ON  ';
+			$onflds=array();
+			foreach($params['-upserton'] as $fld){
+				$fld=trim($fld);
+				$onflds[]="T1.{$fld}=T2.{$fld}";
+			}
+			$query .= implode(' AND ',$onflds);
+			$condition='';
+			if(isset($params['-upsertwhere'])){
+				$condition=" AND {$params['-upsertwhere']}";
+			}
+			$query .= ' '.PHP_EOL."WHEN MATCHED {$condition} THEN UPDATE SET ";
+			$flds=array();
+			foreach($params['-upsert'] as $fld){
+				$fld=trim($fld);
+				if(!in_array($fld,$fields)){continue;}
+				if(!isset($fieldinfo[$fld])){continue;}
+				$flds[]="T1.{$fld}=T2.{$fld}";
+			}
+			$query.=implode(', ',$flds);
+			
+			$query .= PHP_EOL."WHEN NOT MATCHED THEN INSERT  ";
+			$query .= PHP_EOL."({$fieldstr})";
+			$query .= PHP_EOL."VALUES ( ";
+			$flds=array();
+			foreach($fields as $fld){
+				$fld=trim($fld);
+				$flds[]="T2.{$fld}";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+			$query .=PHP_EOL. ')';
+		}
+		else{
+			$query="INSERT INTO {$table} ({$fieldstr}) ( ".PHP_EOL;
+			$query.="SELECT {$fieldstr} FROM JSON_TABLE(?,'\$[*]' COLUMNS (".PHP_EOL; 
+			//insert field_defs into query
+        	$query.=implode(','.PHP_EOL,$field_defs); 
+        	$query.="		)".PHP_EOL; 
+    		$query.="	) jt".PHP_EOL;
+			$query.=')';
+		}
+		//$pvalues=array($jsonstr);
+		if(!is_resource($dbh_hana)){
+			$dbh_hana=hanaDBConnect($params);
+		}
+		if(!$dbh_hana){
+			debugValue(array(
+				'function'=>'hanaAddDBRecordsProcess',
+				'message'=>'hanaDBConnect error',
+				'error'=>odbc_errormsg(),
+				'query'=>$query,
+				'params'=>$params
+			));
+			return 0;
+		}
+		$tpath=getWaSQLPath();
+		$tfile=sha1($jsonstr).'.odbc';
+		$atfile=str_replace("\\",'/',"{$tpath}/{$tfile}");
+		$ok=setFileContents($atfile,$jsonstr);
+		$pvalues=array("'{$atfile}'");
+		if($resource = odbc_prepare($dbh_hana, $query)){
+			if(odbc_execute($resource, $pvalues)){
+				unlink($atfile);
+				if(is_resource($resource)){odbc_free_result($resource);}
+				$resource=null;
+				if(is_resource($dbh_hana) || is_object($dbh_hana)){odbc_close($dbh_hana);}
+				$dbh_hana=null;
+				return count($recs);
+			}
+			else{
+				unlink($atfile);
+				if(is_resource($resource)){$error=odbc_errormsg($resource);}
+				elseif(is_resource($dbh_hana)){$error=odbc_errormsg($dbh_hana);}
+				else{$error=odbc_errormsg();}
+				$drecs=array();
+				$xchunks=array_chunk($pvalues,count($fields));
+				foreach($xchunks as $xchunk){
+					$rec=array();
+					foreach($fields as $i=>$fld){
+						//if($fld != 'dist_id'){continue;}
+						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
+						$drecs[$fld][$xchunk[$i]]+=1;
+					}
+					break;
+				}
+				debugValue(array(
+					'function'=>'hanaAddDBRecordsProcess',
+					'message'=>'odbc execute error',
+					'error'=>$error,
+					'query'=>$query,
+					'params'=>$params,
+					'first_record'=>$drecs
+				));
+				return 0;
+			}
+		}
+		else{
+			unlink($atfile);
+			debugValue(array(
+				'function'=>'hanaAddDBRecordsProcess',
+				'message'=>'odbc prepare error',
+				'error'=>odbc_errormsg($dbh_hana),
+				'query'=>$query,
+				'params'=>$params
+			));
+			return 0;
+		}
+	}
+	//JSON method did not work, try standard prepared statement method
 	//keep prepared statement markers under 20000
 	$fieldcount=count($fields);
 	$maxchunksize=ceil(20000/$fieldcount);
@@ -284,10 +431,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					}
 					break;
 				}
+				if(is_resource($resource)){$error=odbc_errormsg($resource);}
+				elseif(is_resource($dbh_hana)){$error=odbc_errormsg($dbh_hana);}
+				else{$error=odbc_errormsg();}
 				debugValue(array(
 					'function'=>'hanaAddDBRecordsProcess',
 					'message'=>'odbc execute error',
-					'error'=>odbc_errormsg($resource),
+					'error'=>$error,
 					'query'=>$query,
 					'params'=>$params,
 					'first_record'=>$drecs

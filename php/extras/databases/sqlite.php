@@ -91,6 +91,7 @@ function sqliteAddDBRecords($table='',$params=array()){
 	}
 }
 function sqliteAddDBRecordsProcess($recs,$params=array()){
+	//echo 'sqliteAddDBRecordsProcess'.count($recs).printValue($params);exit;
 	if(!isset($params['-table'])){
 		return debugValue("sqliteAddDBRecordsProcess Error: no table"); 
 	}
@@ -108,17 +109,39 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
-	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!isset($fieldinfo[$k])){continue;}
-			if(!in_array($k,$fields)){$fields[]=$k;}
+	//if -map2json then map the whole record to this field
+	if(isset($params['-map2json'])){
+		$jsonkey=$params['-map2json'];
+		foreach($recs as $i=>$rec){
+			$recs[$i]=array($jsonkey=>$rec);
 		}
 	}
+	//fields
+	$fields=array();
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){
+				unset($recs[$i][$k]);
+				continue;
+			}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+		break;
+	}
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'sqliteAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
+	}
+	$fieldstr=implode(',',$fields);
 	//if possible use the JSON way so we can insert more efficiently
-	$jsonstr=encodeJSON($recs);
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
-		$fieldstr=implode(',',$fields);
+		
 		$extracts=array();
 		foreach($fields as $fld){
 			$extracts[]="JSON_EXTRACT(value,'\$.{$fld}') as {$fld}";
@@ -163,9 +186,7 @@ ENDOFQUERY;
 			return 0;
 		}
 	}
-
-
-	$fieldstr=implode(',',$fields);
+	//JSON method did not work, try standard prepared statement method
 	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
 	foreach($recs as $i=>$rec){

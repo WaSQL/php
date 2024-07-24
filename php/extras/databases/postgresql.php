@@ -103,10 +103,17 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	//if -map2json then map the whole record to this field
+	if(isset($params['-map2json'])){
+		$jsonkey=$params['-map2json'];
+		foreach($recs as $i=>$rec){
+			$recs[$i]=array($jsonkey=>$rec);
+		}
+	}
 	//fields
 	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
 			if(!isset($fieldinfo[$k])){
 				unset($recs[$i][$k]);
 				continue;
@@ -115,8 +122,137 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		break;
 	}
-
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
+	}
 	$fieldstr=implode(',',$fields);
+	$field_defs=array();
+	foreach($fields as $field){
+		switch(strtolower($fieldinfo[$field]['_dbtype'])){
+			case 'char':
+			case 'varchar':
+			case 'nchar':
+			case 'nvarchar':
+				$type=$fieldinfo[$field]['_dbtype_ex'];
+			break;
+			default:
+				$type=$fieldinfo[$field]['_dbtype'];
+			break;
+		}
+		$field_defs[]="		{$field} {$type}";
+	}
+	//if possible use the JSON way so we can insert more efficiently
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
+	if(strlen($jsonstr)){
+		//echo count($recs).printValue($recs[0]);exit;
+		$pvalues=array($jsonstr);
+		$query="INSERT INTO {$table} as t1 ({$fieldstr}) ".PHP_EOL;
+		$query.="	SELECT {$fieldstr} FROM json_to_recordset(\$1) AS jt(".PHP_EOL;
+		//insert field_defs into query 
+		$query.=implode(','.PHP_EOL,$field_defs);
+		$query.="	)".PHP_EOL;
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			if(!is_array($params['-upsert'])){
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+			if(!is_array($params['-upserton'])){
+				$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+			}
+	    	$sets=array();
+			foreach($params['-upsert'] as $fld){
+				$fld=trim($fld);
+				if(!in_array($fld,$fields)){continue;}
+				if(!isset($fieldinfo[$fld])){continue;}
+				$sets[]="{$fld} = EXCLUDED.{$fld}";
+			}
+			$onstr=implode(',',$params['-upserton']);
+			$query.="ON CONFLICT ({$onstr}) DO UPDATE SET ".PHP_EOL;
+			$query.=implode(', ',$sets).PHP_EOL;
+			if(isset($params['-upsertwhere'])){
+				$query.="WHERE {$params['-upsertwhere']}".PHP_EOL;
+			}
+		}
+		//echo $query.$jsonstr;exit;
+		$dbh_postgresql='';
+		while($tries < 4){
+			$dbh_postgresql='';
+			$dbh_postgresql=postgresqlDBConnect($params);
+			if(is_resource($dbh_postgresql) || is_object($dbh_postgresql)){
+				break;
+			}
+			sleep(2);
+		}
+		if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+			debugValue(array(
+				'function'=>'postgresqlAddDBRecordsProcess',
+				'message'=>'postgresqlDBConnect error',
+				'error'=>"Connect Error" . pg_last_error(),
+				'query'=>$query,
+			));
+			return 0;
+		}
+		//echo $query;exit;
+		try{
+			$pg_adddbrecords_stmt = pg_prepare($dbh_postgresql,$query_name, $query);
+			if(!is_resource($pg_adddbrecords_stmt) && !is_object($pg_adddbrecords_stmt)){
+				debugValue(array(
+					'function'=>'postgresqlAddDBRecordsProcess',
+					'message'=>'pg_prepare error',
+					'error'=>pg_last_error($dbh_postgresql),
+					'query'=>$query,
+					'pval_counts'=>$pval_counts,
+					'pval_keys'=>$pval_keys,
+					'p'=>$p,
+					'pvalues_cnt'=>count($pvalues)
+				));
+				return 0;
+			}
+			$result = pg_execute($dbh_postgresql,$query_name, $pvalues);
+			$err=pg_last_error($dbh_postgresql);
+			//$ok=postgresqlExecuteSQL($query);
+			if(strlen($err)){
+				$drecs=array();
+				$xchunks=array_chunk($pvalues,count($fields));
+				foreach($xchunks as $xchunk){
+					$rec=array();
+					foreach($fields as $i=>$fld){
+						//if($fld != 'dist_id'){continue;}
+						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
+						$drecs[$fld][$xchunk[$i]]+=1;
+					}
+					break;
+				}
+				debugValue(array(
+					'function'=>'postgresqlAddDBRecordsProcess',
+					'message'=>'execute error',
+					'error'=>$err,
+					'query'=>$query,
+					'p'=>$p,
+					'first_record'=>$drecs
+				));
+				return 0;
+			}
+			return count($recs);
+		}
+		catch (Exception $e) {
+			debugValue(array(
+				'function'=>'postgresqlAddDBRecordsProcess',
+				'message'=>'pg_prepare error',
+				'error'=>pg_last_error($dbh_postgresql),
+				'query'=>$query,
+				'p'=>$p,
+				'pvalues_cnt'=>count($pvalues)
+			));
+			return 0;
+		}
+	}
+	//JSON method did not work, try standard prepared statement method
 	//keep prepared statement markers under 20000
 	$fieldcount=count($fields);
 	$maxchunksize=ceil(18000/$fieldcount);
