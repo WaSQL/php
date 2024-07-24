@@ -252,6 +252,10 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('ccv2');
 			$func="ccv2".ucfirst($func);
 		break;
+		case 'elastic':
+			loadExtras('elastic');
+			$func="elastic".ucfirst($func);
+		break;
 		case 'ctree':
 			loadExtras('ctree');
 			$dbh_ctree='';
@@ -1418,6 +1422,12 @@ function databaseListRecords($params=array()){
 				}
 				$params['-list']=ccv2QueryResults($params['-query']);
 			break;
+			case 'elastic':
+				if(!function_exists('elasticQueryResults')){
+					loadExtras('elastic');
+				}
+				$params['-list']=elasticQueryResults($params['-query']);
+			break;
 			default:
 				$params['-list']=getDBRecords($params['-query']);
 			break;
@@ -1517,6 +1527,12 @@ function databaseListRecords($params=array()){
 					loadExtras('ccv2');
 				}
 				$info=ccv2GetDBFieldInfo($params['-table']);
+			break;
+			case 'elastic':
+				if(!function_exists('elasticGetDBFieldInfo')){
+					loadExtras('elastic');
+				}
+				$info=elasticGetDBFieldInfo($params['-table']);
 			break;
 			default:
 				$info=getDBFieldInfo($params['-table']);

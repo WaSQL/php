@@ -197,6 +197,9 @@ foreach($DATABASE as $d=>$db){
 		case 'sqlite':
 			$DATABASE[$d]['dbicon']='icon-database-sqlite';
 		break;
+		case 'elastic':
+			$DATABASE[$d]['dbicon']='brand-elastic';
+		break;
 		case 'mysql':
 		case 'mysqli':
 			$DATABASE[$d]['dbicon']='icon-database-mysql';

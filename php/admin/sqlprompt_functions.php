@@ -322,6 +322,10 @@ function sqlpromptBuildQuery($db,$name,$str=''){
 			$dbh_ctree='';
 			return trim(ctreeNamedQuery($name,$str));
 		break;
+		case 'elastic':
+			loadExtras('elastic');
+			return trim(elasticNamedQuery($name,$str));
+		break;
 		default:
 			loadExtras('mysql');
 			global $dbh_mysql;
@@ -374,6 +378,10 @@ function sqlpromptNamedQueries(){
 		case 'ccv2':
 			loadExtras('ccv2');
 			$recs=ccv2NamedQueryList();
+		break;
+		case 'elastic':
+			loadExtras('elastic');
+			$recs=elasticNamedQueryList();
 		break;
 		case 'snowflake':
 			loadExtras('snowflake');

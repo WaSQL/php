@@ -15917,7 +15917,7 @@ function loadExtras($extras){
 			elseif(preg_match('/^(canada_post|fedex|ups|usps|npf|integracore)$/i',$extra)){
             	$extra="shipping_methods/{$extra}";
 			}
-			elseif(preg_match('/^(ccv2|gigya|firebird|msaccess|msexcel|mscsv|ctree|hana|mssql|mysql|odbc|oracle|pdo|postgresql|snowflake|sqlite)$/i',$extra)){
+			elseif(preg_match('/^(elastic|ccv2|gigya|firebird|msaccess|msexcel|mscsv|ctree|hana|mssql|mysql|odbc|oracle|pdo|postgresql|snowflake|sqlite)$/i',$extra)){
             	$extra="databases/{$extra}";
 			}
 			//build full path to extra file

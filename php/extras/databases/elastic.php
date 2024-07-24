@@ -76,7 +76,11 @@ function elasticIsDBTable($table,$params=array()){
 */
 function elasticGetDBTables($params=array()){
 	$recs=elasticQueryResults("Show Tables");
-	return $recs;
+	$tables=array();
+	foreach($recs as $rec){
+		$tables[]=$rec['name'];
+	}
+	return $tables;
 }
 //---------- begin function elasticGetDBFieldInfo ----------
 /**
@@ -93,7 +97,27 @@ function elasticGetDBTables($params=array()){
 */
 function elasticGetDBFieldInfo($tablename,$params=array()){
 	$recs=elasticQueryResults("SHOW COLUMNS in {$tablename}");
-	return $recs;
+	//column,type,mapping
+	$fields=array();
+	foreach($recs as $rec){
+		$field=array(
+			'_dbtable'	=> $tablename,
+		 	'_dbfield'	=> strtolower($rec['column']),
+		 	'_dbtype'	=> $rec['type'],
+		 	'_dbtype_ex'	=> strtolower($rec['type']).' ('.$rec['mapping'].')',
+		 	'_dblength' => '',
+		 	'table'		=> $rec['tablename'],
+		 	'name'		=> $rec['column'],
+		 	'type'		=> $rec['type'],
+			'length'	=> '',
+			'num'		=> '',
+			'size'		=> '',
+			'identity'	=> 0,
+		);
+		$fields[]=$field;
+	}
+	//echo printValue($fields);exit;
+	return $fields;
 }
 
 //---------- begin function elasticQueryResults ----------
@@ -119,314 +143,56 @@ function elasticQueryResults($query,$params=array()){
 		'function'=>'elasticQueryResults'
 	);
 	$db=$DATABASE[$CONFIG['db']];
-	$url=$db['dbhost'];
-	if(!stringBeginsWith($url,'http')){
-		$url="https://{$url}";
-	}
+	$url="https://{$db['dbhost']}/_sql";
 	$payload=array(
 		'query'=>$query,
 		'fetch_size'=>5000
 	);
 	$json=encodeJSON($payload);
+	$recs_count=0;
 	$post=postJSON($url,$json,array(
 		'-authuser'=>$db['dbuser'],
 		'-authpass'=>$db['dbpass'],
 		'-port'=>$db['dbport'],
 		'-nossl'=>1,
-		'format'=>'json'
+		'format'=>'json',
+		'-method'=>'HEAD'
 	));
-	echo printValue($post);exit;
-    while($loop < $maxloops){
-    	$loop+=1;
-    	//$cquery=$query." START {$poffset} LIMIT {$plimit}";
-    	$cquery=$query." LIMIT {$plimit}";
-    	$postopts=array(
-			'-method'=>'POST',
-			'apiKey'=>$db['dbkey'],
-			'userKey'=>$db['dbuser'],
-			'secret'=>$db['dbpass'],
-			'format'=>'json',
-			'-json'=>1,
-		);
-		if(!strlen($nextcursorid)){
-			$postopts['openCursor']='true';
-			$postopts['query']=$cquery;
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().",openCURSOR: true,  POSTING: LOOP {$loop}".PHP_EOL);
-		    }
+	if(isset($post['json_array']['error']['root_cause'][0]['reason'])){
+		return "ERROR: ".$post['json_array']['error']['root_cause'][0]['reason'];
+	}
+	if(!isset($post['json_array']['columns'])){
+		//echo printValue($post['json_array'])
+		return 'ERROR'.printValue($post['json_array']);
+	}
+	$fields=array();
+	foreach($post['json_array']['columns'] as $col){
+		$fields[]=$col['name'];
+	}
+	if(!isset($post['json_array']['rows'])){
+		return 'no results';
+	}
+	$recs=array();
+	foreach($post['json_array']['rows'] as $row){
+		$rec=array();
+		foreach($row as $i=>$val){
+			$rec[$fields[$i]]=$val;
+		}
+		$recs[]=$rec;
+	}
+	//echo printValue($params).printValue($recs);exit;
+	if(count($recs) && isset($params['-filename'])){
+		if(file_exists($params['-filename'])){
+			$csv=arrays2CSV($recs,array('-noheader'=>1)).PHP_EOL;
+			setFileContents($params['-filename'],$csv,1);
 		}
 		else{
-			$postopts['cursorId']=$nextcursorid;
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", CURSORID SET,  POSTING: LOOP {$loop}".PHP_EOL);
-		    }
+			//new file - set utf8 bit and include header row
+			$csv="\xEF\xBB\xBF".arrays2CSV($recs).PHP_EOL;
+			setFileContents($params['-filename'],$csv);
 		}
-		//echo printValue($postopts);exit;
-		$post=postURL($url,$postopts);
-		if(isset($post['json_array']['nextCursorId'])){
-			$nextcursorid=$post['json_array']['nextCursorId'];
-		}
-
-		if(isset($params['-logfile'])){
-	    	appendFileContents($params['-logfile'],time().", RETURNED:".PHP_EOL);
-	    }
-		//echo printValue($postopts).printValue($post);exit;
-		if(isset($post['json_array']['errorMessage'])){
-			if($post['json_array']['errorCode']=='500001'){
-				if(isset($params['-logfile'])){
-			    	appendFileContents($params['-logfile'],time().", 500001 error: sleeping for 5 seconds".PHP_EOL);
-			    }
-				sleep(10);
-				if(isset($params['-logfile'])){
-			    	appendFileContents($params['-logfile'],time().", POSTING after 500001 error: LOOP {$loop}".PHP_EOL);
-			    }
-				$post=postURL($url,$postopts);
-				if(isset($params['-logfile'])){
-			    	appendFileContents($params['-logfile'],time().", RETURNED:".PHP_EOL);
-			    }
-			}
-		}
-		if(isset($post['json_array']['errorMessage'])){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],"{$post['json_array']['errorCode']} - {$post['json_array']['errorMessage']}");
-		    	appendFileContents($params['-logfile'],printValue($post));
-		    }
-			return "<div class=\"w_red\">{$post['json_array']['errorCode']} - {$post['json_array']['errorMessage']}</div>".printValue($post);
-		}
-		if(!isset($post['json_array']['results']) && isset($post['json_array']['result'])){
-			$post['json_array']['results']=$post['json_array']['result'];
-		}
-		if(isset($post['json_array']['resultCount']) && $post['json_array']['resultCount']==0){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", no resultCount:".PHP_EOL);
-		    }
-			break;
-		}
-		if(!isset($post['json_array']['results'][0])){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", results are empty:".PHP_EOL);
-		    }
-			break;
-		}
-		if(!isset($post['json_array']['statusCode']) || $post['json_array']['statusCode'] != 200){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", statusCode not 200:".PHP_EOL.decodeJson($post['json_array']).PHP_EOL);
-		    }
-			break;
-		}
-		if(isset($post['json_array']['results'])){
-			foreach($post['json_array']['results'] as $result){
-				//fix fields
-				foreach($result as $k=>$v){
-					$xk=$k;
-					switch(strtolower($xk)){
-						case 'count':
-						case 'count(*)':
-							$xk='count';
-						break;
-						case 'serverip':$xk='server_ip';break;
-						case '@timestamp':$xk='timestamp';break;
-						case 'uid':$xk='uid';break;
-					}
-					$xk=str_replace('ID','Id',$xk);
-					$xk = strtolower(preg_replace('/([A-Z])/', '_$1', $xk));
-					if(!isset($fieldinfo[$xk])){
-						$fieldinfo[$k]=array(
-							'field'=>$xk,
-							'_dbfield'=>$k
-						);
-						$jv=decodeJson($v);
-						if(is_array($jv)){
-							if(!isset($jv[0])){
-								$jfields=array_keys($jv);
-								$fieldinfo[$k]['_dbtype_ex']=implode(',<br>',$jfields);
-							}
-							else{
-								$fieldinfo[$k]['_dbtype_ex']='JSON';
-							}
-						}
-						elseif(isDate($v)){
-							$fieldinfo[$k]['_dbtype_ex']='date';	
-						}
-						elseif($v=='1' || $v=='0'){
-							$fieldinfo[$k]['_dbtype_ex']='int';	
-						}
-						elseif(preg_match('/^[0-9]+$/',$v)){
-							$fieldinfo[$k]['_dbtype_ex']='bigint';
-						}
-						else{
-							$fieldinfo[$k]['_dbtype_ex']='string';
-						}
-					}
-				}
-			}
-			$post['json_array']['results']=elasticLowerKeys($post['json_array']['results']);
-			foreach($post['json_array']['results'] as $result){
-				//fix fields
-				$xrec=array();
-				foreach($result as $k=>$v){
-					$xk=$k;
-					switch(strtolower($xk)){
-						case 'count':
-						case 'count(*)':
-							$xk='count';
-						break;
-						case 'serverip':$xk='server_ip';break;
-						case '@timestamp':$xk='timestamp';break;
-						case 'uid':$xk='uid';break;
-					}
-					$xk=str_replace('ID','Id',$xk);
-					$xk = strtolower(preg_replace('/([A-Z])/', '_$1', $xk));
-					$k=strtolower($k);
-					$xrec[$k]=$xrec[$xk]=$v;
-				}
-				$rec=array();
-				if(count($fields)){
-					foreach($fields as $fieldstr){
-						$aname='';
-						if(preg_match('/([\s\r\n]+)AS([\s\r\n]+)(.+)$/is',$fieldstr,$m)){
-							$aname=$m[3];
-							$fieldstr=str_replace($m[0],'',$fieldstr);
-						}
-						$parts=preg_split('/\./',$fieldstr,2);
-						$field=$parts[0];
-						//echo $field.printValue($xrec[$field]);exit;
-						if(isset($xrec[$field])){
-							if(count($parts)==1){
-								$val=$xrec[$field];
-							}
-							else{
-								$subfield=$parts[1];
-								$val=$xrec[$field][$subfield];
-							}
-							if(is_array($val)){$val=encodeJson($val);}
-							if(strlen($aname)){
-								$rec[$aname]=$val;
-							}
-							else{
-								$field=implode('_',$parts);
-								$rec[$field]=$val;
-							}
-						}
-						else{
-							if(strlen($aname)){
-								$rec[$aname]='';
-							}
-							else{
-								$rec[$field]='';
-							}
-						}
-					}
-				}
-				else{
-					foreach($xrec as $k=>$v){
-						if(is_array($v)){$v=encodeJson($v);}
-						$rec[$k]=$v;
-					}
-				}
-				if(is_array($custom_filters) && count($custom_filters)){
-					$matches=0;
-					foreach($custom_filters as $filter){
-						$field=$filter['field'];
-						if(!isset($rec[$field])){continue;}
-						switch(strtolower($filter['oper'])){
-							case 'like':
-								if(stringContains($rec[$field],$filter['val'])){$matches+=1;}
-							break;
-							case 'not like':
-								if(!stringContains($rec[$field],$filter['val'])){$matches+=1;}
-							break;
-						}
-					}
-					if(count($custom_filters)==$matches){
-						$recs[]=$rec;
-						$recs_count+=1;
-					}
-				}
-				else{
-					$recs[]=$rec;
-					$recs_count+=1;
-				}
-				if($limit > 0 and $recs_count >= $limit){
-					break;
-				}
-			}
-			//echo $action.printValue($delete_url);exit;
-			if($action=='delete' && strlen($delete_url)){
-				foreach($recs as $r=>$rec){
-					if(!isset($rec['uid'])){continue;}
-					$json=array(
-						'apiKey'=>$db['dbkey'],
-						'userKey'=>$db['dbuser'],
-						'secret'=>$db['dbpass'],
-						'UID'=>$rec['uid'],
-						'format'=>'json',
-						'httpStatusCodes'=>true,
-						'-json'=>1,
-						'-method'=>'POST'
-					);
-					//$json=encodeJSON($json);
-					$dparams=$params;
-					$dparams['UID']=$rec['uid'];
-					$dpost=postURL($delete_url,$json);
-					if(isset($dpost['json_array']['statusReason'])){
-						$recs[$r]['delete_status']=$dpost['json_array']['statusReason'];
-					}
-					else{
-						$recs[$r]['delete_status']='failed';
-					}
-					if($recs[$r]['delete_status']=='Forbidden'){
-						echo "DEBUG".printValue($dpost['json_array']);exit;
-					}
-					if(isset($dpost['json_array']['statusCode'])){
-						$recs[$r]['delete_code']=$dpost['json_array']['statusCode'];
-					}
-					else{
-						$recs[$r]['delete_code']='400';
-					}
-					//sleep for a 1/4 second to eliminate rate limit issues
-					usleep(250);
-					//echo printValue($dpost);exit;
-				}
-			}
-			if(count($recs) && isset($params['-filename'])){
-				if(file_exists($params['-filename'])){
-					$csv=arrays2CSV($recs,array('-noheader'=>1)).PHP_EOL;
-					setFileContents($params['-filename'],$csv,1);
-				}
-				else{
-					//new file - set utf8 bit and include header row
-					$csv="\xEF\xBB\xBF".arrays2CSV($recs).PHP_EOL;
-					setFileContents($params['-filename'],$csv);
-				}
-				$recs=array();
-			}
-		}
-		if(!isset($post['json_array']['nextCursorId'])){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", No nextCursorId - DONE".PHP_EOL);
-		    }
-			break;
-		}
-		if(stringContains($query,'count(*)')){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", Count detected - DONE".PHP_EOL);
-		    }
-			break;
-		}
-		if(isset($post['json_array']['objectsCount']) && $post['json_array']['objectsCount'] < $plimit){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", ObjectsCount is less - DONE".PHP_EOL);
-		    }
-			break;
-		}
-		if($limit > 0 and $recs_count >= $limit){
-			if(isset($params['-logfile'])){
-		    	appendFileContents($params['-logfile'],time().", hit limit - DONE".PHP_EOL);
-		    }
-			break;
-		}
-		$poffset+=$plimit;
+		$recs_count+=count($recs);
+		$recs=array();
 	}
 	if(isset($params['-filename'])){
 		return $recs_count;
@@ -639,7 +405,23 @@ function elasticGetDBRecordsCount($params=array()){
 	return $recs[0]['cnt'];
 }
 function elasticNamedQueryList(){
-	return array();
+	return array(
+		array(
+			'code'=>'tables',
+			'icon'=>'icon-table ',
+			'name'=>'Tables'
+		),
+		array(
+			'code'=>'functions',
+			'icon'=>'icon-th-thumb',
+			'name'=>'Functions'
+		),
+		array(
+			'code'=>'catalogs',
+			'icon'=>'icon-spin8',
+			'name'=>'Catalogs'
+		),
+	);
 }
 //---------- begin function elasticNamedQuery ----------
 /**
@@ -653,6 +435,17 @@ function elasticNamedQuery($name){
 	switch(strtolower($name)){
 		case 'tables':
 			return <<<ENDOFQUERY
+	SHOW tables
+ENDOFQUERY;
+		break;
+		case 'functions':
+			return <<<ENDOFQUERY
+	SHOW functions
+ENDOFQUERY;
+		break;
+		case 'catalogs':
+			return <<<ENDOFQUERY
+	SHOW catalogs
 ENDOFQUERY;
 		break;
 	}
