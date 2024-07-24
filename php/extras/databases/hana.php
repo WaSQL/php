@@ -150,6 +150,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
+		//echo "JSON".count($recs).printValue($params);exit;
 		if(isset($params['-upsert']) && isset($params['-upserton'])){
 			if(!is_array($params['-upsert'])){
 				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
@@ -218,14 +219,21 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			));
 			return 0;
 		}
-		$tpath=getWaSQLPath();
+		$tpath=getWaSQLTempPath();
 		$tfile=sha1($jsonstr).'.odbc';
 		$atfile=str_replace("\\",'/',"{$tpath}/{$tfile}");
+		$atfile=str_replace('//','/',$atfile);
 		$ok=setFileContents($atfile,$jsonstr);
-		$pvalues=array("'{$atfile}'");
+		if(file_exists($atfile) && filesize($atfile)>100){
+			$pvalues=array("'{$atfile}'");
+		}
+		else{
+			$pvalues=array($jsonstr);
+		}
+		//echo $atfile.printValue($pvalues).printValue($params);exit;
 		if($resource = odbc_prepare($dbh_hana, $query)){
 			if(odbc_execute($resource, $pvalues)){
-				unlink($atfile);
+				if(file_exists($atfile)){unlink($atfile);}
 				if(is_resource($resource)){odbc_free_result($resource);}
 				$resource=null;
 				if(is_resource($dbh_hana) || is_object($dbh_hana)){odbc_close($dbh_hana);}
@@ -233,7 +241,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				return count($recs);
 			}
 			else{
-				unlink($atfile);
+				if(file_exists($atfile)){unlink($atfile);}
 				if(is_resource($resource)){$error=odbc_errormsg($resource);}
 				elseif(is_resource($dbh_hana)){$error=odbc_errormsg($dbh_hana);}
 				else{$error=odbc_errormsg();}
@@ -260,7 +268,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 		else{
-			unlink($atfile);
+			if(file_exists($atfile)){unlink($atfile);}
 			debugValue(array(
 				'function'=>'hanaAddDBRecordsProcess',
 				'message'=>'odbc prepare error',
