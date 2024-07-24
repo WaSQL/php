@@ -219,6 +219,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			));
 			return 0;
 		}
+		//store JSON in a temp file to allow larger datasets
 		$tpath=getWaSQLTempPath();
 		$tfile=sha1($jsonstr).'.odbc';
 		$atfile=str_replace("\\",'/',"{$tpath}/{$tfile}");
