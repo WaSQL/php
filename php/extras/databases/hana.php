@@ -175,6 +175,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					$type=$fieldinfo[$field]['_dbtype_ex'];
 				break;
 				case 'tinyint':
+				case 'smallint':
 				case 'integer':
 					$type='int';
 				break;
