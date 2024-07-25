@@ -174,6 +174,10 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				case 'nvarchar':
 					$type=$fieldinfo[$field]['_dbtype_ex'];
 				break;
+				case 'tinyint':
+				case 'integer':
+					$type='int';
+				break;
 				default:
 					$type=$fieldinfo[$field]['_dbtype'];
 				break;
