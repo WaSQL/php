@@ -67,10 +67,12 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	global $dbh_postgresql;
 	global $pg_query_name_counter;
 	if(!isset($params['-table'])){
-		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
+		debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
+		return 0;
 	}
 	if(!is_array($recs) || !count($recs)){
-		return debugValue("postgresqlAddDBRecordsProcess Error: recs is empty"); 
+		debugValue("postgresqlAddDBRecordsProcess Error: recs is empty"); 
+		return 0;
 	}
 	$table=$params['-table'];
 	if(isset($params['-fieldinfo']) && is_array($params['-fieldinfo'])){
@@ -141,6 +143,24 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		));
 		return 0;
 	}
+	//verify we can connect to the db
+	$dbh_postgresql='';
+	while($tries < 4){
+		$dbh_postgresql='';
+		$dbh_postgresql=postgresqlDBConnect($params);
+		if(is_resource($dbh_postgresql) || is_object($dbh_postgresql)){
+			break;
+		}
+		sleep(2);
+	}
+	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+		debugValue(array(
+			'function'=>'postgresqlAddDBRecordsProcess',
+			'message'=>'postgresqlDBConnect error',
+			'error'=>"Connect Error" . pg_last_error(),
+		));
+		return 0;
+	}
 	$fieldstr=implode(',',$fields);
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
@@ -187,25 +207,6 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			if(isset($params['-upsertwhere'])){
 				$query.="WHERE {$params['-upsertwhere']}".PHP_EOL;
 			}
-		}
-		//echo $query.$jsonstr;exit;
-		$dbh_postgresql='';
-		while($tries < 4){
-			$dbh_postgresql='';
-			$dbh_postgresql=postgresqlDBConnect($params);
-			if(is_resource($dbh_postgresql) || is_object($dbh_postgresql)){
-				break;
-			}
-			sleep(2);
-		}
-		if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
-			debugValue(array(
-				'function'=>'postgresqlAddDBRecordsProcess',
-				'message'=>'postgresqlDBConnect error',
-				'error'=>"Connect Error" . pg_last_error(),
-				'query'=>$query,
-			));
-			return 0;
 		}
 		//echo $query;exit;
 		try{
