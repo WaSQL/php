@@ -162,12 +162,15 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		//store JSON in a temp file to allow larger datasets
 		$pvalues=array($jsonstr);
 		//define field_defs
+		//Acceptable datatypes for regular column of JSON table are VARCHAR(n), NVARCHAR(n), INT, BIGINT, DOUBLE, DECIMAL, SMALLDECIMAL, TIMESTAMP, SECONDDATE, DATE and TIME
 		$field_defs=array();
 		foreach($fields as $field){
 			switch(strtolower($fieldinfo[$field]['_dbtype'])){
 				case 'char':
-				case 'varchar':
 				case 'nchar':
+					$type=str_replace('char','varchar',$fieldinfo[$field]['_dbtype_ex']);
+				break;
+				case 'varchar':
 				case 'nvarchar':
 					$type=$fieldinfo[$field]['_dbtype_ex'];
 				break;
