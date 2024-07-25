@@ -84,12 +84,22 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	if(!isset($params['-table'])){
 		return debugValue("hanaAddDBRecordsProcess Error: no table"); 
 	}
+	if(!is_array($recs) || !count($recs)){
+		return debugValue("hanaAddDBRecordsProcess Error: recs is empty"); 
+	}
 	$table=$params['-table'];
 	if(isset($params['-fieldinfo'])){
 		$fieldinfo=$params['-fieldinfo'];
 	}
 	else{
 		$fieldinfo=hanaGetDBFieldInfo($table,1);
+	}
+	//indexes must be normal - fix if not
+	if(!isset($recs[0])){
+		$xrecs=array();
+		foreach($recs as $rec){$xrecs[]=$rec;}
+		$recs=$xrecs;
+		unset($xrecs);
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -150,17 +160,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			return 0;
 		}
 		//store JSON in a temp file to allow larger datasets
-		$tpath=getWaSQLTempPath();
-		$tfile=sha1($jsonstr).'.odbc';
-		$atfile=str_replace("\\",'/',"{$tpath}/{$tfile}");
-		$atfile=str_replace('//','/',$atfile);
-		$ok=setFileContents($atfile,$jsonstr);
-		if(file_exists($atfile) && filesize($atfile)>100){
-			$pvalues=array("'{$atfile}'");
-		}
-		else{
-			$pvalues=array($jsonstr);
-		}
+		$pvalues=array($jsonstr);
 		//define field_defs
 		$field_defs=array();
 		foreach($fields as $field){
@@ -201,6 +201,23 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					));
 					return 0;
 				}
+				//$ok=commonCronLog($rec);
+			}
+			else{
+				if(file_exists($atfile)){unlink($atfile);}
+				$drec=array();
+				foreach($recs as $drec){
+					break;
+				}
+				debugValue(array(
+					'function'=>'hanaAddDBRecordsProcess',
+					'message'=>'odbc prepare error for selectquery',
+					'error'=>odbc_errormsg(),
+					'query'=>$selectquery,
+					'first_record'=>$drec,
+					'pvalues'=>$pvalues
+				));
+				return 0;
 			}
 		}
 		//echo "JSON".count($recs).printValue($params);exit;
@@ -247,11 +264,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		}
 		else{
 			$query="INSERT INTO {$table} ({$fieldstr}) ( ".PHP_EOL;
-			$query.="SELECT {$fieldstr} FROM JSON_TABLE(?,'\$[*]' COLUMNS (".PHP_EOL; 
-			//insert field_defs into query
-        	$query.=implode(','.PHP_EOL,$field_defs); 
-        	$query.="		)".PHP_EOL; 
-    		$query.="	) jt".PHP_EOL;
+			$query.=$selectquery;
 			$query.=')';
 		}
 		//echo nl2br($query).printValue($pvalues).printValue($params);exit;
@@ -270,11 +283,6 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			}
 			else{
 				if(file_exists($atfile)){unlink($atfile);}
-				if(is_resource($dbh_hana) && stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
-					$error=odbc_errormsg($dbh_hana);
-					odbc_close($dbh_hana);
-				}
-				else{$error=odbc_error();}
 				$drec=array();
 				foreach($recs as $drec){
 					break;
@@ -282,9 +290,8 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				debugValue(array(
 					'function'=>'hanaAddDBRecordsProcess',
 					'message'=>'odbc execute error',
-					'error'=>$error,
+					'error'=>odbc_errormsg(),
 					'query'=>$query,
-					'params'=>$params,
 					'first_record'=>$drec
 				));
 				return 0;
@@ -292,11 +299,6 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		}
 		else{
 			if(file_exists($atfile)){unlink($atfile);}
-			if(is_resource($dbh_hana) && stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
-				$error=odbc_errormsg($dbh_hana);
-				odbc_close($dbh_hana);
-			}
-			else{$error=odbc_error();}
 			$drec=array();
 			foreach($recs as $drec){
 				break;
@@ -304,9 +306,8 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			debugValue(array(
 				'function'=>'hanaAddDBRecordsProcess',
 				'message'=>'odbc prepare error',
-				'error'=>$error,
+				'error'=>odbc_errormsg(),
 				'query'=>$query,
-				'params'=>$params,
 				'first_record'=>$drec
 			));
 			return 0;
