@@ -69,6 +69,9 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	if(!isset($params['-table'])){
 		return debugValue("postgresqlAddDBRecordsProcess Error: no table"); 
 	}
+	if(!is_array($recs) || !count($recs)){
+		return debugValue("postgresqlAddDBRecordsProcess Error: recs is empty"); 
+	}
 	$table=$params['-table'];
 	if(isset($params['-fieldinfo']) && is_array($params['-fieldinfo'])){
 		$fieldinfo=$params['-fieldinfo'];
@@ -90,6 +93,13 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			'message'=>'No fieldinfo'
 		));
 		return 0;
+	}
+	//indexes must be normal - fix if not
+	if(!isset($recs[0])){
+		$xrecs=array();
+		foreach($recs as $rec){$xrecs[]=$rec;}
+		$recs=$xrecs;
+		unset($xrecs);
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -132,26 +142,26 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	$fieldstr=implode(',',$fields);
-	$field_defs=array();
-	foreach($fields as $field){
-		switch(strtolower($fieldinfo[$field]['_dbtype'])){
-			case 'char':
-			case 'varchar':
-			case 'nchar':
-			case 'nvarchar':
-				$type=$fieldinfo[$field]['_dbtype_ex'];
-			break;
-			default:
-				$type=$fieldinfo[$field]['_dbtype'];
-			break;
-		}
-		$field_defs[]="		{$field} {$type}";
-	}
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
+		$field_defs=array();
 		//echo count($recs).printValue($recs[0]);exit;
 		$pvalues=array($jsonstr);
+		foreach($fields as $field){
+			switch(strtolower($fieldinfo[$field]['_dbtype'])){
+				case 'char':
+				case 'varchar':
+				case 'nchar':
+				case 'nvarchar':
+					$type=$fieldinfo[$field]['_dbtype_ex'];
+				break;
+				default:
+					$type=$fieldinfo[$field]['_dbtype'];
+				break;
+			}
+			$field_defs[]="		{$field} {$type}";
+		}
 		$query="INSERT INTO {$table} as t1 ({$fieldstr}) ".PHP_EOL;
 		$query.="	SELECT {$fieldstr} FROM json_to_recordset(\$1) AS jt(".PHP_EOL;
 		//insert field_defs into query 
@@ -217,15 +227,8 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			$err=pg_last_error($dbh_postgresql);
 			//$ok=postgresqlExecuteSQL($query);
 			if(strlen($err)){
-				$drecs=array();
-				$xchunks=array_chunk($pvalues,count($fields));
-				foreach($xchunks as $xchunk){
-					$rec=array();
-					foreach($fields as $i=>$fld){
-						//if($fld != 'dist_id'){continue;}
-						$fld="{$fld} ({$fieldinfo[$fld]['_dbtype']})";
-						$drecs[$fld][$xchunk[$i]]+=1;
-					}
+				$drec=array();
+				foreach($recs as $drec){
 					break;
 				}
 				debugValue(array(
@@ -234,7 +237,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 					'error'=>$err,
 					'query'=>$query,
 					'p'=>$p,
-					'first_record'=>$drecs
+					'first_record'=>$drec
 				));
 				return 0;
 			}
