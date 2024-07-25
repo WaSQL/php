@@ -95,8 +95,18 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 	if(!isset($params['-table'])){
 		return debugValue("sqliteAddDBRecordsProcess Error: no table"); 
 	}
+	if(!is_array($recs) || !count($recs)){
+		return debugValue("sqliteAddDBRecordsProcess Error: recs is empty"); 
+	}
 	$table=$params['-table'];
 	$fieldinfo=sqliteGetDBFieldInfo($table,1);
+	//indexes must be normal - fix if not
+	if(!isset($recs[0])){
+		$xrecs=array();
+		foreach($recs as $rec){$xrecs[]=$rec;}
+		$recs=$xrecs;
+		unset($xrecs);
+	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -1343,6 +1353,7 @@ function sqliteTruncateDBTable($table){
 * @usage $recs=sqliteQueryResults('select top 50 * from abcschema.abc');
 */
 function sqliteQueryResults($query,$params=array()){
+	echo $query.'<br>';
 	global $DATABASE;
 	$DATABASE['_lastquery']=array(
 		'start'=>microtime(true),
