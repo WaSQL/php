@@ -77,67 +77,24 @@ function mysqlAddDBRecords($table='',$params=array()){
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
-			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no such file: {$params['-csv']}";
-			debugValue($mysqlAddDBRecordsResults['errors']);
-			$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: no such file';
-			return 0;
+			$err="mysqlAddDBRecords Error: no such file: {$params['-csv']}";
+			debugValue($err);
+		return $err;
 		}
-		$afile=$params['-csv'];
-		unset($params['-csv']);
-		$ok=processCSVLines($afile,'mysqlAddDBRecordsCSVLine',$params);
-		if(count($mysqlAddDBRecordsArr)){
-			$mysqlAddDBRecordsResults['counts'][]=mysqlAddDBRecordsProcess($mysqlAddDBRecordsArr,$params);
-			$mysqlAddDBRecordsArr=array();
-		}
-		if(is_array($mysqlAddDBRecordsResults['counts'])){
-			return array_sum($mysqlAddDBRecordsResults['counts']);
-		}
-		return 0;
+		return processCSVLines($params['-csv'],'mysqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
-			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no recs";
-			debugValue($mysqlAddDBRecordsResults['errors']);
-			$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: no recs';
-			return 0;
+			$err="mysqlAddDBRecords Error: no recs";
+			debugValue($err);
+			return $err;
 		}
 		elseif(!count($params['-recs'])){
-			$mysqlAddDBRecordsResults['errors'][]="mysqlAddDBRecords Error: no recs";
-			debugValue($mysqlAddDBRecordsResults['errors']);
-			$DATABASE['_lastquery']['error']='query error: mysqlAddDBRecords Error: no recs';
-			return 0;
+			$err="mysqlAddDBRecords Error: no recs";
+			debugValue($err);
+			return $err;
 		}
-		$chunks=array_chunk($params['-recs'], $params['-chunk']);
-		$rtn=array();
-		foreach($chunks as $chunk){
-			$rtn[]=mysqlAddDBRecordsProcess($chunk,$params);
-		}
-		return array_sum($rtn);
-	}
-}
-function mysqlAddDBRecordsCSVLine($line,$params){
-	global $mysqlAddDBRecordsArr;
-	global $mysqlAddDBRecordsResults;
-	//check to see if this is an array of rows or just one
-	if(!isset($line['line']) && is_array($line)){
-		$mysqlAddDBRecordsArr=array_merge($mysqlAddDBRecordsArr,$line);
-	}
-	else{
-		//make sure this is not a blank row
-		$vcnt=0;
-		foreach($line['line'] as $k=>$v){
-			if(commonStrlen($v)){
-				$vcnt+=1;
-				break;
-			}
-		}
-		if($vcnt==0){return;}
-		$mysqlAddDBRecordsArr[]=$line['line'];
-		unset($line['line']);
-	}
-	if(count($mysqlAddDBRecordsArr) >= (integer)$params['-chunk']){
-		$mysqlAddDBRecordsResults['counts'][]=mysqlAddDBRecordsProcess($mysqlAddDBRecordsArr,$params);
-		$mysqlAddDBRecordsArr=array();
+		return mysqlAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function mysqlAddDBRecordsProcess($recs,$params=array()){
@@ -146,26 +103,41 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	global $DATABASE;
 	global $mysqlAddDBRecordsResults;
 	if(!isset($params['-table'])){
-		$err="mysqlAddDBRecordsProcess Error: no table";
-		$mysqlAddDBRecordsResults['errors'][]=$err;
-		$DATABASE['_lastquery']['error']='Error: no table';
+		debugValue("mysqlAddDBRecordsProcess Error: no table"); 
 		return 0;
 	}
-	$rec_cnt=count($recs);
-	//$dbh_mysql->set_charset("utf8mb4");
+	if(!is_array($recs) || !count($recs)){
+		debugValue("mysqlAddDBRecordsProcess Error: recs is empty"); 
+		return 0;
+	}
 	$table=$params['-table'];
-	$fieldinfo=mysqlGetDBFieldInfo($table,1);
-	//add _cdate and _cuser if table has those fields
-	if(isset($fieldinfo['_cuser'])){
-		$cdate=date('Y-m-d H:i:s');
-		foreach($recs as $i=>$rec){
-			if(!isset($recs[$i]['_cuser'])){
-				$recs[$i]['_cuser']=isset($USER['_id'])?$USER['_id']:0;
+	if(isset($params['-fieldinfo']) && is_array($params['-fieldinfo'])){
+		$fieldinfo=$params['-fieldinfo'];
+	}
+	else{
+		$tries=0;
+		while($tries < 10){
+			$fieldinfo=mysqlGetDBFieldInfo($table,1);
+			if(is_array($fieldinfo) && count($fieldinfo)){
+				break;
 			}
-			if(!isset($recs[$i]['_cdate'])){
-				$recs[$i]['_cdate']=$cdate;
-			}
+			$tries+=1;
+			sleep(5);	
 		}
+	}
+	if(!is_array($fieldinfo) || !count(($fieldinfo))){
+		debugValue(array(
+			'function'=>'mysqlAddDBRecordsProcess',
+			'message'=>'No fieldinfo'
+		));
+		return 0;
+	}
+	//indexes must be normal - fix if not
+	if(!isset($recs[0])){
+		$xrecs=array();
+		foreach($recs as $rec){$xrecs[]=$rec;}
+		$recs=$xrecs;
+		unset($xrecs);
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -179,10 +151,30 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	//if -map2json then map the whole record to this field
+	if(isset($params['-map2json'])){
+		$jsonkey=$params['-map2json'];
+		foreach($recs as $i=>$rec){
+			$recs[$i]=array($jsonkey=>$rec);
+		}
+	}
+	//ignore or upsert?
+	$ignore='';
+	if(isset($params['-upsert'])){
+		if(!is_array($params['-upsert'])){
+			if(strtolower($params['-upsert'])=='ignore'){
+				$ignore=' IGNORE';
+				unset($params['-upsert']);
+			}
+			else{
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+		}
+	}
 	//fields
 	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
 			if(!isset($fieldinfo[$k])){
 				unset($recs[$i][$k]);
 				continue;
@@ -191,36 +183,121 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		break;
 	}
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'mysqlAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
+	}
+	//verify we can connect to the db
+	$dbh_mysql='';
+	while($tries < 4){
+		$dbh_mysql='';
+		$dbh_mysql=mysqlDBConnect($params);
+		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+			break;
+		}
+		sleep(2);
+	}
+	if(!is_resource($dbh_mysql) && !is_object($dbh_mysql)){
+		debugValue(array(
+			'function'=>'mysqlAddDBRecordsProcess',
+			'message'=>'mysqlDBConnect error',
+			'error'=>"Connect Error" . pg_last_error(),
+		));
+		return 0;
+	}
 	$fieldstr=implode(',',$fields);
-	if(isset($params['-upsert'])){
-		if(!is_array($params['-upsert'])){
-			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
-		}
-	}
-	if(isset($params['-ignore']) && !isset($params['-upsert'])){
-		$params['-upsert']=array('ignore');
-	}
-	$ignore='';
-	if(isset($params['-upsert'][0]) && strtolower($params['-upsert'][0])=='ignore'){
-		$ignore='IGNORE';
-		unset($params['-upsert']);
-	}
-	elseif(isset($params['-upsert'][0]) && isset($fieldinfo['_euser'])){
-		//update _edate and _euser if editing the record
-		$edate=date('Y-m-d H:i:s');
-		$eu=in_array('_euser',$params['-upsert']);
-		$ed=in_array('_edate',$params['-upsert']);
-		foreach($recs as $i=>$rec){
-			if($eu && !isset($recs[$i]['_euser'])){
-				$recs[$i]['_euser']=$USER['_id'];
+	//if possible use the JSON way so we can insert more efficiently
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
+	if(strlen($jsonstr)){
+		//store JSON in a temp file to allow larger datasets
+		$pvalues=array($jsonstr);
+		//define field_defs
+		//Acceptable datatypes for regular column of JSON table are VARCHAR(n), NVARCHAR(n), INT, BIGINT, DOUBLE, DECIMAL, SMALLDECIMAL, TIMESTAMP, SECONDDATE, DATE and TIME
+		$field_defs=array();
+		foreach($fields as $field){
+			switch(strtolower($fieldinfo[$field]['_dbtype'])){
+				case 'char':
+				case 'nchar':
+					$type=str_replace('char','varchar',$fieldinfo[$field]['_dbtype_ex']);
+				break;
+				case 'varchar':
+				case 'nvarchar':
+					$type=$fieldinfo[$field]['_dbtype_ex'];
+				break;
+				case 'tinyint':
+				case 'smallint':
+				case 'integer':
+					$type='int';
+				break;
+				default:
+					$type=$fieldinfo[$field]['_dbtype'];
+				break;
 			}
-			if($ed && !isset($recs[$i]['_edate'])){
-				$recs[$i]['_edate']=$edate;
+			$type=str_replace('NOT NULL','',$type);
+			$type=str_replace('PRIMARY KEY','',$type);
+			$type=trim($type);
+			$field_defs[]="		{$field} {$type} PATH '\$.{$field}'";
+		}
+		//build and test selectquery
+		$selectquery="SELECT {$fieldstr} FROM JSON_TABLE(?,'\$[*]' COLUMNS (".PHP_EOL;
+		//insert field_defs into query 
+    	$selectquery.=implode(','.PHP_EOL,$field_defs); 
+    	$selectquery.="		)".PHP_EOL; 
+		$selectquery.="	) AS new".PHP_EOL;
+		
+		$query="INSERT{$ignore} INTO {$table} ({$fieldstr})".PHP_EOL;
+		$query.="	".$selectquery;
+		//upsert?
+		if(isset($params['-upsert'][0])){
+			$query.=" ON DUPLICATE KEY UPDATE";
+			$upserts=$params['-upsert'];
+			//VALUES() to refer to the new row is deprecated with version 8.0.20+
+			$recs=mysqlQueryResults('SELECT VERSION() AS value');
+			$version=$recs[0];
+			list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
+			if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
+				//mysql version 8 and newer
+				$flds=array();
+				foreach($upserts as $fld){
+					$flds[]="{$fld}=new.{$fld}";
+				}
+				$query.=PHP_EOL.implode(', ',$flds);
+				if(isset($params['-upsertwhere']) && commonStrlen($params['-upsertwhere'])){
+					$query.=" WHERE {$params['-upsertwhere']}";
+				}
+				//echo printValue($params);exit;
+			}
+			else{
+				//before mysql version 8.0.20
+				$flds=array();
+				foreach($upserts as $fld){
+					$flds[]="{$fld}=VALUES({$fld})";
+				}
+				$query.=PHP_EOL.implode(', ',$flds);
+				//Note: Mysql does not support WHERE in an insert statement yet before version 8
 			}
 		}
+		//echo "<pre>{$query}</pre>";exit;
+		//prepare and execute
+		$stmt=mysqli_prepare($dbh_mysql,$query);
+		if(!is_resource($stmt) &&  !is_object($stmt)){
+			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+			debugValue(array($DATABASE['_lastquery']['error'],$query));
+			return 0;
+		}
+		if(mysqli_stmt_bind_param($stmt, 's',$jsonstr)){
+			mysqli_stmt_execute($stmt);
+			return count($recs);
+		}
+		return 0;
 	}
-	
-	$query="INSERT {$ignore} INTO {$table} ({$fieldstr}) VALUES ";
+	//JSON method did not work, try standard prepared statement method	
+	$query="INSERT{$ignore} INTO {$table} ({$fieldstr}) VALUES ";
 	$values=array();
 	$types=array();
 	$valuesets=array();

@@ -55,55 +55,24 @@ function mssqlAddDBRecords($table='',$params=array()){
 	}
 	if(isset($params['-csv'])){
 		if(!is_file($params['-csv'])){
-			$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: no such file: {$params['-csv']}";
-			debugValue($mssqlAddDBRecordsResults['errors']);
-			return 0;
+			$err="mssqlAddDBRecords Error: no such file: {$params['-csv']}";
+			debugValue($err);
+		return $err;
 		}
-		$afile=$params['-csv'];
-		unset($params['-csv']);
-		$ok=processCSVLines($afile,'mssqlAddDBRecordsCSVLine',$params);
-		if(count($mssqlAddDBRecordsArr)){
-			$mssqlAddDBRecordsResults['counts'][]=mssqlAddDBRecordsProcess($mssqlAddDBRecordsArr,$params);
-			$mssqlAddDBRecordsArr=array();
-		}
-		return array_sum($mssqlAddDBRecordsResults['counts']);
+		return processCSVLines($params['-csv'],'mssqlAddDBRecordsProcess',$params);
 	}
 	elseif(isset($params['-recs'])){
 		if(!is_array($params['-recs'])){
-			$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: no recs";
-			debugValue($mssqlAddDBRecordsResults['errors']);
-			return 0;
+			$err="mssqlAddDBRecords Error: no recs";
+			debugValue($err);
+			return $err;
 		}
 		elseif(!count($params['-recs'])){
-			$mssqlAddDBRecordsResults['errors'][]="mssqlAddDBRecords Error: no recs";
-			debugValue($mssqlAddDBRecordsResults['errors']);
-			return 0;
+			$err="mssqlAddDBRecords Error: no recs";
+			debugValue($err);
+			return $err;
 		}
-		$chunks=array_chunk($params['-recs'], $params['-chunk']);
-		$rtn=array();
-		foreach($chunks as $chunk){
-			$rtn[]=mssqlAddDBRecordsProcess($chunk,$params);
-		}
-		return array_sum($rtn);
-	}
-}
-function mssqlAddDBRecordsCSVLine($line,$params){
-	global $mssqlAddDBRecordsArr;
-	global $mssqlAddDBRecordsResults;
-	//make sure this is not a blank row
-	$vcnt=0;
-	foreach($line['line'] as $k=>$v){
-		if(strlen($v)){
-			$vcnt+=1;
-			break;
-		}
-	}
-	if($vcnt==0){return;}
-	$mssqlAddDBRecordsArr[]=$line['line'];
-	unset($line['line']);
-	if(count($mssqlAddDBRecordsArr) >= (integer)$params['-chunk']){
-		$mssqlAddDBRecordsResults['counts'][]=mssqlAddDBRecordsProcess($mssqlAddDBRecordsArr,$params);
-		$mssqlAddDBRecordsArr=array();
+		return mssqlAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
 function mssqlAddDBRecordsProcess($recs,$params=array()){
@@ -112,15 +81,41 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 	global $DATABASE;
 	global $mssqlAddDBRecordsResults;
 	if(!isset($params['-table'])){
-		$err="mssqlAddDBRecordsProcess Error: no table";
-		$mssqlAddDBRecordsResults['errors'][]=$err;
+		debugValue("mssqlAddDBRecordsProcess Error: no table"); 
 		return 0;
 	}
-	$rec_cnt=count($recs);
+	if(!is_array($recs) || !count($recs)){
+		debugValue("mssqlAddDBRecordsProcess Error: recs is empty"); 
+		return 0;
+	}
 	$table=$params['-table'];
-	$fieldinfo=mssqlGetDBFieldInfo($table,1);
-	if(!is_array($fieldinfo) || !count($fieldinfo)){
-		echo "no table fields for {$table}. Does table exist?";exit;
+	if(isset($params['-fieldinfo']) && is_array($params['-fieldinfo'])){
+		$fieldinfo=$params['-fieldinfo'];
+	}
+	else{
+		$tries=0;
+		while($tries < 10){
+			$fieldinfo=mssqlGetDBFieldInfo($table,1);
+			if(is_array($fieldinfo) && count($fieldinfo)){
+				break;
+			}
+			$tries+=1;
+			sleep(5);	
+		}
+	}
+	if(!is_array($fieldinfo) || !count(($fieldinfo))){
+		debugValue(array(
+			'function'=>'mssqlAddDBRecordsProcess',
+			'message'=>'No fieldinfo'
+		));
+		return 0;
+	}
+	//indexes must be normal - fix if not
+	if(!isset($recs[0])){
+		$xrecs=array();
+		foreach($recs as $rec){$xrecs[]=$rec;}
+		$recs=$xrecs;
+		unset($xrecs);
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -134,15 +129,153 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
-	//fields
-	$fields=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!isset($fieldinfo[$k])){continue;}
-			if(!in_array($k,$fields)){$fields[]=$k;}
+	//if -map2json then map the whole record to this field
+	if(isset($params['-map2json'])){
+		$jsonkey=$params['-map2json'];
+		foreach($recs as $i=>$rec){
+			$recs[$i]=array($jsonkey=>$rec);
 		}
 	}
+	//fields
+	$fields=array();
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){
+				unset($recs[$i][$k]);
+				continue;
+			}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+		break;
+	}
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'mssqlAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
+	}
+	//verify we can connect to the db
+	$dbh_mssql='';
+	while($tries < 4){
+		$dbh_mssql='';
+		$dbh_mssql=mssqlDBConnect($params);
+		if(is_resource($dbh_mssql) || is_object($dbh_mssql)){
+			break;
+		}
+		sleep(2);
+	}
+	if(!is_resource($dbh_mssql) && !is_object($dbh_mssql)){
+		debugValue(array(
+			'function'=>'mssqlAddDBRecordsProcess',
+			'message'=>'mssqlDBConnect error',
+			'error'=>"Connect Error" . pg_last_error(),
+		));
+		return 0;
+	}
 	$fieldstr=implode(',',$fields);
+	//if possible use the JSON way so we can insert more efficiently
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
+	if(strlen($jsonstr)){
+		$field_defs=array();
+		//echo count($recs).printValue($recs[0]);exit;
+		$pvalues=array($jsonstr);
+		foreach($fields as $field){
+			switch(strtolower($fieldinfo[$field]['_dbtype'])){
+				case 'char':
+				case 'varchar':
+				case 'nchar':
+				case 'nvarchar':
+					$type=$fieldinfo[$field]['_dbtype_ex'];
+				break;
+				default:
+					$type=$fieldinfo[$field]['_dbtype'];
+				break;
+			}
+			$field_defs[]="		{$field} {$type} '$.{$field}'";
+		}
+		//build selectquery
+		$selectquery="	SELECT * from OPENJSON(?)".PHP_EOL;
+		$selectquery.="	WITH (".PHP_EOL;
+		//insert field_defs into query 
+		$selectquery.=implode(','.PHP_EOL,$field_defs);
+		$selectquery.="	)".PHP_EOL;
+		//echo $selectquery.printValue($params);exit;
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			if(!is_array($params['-upsert'])){
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+			if(!is_array($params['-upserton'])){
+				$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+			}
+			$query="MERGE INTO {$table} AS target USING (".PHP_EOL;
+			$query.=$selectquery.PHP_EOL;
+			$query.=") AS source".PHP_EOL;
+			$query.="({$fieldstr}) ON ".PHP_EOL;
+			$onflds=array();
+			foreach($params['-upserton'] as $fld){
+				$onflds[]="target.{$fld}=source.{$fld}";
+			}
+			$query .= implode(' AND ',$onflds).PHP_EOL;
+
+			$query.="WHEN NOT MATCHED BY TARGET THEN".PHP_EOL;
+			$query.="INSERT ({$fieldstr}) VALUES (".PHP_EOL;
+			$flds=array();
+			foreach($fields as $fld){
+				$flds[]="source.{$fld}";
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+			$query .= ');';
+		}
+		else{
+			$query="INSERT INTO {$table} ({$fieldstr})".PHP_EOL;
+			$query.=$selectquery.PHP_EOL;
+		}
+		$stmt = sqlsrv_prepare($dbh_mssql, $query,$pvalues);
+		//echo "stmt".printValue($stmt);
+		if (!($stmt)){
+			$errors=(array)sqlsrv_errors();
+			sqlsrv_close($dbh_mssql);
+			//echo printValue($errors[0]['message']);exit;
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlAddDBRecordsProcess',
+					'message'=>'prepare failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
+	    	return 0;
+	    }
+		if( sqlsrv_execute($stmt) === false ) {
+			$errors=(array)sqlsrv_errors();
+			sqlsrv_close($dbh_mssql);
+			//echo printValue($errors[0]['message']);exit;
+			if(isset($errors[0]['message'])){
+				$errors=array(
+					'function'=>'mssqlAddDBRecordsProcess',
+					'message'=>'execute failed',
+					'error'=>$errors[0]['message'],
+					'query'=>$query,
+					'values'=>$values
+				);
+				debugValue($errors);
+			}
+			else{
+				debugValue($errors);
+			}
+	    	return 0;
+		}
+		return count($recs);
+	}
+	//JSON method did not work, try standard prepared statement method
 	//build values, types and valuesets
 	$values=array();
 	$types=array();

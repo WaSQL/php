@@ -1353,7 +1353,7 @@ function sqliteTruncateDBTable($table){
 * @usage $recs=sqliteQueryResults('select top 50 * from abcschema.abc');
 */
 function sqliteQueryResults($query,$params=array()){
-	echo $query.'<br>';
+	//echo $query.'<br>';
 	global $DATABASE;
 	$DATABASE['_lastquery']=array(
 		'start'=>microtime(true),
@@ -1381,7 +1381,14 @@ function sqliteQueryResults($query,$params=array()){
 			debugValue($DATABASE['_lastquery']);
 			return array();
 		}
-		$recs=sqliteEnumQueryResults($results,$params);
+		//only call enumQueryResults if there are results:
+		//reference: https://codeplea.com/php-sql-query-executing-twice
+		if($results->numColumns()){
+			$recs=sqliteEnumQueryResults($results,$params);	
+		}
+		else{
+			$recs=array(array('result'=>'success'));
+		}
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $recs;
