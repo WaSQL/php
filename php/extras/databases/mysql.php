@@ -214,8 +214,6 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
-		//store JSON in a temp file to allow larger datasets
-		$pvalues=array($jsonstr);
 		//define field_defs
 		//Acceptable datatypes for regular column of JSON table are VARCHAR(n), NVARCHAR(n), INT, BIGINT, DOUBLE, DECIMAL, SMALLDECIMAL, TIMESTAMP, SECONDDATE, DATE and TIME
 		$field_defs=array();

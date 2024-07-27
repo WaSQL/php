@@ -58,29 +58,43 @@ function oracleAddDBRecords($table='',$params=array()){
 	}
 }
 function oracleAddDBRecordsProcess($recs,$params=array()){
+	global $dbh_oracle;
 	if(!isset($params['-table'])){
-		return debugValue("oracleAddDBRecordsProcess Error: no table"); 
+		debugValue("oracleAddDBRecordsProcess Error: no table"); 
+		return 0;
 	}
-	//echo printValue($recs).printValue($params);exit;
+	if(!is_array($recs) || !count($recs)){
+		debugValue("oracleAddDBRecordsProcess Error: recs is empty"); 
+		return 0;
+	}
 	$table=$params['-table'];
-	$fields=array();
-	if(!isset($params['-fields'])){
-		$fieldinfo=oracleGetDBFieldInfo($table,1);
-		foreach($recs as $i=>$rec){
-			foreach($rec as $k=>$v){
-				if(!isset($fieldinfo[$k])){continue;}
-				if(!in_array($k,$fields)){$fields[]=$k;}
-			}
-		}
+	if(isset($params['-fieldinfo']) && is_array($params['-fieldinfo'])){
+		$fieldinfo=$params['-fieldinfo'];
 	}
 	else{
-		if(!is_array($params['-fields'])){
-			$params['-fields']=preg_split('/\,/',$params['-fields']);
-			foreach($params['-fields'] as $i=>$v){
-				$params['-fields'][$i]=trim($v);
+		$tries=0;
+		while($tries < 10){
+			$fieldinfo=oracleGetDBFieldInfo($table,1);
+			if(is_array($fieldinfo) && count($fieldinfo)){
+				break;
 			}
+			$tries+=1;
+			sleep(5);	
 		}
-		$fields=$params['-fields'];
+	}
+	if(!is_array($fieldinfo) || !count(($fieldinfo))){
+		debugValue(array(
+			'function'=>'oracleAddDBRecordsProcess',
+			'message'=>'No fieldinfo'
+		));
+		return 0;
+	}
+	//indexes must be normal - fix if not
+	if(!isset($recs[0])){
+		$xrecs=array();
+		foreach($recs as $rec){$xrecs[]=$rec;}
+		$recs=$xrecs;
+		unset($xrecs);
 	}
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
@@ -94,8 +108,205 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	//if -map2json then map the whole record to this field
+	if(isset($params['-map2json'])){
+		$jsonkey=$params['-map2json'];
+		foreach($recs as $i=>$rec){
+			$recs[$i]=array($jsonkey=>$rec);
+		}
+	}
+	//ignore or upsert?
+	$ignore='';
+	if(isset($params['-upsert'])){
+		if(!is_array($params['-upsert'])){
+			if(strtolower($params['-upsert'])=='ignore'){
+				$ignore=' IGNORE';
+				unset($params['-upsert']);
+			}
+			else{
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+		}
+	}
 	//fields
+	$fields=array();
+	foreach($recs as $i=>$first_rec){
+		foreach($first_rec as $k=>$v){
+			if(!isset($fieldinfo[$k])){
+				unset($recs[$i][$k]);
+				continue;
+			}
+			if(!in_array($k,$fields)){$fields[]=$k;}
+		}
+		break;
+	}
+	if(!count($fields)){
+		debugValue(array(
+			'function'=>'oracleAddDBRecordsProcess',
+			'message'=>'No fields in first_rec that match fieldinfo',
+			'first_rec'=>$first_rec,
+			'fieldinfo_keys'=>array_keys($fieldinfo)
+		));
+		return 0;
+	}
+	//verify we can connect to the db
+	$dbh_oracle='';
+	while($tries < 4){
+		$dbh_oracle='';
+		$dbh_oracle=oracleDBConnect($params);
+		if(is_resource($dbh_oracle) || is_object($dbh_oracle)){
+			break;
+		}
+		sleep(2);
+	}
+	if(!is_resource($dbh_oracle) && !is_object($dbh_oracle)){
+		debugValue(array(
+			'function'=>'oracleAddDBRecordsProcess',
+			'message'=>'oracleDBConnect error',
+			'error'=>"Connect Error" . pg_last_error(),
+		));
+		return 0;
+	}
 	$fieldstr=implode(',',$fields);
+	//if possible use the JSON way so we can insert more efficiently
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
+	if(strlen($jsonstr)){
+		//define field_defs
+		//Acceptable datatypes for regular column of JSON table are VARCHAR(n), NVARCHAR(n), INT, BIGINT, DOUBLE, DECIMAL, SMALLDECIMAL, TIMESTAMP, SECONDDATE, DATE and TIME
+		$field_defs=array();
+		foreach($fields as $field){
+			switch(strtolower($fieldinfo[$field]['_dbtype'])){
+				case 'char':
+				case 'nchar':
+					$type=str_replace('char','varchar',$fieldinfo[$field]['_dbtype_ex']);
+				break;
+				case 'varchar':
+				case 'nvarchar':
+					$type=$fieldinfo[$field]['_dbtype_ex'];
+				break;
+				case 'tinyint':
+				case 'smallint':
+				case 'integer':
+					$type='int';
+				break;
+				default:
+					$type=$fieldinfo[$field]['_dbtype'];
+				break;
+			}
+			$type=str_replace('NOT NULL','',$type);
+			$type=str_replace('PRIMARY KEY','',$type);
+			$type=trim($type);
+			$field_defs[]="		{$field} {$type} PATH '\$.{$field}'";
+		}
+		//build and test selectquery
+		$selectquery="SELECT {$fieldstr} FROM JSON_TABLE(:text_jsonstr,'\$[*]' COLUMNS (".PHP_EOL;
+		//insert field_defs into query 
+    	$selectquery.=implode(','.PHP_EOL,$field_defs); 
+    	$selectquery.="		)".PHP_EOL; 
+		$selectquery.="	) AS new".PHP_EOL;
+		if(isset($params['-upsert']) && isset($params['-upserton'])){
+			if(!is_array($params['-upsert'])){
+				$params['-upsert']=preg_split('/\,/',$params['-upsert']);
+			}
+			if(!is_array($params['-upserton'])){
+				$params['-upserton']=preg_split('/\,/',$params['-upserton']);
+			}
+			/*
+				MERGE INTO TABLE1 T1 
+				USING (
+					SELECT * FROM JSON_TABLE(
+				   	:json_string, '$[*]' COLUMNS ( 
+				      	first_name varchar2(200) PATH '$.firstName',
+				      	last_name varchar2(200) PATH '$.lastName' 
+				      	) 
+				    ) AS new
+				   ) T2
+				ON (    T1.ID = T2.ID
+				    AND T1.DATE = '23.09.2020')
+				WHEN MATCHED
+				 THEN 
+				    UPDATE SET T1.VALUE = T2.VALUE 
+				WHEN NOT MATCHED
+				THEN 
+				    INSERT(ID,DATE,VALUE) 
+				      VALUES(T2.ID,'23.09.2020',T2.VALUE);
+			*/
+			$query="MERGE INTO {$table} T1 USING ( ".PHP_EOL;
+			$query.=$selectquery.PHP_EOL;
+			$query.=PHP_EOL.') T2 ON ( '.PHP_EOL;
+			$onflds=array();
+			foreach($params['-upserton'] as $fld){
+				$onflds[]="	T1.{$fld}=T2.{$fld}".PHP_EOL;
+			}
+			$query .= implode(' AND ',$onflds).')';
+			$query .= PHP_EOL.'WHEN MATCHED THEN UPDATE SET'.PHP_EOL;
+			$flds=array();
+			foreach($params['-upsert'] as $fld){
+				$flds[]="	T1.{$fld}=T2.{$fld}".PHP_EOL;
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+			if(isset($params['-upsertwhere'])){
+				$query.=PHP_EOL."WHERE {$params['-upsertwhere']}";
+			}
+			$query .= PHP_EOL."WHEN NOT MATCHED THEN INSERT";
+			$query .= PHP_EOL."({$fieldstr})";
+			$query .= PHP_EOL."VALUES ( ";
+			$flds=array();
+			foreach($fields as $fld){
+				$flds[]="	T2.{$fld}".PHP_EOL;
+			}
+			$query.=PHP_EOL.implode(', ',$flds);
+			$query .= ')';
+		}
+		else{
+			$query="INSERT INTO {$table} ({$fieldstr})".PHP_EOL;
+			$query.=$selectquery.PHP_EOL;
+		}
+		//prepare and execute
+		//echo "<pre>{$query}</pre>";exit;
+		if(!is_null($dbh_oracle=oracleDBConnect())){
+			if($stid = oci_parse($dbh_oracle,$query)){
+				$clob = oci_new_descriptor($dbh_oracle, OCI_D_LOB);
+				if(oci_bind_by_name($stid, ':text_jsonstr', $clob, -1, OCI_B_CLOB)){
+					$clob->writetemporary($jsonstr);
+					if(oci_execute($stid)){
+						return count($recs);
+					}
+					else{
+						debugValue(array(
+				    		'function'=>"oracleAddDBRecordsProcess",
+				    		'action'=>'oci_execute',
+				    		'error'=>oci_error($stid),
+				    		'query'=>$query
+				    	));
+				    	oci_free_statement($stid);
+				    	return 0;
+					}
+				}
+				else{
+					debugValue(array(
+			    		'function'=>"oracleAddDBRecordsProcess",
+			    		'action'=>'oci_bind_by_name',
+			    		'error'=>oci_error($dbh_oracle),
+			    		'query'=>$query
+			    	));
+			    	oci_free_statement($stid);
+			    	return 0;
+				}
+			}
+			else{
+				debugValue(array(
+		    		'function'=>"oracleAddDBRecordsProcess",
+		    		'action'=>'oci_parse',
+		    		'error'=>oci_error($dbh_oracle),
+		    		'query'=>$query
+		    	));
+		    	return 0;
+			}
+		}
+		return 0;
+	}
+	//JSON method did not work, try standard prepared statement method
 	//values
 	$values=array();
 	foreach($recs as $i=>$rec){
@@ -170,12 +381,45 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 		$query.=implode(PHP_EOL.'UNION ALL'.PHP_EOL,$values);
 		$query.=PHP_EOL.') SELECT * FROM vals';
 	}
-	//echo nl2br($query);exit;
-	$ok=oracleExecuteSQL($query);
-	if(isset($params['-debug'])){
-		return printValue($ok).$query;
+	if(!is_null($dbh_oracle=oracleDBConnect())){
+		if($stid = oci_parse($dbh_oracle,$query)){
+			if(oci_bind_by_name($stid, ":text_jsonstr", $jsonstr,-1,SQLT_LNG)){
+				if(oci_execute($stid)){
+					oci_commit($dbh_oracle);
+					return count($recs);
+				}
+				else{
+					oci_free_statement($stid);
+					debugValue(array(
+			    		'function'=>"oracleAddDBRecordsProcess",
+			    		'action'=>'oci_execute',
+			    		'error'=>oci_error($dbh_oracle),
+			    		'query'=>$query
+			    	));
+			    	return 0;
+				}
+			}
+			else{
+				oci_free_statement($stid);
+				debugValue(array(
+		    		'function'=>"oracleAddDBRecordsProcess",
+		    		'action'=>'oci_bind_by_name',
+		    		'error'=>oci_error($dbh_oracle),
+		    		'query'=>$query
+		    	));
+		    	return 0;
+			}
+		}
+		else{
+			debugValue(array(
+	    		'function'=>"oracleAddDBRecordsProcess",
+	    		'action'=>'oci_parse',
+	    		'error'=>oci_error($dbh_oracle),
+	    		'query'=>$query
+	    	));
+	    	return 0;
+		}
 	}
-	return count($values);
 }
 function oracleEscapeString($str){
 	$str = str_replace("'","''",$str);
