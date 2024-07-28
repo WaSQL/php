@@ -75,9 +75,46 @@
 </view:encode_decode_forms>
 
 <view:encode_form>
-<h3 class="w_noprint"><?=$type;?> Generater</h3>
 <div class="w_noprint">
-<form method="POST" name="encode_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results');">
+<form method="POST" name="encode_form" enctype="multipart/form-data" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results');">
+	<div style="display:flex;justify-content: space-between;">
+		<h3 class="w_noprint"><?=$type;?> Generater</h3>
+		<view:qrcode_sizes>
+			<div style="display:flex;flex:1;flex-wrap:wrap;margin-bottom:10px;">
+				<div style="margin-left:15px;">
+					<div><label>Logo (optional)</label></div>
+					<input type="hidden" value="/php/temp" name="logo_path">
+					<input type="hidden" value="1" name="logo_autonumber">
+					<input type="file" name="logo" accept="image/*" capture="user">
+				</div>
+				<div style="margin-left:15px;">
+					<div><label>Transparent</label></div>
+					<select name="transparent" class="select" style="width:" required>
+						<option value="0" selected>No</option>
+						<option value="1">Yes</option>
+					</select>
+				</div>
+				<div style="margin-left:15px;">
+					<label>Error Level</label>
+					<select name="eclevel" class="select" required>
+						<option value="L">L - up to 7% damage</option>
+						<option value="M">M - up to 15% damage</option>
+						<option value="Q">Q - up to 25% damage</option>
+						<option value="H" selected>H - up to 30% damage</option>
+					</select>
+				</div>
+				<div style="margin-left:15px;">
+					<div><label>Size</label></div>
+					<input type="number" min="1" mask="[0-9]" name="size" class="input" value="5" style="width:80px;" required>
+				</div>
+				<div style="margin-left:15px;">
+					<div><label>Margin</label></div>
+					<input type="number" min="0" mask="[0-9]" name="margin" class="input" value="4" style="width:80px;" required>
+				</div>
+			</div>
+		</view:qrcode_sizes>
+		<?=renderViewIf($type=='qrcode','qrcode_sizes');?>
+	</div>
 	<input type="hidden" name="_menu" value="decode">
 	<input type="hidden" name="func" value="<?=$type;?>">
 	<textarea cols="7" rows="10" wrap="off" autofocus="true" name="content" class="form-control" placeholder="One per line"></textarea>

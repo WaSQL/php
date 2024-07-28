@@ -59,15 +59,28 @@
 		break;
 		case 'qrcode':
 			loadExtras('qrcode');
+			$ok=processFileUploads();
+			$ok=processInlineFiles();
 			$lines=preg_split('/[\r\n]+/',trim($_REQUEST['content']));
 			$codes=array();
+			$eclevel=isNum($_REQUEST['eclevel'])?$_REQUEST['eclevel']:'H';
+			$size=isNum($_REQUEST['size'])?$_REQUEST['size']:5;
+			$qty=isNum($_REQUEST['qty'])?$_REQUEST['qty']:5;
+			$margin=isNum($_REQUEST['margin'])?$_REQUEST['margin']:4;
+			$transparent=isNum($_REQUEST['transparent'])?$_REQUEST['transparent']:0;
+			//echo printValue($_REQUEST).printValue($_FILES);exit;
 			foreach($lines as $url){
-				$qrcode=qrcodeCreate($url,'','H',5);
+				if(isset($_REQUEST['logo_abspath']) && file_exists($_REQUEST['logo_abspath'])){
+					$qrcode=qrcodeCreateWithLogo($url,$_REQUEST['logo_abspath'],$transparent,$eclevel,$size,$margin);
+				}
+				else{
+					$qrcode=qrcodeCreate($url,'',$eclevel,$size,$margin);
+				}
 				$b64=encodeBase64($qrcode);
 				$codes[]=<<<ENDOFCODE
 <div style="margin-bottom:20px;display:flex;flex-direction:column;align-items:center;">
 	<div><img src="data:image/png;base64,{$b64}"></div>
-	<div class="w_bold">{$url}</div>
+	<div>{$url}</div>
 </div>
 ENDOFCODE;
 			}
