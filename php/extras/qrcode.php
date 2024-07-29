@@ -18,12 +18,13 @@ require_once("{$progpath}/qrcode/phpqrcode.php");
 * @param [eclevel] integer- error correction level. L=up to 7% damage, M=up to 15% damage,Q=up to 25% damange, H=up to 30% damage. Defaults to M
 * @param [size] int - size of QRCode. Defaults to 3
 * @param [margin] int - margin of QRCode. Defaults to 4
+* @param [gdimage] 0|1 - if 1 then return the GDImage object
 * @return binary - binary qrcode
 * @usage 
 * 	$b64=encodeBase64(qrcodeCreate('http://www.yoursite.com'));
 * 	echo <<<ENDOFSTR<img src="data:image/png;base64,{$b64}">ENDOFSTR;
 */
-function qrcodeCreate($txt,$filename='',$eclevel='M', $size = 3, $margin = 4){
+function qrcodeCreate($txt,$filename='',$eclevel='M',$size=3,$margin=4,$gdimage=0){
 	switch(strtolower($eclevel)){
 		case 0:
 		case 'l':
@@ -48,12 +49,15 @@ function qrcodeCreate($txt,$filename='',$eclevel='M', $size = 3, $margin = 4){
 		$filename="{$wpath}/php/temp/".sha1($txt).'.png';
 		//$text, $outfile = false, $level = QR_ECLEVEL_L, $size = 3, $margin = 4
 		QRcode::png($txt,$filename,$eclevel,$size,$margin);
+		//return GDImage?
+    	if($gdimage==1){return imagecreatefrompng($filename);}
 		$data=file_get_contents($filename);
 		unlink($filename);
 		return $data;
 	}
 	else{
 		QRcode::png($txt,$filename,$eclevel,$size,$margin);
+		if($gdimage==1){return imagecreatefrompng($filename);}
 		return $filename;
 	}
 
@@ -68,12 +72,13 @@ function qrcodeCreate($txt,$filename='',$eclevel='M', $size = 3, $margin = 4){
 * @param [eclevel] integer- error correction level. L=up to 7% damage, M=up to 15% damage,Q=up to 25% damange, H=up to 30% damage. Defaults to M
 * @param [size] int - size of QRCode. Defaults to 5
 * @param [margin] int - margin of QRCode. Defaults to 4
+* @param [gdimage] 0|1 - if 1 then return the GDImage object
 * @return binary - binary qrcode
 * @usage 
 * 	$b64=encodeBase64(qrcodeCreateWithLogo('http://www.yoursite.com'),$logofile);
 *	echo <<<ENDOFSTR<img src="data:image/png;base64,{$b64}">ENDOFSTR;
 */
-function qrcodeCreateWithLogo($txt,$logo='',$transparent=0, $eclevel='M', $size = 4, $margin = 4){
+function qrcodeCreateWithLogo($txt,$logo='',$transparent=0, $eclevel='M', $size = 4, $margin = 4,$gdimage=0){
 	switch(strtolower($eclevel)){
 		case 0:
 		case 'l':
@@ -141,7 +146,8 @@ function qrcodeCreateWithLogo($txt,$logo='',$transparent=0, $eclevel='M', $size 
     $logo_qr_height = $logo_height/$scale;
 	//imagecolortransparent($QR, imagecolorallocate($logo, 255, 255, 255));
     imagecopyresampled($QR, $logo, $QR_width/3, $QR_height/3, 0, 0, $logo_qr_width, $logo_qr_height, $logo_width, $logo_height);
-
+    //return GDImage?
+    if($gdimage==1){return $QR;}
     // Save QR code again, but with logo on it
     imagepng($QR,$filename);
 	$data=file_get_contents($filename);
