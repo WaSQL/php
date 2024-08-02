@@ -2069,8 +2069,9 @@ var wacss = {
 					        params.parent=this.parentobj;
 					        params.chart=this.chartobj;
 					        params.type=this.parentobj.getAttribute('data-type');
-					        params.label = this.chartobj.data.labels[firstPoint._index] || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
-					        params.value = this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+					        params.xvalue=this.chartobj.data.labels[firstPoint._index];
+					        params.yvalue=this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
+					        params.dataset=this.chartobj.data.datasets[firstPoint._datasetIndex].label;
 					        window[this.onclick_func](params);
 					    }
 				    }
