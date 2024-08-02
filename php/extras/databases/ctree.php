@@ -141,7 +141,70 @@ ENDOFQUERY;
 * @return connection resource and sets the global $dbh_ctree variable.
 * @usage $dbh_ctree=ctreeDBConnect($params);
 */
-function ctreeDBConnect(){
+function ctreeDBConnect($params=array()){
+	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
+	$params=ctreeParseConnectParams($params);
+	if(isset($params['-connect'])){
+		$connect_name=$params['-connect'];
+	}
+	elseif(isset($params['-dbname'])){
+		$connect_name=$params['-dbname'];
+	}
+	else{
+		echo "ctreeDBConnect error: no dbname or connect param".printValue($params);
+		exit;
+	}
+	//echo printValue($params);exit;
+	if(isset($params['-single'])){
+		if(isset($params['-cursor'])){
+			$dbh_ctree_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+		}
+		else{
+			$dbh_ctree_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+		}
+		if(!is_resource($dbh_ctree_single)){
+			$err=odbc_errormsg();
+			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
+			echo "ctreeDBConnect single connect error:{$err}".printValue($params);
+			exit;
+		}
+		return $dbh_ctree_single;
+	}
+	global $dbh_ctree;
+	if(is_resource($dbh_ctree)){return $dbh_ctree;}
+
+	try{
+		if(isset($params['-cursor'])){
+			$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+		}
+		else{
+			$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass']);
+		}
+		if(!is_resource($dbh_ctree)){
+			//wait a few seconds and try again
+			sleep(2);
+			if(isset($params['-cursor'])){
+				$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			}
+			else{
+				$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+			}
+			if(!is_resource($dbh_ctree)){
+				$err=odbc_errormsg();
+				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
+				echo "ctreeDBConnect error:{$err}".printValue($params);
+				exit;
+			}
+		}
+		return $dbh_ctree;
+	}
+	catch (Exception $e) {
+		echo "ctreeDBConnect exception" . printValue($e);
+		exit;
+
+	}
+}
+function ctreeDBConnectOLD(){
 	$ok=dbSetLast(array(
 		'function'=>'ctreeDBConnect',
 	));
