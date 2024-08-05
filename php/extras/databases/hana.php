@@ -128,6 +128,11 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				unset($recs[$i][$k]);
 				continue;
 			}
+			if(stringContains($k,"/")){
+				$orik=$k;
+				$k='"'.strtoupper($k).'"';
+				$fieldinfo[$k]=$fieldinfo[$orik];
+			}
 			if(!in_array($k,$fields)){$fields[]=$k;}
 		}
 		break;
@@ -164,39 +169,76 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 		//define field_defs
 		//Acceptable datatypes for regular column of JSON table are VARCHAR(n), NVARCHAR(n), INT, BIGINT, DOUBLE, DECIMAL, SMALLDECIMAL, TIMESTAMP, SECONDDATE, DATE and TIME
 		$field_defs=array();
+		$jfields=array();
 		foreach($fields as $field){
 			switch(strtolower($fieldinfo[$field]['_dbtype'])){
 				case 'char':
 				case 'nchar':
 					$type=str_replace('char','varchar',$fieldinfo[$field]['_dbtype_ex']);
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},'') as {$field}";
 				break;
 				case 'varchar':
 				case 'nvarchar':
 					$type=$fieldinfo[$field]['_dbtype_ex'];
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},'') as {$field}";
 				break;
 				case 'tinyint':
 				case 'smallint':
 				case 'integer':
 					$type='int';
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},0) as {$field}";
+				break;
+				case 'varbinary':
+					$type='nvarchar';
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="COALESCE(BINTOSTR({$field}),'') as {$field}";
+				break;
+				case 'decimal':
+					$type=$fieldinfo[$field]['_dbtype'];
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},0) as {$field}";
+				break;
+				case 'double':
+					$type=$fieldinfo[$field]['_dbtype'];
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},0) as {$field}";
 				break;
 				default:
+					echo $field.printValue($fieldinfo[$field]);exit;
 					$type=$fieldinfo[$field]['_dbtype'];
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},'') as {$field}";
 				break;
 			}
-			$field_defs[]="		{$field} {$type} PATH '\$.{$field}'";
 		}
 		//build and test selectquery
-		$selectquery="SELECT {$fieldstr} FROM JSON_TABLE(?,'\$[*]' COLUMNS (".PHP_EOL;
+		$jfieldstr=implode(','.PHP_EOL,$jfields);
+		$selectquery="SELECT {$jfieldstr}".PHP_EOL;
+		$selectquery.=" FROM JSON_TABLE(".PHP_EOL;
+		$selectquery.="?,".PHP_EOL;
+		$selectquery.="'\$[*]' COLUMNS (".PHP_EOL;
 		//insert field_defs into query 
     	$selectquery.=implode(','.PHP_EOL,$field_defs); 
     	$selectquery.="		)".PHP_EOL; 
 		$selectquery.="	) jt".PHP_EOL;
+		//echo $selectquery.PHP_EOL.$jsonstr.PHP_EOL;exit;
 		//test selectquery
 		if($resource = odbc_prepare($dbh_hana, $selectquery)){
 			if(odbc_execute($resource, $pvalues)){
 				$rec=odbc_fetch_array($resource);
 				if(is_resource($resource)){odbc_free_result($resource);}
 				$resource=null;
+				//echo "Worked:".printValue($rec).printValue($selectquery);exit;
 				$rec=array_change_key_case($rec);
 				$fld=strtolower($fields[0]);
 				if(!isset($rec[$fld])){
@@ -227,6 +269,18 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				));
 				return 0;
 			}
+		}
+		else{
+			debugValue(array(
+				'function'=>'hanaAddDBRecordsProcess',
+				'message'=>'odbc prepare error for selectquery',
+				'error'=>odbc_errormsg(),
+				'query'=>$selectquery,
+				'first_record'=>$drec,
+				'pvalues'=>$pvalues
+			));
+			return 0;
+			
 		}
 		//echo "JSON".count($recs).printValue($params);exit;
 		if(isset($params['-upsert']) && isset($params['-upserton'])){
@@ -295,13 +349,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				foreach($recs as $drec){
 					break;
 				}
-				debugValue(array(
+				echo printValue(array(
 					'function'=>'hanaAddDBRecordsProcess',
 					'message'=>'odbc execute error',
 					'error'=>odbc_errormsg(),
 					'query'=>$query,
 					'first_record'=>$drec
-				));
+				));exit;
 				return 0;
 			}
 		}
@@ -311,13 +365,13 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			foreach($recs as $drec){
 				break;
 			}
-			debugValue(array(
+			echo printValue(array(
 				'function'=>'hanaAddDBRecordsProcess',
 				'message'=>'odbc prepare error',
 				'error'=>odbc_errormsg(),
 				'query'=>$query,
 				'first_record'=>$drec
-			));
+			));exit;
 			return 0;
 		}
 	}
