@@ -154,6 +154,7 @@ function ctreeDBConnect($params=array()){
 		echo "ctreeDBConnect error: no dbname or connect param".printValue($params);
 		exit;
 	}
+	unset($params['-single']);
 	//echo printValue($params);exit;
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
@@ -732,7 +733,7 @@ function ctreeParseConnectParams($params=array()){
 	//default cursor to SQL_CUR_USE_ODBC
 	$params['-cursor']=SQL_CUR_USE_ODBC;
 	//default pool to 1
-	$params['-pool']=1;
+	$params['-pool']=10;
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']])){
 		foreach($CONFIG as $k=>$v){
 			if(preg_match('/^ctree/i',$k)){unset($CONFIG[$k]);}
