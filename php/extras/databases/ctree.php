@@ -154,7 +154,8 @@ function ctreeDBConnect($params=array()){
 		echo "ctreeDBConnect error: no dbname or connect param".printValue($params);
 		exit;
 	}
-	unset($params['-single']);
+	//ctree does not support pooling do it in the ODBC Connection manager
+	$params['-single']=1;
 	//echo printValue($params);exit;
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
@@ -771,7 +772,7 @@ function ctreeParseConnectParams($params=array()){
 	//echo "HERE".printValue($params);exit;
 	$params['-single']=0;
 	if(isset($CONFIG['dbpool'])){
-		$params['-dbname']=$CONFIG['dbname'];
+		$params['-dbpool']=$CONFIG['dbpool'];
 	}
 	if(isctree()){
 		$params['-dbhost']=$CONFIG['dbhost'];
