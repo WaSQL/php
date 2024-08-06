@@ -369,7 +369,6 @@ Arrows,&#11167;,"\2B9F",U+02B9F,,"black downwards equilateral arrowhead"
 "ASCII Symbols",&#39;,"\0027",U+00027,&apos;,apostrophe
 "ASCII Symbols",&#40;,"\0028",U+00028,&lpar;,"left parenthesis"
 "ASCII Symbols",&#41;,"\0029",U+00029,&rpar;,"right parenthesis"
-"ASCII Symbols",&#42;,"\002A",U+0002A,&midast;,asterisk
 "ASCII Symbols",&#43;,"\002B",U+0002B,&plus;,"plus sign"
 "ASCII Symbols",&#44;,"\002C",U+0002C,&comma;,comma
 "ASCII Symbols",&#45;,"\002D",U+0002D,,hyphen-minus
