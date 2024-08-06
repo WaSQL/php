@@ -236,9 +236,8 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 					$type=$fieldinfo[$field]['_dbtype'];
 				break;
 			}
-			$type=str_replace('NOT NULL','',$type);
-			$type=str_replace('UNIQUE','',$type);
-			$type=str_replace('PRIMARY KEY','',$type);
+			$parts=preg_split('/\ +/',trim($type));
+			$type=$parts[0];
 			$type=trim($type);
 			$field_defs[]="		{$field} {$type} PATH '\$.{$field}'";
 		}
