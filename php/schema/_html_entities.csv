@@ -673,7 +673,6 @@ Arrows,&#11167;,"\2B9F",U+02B9F,,"black downwards equilateral arrowhead"
 "ASCII Symbols",&#253;,"\00FD",U+000FD,&yacute;,"latin small letter y with acute"
 "ASCII Symbols",&#254;,"\00FE",U+000FE,&thorn;,"latin small letter thorn"
 "ASCII Symbols",&#255;,"\00FF",U+000FF,&yuml;,"latin small letter y with diaeresis"
-Asterisks,&#42;,\002A,U+0002A,&midast;,asterisk
 Asterisks,&#8270;,\204E,U+0204E,,low asterisk
 Asterisks,&#8273;,\2051,U+02051,,two Asterisks aligned vertically
 Asterisks,&#8727;,\2217,U+02217,&lowast;,asterisk operator
