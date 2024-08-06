@@ -363,7 +363,6 @@ Arrows,&#11167;,"\2B9F",U+02B9F,,"black downwards equilateral arrowhead"
 "ASCII Symbols",&#33;,"\0021",U+00021,&excl;,"exclamation mark, factoria, bang"
 "ASCII Symbols",&#34;,"\0022",U+00022,&QUOT;,"quotation mark, neutral (vertical), used as opening or closing quotation mark"
 "ASCII Symbols",&#35;,"\0023",U+00023,&num;,"number sign"
-"ASCII Symbols",&#36;,"\0024",U+00024,&dollar;,"dollar sign"
 "ASCII Symbols",&#37;,"\0025",U+00025,&percnt;,"percent sign"
 "ASCII Symbols",&#38;,"\0026",U+00026,&AMP;,ampersand
 "ASCII Symbols",&#39;,"\0027",U+00027,&apos;,apostrophe
