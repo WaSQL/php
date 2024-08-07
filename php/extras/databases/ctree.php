@@ -168,6 +168,10 @@ function ctreeDBConnect($params=array()){
 			$err=odbc_errormsg();
 			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			echo "ctreeDBConnect single connect error:{$err}".printValue($params);
+			if(is_dir('c:/bin') && stringContains($err,'Maximum users exceeded')){
+				//Maximum users exceeded
+				$ok=file_put_contents("C:\bin\ctree_failed.txt", $err);
+			}
 			exit;
 		}
 		return $dbh_ctree_single;
