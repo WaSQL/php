@@ -24,7 +24,7 @@
 			<li><a href="nav-tabs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-Tabs</a></li>
 			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
 			<li><a href="data-navigate" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Data-Navigate</a></li>
-			<li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li>
+			<!-- <li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li> -->
 			<li><a href="behaviors" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Behaviors</a></li>
 			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
 			<li><a href="chartjs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
@@ -740,22 +740,20 @@ LIMIT 10
 	<tr>
 		<th>
 			<h3>PHP</h3>
-			v<?=phpversion();?>
+v<?=phpversion();?>
 		</th>
-		<td>
-			<div class="w_pre">
-			&lt;?php
-				echo &#39;Hello, world!&lt;br&gt;&#39;;
-				echo userValue(&#39;username&#39;);
-			?&gt;
-			</div>
+		<td class="w_nowrap">
+&lt;?php<br>
+	echo &#39;Hello, world!&lt;br&gt;&#39;;<br>
+	echo userValue(&#39;username&#39;);<br>
+?&gt;
 		</td>
 		<td>
-			<div class="w_pre">
-			<?php
-				echo 'Hello, world!<br>';
-				echo userValue('username');
-			?>
+			<div class="w_pre w_nowrap">
+<?php
+echo 'Hello, world!<br>';
+echo userValue('username');
+?>
 			</div>
 		</td>
 	</tr>
@@ -771,78 +769,72 @@ print(platform.python_version())
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
 			</div>
 		</th>
-		<td>
-			<div class="w_pre">
-			&lt;?python
-				print (&#39;Hello, world!&#39;)
-				print(wasql.user(&#39;username&#39;))
-			?&gt;
-			</div>
+		<td class="w_nowrap">
+&lt;?python<br>
+	print (&#39;Hello, world!&#39;)<br>
+	print(wasql.user(&#39;username&#39;))<br>
+?&gt;
 		</td>
 		<td>
-			<div class="w_pre">
-			<?python
-				print ('Hello, world!')
+			<div class="w_pre w_nowrap">
+<?python
+print ('Hello, world!')
 print(wasql.user('username'))
-			?>
+?>
 			</div>
 		</td>
 	</tr>
 	<tr>
 		<th>
 			<h3>NodeJs</h3>
-			<?node
-				console.log(process.version);
-			?>
+<?node
+	console.log(process.version);
+?>
 			<div class="align-right">
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
 			</div>
 		</th>
-		<td>
-			<div class="w_pre">
-			&lt;?node
-				console.log(&#39;Hello, world!&#39;);
-				let v2=wasql.user(&#39;username&#39;);
-				console.log(v2);
-			?&gt;
-			</div>
+		<td class="w_nowrap">
+&lt;?node<br>
+	console.log(&#39;Hello, world!&#39;);<br>
+	let v2=wasql.user(&#39;username&#39;);<br>
+	console.log(v2);<br>
+?&gt;
 		</td>
 		<td>
-			<div class="w_pre">
-			<?node
-				console.log('Hello, world!');
-				let v2=wasql.user('username');
-				console.log(v2);
-			?>
+			<div class="w_pre w_nowrap">
+<?node
+	console.log('Hello, world!');
+	let v2=wasql.user('username');
+	console.log(v2);
+?>
 			</div>
 		</td>
 	</tr>
 	<tr>
 		<th>
 			<h3>Perl</h3>
-			<?perl
-				print "v".$];
-			?>
+<?perl
+	print "v".$];
+?>
 			<div class="align-right">
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
 			</div>
 		</th>
-		<td>
-			<div class="w_pre">
-			&lt;?perl
-				print (&#39;Hello, world!&lt;br&gt;&#39;);
-				print wasqlUser(&#39;username&#39;);
-			?&gt;
-			</div>
+		<td class="w_nowrap">
+&lt;?perl<br>
+	print (&#39;Hello, world!&lt;br&gt;&#39;);<br>
+	print wasqlUser(&#39;username&#39;);<br>
+?&gt;
 		</td>
 		<td>
-			<div class="w_pre">
-			<?perl
-				print ('Hello, world!<br>');
-				print wasqlUser('username');
-			?>
+			<div class="w_pre w_nowrap">
+<?perl
+	print ('Hello, world!<br>');
+	print wasqlUser('username');
+?>
 			</div>
 		</td>
 	</tr>
@@ -857,17 +849,15 @@ print(wasql.user('username'))
 			<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
 		</div>
 		</th>
-		<td>
-			<div class="w_pre">
-			&lt;?lua
-				print (&#39;Hello, world!&#39;);
-				var2=wasqlUser(&#39;username&#39;);
-				print(var2);
-			?&gt;
-			</div>
+		<td class="w_nowrap">
+&lt;?lua<br>
+	print (&#39;Hello, world!&#39;);<br>
+	var2=wasqlUser(&#39;username&#39;);<br>
+	print(var2);<br>
+?&gt;
 		</td>
 		<td>
-			<div class="w_pre">
+			<div class="w_pre w_nowrap">
 <?lua
 	print('Hello, world!');
 	var2=wasqlUser('username');
@@ -879,26 +869,24 @@ print(wasql.user('username'))
 	<tr>
 		<th>
 			<h3>Ruby</h3>
-			v<?ruby
-				puts RUBY_VERSION
-			?>
+v<?ruby
+	puts RUBY_VERSION
+?>
 			<div class="align-right">
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
 				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
 			</div>
 		</th>
-		<td>
-			<div class="w_pre">
-			&lt;?ruby
-				puts &#39;Hello, world!&#39;
-			?&gt;
-			</div>
+		<td class="w_nowrap">
+&lt;?ruby<br>
+	puts &#39;Hello, world!&#39;<br>
+?&gt;
 		</td>
 		<td>
-			<div class="w_pre">
-			<?ruby
-				puts 'Hello, world!'
-			?>
+			<div class="w_pre w_nowrap">
+<?ruby
+	puts 'Hello, world!'
+?>
 			</div>
 		</td>
 	</tr>

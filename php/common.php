@@ -9321,15 +9321,15 @@ ENDOFCONTENT;
 			$precode[]="local {$varname} = json.decode('".$json."');";
 	*/
 	$wasql=array(
-		'USER'=>"local USER = json.decode('".json_encode(evalCleanupGlobal($USER))."');",
-		'CONFIG'=>"local CONFIG = json.decode('".json_encode(evalCleanupGlobal($CONFIG))."');",
-		'PAGE'=>"local PAGE = json.decode('".json_encode(evalCleanupGlobal($p))."');",
-		'TEMPLATE'=>"local TEMPLATE = json.decode('".json_encode(evalCleanupGlobal($t))."');",
-		'PASSTHRU'=>"local PASSTHRU = json.decode('".json_encode(evalCleanupGlobal($PASSTHRU))."');",
-		'DATABASE'=>"local DATABASE = json.decode('".json_encode(evalCleanupGlobal($db))."');",
-		'REQUEST'=>"local REQUEST = json.decode('".json_encode(evalCleanupGlobal($_REQUEST))."');",
-		'SESSION'=>"local SESSION = json.decode('".json_encode(evalCleanupGlobal($_SESSION))."');",
-		'CRONTHRU'=>"local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($CRONTHRU))."');"
+		'USER'=>"local USER = json.decode('".encodeJSON(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'CONFIG'=>"local CONFIG = json.decode('".encodeJSON(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'PAGE'=>"local PAGE = json.decode('".json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'TEMPLATE'=>"local TEMPLATE = json.decode('".json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'PASSTHRU'=>"local PASSTHRU = json.decode('".json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'DATABASE'=>"local DATABASE = json.decode('".json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'REQUEST'=>"local REQUEST = json.decode('".json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'SESSION'=>"local SESSION = json.decode('".json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
+		'CRONTHRU'=>"local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');"
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -9400,13 +9400,13 @@ ENDOFCONTENT;
 	$command = "{$lang['exe']} \"{$filename}\"";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($lang['exe'],$filename,$wasqlTempPath);
-	//remove the temp files
-	if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'lua'){
-		foreach($files as $name=>$afile){
-			unlink($afile);
-		}
-	}
 	if($out['rtncode']==0){
+		//remove the temp files
+		if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'lua'){
+			foreach($files as $name=>$afile){
+				unlink($afile);
+			}
+		}
 		return $out['stdout'];
 	}	
 	elseif(isset($out['stderr']) && strlen($out['stderr'])){
