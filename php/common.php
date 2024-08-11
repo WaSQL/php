@@ -2418,7 +2418,7 @@ function buildFormColorWheelMap($name){
 	$selectmap=buildFormSelect($name.'_select',$opts,$sparams);
 	$map=<<<ENDOFMAP
 <nav class="colorboxmap">
-	<img class="wheel" src="/wfiles/color_wheel.png" usemap="#'.$name.'_map" style="width:100%;height:auto;">
+	<img class="wheel" src="/wfiles/color_wheel.png" usemap="#{$name}_map" style="width:100%;height:auto;">
 	{$selectmap}
 	<map name="{$name}_map">
 	    {$body}
@@ -6818,7 +6818,7 @@ function processTranslateTags($htm){
 function commonProcessChartjsTags($htm){
 	global $CONFIG;
 	if(!stringContains($htm,'<chartjs')){return $htm;}
-	loadExtrasJs(array('chart','chartjs-plugin-labels','chartjs-plugin-doughnutlabel'));
+	//loadExtrasJs(array('chart','chartjs-plugin-labels','chartjs-plugin-doughnutlabel'));
 	preg_match_all('/\<chartjs(.*?)\>(.*?)\<\/chartjs\>/ism',$htm,$chartjs,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole chartjs tag
@@ -6861,6 +6861,10 @@ function commonProcessChartjsTags($htm){
 	);
 	foreach($chartjs[0] as $i=>$chartjs_tag){
 		$chartjs_attributes=parseHtmlTagAttributes($chartjs[1][$i]);
+		if(isset($chartjs_attributes['data-id'])){
+			$chartjs_attributes['id']=$chartjs_attributes['data-id'];
+			unset($chartjs_attributes['data-id']);
+		}
 		if(!isset($chartjs_attributes['id'])){
 			$chartjs_attributes['id']='chartjs_'.$i.strtolower(generateGUID(false,false));
 		}
@@ -6871,6 +6875,7 @@ function commonProcessChartjsTags($htm){
 			$optionstr=$m[1];
 			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
 		}
+		//echo $optionstr;exit;
 		//check for custom colors
 		$colorstr='';
 		if(isset($chartjs_attributes['data-colors'])){
@@ -7111,6 +7116,12 @@ function commonProcessChartjsTags($htm){
 		}
 		if(count($colors)){
 			$replace_str .= '<colors>'.json_encode(array_values($colors)).'</colors>'.PHP_EOL;
+		}
+		elseif(strlen($colorstr)){
+			$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
+		}
+		if(strlen($optionstr)){
+			$replace_str.='<options>'.$optionstr.'</options>'.PHP_EOL;
 		}
 		$replace_str.='</div>'.PHP_EOL;
 		$htm=str_replace($chartjs_tag,$replace_str,$htm);
@@ -16063,7 +16074,7 @@ function loadExtrasJs($extras){
 			case 'chart':
 				//chartjs requires moment for time series charts
 				if(!in_array('moment',$_SESSION['w_MINIFY']['extras_js'])){
-        			$_SESSION['w_MINIFY']['extras_js'][]='moment';
+        			//$_SESSION['w_MINIFY']['extras_js'][]='moment';
 				}
 			break;
         	case 'codemirror':

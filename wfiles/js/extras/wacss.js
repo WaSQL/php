@@ -428,7 +428,7 @@ var wacss = {
 		tagspan.title='Color Selector';
 		tagdiv.appendChild(tagspan);
 		if(undefined != params['-parent']){
-			let pobj=getObject(params['-parent']);
+			let pobj=wacss.getObject(params['-parent']);
 			if(undefined != pobj){
 				pobj.appendChild(tagdiv);
 			}
@@ -466,7 +466,7 @@ var wacss = {
 			tag.appendChild(coption);
 		}
 		if(undefined != params['-parent']){
-			let pobj=getObject(params['-parent']);
+			let pobj=wacss.getObject(params['-parent']);
 			if(undefined != pobj){
 				pobj.appendChild(tag);
 			}
@@ -501,7 +501,7 @@ var wacss = {
 		tag.name=fieldname;
 		tag.id=params.id;
 		if(undefined != params['-parent']){
-			let pobj=getObject(params['-parent']);
+			let pobj=wacss.getObject(params['-parent']);
 			if(undefined != pobj){
 				pobj.appendChild(tag);
 			}
@@ -606,6 +606,26 @@ var wacss = {
 		else if(evt.relatedTarget){
 			return !containsDOM(element, evt.relatedTarget);
 		}
+	},
+	/**
+	* @name wacss.containsHTML
+	* @describe returns true if string contains HTML
+	* @param str string
+	* @return boolean
+	* @usage if(wacss.containsHTML(str)){...}
+	*/
+	containsHTML: function(str){
+		return (/[\<\>]/.test(str));
+	},
+	/**
+	* @name wacss.containsSpaces
+	* @describe returns true if string contains spaces
+	* @param str string
+	* @return boolean
+	* @usage if(wacss.containsSpaces(str)){...}
+	*/
+	containsSpaces: function(str){
+		return (/[\ ]/.test(trim(str)));
 	},
    	/**
 	* @name wacss.copy2Clipboard
@@ -1209,7 +1229,7 @@ var wacss = {
     							wacss.geoLocationMap(position.coords.latitude,position.coords.longitude,navigator.geoOptions);
     					}
     					else{
-    						fldObj=getObject(navigator.geoSetFld);
+    						fldObj=wacss.getObject(navigator.geoSetFld);
     						fldObj.value='['+position.coords.latitude+','+position.coords.longitude+']';	
     					}
     				}
@@ -1499,6 +1519,61 @@ var wacss = {
 		return null;
 	},
 	/**
+	* @name wacss.getSelectedText
+	* @describe returns selected text in the document or field if specified
+	* @param el obj - fld
+	* @return array
+	* @usage let seltext=wacss.getSelectedText();
+	*/
+	getSelectedText: function(fld){
+		//info: returns selected text on the page
+		let txt = '';
+		if(undefined != fld){
+			fld=wacss.getObject(fld);
+			if(undefined == fld){return '';}
+			if(document.selection){
+				fld.focus();
+			    txt = document.selection.createRange();
+		    	}
+			else{
+				let len = fld.value.length;
+				let start = fld.selectionStart;
+				let end = fld.selectionEnd;
+				txt = fld.value.substring(start, end);
+		    	}
+			}
+		else{
+		    if (window.getSelection){
+		        txt = window.getSelection();
+		    }
+		    else if (document.getSelection){
+		        txt = document.getSelection();
+			}
+		    else if (document.selection){
+		        txt = document.selection.createRange().text;
+		    }
+		}
+		return txt;
+	},
+	/**
+	* @name wacss.getText
+	* @describe returns text in any object
+	* @param el obj - element
+	* @return string
+	* @usage let txt=wacss.getText(el);
+	*/
+	getText: function(obj){
+		let cObj=wacss.getObject(obj);
+		if(undefined == cObj){return '';}
+		if(undefined != cObj.value){return cObj.value;}
+	    else if(undefined != cObj.innerHTML){return cObj.innerHTML;}
+	    else if(undefined != cObj.innerText){return cObj.innerText;}
+	    else{
+			//alert('unable to getText on '+cObj);
+	    	}
+	    return '';
+	},
+	/**
 	* @name wacss.getSiblings
 	* @describe returns an array of sibling elements in the DOM
 	* @param el obj - starting element
@@ -1765,7 +1840,15 @@ var wacss = {
 		if(undefined != chartid){
 			list=document.querySelectorAll('#'+chartid);
 		}
-		if(list.length==0){return;}
+		if(list.length==0){return false;}
+		//load Chart is it is not already loaded
+		if(undefined == Chart){
+			console.log('loading Chartjs, etc');
+			wacss.loadScript('/wfiles/js/extras/chart.min.js');
+			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
+			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
+		}
+		if(undefined == Chart){return false;}
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
 	        'rgba(75,192,192,0.4)',
@@ -1840,9 +1923,7 @@ var wacss = {
 				//lconfig.options=JSON.parse(optionsjson);
 				lconfig.options=JSON.parse(optionsjson);
 				if(undefined != list[i].dataset.debug){
-					console.log('optionsjson');
-					console.log(optionsjson);
-					console.log('options');
+					console.log('options loaded');
 					console.log(lconfig.options);
 				}
 			}
@@ -1917,8 +1998,8 @@ var wacss = {
 				let json=JSON.parse(datasetjson);  		
 				let dataset={
 					label:datasets[d].dataset.label || datasets[d].dataset.title || '',
-					backgroundColor: datasets[d].dataset.backgroundcolor || colors,
-					borderColor: datasets[d].dataset.bordercolor || bcolors,
+					backgroundColor: datasets[d].dataset.backgroundcolor || colors[d] || null,
+					borderColor: datasets[d].dataset.bordercolor || bcolors[d] || null,
 					borderWidth:1,
 					borderRadius:3,
                     type:datasets[d].dataset.type || lconfig.type,
@@ -2062,18 +2143,25 @@ var wacss = {
 						this.clicked=1;
 				        //set clicked back to 0 in 250 ms (this prevents duplicate click events)
 				        this.timeout=setTimeout(function(obj){obj.clicked=0;}, 250,this);
+				        //get the active point
 						let activePoints = this.chartobj.getElementsAtEventForMode(evt, 'point', this.chartobj.options);
 				        if(activePoints.length > 0){
-					        let firstPoint = activePoints[0];
-					        let params={};
-					        params.parent=this.parentobj;
-					        params.chart=this.chartobj;
-					        params.type=this.parentobj.getAttribute('data-type');
+				        	let params={};
+							params.parent_id=this.parentobj.id;
+							params.type=this.parentobj.getAttribute('data-type');
+							params.onclick=this.parentobj.getAttribute('data-onclick');
+					        let firstPoint = activePoints[0];			        					        
 					        params.xvalue=this.chartobj.data.labels[firstPoint._index];
 					        params.yvalue=this.chartobj.data.datasets[firstPoint._datasetIndex].data[firstPoint._index];
-					        params.dataset=this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+					        params.dataset=firstPoint._view.datasetLabel || firstPoint._view.label || this.chartobj.data.datasets[firstPoint._datasetIndex].label;
+					        params.color=firstPoint._view.backgroundColor;
+					        params.bcolor=firstPoint._view.borderColor;
+					        params.width=firstPoint._view.width;
+					        params.x=firstPoint._view.x;
+					        params.y=firstPoint._view.y;
 					        window[this.onclick_func](params);
 					    }
+					    
 				    }
 				};
 			}
@@ -2081,7 +2169,15 @@ var wacss = {
 	},
 	initChartJs: function(initid){
 		wacss.initChartJsBehavior();
-		let list=document.querySelectorAll('div.chartjs');
+		let list=document.querySelectorAll('div.chartjs,div[data-behavior="chartjs"]');
+		if(undefined==list || list.length==0){return false;}
+		//load Chart is it is not already loaded
+		if(undefined == Chart){
+			console.log('loading Chartjs, etc');
+			wacss.loadScript('/wfiles/js/extras/chart.min.js');
+			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
+			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
+		}
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
 	        'rgba(75,192,192,0.4)',
@@ -3001,7 +3097,7 @@ var wacss = {
 	  	}
 	},
 	inViewport: function(elem) {
-		elem=getObject(elem);
+		elem=wacss.getObject(elem);
 	    let bounding = elem.getBoundingClientRect();
 	    return (
 	        bounding.top >= 0 &&
@@ -3978,7 +4074,7 @@ var wacss = {
 					console.log('wacssedit code error: no tobj');
 					return false;
 				}
-				let dobj=getObject(tid+'_wacsseditor');
+				let dobj=wacss.getObject(tid+'_wacsseditor');
 				if(undefined == dobj){
 					console.log('wacssedit code error: no dobj');
 					wacss.initWacssEditElements();
@@ -4031,7 +4127,7 @@ var wacss = {
 							//switch to textarea edit mode
 							dobj.removeEventListener('input', function() {
 								let eid=this.getAttribute('data-editor');
-								let tobj=getObject(eid);
+								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
 									wacss.initWacssEditElements();
@@ -4057,7 +4153,7 @@ var wacss = {
 							//switch to wysiwyg edit mode 
 							tobj.removeEventListener('input', function() {
 								let eid=this.getAttribute('data-editor');
-								let tobj=getObject(eid);
+								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
 									console.log('textarea update failed: no eid: '+eid);
 									wacss.initWacssEditElements();
@@ -4849,6 +4945,140 @@ var wacss = {
   		return check;
 	},
 	/**
+	* @name wacss.idDate
+	* @describe returns true if string is a date
+	* @param str string  - the date string to check
+	* @return boolean
+	* @usage if(isDate(str)){...}
+	*/
+	isDate: function(str){
+		let d = new Date(str.replace(/-/g, "/"));
+		if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+	  		// it is a date
+	  		if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+	    		// date is not valid
+	    		return false;
+	  		}
+	  		else {
+	    		// date is valid
+	    		return true;
+	  		}
+		}
+		else {
+	  		// not a date
+	  		return false;
+		}
+	},
+	/**
+	* @name wacss.isFutureDate
+	* @describe returns true if string is a date and is in the future
+	* @param str string  - the date string to check
+	* @return boolean
+	* @usage if(isFutureDate(str)){...}
+	*/
+	isFutureDate: function(str){
+		let d = new Date(str.replace(/-/g, "/"));
+		if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+	  		// it is a date
+	  		if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+	    		// date is not valid
+	    		return false;
+	  		}
+	  		else {
+	    		// date is valid
+	    		let today = new Date();
+    			if((today-d)<0){return true;}
+    			return false;
+	  		}
+		}
+		else {
+	  		// not a date
+	  		return false;
+		}
+	},
+	/**
+	* @name wacss.isDST
+	* @describe return true if Daylight Savings Time
+	* @return boolean
+	* @usage if(wacss.isDST()){...}
+	*/
+	isDST: function(){
+		let today = new Date;
+		let yr = today.getFullYear();
+		// 2nd Sunday in March can't occur after the 14th
+		let dst_start = new Date("March 14, "+yr+" 02:00:00");
+		// 1st Sunday in November can't occur after the 7th
+		let dst_end = new Date("November 07, "+yr+" 02:00:00");
+		let day = dst_start.getDay(); // day of week of 14th
+		dst_start.setDate(14-day); // Calculate 2nd Sunday in March of this year
+		day = dst_end.getDay(); // day of the week of 7th
+		dst_end.setDate(7-day); // Calculate first Sunday in November of this year
+		if (today >= dst_start && today < dst_end){
+			//does today fall inside of DST period?
+			return true; //if so then return true
+		}
+		else{
+			return false; //if not then return false
+		}
+	},
+	/**
+	* @name wacss.isPastDate
+	* @describe returns true if string is a date and is in the past
+	* @param str string  - the date string to check
+	* @return boolean
+	* @usage if(isPastDate(str)){...}
+	*/
+	isPastDate: function(str){
+		let d = new Date(str.replace(/-/g, "/"));
+		if ( Object.prototype.toString.call(d) === "[object Date]" ) {
+	  		// it is a date
+	  		if ( isNaN( d.getTime() ) ) {  // d.valueOf() could also work
+	    		// date is not valid
+	    		return false;
+	  		}
+	  		else {
+	    		// date is valid
+	    		let today = new Date();
+    			if((today-d)>0){return true;}
+    			return false;
+	  		}
+		}
+		else {
+	  		// not a date
+	  		return false;
+		}
+	},
+	/**
+	* @name wacss.isFirefox
+	* @describe return true if browser is Firefox
+	* @return boolean
+	* @usage if(wacss.isFirefox()){...}
+	*/
+	isFirefox: function(){
+		let agt=navigator.userAgent.toLowerCase();
+		return (agt.indexOf('firefox')!=-1);
+	},
+	/**
+	* @name wacss.isOpera
+	* @describe return true if browser is Opera
+	* @return boolean
+	* @usage if(wacss.isOpera()){...}
+	*/
+	isOpera: function(){
+		let agt=navigator.userAgent.toLowerCase();
+		return agt.indexOf("opera")!=-1;
+	},
+	/**
+	* @name wacss.isIE
+	* @describe return true if browser is Internet Explorer
+	* @return boolean
+	* @usage if(wacss.isIE()){...}
+	*/
+	isIE: function(){
+		let agt=navigator.userAgent.toLowerCase();
+		return agt.indexOf("msie")!=-1 && !commonIsOpera;
+	},
+	/**
 	* @name wacss.isMobileOrTablet
 	* @describe return true if device is a mobile or a tablet device
 	* @return boolean
@@ -5022,6 +5252,15 @@ var wacss = {
 			document.onmouseup = null;
 			document.onmousemove = null;
 		}
+	},
+	/**
+	* @name wacss.mobileHideAddressBar
+	* @describe hides the address bar so the page looks like an app
+	* @return boolean
+	* @usage if(x){wacss.mobileHideAddressBar();}
+	*/
+	mobileHideAddressBar: function(){
+		return window.scrollto(0,1);
 	},
 	/**
 	* @name wacss.modalClose
@@ -5709,6 +5948,74 @@ var wacss = {
 	    return false;
 	},
 	/**
+	* @name wacss.setText
+	* @describe sets the value of an element to specified value
+	* @param el object or id
+	* @params str value to set it to
+	* @return boolean
+	* @usage wacss.setText(divid,'');
+	*/
+	setText: function(obj,txt){
+		let cObj=wacss.getObject(obj);
+	    if(undefined == cObj){return false;}
+	    let previous_value=wacss.getText(cObj);
+	    let setflag=0;
+	    if(undefined != cObj.tagName){
+			switch(cObj.tagName.toUpperCase()){
+				case 'INPUT':
+					cObj.value=txt;
+					setflag=1;
+				break;
+				case 'TEXTAREA':
+					if(undefined != cObj.innerHTML){
+						cObj.innerHTML=txt;
+						setflag=1;	
+					}
+					else{
+						cObj.innerText=txt;
+						setflag=1;
+					}
+				break;
+			}
+		}
+	    //if the object has a value attribute, set it
+	    else if(undefined != cObj.getAttribute('value')){
+			cObj.value=txt;
+			setflag=1;
+		}
+		//otherwise try a few others
+		if(setflag==0){
+			try{
+				cObj.innerHTML=txt;
+				let check=wacss.getText(cObj);
+				setflag=1;
+			}
+			catch(e){}
+		}
+		if(setflag==0){
+			try{
+				cObj.innerText=txt;
+				let check=wacss.getText(cObj);
+				setflag=1;
+			}
+			catch(e){}
+		}
+	    if(setflag==0){
+			try{
+				cObj.value=txt;
+				let check=wacss.getText(cObj);
+				setflag=1;
+			}
+			catch(e){}
+		}
+		if(setflag==0){return false;}
+	    //check for onchange attribute and kick it off if the value changes
+	    if(undefined != cObj.onchange && previous_value != txt){
+			cObj.onchange();
+		}
+		return true;
+	},
+	/**
 	* @name wacss.setStarRating
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -5965,7 +6272,7 @@ var wacss = {
 	* @usage let el=wacss.simulateEvent('#mybutton','click')
 	*/
 	simulateEvent: function(element, eventName){
-		element=getObject(element);
+		element=wacss.getObject(element);
 		if(undefined == element){return false;}
 		//info: simulate an event without it actually happening
 	    let evObj = document.createEvent('Event');
@@ -6312,6 +6619,35 @@ var wacss = {
 		str=str.replace(/\#/g,"%23");
 		//str=str.replace(/\s/g,"+");
 	    return str;
+	},
+	/**
+	* @name wacss.verboseTime
+	* @describe converts a number representing seconds into a string that describes how long
+	* @param s number
+	* @return string
+	* @usage console.log(wacss.verboseTime(12321));
+	*/
+	verboseTime: function(s){
+		if(isNaN(s)){return s;}
+		let secs = parseInt(s, 10);
+		let years = Math.floor(secs / (3600*24*365));
+		secs  -= years*3600*24*365;
+		let months = Math.floor(secs / (3600*24*30));
+		secs  -= months*3600*24*30;
+		let days = Math.floor(secs / (3600*24));
+		secs  -= days*3600*24;
+		let hrs   = Math.floor(secs / 3600);
+		secs  -= hrs*3600;
+		let mins = Math.floor(secs / 60);
+		secs  -= mins*60;
+		let parts=new Array();
+		if(years > 0){parts.push(years+' years');}
+		if(months > 0){parts.push(months+' months');}
+		if(days > 0){parts.push(days+' days');}
+		if(hrs > 0){parts.push(hrs+' hrs');}
+		if(mins > 0){parts.push(mins+' mins');}
+		parts.push(secs+' secs');
+		return wacss.implode(' ',parts);
 	},
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual

@@ -13,7 +13,7 @@
 		});
 	}
 	function chartJsOnclick(p){
-		console.log(p);
+		wacss.toast(JSON.stringify(p,null,'<br>'));
 	}
 </script>
 <h2 style="margin:0px;position:sticky;top:35px;">WaSQL Tests</h2>
@@ -59,7 +59,6 @@
 				</div>
 			</div>
 		</form>
-		<?=buildOnLoad("console.log('ONE');");?>
 	</div>
 </div>
 </view:default>
@@ -79,12 +78,25 @@
 		<div style="flex:5;"><?=buildFormDate('mydate',array('data-readonlyif'=>'formreadonly:1'));?></div>
 	</div>
 	<div class="row"><div class="col s2">Checkbox</div><div class="col s8" style="font-size:1.3em;"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
-	<div class="row"><div class="col s2">Color</div><div class="col s4"><?=buildFormColor('x2',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div style="display:flex;justify-content: space-between;margin-bottom:10px;">
+		<div style="display:flex;padding:5px 0;">
+			<div>Color</div>
+			<div style="margin-left:5px;"><?=buildFormColor('x2wheel',array('data-readonlyif'=>'formreadonly:1'));?></div>
+		</div>
+		<div style="display:flex;padding:5px 0;">
+			<div>ColorBox</div>
+			<div style="margin-left:5px;"><?=buildFormColorBox('x2box',array('data-readonlyif'=>'formreadonly:1'));?></div>
+		</div>
+		<div style="display:flex;padding:5px 0;">
+			<div>ColorHexagon</div>
+			<div style="margin-left:5px;"><?=buildFormColorHexagon('x2hex',array('data-readonlyif'=>'formreadonly:1'));?></div>
+		</div>
+	</div>
 	<div class="row"><div class="col s2">Combo</div><div class="col s4"><?=buildFormCombo('x3',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('width'=>4,'data-readonlyif'=>'formreadonly:1'));?></div></div>
 	
 	<div class="row"><div class="col s2">Gender</div><div class="col s4"><?=buildFormGender('x4',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2" onclick="wacss.blink('x5');">Password</div><div class="col s4"><?=buildFormPassword('x5',array('id'=>'x5','autocomplete'=>'current-password','data-readonlyif'=>'formreadonly:1','value'=>''));?></div></div>
-	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
+	<div class="row"><div class="col s2">MultiSelect</div><div class="col s4"><?=buildFormMultiSelect('x6',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','width'=>200,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
 	<div class="row"><div class="col s2">Radio</div><div class="col s8" style="font-size:1.3em;"><?=buildFormRadio('x7',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','width'=>5,'red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));;?></div></div>
 	<div class="row"><div class="col s2">Text</div><div class="col s4"><?=buildFormText('x8',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">Textarea</div><div class="col s4"><?=buildFormTextarea('x',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
@@ -103,9 +115,9 @@
 	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">WYSIWYG</div><div class="col s10">
 		<textarea data-readonlyif="formreadonly:1" id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
-		<?=buildOnLoad("wacss.initWacssEdit();");?>
 	</div></div>
 </form>
+<?=buildOnLoad("wacss.initWacssEdit();wacss.initSignaturePad();");?>
 </view:form-elements>
 
 
@@ -564,21 +576,58 @@
 </view:c3charts>
 
 <view:chartjs>
-	<chartjs data-type="bar" data-recs="myrectest" data-name="Countries" data-title="States Per Country" data-dataset="count">
+	<chartjs data-type="bar" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
+		<options>
+		{
+			"responsive": true,
+			"scales": {
+				"xAxes": [{"display": true,"scaleLabel": {"display": true,"labelString": "Pinewood Derby"}}],
+				"yAxes": [{"ticks": {"beginAtZero": true},"scaleLabel": {"display": true,"labelString": "speed"}}]
+			},
+			"tooltips": {"enabled":false,"display":false,"intersect": true,"mode": "index"},
+			"plugins": {"datalabels": {"display":true,"color": "gray","formatter": "Math.round"}}
+		}
+		</options>
+		<dataset data-label="Car1">[92]</dataset>
+		<dataset data-label="Car2">[95]</dataset>
+		<dataset data-label="Car3">[84]</dataset>
+		<dataset data-label="Car4">[64]</dataset>
+		<dataset data-label="Car5">[55]</dataset>
+		<labels>["Speed"]</labels>
+	</chartjs>
+	<hr>
+	<chartjs data-type="bar" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
+		<options>
+		{
+			"responsive": true,
+			"scales": {
+				"xAxes": [{"display": true,"scaleLabel": {"display": true,"labelString": "labels"}}],
+				"yAxes": [{"ticks": {"beginAtZero": true},"scaleLabel": {"display": true,"labelString": "percent"}}]
+			},
+			"tooltips": {"enabled":true,"intersect": true,"mode": "index"},
+			"plugins": {"datalabels": {"display":true,"color": "purple","formatter": "Math.round"}}
+		}
+		</options>
+		<dataset>[81,89,95,78,64]</dataset>
+		<labels>["Car1","Car2","Car3","Car4","Car5"]</labels>
+	</chartjs>
+	<hr>
+	<chartjs data-type="bar" data-recs="myrectest" data-name="Countries" data-title="States Per Country" data-dataset="count" data-onclick="chartJsOnclick">
 		SELECT
 	count(*) as value
 	,country as label
-	,'x' as ex
 FROM states
 GROUP BY country
 ORDER BY 1 DESC
+LIMIT 10
 	</chartjs>
-	<dblistrecords data-recs="myrectest" -hidesearch="1" -listfields="label,ex">
+	<div style="width:100%;overflow:auto;display:flex;">
+	<dblistrecords data-recs="myrectest" -hidesearch="1" -listfields="label,value" -tableheight="40vh" -tablewidth="100vw">
 		
 	</dblistrecords>
+	</div>
 	<hr>
-	<div class="chartjs" id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart" data-onclick="chartJsOnclick" data-stacked="1" style="width:100%;" data-type="bar"></div>
-	<div id="vbar_da39a3ee5e6b4b0d3255bfef95601890afd80709_chart_data" style="display:none;">
+	<chartjs data-type="bar" data-stacked="1" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
 		<options>{
 			"responsive": true,
 			"showXLabels":10,
@@ -594,10 +643,8 @@ ORDER BY 1 DESC
 		<dataset data-label="food_score">[89]</dataset>
 		<dataset data-label="service_score">[95]</dataset>
 		<dataset data-label="cleanliness_score">[90]</dataset>
-	</div>
-
-	<div class="chartjs" id="barchart" data-type="line"  data-onclick="chartJsOnclick"></div>
-	<div id="barchart_data" style="display:none;">
+	</chartjs>
+	<chartjs data-type="line" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
 		<options>
 		{
 			"responsive": true,
@@ -629,38 +676,16 @@ ORDER BY 1 DESC
 			   }
 		}
 		</options>
-		<colors>["blue","yellow","pink","orange","violet"]</colors>
+		<colors>["black","yellow","pink","orange","violet"]</colors>
 		<labels>["Mon","Tue","Wed","Thu","Fri"]</labels>
 		<dataset data-label="BPMX">[4,6,10,5,11]</dataset>
 		<dataset data-label="F">[7,9,11,8,12]</dataset>
 		<dataset data-label="SQX">[12,4,11,7,12]</dataset>
 		<dataset data-label="ABC">[12,4,11,7,12]</dataset>
 		<dataset data-label="DEF">[12,4,11,7,12]</dataset>	
-	</div>
-
-	<div><a href="#" onclick="document.getElementById('guagechart1').dataset.value=Math.floor((Math.random() * 100) + 1);wacss.initChartJs('guagechart1');return false;">Update guage</a></div>
-
-	<div class="chartjs" id="guagechart1" style="width:250px;height:200px;"  data-labels="true" data-type="guage" data-max="100" data-value="90"  data-onclick="chartJsOnclick"></div>
-	<div id="guagechart1_data" style="display:none;">
-		
-		<colors>["#009300","#000000"]</colors>
-	</div>
-
-	<div><a href="#" onclick="setText('piechart1_data',getText('piechart1_data2'));wacss.initChartJs('piechart1');return false;">Update pie chart</a></div>
-	<div class="chartjs" id="piechart1" style="height:300px;width:400px;" data-type="pie" data-ylabel="Genders" data-onclick="chartJsOnclick"></div>
-	<div id="piechart1_data" style="display:none;">
-		<dataset>[12,25,263]</dataset>
-		<labels>["Pending Action","In Process","Resolved"]</labels>
-	</div>
-	<div id="piechart1_data2" style="display:none;">
-		<dataset>[39,98,425]</dataset>
-		<labels>["Pending Action","In Process","Resolved"]</labels>
-	</div>
-
-
+	</chartjs>
 	<div><a href="#" onclick="setText('linechart_data',getText('linechart_data2'));wacss.initChartJs('linechart');return false;">Update chart</a></div>
-	<div class="chartjs" id="linechart" style="height:650px" data-type="bar" data-x="paymentDate" data-y="amount"  data-onclick="chartJsOnclick"></div>
-	<div id="linechart_data" style="display:none;">
+	<chartjs data-type="bar" data-id="linechart" data-x="paymentDate" data-y="amount" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
 		<options>
 		{
 			"responsive": true,
@@ -695,11 +720,12 @@ ORDER BY 1 DESC
 		<dataset data-label="BPMX">[{"t":1556535600000,"y":1.27},{"t":1556539200000,"y":1.37,"pointBackgroundColor":"rgb(88,198,83)"},{"t":1556542800000,"y":1.41},{"t":1556546400000,"y":1.45},{"t":1556550000000,"y":1.43},{"t":1556553600000,"y":1.41},{"t":1556557200000,"y":1.3697},{"t":1556560800000,"y":1.3934},{"t":1556564400000,"y":1.38},{"t":1556568000000,"y":1.38},{"t":1556571600000,"y":1.42},{"t":1556611200000,"y":1.39},{"t":1556622000000,"y":1.4001},{"t":1556629200000,"y":1.3206},{"t":1556632800000,"y":1.29},{"t":1556636400000,"y":1.2806},{"t":1556640000000,"y":1.28},{"t":1556643600000,"y":1.27,"pointBackgroundColor":"rgb(88,198,83)"},{"t":1556647200000,"y":1.2425},{"t":1556650800000,"y":1.28},{"t":1556654400000,"y":1.31},{"t":1556658000000,"y":1.3},{"t":1556715600000,"y":1.24},{"t":1556719200000,"y":1.15},{"t":1556722800000,"y":1.26},{"t":1556726400000,"y":1.22},{"t":1556730000000,"y":1.28},{"t":1556733600000,"y":1.3026},{"t":1556737200000,"y":1.2995},{"t":1556740800000,"y":1.29},{"t":1556744400000,"y":1.29},{"t":1556751600000,"y":1.28},{"t":1556794800000,"y":1.34},{"t":1556798400000,"y":1.3099},{"t":1556802000000,"y":1.2307},{"t":1556805600000,"y":1.25},{"t":1556809200000,"y":1.26},{"t":1556812800000,"y":1.2597},{"t":1556816400000,"y":1.2504},{"t":1556820000000,"y":1.23},{"t":1556823600000,"y":1.22},{"t":1556827200000,"y":1.23},{"t":1556830800000,"y":1.23},{"t":1556834400000,"y":1.28},{"t":1556838000000,"y":1.27},{"t":1556881200000,"y":1.31},{"t":1556888400000,"y":1.1806},{"t":1556892000000,"y":1.1731},{"t":1556895600000,"y":1.1697},{"t":1556899200000,"y":1.18},{"t":1556902800000,"y":1.1697},{"t":1556906400000,"y":1.19},{"t":1556910000000,"y":1.2},{"t":1556913600000,"y":1.19},{"t":1556917200000,"y":1.23},{"t":1557140400000,"y":1.17},{"t":1557147600000,"y":1.1609},{"t":1557151200000,"y":1.2203},{"t":1557154800000,"y":1.2005},{"t":1557158400000,"y":1.3003},{"t":1557162000000,"y":1.27},{"t":1557165600000,"y":1.2606},{"t":1557169200000,"y":1.3},{"t":1557172800000,"y":1.3},{"t":1557176400000,"y":1.34},{"t":1557183600000,"y":1.29},{"t":1557226800000,"y":1.25},{"t":1557230400000,"y":1.25},{"t":1557234000000,"y":1.3},{"t":1557237600000,"y":1.27},{"t":1557241200000,"y":1.359},{"t":1557244800000,"y":1.375},{"t":1557248400000,"y":1.3042},{"t":1557252000000,"y":1.27},{"t":1557255600000,"y":1.26},{"t":1557259200000,"y":1.3},{"t":1557262800000,"y":1.3},{"t":1557266400000,"y":1.3099},{"t":1557313200000,"y":1.26},{"t":1557320400000,"y":1.2611},{"t":1557324000000,"y":1.2201},{"t":1557327600000,"y":1.2202},{"t":1557331200000,"y":1.2399},{"t":1557334800000,"y":1.2301},{"t":1557338400000,"y":1.2197},{"t":1557342000000,"y":1.231},{"t":1557345600000,"y":1.23},{"t":1557349200000,"y":1.23},{"t":1557352800000,"y":1.22},{"t":1557356400000,"y":1.1801},{"t":1557403200000,"y":1.2},{"t":1557406800000,"y":1.1995},{"t":1557410400000,"y":1.1881},{"t":1557414000000,"y":1.1806},{"t":1557417600000,"y":1.19},{"t":1557421200000,"y":1.23},{"t":1557424800000,"y":1.25},{"t":1557428400000,"y":1.3006},{"t":1557432000000,"y":1.3},{"t":1557435600000,"y":1.27},{"t":1557439200000,"y":1.3},{"t":1557486000000,"y":1.32},{"t":1557493200000,"y":1.2801},{"t":1557496800000,"y":1.275},{"t":1557500400000,"y":1.26},{"t":1557504000000,"y":1.2463},{"t":1557507600000,"y":1.23},{"t":1557511200000,"y":1.25},{"t":1557514800000,"y":1.29},{"t":1557518400000,"y":1.28},{"t":1557522000000,"y":1.29},{"t":1557525600000,"y":1.26},{"t":1557529200000,"y":1.26}]</dataset>
 		<dataset data-label="SDR">[{"t":1556542800000,"y":0.95},{"t":1556546400000,"y":0.9176},{"t":1556550000000,"y":0.8996},{"t":1556553600000,"y":0.8997},{"t":1556557200000,"y":0.9167},{"t":1556560800000,"y":0.95},{"t":1556564400000,"y":0.93989,"pointBackgroundColor":"rgb(88,198,83)"},{"t":1556629200000,"y":0.9499},{"t":1556632800000,"y":0.934282},{"t":1556636400000,"y":0.941},{"t":1556640000000,"y":0.953809},{"t":1556643600000,"y":0.9452},{"t":1556647200000,"y":0.945},{"t":1556650800000,"y":0.95},{"t":1556715600000,"y":0.95},{"t":1556719200000,"y":0.9374},{"t":1556722800000,"y":0.93973},{"t":1556726400000,"y":0.93851},{"t":1556730000000,"y":0.935},{"t":1556733600000,"y":0.9449},{"t":1556737200000,"y":0.936},{"t":1556802000000,"y":0.9375},{"t":1556805600000,"y":0.939},{"t":1556809200000,"y":0.9355},{"t":1556812800000,"y":0.9355},{"t":1556816400000,"y":0.9356},{"t":1556820000000,"y":0.933678},{"t":1556823600000,"y":0.9326},{"t":1556881200000,"y":0.93},{"t":1556888400000,"y":0.9163},{"t":1556892000000,"y":0.93},{"t":1556895600000,"y":0.9373},{"t":1556899200000,"y":0.94},{"t":1556902800000,"y":0.93},{"t":1556906400000,"y":0.9547},{"t":1556910000000,"y":0.9416},{"t":1557147600000,"y":0.9651},{"t":1557151200000,"y":0.970629},{"t":1557154800000,"y":0.995},{"t":1557158400000,"y":0.9985},{"t":1557162000000,"y":0.991171},{"t":1557165600000,"y":0.9984},{"t":1557169200000,"y":0.9942},{"t":1557176400000,"y":0.996},{"t":1557234000000,"y":0.98},{"t":1557237600000,"y":0.98},{"t":1557241200000,"y":0.978406},{"t":1557244800000,"y":0.9751},{"t":1557248400000,"y":0.9751},{"t":1557252000000,"y":0.977422},{"t":1557255600000,"y":0.978},{"t":1557320400000,"y":0.979},{"t":1557324000000,"y":0.9753},{"t":1557327600000,"y":0.9703},{"t":1557331200000,"y":0.977355},{"t":1557334800000,"y":0.972685},{"t":1557338400000,"y":0.964},{"t":1557342000000,"y":0.96},{"t":1557352800000,"y":0.98},{"t":1557406800000,"y":0.93},{"t":1557410400000,"y":0.9213},{"t":1557414000000,"y":0.938},{"t":1557417600000,"y":0.93183},{"t":1557421200000,"y":0.94},{"t":1557493200000,"y":0.9558},{"t":1557496800000,"y":0.9411},{"t":1557500400000,"y":0.9411},{"t":1557504000000,"y":0.9411},{"t":1557507600000,"y":0.941928},{"t":1557511200000,"y":0.947889},{"t":1557514800000,"y":0.942}]
 		</dataset>
-	</div>
+	</chartjs>
 	<div id="linechart_data2" style="display:none">
 		<dataset data-label="BPMX">[{"t":1557147600000,"y":6.3655},{"t":1557151200000,"y":6.4065},{"t":1557154800000,"y":6.44},{"t":1557158400000,"y":6.47},{"t":1557162000000,"y":6.47},{"t":1557165600000,"y":6.4702},{"t":1557169200000,"y":6.49},{"t":1557172800000,"y":6.48},{"t":1557234000000,"y":6.4356},{"t":1557237600000,"y":6.46},{"t":1557241200000,"y":6.49},{"t":1557244800000,"y":6.485},{"t":1557248400000,"y":6.4633},{"t":1557252000000,"y":6.45},{"t":1557255600000,"y":6.46},{"t":1557259200000,"y":6.48},{"t":1557320400000,"y":6.44},{"t":1557324000000,"y":6.45},{"t":1557327600000,"y":6.439},{"t":1557331200000,"y":6.43},{"t":1557334800000,"y":6.42},{"t":1557338400000,"y":6.42},{"t":1557342000000,"y":6.41},{"t":1557345600000,"y":6.41},{"t":1557406800000,"y":6.4},{"t":1557410400000,"y":6.3801},{"t":1557414000000,"y":6.36},{"t":1557417600000,"y":6.37},{"t":1557421200000,"y":6.37},{"t":1557424800000,"y":6.4074},{"t":1557428400000,"y":6.4},{"t":1557432000000,"y":6.41},{"t":1557493200000,"y":6.4523},{"t":1557496800000,"y":6.41},{"t":1557500400000,"y":6.43},{"t":1557504000000,"y":6.43},{"t":1557507600000,"y":6.41},{"t":1557511200000,"y":6.4171},{"t":1557514800000,"y":6.42},{"t":1557518400000,"y":6.41},{"t":1557752400000,"y":6.347}]</dataset>
 	</div>
-	
+
+
 	
 	<?=buildOnLoad("wacss.initChartJs();");?>
 </view:chartjs>

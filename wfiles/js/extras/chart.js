@@ -5460,7 +5460,7 @@
                 var t = this.options,
                     e = t.time || (t.time = {}),
                     i = this._adapter = new si._date(t.adapters.date);
-                return e.format && console.warn("options.time.format is deprecated and replaced by options.time.parser."), ut.mergeIf(e.displayFormats, i.formats()), fi.prototype.update.apply(this, arguments)
+                return e.format, ut.mergeIf(e.displayFormats, i.formats()), fi.prototype.update.apply(this, arguments)
             },
             getRightValue: function(t) {
                 return t && void 0 !== t.t && (t = t.t), fi.prototype.getRightValue.call(this, t)

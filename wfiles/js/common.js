@@ -78,19 +78,22 @@ function commonJSInit(){
 	}
 }
 commonJSInit();
+//Note: moved to wacss.isFirefox
 function commonIsFirefox(){
 	let agt=navigator.userAgent.toLowerCase();
 	return (agt.indexOf('firefox')!=-1);
 }
+//Note: moved to wacss.isOpera
 function commonOpera(){
 	let agt=navigator.userAgent.toLowerCase();
 	return agt.indexOf("opera")!=-1;
 }
+//Note: moved to wacss.isIE
 function commonIsIE(){
 	let agt=navigator.userAgent.toLowerCase();
 	return agt.indexOf("msie")!=-1 && !commonIsOpera;
 }
-//commonEmulateEvent - moved to wacss.emulateEvent
+//Note: moved to wacss.emulateEvent
 /**
 * @describe emulates event on object/element.  change, click, etc.
 * @param el mixed  - object or id
@@ -110,7 +113,7 @@ function commonEmulateEvent(el,ev){
 	}
 	return false;
 }
-
+//Note: moved to wacss.getAllAttributes
 //getAllAttributes
 /**
 * @describe gets all attributes of an element
@@ -228,7 +231,7 @@ function commonModalPopup(htm,title,overlay) {
 	}
 	return modal;
 }
-//commonCopyToClipboard - moved to wacss.copy2Clipboard
+//Note:moved to wacss.copy2Clipboard
 /**
 * @describe copies txt to clipboard
 * @param txt string  - the content you want in the clipboard
@@ -262,6 +265,7 @@ function w_navbarToggle(obj) {
 	}    
     return false;
 }
+//Note:moved to wacss.guid
 /**
  * Generates a GUID string, according to RFC4122 standards.
  * @returns {String} The generated GUID.
@@ -381,11 +385,11 @@ function scrollableTable (tableId, tableHeight, tableWidth) {
 	if (!document.all && document.getElementById && !window.opera){this.initFFengine();}
 }
 var loadJsCssFiles=new Array();
-//moved to wacss.loadJs
+//Note: moved to wacss.loadJs
 function loadJsFile(fname){
 	return loadJsCss(fname, 'js');
 	}
-//moved to wacss.loadCSS
+//Note: moved to wacss.loadCSS
 function loadCssFile(fname){
 	return loadJsCss(fname, 'css');
 	}
@@ -415,6 +419,7 @@ function loadJsCss(fname, filetype){
 	return false;
 	}
 /*Mobile Functions */
+//Note: moved to wacss.mobileHideAddressBar
 function mobileHideAddressBar(){
 	window.scrollTo(0,1);
 }
@@ -456,7 +461,7 @@ function simulateTab(){
 	document.dispatchEvent(keyboardEvent);
 	return true;
 }
-//moved to wacss.function_exists
+//Note: moved to wacss.function_exists
 function function_exists( function_name ) {    
     if (typeof function_name == 'string'){  
         return (typeof window[function_name] == 'function');  
@@ -464,7 +469,7 @@ function function_exists( function_name ) {
         return (function_name instanceof Function);  
     }  
 }
-//moved to wacss.simulateEvent
+//Note: moved to wacss.simulateEvent
 /* simulateEvent without actually having the event happen */
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
 function simulateEvent(element, eventName){
@@ -483,6 +488,7 @@ function simulateEvent(element, eventName){
 * @return boolean
 * @usage if(isDate(txt)){...}
 */
+//Note: moved to wacss.isDate
 function isDate(str){
 	//fix for safari
 	var d = new Date(str.replace(/-/g, "/"));
@@ -509,6 +515,7 @@ function isDate(str){
 * @return boolean
 * @usage if(isFutureDate(txt)){...}
 */
+//Note: moved to wacss.isFutureDate
 function isFutureDate(str){
 	var d = new Date(str);
 	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
@@ -536,6 +543,7 @@ function isFutureDate(str){
 * @return boolean
 * @usage if(isPastDate(txt)){...}
 */
+//Note: moved to wacss.isPastDate
 function isPastDate(str){
 	var d = new Date(str);
 	if ( Object.prototype.toString.call(d) === "[object Date]" ) {
@@ -562,6 +570,7 @@ function isPastDate(str){
 * @return boolean
 * @usage if(isDST(txt)){...}
 */
+//Note: moved to wacss.isDST
 function isDST(){
 	var today = new Date;
 	var yr = today.getFullYear();
@@ -586,7 +595,7 @@ function isFunction(functionToCheck) {
 	var getType = {};
 	return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
 }
-//isNum validation - moved to wacss.isNum
+//Note: moved to wacss.isNum
 function isNum(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -841,6 +850,7 @@ function delTableRow(source,tid){
 * @return boolean
 * @usage if(containsHtml(txt)){...}
 */
+//Note: moved to wacss.containsHTML
 function containsHtml(txt){
 	return (/[\<\>]/.test(txt));
 }
@@ -851,10 +861,11 @@ function containsHtml(txt){
 * @return boolean
 * @usage if(containsSpaces(txt)){...}
 */
+//Note: moved to wacss.containsSpaces
 function containsSpaces(txt){
 	return (/[\ ]/.test(trim(txt)));
 }
-//setActiveTab
+//Note: moved to wacss.setActiveTab
 function setActiveTab(t){
 	var lid=t.parentNode.id;
 	var ulobj=t.parentNode.parentNode;
@@ -1550,6 +1561,7 @@ function getParentEx(obj,pname) {
 }
 //getSelText - returns selected text on the page.
 //<input type="button" value="Get selection" onmousedown="getSelText()">
+//Note: moved to wacss.getSelectedText
 function getSelText(fld){
 	//info: returns selected text on the page
 	var txt = '';
@@ -1614,6 +1626,7 @@ function getCursorPos(fld){
     return -1;
 }
 //getText - returns object text
+//Note: moved to wacss.getText
 function getText(obj){
 	//info: returns the text of the specified object or id
 	var cObj=getObject(obj);
@@ -1880,6 +1893,7 @@ function resizeIframe(id){
 	return 1;
     }
 //setText - returns object text
+//Note: moved to wacss.setText
 function setText(obj,txt){
 	//info: sets the text of specified object or id to txt
 	//usage: setText('div2','test');
@@ -2117,6 +2131,7 @@ function toggleClass(id,class1,class2,myid,myclass1,myclass2){
 	}
 }
 //trim - remove beginning and ending spaces, tabs, and line returns
+//note: moved to wacss.trim
 function trim(str){
 	//info: remove beginning and ending spaces, tabs, and line returns
 	if (null != str && undefined != str && "" != str){
@@ -2217,6 +2232,7 @@ function verboseTime(s){
 	parts.push(secs+' secs');
 	return implode(' ',parts);
 }
+//Note: moved to wacss.ucwords
 function ucwords(str){
     //info: Uppercase the first character of every word in a string
     //source: http://phpjs.org/functions
@@ -2255,6 +2271,7 @@ function array_keys(arr,search_value,argStrict){
     }
     return tmp_arr;
 }
+//note: moved to wacss.in_array
 function in_array(needle,haystack,argStrict){
     //info: Checks if the given value exists in the array
     //usage: let tf=in_array('van', ['Kevin', 'van', 'Zonneveld']); - returns true
@@ -2297,6 +2314,7 @@ function nl2br(str,is_xhtml){
 	let breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '' : '<br>';
     return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
 }
+//Note: moved to wacss.implode
 function implode(glue,pieces){
     //info: Joins array elements placing glue string between items and return one string
     //source: http://phpjs.org/functions
