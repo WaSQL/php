@@ -78,16 +78,16 @@
 		<div style="flex:5;"><?=buildFormDate('mydate',array('data-readonlyif'=>'formreadonly:1'));?></div>
 	</div>
 	<div class="row"><div class="col s2">Checkbox</div><div class="col s8" style="font-size:1.3em;"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
-	<div style="display:flex;justify-content: space-between;margin-bottom:10px;">
+	<div style="display:flex;margin-bottom:10px;">
 		<div style="display:flex;padding:5px 0;">
 			<div>Color</div>
 			<div style="margin-left:5px;"><?=buildFormColor('x2wheel',array('data-readonlyif'=>'formreadonly:1'));?></div>
 		</div>
-		<div style="display:flex;padding:5px 0;">
+		<div style="margin-left:15px;display:flex;padding:5px 0;">
 			<div>ColorBox</div>
 			<div style="margin-left:5px;"><?=buildFormColorBox('x2box',array('data-readonlyif'=>'formreadonly:1'));?></div>
 		</div>
-		<div style="display:flex;padding:5px 0;">
+		<div style="margin-left:15px;display:flex;padding:5px 0;">
 			<div>ColorHexagon</div>
 			<div style="margin-left:5px;"><?=buildFormColorHexagon('x2hex',array('data-readonlyif'=>'formreadonly:1'));?></div>
 		</div>
@@ -107,14 +107,14 @@
 	<div class="row"><div class="col s2">Select</div><div class="col s4"><?=buildFormSelect('x14',array(1=>'One',2=>'Two'),array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">SelectCountry</div><div class="col s4"><?=buildFormSelectCountry('x15',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">SelectMonth</div><div class="col s4"><?=buildFormSelectMonth('x16',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
-	<div class="row"><div class="col s2">SelectState</div><div class="col s4"><?=buildFormSelectState('x17',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">SelectState</div><div class="col s4"><?=buildFormSelectState('x17','US',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">SelectTimezone</div><div class="col s4"><?=buildFormSelectTimezone('x18',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">SelectYear</div><div class="col s4"><?=buildFormSelectYear('x19',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">Signature</div><div class="col s4"><?=buildFormSignature('x20',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
-	<div class="row"><div class="col s2">Slider</div><div class="col s4"><?=buildFormSlider('x21',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
+	<div class="row"><div class="col s2">Slider</div><div class="col s4"><?=buildFormSlider('x21',array('value'=>3,'data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">StarRating</div><div class="col s4"><?=buildFormStarRating('x22',array('data-readonlyif'=>'formreadonly:1'));?></div></div>
 	<div class="row"><div class="col s2">WYSIWYG</div><div class="col s10">
-		<textarea data-readonlyif="formreadonly:1" id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(3000);?></textarea>
+		<textarea data-readonlyif="formreadonly:1" id="wacsseditor" class="wacssedit" data-bar-color="w_white" style="height:200px;border:1px solid #CCC;">This is some <b>bold text</b> <?=loremIpsum(300);?></textarea>
 	</div></div>
 </form>
 <?=buildOnLoad("wacss.initWacssEdit();wacss.initSignaturePad();");?>

@@ -4859,6 +4859,9 @@ function buildFormSelectState($name='state',$country='US',$params=array('message
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['value']=buildFormValueParam($name,$params);
+	if(!isDBTable('states')){
+		return 'missing States table';
+	}
 	//get a list of country codes that exist in the states table - place these first
 	$recopts=array(
 		'-table'=>"states",
@@ -5020,18 +5023,32 @@ function buildFormSlider($name, $params=array()){
     	return buildFormSelect($name,$opts,$params);
 	}
 	//build the slider control
-	$params['onchange'].=";setSliderText(this);";
-	$rtn='<div';
+	//$params['onchange'].=";setSliderText(this);";
+	$params['oninput'].=";setSliderText(this);";
+	$displayif='';
 	if(isset($params['displayif'])){
-		$rtn .= ' data-displayif="'.$params['displayif'].'"';
+		$displayif = ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
 	}
-	$rtn .= '>'.PHP_EOL;
+	$title='';
 	if(isset($params['title'])){
-		$rtn .= '	<div>'.$params['title'].'</div>'.PHP_EOL;
+		$title = "<div>{$params['title']}</div>";
+		unset($params['title']);
 	}
-	$rtn .= '	<div class="input_range_text">'.$params['min_displayname'];
-	$rtn .= ' <input type="range" data-label="'.$params['label'].'" name="'.$params['name'].'"';
+	$min_displayname='';
+	if(isset($params['min_displayname'])){
+		$min_displayname = "<div style=\"align-self:center;\">{$params['min_displayname']}</div>";
+		unset($params['min_displayname']);
+	}
+	$max_displayname='';
+	if(isset($params['max_displayname'])){
+		$max_displayname = "<div style=\"align-self:center;\">{$params['max_displayname']}</div>";
+		unset($params['max_displayname']);
+	}
+	if(isset($params['style'])){$params['style'].=';align-self:center;';}
+	else{$params['style']='align-self:center;';}
+	$slider='';
+	$slider .= ' <input type="range" data-label="'.$params['label'].'" name="'.$params['name'].'"';
 	unset($params['name']);
 	unset($params['required']);
 	unset($params['mask']);
@@ -5051,11 +5068,19 @@ function buildFormSlider($name, $params=array()){
 	}
 	$skip=array();
 	if(isset($params['-noname'])){$skip[]='name';}
-	$rtn .= setTagAttributes($params,$skip);
-	$rtn .= ' value="'.$params['value'].'" /> '.$params['max_displayname'].'</div>'.PHP_EOL;
-	$rtn .= '	<div class="input_range_text" id="'.$params['label'].'" align="center">'.$val.'</div>'.PHP_EOL;
-    //$rtn .= printValue($params);
-    $rtn .= '</div>'.PHP_EOL;
+	$slider .= setTagAttributes($params,$skip);
+	$slider .= ' value="'.$params['value'].'"> '.PHP_EOL;
+	$rtn=<<<ENDOFDIV
+<div style="display:flex;flex-direction:column;width:100%;" data-display="flex" {$displayif}>
+	{$title}
+	<div style="display:flex;width:100%;">
+		{$min_displayname}
+		{$slider}
+		{$max_displayname}
+	</div>
+	<div class="input_range_text" id="{$params['label']}" align="center">{$val}</div>
+</div>
+ENDOFDIV;
 	return $rtn;
 }
 //---------- begin function buildFormStarRating-------------------
@@ -6541,7 +6566,7 @@ function setTagAttributes($atts=array(),$skipatts=array()){
 	//pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
 	$htmlatts=array(
 		'id','name','class','style','title','alt','accesskey','tabindex',
-		'onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid',
+		'onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid','oninput',
 		'_behavior','display','capture',
 		'required','requiredmsg','mask','maskmsg','displayname','size','minlength','maxlength','wrap','readonly','disabled',
 		'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
