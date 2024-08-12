@@ -4185,15 +4185,9 @@ function addDBAccess(){
 * 	$ok=cleanupDBRecords('log',90,'logdate');
 */
 function cleanupDBRecords($table,$length=30,$field='_cdate'){
-	$format='Y-m-d';
-	if(isOracle()){
-		$format='d-M-Y';
-	}
-    $now=date($format);
-    $then=date($format,strtotime("-{$length} Days"));
     $opts=array(
 		'-table'	=> $table,
-		'-where'	=> "{$field} < '{$then}'"
+		'-where'	=> "{$field} < (CURRENT_TIMESTAMP() - INTERVAL {$length} DAY )"
 	);
     return delDBRecord($opts);
 }
@@ -5374,7 +5368,6 @@ function addDBRecord($params=array()){
 		$params['_cuser']=(function_exists('isUser') && isUser())?$USER['_id']:0;
     }
     if(isset($info['_cdate']) && (!isset($params['_cdate']) || !strlen(trim($params['_cdate'])))){
-		//$params['_cdate']=date("Y-m-d H:i:s");
 		$params['_cdate']='NOW()';
     }
     /* Add values for fields that match $_SERVER keys */
