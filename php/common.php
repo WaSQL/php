@@ -17344,21 +17344,20 @@ function postEditXmlFromJson($json=array()){
 			/* JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
             if(strlen($rec['_edate']) && isNum($rec['_euser']) && isset($edit_users[$rec['_euser']])){
             	foreach($edit_users[$rec['_euser']] as $k=>$v){
-            		if(isXML($v) || stringContains($v,'"') || strlen($v) > 255){continue;}
+            		if(strlen($v) > 255){continue;}
             		$atts["user_{$k}"]=$v;	
 				}
             }
             elseif(strlen($rec['_cdate']) && isNum($rec['_cuser']) && isset($edit_users[$rec['_cuser']])){
             	foreach($edit_users[$rec['_cuser']] as $k=>$v){
-            		if(isXML($v) || stringContains($v,'"') || strlen($v) > 255){continue;}
+            		if(strlen($v) > 255){continue;}
             		$atts["user_{$k}"]=$v;	
 				}
             }
             /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 			$xml .= '	<WASQL_RECORD';
 			foreach($atts as $key=>$val){
-				//skip any value with HTML tags or double quotes
-				if(preg_match('/[\<\>\"]/ism',$val)){continue;}
+				if(strlen($val) > 255 || preg_match('/[\<\>\"]/ism',$val)){continue;}
 				$val=str_replace('&','&amp;',$val);
 				$val=str_replace('"','&quot;',$val);
 				$xml .= " {$key}=\"{$val}\"";
@@ -17514,6 +17513,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
                 /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 				$xml .= '	<WASQL_RECORD';
 				foreach($atts as $key=>$val){
+					if(strlen($val) > 255 || preg_match('/[\<\>\"]/ism',$val)){continue;}
 					$val=str_replace('&','&amp;',$val);
 					$val=str_replace('"','&quot;',$val);
 					$xml .= " {$key}=\"{$val}\"";
