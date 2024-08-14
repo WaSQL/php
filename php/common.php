@@ -17357,7 +17357,7 @@ function postEditXmlFromJson($json=array()){
             /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 			$xml .= '	<WASQL_RECORD';
 			foreach($atts as $key=>$val){
-				if(strlen($val) > 255 || preg_match('/[\<\>\"]/ism',$val)){continue;}
+				if($key=='user_plan' || strlen($val) > 255 || preg_match('/[\<\>\"]/ism',$val)){continue;}
 				$val=str_replace('&','&amp;',$val);
 				$val=str_replace('"','&quot;',$val);
 				$xml .= " {$key}=\"{$val}\"";
@@ -17513,7 +17513,7 @@ function postEditXml($pextables=array(),$dbname='',$encoding=''){
                 /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 				$xml .= '	<WASQL_RECORD';
 				foreach($atts as $key=>$val){
-					if(strlen($val) > 255 || preg_match('/[\<\>\"]/ism',$val)){continue;}
+					if($key=='user_plan' || strlen($val) > 255 || preg_match('/[\<\>\"]/ism',$val)){continue;}
 					$val=str_replace('&','&amp;',$val);
 					$val=str_replace('"','&quot;',$val);
 					$xml .= " {$key}=\"{$val}\"";
