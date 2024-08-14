@@ -17357,6 +17357,8 @@ function postEditXmlFromJson($json=array()){
             /* END JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
 			$xml .= '	<WASQL_RECORD';
 			foreach($atts as $key=>$val){
+				//skip any value with HTML tags or double quotes
+				if(preg_match('/[\<\>\"]/ism',$val)){continue;}
 				$val=str_replace('&','&amp;',$val);
 				$val=str_replace('"','&quot;',$val);
 				$xml .= " {$key}=\"{$val}\"";
