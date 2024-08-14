@@ -338,6 +338,8 @@ function writeFiles(){
 		abortMessage($msg);
 	}
 	elseif(!isset($xml['WASQL_RECORD'])){
+		$progpath=dirname(__FILE__);
+		setFileContents("{$progpath}/postedit_results.xml",$post['body']);
 		$msg="Error - no WaSQL RECORD".PHP_EOL.printValue($postopts).$post['body'];
 		abortMessage($msg);
 	}

@@ -17344,13 +17344,13 @@ function postEditXmlFromJson($json=array()){
 			/* JDESPAIN/IntegraCore expanded information for editing user and datatime stamps */
             if(strlen($rec['_edate']) && isNum($rec['_euser']) && isset($edit_users[$rec['_euser']])){
             	foreach($edit_users[$rec['_euser']] as $k=>$v){
-            		if(strlen($v) > 255){continue;}
+            		if(isXML($v) || stringContains($v,'"') || strlen($v) > 255){continue;}
             		$atts["user_{$k}"]=$v;	
 				}
             }
             elseif(strlen($rec['_cdate']) && isNum($rec['_cuser']) && isset($edit_users[$rec['_cuser']])){
             	foreach($edit_users[$rec['_cuser']] as $k=>$v){
-            		if(strlen($v) > 255){continue;}
+            		if(isXML($v) || stringContains($v,'"') || strlen($v) > 255){continue;}
             		$atts["user_{$k}"]=$v;	
 				}
             }
