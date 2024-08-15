@@ -294,7 +294,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 			catch (Exception $e) {
 				$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-				debugValue(array($DATABASE['_lastquery']['error'],$query));
+				debugValue(array($e,$DATABASE['_lastquery']['error'],$query));
 				return 0;
 			}
 			return count($recs);
