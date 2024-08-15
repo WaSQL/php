@@ -289,7 +289,11 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			return 0;
 		}
 		if(mysqli_stmt_bind_param($stmt, 's',$jsonstr)){
-			mysqli_stmt_execute($stmt);
+			if(!mysqli_stmt_execute($stmt)){
+				$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+				debugValue(array($DATABASE['_lastquery']['error'],$query));
+				return 0;
+			}
 			return count($recs);
 		}
 		return 0;
