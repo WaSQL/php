@@ -171,6 +171,19 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
+	//are their any required fields in fieldinfo that cannot be null and do not have a default
+	$rfields=array();
+	foreach($fieldinfo as $f=>$info){
+		if(
+			isset($info['_dbnull']) 
+			&& strtolower($info['_dbnull'])=='no' 
+			&& !isset($info['default'])
+			&& !stringContains($info['_dbflags'],'auto_increment')
+		){
+			$rfields[]=$f;
+		}
+	}
+	//echo "rfields".printValue($rfields);exit;
 	//fields
 	$fields=array();
 	foreach($recs as $i=>$first_rec){
@@ -183,6 +196,43 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		break;
 	}
+	//check to confirm requried fields have a value. Fix if possible.
+	if(count($rfields)){
+		foreach($rfields as $rfld){
+			foreach($recs as $i=>$rec){
+				if(!isset($rec[$rfld]) || !strlen($rec[$rfld])){
+					switch(strtolower($rfld)){
+						case '_cuser':
+							$recs[$i][$rfld]=isset($USER['_id'])?$USER['_id']:0;
+							if(!in_array($rfld,$fields)){$fields[]=$rfld;}
+						break;
+						case '_euser':
+							$recs[$i][$rfld]=isset($USER['_id'])?$USER['_id']:0;
+							if(!in_array($rfld,$fields)){$fields[]=$rfld;}
+						break;
+						case '_cdate':
+							$recs[$i][$rfld]='CURRENT_TIMESTAMP';
+							if(!in_array($rfld,$fields)){$fields[]=$rfld;}
+						break;
+						case '_edate':
+							$recs[$i][$rfld]='CURRENT_TIMESTAMP';
+							if(!in_array($rfld,$fields)){$fields[]=$rfld;}
+						break;
+						default:
+							debugValue(array(
+								'function'=>'mysqlAddDBRecordsProcess',
+								'message'=>$rfld.' cannot be null',
+								'rec'=>$rec,
+								'fieldinfo'=>$fieldinfo[$rfld]
+							));
+							return 0;
+						break;
+					}
+				}
+			}
+		}
+	}
+	//confirm there are fields
 	if(!count($fields)){
 		debugValue(array(
 			'function'=>'mysqlAddDBRecordsProcess',
@@ -211,6 +261,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	$fieldstr=implode(',',$fields);
+	//echo printValue($recs);exit;
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
@@ -285,7 +336,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		$stmt=mysqli_prepare($dbh_mysql,$query);
 		if(!is_resource($stmt) &&  !is_object($stmt)){
 			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-			debugValue(array($DATABASE['_lastquery']['error'],$query));
+			debugValue(array($DATABASE['_lastquery']['error'],$query,$fieldinfo));
 			return 0;
 		}
 		if(mysqli_stmt_bind_param($stmt, 's',$jsonstr)){
@@ -294,7 +345,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 			catch (Exception $e) {
 				$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-				debugValue(array($e,$DATABASE['_lastquery']['error'],$query));
+				debugValue(array($DATABASE['_lastquery']['error'],$query,$fieldinfo));
 				return 0;
 			}
 			return count($recs);

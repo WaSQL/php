@@ -49,6 +49,7 @@ function importProcessCSV($params){
 	}
 	//import
 	$stime=microtime(true);
+	//echo $params['csvtable_name'].printValue($cparams);exit;
 	$importrecs_total=dbAddRecords($params['csvtable_db'],$params['csvtable_name'],$cparams);
 	$etime=round((microtime(true)-$stime),4);
 	array_unshift($results,"Total imported time: {$etime} seconds");

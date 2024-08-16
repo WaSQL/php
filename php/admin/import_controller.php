@@ -6,6 +6,7 @@ global $fieldinfo;
 $importrecs=$results=array();
 switch(strtolower($_REQUEST['func'])){
 	case 'process':
+		$ok=processFileUploads();
 		switch(strtolower($_REQUEST['filetype'])){
 			case 'xml':
 				$results=importProcessXML($_REQUEST);
