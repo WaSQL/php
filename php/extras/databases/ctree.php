@@ -1014,6 +1014,9 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	while(1){
 		$row=odbc_fetch_array($result);
 		if(!is_array($row) || !count($row)){
+			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+				appendFileContents($params['-logfile'],"{$i} - odbc_fetch_array returned empty row - assuming we are done".PHP_EOL);
+			}
 			break;
 		}
 		$i++;
@@ -1021,6 +1024,9 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		foreach($row as $key=>$val){
 			//check for ctreeStopProcess request
 			if(isset($ctreeStopProcess) && $ctreeStopProcess==1){
+				if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+					appendFileContents($params['-logfile'],"{$i} - ctreeStopProcess set to 1 - stopping".PHP_EOL);
+				}
 				break;
 			}
 			$key=strtolower($key);
