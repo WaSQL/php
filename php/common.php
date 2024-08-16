@@ -8955,6 +8955,10 @@ function evalPHP($strings){
 			$strings[$sIndex]='';
 			continue;
 		}
+		if(is_null($strings[$sIndex])){
+			$strings[$sIndex]='';
+			continue;
+		}
 		preg_match_all('/\<\?(.+?)\?\>/sm',$strings[$sIndex],$evalmatches,PREG_PATTERN_ORDER);
 		preg_match_all('/<script type\="php">(.+?)<\/script>/ism',$strings[$sIndex],$evalmatches2,PREG_PATTERN_ORDER);
 		if(count($evalmatches2[1])){
