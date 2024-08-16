@@ -155,7 +155,7 @@ function ctreeDBConnect($params=array()){
 		exit;
 	}
 	//ctree does not support pooling do it in the ODBC Connection manager
-	$params['-single']=1;
+	//$params['-single']=1;
 	//echo printValue($params);exit;
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
