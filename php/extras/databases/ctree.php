@@ -969,10 +969,10 @@ function ctreeQueryResults($query='',$params=array()){
 *	returns records
 */
 function ctreeEnumQueryResults($result,$params=array(),$query=''){
-	global $dbh_ctree;
 	$ok=dbSetLast(array(
 		'function'=>'ctreeEnumQueryResults'
 	));
+	global $dbh_ctree;
 	global $ctreeStopProcess;
 	if(!is_object($result) && !is_resource($result)){return null;}
 	$header=0;
@@ -1014,18 +1014,11 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		$rowcount=odbc_num_rows($dbh_ctree);
 		appendFileContents($params['-logfile'],"odbc_num_rows returns {$rowcount}".PHP_EOL);
 	}
-
 	$rowcount=0;
 	$i=0;
 	while(1){
 		$row=odbc_fetch_array($result);
-		//confirm that we are really done
-		if(!is_array($row) || !count($row)){$orirow=$row;sleep(1);$row=odbc_fetch_array($result);}
-		if(!is_array($row) || !count($row)){sleep(2);$row=odbc_fetch_array($result);}
 		if(!is_array($row) || !count($row)){
-			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-				appendFileContents($params['-logfile'],"{$i} - odbc_fetch_array returned empty row - assuming we are done".printValue($orirow).PHP_EOL);
-			}
 			break;
 		}
 		$i++;
@@ -1033,9 +1026,6 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		foreach($row as $key=>$val){
 			//check for ctreeStopProcess request
 			if(isset($ctreeStopProcess) && $ctreeStopProcess==1){
-				if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-					appendFileContents($params['-logfile'],"{$i} - ctreeStopProcess set to 1 - stopping".PHP_EOL);
-				}
 				break;
 			}
 			$key=strtolower($key);
