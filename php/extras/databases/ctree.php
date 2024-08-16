@@ -1013,9 +1013,12 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	$i=0;
 	while(1){
 		$row=odbc_fetch_array($result);
+		//confirm that we are really done
+		if(!is_array($row) || !count($row)){$orirow=$row;sleep(1);$row=odbc_fetch_array($result);}
+		if(!is_array($row) || !count($row)){sleep(2);$row=odbc_fetch_array($result);}
 		if(!is_array($row) || !count($row)){
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-				appendFileContents($params['-logfile'],"{$i} - odbc_fetch_array returned empty row - assuming we are done".PHP_EOL);
+				appendFileContents($params['-logfile'],"{$i} - odbc_fetch_array returned empty row - assuming we are done".printValue($orirow).PHP_EOL);
 			}
 			break;
 		}
