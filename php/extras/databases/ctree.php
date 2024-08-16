@@ -1011,7 +1011,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-		$rowcount=odbc_num_rows($dbh_ctree);
+		$rowcount=odbc_num_rows($result);
 		appendFileContents($params['-logfile'],"odbc_num_rows returns {$rowcount}".PHP_EOL);
 	}
 	$rowcount=0;
