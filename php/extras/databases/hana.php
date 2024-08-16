@@ -2253,8 +2253,10 @@ function hanaQueryResults($query,$params=array()){
 	}
 	$ok=odbc_errormsg($dbh_hana);
 	if(!isset($params['-longreadlen'])){
-		$params['-longreadlen']=131027;
+		$params['-longreadlen']=8192;
 	}
+	$params['-longreadlen']=819200;
+	//echo printValue($params);exit;
 	try{
 		//odbc_exec($dbh_hana, "SET NAMES 'UTF8'");
 		//odbc_exec($dbh_hana, "SET client_encoding='UTF-8'");

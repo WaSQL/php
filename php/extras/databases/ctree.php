@@ -969,6 +969,7 @@ function ctreeQueryResults($query='',$params=array()){
 *	returns records
 */
 function ctreeEnumQueryResults($result,$params=array(),$query=''){
+	global $dbh_ctree;
 	$ok=dbSetLast(array(
 		'function'=>'ctreeEnumQueryResults'
 	));
@@ -1009,6 +1010,11 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
 		}
 	}
+	if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+		$rowcount=odbc_num_rows($dbh_ctree);
+		appendFileContents($params['-logfile'],"odbc_num_rows returns {$rowcount}".PHP_EOL);
+	}
+
 	$rowcount=0;
 	$i=0;
 	while(1){
