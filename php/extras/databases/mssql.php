@@ -2155,14 +2155,14 @@ function mssqlNamedQuery($name,$str=''){
 			return "KILL {$str}";
 		break;
 		case 'tables':
-			return <<<ENDOFQUERY 
+			return <<<ENDOFQUERY
 SELECT
 	name,object_id,max_column_id_used,create_date,modify_date 
 FROM sys.tables
 ENDOFQUERY;
 		break;
 		case 'views':
-			return <<<ENDOFQUERY 
+			return <<<ENDOFQUERY
 SELECT 
 	name,object_id,create_date,modify_date 
 FROM sys.views
