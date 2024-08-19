@@ -933,6 +933,13 @@ function mssqlParseConnectParams($params=array()){
 				'CharacterSet' 			=> $character_set,
 				'ReturnDatesAsStrings' 	=> $return_dates_as_strings
 			);
+			//integratedSecurity=true;authenticationscheme=NTLM;domain=corp.doterra.net;
+			if(isset($params['-integrated_security'])){$connect_data['integratedSecurity']=$params['-integrated_security'];
+			}
+			if(isset($params['-authentication_scheme'])){$connect_data['authenticationscheme']=$params['-authentication_scheme'];
+			}
+			if(isset($params['-domain'])){$connect_data['domain']=$params['-domain'];
+			}
 			//application_intent - ReadOnly or readWrite - Defaults to ReadWrite
 			if(isset($params['-application_intent'])){$connect_data['ApplicationIntent']=$params['-application_intent'];}
 			elseif(isset($CONFIG['mssql_application_intent'])){$connect_data['ApplicationIntent']=$CONFIG['mssql_application_intent'];}
