@@ -938,6 +938,8 @@ function mssqlParseConnectParams($params=array()){
 			}
 			if(isset($params['-authentication_scheme'])){$connect_data['authenticationscheme']=$params['-authentication_scheme'];
 			}
+			if(isset($params['-authentication'])){$connect_data['Authentication']=$params['-authentication'];
+			}
 			if(isset($params['-domain'])){$connect_data['domain']=$params['-domain'];
 			}
 			//application_intent - ReadOnly or readWrite - Defaults to ReadWrite
