@@ -14645,7 +14645,10 @@ function includePage($val='',$params=array()){
 		$_REQUEST[$key]=$pval;
 	}
 	//load any functions in the page template
-	if(isset($rec['_template']) && isNum($rec['_template'])){
+	if(isset($params['-template']) && isNum($params['-template'])){
+		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$params['-template']}"));
+	}
+	elseif(isset($rec['_template']) && isNum($rec['_template'])){
 		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$rec['_template']}"));
 	}
 	//load functions in the page record
