@@ -213,7 +213,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					$jfields[]="IFNULL({$field},0) as {$field}";
 				break;
 				default:
-					echo $field.printValue($fieldinfo[$field]);exit;
+					//echo $field.printValue($fieldinfo[$field]);exit;
 					$type=$fieldinfo[$field]['_dbtype'];
 					$pfield=str_replace("\"",'',$field);
 					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
