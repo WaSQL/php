@@ -2156,7 +2156,7 @@ function mssqlNamedQuery($name,$str=''){
 		break;
 		case 'tables':
 			return <<<ENDOFQUERY 
-SELECT 
+SELECT
 	name,object_id,max_column_id_used,create_date,modify_date 
 FROM sys.tables
 ENDOFQUERY;
