@@ -2125,6 +2125,16 @@ function mssqlNamedQueryList(){
 			'name'=>'Sessions'
 		),
 		array(
+			'code'=>'tables',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
 			'code'=>'table_locks',
 			'icon'=>'icon-lock',
 			'name'=>'Table Locks'
@@ -2143,6 +2153,20 @@ function mssqlNamedQuery($name,$str=''){
 	switch(strtolower($name)){
 		case 'kill':
 			return "KILL {$str}";
+		break;
+		case 'tables':
+			return <<<ENDOFQUERY 
+SELECT 
+	name,object_id,max_column_id_used,create_date,modify_date 
+FROM sys.tables
+ENDOFQUERY;
+		break;
+		case 'views':
+			return <<<ENDOFQUERY 
+SELECT 
+	name,object_id,create_date,modify_date 
+FROM sys.views
+ENDOFQUERY;
 		break;
 		case 'running':
 		case 'queries':
