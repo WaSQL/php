@@ -14648,6 +14648,9 @@ function includePage($val='',$params=array()){
 	if(isset($params['-template']) && isNum($params['-template'])){
 		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$params['-template']}"));
 	}
+	elseif(isset($params['--template']) && isNum($params['--template'])){
+		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$params['-template']}"));
+	}
 	elseif(isset($rec['_template']) && isNum($rec['_template'])){
 		$ok=includeDBOnce(array('-table'=>'_templates','-field'=>'functions','-where'=>"_id={$rec['_template']}"));
 	}
