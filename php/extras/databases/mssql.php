@@ -2127,7 +2127,7 @@ function mssqlNamedQueryList(){
 		array(
 			'code'=>'tables',
 			'icon'=>'icon-table',
-			'name'=>'Views'
+			'name'=>'tables'
 		),
 		array(
 			'code'=>'views',
