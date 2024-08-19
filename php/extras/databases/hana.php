@@ -194,6 +194,12 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
 					$jfields[]="IFNULL({$field},0) as {$field}";
 				break;
+				case 'bigint':
+					$type='bigint';
+					$pfield=str_replace("\"",'',$field);
+					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
+					$jfields[]="IFNULL({$field},0) as {$field}";
+				break;
 				case 'varbinary':
 					$type='nvarchar';
 					$pfield=str_replace("\"",'',$field);
