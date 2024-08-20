@@ -207,13 +207,15 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					$jfields[]="COALESCE(BINTOSTR({$field}),'') as {$field}";
 				break;
 				case 'decimal':
+				case 'smalldecimal':
 					$type=$fieldinfo[$field]['_dbtype'];
 					$pfield=str_replace("\"",'',$field);
 					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
 					$jfields[]="IFNULL({$field},0) as {$field}";
 				break;
+				case 'real':
 				case 'double':
-					$type=$fieldinfo[$field]['_dbtype'];
+					$type='double';
 					$pfield=str_replace("\"",'',$field);
 					$field_defs[]="		{$field} {$type} PATH '\$.{$pfield}'";
 					$jfields[]="IFNULL({$field},0) as {$field}";
