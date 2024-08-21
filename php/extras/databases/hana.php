@@ -329,7 +329,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					odbc_close($dbh_hana);
 				}
 				$dbh_hana=null;
-				return $rcnt;
+				return count($recs);
 			}
 			else{
 				if(file_exists($atfile)){unlink($atfile);}
