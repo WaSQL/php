@@ -1843,12 +1843,15 @@ var wacss = {
 		if(list.length==0){return false;}
 		//load Chart is it is not already loaded
 		if(undefined == Chart){
-			console.log('loading Chartjs, etc');
+			//console.log('loading Chartjs, etc');
 			wacss.loadScript('/wfiles/js/extras/chart.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
 		}
-		if(undefined == Chart){return false;}
+		if(undefined == Chart){
+			console.log('Error in initChartJsBehavior: Chartjs is not defined');
+			return false;
+		}
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
 	        'rgba(75,192,192,0.4)',
@@ -1904,10 +1907,6 @@ var wacss = {
 				console.log(list[i]);
 				continue;
 			}
-			if(undefined != list[i].dataset.debug){
-				console.log('datadiv');
-				console.log(datadiv.innerHTML);
-			}
 			//setup the config: type, data, options
 			let lconfig = {
 				type:list[i].dataset.type,
@@ -1922,10 +1921,6 @@ var wacss = {
 				let optionsjson=wacss.trim(optionsdiv.innerText);
 				//lconfig.options=JSON.parse(optionsjson);
 				lconfig.options=JSON.parse(optionsjson);
-				if(undefined != list[i].dataset.debug){
-					console.log('options loaded');
-					console.log(lconfig.options);
-				}
 			}
 			else{
 				lconfig.options={
@@ -1949,26 +1944,12 @@ var wacss = {
             			}
             		}
 				};
-				if(undefined != list[i].dataset.debug){
-					console.log('no options div - setting default');
-				}
 			}
 			//labels
 			let labelsdiv=datadiv.querySelector('labels');
 			if(undefined != labelsdiv){
 				let labelsjson=wacss.trim(labelsdiv.innerText);
 				lconfig.data.labels=JSON.parse(labelsjson);
-				if(undefined != list[i].dataset.debug){
-					console.log('labelsjson');
-					console.log(labelsjson);
-					console.log('labels');
-					console.log(lconfig.data.labels);
-				}
-			}
-			else{
-				if(undefined != list[i].dataset.debug){
-					console.log('no labels div');
-				}
 			}
 			//colors
 			let colorsdiv=datadiv.querySelector('colors');
@@ -1979,10 +1960,6 @@ var wacss = {
 			else{
 				colors=gcolors;
 			}
-			if(undefined != list[i].dataset.debug){
-				console.log('colors');
-				console.log(colors);
-			}
 			//bcolors
 			let bcolorsdiv=datadiv.querySelector('bcolors');
 			if(undefined != bcolorsdiv){
@@ -1992,25 +1969,14 @@ var wacss = {
 			else{
 				bcolors=gbcolors;
 			}
-			if(undefined != list[i].dataset.debug){
-				console.log('bcolors');
-				console.log(bcolors);
-			}
 			//datasets
 			let datasets=datadiv.querySelectorAll('dataset');
-			if(undefined != list[i].dataset.debug){
-				console.log(datasets.length+' dataset tags found');
-			} 
 			for(let d=0;d<datasets.length;d++){
 				let datasetjson=wacss.trim(datasets[d].innerText);
 				let json=JSON.parse(datasetjson);  		
 				let dataset={
 					label:datasets[d].dataset.label || datasets[d].dataset.title || '',
-					backgroundColor: datasets[d].dataset.backgroundcolor || colors[d] || null,
-					borderColor: datasets[d].dataset.bordercolor || bcolors[d] || null,
-					borderWidth:1,
-					borderRadius:3,
-                    type:datasets[d].dataset.type || lconfig.type,
+                    //type:datasets[d].dataset.type || lconfig.type,
 					data: json
 				};
 				switch(list[i].dataset.type.toLowerCase()){
@@ -2021,12 +1987,12 @@ var wacss = {
 						dataset.backgroundColor=colors || null;
 						dataset.borderColor=bcolors || null;
 					break;
-				}
-				if(undefined != list[i].dataset.debug){
-					console.log('type');
-					console.log(list[i].dataset.type.toLowerCase());
-					console.log('dataset');
-					console.log(dataset);
+					default:
+						dataset.backgroundColor = datasets[d].dataset.backgroundcolor || colors[d] || null;
+						dataset.borderColor = datasets[d].dataset.bordercolor || bcolors[d] || null;
+						dataset.borderWidth = 1;
+						dataset.borderRadius = 3;
+					break;
 				}
 				/* --  fill  -- */
 				if(undefined != datasets[d].dataset.fill && 
@@ -2151,7 +2117,7 @@ var wacss = {
 			list[i].appendChild(lcanvas);
 			let lctx = lcanvas.getContext('2d');
 			if(undefined != list[i].dataset.debug){
-				console.log(lconfig);
+				console.log(JSON.stringify(lconfig,null,2));
 			}
 			wacss.chartjs[list[i].id] = new Chart(lctx, lconfig);
 			//onclick
