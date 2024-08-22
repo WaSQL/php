@@ -7043,8 +7043,9 @@ function commonProcessChartjsTags($htm){
 			$htm=str_replace($chartjs_tag,$replace_str,$htm);
 			continue;
 		}
+
 		//get dataset tags inside
-		preg_match_all('/\<(div|dataset|colors|options|labels)(.*?)\>(.+?)\<\/\1\>/ism',$chartjs_contents,$chartjs_inner,PREG_PATTERN_ORDER);
+		preg_match_all('/\<(div|dataset|colors|bcolors|options|labels)(.*?)\>(.+?)\<\/\1\>/ism',$chartjs_contents,$chartjs_inner,PREG_PATTERN_ORDER);
 		//echo printValue($chartjs_tags);exit;
 		/* this returns an array of three arrays
 			0 = the whole dataset tag
@@ -7171,7 +7172,7 @@ function commonProcessChartjsTags($htm){
 		if(count($bcolors)){
 			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors)).'</bcolors>'.PHP_EOL;
 		}
-		elseif(strlen($colborstr)){
+		elseif(strlen($bcolorstr)){
 			$replace_str.='<bcolors>'.$bcolorstr.'</bcolors>'.PHP_EOL;
 		}
 		if(strlen($optionstr)){
