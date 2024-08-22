@@ -576,7 +576,16 @@
 </view:c3charts>
 
 <view:chartjs>
-	<chartjs data-type="bar" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
+	
+	<chartjs data-type="doughnut" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;">
+		<dataset>[10,50,40]</dataset>
+		<labels>["ten","fifty","forty"]</labels>
+	</chartjs>
+	<chartjs data-type="pie" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;">
+		<dataset>[10,50,40]</dataset>
+		<labels>["ten","fifty","forty"]</labels>
+	</chartjs>
+<chartjs data-type="bar" data-onclick="chartJsOnclick" style="border-radius:13px;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;padding:25px;margin:25px;" data-backgroundcolor="rgba(183,170,159,0.35)" data-bordercolor="rgb(183,170,159)">
 		<options>
 		{
 			"responsive": true,

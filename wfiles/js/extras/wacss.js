@@ -1979,6 +1979,10 @@ var wacss = {
 			else{
 				colors=gcolors;
 			}
+			if(undefined != list[i].dataset.debug){
+				console.log('colors');
+				console.log(colors);
+			}
 			//bcolors
 			let bcolorsdiv=datadiv.querySelector('bcolors');
 			if(undefined != bcolorsdiv){
@@ -1987,6 +1991,10 @@ var wacss = {
 			}
 			else{
 				bcolors=gbcolors;
+			}
+			if(undefined != list[i].dataset.debug){
+				console.log('bcolors');
+				console.log(bcolors);
 			}
 			//datasets
 			let datasets=datadiv.querySelectorAll('dataset');
@@ -2005,7 +2013,21 @@ var wacss = {
                     type:datasets[d].dataset.type || lconfig.type,
 					data: json
 				};
-				//console.log(dataset);
+				switch(list[i].dataset.type.toLowerCase()){
+					case 'pie':
+					case 'doughnut':
+						//set colors to the set for pies and doughnuts
+						dataset.hoverOffset=4;
+						dataset.backgroundColor=colors || null;
+						dataset.borderColor=bcolors || null;
+					break;
+				}
+				if(undefined != list[i].dataset.debug){
+					console.log('type');
+					console.log(list[i].dataset.type.toLowerCase());
+					console.log('dataset');
+					console.log(dataset);
+				}
 				/* --  fill  -- */
 				if(undefined != datasets[d].dataset.fill && 
 					(datasets[d].dataset.fill.toLowerCase()=='0' || datasets[d].dataset.fill.toLowerCase()=='false')
