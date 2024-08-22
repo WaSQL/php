@@ -6911,6 +6911,15 @@ function commonProcessChartjsTags($htm){
 			$colorstr=$m[1];
 			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
 		}
+		$bcolorstr='';
+		if(isset($chartjs_attributes['data-bcolors'])){
+			$arr=preg_split('/\,+/',$chartjs_attributes['data-bcolors']);
+			$bcolorstr=encodeJSON($arr);
+		}
+		elseif(preg_match('/\<bcolors\>(.*?)\<\/bcolors\>/ism',$chartjs_contents,$m)){
+			$bcolorstr=$m[1];
+			$chartjs_contents=str_replace($m[0],'',$chartjs_contents);
+		}
 		//look for just a query
 		if(preg_match('/^(select|with)/is',trim($chartjs_contents))){
 			$process='';
@@ -6956,6 +6965,7 @@ function commonProcessChartjsTags($htm){
 			$labels=array();
 			$values=array();
 			$rcolors=array();
+			$rbcolors=array();
 			$replace_str='';
 			$replace_str.='<div data-behavior="chartjs" ';
 			$replace_str .= setTagAttributes($chartjs_attributes);
@@ -6972,6 +6982,9 @@ function commonProcessChartjsTags($htm){
 				if(isset($rec['color'])){
 					$rcolors[]=$rec['color'];
 				}
+				if(isset($rec['bcolor'])){
+					$rbcolors[]=$rec['bcolor'];
+				}
 				if(!in_array($dataset,$datasets)){
 					$datasets[]=$dataset;
 				}
@@ -6979,6 +6992,9 @@ function commonProcessChartjsTags($htm){
 			}
 			if(count($rcolors)){
 				$colorstr=encodeJSON($rcolors);
+			}
+			if(count($rbcolors)){
+				$bcolorstr=encodeJSON($rbcolors);
 			}
 			foreach($datasets as $dataset){
 				foreach($labels as $label){
@@ -7013,6 +7029,9 @@ function commonProcessChartjsTags($htm){
 			if(strlen($colorstr)){
 				$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
 			}
+			if(strlen($bcolorstr)){
+				$replace_str.='<bcolors>'.$bcolorstr.'</bcolors>'.PHP_EOL;
+			}
 			if(strlen($optionstr)){
 				$replace_str.='<options>'.$optionstr.'</options>'.PHP_EOL;
 			}
@@ -7045,6 +7064,7 @@ function commonProcessChartjsTags($htm){
 		$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
 		$labels=array();
 		$colors=array();
+		$bcolors=array();
 		foreach($chartjs_inner[0] as $t=>$chartjs_innertag){
 			$innertag_name=$chartjs_inner[1][$t];
 			$innertag_attributes=parseHtmlTagAttributes($chartjs_inner[2][$t]);
@@ -7110,6 +7130,9 @@ function commonProcessChartjsTags($htm){
 						if(isset($rec['color'])){
 							$colors[]=$rec['color'];
 						}
+						if(isset($rec['bcolor'])){
+							$bcolors[]=$rec['bcolor'];
+						}
 					}
 					$replace_str.=json_encode($vals);
 				}
@@ -7144,6 +7167,12 @@ function commonProcessChartjsTags($htm){
 		}
 		elseif(strlen($colorstr)){
 			$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
+		}
+		if(count($bcolors)){
+			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors)).'</bcolors>'.PHP_EOL;
+		}
+		elseif(strlen($colborstr)){
+			$replace_str.='<bcolors>'.$bcolorstr.'</bcolors>'.PHP_EOL;
 		}
 		if(strlen($optionstr)){
 			$replace_str.='<options>'.$optionstr.'</options>'.PHP_EOL;
