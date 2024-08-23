@@ -6047,13 +6047,13 @@ var wacss = {
 		return true;
 	},
 	/**
-	* @name wacss.showVideo
-	* @describe creates a DOM element to show video in
+	* @name wacss.showAudio
+	* @describe creates a DOM element to show audio in
 	* @param mixed DOM element or id of element
 	* @param number z-index defaults to 10020
-	* @param string title optional title to show above video
+	* @param string title optional title to show above audio
 	* @return object DOM object that is created
-	* @usage let el=wacss.showImage('#myimg',2323)
+	* @usage let el=wacss.showAudio('#myimg',2323)
 	*/
 	showAudio: function(el,z,title){
 		el=wacss.getObject(el);
@@ -6215,18 +6215,41 @@ var wacss = {
 			t.innerHTML=title;
 			d.appendChild(t);
 		}
-		let vid=document.createElement('video');
-		vid.src=el.getAttribute('src')  || el.dataset.src || el.getAttribute('href');
-		vid.setAttribute('controls','');
-		vid.setAttribute('autoplay','');
-		vid.setAttribute('playsinline','');
-		vid.style.maxWidth='100%';
-		vid.style.maxHeight='770px';
-		vid.style.width='auto';
-		vid.style.height='auto';
-		vid.d=d;
-		vid.oncanplay=function(){
-			centerObject(this.d);
+		//if video is youtube we have to add an iframe instead of a video element
+		let video_src=el.getAttribute('src')  || el.dataset.src || el.getAttribute('href');
+		let vid={};
+		if(
+			video_src.toLowerCase().indexOf('youtube') != -1 
+			|| video_src.toLowerCase().indexOf('youtu.be') != -1
+			){
+			let code=video_src.substring(video_src.lastIndexOf('/') + 1);
+			video_src='https://www.youtube.com/embed/'+code;
+			vid=document.createElement('iframe');
+			vid.style.maxWidth='100%';
+			vid.style.maxHeight='770px';
+			vid.style.width='auto';
+			vid.style.height='auto';
+			vid.src=video_src;
+			vid.title='';
+			vid.frameborder=0;
+			vid.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+			vid.referrerpolicy="strict-origin-when-cross-origin";
+			vid.setAttribute('allowfullscreen','allowfullscreen');
+		}
+		else{
+			vid=document.createElement('video');
+			vid.src=video_src;
+			vid.setAttribute('controls','');
+			vid.setAttribute('autoplay','');
+			vid.setAttribute('playsinline','');
+			vid.style.maxWidth='100%';
+			vid.style.maxHeight='770px';
+			vid.style.width='auto';
+			vid.style.height='auto';
+			vid.d=d;
+			vid.oncanplay=function(){
+				centerObject(this.d);
+			}
 		}
 		d.appendChild(vid);
 		document.body.appendChild(d);
