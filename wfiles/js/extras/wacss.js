@@ -1976,6 +1976,7 @@ var wacss = {
 				let json=JSON.parse(datasetjson);  		
 				let dataset={
 					label:datasets[d].dataset.label || datasets[d].dataset.title || '',
+					borderWidth:datasets[d].dataset.borderwidth || list[i].dataset.borderwidth || 1,
                     //type:datasets[d].dataset.type || lconfig.type,
 					data: json
 				};
@@ -1990,7 +1991,6 @@ var wacss = {
 					default:
 						dataset.backgroundColor = datasets[d].dataset.backgroundcolor || colors[d] || null;
 						dataset.borderColor = datasets[d].dataset.bordercolor || bcolors[d] || null;
-						dataset.borderWidth = 1;
 						dataset.borderRadius = 3;
 					break;
 				}
