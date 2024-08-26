@@ -4157,11 +4157,11 @@ function buildFormFile($name,$params=array()){
 		}
 		//clear button
 		$tag .= <<<ENDOFTAG
-<span class="w_danger icon-erase" data-id="{$params['id']}" data-remove="{$params['id']}_remove" data-text="{$params['id']}_text" style="font-size:32px;margin-left:25px;" title="Remove" onclick="document.getElementById(this.dataset.id).value='';document.getElementById(this.dataset.remove).value=1;document.getElementById(this.dataset.text).innerText='';return false;">
+<span class="w_danger icon-erase" data-id="{$params['id']}" data-remove="{$params['id']}_remove" data-text="{$params['id']}_text" style="font-size:24px;margin-left:25px;" title="Remove" onclick="document.getElementById(this.dataset.id).value='';document.getElementById(this.dataset.remove).value=1;document.getElementById(this.dataset.text).innerText='';return false;">
 </span>
 ENDOFTAG;
 		//download
-		$tag .= '<a href="'.$params['value'].'" target="_blank" title="Download" style="text-decoration:none;font-size:32px;margin-left:25px;"><span class="w_info icon-download"></span></a>'.PHP_EOL;
+		$tag .= '<a href="'.$params['value'].'" target="_blank" title="Download" style="text-decoration:none;font-size:24px;margin-left:25px;"><span class="w_info icon-download"></span></a>'.PHP_EOL;
 	}
 	else{
 		$tag.=$params['text'];
