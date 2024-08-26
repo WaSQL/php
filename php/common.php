@@ -4120,7 +4120,7 @@ function buildFormFile($name,$params=array()){
 	}
 	unset($label_params['width']);
 	$label_params['style']=preg_replace('/width\:[0-9\%pxrem\;]+/is','',$label_params['style']);
-	$label_params['style'].=';width:300px;';
+	$label_params['style'].=';width:300px;padding:0 15px;';
 	//return printValue($params);
 	$tag .= '	<input type="file" data-text="'.$params['text'].'"';
 	if(isset($params['required'])){
@@ -4142,7 +4142,7 @@ function buildFormFile($name,$params=array()){
 	}
 	$tag .=' for="'.$params['id'].'"';
 	$tag .= setTagAttributes($label_params);
-	$tag .= ' ><span class="'.$params['-icon'].'"></span><span id="'.$params['id'].'_text" class="input_file_text" style="margin-left:5px;display:inline-flex;justify-content:center;align-items:center;font-size:0.8rem;">';
+	$tag .= ' ><span class="'.$params['-icon'].'" style="font-size:24px;margin-left:25px;"></span><span id="'.$params['id'].'_text" class="input_file_text" style="margin-left:5px;display:inline-flex;justify-content:center;align-items:center;font-size:0.8rem;">';
 	//check for value
 	if(strlen($params['value'])){
 		$val=encodeHtml($params['value']);	
