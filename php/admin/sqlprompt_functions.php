@@ -147,7 +147,7 @@ function sqlpromptCaptureFirstRows($rec,$max=30){
 	}
 	return;
 }
-function sqlpromptListResults($recs){
+function sqlpromptListResults($recs,$listopts=array()){
 	global $db;
 	if(!is_array($recs)){
 		if(strlen($recs)){return $recs;}
@@ -160,6 +160,11 @@ function sqlpromptListResults($recs){
 		'-hidesearch'=>1,
 		'-tableclass'=>'table striped bordered condensed responsive'
 	);
+	if(is_array($listopts)){
+		foreach($listopts as $k=>$v){
+			$opts[$k]=$v;
+		}
+	}
 	$sumfields=array();
 	foreach($recs[0] as $k=>$v){
 		if(preg_match('/\_(count|size)$/i',$k)){

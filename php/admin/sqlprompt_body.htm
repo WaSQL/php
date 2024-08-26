@@ -211,7 +211,7 @@
 	<div class="w_padtop" style="overflow:auto;">
 		<view:success>
 			<?=buildOnLoad("sqlpromptSetSha('{$shastr}','{$recs_count}');sqlpromptShowLinks('{$offset}','{$limit}','{$recs_count}','{$qtime_verbose}');");?>
-			<?=sqlpromptListResults($recs);?>		
+			<?=sqlpromptListResults($recs,$listopts);?>		
 		</view:success>
 		<view:failure>
 			<?=buildOnLoad("sqlpromptSetSha('');setText('results_count','{$recs_count}');document.getElementById('export_link').style.display='NONE';");?>
