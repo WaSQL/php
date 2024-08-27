@@ -1116,7 +1116,7 @@ function databaseGradeSQL($sql,$htm=1){
 * 	[-query] string - query to run to get getDBRecords array 
 *	[-csv] file - csv file to load
 *	[-table] string - table name.  Use this with other field/value params to filter the results
-*
+* 	[-css] string - appends custom css before the table in style tags
 * The following parameters adjust the css of the table
 *	[-tableheight] string - sets max height of table (i.e 80vh)
 *	[-table{class|style|id|...}] string - sets specified attribute on table
@@ -1165,12 +1165,15 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_checkbox_value] - string - sets value of checkbox
 *	[{field}_checkbox_checked] - string - checks the box if string equals checkbox id
 *	[{field}_badge] - wraps the value in a span class="badge"
+*	[{field}_badge_class] - add additional class value to badge
 *	[{field}_append] - appends the specified value to the end
 *	[{field}_prepend] - prepends the specified value to the end
 *	[{field}_substr] - only returns a substring of the original value 
 *	[{field}_phone] - formats value as a phone number
 *	[{field}_verboseSize] - converts value to a verboseSize
 *	[{field}_verboseTime] - converts value to a verboseTime
+*	[{field}_verboseNumber] - converts value to a verboseNumber
+*	[{field}_DateFormat] - converts value with said format to date(fmt,strtotime(value))
 *	[{field}_ucwords] - uppercase each word in value
 *	[{field}_strtoupper] - lowercase value
 *	[{field}_strtolower] - uppercase value
@@ -1178,7 +1181,6 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_rtrim] - right trim value
 *	[{field}_ltrim] - left trim value
 *	[{field}_number_format] - applies the number_format function to value passing this attribute value as the number of decimals 
-*	[{field}_badge_class] - add additional class value to badge
 *	[{field}_radio] - 1 - adds a radio button before the field value that holds the field value
 *	[{field}_radio_onclick] - string - adds a onclick value if radio was specifid
 *	[{field}_radio_id] - string - sets id of radio
@@ -1187,8 +1189,6 @@ function databaseGradeSQL($sql,$htm=1){
 *	[{field}_checkmark] - 1 - shows checkmark if value is 1
 *	[{field}_checkmark_icon] - sets a custom icon class instead of icon-mark
 *	[{field}_map] - array - shows mapped value instead.  i.e. array(0=>'',1=>'<span class="icon-mark"></span>')
-*	[{field}_verbosetime] - 1 - converts value verboseTime
-*	[{field}_verbosesize] - 1 - converts value verboseSize
 *	[-database] - database type. oracle,hand,mssql,sqlite, or mysql.  defaults to mysql
 *	[-results_eval] - function name to send the results to before displaying. The array of records will be sent to this function. It MUST return the array back
 *	[-results_eval_params] - additonal params to send the the results_eval function as a second param
@@ -2059,6 +2059,9 @@ function databaseListRecords($params=array()){
 		}
 	}
 	$rtn='';
+	if(isset($params['-css'])){
+		$rtn .= '<style>'.$params['-css'].'</style>';
+	}
 	if(isset($params['-presearch'])){
 		$rtn .= '<div class="dblistrecords_presearch">'.$params['-presearch'].'</div>';
 	}
@@ -2463,16 +2466,19 @@ function databaseListRecords($params=array()){
 			//number_format
 			if(isset($params[$fld."_number_format"])){
 				$p=(integer)$params[$fld."_number_format"];
-				if($p==0){
-					if(function_exists('gmp_init')){
-						$bigInt = gmp_init($value);
-				   		$value = gmp_intval($bigInt);
-				   	}
-				   	else{
-						$value=(integer)$value;
-					}
-				}	
-				$value=number_format($value,$p);
+				$value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){
+					if($p==0){
+						if(function_exists('gmp_init')){
+							$bigInt = gmp_init($value);
+					   		$value = gmp_intval($bigInt);
+					   	}
+					   	else{
+							$value=(integer)$value;
+						}
+					}	
+					$value=number_format($value,$p);
+				}
 			}
 			if(!empty($params[$fld."_translate"])){
 				$value=translateText($value);
@@ -2495,13 +2501,36 @@ function databaseListRecords($params=array()){
             if(isset($params[$fld."_ucwords"])){
                 $value=ucwords($value);
 			}
+			//dateFormat
+            if(isset($params[$fld."_dateFormat"])){
+				if(strlen($value)){	
+					$fmt=$params[$fld."_dateFormat"];
+					$value=date($fmt,strtotime($value));
+				}
+			}
 			//verboseSize
             if(isset($params[$fld."_verboseSize"])){
-                $value=verboseSize($value);
+                $value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){	
+					$fmt=$params[$fld."_verboseSize"];
+					$value=verboseSize($value,$fmt);
+				}
 			}
 			//verboseTime
             if(isset($params[$fld."_verboseTime"])){
-                $value=verboseTime($value);
+            	$value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){	
+					list($notate,$nosecs)=preg_split('/\,/',$params[$fld."_verboseTime"],2);
+					$value=verboseTime($value,$notate,$nosecs);
+				}
+			}
+			//verboseNumber
+            if(isset($params[$fld."_verboseNumber"])){
+            	$value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){	
+					$fmt=$params[$fld."_verboseNumber"];
+					$value=verboseNumber($value,$fmt);
+				}
 			}
 			//strtolower
             if(isset($params[$fld."_strtolower"])){
@@ -2791,13 +2820,31 @@ function databaseListRecords($params=array()){
 				$class=isset($params[$fld."_badge_class"])?$params[$fld."_badge_class"]:'';
                 $value='<span class="badge '.$class.'">'.$value.'</span>';
 			}
-            elseif(isset($params[$fld."_verbosetime"]) && $params[$fld."_verbosetime"]==1){
-				if($value==0){$value='';}
-				elseif(isNum($value)){$value=verboseTime($value);}
+            elseif(isset($params[$fld."_verboseTime"]) && strlen($params[$fld."_verboseTime"])){
+            	$value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){	
+					list($notate,$nosecs)=preg_split('/\,/',$params[$fld."_verboseTime"],2);
+					$value=verboseTime($value,$notate,$nosecs);
+				}
             }
-            elseif(isset($params[$fld."_verbosesize"]) && $params[$fld."_verbosesize"]==1){
-				if($value==0){$value='';}
-				elseif(isNum($value)){$value=verboseSize($value);}
+            elseif(isset($params[$fld."_verboseSize"]) && strlen($params[$fld."_verboseSize"])){
+            	$value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){	
+					$fmt=$params[$fld."_verboseSize"];
+					$value=verboseSize($value,$fmt);
+				}
+            }
+            elseif(isset($params[$fld."_dateFormat"]) && strlen($params[$fld."_dateFormat"])){
+            	if(strlen($value)){	
+					$fmt=$params[$fld."_dateFormat"];
+					$value=date($fmt,strtotime($value));
+				}
+            }
+            elseif(isset($params[$fld."_verboseNumber"]) && strlen($params[$fld."_verboseNumber"])){
+            	$value=preg_replace('/[^0-9\.]+/','',$value);
+				if(strlen($value)){	
+					$value=verboseNumber($value);
+				}
             }
 			elseif(isset($params[$fld."_image"]) && $params[$fld."_image"]==1 && strlen($value)){
 				$image_size=$params[$fld."_image_size"] ?? $params['-image_size'] ?? '28px';
@@ -11659,8 +11706,8 @@ function listDBRecords($params=array(),$customcode=''){
             elseif(isset($params[$fld."_email"]) && $params[$fld."_email"]==1){
 				$val='<a class="w_link" href="mailto:'.$val.'">'.$val.'</a>';
             	}
-            elseif(isset($params[$fld."_dateformat"]) && strlen(trim($val)) && strlen($params[$fld."_dateformat"])){
-				$val=date($params[$fld."_dateformat"],strtotime($val));
+            elseif(isset($params[$fld."_dateFormat"]) && strlen(trim($val)) && strlen($params[$fld."_dateFormat"])){
+				$val=date($params[$fld."_dateFormat"],strtotime($val));
             	}
             elseif(isset($params[$fld."_dateage"]) && $params[$fld."_dateage"]==1){
 				if(isNum($rec["{$fld}_utime"])){

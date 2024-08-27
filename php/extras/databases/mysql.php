@@ -591,24 +591,24 @@ function mysqlGetAllTableIndexes($schema=''){
 	}
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
-	SELECT 
-		table_name,
-       	index_name,
-       	JSON_ARRAYAGG(column_name) AS index_keys,
-       	CASE non_unique
-          	WHEN 1 THEN 0
-            	ELSE 1
-            	END AS is_unique
-	FROM information_schema.statistics
-	WHERE 
-		table_schema NOT IN ('information_schema','mysql','performance_schema','sys')
-	    	AND index_schema = '{$schema}'
-	GROUP BY 
-		index_schema,
-		index_name,
-		non_unique,
-		table_name
-	ORDER BY 1,2
+SELECT 
+	table_name,
+   	index_name,
+   	JSON_ARRAYAGG(column_name) AS index_keys,
+   	CASE non_unique
+      	WHEN 1 THEN 0
+        	ELSE 1
+        	END AS is_unique
+FROM information_schema.statistics
+WHERE 
+	table_schema NOT IN ('information_schema','mysql','performance_schema','sys')
+    	AND index_schema = '{$schema}'
+GROUP BY 
+	index_schema,
+	index_name,
+	non_unique,
+	table_name
+ORDER BY 1,2
 ENDOFQUERY;
 	$recs=mysqlQueryResults($query);
 	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>'.printValue($recs);exit;
@@ -1790,11 +1790,18 @@ function mysqlNamedQuery($name,$str=''){
 		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
+-- ----------------- RUNNING QUERIES --------------------------------
+-- listopts:time_options={"class":"align-right","verboseTime":""}
+-- listopts:-listfields=id,user,host,db,command,time,state
+-- ------------------ SQL -------------------------------
 SHOW processlist
 ENDOFQUERY;
 		break;
 		case 'sessions':
 			return <<<ENDOFQUERY
+-- ----------------- SESSIONS --------------------------------
+-- listopts:time_options={"class":"align-right","verboseTime":""}
+-- ------------------ SQL -------------------------------
 SELECT 
 	id, 
 	user, 
@@ -1802,8 +1809,7 @@ SELECT
 	db, 
 	command, 
 	time, 
-	state, 
-	info 
+	state
 FROM information_schema.processlist
 ENDOFQUERY;
 		break;
@@ -1844,6 +1850,13 @@ ENDOFQUERY;
 		break;
 		case 'tables':
 			return <<<ENDOFQUERY
+-- ----------------- TABLES --------------------------------
+-- listopts:row_count_options={"class":"align-right","number_format":"0"}
+-- listopts:field_count_options={"class":"align-right","number_format":"0"}
+-- listopts:mb_size_options={"class":"align-right","number_format":"2"}
+-- listopts:auto_increment_options={"class":"align-right","number_format":"0"}
+-- listopts:create_time_options={"class":"align-right","dateFormat":"m/d/Y"}
+-- ------------------ SQL -------------------------------
 SELECT
 	t.table_name AS name,
 	t.table_rows AS row_count,
@@ -1873,6 +1886,10 @@ ENDOFQUERY;
 		break;
 		case 'indexes':
 			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:is_unique_options={"checkmark":"1","checkmark_icon":"icon-mark w_blue"}
+-- listopts:is_primary_options={"checkmark":"1","checkmark_icon":"icon-mark w_red"}
+-- ------------------ SQL -------------------------------
 SELECT 
 	table_name,
   	index_name,

@@ -213,6 +213,20 @@
 			else{
 				$qtime_verbose=verboseTime($qtime);
 			}
+			$listopts=array();
+			if(stringContains($_SESSION['sql_last'],'listopts:')){
+				$lines=preg_split('/[\r\n]+/',trim($_SESSION['sql_last']));
+				foreach($lines as $line){
+					if(!stringBeginsWith('-- listopts:')){continue;}
+					$line=preg_replace('/^\-\-\ listopts\:/','',trim($line));
+					$sets=preg_split('/[\;]/',$line);
+					foreach($sets as $set){
+						list($k,$v)=preg_split('/\=/',$set,2);
+						if(stringEndsWith($k,'_options')){$v=decodeJSON($v);}
+						$listopts[$k]=$v;
+					}
+				}
+			}
 			setView(array('results','success'),1);
 			return;
 		break;
@@ -1060,14 +1074,13 @@
 			if(stringContains($_SESSION['sql_last'],'listopts:')){
 				$lines=preg_split('/[\r\n]+/',trim($_SESSION['sql_last']));
 				foreach($lines as $line){
-					if(!stringBeginsWith('--listopts:')){continue;}
-					$line=preg_replace('/^\-\-listopts\:/','',trim($line));
-					$sets=preg_split('/[\;]/',$line);
-					foreach($sets as $set){
-						list($k,$v)=preg_split('/\=/',$set);
-						$listopts[$k]=$v;
-					}
+					if(!stringBeginsWith('-- listopts:')){continue;}
+					$line=preg_replace('/^\-\-\ listopts\:/','',trim($line));
+					list($k,$v)=preg_split('/\=/',$line,2);
+					if(stringEndsWith($k,'_options')){$v=decodeJSON($v);}
+					$listopts[$k]=$v;
 				}
+				//echo printValue($listopts);exit;
 			}
 			if(!isNum($recs_count)){
 				$error=$recs_count;

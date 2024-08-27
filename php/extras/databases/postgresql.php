@@ -15,6 +15,141 @@
 		create  TYPE json_test AS (id_item int, id_menu varchar(100));
 		SELECT * FROM JSON_POPULATE_RECORDSET(null::json_test,'[{"id_item":1,"id_menu":"34"},{"id_item":2,"id_menu":"35"}]')
 
+
+-- dnf install postgresql-contrib
+-- dnf install postgresql16-contrib
+-- https://schneide.blog/2021/11/01/linking-separate-postgresql-servers-with-a-foreign-data-wrapper/
+-- CREATE EXTENSION postgres_fdw;
+-- CREATE SERVER ods_old
+--   FOREIGN DATA WRAPPER postgres_fdw
+--   OPTIONS (
+--     host 'co-dtsrv-db01.doterra.net',
+--     port '5432',
+--     dbname 'ods'
+--   );
+
+  -- CREATE USER MAPPING
+  -- FOR postgres
+  -- SERVER ods_old
+  -- OPTIONS (
+  --   user 'YOURUSERNAME',
+  --   password 'YOURPASSWORD'
+  -- );
+
+-- CREATE EXTENSION file_fdw;
+-- CREATE SERVER "import" FOREIGN DATA WRAPPER file_fdw;
+
+-- CREATE FOREIGN TABLE IF NOT EXISTS public.system_df (
+--   filesystem text,
+--   size numeric,
+--   used numeric,
+--   available numeric,
+--   use_pcnt text,
+--   mount text
+-- ) 
+-- SERVER "import" OPTIONS (
+--   PROGRAM 'df -B1 | tail -n+2 | awk ''{print "\\""$1"\\",\\""$2"\\",\\""$3"\\",\\""$4"\\",\\""$5"\\",\\""$6"\\""}''',
+--   FORMAT 'csv',
+--   HEADER 'off'
+-- );
+
+SELECT 
+  filesystem,
+  PG_SIZE_PRETTY(size) AS size,
+  PG_SIZE_PRETTY(used) AS used,
+  PG_SIZE_PRETTY(available) AS available,
+  use_pcnt,
+  mount
+FROM system_df
+
+-- CREATE FOREIGN TABLE IF NOT EXISTS public.system_cpu (
+--   name text,
+--   value text
+-- ) 
+-- SERVER "import" OPTIONS (
+--   PROGRAM 'lscpu|sed -E ''s/^/"/''|sed -E ''s/:/",/''|sed -E ''s/  +/ /g''|sed -E ''s/, /,"/''|sed -E ''s/$/"/''|sed -E ''s/\\\(s\\\)/s/''',
+--   FORMAT 'csv',
+--   HEADER 'off'
+-- );
+
+SELECT * FROM system_cpu
+
+-- CREATE FOREIGN TABLE IF NOT EXISTS public.system_loadavg (
+--   load_avg_1_min numeric,
+--   load_avg_5_min numeric,
+--   load_avg_15_min numeric,
+--   number_of_running_over_number_of_threads text,
+--   last_created_pid numeric
+-- ) 
+-- SERVER "import" OPTIONS (
+--   PROGRAM 'cat /proc/loadavg|sed ''s/\\s/\\,/g''',
+--   FORMAT 'csv',
+--   HEADER 'off'
+-- );
+
+SELECT * FROM system_loadavg
+
+-- CREATE FOREIGN TABLE IF NOT EXISTS public.system_mem (
+--   total numeric,
+--   used numeric,
+--   free numeric,
+--   shared numeric,
+--   buffers numeric,
+--   cached numeric
+-- ) 
+-- SERVER "import" OPTIONS (
+--   PROGRAM 'free -b | awk -v RS="" ''{print $8 "," $9 "," $10 "," $11 "," $12 "," $13}''',
+--   FORMAT 'csv',
+--   HEADER 'off'
+-- );
+
+SELECT 
+  PG_SIZE_PRETTY(total) AS total_mem,
+  PG_SIZE_PRETTY(used) AS used,
+  PG_SIZE_PRETTY(free) AS free,
+  PG_SIZE_PRETTY(shared) AS shared,
+  PG_SIZE_PRETTY(buffers) AS buffers,
+  PG_SIZE_PRETTY(cached) AS cached
+FROM system_mem
+
+-- https://man7.org/linux/man-pages/man1/ps.1.html
+-- DROP FOREIGN TABLE IF EXISTS public.system_ps
+CREATE FOREIGN TABLE IF NOT EXISTS public.system_ps (
+  pid text,
+  username text,
+  cpu_pcnt text,
+  mem_pcnt text,
+  command text
+) 
+SERVER "import" OPTIONS (
+  --FILENAME '/var/ddfa/system_ps.csv',
+  PROGRAM 'ps --no-headers -e -o %p, -o %U -o ,%C, -o %mem -o ,"%c"',
+  FORMAT 'csv',
+  HEADER 'true'
+);
+ps --no-headers -ef -o pid,uname,pcpu,pmem,arg
+
+SELECT * FROM system_ps
+
+
+SELECT
+    psa.pid
+    ,CASE WHEN (NOW() - psa.query_start) > INTERVAL '5 minutes' THEN 1 ELSE 0 END AS long
+    ,CASE WHEN CARDINALITY(PG_BLOCKING_PIDS(pid)) > 0 THEN PG_BLOCKING_PIDS(pid)::text ELSE '' END AS blocked_by
+    ,psa.client_addr AS ip
+    ,psa.application_name AS app
+    ,psa.usename AS user
+    ,NOW() - psa.query_start AS duration
+    ,psa.query
+  FROM pg_stat_activity psa
+  WHERE 
+    psa.state='active'
+    AND LENGTH(psa.query) > 0
+    AND psa.query NOT LIKE '%psa.query not like%' 
+    AND psa.query NOT LIKE '%autovacuum:%' 
+  ORDER BY 2 DESC, 6 DESC
+		
+
 */
 //---------- begin function postgresqlAddDBRecords--------------------
 /**
@@ -182,7 +317,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			}
 			$field_defs[]="		{$field} {$type}";
 		}
-		$query="INSERT INTO {$table} as t1 ({$fieldstr}) ".PHP_EOL;
+		$query="INSERT INTO {$table} AS t1 ({$fieldstr}) ".PHP_EOL;
 		$query.="	SELECT {$fieldstr} FROM json_to_recordset(\$1) AS jt(".PHP_EOL;
 		//insert field_defs into query 
 		$query.=implode(','.PHP_EOL,$field_defs);
@@ -1679,7 +1814,7 @@ function postgresqlGetAllTableIndexes($schema=''){
 	  	i.relname AS index_name,
 	  	idx.indisunique AS is_unique,
 	  	idx.indisprimary AS is_primary,
-       	to_json(array(
+       	TO_JSON(array(
            SELECT PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE)
            FROM
              GENERATE_SUBSCRIPTS(idx.indkey, 1) AS k
@@ -1746,7 +1881,7 @@ ENDOFQUERY;
 		c.relname as table_name,
 		a.attname as column_name,
 		a.attnum as ordinal_position,
-		pg_get_expr(d.adbin, d.adrelid) AS column_default,
+		PG_GET_EXPR(d.adbin, d.adrelid) AS column_default,
 		a.attnotnull as not_null,
 		pg_catalog.format_type(a.atttypid, a.atttypmod) as data_type,
 		a.attlen as character_maximum_length,
@@ -1754,7 +1889,7 @@ ENDOFQUERY;
 		'' as numeric_precision_radix,
 		'' as udt_name,
 		CASE WHEN p.contype = 'p' THEN true ELSE false END AS primarykey,
-    	CASE WHEN p.contype = 'u' THEN true ELSE false END AS uniquekey,
+    CASE WHEN p.contype = 'u' THEN true ELSE false END AS uniquekey,
 		a.attidentity as is_identity
 	FROM pg_attribute a
 		LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum)
@@ -2850,26 +2985,18 @@ ENDOFQUERY;
 }
 
 function postgresqlNamedQueryList(){
-	return array(
+	global $CONFIG;
+	global $DATABASE;
+	$list=array(
 		array(
 			'code'=>'running_queries',
 			'icon'=>'icon-spin4',
 			'name'=>'Running Queries'
 		),
 		array(
-			'code'=>'long_running_queries',
-			'icon'=>'icon-spin5',
-			'name'=>'Long Running Queries'
-		),
-		array(
 			'code'=>'sessions',
 			'icon'=>'icon-spin8',
 			'name'=>'Sessions'
-		),
-		array(
-			'code'=>'table_locks',
-			'icon'=>'icon-lock',
-			'name'=>'Table Locks'
 		),
 		array(
 			'code'=>'tables',
@@ -2895,8 +3022,41 @@ function postgresqlNamedQueryList(){
 			'code'=>'procedures',
 			'icon'=>'icon-th-thumb-empty',
 			'name'=>'Procedures'
+		),
+		array(
+			'code'=>'encoding',
+			'icon'=>'icon-encoding',
+			'name'=>'Encoding'
 		)
 	);
+	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['system_queries'])){
+		$list[]=array(
+			'code'=>'system_loadavg',
+			'icon'=>'icon-server',
+			'name'=>'System Load Average'
+		);
+		$list[]=array(
+			'code'=>'system_df',
+			'icon'=>'icon-hardware-drive',
+			'name'=>'System Hard Drive Space'
+		);
+		$list[]=array(
+			'code'=>'system_cpu',
+			'icon'=>'icon-hardware-cpu',
+			'name'=>'System CPU'
+		);
+		$list[]=array(
+			'code'=>'system_mem',
+			'icon'=>'icon-hardware-memory',
+			'name'=>'System Memory'
+		);
+		$list[]=array(
+			'code'=>'system_ps',
+			'icon'=>'icon-hardware-memory',
+			'name'=>'System Processes'
+		);
+	}
+	return $list;
 }
 //---------- begin function postgresqlNamedQuery ----------
 /**
@@ -2912,61 +3072,126 @@ function postgresqlNamedQuery($name,$str=''){
 		case 'kill':
 			return "SELECT PG_CANCEL_BACKEND({$str})";
 		break;
+		case 'encoding':
+			return "SHOW SERVER_ENCODING";
+		break;
+		case 'system_loadavg':
+			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:load_avg_1_min_options={"class":"align-right w_bold"}
+-- listopts:load_avg_5_min_options={"class":"align-right"}
+-- listopts:load_avg_15_min_options={"class":"align-right"}
+-- listopts:number_of_running_over_number_of_threads_options={"displayname":"Threads Running/Total","class":"align-right"}
+-- ------------------ SQL -------------------------------
+SELECT * 
+FROM system_loadavg
+ENDOFQUERY;
+		break;
+		case 'system_ps':
+			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:cpu_pcnt_options={"class":"align-right"}
+-- listopts:mem_pcnt_options={"class":"align-right"}
+-- ------------------ SQL -------------------------------
+SELECT * 
+FROM system_ps 
+ORDER BY 
+	cpu_pcnt DESC
+	,mem_pcnt DESC
+ENDOFQUERY;
+		break;
+		case 'system_cpu':
+			return <<<ENDOFQUERY
+SELECT * 
+FROM system_cpu 
+WHERE 
+	name NOT IN ('Flags')
+	AND name NOT LIKE 'Vulnerability%'
+ENDOFQUERY;
+		break;
+		case 'system_df':
+			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:size_options={"class":"align-right"}
+-- listopts:used_options={"class":"align-right"}
+-- listopts:available_options={"class":"align-right"}
+-- listopts:use_pcnt_options={"class":"align-right"}
+-- listopts:-listfields=filesystem,size,used,available,use_pcnt,mount
+-- listopts:-tr_data-tenth=%tenth%
+-- listopts:-css=tr[data-tenth="7"]{color:#ecb100;}tr[data-tenth="8"]{color:#f36c00;}tr[data-tenth="9"]{color:#f60002;}
+-- ------------------ SQL -------------------------------
+SELECT 
+  filesystem,
+  PG_SIZE_PRETTY(size) AS size,
+  PG_SIZE_PRETTY(used) AS used,
+  PG_SIZE_PRETTY(available) AS available,
+  use_pcnt,
+  FLOOR(substr(use_pcnt,0,LENGTH(use_pcnt))::numeric/10) as tenth,
+  mount
+FROM system_df
+ENDOFQUERY;
+		break;
+		case 'system_mem':
+			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:total_mem_options={"class":"align-right"}
+-- listopts:used_options={"class":"align-right"}
+-- listopts:free_options={"class":"align-right"}
+-- listopts:shared_options={"class":"align-right"}
+-- listopts:buffers_options={"class":"align-right"}
+-- listopts:cache_options={"class":"align-right"}
+-- ------------------ SQL -------------------------------
+SELECT 
+  PG_SIZE_PRETTY(total) AS total_mem,
+  PG_SIZE_PRETTY(used) AS used,
+  PG_SIZE_PRETTY(free) AS free,
+  PG_SIZE_PRETTY(shared) AS shared,
+  PG_SIZE_PRETTY(buffers) AS buffers,
+  PG_SIZE_PRETTY(cached) AS cached
+FROM system_mem
+ENDOFQUERY;
+		break;
 		case 'running':
 		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:long_options={"checkmark":"1","checkmark_icon":"icon-spin6 w_red"}
+-- listopts:blocked_by_options={"class":"w_red"}
+-- ------------------ SQL -------------------------------
 SELECT
-	psa.pid
-	,psa.client_addr
-	,psa.application_name
-	,psa.usename
-	,NOW() - psa.query_start AS duration
-	,NOW() - psa.state_change AS last_change
-	,psa.state
-	,psa.query
-FROM pg_stat_activity psa
-WHERE 
-	psa.state='active'
-	AND LENGTH(psa.query) > 0
-	AND psa.query NOT LIKE '%psa.query not like%' 
-ORDER BY 5 DESC
-ENDOFQUERY;
-		break;
-		case 'long_running_queries':
-			return <<<ENDOFQUERY
-SELECT
-	psa.pid
-	,psa.client_addr
-	,psa.application_name
-	,psa.usename
-	,NOW() - psa.query_start AS duration
-	,NOW() - psa.state_change AS last_change
-	,psa.state
-	,psa.query
-FROM pg_stat_activity psa
-WHERE 
-	(NOW() - psa.query_start) > INTERVAL '2 minutes'
-	AND psa.state='active'
-	AND LENGTH(psa.query) > 0
-	AND psa.query NOT LIKE '%psa.query not like%' 
-ORDER BY 5 DESC
+    psa.pid
+    ,CASE WHEN (NOW() - psa.query_start) > INTERVAL '5 minutes' THEN 1 ELSE 0 END AS long
+    ,CASE WHEN CARDINALITY(PG_BLOCKING_PIDS(pid)) > 0 THEN PG_BLOCKING_PIDS(pid)::text ELSE '' END AS blocked_by
+    ,psa.client_addr AS ip
+    ,psa.application_name AS app
+    ,psa.usename AS user
+    ,SUBSTR((NOW() - psa.query_start)::text,0,9) AS duration
+    ,psa.query
+  FROM pg_stat_activity psa
+  WHERE 
+    psa.state='active'
+    AND LENGTH(psa.query) > 0
+    AND psa.query NOT LIKE '%psa.query not like%' 
+    AND psa.query NOT LIKE '%autovacuum:%' 
+  ORDER BY 2 DESC, psa.query_start
 ENDOFQUERY;
 		break;
 		case 'sessions':
 			return <<<ENDOFQUERY
 SELECT
 	psa.pid
-	,psa.client_addr
-	,psa.application_name
-	,psa.usename
+	,psa.client_addr AS ip
+	,psa.application_name AS app
+	,psa.usename AS user
 	,NOW() - psa.query_start AS duration
 	,NOW() - psa.state_change AS last_change
 	,psa.state
 	,psa.query
 FROM pg_stat_activity psa
 WHERE 
-	psa.query NOT LIKE '%psa.query not like%' 
+	psa.state != 'idle'
+	AND psa.query NOT LIKE '%psa.query not like%' 
 ORDER BY 5 DESC
 ENDOFQUERY;
 		break;
@@ -2983,6 +3208,9 @@ ENDOFQUERY;
 		break;
 		case 'views':
 			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:definition_options={"class":"w_gray w_small w_pre"}
+-- ------------------ SQL -------------------------------
 SELECT 
 	table_schema AS schema, 
 	table_name AS name,
@@ -2995,12 +3223,16 @@ ENDOFQUERY;
 		break;
 		case 'indexes':
 			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:is_unique_options={"checkmark":"1","checkmark_icon":"icon-mark w_blue"}
+-- listopts:is_primary_options={"checkmark":"1","checkmark_icon":"icon-mark w_red"}
+-- ------------------ SQL -------------------------------
 SELECT
 	ns.nspname AS schema,
 	idx.indrelid::REGCLASS AS table,
 	i.relname AS name,
-	idx.indisunique AS is_unique,
-	idx.indisprimary AS is_primary,
+	CASE WHEN idx.indisunique='t' THEN 1 ELSE 0 END AS is_unique,
+	CASE WHEN idx.indisprimary='t' THEN 1 ELSE 0 END AS is_primary,
 	TO_JSON(ARRAY(
 		SELECT 
 			PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE) 
@@ -3017,31 +3249,16 @@ SELECT
 ORDER BY 1,2,3 
 ENDOFQUERY;
 		break;
-		case 'table_locks':
-			return <<<ENDOFQUERY
-SELECT
-	psa.pid
-	,PG_BLOCKING_PIDS(pid) as blocked_by
-	,psa.client_addr
-	,psa.application_name
-	,psa.usename
-	,NOW() - psa.query_start AS duration
-	,NOW() - psa.state_change AS last_change
-	,psa.state
-	,psa.query
-FROM pg_stat_activity psa
-WHERE 
-	CARDINALITY(PG_BLOCKING_PIDS(pid)) > 0 
-ORDER BY 6 DESC
-ENDOFQUERY;
-		break;
 		case 'functions':
 			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:definition_options={"class":"w_gray w_small w_pre"}
+-- ------------------ SQL -------------------------------
 SELECT
 	isr.specific_schema AS schema,
 	isr.routine_name AS name, 
 	STRING_AGG(isp.data_type,', ') AS data_types, 
-	isr.routine_definition
+	isr.routine_definition AS definition
 FROM information_schema.routines isr
     LEFT JOIN information_schema.parameters isp ON isr.specific_name=isp.specific_name
 WHERE 
@@ -3056,11 +3273,14 @@ ENDOFQUERY;
 		break;
 		case 'procedures':
 			return <<<ENDOFQUERY
+-- ----------------- FORMAT --------------------------------
+-- listopts:definition_options={"class":"w_gray w_small w_pre"}
+-- ------------------ SQL -------------------------------
 SELECT
 	isr.specific_schema AS schema,
 	isr.routine_name AS name, 
 	STRING_AGG(isp.data_type,', ') AS data_types, 
-	isr.routine_definition
+	isr.routine_definition AS definition
 FROM information_schema.routines isr
     LEFT JOIN information_schema.parameters isp ON isr.specific_name=isp.specific_name
 WHERE 
@@ -3103,7 +3323,7 @@ function postgresqlOptimizations($params=array()){
 	$recs=postgresqlQueryResults('SELECT COUNT(1) AS val FROM pg_prepared_xacts');
 	$postgres['prepared_xact_count']=$recs[0]['val'];
 	//prepared_xact_lock_count
-	$recs=postgresqlQueryResults('SELECT COUNT(1) as val FROM pg_locks WHERE transactionid IN (SELECT transaction FROM pg_prepared_xacts)');
+	$recs=postgresqlQueryResults('SELECT COUNT(1) AS val FROM pg_locks WHERE transactionid IN (SELECT transaction FROM pg_prepared_xacts)');
 	$postgres['prepared_xact_lock_count']=$recs[0]['val'];
 	//connection_age_average
 	$recs=postgresqlQueryResults('SELECT EXTRACT(epoch FROM AVG(NOW()-backend_start)) AS val FROM pg_stat_activity');
@@ -3158,7 +3378,7 @@ function postgresqlOptimizations($params=array()){
 	//Invalid_indexes
 	$q=<<<ENDOFSQL
 	SELECT
-		concat(n.nspname, '.', c.relname) AS index
+		CONCAT(n.nspname, '.', c.relname) AS index
 	FROM
 		pg_catalog.pg_class c,
 		pg_catalog.pg_namespace n,
@@ -3175,7 +3395,8 @@ ENDOFSQL;
 		relname||'.'||indexrelname AS index_name 
 	FROM pg_stat_user_indexes 
 	WHERE 
-		idx_scan=0 and not exists (SELECT 1 FROM pg_constraint WHERE conindid=indexrelid) 
+		idx_scan=0 
+		AND NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conindid=indexrelid) 
 	ORDER BY relname, indexrelname
 ENDOFSQL;
 	$postgres['unused_indexes']=postgresqlQueryResults($q);
@@ -3185,7 +3406,12 @@ ENDOFSQL;
 		n.nspname||'.'||p.proname AS proc_name 
 	FROM pg_catalog.pg_proc p 
 		LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace 
-	WHERE pg_catalog.PG_FUNCTION_IS_VISIBLE(p.oid) AND n.nspname NOT IN ('pg_catalog','information_schema','sys') AND p.prorows<>1000 AND p.procost<>10 AND p.proname NOT LIKE 'uuid_%' AND p.proname != 'pg_stat_statements_reset'
+	WHERE 
+		pg_catalog.PG_FUNCTION_IS_VISIBLE(p.oid) 
+		AND n.nspname NOT IN ('pg_catalog','information_schema','sys') 
+		AND p.prorows<>1000 AND p.procost<>10 
+		AND p.proname NOT LIKE 'uuid_%' 
+		AND p.proname != 'pg_stat_statements_reset'
 ENDOFSQL;
 	$postgres['default_cost_procs']=postgresqlQueryResults($q);
 	//calculate other values based on above info
