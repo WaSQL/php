@@ -589,9 +589,12 @@
 	</chartjs>
 
 	<!-- Pie Chart without border -->
-	<chartjs data-type="pie" data-onclick="chartJsOnclick">
-		<dataset>[10,50,40]</dataset>
-		<labels>["ten","fifty","forty"]</labels>
+	<chartjs style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;border-radius:10px;margin:10px;padding:20px 15px 30px 15px;" data-debug="1" data-type="pie" data-fill="false" data-db="hana_t2_service_bi" >
+		<dataset>[91,83,-74]</dataset>
+		<labels>["T1","T2","Idle"]</labels>
+		<colors>["rgba(171,206,220,0.4)","rgba(254,207,137,0.4)","rgba(86,130,3,0.4)"]</colors>
+		<bcolors>["rgb(171,206,220)","rgb(254,207,137)","rgb(86,130,3)"]</bcolors>
+		
 		<options>{
 			"responsive": true,
 			"tooltips": {"enabled":true,"intersect": false,"mode": "index"},

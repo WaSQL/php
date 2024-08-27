@@ -1150,6 +1150,7 @@ function databaseGradeSQL($sql,$htm=1){
 *	[-offset] mixed - query offset limit
 *	[-ajaxid] str - ajax id to wrap the table in
 *	[-sumfields] string or array - list of fields to sum
+*	[-avgfields] string or array - list of fields to average
 *	[-editfields] - in-cell edit fields.  * will make all cells editable
 *	[-editfunction] - javascript edit function to call if -editfields is set. return indexEditField('%event_id%','%fieldname%');
 *	[-editid] - id to assign to the table cell.  include %fieldname% if you want teh fieldname as part of the id. edit_%fieldname%_%event_id%
@@ -2365,6 +2366,15 @@ function databaseListRecords($params=array()){
 			$sums[$sfld]=0;
 		}
 	}
+	$avgs=array();
+	if(isset($params['-avgfields'])){
+		if(!is_array($params['-avgfields'])){
+			$params['-avgfields']=preg_split('/\,/',$params['-avgfields']);
+		}
+		foreach($params['-avgfields'] as $afld){
+			$avgs[$afld]=array();
+		}
+	}
 	//check for -editfields
 	if(isset($params['-editfields'])){
 		if(!is_array($params['-editfields'])){
@@ -2449,6 +2459,12 @@ function databaseListRecords($params=array()){
 				$sval=str_replace(',','',$sval);
 				$sval=str_replace('$','',$sval);
 				if(isNum($sval)){$sums[$fld]+=$sval;}
+			}
+			elseif(isset($avgs[$fld])){
+				$sval=trim(removeHtml($value));
+				$sval=str_replace(',','',$sval);
+				$sval=str_replace('$','',$sval);
+				if(isNum($sval)){$avgs[$fld][]=$sval;}
 			}
 			//check for {field}_eval
 			if(!empty($params[$fld."_eval"])){
@@ -2951,7 +2967,7 @@ function databaseListRecords($params=array()){
 		}
 		$rtn .= '		</tr>'.PHP_EOL;
 	}
-	if(count($sums)){
+	if(count($sums) || count($avgs)){
 		$rtn .= '		<tr>'.PHP_EOL;
 		foreach($params['-listfields'] as $fld){
 			$rtn .= '			<th';
@@ -2982,6 +2998,12 @@ function databaseListRecords($params=array()){
 					//format it to add commas
 					$rtn .= number_format($sums[$fld],$d);
 				}
+			}
+			elseif(isset($avgs[$fld])){
+				$a = array_filter($avgs[$fld]);
+				if(count($a)){$average = array_sum($a)/count($a);}
+				else{$average='';}
+				$rtn .= $average;
 			}
 			$rtn .='</th>'.PHP_EOL;
 		}
@@ -11480,6 +11502,13 @@ function listDBRecords($params=array(),$customcode=''){
 		$sums=array();
 		foreach($params['-sumfields'] as $sumfield){$sums[$sumfield]=0;}
 	}
+	if(isset($params['-avgfields']) && !is_array($params['-avgfields'])){
+		$params['-avgfields']=preg_split('/[\,\;]+/',$params['-avgfields']);
+	}
+	if(isset($params['-avgfields']) && is_array($params['-avgfields'])){
+		$avgs=array();
+		foreach($params['-avgfields'] as $avgfield){$avgs[$avgfield]=array();}
+	}
 	foreach($list as $rec){
 		$row++;
 		$cronalert=0;
@@ -11578,6 +11607,13 @@ function listDBRecords($params=array(),$customcode=''){
 				$amt=trim(removeHtml($rec[$sumfield]));
 				$amt=(float)str_replace(',','',$amt);
 				$sums[$sumfield]+=$amt;
+			}
+		}
+		if(isset($params['-avgfields']) && is_array($params['-avgfields'])){
+			foreach($params['-avgfields'] as $avgfield){
+				$amt=trim(removeHtml($rec[$avgfield]));
+				$amt=(float)str_replace(',','',$amt);
+				$avgs[$avgfield][]=$amt;
 			}
 		}
     	$tabindex=0;
@@ -11765,10 +11801,17 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= "\t</tr>".PHP_EOL;
     	}
     $rtn .= '</tbody>'.PHP_EOL;
-    if(isset($params['-sumfields']) && is_array($params['-sumfields'])){
+    if(
+    	(isset($params['-sumfields']) && is_array($params['-sumfields']))
+    	|| (isset($params['-avgfields']) && is_array($params['-avgfields']))
+    ){
 		$rtn .= '	<tfoot><tr>'.PHP_EOL;
 		foreach($fields as $fld){
         	if(isset($sums[$fld])){$val=$sums[$fld];}
+        	elseif(isset($avgs[$fld])){
+        		$a = array_filter($avgs[$fld]);
+				$val = array_sum($a)/count($a);
+        	}
         	else{$val='';}
         	$rtn .= '		<th align="right">'.$val.'</th>'.PHP_EOL;
 		}

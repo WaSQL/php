@@ -3127,7 +3127,19 @@ ENDOFQUERY;
 		case 'system_cpu':
 			return <<<ENDOFQUERY
 SELECT * 
-FROM system_mpstat 
+FROM system_mpstat
+-- ----------------- FORMAT --------------------------------
+-- listopts:-avgfields=user_pcnt
+-- listopts:user_pcnt_options={"class":"align-right"}
+-- listopts:nice_pcnt_options={"class":"align-right"}
+-- listopts:sys_pcnt_options={"class":"align-right"}
+-- listopts:iowait_pcnt_options={"class":"align-right"}
+-- listopts:irq_pcnt_options={"class":"align-right"}
+-- listopts:soft_pcnt_options={"class":"align-right"}
+-- listopts:steal_pcnt_options={"class":"align-right"}
+-- listopts:guest_pcnt_options={"class":"align-right"}
+-- listopts:gnice_pcnt_options={"class":"align-right"}
+-- listopts:idle_pcnt_options={"class":"align-right"} 
 ENDOFQUERY;
 		break;
 		case 'system_df':
