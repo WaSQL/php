@@ -74,6 +74,30 @@ FROM system_df
 
 SELECT * FROM system_cpu
 
+-- install mpstat by installint sysstat: dnf install sysstat
+--DROP FOREIGN TABLE IF EXISTS public.system_mpstat
+CREATE FOREIGN TABLE IF NOT EXISTS public.system_mpstat (
+  checktime text,
+  cpu text,
+  user_pcnt text,
+  nice_pcnt text,
+  sys_pcnt text,
+  iowait_pcnt text,
+  irq_pcnt text,
+  soft_pcnt text,
+  steal_pcnt text,
+  guest_pcnt text,
+  gnice_pcnt text,
+  idle_pcnt text
+) 
+SERVER "import" OPTIONS (
+  PROGRAM 'mpstat -P ALL | tail -n+5 | awk ''{print "\\""$1"\\",\\""$2"\\",\\""$3"\\",\\""$4"\\",\\""$5"\\",\\""$6"\\",\\""$7"\\",\\""$8"\\",\\""$9"\\",\\""$10"\\",\\""$11"\\",\\""$12"\\""}''',
+  FORMAT 'csv',
+  HEADER 'off'
+);
+
+select * from public.system_mpstat
+
 -- CREATE FOREIGN TABLE IF NOT EXISTS public.system_loadavg (
 --   load_avg_1_min numeric,
 --   load_avg_5_min numeric,
@@ -3103,10 +3127,7 @@ ENDOFQUERY;
 		case 'system_cpu':
 			return <<<ENDOFQUERY
 SELECT * 
-FROM system_cpu 
-WHERE 
-	name NOT IN ('Flags')
-	AND name NOT LIKE 'Vulnerability%'
+FROM system_mpstat 
 ENDOFQUERY;
 		break;
 		case 'system_df':
