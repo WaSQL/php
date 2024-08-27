@@ -16,63 +16,37 @@
 		SELECT * FROM JSON_POPULATE_RECORDSET(null::json_test,'[{"id_item":1,"id_menu":"34"},{"id_item":2,"id_menu":"35"}]')
 
 
--- dnf install postgresql-contrib
--- dnf install postgresql16-contrib
--- https://schneide.blog/2021/11/01/linking-separate-postgresql-servers-with-a-foreign-data-wrapper/
--- CREATE EXTENSION postgres_fdw;
--- CREATE SERVER ods_old
---   FOREIGN DATA WRAPPER postgres_fdw
---   OPTIONS (
---     host 'co-dtsrv-db01.doterra.net',
---     port '5432',
---     dbname 'ods'
---   );
+dnf install postgresql-contrib
+dnf install postgresql16-contrib
+https://schneide.blog/2021/11/01/linking-separate-postgresql-servers-with-a-foreign-data-wrapper/
+CREATE EXTENSION postgres_fdw;
+CREATE EXTENSION pg_prewarm;
+CREATE SERVER ods_old
+  FOREIGN DATA WRAPPER postgres_fdw
+  OPTIONS (
+    host 'co-dtsrv-db01.doterra.net',
+    port '5432',
+    dbname 'ods'
+  );
 
-  -- CREATE USER MAPPING
-  -- FOR postgres
-  -- SERVER ods_old
-  -- OPTIONS (
-  --   user 'YOURUSERNAME',
-  --   password 'YOURPASSWORD'
-  -- );
+  CREATE USER MAPPING
+  FOR postgres
+  SERVER ods_old
+  OPTIONS (
+    user 'svc_dexpdq',
+    password '7Gx5cHVkKWmZYifW6GuPeo2H3'
+  );
 
--- CREATE EXTENSION file_fdw;
--- CREATE SERVER "import" FOREIGN DATA WRAPPER file_fdw;
+  CREATE USER MAPPING
+  FOR svc_dexpdq
+  SERVER ods_old
+  OPTIONS (
+    user 'svc_dexpdq',
+    password '7Gx5cHVkKWmZYifW6GuPeo2H3'
+  );
 
--- CREATE FOREIGN TABLE IF NOT EXISTS public.system_df (
---   filesystem text,
---   size numeric,
---   used numeric,
---   available numeric,
---   use_pcnt text,
---   mount text
--- ) 
--- SERVER "import" OPTIONS (
---   PROGRAM 'df -B1 | tail -n+2 | awk ''{print "\\""$1"\\",\\""$2"\\",\\""$3"\\",\\""$4"\\",\\""$5"\\",\\""$6"\\""}''',
---   FORMAT 'csv',
---   HEADER 'off'
--- );
-
-SELECT 
-  filesystem,
-  PG_SIZE_PRETTY(size) AS size,
-  PG_SIZE_PRETTY(used) AS used,
-  PG_SIZE_PRETTY(available) AS available,
-  use_pcnt,
-  mount
-FROM system_df
-
--- CREATE FOREIGN TABLE IF NOT EXISTS public.system_cpu (
---   name text,
---   value text
--- ) 
--- SERVER "import" OPTIONS (
---   PROGRAM 'lscpu|sed -E ''s/^/"/''|sed -E ''s/:/",/''|sed -E ''s/  +/ /g''|sed -E ''s/, /,"/''|sed -E ''s/$/"/''|sed -E ''s/\\\(s\\\)/s/''',
---   FORMAT 'csv',
---   HEADER 'off'
--- );
-
-SELECT * FROM system_cpu
+CREATE EXTENSION file_fdw;
+CREATE SERVER "import" FOREIGN DATA WRAPPER file_fdw;
 
 -- install mpstat by installint sysstat: dnf install sysstat
 --DROP FOREIGN TABLE IF EXISTS public.system_mpstat
@@ -98,46 +72,82 @@ SERVER "import" OPTIONS (
 
 select * from public.system_mpstat
 
--- CREATE FOREIGN TABLE IF NOT EXISTS public.system_loadavg (
---   load_avg_1_min numeric,
---   load_avg_5_min numeric,
---   load_avg_15_min numeric,
---   number_of_running_over_number_of_threads text,
---   last_created_pid numeric
--- ) 
--- SERVER "import" OPTIONS (
---   PROGRAM 'cat /proc/loadavg|sed ''s/\\s/\\,/g''',
---   FORMAT 'csv',
---   HEADER 'off'
--- );
+CREATE FOREIGN TABLE IF NOT EXISTS public.system_df (
+  filesystem text,
+  size numeric,
+  used numeric,
+  available numeric,
+  use_pcnt text,
+  mount text
+) 
+SERVER "import" OPTIONS (
+  PROGRAM 'df -B1 | tail -n+2 | awk ''{print "\\""$1"\\",\\""$2"\\",\\""$3"\\",\\""$4"\\",\\""$5"\\",\\""$6"\\""}''',
+  FORMAT 'csv',
+  HEADER 'off'
+);
+SELECT 
+  filesystem,
+  PG_SIZE_PRETTY(size) as size,
+  PG_SIZE_PRETTY(used) as used,
+  PG_SIZE_PRETTY(available) as available,
+  use_pcnt,
+  mount
+FROM system_df
+
+--DROP FOREIGN TABLE IF EXISTS public.system_cpu
+CREATE FOREIGN TABLE IF NOT EXISTS public.system_cpu (
+  name text,
+  value text
+) 
+SERVER "import" OPTIONS (
+  PROGRAM 'lscpu | awk -F : ''{gsub(/^[ \\t]+/, "", $2);print "\\""$1"\\",\\""$2"\\""}''',
+  FORMAT 'csv',
+  HEADER 'off'
+);
+
+SELECT * FROM system_cpu
+
+CREATE FOREIGN TABLE IF NOT EXISTS public.system_loadavg (
+  load_avg_1_min numeric,
+  load_avg_5_min numeric,
+  load_avg_15_min numeric,
+  number_of_running_over_number_of_threads text,
+  last_created_pid numeric
+) 
+SERVER "import" OPTIONS (
+  PROGRAM 'cat /proc/loadavg|sed ''s/\\s/\\,/g''',
+  FORMAT 'csv',
+  HEADER 'off'
+);
 
 SELECT * FROM system_loadavg
 
--- CREATE FOREIGN TABLE IF NOT EXISTS public.system_mem (
---   total numeric,
---   used numeric,
---   free numeric,
---   shared numeric,
---   buffers numeric,
---   cached numeric
--- ) 
--- SERVER "import" OPTIONS (
---   PROGRAM 'free -b | awk -v RS="" ''{print $8 "," $9 "," $10 "," $11 "," $12 "," $13}''',
---   FORMAT 'csv',
---   HEADER 'off'
--- );
+CREATE FOREIGN TABLE IF NOT EXISTS public.system_mem (
+  total numeric,
+  used numeric,
+  free numeric,
+  shared numeric,
+  buffers numeric,
+  cached numeric
+) 
+SERVER "import" OPTIONS (
+  PROGRAM 'free -b | awk -v RS="" ''{print $8 "," $9 "," $10 "," $11 "," $12 "," $13}''',
+  FORMAT 'csv',
+  HEADER 'off'
+);
 
 SELECT 
-  PG_SIZE_PRETTY(total) AS total_mem,
-  PG_SIZE_PRETTY(used) AS used,
-  PG_SIZE_PRETTY(free) AS free,
-  PG_SIZE_PRETTY(shared) AS shared,
-  PG_SIZE_PRETTY(buffers) AS buffers,
-  PG_SIZE_PRETTY(cached) AS cached
+  PG_SIZE_PRETTY(total) as total_mem,
+  PG_SIZE_PRETTY(used) as used,
+  PG_SIZE_PRETTY(free) as free,
+  PG_SIZE_PRETTY(shared) as shared,
+  PG_SIZE_PRETTY(buffers) as buffers,
+  PG_SIZE_PRETTY(cached) as cached
 FROM system_mem
 
 -- https://man7.org/linux/man-pages/man1/ps.1.html
 -- DROP FOREIGN TABLE IF EXISTS public.system_ps
+-- awk:  RS=row separator (newline), FS=field separator ( ), -v assignment i.e. -v FS :
 CREATE FOREIGN TABLE IF NOT EXISTS public.system_ps (
   pid text,
   username text,
@@ -3129,7 +3139,7 @@ ENDOFQUERY;
 SELECT * 
 FROM system_mpstat
 -- ----------------- FORMAT --------------------------------
--- listopts:-avgfields=user_pcnt
+-- listopts:-avgfields=user_pcnt,nice_pcnt,sys_pcnt,iowait_pcnt,irq_pcnt,soft_pcnt,steal_pcnt,guest_pcnt,gnice_pcnt,idle_pcnt
 -- listopts:user_pcnt_options={"class":"align-right"}
 -- listopts:nice_pcnt_options={"class":"align-right"}
 -- listopts:sys_pcnt_options={"class":"align-right"}
