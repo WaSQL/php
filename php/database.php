@@ -3001,7 +3001,10 @@ function databaseListRecords($params=array()){
 			}
 			elseif(isset($avgs[$fld])){
 				$a = array_filter($avgs[$fld]);
-				if(count($a)){$average = array_sum($a)/count($a);}
+				if(count($a)){
+					$average = array_sum($a)/count($a);
+					$average = number_format($average,2);
+				}
 				else{$average='';}
 				$rtn .= $average;
 			}
@@ -11810,7 +11813,11 @@ function listDBRecords($params=array(),$customcode=''){
         	if(isset($sums[$fld])){$val=$sums[$fld];}
         	elseif(isset($avgs[$fld])){
         		$a = array_filter($avgs[$fld]);
-				$val = array_sum($a)/count($a);
+        		if(count($a)){
+					$val = array_sum($a)/count($a);
+					$average = number_format($average,2);
+				}
+				else{$val='';}
         	}
         	else{$val='';}
         	$rtn .= '		<th align="right">'.$val.'</th>'.PHP_EOL;
