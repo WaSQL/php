@@ -157,11 +157,15 @@ CREATE FOREIGN TABLE IF NOT EXISTS public.system_ps (
 ) 
 SERVER "import" OPTIONS (
   --FILENAME '/var/ddfa/system_ps.csv',
-  PROGRAM 'ps --no-headers -e -o %p, -o %U -o ,%C, -o %mem -o ,"%c"',
+  PROGRAM 'ps --no-headers -ef -o pid,uname,pcpu,pmem,args | awk -F " " ''{$5=$5$6$7$8$9$10$11$12$13$14$15$16$17$18$19$20;gsub(/^[ \\t]+/, "", $2);print "\\""$1"\\",\\""$2"\\",\\""$3"\\",\\""$4"\\",\\""$5"\\""}''',
   FORMAT 'csv',
   HEADER 'true'
 );
-ps --no-headers -ef -o pid,uname,pcpu,pmem,arg
+--raw 
+ps --no-headers -ef -o pid,uname,pcpu,pmem,args | awk -F " " '{$5=$5$6$7$8$9$10$11$12$13$14$15$16$17$18$19$20;gsub(/^[ \t]+/, "", $2);print "\""$1"\",\""$2"\",\""$3"\",\""$4"\",\""$5"\""}'
+
+--delimited
+ps --no-headers -ef -o pid,uname,pcpu,pmem,args | awk -F " " ''{$5=$5$6$7$8$9$10$11$12$13$14$15$16$17$18$19$20;gsub(/^[ \\t]+/, "", $2);print "\\""$1"\\",\\""$2"\\",\\""$3"\\",\\""$4"\\",\\""$5"\\""}''
 
 SELECT * FROM system_ps
 

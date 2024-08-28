@@ -248,6 +248,7 @@ function ccv2QueryResults($query,$params=array()){
 		$progpath=dirname(__FILE__);
 		$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
 		unlink($local);
+		debugValue($headers);
 		return $headers;
 	}
 	$url=$db['dbhost'].'/hac/console/flexsearch/execute';
@@ -255,6 +256,7 @@ function ccv2QueryResults($query,$params=array()){
 		'-method'=>'POST',
 		'-headers'=>$headers,
 		'-json'=>1,
+		'-timeout'=>5,
 		"flexibleSearchQuery"=>"",
 	    "sqlQuery"=>$query,
 	    "user"=>$db['dbuser'],
@@ -483,8 +485,16 @@ function ccv2GetAuthHeaders(){
 		return $ccv2GetAuthHeadersCache;
 	}
 	$url=$db['dbhost'].'/hac/login';
-	$post=getURL($url,array('-method'=>'GET'));
-	if($post['curl_info']['http_code'] >= 400){return 'ERROR:'.printValue($post);}
+	$post=getURL($url,array('-method'=>'GET','-timeout_connect'=>10));
+	//echo printValue($post);exit;
+	if($post['curl_info']['http_code']==0 || $post['curl_info']['http_code'] >= 400){
+		if(isset($post['error'])){
+			return 'ERROR:'.printValue($post['error']);
+		}
+		else{
+			return 'ERROR:'.printValue($post);
+		}
+	}
 	/* get CSRF */
 	$document = new DomDocument();
 	$document->loadHTML($post['body']);
