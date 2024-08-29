@@ -6153,7 +6153,8 @@ var wacss = {
 		title=title||el.dataset.header||el.dataset.title||el.title||'';
 		if(undefined != title && title.length){
 			let t=document.createElement('div');
-			t.className='w_big w_bold align-center';
+			t.className='w_blackback w_white w_big w_bold align-center';
+			t.style.top='-25px';
 			t.innerHTML=title;
 			d.appendChild(t);
 		}
