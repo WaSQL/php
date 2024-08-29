@@ -1374,17 +1374,14 @@ ENDOFCON;
 	if(isset($params['-longreadlen'])){
 		odbc_longreadlen($result,$params['-longreadlen']);
 	}
+	$writefile=0;
+	if(isset($fh) && is_resource($fh)){
+		$writefile=1;
+	}
 	$i=0;
-	while(odbc_fetch_row($result)){
-		//check for snowflakeStopProcess request
-		if(isset($snowflakeStopProcess) && $snowflakeStopProcess==1){
-			break;
-		}
-		$rec=array();
-	    for($z=1;$z<=odbc_num_fields($result);$z++){
-			$field=strtolower(odbc_field_name($result,$z));
-	        $rec[$field]=odbc_result($result,$z);
-	    }
+	while($rec=odbc_fetch_array($result)){
+		//lowercase the field names
+		$rec=array_change_key_case($rec);
 	    if(isset($fh) && is_resource($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
