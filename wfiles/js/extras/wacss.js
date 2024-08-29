@@ -6144,6 +6144,7 @@ var wacss = {
 		d.style.maxWidth='60%';
 		d.style.maxHeight='800px';
 		d.style.transform='scaleX(1) scaleY(1)';
+		title=title||el.dataset.header||el.dataset.title||el.title||'';
 		if(undefined != title && title.length){
 			let t=document.createElement('div');
 			t.className='w_big w_bold align-center';
@@ -6159,6 +6160,12 @@ var wacss = {
 			centerObject(this.d);
 		}
 		d.appendChild(i);
+		if(undefined != el.dataset.footer && el.dataset.footer.length){
+			let f=document.createElement('div');
+			f.className='align-center';
+			f.innerHTML=el.dataset.footer;
+			d.appendChild(t);
+		}
 		document.body.appendChild(d);
 		z=z-2;
 		// Build modal-overlay.
