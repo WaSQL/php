@@ -6135,8 +6135,6 @@ var wacss = {
 		d.tabindex=0;
 		d.style.zIndex=z;
 		d.style.display='block';
-		d.style.background='#FFF';
-		d.style.padding='15px';
 		d.style.border='1px outset #747392';
 		d.style.borderRadius='3px';
 		d.style.position='absolute';
@@ -6155,6 +6153,7 @@ var wacss = {
 			let t=document.createElement('div');
 			t.className='w_blackback w_white w_big w_bold align-center';
 			t.style.top='0px';
+			t.style.display='block';
 			t.style.padding='5px 10px;';
 			t.style.width=el.dataset.width || '50vw';
 			t.style.position='absolute';
@@ -6172,7 +6171,12 @@ var wacss = {
 		d.appendChild(i);
 		if(undefined != el.dataset.footer && el.dataset.footer.length){
 			let f=document.createElement('div');
-			f.className='align-center';
+			f.className='w_blackback w_white w_big w_bold align-center';
+			f.style.bottom='0px';
+			f.style.display='block';
+			f.style.padding='5px 10px;';
+			f.style.width=el.dataset.width || '50vw';
+			f.style.position='absolute';
 			f.innerHTML=el.dataset.footer;
 			d.appendChild(t);
 		}
