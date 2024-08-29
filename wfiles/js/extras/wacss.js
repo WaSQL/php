@@ -6154,7 +6154,9 @@ var wacss = {
 		if(undefined != title && title.length){
 			let t=document.createElement('div');
 			t.className='w_blackback w_white w_big w_bold align-center';
-			t.style.top='-25px';
+			t.style.top='0px';
+			t.style.padding='5px 10px;';
+			t.style.position='absolute';
 			t.innerHTML=title;
 			d.appendChild(t);
 		}
