@@ -6144,6 +6144,10 @@ var wacss = {
 		d.style.maxWidth=el.dataset.maxwidth || '60%';
 		d.style.maxHeight=el.dataset.maxheight || '800px';
 		d.style.transform='scaleX(1) scaleY(1)';
+		let imgsrc=el.getAttribute('src') || el.dataset.src || el.getAttribute('href');
+		d.style.backgroundImage="URL('"+imgsrc+"')";
+		d.style.backgroundRepeat='no-repeat';
+		d.style.backgroundSize='cover';
 		title=title||el.dataset.header||el.dataset.title||el.title||'';
 		if(undefined != title && title.length){
 			let t=document.createElement('div');
@@ -6152,7 +6156,7 @@ var wacss = {
 			d.appendChild(t);
 		}
 		let i=document.createElement('img');
-		i.src=el.getAttribute('src') || el.dataset.src || el.getAttribute('href');
+		i.src='/wfiles/clear.gif';
 		i.style.maxWidth='100%';
 		i.style.maxHeight='100%';
 		i.d=d;
