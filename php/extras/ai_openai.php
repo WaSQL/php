@@ -8,7 +8,7 @@
     echo $answer;
 
  */
-function ai_openapiAPIKey(){
+function ai_openaiAPIKey(){
     global $CONFIG;
     if(!isset($CONFIG['openai_apikey'])){
         echo "no openai_apikey set in config.xml";
@@ -16,12 +16,12 @@ function ai_openapiAPIKey(){
     }
     return $CONFIG['openai_apikey'];
 }
-function ai_openapiAsk($question) {
+function ai_openaiAsk($question) {
     $url = 'https://api.openai.com/v1/chat/completions';
 
     $headers = [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . ai_openapiAPIKey()
+        'Authorization: Bearer ' . ai_openaiAPIKey()
     ];
 
     $data = [
