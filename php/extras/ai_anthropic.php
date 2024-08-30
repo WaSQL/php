@@ -54,7 +54,7 @@ function ai_anthropicAsk($question,$max_tokens=1000) {
     return 'Error: ' . printValue($result);
 }
 
-function ai_anthropicAccount($apiKey) {
+function ai_anthropicAccount() {
     $url = 'https://api.anthropic.com/v1/account';
 
     $headers = [
