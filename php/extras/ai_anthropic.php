@@ -53,3 +53,34 @@ function ai_anthropicAsk($question,$max_tokens=1000) {
     }
     return 'Error: ' . printValue($result);
 }
+
+function ai_anthropicAccount($apiKey) {
+    $url = 'https://api.anthropic.com/v1/account';
+
+    $headers = [
+        'x-api-key: ' . ai_anthropicAPIKey(),
+        'anthropic-version: 2023-06-01'
+    ];
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        return 'Error: ' . curl_error($ch);
+    }
+
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode != 200) {
+        return 'HTTP Error: ' . $httpCode;
+    }
+
+    $result = json_decode($response, true);
+    return $result;
+}
