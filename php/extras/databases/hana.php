@@ -18,6 +18,7 @@
 * @param params array - 
 *	[-recs] array - array of records to insert into specified table
 *	[-csv] array - csv file of records to insert into specified table
+*	[-use_json] - 0|1 - set -use_json=0 to not use the JSON_TABLE method
 * @return count int
 * @usage $ok=hanaAddDBRecords('comments',array('-csv'=>$afile);
 * @usage $ok=hanaAddDBRecords('comments',array('-recs'=>$recs);
@@ -165,9 +166,14 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	}
 	$fieldstr=implode(',',$fields);
 	//if possible use the JSON way so we can insert more efficiently
-	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+	if(!isset($params['-use_json'])){$params['-use_json']=1;}
+	if($params['-use_json']==1){
+		$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+	}
+	else{$jsonstr='';}
 	if(strlen($jsonstr)){
 		//make sure we can connect
+		echo "USING JSON";
 		if(!is_resource($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
 		}
