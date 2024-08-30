@@ -89,7 +89,7 @@ function openaiUsage($startDate, $endDate) {
         return 'Usage information not available in the response';
     }
 }
-function openaiAccount() {
+function ai_openaiAccount() {
     $url = 'https://api.openai.com/v1/organizations';
 
     $headers = [
