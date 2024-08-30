@@ -173,7 +173,6 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	else{$jsonstr='';}
 	if(strlen($jsonstr)){
 		//make sure we can connect
-		echo "USING JSON";
 		if(!is_resource($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
 		}
