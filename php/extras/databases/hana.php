@@ -2674,6 +2674,11 @@ function hanaNamedQueryList(){
 			'name'=>'Server Resources'
 		),
 		array(
+			'code'=>'disk_space',
+			'icon'=>'icon-save',
+			'name'=>'Disk Space'
+		),
+		array(
 			'code'=>'sessions',
 			'icon'=>'icon-spin8',
 			'name'=>'Sessions'
@@ -2816,6 +2821,41 @@ ENDOFQUERY;
 		case 'table_locks':
 			return <<<ENDOFQUERY
 SELECT * FROM m_table_locks
+ENDOFQUERY;
+		break;
+		case 'disk_space':
+			return <<<ENDOFQUERY
+WITH fs_sizes AS (
+    SELECT 
+        host,
+        definition_id,
+        caption,
+        value,
+        unit,
+        measured_element_name
+    FROM
+      M_HOST_AGENT_METRICS
+    WHERE 
+        definition_id = 'FS.Size'
+)
+,fs_avail AS (
+    SELECT 
+        host,
+        value,
+        measured_element_name
+    FROM
+      M_HOST_AGENT_METRICS
+    WHERE 
+        definition_id = 'FS.AvailableSpace'
+)
+SELECT
+    fs.host,
+    fs.measured_element_name as fs_mount,
+    TO_DECIMAL((fs.value/1024/1024/1024),10,2) as size_gb,
+    TO_DECIMAL(100-((fa.value/fs.value)*100),3,2) as pcnt_used,
+    TO_DECIMAL(((fa.value/fs.value)*100),3,2) as pcnt_avail
+FROM fs_sizes fs
+    INNER JOIN fs_avail fa on fs.measured_element_name=fa.measured_element_name
 ENDOFQUERY;
 		break;
 		case 'server_resources':
