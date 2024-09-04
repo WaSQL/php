@@ -2669,6 +2669,11 @@ function hanaNamedQueryList(){
 			'name'=>'Running Queries'
 		),
 		array(
+			'code'=>'server_resources',
+			'icon'=>'icon-server',
+			'name'=>'Server Resources'
+		),
+		array(
 			'code'=>'sessions',
 			'icon'=>'icon-spin8',
 			'name'=>'Sessions'
@@ -2811,6 +2816,27 @@ ENDOFQUERY;
 		case 'table_locks':
 			return <<<ENDOFQUERY
 SELECT * FROM m_table_locks
+ENDOFQUERY;
+		break;
+		case 'server_resources':
+			return <<<ENDOFQUERY
+SELECT
+  SUBSTR(MAX(timestamp),0,19) timestamp,
+  HOST,
+  TO_DECIMAL((MAX(MAP(caption, 'Available Physical Memory', TO_NUMBER(value), 0)) / 1024 / 1024),10,2) mem_tot_gb,
+  TO_DECIMAL((MAX(MAP(caption, 'Free Physical Memory', TO_NUMBER(value), 0)) / 1024 / 1024),10,2) mem_free_gb,
+  MAX(MAP(caption, 'Load Average 1 Minute', TO_NUMBER(value), 0)) loadavg_1min,
+  MAX(MAP(caption, 'Load Average 5 Minutes', TO_NUMBER(value), 0)) loadavg_5min,
+  MAX(MAP(caption, 'Load Average 15 Minutes', TO_NUMBER(value), 0)) loadavg_15min,
+  MAX(MAP(caption, 'Steal Time', TO_NUMBER(value), 0)) steal_pct,
+  MAX(MAP(caption, 'Context Switch Rate', TO_NUMBER(value), 0)) ctx_switches_per_s,
+  MAX(MAP(caption, 'Interrupt Rate', TO_NUMBER(value), 0)) interrupts_per_s
+FROM
+  M_HOST_AGENT_METRICS
+WHERE
+  measured_element_type = 'OperatingSystem'
+GROUP BY
+  HOST
 ENDOFQUERY;
 		break;
 	}
