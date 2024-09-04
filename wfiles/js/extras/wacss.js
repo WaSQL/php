@@ -1023,6 +1023,118 @@ var wacss = {
 		}
 		return;
 	},
+	formFileUploadInit: function(){
+		let els=document.querySelectorAll('input[type="file"].fileupload');
+		if(els.length==0){return false;}
+		for(let i=0;i<els.length;i++){
+			let el=els[i];
+			let div=el.nextElementSibling;
+			if(!div.classList.contains('fileupload')){continue;}
+			let tip=div.nextElementSibling;
+			if(!tip.classList.contains('fileupload_tip')){continue;}
+			let label=div.querySelector('label');
+			if(undefined == label){continue;}
+			let erase=div.querySelector('div.icon-erase');
+			if(undefined == erase){continue;}
+			erase.style.display='none';
+			let rbox=div.querySelector('input[type="checkbox"]');
+			if(undefined == rbox){continue;}
+			let code=div.querySelector('code');
+			if(undefined == code){continue;}
+			let files=new Array();
+			if(code.innerText.length){
+				files= JSON.parse(code.innerText) || new Array();
+			}
+			let fcnt=files.length;
+			if(fcnt > 0){
+				erase.style.display='block';
+				let tsize=0;
+				let htm='<table class="table condensed striped bordered">';
+				htm=htm+'<tr><th>Name</th><th>Size</th></tr>';
+				for(let f=0;f<fcnt;f++){
+					tsize=tsize+files[f].size;
+					htm=htm+'<tr><td><a style="max-width:250px;overflow:hidden;text-overflow: ellipsis;white-space:nowrap;" href="'+files[f].name+'" title="'+files[f].name+'" class="w_link" download><span class="icon-download"></span> '+files[f].name+'</a></td><td class="w_nowrap align-right">'+wacss.verboseSize(files[f].size)+'</td></tr>';
+				}
+				htm=htm+'</table>';
+				tip.innerHTML=htm;
+				htm='';
+				if(fcnt==1){
+					htm=files[0].name+' - '+wacss.verboseSize(tsize);
+				}
+				else{
+					htm=fcnt+' files'+' - '+wacss.verboseSize(tsize);			
+				}
+				label.innerHTML=htm;
+				
+			}
+			else{
+				label.innerHTML='Upload';
+				tip.innerHTML='';
+			}
+			erase.file_element=el;
+			erase.rbox=rbox;
+			erase.onclick=function() {
+				this.file_element.value='';
+				this.style.display='none';
+				label.innerHTML='Upload';
+				rbox.checked=true;
+				return false;
+			};
+			
+		}
+	},
+	formFileUpload: function(el){
+		let fcnt=el.files.length;
+		if(fcnt==0){return;}
+		let div=el.nextElementSibling;
+		if(!div.classList.contains('fileupload')){return;}
+		let tip=div.nextElementSibling;
+		if(!tip.classList.contains('fileupload_tip')){return;}
+		let label=div.querySelector('label');
+		if(undefined == label){return;}
+		let erase=div.querySelector('div.icon-erase');
+		if(undefined == erase){return;}
+		erase.style.display='block';
+		let rbox=div.querySelector('input[type="checkbox"]');
+		if(undefined == rbox){return;}
+		let code=div.querySelector('code');
+		if(undefined == code){return;}
+		let files=el.files || new Array();
+		if(fcnt > 0){
+			erase.style.display='block';
+			let tsize=0;
+			let htm='<table class="table condensed striped bordered">';
+			htm=htm+'<tr><th>Name</th><th>Size</th></tr>';
+			for(let f=0;f<fcnt;f++){
+				tsize=tsize+files[f].size;
+				htm=htm+'<tr><td>'+files[f].name+'</td><td class="w_nowrap align-right">'+wacss.verboseSize(files[f].size)+'</td></tr>';
+			}
+			htm=htm+'</table>';
+			tip.innerHTML=htm;
+			htm='';
+			if(fcnt==1){
+				htm=files[0].name+' - '+wacss.verboseSize(tsize);
+			}
+			else{
+				htm=fcnt+' files'+' - '+wacss.verboseSize(tsize);			
+			}
+			label.innerHTML=htm;
+			
+		}
+		else{
+			label.innerHTML='Upload';
+			tip.innerHTML='';
+		}
+		erase.file_element=el;
+		erase.rbox=rbox;
+		erase.onclick=function() {
+			this.file_element.value='';
+			this.style.display='none';
+			label.innerHTML='Upload';
+			rbox.checked=true;
+			return false;
+		};
+	},
 	formIsIfTrue: function(frm,ifstr){
 		//age:5
 		//age:5,12
@@ -1705,6 +1817,7 @@ var wacss = {
 	*/
 	init: function(){
 		/*wacssedit*/
+		wacss.formFileUploadInit();
 		wacss.initOnloads();
 		wacss.initWacssEdit();
 		wacss.initChartJs();
@@ -6651,6 +6764,16 @@ var wacss = {
 		str=str.replace(/\#/g,"%23");
 		//str=str.replace(/\s/g,"+");
 	    return str;
+	},
+	verboseSize: function(bytes) {
+	  var i = -1;
+	  var byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
+	  do {
+	    bytes /= 1024;
+	    i++;
+	  } while (bytes > 1024);
+
+	  return Math.max(bytes, 0.1).toFixed(1) + byteUnits[i];
 	},
 	/**
 	* @name wacss.verboseTime

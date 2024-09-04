@@ -1825,6 +1825,44 @@ a.btn{text-decoration: none;}
 
 
 /* -------------------- Form Controls compatible with bootstrap and materialize ------------*/
+input[type="file"].fileupload ~ div.fileupload {
+  display:inline-flex;
+  white-space:nowrap;
+  border:1px solid #ccc;
+  background-color:#f8f9fa;
+  border-radius:5px;
+  font-size:1rem;
+}
+input[type="file"].fileupload ~ div.fileupload.is-small {font-size:0.75rem;}
+input[type="file"].fileupload ~ div.fileupload.normal {font-size:1rem;}
+input[type="file"].fileupload ~ div.fileupload.is-medium {font-size:1.25rem;}
+input[type="file"].fileupload ~ div.fileupload.is-large {font-size:1.75rem;}
+
+input[type="file"].fileupload ~ div.fileupload span{
+  padding:calc(0.5em - 1px) 1em;
+}
+input[type="file"].fileupload ~ div.fileupload label[for]{
+  text-align:right;
+  cursor:pointer;
+  border-left:1px solid #ccc;
+  padding:calc(0.5em - 1px) 1em;
+  max-width:350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space:nowrap;
+}
+input[type="file"].fileupload ~ div.fileupload div.icon-erase{
+  text-align:right;
+  cursor:pointer;
+  border-left:1px solid #ccc;
+  padding:calc(0.5em - 1px) 0.3em;
+  align-self: center;
+  color:#dc3545;
+  display:none;
+}
+
+
+
 [readonly="readonly"]{
     pointer-events:none !important;
 }

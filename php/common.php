@@ -3999,6 +3999,176 @@ function buildFormFile($name,$params=array()){
 	if(isset($params['multiple']) && !stringEndsWith($params['name'],'[]')){
 		$params['name'].='[]';
 	}
+	if(!isset($params['multiple'])){$params['multiple']='';}
+	if(!isset($params['accept'])){$params['accept']='';}
+	if(!isset($params['capture'])){$params['capture']='';}
+	if(!isset($params['class'])){$params['class']='';}
+	$capture='';
+	$icon='';
+	switch(strtolower($params['accept'])){
+		case 'audio/*':
+		case 'audio':
+			switch(strtolower($params['capture'])){
+				case '1':
+				case 'true':
+				case 'microphone':
+					$capture='capture="microphone"';
+				break;
+			}
+			$params['accept']='audio/*';
+			if(strlen($params['value'])){
+				$icon='<span style="align-self:center;" class="icon-music w_pointer" title="Click to preview" data-src="'.$params['value'].'" onclick="wacss.showAudio(this);"></span>';
+			}
+			else{
+				$icon='<span class="icon-music"></span>';
+			}
+		break;
+		case 'video/*':
+		case 'video':
+			switch(strtolower($params['capture'])){
+				case '1':
+				case 'true':
+				case 'camcorder':
+					$capture='capture="camcorder"';
+				break;
+			}
+			$params['accept']='video/*';
+			if(strlen($params['value'])){
+				$icon='<span style="align-self:center;" class="icon-video w_pointer" title="Click to preview" data-src="'.$params['value'].'" onclick="wacss.showVideo(this);"></span>';
+			}
+			else{
+				$icon='<span class="icon-video"></span>';
+			}
+		break;
+		case 'image/*':
+		case 'image':
+			switch(strtolower($params['capture'])){
+				case '1':
+				case 'true':
+				case 'user':
+					$capture='capture="user"';
+				break;
+				case 'environment':
+					$capture='capture="environment"';
+				break;
+				case 'camera':
+					$capture='capture="camera"';
+				break;
+			}
+			$params['accept']='image/*';
+			if(strlen($params['value'])){
+				$icon='<span style="align-self:center;" class="icon-image w_pointer" title="Click to preview" data-src="'.$params['value'].'" onclick="wacss.showImage(this);"></span>';
+			}
+			else{
+				$icon='<span class="icon-image"></span>';
+			}
+		break;
+		case '.csv':
+		case 'csv':
+			$params['accept']='.csv, text/csv, application/csv, text/comma-separated-values, application/csv';
+			$icon='<span style="align-self:center;" class="icon-file-txt"></span>';
+		break;
+		case '.pdf':
+		case 'pdf':
+			$params['accept']='.pdf';
+			$icon='<span style="align-self:center;" class="icon-file-pdf2"></span>';
+		break;
+		case 'excel':
+			$params['accept']='.xls, .xlsx, application/excel, application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+			$icon='<span style="align-self:center;" class="icon-application-excel"></span>';
+		break;
+		default:
+			$icon='<span style="align-self:center;" class="icon-attach"></span>';
+		break;
+	}
+	if(strlen($params['value'])){
+		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+		//return $afile.printValue($params);
+		if(file_exists($afile)){
+			$arr=array(
+				array(
+					'name'=>$params['value'],
+					'size'=>filesize($afile)
+				)
+			);
+		}
+		else{
+			$arr=array(
+				array(
+					'name'=>$params['value'],
+					'size'=>0
+				)
+			);
+		}
+		$params['value']=encodeJSON($arr);
+	}
+	$tag='<div style="display:inline-flex;" data-display="inline-flex"';
+	//displayif
+	if(isset($params['displayif'])){
+		$tag .= ' data-displayif="'.$params['displayif'].'"';
+	}
+	//hideif
+	if(isset($params['hideif'])){
+		$tag .= ' data-hideif="'.$params['hideif'].'"';
+	}
+	$tag.='>'.PHP_EOL;
+	//prev value
+	if(strlen($params['value'])){
+		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$params['value'].'">'.PHP_EOL;
+	}
+	//set path of where to store this file in
+	if(!isset($params['path'])){
+    	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
+    	elseif(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
+    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
+    	else{$params['path']="/files/{$params['name']}";}
+	}
+	//create path if it does not exist
+	$apath=$_SERVER['DOCUMENT_ROOT'].$params['path'];
+	if(!is_dir($apath)){
+		buildDir($apath);
+	}
+	$tag.=buildFormHidden("{$name}_path",array('value'=>$params['path']));
+	//autonumber?
+	if(isset($params['autonumber']) || isset($params['data-autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+		$tag.=buildFormHidden("{$name}_autonumber",array('value'=>1));
+    }
+    //resize after upload?
+    if(isset($params['resize']) || isset($params['data-resize'])){
+    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
+		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
+		unset($params['data-resize']);
+    }
+	$tag.=<<<ENDOFTAG
+<input type="file" accept="{$params['accept']}" class="fileupload" name="{$name}" id="{$params['id']}" style="display:none;" onchange="wacss.formFileUpload(this);" {$capture} {$params['multiple']}>
+<div class="fileupload {$params['class']}">
+	{$icon}
+	<label for="{$params['id']}" data-tip="id:{$params['id']}_tip" data-tip_position="bottom">Upload</label>
+	<div class="icon-erase"></div>
+	<input type="checkbox" value="1" name="{$params['name']}_remove" style="display:none;">
+	<code style="display:none;">{$params['value']}</code>
+</div>
+<div class="fileupload_tip" style="display:none;" id="{$params['id']}_tip"></div>
+ENDOFTAG;
+	$tag.='</div>';
+	return $tag;
+}
+//Note: old buildFormFile function replace on 9/4/2024 
+function buildFormFile_OLD($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
+	if(!isset($params['text'])){
+		if(isset($params['multiple'])){$params['text']='files to upload';}
+		else{$params['text']='file to upload';}
+	}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
+	$params['value']=buildFormValueParam($name,$params);
+	$params['name']=$name;
+	if(isset($params['multiple']) && !stringEndsWith($params['name'],'[]')){
+		$params['name'].='[]';
+	}
 	//ksort($params);return printValue($params);
 	$tag='';
 	$viewer='';

@@ -65,16 +65,31 @@
 
 <view:form-elements>
 <form name="addedit" onchange="return formChanged(this);">
-	<div style="display:flex;">
-		<div class="w_nowrap" style="width: 200px;">ReadonlyIf</div>
+	<div style="display:flex;flex-wrap:wrap;margin-top:15px;">
+		<div class="w_nowrap" style="width: 200px;font-weight:bold;">Image File with value</div>
+		<div style="flex:5;display:flex;flex-wrap:wrap;">
+			<div style="margin:0 10px 10px 0;"><div>is-small</div><div><?=buildFormFile('filea',array('value'=>'/wfiles/sample_img.jpg','accept'=>'image/*','class'=>'is-small'));?></div></div>
+			<div style="margin:0 10px 10px 0;"><div>is-normal</div><div><?=buildFormFile('fileb',array('value'=>'/wfiles/sample_img.jpg','accept'=>'image/*','class'=>'is-normal'));?></div></div>
+		</div>
+	</div>
+	<div style="display:flex;flex-wrap:wrap;margin-top:15px;">
+		<div class="w_nowrap" style="width: 200px;font-weight:bold;">Video File</div>
+		<div style="flex:5;display:flex;flex-wrap:wrap;">
+			<div style="margin:0 10px 10px 0;"><div>is-small</div><div><?=buildFormFile('filea',array('accept'=>'video/*','class'=>'is-small'));?></div></div>
+			<div style="margin:0 10px 10px 0;"><div>is-normal</div><div><?=buildFormFile('fileb',array('accept'=>'video/*','class'=>'is-normal'));?></div></div>
+		</div>
+	</div>
+	<?=buildOnLoad("wacss.formFileUploadInit();");?>
+	<div style="display:flex;flex-wrap:wrap;margin-top:15px;";">
+		<div class="w_nowrap" style="width: 200px;font-weight:bold;">ReadonlyIf</div>
 		<div style="flex:5;"><input data-type="checkbox" type="checkbox" value="1" name="formreadonly" id="readonlyif" /> <label for="readonlyif" class="w_pointer" style="user-select:none !important;">Make form elements readonly</label></div>
 	</div>
-	<div style="display:flex;margin-top:15px;">
-		<div class="w_nowrap" style="width: 200px;">ButtonSelect</div>
+	<div style="display:flex;flex-wrap:wrap;margin-top:15px;">
+		<div class="w_nowrap" style="width: 200px;font-weight:bold;">ButtonSelect</div>
 		<div style="flex:5;"><?=buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('value'=>'red','data-readonlyif'=>'formreadonly:1','red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div>
 	</div>
-	<div style="display:flex;">
-		<div class="w_nowrap" style="width: 200px;">Date</div>
+	<div style="display:flex;flex-wrap:wrap;margin-top:15px;">
+		<div class="w_nowrap" style="width: 200px;font-weight:bold;">Date</div>
 		<div style="flex:5;"><?=buildFormDate('mydate',array('data-readonlyif'=>'formreadonly:1'));?></div>
 	</div>
 	<div class="row"><div class="col s2">Checkbox</div><div class="col s8" style="font-size:1.3em;"><?=buildFormCheckbox('x1',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('data-readonlyif'=>'formreadonly:1','red_class'=>'w_red','blue_class'=>'w_blue','green_class'=>'w_green'));?></div></div>
