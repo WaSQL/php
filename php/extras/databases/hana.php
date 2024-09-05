@@ -2679,6 +2679,26 @@ function hanaNamedQueryList(){
 			'name'=>'Disk Space'
 		),
 		array(
+			'code'=>'processors',
+			'icon'=>'icon-hardware-cpu',
+			'name'=>'CPU Usage'
+		),
+		array(
+			'code'=>'disk_usage',
+			'icon'=>'icon-hardware-drive',
+			'name'=>'Disk Usage'
+		),
+		array(
+			'code'=>'network_usage',
+			'icon'=>'icon-network',
+			'name'=>'Network Usage'
+		),
+		array(
+			'code'=>'table_locks',
+			'icon'=>'icon-lock',
+			'name'=>'Table Locks'
+		),
+		array(
 			'code'=>'sessions',
 			'icon'=>'icon-spin8',
 			'name'=>'Sessions'
@@ -2697,11 +2717,6 @@ function hanaNamedQueryList(){
 			'code'=>'indexes',
 			'icon'=>'icon-marker',
 			'name'=>'Indexes'
-		),
-		array(
-			'code'=>'table_locks',
-			'icon'=>'icon-lock',
-			'name'=>'Table Locks'
 		),
 	);
 }
@@ -2825,28 +2840,18 @@ ENDOFQUERY;
 		break;
 		case 'disk_space':
 			return <<<ENDOFQUERY
+-- listopts:size_gb_options={"class":"align-right","number_format":"2"}
+-- listopts:pcnt_used_options={"class":"align-right","number_format":"2"}
+-- listopts:pcnt_avail_options={"class":"align-right","number_format":"2"}
 WITH fs_sizes AS (
-    SELECT 
-        host,
-        definition_id,
-        caption,
-        value,
-        unit,
-        measured_element_name
-    FROM
-      M_HOST_AGENT_METRICS
-    WHERE 
-        definition_id = 'FS.Size'
+    SELECT host,caption,value,unit,measured_element_name
+    FROM M_HOST_AGENT_METRICS
+    WHERE definition_id = 'FS.Size'
 )
 ,fs_avail AS (
-    SELECT 
-        host,
-        value,
-        measured_element_name
-    FROM
-      M_HOST_AGENT_METRICS
-    WHERE 
-        definition_id = 'FS.AvailableSpace'
+    SELECT value,measured_element_name
+    FROM M_HOST_AGENT_METRICS
+    WHERE definition_id = 'FS.AvailableSpace'
 )
 SELECT
     fs.host,
@@ -2858,8 +2863,156 @@ FROM fs_sizes fs
     INNER JOIN fs_avail fa on fs.measured_element_name=fa.measured_element_name
 ENDOFQUERY;
 		break;
+		case 'disk_usage':
+			return <<<ENDOFQUERY
+-- listopts:avg_queue_length_options={"class":"align-right","number_format":"2"}
+-- listopts:avg_service_time_options={"class":"align-right","number_format":"2"}
+-- listopts:avg_wait_time_options={"class":"align-right","number_format":"2"}
+-- listopts:io_rate_options={"class":"align-right","number_format":"2"}
+-- listopts:total_throughput_options={"class":"align-right","number_format":"2"}
+-- listopts:util_options={"class":"align-right","number_format":"2"}
+WITH avg_queue_length as (
+       SELECT definition_id,measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Disk' and definition_id='Disk.AverageQueueLength'
+),avg_service_time AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Disk' and definition_id='Disk.AverageServiceTime'
+),avg_wait_time AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Disk' and definition_id='Disk.AverageWaitTime'
+),io_rate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Disk' and definition_id='Disk.IORate'
+),total_throughput AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Disk' and definition_id='Disk.TotalThroughput'
+),util AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Disk' and definition_id='Disk.Util'
+)
+SELECT
+       aql.measured_element_name as name,
+       aql.value as avg_queue_length,
+       ast.value as avg_service_time,
+       awt.value as avg_wait_time,
+       ir.value as io_rate,
+       tt.value as total_throughput,
+       u.value as util
+FROM avg_queue_length aql
+INNER JOIN avg_service_time ast ON ast.measured_element_name=aql.measured_element_name
+INNER JOIN avg_wait_time awt ON awt.measured_element_name=aql.measured_element_name
+INNER JOIN io_rate ir ON ir.measured_element_name=aql.measured_element_name
+INNER JOIN total_throughput tt ON tt.measured_element_name=aql.measured_element_name
+INNER JOIN util u ON u.measured_element_name=aql.measured_element_name
+ORDER BY aql.measured_element_name
+ENDOFQUERY;
+		case 'processors':
+			return <<<ENDOFQUERY
+-- listopts:idle_options={"class":"align-right","number_format":"2"}
+-- listopts:system_options={"class":"align-right","number_format":"2"}
+-- listopts:user_options={"class":"align-right","number_format":"2"}
+-- listopts:wait_options={"class":"align-right","number_format":"2"}
+WITH idle_cpus as (
+       SELECT definition_id,measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Processor' and definition_id='Proc.IdleTimePercentage'
+),system_cpus AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Processor' and definition_id='Proc.SystemTimePercentage'
+),user_cpus AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Processor' and definition_id='Proc.UserTimePercentage'
+),wait_cpus AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='Processor' and definition_id='Proc.WaitTimePercentage'
+)
+SELECT
+       ic.measured_element_name as cpu,
+       sc.value as system,
+       uc.value as user,
+       wc.value as wait,
+       ic.value as idle
+FROM idle_cpus ic
+INNER JOIN system_cpus sc ON sc.measured_element_name=ic.measured_element_name
+INNER JOIN user_cpus uc ON uc.measured_element_name=ic.measured_element_name
+INNER JOIN wait_cpus wc ON wc.measured_element_name=ic.measured_element_name
+ORDER BY CAST(ic.measured_element_name as numeric)
+ENDOFQUERY;
+		break;
+		case 'network_usage':
+			return <<<ENDOFQUERY
+-- listopts:kbyte_receive_rate_options={"class":"align-right","number_format":"2"}
+-- listopts:kbyte_transmit_rate_options={"class":"align-right","number_format":"2"}
+-- listopts:transmit_error_rate_options={"class":"align-right","number_format":"2"}
+-- listopts:receive_error_rate_options={"class":"align-right","number_format":"2"}
+-- listopts:packet_receive_rate_options={"class":"align-right","number_format":"2"}
+-- listopts:packet_transmit_rate_options={"class":"align-right","number_format":"2"}
+WITH CollisionRate as (
+       SELECT definition_id,measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.CollisionRate'
+),KByteReceiveRate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.KByteReceiveRate'
+),KByteTransmitRate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.KByteTransmitRate'
+),TransmitErrorRate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.TransmitErrorRate'
+),ReceiveErrorRate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.ReceiveErrorRate'
+),PacketReceiveRate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.PacketReceiveRate'
+),PacketTransmitRate AS (
+       SELECT measured_element_name,value
+       FROM M_HOST_AGENT_METRICS
+       WHERE measured_element_type='NetworkPort' and definition_id='Net.PacketTransmitRate'
+)
+SELECT
+       cr.measured_element_name as device,
+       cr.value as collission_rate,
+       krr.value as kbyte_receive_rate,
+       ktr.value as kbyte_transmit_rate,
+       ter.value as transmit_error_rate,
+       rer.value as receive_error_rate,
+       prr.value as packet_receive_rate,
+       ptr.value as packet_transmit_rate
+FROM CollisionRate cr
+INNER JOIN KByteReceiveRate krr ON krr.measured_element_name=cr.measured_element_name
+INNER JOIN KByteTransmitRate ktr ON ktr.measured_element_name=cr.measured_element_name
+INNER JOIN TransmitErrorRate ter ON ter.measured_element_name=cr.measured_element_name
+INNER JOIN ReceiveErrorRate rer ON rer.measured_element_name=cr.measured_element_name
+INNER JOIN PacketReceiveRate prr ON prr.measured_element_name=cr.measured_element_name
+INNER JOIN PacketTransmitRate ptr ON ptr.measured_element_name=cr.measured_element_name
+ORDER BY cr.measured_element_name
+ENDOFQUERY;
 		case 'server_resources':
 			return <<<ENDOFQUERY
+-- listopts:mem_tot_gb_options={"class":"align-right","number_format":"2"}
+-- listopts:mem_free_gb_options={"class":"align-right","number_format":"2"}
+-- listopts:loadavg_1min_options={"class":"align-right","number_format":"2"}
+-- listopts:loadavg_5min_options={"class":"align-right","number_format":"2"}
+-- listopts:loadavg_15min_options={"class":"align-right","number_format":"2"}
+-- listopts:steal_pct_options={"class":"align-right","number_format":"2"}
+-- listopts:ctx_switches_per_s_options={"class":"align-right","number_format":"2"}
+-- listopts:interrupts_per_s_options={"class":"align-right","number_format":"2"}
 SELECT
   SUBSTR(MAX(timestamp),0,19) timestamp,
   HOST,
