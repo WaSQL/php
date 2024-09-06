@@ -1075,7 +1075,7 @@ function commonSearchFiltersForm($params=array()){
 				$cparams['-formname']=$params['-formname'];
 			}
 			$cparams['placeholder']='value';
-			$cparams['autofocus']='autofocus';
+			//$cparams['autofocus']='autofocus';
 			$rtn .= buildFormText('filter_value',$cparams);
 			unset($params['autofocus']);
 			$rtn .= '			</div>'.PHP_EOL;
@@ -1116,7 +1116,7 @@ function commonSearchFiltersForm($params=array()){
 				$cparams['-formname']=$params['-formname'];
 			}
 			$cparams['placeholder']='value';
-			$cparams['autofocus']='autofocus';
+			//$cparams['autofocus']='autofocus';
 			$rtn .= buildFormText('filter_value',$cparams);
 			unset($params['autofocus']);
 			$rtn .= '			</div>'.PHP_EOL;
@@ -3984,7 +3984,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 * @return string
 * @usage echo buildFormFile('file',$params);
 */
-function buildFormFileNew($name,$params=array()){
+function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
@@ -4081,6 +4081,7 @@ function buildFormFileNew($name,$params=array()){
 			$icon='<span style="align-self:center;" class="icon-attach"></span>';
 		break;
 	}
+	$params['ori_value']=$params['value'];
 	if(strlen($params['value'])){
 		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
 		//return $afile.printValue($params);
@@ -4114,7 +4115,7 @@ function buildFormFileNew($name,$params=array()){
 	$tag.='>'.PHP_EOL;
 	//prev value
 	if(strlen($params['value'])){
-		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$params['value'].'">'.PHP_EOL;
+		$tag .= '	<input type="hidden" name="'.$name.'_prev" value="'.$params['ori_value'].'">'.PHP_EOL;
 	}
 	//set path of where to store this file in
 	if(!isset($params['path'])){
@@ -4154,7 +4155,7 @@ ENDOFTAG;
 	return $tag;
 }
 //Note: old buildFormFile function replace on 9/4/2024 
-function buildFormFile($name,$params=array()){
+function buildFormFile_OLD($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
