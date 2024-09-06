@@ -3984,7 +3984,7 @@ function buildFormField($tablename,$fieldname,$opts=array()){
 * @return string
 * @usage echo buildFormFile('file',$params);
 */
-function buildFormFile($name,$params=array()){
+function buildFormFileNew($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
@@ -4154,7 +4154,7 @@ ENDOFTAG;
 	return $tag;
 }
 //Note: old buildFormFile function replace on 9/4/2024 
-function buildFormFile_OLD($name,$params=array()){
+function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
