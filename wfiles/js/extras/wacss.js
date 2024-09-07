@@ -1032,8 +1032,8 @@ var wacss = {
 			el.dataset.initialized=1;
 			let div=el.nextElementSibling;
 			if(!div.classList.contains('fileupload')){continue;}
-			let tip=div.nextElementSibling;
-			if(!tip.classList.contains('fileupload_tip')){continue;}
+			let hover=div.nextElementSibling;
+			if(!hover.classList.contains('fileupload_hover')){continue;}
 			let label=div.querySelector('label');
 			if(undefined == label){continue;}
 			let erase=div.querySelector('div.icon-erase');
@@ -1063,7 +1063,7 @@ var wacss = {
 					htm=htm+'<tr><td><a style="max-width:250px;overflow:hidden;text-overflow: ellipsis;white-space:nowrap;" href="'+files[f].name+'" title="'+files[f].name+'" class="w_link" download><span class="icon-download"></span> '+files[f].name+'</a></td><td class="w_nowrap align-right">'+wacss.verboseSize(files[f].size)+'</td></tr>';
 				}
 				htm=htm+'</table>';
-				tip.innerHTML=htm;
+				hover.innerHTML=htm;
 				htm='';
 				if(fcnt==1){
 					htm=files[0].name+' - '+wacss.verboseSize(tsize);
@@ -1076,7 +1076,7 @@ var wacss = {
 			}
 			else{
 				label.innerHTML='Upload';
-				tip.innerHTML='';
+				hover.innerHTML='';
 			}
 			erase.file_element=el;
 			erase.rbox=rbox;
@@ -2937,6 +2937,8 @@ var wacss = {
 			}
 		}
 		for(let i=0;i<hoverEls.length;i++){
+			if(undefined != hoverEls[i].dataset.initialized){continue;}
+			hoverEls[i].dataset.initialized=1;
 			hoverEls[i].addEventListener('mouseover',function(){
 				//populate wacss.hoverDiv with 
 				let txt='';

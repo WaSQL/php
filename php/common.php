@@ -4144,13 +4144,13 @@ function buildFormFile($name,$params=array()){
 <input type="file" accept="{$params['accept']}" class="fileupload" name="{$name}" id="{$params['id']}" style="display:none;" onchange="wacss.formFileUpload(this);" {$capture} {$params['multiple']}>
 <div class="fileupload {$params['class']}">
 	{$icon}
-	<label for="{$params['id']}" data-tip="id:{$params['id']}_tip" data-tip_position="bottom">Upload</label>
+	<label for="{$params['id']}" data-hover="id:{$params['id']}_hover" data-position="bottom">Upload</label>
 	<div class="icon-erase"></div>
 	<input type="checkbox" value="1" name="{$params['name']}_remove" style="display:none;">
 	<code style="display:none;">{$params['value']}</code>
 </div>
-<div class="fileupload_tip" style="display:none;" id="{$params['id']}_tip">
-	<img src="/wfiles/clear.gif" onload="wacss.formFileUploadInit();">
+<div class="fileupload_hover" style="display:none;" id="{$params['id']}_hover">
+	<img src="/wfiles/clear.gif" onload="wacss.formFileUploadInit();wacss.initHovers();">
 </div>
 ENDOFTAG;
 	$tag.='</div>';
