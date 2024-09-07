@@ -1092,20 +1092,20 @@ var wacss = {
 	},
 	formFileUpload: function(el){
 		let fcnt=el.files.length;
-		if(fcnt==0){return;}
+		if(fcnt==0){return true;}
 		let div=el.nextElementSibling;
-		if(!div.classList.contains('fileupload')){return;}
-		let tip=div.nextElementSibling;
-		if(!tip.classList.contains('fileupload_tip')){return;}
+		if(!div.classList.contains('fileupload')){return true;}
+		let hover=div.nextElementSibling;
+		if(!hover.classList.contains('fileupload_hover')){return true;}
 		let label=div.querySelector('label');
-		if(undefined == label){return;}
+		if(undefined == label){return true;}
 		let erase=div.querySelector('div.icon-erase');
-		if(undefined == erase){return;}
+		if(undefined == erase){return true;}
 		erase.style.display='block';
 		let rbox=div.querySelector('input[type="checkbox"]');
-		if(undefined == rbox){return;}
+		if(undefined == rbox){return true;}
 		let code=div.querySelector('code');
-		if(undefined == code){return;}
+		if(undefined == code){return true;}
 		let files=el.files || new Array();
 		if(fcnt > 0){
 			erase.style.display='block';
@@ -1117,7 +1117,7 @@ var wacss = {
 				htm=htm+'<tr><td>'+files[f].name+'</td><td class="w_nowrap align-right">'+wacss.verboseSize(files[f].size)+'</td></tr>';
 			}
 			htm=htm+'</table>';
-			tip.innerHTML=htm;
+			hover.innerHTML=htm;
 			htm='';
 			if(fcnt==1){
 				htm=files[0].name+' - '+wacss.verboseSize(tsize);
@@ -1130,7 +1130,7 @@ var wacss = {
 		}
 		else{
 			label.innerHTML='Upload';
-			tip.innerHTML='';
+			hover.innerHTML='';
 		}
 		erase.file_element=el;
 		erase.rbox=rbox;
@@ -1141,6 +1141,7 @@ var wacss = {
 			rbox.checked=true;
 			return false;
 		};
+		return true;
 	},
 	formIsIfTrue: function(frm,ifstr){
 		//age:5
