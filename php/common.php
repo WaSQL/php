@@ -4149,7 +4149,9 @@ function buildFormFile($name,$params=array()){
 	<input type="checkbox" value="1" name="{$params['name']}_remove" style="display:none;">
 	<code style="display:none;">{$params['value']}</code>
 </div>
-<div class="fileupload_tip" style="display:none;" id="{$params['id']}_tip"></div>
+<div class="fileupload_tip" style="display:none;" id="{$params['id']}_tip">
+	<img src="/wfiles/clear.gif" onload="wacss.formFileUploadInit();">
+</div>
 ENDOFTAG;
 	$tag.='</div>';
 	return $tag;
@@ -19015,7 +19017,7 @@ function processActions(){
 							}
 						}
 					}
-					//if($_REQUEST['_table']=='test'){echo printValue($fields).printValue($_REQUEST);exit;}
+					//if($_REQUEST['_table']=='_files'){echo printValue($info).printValue($_REQUEST);exit;}
 					//echo "EDIT".printValue($jsonfieldmap).printValue($_FILES).printValue($_REQUEST['data>company>favicon']);exit;
 					$jsonmaps=array();
 					foreach($fields as $field){
@@ -19133,8 +19135,10 @@ function processActions(){
 						}
 						//file type
 						if($inputtype=='file'){
+							//echo printValue($_REQUEST);exit;
 							$suffixes=array('remove','autonumber','path','sha1','size','width','height','type','prev');
 							if(isset($_REQUEST[$field.'_remove']) && $_REQUEST[$field.'_remove'] == 1){
+								//echo $field.'_remove';exit;
 								if(strlen($jfield) && isset($_REQUEST[$jfield]) && strlen($_REQUEST[$jfield])){
 									$_REQUEST[$jfield]=json_decode($_REQUEST[$jfield],true);
 									//echo printValue($_REQUEST[$jfield]);
@@ -19161,16 +19165,28 @@ function processActions(){
 									$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
 								}
 								else{
-									$opts[$field]=null;
+									if(stringContains($info[$field]['flags'],'not_null')){
+										$opts[$field]='';
+									}
+									else{$opts[$field]=null;}
 								}
 								
 								//unset($_REQUEST[$field]);
+								//echo printValue($info);exit;
 								foreach($suffixes as $suffix){
-									if(isset($info["{$field}_{$suffix}"])){$opts["{$field}_{$suffix}"]=null;}
+									if(isset($info["{$field}_{$suffix}"])){
+										if(stringContains($info["{$field}_{$suffix}"]['flags'],'not_null')){
+											$opts["{$field}_{$suffix}"]='';	
+										}
+										else{
+											$opts["{$field}_{$suffix}"]=null;
+										}
+										
+									}
 									unset($_REQUEST["{$field}_{$suffix}"]);
 								}	
 							}
-							elseif(isset($_REQUEST[$field.'_prev']) && strlen($_REQUEST[$field.'_prev']) && $_REQUEST[$field.'_remove'] == 0){
+							elseif(isset($_REQUEST[$field.'_prev']) && !isset($_REQUEST[$field.'_abspath'])){
 								$_REQUEST[$field]=$_REQUEST[$field.'_prev'];
 							}
 							else{					
@@ -19298,9 +19314,10 @@ function processActions(){
                     $opts['_edate']=date("Y-m-d H:i:s",$timestamp);
                     //$opts['data']=json_decode($opts['data'],true);
                     //ksort($opts['data']['website']);
-                    //echo printValue($opts);exit;
+                    
                     //edit the record
 					$_REQUEST['edit_result']=editDBRecord($opts);
+					//ksort($_REQUEST);echo printValue($opts).printValue($_FILES).printValue($_REQUEST);exit;
 					global $databaseCache;
 					$databaseCache=array();
 					if(!isNum($_REQUEST['edit_result'])){
@@ -20192,6 +20209,7 @@ function processFileUploads($docroot=''){
 				$pfiles[]=$file;
 			}
 		}
+		//echo printValue($pfiles);exit;
 		foreach($pfiles as $pi=>$file){
 			if((is_array($file['name']) && !count($file['name'])) || !strlen($file['name'])){
 	 			unset($pfiles[$pi]);

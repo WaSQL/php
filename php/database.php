@@ -7338,7 +7338,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	if(!isset($params['-where'])){return 'editDBRecord Error: No where <br>' . printValue($params);}
 	global $USER;
 	$table=$params['-table'];
-	//if($params['-table']=='test'){echo printValue($params);exit;}
+	//if($params['-table']=='_files'){echo printValue($params);exit;}
 	
 	//trigger
 	if(!isset($params['-trigger']) || ($params['-trigger'])){

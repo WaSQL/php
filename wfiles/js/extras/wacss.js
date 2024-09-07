@@ -1028,6 +1028,8 @@ var wacss = {
 		if(els.length==0){return false;}
 		for(let i=0;i<els.length;i++){
 			let el=els[i];
+			if(undefined != el.dataset.initialized){continue;}
+			el.dataset.initialized=1;
 			let div=el.nextElementSibling;
 			if(!div.classList.contains('fileupload')){continue;}
 			let tip=div.nextElementSibling;
@@ -1041,6 +1043,11 @@ var wacss = {
 			if(undefined == rbox){continue;}
 			let code=div.querySelector('code');
 			if(undefined == code){continue;}
+			//if it changes then uncheck the remove checkbox
+			el.rbox=rbox;
+			el.addEventListener("change", function(e) {
+				el.rbox.checked=false;
+			});
 			let files=new Array();
 			if(code.innerText.length){
 				files= JSON.parse(code.innerText) || new Array();
@@ -1817,7 +1824,6 @@ var wacss = {
 	*/
 	init: function(){
 		/*wacssedit*/
-		wacss.formFileUploadInit();
 		wacss.initOnloads();
 		wacss.initWacssEdit();
 		wacss.initChartJs();
