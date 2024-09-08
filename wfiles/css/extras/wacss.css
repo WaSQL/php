@@ -813,6 +813,49 @@ textarea[data-behavior="whiteboard"]{
 
 #wacss_toasts .toast.w_black:hover span.icon-close{opacity:100;color:rgba(35, 39, 43, 0.5);}
 #wacss_toasts .toast.w_black{border-color:rgba(35, 39, 43, 0.3);}
+/* ---------------------- wacss_dropdown ----------------- */
+input[type="checkbox"].wacss_dropdown{
+  display:none;
+}
+input[type="checkbox"].wacss_dropdown ~ .wacss_dropdown-content{
+  display:none;
+  position:absolute;
+  flex-direction: column;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  background:#FFF;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  z-index: 99999;
+}
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content{
+  display:flex;
+}
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *{
+  padding-inline-end: 3rem;
+    text-align: inherit;
+    white-space: nowrap;
+    width: 100%;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    padding: 0.375rem 1rem;
+    color:#4e4e4e;
+}
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *.is-active{
+  background-color:#f0f0f080;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+}
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *:hover{
+  background-color:#f0f0f0;
+}
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content .dropdown-divider{
+  background-color:#f0f0f0;
+  border: none;
+    display: block;
+    height: 1px;
+    padding:0px;
+    line-height: initial;
+    margin: .5rem 0;
+}
 /* ---------------------- dropdown ------------------------- */
 .wacss_hover{
   background: #fff;
