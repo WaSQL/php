@@ -447,7 +447,16 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 				$filters[]=$checkfield;
 			}
 			else{
-				$filters[]="{$checkfield}=*{$str}*";
+				if($checkfield=='manager'){
+					$mstr="(|(samaccountname=*{$str}*)(sn=*{$str}*)(givenname=*{$str}*))";
+					$mrecs=ldapSearch($mstr,'*','dn');
+					foreach($mrecs as $mrec){
+						$filters[]="manager={$mrec['dn']}";
+					}
+				}
+				else{
+					$filters[]="{$checkfield}=*{$str}*";
+				}
 			}
 		}
 	}
@@ -470,6 +479,7 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	if(!is_array($returnfields) && strlen($returnfields)){
 		$returnfields=preg_split('/\,/',$returnfields);
 	}
+	//echo printValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields,'filter'=>$filter));exit;
 	if($debug){
 		debugValue(array('str'=>$str,'checkfields'=>$checkfields,'returnfields'=>$returnfields,'filter'=>$filter));
 	}
@@ -519,6 +529,19 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	        		[['oid' => LDAP_CONTROL_PAGEDRESULTS, 'value' => ['size' => 500, 'cookie' => $cookie]]]
 	    		);
 	        }
+	        if ($result === false) {
+		        $errorCode = ldap_errno($ldapInfo['connection']);
+		        $errorMessage = ldap_error($ldapInfo['connection']);
+		        $phpError = error_get_last();
+		        
+		        $errorDetails = [
+		            'ldap_error_code' => $errorCode,
+		            'ldap_error_message' => $errorMessage,
+		            'php_error' => $phpError,
+		            'filter'=>$filter
+		        ];
+		        echo printValue($errorDetails);exit;
+		    }
     		ldap_parse_result(
     			$ldapInfo['connection'], 
     			$result, 
