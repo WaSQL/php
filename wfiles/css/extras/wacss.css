@@ -827,10 +827,16 @@ input[type="checkbox"].wacss_dropdown ~ .wacss_dropdown-content{
   border-bottom-left-radius: 5px;
   z-index: 99999;
 }
+input[type="checkbox"].wacss_dropdown ~ .wacss_dropdown-content[data-position="right"]{
+  right:0px;
+  top:0px;
+}
+
 input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content{
   display:flex;
 }
-input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *{
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content a,
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content label{
   padding-inline-end: 3rem;
     text-align: inherit;
     white-space: nowrap;
@@ -840,11 +846,13 @@ input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *{
     padding: 0.375rem 1rem;
     color:#4e4e4e;
 }
-input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *.is-active{
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content a.is-active,
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content label.is-active{
   background-color:#f0f0f080;
   box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
 }
-input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content *:hover{
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content a:hover,
+input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content label:hover {
   background-color:#f0f0f0;
 }
 input[type="checkbox"].wacss_dropdown:checked ~ .wacss_dropdown-content .dropdown-divider{
