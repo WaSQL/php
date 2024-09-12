@@ -264,9 +264,22 @@
 					//echo $sql;exit;
 					$recs=dbQueryResults($db['name'],$sql);
 				break;
+				case 'firebird':
+					$sql="SELECT PLAN {$_SESSION['sql_last']} FROM RDB\$DATABASE";
+					//echo $sql;exit;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
+				case 'ctree':
+					echo ' cTREE does not have a built-in EXPLAIN or execution plan feature like those found in more common SQL databases';exit;
+				break;
 				case 'sqlite':
 					$sql="EXPLAIN QUERY PLAN".PHP_EOL.$_SESSION['sql_last'];
 					//echo $sql;exit;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
+				case 'mssql':
+					$sql=str_replace("'","''",$_SESSION['sql_last']);
+					$sql = "EXEC sp_executesql N'SET STATISTICS PROFILE ON; {$sql}; SET STATISTICS PROFILE OFF'";
 					$recs=dbQueryResults($db['name'],$sql);
 				break;
 				case 'oracle':
@@ -287,7 +300,6 @@ ENDOFQUERY;
 					echo "EXPLAIN Plans are not yet supported for {$db['dbtype']} yet.";exit;
 				break;
 			}
-			
 			setView(array('results','success'),1);
 			return;
 		break;

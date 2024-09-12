@@ -1,4 +1,9 @@
 function sqlpromptShowLinks(offset,limit,total,qtime){
+	if(undefined==offset || isNaN(offset) || offset.length==0){
+		setText('results_count','');
+		return false;
+	}
+	//console.log(new Array(offset,limit,total,qtime));
 	offset=parseInt(offset);
 	limit=parseInt(limit);
 	total=parseInt(total);
