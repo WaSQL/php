@@ -807,7 +807,7 @@ function hanaGetAllTableIndexes($schema=''){
 		case index_type when 'CPBTREE UNIQUE' then 1 else 0 end as is_unique
 	FROM sys.indexes si, sys.index_columns sic
 	WHERE 
-		si.table_name = sic.table_name
+		si.index_name = sic.index_name
 		and schema_name='{$schema}'
 	GROUP BY 
 		si.table_name,

@@ -54,8 +54,12 @@ function sqlpromptCheckKey(e){
     	//CTRL+e
     	return sqlpromptSubmit(document.sqlprompt);
     }
-    else if (e.ctrlKey && e.keyCode === 88) {
-    	//CTRL+x - generate an explain plan
+    else if (e.ctrlKey && e.keyCode === 73) {
+    	//CTRL+i - generate an explain plan
+    	return sqlpromptExplainPlan();
+    }
+    else if (e.keyCode == 120) {
+    	//F9 - generate an explain plan
     	return sqlpromptExplainPlan();
     }
     else{
