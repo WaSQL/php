@@ -57,16 +57,14 @@
 				<textarea class="form-control" wrap="hard" data-behavior="editor" id="sql_full" name="sql_full"></textarea>
 				</div>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
-					<div>
-						<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run Query (or press F8, CTRL+ENTER or CTRL+e). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <wtranslate>Execute</wtranslate></button> <span class="w_small w_grey"></span>
-					</div>
-					<div title="Check to execute with Python libraries">
+					<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run Query (or press F8, CTRL+ENTER or CTRL+e). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <wtranslate>Execute</wtranslate></button>
+					<label style="margin-left:10px;cursor:pointer;" title="Check to execute with Python libraries">
 						<input type="checkbox" name="py" id="py" value="1" /><label for="py" class="brand-python"></label>
-					</div>
-					<div onclick="sqlpromptLoadPrompt();" class="w_pointer" title="reload previous" style="margin-left:10px;">
-						<span class="icon-history w_gray"></span>
-					</div>
-					<span style="margin-left:10px;" title="copy SQL to clipboard" class="icon-copy w_pointer" onclick="wacss.copy2Clipboard(document.sqlprompt.sql_full.innerText);"></span>
+					</label>
+					<span class="icon-history w_gray w_pointer" onclick="sqlpromptLoadPrompt();" class="w_pointer" title="reload previous" style="margin-left:10px;"></span>
+
+					<span style="margin-left:10px;" title="copy SQL to clipboard" class="icon-copy w_pointer w_gray" onclick="wacss.copy2Clipboard(document.sqlprompt.sql_full.innerText);"></span>
+					<button style="margin-left:10px;" type="button" class="btn w_white" title="Run Explain Plan" onclick="return sqlpromptExplainPlan();"><span class="icon-help"></span> <wtranslate>Explain</wtranslate></button>
 					<div  style="flex:1;" class="align-right w_gray w_small w_nowrap" id="results_count"></div>
 					<div class="align-right" style="padding-left:10px;display:flex;flex-wrap:nowrap;">
 						<button type="button" data-offset="0" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="prev_link" style="display:none;"><span class="icon-arrow-left"></span> Prev</button>

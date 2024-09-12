@@ -230,6 +230,67 @@
 			setView(array('results','success'),1);
 			return;
 		break;
+		case 'explain':
+			$view='block_results';
+			$_SESSION['sql_full']=$_REQUEST['sql_full'];
+			$sql_select=stripslashes($_REQUEST['sql_select']);
+			$sql_full=stripslashes($_REQUEST['sql_full']);
+			if(strlen($sql_select) && $sql_select != $sql_full){
+				$_SESSION['sql_last']=$sql_select;
+			}
+			else{
+				$_SESSION['sql_last']=$sql_full;
+			}
+			switch(strtolower($db['dbtype'])){
+				case 'hana':
+					$stmt_name='hep_'.encodeBase64(microtime(true));
+					$sql="EXPLAIN PLAN SET statement_name='{$stmt_name}' FOR ".PHP_EOL.$_SESSION['sql_last'];
+					$recs=dbQueryResults($db['name'],$sql);
+					$sql="SELECT * FROM sys.explain_plan_table WHERE statement_name='{$stmt_name}'";
+					$recs=dbQueryResults($db['name'],$sql);
+					foreach($recs as $i=>$rec){
+						unset($recs[$i]['statement_name']);
+					}
+				break;
+				case 'mysql':
+				case 'mysqli':
+				case 'postgres':
+					$sql="EXPLAIN".PHP_EOL.$_SESSION['sql_last'];
+					//echo $sql;exit;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
+				case 'snowflake':
+					$sql="EXPLAIN USING TABULAR".PHP_EOL.$_SESSION['sql_last'];
+					//echo $sql;exit;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
+				case 'sqlite':
+					$sql="EXPLAIN QUERY PLAN".PHP_EOL.$_SESSION['sql_last'];
+					//echo $sql;exit;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
+				case 'oracle':
+					$stmt_id='oep_'.encodeBase64(microtime(true));
+					$sql="EXPLAIN PLAN SET statement_id='{$stmt_id}' INTO plan_table FOR".PHP_EOL.$_SESSION['sql_last'];
+					$recs=dbQueryResults($db['name'],$sql);
+					$sql=<<<ENDOFQUERY
+SELECT id, LPAD(' ',2*(LEVEL-1))||operation operation, options,
+   object_name, object_alias, position 
+FROM plan_table 
+START WITH id = 0 AND statement_id = '{$stmt_id}'
+CONNECT BY PRIOR id = parent_id AND statement_id = '{$stmt_id}'
+ORDER BY id
+ENDOFQUERY;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
+				default:
+					echo "EXPLAIN Plans are not yet supported for {$db['dbtype']} yet.";exit;
+				break;
+			}
+			
+			setView(array('results','success'),1);
+			return;
+		break;
 		case 'sql':
 			$view='block_results';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];

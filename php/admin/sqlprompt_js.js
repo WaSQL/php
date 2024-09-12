@@ -49,9 +49,19 @@ function sqlpromptCheckKey(e){
     	//CTRL+e
     	return sqlpromptSubmit(document.sqlprompt);
     }
+    else if (e.ctrlKey && e.keyCode === 88) {
+    	//CTRL+x - generate an explain plan
+    	return sqlpromptExplainPlan();
+    }
     else{
     	//console.log('Keycode:'+e.keyCode);
     }
+}
+function sqlpromptExplainPlan(){
+	document.sqlprompt.func.value='explain';
+	sqlpromptSubmit(document.sqlprompt);
+	document.sqlprompt.func.value='sql';
+	return false;
 }
 function sqlpromptSetSha(sha,cnt){
 	document.sqlprompt.sql_sha.value=sha;
