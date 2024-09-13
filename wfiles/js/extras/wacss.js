@@ -6646,6 +6646,21 @@ var wacss = {
 	* @usage wacss.toast('copy successful',{color:'w_blue',timer:5});
 	*/
 	toast: function(msg,params){
+		//check for qs: and id: custom message redirectors
+		if(msg.indexOf('qs:')==0){
+			let mid=msg.replace('qs:','');
+			let midobj=document.querySelector(mid);
+			if(undefined==midobj){
+				msg=midobj.innerHTML;
+			}
+		}
+		else if(msg.indexOf('id:')==0){
+			let mid=msg.replace('id:','');
+			let midobj=document.querySelector('#'+mid);
+			if(undefined==midobj){
+				msg=midobj.innerHTML;
+			}
+		}
 		if(undefined == params){
 			params={color:'w_green',timer:3};
 		}
