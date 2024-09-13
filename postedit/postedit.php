@@ -374,6 +374,9 @@ function writeFiles(){
 	    	$field=str_replace("{$info['table']}_",'',$name);
 	    	//echo "Name: {$name}, field: {$field}";exit;
 	    	//name
+	    	if(!isset($info['name'])){
+	    		$info['name']="{$info['table']}_{$info['_id']}";
+	    	}
 	    	$name=preg_replace('/[^a-z0-9\ \_\-]+/i','',$info['name']);
 	    	$name=trim($name);
 	    	//extension
