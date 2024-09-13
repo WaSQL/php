@@ -6650,14 +6650,14 @@ var wacss = {
 		if(msg.indexOf('qs:')==0){
 			let mid=msg.replace('qs:','');
 			let midobj=document.querySelector(mid);
-			if(undefined==midobj){
+			if(undefined!=midobj){
 				msg=midobj.innerHTML;
 			}
 		}
 		else if(msg.indexOf('id:')==0){
 			let mid=msg.replace('id:','');
 			let midobj=document.querySelector('#'+mid);
-			if(undefined==midobj){
+			if(undefined!=midobj){
 				msg=midobj.innerHTML;
 			}
 		}
