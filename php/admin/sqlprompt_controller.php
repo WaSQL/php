@@ -264,13 +264,11 @@
 					//echo $sql;exit;
 					$recs=dbQueryResults($db['name'],$sql);
 				break;
-				case 'firebird':
-					$sql="SELECT PLAN {$_SESSION['sql_last']} FROM RDB\$DATABASE";
+				case 'ctree':
+					//EXPLAIN PLAN FOR <SQL statement>
+					$sql="EXPLAIN PLAN FOR ".$_SESSION['sql_last'];
 					//echo $sql;exit;
 					$recs=dbQueryResults($db['name'],$sql);
-				break;
-				case 'ctree':
-					echo ' cTREE does not have a built-in EXPLAIN or execution plan feature like those found in more common SQL databases';exit;
 				break;
 				case 'sqlite':
 					$sql="EXPLAIN QUERY PLAN".PHP_EOL.$_SESSION['sql_last'];

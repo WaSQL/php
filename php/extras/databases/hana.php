@@ -2718,6 +2718,11 @@ function hanaNamedQueryList(){
 			'icon'=>'icon-marker',
 			'name'=>'Indexes'
 		),
+		array(
+			'code'=>'query_history',
+			'icon'=>'icon-history',
+			'name'=>'Query History'
+		),
 	);
 }
 //---------- begin function hanaNamedQuery ----------
@@ -3030,6 +3035,31 @@ WHERE
   measured_element_type = 'OperatingSystem'
 GROUP BY
   HOST
+ENDOFQUERY;
+		break;
+		case 'query_history':
+			return <<<ENDOFQUERY
+-- listopts:threads_options={"class":"align-right","number_format":"2"}
+-- listopts:run_cnt_options={"class":"align-right","number_format":"0"}
+-- listopts:avg_time_options={"class":"align-right","number_format":"2"}
+-- listopts:mem_gb_options={"class":"align-right","number_format":"2"}
+-- listopts:cpu_time_options={"class":"align-right","number_format":"2"}
+SELECT 
+	user_name,
+	application_name,
+	last_execution_timestamp,
+	avg_called_thread_count AS threads,
+	execution_count AS run_cnt,
+	TO_DECIMAL((avg_execution_time/60000000),5,2) as avg_time,
+	table_types,
+	statement_hash,
+	TO_DECIMAL((avg_execution_memory_size/1024/1024/1024),5,2) as mem_gb,
+	TO_DECIMAL((avg_execution_cpu_time/60000000),5,2) as cpu_time 
+FROM sys.m_sql_plan_statistics
+WHERE 
+	last_execution_timestamp >= add_days(CURRENT_DATE, -1)
+ORDER BY 
+	last_execution_timestamp desc
 ENDOFQUERY;
 		break;
 	}
