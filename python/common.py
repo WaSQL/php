@@ -235,6 +235,20 @@ def setFileContents(filename,data,append=False):
 
     f.write(data)
     f.close()
+#---------- begin function encodeHtml
+# @describe encodes html chars that would mess in  a browser
+# @param str string - string to encode
+# @return str - encodes html chars that would mess in  a browser
+# @usage html=encodeHtml(str);
+def encodeHtml(str=''):
+    if(len(str)==0):
+        return str
+    str=str.replace('?','[[!Q!]]')
+    str=str.replace('<','&lt;')
+    str=str.replace('>','&gt;')
+    str=str.replace('"','&quot;')
+    str=str.replace('[[!Q!]]','?')
+    return str;
 #---------- begin function evalPython ----------
 # @describe compiles string and returns result
 # @param str
