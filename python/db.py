@@ -6,11 +6,18 @@ try:
     import config
     import common
     import subprocess
+    from importlib import import_module
+    import inspect
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
+#wasql module is dynamically created. Import if it exists
+wasql={}
+for module_name in sys.modules:
+    if module_name.startswith('wasql_'):
+        wasql=import_module(module_name)
 #---------- begin function db.dasql ----------
 # @describe returns the results of a dasql query
 # @param tag str - dasql.ini tag
@@ -21,6 +28,49 @@ def dasql(tag,query=''):
     dasql=os.path.abspath(ppath+'/dasql/dasql.py')
     out = subprocess.call("python3 {} {} {}".format(dasql,tag,query), shell=True)
     return out
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
+def getFieldSelections(info={}):
+    selections=[]
+    if 'tvals' in info:
+        if isinstance(info['tvals'], str):
+            if(info['tvals'].lower().startswith('select') and inspect.ismodule(wasql)):
+                recs=db.queryResults(wasql.database('name'),info['tvals'])
+                for rec in recs:
+                    if 'tval' in rec:
+                        selections['tvals'].append(rec['tval'])
+                    else:
+                        parts=[]
+                        for k in rec:
+                            parts.append[rec[k]]
+                        selections['tvals'].append(' '.join(parts))
+            else:
+                selections['tvals']=[x.strip() for x in info['tvals'].split(',')]
+        else:
+            selections['tvals']=info['tvals']
+    else:
+        selections['tvals']=[]
+
+    if 'dvals' in info:
+        if isinstance(info['dvals'], str):
+            if(info['dvals'].lower().startswith('select') and inspect.ismodule(wasql)):
+                recs=db.queryResults(wasql.database('name'),info['dvals'])
+                for rec in recs:
+                    if 'dval' in rec:
+                        selections['dvals'].append(rec['dval'])
+                    else:
+                        parts=[]
+                        for k in rec:
+                            parts.append[rec[k]]
+                        selections['dvals'].append(' '.join(parts))
+            else:
+                selections['dvals']=[x.strip() for x in info['dvals'].split(',')]
+        else:
+            selections['dvals']=info['dvals']
+    else:
+        selections['dvals']=selections['tvals']
+
+    return selections
 
 #---------- begin function queryResults ----------
 # @describe returns a dictionary of records returned from query
