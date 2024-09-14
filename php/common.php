@@ -9843,7 +9843,7 @@ function evalGlobal2Perl($arr){
 */
 function evalPythonCode($lang,$evalcode){
 	$lines=preg_split('/[\r\n]+/',$evalcode);
-	$_REQUEST['view']='howdy <b class="w_biggest">du</b>';
+	//$_REQUEST['view']='howdy <b class="w_bigg">du</b>';
 	$prespace='';
 	foreach($lines as $line){
 		if(strlen(trim($line)) && preg_match('/^([\s\t]+)/',$line,$m)){
