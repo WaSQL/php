@@ -5516,8 +5516,8 @@ var wacss = {
 		let elobj=wacss.getObject(el);
 		if(undefined == elobj){return false;}
 		//stop propigation
-		if(undefined != this.event){
-			this.event.stopPropagation();
+		if(window.event && window.event.target != el){
+			return false;
 		}
 		//get parent
 		let ptr=wacss.getParent(elobj,'tr');
