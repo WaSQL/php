@@ -7965,6 +7965,15 @@ function getCalendar($monthyear='',$params=array()){
     	'short'	=> array('S','M','T','W','T','F','S'),
     	'med'	=> array('Sun','Mon','Tue','Wed','Thu','Fri','Sat'),
     	'long'	=> array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
+    	'all'	=> array(
+    		array('short'=>'Su','med'=>'Sun','long'=>'Sunday'),
+    		array('short'=>'Mo','med'=>'Mon','long'=>'Monday'),
+    		array('short'=>'Tu','med'=>'Tue','long'=>'Tuesday'),
+    		array('short'=>'We','med'=>'Wed','long'=>'Wednesday'),
+    		array('short'=>'Th','med'=>'Thu','long'=>'Thursday'),
+    		array('short'=>'Fr','med'=>'Fri','long'=>'Friday'),
+    		array('short'=>'Sa','med'=>'Sat','long'=>'Saturday'),
+    	)
 	);
 	$calendar['groupnames']=array();
 	//Fill the first week of the month with the appropriate days from previous month
