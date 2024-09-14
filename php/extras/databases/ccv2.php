@@ -245,12 +245,16 @@ function ccv2QueryResults($query,$params=array()){
 	$evalstr="return ccv2GetAuthHeaders();";
 	$headers=getStoredValue($evalstr,1,1.0);
 	if(!is_array($headers)){
+		return $headers;
+	}
+	if(!is_array($headers)){
 		$progpath=dirname(__FILE__);
 		$local="{$progpath}/temp/" . md5($CONFIG['name'].$evalstr) . '.gsv';
 		unlink($local);
 		debugValue($headers);
 		return $headers;
 	}
+	echo "HERE".printValue($headers);exit;
 	$url=$db['dbhost'].'/hac/console/flexsearch/execute';
 	$ccv2params=array(
 		'-method'=>'POST',
@@ -487,7 +491,7 @@ function ccv2GetAuthHeaders(){
 	$url=$db['dbhost'].'/hac/login';
 	$post=getURL($url,array('-method'=>'GET','-timeout_connect'=>10));
 	//echo printValue($post);exit;
-	if($post['curl_info']['http_code']==0 || $post['curl_info']['http_code'] >= 400){
+	if($post['curl_info']['http_code']==0 || $post['curl_info']['http_code'] >= 400 || !strlen($post['body'])){
 		if(isset($post['error'])){
 			return 'ERROR:'.printValue($post['error']);
 		}
@@ -500,7 +504,11 @@ function ccv2GetAuthHeaders(){
 	$document->loadHTML($post['body']);
 	$xpath = new DOMXPath($document);
 	$meta = $xpath->evaluate('//meta[@name="_csrf"]/@content')->item(0);
+	if(!isset($meta->value) || !strlen($meta->value)){
+		return 'Error: login failed';
+	}
 	$csrf=$meta->value;
+	//echo $csrf."<pre><xmp>{$post['body']}</xmp></pre>";exit;
 	//echo printValue($csrf->value).printValue($post);exit;
 	$cookies=$post['headers']['set-cookie'];
 	$headers=array();
@@ -519,7 +527,10 @@ function ccv2GetAuthHeaders(){
 		'_csrf'=>$csrf
 	);
 	$post=postURL($url,$params);
-	if($post['curl_info']['http_code'] >= 400){return 'ERROR:'.printValue($post);}
+	//echo "DEBUG-A".printValue($post);exit;
+	if($post['curl_info']['http_code'] >= 400){
+		return 'j_spring_security_check FAILED:'.printValue($post['body']);
+	}
 
 	/* flexsearch */
 	$cookies=$post['headers']['set-cookie'];
@@ -536,7 +547,10 @@ function ccv2GetAuthHeaders(){
 
 	$url=$db['dbhost'].'/hac/console/flexsearch';
 	$post=postURL($url,$params);
-	if($post['curl_info']['http_code'] >= 400){return 'ERROR:'.printValue($post);}
+	//echo printValue($post);exit;
+	if($post['curl_info']['http_code'] >= 400 || !strlen($post['body'])){
+		return 'ERROR - flexsearch console token failed:'.printValue($post['body']);
+	}
 	//echo printValue($post);exit;
 	$document = new DomDocument();
 	$document->loadHTML($post['body']);

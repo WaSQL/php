@@ -9843,7 +9843,7 @@ function evalGlobal2Perl($arr){
 */
 function evalPythonCode($lang,$evalcode){
 	$lines=preg_split('/[\r\n]+/',$evalcode);
-	//echo printValue($lines);exit;
+	$_REQUEST['view']='howdy <b class="w_biggest">du</b>';
 	$prespace='';
 	foreach($lines as $line){
 		if(strlen(trim($line)) && preg_match('/^([\s\t]+)/',$line,$m)){
@@ -9887,6 +9887,7 @@ function evalPythonCode($lang,$evalcode){
 #! python
 
 try:
+	import wasql_{$lang['evalcode_md5']} as wasql
 	import json
 	import pprint
 	import io
@@ -9897,7 +9898,6 @@ try:
 	import config
 	import db
 	import re
-	import wasql_{$lang['evalcode_md5']} as wasql
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -10029,6 +10029,7 @@ import sys
 sys.path.append("{$wasqlPythonPath}")
 sys.path.append("{$wasqlTempPath}")
 try:
+	import wasql_{$lang['evalcode_md5']} as wasql
 	import json
 	import pprint
 	import io
@@ -10039,7 +10040,6 @@ try:
 	import config
 	import db
 	import re
-	import wasql_{$lang['evalcode_md5']} as wasql
 	{$pagecode}
 except Exception as err:
 	exc_type, exc_obj, exc_tb = sys.exc_info()

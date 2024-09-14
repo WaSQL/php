@@ -20,11 +20,19 @@ try:
     import json
     import smtplib
     import config
+    from importlib import import_module
+    import inspect
 except Exception as err:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print("Import Error: {}. ExeptionType: {}, Filename: {}, Linenumber: {}".format(err,exc_type,fname,exc_tb.tb_lineno))
     sys.exit(3)
+
+#wasql module is dynamically created. Import if it exists
+wasql={}
+for module_name in sys.modules:
+    if module_name.startswith('wasql_'):
+        wasql=import_module(module_name)
 
 VIEWS = {}
 VIEW = {}
@@ -64,6 +72,47 @@ def buildDir(path,mode=0o777,recurse=True):
     else:
         return os.mkdir(path,mode)
 
+def buildFormValueParam(name,params={},arr=0):
+    #load the wasql module from the parent script if it exists
+    if 'value' not in params:
+        namebk="{}[]".format(name)
+        if '-value' in params:
+            params['value']=params['-value']
+        elif name in params:
+            params['value']=params[name]
+        elif namebk in params:
+            params['value']=params[namebk]
+        elif inspect.ismodule(wasql):
+            if wasql.request(name):
+                params['value']=wasql.request(name)
+            elif wasql.request(namebk):
+                params['value']=wasql.request(namebk)
+            else:
+                params['value']=''
+        else:
+            params['value']=''
+    if arr==1:
+        if 'value' in params:
+            if type(params['value']) == 'list':
+                val=params['value']
+            else:
+                try:
+                    val=json.loads(params['value'])
+                except Exception as e:
+                    val=''
+                else:
+                    val=''
+                finally:
+                    val=''
+        else:
+            val=''
+    else:
+        if 'value' in params:
+            if(type(params['value']) is list):
+                val = json.dumps(params['value'])
+            else:
+                val=params['value']
+    return val
 #---------- begin function buildOnLoad
 # @describe executes javascript in an ajax call by builing an image and invoking onload
 # @param str string - javascript to invoke on load
@@ -612,6 +661,89 @@ def sendMail(params):
         abort(sys.exc_info(),err)
         return err
 
+#---------- begin function setTagAttributes ----------
+# @describe builds and attribute string out of a list of attributes
+# @param atts list
+# @return str string
+# @usage tag+=common.setTagAttributes(atts)
+def setTagAttributes(atts={},skipatts=[]):
+    attstring=''
+    #pass through common html attributes and ones used by submitForm and ajaxSubmitForm Validation js
+    htmlatts=[
+        'id','name','class','style','title','alt','accesskey','tabindex',
+        'onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','onfocus','oninvalid','oninput',
+        '_behavior','display','capture',
+        'required','requiredmsg','mask','maskmsg','displayname','size','minlength','maxlength','wrap','readonly','disabled',
+        'placeholder','pattern','data-pattern-msg','spellcheck','max','min','readonly','step',
+        'lang','autocorrect','list','data-requiredif','autofocus','accept','acceptmsg','autocomplete',
+        'action','onsubmit'
+        ]
+    #oninvalid
+    if 'pattern' in atts and 'oninvalid' not in atts and 'data-pattern_message' in atts:
+        atts['oninvalid']="setCustomValidity(this.getAttribute('data-pattern_message'));"
+    #autofocus
+    if 'autofocus' in atts:
+        atts['autofocus']="autofocus"
+    #required
+    if '_required' in atts and atts['_required']==1:
+        atts['required']='required'
+        del atts['_required']
+    if 'required' in atts and atts['required']==1:
+        atts['required']='required'
+    if 'required' in atts and atts['required']==0:
+        del atts['required']
+    #inputmax maps to maxlength
+    if 'inputmax' in atts and atts['inputmax'].isnumeric() and atts['inputmax'] > 0:
+        atts['maxlength']=atts['inputmax']
+        del atts['inputmax']
+    #mask maps to data-mask
+    if 'mask' in atts:
+        if 'data-mask' not in atts:
+            atts['data-mask']=atts['mask']
+        del atts['mask']
+    #displayname maps to data-displayname
+    if 'displayname' in atts:
+        if 'data-displayname' not in atts:
+            atts['data-displayname']=atts['displayname']
+        del atts['displayname']
+    #behavior and _behavior map to data-behavior
+    if '_behavior' in atts:
+        if 'data-behavior' not in atts:
+            atts['data-behavior']=atts['_behavior']
+        del atts['_behavior']
+    if 'behavior' in atts:
+        if 'data-behavior' not in atts:
+            atts['data-behavior']=atts['behavior']
+        del atts['behavior']
+    #readonly
+    if 'readonly' in atts:
+        if atts['readonly'].isnumeric() and atts['readonly']==0:
+            del atts['readonly']
+        else:
+            atts['readonly']='readonly'
+    #disabled
+    if 'disabled' in atts:
+        if atts['disabled'].isnumeric() and atts['disabled']==0:
+            del atts['disabled']
+        else:
+            atts['disabled']='disabled'
+    #look through htmlatts
+    for att in htmlatts:
+        if att in skipatts:
+            continue
+        if att in atts and len(atts[att]):
+            val=common.removeHtml(atts[att])
+            val=val.replace('"',"'")
+            attstring += ' {}="{}"'.format(att,val)
+    #add any data- atts
+    for att in atts:
+        if att.startswith('data-'):
+            val=common.removeHtml(atts[att])
+            val=val.replace('"',"'")
+            attstring += ' {}="{}"'.format(att,val)
+    
+    return attstring
+
 #---------- begin function  ----------
 # @exclude internal use and excluded from docs
 def setView(name,clear=0):
@@ -636,6 +768,11 @@ def scriptPath(d=''):
 def createView(name,val):
     global VIEW
     VIEW[name] = val
+
+#---------- begin function  ----------
+# @exclude internal use and excluded from docs
+def removeHtml(str):
+    return re.sub(r'<[^>]*?>', '', str)
 
 #---------- begin function  ----------
 # @exclude internal use and excluded from docs
