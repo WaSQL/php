@@ -7894,6 +7894,11 @@ function getCalendar($monthyear='',$params=array()){
 
 	//setup current
 	$calendar['current']=getdate($monthyear);
+	$calendar['current']['month_short']=substr(date('M',$monthyear),0,2);
+	$calendar['current']['month_med']=date('M',$monthyear);
+	$calendar['current']['month_long']=date('F',$monthyear);
+	$calendar['current']['month_num']=date('n',$monthyear);
+	$calendar['current']['month_num2']=date('m',$monthyear);
 	$calendar['current']['wnum']=getWeekNumber($monthyear);
 	unset($calendar['current']['seconds']);
 	unset($calendar['current']['minutes']);
