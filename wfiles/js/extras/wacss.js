@@ -5515,6 +5515,11 @@ var wacss = {
 		//check to make sure that el has data-nav
 		let elobj=wacss.getObject(el);
 		if(undefined == elobj){return false;}
+		//stop propigation
+		if(undefined != this.event){
+			this.event.stopPropagation();
+		}
+		//get parent
 		let ptr=wacss.getParent(elobj,'tr');
 		if(undefined==ptr || undefined==ptr.dataset){
 			ptr=new Object;
