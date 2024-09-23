@@ -101,7 +101,7 @@ def buildFormText(name,params={}):
             params['data-displayif']=params['displayif']
     params['name']=name
     if 'viewonly' in params:
-            return '<div class="w_viewonly" id="{}">{}</div>'.format(params['id'],nl2br(params['value']));
+            return '<div class="w_viewonly" id="{}">{}</div>'.format(params['id'],common.nl2br(params['value']));
     tag='   <input type="{}" value="{}"'.format(params['-type'],params['value'])
     tag += setTagAttributes(params)
     selections=db.getFieldSelections(params)
@@ -984,64 +984,64 @@ def verboseNumber(num):
 # [-enclose] - Field enclosure string defaults to quote
 # [-linedelim] - Line delimiter string defaults to newline
 # @usage
-#   csv=list2CSV(recs,{
-#       '-fields':'name,age,color'
-#   })
+# 	csv=list2CSV(recs,{
+# 		'-fields':'name,age,color'
+# 	})
 # @return string - CSV-formatted output
 def list2CSV(recs = [], params = {}):
-    # Defaults
-    if '-delim' not in params:
-        params['-delim'] = ','
-    if '-enclose' not in params:
-        params['-enclose'] = '"'
-    if '-linedelim' not in params:
-        params['-linedelim'] = "\n"
-    if not isinstance(recs, list) or len(recs) == 0:
-        return "No records found"
-    # Get fields for header row
-    fields = []
-    if '-fields' in params:
-        if isinstance(params['fields'], list):
-            fields = params['-fields']
-        else:
-            fields = re.split(r'[\,\:\;]+', strip(params['-fields']))
-    else:
-        for rec in recs:
-            if not isinstance(rec, str):
-                for k in rec:
-                    if k not in fields:
-                        fields.append(k)
-            else:
-                fields.append(rec)
-    fieldmap = {}
-    for field in fields:
-        key = field
-        if '-fieldmap' in params and field in params['-fieldmap']:
-            field = params['-fieldmap'][field]
-        elif field+'_dname' in params:
-            field = params[field+'_dname']
-        elif field+'_displayname' in params:
-            field = params[field+'_displayname']
-        else:
-            field = field.lower().replace(' ', '_')
-        fieldmap[key] = field
-    csvlines = []
-    if '-noheader' not in params or params['-noheader'] == 0:
-        if '-force' in params and params['-force']:
-            csvlines.append(csvImplode(list(fieldmap.values()), params['-delim'], params['-enclose'], 1))
-        else:
-            csvlines.append(csvImplode(list(fieldmap.values()), params['-delim'], params['-enclose']))
-    for rec in recs:
-        vals = []
-        for field in fieldmap:
-            if isinstance(rec[field], (dict, list)):
-                rec[field] = json.dumps(rec[field], ensure_ascii=False).encode('utf-8', errors='replace').decode('utf-8') # Convert to JSON don't force ASCII and then replace non-UTF-8 characters in the JSON string with \0xfffd Unicode replacement character
-            vals.append(rec[field])
-        if '-force' in params and params['-force']:
-            csvlines.append(csvImplode(vals, params['-delim'], params['-enclose'], 1))
-        else:
-            csvlines.append(csvImplode(vals, params['-delim'], params['-enclose']))
-    return "\r\n".join(csvlines)
+	# Defaults
+	if '-delim' not in params:
+		params['-delim'] = ','
+	if '-enclose' not in params:
+		params['-enclose'] = '"'
+	if '-linedelim' not in params:
+		params['-linedelim'] = "\n"
+	if not isinstance(recs, list) or len(recs) == 0:
+		return "No records found"
+	# Get fields for header row
+	fields = []
+	if '-fields' in params:
+		if isinstance(params['fields'], list):
+			fields = params['-fields']
+		else:
+			fields = re.split(r'[\,\:\;]+', strip(params['-fields']))
+	else:
+		for rec in recs:
+			if not isinstance(rec, str):
+				for k in rec:
+					if k not in fields:
+						fields.append(k)
+			else:
+				fields.append(rec)
+	fieldmap = {}
+	for field in fields:
+		key = field
+		if '-fieldmap' in params and field in params['-fieldmap']:
+			field = params['-fieldmap'][field]
+		elif field+'_dname' in params:
+			field = params[field+'_dname']
+		elif field+'_displayname' in params:
+			field = params[field+'_displayname']
+		else:
+			field = field.lower().replace(' ', '_')
+		fieldmap[key] = field
+	csvlines = []
+	if '-noheader' not in params or params['-noheader'] == 0:
+		if '-force' in params and params['-force']:
+			csvlines.append(csvImplode(list(fieldmap.values()), params['-delim'], params['-enclose'], 1))
+		else:
+			csvlines.append(csvImplode(list(fieldmap.values()), params['-delim'], params['-enclose']))
+	for rec in recs:
+		vals = []
+		for field in fieldmap:
+			if isinstance(rec[field], (dict, list)):
+				rec[field] = json.dumps(rec[field], ensure_ascii=False).encode('utf-8', errors='replace').decode('utf-8') # Convert to JSON don't force ASCII and then replace non-UTF-8 characters in the JSON string with \0xfffd Unicode replacement character
+			vals.append(rec[field])
+		if '-force' in params and params['-force']:
+			csvlines.append(csvImplode(vals, params['-delim'], params['-enclose'], 1))
+		else:
+			csvlines.append(csvImplode(vals, params['-delim'], params['-enclose']))
+	return "\r\n".join(csvlines)
 
 #---------- begin function listFiles--------------------------------------
 # @describe returns a list of files in a directory
@@ -1090,15 +1090,15 @@ def listFilesEx(adir):
 # @return string - Returns a csv string
 # @usage line=csvImplode(parts_array)
 def csvImplode(parts = {}, delim = ',', enclose = '"'): # UNUSED , force = 0):
-    io_stream = io.StringIO()
-    csv_writer = csv.writer(io_stream, delimiter=delim, quotechar=enclose, quoting=csv.QUOTE_MINIMAL)
-    csv_writer.writerow(parts)
-    line = io_stream.getvalue()
-    io_stream.close()
-    line = line.rstrip()
-    line.replace(r'[\r\n]+$', '') # Remove carriage return and/or newline at end of string that may have been added by writerow
-    line = line.rstrip()
-    return line
+	io_stream = io.StringIO()
+	csv_writer = csv.writer(io_stream, delimiter=delim, quotechar=enclose, quoting=csv.QUOTE_MINIMAL)
+	csv_writer.writerow(parts)
+	line = io_stream.getvalue()
+	io_stream.close()
+	line = line.rstrip()
+	line.replace(r'[\r\n]+$', '') # Remove carriage return and/or newline at end of string that may have been added by writerow
+	line = line.rstrip()
+	return line
 
 
 
