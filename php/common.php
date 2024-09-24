@@ -2255,7 +2255,7 @@ function buildFormButtonSelect($name,$opts=array(),$params=array()){
 *	[name] - name override
 *	[class] - string - w_green, w_red, etc..
 * @return string
-* @usage echo buildFormButtonSelect('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),$params);
+* @usage echo buildFormButtonSelectMultiple('color',array('red'=>'Red','blue'=>'Blue','green'=>'Green'),array('required'=>1));
 */
 function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
 	$params['value']=buildFormValueParam($name,$params,1);

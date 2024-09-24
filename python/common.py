@@ -9,6 +9,8 @@ try:
     import pprint
     import re
     import io
+    import string
+    import random
     import csv
     from contextlib import redirect_stdout
     from math import sin, cos, sqrt, atan2, radians
@@ -72,6 +74,62 @@ def buildDir(path,mode=0o777,recurse=True):
         return os.makedirs(path,mode)
     else:
         return os.mkdir(path,mode)
+# ---------- begin function buildFormButtonSelectMultiple--------------------
+# @describe creates an button selection field
+# @param name string
+# @param opts array - true value/display value pairs.
+# @param params array
+#   [value] - sets default selection
+#   [name] - name override
+#   [class] - string - w_green, w_red, etc..
+# @return string
+# @usage print(buildFormButtonSelectMultiple('color',{"red":"Red","blue":"Blue","green":"Green"},{"required":"1"}))
+def buildFormButtonSelectMultiple(name,opts={},params={}):
+    params['value']=buildFormValueParam(name,params,1)
+    if '-button' not in params:
+        params['-button']='btn-default'
+    #override name
+    if 'name' in params:
+        name=params['name']
+        del params['name']
+    #requiredif
+    if 'requiredif' in params:
+        params['data-requiredif']=params['requiredif']
+        del params['requiredif']
+    #tag
+    tag='<div class="w_flexgroup" data-display="inline-flex"'
+    #displayif
+    if 'displayif' in params:
+        tag+=' data-displayif="{}"'.format(params['displayif'])
+        del params['displayif']
+
+    tag +='>'+os.linesep
+    for tval in opts:
+        dval=opts[tval]
+        checked=''
+        if tval in params['value'] or dval in params['value']:
+            checked=' checked'
+
+        id="{}_{}".format(name,tval)
+        classname=''
+        tvalclass=tval+'_class'
+        dvalclass=dval+'_class'
+        if tvalclass in params:
+            classname=params[tvalclass]
+        elif dvalclass in params:
+            classname=params[dvalclass]
+        elif 'class' in params:
+            classname=params['class']
+
+        tag += '    <input type="checkbox" data-type="checkbox" class="btn {}" style="display:none"'.format(classname)
+        if 'onclick' in params:
+            tag+=' onclick="{}"'.format(params['onclick'])
+        
+        tag += ' name="{}[]"  id="{}" value="{}"{}>'.format(name,id,tval,checked)+os.linesep
+        tag += '    <label for="{}">{}</label>'.format(id,dval)+os.linesep
+    
+    tag += '</div>'+os.linesep
+    return tag
 
 #---------- begin function buildFormText
 # @describe returns csv file contents as recordsets
@@ -394,6 +452,14 @@ def formatPhone(phone_number):
 def getParentPath(path):
     return os.path.abspath(os.path.join(path, os.pardir))
 
+#---------- begin function getRandomString
+# @describe returns a random string on size length
+# @param size int
+# @return string 
+# @usage id=common.getRandomString(6)
+def getRandomString(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
 #---------- begin function getCSVRecords
 # @describe returns csv file contents as recordsets
 # @param afile string - full path to csv file
@@ -431,6 +497,24 @@ def getCSVRecords(afile,params={}):
                 break
     #return recs list
     return recs
+
+#---------- begin function hex2RGB
+# @describe converts a hex string into a rgb tuple
+# @param hexvalue string
+# @return tuple
+# @usage host=common.hex2RGB('#9495a3')
+def hex2RGB(hexvalue):
+    hexvalue = hexvalue.lstrip('#')
+    lv = len(hexvalue)
+    return tuple(int(hexvalue[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+#---------- begin function rgb2HEX
+# @describe converts a rgb tuple to a hex string
+# @param rgbvalue tuple
+# @return string
+# @usage host=common.rgb2HEX(rgbvalue)
+def rgb2HEX(rgb):
+    return '#%02x%02x%02x' % rgb
 
 #---------- begin function hostname
 # @describe gets document root (HTTP_HOST)
