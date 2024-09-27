@@ -16,6 +16,7 @@ try:
     from math import sin, cos, sqrt, atan2, radians
     import subprocess
     from datetime import datetime
+    import dateutil.parser
     import time as ttime
     import base64
     import urllib.parse
@@ -523,6 +524,26 @@ def rgb2HEX(rgb):
 def hostname():
     return os.environ['HTTP_HOST']
 
+#---------- begin function isAdmin ----------
+# @describe returns true if the current user is a WaSQL Admin
+# @return boolean
+# @usage if(common.isAdmin()):
+def isAdmin():
+    if int(wasql.user('utype')) == 0:
+        return True
+    else:
+        return False
+
+#---------- begin function isAjax ----------
+# @describe returns true if page was called using AJAX
+# @return boolean
+# @usage if(common.isAjax()):
+def isAjax():
+    if len(wasql.request('AjaxRequestUniqueId')) > 0:
+        return True
+    else:
+        return False
+
 #---------- begin function isCLI ----------
 # @describe returns true if script is running from a Command Line
 # @return boolean
@@ -531,6 +552,31 @@ def isCLI():
     if sys.stdin.isatty():
         return True
     else:
+        return False
+
+#---------- begin function isDate ----------
+# @describe returns true if string is a date
+# @param format string - format to check
+# @return boolean
+# @usage if(common.isDate('2024-10-11')):
+def isDate(string,date_format="%Y-%m-%d"):
+    try: 
+        datetime.strptime(string, date_format)
+        return True
+
+    except ValueError:
+        return False
+
+#---------- begin function isDateTime ----------
+# @describe returns true if string is a datetime
+# @return boolean
+# @usage if(common.isDateTime('2024-10-11')):
+def isDateTime(string):
+    try: 
+        dateutil.parser.parse(string, False)
+        return True
+
+    except ValueError:
         return False
 
 #---------- begin function isEmail ----------
@@ -560,6 +606,14 @@ def isEven(num):
 # @usage if(common.isFactor(num,2)):
 def isFactor(num,div):
     return num % div == 0
+
+#---------- begin function isFunction ----------
+# @describe returns true if str is a function
+# @param str string - name of function to check
+# @return boolean
+# @usage if(common.isFunction('isFactor')):
+def isFunction(str):
+    return inspect.isfunction(str)
 
 #---------- begin function isJson ----------
 # @describe returns true if specified object is JSON
