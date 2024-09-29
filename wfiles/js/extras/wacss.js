@@ -5414,8 +5414,23 @@ var wacss = {
 		return wacss.modalPopup(htm,title,params);
 	},
 	modalPopup: function(htm,title,params){
-		if(undefined == params){params={};}
-		if(undefined == title){title='';}
+		if(undefined == params){params={overlay:1};}
+		if(undefined == title){title='&nbsp;';}
+		//check for id: or qs:
+		if(htm.indexOf('id:') == 0 && htm.length < 100){
+			let cid=htm.slice(3);
+			let cidobj=document.querySelector('#'+cid);
+			if(undefined != cidobj){
+				htm=cidobj.innerHTML;
+			}
+		}
+		else if(htm.indexOf('qs:') == 0 && htm.length < 100){
+			let cid=htm.slice(3);
+			let cidobj=document.querySelector(cid);
+			if(undefined != cidobj){
+				htm=cidobj.innerHTML;
+			}
+		}
 		if(undefined != document.getElementById('wacss_modal')){
 			let m=document.getElementById('wacss_modal');
 			let mel=m.querySelector('.wacss_modal_content');
