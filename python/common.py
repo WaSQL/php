@@ -54,6 +54,13 @@ def abort(exc_tuple,err):
     print(abort_err)
     sys.exit(123)
 
+#---------- begin function arrayAverage ----------
+# @describe returns average of all elements in a list
+# @param lst list
+# @usage avg=common.arrayAverage([12,3,4,7])
+def arrayAverage(lst):
+    return sum(lst) / len(lst)
+
 #---------- begin function debug ----------
 # @describe recursive folder creator
 # @param sys.exc_info() -- exc_type, exc_obj, exc_tb
@@ -131,6 +138,229 @@ def buildFormButtonSelectMultiple(name,opts={},params={}):
     
     tag += '</div>'+os.linesep
     return tag
+# ---------- begin function buildFormCheckAll--------------------
+# 
+# @describe creates a checkbox that checks other checkboxes
+# @param att string
+# @param attval string
+# @param params list
+# @return string
+# @usage print(buildFormCheckAll('id','users'))
+def buildFormCheckAll(att,attval,params={}):
+    if '-label' in params:
+        name=params['-label']
+        del params['-label']
+    else:
+        name='Checkall'
+
+    id='checkall_{}'.format(getRandomString());
+    tag='''<input id="{}" type="checkbox" onclick="wacss.checkAllElements('{}','{}',this.checked);" >'''.format(id,att,attval)
+    if 'for' in params:
+        del params['for']
+
+    tag += '<label for="{}" '.format(id)
+    tag += setTagAttributes(params)
+    tag += '>{}</label>'.format(name)
+    return tag
+
+#---------- begin function buildFormColor-------------------
+# @describe creates an HTML color control
+# @param name string - field name
+# @param params array
+#   [-formname] string - specify the form name - defaults to addedit
+#   [value] string - specify the current value
+#   [required] boolean - make it a required field - defaults to addedit false
+#   [id] string - specify the field id - defaults to formname_fieldname
+# @return string - html color control
+# @usage print(buildFormColor('color'))
+def buildFormColor(name,params={}):
+    if '-formname' not in params:
+        params['-formname']='addedit'
+
+    if 'name' in params:
+        name=params['name']
+
+    if 'id' not in params:
+        id='{}_{}'.format(params['-formname'],name)
+
+    if 'requiredif' in params:
+        params['data-requiredif']=params['requiredif']
+        del params['requiredif']
+
+    if 'displayif' in params:
+        params['data-displayif']=params['displayif']
+        del params['displayif']
+
+    params['value']=buildFormValueParam(name,params)
+    tag=''
+    tag+='<div class="w_colorfield"'
+    if 'data-displayif' in params and len(params['data-displayif']):
+        tag+=' data-displayif="{}"'.format(params['data-displayif'])
+
+    tag+='>'+os.linesep
+    tag+=' <div>'+os.linesep
+    tag+= '   <input type="text" name="{}" value=""'.format(name,params['value'])
+    tag+= setTagAttributes(params);
+    tag+= ' >'+os.linesep
+    tag+='     <label for="{}_check"'.format(name)
+    if 'value' in params and len(params['value']):
+        tag+=' style="background-color:{}"'.format(params['value'])
+    tag+='></label>'+os.linesep
+    tag+=' </div>'+os.linesep
+    tag+=' <input type="checkbox" id="{}_check">'.format(name)+os.linesep
+    tag+= buildFormColorWheelMap('{}_map'.format(name))+os.linesep
+    tag+='</div>'+os.linesep
+    return tag
+
+# ---------- begin function buildFormColorWheelMap-------------------
+# @exclude  - this function in only used internally by buildFormColor
+def buildFormColorWheelMap(name):
+    wpath=getWasqlPath('wfiles')
+    afile="{}/color_wheel_map.htm".format(wpath)
+    body=getFileContents(afile)
+    areas=re.findall(r'title\=\"(.+?)\".+?data\-color\=\"(.+?)\"',body,re.MULTILINE)
+    opts={}
+    sparams={
+        "onchange":"wacss.colorboxSelect(this)",
+        "class":"select",
+        "message":"-- Color By Name --",
+        "style":"border-top-right-radius:0px;border-top-left-radius:0px;"
+    }
+    for area in areas:
+        opts[area[1]]=area[0]
+        sparams['{}_style']='background-color:{};color:{}'.format(area[1],'#000')
+
+    selectmap=buildFormSelect('{}_select'.format(name),opts,sparams)
+    map='''
+<nav class="colorboxmap">
+    <img class="wheel" src="/wfiles/color_wheel.png" usemap="#{}_map" style="width:100%;height:auto;">
+    {}
+    <map name="{}_map">
+        {}
+    </map>
+</nav>
+'''.format(name,selectmap,name,body)
+    return map
+
+# ---------- begin function buildFormSelect-------------------
+# @describe creates an HTML form selection tag
+# @param name string - name of select tag
+# @param pairs array - tval/dval pairs array to populate select tag with
+# @param params array - attribute/value pairs to add to select tag
+# @return string - HTML Form select tag
+# @usage echo buildFormSelect('age',array(5=>"Below Five",10=>"5 to 10"));
+def buildFormSelect(name,pairs={},params={}):
+    if '-formname' not in params:
+        params['-formname']='addedit'
+
+    if 'name' in params:
+        name=params['name']
+
+    if 'id' not in params:
+        id='{}_{}'.format(params['-formname'],name)
+
+    if 'requiredif' in params:
+        params['data-requiredif']=params['requiredif']
+        del params['requiredif']
+
+    if 'displayif' in params:
+        params['data-displayif']=params['displayif']
+        del params['displayif']
+
+    if 'class' not in params:
+        params['class']='w_form-control'
+
+    params['value']=buildFormValueParam(name,params)
+
+    if 'viewonly' in params:
+        return '<div class="w_viewonly" id="{}">{}</div>'.format(params['id'],nl2br(params['value']))
+
+    pcnt=len(pairs);
+    if pcnt==0 or (pcnt==1 and pairs[0]==''):
+        return buildFormText(name,params)
+
+    params['name']=name;
+    skip=[];
+    if '-noname' in params:
+        skip.append('name')
+    
+    #select does not honor readonly so lets fix that
+    if 'readonly' in params:
+        params['style']="pointer-events: none;cursor: not-allowed;color:#a8a8a8;"+params['style']
+
+    rtn = '<select data-value="{}"'.format(params['value'])
+    rtn += setTagAttributes(params,skip)
+    rtn += '>'
+    if 'message' in params:
+        rtn += '   <option value="">{}</option>'.format(params['message'])+os.linesep
+
+    if '-groups' in params:
+        for group,opts in enumerate(pairs):
+            rtn += '   <optgroup label="{}">'.format(group)+os.linesep
+            for tval in opts:
+                dval=opts[tval]
+                rtn += '       <option value="{}"'.format(tval)
+                tvalstyle='{}_style'.format(tval)
+                if tvalstyle in params:
+                    rtn += ' style="{}"'.format(tvalstyle)
+
+                tvalclass='{}_class'.format(tval)
+                if tvalclass in params:
+                    rtn += ' class="{}"'.format(tvalclass)
+
+                for k in params:
+                    v=params[k]
+
+                    if not stringBeginsWith(k,"{}_data-".format(tval)):
+                        continue
+
+                    k=str_replace("{}_data-".format(tval),'',k)
+                    rtn += ' data-{}="{}"'.format(k,v)
+
+                if len(params['value']):
+                    if params['value']== tval:
+                        rtn += ' selected'
+                    elif(params['value']==dval):
+                        rtn += ' selected'
+
+                rtn += '>{}</option>'.format(dval)+os.linesep
+
+            rtn += '   </optgroup>'+os.linesep
+
+    else:
+        for tval in pairs:
+            dval=pairs[tval]
+            rtn += '       <option value="{}"'.format(tval)
+            tvalstyle='{}_style'.format(tval)
+            if tvalstyle in params:
+                rtn += ' style="{}"'.format(tvalstyle)
+
+            tvalclass='{}_class'.format(tval)
+            if tvalclass in params:
+                rtn += ' class="{}"'.format(tvalclass)
+
+            for k in params:
+                v=params[k]
+
+                if not stringBeginsWith(k,"{}_data-".format(tval)):
+                    continue
+
+                k=str_replace("{}_data-".format(tval),'',k)
+                rtn += ' data-{}="{}"'.format(k,v)
+
+            if len(params['value']):
+                if params['value']== tval:
+                    rtn += ' selected'
+                elif(params['value']==dval):
+                    rtn += ' selected'
+
+            rtn += '>{}</option>'.format(dval)+os.linesep
+
+    rtn += '</select>'+os.linesep
+    if 'onchange' in params and '-trigger' in params and params['-trigger']==1:
+        rtn += buildOnLoad("commonEmulateEvent('{}','change')".format(params['id']))
+
+    return rtn
 
 #---------- begin function buildFormText
 # @describe returns csv file contents as recordsets
@@ -445,6 +675,15 @@ def formatPhone(phone_number):
     formatted_phone_number = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1-", "%d" % int(clean_phone_number[:-1])) + clean_phone_number[-1]
     return formatted_phone_number
 
+#---------- begin function getFileContents
+# @describe gets the contents of a file
+# @param filename string - full path to file
+# @return string - file contants
+# @usage ph=common.getFileContents('/var/tmp/abc.txt')
+def getFileContents(filename):
+    with open(filename) as f:
+        return f.read()
+
 #---------- begin function getParentPath
 # @describe gets the parent path
 # @param string phone number
@@ -498,7 +737,12 @@ def getCSVRecords(afile,params={}):
                 break
     #return recs list
     return recs
+def getWasqlPath(str=''):
+    wpath=getParentPath(scriptPath())
+    if len(str):
+        wpath+='/{}'.format(str)
 
+    return wpath
 #---------- begin function hex2RGB
 # @describe converts a hex string into a rgb tuple
 # @param hexvalue string
