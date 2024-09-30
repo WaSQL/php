@@ -196,6 +196,7 @@ def buildFormColor(name,params={}):
     tag+='<div class="w_colorfield"'
     if 'data-displayif' in params and len(params['data-displayif']):
         tag+=' data-displayif="{}"'.format(params['data-displayif'])
+        del params['data-displayif']
 
     tag+='>'+os.linesep
     tag+=' <div>'+os.linesep
@@ -235,12 +236,170 @@ def buildFormColorWheelMap(name):
 <nav class="colorboxmap">
     <img class="wheel" src="/wfiles/color_wheel.png" usemap="#{}_map" style="width:100%;height:auto;">
     {}
-    <map name="{}_map">
+    <map name="{}_map" style="display:none;">
         {}
     </map>
 </nav>
 '''.format(name,selectmap,name,body)
     return map
+
+#---------- begin function buildFormColorHexagon-------------------
+# @describe creates an HTML color control using the color_hexagon.gif in wfiles
+# @param name string - field name
+# @param params array
+#   [-formname] string - specify the form name - defaults to addedit
+#   [value] string - specify the current value
+#   [required] boolean - make it a required field - defaults to addedit false
+#   [id] string - specify the field id - defaults to formname_fieldname
+# @return string - html color control
+# @usage print(buildFormColorHexagon('color'))
+
+def buildFormColorHexagon(name,params={}):
+    if '-formname' not in params:
+        params['-formname']='addedit'
+
+    if 'name' in params:
+        name=params['name']
+
+    if 'id' not in params:
+        id='{}_{}'.format(params['-formname'],name)
+
+    if 'requiredif' in params:
+        params['data-requiredif']=params['requiredif']
+        del params['requiredif']
+
+    if 'displayif' in params:
+        params['data-displayif']=params['displayif']
+        del params['displayif']
+
+    params['value']=buildFormValueParam(name,params)
+    tag=''
+    tag+='<div class="w_colorfield"'
+    if 'data-displayif' in params and len(params['data-displayif']):
+        tag+=' data-displayif="{}"'.format(params['data-displayif'])
+        del params['data-displayif']
+
+    tag+='>'+os.linesep
+    tag+=' <div>'+os.linesep
+    tag+='   <input type="text" name="{}" value="{}"'.format(name,params['value'])
+    tag+=setTagAttributes(params);
+    tag+=' />'+os.linesep
+    tag+='     <label for="{}_check"'.format(name)
+    if 'value' in params and len(params['value']):
+        tag+=' style="background-color:{}"'.format(params['value'])
+
+    tag+='></label>'+os.linesep
+    tag+=' </div>'+os.linesep
+    tag+=' <input type="checkbox" id="{}_check">'.format(name)+os.linesep
+    tag+= buildFormColorHexagonMap(name)+os.linesep
+    tag+='</div>'+os.linesep
+    return tag
+
+# ---------- begin function buildFormColorHexagonMap-------------------
+# * @exclude  - this function in only used internally by buildFormColor
+def  buildFormColorHexagonMap(name):
+    wpath=getWasqlPath('wfiles')
+    afile="{}/color_hexagon_map.htm".format(wpath)
+    body=getFileContents(afile)
+    areas=re.findall(r'title\=\"(.+?)\".+?data\-color\=\"(.+?)\"',body,re.MULTILINE)
+    opts={}
+    sparams={
+        "onchange":"wacss.colorboxSelect(this)",
+        "class":"select",
+        "message":"-- Color By Name --",
+        "style":"border-top-right-radius:0px;border-top-left-radius:0px;"
+    }
+    for area in areas:
+        opts[area[1]]=area[0]
+        sparams['{}_style']='background-color:{};color:{}'.format(area[1],'#000')
+
+    selectmap=buildFormSelect('{}_select'.format(name),opts,sparams)
+    map='''
+<nav class="colorboxmap">
+    <img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#{}_map" style="width:100%;height:auto;">
+    {}
+    <map name="{}_map" style="display:none;">
+        {}
+    </map>
+</nav>
+'''.format(name,selectmap,name,body)
+    return map
+
+    
+# ---------- begin function buildFormColorBox-------------------
+# @describe creates an HTML color control using the color box built from color_names.csv
+# @param name string - field name
+# @param params array
+#   [-formname] string - specify the form name - defaults to addedit
+#   [value] string - specify the current value
+#   [required] boolean - make it a required field - defaults to addedit false
+#   [id] string - specify the field id - defaults to formname_fieldname
+# @return string - html color control
+# @usage print(buildFormColorBox('color'))
+def buildFormColorBox(name,params={}):
+    if '-formname' not in params:
+        params['-formname']='addedit'
+
+    if 'name' in params:
+        name=params['name']
+
+    if 'id' not in params:
+        id='{}_{}'.format(params['-formname'],name)
+
+    if 'requiredif' in params:
+        params['data-requiredif']=params['requiredif']
+        del params['requiredif']
+
+    if 'displayif' in params:
+        params['data-displayif']=params['displayif']
+        del params['displayif']
+
+    params['value']=buildFormValueParam(name,params)
+    tag=''
+    tag+='<div class="w_colorfield"'
+    if 'data-displayif' in params and len(params['data-displayif']):
+        tag+=' data-displayif="{}"'.format(params['data-displayif'])
+        del params['data-displayif']
+
+    tag+='>'+os.linesep
+    tag+=' <div>'+os.linesep
+    tag+='   <input type="text" name="{}" value="{}"'.format(name,params['value'])
+    tag+=setTagAttributes(params);
+    tag+=' />'+os.linesep
+    tag+='     <label for="{}_check"'.format(name)
+    if 'value' in params and len(params['value']):
+        tag+=' style="background-color:{}"'.format(params['value'])
+
+    tag+='></label>'+os.linesep
+    tag+=' </div>'+os.linesep
+    tag+=' <input type="checkbox" id="{}_check">'.format(name)+os.linesep
+    tag+= buildFormColorBoxMap(name+'_map')+os.linesep
+    tag+='</div>'+os.linesep
+    return tag;
+
+# ---------- begin function buildFormColorBoxMap-------------------
+# * @exclude  - this function in only used internally by buildFormColor
+def buildFormColorBoxMap(name):
+    wpath=getWasqlPath('wfiles')
+    afile="{}/color_names.csv".format(wpath)
+    recs=getCSVRecords(afile)
+    map='<nav class="colorboxmap" name="{}">'.format(name)+os.linesep
+    opts={}
+    sparams={
+        "onchange":"wacss.colorboxSelect(this)",
+        "class":"select",
+        "message":"-- Color By Name --",
+        "style":"border-top-right-radius:0px;border-top-left-radius:0px;"
+    }
+    for rec in recs:
+        map+='<img src="/wfiles/clear.gif" title="{}" style="background-color:{};" onclick="wacss.colorboxSet(this);" data-color="{}">'.format(rec['name'],rec['hex'],rec['hex'])
+        opts[rec['hex']]=rec['name']
+        sparams["{}_style".format(rec['hex'])]="background-color:{};color:{};".format(rec['hex'],rec['contrast_color'])
+        
+    map+=buildFormSelect(name+'colorbox_select',opts,sparams)
+    map+='</nav>'+os.linesep
+    return map
+
 
 # ---------- begin function buildFormSelect-------------------
 # @describe creates an HTML form selection tag
@@ -370,6 +529,7 @@ def buildFormSelect(name,pairs={},params={}):
 #   [stop]  - int - row number to stop at
 # @usage recs = common.buildFormText(name)
 # @usage recs = common.buildFormText(name,**params)
+# @author Justin Cline
 def buildFormText(name,params={}):
     if '-formname' not in params:
             params['-formname']='addedit'

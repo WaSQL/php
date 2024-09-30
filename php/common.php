@@ -2420,7 +2420,7 @@ function buildFormColorWheelMap($name){
 <nav class="colorboxmap">
 	<img class="wheel" src="/wfiles/color_wheel.png" usemap="#{$name}_map" style="width:100%;height:auto;">
 	{$selectmap}
-	<map name="{$name}_map">
+	<map name="{$name}_map" style="display:none;">
 	    {$body}
 	</map>
 </nav>
