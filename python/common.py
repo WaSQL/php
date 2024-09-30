@@ -301,22 +301,22 @@ def  buildFormColorHexagonMap(name):
     wpath=getWasqlPath('wfiles')
     afile="{}/color_hexagon_map.htm".format(wpath)
     body=getFileContents(afile)
-    areas=re.findall(r'title\=\"(.+?)\".+?data\-color\=\"(.+?)\"',body,re.MULTILINE)
+    areas=re.findall(r'data\-color\=\"(.+?)\".+?title\=\"(.+?)\"',body,re.MULTILINE)
     opts={}
     sparams={
         "onchange":"wacss.colorboxSelect(this)",
         "class":"select",
         "message":"-- Color By Name --",
-        "style":"border-top-right-radius:0px;border-top-left-radius:0px;"
+        "style":"margin-top:3px;border-top-right-radius:0px;border-top-left-radius:0px;"
     }
     for area in areas:
-        opts[area[1]]=area[0]
-        sparams['{}_style']='background-color:{};color:{}'.format(area[1],'#000')
+        opts[area[0]]=area[1]
+        sparams['{}_style']='background-color:{};color:{}'.format(area[0],'#000')
 
     selectmap=buildFormSelect('{}_select'.format(name),opts,sparams)
     map='''
-<nav class="colorboxmap">
-    <img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#{}_map" style="width:100%;height:auto;">
+<nav class="colorboxmap hexagon">
+    <img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#{}_map" style="width:234px;height:199px;">
     {}
     <map name="{}_map" style="display:none;">
         {}

@@ -143,6 +143,9 @@ div.w_colorfield input[type="checkbox"]:checked + nav.colorboxmap{
   margin:0 20px 20px 0;
   z-index: 99999;
 }
+div.w_colorfield input[type="checkbox"]:checked + nav.colorboxmap.hexagon{
+  width:234px;
+}
 div.w_colorfield input[type="checkbox"]:checked + nav.colorboxmap img{
   width:15px;
   height:15px;

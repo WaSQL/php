@@ -2481,7 +2481,7 @@ function buildFormColorHexagonMap($name){
 		'onchange'=>"wacss.colorboxSelect(this)",
 		'class'=>'select',
 		'message'=>'-- Color By Name --',
-		'style'=>'border-top-right-radius:0px;border-top-left-radius:0px;'
+		'style'=>'margin-top:3px;border-top-right-radius:0px;border-top-left-radius:0px;'
 	);
 	//echo printValue($m);exit;
 	foreach($m[0] as $i=>$c){
@@ -2493,8 +2493,8 @@ function buildFormColorHexagonMap($name){
 	}
 	$selectmap=buildFormSelect($name.'_select',$opts,$sparams);
 	$map=<<<ENDOFMAP
-<nav class="colorboxmap">
-	<img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#{$name}_map" style="width:100%;height:auto;"">
+<nav class="colorboxmap hexagon">
+	<img class="hexagon" src="/wfiles/color_hexagon.gif" usemap="#{$name}_map" style="width:234px;height:199px;"">
 	{$selectmap}
 	<map name="{$name}_map">
 	    {$body}
