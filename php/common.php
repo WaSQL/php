@@ -4150,7 +4150,8 @@ function buildFormFile($name,$params=array()){
 			break;
 		}
 	}
-	//$params['viewonly']=1;
+	//
+	if(isset($_REQUEST['viewonly']) && $_REQUEST['viewonly']==1){$params['viewonly']=1;}
 	if(isset($params['viewonly']) && $params['viewonly']==1){	
 		if(!strlen($params['value'])){return '';}
 		return $viewer;
