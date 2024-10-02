@@ -4103,6 +4103,62 @@ function buildFormFile($name,$params=array()){
 		}
 		$params['value']=encodeJSON($arr);
 	}
+	$tag='';
+	$viewer='';
+	if(strlen($params['value'])){
+		$val=encodeHtml($params['value']);
+		$ext=getFileExtension($params['value']);
+		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+		switch(strtolower($ext)){
+			case 'mp3':
+			case 'wav':
+				$mime=getFileMimeType($afile);
+				$viewer .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '</audio></div>'.PHP_EOL;
+			break;
+			case 'mp4':
+				$mime=getFileMimeType($afile);
+				if(!isset($params['view_width'])){
+					$params['view_width']=300;
+				}
+				if(!isset($params['view_height'])){
+					$params['view_height']=300;
+				}
+				$viewer .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\','.$params['view_height'].');" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '</video></div>'.PHP_EOL;
+			break;
+			case 'gif':
+			case 'png':
+			case 'jpg':
+			case 'jpeg':
+			case 'svg':
+			case 'avif':
+				$mime=getFileMimeType($afile);
+				if(!isset($params['view_width'])){
+					$params['view_width']=300;
+				}
+				if(!isset($params['view_height'])){
+					$params['view_height']=300;
+				}
+				$viewer .= '<div style="margin:5px 1px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$viewer .= '</div>'.PHP_EOL;
+			break;
+			default:
+				$viewer .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
+			break;
+		}
+	}
+	//$params['viewonly']=1;
+	if(isset($params['viewonly']) && $params['viewonly']==1){	
+		if(!strlen($params['value'])){return '';}
+		return $viewer;
+	}
+	elseif(isset($params['readonly']) && $params['readonly']==1){	
+		if(!strlen($params['value'])){return '';}
+		return $viewer;
+	}
 	$tag='<div style="display:inline-flex;" data-display="inline-flex"';
 	//displayif
 	if(isset($params['displayif'])){
