@@ -4082,28 +4082,6 @@ function buildFormFile($name,$params=array()){
 		break;
 	}
 	$params['ori_value']=$params['value'];
-	if(strlen($params['value'])){
-		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
-		//return $afile.printValue($params);
-		if(file_exists($afile)){
-			$arr=array(
-				array(
-					'name'=>$params['value'],
-					'size'=>filesize($afile)
-				)
-			);
-		}
-		else{
-			$arr=array(
-				array(
-					'name'=>$params['value'],
-					'size'=>0
-				)
-			);
-		}
-		$params['value']=encodeJSON($arr);
-	}
-	$tag='';
 	$viewer='';
 	if(strlen($params['value'])){
 		$val=encodeHtml($params['value']);
@@ -4149,6 +4127,27 @@ function buildFormFile($name,$params=array()){
 				$viewer .= '	<a class="w_link" href="'.$val.'" target="_blank"><span class="icon-upload"></span> '.$val.'</a>'.PHP_EOL;
 			break;
 		}
+	}
+	if(strlen($params['value'])){
+		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
+		//return $afile.printValue($params);
+		if(file_exists($afile)){
+			$arr=array(
+				array(
+					'name'=>$params['value'],
+					'size'=>filesize($afile)
+				)
+			);
+		}
+		else{
+			$arr=array(
+				array(
+					'name'=>$params['value'],
+					'size'=>0
+				)
+			);
+		}
+		$params['value']=encodeJSON($arr);
 	}
 	//
 	if(isset($_REQUEST['viewonly']) && $_REQUEST['viewonly']==1){$params['viewonly']=1;}
