@@ -208,7 +208,7 @@ function zipListFiles( $zipfile){
 	$slash=isWindows()?"\\":'/';
 	$zipfile=preg_replace('/\/+/',$slash,$zipfile);
     $zipfile=preg_replace('/\\+/',$slash,$zipfile);
-    echo "zipfile:{$zipfile}<br>".PHP_EOL;
+    //echo "zipfile:{$zipfile}<br>".PHP_EOL;
 	if(!file_exists($zipfile)){return false;}
 	$zip = new ZipArchive;
 	$files=array();

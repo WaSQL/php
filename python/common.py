@@ -15,8 +15,9 @@ try:
     from contextlib import redirect_stdout
     from math import sin, cos, sqrt, atan2, radians
     import subprocess
-    from datetime import datetime
-    import dateutil.parser
+    from datetime import datetime, timedelta
+    from dateutil.relativedelta import relativedelta
+    from dateutil import parser
     import time as ttime
     import base64
     import urllib.parse
@@ -399,6 +400,7 @@ def buildFormColorBoxMap(name):
     map+=buildFormSelect(name+'colorbox_select',opts,sparams)
     map+='</nav>'+os.linesep
     return map
+
 
 
 # ---------- begin function buildFormSelect-------------------
@@ -784,6 +786,201 @@ def setFileContents(filename,data,append=False):
 
     f.write(data)
     f.close()
+
+#---------- begin function strtotime--------------------
+# @describe mimicks PHP's strtotime function - converts a string to a unix timestamp
+# @param string - string to parse
+# @return unix_timestamp (seconds since January 1, 1970)
+def strtotime(str):
+    dt=parseCustomDate(str)
+    if dt is None:
+        return ''
+
+    try:
+        return int(ttime.mktime(dt.timetuple()))
+    except (ValueError, TypeError):
+        return ''
+    
+
+def customDate(date_format="%Y-%m-%d %H:%M:%S",t=''):
+    unix_timestamp=strtotime(t)
+
+    dt = datetime.fromtimestamp(unix_timestamp)
+    return dt.strftime(date_format)
+
+#---------- begin function parseCustomDate--------------------
+# @describe Parses human-readable date strings into a datetime object.
+# @param string - string to parse
+# @return date_object
+# @usage print(parseCustomDate("now"))
+# @usage print(parseCustomDate("+1 week"))
+# @usage print(parseCustomDate("-1 week"))
+# @usage print(parseCustomDate("last Monday"))
+# @usage print(parseCustomDate("4th Thursday of November"))
+# @usage print(parseCustomDate("November 11th"))
+# @usage print(parseCustomDate("+2 week sun jun"))
+# @usage print(parseCustomDate("last Monday of May"))
+def parseCustomDate(date_str):
+    """
+    Parses human-readable date strings into a datetime object.
+    Handles cases like 'Next Thursday', '-30 Days', '+1 week', '4th Thursday of November', etc.
+    """
+    date_str = date_str.lower()  # Handle case insensitivity
+    weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    weekdays_short = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    # Handle "now" or blank
+    if len(date_str)==0 or date_str == "now":
+        return datetime.now()
+     # Handle "yesterday"
+    if date_str == "yesterday":
+        return datetime.now() - timedelta(days=1)
+
+    # Handle "tomorrow"
+    if date_str == "tomorrow":
+        return datetime.now() + timedelta(days=1)
+
+    # Handle "+2 week(s) sun (jun|july|august|...|dec)"
+    if re.match(r"[-+]\d+ (weeks?|days?|months?|years?) \w+ (jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?|jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?)", date_str):
+        match = re.match(r"([-+]\d+) (weeks?|days?|months?|years?) (\w+) (jun(e)?|jul(y)?|aug(ust)?|sep(t)?|oct(ober)?|nov(ember)?|dec(ember)?|jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?)", date_str)
+        amount = int(match.group(1))
+        unit = match.group(2).lower()
+        weekday_str = match.group(3).capitalize()
+        month_str = match.group(4).capitalize()
+        
+        # Get the target date based on the relative time
+        target_date = datetime.now()
+        if "week" in unit:
+            target_date += timedelta(weeks=amount)
+        elif "day" in unit:
+            target_date += timedelta(days=amount)
+        elif "month" in unit:
+            target_date += relativedelta(months=amount)
+        elif "year" in unit:
+            target_date += relativedelta(years=amount)
+
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+
+            # Adjust the target date to the correct month if needed
+            target_date = target_date.replace(month=month, day=1)
+
+            days_ahead = (weekday - target_date.weekday() + 7) % 7
+            return target_date + timedelta(days=days_ahead)
+
+        elif weekday_str in weekdays_short:
+            weekday = weekdays_short.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+
+            # Adjust the target date to the correct month if needed
+            target_date = target_date.replace(month=month, day=1)
+
+            days_ahead = (weekday - target_date.weekday() + 7) % 7
+            return target_date + timedelta(days=days_ahead)
+
+        else:
+            return target_date
+
+
+    # Handle "Nth <weekday> of <month> <year>" like "4th Thursday of November 2021"
+    if re.match(r"\d+(st|nd|rd|th) \w+ of \w+ \d{4}", date_str):
+        match = re.match(r"(\d+)(st|nd|rd|th) (\w+) of (\w+) (\d{4})", date_str)
+        n = int(match.group(1))
+        weekday_str = match.group(3).capitalize()
+        month_str = match.group(4).capitalize()
+        year = int(match.group(5))
+        weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+            return nth_weekday_of_month(year, month, weekday, n)
+
+    # Handle "last <weekday> of <month> <year>" like "last Monday of May 2023"
+    if re.match(r"last \w+ of \w+ \d{4}", date_str):
+        match = re.match(r"last (\w+) of (\w+) (\d{4})", date_str)
+        weekday_str = match.group(1).capitalize()
+        month_str = match.group(2).capitalize()
+        year = int(match.group(3))
+        weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+            return last_weekday_of_month(year, month, weekday)
+
+    # Handle "Last <weekday>" like "last Monday"
+    if re.match(r"last \w+", date_str):
+        weekday_str = date_str.split()[1].capitalize()
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            return last_weekday(weekday)
+    
+    # Handle "Last <weekday> of <month>" like "last Monday of May"
+    if re.match(r"last \w+ of \w+", date_str):
+        parts = date_str.split()
+        weekday_str = parts[1].capitalize()
+        month_str = parts[3].capitalize()
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+            return last_weekday_of_month(datetime.now().year, month, weekday)
+
+    # Handle "Nth <weekday> of <month>" like "4th Thursday of November"
+    if re.match(r"\d+(st|nd|rd|th) \w+ of \w+", date_str):
+        match = re.match(r"(\d+)(st|nd|rd|th) (\w+) of (\w+)", date_str)
+        n = int(match.group(1))
+        weekday_str = match.group(3).capitalize()
+        month_str = match.group(4).capitalize()
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+            return nth_weekday_of_month(datetime.now().year, month, weekday, n)
+    
+    # Handle specific date like "November 11th"
+    if re.match(r"\w+ \d+(st|nd|rd|th)?", date_str):
+        try:
+            return parser.parse(date_str)
+        except (ValueError, TypeError):
+            pass
+
+    # Handle standard date strings
+    try:
+        return parser.parse(date_str)
+    except (ValueError, TypeError):
+        return None  # Return None if unable to parse
+
+# parseCustomDate Helper functions
+#Returns the next occurrence of the given weekday (0=Monday, 6=Sunday)
+def next_weekday(weekday):
+    today = datetime.now()
+    days_ahead = weekday - today.weekday()
+    if days_ahead <= 0:  # If the target day has passed this week
+        days_ahead += 7
+    return today + timedelta(days=days_ahead)
+
+#Returns the previous occurrence of a specific weekday (0=Monday, 6=Sunday)
+def last_weekday(weekday):
+    today = datetime.now()
+    days_behind = today.weekday() - weekday
+    if days_behind < 0:  # If today is earlier in the week than the target day
+        days_behind += 7
+    return today - timedelta(days=days_behind)
+
+#Returns the Nth occurrence of a specific weekday in a given month and year. 
+def nth_weekday_of_month(year, month, weekday, n):
+    first_day = datetime(year, month, 1)
+    first_weekday = first_day + timedelta(days=(weekday - first_day.weekday() + 7) % 7)
+    nth_weekday = first_weekday + timedelta(weeks=n-1)
+    return nth_weekday
+
+#Returns the last occurrence of a specific weekday in a given month and year.
+def last_weekday_of_month(year, month, weekday):
+    last_day = datetime(year, month + 1, 1) - timedelta(days=1) if month < 12 else datetime(year, 12, 31)
+    days_behind = (last_day.weekday() - weekday) % 7
+    return last_day - timedelta(days=days_behind)
+
+
+
+
 #---------- begin function encodeHtml
 # @describe encodes html chars that would mess in  a browser
 # @param str string - string to encode
