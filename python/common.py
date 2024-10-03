@@ -17,6 +17,7 @@ try:
     import subprocess
     from datetime import datetime, timedelta
     from dateutil.relativedelta import relativedelta
+    import calendar
     from dateutil import parser
     import time as ttime
     import base64
@@ -826,8 +827,20 @@ def parseCustomDate(date_str):
     Handles cases like 'Next Thursday', '-30 Days', '+1 week', '4th Thursday of November', etc.
     """
     date_str = date_str.lower()  # Handle case insensitivity
+
+    # Add handling for invalid or empty input
+    if not date_str:
+        return "Error: Empty date string provided."
+
     weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
     weekdays_short = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    # Convert abbreviated month names to full names
+    month_abbrev = {
+        "jan": "January", "feb": "February", "mar": "March", "apr": "April",
+        "may": "May", "jun": "June", "jul": "July", "aug": "August",
+        "sep": "September", "oct": "October", "nov": "November", "dec": "December"
+    }
+
     # Handle "now" or blank
     if len(date_str)==0 or date_str == "now":
         return datetime.now()
@@ -839,13 +852,84 @@ def parseCustomDate(date_str):
     if date_str == "tomorrow":
         return datetime.now() + timedelta(days=1)
 
+    # Handle relative dates like '+1 week', '+2 days', etc.
+    if re.match(r"[-+]\d+ (weeks?|days?|months?|years?)", date_str):
+        match = re.match(r"([-+]\d+) (weeks?|days?|months?|years?)", date_str)
+        amount = int(match.group(1))
+        unit = match.group(2).lower()
+
+        target_date = datetime.now()
+        if "week" in unit:
+            target_date += timedelta(weeks=amount)
+        elif "day" in unit:
+            target_date += timedelta(days=amount)
+        elif "month" in unit:
+            target_date += relativedelta(months=amount)
+        elif "year" in unit:
+            target_date += relativedelta(years=amount)
+
+        return target_date
+
+    # Handle last day of month (e.g., 'last day of May 2024')
+    if re.match(r"last day of \w+ \d{4}", date_str):
+        match = re.match(r"last day of (\w+) (\d{4})", date_str)
+        month_str = match.group(1).capitalize()
+        year = int(match.group(2))
+        month = datetime.strptime(month_str, "%B").month
+
+        # Get the last day of the month
+        last_day = calendar.monthrange(year, month)[1]
+        return datetime(year, month, last_day)
+
+    elif re.match(r"last day of \w+", date_str):
+        match = re.match(r"last day of (\w+)", date_str)
+        month_str = match.group(1).capitalize()
+        year = int(datetime.now().strftime('%Y'))
+        month = datetime.strptime(month_str, "%B").month
+
+        # Get the last day of the month
+        last_day = calendar.monthrange(year, month)[1]
+        return datetime(year, month, last_day)
+
+    # Handle "Nth <weekday> in/of <month> <year>" like "4th Monday in January", "3rd Thu of November", etc.
+    if re.match(r"(first|second|third|fourth|last|\d+(st|nd|rd|th)) \w+ (in|of) \w+( \d{4})?", date_str):
+        match = re.match(r"(first|second|third|fourth|last|\d+(st|nd|rd|th)) (\w+) (in|of) (\w+)( \d{4})?", date_str)
+        position = match.group(1).lower()
+        weekday_str = match.group(3).lower()  # Change to lowercase for matching
+        month_str = match.group(5).capitalize()
+        # Replace abbreviated month with full name if applicable
+        month_str = month_abbrev.get(month_str.lower(), month_str)
+
+        # Use current year if year is not specified
+        year = int(match.group(6).strip()) if match.group(6) else datetime.now().year
+
+        if weekday_str in weekdays or weekday_str in weekdays_short:
+            weekday = weekdays.index(weekday_str) if weekday_str in weekdays else weekdays_short.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+
+            # Map text positions to numbers or use directly from ordinal number
+            if position in ["first", "1st"]:
+                n = 1
+            elif position in ["second", "2nd"]:
+                n = 2
+            elif position in ["third", "3rd"]:
+                n = 3
+            elif position in ["fourth", "4th"]:
+                n = 4
+            elif position == "last":
+                return last_weekday_of_month(year, month, weekday)
+
+            return nth_weekday_of_month(year, month, weekday, n)
+
     # Handle "+2 week(s) sun (jun|july|august|...|dec)"
-    if re.match(r"[-+]\d+ (weeks?|days?|months?|years?) \w+ (jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?|jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?)", date_str):
-        match = re.match(r"([-+]\d+) (weeks?|days?|months?|years?) (\w+) (jun(e)?|jul(y)?|aug(ust)?|sep(t)?|oct(ober)?|nov(ember)?|dec(ember)?|jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?)", date_str)
+    if re.match(r"[-+]\d+ (weeks?|days?|months?|years?) \w+ \w+", date_str):
+        match = re.match(r"([-+]\d+) (weeks?|days?|months?|years?) (\w+) (\w+)", date_str)
         amount = int(match.group(1))
         unit = match.group(2).lower()
         weekday_str = match.group(3).capitalize()
         month_str = match.group(4).capitalize()
+        # Replace abbreviated month with full name if applicable
+        month_str = month_abbrev.get(month_str.lower(), month_str)
         
         # Get the target date based on the relative time
         target_date = datetime.now()
@@ -881,15 +965,26 @@ def parseCustomDate(date_str):
         else:
             return target_date
 
-
     # Handle "Nth <weekday> of <month> <year>" like "4th Thursday of November 2021"
     if re.match(r"\d+(st|nd|rd|th) \w+ of \w+ \d{4}", date_str):
         match = re.match(r"(\d+)(st|nd|rd|th) (\w+) of (\w+) (\d{4})", date_str)
         n = int(match.group(1))
         weekday_str = match.group(3).capitalize()
         month_str = match.group(4).capitalize()
+        # Replace abbreviated month with full name if applicable
+        month_str = month_abbrev.get(month_str.lower(), month_str)
         year = int(match.group(5))
-        weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+            return nth_weekday_of_month(year, month, weekday, n)
+
+    elif re.match(r"\d+(st|nd|rd|th) \w+ of \w+", date_str):
+        match = re.match(r"(\d+)(st|nd|rd|th) (\w+) of (\w+)", date_str)
+        n = int(match.group(1))
+        weekday_str = match.group(3).capitalize()
+        month_str = match.group(4).capitalize()
+        year = int(datetime.now().strftime('%Y'))
         if weekday_str in weekdays:
             weekday = weekdays.index(weekday_str)
             month = datetime.strptime(month_str, "%B").month
@@ -900,8 +995,19 @@ def parseCustomDate(date_str):
         match = re.match(r"last (\w+) of (\w+) (\d{4})", date_str)
         weekday_str = match.group(1).capitalize()
         month_str = match.group(2).capitalize()
+        # Replace abbreviated month with full name if applicable
+        month_str = month_abbrev.get(month_str.lower(), month_str)
         year = int(match.group(3))
-        weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        if weekday_str in weekdays:
+            weekday = weekdays.index(weekday_str)
+            month = datetime.strptime(month_str, "%B").month
+            return last_weekday_of_month(year, month, weekday)
+
+    elif re.match(r"last \w+ of \w+", date_str):
+        match = re.match(r"last (\w+) of (\w+)", date_str)
+        weekday_str = match.group(1).capitalize()
+        month_str = match.group(2).capitalize()
+        year = int(datetime.now().strftime('%Y'))
         if weekday_str in weekdays:
             weekday = weekdays.index(weekday_str)
             month = datetime.strptime(month_str, "%B").month
@@ -914,33 +1020,41 @@ def parseCustomDate(date_str):
             weekday = weekdays.index(weekday_str)
             return last_weekday(weekday)
     
-    # Handle "Last <weekday> of <month>" like "last Monday of May"
-    if re.match(r"last \w+ of \w+", date_str):
-        parts = date_str.split()
-        weekday_str = parts[1].capitalize()
-        month_str = parts[3].capitalize()
-        if weekday_str in weekdays:
-            weekday = weekdays.index(weekday_str)
-            month = datetime.strptime(month_str, "%B").month
-            return last_weekday_of_month(datetime.now().year, month, weekday)
-
-    # Handle "Nth <weekday> of <month>" like "4th Thursday of November"
-    if re.match(r"\d+(st|nd|rd|th) \w+ of \w+", date_str):
-        match = re.match(r"(\d+)(st|nd|rd|th) (\w+) of (\w+)", date_str)
-        n = int(match.group(1))
-        weekday_str = match.group(3).capitalize()
-        month_str = match.group(4).capitalize()
-        if weekday_str in weekdays:
-            weekday = weekdays.index(weekday_str)
-            month = datetime.strptime(month_str, "%B").month
-            return nth_weekday_of_month(datetime.now().year, month, weekday, n)
-    
     # Handle specific date like "November 11th"
     if re.match(r"\w+ \d+(st|nd|rd|th)?", date_str):
         try:
             return parser.parse(date_str)
         except (ValueError, TypeError):
             pass
+
+    # Handle "Easter <year>"
+    if re.match(r"easter \d{4}", date_str):
+        match = re.match(r"easter (\d{4})", date_str)
+        year = int(match.group(1))
+        return calculate_easter(year)
+
+    # Add other holidays
+    if re.match(r"thanksgiving \d{4}", date_str):
+        match = re.match(r"thanksgiving (\d{4})", date_str)
+        year = int(match.group(1))
+        # 4th Thursday of November
+        return nth_weekday_of_month(year, 11, 3, 4)  # Thursday is the 3rd weekday
+
+    if re.match(r"christmas \d{4}", date_str):
+        match = re.match(r"christmas (\d{4})", date_str)
+        year = int(match.group(1))
+        # Christmas is always December 25
+        return datetime(year, 12, 25)
+
+    # Handle standard holidays in the current year
+    if date_str == "easter":
+        return calculate_easter(datetime.now().year)
+
+    if date_str == "thanksgiving":
+        return nth_weekday_of_month(datetime.now().year, 11, 3, 4)
+
+    if date_str == "christmas":
+        return datetime(datetime.now().year, 12, 25)
 
     # Handle standard date strings
     try:
@@ -978,8 +1092,24 @@ def last_weekday_of_month(year, month, weekday):
     days_behind = (last_day.weekday() - weekday) % 7
     return last_day - timedelta(days=days_behind)
 
-
-
+#Computes the date of Easter for a given year.
+def calculate_easter(year):
+    # Using the Anonymous Gregorian algorithm to calculate Easter
+    a = year % 19
+    b = year // 100
+    c = year % 100
+    d = b // 4
+    e = b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i = c // 4
+    k = c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    month = (h + l - 7 * m + 114) // 31
+    day = ((h + l - 7 * m + 114) % 31) + 1
+    return datetime(year, month, day)
 
 #---------- begin function encodeHtml
 # @describe encodes html chars that would mess in  a browser
