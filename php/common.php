@@ -43,6 +43,22 @@ if (!function_exists('getallheaders')) {
     return $headers;
     }
 }
+//---------- begin function commonCoalesce
+/**
+* @describe returns the first non-null, non-blank value in a list
+* @param args
+* @return str
+* @usage $privateToken=commonCoalesce($params['token'],$CONFIG['gitlab_token'],'');
+*/
+function commonCoalesce(){
+	$args=func_get_args();
+	foreach($args as $arg){
+		if(is_null($arg)){continue;}
+		if(!strlen($arg)){continue;}
+		return $arg;
+	}
+	return null;
+}
 //---------- begin function convertExtendedCharacters
 /**
 * @describe converts extended characters to ASCII equivilent
