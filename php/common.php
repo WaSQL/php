@@ -22256,8 +22256,9 @@ function xml2Object($xmlstring){
 * @usage
 *	$array =  xml2array(file_get_contents('feed.xml'));
 *	$array =  xml2array(file_get_contents('feed.xml', 1, 'attribute'));
+*	$array =  xml2array(file_get_contents('feed.xml', 'user')); //only read user tags attributes
 */
-function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
+function xml2Array_old($contents, $get_attributes=1, $priority = 'tag') {
 	if (strlen($contents) < PHP_MAXPATHLEN && is_file($contents)){$contents = file_get_contents($contents);}
     if(!strlen($contents)){return array('No contents');}
     if(!function_exists('xml_parser_create')) {
@@ -22275,11 +22276,13 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
     	xml_parser_free($parser);
     }
 	catch(Exception $e){
-    	//debugValue($e);
+    	debugValue($e);
 		return $e;
 	}
 
     if(!$xml_values){return $contents;}
+    //echo "xml_values".printValue($xml_values);exit;
+    $recs=array();
     //Initializations
     $xml_array = array();
     $parents = array();
@@ -22289,6 +22292,11 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
     //Go through the tags.
     $repeated_tag_index = array();//Multiple tags with same name will be turned into an array
     foreach($xml_values as $data) {
+    	echo printValue($data);
+    	if(isset($data['tag']) && strlen($get_attributes) && $data['tag']==$get_attributes && is_array($data['attributes'])){
+    		$recs[]=$data['attributes'];
+    		continue;
+    	}
         unset($attributes,$value);//Remove existing values, or there will be trouble
         //This command will extract these variables into the foreach scope
         // tag(string), type(string), level(int), attributes(array).
@@ -22368,10 +22376,56 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
             $current = &$parent[$level-1];
         	}
     	}
+    //echo "recs".printValue($recs);exit;
+    if(count($recs)){return $recs;}
+    //echo "xml_array".printValue($xml_array);exit;
     //cleanup
 	if(isset($xml_array['soapEnvelope'])){$xml_array=$xml_array['soapEnvelope'];}
     return($xml_array);
 	}
+function xml2Array($xml) {
+    if (is_string($xml)) {
+        $xml = simplexml_load_string($xml);
+    }
+    
+    $result = array();
+    
+    // Handle attributes by adding them directly to parent
+    foreach ($xml->attributes() as $key => $value) {
+        $result[$key] = (string)$value;
+    }
+    
+    // Handle child nodes
+    foreach ($xml->children() as $child) {
+        $nodeName = $child->getName();
+        
+        // Convert SimpleXMLElement to array recursively
+        $temp = xml2Array($child);
+        
+        // Handle multiple nodes with same name
+        if (isset($result[$nodeName])) {
+            if (!isset($result[$nodeName][0])) {
+                $result[$nodeName] = array($result[$nodeName]);
+            }
+            $result[$nodeName][] = $temp;
+        } else {
+            $result[$nodeName] = $temp;
+        }
+    }
+    
+    // Handle text content
+    $text = trim((string)$xml);
+    if (!is_array($xml) && $text !== '') {
+        $result['value'] = $text;
+    }
+    
+    // If the array only contains text, return just the text
+    if (count($result) == 1 && isset($result['value'])) {
+        return $result['value'];
+    }
+    
+    return $result;
+}
 //---------- begin function xmldata2Array
 /**
 * @describe - parses the xmldata structure stored in the _forms table into a two part array: server and data
