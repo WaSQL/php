@@ -22258,7 +22258,7 @@ function xml2Object($xmlstring){
 *	$array =  xml2array(file_get_contents('feed.xml', 1, 'attribute'));
 *	$array =  xml2array(file_get_contents('feed.xml', 'user')); //only read user tags attributes
 */
-function xml2Array_old($contents, $get_attributes=1, $priority = 'tag') {
+function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
 	if (strlen($contents) < PHP_MAXPATHLEN && is_file($contents)){$contents = file_get_contents($contents);}
     if(!strlen($contents)){return array('No contents');}
     if(!function_exists('xml_parser_create')) {
@@ -22292,7 +22292,6 @@ function xml2Array_old($contents, $get_attributes=1, $priority = 'tag') {
     //Go through the tags.
     $repeated_tag_index = array();//Multiple tags with same name will be turned into an array
     foreach($xml_values as $data) {
-    	echo printValue($data);
     	if(isset($data['tag']) && strlen($get_attributes) && $data['tag']==$get_attributes && is_array($data['attributes'])){
     		$recs[]=$data['attributes'];
     		continue;
@@ -22383,7 +22382,7 @@ function xml2Array_old($contents, $get_attributes=1, $priority = 'tag') {
 	if(isset($xml_array['soapEnvelope'])){$xml_array=$xml_array['soapEnvelope'];}
     return($xml_array);
 	}
-function xml2Array($xml) {
+function xml2Array2($xml) {
     if (is_string($xml)) {
         $xml = simplexml_load_string($xml);
     }
