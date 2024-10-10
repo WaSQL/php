@@ -41,9 +41,15 @@
 		</form>
 	</div>
 </div>
-<div class="row">
-	<div class="col-sm-6" id="decoder1"></div>
-	<div class="col-sm-6" id="decoder2"></div>
+<div style="display:flex;">
+	<div style="flex:1;position: relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#decoder1').innerText);"></span>
+		<div id="decoder1"></div>
+	</div>
+	<div style="flex:1;position: relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#decoder2').innerText);"></span>
+		<div id="decoder2"></div>
+	</div>
 </div>
 </view:decode_forms>
 
@@ -68,9 +74,15 @@
 		</form>
 	</div>
 </div>
-<div class="row">
-	<div class="col-sm-6" id="results1"></div>
-	<div class="col-sm-6" id="results2"></div>
+<div style="display:flex;">
+	<div style="flex:1;position: relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#results1').innerText);"></span>
+		<div id="results1"></div>
+	</div>
+	<div style="flex:1;position: relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#results2').innerText);"></span>
+		<div id="results2"></div>
+	</div>
 </div>
 </view:encode_decode_forms>
 
