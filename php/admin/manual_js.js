@@ -15,6 +15,6 @@ function manualNav(el) {
 		params[key]=el.dataset[key];
 	}
 	params['_menu']='manual';
-	return ajaxGet('/php/admin.php',div,params);
+	return wacss.ajaxGet('/php/admin.php',div,params);
 }
 

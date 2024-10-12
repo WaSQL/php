@@ -10,7 +10,7 @@ switch(strtolower($_REQUEST['func'])){
 	case 'docid':
 		$docid=(integer)$_REQUEST['docid'];
 		$rec=getDBRecordById('_docs',$docid);
-		$rec['info_ex']=json_decode($rec['info'],true);
+		$rec['info_ex']=decodeJson($rec['info']);
 		$recs=array($rec);
 		//echo printValue($sdocs);exit;
 		setView('search_results',1);
@@ -29,9 +29,12 @@ switch(strtolower($_REQUEST['func'])){
 			setView('no_results',1);
 			return;
 		}
-		//echo printValue($recs);
 		foreach($recs as $i=>$rec){
-			$recs[$i]['info_ex']=json_decode($rec['info'],true);
+			$recs[$i]['info_ex']=decodeJSON($rec['info']);
+			if(!isset($recs[$i]['info_ex']) || !isset($recs[$i]['info_ex']['describe'])){
+				$recs[$i]['info_ex']['describe']='';
+				continue;
+			}
 			if(isset($recs[$i]['info_ex']['describe'][0])){
 				$recs[$i]['describe']=array();
 				foreach($recs[$i]['info_ex']['describe'] as $str){
@@ -46,7 +49,6 @@ switch(strtolower($_REQUEST['func'])){
 				$recs[$i]['describe']='';
 			}
 		}
-		//echo printValue($recs);exit;
 		setView('search_results',1);
 		return;
 	break;

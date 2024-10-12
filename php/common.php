@@ -8625,14 +8625,23 @@ function decodeJson($str,$arr=true){
 	if(!is_string($str)){$str=encodeJson($str);}
 	//remove control characters that may interfere
 	$json = preg_replace('/[[:cntrl:]]/', '', trim($str));
-	$decoded=json_decode($json,$arr,512,JSON_INVALID_UTF8_SUBSTITUTE);
+	$decoded=json_decode($json,$arr,512,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	if(!is_array($decoded)){
 		//JSON_INVALID_UTF8_SUBSTITUTE flag was added in php 7.2
 		$json = mb_convert_encoding($json, 'UTF-8', 'UTF-8');
-		$decoded=json_decode($json,$arr,512);
+		$decoded=json_decode($json,$arr,512,JSON_UNESCAPED_UNICODE);
+	}
+	if(!is_array($decoded)){
+		$json=stripslashes($json);
+		$json=preg_replace('/^\"/','',$json);
+		$json=preg_replace('/\"$/','',$json);
+		$decoded=json_decode($json,$arr,512,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	}
 	if(!is_array($decoded)){
 		$decoded=json_last_error_msg();
+		if(!is_array($decoded) && $decoded=='No error'){
+			$decoded=null;
+		}
 	}
 	return $decoded;
 }
@@ -16039,7 +16048,7 @@ function listFiles($dir='.'){
 function listFilesEx($dir='.',$params=array()){
 	if(!isset($params['type'])){$params['type']='file';}
 	if(!isset($params['-dateformat'])){$params['-dateformat']='m/d/Y g:i a';}
-	if(!is_dir($dir)){return null;}
+	if(is_null($dir) || !is_dir($dir)){return array();}
 	//handle multiple types by separating them with [,;|]
 	$params['type']=strtolower($params['type']);
 	$types=preg_split('/[,;:\|]+/',$params['type']);

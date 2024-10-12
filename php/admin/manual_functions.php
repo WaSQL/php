@@ -60,20 +60,18 @@ function manualGetNames($afile){
 ENDOFQUERY;
 	$recs=getDBRecords($query);
 	foreach($recs as $i=>$rec){
-			
-		}
-	foreach($recs as $i=>$rec){
-		if($rec['info_length'] < 10 ){
+		if(isset($rec['info_length']) && $rec['info_length'] < 10 ){
 			$recs[$i]['class']='w_red';
 		}
 		else{
-			$rec['info_ex']=json_decode($rec['info'],true);
+			$rec['info_ex']=decodeJson($rec['info'],true);
 			if(!isset($rec['info_ex']['usage'])){
 				$recs[$i]['class']='w_red';
 			}
 			else{
 				$recs[$i]['class']='';
 			}
+			//echo "manualGetNames".printValue($recs[$i]);exit;
 		}
 	}
 	//echo printValue($recs);exit;
@@ -360,9 +358,9 @@ function manualParseFile($file){
 			if(!isset($rec['info']['exclude'])){
 				$rec['comments']=implode(PHP_EOL,$rec['comments']);
 				$rec['comments']=base64_encode($rec['comments']);
-				$rec['info']=json_encode($rec['info'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
-				if(!strlen($rec['info'])){
-					$rec['info']='{}';
+				//$rec['info']=json_encode($rec['info'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+				if(!isset($rec['info'])){
+					$rec['info']=[];
 				}
 				$rec['hash']=md5($rec['name'].$rec['afile']);
 				$rec['name']=str_replace('[tab]','&nbsp;&nbsp;&nbsp;&nbsp;',$rec['name']);
