@@ -335,6 +335,7 @@ var wacss = {
         		wacss.removeId('centerpop');	
         	}
         } 
+        wacss.initOnloads();
 	},
 	ajaxUniqueID: function(){
 		return "10000000000000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
@@ -3310,9 +3311,17 @@ var wacss = {
 		}
 	},
 	initOnloads: function(){
-		let onloads=document.querySelectorAll('div.onload');
+		let onloads=document.querySelectorAll('div.onload,[data-onload],div.wacss_onload');
 		for(let i=0;i<onloads.length;i++){
-			let funcstr=onloads[i].innerText;
+			if(undefined != onloads[i].getAttribute('data-onload-ex')){continue;}
+			onloads[i].setAttribute('data-onload-ex',new Date().getTime());
+			let funcstr='';
+			if(onloads[i].classList.contains('onload')){
+				funcstr=onloads[i].innerText;
+			}
+			else{
+				funcstr=onloads[i].getAttribute('data-onload');
+			}
 			let wacssstr=funcstr.replace('wacss.','');
 			let dsetlen=Object.keys(onloads[i].dataset).length;
 			if(typeof window[funcstr] === 'function'){
