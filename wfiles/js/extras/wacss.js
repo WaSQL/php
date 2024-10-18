@@ -5416,6 +5416,7 @@ var wacss = {
 	modalPopup: function(htm,title,params){
 		if(undefined == params){params={overlay:1};}
 		if(undefined == title){title='&nbsp;';}
+		if(undefined == htm){htm='';}
 		//check for id: or qs:
 		if(htm.indexOf('id:') == 0 && htm.length < 100){
 			let cid=htm.slice(3);
