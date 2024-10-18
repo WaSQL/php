@@ -5529,7 +5529,11 @@ var wacss = {
 	nav: function(el,opts){
 		//check to make sure that el has data-nav
 		let elobj=wacss.getObject(el);
-		if(undefined == elobj){return false;}
+		if(undefined == elobj){
+			console.log('invalid object passed to wacss.nav');
+			console.log(el);
+			return false;
+		}
 		//stop propigation
 		if(window.event && undefined != el.dataset.nav){
 			window.event.stopImmediatePropagation();
@@ -5601,7 +5605,7 @@ var wacss = {
 			let div_content=div.innerHTML;
 			if(div_content.length > 10){
 				div.innerHTML='';
-				return;
+				return false;
 			}
 		}
 		let params={};
