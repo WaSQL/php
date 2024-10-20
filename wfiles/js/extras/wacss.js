@@ -3315,7 +3315,8 @@ var wacss = {
 		let initcnt=0;
 		for(let i=0;i<onloads.length;i++){
 			if(undefined != onloads[i].getAttribute('data-onload-ex')){continue;}
-			onloads[i].setAttribute('data-onload-ex',new Date().getTime());
+			let exval=wacss.guid().replaceAll('-','');
+			onloads[i].setAttribute('data-onload-ex',exval);
 			let funcstr=onloads[i].dataset.wacss_onload||onloads[i].dataset.onload||'';
 			if(funcstr==''){continue;}
 			initcnt=initcnt+1;
@@ -3324,9 +3325,15 @@ var wacss = {
 				console.log(funcstr);
 			}
 			let funcstrs=funcstr.split(';');
+			let thisstr="document.querySelector('[data-onload-ex=\""+exval+"\"]')";
 			for(let f=0;f<funcstrs.length;f++){
 				funcstr=funcstrs[f];
+				funcstr=funcstr.replaceAll('this',thisstr);
+				if(debug==1){
+					console.log(funcstr);
+				}
 				let cfunc=new Function(funcstr);
+
 				if(debug==1){
 					console.log(cfunc.toString());
 				}
