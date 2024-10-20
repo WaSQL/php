@@ -30,7 +30,7 @@
 		<div class="col-sm-12">
 			<ul class="nav-tabs <?=configValue('admin_color');?>">
 				<view:tab>
-				<li <?=synchronizeSetActive($key);?>"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','synchronize_results',{_menu:'synchronize','func':'table',table:'<?=$key;?>',showprocessing:false});"><?=$key;?> (<?=count($recs);?>)</a></li>
+				<li <?=synchronizeSetActive($key);?>"><a href="#" onclick="setText('synchronize_results',getText('changes_<?=$key;?>'));return false;"><?=$key;?> (<?=count($recs);?>)</a></li>
 				</view:tab>
 				<?=renderEach('tab',$changes,'recs');?>
 			</ul>
