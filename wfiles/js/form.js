@@ -4330,6 +4330,9 @@ function ajaxPost(theform,sid,tmeout,callback,returnreq,abort_callback) {
 					}
 				if(isFunction('f_tcalInit')){f_tcalInit();}
 				initBehaviors(dname);
+				if(undefined != typeof wacss && typeof wacss['initOnloads'] === 'function'){
+					wacss.initOnloads();
+					}
 				}
   			}
 	  	);
@@ -4729,6 +4732,9 @@ function ajaxGet(url,sid,xparams,callback,tmeout,nosetprocess,returnreq,newtitle
 						}
 					}
 				initBehaviors(dname);
+				if(undefined != typeof wacss && typeof wacss['initOnloads'] === 'function'){
+					wacss.initOnloads();
+					}
 				}
   			}
 		);
