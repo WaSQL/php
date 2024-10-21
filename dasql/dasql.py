@@ -26,6 +26,7 @@ def dasqlEvalCode(lang,ext,code):
         if len(line):
             print(line)
     os.remove(name)
+
 #get the script path
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 #read dasql.ini for settings
@@ -94,6 +95,18 @@ else:
                 params['tempfile']=params['arg_query']
 
             params['arg_query']=''
+    elif os.path.isfile(sys.argv[2]):
+        file = open(sys.argv[2], mode='r')
+        params['query'] = file.read()
+        file.close()
+        if(sys.argv[2].endswith('_deleteme')):
+            os.remove(sys.argv[2])
+        if params['query'].startswith('--'):
+            params['query']=params['query'][2:].strip()
+        elif params['query'].startswith('#'):
+            params['query']=params['query'][1:].strip()
+        params['tempfile']=sys.argv[2]
+        params['arg_query']=''
     else:
         #load the rest of args as the arg_query
         params['arg_query']='';
@@ -146,30 +159,61 @@ if output is not None:
         line=line.strip()
         if len(line):
             print(line)
-elif len(params['query']) > 0 and params['query'].startswith('http'):
+elif len(params['query']) > 0 and params['query'].lower().startswith('math>'):
+    #Run a python command
+    params['query']=params['query'][5:].strip()
+    print(eval(params['query']))
+elif len(params['query']) > 0 and params['query'].lower().startswith('calc>'):
+    #Run a python command
+    params['query']=params['query'][5:].strip()
+    print(eval(params['query']))
+elif len(params['query']) > 0 and params['query'].lower().startswith('cmd>'):
+    #run a command  >dir d:\wasql
+    params['query']=params['query'][4:].strip()
+    csvlist=[]
+    csvparts=list(csv.reader(params['query'], delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL))
+    cp=''
+    for p in csvparts:
+        if len(p) == 1 and len(p[0]) == 1:
+            cp=cp+p[0]
+        if len(p) == 2 and len(p[0]) == 0:
+            csvlist.append(cp)
+            cp=''
+        if len(p) == 1 and len(p[0]) > 1:
+            csvlist.append(p[0])
+    if len(cp):
+        csvlist.append(cp)
+    #print(csvlist)
+    result = subprocess.run(csvlist, stdout=subprocess.PIPE, stderr = subprocess.STDOUT)
+    for line in result.stdout.decode('utf-8-sig').splitlines():
+        line=line.strip()
+        if len(line):
+            print(line)
+elif len(params['query']) > 0 and params['query'].lower().startswith('http'):
     #launch a URL
     #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
     url=params['query'].replace('&','^&');
     os.system("start {}".format(url))
 elif len(params['query']) > 0 and ((params['query'].startswith('{') and params['query'].endswith('}')) or (params['query'].startswith('[') and params['query'].endswith(']'))):
+    #pretty print a JSON string
     code='<?php\r\n$jsonstr=<<<ENDOFSTR\r\n{}\r\nENDOFSTR;$json=json_decode($jsonstr);$str=json_encode($json,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);\r\n$str=str_replace("\t","     ",$str);echo $str;\r\n?>\r\n'.format(params['query'])
     dasqlEvalCode('php','php',code)
-elif len(params['query']) > 0 and params['query'].startswith('<?php'):
+elif len(params['query']) > 0 and params['query'].lower().startswith('<?php'):
     #Run a PHP command
     dasqlEvalCode('php','php',params['query'])
-elif len(params['query']) > 0 and params['query'].startswith('<?py'):
-    #Run a lua command
+elif len(params['query']) > 0 and params['query'].lower().startswith('<?py'):
+    #Run a python command
     params['query']=params['query'][4:]
     if params['query'].endswith('?>'):
         params['query']=params['query'][:len(params['query'])-2]
     dasqlEvalCode('python','py',params['query'])
-elif len(params['query']) > 0 and params['query'].startswith('<?lua'):
+elif len(params['query']) > 0 and params['query'].lower().startswith('<?lua'):
     #Run a lua command
     params['query']=params['query'][6:]
     if params['query'].endswith('?>'):
         params['query']=params['query'][:len(params['query'])-2]
     dasqlEvalCode('lua','lua',params['query'])
-elif len(params['query']) > 0:
+elif len(params['query']) > 0 and params['query'].lower().startswith(("select", "with", "create", "delete", "update","merge","alter","drop","declare","begin","end")):
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
         'db': params['db'],
@@ -183,7 +227,6 @@ elif len(params['query']) > 0:
         '_menu': 'sqlprompt',
         'sql_full':params['query']
     }
-
     #WaSQL supports multiple authentication methods: set auth method based on params
     if 'apikey' in params:
         data['apikey']=params['apikey']
@@ -236,6 +279,7 @@ elif len(params['query']) > 0:
         if len(line):
             print(line)
 else:
-    print('DaSQL: No Query to run')
+    print('DaSQL: not sure what to do with this:')
     print(sys.argv)
+    print(params['query'])
 
