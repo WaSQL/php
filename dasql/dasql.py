@@ -168,7 +168,7 @@ elif len(params['query']) > 0 and params['query'].lower().startswith('calc>'):
     params['query']=params['query'][5:].strip()
     print(eval(params['query']))
 elif len(params['query']) > 0 and params['query'].lower().startswith('cmd>'):
-    #run a command  >dir d:\wasql
+    #run a command  cmd>ls -al d:\wasql
     params['query']=params['query'][4:].strip()
     csvlist=[]
     csvparts=list(csv.reader(params['query'], delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL))
