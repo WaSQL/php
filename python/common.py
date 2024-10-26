@@ -671,6 +671,25 @@ def cmdResults(cmd,args='',dir='',timeout=0):
     result = subprocess.run([cmd, args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return result.stdout.decode('utf-8')
 
+#---------- begin function commonCoalesce
+# @describe returns the first non-null, non-blank value in a list
+# @param args
+# @return mixed
+# @usage privateToken=common.coalesce(params['token'],vals['gitlab_token'],'')
+def coalesce(*values):
+    for v in values:
+        if type(v)==str and len(v) > 0:
+            return v
+        elif type(v)==int:
+            return v
+        elif type(v)==list:
+            return v
+        elif type(v)==tuple:
+            return v
+        elif type(v)==dict:
+            return v
+    return ''
+
 #---------- begin function cronLog---------------
 # @describe adds a log to the _cron_log table
 # @param str string - message to log
