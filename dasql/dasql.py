@@ -213,7 +213,7 @@ elif len(params['query']) > 0 and params['query'].lower().startswith('<?lua'):
     if params['query'].endswith('?>'):
         params['query']=params['query'][:len(params['query'])-2]
     dasqlEvalCode('lua','lua',params['query'])
-elif len(params['query']) > 0 and params['query'].lower().startswith(("select", "with", "create", "delete", "update","merge","alter","drop","declare","begin","end")):
+elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","select", "with", "create", "delete", "update","merge","alter","drop","declare","begin","end")):
     #prepare the key/value pairs to pass to WaSQL base_url
     data={
         'db': params['db'],
