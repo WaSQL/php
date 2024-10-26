@@ -671,7 +671,7 @@ def cmdResults(cmd,args='',dir='',timeout=0):
     result = subprocess.run([cmd, args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return result.stdout.decode('utf-8')
 
-#---------- begin function commonCoalesce
+#---------- begin function common.coalesce
 # @describe returns the first non-null, non-blank value in a list
 # @param args
 # @return mixed
