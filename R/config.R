@@ -28,6 +28,7 @@ configParse <- function(db_name) {
     dbuser = xml_attr(db_node, "dbuser"),
     dbpass = xml_attr(db_node, "dbpass"),
     dbname = xml_attr(db_node, "dbname"),
+    connect = xml_attr(db_node, "connect"),
     dbschema = xml_attr(db_node, "dbschema") # Optional, depending on your needs
   )
 }

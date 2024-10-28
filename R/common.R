@@ -1,4 +1,4 @@
-#Rscript -e "install.packages('RMySQL', repos='https://cran.r-project.org')"
+#Rscript -e "install.packages('jsonlite', repos='https://cran.r-project.org')"
 suppressPackageStartupMessages(library(jsonlite, quietly = TRUE))
 
 convertExtendedCharacters <- function(string) {
