@@ -411,6 +411,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 					'error'=>$err,
 					'query'=>$query,
 					'p'=>$p,
+					'record_count'=>count(recs),
 					'first_record'=>$drec
 				));
 				return 0;
@@ -420,7 +421,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		catch (Exception $e) {
 			debugValue(array(
 				'function'=>'postgresqlAddDBRecordsProcess',
-				'message'=>'pg_prepare error',
+				'message'=>'trycatch error',
 				'error'=>pg_last_error($dbh_postgresql),
 				'query'=>$query,
 				'p'=>$p,
