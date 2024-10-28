@@ -270,7 +270,12 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	//indexes must be normal - fix if not
-	if(!isset($recs[0])){
+	$cnt=count($recs);
+	$fix=0;
+	for($x=0;$x<$cnt;$x++){
+		if(!isset($recs[$x])){$fix=1;break;}
+	}
+	if($fix==1){
 		$xrecs=array();
 		foreach($recs as $rec){$xrecs[]=$rec;}
 		$recs=$xrecs;
