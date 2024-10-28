@@ -524,7 +524,7 @@ def buildFormSelect(name,pairs={},params={}):
 
     return rtn
 
-#---------- begin function buildFormText
+#---------- begin function common.buildFormText
 # @describe returns csv file contents as recordsets
 # @param name string
 # @param params - dictionary
