@@ -9360,12 +9360,17 @@ function evalPHP($strings){
 		for($ex=0;$ex<$cntB;$ex++){
 			$evalcode=$evalmatches[1][$ex];
 			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
-			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua|R|rscript)[\ \r\n]+(.+)/ism',$evalcode,$g)){
+			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua|R|rscript|tcl)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=preg_replace('/^'.$g[1].'/i','',$evalcode);
 				$lang=commonGetLangInfo($g[1]);
 				$lang['evalcode_md5']=md5($evalcode);
 				$c=0;
 				switch(strtolower($lang['name'])){
+					case 'tcl':
+						$val=evalTclCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
 					case 'r':
 						$val=evalRCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
@@ -10016,7 +10021,285 @@ function evalGlobal2Perl($arr){
 	}
 	return '('.implode(', ',$sets).');';
 }
-//---------- begin function evalPythonCode
+//---------- begin function evalTclCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalTclCode($lang,$evalcode){
+	$lines=preg_split('/[\r\n]+/',$evalcode);
+	//$_REQUEST['view']='howdy <b class="w_bigg">du</b>';
+	$prespace='';
+	foreach($lines as $line){
+		if(strlen(trim($line)) && preg_match('/^([\s\t]+)/',$line,$m)){
+			$prespace=$m[1];
+			break;
+		}
+	}
+	foreach($lines as &$line){
+	//	$line=preg_replace('/^'.$prespace.'/','',rtrim($line));
+	}
+	$evalcode=implode(PHP_EOL,$lines);
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$wasqlPath=getWasqlPath();
+	$wasqlPath=str_replace("\\","/",$wasqlPath);
+	$wasqlTclPath=getWasqlPath('Tcl');
+	$wasqlTclPath=str_replace("\\","/",$wasqlTclPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.tcl",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.tcl",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(jl|tcl)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.tcl";
+		if(!isset($CONFIG['includes_import_name'])){
+			$CONFIG['includes_import_name']='page';
+		}
+		$pagecode="source(page_{$lang['evalcode_md5']})";
+		$content=<<<ENDOFCONTENT
+#! Rscript
+
+{$code}
+ENDOFCONTENT;
+	setFileContents($files['page'],$content);
+		//{$lang['evalcode_md5']}
+	}
+	//create a wasql.R file
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	if(!isset($_SESSION)){$_SESSION=[];}
+	$wasql=array(
+		'USER'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'CONFIG'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'PAGE'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'TEMPLATE'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'PASSTHRU'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'DATABASE'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'REQUEST'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'SESSION'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'SERVER'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
+		'CRONTHRU'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\""
+	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]="{$var} = ".json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+		}
+	}
+	$content=<<<ENDOFCONTENT
+#! tcl
+
+proc wasqlTclPath {} {
+	return "{$wasqlTclPath}"
+}
+
+proc wasqlConfigFile {} {
+	return "{$wasqlPath}/config.xml"
+}
+
+proc wasqlTempPath {} {
+	return "{$wasqlTempPath}"
+}
+
+proc wasqlUSER {k} {
+	{$wasql['USER']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlCONFIG {k} {
+	{$wasql['CONFIG']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlPAGE {k} {
+	{$wasql['PAGE']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlTEMPLATE {k} {
+	{$wasql['TEMPLATE']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlPASSTHRU {k} {
+	{$wasql['PASSTHRU']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlDATABASE {k} {
+	{$wasql['DATABASE']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlSESSION {k} {
+	{$wasql['SESSION']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlSERVER {k} {
+	{$wasql['SERVER']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+proc wasqlCRONTHRU {k} {
+	{$wasql['CRONTHRU']}
+	# Extract the value at the specified key using dict get
+	set value [dict get $jsondict $k]
+
+	# Check if the value is not empty
+	if { [string length $value] > 0 } {
+		return $value
+	} else {
+		return ""
+	}
+}
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#! Tcl
+
+source "{$files['wasql']}"
+source "{$wasqlTclPath}/config.tcl"
+source "{$wasqlTclPath}/common.tcl"
+source "{$wasqlTclPath}/db.tcl"
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($command,'',$wasqlTempPath);
+	//echo printValue($out);exit;
+	//remove any R files in temp older than 1 day - wasqlTempPath
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','R');
+	//check return code
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		foreach($files as $name=>$afile){
+	 		unlink($afile);
+	 	}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}	
+	else{
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Tcl Script Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalRCode
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
@@ -10658,6 +10941,16 @@ function evalCleanupGlobal($arr){
 */
 function commonGetLangInfo($lang){
 	switch(strtolower($lang)){
+		case 'tcl':
+			//Tcl
+			$lang=array(
+				'name'=>'Tcl',
+				'comment'=>'#',
+				'ext'=>'tcl',
+				'exe'=>'tclsh',
+				'shebang'=>'#!/usr/bin/env tclsh'
+			);
+		break;
 		case 'rscript':
 		case 'r':
 			//R
@@ -10665,7 +10958,7 @@ function commonGetLangInfo($lang){
 				'name'=>'R',
 				'comment'=>'#',
 				'ext'=>'R',
-				'exe'=>'rscript.exe',
+				'exe'=>'rscript',
 				'shebang'=>'#!/usr/bin/env Rscript'
 			);
 		break;
