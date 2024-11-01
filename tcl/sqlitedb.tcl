@@ -16,38 +16,43 @@ proc sqliteQueryResults {cfgData query} {
         puts "Error connecting to database: $error_msg"
         exit 1
     }
-    # Initialize an empty array to store the results
-    set results {}
+    
+    # Initialize the return array
+    array set results {}
 
-    # Use db eval to execute the query and populate the array
-    if {[catch {
-        db eval $query row {
-            # Create a unique key based on the first column (ArtistId) and the row number
-            set rowId [set row(ArtistId)]  ;# Assuming ArtistId is the first column
-
-            # Create a unique row index
-            set index [llength [array names results $rowId*]]
-
-            # Store the row data using the rowId and index
-            set results($rowId,$index) [dict create]
-
-            # Populate the dictionary with column names and values
-            foreach {columnName columnValue} [array get row] {
-                set results($rowId,$index)($columnName) $columnValue
-            }
+    # Initialize counters and storage
+    set row 0
+    set columns {}
+    set hasColumns 0
+    
+    # Execute query and process results
+    db eval $query data {
+        # Get column names from the first row
+        if {!$hasColumns} {
+            set columns $data(*)
+            set hasColumns 1
+            
+            # Store column names in array
+            set results(columns) $columns
         }
-    } result_msg]} {
-        puts "Error executing query: $result_msg"
-        return
+        
+        # Store each field in the array
+        foreach column $columns {
+            set results($row,$column) $data($column)
+        }
+        
+        incr row
     }
-
-    return results
+    
+    # Store the number of rows
+    set results(rows) $row
+    
+    # Close database connection
+    db close
+    
+    # Return the results array
+    return [array get results]
 
 }
 
-# Example usage:
-# set cfg [dict create dbname "d:/data/sqlite_chinook.db"]
-# set results [dbQueryResult sqlite_chinook "SELECT * FROM artists LIMIT 5"]
-# foreach row $results {
-#     puts $row
-# }
+

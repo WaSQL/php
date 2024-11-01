@@ -1,6 +1,122 @@
 # Load necessary packages (if applicable)
 # There isn't a direct equivalent for jsonlite, but we'll use built-in features.
+proc resultsAsCSV {results} {
+    # Convert results list back to array
+    array set resultsArray $results
+    
+    # If no results, return early
+    if {$resultsArray(rows) == 0} {
+        return "No results found"
+    }
+    
+    # Build CSV string starting with headers
+    set csv ""
+    append csv [join $resultsArray(columns) ","]
+    append csv "\n"
+    
+    # Add each row of data
+    for {set i 0} {$i < $resultsArray(rows)} {incr i} {
+        set row {}
+        foreach column $resultsArray(columns) {
+            # Handle fields that might contain commas by quoting them
+            set value $resultsArray($i,$column)
+            if {[string first "," $value] != -1} {
+                set value "\"$value\""
+            }
+            lappend row $value
+        }
+        append csv [join $row ","]
+        append csv "\n"
+    }
+    
+    return $csv
+}
 
+# Example usage:
+#
+# # First get results from database
+# set query {SELECT name, email, age FROM users}
+# set results [sqliteQueryResults $query]
+#
+# # Convert to CSV
+# puts [resultsAsCSV $results]
+#
+# # Or save to file:
+# set csv [resultsAsCSV $results]
+# set fileId [open "output.csv" w]
+# puts $fileId $csv
+# close $fileId
+# 
+proc resultsAsTable {results} {
+    # Convert results list back to array
+    array set resultsArray $results
+    
+    # If no results, return early
+    if {$resultsArray(rows) == 0} {
+        return "<p>No results found</p>"
+    }
+    
+    # Start building HTML with some basic styling
+    set html {
+    }
+    
+    # Start table
+    append html "<table class=\"table bordered striped\">\n"
+    
+    # Add header row
+    append html "<thead><tr>\n"
+    foreach column $resultsArray(columns) {
+        append html "<th>[htmlEscape $column]</th>\n"
+    }
+    append html "</tr></thead>\n"
+    
+    # Add data rows
+    append html "<tbody>\n"
+    for {set i 0} {$i < $resultsArray(rows)} {incr i} {
+        append html "<tr>\n"
+        foreach column $resultsArray(columns) {
+            append html "<td>[htmlEscape $resultsArray($i,$column)]</td>\n"
+        }
+        append html "</tr>\n"
+    }
+    append html "</tbody>\n"
+    
+    # Close table
+    append html "</table>"
+    
+    return $html
+}
+
+# Helper function to escape HTML special characters
+proc htmlEscape {text} {
+    set escapes {
+        & &amp;
+        < &lt;
+        > &gt;
+        \" &quot;
+        ' &#39;
+    }
+    
+    set result $text
+    foreach {from to} $escapes {
+        regsub -all $from $result $to result
+    }
+    return $result
+}
+
+# Example usage:
+#
+# # Get data from database
+# set query {SELECT name, email, age FROM users}
+# set results [sqliteQueryResults $query]
+#
+# # Convert to HTML table
+# set html [resultsAsTable $results]
+#
+# # Save to file if needed
+# set fileId [open "results.html" w]
+# puts $fileId $html
+# close $fileId
 # Function to convert extended characters
 proc convertExtendedCharacters {string} {
     # Define the character mapping
