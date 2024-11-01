@@ -1,5 +1,120 @@
-# Load necessary packages (if applicable)
-# There isn't a direct equivalent for jsonlite, but we'll use built-in features.
+proc tclVersion {} {
+    return [info patchlevel]
+}
+# Procedure to list built-in namespaces and their variables
+proc listBuiltinNamespaces {} {
+    # Known built-in Tcl namespaces
+    set builtinNamespaces {
+        ::tcl_platform
+        ::env
+        ::errorCode
+        ::errorInfo
+        ::auto_path
+    }
+    
+    # Results dictionary to store findings
+    set results [dict create]
+    
+    # Explore each namespace
+    foreach ns $builtinNamespaces {
+        # Skip if namespace doesn't exist
+        if {![namespace exists $ns]} continue
+        
+        # Create a list to store variables
+        set nsVars {}
+        
+        # Special handling for some namespaces
+        switch $ns {
+            "::tcl_platform" {
+                # Predefined platform information
+                dict set results $ns [array get ::tcl_platform]
+            }
+            "::env" {
+                # Environment variables
+                dict set results $ns [array get ::env]
+            }
+            "::errorCode" {
+                # Last error code
+                dict set results $ns [list value $::errorCode]
+            }
+            "::errorInfo" {
+                # Last error info
+                dict set results $ns [list value $::errorInfo]
+            }
+            "::auto_path" {
+                # Library search paths
+                dict set results $ns $::auto_path
+            }
+        }
+    }
+    
+    return $results
+}
+
+# Procedure to explore auto_path in more detail
+proc exploreAutoPath {} {
+    puts "Auto Path Details:"
+    puts "----------------"
+    puts "Total Paths: [llength $::auto_path]"
+    puts "\nPaths:"
+    foreach path $::auto_path {
+        puts "- $path"
+        if {[file exists $path]} {
+            puts "  [glob -nocomplain -type d $path/*]"
+        }
+    }
+}
+
+# Procedure to explore environment variables
+proc exploreEnvVars {} {
+    puts "Environment Variables:"
+    puts "--------------------"
+    foreach {key value} [array get ::env] {
+        puts "[format "%-20s : %s" $key $value]"
+    }
+}
+
+# Comprehensive Tcl variable exploration
+proc tclVariableInfo {} {
+    set info [dict create]
+    
+    # Global variables and their values
+    dict set info global_vars [info globals]
+    
+    # Loaded packages
+    dict set info loaded_packages [package names]
+    
+    # Tcl configuration information
+    dict set info config [array get ::tcl_platform]
+    
+    # Current working directory
+    dict set info pwd [pwd]
+    
+    return $info
+}
+
+# Demonstration procedure
+proc demonstrateTclVariables {} {
+    puts "===== Tcl Built-in Namespaces and Variables ====="
+    
+    puts "\n1. Platform Information:"
+    parray ::tcl_platform
+    
+    puts "\n2. Environment Variables (first 10):"
+    set count 0
+    foreach {key value} [array get ::env] {
+        puts "[format "%-20s : %s" $key $value]"
+        incr count
+        if {$count >= 10} break
+    }
+    
+    puts "\n3. Auto Path:"
+    puts $::auto_path
+    
+    puts "\n4. Error Handling Variables:"
+    puts "Error Code: \$::errorCode"
+    puts "Error Info: \$::errorInfo"
+}
 proc resultsAsCSV {results} {
     # Convert results list back to array
     array set resultsArray $results
