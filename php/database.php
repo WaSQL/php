@@ -614,8 +614,8 @@ function dbGetTableDDL($db,$table,$schema=''){
 * @return array
 * @usage $recs=dbGetTableIndexes($db,$table);
 */
-function dbGetTableIndexes($db,$table){
-	return dbFunctionCall('getDBTableIndexes',$db,$table);
+function dbGetTableIndexes($db,$table,$schema=''){
+	return dbFunctionCall('getDBTableIndexes',$db,$table,$schema);
 }
 //---------- begin function dbGetTablePrimaryKeys
 /**
@@ -929,13 +929,7 @@ function dbQueryResults($db,$query,$params=array()){
 		return $recs;
 	}
 	elseif(preg_match('/^idx\ (.+)$/is',$query,$m)){
-		$parts=preg_split('/\./',$m[1],2);
-		if(count($parts)==2){
-			$xrecs=dbGetTableIndexes($db,$parts[1],$parts[0]);
-		}
-		else{
-			$xrecs=dbGetTableIndexes($db,$m[1]);
-		}
+		$xrecs=dbGetTableIndexes($db,$m[1]);
 		$recs=array();
 		foreach($xrecs as $rec){
 			if(isset($params['-index']) && isset($rec[$params['-index']])){

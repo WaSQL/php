@@ -739,7 +739,10 @@ function postgresqlEscapeString($str){
 function postgresqlGetTableDDL($table,$schema=''){
 	$table=strtoupper($table);
 	if(!strlen($schema)){
-		$schema=postgresqlGetDBSchema();
+		if(stringContains($table,'.')){
+			list($schema,$table)=preg_split('/\./',$table,2);
+		}
+		else{$schema=postgresqlGetDBSchema();}
 	}
 	if(!strlen($schema)){
 		debugValue('postgresqlGetTableDDL error: schema is not defined in config.xml');
@@ -747,10 +750,10 @@ function postgresqlGetTableDDL($table,$schema=''){
 	}
 	$schema=strtolower($schema);
 	$table=strtolower($table);
+	//echo "postgresqlGetTableDDL -- schema: {$schema}, table:{$table}";exit;
+	$fieldinfo=postgresqlGetDBFieldInfo("{$schema}.{$table}");
 
-	$fieldinfo=postgresqlGetDBFieldInfo($table);
-
-	$pkeys=postgresqlGetDBTablePrimaryKeys($table);
+	$pkeys=postgresqlGetDBTablePrimaryKeys("{$schema}.{$table}");
 	//return printValue($fieldinfo).printValue($pkeys);
 	$fields=array();
 	foreach($fieldinfo as $field=>$info){
@@ -2042,7 +2045,10 @@ function postgresqlGetDBTableIndexes($tablename=''){
 	WHERE NOT nspname LIKE 'pg%'
 ENDOFQUERY;
 	if(strlen($tablename)){
-		$schema=postgresqlGetDBSchema();
+		if(stringContains($tablename,'.')){
+			list($schema,$tablename)=preg_split('/\./',$tablename,2);
+		}
+		else{$schema=postgresqlGetDBSchema();}
 		if(strlen($schema) && !stringBeginsWith($tablename,"{$schema}.")){
 			$tablename="{$schema}.{$tablename}";
 		}
@@ -2501,6 +2507,7 @@ function postgresqlGetDBTablePrimaryKeys($table){
 		ORDER BY kc.ordinal_position
 ENDOFQUERY;
 	$tmp = postgresqlQueryResults($query);
+	//echo $query.printValue($tmp);exit;
 	foreach($tmp as $rec){
 		$databaseCache[$cachekey][]=$rec['column_name'];
     }

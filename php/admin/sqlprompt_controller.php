@@ -8,7 +8,7 @@
 	$sqlpromptCaptureFirstRows_count=0;
 	global $wasql_debugValueContent;
 	global $db;
-	//echo printValue($_REQUEST);exit;
+	//echo "CONTROLLER".printValue($_REQUEST);exit;
 	$recs=array();
 	if(isset($_REQUEST['db']) && isset($DATABASE[$_REQUEST['db']])){
 		$db=$DATABASE[$_REQUEST['db']];
@@ -801,6 +801,7 @@ ENDOFQUERY;
 				$recs_count=count($recs);
 			}
 			elseif($skip==0 && preg_match('/^idx\ (.+)$/is',$lcq,$m)){
+				//echo "Get Indexes of {$m[1]}, skip:{$skip}, lcq: {$lcq}";exit;
 				$recs=dbQueryResults($db['name'],$lcq);
 				$csv=arrays2CSV($recs);
 				$tpath=getWasqlPath('php/temp');
