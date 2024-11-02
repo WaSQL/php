@@ -1,58 +1,112 @@
-package require sqlite3
+package require Tcl
+package require tdbc::sqlite3
 
-# Connect to SQLite
-proc sqliteConnect {cfg} {
-    set sqliteHandle [sqlite3::open $cfg(dbname)]
-    return $sqliteHandle
-}
-
-# Execute query and return results
-proc sqliteQueryResults {cfgData query} {
-    array set cfg $cfgData
-
-    set db_file $cfg(dbname)
-
-    if {[catch {sqlite3 db $db_file} error_msg]} {
-        puts "Error connecting to database: $error_msg"
-        exit 1
-    }
+proc sqliteQueryResults {cfg query} {
+    # Convert cfg list back to array
+    array set cfgArray $cfg
     
     # Initialize the return array
     array set results {}
-
-    # Initialize counters and storage
-    set row 0
-    set columns {}
-    set hasColumns 0
     
-    # Execute query and process results
-    db eval $query data {
-        # Get column names from the first row
-        if {!$hasColumns} {
-            set columns $data(*)
-            set hasColumns 1
-            
-            # Store column names in array
-            set results(columns) $columns
-        }
-        
-        # Store each field in the array
-        foreach column $columns {
-            set results($row,$column) $data($column)
-        }
-        
-        incr row
+    # Ensure database file path exists in config
+    if {![info exists cfgArray(dbname)]} {
+        error "Database file path not specified in configuration"
     }
     
-    # Store the number of rows
-    set results(rows) $row
+    # Connect to database
+    if {[catch {
+        set db [tdbc::sqlite3::connection create db $cfgArray(dbname)]
+        
+        # Set pragmas if specified in config
+        if {[info exists cfgArray(pragmas)]} {
+            foreach {pragma value} $cfgArray(pragmas) {
+                $db foreachrow "PRAGMA $pragma = $value;" {}
+            }
+        }
+    } err]} {
+        error "Failed to connect to SQLite database: $err"
+    }
     
-    # Close database connection
-    db close
+    try {
+        # Execute query
+        set stmt [$db prepare $query]
+        set rs [$stmt execute]
+        
+        # Get column names
+        set columns [$rs columns]
+        set results(columns) $columns
+        
+        # Process each row
+        set row 0
+        while {[$rs nextrow -as lists rowData]} {
+            # Store each field in the array
+            for {set i 0} {$i < [llength $columns]} {incr i} {
+                set column [lindex $columns $i]
+                set value [lindex $rowData $i]
+                # Handle null values
+                if {$value eq "{}"} {
+                    set value ""
+                }
+                set results($row,$column) $value
+            }
+            incr row
+        }
+        
+        # Store the number of rows
+        set results(rows) $row
+        
+        # Clean up
+        $rs close
+        $stmt close
+        
+    } on error {err opts} {
+        # Clean up on error
+        catch {$rs close}
+        catch {$stmt close}
+        catch {$db close}
+        error "Query failed: $err"
+    } finally {
+        catch {$db close}
+    }
     
     # Return the results array
     return [array get results]
-
 }
 
-
+# Example usage:
+#
+# set cfg [list \
+#     dbfile "path/to/your/database.db" \
+#     pragmas { \
+#         foreign_keys 1 \
+#         journal_mode WAL \
+#         synchronous NORMAL \
+#     } \
+# ]
+#
+# if {[catch {
+#     set query {
+#         SELECT name, email, age 
+#         FROM users 
+#         WHERE active = 1
+#     }
+#     set results [sqliteQueryResults $cfg $query]
+#     
+#     # Convert results back to array
+#     array set resultsArray $results
+#     
+#     # Access the data
+#     puts "Number of rows: $resultsArray(rows)"
+#     puts "Columns: $resultsArray(columns)"
+#     
+#     # Print all results
+#     for {set i 0} {$i < $resultsArray(rows)} {incr i} {
+#         foreach column $resultsArray(columns) {
+#             puts "$column: $resultsArray($i,$column)"
+#         }
+#         puts "---"
+#     }
+#     
+# } err]} {
+#     puts "Database Error: $err"
+# }
