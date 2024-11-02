@@ -26,6 +26,20 @@
 			echo '?';
 			echo ">";exit;
 		break;
+		case 'setlang_r':
+			echo "<?";
+			echo "r".PHP_EOL;
+			echo PHP_EOL;
+			echo '?';
+			echo ">";exit;
+		break;
+		case 'setlang_tcl':
+			echo "<?";
+			echo "tcl".PHP_EOL;
+			echo PHP_EOL;
+			echo '?';
+			echo ">";exit;
+		break;
 		case 'setlang_node':
 			echo "<?";
 			echo "node".PHP_EOL;
