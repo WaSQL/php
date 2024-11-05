@@ -1024,7 +1024,7 @@ function ctreeQueryResults($query='',$params=array()){
 	if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
 	$dbh_ctree=null;
 	if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-		unlink($params['-logfile']);
+		//unlink($params['-logfile']);
 	}
 	if(isset($params['-filename'])){
 		return $allcounts;
