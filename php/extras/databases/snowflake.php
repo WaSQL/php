@@ -1053,6 +1053,60 @@ function snowflakeGetDBTables($params=array()){
 *	$fieldinfo=snowflakeGetDBFieldInfo('abcschema.abc');
 */
 function snowflakeGetDBFieldInfo($table,$params=array()){
+	$parts=preg_split('/\./',$table);
+	switch(count($parts)){
+		case 3:
+			$dbname=strtoupper($parts[0]);
+			$schema=strtoupper($parts[1]);
+			$table=strtoupper($parts[2]);
+		break;
+		case 2:
+			$schema=strtoupper($parts[0]);
+			$table=strtoupper($parts[1]);
+		break;
+	}
+	//new method - use information_schema instead of 1=0
+	$query=<<<ENDOFQUERY
+		SELECT
+			lower(table_name) AS "table",
+			lower(table_name) AS "_dbtable",
+			lower(column_name) AS "name",
+			lower(column_name) AS "_dbfield",
+			lower(data_type) AS "type",
+			lower(data_type) AS "_dbtype",
+			numeric_scale AS "scale",
+			numeric_precision AS "precision",
+			character_maximum_length AS "length"
+		FROM dis_prod.information_schema.columns 
+		WHERE
+			table_schema='{$schema}'
+			AND table_name='{$table}'
+		ORDER BY ordinal_position
+ENDOFQUERY;
+	$params['-index']='_dbfield';
+	$recs=snowflakeQueryResults($query,$params);
+	foreach($recs as $field=>$rec){
+		switch(strtolower($recs[$field]['_dbtype'])){
+			case 'bigint':
+			case 'integer':
+			case 'timestamp':
+			case 'date':
+			case 'datetime':
+			case 'time':
+			case 'timestampntz':
+				$recs[$field]['_dbtype_ex']=$recs[$field]['_dbtype'];
+			break;
+			case 'decimal':
+			case 'number':
+				$recs[$field]['_dbtype_ex']="{$recs[$field]['_dbtype']}({$recs[$field]['precision']},{$recs[$field]['scale']})";
+			break;
+			default:
+				$recs[$field]['_dbtype_ex']="{$recs[$field]['_dbtype']}({$recs[$field]['precision']})";
+			break;
+		}
+	}
+	return $recs;
+	//old method
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
 	if(!is_resource($dbh_snowflake)){
