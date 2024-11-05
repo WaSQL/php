@@ -961,13 +961,12 @@ function ctreeQueryResults($query='',$params=array()){
 	while(1){
 		$cquery=trim($query);
 		$selecttop='';
-		if(stringBeginsWith($cquery,'SELECT') && !stringContains($cquery,' TOP ')){
+		if(stringBeginsWith($cquery,'SELECTPAGINATE') && !stringContains($cquery,' TOP ')){
 			$selecttop="SELECT TOP {$top} SKIP {$skip}";
-			$cquery=preg_replace('/^SELECT/is',$selecttop,$cquery);
+			$cquery=preg_replace('/SELECTPAGINATE/is',$selecttop,$cquery);
 			if(isset($params['-logfile'])){
 				appendFileContents($params['-logfile'],date('H:i:s').", {$selecttop} ...".PHP_EOL);
 			}
-			//echo "HERE:".$cquery;exit;
 		}
 		$breakout=0;
 		
