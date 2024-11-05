@@ -955,21 +955,25 @@ function ctreeQueryResults($query='',$params=array()){
 	$top=10000;
 	$ctreeQueryResultsTemp['-linecount']=0;
 	$ctreeQueryResultsTemp['-header']=0;
-	$ctreeQueryResultsTemp['-append']=0;
+	if(isset($params['-logfile'])){
+		setFileContents($params['-logfile'],date('H:i:s').", {$query}".PHP_EOL.PHP_EOL);
+	}
 	while(1){
 		$cquery=trim($query);
 		$selecttop='';
 		if(stringBeginsWith($cquery,'SELECT') && !stringContains($cquery,' TOP ')){
 			$selecttop="SELECT TOP {$top} SKIP {$skip}";
 			$cquery=preg_replace('/^SELECT/is',$selecttop,$cquery);
+			if(isset($params['-logfile'])){
+				appendFileContents($params['-logfile'],date('H:i:s').", {$selecttop} ...".PHP_EOL);
+			}
 			//echo "HERE:".$cquery;exit;
 		}
 		$breakout=0;
-		//echo $cquery;exit;
+		
 		if($resource = odbc_prepare($dbh_ctree, $cquery)){
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
-				if($ctreeQueryResultsTemp['-append'] != 1){$ctreeQueryResultsTemp['-append']=1;}
 				if(is_resource($resource)){odbc_free_result($resource);}
 				$resource=null;
 				//echo "HERE:{$breakout}:".$cquery.printValue($params);exit;
@@ -1020,6 +1024,9 @@ function ctreeQueryResults($query='',$params=array()){
 	}
 	if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
 	$dbh_ctree=null;
+	if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+		unlink($params['-logfile']);
+	}
 	if(isset($params['-filename'])){
 		return $allcounts;
 	}
@@ -1057,9 +1064,6 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 		if(!isset($params['-webhook_format'])){
 			$params['-webhook_format']='json';
-		}
-		if(isset($params['-logfile']) && $ctreeQueryResultsTemp['-append']==0){
-			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
 		}
 	}
 	$i=0;
@@ -1114,8 +1118,11 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		else{
 			$recs[]=$rec;
 		}
-
-		if(isset($params['-filename']) && count($recs)==$params['-filename_writecount']){
+		$rec_count=count($recs);
+		if(isset($params['-filename']) && $rec_count==$params['-filename_writecount']){
+			if(isset($params['-logfile'])){
+				appendFileContents($params['-logfile'],date('H:i:s').",writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
+			}
 			if($ctreeQueryResultsTemp['-header']==0){
             	$csv=arrays2CSV($recs);
             	$ctreeQueryResultsTemp['-header']=1;
@@ -1131,7 +1138,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			}
 			$recs=array();
 		}
-		if(isset($params['-webhook_url']) && count($recs)==$params['-webhook_rowcount']){
+		if(isset($params['-webhook_url']) && $rec_count==$params['-webhook_rowcount']){
 			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
 			$params['-webhook_count']+=count($recs);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
