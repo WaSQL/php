@@ -946,19 +946,80 @@ function ctreeQueryResults($query='',$params=array()){
 	$dbh_ctree=ctreeDBConnect();
 	if(commonStrlen(dbGetLast('error'))){return array();}
 	$ok=dbSetLast(array('query'=>$query));
-	if($resource = odbc_prepare($dbh_ctree, $query)){
-		if(odbc_execute($resource)){
-			$recs = ctreeEnumQueryResults($resource,$params,$query);
-			if(is_resource($resource)){odbc_free_result($resource);}
-			$resource=null;
-			if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
-			$dbh_ctree=null;
-			return $recs;
+	//chunk this up so that it works with larger datasets
+	$allrecs=array();
+	$allcounts=0;
+	$skip=0;
+	while(1){
+		$cquery=trim($query);
+		$selecttop='';
+		if(stringBeginsWith($cquery,'SELECT') && !stringContains($cquery,' TOP ')){
+			$selecttop="SELECT TOP 1000 SKIP {$skip}";
+			$cquery=preg_replace('/^SELECT/is',$selecttop,$cquery);
+			//echo "HERE:".$cquery;exit;
+		}
+		$breakout=0;
+		//echo $cquery;exit;
+		if($resource = odbc_prepare($dbh_ctree, $cquery)){
+			if(odbc_execute($resource)){
+				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
+				if(is_resource($resource)){odbc_free_result($resource);}
+				$resource=null;
+				//echo "HERE:{$breakout}:".$cquery.printValue($params);exit;
+				if(isset($params['-filename'])){
+					if($crecs==0){break;}
+					$allcounts+=$crecs;
+				}
+				else{
+					if(!is_array($crecs)){
+						$breakout=1;
+						break;
+					}
+					$ccnt=0;
+					foreach($crecs as $crec){
+						$allrecs[]=$crec;
+						$ccnt+=1;
+						$allcounts+=1;
+					}
+					if($ccnt < 1000){
+						$breakout=1;
+						break;
+					}
+				}
+			}
+			else{
+				$ok=dbSetLast(array('error'=>odbc_errormsg()));
+				debugValue(dbGetLast());
+				$breakout=1;
+				break;
+			}
+		}
+		else{
+			$ok=dbSetLast(array('error'=>odbc_errormsg()));
+			debugValue(dbGetLast());
+			$breakout=1;
+			break;
+		}
+		//echo "HERE:{$breakout}:".printValue($recs);exit;
+		if($breakout==1){
+			break;
+		}
+		if(strlen($selecttop)){
+			$skip+=1000;
+			if(!isset($params['-append'])){
+				$params['-append']=1;
+			}
+		}
+		else{
+			break;
 		}
 	}
-	$ok=dbSetLast(array('error'=>odbc_errormsg()));
-	debugValue(dbGetLast());
-	return null;
+	if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
+	$dbh_ctree=null;
+	if(isset($params['-filename'])){
+		return $allcounts;
+	}
+	return $allrecs;
 }
 //---------- begin function ctreeEnumQueryResults ----------
 /**
