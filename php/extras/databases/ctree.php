@@ -955,9 +955,7 @@ function ctreeQueryResults($query='',$params=array()){
 	$top=10000;
 	$ctreeQueryResultsTemp['-linecount']=0;
 	$ctreeQueryResultsTemp['-header']=0;
-	if(isset($params['-logfile'])){
-		setFileContents($params['-logfile'],date('H:i:s').", {$query}".PHP_EOL.PHP_EOL);
-	}
+	$ctreeQueryResultsTemp['-showsql']=1;
 	while(1){
 		$cquery=trim($query);
 		$selecttop='';
@@ -968,6 +966,10 @@ function ctreeQueryResults($query='',$params=array()){
 				appendFileContents($params['-logfile'],date('H:i:s').", {$selecttop} ...".PHP_EOL);
 			}
 		}
+		if(isset($params['-logfile']) && $ctreeQueryResultsTemp['-showsql']==1){
+			appendFileContents($params['-logfile'],date('H:i:s').", {$cquery} ...".PHP_EOL);
+			$ctreeQueryResultsTemp['-showsql']=0;
+		}
 		$breakout=0;
 		
 		if($resource = odbc_prepare($dbh_ctree, $cquery)){
@@ -976,7 +978,7 @@ function ctreeQueryResults($query='',$params=array()){
 				if(is_resource($resource)){odbc_free_result($resource);}
 				$resource=null;
 				//echo "HERE:{$breakout}:".$cquery.printValue($params);exit;
-				if(isset($params['-filename'])){
+				if(isset($params['-filename']) || isset($params['-webhook_url']) || isset($params['-process'])){
 					if($crecs==0){break;}
 					$allcounts+=$crecs;
 				}
@@ -1079,7 +1081,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			break;
 		}
 		$i++;
-		
+		//build the rec
 		$rec=array();
 		foreach($row as $key=>$val){
 			$key=strtolower($key);
@@ -1183,28 +1185,22 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			}
 		}
 		$recs=array();
-		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-			$elapsed=microtime(true)-$starttime;
-			appendFileContents($params['-logfile'],"Total Rows Sent:{$params['-webhook_count']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
-		}
-		return $params['-webhook_count'];
-	}
-	if(isset($params['-webhook_onfinish']) && commonStrlen($params['-webhook_onfinish'])){
-		$post=postURL($params['-webhook_onfinish'],array('-method'=>'GET'));
-		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
-			$elapsed=microtime(true)-$starttime;
-			appendFileContents($params['-logfile'],"Called webhook_onfinish:{$params['-webhook_onfinish']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+		//webhook_onfinish
+		if(isset($params['-webhook_onfinish']) && commonStrlen($params['-webhook_onfinish'])){
+			$post=postURL($params['-webhook_onfinish'],array('-method'=>'GET'));
+			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
+				$elapsed=microtime(true)-$starttime;
+				appendFileContents($params['-logfile'],"Called webhook_onfinish:{$params['-webhook_onfinish']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
+			}
 		}
 	}
+	
 	//close filehandle if -filename was given
-	if(isset($params['-filename'])){
+	if(isset($params['-filename']) || isset($params['-webhook_url']) || isset($params['-process'])){
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
 			appendFileContents($params['-logfile'],"Line count:{$ctreeQueryResultsTemp['-linecount']}, Execute Time: ".verboseTime($elapsed).PHP_EOL);
 		}
-		return $i;
-	}
-	elseif(isset($params['-process'])){
 		return $i;
 	}
 	return $recs;
