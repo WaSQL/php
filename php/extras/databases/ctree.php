@@ -953,7 +953,7 @@ function ctreeQueryResults($query='',$params=array()){
 	$allcounts=0;
 	$skip=0;
 	$top=10000;
-	if(isset($params['batch_count'])){$top=(integer)$params['batch_count'];}
+	if(isset($params['-batch_count'])){$top=(integer)$params['-batch_count'];}
 	$ctreeQueryResultsTemp['-linecount']=0;
 	$ctreeQueryResultsTemp['-header']=0;
 	$ctreeQueryResultsTemp['-showsql']=1;
