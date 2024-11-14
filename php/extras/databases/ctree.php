@@ -972,16 +972,19 @@ function ctreeQueryResults($query='',$params=array()){
 			$ctreeQueryResultsTemp['-showsql']=0;
 		}
 		$breakout=0;
-		
+		//echo $cquery.printValue($params);exit;
 		if($resource = odbc_prepare($dbh_ctree, $cquery)){
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
 				if(is_resource($resource)){odbc_free_result($resource);}
 				$resource=null;
-				//echo "HERE:{$breakout}:".$cquery.printValue($params);exit;
+				//echo "HERE:{$crecs}:".$cquery.printValue($params);exit;
 				if(isset($params['-filename']) || isset($params['-webhook_url']) || isset($params['-process'])){
-					if($crecs==0){break;}
 					$allcounts+=$crecs;
+					if($crecs==0 || $selecttop==''){
+						$breakout=1;
+						break;
+					}
 				}
 				else{
 					if(!is_array($crecs)){
@@ -1157,7 +1160,11 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	@odbc_fetch_row($result, 0);   // reset cursor
 	if(is_resource($resource)){odbc_free_result($result);}
 	$result=null;
-	if(isset($params['-filename']) && count($recs)){
+	$rec_count=count($recs);
+	if(isset($params['-filename']) && $rec_count>0){
+		if(isset($params['-logfile'])){
+			appendFileContents($params['-logfile'],date('H:i:s').",writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
+		}
 		if($ctreeQueryResultsTemp['-header']==0){
         	$csv=arrays2CSV($recs);
         	$ctreeQueryResultsTemp['-header']=1;
@@ -1167,7 +1174,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			$ok=setFileContents($params['-filename'],$csv.PHP_EOL.PHP_EOL);
 		}
 		else{
-        	$csv=arrays2CSV(array($rec),array('-noheader'=>1));
+        	$csv=arrays2CSV($recs,array('-noheader'=>1));
         	$csv=preg_replace('/[\r\n]+$/','',$csv);
         	$ok=appendFileContents($params['-filename'],$csv.PHP_EOL.PHP_EOL);
 		}
