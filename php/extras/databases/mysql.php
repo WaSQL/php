@@ -133,12 +133,10 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	//indexes must be normal - fix if not
-	if(!isset($recs[0])){
-		$xrecs=array();
-		foreach($recs as $rec){$xrecs[]=$rec;}
-		$recs=$xrecs;
-		unset($xrecs);
-	}
+	$xrecs=array();
+	foreach($recs as $rec){$xrecs[]=$rec;}
+	$recs=$xrecs;
+	unset($xrecs);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -261,7 +259,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	$fieldstr=implode(',',$fields);
-	//echo printValue($recs);exit;
+	//echo "DEBUG".printValue($recs);exit;
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
