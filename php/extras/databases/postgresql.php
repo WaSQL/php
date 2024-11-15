@@ -270,17 +270,10 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	//indexes must be normal - fix if not
-	$cnt=count($recs);
-	$fix=0;
-	for($x=0;$x<$cnt;$x++){
-		if(!isset($recs[$x])){$fix=1;break;}
-	}
-	if($fix==1){
-		$xrecs=array();
-		foreach($recs as $rec){$xrecs[]=$rec;}
-		$recs=$xrecs;
-		unset($xrecs);
-	}
+	$xrecs=array();
+	foreach($recs as $rec){$xrecs[]=$rec;}
+	$recs=$xrecs;
+	unset($xrecs);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){

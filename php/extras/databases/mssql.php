@@ -111,12 +111,10 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	//indexes must be normal - fix if not
-	if(!isset($recs[0])){
-		$xrecs=array();
-		foreach($recs as $rec){$xrecs[]=$rec;}
-		$recs=$xrecs;
-		unset($xrecs);
-	}
+	$xrecs=array();
+	foreach($recs as $rec){$xrecs[]=$rec;}
+	$recs=$xrecs;
+	unset($xrecs);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
