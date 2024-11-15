@@ -1125,9 +1125,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 		$rec_count=count($recs);
 		if(isset($params['-filename']) && $rec_count==$params['-filename_writecount']){
-			if(isset($params['-logfile'])){
-				appendFileContents($params['-logfile'],date('H:i:s').",writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
-			}
+			
 			if($ctreeQueryResultsTemp['-header']==0){
             	$csv=arrays2CSV($recs);
             	$ctreeQueryResultsTemp['-header']=1;
@@ -1135,10 +1133,16 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 				$csv="\xEF\xBB\xBF".$csv;
 				$csv=preg_replace('/[\r\n]+$/','',$csv);
 				$ok=setFileContents($params['-filename'],$csv.PHP_EOL.PHP_EOL);
+				if(isset($params['-logfile'])){
+					appendFileContents($params['-logfile'],date('H:i:s')."CSV FILE: {$params['-filename']} ,writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
+				}
 			}
 			else{
             	$csv=arrays2CSV($recs,array('-noheader'=>1));
             	$csv=preg_replace('/[\r\n]+$/','',$csv);
+            	if(isset($params['-logfile'])){
+					appendFileContents($params['-logfile'],date('H:i:s').",writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
+				}
             	$ok=appendFileContents($params['-filename'],$csv.PHP_EOL.PHP_EOL);
 			}
 			$recs=array();
@@ -1162,20 +1166,23 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	$result=null;
 	$rec_count=count($recs);
 	if(isset($params['-filename']) && $rec_count>0){
-		if(isset($params['-logfile'])){
-			appendFileContents($params['-logfile'],date('H:i:s').",writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
-		}
 		if($ctreeQueryResultsTemp['-header']==0){
         	$csv=arrays2CSV($recs);
         	$ctreeQueryResultsTemp['-header']=1;
         	//add UTF-8 byte order mark to the beginning of the csv
 			$csv="\xEF\xBB\xBF".$csv;
 			$csv=preg_replace('/[\r\n]+$/','',$csv);
+			if(isset($params['-logfile'])){
+				appendFileContents($params['-logfile'],date('H:i:s')."CSV FILE: {$params['-filename']} ,writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
+			}
 			$ok=setFileContents($params['-filename'],$csv.PHP_EOL.PHP_EOL);
 		}
 		else{
         	$csv=arrays2CSV($recs,array('-noheader'=>1));
         	$csv=preg_replace('/[\r\n]+$/','',$csv);
+        	if(isset($params['-logfile'])){
+				appendFileContents($params['-logfile'],date('H:i:s').",writing {$rec_count} lines. Total Line Count: {$ctreeQueryResultsTemp['-linecount']}".PHP_EOL);
+			}
         	$ok=appendFileContents($params['-filename'],$csv.PHP_EOL.PHP_EOL);
 		}
 	}
