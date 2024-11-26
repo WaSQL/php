@@ -3547,7 +3547,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strtolower($format)=='topbottom'){
 			$format=$i%2==0?'top':'bottom';
 		}
-		$rtn.='	<div data-type="checkradio" data-format="'.$format.'"';
+		$rtn.='	<div data-type="checkradio" data-display="initial" data-format="'.$format.'"';
 		if(strlen($color) && stringBeginsWith($color,'w_')){
 			$rtn.=' data-color="'.$color.'"';
 		}
