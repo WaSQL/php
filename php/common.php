@@ -3556,8 +3556,17 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 
 		//displayif
-		if(strlen($displayif)){
+		if(isset($params["{$tval}_displayif"])){
+			$rtn .= ' data-displayif="'.$params["{$tval}_displayif"].'"';
+			unset($params["{$tval}_displayif"]);
+		}
+		elseif(strlen($displayif)){
 			$rtn .= ' data-displayif="'.$displayif.'"';
+		}
+		//hideif
+		if(isset($params["{$tval}_hideif"])){
+			$rtn .= ' data-hideif="'.$params["{$tval}_hideif"].'"';
+			unset($params["{$tval}_hideif"]);
 		}
 		$rtn.='>'.PHP_EOL;
 		$rtn.='		<input style="width:1px;height:1px;appearance:none;display:block;align-self:center;" type="'.$params['-type'].'" id="'.$opt_id.'" name="'.$input_name.'" value="'.$tval.'"';
