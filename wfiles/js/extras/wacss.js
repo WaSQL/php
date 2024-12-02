@@ -1836,7 +1836,62 @@ var wacss = {
 		wacss.initSignaturePad();
 		wacss.initDrag();
 		wacss.initHovers();
+		wacss.initLeftmenu();
 		return false;
+	},
+	/**
+	* @name wacss.initLeftmenu
+	* @describe initializes draggable="true" elements and elements with data-ondrop set
+	* @describe example drag element:  <div draggable="true" data-dropzones="div.drop1">...</div>
+	* @describe example drop element:  <div data-ondrop="myDropFunc">...</div>
+	* @describe example drop function: function myDropFunc(dragEl,dropEl){...}
+	* @describe Note: During drag the class "dragging" is set on the dragging element
+	* @return false
+	* @usage wacss.initLeftmenu();
+	*/
+	initLeftmenu: function(){
+		let obj=document.querySelector('.wacss_leftmenu');
+		if(undefined == obj){return false;}
+		//verify that a checkbox with an id of wacss_leftmenu-toggle exist
+		let ckobj=document.querySelector('#wacss_leftmenu-toggle');
+		if(undefined==ckobj){
+			let ck=document.createElement('input');
+			ck.type='checkbox';
+			ck.id='wacss_leftmenu-toggle';
+			ck.addEventListener('click', function(){
+				wacss.setLeftMenuWidth();
+			});
+			if(undefined != obj.dataset.state && obj.dataset.state=='open'){
+				ck.checked=true;
+				ck.dataset.state='open';
+			}
+			obj.parentNode.insertBefore(ck, obj);
+			let lab=document.createElement('label');
+			lab.setAttribute('for','wacss_leftmenu-toggle');
+			lab.className='wacss_leftmenu-tab';
+			obj.insertBefore(lab, obj.firstChild);
+		}		
+		// Initial width calculation
+		document.documentElement.style.setProperty('--wacss_leftmenu-width', obj.offsetWidth + 'px');
+		// Update left menu width on window resize
+		window.addEventListener('resize', function(){
+			wacss.setLeftMenuWidth();
+		});
+		// Update left menu width with a treeview expands
+	  	document.querySelectorAll('.wacss_treeview details').forEach(detail => {
+			detail.addEventListener('toggle', () => {
+				// Small delay to allow animation to complete
+				setTimeout(function(){
+					wacss.setLeftMenuWidth();
+				}, 10);
+			});
+		});
+	},
+	setLeftMenuWidth: function(){
+		let obj=document.querySelector('.wacss_leftmenu');
+		if(undefined == obj){return false;}
+    	document.documentElement.style.setProperty('--wacss_leftmenu-width', obj.offsetWidth + 'px');
+    	return true;
 	},
 	/**
 	* @name wacss.initDrag
