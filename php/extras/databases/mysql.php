@@ -1818,17 +1818,25 @@ ENDOFQUERY;
 		break;
 		case 'functions':
 			return <<<ENDOFQUERY
+-- ----------------- Functions --------------------------------
+-- listopts:routine_definition_options={"class":"w_pre w_smaller"}
+-- ------------------ SQL -------------------------------
 SELECT 
-	routine_catalog,
-	routine_schema,
-	routine_name,
-	created,
-	last_altered,
-	definer
-FROM information_schema.ROUTINES 
+	r.routine_name as name,
+	r.created,
+	r.last_altered as modified,
+	GROUP_CONCAT(pi.parameter_name, ' ', pi.data_type) AS inputs,
+	po.data_type AS output,
+	definer as created_by,
+	r.routine_definition 
+FROM information_schema.routines r
+LEFT JOIN information_schema.parameters pi 
+	on pi.specific_schema=r.routine_schema and pi.specific_name=r.routine_name and pi.parameter_mode='IN'
+LEFT JOIN information_schema.parameters po 
+	on po.specific_schema=r.routine_schema and po.specific_name=r.routine_name and po.parameter_mode is null
 WHERE 
-	routine_type = 'FUNCTION' 
-	AND routine_schema = '{$dbname}'
+	r.routine_type = 'FUNCTION' 
+	AND r.routine_schema = '{$dbname}'
 ENDOFQUERY;
 		break;
 		case 'procedures':
