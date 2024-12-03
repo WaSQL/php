@@ -14,7 +14,6 @@ function tablesList(){
 				'class'			=> 'align-right'
 		),
 		'rows_options'			=>array(
-				'eval'				=>	"return number_format(%rows%,0);",
 				'class'				=> 'align-right',
 				'displayname'		=> 'Row Count'
 		),
