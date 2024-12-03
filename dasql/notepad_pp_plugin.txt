@@ -1,12 +1,13 @@
 //--------------------------------------------------
 // Notepad++ script to execute DaSQL commands
-//	-- Install NPExec Plugin (Plugins->Plugins Admin, search for NPExec, Install)
-//	-- Plugins->NPExec->No Internal Messages
+//	-- Install python to your Python_Dir directory set below
+//	-- Install NppExec Plugin (Plugins->Plugins Admin, search for NppExec, Install)
+//	-- Plugins->NppExec->No Internal Messages
 //	-- F6, paste the code below in the window. Save as DaSQL. Click OK
 //--------------------------------------------------
 set local Python_Dir = C:\Webserver\bin\Python311
 set local DaSQL_Dir =  d:\wasql\dasql
-//no need to change anythig below
+//no need to change anything below
 SCI_SENDMSG SCI_GETSELTEXT 0 @""
 set local F = $(MSG_LPARAM)
 if "$(F)" == "" GOTO NOSELECTION
@@ -14,10 +15,10 @@ GOTO SELECTION
 :SELECTION
 set sourcefile = $(SYS.TEMP)\$(NAME_PART).source_tmp
 sel_saveto "$(sourcefile)" :a
-$(Python_Dir)\python3.exe $(DaSQL_Dir)\dasql.py "$(sourcefile)"
+$(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(sourcefile)"
 rm -rf "$(sourcefile)
 GOTO FINISH
 :NOSELECTION
-$(Python_Dir)\python3.exe $(DaSQL_Dir)\dasql.py $(NAME_PART) "$(CURRENT_LINESTR)"
+$(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py $(NAME_PART) "$(CURRENT_LINESTR)"
 GOTO FINISH
 :FINISH
