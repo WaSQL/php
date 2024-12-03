@@ -1842,6 +1842,11 @@ var wacss = {
 	/**
 	* @name wacss.leftMenu
 	* @describe leftMenu functions: init, open, close, width
+	* @describe <div class="wacss_leftmenu w_white" data-state="open" data-onload="wacss.leftMenu('width');>
+	* @describe 	<div class="wacss_leftmenu-content" id="menu">
+	* @describe 		your menu goes here
+	* @describe 	</div>
+	* @describe </div>
 	* @param action string - init, open, close, width
 	* @return boolean
 	* @usage wacss.leftMenu('init');
