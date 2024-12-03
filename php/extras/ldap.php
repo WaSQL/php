@@ -1137,4 +1137,64 @@ function ldapListOU($folderName = NULL, $dnType = adLDAP::ADLDAP_FOLDER, $recurs
         return false;
     }
 
+function ldapSchema($attributes=array()){
+	global $ldapInfo;
+
+    $schema_info = [];
+
+    $root_dse = ldap_read($ldapInfo['connection'], '', 'objectClass=*', ['defaultNamingContext']);
+    $entries = ldap_get_entries($ldapInfo['connection'], $root_dse);
+    $base_dn = $entries[0]['defaultnamingcontext'][0];
+    $systemFlags = [
+        // Account Management Flags
+        0 => ['description' => 'Default account settings', 'details' => 'No special flags set'],
+        1 => ['description' => 'Account disabled', 'details' => 'User cannot log in'],
+        2 => ['description' => 'Homedir required', 'details' => 'Home directory must be created'],
+        4 => ['description' => 'Password not required', 'details' => 'Account can log in without password'],
+        8 => ['description' => 'Temporary duplicate account', 'details' => 'Temporary account for migration'],
+        16 => ['description' => 'Normal account', 'details' => 'Standard user account'],
+        32 => ['description' => 'Interdomain trust account', 'details' => 'Used for trust relationships between domains'],
+        64 => ['description' => 'Workstation trust account', 'details' => 'Computer account for domain-joined machine'],
+        128 => ['description' => 'Server trust account', 'details' => 'Account for domain controllers'],
+        256 => ['description' => 'Do not expire password', 'details' => 'Password never expires'],
+        512 => ['description' => 'MNS logon account', 'details' => 'Metaframe Presentation Server account'],
+        1024 => ['description' => 'Smartcard required', 'details' => 'User must use smartcard for login'],
+        2048 => ['description' => 'Trusted for delegation', 'details' => 'Account can be delegated'],
+        4096 => ['description' => 'Not delegated', 'details' => 'Account cannot be delegated'],
+        8192 => ['description' => 'Use DES key only', 'details' => 'Restricted encryption method'],
+        16384 => ['description' => 'Do not require preauth', 'details' => 'Kerberos pre-authentication not required'],
+        32768 => ['description' => 'Password expired', 'details' => 'User must change password at next login'],
+        65536 => ['description' => 'Trusted to authenticate for delegation', 'details' => 'Can provide delegation credentials'],
+        
+        // Combination Flags (most common)
+        18 => ['description' => 'Disabled account with normal settings', 'details' => 'Account disabled with standard configuration'],
+    ];
+    foreach ($attributes as $attribute) {
+        $filter = "(&(objectClass=attributeSchema)(lDAPDisplayName={$attribute}))";
+        $search = ldap_search($ldapInfo['connection'], "CN=Schema,CN=Configuration,{$base_dn}", $filter);
+        $entries = ldap_get_entries($ldapInfo['connection'], $search);
+
+        if ($entries['count'] > 0) {
+        	foreach($entries[0] as $k=>$vals){
+        		if(isNum($k) || stringContains($k,'guid') || !isset($vals[0])){continue;}
+        		$schema_info[$attribute][$k]=$vals[0];
+        	}
+        	//omsyntax
+        	switch((integer)$schema_info[$attribute]['omsyntax']){
+        		case 1:$schema_info[$attribute]['omsyntax_name']='Boolean';break;
+        		case 2:$schema_info[$attribute]['omsyntax_name']='Integer';break;
+        		case 3:$schema_info[$attribute]['omsyntax_name']='Large Integer';break;
+        		case 4:$schema_info[$attribute]['omsyntax_name']='String (Case Sensitive)';break;
+        		case 5:$schema_info[$attribute]['omsyntax_name']='String (Case Insensitive)';break;
+        		case 6:$schema_info[$attribute]['omsyntax_name']='Print String';break;
+        		case 64:$schema_info[$attribute]['omsyntax_name']='Unicode String';break;
+        		case 65:$schema_info[$attribute]['omsyntax_name']='Octet String';break;
+        		case 66:$schema_info[$attribute]['omsyntax_name']='Generalized Time';break;
+        		case 67:$schema_info[$attribute]['omsyntax_name']='DN (Distinguished Name)';break;
+        	}
+        }
+    }
+    return $schema_info;
+}
+
 ?>
