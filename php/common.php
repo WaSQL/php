@@ -1301,7 +1301,14 @@ function commonSearchFiltersForm($params=array()){
 	    	// }
 		}
 	}
-	
+	else{
+		if(!empty($params['-export'])){
+			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
+	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="'.$btnclass.'" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_bold"></span></button>'.PHP_EOL;
+	    	$rtn .= '			</div>'.PHP_EOL;
+	    	$rtn .= '			<div style="margin:0 4px 4px 0;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
+	    }
+	}
 	//end flex wrapper
 	$rtn .= '	</div>'.PHP_EOL;
 	//send_to_filters list
