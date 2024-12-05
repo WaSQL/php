@@ -253,6 +253,7 @@ if(isset($_REQUEST['_locale_'])){
 if(isset($_REQUEST['_pushfile'])){
 	$params=array();
 	if(isset($_REQUEST['-attach']) && $_REQUEST['-attach']==0){$params['-attach']=0;}
+	if(isset($_REQUEST['-destroy']) && $_REQUEST['-destroy']==1){$params['-destroy']=1;}
 	if(isset($_REQUEST['_filename'])){$params['-filename']=decodeBase64($_REQUEST['_filename']);}
 	if(isset($_REQUEST['_ctype'])){$params['-ctype']=decodeBase64($_REQUEST['_ctype']);}
 	$afile=decodeBase64($_REQUEST['_pushfile']);
@@ -262,6 +263,7 @@ if(isset($_REQUEST['_pushfile'])){
 		echo "Error: denied push request";
 		exit;
 	}
+	//echo $afile.printValue($params)."DEBUG".printValue($_REQUEST);exit;
  	$ok=pushFile($afile,$params);
 }
 //_dblistrecords

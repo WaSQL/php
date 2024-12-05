@@ -21487,6 +21487,7 @@ function pushData($data='',$ext='txt',$name=''){
 * @history slloyd 2014-01-07 added documentation
 */
 function pushFile($file='',$params=array()){
+	//echo $file.printValue($params);exit;
 	if(!is_file($file)){
 		header('Content-type: text/plain');
 		echo "{$file} does NOT exist!";
@@ -21523,7 +21524,13 @@ function pushFile($file='',$params=array()){
     	header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
     	header('Pragma: public');
 		}
-    readfile($file);
+    if(isset($params['-destroy'])){
+    	register_shutdown_function('unlink',$file);
+    	readfile($file);
+    }
+    else{
+    	readfile($file);
+    }
     exit;
 	}
 //---------- begin---------------------------------------

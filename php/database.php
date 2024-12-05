@@ -1241,6 +1241,25 @@ function databaseListRecords($params=array()){
 	if(isset($params['-list'])){
 		$params['-hidesearch']=1;
 		$allfields=1;
+		$csv=arrays2csv($params['-list']);
+		//add UTF-8 byte order mark to the beginning of the csv
+		$csv="\xEF\xBB\xBF".$csv;
+		$epath=getWasqlTempPath();
+		$ename=sha1($csv).'.csv';
+		$efile="{$epath}/".$ename;
+		setFileContents($efile,$csv);
+		$url='/php/index.php?-destroy=1&_pushfile='.encodeBase64($efile);
+		$pretable=<<<ENDOFPRETABLE
+		<div style="display:flex;justify-content:flex-end;">
+			<a href="{$url}" title="Export current results to CSV file" class="btn"><span class="icon-export w_bold"></span></a>
+		</div>
+ENDOFPRETABLE;
+		if(!isset($params['-pretable'])){
+			$params['-pretable']=$pretable;
+		}
+		else{
+			$params['-pretable']=$pretable.$params['-pretable'];
+		}
 		//check for -export and filter_export
 		if(!empty($params['-export']) && !empty($params['-export_now']) && $params['-export_now']==1){
 			//remove limit temporarily
