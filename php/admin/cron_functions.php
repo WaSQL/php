@@ -53,6 +53,7 @@ function cronDetailsList($id){
 		'-tableclass'=>'table striped bordered condensed',
 		'-listfields'=>'date,time,run,action',
 		'-results_eval'=>'cronDetailsListExtra',
+		'-table_data-onload'=>"wacss.nav(document.querySelector('#tr_{$recs[0]['_id']}'));",
 		'time_class'=>'w_nowrap',
 		'run_options'=>array(
 			'class'=>'w_nowrap align-right',
@@ -72,9 +73,6 @@ function cronDetailsList($id){
 		'-tr_data-tr'=>'1',
 		'-tr_id'=>'tr_%_id%'
 	));
-	if(isset($recs[0]['_id'])){
-		$rtn.=buildOnLoad("wacss.nav('tr_{$recs[0]['_id']}');");
-	}
 	return $rtn;
 }
 function cronDetailsListExtra($recs){
@@ -120,7 +118,8 @@ function cronDetailsLog($id,$field='log'){
 	return databaseListRecords(array(
 		'-list'=>$recs,
 		'-listfields'=>'time,elapsed,message',
-		'-tableclass'=>'table striped bordered condensed sticky',
+		'-table_class'=>'table striped bordered condensed sticky',
+		'-table_data-onload'=>"document.querySelector('#cron_details_content').scrollTop=document.querySelector('#cron_details_content').scrollHeight;",
 		'-hidesearch'=>1,
 		'time_class'=>'align-right w_nowrap',
 		'-results_eval'=>'cronDetailsLogExtra',
@@ -128,7 +127,7 @@ function cronDetailsLog($id,$field='log'){
 			'class'=>'w_nowrap align-right',
 			'displayname'=>'<div class="align-center"><span class="icon-clock"></span></div>'
 		),
-	)).buildOnLoad("document.querySelector('#cron_details_content').scrollTop=document.querySelector('#cron_details_content').scrollHeight;");;
+	));
 }
 function cronDetailsLogExtra($recs){
 	$t=$recs[0]['timestamp'];

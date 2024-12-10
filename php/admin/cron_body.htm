@@ -138,7 +138,7 @@ function cronLogRefreshTimer(){
 
 <view:list>
 	<?=cronList();?>
-	<div class="align-left">
+	<div class="align-left" data-onload="wacss.modalClose();">
 		<button type="button" class="button btn w_green" onclick="cronSetMultiple('active',1)">Set Active</button>
 		<button type="button" class="button btn w_green" onclick="cronSetMultiple('active',0)">Unset Active</button>
 		<button type="button" class="button btn w_orange" onclick="cronSetMultiple('paused',1)">Set Paused</button>
@@ -148,27 +148,24 @@ function cronLogRefreshTimer(){
 		<button type="button" class="button btn w_blue" onclick="cronSetMultiple('run_now',1)">Set Run Now</button>
 		<button type="button" class="button btn w_blue" onclick="cronSetMultiple('run_now',0)">Unset Run Now</button>
 	</div>
-	<?=buildOnLoad("wacss.modalClose();");?>
 </view:list>
 
 
 <view:pid>
 <div class="w_centerpop_title">Process <?=$pid;?></div>
-<div class="w_centerpop_content">
+<div class="w_centerpop_content" data-onload="centerObject('centerpop');">
 	<?=printValue($rec);?>
 	<div class="align-right">
 		<a href="#" class="w_red w_link" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','centerpop',{_menu:'cron',func:'kill',id:this.dataset.cron_pid,title:this.title,setprocessing:'cron_processing'});" data-cron_pid="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
 	</div>
-	<?=buildOnLoad("centerObject('centerpop');");?>
 </div>
 </view:pid>
 
 <view:nopid>
 <div class="w_centerpop_title">Process <?=$pid;?></div>
-<div class="w_centerpop_content">
+<div class="w_centerpop_content"data-onload="setText('process_{$pid}','');centerObject('centerpop');">
 	<h3>No process found with pid of <?=$pid;?></h3>
 	<div>Updated cron to reflect it is not running</div>
-	<?=buildOnLoad("setText('process_{$pid}','');centerObject('centerpop');");?>
 </div>
 </view:nopid>
 
@@ -348,10 +345,9 @@ Return Code: <?=$json['rtncode'];?></div>
 <?=$log['run_result'];?>
 </textarea>
 <view:bottom>
-<div id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;color:#CCC;font-size:0.8rem;" data-behavior="countdown">12</div>
-<?=buildOnLoad("cronResultScroll({$log['bottom']});");?>
+<div data-onload="cronResultScroll({$log['bottom']});" id="setprocessing" style="float:right;position:absolute;top:70px;right:20px;color:#CCC;font-size:0.8rem;" data-behavior="countdown">12</div>
 </view:bottom>
 <?=renderViewIf(strlen($log['bottom']),'bottom',$log,'log');?>
-<view:not_running><?=buildOnLoad("setText('is_running','');setText('run_date_0','Not Running');");?></view:not_running>
+<view:not_running><span data-onload="setText('is_running','');setText('run_date_0','Not Running');"></span></view:not_running>
 <?=renderViewIf($log['run_result']=='No longer running','not_running');?>
 </view:cron_result>
