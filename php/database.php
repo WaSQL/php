@@ -2193,7 +2193,10 @@ ENDOFPRETABLE;
 	//add any table attributes pass in with -table
 	$atts=array();
 	foreach($params as $k=>$v){
-		if(preg_match('/^-table(.+)$/',$k,$m)){
+		if(preg_match('/^-table\_(.+)$/',$k,$m)){
+			$atts[$m[1]]=$v;
+		}
+		elseif(preg_match('/^-table(.+)$/',$k,$m)){
 			$atts[$m[1]]=$v;
 		}
 	}
