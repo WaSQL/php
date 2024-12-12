@@ -13,6 +13,10 @@
 	        dbkey="{apiKey or token}"
 	    />
 */
+
+function splunkGetDBRecords($params=array()){
+	return splunkQueryResults($params['query']);
+}
 //---------- begin function splunkQueryResults ----------
 /**
 * @describe returns the records of a query

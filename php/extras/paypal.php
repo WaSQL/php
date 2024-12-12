@@ -120,27 +120,12 @@ https://stackoverflow.com/questions/56414640/paypal-checkout-javascript-with-sma
 
 
 */
-//confirm/add google settings to _config table
-$crecs=getDBRecords(array(
-    '-table'=>'_config',
-    '-where'=>"name like paypal_%",
-    '-index'=>'name'
-));
-if(!isset($crecs['paypal_clientid'])){
-    $ok=addDBRecord(array('-table'=>'_config','name'=>'paypal_clientid','category'=>'extras'));
-}
-if(!isset($crecs['paypal_secret'])){
-    $ok=addDBRecord(array('-table'=>'_config','name'=>'paypal_secret','category'=>'extras'));
-}
-if(!isset($crecs['paypal_url'])){
-    $ok=addDBRecord(array('-table'=>'_config','name'=>'paypal_url','category'=>'extras'));
-}
 
 function paypalCheckout($cart=array()){
 	global $CONFIG;
 	if(!isset($CONFIG['paypal_clientid'])){
 		debugValue('paypal_clientid not set in config.xml');
-		return 'paypalCheckout ERROR - no clientid specified';
+		return 'paypalCheckout Error - no clientid specified';
 	}
 	if(!isset($cart['items'][0])){
 		debugValue('No items in cart');
@@ -296,13 +281,14 @@ function paypapClientId(){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function paypalUrl(){
+    global $CONFIG;
 	if(isset($CONFIG['paypal_url'])){
 		return $CONFIG['paypal_url'];
 	}
 	if(isDBStage()){
-		return 'https://api.sandbox.paypal.com';
+		return 'https://api-m.sandbox.paypal.com';
 	}
-	return 'https://api.paypal.com';
+	return 'https://api-m.paypal.com';
 }
 //---------- begin function paypalSendInvoice
 /**
@@ -434,9 +420,9 @@ function paypalSendInvoice($params=array()){
 		if(isset($post['json_array'])){
 			return $post['json_array'];
 		}
-		return "ERROR: ". printValue($post);
+		return "paypalSendInvoice Error: ". printValue($post);
 	}
-	return "Error: no token";
+	return "paypalSendInvoice Error: no token";
 }
 //---------- begin function paypalSendPayout
 /**
@@ -511,9 +497,9 @@ function paypalSendPayout($params=array()){
 			return $payout;
 			//return $post['json_array'];
 		}
-		return "ERROR: ". printValue($post);
+		return "paypalSendPayout Error: ". printValue($post);
 	}
-	return "Error: no token";
+	return "paypalSendPayout Error: no token";
 }
 //---------- begin function
 /**
@@ -539,7 +525,7 @@ function paypalNextInvoiceNumber(){
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
-function paypalGetAccessToken(){
+function paypalGetAccessToken($scope=''){
 	/*
 		curl -v https://api.sandbox.paypal.com/v1/oauth2/token \
 		   -H "Accept: application/json" \
@@ -548,6 +534,26 @@ function paypalGetAccessToken(){
 		   -d "grant_type=client_credentials"
 	*/
 	$url=paypalUrl().'/v1/oauth2/token';
+    $postopts=array(
+        '-method'=>'POST',
+        '-authuser'=>paypapClientId(),
+        '-authpass'=>paypalSecret(),
+        '-headers'=>array(
+            "Content-Type: application/x-www-form-urlencoded"
+        ),
+        'grant_type'=>'client_credentials',
+        '-json'=>1
+    );
+    if(strlen($scope)){
+        $postopts['scope']=$scope;
+    }
+    $post=postURL($url,$postopts);
+    if(isset($post['json_array']['access_token'])){
+        return $post['json_array']['access_token'];
+    }
+    echo "paypalGetAccessToken FAILED".printValue($post);exit;
+
+
 	$ch = curl_init();
 	$clientId = paypapClientId();
 	$secret = paypalSecret();
@@ -559,15 +565,234 @@ function paypalGetAccessToken(){
 	curl_setopt($ch, CURLOPT_POST, true);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
 	curl_setopt($ch, CURLOPT_USERPWD, $clientId.":".$secret);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+	//curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+    if(strlen($scope)){
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials&scope={$scope}");    
+    }
+    else{
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+    }
+    
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Accept: application/json',
+        'Accept-Language: en_US'
+    ));
 
 	$result = curl_exec($ch);
 	curl_close($ch);
-	//echo $result;exit;
+    //echo "url:{$url},result:{$result}";exit;
 	if(empty($result)){return '';}
 	else{
 	    $json = json_decode($result,true);
-	    return $json['access_token'];
+        if(isset($json['access_token'])){
+            return $json['access_token'];
+        }
+	    echo "paypalGetAccessToken Error: ".printValue($json);exit;
 	}
 	return '';
+}
+// paypalCreateProduct
+// $productResult = paypalCreateProduct($params);
+function paypalCreateProduct($params=array()) {
+    //check params
+    if(!isset($params['name'])){return 'paypalCreateProduct Error: name required';}
+    if(!isset($params['description'])){return 'paypalCreateProduct Error: description required';}
+    if(!isset($params['type'])){return 'paypalCreateProduct Error: type required';}
+    if(!isset($params['category'])){return 'paypalCreateProduct Error: category required';}
+    if(!isset($params['home_url'])){return 'paypalCreateProduct Error: home_url required';}
+
+    // Product payload
+    $productPayload = [
+        'name' => $params['name'],
+        'description' => $params['description'],
+        'type' => $params['type'],
+        'category' => $params['category'],
+        'home_url' => $params['home_url']
+    ];
+    // Access Token
+    $token=paypalGetAccessToken();
+    if(!strlen($token)){return "paypalCreateProduct Error: no token";}
+    // Url
+    $url = paypalUrl(). '/v1/catalogs/products';
+    // Payload
+    $json=json_encode($productPayload);
+    // Post
+    $post=postJSON($url,$json,array(
+        '-method'=>'POST',
+        '-json'=>1,
+        '-headers'=>array("Authorization: Bearer {$token}")
+    ));
+    if(isset($post['json_array'])){
+        return $post['json_array'];
+    }
+    return "paypalCreateProduct Error: ". printValue($post);
+}
+
+function paypalCreatePlan($params=array()) {
+    //check params
+    $required=array('product_id','name','description');
+    foreach($required as $field){
+        if(!isset($params[$field])){return "paypalCreatePlan Error: {$field} required";}
+    }
+    // Plan payload with initial $75 setup and $10 monthly after 3 months
+    $planPayload = [
+        'product_id' => $params['product_id'],
+        'name' => $params['name'],
+        'description' => $params['description'],
+        'billing_cycles' => [
+            [
+                'frequency' => [
+                    'interval_unit' => 'MONTH',
+                    'interval_count' => 3
+                ],
+                'tenure_type' => 'TRIAL',
+                'sequence' => 1,
+                'total_cycles' => 3,
+                'pricing_scheme' => [
+                    'fixed_price' => [
+                        'value' => '75.00',
+                        'currency_code' => 'USD'
+                    ]
+                ]
+            ],
+            [
+                'frequency' => [
+                    'interval_unit' => 'MONTH',
+                    'interval_count' => 1
+                ],
+                'tenure_type' => 'REGULAR',
+                'sequence' => 2,
+                'total_cycles' => 0, // Infinite
+                'pricing_scheme' => [
+                    'fixed_price' => [
+                        'value' => '10.00',
+                        'currency_code' => 'USD'
+                    ]
+                ]
+            ]
+        ],
+        'payment_preferences' => [
+            'auto_bill_outstanding' => true,
+            'setup_fee' => [
+                'value' => '75.00',
+                'currency_code' => 'USD'
+            ],
+            'setup_fee_failure_action' => 'CONTINUE'
+        ]
+    ];
+
+    // Access Token
+    $token=paypalGetAccessToken();
+    if(!strlen($token)){return "paypalCreatePlan Error: no token";}
+    // Url
+    $url = paypalUrl(). '/v1/billing/plans';
+    // Payload
+    $json=json_encode($planPayload);
+    // Post
+    $post=postJSON($url,$json,array(
+        '-method'=>'POST',
+        '-json'=>1,
+        '-headers'=>array("Authorization: Bearer {$token}")
+    ));
+    if(isset($post['json_array'])){
+        return $post['json_array'];
+    }
+    return "paypalCreatePlan Error: ". printValue($post);
+}
+
+function paypalCreateSubscription($params=array()) {
+    //check params
+    $required=array('plan_id','firstname','lastname','email');
+    foreach($required as $field){
+        if(!isset($params[$field])){return "paypalCreatePlan Error: {$field} required";}
+    }
+    // Subscription payload
+    $subscriptionPayload = [
+        'plan_id' => $params['plan_id'],
+        'subscriber' => [
+            'name' => [
+                'given_name' => $params['firstname'],
+                'surname' => $params['lastname'],
+            ],
+            'email_address' => $params['email'],
+        ],
+        'application_context' => [
+            'brand_name' => 'Your Company Name',
+            'locale' => 'en-US',
+            'shipping_preference' => 'SET_PROVIDED_ADDRESS',
+            'user_action' => 'SUBSCRIBE_NOW',
+            'payment_method' => [
+                'payer_selected' => 'PAYPAL',
+                'payee_preferred' => 'IMMEDIATE_PAYMENT_REQUIRED'
+            ],
+            'return_url' => 'https://example.com/success',
+            'cancel_url' => 'https://example.com/cancel'
+        ]
+    ];
+    // Access Token
+    $token=paypalGetAccessToken();
+    if(!strlen($token)){return "paypalCreateSubscription Error: no token";}
+    // Url
+    $url = paypalUrl(). '/v1/billing/subscriptions';
+    // Payload
+    $json=json_encode($subscriptionPayload);
+    // Post
+    $post=postJSON($url,$json,array(
+        '-method'=>'POST',
+        '-json'=>1,
+        '-headers'=>array("Authorization: Bearer {$token}")
+    ));
+    if(isset($post['json_array'])){
+        return $post['json_array'];
+    }
+    return "paypalCreateSubscription Error: ". printValue($post);
+}
+// Products Functions
+function payPalPermissions() {
+    $token=paypalGetAccessToken();
+    if(!strlen($token)){return "payPalPermissions Error: no token";}
+    // Url
+    $url = paypalUrl(). '/v1/oauth2/token/userinfo';
+    $post=postURL($url,array(
+        '-method'=>'GET',
+        '-json'=>1,
+        '-headers'=>array(
+            "Authorization: Bearer {$token}"
+        ),
+    ));
+    echo printValue($post);exit;
+    return $post['json_array'];  
+}
+// Products Functions
+function payPalProducts() {
+    // Url
+    $url = paypalUrl(). '/v1/catalogs/products';
+    $token=paypalGetAccessToken($url);
+    if(!strlen($token)){return "payPalProducts Error: no token";}
+   
+    // Payload
+    $recs=array();
+    $page=1;
+    $page_size=10;
+    while(1){
+        // Post
+        $post=postURL($url,array(
+            '-method'=>'GET',
+            '-json'=>1,
+            '-headers'=>array(
+                "Authorization: Bearer {$token}",
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ),
+            'page'=>$page,
+            'page_size'=>$page_size,
+            'total_required'=>'true'
+        ));
+        if(!is_array($post['json_array']) || !count($post['json_array'])){
+            break;
+        }
+        $page+=1;
+        echo printValue($post['json_array']);exit;
+    }
+    return $recs;
 }

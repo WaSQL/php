@@ -380,6 +380,10 @@ function sqlpromptNamedQueries(){
 			loadExtras('gigya');
 			$recs=gigyaNamedQueryList();
 		break;
+		case 'splunk':
+			loadExtras('splunk');
+			$recs=splunkNamedQueryList();
+		break;
 		case 'ccv2':
 			loadExtras('ccv2');
 			$recs=ccv2NamedQueryList();

@@ -248,6 +248,10 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('gigya');
 			$func="gigya".ucfirst($func);
 		break;
+		case 'splunk':
+			loadExtras('splunk');
+			$func="splunk".ucfirst($func);
+		break;
 		case 'ccv2':
 			loadExtras('ccv2');
 			$func="ccv2".ucfirst($func);
@@ -1430,6 +1434,12 @@ ENDOFPRETABLE;
 				}
 				$params['-list']=gigyaQueryResults($params['-query']);
 			break;
+			case 'splunk':
+				if(!function_exists('splunkQueryResults')){
+					loadExtras('splunk');
+				}
+				$params['-list']=splunkQueryResults($params['-query']);
+			break;
 			case 'ccv2':
 				if(!function_exists('ccv2QueryResults')){
 					loadExtras('ccv2');
@@ -1535,6 +1545,12 @@ ENDOFPRETABLE;
 					loadExtras('gigya');
 				}
 				$info=gigyaGetDBFieldInfo($params['-table']);
+			break;
+			case 'splunk':
+				if(!function_exists('splunkGetDBFieldInfo')){
+					loadExtras('splunk');
+				}
+				$info=splunkGetDBFieldInfo($params['-table']);
 			break;
 			case 'ccv2':
 				if(!function_exists('ccv2GetDBFieldInfo')){

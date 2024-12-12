@@ -76,6 +76,9 @@
 				case 'gigya':
 					$sql="SELECT * FROM {$table} LIMIT 5";
 				break;
+				case 'splunk':
+					$sql="SELECT * FROM {$table} LIMIT 5";
+				break;
 				case 'ccv2':
 					$sql="SELECT TOP 5 * FROM {$table}";
 				break;
