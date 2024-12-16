@@ -8023,7 +8023,7 @@ function stringEndsWith($string, $search){
 * @usage if(stringContains('beginning','gin')){...}
 */
 function stringContains($string, $search){
-	if(is_array($string)){return false;}
+	if(is_array($string) || is_null($string)){return false;}
 	if(!strlen($string) || !strlen($search)){return false;}
 	return strpos(strtolower($string),strtolower($search)) !== false;
 	}

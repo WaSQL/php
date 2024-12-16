@@ -1322,7 +1322,7 @@ if(is_array($PAGE) && $PAGE['_id'] > 0){
 			if(in_array('_aip',array_keys($TEMPLATE))){
 				$updateopts['_aip']=$_SERVER['REMOTE_ADDR'];
 			}
-			if(in_array('_auser',array_keys($TEMPLATE)) && isNum($USER['_id'])){
+			if(in_array('_auser',array_keys($TEMPLATE)) && isset($USER['_id']) && isNum($USER['_id'])){
 				$updateopts['_auser']=$USER['_id'];
 			}
 			if(in_array('_adate',array_keys($TEMPLATE))){
