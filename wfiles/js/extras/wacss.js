@@ -1900,6 +1900,16 @@ var wacss = {
 						}, 10);
 					});
 				});
+				wacss.registerTouchEvent(function(d){
+					switch(d.toLowerCase()){
+						case 'left':
+							document.getElementById('wacss_leftmenu-toggle').checked=false;
+						break;
+						case 'right':
+							document.getElementById('wacss_leftmenu-toggle').checked=true;
+						break;
+					}
+				});
 				return true;
 			break;
 			case 'open':
@@ -5948,6 +5958,39 @@ var wacss = {
 		if (evt.preventDefault){evt.preventDefault();}
 		if (evt.stopPropagation){evt.stopPropagation();}
 	 	if (evt.cancelBubble !== null){evt.cancelBubble = true;}
+	},
+	/**
+	* @name wacss.registerTouchEvent
+	* @describe called specified function(callback) on touch(swipe) event
+	* @describe callback will receive a string left/right/up/down/click/diagonal and the startEvent and endEvent
+	* @param callback function
+	* @param [element] defaults to document
+	* @return boolean false
+	* @usage wacss.registerTouchEvent(mySwipeEvent);
+	*/
+	registerTouchEvent: function(callback,element) {
+		if(undefined==element){element=document;}
+		let startEvent;
+		element.addEventListener('touchstart', ev => startEvent = ev);
+		element.addEventListener('touchend', endEvent => {
+			if (!startEvent.changedTouches || !endEvent.changedTouches){return;}
+			let THRESHOLD = 50
+			let start = startEvent.changedTouches[0];
+			let end = endEvent.changedTouches[0];
+			if (!start || !end) return;
+
+			let horizontalDifference = start.screenX - end.screenX;
+			let verticalDifference = start.screenY - end.screenY;
+			let horizontal = Math.abs(horizontalDifference) > Math.abs(verticalDifference) && Math.abs(verticalDifference) < THRESHOLD;
+			let vertical = !horizontal && Math.abs(horizontalDifference) < THRESHOLD;
+
+			let direction = 'diagonal';
+			if (horizontal){direction = horizontalDifference >= THRESHOLD ? 'left' : (horizontalDifference <= -THRESHOLD ? 'right' : 'click');}
+			if (vertical){direction = verticalDifference >= THRESHOLD ? 'up' : (verticalDifference <= -THRESHOLD ? 'down' : 'click');}
+
+			callback(direction, startEvent, endEvent);
+		});
+		return true;
 	},
 	removeClass: function(element, classToRemove) {
 		element=wacss.getObject(element);
