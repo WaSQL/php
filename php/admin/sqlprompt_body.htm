@@ -130,6 +130,7 @@
 <view:tabs>
 <nav>
 <ul class="nav-tabs <?=configValue('admin_color');?>">
+	<view:current_db_tab>
 	<li class="nav-item active">
 		<input type="radio" data-type="radio" style="display:none;" id="db_default" onclick="wacss.setActiveTab(wacss.getParent(this,'li'));sqlpromptSetDB(this.value)" name="db" value="<?=configValue('database');?>" checked />
 		<span><label for="db_default">
@@ -147,6 +148,8 @@
 			</div>
 		</label></span>
 	</li>
+	</view:current_db_tab>
+	<?=renderViewIf(!strlen(configValue('sql_prompt_dbs')),'current_db_tab');?>
 	<view:tab>
 	<li>
 		<a href="#<?=$tab['group'];?>" onclick="return false;" class="dropdown">
