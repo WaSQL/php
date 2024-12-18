@@ -556,14 +556,24 @@ ENDOFQUERY;
 					exit;
 				break;
 				case 'history':
-					$recs=getDBRecords(array(
+					$recopts=array(
 						'-table'=>'_queries',
 						'_cuser'=>$USER['_id'],
-						'function_name'=>'dasql_prompt',
-						'-fields'=>'_id,_cdate,query',
+						'-fields'=>'_id,_cdate,query,row_count,run_length',
+						'-order'=>'_id desc',
 						'-limit'=>100,
 						'-notimestamp'=>1
-					));
+					);
+					if(isset($_REQUEST['db'])){
+						$recopts['tablename']="DB:{$_REQUEST['db']}";
+					}
+					//echo printValue($_REQUEST);exit;
+					$recs=getDBRecords($recopts);
+					if(is_array($recs)){
+						foreach($recs as $i=>$rec){
+							$recs[$i]['query']='<div class="w_small w_pre">'.$rec['query'].'</div>';
+						}
+					}
 					$recs=sortArrayByKeys($recs,array('_id'=>SORT_DESC));
 					$csv=arrays2CSV($recs);
 					$tpath=getWasqlPath('php/temp');
