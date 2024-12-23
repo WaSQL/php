@@ -5786,7 +5786,7 @@ var wacss = {
 			if(k=='title'){continue;}
 			if(k=='prompt'){continue;}
 			if(elobj.dataset[k].indexOf('id:') == 0){
-				let cid=elobj.dataset[k].replace('qs:','id:');
+				let cid=elobj.dataset[k].replace('id:','qs:#');
 				elobj.dataset[k]=cid;
 			}
 			if(elobj.dataset[k].indexOf('qs:') == 0){
