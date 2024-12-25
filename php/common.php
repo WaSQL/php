@@ -972,9 +972,9 @@ function commonSearchFiltersForm($params=array()){
 		$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
 	}
 	$rtn .= '<div style="display:none;">'.PHP_EOL;
-	$rtn .= '	<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" />'.PHP_EOL;
+	$rtn .= '	<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" >'.PHP_EOL;
 	if(isset($params['-simplesearch']) || isset($params['-navonly'])){
-		$rtn .= '	<input type="hidden" name="filter_order" value="'.$params['-order'].'" />'.PHP_EOL;
+		$rtn .= '	<input type="hidden" name="filter_order" value="'.$params['-order'].'" >'.PHP_EOL;
 	}
 	if(isset($params['-filters'])){
 		$filters=is_array($params['-filters'])?implode("\r\n",$params['-filters']):$params['-filters'];
@@ -982,7 +982,7 @@ function commonSearchFiltersForm($params=array()){
 	else{$filters='';}
 	$rtn .= '	<textarea name="_filters">'.$filters.'</textarea>'.PHP_EOL;
 	if(isset($params['-bulkedit'])){
-		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" />'.PHP_EOL;
+		$rtn .= '	<input type="hidden" name="filter_bulkedit" value="" >'.PHP_EOL;
 	}
 	if(isset($params['-export'])){
 		$export_params=$params;
@@ -1007,8 +1007,8 @@ function commonSearchFiltersForm($params=array()){
 			$export_params['-page_template']=$PAGE['_template'];
 		}
 		$rtn .= '	<textarea name="_export_params_">'.base64_encode(json_encode($export_params)).'</textarea>'.PHP_EOL;
-		$rtn .= '	<input type="hidden" name="_export_formname" value="'.$params['-formname'].'" />'.PHP_EOL;
-		$rtn .= '	<input type="hidden" name="filter_export" value="" />'.PHP_EOL;
+		$rtn .= '	<input type="hidden" name="_export_formname" value="'.$params['-formname'].'" >'.PHP_EOL;
+		$rtn .= '	<input type="hidden" name="filter_export" value="" >'.PHP_EOL;
 	}
 	//other fields
 	foreach($params as $k=>$v){
@@ -1209,12 +1209,12 @@ function commonSearchFiltersForm($params=array()){
 				$rtn .= '			</div>'.PHP_EOL;	
 			}
 			else{
-				$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" />'.PHP_EOL;
+				$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" >'.PHP_EOL;
 			}
 		}
 		else{
-			$rtn .='<input type="hidden" name="filter_field" value="'.$params['-simplesearch'].'" />'.PHP_EOL;
-			$rtn .='<input type="hidden" name="filter_operator" value="ct" />'.PHP_EOL;
+			$rtn .='<input type="hidden" name="filter_field" value="'.$params['-simplesearch'].'" >'.PHP_EOL;
+			$rtn .='<input type="hidden" name="filter_operator" value="ct" >'.PHP_EOL;
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
 			if(isset($params['-search_input_class'])){
@@ -1253,7 +1253,7 @@ function commonSearchFiltersForm($params=array()){
 		//keep pagination buttons together (now wrapping)
 		$rtn .= '	<div data-set="3" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 		if(empty($params['-limit'])){$params['-limit']=15;}
-		$rtn .= '		<input type="hidden" name="filter_total" value="'.$params['-total'].'" />'.PHP_EOL;
+		$rtn .= '		<input type="hidden" name="filter_total" value="'.$params['-total'].'" >'.PHP_EOL;
 		//show first if offset minus limit is not 0
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
@@ -1543,11 +1543,11 @@ function abort($obj,$title='',$subtitle=''){
 	$rtn .= '<!DOCTYPE HTML>'.PHP_EOL;
 	$rtn .= '<html lang="en">'.PHP_EOL;
 	$rtn .= '<head>'.PHP_EOL;
-	$rtn .= '	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />'.PHP_EOL;
-	$rtn .= '	<meta name="robots" content="noindex, nofollow, noarchive" />'.PHP_EOL;
-	$rtn .= '	<meta name="viewport" content="width=device-width, initial-scale=1" />'.PHP_EOL;
+	$rtn .= '	<meta http-equiv="content-type" content="text/html; charset=UTF-8" >'.PHP_EOL;
+	$rtn .= '	<meta name="robots" content="noindex, nofollow, noarchive" >'.PHP_EOL;
+	$rtn .= '	<meta name="viewport" content="width=device-width, initial-scale=1" >'.PHP_EOL;
 	if(function_exists('minifyCssFile')){
-		$rtn .= '	<link type="text/css" rel="stylesheet" href="'.minifyCssFile('wacss').'" />'.PHP_EOL;
+		$rtn .= '	<link type="text/css" rel="stylesheet" href="'.minifyCssFile('wacss').'" >'.PHP_EOL;
 		$rtn .= '	<script type="text/javascript" src="'.minifyJsFile('wacss').'"></script>'.PHP_EOL;
 	}
 	$rtn .= '</head>'.PHP_EOL;
@@ -1559,7 +1559,7 @@ function abort($obj,$title='',$subtitle=''){
 		$heading[]='<img src="'.$CONFIG['logo'].'">';
 	}
 	else{
-		$heading[]='<img src="/wfiles/iconsets/32/wasql.png" style="padding:10px;" />';
+		$heading[]='<img src="/wfiles/iconsets/32/wasql.png" style="padding:10px;" >';
 	}
 	$heading[]=$headstr;
 	$rtn .= '<table class="table">'.PHP_EOL;
@@ -1735,7 +1735,7 @@ function buildIECompatible($version=0){
 		$version=(integer)$_SERVER['REMOTE_BROWSER_VERSION'];
 		if($version < 7){return '';}
 	}
-	return '<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE'.$version.'" />';
+	return '<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE'.$version.'" >';
 	}
 //---------- begin function buildChartJsData--------------------
 /**
@@ -2397,7 +2397,7 @@ function buildFormButtonSelectMultiple($name,$opts=array(),$params=array()){
 		if(isset($params['onclick'])){
 			$tag .= ' onclick="'.$params['onclick'].'"';
 		}
-		$tag .= ' name="'.$name.'[]"  id="'.$id.'" value="'.$tval.'" '.$checked.' />'.PHP_EOL;
+		$tag .= ' name="'.$name.'[]"  id="'.$id.'" value="'.$tval.'" '.$checked.' >'.PHP_EOL;
         $tag .= '<label for="'.$id.'">'.$dval.'</label>'.PHP_EOL;
 	}
 	$tag .= '</div>'.PHP_EOL;
@@ -2433,7 +2433,7 @@ function buildFormCheckAll($att,$attval,$params=array()){
 	}
 
 	$id='checkall_'.crc32($att.$attval);
-	$tag="<input id=\"{$id}\" type=\"checkbox\" onclick=\"checkAllElements('{$att}','{$attval}',this.checked);\" />";
+	$tag="<input id=\"{$id}\" type=\"checkbox\" onclick=\"checkAllElements('{$att}','{$attval}',this.checked);\" >";
 	if(isset($params['for'])){unset($params['for']);}
 	$tag .= '<label for="'.$id.'" ';
 	$tag .= setTagAttributes($params);
@@ -2488,7 +2488,7 @@ function buildFormColor($name,$params=array()){
 	$tag.='	<div>'.PHP_EOL;
 	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' >'.PHP_EOL;
 	$tag.='		<label for="'.$name.'_check"';
 	if(isset($params['value']) && is_string($params['value']) && strlen($params['value'])){
 		$tag.=' style="background-color:'.$params['value'].'"';
@@ -2564,7 +2564,7 @@ function buildFormColorHexagon($name,$params=array()){
 	$tag.='	<div>'.PHP_EOL;
 	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' >'.PHP_EOL;
 	$tag.='		<label for="'.$name.'_check"';
 	if(isset($params['value']) && is_string($params['value']) && strlen($params['value'])){
 		$tag.=' style="background-color:'.$params['value'].'"';
@@ -2640,7 +2640,7 @@ function buildFormColorBox($name,$params=array()){
 	$tag.='	<div>'.PHP_EOL;
 	$tag .= '	<input type="text" name="'.$name.'" value="'.$params['value'].'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' >'.PHP_EOL;
 	$tag.='		<label for="'.$name.'_check"';
 	if(isset($params['value']) && is_string($params['value']) && strlen($params['value'])){
 		$tag.=' style="background-color:'.$params['value'].'"';
@@ -2700,7 +2700,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	$params['name']=$name;
 	$tag .= '	<input type="text" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' >'.PHP_EOL;
 	$tag .= '<datalist id="'.$params['list'].'">'.PHP_EOL;
 	foreach($opts as $tval=>$dval){
 		$tag .= '	<option value="'.$tval.'">'.$dval.'</option>'.PHP_EOL;
@@ -2798,13 +2798,13 @@ function buildFormDate($name,$params=array()){
 	}
 	unset($params['name']);
 	$tag .='>'.PHP_EOL;
-	$tag .= '	<input type="text" data-inputtype="date" name="'.$name.'" autocomplete="'.getRandomString().'"';
+	$tag .= '	<input type="text" data-inputtype="date" name="'.$name.'" autocomplete="off"';
 	$pstyle='';
 	if(isset($params['style'])){$pstyle=$params['style'];}
 	$params['style']='min-width:100px;'.$pstyle;
 	unset($params['width']);
 	$tag .= setTagAttributes($params);
-	$tag .= '  value="'.encodeHtml($params['value']).'" />'.PHP_EOL;
+	$tag .= '  value="'.encodeHtml($params['value']).'" >'.PHP_EOL;
 	$attrs='';
 	if(isset($params['data-readonlyif'])){
 		$attrs.=' data-readonlyif="'.$params['data-readonlyif'].'"';
@@ -2871,7 +2871,7 @@ function buildFormHidden($name,$params=array()){
 	$params['name']=$name;
 	$tag .= '	<input type="hidden" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' >'.PHP_EOL;
 	return $tag;
 }
 //---------- begin function buildFormPassword--------------------
@@ -2911,9 +2911,9 @@ function buildFormPassword($name,$params=array()){
 	}
 	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
-	$tag .= ' />'.PHP_EOL; 
+	$tag .= ' >'.PHP_EOL; 
 	if(isset($params['data-show_icon'])){
-		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" /><span title="show password"><label for="showpassword" class="w_pointer"><span class="icon-eye"></span></label></span>'.PHP_EOL;
+		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" ><span title="show password"><label for="showpassword" class="w_pointer"><span class="icon-eye"></span></label></span>'.PHP_EOL;
 	}	
 	$tag .= '</div>'.PHP_EOL;
 
@@ -3106,7 +3106,7 @@ ENDOFLOAD;
 	}
 	$tag .=<<<ENDOFTAG
 	><div style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
-	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
+	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" >
 	<button type="button" id="{$params['id']}_clickdiv" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}" class="btn" style="font-size:0.8rem;background:#b4b6b5;background-image:url('/wfiles/svg/google-maps.svg');background-size: cover;border-left:0px !important;border-top-left-radius: 0px;border-bottom-left-radius: 0px;">&nbsp;</button>
 </div>
 </div>
@@ -3165,7 +3165,7 @@ function buildFormLatLon($name,$params=array()){
 	}
 	$tag .=<<<ENDOFTAG
 	><div style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
-	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" />
+	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" >
 	<button type="button" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}" class="btn"><span class="icon-map-marker" id="{$params['id']}_ico"></span></button>
 </div>
 </div>
@@ -3239,7 +3239,7 @@ function buildFormMultiInput($name,$opts=array(),$params=array()){
 		if($inputafter==1){
 			$tag.='<label class="multiinput_text w_nowrap">'.$dval.'</label>';
 		}
-		$tag.='<input name="'."{$name}>{$tval}".'" type="text" style="border:0px;border-bottom:2px solid #CCC;width:'.$inputwidth.';border-radius:0px;padding-bottom:0px;margin:0 2px;" value="'.$params['value'][$tval].'" />';
+		$tag.='<input name="'."{$name}>{$tval}".'" type="text" style="border:0px;border-bottom:2px solid #CCC;width:'.$inputwidth.';border-radius:0px;padding-bottom:0px;margin:0 2px;" value="'.$params['value'][$tval].'" >';
 		if($inputafter==0){
 			$tag.='<label class="multiinput_text w_nowrap">'.$dval.'</label>';
 		}
@@ -3336,7 +3336,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
         	$checked_cnt++;
         	$checked_vals[]=$dval;
 		}
-    	$litags .= ' /><label for="'.$id.'" style="margin-left:10px;white-space:nowrap"> '.$dval.'</label></div>'.PHP_EOL;
+    	$litags .= ' ><label for="'.$id.'" style="margin-left:10px;white-space:nowrap"> '.$dval.'</label></div>'.PHP_EOL;
 	}
 
 
@@ -3616,7 +3616,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(isset($params['disabled'])){
 			$rtn .= ' disabled="disabled"';
 		}
-		$rtn.=' />'.PHP_EOL;
+		$rtn.=' >'.PHP_EOL;
 		//styles and classes
 		$classes=array();
 		$styles=array();
@@ -3690,7 +3690,7 @@ function buildFormText($name,$params=array()){
 	if(isset($selections['tvals']) && is_array($selections['tvals']) && count($selections['tvals'])){
 		$list_id=$name.'_datalist';
         $tag .= ' list="'.$list_id.'"';
-        $tag .= ' />'.PHP_EOL;
+        $tag .= ' >'.PHP_EOL;
         $tag .= '	<datalist id="'.$list_id.'">'.PHP_EOL;
 		$cnt=count($selections['tvals']);
 		for($x=0;$x<$cnt;$x++){
@@ -3701,7 +3701,7 @@ function buildFormText($name,$params=array()){
 	    $tag .= '	</datalist>'.PHP_EOL;
 	}
 	else{
-		$tag .= ' />'.PHP_EOL;
+		$tag .= ' >'.PHP_EOL;
 		return $tag;
 	}
 	return $tag;
@@ -3854,7 +3854,7 @@ function buildFormTranslate($params=array()){
 	$opts=array();
 	foreach($locales as $locale){
 		if($params['-showflag']==1){
-			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;" />';
+			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;" >';
 			$lang="{$img} {$locale['name']}";
 		}
 		else{
@@ -3884,7 +3884,7 @@ function buildFormTranslateBulma($params=array()){
 	$tag='';
 	$tag.='<div class="navbar-item has-dropdown is-hoverable">'.PHP_EOL;
 	if($params['-showflag']==1){
-		$img='<img src="'.$info['flag4x3'].'" alt="Language: '.$info['lang'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" />';
+		$img='<img src="'.$info['flag4x3'].'" alt="Language: '.$info['lang'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" >';
 		$lang="{$img} {$info['lang']}";
 	}
 	else{
@@ -3894,7 +3894,7 @@ function buildFormTranslateBulma($params=array()){
 	$tag.=' 	<div class="navbar-dropdown is-right">'.PHP_EOL;
 	foreach($locales as $locale){
 		if($params['-showflag']==1){
-			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" />';
+			$img='<img src="'.$locale['flag4x3'].'" alt="Language: '.$locale['name'].'" style="height:16px;width:auto;border-radius:2px;margin-right:5px;" >';
 			$lang="{$img} {$locale['name']}";
 		}
 		else{
@@ -4209,7 +4209,7 @@ function buildFormFile($name,$params=array()){
 			case 'wav':
 				$mime=getFileMimeType($afile);
 				$viewer .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
-				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  >'.PHP_EOL;
 				$viewer .= '</audio></div>'.PHP_EOL;
 			break;
 			case 'mp4':
@@ -4221,7 +4221,7 @@ function buildFormFile($name,$params=array()){
 					$params['view_height']=300;
 				}
 				$viewer .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\','.$params['view_height'].');" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
-				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  >'.PHP_EOL;
 				$viewer .= '</video></div>'.PHP_EOL;
 			break;
 			case 'gif':
@@ -4237,7 +4237,7 @@ function buildFormFile($name,$params=array()){
 				if(!isset($params['view_height'])){
 					$params['view_height']=300;
 				}
-				$viewer .= '<div style="margin:5px 1px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$viewer .= '<div style="margin:5px 1px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;" src="'.$params['value'].'" ></a>'.PHP_EOL;
 				$viewer .= '</div>'.PHP_EOL;
 			break;
 			default:
@@ -4357,7 +4357,7 @@ function buildFormFile_OLD($name,$params=array()){
 			case 'wav':
 				$mime=getFileMimeType($afile);
 				$viewer .= '<div style="margin:5px 1px"><audio controls="controls">'.PHP_EOL;
-				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  >'.PHP_EOL;
 				$viewer .= '</audio></div>'.PHP_EOL;
 			break;
 			case 'mp4':
@@ -4369,7 +4369,7 @@ function buildFormFile_OLD($name,$params=array()){
 					$params['view_height']=300;
 				}
 				$viewer .= '<div style="margin:5px 1px;"><video height="36" onmouseover="this.setAttribute(\'height\','.$params['view_height'].');" onmouseout="this.setAttribute(\'height\',36);" controls="controls">'.PHP_EOL;
-				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  />'.PHP_EOL;
+				$viewer .= '	<source src="'.$params['value'].'" type="'.$mime.'"  >'.PHP_EOL;
 				$viewer .= '</video></div>'.PHP_EOL;
 			break;
 			case 'gif':
@@ -4385,7 +4385,7 @@ function buildFormFile_OLD($name,$params=array()){
 				if(!isset($params['view_height'])){
 					$params['view_height']=300;
 				}
-				$viewer .= '<div style="margin:5px 1px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;" src="'.$params['value'].'" /></a>'.PHP_EOL;
+				$viewer .= '<div style="margin:5px 1px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;"><a class="w_link w_lblue" href="'.$val.'" target="_blank"><img style="border-radius:3px;max-width:'.$params['view_width'].'px;max-height:'.$params['view_height'].'px;" src="'.$params['value'].'" ></a>'.PHP_EOL;
 				$viewer .= '</div>'.PHP_EOL;
 			break;
 			default:
@@ -4441,7 +4441,7 @@ function buildFormFile_OLD($name,$params=array()){
 		unset($params['data-resize']);
     }
     //remove checkbox
-    $tag .= '		<input type="hidden" style="display:none;" value="0" name="'.$name.'_remove"  id="'.$params['id'].'_remove" />'.PHP_EOL;
+    $tag .= '		<input type="hidden" style="display:none;" value="0" name="'.$name.'_remove"  id="'.$params['id'].'_remove" >'.PHP_EOL;
 
     $params['data-type']='file';
     $params['data-formname']=$params['-formname'];
@@ -4481,7 +4481,7 @@ function buildFormFile_OLD($name,$params=array()){
 	if(isset($params['multiple']) && $params['multiple']){
     	$tag .= ' multiple ';
 	}
-	$tag .= ' />'.PHP_EOL;
+	$tag .= ' >'.PHP_EOL;
 	$tag .= '	<label';
 	if(strlen($viewer)){
 		$tag .=' data-tooltip="id:'.$viewer_id.'"';
@@ -4495,7 +4495,7 @@ function buildFormFile_OLD($name,$params=array()){
 		$ext=getFileExtension($params['value']);
 		$afile=$_SERVER['DOCUMENT_ROOT'].$params['value'];
 		if(isImageFile($afile)){
-			$tag .= '<img style="display:inline;max-height:24px;max-width:190px;" src="'.$params['value'].'" />'.PHP_EOL;
+			$tag .= '<img style="display:inline;max-height:24px;max-width:190px;" src="'.$params['value'].'" >'.PHP_EOL;
 		}
 		else{
 			$class=commonGetFileIconClass($afile);
@@ -4595,7 +4595,7 @@ ENDOFRTN;
 		for($x=0;$x<60;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_minute" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_minute" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
 			if(($x+1)%10==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
@@ -4610,7 +4610,7 @@ ENDOFRTN;
 		for($x=0;$x<24;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_hour" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_hour" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
 			if(($x+1)%12==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
@@ -4625,7 +4625,7 @@ ENDOFRTN;
 		for($x=1;$x<29;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_day" value="'.$v.'" /> '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_day" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
 			if($x%7==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
@@ -4639,7 +4639,7 @@ ENDOFRTN;
 		$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
 		$daynames=array(0=>'Mon',1=>'Tue',2=>'Wed',3=>'Thu',4=>'Fri',5=>'Sat',6=>'Sun');
 		foreach($daynames as $tval=>$dval){
-			$rtn .= '		      	<label><input type="checkbox" data-inputtype="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_dayname" value="'.$tval.'" /> '.$dval.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" data-inputtype="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_dayname" value="'.$tval.'" > '.$dval.'</label>'.PHP_EOL;
 		}
 		$rtn .= '		    </div>'.PHP_EOL;
 	}
@@ -4647,20 +4647,20 @@ ENDOFRTN;
 		$rtn.=<<<ENDOFRTN
 			<div class="w_frequency_row" data-type="section"><span>Months</span><span class="icon-erase w_pointer" title="clear months" onclick="return formSetFrequency('{$params['id']}',{reset:['month']});"></span></div>
 		    <div class="w_frequency_row" data-type="months">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="1" /> Jan</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="2" /> Feb</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="3" /> Mar</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="4" /> Apr</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="5" /> May</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="6" /> Jun</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="1" > Jan</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="2" > Feb</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="3" > Mar</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="4" > Apr</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="5" > May</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="6" > Jun</label>
 		    </div>
 		    <div class="w_frequency_row" style="border-bottom:1px solid #ccc;" data-type="months">      	
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="7" /> Jul</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="8" /> Aug</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="9" /> Sep</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="10" /> Oct</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="11" /> Nov</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="12" /> Dec</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="7" > Jul</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="8" > Aug</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="9" > Sep</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="10" > Oct</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="11" > Nov</label>
+		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="12" > Dec</label>
 		    </div>
 ENDOFRTN;
 	}
@@ -5005,7 +5005,7 @@ function buildFormSelectCustom($name,$pairs=array(),$params=array()){
 		$id=$params['id'].'_'.$cnt;
 		$checked='';
 		if($params['value']==$tval){$checked=' checked';}
-		$rtn .= '			<li><input type="radio"  name="'.$params['name'].'" id="'.$id.'" value="'.$tval.'" onclick="event.stopPropagation();this.parentNode.parentNode.parentNode.className=\'select\';"'.$checked.' /><span data-value="'.$txtval.'"></span><label for="'.$id.'">'.$dval.'</label></li>'.PHP_EOL;
+		$rtn .= '			<li><input type="radio"  name="'.$params['name'].'" id="'.$id.'" value="'.$tval.'" onclick="event.stopPropagation();this.parentNode.parentNode.parentNode.className=\'select\';"'.$checked.' ><span data-value="'.$txtval.'"></span><label for="'.$id.'">'.$dval.'</label></li>'.PHP_EOL;
 		$cnt++;
 	}	
 	$rtn .= '		</ul>'.PHP_EOL;
@@ -5316,7 +5316,7 @@ function buildFormSignature($name,$params=array()){
 		else{
 			$rtn .= ' style="width:'.$params['width'].'px;height:'.$params['height'].'px;"';
 		}
-		$rtn .= ' /></div>';
+		$rtn .= ' ></div>';
 		return $rtn;
 	}
 	$params['data-behavior']='signature_pad';
@@ -5494,7 +5494,7 @@ function buildFormStarRating($name, $params=array()){
 	$rtn .= '<input type="hidden" name="'.$name.'" value="'.$params['value'].'"';
 		if(isset($params['required']) && $params['required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
 		elseif(isset($params['_required']) && $params['_required']){$rtn .= ' data-required="1" data-blink="'.$params['id'].'"';}
-		$rtn .=' />'.PHP_EOL;
+		$rtn .=' >'.PHP_EOL;
 	}
 	$rtn .= '</div>'.PHP_EOL;
 	return $rtn;
@@ -5567,15 +5567,15 @@ function buildHtmlBegin($params=array()){
 		}
 	else{$rtn .= '<html lang="en" style="max-width:100%; overflow-x:hidden;">'.PHP_EOL;}
 	$rtn .= '<head>'.PHP_EOL;
-	$rtn .= ' 	<link rel="icon" href="/wfiles/favicon.ico" type="image/x-icon" />'.PHP_EOL;
-	$rtn .= ' 	<link rel="shortcut icon" href="/wfiles/favicon.ico" type="image/x-icon" />'.PHP_EOL;
+	$rtn .= ' 	<link rel="icon" href="/wfiles/favicon.ico" type="image/x-icon" >'.PHP_EOL;
+	$rtn .= ' 	<link rel="shortcut icon" href="/wfiles/favicon.ico" type="image/x-icon" >'.PHP_EOL;
 	$title=setValue(array($params['title'],"WaSQL - {$_SERVER['HTTP_HOST']}"));
 	$rtn .= ' 	<title>'.$title.'</title>'.PHP_EOL;
-	$rtn .= ' 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />'.PHP_EOL;
-	$rtn .= ' 	<meta name="robots" content="noindex, nofollow, noarchive" />'.PHP_EOL;
-	$rtn .= ' 	<meta name="viewport" content="width=device-width, initial-scale=1" />'.PHP_EOL;
+	$rtn .= ' 	<meta http-equiv="content-type" content="text/html; charset=UTF-8" >'.PHP_EOL;
+	$rtn .= ' 	<meta name="robots" content="noindex, nofollow, noarchive" >'.PHP_EOL;
+	$rtn .= ' 	<meta name="viewport" content="width=device-width, initial-scale=1" >'.PHP_EOL;
 	//set the order of compatibility view for IE - dumb I know, but it works.
-	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="'.minifyCssFile('wacss').'" />'.PHP_EOL;
+	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="'.minifyCssFile('wacss').'" >'.PHP_EOL;
 	if(isset($params['css']) && strlen($params['css'])){
 		$rtn .= $params['css'] .PHP_EOL;
 	}
@@ -5606,7 +5606,7 @@ function buildHtmlEnd(){
 */
 function buildImage($name,$size=16){
 	$src=getImageSrc($name,$size);
-	return '<img src="'.$src.'" border="0" alt="'.$name.'" />';
+	return '<img src="'.$src.'" border="0" alt="'.$name.'" >';
 }
 //---------- begin function buildInfoBox
 /**
@@ -6637,7 +6637,7 @@ function arrays2RSS($recs=array(),$params=array()){
 	$xml.= '	<channel>'.PHP_EOL;
 	$xml.= '		<title>'.$params['title'].'</title>'.PHP_EOL;
 	if(isset($params['rss'])){
-		$xml.= '		<atom:link href="'.xmlEncode($params['rss']).'" rel="self" type="application/rss+xml" />'.PHP_EOL;
+		$xml.= '		<atom:link href="'.xmlEncode($params['rss']).'" rel="self" type="application/rss+xml" >'.PHP_EOL;
 	}
 	$xml.= '		<link>'.xmlEncode($params['link']).'</link>'.PHP_EOL;
 	$xml.= '		<description>'.xmlEncodeCDATA($params['description']).'</description>'.PHP_EOL;
@@ -6647,7 +6647,7 @@ function arrays2RSS($recs=array(),$params=array()){
 	//$xml.= '		<sy:updatePeriod>hourly</sy:updatePeriod>'.PHP_EOL;
 	//$xml.= '		<sy:updateFrequency>1</sy:updateFrequency>'.PHP_EOL;
 	$xml.= '		<generator>http://wasql.com</generator>'.PHP_EOL;
-	$xml.= '		<xhtml:meta xmlns:xhtml="http://www.w3.org/1999/xhtml" name="robots" content="noindex" />'.PHP_EOL;
+	$xml.= '		<xhtml:meta xmlns:xhtml="http://www.w3.org/1999/xhtml" name="robots" content="noindex" >'.PHP_EOL;
 	foreach($recs as $rec) {
 		$xml .= '		<item>'.PHP_EOL;
 		foreach($fields as $field){
@@ -11319,7 +11319,7 @@ function selectYears($cnt=10,$digits=2,$backwards=0){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function evalErrorWrapper($e=array(),$title='evalPHP Error!'){
-	$wrap='<b style="border:1px solid #D50000;color:#000;background:#F4F400;padding:2px;">'.$title.'</b><br /><br />' . "\n";
+	$wrap='<b style="border:1px solid #D50000;color:#000;background:#F4F400;padding:2px;">'.$title.'</b><br ><br >' . "\n";
 	$wrap .="<div><b>Error:</b> {$e['message']}</div>\n";
 	$wrap .="<div><b>File:</b> {$e['file']}</div>\n";
 	$wrap .="<div><b>Line:</b> {$e['line']}</div>\n";
@@ -11444,7 +11444,7 @@ function fileManager($startdir='',$params=array()){
 			$rpath .= "/{$pathpart}";
 			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
         }
-		$pretable .= implode(' <img src="/wfiles/crumb.gif" alt="crumb" /> ',$rpathlinks);
+		$pretable .= implode(' <img src="/wfiles/crumb.gif" alt="crumb" > ',$rpathlinks);
 	}
 	//Handle file uploads
 	 if($params['-rights'] == 'all' && is_array($_FILES) && count($_FILES) > 0){
@@ -11486,7 +11486,7 @@ function fileManager($startdir='',$params=array()){
 	if($params['-rights'] == 'all'){
 		$pretable .= '	<div style="display:flex;flex-direction:column;margin-top:10px;">'.PHP_EOL;
 		$pretable .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
-		$pretable .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" />'.PHP_EOL;
+		$pretable .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" >'.PHP_EOL;
 		$pretable .= '	</div>'.PHP_EOL;
 		}
 	if($params['-rights'] != 'readonly'){
@@ -11898,7 +11898,7 @@ function fileManagerOLD($startdir='',$params=array()){
 			$rpath .= "/{$pathpart}";
 			array_push($rpathlinks,'<a class="w_link w_bold w_lblue" href="'.$action.'?_menu=files&_dir='.encodeBase64($rpath).'">'.$pathpart.'</a>'."\n");
         }
-		$rtn .= '<div class="w_bigger">'.implode(' <img src="/wfiles/crumb.gif" alt="crumb" /> ',$rpathlinks).'</div>'.PHP_EOL;
+		$rtn .= '<div class="w_bigger">'.implode(' <img src="/wfiles/crumb.gif" alt="crumb" > ',$rpathlinks).'</div>'.PHP_EOL;
 	}
 	//perform actions
 	if(isset($_REQUEST['_newdir']) && $params['-rights'] == 'all'){
@@ -11990,7 +11990,7 @@ function fileManagerOLD($startdir='',$params=array()){
 	if($params['-rights'] == 'all'){
 		$rtn .= '	<div style="display:flex;flex-direction:column;margin-top:10px;">'.PHP_EOL;
 		$rtn .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
-		$rtn .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" />'.PHP_EOL;
+		$rtn .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" >'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 		}
 	if($params['-rights'] != 'readonly'){
@@ -13033,7 +13033,7 @@ function xls2CSV($afile=''){
 *	name of the file
 * @return image path to the icon associated with file extension
 * @usage 
-*	<img src="&lt;?=getFileIcon('info.doc');?&gt;" />
+*	<img src="&lt;?=getFileIcon('info.doc');?&gt;" >
 */
 function getFileIcon($file=''){
 	$progpath=dirname(__FILE__);
@@ -13045,7 +13045,7 @@ function getFileIcon($file=''){
 	elseif(isAudioFile($file)){$icon="audio.gif";}
 	elseif(isVideoFile($file)){$icon="video.gif";}
 	else{return null;}
-	return '<img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" />';
+	return '<img src="/wfiles/icons/files/'.$icon.'" class="w_middle" alt="" >';
 	}
 //---------- begin function getHolidays
 /**
@@ -13528,7 +13528,7 @@ function getCharset($str=''){
  *		rating - max rating, defaults to g [ g | pg | r | x ]
  * @return String containing either just a URL or a complete image tag
  * @source https://gravatar.com/site/implement/images/php/
- * @usage <img src="&lt;?=getGravatar('some.email@gmail.com');?&gt;" alt="gravatar" />
+ * @usage <img src="&lt;?=getGravatar('some.email@gmail.com');?&gt;" alt="gravatar" >
  */
 function getGravatar($email,$params=array()){
 	if(!isset($params['size'])){$params['size']=80;}
@@ -14625,7 +14625,7 @@ function getCSVFileContents($file,$params=array()){
 						$row['-table']=$params['addtable'];
 						set_time_limit(180);
 						$ok=addDBRecord($row);
-						if(isset($params['echo']) && $params['echo']){echo "record {$ok}<br />\n";}
+						if(isset($params['echo']) && $params['echo']){echo "record {$ok}<br >\n";}
 						$results['addtable_results'][]=$ok;
 	                }
 	                else{
@@ -14667,7 +14667,7 @@ function getCSVFileContents($file,$params=array()){
 					$row['-table']=$params['addtable'];
 					set_time_limit(180);
 					$ok=addDBRecord($row);
-					if(isset($params['echo']) && $params['echo']){echo "record {$ok}<br />\n";}
+					if(isset($params['echo']) && $params['echo']){echo "record {$ok}<br >\n";}
 					$results['addtable_results'][]=$ok;
                 }
                 else{
@@ -18561,7 +18561,7 @@ function postEditCheck($tables=array()){
 		//$xml .= "<!-- {$table} has ".count($recs)." records -->\n";
 		foreach($recs as $rec){
 			$timestamp=strlen($rec['_edate_utime'])?$rec['_edate_utime']:$rec['_cdate_utime'];
-			$xml .= '	<WASQL_CHECK table="'.$table.'" _id="'.$rec['_id'].'" name="'.$rec['name'].'" timestamp="'.$timestamp.'" />'.PHP_EOL;
+			$xml .= '	<WASQL_CHECK table="'.$table.'" _id="'.$rec['_id'].'" name="'.$rec['name'].'" timestamp="'.$timestamp.'" >'.PHP_EOL;
         	}
     	}
     $xml .= "</xmlroot>\n";
@@ -20756,16 +20756,16 @@ function processActions(){
 			}
 			else{
 				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
-				echo '	<input type="hidden" name="setprocessing" value="0" />'.PHP_EOL;
+				echo '	<input type="hidden" name="setprocessing" value="0" >'.PHP_EOL;
 			}
 			if(isset($_REQUEST['noicon'])){
-				echo '	<input type="hidden" name="_noicon" value="'.$_REQUEST['noicon'].'" />'.PHP_EOL;	
+				echo '	<input type="hidden" name="_noicon" value="'.$_REQUEST['noicon'].'" >'.PHP_EOL;	
 			}
-			echo '	<input type="hidden" name="_table" value="'.$_REQUEST['table'].'" />'.PHP_EOL;
-			echo '	<input type="hidden" name="_fields" value="'.$_REQUEST['field'].'" />'.PHP_EOL;
-			echo '	<input type="hidden" name="_id" value="'.$_REQUEST['id'].'" />'.PHP_EOL;
-			echo '	<input type="hidden" name="_action" value="EDIT" />'.PHP_EOL;
-			echo '	<input type="hidden" name="_editfield" value="'.$_REQUEST['field'].'" />'.PHP_EOL;
+			echo '	<input type="hidden" name="_table" value="'.$_REQUEST['table'].'" >'.PHP_EOL;
+			echo '	<input type="hidden" name="_fields" value="'.$_REQUEST['field'].'" >'.PHP_EOL;
+			echo '	<input type="hidden" name="_id" value="'.$_REQUEST['id'].'" >'.PHP_EOL;
+			echo '	<input type="hidden" name="_action" value="EDIT" >'.PHP_EOL;
+			echo '	<input type="hidden" name="_editfield" value="'.$_REQUEST['field'].'" >'.PHP_EOL;
 			switch(strtolower($_REQUEST['table'])){
 				case '_config':
 					switch(strtolower($_REQUEST['field'])){
@@ -21671,7 +21671,7 @@ function arrayToXML($data, $rootNodeName = 'data', $xml=null){
 		@ini_set ('zend.ze1_compatibility_mode', 0);
 	}
 	if ($xml == null){
-		$xml = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><$rootNodeName />");
+		$xml = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><$rootNodeName >");
 	}
 	// loop through the data passed in.
 	foreach($data as $key => $value){
@@ -22416,13 +22416,13 @@ function swfChart($recs=array(),$params=array(),$crc=''){
   	$data .= ">";
   	foreach($recs as $rec){
 		if(isset($rec['color'])){
-      		$data .= "<set name='{$rec['xval']}' value='{$rec['yval']}' color='".$rec['color']."' />";
+      		$data .= "<set name='{$rec['xval']}' value='{$rec['yval']}' color='".$rec['color']."' >";
       	}
     	elseif(isset($params['color'])){
-      		$data .= "<set name='{$rec['xval']}' value='{$rec['yval']}' color='".$params['color']."' />";
+      		$data .= "<set name='{$rec['xval']}' value='{$rec['yval']}' color='".$params['color']."' >";
       	}
     	else{
-      		$data .= "<set name='{$rec['xval']}' value='{$rec['yval']}' />";
+      		$data .= "<set name='{$rec['xval']}' value='{$rec['yval']}' >";
         }
 	}
   	$data .= "</graph>";
@@ -22704,8 +22704,8 @@ function underMaintenance($note=''){
 	$rtn='';
 	$rtn .= '<html>'.PHP_EOL;
 	$rtn .= '<head>'.PHP_EOL;
-	$rtn .= '	<link type="text/css" rel="stylesheet" href="/wfiles/min/index.php?g=w_Css3" />'.PHP_EOL;
-	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="/wfiles/css/print.css" media="print" />'.PHP_EOL;
+	$rtn .= '	<link type="text/css" rel="stylesheet" href="/wfiles/min/index.php?g=w_Css3" >'.PHP_EOL;
+	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="/wfiles/css/print.css" media="print" >'.PHP_EOL;
 	$rtn .= '	<script type="text/javascript" src="/wfiles/min/index.php?g=w_Js3"></script>'.PHP_EOL;
 	$rtn .= '</head>'.PHP_EOL;
 	$rtn .= '<body>'.PHP_EOL;
@@ -22738,8 +22738,8 @@ function underConstruction($note='',$login=0){
 	$rtn='';
 	$rtn .= '<html>'.PHP_EOL;
 	$rtn .= '<head>'.PHP_EOL;
-	$rtn .= '	<link type="text/css" rel="stylesheet" href="/wfiles/min/index.php?g=w_Css3" />'.PHP_EOL;
-	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="/wfiles/css/print.css" media="print" />'.PHP_EOL;
+	$rtn .= '	<link type="text/css" rel="stylesheet" href="/wfiles/min/index.php?g=w_Css3" >'.PHP_EOL;
+	$rtn .= ' 	<link type="text/css" rel="stylesheet" href="/wfiles/css/print.css" media="print" >'.PHP_EOL;
 	$rtn .= '	<script type="text/javascript" src="/wfiles/min/index.php?g=w_Js3"></script>'.PHP_EOL;
 	$rtn .= '</head>'.PHP_EOL;
 	$rtn .= '<body>'.PHP_EOL;
@@ -23011,7 +23011,7 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
                 $current = &$current[$tag][$last_item_index];
             	}
         	}
-		elseif($type == "complete") { //Tags that ends in 1 line '<tag />'
+		elseif($type == "complete") { //Tags that ends in 1 line '<tag >'
             //See if the key is already taken.
             if(!isset($current[$tag])) { //New Key
                 $current[$tag] = $result;
