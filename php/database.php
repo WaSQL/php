@@ -1253,11 +1253,13 @@ function databaseListRecords($params=array()){
 		$efile="{$epath}/".$ename;
 		setFileContents($efile,$csv);
 		$url='/php/index.php?-destroy=1&_pushfile='.encodeBase64($efile);
-		$pretable=<<<ENDOFPRETABLE
+		if(isset($params['-export']) && $params['-export']==1){
+			$pretable=<<<ENDOFPRETABLE
 		<div style="display:flex;justify-content:flex-end;">
 			<a href="{$url}" title="Export current results to CSV file" class="btn"><span class="icon-export w_bold"></span></a>
 		</div>
 ENDOFPRETABLE;
+		}
 		if(!isset($params['-pretable'])){
 			$params['-pretable']=$pretable;
 		}
