@@ -61,7 +61,7 @@ function splunkQueryResults($query,$params=array()){
     $spost=postURL($searchUrl,$searchData);
     //get sid
     if(!isset($spost['json_array']['sid'])){
-    	return "FAILED search".printValue($searchData);
+    	return "FAILED search".printValue($searchData).printValue($spost['json_array']);
     }
     $sid=$spost['json_array']['sid'];
 
@@ -98,10 +98,15 @@ function splunkQueryResults($query,$params=array()){
         	'-json'=>1,
         	'-method'=>'GET'
         ));
-        if(!isset($post['json_array']['results'][0])){
-        	break;
+        if(isset($post['json_array']['entry'][0])){
+            $recs=array_merge($recs,$post['json_array']['entry']);
         }
-        $recs=array_merge($recs,$post['json_array']['results']);
+        elseif(isset($post['json_array']['results'][0])){
+        	$recs=array_merge($recs,$post['json_array']['results']);
+        }
+        else{
+            break;
+        }
         
         // Store total count on first iteration
         if ($totalCount === null) {
