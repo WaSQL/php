@@ -5,17 +5,38 @@
 	splunk can be queried using SQL like a database.
 	Usage:
 		<database
-	        name="splunk"
-	        dbhost="{host}"
+	        name="my_splunk"
+	        dbhost="{yoursplunkID}.splunkcloud.com:8089"
 	        dbtype="splunk"
-	        dbuser="{userKey}"
-	        dbpass="{secretKey}"
 	        dbkey="{apiKey or token}"
 	    />
 */
 
 function splunkGetDBRecords($params=array()){
-	return splunkQueryResults($params['-query']);
+	return splunkQueryResults($params['-query'],$params);
+}
+
+function splunkGetDBTables($params=array()){
+    $query=<<<ENDOFQUERY
+| metadata type=sourcetypes index=* 
+| table sourcetype
+ENDOFQUERY;
+    $recs=splunkQueryResults($query,$params);
+    $k="sourcetype";
+    foreach($recs as $rec){
+        $tables[]=strtolower($rec[$k]);
+    }
+    return $tables; 
+}
+function splunkGetDBFieldInfo($table,$params=array()){
+    $query=<<<ENDOFQUERY
+| search sourcetype={$table} 
+| fieldsummary 
+| eval _dbfield=field, _dbtype_ex=typeof(field) 
+| table _dbfield _dbtype_ex
+ENDOFQUERY;
+    $recs=splunkQueryResults($query,$params);
+    return $recs; 
 }
 //---------- begin function splunkQueryResults ----------
 /**
@@ -46,19 +67,19 @@ function splunkQueryResults($query,$params=array()){
 
 	// Configuration
     $searchUrl = "https://{$db['dbhost']}/services/search/v2/jobs";
-    $resultsUrl = "https://{$db['dbhost']}/services/search/v2/results";
 	
     // Prepare the search query data
     $searchData = [
-        'search' => $query,
-        'earliest_time' => '-24h',  // Last 24 hours by default
-        'output_mode' => 'json',
-        '-headers'=>array(
+        'search'        => $query,
+        // 'earliest_time' => '-48@h',  // Last 24 hours by default
+        // 'latest_time'   => 'now',
+        'output_mode'   => 'json',
+        '-headers'      => array(
         	'Authorization: Bearer ' . $db['dbkey'],
             'Content-Type: application/x-www-form-urlencoded'
         ),
-        '-json'=>1,
-        '-nossl'=>1
+        '-json'         => 1,
+        '-nossl'        => 1
     ];
     // Execute search job request
     $spost=postURL($searchUrl,$searchData);
@@ -70,57 +91,117 @@ function splunkQueryResults($query,$params=array()){
 
     // Poll for job completion
     $complete = false;
-    $maxAttempts = 50;
+    $maxAttempts = 10;
     $attempts = 0;
     $url=$searchUrl . '/' . $sid;
+    $sleepx=1;
+    $sleepcnt=0;
     while (!$complete && $attempts < $maxAttempts) {
-        sleep(2); // Wait 2 seconds between checks
-        
-        $post=postURL($url,array('-method'=>'GET','-json'=>1));
-        if(isset($post['json_array']['isDone']) && $post['json_array']['isDone']){
+        sleep($sleepx); // Wait 2 seconds between checks
+        $sleepcnt+=$sleepx;
+        $sleepx+=1;
+        $post=postURL($url,array(
+            '-method'       =>'GET',
+            'output_mode'   => 'json',
+            '-json'         => 1,
+            '-headers'      => array(
+                'Authorization: Bearer ' . $db['dbkey'],
+                'Content-Type: application/x-www-form-urlencoded'
+            ),
+            '-nossl'        => 1
+        ));
+        if($post['curl_info']['http_code'] >=400){
+            return "FAILED search".printValue($post['json_array']);
+        }
+        $isDone=0;
+        if(isset($post['json_array']['isDone'])){$isDone=$post['json_array']['isDone'];}
+        elseif(isset($post['json_array']['entry'][0]['content']['isDone'])){$isDone=$post['json_array']['entry'][0]['content']['isDone'];}
+        if($isDone || $isDone=='true' || $isDone==1){$isDone=1;}
+        //echo $isDone.printValue($post['json_array']);exit;
+        if($isDone==1){
         	$complete=true;
+            break;
         }
         
         $attempts++;
     }
 
-    if(!$complete){return "job timed out";}
+    if(!$complete){return "job timed out after {$attempts} attempts and {$sleepcnt} seconds";}
 
    	// Get all results with pagination
-    $recs = [];
-    $totalCount = null;
-    $offset=commonCoalesce($params['offset'],0);
-    $limit=commonCoalesce($params['limit'],1000);
-    do {
-        // Get results with pagination parameters
-        $paginatedUrl = $resultsUrl . '?sid=' . $sid . 
-                       '&offset=' . $offset . 
-                       '&count=' . $limit;
-        
-        $post=postURL($paginatedUrl,array(
-        	'-json'=>1,
-        	'-method'=>'GET'
-        ));
-        if(isset($post['json_array']['entry'][0])){
-            $recs=array_merge($recs,$post['json_array']['entry']);
-        }
-        elseif(isset($post['json_array']['results'][0])){
-        	$recs=array_merge($recs,$post['json_array']['results']);
+    if(isset($fh)){unset($fh);}
+    if(isset($params['-filename'])){
+        $starttime=microtime(true);
+        if(isset($params['-append'])){
+            //append
+            $fh = fopen($params['-filename'],"ab");
         }
         else{
-            break;
+            if(file_exists($params['-filename'])){unlink($params['-filename']);}
+            $fh = fopen($params['-filename'],"wb");
         }
+        if(!isset($fh) || !is_resource($fh)){
+            return "Failed to create {$params['-filename']}";
+        }
+        if(isset($params['-logfile'])){
+            setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+        }
+    }
+    else{$recs=array();}
+    $totalCount = null;
+    $header=0;
+    $offset=commonCoalesce($params['offset'],0);
+    $limit=commonCoalesce($params['limit'],1000);
+    $pcount=1;
+    do {
+        // Get results with pagination parameters
+        $paginatedUrl = $searchUrl . "/{$sid}/results";
         
-        // Store total count on first iteration
-        if ($totalCount === null) {
-            $totalCount = $post['json_array']['totalResults'];
+        $post=postURL($paginatedUrl,array(
+        	'-method'=>'GET',
+            '-json'         => 1,
+            'offset'        => $offset,
+            'count'         => $limit,
+            'output_mode'   => 'json',
+            '-headers'      => array(
+                'Authorization: Bearer ' . $db['dbkey'],
+                'Content-Type: application/x-www-form-urlencoded'
+            ),
+            '-nossl'        => 1
+        ));
+        //echo "HERE".printValue($post);exit;
+        if(isset($post['json_array']['results'][0])){
+            $pcount=count($post['json_array']['results']);
+            $rowcount+=$pcount;
+            if(isset($params['-filename']) && isset($fh)){
+                $csv=arrays2CSV($post['json_array']['results']);
+                if($header==0){
+                    $csv="\xEF\xBB\xBF".$csv;
+                    $header=1;
+                }
+                $csv=preg_replace('/[\r\n]+$/','',$csv);
+                fwrite($fh,$csv."\r\n");    
+            }
+            else{
+                $recs=array_merge($recs,$post['json_array']['results']);
+            }
+            if(isset($params['-logfile'])){
+                setFileContents($params['-logfile'],"Rowcount:".$rowcount.PHP_EOL);
+            }
+        }
+        else{
+            $pcount=0;
         }
 
         // Move offset for next iteration
         $offset += $limit;
         
-    } while ($offset < $totalCount);
-    
+    } while ($pcount > 0);
+    //close file if specified
+    if(isset($params['-filename']) && isset($fh)){
+        @fclose($fh);
+        return $rowcount;
+    }
     return $recs;
 }
 

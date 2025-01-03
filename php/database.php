@@ -1440,7 +1440,7 @@ ENDOFPRETABLE;
 				if(!function_exists('splunkQueryResults')){
 					loadExtras('splunk');
 				}
-				$params['-list']=splunkQueryResults($params['-query']);
+				$params['-list']=splunkQueryResults($params['-query'],$params);
 			break;
 			case 'ccv2':
 				if(!function_exists('ccv2QueryResults')){
