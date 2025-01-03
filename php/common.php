@@ -13734,16 +13734,24 @@ function getFileContentsPartial($file,$begin=0,$end=200){
 * @param params array
 *	[-start] - line to start on
 *	[-stop]  - line to stop on
+*	[-mod] string - mod,val  only process lines that have a mod of value
 *	any additional key/values passed in will be passed through to the function
 * @return number of lines processed
 * @usage
 *	$num=processFileLines($afile,'processLine');
+*	$num=processFileLines($afile,'processLine',array('-mod'=>'4,1'));
 */
 function processFileLines($file,$func_name,$params=array()){
 	//validate function exists
 	if(!function_exists($func_name)){
 		return 'invalid function:'.$func_name;
+	}
+	if(isset($params['-mod'])){
+		if(!is_array($params['-mod'])){
+			list($m,$v)=preg_split('/\,/',$params['-mod'],2);
+			$params['-mod']=array('mod'=>$m,'val'=>$v);
 		}
+	}
 	$linecnt = 0;
 	if ($fh = fopen($file,'r')) {
 		while (!feof($fh)) {
@@ -13758,6 +13766,11 @@ function processFileLines($file,$func_name,$params=array()){
 				$linecnt++;
 				break;
 			}
+			//-mod
+			if(isset($params['-mod']['mod']) && $linecnt % $params['-mod']['mod'] != $params['-mod']['val']){
+				$linecnt++;
+				continue;
+			}
 			//build an array with this line and some general info about where we are
 			$set=array(
 				'file'			=> $file,
@@ -13765,7 +13778,7 @@ function processFileLines($file,$func_name,$params=array()){
 				'line'			=> $line
 			);
 			foreach($params as $key=>$val){
-				if(preg_match('/^(\-start|\-stop)$/i',$key)){continue;}
+				if(preg_match('/^(\-start|\-stop|\-mod)$/i',$key)){continue;}
             	$set[$key]=$val;
 			}
 			//pass array to function
