@@ -67,12 +67,19 @@ function splunkQueryResults($query,$params=array()){
 
 	// Configuration
     $searchUrl = "https://{$db['dbhost']}/services/search/v2/jobs";
-	
+	if(preg_match('/\#earliest_time\:([a-z0-9\+\-\@]+)/',$query,$m)){
+        $earliest_time=$m[1];
+    }
+    else{$earliest_time='-24@h';}
+    if(preg_match('/\#latest_time\:([a-z0-9\+\-\@]+)/',$query,$m)){
+        $latest_time=$m[1];
+    }
+    else{$latest_time='now';}
     // Prepare the search query data
     $searchData = [
         'search'        => $query,
-        // 'earliest_time' => '-48@h',  // Last 24 hours by default
-        // 'latest_time'   => 'now',
+         'earliest_time' => $earliest_time,  // Last 24 hours by default
+         'latest_time'   => $latest_time,
         'output_mode'   => 'json',
         '-headers'      => array(
         	'Authorization: Bearer ' . $db['dbkey'],
@@ -91,15 +98,17 @@ function splunkQueryResults($query,$params=array()){
 
     // Poll for job completion
     $complete = false;
-    $maxAttempts = 10;
+    $maxAttempts = 20;
     $attempts = 0;
     $url=$searchUrl . '/' . $sid;
     $sleepx=1;
     $sleepcnt=0;
+    $debug=array();
     while (!$complete && $attempts < $maxAttempts) {
         sleep($sleepx); // Wait 2 seconds between checks
         $sleepcnt+=$sleepx;
-        $sleepx+=1;
+        if($sleepx > 3){$sleepx=1;}
+        else{$sleepx+=1;}
         $post=postURL($url,array(
             '-method'       =>'GET',
             'output_mode'   => 'json',
@@ -117,6 +126,7 @@ function splunkQueryResults($query,$params=array()){
         if(isset($post['json_array']['isDone'])){$isDone=$post['json_array']['isDone'];}
         elseif(isset($post['json_array']['entry'][0]['content']['isDone'])){$isDone=$post['json_array']['entry'][0]['content']['isDone'];}
         if($isDone || $isDone=='true' || $isDone==1){$isDone=1;}
+        $debug[]="Attempt:{$attempts}. doneProgress:{$post['json_array']['entry'][0]['content']['doneProgress']}";
         //echo $isDone.printValue($post['json_array']);exit;
         if($isDone==1){
         	$complete=true;
@@ -126,7 +136,10 @@ function splunkQueryResults($query,$params=array()){
         $attempts++;
     }
 
-    if(!$complete){return "job timed out after {$attempts} attempts and {$sleepcnt} seconds";}
+    if(!$complete){
+        echo "job timed out after {$attempts} attempts and {$sleepcnt} seconds".printValue($debug);exit;
+        return "job timed out after {$attempts} attempts and {$sleepcnt} seconds";
+    }
 
    	// Get all results with pagination
     if(isset($fh)){unset($fh);}
@@ -169,7 +182,7 @@ function splunkQueryResults($query,$params=array()){
             ),
             '-nossl'        => 1
         ));
-        //echo "HERE".printValue($post);exit;
+        //echo "HERE".printValue($post['json_array']);exit;
         if(isset($post['json_array']['results'][0])){
             $pcount=count($post['json_array']['results']);
             $rowcount+=$pcount;
