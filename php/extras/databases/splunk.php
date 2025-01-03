@@ -15,7 +15,7 @@
 */
 
 function splunkGetDBRecords($params=array()){
-	return splunkQueryResults($params['query']);
+	return splunkQueryResults($params['-query']);
 }
 //---------- begin function splunkQueryResults ----------
 /**
@@ -29,6 +29,9 @@ function splunkGetDBRecords($params=array()){
 * @usage $recs=splunkQueryResults('select top 50 * from abcschema.abc');
 */
 function splunkQueryResults($query,$params=array()){
+    if(!strlen(trim($query))){
+        return array(array('function'=>'splunkQueryResults','error'=>'No query specified'));
+    }
 	global $DATABASE;
 	global $CONFIG;
 	$DATABASE['_lastquery']=array(
@@ -61,7 +64,7 @@ function splunkQueryResults($query,$params=array()){
     $spost=postURL($searchUrl,$searchData);
     //get sid
     if(!isset($spost['json_array']['sid'])){
-    	return "FAILED search".printValue($searchData).printValue($spost['json_array']);
+    	return "FAILED search".printValue($spost['json_array']);
     }
     $sid=$spost['json_array']['sid'];
 
