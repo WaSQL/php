@@ -1106,7 +1106,10 @@ function commonSearchFiltersForm($params=array()){
 		}
 		$vals=array();
 		foreach($params['-searchfields'] as $field){
-	    	$vals[$field]=ucwords(str_replace('_',' ',$field));
+			if(isset($params["{$field}_displayname"])){$dname=$params["{$field}_displayname"];}
+			elseif(isset($params["{$field}_options"]['displayname'])){$dname=$params["{$field}_options"]['displayname'];}
+			else{$dname=ucwords(str_replace('_',' ',$field));}
+	    	$vals[$field]=$dname;
 		}
 	}
 	elseif(!empty($params['-table'])){
@@ -1114,7 +1117,10 @@ function commonSearchFiltersForm($params=array()){
 		$vals=array('*'=>'Any Field');
 		foreach($fields as $field){
 	    	if(isWasqlField($field) && $field != '_id'){continue;}
-	    	$vals[$field]=ucwords(str_replace('_',' ',$field));
+	    	if(isset($params["{$field}_displayname"])){$dname=$params["{$field}_displayname"];}
+			elseif(isset($params["{$field}_options"]['displayname'])){$dname=$params["{$field}_options"]['displayname'];}
+			else{$dname=ucwords(str_replace('_',' ',$field));}
+	    	$vals[$field]=$dname;
 		}
 	}
 	$btnclass='btn';
