@@ -24,7 +24,7 @@ function langPHPInfo(){
 function langPythonInfo(){
 	//get pythoninfo contents
 	$pypath=getWasqlPath('python');
-	$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\"");
+	$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\" 2>&1");
 	$data=$out['stdout'];
 	//get modules for left side menu by parsing pythoninfo contents
 	preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
@@ -55,7 +55,7 @@ function langPythonInfo(){
 function langPerlInfo(){
 	$modules=array();
 	$menu=array();
-	$out=cmdResults('perl -V');
+	$out=cmdResults('perl -V 2>&1');
 	$lines=preg_split('/[\r\n]+/',$out['stdout']);
 	$perlinfo=array();
 	$section='';
@@ -188,7 +188,7 @@ function langPerlInfo(){
 		}
 	}
 	ksort($menu);
-	$out=cmdResults("perl -v");
+	$out=cmdResults("perl -v 2>&1");
 	$version='';
 	if(preg_match('/\(v([0-9\.]+?)\)/',$out['stdout'],$m)){
 		$version=$m[1];
@@ -227,13 +227,17 @@ function langNodeInfo(){
 	$tpath=getWasqlTempPath();
 	if(file_exists("{$tpath}/npm_modules.json")){
 		$json=decodeJSON(getFileContents("{$tpath}/npm_modules.json"));
+		if(!is_array($json)){
+			$out=cmdResults('npm ls -g --json 2>/dev/null');
+			$json=decodeJSON($out['stdout']);
+		}
 	}
 	else{
-		$out=cmdResults('npm -g -json ll');
+		$out=cmdResults('npm ls -g --json 2>/dev/null');
 		$json=decodeJSON($out['stdout']);
 	}
-	if(!is_array($json)){return array('','');}
-	$out=cmdResults("node -v");
+	if(!is_array($json)){return array($out['stdout'],$json);}
+	$out=cmdResults("node -v 2>/dev/null");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
 <header class="align-left">
@@ -282,10 +286,10 @@ function langLuaInfo(){
 		$lines=file("{$tpath}/lua_modules.txt");
 	}
 	else{
-		$out=cmdResults('luarocks list --porcelain');
+		$out=cmdResults('luarocks list --porcelain 2>&1');
 		$lines=preg_split('/[\r\n]+/',$out['stdout']);
 	}
-	$out=cmdResults("lua -v");
+	$out=cmdResults("lua -v 2>&1");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
 <header class="align-left">
