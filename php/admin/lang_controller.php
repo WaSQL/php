@@ -6,13 +6,13 @@
 	$lang=$_REQUEST['lang'];
 	switch(strtolower($lang)){
 		case 'php':
-			$install='';
+			$install=array('cmd'=>'','stdout'=>'');
 			if(isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				//install this module
 				$module=trim($_REQUEST['module']);
 				if(isWindows()){
-					$install="Unable to auto install PHP modules on windows.";
-					$install.='<br><br><a href="https://www.php.net/manual/en/install.pecl.windows.php" target="_blank"><span class="icon-php"></span> Click for instructions.</a>';
+					$install['cmd']="";
+					$install['stdout']='Unable to auto install PHP modules on windows.<br><br><a href="https://www.php.net/manual/en/install.pecl.windows.php" class="w_link w_white" target="_blank"><span class="icon-php"></span> Click for instructions.</a>';
 				}
 				else{
 					$out=cmdResults('cat /etc/os-release');
@@ -42,7 +42,7 @@
 			list($body,$modules)=langPHPInfo();
 		break;
 		case 'python':
-			$install='';
+			$install=array('cmd'=>'','stdout'=>'');
 			if(isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$module=trim($_REQUEST['module']);
 				//install this module
@@ -54,7 +54,7 @@
 			list($body,$modules)=langPythonInfo();
 		break;
 		case 'perl':
-			$install='';
+			$install=array('cmd'=>'','stdout'=>'');
 			if(isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$module=trim($_REQUEST['module']);
 				//install this module
@@ -66,7 +66,7 @@
 			list($body,$modules)=langPerlInfo();
 		break;
 		case 'node':
-			$install='';
+			$install=array('cmd'=>'','stdout'=>'');
 			if(isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$module=trim($_REQUEST['module']);
 				//install this module
@@ -78,7 +78,7 @@
 			list($body,$modules)=langNodeInfo();
 		break;
 		case 'lua':
-			$install='';
+			$install=array('cmd'=>'','stdout'=>'');
 			if(isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$module=trim($_REQUEST['module']);
 				//install this module
@@ -88,6 +88,18 @@
 				return;
 			}
 			list($body,$modules)=langLuaInfo();
+		break;
+		case 'r':
+			$install=array('cmd'=>'','stdout'=>'');
+			if(isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
+				$module=trim($_REQUEST['module']);
+				//install this module
+				$cmd="python3 -m pip install {$module}";
+				$install=cmdResults($cmd);
+				setView('install',1);
+				return;
+			}
+			list($body,$modules)=langRInfo();
 		break;
 	}
 	setView('default',1);

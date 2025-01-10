@@ -1362,6 +1362,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'nodeinfo':
 		case 'perlinfo':
 		case 'luainfo':
+		case 'rinfo':
 			if(!isset($_REQUEST['module'])){
 				echo adminViewPage('topmenu');
 			}
@@ -1420,6 +1421,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'nodeinfo':
 		case 'perlinfo':
 		case 'luainfo':
+		case 'rinfo':
 			$_REQUEST['lang']=str_replace('info','',$_REQUEST['_menu']);
 			$htm=adminViewPage('lang');
 			//check for translate tags

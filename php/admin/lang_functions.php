@@ -228,16 +228,16 @@ function langNodeInfo(){
 	if(file_exists("{$tpath}/npm_modules.json")){
 		$json=decodeJSON(getFileContents("{$tpath}/npm_modules.json"));
 		if(!is_array($json)){
-			$out=cmdResults('npm ls -g --json 2>/dev/null');
+			$out=cmdResults('npm.cmd ls --g --json');
 			$json=decodeJSON($out['stdout']);
 		}
 	}
 	else{
-		$out=cmdResults('npm ls -g --json 2>/dev/null');
+		$out=cmdResults('npm ls --g --json');
 		$json=decodeJSON($out['stdout']);
 	}
-	if(!is_array($json)){return array($out['stdout'],$json);}
-	$out=cmdResults("node -v 2>/dev/null");
+	if(!is_array($json)){return array('',array());}
+	$out=cmdResults("node -v");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
 <header class="align-left">
@@ -312,6 +312,38 @@ ENDOFHEADER;
 </table>
 ENDOFSECTION;
 		$menu[$k]=$module;
+	}
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	ksort($modules);
+	ksort($menu);
+	foreach($modules as $k=>$section){
+		$data.=$section;
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langRInfo(){
+	//get pythoninfo contents
+	$rpath=getWasqlPath('R');
+	$out=cmdResults("rscript \"{$rpath}/rinfo.R\" 2>&1");
+	//echo printValue($out);exit;
+	$data=$out['stdout'];
+	//get modules for left side menu by parsing pythoninfo contents
+	preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
+	$header='';
+	if(preg_match('/\<header\>(.+?)\<\/header\>/ism',$data,$m)){
+		$header=$m[0];
+	}
+	$modules=array();
+	$menu=array();
+	foreach($sections[0] as $section){
+		$module='';
+		if(preg_match('/\<a name\=\"module\_(.+?)\">(.+?)\<\/a\>/is',$section,$m)){
+			$k=strtolower($m[1]);
+			$modules[$k]=$section;
+			$menu[$k]=$m[1];
+		}
 	}
 	$data='<div class="align-center" style="width:934px;">';
 	$data.=$header;
