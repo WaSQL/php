@@ -1,4 +1,12 @@
 <?php
+function langLinuxOSName(){
+	if(isWindows()){return 'windows';}
+	$out=cmdResults('cat /etc/os-release');
+	$ini='[os]'.PHP_EOL.$out['stdout'];
+	$info=commonParseIni($ini);
+	if(isset($info['os']['name'])){return $info['os']['name'];}
+	return 'unknown';
+}
 function langPHPInfo(){
 	//get phpinfo contents
 	ob_start();
@@ -233,10 +241,9 @@ function langNodeInfo(){
 		}
 	}
 	else{
-		$out=cmdResults('npm ls --g --json');
+		$out=cmdResults('npm.cmd ls --g --json');
 		$json=decodeJSON($out['stdout']);
 	}
-	if(!is_array($json)){return array('',array());}
 	$out=cmdResults("node -v");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
@@ -247,6 +254,8 @@ function langNodeInfo(){
 	</div>
 </header>
 ENDOFHEADER;
+	if(!is_array($json)){return array($header,array());}
+	
 	foreach($json['dependencies'] as $module=>$info){
 		$k=strtolower($module);
 		$version=isset($info['version'])?$info['version']:'';

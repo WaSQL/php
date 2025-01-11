@@ -14492,7 +14492,7 @@ function csv2Arrays($lines,$params=array()){
 	$fields=array();
 	foreach($xfields as $field){
 		if(isset($params['-lowercase']) && $params['-lowercase']){$field=strtolower($field);}
-		if(isset($params['-nospaces']) && $params['-nospaces']){$field=preg_replace('/\ +/','_',$field);}
+		if(isset($params['-nospaces']) && $params['-nospaces']){$field=preg_replace('/\ +/','_',trim($field));}
 		if(isset($params['-fieldmap'][$field])){
 			$field=$params['-fieldmap'][$field];
 		}

@@ -1356,14 +1356,8 @@ $params=array(
 echo buildHtmlBegin($params);
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
-		case 'phpinfo':
-		case 'pythoninfo':
-		case 'perlinfo':
-		case 'nodeinfo':
-		case 'perlinfo':
-		case 'luainfo':
-		case 'rinfo':
-			if(!isset($_REQUEST['module'])){
+		case 'lang':
+			if(!isset($_REQUEST['lang'])){
 				echo adminViewPage('topmenu');
 			}
 		break;
@@ -1415,14 +1409,7 @@ if(isset($_REQUEST['_menu'])){
 			echo $htm;
 			exit;
 		break;
-		case 'phpinfo':
-		case 'pythoninfo':
-		case 'perlinfo':
-		case 'nodeinfo':
-		case 'perlinfo':
-		case 'luainfo':
-		case 'rinfo':
-			$_REQUEST['lang']=str_replace('info','',$_REQUEST['_menu']);
+		case 'lang':
 			$htm=adminViewPage('lang');
 			//check for translate tags
 			$htm=processTranslateTags($htm);

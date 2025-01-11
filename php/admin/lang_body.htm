@@ -15,29 +15,59 @@
 	.v i {color: #999;}
 	header{text-align:left;}
 </style>
-<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;margin-bottom:100px;">
-	<div class="w_nowrap is-hidden-mobile" style="margin-top:20px;min-width:250px;">
-		<form class="w_form" name="moduleform" data-setprocessing="installbutton" method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'centerpop');" style="width:100%;margin-bottom:10px;">
-			<input type="hidden" name="_menu" value="<?=$_REQUEST['_menu'];?>">
-			<input type="hidden" name="title" value="Install <?=$_REQUEST['lang'];?> module">
-			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
-				<input  style="flex:1;" class="input" name="module" type="text" placeholder="module to install" required autofocus>
-				<button style="margin-left:5px;" id="installbutton" type="submit" class="btn">Install</button>
-			</div>
-		</form>
-		<h3><?=count($modules);?> Modules Installed</h3>
-		<?=renderEach('module',$modules,'name');?>
-	</div>
-	<div style="margin-left:5px;flex:1;">
-		<?=$body;?>
-	</div>
-</div>
+<ul class="nav-tabs w_white">
+	<li class="active"><a href="#" data-lang="php" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-php"></span> PHP</a></li>
+	<li><a href="#" data-lang="python" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-python"></span> Python</a></li>
+	<li><a href="#" data-lang="perl" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-perl"></span> Perl</a></li>
+	<li><a href="#" data-lang="nodejs" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-nodejs"></span> NodeJs</a></li>
+	<li><a href="#" data-lang="lua" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-lua"></span> Lua</a></li>
+	<li><a href="#" data-lang="r" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="brand-r"></span> R</a></li>
+	<li><a href="#" id="lang_tab_processing" style="border:0px;"></a></li>
+</ul>
+<div id="lang_results"><?=renderView('lang_results',$result,'result');?></div>
 </view:default>
 
-<view:install>
-<div class="w_bold"><?=$install['cmd'];?></div>
-<div style="border-radius:4px;font-family:monospace;white-space: pre;padding:15px;background:#3f3f3f;color:#FFF;margin-top:10px;"><?=$install['stdout'];?></div>
-</view:install>
+<view:lang_results>
+<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;margin-bottom:100px;" data-onload="wacss.removeId('wacss_centerpop');">
+	<div class="w_nowrap is-hidden-mobile" style="margin-top:20px;padding-right:25px;min-width:250px;max-height:90vh;overflow:auto;">
+		<form class="w_form" name="moduleform" data-onload="document.moduleform.module.select();" data-setprocessing="installbutton" method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'centerpop');" style="width:100%;margin-bottom:10px;">
+			<input type="hidden" name="_menu" value="lang">
+			<input type="hidden" name="lang" value="<?=$result['lang'];?>">
+			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
+				<input  style="flex:1;" class="input" name="module" type="text" placeholder="module name" required autofocus>
+				<select name="title" style="width:110px;font-size:0.9rem;">
+					<option value="search">Search</option>
+					<option value="install">Install</option>
+					<option value="uninstall">Uninstall</option>
+					
+				</select>
+				<button id="installbutton" type="submit" class="btn">Go</button>
+			</div>
+		</form>
+		<h3><?=count($result['modules']);?> Modules Installed</h3>
+		<?=renderEach('module',$result['modules'],'name');?>
+	</div>
+	<div style="margin-left:5px;flex:1;margin-top:20px;padding-right:25px;max-height:90vh;overflow:auto;">
+		<?=$result['body'];?>
+	</div>
+</div>
+</view:lang_results>
+
+<view:installs>
+<div data-onload="wacss.centerObject('wacss_centerpop');">
+	<view:install>
+	<div class="w_small w_gray"><?=$install['cmd'];?></div>
+	<div style="border-radius:4px;font-family:monospace;white-space: pre;padding:15px;background:#3f3f3f;color:#FFF;margin-top:10px;"><?=$install['stdout'];?><?=$install['stderr'];?></div>
+	</view:install>
+	<?=renderEach('install',$installs,'install');?>
+</div>
+</view:installs>
+
+<view:install_table>
+<div data-onload="wacss.centerObject('wacss_centerpop');">
+	<?=$install_table;?>
+</div>
+</view:install_table>
 
 <view:module>
 <div>
