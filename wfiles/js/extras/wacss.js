@@ -1076,7 +1076,7 @@ var wacss = {
 				
 			}
 			else{
-				label.innerHTML='Upload';
+				label.innerHTML=label.dataset.text || 'Upload';
 				hover.innerHTML='';
 			}
 			erase.file_element=el;
