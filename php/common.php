@@ -4143,7 +4143,7 @@ function buildFormFile($name,$params=array()){
 				$icon='<span style="align-self:center;" class="icon-music w_pointer" title="Click to preview" data-src="'.$params['value'].'" onclick="wacss.showAudio(this);"></span>';
 			}
 			else{
-				$icon='<span class="icon-music"></span>';
+				$icon='<span style="align-self:center;" class="icon-music"></span>';
 			}
 		break;
 		case 'video/*':
@@ -4160,7 +4160,7 @@ function buildFormFile($name,$params=array()){
 				$icon='<span style="align-self:center;" class="icon-video w_pointer" title="Click to preview" data-src="'.$params['value'].'" onclick="wacss.showVideo(this);"></span>';
 			}
 			else{
-				$icon='<span class="icon-video"></span>';
+				$icon='<span style="align-self:center;" class="icon-video"></span>';
 			}
 		break;
 		case 'image/*':
@@ -4183,7 +4183,7 @@ function buildFormFile($name,$params=array()){
 				$icon='<span style="align-self:center;" class="icon-image w_pointer" title="Click to preview" data-src="'.$params['value'].'" onclick="wacss.showImage(this);"></span>';
 			}
 			else{
-				$icon='<span class="icon-image"></span>';
+				$icon='<span style="align-self:center;" class="icon-image"></span>';
 			}
 		break;
 		case '.csv':
