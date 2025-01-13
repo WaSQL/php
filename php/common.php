@@ -4111,8 +4111,8 @@ function buildFormFile($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
-		if(isset($params['multiple'])){$params['text']='files to upload';}
-		else{$params['text']='file to upload';}
+		if(isset($params['multiple'])){$params['text']='Upload Files';}
+		else{$params['text']='Upload';}
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['name'])){$name=$params['name'];}
@@ -4323,7 +4323,7 @@ function buildFormFile($name,$params=array()){
 <input type="file" accept="{$params['accept']}" class="fileupload" name="{$name}" id="{$params['id']}" style="display:none;" onchange="wacss.formFileUpload(this);" {$capture} {$params['multiple']}>
 <div class="fileupload {$params['class']}">
 	{$icon}
-	<label for="{$params['id']}" data-hover="id:{$params['id']}_hover" data-position="bottom">Upload</label>
+	<label for="{$params['id']}" data-hover="id:{$params['id']}_hover" data-position="bottom">{$params['text']}</label>
 	<div class="icon-erase"></div>
 	<input type="checkbox" value="1" name="{$params['name']}_remove" style="display:none;">
 	<code style="display:none;">{$params['value']}</code>
