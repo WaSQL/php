@@ -1721,6 +1721,11 @@ function mysqlEnumQueryResults($data,$params=array()){
 function mysqlNamedQueryList(){
 	return array(
 		array(
+			'code'=>'stats',
+			'icon'=>'icon-list',
+			'name'=>'Stats'
+		),
+		array(
 			'code'=>'running_queries',
 			'icon'=>'icon-spin4',
 			'name'=>'Running Queries'
@@ -1784,15 +1789,69 @@ function mysqlNamedQuery($name,$str=''){
 		case 'kill':
 			return "KILL {$str}";
 		break;
+		case 'stats':
+			return <<<ENDOFQUERY
+-- ----------------- Stats --------------------------------
+-- listopts:query_options={"class":"w_pre w_smaller"}
+-- listopts:time_options={"class":"align-right","verboseTime":""}
+-- ------------------ SQL -------------------------------
+SELECT 'Threads_connected' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+FROM performance_schema.global_status
+WHERE VARIABLE_NAME = 'Threads_connected'
+
+UNION ALL
+
+SELECT 'Threads_running' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+FROM performance_schema.global_status
+WHERE VARIABLE_NAME = 'Threads_running'
+
+UNION ALL
+
+SELECT 'Connections' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+FROM performance_schema.global_status
+WHERE VARIABLE_NAME = 'Connections'
+
+UNION ALL
+
+SELECT 'Uptime' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+FROM performance_schema.global_status
+WHERE VARIABLE_NAME = 'Uptime'
+
+UNION ALL
+
+SELECT 'server_name' AS name, @@hostname AS value
+UNION ALL
+SELECT 'mysql_version' AS name, @@version AS value
+UNION ALL
+SELECT 'data_directory' AS name, @@datadir AS value
+UNION ALL
+SELECT 'tmp_directory' AS name, @@tmpdir AS value
+UNION ALL
+SELECT 'os_name' AS name, @@version_compile_os AS value;
+
+ENDOFQUERY;			
+		break;
 		case 'running':
 		case 'queries':
 		case 'running_queries':
 			return <<<ENDOFQUERY
 -- ----------------- RUNNING QUERIES --------------------------------
+-- listopts:query_options={"class":"w_pre w_smaller"}
 -- listopts:time_options={"class":"align-right","verboseTime":""}
--- listopts:-listfields=id,user,host,db,command,time,state
 -- ------------------ SQL -------------------------------
-SHOW processlist
+SELECT 
+    processlist_id AS pid,
+    processlist_time as time,
+    processlist_host AS host,
+    processlist_db AS db,
+    processlist_user AS user,
+    processlist_info AS query,
+    processlist_state AS state
+FROM performance_schema.threads 
+WHERE 
+    processlist_command = 'Query'
+    AND processlist_id != CONNECTION_ID()
+ORDER BY processlist_time DESC
 ENDOFQUERY;
 		break;
 		case 'sessions':
@@ -1819,16 +1878,16 @@ ENDOFQUERY;
 		case 'functions':
 			return <<<ENDOFQUERY
 -- ----------------- Functions --------------------------------
--- listopts:routine_definition_options={"class":"w_pre w_smaller"}
+-- listopts:definition_options={"class":"w_pre w_smaller"}
 -- ------------------ SQL -------------------------------
 SELECT 
-	r.routine_name as name,
+	r.routine_name AS name,
 	r.created,
-	r.last_altered as modified,
+	r.last_altered AS modified,
 	GROUP_CONCAT(pi.parameter_name, ' ', pi.data_type) AS inputs,
 	po.data_type AS output,
-	definer as created_by,
-	r.routine_definition 
+	definer AS created_by,
+	r.routine_definition AS definition 
 FROM information_schema.routines r
 LEFT JOIN information_schema.parameters pi 
 	on pi.specific_schema=r.routine_schema and pi.specific_name=r.routine_name and pi.parameter_mode='IN'
@@ -1841,17 +1900,25 @@ ENDOFQUERY;
 		break;
 		case 'procedures':
 			return <<<ENDOFQUERY
+-- ----------------- Procedures --------------------------------
+-- listopts:definition_options={"class":"w_pre w_smaller"}
+-- ------------------ SQL -------------------------------
 SELECT 
-	routine_catalog,
-	routine_schema,
-	routine_name,
-	created,
-	last_altered,
-	definer
-FROM information_schema.ROUTINES 
+	r.routine_name AS name,
+	r.created,
+	r.last_altered AS modified,
+	GROUP_CONCAT(pi.parameter_name, ' ', pi.data_type) AS inputs,
+	po.data_type AS output,
+	definer AS created_by,
+	r.routine_definition AS definition 
+FROM information_schema.routines r
+LEFT JOIN information_schema.parameters pi 
+	on pi.specific_schema=r.routine_schema and pi.specific_name=r.routine_name and pi.parameter_mode='IN'
+LEFT JOIN information_schema.parameters po 
+	on po.specific_schema=r.routine_schema and po.specific_name=r.routine_name and po.parameter_mode is null
 WHERE 
-	routine_type = 'PROCEDURE' 
-	AND routine_schema = '{$dbname}'
+	r.routine_type = 'PROCEDURE' 
+	AND r.routine_schema = '{$dbname}'
 ENDOFQUERY;
 		break;
 		case 'tables':
@@ -1882,6 +1949,9 @@ ENDOFQUERY;
 		break;
 		case 'views':
 			return <<<ENDOFQUERY
+-- ----------------- Views --------------------------------
+-- listopts:definition_options={"class":"w_pre w_smaller"}
+-- ------------------ SQL -------------------------------
 SELECT
 	table_name AS name,
 	view_definition as definition
@@ -1892,7 +1962,7 @@ ENDOFQUERY;
 		break;
 		case 'indexes':
 			return <<<ENDOFQUERY
--- ----------------- FORMAT --------------------------------
+-- ----------------- INDEXES --------------------------------
 -- listopts:is_unique_options={"checkmark":"1","checkmark_icon":"icon-mark w_blue"}
 -- listopts:is_primary_options={"checkmark":"1","checkmark_icon":"icon-mark w_red"}
 -- ------------------ SQL -------------------------------
@@ -1903,7 +1973,11 @@ SELECT
   	CASE non_unique
      	WHEN 1 THEN 0
      	ELSE 1
-     	END AS is_unique
+    END AS is_unique,
+    CASE index_name
+        WHEN 'PRIMARY' THEN 1
+        ELSE 0
+    END AS is_primary
 FROM information_schema.statistics
 WHERE 
 	table_schema NOT IN ('information_schema', 'mysql','performance_schema', 'sys')
@@ -1913,7 +1987,7 @@ GROUP BY
 	index_name,
 	non_unique,
 	table_name
-ORDER BY 1,2
+ORDER BY table_name,index_name,is_primary DESC,is_unique DESC
 ENDOFQUERY;
 		break;
 	}
