@@ -1791,9 +1791,6 @@ function mysqlNamedQuery($name,$str=''){
 		break;
 		case 'stats':
 			return <<<ENDOFQUERY
--- ----------------- Stats --------------------------------
--- listopts:query_options={"class":"w_pre w_smaller"}
--- listopts:time_options={"class":"align-right","verboseTime":""}
 -- ------------------ SQL -------------------------------
 SELECT 'Threads_connected' AS name, FORMAT(VARIABLE_VALUE,0) AS value
 FROM performance_schema.global_status
