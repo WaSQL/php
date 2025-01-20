@@ -1792,21 +1792,19 @@ function mysqlNamedQuery($name,$str=''){
 		case 'stats':
 			return <<<ENDOFQUERY
 -- ------------------ SQL -------------------------------
-SELECT 'Threads_connected' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+SELECT 'Threads Connected' AS name, FORMAT(VARIABLE_VALUE,0) AS value
 FROM performance_schema.global_status
 WHERE VARIABLE_NAME = 'Threads_connected'
 
 UNION ALL
 
-SELECT 'Threads_running' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+SELECT 'Threads Running' AS name, FORMAT(VARIABLE_VALUE,0) AS value
 FROM performance_schema.global_status
 WHERE VARIABLE_NAME = 'Threads_running'
 
-UNION ALL
+UNION ALL 
 
-SELECT 'Connections' AS name, FORMAT(VARIABLE_VALUE,0) AS value
-FROM performance_schema.global_status
-WHERE VARIABLE_NAME = 'Connections'
+SELECT 'Max Connections' AS name, @@max_connections AS value
 
 UNION ALL
 
