@@ -1791,6 +1791,8 @@ function mysqlNamedQuery($name,$str=''){
 		break;
 		case 'stats':
 			return <<<ENDOFQUERY
+-- ----------------- STATS --------------------------------
+-- listopts:value_options={"class":"align-right"}
 -- ------------------ SQL -------------------------------
 SELECT 'Threads Connected' AS name, FORMAT(VARIABLE_VALUE,0) AS value
 FROM performance_schema.global_status
@@ -1808,7 +1810,7 @@ SELECT 'Max Connections' AS name, @@max_connections AS value
 
 UNION ALL
 
-SELECT 'Uptime' AS name, FORMAT(VARIABLE_VALUE,0) AS value
+SELECT 'Uptime (seconds)' AS name, FORMAT(VARIABLE_VALUE,0) AS value
 FROM performance_schema.global_status
 WHERE VARIABLE_NAME = 'Uptime'
 
