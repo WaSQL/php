@@ -1893,6 +1893,8 @@ LEFT JOIN information_schema.parameters po
 WHERE 
 	r.routine_type = 'FUNCTION' 
 	AND r.routine_schema = '{$dbname}'
+GROUP BY 
+    r.routine_name, r.created, r.last_altered, po.data_type, definer, r.routine_definition
 ENDOFQUERY;
 		break;
 		case 'procedures':
@@ -1916,6 +1918,8 @@ LEFT JOIN information_schema.parameters po
 WHERE 
 	r.routine_type = 'PROCEDURE' 
 	AND r.routine_schema = '{$dbname}'
+GROUP BY 
+    r.routine_name, r.created, r.last_altered, po.data_type, definer, r.routine_definition
 ENDOFQUERY;
 		break;
 		case 'tables':
