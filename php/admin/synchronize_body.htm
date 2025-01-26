@@ -1,5 +1,5 @@
 <view:default>
-<form method="post" name="syncform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');">
+<form method="post" name="syncform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'modal');">
 <input type="hidden" name="_menu" value="synchronize" />
 <input type="hidden" name="func" value="sync" />
 <div class="container-fluid">
@@ -92,12 +92,12 @@
 		<td><?=$rec['changed_age'];?></td>
 		<td class="align-right w_nowrap">
 			<view:action_diff>
-			<a href="#" title="Diff" style="display:inline;" data-table="<?=$rec['tabname'];?>" data-marker="<?=$rec['marker'];?>" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Diff <?=$rec['id'];?>',_menu:'synchronize','func':'diff',table:this.dataset.table,id:'<?=$rec['id'];?>',marker:this.dataset.marker,setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
+			<a href="#" title="Diff" style="display:inline;" data-table="<?=$rec['tabname'];?>" data-marker="<?=$rec['marker'];?>" onclick="return wacss.ajaxGet('/php/admin.php','modal',{cp_title:'Diff <?=$rec['id'];?>',_menu:'synchronize','func':'diff',table:this.dataset.table,id:'<?=$rec['id'];?>',marker:this.dataset.marker,setprocessing:0});"><span class="icon-sync-diff w_bigger w_danger"></span></a>
 			</view:action_diff>
 			<?=renderViewIf(!preg_match('/^NEW/',$rec['changes']),'action_diff',$rec,'rec');?>
-			<a href="#" title="Sync" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Sync <?=$rec['id'];?>',_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
+			<a href="#" title="Sync" style="display:inline;" onclick="return wacss.ajaxGet('/php/admin.php','modal',{cp_title:'Sync <?=$rec['id'];?>',_menu:'synchronize','func':'sync',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-sync w_bigger w_warning"></span></a>
 			<view:action_edit>
-			<a href="#" title="Edit" style="display:inline;" onclick="return ajaxGet('/php/admin.php','modal',{cp_title:'Edit <?=$rec['id'];?>',_menu:'synchronize','func':'edit',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-edit w_bigger w_grey"></span></a>
+			<a href="#" title="Edit" style="display:inline;" onclick="return wacss.ajaxGet('/php/admin.php','modal',{cp_title:'Edit <?=$rec['id'];?>',_menu:'synchronize','func':'edit',table:'<?=$rec['tabname'];?>',id:'<?=$rec['id'];?>',setprocessing:0});"><span class="icon-edit w_bigger w_grey"></span></a>
 			</view:action_edit>
 			<view:action_properties>
 			<a href="/php/admin.php?_menu=properties&_table_=<?=$rec['tablename'];?>" title="Properties" style="display:inline;" ><span class="icon-properties w_bigger w_primary"></span></a>
@@ -208,7 +208,7 @@
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
-	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');">
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'toast');">
 		<input type="hidden" name="_menu" value="synchronize" />
 		<input type="hidden" name="func" value="sync_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />
@@ -244,7 +244,7 @@
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
-	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'modal');">
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'toast');">
 		<input type="hidden" name="_menu" value="synchronize" />
 		<input type="hidden" name="func" value="revert_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />
