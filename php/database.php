@@ -5540,30 +5540,39 @@ function addDBRecord($params=array()){
 			if(isset($upserts[$key])){$upserts[$key]=$pm[1];}
 		}
 		elseif(($info[$key]['_dbtype'] =='date')){
-			if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
-			if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-            	array_push($vals,$val);
+			if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+				array_push($vals,$val);
 				if(isset($upserts[$key])){$upserts[$key]=$val;}
-            }
+			}
 			else{
-				$val=date("Y-m-d",strtotime($val));
-				array_push($vals,"'{$val}'");
-				if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+				if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
+				if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+	            	array_push($vals,$val);
+					if(isset($upserts[$key])){$upserts[$key]=$val;}
+	            }
+				else{
+					$val=date("Y-m-d",strtotime($val));
+					array_push($vals,"'{$val}'");
+					if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+				}
 			}
 		}
 		elseif(isset($info[$key]['inputtype']) && $info[$key]['inputtype'] =='date'){
-			//date field :  03-09-2009, 2009-01-26
-			if(preg_match('/^([0-9]{1,2}?)[\/\-]([0-9]{1,2}?)[\/\-]([0-9]{4,4})$/',$_REQUEST[$key],$datematch)){
-				$val=$datematch[3].'-'.$datematch[1].'-'.$datematch[2];
-            }
-            if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-            	array_push($vals,$val);
+			if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+				array_push($vals,$val);
 				if(isset($upserts[$key])){$upserts[$key]=$val;}
-            }
+			}
 			else{
-	            $val=date("Y-m-d",strtotime($val));
-				array_push($vals,"'{$val}'");
-				if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+				if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
+				if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+	            	array_push($vals,$val);
+					if(isset($upserts[$key])){$upserts[$key]=$val;}
+	            }
+				else{
+					$val=date("Y-m-d",strtotime($val));
+					array_push($vals,"'{$val}'");
+					if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
+				}
 			}
         }
 		elseif($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
@@ -5574,40 +5583,39 @@ function addDBRecord($params=array()){
 		}
 		elseif($info[$key]['_dbtype'] =='datetime'){
 			unset($dmatch);
-			if(is_array($val)){
-				if(preg_match('/^([0-9]{1,2})-([0-9]{1,2})-([0-9]{4,4})$/s',$val[0],$dmatch)){
-					if(strlen($dmatch[1])==1){$dmatch[1]="0{$dmatch[1]}";}
-					if(strlen($dmatch[2])==1){$dmatch[2]="0{$dmatch[2]}";}
-					$newval=$dmatch[3] . "-" . $dmatch[1] . "-" . $dmatch[2];
-				}
-				else{$newval=$val[0];}
-				if($val[3]=='pm' && $val[1] < 12){$val[1]+=12;}
-				elseif($val[3]=='am' && $val[1] ==12){$val[1]='00';}
-				$newval .=" {$val[1]}:{$val[2]}:00";
-				$val=$newval;
-            }
-            if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-            	//val is a function  - now(),curdate(), etc
-            	array_push($vals,$val);
+			if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+				array_push($vals,$val);
 				if(isset($upserts[$key])){$upserts[$key]=$val;}
-            }
+			}
 			else{
+				if(is_array($val)){
+					if(preg_match('/^([0-9]{1,2})-([0-9]{1,2})-([0-9]{4,4})$/s',$val[0],$dmatch)){
+						if(strlen($dmatch[1])==1){$dmatch[1]="0{$dmatch[1]}";}
+						if(strlen($dmatch[2])==1){$dmatch[2]="0{$dmatch[2]}";}
+						$newval=$dmatch[3] . "-" . $dmatch[1] . "-" . $dmatch[2];
+					}
+					else{$newval=$val[0];}
+					if($val[3]=='pm' && $val[1] < 12){$val[1]+=12;}
+					elseif($val[3]=='am' && $val[1] ==12){$val[1]='00';}
+					$newval .=" {$val[1]}:{$val[2]}:00";
+					$val=$newval;
+	            }
 	            $val=date("Y-m-d H:i:s",strtotime($val));
 	            array_push($vals,"'{$val}'");
 	            if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
 	        }
 		}
 		elseif($info[$key]['_dbtype'] =='time'){
-			if(is_array($val)){
-				if($val[2]=='pm' && $val[0] < 12){$val[0]+=12;}
-				elseif($val[2]=='am' && $val[0] ==12){$val[0]='00';}
-				$val="{$val[0]}:{$val[1]}:00";
-            }
-            if(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-            	array_push($vals,$val);
+			if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+				array_push($vals,$val);
 				if(isset($upserts[$key])){$upserts[$key]=$val;}
-            }
+			}
 			else{
+				if(is_array($val)){
+					if($val[2]=='pm' && $val[0] < 12){$val[0]+=12;}
+					elseif($val[2]=='am' && $val[0] ==12){$val[0]='00';}
+					$val="{$val[0]}:{$val[1]}:00";
+	            }
 	            $val=date("H:i:s",strtotime($val));
 	            array_push($vals,"'{$val}'");
 	            if(isset($upserts[$key])){$upserts[$key]="'{$val}'";}
@@ -7554,52 +7562,70 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			$noticks=0;
 			if(isset($info[$key.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
 			if(($info[$key]['_dbtype']=='date')){
-				if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
-				if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
-				elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-	            	$val=$val;
+				if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+					$val=$val;
 	            	$noticks=1;
-	            }
-				else{$val=date("Y-m-d",strtotime($val));}
+				}
+				else{
+					if(preg_match('/^[0-9]{2,2}\-[0-9]{2,2}\-[0-9]{4,4}$/',$val)){$val=str_replace('-','/',$val);}
+					if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
+					elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+		            	$val=$val;
+		            	$noticks=1;
+		            }
+					else{$val=date("Y-m-d",strtotime($val));}
+				}
 			}
 			elseif($info[$key]['_dbtype'] =='time'){
-				if(is_array($val)){
-					if($val[2]=='pm' && $val[0] < 12){$val[0]+=12;}
-					elseif($val[2]=='am' && $val[0] ==12){$val[0]='00';}
-					$val="{$val[0]}:{$val[1]}:00";
-	            }
-	            if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
-	            elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-	            	$val=$val;
+				if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+					$val=$val;
 	            	$noticks=1;
-	            }
-				else{$val=date("H:i:s",strtotime($val));}
+				}
+				else{
+					if(is_array($val)){
+						if($val[2]=='pm' && $val[0] < 12){$val[0]+=12;}
+						elseif($val[2]=='am' && $val[0] ==12){$val[0]='00';}
+						$val="{$val[0]}:{$val[1]}:00";
+		            }
+		            if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
+		            elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+		            	$val=$val;
+		            	$noticks=1;
+		            }
+					else{$val=date("H:i:s",strtotime($val));}
+				}
 			}
 			elseif($info[$key]['_dbtype'] =='datetime'){
-				$newval='';
 				unset($dmatch);
-				if(is_array($val)){
-					if(preg_match('/^([0-9]{1,2})-([0-9]{1,2})-([0-9]{4,4})$/s',$val[0],$dmatch)){
-						if(strlen($dmatch[1])==1){$dmatch[1]="0{$dmatch[1]}";}
-						if(strlen($dmatch[2])==1){$dmatch[2]="0{$dmatch[2]}";}
-						$newval=$dmatch[3] . "-" . $dmatch[1] . "-" . $dmatch[2];
-					}
-					else{$newval=$val[0];}
-					if($val[3]=='pm' && $val[1] < 12){$val[1]+=12;}
-					elseif($val[3]=='am' && $val[1] ==12){$val[1]='00';}
-					if(!strlen(trim($val[1])) && !strlen(trim($val[2]))){$newval='NULLDATE';}
-					else{
-						$newval .=" {$val[1]}:{$val[2]}:00";
-					}
-	            }
-	            else{$newval=$val;}
-	            $val=$newval;
-	            if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
-	            elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
-	            	$val=$val;
+				if(preg_match('/(CURRENT|NOW|DATE|TIME)/i',$val)){
+					$val=$val;
 	            	$noticks=1;
-	            }
-				else{$val=date("Y-m-d H:i:s",strtotime($val));}
+				}
+				else{
+					$newval='';
+					if(is_array($val)){
+						if(preg_match('/^([0-9]{1,2})-([0-9]{1,2})-([0-9]{4,4})$/s',$val[0],$dmatch)){
+							if(strlen($dmatch[1])==1){$dmatch[1]="0{$dmatch[1]}";}
+							if(strlen($dmatch[2])==1){$dmatch[2]="0{$dmatch[2]}";}
+							$newval=$dmatch[3] . "-" . $dmatch[1] . "-" . $dmatch[2];
+						}
+						else{$newval=$val[0];}
+						if($val[3]=='pm' && $val[1] < 12){$val[1]+=12;}
+						elseif($val[3]=='am' && $val[1] ==12){$val[1]='00';}
+						if(!strlen(trim($val[1])) && !strlen(trim($val[2]))){$newval='NULLDATE';}
+						else{
+							$newval .=" {$val[1]}:{$val[2]}:00";
+						}
+		            }
+		            else{$newval=$val;}
+		            $val=$newval;
+		            if(!is_array($val) && !strlen(trim($val))){$val='NULLDATE';}
+		            elseif(preg_match('/^([a-z\_0-9]+)\(\)$/is',$val)){
+		            	$val=$val;
+		            	$noticks=1;
+		            }
+					else{$val=date("Y-m-d H:i:s",strtotime($val));}
+				}
 			}
 			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
 				if(is_array($val)){$val=(integer)$val[0];}
