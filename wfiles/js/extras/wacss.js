@@ -6545,10 +6545,11 @@ var wacss = {
 	/**
 	* @name wacss.speak
 	* @param sentence string
-	* @param params - json object. volume,name,lang,rate,pitch
+	* @param params - json object. volume,name,lang,rate,pitch,gender
 	* @return false
 	* @usage wacss.speak('hello bob');
 	* @usage wacss.speak('hello bob',{volume:0.3,name:'Sally',lang:'en-US'});
+	* @usage wacss.speak('hello bob',{volume:0.3,gender:'male'});
 	*/
 	speakStop: function(vol){
 		window.speechSynthesis.cancel();
@@ -6584,6 +6585,15 @@ var wacss = {
 				if(undefined != params.name){
 					for(let i=0;i<voices.length;i++){
 						if(voices[i].name.toLowerCase().indexOf(params.name.toLowerCase()) != -1){
+							msg.voice=voices[i];
+							break;
+						}
+					}
+				}
+				else if(undefined != params.gender){
+					/* if params.gender then pick a voice with that gender */
+					for(let i=0;i<voices.length;i++){
+						if(voices[i].gender.toLowerCase()==params.gender.toLowerCase()){
 							msg.voice=voices[i];
 							break;
 						}
