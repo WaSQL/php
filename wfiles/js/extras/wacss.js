@@ -6592,8 +6592,28 @@ var wacss = {
 				}
 				else if(undefined != params.gender){
 					/* if params.gender then pick a voice with that gender */
+					let gender=params.gender.toLowerCase();
 					for(let i=0;i<voices.length;i++){
-						if(voices[i].gender.toLowerCase()==params.gender.toLowerCase()){
+						let name=voices[i].name.toLowerCase();
+						if(gender=='male' && (
+							name.includes('male') 
+							|| name.includes('daniel')
+							|| name.includes('david')
+							|| name.includes('alex')
+							|| name.includes('man')
+							)
+						){
+							msg.voice=voices[i];
+							break;
+						}
+						else if(gender=='female' && (
+							name.includes('female') 
+							|| name.includes('samantha')
+							|| name.includes('victoria')
+							|| name.includes('karen')
+							|| name.includes('woman')
+							)
+						){
 							msg.voice=voices[i];
 							break;
 						}
