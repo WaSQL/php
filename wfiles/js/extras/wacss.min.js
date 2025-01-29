@@ -22,7 +22,7 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" data-timer="3" class="w_gray" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
+	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" data-timer="3" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
