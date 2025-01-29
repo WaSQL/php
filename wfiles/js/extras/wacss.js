@@ -22,7 +22,7 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	processing: '<span class="icon-spin4 w_spin"></span>',
+	processing: '<div style="display:flex;" data-onload="wacss.setProcessingTimer();"><span class="icon-spin4 w_spin"></span><span id="processing_timer" class="w_gray" style="margin-left:5px;"></span></div>',
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -6164,6 +6164,22 @@ var wacss = {
 	    	wacss.addClass(li,'active');
 	    }
 	    return false;
+	},
+	setProcessingTimer: function(){
+		let t=document.getElementById('processing_timer');
+		if(undefined==t){return false;}
+		if(undefined==t.dataset.timer){
+			t.dataset.timer=0;
+		}
+		let seconds=parseInt(t.dataset.timer);
+		const hrs = Math.floor(seconds / 3600);
+	    const mins = Math.floor((seconds % 3600) / 60);
+	    const secs = seconds % 60;
+	    t.innerText = [hrs, mins, secs]
+	        .map(v => String(v).padStart(2, '0'))
+	        .join(':');
+	    t.dataset.timer=seconds+1;
+		setTimeout(wacss.setProcessingTimer, 1000);
 	},
 	/**
 	* @name wacss.setText
