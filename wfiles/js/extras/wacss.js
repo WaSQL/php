@@ -22,7 +22,7 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	processing: '<div style="display:flex;" data-onload="wacss.setProcessingTimer();"><span class="icon-spin4 w_spin"></span><span id="processing_timer" class="w_gray" style="margin-left:5px;"></span></div>',
+	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" class="w_gray" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -110,6 +110,7 @@ var wacss = {
 			if(undefined != xmlhttp.recenter && xmlhttp.recenter.length > 0){
         		wacss.centerObject(xmlhttp.recenter);
         	}
+        	setTimeout(wacss.setProcessingTimer, 1000);
 		}
 		else if (params.setprocessing.toString()!='0'){
 			switch(params.setprocessing.toString().toLowerCase()){
@@ -131,6 +132,7 @@ var wacss = {
 				pdiv.previous=pdiv.innerHTML;
 				xmlhttp.processing=pdiv;
 				pdiv.innerHTML=wacss.processing;
+				setTimeout(wacss.setProcessingTimer, 1000);
 			}
 		}
 		//get base URL if needed
@@ -282,6 +284,7 @@ var wacss = {
 				pdiv.previous=pdiv.innerHTML;
 				xmlhttp.processing=pdiv;
 				pdiv.innerHTML=wacss.processing;
+				setTimeout(wacss.setProcessingTimer, 1000);
 			}
 		}
 	    let data = new FormData(frm);
@@ -6166,6 +6169,7 @@ var wacss = {
 	    return false;
 	},
 	setProcessingTimer: function(){
+		console.log('setProcessingTimer');
 		let t=document.getElementById('processing_timer');
 		if(undefined==t){return false;}
 		if(undefined==t.dataset.timer){
@@ -6178,6 +6182,7 @@ var wacss = {
 	    t.innerText = [hrs, mins, secs]
 	        .map(v => String(v).padStart(2, '0'))
 	        .join(':');
+	    console.log(t.innerText);
 	    t.dataset.timer=seconds+1;
 		setTimeout(wacss.setProcessingTimer, 1000);
 	},
