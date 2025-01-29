@@ -22,7 +22,7 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" class="w_gray" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
+	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" data-timer="3" class="w_gray" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -110,7 +110,7 @@ var wacss = {
 			if(undefined != xmlhttp.recenter && xmlhttp.recenter.length > 0){
         		wacss.centerObject(xmlhttp.recenter);
         	}
-        	setTimeout(wacss.setProcessingTimer, 1000);
+        	setTimeout(wacss.setProcessingTimer, 3000);
 		}
 		else if (params.setprocessing.toString()!='0'){
 			switch(params.setprocessing.toString().toLowerCase()){
@@ -132,7 +132,7 @@ var wacss = {
 				pdiv.previous=pdiv.innerHTML;
 				xmlhttp.processing=pdiv;
 				pdiv.innerHTML=wacss.processing;
-				setTimeout(wacss.setProcessingTimer, 1000);
+				setTimeout(wacss.setProcessingTimer, 3000);
 			}
 		}
 		//get base URL if needed
@@ -284,7 +284,7 @@ var wacss = {
 				pdiv.previous=pdiv.innerHTML;
 				xmlhttp.processing=pdiv;
 				pdiv.innerHTML=wacss.processing;
-				setTimeout(wacss.setProcessingTimer, 1000);
+				setTimeout(wacss.setProcessingTimer, 3000);
 			}
 		}
 	    let data = new FormData(frm);
