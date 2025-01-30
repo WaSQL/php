@@ -6169,7 +6169,7 @@ var wacss = {
 	    return false;
 	},
 	setProcessingTimer: function(){
-		console.log('setProcessingTimer');
+		//console.log('setProcessingTimer');
 		let t=document.getElementById('processing_timer');
 		if(undefined==t){return false;}
 		if(undefined==t.dataset.timer){
@@ -6182,7 +6182,7 @@ var wacss = {
 	    t.innerText = [hrs, mins, secs]
 	        .map(v => String(v).padStart(2, '0'))
 	        .join(':');
-	    console.log(t.innerText);
+	    //console.log(t.innerText);
 	    t.dataset.timer=seconds+1;
 		setTimeout(wacss.setProcessingTimer, 1000);
 	},

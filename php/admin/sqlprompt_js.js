@@ -84,7 +84,7 @@ function sqlpromptSetDB(db,schema){
 		params.schema=schema;
 	}
 	else{document.sqlprompt.schema.value='';}
-	return ajaxGet('/php/admin.php','table_fields',params)
+	return wacss.ajaxGet('/php/admin.php','table_fields',params)
 }
 function sqlpromptSetValue(v){
 	let el=document.getElementById('sql_full');
@@ -117,7 +117,7 @@ function sqlpromptLoadPrompt(){
 	if(schema.length){
 		params.schema=document.sqlprompt.schema.value;
 	}
-	return ajaxGet('/php/admin.php','nulldiv',params)
+	return wacss.ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptMonitor(type){
 	let db=document.sqlprompt.db.value;
@@ -134,7 +134,7 @@ function sqlpromptMonitor(type){
 		div='sqlprompt_results';
 		params.setprocessing=div;
 	}
-	return ajaxGet('/php/admin.php',div,params)
+	return wacss.ajaxGet('/php/admin.php',div,params)
 }
 function sqlpromptMonitorSQL(norun){
 	if(undefined==norun){norun=0;}
@@ -178,7 +178,7 @@ function sqlpromptLastRecords(table){
 		params.schema=document.sqlprompt.schema.value;
 		document.sqlprompt.schema.value=schema;
 	}
-	return ajaxGet('/php/admin.php','nulldiv',params)
+	return wacss.ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptListRecords(table){
 	let db=document.sqlprompt.db.value;
@@ -190,7 +190,7 @@ function sqlpromptListRecords(table){
 		params.schema=document.sqlprompt.schema.value;
 		document.sqlprompt.schema.value=schema;
 	}
-	return ajaxGet('/php/admin.php','sqlprompt_results',params)
+	return wacss.ajaxGet('/php/admin.php','sqlprompt_results',params)
 }
 function sqlpromptCountRecords(table){
 	let db=document.sqlprompt.db.value;
@@ -202,7 +202,7 @@ function sqlpromptCountRecords(table){
 		params.schema=document.sqlprompt.schema.value;
 		document.sqlprompt.schema.value=schema;
 	}
-	return ajaxGet('/php/admin.php','nulldiv',params)
+	return wacss.ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptDDL(table){
 	let db=document.sqlprompt.db.value;
@@ -214,7 +214,7 @@ function sqlpromptDDL(table){
 		params.schema=document.sqlprompt.schema.value;
 		document.sqlprompt.schema.value=schema;
 	}
-	return ajaxGet('/php/admin.php','nulldiv',params)
+	return wacss.ajaxGet('/php/admin.php','nulldiv',params)
 }
 function sqlpromptFields(table){
 	let icon=getObject(table+'_icon');
@@ -229,7 +229,7 @@ function sqlpromptFields(table){
 		params.schema=document.sqlprompt.schema.value;
 	}
 	icon.className='icon-square-minus';
-	return ajaxGet('/php/admin.php',table+'_fields',params)
+	return wacss.ajaxGet('/php/admin.php',table+'_fields',params)
 }
 function sqlpromptExecute(args){
 	return sqlpromptSubmit(document.sqlprompt);
@@ -243,10 +243,10 @@ function sqlpromptSubmit(frm){
 			//console.log('section selected: length:'+str.length);
 			//console.log(str);
 			frm.sql_select.value=str;
-			return ajaxSubmitForm(frm,'sqlprompt_results');
+			return wacss.ajaxPost(frm,'sqlprompt_results');
 		}
 		frm.sql_select.value='';
-		return ajaxSubmitForm(frm,'sqlprompt_results');
+		return wacss.ajaxPost(frm,'sqlprompt_results');
 	}
 	else if(undefined != obj.editor){
 		//store editor_content
@@ -265,10 +265,10 @@ function sqlpromptSubmit(frm){
 			//console.log('section selected: length:'+str.length);
 			//console.log(str);
 			frm.sql_select.value=str;
-			return ajaxSubmitForm(frm,'sqlprompt_results');
+			return wacss.ajaxPost(frm,'sqlprompt_results');
 		}
 		frm.sql_select.value='';
-		return ajaxSubmitForm(frm,'sqlprompt_results');
+		return wacss.ajaxPost(frm,'sqlprompt_results');
 	}
 	return false;
 }
@@ -282,7 +282,7 @@ function sqlpromptExport(){
 function sqlpromptPaginate(offset){
 	document.sqlprompt.func.value='paginate';
 	document.sqlprompt.offset.value=offset;
-	ajaxSubmitForm(document.sqlprompt,'sqlprompt_results');
+	wacss.ajaxPost(document.sqlprompt,'sqlprompt_results');
 	document.sqlprompt.func.value='sql';
 	document.sqlprompt.offset.value=0;
 	return false;
