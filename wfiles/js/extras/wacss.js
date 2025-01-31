@@ -23,6 +23,7 @@ var wacss = {
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" data-timer="3" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
+	processing_timeout:undefined,
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
@@ -6170,6 +6171,9 @@ var wacss = {
 	},
 	setProcessingTimer: function(){
 		//console.log('setProcessingTimer');
+		if(undefined != wacss.processing_timeout){
+			clearTimeout(wacss.processing_timeout);
+		}
 		let t=document.getElementById('processing_timer');
 		if(undefined==t){return false;}
 		if(undefined==t.dataset.timer){
@@ -6184,7 +6188,7 @@ var wacss = {
 	        .join(':');
 	    //console.log(t.innerText);
 	    t.dataset.timer=seconds+1;
-		setTimeout(wacss.setProcessingTimer, 1000);
+		wacss.processing_timeout=setTimeout(wacss.setProcessingTimer, 1000);
 	},
 	/**
 	* @name wacss.setText
