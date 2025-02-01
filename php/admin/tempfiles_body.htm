@@ -4,21 +4,21 @@
 		if(document.tempfiles_form.ext.value.length==0){return false;}
 		let ext=document.tempfiles_form.ext.value;
 		if(!confirm('Remove '+el.dataset.name+'? Click OK to confirm.')){return false;}
-		return ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',func:'clear_file',ext:ext,file:el.dataset.name});
+		return wacss.ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',func:'clear_file',ext:ext,file:el.dataset.name});
 	}
 	function tempfilesViewFile(el){
 		el.dataset.name;
-		return ajaxGet('/php/admin.php','centerpop',{_menu:'tempfiles',func:'view_file',file:el.dataset.name});
+		return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'tempfiles',func:'view_file',file:el.dataset.name});
 	}
 	function tempfilesNavTab(el){
 		wacss.setActiveTab(el);
 		document.tempfiles_form.ext.value=el.dataset.name;
 		document.tempfiles_form.func.value='list';
-		return ajaxSubmitForm(document.tempfiles_form,'tempfiles_content');
+		return wacss.ajaxPost(document.tempfiles_form,'tempfiles_content');
 	}
 	function tempfilesSortBy(fld){
 		document.tempfiles_form.sort.value=fld;
-		return ajaxSubmitForm(document.tempfiles_form,'tempfiles_content');
+		return wacss.ajaxPost(document.tempfiles_form,'tempfiles_content');
 	}
 	function tempfilesClearTab(){
 		if(document.tempfiles_form.ext.value.length==0){return false;}
@@ -38,7 +38,7 @@
 		}
 		if(checked.length==0){return false;}
 		let files=implode(';',checked);
-		return ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',ext:ext,func:'clear_checked',files:files});
+		return wacss.ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',ext:ext,func:'clear_checked',files:files});
 	}
 	function tempfilesRefresh(){
 		window.location='/php/admin.php?_menu=tempfiles';

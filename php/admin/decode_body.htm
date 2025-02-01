@@ -24,7 +24,7 @@
 <div class="row w_noprint">
 	<div class="col-sm-6">
 		<h3><?=$type;?> Decoder 1</h3>
-		<form method="POST" name="decoder_form1" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'decoder1');">
+		<form method="POST" name="decoder_form1" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'decoder1');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>">
 			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
@@ -33,7 +33,7 @@
 	</div>
 	<div class="col-sm-6">
 		<h3><?=$type;?> Decoder 2</h3>
-		<form method="POST" name="decoder_form2" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'decoder2');">
+		<form method="POST" name="decoder_form2" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'decoder2');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>">
 			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
@@ -57,7 +57,7 @@
 <div class="row w_noprint">
 	<div class="col-sm-6">
 		<h3><?=$type;?> Encoder</h3>
-		<form method="POST" name="url_form1" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results1');">
+		<form method="POST" name="url_form1" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results1');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>_encode">
 			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
@@ -66,7 +66,7 @@
 	</div>
 	<div class="col-sm-6">
 		<h3><?=$type;?> Decoder</h3>
-		<form method="POST" name="url_form2" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'results2');">
+		<form method="POST" name="url_form2" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results2');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>_decode">
 			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>

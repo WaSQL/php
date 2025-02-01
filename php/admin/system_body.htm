@@ -3,7 +3,7 @@
 	function systemNavTab(el){
 		wacss.setActiveTab(el);
 		document.system_form.tab.value=el.dataset.tab;
-		return ajaxSubmitForm(document.system_form,'<?=$ADMINPAGE['ajaxdiv'];?>');
+		return wacss.ajaxPost(document.system_form,'<?=$ADMINPAGE['ajaxdiv'];?>');
 	}
 </script>
 <h2 style="margin:10px 0 0 0;padding:6px;" class="<?=configValue('admin_color');?>">

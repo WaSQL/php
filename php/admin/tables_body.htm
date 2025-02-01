@@ -32,7 +32,7 @@
 </view:message_centerpop>
 
 <view:change_charset>
-	<form method="post" name="change_charset_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'centerpop');">
+	<form method="post" name="change_charset_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'centerpop');">
 	<input type="hidden" name="_menu" value="tables" />
 	<input type="hidden" name="func" value="change_charset" />
 	<div style="display:flex;margin-bottom:10px;">
@@ -44,7 +44,7 @@
 
 <view:add_single>
 <h3>Add New Table</h3>
-<form method="post" name="add_single_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'add_result');">
+<form method="post" name="add_single_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'add_result');">
 	<input type="hidden" name="_menu" value="tables" />
 	<input type="hidden" name="func" value="add_single_process" />
 	<div style="display:flex;flex-wrap:wrap;">
@@ -65,7 +65,7 @@
 
 <view:add_multiple>
 <h3>Add Multiple Tables</h3>
-<form method="post" name="add_multiple_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'add_result');">
+<form method="post" name="add_multiple_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'add_result');">
 	<input type="hidden" name="_menu" value="tables" />
 	<input type="hidden" name="func" value="add_multiple_process" />
 	<div style="display:flex;flex-wrap:wrap;">

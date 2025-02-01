@@ -1,7 +1,7 @@
 <view:default>
 <div style="display:flex;flex-wrap:wrap;justify-content:space-between;margin-top:10px;">
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="material-storefront"></span> WaSQL Appstore</h2>
-	<form method="post" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'appstore_content');">
+	<form method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'appstore_content');">
 		<input type="hidden" name="_menu" value="appstore">
 		<input type="hidden" name="_func" value="install">
 		<div style="display:flex">

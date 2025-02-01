@@ -47,9 +47,9 @@
 					<td class="w_nowrap align-center align-middle"><div id="actions_<?=$rec['name'];?>" class="w_grey">
 						<view:error><?=$rec['error'];?></view:error>
 						<view:actions>
-							<view:sync_from_target><a href="#" class="w_grey" style="display:inline;" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a></view:sync_from_target>
+							<view:sync_from_target><a href="#" class="w_grey" style="display:inline;" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a></view:sync_from_target>
 							<?=renderViewIf($rec['target_records']>0,'sync_from_target',$rec,'rec');?>
-							<view:sync_to_target><a href="#" class="w_grey w_padleft" style="display:inline;" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
+							<view:sync_to_target><a href="#" class="w_grey w_padleft" style="display:inline;" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
 							<?=renderViewIf($rec['source_records']>0,'sync_to_target',$rec,'rec');?>
 
 						</view:actions>
@@ -77,7 +77,7 @@
 		<div class="w_padtop w_bigger text-center w_nowrap"><label class="w_primary">Are you sure? This CANNOT be undone!</label></div>
 	</view:sync_from_target>
 	<?=renderView($func,$table,'table');?>
-	<form method="post" name="datasync_verify_form" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'actions_<?=$table;?>');">
+	<form method="post" name="datasync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'actions_<?=$table;?>');">
 		<input type="hidden" name="_menu" value="datasync" />
 		<input type="hidden" name="func" value="<?=$func;?>_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />

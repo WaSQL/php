@@ -17,7 +17,7 @@ function pauseSelected(func){
 			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
-	return ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
+	return wacss.ajaxGet('<?=configValue('admin_form_url');?>','cron_results',params);
 }
 function cronSetMultiple(fld,val){
 	var clist=document.querySelectorAll('input[type="checkbox"][name="cronid[]"]:checked');
@@ -42,7 +42,7 @@ function cronSetMultiple(fld,val){
 			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
-	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
+	return wacss.ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
 }
 function cronSetFieldValue(el,fld,val){
 	let ptr=getParent(el,'tr');
@@ -52,7 +52,7 @@ function cronSetFieldValue(el,fld,val){
 		return false;
 	}
 	let params={_menu:'cron',func:'set_field_value',setprocessing:'setprocessing',cron_id:cron_id,fld:fld,val:val};
-	return ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
+	return wacss.ajaxGet('<?=configValue('admin_form_url');?>','cron_null',params);
 }
 function cronFilterByGroup(name){
 	pagingClearFilters(document.cronlistform);
@@ -71,7 +71,7 @@ function cronRefreshResult(cron_id,id){
 			params.filter_order=document.cronlistform.filter_order.value;
 		}	
 	}
-	return ajaxGet('<?=configValue('admin_form_url');?>','cron_result',params);
+	return wacss.ajaxGet('<?=configValue('admin_form_url');?>','cron_result',params);
 }
 function cronResultScroll(cron_id,id,run_length){
 	let obj=getObject('setprocessing');
@@ -100,16 +100,16 @@ function cronModal(func,id,title){
 	let wmc=document.querySelector('div.wacss_modal_content');
 	if(undefined != wmc){
 		wmc.id='wacss_modal_content';
-		return ajaxGet('<?=configValue('admin_form_url');?>',wmc.id,params);
+		return wacss.ajaxGet('<?=configValue('admin_form_url');?>',wmc.id,params);
 	}
 	else{
-		return ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
+		return wacss.ajaxGet('<?=configValue('admin_form_url');?>','modal',params);
 	}
 	
 }
 function cronLogRefresh(){
 	let params = {_menu:'cron',func:'log_refresh',setprocessing:'cronlog_refreshing'};
-	return ajaxGet('<?=configValue('admin_form_url');?>','cronlog_data',params); 
+	return wacss.ajaxGet('<?=configValue('admin_form_url');?>','cronlog_data',params); 
 }
 var cronLogRefresh_timer;
 function cronLogRefreshTimer(){
@@ -156,7 +156,7 @@ function cronLogRefreshTimer(){
 <div class="w_centerpop_content" data-onload="centerObject('centerpop');">
 	<?=printValue($rec);?>
 	<div class="align-right">
-		<a href="#" class="w_red w_link" onclick="return ajaxGet('<?=configValue('admin_form_url');?>','centerpop',{_menu:'cron',func:'kill',id:this.dataset.cron_pid,title:this.title,setprocessing:'cron_processing'});" data-cron_pid="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
+		<a href="#" class="w_red w_link" onclick="return wacss.ajaxGet('<?=configValue('admin_form_url');?>','centerpop',{_menu:'cron',func:'kill',id:this.dataset.cron_pid,title:this.title,setprocessing:'cron_processing'});" data-cron_pid="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
 	</div>
 </div>
 </view:pid>

@@ -9,7 +9,7 @@ function configAuthMethodChanged(){
 }
 function configLogsViewFile(file){
 	let params={setprocessing:0,'_menu':'config',func:'config_logs_view_file',file:file};
-	return ajaxGet('/php/admin.php','centerpop',params);
+	return wacss.ajaxGet('/php/admin.php','centerpop',params);
 }
 function configUpdateSessionCookieLifetimeInputValue(el){
 	// Make input for okta_simplesamlphp_config_session__cookie__lifetime the same value as the input this event is attached to (el) + 1 hour

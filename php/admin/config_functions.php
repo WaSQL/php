@@ -332,7 +332,7 @@ function configAddEdit($id){
 		'-action'=>'/php/admin.php',
 		'-fields'=>'name:category,current_value:default_value,description,possible_values',
 		'-style_all'=>'width:100%',
-		'-onsubmit'=>"return ajaxSubmitForm(this,'main_content');",
+		'-onsubmit'=>"return wacss.ajaxPost(this,'main_content');",
 		'_menu'=>'config',
 		'func'=>'showlist',
 		'config_menu'=>1

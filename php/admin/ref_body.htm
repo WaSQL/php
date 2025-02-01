@@ -4,7 +4,7 @@
 		wacss.setActiveTab(el);
 		document.ref_form.tab.value=el.dataset.tab;
 		document.ref_form.func.value='list';
-		return ajaxSubmitForm(document.ref_form,'ref_content');
+		return wacss.ajaxPost(document.ref_form,'ref_content');
 	}
 </script>
 <style>

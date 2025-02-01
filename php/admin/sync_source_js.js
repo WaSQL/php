@@ -2,13 +2,13 @@ function sync_sourceCheck(id){
 	let params={id:id};
 	params['_menu']='sync_source';
 	params['func']='check';
-	return ajaxGet('/php/admin.php','centerpop',params);
+	return wacss.ajaxGet('/php/admin.php','centerpop',params);
 }
 function sync_sourceAddEdit(id){
 	let params={id:id,setprocessing:0};
 	params['_menu']='sync_source';
 	params['func']='addedit';
-	return ajaxGet('/php/admin.php','sync_source_addedit',params);
+	return wacss.ajaxGet('/php/admin.php','sync_source_addedit',params);
 }
 function sync_sourceSync(id){
 	if(!confirm('Update your copy to match the source record? THIS CANNOT BE UNDONE.')){
@@ -17,7 +17,7 @@ function sync_sourceSync(id){
 	let params={id:id};
 	params['_menu']='sync_source';
 	params['func']='sync';
-	return ajaxGet('/php/admin.php','sync_source_content',params);
+	return wacss.ajaxGet('/php/admin.php','sync_source_content',params);
 }
 function sync_sourceFunc(el){
 	if(undefined != el.dataset.confirm && !confirm(el.dataset.confirm)){
@@ -41,5 +41,5 @@ function sync_sourceFunc(el){
 		params.setprocessing=el;
 	}
 	//console.log(params);
-	return ajaxGet('/php/admin.php',params.div,params);
+	return wacss.ajaxGet('/php/admin.php',params.div,params);
 }

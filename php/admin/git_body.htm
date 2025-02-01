@@ -2,7 +2,7 @@
 <script language="javascript">
 function gitCall(func,div){
 	if(undefined == div){div='git_details';}
-	return ajaxGet('/php/admin.php',div,{_menu:'git',func:func});
+	return wacss.ajaxGet('/php/admin.php',div,{_menu:'git',func:func});
 }
 </script>
 <div class="container-fluid">
@@ -13,7 +13,7 @@ function gitCall(func,div){
 	</div>
 	<div class="row">
 		<div class="col-sm-9 w_padtop">
-			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'git_details');">
+			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'git_details');">
 			<input type="hidden" name="_menu" value="git" />
 			<input type="hidden" name="func" value="" />
 			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
@@ -34,8 +34,8 @@ function gitCall(func,div){
 					<td>
 						<view:compare>
 						<div class="w_right">
-							<a href="#" class="w_link w_padright" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=$file['b64'];?>'});" title="compare"><span class="icon-compare w_big"></span></a>
-							<a href="#" class="w_link w_padright" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=$file['b64'];?>'});"  title="view history log"><span class="icon-history w_big"></span></a>
+							<a href="#" class="w_link w_padright" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=$file['b64'];?>'});" title="compare"><span class="icon-compare w_big"></span></a>
+							<a href="#" class="w_link w_padright" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=$file['b64'];?>'});"  title="view history log"><span class="icon-history w_big"></span></a>
 						</div>
 						</view:compare>
 						<?=renderViewIf($file['status'] != 'new','compare',$file,'file');?>

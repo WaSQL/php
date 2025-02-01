@@ -11,5 +11,5 @@ function tablesNav(el){
 		params.setprocessing=el;
 	}
 	//console.log(params);
-	return ajaxGet('/php/admin.php',params.div,params)
+	return wacss.ajaxGet('/php/admin.php',params.div,params)
 }

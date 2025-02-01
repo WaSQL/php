@@ -20,21 +20,21 @@
 <div class="row">
 	<div class="col s2" style="position:sticky;top:59px;">
 		<ul class="nav-list buttons <?=$CONFIG['admin_color'];?>">
-			<li><a href="form-elements" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Form Elements</a></li>
-			<li><a href="nav-tabs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-Tabs</a></li>
-			<li><a href="nav-list" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
-			<li><a href="data-navigate" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Data-Navigate</a></li>
+			<li><a href="form-elements" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Form Elements</a></li>
+			<li><a href="nav-tabs" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-Tabs</a></li>
+			<li><a href="nav-list" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
+			<li><a href="data-navigate" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Data-Navigate</a></li>
 			<!-- <li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li> -->
-			<li><a href="behaviors" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Behaviors</a></li>
-			<li><a href="flexbutton" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
-			<li><a href="chartjs" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
-			<li><a href="languages" onclick="return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Languages</a></li>
+			<li><a href="behaviors" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Behaviors</a></li>
+			<li><a href="flexbutton" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
+			<li><a href="chartjs" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
+			<li><a href="languages" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Languages</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
 		<button type="button" class="btn w_blue" onclick="wacss.modalPopup('this is modal content','modal title');">Modal Create</button>
 		<button type="button" class="btn w_orange" onclick="wacss.modalPopup(new Date().getTime());">Modal Update</button>
-		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return ajaxSubmitMultipartForm(this,'modal');">
+		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return wacss.ajaxPost(this,'modal');">
 			<input type="hidden" name="_menu" value="test" />
 			<input type="hidden" name="multipart" value="1" />
 			<div class="row">
@@ -808,8 +808,8 @@ import platform
 print(platform.python_version())
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">
@@ -834,8 +834,8 @@ print(wasql.user('username'))
 	console.log(process.version);
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">
@@ -862,8 +862,8 @@ print(wasql.user('username'))
 	print "v".$];
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">
@@ -888,8 +888,8 @@ print(wasql.user('username'))
 	print(_VERSION);
 ?>
 		<div class="align-right">
-			<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button>
-			<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
+			<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button>
+			<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
 		</div>
 		</th>
 		<td class="w_nowrap">
@@ -916,8 +916,8 @@ v<?ruby
 	puts RUBY_VERSION
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
+				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">

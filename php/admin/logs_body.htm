@@ -45,7 +45,7 @@
 	<div style="display: flex;justify-content: space-between;margin-bottom:5px;height:20px;">
 		<div id="tail_refreshing"></div>
 		<div>
-			<span class="icon-refresh w_pointer" data-setprocessing="tail_refreshing" data-_menu="logs" data-func="tail_refresh" data-name="<?=$tail['name'];?>" data-filter="<?=$tail['filter'];?>" onclick="ajaxGet('/php/admin.php','tail_div',this.dataset);"></span>
+			<span class="icon-refresh w_pointer" data-setprocessing="tail_refreshing" data-_menu="logs" data-func="tail_refresh" data-name="<?=$tail['name'];?>" data-filter="<?=$tail['filter'];?>" onclick="wacss.ajaxGet('/php/admin.php','tail_div',this.dataset);"></span>
 		</div>
 	</div>
 	<div class="w_nowrap" style="background:#272f36;color:#fcfcfc;padding:10px 5px 15px 5px;font-size:0.93rem;"><?=nl2br($tail['data']);?></div>

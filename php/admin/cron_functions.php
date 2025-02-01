@@ -12,7 +12,7 @@ function cronAddEdit($id=0){
 		'run_cmd_displayname'=>'Run Cmd: (command, page name, or url)',
 		'_menu'=>'cron',
 		'func'=>'list',
-		'-onsubmit'=>"return ajaxSubmitForm(this,'cron_results');",
+		'-onsubmit'=>"return wacss.ajaxPost(this,'cron_results');",
 		'-style_all'=>'width:100%',
 		'-class_all'=>'browser-default',
 		'run_length_readonly'=>1,
@@ -258,21 +258,21 @@ function cronList(){
 				'icon'=>'icon-file-txt w_orange',
 				'title'=>'view Cron Scheduler log',
 				'class'=>'btn w_white',
-				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron_scheduler',title:'Cron Scheduler Log'});",
+				'onclick'=>"return wacss.ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron_scheduler',title:'Cron Scheduler Log'});",
 			),
 			array(
 				'name'=>'',
 				'icon'=>'icon-file-txt w_green',
 				'title'=>'view Cron Worker log',
 				'class'=>'btn w_white',
-				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron_worker',title:'Cron Worker Log'});",
+				'onclick'=>"return wacss.ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron_worker',title:'Cron Worker Log'});",
 			),
 			array(
 				'name'=>'',
 				'icon'=>'icon-file-txt w_gray',
 				'title'=>'view Old Cron log',
 				'class'=>'btn w_white',
-				'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron',title:'Cron Log'});",
+				'onclick'=>"return wacss.ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'cron',title:'Cron Log'});",
 			),
 			array(
 				'name'=>'',
@@ -357,7 +357,7 @@ function cronListExtra($recs){
 		}
 		//pid lookup
 		if($pid != 0){
-			$recs[$i]['cron_pid']='<a id="process_'.$pid.'" style="margin-left:10px;align-self:center;margin-right:10px;display:inline" href="#" class="w_right w_link" onclick="return ajaxGet(\'/php/admin.php\',\'centerpop\',{_menu:\'cron\',func:\'pid\',id:this.dataset.cron_pid,title:this.title,setprocessing:\'cron_processing\'});" data-cron_pid="'.$rec['cron_pid'].'" title="check process">'.$recs[$i]['cron_pid'].'</a>';
+			$recs[$i]['cron_pid']='<a id="process_'.$pid.'" style="margin-left:10px;align-self:center;margin-right:10px;display:inline" href="#" class="w_right w_link" onclick="return wacss.ajaxGet(\'/php/admin.php\',\'centerpop\',{_menu:\'cron\',func:\'pid\',id:this.dataset.cron_pid,title:this.title,setprocessing:\'cron_processing\'});" data-cron_pid="'.$rec['cron_pid'].'" title="check process">'.$recs[$i]['cron_pid'].'</a>';
 		}
 		else{$recs[$i]['cron_pid']='';}
 		//logcount
@@ -390,9 +390,9 @@ function cronListExtra($recs){
 			<input type="checkbox" data-type="checkbox" class="w_gray align-center"  style="margin-left:10px;margin-right:0px;align-self:center;" data-groupname="{$rec['groupname']}" name="cronid[]" value="{$id}" />
 			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return cronModal('edit','{$id}',this.title);" title="Edit Cron"><span class="icon-edit"></span></a>
 
-			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_scheduler',filter:'cron_id:{$id}',title:'Scheduler Log Entries'});" title="View Scheduler Log Entries"><span class="icon-file-txt w_orange"></span></a>
+			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return wacss.ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_scheduler',filter:'cron_id:{$id}',title:'Scheduler Log Entries'});" title="View Scheduler Log Entries"><span class="icon-file-txt w_orange"></span></a>
 
-			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_worker',filter:'cron_id:{$id}',title:'Worker Log Entries'});" title="View Worker Log Entries"><span class="icon-file-txt w_green"></span></a>
+			<a style="margin-left:10px;align-self:center;" href="#" class="w_right w_link w_block" onclick="return wacss.ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'filter','name':'cron_worker',filter:'cron_id:{$id}',title:'Worker Log Entries'});" title="View Worker Log Entries"><span class="icon-file-txt w_green"></span></a>
 
 			<a style="margin-left:10px;align-self:center;" href="#" onclick="return cronModal('details','{$id}',this.title);" class="w_bigger" title="Cron Details - {$name}"><span class="icon-info-circled  w_gray"></span></a>
 		</div>

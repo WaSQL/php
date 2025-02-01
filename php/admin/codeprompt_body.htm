@@ -31,15 +31,15 @@
 			return;
 		}
 		var db=document.sqlprompt.db.value;
-		return ajaxGet('/php/admin.php',table+'_fields',{_menu:'codeprompt',func:'fields',table:table,db:db})
+		return wacss.ajaxGet('/php/admin.php',table+'_fields',{_menu:'codeprompt',func:'fields',table:table,db:db})
 	}
 	function codepromptSetLang(lang){
 		let func='setlang_'+lang;
-		return ajaxGet('/php/admin.php','code_full',{_menu:'codeprompt',func:func,setprocessing:0})
+		return wacss.ajaxGet('/php/admin.php','code_full',{_menu:'codeprompt',func:func,setprocessing:0})
 	}
 	function codepromptSubmit(frm){
 		frm.code_select.value=getSelText(frm.code_full);
-		return ajaxSubmitForm(frm,'codeprompt_results');
+		return wacss.ajaxPost(frm,'codeprompt_results');
 	}
 	document.onkeydown = codepromptCheckKey;
 </script>

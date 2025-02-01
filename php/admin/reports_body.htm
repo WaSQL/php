@@ -3,7 +3,7 @@
 	<div class="row w_padtop">
 		<div>
 			<div class="w_right w_padright">
-				<a href="#" class="btn btn-default" onclick="return ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'new'});"><span class="icon-plus"></span> new report</a>
+				<a href="#" class="btn btn-default" onclick="return wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'new'});"><span class="icon-plus"></span> new report</a>
 			</div>
 			<div class="w_bigger w_lblue w_bold"><span class="icon-chart-line"></span> WaSQL Reports</div>
 		</div>
@@ -14,7 +14,7 @@
 			<div class="w_bold w_pad w_dblue" style="border-bottom:1px solid #BBB;">Categories</div>
 			<div class="w_pad">
 			<view:_group>
-				<div class="group"><a class="w_link w_block" href="#" onclick="return ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'reports',menu:'<?=encodeUrl($group);?>'});"><?=ucwords($group);?></a></div>
+				<div class="group"><a class="w_link w_block" href="#" onclick="return wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'reports',menu:'<?=encodeUrl($group);?>'});"><?=ucwords($group);?></a></div>
 			</view:_group>
 			<?=renderEach('_group',$groups,array('-alias'=>'group'));?>
 			</div>
@@ -50,8 +50,8 @@
 		<tr class="w_cursor">
 			<td>
 				<div class="w_right">
-					<a title="Run Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'report',id:'<?=$rec['_id'];?>'});"><span class="icon-chart-line"></span></a>
-					<a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$rec['_id'];?>'});"><span class="icon-edit"></span></a>
+					<a title="Run Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'report',id:'<?=$rec['_id'];?>'});"><span class="icon-chart-line"></span></a>
+					<a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$rec['_id'];?>'});"><span class="icon-edit"></span></a>
 				</div>
 				<?=$rec['name'];?>
 			</td>
@@ -70,7 +70,7 @@
 	<div class="w_bold w_big"><?=$report['menu'];?> &raquo; <?=$report['name'];?></div>
 	<div class="row">
 		<div class="col-xs-2">
-		<form method="post" name="optionsform" action="/php/admin.php" onsubmit="return ajaxSubmitForm(this,'reports');">
+		<form method="post" name="optionsform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'reports');">
 			<input type="hidden" name="_menu" value="reports" />
 			<input type="hidden" name="func" value="report" />
 			<input type="hidden" name="status" value="ready" />
@@ -91,16 +91,16 @@
 			<table class="w_table">
 				<tr>
 					<td nowrap><?=createExpandDiv('<span class="icon-file-code"></span> show query','<div style="position:absolute;background:#FFF">'.$report['query'].'</div>','#0d0d7d',0);?></td>
-					<td nowrap><a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$report['_id'];?>'});"><span class="icon-edit"></span> edit report</a></td>
+					<td nowrap><a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$report['_id'];?>'});"><span class="icon-edit"></span> edit report</a></td>
 					<td nowrap><a title="Export Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick=document.optionsform.func.value='export';document.optionsform.submit();return false;"><span class="icon-export"></span>csv export</a></td>
 					<td width="100%" align="right">
 						<div class="btn-group">
 							<view:_page_prev>
-							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_prev'];?>';ajaxSubmitForm(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-left"></span></button>
+							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_prev'];?>';wacss.ajaxPost(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-left"></span></button>
 							</view:_page_prev>
 							<?=renderViewIf(isset($report['limit_prev']),'_page_prev',$report,array('-alias'=>'report'));?>
 							<view:_page_next>
-							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_next'];?>';ajaxSubmitForm(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-right"></span></button>
+							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_next'];?>';wacss.ajaxPost(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-right"></span></button>
 							</view:_page_next>
 							<?=renderViewIf(isset($report['limit_next']),'_page_next',$report,array('-alias'=>'report'));?>
 						</div>

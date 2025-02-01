@@ -78,7 +78,7 @@ function sqlpromptSetSha(sha,cnt){
 }
 function sqlpromptSetDB(db,schema){
 	document.sqlprompt.db.value=db;
-	let params={_menu:'sqlprompt',func:'setdb',db:db};
+	let params={_menu:'sqlprompt',func:'setdb',db:db,setprocessing:'tables_fields_processing'};
 	if(undefined != schema && schema.length > 0){
 		document.sqlprompt.schema.value=schema;
 		params.schema=schema;
@@ -218,10 +218,11 @@ function sqlpromptDDL(table){
 }
 function sqlpromptFields(table){
 	let icon=getObject(table+'_icon');
-	let t=getText(table+'_fields');
+	let div=table.replace(/[^0-9a-z\_]/gi, '')+'_fields';
+	let t=getText(div);
 	if(t.length){
 		icon.className='icon-square-plus';
-		setText(table+'_fields','');
+		setText(div,'');
 		return;
 	}
 	let params={_menu:'sqlprompt',func:'fields',table:table,db:document.sqlprompt.db.value};
@@ -229,7 +230,8 @@ function sqlpromptFields(table){
 		params.schema=document.sqlprompt.schema.value;
 	}
 	icon.className='icon-square-minus';
-	return wacss.ajaxGet('/php/admin.php',table+'_fields',params)
+	
+	return wacss.ajaxGet('/php/admin.php',div,params)
 }
 function sqlpromptExecute(args){
 	return sqlpromptSubmit(document.sqlprompt);

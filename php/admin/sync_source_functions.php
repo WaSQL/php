@@ -12,7 +12,7 @@ function sync_sourceAddEdit($id=0){
 		'-fields'=>getView('addedit_fields'),
 		'-style_all'=>'width:100%',
 		'-action'=>'/php/admin.php',
-		'-onsubmit'=>"return ajaxSubmitForm(this,'sync_source_content');",
+		'-onsubmit'=>"return wacss.ajaxPost(this,'sync_source_content');",
 		'_menu'=>'sync_source',
 		'func'=>'list',
 		'table_name_options'=>array(
@@ -36,7 +36,7 @@ function sync_sourceAddEdit($id=0){
 		$_REQUEST['table_name']=$_REQUEST['_table_'];
 	}
 	if($id==0 && isset($_REQUEST['table_name'])){
-		$rtn.=buildOnLoad("ajaxGet('/php/admin.php','table_id',{setprocessing:0,'_menu':'sync_source',func:'redraw_table_id',value:'{$_REQUEST['table_name']}'});");
+		$rtn.=buildOnLoad("wacss.ajaxGet('/php/admin.php','table_id',{setprocessing:0,'_menu':'sync_source',func:'redraw_table_id',value:'{$_REQUEST['table_name']}'});");
 	}
 	return $rtn;
 }
