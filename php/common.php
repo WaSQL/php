@@ -14901,15 +14901,17 @@ function getEncodedFileContents($filename,$return_encoding=0){
 }
 //---------- begin function getFileContents--------------------
 /**
-* @describe returns the contents of file - wrapper for file_get_contents
+* @describe  wrapper for file_get_contents
 * @param file string - name and path of file
 * @return string
 * @usage $data=getFileContents($afile);
 */
 function getFileContents($file){
-	if(!is_file($file)){return "getFileContents Error: No such file [$file]";}
-	return file_get_contents($file);
+	if(!is_file($file)){
+		return "getFileContents Error: No such file [$file]";
 	}
+	return file_get_contents($file);
+}
 //---------- begin function getFileMimeType--------------------
 /**
 * @describe returns the mime type of file
@@ -14977,11 +14979,10 @@ function getFileContentType($file=''){
 * @usage $ext=getFileExtension($afile);
 */
 function getFileExtension($file=''){
-	//params (string) filename
 	$tmp=preg_split('/\./',$file);
 	$ext=array_pop($tmp);
 	return strtolower($ext);
-	}
+}
 //---------- begin function getFileName--------------------
 /**
 * @describe returns the filename of file, removing the path
