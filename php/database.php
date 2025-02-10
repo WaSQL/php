@@ -2181,10 +2181,10 @@ ENDOFPRETABLE;
 			//return printValue($rec);
 			foreach($rec as $cfield=>$cvalue){
 				if(is_array($cvalue)){
-					$cvalue=json_encode($cvalue);
+					$cvalue=json_encode($cvalue,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 				}
 				if(!is_string($cvalue) && !is_numeric($cvalue)){
-					$cvalue=json_encode($cvalue);
+					$cvalue=json_encode($cvalue,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 				}
 				$crow=str_replace("[{$cfield}]", $cvalue, $crow);
 			}
@@ -2483,7 +2483,7 @@ ENDOFPRETABLE;
 		foreach($params['-listfields'] as $fld){
 			if(!isset($rec[$fld])){$rec[$fld]='';}
 			if(is_array($rec[$fld])){
-				$rec[$fld]=json_encode($rec[$fld],JSON_INVALID_UTF8_SUBSTITUTE);
+				$rec[$fld]=json_encode($rec[$fld],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 			}
 			$value=$rec[$fld];
 
@@ -5424,17 +5424,17 @@ function addDBRecord($params=array()){
     	if($i['_dbtype']=='json' && isset($params[$k])){
         	$jsonfields[]=$k;
         	if(is_array($params[$k])){
-        		$params[$k]=json_encode($params[$k],JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+        		$params[$k]=json_encode($params[$k],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
         	}
         	else{
         		$jval=json_decode($params[$k],true);
 	        	if(!is_array($jval)){
 	        		if(stringContains($params[$k],':')){
 	        			$arr=preg_split('/\:/',$params[$k]);
-	        			$params[$k]=json_encode($arr,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+	        			$params[$k]=json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	        		}
 	        		else{
-	        			$params[$k]=json_encode(array($params[$k]),JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+	        			$params[$k]=json_encode(array($params[$k]),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	        		}
 	        	}
         	}
@@ -5461,7 +5461,7 @@ function addDBRecord($params=array()){
 							case 5:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]]=$val;break;
 							case 6:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]][$parts[5]]=$val;break;
 						}
-						$params[$jfield]=json_encode($jarray,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+						$params[$jfield]=json_encode($jarray,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
 
 				}
@@ -5683,7 +5683,7 @@ function addDBRecord($params=array()){
     			foreach($json_sets[$field] as $jkey=>$jval){
     				$json[$jkey]=$jval;
     			}
-    			$vals[$i]="'".json_encode($json,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE)."'";
+    			$vals[$i]="'".json_encode($json,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."'";
     			unset($json_sets[$field]);
     		}
     	}
@@ -5691,7 +5691,7 @@ function addDBRecord($params=array()){
     if(count($json_sets)){
     	foreach($json_sets as $tfield=>$tvals){
     		$fields[]=$tfield;
-    		$vals[]="'".json_encode($tvals,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE)."'";
+    		$vals[]="'".json_encode($tvals,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."'";
     	}
     }
     $fieldstr=implode(",",$fields);
@@ -7432,17 +7432,17 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
     	if($i['_dbtype']=='json' && isset($params[$k])){
         	$jsonfields[]=$k;
         	if(is_array($params[$k])){
-        		$params[$k]=json_encode($params[$k],JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+        		$params[$k]=json_encode($params[$k],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
         	}
         	else{
         		$jval=json_decode($params[$k],true);
 	        	if(!is_array($jval)){
 	        		if(stringContains($params[$k],':')){
 	        			$arr=preg_split('/\:/',$params[$k]);
-	        			$params[$k]=json_encode($arr,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+	        			$params[$k]=json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	        		}
 	        		else{
-	        			$params[$k]=json_encode(array($params[$k]),JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+	        			$params[$k]=json_encode(array($params[$k]),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	        		}
 	        	}
         	}
@@ -7493,7 +7493,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 									case 6:$jarray[$parts[0]][$parts[1]][$parts[2]][$parts[3]][$parts[4]][$parts[5]]=$jval;break;
 								}
 							}
-							$rchanges[$jfield]=json_encode($jarray,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+							$rchanges[$jfield]=json_encode($jarray,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 						}
 					}
 					//echo "rchanges".printValue($rchanges);exit;
@@ -9187,7 +9187,7 @@ function includeDBOnce($params=array()){
 function mapDBDvalsToTvals($table,$field,$params=array()){
 	global $databaseCache;
 	$cachekey=$table.'_'.$field;
-	if(count($params)){$cachekey .= '_'.sha1(json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE));}
+	if(count($params)){$cachekey .= '_'.sha1(json_encode($params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));}
 	if(isset($databaseCache['mapDBDvalsToTvals'][$cachekey])){
 		return $databaseCache['mapDBDvalsToTvals'][$cachekey];
 	}
@@ -10548,8 +10548,8 @@ function getDBRecords($params=array()){
 		$query=getDBQuery($params);
 	}
 	else{
-		setWasqlError(debug_backtrace(),"No table: ".json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE));
-		return "No table. ".json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+		setWasqlError(debug_backtrace(),"No table: ".json_encode($params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
+		return "No table. ".json_encode($params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	}
 	//do we already have a query for this stored?
 	$query_sha=sha1($CONFIG['dbname'].$query);
@@ -11133,7 +11133,7 @@ function listDBRecords($params=array(),$customcode=''){
 	$rtn='';
 	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '<div id="cronlist">'.PHP_EOL;}
 	elseif(isset($params['-ajax']) && (integer)$params['-ajax']==1){
-		$params['-ajaxid']='list_'.sha1(json_encode($params,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE));
+		$params['-ajaxid']='list_'.sha1(json_encode($params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}
 	elseif(isset($params['-ajaxid'])){

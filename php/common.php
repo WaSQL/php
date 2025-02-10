@@ -1006,7 +1006,7 @@ function commonSearchFiltersForm($params=array()){
 			$export_params['-page_name']=$PAGE['name'];
 			$export_params['-page_template']=$PAGE['_template'];
 		}
-		$rtn .= '	<textarea name="_export_params_">'.base64_encode(json_encode($export_params)).'</textarea>'.PHP_EOL;
+		$rtn .= '	<textarea name="_export_params_">'.base64_encode(json_encode($export_params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</textarea>'.PHP_EOL;
 		$rtn .= '	<input type="hidden" name="_export_formname" value="'.$params['-formname'].'" >'.PHP_EOL;
 		$rtn .= '	<input type="hidden" name="filter_export" value="" >'.PHP_EOL;
 	}
@@ -1525,7 +1525,7 @@ function abort($obj,$title='',$subtitle=''){
 			$obj=preg_replace('/[\r\n\"\']+/','',$obj);
 			$obj=removeHtml($obj);
 		}
-		else{$obj=json_encode($obj);}
+		else{$obj=json_encode($obj,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);}
 		$json=array(
 			'status'=>'failed',
 			'site'=>$_SERVER['HTTP_HOST'],
@@ -1541,7 +1541,7 @@ function abort($obj,$title='',$subtitle=''){
 		}
 		
 		header("Content-Type: application/json; charset=UTF-8");
-		echo json_encode($json, JSON_PRETTY_PRINT);
+		echo json_encode($json,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 		exit(362);
 	}
 
@@ -1794,7 +1794,7 @@ function buildChartJsData($recs,$params=array()){
 		}
 		$data['datasets'][]=$dataset;
 	}
-	return json_encode($data);
+	return json_encode($data,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 }
 //---------- begin function buildDir ----------
 /**
@@ -5409,7 +5409,7 @@ function buildFormSlider($name, $params=array()){
 	if(isset($params['data-labelmap'])){
 		if(is_array($params['data-labelmap'])){
 			if(isset($params['data-labelmap'][$val])){$val=$params['data-labelmap'][$val];}
-	    	$params['data-labelmap']=json_encode($params['data-labelmap']);
+	    	$params['data-labelmap']=json_encode($params['data-labelmap'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	    	$params['data-labelmap']=str_replace('"',"'",$params['data-labelmap']);
 		}
 		else{
@@ -6744,7 +6744,7 @@ function arrays2CSV($recs=array(),$params=array()){
 		$vals=array();
 		foreach($fieldmap as $field=>$dval){
 			if(is_array($rec[$field])){
-				$rec[$field]=json_encode($rec[$field],JSON_INVALID_UTF8_SUBSTITUTE);
+				$rec[$field]=json_encode($rec[$field],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 			}
         	$vals[]=$rec[$field];
 		}
@@ -7367,13 +7367,13 @@ function commonProcessChartjsTags($htm){
 				}
 				$replace_str.='<dataset ';
 				$replace_str .= setTagAttributes($atts);
-				$replace_str.='>'.json_encode($vals).'</dataset>'.PHP_EOL;
+				$replace_str.='>'.json_encode($vals,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</dataset>'.PHP_EOL;
 				$i+=1;
 			}
-			$replace_str.='<labels>'.json_encode($labels).'</labels>'.PHP_EOL;
+			$replace_str.='<labels>'.json_encode($labels,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</labels>'.PHP_EOL;
 			if(isset($chartjs_attributes['data-recs'])){
 				$id=$chartjs_attributes['data-recs'];
-				$replace_str.='<recs id="'.$id.'">'.json_encode($recs).'</recs>'.PHP_EOL;
+				$replace_str.='<recs id="'.$id.'">'.json_encode($recs,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</recs>'.PHP_EOL;
 			}
 			if(isset($chartjs_attributes['data-sql'])){
 				$id=$chartjs_attributes['data-sql'];
@@ -7488,7 +7488,7 @@ function commonProcessChartjsTags($htm){
 							$bcolors[]=$rec['bcolor'];
 						}
 					}
-					$replace_str.=json_encode($vals);
+					$replace_str.=json_encode($vals,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 				}
 				else{
 					$replace_str.='[]';
@@ -7501,7 +7501,7 @@ function commonProcessChartjsTags($htm){
 						if(strlen($process)){
 							$json=call_user_func($process,$json,$innertag_attributes,$chartjs_attributes);
 						}
-						$replace_str.=json_encode($json,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+						$replace_str.=json_encode($json,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 					}
 					else{
 						$replace_str.=$innertag_contents;
@@ -7514,16 +7514,16 @@ function commonProcessChartjsTags($htm){
 			$replace_str.="</{$innertag_name}>".PHP_EOL;
 		}
 		if(count($labels)){
-			$replace_str .= '<labels>'.json_encode(array_values($labels)).'</labels>'.PHP_EOL;
+			$replace_str .= '<labels>'.json_encode(array_values($labels,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</labels>'.PHP_EOL;
 		}
 		if(count($colors)){
-			$replace_str .= '<colors>'.json_encode(array_values($colors)).'</colors>'.PHP_EOL;
+			$replace_str .= '<colors>'.json_encode(array_values($colors,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</colors>'.PHP_EOL;
 		}
 		elseif(strlen($colorstr)){
 			$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
 		}
 		if(count($bcolors)){
-			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors)).'</bcolors>'.PHP_EOL;
+			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</bcolors>'.PHP_EOL;
 		}
 		elseif(strlen($bcolorstr)){
 			$replace_str.='<bcolors>'.$bcolorstr.'</bcolors>'.PHP_EOL;
@@ -7646,7 +7646,7 @@ function commonProcessDBListRecordsTags($htm){
 			$replace_str.=printValue($opts);
 		}
 		else{
-			$opts['_dblistrecords_params']=base64_encode(json_encode($json));
+			$opts['_dblistrecords_params']=base64_encode(json_encode($json,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 			$replace_str.=dbListRecords($db,$opts);
 		}
 		$replace_str.='</div>'.PHP_EOL;
@@ -8413,7 +8413,7 @@ function getCalendar($monthyear='',$params=array()){
 			if($params['-view']=='week' && $calendar['current']['wnum'] != $event['wnum']){$valid=0;}
 			elseif($params['-view']=='day' && $calendar['current']['mday'] != $event['mday']){$valid=0;}
 			//skip this event if we have already listed it - user has overlapping events from two feeds
-			$sha=sha1(json_encode($event));
+			$sha=sha1(json_encode($event,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 			if(isset($shas[$sha])){$valid=0;}
 			else{$shas[$sha]=1;}
 			if($valid){
@@ -8445,7 +8445,7 @@ function getCalendar($monthyear='',$params=array()){
 		                	continue;
 						}
 						//skip this event if we have already listed it - user has overlapping events from two feeds
-						$sha=sha1(json_encode($event));
+						$sha=sha1(json_encode($event,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 						if(isset($shas[$sha])){continue;}
 						$shas[$sha]=1;
 						$current['events'][]=$event;
@@ -8853,7 +8853,7 @@ function diffText($s,$m,$title='',$more='',$height=600){
 	if(count($s) > $linecnt){$linecnt=count($s);}
 	$sdiff=simpleDiff($m,$s);
 	//return printValue($sdiff);
-	$sha=sha1(json_encode(array($m,$s)));
+	$sha=sha1(json_encode(array($m,$s),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 	$header= '';
 	$result='';
 	//$result .= "<div>Diffs:" . implode(',',$diffs)."</div>\n";
@@ -9009,6 +9009,7 @@ function encodeAscii($str=''){
 * @usage $json_string=encodeJson($arr);
 */
 function encodeJson($arr,$flags=0){
+	if($flags==0){$flags=JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE;}
 	$str=json_encode($arr,$flags);
 	if(!strlen($str)){
 		$arr = mb_convert_encoding($arr, 'UTF-8', 'UTF-8');
@@ -9448,7 +9449,7 @@ function evalPHP($strings){
 						$val=$out['stdout'];
 					}	
 					else{
-						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_PRETTY_PRINT).'</pre>';
+						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT).'</pre>';
 					}
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
@@ -9487,14 +9488,14 @@ function evalPHP($strings){
 				}
 				elseif(strlen(trim($ob))){
 					if(!is_string($ob)){
-						$ob=json_encode($ob);
+						$ob=json_encode($ob,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
 					$strings[$sIndex]=str_replace($evalmatches[0][$ex],$ob,$strings[$sIndex]);
 				}
 				else{
 					if(is_null($val)){$val='';}
 					if(!is_string($val)){
-						$val=json_encode($val);
+						$val=json_encode($val,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
 					$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 		        }
@@ -9568,15 +9569,15 @@ ENDOFCONTENT;
 			$precode[]="local {$varname} = json.decode('".$json."');";
 	*/
 	$wasql=array(
-		'USER'=>"let USER = ".json_encode(evalCleanupGlobal($USER)).";",
-		'CONFIG'=>"let CONFIG = ".json_encode(evalCleanupGlobal($CONFIG)).";",
-		'PAGE'=>"let PAGE = ".json_encode(evalCleanupGlobal($p)).";",
-		'TEMPLATE'=>"let TEMPLATE = ".json_encode(evalCleanupGlobal($t)).";",
-		'PASSTHRU'=>"let PASSTHRU = ".json_encode(evalCleanupGlobal($PASSTHRU)).";",
-		'DATABASE'=>"let DATABASE = ".json_encode(evalCleanupGlobal($db)).";",
-		'REQUEST'=>"let REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST)).";",
-		'SESSION'=>"let SESSION = ".json_encode(evalCleanupGlobal($_SESSION)).";",
-		'CRONTHRU'=>"let CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU)).";"
+		'USER'=>"let USER = ".json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'CONFIG'=>"let CONFIG = ".json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'PAGE'=>"let PAGE = ".json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'TEMPLATE'=>"let TEMPLATE = ".json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'PASSTHRU'=>"let PASSTHRU = ".json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'DATABASE'=>"let DATABASE = ".json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'REQUEST'=>"let REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'SESSION'=>"let SESSION = ".json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
+		'CRONTHRU'=>"let CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";"
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -9585,7 +9586,7 @@ ENDOFCONTENT;
 		}
 		foreach($CONFIG['eval_globals'] as $var){
 			global $$var;
-			$wasql[$var]="let CRONTHRU = ".json_encode(evalCleanupGlobal($$var)).";";
+			$wasql[$var]="let CRONTHRU = ".json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";";
 		}
 	}
 	$content=<<<ENDOFCONTENT
@@ -9758,7 +9759,7 @@ ENDOFCONTENT;
 		}
 		foreach($CONFIG['eval_globals'] as $var){
 			global $$var;
-			$wasql[$var]="local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($$var))."');";
+			$wasql[$var]="local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."');";
 		}
 	}
 	$content=<<<ENDOFCONTENT
@@ -11234,7 +11235,7 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 	if(!count($arr)){return array();}
 	switch(strtolower($lang['name'])){
 		case 'python':
-			$precode[]="{$varname} = ".json_encode($arr);
+			$precode[]="{$varname} = ".json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 		break;
 		case 'perl':
 			$precode[]="our %{$varname} = (";
@@ -11251,10 +11252,10 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 			$precode[]="}";
 		break;
 		case 'nodejs':
-			$precode[]="const {$varname} = ".json_encode($arr).";";
+			$precode[]="const {$varname} = ".json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";";
 		break;
 		case 'lua':
-			$json=json_encode($arr,JSON_UNESCAPED_SLASHES);
+			$json=json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_SLASHES);
 			$json=str_replace('\\"','',$json);
 			$precode[]="local {$varname} = json.decode('".$json."');";
 		break;
@@ -12611,7 +12612,7 @@ function formatMoney($number=0,$cents = 1){
 */function timezoneList($params=array()){
 	global $timezoneListCache;
 	ksort($params);
-	$key=sha1(json_encode($params));
+	$key=sha1(json_encode($params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 	if(isset($timezoneListCache[$key])){return $timezoneListCache[$key];}
     $timezones = DateTimeZone::listIdentifiers(DateTimeZone::ALL);
     //echo printValue($timezones);exit;
@@ -12855,7 +12856,7 @@ function getAllVersions(){
 			}
 			//echo "{$fname}<br>".printValue($val).'<hr>';
 			if(is_array($val)){
-				$versions[$fname]=json_encode($val);
+				$versions[$fname]=json_encode($val,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 			}
 			else{$versions[$fname]=$val;}
 		}
@@ -16047,14 +16048,14 @@ function isJSON($string){
 			'code'=>-1,
 			'type'=>gettype($string)
 		);
-	  return json_encode($error,JSON_PRETTY_PRINT);
+	  return json_encode($error,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 	}
 	if(!strlen(trim($string))){
 		$error=array(
 			'error'=>"Empty JSON string",
 			'code'=>-1
 		);
-	  return json_encode($error,JSON_PRETTY_PRINT);
+	  return json_encode($error,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 	}
 	try {  
 	  json_decode($string, false, 512, JSON_THROW_ON_ERROR);  
@@ -16064,15 +16065,15 @@ function isJSON($string){
 			'error'=>$exception->getMessage(),
 			'code'=>$exception->getCode()
 		);
-	  return json_encode($error,JSON_PRETTY_PRINT);
+	  return json_encode($error,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 	}
-	$enc=json_encode($string);
+	$enc=json_encode($string,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	if(is_null(json_decode($string))){
 		$error=array(
 			'error'=>"Empty JSON string",
 			'code'=>-1
 		);
-	  return json_encode($error,JSON_PRETTY_PRINT);
+	  return json_encode($error,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 	}
 	return 1;
 }
@@ -18124,7 +18125,7 @@ function postEditSha($pextables=array()){
 			$shas['records'][$tablename][]=$rec;
 		}
 	}
-	return json_encode($shas);
+	return json_encode($shas,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 }
 
 $GLOBALS['crc32Table']=array();        // Lookup table array
@@ -18307,7 +18308,7 @@ function postEditXmlFromJson($json=array()){
 				if($finfo[$field]['_dbtype']=='json'){
 					$arr=json_decode($val,true);
 					if(is_array($arr)){
-						$val=json_encode($arr,JSON_PRETTY_PRINT);
+						$val=json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 						$json_fields[]=$field;
 					}
 				}
@@ -19746,7 +19747,7 @@ function processActions(){
 								if(isWasqlField($k)){continue;}
 								$jreq[$k]=$v;
 							}
-							$opts[$cfield]=json_encode($jreq,JSON_UNESCAPED_UNICODE);
+							$opts[$cfield]=json_encode($jreq,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 						}
 					}
 					//check for xmldata field unless noxmldata is passed also
@@ -19850,15 +19851,15 @@ function processActions(){
 												$_REQUEST[$jfield][$jk]=$jv;
 											}
 										}
-										$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
+										$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 									}
 									else{
-										$_REQUEST[$jfield]=json_encode($jval);
+										$_REQUEST[$jfield]=json_encode($jval,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 									}
 									//echo "{$field}::SET {$jfield} to {$_REQUEST[$jfield]}<br>".PHP_EOL;
 								}
 								else{
-									$_REQUEST[$field]=json_encode($jval);
+									$_REQUEST[$field]=json_encode($jval,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 								}
 							}
 							//echo "EDIT".printValue($jsonfieldmap).printValue($_FILES).printValue($_REQUEST['data>company>favicon']);exit;
@@ -19933,7 +19934,7 @@ function processActions(){
 										}
 									}
 									//echo "HERE".printValue($_REQUEST[$jfield]);exit;
-									$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
+									$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 								}
 								else{
 									if(stringContains($info[$field]['flags'],'not_null')){
@@ -19991,7 +19992,7 @@ function processActions(){
 											}
 										}
 										//echo "{$field}={$_REQUEST[$field.'_prev']}".printValue($_REQUEST[$jfield]);exit;
-										$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield]);
+										$opts[$jfield]=$_REQUEST[$jfield]=json_encode($_REQUEST[$jfield],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 									}
 									else{
 										$opts[$field]=$_REQUEST[$field.'_prev'];
@@ -20199,7 +20200,7 @@ function processActions(){
 					setWasqlError(debug_backtrace(),"No record found");
 					}
 				if(isset($_REQUEST['_return']) && $_REQUEST['_return']=='XML'){
-					$_REQUEST['edit_result']=json_encode($_REQUEST['edit_result']);
+					$_REQUEST['edit_result']=json_encode($_REQUEST['edit_result'],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					echo "<timestamp>{$timestamp}</timestamp>";
 					echo "<edit_result>{$_REQUEST['edit_result']}</edit_result>";
 					echo "<wasql_dbname>{$_SERVER['WaSQL_DBNAME']}</wasql_dbname>";
@@ -20281,7 +20282,7 @@ function processActions(){
 							if(isWasqlField($k)){continue;}
 							$jreq[$k]=$v;
 						}
-						$opts[$cfield]=json_encode($jreq,JSON_UNESCAPED_UNICODE);
+						$opts[$cfield]=json_encode($jreq,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
 				}
 				else{
@@ -20320,7 +20321,7 @@ function processActions(){
 							}
 							unset($_jsonval_);
 							if(is_array($jval) && count($jval)){
-								$_REQUEST[$field]=json_encode($jval);
+								$_REQUEST[$field]=json_encode($jval,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 							}
 						}
 						//markdown?
@@ -20355,8 +20356,8 @@ function processActions(){
 						}
 						elseif($field=='xmldata'){$opts['xmldata']= request2XML($_REQUEST);}
 						elseif($field=='_xmldata'){$opts['_xmldata']= request2XML($_REQUEST);}
-						elseif($field=='jsondata'){$opts['jsondata']= json_encode($_REQUEST);}
-						elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST);}
+						elseif($field=='jsondata'){$opts['jsondata']= json_encode($_REQUEST,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);}
+						elseif($field=='_jsondata'){$opts['_jsondata']= json_encode($_REQUEST,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);}
 						elseif(isset($_SERVER[$ucfield])){$opts[$field]=$_SERVER[$ucfield];}
 					}
 				}
@@ -20414,7 +20415,7 @@ function processActions(){
 					$val=request2XMLSimple($_REQUEST);
 					$val_array=xml2Array($val);
 					if(is_array($rec)){
-						if(sha1(json_encode($val_array)) != sha1(json_encode($settings[$setkey]))){
+						if(sha1(json_encode($val_array,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)) != sha1(json_encode($settings[$setkey],JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))){
 							$editopts=array('-table'=>'_settings','-where'=>"_id={$rec['_id']}",'key_value'=>$val);
 							$ok=editDBRecord($editopts);
 							$_REQUEST['edit_result']=$ok;
@@ -20739,7 +20740,7 @@ function processActions(){
             	}
             switch(strtolower($_REQUEST['_format_'])){
 				case 'json':
-					echo json_encode($out);
+					echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 				break;
 				default:
             		echo arrays2XML($out,$params);
@@ -22403,7 +22404,7 @@ function swfChart($recs=array(),$params=array(),$crc=''){
   	//build inline data and add any attributes passed in
   	$total=0;
   	foreach($recs as $rec){$total+=$rec['yval'];}
-  	if(!strlen($crc)){$crc=encodeCRC(json_encode(array($recs,$params)));}
+  	if(!strlen($crc)){$crc=encodeCRC(json_encode(array($recs,$params),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));}
   	if(!isset($params['showNames'])){$params['showNames']=1;}
   	if(!isset($params['decimalPrecision'])){$params['decimalPrecision']=0;}
   	if(!isset($params['subcaption'])){$params['subcaption']="Total: {$total}";}
