@@ -2,6 +2,7 @@
 #On Windows it is saved in C:\Users\{YOUR USER}\AppData\Roaming\Sublime Text 3\Packages\User
 import sublime
 import sublime_plugin
+import sys
 import os
 import tempfile
 
@@ -11,24 +12,34 @@ class ExecuteSelectionExecCommand(ExecCommand):
 	def run(self,**kwargs):
 		view = self.window.active_view()
 		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		# Get just the folder name (the last directory in the path)
+		dirname = os.path.basename(os.path.dirname(view.file_name()))
 		# if nothing is selected, pass in full filename
 		if view.sel()[0].empty():
 			sql = view.substr(view.line(view.sel()[0].a))
-			variables = {"fname":fname,"selection": sql}
+			variables = {"fname":fname,"dirname":dirname,"selection": sql}
 		else:
 			# create a temp file with just the selection and pass that
 			self.tmp_file = self.get_selection(view)
-			variables = {"fname":fname,"selection": self.tmp_file}
+			variables = {"fname":fname,"dirname":dirname,"selection": self.tmp_file}
 		# expand the variables
 		kwargs = sublime.expand_variables(kwargs,variables)
-		#print(kwargs)
 		# run
 		super().run(**kwargs)
 
 	# get the selected text in the current window - first cursor only
+	def get_currentline(self, view):
+		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		handle, name = tempfile.mkstemp(suffix="_deleteme",prefix=fname+".",text=True)
+		handle = os.fdopen(handle, mode="wt",encoding="utf-8")
+		handle.write(view.substr(view.line(view.sel()[0].a)))
+		handle.close()
+		return name
+
+	# get the selected text in the current window - first cursor only
 	def get_selection(self, view):
 		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
-		handle, name = tempfile.mkstemp(suffix="_sql",prefix=fname+".",text=True)
+		handle, name = tempfile.mkstemp(suffix="_deleteme",prefix=fname+".",text=True)
 		handle = os.fdopen(handle, mode="wt",encoding="utf-8")
 		handle.write(view.substr(view.sel()[0]))
 		handle.close()

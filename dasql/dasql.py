@@ -38,7 +38,7 @@ section_name=''
 params=dict(config.items('global'))
 params['query']=''
 #check to see if the args are a filename
-params['arg_query']='';
+params['arg_query']=''
 for arg in sys.argv[1:]:
     params['arg_query']+="{}  ".format(arg)
 params['arg_query']=params['arg_query'].strip()
@@ -64,19 +64,51 @@ else:
     #check for section_name
     #section_name=sys.argv[1]
     section_name=os.path.splitext(os.path.basename(sys.argv[1]))[0]
+    dir_name=os.path.splitext(os.path.basename(sys.argv[2]))[0]
     if(config.has_section(section_name)):
         #overide any params from section
         section=dict(config.items(section_name))
         for key in section:
             params[key]=section[key]
         #load the rest of args as the arg_query
-        params['arg_query']='';
-        for arg in sys.argv[2:]:
+        params['arg_query']=''
+        for arg in sys.argv[3:]:
             params['arg_query']+="{}  ".format(arg)
         params['arg_query']=params['arg_query'].strip()
         #if the line starts with two dashes, remove them.
         if params['arg_query'].startswith('--'):
-            params['arg_query']=params['arg_query'][2:].strip()
+            params['arg_query']=params['arg_query'][3:].strip()
+        #check to see if the args are a filename
+        if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
+            #check for a section with this name
+            file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
+            if(config.has_section(file_name)):
+                #overide any params from section
+                section=dict(config.items(file_name))
+                for key in section:
+                    params[key]=section[key]
+                #set query to file contents
+                file = open(params['arg_query'], mode='r')
+                params['query'] = file.read()
+                file.close()
+                if(params['arg_query'].endswith('_deleteme')):
+                    os.remove(params['arg_query'])
+                params['tempfile']=params['arg_query']
+
+            params['arg_query']=''
+    elif(config.has_section(dir_name)):
+        #overide any params from section
+        section=dict(config.items(dir_name))
+        for key in section:
+            params[key]=section[key]
+        #load the rest of args as the arg_query
+        params['arg_query']=''
+        for arg in sys.argv[3:]:
+            params['arg_query']+="{}  ".format(arg)
+        params['arg_query']=params['arg_query'].strip()
+        #if the line starts with two dashes, remove them.
+        if params['arg_query'].startswith('--'):
+            params['arg_query']=params['arg_query'][3:].strip()
         #check to see if the args are a filename
         if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
             #check for a section with this name
@@ -109,7 +141,7 @@ else:
         params['arg_query']=''
     else:
         #load the rest of args as the arg_query
-        params['arg_query']='';
+        params['arg_query']=''
         for arg in sys.argv[1:]:
             params['arg_query']+="{}  ".format(arg)
 
@@ -192,7 +224,7 @@ elif len(params['query']) > 0 and params['query'].lower().startswith('cmd>'):
 elif len(params['query']) > 0 and params['query'].lower().startswith('http'):
     #launch a URL
     #Reference: https://stackoverflow.com/questions/6375149/how-to-open-a-url-with-get-query-parameters-using-the-command-line-in-windows
-    url=params['query'].replace('&','^&');
+    url=params['query'].replace('&','^&')
     os.system("start {}".format(url))
 elif len(params['query']) > 0 and ((params['query'].startswith('{') and params['query'].endswith('}')) or (params['query'].startswith('[') and params['query'].endswith(']'))):
     #pretty print a JSON string
