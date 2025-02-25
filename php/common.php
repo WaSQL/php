@@ -22572,12 +22572,14 @@ function wget($url,$localfile='',$params=array()){
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 	// get curl response
 	curl_exec($ch); 
+	// Get the HTTP status code
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	curl_close($ch);
 	fclose($fp);
 	if($content==1){
 		return file_get_contents($localfile);
 	}
-	return array($localfile,$path);
+	return array($localfile,$path,$http_code);
 }
 //---------- begin function getRemoteImage--------------------
 /**

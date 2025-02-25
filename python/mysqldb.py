@@ -2,12 +2,13 @@
 """
 Installation
 	python3 -m pip install mysql.connector-python
-		Try upgrading pip:
-			python3 -m pip install --upgrade pip
-			then try again
-		and if it still fails try
-	   		python -m pip install -U setuptools
-	   		python -m pip install -U wheel
+	If that fails, try upgrading pip:
+		python3 -m pip install --upgrade pip
+		then try again
+	if it still fails try
+   		python -m pip install -U setuptools
+   		python -m pip install -U wheel
+   		then try again
 References
 	https://dev.mysql.com/doc/connector-python/en/connector-python-cext-reference.html
 """
