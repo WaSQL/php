@@ -7,6 +7,7 @@ import os
 import requests
 import urllib3
 import configparser
+from chardet import detect  # For encoding detection
 import subprocess
 import tempfile
 import json
@@ -27,12 +28,39 @@ def dasqlEvalCode(lang,ext,code):
             print(line)
     os.remove(name)
 
-#get the script path
+# Function to detect file encoding and remove BOM
+def read_file_without_bom(file_path):
+    with open(file_path, 'rb') as f:
+        raw_data = f.read()
+
+    # Detect encoding
+    encoding = detect(raw_data)['encoding']
+    if not encoding:
+        encoding = 'utf-8'  # Fallback to UTF-8 if detection fails
+
+    # Decode the file content and remove BOM if present
+    content = raw_data.decode(encoding)
+    if content.startswith('\ufeff'):  # Check for UTF-8 BOM
+        content = content.lstrip('\ufeff')
+
+    return content
+
+# Get the script directory and construct the INI file path
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-#read dasql.ini for settings
-inifile="{}/dasql.ini".format(script_directory)
+inifile = os.path.join(script_directory, "dasql.ini")
+
+# Read the file content without BOM
+file_content = read_file_without_bom(inifile)
+
+# Use configparser to parse the content
 config = configparser.ConfigParser()
-config.read(inifile)
+config.read_string(file_content)  # Read from the string instead of the file
+# #get the script path
+# script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+# #read dasql.ini for settings
+# inifile="{}/dasql.ini".format(script_directory)
+# config = configparser.ConfigParser()
+# config.read(inifile)
 section_name=''
 #set params to keys in global
 params=dict(config.items('global'))
