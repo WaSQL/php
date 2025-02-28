@@ -104,10 +104,12 @@ else:
             params['arg_query']+="{}  ".format(arg)
         params['arg_query']=params['arg_query'].strip()
         #if the line starts with two dashes, remove them.
-        if params['arg_query'].startswith('-- '):
-            params['arg_query']=params['arg_query'][3:].strip()
-        elif params['arg_query'].startswith('--'):
-            params['arg_query']=params['arg_query'][2:].strip()
+        if params['query'].startswith('-- '):
+            params['query']=params['query'][3:].strip()
+        elif params['query'].startswith('--'):
+            params['query']=params['query'][2:].strip()
+        elif params['query'].startswith('#'):
+            params['query']=params['query'][1:].strip()
         #check to see if the args are a filename
         if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
             #check for a section with this name
@@ -137,8 +139,12 @@ else:
             params['arg_query']+="{}  ".format(arg)
         params['arg_query']=params['arg_query'].strip()
         #if the line starts with two dashes, remove them.
-        if params['arg_query'].startswith('--'):
-            params['arg_query']=params['arg_query'][3:].strip()
+        if params['query'].startswith('-- '):
+            params['query']=params['query'][3:].strip()
+        elif params['query'].startswith('--'):
+            params['query']=params['query'][2:].strip()
+        elif params['query'].startswith('#'):
+            params['query']=params['query'][1:].strip()
         #check to see if the args are a filename
         if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
             #check for a section with this name
@@ -163,7 +169,9 @@ else:
         file.close()
         if(sys.argv[2].endswith('_deleteme')):
             os.remove(sys.argv[2])
-        if params['query'].startswith('--'):
+        if params['query'].startswith('-- '):
+            params['query']=params['query'][3:].strip()
+        elif params['query'].startswith('--'):
             params['query']=params['query'][2:].strip()
         elif params['query'].startswith('#'):
             params['query']=params['query'][1:].strip()
@@ -180,8 +188,12 @@ if len(params['arg_query']) > 0:
     params['query']=params['arg_query']
 params['query']=params['query'].strip()
 #if the line starts with two dashes, remove them.
-if params['query'].startswith('--'):
+if params['query'].startswith('-- '):
+    params['query']=params['query'][3:].strip()
+elif params['query'].startswith('--'):
     params['query']=params['query'][2:].strip()
+elif params['query'].startswith('#'):
+    params['query']=params['query'][1:].strip()
 #check for shortcuts in ini file - first section then global
 global_shortcut="global:{}".format(params['query'])
 shortcut="{}:{}".format(section_name,params['query'])
