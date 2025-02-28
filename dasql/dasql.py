@@ -70,6 +70,7 @@ params['arg_query']=''
 for arg in sys.argv[1:]:
     params['arg_query']+="{}  ".format(arg)
 params['arg_query']=params['arg_query'].strip()
+dir_name=os.path.splitext(os.path.basename(sys.argv[2]))[0]
 if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
     #check for a section with this name
     file_name=os.path.splitext(os.path.basename(params['arg_query']))[0]
@@ -86,13 +87,25 @@ if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
         if(params['arg_query'].endswith('_deleteme')):
             os.remove(params['arg_query'])
         params['tempfile']=params['arg_query']
+    elif(config.has_section(dir_name)):
+        section_name=dir_name
+        #overide any params from section
+        section=dict(config.items(dir_name))
+        for key in section:
+            params[key]=section[key]
+        #set query to file contents
+        file = open(params['arg_query'], mode='r')
+        params['query'] = file.read()
+        file.close()
+        if(params['arg_query'].endswith('_deleteme')):
+            os.remove(params['arg_query'])
+        params['tempfile']=params['arg_query']
 
     params['arg_query']=''
 else:
     #check for section_name
     #section_name=sys.argv[1]
     section_name=os.path.splitext(os.path.basename(sys.argv[1]))[0]
-    dir_name=os.path.splitext(os.path.basename(sys.argv[2]))[0]
     if(config.has_section(section_name)):
         #overide any params from section
         section=dict(config.items(section_name))
@@ -152,6 +165,18 @@ else:
             if(config.has_section(file_name)):
                 #overide any params from section
                 section=dict(config.items(file_name))
+                for key in section:
+                    params[key]=section[key]
+                #set query to file contents
+                file = open(params['arg_query'], mode='r')
+                params['query'] = file.read()
+                file.close()
+                if(params['arg_query'].endswith('_deleteme')):
+                    os.remove(params['arg_query'])
+                params['tempfile']=params['arg_query']
+            elif(config.has_section(dir_name)):
+                #overide any params from section
+                section=dict(config.items(dir_name))
                 for key in section:
                     params[key]=section[key]
                 #set query to file contents
