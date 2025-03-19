@@ -3004,7 +3004,7 @@ var wacss = {
 		return true;
 	},
 	initDatePicker: function(){
-		let els=document.querySelectorAll('input[data-behavior="flatpickr"],input[data-behavior="date"]');
+		let els=document.querySelectorAll('input[data-behavior="flatpickr"],input[data-behavior="date"],input[data-behavior="datepicker"]');
 		if(!els.length){return false;}
 		let nlang=navigator.language || 'en-US';
 		nlang=nlang.split('-')[0];
