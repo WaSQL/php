@@ -1830,19 +1830,21 @@ var wacss = {
 	*/
 	init: function(){
 		/*wacssedit*/
-		wacss.initOnloads();
-		wacss.initWacssEdit();
-		wacss.initChartJs();
-		wacss.initTabs();
-		wacss.initCodeMirror();
-		wacss.initEditor();
-		wacss.initWhiteboard();
-		wacss.initSignaturePad();
-		wacss.initDrag();
-		wacss.initHovers();
-		wacss.leftMenu('init');
+		try{wacss.initOnloads();}catch(e){console.log('wacss.initOnloads failed');}
+		try{wacss.initWacssEdit();}catch(e){console.log('wacss.initWacssEdit failed');}
+		try{wacss.initChartJs();}catch(e){console.log('wacss.initChartJs failed');}
+		try{wacss.initTabs();}catch(e){console.log('wacss.initTabs failed');}
+		try{wacss.initCodeMirror();}catch(e){console.log('wacss.initCodeMirror failed');}
+		try{wacss.initEditor();}catch(e){console.log('wacss.initEditor failed');}
+		try{wacss.initWhiteboard();}catch(e){console.log('wacss.initWhiteboard failed');}
+		try{wacss.initSignaturePad();}catch(e){console.log('wacss.initSignaturePad failed');}
+		try{wacss.initDrag();}catch(e){console.log('wacss.initDrag failed');}
+		try{wacss.initHovers();}catch(e){console.log('wacss.initHovers failed');}
+		try{wacss.leftMenu('init');}catch(e){console.log('wacss.leftMenu failed');}
+		try{wacss.initDatePicker();}catch(e){console.log('wacss.initDatePicker failed');}
 		return false;
 	},
+
 	/**
 	* @name wacss.leftMenu
 	* @describe leftMenu functions: init, open, close, width
@@ -3000,6 +3002,248 @@ var wacss = {
 			}
 		}
 		return true;
+	},
+	initDatePicker: function(){
+		let els=document.querySelectorAll('input[data-behavior="flatpickr"],input[data-behavior="date"]');
+		if(!els.length){return false;}
+		let nlang=navigator.language || 'en-US';
+		nlang=nlang.split('-')[0];
+		for(let i=0;i<els.length;i++){
+			if(undefined != els[i].dataset.initflatpickr){continue;}
+			if(undefined != els[i].dataset.initdatepicker){continue;}
+			els[i].dataset.initdatepicker=1;
+			let lang=els[i].dataset.lang || nlang;
+			let config={
+				errorHandler: function (err) {
+					alert(err);
+		          	return false;
+		        	}
+			};
+			config.prevArrow = "<span class='icon-arrow-left'></span>";
+			config.nextArrow = "<span class='icon-arrow-right'></span>";
+			for(k in els[i].dataset){
+				let v=els[i].dataset[k];
+				switch(k.toLowerCase()){
+					case 'altformat':k='altFormat';break;
+					case 'altinput':k='altInput';break;
+					case 'altinputclass':k='altInputClass';break;
+					case 'allowinput':k='allowInput';break;
+					case 'allowinvalidpreload':k='allowInvalidPreload';break;
+					case 'appendto':
+						k='appendTo';
+						v=document.querySelector(v)||getObject(v);
+					break;
+					case 'ariadateformat':k='ariaDateFormat';break;
+					case 'conjunction':k='conjunction';break;
+					case 'clickopens':k='clickOpens';break;
+					case 'dateformat':k='dateFormat';break;
+					case 'defaultdate':
+						if(undefined != els[i].value && els[i].value.length){k='';}
+						else{k='defaultDate';}
+					break;
+					case 'defaulthour':k='defaultHour';break;
+					case 'defaultminute':k='defaultMinute';break;
+					case 'disablemobile':k='disableMobile';break;
+					case 'enabletime':k='enableTime';break;
+					case 'enableseconds':k='enableSeconds';break;
+					case 'firstdayofweek':
+					case 'firstday':
+						if(undefined == config.locale){
+							config.locale={};
+						}
+						config.locale.firstDayOfWeek=v;
+						continue;
+						//k='firstDayOfWeek';
+					break;
+					case 'hourincrement':k='hourIncrement';break;
+					case 'maxdate':
+						k='maxDate';
+						if(!isNaN(v)){
+							if(v < 0){
+								v=Math.abs(v);
+								v = new Date(new Date().setDate(new Date().getDate() - v)).toLocaleDateString('en-CA');	
+							}
+							else if(v > 0){
+								v=Math.abs(v);
+								v = new Date(new Date().setDate(new Date().getDate() + v)).toLocaleDateString('en-CA');	
+							}	
+						}
+						else if(v.toLowerCase()=='today'){
+							v=new Date().toLocaleDateString('en-CA');
+						}
+						els[i].dataset.maxdate_value=v;
+					break;
+					case 'mindate':
+						k='minDate';
+						if(!isNaN(v)){
+							if(v < 0){
+								v=Math.abs(v);
+								v = new Date(new Date().setDate(new Date().getDate() - v)).toLocaleDateString('en-CA');	
+							}
+							else if(v > 0){
+								v=Math.abs(v);
+								v = new Date(new Date().setDate(new Date().getDate() + v)).toLocaleDateString('en-CA');	
+							}	
+						}
+						else if(v.toLowerCase()=='today'){
+							v=new Date().toLocaleDateString('en-CA');
+						}
+						els[i].dataset.mindate_value=v;
+					break;
+					case 'minuteincrement':k='minuteIncrement';break;
+					case 'nextarrow':k='nextArrow';break;
+					case 'nocalendar':k='noCalendar';break;
+					case 'prevarrow':k='prevArrow';break;
+					case 'shorthandcurrentmonth':k='shorthandCurrentMonth';break;
+					case 'showmonths':k='showMonths';break;
+					case 'weeknumbers':
+					case 'showweeknumber':
+						k='weekNumbers';
+					break;
+					case 'monthselectortype':k='monthSelectorType';break;
+					default:continue;break;
+				}
+				switch(v.toLowerCase()){
+					case 'true':
+					case '1':
+						v=true;
+					break;
+					case 'false':
+					case '0':
+						v=false;
+					break;
+				}
+				if(k != ''){config[k]=v;}
+			}
+			switch(lang.toLowerCase()){
+				case 'es':
+					//spanish
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+					config.locale.months.shorthand = ['enero', 'feb.', 'marzo', 'abr.', 'mayo', 'jun.', 'jul.', 'agosto', 'sept.', 'oct.', 'nov.', 'dic.'];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+					config.locale.weekdays.shorthand = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+					config.locale.firstDayOfWeek = 1;
+					config.locale.rangeSeparator=" a ";
+					config.locale.time_24hr=true;
+					config.locale.ordinal=function(){return "º";};
+				break;
+				case 'de':
+					//german
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+					config.locale.months.shorthand = ['Jan.', 'Feb.', 'Marz', 'Apr.', 'Mai', 'Juni.', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+					config.locale.weekdays.shorthand = ['Son', 'Mon', 'Die', 'Mit', 'Don', 'Fre', 'Sam'];
+					//in Germany the first day of the week is Monday
+					config.locale.firstDayOfWeek = 1;
+					config.locale.weekAbbreviation = "KW";
+	      			config.locale.rangeSeparator = " bis ";
+	      			config.locale.scrollTitle = "Zum Ändern scrollen";
+	      			config.locale.toggleTitle = "Zum Umschalten klicken";
+	      			config.locale.time_24hr = true;
+				break;
+				case 'fr':
+					//french
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+					config.locale.months.shorthand = ['janv.', 'févr.', 'mars', 'avril.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+					config.locale.weekdays.shorthand = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+					config.locale.ordinal = function (nth) {
+				          if (nth > 1){return "";}
+				          return "er";
+				     };
+				     rangeSeparator = " au ";
+				     weekAbbreviation = "Sem";
+				     scrollTitle = "Défiler pour augmenter la valeur";
+				     toggleTitle = "Cliquer pour basculer";
+				     time_24hr = true;
+				break;
+				case 'it':
+					//italian
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+					config.locale.months.shorthand = ['genn.', 'febbr.', 'mar.', 'abr.', 'magg.', 'giugno', 'luglio', 'ag.', 'sett.', 'ott.', 'nov.', 'dic.'];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+					config.locale.weekdays.shorthand = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+					//in Italy the first day of the week is Monday
+					config.locale.firstDayOfWeek = 1;
+					config.locale.ordinal = function () { return "°"; };
+	      			config.locale.rangeSeparator = " al ";
+	      			config.locale.weekAbbreviation = "Se";
+	      			config.locale.scrollTitle = "Scrolla per aumentare";
+	      			config.locale.toggleTitle = "Clicca per cambiare";
+	      			config.locale.time_24hr = true;
+				break;
+				case 'ja':
+					//japanese
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+					config.locale.months.shorthand = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ["日曜日","月曜日","火曜日","水曜日","木曜日","金曜日","土曜日"];
+					config.locale.weekdays.shorthand = ["日", "月", "火", "水", "木", "金", "土"];
+					config.locale.time_24hr=true;
+					config.locale.rangeSeparator = " から ";
+				     config.locale.monthAriaLabel = "月";
+				     config.locale.amPM = ["午前", "午後"];
+				     config.locale.yearAriaLabel = "年";
+				     config.locale.hourAriaLabel = "時間";
+				     config.locale.minuteAriaLabel = "分";
+				break;
+				case 'ko':
+					//korean
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+					config.locale.months.shorthand = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"];
+					config.locale.weekdays.shorthand = ["일", "월", "화", "수", "목", "금", "토"];
+					config.locale.rangeSeparator = " ~ ";
+				     config.locale.ordinal = function(){return "일";};
+				break;
+				case 'pt':
+					//portuguese
+					config.locale={};
+					config.locale.months={};
+					config.locale.months.longhand = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+					config.locale.months.shorthand = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+					config.locale.weekdays = {};
+					config.locale.weekdays.longhand = [ "Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+					config.locale.weekdays.shorthand = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+					config.locale.rangeSeparator = " até ";
+				     config.locale.time_24hr = true;
+				break;
+				case 'zh':
+					//chinese
+					config.locale={};
+					config.locale.months = {};
+					config.locale.months.longhand = ["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
+					config.locale.months.shorthand = ["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
+					config.locale.weekdays={};
+					config.locale.weekdays.longhand = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+					config.locale.weekdays.shorthand = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+					config.locale.rangeSeparator = " 至 ";
+	      			config.locale.weekAbbreviation = "周";
+	      			config.locale.scrollTitle = "滚动切换";
+	      			config.locale.toggleTitle = "点击切换 12/24 小时时制";
+				break;
+			}
+			//console.log(config);
+			flatpickr(els[i],config);
+		}
+		return false;
 	},
 	/**
 	* @name wacss.initHovers
