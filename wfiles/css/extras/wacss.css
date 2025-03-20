@@ -1381,14 +1381,16 @@ ul.nav-tabs{
   padding: 0;
   margin:1px 0 1px 0;
   list-style: none;
+  justify-content: flex-start;
 }
-ul.nav-tabs.align-center{
+/* alignment: left,right,or center */
+ul.nav-tabs.center{
   justify-content: center;
 }
-ul.nav-tabs.align-right{
+ul.nav-tabs.right{
   justify-content: flex-end;
 }
-ul.nav-tabs.align-left{
+ul.nav-tabs.left{
   justify-content: flex-start;
 }
 ul.nav-tabs > li {
@@ -1407,6 +1409,14 @@ ul.nav-tabs > li > a, ul.nav-tabs > li.nav-item {
   border:1px solid #e2e6ea;
   border-top-right-radius:6px;
   border-top-left-radius: 6px;
+}
+/* allow some tabs to be on the right when the rest is on the left */
+ul.nav-tabs.left > li.right {
+  margin-left: auto;
+}
+/* allow some tabs to be on the left when the rest is on the right */
+ul.nav-tabs.right > li.left {
+  margin-right: auto;
 }
 /* color variations */
 /* default to white */
