@@ -1290,8 +1290,15 @@ function hanaDBConnect($params=array()){
 		echo "hanaDBConnect error: no dbname or connect param".printValue($params);
 		exit;
 	}
+	
 	//echo printValue($params);exit;
 	if(isset($params['-single'])){
+		global $dbh_hana_single;
+		//echo "Single:".printValue($dbh_hana_single);
+		//if(is_resource($dbh_hana)){return $dbh_hana;}
+		if(is_resource($dbh_hana_single) && stringBeginsWith(get_resource_type($dbh_hana_single),'odbc link')){
+			odbc_close($dbh_hana_single);
+		}
 		if(isset($params['-cursor'])){
 			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
@@ -1307,8 +1314,11 @@ function hanaDBConnect($params=array()){
 		return $dbh_hana_single;
 	}
 	global $dbh_hana;
-	if(is_resource($dbh_hana)){return $dbh_hana;}
-
+	//echo "Pooled:".printValue($dbh_hana);
+	//if(is_resource($dbh_hana)){return $dbh_hana;}
+	if(is_resource($dbh_hana) && stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
+		odbc_close($dbh_hana);
+	}
 	try{
 		if(isset($params['-cursor'])){
 			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
@@ -2242,42 +2252,43 @@ function hanaQueryResults($query,$params=array()){
 	);
 	global $hanaStopProcess;
 	global $dbh_hana;
+	$dbh_hana=hanaDBConnect($params);
 	$starttime=microtime(true);
-	if(!is_resource($dbh_hana)){
+	if(!is_resource($dbh_hana) || !stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
 		$dbh_hana=hanaDBConnect($params);
 	}
-	$dbh_hana_result='';
-	if(!$dbh_hana){
+	if(!is_resource($dbh_hana) || !stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
 		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
 		debugValue($DATABASE['_lastquery']);
     	return array();
 	}
-	$ok=odbc_errormsg($dbh_hana);
+	// Reset the error state by running a simple valid query
+    $dbh_hana_result=odbc_exec($dbh_hana,"SELECT 'x' FROM DUMMY");
+	$dbh_hana_result='';
 	if(!isset($params['-longreadlen'])){
 		$params['-longreadlen']=131027;
 	}
 	try{
-		//odbc_exec($dbh_hana, "SET NAMES 'UTF8'");
-		//odbc_exec($dbh_hana, "SET client_encoding='UTF-8'");
-		//check for -timeout
 		if(isset($params['-timeout']) && isNum($params['-timeout'])){
 			//sets the query to timeout after X seconds
 			$dbh_hana_result = odbc_prepare($dbh_hana,$query);
+			if(!is_resource($dbh_hana_result)){
+				$err=array(
+					'function'=>'hanaQueryResults',
+					'message'=>'odbc_prepare with timeout resource error',
+					'error'=>odbc_errormsg($dbh_hana),
+					'query'=>$query,
+					'params'=>$params
+				);
+				debugValue($err);
+				//echo "hanaQueryResults-D".printValue($err);
+				return array();
+			}
 			odbc_setoption($dbh_hana_result, 2, 0, $params['-timeout']);
 			odbc_execute($dbh_hana_result);
 		}
 		else{
 			$dbh_hana_result=odbc_exec($dbh_hana,$query);	
-		}
-		if (odbc_error()){
-			debugValue(array(
-				'function'=>'hanaQueryResults',
-				'message'=>'odbc execute error',
-				'error'=>odbc_errormsg($dbh_hana),
-				'query'=>$query,
-				'params'=>$params
-			));
-			return array();
 		}
 	}
 	catch (Exception $e) {
@@ -2285,6 +2296,18 @@ function hanaQueryResults($query,$params=array()){
 		$DATABASE['_lastquery']['error']='connect failed: '.$e->errorInfo;
 		debugValue($DATABASE['_lastquery']);
     	return array();
+	}
+	if(!is_resource($dbh_hana_result)){
+		$err=array(
+			'function'=>'hanaQueryResults',
+			'message'=>'odbc resource error',
+			'error'=>odbc_errormsg($dbh_hana),
+			'query'=>$query,
+			'params'=>$params
+		);
+		debugValue($err);
+		//echo "hanaQueryResults-D".printValue($err);
+		return array();
 	}
 	$rowcount=odbc_num_rows($dbh_hana_result);
 	if($rowcount==0 && isset($params['-forceheader'])){
