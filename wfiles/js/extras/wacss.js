@@ -546,6 +546,20 @@ var wacss = {
 	  	sObj.style.top=y+'px';
 	  	return new Array(x,y);
 	},
+	/**
+	* @name wacss.centerpopClose
+	* @describe closes the centerpop window
+	* @return boolean
+	* @usage wacss.centerpopClose();
+	*/
+	centerpopClose: function(){
+		if(undefined != document.getElementById('wacss_centerpop')){
+			return wacss.removeObj(document.getElementById('wacss_centerpop'));
+		}
+		else if(undefined != document.getElementById('centerpop')){
+			return wacss.removeObj(document.getElementById('centerpop'));
+		}
+	},
 	chartjsDrawTotals: function(chart){
 		let width = chart.chart.width,
 	    height = chart.chart.height,
