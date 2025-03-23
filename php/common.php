@@ -4319,8 +4319,12 @@ function buildFormFile($name,$params=array()){
 		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
 		unset($params['data-resize']);
     }
+    if(isset($params['data-onfile'])){
+    	$onfile="data-onfile=\"{$params['data-onfile']}\"";
+    }
+    else{$onfile='';}
 	$tag.=<<<ENDOFTAG
-<input type="file" accept="{$params['accept']}" class="fileupload" name="{$name}" id="{$params['id']}" style="display:none;" onchange="wacss.formFileUpload(this);" {$capture} {$params['multiple']}>
+<input type="file" {$onfile} accept="{$params['accept']}" class="fileupload" name="{$name}" id="{$params['id']}" style="display:none;" onchange="wacss.formFileUpload(this);" {$capture} {$params['multiple']}>
 <div class="fileupload {$params['class']}">
 	{$icon}
 	<label for="{$params['id']}" data-hover="id:{$params['id']}_hover" data-position="bottom" data-text="{$params['text']}">{$params['text']}</label>
