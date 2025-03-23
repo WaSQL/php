@@ -2904,12 +2904,7 @@ ENDOFPRETABLE;
 				if(isset($params[$fld."_style"])){$style=$params[$fld."_image"];}
                 $value='<img src="'.$value.'" alt="" style="'.$style.'" />';
 			}
-			if(!empty($params[$fld."_displayname"])){
-				$fieldname=$params[$fld."_displayname"];
-			}
-			else{
-				$fieldname=ucwords(trim(str_replace('_',' ',$fld)));
-			}
+			$fieldname=ucwords(trim(str_replace('_',' ',$fld)));
 			$rtn .= '			<td data-fieldname="'.$fieldname.'" ';
 			$atts=array();
 			foreach($params as $k=>$v){
