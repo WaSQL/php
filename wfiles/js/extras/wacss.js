@@ -1438,7 +1438,7 @@ var wacss = {
 		if(undefined != document.getElementById('geolocationmap_content')){
 			params.div='geolocationmap_content';
 			wacss.geoLocationMapContent(params);
-			centerObject('geolocationmap');
+			wacss.centerObject('geolocationmap');
 			return 1;
 		}
 		let popup=document.createElement('div');
@@ -1470,7 +1470,7 @@ var wacss = {
 		params.div=popup_content;
 		wacss.geoLocationMapContent(params);
 		document.body.appendChild(popup);
-		centerObject(popup);
+		wacss.centerObject(popup);
 	},
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
@@ -5715,7 +5715,7 @@ var wacss = {
 			if(undefined != mt){
 				mt.innerHTML=title;
 			}
-			centerObject(m);
+			wacss.centerObject(m);
 			return m;
 		}
 	},
@@ -5760,7 +5760,7 @@ var wacss = {
 					mt.innerHTML=title;
 				}
 			}
-			centerObject(m);
+			wacss.centerObject(m);
 			return m;
 		}
 		if(undefined != document.getElementById('wacss_modal_overlay_close')){
@@ -5832,7 +5832,7 @@ var wacss = {
 			document.body.appendChild(modal);
 		}
 		modal.setAttribute('data-position','initial');
-		centerObject(modal);
+		wacss.centerObject(modal);
 		return modal;
 	},
 	/**
@@ -6608,7 +6608,7 @@ var wacss = {
 		aud.style.height='50px';
 		aud.d=d;
 		aud.oncanplay=function(){
-			centerObject(this.d);
+			wacss.centerObject(this.d);
 		}
 		d.appendChild(aud);
 		document.body.appendChild(d);
@@ -6630,7 +6630,7 @@ var wacss = {
 			removeDiv(this.id);
 		};
 		document.body.appendChild(v);
-		centerObject(d);
+		wacss.centerObject(d);
 		return v;
 	},
 	/**
@@ -6683,7 +6683,7 @@ var wacss = {
 		i.style.maxHeight='100%';
 		i.d=d;
 		i.onload=function(){
-			centerObject(this.d);
+			wacss.centerObject(this.d);
 		}
 		d.appendChild(i);
 		if(undefined != el.dataset.footer && el.dataset.footer.length){
@@ -6716,7 +6716,7 @@ var wacss = {
 			removeDiv(this.id);
 		};
 		document.body.appendChild(v);
-		centerObject(d);
+		wacss.centerObject(d);
 		return v;
 	},
 	/**
@@ -6786,7 +6786,7 @@ var wacss = {
 			vid.style.height='auto';
 			vid.d=d;
 			vid.oncanplay=function(){
-				centerObject(this.d);
+				wacss.centerObject(this.d);
 			}
 		}
 		d.appendChild(vid);
@@ -6809,7 +6809,7 @@ var wacss = {
 			removeDiv(this.id);
 		};
 		document.body.appendChild(v);
-		centerObject(d);
+		wacss.centerObject(d);
 		return v;
 	},
 	/**
