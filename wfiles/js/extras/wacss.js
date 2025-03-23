@@ -1127,6 +1127,10 @@ var wacss = {
 		if(undefined == code){return true;}
 		let files=el.files || new Array();
 		if(fcnt > 0){
+			if(undefined != el.dataset.onfile){
+				let cfunc=new Function(el.dataset.onfile);
+				cfunc();
+			}
 			erase.style.display='block';
 			let tsize=0;
 			let htm='<table class="table condensed striped bordered">';
