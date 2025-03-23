@@ -2904,7 +2904,7 @@ ENDOFPRETABLE;
 				if(isset($params[$fld."_style"])){$style=$params[$fld."_image"];}
                 $value='<img src="'.$value.'" alt="" style="'.$style.'" />';
 			}
-			$rtn .= '			<td';
+			$rtn .= '			<td data-fieldname="'.$fld.'" ';
 			$atts=array();
 			foreach($params as $k=>$v){
 				if(preg_match('/^'.$fld.'_(onclick|eval|href|target)$/i',$k)){continue;}
