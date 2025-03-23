@@ -2904,7 +2904,13 @@ ENDOFPRETABLE;
 				if(isset($params[$fld."_style"])){$style=$params[$fld."_image"];}
                 $value='<img src="'.$value.'" alt="" style="'.$style.'" />';
 			}
-			$rtn .= '			<td data-fieldname="'.$fld.'" ';
+			if(!empty($params[$fld."_displayname"])){
+				$fieldname=$params[$fld."_displayname"];
+			}
+			else{
+				$fieldname=ucwords(trim(str_replace('_',' ',$fld)));
+			}
+			$rtn .= '			<td data-fieldname="'.$fieldname.'" ';
 			$atts=array();
 			foreach($params as $k=>$v){
 				if(preg_match('/^'.$fld.'_(onclick|eval|href|target)$/i',$k)){continue;}
