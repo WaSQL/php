@@ -4332,8 +4332,7 @@ function buildFormFile($name,$params=array()){
 	<input type="checkbox" value="1" name="{$params['name']}_remove" style="display:none;">
 	<code style="display:none;">{$params['value']}</code>
 </div>
-<div class="fileupload_hover" style="display:none;" id="{$params['id']}_hover">
-	<img src="/wfiles/clear.gif" onload="wacss.formFileUploadInit();wacss.initHovers();">
+<div class="fileupload_hover" style="display:none;" id="{$params['id']}_hover" data-onload="wacss.formFileUploadInit();wacss.initHovers();">
 </div>
 ENDOFTAG;
 	$tag.='</div>';
