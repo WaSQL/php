@@ -1029,6 +1029,16 @@ function dbQueryResults($db,$query,$params=array()){
 */
 function duckdbQueryResults($query,$params=array()){
 	global $DATABASE;
+	global $DATABASE;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>$query,
+		'function'=>'duckdbQueryResults',
+		'params'=>$params
+	);
 	//return printValue($DATABASE);
 
 	$tpath=getWasqlTempPath();
@@ -1076,9 +1086,6 @@ function duckdbQueryResults($query,$params=array()){
 			}
 		}
 	}
-	
-	//return "<pre>{$query}</pre>";
-	
 	if(isset($params['-filename']) && strlen($params['-filename'])){
 		$csvfile=str_replace("\\","/",$params['-filename']);
 		$preloads[]=".mode csv";
@@ -1092,12 +1099,19 @@ function duckdbQueryResults($query,$params=array()){
 		$cmd="duckdb -csv -c \".read {$afile}\"";
 		$out=cmdResults($cmd);
 		if(isset($out['stderr']) && strlen($out['stderr'])){
-			return "<pre>{$query}</pre>".printValue($out);
+			$DATABASE['_lastquery']['error']=$out['stderr'];
+			debugValue($DATABASE['_lastquery']);
+    		return 0;
 		}
 		unlink($afile);
-		//return the csvfile count
-		$cmd="duckdb -json -c \"select count(*) AS cnt from read_csv('{$csvfile}');\"";
+		//call duckdb again to return the count
+		$cmd="duckdb -json -c \"SELECT count(*) AS cnt FROM read_csv('{$csvfile}');\"";
 		$out=cmdResults($cmd);
+		if(isset($out['stderr']) && strlen($out['stderr'])){
+			$DATABASE['_lastquery']['error']=$out['stderr'];
+			debugValue($DATABASE['_lastquery']);
+    		return 0;
+		}
 		$recs=decodeJSON($out['stdout']);
 		return $recs[0]['cnt'];
 	}
@@ -1111,13 +1125,14 @@ function duckdbQueryResults($query,$params=array()){
 		$cmd="duckdb -json -c \".read {$afile}\"";
 		$out=cmdResults($cmd);
 		if(isset($out['stderr']) && strlen($out['stderr'])){
-			return "<pre>{$query}</pre>".printValue($out);
+			$DATABASE['_lastquery']['error']=$out['stderr'];
+			debugValue($DATABASE['_lastquery']);
+    		return array();
 		}
 		$recs=decodeJSON($out['stdout']);
 		unlink($afile);
 		return $recs;
 	}
-	
 }
 //---------- begin function pyQueryResults
 /**
