@@ -587,6 +587,19 @@ function dbGetCount($db,$params){
 function dbGetProcedureText($db,$name,$type,$schema=''){
 	return dbFunctionCall('getProcedureText',$db,$name,$type,$schema);
 }
+//---------- begin function dbQueryExplainResults
+/**
+* @describe returns an records set from a database
+* @param db string - database name as specified in the database section of config.xml
+* @param sql string - query to execute
+
+* @return array recordsets
+* @usage
+*	$recs=dbQueryExplainResults('pg_local',"truncate table test");
+*/
+function dbQueryExplainResults($db,$sql,$return_error=1){
+	return dbFunctionCall('queryExplainResults',$db,$sql,$return_error);
+}
 //---------- begin function dbGetDDL
 /**
 * @describe returns DDL to specified object type and name
@@ -739,6 +752,10 @@ function dbGetAllTableConstraints($db,$schema=''){
 *	$recs=dbGetRecords('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
 function dbGetRecords($db,$params){
+	//check for duckdb
+	if(isset($params['-query']) && stringBeginsWith(trim($params['-query']),'-- duckdb')){
+		return duckdbQueryResults(trim($params['-query']),$params);
+	}
 	return dbFunctionCall('getDBRecords',$db,$params);
 }
 //---------- begin function dbGetAllProcedures
@@ -897,6 +914,10 @@ function dbOptimizations($db,$params=array()){
 *	$recs=dbQueryResults('pg_local','select * from postgres.notes order by _cdate limit 10')
 */
 function dbQueryResults($db,$query,$params=array()){
+	//check for duckdb
+	if($db=='duckdb' || stringBeginsWith(trim($query),'-- duckdb')){
+		return duckdbQueryResults(trim($query),$params);
+	}
 	//check for shortcuts
 	if(preg_match('/^(fields|fld)\ (.+)$/is',$query,$m)){
 		$parts=preg_split('/\ /',$m[2],2);
@@ -974,6 +995,129 @@ function dbQueryResults($db,$query,$params=array()){
 		}
 	}
 	return $recs;
+}
+//---------- begin function duckdbQueryResults
+/*
+* @describe returns record sets from a duckdb query. Supports reading (and joining) csv, orc, json, avro, parquet, xlsx, arrow files, mysql, postgres, and sqlite using config.xml settings. NOTE: duckdb must be installed and in your PATH
+* @param query string - query to send to duckdb
+* @return array recordsets
+* @usage
+*	$recs=duckdbQueryResults("SELECT * FROM read_xlsx('d:/temp3/ideas.xlsx')");
+*	$recs=duckdbQueryResults("SELECT * FROM read_csv('d:/temp3/ideas.csv')");
+* 	Example of a query that joins multiple data sources and types
+*	SELECT
+*		c.distid,c.name,c.email,
+*		j.age,j.color,
+*		m.code,m.name as country_name,
+*		count(o.ordernumber) as order_count,
+*		sum(o.order_amount) as order_total,
+*		count(oi.itemid) as item_count
+*	-- CSV file
+*	FROM read_csv('d:/temp3/names.csv') c
+*	-- JSON file
+*	JOIN read_json('d:/temp3/ages.json') j on j.distid=c.distid 
+*	-- SQLite DB
+*	JOIN sqlite_orders.orders o on o.dist_id=c.distid
+*	-- Postgres DB
+*	JOIN pg_local_master.order_items oi on oi.distid=c.distid
+*	-- Mysql DB
+*	JOIN dis_live.states m on m.code=o.state and m.country='US'
+*	GROUP BY 
+*		c.distid,c.name,c.email,
+*		j.age,j.color,
+*		m.code,m.name
+*/
+function duckdbQueryResults($query,$params=array()){
+	global $DATABASE;
+	//return printValue($DATABASE);
+
+	$tpath=getWasqlTempPath();
+	$tpath=str_replace("\\","/",$tpath);
+	//add preloads. csv, json, orc files do not need preloads
+	$preloads=array();
+	//excel xlsx files
+	if(stringContains($query,'FROM read_xlsx(') && !stringContains($query,'LOAD excel')){
+		$preloads[]="INSTALL excel; LOAD excel;";
+	}
+	//avro files
+	if(stringContains($query,'FROM read_avro(') && !stringContains($query,'LOAD avro')){
+		$preloads[]="INSTALL avro; LOAD avro;";
+	}
+	//arrow files
+	if(stringContains($query,'FROM read_arrow(') && !stringContains($query,'LOAD nanoarrow')){
+		$preloads[]="INSTALL nanoarrow; LOAD nanoarrow;";
+	}
+	//remote files
+	if(preg_match('/\(\'(http|https|s3)\:/is',$query)){
+		$preloads[]="INSTALL httpfs; LOAD httpfs;";
+	}
+	//DATABASE
+	foreach($DATABASE as $name=>$db){
+		if(stringContains($query," {$name}.")){
+			switch(strtolower($db['dbtype'])){
+				case 'postgresql':
+				case 'postgres':
+					//tested: 2025-03-31
+					if(!isset($db['dbport'])){$db['dbport']=5432;}
+					$preloads[]="INSTALL postgres_scanner; LOAD postgres_scanner;";
+					$preloads[]="ATTACH 'host={$db['dbhost']} port={$db['dbport']} user={$db['dbuser']} password={$db['dbpass']} dbname={$db['dbname']}' AS {$name} (TYPE postgres);";
+				break;
+				case 'mysql':
+				case 'mysqli':
+					//tested: 2025-03-31
+					$preloads[]="INSTALL mysql; LOAD mysql;";
+					$preloads[]="ATTACH 'host={$db['dbhost']} user={$db['dbuser']} password={$db['dbpass']} database={$db['dbname']}' AS {$name} (TYPE mysql);";
+				break;
+				case 'sqlite':
+					//tested: 2025-04-01
+					$preloads[]="INSTALL sqlite; LOAD sqlite;";
+					$preloads[]="ATTACH '{$db['dbname']}' AS {$name} (TYPE sqlite);";
+				break;
+			}
+		}
+	}
+	
+	//return "<pre>{$query}</pre>";
+	
+	if(isset($params['-filename']) && strlen($params['-filename'])){
+		$csvfile=str_replace("\\","/",$params['-filename']);
+		$preloads[]=".mode csv";
+		$preloads[]=".output {$csvfile}";
+		if(count($preloads)){
+			$query=implode(PHP_EOL,$preloads).PHP_EOL.$query;
+		}
+		$filename='duckdb_'.sha1($query).'.sql';
+		$afile="{$tpath}/{$filename}";
+		$ok=setFileContents($afile,$query);
+		$cmd="duckdb -csv -c \".read {$afile}\"";
+		$out=cmdResults($cmd);
+		if(isset($out['stderr']) && strlen($out['stderr'])){
+			return "<pre>{$query}</pre>".printValue($out);
+		}
+		unlink($afile);
+		//return the csvfile count
+		$cmd="duckdb -json -c \"select count(*) AS cnt from read_csv('{$csvfile}');\"";
+		$out=cmdResults($cmd);
+		$recs=decodeJSON($out['stdout']);
+		return $recs[0]['cnt'];
+	}
+	else{
+		if(count($preloads)){
+			$query=implode(PHP_EOL,$preloads).PHP_EOL.$query;
+		}
+		$filename='duckdb_'.sha1($query).'.sql';
+		$afile="{$tpath}/{$filename}";
+		$ok=setFileContents($afile,$query);
+		$cmd="duckdb -json -c \".read {$afile}\"";
+		$out=cmdResults($cmd);
+		if(isset($out['stderr']) && strlen($out['stderr'])){
+			return "<pre>{$query}</pre>".printValue($out);
+		}
+		$recs=decodeJSON($out['stdout']);
+		unlink($afile);
+		return $recs;
+	}
+	
 }
 //---------- begin function pyQueryResults
 /**
