@@ -1494,6 +1494,31 @@ def parseCodeBlocks(str):
         str = str_replace(repstr,rtn,str)
     return str
 
+def extractPythonCode(str):
+    """
+    Extract Python code from various embedded code tag formats
+    Supports:
+    - <?py ... ?>
+    - <? ... ?>
+    """
+    # Regex to match both <?py and <? style tags
+    patterns = [
+        r'\<\?py(.*?)\?\>',   # <?py ... ?> style
+        r'\<\?(.*?)\?\>'       # <? ... ?> style
+    ]
+    
+    extracted_code = []
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, str, re.DOTALL)
+        if matches:
+            # Strip whitespace and add to extracted code
+            extracted_code.extend(match.strip() for match in matches)
+            return '\n'.join(extracted_code)
+    
+    # Join multiple matches, ensuring each is a complete statement
+    return '\n'.join(extracted_code)
+
 #---------- begin function sendMail ----------
 # @describe sends email
 # @param dictionary or parameters

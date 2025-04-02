@@ -197,6 +197,15 @@ foreach($DATABASE as $d=>$db){
 		case 'sqlite':
 			$DATABASE[$d]['dbicon']='icon-database-sqlite';
 		break;
+		case 'duckdb':
+			$DATABASE[$d]['dbicon']='icon-database-duckdb';
+		break;
+		case 'splunk':
+			$DATABASE[$d]['dbicon']='icon-database-splunk';
+		break;
+		case 'gigya':
+			$DATABASE[$d]['dbicon']='icon-database-gigya';
+		break;
 		case 'elastic':
 			$DATABASE[$d]['dbicon']='brand-elastic';
 		break;

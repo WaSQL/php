@@ -49,7 +49,7 @@ REQUEST = dict(parse_qsl(parsed_url.query))
 PAGE = {}
 TEMPLATE = {}
 if '_view' not in REQUEST:
-    REQUEST['_view']='index.py'
+    REQUEST['_view']='index'
 
 #view a page
 if '_view' in REQUEST:
@@ -66,25 +66,31 @@ if '_view' in REQUEST:
                 else:
                     PAGE[rk]=rec[rk]
             #set common.VIEWS
-            common.parseViews(rec['body'])
-            body = rec['body']
+            #print(PAGE['body']);sys.exit;
+            common.parseViews(PAGE['body'])
+            body = PAGE['body']
             #check for functions - TODO: determine how to call these
-            if 'functions' in rec and len(rec['functions']) > 0:
-                compileString=''
-                compileString = rec['functions'] + os.linesep + os.linesep
-                #compile(source, filename, mode, flags=0, dont_inherit=False, optimize=-1)
-                compiledCodeBlock = compile(compileString, '<string>', 'exec')
-                eval(compiledCodeBlock)
+            if 'functions' in PAGE and len(PAGE['functions']) > 0:
+                try:
+                    compileString = common.extractPythonCode(PAGE['functions']) + os.linesep + os.linesep
+                    #compile(source, filename, mode, flags=0, dont_inherit=False, optimize=-1)
+                    compiledCodeBlock = compile(compileString, '<string>', 'exec')
+                    eval(compiledCodeBlock)
+                except Exception as e:
+                    print("Error compiling/evaluating functions: {}".format(e))
+
             #check for controller
-            if 'controller' in rec and len(rec['controller']) > 0:
-                compileString=''
-                compileString = rec['controller'] + os.linesep + os.linesep
-                compiledCodeBlock = compile(compileString, '<string>', 'exec')
-                eval(compiledCodeBlock)
+            if 'controller' in PAGE and len(PAGE['controller']) > 0:
+                try:
+                    compileString = common.extractPythonCode(PAGE['controller']) + os.linesep + os.linesep
+                    compiledCodeBlock = compile(compileString, '<string>', 'exec')
+                    eval(compiledCodeBlock)
+                except Exception as e:
+                    print("Error compiling/evaluating controller: {}".format(e))
+
             #process page views set
             if not bool(common.VIEW.keys):
-                common.createView('default',rec['body'])
-
+                common.createView('default',body)
             for viewname in common.VIEW:
                 rtn = common.parseCodeBlocks(common.VIEW[viewname]).strip()
                 repstr="<view:{}>{}</view:{}>".format(viewname,common.VIEW[viewname],viewname)

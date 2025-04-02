@@ -2808,6 +2808,399 @@ function postgresqlQueryResults($query='',$params=array()){
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $results;
 }
+function postgresqlQueryExplainResults($query='', $params=array()) {
+    $query = 'EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)' . PHP_EOL . $query;
+    $recs = postgresqlQueryResults($query);
+    if(!isset($recs[0]['query plan'])){
+    	global $DATABASE;
+    	return 'Error: invalid query: '.printValue($DATABASE['_lastquery']);
+    }
+    $plan = decodeJSON($recs[0]['query plan']);
+    $issues = [];
+    $indexSuggestions = [];
+    $tablesToAnalyze = [];
+    $usedIndexes = []; // New array to track indexes
+    $feedback = "";
+    
+    // Start with the root plan node
+    if (isset($plan[0]['Plan'])) {
+        postgresqlAnalyzeExplainNode($plan[0]['Plan'], $issues, $indexSuggestions, $tablesToAnalyze, $usedIndexes);
+        
+        // Check if the query is using proper indexes
+        $isEfficientPlan = postgresqlIsEfficientQueryPlan($plan[0]['Plan']);
+        $executionTime = isset($plan[0]['Execution Time']) ? $plan[0]['Execution Time'] : null;
+        
+        // Provide positive feedback for efficient queries
+        if ($isEfficientPlan && $executionTime && $executionTime < 100) {
+            $feedback = "Query plan is efficient - using proper indexes with fast execution time.";
+        } elseif ($isEfficientPlan) {
+            $feedback = "Query plan is using appropriate indexes.";
+        }
+    }
+    
+    // Add overall query execution time if available
+    $executionTime = isset($plan[0]['Execution Time']) ? $plan[0]['Execution Time'] : null;
+    if ($executionTime && $executionTime > 1000) { // over 1 second
+        $issues[] = [
+            'node_type' => 'Overall Query',
+            'description' => "Query execution time ($executionTime ms) is high",
+            'severity' => 'high'
+        ];
+    }
+    
+    // Suggest ANALYZE for outdated statistics
+    foreach($tablesToAnalyze as $table) {
+        $indexSuggestions[] = [
+            'table' => $table,
+            'suggested_index' => "ANALYZE $table;",
+            'reason' => 'Table statistics may be outdated, causing suboptimal query plans'
+        ];
+    }
+    
+    return [
+        'success' => true,
+        'issues' => $issues,
+        'index_suggestions' => $indexSuggestions,
+        'used_indexes' => $usedIndexes, // Include used indexes in the results
+        'execution_time_ms' => $executionTime,
+        'feedback' => $feedback
+    ];
+}
+
+/**
+ * Check if the query plan is using efficient access methods
+ */
+function postgresqlIsEfficientQueryPlan($plan) {
+    // Node types that indicate efficient access methods
+    $efficientNodes = ['Index Scan', 'Index Only Scan', 'Bitmap Index Scan', 'Bitmap Heap Scan'];
+    
+    // Check if the current node is an efficient type
+    if (isset($plan['Node Type']) && in_array($plan['Node Type'], $efficientNodes)) {
+        return true;
+    }
+    
+    // No sequential scans for large tables
+    if (isset($plan['Node Type']) && $plan['Node Type'] === 'Seq Scan' && 
+        isset($plan['Plan Rows']) && $plan['Plan Rows'] > 1000) {
+        return false;
+    }
+    
+    // Check child nodes
+    if (isset($plan['Plans']) && is_array($plan['Plans'])) {
+        foreach ($plan['Plans'] as $childPlan) {
+            // If any child is inefficient, return false
+            if (!postgresqlIsEfficientQueryPlan($childPlan)) {
+                return false;
+            }
+        }
+    }
+    
+    // Default to true if no inefficiencies found
+    return true;
+}
+
+/**
+ * Recursively analyze PostgreSQL plan node with index usage tracking
+ * 
+ * @param array $node The current plan node to analyze
+ * @param array &$issues Array to collect performance issues
+ * @param array &$indexSuggestions Array to collect index suggestions
+ * @param array &$tablesToAnalyze Array to collect tables needing statistics updates
+ * @param array &$usedIndexes Array to collect information about indexes being used
+ */
+function postgresqlAnalyzeExplainNode($node, &$issues, &$indexSuggestions, &$tablesToAnalyze, &$usedIndexes = []) {
+    $problematicNodeTypes = array(
+        'Seq Scan' => [
+            'description' => 'Sequential scan on potentially large table',
+            'severity' => 'high',
+            'threshold' => 1000 // rows - set lower to catch more potential issues
+        ],
+        'Materialize' => [
+            'description' => 'Materializing large result sets can be memory-intensive',
+            'severity' => 'medium',
+            'threshold' => 10000 
+        ],
+        'Sort' => [
+            'description' => 'Sorting large datasets without proper indexes is expensive',
+            'severity' => 'medium',
+            'threshold' => 10000
+        ],
+        'Hash Join' => [
+            'description' => 'Hash join with large tables can consume excessive memory',
+            'severity' => 'medium',
+            'threshold' => 100000
+        ],
+        'Nested Loop' => [
+            'description' => 'Nested loop with large datasets may be inefficient',
+            'severity' => 'medium',
+            'threshold' => 1000
+        ]
+    );
+    
+    // Track index usage - NEW CODE
+    $indexNodeTypes = ['Index Scan', 'Index Only Scan', 'Bitmap Index Scan'];
+    if (isset($node['Node Type']) && in_array($node['Node Type'], $indexNodeTypes)) {
+        $indexInfo = [
+            'node_type' => $node['Node Type'],
+            'table' => $node['Relation Name'] ?? 'unknown',
+            'index_name' => $node['Index Name'] ?? 'unknown'
+        ];
+        
+        // Add additional context if available
+        if (isset($node['Index Cond'])) {
+            $indexInfo['condition'] = $node['Index Cond'];
+        }
+        
+        if (isset($node['Actual Loops'])) {
+            $indexInfo['loops'] = $node['Actual Loops'];
+        }
+        
+        if (isset($node['Total Cost'])) {
+            $indexInfo['cost'] = $node['Total Cost'];
+        }
+        
+        if (isset($node['Actual Rows'])) {
+            $indexInfo['rows'] = $node['Actual Rows'];
+        }
+        
+        // Determine if partial/full index scan
+        if (isset($node['Scan Direction'])) {
+            $indexInfo['scan_direction'] = $node['Scan Direction'];
+        }
+        
+        // Information about index efficiency
+        if (isset($node['Node Type']) && $node['Node Type'] === 'Index Only Scan') {
+            $indexInfo['efficiency'] = 'high'; // Index only scans are very efficient
+        } else if (isset($node['Index Cond']) && isset($node['Filter'])) {
+            $indexInfo['efficiency'] = 'medium'; // Using both index condition and additional filter
+        } else if (isset($node['Index Cond'])) {
+            $indexInfo['efficiency'] = 'high'; // Using index condition only
+        } else {
+            $indexInfo['efficiency'] = 'low'; // Fallback
+        }
+        
+        $usedIndexes[] = $indexInfo;
+    }
+    
+    // Original code for checking problematic node types
+    if (isset($node['Node Type']) && isset($problematicNodeTypes[$node['Node Type']])) {
+        $nodeInfo = $problematicNodeTypes[$node['Node Type']];
+        $rows = isset($node['Plan Rows']) ? $node['Plan Rows'] : 
+               (isset($node['Actual Rows']) ? $node['Actual Rows'] : 0);
+        
+        // Only add issues if they exceed the threshold
+        if ($rows > $nodeInfo['threshold']) {
+            $issue = [
+                'node_type' => $node['Node Type'],
+                'description' => $nodeInfo['description'] . " (rows: $rows)",
+                'severity' => $nodeInfo['severity'],
+                'cost' => isset($node['Total Cost']) ? $node['Total Cost'] : null
+            ];
+            
+            // Add table information if available
+            if (isset($node['Relation Name'])) {
+                $issue['table'] = $node['Relation Name'];
+                
+                // Check for outdated statistics
+                if (isset($node['Plan Rows']) && isset($node['Actual Rows']) && 
+                    $node['Actual Rows'] > $node['Plan Rows'] * 10) {
+                    $tablesToAnalyze[$node['Relation Name']] = $node['Relation Name'];
+                }
+                
+                // Generate index suggestion for Seq Scan
+                if ($node['Node Type'] === 'Seq Scan') {
+                    // Generate index based on filter condition
+                    if (isset($node['Filter'])) {
+                        $columns = postgresqlExtractColumnsFromFilter($node['Filter']);
+                        
+                        if (!empty($columns)) {
+                            // Single column index
+                            if (count($columns) == 1) {
+                                $indexSuggestions[] = [
+                                    'table' => $node['Relation Name'],
+                                    'suggested_index' => "CREATE INDEX idx_" . $node['Relation Name'] . "_" . $columns[0] . 
+                                                      " ON " . $node['Relation Name'] . " (" . $columns[0] . ");",
+                                    'reason' => 'Replace sequential scan with index scan for filter: ' . $node['Filter']
+                                ];
+                            } 
+                            // Multi-column index
+                            else {
+                                $columnList = implode(', ', $columns);
+                                $indexSuggestions[] = [
+                                    'table' => $node['Relation Name'],
+                                    'suggested_index' => "CREATE INDEX idx_" . $node['Relation Name'] . "_combined ON " . 
+                                                      $node['Relation Name'] . " (" . $columnList . ");",
+                                    'reason' => 'Replace sequential scan with filter: ' . $node['Filter']
+                                ];
+                            }
+                        }
+                    } else {
+                        // No filter, suggest general improvement
+                        $indexSuggestions[] = [
+                            'table' => $node['Relation Name'],
+                            'suggested_index' => "-- Consider adding indexes on commonly queried columns for " . $node['Relation Name'],
+                            'reason' => 'Full table scan detected with no filter condition'
+                        ];
+                    }
+                }
+            }
+            
+            $issues[] = $issue;
+        }
+    }
+    
+    // Check for specific join issues
+    if (isset($node['Node Type']) && in_array($node['Node Type'], ['Nested Loop', 'Hash Join', 'Merge Join'])) {
+        if (!isset($node['Join Type']) || $node['Join Type'] === 'Inner' && 
+            !isset($node['Join Filter']) && !isset($node['Hash Cond']) && !isset($node['Merge Cond'])) {
+            $issues[] = [
+                'node_type' => $node['Node Type'],
+                'description' => 'Possible Cartesian join (missing join condition)',
+                'severity' => 'critical'
+            ];
+        }
+    }
+    
+    // Check for Sort operations and suggest indexes for them
+    if (isset($node['Node Type']) && $node['Node Type'] === 'Sort') {
+        if (isset($node['Sort Key'])) {
+            $sortColumns = [];
+            foreach ($node['Sort Key'] as $key) {
+                // Extract column name (remove any functions or operators)
+                if (preg_match('/([a-zA-Z0-9_\.]+)/', $key, $matches)) {
+                    $column = $matches[1];
+                    // Remove table prefix if present
+                    if (strpos($column, '.') !== false) {
+                        $parts = explode('.', $column);
+                        $column = end($parts);
+                    }
+                    $sortColumns[] = $column;
+                }
+            }
+            
+            // If we have sort columns and can determine the table being sorted
+            if (!empty($sortColumns) && isset($node['Plans'][0]['Relation Name'])) {
+                $table = $node['Plans'][0]['Relation Name'];
+                $columnList = implode(', ', $sortColumns);
+                $indexSuggestions[] = [
+                    'table' => $table,
+                    'suggested_index' => "CREATE INDEX idx_" . $table . "_sort ON " . $table . " (" . $columnList . ");",
+                    'reason' => 'Eliminate sort operation with index that matches sort order'
+                ];
+            }
+        }
+    }
+    
+    // Process child nodes
+    if (isset($node['Plans']) && is_array($node['Plans'])) {
+        foreach ($node['Plans'] as $childNode) {
+            postgresqlAnalyzeExplainNode($childNode, $issues, $indexSuggestions, $tablesToAnalyze, $usedIndexes);
+        }
+    }
+}
+
+/**
+ * Extract column names from a filter condition with improved pattern matching
+ * 
+ * @param string $filter The filter condition from explain plan
+ * @return array List of identified column names
+ */
+function postgresqlExtractColumnsFromFilter($filter) {
+    $columns = [];
+    
+    // Handle null filter
+    if (!$filter) {
+        return $columns;
+    }
+    
+    // Remove all string literals to avoid false positives
+    $filter = preg_replace("/'[^']*'/", "'LITERAL'", $filter);
+    
+    // Remove type casts with more comprehensive regex
+    $filter = preg_replace('/::[\w\[\]]+/', '', $filter);
+    
+    // Handle common PostgreSQL operators
+    $operators = [
+        '=', '!=', '<>', '>', '<', '>=', '<=', 
+        'LIKE', 'NOT LIKE', 'ILIKE', 'NOT ILIKE', 
+        '~', '!~', '~*', '!~*', '@>', '<@', '&&',
+        'IS NULL', 'IS NOT NULL', 'BETWEEN', 'NOT BETWEEN',
+        'IN', 'NOT IN'
+    ];
+    
+    $pattern = '/\s+(' . implode('|', array_map('preg_quote', $operators)) . ')\s+/i';
+    $parts = preg_split($pattern, $filter);
+    
+    // Also split on logical operators
+    $logicalPattern = '/\s+(AND|OR|NOT)\s+/i';
+    $allParts = [];
+    foreach ($parts as $part) {
+        $subparts = preg_split($logicalPattern, $part);
+        $allParts = array_merge($allParts, $subparts);
+    }
+    
+    foreach ($allParts as $part) {
+        $part = trim($part);
+        
+        // Skip if empty, numeric literal, boolean, or still has quotes
+        if (empty($part) || 
+            is_numeric($part) || 
+            in_array(strtolower($part), ['true', 'false', 'null']) || 
+            preg_match('/^[\'\"].*[\'\"]$/', $part)) {
+            continue;
+        }
+        
+        // Handle parentheses - extract content between them for processing
+        if (strpos($part, '(') !== false && strpos($part, ')') !== false) {
+            // Extract function arguments and add to parts for processing
+            preg_match_all('/\b([a-zA-Z0-9_]+)\s*\(([^)]*)\)/i', $part, $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                // Skip known SQL functions that don't directly reference columns
+                $sqlFunctions = ['sum', 'count', 'min', 'max', 'avg', 'coalesce', 'nullif', 
+                                'current_date', 'current_time', 'current_timestamp', 'now'];
+                if (!in_array(strtolower($match[1]), $sqlFunctions)) {
+                    // For unknown functions, process their arguments as potential column references
+                    $potentialColumns = explode(',', $match[2]);
+                    foreach ($potentialColumns as $potentialColumn) {
+                        $allParts[] = trim($potentialColumn);
+                    }
+                }
+            }
+            
+            // Clean part from function calls for further processing
+            $part = preg_replace('/\b[a-zA-Z0-9_]+\s*\([^)]*\)/i', '', $part);
+        }
+        
+        // Remove schema prefixes with more comprehensive pattern
+        if (preg_match('/([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)/', $part, $matches)) {
+            $part = $matches[2]; // Just keep the column name
+        }
+        
+        // Additional cleaning
+        $part = preg_replace('/[\(\)\[\]\'";,]/', '', $part);
+        $part = trim($part);
+        
+        // Use word boundary to extract identifiers
+        if (preg_match('/\b([a-zA-Z][a-zA-Z0-9_]*)\b/', $part, $matches)) {
+            $candidate = $matches[1];
+            
+            // Skip SQL keywords
+            $sqlKeywords = ['select', 'from', 'where', 'group', 'order', 'by', 'having', 
+                          'limit', 'offset', 'on', 'as', 'join', 'inner', 'outer', 'left', 
+                          'right', 'full', 'cross', 'union', 'intersect', 'except', 'all', 
+                          'any', 'some', 'exists', 'case', 'when', 'then', 'else', 'end'];
+            
+            if (!in_array(strtolower($candidate), $sqlKeywords) && !empty($candidate)) {
+                // Avoid duplicates
+                if (!in_array($candidate, $columns)) {
+                    $columns[] = $candidate;
+                }
+            }
+        }
+    }
+    
+    return $columns;
+}
 //---------- begin function postgresqlEnumQueryResults ----------
 /**
 * @describe enumerates through the data from a pg_query call

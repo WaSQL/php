@@ -309,6 +309,10 @@ function sqlpromptBuildQuery($db,$name,$str=''){
 			$dbh_sqlite='';
 			return trim(sqliteNamedQuery($name,$str));
 		break;
+		case 'duckdb':
+			loadExtras('duckdb');
+			return trim(duckdbNamedQuery($name,$str));
+		break;
 		case 'snowflake':
 			loadExtras('snowflake');
 			global $dbh_snowflake;
@@ -375,6 +379,10 @@ function sqlpromptNamedQueries(){
 			global $dbh_sqlite;
 			$dbh_sqlite='';
 			$recs=sqliteNamedQueryList();
+		break;
+		case 'duckdb':
+			loadExtras('duckdb');
+			$recs=duckdbNamedQueryList();
 		break;
 		case 'gigya':
 			loadExtras('gigya');

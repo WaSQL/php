@@ -244,6 +244,10 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			$dbh_sqlite='';
 			$func="sqlite".ucfirst($func);
 		break;
+		case 'duckdb':
+			loadExtras('duckdb');
+			$func="duckdb".ucfirst($func);
+		break;
 		case 'gigya':
 			loadExtras('gigya');
 			$func="gigya".ucfirst($func);
@@ -754,6 +758,7 @@ function dbGetAllTableConstraints($db,$schema=''){
 function dbGetRecords($db,$params){
 	//check for duckdb
 	if(isset($params['-query']) && stringBeginsWith(trim($params['-query']),'-- duckdb')){
+		loadExtras('duckdb');
 		return duckdbQueryResults(trim($params['-query']),$params);
 	}
 	return dbFunctionCall('getDBRecords',$db,$params);
@@ -915,7 +920,8 @@ function dbOptimizations($db,$params=array()){
 */
 function dbQueryResults($db,$query,$params=array()){
 	//check for duckdb
-	if($db=='duckdb' || stringBeginsWith(trim($query),'-- duckdb')){
+	if(stringBeginsWith(trim($query),'-- duckdb')){
+		loadExtras('duckdb');
 		return duckdbQueryResults(trim($query),$params);
 	}
 	//check for shortcuts
@@ -995,144 +1001,6 @@ function dbQueryResults($db,$query,$params=array()){
 		}
 	}
 	return $recs;
-}
-//---------- begin function duckdbQueryResults
-/*
-* @describe returns record sets from a duckdb query. Supports reading (and joining) csv, orc, json, avro, parquet, xlsx, arrow files, mysql, postgres, and sqlite using config.xml settings. NOTE: duckdb must be installed and in your PATH
-* @param query string - query to send to duckdb
-* @return array recordsets
-* @usage
-*	$recs=duckdbQueryResults("SELECT * FROM read_xlsx('d:/temp3/ideas.xlsx')");
-*	$recs=duckdbQueryResults("SELECT * FROM read_csv('d:/temp3/ideas.csv')");
-* 	Example of a query that joins multiple data sources and types
-*	SELECT
-*		c.distid,c.name,c.email,
-*		j.age,j.color,
-*		m.code,m.name as country_name,
-*		count(o.ordernumber) as order_count,
-*		sum(o.order_amount) as order_total,
-*		count(oi.itemid) as item_count
-*	-- CSV file
-*	FROM read_csv('d:/temp3/names.csv') c
-*	-- JSON file
-*	JOIN read_json('d:/temp3/ages.json') j on j.distid=c.distid 
-*	-- SQLite DB
-*	JOIN sqlite_orders.orders o on o.dist_id=c.distid
-*	-- Postgres DB
-*	JOIN pg_local_master.order_items oi on oi.distid=c.distid
-*	-- Mysql DB
-*	JOIN dis_live.states m on m.code=o.state and m.country='US'
-*	GROUP BY 
-*		c.distid,c.name,c.email,
-*		j.age,j.color,
-*		m.code,m.name
-*/
-function duckdbQueryResults($query,$params=array()){
-	global $DATABASE;
-	global $DATABASE;
-	$DATABASE['_lastquery']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'query'=>$query,
-		'function'=>'duckdbQueryResults',
-		'params'=>$params
-	);
-	//return printValue($DATABASE);
-
-	$tpath=getWasqlTempPath();
-	$tpath=str_replace("\\","/",$tpath);
-	//add preloads. csv, json, orc files do not need preloads
-	$preloads=array();
-	//excel xlsx files
-	if(stringContains($query,'FROM read_xlsx(') && !stringContains($query,'LOAD excel')){
-		$preloads[]="INSTALL excel; LOAD excel;";
-	}
-	//avro files
-	if(stringContains($query,'FROM read_avro(') && !stringContains($query,'LOAD avro')){
-		$preloads[]="INSTALL avro; LOAD avro;";
-	}
-	//arrow files
-	if(stringContains($query,'FROM read_arrow(') && !stringContains($query,'LOAD nanoarrow')){
-		$preloads[]="INSTALL nanoarrow; LOAD nanoarrow;";
-	}
-	//remote files
-	if(preg_match('/\(\'(http|https|s3)\:/is',$query)){
-		$preloads[]="INSTALL httpfs; LOAD httpfs;";
-	}
-	//DATABASE
-	foreach($DATABASE as $name=>$db){
-		if(stringContains($query," {$name}.")){
-			switch(strtolower($db['dbtype'])){
-				case 'postgresql':
-				case 'postgres':
-					//tested: 2025-03-31
-					if(!isset($db['dbport'])){$db['dbport']=5432;}
-					$preloads[]="INSTALL postgres_scanner; LOAD postgres_scanner;";
-					$preloads[]="ATTACH 'host={$db['dbhost']} port={$db['dbport']} user={$db['dbuser']} password={$db['dbpass']} dbname={$db['dbname']}' AS {$name} (TYPE postgres);";
-				break;
-				case 'mysql':
-				case 'mysqli':
-					//tested: 2025-03-31
-					$preloads[]="INSTALL mysql; LOAD mysql;";
-					$preloads[]="ATTACH 'host={$db['dbhost']} user={$db['dbuser']} password={$db['dbpass']} database={$db['dbname']}' AS {$name} (TYPE mysql);";
-				break;
-				case 'sqlite':
-					//tested: 2025-04-01
-					$preloads[]="INSTALL sqlite; LOAD sqlite;";
-					$preloads[]="ATTACH '{$db['dbname']}' AS {$name} (TYPE sqlite);";
-				break;
-			}
-		}
-	}
-	if(isset($params['-filename']) && strlen($params['-filename'])){
-		$csvfile=str_replace("\\","/",$params['-filename']);
-		$preloads[]=".mode csv";
-		$preloads[]=".output {$csvfile}";
-		if(count($preloads)){
-			$query=implode(PHP_EOL,$preloads).PHP_EOL.$query;
-		}
-		$filename='duckdb_'.sha1($query).'.sql';
-		$afile="{$tpath}/{$filename}";
-		$ok=setFileContents($afile,$query);
-		$cmd="duckdb -csv -c \".read {$afile}\"";
-		$out=cmdResults($cmd);
-		if(isset($out['stderr']) && strlen($out['stderr'])){
-			$DATABASE['_lastquery']['error']=$out['stderr'];
-			debugValue($DATABASE['_lastquery']);
-    		return 0;
-		}
-		unlink($afile);
-		//call duckdb again to return the count
-		$cmd="duckdb -json -c \"SELECT count(*) AS cnt FROM read_csv('{$csvfile}');\"";
-		$out=cmdResults($cmd);
-		if(isset($out['stderr']) && strlen($out['stderr'])){
-			$DATABASE['_lastquery']['error']=$out['stderr'];
-			debugValue($DATABASE['_lastquery']);
-    		return 0;
-		}
-		$recs=decodeJSON($out['stdout']);
-		return $recs[0]['cnt'];
-	}
-	else{
-		if(count($preloads)){
-			$query=implode(PHP_EOL,$preloads).PHP_EOL.$query;
-		}
-		$filename='duckdb_'.sha1($query).'.sql';
-		$afile="{$tpath}/{$filename}";
-		$ok=setFileContents($afile,$query);
-		$cmd="duckdb -json -c \".read {$afile}\"";
-		$out=cmdResults($cmd);
-		if(isset($out['stderr']) && strlen($out['stderr'])){
-			$DATABASE['_lastquery']['error']=$out['stderr'];
-			debugValue($DATABASE['_lastquery']);
-    		return array();
-		}
-		$recs=decodeJSON($out['stdout']);
-		unlink($afile);
-		return $recs;
-	}
 }
 //---------- begin function pyQueryResults
 /**
@@ -1589,6 +1457,12 @@ ENDOFPRETABLE;
 				}
 				$params['-list']=sqliteQueryResults($params['-query']);
 			break;
+			case 'duckdb':
+				if(!function_exists('sduckdbQueryResults')){
+					loadExtras('duckdb');
+				}
+				$params['-list']=duckdbQueryResults($params['-query']);
+			break;
 			case 'gigya':
 				if(!function_exists('gigyaQueryResults')){
 					loadExtras('gigya');
@@ -1700,6 +1574,12 @@ ENDOFPRETABLE;
 					loadExtras('sqlite');
 				}
 				$info=sqliteGetDBFieldInfo($params['-table']);
+			break;
+			case 'duckdb':
+				if(!function_exists('duckdbGetDBFieldInfo')){
+					loadExtras('duckdb');
+				}
+				$info=duckdbGetDBFieldInfo($params['-table']);
 			break;
 			case 'gigya':
 				if(!function_exists('gigyaGetDBFieldInfo')){
@@ -1844,6 +1724,12 @@ ENDOFPRETABLE;
 					}
 					$ok=sqliteEditDBRecord($bulk);
 				break;
+				case 'duckdb':
+					if(!function_exists('duckdbEditDBRecord')){
+						loadExtras('duckdb');
+					}
+					$ok=duckdbEditDBRecord($bulk);
+				break;
 				default:
 					$ok=editDBRecord($bulk);
 				break;
@@ -1961,6 +1847,12 @@ ENDOFPRETABLE;
 						loadExtras('sqlite');
 					}
 					$recs=sqliteGetDBRecords($params);
+				break;
+				case 'duckdb':
+					if(!function_exists('duckdbGetDBRecords')){
+						loadExtras('duckdb');
+					}
+					$recs=duckdbGetDBRecords($params);
 				break;
 				default:
 					$recs=getDBRecords($params);
@@ -2101,6 +1993,12 @@ ENDOFPRETABLE;
 					}
 					$params['-total']=sqliteGetDBCount($params);
 				break;
+				case 'duckdb':
+					if(!function_exists('duckdbGetDBCount')){
+						loadExtras('duckdb');
+					}
+					$params['-total']=duckdbGetDBCount($params);
+				break;
 				default:
 					$params['-total']=getDBCount($params);
 				break;
@@ -2189,6 +2087,12 @@ ENDOFPRETABLE;
 					loadExtras('sqlite');
 				}
 				$params['-list']=sqliteGetDBRecords($params);
+			break;
+			case 'duckdb':
+				if(!function_exists('duckdbGetDBRecords')){
+					loadExtras('duckdb');
+				}
+				$params['-list']=duckdbGetDBRecords($params);
 			break;
 			default:
 				//echo printValue($params);exit;
@@ -3251,6 +3155,7 @@ function databaseParseFilters($params=array()){
 				case 'odbc':
 				case 'mssql':
 				case 'sqlite':
+				case 'duckdb':
 					$ors[]="lower({$field}) like '%{$lval}%'";
 				break;
 				case 'postgres':
@@ -3284,6 +3189,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						$wheres[]="lower({$field}) like '%{$lval}%'";
 					break;
 					case 'postgres':
@@ -3307,6 +3213,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						$wheres[]="lower({$field}) not like '%{$lval}%'";
 					break;
 					case 'postgres':
@@ -3333,6 +3240,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						foreach($lcvals as $lcval){
 							$ors[]="lower({$field}) like '%{$lcval}%'";
 						}
@@ -3368,6 +3276,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						foreach($lcvals as $lcval){
 							$ands[]="lower(cast({$field} as text)) not like '%{$lcval}%'";
 						}
@@ -3400,6 +3309,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						if(isNum($val)){
 							$wheres[]="{$field} = {$val}";
 						}
@@ -3456,6 +3366,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						if(isNum($val)){
 							$wheres[]="{$field} != {$val}";
 						}
@@ -3515,6 +3426,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						foreach($lcvals as $lcval){
 							if(isNum($lcval)){
 								$ors[]="{$field} = {$lcval}";
@@ -3571,6 +3483,7 @@ function databaseParseFilters($params=array()){
 					case 'odbc':
 					case 'mssql':
 					case 'sqlite':
+					case 'duckdb':
 						foreach($lcvals as $lcval){
 							if(isNum($lcval)){
 								$ands[]="{$field} != '{$lcval}'";

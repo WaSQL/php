@@ -278,6 +278,11 @@
 					//echo $sql;exit;
 					$recs=dbQueryResults($db['name'],$sql);
 				break;
+				case 'duckdb':
+					$sql="EXPLAIN".PHP_EOL.$_SESSION['sql_last'];
+					//echo $sql;exit;
+					$recs=dbQueryResults($db['name'],$sql);
+				break;
 				case 'mssql':
 					$sql=str_replace("'","''",$_SESSION['sql_last']);
 					$sql = "EXEC sp_executesql N'SET STATISTICS PROFILE ON; {$sql}; SET STATISTICS PROFILE OFF'";
