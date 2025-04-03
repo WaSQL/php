@@ -1,9 +1,9 @@
 <?php
 
 /*
-	duckdb Database functions
-		http://php.net/manual/en/duckdb3.query.php
-		*
+	duckdb ODBC Extension:
+		https://github.com/rupurt/odbc-scanner-duckdb-extension
+
 */
 //---------- begin function duckdbAddDBIndex--------------------
 /**
@@ -895,22 +895,11 @@ function duckdbExecuteSQL($query,$params=array()){
 		'query'=>$query,
 		'function'=>'duckdbExecuteSQL'
 	);
-	$dbh_duckdb=duckdbDBConnect($params);
-	//enable exceptions
-	$dbh_duckdb->enableExceptions(true);
-	try{
-		$result=$dbh_duckdb->exec($query);
-		$DATABASE['_lastquery']['stop']=microtime(true);
-		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-		return 1;
-	}
-	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']='connect failed: '.$e->getMessage();
+	$ok=duckdbQueryResults($query);
+	if(isset($DATABASE['_lastquery']['error']) && strlen($DATABASE['_lastquery']['error'])){
 		debugValue($DATABASE['_lastquery']);
 		return 0;
 	}
-	$DATABASE['_lastquery']['stop']=microtime(true);
-	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return 1;
 }
 //---------- begin function duckdbAddDBRecord ----------
