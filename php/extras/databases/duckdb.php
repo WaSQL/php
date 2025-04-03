@@ -1463,6 +1463,7 @@ function duckdbQueryResults($query,$params=array()){
 		$out=cmdResults($cmd);
 		//echo "<pre>{$query}</pre>".printValue($cmd);exit;
 		if(isset($out['stderr']) && strlen($out['stderr'])){
+			$DATABASE['_lastquery']['cmd']=$cmd;
 			$DATABASE['_lastquery']['error']=$out['stderr'];
 			debugValue($DATABASE['_lastquery']);
     		return 0;
@@ -1618,6 +1619,16 @@ function duckdbNamedQueryList(){
 			'code'=>'tables',
 			'icon'=>'icon-table',
 			'name'=>'Tables'
+		),
+		array(
+			'code'=>'functions',
+			'icon'=>'icon-table',
+			'name'=>'Functions'
+		),
+		array(
+			'code'=>'extensions',
+			'icon'=>'icon-share',
+			'name'=>'Extensions'
 		)
 	);
 }
@@ -1642,6 +1653,24 @@ FROM information_schema.tables
 WHERE 
 	table_schema = 'main'
 ORDER BY table_name
+ENDOFQUERY;
+		break;
+		case 'functions':
+			return <<<ENDOFQUERY
+SELECT 
+	schema_name,
+	function_name,
+	parameters,
+	description,
+	comment
+FROM duckdb_functions() 
+WHERE internal=false
+ENDOFQUERY;
+		break;
+		case 'extensions':
+			return <<<ENDOFQUERY
+SELECT * 
+FROM duckdb_extensions()
 ENDOFQUERY;
 		break;
 	}
