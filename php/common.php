@@ -4122,7 +4122,8 @@ function buildFormFile($name,$params=array()){
 	if(isset($params['multiple']) && !stringEndsWith($params['name'],'[]')){
 		$params['name'].='[]';
 	}
-	if(!isset($params['multiple'])){$params['multiple']='';}
+	if(isset($params['multiple'])){$params['multiple']='multiple';}
+	else{$params['multiple']='';}
 	if(!isset($params['accept'])){$params['accept']='';}
 	if(!isset($params['capture'])){$params['capture']='';}
 	if(!isset($params['class'])){$params['class']='';}

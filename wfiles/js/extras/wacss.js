@@ -1110,99 +1110,56 @@ var wacss = {
 		}
 	},
 	formFileUpload: function(el){
-		let fcnt=el.files.length;
-		if(fcnt==0){return true;}
-		let div=el.nextElementSibling;
-		if(undefined ==div || undefined==div.classList || !div.classList.contains('fileupload')){
-			if(fcnt > 0){
-				if(undefined != el.dataset.onfile){
-					let cfunc=new Function(el.dataset.onfile);
-					cfunc();
-				}
-			}
-			return true;
-		}
-		let hover=div.nextElementSibling;
-		if(undefined ==hover || undefined==hover.classList || !hover.classList.contains('fileupload_hover')){
-			if(fcnt > 0){
-				if(undefined != el.dataset.onfile){
-					let cfunc=new Function(el.dataset.onfile);
-					cfunc();
-				}
-			}
-			return true;
-		}
-		let label=div.querySelector('label');
-		if(undefined == label){
-			if(fcnt > 0){
-				if(undefined != el.dataset.onfile){
-					let cfunc=new Function(el.dataset.onfile);
-					cfunc();
-				}
-			}
-			return true;
-		}
-		let erase=div.querySelector('div.icon-erase');
-		if(undefined == erase){
-			if(fcnt > 0){
-				if(undefined != el.dataset.onfile){
-					let cfunc=new Function(el.dataset.onfile);
-					cfunc();
-				}
-			}
-			return true;
-		}
-		erase.style.display='block';
-		let rbox=div.querySelector('input[type="checkbox"]');
-		if(undefined == rbox){
-			if(fcnt > 0){
-				if(undefined != el.dataset.onfile){
-					let cfunc=new Function(el.dataset.onfile);
-					cfunc();
-				}
-			}
-			return true;
-		}
-		let code=div.querySelector('code');
-		if(undefined == code){
-			if(fcnt > 0){
-				if(undefined != el.dataset.onfile){
-					let cfunc=new Function(el.dataset.onfile);
-					cfunc();
-				}
-			}
+		if(undefined==el || undefined==el.files){
 			return true;
 		}
 		let files=el.files || new Array();
-		if(fcnt > 0){
-			if(undefined != el.dataset.onfile){
-				let cfunc=new Function(el.dataset.onfile);
-				cfunc();
-			}
-			erase.style.display='block';
-			let tsize=0;
-			let htm='<table class="table condensed striped bordered">';
-			htm=htm+'<tr><th>Name</th><th>Size</th></tr>';
-			for(let f=0;f<fcnt;f++){
-				tsize=tsize+files[f].size;
-				htm=htm+'<tr><td>'+files[f].name+'</td><td class="w_nowrap align-right">'+wacss.verboseSize(files[f].size)+'</td></tr>';
-			}
-			htm=htm+'</table>';
-			hover.innerHTML=htm;
-			htm='';
-			if(fcnt==1){
-				htm=files[0].name+' - '+wacss.verboseSize(tsize);
-			}
-			else{
-				htm=fcnt+' files'+' - '+wacss.verboseSize(tsize);			
-			}
-			label.innerHTML=htm;
-			
+		let fcnt=files.length;
+		if(fcnt==0){
+			let div=el.nextElementSibling;
+			if(undefined == div){return true;}
+			let label=div.querySelector('label');
+			if(undefined != label){label.innerHTML='Upload';}
+			let hover=div.nextElementSibling;
+			if(undefined != hover){hover.innerHTML='';}
+			return true;
+		}
+		//process data-onfile
+		if(undefined != el.dataset.onfile){
+			let cfunc=new Function(el.dataset.onfile);
+			cfunc();
+		}
+		let div=el.nextElementSibling;
+		if(!div.classList.contains('fileupload')){return true;}
+		let hover=div.nextElementSibling;
+		if(!hover.classList.contains('fileupload_hover')){return true;}
+		let label=div.querySelector('label');
+		if(undefined == label){return true;}
+		let erase=div.querySelector('div.icon-erase');
+		if(undefined == erase){return true;}
+		erase.style.display='block';
+		let rbox=div.querySelector('input[type="checkbox"]');
+		if(undefined == rbox){return true;}
+		let code=div.querySelector('code');
+		if(undefined == code){return true;}
+		erase.style.display='block';
+		let tsize=0;
+		let htm='<table class="table condensed striped bordered">';
+		htm=htm+'<tr><th>Name</th><th>Size</th></tr>';
+		for(let f=0;f<fcnt;f++){
+			tsize=tsize+files[f].size;
+			htm=htm+'<tr><td>'+files[f].name+'</td><td class="w_nowrap align-right">'+wacss.verboseSize(files[f].size)+'</td></tr>';
+		}
+		htm=htm+'</table>';
+		hover.innerHTML=htm;
+		htm='';
+		if(fcnt==1){
+			htm=files[0].name+' - '+wacss.verboseSize(tsize);
 		}
 		else{
-			label.innerHTML='Upload';
-			hover.innerHTML='';
+			htm=fcnt+' files'+' - '+wacss.verboseSize(tsize);			
 		}
+		label.innerHTML=htm;
 		erase.file_element=el;
 		erase.rbox=rbox;
 		erase.onclick=function() {
