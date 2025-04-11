@@ -1113,18 +1113,66 @@ var wacss = {
 		let fcnt=el.files.length;
 		if(fcnt==0){return true;}
 		let div=el.nextElementSibling;
-		if(!div.classList.contains('fileupload')){return true;}
+		if(undefined ==div || undefined==div.classList || !div.classList.contains('fileupload')){
+			if(fcnt > 0){
+				if(undefined != el.dataset.onfile){
+					let cfunc=new Function(el.dataset.onfile);
+					cfunc();
+				}
+			}
+			return true;
+		}
 		let hover=div.nextElementSibling;
-		if(!hover.classList.contains('fileupload_hover')){return true;}
+		if(undefined ==hover || undefined==hover.classList || !hover.classList.contains('fileupload_hover')){
+			if(fcnt > 0){
+				if(undefined != el.dataset.onfile){
+					let cfunc=new Function(el.dataset.onfile);
+					cfunc();
+				}
+			}
+			return true;
+		}
 		let label=div.querySelector('label');
-		if(undefined == label){return true;}
+		if(undefined == label){
+			if(fcnt > 0){
+				if(undefined != el.dataset.onfile){
+					let cfunc=new Function(el.dataset.onfile);
+					cfunc();
+				}
+			}
+			return true;
+		}
 		let erase=div.querySelector('div.icon-erase');
-		if(undefined == erase){return true;}
+		if(undefined == erase){
+			if(fcnt > 0){
+				if(undefined != el.dataset.onfile){
+					let cfunc=new Function(el.dataset.onfile);
+					cfunc();
+				}
+			}
+			return true;
+		}
 		erase.style.display='block';
 		let rbox=div.querySelector('input[type="checkbox"]');
-		if(undefined == rbox){return true;}
+		if(undefined == rbox){
+			if(fcnt > 0){
+				if(undefined != el.dataset.onfile){
+					let cfunc=new Function(el.dataset.onfile);
+					cfunc();
+				}
+			}
+			return true;
+		}
 		let code=div.querySelector('code');
-		if(undefined == code){return true;}
+		if(undefined == code){
+			if(fcnt > 0){
+				if(undefined != el.dataset.onfile){
+					let cfunc=new Function(el.dataset.onfile);
+					cfunc();
+				}
+			}
+			return true;
+		}
 		let files=el.files || new Array();
 		if(fcnt > 0){
 			if(undefined != el.dataset.onfile){
