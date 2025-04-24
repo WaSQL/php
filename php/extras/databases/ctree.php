@@ -231,7 +231,7 @@ function ctreeDBConnectOLD(){
 		$tries+=1;
 		sleep(5);
 	}
-	if(!is_object($dbh_ctree) && !is_resource($dbh_ctree)){
+	if(!is_resource($dbh_ctree) && !is_object($dbh_ctree)){
 		$ok=dbSetLast(array('error'=>odbc_errormsg()));
 		debugValue(dbGetLast());
 		return false;
@@ -259,7 +259,7 @@ function ctreeExecuteSQL($query,$return_error=1){
 	$ok=dbSetLast(array('query'=>$query));
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		if(odbc_execute($resource)){
-			if(is_resource($resource)){odbc_free_result($resource);}
+			if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
 			$resource=null;
 			if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
 			$dbh_ctree=null;
@@ -976,7 +976,7 @@ function ctreeQueryResults($query='',$params=array()){
 		if($resource = odbc_prepare($dbh_ctree, $cquery)){
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
-				if(is_resource($resource)){odbc_free_result($resource);}
+				if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
 				$resource=null;
 				//echo "HERE:{$crecs}:".$cquery.printValue($params);exit;
 				if(isset($params['-filename']) || isset($params['-webhook_url']) || isset($params['-process'])){
@@ -1052,7 +1052,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	global $dbh_ctree;
 	global $ctreeStopProcess;
 	global $ctreeQueryResultsTemp;
-	if(!is_object($result) && !is_resource($result)){return null;}
+	if(!is_resource($result) && !is_object($result)){return null;}
 	unset($fh);
 	$starttime=microtime(true);
 	$recs=array();
@@ -1162,7 +1162,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	@odbc_fetch_row($result, 0);   // reset cursor
-	if(is_resource($resource)){odbc_free_result($result);}
+	if(is_resource($resource) || is_object($resource)){odbc_free_result($result);}
 	$result=null;
 	$rec_count=count($recs);
 	if(isset($params['-filename']) && $rec_count>0){
