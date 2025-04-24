@@ -164,7 +164,7 @@ function ctreeDBConnect($params=array()){
 		else{
 			$dbh_ctree_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 		}
-		if(!is_resource($dbh_ctree_single)){
+		if(!is_resource($dbh_ctree_single) && !is_object($dbh_ctree_single)){
 			$err=odbc_errormsg();
 			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			echo "ctreeDBConnect single connect error:{$err}".printValue($params);
@@ -177,7 +177,7 @@ function ctreeDBConnect($params=array()){
 		return $dbh_ctree_single;
 	}
 	global $dbh_ctree;
-	if(is_resource($dbh_ctree)){return $dbh_ctree;}
+	if(is_resource($dbh_ctree) || is_object($dbh_ctree)){return $dbh_ctree;}
 
 	try{
 		if(isset($params['-cursor'])){
@@ -186,7 +186,7 @@ function ctreeDBConnect($params=array()){
 		else{
 			$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass']);
 		}
-		if(!is_resource($dbh_ctree)){
+		if(!is_resource($dbh_ctree) && !is_object($dbh_ctree)){
 			//wait a few seconds and try again
 			sleep(2);
 			if(isset($params['-cursor'])){
@@ -195,7 +195,7 @@ function ctreeDBConnect($params=array()){
 			else{
 				$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
-			if(!is_resource($dbh_ctree)){
+			if(!is_resource($dbh_ctree) && !is_object($dbh_ctree)){
 				$err=odbc_errormsg();
 				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 				echo "ctreeDBConnect error:{$err}".printValue($params);
