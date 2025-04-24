@@ -2025,6 +2025,14 @@ ENDOFQUERY;
 *	$fieldinfo=hanaGetDBFieldInfo('abcschema.abc');
 */
 function hanaGetDBFieldInfo($table,$params=array()){
+	$view=0;
+	//if table ends with _vw or _view then it is probably a view instead of a table
+	if(stringEndsWith(strtolower($table),'_vw') || stringEndsWith(strtolower($table),'_view')){$view=1;}
+	if(isset($params['-view'])){
+		if($params['-view']==1){$view=1;}
+		else{$view=0;}
+	}
+	//echo "HERE: {$table} -- {$view}";exit;
 	$parts=preg_split('/\./',$table,2);
 	if(count($parts)==2){
 		$schema=$parts[0];
@@ -2041,24 +2049,29 @@ function hanaGetDBFieldInfo($table,$params=array()){
 	$table=strtoupper($table);
 	$query=<<<ENDOFQUERYNEW
 	SELECT
-		tc.schema_name as table_schema, 
-		tc.table_name,
+		tc.schema_name AS table_schema, 
+		tc.table_name AS table_name,
 		tc.column_name,
-		tc.position as ordinal_position,
+		tc.position AS ordinal_position,
 		tc.default_value column_default,
 		tc.is_nullable,
-		tc.data_type_name as data_type,
-		tc.length as character_maximum_length,
-		tc.scale as numeric_precision,
+		tc.data_type_name AS data_type,
+		tc.length AS character_maximum_length,
+		tc.scale AS numeric_precision,
 		c.is_primary_key,
 		c.is_unique_key
 	FROM
 		sys.table_columns tc
-		LEFT OUTER JOIN sys.constraints c on c.schema_name=tc.schema_name and c.table_name=tc.table_name and c.column_name=tc.column_name
+		LEFT OUTER JOIN sys.constraints c ON c.schema_name=tc.schema_name AND c.table_name=tc.table_name AND c.column_name=tc.column_name
 	WHERE
 		tc.schema_name='{$schema}'
-		and tc.table_name='{$table}'
+		AND tc.table_name='{$table}'
 ENDOFQUERYNEW;
+	//check views instead of tables?
+	if($view==1){
+		$query=str_replace('sys.table_columns tc','sys.view_columns tc',$query);
+		$query=str_replace('tc.table_name','tc.view_name',$query);
+	}
 	$recs=hanaQueryResults($query);
 	$fields=array();
 	foreach($recs as $rec){
