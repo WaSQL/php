@@ -41,7 +41,7 @@ loadExtras('translate');
 
 loadExtrasJs(array('wacss','chartist','pikaday','alertify','html5','nicedit','codemirror'));
 loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
-set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
+set_error_handler("wasqlErrorHandler",E_ALL);
 
 //check for url_eval
 if(isset($CONFIG['admin_eval'])){
