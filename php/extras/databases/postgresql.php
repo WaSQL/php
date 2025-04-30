@@ -2777,6 +2777,7 @@ function postgresqlQueryResults($query='',$params=array()){
 	//set application name?
 	if(isset($params['-application_name'])){
 		$appname=str_replace("'",'',$params['-application_name']);
+		$appname=substr($appname,0,64);
 		$ok=pg_query($dbh_postgresql,"SET application_name TO '{$appname}'");
 	}
 	$data=pg_query($dbh_postgresql,$query);
