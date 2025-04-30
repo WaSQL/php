@@ -2774,6 +2774,11 @@ function postgresqlQueryResults($query='',$params=array()){
 		debugValue($DATABASE['_lastquery']);
     	return array();
 	}
+	//set application name?
+	if(isset($params['-application_name'])){
+		$appname=str_replace("'",'',$params['-application_name']);
+		$ok=pg_query($dbh_postgresql,"SET application_name TO '{$appname}'");
+	}
 	$data=pg_query($dbh_postgresql,$query);
 	if(!$data && stringContains(pg_last_error($dbh_postgresql),'server closed the connection unexpectedly')){
 		//lets try one more time
