@@ -19,6 +19,6 @@ $(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(s
 rm -rf "$(sourcefile)
 GOTO FINISH
 :NOSELECTION
-$(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py $(NAME_PART) "$(CURRENT_LINESTR)"
+$(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(CURRENT_LINESTR)"
 GOTO FINISH
 :FINISH
