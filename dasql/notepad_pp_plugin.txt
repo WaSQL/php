@@ -15,7 +15,7 @@ GOTO SELECTION
 :SELECTION
 set sourcefile = $(SYS.TEMP)\$(NAME_PART).source_tmp
 sel_saveto "$(sourcefile)" :a
-$(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(sourcefile)"
+$(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(sourcefile)"
 rm -rf "$(sourcefile)
 GOTO FINISH
 :NOSELECTION
