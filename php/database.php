@@ -19,8 +19,8 @@ if(!$dbh){
 	$error=databaseError();
 	if(isPostgreSQL()){$error .= "<br>PostgreSQL does not allow CREATE DATABASE inside a transaction block. Create the database first.";}
 	$msg = '<div>'.PHP_EOL;
-	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to connect. DBType: <b>'.$CONFIG['dbtype'].'</b> DBHost <b>'.$CONFIG['dbhost'].'</b></div>'.PHP_EOL;
-	$msg .= "	<div>{$error}</div>".PHP_EOL;
+	$msg .= '	<div class="w_bigger w_red"><img src="/wfiles/iconsets/32/abort.png" style="vertical-align:middle;" alt="abort" /> Failed to connect. DBType: <b>'.$CONFIG['dbtype'].'</b> DBHost: <b>'.$CONFIG['dbhost'].'</b></div>'.PHP_EOL;
+	$msg .= "	<div>Error: {$error}</div>".PHP_EOL;
 	$msg .= '</div>'.PHP_EOL;
 	echo $msg;
 	exit;
