@@ -21,7 +21,7 @@ GOTO SELECTION
 set sourcefile = $(SYS.TEMP)\$(NAME_PART).source_tmp
 sel_saveto "$(sourcefile)" :a
 $(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(sourcefile)"
-rm -rf "$(sourcefile)
+cmd /c del /f /q "$(sourcefile)"
 GOTO FINISH
 :NOSELECTION
 $(Python_Dir)\python.exe $(DaSQL_Dir)\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(CURRENT_LINESTR)"
