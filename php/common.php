@@ -22742,12 +22742,13 @@ function underMaintenance($note=''){
 	$rtn .= '			<div style="padding-top:15px;font-size:30pt;color:#FFF;">Under Maintenance</div>'.PHP_EOL;
 	$rtn .= '			<div style="padding-top:2px;font-size:15pt;color:#FFF;">' . $_SERVER['HTTP_HOST'] . '</div>'.PHP_EOL;
 	$rtn .= '		</div>'.PHP_EOL;
-	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:15pt;">Our site is currently undergoing maintenance to upgrade our systems in order to better serve you.</div>'.PHP_EOL;
-	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:12pt;">We apologize for any inconvenience during this short outage and thank you in advance for your patience and understanding.</div>'.PHP_EOL;
 	if(strlen($note)){
 		$rtn .= '		<div style="padding:10px;font-size:16pt;" class="w_align_left w_bold w_dblue">'.$note.'</div>'.PHP_EOL;
-    	}
-	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:11pt;">Sincerely,<br><br>Customer Service Team</div>'.PHP_EOL;
+    }
+    else{
+    	$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:15pt;">Our site is currently undergoing maintenance to upgrade our systems in order to better serve you.</div>'.PHP_EOL;
+		$rtn .= '		<div class="w_align_left" style="padding:10px;font-size:12pt;">We apologize for any inconvenience during this short outage and thank you in advance for your patience and understanding.</div>'.PHP_EOL;
+    }
 	$rtn .= '	</div>'.PHP_EOL;
 	$rtn .= '</div>'.PHP_EOL;
 	$rtn .= '</body></html>'.PHP_EOL;
