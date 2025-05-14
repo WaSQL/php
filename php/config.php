@@ -163,7 +163,7 @@ foreach($DATABASE as $d=>$db){
 	if(!isset($db['displayname'])){
 		$DATABASE[$d]['displayname']=ucwords(str_replace('_',' ',$db['name']));
 	}
-	if(isset($db['dbicon'])){continue;}
+	if(isset($db['dbicon']) || !isset($db['dbtype'])){continue;}
 	switch(strtolower($db['dbtype'])){
 		case 'ctree':
 			$DATABASE[$d]['dbicon']='icon-database-faircom';
