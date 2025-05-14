@@ -168,7 +168,6 @@ function synchronizePost($load,$plain=0){
 				return array(
 					'error'=>"Failed to decode response",
 					'post_body'=>"<xmp>{$post['body']}</xmp>",
-					'params'=>$post['params']
 				);
 			}
 		}
