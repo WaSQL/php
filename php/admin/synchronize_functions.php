@@ -145,26 +145,31 @@ function synchronizePost($load,$plain=0){
 				$post['body']=trim($parts[1]);
 			}
 		}
-
-		$json=json_decode(base64_decode($post['body']),true);
+		$postBody=$post['body'];
+		$post['body_decoded']=base64_decode($post['body']);
+		$json=decodeJson($post['body_decoded']);
 		if(!is_array($json)){
-			$json=json_decode(base64_decode(trim($post['body'])),true);
+			$json=decodeJson(base64_decode(trim($post['body'])));
 		}
 		if(!is_array($json)){
 			$post['body']=preg_replace('/\<div(.+?)\<\/div\>/is','',$post['body']);
 			$post['body']=preg_replace('/\<img(.+?)\>/is','',$post['body']);
-			$json=json_decode(base64_decode(trim($post['body'])),true);
+			$json=decodeJson(base64_decode(trim($post['body'])),true);
 		}
 		//echo $_SESSION['sync_target_url'].printValue($postopts).printValue($json);exit;
 		if(!is_array($json)){
-			$json=json_decode(trim($post['body']),true);
+			$json=decodeJson(trim($post['body']));
 			if(!is_array($json)){
 				foreach($_SESSION as $k=>$v){
 					if(stringBeginsWith($k,'sync')){
 						unset($_SESSION[$k]);
 					}
 				}
-				return array('error'=>"Failed to decode response.<hr />".PHP_EOL."<pre>{$post['body']}</pre>".PHP_EOL.'<hr />');
+				return array(
+					'error'=>"Failed to decode response",
+					'body'=>$post['body'],
+					'body_decoded'=>$post['body_decoded']
+				);
 			}
 		}
 		return $json;
