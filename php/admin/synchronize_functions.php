@@ -168,7 +168,7 @@ function synchronizePost($load,$plain=0){
 				return array(
 					'error'=>"Failed to decode response",
 					'body'=>$post['body'],
-					'body_decoded'=>$post['body_decoded']
+					//'body_decoded'=>$post['body_decoded']
 				);
 			}
 		}
