@@ -2552,7 +2552,7 @@ function oracleQueryResults($query='',$params=array()){
 	//set date_format?
 	if(isset($params['-date_format']) && strlen($params['-date_format'])){
 		//YYYY-MM-DD
-		$stid = oci_parse($conn, "ALTER SESSION SET NLS_DATE_FORMAT = '{$params['-date_format']}'");
+		$stid = oci_parse($dbh_oracle, "ALTER SESSION SET NLS_DATE_FORMAT = '{$params['-date_format']}'");
 		oci_execute($stid);
 	}
 	//ignore_case?
