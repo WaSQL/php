@@ -80,7 +80,7 @@ switch(strtolower($_REQUEST['func'])){
 		}
 		//php/extras
 		$path=getWasqlPath('php/extras');
-		$files=listFilesEx($pypath,array('ext'=>'php'));
+		$files=listFilesEx($path,array('ext'=>'php'));
 		foreach($files as $file){
 			$ok=manualParseFile($file['afile']);
 		}

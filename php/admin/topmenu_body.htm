@@ -14,12 +14,12 @@
 		<!-- WaSQL -->
 		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
 			<ul  style="padding-bottom:15px;padding-top:10px;">
-				<li><a href="/php/admin.php?_menu=about"><span class="icon-info-circled"></span> <wtranslate>About</wtranslate> WaSQL</a></li>
-				<li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-help-circled"></span>  <wtranslate>WaSQL Documentation</wtranslate></a></li>
-				<li><a href="/php/admin.php?_menu=config"><span class="icon-gear"></span> WaSQL <wtranslate>Config</wtranslate></a></li>
-				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<wtranslate>Update WaSQL? Are you sure?</wtranslate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <wtranslate>Update</wtranslate> WaSQL</a></li>
+				<li><a href="/php/admin.php?_menu=about"><span class="icon-wasql-about w_bigger"></span> <wtranslate>About</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-wasql-doc w_bigger"></span>  <wtranslate>Docs</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=config"><span class="icon-wasql-config w_bigger"></span> <wtranslate>Config</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=update_wasql" data-confirm="<wtranslate>Update WaSQL? Are you sure?</wtranslate>" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> <wtranslate>Update</wtranslate></a></li>
 				<li><hr size="1" /></li>
-				<li class="w_bold"><a href="/php/admin.php?_menu=appstore"><span class="material-storefront w_bigger"></span> WaSQL <wtranslate>Appstore</wtranslate></a></li>
+				<li class="w_bold"><a href="/php/admin.php?_menu=appstore"><span class="material-storefront w_bigger"></span> <wtranslate>Appstore</wtranslate></a></li>
 				<li><hr size="1" /></li>
 				<li><a href="/php/admin.php?_menu=dashboard"><span class="icon-th-thumb-empty"></span> <wtranslate>Table Stats</wtranslate></a></li>
 				<li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return wacss.ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'<?=$CONFIG['admin_color'];?>'});"><span class="icon-erase"></span> <span class="hidden-sm-down"><wtranslate>Clear Min</wtranslate></span></a></li>
@@ -182,7 +182,7 @@
 				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> <wtranslate>Terminal</wtranslate></a></li>
 				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> <wtranslate>File Manager</wtranslate></a></li>
 				<view:schtasks_menu>
-				<li><a href="/php/admin.php?_menu=schtasks"><span class="brand-windows"></span> <wtranslate>Scheduled Tasks</wtranslate></a></li>
+				<li><a href="/php/admin.php?_menu=schtasks"><span class="brand-windows" style="background:#fff;"></span> <wtranslate>Scheduled Tasks</wtranslate></a></li>
 				</view:schtasks_menu>
 				<?=renderViewIf(isWindows(),'schtasks_menu');?>
 				<li><hr size="1" /></li>
@@ -207,8 +207,8 @@
 		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down"><?=$USER['username'];?></span></a>
 			<ul style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=profile"><span class="icon-user-portal"></span> <wtranslate>Profile</wtranslate></a></li>
-				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-postedit"></span> postEdit</a></li>
-				<li><a href="/php/admin.php?_menu=dasql"><span class="icon-dasql"></span> DaSQL</a></li>
+				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-wasql-postedit w_bigger"></span> postEdit</a></li>
+				<li><a href="/php/admin.php?_menu=dasql"><span class="icon-wasql-dasql w_bigger"></span> DaSQL</a></li>
 				<li><a href="/php/admin.php?_logout=1"><span class="icon-logout"></span> <wtranslate>Log Off</wtranslate></a></li>
 			</ul>
 		</li>

@@ -1838,7 +1838,7 @@ ENDOFX;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-info-circled"></span> About WaSQL</h2>'.PHP_EOL;
+			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-wasql-about w_biggest"></span> About WaSQL</h2>'.PHP_EOL;
 			echo '<div class="row"><div class="col s12 m6">';
 			echo '<table class="table striped">'.PHP_EOL;
 			//versions
