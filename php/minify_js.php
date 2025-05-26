@@ -315,15 +315,15 @@ function minifyFiles($path,$names){
 			echo getStoredValue($evalstr,0,168);
 			continue;
 		}
-		if($CONFIG['minify_js'] && is_file("{$path}/{$name}.min.js")){
+		if(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}.min.js")){
 			$file=realpath("{$path}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		elseif($CONFIG['minify_js'] && is_file("{$path}/{$name}/{$name}.min.js")){
+		elseif(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}/{$name}.min.js")){
 			$file=realpath("{$path}/{$name}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		elseif($CONFIG['minify_js'] && is_file("{$path}/{$name}/{$name}.min.js")){
+		elseif(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}/{$name}.min.js")){
 			$file=realpath("{$path}/{$name}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
