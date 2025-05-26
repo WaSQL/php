@@ -277,7 +277,7 @@ function cronLogRefreshTimer(){
 	</tr>
 </table>
 <div style="display:flex;justify-content: flex-start;align-content: flex-start;">
-	<div id="cron_details_list"><?=cronDetailsList($id);?></div>
+	<div id="cron_details_list" style="height:60vh;overflow:auto;"><?=cronDetailsList($id);?></div>
 	<div id="cron_details_content" style="flex:1;overflow: scroll;"></div>
 </div>
 </view:details>

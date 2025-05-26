@@ -16,10 +16,14 @@ function cronAddEdit($id=0){
 		'-style_all'=>'width:100%',
 		'-class_all'=>'browser-default',
 		'run_length_readonly'=>1,
-		'run_result_readonly'=>1,
-		'run_result_height'=>120,
-		'run_format_inputtype'=>'frequency',
-		'run_format_style'=>'width:100%;height:32px;overflow:hidden;',
+		'run_result_options'=>array(
+			'readonly'=>1,
+			'height'=>50
+		),
+		'run_format_options'=>array(
+			'inputtype'=>'frequency',
+			'style'=>'width:100%;height:32px;overflow:hidden;'
+		),
 		'frequency_onchange'=>"return formSetFrequency('addedit_run_format',parseInt(this.value));"
 	);
 	if($id > 0){
@@ -114,20 +118,22 @@ function cronDetailsLog($id,$field='log'){
 	));
 	if(!strlen($log['log'])){return 'no logs';}
 	$recs=decodeJson($log['log']);
-
-	return databaseListRecords(array(
+	$rtn='<div id="cron_details_log">';
+	$rtn.= databaseListRecords(array(
 		'-list'=>$recs,
 		'-listfields'=>'time,elapsed,message',
-		'-table_class'=>'table striped bordered condensed sticky',
-		'-table_data-onload'=>"document.querySelector('#cron_details_content').scrollTop=document.querySelector('#cron_details_content').scrollHeight;",
+		'-table_class'=>'table striped bordered condensed',
+		'-table_data-onload'=>"document.querySelector('#cron_details_log').scrollTop=document.querySelector('#cron_details_log').scrollHeight;",
 		'-hidesearch'=>1,
 		'time_class'=>'align-right w_nowrap',
 		'-results_eval'=>'cronDetailsLogExtra',
 		'elapsed_options'=>array(
 			'class'=>'w_nowrap align-right',
-			'displayname'=>'<div class="align-center"><span class="icon-clock"></span></div>'
+			'displayname'=>'<div class="align-center"><span class="icon-clock"></span></div>',
 		),
 	));
+	$rtn.='</div>';
+	return $rtn;
 }
 function cronDetailsLogExtra($recs){
 	$t=$recs[0]['timestamp'];
