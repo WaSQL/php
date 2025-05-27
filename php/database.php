@@ -10514,12 +10514,12 @@ function getDBRecord($params=array(),$id=0,$flds=''){
 * @describe returns a single multi-dimensional record with said id in said table
 * @param table string - tablename
 * @param id integer - record ID of record
-* @param relate boolean - defaults to true
+* @param relate boolean - defaults to false
 * @param fields string - defaults to blank
 * @return array
 * @usage $rec=getDBRecordById('comments',7);
 */
-function getDBRecordById($table='',$id=0,$relate=1,$fields=""){
+function getDBRecordById($table='',$id=0,$relate=false,$fields=""){
 	if(!strlen($table)){return "getDBRecordById Error: No Table";}
 	if($id == 0){return "getDBRecordById Error: No ID";}
 	$recopts=array('-table'=>$table,'_id'=>$id);
