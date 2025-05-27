@@ -21511,53 +21511,60 @@ function pushData($data='',$ext='txt',$name=''){
 * @author slloyd
 * @history slloyd 2014-01-07 added documentation
 */
-function pushFile($file='',$params=array()){
-	//echo $file.printValue($params);exit;
-	if(!is_file($file)){
-		header('Content-type: text/plain');
-		echo "{$file} does NOT exist!";
-		exit;
-		}
-	if(!isset($params['-attach'])){$params['-attach']=1;}
-	if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
-	else{$ctype=getFileContentType($file);}
-	if(!isset($params['-filename'])){$params['-filename']=getFileName($file);}
-	@header("Content-Type: {$ctype}");
-	if($params['-attach']){
-		@header('Content-Description: File Transfer');
-    	@header('Content-Disposition: attachment; filename="'.$params['-filename'].'"');
-		}
-	else{
-		@header('Content-Description: File Transfer');
-    	@header('Content-Disposition: inline; filename="'.$params['-filename'].'"');
-		}
-
-    if(!isTextFile($file)){
-    	@header('Content-Transfer-Encoding: binary');
-		}
-	header('Content-Length: ' . filesize($file));
-	header("X-Pushed-By: WaSQL");
-    header("Accept-Ranges: bytes");
-	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
-	header('ETag: ' . sha1_file($file));
-	//Note: caching on https will make it so it will fail in IE
-    if (isset($_SERVER['HTTPS'])) {
-		header('Pragma: ');
-		header('Cache-Control: ');
-		}
-    else{
-    	header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
-    	header('Pragma: public');
-		}
+function pushFile($file='', $params=array()){
+    if(!is_file($file)){
+        header('Content-type: text/plain');
+        echo "{$file} does NOT exist!";
+        exit;
+    }
+    
+    // Clear any output buffers to prevent "headers already sent" errors
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    if(!isset($params['-attach'])){$params['-attach']=1;}
+    if(isset($params['-ctype'])){$ctype=$params['-ctype'];}
+    else{$ctype=getFileContentType($file);}
+    if(!isset($params['-filename'])){$params['-filename']=getFileName($file);}
+    
+    // Remove @ suppressors and ensure headers aren't already sent
+    if (!headers_sent()) {
+        header("Content-Type: {$ctype}");
+        header('Content-Description: File Transfer');
+        
+        if($params['-attach']){
+            header('Content-Disposition: attachment; filename="'.$params['-filename'].'"');
+        } else {
+            header('Content-Disposition: inline; filename="'.$params['-filename'].'"');
+        }
+        
+        if(!isTextFile($file)){
+            header('Content-Transfer-Encoding: binary');
+        }
+        
+        header('Content-Length: ' . filesize($file));
+        header("X-Pushed-By: WaSQL");
+        header("Accept-Ranges: bytes");
+        header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+        header('ETag: ' . sha1_file($file));
+        
+        if (isset($_SERVER['HTTPS'])) {
+            header('Pragma: ');
+            header('Cache-Control: ');
+        } else {
+            header("Cache-Control: no-cache, must-revalidate");
+            header('Pragma: public');
+        }
+    }
+    
     if(isset($params['-destroy'])){
-    	register_shutdown_function('unlink',$file);
-    	readfile($file);
+        register_shutdown_function('unlink', $file);
     }
-    else{
-    	readfile($file);
-    }
+    
+    readfile($file);
     exit;
-	}
+}
 //---------- begin---------------------------------------
 /**
 * @describe reads an RSS feed into an array and returns the array

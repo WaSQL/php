@@ -766,7 +766,7 @@ if(!is_array($rec)){
         }
 	}
 }
-set_error_handler("wasqlErrorHandler",E_STRICT | E_ALL);
+set_error_handler("wasqlErrorHandler",E_ALL);
 global $CONFIG;
 //Handle file uploads
 if(isset($_SERVER['CONTENT_TYPE']) && preg_match('/multipart/i',$_SERVER['CONTENT_TYPE']) && is_array($_FILES) && count($_FILES) > 0){
