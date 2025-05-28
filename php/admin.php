@@ -1202,24 +1202,34 @@ if(!isUser()){
 	exit;
 	}
 elseif($USER['utype'] != 0){
-	echo buildHtmlBegin();
-	echo adminViewPage('topmenu');
-	echo '<div class="well" style="border-radius:0px;">'.PHP_EOL;
-	echo '	<span class="icon-block w_danger w_biggest w_bold"></span><b class="w_danger w_biggest"> Administration access denied.</b>'.PHP_EOL;
-	echo '	<div class="w_big">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
-	echo '</div>'.PHP_EOL;
-	$formopts=array(
-		'-action'=>'/php/admin.php',
-		'-show_icons'=>$ConfigSettings['mainmenu_icons']
-		);
-	if(isset($_REQUEST['_menu'])){$formopts['_menu']=$_REQUEST['_menu'];}
-	if(isset($_REQUEST['_table_'])){$formopts['_table_']=$_REQUEST['_table_'];}
-	echo '<div style="margin-top:20px;margin-left:20px;">'.PHP_EOL;
-	echo userLoginForm($formopts);
-	echo '</div>'.PHP_EOL;
-	echo buildHtmlEnd();
-	exit;
+	//allow csv export even if they are not an admin
+	if(
+		isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='sqlprompt'
+		&& isset($_REQUEST['func']) && $_REQUEST['func']=='export'
+		&& isset($_REQUEST['sql_sha']) && strlen($_REQUEST['sql_sha'])
+		){
+		//exporting CSV - do nothing
 	}
+	else{
+		echo buildHtmlBegin();
+		echo adminViewPage('topmenu');
+		echo '<div class="well" style="border-radius:0px;">'.PHP_EOL;
+		echo '	<span class="icon-block w_danger w_biggest w_bold"></span><b class="w_danger w_biggest"> Administration access denied.</b>'.PHP_EOL;
+		echo '	<div class="w_big">You must log in as an administrator to access the administration area.</div>'.PHP_EOL;
+		echo '</div>'.PHP_EOL;
+		$formopts=array(
+			'-action'=>'/php/admin.php',
+			'-show_icons'=>$ConfigSettings['mainmenu_icons']
+			);
+		if(isset($_REQUEST['_menu'])){$formopts['_menu']=$_REQUEST['_menu'];}
+		if(isset($_REQUEST['_table_'])){$formopts['_table_']=$_REQUEST['_table_'];}
+		echo '<div style="margin-top:20px;margin-left:20px;">'.PHP_EOL;
+		echo userLoginForm($formopts);
+		echo '</div>'.PHP_EOL;
+		echo buildHtmlEnd();
+		exit;
+	}
+}
 //
 
 if(isset($_REQUEST['_menu']) && strtolower($_REQUEST['_menu'])=='export' && isset($_REQUEST['func']) && $_REQUEST['func']=='export'){
