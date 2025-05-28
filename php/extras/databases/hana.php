@@ -171,7 +171,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 	else{$jsonstr='';}
 	if(strlen($jsonstr)){
 		//make sure we can connect
-		if(!is_resource($dbh_hana)){
+		if(!is_resource($dbh_hana) && !is_object($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
 		}
 		if(!$dbh_hana){
@@ -329,6 +329,9 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				if(is_resource($dbh_hana) && stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
 					odbc_close($dbh_hana);
 				}
+				elseif(is_object($dbh_hana) && stringBeginsWith(get_object_type($dbh_hana),'odbc link')){
+					odbc_close($dbh_hana);
+				}
 				$dbh_hana=null;
 				return count($recs);
 			}
@@ -350,6 +353,9 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 				}
 				$resource=null;
 				if(is_resource($dbh_hana) && stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
+					odbc_close($dbh_hana);
+				}
+				elseif(is_object($dbh_hana) && stringBeginsWith(get_object_type($dbh_hana),'odbc link')){
 					odbc_close($dbh_hana);
 				}
 				$dbh_hana=null;
@@ -499,7 +505,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			return "Fields:".printValue($fields).PHP_EOL."fieldinfo:".printValue($fieldinfo).PHP_EOL."Query:{$query}".PHP_EOL."errors".printValue($errors).PHP_EOL.'drecs'.printValue($drecs);
 		}
 
-		if(!is_resource($dbh_hana)){
+		if(!is_resource($dbh_hana) && !is_object($dbh_hana)){
 			$dbh_hana=hanaDBConnect($params);
 		}
 		if(!$dbh_hana){
@@ -534,8 +540,8 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 					}
 					break;
 				}
-				if(is_resource($resource)){$error=odbc_errormsg($resource);}
-				elseif(is_resource($dbh_hana)){$error=odbc_errormsg($dbh_hana);}
+				if(is_resource($resource) || is_object($resource)){$error=odbc_errormsg($resource);}
+				elseif(is_resource($dbh_hana) || is_object($dbh_hana)){$error=odbc_errormsg($dbh_hana);}
 				else{$error=odbc_errormsg();}
 				debugValue(array(
 					'function'=>'hanaAddDBRecordsProcess',
@@ -1148,7 +1154,7 @@ ENDOFQUERY;
 	$conn=hanaDBConnect($params);
 	odbc_autocommit($conn, FALSE);
 	$result=odbc_exec($conn, $query);
-	if(is_resource($result)){odbc_commit($conn);}
+	if(is_resource($result) || is_object($result)){odbc_commit($conn);}
 	else{odbc_rollback($conn);}
 	odbc_close($conn);
 	return file($local_error_log);
@@ -1291,13 +1297,16 @@ function hanaDBConnect($params=array()){
 		if(is_resource($dbh_hana_single) && stringBeginsWith(get_resource_type($dbh_hana_single),'odbc link')){
 			odbc_close($dbh_hana_single);
 		}
+		elseif(is_object($dbh_hana_single) && stringBeginsWith(get_object_type($dbh_hana_single),'odbc link')){
+			odbc_close($dbh_hana_single);
+		}
 		if(isset($params['-cursor'])){
 			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
 			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 		}
-		if(!is_resource($dbh_hana_single)){
+		if(!is_resource($dbh_hana_single) && !is_object($dbh_hana_single)){
 			$err=odbc_errormsg();
 			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			echo "hanaDBConnect single connect error:{$err}".printValue($params);
@@ -1307,7 +1316,7 @@ function hanaDBConnect($params=array()){
 	}
 	global $dbh_hana;
 	//echo "Pooled:".printValue($dbh_hana);
-	if(is_resource($dbh_hana)){return $dbh_hana;}
+	if(is_resource($dbh_hana) || is_object($dbh_hana)){return $dbh_hana;}
 	try{
 		if(isset($params['-cursor'])){
 			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
@@ -1315,7 +1324,7 @@ function hanaDBConnect($params=array()){
 		else{
 			$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass']);
 		}
-		if(!is_resource($dbh_hana)){
+		if(!is_resource($dbh_hana) && !is_object($dbh_hana)){
 			//wait a few seconds and try again
 			sleep(2);
 			if(isset($params['-cursor'])){
@@ -1324,7 +1333,7 @@ function hanaDBConnect($params=array()){
 			else{
 				$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
-			if(!is_resource($dbh_hana)){
+			if(!is_resource($dbh_hana) && !is_object($dbh_hana)){
 				$err=odbc_errormsg();
 				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 				echo "hanaDBConnect error:{$err}".printValue($params);
@@ -1429,7 +1438,7 @@ function hanaExecuteSQL($query,$params=array()){
 		'params'=>$params
 	);
 	global $dbh_hana;
-	if(!is_resource($dbh_hana)){
+	if(!is_resource($dbh_hana) && !is_object($dbh_hana)){
 		$dbh_hana=hanaDBConnect($params);
 	}
 	if(!$dbh_hana){
@@ -1443,7 +1452,7 @@ function hanaExecuteSQL($query,$params=array()){
 		if(isset($params['-timeout']) && isNum($params['-timeout'])){
 			//sets the query to timeout after X seconds
 			$result = odbc_prepare($dbh_hana,$query);
-			if(!is_resource($result)){
+			if(!is_resource($result) && !is_object($result)){
 				$err=array(
 					'function'=>'hanaExecuteSQL',
 					'message'=>'odbc_prepare resource error',
@@ -1460,7 +1469,7 @@ function hanaExecuteSQL($query,$params=array()){
 		}
 		else{
 			$result=odbc_exec($dbh_hana,$query);	
-			if(is_resource($result)){$success=1;}
+			if(is_resource($result) || is_object($result)){$success=1;}
 		}
 		if ($success==0){
 			$errstr=odbc_errormsg($dbh_hana);
@@ -1480,7 +1489,7 @@ function hanaExecuteSQL($query,$params=array()){
 				}
 				else{
 					$result=odbc_exec($dbh_hana,$query);
-					if(is_resource($result)){$success=1;}	
+					if(is_resource($result) || is_object($result)){$success=1;}	
 				}
 				if(success==0){
 					$errstr=odbc_errormsg($dbh_hana);
@@ -1685,7 +1694,7 @@ function hanaEditDBRecord($params,$id=0,$opts=array()){
 		WHERE {$params['-where']}
 ENDOFQUERY;
 	global $dbh_hana;
-	if(!is_resource($dbh_hana)){
+	if(!is_resource($dbh_hana) && !is_object($dbh_hana)){
 		$dbh_hana=hanaDBConnect($params);
 	}
 	if(!$dbh_hana){
@@ -1789,7 +1798,7 @@ ENDOFQUERY;
 	}
 	try{
 		$result=odbc_exec($dbh_hana,$query);
-		if(!is_resource($result)){
+		if(!is_resource($result) && !is_object($result)){
         	$err=array(
         		'error'	=> odbc_errormsg($dbh_hana),
 				'query'	=> $query
@@ -1801,11 +1810,11 @@ ENDOFQUERY;
 	catch (Exception $e) {
 		$err=$e->errorInfo;
 		$err['query']=$query;
-		if(is_resource($result)){odbc_free_result($result);}
+		if(is_resource($result) || is_object($result)){odbc_free_result($result);}
 		debugValue(array("hanaReplaceDBRecord Connect Error",$e));
 		return "hanaReplaceDBRecord Error".printValue($err);
 	}
-	if(is_resource($result)){odbc_free_result($result);}
+	if(is_resource($result) || is_object($result)){odbc_free_result($result);}
 	return true;
 }
 //---------- begin function hanaManageDBSessions ----------
@@ -2204,7 +2213,7 @@ function hanaQueryHeader($query,$params=array()){
 		}
 		else{
 			$result=odbc_exec($dbh_hana,$query);
-			if(is_resource($result)){$success=1;}	
+			if(is_resource($result) || is_object($result)){$success=1;}	
 		}
 		if ($success==0){
 			debugValue(array(
@@ -2233,7 +2242,7 @@ function hanaQueryHeader($query,$params=array()){
 		$field=strtolower(odbc_field_name($result,$i));
         $fields[]=$field;
     }
-    if(is_resource($result)){odbc_free_result($result);}
+    if(is_resource($result) || is_object($result)){odbc_free_result($result);}
     $rec=array();
     foreach($fields as $field){
 		$rec[$field]='';
@@ -2277,7 +2286,10 @@ function hanaQueryResults($query,$params=array()){
 	if(!is_resource($dbh_hana) || !stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
 		$dbh_hana=hanaDBConnect($params);
 	}
-	if(!is_resource($dbh_hana) || !stringBeginsWith(get_resource_type($dbh_hana),'odbc link')){
+	elseif(!is_object($dbh_hana) || !stringBeginsWith(get_object_type($dbh_hana),'odbc link')){
+		$dbh_hana=hanaDBConnect($params);
+	}
+	if(!$dbh_hana){
 		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
 		debugValue($DATABASE['_lastquery']);
     	return array();
@@ -2293,7 +2305,7 @@ function hanaQueryResults($query,$params=array()){
 		if(isset($params['-timeout']) && isNum($params['-timeout'])){
 			//sets the query to timeout after X seconds
 			$dbh_hana_result = odbc_prepare($dbh_hana,$query);
-			if(!is_resource($dbh_hana_result)){
+			if(!is_resource($dbh_hana_result) && !is_object($dbh_hana_result)){
 				$err=array(
 					'function'=>'hanaQueryResults',
 					'message'=>'odbc_prepare with timeout resource error',
@@ -2312,7 +2324,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 		else{
 			$dbh_hana_result=odbc_exec($dbh_hana,$query);
-			if(is_resource($dbh_hana_result)){$success=1;}	
+			if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){$success=1;}	
 		}
 	}
 	catch (Exception $e) {
@@ -2340,7 +2352,7 @@ function hanaQueryResults($query,$params=array()){
 			$field=strtolower(odbc_field_name($dbh_hana_result,$i));
 			$fields[]=$field;
 		}
-		if(is_resource($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
+		if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
 		$rec=array();
 		foreach($fields as $field){
 			$rec[$field]='';
@@ -2349,7 +2361,7 @@ function hanaQueryResults($query,$params=array()){
 		return $recs;
 	}
 	if(isset($params['-count'])){
-		if(is_resource($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
+		if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
     	return $rowcount;
 	}
 	$header=0;
@@ -2382,7 +2394,7 @@ function hanaQueryResults($query,$params=array()){
 		}
 		
     	if(!isset($fh) || !is_resource($fh)){
-			if(is_resource($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
+			if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
 			$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 			debugValue($DATABASE['_lastquery']);
 	    	return array();
@@ -2431,7 +2443,7 @@ function hanaQueryResults($query,$params=array()){
 				}
 				
 		    	if(!isset($fh) || !is_resource($fh)){
-					if(is_resource($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
+					if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
 					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 					debugValue($DATABASE['_lastquery']);
 			    	return array();
@@ -2480,7 +2492,7 @@ function hanaQueryResults($query,$params=array()){
 		    	$fh = fopen($params['-filename'],"wb");
 				
 		    	if(!isset($fh) || !is_resource($fh)){
-					if(is_resource($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
+					if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
 					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 					debugValue($DATABASE['_lastquery']);
 			    	return array();
@@ -2503,7 +2515,7 @@ function hanaQueryResults($query,$params=array()){
 			$recs[]=$rec;
 		}
 	}
-	if(is_resource($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
+	if(is_resource($dbh_hana_result) || is_object($dbh_hana_result)){odbc_free_result($dbh_hana_result);}
 	if($writefile==1){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
