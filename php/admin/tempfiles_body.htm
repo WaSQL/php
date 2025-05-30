@@ -1,15 +1,5 @@
 <view:default>
 <script type="text/javascript">
-	function tempfilesClearFile(el){
-		if(document.tempfiles_form.ext.value.length==0){return false;}
-		let ext=document.tempfiles_form.ext.value;
-		if(!confirm('Remove '+el.dataset.name+'? Click OK to confirm.')){return false;}
-		return wacss.ajaxGet('/php/admin.php','tempfiles_content',{_menu:'tempfiles',func:'clear_file',ext:ext,file:el.dataset.name});
-	}
-	function tempfilesViewFile(el){
-		el.dataset.name;
-		return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'tempfiles',func:'view_file',file:el.dataset.name});
-	}
 	function tempfilesNavTab(el){
 		wacss.setActiveTab(el);
 		document.tempfiles_form.ext.value=el.dataset.name;
@@ -74,12 +64,12 @@
 
 <view:list>
 	<?=tempfilesShowList($ext,$sort);?>
+	<div data-onload="wacss.removeId('wacss_centerpop');"></div>
 </view:list>
 
 
 <view:view_file>
-	<div class="w_centerpop_title">Temp File Details - <?=$file;?></div>
-	<div class="w_centerpop_content w_nowrap" style="overflow:auto;">
+	<div style="overflow:auto;">
 		<div style="float:right;margin:15px 15px 0 0;"><span class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(document.querySelector('pre#view_file').innerText);"></span></div>
 	<style>
 		pre.viewfile{

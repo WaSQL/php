@@ -112,18 +112,27 @@ function tempfilesShowList($ext,$sort){
 }
 function tempfilesShowListExtra($recs){
 	foreach($recs as $i=>$rec){
+		$ext=getFileExtension($rec['name']);
 		//size to verboseSize
 		$recs[$i]['size']=verboseSize($rec['size']);
 		//action - select, view, delete
 		$recs[$i]['action']='<input type="checkbox" name="file[]" value="'.$rec['name'].'" class="input selectfile" />';
-		$recs[$i]['action'].='<a href="#" style="display:inline;margin-left:8px;" data-name="'.$rec['name'].'" onclick="return tempfilesViewFile(this);" data-name="'.$rec['name'].'"><span class="icon-file-txt w_info"></span></a>';
-		$recs[$i]['action'].='<a href="#" style="display:inline;margin-left:12px;" data-name="'.$rec['name'].'" onclick="return tempfilesClearFile(this)" data-name="'.$rec['name'].'"><span class="icon-erase w_danger"></span></a>';
+		//viewfile
+		$recs[$i]['action'].=<<<ENDOFACTION
+<a href="#" style="display:inline;margin-left:8px;" data-div="centerpop" data-title="{$rec['name']}" data-nav="/php/admin.php" data-_menu="tempfiles" data-func="view_file" data-file="{$rec['name']}" onclick="return wacss.nav(this);"><span class="icon-file-txt w_info"></span></a>
+ENDOFACTION;
+		//clear_file
+		$recs[$i]['action'].=<<<ENDOFACTION
+<a href="#" style="display:inline;margin-left:12px;" data-confirm="Remove {$rec['name']}? Click OK to confirm." data-div="tempfiles_content" data-ext="{$ext}" data-title="{$rec['name']}" data-nav="/php/admin.php" data-_menu="tempfiles" data-func="clear_file" data-file="{$rec['name']}" onclick="return wacss.nav(this);"><span class="icon-erase w_danger"></span></a>
+ENDOFACTION;
 		if($rec['ext'] != 'log'){
 			//matching logfile?
 			$logfile=preg_replace('/\.'.$rec['ext'].'$/','.log',$rec['afile']);
 			if(file_exists($logfile)){
 				$lname=getFileName($logfile);
-				$recs[$i]['action'].='<a href="#" title="view log" style="display:inline;margin-left:12px;" data-name="'.$lname.'" onclick="return tempfilesViewFile(this)" data-name="'.$lname.'"><span class="icon-file-txt w_gray"></span></a>';
+				$recs[$i]['action'].=<<<ENDOFACTION
+<a href="#" title="view log" style="display:inline;margin-left:12px;" data-div="centerpop" data-ext="{$ext}" data-title="Logfile: {$lname}" data-nav="/php/admin.php" data-_menu="tempfiles" data-func="view_file" data-file="{$lname}" onclick="return wacss.nav(this);"><span class="icon-file-txt w_gray"></span></a>
+ENDOFACTION;
 			}
 		}
 		//echo printValue($rec);exit;
