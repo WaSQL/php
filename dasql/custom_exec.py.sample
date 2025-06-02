@@ -1,54 +1,216 @@
-#custom_exec.py  - used in sublime text
+#custom_exec.py  - used in sublime text - test
 #On Windows it is saved in C:\Users\{YOUR USER}\AppData\Roaming\Sublime Text 3\Packages\User
 import sublime
 import sublime_plugin
 import sys
 import os
 import tempfile
-
+import datetime
 from Default.exec import ExecCommand
 
 class ExecuteSelectionExecCommand(ExecCommand):
 	def run(self,**kwargs):
 		view = self.window.active_view()
-		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
-		# Get just the folder name (the last directory in the path)
-		dirname = os.path.basename(os.path.dirname(view.file_name()))
+		self.log_message(view)
+		fname = view.file_name()
+		self.log_message("fname:{}".format(fname))
+		
+		interpreters = {
+	        '.php': 'php',
+	        '.py': 'python',
+	        '.pl': 'perl',
+	        '.rb': 'ruby',
+	        '.js': 'node',
+	        '.lua': 'lua',
+	        '.r': 'Rscript',
+	        '.sh': 'bash',
+	        '.md': 'markdown',
+	        '.markdown':'markdown',
+	        '.html':'html',
+	        '.htm':'html'
+	    }
+		
+		interpreter = None
+		ext = None
+		temp_file_for_shebang = None
+		
+		# Handle case where file is not saved (fname is None)
+		if fname:
+			_, ext = os.path.splitext(fname.lower())
+			self.log_message("ext:{}".format(ext))
+			interpreter = interpreters.get(ext)
+			self.log_message("interpreter:{}".format(interpreter))
+			
+			# If no interpreter found by extension, try reading shebang from file
+			if not interpreter:
+				try:
+					with open(fname, 'r', encoding='utf-8') as f:
+						first_line = f.readline().strip()
+						if first_line.startswith('#!'):
+							parts = first_line[2:].strip().split()
+							if parts:
+								interpreter = os.path.basename(parts[0])
+				except Exception as e:
+					self.log_message(f"Error reading shebang from file: {e}")
+		else:
+			# File not saved - create temp file with full content to check shebang
+			self.log_message("File not saved, creating temp file to check shebang")
+			try:
+				temp_file_for_shebang = self.create_temp_file_for_shebang(view)
+				self.log_message("temp_file_for_shebang: {}".format(temp_file_for_shebang))
+				# fname and dirname are now set by create_temp_file_for_shebang
+				fname = self.fname
+				# Store the temp file so it can be cleaned up later
+				self.temp_shebang_file = temp_file_for_shebang
+				
+				# Check shebang from temp file
+				with open(temp_file_for_shebang, 'r', encoding='utf-8') as f:
+					first_line = f.readline().strip()
+					self.log_message("first_line from temp file: {}".format(first_line))
+					
+					if first_line.startswith('#!'):
+						parts = first_line[2:].strip().split()
+						if parts:
+							interpreter = os.path.basename(parts[0])
+							self.log_message("interpreter from shebang: {}".format(interpreter))
+			except Exception as e:
+				self.log_message(f"Error creating temp file or reading shebang: {e}")
+		
+		# Set dirname for saved files
+		if view.file_name():
+			dirname = os.path.basename(os.path.dirname(view.file_name()))
+		else:
+			dirname = self.dirname
+		
 		# if nothing is selected, pass in full filename
-		if view.sel()[0].empty():
+		if interpreter or view.sel()[0].empty():
+			self.log_message("passing full filename")
 			sql = view.substr(view.line(view.sel()[0].a))
 			variables = {"fname":fname,"dirname":dirname,"selection": sql}
 		else:
 			# create a temp file with just the selection and pass that
+			self.log_message("creating temp file")
 			self.tmp_file = self.get_selection(view)
 			variables = {"fname":fname,"dirname":dirname,"selection": self.tmp_file}
+			
+		self.log_message(variables)
 		# expand the variables
 		kwargs = sublime.expand_variables(kwargs,variables)
+		
+		# Don't clean up temp_file_for_shebang here - it needs to exist for the build
+		# It will be cleaned up in the finish() method after the build completes
+		
 		# run
 		super().run(**kwargs)
-
+		
+	# create temp file with full content for shebang checking
+	def create_temp_file_for_shebang(self, view):
+		# First, create a temp file to read the shebang
+		handle, temp_name = tempfile.mkstemp(suffix="_temp", prefix="sublime_", text=True)
+		handle = os.fdopen(handle, mode="wt", encoding="utf-8")
+		content = view.substr(sublime.Region(0, view.size()))
+		handle.write(content)
+		handle.close()
+		
+		# Read the shebang to determine extension
+		extension = ""
+		try:
+			with open(temp_name, 'r', encoding='utf-8') as f:
+				first_line = f.readline().strip()
+				if first_line.startswith('#!'):
+					parts = first_line[2:].strip().split()
+					if parts:
+						interpreter = os.path.basename(parts[0])
+						# Map interpreters to extensions
+						interpreter_to_ext = {
+							'python': '.py',
+							'python3': '.py',
+							'php': '.php',
+							'perl': '.pl',
+							'ruby': '.rb',
+							'node': '.js',
+							'lua': '.lua',
+							'bash': '.sh',
+							'sh': '.sh',
+							'Rscript': '.r'
+						}
+						extension = interpreter_to_ext.get(interpreter, "")
+						self.log_message("Detected interpreter: {}, extension: {}".format(interpreter, extension))
+		except Exception as e:
+			self.log_message(f"Error reading shebang for extension: {e}")
+		
+		# Clean up the temporary file
+		os.remove(temp_name)
+		
+		# Create the final temp file with proper extension
+		if extension:
+			handle, name = tempfile.mkstemp(suffix=extension, prefix="sublime_", text=True)
+		else:
+			handle, name = tempfile.mkstemp(suffix="_shebang_check", prefix="sublime_", text=True)
+		
+		handle = os.fdopen(handle, mode="wt", encoding="utf-8")
+		handle.write(content)
+		handle.close()
+		
+		# Set instance variables to the actual temp file path and directory
+		self.fname = name
+		self.dirname = os.path.basename(os.path.dirname(name))
+		self.log_message("Set fname to temp file: {}".format(self.fname))
+		self.log_message("Set dirname to temp dir: {}".format(self.dirname))
+		
+		return name
+		
 	# get the selected text in the current window - first cursor only
 	def get_currentline(self, view):
-		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		if view.file_name():
+			fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		else:
+			fname = "untitled"
 		handle, name = tempfile.mkstemp(suffix="_deleteme",prefix=fname+".",text=True)
 		handle = os.fdopen(handle, mode="wt",encoding="utf-8")
 		handle.write(view.substr(view.line(view.sel()[0].a)))
 		handle.close()
 		return name
-
+		
 	# get the selected text in the current window - first cursor only
 	def get_selection(self, view):
-		fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		if view.file_name():
+			fname = os.path.splitext(os.path.basename(view.file_name()))[0]
+		else:
+			fname = "untitled"
 		handle, name = tempfile.mkstemp(suffix="_deleteme",prefix=fname+".",text=True)
 		handle = os.fdopen(handle, mode="wt",encoding="utf-8")
 		handle.write(view.substr(view.sel()[0]))
 		handle.close()
 		return name
-
+		
 	# remove temp file if exists
 	def finish(self,proc):
 		super().finish(proc)
+		# Clean up selection temp file
 		try:
-			os.remove(self.tmp_file)
+			if hasattr(self, 'tmp_file') and self.tmp_file:
+				os.remove(self.tmp_file)
+				self.log_message("Cleaned up selection temp file: {}".format(self.tmp_file))
+		except Exception as e:
+			self.log_message(f"Error cleaning up selection temp file: {e}")
 		finally:
-			self.tmp_file = None
+			if hasattr(self, 'tmp_file'):
+				self.tmp_file = None
+		
+		# Clean up shebang temp file
+		try:
+			if hasattr(self, 'temp_shebang_file') and self.temp_shebang_file:
+				os.remove(self.temp_shebang_file)
+				self.log_message("Cleaned up shebang temp file: {}".format(self.temp_shebang_file))
+		except Exception as e:
+			self.log_message(f"Error cleaning up shebang temp file: {e}")
+		finally:
+			if hasattr(self, 'temp_shebang_file'):
+				self.temp_shebang_file = None
+				
+	def log_message(self, message):
+		log_path = os.path.expanduser("~/sublime_build.log")
+		timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		with open(log_path, "a") as f:
+			f.write(f"[{timestamp}] {message}\n")
