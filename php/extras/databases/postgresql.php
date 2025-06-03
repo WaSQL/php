@@ -409,7 +409,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 					'error'=>$err,
 					'query'=>$query,
 					'p'=>$p,
-					'record_count'=>count(recs),
+					'record_count'=>count($recs),
 					'first_record'=>$drec
 				));
 				return 0;
