@@ -333,6 +333,27 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		return 0;
 	}
 	$fieldstr=implode(',',$fields);
+	//make sure date fields are null instead of blank
+	$date_fields=array();
+	foreach($fieldinfo as $field=>$info){
+			switch(strtolower($info['_dbtype'])){
+				case 'date':
+				case 'datetime':
+				case 'time':
+				case 'timestamp':
+					$date_fields[]=$field;
+				break;
+			}
+	}
+	if(count($date_fields)){
+		foreach($recs as $i=>$rec){
+			foreach($rec as $k=>$v){
+				if(!in_array($k,$date_fields)){continue;}
+				if(strlen($v)){continue;}
+				$recs[$i][$k]=null;
+			}
+		}
+	}
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
