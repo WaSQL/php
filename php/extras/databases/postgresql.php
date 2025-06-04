@@ -379,7 +379,15 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 				$query.="WHERE {$params['-upsertwhere']}".PHP_EOL;
 			}
 		}
-		//echo $query;exit;
+		if(isset($params['-debug']) && $params['-debug']==1){
+			return array(
+					'dbh'=>$dbh_postgresql,
+					'query_name'=>$query_name,
+					'query'=>$query,
+					'pvalues_count'=>count($pvalues),
+					'pvalues'=>$pvalues
+			);
+		}
 		try{
 			$pg_adddbrecords_stmt = pg_prepare($dbh_postgresql,$query_name, $query);
 			if(!is_resource($pg_adddbrecords_stmt) && !is_object($pg_adddbrecords_stmt)){
