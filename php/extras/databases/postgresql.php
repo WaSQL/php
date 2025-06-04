@@ -1252,6 +1252,9 @@ function postgresqlDBConnect(){
 	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		return '';
 	}
+	//set log_error_verbosity for better error messages
+	pg_query($dbh_postgresql, "SET log_error_verbosity = 'verbose'");
+	//pg_query($dbh_postgresql, "SET log_statement = 'all'");
 	return $dbh_postgresql;
 	
 }
