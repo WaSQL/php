@@ -63,17 +63,16 @@ LoadModule rewrite_module modules/mod_rewrite.so
 
 - copy sample.htaccess in the wasql folder to your htdocs (DOCUMENT ROOT) folder and name it .htaccess  NOTE: you may need a different text editor that allows you to save .htaccess. Make sure it does not have the .txt extension. Note: notepad will not work. Use Notepad++ or sublime.
 
-- Open the PHP php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres.  You will need php-zip and php-curl for sure.  
+- Open the PHP php.ini in a text editor and uncomment any extensions you want enabled. For example, extension=pgsql to enable postgres.  You will need php-zip and php-curl for sure. NOTES: if this is a new PHP install you may not have a php.ini. Instead you will see a php.ini-development and a php.ini-production.  Rename one of these to php.ini and then make the above changes.  You may also need to set the extension_dir to point to the /ext directory inside your PHP install.
 
-- Add your new PHP bin directory path to your PATH Environment.
+- Add your new PHP directory path to your PATH Environment.
 - Add your new Apache bin directory path to your PATH Environment.
 
 - restart your computer
 - open a DOS console and type >mysql -u root -p <ENTER>. Then enter your password and hit <ENTER>.  Type the following (this is going to create a username and password that Wasql will use)
 ```
-	- mysql>CREATE USER 'wasql_dbuser'@'%' IDENTIFIED with mysql_native_password BY 'wasql_dbpass';
+	- mysql>CREATE USER 'wasql_dbuser'@'%' IDENTIFIED BY 'wasql_dbpass';
 	- mysql>GRANT ALL PRIVILEGES ON *.* TO 'wasql_dbuser'@'%' WITH GRANT OPTION;
-	- mysql>flush privileges;
 	- mysql>create database wasql_sample;
 	- mysql>exit
 ```
