@@ -6886,28 +6886,39 @@ var wacss = {
 					/* if params.gender then pick a voice with that gender */
 					let gender=params.gender.toLowerCase();
 					for(let i=0;i<voices.length;i++){
-						let name=voices[i].name.toLowerCase();
-						if(gender=='male' && (
-							name.includes('male') 
-							|| name.includes('daniel')
-							|| name.includes('david')
-							|| name.includes('alex')
-							|| name.includes('man')
-							)
-						){
-							msg.voice=voices[i];
-							break;
-						}
-						else if(gender=='female' && (
-							name.includes('female') 
-							|| name.includes('samantha')
-							|| name.includes('victoria')
-							|| name.includes('karen')
-							|| name.includes('woman')
-							)
-						){
-							msg.voice=voices[i];
-							break;
+						let name = voices[i].name.toLowerCase();
+						if (gender === 'male' && (
+						   name.includes('male') ||
+						   name.includes('daniel') ||
+						   name.includes('david') ||
+						   name.includes('alex') ||
+						   name.includes('mark') ||
+						   name.includes('tom') ||
+						   name.includes('fred') ||
+						   name.includes('paul') ||
+						   name.includes('john') ||
+						   name.includes('bob') ||
+						   name.includes('man') ||
+						   name.includes('masculine')
+						)) {
+						   msg.voice = voices[i];
+						   break;
+						} 
+						else if (gender === 'female' && (
+						   name.includes('female') ||
+						   name.includes('samantha') ||
+						   name.includes('victoria') ||
+						   name.includes('karen') ||
+						   name.includes('susan') ||
+						   name.includes('mary') ||
+						   name.includes('helen') ||
+						   name.includes('sarah') ||
+						   name.includes('anna') ||
+						   name.includes('woman') ||
+						   name.includes('feminine')
+						)) {
+						   msg.voice = voices[i];
+						   break;
 						}
 					}
 				}
