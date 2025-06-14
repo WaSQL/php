@@ -6872,6 +6872,9 @@ var wacss = {
 				};
 			}
 			else{
+				if(undefined != document.getElementById('voices_list_debug')){
+					wacss.setText('voices_list_debug', JSON.stringify(voices, null, 2));
+				}
 				let msg = new SpeechSynthesisUtterance();
 				/* if params.name then pick a voice with that name */
 				if(undefined != params.name){
