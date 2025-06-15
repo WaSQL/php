@@ -3420,7 +3420,7 @@ var wacss = {
 	},
 	initCodeMirror: function(){
 		/*convert texteara to codemirror */
-		let list=document.querySelectorAll('textarea.code[data-mode]');
+		let list=document.querySelectorAll('textarea.code[data-mode],pre code[class*="language-"]');
 		if(undefined == list || list.length==0){return false;}
 		//set some defaults
 		let defaults={
@@ -3456,6 +3456,8 @@ var wacss = {
 			//go through dataset to get params
 			let params={};
 			let curr_defaults=defaults;
+			const match = list[i].className.match(/language-(\w+)/);
+			if (match){list[i].dataset.mode = match[1];}
 			for(k in list[i].dataset){
 				if(k=='debug'){continue;}
 				let v=list[i].dataset[k];
