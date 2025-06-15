@@ -3503,6 +3503,9 @@ var wacss = {
 			}
 			//fix modes
 			switch(params.mode.toLowerCase()){
+				case 'bash':
+					params.mode='shell';
+				break;
 				case 'css':
 				case 'text/css':
 					params.mode='text/css';
