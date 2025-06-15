@@ -3457,7 +3457,10 @@ var wacss = {
 			let params={};
 			let curr_defaults=defaults;
 			const match = list[i].className.match(/language-(\w+)/);
-			if (match){list[i].dataset.mode = match[1];}
+			if (match){
+				list[i].dataset.mode = match[1];
+				list[i].dataset.debug=1;
+			}
 			for(k in list[i].dataset){
 				if(k=='debug'){continue;}
 				let v=list[i].dataset[k];
