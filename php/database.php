@@ -3140,6 +3140,7 @@ function databaseParseFilters($params=array()){
 	if(!is_array($params['-filters'])){
 		$params['-filters']=preg_split('/[\r\n\ ]+/',trim($params['-filters']));
 	}
+	//echo printValue($params['-filters']);exit;
 	if(count($params['-filters'])==1 && stringBeginsWith($params['-filters'][0],'1-ct-')){
 		//this is a simplesearch
 		list($field,$oper,$val)=preg_split('/\-/',$params['-filters'][0],3);
@@ -3200,8 +3201,13 @@ function databaseParseFilters($params=array()){
 						$wheres[]="{$field} ilike '%{$val}%'";
 					break;
 					default:
-						//mysql is case insensitive
-						$wheres[]="{$field} like '%{$val}%'";
+						if(isset($params['-info'][$field]['_dbtype']) && strtolower($params['-info'][$field]['_dbtype'])=='json'){
+							$wheres[]="'{$val}' MEMBER OF ({$field})";
+						}
+						else{
+							$wheres[]="{$field} like '%{$val}%'";
+						}
+						
 					break;
 				}
 			break;
@@ -3225,7 +3231,13 @@ function databaseParseFilters($params=array()){
 					break;
 					default:
 						//mysql is case insensitive
-						$wheres[]="{$field} not like '%{$val}%'";
+						if(isset($params['-info'][$field]['_dbtype']) && strtolower($params['-info'][$field]['_dbtype'])=='json'){
+							$wheres[]="NOT ('{$val}' MEMBER OF ({$field}))";
+						}
+						else{
+							$wheres[]="{$field} not like '%{$val}%'";
+						}
+						
 					break;
 				}
 			break;
@@ -3259,11 +3271,17 @@ function databaseParseFilters($params=array()){
 					default:
 						//mysql is case insensitive
 						foreach($cvals as $cval){
-							$ors[]="{$field} like '%{$cval}%'";
+							if(isset($params['-info'][$field]['_dbtype']) && strtolower($params['-info'][$field]['_dbtype'])=='json'){
+								$ors[]="'{$cval}' MEMBER OF ({$field})";
+							}
+							else{
+								$ors[]="{$field} like '%{$cval}%'";
+							}
 						}
 					break;
 				}
 				$wheres[]='('.implode(' or ',$ors).')';
+				//echo printValue($wheres);exit;
 			break;
 			case 'nca':
 				//not contains any
@@ -3295,7 +3313,12 @@ function databaseParseFilters($params=array()){
 					default:
 						//mysql is case insensitive
 						foreach($cvals as $cval){
-							$ands[]="{$field} not like '%{$cval}%'";
+							if(isset($params['-info'][$field]['_dbtype']) && strtolower($params['-info'][$field]['_dbtype'])=='json'){
+								$ands[]="NOT ('{$cval}' MEMBER OF ({$field}))";
+							}
+							else{
+								$ands[]="{$field} not like '%{$cval}%'";
+							}
 						}
 					break;
 				}
