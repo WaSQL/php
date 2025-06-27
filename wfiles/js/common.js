@@ -472,14 +472,38 @@ function function_exists( function_name ) {
 //Note: moved to wacss.simulateEvent
 /* simulateEvent without actually having the event happen */
 // adapted from http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript/6158050#6158050
-function simulateEvent(element, eventName){
-	element=getObject(element);
-	if(undefined == element){return false;}
-	//info: simulate an event without it actually happening
-    let evObj = document.createEvent('Event');
-    evObj.initEvent(eventName, true, false);
-    element.dispatchEvent(evObj);
-  	return true;
+function simulateEvent(element, eventName) {
+    element = getObject(element);
+    if (element === undefined) { return false; }
+    
+    if (eventName === 'submit' && element.tagName === 'FORM') {
+        // Check if requestSubmit is available (modern browsers)
+        if (typeof element.requestSubmit === 'function') {
+            element.requestSubmit();
+        } else {
+            // Fallback for older browsers
+            element.submit();
+        }
+    } else {
+        // For other events
+        let evObj;
+        if (document.createEvent) {
+            evObj = document.createEvent('Event');
+            evObj.initEvent(eventName, true, false);
+        } else {
+            // IE fallback
+            evObj = document.createEventObject();
+            evObj.eventType = eventName;
+        }
+        
+        if (element.dispatchEvent) {
+            element.dispatchEvent(evObj);
+        } else {
+            // IE fallback
+            element.fireEvent('on' + eventName, evObj);
+        }
+    }
+    return true;
 }
 //isDate
 /**
