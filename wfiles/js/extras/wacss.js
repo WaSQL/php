@@ -3581,6 +3581,65 @@ var wacss = {
 	        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
 	    );
 	},
+	initDropdown: function() {
+	   const triggers = document.querySelectorAll('[data-dropdown]');
+	   const isTouchDevice = 'ontouchstart' in window;
+	   
+	   triggers.forEach(trigger => {
+	       const menuId = trigger.dataset.dropdown;
+	       const menu = document.getElementById(menuId);
+	       
+	       if (!menu) return;
+	       
+	       // Set initial styles
+	       menu.style.opacity = '0';
+	       menu.style.visibility = 'hidden';
+	       menu.style.transition = 'opacity 0.2s ease, visibility 0.2s ease';
+	       
+	       if (isTouchDevice) {
+	           // Mobile: click to toggle
+	           trigger.addEventListener('click', (e) => {
+	               e.preventDefault();
+	               const isVisible = menu.style.opacity === '1';
+	               menu.style.opacity = isVisible ? '0' : '1';
+	               menu.style.visibility = isVisible ? 'hidden' : 'visible';
+	           });
+	           
+	           // Close when clicking outside
+	           document.addEventListener('click', (e) => {
+	               if (!trigger.contains(e.target) && !menu.contains(e.target)) {
+	                   menu.style.opacity = '0';
+	                   menu.style.visibility = 'hidden';
+	               }
+	           });
+	       } else {
+	           // Desktop: hover behavior
+	           trigger.addEventListener('mouseenter', () => {
+	               menu.style.opacity = '1';
+	               menu.style.visibility = 'visible';
+	           });
+	           
+	           trigger.addEventListener('mouseleave', () => {
+	               setTimeout(() => {
+	                   if (!menu.matches(':hover')) {
+	                       menu.style.opacity = '0';
+	                       menu.style.visibility = 'hidden';
+	                   }
+	               }, 10);
+	           });
+	           
+	           menu.addEventListener('mouseenter', () => {
+	               menu.style.opacity = '1';
+	               menu.style.visibility = 'visible';
+	           });
+	           
+	           menu.addEventListener('mouseleave', () => {
+	               menu.style.opacity = '0';
+	               menu.style.visibility = 'hidden';
+	           });
+	       }
+	   });
+	},
 	initEditor: function(){
 		let els=document.querySelectorAll('textarea[data-behavior="editor"]');
 		if(els.length==0){return false;}
@@ -6826,13 +6885,35 @@ var wacss = {
 	* @usage let el=wacss.simulateEvent('#mybutton','click')
 	*/
 	simulateEvent: function(element, eventName){
-		element=wacss.getObject(element);
-		if(undefined == element){return false;}
-		//info: simulate an event without it actually happening
-	    let evObj = document.createEvent('Event');
-	    evObj.initEvent(eventName, true, false);
-	    element.dispatchEvent(evObj);
-	  	return true;
+		element = getObject(element);
+	    if (element === undefined) { return false; }
+	    if (eventName === 'submit' && element.tagName === 'FORM') {
+	        // Check if requestSubmit is available (modern browsers)
+	        if (typeof element.requestSubmit === 'function') {
+	            element.requestSubmit();
+	        } else {
+	            // Fallback for older browsers
+	            element.submit();
+	        }
+	    } else {
+	        // For other events
+	        let evObj;
+	        if (document.createEvent) {
+	            evObj = document.createEvent('Event');
+	            evObj.initEvent(eventName, true, false);
+	        } else {
+	            // IE fallback
+	            evObj = document.createEventObject();
+	            evObj.eventType = eventName;
+	        }
+	        if (element.dispatchEvent) {
+	            element.dispatchEvent(evObj);
+	        } else {
+	            // IE fallback
+	            element.fireEvent('on' + eventName, evObj);
+	        }
+	    }
+	    return true;
 	},
 	/**
 	* @name wacss.speak
