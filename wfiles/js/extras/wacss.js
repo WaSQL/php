@@ -3581,64 +3581,109 @@ var wacss = {
 	        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
 	    );
 	},
-	initDropdown: function() {
-	   const triggers = document.querySelectorAll('[data-dropdown]');
-	   const isTouchDevice = 'ontouchstart' in window;
-	   
-	   triggers.forEach(trigger => {
-	       const menuId = trigger.dataset.dropdown;
-	       const menu = document.getElementById(menuId);
-	       
-	       if (!menu) return;
-	       
-	       // Set initial styles
-	       menu.style.opacity = '0';
-	       menu.style.visibility = 'hidden';
-	       menu.style.transition = 'opacity 0.2s ease, visibility 0.2s ease';
-	       
-	       if (isTouchDevice) {
-	           // Mobile: click to toggle
-	           trigger.addEventListener('click', (e) => {
-	               e.preventDefault();
-	               const isVisible = menu.style.opacity === '1';
-	               menu.style.opacity = isVisible ? '0' : '1';
-	               menu.style.visibility = isVisible ? 'hidden' : 'visible';
-	           });
-	           
-	           // Close when clicking outside
-	           document.addEventListener('click', (e) => {
-	               if (!trigger.contains(e.target) && !menu.contains(e.target)) {
-	                   menu.style.opacity = '0';
-	                   menu.style.visibility = 'hidden';
-	               }
-	           });
-	       } else {
-	           // Desktop: hover behavior
-	           trigger.addEventListener('mouseenter', () => {
-	               menu.style.opacity = '1';
-	               menu.style.visibility = 'visible';
-	           });
-	           
-	           trigger.addEventListener('mouseleave', () => {
-	               setTimeout(() => {
-	                   if (!menu.matches(':hover')) {
-	                       menu.style.opacity = '0';
-	                       menu.style.visibility = 'hidden';
-	                   }
-	               }, 10);
-	           });
-	           
-	           menu.addEventListener('mouseenter', () => {
-	               menu.style.opacity = '1';
-	               menu.style.visibility = 'visible';
-	           });
-	           
-	           menu.addEventListener('mouseleave', () => {
-	               menu.style.opacity = '0';
-	               menu.style.visibility = 'hidden';
-	           });
-	       }
-	   });
+	initDropdowns: function(){
+		let els=document.querySelectorAll('[data-dropdown]:not([data-dropdown_initialized="1"])');
+		if(els.length==0){return false;}
+		for(e=0;e<els.length;e++){
+			els[e].dataset.dropdown_initialized=1;
+			let menuid=els[e].dataset.dropdown;
+			let menuobj=wacss.getObject(menuid);
+			if(undefined == menuobj){
+				els[e].dataset.dropdown_error='dropdown element not found';
+				continue;
+			}
+			els[e].addEventListener('mouseenter',function(evt){
+			   wacss.preventDefault(evt);
+			   if(undefined != this.dropdown){
+			       return false;
+			   }
+			   let menuid=this.dataset.dropdown;
+			   let menuobj=wacss.getObject(menuid);
+			   if(undefined == menuobj){
+			       return false;
+			   }
+			   let dropdown = document.createElement('div');
+			   dropdown.innerHTML = menuobj.innerHTML;
+			   rect = this.getBoundingClientRect();
+			   // Get background color from element
+			  let computedStyle = window.getComputedStyle(this);
+			  let bgColor = computedStyle.backgroundColor;
+			  let shadowColor = 'rgba(0, 0, 0, 0.16)';
+			  
+			  if(bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+			      // Extract RGB values and create shadow color
+			      let rgbMatch = bgColor.match(/\d+/g);
+			      if(rgbMatch && rgbMatch.length >= 3) {
+			          shadowColor = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.4)`;
+			      }
+			  }
+			   Object.assign(dropdown.style,{
+			       display:'block',
+			       position:'absolute',
+			       left:rect.left + 'px',
+			       top:(rect.bottom + window.scrollY)-1 + 'px',
+			       padding:'13px',
+			       zIndex:99999,
+			       backgroundColor:'#FFFFFF',
+			       boxShadow: `${shadowColor} 0px 2px 6px`,
+			       overflow:'hidden',
+			       maxHeight:'1px',
+			       transition:'max-height 0.1s ease-out',
+			       opacity:'0',
+			       borderRadius:'0 0 3px 3px'
+			   });
+			   document.body.appendChild(dropdown);
+			   
+			   // Get the full height after adding to DOM
+			   let fullHeight = dropdown.scrollHeight;
+			   
+			   // Trigger animation
+			   requestAnimationFrame(() => {
+			       dropdown.style.maxHeight = fullHeight + 'px';
+			       dropdown.style.opacity = '1';
+			   });
+			   
+			   this.dropdown=dropdown;
+			   dropdown.pel=this;
+			   
+			   // Remove dropdown when mouse leaves it and is over the original element
+			   dropdown.addEventListener('mouseleave', function(evt) {
+			       if(undefined == this.pel){return false;}
+			      let originalRect = this.pel.getBoundingClientRect();
+			      if(evt.clientX >= originalRect.left && evt.clientX <= originalRect.right &&
+			         evt.clientY >= originalRect.top && evt.clientY <= originalRect.bottom) {
+			          return false;
+			      }
+			      // Remove dropdown when mouse leaves it
+			      if(this.parentNode) {
+			          this.parentNode.removeChild(this);
+			      }
+			      // Clear reference from original element
+			      this.pel.dropdown = undefined;
+			   });
+			   
+			   return false;
+			},false);
+
+			els[e].addEventListener('mouseleave',function(evt){
+			   wacss.preventDefault(evt);
+			   if(undefined == this.dropdown){
+			       return false;
+			   }
+			   // Check if mouse is over the dropdown
+			   let dropdownRect = this.dropdown.getBoundingClientRect();
+			   if(evt.clientX >= dropdownRect.left && evt.clientX <= dropdownRect.right &&
+			      evt.clientY >= dropdownRect.top && evt.clientY <= dropdownRect.bottom) {
+			       return false;
+			   }
+			   //remove the node
+			   this.dropdown.parentNode.removeChild(this.dropdown);
+			   // Clear the reference
+			   this.dropdown = undefined; 
+			   return false;
+			},false);
+			
+		}
 	},
 	initEditor: function(){
 		let els=document.querySelectorAll('textarea[data-behavior="editor"]');
