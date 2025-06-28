@@ -1858,6 +1858,7 @@ var wacss = {
 		try{wacss.initChartJs();}catch(e){console.log('wacss.initChartJs failed');}
 		try{wacss.initTabs();}catch(e){console.log('wacss.initTabs failed');}
 		try{wacss.initCodeMirror();}catch(e){console.log('wacss.initCodeMirror failed');}
+		try{wacss.initDropdowns();}catch(e){console.log('wacss.initDropdowns failed');}
 		try{wacss.initEditor();}catch(e){console.log('wacss.initEditor failed');}
 		try{wacss.initWhiteboard();}catch(e){console.log('wacss.initWhiteboard failed');}
 		try{wacss.initSignaturePad();}catch(e){console.log('wacss.initSignaturePad failed');}
