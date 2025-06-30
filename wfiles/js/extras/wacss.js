@@ -1704,6 +1704,62 @@ var wacss = {
 		return txt;
 	},
 	/**
+	* @name wacss.getTableRowValues
+	* @describe returns a key/value array using the first row in the table as the keys
+	* @param el obj - element
+	* @return mixed
+	* @usage let params=wacss.getTableRowValues(el);
+	*/
+	getTableRowValues: function(el,s) {
+	   //info: getTableRowValues .
+	   //info: if s=1, then returns as a URL string instead of an array
+	   //usage: alert(getTableRowValues(this,1));
+	   if(undefined == s){s=0;}
+	   ptable=wacss.getParent(el,'table');
+	   let str='';
+	   let row=new Array();
+	   if(undefined == ptable){
+	       //no parent table - log and return
+	       console.log('wacss.getTableRowValues Error - no parent table');
+	       if(s==1){return str;}
+	       return row; 
+	   }
+	   let keys=new Array();
+	   let vals=new Array();
+	   let tr=wacss.getParent(el,'tr'); // assuming you have getParent method
+	   
+	   //iterate through rows
+	   for (let i = 0, tableRow; tableRow = ptable.rows[i]; i ++) {
+	       //rows would be accessed using the "tableRow" variable assigned in the for loop
+	       for (let j = 0, col; col = tableRow.cells[j]; j ++) {
+	           //iterate through columns
+	           //columns would be accessed using the "col" variable assigned in the for loop
+	           var cval;
+	           if(i==0){
+	               cval=wacss.getText(col);
+	               keys.push(cval);
+	           }
+	           if(tableRow==tr){
+	               // Check for input/select elements first
+	               let input = col.querySelector('input, select');
+	               if(input) {
+	                   cval = input.value;
+	               } else {
+	                   cval = wacss.getText(col);
+	               }
+	               vals.push(cval);
+	           }
+	       }
+	   }
+	   for(let i=0;i<keys.length;i++){
+	       let key=strtolower(keys[i]);
+	       row[key]=vals[i];
+	       str+=key+'='+vals[i]+'&';
+	   }
+	   if(s==1){return str;}
+	   return row;
+	},
+	/**
 	* @name wacss.getText
 	* @describe returns text in any object
 	* @param el obj - element
