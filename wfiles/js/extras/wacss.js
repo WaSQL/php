@@ -3642,102 +3642,161 @@ var wacss = {
 		let els=document.querySelectorAll('[data-dropdown]:not([data-dropdown_initialized="1"])');
 		if(els.length==0){return false;}
 		for(e=0;e<els.length;e++){
+			//set dropdown_initialized
 			els[e].dataset.dropdown_initialized=1;
+			//get the menu obj
 			let menuid=els[e].dataset.dropdown;
 			let menuobj=wacss.getObject(menuid);
 			if(undefined == menuobj){
 				els[e].dataset.dropdown_error='dropdown element not found';
 				continue;
 			}
+			//assign the menu obj
+			els[e].menuobj=menuobj;
+			//listen for mouse enter
 			els[e].addEventListener('mouseenter',function(evt){
-			   wacss.preventDefault(evt);
-			   if(undefined != this.dropdown){
-			       return false;
-			   }
-			   let menuid=this.dataset.dropdown;
-			   let menuobj=wacss.getObject(menuid);
-			   if(undefined == menuobj){
-			       return false;
-			   }
-			   let dropdown = document.createElement('div');
-			   dropdown.innerHTML = menuobj.innerHTML;
-			   rect = this.getBoundingClientRect();
-			   // Get background color from element
-			  let computedStyle = window.getComputedStyle(this);
-			  let bgColor = computedStyle.backgroundColor;
-			  let shadowColor = 'rgba(0, 0, 0, 0.16)';
-			  
-			  if(bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
-			      // Extract RGB values and create shadow color
-			      let rgbMatch = bgColor.match(/\d+/g);
-			      if(rgbMatch && rgbMatch.length >= 3) {
-			          shadowColor = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.4)`;
-			      }
-			  }
-			   Object.assign(dropdown.style,{
-			       display:'block',
-			       position:'absolute',
-			       left:rect.left + 'px',
-			       top:(rect.bottom + window.scrollY)-1 + 'px',
-			       padding:'13px',
-			       zIndex:99999,
-			       backgroundColor:'#FFFFFF',
-			       boxShadow: `${shadowColor} 0px 2px 6px`,
-			       overflow:'hidden',
-			       maxHeight:'1px',
-			       transition:'max-height 0.1s ease-out',
-			       opacity:'0',
-			       borderRadius:'0 0 3px 3px'
-			   });
-			   document.body.appendChild(dropdown);
-			   
-			   // Get the full height after adding to DOM
-			   let fullHeight = dropdown.scrollHeight;
-			   
-			   // Trigger animation
-			   requestAnimationFrame(() => {
-			       dropdown.style.maxHeight = fullHeight + 'px';
-			       dropdown.style.opacity = '1';
-			   });
-			   
-			   this.dropdown=dropdown;
-			   dropdown.pel=this;
-			   
-			   // Remove dropdown when mouse leaves it and is over the original element
-			   dropdown.addEventListener('mouseleave', function(evt) {
-			       if(undefined == this.pel){return false;}
-			      let originalRect = this.pel.getBoundingClientRect();
-			      if(evt.clientX >= originalRect.left && evt.clientX <= originalRect.right &&
-			         evt.clientY >= originalRect.top && evt.clientY <= originalRect.bottom) {
-			          return false;
-			      }
-			      // Remove dropdown when mouse leaves it
-			      if(this.parentNode) {
-			          this.parentNode.removeChild(this);
-			      }
-			      // Clear reference from original element
-			      this.pel.dropdown = undefined;
-			   });
-			   
-			   return false;
-			},false);
+				wacss.preventDefault(evt);
+				if(undefined != this.dropdown){return false;}
+				if(undefined == this.menuobj){return false;}
+				let dropdown = document.createElement('div');
+				dropdown.innerHTML = this.menuobj.innerHTML;
+				rect = this.getBoundingClientRect();
+				// Check if dropdown would go off right edge of screen
+				let dropdownWidth = 300; // estimated width, you can measure after creating
+				let windowWidth = window.innerWidth;
+				// Get background color from element
+				let computedStyle = window.getComputedStyle(this);
+				let borderColor = computedStyle.borderColor;
+				let bgColor = computedStyle.backgroundColor;
+				let shadowColor = 'rgba(0, 0, 0, 0.16)';
 
+				// determine the shadowcolor
+				if(undefined != this.menuobj.dataset.border){
+					let borderColor = this.menuobj.dataset.border;
+					// If it's a hex color
+					if(borderColor.startsWith('#')) {
+						let hex = borderColor.slice(1);
+						let r, g, b;
+						// Handle 3-digit hex (#000)
+						if(hex.length === 3) {
+							r = parseInt(hex[0] + hex[0], 16);
+							g = parseInt(hex[1] + hex[1], 16);
+							b = parseInt(hex[2] + hex[2], 16);
+						}
+						// Handle 6-digit hex (#000000)
+						else if(hex.length === 6) {
+							r = parseInt(hex.slice(0, 2), 16);
+							g = parseInt(hex.slice(2, 4), 16);
+							b = parseInt(hex.slice(4, 6), 16);
+						}
+						if(r !== undefined && g !== undefined && b !== undefined) {
+							shadowColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
+						}
+					}
+					// If it's a named color or rgb() value, create a temporary element to get computed color
+					else {
+						let tempEl = document.createElement('div');
+						tempEl.style.color = borderColor;
+						document.body.appendChild(tempEl);
+						let computedColor = window.getComputedStyle(tempEl).color;
+						document.body.removeChild(tempEl);
+
+						let rgbMatch = computedColor.match(/\d+/g);
+						if(rgbMatch && rgbMatch.length >= 3) {
+							shadowColor = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.4)`;
+						}
+					}
+				}
+				else if(borderColor && borderColor !== 'rgba(0, 0, 0, 0)' && borderColor !== 'transparent') {
+					let rgbMatch = borderColor.match(/\d+/g);
+					if(rgbMatch && rgbMatch.length >= 3) {
+						shadowColor = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.4)`;
+					}
+				}
+				// Fall back to background color if no border color
+				else if(bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+					let rgbMatch = bgColor.match(/\d+/g);
+					if(rgbMatch && rgbMatch.length >= 3) {
+						shadowColor = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.4)`;
+					}
+				}
+				//style the dropdown
+				Object.assign(dropdown.style,{
+					display:'block',
+					position:'absolute',
+					top:(rect.bottom + window.scrollY)-1 + 'px',
+					padding:'13px',
+					zIndex:99999,
+					backgroundColor:'#FFFFFF',
+					boxShadow: `${shadowColor} 0px 2px 6px`,
+					overflow:'hidden',
+					maxHeight:'1px',
+					transition:'max-height 0.1s ease-out',
+					opacity:'0',
+					borderRadius:'0 0 3px 3px'
+				});
+				//add dropdown to the dom
+				document.body.appendChild(dropdown);
+				// If dropdown would extend beyond right edge, position it to the right of element
+				let dropdownRect = dropdown.getBoundingClientRect();
+				if (rect.left + dropdownRect.width > windowWidth) {
+					dropdown.style.left = (rect.right-(dropdownRect.width)) + 'px';
+					dropdown.style.borderTopLeftRadius='10px';
+				}
+				else{
+					dropdown.style.left = rect.left + 'px';
+					dropdown.style.borderTopRightRadius='10px';
+				}
+				// Get the full height after adding to DOM
+				let fullHeight = dropdown.scrollHeight;
+				// Trigger animation
+				requestAnimationFrame(() => {
+					dropdown.style.maxHeight = fullHeight + 'px';
+					dropdown.style.opacity = '1';
+				});
+				//assign to each other for easy access later
+				this.dropdown=dropdown;
+				dropdown.pel=this;
+				// Remove dropdown when mouse leaves it and is over the original element
+				dropdown.addEventListener('mouseleave', function(evt) {
+				if(undefined == this.pel){return false;}
+				let originalRect = this.pel.getBoundingClientRect();
+				if(
+					evt.clientX >= originalRect.left 
+					&& evt.clientX <= originalRect.right 
+					&& evt.clientY >= originalRect.top 
+					&& evt.clientY <= originalRect.bottom
+					) {
+					return false;
+				}
+				// Remove dropdown when mouse leaves it
+				if(this.parentNode) {
+					this.parentNode.removeChild(this);
+				}
+				// Clear reference from original element
+				this.pel.dropdown = undefined;
+				});
+				return false;
+			},false);
+			//listen for mouse leave
 			els[e].addEventListener('mouseleave',function(evt){
-			   wacss.preventDefault(evt);
-			   if(undefined == this.dropdown){
-			       return false;
-			   }
-			   // Check if mouse is over the dropdown
-			   let dropdownRect = this.dropdown.getBoundingClientRect();
-			   if(evt.clientX >= dropdownRect.left && evt.clientX <= dropdownRect.right &&
-			      evt.clientY >= dropdownRect.top && evt.clientY <= dropdownRect.bottom) {
-			       return false;
-			   }
-			   //remove the node
-			   this.dropdown.parentNode.removeChild(this.dropdown);
-			   // Clear the reference
-			   this.dropdown = undefined; 
-			   return false;
+				wacss.preventDefault(evt);
+				if(undefined == this.dropdown){return false;}
+				// Check if mouse is over the dropdown
+				let dropdownRect = this.dropdown.getBoundingClientRect();
+				if(
+					evt.clientX >= dropdownRect.left 
+					&& evt.clientX <= dropdownRect.right 
+					&& evt.clientY >= dropdownRect.top 
+					&& evt.clientY <= dropdownRect.bottom
+					) {
+					return false;
+				}
+				//remove the node
+				this.dropdown.parentNode.removeChild(this.dropdown);
+				// Clear the reference
+				this.dropdown = undefined; 
+				return false;
 			},false);
 			
 		}
