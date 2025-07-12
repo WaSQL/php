@@ -6,7 +6,7 @@ This script installs custom_exec.py.sample and DaSQL.sublime-build.sample
 to the appropriate Sublime Text directories across Linux, macOS, and Windows.
 
 Use:
-    Open us a DOS/CMD prompt
+    Open us a DOS/CMD prompt or Terminal
     Change directory to the place you have DaSQL (ie   cd c:/wasql/dasql)
     python sublime_installer.py
 
@@ -22,6 +22,41 @@ import json
 import re
 from pathlib import Path
 
+def updateKeyBindings(user_packages_dir):
+    """Update or create user key bindings to set F8 for build."""
+    keybindings_file = user_packages_dir / "Default.sublime-keymap"
+    
+    # Key binding to add
+    f8_binding = {"keys": ["f8"], "command": "build"}
+    
+    try:
+        # Read existing bindings if file exists
+        if keybindings_file.exists():
+            with open(keybindings_file, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                if content:
+                    bindings = json.loads(content)
+                else:
+                    bindings = []
+        else:
+            bindings = []
+        
+        # Check if F8 binding already exists
+        f8_exists = any(binding.get("keys") == ["f8"] for binding in bindings)
+        
+        if not f8_exists:
+            bindings.append(f8_binding)
+            
+            # Write updated bindings
+            with open(keybindings_file, 'w', encoding='utf-8') as f:
+                json.dump(bindings, f, indent=4)
+            
+            return True, f"Added F8 build key binding to: {keybindings_file}"
+        else:
+            return True, "F8 key binding already exists"
+            
+    except Exception as e:
+        return False, f"Failed to update key bindings: {e}"
 
 def getSublimePaths():
     """Get potential Sublime Text installation and user data paths for different OS."""
@@ -93,6 +128,9 @@ def findSublimeInstallation():
                 # Check for the actual executable in the app bundle
                 if (path / "Contents" / "MacOS" / "Sublime Text").exists():
                     return path
+                # Also check for alternative executable names
+                elif (path / "Contents" / "MacOS" / "sublime_text").exists():
+                    return path
             elif system == "windows":
                 if (path / "sublime_text.exe").exists():
                     return path
@@ -141,11 +179,12 @@ def updateWorkingDirInBuildFile(build_file_path, working_dir):
         with open(build_file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # Convert Windows paths to use forward slashes or escaped backslashes for JSON
+        # Convert paths for JSON compatibility
         if platform.system().lower() == "windows":
             # Use forward slashes in JSON (works in Sublime Text on Windows)
             json_safe_path = str(working_dir).replace('\\', '/')
         else:
+            # For Unix-like systems (macOS, Linux), use the path as-is
             json_safe_path = str(working_dir)
         
         # Try to parse as JSON first (if it's a valid JSON file)
@@ -165,16 +204,19 @@ def updateWorkingDirInBuildFile(build_file_path, working_dir):
                 # If working_dir doesn't exist, add it
                 # Look for the closing brace and add working_dir before it
                 if content.strip().endswith('}'):
-                    # Add comma if there are other entries
-                    if content.count('"') > 0:
-                        insert_text = f',\n    "working_dir": "{json_safe_path}"\n}}'
-                        updated_content = content.rstrip().rstrip('}') + insert_text
+                    # Remove the closing brace, add working_dir with comma if needed, then add closing brace
+                    content_without_closing = content.rstrip().rstrip('}').rstrip()
+                    
+                    # Check if we need a comma (if there's existing content)
+                    if '"' in content_without_closing and content_without_closing.count('"') > 0:
+                        # Add comma and new working_dir
+                        updated_content = content_without_closing + f',\n    "working_dir": "{json_safe_path}"\n}}'
                     else:
-                        insert_text = f'\n    "working_dir": "{json_safe_path}"\n}}'
-                        updated_content = content.rstrip().rstrip('}') + insert_text
+                        # First entry, no comma needed
+                        updated_content = f'{{\n    "working_dir": "{json_safe_path}"\n}}'
                 else:
-                    # Fallback: append to end
-                    updated_content = content + f'\n"working_dir": "{json_safe_path}"'
+                    # Fallback: create a simple JSON structure
+                    updated_content = f'{{\n    "working_dir": "{json_safe_path}"\n}}'
         
         with open(build_file_path, 'w', encoding='utf-8') as f:
             f.write(updated_content)
@@ -237,13 +279,20 @@ def installFiles(source_dir=None):
             print(f"Replacing existing file: {dasql_build_dest}")
         shutil.copy2(dasql_build_sample, dasql_build_dest)
         print(f"Installed: {dasql_build_dest}")
+
+        # Update key bindings for F8
+        key_success, key_message = updateKeyBindings(user_packages_dir)
+        if key_success:
+            print(f" {key_message}")
+        else:
+            print(f"  Warning: {key_message}")
         
         # Update the working_dir in the build file
         success, message = updateWorkingDirInBuildFile(dasql_build_dest, working_directory)
         if success:
-            print(f"✅ {message}")
+            print(f" {message}")
         else:
-            print(f"⚠️  Warning: {message}")
+            print(f"  Warning: {message}")
         
         return True, "Files installed successfully!"
         
@@ -267,17 +316,20 @@ def main():
     success, message = installFiles(source_dir)
     
     if success:
-        print("✅ SUCCESS:", message)
+        print(" SUCCESS:", message)
         print("\nNext steps:")
         print("1. Restart Sublime Text to load the new build system")
         print("2. Use Tools > Build System > DaSQL to select the new build system")
         print("3. The custom_exec.py file will be automatically used by the build system")
     else:
-        print("❌ FAILED:", message)
+        print(" FAILED:", message)
         print("\nTroubleshooting tips:")
         print("- Ensure Sublime Text is installed")
         print("- Check that the sample files exist in the current directory")
-        print("- Try running with administrator/sudo privileges")
+        if platform.system().lower() != "windows":
+            print("- Try running with sudo privileges: sudo python sublime_installer.py")
+        else:
+            print("- Try running with administrator privileges")
         print("- Verify Sublime Text user directory permissions")
         return 1
     
