@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Notepad++ NppExec Configuration Generator for DaSQL
-Automatically detects Python installation and creates NppExec script
+Enhanced Notepad++ DaSQL Auto-Installer
+Uses the most reliable method for F8 shortcut binding
 """
 
 import os
@@ -13,7 +13,10 @@ import zipfile
 import tempfile
 import json
 import platform
+import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
+import time
 
 def find_notepad_plus_plus():
     """Find Notepad++ installation directory"""
@@ -66,27 +69,19 @@ def check_nppexec_installed(npp_dir):
 
 def get_latest_nppexec_url():
     """Get the latest NppExec release URL from GitHub"""
-    import json
-    import re
-    
     try:
-        # Get the latest release info from GitHub API
         api_url = "https://api.github.com/repos/d0vgan/nppexec/releases/latest"
         with urllib.request.urlopen(api_url) as response:
             data = json.loads(response.read().decode())
         
-        # Determine architecture
-        import platform
         is_64bit = platform.machine().endswith('64')
         arch_pattern = 'x64' if is_64bit else 'x86'
         
-        # Find the appropriate download URL
         for asset in data.get('assets', []):
             name = asset['name']
             if 'dll' in name.lower() and arch_pattern in name.lower() and name.endswith('.zip'):
                 return asset['browser_download_url'], data['tag_name']
         
-        # If no specific architecture found, try to find any dll zip
         for asset in data.get('assets', []):
             name = asset['name']
             if 'dll' in name.lower() and name.endswith('.zip'):
@@ -102,8 +97,7 @@ def download_nppexec():
     url, version = get_latest_nppexec_url()
     
     if not url:
-        print("Could not determine latest NppExec version, trying fallback...")
-        # Fallback to known working version
+        print("Using fallback NppExec version...")
         url = "https://github.com/d0vgan/nppexec/releases/download/v0.8.6/NppExec_0_8_6_dll_x64.zip"
         version = "v0.8.6"
     
@@ -114,7 +108,6 @@ def download_nppexec():
             return tmp_file.name
     except Exception as e:
         print(f"Failed to download NppExec: {e}")
-        # Try alternative URL for x86
         try:
             url = url.replace('x64', 'x86')
             with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as tmp_file:
@@ -130,32 +123,27 @@ def install_nppexec(npp_dir, zip_path):
         if not os.path.exists(plugins_dir):
             os.makedirs(plugins_dir)
         
-        # Extract the plugin
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            # Check if it's the new plugin structure (folder-based)
-            namelist = zip_ref.namelist()
-            if any("NppExec.dll" in name for name in namelist):
-                # Extract to plugins directory
-                zip_ref.extractall(plugins_dir)
-                print("NppExec plugin installed successfully!")
-                return True
+            zip_ref.extractall(plugins_dir)
+            print("✓ NppExec plugin installed successfully!")
+            return True
     except Exception as e:
         print(f"Failed to install NppExec: {e}")
+        return False
     finally:
-        # Clean up
         if os.path.exists(zip_path):
             os.unlink(zip_path)
-    
-    return False
 
 def find_python_executable():
     """Find Python executable path"""
-    # First, try the current Python interpreter
     python_exe = sys.executable
     if os.path.exists(python_exe):
         return python_exe
     
-    # Try common Python locations on Windows
+    python_in_path = shutil.which("python")
+    if python_in_path:
+        return python_in_path
+    
     possible_paths = [
         r"C:\Python311\python.exe",
         r"C:\Python310\python.exe",
@@ -171,175 +159,189 @@ def find_python_executable():
         r"C:\Program Files (x86)\Python38\python.exe",
     ]
     
-    # Check if python is in PATH
-    python_in_path = shutil.which("python")
-    if python_in_path:
-        possible_paths.insert(0, python_in_path)
-    
     for path in possible_paths:
         if os.path.exists(path):
             return path
     
     return None
 
-def save_nppexec_script(npp_dir, script_content):
-    """Save NppExec script to Notepad++ config"""
+def get_nppexec_config_path():
+    """Get NppExec configuration directory"""
+    appdata_path = os.path.expandvars(r"%APPDATA%\Notepad++\plugins\config\NppExec")
+    if not os.path.exists(appdata_path):
+        os.makedirs(appdata_path, exist_ok=True)
+    return appdata_path
+
+def save_nppexec_script(config_path, script_content):
+    """Save NppExec script to config directory"""
     try:
-        # Try to find NppExec config directory
-        config_paths = [
-            os.path.join(os.path.expandvars(r"%APPDATA%"), "Notepad++", "plugins", "config", "NppExec"),
-            os.path.join(npp_dir, "plugins", "config", "NppExec"),
-        ]
-        
-        for config_path in config_paths:
-            if os.path.exists(config_path):
-                script_file = os.path.join(config_path, "DaSQL.txt")
-                with open(script_file, 'w') as f:
-                    f.write(script_content)
-                print(f"NppExec script saved to: {script_file}")
-                return True
-        
-        # If config doesn't exist, create it
-        config_path = config_paths[0]
-        os.makedirs(config_path, exist_ok=True)
         script_file = os.path.join(config_path, "DaSQL.txt")
         with open(script_file, 'w') as f:
             f.write(script_content)
-        print(f"NppExec script saved to: {script_file}")
+        print(f"✓ NppExec script saved to: {script_file}")
         return True
     except Exception as e:
-        print(f"Could not save script automatically: {e}")
+        print(f"Could not save script: {e}")
+        return False
+
+def configure_nppexec_menu_item(config_path):
+    """Configure NppExec menu item for DaSQL script"""
+    try:
+        # Create nppexec_saved.txt file to store menu items
+        saved_file = os.path.join(config_path, "nppexec_saved.txt")
+        
+        # Read existing content if file exists
+        existing_content = ""
+        if os.path.exists(saved_file):
+            with open(saved_file, 'r') as f:
+                existing_content = f.read()
+        
+        # Check if DaSQL menu item already exists
+        if "DaSQL" not in existing_content:
+            # Add DaSQL menu item entry
+            menu_item = """
+[UserMenu]
+DaSQL :: DaSQL
+"""
+            updated_content = existing_content + menu_item
+            
+            with open(saved_file, 'w') as f:
+                f.write(updated_content)
+            
+            print("✓ DaSQL menu item configured in NppExec")
+            return True
+        else:
+            print("✓ DaSQL menu item already exists")
+            return True
+            
+    except Exception as e:
+        print(f"Could not configure NppExec menu item: {e}")
         return False
 
 def generate_nppexec_script(python_exe, dasql_dir):
     """Generate the NppExec script content"""
-    # Convert paths to use forward slashes for NppExec
     python_exe = python_exe.replace('\\', '\\\\')
     dasql_dir = dasql_dir.replace('\\', '\\\\')
     
     script = f"""//--------------------------------------------------
-// Notepad++ script to execute DaSQL commands
-//  -- Python detected at: {python_exe}
-//  -- DaSQL directory: {dasql_dir}
-//  -- Install NppExec Plugin (Plugins->Plugins Admin, search for NppExec, Install)
-//  -- Plugins->NppExec->No Internal Messages
-//  -- F6, paste the code below in the window. Save as DaSQL. Click OK
-//  -- Now you should be able to run queries by using CTRL+F6
-//--------------------------------------------------
-//----- Automatically generated paths ---------------
+// DaSQL execution script - Press F8 to run
 //--------------------------------------------------
 set local Python_Exe = {python_exe}
 set local DaSQL_Dir = {dasql_dir}
 //--------------------------------------------------
-//----- no need to change anything below -----------
-//--------------------------------------------------
-SCI_SENDMSG SCI_GETSELTEXT 0 @""
-set local F = $(MSG_LPARAM)
-if "$(F)" == "" GOTO NOSELECTION
+SCI_SENDMSG SCI_GETSELECTION
+set local sel_start = $(MSG_WPARAM)
+set local sel_end = $(MSG_LPARAM)
+if $(sel_start) == $(sel_end) GOTO NOSELECTION
 GOTO SELECTION
 :SELECTION
+SCI_SENDMSG SCI_GETSELTEXT 0 @""
+set local F = $(MSG_LPARAM)
 set sourcefile = $(SYS.TEMP)\\$(NAME_PART).source_tmp
 sel_saveto "$(sourcefile)" :a
-$(Python_Exe) $(DaSQL_Dir)\\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(sourcefile)"
+$(Python_Exe) "$(DaSQL_Dir)\\dasql.py" "$(NAME_PART)" "$(SYS.TEMP)" "$(sourcefile)"
 cmd /c del /f /q "$(sourcefile)"
 GOTO FINISH
 :NOSELECTION
-$(Python_Exe) $(DaSQL_Dir)\\dasql.py "$(NAME_PART)" "$(SYS.TEMP)" "$(CURRENT_LINESTR)"
+$(Python_Exe) "$(DaSQL_Dir)\\dasql.py" "$(NAME_PART)" "$(SYS.TEMP)" "$(CURRENT_LINESTR)"
 GOTO FINISH
 :FINISH"""
     
     return script
 
+def close_notepad_plus_plus():
+    """Close Notepad++ if it's running"""
+    try:
+        subprocess.run(['taskkill', '/F', '/IM', 'notepad++.exe'], 
+                      capture_output=True, check=False)
+        time.sleep(1)
+        return True
+    except:
+        return False
+
 def main():
-    print("DaSQL Notepad++ Integration Setup")
+    print("DaSQL Notepad++ Auto-Installer")
     print("=" * 50)
     
-    # Check if running on Windows
     if sys.platform != "win32":
-        print("ERROR: This script is designed for Windows only!")
+        print("ERROR: This script requires Windows!")
         sys.exit(1)
     
-    # Get current directory (where script is run from)
+    # Get current directory
     dasql_dir = os.getcwd()
     
-    # Find Python executable
+    # Find Python
     python_exe = find_python_executable()
-    
     if not python_exe:
-        print("ERROR: Could not find Python installation!")
-        print("Please ensure Python is installed and in your PATH")
+        print("ERROR: Python not found!")
         sys.exit(1)
     
-    print(f"✓ Python found: {python_exe}")
+    print(f"✓ Python: {python_exe}")
     
-    # Check if dasql.py exists in current directory
-    dasql_script = os.path.join(dasql_dir, "dasql.py")
-    if not os.path.exists(dasql_script):
+    # Check for dasql.py
+    if not os.path.exists(os.path.join(dasql_dir, "dasql.py")):
         print(f"WARNING: dasql.py not found in {dasql_dir}")
-        print("Make sure you're running this script from the DaSQL directory")
     else:
         print(f"✓ DaSQL directory: {dasql_dir}")
     
     # Find Notepad++
     npp_dir = find_notepad_plus_plus()
     if not npp_dir:
-        print("\n✗ Notepad++ not found!")
-        print("Please install Notepad++ from https://notepad-plus-plus.org/")
-    else:
-        print(f"✓ Notepad++ found: {npp_dir}")
-        
-        # Check if NppExec is installed
-        if not check_nppexec_installed(npp_dir):
-            print("\n✗ NppExec plugin not found")
-            
-            # Ask user if they want to install it
-            response = input("Would you like to install NppExec plugin automatically? (y/n): ")
-            if response.lower() == 'y':
-                zip_path = download_nppexec()
-                if zip_path and install_nppexec(npp_dir, zip_path):
-                    print("✓ NppExec plugin installed!")
-                    print("NOTE: You may need to restart Notepad++ for the plugin to be recognized.")
-                else:
-                    print("Failed to install NppExec automatically.")
-                    print("Please install it manually via Plugins -> Plugins Admin in Notepad++")
-        else:
-            print("✓ NppExec plugin is already installed")
+        print("ERROR: Notepad++ not found!")
+        print("Please install Notepad++ first.")
+        sys.exit(1)
     
-    # Generate the script
+    print(f"✓ Notepad++: {npp_dir}")
+    
+    # Close Notepad++ if running
+    print("Closing Notepad++ if running...")
+    close_notepad_plus_plus()
+    
+    # Install NppExec if needed
+    if not check_nppexec_installed(npp_dir):
+        print("Installing NppExec plugin...")
+        zip_path = download_nppexec()
+        if zip_path and install_nppexec(npp_dir, zip_path):
+            print("✓ NppExec installed!")
+        else:
+            print("ERROR: Failed to install NppExec!")
+            sys.exit(1)
+    else:
+        print("✓ NppExec already installed")
+    
+    # Generate and save script
     nppexec_script = generate_nppexec_script(python_exe, dasql_dir)
+    config_path = get_nppexec_config_path()
     
-    # Save to file
-    output_file = "nppexec_dasql_config.txt"
-    with open(output_file, 'w') as f:
-        f.write(nppexec_script)
+    if not save_nppexec_script(config_path, nppexec_script):
+        print("ERROR: Could not save NppExec script!")
+        sys.exit(1)
     
-    print(f"\n✓ Configuration saved to: {output_file}")
+    # Configure menu item
+    configure_nppexec_menu_item(config_path)
     
-    # Try to save directly to NppExec config
-    if npp_dir and check_nppexec_installed(npp_dir):
-        if save_nppexec_script(npp_dir, nppexec_script):
-            print("\n✓ Script automatically saved to NppExec config!")
-            print("\nFinal steps:")
-            print("1. Open/Restart Notepad++")
-            print("2. Go to Plugins -> NppExec -> Execute... (or press F6)")
-            print("3. Select 'DaSQL' from the dropdown (if available)")
-            print("4. Or paste the script from nppexec_dasql_config.txt")
-            print("5. Save as 'DaSQL' and click OK")
-            print("6. Use Ctrl+F6 to run DaSQL queries")
-        else:
-            print("\nManual configuration required:")
-            print("1. Open Notepad++")
-            print("2. Press F6 to open Execute dialog")
-            print(f"3. Copy contents of {output_file} and paste")
-            print("4. Save as 'DaSQL' and click OK")
-            print("5. Use Ctrl+F6 to run DaSQL queries")
-    else:
-        print("\nManual steps required:")
-        print("1. Install Notepad++ if not already installed")
-        print("2. Install NppExec plugin (Plugins -> Plugins Admin)")
-        print("3. Press F6 and paste the configuration")
-        print("4. Save as 'DaSQL'")
-        print("5. Use Ctrl+F6 to run DaSQL queries")
+    print("\n" + "=" * 50)
+    print("✓ Installation complete!")
+    print("=" * 50)
+    print("IMPORTANT: FOLLOW THESE TO COMPLETE - This sets F8 as the key to run:")
+    print("1. Open Notepad++")
+    print("2. Go to Plugins → NppExec → Advanced Options")
+    print("3. In the 'Menu Items' section:")
+    print("   - Item name: DaSQL")
+    print("   - Associated script: DaSQL")
+    print("   - Click 'Add/Modify'")
+    print("   - Click 'OK'")
+    print("4. Restart Notepad++")
+    print("5. Go to Settings → Shortcut Mapper → Plugin commands")
+    print("6. Find 'DaSQL' in the list")
+    print("7. Double-click and set shortcut to F8")
+    print("8. It will turn red if there are conficts. If so, look for F8 elsewhere and change to a different key")
+    print("9. Now F8 will execute DaSQL queries!")
+    print("\nUsage:")
+    print("- Select text and press F8 to run selection")
+    print("- Place cursor on line and press F8 to run that line")
+    print("\nNote: Due to NppExec plugin limitations, the shortcut")
+    print("must be configured manually through the GUI.")
 
 if __name__ == "__main__":
     main()
