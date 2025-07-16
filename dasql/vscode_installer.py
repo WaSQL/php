@@ -157,12 +157,12 @@ def createTasksJson(working_dir):
                     "isDefault": True
                 },
                 "presentation": {
-                    "echo": True,
+                    "echo": False,
                     "reveal": "always",
                     "focus": False,
                     "panel": "shared",
-                    "showReuseMessage": True,
-                    "clear": False
+                    "showReuseMessage": False,
+                    "clear": True
                 },
                 "problemMatcher": []
             },
@@ -181,12 +181,12 @@ def createTasksJson(working_dir):
                 },
                 "group": "build",
                 "presentation": {
-                    "echo": True,
+                    "echo": False,
                     "reveal": "always",
                     "focus": False,
                     "panel": "shared",
-                    "showReuseMessage": True,
-                    "clear": False
+                    "showReuseMessage": False,
+                    "clear": True
                 },
                 "problemMatcher": []
             },
@@ -205,12 +205,12 @@ def createTasksJson(working_dir):
                 },
                 "group": "build",
                 "presentation": {
-                    "echo": True,
+                    "echo": False,
                     "reveal": "always",
                     "focus": False,
                     "panel": "shared",
-                    "showReuseMessage": True,
-                    "clear": False
+                    "showReuseMessage": False,
+                    "clear": True
                 },
                 "problemMatcher": []
             }
