@@ -1259,12 +1259,8 @@ function postgresqlDBConnect(){
 		$err=$e->getMessage();
 		restore_error_handler();
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 2 seconds" . printValue($params));
-	}
-	restore_error_handler();
-	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
-		//try one more time after a couple of seconds
-		sleep(2);
+		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 10 seconds" . printValue($params));
+		sleep(10);
 		set_error_handler('postgresExceptionErrorHandler');
 		try{
 			$dbh_postgresql = pg_connect($params['-connect']);
@@ -1273,11 +1269,21 @@ function postgresqlDBConnect(){
 			$err=$e->getMessage();
 			restore_error_handler();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-			debugValue("postgresqlDBConnect retry exception : {$err}" . printValue($params));
+			debugValue("postgresqlDBConnect exception: {$err}. Will retry in 60 seconds" . printValue($params));
+			sleep(60);
+			set_error_handler('postgresExceptionErrorHandler');
+			try{
+				$dbh_postgresql = pg_connect($params['-connect']);
+			}
+			catch (Exception $e) {
+				$err=$e->getMessage();
+				restore_error_handler();
+				$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
+				debugValue("postgresqlDBConnect Failed after 3 tries : {$err}" . printValue($params));
+			}
 		}
-		restore_error_handler();
 	}
-
+	restore_error_handler();
 	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
 		return '';
 	}
