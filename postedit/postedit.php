@@ -1,11 +1,13 @@
 <?php
 /*
-	replacement for posteditd.pl to handle secure sites
-	for sublime: subl --add
-	for notepad++: notepad++ -openFoldersAsWorkspace
-	Process:
-		get host based on alias passed in
-		get records from server
+	PostEDIT - WaSQL companion app to 
+		- pull down db changes locally, 
+		- monitor local files, 
+		- update db records
+	USAGE:
+		In the backend of WaSQL select postEdit in the User menu can copy tag
+		add to postedit.xml - the alias name is what you use to call that site
+		in a command prompt type: p {alias} where alias is the name in your tag
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
 if(!isset($argv[1]) || in_array($argv[1],array('?','--help'))){
