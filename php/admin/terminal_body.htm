@@ -6,7 +6,7 @@
 			<input type="hidden" name="_menu" value="terminal" />
 			<div style="display:inline-flex;align-items: stretch;flex-direction: row;width:100%;z-index: 9950;">
 				<div style="flex-grow:10">
-					<input autocomplete="off" type="text" autofocus="autofocus" onfocus="this.select();" name="cmd" class="input browser-default" value="" placeholder="enter command here" required="required">
+					<input autocomplete="off" type="text" autofocus="autofocus" onfocus="this.select();" name="cmd" list="cmdDatalist" class="input browser-default" value="" placeholder="enter command here" required="required">
 				</div>
 				<div style="flex-grow:4;margin-left:5px;">
 					<input type="text" onfocus="this.select();" name="dir" list="dirs" class="input browser-default" value="" placeholder="directory (optional)">
@@ -15,6 +15,12 @@
 			</div>
 		</form>
 		<div id="stdout"  style="margin:5px 0 0 0 !important;font-size:0.9em;padding:5px;background:#282923;color:#f8f8f2;min-height:300px;max-height:80vh;overflow:auto;width:100%;z-index: 9999;">
+			<datalist id="cmdDatalist">
+				<view:datalist>
+	            <option value="<?=$rec['cmd'];?>"><?=$rec['cmd'];?></option>
+	        	</view:datalist>
+	        	<?=renderEach('datalist',$drecs,'rec');?>
+	        </datalist>
 		</div>
 	</div>
 </div>
@@ -32,19 +38,12 @@
 		<?=nl2br($out['stderr']);?>
 	</div>
 
-
-	<datalist id="cmds">
-		<view:command>
-		<option><?=$command;?></option>
-		</view:command>
-		<?=renderEach('command',$_SESSION['terminal_commands'],'command');?>
-	</datalist>
-	<datalist id="dirs">
-		<view:dir>
-		<option><?=$dir;?></option>
-		</view:dir>
-		<?=renderEach('dir',$_SESSION['terminal_dirs'],'dir');?>
-	</datalist>
+	<datalist id="cmdDatalist">
+		<view:datalist>
+        <option value="<?=$rec['cmd'];?>"><?=$rec['cmd'];?></option>
+    	</view:datalist>
+    	<?=renderEach('datalist',$drecs,'rec');?>
+    </datalist>
 </view:results>
 
 <view:error>

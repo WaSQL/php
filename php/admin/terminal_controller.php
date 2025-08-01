@@ -4,21 +4,22 @@
 	if(isset($_REQUEST['cmd'])){
 		$cmd=$_REQUEST['cmd'];
 		if(isset($_REQUEST['dir']) && strlen($_REQUEST['dir'])){
-			$dir=$_REQUEST['dir'];
-			$out=cmdResults($cmd,'',$dir);
-			if(!in_array($dir,$_SESSION['terminal_dirs'])){
-				$_SESSION['terminal_dirs'][]=$dir;
-			}
+			$cmd_dir=$_REQUEST['dir'];
+			$out=cmdResults($cmd,'',$cmd_dir);
+			$ok=terminalAddHistory($cmd,$cmd_dir);
 		}
 		else{
 			$out=cmdResults($cmd);
+			$ok=terminalAddHistory($cmd,'');
 		}
-		if(!in_array($cmd,$_SESSION['terminal_commands'])){
-			$_SESSION['terminal_commands'][]=$cmd;
-		}
+		$drecs=terminalGetHistory();
 		setView('results',1);
 		return;
 	}
-	$_SESSION['terminal_commands']=array();
+	$drecs=terminalGetHistory();
+	if(!isset($_SESSION['terminal_tablecheck'])){
+		$_SESSION['terminal_tablecheck']=1;
+		$ok=terminalTableCheck();
+	}
 	setView('default',1);
 ?>
