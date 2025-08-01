@@ -398,7 +398,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_markers':
 			$fields['problem']=databaseDataType('varchar(500)')." NULL";
 			$fields['solution']=databaseDataType('varchar(1000)')." NULL";
@@ -418,7 +418,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_forms':
 			$fields['email']=databaseDataType('varchar(255)')." NULL";
 			$fields['_formname']=databaseDataType('varchar(100)')." NOT NULL";
@@ -436,7 +436,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_history':
 			$fields['action']=databaseDataType('varchar(5)')." NULL";
 			$fields['page_id']=databaseDataType('integer')." NULL";
@@ -455,7 +455,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_minify':
 			$fields['_cuser']=databaseDataType('integer')." NOT NULL Default 0";
 			$fields['name']=databaseDataType('varchar(100)')." NOT NULL";
@@ -471,7 +471,16 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
+		case '_terminal':
+			$fields['cmd']=databaseDataType('varchar(255)')." NOT NULL";
+			$fields['cmd_dir']=databaseDataType('varchar(255)')." NULL";
+			$ok = createDBTable($table,$fields,'InnoDB');
+			if($ok != 1){break;}
+			//use an index to only store last result for each command per user
+			$ok=addDBIndex(array('-table'=>$table,'-fields'=>"_cuser,cmd",'-unique'=>true));
+			return 1;
+		break;
 		case '_triggers':
 			$fields['name']=databaseDataType('varchar(100)')." NOT NULL UNIQUE";
 			$fields['mtype']=databaseDataType('integer(1)')." NOT NULL Default 1";
@@ -488,7 +497,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_pages':
 			/*other possible fields
 				sync tinyint(1) NOT NULL Default 1 - if not checked then do not sync
@@ -539,7 +548,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_queries':
 			$fields['run_length']=databaseDataType('float(8,3)')." NOT NULL Default 0.000";
 			$fields['query']="text NULL";
@@ -572,7 +581,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_wpass':
 			$fields['title']=databaseDataType('varchar(100)')." NOT NULL";
 			$fields['category']=databaseDataType('varchar(50)')." NOT NULL";
@@ -599,7 +608,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_sessions':
 			$fields['session_id']=databaseDataType('varchar(40)')." NOT NULL UNIQUE";
 			$fields['session_data']=databaseDataType('mediumtext')." NULL";
@@ -623,7 +632,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_tabledata':
 			$fields['formfields']="text NULL";
 			$fields['formfields_mod']="text NULL";
@@ -728,7 +737,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_templates':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
 			$fields['_aip']=databaseDataType('varchar(45)')." NULL";
@@ -755,7 +764,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_settings':
 			$fields['key_name']=databaseDataType('varchar(25)')." NOT NULL";
 			$fields['key_value']=databaseDataType('varchar(5000)')." NULL";
@@ -787,7 +796,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_synchronize':
 			//sync_action,diff_table,diff_id,sync_items
 			$fields['tablename']=databaseDataType('varchar(100)')." NOT NULL";
@@ -804,7 +813,7 @@ function createWasqlTable($table=''){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
 			return 1;
-			break;
+		break;
 		case '_users':
 			$fields['_adate']=databaseDataType('datetime')." NULL";
 			$fields['_apage']=databaseDataType('integer')." NULL";
@@ -860,7 +869,7 @@ function createWasqlTable($table=''){
 			if(is_file("{$progpath}/schema/{$table}.csv")){
 				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
 			}
-			return 1;
+		return 1;
 		break;
 		case '_docs':
 			$fields['afile']=databaseDataType('varchar(255)')." NOT NULL";
