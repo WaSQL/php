@@ -53,13 +53,16 @@
 			<span class="icon-program-nodejs w_pointer" title="NodeJs" style="margin-left:10px;" onclick="codepromptSetLang('node')"></span>
 			<span class="icon-program-lua w_pointer" title="Lua" style="margin-left:10px;" onclick="codepromptSetLang('lua')"></span>
 	</h2>
-	<form method="post" action="<?=$CONFIG['codeprompt_path'];?>" name="codeprompt" onsubmit="return codepromptSubmit(this);">
+	<form method="post" action="<?=$CONFIG['codeprompt_path'];?>" data-setprocessing="codeprompt_processing" name="codeprompt" onsubmit="return codepromptSubmit(this);">
 		<input type="hidden" name="_menu" value="codeprompt">
 		<input type="hidden" name="func" value="code">
 		<input type="hidden" name="code_select" value="">
 		<textarea class="form-control" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;padding:10px;" placeholder="Code" id="code_full" name="code_full"><?=codepromptGetValue();?></textarea>
 		<div class="w_padtop" style="display:flex;justify-content: space-between;">
-			<button type="submit" onclick="codepromptSetFunc('code');" class="btn w_blue"><wtranslate>Run Input Contents</wtranslate></button>
+			<div style="display:flex;">
+				<button style="align-self:center;" type="submit" onclick="codepromptSetFunc('code');" class="btn w_blue"><wtranslate>Run Input Contents</wtranslate></button>
+				<div  style="margin-left:15px;align-self:center;" id="codeprompt_processing"></div>
+			</div>
 			<div>
 				<button type="submit" onclick="codepromptSetFunc('code_prompt_load');" class="btn w_yellow"><wtranslate>Load Code Prompt</wtranslate></button>
 			</div>
