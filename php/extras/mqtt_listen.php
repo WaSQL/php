@@ -4,8 +4,8 @@ loadExtras('mqtt');
 
 // Get topic from CLI argument
 if ($argc < 2) {
-    echo "Usage: php fmq_listen.php <topic>\n";
-    echo "Example: php fmq_listen.php dstdb\n";
+    echo "Usage: php mqtt_listen.php <topic>\n";
+    echo "Example: php mqtt_listen.php dstdb\n";
     exit(1);
 }
 

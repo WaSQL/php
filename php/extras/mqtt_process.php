@@ -3,8 +3,8 @@ include_once('common.php');
 
 // Get topic from CLI argument
 if ($argc < 2) {
-    echo "Usage: php fmq_process.php <topic> [batch_size] [sleep_seconds]\n";
-    echo "Example: php fmq_process.php dstdb 10 1\n";
+    echo "Usage: php mqtt_process.php <topic> [batch_size] [sleep_seconds]\n";
+    echo "Example: php mqtt_process.php dstdb 10 1\n";
     exit(1);
 }
 

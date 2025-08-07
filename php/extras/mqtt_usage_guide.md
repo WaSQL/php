@@ -7,13 +7,13 @@ This system provides a robust, production-ready MQTT message processing architec
 ## Architecture
 
 ```
-MQTT Broker → fmq_listen.php → SQLite Queue → fmq_process.php → Your Processing Logic
+MQTT Broker → mqtt_listen.php → SQLite Queue → mqtt_process.php → Your Processing Logic
 ```
 
 ### Components
 
-- **fmq_listen.php**: Fast MQTT message capture daemon
-- **fmq_process.php**: Message processing worker
+- **mqtt_listen.php**: Fast MQTT message capture daemon
+- **mqtt_process.php**: Message processing worker
 - **SQLite Database**: Reliable message queue with per-topic tables
 
 ## Features
@@ -30,26 +30,26 @@ MQTT Broker → fmq_listen.php → SQLite Queue → fmq_process.php → Your Pro
 
 ```bash
 # Listen to a specific MQTT topic
-php fmq_listen.php <topic>
+php mqtt_listen.php <topic>
 
 # Example: Listen to database change events
-php fmq_listen.php dstdb
+php mqtt_listen.php dstdb
 ```
 
 ### 2. Start Message Processor
 
 ```bash
 # Process messages with default settings (10 msgs/batch, 1s sleep)
-php fmq_process.php <topic>
+php mqtt_process.php <topic>
 
 # Example: Process database changes
-php fmq_process.php dstdb
+php mqtt_process.php dstdb
 
 # Custom batch size and sleep interval
-php fmq_process.php <topic> <batch_size> <sleep_seconds>
+php mqtt_process.php <topic> <batch_size> <sleep_seconds>
 
 # Example: Process 50 messages per batch, sleep 2 seconds between batches
-php fmq_process.php dstdb 50 2
+php mqtt_process.php dstdb 50 2
 ```
 
 ## Advanced Usage
@@ -60,18 +60,18 @@ Run separate processes for different topics:
 
 ```bash
 # Terminal 1: Listen to database events
-php fmq_listen.php dstdb
+php mqtt_listen.php dstdb
 
 # Terminal 2: Listen to sensor data  
-php fmq_listen.php sensor/temperature
+php mqtt_listen.php sensor/temperature
 
 # Terminal 3: Listen to alerts
-php fmq_listen.php alerts/critical
+php mqtt_listen.php alerts/critical
 
 # Process each topic separately
-php fmq_process.php dstdb 20 1
-php fmq_process.php sensor/temperature 100 0.5  
-php fmq_process.php alerts/critical 5 0
+php mqtt_process.php dstdb 20 1
+php mqtt_process.php sensor/temperature 100 0.5  
+php mqtt_process.php alerts/critical 5 0
 ```
 
 ### High-Volume Processing
@@ -80,12 +80,12 @@ For high-throughput scenarios:
 
 ```bash
 # Fast listener (no processing delay)
-php fmq_listen.php high_volume_topic
+php mqtt_listen.php high_volume_topic
 
 # Multiple processors for parallel processing
-php fmq_process.php high_volume_topic 100 0 &  # Process 1
-php fmq_process.php high_volume_topic 100 0 &  # Process 2  
-php fmq_process.php high_volume_topic 100 0 &  # Process 3
+php mqtt_process.php high_volume_topic 100 0 &  # Process 1
+php mqtt_process.php high_volume_topic 100 0 &  # Process 2  
+php mqtt_process.php high_volume_topic 100 0 &  # Process 3
 ```
 
 ### Production Deployment
@@ -95,7 +95,7 @@ Use process managers like systemd or supervisor:
 ```ini
 # /etc/supervisor/conf.d/mqtt_listener.conf
 [program:mqtt_dstdb_listener]
-command=php /path/to/fmq_listen.php dstdb
+command=php /path/to/mqtt_listen.php dstdb
 directory=/path/to/project
 user=www-data
 autostart=true
@@ -104,7 +104,7 @@ stderr_logfile=/var/log/mqtt_dstdb_listener.err.log
 stdout_logfile=/var/log/mqtt_dstdb_listener.out.log
 
 [program:mqtt_dstdb_processor]
-command=php /path/to/fmq_process.php dstdb 25 1
+command=php /path/to/mqtt_process.php dstdb 25 1
 directory=/path/to/project  
 user=www-data
 autostart=true
@@ -117,7 +117,7 @@ stdout_logfile=/var/log/mqtt_dstdb_processor.out.log
 
 ### MQTT Connection
 
-Edit connection details in `fmq_listen.php`:
+Edit connection details in `mqtt_listen.php`:
 
 ```php
 $mqtt->setConfig('your-mqtt-broker.com', 'username', 'password', 1883);
@@ -133,7 +133,7 @@ The SQLite database is created as `mqtt_queue.db` in the script directory. Each 
 
 ### Processing Logic
 
-Customize the `processMessage()` function in `fmq_process.php` for your specific needs:
+Customize the `processMessage()` function in `mqtt_process.php` for your specific needs:
 
 ```php
 function processMessage($msg, $logPrefix) {
