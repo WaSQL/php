@@ -635,4 +635,240 @@ function amazonGetDocument($docid,$params=array()){
 
 	return $rtn;
 	}
+//----------------------------------------------------------
+
+/**
+ * Sends SMS message using AWS SNS via cURL with Signature Version 4
+ * 
+ * @param string $message SMS message content
+ * @param array $awsConfig AWS configuration array with keys: accessKey, secretKey, region, phoneNumber
+ * @return string AWS SNS response
+ * @throws Exception If SMS sending fails
+ */
+function amazonSMSSendSMSWithCurl($message, $awsConfig) {
+    $service = 'sns';
+    $region = $awsConfig['region'];
+    $host = $service . '.' . $region . '.amazonaws.com';
+    $endpoint = 'https://' . $host . '/';
+    
+    // Request body for SNS Publish
+    $requestBody = http_build_query([
+        'Action' => 'Publish',
+        'Message' => $message,
+        'PhoneNumber' => $awsConfig['phoneNumber'],
+        'Version' => '2010-03-31'
+    ]);
+    
+    // Create AWS Signature Version 4
+    $signature = amazonSMSCreateAWSSignatureV4($requestBody, $awsConfig, $host, $service);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $endpoint);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBody);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/x-www-form-urlencoded',
+        'Host: ' . $host,
+        'X-Amz-Date: ' . $signature['amzDate'],
+        'Authorization: ' . $signature['authHeader']
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode !== 200) {
+        throw new Exception('SMS send failed: ' . $httpCode . ' - ' . $response);
+    }
+    
+    echo "SMS sent successfully!\n";
+    return $response;
+}
+
+/**
+ * Creates AWS Signature Version 4 for SNS API requests
+ * 
+ * @param string $requestBody The HTTP request body
+ * @param array $awsConfig AWS configuration array with keys: accessKey, secretKey, region
+ * @param string $host AWS service host
+ * @param string $service AWS service name (sns)
+ * @return array Array with authHeader and amzDate keys
+ */
+function amazonSMSCreateAWSSignatureV4($requestBody, $awsConfig, $host, $service) {
+    $accessKey = $awsConfig['accessKey'];
+    $secretKey = $awsConfig['secretKey'];
+    $region = $awsConfig['region'];
+    
+    // Create timestamp
+    $timestamp = gmdate('Ymd\THis\Z');
+    $dateStamp = gmdate('Ymd');
+    
+    // Step 1: Create canonical request
+    $method = 'POST';
+    $canonicalUri = '/';
+    $canonicalQueryString = '';
+    
+    // Canonical headers
+    $canonicalHeaders = "content-type:application/x-www-form-urlencoded\n";
+    $canonicalHeaders .= "host:" . $host . "\n";
+    $canonicalHeaders .= "x-amz-date:" . $timestamp . "\n";
+    
+    $signedHeaders = 'content-type;host;x-amz-date';
+    
+    // Create payload hash
+    $payloadHash = hash('sha256', $requestBody);
+    
+    // Create canonical request
+    $canonicalRequest = $method . "\n" . $canonicalUri . "\n" . $canonicalQueryString . "\n" . 
+                       $canonicalHeaders . "\n" . $signedHeaders . "\n" . $payloadHash;
+    
+    // Step 2: Create string to sign
+    $algorithm = 'AWS4-HMAC-SHA256';
+    $credentialScope = $dateStamp . '/' . $region . '/' . $service . '/aws4_request';
+    $stringToSign = $algorithm . "\n" . $timestamp . "\n" . $credentialScope . "\n" . 
+                   hash('sha256', $canonicalRequest);
+    
+    // Step 3: Calculate signature
+    $signingKey = amazonSMSGetSignatureKey($secretKey, $dateStamp, $region, $service);
+    $signature = hash_hmac('sha256', $stringToSign, $signingKey);
+    
+    // Step 4: Create authorization header
+    $authorizationHeader = $algorithm . ' ' . 'Credential=' . $accessKey . '/' . $credentialScope . ', ' .
+                          'SignedHeaders=' . $signedHeaders . ', ' . 'Signature=' . $signature;
+    
+    return [
+        'authHeader' => $authorizationHeader,
+        'amzDate' => $timestamp
+    ];
+}
+
+/**
+ * Derives AWS signing key for Signature Version 4
+ * 
+ * @param string $key AWS secret access key
+ * @param string $dateStamp Date in YYYYMMDD format
+ * @param string $regionName AWS region name
+ * @param string $serviceName AWS service name
+ * @return string Binary signing key
+ */
+function amazonSMSGetSignatureKey($key, $dateStamp, $regionName, $serviceName) {
+    $kDate = hash_hmac('sha256', $dateStamp, 'AWS4' . $key, true);
+    $kRegion = hash_hmac('sha256', $regionName, $kDate, true);
+    $kService = hash_hmac('sha256', $serviceName, $kRegion, true);
+    $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
+    return $kSigning;
+}
+
+function amazonSendTextMsg($phone, $message) {
+    global $CONFIG;
+    $region = 'us-east-1';
+    $service = 'sns';
+    $host = "sns.{$region}.amazonaws.com";
+    
+    $accessKey = $CONFIG['aws_accesskey'];
+    $secretKey = $CONFIG['aws_secretkey'];
+    //echo "access:{$accessKey}, secret:{$secretKey}<br>".PHP_EOL;
+    // Debug: Check credentials
+    if (empty($accessKey) || empty($secretKey)) {
+    	$result = [
+			'status'=>'failed',
+			'phone_number'=>$phone,
+			'_cdate'=>date('Y-m-d H:i:s'),
+		    'response' => "missing credentials"
+		];
+		return $result;
+    }
+    
+    $endpoint = "https://{$host}/";
+    $method = 'POST';
+    $timestamp = gmdate('Ymd\THis\Z');
+    $date = gmdate('Ymd');
+    
+    $params = [
+        'Action' => 'Publish',
+        'PhoneNumber' => $phone,
+        'Message' => $message,
+        'Version' => '2010-03-31'
+    ];
+    ksort($params);  // Sort parameters alphabetically
+    $queryString = http_build_query($params);
+    
+    $canonicalHeaders = "host:{$host}\nx-amz-date:{$timestamp}\n";
+    $signedHeaders = 'host;x-amz-date';
+    $payloadHash = hash('sha256', $queryString);  // Hash the POST body
+	$canonicalRequest = "{$method}\n/\n\n{$canonicalHeaders}\n{$signedHeaders}\n{$payloadHash}";
+    
+    $credentialScope = "$date/$region/$service/aws4_request";
+    $stringToSign = "AWS4-HMAC-SHA256\n{$timestamp}\n{$credentialScope}\n" . hash('sha256', $canonicalRequest);
+    
+    $kDate = hash_hmac('sha256', $date, "AWS4{$secretKey}", true);
+    $kRegion = hash_hmac('sha256', $region, $kDate, true);
+    $kService = hash_hmac('sha256', $service, $kRegion, true);
+    $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
+    $signature = hash_hmac('sha256', $stringToSign, $kSigning);
+    
+    $authorization = "AWS4-HMAC-SHA256 Credential={$accessKey}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
+    $epath=getWasqlPath('php/extras');
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $endpoint,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $queryString,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CAINFO => "{$epath}/cacert.pem",
+        CURLOPT_HTTPHEADER => [
+            'Authorization: ' . $authorization,
+            'Content-Type: application/x-www-form-urlencoded; charset=utf-8',
+            'X-Amz-Date: ' . $timestamp,
+            'Host: ' . $host
+        ]
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+    
+    // Debug: Log response details
+    //amazonErrorLog("AWS SMS Debug: HTTP Code: $httpCode");
+    if ($curlError) {
+        //amazonErrorLog("AWS SMS Debug: cURL Error: $curlError");
+    }
+    //amazonErrorLog("AWS SMS Debug: Response: " . substr($response, 0, 500));
+    
+    if ($httpCode !== 200) {
+	    $result = [
+			'status'=>'failed',
+			'phone_number'=>$phone,
+			'_cdate'=>date('Y-m-d H:i:s'),
+		    'response' => $response
+		];
+		return $result;
+	}
+
+	// Parse XML response
+	$xml = simplexml_load_string($response);
+	if ($xml === false) {
+		$result = [
+			'status'=>'failed',
+			'phone_number'=>$phone,
+			'_cdate'=>date('Y-m-d H:i:s'),
+		    'response' => $response
+		];
+		return $result;
+	}
+
+	// Extract data from XML
+	$result = [
+		'status'=>'success',
+		'phone_number'=>$phone,
+		'_cdate'=>date('Y-m-d H:i:s'),
+	    'message_id' => (string)$xml->PublishResult->MessageId,
+	    'request_id' => (string)$xml->ResponseMetadata->RequestId
+	];
+
+	return $result;
+}
 ?>
