@@ -10,6 +10,7 @@ import json
 import re
 import csv
 import markdown
+import codecs
 from requests.packages import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #import the daSQL functions so we can call them as df.{function_name}
@@ -20,6 +21,9 @@ import dasql_functions as df
 if len(sys.argv) < 3:
     print("No arguments provided. Please provide at least one argument.")
     sys.exit(1)
+
+# Set stdout to use UTF-8 encoding
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 # Get the script directory and construct the INI file path
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
