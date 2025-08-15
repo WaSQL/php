@@ -834,7 +834,7 @@ function amazonSendTextMsg($phone, $message) {
     if ($httpCode == 200) {
         $xml = simplexml_load_string($response);
         $result = [
-            'status' => 'success',
+            'status' => 'SUCCESS',
             'phone_number' => $phone,
             '_cdate' => date('Y-m-d H:i:s'),
             'message_id' => (string)$xml->PublishResult->MessageId,
@@ -843,7 +843,7 @@ function amazonSendTextMsg($phone, $message) {
         return $result;
     } else {
         $result = [
-            'status' => 'failed',
+            'status' => 'FAILED',
             'phone_number' => $phone,
             '_cdate' => date('Y-m-d H:i:s'),
             'response' => $response,
