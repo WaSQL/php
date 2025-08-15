@@ -763,112 +763,95 @@ function amazonSMSGetSignatureKey($key, $dateStamp, $regionName, $serviceName) {
 
 function amazonSendTextMsg($phone, $message) {
     global $CONFIG;
-    $region = 'us-east-1';
     $service = 'sns';
     $host = "sns.{$region}.amazonaws.com";
-    
-    $accessKey = $CONFIG['aws_accesskey'];
-    $secretKey = $CONFIG['aws_secretkey'];
-    //echo "access:{$accessKey}, secret:{$secretKey}<br>".PHP_EOL;
-    // Debug: Check credentials
-    if (empty($accessKey) || empty($secretKey)) {
-    	$result = [
-			'status'=>'failed',
-			'phone_number'=>$phone,
-			'_cdate'=>date('Y-m-d H:i:s'),
-		    'response' => "missing credentials"
-		];
-		return $result;
-    }
-    
-    $endpoint = "https://{$host}/";
+
+    // Trim credentials to remove hidden characters
+    $accessKey = trim($CONFIG['aws_accesskey']);
+    $secretKey = trim($CONFIG['aws_secretkey']);
+    $region=commonCoalesce($CONFIG['aws_region'],'us-east-1');
+
     $method = 'POST';
-    $timestamp = gmdate('Ymd\THis\Z');
-    $date = gmdate('Ymd');
-    
-    $params = [
-        'Action' => 'Publish',
-        'PhoneNumber' => $phone,
-        'Message' => $message,
-        'Version' => '2010-03-31'
-    ];
-    ksort($params);  // Sort parameters alphabetically
-    $queryString = http_build_query($params);
-    
-    $canonicalHeaders = "host:{$host}\nx-amz-date:{$timestamp}\n";
-    $signedHeaders = 'host;x-amz-date';
-    $payloadHash = hash('sha256', $queryString);  // Hash the POST body
-	$canonicalRequest = "{$method}\n/\n\n{$canonicalHeaders}\n{$signedHeaders}\n{$payloadHash}";
-    
-    $credentialScope = "$date/$region/$service/aws4_request";
-    $stringToSign = "AWS4-HMAC-SHA256\n{$timestamp}\n{$credentialScope}\n" . hash('sha256', $canonicalRequest);
-    
-    $kDate = hash_hmac('sha256', $date, "AWS4{$secretKey}", true);
+    $uri = '/';
+    $date = gmdate('Ymd\THis\Z');
+    $shortDate = gmdate('Ymd');
+
+    // Build payload with strict encoding
+    $payload = "Action=Publish&Message=" . rawurlencode($message) . "&PhoneNumber=" . rawurlencode($phone);
+    $hashedPayload = hash('sha256', $payload);
+
+    // Canonical request
+    $contentType = 'application/x-www-form-urlencoded; charset=utf-8';
+    $canonicalQuery = '';
+    $canonicalHeaders = "content-type:{$contentType}\n" .
+                       "host:{$host}\n" .
+                       "x-amz-date:{$date}\n";
+    $signedHeaders = 'content-type;host;x-amz-date';
+    $canonicalRequest = "{$method}\n{$uri}\n{$canonicalQuery}\n{$canonicalHeaders}\n{$signedHeaders}\n{$hashedPayload}";
+
+    // String to sign
+    $algorithm = 'AWS4-HMAC-SHA256';
+    $credentialScope = "{$shortDate}/{$region}/{$service}/aws4_request";
+    $stringToSign = "{$algorithm}\n{$date}\n{$credentialScope}\n" . hash('sha256', $canonicalRequest);
+
+    // Signing key
+    $kDate = hash_hmac('sha256', $shortDate, "AWS4{$secretKey}", true);
     $kRegion = hash_hmac('sha256', $region, $kDate, true);
     $kService = hash_hmac('sha256', $service, $kRegion, true);
     $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
-    $signature = hash_hmac('sha256', $stringToSign, $kSigning);
-    
-    $authorization = "AWS4-HMAC-SHA256 Credential={$accessKey}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
-    $epath=getWasqlPath('php/extras');
+    $signature = bin2hex(hash_hmac('sha256', $stringToSign, $kSigning, true));
+
+    // Authorization header
+    $authorizationHeader = "{$algorithm} Credential={$accessKey}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
+
+    // cURL headers
+    $headers = [
+        "Content-Type: {$contentType}",
+        "Host: {$host}",
+        "X-Amz-Date: {$date}",
+        "Authorization: {$authorizationHeader}"
+    ];
+
+    // cURL setup
     $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => $endpoint,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $queryString,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CAINFO => "{$epath}/cacert.pem",
-        CURLOPT_HTTPHEADER => [
-            'Authorization: ' . $authorization,
-            'Content-Type: application/x-www-form-urlencoded; charset=utf-8',
-            'X-Amz-Date: ' . $timestamp,
-            'Host: ' . $host
-        ]
-    ]);
-    
+    curl_setopt($ch, CURLOPT_URL, "https://{$host}{$uri}");
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Not recommended for production
+    curl_setopt($ch, CURLOPT_VERBOSE, true);
+    $verbose = fopen('curl_debug.log', 'a+');
+    curl_setopt($ch, CURLOPT_STDERR, $verbose);
+
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
+    $curlErrno = curl_errno($ch);
+    fclose($verbose);
     curl_close($ch);
-    
-    // Debug: Log response details
-    //amazonErrorLog("AWS SMS Debug: HTTP Code: $httpCode");
-    if ($curlError) {
-        //amazonErrorLog("AWS SMS Debug: cURL Error: $curlError");
+
+    if ($httpCode == 200) {
+        $xml = simplexml_load_string($response);
+        $result = [
+            'status' => 'success',
+            'phone_number' => $phone,
+            '_cdate' => date('Y-m-d H:i:s'),
+            'message_id' => (string)$xml->PublishResult->MessageId,
+            'request_id' => (string)$xml->ResponseMetadata->RequestId
+        ];
+        return $result;
+    } else {
+        $result = [
+            'status' => 'failed',
+            'phone_number' => $phone,
+            '_cdate' => date('Y-m-d H:i:s'),
+            'response' => $response,
+            'http_code' => $httpCode,
+            'curl_error' => $curlError,
+            'curl_errno' => $curlErrno
+        ];
+        return $result;
     }
-    //amazonErrorLog("AWS SMS Debug: Response: " . substr($response, 0, 500));
-    
-    if ($httpCode !== 200) {
-	    $result = [
-			'status'=>'failed',
-			'phone_number'=>$phone,
-			'_cdate'=>date('Y-m-d H:i:s'),
-		    'response' => $response
-		];
-		return $result;
-	}
-
-	// Parse XML response
-	$xml = simplexml_load_string($response);
-	if ($xml === false) {
-		$result = [
-			'status'=>'failed',
-			'phone_number'=>$phone,
-			'_cdate'=>date('Y-m-d H:i:s'),
-		    'response' => $response
-		];
-		return $result;
-	}
-
-	// Extract data from XML
-	$result = [
-		'status'=>'success',
-		'phone_number'=>$phone,
-		'_cdate'=>date('Y-m-d H:i:s'),
-	    'message_id' => (string)$xml->PublishResult->MessageId,
-	    'request_id' => (string)$xml->ResponseMetadata->RequestId
-	];
-
-	return $result;
 }
 ?>
