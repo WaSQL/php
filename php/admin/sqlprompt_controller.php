@@ -1340,10 +1340,19 @@ ENDOFQUERY;
 					'dbs'=>$dbs
 				);
 			}
-			if(isset($db['name'])){$tables=sqlpromptGetTables($db['name']);}
-			else{$tables=sqlpromptGetTables();}
+			if(isset($db['name'])){
+				$_SESSION['db']=$db;
+				$CONFIG['database']=$db['name'];
+				$tables=sqlpromptGetTables($db['name']);
+				setView(array('default','tables_fields','prompt_load'),1);
+				
+			}
+			else{
+				$tables=sqlpromptGetTables();
+				setView('default',1);
+			}
 			
-			setView('default',1);
+			
 		break;
 	}
 	setView('default',1);
