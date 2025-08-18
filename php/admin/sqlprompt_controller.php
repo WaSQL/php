@@ -1290,46 +1290,46 @@ ENDOFQUERY;
 			}
 			$tabs=array();
 			$groups=array();
-			foreach($DATABASE as $d=>$db){
+			foreach($DATABASE as $d=>$cdb){
 				if($CONFIG['database']==$d){
-					$_SESSION['db']=$db;
+					$_SESSION['db']=$cdb;
 					continue;
 				}
 				if(count($showtabs) && !in_array($d,$showtabs)){continue;}
 				//access?
-				if(isset($db['access']) && strtolower($db['access']) != 'all'){
-					$access_users=preg_split('/\,/',strtolower($db['access']));
+				if(isset($cdb['access']) && strtolower($cdb['access']) != 'all'){
+					$access_users=preg_split('/\,/',strtolower($cdb['access']));
 					if(!in_array($USER['username'],$access_users)){continue;}
 				}
 				//specific user and pass
-				if(isset($db["dbuser_{$USER['username']}"])){
-					$db['dbuser']=$db["dbuser_{$USER['username']}"];
+				if(isset($cdb["dbuser_{$USER['username']}"])){
+					$cdb['dbuser']=$cdb["dbuser_{$USER['username']}"];
 				}
-				if(isset($db["dbpass_{$USER['username']}"])){
-					$db['dbpass']=$db["dbpass_{$USER['username']}"];
+				if(isset($cdb["dbpass_{$USER['username']}"])){
+					$cdb['dbpass']=$cdb["dbpass_{$USER['username']}"];
 				}
 				//group?
-				if(isset($db['group'])){
-					$group=$db['group'];
+				if(isset($cdb['group'])){
+					$group=$cdb['group'];
 				}
 				else{
-					$group=ucfirst($db['dbtype']);
+					$group=ucfirst($cdb['dbtype']);
 				}
-				if(!isset($db['group_icon'])){
-					$db['group_icon']=$db['dbicon'];
+				if(!isset($cdb['group_icon'])){
+					$cdb['group_icon']=$cdb['dbicon'];
 				}
-				$db['group']=$group;
-				$dbschemas=preg_split('/[\:\,\ ]+/',$db['dbschema']);
+				$cdb['group']=$group;
+				$dbschemas=preg_split('/[\:\,\ ]+/',$cdb['dbschema']);
 				if(count($dbschemas) > 1){
-					$db['dbschemas']=array();
+					$cdb['dbschemas']=array();
 					foreach($dbschemas as $dbschema){
 						$dbschema=trim($dbschema);
-						$db['dbschemas'][]='<a  style="text-align:center;border-radius:15px;border:1px solid #ccc;padding:3px 5px;margin-bottom:2px;" href="#" onclick="wacss.setActiveTab(document.querySelector(\'#db_'.$db['name'].'\'));sqlpromptSetDB('."'{$db['name']}','{$dbschema}'".')">'.$dbschema.'</a>';
+						$cdb['dbschemas'][]='<a  style="text-align:center;border-radius:15px;border:1px solid #ccc;padding:3px 5px;margin-bottom:2px;" href="#" onclick="wacss.setActiveTab(document.querySelector(\'#db_'.$cdb['name'].'\'));sqlpromptSetDB('."'{$cdb['name']}','{$dbschema}'".')">'.$dbschema.'</a>';
 					}
 					//echo '<xmp>'.implode(PHP_EOL,$db['dbschemas']).'</xmp>';exit;
 				}
-				$groups[$group][]=$db;
-				$tabs[]=$db;
+				$groups[$group][]=$cdb;
+				$tabs[]=$cdb;
 			}
 			$tabs=array();
 			foreach($groups as $group=>$dbs){
@@ -1340,8 +1340,9 @@ ENDOFQUERY;
 					'dbs'=>$dbs
 				);
 			}
-			//echo printValue($tabs);exit;
-			$tables=sqlpromptGetTables();
+			if(isset($db['name'])){$tables=sqlpromptGetTables($db['name']);}
+			else{$tables=sqlpromptGetTables();}
+			
 			setView('default',1);
 		break;
 	}
