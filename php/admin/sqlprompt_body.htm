@@ -32,8 +32,8 @@
 	</h2>
 	<view:history>
 	<div style="align-self: center;">
-		<span class="icon-circle w_red" style="margin-right:10px;"></span>
-		<button type="button" class="btn <?=configValue('admin_color');?>" onclick="return sqlpromptShowHistory();">History</button>
+		<span class="icon-circle w_red" title="Query Logging is On" style="margin-right:10px;"></span>
+		<button type="button" class="btn <?=configValue('admin_color');?>" style="font-size:0.9rem;padding:0.20rem 0.5rem;" onclick="return sqlpromptShowHistory();"><span class="icon-history" style="margin-right:3px;"></span> History</button>
 	</div>
 	</view:history>
 	<?=renderViewIf($CONFIG['log_queries']==1,'history');?>

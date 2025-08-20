@@ -40,6 +40,23 @@ function sqlpromptShowHistory($dbname){
 		'_cdate_class'=>'w_small w_nowrap',
 		'query_class'=>'w_small w_pre',
 		'-order'=>'_id desc',
+		'row_count_options'=>array(
+			'class'=>'align-right',
+			'number_format'=>0,
+			'displayname'=>'Rows'
+		),
+		'filename_options'=>array(
+			'class'=>'align-right w_nowrap',
+			'displayname'=>'File'
+		),
+		'filesize_options'=>array(
+			'class'=>'align-right w_nowrap',
+			'displayname'=>'Size'
+		),
+		'exported_options'=>array(
+			'class'=>'align-right',
+			'number_format'=>0
+		),
 		'-results_eval'=>'sqlpromptShowHistoryEx',
 		'-results_eval_params'=>$dbname
 	);
@@ -50,10 +67,10 @@ function sqlpromptShowHistoryEx($recs,$dbname){
 	foreach($recs as $i=>$rec){
 		$rec['query']=trim($rec['query']);
 		$recs[$i]['query']=<<<ENDOFQUERY
-<div style="max-height:60px;overflow:hidden;" class="w_small w_gray w_pre w_pointer" title="load query" onclick="sqlpromptSetValue(this.innerText);return wacss.centerpopClose();">{$rec['query']}</div>
+<div style="max-height:60px;overflow:auto;" class="w_small w_gray w_pre w_pointer" title="load query" onclick="sqlpromptSetValue(this.innerText);return wacss.centerpopClose();">{$rec['query']}</div>
 ENDOFQUERY;
 		$afile="{$tpath}/{$rec['filename']}";
-		if(file_exists($afile)){
+		if(file_exists($afile) && !is_dir($afile)){
 			$size=filesize($afile);
 			$recs[$i]['filesize']=verboseSize($size);
 			$recs[$i]['filename']=<<<ENDOFLINK
@@ -62,9 +79,7 @@ ENDOFLINK;
 
 		}
 		else{
-			$recs[$i]['filename']=<<<ENDOFLINK
-<div class="w_small w_gray w_nowrap">{$rec['filename']}</div>
-ENDOFLINK;
+			$recs[$i]['filename']='';
 		}
 	}
 	return $recs;
