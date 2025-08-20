@@ -85,7 +85,8 @@ ENDOFLINK;
 	return $recs;
 }
 function sqlpromptGetTables(string $dbname=''){
-	return getCachedValue(fn() => sqlpromptGetTablesLive($dbname), false, 12);
+	$code="return sqlpromptGetTablesLive('{$dbname}');";
+	return getStoredValue($code, false, 12);
 }
 function sqlpromptGetTablesLive($dbname=''){
 	global $CONFIG;
