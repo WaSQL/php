@@ -84,7 +84,10 @@ ENDOFLINK;
 	}
 	return $recs;
 }
-function sqlpromptGetTables($dbname=''){
+function sqlpromptGetTables(string $dbname=''){
+	return getCachedValue(fn() => sqlpromptGetTablesLive($dbname), false, 12);
+}
+function sqlpromptGetTablesLive($dbname=''){
 	global $CONFIG;
 	global $DATABASE;
 	if(strlen($dbname)){

@@ -13352,6 +13352,143 @@ function getStoredValue($evalstr,$force=0,$hrs=1,$debug=0,$serialize=1){
 	}
 	return $data;
 }
+// ---------- begin function getCachedValue (fast/safer) ----------
+/**
+ * Sets or returns a previously set stored value. Values persist like sessions but across users.
+ *
+ * @param callable|string $producer  Callable that returns the value (preferred). If string, it will be eval'd.
+ * @param bool            $force     Force a refresh.
+ * @param int|float       $hrs       Hours before refresh (TTL).
+ * @param bool            $debug
+ * @param bool|string     $serialize true  => serialize/unserialize (default)
+ *                                   'json'=> json_encode/json_decode (faster for simple data)
+ *                                   false => store raw string
+ * @param string|null     $namespace Optional namespace for the cache key (defaults to $CONFIG['name'] if present).
+ * @param string|null     $cacheDir  Directory for file cache. Defaults to sys_get_temp_dir().'/gsv'
+ * @return mixed
+ */
+function getCachedValue(
+    $producer,
+    $force = false,
+    $hrs = 1,
+    $debug = false,
+    $serialize = true,
+    $namespace = null,
+    $cacheDir = null
+){
+    // --- config & key
+    static $hasApcu = null;
+    if ($hasApcu === null) { $hasApcu = function_exists('apcu_fetch') && ini_get('apc.enabled'); }
+
+    $ttl = max(0, (int)round($hrs * 3600));
+    $now = time();
+
+    // namespace
+    if ($namespace === null && isset($GLOBALS['CONFIG']['name'])) {
+        $namespace = (string)$GLOBALS['CONFIG']['name'];
+    }
+    $namespace = $namespace ?? 'gsv';
+
+    // normalize producer and key
+    $producerKey = is_string($producer) ? $producer : (is_callable($producer) ? spl_object_hash((object)$producer) : var_export($producer, true));
+    $key = hash('sha256', $namespace . '|' . $producerKey);
+
+    // --- APCu fast path
+    if ($hasApcu) {
+        $apcuKey = "gsv:$key";
+        if (!$force) {
+            $ok = false;
+            $cached = apcu_fetch($apcuKey, $ok);
+            if ($ok) {
+                if ($debug) { echo "getStoredValue: APCu hit for {$apcuKey}\n"; }
+                return $cached;
+            }
+        }
+        // compute
+        $value = is_callable($producer)
+            ? $producer()
+            : (function($code) { return eval($code); })($producer);
+
+        apcu_store($apcuKey, $value, $ttl ?: 0);
+        if ($debug) { echo "getStoredValue: APCu store {$apcuKey} (ttl={$ttl})\n"; }
+        return $value;
+    }
+
+    // --- Filesystem fallback
+    $cacheDir = $cacheDir ?: (rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'gsv');
+    if (!is_dir($cacheDir)) {
+        // fail silently if mkdir race; permissions 0777 masked by umask
+        @mkdir($cacheDir, 0777, true);
+    }
+    $local = $cacheDir . DIRECTORY_SEPARATOR . $key . '.gsv';
+
+    // invalidate if forced
+    if ($force && is_file($local)) { @unlink($local); }
+
+    // read if fresh
+    if (is_file($local)) {
+        $stat = @stat($local);
+        if ($stat && isset($stat['mtime'])) {
+            $age = $now - (int)$stat['mtime'];
+            if ($ttl === 0 || $age < $ttl) {
+                // shared-lock read to avoid torn writes
+                $fp = @fopen($local, 'rb');
+                if ($fp) {
+                    @flock($fp, LOCK_SH);
+                    $content = stream_get_contents($fp);
+                    @flock($fp, LOCK_UN);
+                    @fclose($fp);
+
+                    if ($serialize === true) {
+                        $out = @unserialize($content);
+                    } elseif ($serialize === 'json') {
+                        $out = json_decode($content, true);
+                    } else {
+                        $out = $content;
+                    }
+                    if ($debug) { echo "getStoredValue: file hit {$local} (age={$age}s < ttl={$ttl}s)\n"; }
+                    return $out;
+                }
+            }
+        }
+    }
+
+    // compute and write (atomic)
+    if ($debug) {
+        $snippet = is_string($producer) ? $producer : (is_callable($producer) ? 'callable()' : 'unknown');
+        echo "getStoredValue: computing via {$snippet}\n";
+    }
+
+    $data = is_callable($producer)
+        ? $producer()
+        : (function($code) { return eval($code); })($producer);
+
+    if ($serialize === true) {
+        $payload = serialize($data);
+    } elseif ($serialize === 'json') {
+        // JSON is faster for simple arrays/objects; if it fails, fall back to serialize
+        $json = json_encode($data);
+        $payload = ($json !== false) ? $json : serialize($data);
+    } else {
+        $payload = (string)$data;
+    }
+
+    $tmp = $local . '.' . getmypid() . '.' . bin2hex(random_bytes(4)) . '.tmp';
+    $ok = false;
+    if (($fp = @fopen($tmp, 'wb')) !== false) {
+        @flock($fp, LOCK_EX);
+        $ok = (fwrite($fp, $payload) === strlen($payload)) && fflush($fp);
+        @flock($fp, LOCK_UN);
+        @fclose($fp);
+        if ($ok) { $ok = @rename($tmp, $local); }
+        if (!$ok) { @unlink($tmp); }
+    }
+    if ($debug) { echo $ok ? "getStoredValue: wrote {$local}\n" : "getStoredValue: write failed for {$local}\n"; }
+
+    return $data;
+}
+// ---------- end function getCachedValue ----------
+
 //---------- begin function setStoredValue ----------
 /**
 * @describe sets or returns a previously set stored value. Stored values persist like sessions but work across multiple users
