@@ -86,6 +86,11 @@ function sqlpromptSetDB(db,schema){
 	else{document.sqlprompt.schema.value='';}
 	return wacss.ajaxGet('/php/admin.php','table_fields',params)
 }
+function sqlpromptShowHistory(){
+	let params={_menu:'sqlprompt',func:'show_history',db:document.sqlprompt.db.value,schema:document.sqlprompt.schema.value};
+	params.title='User History: '+params.db;
+	return wacss.ajaxGet('/php/admin.php','centerpop',params)
+}
 function sqlpromptSetValue(v){
 	let el=document.getElementById('sql_full');
 	if(undefined != el.codemirror){

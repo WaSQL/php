@@ -19,6 +19,56 @@ function sqlpromptHTMLHead($title=''){
 	<div class="container">
 ENDOFHTML;
 }
+
+function sqlpromptShowHistory($dbname){
+	global $CONFIG;
+	$CONFIG['paging']=20;
+	global $USER;
+	$opts=array(
+		'-tableclass'=>'table striped bordered condensed',
+		'-table'=>'_queries',
+		'-action'=>'/php/admin.php',
+		'-onsubmit'=>"return pagingSubmit(this,'show_history_list');",
+		'setprocessing'=>0,
+		'_menu'=>'sqlprompt',
+		'-searchfields'=>'query',
+		'-searchopers'=>'ct',
+		'func'=>'show_history_list',
+		'db'=>$dbname,
+		'-listfields'=>'_cdate,query,row_count,filename,filesize,exported',
+		'-where'=>"user_id={$USER['_id']} AND tablename = 'DB:{$dbname}'",
+		'_cdate_class'=>'w_small w_nowrap',
+		'query_class'=>'w_small w_pre',
+		'-order'=>'_id desc',
+		'-results_eval'=>'sqlpromptShowHistoryEx',
+		'-results_eval_params'=>$dbname
+	);
+	return databaseListRecords($opts);
+}
+function sqlpromptShowHistoryEx($recs,$dbname){
+	$tpath=getWasqlPath('php/temp');
+	foreach($recs as $i=>$rec){
+		$rec['query']=trim($rec['query']);
+		$recs[$i]['query']=<<<ENDOFQUERY
+<div style="max-height:60px;overflow:hidden;" class="w_small w_gray w_pre w_pointer" title="load query" onclick="sqlpromptSetValue(this.innerText);return wacss.centerpopClose();">{$rec['query']}</div>
+ENDOFQUERY;
+		$afile="{$tpath}/{$rec['filename']}";
+		if(file_exists($afile)){
+			$size=filesize($afile);
+			$recs[$i]['filesize']=verboseSize($size);
+			$recs[$i]['filename']=<<<ENDOFLINK
+<div class="w_small w_gray w_nowrap"><a title="download {$rec['filename']}" href="/php/temp/{$rec['filename']}"><span class="icon-download"></span> download</a></div>
+ENDOFLINK;
+
+		}
+		else{
+			$recs[$i]['filename']=<<<ENDOFLINK
+<div class="w_small w_gray w_nowrap">{$rec['filename']}</div>
+ENDOFLINK;
+		}
+	}
+	return $recs;
+}
 function sqlpromptGetTables($dbname=''){
 	global $CONFIG;
 	global $DATABASE;

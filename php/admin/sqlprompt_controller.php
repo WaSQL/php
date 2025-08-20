@@ -1,4 +1,14 @@
 <?php
+/*
+	Show record icon if log queries is on
+		set at config, database level
+			log_queries=1
+			log_queries_user
+			log_queries_time
+			log_queries_days
+
+
+*/
 	global $CONFIG;
 	global $DATABASE;
 	global $_SESSION;
@@ -40,6 +50,17 @@
 		$_SESSION['db']=$db;
 	}
 	switch(strtolower($_REQUEST['func'])){
+		case 'show_history':
+			$db=$_REQUEST['db'];
+			setView('show_history',1);
+			return;
+		break;
+		case 'show_history_list':
+			//echo printValue($_REQUEST);exit;
+			$db=$_REQUEST['db'];
+			setView('show_history_list',1);
+			return;
+		break;
 		case 'toast_query':
 			$recs=dbQueryResults($_REQUEST['db'],$_REQUEST['query']);
 			setView('toast_query',1);
@@ -563,7 +584,7 @@ ENDOFQUERY;
 				case 'history':
 					$recopts=array(
 						'-table'=>'_queries',
-						'_cuser'=>$USER['_id'],
+						'user_id'=>$USER['_id'],
 						'-fields'=>'_id,_cdate,query,row_count,run_length',
 						'-order'=>'_id desc',
 						'-limit'=>100,
@@ -1148,6 +1169,7 @@ ENDOFQUERY;
 						'row_count'=>$recs_count,
 						'user_id'=>$USER['_id'],
 						'tablename'=>"DB:{$db['name']}",
+						'filename'=>getFileName($afile),
 						'fields'=>implode(',',array_keys($recs[0])),
 						'field_count'=>count(array_keys($recs[0]))
 					));
@@ -1203,6 +1225,16 @@ ENDOFQUERY;
 			$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
 			$afile="{$tpath}/{$filename}";
 			if(file_exists($afile)){
+				$fname=getFileName($afile);
+				$srec=getDBRecord(array(
+					'-table'=>'_queries',
+					'filename'=>$fname,
+					'user_id'=>$USER['_id']
+				));
+				if(isset($srec['_id'])){
+					$ecnt=(integer)($srec['exported'])+1;
+					$ok=editDBRecordById('_queries',$srec['_id'],array('exported'=>$ecnt));
+				}
 				pushFile($afile);
 				exit;
 			}
@@ -1340,6 +1372,14 @@ ENDOFQUERY;
 					'dbs'=>$dbs
 				);
 			}
+			//make sure _queries exists and has a filename field
+			$qfields=getDBFieldInfo('_queries');
+			if(!isset($qfields['filename'])){
+				$ok=executeSQL('ALTER TABLE _queries ADD filename varchar(255) NULL');
+			}
+			if(!isset($qfields['exported'])){
+				$ok=executeSQL('ALTER TABLE _queries ADD exported integer NULL');
+			}
 			if(isset($db['name'])){
 				$_SESSION['db']=$db;
 				$CONFIG['database']=$db['name'];
@@ -1351,8 +1391,6 @@ ENDOFQUERY;
 				$tables=sqlpromptGetTables();
 				setView('default',1);
 			}
-			
-			
 		break;
 	}
 	setView('default',1);

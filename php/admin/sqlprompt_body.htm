@@ -25,11 +25,18 @@
 		overflow: auto;
 	}
 </style>
-<div>
+<div style="display:flex;justify-content: space-between;margin-top:10px;">
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
 		<span class="icon-prompt"></span> 
 		<wtranslate>SQL Prompt</wtranslate>
 	</h2>
+	<view:history>
+	<div style="align-self: center;">
+		<span class="icon-circle w_red" style="margin-right:10px;"></span>
+		<button type="button" class="btn <?=configValue('admin_color');?>" onclick="return sqlpromptShowHistory();">History</button>
+	</div>
+	</view:history>
+	<?=renderViewIf($CONFIG['log_queries']==1,'history');?>
 </div>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div data-content="tables and fields">
@@ -82,6 +89,11 @@
 	</div>
 </div>
 </view:default>
+
+<view:show_history>
+	<div id="show_history_list"><?=sqlpromptShowHistory($db);?></div>
+</view:show_history>
+<view:show_history_list><?=sqlpromptShowHistory($db);?></view:show_history_list>
 
 <view:tables_fields>
 <div class="w_bigger"><span class="<?=$_SESSION['db']['dbicon'];?>"></span> <?=$_SESSION['db']['displayname'];?></div>
@@ -210,7 +222,7 @@
 
 <view:results>
 	<div id="setprocessing" style="position:absolute;top:-45px;right:150px;"></div>
-	<div class="w_padtop" style="overflow:auto;">
+	<div class="w_padtop" style="overflow:auto;" data-onload="wacss.centerpopClose();">
 		<view:success>
 			<?=buildOnLoad("sqlpromptSetSha('{$shastr}','{$recs_count}');sqlpromptShowLinks('{$offset}','{$limit}','{$recs_count}','{$qtime_verbose}');");?>
 			<?=sqlpromptListResults($recs,$listopts);?>		
