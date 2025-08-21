@@ -813,7 +813,7 @@ final class NativeSFTP
 
     public function chmod(int $mode, string $path): bool
     {
-        if ($mode < 0 or $mode > 0o7777) {
+        if ($mode < 0 or $mode > 07777) {
             throw new \InvalidArgumentException('chmod() invalid mode; expected octal 0-07777.');
         }
         $path = $this->applyCwd($path);
