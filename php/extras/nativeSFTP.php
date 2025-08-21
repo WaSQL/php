@@ -138,7 +138,7 @@ final class NativeSFTP
         return $items;
     }
 
-        /**
+    /**
      * Execute a raw command on the remote server and return stdout+stderr.
      */
     public function exec(string $command, bool $trim = true): string
