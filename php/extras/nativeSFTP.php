@@ -431,6 +431,11 @@ final class NativeSFTP
             throw new RuntimeException('Not connected. Call connect() first.');
         }
 
+        // Validate source exists
+        if (!$this->exists($remoteFrom)) {
+            throw new RuntimeException("Source does not exist: {$remoteFrom}");
+        }
+
         // Ensure destination directory exists
         $parent = rtrim(dirname($remoteTo), '/');
         if ($parent !== '' && $parent !== '.' && $parent !== '/') {
@@ -443,17 +448,56 @@ final class NativeSFTP
             throw new RuntimeException("Destination exists: {$remoteTo}");
         }
 
-        $from = $this->sftpPath($remoteFrom);
-        $to   = $this->sftpPath($remoteTo);
+        $fromUri = $this->sftpPath($remoteFrom);
+        $toUri   = $this->sftpPath($remoteTo);
 
-        if (!@rename($from, $to)) {
-            if ($overwrite && $this->exists($remoteTo)) {
-                @unlink($this->sftpPath($remoteTo));
-                if (@rename($from, $to)) {
-                    return;
-                }
+        // Try native rename first
+        if (@rename($fromUri, $toUri)) {
+            return;
+        }
+
+        // If overwriting allowed, try unlink + rename again
+        if ($overwrite && $this->exists($remoteTo)) {
+            @unlink($toUri);
+            if (@rename($fromUri, $toUri)) {
+                return;
             }
-            throw new RuntimeException("Failed to rename {$remoteFrom} to {$remoteTo}");
+        }
+
+        // Fallback: copy + unlink (handles servers that block cross-dir rename)
+        $src = @fopen($fromUri, 'rb');
+        if ($src === false) {
+            throw new RuntimeException("Failed to open source for copy: {$remoteFrom}");
+        }
+        $dst = @fopen($toUri, 'wb');
+        if ($dst === false) {
+            @fclose($src);
+            throw new RuntimeException("Failed to open destination for copy: {$remoteTo}");
+        }
+        $bytes = @stream_copy_to_stream($src, $dst);
+        @fflush($dst);
+        @fclose($dst);
+        @fclose($src);
+
+        if ($bytes === false) {
+            throw new RuntimeException("Copy fallback failed from {$remoteFrom} to {$remoteTo}");
+        }
+
+        // Verify copy if possible
+        $srcSize = null; $dstSize = null;
+        try { $srcSize = $this->filesize($remoteFrom); } catch (\Throwable $e) {}
+        try { $dstSize = $this->filesize($remoteTo);   } catch (\Throwable $e) {}
+        if ($srcSize !== null && $dstSize !== null && $srcSize !== $dstSize) {
+            // Clean up partial dest
+            @unlink($toUri);
+            throw new RuntimeException("Copy size mismatch ({$srcSize} -> {$dstSize}) during rename fallback.");
+        }
+
+        // Remove source
+        if (!@unlink($fromUri)) {
+            // If unlink fails, try to roll back by removing dest to avoid duplicates
+            @unlink($toUri);
+            throw new RuntimeException("Failed to remove source after copy fallback: {$remoteFrom}");
         }
     }
 
