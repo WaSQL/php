@@ -427,10 +427,16 @@ final class NativeSFTP
         $remoteFrom = $this->applyCwd($remoteFrom);
         $remoteTo   = $this->applyCwd($remoteTo);
 
-        // Ensure parent dir exists
-        $parent = dirname($remoteTo);
-        if (!$this->exists($parent)) {
-            $this->mkdir($parent, 0755, true);
+        if (!is_resource($this->sftp)) {
+            throw new RuntimeException('Not connected. Call connect() first.');
+        }
+
+        // Ensure destination directory exists
+        $parent = rtrim(dirname($remoteTo), '/');
+        if ($parent !== '' && $parent !== '.' && $parent !== '/') {
+            if (!$this->exists($parent) || !@is_dir($this->sftpPath($parent))) {
+                $this->mkdir($parent, 0755, true);
+            }
         }
 
         if (!$overwrite && $this->exists($remoteTo)) {
@@ -441,6 +447,12 @@ final class NativeSFTP
         $to   = $this->sftpPath($remoteTo);
 
         if (!@rename($from, $to)) {
+            if ($overwrite && $this->exists($remoteTo)) {
+                @unlink($this->sftpPath($remoteTo));
+                if (@rename($from, $to)) {
+                    return;
+                }
+            }
             throw new RuntimeException("Failed to rename {$remoteFrom} to {$remoteTo}");
         }
     }
@@ -448,23 +460,40 @@ final class NativeSFTP
     public function mkdir(string $remotePath, int $mode = 0755, bool $recursive = false): void
     {
         $remotePath = $this->applyCwd($remotePath);
+        if (!is_resource($this->sftp)) {
+            throw new RuntimeException('Not connected. Call connect() first.');
+        }
+        // Normalize absolute, collapse //, remove trailing slash unless root
+        $remotePath = '/' . ltrim($remotePath, '/');
+        $remotePath = rtrim($remotePath, '/');
+        if ($remotePath === '') { $remotePath = '/'; }
 
-        $path = $this->sftpPath($remotePath);
-        if ($recursive) {
-            $parts = array_filter(explode('/', trim($remotePath, '/')));
-            $build = '';
-            foreach ($parts as $p) {
-                $build .= "/{$p}";
-                $dir = $this->sftpPath($build);
-                if (!@is_dir($dir)) {
-                    if (!@mkdir($dir, $mode)) {
+        $dirUri = $this->sftpPath($remotePath);
+        if (@is_dir($dirUri)) {
+            return;
+        }
+
+        if (!$recursive) {
+            if (!@ssh2_sftp_mkdir($this->sftp, $remotePath, $mode, false)) {
+                throw new RuntimeException("Failed to create directory: {$remotePath}");
+            }
+            return;
+        }
+
+        $parts = array_filter(explode('/', trim($remotePath, '/')), 'strlen');
+        $build = '';
+        foreach ($parts as $p) {
+            $build .= '/' . $p;
+            $uri = $this->sftpPath($build);
+            if (@is_dir($uri)) {
+                continue;
+            }
+            if (!@ssh2_sftp_mkdir($this->sftp, $build, $mode, false)) {
+                if (!@ssh2_sftp_mkdir($this->sftp, $build)) {
+                    if (!@is_dir($uri)) {
                         throw new RuntimeException("Failed to create directory: {$build}");
                     }
                 }
-            }
-        } else {
-            if (!@mkdir($path, $mode)) {
-                throw new RuntimeException("Failed to create directory: {$remotePath}");
             }
         }
     }
