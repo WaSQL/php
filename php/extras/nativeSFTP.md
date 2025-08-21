@@ -86,3 +86,17 @@ $sftp->disconnect();
 
 - **BSD vs GNU `stat`**  
   We auto-try GNU (`stat -c`) then BSD (`stat -f`). If both fail, metadata remains `null`.
+
+
+## Working Directory (`chdir`)
+
+Set a session-local working directory that is **prepended to all relative remote paths** for uploads, downloads, listings, and metadata:
+
+```php
+$sftp->chdir('/var/www');
+$sftp->put('index.html', '<h1>Hello</h1>');   // writes to /var/www/index.html
+echo $sftp->get('index.html', false);         // reads /var/www/index.html
+$names = $sftp->nlist('.');                    // lists /var/www
+```
+
+Use `getCwd()` to read the current working directory (or `null` if not set).

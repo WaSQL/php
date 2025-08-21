@@ -123,6 +123,8 @@ final class NativeSFTP
 
     public function list(string $remotePath): array
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $dir = $this->sftpPath($remotePath);
         $dh = @opendir($dir);
         if (!$dh) {
@@ -233,6 +235,8 @@ final class NativeSFTP
      */
     public function tryList(string $remotePath = '.', bool $includeHidden = false): array
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         if (!is_resource($this->sftp)) {
             throw new RuntimeException('Not connected. Call connect() first.');
         }
@@ -283,6 +287,8 @@ final class NativeSFTP
      */
     public function listDirs(string $remotePath = '.', bool $includeHidden = false): array
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $res = $this->tryList($remotePath, $includeHidden);
         return $res['dirs'];
     }
@@ -299,6 +305,8 @@ final class NativeSFTP
      */
     public function discoverDirectories(string $start = '.', int $maxDepth = 2, int $maxNodes = 2000, bool $includeHidden = false): array
     {
+        $start = $this->applyCwd($start);
+
         if (!is_resource($this->sftp)) {
             throw new RuntimeException('Not connected. Call connect() first.');
         }
@@ -352,6 +360,8 @@ final class NativeSFTP
 
     public function download(string $remoteFile, string $localFile, bool $overwrite = true): void
     {
+        $remoteFile = $this->applyCwd($remoteFile);
+
         $src = $this->sftpPath($remoteFile);
         if (!$overwrite && file_exists($localFile)) {
             throw new RuntimeException("Local file exists: {$localFile}");
@@ -375,6 +385,8 @@ final class NativeSFTP
 
     public function upload(string $localFile, string $remoteFile, bool $overwrite = true): void
     {
+        $remoteFile = $this->applyCwd($remoteFile);
+
         if (!is_file($localFile)) {
             throw new RuntimeException("Local file not found: {$localFile}");
         }
@@ -402,6 +414,8 @@ final class NativeSFTP
 
     public function delete(string $remoteFile): void
     {
+        $remoteFile = $this->applyCwd($remoteFile);
+
         $path = $this->sftpPath($remoteFile);
         if (!@unlink($path)) {
             throw new RuntimeException("Failed to delete remote file: {$remoteFile}");
@@ -410,6 +424,9 @@ final class NativeSFTP
 
     public function rename(string $remoteFrom, string $remoteTo, bool $overwrite = true): void
     {
+        $remoteFrom = $this->applyCwd($remoteFrom);
+        $remoteTo = $this->applyCwd($remoteTo);
+
         if (!$overwrite && $this->exists($remoteTo)) {
             throw new RuntimeException("Destination exists: {$remoteTo}");
         }
@@ -422,6 +439,8 @@ final class NativeSFTP
 
     public function mkdir(string $remotePath, int $mode = 0755, bool $recursive = false): void
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         if ($recursive) {
             $parts = array_filter(explode('/', trim($remotePath, '/')));
@@ -444,6 +463,8 @@ final class NativeSFTP
 
     public function rmdir(string $remotePath): void
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         if (!@rmdir($path)) {
             throw new RuntimeException("Failed to remove directory: {$remotePath}");
@@ -452,12 +473,16 @@ final class NativeSFTP
 
     public function exists(string $remotePath): bool
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         return @file_exists($path);
     }
 
     public function filesize(string $remotePath): int
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         $size = @filesize($path);
         if ($size === false) {
@@ -502,464 +527,231 @@ final class NativeSFTP
         $normalized = '/' . ltrim($path, '/');
         return sprintf('ssh2.sftp://%s%s', intval($this->sftp), $normalized);
     }
-    // ===================== Utility / Hardening helpers =====================
 
-    /** Throws if path is empty; resolves via realpath() if available. */
-    private function normalizePath(string $path): string
+    // ===================== CWD support & helpers =====================
+    /** @var string|null Working directory for SFTP-relative operations */
+    private ?string $cwd = null;
+
+    /**
+     * Change SFTP working directory (affects relative remote paths for upload/download/etc).
+     */
+    public function chdir(string $directory): bool
+    {
+        $directory = $this->normalizePathNonThrow($directory);
+        if (!$this->is_dir($directory)) {
+            throw new \RuntimeException("chdir() failed: {$directory} is not a directory or not accessible.");
+        }
+        $this->cwd = rtrim($directory, '/');
+        return true;
+    }
+
+    /** Return the session-local SFTP working directory (or null if not set). */
+    public function getCwd(): ?string
+    {
+        return $this->cwd;
+    }
+
+    /** Prepend cwd to relative paths */
+    private function applyCwd(string $path): string
+    {
+        if ($this->cwd === null) return $path;
+        if (strlen($path) > 0 && $path[0] === '/') return $path;
+        return rtrim($this->cwd, '/') . '/' . ltrim($path, '/');
+    }
+
+    /** Normalize without throwing when target does not yet exist. */
+    private function normalizePathNonThrow(string $path): string
     {
         $path = trim($path);
-        if ($path === '') {
-            throw new \InvalidArgumentException('Path cannot be empty.');
-        }
-        if (method_exists($this, 'realpath')) {
-            $rp = $this->realpath($path);
-            if (is_string($rp) && $rp !== '') {
-                return $rp;
-            }
-        }
-        return $path;
-    }
-
-    /** Best-effort directory check using listDirs() / list() fallbacks. */
-    public function is_dir(string $path): bool
-    {
+        if ($path === '') throw new \InvalidArgumentException('Path cannot be empty.');
         try {
-            $path = $this->normalizePath($path);
-            // Fast path: if parent dir lists it as a directory
-            $parent = rtrim(dirname($path), '/');
-            $name   = basename($path);
-
-            if (method_exists($this, 'listDirs')) {
-                $dirs = $this->listDirs($parent === '' ? '/' : $parent);
-                if (is_array($dirs) && in_array($name, array_map('strval', $dirs), true)) {
-                    return true;
-                }
-            }
-
-            // As a fallback, see if it's listed at all and isn't a plain file
-            if (method_exists($this, 'list')) {
-                $entries = $this->list($parent === '' ? '/' : $parent);
-                if (is_array($entries)) {
-                    foreach ($entries as $e) {
-                        if (is_array($e) && isset($e['name']) && (string)$e['name'] === $name) {
-                            $type = $e['type'] ?? null;
-                            if ($type === 'dir' || $type === 'directory') return true;
-                            if (($e['is_dir'] ?? false) === true) return true;
-                        } elseif (is_string($e) && $e === $name) {
-                            // ambiguous; keep checking
-                        }
-                    }
-                }
-            }
-
-            // Last resort: if it exists but filesize() fails, treat as possibly dir
-            if ($this->exists($path)) {
-                $size = null;
-                try { $size = $this->filesize($path); } catch (\Throwable $t) {}
-                if ($size === null) return true;
-            }
+            return $this->realpath($path);
         } catch (\Throwable $e) {
-            // swallow and return false
-        }
-        return false;
-    }
-
-    /** File check derived from exists() and is_dir(). */
-    public function is_file(string $path): bool
-    {
-        try {
-            $path = $this->normalizePath($path);
-            if (!$this->exists($path)) return false;
-            return !$this->is_dir($path);
-        } catch (\Throwable $e) {
-            return false;
+            return '/' . ltrim($path, '/'); // fallback normalized
         }
     }
 
-    /** Shell-escape for single-quoted strings sent via exec(). */
-    private function q(string $s): string
-    {
-        return "'" . str_replace("'", "'\"'\"'", $s) . "'";
-    }
-
-    /**
-     * Execute a remote command via $this->exec(), normalize its result.
-     * Accepts either string or array returns; throws on failure/falsy.
-     * @return array{code:int, stdout:string, stderr:?string}
-     */
-    private function runExec(string $cmd): array
-    {
-        if (!method_exists($this, 'exec')) {
-            throw new \RuntimeException('Remote exec() is not supported by this NativeSFTP build.');
-        }
-        $res = $this->exec($cmd);
-
-        // Normalize common return shapes: string, array, object with props, etc.
-        if (is_string($res)) {
-            return ['code' => 0, 'stdout' => $res, 'stderr' => null];
-        }
-        if (is_array($res)) {
-            $code   = (int)($res['exit_code'] ?? $res['code'] ?? 0);
-            $stdout = (string)($res['stdout'] ?? $res['output'] ?? $res[0] ?? '');
-            $stderr = isset($res['stderr']) ? (string)$res['stderr'] : null;
-            if ($code !== 0) {
-                throw new \RuntimeException("exec failed ({$code}): " . ($stderr ?? $stdout));
-            }
-            return ['code' => $code, 'stdout' => $stdout, 'stderr' => $stderr];
-        }
-        if (is_object($res) && isset($res->code)) {
-            $code   = (int)$res->code;
-            $stdout = (string)($res->stdout ?? '');
-            $stderr = isset($res->stderr) ? (string)$res->stderr : null;
-            if ($code !== 0) {
-                throw new \RuntimeException("exec failed ({$code}): " . ($stderr ?? $stdout));
-            }
-            return ['code' => $code, 'stdout' => $stdout, 'stderr' => $stderr];
-        }
-
-        if (!$res) {
-            throw new \RuntimeException('exec returned falsy/unknown result.');
-        }
-        return ['code' => 0, 'stdout' => (string)$res, 'stderr' => null];
-    }
-
-    /**
-     * Try to fetch POSIX metadata via remote `stat`.
-     * Supports GNU (Linux) and BSD (macOS/*BSD) formats. Returns null if unavailable.
-     * @return array{mode:?int,uid:?int,gid:?int,atime:?int,mtime:?int}|null
-     */
-    private function probePosixMeta(string $path): ?array
-    {
-        $path = $this->normalizePath($path);
-
-        try {
-            // GNU coreutils stat -c: hex mode (%f), uid (%u), gid (%g), atime (%X), mtime (%Y)
-            $cmd = 'stat -c "%f %u %g %X %Y" ' . $this->q($path);
-            $r = $this->runExec($cmd);
-            $parts = preg_split('/\s+/', trim($r['stdout']));
-            if (count($parts) === 5) {
-                [$hex, $uid, $gid, $at, $mt] = $parts;
-                $mode = ctype_xdigit($hex) ? hexdec($hex) : null; // includes file type + perms
-                return [
-                    'mode'  => is_int($mode) ? $mode : null,
-                    'uid'   => ctype_digit($uid) ? (int)$uid : null,
-                    'gid'   => ctype_digit($gid) ? (int)$gid : null,
-                    'atime' => ctype_digit($at)  ? (int)$at  : null,
-                    'mtime' => ctype_digit($mt)  ? (int)$mt  : null,
-                ];
-            }
-        } catch (\Throwable $e) {
-            // fall through to BSD try
-        }
-
-        try {
-            // BSD/macOS: stat -f "%p %u %g %a %m"  -> octal perms (%p), uid, gid, atime, mtime
-            $cmd = 'stat -f "%p %u %g %a %m" ' . $this->q($path);
-            $r = $this->runExec($cmd);
-            $parts = preg_split('/\s+/', trim($r['stdout']));
-            if (count($parts) === 5) {
-                [$oct, $uid, $gid, $at, $mt] = $parts;
-                $mode = preg_match('/^[0-7]+$/', $oct) ? intval($oct, 8) : null;
-                return [
-                    'mode'  => $mode,
-                    'uid'   => ctype_digit($uid) ? (int)$uid : null,
-                    'gid'   => ctype_digit($gid) ? (int)$gid : null,
-                    'atime' => ctype_digit($at)  ? (int)$at  : null,
-                    'mtime' => ctype_digit($mt)  ? (int)$mt  : null,
-                ];
-            }
-        } catch (\Throwable $e) {
-            // no stat available
-        }
-
-        return null;
-    }
-
-    /** Infer 'file' | 'directory' | 'link' | null from mode bits (if available). */
-    private function inferTypeFromMode(?int $mode): ?string
-    {
-        if (!is_int($mode)) return null;
-        $type = $mode & 0170000;
-        switch ($type) {
-            case 0040000: return 'directory';
-            case 0100000: return 'file';
-            case 0120000: return 'link';
-            case 0010000: return 'fifo';
-            case 0060000: return 'block';
-            case 0020000: return 'char';
-            case 0140000: return 'socket';
-            default: return null;
-        }
-    }
-
-    // ===================== Aliases (compat surfaces) =====================
+    // ===================== Aliases & extended API =====================
 
     /** put(): alias to upload() */
     public function put(string $remoteFile, $data, $mode = null): bool
     {
-        $remoteFile = $this->normalizePath($remoteFile);
-        if (!method_exists($this, 'upload')) {
-            throw new \RuntimeException('upload() not implemented on NativeSFTP.');
-        }
-        try {
-            return (bool)$this->upload($remoteFile, $data, $mode);
-        } catch (\Throwable $e) {
-            throw new \RuntimeException("put() failed for {$remoteFile}: ".$e->getMessage(), 0, $e);
-        }
+        $remoteFile = $this->applyCwd($remoteFile);
+        return (bool)$this->upload($data, $remoteFile, true);
     }
 
-    /** get(): alias to download(). If $localFile === false, return string when supported. */
+    /** get(): alias to download(); if $localFile === false, return string when supported. */
     public function get(string $remoteFile, $localFile = false)
     {
-        $remoteFile = $this->normalizePath($remoteFile);
-        if (!method_exists($this, 'download')) {
-            throw new \RuntimeException('download() not implemented on NativeSFTP.');
-        }
-        try {
-            return $this->download($remoteFile, $localFile);
-        } catch (\Throwable $e) {
-            throw new \RuntimeException("get() failed for {$remoteFile}: ".$e->getMessage(), 0, $e);
-        }
+        $remoteFile = $this->applyCwd($remoteFile);
+        return $this->download($remoteFile, is_string($localFile) ? $localFile : '', is_string($localFile) ? true : true);
     }
 
     /** file_exists(): alias to exists() */
     public function file_exists(string $path): bool
     {
-        $path = $this->normalizePath($path);
-        if (!method_exists($this, 'exists')) {
-            throw new \RuntimeException('exists() not implemented on NativeSFTP.');
-        }
-        try {
-            return (bool)$this->exists($path);
-        } catch (\Throwable $e) {
-            throw new \RuntimeException("file_exists() failed for {$path}: ".$e->getMessage(), 0, $e);
-        }
+        $path = $this->applyCwd($path);
+        return $this->exists($path);
     }
 
-    /**
-     * nlist(): filenames only. Uses list(); handles shapes:
-     *  - ['a.txt','b'] or [['name'=>'a.txt',...], ...]
-     */
+    /** Basic 'is_dir' using listDirs()/list() */
+    public function is_dir(string $path): bool
+    {
+        $path = $this->applyCwd($path);
+        try {
+            $parent = rtrim(dirname($path), '/');
+            $name = basename($path);
+            if (method_exists($this, 'listDirs')) {
+                $dirs = $this->listDirs($parent === '' ? '/' : $parent);
+                if (is_array($dirs) && in_array($name, array_map('strval', $dirs), true)) return true;
+            }
+            // Try stream stat
+            $meta = @stat($this->sftpPath($path));
+            if (is_array($meta)) {
+                return ($meta['mode'] & 0170000) == 0040000;
+            }
+        } catch (\Throwable $e) {}
+        return false;
+    }
+
+    public function is_file(string $path): bool
+    {
+        $path = $this->applyCwd($path);
+        try {
+            if (!$this->exists($path)) return false;
+            $meta = @stat($this->sftpPath($path));
+            if (is_array($meta)) {
+                return ($meta['mode'] & 0170000) == 0100000;
+            }
+        } catch (\Throwable $e) {}
+        return false;
+    }
+
+    /** nlist(): filenames only (optionally recursive) */
     public function nlist(string $directory='.', bool $recursive=false): array
     {
-        if (!method_exists($this, 'list')) {
-            throw new \RuntimeException('list() not implemented on NativeSFTP.');
-        }
-        $directory = $this->normalizePath($directory);
+        $directory = $this->applyCwd($directory);
         $items = $this->list($directory);
-
-        if (!is_array($items)) {
-            throw new \RuntimeException("list() did not return an array for {$directory}");
-        }
-
-        // Extract names
+        if (!is_array($items)) return [];
         $names = [];
         foreach ($items as $it) {
-            if (is_array($it) && isset($it['name'])) {
-                $n = (string)$it['name'];
-            } elseif (is_string($it)) {
-                $n = $it;
-            } else {
-                continue;
-            }
+            if (is_array($it) && isset($it['name'])) $n = (string)$it['name'];
+            elseif (is_string($it)) $n = $it;
+            else continue;
             if ($n === '' || $n === '.' || $n === '..') continue;
             $names[] = $n;
         }
-
         if (!$recursive) return array_values($names);
-
-        // Recursive expansion
         $all = [];
-        foreach ($names as $name) {
-            $all[] = $name;
-            $full = rtrim($directory, '/') . '/' . $name;
-            try {
-                if ($this->is_dir($full)) {
-                    foreach ($this->nlist($full, true) as $child) {
-                        $all[] = $name . '/' . $child;
-                    }
+        foreach ($names as $n) {
+            $all[] = $n;
+            $full = rtrim($directory, '/') . '/' . $n;
+            if ($this->is_dir($full)) {
+                foreach ($this->nlist($full, true) as $child) {
+                    $all[] = $n . '/' . $child;
                 }
-            } catch (\Throwable $e) {
-                // skip problematic entries
             }
         }
         return $all;
     }
 
-    /**
-     * rawlist(): detailed listing.
-     * If list() already returns metadata, it is normalized.
-     * Otherwise synthesize entries using filesize(), probePosixMeta(), and is_dir().
-     * Returns: [ name => ['type'=>..., 'size'=>..., 'mode'=>..., 'uid'=>..., 'gid'=>..., 'atime'=>..., 'mtime'=>...], ... ]
-     */
+    /** rawlist(): normalize details using list() + stat() when available */
     public function rawlist(string $directory='.', bool $recursive=false): array
     {
-        if (!method_exists($this, 'list')) {
-            throw new \RuntimeException('list() not implemented on NativeSFTP.');
-        }
-        $directory = $this->normalizePath($directory);
+        $directory = $this->applyCwd($directory);
         $items = $this->list($directory);
-        if (!is_array($items)) {
-            throw new \RuntimeException("list() did not return an array for {$directory}");
-        }
-
+        if (!is_array($items)) return [];
         $out = [];
-
-        // First pass: normalize current directory entries
         foreach ($items as $it) {
-            $name = null;
-            $type = null;
-            $size = null;
-            $mtime = null;
-            $atime = null;
-            $mode = null;
-            $uid  = null;
-            $gid  = null;
-
-            if (is_array($it)) {
-                $name = isset($it['name']) ? (string)$it['name'] : null;
-                $type = $it['type'] ?? $it['filetype'] ?? null;
-                $size = $it['size'] ?? $it['filesize'] ?? null;
-                $mtime = $it['mtime'] ?? $it['modified'] ?? null;
-                $atime = $it['atime'] ?? null;
-                $mode  = $it['mode']  ?? $it['perms'] ?? null;
-                $uid   = $it['uid']   ?? null;
-                $gid   = $it['gid']   ?? null;
-                if (isset($it['is_dir']) && $it['is_dir'] === true) $type = 'directory';
-            } elseif (is_string($it)) {
-                $name = $it;
-            }
-
+            $name = is_array($it) && isset($it['name']) ? (string)$it['name'] : (is_string($it) ? $it : null);
             if (!$name || $name === '.' || $name === '..') continue;
-
             $full = rtrim($directory, '/') . '/' . $name;
-
-            // Fill missing pieces
-            if ($size === null) {
-                try { $size = $this->filesize($full); } catch (\Throwable $e) { /* leave null */ }
-            }
-            if ($type === null) {
-                $type = $this->is_dir($full) ? 'directory' : 'file';
-            }
-            if ($mode === null || $uid === null || $gid === null || $mtime === null || $atime === null) {
-                $meta = $this->probePosixMeta($full);
-                if ($meta) {
-                    $mode  = $mode  ?? $meta['mode'];
-                    $uid   = $uid   ?? $meta['uid'];
-                    $gid   = $gid   ?? $meta['gid'];
-                    $atime = $atime ?? $meta['atime'];
-                    $mtime = $mtime ?? $meta['mtime'];
-                }
-            }
-
-            $out[$name] = [
-                'type'  => $type,
-                'size'  => is_numeric($size) ? (int)$size : null,
-                'mode'  => is_int($mode) ? $mode : null,
-                'uid'   => is_numeric($uid) ? (int)$uid : null,
-                'gid'   => is_numeric($gid) ? (int)$gid : null,
-                'atime' => is_numeric($atime) ? (int)$atime : null,
-                'mtime' => is_numeric($mtime) ? (int)$mtime : null,
-            ];
-
-            // Recurse if requested and it's a directory
-            if ($recursive && $out[$name]['type'] === 'directory') {
-                try {
-                    $children = $this->rawlist($full, true);
-                    foreach ($children as $childName => $childData) {
-                        $out[$name . '/' . $childName] = $childData;
-                    }
-                } catch (\Throwable $e) {
-                    // continue; keep top-level entries even if subdir fails
+            $meta = @stat($this->sftpPath($full));
+            $mode = is_array($meta) && isset($meta['mode']) ? $meta['mode'] : null;
+            $size = is_array($meta) && isset($meta['size']) ? (int)$meta['size'] : null;
+            $mtime= is_array($meta) && isset($meta['mtime'])? (int)$meta['mtime']: null;
+            $atime= is_array($meta) && isset($meta['atime'])? (int)$meta['atime']: null;
+            $uid  = is_array($meta) && isset($meta['uid'])  ? (int)$meta['uid']  : null;
+            $gid  = is_array($meta) && isset($meta['gid'])  ? (int)$meta['gid']  : null;
+            $type = $mode !== null ? ((($mode & 0170000) == 0040000) ? 'directory' : 'file') : ($this->is_dir($full) ? 'directory' : 'file');
+            $out[$name] = ['type'=>$type,'size'=>$size,'mode'=>$mode,'uid'=>$uid,'gid'=>$gid,'atime'=>$atime,'mtime'=>$mtime];
+            if ($recursive && $type === 'directory') {
+                foreach ($this->rawlist($full, true) as $cn => $cv) {
+                    $out[$name.'/'.$cn] = $cv;
                 }
             }
         }
-
         return $out;
     }
 
-    // ===================== Metadata getters =====================
-
-    /** 'file' | 'directory' | 'link' | ... (best-effort) */
     public function filetype(string $path): ?string
     {
-        $path = $this->normalizePath($path);
-        if ($this->is_dir($path)) return 'directory';
-        if ($this->is_file($path)) return 'file';
-
-        $meta = $this->probePosixMeta($path);
-        return $this->inferTypeFromMode($meta['mode'] ?? null);
+        $path = $this->applyCwd($path);
+        $meta = @stat($this->sftpPath($path));
+        if (is_array($meta) && isset($meta['mode'])) {
+            $t = $meta['mode'] & 0170000;
+            return $t == 0040000 ? 'directory' : ($t == 0100000 ? 'file' : null);
+        }
+        return null;
     }
 
-    /** Returns POSIX mode (e.g., 0100644) when available, otherwise null. */
     public function fileperms(string $path): ?int
     {
-        $path = $this->normalizePath($path);
-        $meta = $this->probePosixMeta($path);
-        return $meta['mode'] ?? null;
+        $path = $this->applyCwd($path);
+        $meta = @stat($this->sftpPath($path));
+        return is_array($meta) && isset($meta['mode']) ? (int)$meta['mode'] : null;
     }
 
     public function fileowner(string $path): ?int
     {
-        $path = $this->normalizePath($path);
-        $meta = $this->probePosixMeta($path);
-        return $meta['uid'] ?? null;
+        $path = $this->applyCwd($path);
+        $meta = @stat($this->sftpPath($path));
+        return is_array($meta) && isset($meta['uid']) ? (int)$meta['uid'] : null;
     }
 
     public function filegroup(string $path): ?int
     {
-        $path = $this->normalizePath($path);
-        $meta = $this->probePosixMeta($path);
-        return $meta['gid'] ?? null;
+        $path = $this->applyCwd($path);
+        $meta = @stat($this->sftpPath($path));
+        return is_array($meta) && isset($meta['gid']) ? (int)$meta['gid'] : null;
     }
 
     public function fileatime(string $path): ?int
     {
-        $path = $this->normalizePath($path);
-        $meta = $this->probePosixMeta($path);
-        return $meta['atime'] ?? null;
+        $path = $this->applyCwd($path);
+        $meta = @stat($this->sftpPath($path));
+        return is_array($meta) && isset($meta['atime']) ? (int)$meta['atime'] : null;
     }
 
     public function filemtime(string $path): ?int
     {
-        $path = $this->normalizePath($path);
-        $meta = $this->probePosixMeta($path);
-        return $meta['mtime'] ?? null;
+        $path = $this->applyCwd($path);
+        $meta = @stat($this->sftpPath($path));
+        return is_array($meta) && isset($meta['mtime']) ? (int)$meta['mtime'] : null;
     }
 
-    // ===================== Mutators =====================
-
-    /** chmod using remote exec(); validates mode and errors explicitly. */
     public function chmod(int $mode, string $path): bool
     {
-        $path = $this->normalizePath($path);
-        if ($mode < 0 || $mode > 07777) {
+        if ($mode < 0 or $mode > 0o7777) {
             throw new \InvalidArgumentException('chmod() invalid mode; expected octal 0-07777.');
         }
-        // Prefer remote chmod if available
-        $cmd = 'chmod ' . sprintf('%o', $mode) . ' ' . $this->q($path);
-        $this->runExec($cmd);
+        $path = $this->applyCwd($path);
+        $cmd = 'chmod ' . sprintf('%o', $mode) . ' ' . escapeshellarg($path);
+        $this->exec($cmd);
         return true;
     }
 
-    /** chown using remote exec(); accepts numeric uid; optional gid. */
     public function chown(int $uid, string $path, ?int $gid = null): bool
     {
-        $path = $this->normalizePath($path);
         if ($uid < 0) throw new \InvalidArgumentException('chown() uid must be >= 0.');
         if ($gid !== null && $gid < 0) throw new \InvalidArgumentException('chown() gid must be >= 0.');
-
-        if ($gid === null) {
-            $cmd = 'chown ' . $uid . ' ' . $this->q($path);
-            $this->runExec($cmd);
-        } else {
-            $cmd = 'chown ' . $uid . ':' . $gid . ' ' . $this->q($path);
-            $this->runExec($cmd);
-        }
+        $path = $this->applyCwd($path);
+        $cmd = 'chown ' . $uid . ($gid === null ? '' : ':' . $gid) . ' ' . escapeshellarg($path);
+        $this->exec($cmd);
         return true;
     }
-
 }
+
 /* =======================
  * Example usage:
  * =======================
