@@ -425,13 +425,21 @@ final class NativeSFTP
     public function rename(string $remoteFrom, string $remoteTo, bool $overwrite = true): void
     {
         $remoteFrom = $this->applyCwd($remoteFrom);
-        $remoteTo = $this->applyCwd($remoteTo);
+        $remoteTo   = $this->applyCwd($remoteTo);
+
+        // Ensure parent dir exists
+        $parent = dirname($remoteTo);
+        if (!$this->exists($parent)) {
+            $this->mkdir($parent, 0755, true);
+        }
 
         if (!$overwrite && $this->exists($remoteTo)) {
             throw new RuntimeException("Destination exists: {$remoteTo}");
         }
+
         $from = $this->sftpPath($remoteFrom);
         $to   = $this->sftpPath($remoteTo);
+
         if (!@rename($from, $to)) {
             throw new RuntimeException("Failed to rename {$remoteFrom} to {$remoteTo}");
         }
