@@ -96,37 +96,37 @@ final class NativeSFTP
         // Authenticate
 $ok = false;
 if ($this->privKeyPath !== null) {
-    // If provided values are not both existing files, treat them as contents.
     $useDirectFiles = is_file($this->privKeyPath) && ($this->pubKeyPath !== null && is_file($this->pubKeyPath));
-    if ($useDirectFiles) {
-        $ok = @ssh2_auth_pubkey_file(
-            $this->conn,
-            $this->username,
-            $this->pubKeyPath,
-            $this->privKeyPath,
-            $this->passphrase ?? ''
-        );
-    } else {
-        // Prepare temp files when given contents (PEM/private or OpenSSH public line)
+    if (!$useDirectFiles) {
+        // Treat provided values as contents; prepare temp files and auto-derive .pub if needed
         [$priv, $pub, $pass] = self::prepareKeyAuth($this->privKeyPath, $this->pubKeyPath, $this->passphrase);
-        $ok = @ssh2_auth_pubkey_file(
-            $this->conn,
-            $this->username,
-            $pub,
-            $priv,
-            $pass ?? ''
-        );
+    } else {
+        $priv = $this->privKeyPath;
+        $pub  = $this->pubKeyPath;
+        $pass = $this->passphrase ?? '';
     }
+    $ok = @ssh2_auth_pubkey_file(
+        $this->conn,
+        $this->username,
+        $pub,
+        $priv,
+        $pass ?? ''
+    );
 } elseif ($this->password !== null) {
     $ok = @ssh2_auth_password($this->conn, $this->username, $this->password);
 } else {
-    throw new \InvalidArgumentException('Provide either password OR pub_key + priv_key (with optional passphrase).');
+    throw new InvalidArgumentException('Provide either password OR pub_key + priv_key (with optional passphrase).');
 }
 
 if (!$ok) {
-    throw new \RuntimeException('SSH authentication failed.');
+    throw new RuntimeException('SSH authentication failed.');
 }
-$this->sftp = @ssh2_sftp($this->conn);
+
+        if (!$ok) {
+            throw new RuntimeException('SSH authentication failed.');
+        }
+
+        $this->sftp = @ssh2_sftp($this->conn);
         if (!$this->sftp) {
             throw new RuntimeException('Failed to initialize SFTP subsystem.');
         }
@@ -137,6 +137,8 @@ $this->sftp = @ssh2_sftp($this->conn);
 
     public function list(string $remotePath): array
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $dir = $this->sftpPath($remotePath);
         $dh = @opendir($dir);
         if (!$dh) {
@@ -366,6 +368,8 @@ $this->sftp = @ssh2_sftp($this->conn);
 
     public function download(string $remoteFile, string $localFile, bool $overwrite = true): void
     {
+        $remoteFile = $this->applyCwd($remoteFile);
+
         $src = $this->sftpPath($remoteFile);
         if (!$overwrite && file_exists($localFile)) {
             throw new RuntimeException("Local file exists: {$localFile}");
@@ -389,6 +393,8 @@ $this->sftp = @ssh2_sftp($this->conn);
 
     public function upload(string $localFile, string $remoteFile, bool $overwrite = true): void
     {
+        $remoteFile = $this->applyCwd($remoteFile);
+
         if (!is_file($localFile)) {
             throw new RuntimeException("Local file not found: {$localFile}");
         }
@@ -416,6 +422,8 @@ $this->sftp = @ssh2_sftp($this->conn);
 
     public function delete(string $remoteFile): void
     {
+        $remoteFile = $this->applyCwd($remoteFile);
+
         $path = $this->sftpPath($remoteFile);
         if (!@unlink($path)) {
             throw new RuntimeException("Failed to delete remote file: {$remoteFile}");
@@ -424,40 +432,125 @@ $this->sftp = @ssh2_sftp($this->conn);
 
     public function rename(string $remoteFrom, string $remoteTo, bool $overwrite = true): void
     {
+        $remoteFrom = $this->applyCwd($remoteFrom);
+        $remoteTo   = $this->applyCwd($remoteTo);
+
+        if (!is_resource($this->sftp)) {
+            throw new RuntimeException('Not connected. Call connect() first.');
+        }
+
+        if (!$this->exists($remoteFrom)) {
+            throw new RuntimeException("Source does not exist: {$remoteFrom}");
+        }
+
+        $parent = rtrim(dirname($remoteTo), '/');
+        if ($parent !== '' && $parent !== '.' && $parent !== '/') {
+            if (!$this->exists($parent) || !@is_dir($this->sftpPath($parent))) {
+                $this->mkdir($parent, 0755, true);
+            }
+            // Probe writability
+            $parentUri = $this->sftpPath($parent);
+            $probeName = '/.__probe_' . bin2hex(random_bytes(4));
+            $probe = @fopen($parentUri . $probeName, 'wb');
+            if ($probe === false) {
+                throw new RuntimeException("Destination directory not writable: {$parent}");
+            }
+            @fclose($probe);
+            @unlink($parentUri . $probeName);
+        }
+
         if (!$overwrite && $this->exists($remoteTo)) {
             throw new RuntimeException("Destination exists: {$remoteTo}");
         }
-        $from = $this->sftpPath($remoteFrom);
-        $to   = $this->sftpPath($remoteTo);
-        if (!@rename($from, $to)) {
-            throw new RuntimeException("Failed to rename {$remoteFrom} to {$remoteTo}");
+
+        $fromUri = $this->sftpPath($remoteFrom);
+        $toUri   = $this->sftpPath($remoteTo);
+
+        if (@rename($fromUri, $toUri)) {
+            return;
+        }
+
+        if ($overwrite && $this->exists($remoteTo)) {
+            @unlink($toUri);
+            if (@rename($fromUri, $toUri)) {
+                return;
+            }
+        }
+
+        $src = @fopen($fromUri, 'rb');
+        if ($src === false) {
+            throw new RuntimeException("Failed to open source for copy: {$remoteFrom}");
+        }
+        $dst = @fopen($toUri, 'wb');
+        if ($dst === false) {
+            @fclose($src);
+            throw new RuntimeException("Failed to open destination for copy: {$remoteTo}");
+        }
+        $bytes = @stream_copy_to_stream($src, $dst);
+        @fflush($dst);
+        @fclose($dst);
+        @fclose($src);
+
+        if ($bytes === false) {
+            throw new RuntimeException("Copy fallback failed from {$remoteFrom} to {$remoteTo}");
+        }
+
+        $srcSize = null; $dstSize = null;
+        try { $srcSize = $this->filesize($remoteFrom); } catch (\Throwable $e) {}
+        try { $dstSize = $this->filesize($remoteTo);   } catch (\Throwable $e) {}
+        if ($srcSize !== null && $dstSize !== null && $srcSize !== $dstSize) {
+            @unlink($toUri);
+            throw new RuntimeException("Copy size mismatch ({$srcSize} -> {$dstSize}) during rename fallback.");
+        }
+
+        if (!@unlink($fromUri)) {
+            @unlink($toUri);
+            throw new RuntimeException("Failed to remove source after copy fallback: {$remoteFrom}");
         }
     }
 
     public function mkdir(string $remotePath, int $mode = 0755, bool $recursive = false): void
     {
-        $path = $this->sftpPath($remotePath);
-        if ($recursive) {
-            $parts = array_filter(explode('/', trim($remotePath, '/')));
-            $build = '';
-            foreach ($parts as $p) {
-                $build .= "/{$p}";
-                $dir = $this->sftpPath($build);
-                if (!@is_dir($dir)) {
-                    if (!@mkdir($dir, $mode)) {
+        $remotePath = $this->applyCwd($remotePath);
+        if (!is_resource($this->sftp)) {
+            throw new RuntimeException('Not connected. Call connect() first.');
+        }
+        $remotePath = '/' . ltrim($remotePath, '/');
+        $remotePath = rtrim($remotePath, '/');
+        if ($remotePath === '') { $remotePath = '/'; }
+
+        $dirUri = $this->sftpPath($remotePath);
+        if (@is_dir($dirUri)) {
+            return;
+        }
+
+        if (!$recursive) {
+            if (!@ssh2_sftp_mkdir($this->sftp, $remotePath, $mode, false)) {
+                throw new RuntimeException("Failed to create directory: {$remotePath}");
+            }
+            return;
+        }
+
+        $parts = array_filter(explode('/', trim($remotePath, '/')), 'strlen');
+        $build = '';
+        foreach ($parts as $p) {
+            $build .= '/' . $p;
+            $uri = $this->sftpPath($build);
+            if (@is_dir($uri)) continue;
+            if (!@ssh2_sftp_mkdir($this->sftp, $build, $mode, false)) {
+                if (!@ssh2_sftp_mkdir($this->sftp, $build)) {
+                    if (!@is_dir($uri)) {
                         throw new RuntimeException("Failed to create directory: {$build}");
                     }
                 }
-            }
-        } else {
-            if (!@mkdir($path, $mode)) {
-                throw new RuntimeException("Failed to create directory: {$remotePath}");
             }
         }
     }
 
     public function rmdir(string $remotePath): void
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         if (!@rmdir($path)) {
             throw new RuntimeException("Failed to remove directory: {$remotePath}");
@@ -466,12 +559,16 @@ $this->sftp = @ssh2_sftp($this->conn);
 
     public function exists(string $remotePath): bool
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         return @file_exists($path);
     }
 
     public function filesize(string $remotePath): int
     {
+        $remotePath = $this->applyCwd($remotePath);
+
         $path = $this->sftpPath($remotePath);
         $size = @filesize($path);
         if ($size === false) {
@@ -519,6 +616,7 @@ $this->sftp = @ssh2_sftp($this->conn);
     /**
      * Prepare key files for public key authentication.
      * Accepts private/public key paths OR raw contents and writes temp files if needed.
+     * If only private key is provided and unencrypted, derive .pub via ssh-keygen -y.
      * Returns [string $privPath, string $pubPath, ?string $passphrase]
      */
     private static function prepareKeyAuth(string $priv, ?string $pub, ?string $pass): array
@@ -582,6 +680,9 @@ $this->sftp = @ssh2_sftp($this->conn);
         return [$privPath, $pubPath, $pass];
     }
 
+    /**
+     * Write temporary key material to a secure file.
+     */
     private static function writeTempKey(string $contents, string $prefix, string $suffix, int $chmod): string
     {
         $dir = sys_get_temp_dir();
@@ -599,6 +700,251 @@ $this->sftp = @ssh2_sftp($this->conn);
         }
         @chmod($target, $chmod);
         return $target;
+    }
+
+    // ===================== Working Directory Support =====================
+    /** @var string|null Current working directory for SFTP operations */
+    private ?string $cwd = null;
+
+    /**
+     * Change working directory. Verifies it is a directory on the server.
+     */
+    public function chdir(string $directory): bool
+    {
+        $directory = $this->normalizePathNonThrow($directory);
+        if (!$this->is_dir($directory)) {
+            throw new \RuntimeException("chdir() failed: {$directory} is not a directory or not accessible.");
+        }
+        $this->cwd = rtrim($directory, '/');
+        return true;
+    }
+
+    /** Get current working directory (null if unset). */
+    public function getCwd(): ?string
+    {
+        return $this->cwd;
+    }
+
+    /** Prepend cwd to relative remote paths. */
+    private function applyCwd(string $path): string
+    {
+        if ($this->cwd === null) return $path;
+        if ($path !== '' && $path[0] === '/') return $path;
+        return rtrim($this->cwd, '/') . '/' . ltrim($path, '/');
+    }
+
+    /** Normalize a path without throwing if it doesn't exist yet. */
+    private function normalizePathNonThrow(string $path): string
+    {
+        $path = trim($path);
+        if ($path === '') throw new \InvalidArgumentException('Path cannot be empty.');
+        try { return $this->realpath($path); } catch (\Throwable $e) { return '/' . ltrim($path, '/'); }
+    }
+
+    // ===================== Convenience / Compatibility =====================
+
+    /** put(): alias to upload() */
+    public function put(string $remoteFile, $data, $mode = null): bool
+    {
+        $remoteFile = $this->applyCwd($remoteFile);
+        $this->upload(is_string($data) && is_file($data) ? $data : $data, $remoteFile, true);
+        return true;
+    }
+
+    /** get(): alias to download(); if $localFile === false, return string when supported. */
+    public function get(string $remoteFile, $localFile = false)
+    {
+        $remoteFile = $this->applyCwd($remoteFile);
+        if ($localFile === false) {
+            // Download to memory
+            $tmp = tmpfile();
+            if ($tmp === false) {
+                throw new \RuntimeException('Failed to allocate temp memory for get().');
+            }
+            $meta = stream_get_meta_data($tmp);
+            $tmpPath = $meta['uri'] ?? null;
+            if (!$tmpPath) {
+                fclose($tmp);
+                throw new \RuntimeException('Temp stream has no path.');
+            }
+            $this->download($remoteFile, $tmpPath, true);
+            $data = stream_get_contents($tmp);
+            fclose($tmp);
+            if ($data === false) {
+                throw new \RuntimeException('Failed reading from temp stream.');
+            }
+            return $data;
+        }
+        $this->download($remoteFile, (string)$localFile, true);
+        return true;
+    }
+
+    /** file_exists(): alias to exists() */
+    public function file_exists(string $path): bool
+    {
+        $path = $this->applyCwd($path);
+        return $this->exists($path);
+    }
+
+    /** Basic is_dir using stream stat and listDirs() */
+    public function is_dir(string $path): bool
+    {
+        $path = $this->applyCwd($path);
+        try {
+            $uri = $this->sftpPath($path);
+            $st = @stat($uri);
+            if (is_array($st) && isset($st['mode'])) {
+                return (($st['mode'] & 0170000) === 0040000);
+            }
+            // fallback using listDirs on parent dir
+            $parent = rtrim(dirname($path), '/');
+            $name = basename($path);
+            if (method_exists($this, 'listDirs')) {
+                $dirs = $this->listDirs($parent === '' ? '/' : $parent);
+                if (is_array($dirs) && in_array($name, array_map('strval', $dirs), true)) return true;
+            }
+        } catch (\Throwable $e) {}
+        return false;
+    }
+
+    public function is_file(string $path): bool
+    {
+        $path = $this->applyCwd($path);
+        try {
+            if (!$this->exists($path)) return false;
+            $st = @stat($this->sftpPath($path));
+            return is_array($st) && isset($st['mode']) && (($st['mode'] & 0170000) === 0100000);
+        } catch (\Throwable $e) { return false; }
+    }
+
+    /** nlist(): filenames only; supports recursion */
+    public function nlist(string $directory='.', bool $recursive=false): array
+    {
+        $directory = $this->applyCwd($directory);
+        $items = $this->list($directory);
+        if (!is_array($items)) return [];
+        $names = [];
+        foreach ($items as $it) {
+            if (is_array($it) && isset($it['name'])) $n = (string)$it['name'];
+            elseif (is_string($it)) $n = $it;
+            else continue;
+            if ($n === '' || $n === '.' || $n === '..') continue;
+            $names[] = $n;
+        }
+        if (!$recursive) return array_values($names);
+        $all = [];
+        foreach ($names as $n) {
+            $all[] = $n;
+            $full = rtrim($directory, '/') . '/' . $n;
+            if ($this->is_dir($full)) {
+                foreach ($this->nlist($full, true) as $child) {
+                    $all[] = $n . '/' . $child;
+                }
+            }
+        }
+        return $all;
+    }
+
+    /** rawlist(): detailed listing built from list() + stat() */
+    public function rawlist(string $directory='.', bool $recursive=false): array
+    {
+        $directory = $this->applyCwd($directory);
+        $items = $this->list($directory);
+        if (!is_array($items)) return [];
+        $out = [];
+        foreach ($items as $it) {
+            $name = is_array($it) && isset($it['name']) ? (string)$it['name'] : (is_string($it) ? $it : null);
+            if (!$name || $name === '.' || $name === '..') continue;
+            $full = rtrim($directory, '/') . '/' . $name;
+            $st = @stat($this->sftpPath($full));
+            $mode = is_array($st) && isset($st['mode']) ? $st['mode'] : null;
+            $size = is_array($st) && isset($st['size']) ? (int)$st['size'] : null;
+            $mtime= is_array($st) && isset($st['mtime'])? (int)$st['mtime']: null;
+            $atime= is_array($st) && isset($st['atime'])? (int)$st['atime']: null;
+            $uid  = is_array($st) && isset($st['uid'])  ? (int)$st['uid']  : null;
+            $gid  = is_array($st) && isset($st['gid'])  ? (int)$st['gid']  : null;
+            $type = $mode !== null ? ((($mode & 0170000) == 0040000) ? 'directory' : 'file') : ($this->is_dir($full) ? 'directory' : 'file');
+            $out[$name] = ['type'=>$type,'size'=>$size,'mode'=>$mode,'uid'=>$uid,'gid'=>$gid,'atime'=>$atime,'mtime'=>$mtime];
+            if ($recursive && $type === 'directory') {
+                foreach ($this->rawlist($full, true) as $cn => $cv) {
+                    $out[$name.'/'.$cn] = $cv;
+                }
+            }
+        }
+        return $out;
+    }
+
+    // Metadata helpers
+    public function filetype(string $path): ?string
+    {
+        $path = $this->applyCwd($path);
+        $st = @stat($this->sftpPath($path));
+        if (is_array($st) && isset($st['mode'])) {
+            $t = $st['mode'] & 0170000;
+            return $t == 0040000 ? 'directory' : ($t == 0100000 ? 'file' : null);
+        }
+        return null;
+    }
+    public function fileperms(string $path): ?int
+    {
+        $path = $this->applyCwd($path);
+        $st = @stat($this->sftpPath($path));
+        return is_array($st) && isset($st['mode']) ? (int)$st['mode'] : null;
+    }
+    public function fileowner(string $path): ?int
+    {
+        $path = $this->applyCwd($path);
+        $st = @stat($this->sftpPath($path));
+        return is_array($st) && isset($st['uid']) ? (int)$st['uid'] : null;
+    }
+    public function filegroup(string $path): ?int
+    {
+        $path = $this->applyCwd($path);
+        $st = @stat($this->sftpPath($path));
+        return is_array($st) && isset($st['gid']) ? (int)$st['gid'] : null;
+    }
+    public function fileatime(string $path): ?int
+    {
+        $path = $this->applyCwd($path);
+        $st = @stat($this->sftpPath($path));
+        return is_array($st) && isset($st['atime']) ? (int)$st['atime'] : null;
+    }
+    public function filemtime(string $path): ?int
+    {
+        $path = $this->applyCwd($path);
+        $st = @stat($this->sftpPath($path));
+        return is_array($st) && isset($st['mtime']) ? (int)$st['mtime'] : null;
+    }
+
+    // Mutators
+    public function chmod(int $mode, string $path): bool
+    {
+        if ($mode < 0 || $mode > 07777) {
+            throw new \InvalidArgumentException('chmod() invalid mode; expected octal 0-07777.');
+        }
+        $path = $this->applyCwd($path);
+        if (!is_resource($this->sftp)) {
+            throw new \RuntimeException('Not connected. Call connect() first.');
+        }
+        if (function_exists('ssh2_sftp_chmod')) {
+            if (!@ssh2_sftp_chmod($this->sftp, $path, $mode)) {
+                throw new \RuntimeException(sprintf('ssh2_sftp_chmod(%o, %s) failed.', $mode, $path));
+            }
+            return true;
+        }
+        $cmd = 'chmod ' . sprintf('%o', $mode) . ' ' . escapeshellarg($path);
+        $this->exec($cmd);
+        return true;
+    }
+
+    public function chown(int $uid, string $path, ?int $gid = null): bool
+    {
+        if ($uid < 0) throw new \InvalidArgumentException('chown() uid must be >= 0.');
+        if ($gid !== null && $gid < 0) throw new \InvalidArgumentException('chown() gid must be >= 0.');
+        $path = $this->applyCwd($path);
+        $cmd = 'chown ' . $uid . ($gid === null ? '' : ':' . $gid) . ' ' . escapeshellarg($path);
+        $this->exec($cmd);
+        return true;
     }
 
 }
