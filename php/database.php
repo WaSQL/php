@@ -7366,7 +7366,7 @@ function dumpDB($table=''){
     	//PostgreSQL - pg_dump dbname > outfile
     	$dump['command'] = isWindows()?"pg_dump.exe":"pg_dump";
     	if(strlen($CONFIG['dbpass']) && strlen($CONFIG['dbuser'])){
-			$dump['command'] .=" \"--dbname=postgresql://{$CONFIG['dbuser']}:{$CONFIG['dbpass']}@{$CONFIG['dbhost']}:5432/{$CONFIG['dbname']}\"";
+			$dump['command'] .=" \"--dbname=postgresql://{$CONFIG['dbuser']}:{$CONFIG['dbpass']}@{$CONFIG['dbhost']}:5432/{$CONFIG['dbname']}\"";  // secret-scan: ignore
 		}
 		else{
 			$dump['command'] .= " -h {$CONFIG['dbhost']} -Fp -c";	

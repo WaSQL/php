@@ -2,3 +2,5 @@ __pycache__/
 test_scripts/
 test.csv
 website_check_*
+myshortcuts.db
+secrets_scanner.log

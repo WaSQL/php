@@ -4,7 +4,7 @@
 function office365Auth($params=array()){
 	if(!isset($params['-username'])){return 'office365 Auth Error: no username';}
 	if(!isset($params['-password'])){return 'office365 Auth Error: no password';}
-	$token=office365GetSecurityToken($params['-username'], $params['-password']);
+	$token=office365GetSecurityToken($params['-username'], $params['-password']); // secret-scan: ignore
 	if(isset($token['value']) && isset($token['expire'])){
     	//valid user
     	return $token;

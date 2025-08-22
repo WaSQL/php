@@ -410,7 +410,7 @@ function paypalSendInvoice($params=array()){
 	$url=paypalUrl().'/v2/invoicing/invoices';
 	$json=json_encode($invoice);
 	//echo $json;exit;
-	$token=paypalGetAccessToken();
+	$token=paypalGetAccessToken(); // secret-scan: ignore
 	if(strlen($token)){
 		$post=postJSON($url,$json,array(
 			'-method'=>'POST',
@@ -485,7 +485,7 @@ function paypalSendPayout($params=array()){
 	$url=paypalUrl().'/v1/payments/payouts';
 	$json=json_encode($payout);
 	//echo $url.printValue($payout);exit;
-	$token=paypalGetAccessToken();
+	$token=paypalGetAccessToken(); // secret-scan: ignore
 	if(strlen($token)){
 		$post=postJSON($url,$json,array(
 			'-method'=>'POST',
@@ -508,7 +508,7 @@ function paypalSendPayout($params=array()){
 function paypalNextInvoiceNumber(){
 	$url=paypalUrl().'/v2/invoicing/generate-next-invoice-number';
 	//echo $json;exit;
-	$token=paypalGetAccessToken();
+	$token=paypalGetAccessToken(); // secret-scan: ignore
 	if(strlen($token)){
 		$post=postJSON($url,$json,array(
 			'-method'=>'GET',
@@ -610,7 +610,7 @@ function paypalCreateProduct($params=array()) {
         'home_url' => $params['home_url']
     ];
     // Access Token
-    $token=paypalGetAccessToken();
+    $token=paypalGetAccessToken(); // secret-scan: ignore
     if(!strlen($token)){return "paypalCreateProduct Error: no token";}
     // Url
     $url = paypalUrl(). '/v1/catalogs/products';
@@ -682,7 +682,7 @@ function paypalCreatePlan($params=array()) {
     ];
 
     // Access Token
-    $token=paypalGetAccessToken();
+    $token=paypalGetAccessToken(); // secret-scan: ignore
     if(!strlen($token)){return "paypalCreatePlan Error: no token";}
     // Url
     $url = paypalUrl(). '/v1/billing/plans';
@@ -730,7 +730,7 @@ function paypalCreateSubscription($params=array()) {
         ]
     ];
     // Access Token
-    $token=paypalGetAccessToken();
+    $token=paypalGetAccessToken(); // secret-scan: ignore
     if(!strlen($token)){return "paypalCreateSubscription Error: no token";}
     // Url
     $url = paypalUrl(). '/v1/billing/subscriptions';
@@ -749,7 +749,7 @@ function paypalCreateSubscription($params=array()) {
 }
 // Products Functions
 function payPalPermissions() {
-    $token=paypalGetAccessToken();
+    $token=paypalGetAccessToken(); // secret-scan: ignore
     if(!strlen($token)){return "payPalPermissions Error: no token";}
     // Url
     $url = paypalUrl(). '/v1/oauth2/token/userinfo';
@@ -767,7 +767,7 @@ function payPalPermissions() {
 function payPalProducts() {
     // Url
     $url = paypalUrl(). '/v1/catalogs/products';
-    $token=paypalGetAccessToken($url);
+    $token=paypalGetAccessToken($url); // secret-scan: ignore
     if(!strlen($token)){return "payPalProducts Error: no token";}
    
     // Payload

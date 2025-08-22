@@ -7,7 +7,7 @@
 
 		$host = 'localhost:d:/data/examples.fdb';
 		$username='myuser';
-		$password='mypass';
+		$password='mypass'; // secret-scan: ignore
 		$dbh = ibase_connect($host, $username, $password);
 		echo "dbh".printValue($dbh);
 		$stmt = 'SELECT CUSTOMER_ID, NAME, ADDRESS, ZIPCODE, PHONE FROM CUSTOMER offset 0 rows fetch next 5 rows only';

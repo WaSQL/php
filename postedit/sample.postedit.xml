@@ -31,7 +31,7 @@
 	<host
 		name="localhost"
 		alias="localhost"
-		apikey="YWR6adZEVSMzNnasfdhZHBleHpnMWkFrOmFkcGV4easfdsaRlVaQWs="
+		apikey="YOURAPIKEY"
 		username="admin"
 		groupby="name"
 		insecure="1"
