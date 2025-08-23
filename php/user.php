@@ -24,7 +24,11 @@ global $ConfigXml;
 if(function_exists('getallheaders')){
 	$headers=getallheaders();
 	foreach($headers as $name => $value){
-		if(preg_match('/^WaSQL\-(.+?)$/i',$name,$m)){
+		//authorization: Bearer {_authkey} support
+		if(preg_match('/^Authorization$/i',$name,$m)){
+			$_REQUEST['_auth']=trim(preg_replace('/^Bearer/','',trim($value)));
+		}
+		elseif(preg_match('/^WaSQL\-(.+?)$/i',$name,$m)){
 			$k=strtolower($m[1]);
 			switch($k){
 				case 'auth':$k='_auth';break;
@@ -40,7 +44,11 @@ if(function_exists('getallheaders')){
 else{
 	//PHP-FPM does not have the getallheaders but passes them through via HTTP_ in $_SERVER
 	foreach($_SERVER as $name=>$value){
-		if(preg_match('/^HTTP\_WASQL\_(.+)$/i',$name,$m)){
+		//authorization: Bearer {_authkey} support
+		if(preg_match('/^HTTP\_Authorization$/i',$name,$m)){
+			$_REQUEST['_auth']=trim(preg_replace('/^Bearer/','',trim($value)));
+		}
+		elseif(preg_match('/^HTTP\_WASQL\_(.+)$/i',$name,$m)){
 			$k=strtolower($m[1]);
 			switch($k){
 				case 'auth':$k='_auth';break;
