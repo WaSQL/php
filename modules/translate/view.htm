@@ -74,7 +74,9 @@
 		</view:google_translate_button>
 		<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button',$locale,'locale');?>
 	</div>
-	<?=translateList();?><span data-onload="wacss.modalClose();"></span>
+	<div id="list_translations" data-onload="wacss.modalClose();">
+	<?=translateList();?>
+	</div>
 </view:list>
 
 <view:listnext>
