@@ -553,12 +553,15 @@ var wacss = {
 	* @usage wacss.centerpopCenter();
 	*/
 	centerpopCenter: function(){
-		if(undefined != document.getElementById('wacss_centerpop')){
-			return wacss.centerObject('wacss_centerpop');
+		let cel=document.getElementById('wacss_centerpop');
+		if(undefined != cel){
+			return wacss.centerObject(cel);
 		}
-		else if(undefined != document.getElementById('centerpop')){
-			return wacss.centerObject('centerpop');
+		cel=document.getElementById('centerpop');
+		if(undefined != cel){
+			return wacss.centerObject(cel);
 		}
+		return false;
 	},
 	/**
 	* @name wacss.centerpopClose
