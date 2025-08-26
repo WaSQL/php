@@ -547,6 +547,20 @@ var wacss = {
 	  	return new Array(x,y);
 	},
 	/**
+	* @name wacss.centerpopCenter
+	* @describe closes the centerpop window
+	* @return boolean
+	* @usage wacss.centerpopCenter();
+	*/
+	centerpopCenter: function(){
+		if(undefined != document.getElementById('wacss_centerpop')){
+			return wacss.centerObject('wacss_centerpop');
+		}
+		else if(undefined != document.getElementById('centerpop')){
+			return wacss.centerObject('centerpop');
+		}
+	},
+	/**
 	* @name wacss.centerpopClose
 	* @describe closes the centerpop window
 	* @return boolean
