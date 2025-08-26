@@ -88,6 +88,7 @@ ENDOFNAME,
 		'locale' => $locale,
 		'wasql' => translateGetWasqlValue(),
 		'-order' => "confirmed,_id",
+		'setprocessing'=>0,
 		'-results_eval' => "translateListExtra",
 	);
 	return databaseListRecords($opts);
