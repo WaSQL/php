@@ -10,6 +10,7 @@
 	global $PAGE;
 	global $MODULE;
 	global $CONFIG;
+	global $locale;
 	if(!isset($MODULE['title'])){
 		$MODULE['title']='<span class="icon-translate w_success"></span> <wtranslate>Translation Manager</wtranslate>';
 	}

@@ -52,7 +52,47 @@ function translateGetLangSelectionsExtra($recs){
 	}
 	return $recs;
 }
-function translateAddExtraInfo($recs){
+function translateGetWasqlValue(){
+	global $MODULE;
+	return 0;
+	//echo printValue($MODULE);exit;
+	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
+	return $wasql;
+}
+function translateList(){
+	global $MODULE;
+	global $locale;
+	$opts=array(
+		'-divid' => "list_translations",
+		'-table' => "_translations" ,
+		'-tableclass' => "table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover",
+		'-listfields' => "_id,source,translation,confirmed",
+		'-action' => "/{$MODULE['ajaxpage']}/listnext/{$locale}",
+		'-onsubmit' => "return pagingSubmit(this,'list_translations')",
+		'-navonly' => "1",
+		'-searchopers' => "ct",
+		'source_displayname' => "Source (<?=translateGetSourceLocale();?>)",
+		'source_style' => "white-space: normal",
+		'translation_displayname' => "Translation ({$locale})",
+		'translation_style' => "white-space: normal;",
+		'confirmed_style' => "text-align:center",
+		'confirmed_checkmark' => "1",
+		'confirmed_checkmark_icon' => "icon-mark w_success",
+		'translation_onclick' => "return ajaxGet('/{$MODULE['ajaxpage']}/edit/%_id%','modal',{setprocessing:0})",
+		'_id_displayname' => <<<ENDOFNAME
+<div style="display:flex;justify-content:space-between;">
+	<label for="checkall_ids" style="margin-right:3px;cursor:pointer;">ID</label>
+	<input id="checkall_ids" type="checkbox" onclick="checkAllElements('data-group','_id_checkbox',this.checked);">
+</div>
+ENDOFNAME,
+		'locale' => $locale,
+		'wasql' => translateGetWasqlValue(),
+		'-order' => "confirmed,_id",
+		'-results_eval' => "translateListExtra",
+	);
+	return databaseListRecords($opts);
+}
+function translateListExtra($recs){
 	$locale=$recs[0]['locale'];
 	$ids=array();
 	foreach($recs as $rec){
@@ -74,21 +114,24 @@ function translateAddExtraInfo($recs){
 		if(isset($sourcemap[$key])){
 			$recs[$i]['source']=$sourcemap[$key]['translation'];
 		}
+		$checkbox=0;
 		if($recs[$i]['confirmed']==1){
 			$recs[$i]['confirmed']='<span class="icon-mark w_success"></span>';
 		}
 		else{
+			$checkbox=1;
 			$recs[$i]['confirmed']='<span class="icon-block w_danger"></span>';
+		}
+		if($checkbox==1){
+			$recs[$i]['_id']=<<<ENDOFCHECKBOX
+<div style="display:flex;justify-content:space-between;">
+	<label for="trid_{$rec['_id']}" style="margin-right:3px;cursor:pointer;">{$rec['_id']}</label>
+	<input type="checkbox" data-group="_id_checkbox" id="trid_{$rec['_id']}" name="_id[]" value="{$rec['_id']}">
+</div>
+ENDOFCHECKBOX;
 		}
 	}
 	return $recs;
-}
-function translateGetWasqlValue(){
-	global $MODULE;
-	return 0;
-	//echo printValue($MODULE);exit;
-	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
-	return $wasql;
 }
 /* translateListLocales returns recs for json in dblistrecords */
 function translateListLocales(){
