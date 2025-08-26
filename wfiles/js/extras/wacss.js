@@ -1967,7 +1967,7 @@ var wacss = {
 				}
 				leftmenu.dataset.initialized=1;
 				//verify that a checkbox with an id of wacss_leftmenu-toggle exist
-				let ckobj=document.querySelector('#wacss_leftmenu-toggle');
+				let ckobj=document.getElementById('wacss_leftmenu-toggle');
 				if(undefined==ckobj){
 					let ck=document.createElement('input');
 					ck.type='checkbox';
@@ -2013,15 +2013,11 @@ var wacss = {
 				return true;
 			break;
 			case 'open':
-				let leftmenu_open=document.querySelector('#wacss_leftmenu-toggle');
-				if(undefined == leftmenu_open){return false;}
-				leftmenu_open.checked=true;
+				document.getElementById('wacss_leftmenu-toggle').checked=true;
 				return true;
 			break;
 			case 'close':
-				let leftmenu_close=document.querySelector('#wacss_leftmenu-toggle');
-				if(undefined == leftmenu_close){return false;}
-				leftmenu_close.checked=false;
+				document.getElementById('wacss_leftmenu-toggle').checked=false;
 				return true;
 			break;
 			case 'width':
