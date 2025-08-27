@@ -149,6 +149,9 @@ ENDOFQ;
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateCheckSchema(){
+	//no need to check every hit.. only once per session
+	if(isset($_SESSION['translateCheckSchema'])){return;}
+	$_SESSION['translateCheckSchema']=time();
 	global $CONFIG;
 	$table='_translations';
 	if(isDBTable($table)){
@@ -196,6 +199,10 @@ function translateGetSourceLocale(){
 	else{$source_locale='en-us';}
 	return $source_locale;
 }
+//---------- begin function translateMapText
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function translateMapText($text){
 	$map=array(
 		'text'=>$text,
@@ -228,6 +235,10 @@ function translateMapText($text){
 	}
 	return $map;
 }
+//---------- begin function translateUnmapText
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function translateUnmapText($source,$target){
 	$map=translateMapText($source);
 	foreach($map['map'] as $i=>$tag){
