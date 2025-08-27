@@ -71,18 +71,29 @@ function translateList(){
 		'-onsubmit' => "return pagingSubmit(this,'list_translations')",
 		'-navonly' => "1",
 		'-searchopers' => "ct",
-		'source_displayname' => "Source (<?=translateGetSourceLocale();?>)",
-		'source_style' => "white-space: normal",
-		'translation_displayname' => "Translation ({$locale})",
-		'translation_style' => "white-space: normal;",
-		'confirmed_style' => "text-align:center",
-		'confirmed_checkmark' => "1",
-		'confirmed_checkmark_icon' => "icon-mark w_success",
-		'translation_onclick' => "return ajaxGet('/{$MODULE['ajaxpage']}/edit/%_id%','modal',{setprocessing:0})",
+		'source_options'=>array(
+			'displayname' => "Source (<?=translateGetSourceLocale();?>)",
+			'style' => "white-space: normal"
+		),
+		'translation_options'=>array(
+			'displayname' => "Translation ({$locale})",
+			'style' => "white-space: normal;"
+		),
+		'confirmed_options'=>array(
+			'style' => "text-align:center",
+			'checkmark' => "1",
+			'checkmark_icon' => "icon-mark w_success",
+			'displayname'=><<<ENDOFHTM
+<div style="display:flex;justify-content:center;">
+	<label for="checkall_ids" style="margin-right:5px;cursor:pointer;"><span class="icon-mark w_success"></span></label>
+	<input  title="check confirmed" id="check_confirmed" type="checkbox" onclick="checkAllElements('data-confirmed','yes',this.checked);">
+</div>
+ENDOFHTM
+		),
 		'_id_displayname' => <<<ENDOFNAME
 <div style="display:flex;justify-content:space-between;">
 	<label for="checkall_ids" style="margin-right:3px;cursor:pointer;">ID</label>
-	<input id="checkall_ids" type="checkbox" onclick="checkAllElements('data-group','_id_checkbox',this.checked);">
+	<input title="Check Not Confirmed" id="check_not_confirmed" type="checkbox" onclick="checkAllElements('data-confirmed','no',this.checked);">
 </div>
 ENDOFNAME,
 		'locale' => $locale,
@@ -94,6 +105,8 @@ ENDOFNAME,
 	return databaseListRecords($opts);
 }
 function translateListExtra($recs){
+	global $MODULE;
+	global $locale;
 	$locale=$recs[0]['locale'];
 	$ids=array();
 	foreach($recs as $rec){
@@ -112,25 +125,44 @@ function translateListExtra($recs){
 	if(!is_array($sourcemap) || !count($sourcemap)){return $recs;}
 	foreach($recs as $i=>$rec){
 		$key=$rec['identifier'];
+		//source
 		if(isset($sourcemap[$key])){
 			$recs[$i]['source']=$sourcemap[$key]['translation'];
 		}
-		$checkbox=0;
+		$class=isXML($recs[$i]['source'])?'w_red':'';
+		$recs[$i]['source']=<<<ENDOFSOURCE
+<xmp class="{$class}" style="display:inline-block;font-family:inherit;white-space:inherit;margin:0 0;">
+{$recs[$i]['source']}
+</xmp>
+ENDOFSOURCE;
+		//translation
+		$class=isXML($recs[$i]['translation'])?'w_red':'';
+		$recs[$i]['translation']=<<<ENDOFSOURCE
+<div style="display:flex;justify-content:space-between;">
+	<xmp class="{$class}" style="display:inline-block;font-family:inherit;white-space:inherit;margin:0 0;">
+	{$recs[$i]['translation']}
+	</xmp>
+	<div style="display:flex;justify-content:flex-end;">
+		<a href="#" style="margin-right:10px;" data-confirm="Delete Translation #{$rec['_id']}?" title="Edit" data-title="Edit Translation" data-nav="/{$MODULE['ajaxpage']}/delete/{$locale}/{$rec['_id']}" data-div="tranalate_results" data-setprocessing="0" onclick="return wacss.nav(this);"><span class="icon-erase w_big w_red"></span></a>
+		<a href="#" title="Edit" data-title="Edit Translation" data-nav="/{$MODULE['ajaxpage']}/edit/{$rec['_id']}" data-div="modal" data-setprocessing="0" onclick="return wacss.nav(this);"><span class="icon-edit w_big"></span></a>
+	</div>
+</div>
+ENDOFSOURCE;
+		$confirmed='';
 		if($recs[$i]['confirmed']==1){
+			$confirmed='yes';
 			$recs[$i]['confirmed']='<span class="icon-mark w_success"></span>';
 		}
 		else{
-			$checkbox=1;
+			$confirmed='no';
 			$recs[$i]['confirmed']='<span class="icon-block w_danger"></span>';
 		}
-		if($checkbox==1){
-			$recs[$i]['_id']=<<<ENDOFCHECKBOX
+		$recs[$i]['_id']=<<<ENDOFCHECKBOX
 <div style="display:flex;justify-content:space-between;">
 	<label for="trid_{$rec['_id']}" style="margin-right:3px;cursor:pointer;">{$rec['_id']}</label>
-	<input type="checkbox" data-group="_id_checkbox" id="trid_{$rec['_id']}" name="_id[]" value="{$rec['_id']}">
+	<input type="checkbox" data-confirmed="{$confirmed}" data-group="_id_checkbox" id="trid_{$rec['_id']}" name="_id[]" value="{$rec['_id']}">
 </div>
 ENDOFCHECKBOX;
-		}
 	}
 	return $recs;
 }

@@ -1,6 +1,6 @@
 <view:default>
 <script>
-	window['translateBulkGoogleTranslate'] = function(locale){
+	window['translateBulkTranslate'] = function(locale){
 		let els=document.querySelectorAll('input[type="checkbox"][data-group="_id_checkbox"]:checked');
 		if(els.length==0){
 			alert('Select rows to translate');
@@ -68,11 +68,10 @@
 <view:list>
 	<div style="display: flex;justify-content: space-between; align-items:center;margin-bottom:10px;">
 		<h3><?=$info['name'];?></h3>
-		<view:google_translate_button>
-			<? global $MODULE;?>
-		<button onclick="return translateBulkGoogleTranslate('<?=$locale;?>');" class="btn w-white white"><span class="icon-site-google"></span> Bulk Google Translate</button>
-		</view:google_translate_button>
-		<?=renderViewIf(translateHasPermission('google_translate'),'google_translate_button',$locale,'locale');?>
+		<? global $MODULE;?>
+		<div>
+			<button onclick="return translateBulkTranslate('<?=$locale;?>');" class="btn w-white white"><span class="icon-translate w_red"></span> Bulk Translate</button>
+		</div>
 	</div>
 	<div id="list_translations" data-onload="wacss.modalClose();">
 	<?=translateList();?>
@@ -87,7 +86,13 @@
 <div>
 	<div class="w_bold w_bigger"><wtranslate>Instructions</wtranslate></div> 
 	<div class="w_small"> - <wtranslate>Click on the copy icon below to copy the source language to your clipboard</wtranslate></div>
-	<div class="w_small"> - <wtranslate>Go to <a href="https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?>" target="_blank">https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?></a></wtranslate></div>
+	<div class="w_small"> - Go to 
+		<a href="https://translate.google.com/#view=home&op=translate&sl=<?=$source['lang'];?>&tl=<?=$target['lang'];?>" target="_blank" class="btn w_white white w_small"><span class="icon-site-google"></span> Google</a>
+		OR
+		<a href="https://translate.yandex.com/?lang=<?=$source['lang'];?>-<?=$target['lang'];?>" target="_blank" class="btn w_white white w_small"><span class="icon-translate w_red"></span> Yandex</a>
+		OR
+		<a href="https://www.bing.com/translator/?from=<?=$source['lang'];?>&to=<?=$target['lang'];?>" target="_blank" class="btn w_white white w_small"><span class="icon-site-bing"></span> Bing</a>
+	</div>
 	<div class="w_small"> - <wtranslate>Make sure the target lang on the right side is <?=$target['name'];?></wtranslate></div>
 	<div class="w_small"> - <wtranslate>Paste the clipboard contents into the source area on the left side. You should see the translated version on the right side now</wtranslate></div>
 	<div class="w_small"> - <wtranslate>Click on the copy icon on the bottom of the target language window to copy to your clipboard</wtranslate></div>

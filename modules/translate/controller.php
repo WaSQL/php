@@ -10,6 +10,7 @@
 	global $PAGE;
 	global $MODULE;
 	global $CONFIG;
+	global $PASSTHRU;
 	global $locale;
 	if(!isset($MODULE['title'])){
 		$MODULE['title']='<span class="icon-translate w_success"></span> <wtranslate>Translation Manager</wtranslate>';
@@ -164,6 +165,14 @@
 		case 'listnext':
 			$locale=addslashes($_REQUEST['passthru'][$p1]);
 			$info=translateGetLocaleInfo($locale);
+			setView('listnext',1);
+			return;
+		break;
+		case 'delete':
+			$locale=addslashes($_REQUEST['passthru'][$p1]);
+			$info=translateGetLocaleInfo($locale);
+			$id=(integer)$_REQUEST['passthru'][$p2];
+			$ok=delDBRecordById('_translations',$id);
 			setView('listnext',1);
 			return;
 		break;
