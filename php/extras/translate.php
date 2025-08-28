@@ -29,6 +29,7 @@ translateCheckSchema();
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function translateGetLocaleInfo($locale){
+	$locale=preg_replace('/\?.+$/','',$locale);
 	global $localesJson;
 	$path=getWasqlPath('php/schema');
 	$flagspath=getWasqlPath('wfiles/flags');
