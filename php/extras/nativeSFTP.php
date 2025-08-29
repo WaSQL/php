@@ -39,7 +39,7 @@ final class NativeSFTP
     public function __construct(array $cfg)
     {
         if (!extension_loaded('ssh2')) {
-            return 'The ssh2 extension is required. Install via PECL: pecl install ssh2';
+            throw new RuntimeException('The ssh2 extension is required. Install via PECL: pecl install ssh2');
         }
 
         $this->host   = $cfg['host'] ?? 'localhost';
@@ -81,7 +81,7 @@ final class NativeSFTP
 
         $this->conn = @ssh2_connect($this->host, $this->port, $methods, $callbacks);
         if (!$this->conn) {
-            return "Failed to connect to {$this->host}:{$this->port}";
+            throw new RuntimeException("Failed to connect to {$this->host}:{$this->port}");
         }
 
         // Optional: verify server fingerprint (MD5 hex). ext-ssh2 commonly supports MD5/hex flag combo.
@@ -89,7 +89,7 @@ final class NativeSFTP
             $fp = @ssh2_fingerprint($this->conn, SSH2_FINGERPRINT_MD5 | SSH2_FINGERPRINT_HEX);
             $fpNorm = strtolower(preg_replace('/[^0-9a-f]/i', '', (string)$fp));
             if ($fpNorm !== $this->expectedFingerprintHex) {
-                return "Server fingerprint mismatch. Expected {$this->expectedFingerprintHex}, got {$fpNorm}";
+                throw new RuntimeException("Server fingerprint mismatch. Expected {$this->expectedFingerprintHex}, got {$fpNorm}");
             }
         }
 
@@ -119,16 +119,16 @@ if ($this->privKeyPath !== null) {
 }
 
 if (!$ok) {
-    return 'SSH authentication failed.';
+    throw new RuntimeException('SSH authentication failed.');
 }
 
         if (!$ok) {
-            return 'SSH authentication failed.';
+            throw new RuntimeException('SSH authentication failed.');
         }
 
         $this->sftp = @ssh2_sftp($this->conn);
         if (!$this->sftp) {
-            return 'Failed to initialize SFTP subsystem.';
+            throw new RuntimeException('Failed to initialize SFTP subsystem.');
         }
 
         // Apply a socket timeout to SFTP operations by setting stream context default timeout, if needed.
@@ -142,7 +142,7 @@ if (!$ok) {
         $dir = $this->sftpPath($remotePath);
         $dh = @opendir($dir);
         if (!$dh) {
-            return "Cannot open directory: {$remotePath}";
+            throw new RuntimeException("Cannot open directory: {$remotePath}");
         }
         $items = [];
         while (($file = readdir($dh)) !== false) {
@@ -160,12 +160,12 @@ if (!$ok) {
     public function exec(string $command, bool $trim = true): string
     {
         if (!is_resource($this->conn)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
 
         $stream = @ssh2_exec($this->conn, $command);
         if (!$stream) {
-            return "Failed to execute command: {$command}";
+            throw new RuntimeException("Failed to execute command: {$command}");
         }
 
         $errorStream = @ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
@@ -198,14 +198,14 @@ if (!$ok) {
     public function realpath(string $path = '.'): string
     {
         if (!is_resource($this->sftp)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
 
         // Prefer the dedicated API if available in your ssh2 build:
         if (function_exists('ssh2_sftp_realpath')) {
             $resolved = @ssh2_sftp_realpath($this->sftp, $path);
             if ($resolved === false || $resolved === null || $resolved === '') {
-                return "Failed to resolve path: {$path}";
+                throw new RuntimeException("Failed to resolve path: {$path}");
             }
             return $resolved;
         }
@@ -219,7 +219,7 @@ if (!$ok) {
             if ($path === '.' && @opendir(sprintf('ssh2.sftp://%s/', intval($this->sftp))) !== false) {
                 return '/';
             }
-            return "Cannot open path: {$path}";
+            throw new RuntimeException("Cannot open path: {$path}");
         }
         // Some stream wrappers expose the resolved path in stream_get_meta_data
         $metaData = stream_get_meta_data($dir);
@@ -250,7 +250,7 @@ if (!$ok) {
     public function tryList(string $remotePath = '.', bool $includeHidden = false): array
     {
         if (!is_resource($this->sftp)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
 
         $path = $this->sftpPath($remotePath);
@@ -316,7 +316,7 @@ if (!$ok) {
     public function discoverDirectories(string $start = '.', int $maxDepth = 2, int $maxNodes = 2000, bool $includeHidden = false): array
     {
         if (!is_resource($this->sftp)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
 
         // Normalize start
@@ -372,18 +372,18 @@ if (!$ok) {
 
         $src = $this->sftpPath($remoteFile);
         if (!$overwrite && file_exists($localFile)) {
-            return "Local file exists: {$localFile}";
+            throw new RuntimeException("Local file exists: {$localFile}");
         }
 
         $in  = @fopen($src, 'rb');
         if (!$in) {
-            return "Cannot open remote file for reading: {$remoteFile}";
+            throw new RuntimeException("Cannot open remote file for reading: {$remoteFile}");
         }
 
         $out = @fopen($localFile, 'wb');
         if (!$out) {
             fclose($in);
-            return "Cannot open local file for writing: {$localFile}";
+            throw new RuntimeException("Cannot open local file for writing: {$localFile}");
         }
 
         $this->streamCopy($in, $out);
@@ -396,23 +396,23 @@ if (!$ok) {
         $remoteFile = $this->applyCwd($remoteFile);
 
         if (!is_file($localFile)) {
-            return "Local file not found: {$localFile}";
+            throw new RuntimeException("Local file not found: {$localFile}");
         }
 
         $dst = $this->sftpPath($remoteFile);
         if (!$overwrite && $this->exists($remoteFile)) {
-            return "Remote file exists: {$remoteFile}";
+            throw new RuntimeException("Remote file exists: {$remoteFile}");
         }
 
         $in  = @fopen($localFile, 'rb');
         if (!$in) {
-            return "Cannot open local file for reading: {$localFile}";
+            throw new RuntimeException("Cannot open local file for reading: {$localFile}");
         }
 
         $out = @fopen($dst, 'wb');
         if (!$out) {
             fclose($in);
-            return "Cannot open remote file for writing: {$remoteFile}";
+            throw new RuntimeException("Cannot open remote file for writing: {$remoteFile}");
         }
 
         $this->streamCopy($in, $out);
@@ -426,9 +426,8 @@ if (!$ok) {
 
         $path = $this->sftpPath($remoteFile);
         if (!@unlink($path)) {
-            return "Failed to delete remote file: {$remoteFile}";
+            throw new RuntimeException("Failed to delete remote file: {$remoteFile}");
         }
-        return true;
     }
 
     public function rename(string $remoteFrom, string $remoteTo, bool $overwrite = true): void
@@ -437,11 +436,11 @@ if (!$ok) {
         $remoteTo   = $this->applyCwd($remoteTo);
 
         if (!is_resource($this->sftp)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
 
         if (!$this->exists($remoteFrom)) {
-            return "Source does not exist: {$remoteFrom}";
+            throw new RuntimeException("Source does not exist: {$remoteFrom}");
         }
 
         $parent = rtrim(dirname($remoteTo), '/');
@@ -454,38 +453,38 @@ if (!$ok) {
             $probeName = '/.__probe_' . bin2hex(random_bytes(4));
             $probe = @fopen($parentUri . $probeName, 'wb');
             if ($probe === false) {
-                return "Destination directory not writable: {$parent}";
+                throw new RuntimeException("Destination directory not writable: {$parent}");
             }
             @fclose($probe);
             @unlink($parentUri . $probeName);
         }
 
         if (!$overwrite && $this->exists($remoteTo)) {
-            return "Destination exists: {$remoteTo}";
+            throw new RuntimeException("Destination exists: {$remoteTo}");
         }
 
         $fromUri = $this->sftpPath($remoteFrom);
         $toUri   = $this->sftpPath($remoteTo);
 
         if (@rename($fromUri, $toUri)) {
-            return true;
+            return;
         }
 
         if ($overwrite && $this->exists($remoteTo)) {
             @unlink($toUri);
             if (@rename($fromUri, $toUri)) {
-                return true;
+                return;
             }
         }
 
         $src = @fopen($fromUri, 'rb');
         if ($src === false) {
-            return "Failed to open source for copy: {$remoteFrom}";
+            throw new RuntimeException("Failed to open source for copy: {$remoteFrom}");
         }
         $dst = @fopen($toUri, 'wb');
         if ($dst === false) {
             @fclose($src);
-            return "Failed to open destination for copy: {$remoteTo}";
+            throw new RuntimeException("Failed to open destination for copy: {$remoteTo}");
         }
         $bytes = @stream_copy_to_stream($src, $dst);
         @fflush($dst);
@@ -493,7 +492,7 @@ if (!$ok) {
         @fclose($src);
 
         if ($bytes === false) {
-            return "Copy fallback failed from {$remoteFrom} to {$remoteTo}";
+            throw new RuntimeException("Copy fallback failed from {$remoteFrom} to {$remoteTo}");
         }
 
         $srcSize = null; $dstSize = null;
@@ -501,21 +500,20 @@ if (!$ok) {
         try { $dstSize = $this->filesize($remoteTo);   } catch (\Throwable $e) {}
         if ($srcSize !== null && $dstSize !== null && $srcSize !== $dstSize) {
             @unlink($toUri);
-            return "Copy size mismatch ({$srcSize} -> {$dstSize}) during rename fallback.";
+            throw new RuntimeException("Copy size mismatch ({$srcSize} -> {$dstSize}) during rename fallback.");
         }
 
         if (!@unlink($fromUri)) {
             @unlink($toUri);
-            return "Failed to remove source after copy fallback: {$remoteFrom}";
+            throw new RuntimeException("Failed to remove source after copy fallback: {$remoteFrom}");
         }
-        return true;
     }
 
     public function mkdir(string $remotePath, int $mode = 0755, bool $recursive = false): void
     {
         $remotePath = $this->applyCwd($remotePath);
         if (!is_resource($this->sftp)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
         $remotePath = '/' . ltrim($remotePath, '/');
         $remotePath = rtrim($remotePath, '/');
@@ -528,7 +526,7 @@ if (!$ok) {
 
         if (!$recursive) {
             if (!@ssh2_sftp_mkdir($this->sftp, $remotePath, $mode, false)) {
-                return "Failed to create directory: {$remotePath}";
+                throw new RuntimeException("Failed to create directory: {$remotePath}");
             }
             return;
         }
@@ -542,7 +540,7 @@ if (!$ok) {
             if (!@ssh2_sftp_mkdir($this->sftp, $build, $mode, false)) {
                 if (!@ssh2_sftp_mkdir($this->sftp, $build)) {
                     if (!@is_dir($uri)) {
-                        return "Failed to create directory: {$build}";
+                        throw new RuntimeException("Failed to create directory: {$build}");
                     }
                 }
             }
@@ -555,7 +553,7 @@ if (!$ok) {
 
         $path = $this->sftpPath($remotePath);
         if (!@rmdir($path)) {
-            return "Failed to remove directory: {$remotePath}";
+            throw new RuntimeException("Failed to remove directory: {$remotePath}");
         }
     }
 
@@ -574,7 +572,7 @@ if (!$ok) {
         $path = $this->sftpPath($remotePath);
         $size = @filesize($path);
         if ($size === false) {
-            return "Failed to stat file size: {$remotePath}";
+            throw new RuntimeException("Failed to stat file size: {$remotePath}");
         }
         return (int)$size;
     }
@@ -596,11 +594,11 @@ if (!$ok) {
         while (!feof($in)) {
             $buf = fread($in, $bufSize);
             if ($buf === false) {
-                return 'Read error during stream copy.';
+                throw new RuntimeException('Read error during stream copy.');
             }
             $written = fwrite($out, $buf);
             if ($written === false) {
-                return 'Write error during stream copy.';
+                throw new RuntimeException('Write error during stream copy.');
             }
         }
         fflush($out);
@@ -609,7 +607,7 @@ if (!$ok) {
     private function sftpPath(string $path): string
     {
         if (!is_resource($this->sftp)) {
-            return 'Not connected. Call connect() first.';
+            throw new RuntimeException('Not connected. Call connect() first.');
         }
         // Normalize (allow absolute or relative)
         $normalized = '/' . ltrim($path, '/');
