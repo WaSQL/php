@@ -864,7 +864,7 @@ if (!$ok) {
             $uid  = is_array($st) && isset($st['uid'])  ? (int)$st['uid']  : null;
             $gid  = is_array($st) && isset($st['gid'])  ? (int)$st['gid']  : null;
             $type = $mode !== null ? ((($mode & 0170000) == 0040000) ? 'directory' : 'file') : ($this->is_dir($full) ? 'directory' : 'file');
-            $out[$name] = ['type'=>$type,'size'=>$size,'mode'=>$mode,'uid'=>$uid,'gid'=>$gid,'atime'=>$atime,'mtime'=>$mtime];
+            $out[$name] = ['filename'=>$name,'afile'=>$full,'type'=>$type,'size'=>$size,'mode'=>$mode,'uid'=>$uid,'gid'=>$gid,'atime'=>$atime,'mtime'=>$mtime];
             if ($recursive && $type === 'directory') {
                 foreach ($this->rawlist($full, true) as $cn => $cv) {
                     $out[$name.'/'.$cn] = $cv;
