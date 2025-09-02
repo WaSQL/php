@@ -24,22 +24,94 @@ function markdown2Html($txt){
 /**
 * @describe converts markdown text to email friendly HTML
 * @param string $txt     - markdown string
-* @param array  $params  - options like ['target' => '_blank']
+* @param array  $params  - e.g. ['target' => '_blank', 'rel' => 'noopener noreferrer']
 * @return string - HTML
 * @usage echo markdown2Email($txt, ['target' => '_blank']);
 */
-function markdown2Email($txt, $params=array()) {
+function markdown2Email($txt, $params = array()) {
     $html = Parsedown::instance()->text($txt);
 
-    // Base <a> tag style
-    $aTag = '<a style="color:#0066cc;text-decoration:underline;" ';
+    // 1) Tweak <a> tags reliably via DOM (handles any spacing/newlines/attribute order)
+    $linkStyle = 'color:#0066cc;text-decoration:underline;';
+    $linkTarget = isset($params['target']) ? $params['target'] : null;
+    $linkRel    = isset($params['rel']) ? $params['rel'] : null;
 
-    // Add optional target
-    if (!empty($params['target'])) {
-        $aTag = '<a style="color:#0066cc;text-decoration:underline;" target="' . htmlspecialchars($params['target'], ENT_QUOTES) . '" ';
+    if (class_exists('DOMDocument')) {
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        libxml_use_internal_errors(true);
+        // Ensure UTF-8 and avoid HTML wrapper side-effects
+        $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'.$html);
+        libxml_clear_errors();
+
+        foreach ($dom->getElementsByTagName('a') as $a) {
+            // Style: append to any existing style
+            $existingStyle = $a->getAttribute('style');
+            $a->setAttribute('style', trim($existingStyle.' '.$linkStyle));
+
+            if (!empty($linkTarget)) {
+                $a->setAttribute('target', $linkTarget);
+            }
+            if (!empty($linkRel)) {
+                // Append rel tokens if rel already exists
+                $existingRel = trim($a->getAttribute('rel'));
+                $newRel = trim($existingRel.' '.$linkRel);
+                // Deduplicate rel tokens
+                if ($newRel !== '') {
+                    $relParts = preg_split('/\s+/', $newRel);
+                    $a->setAttribute('rel', implode(' ', array_unique($relParts)));
+                }
+            }
+        }
+
+        // Extract body innerHTML
+        $body = $dom->getElementsByTagName('body')->item(0);
+        $newHtml = '';
+        foreach ($body->childNodes as $child) {
+            $newHtml .= $dom->saveHTML($child);
+        }
+        $html = $newHtml;
+    } else {
+        // 1b) Fallback: regex approach if DOM extension isn’t available
+        $t = $linkTarget;
+        $r = $linkRel;
+        $s = $linkStyle;
+        $html = preg_replace_callback('/<a\b([^>]*)>/i', function ($m) use ($t, $r, $s) {
+            $attrs = $m[1];
+
+            // style
+            if (preg_match('/\bstyle="/i', $attrs)) {
+                $attrs = preg_replace('/\bstyle="([^"]*)"/i', 'style="$1 '.$s.'"', $attrs);
+            } else {
+                $attrs .= ' style="'.$s.'"';
+            }
+
+            // target
+            if (!empty($t)) {
+                if (preg_match('/\btarget="/i', $attrs)) {
+                    $attrs = preg_replace('/\btarget="[^"]*"/i', 'target="'.htmlspecialchars($t, ENT_QUOTES).'"', $attrs);
+                } else {
+                    $attrs .= ' target="'.htmlspecialchars($t, ENT_QUOTES).'"';
+                }
+            }
+
+            // rel (append + dedupe basic)
+            if (!empty($r)) {
+                if (preg_match('/\brel="([^"]*)"/i', $attrs, $rm)) {
+                    $existing = trim($rm[1]);
+                    $merged = trim($existing.' '.$r);
+                    $parts = preg_split('/\s+/', $merged);
+                    $merged = implode(' ', array_unique($parts));
+                    $attrs = preg_replace('/\brel="[^"]*"/i', 'rel="'.$merged.'"', $attrs);
+                } else {
+                    $attrs .= ' rel="'.$r.'"';
+                }
+            }
+
+            return '<a'.$attrs.'>';
+        }, $html);
     }
 
-    // Email-friendly inline styles
+    // 2) Your email-friendly inline styles for other tags
     $emailStyles = array(
         '<h1>' => '<h1 style="font-family:Arial,sans-serif;font-size:24px;color:#333;margin:20px 0 10px 0;font-weight:bold;">',
         '<h2>' => '<h2 style="font-family:Arial,sans-serif;font-size:20px;color:#333;margin:18px 0 8px 0;font-weight:bold;">',
@@ -47,7 +119,7 @@ function markdown2Email($txt, $params=array()) {
         '<h4>' => '<h4 style="font-family:Arial,sans-serif;font-size:16px;color:#333;margin:14px 0 4px 0;font-weight:bold;">',
         '<h5>' => '<h5 style="font-family:Arial,sans-serif;font-size:14px;color:#333;margin:12px 0 4px 0;font-weight:bold;">',
         '<h6>' => '<h6 style="font-family:Arial,sans-serif;font-size:12px;color:#333;margin:10px 0 4px 0;font-weight:bold;">',
-        '<p>' => '<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;margin:10px 0;color:#333;">',
+        '<p>'  => '<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;margin:10px 0;color:#333;">',
         '<strong>' => '<strong style="font-weight:bold;">',
         '<em>' => '<em style="font-style:italic;">',
         '<ul>' => '<ul style="margin:10px 0;padding-left:20px;">',
@@ -56,11 +128,13 @@ function markdown2Email($txt, $params=array()) {
         '<blockquote>' => '<blockquote style="border-left:4px solid #ccc;margin:15px 0;padding-left:15px;font-style:italic;color:#666;">',
         '<code>' => '<code style="background-color:#f4f4f4;padding:2px 4px;border-radius:3px;font-family:monospace;font-size:13px;">',
         '<pre>' => '<pre style="background-color:#f4f4f4;padding:10px;border-radius:5px;overflow-x:auto;font-family:monospace;font-size:13px;margin:10px 0;">',
-        '<a ' => $aTag,
+        // NOTE: we no longer touch '<a ' here; handled above
         '<hr>' => '<hr style="border:none;border-top:1px solid #ccc;margin:20px 0;">',
     );
 
-    return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
+    $html = str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
+
+    return $html;
 }
 
 //---------- begin function markdownFromHtml--------------------
