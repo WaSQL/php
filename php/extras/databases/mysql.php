@@ -1561,73 +1561,140 @@ function mysqlGetDBViews($params=array()){
 * @return array - returns records
 
 */
-function mysqlQueryResults($query='',$params=array()){
-	global $DATABASE;
-	$DATABASE['_lastquery']=array(
-		'start'=>microtime(true),
-		'stop'=>0,
-		'time'=>0,
-		'error'=>'',
-		'query'=>$query,
-		'function'=>'mysqlQueryResults',
-		'params'=>$params
-	);
-	$query=trim($query);
-	global $USER;
-	global $dbh_mysql;
-	$dbh_mysql='';
-	$dbh_mysql=mysqlDBConnect();
-	if(!$dbh_mysql){
-		$DATABASE['_lastquery']['error']='connect failed: '.mysqli_connect_error();
-		debugValue($DATABASE['_lastquery']);
-    	return array();
-	}
-	try{
-		$result=@mysqli_query($dbh_mysql,$query);
-	}
-	catch (Exception $e) {
-		$err=array(
-			'status'=>"Mysqli Prepare ERROR",
-			'function'=>'importProcessCSVRecs',
-			'error'=> mysqli_error($dbh_mysql),
-			'exception'=>$e,
-			'query'=>$query,
-			'params'=>json_encode($params)
-		);
-		debugValue($err);
-		$DATABASE['_lastquery']['error']='query error: '.mysqli_error($dbh_mysql);
-		debugValue($DATABASE['_lastquery']);
-		//mysqli_close($dbh_mysql);
-		//echo printValue($err);exit;
-		if(isset($params['-filename'])){return 0;}
-		return array();
-	}
-	$err=mysqli_error($dbh_mysql);
-	if(is_array($err) || commonStrlen($err)){
-		$DATABASE['_lastquery']['error']='query error: '.$err;
-		debugValue($DATABASE['_lastquery']);
-		//mysqli_close($dbh_mysql);
-		return array();
-	}
-	if(preg_match('/^insert /i',$query) && !stringContains($query,' returning ')){
-    	//return the id inserted on insert statements
-    	$id=databaseAffectedRows($result);
-    	//mysqli_close($dbh_mysql);
-    	$DATABASE['_lastquery']['stop']=microtime(true);
-		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-    	return $id;
-	}
-	$results = mysqlEnumQueryResults($result,$params);
-	//mysqli_close($dbh_mysql);
-	if(!is_array($results) && !isNum($results)){
-		$DATABASE['_lastquery']['error']='query error: '.$results;
-		debugValue($DATABASE['_lastquery']);
-		return array();
-	}
-	$DATABASE['_lastquery']['stop']=microtime(true);
-	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-	return $results;
+function mysqlQueryResults($query = '', $params = array()) {
+    global $DATABASE;
+    $DATABASE['_lastquery'] = array(
+        'start'   => microtime(true),
+        'stop'    => 0,
+        'time'    => 0,
+        'error'   => '',
+        'query'   => $query,
+        'function'=> 'mysqlQueryResults',
+        'params'  => $params
+    );
+
+    $query = trim($query);
+    global $dbh_mysql;
+    $dbh_mysql = mysqlDBConnect();
+    if (!$dbh_mysql) {
+        $DATABASE['_lastquery']['error'] = 'connect failed: ' . mysqli_connect_error();
+        debugValue($DATABASE['_lastquery']);
+        return array();
+    }
+
+    // Make mysqli throw exceptions (set once per process ideally)
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+    $stmt   = null;
+    $result = null;
+
+    try {
+        $hasParams = !empty($params['-values']);
+        if ($hasParams) {
+            // Validate placeholder count
+            $placeholders = preg_match_all('/\?/', $query, $m);
+            if ($placeholders !== count($params['-values'])) {
+                throw new Exception("Placeholder count ($placeholders) does not match params (" . count($params['-values']) . ").");
+            }
+
+            $stmt = mysqli_prepare($dbh_mysql, $query);
+
+            // Build types: allow override via $params['-types'] like 'isd'
+            if (!empty($params['-types'])) {
+                $types = $params['-types'];
+                if (strlen($types) !== count($params['-values'])) {
+                    throw new Exception("Provided -types length does not match params.");
+                }
+            } else {
+                $types = '';
+                foreach ($params['-values'] as $p) {
+                    if (is_null($p)) {
+                        // Use 's' for NULL; MySQL will get NULL via bound param if you pass NULL
+                        $types .= 's';
+                    } elseif (is_int($p) || is_bool($p)) {
+                        $types .= 'i';
+                    } elseif (is_float($p)) {
+                        $types .= 'd';
+                    } elseif (is_string($p)) {
+                        $types .= 's';
+                    } else {
+                        $types .= 'b';
+                    }
+                }
+            }
+
+            // bind_param requires references
+            $tmp = [];
+            $tmp[] = $types;
+            foreach ($params['-values'] as $k => $v) {
+                $tmp[] = &$params['-values'][$k];
+            }
+            call_user_func_array('mysqli_stmt_bind_param', array_merge([$stmt], $tmp));
+
+            // Execute
+            mysqli_stmt_execute($stmt);
+
+            // SELECT returns a result set (requires mysqlnd). Non-SELECT returns false here.
+            $result = mysqli_stmt_get_result($stmt);
+        } else {
+            $result = mysqli_query($dbh_mysql, $query);
+        }
+
+        // Handle INSERT/UPDATE/DELETE
+        if (preg_match('/^\s*insert\b/i', $query) && !stringContains($query, ' returning ')) {
+            // If you want the inserted id:
+            $id = mysqli_insert_id($dbh_mysql);          // last AUTO_INCREMENT id
+            if (!$id) {
+                // If no auto-increment, you might want affected rows instead
+                $id = mysqli_affected_rows($dbh_mysql);   // rows affected
+            }
+            $DATABASE['_lastquery']['stop'] = microtime(true);
+            $DATABASE['_lastquery']['time'] = $DATABASE['_lastquery']['stop'] - $DATABASE['_lastquery']['start'];
+            return $id;
+        } elseif (preg_match('/^\s*(update|delete|replace)\b/i', $query)) {
+            $affected = mysqli_affected_rows($dbh_mysql);
+            $DATABASE['_lastquery']['stop'] = microtime(true);
+            $DATABASE['_lastquery']['time'] = $DATABASE['_lastquery']['stop'] - $DATABASE['_lastquery']['start'];
+            return $affected;
+        }
+
+        // SELECT-style result consumption
+        $rows = mysqlEnumQueryResults($result, $params);
+
+        if ($result instanceof mysqli_result) {
+            mysqli_free_result($result);
+        }
+        if ($stmt) {
+            mysqli_stmt_close($stmt);
+        }
+
+        if (!is_array($rows) && !isNum($rows)) {
+            $DATABASE['_lastquery']['error'] = 'query error: ' . $rows;
+            debugValue($DATABASE['_lastquery']);
+            return array();
+        }
+
+        $DATABASE['_lastquery']['stop'] = microtime(true);
+        $DATABASE['_lastquery']['time'] = $DATABASE['_lastquery']['stop'] - $DATABASE['_lastquery']['start'];
+        return $rows;
+
+    } catch (Throwable $e) {
+        $err = array(
+            'status'   => "Mysqli ERROR",
+            'function' => 'mysqlQueryResults',
+            'error'    => mysqli_error($dbh_mysql),
+            'exception'=> $e->getMessage(),
+            'query'    => $query,
+            'params'   => json_encode($params)
+        );
+        debugValue($err);
+        $DATABASE['_lastquery']['error'] = 'query error: ' . $e->getMessage();
+        debugValue($DATABASE['_lastquery']);
+        if (isset($params['-filename'])) { return 0; }
+        return array();
+    }
 }
+
 //---------- begin function mysqlEnumQueryResults ----------
 /**
 * @describe enumerates through the data from a mysqli_query call

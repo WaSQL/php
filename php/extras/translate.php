@@ -252,7 +252,121 @@ function translateUnmapText($source,$target){
 	}
 	return $target;
 }
-//---------- begin function translateText
+/**
+ * Replace <translate>...</translate> tags in $html using the translations table.
+ *
+ * - translations.identifier = sha1(text inside tags)
+ * - Prefers confirmed=1 (ties broken by lowest failed), in ONE batched query
+ *   using MySQL 8 CTE + JSON_TABLE + ROW_NUMBER().
+ * - Fast within the request via a static memory cache (no APCu required).
+ *
+ * @param string $html
+ * @param string $locale e.g. 'es-mx'
+ * @return string translated HTML
+ */
+function translateHTML($html, $locale=''){
+	if(!stringContains((string)$html,'<translate>')){return (string)$html;}
+	//set locale if not specified
+	if(!strlen($locale)){
+		$locale=$_SESSION['REMOTE_LANG']=commonCoalesce($_SESSION['REMOTE_LANG'],$_REQUEST['REMOTE_LANG'],'en-us');
+	}
+	//echo "{$locale}: translateHTML"."<xmp>{$html}</xmp>";exit;
+    global $CONFIG;
+    if(!isset($CONFIG['database'])){return (string)$html;}
+  
+    // Find all <translate>…</translate> occurrences (works in text or attributes)
+    if (!preg_match_all('#<translate>(.*?)</translate>#is', $html, $matches, PREG_SET_ORDER)) {
+        return $html;
+    }
+
+    // Unique identifiers for batch lookup
+    $phrasesById = [];   // id => original text
+    foreach ($matches as $m) {
+        $raw = trim($m[1]);
+        if ($raw === '') { continue; }
+        $phrasesById[sha1($raw)] = $raw;
+    }
+    if (!$phrasesById) {
+        return $html;
+    }
+
+    // Per-request cache: [locale][id] => translation|null
+    static $memoryCache = [];
+
+    // Determine which IDs we still need to fetch from DB
+    $need = [];
+    foreach ($phrasesById as $id => $_txt) {
+        if (!isset($memoryCache[$locale][$id])) {
+            $need[$id] = $_txt;
+        }
+    }
+    // Batch DB lookup for any uncached IDs using a single CTE + JSON_TABLE query
+    if($need){
+         $jsonIds = json_encode(array_keys($need), JSON_UNESCAPED_UNICODE);
+         $query=<<<ENDOFNEEDQUERY
+         WITH ids AS (
+            SELECT jt.id
+            FROM JSON_TABLE(?, '$[*]' COLUMNS (id VARCHAR(40) PATH '$')) AS jt
+        )
+        SELECT
+            t.identifier,
+            t.translation
+        FROM _translations t
+        INNER JOIN ids i ON i.id = t.identifier
+        WHERE t.locale = ? AND t.confirmed=1 and t.wasql=0
+ENDOFNEEDQUERY;
+        $params=array('-values'=>array($jsonIds, $locale));
+        $recs=dbQueryResults($CONFIG['database'],$query,$params);
+        //echo $locale.$query.printValue($params).printValue($recs);exit;
+        // Initialize cache container for locale
+        if (!isset($memoryCache[$locale])) {
+            $memoryCache[$locale] = [];
+        }
+        if(isset($recs[0])){
+            foreach($recs as $rec){
+                $id  = $rec['identifier'];
+                $val = (string)$rec['translation'];
+                $memoryCache[$locale][$id] = (string)$rec['translation']; // cache hit
+            }
+        }
+        $addrecs=array();
+        // Cache negative lookups (misses) as null
+        foreach ($need as $id => $txt) {
+            if (!isset($memoryCache[$locale][$id])) {
+            	$addrecs[]=array(
+            		'locale'=>$locale,
+            		'confirmed'=>0,
+            		'identifier'=>$id,
+            		'translation'=>$txt
+            	);
+            	$memoryCache[$locale][$id]=$txt;
+            }
+        }
+        if($addrecs){
+        	$ok=dbAddRecords($CONFIG['database'],'_translations',array('-recs'=>$addrecs));
+        }
+    }
+    // Replace tags using cached resolutions
+    $out = preg_replace_callback(
+        '#<translate>(.*?)</translate>#is',
+        function ($m) use ($locale, $phrasesById, $memoryCache) {
+            $original = trim($m[1]);
+            if ($original === '') { return ''; }
+            $id = sha1($original);
+
+            // Use translation if present (allow empty-string translations)
+            if (isset($memoryCache[$locale][$id])) {
+                return $memoryCache[$locale][$id];
+            }
+            // Fallback to original text
+            return $original;
+        },
+        $html
+    );
+
+    return $out;
+}
+//---------- begin function translateTextOLD
 /**
 // http://www.lingoes.net/en/translator/langcode.htm
 * @exclude  - this function is for internal use only and thus excluded from the manual

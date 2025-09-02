@@ -7156,8 +7156,10 @@ function removeViews($htm){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function processTranslateTags($htm){
-	if(!stringContains($htm,'<translate>') && !stringContains($htm,'<wtranslate>')){return $htm;}
 	loadExtras('translate');
+	return translateHTML($htm);
+	if(!stringContains($htm,'<translate>') && !stringContains($htm,'<wtranslate>')){return $htm;}
+	
 	preg_match_all('/\<translate\>(.+?)\<\/translate\>/ism',$htm,$m,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole tag
