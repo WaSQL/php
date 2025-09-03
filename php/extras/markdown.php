@@ -19,18 +19,18 @@ require_once("{$progpath}/markdown/HTML_To_Markdown.php");
 function markdown2Html($txt, $params=array()){
 	//return Parsedown::instance()->parse($txt);
 	$html = Parsedown::instance()->text($txt);
-    // Base <a> tag style
-    $aTag = '<a ';
-
+    // enhance a few attributes...
+    $emailStyles = array(
+        '<a ' => '<a ',
+        '<table '=>'<table '
+    );
     // Add optional target
     if (!empty($params['target'])) {
-        $aTag = '<a target="' . htmlspecialchars($params['target'], ENT_QUOTES) . '" ';
+        $emailStyles['<a '] = '<a target="' . htmlspecialchars($params['target'], ENT_QUOTES) . '" ';
     }
-
-    // Email-friendly inline styles
-    $emailStyles = array(
-        '<a ' => $aTag,
-    );
+    if (!empty($params['tableclass'])) {
+        $emailStyles['<table '] = '<table class="' . htmlspecialchars($params['tableclass'], ENT_QUOTES) . '" ';
+    }
     return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
 }
 //---------- begin function markdown2Email--------------------
@@ -42,15 +42,8 @@ function markdown2Html($txt, $params=array()){
 * @usage echo markdown2Email($txt, ['target' => '_blank']);
 */
 function markdown2Email($txt, $params=array()) {
-    $html = Parsedown::instance()->text($txt);
-
-    // Base <a> tag style
-    $aTag = '<a style="color:#0066cc;text-decoration:underline;" ';
-
-    // Add optional target
-    if (!empty($params['target'])) {
-        $aTag = '<a style="color:#0066cc;text-decoration:underline;" target="' . htmlspecialchars($params['target'], ENT_QUOTES) . '" ';
-    }
+    //first convert markdown to HTML
+    $html = markdown2Html($txt,$params);
 
     // Email-friendly inline styles
     $emailStyles = array(
@@ -69,7 +62,7 @@ function markdown2Email($txt, $params=array()) {
         '<blockquote>' => '<blockquote style="border-left:4px solid #ccc;margin:15px 0;padding-left:15px;font-style:italic;color:#666;">',
         '<code>' => '<code style="background-color:#f4f4f4;padding:2px 4px;border-radius:3px;font-family:monospace;font-size:13px;">',
         '<pre>' => '<pre style="background-color:#f4f4f4;padding:10px;border-radius:5px;overflow-x:auto;font-family:monospace;font-size:13px;margin:10px 0;">',
-        '<a ' => $aTag,
+        '<a ' => '<a style="color:#0066cc;text-decoration:underline;" ',
         '<hr>' => '<hr style="border:none;border-top:1px solid #ccc;margin:20px 0;">',
     );
     return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
