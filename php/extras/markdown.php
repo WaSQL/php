@@ -66,7 +66,7 @@ function markdown2Email($txt, $params=array()) {
         '<hr>' => '<hr style="border:none;border-top:1px solid #ccc;margin:20px 0;">',
         '<table ' => '<table style="border:1px solid #ccc;border-collapse:collapse;" border="1" ',
         '<table>' => '<table style="border:1px solid #ccc;border-collapse:collapse;" border="1">',
-        '<td>'=> '<td style="padding:3px 5px;" '
+        '<td>'=> '<td style="padding:3px 5px;">'
     );
     return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
 }
