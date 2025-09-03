@@ -22,14 +22,14 @@ function markdown2Html($txt, $params=array()){
     // enhance a few attributes...
     $emailStyles = array(
         '<a ' => '<a ',
-        '<table '=>'<table '
+        '<table>'=>'<table>'
     );
     // Add optional target
     if (!empty($params['target'])) {
         $emailStyles['<a '] = '<a target="' . htmlspecialchars($params['target'], ENT_QUOTES) . '" ';
     }
     if (!empty($params['tableclass'])) {
-        $emailStyles['<table '] = '<table class="' . htmlspecialchars($params['tableclass'], ENT_QUOTES) . '" ';
+        $emailStyles['<table>'] = '<table class="' . htmlspecialchars($params['tableclass'], ENT_QUOTES) . '">';
     }
     return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
 }
@@ -64,6 +64,9 @@ function markdown2Email($txt, $params=array()) {
         '<pre>' => '<pre style="background-color:#f4f4f4;padding:10px;border-radius:5px;overflow-x:auto;font-family:monospace;font-size:13px;margin:10px 0;">',
         '<a ' => '<a style="color:#0066cc;text-decoration:underline;" ',
         '<hr>' => '<hr style="border:none;border-top:1px solid #ccc;margin:20px 0;">',
+        '<table ' => '<table style="border:1px solid #ccc;border-collapse:collapse;" border="1" ',
+        '<table>' => '<table style="border:1px solid #ccc;border-collapse:collapse;" border="1">',
+        '<td>'=> '<td style="padding:3px 5px;" '
     );
     return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
 }
