@@ -548,7 +548,7 @@ function debugValue($m,$name=''){
 		$wasql_debugValueContent.= $m.PHP_EOL;
 		$wasql_debugValueContent.= "--------------------".PHP_EOL;
 		$wasql_debugValueContent.= "</div>".PHP_EOL;
-		$wasql_debugValueContent.= buildOnLoad("if(typeof(console) != 'undefined' && typeof(console.log) != 'undefined'){console.log(document.getElementById('{$id}').innerHTML);}");
+		$wasql_debugValueContent.= buildOnLoad("wacss.debugValue('{$id}');");
 	}
 	return false;
 }

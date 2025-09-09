@@ -343,7 +343,7 @@ ENDOFNEEDQUERY;
             }
         }
         if($addrecs){
-        	$ok=dbAddRecords($CONFIG['database'],'_translations',array('-recs'=>$addrecs));
+        	$ok=dbAddRecords($CONFIG['database'],'_translations',array('-recs'=>$addrecs,'-upsert'=>'ignore'));
         }
     }
     // Replace tags using cached resolutions

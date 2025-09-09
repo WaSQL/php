@@ -3,33 +3,6 @@
 /**
 * @exclude  - this function is excluded from the manual
 * 
-* Functions to move to wacss.js
-		pagingAddFilters
-		pagingSetProcessing
-		pagingSetOffset
-		pagingAddFilter
-		pagingBulkEdit
-		pagingExport
-		pagingClearFilters
-		DONE: removeId
-		DONE:checkAllElements
-		colorSelector
-		DONE:simulateEvent
-		formShowPassword
-		formRecorderAudio
-		formRecorderAudioControl
-		formSetMultiSelectStatus
-		formSetFrequency
-		formSetFrequencyDisplay
-		DONE:setStarRating
-		w_shareButton
-		setCustomValidity
-		ajaxExpand
-		expand
-		filemanagerEdit
-		DONE: imagePreview
-		ajaxEditField
-* 
 */
 if (!function_exists('getallheaders')) {
 	/* @exclude  - this function is excluded from the manual */
@@ -964,7 +937,7 @@ function commonSearchFiltersForm($params=array()){
 		$atts['onsubmit']=$params['-onsubmit'];
 	}
 	if(!isset($atts['onsubmit'])){
-		$atts['onsubmit']="return pagingSubmit(this);";
+		$atts['onsubmit']="return wacss.pagingSubmit(this);";
 	}
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
@@ -1047,7 +1020,7 @@ function commonSearchFiltersForm($params=array()){
 				}
 				else{
 					$filter=$str;
-					$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),this.dataset.filter,1);"';
+					$btn .=' onclick="wacss.pagingAddFilters(getParent(this,\'form\'),this.dataset.filter,1);"';
 				}
 				if(isset($str['name'])){
 					$cname=$str['name'];
@@ -1087,7 +1060,7 @@ function commonSearchFiltersForm($params=array()){
 				else{
 					$filter=$str;
 					$btn .=' data-filter="'.$filter.'"';
-					$btn .=' onclick="pagingAddFilters(getParent(this,\'form\'),this.dataset.filter,1);"';
+					$btn .=' onclick="wacss.pagingAddFilters(wacss.getParent(this,\'form\'),this.dataset.filter,1);"';
 				}
 				if(isNum($name)){$cname='';}
 				else{$cname=$name;}
@@ -1237,17 +1210,17 @@ function commonSearchFiltersForm($params=array()){
 		}
 		//search button
 		$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].',0);return false;"><span class="icon-search" style="margin-right:5px;"></span> Search</button>'.PHP_EOL;
+		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].',0);return false;"><span class="icon-search" style="margin-right:5px;"></span> Search</button>'.PHP_EOL;
 		$rtn .= '			</div>'.PHP_EOL;
 		if(!isset($params['-simplesearch'])){
 			//add filter
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="'.$btnclass.'" title="Add Filter" onclick="pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="button" class="'.$btnclass.'" title="Add Filter" onclick="wacss.pagingAddFilter(document.'.$params['-formname'].');"><span class="icon-filter-add"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 			//bulkedit
 			if(!empty($params['-bulkedit'])){
 				$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-		    	$rtn .= '				<button type="button" title="Bulk Edit" class="'.$btnclass.'" onclick="pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_bold"></span></button>'.PHP_EOL;
+		    	$rtn .= '				<button type="button" title="Bulk Edit" class="'.$btnclass.'" onclick="wacss.pagingBulkEdit(document.'.$params['-formname'].');"><span class="icon-edit w_bold"></span></button>'.PHP_EOL;
 		    	$rtn .= '			</div>'.PHP_EOL;
 			}
 		}
@@ -1264,7 +1237,7 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']-$params['-limit'] > 0){
 			$offset=0;
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-first"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//show prev if offset is not 0
@@ -1272,7 +1245,7 @@ function commonSearchFiltersForm($params=array()){
 			$offset=$params['-offset']-$params['-limit'];
 			if($offset < 0){$offset=0;}
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-prev"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '			<div style="margin:0 4px 4px 0;display:flex;align-items: center;justify-content: center;">'.PHP_EOL;
@@ -1285,19 +1258,19 @@ function commonSearchFiltersForm($params=array()){
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-offset']+$params['-limit'];
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-next"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		if($params['-offset']+$params['-limit'] < $params['-total']){
 			$offset=$params['-total']-$params['-limit'];
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="pagingSetProcessing(this);pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
+			$rtn .= '				<button type="button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].','.$offset.')"><span class="icon-nav-last"></span></button>'.PHP_EOL;
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		$rtn .= '		</div>'.PHP_EOL;
 		if(!empty($params['-export'])){
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="'.$btnclass.'" onclick="pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_bold"></span></button>'.PHP_EOL;
+	    	$rtn .= '				<button type="button" title="Export current results to CSV file" class="'.$btnclass.'" onclick="wacss.pagingExport(document.'.$params['-formname'].');"><span class="icon-export w_bold"></span></button>'.PHP_EOL;
 	    	$rtn .= '			</div>'.PHP_EOL;
 	    	$rtn .= '			<div style="margin:0 4px 4px 0;display:none;" id="'.$params['-formname'].'_exportbutton"></div>'.PHP_EOL;
 	    	// if(!empty($params['-export_file'])){
@@ -1358,7 +1331,7 @@ function commonSearchFiltersForm($params=array()){
         	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'">'.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
-			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="pagingClearFilters(getParent(this,\'form\'));"></div>'.PHP_EOL;
+			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="wacss.pagingClearFilters(getParent(this,\'form\'));"></div>'.PHP_EOL;
 		}
 	}
 	$rtn .= '	</div>'.PHP_EOL;
@@ -4034,7 +4007,7 @@ function buildFormBegin($action='',$params=array()){
 		$params['-class']="w_form";
 		if(isExtraCss('bootstrap')){$params['-class'] .= ' form-inline';}
 		}
-	if(!isset($params['-onsubmit'])){$params['-onsubmit']="return submitForm(this);";}
+	if(!isset($params['-onsubmit'])){$params['-onsubmit']="return wacss.Post(this);";}
 	$rtn='';
 	$rtn .= '<form method="'.$params['-method'].'" action="'.$action.'"';
 	if(isset($params['-name'])){$rtn .= ' name="'.$params['-name'].'"';}
@@ -7771,7 +7744,7 @@ function commonProcessDBListRecordsTags($htm){
 		$replace_str.='<div id="'.$divid.'">'.PHP_EOL;
 		$opts=array(
 			'-action'=>$dblistrecords_attributes['-action'] ?? '/php/index.php',
-			'-onsubmit'=>"return pagingSubmit(this,'{$divid}');",
+			'-onsubmit'=>"return wacss.pagingSubmit(this,'{$divid}');",
 			'-formname'=>"dblistrecordsform_{$i}",
 			'setprocessing'=>0,
 		);
@@ -21100,10 +21073,10 @@ function processActions(){
 				echo '<div class="w_centerpop_title">Edit '.$_REQUEST['field'].'</div>'.PHP_EOL;
 				echo '<div class="w_centerpop_content">'.PHP_EOL;
 				$opts['style']='width:100%';
-				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\'null\');">'.PHP_EOL;
+				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return wacss.ajaxPost(this,\'null\');">'.PHP_EOL;
 			}
 			else{
-				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return ajaxSubmitForm(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
+				echo '<form style="display:flex;justify-content:flex-end;" method="post" name="'.$formname.'" enctype="multipart/form-data" action="/php/index.php" onsubmit="return wacss.ajaxPost(this,\''.$_REQUEST['div'].'\');">'.PHP_EOL;
 				echo '	<input type="hidden" name="setprocessing" value="0" >'.PHP_EOL;
 			}
 			if(isset($_REQUEST['noicon'])){

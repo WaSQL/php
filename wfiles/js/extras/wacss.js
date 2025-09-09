@@ -29,6 +29,18 @@ var wacss = {
 	*/
 	hoverDiv:'',
 	/**
+	* @name wacss.abort
+	* @describe alerts and returns false
+	* @param msg text
+	* @return boolean false
+	* @usage wacss.abort('failed');
+	*/
+	abort: function(msg){
+		//info: shows alert msg and returns false
+		alert(msg);
+		return false;
+	},
+	/**
 	* @name wacss.addClass
 	* @describe adds a class to an element
 	* @param mixed element object or id
@@ -128,7 +140,7 @@ var wacss = {
 					params.setprocessing='wacss_centerpop3_processing';
 				break;
 			}
-			pdiv=wacss.getObject(params.setprocessing);
+			let pdiv=wacss.getObject(params.setprocessing);
 			if(undefined != pdiv){
 				pdiv.previous=pdiv.innerHTML;
 				xmlhttp.processing=pdiv;
@@ -143,9 +155,10 @@ var wacss = {
 		let aurl = new URL(url);
 		let aparams = aurl.searchParams;
 		params.AjaxRequestUniqueId=wacss.ajaxUniqueID();
-		for(k in params){
-	    	if(undefined==typeof(params[k]) || params[k]===null || params[k].length==0){continue;}
-			aparams.append(k, params[k]);
+		for (const k in params) {
+			const v = params[k];
+			if (typeof v === 'undefined' || v === null || (typeof v === 'string' && v.length === 0)) continue;
+			aparams.append(k, v);
 		}
 		//load
 	    xmlhttp.onload = function(){
@@ -280,7 +293,7 @@ var wacss = {
 					processing='wacss_centerpop3_processing';
 				break;
 			}
-			pdiv=wacss.getObject(processing);
+			let pdiv=wacss.getObject(processing);
 			if(undefined != pdiv){
 				pdiv.previous=pdiv.innerHTML;
 				xmlhttp.processing=pdiv;
@@ -452,7 +465,7 @@ var wacss = {
 	*/
 	buildFormSelect: function(fieldname, opts, params){
 		if(undefined == fieldname || !fieldname.length){alert('buildFormSelect Error: no name');return undefined;}
-		fieldname=fieldname.replace('/[\[\]]+$/','');
+		fieldname = fieldname.replace(/[\[\]]+$/, '');
 		if(undefined == params){params={};}
 		if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
 		if(undefined == params['-formname']){params['-formname']='addedit';}
@@ -535,8 +548,8 @@ var wacss = {
 		let sObj=wacss.getObject(obj);
 		if(undefined == sObj){return false;}
 		sObj.style.position=sObj.dataset.position || 'fixed';
-		let w=sObj.offsetWidth || sObj.innerWidth || getWidth(sObj) || 100;
-		let h=sObj.offsetHeight || sObj.innerHeight || getHeight(sObj) || 100;
+		let w=sObj.offsetWidth || sObj.innerWidth || wacss.getWidth(sObj) || 100;
+		let h=sObj.offsetHeight || sObj.innerHeight || wacss.getHeight(sObj) || 100;
 		let vp=wacss.getViewportSize();
 		let x = Math.round((vp.w / 2) - (w / 2));
 	  	let y = Math.round((vp.h / 2) - (h / 2));
@@ -634,13 +647,12 @@ var wacss = {
 	* @usage if(wacss.checkMouseLeave(this,e)){...}
 	*/
    	checkMouseLeave: function(element, evt){
-   		element=wacss.getObject(element);
-   		if(undefined==element){return false;}
-		if(element.contains && undefined != evt.toElement){
+		element = wacss.getObject(element);
+		if (undefined == element) { return false; }
+		if (element.contains && evt.toElement) {
 			return !element.contains(evt.toElement);
-		}
-		else if(evt.relatedTarget){
-			return !containsDOM(element, evt.relatedTarget);
+		} else if (evt.relatedTarget) {
+			return !element.contains(evt.relatedTarget);
 		}
 	},
 	/**
@@ -661,7 +673,7 @@ var wacss = {
 	* @usage if(wacss.containsSpaces(str)){...}
 	*/
 	containsSpaces: function(str){
-		return (/[\ ]/.test(trim(str)));
+		return (/[\ ]/.test(wacss.trim(str)));
 	},
    	/**
 	* @name wacss.copy2Clipboard
@@ -677,7 +689,11 @@ var wacss = {
 	  	el.value = str;
 	  	document.body.appendChild(el);
 	  	el.select();
-	  	document.execCommand('copy');
+	  	if (navigator.clipboard?.writeText) {
+  			navigator.clipboard.writeText(str);
+		} else {
+	  		document.execCommand('copy');
+	  	}
 	 	document.body.removeChild(el);
 	 	wacss.toast(msg);
 	 	return false;
@@ -798,6 +814,12 @@ var wacss = {
 		wacss.makeMovable(cp,cpt);
 		return cp;
 	},
+	debugValue: function(id){
+		const el = document.getElementById(id);
+		if (el && typeof console !== "undefined" && typeof console.log === "function") {
+		  console.log(el.innerHTML);
+		}
+	},
 	dismiss: function(el){
 		/* if the user is hovering over it, do not close.*/
 		if(el.parentElement.querySelector(':hover') == el){
@@ -808,7 +830,7 @@ var wacss = {
 			);
 			return;
 		}
-		el.classList.add='dismiss';
+		el.classList.add('dismiss');
 		setTimeout(function(){
 			wacss.removeObj(el);
 		},1000);
@@ -829,7 +851,7 @@ var wacss = {
 	* @param el mixed  - object or id
 	* @param ev string  - event to emulate - change,click, etc
 	* @return false
-	* @usage wacss.EmulateEvent(el,'change');
+	* @usage wacss.emulateEvent(el,'change');
 	*/
 	emulateEvent: function(el,ev){
 		el=wacss.getObject(el);
@@ -875,8 +897,13 @@ var wacss = {
   		return '';
 	},
 	formatJSON: function(str){
-		let jsonobj=JSON.parse(str);
-		return JSON.stringify(jsonobj,null,'\t');
+	    try {
+	        let jsonobj = JSON.parse(str);
+	        return JSON.stringify(jsonobj, null, '\t');
+	    } catch (e) {
+	        console.error("wacss.formatJSON error:", e);
+	        return str; // fallback: return the original string
+	    }
 	},
 	formatPhone: function(str){
   		//Filter only numbers from the input
@@ -981,7 +1008,7 @@ var wacss = {
 						console.error('blankif does not support checkbox and radio inputs');
 					break;
 					case 'textarea':
-						els[i].dataset.blankx=trim(els[i].innerHTML);
+						els[i].dataset.blankx=wacss.trim(els[i].innerHTML);
 						//is this textarea a codemirror
 						if(undefined != els[i].codemirror){
 							els[i].codemirror.getDoc().setValue('');
@@ -1199,7 +1226,7 @@ var wacss = {
 			//console.error('formIsIfTrue Error - ifstr not defined');
 			return false;
 		}
-		ifstr=trim(ifstr);
+		ifstr=wacss.trim(ifstr);
 		if(ifstr.length==0){
 			//console.error('formIsIfTrue Error - ifstr is empty');
 			return false;
@@ -1247,7 +1274,7 @@ var wacss = {
 						}
 					break;
 					case 'textarea':
-						fvals.push(trim(fel.innerText));
+						fvals.push(wacss.trim(fel.innerText));
 					break;
 					default:
 						fvals.push(fel.value);
@@ -1342,10 +1369,10 @@ var wacss = {
 	    // This works for all browsers except IE8 and before
 	    if (w.innerWidth != null) return { w: w.innerWidth, h: w.innerHeight };
 	    // For IE (or any browser) in Standards mode
-	    let d = w.document;
-	    if (document.compatMode == "CSS1Compat")
-	        return { w: d.documentElement.clientWidth,
-	           h: d.documentElement.clientHeight };
+	    const d = w.document;
+		if (d.compatMode === "CSS1Compat") {
+			return { w: d.documentElement.clientWidth, h: d.documentElement.clientHeight };
+		}
 	    // For browsers in Quirks mode
 	    return { w: d.body.clientWidth, h: d.body.clientHeight };
 	},
@@ -1354,7 +1381,7 @@ var wacss = {
 	*/
 	geoLocation: function(fld,opts){
 		//fld can be a function: (lat,long) or an input field to set value to: [lat,long] 
-		fldObj=wacss.getObject(fld);
+		let fldObj=wacss.getObject(fld);
 		if(undefined==fldObj){
 			if(!wacss.function_exists(fld)){
 				console.log("wacss.getGeoLocation error: "+fld+' is undefined');
@@ -1411,13 +1438,13 @@ var wacss = {
 	    					window[navigator.geoSetFldFailed](navigator.geoOptions);
 	    				}
 	    				else{
-	    					if(undefined==navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
+	    					if(undefined != navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
 	    						alert(err.message);
 	    					}
 	    					else{
 		    					let errfld=document.querySelector(navigator.geoSetFldFailed);
 		    					if(undefined != errfld){
-		    						setText(wacss.getObject(errfld),err.message);
+		    						wacss.setText(wacss.getObject(errfld),err.message);
 		    					}
 		    					else{
 		    						console.log('wacss.getGeoLocation error. Invalid onerror value');
@@ -1428,7 +1455,7 @@ var wacss = {
 	    				}
     				}
     				else{
-    					if(undefined==navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
+    					if(undefined != navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
     						alert(err.message);
     					}
     					else{
@@ -1635,7 +1662,7 @@ var wacss = {
 			while(count < 1000) {
 				if(undefined == obj.parentNode){return null;}
 				obj = obj.parentNode;
-				if(!typeof(obj)){return null;}
+				if (typeof obj !== 'object' || !obj) { return null; }
 				if(classname.length && name.length){
 					if(
 						obj.nodeName.toLowerCase() == name.toLowerCase()
@@ -1659,7 +1686,7 @@ var wacss = {
 			return null;	
 		}
 		let cObj=wacss.getObject(obj);
-		if(undefined == cObj){return abort("undefined object passed to getParent");}
+		if(undefined == cObj){return wacss.abort("undefined object passed to getParent");}
 		if(undefined == cObj.parentNode){return cObj;}
 		let pobj=cObj.parentNode;
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
@@ -1672,7 +1699,7 @@ var wacss = {
 			while(count < 1000) {
 				if(undefined == obj.parentNode){return null;}
 				obj = obj.parentNode;
-				if(!typeof(obj)){return null;}
+				if (typeof obj !== 'object' || !obj) { return null; }
 				let natt=obj.getAttribute(att);
 				if(undefined != natt && (undefined==val || val.length==0 || natt.toLowerCase() == val.toLowerCase())){
 					return obj;
@@ -1730,9 +1757,9 @@ var wacss = {
 	getTableRowValues: function(el,s) {
 	   //info: getTableRowValues .
 	   //info: if s=1, then returns as a URL string instead of an array
-	   //usage: alert(getTableRowValues(this,1));
+	   //usage: alert(wacss.getTableRowValues(this,1));
 	   if(undefined == s){s=0;}
-	   ptable=wacss.getParent(el,'table');
+	   let ptable=wacss.getParent(el,'table');
 	   let str='';
 	   let row=new Array();
 	   if(undefined == ptable){
@@ -1769,7 +1796,7 @@ var wacss = {
 	       }
 	   }
 	   for(let i=0;i<keys.length;i++){
-	       let key=strtolower(keys[i]);
+	       let key=wacss.strtolower(keys[i]);
 	       row[key]=vals[i];
 	       str+=key+'='+vals[i]+'&';
 	   }
@@ -1816,6 +1843,54 @@ var wacss = {
 
 		return siblings;
 
+	},
+	/**
+	* @name wacss.getWidth
+	* @describe returns the width of the given element
+	* @param mixed - id, query selector, or DOM element
+	* @return integer width in pixels or 0
+	* @usage let w=wacss.getWidth('mydiv');
+	*/
+	getWidth: function(obj){
+		let el=wacss.getObject(obj);
+		if(undefined==el || el===null){return 0;}
+		// prefer offsetWidth
+		if(typeof el.offsetWidth !== 'undefined' && el.offsetWidth>0){
+			return el.offsetWidth;
+		}
+		// fallback to clientWidth
+		if(typeof el.clientWidth !== 'undefined' && el.clientWidth>0){
+			return el.clientWidth;
+		}
+		// fallback to scrollWidth
+		if(typeof el.scrollWidth !== 'undefined' && el.scrollWidth>0){
+			return el.scrollWidth;
+		}
+		return 0;
+	},
+	/**
+	* @name wacss.getHeight
+	* @describe returns the height of the given element
+	* @param mixed - id, query selector, or DOM element
+	* @return integer height in pixels or 0
+	* @usage let h=wacss.getHeight('mydiv');
+	*/
+	getHeight: function(obj){
+		let el=wacss.getObject(obj);
+		if(undefined==el || el===null){return 0;}
+		// prefer offsetHeight
+		if(typeof el.offsetHeight !== 'undefined' && el.offsetHeight>0){
+			return el.offsetHeight;
+		}
+		// fallback to clientHeight
+		if(typeof el.clientHeight !== 'undefined' && el.clientHeight>0){
+			return el.clientHeight;
+		}
+		// fallback to scrollHeight
+		if(typeof el.scrollHeight !== 'undefined' && el.scrollHeight>0){
+			return el.scrollHeight;
+		}
+		return 0;
 	},
 	guid: function () {
 	    function _p8(s) {
@@ -2155,13 +2230,13 @@ var wacss = {
 		}
 		if(list.length==0){return false;}
 		//load Chart is it is not already loaded
-		if(undefined == Chart){
+		if (typeof Chart === 'undefined') {
 			//console.log('loading Chartjs, etc');
 			wacss.loadScript('/wfiles/js/extras/chart.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
 		}
-		if(undefined == Chart){
+		if (typeof Chart === 'undefined') {
 			console.log('Error in initChartJsBehavior: Chartjs is not defined');
 			return false;
 		}
@@ -2473,11 +2548,15 @@ var wacss = {
 		let list=document.querySelectorAll('div.chartjs,div[data-behavior="chartjs"]');
 		if(undefined==list || list.length==0){return false;}
 		//load Chart is it is not already loaded
-		if(undefined == Chart){
-			console.log('loading Chartjs, etc');
+		if (typeof Chart === 'undefined') {
+			//console.log('loading Chartjs, etc');
 			wacss.loadScript('/wfiles/js/extras/chart.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
+		}
+		if (typeof Chart === 'undefined') {
+			console.log('Error in initChartJsBehavior: Chartjs is not defined');
+			return false;
 		}
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
@@ -2577,7 +2656,7 @@ var wacss = {
 			}
 			let foundchart=0;
 			switch(type){
-				case 'guage':
+				case 'gauge':
 					if(undefined != wacss.chartjs[list[i].id]){
 						//check for canvas
 						let ck=list[i].querySelector('canvas');
@@ -3114,7 +3193,7 @@ var wacss = {
 			};
 			config.prevArrow = "<span class='icon-arrow-left'></span>";
 			config.nextArrow = "<span class='icon-arrow-right'></span>";
-			for(k in els[i].dataset){
+			for(let k in els[i].dataset){
 				let v=els[i].dataset[k];
 				switch(k.toLowerCase()){
 					case 'altformat':k='altFormat';break;
@@ -3124,7 +3203,7 @@ var wacss = {
 					case 'allowinvalidpreload':k='allowInvalidPreload';break;
 					case 'appendto':
 						k='appendTo';
-						v=document.querySelector(v)||getObject(v);
+						v=document.querySelector(v)||wacss.getObject(v);
 					break;
 					case 'ariadateformat':k='ariaDateFormat';break;
 					case 'conjunction':k='conjunction';break;
@@ -3196,15 +3275,17 @@ var wacss = {
 					case 'monthselectortype':k='monthSelectorType';break;
 					default:continue;break;
 				}
-				switch(v.toLowerCase()){
-					case 'true':
-					case '1':
-						v=true;
-					break;
-					case 'false':
-					case '0':
-						v=false;
-					break;
+				if (typeof v === 'string') {
+					switch(v.toLowerCase()){
+						case 'true':
+						case '1':
+							v=true;
+						break;
+						case 'false':
+						case '0':
+							v=false;
+						break;
+					}
 				}
 				if(k != ''){config[k]=v;}
 			}
@@ -3253,11 +3334,11 @@ var wacss = {
 				          if (nth > 1){return "";}
 				          return "er";
 				     };
-				     rangeSeparator = " au ";
-				     weekAbbreviation = "Sem";
-				     scrollTitle = "Défiler pour augmenter la valeur";
-				     toggleTitle = "Cliquer pour basculer";
-				     time_24hr = true;
+				     config.locale.rangeSeparator = " au ";
+					config.locale.weekAbbreviation = "Sem";
+					config.locale.scrollTitle = "Défiler pour augmenter la valeur";
+					config.locale.toggleTitle = "Cliquer pour basculer";
+					config.locale.time_24hr = true;
 				break;
 				case 'it':
 					//italian
@@ -3288,11 +3369,11 @@ var wacss = {
 					config.locale.weekdays.shorthand = ["日", "月", "火", "水", "木", "金", "土"];
 					config.locale.time_24hr=true;
 					config.locale.rangeSeparator = " から ";
-				     config.locale.monthAriaLabel = "月";
-				     config.locale.amPM = ["午前", "午後"];
-				     config.locale.yearAriaLabel = "年";
-				     config.locale.hourAriaLabel = "時間";
-				     config.locale.minuteAriaLabel = "分";
+					config.locale.monthAriaLabel = "月";
+					config.locale.amPM = ["午前", "午後"];
+					config.locale.yearAriaLabel = "年";
+					config.locale.hourAriaLabel = "時間";
+					config.locale.minuteAriaLabel = "分";
 				break;
 				case 'ko':
 					//korean
@@ -3304,7 +3385,7 @@ var wacss = {
 					config.locale.weekdays.longhand = ["일요일","월요일","화요일","수요일","목요일","금요일","토요일"];
 					config.locale.weekdays.shorthand = ["일", "월", "화", "수", "목", "금", "토"];
 					config.locale.rangeSeparator = " ~ ";
-				     config.locale.ordinal = function(){return "일";};
+				    config.locale.ordinal = function(){return "일";};
 				break;
 				case 'pt':
 					//portuguese
@@ -3316,7 +3397,7 @@ var wacss = {
 					config.locale.weekdays.longhand = [ "Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
 					config.locale.weekdays.shorthand = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 					config.locale.rangeSeparator = " até ";
-				     config.locale.time_24hr = true;
+				    config.locale.time_24hr = true;
 				break;
 				case 'zh':
 					//chinese
@@ -3382,7 +3463,7 @@ var wacss = {
 				if(hoverEls[i].dataset.hover.indexOf('id:')===0){
 					//console.log("hover id");
 					//get content from a different id
-					let txtid=trim(str_replace('id:','',hoverEls[i].dataset.hover));
+					let txtid=wacss.trim(wacss.str_replace('id:','',hoverEls[i].dataset.hover));
 					let txtel=document.querySelector('#'+txtid);
 					if(undefined != txtel){
 						txt=txtel.innerHTML;		
@@ -3391,7 +3472,7 @@ var wacss = {
 				else if(hoverEls[i].dataset.hover.indexOf('js:')===0){
 					//call a function
 					//console.log("hover js");
-					let f=trim(str_replace('js:','',hoverEls[i].dataset.hover));
+					let f=wacss.trim(wacss.str_replace('js:','',hoverEls[i].dataset.hover));
 					let jsfunc=new Function(f);
 					txt=jsfunc();
 				}
@@ -3409,7 +3490,7 @@ var wacss = {
 				//console.log(hrect);
 				
 				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-				let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+				//let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
 				switch(this.dataset.position.toLowerCase()){
 					case 'above':
 						wacss.hoverDiv.dataset.position='above';
@@ -3526,7 +3607,7 @@ var wacss = {
 			//go through dataset to get params
 			let params={};
 			let curr_defaults=defaults;
-			for(k in list[i].dataset){
+			for(let k in list[i].dataset){
 				if(k=='debug'){continue;}
 				let v=list[i].dataset[k];
 				//look for custom keys
@@ -3625,7 +3706,7 @@ var wacss = {
 					params.mode='application/xml';
 				break;
 			}
-			for(k in curr_defaults){
+			for(let k in curr_defaults){
 	  			if(undefined == params[k]){
 	  				params[k]=curr_defaults[k];
 	  			}
@@ -3654,7 +3735,7 @@ var wacss = {
 	initDropdowns: function(){
 		let els=document.querySelectorAll('[data-dropdown]:not([data-dropdown_initialized="1"])');
 		if(els.length==0){return false;}
-		for(e=0;e<els.length;e++){
+		for(let e=0;e<els.length;e++){
 			//set dropdown_initialized
 			els[e].dataset.dropdown_initialized=1;
 			//get the menu obj
@@ -3673,7 +3754,7 @@ var wacss = {
 				if(undefined == this.menuobj){return false;}
 				let dropdown = document.createElement('div');
 				dropdown.innerHTML = this.menuobj.innerHTML;
-				rect = this.getBoundingClientRect();
+				const rect = this.getBoundingClientRect();
 				// Check if dropdown would go off right edge of screen
 				let dropdownWidth = 300; // estimated width, you can measure after creating
 				let windowWidth = window.innerWidth;
@@ -3918,23 +3999,19 @@ var wacss = {
 			if(funcstr==''){continue;}
 			initcnt=initcnt+1;
 			let debug=onloads[i].dataset.debug||0;
-			if(debug==1){
-				console.log(funcstr);
-			}
 			let funcstrs=funcstr.split(';');
 			let thisstr="document.querySelector('[data-onload-ex=\""+exval+"\"]')";
 			for(let f=0;f<funcstrs.length;f++){
 				funcstr=funcstrs[f];
 				funcstr=funcstr.replaceAll('this',thisstr);
-				if(debug==1){
+				try{
+					let cfunc=new Function(funcstr);
+					cfunc();
+				}catch(e){
+					console.log('initOnloads Failure:');
 					console.log(funcstr);
-				}
-				let cfunc=new Function(funcstr);
-
-				if(debug==1){
 					console.log(cfunc.toString());
 				}
-				cfunc();
 			}
 		}
 		return initcnt;
@@ -3982,7 +4059,7 @@ var wacss = {
 			d.id=editor_id;
 			list[i].setAttribute('data-editor',d.id);
 			d.setAttribute('data-editor',list[i].id);
-			for(k in attrs){
+			for(let k in attrs){
 				if(k=='id' || k=='data-editor'){continue;}
 				d.setAttribute(k,attrs[k]);
 			}
@@ -5300,7 +5377,7 @@ var wacss = {
 					if(simg){
 						simg.onload = function () {
 				            //draw background image
-				            this.top_canvastop_canvas.ctx.drawImage(this, 0, 0);
+				            this.top_canvas.ctx.drawImage(this, 0, 0);
 				            this.txtarea.innerText=this.top_canvas.toDataURL('image/png');
 				            //console.log('saved 1');
 				        };
@@ -5332,7 +5409,7 @@ var wacss = {
 				'pencil':'Pencil',
 				'line':'Line',
 				'circle':'Circle',
-				'rectangle':'Rectangle',
+				'rectangle':'Rectangle'
 			};
 			params={style:'margin-left:10px;width:100px;padding:3px;'}
 			toolbar.shape=wacss.buildFormSelect('shape',shapes,params);
@@ -6225,12 +6302,12 @@ var wacss = {
 			}
 		}
 		if(undefined != ptr.dataset){
-			for(k in ptr.dataset){
+			for(let k in ptr.dataset){
 				params[k]=ptr.dataset[k];
 			}
 		}
 		if(undefined != ptd.dataset){
-			for(k in ptd.dataset){
+			for(let k in ptd.dataset){
 				params[k]=ptd.dataset[k];
 			}
 		}
@@ -6282,7 +6359,7 @@ var wacss = {
 			params.title=title;
 			params.cp_title=title;
 		}
-		for(k in elobj.dataset){
+		for(let k in elobj.dataset){
 			if(k=='nav'){continue;}
 			if(k=='confirm'){continue;}
 			if(k=='div'){continue;}
@@ -6357,7 +6434,7 @@ var wacss = {
 			}
 		}
 		//override params with opts if passed in
-		for(k in opts){
+		for(let k in opts){
 			if(opts[k].length==0){continue;}
 			params[k]=opts[k];
 		}
@@ -6390,7 +6467,7 @@ var wacss = {
 			let winHeight=parseInt(h/systemZoom);
 
 			let pairs=new Array();
-			for(k in params){
+			for(let k in params){
 				if(k=='nav'){continue;}
 				if(k=='confirm'){continue;}
 				if(k=='div'){continue;}
@@ -6426,6 +6503,342 @@ var wacss = {
 				}
 			}
 		}
+		return false;
+	},
+	/**
+	* @name wacss.pagingSubmit
+	* @describe submits a paged list/filter form, optionally via AJAX if a target div is specified
+	* @param object frm - the form element to submit
+	* @param string|HTMLElement div - optional target div id or element for AJAX submission
+	* @return boolean false
+	* @usage wacss.pagingSubmit(document.forms['myform'],'resultsdiv');
+	*/
+	pagingSubmit: function(frm,div){
+		if(undefined == frm || !frm || typeof frm !== 'object'){return false;}
+		if(!('querySelectorAll' in frm)){return false;}
+		try{ wacss.pagingAddFilter(frm); }catch(e){}
+		try{ wacss.pagingSetFilters(frm); }catch(e){}
+		if(undefined != div){
+			try{
+				if(frm && frm.setAttribute){ frm.setAttribute('pagingSetFilters',0); }
+				let targetDiv = div;
+				if(typeof div === 'object' && div && div.id){ targetDiv = div.id; }
+				if(typeof wacss.ajaxPost === 'function'){
+					return wacss.ajaxPost(frm,targetDiv);
+				}
+			}catch(e){}
+		}
+		if(typeof frm.submit === 'function'){
+			frm.submit();
+		}
+		return false;
+	},
+	/**
+	* @name wacss.pagingSetProcessing
+	* @describe shows a spinner on a paging button/container while processing
+	* @param HTMLElement obj - the button/container element
+	* @return void
+	* @usage wacss.pagingSetProcessing(document.getElementById('myPagingBtn'));
+	*/
+	pagingSetProcessing: function(obj){
+		if(!obj){return;}
+		let s=obj.querySelector('span');
+		if(s){ s.className='icon-spin7 w_spin'; return; }
+			let sp=document.createElement('span');
+			sp.className='icon-spin7 w_spin';
+			obj.appendChild(sp);
+		},
+
+	/**
+	* @name wacss.pagingSetOffset
+	* @describe sets the paging offset and submits the form
+	* @param object frm - form element
+	* @param number|string v - new offset value
+	* @return boolean false
+	* @usage wacss.pagingSetOffset(document.forms['myform'], 50);
+	*/
+	pagingSetOffset: function(frm,v){
+		if(!frm || !frm.filter_offset){return false;}
+		frm.filter_offset.value=v;
+		if(typeof frm.onsubmit === 'function'){ return frm.onsubmit(); }
+		if(typeof wacss.simulateEvent === 'function'){ wacss.simulateEvent(frm,'submit'); return false; }
+		if(typeof frm.submit === 'function'){ frm.submit(); }
+		return false;
+	},
+	/**
+	* @name wacss.pagingSetOrder
+	* @describe sets (and toggles desc) the paging order field then submits
+	* @param object frm - form element
+	* @param string v - column (optionally with direction)
+	* @return boolean false
+	* @usage wacss.pagingSetOrder(document.forms['myform'], 'created');
+	*/
+	pagingSetOrder: function(frm,v){
+		if(!frm || !frm.filter_order){return false;}
+		let cur=(frm.filter_order.value||'');
+		if(cur===v && cur.indexOf('desc')===-1){ v=v+' desc'; }
+		frm.filter_order.value=v;
+		if(typeof frm.onsubmit === 'function'){ return frm.onsubmit(); }
+		if(typeof wacss.simulateEvent === 'function'){ wacss.simulateEvent(frm,'submit'); return false; }
+		if(typeof frm.submit === 'function'){ frm.submit(); }
+		return false;
+	},
+	/**
+	* @name wacss.pagingBulkEdit
+	* @describe confirms and flags a bulk edit on the current filtered dataset, then submits
+	* @param object frm - form element
+	* @return boolean false if cancelled or invalid
+	* @usage wacss.pagingBulkEdit(document.forms['myform']);
+	*/
+	pagingBulkEdit: function(frm){
+		if(!frm || !frm.filter_field || !frm.filter_bulkedit){return false;}
+		let field=(frm.filter_field.value||'').trim();
+		if(!field || field==='*'){ alert('select a field to edit'); return false; }
+		let editval='';
+		if(!frm.filter_value || (frm.filter_value.value||'').length===0){ editval='NULL'; }
+		else{ editval="'"+frm.filter_value.value+"'"; }
+		if(!window.confirm("Are you sure you want to update the current dataset?\r\n\r\n"+
+			"Mass Update '"+field+"' field to "+editval+"?\r\n\r\nClick OK to confirm.  THIS IS NOT REVERSABLE.")){
+			return false;
+		}
+		frm.bulkedit=1;
+		frm.filter_bulkedit.value='1';
+		if(typeof frm.onsubmit === 'function'){ return frm.onsubmit(); }
+		if(typeof wacss.simulateEvent === 'function'){ wacss.simulateEvent(frm,'submit'); return false; }
+		if(typeof frm.submit === 'function'){ frm.submit(); }
+		return false;
+	},
+	/**
+	* @name wacss.pagingExport
+	* @describe triggers an export by posting params to the server and rendering progress in the export button
+	* @param object frm - form element
+	* @return boolean false
+	* @usage wacss.pagingExport(document.forms['myform']);
+	*/
+	pagingExport: function(frm){
+		if(!frm || !frm._export_formname || !frm._export_params_){return false;}
+		let divId = (frm._export_formname.value||'') + '_exportbutton';
+		if(!divId){return false;}
+		let obj = (typeof getObject==='function')? wacss.getObject(divId) : document.getElementById(divId);
+		if(!obj){return false;}
+		obj.style.display='inline-block';
+		obj.innerHTML='<span class="icon-spin7 w_spin" style="margin-top:5px;"></span>';
+
+		let exportForm=document.createElement('form');
+		exportForm.method='POST';
+		exportForm.action='/php/index.php';
+		let inp=document.createElement('input');
+		inp.type='hidden'; inp.name='setprocessing'; inp.value='0';
+		let inp1=document.createElement('input');
+		inp1.type='hidden'; inp1.name='_pushexport'; inp1.value='1';
+		let inp2=document.createElement('textarea');
+		inp2.name='_pushparams'; inp2.innerText=frm._export_params_.innerText;
+		exportForm.appendChild(inp);
+		exportForm.appendChild(inp1);
+		exportForm.appendChild(inp2);
+		document.body.appendChild(exportForm);
+
+		if(typeof wacss.ajaxPost === 'function'){
+			wacss.ajaxPost(exportForm,divId);
+		}
+		if(exportForm.parentNode){ exportForm.parentNode.removeChild(exportForm); }
+		return false;
+	},
+	/**
+	* @name wacss.pagingAddFilter
+	* @describe adds a single filter from filter_* form controls into the filter list
+	* @param object frm - the form element containing filter controls
+	* @return boolean false if validation fails
+	* @usage wacss.pagingAddFilter(document.forms['myform']);
+	*/
+	pagingAddFilter: function(frm){
+		if(undefined == frm || !frm){return false;}
+		if(undefined != frm.bulkedit){return false;}
+		if(undefined == frm.filter_field || undefined == frm.filter_operator){return false;}
+		let field = (frm.filter_field.value||'').trim();
+		let oper  = (frm.filter_operator.value||'').trim();
+		let val   = (frm.filter_value && frm.filter_value.value||'').trim();
+
+		if(field.length==0){alert('select a filter field');return false;}
+		if(oper.length==0){alert('select a filter operator');return false;}
+
+		if(field == '*' && (oper == 'ib' || oper == 'nb')){
+			alert('select a field to check for null values on');
+			if(frm.filter_field && frm.filter_field.focus){frm.filter_field.focus();}
+			return false;
+		}
+		else if(field != '*' && (oper == 'ib' || oper == 'nb')){
+			// ok with blank value
+		}
+		else if(val.length==0 && oper != 'null'){
+			if(frm.filter_value && frm.filter_value.focus){frm.filter_value.focus();}
+			return false;
+		}
+		let str=field+' '+oper+' '+val;
+		wacss.pagingAddFilters(frm,str);
+		if(frm.filter_value){ frm.filter_value.value=''; if(frm.filter_value.focus){frm.filter_value.focus();} }
+		return false;
+	},
+
+	/**
+	* @name wacss.pagingSetFilters
+	* @describe serializes visible filter chips into the hidden _filters field of the form
+	* @param object frm - the form element to update
+	* @return void
+	* @usage wacss.pagingSetFilters(document.forms['myform']);
+	*/
+	pagingSetFilters: function(frm){
+		if(undefined == frm || !frm){return;}
+		if(!('querySelectorAll' in frm)){return;}
+		let nodes=frm.querySelectorAll('.w_pagingfilter');
+		let filters=[];
+		for(let i=0;i<nodes.length;i++){
+		let n=nodes[i];
+		if(!n || (n.style && n.style.display=='none')){continue;}
+		let f=n.getAttribute('data-field');
+		let o=n.getAttribute('data-operator');
+		let v=n.getAttribute('data-value');
+		if(undefined == f || f==='null'){continue;}
+			filters.push([f,o,v].join('-'));
+		}
+		if(undefined != frm.bulkedit){return;}
+		if(frm._filters){
+			frm._filters.value=wacss.implode("\r\n",filters);
+		}
+		if(frm.getAttribute){
+			let check=frm.getAttribute('pagingSetFilters');
+			if(check==1 || check=='1'){return false;}
+			frm.setAttribute('pagingSetFilters',1);
+		}
+
+		if(frm.filter_bulkedit){frm.filter_bulkedit.value='';}
+		if(frm.filter_export){frm.filter_export.value='';}
+		return false;
+	},
+
+	/**
+	* @name wacss.pagingClearFilters
+	* @describe removes all filter chips from the form and clears the serialized _filters field, then submits the form
+	* @param object frm - the form element to clear
+	* @return boolean false if no filters found
+	* @usage wacss.pagingClearFilters(document.forms['myform']);
+	*/
+	pagingClearFilters: function(frm){
+		if(undefined == frm || !frm){return false;}
+		if(!('querySelectorAll' in frm)){return false;}
+		let chips=frm.querySelectorAll('.w_pagingfilter');
+		if(!chips || chips.length===0){
+			if(frm._filters){ frm._filters.value=''; }
+			return false;
+		}
+		for(let i=0;i<chips.length;i++){
+			let c=chips[i];
+			if(c && c.parentNode){ c.parentNode.removeChild(c); }
+		}
+		let areas=frm.querySelectorAll('textarea[name="_filters"]');
+		for(let i=0;i<areas.length;i++){
+			if(typeof wacss.setText === 'function'){ wacss.setText(areas[i],''); }
+			else{ areas[i].value=''; }
+		}
+		if(typeof wacss.simulateEvent === 'function'){
+			wacss.simulateEvent(frm,'submit');
+		}else if(typeof frm.submit === 'function'){
+			frm.submit();
+		}
+		return false;
+	},
+
+	/**
+	* @name wacss.pagingAddFilters
+	* @describe adds one or more filters to the form as filter chips, clearing existing ones if specified
+	* @param object frm - the form element to update
+	* @param string filters - semicolon-separated string of filters in "field operator value" format
+	* @param int clear - optional, set to 1 to clear existing filters first
+	* @return void
+	* @usage wacss.pagingAddFilters(document.forms['myform'],"status eq active; created gt 2024-01-01",1);
+	*/
+	pagingAddFilters: function(frm,filters,clear){
+		if(undefined == frm || !frm){return false;}
+		if(!filters || typeof filters !== 'string'){return false;}
+		if(undefined == clear){clear=0;}
+		if(clear==1){
+		  try{ wacss.pagingClearFilters(frm); }catch(e){}
+		}
+		let sets=filters.split(';');
+		for(let s=0;s<sets.length;s++){
+		  let raw = (sets[s]||'').trim();
+		  if(!raw){continue;}
+		  let fltrs=raw.split(/\s+/);
+		  let dfield=(fltrs.shift()||'').trim();
+		  if(!dfield){continue;}
+		  if(dfield=='*'){dfield='Any Field';}
+		  let doper=(fltrs.shift()||'').trim();
+		  let dvalue=fltrs.length? fltrs.join(' ') : '';
+
+		  let did=(dfield+doper+dvalue).replace(/[^a-zA-Z0-9\_]+/g,"").toLowerCase();
+		  did='id_'+did;
+
+		  let chip=frm.querySelector('#'+did);
+		  if(chip){
+		    chip.style.display='inline-block';
+		  } else {
+		    let filter_element=document.createElement('div');
+		    filter_element.className='w_pagingfilter';
+		    filter_element.setAttribute('data-field',dfield);
+		    filter_element.setAttribute('data-operator',doper);
+		    filter_element.setAttribute('data-value',dvalue);
+		    filter_element.setAttribute('id',did);
+
+		    let descOper=doper;
+		    let displayVal="'"+dvalue+"'";
+		    switch(doper){
+		        case 'ct':  descOper='Contains';break;
+		        case 'nct': descOper='Not Contains';break;
+		        case 'ca':  descOper='Contains Any of These';break;
+		        case 'ie':  descOper='Is Exactly';break;
+		        case 'gie': descOper='Is Exactly (case insensitive)';break;
+		        case 'sw':  descOper='Starts With';break;
+		        case 'ew':  descOper='Ends With';break;
+		        case 'n':   descOper='Is Not';break;
+		        case 'ne':  descOper='Is Not Exactly';break;
+		        case 'gt':  descOper='Is Greater Than';break;
+		        case 'lt':  descOper='Is Less Than';break;
+		        case 'ge':  descOper='Is Greater Than Or Equal To';break;
+		        case 'le':  descOper='Is Less Than Or Equal To';break;
+		        case 'ib':  descOper='Is Blank';displayVal='';break;
+		        case 'nb':  descOper='Is Not Blank';displayVal='';break;
+		        case 'ep':  descOper='Is Empty';break;
+		        case 'mp':  descOper='Missing Param';break;
+		        case 'np':  descOper='Not Present';break;
+		        case 'bw':  descOper='Between';displayVal=fltrs.join(' ');break;
+		        case 'eq':  descOper='Equals';break;
+		        default:    break;
+		    }
+		    if(dfield=='*'){dfield='Any Field';}
+		    let labelText = (dfield+' '+descOper+' '+displayVal).trim();
+		    let span=document.createElement('span');
+		    span.className='w_lblue w_padsmall';
+		    span.textContent=labelText;
+
+		    let a=document.createElement('a');
+		    a.className='w_gray w_nowrap w_nounderline';
+		    a.href='javascript:void(0)';
+		    a.setAttribute('aria-label','Remove filter');
+		    a.onclick=function(){ this.parentNode.style.display='none'; return wacss.pagingSetFilters(this.parentNode.parentNode); };
+		    let icon=document.createElement('span');
+		    icon.className='icon-cancel';
+		    a.appendChild(document.createTextNode('\u00A0'));
+		    a.appendChild(icon);
+		    a.appendChild(document.createTextNode('\u00A0'));
+
+		    filter_element.appendChild(span);
+		    filter_element.appendChild(a);
+
+		    let targetList = frm.filterlist || (frm.querySelector && frm.querySelector('.filterlist')) || frm;
+		    if(targetList && targetList.appendChild){ targetList.appendChild(filter_element); }
+		  }
+		}
+		wacss.pagingSetFilters(frm);
 		return false;
 	},
 	/**
@@ -6604,7 +7017,7 @@ var wacss = {
 		let params={behavior: 'smooth', block: 'center', inline: 'center'};
 		//allow override
 		if(undefined==p){
-			for(k in p){
+			for(let k in p){
 				params[k]=p[k];
 			}
 		}
@@ -6864,8 +7277,8 @@ var wacss = {
 		v.id=d.id+'_overlay';
 		v.setAttribute('data-target',d.id);
 		v.onclick=function(){
-			removeDiv(this.getAttribute('data-target'));
-			removeDiv(this.id);
+			wacss.removeId(this.getAttribute('data-target'));
+			wacss.removeId(this.id);
 		};
 		document.body.appendChild(v);
 		wacss.centerObject(d);
@@ -6950,8 +7363,8 @@ var wacss = {
 		v.id=d.id+'_overlay';
 		v.setAttribute('data-target',d.id);
 		v.onclick=function(){
-			removeDiv(this.getAttribute('data-target'));
-			removeDiv(this.id);
+			wacss.removeId(this.getAttribute('data-target'));
+			wacss.removeId(this.id);
 		};
 		document.body.appendChild(v);
 		wacss.centerObject(d);
@@ -7043,8 +7456,8 @@ var wacss = {
 		v.id=d.id+'_overlay';
 		v.setAttribute('data-target',d.id);
 		v.onclick=function(){
-			removeDiv(this.getAttribute('data-target'));
-			removeDiv(this.id);
+			wacss.removeId(this.getAttribute('data-target'));
+			wacss.removeId(this.id);
 		};
 		document.body.appendChild(v);
 		wacss.centerObject(d);
@@ -7059,7 +7472,7 @@ var wacss = {
 	* @usage let el=wacss.simulateEvent('#mybutton','click')
 	*/
 	simulateEvent: function(element, eventName){
-		element = getObject(element);
+		element = wacss.getObject(element);
 	    if (element === undefined) { return false; }
 	    if (eventName === 'submit' && element.tagName === 'FORM') {
 	        // Check if requestSubmit is available (modern browsers)
@@ -7331,7 +7744,7 @@ var wacss = {
 	},
 	/**
 	* @name wacss.strtoupper
-	* @describe uppercases a string - emulates PHP trim function
+	* @describe uppercases a string - emulates PHP strtoupper function
 	* @param str string
 	* @return string
 	* @usage let uc=wacss.strtoupper(str);
@@ -7431,7 +7844,6 @@ var wacss = {
 			else{wacss.addClass(obj,myclass1);}
 		}
 	},
-	
 	/**
 	* @name wacss.trim
 	* @describe trims a string - emulates PHP function
@@ -7537,7 +7949,7 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	wacsseditHandleFiles(el){
+	wacsseditHandleFiles: function(el){
 		for(let f=0;f<el.files.length;f++){
 			let reader = new FileReader();
 			reader.filebox=el.filebox;
