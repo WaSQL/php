@@ -6201,7 +6201,7 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 			array(
 				0=>array('pipe', 'r'), //stdin
 				1=>array('pipe', 'w'), //stdout
-				2=>array('pipe', 'a')  //stderr
+				2=>array('pipe', 'w')  //stderr
 				),
 			$pipes,
 			$dir
@@ -6231,6 +6231,190 @@ function cmdResults($cmd,$args='',$dir='',$timeout=0){
 	}
 	return $rtn;
 }
+function cmdResults2($cmd, $args = [], $dir = '', $timeout = 0, $env = [])
+{
+    $start = microtime(true);
+
+    // --- Normalize inputs ---
+    if (!is_string($cmd) || $cmd === '') {
+        throw new InvalidArgumentException('cmdResults: $cmd must be a non-empty string.');
+    }
+    // Accept legacy string $args but prefer array
+    if (is_string($args)) {
+        $args = strlen(trim($args)) ? [trim($args)] : [];
+    } elseif (!is_array($args)) {
+        $args = [(string)$args];
+    }
+
+    // Working directory
+    $cwd = is_string($dir) && is_dir($dir) ? $dir : getcwd();
+
+    // Ensure UTF-8 friendly environment (won't override explicit values)
+    if (!is_array($env)) { $env = []; }
+    $utf8Env = ['LANG' => 'C.UTF-8', 'LC_ALL' => 'C.UTF-8'];
+    foreach ($utf8Env as $k => $v) {
+        if (!array_key_exists($k, $env)) { $env[$k] = $v; }
+    }
+
+    // --- Build a safe command line ---
+    // Escape the executable itself (quote if it has spaces; otherwise escapeshellcmd)
+    $exe = $cmd;
+    if (preg_match('/\s/', $exe)) {
+        $exe = escapeshellarg($exe);
+    } else {
+        $exe = escapeshellcmd($exe);
+    }
+    // Escape each argument
+    $cmdline = $exe;
+    foreach ($args as $a) {
+        $cmdline .= ' ' . escapeshellarg((string)$a);
+    }
+
+    // --- Start process ---
+    $descriptorSpec = [
+        0 => ['pipe', 'r'],  // stdin
+        1 => ['pipe', 'w'],  // stdout
+        2 => ['pipe', 'w'],  // stderr
+    ];
+
+    // On Windows, bypass_shell prevents cmd.exe wrapping. On *nix it's ignored (safe due to quoting above).
+    $options = ['bypass_shell' => true];
+
+    $proc = @proc_open($cmdline, $descriptorSpec, $pipes, $cwd, $env, $options);
+    if (!\is_resource($proc)) {
+        return [
+            'cmd'     => $cmd,
+            'args'    => $args,
+            'dir'     => $cwd,
+            'stdout'  => '',
+            'stderr'  => 'Failed to start process (proc_open).',
+            'runtime' => microtime(true) - $start,
+            'rtncode' => 127,
+        ];
+    }
+
+    // Non-blocking reads
+    stream_set_blocking($pipes[0], false);
+    stream_set_blocking($pipes[1], false);
+    stream_set_blocking($pipes[2], false);
+
+    // We don't write to stdin; close immediately.
+    fclose($pipes[0]);
+
+    $stdout = '';
+    $stderr = '';
+    $deadline = ($timeout && is_numeric($timeout) && $timeout > 0) ? (microtime(true) + (float)$timeout) : null;
+    $timedOut = false;
+
+    // Read loop with select & timeout enforcement
+    while (true) {
+        $read = [];
+        if (!feof($pipes[1])) { $read[] = $pipes[1]; }
+        if (!feof($pipes[2])) { $read[] = $pipes[2]; }
+
+        // If both streams at EOF, we can break after process check
+        if (!$read) {
+            $status = proc_get_status($proc);
+            if (!$status['running']) { break; }
+        }
+
+        $write = null; $except = null;
+        // Poll every 200ms
+        $num = @stream_select($read, $write, $except, 0, 200000);
+        if ($num === false) {
+            // Select error; attempt to break cleanly
+            break;
+        }
+
+        foreach ($read as $r) {
+            $chunk = fread($r, 8192);
+            if ($r === $pipes[1]) { $stdout .= $chunk; }
+            else { $stderr .= $chunk; }
+        }
+
+        // Timeout?
+        if ($deadline && microtime(true) > $deadline) {
+            $timedOut = true;
+            // Try graceful terminate then kill
+            @proc_terminate($proc);               // SIGTERM / TerminateProcess
+            usleep(150000);                       // 150ms grace
+            $status = proc_get_status($proc);
+            if ($status['running']) {
+                @proc_terminate($proc, 9);        // SIGKILL (POSIX); same as TerminateProcess on Windows
+            }
+            break;
+        }
+
+        // Exit if process no longer running and streams drained
+        $status = proc_get_status($proc);
+        if (!$status['running'] && feof($pipes[1]) && feof($pipes[2])) {
+            break;
+        }
+    }
+
+    // Close pipes and get exit code
+    @fclose($pipes[1]);
+    @fclose($pipes[2]);
+    $exitCode = @proc_close($proc);
+
+    // --- Normalize to valid UTF-8 (lossless when possible) ---
+    // Try mb_* first; fallback to iconv ignore if needed.
+    $normalizeUtf8 = static function ($s) {
+        if ($s === '' || $s === null) { return ''; }
+        if (function_exists('mb_check_encoding') && mb_check_encoding($s, 'UTF-8')) {
+            return $s;
+        }
+        if (function_exists('mb_convert_encoding')) {
+            // Attempt common Western encodings before falling back
+            $encs = ['UTF-8', 'Windows-1252', 'ISO-8859-1', 'ISO-8859-15'];
+            $detected = null;
+            foreach ($encs as $enc) {
+                if (@mb_check_encoding($s, $enc)) { $detected = $enc; break; }
+            }
+            if ($detected === null) { $detected = 'Windows-1252'; }
+            $converted = @mb_convert_encoding($s, 'UTF-8', $detected);
+            if ($converted !== false) { return $converted; }
+        }
+        if (function_exists('iconv')) {
+            $converted = @iconv('UTF-8', 'UTF-8//IGNORE', $s);
+            if ($converted !== false) { return $converted; }
+        }
+        // As a last resort, strip non-UTF8 bytes
+        return preg_replace('/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F' .
+                            '\\xC0-\\xC1\\xF5-\\xFF]/', '', $s);
+    };
+
+    $stdout = $normalizeUtf8($stdout);
+    $stderr = $normalizeUtf8($stderr);
+
+    $result = [
+        'cmd'     => $cmd,
+        'args'    => $args,
+        'dir'     => $cwd,
+        'stdout'  => trim($stdout),
+        'stderr'  => trim($stderr),
+        'runtime' => microtime(true) - $start,
+        'rtncode' => is_int($exitCode) ? $exitCode : 0,
+    ];
+
+    if ($timedOut) {
+        // Keep compatibility with existing consumers but surface timeout clearly
+        $result['timed_out'] = true;
+        if ($result['stderr'] === '') {
+            $result['stderr'] = 'Process timed out.';
+        }
+        // Use 124 convention for timeouts if no exit code returned
+        if ($result['rtncode'] === 0) { $result['rtncode'] = 124; }
+    }
+
+    // Drop empty keys for parity with legacy behavior
+    foreach ($result as $k => $v) {
+        if (!is_array($v) && $v === '') { unset($result[$k]); }
+    }
+
+    return $result;
+}
+
 //---------- begin function copyFile--------------------
 /**
 * @describe copies file from source to destination using stream_copy_to_stream for speed and efficiency
