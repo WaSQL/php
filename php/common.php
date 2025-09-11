@@ -9519,11 +9519,7 @@ function evalPHP($strings){
 			$strings[$sIndex]=removeViews($strings[$sIndex]);
 			$strings[$sIndex]=processForeach($strings[$sIndex]);
 			}
-		if(trim($strings[$sIndex])=='<??>'){
-			$strings[$sIndex]='';
-			continue;
-		}
-		if(is_null($strings[$sIndex])){
+		if(!isset($strings[$sIndex]) || is_null($strings[$sIndex]) ||  trim($strings[$sIndex])=='<??>'){
 			$strings[$sIndex]='';
 			continue;
 		}
