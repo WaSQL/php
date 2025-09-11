@@ -1338,6 +1338,26 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= '</form>'.PHP_EOL;
 	return $rtn;
 }
+//---------- begin function commonRtrim ----------
+/**
+* @describe wrapper for rtrim that handles objects
+* @param str mixed - string or obj
+* @return str
+*/
+function commonRtrim($str){
+	if(!is_string($str)){$str=encodeJson($str);}
+	return rtrim($str);
+}
+//---------- begin function commonTrim ----------
+/**
+* @describe wrapper for trim that handles objects
+* @param str mixed - string or obj
+* @return str
+*/
+function commonTrim($str){
+	if(!is_string($str)){$str=encodeJson($str);}
+	return trim($str);
+}
 //---------- begin function getWebsiteMeta ----------
 /**
 * @describe gets the headers, meta, and link data from a website URL

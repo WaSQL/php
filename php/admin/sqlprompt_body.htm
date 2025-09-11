@@ -131,12 +131,12 @@
 </view:sqlprompt_named_query>
 
 <view:monitor_sql>
-	<div id="monitor_sql_query"><?=trim($sql);?></div>
+	<div id="monitor_sql_query"><?=commonTrim($sql);?></div>
 	<?=buildOnLoad("sqlpromptMonitorSQL();");?>
 </view:monitor_sql>
 
 <view:monitor_sql_norun>
-	<div id="monitor_sql_query"><?=trim($sql);?></div>
+	<div id="monitor_sql_query"><?=commonTrim($sql);?></div>
 	<?=buildOnLoad("sqlpromptMonitorSQL(1);");?>
 </view:monitor_sql_norun>
 
