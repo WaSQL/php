@@ -6650,20 +6650,18 @@ function convertTimezone($ds,$from_timezone,$to_timezone,$format='Y-m-d H:i:s'){
 //---------- begin function csvImplode--------------------------------------
 /**
 * @describe creates a csv string from an array
-* @param arr array
-*	the array to convert to a csv string
-* @param delim char[optional]
-*	The delimiter character - defaults to a comma
-* @param enclose char
-*	the enclose character - defaults to a double-quote
+* @param arr array  - the array to convert to a csv string
+* @param [delim] char - The delimiter character - defaults to a comma
+* @param [enclose] char - the enclose character - defaults to a double-quote
+* @param [escape] char - defaults to \
 * @return
 *	returns a csv string
 * @usage $line=csvImplode($parts_array);
 */
-function csvImplode($parts=array(),$delim=',', $enclose='"',$force=0){
+function csvImplode($parts=array(),$delim=',', $enclose='"',$escape = "\\"){
 	ob_start(); // buffer the output ...
 	$csvImplodeFH = fopen('php://output', 'w'); // this file actual writes to php output
-    fputcsv($csvImplodeFH, $parts, $delim, $enclose);
+    fputcsv($csvImplodeFH, $parts, $delim, $enclose,$escape);
     fclose($csvImplodeFH);
     $line=ob_get_clean();
     $line=rtrim($line);
