@@ -152,21 +152,15 @@ function cronLogRefreshTimer(){
 
 
 <view:pid>
-<div class="w_centerpop_title">Process <?=$pid;?></div>
-<div class="w_centerpop_content" data-onload="centerObject('centerpop');">
-	<?=printValue($rec);?>
-	<div class="align-right">
-		<a href="#" class="w_red w_link" onclick="return wacss.ajaxGet('<?=configValue('admin_form_url');?>','centerpop',{_menu:'cron',func:'kill',id:this.dataset.cron_pid,title:this.title,setprocessing:'cron_processing'});" data-cron_pid="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
-	</div>
+<?=printValue($rec);?>
+<div class="align-right">
+	<a href="#" class="w_red w_link" onclick="return wacss.ajaxGet('<?=configValue('admin_form_url');?>','centerpop',{_menu:'cron',func:'kill',id:this.dataset.cron_pid,title:this.title,setprocessing:'cron_processing'});" data-cron_pid="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
 </div>
 </view:pid>
 
 <view:nopid>
-<div class="w_centerpop_title">Process <?=$pid;?></div>
-<div class="w_centerpop_content"data-onload="setText('process_{$pid}','');centerObject('centerpop');">
 	<h3>No process found with pid of <?=$pid;?></h3>
 	<div>Updated cron to reflect it is not running</div>
-</div>
 </view:nopid>
 
 <view:addedit>
