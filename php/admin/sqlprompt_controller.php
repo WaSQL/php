@@ -163,6 +163,19 @@
 			setView('monitor_sql_norun',1);
 			return;
 		break;
+		case 'desc':
+			$table=addslashes($_REQUEST['table']);
+			$db=$_REQUEST['db'];
+			$parts=preg_split('/\./',$table,2);
+			if(count($parts)==2){
+				$sql="desc {$table}";
+			}
+			else{
+				$sql="desc {$table}";
+			}
+			setView('monitor_sql',1);
+			return;
+		break;
 		case 'monitor':
 			switch(strtolower($_REQUEST['type'])){
 				case 'optimizations':
@@ -1308,7 +1321,7 @@ ENDOFQUERY;
 			$table=addslashes($_REQUEST['table']);
 			$fields=dbGetTableFields($db['name'],$table);
 			$indexes=dbGetTableIndexes($db['name'],$table);
-			//echo printValue($indexes);exit;
+			//echo printValue($db);exit;
 			setView('tabledetails',1);
 			return;
 		break;

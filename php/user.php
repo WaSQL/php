@@ -26,10 +26,10 @@ if(function_exists('getallheaders')){
 	foreach($headers as $name => $value){
 		//authorization: Bearer {_authkey} support
 		if(preg_match('/^Authorization$/i',$name,$m)){
-			$_REQUEST['_auth']=trim(preg_replace('/^Bearer/','',trim($value)));
+			$_REQUEST['_auth']=trim(preg_replace('/^Bearer/i','',trim($value)));
 		}
-		elseif(preg_match('/^WaSQL\-(.+?)$/i',$name,$m)){
-			$k=strtolower($m[1]);
+		elseif(preg_match('/^WaSQL[\-\_](.+?)$/i',$name,$m)){
+			$k=trim(strtolower($m[1]));
 			switch($k){
 				case 'auth':$k='_auth';break;
 				case 'noguid':$k='_noguid';break;
@@ -46,10 +46,10 @@ else{
 	foreach($_SERVER as $name=>$value){
 		//authorization: Bearer {_authkey} support
 		if(preg_match('/^HTTP\_Authorization$/i',$name,$m)){
-			$_REQUEST['_auth']=trim(preg_replace('/^Bearer/','',trim($value)));
+			$_REQUEST['_auth']=trim(preg_replace('/^Bearer/i','',trim($value)));
 		}
-		elseif(preg_match('/^HTTP\_WASQL\_(.+)$/i',$name,$m)){
-			$k=strtolower($m[1]);
+		elseif(preg_match('/^HTTP\_WASQL[\-\_](.+)$/i',$name,$m)){
+			$k=trim(strtolower($m[1]));
 			switch($k){
 				case 'auth':$k='_auth';break;
 				case 'noguid':$k='_noguid';break;

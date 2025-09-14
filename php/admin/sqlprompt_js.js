@@ -221,6 +221,18 @@ function sqlpromptDDL(table){
 	}
 	return wacss.ajaxGet('/php/admin.php','nulldiv',params)
 }
+function sqlpromptDescTable(table){
+	let db=document.sqlprompt.db.value;
+	let schema=document.sqlprompt.schema.value;
+	document.sqlprompt.reset();
+	document.sqlprompt.db.value=db;
+	let params={_menu:'sqlprompt',func:'desc',db:db,table:table,setprocessing:0};
+	if(schema.length){
+		params.schema=document.sqlprompt.schema.value;
+		document.sqlprompt.schema.value=schema;
+	}
+	return wacss.ajaxGet('/php/admin.php','nulldiv',params)
+}
 function sqlpromptFields(table){
 	let icon=getObject(table+'_icon');
 	let div=table.replace(/[^0-9a-z\_]/gi, '')+'_fields';

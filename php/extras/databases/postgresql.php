@@ -1888,21 +1888,32 @@ function postgresqlGetAllTableIndexes($schema=''){
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
 	SELECT
-	  	idx.indrelid::REGCLASS AS table_name,
-	  	i.relname AS index_name,
-	  	idx.indisunique AS is_unique,
-	  	idx.indisprimary AS is_primary,
-       	TO_JSON(array(
-           SELECT PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE)
-           FROM
-             GENERATE_SUBSCRIPTS(idx.indkey, 1) AS k
-           ORDER BY k
-       	)) AS index_keys
-	FROM pg_index AS idx
-  		JOIN pg_class AS i ON i.oid = idx.indexrelid
-  		JOIN pg_namespace AS ns ON i.relnamespace = NS.OID
-	WHERE ns.nspname = '{$schema}'
-	ORDER BY 1,2
+	idx.indrelid::regclass::text AS table_name,
+	i.relname                    AS index_name,
+	idx.indisunique              AS is_unique,
+	idx.indisprimary             AS is_primary,
+
+	-- usage stats
+	COALESCE(sai.idx_scan, 0)       AS idx_scan,
+	(COALESCE(sai.idx_scan, 0) > 0) AS used,
+	COALESCE(sai.idx_tup_read, 0)   AS idx_tup_read,
+	COALESCE(sai.idx_tup_fetch, 0)  AS idx_tup_fetch,
+	pg_size_pretty(pg_relation_size(i.oid)) AS index_size,
+
+	-- keys only (column / expression list, ordered)
+	TO_JSON(array(
+		SELECT PG_GET_INDEXDEF(idx.indexrelid, k + 1, TRUE)
+		FROM
+		GENERATE_SUBSCRIPTS(idx.indkey, 1) AS k
+		ORDER BY k
+	)) AS index_keys
+
+FROM pg_index AS idx
+JOIN pg_class   AS i  ON i.oid  = idx.indexrelid
+JOIN pg_namespace ns  ON ns.oid = i.relnamespace
+LEFT JOIN pg_stat_all_indexes sai ON sai.indexrelid = idx.indexrelid
+WHERE ns.nspname = '{$schema}'
+ORDER BY 1, 2;
 ENDOFQUERY;
 	$recs=postgresqlQueryResults($query);
 	$databaseCache[$cachekey]=array();
