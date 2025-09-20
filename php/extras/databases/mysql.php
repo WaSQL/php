@@ -459,7 +459,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 */
 function mysqlGetDDL($type,$name){
 	$type=strtoupper($type);
-	$name=strtoupper($name);
+	$name=strtolower($name);
 	$query="SHOW CREATE {$type} {$name}";
 	$field='create_'.strtolower($name);
 	$recs=mysqlQueryResults($query);
