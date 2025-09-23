@@ -10194,6 +10194,7 @@ function dbGetTime(){
 	$nrec=getDBRecord("select now() as now");
 	return strtotime($nrec['now']);
 }
+
 function getDBTimezone(){
 	$rec=getDBRecord("SELECT @@session.time_zone as stz");
 	if($rec['stz']=='SYSTEM'){
