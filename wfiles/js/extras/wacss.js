@@ -1273,23 +1273,28 @@ var wacss = {
 	formFileImageMode: function(input,mode){
 		input=wacss.getObject(input);
 		if(undefined==input){return false;}
+		//clone the input to force camera mode, will swap it below.
+		let new_input = input.cloneNode(true);
+		new_input.value='';
 		if (mode === 'user' || mode === 'environment') {
-			input.setAttribute('capture', mode);
+			new_input.setAttribute('capture', mode);     // lens hint
+		} else if (mode === 'camera') {
+			new_input.setAttribute('capture', 'camera'); // Android-friendly alias
 		} else {
-			input.removeAttribute('capture');
+			new_input.removeAttribute('capture');        // open picker (gallery/files)
 		}
-		// Ensure 'multiple' is not present, as it breaks capture on many browsers
-		input.removeAttribute('multiple');
 		//check remove if present
-		if(undefined != input.id){
-			let remove=document.getElementById(input.id+'_remove');
+		if(undefined != new_input.id){
+			let remove=document.getElementById(new_input.id+'_remove');
 			if(undefined != remove){
 				remove.checked=true;
 			}
 		}
-		// Manually trigger the picker/camera after updating attributes
-		input.click();
-		return false;
+		// Ensure 'multiple' is not present, as it breaks capture on many browsers
+		new_input.removeAttribute('multiple');
+		// Swap in the new node right before the label's default click fires
+    	input.parentNode.replaceChild(new_input, input);
+		return true;
 	},
 	formFileImageErase: function(el){
 		el=wacss.getObject(el);
