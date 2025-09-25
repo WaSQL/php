@@ -1270,30 +1270,26 @@ var wacss = {
 		}
 		return true;
 	},
-	formFileImageMode: function(input,mode){
-		input=wacss.getObject(input);
-		if(undefined==input){return false;}
-		//clone the input to force camera mode, will swap it below.
-		let new_input = input.cloneNode(true);
-		new_input.value='';
+	formFileImageMode: function(el,mode){
+		el=wacss.getObject(el);
+		if(undefined==el){return false;}
+		//set capture mode
 		if (mode === 'user' || mode === 'environment') {
-			new_input.setAttribute('capture', mode);     // lens hint
+			el.setAttribute('capture', mode);     // lens hint
 		} else if (mode === 'camera') {
-			new_input.setAttribute('capture', 'camera'); // Android-friendly alias
+			el.setAttribute('capture', 'camera'); // Android-friendly alias
 		} else {
-			new_input.removeAttribute('capture');        // open picker (gallery/files)
+			el.removeAttribute('capture');        // open picker (gallery/files)
 		}
 		//check remove if present
-		if(undefined != new_input.id){
-			let remove=document.getElementById(new_input.id+'_remove');
+		if(undefined != el.id){
+			let remove=document.getElementById(el.id+'_remove');
 			if(undefined != remove){
 				remove.checked=true;
 			}
 		}
 		// Ensure 'multiple' is not present, as it breaks capture on many browsers
-		new_input.removeAttribute('multiple');
-		// Swap in the new node right before the label's default click fires
-    	input.parentNode.replaceChild(new_input, input);
+		el.removeAttribute('multiple');
 		return true;
 	},
 	formFileImageErase: function(el){
