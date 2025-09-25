@@ -4349,7 +4349,6 @@ function buildFormFileImage($name,$params=array()){
 	}
 	if(isset($params['multiple'])){$params['multiple']='multiple';}
 	else{$params['multiple']='';}
-	$params['multiple']='multiple';
 	if(!isset($params['accept'])){$params['accept']='image/*';}
 	if(!isset($params['class'])){$params['class']='';}
 	//set path of where to store this file in
@@ -4398,7 +4397,7 @@ ENDOFERASE;
 	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
 	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" capture="" onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
 	{$erase}
-	<label for="{$params['id']}" title="Front facing camera" onclick="document.getElementById('{$params['id']}').setAttribute('capture','user');"document.getElementById('{$params['id']}_remove').checked" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
+	<label for="{$params['id']}" title="Front facing camera" onclick="document.getElementById('{$params['id']}').setAttribute('capture','user');document.getElementById('{$params['id']}_remove').checked" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
 	<label for="{$params['id']}" title="Rear facing camera" onclick="document.getElementById('{$params['id']}').setAttribute('capture','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
 	<label for="{$params['id']}" title="Browse for image" onclick="document.getElementById('{$params['id']}').setAttribute('capture','');" class="w_biggest w_pointer">{$params['text']}</label>
 </div>
