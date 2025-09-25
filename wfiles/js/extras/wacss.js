@@ -1276,9 +1276,8 @@ var wacss = {
 		//set capture mode
 		if (mode === 'user' || mode === 'environment') {
 			el.setAttribute('capture', mode);     // lens hint
-		} else if (mode === 'camera') {
-			el.setAttribute('capture', 'camera'); // Android-friendly alias
-		} else {
+		} 
+		else {
 			el.removeAttribute('capture');        // open picker (gallery/files)
 		}
 		//check remove if present
