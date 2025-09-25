@@ -4395,11 +4395,11 @@ ENDOFERASE;
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
 	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
-	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" capture="" onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
+	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
 	{$erase}
-	<label for="{$params['id']}" title="Front facing camera" onclick="return formFileImageMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
-	<label for="{$params['id']}" title="Rear facing camera" onclick="return formFileImageMode('{$params['id']}','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
-	<label for="{$params['id']}" title="Browse for image" onclick="return formFileImageMode('{$params['id']}','none');" class="w_biggest w_pointer">{$params['text']}</label>
+	<label for="{$params['id']}" title="Front facing camera" onclick="return wacss.formFileImageMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
+	<label for="{$params['id']}" title="Rear facing camera" onclick="return wacss.formFileImageMode('{$params['id']}','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
+	<label for="{$params['id']}" title="Browse for image" onclick="return wacss.formFileImageMode('{$params['id']}','none');" class="w_biggest w_pointer">{$params['text']}</label>
 </div>
 ENDOFTAG;
 	return $tag;
