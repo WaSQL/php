@@ -1215,6 +1215,85 @@ var wacss = {
 		};
 		return true;
 	},
+	formFileImageUpload: function(el){
+		if(undefined==el || undefined==el.files){
+			return true;
+		}
+		let id=el.id || el.dataset.id || 'unknown';
+		let preview=document.getElementById(id+'_preview');
+		if(undefined == preview){return true;}
+		let files=el.files || new Array();
+		preview.dataset.fcnt=files.length;
+		//process data-onfile
+		if(undefined != el.dataset.onfile){
+			let cfunc=new Function(el.dataset.onfile);
+			cfunc();
+		}
+		const url = URL.createObjectURL(files[0]);
+  		preview.style.backgroundImage =  'url('+url+')';
+		if (files.length === 1) {
+			// Single image: center and cover
+			preview.style.backgroundPosition = 'center';
+			preview.style.backgroundSize = 'cover';
+		}
+		else{
+			preview.style.position = 'relative';
+			// Create count badge showing the number of images
+			const badge = document.createElement('div');
+			badge.textContent = files.length;
+			badge.style.position = 'absolute';
+			badge.id=id+'_badge';
+			badge.style.bottom = '-2px';
+			badge.style.right = '-2px';
+			badge.style.width = '16px';
+			badge.style.height = '16px';
+			badge.style.backgroundColor = '#ff4444';
+			badge.style.color = 'white';
+			badge.style.borderRadius = '50%';
+			badge.style.fontSize = '10px';
+			badge.style.fontWeight = 'bold';
+			badge.style.display = 'flex';
+			badge.style.alignItems = 'center';
+			badge.style.justifyContent = 'center';
+			badge.style.border = '2px solid white';
+			badge.style.boxSizing = 'border-box';
+			preview.appendChild(badge);
+		}
+		let erase=document.getElementById(id+'_erase');
+		if(undefined != erase){
+			erase.style.display='block';
+		}
+		let remove=document.getElementById(id+'_remove');
+		if(undefined == remove){
+			remove.checked=false;
+		}
+		return true;
+	},
+	formFileImageErase: function(el){
+		if(undefined==el || undefined==el.dataset.id){
+			return true;
+		}
+		let id=el.dataset.id;
+		let pel=document.getElementById(id);
+		if(undefined != pel.files){
+			pel.files=undefined;
+		}
+		let preview=document.getElementById(id+'_preview');
+		if(undefined == preview){
+			return true;
+		}
+		let remove=document.getElementById(id+'_remove');
+		if(undefined != remove){
+			remove.checked=true;
+		}
+		let badge=document.getElementById(id+'_badge');
+		if(undefined != badge){
+			badge.parentNode.removeChild(badge);
+		}
+		preview.style.backgroundImage='none';
+		el.style.display='none';
+		return true;
+	},
 	formIsIfTrue: function(frm,ifstr){
 		//age:5
 		//age:5,12
@@ -7294,81 +7373,95 @@ var wacss = {
 	* @usage let el=wacss.showImage('#myimg',2323)
 	*/
 	showImage: function(el,z,title){
-		el=wacss.getObject(el);
-		if(undefined == el){return false;}
-		z=z||999980;
-		let d=document.createElement('div');
-		d.id="modal1";
-		//d.className='modal open';
-		d.tabindex=0;
-		d.style.zIndex=z;
-		d.style.display='block';
-		d.style.border='1px outset #747392';
-		d.style.borderRadius='3px';
-		d.style.position='absolute';
-		d.style.textAlign='center';
-		d.style.width=el.dataset.width || '50vw';
-		d.style.height=el.dataset.height || '60vh';
-		d.style.transform='scaleX(1) scaleY(1)';
-		let imgsrc=el.getAttribute('src') || el.dataset.src || el.getAttribute('href');
-		d.style.backgroundImage="URL('"+imgsrc+"')";
-		d.style.backgroundRepeat='no-repeat';
-		d.style.backgroundSize='contain';
-		d.style.backgroundPosition='center';
-		d.style.backgroundColor='#000';
-		title=title||el.dataset.header||el.dataset.title||el.title||'';
-		if(undefined != title && title.length){
-			let t=document.createElement('div');
-			t.className='w_blackback w_white w_big w_bold align-center';
-			t.style.top='0px';
-			t.style.display='block';
-			t.style.padding='10px 15px;';
-			t.style.width=el.dataset.width || '50vw';
-			t.style.position='absolute';
-			t.innerHTML=title;
-			d.appendChild(t);
-		}
-		let i=document.createElement('img');
-		i.src='/wfiles/clear.gif';
-		i.style.maxWidth='100%';
-		i.style.maxHeight='100%';
-		i.d=d;
-		i.onload=function(){
-			wacss.centerObject(this.d);
-		}
-		d.appendChild(i);
-		if(undefined != el.dataset.footer && el.dataset.footer.length){
-			let f=document.createElement('div');
-			f.className='w_blackback w_white w_big w_bold align-center';
-			f.style.bottom='0px';
-			f.style.display='block';
-			f.style.padding='10px 15px;';
-			f.style.width=el.dataset.width || '50vw';
-			f.style.position='absolute';
-			f.innerHTML=el.dataset.footer;
-			d.appendChild(t);
-		}
-		document.body.appendChild(d);
-		z=z-2;
-		// Build modal-overlay.
-		let v=document.createElement('div');
-		v.style.zIndex=z;
-		v.style.display='block';
-		v.style.width='100vw';
-		v.style.height=wacss.documentHeight()+'px';
-		v.style.position='absolute';
-		v.style.top='0px';
-		v.style.left='0px';
-		v.style.background='rgba(0,0,0,0.5)';
-		v.id=d.id+'_overlay';
-		v.setAttribute('data-target',d.id);
-		v.onclick=function(){
-			wacss.removeId(this.getAttribute('data-target'));
-			wacss.removeId(this.id);
-		};
-		document.body.appendChild(v);
-		wacss.centerObject(d);
-		return v;
+	    el=wacss.getObject(el);
+	    if(undefined == el){return false;}
+	    z=z||999980;
+	    let d=document.createElement('div');
+	    d.id="modal1";
+	    //d.className='modal open';
+	    d.tabindex=0;
+	    d.style.zIndex=z;
+	    d.style.display='block';
+	    d.style.border='1px outset #747392';
+	    d.style.borderRadius='3px';
+	    d.style.position='absolute';
+	    d.style.textAlign='center';
+	    d.style.width=el.dataset.width || '50vw';
+	    d.style.height=el.dataset.height || '60vh';
+	    d.style.transform='scaleX(1) scaleY(1)';
+	    
+	    let imgsrc=el.getAttribute('src') || el.dataset.src || el.getAttribute('href');
+	    
+	    // If no src found, check for background image
+	    if(!imgsrc) {
+	        let bgImage = window.getComputedStyle(el).backgroundImage;
+	        if(bgImage && bgImage !== 'none') {
+	            // Extract URL from "url("path")" format
+	            let match = bgImage.match(/url\(['"]?([^'")]+)['"]?\)/);
+	            if(match) {
+	                imgsrc = match[1];
+	            }
+	        }
+	    }
+	    
+	    d.style.backgroundImage="URL('"+imgsrc+"')";
+	    d.style.backgroundRepeat='no-repeat';
+	    d.style.backgroundSize='contain';
+	    d.style.backgroundPosition='center';
+	    d.style.backgroundColor='#000';
+	    title=title||el.dataset.header||el.dataset.title||el.title||'';
+	    if(undefined != title && title.length){
+	        let t=document.createElement('div');
+	        t.className='w_blackback w_white w_big w_bold align-center';
+	        t.style.top='0px';
+	        t.style.display='block';
+	        t.style.padding='10px 15px;';
+	        t.style.width=el.dataset.width || '50vw';
+	        t.style.position='absolute';
+	        t.innerHTML=title;
+	        d.appendChild(t);
+	    }
+	    let i=document.createElement('img');
+	    i.src='/wfiles/clear.gif';
+	    i.style.maxWidth='100%';
+	    i.style.maxHeight='100%';
+	    i.d=d;
+	    i.onload=function(){
+	        wacss.centerObject(this.d);
+	    }
+	    d.appendChild(i);
+	    if(undefined != el.dataset.footer && el.dataset.footer.length){
+	        let f=document.createElement('div');
+	        f.className='w_blackback w_white w_big w_bold align-center';
+	        f.style.bottom='0px';
+	        f.style.display='block';
+	        f.style.padding='10px 15px;';
+	        f.style.width=el.dataset.width || '50vw';
+	        f.style.position='absolute';
+	        f.innerHTML=el.dataset.footer;
+	        d.appendChild(f); // Fixed: was appending 't' instead of 'f'
+	    }
+	    document.body.appendChild(d);
+	    z=z-2;
+	    // Build modal-overlay.
+	    let v=document.createElement('div');
+	    v.style.zIndex=z;
+	    v.style.display='block';
+	    v.style.width='100vw';
+	    v.style.height=wacss.documentHeight()+'px';
+	    v.style.position='absolute';
+	    v.style.top='0px';
+	    v.style.left='0px';
+	    v.style.background='rgba(0,0,0,0.5)';
+	    v.id=d.id+'_overlay';
+	    v.setAttribute('data-target',d.id);
+	    v.onclick=function(){
+	        wacss.removeId(this.getAttribute('data-target'));
+	        wacss.removeId(this.id);
+	    };
+	    document.body.appendChild(v);
+	    wacss.centerObject(d);
+	    return v;
 	},
 	/**
 	* @name wacss.showVideo

@@ -1558,6 +1558,7 @@ function wasqlGetInputtypes($d=0){
 		'date'			=> 'Date',
 		'datetime'		=> 'DateTime',
 		'file'			=> 'File Upload',
+		'file_image'	=> 'Image Upload',
 		'formula'		=> 'Formula',
 		'hidden'		=> 'Hidden',
 		'latlon'		=> 'Latitude/Longitude',

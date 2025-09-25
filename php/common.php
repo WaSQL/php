@@ -4332,6 +4332,79 @@ ENDOFTAG;
 	$tag.='</div>';
 	return $tag;
 }
+function buildFormFileImage($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
+	if(!isset($params['text'])){
+		if(isset($params['multiple'])){$params['text']='Browse Images';}
+		else{$params['text']='Browse';}
+	}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
+	$params['value']=buildFormValueParam($name,$params);
+	$params['name']=$name;
+	if(isset($params['multiple']) && !stringEndsWith($params['name'],'[]')){
+		$params['name'].='[]';
+	}
+	if(isset($params['multiple'])){$params['multiple']='multiple';}
+	else{$params['multiple']='';}
+	$params['multiple']='multiple';
+	if(!isset($params['accept'])){$params['accept']='image/*';}
+	if(!isset($params['class'])){$params['class']='';}
+	//set path of where to store this file in
+	if(!isset($params['path'])){
+    	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
+    	elseif(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
+    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
+    	else{$params['path']="/files/{$params['name']}";}
+	}
+	//create path if it does not exist
+	$apath=$_SERVER['DOCUMENT_ROOT'].$params['path'];
+	if(!is_dir($apath)){
+		buildDir($apath);
+	}
+	$hidden=array();
+	$hidden[]=buildFormHidden("{$name}_path",array('value'=>$params['path']));
+	//autonumber?
+	if(isset($params['autonumber']) || isset($params['data-autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+		$hidden[]=buildFormHidden("{$name}_autonumber",array('value'=>1));
+    }
+    //resize after upload?
+    if(isset($params['resize']) || isset($params['data-resize'])){
+    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
+		$hidden[]=buildFormHidden("{$name}_resize",array('value'=>$resize));
+		unset($params['data-resize']);
+    }
+    $hiddenstr=implode(PHP_EOL."\t",$hidden);
+    //preview?
+    $erase='';
+    if(strlen($params['value'])){
+    	$hidden[]=buildFormHidden("{$name}_prev",array('value'=>$params['value']));
+    	$erase=<<<ENDOFERASE
+<label title="Erase" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileImageErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
+ENDOFERASE;
+	}
+	else{
+		$erase=<<<ENDOFERASE
+<label title="Erase" style="display:none;" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileImageErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
+ENDOFERASE;
+	}
+	$tag=<<<ENDOFTAG
+<div data-inputtype="file_image" data-display="inline-flex">
+	<input type="hidden" value="{$params['path']}" name="{$name}_path">
+	{$hiddenstr}
+	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
+	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
+	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" capture="" onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
+	{$erase}
+	<label for="{$params['id']}" title="Front facing camera" onclick="document.getElementById('{$params['id']}').setAttribute('capture','user');"document.getElementById('{$params['id']}_remove').checked" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
+	<label for="{$params['id']}" title="Rear facing camera" onclick="document.getElementById('{$params['id']}').setAttribute('capture','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
+	<label for="{$params['id']}" title="Browse for image" onclick="document.getElementById('{$params['id']}').setAttribute('capture','');" class="w_biggest w_pointer">{$params['text']}</label>
+</div>
+ENDOFTAG;
+	return $tag;
+}
 //Note: old buildFormFile function replace on 9/4/2024 
 function buildFormFile_OLD($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}

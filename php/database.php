@@ -4712,7 +4712,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		if(is_array($fields)){
 			foreach($fields as $field){
 				if(isset($info['fieldinfo'][$field]['_dbtype_ex']) && stringContains($info['fieldinfo'][$field]['_dbtype_ex'],' stored ')){continue;}
-				if(isset($info['fieldinfo'][$field]['inputtype']) && $info['fieldinfo'][$field]['inputtype']=='file'){
+				if(isset($info['fieldinfo'][$field]['inputtype']) && ($info['fieldinfo'][$field]['inputtype']=='file' || $info['fieldinfo'][$field]['inputtype']=='file_image')){
 	                $enctype="multipart/form-data";
 	                break;
             	}
@@ -4721,7 +4721,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		elseif(isset($info['fieldinfo'][$fields]['_dbtype_ex']) && stringContains($info['fieldinfo'][$fields]['_dbtype_ex'],' stored ')){
 	        continue;
 	    }
-		elseif(isset($info['fieldinfo'][$fields]['inputtype']) && $info['fieldinfo'][$fields]['inputtype']=='file'){
+		elseif(isset($info['fieldinfo'][$fields]['inputtype']) && ($info['fieldinfo'][$fields]['inputtype']=='file' || $info['fieldinfo'][$fields]['inputtype']=='file_image')){
 	        $enctype="multipart/form-data";
 	        break;
 	    }
@@ -8640,6 +8640,9 @@ function getDBFieldTag($params=array()){
 			break;
 		case 'file':
 			$tag=buildFormFile($info[$field]['name'],$info[$field]);
+		break;
+		case 'file_image':
+			$tag=buildFormFileImage($info[$field]['name'],$info[$field]);
 		break;
 		case 'formula':
 		break;
