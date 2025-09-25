@@ -1216,6 +1216,7 @@ var wacss = {
 		return true;
 	},
 	formFileImageUpload: function(el){
+		el=wacss.getObject(el);
 		if(undefined==el || undefined==el.files){
 			return true;
 		}
@@ -1264,12 +1265,34 @@ var wacss = {
 			erase.style.display='block';
 		}
 		let remove=document.getElementById(id+'_remove');
-		if(undefined == remove){
+		if(undefined != remove){
 			remove.checked=false;
 		}
 		return true;
 	},
+	formFileImageMode: function(input,mode){
+		input=wacss.getObject(input);
+		if(undefined==input){return false;}
+		if (mode === 'user' || mode === 'environment') {
+			input.setAttribute('capture', mode);
+		} else {
+			input.removeAttribute('capture');
+		}
+		// Ensure 'multiple' is not present, as it breaks capture on many browsers
+		input.removeAttribute('multiple');
+		//check remove if present
+		if(undefined != input.id){
+			let remove=document.getElementById(input.id+'_remove');
+			if(undefined != remove){
+				remove.checked=true;
+			}
+		}
+		// Manually trigger the picker/camera after updating attributes
+		input.click();
+		return false;
+	},
 	formFileImageErase: function(el){
+		el=wacss.getObject(el);
 		if(undefined==el || undefined==el.dataset.id){
 			return true;
 		}
