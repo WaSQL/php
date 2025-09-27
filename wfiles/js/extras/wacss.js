@@ -203,15 +203,11 @@ var wacss = {
 	alertMessage: function(msg,timer){
 		if(undefined==timer){timer=4000;}
 		timer=parseInt(timer);
-		html='';
-		html+='<div class="w_fade_away w_centerpop_title"><span class="icon-warning w_danger"></span> Error Processing Request</div>'+"\n";
-		html+= '<div class="w_centerpop_content" style="padding:15px;">'+"\n";
-		html+= '	<div class="w_big w_red"> - '+msg+'</div>'+"\n";
-		html+= '</div>'+"\n";
+		html='<div class="w_fade_away w_big w_red" style="background:#FFF;padding:15px;">'+msg+'</div>'+"\n";
 		let cp=wacss.createCenterpop('Alert',2);
 		cp.innerHTML=html;
 		setTimeout(() => {
-			cp.querySelector('div.w_centerpop_title').classList.add("w_fade-out");
+			cp.querySelector('div.w_fade_away').classList.add("w_fade-out");
 		    // When the fade-out finishes, remove element from DOM
 		    cp.addEventListener("transitionend", () => {
 		    	cp.remove();
