@@ -200,9 +200,62 @@ var wacss = {
 	    //always return false
 	    return false;
 	},
+	alertMessage: function(msg,timer){
+		if(undefined==timer){timer=4000;}
+		timer=parseInt(timer);
+		html='';
+		html+='<div class="w_centerpop_title"><span class="icon-warning w_danger"></span> Error Processing Request</div>'+"\n";
+		html+= '<div class="w_centerpop_content">'+"\n";
+		html+= '	<div class="w_big w_dblue"> - '+msg+'</div>'+"\n";
+		html+= '	<div class="w_smallest w_right w_lblue" style="margin-right:20px;" id="centerpop2_countdown">4</div>'+"\n";
+		html+= '</div>'+"\n";
+		let cp=wacss.createCenterpop('Alert');
+		cp.innerHTML=html;
+		setTimeout(() => {
+			cp.classList.add("fade-out");
+		    // When the fade-out finishes, remove element from DOM
+		    cp.addEventListener("transitionend", () => {
+		    	cp.remove();
+		    });
+		}, timer);
+	    return false;
+	},
 	ajaxPost: function(frm,div) {
 	    let xmlhttp = new XMLHttpRequest();
 	    let url=frm.getAttribute('action');
+	    //some quick checks
+	    for(var i=0;i<frm.length;i++){
+			let atts=getAllAttributes(frm[i]);
+			if(undefined != atts.disabled){continue;}
+			if(undefined != atts.readonly){continue;}
+			if(frm[i].type == 'hidden'){continue;}
+		    /* Password confirm */
+		  	if(frm[i].name == 'password'  && undefined != frm.password_confirm){
+		  		if(frm[i].value.length == 0 || frm.password_confirm.value.length == 0){
+					wacss.alertMessage('Password is required');
+	                frm[i].focus();
+	                return false;
+	            }
+	            if(frm[i].value != frm.password_confirm.value){
+					wacss.alertMessage('Passwords do not match.  Please retype password.');
+	                frm[i].focus();
+	                return false;
+	            }
+			}
+			/* email confirm */
+		  	if(frm[i].name == 'email'  && undefined != frm.email_confirm){
+		  		if(frm[i].value.length == 0 || frm.email_confirm.value.length == 0){
+					wacss.alertMessage('Email is required',popup,3);
+	                frm[i].focus();
+	                return false;
+	            }
+	            if(frm[i].value != theForm.email_confirm.value){
+					wacss.alertMessage('Emails do not match.',popup,3);
+	                frm[i].focus();
+	                return false;
+	            }
+			}
+		}
 	    xmlhttp.div=div;
 	    let cp={};
 	    let params={};
@@ -1270,7 +1323,182 @@ var wacss = {
 		}
 		return true;
 	},
-	formFileImageMode: function(el,mode){
+	// Preview handler for videos (and still works fine if an image is uploaded)
+	formFileVideoUpload: function (el) {
+		el = wacss.getObject(el);
+		if (!el || !el.files) { return true; }
+
+		const id = el.id || el.dataset.id || 'unknown';
+		const preview = document.getElementById(id + '_preview');
+		if (!preview) { return true; }
+
+		const files = el.files || [];
+		preview.dataset.fcnt = files.length;
+
+		// Run optional inline handler
+		if (el.dataset.onfile !== undefined) {
+			try { new Function(el.dataset.onfile)(); } catch (e) { /* no-op */ }
+		}
+
+		// Clean up any previous preview content + blob URL
+		preview.innerHTML = '';
+		preview.style.backgroundImage = '';
+		const oldBadge = document.getElementById(id + '_badge');
+		if (oldBadge) { oldBadge.remove(); }
+		if (preview.dataset.blobUrl) {
+			try { URL.revokeObjectURL(preview.dataset.blobUrl); } catch (e) {}
+			delete preview.dataset.blobUrl;
+		}
+
+		// Nothing selected
+		if (!files.length) { return true; }
+
+		const file = files[0];
+		const isVideo = /^video\//i.test(file.type);
+		const isImage = /^image\//i.test(file.type);
+		const mode = (el.dataset.previewMode || 'inline-video').toLowerCase(); // 'inline-video' | 'thumbnail'
+		const showControls = (el.dataset.controls === '1' || el.dataset.controls === 'true');
+
+		// --- VIDEO ---
+		if (isVideo) {
+			if (mode === 'thumbnail') {
+				// Generate a still and use it like your image preview
+				makeVideoThumb(file).then((dataUrl) => {
+					preview.style.backgroundImage = 'url(' + dataUrl + ')';
+					preview.style.backgroundPosition = 'center';
+					preview.style.backgroundSize = 'cover';
+				}).catch(() => {
+					// Fallback to inline if thumbnailing fails
+					injectInlineVideo(preview, file, showControls);
+				});
+			} else {
+				injectInlineVideo(preview, file, showControls);
+			}
+		}
+		// --- IMAGE (fallback to your existing behavior) ---
+		else if (isImage) {
+			const url = URL.createObjectURL(file);
+			preview.dataset.blobUrl = url;
+			preview.style.backgroundImage = 'url(' + url + ')';
+			preview.style.backgroundPosition = 'center';
+			preview.style.backgroundSize = 'cover';
+		}
+		// --- OTHER TYPES ---
+		else {
+			preview.textContent = file.name;
+		}
+
+		// Multi-file count badge (same look/feel as your original)
+		if (files.length > 1) {
+			preview.style.position = 'relative';
+			const badge = document.createElement('div');
+			badge.textContent = files.length;
+			badge.id = id + '_badge';
+			badge.style.position = 'absolute';
+			badge.style.bottom = '-2px';
+			badge.style.right = '-2px';
+			badge.style.width = '16px';
+			badge.style.height = '16px';
+			badge.style.backgroundColor = '#ff4444';
+			badge.style.color = 'white';
+			badge.style.borderRadius = '50%';
+			badge.style.fontSize = '10px';
+			badge.style.fontWeight = 'bold';
+			badge.style.display = 'flex';
+			badge.style.alignItems = 'center';
+			badge.style.justifyContent = 'center';
+			badge.style.border = '2px solid white';
+			badge.style.boxSizing = 'border-box';
+			preview.appendChild(badge);
+		}
+
+		// Mirror your erase/remove toggles
+		const erase = document.getElementById(id + '_erase');
+		if (erase) { erase.style.display = 'block'; }
+		const remove = document.getElementById(id + '_remove');
+		if (remove) { remove.checked = false; }
+
+		return true;
+
+		// --- Helpers ---
+
+		function injectInlineVideo(previewEl, f, withControls) {
+			const url = URL.createObjectURL(f);
+			previewEl.dataset.blobUrl = url;
+
+			const v = document.createElement('video');
+			v.src = url;
+			v.preload = 'metadata';
+			v.muted = true;
+			v.playsInline = true;                    // iOS Safari inline playback
+			v.setAttribute('playsinline', '');       // attribute form (extra-safe for iOS)
+			v.setAttribute('webkit-playsinline', '');// legacy iOS
+			if (withControls) { v.controls = true; }
+
+			// Fill the preview box similar to your image cover behavior
+			v.style.width = '100%';
+			v.style.height = '100%';
+			v.style.objectFit = 'cover';
+			v.style.display = 'block';
+
+			// Optional: grab first frame as poster once available (nice visual before play)
+			v.addEventListener('loadeddata', () => {
+				try {
+					const c = document.createElement('canvas');
+					c.width = v.videoWidth || 640;
+					c.height = v.videoHeight || 360;
+					const ctx = c.getContext('2d');
+					ctx.drawImage(v, 0, 0, c.width, c.height);
+					v.setAttribute('poster', c.toDataURL('image/jpeg', 0.8));
+				} catch (e) { /* non-fatal */ }
+			}, { once: true });
+
+			previewEl.appendChild(v);
+		}
+
+		function makeVideoThumb(f) {
+			return new Promise((resolve, reject) => {
+				const url = URL.createObjectURL(f);
+				const v = document.createElement('video');
+				v.preload = 'metadata';
+				v.muted = true;
+				v.playsInline = true;
+				v.src = url;
+
+				const cleanup = () => { try { URL.revokeObjectURL(url); } catch (e) {} };
+
+				v.addEventListener('loadeddata', () => {
+					try {
+						// Draw first available frame
+						const vw = v.videoWidth || 640;
+						const vh = v.videoHeight || 360;
+						// Bound the thumbnail width for performance
+						const targetW = Math.min(640, vw);
+						const targetH = Math.round(targetW * (vh / vw));
+
+						const c = document.createElement('canvas');
+						c.width = targetW;
+						c.height = targetH;
+						c.getContext('2d').drawImage(v, 0, 0, targetW, targetH);
+
+						const dataUrl = c.toDataURL('image/jpeg', 0.85);
+						cleanup();
+						resolve(dataUrl);
+					} catch (e) {
+						cleanup();
+						reject(e);
+					}
+				}, { once: true });
+
+				v.addEventListener('error', () => {
+					cleanup();
+					reject(new Error('Unable to read video for thumbnail.'));
+				}, { once: true });
+			});
+		}
+	},
+
+	formFileCaptureMode: function(el,mode){
 		el=wacss.getObject(el);
 		if(undefined==el){return false;}
 		//set capture mode
@@ -1291,7 +1519,7 @@ var wacss = {
 		el.removeAttribute('multiple');
 		return true;
 	},
-	formFileImageErase: function(el){
+	formFileCaptureErase: function(el){
 		el=wacss.getObject(el);
 		if(undefined==el || undefined==el.dataset.id){
 			return true;

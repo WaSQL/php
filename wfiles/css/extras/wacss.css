@@ -20,6 +20,14 @@ body{
     -ms-flex-pack: center !important;
     justify-content: center !important;
 }
+
+.w_fade_away {
+    opacity: 1;
+    transition: opacity 1s ease; /* 1s fade duration */
+  }
+ .w_fade_away.w_fade-out {
+    opacity: 0;
+  }
 /* ---------------------- centerpop ------------------------- */
 
 div.wacss_centerpop{
