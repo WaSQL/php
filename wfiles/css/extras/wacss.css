@@ -22,7 +22,11 @@ body{
 }
 
 .w_fade_away {
+    border-radius:50%;
+    background:#FFF;
+    padding:15px;
     opacity: 1;
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
     transition: opacity 1s ease; /* 1s fade duration */
   }
  .w_fade_away.w_fade-out {

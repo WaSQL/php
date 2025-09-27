@@ -203,7 +203,7 @@ var wacss = {
 	alertMessage: function(msg,timer){
 		if(undefined==timer){timer=4000;}
 		timer=parseInt(timer);
-		html='<div class="w_fade_away w_big w_red" style="background:#FFF;padding:15px;">'+msg+'</div>'+"\n";
+		html='<div class="w_fade_away w_big w_red">'+msg+'</div>'+"\n";
 		let cp=wacss.createCenterpop('Alert',2);
 		cp.innerHTML=html;
 		setTimeout(() => {
