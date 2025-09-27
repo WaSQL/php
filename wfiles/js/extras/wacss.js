@@ -227,7 +227,7 @@ var wacss = {
 		    /* Password confirm */
 		  	if(frm[i].name == 'password'  && undefined != frm.password_confirm){
 		  		if(frm[i].value.length == 0 || frm.password_confirm.value.length == 0){
-					wacss.alertMessage('Password is required');
+					wacss.alertMessage('Password and Password Confirm are both required');
 	                frm[i].focus();
 	                return false;
 	            }
