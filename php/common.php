@@ -3657,14 +3657,38 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
-//---------- begin function buildFormText--------------------
+//---------- begin function buildFormQrcodeBarcode --------------------
 /**
-* @describe creates an HTML text field
-* @param name string
-* @param params array
-* @return string
-* @usage echo buildFormText('name',$params);
-*/
+ * @describe Builds a QR/Barcode-enabled text input with a scan icon.
+ * @describe Renders an <input type="text" data-input="qrcode_barcode"> wrapped with a container
+ * @describe and a clickable icon. Automatically derives the input's value via
+ * @describe buildFormValueParam($name, $params). Adds data-requiredif/displayif attributes when provided.
+ * @describe When 'viewonly' is set, returns a read-only <div> instead of an input.
+ * @describe The wrapper includes data-onload="wacss.initQrcodeBarcode();".
+ * @describe The icon receives id "{$id}_scanicon" and class from $params['-icon'].
+ *
+ * @param string $name   Base field name (overridden by $params['name'] if set).
+ * @param array<string,mixed> $params [optional] Options:
+ *   - [-formname]  (string) Form name namespace for default id. Default: 'addedit'.
+ *   - [-icon]      (string) CSS class for the scan icon. Default: 'icon-qrcode'.
+ *   - [name]       (string) Override for the field name.
+ *   - [id]         (string) Element id. Default: "{-formname}_{name}".
+ *   - [class]      (string) Input CSS class. Default: 'w_form-control'.
+ *   - [style]      (string) Inline styles; function appends right-side radius adjustments.
+ *   - [requiredif] (string) Sets data-requiredif attribute.
+ *   - [displayif]  (string) Sets data-displayif attribute.
+ *   - [viewonly]   (bool)   If truthy, returns read-only <div class="w_viewonly"> with nl2br(value).
+ *   - any other keys are assed through to setTagAttributes().
+ *
+ * @return string HTML for the input (or view-only div) and scan icon container.
+ *
+ * @example
+ * echo buildFormQrcodeBarcode('sku', [
+ *   '-formname' => 'product',
+ *   '-icon'     => 'icon-barcode',
+ *   'class'     => 'w_form-control w_text',
+ * ]);
+ */
 function buildFormQrcodeBarcode($name,$params=array()){
 	//return $name.printValue($params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
