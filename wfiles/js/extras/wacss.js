@@ -4341,6 +4341,215 @@ var wacss = {
 		}
 		return initcnt;
 	},
+	ensureHtml5QrcodeLoaded: async function () {
+		if (window.Html5Qrcode){return;}
+		if (!wacss._html5qrcodePromise) {
+			wacss._html5qrcodePromise = new Promise((resolve, reject) => {
+				const s = document.createElement('script');
+				s.src = '/wfiles/js/extras/html5-qrcode.min.js';
+				s.async = true;
+				s.onload = () => resolve();
+				s.onerror = () => reject(new Error('Failed to load html5-qrcode'));
+				document.head.appendChild(s);
+			}).finally(() => { /* keep promise for reuse; do not delete */ });
+		}
+		await wacss._html5qrcodePromise;
+	},
+	initQrcodeBarcode: async function () {
+		const els = document.querySelectorAll('input[data-input="qrcode_barcode"]');
+		if (!els || !els.length){return false;}
+		await wacss.ensureHtml5QrcodeLoaded();
+		// Build overlay/modal (once)
+		let overlay = document.getElementById('qr-overlay');
+		if (!overlay) {
+			overlay = document.createElement('div');
+			overlay.id = 'qr-overlay';
+			overlay.style.cssText = `
+				position: fixed; inset: 0; display: none; z-index: 99999;
+				background: rgba(0,0,0,0.5);
+			`;
+
+			const modal = document.createElement('div');
+			modal.className = 'qr-modal';
+			modal.style.cssText = `
+				position: absolute; left: 50%; top: 50%;
+				transform: translate(-50%, -50%);
+				width: min(92vw, 520px);
+				max-height: 92vh;                 /* ensure the whole modal fits */
+				display: flex; flex-direction: column;
+				background: #111; color: #fff; border-radius: 16px;
+				box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+				overflow: hidden;                  /* crop camera inside if needed, not the toolbar */
+			`;
+
+			const header = document.createElement('div');
+			header.style.cssText = `
+				padding: 12px 16px; font-weight: 600;
+				background: #1a1a1a; border-bottom: 1px solid #222;
+				flex: 0 0 auto;
+			`;
+			header.textContent = 'Scan a code';
+
+			const mount = document.createElement('div');
+			mount.id = 'qrcodebarcode';
+			mount.style.cssText = `
+				position: relative;
+				width: 100%;
+				/* Flex so this area grows/shrinks to fit between header and toolbar */
+				flex: 1 1 auto;
+				/* Keep a sensible height range so we don't overflow the viewport */
+				height: clamp(220px, 60vh, 420px);
+				/* Prevent internal absolute children from spilling outside */
+				overflow: hidden;
+			`;
+
+			const toolbar = document.createElement('div');
+			toolbar.style.cssText = `
+				display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+				padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); /* iOS safe area */
+				background: #1a1a1a; border-top: 1px solid #222;
+				flex: 0 0 auto;
+			`;
+
+			const hint = document.createElement('div');
+			hint.style.cssText = 'margin-right:auto; opacity:.8; font-size:12px;';
+			hint.textContent = 'Point your camera at a barcode or QR code.';
+
+			const cancelBtn = document.createElement('button');
+			cancelBtn.id = 'qr-cancel';
+			cancelBtn.type = 'button';
+			cancelBtn.textContent = 'Cancel (Esc)';
+			cancelBtn.style.cssText = `
+				padding: 8px 12px; border-radius: 10px; background:#333;
+				color:#fff; border:1px solid #444; cursor:pointer;
+			`;
+
+			toolbar.appendChild(hint);
+			toolbar.appendChild(cancelBtn);
+
+			modal.appendChild(header);
+			modal.appendChild(mount);
+			modal.appendChild(toolbar);
+			overlay.appendChild(modal);
+			document.body.appendChild(overlay);
+		}
+		// Singleton scanner
+		const scanner = window.__qrScanner || (window.__qrScanner = new Html5Qrcode('qrcodebarcode'));
+		let isScanning = false;
+		// Helpers
+		const openScanner = async (button) => {
+			if (isScanning){return;}
+			overlay.style.display = 'block';
+			button?.classList.add('scanning');
+			try {
+				const formats = [
+					Html5QrcodeSupportedFormats.EAN_13,
+					Html5QrcodeSupportedFormats.EAN_8,
+					Html5QrcodeSupportedFormats.UPC_A,
+					Html5QrcodeSupportedFormats.UPC_E,
+					Html5QrcodeSupportedFormats.QR_CODE, // include QR codes too
+				];
+
+				await scanner.start(
+					{ facingMode: 'environment' },
+					{
+						fps: 20,
+						qrbox: { width: 300, height: 200 }, // visible guide box
+						formatsToSupport: formats,
+						experimentalFeatures: { useBarCodeDetectorIfSupported: true, useLegacyIos: true }
+					},
+					(decodedText /*, decodedResult */) => {
+						const input = document.getElementById(button?.dataset.inputid || '');
+						if (input) {
+							input.value = decodedText;
+							input.focus();
+							input.dispatchEvent(new Event('change', { bubbles: true }));
+							//check for data-onscan
+							if (input.dataset.onscan) {
+								try {
+									// new Function arg order: decodedText, input, this
+									const fn = new Function('code', 'el', 'btn', input.dataset.onscan);
+									fn(decodedText, input, button);
+								} catch (err) {
+									console.error('Error in data-onscan handler:', err);
+								}
+							}
+						}
+						closeScanner(button); // auto-close after successful read
+					},
+					() => { /* ignore per-frame errors */ }
+				);
+
+				isScanning = true;
+			} catch (err) {
+				console.error('QRCode/Barcode Scanner start failed:', err);
+				await closeScanner(button);
+			}
+		};
+
+		const closeScanner = async (button) => {
+			if (isScanning) {
+				try { await scanner.stop(); } catch (_) {}
+				isScanning = false;
+			}
+			overlay.style.display = 'none';
+			button?.classList.remove('scanning');
+			const input = document.getElementById(button?.dataset.inputid || '');
+			input?.focus();
+		};
+
+		// Bind cancel/backdrop/Esc once
+		if (!overlay.dataset.bound) {
+			overlay.dataset.bound = '1';
+
+			// Cancel button
+			overlay.querySelector('#qr-cancel')?.addEventListener('click', () => {
+				const trigger = document.querySelector('.icon-qrcode.scanning');
+				closeScanner(trigger);
+			});
+
+			// Backdrop click (ignore clicks inside modal)
+			overlay.addEventListener('click', (e) => {
+				if (e.target === overlay) {
+					const trigger = document.querySelector('.icon-qrcode.scanning');
+					closeScanner(trigger);
+				}
+			});
+
+			// Escape key
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape' && overlay.style.display === 'block') {
+					const trigger = document.querySelector('.icon-qrcode.scanning');
+					closeScanner(trigger);
+				}
+			});
+		}
+
+		// Attach per-input scan triggers
+		for (const el of els) {
+			if (el.dataset.initialized){continue;}
+			el.dataset.initialized = '1';
+			// Prefer "<input id>_scanicon", else fallback to "#_scanicon" or a nearby .icon-qrcode
+			const scanButton =
+				document.getElementById(el.id + '_scanicon') ||
+				el.parentElement?.querySelector('#_scanicon, .icon-qrcode');
+
+			if (!scanButton) {
+				el.dataset.error = 'no scanbutton';
+				continue;
+			}
+
+			scanButton.dataset.inputid = el.id;
+
+			scanButton.addEventListener('click', async function () {
+				if (isScanning) {
+					await closeScanner(this);
+				} else {
+					await openScanner(this);
+				}
+			});
+		}
+	},
 	/**
 	* @name wacss.initTabs
 	* @describe if a textarea has a class of w_tabs then enable the tab key in that textarea
@@ -6255,6 +6464,7 @@ var wacss = {
 	loadScript: function(file,func) {
 	    let script = document.createElement('script');
 	    script.src = file;
+	    script.async = true;
 	    //for backwards compatibility, check to see if func=1, if so toast 
 	    if(undefined != func){
 	    	script.func=func;

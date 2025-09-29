@@ -8687,6 +8687,14 @@ function getDBFieldTag($params=array()){
             $tag=buildFormMultiInput($info[$field]['fieldname'],$options,$info[$field]);
             //$tag=printValue($info[$field]);
 		break;
+		case 'qrcode':
+			$info[$field]['-icon']='icon-qrcode';
+			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
+		break;
+		case 'barcode':
+			$info[$field]['-icon']='icon-barcode';
+			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
+		break;
 		case 'buttonselect':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}
 			$selections=getDBFieldSelections($info[$field]);

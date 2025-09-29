@@ -3665,6 +3665,43 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 * @return string
 * @usage echo buildFormText('name',$params);
 */
+function buildFormQrcodeBarcode($name,$params=array()){
+	//return $name.printValue($params);
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-icon'])){$params['-icon']='icon-qrcode';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['value']=buildFormValueParam($name,$params);
+	//ksort($params);return printValue($params);
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['name']=$name;
+	//ksort($params);return printValue($params);
+	if(isset($params['viewonly'])){
+		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
+	}
+	$params['style'].=';border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	$inputtag ='<input type="text" data-input="qrcode_barcode" value="'.encodeHtml($params['value']).'"';
+	$inputtag.= setTagAttributes($params);
+	$inputtag.='>';
+	$icon_id=$params['id'].'_scanicon';
+	$tag = <<<ENDOFINPUT
+<div style="display:inline-flex;" data-onload="wacss.initQrcodeBarcode();">
+	{$inputtag}
+	<span id="{$icon_id}" class="{$params['-icon']} w_pointer" style="font-size:32px;"></span>
+</div>
+ENDOFINPUT;
+	return $tag;
+}
+//---------- begin function buildFormText-----------------cfunc=new Function('wacss.initQrcodeBarcode();');---
+/**
+* @describe creates an HTML text field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormText('name',$params);
+*/
 function buildFormText($name,$params=array()){
 	//return $name.printValue($params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
