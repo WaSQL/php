@@ -3486,6 +3486,11 @@ function postgresqlNamedQueryList(){
 			'name'=>'Running Queries'
 		),
 		array(
+			'code'=>'running_create_index',
+			'icon'=>'icon-spin4',
+			'name'=>'Running Create Index'
+		),
+		array(
 			'code'=>'sessions',
 			'icon'=>'icon-spin8',
 			'name'=>'Sessions'
@@ -3677,6 +3682,24 @@ SELECT
     AND psa.query NOT LIKE '%autovacuum:%' 
   ORDER BY 2 DESC, psa.query_start
 ENDOFQUERY;
+		break;
+		case 'running_create_index':
+			return <<<ENDOFQUERY
+SELECT
+	p.pid,
+	a.state,
+	a.wait_event_type,
+	a.wait_event,   
+	p.phase,
+	p.relid::regclass AS table_name,
+	p.index_relid::regclass AS index_name,
+	round(100.0 * p.blocks_done  / NULLIF(p.blocks_total,  0), 2) AS blocks_pct,
+	round(100.0 * p.tuples_done  / NULLIF(p.tuples_total,  0), 2) AS tuples_pct,
+	p.lockers_done, p.lockers_total,
+	p.current_locker_pid
+FROM pg_stat_progress_create_index p
+JOIN pg_stat_activity a ON a.pid = p.pid
+ENDOFQUERY;			
 		break;
 		case 'sessions':
 			return <<<ENDOFQUERY
