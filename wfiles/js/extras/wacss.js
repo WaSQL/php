@@ -1268,6 +1268,9 @@ var wacss = {
 		if(undefined==el || undefined==el.files){
 			return true;
 		}
+		if(undefined != el.dataset.resize){
+			wacss.resizeImage(el);
+		}
 		let id=el.id || el.dataset.id || 'unknown';
 		let preview=document.getElementById(id+'_preview');
 		if(undefined == preview){return true;}
@@ -7518,6 +7521,129 @@ var wacss = {
 		}
 		catch(e){}
 	    return false;
+	},
+	/**
+	* @name wacss.resizeImage
+	* @describe resize one or more images client-side and replace input.files with resized JPEG(s)
+	* @param object input element
+	* @param maxWidth (optional; fallback if data-maxwidth missing)
+	* @param maxHeight (optional; fallback if data-maxheight missing)
+	* @return boolean
+	* @usage onchange="wacss.resizeImage(this, 1080, 1080)"
+	*/
+	resizeImage:function(input, maxWidth, maxHeight) {
+		// no files to process
+		if (!input || !input.files || input.files.length === 0){return false;}
+
+		// derive max dims from data-* or params or default
+		const maxW = Number(input.dataset.maxwidth) || Number(maxWidth) || 1080;
+		const maxH = Number(input.dataset.maxheight) || Number(maxHeight) || 1080;
+
+		// derive quality (default 0.85)
+		let quality = parseFloat(input.dataset.quality);
+		if (isNaN(quality) || quality <= 0 || quality > 1){
+			quality = 0.85;
+		}
+		// helper: promisified toBlob
+		function canvasToBlob(canvas, type = "image/jpeg", q = quality){
+			return new Promise(function(resolve){
+				canvas.toBlob(function(blob){ resolve(blob); }, type, q);
+			});
+		}
+
+		// helper: read a File -> dataURL
+		function readFileAsDataURL(file){
+			return new Promise(function(resolve, reject){
+				const reader = new FileReader();
+				reader.onload = () => resolve(reader.result);
+				reader.onerror = reject;
+				reader.readAsDataURL(file);
+			});
+		}
+
+		// helper: load an image from src (dataURL/objectURL)
+		function loadImage(src){
+			return new Promise(function(resolve, reject){
+				const img = new Image();
+				img.onload = () => resolve(img);
+				img.onerror = reject;
+				img.src = src;
+			});
+		}
+
+		// core: resize one image file -> Promise<File>
+		async function processFile(file){
+			// only handle images the browser can decode
+			if (!file || !file.type || !file.type.startsWith("image/")){
+				// return null to indicate skip (non-image)
+				return null;
+			}
+			// NOTE: Some formats like HEIC/HEIF may not decode in many browsers.
+			// When not decodable, loadImage will reject and we'll fall back to original.
+			try{
+				const dataURL = await readFileAsDataURL(file);
+				const img = await loadImage(dataURL);
+
+				let width = img.width;
+				let height = img.height;
+
+				// scale proportionally if exceeds max bounds
+				if (width > maxW || height > maxH) {
+					const scale = Math.min(maxW / width, maxH / height);
+					width = Math.round(width * scale);
+					height = Math.round(height * scale);
+				}
+
+				// draw onto a canvas
+				const canvas = document.createElement("canvas");
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext("2d");
+				ctx.drawImage(img, 0, 0, width, height);
+
+				// convert canvas back to Blob (JPEG output for consistency/size)
+				const blob = await canvasToBlob(canvas, "image/jpeg", quality);
+				// Fallback: if toBlob failed for some reason, keep original file
+				if(!blob){ return file; }
+
+				// create a new File object (keep original name; change type to .jpg if you prefer)
+				const newName = file.name.replace(/\.(heic|heif|png|webp|gif|bmp|tiff?)$/i, '') + ".jpg";
+				const resized = new File([blob], newName, { type: "image/jpeg", lastModified: Date.now() });
+				return resized;
+			}catch(err){
+				// If decoding fails (e.g., unsupported format), fall back to original file
+				// You can also choose to return null to skip instead.
+				return file;
+			}
+		}
+
+		// process all files, then replace input.files
+		(async function(){
+			const dt = new DataTransfer();
+			const files = Array.from(input.files);
+
+			for (const f of files){
+				const out = await processFile(f);
+				if (out instanceof File){
+					dt.items.add(out);
+				}
+				// If out is null (non-image), you can decide to either:
+				// - keep original: dt.items.add(f);
+				// - or skip: do nothing
+				else if (out === null){
+					// Here we skip non-images to ensure only images are uploaded
+					// Uncomment next line to keep originals instead:
+					dt.items.add(f);
+				}
+			}
+			// replace input files with the resized set
+			input.files = dt.files;
+			// optional: trigger your existing upload flow
+			if (typeof wacss.formFileImageUpload === "function"){
+				try{ wacss.formFileImageUpload(input); }catch(e){}
+			}
+		})();
+		return true;
 	},
 	/**
 	* @name wacss.rgbToHex
