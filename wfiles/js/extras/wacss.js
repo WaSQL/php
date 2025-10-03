@@ -1263,38 +1263,68 @@ var wacss = {
 		};
 		return true;
 	},
-	formFileImageUpload: function(el){
-		el=wacss.getObject(el);
-		if(undefined==el || undefined==el.files){
+	formFileImageUpload: async function(el){
+		el = wacss.getObject(el);
+		if (undefined == el || undefined == el.files) {
 			return true;
 		}
-		if(undefined != el.dataset.resize){
-			wacss.resizeImage(el);
+		// If flagged for resize and not already resizing, run the resizer first.
+		if (el.dataset.resize !== undefined) {
+			// Prevent re-entrancy/races on rapid changes
+			if (el.dataset.resizing === "1") { return; }
+			el.dataset.resizing = "1";
+			// Remove flag so the post-resize re-entry won't resize again
+			el.removeAttribute("data-resize");
+			try{
+				await wacss.resizeImage(el);
+			} finally {
+				// Restore capability for future selections
+				el.setAttribute("data-resize", "1");
+				delete el.dataset.resizing;
+			}
+			// After resizeImage finishes, files are replaced and this function
+			// will be called again by resizeImage (async) to continue preview/setup.
+			// So stop here to avoid double work.
+			return;
 		}
-		let id=el.id || el.dataset.id || 'unknown';
-		let preview=document.getElementById(id+'_preview');
-		if(undefined == preview){return true;}
-		let files=el.files || new Array();
-		preview.dataset.fcnt=files.length;
-		//process data-onfile
-		if(undefined != el.dataset.onfile){
-			let cfunc=new Function(el.dataset.onfile);
-			cfunc();
+		let id = el.id || el.dataset.id || 'unknown';
+		let preview = document.getElementById(id + '_preview');
+		if (undefined == preview) { return true; }
+		let files = el.files || new Array();
+		preview.dataset.fcnt = files.length;
+		// Clear previous badge if any
+		let oldBadge = document.getElementById(id + '_badge');
+		if (oldBadge && oldBadge.parentNode) {
+			oldBadge.parentNode.removeChild(oldBadge);
 		}
+		// Revoke old object URL if we stored one
+		if (preview.dataset.objurl) {
+			try { URL.revokeObjectURL(preview.dataset.objurl); } catch(e){}
+			delete preview.dataset.objurl;
+		}
+		// If no files, clear preview and exit
+		if (!files.length) {
+			preview.style.backgroundImage = '';
+			preview.style.backgroundPosition = '';
+			preview.style.backgroundSize = '';
+			return true;
+		}
+		// Show first file as preview
 		const url = URL.createObjectURL(files[0]);
-  		preview.style.backgroundImage =  'url('+url+')';
+		preview.dataset.objurl = url;
+		preview.style.backgroundImage = 'url(' + url + ')';
 		if (files.length === 1) {
 			// Single image: center and cover
 			preview.style.backgroundPosition = 'center';
 			preview.style.backgroundSize = 'cover';
-		}
-		else{
+			preview.style.position = '';
+		} else {
+			// Multiple: add count badge
 			preview.style.position = 'relative';
-			// Create count badge showing the number of images
 			const badge = document.createElement('div');
 			badge.textContent = files.length;
 			badge.style.position = 'absolute';
-			badge.id=id+'_badge';
+			badge.id = id + '_badge';
 			badge.style.bottom = '-2px';
 			badge.style.right = '-2px';
 			badge.style.width = '16px';
@@ -1311,13 +1341,20 @@ var wacss = {
 			badge.style.boxSizing = 'border-box';
 			preview.appendChild(badge);
 		}
-		let erase=document.getElementById(id+'_erase');
-		if(undefined != erase){
-			erase.style.display='block';
+		let erase = document.getElementById(id + '_erase');
+		if (undefined != erase) {
+			erase.style.display = 'block';
 		}
-		let remove=document.getElementById(id+'_remove');
-		if(undefined != remove){
-			remove.checked=false;
+		let remove = document.getElementById(id + '_remove');
+		if (undefined != remove) {
+			remove.checked = false;
+		}
+		// process data-onfile
+		if (undefined != el.dataset.onfile) {
+			try {
+				let cfunc = new Function(el.dataset.onfile);
+				cfunc();
+			} catch(e){}
 		}
 		return true;
 	},
@@ -1325,19 +1362,15 @@ var wacss = {
 	formFileVideoUpload: function (el) {
 		el = wacss.getObject(el);
 		if (!el || !el.files) { return true; }
-
 		const id = el.id || el.dataset.id || 'unknown';
 		const preview = document.getElementById(id + '_preview');
 		if (!preview) { return true; }
-
 		const files = el.files || [];
 		preview.dataset.fcnt = files.length;
-
 		// Run optional inline handler
 		if (el.dataset.onfile !== undefined) {
 			try { new Function(el.dataset.onfile)(); } catch (e) { /* no-op */ }
 		}
-
 		// Clean up any previous preview content + blob URL
 		preview.innerHTML = '';
 		preview.style.backgroundImage = '';
@@ -1347,16 +1380,13 @@ var wacss = {
 			try { URL.revokeObjectURL(preview.dataset.blobUrl); } catch (e) {}
 			delete preview.dataset.blobUrl;
 		}
-
 		// Nothing selected
 		if (!files.length) { return true; }
-
 		const file = files[0];
 		const isVideo = /^video\//i.test(file.type);
 		const isImage = /^image\//i.test(file.type);
 		const mode = (el.dataset.previewMode || 'inline-video').toLowerCase(); // 'inline-video' | 'thumbnail'
 		const showControls = (el.dataset.controls === '1' || el.dataset.controls === 'true');
-
 		// --- VIDEO ---
 		if (isVideo) {
 			if (mode === 'thumbnail') {
@@ -1409,21 +1439,16 @@ var wacss = {
 			badge.style.boxSizing = 'border-box';
 			preview.appendChild(badge);
 		}
-
 		// Mirror your erase/remove toggles
 		const erase = document.getElementById(id + '_erase');
 		if (erase) { erase.style.display = 'block'; }
 		const remove = document.getElementById(id + '_remove');
 		if (remove) { remove.checked = false; }
-
 		return true;
-
 		// --- Helpers ---
-
 		function injectInlineVideo(previewEl, f, withControls) {
 			const url = URL.createObjectURL(f);
 			previewEl.dataset.blobUrl = url;
-
 			const v = document.createElement('video');
 			v.src = url;
 			v.preload = 'metadata';
@@ -1432,13 +1457,11 @@ var wacss = {
 			v.setAttribute('playsinline', '');       // attribute form (extra-safe for iOS)
 			v.setAttribute('webkit-playsinline', '');// legacy iOS
 			if (withControls) { v.controls = true; }
-
 			// Fill the preview box similar to your image cover behavior
 			v.style.width = '100%';
 			v.style.height = '100%';
 			v.style.objectFit = 'cover';
 			v.style.display = 'block';
-
 			// Optional: grab first frame as poster once available (nice visual before play)
 			v.addEventListener('loadeddata', () => {
 				try {
@@ -1450,10 +1473,8 @@ var wacss = {
 					v.setAttribute('poster', c.toDataURL('image/jpeg', 0.8));
 				} catch (e) { /* non-fatal */ }
 			}, { once: true });
-
 			previewEl.appendChild(v);
 		}
-
 		function makeVideoThumb(f) {
 			return new Promise((resolve, reject) => {
 				const url = URL.createObjectURL(f);
@@ -1462,9 +1483,7 @@ var wacss = {
 				v.muted = true;
 				v.playsInline = true;
 				v.src = url;
-
 				const cleanup = () => { try { URL.revokeObjectURL(url); } catch (e) {} };
-
 				v.addEventListener('loadeddata', () => {
 					try {
 						// Draw first available frame
@@ -1487,7 +1506,6 @@ var wacss = {
 						reject(e);
 					}
 				}, { once: true });
-
 				v.addEventListener('error', () => {
 					cleanup();
 					reject(new Error('Unable to read video for thumbnail.'));
@@ -1495,7 +1513,6 @@ var wacss = {
 			});
 		}
 	},
-
 	formFileCaptureMode: function(el,mode){
 		el=wacss.getObject(el);
 		if(undefined==el){return false;}
@@ -7531,119 +7548,133 @@ var wacss = {
 	* @return boolean
 	* @usage onchange="wacss.resizeImage(this, 1080, 1080)"
 	*/
-	resizeImage:function(input, maxWidth, maxHeight) {
-		// no files to process
-		if (!input || !input.files || input.files.length === 0){return false;}
-
-		// derive max dims from data-* or params or default
-		const maxW = Number(input.dataset.maxwidth) || Number(maxWidth) || 1080;
-		const maxH = Number(input.dataset.maxheight) || Number(maxHeight) || 1080;
-
-		// derive quality (default 0.85)
-		let quality = parseFloat(input.dataset.quality);
-		if (isNaN(quality) || quality <= 0 || quality > 1){
-			quality = 0.85;
-		}
-		// helper: promisified toBlob
-		function canvasToBlob(canvas, type = "image/jpeg", q = quality){
-			return new Promise(function(resolve){
-				canvas.toBlob(function(blob){ resolve(blob); }, type, q);
-			});
-		}
-
-		// helper: read a File -> dataURL
-		function readFileAsDataURL(file){
-			return new Promise(function(resolve, reject){
-				const reader = new FileReader();
-				reader.onload = () => resolve(reader.result);
-				reader.onerror = reject;
-				reader.readAsDataURL(file);
-			});
-		}
-
-		// helper: load an image from src (dataURL/objectURL)
-		function loadImage(src){
-			return new Promise(function(resolve, reject){
-				const img = new Image();
-				img.onload = () => resolve(img);
-				img.onerror = reject;
-				img.src = src;
-			});
-		}
-
-		// core: resize one image file -> Promise<File>
-		async function processFile(file){
-			// only handle images the browser can decode
-			if (!file || !file.type || !file.type.startsWith("image/")){
-				// return null to indicate skip (non-image)
-				return null;
+	resizeImage: function(input, maxWidth, maxHeight) {
+		return new Promise(function(resolve){
+			// No files to process
+			if (!input || !input.files || input.files.length === 0){
+				resolve(false);
+				return;
 			}
-			// NOTE: Some formats like HEIC/HEIF may not decode in many browsers.
-			// When not decodable, loadImage will reject and we'll fall back to original.
-			try{
-				const dataURL = await readFileAsDataURL(file);
-				const img = await loadImage(dataURL);
 
-				let width = img.width;
-				let height = img.height;
+			// Derive max dims from data-* or params or default
+			const maxW = Number(input.dataset.maxwidth) || Number(maxWidth) || 1080;
+			const maxH = Number(input.dataset.maxheight) || Number(maxHeight) || 1080;
 
-				// scale proportionally if exceeds max bounds
-				if (width > maxW || height > maxH) {
-					const scale = Math.min(maxW / width, maxH / height);
-					width = Math.round(width * scale);
-					height = Math.round(height * scale);
-				}
-
-				// draw onto a canvas
-				const canvas = document.createElement("canvas");
-				canvas.width = width;
-				canvas.height = height;
-				const ctx = canvas.getContext("2d");
-				ctx.drawImage(img, 0, 0, width, height);
-
-				// convert canvas back to Blob (JPEG output for consistency/size)
-				const blob = await canvasToBlob(canvas, "image/jpeg", quality);
-				// Fallback: if toBlob failed for some reason, keep original file
-				if(!blob){ return file; }
-
-				// create a new File object (keep original name; change type to .jpg if you prefer)
-				const newName = file.name.replace(/\.(heic|heif|png|webp|gif|bmp|tiff?)$/i, '') + ".jpg";
-				const resized = new File([blob], newName, { type: "image/jpeg", lastModified: Date.now() });
-				return resized;
-			}catch(err){
-				// If decoding fails (e.g., unsupported format), fall back to original file
-				// You can also choose to return null to skip instead.
-				return file;
+			// Derive quality (default 0.85)
+			let quality = parseFloat(input.dataset.quality);
+			if (isNaN(quality) || quality <= 0 || quality > 1){
+				quality = 0.85;
 			}
-		}
 
-		// process all files, then replace input.files
-		(async function(){
-			const dt = new DataTransfer();
-			const files = Array.from(input.files);
+			// helper: promisified toBlob
+			function canvasToBlob(canvas, type = "image/jpeg", q = quality){
+				return new Promise(function(resolve){
+					// Some browsers (rare) may return null in toBlob callback; handle upstream.
+					canvas.toBlob(function(blob){ resolve(blob); }, type, q);
+				});
+			}
 
-			for (const f of files){
-				const out = await processFile(f);
-				if (out instanceof File){
-					dt.items.add(out);
+			// helper: read a File -> dataURL
+			function readFileAsDataURL(file){
+				return new Promise(function(resolve, reject){
+					const reader = new FileReader();
+					reader.onload = () => resolve(reader.result);
+					reader.onerror = reject;
+					reader.readAsDataURL(file);
+				});
+			}
+
+			// helper: load an image from src (dataURL/objectURL)
+			function loadImage(src){
+				return new Promise(function(resolve, reject){
+					const img = new Image();
+					img.onload = () => resolve(img);
+					img.onerror = reject;
+					img.src = src;
+				});
+			}
+
+			// core: resize one image file -> Promise<File>
+			async function processFile(file){
+				// only handle images the browser can decode
+				if (!file || !file.type || !file.type.startsWith("image/")){
+					// keep non-images as-is
+					return file;
 				}
-				// If out is null (non-image), you can decide to either:
-				// - keep original: dt.items.add(f);
-				// - or skip: do nothing
-				else if (out === null){
-					// Here we skip non-images to ensure only images are uploaded
-					// Uncomment next line to keep originals instead:
-					dt.items.add(f);
+				// HEIC/HEIF may fail to decode; fall back to original if so
+				try{
+					const dataURL = await readFileAsDataURL(file);
+					const img = await loadImage(dataURL);
+
+					let width = img.width;
+					let height = img.height;
+
+					// scale proportionally if exceeds max bounds
+					if (width > maxW || height > maxH) {
+						const scale = Math.min(maxW / width, maxH / height);
+						width = Math.round(width * scale);
+						height = Math.round(height * scale);
+					}
+
+					// draw onto a canvas
+					const canvas = document.createElement("canvas");
+					canvas.width = width;
+					canvas.height = height;
+					const ctx = canvas.getContext("2d");
+					ctx.drawImage(img, 0, 0, width, height);
+
+					// If you need to preserve PNG transparency, uncomment:
+					// const outType = (file.type === "image/png") ? "image/png" : "image/jpeg";
+					const outType = "image/jpeg";
+					const blob = await canvasToBlob(canvas, outType, quality);
+
+					// Fallback: if toBlob failed, keep original file
+					if(!blob){ return file; }
+
+					// create a new File object (normalize extension to .jpg if jpeg)
+					const newName = outType === "image/jpeg"
+						? file.name.replace(/\.(heic|heif|png|webp|gif|bmp|tiff?)$/i, '') + ".jpg"
+						: file.name;
+
+					return new File([blob], newName, { type: outType, lastModified: Date.now() });
+				}catch(err){
+					// decoding failed -> keep original
+					return file;
 				}
 			}
-			// replace input files with the resized set
-			input.files = dt.files;
-			// optional: trigger your existing upload flow
-			if (typeof wacss.formFileImageUpload === "function"){
-				try{ wacss.formFileImageUpload(input); }catch(e){}
-			}
-		})();
-		return true;
+
+			// process all files sequentially to keep memory usage predictable
+			(async function(){
+				try{
+					const dt = new DataTransfer();
+					const files = Array.from(input.files);
+
+					for (const f of files){
+						const out = await processFile(f);
+						// Always keep something (either resized or original)
+						if (out instanceof File){
+							dt.items.add(out);
+						} else if (out) {
+							dt.items.add(out);
+						}
+					}
+
+					// replace input files with the resized set
+					input.files = dt.files;
+
+					// Re-enter upload flow after microtask; avoids sync recursion
+					setTimeout(function(){
+						if (typeof wacss.formFileImageUpload === "function"){
+							try { wacss.formFileImageUpload(input); } catch(e){}
+						}
+						resolve(true);
+					}, 0);
+				}catch(e){
+					// On unexpected failure, resolve and let normal flow proceed
+					resolve(false);
+				}
+			})();
+		});
 	},
 	/**
 	* @name wacss.rgbToHex
