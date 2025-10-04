@@ -1264,54 +1264,96 @@ var wacss = {
 		return true;
 	},
 	formFileImageUpload: async function(el){
-	  // Resolve
+	  // -------- Resolve element & debounce noisy platforms --------
 	  el = wacss.getObject(el);
 	  if (!el || !el.files) return true;
-
-	  // --- Debounce ultra-rapid double-fires (Android sometimes does this) ---
 	  const now = Date.now();
 	  const lastT = Number(el.dataset.lastCallTs || 0);
-	  if (now - lastT < 40) return true;
+	  if (now - lastT < 40) return true;            // tame ultra-rapid double-fires
 	  el.dataset.lastCallTs = String(now);
 
+	  // -------- DOM refs --------
 	  const id = el.id || el.dataset.id || 'unknown';
 	  const browse = document.getElementById(id + '_browse');
 	  const preview = document.getElementById(id + '_preview');
 	  if (!browse || !preview) return true;
-
 	  if (el.browseText === undefined) el.browseText = browse.innerHTML;
 
-	  // --- Busy UI with reference counting (prevents flicker across nested calls) ---
+	  // -------- Busy UI (reference-counted; no flicker) --------
 	  const uiBusy = {
 	    on() {
 	      const depth = Number(el.dataset.busyDepth || 0);
 	      el.dataset.busyDepth = String(depth + 1);
-	      if (depth === 0) {
-	        // Only the first "on" shows spinner
-	        const spinner = "<span class='icon-spin4 w_spin'></span>";
-	        if (browse.innerHTML !== spinner) browse.innerHTML = spinner;
-	      }
+	      if (depth === 0) browse.innerHTML = "<span class='icon-spin4 w_spin'></span>";
 	    },
 	    off() {
 	      const depth = Math.max(0, Number(el.dataset.busyDepth || 0) - 1);
 	      el.dataset.busyDepth = String(depth);
-	      if (depth === 0) {
-	        const label = el.browseText || 'Browse';
-	        if (browse.innerHTML !== label) browse.innerHTML = label;
-	      }
+	      if (depth === 0) browse.innerHTML = el.browseText || 'Browse';
 	    }
 	  };
 
-	  // --- Image validation: accept empty MIME & common extensions ---
+	  // -------- Helpers --------
 	  const looksLikeImage = (f) => {
 	    if (f.type && f.type.startsWith('image/')) return true;
 	    const name = (f.name || '').toLowerCase();
 	    return /\.(png|jpe?g|gif|webp|bmp|heic|heif|avif|svg)$/.test(name);
 	  };
 
+	  const canDecodeViaImg = (url) => new Promise((res, rej) => {
+	    const img = new Image();
+	    img.onload = () => res(true);
+	    img.onerror = () => rej(new Error('decode-failed'));
+	    img.src = url;
+	  });
+
+	  const canUseImageDecoder = async (mime) => {
+	    try {
+	      if (!('ImageDecoder' in window) || !ImageDecoder.isTypeSupported) return false;
+	      if (mime) return !!(await ImageDecoder.isTypeSupported(mime));
+	      return !!(await ImageDecoder.isTypeSupported('image/heic')) ||
+	             !!(await ImageDecoder.isTypeSupported('image/heif'));
+	    } catch { return false; }
+	  };
+
+	  const decodeWithImageDecoderToJPEG = async (blob) => {
+	    const type = blob.type || 'image/heic';
+	    const dec = new ImageDecoder({ data: blob.stream(), type });
+	    const { image } = await dec.decode();
+	    const bmp = await createImageBitmap(image);
+	    const c = document.createElement('canvas');
+	    c.width = bmp.width; c.height = bmp.height;
+	    c.getContext('2d').drawImage(bmp, 0, 0);
+	    const out = await new Promise(r => c.toBlob(r, 'image/jpeg', parseFloat(el.dataset.quality || '0.92')));
+	    return out || blob;
+	  };
+
+	  const replaceInputFiles = (inputEl, newBlobs, baseName) => {
+	    // Replace FileList with DataTransfer (widely supported in modern mobile/desktop Chromium/WebKit)
+	    const dt = new DataTransfer();
+	    newBlobs.forEach((b, i) => {
+	      const ext = (b.type === 'image/jpeg') ? '.jpg'
+	               : (b.type === 'image/png')  ? '.png'
+	               : (b.type === 'image/webp') ? '.webp'
+	               : (/\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(baseName||'')) ? ''
+	               : '';
+	      const name = (baseName || `converted_${i}`) + ext;
+	      dt.items.add(new File([b], name, { type: b.type || 'application/octet-stream' }));
+	    });
+	    inputEl.files = dt.files;
+	    return inputEl.files;
+	  };
+
+	  const likelyHeicHeif = (file) => {
+	    const n = (file.name || '').toLowerCase();
+	    return file.type === 'image/heic' || file.type === 'image/heif' ||
+	           /\.hei[cf]$/.test(n);
+	  };
+
 	  uiBusy.on();
 	  try {
 	    let files = el.files || [];
+	    // ---- Validate images (be lenient about empty MIME) ----
 	    if (files.length) {
 	      for (const file of files) {
 	        if (!looksLikeImage(file)) {
@@ -1322,7 +1364,7 @@ var wacss = {
 	      }
 	    }
 
-	    // Clear prior badge & object URL
+	    // ---- Clear prior badge & object URL ----
 	    const oldBadge = document.getElementById(id + '_badge');
 	    if (oldBadge && oldBadge.parentNode) oldBadge.parentNode.removeChild(oldBadge);
 	    if (preview.dataset.objurl) {
@@ -1330,7 +1372,7 @@ var wacss = {
 	      delete preview.dataset.objurl;
 	    }
 
-	    // No files → clear preview
+	    // ---- No files → clear preview ----
 	    if (!files.length) {
 	      preview.style.backgroundImage = '';
 	      preview.style.backgroundPosition = '';
@@ -1340,13 +1382,15 @@ var wacss = {
 
 	    preview.dataset.fcnt = files.length;
 
-	    // --- Normalize via resizer first if enabled (no re-entry; continue in-place) ---
+	    // ---- Optional normalize via built-in resizer first (if you want size limits) ----
+	    // We keep this BEFORE HEIC conversion only if your resizer already handles HEIC via canvas draw.
+	    // If your resizer fails on HEIC, comment this block and let the HEIC conversion happen first.
 	    if (el.dataset.resizer !== undefined && el.dataset.resizing !== "1") {
 	      el.dataset.resizing = "1";
 	      el.dataset.resizer_status = "processing";
 	      el.removeAttribute("data-resizer");
 	      try {
-	        // Ensure resizeImage converts to JPEG internally for HEIC:
+	        // Ensure resizeImage converts exotic inputs to a safe format (e.g., JPEG) internally:
 	        // canvas.toBlob(cb, 'image/jpeg', parseFloat(el.dataset.quality || '0.92'));
 	        await wacss.resizeImage(el);
 	      } finally {
@@ -1354,7 +1398,6 @@ var wacss = {
 	        delete el.dataset.resizing;
 	        el.dataset.resizer_status = "done";
 	      }
-	      // Refresh file list and proceed without returning (prevents a second call/UI flip)
 	      files = el.files || [];
 	      if (!files.length) {
 	        preview.style.backgroundImage = '';
@@ -1363,42 +1406,71 @@ var wacss = {
 	        return true;
 	      }
 	    } else if (el.dataset.resizing === "1") {
-	      // If another call is currently resizing, just exit quietly (no UI thrash)
+	      // If another call is resizing, exit quietly to avoid UI thrash
 	      return true;
 	    }
 
-	    // --- Create blob URL and decode-test (catches unsupported formats) ---
-	    const first = files[0];
-	    let url = URL.createObjectURL(first);
+	    // ---- HEIC/HEIF handling (widest compatibility path) ----
+	    // Work on the first file for preview. (Your badge still shows count for multi-select.)
+	    let first = files[0];
+	    let previewBlob = first;
 
-	    const canDecode = () => new Promise((resolve, reject) => {
-	      const img = new Image();
-	      img.onload = () => resolve(true);
-	      img.onerror = () => reject(new Error('decode-failed'));
-	      img.src = url;
-	    });
+	    // If type missing, we still try normal decode; if it fails and name suggests HEIC, try conversions.
+	    const firstLooksHeic = likelyHeicHeif(first);
 
-	    try {
-	      await canDecode();
-	    } catch {
-	      // Try converting via resizer path (in-place, no reentry)
-	      try { URL.revokeObjectURL(url); } catch(e){}
-	      if (el.getAttribute("data-resizer") === null) el.setAttribute("data-resizer", "1");
-	      el.dataset.resizing = "1";
-	      el.removeAttribute("data-resizer");
-	      try {
-	        await wacss.resizeImage(el); // should convert to JPEG
-	      } finally {
-	        el.setAttribute("data-resizer", "1");
-	        delete el.dataset.resizing;
+	    // 1) Try quick decode via <img>. If it works, we're done.
+	    let tmpUrl = URL.createObjectURL(first);
+	    let canDecode = true;
+	    try { await canDecodeViaImg(tmpUrl); }
+	    catch { canDecode = false; }
+	    finally { try { URL.revokeObjectURL(tmpUrl); } catch(e){} }
+
+	    if (!canDecode) {
+	      // 2) Try WebCodecs ImageDecoder (native HEIC on some devices)
+	      if (firstLooksHeic && await canUseImageDecoder(first.type || 'image/heic')) {
+	        try {
+	          previewBlob = await decodeWithImageDecoderToJPEG(first);
+	        } catch {/* fall through */}
 	      }
-	      // Use the converted file
-	      files = el.files || [];
-	      if (!files.length) return true;
-	      url = URL.createObjectURL(files[0]);
+
+	      // 3) Try heic2any (if included on the page)
+	      if (!await canDecodeViaImg(URL.createObjectURL(previewBlob)).catch(()=>false)) {
+	        if (firstLooksHeic && typeof window.heic2any === 'function') {
+	          try {
+	            const out = await window.heic2any({ blob: first, toType: 'image/jpeg', quality: parseFloat(el.dataset.quality || '0.92') });
+	            previewBlob = Array.isArray(out) ? out[0] : out;
+	          } catch {/* fall through */}
+	        }
+	      }
+
+	      // 4) As a last resort, let your resizer convert by drawing to canvas (if not already used)
+	      if (!await canDecodeViaImg(URL.createObjectURL(previewBlob)).catch(()=>false)) {
+	        if (el.dataset.resizer !== undefined && el.dataset.resizing !== "1") {
+	          el.dataset.resizing = "1";
+	          el.removeAttribute("data-resizer");
+	          try { await wacss.resizeImage(el); }
+	          finally { el.setAttribute("data-resizer","1"); delete el.dataset.resizing; }
+	          files = el.files || [];
+	          if (!files.length) return true;
+	          first = files[0];
+	          previewBlob = first;
+	        }
+	      }
 	    }
 
-	    // Apply preview
+	    // ---- If we converted the blob, replace the input's FileList so upload uses the normalized file ----
+	    if (previewBlob !== first) {
+	      const newType = previewBlob.type || 'image/jpeg';
+	      const baseName = (first.name || 'photo').replace(/\.[^.]+$/, '');
+	      const replaced = replaceInputFiles(el, [previewBlob], baseName);
+	      if (replaced && replaced.length) {
+	        files = replaced;
+	        first = replaced[0];
+	      }
+	    }
+
+	    // ---- Final preview (background-image) ----
+	    const url = URL.createObjectURL(previewBlob);
 	    preview.dataset.objurl = url;
 	    preview.style.backgroundImage = `url("${url}")`;
 
@@ -1431,13 +1503,13 @@ var wacss = {
 	      preview.appendChild(badge);
 	    }
 
-	    // Ancillary controls
+	    // ---- Ancillary controls ----
 	    const erase = document.getElementById(id + '_erase');
 	    if (erase) erase.style.display = 'block';
 	    const remove = document.getElementById(id + '_remove');
 	    if (remove) remove.checked = false;
 
-	    // onfile hook
+	    // ---- onfile hook ----
 	    if (el.dataset.onfile !== undefined) {
 	      try { new Function(el.dataset.onfile)(); } catch(e){}
 	    }
