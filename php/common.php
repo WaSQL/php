@@ -21822,8 +21822,7 @@ function commonProcessFileActions($name,$afile){
 	$adir=getFilePath($afile);
 	$ext=getFileExtension($afile);
 	$mimetype=getFileMimeType($afile);
-	//echo "Mime:{$mimetype},ext:{$ext} - commonProcessFileActions({$name},{$afile})<br>";
-	//process $recs=call_user_func($params['-results_eval'],$recs)
+	//process function?
 	$process='';
 	if(isset($_REQUEST[$name.'_process']) && strlen($_REQUEST[$name.'_process'])){
 		$process=$_REQUEST[$name.'_process'];
@@ -21842,37 +21841,7 @@ function commonProcessFileActions($name,$afile){
 			$_REQUEST[$name.'_process_results']="function {$process} does not exist (yet)";
 		}
 	}
-	$resize='';
-	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
-		$resize=$_REQUEST[$name.'_resize'];
-	}
-	elseif(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
-		$resize=$_REQUEST['data-resize'];
-	}
-	elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
-		$resize=$CONFIG['resize'];
-	}
-	//echo "resize:{$resize}<br>";
-	if(strlen($resize) && stringContains($mimetype,'image')){
-		if(!isset($CONFIG['resize_command'])){
-			$CONFIG['resize_command']="convert -thumbnail";
-		}
-		//resize
-		$cmd=$CONFIG['resize_command'];
-		$fname=getFileName($afile,1);
-		$refile=str_replace($fname,$fname.'_resized',$afile);
-		$cmd="{$cmd} {$resize} \"{$afile}\" -auto-orient \"{$refile}\"";
-		$ok=cmdResults($cmd);
-		if(is_file($refile) && filesize($refile) > 0){
-			unlink($afile);
-			$afile=$refile;
-			$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
-    		$_REQUEST[$name.'_size']=filesize($afile);
-    		$_REQUEST[$name.'_abspath']=$afile;
-		}
-    	$_REQUEST[$name.'_resized']=$ok;       	
-	}
-	//convert the file
+	//convert?
 	$convert='';
 	if(isset($_REQUEST[$name.'_convert']) && strlen($_REQUEST[$name.'_convert'])){
 		$convert=$_REQUEST[$name.'_convert'];
@@ -21883,7 +21852,6 @@ function commonProcessFileActions($name,$afile){
 	elseif(isset($CONFIG['convert']) && strlen($CONFIG['convert'])){
 		$convert=$CONFIG['convert'];
 	}
-	//echo "convert:{$convert}<br>";
 	if(strlen($convert)){
 		if(!isset($CONFIG['convert_command'])){
 			$CONFIG['convert_command']="convert ";
@@ -21910,7 +21878,37 @@ function commonProcessFileActions($name,$afile){
 			}
 		}            	
 	}
-	//reencode the file
+	//resize?
+	$resize='';
+	if(isset($_REQUEST[$name.'_resize']) && strlen($_REQUEST[$name.'_resize'])){
+		$resize=$_REQUEST[$name.'_resize'];
+	}
+	elseif(isset($_REQUEST['data-resize']) && strlen($_REQUEST['data-resize'])){
+		$resize=$_REQUEST['data-resize'];
+	}
+	elseif(isset($CONFIG['resize']) && strlen($CONFIG['resize'])){
+		$resize=$CONFIG['resize'];
+	}
+	if(strlen($resize) && stringContains($mimetype,'image')){
+		if(!isset($CONFIG['resize_command'])){
+			$CONFIG['resize_command']="convert -thumbnail";
+		}
+		//resize
+		$cmd=$CONFIG['resize_command'];
+		$fname=getFileName($afile,1);
+		$refile=str_replace($fname,$fname.'_resized',$afile);
+		$cmd="{$cmd} {$resize} \"{$afile}\" -auto-orient \"{$refile}\"";
+		$ok=cmdResults($cmd);
+		if(is_file($refile) && filesize($refile) > 0){
+			unlink($afile);
+			$afile=$refile;
+			$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+    		$_REQUEST[$name.'_size']=filesize($afile);
+    		$_REQUEST[$name.'_abspath']=$afile;
+		}
+    	$_REQUEST[$name.'_resized']=$ok;       	
+	}
+	//reencode?
 	$reencode='';
 	if(isset($_REQUEST[$name.'_reencode']) && strlen($_REQUEST[$name.'_reencode'])){
 		$reencode=$_REQUEST[$name.'_reencode'];
