@@ -21865,7 +21865,6 @@ function commonProcessFileActions($name,$afile){
 		$ok=cmdResults($cmd);
 		if(is_file($refile) && filesize($refile) > 0){
 			unlink($afile);
-			rename($refile,$afile);
 			$afile=$refile;
 			$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
     		$_REQUEST[$name.'_size']=filesize($afile);
@@ -21897,12 +21896,11 @@ function commonProcessFileActions($name,$afile){
 			//echo " -- convert: {$from}=={$ext}<br>";
 			if($from==$ext){
 				$fname=getFileName($afile,1);
-				$tfile="{$adir}/{$fname}_reencoded.{$to}";
+				$tfile="{$adir}/{$fname}_converted.{$to}";
 				$cmd="{$cmd} \"{$afile}\" \"{$tfile}\"";
         		$ok=cmdResults($cmd);
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
-					rename($tfile,$afile);
 					$afile=$tfile;
 					$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
     				$_REQUEST[$name.'_size']=filesize($afile);
@@ -21949,7 +21947,6 @@ function commonProcessFileActions($name,$afile){
         		$_REQUEST[$name.'_reencode_cmd_results']=$ok;
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
-					rename($tfile,$afile);
 					$afile=$tfile;
 					$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
     				$_REQUEST[$name.'_size']=filesize($afile);
