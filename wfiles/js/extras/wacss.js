@@ -1274,8 +1274,7 @@ var wacss = {
 			for (const file of files) {
 				if (!file.type.startsWith('image/')) {
 					alert('All selected files must be valid image files.');
-					input.value = '';
-					browse.innerHTML=el.browseText;
+					el.value = '';
 					return true;
 				}
 			}

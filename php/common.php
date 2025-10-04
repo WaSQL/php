@@ -4478,7 +4478,7 @@ function buildFormFileVideo($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
 	if(!isset($params['text'])){
-		if(isset($params['multiple'])){$params['text']='Browse Images';}
+		if(isset($params['multiple'])){$params['text']='Browse Videos';}
 		else{$params['text']='Browse';}
 	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
