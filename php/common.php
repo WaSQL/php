@@ -20090,8 +20090,9 @@ function processInlineFiles(){
 				//save the file
 				file_put_contents($afile,$decoded);
 				if(is_file($afile) && filesize($afile) > 0){
+			        $afile=commonProcessFileActions($key,$afile);
+			        $name=getFileName($afile);
 			        $efiles[]="/{$path}/{$name}";
-			        $ok=commonProcessFileActions($key,$afile);
 				}
 				else{
 					$_REQUEST["{$key}_error"]="processInlineFiles error: unable to find or create file: {$afile}";
@@ -21713,7 +21714,9 @@ function processFileUploads($docroot=''){
 					}
 				}
 				$ext=strtolower(getFileExtension($file['name']));
-				$ok=commonProcessFileActions($file['iname'],$abspath);
+				$abspath=commonProcessFileActions($file['iname'],$abspath);
+				$realname=getFileName($abspath);
+				$webpath = "{$path}/{$realname}";
 				//
             	$_REQUEST[$file['pname']]=$webpath;
             	$_REQUEST[$file['pname'].'_abspath']=$abspath;
@@ -21863,8 +21866,10 @@ function commonProcessFileActions($name,$afile){
 		if(is_file($refile) && filesize($refile) > 0){
 			unlink($afile);
 			rename($refile,$afile);
+			$afile=$refile;
 			$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
     		$_REQUEST[$name.'_size']=filesize($afile);
+    		$_REQUEST[$name.'_abspath']=$afile;
 		}
     	$_REQUEST[$name.'_resized']=$ok;       	
 	}
@@ -21898,6 +21903,10 @@ function commonProcessFileActions($name,$afile){
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
 					rename($tfile,$afile);
+					$afile=$tfile;
+					$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+    				$_REQUEST[$name.'_size']=filesize($afile);
+    				$_REQUEST[$name.'_abspath']=$afile;
 				}
             	$_REQUEST[$name.'_converted']=$ok;
 			}
@@ -21941,12 +21950,16 @@ function commonProcessFileActions($name,$afile){
         		if(is_file($tfile) && filesize($tfile) > 0){
 					unlink($afile);
 					rename($tfile,$afile);
+					$afile=$tfile;
+					$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+    				$_REQUEST[$name.'_size']=filesize($afile);
+    				$_REQUEST[$name.'_abspath']=$afile;
 				}
             	$_REQUEST[$name.'_reencoded']=$ok;
 			}
 		}            	
 	}
-	//echo printValue($_REQUEST);
+	return $afile;
 }
 
 
