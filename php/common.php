@@ -4374,6 +4374,12 @@ function buildFormFile($name,$params=array()){
 		$tag.=buildFormHidden("{$name}_resize",array('value'=>$resize));
 		unset($params['data-resize']);
     }
+    //convert after upload?
+    if(isset($params['convert']) || isset($params['data-convert'])){
+    	$convert=isset($params['convert'])?$params['convert']:$params['data-convert'];
+		$hidden[]=buildFormHidden("{$name}_convert",array('value'=>$convert));
+		unset($params['data-convert']);
+    }
     if(isset($params['data-onfile'])){
     	$onfile="data-onfile=\"{$params['data-onfile']}\"";
     }
@@ -4435,6 +4441,12 @@ function buildFormFileImage($name,$params=array()){
     	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
 		$hidden[]=buildFormHidden("{$name}_resize",array('value'=>$resize));
 		unset($params['data-resize']);
+    }
+    //convert after upload?
+    if(isset($params['convert']) || isset($params['data-convert'])){
+    	$convert=isset($params['convert'])?$params['convert']:$params['data-convert'];
+		$hidden[]=buildFormHidden("{$name}_convert",array('value'=>$convert));
+		unset($params['data-convert']);
     }
     $hiddenstr=implode(PHP_EOL."\t",$hidden);
     //preview?
