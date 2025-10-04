@@ -1264,130 +1264,184 @@ var wacss = {
 		return true;
 	},
 	formFileImageUpload: async function(el){
-		el = wacss.getObject(el);
-		if (undefined == el || undefined == el.files) {
-			return true;
-		}
-		let files = el.files || new Array();
-		//check all files to confirm they are images
-		if(files.length){
-			for (const file of files) {
-				if (!file.type.startsWith('image/')) {
-					alert('All selected files must be valid image files.');
-					el.value = '';
-					return true;
-				}
-			}
-		}
-		let id = el.id || el.dataset.id || 'unknown';
-		let browse = document.getElementById(id + '_browse');
-		if (undefined == browse) { return true; }
-		if(undefined == el.browseText){
-			//console.log('set browsetext:'+browse.innerHTML);
-			el.browseText=browse.innerHTML;
-		}
-		browse.innerHTML="<span class='icon-spin4 w_spin'></span>";
-		let preview = document.getElementById(id + '_preview');
-		if (undefined == preview) { 
-			//console.log('b:'+el.browseText);
-			browse.innerHTML=el.browseText;
-			return true; 
-		}
-		preview.dataset.fcnt = files.length;
-		// Clear previous badge if any
-		let oldBadge = document.getElementById(id + '_badge');
-		if (oldBadge && oldBadge.parentNode) {
-			oldBadge.parentNode.removeChild(oldBadge);
-		}
-		// Revoke old object URL if we stored one
-		if (preview.dataset.objurl) {
-			try { URL.revokeObjectURL(preview.dataset.objurl); } catch(e){}
-			delete preview.dataset.objurl;
-		}
-		// If no files, clear preview and exit
-		if (!files.length) {
-			preview.style.backgroundImage = '';
-			preview.style.backgroundPosition = '';
-			preview.style.backgroundSize = '';
-			//console.log('c:'+el.browseText);
-			browse.innerHTML=el.browseText;
-			return true;
-		}
-		
-		// If flagged for resize and not already resizing, run the resizer first.
-		if (el.dataset.resizer !== undefined) {
-			// Prevent re-entrancy/races on rapid changes
-			if (el.dataset.resizing === "1") { return; }
-			el.dataset.resizing = "1";
-			el.dataset.resizer_status="processing";
-			// Remove flag so the post-resize re-entry won't resize again
-			el.removeAttribute("data-resizer");
-			try{
-				await wacss.resizeImage(el);
-			} finally {
-				// Restore capability for future selections
-				el.setAttribute("data-resizer", "1");
-				delete el.dataset.resizing;
-				el.dataset.resize_status="done";
-			}
-			// After resizeImage finishes, files are replaced and this function
-			// will be called again by resizeImage (async) to continue preview/setup.
-			// So stop here to avoid double work.
-			//console.log('a:'+el.browseText);
-			browse.innerHTML=el.browseText;
-			return;
-		}
-		
-		// Show first file as preview
-		const url = URL.createObjectURL(files[0]);
-		preview.dataset.objurl = url;
-		preview.style.backgroundImage = 'url(' + url + ')';
-		if (files.length === 1) {
-			// Single image: center and cover
-			preview.style.backgroundPosition = 'center';
-			preview.style.backgroundSize = 'cover';
-			preview.style.position = '';
-		} else {
-			// Multiple: add count badge
-			preview.style.position = 'relative';
-			const badge = document.createElement('div');
-			badge.textContent = files.length;
-			badge.style.position = 'absolute';
-			badge.id = id + '_badge';
-			badge.style.bottom = '-2px';
-			badge.style.right = '-2px';
-			badge.style.width = '16px';
-			badge.style.height = '16px';
-			badge.style.backgroundColor = '#ff4444';
-			badge.style.color = 'white';
-			badge.style.borderRadius = '50%';
-			badge.style.fontSize = '10px';
-			badge.style.fontWeight = 'bold';
-			badge.style.display = 'flex';
-			badge.style.alignItems = 'center';
-			badge.style.justifyContent = 'center';
-			badge.style.border = '2px solid white';
-			badge.style.boxSizing = 'border-box';
-			preview.appendChild(badge);
-		}
-		let erase = document.getElementById(id + '_erase');
-		if (undefined != erase) {
-			erase.style.display = 'block';
-		}
-		let remove = document.getElementById(id + '_remove');
-		if (undefined != remove) {
-			remove.checked = false;
-		}
-		// process data-onfile
-		if (undefined != el.dataset.onfile) {
-			try {
-				let cfunc = new Function(el.dataset.onfile);
-				cfunc();
-			} catch(e){}
-		}
-		//console.log('d:'+el.browseText);
-		browse.innerHTML=el.browseText;
-		return true;
+	  // Resolve element
+	  el = wacss.getObject(el);
+	  if (!el || !el.files) return true;
+
+	  // --- Debounce rapid double-fires (some Android WebViews) ---
+	  const now = Date.now();
+	  const lastT = Number(el.dataset.lastCallTs || 0);
+	  if (now - lastT < 60) return true;
+	  el.dataset.lastCallTs = String(now);
+
+	  const files = el.files || [];
+	  const id = el.id || el.dataset.id || 'unknown';
+	  const browse = document.getElementById(id + '_browse');
+	  const preview = document.getElementById(id + '_preview');
+
+	  // --- Op-token UI guard to prevent browse label flicker ---
+	  const nextOp = () => String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+	  const op = nextOp();
+	  el.dataset.currentOp = op;
+	  if (el.browseText === undefined && browse) el.browseText = browse.innerHTML;
+
+	  const beginBusy = (be) => {
+	    if (!be) return;
+	    if (!el.dataset.busyOp) {
+	      el.dataset.busyOp = op;
+	      be.innerHTML = "<span class='icon-spin4 w_spin'></span>";
+	    }
+	  };
+	  const endBusy = (be) => {
+	    if (!be) return;
+	    if (el.dataset.busyOp === op) {
+	      be.innerHTML = el.browseText || 'Browse';
+	      delete el.dataset.busyOp;
+	    }
+	  };
+
+	  // --- Robust image validation (accept empty MIME & common extensions) ---
+	  const looksLikeImage = (f) => {
+	    if (f.type && f.type.startsWith('image/')) return true;
+	    const name = (f.name || '').toLowerCase();
+	    return /\.(png|jpe?g|gif|webp|bmp|heic|heif|avif|svg)$/.test(name);
+	  };
+
+	  if (files.length) {
+	    for (const file of files) {
+	      if (!looksLikeImage(file)) {
+	        alert('All selected files must be valid image files.');
+	        el.value = '';
+	        return true;
+	      }
+	    }
+	  }
+
+	  if (!browse) return true;
+	  beginBusy(browse);
+
+	  if (!preview) { endBusy(browse); return true; }
+
+	  // Clear old badge & URL
+	  const oldBadge = document.getElementById(id + '_badge');
+	  if (oldBadge && oldBadge.parentNode) oldBadge.parentNode.removeChild(oldBadge);
+	  if (preview.dataset.objurl) {
+	    try { URL.revokeObjectURL(preview.dataset.objurl); } catch(e){}
+	    delete preview.dataset.objurl;
+	  }
+
+	  // No files → clear preview
+	  if (!files.length) {
+	    preview.style.backgroundImage = '';
+	    preview.style.backgroundPosition = '';
+	    preview.style.backgroundSize = '';
+	    endBusy(browse);
+	    return true;
+	  }
+
+	  preview.dataset.fcnt = files.length;
+
+	  // --- Run resizer first if enabled (normalizes HEIC/large images) ---
+	  if (el.dataset.resizer !== undefined) {
+	    if (el.dataset.resizing === "1") { endBusy(browse); return true; }
+	    el.dataset.resizing = "1";
+	    el.dataset.resizer_status = "processing";
+	    el.removeAttribute("data-resizer");
+	    try {
+	      // Ensure your resizeImage converts to JPEG internally:
+	      // canvas.toBlob(cb, 'image/jpeg', parseFloat(el.dataset.quality || '0.92'));
+	      await wacss.resizeImage(el);
+	    } finally {
+	      el.setAttribute("data-resizer", "1");
+	      delete el.dataset.resizing;
+	      el.dataset.resizer_status = "done";
+	    }
+	    // Some Android environments don't re-fire "change" after file replacement; re-enter manually.
+	    if (el.files && el.files.length) {
+	      try { await wacss.formFileImageUpload(el); } catch(e){}
+	    }
+	    endBusy(browse);
+	    return true;
+	  }
+
+	  // --- Try to preview the first file; decode-test to catch unsupported formats ---
+	  const first = files[0];
+	  const url = URL.createObjectURL(first);
+
+	  const canDecode = () => new Promise((resolve, reject) => {
+	    const img = new Image();
+	    img.onload = () => resolve(true);
+	    img.onerror = () => reject(new Error('decode-failed'));
+	    img.src = url;
+	  });
+
+	  try {
+	    await canDecode(); // fails on unsupported formats (e.g., some HEIC cases)
+	    preview.dataset.objurl = url;
+	    preview.style.backgroundImage = `url("${url}")`;
+	  } catch {
+	    try { URL.revokeObjectURL(url); } catch(e){}
+	    // If decode failed, try resizer-based conversion
+	    if (el.getAttribute("data-resizer") === null) el.setAttribute("data-resizer", "1");
+	    el.dataset.resizing = "1";
+	    el.removeAttribute("data-resizer");
+	    try {
+	      await wacss.resizeImage(el); // should convert to JPEG
+	    } finally {
+	      el.setAttribute("data-resizer", "1");
+	      delete el.dataset.resizing;
+	    }
+	    // Re-enter to set preview for the converted file
+	    if (el.files && el.files.length) {
+	      try { await wacss.formFileImageUpload(el); } catch(e){}
+	    }
+	    endBusy(browse);
+	    return true;
+	  }
+
+	  // Single vs multi UI
+	  if (files.length === 1) {
+	    preview.style.backgroundPosition = 'center';
+	    preview.style.backgroundSize = 'cover';
+	    preview.style.position = '';
+	  } else {
+	    preview.style.position = 'relative';
+	    const badge = document.createElement('div');
+	    badge.id = id + '_badge';
+	    badge.textContent = files.length;
+	    Object.assign(badge.style, {
+	      position: 'absolute',
+	      bottom: '-2px',
+	      right: '-2px',
+	      width: '16px',
+	      height: '16px',
+	      backgroundColor: '#ff4444',
+	      color: 'white',
+	      borderRadius: '50%',
+	      fontSize: '10px',
+	      fontWeight: 'bold',
+	      display: 'flex',
+	      alignItems: 'center',
+	      justifyContent: 'center',
+	      border: '2px solid white',
+	      boxSizing: 'border-box'
+	    });
+	    preview.appendChild(badge);
+	  }
+
+	  // Ancillary controls
+	  const erase = document.getElementById(id + '_erase');
+	  if (erase) erase.style.display = 'block';
+	  const remove = document.getElementById(id + '_remove');
+	  if (remove) remove.checked = false;
+
+	  // onfile hook
+	  if (el.dataset.onfile !== undefined) {
+	    try { new Function(el.dataset.onfile)(); } catch(e){}
+	  }
+
+	  endBusy(browse);
+	  return true;
 	},
 	// Preview handler for videos (and still works fine if an image is uploaded)
 	formFileVideoUpload: function (el) {
