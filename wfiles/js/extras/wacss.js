@@ -1268,29 +1268,32 @@ var wacss = {
 		if (undefined == el || undefined == el.files) {
 			return true;
 		}
-		// If flagged for resize and not already resizing, run the resizer first.
-		if (el.dataset.resize !== undefined) {
-			// Prevent re-entrancy/races on rapid changes
-			if (el.dataset.resizing === "1") { return; }
-			el.dataset.resizing = "1";
-			// Remove flag so the post-resize re-entry won't resize again
-			el.removeAttribute("data-resize");
-			try{
-				await wacss.resizeImage(el);
-			} finally {
-				// Restore capability for future selections
-				el.setAttribute("data-resize", "1");
-				delete el.dataset.resizing;
+		let files = el.files || new Array();
+		//check all files to confirm they are images
+		if(files.length){
+			for (const file of files) {
+				if (!file.type.startsWith('image/')) {
+					alert('All selected files must be valid image files.');
+					input.value = '';
+					browse.innerHTML=el.browseText;
+					return true;
+				}
 			}
-			// After resizeImage finishes, files are replaced and this function
-			// will be called again by resizeImage (async) to continue preview/setup.
-			// So stop here to avoid double work.
-			return;
 		}
 		let id = el.id || el.dataset.id || 'unknown';
+		let browse = document.getElementById(id + '_browse');
+		if (undefined == browse) { return true; }
+		if(undefined == el.browseText){
+			//console.log('set browsetext:'+browse.innerHTML);
+			el.browseText=browse.innerHTML;
+		}
+		browse.innerHTML="<span class='icon-spin4 w_spin'></span>";
 		let preview = document.getElementById(id + '_preview');
-		if (undefined == preview) { return true; }
-		let files = el.files || new Array();
+		if (undefined == preview) { 
+			//console.log('b:'+el.browseText);
+			browse.innerHTML=el.browseText;
+			return true; 
+		}
 		preview.dataset.fcnt = files.length;
 		// Clear previous badge if any
 		let oldBadge = document.getElementById(id + '_badge');
@@ -1307,8 +1310,35 @@ var wacss = {
 			preview.style.backgroundImage = '';
 			preview.style.backgroundPosition = '';
 			preview.style.backgroundSize = '';
+			//console.log('c:'+el.browseText);
+			browse.innerHTML=el.browseText;
 			return true;
 		}
+		
+		// If flagged for resize and not already resizing, run the resizer first.
+		if (el.dataset.resizer !== undefined) {
+			// Prevent re-entrancy/races on rapid changes
+			if (el.dataset.resizing === "1") { return; }
+			el.dataset.resizing = "1";
+			el.dataset.resizer_status="processing";
+			// Remove flag so the post-resize re-entry won't resize again
+			el.removeAttribute("data-resizer");
+			try{
+				await wacss.resizeImage(el);
+			} finally {
+				// Restore capability for future selections
+				el.setAttribute("data-resizer", "1");
+				delete el.dataset.resizing;
+				el.dataset.resize_status="done";
+			}
+			// After resizeImage finishes, files are replaced and this function
+			// will be called again by resizeImage (async) to continue preview/setup.
+			// So stop here to avoid double work.
+			//console.log('a:'+el.browseText);
+			browse.innerHTML=el.browseText;
+			return;
+		}
+		
 		// Show first file as preview
 		const url = URL.createObjectURL(files[0]);
 		preview.dataset.objurl = url;
@@ -1356,6 +1386,8 @@ var wacss = {
 				cfunc();
 			} catch(e){}
 		}
+		//console.log('d:'+el.browseText);
+		browse.innerHTML=el.browseText;
 		return true;
 	},
 	// Preview handler for videos (and still works fine if an image is uploaded)
@@ -7552,20 +7584,18 @@ var wacss = {
 		return new Promise(function(resolve){
 			// No files to process
 			if (!input || !input.files || input.files.length === 0){
+				console.log('resizeImage-no files to process');
 				resolve(false);
 				return;
 			}
-
 			// Derive max dims from data-* or params or default
 			const maxW = Number(input.dataset.maxwidth) || Number(maxWidth) || 1080;
 			const maxH = Number(input.dataset.maxheight) || Number(maxHeight) || 1080;
-
 			// Derive quality (default 0.85)
 			let quality = parseFloat(input.dataset.quality);
 			if (isNaN(quality) || quality <= 0 || quality > 1){
 				quality = 0.85;
 			}
-
 			// helper: promisified toBlob
 			function canvasToBlob(canvas, type = "image/jpeg", q = quality){
 				return new Promise(function(resolve){
@@ -7573,7 +7603,6 @@ var wacss = {
 					canvas.toBlob(function(blob){ resolve(blob); }, type, q);
 				});
 			}
-
 			// helper: read a File -> dataURL
 			function readFileAsDataURL(file){
 				return new Promise(function(resolve, reject){
@@ -7583,7 +7612,6 @@ var wacss = {
 					reader.readAsDataURL(file);
 				});
 			}
-
 			// helper: load an image from src (dataURL/objectURL)
 			function loadImage(src){
 				return new Promise(function(resolve, reject){
@@ -7593,7 +7621,6 @@ var wacss = {
 					img.src = src;
 				});
 			}
-
 			// core: resize one image file -> Promise<File>
 			async function processFile(file){
 				// only handle images the browser can decode
@@ -7605,50 +7632,44 @@ var wacss = {
 				try{
 					const dataURL = await readFileAsDataURL(file);
 					const img = await loadImage(dataURL);
-
 					let width = img.width;
 					let height = img.height;
-
 					// scale proportionally if exceeds max bounds
 					if (width > maxW || height > maxH) {
 						const scale = Math.min(maxW / width, maxH / height);
 						width = Math.round(width * scale);
 						height = Math.round(height * scale);
 					}
-
 					// draw onto a canvas
 					const canvas = document.createElement("canvas");
 					canvas.width = width;
 					canvas.height = height;
 					const ctx = canvas.getContext("2d");
 					ctx.drawImage(img, 0, 0, width, height);
-
-					// If you need to preserve PNG transparency, uncomment:
-					// const outType = (file.type === "image/png") ? "image/png" : "image/jpeg";
-					const outType = "image/jpeg";
+					// choose output type dynamically
+					const outType = (file.type === "image/png") ? "image/png" : "image/jpeg";
+					// convert to Blob
 					const blob = await canvasToBlob(canvas, outType, quality);
-
-					// Fallback: if toBlob failed, keep original file
-					if(!blob){ return file; }
-
-					// create a new File object (normalize extension to .jpg if jpeg)
-					const newName = outType === "image/jpeg"
-						? file.name.replace(/\.(heic|heif|png|webp|gif|bmp|tiff?)$/i, '') + ".jpg"
-						: file.name;
-
+					if (!blob) { return file; }
+					// normalize extension based on type
+					let newName;
+					if (outType === "image/png") {
+						newName = file.name.replace(/\.(heic|heif|jpg|jpeg|webp|gif|bmp|tiff?)$/i, '') + ".png";
+					} else {
+						newName = file.name.replace(/\.(heic|heif|jpg|jpeg|png|webp|gif|bmp|tiff?)$/i, '') + ".jpg";
+					}
+					// create resized file
 					return new File([blob], newName, { type: outType, lastModified: Date.now() });
 				}catch(err){
 					// decoding failed -> keep original
 					return file;
 				}
 			}
-
 			// process all files sequentially to keep memory usage predictable
 			(async function(){
 				try{
 					const dt = new DataTransfer();
 					const files = Array.from(input.files);
-
 					for (const f of files){
 						const out = await processFile(f);
 						// Always keep something (either resized or original)
@@ -7658,10 +7679,8 @@ var wacss = {
 							dt.items.add(out);
 						}
 					}
-
 					// replace input files with the resized set
 					input.files = dt.files;
-
 					// Re-enter upload flow after microtask; avoids sync recursion
 					setTimeout(function(){
 						if (typeof wacss.formFileImageUpload === "function"){

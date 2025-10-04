@@ -4450,17 +4450,26 @@ ENDOFERASE;
 <label title="Erase" style="display:none;" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileCaptureErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
 ENDOFERASE;
 	}
+	//data params
+	$datatags=array();
+	//return printValue($params);
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'data-')){
+			$datatags[]="{$k}=\"{$v}\"";
+		}
+	}
+	$datatagstr=implode(' ',$datatags);
 	$tag=<<<ENDOFTAG
 <div data-inputtype="file_image" data-display="inline-flex">
 	<input type="hidden" value="{$params['path']}" name="{$name}_path">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
-	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
+	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-color:#FFF;background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
+	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
 	<label for="{$params['id']}" title="Rear facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','environment');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
-	<label for="{$params['id']}" title="Browse for image" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer">{$params['text']}</label>
+	<label for="{$params['id']}" id="{$params['id']}_browse" title="Browse for image" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer" style="display:flex;justify-content:center;align-items:center;gap:3px;">{$params['text']}</label>
 </div>
 ENDOFTAG;
 	return $tag;
