@@ -161,8 +161,15 @@ foreach($files as $file){
 	}
 	if(preg_match('/^http/i',$file)){
      	//remote file
-     	$evalstr="return minifyGetExternal('{$file}');";
-		$content = getStoredValue($evalstr,0,24);
+     	//$evalstr="return minifyGetExternal('{$file}');";
+		//$content = getStoredValue($evalstr,0,24);
+		$content = getStoredValue(
+		    function() use ($file) {
+		        return minifyGetExternal($file);
+		    },
+		    0,
+		    24
+		);
 		minifyLines($content);
 		continue;
 	}
@@ -311,8 +318,15 @@ function minifyFiles($path,$names){
 		//automatically create minified versions if they do not exist - localhost only
 		if(preg_match('/^http/i',$name)){
 	     	//remote file - expire every week
-	     	$evalstr="return minifyGetExternal('{$name}');";
-			echo getStoredValue($evalstr,0,168);
+	     	//$evalstr="return minifyGetExternal('{$name}');";
+			//echo getStoredValue($evalstr,0,168);
+			echo getStoredValue(
+			    function() use ($name) {
+			        return minifyGetExternal($name);
+			    },
+			    0,
+			    24
+			);
 			continue;
 		}
 		if(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}.min.js")){

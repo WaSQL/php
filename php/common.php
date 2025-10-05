@@ -8707,7 +8707,14 @@ function getCalendar($monthyear='',$params=array()){
 
 			//$ical_events=icalEvents($ical);
 			//use getStoredValue so we are not retrieving the same data every time - cache it for 3 hours
-			$ical_events=getStoredValue("return icalEvents('".$ical."');",0,$cache);
+			//$ical_events=getStoredValue("return icalEvents('".$ical."');",0,$cache);
+			$ical_events = getStoredValue(
+			    function() use ($ical) {
+			        return icalEvents($ical);
+			    },
+			    0,
+			    $cache
+			);
         	foreach($ical_events as $rec){
 				//skip events not in this month
 				$dstart=getdate(strtotime($rec['date_start']));
@@ -13976,7 +13983,7 @@ function getCachedValue(
             $ok = false;
             $cached = apcu_fetch($apcuKey, $ok);
             if ($ok) {
-                if ($debug) { echo "getStoredValue: APCu hit for {$apcuKey}\n"; }
+                if ($debug) { echo "getCachedValue: APCu hit for {$apcuKey}\n"; }
                 return $cached;
             }
         }
@@ -13986,7 +13993,7 @@ function getCachedValue(
             : (function($code) { return eval($code); })($producer);
 
         apcu_store($apcuKey, $value, $ttl ?: 0);
-        if ($debug) { echo "getStoredValue: APCu store {$apcuKey} (ttl={$ttl})\n"; }
+        if ($debug) { echo "getCachedValue: APCu store {$apcuKey} (ttl={$ttl})\n"; }
         return $value;
     }
 
@@ -14022,7 +14029,7 @@ function getCachedValue(
                     } else {
                         $out = $content;
                     }
-                    if ($debug) { echo "getStoredValue: file hit {$local} (age={$age}s < ttl={$ttl}s)\n"; }
+                    if ($debug) { echo "getCachedValue: file hit {$local} (age={$age}s < ttl={$ttl}s)\n"; }
                     return $out;
                 }
             }
@@ -14032,7 +14039,7 @@ function getCachedValue(
     // compute and write (atomic)
     if ($debug) {
         $snippet = is_string($producer) ? $producer : (is_callable($producer) ? 'callable()' : 'unknown');
-        echo "getStoredValue: computing via {$snippet}\n";
+        echo "getCachedValue: computing via {$snippet}\n";
     }
 
     $data = is_callable($producer)
@@ -14059,12 +14066,10 @@ function getCachedValue(
         if ($ok) { $ok = @rename($tmp, $local); }
         if (!$ok) { @unlink($tmp); }
     }
-    if ($debug) { echo $ok ? "getStoredValue: wrote {$local}\n" : "getStoredValue: write failed for {$local}\n"; }
+    if ($debug) { echo $ok ? "getCachedValue: wrote {$local}\n" : "getCachedValue: write failed for {$local}\n"; }
 
     return $data;
 }
-// ---------- end function getCachedValue ----------
-
 //---------- begin function setStoredValue ----------
 /**
 * @describe sets or returns a previously set stored value. Stored values persist like sessions but work across multiple users
@@ -22307,7 +22312,14 @@ function readRSS($url,$hrs=3,$force=0){
 	//set error string to blank
 	$rss_log='';
 	$results=array('feed'=>$url,'hrs'=>$hrs,'force'=>$force);
-	$post=getStoredValue("return postURL('{$url}',array('-method'=>'GET'));",$force,$hrs);
+	//$post=getStoredValue("return postURL('{$url}',array('-method'=>'GET'));",$force,$hrs);
+	$post = getStoredValue(
+        function() use ($url) {
+            return postURL($url, ['-method' => 'GET']);
+        },
+        $force,
+        $hrs
+    );
 	$lines=preg_split('/[\r\n]+/',$post['body']);
 	//fix malformed & in links, etc
 	foreach($lines as $i=>$line){
