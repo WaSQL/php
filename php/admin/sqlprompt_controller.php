@@ -194,7 +194,6 @@
 			return;
 		break;
 		case 'setdb':
-			//echo printValue($db);exit;
 			$tables=sqlpromptGetTables($db['name']);
 			//echo "setdb".printValue($tables);exit;
 			setView(array('tables_fields','prompt_load'),1);

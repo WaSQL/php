@@ -85,15 +85,16 @@ ENDOFLINK;
 	return $recs;
 }
 function sqlpromptGetTables(string $dbname=''){
-	$code="return sqlpromptGetTablesLive('{$dbname}');";
+	$schema=commonCoalesce($_REQUEST['schema'],'');
+	$code="return sqlpromptGetTablesLive('{$dbname}','{$schema}');";
 	return getStoredValue($code, false, 12);
 }
-function sqlpromptGetTablesLive($dbname=''){
+function sqlpromptGetTablesLive($dbname='',$schema=''){
 	global $CONFIG;
 	global $DATABASE;
 	if(strlen($dbname)){
-		if(isset($_REQUEST['schema']) && strlen($_REQUEST['schema'])){
-			$DATABASE[$dbname]['dbschema']=$_REQUEST['schema'];
+		if(strlen($schema)){
+			$DATABASE[$dbname]['dbschema']=$schema;
 		}
 		$tables=dbGetTables($dbname);
 	}
