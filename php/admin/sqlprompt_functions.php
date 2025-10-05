@@ -87,7 +87,8 @@ ENDOFLINK;
 function sqlpromptGetTables(string $dbname=''){
 	$schema=commonCoalesce($_REQUEST['schema'],'');
 	$code="return sqlpromptGetTablesLive('{$dbname}','{$schema}');";
-	return getStoredValue($code, false, 12);
+	//cache for 1 minutes
+	return getStoredValue($code, false, 0.0166);
 }
 function sqlpromptGetTablesLive($dbname='',$schema=''){
 	global $CONFIG;
