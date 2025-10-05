@@ -13707,75 +13707,94 @@ function getStoredValueAge($evalstr){
 	}
 	return 0;
 }
-//---------- begin function getStoredValue (hardened, backward-compatible) ----------
+//---------- begin function getStoredValue (hardened, callable-safe) ----------
 /**
 * @describe
-*   Retrieves or sets a stored (cached) value that persists like a session but can be shared across users.
-*   The cache is stored on disk and refreshed automatically after a given number of hours.
+*   Retrieves or sets a stored (cached) value that persists like a session but is shared across users.
+*   Cache is file-backed and auto-refreshes after a given number of hours.
 *
-*   Preferred usage (safe):
-*     Pass a callable (e.g., anonymous function or named function) instead of an eval string.
-*     This avoids executing arbitrary PHP code and makes the cache easier to audit.
+*   Preferred (safe): pass a callable that returns the value to cache.
+*      Example: getStoredValue(function() { return pageData(); }, 0, 3);
 *
-*   Legacy usage (still supported for backward compatibility):
-*     You may still pass a PHP code string to evaluate (e.g., `'return pageData();'`),
-*     but this is discouraged for production use.
+*   Legacy (still supported): pass a PHP code string to eval (discouraged).
+*      Example: getStoredValue('return pageData();', 0, 3);
 *
-* @param eval_code string|callable  - Preferred: callable returning data. Legacy: PHP code string to evaluate.
-* @param force boolean              - Force a refresh and rebuild the cached value (default: 0).
-* @param hrs numeric                - Hours before the cached value expires (default: 1).
-* @param debug boolean              - Set to true to echo debug messages (default: 0).
-* @param serialize boolean          - Whether to serialize the cached data (default: 1).
-* @return mixed                     - The cached or newly generated data.
+* @param eval_code string|callable  Preferred: callable returning data. Legacy: PHP code string to evaluate.
+* @param force boolean              Force a refresh and rebuild the cached value (default: 0).
+* @param hrs numeric                Hours before the cached value expires (default: 1).
+* @param debug boolean              Echo debug messages if true (default: 0).
+* @param serialize boolean          Serialize cached data (default: 1, for backward compatibility).
+* @return mixed                     The cached (or newly generated) value.
 *
 * @usage
 *   // Preferred (safe):
 *   $data = getStoredValue(function() { return pageData(); }, 0, 3);
-*
-*   // Legacy (still works, but unsafe):
+*   // Legacy (unsafe, but supported):
 *   $data = getStoredValue('return pageData();', 0, 3);
 */
-
 function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
-    // Backwards-compatible base path (same as before), but allow override via env
+    // Base cache dir (legacy path), override via APP_CACHE_DIR if desired
     $progpath = dirname(__FILE__);
     $defaultCacheDir = "{$progpath}/temp";
     $cacheDir = getenv('APP_CACHE_DIR') ?: $defaultCacheDir;
 
-    // Create cache directory if needed (fallback to previous buildDir() helper if present)
+    // Create cache directory if needed (use legacy buildDir() if present)
     if (!is_dir($cacheDir)) {
         if (function_exists('buildDir')) {
-            buildDir($cacheDir);
+            @buildDir($cacheDir);
         } else {
             @mkdir($cacheDir, 0700, true);
         }
     }
 
-    // Keep original cache key derivation
-    global $CONFIG;
-    $confName = isset($CONFIG['name']) ? $CONFIG['name'] : '';
-    $local = $cacheDir . '/' . md5($confName . $evalstr) . '.gsv';
-    $lockFile = $local . '.lock';
-
-    // Optional debug helper
+    // Helper for optional debug
     $dbg = function($msg) use ($debug){ if($debug){ echo "getStoredValue: {$msg}<br>\n"; } };
 
-    // Force refresh deletes stale file
+    // ---------- Build cache key & file path (supports callable/Closure) ----------
+    global $CONFIG;
+    $confName = isset($CONFIG['name']) ? $CONFIG['name'] : '';
+
+    $local = null;
+    if (is_callable($evalstr) && !is_string($evalstr)) {
+        // Closure or array callable: fingerprint by file/lines and captured vars
+        try {
+            $ref = new ReflectionFunction($evalstr);
+            $sig = [
+                'file'    => $ref->getFileName(),
+                'start'   => $ref->getStartLine(),
+                'end'     => $ref->getEndLine(),
+                'statics' => $ref->getStaticVariables(), // captured via `use (...)`
+                'scope'   => $ref->getClosureScopeClass() ? $ref->getClosureScopeClass()->getName() : null,
+            ];
+        } catch (Throwable $e) {
+            // Fallback: include object hash so different closures don't collide
+            $sig = ['closure' => 'unknown', 'hint' => (function_exists('spl_object_hash') ? spl_object_hash($evalstr) : uniqid('cl_', true))];
+        }
+        $keySource = $confName . json_encode($sig);
+        $local = $cacheDir . '/' . hash('sha256', $keySource) . '.gsv';
+    } elseif (is_string($evalstr) && is_callable($evalstr)) {
+        // Named function/method string
+        $local = $cacheDir . '/' . hash('sha256', $confName . 'fn:' . $evalstr) . '.gsv';
+    } else {
+        // Legacy: eval string; keep exact behavior (md5 of conf+code)
+        $local = $cacheDir . '/' . md5($confName . (string)$evalstr) . '.gsv';
+    }
+    $lockFile = $local . '.lock';
+
+    // ---------- Force refresh ----------
     if ($force && is_file($local)) {
         @unlink($local);
         $dbg("Forced delete: {$local}");
     }
 
-    // Fast path: try to read if fresh
-    if (is_file($local) && @filesize($local) > 50) { // preserve legacy 50B guard
+    // ---------- Fast path: read if fresh (preserve legacy filesize>50 guard) ----------
+    if (is_file($local) && @filesize($local) > 50) {
         $filetime = @filemtime($local);
-        $ctime = time();
         if ($filetime !== false) {
-            $diff_seconds = $ctime - $filetime;
-            $file_hrs = round(($diff_seconds/60/60), 2);
+            $ageSec = time() - $filetime;
+            $file_hrs = round($ageSec/3600, 2);
             $dbg("cache exists: {$file_hrs} < {$hrs}");
-            if ($file_hrs < $hrs) {
-                // Shared lock while reading to prevent partial reads
+            if ($ageSec >= 0 && $file_hrs < $hrs) {
                 $fh = @fopen($local, 'rb');
                 if ($fh) {
                     @flock($fh, LOCK_SH);
@@ -13784,12 +13803,11 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
                     @fclose($fh);
                     if ($content !== false) {
                         if ($serialize) {
-                            // Keep original behavior: plain unserialize (back-compat)
                             $val = @unserialize($content);
-                            if ($val !== false || $content === serialize(false)) { // handle serialized false
+                            if ($val !== false || $content === serialize(false)) {
                                 return $val;
                             }
-                            $dbg("unserialize failed; falling back to raw content");
+                            $dbg("unserialize failed; returning raw content");
                         }
                         return $content;
                     }
@@ -13799,11 +13817,10 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
         }
     }
 
-    // MISS or STALE -> compute with lock (avoid stampede)
+    // ---------- MISS/STALE: acquire lock to avoid stampede ----------
     $lfh = @fopen($lockFile, 'c');
     if ($lfh) {
         if (!@flock($lfh, LOCK_EX)) {
-            // If we can't lock, we still try to proceed safely
             $dbg("warning: could not acquire lock");
         } else {
             $dbg("lock acquired");
@@ -13811,12 +13828,12 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
     }
 
     try {
-        // Double-check after acquiring the lock; another process may have refreshed it.
+        // Re-check after obtaining lock (another process may have refreshed it)
         if (!$force && is_file($local) && @filesize($local) > 50) {
             $filetime = @filemtime($local);
             if ($filetime !== false) {
-                $diff_seconds = time() - $filetime;
-                if ($diff_seconds >= 0 && $diff_seconds < ($hrs * 3600)) {
+                $ageSec = time() - $filetime;
+                if ($ageSec >= 0 && $ageSec < ($hrs * 3600)) {
                     $fh = @fopen($local, 'rb');
                     if ($fh) {
                         @flock($fh, LOCK_SH);
@@ -13840,37 +13857,38 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
             }
         }
 
-        // Evaluate (backwards compatible). If a callable name is provided, prefer that.
+        // ---------- Compute fresh value ----------
         $dbg("Evaluating...");
         $data = null;
-        if (is_string($evalstr) && function_exists($evalstr) && is_callable($evalstr)) {
-            // additive convenience: allow passing a function name like 'pageData'
+        if (is_callable($evalstr) && !is_string($evalstr)) {
+            // Preferred path: call the provided callable/closure
+            $data = call_user_func($evalstr);
+        } elseif (is_string($evalstr) && is_callable($evalstr)) {
+            // Named callable provided as string
             $data = call_user_func($evalstr);
         } else {
-            // legacy path: evaluate provided code string
-            // Keep @ to preserve caller expectations (no fatal spam in prod); emit debug if it fails.
+            // Legacy path: eval string
             $data = @eval($evalstr);
             if ($data === false) { $dbg("warning: eval returned false (parse/runtime error?)"); }
         }
 
-        // Write atomically
-        $tmp = $local . '.tmp';
+        // ---------- Serialize payload ----------
         if ($serialize) {
-            $payload = serialize($data); // keep exact behavior for back-compat (objects allowed)
+            $payload = serialize($data); // keep exact legacy behavior
         } else {
-            // When not serializing, coerce to string in a safe-ish way
             if (is_scalar($data) || (is_object($data) && method_exists($data, '__toString'))) {
                 $payload = (string)$data;
             } else {
-                // Maintain permissive behavior: attempt JSON for non-scalars when serialize=0
-                $payload = json_encode($data);
-                if ($payload === false) { $payload = ''; }
+                // Best-effort for non-scalars when serialize=0
+                $json = json_encode($data);
+                $payload = ($json !== false) ? $json : '';
             }
         }
 
-        $fh = @fopen($tmp, 'wb');
-        if ($fh === false) {
-            // fall back to legacy helper if available
+        // ---------- Atomic write ----------
+        $tmp = $local . '.tmp';
+        $fhw = @fopen($tmp, 'wb');
+        if ($fhw === false) {
             if (function_exists('setFileContents')) {
                 @setFileContents($local, $payload);
                 @chmod($local, 0600);
@@ -13879,12 +13897,11 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
             }
             throw new RuntimeException("Failed to open temp file for writing: {$tmp}");
         }
-        // Exclusive lock during write
-        @flock($fh, LOCK_EX);
-        $ok = @fwrite($fh, $payload);
-        @fflush($fh);
-        @flock($fh, LOCK_UN);
-        @fclose($fh);
+        @flock($fhw, LOCK_EX);
+        $ok = @fwrite($fhw, $payload);
+        @fflush($fhw);
+        @flock($fhw, LOCK_UN);
+        @fclose($fhw);
 
         if ($ok === false) {
             @unlink($tmp);
@@ -13893,7 +13910,6 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
 
         @chmod($tmp, 0600);
 
-        // Atomic replace
         if (!@rename($tmp, $local)) {
             @unlink($local);
             if (!@rename($tmp, $local)) {
