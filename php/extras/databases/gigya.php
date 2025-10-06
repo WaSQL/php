@@ -250,7 +250,24 @@ function gigyaQueryResults($query,$params=array()){
 	}
 	//set actions and urls
 	$action='select';
-	$url="https://{$table}.us1.gigya.com/{$table}.search";
+	$dc = isset($params['-dc']) && strlen($params['-dc']) ? $params['-dc'] : ((isset($db['dbhost']) && strlen($db['dbhost'])) ? $db['dbhost'] : 'us1.gigya.com');
+switch(strtolower($table)){
+	case 'accounts':
+		$url = "https://accounts.{$dc}/accounts.search";
+	break;
+	case 'audit':
+		$url = "https://audit.{$dc}/audit.search";
+	break;
+	case 'ds':
+		$url = "https://ds.{$dc}/ds.search";
+	break;
+	case 'idx':
+		$url = "https://idx.{$dc}/idx.search";
+	break;
+	default:
+		$url = "https://accounts.{$dc}/accounts.search"; // sensible default
+	break;
+}
 	$delete_url="";
 	//get fields to return
 	$fields=array();
@@ -279,7 +296,7 @@ function gigyaQueryResults($query,$params=array()){
 		$action='delete';
 		switch(strtolower($table)){
 			case 'accounts':
-				$delete_url="https://accounts.us1.gigya.com/accounts.deleteAccount";
+				$delete_url="https://accounts.{$dc}/accounts.deleteAccount";
 			break;
 		}
 	}
@@ -334,7 +351,9 @@ function gigyaQueryResults($query,$params=array()){
     $loop=0;
     $fieldinfo=array();
     if(isset($params['-logfile'])){
-    	setFileContents($params['-logfile'],printValue($params));
+    	$__safe_params=$params;
+if(isset($__safe_params['-query'])){$__safe_params['-query']='[redacted]';}
+setFileContents($params['-logfile'],printValue($__safe_params));
     }
     if(isset($params['-logfile'])){
     	appendFileContents($params['-logfile'],time().", PLIMIT: {$plimit}, MAXLOOPS: {$maxloops}".PHP_EOL);
@@ -352,7 +371,21 @@ function gigyaQueryResults($query,$params=array()){
 			'secret'=>$db['dbpass'],
 			'format'=>'json',
 			'-json'=>1,
+		
+			'timeout'=>isset($params['-timeout']) ? (int)$params['-timeout'] : 60
 		);
+		// optional OAuth2 bearer support
+		$__tok = '';
+		if(!empty($params['-access_token'])){$__tok=$params['-access_token'];}
+		elseif(isset($db['access_token']) && strlen($db['access_token'])){$__tok=$db['access_token'];}
+		if(strlen($__tok)){
+			$postopts['headers']=isset($postopts['headers']) && is_array($postopts['headers']) ? $postopts['headers'] : array();
+			$postopts['headers']['Authorization']='Bearer '.$__tok;
+			// do not send basic secrets if using OAuth2
+			if(isset($postopts['userKey'])){unset($postopts['userKey']);}
+			if(isset($postopts['secret'])){unset($postopts['secret']);}
+		}
+
 		if(!strlen($nextcursorid)){
 			$postopts['openCursor']='true';
 			$postopts['query']=$cquery;
@@ -558,6 +591,10 @@ function gigyaQueryResults($query,$params=array()){
 			}
 			//echo $action.printValue($delete_url);exit;
 			if($action=='delete' && strlen($delete_url)){
+			// safety guard: require explicit opt-in for delete operations
+			if(empty($params['-allow_delete']) && empty($CONFIG['gigya_allow_delete'])){
+				return '<div class="w_red">Delete protection: set -allow_delete=1 to enable deletions.</div>';
+			}
 				foreach($recs as $r=>$rec){
 					if(!isset($rec['uid'])){continue;}
 					$json=array(
@@ -571,6 +608,17 @@ function gigyaQueryResults($query,$params=array()){
 						'-method'=>'POST'
 					);
 					//$json=encodeJSON($json);
+// optional OAuth2 bearer support for delete
+$__tok = '';
+if(!empty($params['-access_token'])){$__tok=$params['-access_token'];}
+elseif(isset($db['access_token']) && strlen($db['access_token'])){$__tok=$db['access_token'];}
+if(strlen($__tok)){
+	$json['headers']=isset($json['headers']) && is_array($json['headers']) ? $json['headers'] : array();
+	$json['headers']['Authorization']='Bearer '.$__tok;
+	if(isset($json['userKey'])){unset($json['userKey']);}
+	if(isset($json['secret'])){unset($json['secret']);}
+}
+
 					$dparams=$params;
 					$dparams['UID']=$rec['uid'];
 					$dpost=postURL($delete_url,$json);
@@ -587,7 +635,7 @@ function gigyaQueryResults($query,$params=array()){
 						$recs[$r]['delete_code']='400';
 					}
 					//sleep for a 1/4 second to eliminate rate limit issues
-					usleep(250);
+					usleep(250000);
 					//echo printValue($dpost);exit;
 				}
 			}
