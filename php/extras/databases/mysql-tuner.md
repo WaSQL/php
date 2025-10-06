@@ -1,10 +1,10 @@
 
-# mysql_tuner.py (Python)
+# mysql-tuner.py (Python)
 
 A production‑hardened, read‑only MySQL/MariaDB configuration and health tuner. It takes inspiration from `mysqltuner.pl`, but is a clean Python implementation with modern defaults and JSON output.
 
 ## Highlights
-- **Safe**: read‑only queries only—no config changes.
+- **Safe**: read‑only queries only--no config changes.
 - **Accurate**: evidence‑based rules from GLOBAL STATUS/VARIABLES & information_schema.
 - **Portable**: works with MySQL 5.7/8.x and MariaDB 10.x/11.x.
 - **DevOps‑friendly**: JSON or human‑readable text; non‑zero exit codes on findings.
@@ -18,13 +18,13 @@ pip install mysql-connector-python  # or: pip install PyMySQL
 ## Usage
 ```bash
 # TCP
-python3 mysql_tuner.py --host 127.0.0.1 --user audit --password secret --output text
+python3 mysql-tuner.py --host 127.0.0.1 --user audit --password secret --output text
 
 # Local socket
-python3 mysql_tuner.py --socket /var/run/mysqld/mysqld.sock --output json > report.json
+python3 mysql-tuner.py --socket /var/run/mysqld/mysqld.sock --output json > report.json
 
 # With SSL
-python3 mysql_tuner.py --host db --user audit --password secret --require-ssl --ssl-ca /path/ca.pem
+python3 mysql-tuner.py --host db --user audit --password secret --require-ssl --ssl-ca /path/ca.pem
 ```
 
 Recommended minimal privileges for the `audit` user:

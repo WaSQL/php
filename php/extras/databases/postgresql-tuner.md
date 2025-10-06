@@ -1,10 +1,10 @@
 
-# pg_tuner.py (Python)
+# postgresql-tuner.py (Python)
 
-A production-hardened, read-only PostgreSQL 11+ configuration and health tuner. It’s a clean Python implementation with modern defaults and JSON/text outputs.
+A production-hardened, read-only PostgreSQL 11+ configuration and health tuner. It's a clean Python implementation with modern defaults and JSON/text outputs.
 
 ## Highlights
-- **Safe**: read-only queries only—no changes.
+- **Safe**: read-only queries only--no changes.
 - **Accurate**: pulls from `pg_settings`, `pg_stat_database`, `pg_stat_bgwriter`, `pg_stat_activity`, and `pg_stat_user_tables`.
 - **Portable**: PostgreSQL 11+ (tested up to 16). Uses newer metrics when available.
 - **DevOps-friendly**: JSON or human text, with exit codes for CI pipelines.
@@ -19,14 +19,14 @@ pip install psycopg2-binary     # psycopg2
 
 ## Usage
 ```bash
-python3 pg_tuner.py --host 127.0.0.1 --port 5432 --user audit --password '...' --dbname postgres --output text
+python3 postgresql-tuner.py --host 127.0.0.1 --port 5432 --user audit --password '...' --dbname postgres --output text
 
 # JSON output to a file
-python3 pg_tuner.py --output json > pg_report.json
+python3 postgresql-tuner.py --output json > pg_report.json
 
 # Using env vars (PGHOST, PGUSER, PGDATABASE) and SSL
 PGHOST=db.example.com PGUSER=audit PGDATABASE=postgres PGSSLMODE=require \
-  python3 pg_tuner.py --output text
+  python3 postgresql-tuner.py --output text
 ```
 
 Recommended role:

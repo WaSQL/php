@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-hana_tuner.py — A production-hardened SAP HANA (1.0 SPS12+ / HANA 2.0) health & configuration advisor (read-only).
+hana-tuner.py — A production-hardened SAP HANA (1.0 SPS12+ / HANA 2.0) health & configuration advisor (read-only).
 
 - Safe: read-only system view queries only (no ALTER/DDL/DML).
 - Accurate: evidence-based suggestions from SYS/M_* monitoring views and ini parameters.
@@ -9,8 +9,8 @@ hana_tuner.py — A production-hardened SAP HANA (1.0 SPS12+ / HANA 2.0) health 
 - DevOps-friendly: JSON or text output; exit codes 0 (ok), 1 (warnings), 2 (critical/errors).
 
 USAGE (examples):
-  python3 hana_tuner.py --host hana.example.com --port 30015 --user MONITOR --password '***' --output text
-  HDB_HOST=hana HDB_PORT=30013 HDB_USER=MONITOR HDB_PASSWORD=*** python3 hana_tuner.py --output json > report.json
+  python3 hana-tuner.py --host hana.example.com --port 30015 --user MONITOR --password '***' --output text
+  HDB_HOST=hana HDB_PORT=30013 HDB_USER=MONITOR HDB_PASSWORD=*** python3 hana-tuner.py --output json > report.json
 
 PRIVILEGES:
 - A monitoring user with roles like MONITORING or CATALOG READ is preferred.

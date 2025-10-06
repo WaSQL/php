@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-duckdb_tuner.py — A production-hardened DuckDB health & configuration advisor (read-only).
+duckdb-tuner.py — A production-hardened DuckDB health & configuration advisor (read-only).
 
 - Safe: opens the database in read-only mode and runs introspection queries only.
 - Accurate: evidence-based suggestions from duckdb_settings(), PRAGMA database_size, and system catalogs.
@@ -9,8 +9,8 @@ duckdb_tuner.py — A production-hardened DuckDB health & configuration advisor 
 - DevOps-friendly: JSON or text output; exit codes 0 (ok), 1 (warnings), 2 (critical/errors).
 
 USAGE (examples):
-  python3 duckdb_tuner.py --db /path/to/analytics.duckdb --output text
-  python3 duckdb_tuner.py --db /path/to/analytics.duckdb --output json > report.json
+  python3 duckdb-tuner.py --db /path/to/analytics.duckdb --output text
+  python3 duckdb-tuner.py --db /path/to/analytics.duckdb --output json > report.json
 
 Notes:
 - Some settings differ across DuckDB versions; the script degrades gracefully if a setting/view is missing.

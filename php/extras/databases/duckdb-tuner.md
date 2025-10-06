@@ -1,7 +1,7 @@
 
-# duckdb_tuner.py (Python)
+# duckdb-tuner.py (Python)
 
-A production-hardened, read-only DuckDB configuration & health tuner. It mirrors the other RDBMS tuners but uses DuckDB’s built‑in system tables and pragmas.
+A production-hardened, read-only DuckDB configuration & health tuner. It mirrors the other RDBMS tuners but uses DuckDB's built‑in system tables and pragmas.
 
 ## Highlights
 - **Safe**: opens the database in read‑only mode and runs introspection queries only.
@@ -16,10 +16,10 @@ pip install duckdb
 
 ## Usage
 ```bash
-python3 duckdb_tuner.py --db /path/to/analytics.duckdb --output text
+python3 duckdb-tuner.py --db /path/to/analytics.duckdb --output text
 
 # JSON
-python3 duckdb_tuner.py --db /path/to/analytics.duckdb --output json > duckdb_report.json
+python3 duckdb-tuner.py --db /path/to/analytics.duckdb --output json > duckdb_report.json
 ```
 
 ## Checks included (sample)

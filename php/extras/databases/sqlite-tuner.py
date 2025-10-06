@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-sqlite_tuner.py — A production-hardened SQLite health & configuration advisor (read-only by default).
+sqlite-tuner.py — A production-hardened SQLite health & configuration advisor (read-only by default).
 
 - Safe: defaults to read-only mode using SQLite URI (file:db?mode=ro).
 - Accurate: inspects PRAGMAs, schema, stats tables, and page-level metrics for evidence-based suggestions.
@@ -9,9 +9,9 @@ sqlite_tuner.py — A production-hardened SQLite health & configuration advisor 
 - DevOps-friendly: JSON or text output; exit codes 0 (ok), 1 (warnings), 2 (critical/errors).
 
 USAGE (examples):
-  python3 sqlite_tuner.py --db /path/app.db --output text
-  python3 sqlite_tuner.py --db /path/app.db --output json > report.json
-  python3 sqlite_tuner.py --db /path/app.db --integrity-check
+  python3 sqlite-tuner.py --db /path/app.db --output text
+  python3 sqlite-tuner.py --db /path/app.db --output json > report.json
+  python3 sqlite-tuner.py --db /path/app.db --integrity-check
 
 NOTES
 - Integrity checks and analysis are read-only (PRAGMA integrity_check is read-only but can be expensive).

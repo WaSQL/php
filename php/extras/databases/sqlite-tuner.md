@@ -1,7 +1,7 @@
 
-# sqlite_tuner.py (Python)
+# sqlite-tuner.py (Python)
 
-A production-hardened, **read-only by default** SQLite configuration and health tuner, inspired by MySQL/Postgres counterparts but tailored to SQLite’s architecture.
+A production-hardened, **read-only by default** SQLite configuration and health tuner, inspired by MySQL/Postgres counterparts but tailored to SQLite's architecture.
 
 ## Highlights
 - **Safe & simple**: uses SQLite URI with `mode=ro`, enables `query_only`.
@@ -17,11 +17,11 @@ python3 --version  # 3.x
 
 ## Usage
 ```bash
-python3 sqlite_tuner.py --db /path/app.db --output text
-python3 sqlite_tuner.py --db /path/app.db --output json > sqlite_report.json
+python3 sqlite-tuner.py --db /path/app.db --output text
+python3 sqlite-tuner.py --db /path/app.db --output json > sqlite_report.json
 
 # Optional: integrity check (can be slow on very large DBs)
-python3 sqlite_tuner.py --db /path/app.db --integrity-check
+python3 sqlite-tuner.py --db /path/app.db --integrity-check
 ```
 
 ## What it checks

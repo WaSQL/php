@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-oracle_tuner.py — A production-hardened Oracle Database 12c+ health & configuration advisor (read-only).
+oracle-tuner.py — A production-hardened Oracle Database 12c+ health & configuration advisor (read-only).
 
 - Safe: read-only queries only (no ALTER/DDL/DML).
 - Accurate: evidence-based suggestions from V$ views, DBA_* views (when permitted), and basic heuristics.
@@ -10,10 +10,10 @@ oracle_tuner.py — A production-hardened Oracle Database 12c+ health & configur
 
 USAGE (examples):
   # EZCONNECT
-  python3 oracle_tuner.py --user audit --password '***' --dsn "dbhost:1521/orclpdb1" --output text
+  python3 oracle-tuner.py --user audit --password '***' --dsn "dbhost:1521/orclpdb1" --output text
 
   # Using TNS name from tnsnames.ora
-  python3 oracle_tuner.py --user audit --password '***' --dsn "ORCLPDB1" --output json > report.json
+  python3 oracle-tuner.py --user audit --password '***' --dsn "ORCLPDB1" --output json > report.json
 
 PRIVILEGES
 - For full checks: GRANT SELECT_CATALOG_ROLE TO audit;  (or) GRANT SELECT ANY DICTIONARY TO audit;

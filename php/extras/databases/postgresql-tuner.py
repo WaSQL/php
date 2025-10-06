@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-pg_tuner.py — A production-hardened PostgreSQL 11+ health & configuration advisor.
+postgresql-tuner.py — A production-hardened PostgreSQL 11+ health & configuration advisor.
 
 - Safe: read-only queries only.
 - Accurate: evidence-based suggestions from pg_settings, pg_stat_* views, and system catalogs.
@@ -9,8 +9,8 @@ pg_tuner.py — A production-hardened PostgreSQL 11+ health & configuration advi
 - DevOps-friendly: JSON or text output; exit status 0 (ok), 1 (warnings), 2 (errors).
 
 USAGE (examples):
-  python3 pg_tuner.py --host 127.0.0.1 --port 5432 --user audit --dbname postgres --output text
-  PGHOST=/var/run/postgresql PGUSER=audit PGDATABASE=postgres python3 pg_tuner.py --output json > report.json
+  python3 postgresql-tuner.py --host 127.0.0.1 --port 5432 --user audit --dbname postgres --output text
+  PGHOST=/var/run/postgresql PGUSER=audit PGDATABASE=postgres python3 postgresql-tuner.py --output json > report.json
 
 PRIVILEGES: Prefer a low-privilege read-only role with access to pg_stat views. Suggested grants:
   GRANT pg_monitor TO audit;     -- PostgreSQL 10+ predefined role

@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-mssql_tuner.py — A production-hardened Microsoft SQL Server (2012+ / Azure SQL) health & configuration advisor.
+mssql-tuner.py — A production-hardened Microsoft SQL Server (2012+ / Azure SQL) health & configuration advisor.
 
 - Safe: read-only DMV queries only (no DBCC that changes anything, no ALTERs).
 - Accurate: evidence-based checks from sys.configurations, DMVs (waits, IO, memory), tempdb layout, and perf counters.
@@ -10,13 +10,13 @@ mssql_tuner.py — A production-hardened Microsoft SQL Server (2012+ / Azure SQL
 
 USAGE (examples):
   # Windows Auth (Trusted Connection) with ODBC driver
-  python3 mssql_tuner.py --server "tcp:sql01,1433" --driver "ODBC Driver 18 for SQL Server" --trusted
+  python3 mssql-tuner.py --server "tcp:sql01,1433" --driver "ODBC Driver 18 for SQL Server" --trusted
 
   # SQL Auth
-  python3 mssql_tuner.py --server "tcp:sql01,1433" --user sa --password '***' --database master --output json > report.json
+  python3 mssql-tuner.py --server "tcp:sql01,1433" --user sa --password '***' --database master --output json > report.json
 
   # Azure SQL with encryption
-  python3 mssql_tuner.py --server "tcp:yourserver.database.windows.net,1433" --database yourdb --user user --password '***' --encrypt --trustservercert
+  python3 mssql-tuner.py --server "tcp:yourserver.database.windows.net,1433" --database yourdb --user user --password '***' --encrypt --trustservercert
 """
 
 import argparse

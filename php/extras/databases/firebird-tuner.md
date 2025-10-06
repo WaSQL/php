@@ -1,10 +1,10 @@
 
-# firebird_tuner.py (Python)
+# firebird-tuner.py (Python)
 
 A production-hardened, read-only Firebird (2.5/3.0/4.0/5.0) configuration & health tuner. It mirrors the MySQL/Postgres/SQLite/Oracle/SQL Server tuners with Firebird-specific checks on MON$ tables.
 
 ## Highlights
-- **Safe**: read-only queries—no `gfix`/`gstat` or settings changes.
+- **Safe**: read-only queries--no `gfix`/`gstat` or settings changes.
 - **Accurate**: uses `MON$DATABASE`, `MON$ATTACHMENTS`, `MON$TRANSACTIONS`, `MON$IO_STATS`, and `MON$RECORD_STATS` when available.
 - **Portable**: works with Classic/SuperClassic/SuperServer; tries `firebird-driver` first, `fdb` as fallback.
 - **DevOps-friendly**: JSON or human-readable text; exit codes: `0` ok, `1` warn, `2` critical/error.
@@ -19,13 +19,13 @@ pip install fdb
 ## Usage
 ```bash
 # Basic
-python3 firebird_tuner.py --host 127.0.0.1 --port 3050 --db /path/to/database.fdb --user sysdba --password '...'
+python3 firebird-tuner.py --host 127.0.0.1 --port 3050 --db /path/to/database.fdb --user sysdba --password '...'
 
 # Using DSN string
-python3 firebird_tuner.py --dsn "localhost:/path/to/database.fdb" --user sysdba --password '...' --output json > fb_report.json
+python3 firebird-tuner.py --dsn "localhost:/path/to/database.fdb" --user sysdba --password '...' --output json > fb_report.json
 
 # Long-running tx threshold
-python3 firebird_tuner.py --dsn "host:/path/db.fdb" --user ... --password ... --long-tx-minutes 30
+python3 firebird-tuner.py --dsn "host:/path/db.fdb" --user ... --password ... --long-tx-minutes 30
 ```
 
 ## Checks included (sample)

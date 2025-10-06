@@ -1,5 +1,5 @@
 
-# oracle_tuner.py (Python)
+# oracle-tuner.py (Python)
 
 A production-hardened, read-only Oracle Database health & configuration tuner. It mirrors the MySQL/Postgres/SQLite tuners with Oracle-centric checks.
 
@@ -20,10 +20,10 @@ pip install cx_Oracle
 ## Usage
 ```bash
 # EZCONNECT style
-python3 oracle_tuner.py --user audit --password '...' --dsn "dbhost:1521/orclpdb1" --output text
+python3 oracle-tuner.py --user audit --password '...' --dsn "dbhost:1521/orclpdb1" --output text
 
 # TNS alias (requires config in ORACLE_HOME/network/admin or --config-dir)
-python3 oracle_tuner.py --user audit --password '...' --dsn "ORCLPDB1" --output json > ora_report.json
+python3 oracle-tuner.py --user audit --password '...' --dsn "ORCLPDB1" --output json > ora_report.json
 ```
 
 ### Recommended privileges

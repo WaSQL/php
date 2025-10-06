@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-mysql_tuner.py — A production-hardened MySQL/MariaDB health & configuration advisor.
+mysql-tuner.py — A production-hardened MySQL/MariaDB health & configuration advisor.
 
 - Safe: read-only queries only (no config or data changes).
 - Accurate: uses server status, variables, and information_schema to form evidence-based suggestions.
@@ -10,9 +10,9 @@ mysql_tuner.py — A production-hardened MySQL/MariaDB health & configuration ad
 - DevOps-friendly: JSON or text output; exit code 0 (ok), 1 (warnings found), 2 (errors).
 
 USAGE (examples):
-  python3 mysql_tuner.py --host 127.0.0.1 --user root --password ... --output text
-  python3 mysql_tuner.py --socket /var/run/mysqld/mysqld.sock --output json > report.json
-  MYSQL_PWD=secret python3 mysql_tuner.py --host db --user audit --require-ssl
+  python3 mysql-tuner.py --host 127.0.0.1 --user root --password ... --output text
+  python3 mysql-tuner.py --socket /var/run/mysqld/mysqld.sock --output json > report.json
+  MYSQL_PWD=secret python3 mysql-tuner.py --host db --user audit --require-ssl
 
 PRIVILEGES: Prefer a read-only account with: PROCESS, REPLICATION CLIENT, SELECT on performance_schema & information_schema.
 """

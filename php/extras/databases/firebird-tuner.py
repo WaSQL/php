@@ -1,7 +1,7 @@
 
 #!/usr/bin/env python3
 """
-firebird_tuner.py — A production-hardened Firebird (2.5/3.0/4.0/5.0) health & configuration advisor (read-only).
+firebird-tuner.py — A production-hardened Firebird (2.5/3.0/4.0/5.0) health & configuration advisor (read-only).
 
 - Safe: read-only metadata/monitoring queries only (no gfix/gstat, no ALTER/DDL/DML).
 - Accurate: evidence-based suggestions from MON$ monitoring tables and RDB$ catalogs where possible.
@@ -9,8 +9,8 @@ firebird_tuner.py — A production-hardened Firebird (2.5/3.0/4.0/5.0) health & 
 - DevOps-friendly: JSON or text output; exit status 0 (ok), 1 (warnings), 2 (critical/errors).
 
 USAGE (examples):
-  python3 firebird_tuner.py --host 127.0.0.1 --port 3050 --db /path/to/database.fdb --user sysdba --password ... --output text
-  python3 firebird_tuner.py --dsn "localhost:/path/to/database.fdb" --user sysdba --password ... --output json > fb_report.json
+  python3 firebird-tuner.py --host 127.0.0.1 --port 3050 --db /path/to/database.fdb --user sysdba --password ... --output text
+  python3 firebird-tuner.py --dsn "localhost:/path/to/database.fdb" --user sysdba --password ... --output json > fb_report.json
 
 PRIVILEGES: a regular user with access to MON$ tables (default) is sufficient. SYSDBA or admin role yields the most detail.
 """
