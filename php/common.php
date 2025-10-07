@@ -2790,7 +2790,7 @@ function buildFormDate($name,$params=array()){
 		break;
 	}
 	$tag='';
-	$tag .= '<div class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
+	$tag .= '<div data-onload="wacss.initDatePicker();" class="w_flexgroup" data-display="inline-flex" style="position:relative;margin-top:0px;"';
 	if(isset($params['displayif'])){
 		$tag .= ' data-displayif="'.$params['displayif'].'"';
 		unset($params['displayif']);
