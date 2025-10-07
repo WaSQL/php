@@ -4537,7 +4537,7 @@ var wacss = {
 		await wacss._html5qrcodePromise;
 	},
 	initQrcodeBarcode: async function () {
-		const els = document.querySelectorAll('input[data-input="qrcode_barcode"]');
+		const els = document.querySelectorAll('[data-input="qrcode_barcode"]');
 		if (!els || !els.length){return false;}
 		await wacss.ensureHtml5QrcodeLoaded();
 		// Build overlay/modal (once)
@@ -4642,13 +4642,26 @@ var wacss = {
 					(decodedText /*, decodedResult */) => {
 						const input = document.getElementById(button?.dataset.inputid || '');
 						if (input) {
-							input.value = decodedText;
+							const tag = input.tagName.toLowerCase();
+
+							if (tag === 'input' || tag === 'textarea') {
+								input.value = decodedText;
+							} else if (tag === 'div') {
+								// contentEditable div or display container
+								if (input.isContentEditable) {
+									input.innerText = decodedText;
+								} else {
+									input.textContent = decodedText;
+								}
+							}
+
 							input.focus();
 							input.dispatchEvent(new Event('change', { bubbles: true }));
-							//check for data-onscan
+
+							// check for data-onscan
 							if (input.dataset.onscan) {
 								try {
-									// new Function arg order: decodedText, input, this
+									// new Function arg order: decodedText, input, button
 									const fn = new Function('code', 'el', 'btn', input.dataset.onscan);
 									fn(decodedText, input, button);
 								} catch (err) {
@@ -4656,6 +4669,7 @@ var wacss = {
 								}
 							}
 						}
+
 						closeScanner(button); // auto-close after successful read
 					},
 					() => { /* ignore per-frame errors */ }
