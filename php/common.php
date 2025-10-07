@@ -4473,7 +4473,6 @@ ENDOFERASE;
 	$datatagstr=implode(' ',$datatags);
 	$tag=<<<ENDOFTAG
 <div data-inputtype="file_image" data-display="inline-flex">
-	<input type="hidden" value="{$params['path']}" name="{$name}_path">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
 	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-color:#FFF;background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
