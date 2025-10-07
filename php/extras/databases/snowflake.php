@@ -1276,23 +1276,68 @@ function snowflakeQueryResults($query,$params=array()){
 	if(isset($params['-snowsql']) && $params['-snowsql']==1){$snowsql=1;}
 	if(isset($DATABASE[$db]['snowsql']) && $DATABASE[$db]['snowsql']==1){$snowsql=1;}
 	//echo $snowsql.printValue($params);exit;
-	if($snowsql==1){
-		//use snowsql instead of the ODBC driver
-		$wpath=getWasqlTempPath();
-		$wpath=str_replace('\\','/',$wpath);
-		$hash=sha1($query);
-		$sqlfile="{$wpath}/snowsql_{$hash}.sql";
-		$confile="{$wpath}/snowsql_{$hash}.conf";
-		$outfile="{$wpath}/snowsql_{$hash}.csv";
-		$logfile="{$wpath}/snowsql.log";
-		if(isset($params['-filename'])){
-			$outfile=$params['-filename'];
-		}
-		if(is_file($outfile)){
-			unlink($outfile);
-		}
-		$ok=setfileContents($sqlfile,$query);
-		$constr=<<<ENDOFCON
+	if ($snowsql==1) {
+	    // use snowsql instead of the ODBC driver
+	    $wpath = str_replace('\\', '/', getWasqlTempPath());
+
+	    // Derive a lock key:
+	    // - If this is a PUT, lock by the target json.gz (prevents dup uploads of the same file)
+	    // - Else, lock by sha1($query)
+	    $match = [];
+	    $putFileBase = '';
+	    if (preg_match('/\bPUT\s+file:\/\/(\S+?\.json\.gz)\b/i', $query, $match)) {
+	        $putPath = $match[1];
+	        $putFileBase = basename($putPath);
+	    }
+	    $hash = $putFileBase ? sha1("PUT:".$putFileBase) : sha1($query);
+
+	    $sqlfile = "{$wpath}/snowsql_{$hash}.sql";
+	    $confile = "{$wpath}/snowsql_{$hash}.conf";
+	    $outfile = "{$wpath}/snowsql_{$hash}.csv";          // final, stable target
+	    $tmpfile = "{$outfile}.tmp";                         // write-then-rename target
+	    $logfile = "{$wpath}/snowsql_{$hash}.log";           // per-hash log (avoid global contention)
+
+	    if (isset($params['-filename'])) {
+	        // If caller wants a specific output, we still stage to $tmpfile then copy
+	        $outfile = $params['-filename'];
+	        $tmpfile = "{$outfile}.tmp";
+	    }
+
+	    // ---- LOCK (exclusive) ----
+	    $lockfile = "{$wpath}/snowsql_{$hash}.lock";
+	    $lockfh = @fopen($lockfile, 'c');
+	    if (!$lockfh) {
+	        // If we can’t lock, fall back to ODBC path or fail gracefully
+	        $DATABASE['_lastquery']['error'] = "Cannot open lock file: {$lockfile}";
+	        debugValue($DATABASE['_lastquery']);
+	        return 0;
+	    }
+
+	    // Optional: wait up to N seconds; change to LOCK_EX|LOCK_NB to fail fast
+	    $lockWaitSeconds = isset($params['-lockwait']) ? (int)$params['-lockwait'] : 120;
+	    $gotLock = false;
+	    $t0 = microtime(true);
+	    do {
+	        $gotLock = flock($lockfh, LOCK_EX | LOCK_NB);
+	        if (!$gotLock) usleep(200000); // 200ms
+	    } while (!$gotLock && (microtime(true) - $t0) < $lockWaitSeconds);
+
+	    if (!$gotLock) {
+	        // Someone else is running this exact work unit
+	        // You can either return 0, or block indefinitely with plain LOCK_EX
+	        $DATABASE['_lastquery']['error'] = "Another snowsql run is in progress for key {$hash}";
+	        debugValue($DATABASE['_lastquery']);
+	        fclose($lockfh);
+	        return 0;
+	    }
+
+	    // ---- we own the lock now ----
+
+	    // Write SQL + config
+	    // (Use the same values you already set from $DATABASE[$db])
+	    $ok = setFileContents($sqlfile, $query);
+
+	    $constr = <<<ENDOFCON
 [connections]
 accountname=doterra
 username={$DATABASE[$db]['dbuser']}
@@ -1303,33 +1348,63 @@ warehouse={$DATABASE[$db]['dbwarehouse']}
 rolename={$DATABASE[$db]['dbrole']}
 authenticator=snowflake
 ENDOFCON;
-		setFileContents($confile,$constr);
-		$cmd="snowsql --config {$confile} -f {$sqlfile}  -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file={$outfile} -o log_file={$logfile} -o log_level=ERROR 2>&1";
-		$starttime=microtime(true);
-		$out=cmdResults($cmd);
-		$DATABASE['_lastquery']['stop']=microtime(true);
-		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-		if(is_file($outfile)){
-			if(isset($params['-filename'])){
-				$cnt=getFileLineCount($outfile)-2;
-				unlink($sqlfile);
-				unlink($confile);
-				return $cnt;
-			}
-			$recs=getCSVRecords($outfile,$params);
-			//echo printValue($out).printValue($recs);exit;
-			unlink($outfile);
-			unlink($sqlfile);
-			unlink($confile);
-			return $recs;
-		}
-		debugValue($out);
-		unlink($outfile);
-		unlink($sqlfile);
-		unlink($confile);
-		return array();
-		//failed - try the other way
+	    setFileContents($confile, $constr);
+
+	    // Ensure a clean temp target. We DO NOT delete the final file here (other readers might rely on it).
+	    if (is_file($tmpfile)) { @unlink($tmpfile); }
+
+	    // Build command with safe quoting
+	    $cmd = sprintf(
+	        'snowsql --config %s -f %s -o friendly=False -o quiet=true -o echo=false -o output_format=csv -o output_file=%s -o log_file=%s -o log_level=ERROR 2>&1',
+	        escapeshellarg($confile),
+	        escapeshellarg($sqlfile),
+	        escapeshellarg($tmpfile),
+	        escapeshellarg($logfile)
+	    );
+
+	    $starttime = microtime(true);
+	    $out = cmdResults($cmd);
+	    $DATABASE['_lastquery']['stop'] = microtime(true);
+	    $DATABASE['_lastquery']['time'] = $DATABASE['_lastquery']['stop'] - $DATABASE['_lastquery']['start'];
+
+	    // If snowsql succeeded, atomically publish tmp -> final
+	    if (is_file($tmpfile)) {
+	        // Atomic replace to avoid readers seeing partial files
+	        // If caller specified -filename, this writes directly there
+	        @rename($tmpfile, $outfile);
+	    }
+
+	    // Release the lock ASAP so waiters can proceed (either to read $outfile or to re-run later)
+	    flock($lockfh, LOCK_UN);
+	    fclose($lockfh);
+	    // Optional: clean stale lockfile
+	    @unlink($lockfile);
+
+	    if (is_file($outfile)) {
+	        if (isset($params['-filename'])) {
+	            // Caller just wanted row count; keep their file and don’t delete it here
+	            $cnt = getFileLineCount($outfile) - 2;
+	            // Cleanup our per-run files
+	            @unlink($sqlfile);
+	            @unlink($confile);
+	            return $cnt;
+	        }
+	        // Parse CSV into records, then clean up our internal files (keep log for debugging if you want)
+	        $recs = getCSVRecords($outfile, $params);
+	        @unlink($outfile);   // delete if you don’t want caching; or keep & add a TTL cache if desired
+	        @unlink($sqlfile);
+	        @unlink($confile);
+	        return $recs;
+	    }
+
+	    // Failed path
+	    debugValue($out);
+	    @unlink($tmpfile);
+	    @unlink($sqlfile);
+	    @unlink($confile);
+	    return array();
 	}
+
 	global $snowflakeStopProcess;
 	$starttime=microtime(true);
 	global $dbh_snowflake;
