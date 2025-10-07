@@ -3705,13 +3705,13 @@ function buildFormQrcodeBarcode($name,$params=array()){
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
-	$params['style'].=';border-top-right-radius:0px;border-bottom-right-radius:0px;overflow:hidden;height:32px;padding:3fsadfsa px 5px;';
+	$params['style'].=';border-top-right-radius:0px;border-bottom-right-radius:0px;overflow:hidden;height:100%;padding:3px 5px;';
 	$inputtag ='<textarea wrap="off" data-input="qrcode_barcode"';
 	$inputtag.= setTagAttributes($params);
 	$inputtag.='>'.encodeHtml($params['value']).'</textarea>';
 	$icon_id=$params['id'].'_scanicon';
 	$tag = <<<ENDOFINPUT
-<div style="display:inline-flex;" data-onload="wacss.initQrcodeBarcode();">
+<div style="display:inline-flex;min-width:200px;height:32px;" data-onload="wacss.initQrcodeBarcode();">
 	{$inputtag}
 	<span id="{$icon_id}" class="{$params['-icon']} w_pointer" style="font-size:32px;"></span>
 </div>
