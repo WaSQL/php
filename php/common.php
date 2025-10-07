@@ -3711,7 +3711,7 @@ function buildFormQrcodeBarcode($name,$params=array()){
 	$inputtag.='>'.encodeHtml($params['value']).'</textarea>';
 	$icon_id=$params['id'].'_scanicon';
 	$tag = <<<ENDOFINPUT
-<div style="display:inline-flex;min-width:250px;height:32px;" data-onload="wacss.initQrcodeBarcode();">
+<div style="display:inline-flex;height:32px;" data-onload="wacss.initQrcodeBarcode();">
 	{$inputtag}
 	<span id="{$icon_id}" class="{$params['-icon']} w_pointer" style="font-size:32px;"></span>
 </div>
