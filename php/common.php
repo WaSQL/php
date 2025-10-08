@@ -3696,7 +3696,7 @@ function buildFormQrcodeBarcode($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['-style'])){$params['-style']='height:40px;width:100%;';}
+	if(!isset($params['style'])){$params['style']='height:40px;width:100%;';}
 	$params['value']=buildFormValueParam($name,$params);
 	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -4404,7 +4404,7 @@ ENDOFTAG;
 function buildFormFileImage($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
-	if(!isset($params['-style'])){$params['-style']='height:40px;width:100%;';}
+	if(!isset($params['style'])){$params['style']='height:40px;width:100%;';}
 	if(!isset($params['text'])){
 		if(isset($params['multiple'])){$params['text']='Browse Images';}
 		else{$params['text']='Browse';}
@@ -4475,7 +4475,7 @@ ENDOFERASE;
 	}
 	$datatagstr=implode(' ',$datatags);
 	$tag=<<<ENDOFTAG
-<div data-inputtype="file_image" data-display="inline-flex" style="{$params['-style']}">
+<div data-inputtype="file_image" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
 	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-color:#FFF;background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
