@@ -4846,7 +4846,8 @@ var wacss = {
 				'Undo':['undo','','icon-undo','z'],
 				'Remove':['removeFormat','','icon-erase','-'],
 				'Print':['print','','icon-print','p'],
-				'Htmlcode':['code','','icon-file-code','h']
+				'Htmlcode':['code','','icon-file-code','h'],
+				'Fullscreen':['toggleFullscreen','','icon-blank','f']
 				
 			}
 			/*
