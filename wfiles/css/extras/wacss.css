@@ -2213,13 +2213,13 @@ div[data-inputtype="file_image"] label{
   justify-self: center;
   border-left:1px solid #ccc;
   min-height:32px;
-  background-color:#f8f9fa;
+  background-color:transparent;
 }
 div[data-inputtype="file_image"] label span{
   vertical-align: middle;
 }
 div[data-inputtype="file_image"] label:hover{
-  background-color:#e2e6ea;
+  font-weight: bold;
 }
 div[data-inputtype="file_image"] > label:last-of-type{
   border-top-right-radius:4px;
