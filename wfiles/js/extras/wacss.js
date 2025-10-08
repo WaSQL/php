@@ -6884,11 +6884,14 @@ var wacss = {
 	* @name wacss.nav
 	* @describe navigation based on data-nav and data-div
 	* @param el element (this)
-	* @param opts object additional instructions not in dataset
+	* @param [opts] object additional instructions not in dataset
+	* @param [event] event object - if set call event.stopPropagation()
 	* @return string placed in element specified by data-div
 	* @usage <a href="#" data-nav="/t/1/index/test" data-div="centerpop" onclick="return wacss.nav(this);">test</a>
+	* @usage <a href="#" data-nav="/t/1/index/test" data-div="centerpop" onclick="return wacss.nav(this,{},event);">test</a>
 	*/
-	nav: function(el,opts){
+	nav: function(el,opts,event){
+		 if(event){event.stopPropagation();}
 		//check to make sure that el has data-nav
 		let elobj=wacss.getObject(el);
 		if(undefined == elobj){
@@ -8142,12 +8145,14 @@ var wacss = {
 	* @name wacss.showImage
 	* @describe creates a DOM element to show image in
 	* @param mixed DOM element or id of element
-	* @param number z-index defaults to 10020
-	* @param string title optional title to show above image
+	* @param [number] z-index defaults to 10020
+	* @param [string] title optional title to show above image
+	* @param [event] event object - if set call event.stopPropagation()
 	* @return object DOM object that is created
 	* @usage let el=wacss.showImage('#myimg',2323)
 	*/
-	showImage: function(el,z,title){
+	showImage: function(el,z,title,event){
+		if(event){event.stopPropagation();}
 	    el=wacss.getObject(el);
 	    if(undefined == el){return false;}
 	    z=z||999980;
@@ -8242,12 +8247,14 @@ var wacss = {
 	* @name wacss.showVideo
 	* @describe creates a DOM element to show video in
 	* @param mixed DOM element or id of element
-	* @param number z-index defaults to 10020
-	* @param string title optional title to show above video
+	* @param [number] z-index defaults to 10020
+	* @param [string] title optional title to show above video
+	* @param [event] event object - if set call event.stopPropagation()
 	* @return object DOM object that is created
 	* @usage let el=wacss.showImage('#myimg',2323)
 	*/
-	showVideo: function(el,z,title){
+	showVideo: function(el,z,title,event){
+		if(event){event.stopPropagation();}
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
 		z=z||999980;
