@@ -5597,6 +5597,7 @@ var wacss = {
 						let editor=wacss.getObject(t.id+'_wacsseditor');
 						wacss.toggleFullscreen(wrapper);
 						editor.style.height='100%';
+						editor.style.maxHeight='100%';
 						return false;
 					break;
 					case 'print':
