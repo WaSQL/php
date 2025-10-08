@@ -4774,7 +4774,9 @@ var wacss = {
 	initWacssEdit: function(){
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
-			if(undefined == list[i].id){continue;}
+			if(undefined == list[i].id){
+				list[i].id='id_'+Math.random().toString(36).slice(2);
+			}
 			//check to see if we have already initialized this element
 			if(undefined != list[i].dataset.initialized){continue;}
 			list[i].setAttribute('data-initialized',1);
@@ -5521,7 +5523,8 @@ var wacss = {
 				ul.appendChild(li);
 			}
 			nav.appendChild(ul);
-			
+			nav.id=list[i].id+'_navbar';
+			nav.dataset.parent_id=list[i].id;
 			list[i].parentNode.insertAdjacentElement('afterBegin',d);
 			list[i].parentNode.insertAdjacentElement('afterBegin',nav);
 			
@@ -5541,6 +5544,7 @@ var wacss = {
 				//console.log('onclick',cmd);
 				let tid=this.getAttribute('data-txt');
 				let tobj=wacss.getObject(tid);
+				let pobj=wacss.getObject(this.dataset.parent_id);
 				if(undefined == tobj){
 					console.log('wacssedit code error: no tobj');
 					return false;
@@ -5586,7 +5590,7 @@ var wacss = {
 						return false;
 					break;
 					case 'fullscreen':
-						return wacss.toggleFullscreen(dobj);
+						return wacss.toggleFullscreen(pobj);
 					break;
 					case 'print':
 						let oPrntWin = window.open("","_blank","width=450,height=470,left=400,top=100,menubar=yes,toolbar=no,location=no,scrollbars=yes");
