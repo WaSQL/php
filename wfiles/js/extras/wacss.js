@@ -4849,7 +4849,7 @@ var wacss = {
 				'Remove':['removeFormat','','icon-erase','-'],
 				'Print':['print','','icon-print','p'],
 				'Htmlcode':['code','','icon-file-code','h'],
-				'Fullscreen':['fullscreen','','icon-blank','f']
+				'Fullscreen':['fullscreen','','material-fullscreen','f']
 				
 			}
 			/*
@@ -5590,7 +5590,14 @@ var wacss = {
 						return false;
 					break;
 					case 'fullscreen':
-						return wacss.toggleFullscreen(pobj);
+						//console.log('fullscreen');
+						let navobj=wacss.getParent(this,'nav');
+						let t=wacss.getObject(navobj.dataset.parent_id);
+						let wrapper=wacss.getObject(t.id+'_wrapper');
+						let editor=wacss.getObject(t.id+'_wacsseditor');
+						wacss.toggleFullscreen(wrapper);
+						editor.style.height='100%';
+						return false;
 					break;
 					case 'print':
 						let oPrntWin = window.open("","_blank","width=450,height=470,left=400,top=100,menubar=yes,toolbar=no,location=no,scrollbars=yes");
