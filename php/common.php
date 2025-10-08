@@ -3696,6 +3696,7 @@ function buildFormQrcodeBarcode($name,$params=array()){
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['-style'])){$params['-style']='height:40px;width:100%;';}
 	$params['value']=buildFormValueParam($name,$params);
 	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
