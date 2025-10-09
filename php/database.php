@@ -4773,6 +4773,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	}
 	$rtn .= ' onsubmit="'.$onsubmit.'"';
 	$rtn .= ' onchange="'.$params['-onchange'].'"';
+	$rtn .= ' data-onload="wacss.initWacssEdit();"';
 	$rtn .= '>'.PHP_EOL;
 	//upload progress
 	$upload_progress_enabled=ini_get("session.upload_progress.enabled");
