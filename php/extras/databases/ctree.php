@@ -1322,3 +1322,228 @@ ENDOFQUERY;
 		break;
 	}
 }
+/*
+	The following function are used when jsondb is set to 1 in the config.xml database container
+	global $CONFIG;
+	$CONFIG['db']='ctree_birepl01_us';
+	$ok=ctreeJsonDBGetAuthToken();
+	echo printValue($ok);
+*/
+function ctreeJsonDBGetAuthToken($params=array()){
+	$params=ctreeParseConnectParams($params);
+	$authtoken=commonCoalesce($params['-authtoken'],$params['-authToken'],'');
+	//if(strlen($authtoken)){return $authtoken;}
+	$json=array(
+		'api'=>'admin',
+		'action'=>'createSession',
+		'params'=>array(
+			'username'=>$params['-dbuser'],
+			'password'=>$params['-dbpass'],
+			//'permanentSession'=>true,
+			'defaultDatabaseName'=>$params['-dbname'],
+			'defaultOwnerName'=>$params['-dbuser'],
+			'description'=>"API key for {$params['-name']})"
+		)
+	);
+	$jsonstr=encodeJSON($json);
+	$url=ctreeJsonDBBaseURL();
+	$port=commonCoalesce($params['-jsondbport'],8443);
+	//echo $url.printValue($params).printValue($json);exit;
+	$post=postJSON($url,$jsonstr,array('-port'=>$port,'-nossl'=>1));
+ 	if(isset($post['json_array']['authToken'])){
+ 		return $post['json_array']['authToken'];
+		echo "Your authtoken is {$post['json_array']['authToken']}. Put this in your ctree database container<br><hr>";
+	}
+	else{
+		echo "Failed to get authtoken";
+	}
+	echo printValue($post);
+	exit;
+}
+function ctreeJsonDBBaseURL(){
+	$params=ctreeParseConnectParams($params);
+	$url=commonCoalesce($params['-jsondbhost'],$params['-dbhost']);
+	if(!stringBeginsWith($url,'http')){$url="https://{$url}/api";}
+	return $url;
+}
+function ctreeJsonDBRequestId(){
+	global $ctreeJsonDBRequestId_last;
+	if(!isset($ctreeJsonDBRequestId_last) || !strlen($ctreeJsonDBRequestId_last)){
+		$ctreeJsonDBRequestId_last=time();
+	}
+	$ctreeJsonDBRequestId_last+=1;
+	return $ctreeJsonDBRequestId_last;
+}
+function ctreeJsonDBCloseCursor(){
+	return ctreeJsonDBCallAPI('db','closeCursor',array(
+		'cursorId'=>null
+	));
+}
+function ctreeJsonDBQueryResults($query='',$params=array()){
+	$params=ctreeParseConnectParams($params);
+	//run SQL and request a cursor
+	$post=ctreeJsonDBCallAPI('db','getRecordsUsingSQL',array(
+		'sql'=>$query,
+		'returnCursor'=>true,
+		'forceRecordCount'=>true
+	));
+	// $post=ctreeJsonDBCallAPI('db','getRecordsByTable',array(
+	// 	'tableName'=>'dstdb',
+	// 	'databaseName'=>'liveSQL',
+	// 	'maxRecords'=>2
+	// )
+	// ,array('includeFields'=>array('DIST_ID'))
+	// );
+	// echo printValue($post);exit;
+	if(!isset($post['cursorId'])){
+		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);
+	}
+	$cursorid=$post['cursorId'];
+	$total_cnt=commonCoalesce($post['totalRecordCount'],0);
+	$fetch = commonCoalesce($params['dbfetch'],1000);
+	if($total_cnt > 0 && $total_cnt < $fetch){$fetch=$total_cnt;}
+	$recs=array();
+	$recs_cnt=0;
+	$options=array(
+		'cursorId'=>$cursorid,
+		'fetchRecords'=>$fetch,
+		'databaseName'=>$params['-dbname']
+	);
+	$response_options=array(
+		'dataFormat' => 'arrays',
+		'numberFormat'=>'number'
+	);
+	do {
+		$xrecs=ctreeJsonDBCallAPI('db','getRecordsFromCursor',$options,$response_options);
+		if(!is_array($xrecs)){$recs=array();}
+		$xrecs_cnt = count($xrecs);
+		$recs=array_merge($recs,$xrecs);
+		$recs_cnt=count($recs);
+		if($total_cnt > 0 && $recs_cnt == $total_cnt){$xrecs_cnt=0;}
+	} while ($xrecs_cnt > 0);
+	//close cursor
+	$ok=ctreeJsonDBCloseCursor();
+	return $recs;
+}
+//dumps table to a csv file and returns the csv file
+function ctreeJsonDBDumpTable($tablename,$params=array()){
+	$params=ctreeParseConnectParams($params);
+	//call params
+	$options=array(
+		'tableName'=>$tablename,
+		'databaseName'=>$params['-dbname'],
+		'returnCursor'=>true
+	);
+	if(isset($params['-filter'])){
+		$options['tableFilter']=$params['-filter'];
+	}
+	if(isset($params['-limit'])){
+		$options['maxRecords']=$params['-limit'];
+	}
+	//response options
+	$response_options=array(
+		'numberFormat'=>'number',
+		'dataFormat'=>'arrays'
+	);
+	//-fields
+	if(isset($params['-fields'])){
+		if(!is_array($params['-fields'])){
+			$params['-fields']=preg_split('/\,/',$params['-fields']);
+		}
+		//trim and uppercase each field
+		$params['-fields'] = array_map(function($v) {
+    		return strtoupper(trim($v));
+		}, $params['-fields']);
+		$response_options['includeFields']=$params['-fields'];
+	}
+
+	$post=ctreeJsonDBCallAPI('db','getRecordsByTable',$options,$response_options);
+	// echo printValue($post);exit;
+	if(!isset($post['cursorId'])){
+		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);
+	}
+	$cursorid=$post['cursorId'];
+	$total_cnt=commonCoalesce($post['totalRecordCount'],0);
+	$fetch = commonCoalesce($params['dbfetch'],1000);
+	if($total_cnt > 0 && $total_cnt < $fetch){$fetch=$total_cnt;}
+	$recs=array();
+	$recs_cnt=0;
+	do {
+		$xrecs=ctreeJsonDBCallAPI('db','getRecordsFromCursor',array(
+			'cursorId'=>$cursorid,
+			'fetchRecords'=>$fetch
+		),array(
+			'dataFormat' => 'arrays',
+			'numberFormat'=>'number'
+		));
+		if(!is_array($xrecs)){$recs=array();}
+		$xrecs_cnt = count($xrecs);
+		$recs=array_merge($recs,$xrecs);
+		$recs_cnt=count($recs);
+		if($total_cnt > 0 && $recs_cnt == $total_cnt){$xrecs_cnt=0;}
+	} while ($xrecs_cnt > 0);
+	//close cursor
+	$ok=ctreeJsonDBCloseCursor();
+	return $recs;
+}
+function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array()){
+	$url=ctreeJsonDBBaseURL();
+	$json=array(
+		'api'=>$api,
+		'action'=>$action,
+		'authToken'=>ctreeJsonDBGetAuthToken($params),
+		'requestId'=>ctreeJsonDBRequestId()
+	);
+	if(is_array($params) && count($params)){
+		$json['params']=$params;
+	}
+	if(is_array($responseOptions) && count($responseOptions)){
+		$json['responseOptions']=$responseOptions;
+	}
+	$params=array(
+		'-nossl'=>1,
+		'-port'=>commonCoalesce($params['-jsondbport'],8443)
+	);
+
+	$jsonstr=encodeJSON($json,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+	if(!strlen($jsonstr)){
+		echo "ctreeJsonDBCallAPI ERROR: invalid json".printValue($json);exit;
+	}
+	$post=postJSON($url,$jsonstr,$params);
+	if($action=='getRecordsByTable'){echo printValue($post);exit;}
+	if($post['code']==400){
+		//$ok=fmqDeleteSession();
+		echo "ctreeJsonDBCallAPI ERROR: ".PHP_EOL.PHP_EOL.$jsonstr.PHP_EOL.PHP_EOL.printValue($post);exit;
+	}
+	//echo printValue($post['json_array']);
+	if(!isset($post['json_array'])){
+		//$ok=fmqDeleteSession();
+		echo "ctreeJsonDBCallAPI ERROR: Failed to call".printValue($post);exit;
+	}
+	if(!stringContains($action,'delete') && isset($post['json_array']['errorMessage']) && strlen($post['json_array']['errorMessage'])){
+		//$ok=fmqDeleteSession();
+		echo "ctreeJsonDBCallAPI {$action} Error {$post['json_array']['errorCode']}: {$post['json_array']['errorMessage']}";
+		echo printValue($post);exit;
+	}
+	if(isset($post['json_array']['result']['data'])){
+		//$ok=fmqDeleteSession();
+		return $post['json_array']['result']['data'];
+	}
+	if(isset($post['json_array']['result']['messages'])){
+		//$ok=fmqDeleteSession();
+		return $post['json_array']['result']['messages'];
+	}
+	if(isset($post['json_array']['authToken'])){
+		return $post['json_array'];
+	}
+	if(isset($post['json_array']['result'])){
+		//$ok=fmqDeleteSession();
+		return $post['json_array']['result'];
+	}
+	if(isset($post['json_array'])){
+		//$ok=fmqDeleteSession();
+		return $post['json_array'];
+	}
+	//$ok=fmqDeleteSession();
+	echo "ctreeJsonDBCallAPI ERROR:  Failed to call".printValue($post);exit;
+}
