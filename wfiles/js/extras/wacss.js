@@ -1019,6 +1019,7 @@ var wacss = {
 				// clear the processed flag only if it was set (true -> false)
 				if (wasTrue) {
 					el.removeAttribute('data-displayif-processed');
+					wacss.runOnDisplay(el);
 				}
 			}
 		}
@@ -7983,6 +7984,83 @@ var wacss = {
 				break;
 				default:
 					if (window && window.console) { console.warn('Unknown data-ondisplay action:', action); }
+				break;
+			}
+		});
+		return false;
+	},
+	/**
+	* @name wacss.runOnDisplay
+	* @describe Safely executes actions defined in the data-ondisplay attribute when a displayif condition becomes true.
+	* @param element elContainer - The container element that triggered the displayif condition.
+	* @return void
+	* @usage 
+	*  Example: 
+	*  <p data-displayif="color:other" data-ondisplay="focus:#other_color; addclass:#other_color,is-warning">
+	*  Supported actions:
+	*   focus:#selector
+	*   addclass:#selector,class1[,class2]
+	*   removeclass:#selector,class1[,class2]
+	*   value:#selector,textValue
+	*   call:functionName or call:namespace.functionName
+	*/
+	runOnHide: function (elContainer) {
+		if (!elContainer || !elContainer.dataset) { return false; }
+		const spec = (elContainer.dataset.onhide || '').trim();
+		if (!spec || spec.length==0) { return false; }
+		// Allow multiple actions separated by ';'
+		const actions = spec.split(';').map(s => s.trim()).filter(Boolean);
+		actions.forEach(actionStr => {
+			// Match: action:selector[:arg...]
+			const m = actionStr.match(/^(\w+)\s*:\s*([^:]+)(?::([\s\S]*))?$/);
+			if (!m) { return; }
+			const [, actionRaw, selectorRaw, argRaw] = m;
+			const action = actionRaw.toLowerCase();
+			const selector = selectorRaw.trim();
+			const arg = (argRaw || '').trim();
+			// Prefer WaSQL helper if present, otherwise fallback to querySelector
+			let target = wacss.getObject(selector);
+			if (!target) { target = document.querySelector(selector); }
+			if (!target) { return; }
+			switch (action) {
+				case 'focus':
+					if (typeof target.focus === 'function') {
+						setTimeout(() => target.focus(), 0);
+					}
+				break;
+				case 'addclass':
+					if (arg) {
+						arg.split(',').forEach(c => c && target.classList.add(c.trim()));
+					}
+				break;
+				case 'removeclass':
+					if (arg) {
+						arg.split(',').forEach(c => c && target.classList.remove(c.trim()));
+					}
+				break;
+				case 'value':
+					if ('value' in target) {
+						target.value = arg;          // empty string allowed (clears)
+					} else {
+						target.textContent = arg;
+					}
+				break;
+				case 'call':
+					// Resolve a named function safely (no eval/new Function)
+					// Supports "fnName" or "namespace.fnName" (e.g., "wacss.afterShow")
+					const path = arg.split('.').map(s => s.trim()).filter(Boolean);
+					let fn = window;
+					for (const key of path) {
+						if (fn && key in fn) { fn = fn[key]; }
+						else { fn = null; break; }
+					}
+					if (typeof fn === 'function') {
+						try { fn(target); }
+						catch (e) { console.error('data-onhide call error:', e); }
+					}
+				break;
+				default:
+					if (window && window.console) { console.warn('Unknown data-onhide action:', action); }
 				break;
 			}
 		});
