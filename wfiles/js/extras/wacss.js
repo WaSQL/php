@@ -8005,6 +8005,7 @@ var wacss = {
 	*   call:functionName or call:namespace.functionName
 	*/
 	runOnHide: function (elContainer) {
+		console.log('runOnHide');
 		if (!elContainer || !elContainer.dataset) { return false; }
 		const spec = (elContainer.dataset.onhide || '').trim();
 		if (!spec || spec.length==0) { return false; }
