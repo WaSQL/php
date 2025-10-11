@@ -1019,7 +1019,7 @@ var wacss = {
 				// clear the processed flag only if it was set (true -> false)
 				if (wasTrue) {
 					delete el.dataset.displayif_processed;
-					wacss.runOnDisplay(el);
+					wacss.runOnHide(el);
 				}
 			}
 		}
