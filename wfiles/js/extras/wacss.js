@@ -1018,7 +1018,7 @@ var wacss = {
 				el.style.display = 'none';
 				// clear the processed flag only if it was set (true -> false)
 				if (wasTrue) {
-					el.removeAttribute('data-displayif-processed');
+					delete el.dataset.displayif_processed;
 					wacss.runOnDisplay(el);
 				}
 			}
