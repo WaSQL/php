@@ -993,23 +993,33 @@ var wacss = {
 		//data-classif="w_red:age:4"
 		//data-requiredif, data-displayif, data-hideif, data-blankif, data-readonlyif
 		//data-displayif
-		let els=frm.querySelectorAll('[data-displayif]');
-		for(let i=0;i<els.length;i++){
-			if(wacss.formIsIfTrue(frm,els[i].dataset.displayif)){
-				if(undefined != els[i].dataset.display){
-					if(debug==1){console.log('displayif to display:'+els[i]);}
-					els[i].style.display=els[i].dataset.display;
+		let els = frm.querySelectorAll('[data-displayif]');
+		for (let i = 0; i < els.length; i++) {
+			const el = els[i];
+			const nowTrue = wacss.formIsIfTrue(frm, el.dataset.displayif);
+			// prior state
+			const wasTrue = el.dataset.displayif_processed === '1'; 
+			if (nowTrue) {
+				// show
+				if (el.dataset.display !== undefined) {
+					el.style.display = el.dataset.display;
+				} 
+				else {
+					el.style.display = 'initial';
 				}
-				else{
-					if(debug==1){console.log('displayif to initial:'+els[i]);}
-					els[i].style.display='initial';
+				// fire only on transition false -> true
+				if (!wasTrue) {
+					wacss.runOnDisplay(el);
+					el.dataset.displayif_processed = '1';
 				}
-				// run data-ondisplay if present
-				wacss.runOnDisplay(els[i]);
-			}
-			else{
-				if(debug==1){console.log('displayif to none:'+els[i]);}
-				els[i].style.display='none';
+			} 
+			else {
+				// hide
+				el.style.display = 'none';
+				// clear the processed flag only if it was set (true -> false)
+				if (wasTrue) {
+					el.removeAttribute('data-displayif-processed');
+				}
 			}
 		}
 		//data-hideif
