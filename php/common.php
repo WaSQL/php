@@ -3541,7 +3541,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 
 		if(!strlen($display)){$display=$tval;}
 		$opt_id=$params['id'].'_'.$tval;
-		$opt_id=preg_replace('/[^a-z0-9\_]+/i','',$opt_id);
+		$opt_id=preg_replace('/[^a-z0-9\_]+/i','_',$opt_id);
 		//topbottom
 		if(strtolower($format)=='topbottom'){
 			$format=$i%2==0?'top':'bottom';
