@@ -3567,8 +3567,12 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			$rtn .= ' data-hideif="'.$params["{$tval}_hideif"].'"';
 			unset($params["{$tval}_hideif"]);
 		}
+
+		if(isset($params['-other']) && $params['-other']==1 && stringEndsWith($tval,'?')){
+			$rtn .= ' style="display:flex;"';
+		}
 		$rtn.='>'.PHP_EOL;
-		$rtn.='		<input style="width:1px;height:1px;appearance:none;display:block;align-self:center;" type="'.$params['-type'].'" id="'.$opt_id.'" name="'.$input_name.'" value="'.$tval.'"';
+		$rtn.='		<input style="position:absolute;right:4000px;width:1px;height:1px;appearance:none;display:block;align-self:center;" type="'.$params['-type'].'" id="'.$opt_id.'" name="'.$input_name.'" value="'.$tval.'"';
 		//required
 		if(isset($params['required']) && $params['required']){
 			//$rtn .= ' required="required"';
@@ -3651,6 +3655,11 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			$rtn .= ' class="'.$classestr.'"';
 		}
 		$rtn.= '>'.$display.'</label>'.PHP_EOL;
+		if(isset($params['-other']) && $params['-other']==1 && stringEndsWith($tval,'?')){
+			$rtn.=<<<ENDOFOTHER
+<input type="text" style="margin-left:5px;font-size:0.9rem;" id="{$opt_id}_other" name="{$input_name}" data-onhide="value:{$opt_id}_other:" data-ondisplay="focus:{$opt_id}_other:" placeholder="Enter ..." data-displayif="{$input_name}:{$tval}">
+ENDOFOTHER;
+		}
 		$rtn.='	</div>'.PHP_EOL;
 		$i+=1;
 	}
