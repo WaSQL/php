@@ -3716,7 +3716,7 @@ function buildFormQrcodeBarcode($name,$params=array()){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
 	$style=$params['style'];
-	$params['style'].=';flex:1;border-top-right-radius:0px;border-bottom-right-radius:0px;overflow:hidden;height:100%;padding:3px 5px;';
+	$params['style'].=';resize:none;flex:1;border-top-right-radius:0px;border-bottom-right-radius:0px;overflow:hidden;height:100%;padding:3px 5px;';
 	$inputtag ='<textarea wrap="off" data-input="qrcode_barcode"';
 	$inputtag.= setTagAttributes($params);
 	$inputtag.='>'.encodeHtml($params['value']).'</textarea>';
@@ -21070,7 +21070,7 @@ function processActions(){
 								$opts["{$field}_mdml"]=markdownFromHtml($_REQUEST[$field],$mdmlopts);
 							}
 						}
-						if($info[$field]['inputtype']=='file'){
+						if(in_array($info[$field]['inputtype'],array('file','file_image'))){
 							//add width, height, size, and type if fields exist
 							if(isset($info[$field.'_sha1']) && isset($_REQUEST[$field.'_sha1'])){$opts[$field.'_sha1']=$_REQUEST[$field.'_sha1'];}
 							if(isset($info[$field.'_type']) && isset($_REQUEST[$field.'_type'])){$opts[$field.'_type']=$_REQUEST[$field.'_type'];}
@@ -21079,8 +21079,8 @@ function processActions(){
 							if(isset($info[$field.'_height']) && isset($_REQUEST[$field.'_height'])){$opts[$field.'_height']=$_REQUEST[$field.'_height'];}
 							}
 						else{
-							if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=setValue(array($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field])));}
-							if(isset($info[$field.'_size'])){$opts[$field.'_size']=setValue(array($_REQUEST[$field.'_size'],strlen($_REQUEST[$field])));}
+							if(isset($info[$field.'_sha1'])){$opts[$field.'_sha1']=commonCoalesce($_REQUEST[$field.'_sha1'],sha1($_REQUEST[$field]));}
+							if(isset($info[$field.'_size'])){$opts[$field.'_size']=commonCoalesce($_REQUEST[$field.'_size'],strlen($_REQUEST[$field]));}
 							}
 						$ucfield=strtoupper($field);
 						if(isset($_REQUEST[$field])){
