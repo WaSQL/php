@@ -3984,14 +3984,16 @@ function buildFormTranslateBulma($params=array()){
 *	The name of the field
 * @param params array
 *	options are as follows
-*	- [displayname]. Defaults to "Please Sign Below:"
+*	- [displayname]. Defaults to ""
 *	- [width]. Defaults to 300
-*	- [height]. Defaults to 75
+*	- [height]. Defaults to 200
 * 	- [style] - set width or height in style to override defaults
 * @return HTML Form signature field the works on mobile and PC - user can use the mouse or finger to sign
 * @usage buildFormWhiteboard('board',$params);
 */
 function buildFormWhiteboard($name,$params=array()){
+	if(!isset($params['width'])){$params['width']=300;}
+	if(!isset($params['height'])){$params['height']=200;}
 	$params['data-behavior']="whiteboard";
 	$rtn=buildFormHidden("{$name}_inline",array('value'=>1));
 	$rtn.=buildFormHidden("{$name}_autonumber",array('value'=>1));
