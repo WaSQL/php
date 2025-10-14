@@ -5969,498 +5969,361 @@ var wacss = {
 			wrapper.toolbar.appendChild(wrapper.toolbar.clear);
 		}
 	},
-	initWhiteboard:function(){
-		//@reference https://stackoverflow.com/questions/3008635/html5-canvas-element-multiple-layers
-		let list=document.querySelectorAll('textarea[data-behavior="whiteboard"]');
-		for(let i=0;i<list.length;i++){
-			if(undefined != list[i].dataset.initialized){
-				continue;
-			}
-			list[i].dataset.initialized+=1;
-			list[i].style.display='none';
-			//wrapper
-			let wrapper = document.createElement('div');
-			wrapper.style.width = list[i].style.width;
-			wrapper.style.height = list[i].style.height;
-			wrapper.style.display='block';
-			wrapper.style.position='relative';
-			wrapper.style.boxShadow='rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px';
-			wrapper.id='whiteboard_wrapper_1';
-			wrapper.style.backgroundColor=list[i].dataset.fill||'#fff';
-			wrapper.shapesBottom=new Array();
-			wrapper.shapesTop=new Array();
-			wrapper.shape={};
-			wrapper.drawShapesBottom=function(){
-				//clear canvas
-				this.bottom_canvas.ctx.clearRect(0, 0, this.bottom_canvas.width, this.bottom_canvas.height);
-		    	this.txtarea.innerText='';
-		    	let dshapes=this.shapesBottom;
-		    	//draw shapes
-		    	let simg=undefined;
-				for(let i=0;i<dshapes.length;i++){
-					let shape=dshapes[i];
-					if(undefined == shape){continue;}
-					if(undefined == shape.shape){continue;}
-					switch(shape.shape){
-						case 'image':
-							simg = new Image();
-					        //drawing of the test image - img1
-					        simg.bottom_canvas=this.bottom_canvas;
-					        simg.txtarea=this.txtarea;
-					        simg.crossOrigin = 'anonymous';
-					        simg.src = shape.src;
-						break;
-						case 'circle':
-							//circle fields: shape,x,y,radius,fillcolor
-							this.bottom_canvas.ctx.beginPath();
-				            this.bottom_canvas.ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2);
-				       		
-				            if(shape.fillcolor.length){
-				            	this.bottom_canvas.ctx.fillStyle=shape.fillcolor;
-				            	this.bottom_canvas.ctx.lineWidth=shape.size;
-				            	this.bottom_canvas.ctx.fill();	
-				            }
-				            else{
-				            	//no fill
-				            	this.bottom_canvas.ctx.lineWidth=shape.size;
-				            	this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
-				            	this.bottom_canvas.ctx.stroke();
-				            }
-						break;
-						case 'rectangle':
-							//rectangle fields: shape,x,y,width,fillcolor
-							if(shape.fillcolor.length){
-				            	this.bottom_canvas.ctx.fillStyle=shape.fillcolor;
-				            	this.bottom_canvas.ctx.lineWidth=shape.size;
-	            				this.bottom_canvas.ctx.fillRect(shape.x,shape.y,shape.width,shape.height);	
-				            }
-				            else{
-				            	//no fill
-				            	this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
-				            	this.bottom_canvas.ctx.lineWidth=shape.size;
-				            	this.bottom_canvas.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
-				            }
-						break;
-						case 'line':
-							//pencil fields: shape,x,y,x2,y2,pencolor
-							this.bottom_canvas.ctx.beginPath();
-							this.bottom_canvas.ctx.moveTo(shape.x, shape.y);
-							this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
-			            	this.bottom_canvas.ctx.lineTo(shape.x2, shape.y2);
-			            	this.bottom_canvas.ctx.lineWidth=shape.size;
-							this.bottom_canvas.ctx.stroke();
-							this.bottom_canvas.ctx.closePath();
-						break;
-						default: //pencil is the default
-							//pencil fields: shape,x,y,x2,y2,pencolor
-							//console.log(shape);
-							this.bottom_canvas.ctx.beginPath();
-							this.bottom_canvas.ctx.moveTo(shape.x, shape.y);
-							this.bottom_canvas.ctx.strokeStyle=shape.pencolor;
-							this.bottom_canvas.ctx.lineWidth=shape.size;
-			            	this.bottom_canvas.ctx.lineTo(shape.x2, shape.y2);
-			            	
-							this.bottom_canvas.ctx.stroke();
-							this.bottom_canvas.ctx.closePath();
-						break;
-					}
-				}
-				dshapes=[];
-				
-				if (typeof this.bottom_canvas.toDataURL === 'function') {
-					if(simg){
-						simg.onload = function () {
-				            //draw background image
-				            this.bottom_canvas.ctx.drawImage(this, 0, 0);
-				            this.txtarea.innerText=this.bottom_canvas.toDataURL('image/png');
-				            //console.log('saved 1');
-				        };
-					}
-					else{
-						this.txtarea.innerText=this.bottom_canvas.toDataURL('image/png');
-						//console.log('saved 2');
-					}
-				}
-				else{
-					//console.log('NOT saved');
-				}
-			}
-			wrapper.drawShapesTop=function(){
-				//clear canvas
-				//this.top_canvas.ctx.clearRect(0, 0, this.bottom_canvas.width, this.bottom_canvas.height);
-		    	let dshapes=new Array();
-		    	dshapes.push(this.shape);
-		    	//console.log(dshapes);
-		    	//draw shapes
-		    	let simg=undefined;
-				for(let i=0;i<dshapes.length;i++){
-					let shape=dshapes[i];
-					if(undefined == shape){continue;}
-					if(undefined == shape.shape){continue;}
-					switch(shape.shape){
-						case 'image':
-							simg = new Image();
-					        //drawing of the test image - img1
-					        simg.top_canvas=this.top_canvas;
-					        simg.txtarea=this.txtarea;
-					        simg.crossOrigin = 'anonymous';
-					        simg.src = shape.src;
-						break;
-						case 'circle':
-							//circle fields: shape,x,y,radius,fillcolor
-							this.top_canvas.ctx.beginPath();
-				            this.top_canvas.ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2);
-				       		
-				            if(shape.fillcolor.length){
-				            	this.top_canvas.ctx.fillStyle=shape.fillcolor;
-				            	this.top_canvas.ctx.lineWidth=shape.size;
-				            	this.top_canvas.ctx.fill();	
-				            }
-				            else{
-				            	//no fill
-				            	this.top_canvas.ctx.lineWidth=shape.size;
-				            	this.top_canvas.ctx.strokeStyle=shape.pencolor;
-				            	this.top_canvas.ctx.stroke();
-				            }
-						break;
-						case 'rectangle':
-							//rectangle fields: shape,x,y,width,fillcolor
-							if(shape.fillcolor.length){
-				            	this.top_canvas.ctx.fillStyle=shape.fillcolor;
-				            	this.top_canvas.ctx.lineWidth=shape.size;
-	            				this.top_canvas.ctx.fillRect(shape.x,shape.y,shape.width,shape.height);	
-				            }
-				            else{
-				            	//no fill
-				            	this.top_canvas.ctx.strokeStyle=shape.pencolor;
-				            	this.top_canvas.ctx.lineWidth=shape.size;
-				            	this.top_canvas.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height);
-				            }
-						break;
-						case 'line':
-							//pencil fields: shape,x,y,x2,y2,pencolor
-							this.top_canvas.ctx.beginPath();
-							this.top_canvas.ctx.moveTo(shape.x, shape.y);
-							this.top_canvas.ctx.strokeStyle=shape.pencolor;
-			            	this.top_canvas.ctx.lineTo(shape.x2, shape.y2);
-			            	this.top_canvas.ctx.lineWidth=shape.size;
-							this.top_canvas.ctx.stroke();
-							this.top_canvas.ctx.closePath();
-						break;
-						default: //pencil is the default
-							//pencil fields: shape,x,y,x2,y2,pencolor
-							this.top_canvas.ctx.beginPath();
-							this.top_canvas.ctx.moveTo(shape.x, shape.y);
-							this.top_canvas.ctx.strokeStyle=shape.pencolor;
-			            	this.top_canvas.ctx.lineTo(shape.x2, shape.y2);
-			            	this.top_canvas.ctx.lineWidth=shape.size;
-							this.top_canvas.ctx.stroke();
-							this.top_canvas.ctx.closePath();
-						break;
-					}
-				}
-				dshapes=[];
-				
-				if (typeof this.top_canvas.toDataURL === 'function') {
-					if(simg){
-						simg.onload = function () {
-				            //draw background image
-				            this.top_canvas.ctx.drawImage(this, 0, 0);
-				            this.txtarea.innerText=this.top_canvas.toDataURL('image/png');
-				            //console.log('saved 1');
-				        };
-					}
-					else{
-						this.txtarea.innerText=this.top_canvas.toDataURL('image/png');
-						//console.log('saved 2');
-					}
-				}
-				else{
-					//console.log('NOT saved');
-				}
-			}
-			//put wrapper in the DOM
-			list[i].parentNode.insertBefore(wrapper, list[i].nextSibling);
-			//bottom_canvas for the base
-			wrapper.bottom_canvas = document.createElement('canvas');
-			wrapper.bottom_canvas.style.zIndex=5000;
-			//top_canvas for the top (temp)
-			wrapper.top_canvas = document.createElement('canvas');
-			wrapper.top_canvas.style.zIndex=6000;
-			//toolbar
-			let params={};
-			let toolbar = document.createElement('div');
-			toolbar.style='position:absolute;bottom:0px;left:0px;display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px;';
-			//toolbar.shape - pencil,line,circle,rectangle - default to pencil
-			wrapper.dataset.shape='pencil';
-			let shapes={
-				'pencil':'Pencil',
-				'line':'Line',
-				'circle':'Circle',
-				'rectangle':'Rectangle'
-			};
-			params={style:'margin-left:10px;width:100px;padding:3px;'}
-			toolbar.shape=wacss.buildFormSelect('shape',shapes,params);
-			toolbar.shape.onchange=function(){
-				let shape=this.options[this.selectedIndex].value;
-				this.parentNode.parentNode.dataset.shape=shape;
-			};
-			toolbar.shape.title="Shape";
-			toolbar.appendChild(toolbar.shape);
-			//toolbar.size - default to 1
-			wrapper.dataset.size='1';
-			let sizes={
-				'1':'1px',
-				'3':'3px',
-				'5':'5px',
-				'7':'7px',
-				'9':'9px',
-				'11':'11px',
-				'13':'13px',
-				'15':'15px',
-				'17':'17px',
-				'19':'19px'
-			};
-			params={style:'margin-left:10px;width:100px;padding:3px;'}
-			toolbar.size=wacss.buildFormSelect('size',sizes,params);
-			toolbar.size.onchange=function(){
-				let size=this.options[this.selectedIndex].value;
-				this.parentNode.parentNode.dataset.size=size;
-			};
-			toolbar.size.title="Pen Size";
-			toolbar.appendChild(toolbar.size);	
-			//toolbar.pencolor - default to black
-			wrapper.dataset.pencolor='#000';
-			let pencolors={
-				'#000':'Black',
-				'#213a9a':'Blue',
-				'#05abff':'Light Blue',
-				'#05a04d':'Green',
-				'#66d81f':'Light Green',
-				'#ff0081':'Pink',
-				'#f16115':'Orange',
-				'#f43940':'Red',
-				'#fee213':'Yellow'
-			};
-			params={style:'margin-left:10px;width:100px;padding:3px;'}
-			toolbar.pencolor=wacss.buildFormSelect('pencolor',pencolors,params);
-			toolbar.pencolor.onchange=function(){
-				let pencolor=this.options[this.selectedIndex].value;
-				this.parentNode.parentNode.dataset.pencolor=pencolor;
-			};
-			toolbar.pencolor.title="Pen Color";
-			toolbar.appendChild(toolbar.pencolor);
-			//toolbar.fillcolor - default to none
-			let fillcolors={
-				'':'None',
-				'#000':'Black',
-				'#213a9a':'Blue',
-				'#05abff':'Light Blue',
-				'#05a04d':'Green',
-				'#66d81f':'Light Green',
-				'#ff0081':'Pink',
-				'#f16115':'Orange',
-				'#f43940':'Red',
-				'#fee213':'Yellow'
-			};
-			wrapper.dataset.fillcolor='';
-			params={style:'margin-left:10px;width:100px;padding:3px;'}
-			toolbar.fillcolor=wacss.buildFormSelect('fillcolor',fillcolors,params);
-			toolbar.fillcolor.onchange=function(){
-				let fillcolor=this.options[this.selectedIndex].value;
-				this.parentNode.parentNode.dataset.fillcolor=fillcolor;
-			};
-			toolbar.fillcolor.title="Fill Color";
-			toolbar.appendChild(toolbar.fillcolor);
-			//toolbar.clear
-			toolbar.clear=document.createElement('span');
-			toolbar.clear.className='icon-erase w_pointer';
-			toolbar.clear.setAttribute('style','margin-left:10px;margin-right:10px;');
-			toolbar.clear.title='Erase Whiteboard';
-			toolbar.appendChild(toolbar.clear);
-			toolbar.clear.onclick=function(e){
-				if(!confirm('Erase Whiteboard?')){return false;}
-				this.parentNode.parentNode.bottom_canvas.ctx.clearRect(0, 0, this.parentNode.bottom_canvas.width, this.parentNode.bottom_canvas.height);
-		    	this.parentNode.parentNode.txtarea.innerText='';
-		    	this.parentNode.parentNode.shapes=new Array();
-			};
-			wrapper.txtarea=list[i];
-			wrapper.ro = new ResizeObserver(entries => {
-				for (let entry of entries) {
-					if(undefined != entry.target.bottom_canvas && undefined!=entry.target.clientWidth){
-						entry.target.bottom_canvas.setAttribute('width',entry.target.clientWidth);
-						entry.target.bottom_canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
-						entry.target.top_canvas.setAttribute('width',entry.target.clientWidth);
-						entry.target.top_canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
-					}
-			 	}
-			});
-			wrapper.ro.observe(wrapper);
-		    // Fill Window Width and Height
-			wrapper.bottom_canvas.style.position='absolute';
-			wrapper.top_canvas.style.position='absolute';
-			wrapper.top_canvas.style.cursor='crosshair';
-			
+	initWhiteboard: function () {
+	  const list = document.querySelectorAll('textarea[data-behavior="whiteboard"]');
+	  for (let i = 0; i < list.length; i++) {
+	    const ta = list[i];
 
-			//console.log(wcanvas);
-			// context (ctx)
-			wrapper.bottom_canvas.ctx = wrapper.bottom_canvas.getContext("2d");
-			wrapper.top_canvas.ctx = wrapper.top_canvas.getContext("2d");
-			//load image?
-			if(list[i].innerHTML.length){
-		        let wshape={
-		        	shape:'image',
-		        	src:list[i].innerHTML
-		        }
-		        wrapper.shapesBottom.push(wshape);
-		        wrapper.drawShapesBottom();
-			}
-			
-		    // Mouse Event Handlers
-			wrapper.isDown = false;
-			wrapper.top_canvas.onmousedown = function(e){
-				e = e || window.event;
-				let rect = e.target.getBoundingClientRect();
-			    this.x = parseInt(e.pageX - rect.left); //x position within the element.
-			    this.y = parseInt(e.pageY - rect.top);  //y position within the element.
-				this.parentNode.isDown = true;
-				switch(this.parentNode.dataset.shape){
-					default: //pencil is the default
-						this.parentNode.shape={
-							shape:'pencil',
-							x:this.x,
-							y:this.y,
-							pencolor:this.parentNode.dataset.pencolor,
-							size:this.parentNode.dataset.size
-						};
-					break;
-					case 'line':
-						this.parentNode.shape={
-							shape:'line',
-							x:this.x,
-							y:this.y,
-							pencolor:this.parentNode.dataset.pencolor,
-							size:this.parentNode.dataset.size
-						};
-					break;
-					case 'circle':
-						//circle
-						//circle fields: shape,x,y,radius,fillcolor
-						this.parentNode.shape={
-							shape:'circle',
-							x:this.x,
-							y:this.y,
-							pencolor:this.parentNode.dataset.pencolor,
-							size:this.parentNode.dataset.size
-						};
-			            if(this.parentNode.dataset.fillcolor.length){
-			            	this.parentNode.shape.fillcolor=this.parentNode.dataset.fillcolor;	
-			            }
-			            else{
-			            	//no fill
-			            	this.parentNode.shape.fillcolor='';
-			            }
-					break;
-					case 'rectangle':
-						this.parentNode.shape={
-							shape:'rectangle',
-							x:this.x,
-							y:this.y,
-							pencolor:this.parentNode.dataset.pencolor,
-							size:this.parentNode.dataset.size
-						};
-			            if(this.parentNode.dataset.fillcolor.length){
-			            	this.parentNode.shape.fillcolor=this.parentNode.dataset.fillcolor;	
-			            }
-			            else{
-			            	//no fill
-			            	this.parentNode.shape.fillcolor='';
-			            }
-					break;
-				}
-				//console.log(this.shape);
-			};
-			wrapper.top_canvas.onmousemove=function(e){
-				e = e || window.event;
-				if(this.parentNode.isDown !== false) {
-					let rect = e.target.getBoundingClientRect();
-					let x = parseInt(e.pageX - rect.left); //x position within the element.
-				    let y = parseInt(e.pageY - rect.top);  //y position within the element.
+	    // already initialized?
+	    if (ta.dataset.initialized === '1') continue;
+	    ta.dataset.initialized = '1';
 
-				    switch(this.parentNode.dataset.shape){
-						default: //pencil is the default
-							this.parentNode.shape.x2=x;
-							this.parentNode.shape.y2=y;
-				    		this.parentNode.shapesTop.push(this.parentNode.shape);
-				    		this.parentNode.shape={
-								shape:'pencil',
-								x:x,
-								y:y,
-								pencolor:this.parentNode.dataset.pencolor
-							};
-							//console.log(this.parentNode.shapes);
-						break;
-						case 'line':
-							this.parentNode.shape.x2=x;
-				    		this.parentNode.shape.y2=y;
-						break;
-						case 'circle':
-							let r1=Math.abs(x-this.parentNode.shape.x);
-							let r2=Math.abs(y-this.parentNode.shape.y);
-							if(r1 > r2){this.parentNode.shape.radius=r1;}
-							else{this.parentNode.shape.radius=r2;}
-						break;
-						case 'rectangle':
-							this.parentNode.shape.width=Math.abs(x-this.parentNode.shape.x);
-							this.parentNode.shape.height=Math.abs(y-this.parentNode.shape.y);
-						break;
-					}
-					this.parentNode.drawShapesTop();
-				}
-				
-			};
-			wrapper.top_canvas.onmouseup=function(e){
-				e = e || window.event;
-				this.parentNode.isDown = false;
-				switch(this.parentNode.dataset.shape){
-					default: //pencil is the default
-						this.parentNode.shapesTop.push(this.shape);
-					break;
-					case 'line':
-					break;
-					case 'circle':
-						this.parentNode.shapesTop.push(this.shape);
-					break;
-					case 'rectangle':
-						this.parentNode.shapesTop.push(this.shape);
-					break;
-				}
-				this.parentNode.drawShapesTop();
-			};
-			wrapper.top_canvas.onmouseout=function(e){
-				e = e || window.event;
-				this.parentNode.isDown = false;
-				switch(this.parentNode.dataset.shape){
-					default: //pencil is the default
-						
-					break;
-					case 'line':
-					break;
-					case 'circle':
-					break;
-					case 'rectangle':
-					break;
-				}
-			}
-			// Disable Page Move
-			document.body.addEventListener('touchmove',function(e){
-				e = e || window.event;
-				e.preventDefault();
-			},false);
-			wrapper.appendChild(wrapper.bottom_canvas);
-			wrapper.appendChild(wrapper.top_canvas);
-			wrapper.appendChild(toolbar);
-		}
+	    // hide the textarea (but we use its .value for persistence)
+	    ta.style.display = 'none';
+
+	    // wrapper
+	    const wrapper = document.createElement('div');
+	    wrapper.style.width = ta.style.width || '100%';
+	    wrapper.style.height = ta.style.height || '300px';
+	    wrapper.style.display = 'block';
+	    wrapper.style.position = 'relative';
+	    wrapper.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px';
+	    wrapper.style.backgroundColor = (ta.dataset.fill || '#fff');
+	    wrapper.dataset.shape = 'pencil';
+	    wrapper.dataset.size = '1';
+	    wrapper.dataset.pencolor = '#000';
+	    wrapper.dataset.fillcolor = '';
+	    // unique-ish id
+	    wrapper.id = (ta.id ? (ta.id + '_whiteboard') : ('whiteboard_wrapper_' + Math.random().toString(36).slice(2)));
+
+	    // state
+	    wrapper.txtarea = ta;
+	    wrapper.shapesBottom = []; // committed shapes (persisted)
+	    wrapper.shape = {};        // in-progress shape (preview only)
+	    wrapper.isDown = false;
+
+	    // canvases
+	    const bottom = document.createElement('canvas');
+	    bottom.style.zIndex = 5000;
+	    bottom.style.position = 'absolute';
+	    const top = document.createElement('canvas');
+	    top.style.zIndex = 6000;
+	    top.style.position = 'absolute';
+	    top.style.cursor = 'crosshair';
+
+	    wrapper.bottom_canvas = bottom;
+	    wrapper.top_canvas = top;
+	    bottom.ctx = bottom.getContext('2d');
+	    top.ctx = top.getContext('2d');
+
+	    // draw helpers
+	    wrapper.drawShapesBottom = function () {
+	      const ctx = this.bottom_canvas.ctx;
+	      ctx.clearRect(0, 0, this.bottom_canvas.width, this.bottom_canvas.height);
+
+	      let pendingImages = 0;
+	      const maybeSave = () => {
+	        if (pendingImages === 0 && typeof this.bottom_canvas.toDataURL === 'function') {
+	          this.txtarea.value = this.bottom_canvas.toDataURL('image/png');
+	        }
+	      };
+
+	      for (let s of this.shapesBottom) {
+	        if (!s || !s.shape) continue;
+	        switch (s.shape) {
+	          case 'image': {
+	            if (!s.src) break;
+	            const img = new Image();
+	            pendingImages++;
+	            img.crossOrigin = 'anonymous';
+	            img.onload = () => {
+	              ctx.drawImage(img, 0, 0);
+	              pendingImages--;
+	              maybeSave();
+	            };
+	            img.src = s.src;
+	          } break;
+	          case 'circle': {
+	            ctx.beginPath();
+	            ctx.arc(s.x, s.y, s.radius || 0, 0, Math.PI * 2);
+	            ctx.lineWidth = parseInt(s.size || 1, 10);
+	            if (s.fillcolor && s.fillcolor.length) {
+	              ctx.fillStyle = s.fillcolor;
+	              ctx.fill();
+	            } else {
+	              ctx.strokeStyle = s.pencolor || '#000';
+	              ctx.stroke();
+	            }
+	            ctx.closePath();
+	          } break;
+	          case 'rectangle': {
+	            ctx.lineWidth = parseInt(s.size || 1, 10);
+	            if (s.fillcolor && s.fillcolor.length) {
+	              ctx.fillStyle = s.fillcolor;
+	              ctx.fillRect(s.x, s.y, s.width || 0, s.height || 0);
+	            } else {
+	              ctx.strokeStyle = s.pencolor || '#000';
+	              ctx.strokeRect(s.x, s.y, s.width || 0, s.height || 0);
+	            }
+	          } break;
+	          case 'line': {
+	            ctx.beginPath();
+	            ctx.moveTo(s.x, s.y);
+	            ctx.lineTo(s.x2 ?? s.x, s.y2 ?? s.y);
+	            ctx.lineWidth = parseInt(s.size || 1, 10);
+	            ctx.strokeStyle = s.pencolor || '#000';
+	            ctx.stroke();
+	            ctx.closePath();
+	          } break;
+	          default: { // pencil segments
+	            ctx.beginPath();
+	            ctx.moveTo(s.x, s.y);
+	            ctx.lineTo(s.x2 ?? s.x, s.y2 ?? s.y);
+	            ctx.lineWidth = parseInt(s.size || 1, 10);
+	            ctx.strokeStyle = s.pencolor || '#000';
+	            ctx.stroke();
+	            ctx.closePath();
+	          } break;
+	        }
+	      }
+	      maybeSave();
+	    };
+
+	    wrapper.drawShapeTop = function () {
+	      const ctx = this.top_canvas.ctx;
+	      ctx.clearRect(0, 0, this.top_canvas.width, this.top_canvas.height);
+	      const s = this.shape;
+	      if (!s || !s.shape) return;
+
+	      switch (s.shape) {
+	        case 'circle': {
+	          ctx.beginPath();
+	          ctx.arc(s.x, s.y, s.radius || 0, 0, Math.PI * 2);
+	          ctx.lineWidth = parseInt(s.size || 1, 10);
+	          if (s.fillcolor && s.fillcolor.length) {
+	            ctx.fillStyle = s.fillcolor;
+	            ctx.fill();
+	          } else {
+	            ctx.strokeStyle = s.pencolor || '#000';
+	            ctx.stroke();
+	          }
+	          ctx.closePath();
+	        } break;
+	        case 'rectangle': {
+	          ctx.lineWidth = parseInt(s.size || 1, 10);
+	          if (s.fillcolor && s.fillcolor.length) {
+	            ctx.fillStyle = s.fillcolor;
+	            ctx.fillRect(s.x, s.y, s.width || 0, s.height || 0);
+	          } else {
+	            ctx.strokeStyle = s.pencolor || '#000';
+	            ctx.strokeRect(s.x, s.y, s.width || 0, s.height || 0);
+	          }
+	        } break;
+	        case 'line': {
+	          ctx.beginPath();
+	          ctx.moveTo(s.x, s.y);
+	          ctx.lineTo(s.x2 ?? s.x, s.y2 ?? s.y);
+	          ctx.lineWidth = parseInt(s.size || 1, 10);
+	          ctx.strokeStyle = s.pencolor || '#000';
+	          ctx.stroke();
+	          ctx.closePath();
+	        } break;
+	        // pencil preview is not needed (we stream to bottom while moving)
+	      }
+	    };
+
+	    // toolbar
+	    const toolbar = document.createElement('div');
+	    toolbar.style = 'position:absolute;bottom:0;left:0;display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow:rgba(17,17,26,.05) 0 1px 0, rgba(17,17,26,.1) 0 0 8px;';
+
+	    const addSelect = (name, options) => {
+	      const params = { style: 'margin-left:10px;width:100px;padding:3px;' };
+	      const sel = (window.wacss && wacss.buildFormSelect) ? wacss.buildFormSelect(name, options, params) : (() => {
+	        const s = document.createElement('select');
+	        s.setAttribute('name', name);
+	        s.setAttribute('style', params.style);
+	        for (const [val, lab] of Object.entries(options)) {
+	          const o = document.createElement('option'); o.value = val; o.textContent = lab; s.appendChild(o);
+	        }
+	        return s;
+	      })();
+	      toolbar.appendChild(sel);
+	      return sel;
+	    };
+
+	    const shapeSel = addSelect('shape', { pencil: 'Pencil', line: 'Line', circle: 'Circle', rectangle: 'Rectangle' });
+	    shapeSel.title = 'Shape';
+	    shapeSel.onchange = function () { wrapper.dataset.shape = this.value; };
+
+	    const sizeSel = addSelect('size', { '1': '1px', '3': '3px', '5': '5px', '7': '7px', '9': '9px', '11': '11px', '13': '13px', '15': '15px', '17': '17px', '19': '19px' });
+	    sizeSel.title = 'Pen Size';
+	    sizeSel.onchange = function () { wrapper.dataset.size = this.value; };
+
+	    const penSel = addSelect('pencolor', {
+	      '#000': 'Black', '#213a9a': 'Blue', '#05abff': 'Light Blue', '#05a04d': 'Green',
+	      '#66d81f': 'Light Green', '#ff0081': 'Pink', '#f16115': 'Orange', '#f43940': 'Red', '#fee213': 'Yellow'
+	    });
+	    penSel.title = 'Pen Color';
+	    penSel.onchange = function () { wrapper.dataset.pencolor = this.value; };
+
+	    const fillSel = addSelect('fillcolor', {
+	      '': 'None', '#000': 'Black', '#213a9a': 'Blue', '#05abff': 'Light Blue', '#05a04d': 'Green',
+	      '#66d81f': 'Light Green', '#ff0081': 'Pink', '#f16115': 'Orange', '#f43940': 'Red', '#fee213': 'Yellow'
+	    });
+	    fillSel.title = 'Fill Color';
+	    fillSel.onchange = function () { wrapper.dataset.fillcolor = this.value; };
+
+	    const clearBtn = document.createElement('span');
+	    clearBtn.className = 'icon-erase w_pointer';
+	    clearBtn.style.margin = '0 10px 0 10px';
+	    clearBtn.title = 'Erase Whiteboard';
+	    clearBtn.onclick = function () {
+	      if (!confirm('Erase Whiteboard?')) return;
+	      wrapper.shapesBottom = [];
+	      wrapper.bottom_canvas.ctx.clearRect(0, 0, wrapper.bottom_canvas.width, wrapper.bottom_canvas.height);
+	      wrapper.top_canvas.ctx.clearRect(0, 0, wrapper.top_canvas.width, wrapper.top_canvas.height);
+	      wrapper.txtarea.value = '';
+	    };
+	    toolbar.appendChild(clearBtn);
+
+	    // add to DOM
+	    ta.parentNode.insertBefore(wrapper, ta.nextSibling);
+	    wrapper.appendChild(bottom);
+	    wrapper.appendChild(top);
+	    wrapper.appendChild(toolbar);
+
+	    // sizing (ResizeObserver resizes & redraws)
+	    wrapper.ro = new ResizeObserver(entries => {
+	      for (const entry of entries) {
+	        if (entry.target !== wrapper) continue;
+	        const w = entry.target.clientWidth || 0;
+	        const h = (entry.target.clientHeight || 0) - 34; // leave room for toolbar
+	        if (w > 0 && h > 0) {
+	          bottom.setAttribute('width', w);
+	          bottom.setAttribute('height', h);
+	          top.setAttribute('width', w);
+	          top.setAttribute('height', h);
+	          wrapper.drawShapesBottom(); // resizing clears the canvas — redraw persisted content
+	        }
+	      }
+	    });
+	    wrapper.ro.observe(wrapper);
+
+	    // load existing image (from textarea value or textContent)
+	    (function loadInitial() {
+	      const initial = (ta.value || ta.textContent || '').trim();
+	      if (initial && /^data:image\/png;base64,/.test(initial)) {
+	        wrapper.shapesBottom.push({ shape: 'image', src: initial });
+	        wrapper.drawShapesBottom();
+	      }
+	    })();
+
+	    // pointer utilities
+	    const getXY = (e, target) => {
+	      const rect = target.getBoundingClientRect();
+	      const cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+	      const cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+	      return {
+	        x: Math.round(cx - rect.left),
+	        y: Math.round(cy - rect.top)
+	      };
+	    };
+
+	    // mousedown / touchstart
+	    const startDraw = (e) => {
+	      e.preventDefault();
+	      const { x, y } = getXY(e, top);
+	      wrapper.isDown = true;
+	      const base = {
+	        x, y,
+	        pencolor: wrapper.dataset.pencolor,
+	        size: wrapper.dataset.size
+	      };
+	      switch (wrapper.dataset.shape) {
+	        case 'line': wrapper.shape = { shape: 'line', ...base }; break;
+	        case 'circle': wrapper.shape = { shape: 'circle', fillcolor: wrapper.dataset.fillcolor || '', ...base }; break;
+	        case 'rectangle': wrapper.shape = { shape: 'rectangle', fillcolor: wrapper.dataset.fillcolor || '', ...base }; break;
+	        default: wrapper.shape = { shape: 'pencil', ...base }; break;
+	      }
+	    };
+
+	    // mousemove / touchmove
+	    const moveDraw = (e) => {
+	      if (!wrapper.isDown) return;
+	      e.preventDefault();
+	      const { x, y } = getXY(e, top);
+
+	      switch (wrapper.dataset.shape) {
+	        case 'line':
+	          wrapper.shape.x2 = x; wrapper.shape.y2 = y;
+	          wrapper.drawShapeTop();
+	          break;
+
+	        case 'circle': {
+	          const r1 = Math.abs(x - wrapper.shape.x);
+	          const r2 = Math.abs(y - wrapper.shape.y);
+	          wrapper.shape.radius = Math.max(r1, r2);
+	          wrapper.drawShapeTop();
+	        } break;
+
+	        case 'rectangle':
+	          wrapper.shape.width = x - wrapper.shape.x;
+	          wrapper.shape.height = y - wrapper.shape.y;
+	          wrapper.drawShapeTop();
+	          break;
+
+	        default: { // pencil -> stream segments directly to bottom
+	          const seg = {
+	            shape: 'pencil',
+	            x: wrapper.shape.x,
+	            y: wrapper.shape.y,
+	            x2: x,
+	            y2: y,
+	            pencolor: wrapper.shape.pencolor,
+	            size: wrapper.shape.size
+	          };
+	          wrapper.shapesBottom.push(seg);
+	          wrapper.shape.x = x; wrapper.shape.y = y; // continue from current point
+	          wrapper.drawShapesBottom();
+	        } break;
+	      }
+	    };
+
+	    // mouseup / touchend
+	    const endDraw = (e) => {
+	      if (!wrapper.isDown) return;
+	      e.preventDefault();
+	      wrapper.isDown = false;
+
+	      switch (wrapper.dataset.shape) {
+	        case 'line':
+	        case 'circle':
+	        case 'rectangle':
+	          // commit previewed shape to bottom
+	          wrapper.shapesBottom.push({ ...wrapper.shape });
+	          wrapper.top_canvas.ctx.clearRect(0, 0, wrapper.top_canvas.width, wrapper.top_canvas.height);
+	          wrapper.shape = {};
+	          wrapper.drawShapesBottom();
+	          break;
+	        default:
+	          // pencil already committed during move; nothing to do
+	          wrapper.shape = {};
+	          break;
+	      }
+	    };
+
+	    // bind events
+	    top.addEventListener('mousedown', startDraw, false);
+	    top.addEventListener('mousemove', moveDraw, false);
+	    document.addEventListener('mouseup', endDraw, false);
+
+	    top.addEventListener('touchstart', startDraw, { passive: false });
+	    top.addEventListener('touchmove', moveDraw, { passive: false });
+	    document.addEventListener('touchend', endDraw, { passive: false });
+
+	    // avoid page scroll while drawing on touch
+	    document.body.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+	  }
 	},
 	/**
 	* @name wacss.isMobile
