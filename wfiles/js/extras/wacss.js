@@ -5993,7 +5993,6 @@ var wacss = {
 	    wrapper.dataset.size = '1';
 	    wrapper.dataset.pencolor = '#000';
 	    wrapper.dataset.fillcolor = '';
-	    // unique-ish id
 	    wrapper.id = (ta.id ? (ta.id + '_whiteboard') : ('whiteboard_wrapper_' + Math.random().toString(36).slice(2)));
 
 	    // state
@@ -6043,6 +6042,19 @@ var wacss = {
 	            };
 	            img.src = s.src;
 	          } break;
+
+	          case 'text': {
+	            const fontPx = parseInt(s.size || 16, 10);
+	            const lineHeight = Math.round(fontPx * 1.25);
+	            ctx.textBaseline = 'top';
+	            ctx.font = `${fontPx}px ${s.font || 'sans-serif'}`;
+	            ctx.fillStyle = s.pencolor || '#000';
+	            const lines = Array.isArray(s.lines) ? s.lines : (String(s.text || '')).split('\n');
+	            lines.forEach((line, idx) => {
+	              ctx.fillText(line, s.x, s.y + idx * lineHeight);
+	            });
+	          } break;
+
 	          case 'circle': {
 	            ctx.beginPath();
 	            ctx.arc(s.x, s.y, s.radius || 0, 0, Math.PI * 2);
@@ -6056,16 +6068,19 @@ var wacss = {
 	            }
 	            ctx.closePath();
 	          } break;
+
 	          case 'rectangle': {
 	            ctx.lineWidth = parseInt(s.size || 1, 10);
+	            const w = s.width || 0, h = s.height || 0;
 	            if (s.fillcolor && s.fillcolor.length) {
 	              ctx.fillStyle = s.fillcolor;
-	              ctx.fillRect(s.x, s.y, s.width || 0, s.height || 0);
+	              ctx.fillRect(s.x, s.y, w, h);
 	            } else {
 	              ctx.strokeStyle = s.pencolor || '#000';
-	              ctx.strokeRect(s.x, s.y, s.width || 0, s.height || 0);
+	              ctx.strokeRect(s.x, s.y, w, h);
 	            }
 	          } break;
+
 	          case 'line': {
 	            ctx.beginPath();
 	            ctx.moveTo(s.x, s.y);
@@ -6075,6 +6090,7 @@ var wacss = {
 	            ctx.stroke();
 	            ctx.closePath();
 	          } break;
+
 	          default: { // pencil segments
 	            ctx.beginPath();
 	            ctx.moveTo(s.x, s.y);
@@ -6128,7 +6144,7 @@ var wacss = {
 	          ctx.stroke();
 	          ctx.closePath();
 	        } break;
-	        // pencil preview is not needed (we stream to bottom while moving)
+	        // text & pencil preview are handled differently
 	      }
 	    };
 
@@ -6137,7 +6153,7 @@ var wacss = {
 	    toolbar.style = 'position:absolute;bottom:0;left:0;display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow:rgba(17,17,26,.05) 0 1px 0, rgba(17,17,26,.1) 0 0 8px;';
 
 	    const addSelect = (name, options) => {
-	      const params = { style: 'margin-left:10px;width:100px;padding:3px;' };
+	      const params = { style: 'margin-left:10px;width:120px;padding:3px;' };
 	      const sel = (window.wacss && wacss.buildFormSelect) ? wacss.buildFormSelect(name, options, params) : (() => {
 	        const s = document.createElement('select');
 	        s.setAttribute('name', name);
@@ -6151,7 +6167,8 @@ var wacss = {
 	      return sel;
 	    };
 
-	    const shapeSel = addSelect('shape', { pencil: 'Pencil', line: 'Line', circle: 'Circle', rectangle: 'Rectangle' });
+	    // ADD "Text" to shapes
+	    const shapeSel = addSelect('shape', { pencil: 'Pencil', line: 'Line', circle: 'Circle', rectangle: 'Rectangle', text: 'Text' });
 	    shapeSel.title = 'Shape';
 	    shapeSel.onchange = function () { wrapper.dataset.shape = this.value; };
 
@@ -6218,27 +6235,81 @@ var wacss = {
 	      }
 	    })();
 
-	    // pointer utilities
+	    // pointer helpers
 	    const getXY = (e, target) => {
 	      const rect = target.getBoundingClientRect();
 	      const cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
 	      const cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-	      return {
-	        x: Math.round(cx - rect.left),
-	        y: Math.round(cy - rect.top)
+	      return { x: Math.round(cx - rect.left), y: Math.round(cy - rect.top) };
+	    };
+
+	    // ---- TEXT TOOL ----
+	    const createTextEditor = (x, y) => {
+	      // font size derives from pen size (roughly)
+	      const penSize = parseInt(wrapper.dataset.size || '1', 10);
+	      const fontPx = Math.max(12, penSize * 3 + 9);
+	      const lineHeight = Math.round(fontPx * 1.25);
+
+	      const editor = document.createElement('textarea');
+	      editor.setAttribute('rows', '1');
+	      editor.style.position = 'absolute';
+	      editor.style.left = `${x}px`;
+	      editor.style.top = `${y}px`;
+	      editor.style.minWidth = '160px';
+	      editor.style.maxWidth = '80%';
+	      editor.style.padding = '2px 4px';
+	      editor.style.border = '1px dashed rgba(0,0,0,.4)';
+	      editor.style.background = 'rgba(255,255,255,.9)';
+	      editor.style.color = wrapper.dataset.pencolor || '#000';
+	      editor.style.font = `${fontPx}px sans-serif`;
+	      editor.style.lineHeight = `${lineHeight}px`;
+	      editor.style.outline = 'none';
+	      editor.style.zIndex = 7000;
+	      editor.placeholder = 'Type text… (click outside to commit, Esc to cancel)';
+
+	      // commit: draw to bottom canvas and persist a "text" shape so resizes work
+	      const commit = () => {
+	        const val = (editor.value || '').replace(/\r/g, '');
+	        editor.remove();
+	        if (!val.trim().length) return;
+
+	        const lines = val.split('\n');
+	        wrapper.shapesBottom.push({
+	          shape: 'text',
+	          x, y,
+	          lines,
+	          size: fontPx,
+	          pencolor: wrapper.dataset.pencolor || '#000',
+	          font: 'sans-serif'
+	        });
+	        wrapper.drawShapesBottom();
 	      };
+
+	      const cancel = () => editor.remove();
+
+	      editor.addEventListener('keydown', (e) => {
+	        if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+	      });
+	      editor.addEventListener('blur', commit);
+
+	      wrapper.appendChild(editor);
+	      editor.focus();
+	      return editor;
 	    };
 
 	    // mousedown / touchstart
 	    const startDraw = (e) => {
 	      e.preventDefault();
 	      const { x, y } = getXY(e, top);
+
+	      // TEXT tool: open editor and return (no isDown drawing loop)
+	      if (wrapper.dataset.shape === 'text') {
+	        createTextEditor(x, y);
+	        return;
+	      }
+
 	      wrapper.isDown = true;
-	      const base = {
-	        x, y,
-	        pencolor: wrapper.dataset.pencolor,
-	        size: wrapper.dataset.size
-	      };
+	      const base = { x, y, pencolor: wrapper.dataset.pencolor, size: wrapper.dataset.size };
 	      switch (wrapper.dataset.shape) {
 	        case 'line': wrapper.shape = { shape: 'line', ...base }; break;
 	        case 'circle': wrapper.shape = { shape: 'circle', fillcolor: wrapper.dataset.fillcolor || '', ...base }; break;
@@ -6299,15 +6370,13 @@ var wacss = {
 	        case 'line':
 	        case 'circle':
 	        case 'rectangle':
-	          // commit previewed shape to bottom
-	          wrapper.shapesBottom.push({ ...wrapper.shape });
+	          wrapper.shapesBottom.push({ ...wrapper.shape });          // commit previewed shape
 	          wrapper.top_canvas.ctx.clearRect(0, 0, wrapper.top_canvas.width, wrapper.top_canvas.height);
 	          wrapper.shape = {};
 	          wrapper.drawShapesBottom();
 	          break;
 	        default:
-	          // pencil already committed during move; nothing to do
-	          wrapper.shape = {};
+	          wrapper.shape = {}; // pencil already committed during move
 	          break;
 	      }
 	    };
