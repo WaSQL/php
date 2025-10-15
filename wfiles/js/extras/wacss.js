@@ -6009,6 +6009,8 @@ var wacss = {
 	    top.style.zIndex = 6000;
 	    top.style.position = 'absolute';
 	    top.style.cursor = 'crosshair';
+	    // IMPORTANT: allow page to scroll elsewhere; only the canvas stops panning while drawing
+	    top.style.touchAction = 'none'; // ← key for mobile; no global preventDefault needed
 
 	    wrapper.bottom_canvas = bottom;
 	    wrapper.top_canvas = top;
@@ -6144,13 +6146,13 @@ var wacss = {
 	          ctx.stroke();
 	          ctx.closePath();
 	        } break;
-	        // text & pencil preview are handled differently
 	      }
 	    };
 
 	    // toolbar
 	    const toolbar = document.createElement('div');
 	    toolbar.style = 'position:absolute;bottom:0;left:0;display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow:rgba(17,17,26,.05) 0 1px 0, rgba(17,17,26,.1) 0 0 8px;';
+	    toolbar.style.touchAction = 'manipulation'; // keep toolbar taps/scroll snappy on mobile
 
 	    const addSelect = (name, options) => {
 	      const params = { style: 'margin-left:10px;width:120px;padding:3px;' };
@@ -6167,7 +6169,7 @@ var wacss = {
 	      return sel;
 	    };
 
-	    // ADD "Text" to shapes
+	    // include Text option
 	    const shapeSel = addSelect('shape', { pencil: 'Pencil', line: 'Line', circle: 'Circle', rectangle: 'Rectangle', text: 'Text' });
 	    shapeSel.title = 'Shape';
 	    shapeSel.onchange = function () { wrapper.dataset.shape = this.value; };
@@ -6235,17 +6237,16 @@ var wacss = {
 	      }
 	    })();
 
-	    // pointer helpers
+	    // pointer helpers (Pointer Events unify mouse + touch + pen)
 	    const getXY = (e, target) => {
 	      const rect = target.getBoundingClientRect();
-	      const cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-	      const cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+	      const cx = e.clientX;
+	      const cy = e.clientY;
 	      return { x: Math.round(cx - rect.left), y: Math.round(cy - rect.top) };
 	    };
 
 	    // ---- TEXT TOOL ----
 	    const createTextEditor = (x, y) => {
-	      // font size derives from pen size (roughly)
 	      const penSize = parseInt(wrapper.dataset.size || '1', 10);
 	      const fontPx = Math.max(12, penSize * 3 + 9);
 	      const lineHeight = Math.round(fontPx * 1.25);
@@ -6265,9 +6266,8 @@ var wacss = {
 	      editor.style.lineHeight = `${lineHeight}px`;
 	      editor.style.outline = 'none';
 	      editor.style.zIndex = 7000;
-	      editor.placeholder = 'Type text… (click outside to commit, Esc to cancel)';
+	      editor.placeholder = 'Type text… (tap outside to commit, Esc to cancel)';
 
-	      // commit: draw to bottom canvas and persist a "text" shape so resizes work
 	      const commit = () => {
 	        const val = (editor.value || '').replace(/\r/g, '');
 	        editor.remove();
@@ -6297,13 +6297,15 @@ var wacss = {
 	      return editor;
 	    };
 
-	    // mousedown / touchstart
+	    // pointerdown
 	    const startDraw = (e) => {
-	      e.preventDefault();
+	      // capture pointer only within canvas; does not affect page scroll elsewhere
+	      top.setPointerCapture?.(e.pointerId);
+
 	      const { x, y } = getXY(e, top);
 
-	      // TEXT tool: open editor and return (no isDown drawing loop)
 	      if (wrapper.dataset.shape === 'text') {
+	        // allow page to keep scrolling when tapping text tool elsewhere
 	        createTextEditor(x, y);
 	        return;
 	      }
@@ -6318,10 +6320,9 @@ var wacss = {
 	      }
 	    };
 
-	    // mousemove / touchmove
+	    // pointermove
 	    const moveDraw = (e) => {
 	      if (!wrapper.isDown) return;
-	      e.preventDefault();
 	      const { x, y } = getXY(e, top);
 
 	      switch (wrapper.dataset.shape) {
@@ -6360,10 +6361,9 @@ var wacss = {
 	      }
 	    };
 
-	    // mouseup / touchend
+	    // pointerup / pointercancel / pointerleave
 	    const endDraw = (e) => {
 	      if (!wrapper.isDown) return;
-	      e.preventDefault();
 	      wrapper.isDown = false;
 
 	      switch (wrapper.dataset.shape) {
@@ -6379,19 +6379,15 @@ var wacss = {
 	          wrapper.shape = {}; // pencil already committed during move
 	          break;
 	      }
+	      top.releasePointerCapture?.(e.pointerId);
 	    };
 
-	    // bind events
-	    top.addEventListener('mousedown', startDraw, false);
-	    top.addEventListener('mousemove', moveDraw, false);
-	    document.addEventListener('mouseup', endDraw, false);
-
-	    top.addEventListener('touchstart', startDraw, { passive: false });
-	    top.addEventListener('touchmove', moveDraw, { passive: false });
-	    document.addEventListener('touchend', endDraw, { passive: false });
-
-	    // avoid page scroll while drawing on touch
-	    document.body.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+	    // bind Pointer Events (covers mouse, touch, pen)
+	    top.addEventListener('pointerdown', startDraw, false);
+	    top.addEventListener('pointermove', moveDraw, false);
+	    top.addEventListener('pointerup', endDraw, false);
+	    top.addEventListener('pointercancel', endDraw, false);
+	    top.addEventListener('pointerleave', endDraw, false);
 	  }
 	},
 	/**
