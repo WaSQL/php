@@ -1830,6 +1830,7 @@ ENDOFX;
 			setFileContents("{$tempdir}/wasql.update",time());
 			//wait for the update.log file
 			$startwait=microtime(true);
+			$wasql_updated=0;
 			while(microtime(true)-$startwait < 30){
 				if(is_file("{$tempdir}/wasql.update.log")){
 					//echo "Results of {$tempdir}/wasql.update.log<br>".PHP_EOL;
@@ -1838,12 +1839,14 @@ ENDOFX;
 						wasqlClearMinCache();
 					}
 					echo $results;
-					exit;
+					$wasql_updated=1;
+					break;
 				}
 				sleep(1);
 			}
-			echo "Update Failed - cron.php does not seem to be running";
-			exit;
+			if($wasql_updated==0){
+				echo "Update Failed - cron.php does not seem to be running";
+			}
 		break;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
