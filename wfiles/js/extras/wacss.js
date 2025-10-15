@@ -5837,7 +5837,7 @@ var wacss = {
 			wrapper.toolbar.style.borderTop='1px solid #ccc';
 			wrapper.appendChild(wrapper.toolbar);
 			//toolbar.text
-			params={style:'flex:1;color:#999;font-size:0.8rem;height:16px;',class:'input w_small'};
+			params={style:'flex:1;color:#999;font-size:0.9rem;height:100%;',class:'input w_small'};
 			wrapper.toolbar.txt=wacss.buildFormText('txt',params);
 			wrapper.toolbar.txt.onkeyup=function(){
 				return this.parentNode.parentNode.typeText();
