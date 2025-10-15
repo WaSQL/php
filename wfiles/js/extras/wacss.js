@@ -6151,7 +6151,7 @@ var wacss = {
 
 	    // toolbar
 	    const toolbar = document.createElement('div');
-	    toolbar.style = 'position:absolute;bottom:0;left:0;display:flex;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow:rgba(17,17,26,.05) 0 1px 0, rgba(17,17,26,.1) 0 0 8px;';
+	    toolbar.style = 'position:absolute;bottom:0;left:0;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;width:100%;background:#f0f0f0;height:34px;box-shadow:rgba(17,17,26,.05) 0 1px 0, rgba(17,17,26,.1) 0 0 8px;';
 	    toolbar.style.touchAction = 'manipulation'; // keep toolbar taps/scroll snappy on mobile
 
 	    const addSelect = (name, options) => {
