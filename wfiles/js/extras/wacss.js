@@ -27,7 +27,6 @@ var wacss = {
 	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
-	formchanges:0,
 	hoverDiv:'',
 	/**
 	* @name wacss.abort
@@ -350,7 +349,6 @@ var wacss = {
 				setTimeout(wacss.setProcessingTimer, 3000);
 			}
 		}
-		wacss.formchanges=0;
 	    let data = new FormData(frm);
 	    //add AjaxRequestUniqueId
 	    data.append('AjaxRequestUniqueId',wacss.ajaxUniqueID());
@@ -846,19 +844,6 @@ var wacss = {
 		cpt_close.onclick=function(){
 			//before just closing a centerpop check for forms that have changed and prompt to save
 			let mcp=wacss.getObject(this.closeid);
-			if(undefined != mcp){
-				let frm=mcp.querySelector('form');
-				if(frm && wacss.formchanges > 0){
-					wacss.formchanges=0;
-					if(confirm('Wait! Form changes will not be saved. Submit the form to save changes in the form.')){
-						frm.onsubmit();
-					}
-					else{
-						return false;
-					}
-				}
-
-			}
 			wacss.removeId(this.closeid);
 		}
 		cpt.appendChild(cpt_close);
@@ -987,7 +972,6 @@ var wacss = {
 	formChanged: function(frm,debug){
 		if(undefined == debug || debug != 1){debug=0;}
 		if(debug==1){console.log('formChanged');}
-		wacss.formchanges=parseInt(wacss.formchanges)+1;
 		//data-classif="w_red:age:4"
 		//data-requiredif, data-displayif, data-hideif, data-blankif, data-readonlyif
 		//data-displayif
@@ -4838,7 +4822,6 @@ var wacss = {
 					frm 
 					&& typeof frm.onchange === 'function'
 				) {
-					wacss.formchanges=parseInt(wacss.formchanges)+1;
 					frm.onchange();
 				}
 
