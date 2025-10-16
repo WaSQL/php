@@ -849,10 +849,8 @@ var wacss = {
 			if(undefined != mcp){
 				let frm=mcp.querySelector('form');
 				if(frm && wacss.formchanges > 0){
-					let btn=frm.querySelector('button[data-navigate-focus="Ctrl+s"]');
-					let txt=btn.innerText || 'Save';
 					wacss.formchanges=0;
-					if(confirm('Wait! Form changes will not be saved. Click '+txt+' to save changes in the form.')){
+					if(confirm('Wait! Form changes will not be saved. Submit the form to save changes in the form.')){
 						frm.onsubmit();
 					}
 					else{
