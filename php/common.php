@@ -3473,6 +3473,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			}
 		break;
 	}
+	if(isset($params['viewonly']) && $params['viewonly']==1){
+		$params['style'].='pointer-events:none;';
+	}
 	$rtn='';
 	$rtn.='<div style="'.$params['style'].'"';
 	//displayif
@@ -3845,6 +3848,19 @@ function buildFormTextarea($name,$params=array()){
 		}
 	}
 	$tag.='>'.PHP_EOL;
+	if(isset($params['viewonly']) && $params['viewonly']==1){
+		$params['style'].=';border:1px solid #ccc;padding:15px;border-radius:4px;';
+		$tag .= '	<div';
+		$tag .= setTagAttributes($params);
+		$tag .= ' >';
+		if(isset($params['-fixms'])){
+			$params['value']=fixMicrosoft($params['value']);
+		}
+		$tag .= nl2br(encodeHtml($params['value']));
+		$tag .= '</div>'.PHP_EOL;
+		$tag.='</div>'.PHP_EOL;
+		return $tag;
+	}
 	if(isset($params['data-behavior']) && $params['data-behavior']=='autogrow' && isset($params['disabled'])){
 		$params['style']="padding:10px 15px;border:1px solid #ccc;background-color:inherit;border-radius:4px;";
 		$tag .= '	<div';
