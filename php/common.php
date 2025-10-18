@@ -3659,8 +3659,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		}
 		$rtn.= '>'.$display.'</label>'.PHP_EOL;
 		if(isset($params['-other']) && $params['-other']==1 && stringEndsWith($tval,'?')){
+			$othername="{$input_name}_{$tval}";
+			$othervalue=buildFormValueParam($othername,$params,1);
 			$rtn.=<<<ENDOFOTHER
-<input type="text" style="margin-left:5px;font-size:0.9rem;" id="{$opt_id}_other" name="{$input_name}" data-onhide="value:{$opt_id}_other:" data-ondisplay="focus:{$opt_id}_other:" placeholder="Enter ..." data-displayif="{$input_name}:{$tval}">
+<input type="text" style="margin-left:5px;font-size:0.9rem;" id="{$opt_id}_other" name="{$othername}" value="{$othervalue}" data-onhide="value:{$opt_id}_other:" data-ondisplay="focus:{$opt_id}_other:" placeholder="Enter ..." data-displayif="{$input_name}:{$tval}">
 ENDOFOTHER;
 		}
 		$rtn.='	</div>'.PHP_EOL;
