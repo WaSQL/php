@@ -4974,7 +4974,7 @@ function buildFormImage($src,$name='',$onclick=''){
 function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.preg_replace('/[^a-z0-9\_]+/','_',$name);}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
@@ -4997,7 +4997,19 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(isset($params['readonly'])){
 		$params['style']="pointer-events: none;cursor: not-allowed;color:#a8a8a8;".$params['style'];
 	}
-	$rtn = '<select data-value="'.$params['value'].'"';
+	$rtn  = '<div style="display:flex;"';
+	if(strlen($sval) && isset($params['onchange']) && isset($params['-trigger']) && $params['-trigger']==1){
+    	$rtn .= " data-onload=\"commonEmulateEvent('{$params['id']}','change');\"";	
+    }
+	$rtn .= '>'.PHP_EOL;
+	$other='';
+	if(isset($params['-other'][0])){
+		$otherstr=implode("','",$params['-other']);
+		$params['onchange'].=<<<ENDOFOTHER
+;if(['{$otherstr}'].includes(this.value)){document.querySelector('#{$params['id']}_other').setAttribute('name',this.name+'_'+this.value);}else{document.querySelector('#{$params['id']}_other').removeAttribute('name');}
+ENDOFOTHER;
+	}
+	$rtn .= '<select data-value="'.$params['value'].'"';
 	$rtn .= setTagAttributes($params,$skip);
 	$rtn .= '>';
 	if(isset($params['message'])){
@@ -5021,8 +5033,19 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 					$rtn .= " data-{$k}=\"{$v}\"";
 				}
 				if(strlen($params['value'])){
-					if($params['value']==$tval){$rtn .= ' selected';}
-					elseif($params['value']==$dval){$rtn .= ' selected';}
+					if($params['value']==$tval){
+						$rtn .= ' selected';
+						if(isset($params['-other'][0]) && strlen($other)==0){
+							$other=$params['name'].'_'.$tval;
+						}
+					}
+					elseif($params['value']==$dval){
+						$rtn .= ' selected';
+						if(isset($params['-other'][0]) && strlen($other)==0){
+							$other=$params['name'].'_'.$tval;
+						}
+					}
+
 				}
 				$rtn .= '>'.$dval.'</option>'.PHP_EOL;
 		    }
@@ -5045,16 +5068,35 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 				$rtn .= " data-{$k}=\"{$v}\"";
 			}
 			if(strlen($params['value'])){
-				if($params['value']==$tval){$rtn .= ' selected';}
-				elseif($params['value']==$dval){$rtn .= ' selected';}
+				if($params['value']==$tval){
+					$rtn .= ' selected';
+					if(isset($params['-other'][0]) && strlen($other)==0){
+						$other=$params['name'].'_'.$tval;
+					}
+				}
+				elseif($params['value']==$dval){
+					$rtn .= ' selected';
+					if(isset($params['-other'][0]) && strlen($other)==0){
+						$other=$params['name'].'_'.$tval;
+					}
+				}
 			}
 			$rtn .= '>'.$dval.'</option>'.PHP_EOL;
 	    }
 	}
     $rtn .= '</select>'.PHP_EOL;
-    if(strlen($sval) && isset($params['onchange']) && isset($params['-trigger']) && $params['-trigger']==1){
-    	$rtn .= buildOnLoad("commonEmulateEvent('{$params['id']}','change')");	
+    if(isset($params['-other'][0])){
+    	$dvalstr=implode(',',$params['-other']);
+    	$ovalue='';
+    	if(strlen($other)){
+    		$ovalue=$_REQUEST[$other];
+    	}
+    	$rtn.=<<<ENDOFOTHER
+<div data-displayif="{$params['name']}:{$dvalstr}" data-ondisplay="focus:#{$params['id']}_other"><input class="input" type="text" name="{$other}" value="{$ovalue}" id="{$params['id']}_other" placeholder="Enter ..."></div>
+ENDOFOTHER;
     }
+    $rtn .= '</div>'.PHP_EOL;
+    
     return $rtn;
 }
 //---------- begin function buildFormSelectCountry--------------------

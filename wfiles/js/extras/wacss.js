@@ -7860,6 +7860,10 @@ var wacss = {
 						setTimeout(() => target.focus(), 0);
 					}
 				break;
+				case 'setname':
+					if(arg.length==0){target.removeAttribute('name');}
+					else{target.setAttribute('name',arg);}
+				break;
 				case 'addclass':
 					if (arg) {
 						arg.split(',').forEach(c => c && target.classList.add(c.trim()));
@@ -7899,8 +7903,8 @@ var wacss = {
 		return false;
 	},
 	/**
-	* @name wacss.runOnDisplay
-	* @describe Safely executes actions defined in the data-ondisplay attribute when a displayif condition becomes true.
+	* @name wacss.runOnHide
+	* @describe Safely executes actions defined in the data-onhide attribute when a displayif condition becomes true.
 	* @param element elContainer - The container element that triggered the displayif condition.
 	* @return void
 	* @usage 
@@ -7908,13 +7912,14 @@ var wacss = {
 	*  <p data-displayif="color:other" data-ondisplay="focus:#other_color; addclass:#other_color,is-warning">
 	*  Supported actions:
 	*   focus:#selector
+	* 	setname:#selector:
 	*   addclass:#selector,class1[,class2]
 	*   removeclass:#selector,class1[,class2]
 	*   value:#selector,textValue
 	*   call:functionName or call:namespace.functionName
 	*/
 	runOnHide: function (elContainer) {
-		console.log('runOnHide');
+		//console.log('runOnHide');
 		if (!elContainer || !elContainer.dataset) { return false; }
 		const spec = (elContainer.dataset.onhide || '').trim();
 		if (!spec || spec.length==0) { return false; }
@@ -7937,6 +7942,10 @@ var wacss = {
 					if (typeof target.focus === 'function') {
 						setTimeout(() => target.focus(), 0);
 					}
+				break;
+				case 'setname':
+					if(arg.length==0){target.removeAttribute('name');}
+					else{target.setAttribute('name',arg);}
 				break;
 				case 'addclass':
 					if (arg) {
