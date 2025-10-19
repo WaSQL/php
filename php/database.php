@@ -4685,6 +4685,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$info['formfields']=$info['default_formfields'];
 	}
 	//echo printValue($info);exit;
+
     //Build the form fields
     $rtn .= "".PHP_EOL;
     $method=isset($params['-method'])?$params['-method']:'POST';
@@ -4859,6 +4860,14 @@ function addEditDBForm($params=array(),$customcode=''){
     				if(isset($jsonmaps[$jm[1]][$jm[2]])){
     					$_REQUEST[$cfield]=$jsonmaps[$jm[1]][$jm[2]];
     				}
+    				if(isset($params["{$cfield}_options"]['-other'][0])){
+    					foreach($params["{$cfield}_options"]['-other'] as $ofld){
+    						if(isset($jsonmaps[$jm[1]]["{$jm[2]}_other"])){
+		    					$_REQUEST["{$cfield}_other"]=$jsonmaps[$jm[1]]["{$jm[2]}_other"];
+		    				}
+    					}
+    				}
+    				//echo $cfield.printValue($jsonmaps).printValue($params);exit;
     			}
     			elseif(preg_match('/^([a-z0-9\_\-]+?)\>([a-z0-9\_\-]+?)\>([a-z0-9\_\-]+?)$/i',$cfield,$jm)){
     				//meta>1>file
@@ -4867,6 +4876,13 @@ function addEditDBForm($params=array(),$customcode=''){
     				}
     				if(isset($jsonmaps[$jm[1]][$jm[2]][$jm[3]])){
     					$_REQUEST[$cfield]=$jsonmaps[$jm[1]][$jm[2]][$jm[3]];
+    				}
+    				if(isset($params["{$cfield}_options"]['-other'][0])){
+    					foreach($params["{$cfield}_options"]['-other'] as $ofld){
+    						if(isset($jsonmaps[$jm[1]][$jm[2]]["{$jm[3]}_other"])){
+		    					$_REQUEST["{$cfield}_other"]=$jsonmaps[$jm[1]][$jm[2]]["{$jm[2]}_other"];
+		    				}
+    					}
     				}
     			}
     			//echo $cfield.printValue($_REQUEST);exit;

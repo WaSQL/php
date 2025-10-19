@@ -3451,7 +3451,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	if(!isset($params['-format'])){$params['-format']='right';}
 	//display:  flex or column
 	if(isset($params['data-display'])){$params['-display']=$params['data-display'];}
-	if(!isset($params['-display'])){$params['-display']=count($opts)==1?'flex':'column';}
+	if(!isset($params['-display'])){$params['-display']=count($opts)==1?'column':'flex';}
 	if(isset($params['data-style'])){$params['style']=$params['data-style'];}
 	if(!isset($params['style'])){$params['style']='';}
 	if(isset($params['data-values'])){$params['value']=$params['data-values'];}
@@ -3459,7 +3459,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 	$params['value']=buildFormValueParam($name,$params,1);
 	switch(strtolower($params['-display'])){
 		case 'flex':
-			$params['style'].='display:flex; justify-content: flex-start;flex-wrap:wrap;align-items:flex-start;';
+			$params['style'].='display:flex;gap:3px;justify-content:flex-start;flex-wrap:wrap;align-items:flex-start;';
 		break;
 		case 'column':
 			if(isset($params['-column-width'])){
@@ -3570,8 +3570,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			$rtn .= ' data-hideif="'.$params["{$tval}_hideif"].'"';
 			unset($params["{$tval}_hideif"]);
 		}
-
-		if(isset($params['-other']) && $params['-other']==1 && stringEndsWith($tval,'?')){
+		$other=0;
+		if(isset($params['-other'][0]) && in_array($tval,$params['-other'])){
+			$other=1;
 			$rtn .= ' style="display:flex;"';
 		}
 		$rtn.='>'.PHP_EOL;
@@ -3658,9 +3659,10 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			$rtn .= ' class="'.$classestr.'"';
 		}
 		$rtn.= '>'.$display.'</label>'.PHP_EOL;
-		if(isset($params['-other']) && $params['-other']==1 && stringEndsWith($tval,'?')){
-			$othername="{$input_name}_{$tval}";
-			$othervalue=buildFormValueParam($othername,$params,0);
+		//other?
+		if($other==1){
+			$othername=preg_replace('/\[\]$/is','',$input_name).'_'.preg_replace('/\?$/','',$tval);
+			$othervalue=$_REQUEST[$othername];
 			$rtn.=<<<ENDOFOTHER
 <input type="text" style="margin-left:5px;font-size:0.9rem;" id="{$opt_id}_other" name="{$othername}" value="{$othervalue}" data-onhide="value:{$opt_id}_other:" data-ondisplay="focus:{$opt_id}_other:" placeholder="Enter ..." data-displayif="{$input_name}:{$tval}">
 ENDOFOTHER;
