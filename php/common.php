@@ -3723,13 +3723,13 @@ function buildFormQrcodeBarcode($name,$params=array()){
 	if(isset($params['viewonly'])){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
+	$params['data-input']='barcode';
 	$style=$params['style'];
-	$datainput='barcode';
 	if(stringContains($params['-icon'],'qrcode')){
-		$datainput='qrcode';
+		$params['data-input']='qrcode';
 	}
 	$params['style'].=';flex:1;justify-self:center;border:0px;border-radius:4px;box-shadow:none;overflow:hidden;';
-	$inputtag ='<input type="text" data-input="'.$datainput.'"';
+	$inputtag ='<input type="text" ';
 	$inputtag.= setTagAttributes($params);
 	$inputtag.='>';
 	$icon_id=$params['id'].'_scanicon';

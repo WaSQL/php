@@ -4638,13 +4638,33 @@ var wacss = {
 			overlay.style.display = 'block';
 			button?.classList.add('scanning');
 			try {
-				const formats = [
-					Html5QrcodeSupportedFormats.EAN_13,
-					Html5QrcodeSupportedFormats.EAN_8,
-					Html5QrcodeSupportedFormats.UPC_A,
-					Html5QrcodeSupportedFormats.UPC_E,
-					Html5QrcodeSupportedFormats.QR_CODE, // include QR codes too
-				];
+				// Get the input element to check its data-input type
+				const input = document.getElementById(button?.dataset.inputid || '');
+				const inputType = input?.dataset.input;
+				input.dataset.inputtype_set=inputType;
+				// Conditionally set formats based on data-input attribute
+				let formats;
+				if (inputType === 'qrcode') {
+					// QR code only
+					formats = [Html5QrcodeSupportedFormats.QR_CODE];
+				} else if (inputType === 'barcode') {
+					// Barcodes only (no QR code)
+					formats = [
+						Html5QrcodeSupportedFormats.EAN_13,
+						Html5QrcodeSupportedFormats.EAN_8,
+						Html5QrcodeSupportedFormats.UPC_A,
+						Html5QrcodeSupportedFormats.UPC_E,
+					];
+				} else {
+					// Fallback: support both
+					formats = [
+						Html5QrcodeSupportedFormats.EAN_13,
+						Html5QrcodeSupportedFormats.EAN_8,
+						Html5QrcodeSupportedFormats.UPC_A,
+						Html5QrcodeSupportedFormats.UPC_E,
+						Html5QrcodeSupportedFormats.QR_CODE,
+					];
+				}
 
 				await scanner.start(
 					{ facingMode: 'environment' },
@@ -4655,7 +4675,6 @@ var wacss = {
 						experimentalFeatures: { useBarCodeDetectorIfSupported: true, useLegacyIos: true }
 					},
 					(decodedText /*, decodedResult */) => {
-						const input = document.getElementById(button?.dataset.inputid || '');
 						if (input) {
 							const tag = input.tagName.toLowerCase();
 
