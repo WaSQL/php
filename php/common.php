@@ -3693,6 +3693,7 @@ ENDOFOTHER;
  *   - [style]      (string) Inline styles; function appends right-side radius adjustments.
  *   - [requiredif] (string) Sets data-requiredif attribute.
  *   - [displayif]  (string) Sets data-displayif attribute.
+ * 	 - [data-onscan](string) Specifies a function to call on scan
  *   - [viewonly]   (bool)   If truthy, returns read-only <div class="w_viewonly"> with nl2br(value).
  *   - any other keys are assed through to setTagAttributes().
  *
@@ -3723,15 +3724,36 @@ function buildFormQrcodeBarcode($name,$params=array()){
 		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
 	}
 	$style=$params['style'];
-	$params['style'].=';resize:none;flex:1;border-top-right-radius:0px;border-bottom-right-radius:0px;overflow:hidden;height:100%;padding:3px 5px;';
-	$inputtag ='<textarea wrap="off" data-input="qrcode_barcode"';
+	$datainput='barcode';
+	if(stringContains($params['-icon'],'qrcode')){
+		$datainput='qrcode';
+	}
+	$params['style'].=';flex:1;justify-self:center;border:0px;border-radius:4px;box-shadow:none;overflow:hidden;';
+	$inputtag ='<input type="text" data-input="'.$datainput.'"';
 	$inputtag.= setTagAttributes($params);
-	$inputtag.='>'.encodeHtml($params['value']).'</textarea>';
+	$inputtag.='>';
 	$icon_id=$params['id'].'_scanicon';
+
+	$oclass=array($params['-icon'],'w_pointer');
+	$ostyle=array('justify-self:center','align-self:center');
+	if(stringContains($params['class'],'input')){
+		if(stringContains($params['class'],'is-small')){$ostyle[]='font-size:1.65rem';}
+		elseif(stringContains($params['class'],'is-medium')){$ostyle[]='font-size:2.75rem';}
+		elseif(stringContains($params['class'],'is-large')){$ostyle[]='font-size:3.40rem';}
+		else{$ostyle[]='font-size:2.45rem';}
+	}
+	else{
+		$ostyle[]='font-size:1.75rem';
+	}
+	if(preg_match('/w\_(red|green|orange|blue|yellow)/is',$params['class'],$m)){
+		$oclass[]="w_{$m[1]}";
+	}
+	$oclasstr=implode(' ',$oclass);
+	$ostylestr=implode(';',$ostyle);
 	$tag = <<<ENDOFINPUT
-<div style="{$style};display:inline-flex;" data-onload="wacss.initQrcodeBarcode();">
+<div style="{$style};border:1px solid #ccc;border-radius:4px;display:flex;margin:0 3px;" data-onload="wacss.initQrcodeBarcode();">
 	{$inputtag}
-	<span id="{$icon_id}" class="{$params['-icon']} w_pointer" style="font-size:32px;"></span>
+	<span id="{$icon_id}" class="{$oclasstr}" style="{$ostylestr}"></span>
 </div>
 ENDOFINPUT;
 	return $tag;
@@ -4966,10 +4988,25 @@ function buildFormImage($src,$name='',$onclick=''){
 /**
 * @describe creates an HTML form selection tag
 * @param name string - name of select tag
-* @param pairs array - tval/dval pairs array to populate select tag with
+* @param pairs array - tval/dval pairs array to populate select tag with, or array of groups when using -groups
 * @param params array - attribute/value pairs to add to select tag
+*   Standard HTML attributes: id, class, style, onchange, readonly, etc.
+*   Special params:
+*     -formname: form name prefix for id generation (default: 'addedit')
+*     -noname: if set, suppresses the name attribute
+*     -trigger: if set to 1, triggers onchange event on load when value is set
+*     -groups: if set, treats pairs as optgroups with nested options
+*     -other: array of values that trigger an additional text input field when selected
+*     viewonly: if set, displays as static text instead of select
+*     message: placeholder option with empty value
+*     requiredif: conditional requirement rule (converted to data-requiredif)
+*     displayif: conditional display rule (converted to data-displayif)
+*     {tval}_style: inline style for specific option value
+*     {tval}_class: CSS class for specific option value
+*     {tval}_data-*: custom data attributes for specific option value
 * @return string - HTML Form select tag
 * @usage echo buildFormSelect('age',array(5=>"Below Five",10=>"5 to 10"));
+* @usage echo buildFormSelect('country',$countries,array('message'=>'Select Country','-other'=>array('other')));
 */
 function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
@@ -5091,8 +5128,19 @@ ENDOFOTHER;
     	if(strlen($other)){
     		$ovalue=$_REQUEST[$other];
     	}
+    	//set the input class to match the select class if possible
+    	$oclass=array();
+    	if(stringContains($params['class'],'select')){$oclass[]='input';}
+    	else{$oclass[]='w_form-control';}
+    	if(stringContains($params['class'],'is-small')){$oclass[]='is-small';}
+    	if(stringContains($params['class'],'is-medium')){$oclass[]='is-medium';}
+    	if(stringContains($params['class'],'is-large')){$oclass[]='is-large';}
+    	if(preg_match('/w\_(red|green|orange|blue|yellow)/is',$params['class'],$m)){
+    		$oclass[]="w_{$m[1]}";
+    	}
+    	$oclasstr=implode(' ',$oclass);
     	$rtn.=<<<ENDOFOTHER
-<div data-displayif="{$params['name']}:{$dvalstr}" data-ondisplay="focus:#{$params['id']}_other"><input class="input" type="text" name="{$other}" value="{$ovalue}" id="{$params['id']}_other" placeholder="Enter ..."></div>
+<div data-displayif="{$params['name']}:{$dvalstr}" data-ondisplay="focus:#{$params['id']}_other"><input class="{$oclasstr}" type="text" name="{$other}" value="{$ovalue}" id="{$params['id']}_other" placeholder="Enter ..."></div>
 ENDOFOTHER;
     }
     $rtn .= '</div>'.PHP_EOL;

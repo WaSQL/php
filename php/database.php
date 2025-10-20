@@ -8431,7 +8431,7 @@ function getDBFieldTag($params=array()){
     if(!is_array($info) && strlen($info)){return $info;}
     //return printValue($params).printValue($info);
     //echo printValue($info);
-    //echo printValue($params);
+    //return printValue($params);
     $styles=array();
     //overrides that are passed in
     foreach($params as $key=>$val){
@@ -8471,6 +8471,7 @@ function getDBFieldTag($params=array()){
     //set inputmax if not defined
     if(!isset($info[$field]['inputmax']) && isset($info[$field]['_dblength'])){$info[$field]['inputmax']=$info[$field]['_dblength'];}
     //set inputtype if not defined
+    //return $field.printValue($info[$field]);
     if(!isset($info[$field]['inputtype'])){
 		//assign a valid inputtype based on _dbtype
 		//Valid inputtypes:
@@ -8508,34 +8509,34 @@ function getDBFieldTag($params=array()){
 		//Checkbox
 		case 'text':
 			unset($info[$field]['height']);
-			break;
+		break;
 		case 'password':
 			unset($info[$field]['height']);
 			//$info[$field]['onfocus']="this.select();";
-			break;
+		break;
 		case 'file':
 			if(!isset($info[$field]['width']) || $info[$field]['width']==0){$info[$field]['width']=300;}
 			unset($info[$field]['height']);
-			break;
+		break;
         case 'select':
 			unset($info[$field]['height']);
 			if(isset($info[$field]['width']) && (!isNum($info[$field]['width']) || $info[$field]['width']==0)){unset($info[$field]['width']);}
-			break;
+		break;
 		case 'combo':
 			unset($info[$field]['height']);
 			if($params['-table']=='_fielddata' && $field=='behavior'){
             	$info[$field]['tvals']=wasqlGetBehaviors();
             	$info[$field]['dvals']=wasqlGetBehaviors();
 			}
-			break;
+		break;
 		case 'time':
 			unset($info[$field]['height']);
 			unset($info[$field]['width']);
-			break;
+		break;
 		case 'color':
 			unset($info[$field]['height']);
 			unset($info[$field]['width']);
-			break;
+		break;
 		case 'slider':
 			$info[$field]['min']=$info[$field]['height'];
 			$info[$field]['max']=$info[$field]['inputmax'];
@@ -8543,8 +8544,8 @@ function getDBFieldTag($params=array()){
 			unset($info[$field]['height']);
 			unset($info[$field]['inputmax']);
 			unset($info[$field]['required']);
-			break;
-		}
+		break;
+	}
 	//set tag name
 	if(!isset($info[$field]['name'])){$info[$field]['name']=$field;}
 	//set displayname
@@ -8710,6 +8711,9 @@ function getDBFieldTag($params=array()){
 		break;
 		case 'barcode':
 			$info[$field]['-icon']='icon-barcode';
+			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
+		break;
+		case 'qrcodebarcode':
 			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
 		break;
 		case 'buttonselect':

@@ -4552,7 +4552,7 @@ var wacss = {
 		await wacss._html5qrcodePromise;
 	},
 	initQrcodeBarcode: async function () {
-		const els = document.querySelectorAll('[data-input="qrcode_barcode"]');
+		const els = document.querySelectorAll('[data-input="barcode"],[data-input="qrcode"]');
 		if (!els || !els.length){return false;}
 		await wacss.ensureHtml5QrcodeLoaded();
 		// Build overlay/modal (once)
