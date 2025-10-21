@@ -3740,7 +3740,7 @@ function buildFormQrcodeBarcode($name,$params=array()){
 		if(stringContains($params['class'],'is-small')){$ostyle[]='font-size:1.65rem';}
 		elseif(stringContains($params['class'],'is-medium')){$ostyle[]='font-size:2.75rem';}
 		elseif(stringContains($params['class'],'is-large')){$ostyle[]='font-size:3.40rem';}
-		else{$ostyle[]='font-size:2.45rem';}
+		else{$ostyle[]='font-size:2.0rem';}
 	}
 	else{
 		$ostyle[]='font-size:1.75rem';
