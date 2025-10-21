@@ -3730,7 +3730,12 @@ function buildFormQrcodeBarcode($name,$params=array()){
 	}
 	$params['style'].=';flex:1;justify-self:center;border:0px;border-radius:4px;box-shadow:none;overflow:hidden;';
 	$inputtag ='<input type="text" ';
+	if(strlen($params['value'])){
+		$inputtag.=" value=\"{$params['value']}\"";
+		unset($params['value']);
+	}
 	$inputtag.= setTagAttributes($params);
+
 	$inputtag.='>';
 	$icon_id=$params['id'].'_scanicon';
 
