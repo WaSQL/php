@@ -5796,14 +5796,23 @@ var wacss = {
 			wrapper.canvas.width='500';
 			wrapper.canvas.height='200';
 			wrapper.appendChild(wrapper.canvas);
-			//build a resize observer to make it responsive
+			//build a resize observer to make it responsive and keep signature on resize
 			wrapper.ro = new ResizeObserver(entries => {
-				for (let entry of entries) {
-					if(undefined != entry.target.canvas && undefined!=entry.target.clientWidth){
-						entry.target.canvas.setAttribute('width',parseInt(entry.target.clientWidth));
-						entry.target.canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
-					}
-			 	}
+			    for (let entry of entries) {
+			        if(undefined != entry.target.canvas && undefined!=entry.target.clientWidth){
+			            // Save the current signature data before resizing
+			            let currentData = entry.target.pad.toData();
+			            
+			            // Resize the canvas
+			            entry.target.canvas.setAttribute('width',parseInt(entry.target.clientWidth));
+			            entry.target.canvas.setAttribute('height',parseInt(entry.target.clientHeight)-30);
+			            
+			            // Restore the signature data after resizing
+			            if(currentData && currentData.length > 0) {
+			                entry.target.pad.fromData(currentData);
+			            }
+			        }
+			    }
 			});
 			wrapper.ro.observe(wrapper);
 			// call signature_pad
