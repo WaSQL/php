@@ -4555,6 +4555,151 @@ var wacss = {
 		const els = document.querySelectorAll('[data-input="barcode"],[data-input="qrcode"]');
 		if (!els || !els.length){return false;}
 		await wacss.ensureHtml5QrcodeLoaded();
+		// Validation functions
+		const validateUPC_A = (code) => {
+		    // Remove any whitespace
+		    code = code.trim();
+		    // Must be exactly 12 digits
+		    if (!/^\d{12}$/.test(code)) return false;
+		    // Calculate checksum
+		    let sum = 0;
+		    for (let i = 0; i < 11; i++) {
+		        sum += parseInt(code[i], 10) * (i % 2 === 0 ? 3 : 1);
+		    }
+		    const checksum = (10 - (sum % 10)) % 10;
+		    return checksum === parseInt(code[11], 10);
+		};
+		const validateCODE_39 = (code) => {
+		    // Remove any whitespace
+		    code = code.trim();
+		    // Check if code is not empty
+		    if (!code || code.length === 0) return false;
+		    // Most scanners strip the start/stop asterisks
+		    const hasStartStop = code.startsWith('*') && code.endsWith('*');
+		    const codeToValidate = hasStartStop ? code.slice(1, -1) : code; 
+		    // After stripping, must have content
+		    if (!codeToValidate || codeToValidate.length === 0) return false;
+		    // CODE_39 valid character set (note: space is valid but escaped in regex)
+		    const validChars = /^[0-9A-Z\-\. \$\/\+\%]+$/;
+		    // Check if all characters are valid CODE_39 characters
+		    if (!validChars.test(codeToValidate)) return false;
+		    // Optional: Check reasonable length (CODE_39 is typically 1-43 characters)
+		    if (codeToValidate.length > 43) return false;
+		    return true;
+		};
+		const validateUPC_E = (code) => {
+		    // Remove any whitespace
+		    code = code.trim();
+		    // UPC-E is 6 digits (some scanners expand to 8 with number system and check digit)
+		    if (!/^\d{6}$/.test(code) && !/^\d{8}$/.test(code)) return false;
+		    // If 8 digits, validate the check digit
+		    if (code.length === 8) {
+		        // The 8-digit format includes number system (first digit) and check digit (last digit)
+		        // Expand UPC-E to UPC-A for validation
+		        const expanded = expandUPCE(code.substring(0, 7));
+		        if (!expanded) return false;
+		        
+		        // Validate the check digit against expanded UPC-A
+		        let sum = 0;
+		        for (let i = 0; i < 11; i++) {
+		            sum += parseInt(expanded[i], 10) * (i % 2 === 0 ? 3 : 1);
+		        }
+		        const checksum = (10 - (sum % 10)) % 10;
+		        return checksum === parseInt(code[7], 10);
+		    }
+		    // For 6-digit UPC-E, we can't validate checksum without number system
+		    return true;
+		};
+		// Helper function to expand UPC-E to UPC-A
+		const expandUPCE = (code) => {
+		    if (code.length !== 7) return null;
+		    const numberSystem = code[0];
+		    const lastDigit = code[6];
+		    const middle = code.substring(1, 6);
+		    let expanded;
+		    if (lastDigit === '0' || lastDigit === '1' || lastDigit === '2') {
+		        expanded = numberSystem + middle.substring(0, 2) + lastDigit + '0000' + middle.substring(2, 5);
+		    } else if (lastDigit === '3') {
+		        expanded = numberSystem + middle.substring(0, 3) + '00000' + middle.substring(3, 5);
+		    } else if (lastDigit === '4') {
+		        expanded = numberSystem + middle.substring(0, 4) + '00000' + middle[4];
+		    } else {
+		        expanded = numberSystem + middle + '0000' + lastDigit;
+		    }
+		    return expanded;
+		};
+		const validateEAN13 = (code) => {
+		    // Remove any whitespace
+		    code = code.trim();
+		    // Must be exactly 13 digits
+		    if (!/^\d{13}$/.test(code)) return false;
+		    // Calculate checksum
+		    let sum = 0;
+		    for (let i = 0; i < 12; i++) {
+		        sum += parseInt(code[i], 10) * (i % 2 === 0 ? 1 : 3);
+		    }
+		    const checksum = (10 - (sum % 10)) % 10;
+		    return checksum === parseInt(code[12], 10);
+		};
+		const validateEAN8 = (code) => {
+		    // Remove any whitespace
+		    code = code.trim();
+		    // Must be exactly 8 digits
+		    if (!/^\d{8}$/.test(code)) return false;
+		    // Calculate checksum
+		    let sum = 0;
+		    for (let i = 0; i < 7; i++) {
+		        sum += parseInt(code[i], 10) * (i % 2 === 0 ? 3 : 1);
+		    }
+		    const checksum = (10 - (sum % 10)) % 10;
+		    return checksum === parseInt(code[7], 10);
+		};
+		const validateCODE_128 = (code) => {
+		    // Check if code is not empty
+		    if (!code || code.length === 0) return false;
+		    // Check reasonable length (most CMMS asset codes are 3-30 characters)
+		    if (code.length < 3 || code.length > 30) return false;
+		    // CODE_128 can encode ASCII 0-127, but for CMMS we should be more restrictive
+		    // Typical CMMS codes use: A-Z, a-z, 0-9, hyphen, underscore, forward slash, period
+		    const validPattern = /^[A-Za-z0-9\-_\/\.]+$/;
+		    if (!validPattern.test(code)) {
+		        return false;
+		    }
+		    // Additional checks for suspicious patterns
+		    if (code.includes('  ')) return false; // No double spaces
+		    if (code.trim() !== code) return false; // No leading/trailing whitespace
+		    return true;
+		};
+		const validateBarcode = (decodedText, format, inputType) => {
+			//do not validate QRCodes
+			if(inputType==='qrcode'){return true;}
+			try {
+				switch(format) {
+					case 'UPC_A':
+						return validateUPC_A(decodedText);	
+					case 'UPC_E':
+						return validateUPC_E(decodedText);
+					case 'EAN_8':
+						return validateEAN8(decodedText);
+					case 'EAN_13':
+						return validateEAN13(decodedText);
+					case 'CODE_39':
+						return validateCODE_39(decodedText);
+					case 'CODE_128':
+						return validateCODE_128(decodedText);
+					case 'QR_CODE':
+						//do not accept QR_CODE value as a barcode
+						return false;
+					default:
+						// Unknown format, accept it
+						console.warn('Unknown barcode format:', format);
+						return false;
+				}
+			} catch (err) {
+				//console.error('Validation error:', err);
+				return true; // Accept on validation error to avoid blocking user
+			}
+		};
 		// Build overlay/modal (once)
 		let overlay = document.getElementById('qr-overlay');
 		if (!overlay) {
@@ -4564,20 +4709,18 @@ var wacss = {
 				position: fixed; inset: 0; display: none; z-index: 99999;
 				background: rgba(0,0,0,0.5);
 			`;
-
 			const modal = document.createElement('div');
 			modal.className = 'qr-modal';
 			modal.style.cssText = `
 				position: absolute; left: 50%; top: 50%;
 				transform: translate(-50%, -50%);
 				width: min(92vw, 520px);
-				max-height: 92vh;                 /* ensure the whole modal fits */
+				max-height: 92vh;
 				display: flex; flex-direction: column;
 				background: #111; color: #fff; border-radius: 16px;
 				box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-				overflow: hidden;                  /* crop camera inside if needed, not the toolbar */
+				overflow: hidden;
 			`;
-
 			const header = document.createElement('div');
 			header.style.cssText = `
 				padding: 12px 16px; font-weight: 600;
@@ -4585,32 +4728,25 @@ var wacss = {
 				flex: 0 0 auto;
 			`;
 			header.textContent = 'Scan a code';
-
 			const mount = document.createElement('div');
 			mount.id = 'qrcodebarcode';
 			mount.style.cssText = `
 				position: relative;
 				width: 100%;
-				/* Flex so this area grows/shrinks to fit between header and toolbar */
 				flex: 1 1 auto;
-				/* Keep a sensible height range so we don't overflow the viewport */
 				height: clamp(220px, 60vh, 420px);
-				/* Prevent internal absolute children from spilling outside */
 				overflow: hidden;
 			`;
-
 			const toolbar = document.createElement('div');
 			toolbar.style.cssText = `
 				display: flex; gap: 8px; justify-content: flex-end; align-items: center;
-				padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); /* iOS safe area */
+				padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
 				background: #1a1a1a; border-top: 1px solid #222;
 				flex: 0 0 auto;
 			`;
-
 			const hint = document.createElement('div');
 			hint.style.cssText = 'margin-right:auto; opacity:.8; font-size:12px;';
 			hint.textContent = 'Point your camera at a barcode or QR code.';
-
 			const cancelBtn = document.createElement('button');
 			cancelBtn.id = 'qr-cancel';
 			cancelBtn.type = 'button';
@@ -4619,10 +4755,8 @@ var wacss = {
 				padding: 8px 12px; border-radius: 10px; background:#333;
 				color:#fff; border:1px solid #444; cursor:pointer;
 			`;
-
 			toolbar.appendChild(hint);
 			toolbar.appendChild(cancelBtn);
-
 			modal.appendChild(header);
 			modal.appendChild(mount);
 			modal.appendChild(toolbar);
@@ -4634,99 +4768,124 @@ var wacss = {
 		let isScanning = false;
 		// Helpers
 		const openScanner = async (button) => {
-			if (isScanning){return;}
+			if (isScanning) return;
 			overlay.style.display = 'block';
 			button?.classList.add('scanning');
 			try {
 				// Get the input element to check its data-input type
 				const input = document.getElementById(button?.dataset.inputid || '');
 				const inputType = input?.dataset.input;
-				input.dataset.inputtype_set=inputType;
+				if (input) {
+					input.dataset.inputtype_set = inputType;
+				}
+				//console.log('Input type (data-input):'+inputType);
 				// Conditionally set formats based on data-input attribute
 				let formats;
 				if (inputType === 'qrcode') {
 					// QR code only
 					formats = [Html5QrcodeSupportedFormats.QR_CODE];
+					//console.log('✓ QR code ONLY mode enabled');
 				} else if (inputType === 'barcode') {
 					// Barcodes only (no QR code)
 					formats = [
 						Html5QrcodeSupportedFormats.EAN_13,
-						Html5QrcodeSupportedFormats.EAN_8,
 						Html5QrcodeSupportedFormats.UPC_A,
-						Html5QrcodeSupportedFormats.UPC_E,
+						Html5QrcodeSupportedFormats.CODE_128,
+						Html5QrcodeSupportedFormats.CODE_39,
+						Html5QrcodeSupportedFormats.EAN_8,
+						Html5QrcodeSupportedFormats.UPC_E
 					];
+					//console.log('✓ Barcode ONLY mode enabled');
 				} else {
 					// Fallback: support both
 					formats = [
-						Html5QrcodeSupportedFormats.EAN_13,
-						Html5QrcodeSupportedFormats.EAN_8,
-						Html5QrcodeSupportedFormats.UPC_A,
-						Html5QrcodeSupportedFormats.UPC_E,
 						Html5QrcodeSupportedFormats.QR_CODE,
+						Html5QrcodeSupportedFormats.EAN_13,
+						Html5QrcodeSupportedFormats.UPC_A,
+						Html5QrcodeSupportedFormats.CODE_128,
+						Html5QrcodeSupportedFormats.CODE_39,
+						Html5QrcodeSupportedFormats.EAN_8,
+						Html5QrcodeSupportedFormats.UPC_E
 					];
+					//console.log('⚠ Mixed mode (QR + Barcode) - no data-input attribute found');
 				}
-
 				await scanner.start(
 					{ facingMode: 'environment' },
 					{
-						fps: 20,
-						qrbox: { width: 300, height: 200 }, // visible guide box
+						fps: 30,
+						qrbox: { width: 280, height: 140 },
 						formatsToSupport: formats,
-						experimentalFeatures: { useBarCodeDetectorIfSupported: true, useLegacyIos: true }
-					},
-					(decodedText /*, decodedResult */) => {
-						if (input) {
-							const tag = input.tagName.toLowerCase();
-
-							if (tag === 'input' || tag === 'textarea') {
-								input.value = decodedText;
-							} else if (tag === 'div') {
-								// contentEditable div or display container
-								if (input.isContentEditable) {
-									input.innerText = decodedText;
-								} else {
-									input.textContent = decodedText;
-								}
-							}
-
-							input.focus();
-							input.dispatchEvent(new Event('change', { bubbles: true }));
-
-							// check for data-onscan
-							if (input.dataset.onscan) {
-								try {
-									// new Function arg order: decodedText, input, button
-									const fn = new Function('code', 'el', 'btn', input.dataset.onscan);
-									fn(decodedText, input, button);
-								} catch (err) {
-									console.error('Error in data-onscan handler:', err);
-								}
-							}
+						experimentalFeatures: { 
+							useBarCodeDetectorIfSupported: true, 
+							useLegacyIos: true 
 						}
+					},
+					(decodedText, decodedResult) => {
+						try {
+							// Validate barcode format
+							const format = decodedResult?.result?.format?.formatName || 'UNKNOWN';
+							const isValid = validateBarcode(decodedText, format, inputType);
+							if (!isValid) {
+								//console.warn(`Invalid ${format} checksum: ${decodedText}. Rescanning...`);
+								return; // Don't close scanner, let user try again
+							}
+							//console.log(`Valid ${format} scanned:`, decodedText);
+							if (input) {
+								const tag = input.tagName.toLowerCase();
 
-						closeScanner(button); // auto-close after successful read
+								if (tag === 'input' || tag === 'textarea') {
+									input.value = decodedText;
+								} else if (tag === 'div') {
+									// contentEditable div or display container
+									if (input.isContentEditable) {
+										input.innerText = decodedText;
+									} else {
+										input.textContent = decodedText;
+									}
+								}
+								input.focus();
+								input.dispatchEvent(new Event('change', { bubbles: true }));
+								// check for data-onscan
+								if (input.dataset.onscan) {
+									try {
+										// new Function arg order: decodedText, input, button
+										const fn = new Function('code', 'el', 'btn', input.dataset.onscan);
+										fn(decodedText, input, button);
+									} catch (err) {
+										console.error('Error in data-onscan handler:', err);
+									}
+								}
+							}
+							closeScanner(button); // auto-close after successful read
+						} catch (err) {
+							console.error('Error processing scan result:', err);
+							closeScanner(button);
+						}
 					},
 					() => { /* ignore per-frame errors */ }
 				);
-
 				isScanning = true;
 			} catch (err) {
 				console.error('QRCode/Barcode Scanner start failed:', err);
 				await closeScanner(button);
 			}
 		};
-
 		const closeScanner = async (button) => {
 			if (isScanning) {
-				try { await scanner.stop(); } catch (_) {}
+				try { 
+					await scanner.stop(); 
+				} catch (err) {
+					console.error('Error stopping scanner:', err);
+				}
 				isScanning = false;
 			}
 			overlay.style.display = 'none';
 			button?.classList.remove('scanning');
+			
+			// Refocus the input after closing
 			const input = document.getElementById(button?.dataset.inputid || '');
 			input?.focus();
 		};
-
 		// Bind cancel/backdrop/Esc once
 		if (!overlay.dataset.bound) {
 			overlay.dataset.bound = '1';
@@ -4753,23 +4912,20 @@ var wacss = {
 				}
 			});
 		}
-
 		// Attach per-input scan triggers
 		for (const el of els) {
-			if (el.dataset.initialized){continue;}
+			if (el.dataset.initialized) continue;
 			el.dataset.initialized = '1';
 			// Prefer "<input id>_scanicon", else fallback to "#_scanicon" or a nearby .icon-qrcode
 			const scanButton =
 				document.getElementById(el.id + '_scanicon') ||
 				el.parentElement?.querySelector('#_scanicon, .icon-qrcode');
-
 			if (!scanButton) {
 				el.dataset.error = 'no scanbutton';
+				console.warn('No scan button found for input:', el.id);
 				continue;
 			}
-
 			scanButton.dataset.inputid = el.id;
-
 			scanButton.addEventListener('click', async function () {
 				if (isScanning) {
 					await closeScanner(this);
