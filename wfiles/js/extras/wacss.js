@@ -4781,10 +4781,12 @@ var wacss = {
 				//console.log('Input type (data-input):'+inputType);
 				// Conditionally set formats based on data-input attribute
 				let formats;
+				let qrboxConfig;
 				if (inputType === 'qrcode') {
 					// QR code only
 					formats = [Html5QrcodeSupportedFormats.QR_CODE];
-					//console.log('✓ QR code ONLY mode enabled');
+					// Square box for QR codes
+					qrboxConfig = { width: 280, height: 280 };
 				} else if (inputType === 'barcode') {
 					// Barcodes only (no QR code)
 					formats = [
@@ -4795,7 +4797,8 @@ var wacss = {
 						Html5QrcodeSupportedFormats.EAN_8,
 						Html5QrcodeSupportedFormats.UPC_E
 					];
-					//console.log('✓ Barcode ONLY mode enabled');
+					// Wide, narrow box for barcodes
+					qrboxConfig = { width: 280, height: 140 };
 				} else {
 					// Fallback: support both
 					formats = [
@@ -4807,13 +4810,14 @@ var wacss = {
 						Html5QrcodeSupportedFormats.EAN_8,
 						Html5QrcodeSupportedFormats.UPC_E
 					];
-					//console.log('⚠ Mixed mode (QR + Barcode) - no data-input attribute found');
+					// Default to square for mixed mode
+					qrboxConfig = { width: 280, height: 280 };
 				}
 				await scanner.start(
 					{ facingMode: 'environment' },
 					{
 						fps: 30,
-						qrbox: { width: 280, height: 140 },
+						qrbox: qrboxConfig,
 						formatsToSupport: formats,
 						experimentalFeatures: { 
 							useBarCodeDetectorIfSupported: true, 
