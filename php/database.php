@@ -5347,19 +5347,19 @@ function addEditDBForm($params=array(),$customcode=''){
 	    		continue;
 	    	}
 			elseif(isset($used[$key])){
-				$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
+				//$rtn .= '<!--Skipped Used:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			elseif(stringContains($key,'<')){
-				$rtn .= '<!--Skipped LT:'.$key.'-->'.PHP_EOL;
+				//$rtn .= '<!--Skipped LT:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			elseif(stringEndsWith($key,'_options') && is_array($val)){
-				$rtn .= '<!--Skipped Options:'.$key.'-->'.PHP_EOL;
+				//$rtn .= '<!--Skipped Options:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(preg_match('/^[_-]/',$key) && !preg_match('/^\_(marker|menu|search|sort|start|table\_)$/is',$key)){
-				$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
+				//$rtn .= '<!--Skipped Reserved:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			if(preg_match('/^(GUID|PHPSESSID|AjaxRequestUniqueId)$/i',$key)){
@@ -5367,7 +5367,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				continue;
 			}
 			if(!is_array($val) && strlen(trim($val))==0){
-				$rtn .= '<!--Skipped Blank:'.$key.'-->'.PHP_EOL;
+				//$rtn .= '<!--Skipped Blank:'.$key.'-->'.PHP_EOL;
 				continue;
 			}
 			//check for geolocation
