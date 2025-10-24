@@ -916,6 +916,47 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	 * Fades away a DOM element
+	 * @param {HTMLElement} element - The DOM element to fade away
+	 * @param {Object} options - Configuration options
+	 * @param {number} options.delay - Time to wait before starting fade in milliseconds (default: 4000)
+	 * @param {number} options.duration - Fade duration in milliseconds (default: 1500)
+	 * @param {boolean} options.remove - Whether to remove the element after fading (default: false)
+	 * @example 
+	 * 		fadeaway(document.getElementById('myElement'));
+	 * 		fadeaway(document.getElementById('myElement'), { remove: true });
+	 *		fadeaway(document.getElementById('myElement'), { delay: 2000, duration: 1000, remove: true });
+	 */
+	fadeaway:function(element, options = {}) {
+		element=wacss.getObject(element);
+		if(undefined == element){return false;}
+		//set a property so it does not get called during a transition
+		if(undefined != element.dataset.fadeaway){return false;}
+		element.dataset.fadeaway=1;
+		const { delay = 4000, duration = 1500, remove = false } = options;
+		// Wait specified delay before starting the fade
+		setTimeout(() => {
+			// Set initial opacity if not set
+			if (!element.style.opacity) {
+				element.style.opacity = '1';
+			}
+			// Add transition for smooth fading
+			element.style.transition = `opacity ${duration}ms ease-in-out`;
+			// listen for transitionend and clean up. remove if requested
+			element.addEventListener('transitionend', function handler(e) {
+			    if (e.propertyName === 'opacity' && e.target === element) {
+			        delete element.dataset.fadeaway;
+			        element.removeEventListener('transitionend', handler);
+			        if (remove) {
+			            element.remove();
+			        }
+			    }
+			});
+			// Trigger the fade
+			element.style.opacity = '0';
+		}, delay);
+	},
 	filemanagerReorder:function(dragel,dropel){
 		let action=dragel.dataset.action || dropel.dataset.action;
 		let dir=dragel.dataset.dir || dropel.dataset.dir;
