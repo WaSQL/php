@@ -4529,9 +4529,8 @@ var wacss = {
 					let cfunc=new Function(funcstr);
 					cfunc();
 				}catch(e){
-					console.log('initOnloads Failure:');
+					console.log('initOnloads Failed For:');
 					console.log(funcstr);
-					console.log(cfunc.toString());
 				}
 			}
 		}
