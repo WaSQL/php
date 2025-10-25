@@ -28,7 +28,7 @@
 <div style="display:flex;justify-content: space-between;margin-top:10px;">
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
 		<span class="icon-prompt"></span> 
-		<wtranslate>SQL Prompt</wtranslate>
+		SQL Prompt
 	</h2>
 	<view:history>
 	<div style="align-self: center;">
@@ -40,7 +40,7 @@
 </div>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div data-content="tables and fields">
-		<div class="w_bold w_big"><wtranslate>Tables & Fields</wtranslate></div>
+		<div class="w_bold w_big">Tables & Fields</div>
 		<div class="w_gray w_smaller" style="display:flex;justify-content:flex-end;height:20px;" id="tables_fields_processing"></div>
 		<div id="table_fields" style="max-width:300px;overflow: auto;" class="w_nowrap">
 			<?=renderView('tables_fields',$tables,'tables');?>
@@ -65,19 +65,19 @@
 				<textarea class="form-control" wrap="hard" data-behavior="editor" id="sql_full" name="sql_full"></textarea>
 				</div>
 				<div style="margin-top:10px;display:flex;justify-content: flex-start;align-items: center;">
-					<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run [selected] Query ( or press F8, CTRL+ENTER or CTRL+e ). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> <wtranslate>Execute</wtranslate></button>
+					<button type="submit" class="btn <?=configValue('admin_color');?>" title="Run [selected] Query ( or press F8, CTRL+ENTER or CTRL+e ). Note: You can drag and drop .sql files onto the textarea"><span class="icon-mark"></span> Execute</button>
 					<div style="margin-left:10px;" title="Check to execute with Python libraries">
 						<input type="checkbox" style="cursor:pointer;" name="py" id="py" value="1" /><label for="py" style="cursor:pointer;" class="brand-python"></label>
 					</div>
 					<span class="icon-history w_gray w_pointer" onclick="sqlpromptLoadPrompt();" class="w_pointer" title="reload previous" style="margin-left:10px;"></span>
 
 					<span style="margin-left:10px;" title="copy SQL to clipboard" class="icon-copy w_pointer w_gray" onclick="wacss.copy2Clipboard(document.sqlprompt.sql_full.innerText);"></span>
-					<div style="margin-left:10px;" class="w_small w_gray w_pointer w_link" title="Run Explain Plan on selection ( or press F9 or CTRL-i )" onclick="return sqlpromptExplainPlan();"><span class="icon-info-circled"></span> <wtranslate>Explain</wtranslate></div>
+					<div style="margin-left:10px;" class="w_small w_gray w_pointer w_link" title="Run Explain Plan on selection ( or press F9 or CTRL-i )" onclick="return sqlpromptExplainPlan();"><span class="icon-info-circled"></span> Explain</div>
 					<div  style="flex:1;" class="align-right w_gray w_small w_nowrap" id="results_count"></div>
 					<div class="align-right" style="padding-left:10px;display:flex;flex-wrap:nowrap;">
 						<button type="button" data-offset="0" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="prev_link" style="display:none;"><span class="icon-arrow-left"></span> Prev</button>
 						<button type="button" data-offset="30" class="btn small" onclick="sqlpromptPaginate(this.dataset.offset);" id="next_link" style="margin-left:3px;display:none;">Next <span class="icon-arrow-right"></span></button>
-						<a href="#" onclick="return sqlpromptExport();" style="display:none;margin-left:3px;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> <wtranslate>export</wtranslate></a>
+						<a href="#" onclick="return sqlpromptExport();" style="display:none;margin-left:3px;" id="export_link" class="btn <?=configValue('admin_color');?>"><span class="icon-export"></span> export</a>
 					</div>
 				</div>
 			</form>
@@ -278,21 +278,21 @@
 </view:list_records>
 
 <view:no_results>
-<div style="padding: 10px 0"><wtranslate>No Results</wtranslate></div>
+<div style="padding: 10px 0">No Results</div>
 </view:no_results>
 
 <view:no_results_html>
 	<?=sqlpromptHTMLHead();?>
-	<table class="table striped bordered condensed"><tr><td>--<wtranslate>No Results</wtranslate>--</td></tr></table>
+	<table class="table striped bordered condensed"><tr><td>--No Results--</td></tr></table>
 	</body></html>
 </view:no_results_html>
 
 <view:no_results_table>
-	<table class="table striped bordered condensed"><tr><td>--<wtranslate>No Results</wtranslate>--</td></tr></table>
+	<table class="table striped bordered condensed"><tr><td>--No Results--</td></tr></table>
 </view:no_results_table>
 
 <view:no_results_dos>
---<wtranslate>No Results</wtranslate>--
+--No Results--
 </view:no_results_dos>
 
 <view:error>

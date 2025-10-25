@@ -1,6 +1,6 @@
 <view:default>
 <div style="display:flex;align-items: center;">
-	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-clock"></span> <wtranslate>Windows Scheduled Tasks</wtranslate></h2>
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-clock"></span> Windows Scheduled Tasks</h2>
 	<span title="Repull the list" class="icon-refresh w_gray w_pointer" style="margin-left:20px;" data-div="schtasks_results" data-_menu="schtasks" data-refresh="1" data-func="list" data-nav="<?=$CONFIG['admin_form_url'];?>" onclick="wacss.nav(this);"></span>
 </div>
 
@@ -19,79 +19,79 @@
 <view:details>
 <div style="max-width:90vw;">
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Task Name</wtranslate>:</label>
+		<label style="flex:3;">Task Name:</label>
 		<div style="flex:9;"><?=$rec['taskname'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Location</wtranslate>:</label>
+		<label style="flex:3;">Location:</label>
 		<div style="flex:9;"><?=$rec['location'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Author</wtranslate>:</label>
+		<label style="flex:3;">Author:</label>
 		<div style="flex:9;"><?=$rec['author'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Description</wtranslate>:</label>
+		<label style="flex:3;">Description:</label>
 		<div style="flex:9;"><?=$rec['comment'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Task To Run</wtranslate>:</label>
+		<label style="flex:3;">Task To Run:</label>
 		<div style="flex:9;"><?=$rec['task_to_run'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Start In</wtranslate>:</label>
+		<label style="flex:3;">Start In:</label>
 		<div style="flex:9;"><?=$rec['start_in'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Run as User</wtranslate>:</label>
+		<label style="flex:3;">Run as User:</label>
 		<div style="flex:9;"><?=$rec['run_as_user'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Next Run Time</wtranslate>:</label>
+		<label style="flex:3;">Next Run Time:</label>
 		<div style="flex:9;"><?=$rec['next_run_time'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Last Run Time</wtranslate>:</label>
+		<label style="flex:3;">Last Run Time:</label>
 		<div style="flex:9;"><?=$rec['last_run_time'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Last Result</wtranslate>:</label>
+		<label style="flex:3;">Last Result:</label>
 		<div style="flex:9;"><?=$rec['last_result'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Scheduled Task State</wtranslate>:</label>
+		<label style="flex:3;">Scheduled Task State:</label>
 		<div style="flex:9;"><?=$rec['scheduled_task_state'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Status</wtranslate>:</label>
+		<label style="flex:3;">Status:</label>
 		<div style="flex:9;"><?=$rec['status'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Idle Time</wtranslate>:</label>
+		<label style="flex:3;">Idle Time:</label>
 		<div style="flex:9;"><?=$rec['idle_time'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Power Management</wtranslate>:</label>
+		<label style="flex:3;">Power Management:</label>
 		<div style="flex:9;"><?=$rec['power_management'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Schedule Type</wtranslate>:</label>
+		<label style="flex:3;">Schedule Type:</label>
 		<div style="flex:9;"><?=$rec['schedule_type'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Months</wtranslate>:</label>
+		<label style="flex:3;">Months:</label>
 		<div style="flex:9;"><?=$rec['months'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Days</wtranslate>:</label>
+		<label style="flex:3;">Days:</label>
 		<div style="flex:9;"><?=$rec['days'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>Start Date/Time</wtranslate>:</label>
+		<label style="flex:3;">Start Date/Time:</label>
 		<div style="flex:9;"><?=$rec['start_date'];?> <?=$rec['start_time'];?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
-		<label style="flex:3;"><wtranslate>End Date</wtranslate>:</label>
+		<label style="flex:3;">End Date:</label>
 		<div style="flex:9;"><?=$rec['end_date'];?></div>
 	</div>
 </div>

@@ -3,16 +3,16 @@
 <div class="container-fluid">
 	<div class="row" style="margin-bottom:10px;">
 		<div class="col-sm-12">
-			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-database"></span> <wtranslate>DB Sync Tool</wtranslate></h2>
+			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-database"></span> DB Sync Tool</h2>
 			<form method="post" name="dbsync_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'dbsync_content');">
 				<input type="hidden" name="_menu" value="dbsync" />
 				<input type="hidden" name="func" value="compare" />
 				<input type="hidden" name="tab" value="tables_indexes" />
 				<div style="display:flex;align-items: flex-end;">
-					<div><label class="w_bigger w_bold"><wtranslate>Source</wtranslate></label><?=dbsyncFormField('source');?></div>
-					<div style="margin-left:5px"><label class="w_bigger w_bold"><wtranslate>Target</wtranslate></label><?=dbsyncFormField('target');?></div>
-					<div style="text-align: center;margin:0 5px;"><div><label><wtranslate>Diffs</wtranslate></label></div><input type="checkbox" name="diffs" value="1" data-type="checkbox" class="<?=configValue('admin_color');?>" /></div>
-					<div><label>&nbsp;</label><button type="submit" class="btn" onclick="document.dbsync_form.tab.value='tables-indexes"><span class="icon-sync-diff"></span> <wtranslate>Compare</wtranslate></button></div>
+					<div><label class="w_bigger w_bold">Source</label><?=dbsyncFormField('source');?></div>
+					<div style="margin-left:5px"><label class="w_bigger w_bold">Target</label><?=dbsyncFormField('target');?></div>
+					<div style="text-align: center;margin:0 5px;"><div><label>Diffs</label></div><input type="checkbox" name="diffs" value="1" data-type="checkbox" class="<?=configValue('admin_color');?>" /></div>
+					<div><label>&nbsp;</label><button type="submit" class="btn" onclick="document.dbsync_form.tab.value='tables-indexes"><span class="icon-sync-diff"></span> Compare</button></div>
 				</div>
 			</form>
 		</div>
@@ -27,8 +27,8 @@
 
 <view:compare>
 <ul class="nav-tabs">
-	<li class="active"><a href="#" data-tab="compare_tables_indexes" onclick="return dbsyncCompare(this);"><wtranslate>Tables and Indexes</wtranslate></a></li>
-	<li><a href="#" data-tab="compare_functions_procedures" onclick="return dbsyncCompare(this);"><wtranslate>Functions and Procedures</wtranslate></a></li>
+	<li class="active"><a href="#" data-tab="compare_tables_indexes" onclick="return dbsyncCompare(this);">Tables and Indexes</a></li>
+	<li><a href="#" data-tab="compare_functions_procedures" onclick="return dbsyncCompare(this);">Functions and Procedures</a></li>
 </ul>
 <div id="compare_results">
 	<?=dbsyncCompareTablesAndIndexes($source,$target,$diffs);?>

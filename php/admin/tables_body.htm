@@ -1,7 +1,7 @@
 <view:default>
 <?=buildOnLoad("wacss.loadScript('/php/admin/tables_js.js');");?>
 <div style="display:flex;justify-content: space-between;padding-top:15px;">
-	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-tables"></span> <wtranslate>Tables</wtranslate></h2>
+	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-tables"></span> Tables</h2>
 	<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">
 		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add new" data-func="add_single"><span class="icon-table-add w_bigger w_green"></span> </button> 
 		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add multiple" data-func="add_multiple"><span class="icon-table-add w_bigger w_red"></span> </button> 
@@ -90,7 +90,7 @@
 			<li><a href="#" data-div="add_result" data-func="add_prebuilt_process" data-tablename="<?=$rec['name'];?>" onclick="return tablesNav(this);" data-confirm="<?=$rec['data-confirm'];?>"><span class="<?=$rec['class'];?>"></span> <?=$rec['name'];?></a></li>
 			</view:rec>
 			<?=renderEach('rec',$recs,'rec');?>
-			<li><a href="/php/admin.php?_menu=zipcodes"><span class="icon-map-marker"></span> <wtranslate>Zipcodes</wtranslate></a></li>
+			<li><a href="/php/admin.php?_menu=zipcodes"><span class="icon-map-marker"></span> Zipcodes</a></li>
 		</ul>
 		</div>
 		<div style="flex:3;margin-left:15px;" class="w_nowrap" id="add_result">

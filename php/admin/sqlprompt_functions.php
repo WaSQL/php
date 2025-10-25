@@ -531,7 +531,7 @@ function sqlpromptMonitorTools(){
 		'-list'=>$recs,
 		'-hidesearch'=>1,
 		'-listview'=>getView('sqlprompt_named_query'),
-		'-pretable'=>'<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;"><wtranslate>Admin Tools</wtranslate></div><ul style="margin-top:0px;" class="nav-list '.configValue('admin_color').'"  >',
+		'-pretable'=>'<div class="w_bold w_big" style="border-top:2px solid #f1f1f1;padding-top:10px;">Admin Tools</div><ul style="margin-top:0px;" class="nav-list '.configValue('admin_color').'"  >',
 		'-posttable'=>'</ul>'
 	));
 }
