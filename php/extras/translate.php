@@ -259,6 +259,7 @@ function translateUnmapText($source,$target){
  * - Prefers confirmed=1 (ties broken by lowest failed), in ONE batched query
  *   using MySQL 8 CTE + JSON_TABLE + ROW_NUMBER().
  * - Fast within the request via a static memory cache (no APCu required).
+ * - Auto-creates missing translations with source locale and target locale
  *
  * @param string $html
  * @param string $locale e.g. 'es-mx'
@@ -272,12 +273,11 @@ function translateHTML($html, $locale=''){
 	}
 	global $CONFIG;
 	if(!isset($CONFIG['database'])){return (string)$html;}
-
 	// Find all <translate>…</translate> occurrences (works in text or attributes)
 	if (!preg_match_all('#<translate>(.*?)</translate>#is', $html, $matches, PREG_SET_ORDER)) {
 		return $html;
 	}
-
+	//echo $locale.printValue($matches);exit;
 	// Unique identifiers for batch lookup
 	$phrasesById = [];   // id => original text
 	foreach ($matches as $m) {
@@ -288,10 +288,8 @@ function translateHTML($html, $locale=''){
 	if (!$phrasesById) {
 		return $html;
 	}
-
 	// Per-request cache: [locale][id] => translation|null
 	static $memoryCache = [];
-
 	// Which IDs we still need to fetch from DB (not seen in cache)
 	$need = [];
 	foreach ($phrasesById as $id => $_txt) {
@@ -299,7 +297,6 @@ function translateHTML($html, $locale=''){
 			$need[$id] = $_txt;
 		}
 	}
-
 	// Nothing to look up
 	if (!$need) {
 		return preg_replace_callback(
@@ -315,7 +312,6 @@ function translateHTML($html, $locale=''){
 			$html
 		);
 	}
-
 	// Determine server version (8+ supports CTE/JSON_TABLE; 5.7 does not)
 	$verRes = dbQueryResults($CONFIG['database'], "SELECT VERSION() AS value", []);
 	$verStr = isset($verRes[0]['value']) ? (string)$verRes[0]['value'] : '5.7.0';
@@ -326,7 +322,6 @@ function translateHTML($html, $locale=''){
 	if (!isset($memoryCache[$locale])) {
 		$memoryCache[$locale] = [];
 	}
-
 	if ($supports_json_table) {
 		// Fast path for MySQL 8+: single round-trip using CTE + JSON_TABLE
 		$jsonIds = json_encode(array_keys($need), JSON_UNESCAPED_UNICODE);
@@ -342,9 +337,10 @@ WHERE t.locale = ? AND t.confirmed = 1 AND t.wasql = 0
 SQL;
 		$params = array('-values' => array($jsonIds, $locale));
 		try{
-			$rows = dbQueryResults($CONFIG['database'], $query, $params);
-			foreach (($rows ?: []) as $r) {
-				$memoryCache[$locale][$r['identifier']] = $r['translation'];
+			$recs = dbQueryResults($CONFIG['database'], $query, $params);
+			//echo $query.printValue($recs).$jsonIds;exit;
+			foreach (($recs ?: []) as $rec) {
+				$memoryCache[$locale][$rec['identifier']] = $rec['translation'];
 			}
 		}
 		catch(Exception $e){
@@ -352,7 +348,6 @@ SQL;
 			$supports_json_table = false;
 		}
 	}
-
 	if (!$supports_json_table) {
 		// Portable path for MySQL 5.7: chunked IN (…) lookups (no CTE/JSON_TABLE)
 		$ids = array_keys($need);
@@ -360,20 +355,72 @@ SQL;
 		for ($i = 0; $i < count($ids); $i += $chunkSize) {
 			$chunk = array_slice($ids, $i, $chunkSize);
 			$ph = implode(',', array_fill(0, count($chunk), '?'));
-			$query57 = "
+			$query = "
 				SELECT t.identifier, t.translation
 				FROM _translations t
 				WHERE t.locale = ? AND t.confirmed = 1 AND t.wasql = 0
 				  AND t.identifier IN ($ph)
 			";
-			$params57 = array('-values' => array_merge([$locale], $chunk));
-			$rows57 = dbQueryResults($CONFIG['database'], $query57, $params57);
-			foreach (($rows57 ?: []) as $r) {
-				$memoryCache[$locale][$r['identifier']] = $r['translation'];
+			$params = array('-values' => array_merge([$locale], $chunk));
+			$recs = dbQueryResults($CONFIG['database'], $query, $params);
+			foreach (($recs ?: []) as $rec) {
+				$memoryCache[$locale][$rec['identifier']] = $rec['translation'];
 			}
 		}
 	}
-
+	// Identify missing translations and auto-create them
+	$missing = [];
+	foreach ($need as $id => $txt) {
+		if (!array_key_exists($id, $memoryCache[$locale])) {
+			$missing[$id] = $txt;
+		}
+	}
+	if (!empty($missing)) {
+		$sourceLang = commonCoalesce($_SERVER['REMOTE_LANG'],'en-us');
+		//check to see if the source is there
+		$ids=array_keys($missing);
+		$idstr=implode("','",$ids);
+		$sourcerecs=getDBRecords(array(
+			'-table'=>'_translations',
+			'-fields'=>'_id,identifier,locale',
+			'-index'=>'identifier',
+			'-where'=>"locale='{$sourceLang}' AND identifier IN ('{$idstr}')"
+		));
+		//echo printValue($missing).printValue($sourcerecs);exit;
+		foreach ($missing as $id => $txt) {
+			try {
+				// Step 1: Insert source locale record (if not already there)
+				if (!isset($sourcerecs[$id])) {
+					// Insert source record
+					$sourceId=addDBRecord(array(
+							'-table'=>'_translations',
+							'locale'=>$sourceLang,
+							'identifier'=>$id,
+							'translation'=>$txt,
+							'source_id'=>0,
+							'confirmed'=>1
+					));
+				} 
+				else {
+					$sourceId = $sourcerecs[$id]['_id'];
+				}
+				// Step 2: Insert target locale record with reference to source
+				$newid=addDBRecord(array(
+							'-table'=>'_translations',
+							'locale'=>$locale,
+							'identifier'=>$id,
+							'translation'=>$txt,
+							'source_id'=>$sourceId,
+							'-upsert'=>'ignore'
+					));
+				// Cache the translation (using original text as fallback)
+				$memoryCache[$locale][$id] = $txt;
+			} catch (Exception $e) {
+				// Silently fail and use original text
+				$memoryCache[$locale][$id] = $txt;
+			}
+		}
+	}
 	// Replace tags using cached resolutions
 	$out = preg_replace_callback(
 		'#<translate>(.*?)</translate>#is',
@@ -388,7 +435,6 @@ SQL;
 		},
 		$html
 	);
-
 	return $out;
 }
 //---------- begin function translateTextOLD
