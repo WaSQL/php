@@ -915,6 +915,9 @@ function commonSearchFiltersForm($params=array()){
 	if(empty($params['-formname'])){
 		$params['-formname']='searchfiltersform';
 	}
+	if(isset($params['-translate']) && $params['-translate']==1){
+		loadExtras('translate');
+	}
 	$params['class']='browser-default';
 	//beginning Form tag
 	$rtn = '<form method="post"';
@@ -1081,7 +1084,12 @@ function commonSearchFiltersForm($params=array()){
 		foreach($params['-searchfields'] as $field){
 			if(isset($params["{$field}_displayname"])){$dname=$params["{$field}_displayname"];}
 			elseif(isset($params["{$field}_options"]['displayname'])){$dname=$params["{$field}_options"]['displayname'];}
-			else{$dname=ucwords(str_replace('_',' ',$field));}
+			else{
+				$dname=ucwords(str_replace('_',' ',$field));
+				if(isset($params['-translate']) && $params['-translate']==1){
+					$dname=translateHTML("<translate>{$dname}</translate>");
+				}
+			}
 	    	$vals[$field]=$dname;
 		}
 	}
@@ -1092,7 +1100,12 @@ function commonSearchFiltersForm($params=array()){
 	    	if(isWasqlField($field) && $field != '_id'){continue;}
 	    	if(isset($params["{$field}_displayname"])){$dname=$params["{$field}_displayname"];}
 			elseif(isset($params["{$field}_options"]['displayname'])){$dname=$params["{$field}_options"]['displayname'];}
-			else{$dname=ucwords(str_replace('_',' ',$field));}
+			else{
+				$dname=ucwords(str_replace('_',' ',$field));
+				if(isset($params['-translate']) && $params['-translate']==1){
+					$dname=translateHTML("<translate>{$dname}</translate>");
+				}
+			}
 	    	$vals[$field]=$dname;
 		}
 	}
@@ -1143,6 +1156,11 @@ function commonSearchFiltersForm($params=array()){
 				}
 				$vals=$tmp;
 			}
+			if(isset($params['-translate']) && $params['-translate']==1){
+				foreach($vals as $k=>$v){
+					$vals[$k]=translateHTML("<translate>{$v}</translate>");
+				}
+			}
 			$cparams=array();
 			if(isset($params['-search_select_class'])){
 				$cparams['class']=$params['-search_select_class'];
@@ -1162,6 +1180,9 @@ function commonSearchFiltersForm($params=array()){
 				$cparams['-formname']=$params['-formname'];
 			}
 			$cparams['placeholder']='value';
+			if(isset($params['-translate']) && $params['-translate']==1){
+				$cparams['placeholder']=translateHTML("<translate>{$cparams['placeholder']}</translate>");
+			}
 			//$cparams['autofocus']='autofocus';
 			$rtn .= buildFormText('filter_value',$cparams);
 			unset($params['autofocus']);
@@ -1172,10 +1193,14 @@ function commonSearchFiltersForm($params=array()){
 			if(!empty($params['-showorder']) && $params['-showorder']==1){
 				$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 				$vals=array();
+				$orderbyname='Order By';
+				if(isset($params['-translate']) && $params['-translate']==1){
+					$orderbyname=translateHTML("<translate>{$orderbyname}</translate>");
+				}
 				foreach($params['-listfields'] as $fld){
 					$dname=ucwords(trim(str_replace('_',' ',$fld)));
-					$vals[$fld]='Order By '.$dname;
-					$vals["{$fld} desc"]='Order By '.$dname.' desc';
+					$vals[$fld]="{$orderbyname} {$dname}";
+					$vals["{$fld} desc"]="{$orderbyname} {$dname} DESC";
 				}
 				$cparams=array();
 				if(isset($params['-search_select_class'])){
@@ -1209,8 +1234,12 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= '			</div>'.PHP_EOL;
 		}
 		//search button
+		$searchtext='Search';
+		if(isset($params['-translate']) && $params['-translate']==1){
+			$searchtext=translateHTML("<translate>{$searchtext}</translate>");
+		}
 		$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
-		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].',0);return false;"><span class="icon-search" style="margin-right:5px;"></span> Search</button>'.PHP_EOL;
+		$rtn .= '				<button type="submit" id="'.$params['-formname'].'_search_button" class="'.$btnclass.'" onclick="wacss.pagingSetProcessing(this);wacss.pagingSetOffset(document.'.$params['-formname'].',0);return false;"><span class="icon-search" style="margin-right:5px;"></span> '.$searchtext.'</button>'.PHP_EOL;
 		$rtn .= '			</div>'.PHP_EOL;
 		if(!isset($params['-simplesearch'])){
 			//add filter
@@ -7687,34 +7716,6 @@ function removeViews($htm){
 function processTranslateTags($htm){
 	loadExtras('translate');
 	return translateHTML($htm);
-	if(!stringContains($htm,'<translate>') && !stringContains($htm,'<wtranslate>')){return $htm;}
-	
-	preg_match_all('/\<translate\>(.+?)\<\/translate\>/ism',$htm,$m,PREG_PATTERN_ORDER);
-	/* this returns an array of three arrays
-		0 = the whole tag
-		1 = the tag text
-	*/
-	foreach($m[1] as $i=>$text){
-		$replace_str=translateText($text);
-		$htm=str_replace($m[0][$i],$replace_str,$htm);
-	}
-	if(stringContains($htm,'<translate>')){
-    	debugValue("Translate Tag Error detected - perhaps a malformed 'translate' tag");
-	}
-	//wtranslate
-	preg_match_all('/\<wtranslate\>(.+?)\<\/wtranslate\>/ism',$htm,$wm,PREG_PATTERN_ORDER);
-	/* this returns an array of three arrays
-		0 = the whole tag
-		1 = the tag text
-	*/
-	foreach($wm[1] as $i=>$text){
-		$replace_str=translateText($text,'',1);
-		$htm=str_replace($wm[0][$i],$replace_str,$htm);
-	}
-	if(stringContains($htm,'<wtranslate>')){
-    	debugValue("wTranslate Tag Error detected - perhaps a malformed 'wtranslate' tag");
-	}
-	return $htm;
 }
 //---------- begin function commonProcessChartjsTags
 /**
