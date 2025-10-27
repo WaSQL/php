@@ -22,6 +22,122 @@ $progpath=dirname(__FILE__);
 //make sure the translations table exists
 translateCheckSchema();
 
+/**
+ * Returns translated month names for January through December
+ * 
+ * Uses PHP's IntlDateFormatter to provide localized month names in the specified
+ * locale. The locale should be in the format 'en-US', 'es-ES', 'fr-FR', etc.
+ * 
+ * @param string $format The format type: 'short' (Jan, Feb) or 'long' (January, February)
+ * @param string $locale The locale code (e.g., 'en-US', 'es-ES', 'fr-FR')
+ * @return array An array of 12 translated month names starting with January
+ * 
+ * @example
+ * $months = translateMonthNames('es-ES', 'long');
+ * // Returns: ['enero', 'febrero', 'marzo', ...]
+ */
+function translateMonthNames($format = 'long',$locale='') {
+		$locale = commonCoalesce($locale, $_SESSION['REMOTE_LANG'], $_REQUEST['REMOTE_LANG'], 'en-US');
+    // Convert en-US to en_US format for IntlDateFormatter
+    $locale = str_replace('-', '_', $locale);
+    
+    // Determine the pattern based on format
+    switch(strtolower($format)){
+    	case 'one':
+    	case 'one-letter':
+    		$pattern = 'MMMMM'; // one letter
+    	break;
+    	case 'three':
+    	case 'short':
+    	case 'medium':
+    		$pattern = 'MMM'; // Three letter abbreviation
+    	break;
+    	default:
+    		$pattern = 'MMMM'; // default to long
+    	break;
+    }
+    // Create formatter
+    $formatter = new IntlDateFormatter(
+        $locale,
+        IntlDateFormatter::FULL,
+        IntlDateFormatter::NONE,
+        null,
+        null,
+        $pattern
+    );
+    //fail if formatter is invalid
+    if (!$formatter) {return array();}
+    $months = array();
+    
+    // Loop through 12 months
+    for ($i = 1; $i <= 12; $i++) {
+        // Create a date for each month (using the 1st day)
+        $date = mktime(0, 0, 0, $i, 1, 2024);
+        $months[] = $formatter->format($date);
+    }
+    
+    return $months;
+}
+
+/**
+ * Returns translated day names for Sunday through Saturday
+ * 
+ * Uses PHP's IntlDateFormatter to provide localized day names in the specified
+ * locale. The locale should be in the format 'en-US', 'es-ES', 'fr-FR', etc.
+ * 
+ * @param string $format The format type: 'short' (S, M, T), 'med' (Sun, Mon, Tue), or 'long' (Sunday, Monday, Tuesday)
+ * @param string $locale The locale code (e.g., 'en-US', 'es-ES', 'fr-FR')
+ * @return array An array of 7 translated day names starting with Sunday
+ * 
+ * @example
+ * $days = translateDayNames('fr-FR', 'long');
+ * // Returns: ['dimanche', 'lundi', 'mardi', ...]
+ */
+function translateDayNames($format = 'long',$locale='') {
+		$locale = commonCoalesce($locale, $_SESSION['REMOTE_LANG'], $_REQUEST['REMOTE_LANG'], 'en-US');
+    // Convert en-US to en_US format for IntlDateFormatter
+    $locale = str_replace('-', '_', $locale);
+    
+    // Determine the pattern based on format
+    switch(strtolower($format)){
+    	case 'short':
+    	case 'one':
+    	case 'one-letter':
+    		$pattern = 'EEEEE'; // one letter
+    	break;
+    	case 'two':
+    	case 'two-letter':
+    		$pattern = 'EE'; // two letter
+    	break;
+    	case 'three':
+    	case 'med':
+    	case 'medium':
+    		$pattern = 'EEE'; // Three letter abbreviation
+    	break;
+    	default:
+    		$pattern = 'EEEE'; // default to long
+    	break;
+    }
+    // Create formatter
+    $formatter = new IntlDateFormatter(
+        $locale,
+        IntlDateFormatter::FULL,
+        IntlDateFormatter::NONE,
+        null,
+        null,
+        $pattern
+    );
+    //fail if formatter is invalid
+    if (!$formatter) {return array();}
+    $days = array();
+    // Loop through 7 days starting from Sunday
+    $baseDate = mktime(0, 0, 0, 1, 7, 2024); // January 7, 2024 is a Sunday
+		for ($i = 0; $i < 7; $i++) {
+		    $date = strtotime("+$i days", $baseDate);
+		    $days[] = $formatter->format($date);
+		}
+    return $days;
+}
 
 //functions
 //---------- begin function translateCheckSchema

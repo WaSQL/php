@@ -8600,18 +8600,44 @@ function stringEquals($string, $search){
 */
 function getCalendar($monthyear='',$params=array()){
 	global $USER;
+	loadExtras('translate');
 	if(!strlen($monthyear)){$monthyear=time();}
 	if(!isNum($monthyear)){$monthyear=strtotime($monthyear);}
 	if(!isset($params['-view'])){$params['-view']='month';}
 	$params['-view']=strtolower(trim($params['-view']));
 	//build current array
 	$calendar=array('-view'=>$params['-view']);
-
+	//translated months
+	$calendar['monthnames']=array(
+    	'short'	=> translateMonthNames('three'),
+    	'long'	=> translateMonthNames('long')
+    );
+    //daynames translated
+	$calendar['daynames']=array(
+    	'short'	=> translateDayNames('one'),
+    	'med'	=> translateDayNames('three'),
+    	'long'	=> translateDayNames('long')
+    );
+    //all
+    $calendar['daynames']['all'] = array();
+	for ($i = 0; $i < 7; $i++) {
+	    $calendar['daynames']['all'][] = array(
+	        'short' => $calendar['daynames']['short'][$i],
+	        'med'   => $calendar['daynames']['med'][$i],
+	        'long'  => $calendar['daynames']['long'][$i]
+	    );
+	}
 	//setup current
 	$calendar['current']=getdate($monthyear);
-	$calendar['current']['month_short']=substr(date('M',$monthyear),0,2);
-	$calendar['current']['month_med']=date('M',$monthyear);
-	$calendar['current']['month_long']=date('F',$monthyear);
+	//translate weekday and month that are returned by getdate
+	$calendar['current']['weekday']=$calendar['daynames']['long'][$calendar['current']['wday']];
+	$calendar['current']['month']=$calendar['monthnames']['long'][$calendar['current']['mon']-1];
+	
+    $monthnameindex=(integer)date('n',$monthyear) - 1;
+
+	$calendar['current']['month_short']=$calendar['monthnames']['short'][$monthnameindex];
+	$calendar['current']['month_med']=$calendar['monthnames']['short'][$monthnameindex];
+	$calendar['current']['month_long']=$calendar['monthnames']['long'][$monthnameindex];
 	$calendar['current']['month_num']=date('n',$monthyear);
 	$calendar['current']['month_num2']=date('m',$monthyear);
 	$calendar['current']['wnum']=getWeekNumber($monthyear);
@@ -8621,51 +8647,81 @@ function getCalendar($monthyear='',$params=array()){
 
 	//first_week_day
 	$calendar['current']['first_week_day']=getdate($calendar['current']['0']-($calendar['current']['wday']*86400));
-	unset($calendar['next_day']['seconds']);
-	unset($calendar['next_day']['minutes']);
-	unset($calendar['next_day']['hours']);
+	//translate weekday and month that are returned by getdate
+	$calendar['current']['first_week_day']['weekday']=$calendar['daynames']['long'][$calendar['current']['first_week_day']['wday']];
+	$calendar['current']['first_week_day']['month']=$calendar['monthnames']['long'][$calendar['current']['first_week_day']['mon']-1];
+	unset($calendar['current']['first_week_day']['seconds']);
+	unset($calendar['current']['first_week_day']['minutes']);
+	unset($calendar['current']['first_week_day']['hours']);
+	
 
 	//last_week_day
 	$calendar['current']['last_week_day']=getdate($calendar['current']['first_week_day'][0]+(6*86400));
-	unset($calendar['next_day']['last_week_day']['seconds']);
-	unset($calendar['next_day']['last_week_day']['minutes']);
-	unset($calendar['next_day']['last_week_day']['hours']);
+	//translate weekday and month that are returned by getdate
+	$calendar['current']['last_week_day']['weekday']=$calendar['daynames']['long'][$calendar['current']['last_week_day']['wday']];
+	$calendar['current']['last_week_day']['month']=$calendar['monthnames']['long'][$calendar['current']['last_week_day']['mon']-1];
+	unset($calendar['current']['last_week_day']['seconds']);
+	unset($calendar['current']['last_week_day']['minutes']);
+	unset($calendar['current']['last_week_day']['hours']);
+	
 
 	$calendar['current']['days_in_this_month'] = getDaysInMonth($calendar['current'][0]);
 
 	$calendar['next_day'] = getdate(strtotime('+1 day', $calendar['current'][0]));
+	//translate weekday and month that are returned by getdate
+	$calendar['next_day']['weekday']=$calendar['daynames']['long'][$calendar['next_day']['wday']];
+	$calendar['next_day']['month']=$calendar['monthnames']['long'][$calendar['next_day']['mon']-1];
 	unset($calendar['next_day']['seconds']);
 	unset($calendar['next_day']['minutes']);
 	unset($calendar['next_day']['hours']);
 
+
 	$calendar['prev_day'] = getdate(strtotime('-1 day', $calendar['current'][0]));
+	//translate weekday and month that are returned by getdate
+	$calendar['prev_day']['weekday']=$calendar['daynames']['long'][$calendar['prev_day']['wday']];
+	$calendar['prev_day']['month']=$calendar['monthnames']['long'][$calendar['prev_day']['mon']-1];
 	unset($calendar['prev_day']['seconds']);
 	unset($calendar['prev_day']['minutes']);
 	unset($calendar['prev_day']['hours']);
 
 	$calendar['next_week'] = getdate(strtotime('+1 week', $calendar['current'][0]));
+	//translate weekday and month that are returned by getdate
+	$calendar['next_week']['weekday']=$calendar['daynames']['long'][$calendar['next_week']['wday']];
+	$calendar['next_week']['month']=$calendar['monthnames']['long'][$calendar['next_week']['mon']-1];
 	unset($calendar['next_week']['seconds']);
 	unset($calendar['next_week']['minutes']);
 	unset($calendar['next_week']['hours']);
 
 	$calendar['prev_week'] = getdate(strtotime('-1 week', $calendar['current'][0]));
+	//translate weekday and month that are returned by getdate
+	$calendar['prev_week']['weekday']=$calendar['daynames']['long'][$calendar['prev_week']['wday']];
+	$calendar['prev_week']['month']=$calendar['monthnames']['long'][$calendar['prev_week']['mon']-1];
 	unset($calendar['prev_week']['seconds']);
 	unset($calendar['prev_week']['minutes']);
 	unset($calendar['prev_week']['hours']);
 
 	$calendar['this_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'], 1, $calendar['current']['year']));
+	//translate weekday and month that are returned by getdate
+	$calendar['this_month']['weekday']=$calendar['daynames']['long'][$calendar['this_month']['wday']];
+	$calendar['this_month']['month']=$calendar['monthnames']['long'][$calendar['this_month']['mon']-1];
 	$calendar['this_month']['days_in_this_month'] = getDaysInMonth($calendar['this_month'][0]);
 	unset($calendar['this_month']['seconds']);
 	unset($calendar['this_month']['minutes']);
 	unset($calendar['this_month']['hours']);
 
 	$calendar['nextnext_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] + 2, 1, $calendar['current']['year']));
+	//translate weekday and month that are returned by getdate
+	$calendar['nextnext_month']['weekday']=$calendar['daynames']['long'][$calendar['nextnext_month']['wday']];
+	$calendar['nextnext_month']['month']=$calendar['monthnames']['long'][$calendar['nextnext_month']['mon']-1];
 	$calendar['nextnext_month']['days_in_this_month'] = getDaysInMonth($calendar['nextnext_month'][0]);
 	unset($calendar['nextnext_month']['seconds']);
 	unset($calendar['nextnext_month']['minutes']);
 	unset($calendar['nextnext_month']['hours']);
 
 	$calendar['next_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] + 1, 1, $calendar['current']['year']));
+	//translate weekday and month that are returned by getdate
+	$calendar['next_month']['weekday']=$calendar['daynames']['long'][$calendar['next_month']['wday']];
+	$calendar['next_month']['month']=$calendar['monthnames']['long'][$calendar['next_month']['mon']-1];
 	$calendar['next_month']['days_in_this_month'] = getDaysInMonth($calendar['next_month'][0]);
 	unset($calendar['next_month']['seconds']);
 	unset($calendar['next_month']['minutes']);
@@ -8673,6 +8729,9 @@ function getCalendar($monthyear='',$params=array()){
 
 
 	$calendar['prev_month'] = getdate(mktime(0, 0, 0, $calendar['current']['mon'] - 1, 1, $calendar['current']['year']));
+	//translate weekday and month that are returned by getdate
+	$calendar['prev_month']['weekday']=$calendar['daynames']['long'][$calendar['prev_month']['wday']];
+	$calendar['prev_month']['month']=$calendar['monthnames']['long'][$calendar['prev_month']['mon']-1];
 	$calendar['prev_month']['days_in_this_month'] = getDaysInMonth($calendar['prev_month'][0]);
 	unset($calendar['prev_month']['seconds']);
 	unset($calendar['prev_month']['minutes']);
@@ -8680,21 +8739,7 @@ function getCalendar($monthyear='',$params=array()){
 
 	//Find out when this month starts and ends.
 	$calendar['current']['first_month_day'] = $calendar['this_month']['wday'];
-
-	$calendar['daynames']=array(
-    	'short'	=> array('S','M','T','W','T','F','S'),
-    	'med'	=> array('Sun','Mon','Tue','Wed','Thu','Fri','Sat'),
-    	'long'	=> array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
-    	'all'	=> array(
-    		array('short'=>'Su','med'=>'Sun','long'=>'Sunday'),
-    		array('short'=>'Mo','med'=>'Mon','long'=>'Monday'),
-    		array('short'=>'Tu','med'=>'Tue','long'=>'Tuesday'),
-    		array('short'=>'We','med'=>'Wed','long'=>'Wednesday'),
-    		array('short'=>'Th','med'=>'Thu','long'=>'Thursday'),
-    		array('short'=>'Fr','med'=>'Fri','long'=>'Friday'),
-    		array('short'=>'Sa','med'=>'Sat','long'=>'Saturday'),
-    	)
-	);
+	
 	$calendar['groupnames']=array();
 	//Fill the first week of the month with the appropriate days from previous month
 	$minus=-1;
@@ -8705,6 +8750,9 @@ function getCalendar($monthyear='',$params=array()){
 
 	for($week_day = 0; $week_day < $calendar['current']['first_month_day']; $week_day++){
 		$cdate=getdate(strtotime("{$m} {$d} {$y}"));
+		//translate weekday and month that are returned by getdate
+		$cdate['weekday']=$calendar['daynames']['long'][$cdate['wday']];
+		$cdate['month']=$calendar['monthnames']['long'][$cdate['mon']-1];
 		$cdate['wnum']=getWeekNumber($cdate[0]);
 		$cdate['day']			= $cdate['mday'];
 		$cdate['name_char']		= $calendar['daynames']['short'][$cdate['wday']];
@@ -8735,6 +8783,9 @@ function getCalendar($monthyear='',$params=array()){
     	foreach($recs as $rec){
 			if(isset($rec['startdate'])){
         		$edate=getdate(strtotime($rec['startdate']));
+        		//translate weekday and month that are returned by getdate
+				$edate['weekday']=$calendar['daynames']['long'][$edate['wday']];
+				$edate['month']=$calendar['monthnames']['long'][$edate['mon']-1];
         		$edate['wnum']=getWeekNumber($edate[0]);
         		//skip events that do not apply to this view
         		if($calendar['current']['year'] != $edate['year']){continue;}
@@ -8799,6 +8850,9 @@ function getCalendar($monthyear='',$params=array()){
 		if(is_array($recs)){
 			foreach($recs as $rec){
 				$edate=getdate(strtotime($rec['startdate']));
+				//translate weekday and month that are returned by getdate
+				$edate['weekday']=$calendar['daynames']['long'][$edate['wday']];
+				$edate['month']=$calendar['monthnames']['long'][$edate['mon']-1];
 				if(!isset($rec['group'])){$rec['group']=$params['-event_table'];}
 				if(isset($rec['group']) && !isset($calendar['groupnames'][$rec['group']])){
 					$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
@@ -8827,7 +8881,7 @@ function getCalendar($monthyear='',$params=array()){
 				$ical_group=implode(' ',$nameparts);
 			}
 			//icon override for this group
-			if(isset($params['-ical_icons'][$icon_group])){$icon=$params['-ical_icons'][$icon_group];}
+			if(isset($params['-ical_icons'][$ical_group])){$icon=$params['-ical_icons'][$ical_group];}
 			//load group and icon into groupnames
 			if(isset($ical_group) && !isset($calendar['groupnames'][$ical_group])){
 				$calendar['groupnames'][$ical_group]=array('icon'=>$icon,'name'=>$ical_group);
@@ -8846,6 +8900,9 @@ function getCalendar($monthyear='',$params=array()){
         	foreach($ical_events as $rec){
 				//skip events not in this month
 				$dstart=getdate(strtotime($rec['date_start']));
+				//translate weekday and month that are returned by getdate
+				$dstart['weekday']=$calendar['daynames']['long'][$dstart['wday']];
+				$dstart['month']=$calendar['monthnames']['long'][$dstart['mon']-1];
 				$dstart['wnum']=getWeekNumber($dstart[0]);
 				$dstop=getdate(strtotime($rec['date_stop']));
 				$dstop['wnum']=getWeekNumber($dstop[0]);
@@ -8884,7 +8941,7 @@ function getCalendar($monthyear='',$params=array()){
 					$event['timestring']='From '.$event['timestring'].' to '.date('g:i a',strtotime($rec['time_stop']));
 					$event['time_stop']=date('g:i a',strtotime($rec['time_stop']));
 				}
-				$event['name']=$event['eventtime'].' '.$rec['title'];
+				$event['name']=$event['timestring'].' '.$rec['title'];
             	if($rec['date_stop'] != $rec['date_start']){
                 	$startTime = strtotime("{$rec['date_start']} 12:00");
 					$endTime = strtotime("{$rec['date_stop']} 12:00");
@@ -8929,6 +8986,11 @@ function getCalendar($monthyear='',$params=array()){
 		$d=strlen($day_counter)==2?$day_counter:'0'.$day_counter;
 		$current['date']="{$calendar['current']['year']}-{$m}-{$d}";
 		$edate=getdate(strtotime($current['date']));
+		//translate weekday and month that are returned by getdate
+		$edate['weekday']=$calendar['daynames']['long'][$edate['wday']];
+		$edate['month']=$calendar['monthnames']['long'][$edate['mon']-1];
+		$current['weekday']=$edate['weekday'];
+		$current['month']=$edate['month'];
 		unset($edate['seconds']);
 		unset($edate['minutes']);
 		unset($edate['hours']);
@@ -9011,6 +9073,9 @@ function getCalendar($monthyear='',$params=array()){
 	$y=$calendar['next_month']['year'];
 	for($x=$cnt;$x<7;$x++){
 		$cdate=getdate(strtotime("{$m} {$d} {$y}"));
+		//translate weekday and month that are returned by getdate
+		$cdate['weekday']=$calendar['daynames']['long'][$cdate['wday']];
+		$cdate['month']=$calendar['monthnames']['long'][$cdate['mon']-1];
 		$cdate['wnum']=getWeekNumber($cdate[0]);
 		$cdate['day']			= $cdate['mday'];
 		$cdate['name_char']		= $calendar['daynames']['short'][$cdate['wday']];
@@ -9028,7 +9093,7 @@ function getCalendar($monthyear='',$params=array()){
     unset($calendar['this_month']);
     unset($calendar[0]);
     return $calendar;
-	}
+}
 //---------- begin function calendar
 /**
 * @exclude  - this function will be depreciated and thus excluded from the manual
@@ -9055,10 +9120,11 @@ function calendar($params=array()){
     //Show Month Name and Year
 	$rtn .= '	<tr class="w_calendar_month"><td colspan="7" align="center">'. "{$month_name} {$year}" . '</td></tr>'.PHP_EOL;
     //Show Day names
+    loadExtras('translate');
     $names=array(
-    	'short'	=> array('S','M','T','W','T','F','S'),
-    	'med'	=> array('Sun','Mon','Tue','Wed','Thu','Fri','Sat'),
-    	'long'	=> array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'),
+    	'short'	=> translateDayNames('one'),
+    	'med'	=> translateDayNames('three'),
+    	'long'	=> translateDayNames('long'),
 		);
 	$daysformat=isset($params['daysformat'])?$params['daysformat']:'short';
 	$rtn .= '	<tr class="w_calendar_names" align="center">'.PHP_EOL;
