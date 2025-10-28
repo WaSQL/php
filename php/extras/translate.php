@@ -369,6 +369,16 @@ function translateUnmapText($source,$target){
 	return $target;
 }
 /**
+ * Translates a string by putting <translate> tags around it and processing it via translateHTML
+ *
+ * @param string $html
+ * @param [string $locale] e.g. 'es-mx'
+ * @return string translated
+ */
+function translateString($str,$locale=''){
+	return translateHTML("<translate>{$str}</translate>",$locale);
+}
+/**
  * Replace <translate>...</translate> tags in $html using the translations table.
  *
  * - translations.identifier = sha1(text inside tags)
