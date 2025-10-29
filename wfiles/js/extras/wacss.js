@@ -1016,15 +1016,17 @@ var wacss = {
   		}
   		return cleaned;
 	},
-	formChanged: function(frm,debug){
-		if(undefined == debug || debug != 1){debug=0;}
-		if(debug==1){console.log('formChanged');}
+	formChanged: function(frm,ignorecp=0){
+		if(undefined == ignorecp || ignorecp != 1){ignorecp=0;}
+		let debug=0;
 		//check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have changed
-		let cpop=wacss.getParent(frm,'div','wacss_centerpop');
-		if(undefined != cpop){
-			let cpop_close=cpop.querySelector('.wacss_centerpop_close');
-			if(undefined != cpop_close){
-				cpop_close.dataset.formchanged=1;
+		if(ignorecp==0){
+			let cpop=wacss.getParent(frm,'div','wacss_centerpop');
+			if(undefined != cpop){
+				let cpop_close=cpop.querySelector('.wacss_centerpop_close');
+				if(undefined != cpop_close){
+					cpop_close.dataset.formchanged=1;
+				}
 			}
 		}
 		//data-classif="w_red:age:4"
