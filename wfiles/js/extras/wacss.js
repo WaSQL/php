@@ -293,13 +293,11 @@ var wacss = {
 	    	}
 	    }
 	    //check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have not changed
-		if(ignorecp==0){
-			let cpop=wacss.getParent(frm,'div','wacss_centerpop');
-			if(undefined != cpop){
-				let cpop_close=cpop.querySelector('.wacss_centerpop_close');
-				if(undefined != cpop_close){
-					cpop_close.dataset.formchanged=0;
-				}
+		let cpop=wacss.getParent(frm,'div','wacss_centerpop');
+		if(undefined != cpop){
+			let cpop_close=cpop.querySelector('.wacss_centerpop_close');
+			if(undefined != cpop_close){
+				cpop_close.dataset.formchanged=0;
 			}
 		}
 	    //load
