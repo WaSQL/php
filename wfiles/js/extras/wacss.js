@@ -844,7 +844,8 @@ var wacss = {
 		cpt_close.onclick=function(){
 			//before just closing a centerpop check for forms that have changed and prompt to save
 			if(undefined != this.dataset.formchanged && this.dataset.formchanged==1){
-				if(!confirm('Form content has changed. If you close this window your changes will be lost.')){
+				this.dataset.formchanged=0;
+				if(!confirm('Form content has changed. If you close this window your changes will be lost. Only Warning.')){
 					return false;
 				}
 			}
