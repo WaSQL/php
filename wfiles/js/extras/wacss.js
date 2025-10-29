@@ -843,6 +843,11 @@ var wacss = {
 		cpt_close.closeid=cp.id;
 		cpt_close.onclick=function(){
 			//before just closing a centerpop check for forms that have changed and prompt to save
+			if(undefined != this.dataset.formchanged && this.dataset.formchanged==1){
+				if(!confirm('Form content has changed. If you close this window your changes will be lost.')){
+					return false;
+				}
+			}
 			let mcp=wacss.getObject(this.closeid);
 			wacss.removeId(this.closeid);
 		}
@@ -1013,6 +1018,14 @@ var wacss = {
 	formChanged: function(frm,debug){
 		if(undefined == debug || debug != 1){debug=0;}
 		if(debug==1){console.log('formChanged');}
+		//check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have changed
+		let cpop=wacss.getParent(frm,'div','wacss_centerpop');
+		if(undefined != cpop){
+			let cpop_close=cpop.querySelector('.wacss_centerpop_close');
+			if(undefined != cpop_close){
+				cpop_close.dataset.formchanged=1;
+			}
+		}
 		//data-classif="w_red:age:4"
 		//data-requiredif, data-displayif, data-hideif, data-blankif, data-readonlyif
 		//data-displayif
@@ -5029,21 +5042,20 @@ var wacss = {
 				d.setAttribute(k,attrs[k]);
 			}
 			d.addEventListener('input', function() {
+				//check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have changed
+				let cpop=wacss.getParent(list[i],'div','wacss_centerpop');
+				if(undefined != cpop){
+					let cpop_close=cpop.querySelector('.wacss_centerpop_close');
+					if(undefined != cpop_close){
+						cpop_close.dataset.formchanged=1;
+					}
+				}
 				let eid=this.dataset.editor;
 				let tobj=wacss.getObject(eid);
 				if(undefined == tobj){
 					console.log('textarea update failed: no eid: '+eid);
 					return false;
 				}
-				//call onchange once
-				let frm=wacss.getParent(tobj,'form');
-				if (
-					frm 
-					&& typeof frm.onchange === 'function'
-				) {
-					frm.onchange();
-				}
-
 				tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
 			});
 			d.setAttribute('contenteditable','true');
