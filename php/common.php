@@ -5754,7 +5754,7 @@ function buildFormSlider($name, $params=array()){
 		$params['oninput'].=";wacss.setSliderText(this);";	
 	}
 	else{
-		$params['oninput']=";wacss.setSliderText(this);";
+		$params['oninput']="wacss.setSliderText(this);";
 	}
 	
 	$displayif='';
