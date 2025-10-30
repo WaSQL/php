@@ -2478,6 +2478,74 @@ var wacss = {
 		}
 		return 0;
 	},
+	getLatLon: async function(inputElement, options = {}) {
+	    inputElement = wacss.getObject(inputElement);
+	    if (undefined == inputElement) {
+	        return false;
+	    }
+	    
+	    const {
+	        highAccuracy = true,
+	        timeout = 10000,
+	        maxAge = 0
+	    } = options;
+	    
+	    try {
+	        const position = await new Promise((resolve, reject) => {
+	            if (!navigator.geolocation) {
+	                reject(new Error('Geolocation is not supported by this browser'));
+	                return;
+	            }
+	            
+	            navigator.geolocation.getCurrentPosition(
+	                (position) => {
+	                    resolve({
+	                        latitude: position.coords.latitude,
+	                        longitude: position.coords.longitude,
+	                        accuracy: position.coords.accuracy, // meters
+	                        altitude: position.coords.altitude, // meters (may be null)
+	                        altitudeAccuracy: position.coords.altitudeAccuracy, // meters (may be null)
+	                        heading: position.coords.heading, // degrees (may be null)
+	                        speed: position.coords.speed, // meters/second (may be null)
+	                        timestamp: position.timestamp
+	                    });
+	                },
+	                (error) => {
+	                    let errorMessage = '';
+	                    switch(error.code) {
+	                        case error.PERMISSION_DENIED:
+	                            errorMessage = 'User denied location permission';
+	                            break;
+	                        case error.POSITION_UNAVAILABLE:
+	                            errorMessage = 'Location information unavailable';
+	                            break;
+	                        case error.TIMEOUT:
+	                            errorMessage = 'Location request timed out';
+	                            break;
+	                        default:
+	                            errorMessage = 'Unknown error occurred';
+	                    }
+	                    reject(new Error(errorMessage));
+	                },
+	                {
+	                    enableHighAccuracy: highAccuracy,
+	                    timeout: timeout,
+	                    maximumAge: maxAge
+	                }
+	            );
+	        });
+	        
+	        // Set input value as JSON array [lat, lon]
+	        inputElement.value = JSON.stringify([position.latitude, position.longitude]);
+	        
+	        // Return the full position object
+	        return position;
+	        
+	    } catch (error) {
+	        console.error('getLatLon error:', error.message);
+	        return false;
+	    }
+	},
 	guid: function () {
 	    function _p8(s) {
 	        let p = (Math.random().toString(16)+"000000000").substr(2,8);

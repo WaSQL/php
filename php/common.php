@@ -1748,6 +1748,28 @@ function asciiArt($file,$force=false){
 */
 function asciiEncode($str=''){return encodeAscii($str);}
 
+//---------- begin function buildFormText-----------------cfunc=new Function('wacss.initQrcodeBarcode();');---
+/**
+* @describe creates an HTML text field
+* @param name string
+* @param params array
+* @return string
+* @usage echo buildFormText('name',$params);
+*/
+function buildFormButton($params=array()){
+	//return $name.printValue($params);
+	if(!isset($params['type'])){$params['type']='button';}
+	if(!isset($params['text'])){$params['text']='SAVE';}
+	if(isset($params['displayif'])){
+		$params['data-displayif']=$params['displayif'];
+		unset($params['displayif']);
+	}
+	$tag = "<button type=\"{$params['type']}\" ";
+	$tag .= setTagAttributes($params);
+	$tag .= ">{$params['text']}</button>";
+	return $tag;
+}
+
 //---------- begin function buildIECompatible ----------
 /**
 * @describe build X-UA-Compatible meta tag for IE
@@ -3148,53 +3170,23 @@ ENDOFTAG;
 * @param params array
 * [zoom] integer - zoom level defaults to 13
 * @return string
-* @usage echo buildFormGeoLocationMap('work_location',$params);
+* @usage echo buildFormLatLon('work_location',$params);
 */
 function buildFormLatLon($name,$params=array()){
-	global $CONFIG;
-	//return $name.printValue($params);
-	$name=preg_replace('/[\[\]]+$/','',$name);
-	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name']) && strlen($params['name'])){$name=$params['name'];}
-	$params['name']=$name;
-	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
-	$params['width']=isNum($params['width'])?$params['width']:300;
-	if(!isset($params['class']) || !strlen($params['class'])){$params['class']='input';}
-	if(!isset($params['autocomplete'])){$params['autocomplete']='off';}
-	if(!isset($params['-apikey']) && isset($CONFIG['google_apikey'])){
-		$params['-apikey']=$CONFIG['google_apikey'];
-	}
-	if(!isset($params['style'])){$params['style']='';}
-	if(!isset($params['zoom'])){$params['zoom']=13;}
-	$params['style'].='pointer-events: none;font-size:0.8rem;border-right:0px !important;border-top-right-radius: 0px;border-bottom-right-radius: 0px;';
-	if(isset($params['displayname'])){$dname=$params['displayname'];}
-	else{$dname=ucwords(trim(str_replace('_',' ',$name)));}
-	if(!isset($params['placeholder'])){$params['placeholder']=$dname;}
-	$params['value']=buildFormValueParam($name,$params);
-	$onclick="return wacss.latlon('{$params['id']}','{$params['id']}_ico');";
-	if(isset($params['viewonly']) || isset($params['readonly']) || isset($params['disabled'])){
-		$onclick="return false;";
-	}	
-	$params['pattern']='\[[+-]?[0-9]*\.?[0-9]+,[+-]?[0-9]*\.?[0-9]+\,[0-9\.]+?\,[0-9]+?\]';
-	$params['title']='[latitude,longitude,accuracy,trycount] - click to set';
-	$params['data-tip']='Click to set a location';
-	$params['data-tip_position']='bottom';
-	unset($params['onclick']);
-	$atts = setTagAttributes($params);
-	$tag.='<div';
-	if(isset($params['displayif'])){
-		$tag .= ' data-displayif="'.$params['displayif'].'"';
-		unset($params['displayif']);
-	}
-	elseif(isset($params['data-displayif'])){
-		$tag .= ' data-displayif="'.$params['data-displayif'].'"';
-		unset($params['data-displayif']);
-	}
-	$tag .=<<<ENDOFTAG
-	><div style="display:inline-flex;align-items: center;width:{$params['width']}px;";>
-	<input type="text" class="{$params['class']}" {$atts}  value="{$params['value']}" >
-	<button type="button" onclick="{$onclick}" data-lat="{$latlon[0]}" data-lon="{$latlon[1]}" class="btn"><span class="icon-map-marker" id="{$params['id']}_ico"></span></button>
+	$bparams=$params;
+	$params['style'].='border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	$input=buildFormText($name,$params);
+	//replace input class with button
+	$bparams['class']=str_replace('input','button',$params['class']);
+	$bparams['style'].='border-top-left-radius:0px;border-bottom-left-radius:0px;';
+	$bparams['onclick']="wacss.getLatLon(this.previousElementSibling)";
+	$bparams['text']='<span class="material-location_pin"></span>';
+	$button=buildFormButton($bparams);
+	$tag =<<<ENDOFTAG
+	<div style="display:inline-flex;align-items: center;";>
+		{$input}
+		{$button}
+	</button>
 </div>
 </div>
 ENDOFTAG;
