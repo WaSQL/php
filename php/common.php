@@ -3180,6 +3180,9 @@ function buildFormLatLon($name,$params=array()){
 	$bparams['class']=str_replace('input','button',$params['class']);
 	$bparams['style'].='border-top-left-radius:0px;border-bottom-left-radius:0px;';
 	$bparams['onclick']="wacss.getLatLon(this.previousElementSibling)";
+	if(isset($params['viewonly']) && $params['viewonly']==1){
+		unset($bparams['onclick']);
+	}
 	$bparams['text']='<span class="material-location_pin"></span>';
 	$button=buildFormButton($bparams);
 	$tag =<<<ENDOFTAG
