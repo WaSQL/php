@@ -5722,7 +5722,10 @@ function buildFormSignature($name,$params=array()){
 function buildFormSlider($name, $params=array()){
 	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(isset($params['name'])){$name=$params['name'];}
+	if(isset($params['name'])){
+		$name=$params['name'];
+		unset($params['name']);
+	}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['min'])){$params['min']=1;}
 	if(!isset($params['max'])){$params['max']=10;}
@@ -5742,7 +5745,6 @@ function buildFormSlider($name, $params=array()){
     	unset($params['min']);
 		unset($params['max']);
 		unset($params['step']);
-		unset($params['name']);
 		unset($params['mask']);
     	return buildFormSelect($name,$opts,$params);
 	}
@@ -5772,8 +5774,7 @@ function buildFormSlider($name, $params=array()){
 	if(isset($params['style'])){$params['style'].=';align-self:center;';}
 	else{$params['style']='align-self:center;';}
 	$slider='';
-	$slider .= ' <input type="range" data-label="'.$params['label'].'" name="'.$params['name'].'"';
-	unset($params['name']);
+	$slider .= ' <input type="range" data-label="'.$params['label'].'" name="'.$name.'"';
 	unset($params['required']);
 	unset($params['mask']);
 	unset($params['data-label']);
