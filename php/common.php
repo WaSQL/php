@@ -5730,8 +5730,8 @@ function buildFormSlider($name, $params=array()){
 	if(!isset($params['min'])){$params['min']=1;}
 	if(!isset($params['max'])){$params['max']=10;}
 	if(!isset($params['step'])){$params['step']=1;}
+	if(!isset($params['value'])){$params['value']=5;}
 	$params['value']=buildFormValueParam($name,$params);
-	if(!strlen($params['value'])){$params['value']=5;}
 	if(!isset($params['label'])){
 		$params['label']=$params['-formname'].'_'.$name.'_value';
 		$params['label']=preg_replace('/[^a-z0-9]+/i','_',$params['label']);
