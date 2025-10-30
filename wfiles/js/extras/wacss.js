@@ -8408,6 +8408,20 @@ var wacss = {
 	    t.dataset.timer=seconds+1;
 		wacss.processing_timeout=setTimeout(wacss.setProcessingTimer, 1000);
 	},
+	setSliderText:function(fld){
+		var val=fld.value;
+		var attr=wacss.getAllAttributes(fld);
+		if(undefined == attr["data-label"]){return;}
+		if(undefined != attr['data-labelmap']){
+			attr['data-labelmap']=str_replace("'",'"',attr['data-labelmap']);
+	    	var map=JSON.parse(attr['data-labelmap']);
+	    	if(undefined != map[val]){
+				wacss.setText(attr['data-label'],map[val]);
+				return;
+			}
+		}
+		wacss.setText(attr['data-label'],val);
+	},
 	/**
 	* @name wacss.setText
 	* @describe sets the value of an element to specified value

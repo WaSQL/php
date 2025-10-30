@@ -5731,7 +5731,7 @@ function buildFormSlider($name, $params=array()){
 	if(!isset($params['max'])){$params['max']=10;}
 	if(!isset($params['step'])){$params['step']=1;}
 	$params['value']=buildFormValueParam($name,$params);
-	if(!isset($params['value'])){$params['value']=5;}
+	if(!strlen($params['value'])){$params['value']=5;}
 	if(!isset($params['label'])){$params['label']=$params['formname'].'_'.$name.'_value';}
 	if(!isset($params['min_displayname'])){$params['min_displayname']=$params['min'];}
 	if(!isset($params['max_displayname'])){$params['max_displayname']=$params['max'];}
@@ -5750,7 +5750,13 @@ function buildFormSlider($name, $params=array()){
 	}
 	//build the slider control
 	//$params['onchange'].=";setSliderText(this);";
-	$params['oninput'].=";setSliderText(this);";
+	if(isset($params['oninput']) && strlen($params['oninput'])){
+		$params['oninput'].=";wacss.setSliderText(this);";	
+	}
+	else{
+		$params['oninput']=";wacss.setSliderText(this);";
+	}
+	
 	$displayif='';
 	if(isset($params['displayif'])){
 		$displayif = ' data-displayif="'.$params['displayif'].'"';
@@ -5823,7 +5829,7 @@ function buildFormStarRating($name, $params=array()){
 	if(isset($params) && !is_array($params) && isNum($params)){
 		$params=array('value'=>(float)$params,'-readonly'=>1);
 	}
-	if(!strlen(trim($name))){return 'buildFormSlider Error: no name';}
+	if(!strlen(trim($name))){return 'buildFormStarRating Error: no name';}
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
