@@ -5732,7 +5732,10 @@ function buildFormSlider($name, $params=array()){
 	if(!isset($params['step'])){$params['step']=1;}
 	$params['value']=buildFormValueParam($name,$params);
 	if(!strlen($params['value'])){$params['value']=5;}
-	if(!isset($params['label'])){$params['label']=$params['formname'].'_'.$name.'_value';}
+	if(!isset($params['label'])){
+		$params['label']=$params['-formname'].'_'.$name.'_value';
+		$params['label']=preg_replace('/[^a-z0-9]+/i','_',$params['label']);
+	}
 	if(!isset($params['min_displayname'])){$params['min_displayname']=$params['min'];}
 	if(!isset($params['max_displayname'])){$params['max_displayname']=$params['max'];}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
