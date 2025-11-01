@@ -3797,7 +3797,7 @@ function buildFormQrcode($name,$params=array()){
 	if(isset($params['viewonly']) && $params['viewonly']==1){
 		unset($setparams['onclick']);
 	}
-	$setparams['style']='border-top-left-radius:0px;border-bottom-left-radius:0px;';
+	$setparams['style']='border-top-left-radius:0px;border-bottom-left-radius:0px;height:-webkit-fill-available;height: stretch;';
 	$setparams['text']='<span class="icon-qrcode"></span>';
 	$classes=preg_split('/\ +/',$params['class']);
 	$class=['button'];
@@ -3841,7 +3841,7 @@ function buildFormBarcode($name,$params=array()){
 	if(isset($params['viewonly']) && $params['viewonly']==1){
 		unset($setparams['onclick']);
 	}
-	$setparams['style']='border-top-left-radius:0px;border-bottom-left-radius:0px;';
+	$setparams['style']='border-top-left-radius:0px;border-bottom-left-radius:0px;height:-webkit-fill-available;height: stretch;';
 	$setparams['text']='<span class="icon-barcode"></span>';
 	//button classes
 	$classes=preg_split('/\ +/',$params['class']);
