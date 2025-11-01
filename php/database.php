@@ -1630,14 +1630,16 @@ ENDOFPRETABLE;
 		}
 		//check for -filters
 		if(!empty($params['-filters'])){
+			//echo "FILTERS::";
 			$wheres=databaseParseFilters($params);	
 			if(!empty($params['-where'])){
 				$wheres[]="({$params['-where']})";
 			}
 			if(count($wheres)){
-				$params['-where']=implode(' and ',$wheres);
+				$params['-where']=implode(' AND ',$wheres);
 			}
 		}
+		//
 		$params['-forceheader']=1;
 		//check for -bulkedit and filter_bulkedit before running query
 		if(!empty($params['-bulkedit']) && !empty($_REQUEST['filter_bulkedit']) && $_REQUEST['filter_bulkedit']==1){
@@ -3149,7 +3151,15 @@ function databaseParseFilters($params=array()){
 		$val=str_replace("'","''",$val);
 		$lval=str_replace("'","''",$lval);
 		$ors=array();
+		$searchfields=0;
+		if(isset($params['-searchfields'])){
+			$searchfields=1;
+			if(!is_array($params['-searchfields'])){
+				$params['-searchfields']=preg_split('/[\,\ ]+/',trim($params['-searchfields']));
+			}
+		}
 		foreach($params['-info'] as $field=>$info){
+			if($searchfields==1 && !in_array($field,$params['-searchfields'])){continue;}
 			switch(strtolower($params['-database'])){
 				case 'oracle':
 				case 'hana':
@@ -3172,7 +3182,8 @@ function databaseParseFilters($params=array()){
 				break;
 			}
 		}
-		return array(implode(' or ',$ors));
+		$orstr=implode(' OR ',$ors);
+		return array("({$orstr})");
 	}
 	foreach($params['-filters'] as $filter){
 		if(is_array($filter) || !strlen($filter)){continue;}
