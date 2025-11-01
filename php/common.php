@@ -3173,24 +3173,37 @@ ENDOFTAG;
 * @usage echo buildFormLatLon('work_location',$params);
 */
 function buildFormLatLon($name,$params=array()){
-	$bparams=$params;
-	$params['style'].='border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	$setparams=$params;
+	$mapparams=$params;
+	if(!isset($params['placeholder'])){$params['placeholder']='Click Pin To Set Location &#8663;';}
+	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
 	$input=buildFormText($name,$params);
 	//replace input class with button
-	$bparams['class']=str_replace('input','button',$params['class']);
-	$bparams['style'].='border-top-left-radius:0px;border-bottom-left-radius:0px;';
-	$bparams['onclick']="wacss.getLatLon(this.previousElementSibling)";
+	$setparams['class']='button diagonal-top';
+	$setparams['onclick']="wacss.getLatLon(this.closest('.wacss-split-button').previousElementSibling)";
+	$setparams['title']="Set Lat/Lon";
 	if(isset($params['viewonly']) && $params['viewonly']==1){
-		unset($bparams['onclick']);
+		unset($setparams['onclick']);
 	}
-	$bparams['text']='<span class="material-location_pin"></span>';
-	$button=buildFormButton($bparams);
+	$setparams['text']='<span class="material-location_pin"></span>';
+	$setbutton=buildFormButton($setparams);
+	//map button
+	$mapparams['class']='button diagonal-bottom';
+	$mapparams['onclick']="wacss.mapLatLon(this.closest('.wacss-split-button').previousElementSibling)";
+	$mapparams['text']='<span class="material-map"></span>';
+	$mapparams['title']="Show on Map";
+	$mapbutton=buildFormButton($mapparams);
+	$class='';
+	if(stringContains($params['class'],'is-small')){$class='is-small';}
+	elseif(stringContains($params['class'],'is-medium')){$class='is-medium';}
+	elseif(stringContains($params['class'],'is-large')){$class='is-large';}
 	$tag =<<<ENDOFTAG
-	<div style="display:inline-flex;align-items: center;";>
-		{$input}
-		{$button}
-	</button>
-</div>
+<div style="display:inline-flex;align-items: center;">
+  {$input}
+  <div class="wacss-split-button {$class}" style="position: relative; border-top-left-radius:0px;border-bottom-left-radius:0px;">
+  		{$setbutton}
+  		{$mapbutton}
+  </div>
 </div>
 ENDOFTAG;
 	return $tag;

@@ -816,7 +816,7 @@ var wacss = {
 	* @return object
 	* @usage let cp=wacss.createCenterpop;cp.innerHTML='<h1>Hello</h1>';
 	*/
-	createCenterpop: function(title,x){
+	createCenterpop: function(title,x,nopadding=0){
 		if(undefined==x){x='';}
 		let cp=wacss.getObject('wacss_centerpop'+x);
 		if(undefined != cp){
@@ -867,7 +867,10 @@ var wacss = {
 		cpc.className='wacss_centerpop_content';
 		cpc.style.maxHeight='80vh';
 		cpc.style.overflow='auto';
-		cpc.innerHTML='<div class="align-center">......</div>';
+		if(nopadding==1){
+			cpc.style.padding='0px';
+		}
+		//cpc.innerHTML='<div class="align-center">......</div>';
 		//appends
 		cp.appendChild(cpt);
 		cp.appendChild(cpc);
@@ -2483,7 +2486,7 @@ var wacss = {
 	    if (undefined == inputElement) {
 	        return false;
 	    }
-	    
+	    inputElement.value='Please Wait ...';
 	    const {
 	        highAccuracy = true,
 	        timeout = 10000,
@@ -2545,6 +2548,36 @@ var wacss = {
 	        console.error('getLatLon error:', error.message);
 	        return false;
 	    }
+	},
+	mapLatLon: function(el){
+		el=wacss.getObject(el);
+		if(undefined==el){return false;}
+		if(el.value.length==0){return;}
+		const coords = el.value.replace(/[\[\]\s]/g, '').split(',');
+		const lat = parseFloat(coords[0]);
+		const lon = parseFloat(coords[1]);
+		const mapUrl = `https://www.google.com/maps?q=${lat},${lon}&output=embed`;
+		const wrapper = document.createElement('div');
+		wrapper.style.position = 'relative';
+		wrapper.style.minWidth = '300px';
+		wrapper.style.minHeight = '300px'; // 16:9 aspect ratio
+
+		const iframe = document.createElement('iframe');
+		iframe.style.position = 'absolute';
+		iframe.style.top = '0';
+		iframe.style.left = '0';
+		iframe.style.width = '100%';
+		iframe.style.height = '100%';
+		iframe.style.border = '0';
+		iframe.loading = 'lazy';
+		iframe.src = mapUrl;
+		iframe.allowFullscreen = true;
+		wrapper.appendChild(iframe);
+		cp=wacss.createCenterpop('Show on Map '+el.value,9,1);
+	    content=cp.querySelector('.wacss_centerpop_content');
+		content.appendChild(wrapper);
+		wacss.centerObject(cp);
+		return false;
 	},
 	guid: function () {
 	    function _p8(s) {
