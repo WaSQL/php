@@ -8707,14 +8707,11 @@ function getDBFieldTag($params=array()){
 		break;
 		case 'qrcode':
 			$info[$field]['-icon']='icon-qrcode';
-			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
+			$tag=buildFormQrcode($info[$field]['name'],$info[$field]);
 		break;
 		case 'barcode':
 			$info[$field]['-icon']='icon-barcode';
-			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
-		break;
-		case 'qrcodebarcode':
-			$tag=buildFormQrcodeBarcode($info[$field]['name'],$info[$field]);
+			$tag=buildFormBarcode($info[$field]['name'],$info[$field]);
 		break;
 		case 'buttonselect':
 			if(isset($params['-translate'])){$info[$field]['-translate']=$params['-translate'];}

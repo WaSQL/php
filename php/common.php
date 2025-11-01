@@ -1748,9 +1748,9 @@ function asciiArt($file,$force=false){
 */
 function asciiEncode($str=''){return encodeAscii($str);}
 
-//---------- begin function buildFormText-----------------cfunc=new Function('wacss.initQrcodeBarcode();');---
+//---------- begin function buildFormButton-----------------
 /**
-* @describe creates an HTML text field
+* @describe creates an HTML button field
 * @param name string
 * @param params array
 * @return string
@@ -3173,13 +3173,34 @@ ENDOFTAG;
 * @usage echo buildFormLatLon('work_location',$params);
 */
 function buildFormLatLon($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['value']=buildFormValueParam($name,$params);
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['name']=$name;
 	$setparams=$params;
 	$mapparams=$params;
 	if(!isset($params['placeholder'])){$params['placeholder']='Click Pin To Set Location &#8663;';}
 	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
 	$input=buildFormText($name,$params);
-	//replace input class with button
-	$setparams['class']='button diagonal-top';
+	//button classes
+	$classes=preg_split('/\ +/',$params['class']);
+	$class=['button','diagonal-top'];
+	//size
+	if(in_array('is-small',$classes)){$class[]='is-small';}
+	elseif(in_array('is-medium',$classes)){$class[]='is-medium';}
+	elseif(in_array('is-large',$classes)){$class[]='is-large';}
+	//color
+	if(in_array('is-info',$classes)){$class[]='is-info';}
+	elseif(in_array('is-danger',$classes)){$class[]='is-danger';}
+	elseif(in_array('is-warning',$classes)){$class[]='is-warning';}
+	elseif(in_array('is-primary',$classes)){$class[]='is-primary';}
+	elseif(in_array('is-dark',$classes)){$class[]='is-dark';}
+	$setparams['class']=implode(' ',$class);
+	//onclick
 	$setparams['onclick']="wacss.getLatLon(this.closest('.wacss-split-button').previousElementSibling)";
 	$setparams['title']="Set Lat/Lon";
 	if(isset($params['viewonly']) && $params['viewonly']==1){
@@ -3188,19 +3209,32 @@ function buildFormLatLon($name,$params=array()){
 	$setparams['text']='<span class="material-location_pin"></span>';
 	$setbutton=buildFormButton($setparams);
 	//map button
-	$mapparams['class']='button diagonal-bottom';
+	$class=['button','diagonal-bottom'];
+	//size
+	if(in_array('is-small',$classes)){$class[]='is-small';}
+	elseif(in_array('is-medium',$classes)){$class[]='is-medium';}
+	elseif(in_array('is-large',$classes)){$class[]='is-large';}
+	//color
+	if(in_array('is-info',$classes)){$class[]='is-warning';}
+	elseif(in_array('is-danger',$classes)){$class[]='is-warning';}
+	elseif(in_array('is-warning',$classes)){$class[]='is-danger';}
+	elseif(in_array('is-primary',$classes)){$class[]='is-warning';}
+	elseif(in_array('is-dark',$classes)){$class[]='is-warning';}
+	$mapparams['class']=implode(' ',$class);
 	$mapparams['onclick']="wacss.mapLatLon(this.closest('.wacss-split-button').previousElementSibling)";
 	$mapparams['text']='<span class="material-map"></span>';
 	$mapparams['title']="Show on Map";
 	$mapbutton=buildFormButton($mapparams);
-	$class='';
-	if(stringContains($params['class'],'is-small')){$class='is-small';}
-	elseif(stringContains($params['class'],'is-medium')){$class='is-medium';}
-	elseif(stringContains($params['class'],'is-large')){$class='is-large';}
+	$class=['wacss-split-button'];
+	//size
+	if(in_array('is-small',$classes)){$class[]='is-small';}
+	elseif(in_array('is-medium',$classes)){$class[]='is-medium';}
+	elseif(in_array('is-large',$classes)){$class[]='is-large';}
+	$class=implode(' ',$class);;
 	$tag =<<<ENDOFTAG
 <div style="display:inline-flex;align-items: center;">
   {$input}
-  <div class="wacss-split-button {$class}" style="position: relative; border-top-left-radius:0px;border-bottom-left-radius:0px;">
+  <div class="{$class}" style="position: relative; border-top-left-radius:0px;border-bottom-left-radius:0px;">
   		{$setbutton}
   		{$mapbutton}
   </div>
@@ -3743,61 +3777,93 @@ ENDOFOTHER;
  *   'class'     => 'w_form-control w_text',
  * ]);
  */
-function buildFormQrcodeBarcode($name,$params=array()){
-	//return $name.printValue($params);
+function buildFormQrcode($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
-	if(!isset($params['-icon'])){$params['-icon']='icon-qrcode';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
-	if(!isset($params['style'])){$params['style']='height:40px;width:100%;';}
 	$params['value']=buildFormValueParam($name,$params);
-	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['name']=$name;
-	//ksort($params);return printValue($params);
-	if(isset($params['viewonly'])){
-		return '<div class="w_viewonly" id="'.$params['id'].'">'.nl2br($params['value']).'</div>'.PHP_EOL;
+	$params['data-input']='qrcode';
+	$setparams=$params;
+	if(!isset($params['placeholder'])){$params['placeholder']='Click QRCode to Scan &#8658;';}
+	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	$input=buildFormText($name,$params);
+	//replace input class with button
+	$setparams['onclick']="wacss.getQrcodeBarcode(this.previousElementSibling,this)";
+	$setparams['title']="Click to Scan";
+	if(isset($params['viewonly']) && $params['viewonly']==1){
+		unset($setparams['onclick']);
 	}
-	$params['data-input']='barcode';
-	$style=$params['style'];
-	if(stringContains($params['-icon'],'qrcode')){
-		$params['data-input']='qrcode';
-	}
-	$params['style'].=';flex:1;justify-self:center;border:0px;border-radius:4px;box-shadow:none;overflow:hidden;';
-	$inputtag ='<input type="text" ';
-	if(strlen($params['value'])){
-		$inputtag.=" value=\"{$params['value']}\"";
-		unset($params['value']);
-	}
-	$inputtag.= setTagAttributes($params);
-
-	$inputtag.='>';
-	$icon_id=$params['id'].'_scanicon';
-
-	$oclass=array($params['-icon'],'w_pointer');
-	$ostyle=array('justify-self:center','align-self:center');
-	if(stringContains($params['class'],'input')){
-		if(stringContains($params['class'],'is-small')){$ostyle[]='font-size:1.65rem';}
-		elseif(stringContains($params['class'],'is-medium')){$ostyle[]='font-size:2.75rem';}
-		elseif(stringContains($params['class'],'is-large')){$ostyle[]='font-size:3.40rem';}
-		else{$ostyle[]='font-size:1.75rem';}
-	}
-	else{
-		$ostyle[]='font-size:1.75rem';
-	}
-	if(preg_match('/w\_(red|green|orange|blue|yellow)/is',$params['class'],$m)){
-		$oclass[]="w_{$m[1]}";
-	}
-	$oclasstr=implode(' ',$oclass);
-	$ostylestr=implode(';',$ostyle);
-	$tag = <<<ENDOFINPUT
-<div style="{$style};border:1px solid #ccc;border-radius:4px;display:flex;margin:0 3px;" data-onload="wacss.initQrcodeBarcode();">
-	{$inputtag}
-	<span id="{$icon_id}" class="{$oclasstr}" style="{$ostylestr}"></span>
+	$setparams['style']='border-top-left-radius:0px;border-bottom-left-radius:0px;';
+	$setparams['text']='<span class="icon-qrcode"></span>';
+	$classes=preg_split('/\ +/',$params['class']);
+	$class=['button'];
+	//size
+	if(in_array('is-small',$classes)){$class[]='is-small';}
+	elseif(in_array('is-medium',$classes)){$class[]='is-medium';}
+	elseif(in_array('is-large',$classes)){$class[]='is-large';}
+	//color
+	if(in_array('is-info',$classes)){$class[]='is-info';}
+	elseif(in_array('is-danger',$classes)){$class[]='is-danger';}
+	elseif(in_array('is-warning',$classes)){$class[]='is-warning';}
+	elseif(in_array('is-primary',$classes)){$class[]='is-primary';}
+	elseif(in_array('is-dark',$classes)){$class[]='is-dark';}
+	$setparams['class']=implode(' ',$class);
+	$setbutton=buildFormButton($setparams);
+	$tag =<<<ENDOFTAG
+<div style="display:inline-flex;align-items: center;">
+  {$input}
+  {$setbutton}
 </div>
-ENDOFINPUT;
+ENDOFTAG;
+	return $tag;
+}
+function buildFormBarcode($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['value']=buildFormValueParam($name,$params);
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['name']=$name;
+	$params['data-input']='barcode';
+	$setparams=$params;
+	if(!isset($params['placeholder'])){$params['placeholder']='Click Barcode to Scan &#8658;';}
+	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	$input=buildFormText($name,$params);
+	//replace input class with button
+	$setparams['onclick']="wacss.getQrcodeBarcode(this.previousElementSibling,this)";
+	$setparams['title']="Click to Scan";
+	if(isset($params['viewonly']) && $params['viewonly']==1){
+		unset($setparams['onclick']);
+	}
+	$setparams['style']='border-top-left-radius:0px;border-bottom-left-radius:0px;';
+	$setparams['text']='<span class="icon-barcode"></span>';
+	//button classes
+	$classes=preg_split('/\ +/',$params['class']);
+	$class=['button'];
+	//size
+	if(in_array('is-small',$classes)){$class[]='is-small';}
+	elseif(in_array('is-medium',$classes)){$class[]='is-medium';}
+	elseif(in_array('is-large',$classes)){$class[]='is-large';}
+	//color
+	if(in_array('is-info',$classes)){$class[]='is-info';}
+	elseif(in_array('is-danger',$classes)){$class[]='is-danger';}
+	elseif(in_array('is-warning',$classes)){$class[]='is-warning';}
+	elseif(in_array('is-primary',$classes)){$class[]='is-primary';}
+	elseif(in_array('is-dark',$classes)){$class[]='is-dark';}
+	$setparams['class']=implode(' ',$class);
+	$setbutton=buildFormButton($setparams);
+	$tag =<<<ENDOFTAG
+<div style="display:inline-flex;align-items: center;">
+  {$input}
+  {$setbutton}
+</div>
+ENDOFTAG;
 	return $tag;
 }
 //---------- begin function buildFormText-----------------cfunc=new Function('wacss.initQrcodeBarcode();');---

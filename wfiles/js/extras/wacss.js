@@ -2549,10 +2549,312 @@ var wacss = {
 	        return false;
 	    }
 	},
+	getQrcodeBarcode: async function (inputElement, scanButton) {
+		inputElement=wacss.getObject(inputElement);
+		if(!inputElement){
+			console.error('getQrcodeBarcode Error: No inputElement');
+			return false;
+		}
+		scanButton=wacss.getObject(scanButton);
+		await wacss.ensureHtml5QrcodeLoaded();
+		// Validation functions
+		//UPC A
+		const validateUPC_A = (code) => {
+			code = code.trim();
+			if (!/^\d{12}$/.test(code)) return false;
+			let sum = 0;
+			for (let i = 0; i < 11; i++) {
+				sum += parseInt(code[i], 10) * (i % 2 === 0 ? 3 : 1);
+			}
+			const checksum = (10 - (sum % 10)) % 10;
+			return checksum === parseInt(code[11], 10);
+		};
+		//Code 39
+		const validateCODE_39 = (code) => {
+			code = code.trim();
+			if (!code || code.length === 0) return false;
+			const hasStartStop = code.startsWith('*') && code.endsWith('*');
+			const codeToValidate = hasStartStop ? code.slice(1, -1) : code;
+			if (!codeToValidate || codeToValidate.length === 0) return false;
+			const validChars = /^[0-9A-Z\-\. \$\/\+\%]+$/;
+			if (!validChars.test(codeToValidate)) return false;
+			if (codeToValidate.length > 43) return false;
+			return true;
+		};
+		//UPC E
+		const validateUPC_E = (code) => {
+			code = code.trim();
+			if (!/^\d{6}$/.test(code) && !/^\d{8}$/.test(code)) return false;
+			if (code.length === 8) {
+				const expanded = expandUPCE(code.substring(0, 7));
+				if (!expanded) return false;
+				let sum = 0;
+				for (let i = 0; i < 11; i++) {
+					sum += parseInt(expanded[i], 10) * (i % 2 === 0 ? 3 : 1);
+				}
+				const checksum = (10 - (sum % 10)) % 10;
+				return checksum === parseInt(code[7], 10);
+			}
+			return true;
+		};
+		const expandUPCE = (code) => {
+			if (code.length !== 7) return null;
+			const numberSystem = code[0];
+			const lastDigit = code[6];
+			const middle = code.substring(1, 6);
+			let expanded;
+			if (lastDigit === '0' || lastDigit === '1' || lastDigit === '2') {
+				expanded = numberSystem + middle.substring(0, 2) + lastDigit + '0000' + middle.substring(2, 5);
+			} else if (lastDigit === '3') {
+				expanded = numberSystem + middle.substring(0, 3) + '00000' + middle.substring(3, 5);
+			} else if (lastDigit === '4') {
+				expanded = numberSystem + middle.substring(0, 4) + '00000' + middle[4];
+			} else {
+				expanded = numberSystem + middle + '0000' + lastDigit;
+			}
+			return expanded;
+		};
+		//EAN 13
+		const validateEAN13 = (code) => {
+			code = code.trim();
+			if (!/^\d{13}$/.test(code)) return false;
+			let sum = 0;
+			for (let i = 0; i < 12; i++) {
+				sum += parseInt(code[i], 10) * (i % 2 === 0 ? 1 : 3);
+			}
+			const checksum = (10 - (sum % 10)) % 10;
+			return checksum === parseInt(code[12], 10);
+		};
+		//EAN 8
+		const validateEAN8 = (code) => {
+			code = code.trim();
+			if (!/^\d{8}$/.test(code)) return false;
+			let sum = 0;
+			for (let i = 0; i < 7; i++) {
+				sum += parseInt(code[i], 10) * (i % 2 === 0 ? 3 : 1);
+			}
+			const checksum = (10 - (sum % 10)) % 10;
+			return checksum === parseInt(code[7], 10);
+		};
+		//CODE 128
+		const validateCODE_128 = (code) => {
+			if (!code || code.length === 0) return false;
+			if (code.length < 3 || code.length > 30) return false;
+			const validPattern = /^[A-Za-z0-9\-_\/\.]+$/;
+			if (!validPattern.test(code)) return false;
+			if (code.includes('  ')) return false;
+			if (code.trim() !== code) return false;
+			return true;
+		};
+		//Barcode
+		const validateBarcode = (decodedText, format, inputType) => {
+			if (inputType === 'qrcode') return true;
+			try {
+				switch(format) {
+					case 'UPC_A': return validateUPC_A(decodedText);
+					case 'UPC_E': return validateUPC_E(decodedText);
+					case 'EAN_8': return validateEAN8(decodedText);
+					case 'EAN_13': return validateEAN13(decodedText);
+					case 'CODE_39': return validateCODE_39(decodedText);
+					case 'CODE_128': return validateCODE_128(decodedText);
+					case 'QR_CODE': return false;
+					default:
+						console.warn('Unknown barcode format:', format);
+						return false;
+				}
+			} catch (err) {
+				return true;
+			}
+		};
+		// Build overlay/modal (once)
+		let overlay = document.getElementById('qr-overlay');
+		if (!overlay) {
+			overlay = document.createElement('div');
+			overlay.id = 'qr-overlay';
+			overlay.style.cssText = `
+				position: fixed; inset: 0; display: none; z-index: 99999;
+				background: rgba(0,0,0,0.5);
+			`;
+			const modal = document.createElement('div');
+			modal.className = 'qr-modal';
+			modal.style.cssText = `
+				position: absolute; left: 50%; top: 50%;
+				transform: translate(-50%, -50%);
+				width: min(92vw, 520px);
+				max-height: 92vh;
+				display: flex; flex-direction: column;
+				background: #111; color: #fff; border-radius: 16px;
+				box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+				overflow: hidden;
+			`;
+			const header = document.createElement('div');
+			header.style.cssText = `
+				padding: 12px 16px; font-weight: 600;
+				background: #1a1a1a; border-bottom: 1px solid #222;
+				flex: 0 0 auto;
+			`;
+			header.textContent = 'Scan a code';
+			const mount = document.createElement('div');
+			mount.id = 'qrcodebarcode';
+			mount.style.cssText = `
+				position: relative;
+				width: 100%;
+				flex: 1 1 auto;
+				height: clamp(220px, 60vh, 420px);
+				overflow: hidden;
+			`;
+			const toolbar = document.createElement('div');
+			toolbar.style.cssText = `
+				display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+				padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+				background: #1a1a1a; border-top: 1px solid #222;
+				flex: 0 0 auto;
+			`;
+			const hint = document.createElement('div');
+			hint.style.cssText = 'margin-right:auto; opacity:.8; font-size:12px;';
+			hint.textContent = 'Point your camera at a barcode or QR code.';
+			const cancelBtn = document.createElement('button');
+			cancelBtn.id = 'qr-cancel';
+			cancelBtn.type = 'button';
+			cancelBtn.textContent = 'Cancel (Esc)';
+			cancelBtn.style.cssText = `
+				padding: 8px 12px; border-radius: 10px; background:#333;
+				color:#fff; border:1px solid #444; cursor:pointer;
+			`;
+			toolbar.appendChild(hint);
+			toolbar.appendChild(cancelBtn);
+			modal.appendChild(header);
+			modal.appendChild(mount);
+			modal.appendChild(toolbar);
+			overlay.appendChild(modal);
+			document.body.appendChild(overlay);
+			
+			// Bind cancel/backdrop/Esc once
+			overlay.querySelector('#qr-cancel')?.addEventListener('click', () => {
+				closeScanner();
+			});
+			overlay.addEventListener('click', (e) => {
+				if (e.target === overlay) closeScanner();
+			});
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape' && overlay.style.display === 'block') {
+					closeScanner();
+				}
+			});
+		}
+		// Singleton scanner
+		const scanner = window.__qrScanner || (window.__qrScanner = new Html5Qrcode('qrcodebarcode'));
+		let isScanning = window.__qrScannerActive || false;
+		//close Scanner
+		const closeScanner = async () => {
+			if (isScanning) {
+				try {
+					await scanner.stop();
+				} catch (err) {
+					console.error('Error stopping scanner:', err);
+				}
+				window.__qrScannerActive = false;
+				isScanning = false;
+			}
+			overlay.style.display = 'none';
+			scanButton?.classList.remove('scanning');
+			inputElement?.focus();
+		};
+		// Open scanner
+		if (isScanning) {
+			await closeScanner();
+			return;
+		}
+		overlay.style.display = 'block';
+		scanButton?.classList.add('scanning');
+		try {
+			const inputType = inputElement.dataset.input;
+			// Configure formats based on input type
+			let formats, qrboxConfig;
+			if (inputType === 'qrcode') {
+				formats = [Html5QrcodeSupportedFormats.QR_CODE];
+				qrboxConfig = { width: 280, height: 280 };
+			} else if (inputType === 'barcode') {
+				formats = [
+					Html5QrcodeSupportedFormats.EAN_13,
+					Html5QrcodeSupportedFormats.UPC_A,
+					Html5QrcodeSupportedFormats.CODE_128,
+					Html5QrcodeSupportedFormats.CODE_39,
+					Html5QrcodeSupportedFormats.EAN_8,
+					Html5QrcodeSupportedFormats.UPC_E
+				];
+				qrboxConfig = { width: 280, height: 140 };
+			} else {
+				formats = [
+					Html5QrcodeSupportedFormats.QR_CODE,
+					Html5QrcodeSupportedFormats.EAN_13,
+					Html5QrcodeSupportedFormats.UPC_A,
+					Html5QrcodeSupportedFormats.CODE_128,
+					Html5QrcodeSupportedFormats.CODE_39,
+					Html5QrcodeSupportedFormats.EAN_8,
+					Html5QrcodeSupportedFormats.UPC_E
+				];
+				qrboxConfig = { width: 280, height: 280 };
+			}
+			await scanner.start(
+				{ facingMode: 'environment' },
+				{
+					fps: 30,
+					qrbox: qrboxConfig,
+					formatsToSupport: formats,
+					experimentalFeatures: {
+						useBarCodeDetectorIfSupported: true,
+						useLegacyIos: true
+					}
+				},
+				(decodedText, decodedResult) => {
+					try {
+						const format = decodedResult?.result?.format?.formatName || 'UNKNOWN';
+						const isValid = validateBarcode(decodedText, format, inputType);
+						if (!isValid) return;
+						
+						const tag = inputElement.tagName.toLowerCase();
+						if (tag === 'input' || tag === 'textarea') {
+							inputElement.value = decodedText;
+						} else if (tag === 'div') {
+							if (inputElement.isContentEditable) {
+								inputElement.innerText = decodedText;
+							} else {
+								inputElement.textContent = decodedText;
+							}
+						}
+						
+						inputElement.focus();
+						inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+						
+						if (inputElement.dataset.onscan) {
+							try {
+								const fn = new Function('code', 'el', 'btn', inputElement.dataset.onscan);
+								fn(decodedText, inputElement, scanButton);
+							} catch (err) {
+								console.error('Error in data-onscan handler:', err);
+							}
+						}
+						
+						closeScanner();
+					} catch (err) {
+						console.error('Error processing scan result:', err);
+						closeScanner();
+					}
+				},
+				() => { /* ignore per-frame errors */ }
+			);	
+			window.__qrScannerActive = true;
+			isScanning = true;
+		} catch (err) {
+			console.error('QRCode/Barcode Scanner start failed:', err);
+			await closeScanner();
+		}
+	},
 	mapLatLon: function(el){
 		el=wacss.getObject(el);
 		if(undefined==el){return false;}
-		if(el.value.length==0){return;}
+		if(el.value.length==0){return wacss.getLatLon(el);}
 		const coords = el.value.replace(/[\[\]\s]/g, '').split(',');
 		const lat = parseFloat(coords[0]);
 		const lon = parseFloat(coords[1]);
@@ -2575,6 +2877,7 @@ var wacss = {
 		wrapper.appendChild(iframe);
 		cp=wacss.createCenterpop('Show on Map '+el.value,9,1);
 	    content=cp.querySelector('.wacss_centerpop_content');
+	    content.innerHTML = '';
 		content.appendChild(wrapper);
 		wacss.centerObject(cp);
 		return false;
@@ -7554,6 +7857,35 @@ var wacss = {
 			}
 		}
 		return false;
+	},
+	openUrl: function(url) {
+		if (!url || typeof url !== 'string') {
+			return false;
+		}
+		// Trim whitespace
+		url = url.trim();
+		// Validate URL starts with http:// or https://
+		if (!url.startsWith('http://') && !url.startsWith('https://')) {
+			return false;
+		}
+		// Additional validation - try to construct URL object
+		try {
+			new URL(url);
+		} catch (err) {
+			return false;
+		}
+		// Open in new tab
+		try {
+			const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+			if (!newWindow) {
+				console.warn('wacss.openUrl Error - Failed to open new tab - popup may be blocked');
+				return false;
+			}
+			return true;
+		} catch (err) {
+			console.error('wacss.openUrl Error - Error opening URL:', err);
+			return false;
+		}
 	},
 	/**
 	* @name wacss.pagingSubmit
