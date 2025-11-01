@@ -3744,7 +3744,7 @@ ENDOFOTHER;
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
-//---------- begin function buildFormQrcodeBarcode --------------------
+//---------- begin function buildFormQrcode --------------------
 /**
  * @describe Builds a QR/Barcode-enabled text input with a scan icon.
  * @describe Renders an <input type="text" data-input="qrcode_barcode"> wrapped with a container
@@ -3771,7 +3771,7 @@ ENDOFOTHER;
  * @return string HTML for the input (or view-only div) and scan icon container.
  *
  * @example
- * echo buildFormQrcodeBarcode('sku', [
+ * echo buildFormQrcode('sku', [
  *   '-formname' => 'product',
  *   '-icon'     => 'icon-barcode',
  *   'class'     => 'w_form-control w_text',
