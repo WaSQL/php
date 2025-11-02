@@ -2,9 +2,9 @@
 $progpath=dirname(__FILE__);
 include_once("$progpath/weather/phpweatherlib.php");
 /* References:
-	http://www.weather.gov/forecasts/xml/
-	http://www.weather.gov/forecasts/xml/docs/SOAP_Requests/LatLonListZipCode.xml
-	http://www.ebrueggeman.com/phpweatherlib/documentation.php
+	https://www.weather.gov/forecasts/xml/
+	https://www.weather.gov/forecasts/xml/docs/SOAP_Requests/LatLonListZipCode.xml
+	https://www.ebrueggeman.com/phpweatherlib/documentation.php
 */
 //------------------
 function weatherByZip($zip,$params=array()){
@@ -94,7 +94,7 @@ function weatherNDFDgenByDay($zip='',$params=array()){
 	$soap.='</ns8077:NDFDgenByDay>'."\n";
 	$soap.='</SOAP-ENV:Body>'."\n";
 	$soap.='</SOAP-ENV:Envelope>'."\n";
-	$url='http://www.weather.gov/forecasts/xml/SOAP_server/ndfdXMLserver.php';
+	$url='https://www.weather.gov/forecasts/xml/SOAP_server/ndfdXMLserver.php';
 	$post=postXML($url,$soap,array('-soap'=>true));
 	//$post=array();
 	//$post['body']=getFileContents('weathersoap.xml');
@@ -196,7 +196,7 @@ function weatherGetLatLon($zip=''){
 	$soap.='</ns8077:LatLonListZipCode>'."\n";
 	$soap.='</SOAP-ENV:Body>'."\n";
 	$soap.='</SOAP-ENV:Envelope>'."\n";
-	$url='http://www.weather.gov/forecasts/xml/SOAP_server/ndfdXMLserver.php';
+	$url='https://www.weather.gov/forecasts/xml/SOAP_server/ndfdXMLserver.php';
 	$post=postXML($url,$soap);
 	unset($smatch);
 	if(preg_match('/<listLatLonOut xsi:type="xsd:string">(.+)<\/listLatLonOut>/s',$post['body'],$smatch)){
@@ -240,7 +240,7 @@ function weatherGetStationList($force=0,$try=0){
 	return null;
 	}
 function weatherGetStationsXML(){
-	$url = 'http://www.weather.gov/xml/current_obs/index.xml';
+	$url = 'https://www.weather.gov/xml/current_obs/index.xml';
 	$post=getURL($url);
 	return $post['body'];
 	$xmlstr=trim($post['body']);
