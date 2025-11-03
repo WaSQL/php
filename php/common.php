@@ -4565,7 +4565,7 @@ ENDOFTAG;
 function buildFormFileImage($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
-	if(!isset($params['style'])){$params['style']='height:40px;width:100%;';}
+	if(!isset($params['style'])){$params['style']='height:40px;';}
 	if(!isset($params['text'])){
 		if(isset($params['multiple'])){$params['text']='Browse Images';}
 		else{$params['text']='Browse';}
