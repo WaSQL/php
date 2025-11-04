@@ -9590,6 +9590,32 @@ var wacss = {
                 </g>
             </svg>
         `;
+        // Add hover effects
+        voiceBtn.addEventListener('mouseenter', () => {
+            if (!voiceBtn.disabled && !isListening) {
+                voiceBtn.style.backgroundColor = '#45a049';
+                voiceBtn.style.transform = 'scale(1.05)';
+            }
+        });
+        
+        voiceBtn.addEventListener('mouseleave', () => {
+            if (!isListening) {
+                voiceBtn.style.backgroundColor = '#4CAF50';
+                voiceBtn.style.transform = 'scale(1)';
+            }
+        });
+        
+        clearBtn.addEventListener('mouseenter', () => {
+            if (!clearBtn.disabled) {
+                clearBtn.style.backgroundColor = '#e68900';
+                clearBtn.style.transform = 'scale(1.05)';
+            }
+        });
+        
+        clearBtn.addEventListener('mouseleave', () => {
+            clearBtn.style.backgroundColor = '#ff9800';
+            clearBtn.style.transform = 'scale(1)';
+        });
         
         controlsDiv.appendChild(voiceBtn);
         controlsDiv.appendChild(clearBtn);
@@ -9599,6 +9625,12 @@ var wacss = {
         if (!status || !status.classList.contains('status')) {
             status = document.createElement('div');
             status.className = 'status';
+            Object.assign(status.style, {
+                marginTop: '8px',
+                fontSize: '12px',
+                color: '#666',
+                minHeight: '18px'
+            });
             textarea.parentElement.after(status);
         }
         
@@ -9606,6 +9638,13 @@ var wacss = {
         const parent = textarea.parentElement;
         if (getComputedStyle(parent).position === 'static') {
             parent.style.position = 'relative';
+        }
+        
+        // Ensure textarea has proper padding for buttons
+        const currentPaddingRight = getComputedStyle(textarea).paddingRight;
+        const paddingValue = parseInt(currentPaddingRight) || 12;
+        if (paddingValue < 50) {
+            textarea.style.paddingRight = '50px';
         }
         
         // Add controls to parent
@@ -9667,41 +9706,67 @@ var wacss = {
             recognition.lang = 'en-US';
             
             let finalTranscript = '';
+            let startingText = '';
             
             recognition.onstart = () => {
                 isListening = true;
+                startingText = textarea.value;
+                finalTranscript = '';
                 voiceBtn.classList.add('listening');
+                voiceBtn.style.backgroundColor = '#f44336';
+                voiceBtn.style.animation = 'none'; // Reset for inline
                 status.textContent = 'Listening... Speak now';
-                status.className = 'status success';
+                status.style.color = '#4CAF50';
+                
+                // Create pulsing effect
+                let pulseState = 0;
+                const pulseInterval = setInterval(() => {
+                    if (!isListening) {
+                        clearInterval(pulseInterval);
+                        voiceBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                        return;
+                    }
+                    pulseState = (pulseState + 1) % 2;
+                    voiceBtn.style.boxShadow = pulseState === 0 
+                        ? '0 2px 5px rgba(0,0,0,0.2)' 
+                        : '0 2px 20px rgba(244, 67, 54, 0.6)';
+                }, 750);
+                voiceBtn.pulseInterval = pulseInterval;
             };
             
             recognition.onresult = (e) => {
                 let interimTranscript = '';
+                let newFinalTranscript = '';
                 
-                for (let i = e.resultIndex; i < e.results.length; i++) {
+                for (let i = 0; i < e.results.length; i++) {
                     const transcript = e.results[i][0].transcript;
                     if (e.results[i].isFinal) {
-                        finalTranscript += transcript + ' ';
+                        newFinalTranscript += transcript + ' ';
                     } else {
                         interimTranscript += transcript;
                     }
                 }
                 
-                const fullText = finalTranscript + interimTranscript;
+                // Only update finalTranscript with new content
+                if (newFinalTranscript) {
+                    finalTranscript = newFinalTranscript;
+                }
+                
+                const fullText = (startingText ? startingText + ' ' : '') + finalTranscript + interimTranscript;
                 textarea.value = convertPunctuation(fullText);
             };
             
             recognition.onerror = (e) => {
                 console.error('Speech recognition error:', e.error);
                 status.textContent = `Error: ${e.error}`;
-                status.className = 'status error';
+                status.style.color = '#f44336';
                 stopListening();
             };
             
             recognition.onend = () => {
                 if (isListening) {
                     status.textContent = 'Stopped listening';
-                    status.className = 'status';
+                    status.style.color = '#666';
                 }
                 stopListening();
             };
@@ -9709,9 +9774,7 @@ var wacss = {
             voiceBtn.addEventListener('click', () => {
                 if (isListening) {
                     recognition.stop();
-                    finalTranscript = textarea.value;
                 } else {
-                    finalTranscript = textarea.value ? textarea.value + ' ' : '';
                     recognition.start();
                 }
             });
@@ -9719,21 +9782,28 @@ var wacss = {
             function stopListening() {
                 isListening = false;
                 voiceBtn.classList.remove('listening');
+                voiceBtn.style.backgroundColor = '#4CAF50';
+                voiceBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                if (voiceBtn.pulseInterval) {
+                    clearInterval(voiceBtn.pulseInterval);
+                }
             }
             
         } else {
             voiceBtn.disabled = true;
+            voiceBtn.style.backgroundColor = '#cccccc';
+            voiceBtn.style.cursor = 'not-allowed';
             status.textContent = 'Speech recognition not supported in this browser';
-            status.className = 'status error';
+            status.style.color = '#f44336';
         }
         
         // Clear button functionality
         clearBtn.addEventListener('click', () => {
-            if(!confirm('Clear Text?')){return false;}
+        	if(!confirm('Clear Text?')){return false;}
             textarea.value = '';
             textarea.focus();
             status.textContent = 'Text cleared';
-            status.className = 'status';
+            status.style.color = '#666';
             setTimeout(() => {
                 status.textContent = '';
             }, 2000);
