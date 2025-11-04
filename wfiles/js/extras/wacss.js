@@ -9470,9 +9470,12 @@ var wacss = {
     textareaVoiceControls: function(textarea) {
     	textarea=wacss.getObject(textarea);
         if (!textarea || !(textarea instanceof HTMLTextAreaElement)) {
-            console.error('Invalid textarea element provided');
             return null;
         }
+        if(undefined != textarea.dataset.voice_initialized){
+        	return null;
+        }
+        textarea.dataset.voice_initialized=1;
         // Apply inline styles to controls container
         Object.assign(textarea.style, {
             minHeight: '120px',
