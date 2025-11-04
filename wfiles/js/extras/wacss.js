@@ -9463,6 +9463,290 @@ var wacss = {
 	    return (str + '').toUpperCase();
 	},
 	/**
+     * Initialize voice controls for a textarea element
+     * @param {HTMLTextAreaElement} textarea - The textarea element to add voice controls to
+     * @returns {Object} - Object containing cleanup function
+     */
+    textareaVoiceControls: function(textarea) {
+    	textarea=wacss.getObject(textarea);
+        if (!textarea || !(textarea instanceof HTMLTextAreaElement)) {
+            console.error('Invalid textarea element provided');
+            return null;
+        }
+        // Apply inline styles to controls container
+        Object.assign(textarea.style, {
+            minHeight: '120px',
+            padding: '12px',
+            paddingRight: '50px',
+            resize: 'vertical',
+            boxSizing: 'border-box'
+        });
+        // Create controls container
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'w_smallest w_gray';
+        // Apply inline styles to controls container
+        Object.assign(controlsDiv.style, {
+            position: 'absolute',
+            right: '10px',
+            top: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            zIndex: '1000'
+        });
+        
+        // Create voice button
+        const voiceBtn = document.createElement('button');
+        voiceBtn.title = 'Click to speak';
+        // Apply inline styles to voice button
+        Object.assign(voiceBtn.style, {
+            width: '36px',
+            height: '36px',
+            border: 'none',
+            borderRadius: '50%',
+            backgroundColor: '#4CAF50',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            padding: '0'
+        });
+        voiceBtn.innerHTML = `
+            <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <g class="mic-group">
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="scale"
+                        additive="sum"
+                        from="1 1"
+                        to="1.1 1.1"
+                        begin="mouseover"
+                        dur="0.3s"
+                        fill="freeze" />
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="scale"
+                        additive="sum"
+                        from="1.1 1.1"
+                        to="1 1"
+                        begin="mouseout"
+                        dur="0.3s"
+                        fill="freeze" />
+                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </g>
+            </svg>
+        `;
+        
+        // Create clear button
+        const clearBtn = document.createElement('button');
+        clearBtn.title = 'Clear text';
+        // Apply inline styles to clear button
+        Object.assign(clearBtn.style, {
+            width: '36px',
+            height: '36px',
+            border: 'none',
+            borderRadius: '50%',
+            backgroundColor: '#ff9800',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            padding: '0'
+        });
+        clearBtn.innerHTML = `
+            <svg class="icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <g class="clear-group">
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="scale"
+                        additive="sum"
+                        from="1 1"
+                        to="1.1 1.1"
+                        begin="mouseover"
+                        dur="0.3s"
+                        fill="freeze" />
+                    <animateTransform
+                        attributeName="transform"
+                        attributeType="XML"
+                        type="scale"
+                        additive="sum"
+                        from="1.1 1.1"
+                        to="1 1"
+                        begin="mouseout"
+                        dur="0.3s"
+                        fill="freeze" />
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </g>
+            </svg>
+        `;
+        
+        controlsDiv.appendChild(voiceBtn);
+        controlsDiv.appendChild(clearBtn);
+        
+        // Find or create status element
+        let status = textarea.parentElement.nextElementSibling;
+        if (!status || !status.classList.contains('status')) {
+            status = document.createElement('div');
+            status.className = 'status';
+            textarea.parentElement.after(status);
+        }
+        
+        // Make textarea's parent container relative if not already
+        const parent = textarea.parentElement;
+        if (getComputedStyle(parent).position === 'static') {
+            parent.style.position = 'relative';
+        }
+        
+        // Add controls to parent
+        parent.appendChild(controlsDiv);
+        
+        // Punctuation conversion map
+        const punctuationMap = {
+            'period': '.',
+            'comma': ',',
+            'question mark': '?',
+            'exclamation point': '!',
+            'exclamation mark': '!',
+            'colon': ':',
+            'semicolon': ';',
+            'quote': '"',
+            'apostrophe': "'",
+            'dash': '-',
+            'hyphen': '-',
+            'new line': '\n',
+            'new paragraph': '\n\n'
+        };
+        
+        // Function to convert punctuation commands and capitalize appropriately
+        function convertPunctuation(text) {
+            let result = text;
+            for (const [command, symbol] of Object.entries(punctuationMap)) {
+                const regex = new RegExp('\\s*\\b' + command + '\\b', 'gi');
+                result = result.replace(regex, symbol);
+            }
+            // Clean up any double spaces
+            result = result.replace(/\s+/g, ' ');
+            
+            // Capitalize first letter of the entire text
+            result = result.charAt(0).toUpperCase() + result.slice(1);
+            
+            // Capitalize after sentence-ending punctuation (. ! ?)
+            result = result.replace(/([.!?])\s+([a-z])/g, function(match, punct, letter) {
+                return punct + ' ' + letter.toUpperCase();
+            });
+            
+            // Capitalize after new lines
+            result = result.replace(/\n+([a-z])/g, function(match, letter) {
+                return match.slice(0, -1) + letter.toUpperCase();
+            });
+            
+            return result;
+        }
+        
+        let recognition;
+        let isListening = false;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            let finalTranscript = '';
+            
+            recognition.onstart = () => {
+                isListening = true;
+                voiceBtn.classList.add('listening');
+                status.textContent = 'Listening... Speak now';
+                status.className = 'status success';
+            };
+            
+            recognition.onresult = (e) => {
+                let interimTranscript = '';
+                
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    const transcript = e.results[i][0].transcript;
+                    if (e.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                const fullText = finalTranscript + interimTranscript;
+                textarea.value = convertPunctuation(fullText);
+            };
+            
+            recognition.onerror = (e) => {
+                console.error('Speech recognition error:', e.error);
+                status.textContent = `Error: ${e.error}`;
+                status.className = 'status error';
+                stopListening();
+            };
+            
+            recognition.onend = () => {
+                if (isListening) {
+                    status.textContent = 'Stopped listening';
+                    status.className = 'status';
+                }
+                stopListening();
+            };
+            
+            voiceBtn.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                    finalTranscript = textarea.value;
+                } else {
+                    finalTranscript = textarea.value ? textarea.value + ' ' : '';
+                    recognition.start();
+                }
+            });
+            
+            function stopListening() {
+                isListening = false;
+                voiceBtn.classList.remove('listening');
+            }
+            
+        } else {
+            voiceBtn.disabled = true;
+            status.textContent = 'Speech recognition not supported in this browser';
+            status.className = 'status error';
+        }
+        
+        // Clear button functionality
+        clearBtn.addEventListener('click', () => {
+            if(!confirm('Clear Text?')){return false;}
+            textarea.value = '';
+            textarea.focus();
+            status.textContent = 'Text cleared';
+            status.className = 'status';
+            setTimeout(() => {
+                status.textContent = '';
+            }, 2000);
+        });
+        
+        // Return cleanup function
+        return {
+            destroy: () => {
+                if (recognition) {
+                    recognition.stop();
+                }
+                controlsDiv.remove();
+            }
+        };
+    },
+	/**
 	* @name wacss.toast
 	* @describe displays a toast message for 3 seconds
 	* @param str string
