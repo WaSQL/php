@@ -5548,6 +5548,7 @@ var wacss = {
 					case 'media':
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title='Multimedia';
 						a.li=li;
 						a.onclick=function(){
@@ -5844,6 +5845,7 @@ var wacss = {
 					case 'color':
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title='Text Color';
 						a.li=li;
 						a.onclick=function(){
@@ -5964,6 +5966,7 @@ var wacss = {
 						//headings H1-6
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title=name;
 						a.li=li;
 						a.onclick=function(){
@@ -6001,6 +6004,7 @@ var wacss = {
 						//justify full,left,center,right
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title=name;
 						a.li=li;
 						a.onclick=function(){
@@ -6035,6 +6039,7 @@ var wacss = {
 						//headings H1-6
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title='Text Size';
 						a.li=li;
 						a.onclick=function(){
@@ -6073,6 +6078,7 @@ var wacss = {
 						//justify full,left,center,right
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title=name;
 						a.li=li;
 						a.onclick=function(){
@@ -6121,6 +6127,7 @@ var wacss = {
 						//Multi-media insert:  https://www.froala.com/wysiwyg-editor/examples/custom-image-button
 						a=document.createElement('button');
 						a.className='wacssedit dropdown';
+						a.setAttribute('tabindex',-1);
 						a.title=name;
 						a.li=li;
 						a.onclick=function(){
@@ -6170,6 +6177,7 @@ var wacss = {
 						parts=buttons[name];
 						a=document.createElement('button');
 						a.className='wacssedit';
+						a.setAttribute('tabindex',-1);
 						a.title=name;
 						a.onclick=function(){return false;};
 						a.setAttribute('data-txt',list[i].id);
