@@ -6208,6 +6208,7 @@ var wacss = {
 			let cmd=list[i].getAttribute('data-cmd');
 			if(undefined == cmd){continue;}
 			list[i].setAttribute('data-wacssedit-cmd',cmd);
+			list[i].setAttribute('tabindex',-1);
 			list[i].onclick=function(event){
 				event.preventDefault();
 				let cmd=this.getAttribute('data-cmd');
