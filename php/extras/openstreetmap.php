@@ -3,7 +3,7 @@
 	OpenStreetMap/Nominatim wrapper functions
 	Documentation: https://nominatim.org/release-docs/latest/api/
 	Usage Policy: Please respect the rate limit of 1 request per second for public API
-	Cache Table.
+	Cache Table openstreetmap is automatically created for you.
 */
 if(!isDBTable('openstreetmap')){
 	$ok=createDBTable('openstreetmap',array('hash_value'=>"varchar(64) NOT NULL UNIQUE",'data'=>"JSON"));
@@ -23,6 +23,7 @@ if(!isDBTable('openstreetmap')){
  *   - namedetails: int - 0|1 - Include full list of names (language variants, older names, etc.)
  *   - accept-language: string - Preferred language order (e.g., 'en,de')
  *   - -table: string - Database table name for caching results (requires hash_value varchar(64) UNIQUE, data JSON)
+ *   - -maxage number - days to cache the record locally
  * @return array|string - Address object on success, error string on failure
  * @usage 
  *   $address = osmReverse(["51.21709661403662","6.7782883744862374"]);
@@ -34,6 +35,9 @@ function osmReverse($location, $params = array()) {
 	if (!isset($params['zoom'])) { $params['zoom'] = 18; }
 	if (!isset($params['addressdetails'])) { $params['addressdetails'] = 1; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
+	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	//sanatize maxage
+	$params['-maxage'] = (int)$params['-maxage'];
 	// Parse location parameter
 	if (!is_array($location)) {
 		// Handle string input
@@ -64,7 +68,7 @@ function osmReverse($location, $params = array()) {
 	$hash_value = hash('sha256', $lat . ',' . $lon . ',' . ($params['zoom'] ?? 18));
 	$rec = getDBRecord(array(
 		'-table' => $params['-table'],
-		'hash_value' => $hash_value
+		'-where' => "hash_value='{$hash_value}' AND COALESCE(_edate, _cdate) >= DATE_SUB(NOW(), INTERVAL {$params['-maxage']} DAY)"
 	));
 	if (isset($rec['_id']) && !empty($rec['data'])) {
 		$rtn=decodeJSON($rec['data']);
@@ -138,6 +142,7 @@ function osmReverse($location, $params = array()) {
  *   - email: string - Valid email address for identifying requests
  *   - accept-language: string - Preferred language order
  *   - -table: string - Database table name for caching results
+ *   - -maxage number - days to cache the record locally
  * @return array|string - Array of location results on success, error string on failure
  * @usage 
  *   $results = osmSearch("1600 Pennsylvania Avenue, Washington DC");
@@ -149,6 +154,9 @@ function osmSearch($query, $params = array()) {
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['limit'])) { $params['limit'] = 10; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
+	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	//sanatize maxage
+	$params['-maxage'] = (int)$params['-maxage'];
 	// Validate query
 	if (empty($query)) {
 		return "osmSearch ERROR: Query parameter is required";
@@ -159,7 +167,7 @@ function osmSearch($query, $params = array()) {
 	$hash_value = hash('sha256', $query_string . encodeJSON($params));
 	$rec = getDBRecord(array(
 		'-table' => $params['-table'],
-		'hash_value' => $hash_value
+		'-where' => "hash_value='{$hash_value}' AND COALESCE(_edate, _cdate) >= DATE_SUB(NOW(), INTERVAL {$params['-maxage']} DAY)"
 	));
 	if (isset($rec['_id']) && !empty($rec['data'])) {
 		$rtn=decodeJSON($rec['data']);
@@ -225,6 +233,7 @@ function osmSearch($query, $params = array()) {
  *   - email: string - Valid email address for identifying requests
  *   - accept-language: string - Preferred language order
  *   - -table: string - Database table name for caching results
+ *   - -maxage number - days to cache the record locally
  * @return array|string - Array of location objects on success, error string on failure
  * @usage 
  *   $details = osmLookup('R146656');
@@ -234,6 +243,9 @@ function osmLookup($osm_ids, $params = array()) {
 	// Validate and set defaults
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
+	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	//sanatize maxage
+	$params['-maxage'] = (int)$params['-maxage'];
 	// Validate input
 	if (empty($osm_ids)) {
 		return "osmLookup ERROR: OSM IDs are required";
@@ -248,7 +260,7 @@ function osmLookup($osm_ids, $params = array()) {
 	$hash_value = hash('sha256', $osm_ids_string . encodeJSON($params));
 	$rec = getDBRecord(array(
 		'-table' => $params['-table'],
-		'hash_value' => $hash_value
+		'-where' => "hash_value='{$hash_value}' AND COALESCE(_edate, _cdate) >= DATE_SUB(NOW(), INTERVAL {$params['-maxage']} DAY)"
 	));
 	if (isset($rec['_id']) && !empty($rec['data'])) {
 		$rtn=decodeJSON($rec['data']);
@@ -308,6 +320,7 @@ function osmLookup($osm_ids, $params = array()) {
  *   - email: string - Valid email address for identifying requests
  *   - accept-language: string - Preferred language order
  *   - -table: string - Database table name for caching results
+ *   - -maxage number - days to cache the record locally
  * @return array|string - Detailed place object on success, error string on failure
  * @usage 
  *   $details = osmDetails(123456);
@@ -318,6 +331,9 @@ function osmDetails($place_id, $params = array()) {
 	// Validate and set defaults
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
+	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	//sanatize maxage
+	$params['-maxage'] = (int)$params['-maxage'];
 	// Validate input
 	if (empty($place_id)) {
 		return "osmDetails ERROR: Place identifier is required";
@@ -349,7 +365,7 @@ function osmDetails($place_id, $params = array()) {
 	$hash_value = hash('sha256', $cache_key . encodeJSON($params));
 	$rec = getDBRecord(array(
 		'-table' => $params['-table'],
-		'hash_value' => $hash_value
+		'-where' => "hash_value='{$hash_value}' AND COALESCE(_edate, _cdate) >= DATE_SUB(NOW(), INTERVAL {$params['-maxage']} DAY)"
 	));
 	if (isset($rec['_id']) && !empty($rec['data'])) {
 		$rtn=decodeJSON($rec['data']);
