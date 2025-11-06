@@ -67,7 +67,7 @@ def previewMarkdown(markdown_file, browser_path=None):
     with open(markdown_file, 'r', encoding='utf-8') as f:
         md_content = f.read()
 
-    html = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite'])
+    html = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite', 'tables'])
 
     html_content = f"""
     <html>
@@ -78,6 +78,10 @@ def previewMarkdown(markdown_file, browser_path=None):
             body {{ font-family: Arial, sans-serif; padding: 2em; max-width: 800px; margin: auto; }}
             pre {{ background: #f4f4f4; padding: 1em; overflow: auto; }}
             code {{ background: #f4f4f4; padding: 0.2em 0.4em; }}
+            table {{ border-collapse: collapse; width: 100%; margin: 1em 0; }}
+            th, td {{ border: 1px solid #ddd; padding: 8px 12px; text-align: left; }}
+            th {{ background-color: #f2f2f2; font-weight: bold; }}
+            tr:nth-child(even) {{ background-color: #f9f9f9; }}
         </style>
     </head>
     <body>{html}</body>
