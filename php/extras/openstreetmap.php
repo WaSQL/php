@@ -4,6 +4,13 @@
 	Documentation: https://nominatim.org/release-docs/latest/api/
 	Usage Policy: Please respect the rate limit of 1 request per second for public API
 	Cache Table openstreetmap is automatically created for you.
+
+	Usage Example:
+	loadExtras('openstreetmap');
+	$location=[40.3888786, -111.7499857];
+	$address=osmReverse($location,array('-table'=>'openstreetmap'));
+	echo printValue($address);
+
 */
 if(!isDBTable('openstreetmap')){
 	$ok=createDBTable('openstreetmap',array('hash_value'=>"varchar(64) NOT NULL UNIQUE",'data'=>"JSON"));
