@@ -3,8 +3,11 @@
 	OpenStreetMap/Nominatim wrapper functions
 	Documentation: https://nominatim.org/release-docs/latest/api/
 	Usage Policy: Please respect the rate limit of 1 request per second for public API
+	Cache Table.
 */
-
+if(!isDBTable('openstreetmap')){
+	$ok=createDBTable('openstreetmap',array('hash_value'=>"varchar(64) NOT NULL UNIQUE",'data'=>"JSON"));
+}
 //---------- begin function osmReverse --------------------
 /**
  * @describe Generates an address from coordinates (reverse geocoding)
@@ -30,6 +33,7 @@ function osmReverse($location, $params = array()) {
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['zoom'])) { $params['zoom'] = 18; }
 	if (!isset($params['addressdetails'])) { $params['addressdetails'] = 1; }
+	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	// Parse location parameter
 	if (!is_array($location)) {
 		// Handle string input
@@ -56,18 +60,16 @@ function osmReverse($location, $params = array()) {
 	if ($lon < -180 || $lon > 180) {
 		return "osmReverse ERROR: Longitude must be between -180 and 180";
 	}
-	// Check cache if table is specified
-	if (isset($params['-table'])) {
-		$hash_value = hash('sha256', $lat . ',' . $lon . ',' . ($params['zoom'] ?? 18));
-		$rec = getDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value
-		));
-		if (isset($rec['_id']) && !empty($rec['data'])) {
-			$rtn=decodeJSON($rec['data']);
-			ksort($rtn);
-			return $rtn;
-		}
+	// Check cache table
+	$hash_value = hash('sha256', $lat . ',' . $lon . ',' . ($params['zoom'] ?? 18));
+	$rec = getDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value
+	));
+	if (isset($rec['_id']) && !empty($rec['data'])) {
+		$rtn=decodeJSON($rec['data']);
+		ksort($rtn);
+		return $rtn;
 	}
 	$url = "https://nominatim.openstreetmap.org/reverse";
 	//postopts
@@ -107,15 +109,13 @@ function osmReverse($location, $params = array()) {
 		$rtn['addr_1'] = trim("{$house} {$road}");
 		$rtn['addr_2'] = trim("{$town}, {$state} {$postcode}", ', ');
 	}
-	// Save to cache if -table is specified
-	if (isset($params['-table']) && isset($hash_value)) {
-		addDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value,
-			'-upsert' => 'data',
-			'data' => $rtn
-		));
-	}
+	// Save to cache
+	addDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value,
+		'-upsert' => 'data',
+		'data' => $rtn
+	));
 	ksort($rtn);
 	return $rtn;
 }
@@ -148,25 +148,25 @@ function osmSearch($query, $params = array()) {
 	// Validate and set defaults
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['limit'])) { $params['limit'] = 10; }
+	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	// Validate query
 	if (empty($query)) {
 		return "osmSearch ERROR: Query parameter is required";
 	}
 	// Build query hash for caching
 	$query_string = is_array($query) ? encodeJSON($query) : $query;
-	// Check cache if table is specified
-	if (isset($params['-table'])) {
-		$hash_value = hash('sha256', $query_string . encodeJSON($params));
-		$rec = getDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value
-		));
-		if (isset($rec['_id']) && !empty($rec['data'])) {
-			$rtn=decodeJSON($rec['data']);
-			ksort($rtn);
-			return $rtn;
-		}
+	// Check cache
+	$hash_value = hash('sha256', $query_string . encodeJSON($params));
+	$rec = getDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value
+	));
+	if (isset($rec['_id']) && !empty($rec['data'])) {
+		$rtn=decodeJSON($rec['data']);
+		ksort($rtn);
+		return $rtn;
 	}
+
 	$url = "https://nominatim.openstreetmap.org/search";
 	//postopts
 	$postopts = array(
@@ -201,15 +201,13 @@ function osmSearch($query, $params = array()) {
 	if (isset($rtn['error'])) {
 		return "osmSearch ERROR: " . $rtn['error'];
 	}
-	// Save to cache if -table is specified
-	if (isset($params['-table']) && isset($hash_value)) {
-		addDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value,
-			'-upsert' => 'data',
-			'data' => encodeJSON($rtn)
-		));
-	}
+	// Save to cache
+	addDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value,
+		'-upsert' => 'data',
+		'data' => encodeJSON($rtn)
+	));
 	ksort($rtn);
 	return $rtn;
 }
@@ -235,6 +233,7 @@ function osmSearch($query, $params = array()) {
 function osmLookup($osm_ids, $params = array()) {
 	// Validate and set defaults
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
+	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	// Validate input
 	if (empty($osm_ids)) {
 		return "osmLookup ERROR: OSM IDs are required";
@@ -245,19 +244,18 @@ function osmLookup($osm_ids, $params = array()) {
 	} else {
 		$osm_ids_string = $osm_ids;
 	}
-	// Check cache if table is specified
-	if (isset($params['-table'])) {
-		$hash_value = hash('sha256', $osm_ids_string . encodeJSON($params));
-		$rec = getDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value
-		));
-		if (isset($rec['_id']) && !empty($rec['data'])) {
-			$rtn=decodeJSON($rec['data']);
-			ksort($rtn);
-			return $rtn;
-		}
+	// Check cache
+	$hash_value = hash('sha256', $osm_ids_string . encodeJSON($params));
+	$rec = getDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value
+	));
+	if (isset($rec['_id']) && !empty($rec['data'])) {
+		$rtn=decodeJSON($rec['data']);
+		ksort($rtn);
+		return $rtn;
 	}
+
 	$url = "https://nominatim.openstreetmap.org/lookup";
 	//postopts
 	$postopts = array(
@@ -284,14 +282,12 @@ function osmLookup($osm_ids, $params = array()) {
 		return "osmLookup ERROR: " . $rtn['error'];
 	}
 	// Save to cache if -table is specified
-	if (isset($params['-table']) && isset($hash_value)) {
-		addDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value,
-			'-upsert' => 'data',
-			'data' => encodeJSON($rtn)
-		));
-	}
+	addDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value,
+		'-upsert' => 'data',
+		'data' => encodeJSON($rtn)
+	));
 	ksort($rtn);
 	return $rtn;
 }
@@ -321,6 +317,7 @@ function osmLookup($osm_ids, $params = array()) {
 function osmDetails($place_id, $params = array()) {
 	// Validate and set defaults
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
+	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	// Validate input
 	if (empty($place_id)) {
 		return "osmDetails ERROR: Place identifier is required";
@@ -348,18 +345,16 @@ function osmDetails($place_id, $params = array()) {
 		$postopts['place_id'] = $place_id;
 		$cache_key = 'place_id:' . $place_id;
 	}
-	// Check cache if table is specified
-	if (isset($params['-table'])) {
-		$hash_value = hash('sha256', $cache_key . encodeJSON($params));
-		$rec = getDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value
-		));
-		if (isset($rec['_id']) && !empty($rec['data'])) {
-			$rtn=decodeJSON($rec['data']);
-			ksort($rtn);
-			return $rtn;
-		}
+	// Check cache
+	$hash_value = hash('sha256', $cache_key . encodeJSON($params));
+	$rec = getDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value
+	));
+	if (isset($rec['_id']) && !empty($rec['data'])) {
+		$rtn=decodeJSON($rec['data']);
+		ksort($rtn);
+		return $rtn;
 	}
 	// Apply optional params (exclude internal ones)
 	foreach ($params as $k => $v) {
@@ -379,14 +374,12 @@ function osmDetails($place_id, $params = array()) {
 		return "osmDetails ERROR: " . $rtn['error'];
 	}
 	// Save to cache if -table is specified
-	if (isset($params['-table']) && isset($hash_value)) {
-		addDBRecord(array(
-			'-table' => $params['-table'],
-			'hash_value' => $hash_value,
-			'-upsert' => 'data',
-			'data' => encodeJSON($rtn)
-		));
-	}
+	addDBRecord(array(
+		'-table' => $params['-table'],
+		'hash_value' => $hash_value,
+		'-upsert' => 'data',
+		'data' => encodeJSON($rtn)
+	));
 	ksort($rtn);
 	return $rtn;
 }
