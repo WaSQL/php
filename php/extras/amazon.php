@@ -258,6 +258,35 @@ function amazonConvertFilesS3($params=array()){
 	}
 	return $rec['_id'];
 }
+//---------- begin function amazonUploadFileS3---------------------------------------
+/**
+* @describe Uploads a file to Amazon S3 using AWS Signature Version 4
+* @param array $params Parameters array
+*   Required parameters:
+*   - file: Full path to the local file to upload
+*   
+*   Optional parameters (will use global CONFIG values if not provided):
+*   - -accesskey: AWS Access Key ID
+*   - -secretkey: AWS Secret Access Key  
+*   - bucket: S3 bucket name
+*   - region: AWS region (e.g., 'us-east-1', 'us-west-2')
+*   - acl: Access control list (default: 'x-amz-acl:public-read')
+*   - folder: S3 folder/prefix to upload to (default: root)
+* @return mixed Returns 1 on success, or error message string on failure
+* @usage
+*   // Upload a file to S3
+*   $result = amazonUploadFileS3(array(
+*       'file' => '/path/to/local/file.jpg',
+*       'folder' => 'uploads/images',
+*       'bucket' => 'my-bucket',
+*       'region' => 'us-east-1'
+*   ));
+*   if($result === 1) {
+*       echo "File uploaded successfully";
+*   } else {
+*       echo "Upload failed: " . $result;
+*   }
+*/
 function amazonUploadFileS3($params=array()){
 	global $CONFIG;
 	$rtn=array();
@@ -397,7 +426,7 @@ function amazonUploadFileS3($params=array()){
 		}
 	else{
 		//break it up into header and body
-		$parts=preg_split('/\r\n\r\n/',trim($return),2);
+		$parts=preg_split('/\r\n\r\n/',trim($response),2);
 		$rtn['header']=trim($parts[0]);
 		$rtn['body']=trim($parts[1]);
 		//check for redirect cases with two headers
@@ -853,5 +882,677 @@ function amazonSendTextMsg($phone, $message) {
         ];
         return $result;
     }
+}
+
+//---------- begin function amazonListFilesS3---------------------------------------
+/**
+* @describe Lists files in an Amazon S3 bucket using AWS Signature Version 4
+* @param array $params Parameters array
+*   Optional parameters (will use global CONFIG values if not provided):
+*   - -accesskey: AWS Access Key ID
+*   - -secretkey: AWS Secret Access Key  
+*   - bucket: S3 bucket name
+*   - region: AWS region (e.g., 'us-east-1', 'us-west-2')
+*   - prefix: Filter files by prefix/folder path (default: '')
+*   - max-keys: Maximum number of files to return (default: 1000, max: 1000)
+*   - delimiter: Character to group keys by (default: none)
+*   - continuation-token: Token for pagination (from previous response)
+*   - newer-than: ISO 8601 date string - only return files modified after this date
+*   - older-than: ISO 8601 date string - only return files modified before this date
+*   - stop-on-old: Boolean - stop fetching when encountering files older than newer-than (default: true)
+* @return mixed Returns array with file list on success, or error message string on failure
+*   Success response contains:
+*   - files: Array of file objects with keys: key, last_modified, size, storage_class
+*   - count: Number of files returned
+*   - is_truncated: Boolean indicating if more results available
+*   - next_continuation_token: Token for next page (if is_truncated is true)
+* @usage
+*   // List all files in bucket
+*   $result = amazonListFilesS3(array(
+*       'bucket' => 'my-bucket',
+*       'region' => 'us-east-1'
+*   ));
+*   
+*   // List files with prefix filter
+*   $result = amazonListFilesS3(array(
+*       'prefix' => 'uploads/images/',
+*       'max-keys' => 50
+*   ));
+*   
+*   // List only new files from last 24 hours (optimized)
+*   $result = amazonListFilesS3(array(
+*       'newer-than' => date('c', strtotime('-1 day')),
+*       'stop-on-old' => true // Stops fetching when old files found
+*   ));
+*   
+*   // List files in date range
+*   $result = amazonListFilesS3(array(
+*       'newer-than' => '2024-01-01T00:00:00Z',
+*       'older-than' => '2024-12-31T23:59:59Z',
+*       'stop-on-old' => false // Continue through all pages
+*   ));
+*   
+*   if(is_array($result)) {
+*       echo "Found " . $result['count'] . " files";
+*       foreach($result['files'] as $file) {
+*           echo $file['key'] . " (" . $file['size'] . " bytes)";
+*       }
+*   } else {
+*       echo "Error: " . $result;
+*   }
+*/
+function amazonListFilesS3($params=array()){
+	global $CONFIG;
+	$rtn=array();
+	$rtn['input_params']=$params;
+	//require -accesskey
+	if(!isset($params['-accesskey']) && isset($CONFIG['aws_accesskey'])){
+		$params['-accesskey']=$CONFIG['aws_accesskey'];
+	}
+	if(!isset($params['-accesskey'])){
+		return "amazonListFilesS3 Error: missing -accesskey";
+	}
+	//require -secretkey
+	if(!isset($params['-secretkey']) && isset($CONFIG['aws_secretkey'])){
+		$params['-secretkey']=$CONFIG['aws_secretkey'];
+	}
+	if(!isset($params['-secretkey'])){
+		return "amazonListFilesS3 Error: missing -secretkey";
+	}
+	//require bucket
+	if(!isset($params['bucket']) && isset($CONFIG['aws_bucket'])){
+		$params['bucket']=$CONFIG['aws_bucket'];
+	}
+	if(!isset($params['bucket'])){
+		return "amazonListFilesS3 Error: missing bucket param";
+	}
+	//require region - us-west-2, us-east-1, etc
+	if(!isset($params['region']) && isset($CONFIG['aws_region'])){
+		$params['region']=$CONFIG['aws_region'];
+	}
+	if(!isset($params['region'])){
+		return "amazonListFilesS3 Error: missing region param";
+	}
+	
+	// Optional parameters with validation
+	if(!isset($params['prefix'])){
+		$params['prefix']='';
+	}
+	if(!isset($params['max-keys'])){
+		$params['max-keys']=1000;
+	}
+	// Validate max-keys range
+	$params['max-keys'] = max(1, min(1000, intval($params['max-keys'])));
+	
+	if(!isset($params['delimiter'])){
+		$params['delimiter']='';
+	}
+	if(!isset($params['continuation-token'])){
+		$params['continuation-token']='';
+	}
+	
+	// Date filtering parameters
+	$newerThan = isset($params['newer-than']) ? $params['newer-than'] : '';
+	$olderThan = isset($params['older-than']) ? $params['older-than'] : '';
+	$stopOnOld = isset($params['stop-on-old']) ? $params['stop-on-old'] : true;
+	
+	// Validate date formats if provided
+	if($newerThan !== ''){
+		$newerThanTime = strtotime($newerThan);
+		if($newerThanTime === false){
+			return "amazonListFilesS3 Error: Invalid newer-than date format. Use ISO 8601 format.";
+		}
+	}
+	if($olderThan !== ''){
+		$olderThanTime = strtotime($olderThan);
+		if($olderThanTime === false){
+			return "amazonListFilesS3 Error: Invalid older-than date format. Use ISO 8601 format.";
+		}
+	}
+	
+	// USER OPTIONS
+	$accessKeyId = $params['-accesskey'];
+	$secretKey = $params['-secretkey'];
+	$bucket = $params['bucket'];
+	$region = $params['region'];
+	$prefix = $params['prefix'];
+	$maxKeys = $params['max-keys'];
+	$delimiter = $params['delimiter'];
+	$continuationToken = $params['continuation-token'];
+
+	// VARIABLES
+	$longDate = gmdate('Ymd\THis\Z');
+	$shortDate = gmdate('Ymd');
+	$credential = $accessKeyId.'/'.$shortDate.'/'.$region.'/s3/aws4_request';
+
+	// Build query string
+	$queryString = 'list-type=2';
+	if($prefix != ''){
+		$queryString .= '&prefix='.rawurlencode($prefix);
+	}
+	$queryString .= '&max-keys='.$maxKeys;
+	if($delimiter != ''){
+		$queryString .= '&delimiter='.rawurlencode($delimiter);
+	}
+	if($continuationToken != ''){
+		$queryString .= '&continuation-token='.rawurlencode($continuationToken);
+	}
+
+	// CANONICAL REQUEST
+	$canonicalRequest = "GET\n/\n{$queryString}\nhost:{$bucket}.s3.{$region}.amazonaws.com\nx-amz-date:{$longDate}\n\nhost;x-amz-date\n".hash('sha256', '');
+
+	// STRING TO SIGN
+	$stringToSign = "AWS4-HMAC-SHA256\n{$longDate}\n{$shortDate}/{$region}/s3/aws4_request\n".hash('sha256', $canonicalRequest);
+
+	// SIGNATURE
+	$signingKey = hash_hmac('sha256', $shortDate, 'AWS4' . $secretKey, true);
+	$signingKey = hash_hmac('sha256', $region, $signingKey, true);
+	$signingKey = hash_hmac('sha256', 's3', $signingKey, true);
+	$signingKey = hash_hmac('sha256', 'aws4_request', $signingKey, true);
+	$signature = hash_hmac('sha256', $stringToSign, $signingKey);
+
+	// CURL
+	$url = "https://{$bucket}.s3.{$region}.amazonaws.com/?{$queryString}";
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, true);
+	curl_setopt($ch, CURLOPT_HTTPGET, true);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	
+	$headers = array(
+		'Host: '.$bucket.'.s3.'.$region.'.amazonaws.com',
+		'X-Amz-Date: '.$longDate,
+		'Authorization: AWS4-HMAC-SHA256 Credential='.$credential.', SignedHeaders=host;x-amz-date, Signature='.$signature
+	);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+	
+	$response = curl_exec($ch);
+	$rtn['response']=$response;
+	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($ch,CURLINFO_HEADER_OUT));
+	$rtn['curl_info']=curl_getinfo($ch);
+	
+	if(curl_errno($ch)){
+		$rtn['error_number'] = curl_errno($ch);
+		$rtn['error'] = curl_error($ch);
+	}
+	else{
+		//break it up into header and body
+		$parts=preg_split('/\r\n\r\n/',trim($response),2);
+		$rtn['header']=trim($parts[0]);
+		$rtn['body']=trim($parts[1]);
+		
+		//check for redirect cases with two headers
+		if(preg_match('/^HTTP\//is',$rtn['body'])){
+			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
+			$rtn['header']=trim($parts[0]);
+			$rtn['body']=trim($parts[1]);
+		}
+		
+		//parse the header into an array
+		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
+		$headers=array();
+		foreach($parts as $part){
+			if(!preg_match('/\:/',$part)){continue;}
+			list($key,$val)=preg_split('/\:/',trim($part),2);
+			$key=strtolower(trim($key));
+			$headers[$key][]=trim($val);
+		}
+		foreach($headers as $k=>$v){
+			if(count($v)==1){$rtn['headers'][$k]=$v[0];}
+			else{$rtn['headers'][$k]=$v;}
+		}
+	}
+	curl_close($ch);
+	$rtn['url']=$url;
+
+	// RESPONSE PROCESSING WITH DATE FILTERING
+	if($rtn['curl_info']['http_code'] == 200){
+		// Parse XML response to extract file list
+		$xml = simplexml_load_string($rtn['body']);
+		if($xml === false){
+			return 'amazonListFilesS3 Error: Invalid XML response';
+		}
+		
+		// Process files with date filtering
+		$allFiles = array();
+		$filteredFiles = array();
+		$shouldStopFetching = false;
+		$oldFileEncountered = false;
+		
+		if(isset($xml->Contents)){
+			foreach($xml->Contents as $content){
+				$file = array(
+					'key' => (string)$content->Key,
+					'last_modified' => (string)$content->LastModified,
+					'size' => (int)$content->Size,
+					'storage_class' => (string)$content->StorageClass,
+					'etag' => trim((string)$content->ETag, '"')
+				);
+				
+				$allFiles[] = $file;
+				$fileTime = strtotime($file['last_modified']);
+				$includeFile = true;
+				
+				// Apply date filters
+				if($newerThan !== '' && $fileTime <= $newerThanTime){
+					$includeFile = false;
+					$oldFileEncountered = true;
+					
+					// If stop-on-old is enabled and we're filtering by newer-than, stop here
+					if($stopOnOld && $newerThan !== ''){
+						$shouldStopFetching = true;
+					}
+				}
+				
+				if($olderThan !== '' && $fileTime >= $olderThanTime){
+					$includeFile = false;
+				}
+				
+				if($includeFile){
+					$filteredFiles[] = $file;
+				}
+				
+				// If we should stop fetching, break the loop
+				if($shouldStopFetching){
+					break;
+				}
+			}
+		}
+		
+		// Parse pagination information
+		$isTruncated = isset($xml->IsTruncated) ? ((string)$xml->IsTruncated === 'true') : false;
+		
+		// If we encountered old files and should stop, override truncation
+		if($shouldStopFetching){
+			$isTruncated = false; // Don't continue pagination
+		}
+		
+		$result = array(
+			'files' => $filteredFiles,
+			'count' => count($filteredFiles),
+			'is_truncated' => $isTruncated,
+			'max_keys' => isset($xml->MaxKeys) ? (int)$xml->MaxKeys : $maxKeys,
+			'key_count' => isset($xml->KeyCount) ? (int)$xml->KeyCount : count($allFiles),
+			'total_files_examined' => count($allFiles),
+			'files_filtered_out' => count($allFiles) - count($filteredFiles)
+		);
+		
+		// Add filter information to response
+		if($newerThan !== '' || $olderThan !== ''){
+			$result['date_filters_applied'] = array();
+			if($newerThan !== '') $result['date_filters_applied']['newer_than'] = $newerThan;
+			if($olderThan !== '') $result['date_filters_applied']['older_than'] = $olderThan;
+			$result['date_filters_applied']['stop_on_old'] = $stopOnOld;
+			$result['stopped_early'] = $shouldStopFetching;
+		}
+		
+		if(isset($xml->NextContinuationToken) && !$shouldStopFetching){
+			$result['next_continuation_token'] = (string)$xml->NextContinuationToken;
+		}
+		
+		// Parse common prefixes (folders) if delimiter was used
+		if(isset($xml->CommonPrefixes)){
+			$result['common_prefixes'] = array();
+			foreach($xml->CommonPrefixes as $commonPrefix){
+				$result['common_prefixes'][] = (string)$commonPrefix->Prefix;
+			}
+		}
+		
+		return $result;
+	} 
+	else {
+		return 'amazonListFilesS3 Error: HTTP '.$rtn['curl_info']['http_code'].' - '.printValue($rtn);
+	}
+}
+
+//---------- begin function amazonListAllNewFilesS3---------------------------------------
+/**
+* @describe Lists all new files from S3 with automatic pagination until date limit reached
+* @param array $params Same parameters as amazonListFilesS3, plus:
+*   - target-count: Stop after finding this many matching files (default: unlimited)
+*   - max-pages: Maximum number of pages to fetch (default: 10, prevents runaway)
+* @return mixed Returns array with all matching files, or error message string on failure
+* @usage
+*   // Get ALL files from last 24 hours (may span multiple pages)
+*   $result = amazonListAllNewFilesS3(array(
+*       'newer-than' => date('c', strtotime('-1 day')),
+*       'max-pages' => 20
+*   ));
+*/
+function amazonListAllNewFilesS3($params = array()) {
+    $targetCount = isset($params['target-count']) ? intval($params['target-count']) : 0;
+    $maxPages = isset($params['max-pages']) ? intval($params['max-pages']) : 10;
+    
+    // Remove helper params from S3 request
+    unset($params['target-count']);
+    unset($params['max-pages']);
+    
+    $allFiles = array();
+    $totalExamined = 0;
+    $totalFilteredOut = 0;
+    $pageCount = 0;
+    $continuationToken = '';
+    
+    do {
+        $pageCount++;
+        
+        // Set continuation token for pagination
+        if($continuationToken !== '') {
+            $params['continuation-token'] = $continuationToken;
+        }
+        
+        $result = amazonListFilesS3($params);
+        
+        if(!is_array($result)) {
+            return $result; // Return error
+        }
+        
+        // Add files from this page
+        $allFiles = array_merge($allFiles, $result['files']);
+        $totalExamined += $result['total_files_examined'];
+        $totalFilteredOut += $result['files_filtered_out'];
+        
+        // Check if we should continue
+        $shouldContinue = false;
+        
+        // Continue if we haven't reached target count
+        if($targetCount > 0 && count($allFiles) < $targetCount) {
+            $shouldContinue = true;
+        } else if($targetCount === 0) {
+            $shouldContinue = true;
+        }
+        
+        // Continue if there are more pages and we didn't stop early
+        if($shouldContinue && isset($result['next_continuation_token']) && !$result['stopped_early']) {
+            $continuationToken = $result['next_continuation_token'];
+            $shouldContinue = true;
+        } else {
+            $shouldContinue = false;
+        }
+        
+        // Don't exceed max pages
+        if($pageCount >= $maxPages) {
+            $shouldContinue = false;
+        }
+        
+    } while($shouldContinue);
+    
+    // Trim results to target count if specified
+    if($targetCount > 0 && count($allFiles) > $targetCount) {
+        $allFiles = array_slice($allFiles, 0, $targetCount);
+    }
+    
+    return array(
+        'files' => $allFiles,
+        'count' => count($allFiles),
+        'pages_fetched' => $pageCount,
+        'total_files_examined' => $totalExamined,
+        'files_filtered_out' => $totalFilteredOut,
+        'date_filters_applied' => isset($result['date_filters_applied']) ? $result['date_filters_applied'] : null,
+        'stopped_at_max_pages' => $pageCount >= $maxPages,
+        'target_count_reached' => $targetCount > 0 && count($allFiles) >= $targetCount
+    );
+}
+
+//---------- begin function amazonGetFileS3---------------------------------------
+/**
+* @describe Downloads a file from Amazon S3 using AWS Signature Version 4
+* @param array $params Parameters array
+*   Required parameters:
+*   - key: S3 object key/path to download
+*   
+*   Optional parameters (will use global CONFIG values if not provided):
+*   - -accesskey: AWS Access Key ID
+*   - -secretkey: AWS Secret Access Key  
+*   - bucket: S3 bucket name
+*   - region: AWS region (e.g., 'us-east-1', 'us-west-2')
+*   - save_to: Local file path to save downloaded content (optional)
+*   - range: HTTP Range header value for partial download (e.g., 'bytes=0-1023')
+*   - if_modified_since: Only download if modified since this date (RFC 2822 format)
+*   - if_none_match: Only download if ETag doesn't match this value
+* @return mixed Returns array with file content on success, or error message string on failure
+*   Success response contains:
+*   - content: Raw file content (if save_to not specified)
+*   - content_length: Size of downloaded content in bytes
+*   - content_type: MIME type of the file
+*   - etag: ETag of the file
+*   - last_modified: Last modification date
+*   - saved_to: Local file path (if save_to was specified)
+*   - bytes_written: Number of bytes written to local file (if save_to was specified)
+* @usage
+*   // Download file to memory
+*   $result = amazonGetFileS3(array(
+*       'key' => 'uploads/document.pdf',
+*       'bucket' => 'my-bucket',
+*       'region' => 'us-east-1'
+*   ));
+*   if(is_array($result)) {
+*       file_put_contents('local_file.pdf', $result['content']);
+*   }
+*   
+*   // Download file directly to disk
+*   $result = amazonGetFileS3(array(
+*       'key' => 'uploads/large-file.zip',
+*       'save_to' => '/local/path/large-file.zip'
+*   ));
+*   
+*   // Download partial file (first 1KB)
+*   $result = amazonGetFileS3(array(
+*       'key' => 'uploads/video.mp4',
+*       'range' => 'bytes=0-1023'
+*   ));
+*/
+function amazonGetFileS3($params=array()){
+	global $CONFIG;
+	$rtn=array();
+	$rtn['input_params']=$params;
+	//require -accesskey
+	if(!isset($params['-accesskey']) && isset($CONFIG['aws_accesskey'])){
+		$params['-accesskey']=$CONFIG['aws_accesskey'];
+	}
+	if(!isset($params['-accesskey'])){
+		return "amazonGetFileS3 Error: missing -accesskey";
+	}
+	//require -secretkey
+	if(!isset($params['-secretkey']) && isset($CONFIG['aws_secretkey'])){
+		$params['-secretkey']=$CONFIG['aws_secretkey'];
+	}
+	if(!isset($params['-secretkey'])){
+		return "amazonGetFileS3 Error: missing -secretkey";
+	}
+	//require bucket
+	if(!isset($params['bucket']) && isset($CONFIG['aws_bucket'])){
+		$params['bucket']=$CONFIG['aws_bucket'];
+	}
+	if(!isset($params['bucket'])){
+		return "amazonGetFileS3 Error: missing bucket param";
+	}
+	//require region - us-west-2, us-east-1, etc
+	if(!isset($params['region']) && isset($CONFIG['aws_region'])){
+		$params['region']=$CONFIG['aws_region'];
+	}
+	if(!isset($params['region'])){
+		return "amazonGetFileS3 Error: missing region param";
+	}
+	//require key (file path in S3)
+	if(!isset($params['key']) || trim($params['key']) === ''){
+		return "amazonGetFileS3 Error: missing or empty key param";
+	}
+	
+	// Optional parameters
+	$saveToFile = isset($params['save_to']) ? $params['save_to'] : '';
+	$range = isset($params['range']) ? $params['range'] : '';
+	$ifModifiedSince = isset($params['if_modified_since']) ? $params['if_modified_since'] : '';
+	$ifNoneMatch = isset($params['if_none_match']) ? $params['if_none_match'] : '';
+	
+	// Validate save_to directory exists if specified
+	if($saveToFile !== ''){
+		$saveDir = dirname($saveToFile);
+		if(!is_dir($saveDir)){
+			return "amazonGetFileS3 Error: Directory does not exist: {$saveDir}";
+		}
+		if(!is_writable($saveDir)){
+			return "amazonGetFileS3 Error: Directory not writable: {$saveDir}";
+		}
+	}
+
+	// USER OPTIONS
+	$accessKeyId = $params['-accesskey'];
+	$secretKey = $params['-secretkey'];
+	$bucket = $params['bucket'];
+	$region = $params['region'];
+	$key = trim($params['key']);
+
+	// VARIABLES
+	$longDate = gmdate('Ymd\THis\Z');
+	$shortDate = gmdate('Ymd');
+	$credential = $accessKeyId.'/'.$shortDate.'/'.$region.'/s3/aws4_request';
+
+	// CANONICAL REQUEST
+	$canonicalRequest = "GET\n/".rawurlencode($key)."\n\nhost:{$bucket}.s3.{$region}.amazonaws.com\nx-amz-date:{$longDate}\n\nhost;x-amz-date\n".hash('sha256', '');
+
+	// STRING TO SIGN
+	$stringToSign = "AWS4-HMAC-SHA256\n{$longDate}\n{$shortDate}/{$region}/s3/aws4_request\n".hash('sha256', $canonicalRequest);
+
+	// SIGNATURE
+	$signingKey = hash_hmac('sha256', $shortDate, 'AWS4' . $secretKey, true);
+	$signingKey = hash_hmac('sha256', $region, $signingKey, true);
+	$signingKey = hash_hmac('sha256', 's3', $signingKey, true);
+	$signingKey = hash_hmac('sha256', 'aws4_request', $signingKey, true);
+	$signature = hash_hmac('sha256', $stringToSign, $signingKey);
+
+	// CURL
+	$url = "https://{$bucket}.s3.{$region}.amazonaws.com/".rawurlencode($key);
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, true);
+	curl_setopt($ch, CURLOPT_HTTPGET, true);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	
+	$headers = array(
+		'Host: '.$bucket.'.s3.'.$region.'.amazonaws.com',
+		'X-Amz-Date: '.$longDate,
+		'Authorization: AWS4-HMAC-SHA256 Credential='.$credential.', SignedHeaders=host;x-amz-date, Signature='.$signature
+	);
+	
+	// Add optional headers
+	if($range !== ''){
+		$headers[] = 'Range: '.$range;
+	}
+	if($ifModifiedSince !== ''){
+		$headers[] = 'If-Modified-Since: '.$ifModifiedSince;
+	}
+	if($ifNoneMatch !== ''){
+		$headers[] = 'If-None-Match: '.$ifNoneMatch;
+	}
+	
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+	
+	$response = curl_exec($ch);
+	$rtn['response']=$response;
+	$rtn['headers_out']=preg_split('/[\r\n]+/',curl_getinfo($ch,CURLINFO_HEADER_OUT));
+	$rtn['curl_info']=curl_getinfo($ch);
+	
+	if(curl_errno($ch)){
+		$rtn['error_number'] = curl_errno($ch);
+		$rtn['error'] = curl_error($ch);
+	}
+	else{
+		//break it up into header and body
+		$parts=preg_split('/\r\n\r\n/',trim($response),2);
+		$rtn['header']=trim($parts[0]);
+		$rtn['body']=trim($parts[1]);
+		
+		//check for redirect cases with two headers
+		if(preg_match('/^HTTP\//is',$rtn['body'])){
+			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
+			$rtn['header']=trim($parts[0]);
+			$rtn['body']=trim($parts[1]);
+		}
+		
+		//parse the header into an array
+		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
+		$headers=array();
+		foreach($parts as $part){
+			if(!preg_match('/\:/',$part)){continue;}
+			list($key,$val)=preg_split('/\:/',trim($part),2);
+			$key=strtolower(trim($key));
+			$headers[$key][]=trim($val);
+		}
+		foreach($headers as $k=>$v){
+			if(count($v)==1){$rtn['headers'][$k]=$v[0];}
+			else{$rtn['headers'][$k]=$v;}
+		}
+	}
+	curl_close($ch);
+	$rtn['url']=$url;
+
+	// RESPONSE
+	$httpCode = $rtn['curl_info']['http_code'];
+	
+	if($httpCode == 200 || $httpCode == 206){  // 206 = Partial Content for range requests
+		// Extract metadata from response headers
+		$result = array(
+			'content' => $rtn['body'],
+			'content_length' => strlen($rtn['body']),
+			'http_code' => $httpCode
+		);
+		
+		// Parse response headers for metadata
+		if(isset($rtn['headers'])){
+			if(isset($rtn['headers']['content-type'])){
+				$result['content_type'] = $rtn['headers']['content-type'];
+			}
+			if(isset($rtn['headers']['etag'])){
+				$result['etag'] = trim($rtn['headers']['etag'], '"');
+			}
+			if(isset($rtn['headers']['last-modified'])){
+				$result['last_modified'] = $rtn['headers']['last-modified'];
+			}
+			if(isset($rtn['headers']['content-range'])){
+				$result['content_range'] = $rtn['headers']['content-range'];
+			}
+			if(isset($rtn['headers']['accept-ranges'])){
+				$result['accept_ranges'] = $rtn['headers']['accept-ranges'];
+			}
+		}
+		
+		// For successful download, save to file if specified
+		if($saveToFile !== ''){
+			$bytesWritten = file_put_contents($saveToFile, $rtn['body']);
+			if($bytesWritten !== false){
+				$result['saved_to'] = $saveToFile;
+				$result['bytes_written'] = $bytesWritten;
+				// Don't include content in memory if saved to file (saves memory)
+				unset($result['content']);
+			}
+			else{
+				$result['save_error'] = 'Failed to save file to '.$saveToFile;
+			}
+		}
+		
+		return $result;
+	}
+	else if($httpCode == 304){
+		// Not Modified - file hasn't changed
+		return array(
+			'not_modified' => true,
+			'http_code' => $httpCode,
+			'message' => 'File not modified since last request'
+		);
+	}
+	else if($httpCode == 404){
+		return 'amazonGetFileS3 Error: File not found - '.$key;
+	}
+	else if($httpCode == 403){
+		return 'amazonGetFileS3 Error: Access denied - check permissions for '.$key;
+	}
+	else {
+		return 'amazonGetFileS3 Error: HTTP '.$httpCode.' - '.printValue($rtn);
+	}
 }
 ?>
