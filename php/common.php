@@ -3191,7 +3191,10 @@ function buildFormLatLon($name,$params=array()){
 	if(isset($params['style']) && strlen($params['style']) && !stringEndsWith($params['style'],';')){
 		$params['style'].=';';
 	}
-	$params['style'].='padding-left:1px;padding-right:1px;border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	if(!isset($params['title']) && strlen($params['value'])){
+		$params['title']=$params['value'];
+	}
 	$input=buildFormText($name,$params);
 	//button classes
 	$classes=preg_split('/\ +/',$params['class']);
