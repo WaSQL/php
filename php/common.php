@@ -3178,6 +3178,10 @@ function buildFormLatLon($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['class'])){$params['class']='w_form-control';}
 	$params['value']=buildFormValueParam($name,$params);
+	if($params['value']=='latlon' && $params['defaultval']=='latlon'){
+		$params['value']='';
+		$params['data-onload']="wacss.getLatLon(this);";
+	}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['name']=$name;
