@@ -3799,7 +3799,13 @@ function buildFormQrcode($name,$params=array()){
 	$params['data-input']='qrcode';
 	$setparams=$params;
 	if(!isset($params['placeholder'])){$params['placeholder']='Click QRCode to Scan &#8658;';}
+	if(isset($params['style']) && strlen($params['style']) && !stringEndsWith($params['style'],';')){
+		$params['style'].=';';
+	}
 	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	if(!isset($params['title']) && strlen($params['value'])){
+		$params['title']=$params['value'];
+	}
 	$input=buildFormText($name,$params);
 	//replace input class with button
 	$setparams['onclick']="wacss.getQrcodeBarcode(this.previousElementSibling,this)";
@@ -3843,7 +3849,13 @@ function buildFormBarcode($name,$params=array()){
 	$params['data-input']='barcode';
 	$setparams=$params;
 	if(!isset($params['placeholder'])){$params['placeholder']='Click Barcode to Scan &#8658;';}
+	if(isset($params['style']) && strlen($params['style']) && !stringEndsWith($params['style'],';')){
+		$params['style'].=';';
+	}
 	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
+	if(!isset($params['title']) && strlen($params['value'])){
+		$params['title']=$params['value'];
+	}
 	$input=buildFormText($name,$params);
 	//replace input class with button
 	$setparams['onclick']="wacss.getQrcodeBarcode(this.previousElementSibling,this)";
