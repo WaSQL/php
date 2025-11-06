@@ -31,8 +31,8 @@ if "%OLD_HEAD%" neq "%NEW_HEAD%" (
     REM Get the list of changed files from the pull
     for /f "delims=" %%f in ('git diff --name-only %OLD_HEAD% %NEW_HEAD% 2^>nul') do (
         echo %%f
-        REM Get the most recent commit message for this file
-        for /f "delims=" %%c in ('git log -1 --pretty^=format:"    %%s" -- "%%f" 2^>nul') do (
+        REM Get all commit messages for this file since last pull
+        for /f "delims=" %%c in ('git log %OLD_HEAD%..%NEW_HEAD% --pretty^=format:"    %%s" -- "%%f" 2^>nul') do (
             echo     %%c
         )
         echo.
