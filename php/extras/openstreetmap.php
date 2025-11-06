@@ -31,6 +31,7 @@ if(!isDBTable('openstreetmap')){
  *   - accept-language: string - Preferred language order (e.g., 'en,de')
  *   - -table: string - Database table name for caching results (requires hash_value varchar(64) UNIQUE, data JSON)
  *   - -maxage number - days to cache the record locally
+ *   - -user_agent string - User-Agent identifying the application
  * @return array|string - Address object on success, error string on failure
  * @usage 
  *   $address = osmReverse(["51.21709661403662","6.7782883744862374"]);
@@ -43,6 +44,7 @@ function osmReverse($location, $params = array()) {
 	if (!isset($params['addressdetails'])) { $params['addressdetails'] = 1; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	if (!isset($params['-user_agent'])) {$params['-user_agent'] = 'WaSQL-OSM-Wrapper/1.3';}
 	//sanatize maxage
 	$params['-maxage'] = (int)$params['-maxage'];
 	// Parse location parameter
@@ -88,6 +90,7 @@ function osmReverse($location, $params = array()) {
 		'-method' => 'GET',
 		'-nossl' => 1,
 		'-json' => 1,
+		'-user_agent' => $params['-user_agent'],
 		'lat' => $lat,
 		'lon' => $lon
 	);
@@ -150,6 +153,7 @@ function osmReverse($location, $params = array()) {
  *   - accept-language: string - Preferred language order
  *   - -table: string - Database table name for caching results
  *   - -maxage number - days to cache the record locally
+ *   - -user_agent string - User-Agent identifying the application
  * @return array|string - Array of location results on success, error string on failure
  * @usage 
  *   $results = osmSearch("1600 Pennsylvania Avenue, Washington DC");
@@ -162,6 +166,7 @@ function osmSearch($query, $params = array()) {
 	if (!isset($params['limit'])) { $params['limit'] = 10; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	if (!isset($params['-user_agent'])) {$params['-user_agent'] = 'WaSQL-OSM-Wrapper/1.3';}
 	//sanatize maxage
 	$params['-maxage'] = (int)$params['-maxage'];
 	// Validate query
@@ -187,7 +192,8 @@ function osmSearch($query, $params = array()) {
 	$postopts = array(
 		'-method' => 'GET',
 		'-nossl' => 1,
-		'-json' => 1
+		'-json' => 1,
+		'-user_agent' => $params['-user_agent']
 	);
 	// Handle structured vs free-form query
 	if (is_array($query)) {
@@ -241,6 +247,7 @@ function osmSearch($query, $params = array()) {
  *   - accept-language: string - Preferred language order
  *   - -table: string - Database table name for caching results
  *   - -maxage number - days to cache the record locally
+ *   - -user_agent string - User-Agent identifying the application
  * @return array|string - Array of location objects on success, error string on failure
  * @usage 
  *   $details = osmLookup('R146656');
@@ -251,6 +258,7 @@ function osmLookup($osm_ids, $params = array()) {
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	if (!isset($params['-user_agent'])) {$params['-user_agent'] = 'WaSQL-OSM-Wrapper/1.3';}
 	//sanatize maxage
 	$params['-maxage'] = (int)$params['-maxage'];
 	// Validate input
@@ -281,6 +289,7 @@ function osmLookup($osm_ids, $params = array()) {
 		'-method' => 'GET',
 		'-nossl' => 1,
 		'-json' => 1,
+		'-user_agent' => $params['-user_agent'],
 		'osm_ids' => $osm_ids_string
 	);
 	// Apply optional params (exclude internal ones)
@@ -328,6 +337,7 @@ function osmLookup($osm_ids, $params = array()) {
  *   - accept-language: string - Preferred language order
  *   - -table: string - Database table name for caching results
  *   - -maxage number - days to cache the record locally
+ *   - -user_agent string - User-Agent identifying the application
  * @return array|string - Detailed place object on success, error string on failure
  * @usage 
  *   $details = osmDetails(123456);
@@ -339,6 +349,7 @@ function osmDetails($place_id, $params = array()) {
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
 	if (!isset($params['-table'])) {$params['-table']='openstreetmap';}
 	if (!isset($params['-maxage'])) {$params['-maxage'] = 90;}
+	if (!isset($params['-user_agent'])) {$params['-user_agent'] = 'WaSQL-OSM-Wrapper/1.3';}
 	//sanatize maxage
 	$params['-maxage'] = (int)$params['-maxage'];
 	// Validate input
@@ -350,7 +361,8 @@ function osmDetails($place_id, $params = array()) {
 	$postopts = array(
 		'-method' => 'GET',
 		'-nossl' => 1,
-		'-json' => 1
+		'-json' => 1,
+		'-user_agent' => $params['-user_agent'],
 	);
 	// Handle different place identifier types
 	if (is_array($place_id)) {
@@ -414,6 +426,7 @@ function osmDetails($place_id, $params = array()) {
  * @param params array - Optional parameters:
  *   - format: string - json (default), text
  *   - email: string - Valid email address for identifying requests
+ *   - -user_agent string - User-Agent identifying the application
  * @return array|string - Status object with 'status' (0=OK, error code otherwise), 'message', and 'data_updated' timestamp
  * @usage 
  *   $status = osmStatus();
@@ -422,11 +435,13 @@ function osmDetails($place_id, $params = array()) {
 function osmStatus($params = array()) {
 	// Validate and set defaults
 	if (!isset($params['format'])) { $params['format'] = 'json'; }
+	if (!isset($params['-user_agent'])) {$params['-user_agent'] = 'WaSQL-OSM-Wrapper/1.3';}
 	$url = "https://nominatim.openstreetmap.org/status";
 	$postopts = array(
 		'-method' => 'GET',
 		'-nossl' => 1,
-		'-json' => 1
+		'-json' => 1,
+		'-user_agent' => $params['-user_agent'],
 	);
 	// Apply optional params
 	foreach ($params as $k => $v) {
