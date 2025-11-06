@@ -3188,6 +3188,9 @@ function buildFormLatLon($name,$params=array()){
 	$setparams=$params;
 	$mapparams=$params;
 	if(!isset($params['placeholder'])){$params['placeholder']='Click Pin To Set Location &#8663;';}
+	if(isset($params['style']) && strlen($params['style']) && !stringEndsWith($params['style'],';')){
+		$params['style'].=';';
+	}
 	$params['style'].='border-right:0px;border-top-right-radius:0px;border-bottom-right-radius:0px;';
 	$input=buildFormText($name,$params);
 	//button classes
