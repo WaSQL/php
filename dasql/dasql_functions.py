@@ -67,7 +67,23 @@ def previewMarkdown(markdown_file, browser_path=None):
     with open(markdown_file, 'r', encoding='utf-8') as f:
         md_content = f.read()
 
-    html = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite', 'tables'])
+    # Available markdown extensions:
+    # 'abbr' - Abbreviation support (e.g., *[HTML]: HyperText Markup Language)
+    # 'admonition' - Warning/note/tip boxes (!!! note, !!! warning, etc.)
+    # 'attr_list' - Add CSS classes and IDs to elements {: .class #id}
+    # 'codehilite' - Syntax highlighting for code blocks
+    # 'def_list' - Definition lists support
+    # 'fenced_code' - GitHub-style ``` code blocks
+    # 'footnotes' - Footnote support with [^1] syntax
+    # 'md_in_html' - Process markdown inside HTML blocks
+    # 'meta' - Document metadata support
+    # 'nl2br' - Convert single newlines to <br> tags
+    # 'sane_lists' - Better list handling and nesting
+    # 'smarty' - Smart quotes, dashes, and ellipses
+    # 'tables' - Table support with | syntax
+    # 'toc' - Table of contents generation
+    # 'wikilinks' - Wiki-style [[links]]
+    html = markdown.markdown(md_content, extensions=['fenced_code', 'codehilite', 'tables', 'toc', 'footnotes', 'admonition','sane_lists','footnotes','attr_list'])
 
     html_content = f"""
     <html>
@@ -78,10 +94,33 @@ def previewMarkdown(markdown_file, browser_path=None):
             body {{ font-family: Arial, sans-serif; padding: 2em; max-width: 800px; margin: auto; }}
             pre {{ background: #f4f4f4; padding: 1em; overflow: auto; }}
             code {{ background: #f4f4f4; padding: 0.2em 0.4em; }}
+
+            /* Tables */
             table {{ border-collapse: collapse; width: 100%; margin: 1em 0; }}
             th, td {{ border: 1px solid #ddd; padding: 8px 12px; text-align: left; }}
             th {{ background-color: #f2f2f2; font-weight: bold; }}
             tr:nth-child(even) {{ background-color: #f9f9f9; }}
+            
+            /* Table of Contents */
+            .toc {{ background: #f8f9fa; border: 1px solid #e9ecef; padding: 1em; margin: 1em 0; border-radius: 4px; }}
+            .toc ul {{ margin: 0.5em 0; }}
+            
+            /* Admonitions (note, warning, etc.) */
+            .admonition {{ margin: 1em 0; padding: 1em; border-left: 4px solid #007bff; background: #f8f9fa; }}
+            .admonition-title {{ font-weight: bold; margin-bottom: 0.5em; }}
+            .admonition.warning {{ border-left-color: #ffc107; background: #fff3cd; }}
+            .admonition.danger {{ border-left-color: #dc3545; background: #f8d7da; }}
+            
+            /* Footnotes */
+            .footnote {{ font-size: 0.8em; }}
+            .footnote-ref {{ vertical-align: super; font-size: 0.7em; }}
+            
+            /* Definition Lists */
+            dt {{ font-weight: bold; margin-top: 1em; }}
+            dd {{ margin-left: 2em; margin-bottom: 0.5em; }}
+            
+            /* Abbreviations */
+            abbr {{ cursor: help; border-bottom: 1px dotted; }}
         </style>
     </head>
     <body>{html}</body>
