@@ -2646,6 +2646,59 @@ var wacss = {
 			if (code.trim() !== code) return false;
 			return true;
 		};
+		//DATA_MATRIX
+		const validateDATA_MATRIX = (code) => {
+		  if (!code || code.length === 0) return false;
+		  // DATA_MATRIX can store up to 3,116 numeric or 2,335 alphanumeric characters
+		  if (code.length > 3116) return false;
+		  // Basic validation - DATA_MATRIX can contain any printable ASCII characters
+		  const validPattern = /^[\x20-\x7E]*$/; // Printable ASCII characters
+		  if (!validPattern.test(code)) return false;
+		  // Check for common DATA_MATRIX prefixes (GS1, HIBC, etc.)
+		  const hasValidStructure =
+		      /^(\d{2,4}[\x1D\x1E]|\+\$|>:|01\d{14}|21)/.test(code) || // GS1, HIBC, or structured data
+		      code.length <= 50 || // Short codes are typically valid
+		      /^[A-Z0-9\-\.\/\s]+$/.test(code); // Common alphanumeric pattern
+		  return hasValidStructure;
+		};
+		//AZTEC
+		const validateAZTEC = (code) => {
+		  if (!code || code.length === 0) return false;
+		  // AZTEC can store up to 3,832 numeric or 3,067 alphanumeric characters
+		  if (code.length > 3832) return false;
+		  // AZTEC supports extended ASCII and binary data
+		  const validPattern = /^[\x00-\xFF]*$/; // Extended ASCII
+		  if (!validPattern.test(code)) return false;
+		  // Check for common AZTEC structured data patterns
+		  const hasValidStructure =
+		      /^[A-Z]{2}\d{4}/.test(code) || // Flight codes
+		      /^\d{13}[\x1E]/.test(code) || // Ticket numbers with separator
+		      /^M1[A-Z0-9\/]{20,}/.test(code) || // IATA boarding pass
+		      code.includes('\x1E') || // Contains group separator
+		      code.length <= 100 || // Short codes typically valid
+		      /^[A-Z0-9\s\-\.\/]+$/.test(code); // Common alphanumeric
+		  return hasValidStructure;
+		};
+		//PDF_417
+		const validatePDF_417 = (code) => {
+		  if (!code || code.length === 0) return false;
+		  // PDF417 can store up to 2,710 numeric or 1,850 alphanumeric characters
+		  if (code.length > 2710) return false;
+		  // PDF417 supports full 256-character ASCII set
+		  const validPattern = /^[\x00-\xFF]*$/;
+		  if (!validPattern.test(code)) return false;
+		  // Check for common PDF417 patterns (driver's license, shipping, etc.)
+		  const hasValidStructure =
+		      /^@\n\x1E\rANSI/.test(code) || // AAMVA driver's license header
+		      /^DCS[A-Z0-9]{8,}/.test(code) || // Driver's license format
+		      /^\d{1,2}[A-Z]{2}\d{6}/.test(code) || // Common ID format
+		      code.includes('\r') || // Contains carriage return (common in PDF417)
+		      code.includes('\n') || // Contains line feed
+		      code.includes('\x1E') || // Contains record separator
+		      code.length <= 200 || // Short codes typically valid
+		      /^[A-Z0-9\s\-\.\/]+$/.test(code); // Common alphanumeric
+		  return hasValidStructure;
+		};
 		//Barcode
 		const validateBarcode = (decodedText, format, inputType) => {
 			if (inputType === 'qrcode') return true;
@@ -2657,6 +2710,9 @@ var wacss = {
 					case 'EAN_13': return validateEAN13(decodedText);
 					case 'CODE_39': return validateCODE_39(decodedText);
 					case 'CODE_128': return validateCODE_128(decodedText);
+					case 'DATA_MATRIX': return validateDATA_MATRIX(decodedText);
+					case 'AZTEC': return validateAZTEC(decodedText);
+					case 'PDF_417': return validatePDF_417(decodedText);
 					case 'QR_CODE': return false;
 					default:
 						console.warn('Unknown barcode format:', format);
@@ -2772,8 +2828,10 @@ var wacss = {
 			// Configure formats based on input type
 			let formats, qrboxConfig;
 			if (inputType === 'qrcode') {
-				formats = [Html5QrcodeSupportedFormats.QR_CODE];
-				qrboxConfig = { width: 280, height: 280 };
+				formats = [
+					Html5QrcodeSupportedFormats.QR_CODE
+				];
+				qrboxConfig = { width: 350, height: 350 };
 			} else if (inputType === 'barcode') {
 				formats = [
 					Html5QrcodeSupportedFormats.EAN_13,
@@ -2783,7 +2841,7 @@ var wacss = {
 					Html5QrcodeSupportedFormats.EAN_8,
 					Html5QrcodeSupportedFormats.UPC_E
 				];
-				qrboxConfig = { width: 280, height: 140 };
+				qrboxConfig = { width: 350, height: 200 };
 			} else {
 				formats = [
 					Html5QrcodeSupportedFormats.QR_CODE,
@@ -2794,18 +2852,21 @@ var wacss = {
 					Html5QrcodeSupportedFormats.EAN_8,
 					Html5QrcodeSupportedFormats.UPC_E
 				];
-				qrboxConfig = { width: 280, height: 280 };
+				qrboxConfig = { width: 350, height: 350 };
 			}
 			await scanner.start(
 				{ facingMode: 'environment' },
 				{
-					fps: 30,
+					fps: 20,
 					qrbox: qrboxConfig,
 					formatsToSupport: formats,
+					aspectRatio: 1.0,
 					experimentalFeatures: {
-						useBarCodeDetectorIfSupported: true,
-						useLegacyIos: true
-					}
+						useBarCodeDetectorIfSupported: true
+					},
+					disableFlip: false,
+      				rememberLastUsedCamera: true,
+      				supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
 				},
 				(decodedText, decodedResult) => {
 					try {
