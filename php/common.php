@@ -3788,10 +3788,11 @@ ENDOFOTHER;
  * ]);
  */
 function buildFormQrcode($name,$params=array()){
+	//ksort($params);return printValue($params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['class']=commonCoalesce($params['class'],'wacss_input');
 	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
@@ -3841,7 +3842,7 @@ function buildFormBarcode($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['class']=commonCoalesce($params['class'],'wacss_input');
 	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
@@ -3903,7 +3904,7 @@ function buildFormText($name,$params=array()){
 	if(!isset($params['-type'])){$params['-type']='text';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['class']=commonCoalesce($params['class'],'wacss_input');
 	$params['value']=buildFormValueParam($name,$params);
 	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -4634,7 +4635,6 @@ function buildFormFileImage($name,$params=array()){
 		$hidden[]=buildFormHidden("{$name}_convert",array('value'=>$convert));
 		unset($params['data-convert']);
     }
-    $hiddenstr=implode(PHP_EOL."\t",$hidden);
     //preview?
     $erase='';
     if(strlen($params['value'])){
@@ -4648,6 +4648,7 @@ ENDOFERASE;
 <label title="Erase" style="display:none;" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileCaptureErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
 ENDOFERASE;
 	}
+	$hiddenstr=implode(PHP_EOL."\t",$hidden);
 	//data params
 	$datatags=array();
 	//return printValue($params);
@@ -4658,7 +4659,7 @@ ENDOFERASE;
 	}
 	$datatagstr=implode(' ',$datatags);
 	$tag=<<<ENDOFTAG
-<div data-inputtype="file_image" data-display="inline-flex" style="{$params['style']}">
+<div data-inputtype="file_image" data-display="inline-flex" data-debug="1" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
 	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-color:#FFF;background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
