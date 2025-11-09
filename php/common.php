@@ -4134,7 +4134,7 @@ function buildFormTranslateBulma($params=array()){
 	else{
 		$lang=$info['lang'];
 	}
-	$tag.=' 	<a class="navbar-link">'.$lang.'</a>'.PHP_EOL;
+	$tag.=' 	<a class="navbar-link '.$params['class'].'">'.$lang.'</a>'.PHP_EOL;
 	$tag.=' 	<div class="navbar-dropdown is-right">'.PHP_EOL;
 	foreach($locales as $locale){
 		if($params['-showflag']==1){
@@ -4144,7 +4144,7 @@ function buildFormTranslateBulma($params=array()){
 		else{
 			$lang=$locale['name'];
 		}
-		$tag.='		<a class="navbar-item" href="?_locale_='.$locale['locale'].'">'.$lang.'</a>'.PHP_EOL;
+		$tag.='		<a class="navbar-item '.$params['class'].'" href="?_locale_='.$locale['locale'].'">'.$lang.'</a>'.PHP_EOL;
 	}
     $tag.='    </div>'.PHP_EOL;
 	$tag.='</div>'.PHP_EOL;
