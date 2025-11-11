@@ -20,15 +20,14 @@
 <div class="row">
 	<div class="col s2" style="position:sticky;top:59px;">
 		<ul class="nav-list buttons <?=$CONFIG['admin_color'];?>">
-			<li><a href="form-elements" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Form Elements</a></li>
-			<li><a href="nav-tabs" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-Tabs</a></li>
-			<li><a href="nav-list" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Nav-List</a></li>
-			<li><a href="data-navigate" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Data-Navigate</a></li>
-			<!-- <li><a href="javascript" onclick="wacss.toast('You are now looking at some fine toast. This is some more fine toast.',{timer:13});return ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Javascript</a></li> -->
-			<li><a href="behaviors" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Behaviors</a></li>
-			<li><a href="flexbutton" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">FlexButton</a></li>
-			<li><a href="chartjs" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">ChartJs</a></li>
-			<li><a href="languages" onclick="return wacss.ajaxGet('/php/admin.php?_menu=test&test='+this.getAttribute('href')+'&','test_content');">Languages</a></li>
+			<li class="active"><a href="#form-elements" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="form-elements" onclick="return wacss.nav(this);">Form Elements</a></li>
+			<li><a href="#nav-tabs" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="nav-tabs" onclick="return wacss.nav(this);">Nav-Tabs</a></li>
+			<li><a href="#nav-list" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="nav-list" onclick="return wacss.nav(this);">Nav-List</a></li>
+			<li><a href="#data-navigate" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="data-navigate" onclick="return wacss.nav(this);">Data-Navigate</a></li>
+			<li><a href="#behaviors" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="behaviors" onclick="return wacss.nav(this);">Behaviors</a></li>
+			<li><a href="#flexbutton" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="flexbutton" onclick="return wacss.nav(this);">FlexButton</a></li>
+			<li><a href="#chartjs" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="chartjs" onclick="return wacss.nav(this);">ChartJs</a></li>
+			<li><a href="#languages" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="languages" onclick="return wacss.nav(this);">Languages</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
