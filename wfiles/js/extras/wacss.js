@@ -850,11 +850,14 @@ var wacss = {
 		cpt_close.title='Close';
 		cpt_close.closeid=cp.id;
 		cpt_close.onclick=function(){
-			//before just closing a centerpop check for forms that have changed and prompt to save
-			if(undefined != this.dataset.formchanged && this.dataset.formchanged==1){
-				this.dataset.formchanged=0;
-				if(!confirm('Form content has changed. If you close this window your changes will be lost. Only Warning.')){
-					return false;
+			//if content has a form, check for form changes
+			let cp=wacss.getParent(this,'div','wacss_centerpop');
+			if(cp){
+				let formchanges=cp.querySelectorAll('form [data-wacss_changed]');
+				if(formchanges.length){
+					if(!confirm('Form content has changed. Closing will lose your changes. Confirm.')){
+						return false;
+					}
 				}
 			}
 			let mcp=wacss.getObject(this.closeid);
@@ -1027,17 +1030,22 @@ var wacss = {
   		}
   		return cleaned;
 	},
-	formChanged: function(frm,ignorecp=0){
-		if(undefined == ignorecp || ignorecp != 1){ignorecp=0;}
+	formChanged: function(frm,event){
+		if(!event){event=window.event;}
+		//mark the element that changed
+		if (typeof event === 'object' && typeof event.type === 'string' && event.type=='change') {
+	        const changedElement = event.target || event.srcElement;
+	        if(changedElement.name){
+		        changedElement.dataset.wacss_changed=1;
+		    }
+	    }
 		let debug=0;
 		//check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have changed
-		if(ignorecp==0){
-			let cpop=wacss.getParent(frm,'div','wacss_centerpop');
-			if(undefined != cpop){
-				let cpop_close=cpop.querySelector('.wacss_centerpop_close');
-				if(undefined != cpop_close){
-					cpop_close.dataset.formchanged=1;
-				}
+		let cpop=wacss.getParent(frm,'div','wacss_centerpop');
+		if(undefined != cpop){
+			let cpop_close=cpop.querySelector('.wacss_centerpop_close');
+			if(undefined != cpop_close){
+				cpop_close.dataset.formchanged=1;
 			}
 		}
 		//data-classif="w_red:age:4"
@@ -4655,6 +4663,10 @@ var wacss = {
 		for(let i=0;i<list.length;i++){
 			//check to see if we have already initialized this element
 			if(undefined != list[i].codemirror){continue;}
+			//generate a unique id if one does not exist
+			if(undefined == list[i].id){
+				list[i].id='codemirror_'+Math.random().toString(36).slice(2);
+			}
 			//go through dataset to get params
 			let params={};
 			let curr_defaults=defaults;
@@ -4768,9 +4780,16 @@ var wacss = {
 	  		}
 			let cm = CodeMirror.fromTextArea(list[i], params);
 			//save the codemirror object to the textarea so we can find it easier
+			cm.dataset.textarea=list[i].id;
 			list[i].codemirror=cm;
 			//save changes to textarea
-	  		cm.on('change', function(cm){cm.save();});
+	  		cm.on('change', function(cm){
+	  			cm.save();
+	  			let txtel=document.getElementById(this.dataset.textarea);
+	  			if(txtel){
+	  				txtel.dataset.wacss_changed=1;
+	  			}
+	  		});
 	  	}
 	},
 	inViewport: function(elem) {
@@ -5029,6 +5048,7 @@ var wacss = {
 				//console.log(this.innerText);
 				//console.log(this.textContent);
 				this.saveto.innerHTML=this.innerText;
+				this.saveto.dataset.wacss_changed=1;
 			});
 			editor.save=function() {
 				this.saveto.innerHTML=this.innerText;
@@ -5497,8 +5517,9 @@ var wacss = {
 	initWacssEdit: function(){
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
+			//generate a unique id if one does not exist
 			if(undefined == list[i].id){
-				list[i].id='id_'+Math.random().toString(36).slice(2);
+				list[i].id='wacssedit_'+Math.random().toString(36).slice(2);
 			}
 			//check to see if we have already initialized this element
 			if(undefined != list[i].dataset.initialized){continue;}
@@ -5518,21 +5539,11 @@ var wacss = {
 				d.setAttribute(k,attrs[k]);
 			}
 			d.addEventListener('input', function() {
-				//check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have changed
-				let cpop=wacss.getParent(list[i],'div','wacss_centerpop');
-				if(undefined != cpop){
-					let cpop_close=cpop.querySelector('.wacss_centerpop_close');
-					if(undefined != cpop_close){
-						cpop_close.dataset.formchanged=1;
-					}
+				let txtel=document.getElementById(this.dataset.editor);
+				if(txtel){
+					txtel.dataset.wacss_changed=1;
+					txtel.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
 				}
-				let eid=this.dataset.editor;
-				let tobj=wacss.getObject(eid);
-				if(undefined == tobj){
-					console.log('textarea update failed: no eid: '+eid);
-					return false;
-				}
-				tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
 			});
 			d.setAttribute('contenteditable','true');
 			d.innerHTML = list[i].value;
@@ -5581,7 +5592,6 @@ var wacss = {
 				'Print':['print','','icon-print','p'],
 				'Htmlcode':['code','','icon-file-code','h'],
 				'Fullscreen':['fullscreen','','material-fullscreen','f']
-				
 			}
 			/*
 				Features to add:
@@ -7433,15 +7443,28 @@ var wacss = {
 	* @usage if(x){wacss.modalClose();}
 	*/
 	modalClose: function(){
+		//check for form
+		let mc=document.getElementById('wacss_modal_content');
+		if(mc){
+			let formchanges=mc.querySelectorAll('form [data-wacss_changed]');
+			if(formchanges.length){
+				if(!confirm('Form content has changed. Closing will lose your changes. Confirm.')){
+					return false;
+				}
+			}
+		}
 		if(undefined != document.getElementById('wacss_modal_overlay')){
-			return wacss.removeObj(document.getElementById('wacss_modal_overlay'));
+			//check for form changes
+			let el=document.getElementById('wacss_modal_overlay');
+			return wacss.removeObj(el);
 		}
 		else if(undefined != document.getElementById('wacss_modal')){
-			return wacss.removeObj(document.getElementById('wacss_modal'));
+			let el=document.getElementById('wacss_modal');
+			return wacss.removeObj(el);
 		}
 	},
 	/**
-	* @name wacss.modalClose
+	* @name wacss.modalTitle
 	* @describe sets modal title
 	* @return boolean
 	* @usage wacss.modalTitle('test');
@@ -7519,7 +7542,7 @@ var wacss = {
 			modal_close.className='wacss_modal_close icon-close';
 			modal_close.title="Close";
 			modal_close.onclick=function(){
-				wacss.removeObj(this.pnode);
+				wacss.modalClose();
 			}
 			modal_title.appendChild(modal_close);
 			let modal_title_text=document.createElement('div');
