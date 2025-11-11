@@ -2486,6 +2486,12 @@ div[data-type="checkradio"][data-format="button"] input:checked+label {
   background-color: #d6d6d6;
   outline: 0;
 }
+div[data-type="checkradio"][data-format="oval"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"] input:checked+label::before {
+  content: '\2714';
+  color: #7a757d;
+  margin-right:2px;
+}
 div[data-type="checkradio"][data-format="oval"][data-image="1"] label,
 div[data-type="checkradio"][data-format="button"][data-image="1"] label{
   background-size: contain;
@@ -2525,6 +2531,10 @@ div[data-type="checkradio"][data-format="button"][data-color="w_blue"] input:che
   background-color: rgba(12, 122, 191, 0.6);
   color: #FFF;
 }
+div[data-type="checkradio"][data-format="oval"][data-color="w_blue"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_blue"] input:checked+label::before {
+  color: #fff;
+}
 /* w_gray */
 div[data-type="checkradio"][data-format="right"][data-color="w_gray"] input+label,
 div[data-type="checkradio"][data-format="left"][data-color="w_gray"] input+label,
@@ -2540,6 +2550,10 @@ div[data-type="checkradio"][data-format="oval"][data-color="w_gray"] input:check
 div[data-type="checkradio"][data-format="button"][data-color="w_gray"] input:checked+label{
   background-color: rgba(90, 98, 104, 0.6);
   color: #FFF;
+}
+div[data-type="checkradio"][data-format="oval"][data-color="w_gray"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_gray"] input:checked+label::before {
+  color: #fff;
 }
 /* w_green */
 div[data-type="checkradio"][data-format="right"][data-color="w_green"] input+label,
@@ -2557,6 +2571,10 @@ div[data-type="checkradio"][data-format="button"][data-color="w_green"] input:ch
   background-color: rgba(33, 136, 56, 0.6);
   color: #FFF;
 }
+div[data-type="checkradio"][data-format="oval"][data-color="w_green"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_green"] input:checked+label::before {
+  color: #fff;
+}
 /* w_red */
 div[data-type="checkradio"][data-format="right"][data-color="w_red"] input+label,
 div[data-type="checkradio"][data-format="left"][data-color="w_red"] input+label,
@@ -2572,6 +2590,10 @@ div[data-type="checkradio"][data-format="oval"][data-color="w_red"] input:checke
 div[data-type="checkradio"][data-format="button"][data-color="w_red"] input:checked+label{
   background-color: rgba(200, 35, 51, 0.6);
   color: #FFF;
+}
+div[data-type="checkradio"][data-format="oval"][data-color="w_red"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_red"] input:checked+label::before {
+  color: #fff;
 }
 /* w_yellow */
 div[data-type="checkradio"][data-format="right"][data-color="w_yellow"] input+label,
@@ -2589,6 +2611,10 @@ div[data-type="checkradio"][data-format="button"][data-color="w_yellow"] input:c
   background-color: rgba(224, 168, 0, 0.6);
   color: #FFF;
 }
+div[data-type="checkradio"][data-format="oval"][data-color="w_yellow"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_yellow"] input:checked+label::before {
+  color: #fff;
+}
 /* w_orange */
 div[data-type="checkradio"][data-format="right"][data-color="w_orange"] input+label,
 div[data-type="checkradio"][data-format="left"][data-color="w_orange"] input+label,
@@ -2604,6 +2630,10 @@ div[data-type="checkradio"][data-format="oval"][data-color="w_orange"] input:che
 div[data-type="checkradio"][data-format="button"][data-color="w_orange"] input:checked+label{
   background-color: rgba(255, 152, 0, 0.6);
   color: #FFF;
+}
+div[data-type="checkradio"][data-format="oval"][data-color="w_orange"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_orange"] input:checked+label::before {
+  color: #fff;
 }
 /* w_teal */
 div[data-type="checkradio"][data-format="right"][data-color="w_teal"] input+label,
@@ -2621,6 +2651,10 @@ div[data-type="checkradio"][data-format="button"][data-color="w_teal"] input:che
   background-color: rgba(19, 132, 150, 0.6);
   color: #FFF;
 }
+div[data-type="checkradio"][data-format="oval"][data-color="w_teal"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_teal"] input:checked+label::before {
+  color: #fff;
+}
 /* w_white */
 div[data-type="checkradio"][data-format="right"][data-color="w_white"] input+label,
 div[data-type="checkradio"][data-format="left"][data-color="w_white"] input+label,
@@ -2635,6 +2669,10 @@ div[data-type="checkradio"][data-format="button"][data-color="w_white"] input+la
 div[data-type="checkradio"][data-format="oval"][data-color="w_white"] input:checked+label,
 div[data-type="checkradio"][data-format="button"][data-color="w_white"] input:checked+label{
   background-color: rgba(216, 221, 226, 0.8);
+}
+div[data-type="checkradio"][data-format="oval"][data-color="w_white"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_white"] input:checked+label::before {
+  color: rgba(164, 165, 167, 0.7);
 }
 /* w_black */
 div[data-type="checkradio"][data-format="right"][data-color="w_black"] input+label,
@@ -2651,6 +2689,10 @@ div[data-type="checkradio"][data-format="oval"][data-color="w_black"] input:chec
 div[data-type="checkradio"][data-format="button"][data-color="w_black"] input:checked+label{
   background-color: rgba(35, 39, 43, 0.6);
   color: #FFF;
+}
+div[data-type="checkradio"][data-format="oval"][data-color="w_black"] input:checked+label::before,
+div[data-type="checkradio"][data-format="button"][data-color="w_black"] input:checked+label::before {
+  color: #fff;
 }
 /* create custom colors by adding these to the style: --color, --bgcolor, --checked_color, --checked_bgcolor */
 div[data-type="checkradio"] label[for][style*="--color"]{
