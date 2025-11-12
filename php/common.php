@@ -7283,66 +7283,85 @@ function array2XML($buffer=array(),$main='main',$item='item',$skip=0){
 *		link - required - main link
 *		description - required - main description
 *		pubdate - required - main pubdate
+*		rss - optional - self link to the feed
+*		language - optional - defaults to 'en'
+*		field_map - optional - map DB fields to RSS fields
+*			Example: array('link' => 'permalink', 'description' => 'body', 'pubdate' => 'publish_date')
+*		-utf8 - optional - utf8 encode values (default 1)
+*		-encode - optional - CDATA encode values (default 1)
 * @return string
-*	RSS XML string
-* @usage $rss=arrays2RSS($recs);
+*	RSS XML string or error message
+* @usage 
+*   $rss = arrays2RSS($articles, array(
+*       'title' => 'My Blog',
+*       'link' => 'https://example.com',
+*       'description' => 'Blog articles feed',
+*       'pubdate' => !empty($articles) ? date('r', strtotime($articles[0]['publish_date'])) : date('r'),
+*       'rss' => 'https://example.com/feed.xml',
+*       'field_map' => array(
+*           'link' => 'permalink',
+*           'description' => 'body',
+*           'pubdate' => 'publish_date'
+*       )
+*   ));
 */
-function arrays2RSS($recs=array(),$params=array()){
-	$fields=array('title','link','description','pubdate');
-	foreach($fields as $field){
-		if(!isset($params[$field])){return "missing main {$field}";}
-	}
-	//check to make sure each record also has a title, link, description, and pubdate
-	foreach($recs as $rec){
-		foreach($fields as $field){
-			if(!isset($rec[$field])){return "missing record {$field} field in dataset";}
-		}
-		break;
-	}
-	//generate the xml for the RSS feed
-	$xml=xmlHeader(array('version'=>'1.0','coding'=>'utf-8'));
-	$xml.= '<rss version="2.0"'.PHP_EOL;
-	$xml.= '	xmlns:content="http://purl.org/rss/1.0/modules/content/"'.PHP_EOL;
-	//$xml.= '	xmlns:wfw="http://wellformedweb.org/CommentAPI/"'.PHP_EOL;
-	//$xml.= '	xmlns:dc="http://purl.org/dc/elements/1.1/"'.PHP_EOL;
-	$xml.= '	xmlns:atom="http://www.w3.org/2005/Atom"'.PHP_EOL;
-	//$xml.= '	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"'.PHP_EOL;
-	//$xml.= '	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"'.PHP_EOL;
-	$xml.= '	>'.PHP_EOL;
-	$xml.= '	<channel>'.PHP_EOL;
-	$xml.= '		<title>'.$params['title'].'</title>'.PHP_EOL;
-	if(isset($params['rss'])){
-		$xml.= '		<atom:link href="'.xmlEncode($params['rss']).'" rel="self" type="application/rss+xml" >'.PHP_EOL;
-	}
-	$xml.= '		<link>'.xmlEncode($params['link']).'</link>'.PHP_EOL;
-	$xml.= '		<description>'.xmlEncodeCDATA($params['description']).'</description>'.PHP_EOL;
-	//$xml.= '		<lastBuildDate>Wed, 05 Dec 2012 12:00:49 +0000</lastBuildDate>'.PHP_EOL;
-	if(!isset($params['language'])){$params['language']='en';}
-	$xml.= '		<language>'.$params['language'].'</language>'.PHP_EOL;
-	//$xml.= '		<sy:updatePeriod>hourly</sy:updatePeriod>'.PHP_EOL;
-	//$xml.= '		<sy:updateFrequency>1</sy:updateFrequency>'.PHP_EOL;
-	$xml.= '		<generator>http://wasql.com</generator>'.PHP_EOL;
-	$xml.= '		<xhtml:meta xmlns:xhtml="http://www.w3.org/1999/xhtml" name="robots" content="noindex" >'.PHP_EOL;
-	foreach($recs as $rec) {
-		$xml .= '		<item>'.PHP_EOL;
-		foreach($fields as $field){
-			$val=$rec[$field];
-			if(!isset($params['-utf8']) || $params['-utf8']==1){
-				$val=utf8_encode($val);
-			}
-			if(!isset($params['-encode']) || $params['-encode']==1){
-				$val=xmlEncodeCDATA($val);
-			}
-			else{
-            	if(isXML($val)){$val= "<![CDATA[\n".$val."\n]]>";}
-			}
-			$key=$field=='pubdate'?'pubDate':$field;
-    		$xml .= "   		<{$key}>{$val}</{$key}>\n";
-		}
-		$xml .= '   	</item>'.PHP_EOL;
-	}
-	$xml .= '	</channel>'.PHP_EOL;
-	$xml .= '</rss>'.PHP_EOL;
+function arrays2RSS($recs = array(), $params = array()) {
+    // Field map allows mapping DB fields to RSS fields
+    $fieldMap = isset($params['field_map']) ? $params['field_map'] : array();
+    $requiredFields = array('title', 'link', 'description', 'pubdate');
+    // Validate channel params
+    foreach ($requiredFields as $field) {
+        if (!isset($params[$field])) {
+            return "missing main {$field}";
+        }
+    }
+    // Validate records have required fields (using mapped names)
+    if (!empty($recs)) {
+        foreach ($requiredFields as $field) {
+            $sourceField = isset($fieldMap[$field]) ? $fieldMap[$field] : $field;
+            if (!isset($recs[0][$sourceField])) {
+                return "missing record field: {$sourceField}";
+            }
+        }
+    }
+    $xml = xmlHeader(array('version' => '1.0', 'coding' => 'utf-8'));
+    $xml .= '<rss version="2.0"' . PHP_EOL;
+    $xml .= '    xmlns:content="http://purl.org/rss/1.0/modules/content/"' . PHP_EOL;
+    $xml .= '    xmlns:atom="http://www.w3.org/2005/Atom"' . PHP_EOL;
+    $xml .= '    >' . PHP_EOL;
+    $xml .= '    <channel>' . PHP_EOL;
+    $xml .= '        <title>' . xmlEncode($params['title']) . '</title>' . PHP_EOL;
+    if (isset($params['rss'])) {
+        $xml .= '        <atom:link href="' . xmlEncode($params['rss']) . '" rel="self" type="application/rss+xml" />' . PHP_EOL;
+    }
+    $xml .= '        <link>' . xmlEncode($params['link']) . '</link>' . PHP_EOL;
+    $xml .= '        <description>' . xmlEncodeCDATA($params['description']) . '</description>' . PHP_EOL;
+    $xml .= '        <language>' . (isset($params['language']) ? $params['language'] : 'en') . '</language>' . PHP_EOL;
+    $xml .= '        <generator>' . (isset($params['generator']) ? $params['generator'] : 'https://www.wasql.com') . '</generator>' . PHP_EOL;
+    $xml .= '        <xhtml:meta xmlns:xhtml="http://www.w3.org/1999/xhtml" name="robots" content="noindex" />' . PHP_EOL;
+    foreach ($recs as $rec) {
+        $xml .= '        <item>' . PHP_EOL; 
+        foreach ($requiredFields as $field) {
+            $sourceField = isset($fieldMap[$field]) ? $fieldMap[$field] : $field;
+            $val = $rec[$sourceField];
+            
+            if (!isset($params['-utf8']) || $params['-utf8'] == 1) {
+                $val = utf8_encode($val);
+            }
+            if (!isset($params['-encode']) || $params['-encode'] == 1) {
+                $val = xmlEncodeCDATA($val);
+            } else {
+                if (isXML($val)) {
+                    $val = "<![CDATA[\n" . $val . "\n]]>";
+                }
+            }
+            $key = $field == 'pubdate' ? 'pubDate' : $field;
+            $xml .= "            <{$key}>{$val}</{$key}>" . PHP_EOL;
+        }
+        $xml .= '        </item>' . PHP_EOL;
+    }
+    $xml .= '    </channel>' . PHP_EOL;
+    $xml .= '</rss>' . PHP_EOL;
     return $xml;
 }
 //---------- begin function arrays2CSV--------------------
