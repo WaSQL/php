@@ -1330,9 +1330,9 @@ ENDOFQUERY;
 	echo printValue($ok);
 */
 function ctreeJsonDBGetAuthToken($params=array()){
+	global $ctreeJsonDBGetAuthTokenCache;
+	if(strlen($ctreeJsonDBGetAuthTokenCache)){return $ctreeJsonDBGetAuthTokenCache;}
 	$params=ctreeParseConnectParams($params);
-	$authtoken=commonCoalesce($params['-authtoken'],$params['-authToken'],'');
-	//if(strlen($authtoken)){return $authtoken;}
 	$json=array(
 		'api'=>'admin',
 		'action'=>'createSession',
@@ -1351,8 +1351,8 @@ function ctreeJsonDBGetAuthToken($params=array()){
 	//echo $url.printValue($params).printValue($json);exit;
 	$post=postJSON($url,$jsonstr,array('-port'=>$port,'-nossl'=>1));
  	if(isset($post['json_array']['authToken'])){
- 		return $post['json_array']['authToken'];
-		echo "Your authtoken is {$post['json_array']['authToken']}. Put this in your ctree database container<br><hr>";
+ 		$ctreeJsonDBGetAuthTokenCache=$post['json_array']['authToken'];
+ 		return $ctreeJsonDBGetAuthTokenCache;
 	}
 	else{
 		echo "Failed to get authtoken";
@@ -1387,14 +1387,6 @@ function ctreeJsonDBQueryResults($query='',$params=array()){
 		'returnCursor'=>true,
 		'forceRecordCount'=>true
 	));
-	// $post=ctreeJsonDBCallAPI('db','getRecordsByTable',array(
-	// 	'tableName'=>'dstdb',
-	// 	'databaseName'=>'liveSQL',
-	// 	'maxRecords'=>2
-	// )
-	// ,array('includeFields'=>array('DIST_ID'))
-	// );
-	// echo printValue($post);exit;
 	if(!isset($post['cursorId'])){
 		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);
 	}
@@ -1427,7 +1419,9 @@ function ctreeJsonDBQueryResults($query='',$params=array()){
 }
 //dumps table to a csv file and returns the csv file
 function ctreeJsonDBDumpTable($tablename,$params=array()){
+	//echo "ctreeJsonDBDumpTable<br>".PHP_EOL;
 	$params=ctreeParseConnectParams($params);
+	//echo "params".printValue($params);exit;
 	//call params
 	$options=array(
 		'tableName'=>$tablename,
@@ -1436,9 +1430,6 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 	);
 	if(isset($params['-filter'])){
 		$options['tableFilter']=$params['-filter'];
-	}
-	if(isset($params['-limit'])){
-		$options['maxRecords']=$params['-limit'];
 	}
 	//response options
 	$response_options=array(
@@ -1456,35 +1447,58 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 		}, $params['-fields']);
 		$response_options['includeFields']=$params['-fields'];
 	}
-
+	$tpath=getWasqlTempPath();
+	$fname="{$tablename}_dump_".date('YmdHis').'.csv';
+	$afile="{$tpath}/{$fname}";
 	$post=ctreeJsonDBCallAPI('db','getRecordsByTable',$options,$response_options);
-	// echo printValue($post);exit;
-	if(!isset($post['cursorId'])){
+	$cursorid=commonCoalesce($post['result']['cursorId'],$post['cursorId'],'');
+	//echo printValue($recs);exit;
+	if(!strlen($cursorid)){
 		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);
+		exit;
 	}
-	$cursorid=$post['cursorId'];
-	$total_cnt=commonCoalesce($post['totalRecordCount'],0);
-	$fetch = commonCoalesce($params['dbfetch'],1000);
+	$total_cnt=commonCoalesce($post['result']['totalRecordCount'],$post['totalRecordCount'],0);
+	$fetch = commonCoalesce($params['dbfetch'],10000);
 	if($total_cnt > 0 && $total_cnt < $fetch){$fetch=$total_cnt;}
-	$recs=array();
 	$recs_cnt=0;
+	$output = fopen($afile, 'a');
+	$header=0;
+	$doloop=0;
+	//echo printValue($post);
 	do {
-		$xrecs=ctreeJsonDBCallAPI('db','getRecordsFromCursor',array(
+		$doloop+=1;
+		$cpost=ctreeJsonDBCallAPI('db','getRecordsFromCursor',array(
 			'cursorId'=>$cursorid,
 			'fetchRecords'=>$fetch
 		),array(
 			'dataFormat' => 'arrays',
 			'numberFormat'=>'number'
 		));
-		if(!is_array($xrecs)){$recs=array();}
-		$xrecs_cnt = count($xrecs);
-		$recs=array_merge($recs,$xrecs);
-		$recs_cnt=count($recs);
+		//echo "xrecs".printValue($xrecs);$ok=ctreeJsonDBCloseCursor();exit;
+		if(!is_array($cpost['data'])){break;}
+		if($header==0){
+			$header=1;
+			$fields=[];
+			foreach($cpost['fields'] as $field){
+				$fields[]=strtolower($field['name']);
+			}
+			$fields = array_map('trim', $fields);
+			fputcsv($output, $fields);
+		}
+		$xrecs_cnt = count($cpost['data']);
+		//fputcsv() automatically adds a newline character at the end of each row.
+		foreach ($cpost['data'] as $row) {
+			$row = array_map('trim', $row);
+      		fputcsv($output, $row);
+      		$recs_cnt+=1;
+  		}
 		if($total_cnt > 0 && $recs_cnt == $total_cnt){$xrecs_cnt=0;}
-	} while ($xrecs_cnt > 0);
+	} while ($xrecs_cnt > 0 && $doloop < 25000);
+	//close file
+	 fclose($output);
 	//close cursor
 	$ok=ctreeJsonDBCloseCursor();
-	return $recs;
+	return $afile;
 }
 function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array()){
 	$url=ctreeJsonDBBaseURL();
@@ -1510,7 +1524,7 @@ function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array(
 		echo "ctreeJsonDBCallAPI ERROR: invalid json".printValue($json);exit;
 	}
 	$post=postJSON($url,$jsonstr,$params);
-	if($action=='getRecordsByTable'){echo printValue($post);exit;}
+	//if($action=='getRecordsByTable'){echo printValue($post);exit;}
 	if($post['code']==400){
 		//$ok=fmqDeleteSession();
 		echo "ctreeJsonDBCallAPI ERROR: ".PHP_EOL.PHP_EOL.$jsonstr.PHP_EOL.PHP_EOL.printValue($post);exit;
@@ -1524,6 +1538,27 @@ function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array(
 		//$ok=fmqDeleteSession();
 		echo "ctreeJsonDBCallAPI {$action} Error {$post['json_array']['errorCode']}: {$post['json_array']['errorMessage']}";
 		echo printValue($post);exit;
+	}
+	if(isset($post['json_array']['result']) && $action=='getRecordsFromCursor'){
+		return $post['json_array']['result'];
+	}
+	if(isset($post['json_array']['result']['fields']) && isset($post['json_array']['result']['data'])){
+		
+		//convert to a normal recordset
+		$fields=[];
+		foreach($post['json_array']['result']['fields'] as $field){
+			$fields[]=strtolower($field['name']);
+		}
+		$recs=[];
+		foreach($post['json_array']['result']['data'] as $data){
+			$rec=[];
+			//echo printValue($fields).printValue($data);exit;
+			foreach($data as $i=>$v){
+				$rec[$fields[$i]]=trim($v);
+			}
+			$recs[]=$rec;
+		}
+		return $recs;
 	}
 	if(isset($post['json_array']['result']['data'])){
 		//$ok=fmqDeleteSession();
