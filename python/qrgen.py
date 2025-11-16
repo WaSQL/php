@@ -15,7 +15,7 @@ try:
         SquareModuleDrawer, VerticalBarsDrawer, HorizontalBarsDrawer
     )
     from qrcode.image.styles.colormasks import SolidFillColorMask
-    from PIL import Image
+    from PIL import Image, ImageDraw
 except ImportError as e:
     print(f"Error: Missing required package - {e}", file=sys.stderr)
     print("Install with: pip install qrcode[pil] pillow", file=sys.stderr)
@@ -27,6 +27,12 @@ try:
     SVG_AVAILABLE = True
 except ImportError:
     SVG_AVAILABLE = False
+
+# Custom smooth/curvy module drawer
+class SmoothModuleDrawer(RoundedModuleDrawer):
+    """Smooth, curvy modules with maximum rounded edges."""
+    def __init__(self):
+        super().__init__(radius_ratio=1.0)  # Maximum rounding
 
 VERSION = "1.0.0"
 
@@ -42,6 +48,7 @@ ERROR_CORRECTION = {
 MODULE_DRAWERS = {
     'square': SquareModuleDrawer,
     'rounded': RoundedModuleDrawer,
+    'smooth': SmoothModuleDrawer,  # Curvy/smooth style
     'circle': CircleModuleDrawer,
     'gapped': GappedSquareModuleDrawer,
     'vertical': VerticalBarsDrawer,
@@ -59,22 +66,52 @@ def add_frame_and_caption(img, args):
     """Add border frame, code, and caption to the QR code image."""
     from PIL import ImageDraw, ImageFont
     
-    # Ensure image is in RGB mode
-    if img.mode != 'RGB':
+    # Convert StyledPilImage to pure PIL Image if needed
+    if hasattr(img, '_img'):
+        img = img._img
+    
+    # Convert image to RGB mode (handle RGBA from styled QR codes)
+    if img.mode == 'RGBA':
+        # Convert RGBA to RGB with white background
+        rgb_img = Image.new('RGB', img.size, (255, 255, 255))
+        rgb_img.paste(img, mask=img.split()[3])  # Use alpha channel as mask
+        img = rgb_img
+    elif img.mode != 'RGB':
         img = img.convert('RGB')
     
-    # Parse colors
+    # Parse colors - ensure all are RGB tuples
     try:
-        frame_color = hex_to_rgb(args.frame_color) if args.frame_color.startswith('#') else args.frame_color
-        caption_color = hex_to_rgb(args.caption_color) if args.caption_color.startswith('#') else args.caption_color
-        caption_bg = hex_to_rgb(args.caption_bg) if args.caption_bg.startswith('#') else args.caption_bg
-        code_color = hex_to_rgb(args.code_color) if args.code_color.startswith('#') else args.code_color
-    except ValueError as e:
+        from PIL import ImageColor
+        
+        # Convert frame color
+        if args.frame_color.startswith('#'):
+            frame_color = hex_to_rgb(args.frame_color)
+        else:
+            frame_color = ImageColor.getrgb(args.frame_color)
+        
+        # Convert caption color
+        if args.caption_color.startswith('#'):
+            caption_color = hex_to_rgb(args.caption_color)
+        else:
+            caption_color = ImageColor.getrgb(args.caption_color)
+        
+        # Convert caption background
+        if args.caption_bg.startswith('#'):
+            caption_bg = hex_to_rgb(args.caption_bg)
+        else:
+            caption_bg = ImageColor.getrgb(args.caption_bg)
+        
+        # Convert code color
+        if args.code_color.startswith('#'):
+            code_color = hex_to_rgb(args.code_color)
+        else:
+            code_color = ImageColor.getrgb(args.code_color)
+    except (ValueError, AttributeError) as e:
         print(f"Warning: Invalid color format - {e}, using defaults", file=sys.stderr)
-        frame_color = 'white'
-        caption_color = 'black'
-        caption_bg = 'white'
-        code_color = 'white'
+        frame_color = (255, 255, 255)
+        caption_color = (0, 0, 0)
+        caption_bg = (255, 255, 255)
+        code_color = (255, 255, 255)
     
     # Calculate dimensions - allocate space based on actual text + border spacing
     border_size = args.frame_border or 0
@@ -106,7 +143,8 @@ def add_frame_and_caption(img, args):
         
         # Paste the QR code at top (with only top and side borders, no bottom border)
         qr_y_offset = border_size
-        framed.paste(img, (border_size, qr_y_offset))
+        # Use 4-item box for paste to be explicit about region
+        framed.paste(img, (border_size, qr_y_offset, border_size + img.size[0], qr_y_offset + img.size[1]))
         
         # Add caption background if different from frame (for the entire text area)
         # Text area starts immediately after QR code
@@ -135,7 +173,8 @@ def add_frame_and_caption(img, args):
         # Simple rectangular frame
         framed = Image.new('RGB', (new_width, new_height), frame_color)
         qr_y_offset = border_size
-        framed.paste(img, (border_size, qr_y_offset))
+        # Use 4-item box for paste to be explicit about region
+        framed.paste(img, (border_size, qr_y_offset, border_size + img.size[0], qr_y_offset + img.size[1]))
         
         # Add caption background if different from frame (for the entire text area)
         # Text area starts immediately after QR code
@@ -267,10 +306,24 @@ def generate_qrcode(args):
     if is_svg:
         img = qr.make_image(image_factory=SvgPathImage, fill_color=args.fill_color, back_color=args.back_color)
     else:
-        # Parse colors for raster formats
+        # Parse colors for raster formats - ensure they're RGB tuples
         try:
-            fill_color = hex_to_rgb(args.fill_color) if args.fill_color.startswith('#') else args.fill_color
-            back_color = hex_to_rgb(args.back_color) if args.back_color.startswith('#') else args.back_color
+            if args.fill_color.startswith('#'):
+                fill_color = hex_to_rgb(args.fill_color)
+            elif args.fill_color in ['black', 'white']:
+                fill_color = (0, 0, 0) if args.fill_color == 'black' else (255, 255, 255)
+            else:
+                # Try to convert named color
+                from PIL import ImageColor
+                fill_color = ImageColor.getrgb(args.fill_color)
+            
+            if args.back_color.startswith('#'):
+                back_color = hex_to_rgb(args.back_color)
+            elif args.back_color in ['black', 'white']:
+                back_color = (0, 0, 0) if args.back_color == 'black' else (255, 255, 255)
+            else:
+                from PIL import ImageColor
+                back_color = ImageColor.getrgb(args.back_color)
         except ValueError as e:
             print(f"Error: Invalid color format - {e}", file=sys.stderr)
             return False
@@ -303,6 +356,38 @@ def generate_qrcode(args):
     
     # Save image
     try:
+        # Check if output is stdout FIRST, before creating Path
+        if args.output == '-':
+            # Output to stdout
+            import io
+            buffer = io.BytesIO()
+            
+            # Add frame and caption for raster formats
+            if not is_svg and (args.frame_border or args.caption or args.code):
+                img = add_frame_and_caption(img, args)
+            
+            if is_svg:
+                if args.frame_border or args.caption:
+                    print("Warning: Frame and caption not supported for SVG output", file=sys.stderr)
+                img.save(buffer)
+            else:
+                # Default to PNG for stdout
+                if img.mode == 'RGBA':
+                    img.save(buffer, 'PNG')
+                else:
+                    img.save(buffer, 'PNG')
+            
+            # Write to stdout
+            sys.stdout.buffer.write(buffer.getvalue())
+            
+            if args.verbose:
+                print(f"✓ QR code written to stdout", file=sys.stderr)
+                print(f"  Format: {'SVG' if is_svg else 'PNG'}", file=sys.stderr)
+                print(f"  Data: {args.data[:50]}{'...' if len(args.data) > 50 else ''}", file=sys.stderr)
+            
+            return True
+        
+        # Regular file output
         output_path = Path(args.output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
