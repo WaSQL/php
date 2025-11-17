@@ -1388,7 +1388,7 @@ function ctreeJsonDBQueryResults($query='',$params=array()){
 		'forceRecordCount'=>true
 	));
 	if(!isset($post['cursorId'])){
-		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);
+		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);exit;
 	}
 	$cursorid=$post['cursorId'];
 	$total_cnt=commonCoalesce($post['totalRecordCount'],0);
@@ -1407,6 +1407,7 @@ function ctreeJsonDBQueryResults($query='',$params=array()){
 	);
 	do {
 		$xrecs=ctreeJsonDBCallAPI('db','getRecordsFromCursor',$options,$response_options);
+		if(isset($recs['errorMessage'])){echo printValue($xrecs);exit;}
 		if(!is_array($xrecs)){$recs=array();}
 		$xrecs_cnt = count($xrecs);
 		$recs=array_merge($recs,$xrecs);
@@ -1449,7 +1450,12 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 	}
 	$tpath=getWasqlTempPath();
 	$fname="{$tablename}_dump_".date('YmdHis').'.csv';
+	$logname=str_replace('.csv','.log',$fname);
 	$afile="{$tpath}/{$fname}";
+	$logfile="{$tpath}/{$logname}";
+	$fetch = commonCoalesce($params['dbfetch'],5000);
+	$ctime=date('H:i:s');
+	$ok=setFileContents($logfile,"{$ctime} -- Started. Fetch: {$fetch}".PHP_EOL);
 	$post=ctreeJsonDBCallAPI('db','getRecordsByTable',$options,$response_options);
 	$cursorid=commonCoalesce($post['result']['cursorId'],$post['cursorId'],'');
 	//echo printValue($recs);exit;
@@ -1458,8 +1464,9 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 		exit;
 	}
 	$total_cnt=commonCoalesce($post['result']['totalRecordCount'],$post['totalRecordCount'],0);
-	$fetch = commonCoalesce($params['dbfetch'],10000);
 	if($total_cnt > 0 && $total_cnt < $fetch){$fetch=$total_cnt;}
+	$ctime=date('H:i:s');
+	$ok=appendFileContents($logfile,"{$ctime} -- Total Cnt: {$total_cnt}".PHP_EOL);
 	$recs_cnt=0;
 	$output = fopen($afile, 'a');
 	$header=0;
@@ -1467,6 +1474,8 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 	//echo printValue($post);
 	do {
 		$doloop+=1;
+		$ctime=date('H:i:s');
+		$btime=microtime(true);
 		$cpost=ctreeJsonDBCallAPI('db','getRecordsFromCursor',array(
 			'cursorId'=>$cursorid,
 			'fetchRecords'=>$fetch
@@ -1474,8 +1483,14 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 			'dataFormat' => 'arrays',
 			'numberFormat'=>'number'
 		));
+		$etime=number_format((microtime(true)-$btime),2);
+		$ok=appendFileContents($logfile,"{$ctime} -- Loop {$doloop} ctreeJsonDBCallAPI took {$etime} seconds {$total_cnt}".PHP_EOL);
 		//echo "xrecs".printValue($xrecs);$ok=ctreeJsonDBCloseCursor();exit;
-		if(!is_array($cpost['data'])){break;}
+		if(!is_array($cpost['data'])){
+			$ok=appendFileContents($logfile,"{$ctime} -- Error: {$cpost['errorCode']}- {$cpost['errorMessage']}".PHP_EOL);
+			$xrecs_cnt=0;
+			break;
+		}
 		if($header==0){
 			$header=1;
 			$fields=[];
@@ -1486,14 +1501,24 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 			fputcsv($output, $fields);
 		}
 		$xrecs_cnt = count($cpost['data']);
+		$ctime=date('H:i:s');
+		$ok=appendFileContents($logfile,"{$ctime} -- Loop:{$doloop}, xrecs_cnt:{$xrecs_cnt}, recs_cnt:{$recs_cnt}".PHP_EOL);
 		//fputcsv() automatically adds a newline character at the end of each row.
 		foreach ($cpost['data'] as $row) {
 			$row = array_map('trim', $row);
       		fputcsv($output, $row);
       		$recs_cnt+=1;
   		}
-		if($total_cnt > 0 && $recs_cnt == $total_cnt){$xrecs_cnt=0;}
-	} while ($xrecs_cnt > 0 && $doloop < 25000);
+		if($total_cnt > 0 && $xrecs_cnt == $total_cnt){
+			$ok=appendFileContents($logfile,"{$ctime} -- Exit Loop A: {$total_cnt}".PHP_EOL);
+			$xrecs_cnt=0;
+		}
+		elseif($total_cnt > 0 && $recs_cnt >= $total_cnt){
+			$ok=appendFileContents($logfile,"{$ctime} -- Exit Loop B: {$total_cnt}".PHP_EOL);
+			$xrecs_cnt=0;
+		}
+		$ok=appendFileContents($logfile,"--------------".PHP_EOL);
+	} while ($xrecs_cnt > 0 && $doloop < 300);
 	//close file
 	 fclose($output);
 	//close cursor
@@ -1508,6 +1533,7 @@ function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array(
 		'authToken'=>ctreeJsonDBGetAuthToken($params),
 		'requestId'=>ctreeJsonDBRequestId()
 	);
+	//echo printValue($json);
 	if(is_array($params) && count($params)){
 		$json['params']=$params;
 	}
@@ -1531,13 +1557,16 @@ function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array(
 	}
 	//echo printValue($post['json_array']);
 	if(!isset($post['json_array'])){
+		return array();
 		//$ok=fmqDeleteSession();
 		echo "ctreeJsonDBCallAPI ERROR: Failed to call".printValue($post);exit;
 	}
 	if(!stringContains($action,'delete') && isset($post['json_array']['errorMessage']) && strlen($post['json_array']['errorMessage'])){
+		return $post['json_array'];
 		//$ok=fmqDeleteSession();
 		echo "ctreeJsonDBCallAPI {$action} Error {$post['json_array']['errorCode']}: {$post['json_array']['errorMessage']}";
 		echo printValue($post);exit;
+
 	}
 	if(isset($post['json_array']['result']) && $action=='getRecordsFromCursor'){
 		return $post['json_array']['result'];
@@ -1580,5 +1609,5 @@ function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array(
 		return $post['json_array'];
 	}
 	//$ok=fmqDeleteSession();
-	echo "ctreeJsonDBCallAPI ERROR:  Failed to call".printValue($post);exit;
+	//echo "ctreeJsonDBCallAPI ERROR:  Failed to call".printValue($post);exit;
 }
