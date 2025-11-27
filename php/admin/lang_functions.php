@@ -94,6 +94,123 @@ function langPythonInfo(){
 	$data.='</div>';
 	return array($data,$menu);
 }
+function langRubyInfo(){
+	// Check if ruby exists
+	$check=isWindows()?'where ruby 2>nul':'which ruby 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby"></span> Ruby</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Ruby is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download Ruby+Devkit from <a href="https://rubyinstaller.org/" target="_blank" class="w_link">rubyinstaller.org</a></li><li>Run the installer (includes RubyGems)</li><li>Follow the installation wizard</li><li>Restart your terminal/command prompt</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install ruby ruby-devel</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install ruby ruby-devel</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install ruby-full</pre><p>Or use rbenv/rvm for version management:</p><pre>curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	// Check if gem command exists
+	$check=isWindows()?'where gem 2>nul':'which gem 2>/dev/null';
+	$test=cmdResults($check);
+	$out=cmdResults("ruby -v 2>&1");
+	$version=$out['stdout'];
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby"></span> Ruby</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version '.$version.'</div></div></header>';
+		return array('<div class="align-center" style="width:934px;">'.$header.'<div class="w_padding w_error">RubyGems (gem command) is not available. It should be included with Ruby installation.</div></div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	//get ruby gems with cache expiration (24 hours)
+	$tpath=getWasqlTempPath();
+	$cachefile="{$tpath}/ruby_gems.txt";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$lines=null;
+	if(file_exists($cachefile) && $cache_age < 86400){
+		$lines=file($cachefile);
+	}
+	if(!is_array($lines) || count($lines)==0){
+		$out=cmdResults('gem list --local 2>&1');
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		// Cache the results only if we got valid output
+		if(is_array($lines) && count($lines) > 0 && !stringContains($out['stdout'],'command not found')){
+			setFileContents($cachefile,implode(PHP_EOL,$lines));
+		}
+	}
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby"></span> Ruby</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+	foreach($lines as $line){
+		$line=trim($line);
+		if(!strlen($line)){continue;}
+		// Parse gem list format: gem_name (version1, version2, ...)
+		if(preg_match('/^(.+?)\s+\((.+?)\)$/',$line,$m)){
+			$gemname=trim($m[1]);
+			$versions=trim($m[2]);
+			// Get primary version (first one listed)
+			$vparts=preg_split('/\,\s*/',$versions);
+			$version=isset($vparts[0])?trim($vparts[0]):'';
+
+			if(!strlen($gemname)){continue;}
+			$k=strtolower($gemname);
+
+			// Get gem info
+			$info_out=cmdResults("gem info {$gemname} --local 2>&1");
+			$description='';
+			$homepage='';
+			$author='';
+			if(preg_match('/Author[s]?\:\s*(.+?)$/im',$info_out['stdout'],$im)){
+				$author=trim($im[1]);
+			}
+			if(preg_match('/Homepage\:\s*(.+?)$/im',$info_out['stdout'],$im)){
+				$homepage=trim($im[1]);
+			}
+			if(preg_match('/Description\:\s*(.+?)$/im',$info_out['stdout'],$im)){
+				$description=trim($im[1]);
+			}
+
+			$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$gemname}">{$gemname}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$gemname}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">All Versions</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$versions}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Author</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$author}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Description</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$description}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Homepage</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;word-break:break-all;">{$homepage}</td></tr>
+</table>
+ENDOFSECTION;
+			$menu[$k]=$gemname;
+		}
+	}
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	ksort($modules);
+	ksort($menu);
+	foreach($modules as $k=>$section){
+		$data.=$section;
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
 function langPerlInfo(){
 	// Check if perl exists
 	$check=isWindows()?'where perl 2>nul':'which perl 2>/dev/null';
@@ -572,6 +689,99 @@ function langRInfo(){
 			$k=strtolower($m[1]);
 			$modules[$k]=$section;
 			$menu[$k]=$m[1];
+		}
+	}
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	ksort($modules);
+	ksort($menu);
+	foreach($modules as $k=>$section){
+		$data.=$section;
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langJuliaInfo(){
+	// Check if julia exists
+	$check=isWindows()?'where julia 2>nul':'which julia 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-julia"></span> Julia</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Julia is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download Julia from <a href="https://julialang.org/downloads/" target="_blank" class="w_link">julialang.org/downloads</a></li><li>Run the installer (EXE package)</li><li>Follow the installation wizard</li><li>Add Julia to PATH during installation</li><li>Restart your terminal/command prompt</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.0-linux-x86_64.tar.gz<br>tar zxvf julia-1.10.0-linux-x86_64.tar.gz<br>sudo cp -r julia-1.10.0 /opt/<br>sudo ln -s /opt/julia-1.10.0/bin/julia /usr/local/bin/julia</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.0-linux-x86_64.tar.gz<br>tar zxvf julia-1.10.0-linux-x86_64.tar.gz<br>sudo cp -r julia-1.10.0 /opt/<br>sudo ln -s /opt/julia-1.10.0/bin/julia /usr/local/bin/julia</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.0-linux-x86_64.tar.gz<br>tar zxvf julia-1.10.0-linux-x86_64.tar.gz<br>sudo cp -r julia-1.10.0 /opt/<br>sudo ln -s /opt/julia-1.10.0/bin/julia /usr/local/bin/julia</pre><p>Or use official PPA:</p><pre>sudo add-apt-repository ppa:staticfloat/juliareleases<br>sudo apt-get update<br>sudo apt-get install julia</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	$out=cmdResults("julia --version 2>&1");
+	$version=$out['stdout'];
+	// Get installed packages using Julia's Pkg
+	$tpath=getWasqlTempPath();
+	$cachefile="{$tpath}/julia_packages.txt";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$pkgdata='';
+	if(file_exists($cachefile) && $cache_age < 86400){
+		$pkgdata=getFileContents($cachefile);
+	}
+	if(!strlen($pkgdata)){
+		$cmd='julia -e "using Pkg; Pkg.status()" 2>&1';
+		$out=cmdResults($cmd);
+		$pkgdata=$out['stdout'];
+		// Cache the results only if we got valid output
+		if(strlen($pkgdata) && !stringContains($pkgdata,'command not found')){
+			setFileContents($cachefile,$pkgdata);
+		}
+	}
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-julia"></span> Julia</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+	$lines=preg_split('/[\r\n]+/',$pkgdata);
+	foreach($lines as $line){
+		$line=trim($line);
+		if(!strlen($line)){continue;}
+		// Parse Pkg.status() format: [hash] PackageName v1.2.3
+		if(preg_match('/^\[([a-f0-9]+)\]\s+(\S+)\s+v?(.+?)$/i',$line,$m)){
+			$hash=trim($m[1]);
+			$pkgname=trim($m[2]);
+			$version=trim($m[3]);
+
+			if(!strlen($pkgname)){continue;}
+			$k=strtolower($pkgname);
+
+			$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$pkgname}">{$pkgname}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgname}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">UUID</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$hash}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">JuliaHub</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;"><a href="https://juliahub.com/ui/Packages/{$pkgname}" target="_blank" class="w_link">{$pkgname}</a></td></tr>
+</table>
+ENDOFSECTION;
+			$menu[$k]=$pkgname;
 		}
 	}
 	$data='<div class="align-center" style="width:934px;">';

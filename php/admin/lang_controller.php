@@ -203,6 +203,87 @@
 			setView('lang_results',1);
 			return;
 		break;
+		case 'ruby':
+			$installs=array();
+			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
+				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
+				foreach($modules as $m=>$module){
+					$module=trim($module);
+					// Validate module name to prevent command injection
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid gem name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
+				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
+				}
+				switch(strtolower($_REQUEST['title'])){
+					case 'search':
+						$recs=array();
+						foreach($modules as $module){
+							// Use RubyGems.org API
+							$apiurl="https://rubygems.org/api/v1/search.json?query=".urlencode($module);
+							$post=postURL($apiurl,array('-method'=>'GET','-json'=>1,'-nossl'=>1,'-timeout'=>5));
+							if(isset($post['json_array']) && is_array($post['json_array'])){
+								foreach($post['json_array'] as $gem){
+									$recs[]=array(
+										'name'=>$gem['name'],
+										'version'=>$gem['version'],
+										'info'=>$gem['info'],
+										'downloads'=>$gem['downloads'],
+										'project_uri'=>$gem['project_uri']
+									);
+								}
+							}
+						}
+						if(count($recs)){
+							$recs=sortArrayByKeys($recs,array('downloads'=>SORT_DESC));
+							$install_table=databaseListRecords(array(
+								'-list'=>$recs,
+								'-tableclass'=>'wacss_table striped sticky',
+								'name_class'=>'w_nowrap',
+								'-tableheight'=>'500px',
+								'-pretable'=>"Search for: ".implode(' OR ',$modules),
+								'-listfields'=>'name,version,info,downloads',
+								'project_uri_options'=>array('target'=>'_blank','href'=>'%project_uri%'),
+								'downloads_options'=>array('class'=>'align-right','number_format'=>0)
+							));
+							setView('install_table',1);
+							return;
+						}
+						else{
+							$installs[]=array(
+								'cmd'=>'',
+								'stdout'=>'No matches found. <a href="https://rubygems.org/search?query='.urlencode(implode(' ',$modules)).'" target="_blank" class="w_link">Search RubyGems</a>'
+							);
+						}
+					break;
+					case 'install':
+						foreach($modules as $module){
+							$cmd="gem install {$module}";
+							$installs[]=cmdResults($cmd);
+						}
+					break;
+					case 'uninstall':
+						foreach($modules as $module){
+							$cmd="gem uninstall {$module} -x";
+							$installs[]=cmdResults($cmd);
+						}
+					break;
+				}
+				setView('installs',1);
+				return;
+			}
+			$result=array('lang'=>'ruby');
+			list($result['body'],$result['modules'])=langRubyInfo();
+			setView('lang_results',1);
+			return;
+		break;
 		case 'perl':
 			$installs=array();
 			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
@@ -475,6 +556,87 @@
 			}
 			$result=array('lang'=>'r');
 			list($result['body'],$result['modules'])=langRInfo();
+			setView('lang_results',1);
+			return;
+		break;
+		case 'julia':
+			$installs=array();
+			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
+				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
+				foreach($modules as $m=>$module){
+					$module=trim($module);
+					// Validate module name to prevent command injection
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid package name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
+				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
+				}
+				switch(strtolower($_REQUEST['title'])){
+					case 'search':
+						$recs=array();
+						foreach($modules as $module){
+							// Use JuliaHub API
+							$apiurl="https://juliahub.com/api/v1/package?name=".urlencode($module);
+							$post=postURL($apiurl,array('-method'=>'GET','-json'=>1,'-nossl'=>1,'-timeout'=>5));
+							if(isset($post['json_array']['results']) && is_array($post['json_array']['results'])){
+								foreach($post['json_array']['results'] as $pkg){
+									$recs[]=array(
+										'name'=>isset($pkg['name'])?$pkg['name']:'',
+										'version'=>isset($pkg['latest_version'])?$pkg['latest_version']:'',
+										'description'=>isset($pkg['description'])?$pkg['description']:'',
+										'stars'=>isset($pkg['stars'])?$pkg['stars']:0,
+										'url'=>isset($pkg['name'])?'https://juliahub.com/ui/Packages/'.$pkg['name']:''
+									);
+								}
+							}
+						}
+						if(count($recs)){
+							$recs=sortArrayByKeys($recs,array('stars'=>SORT_DESC));
+							$install_table=databaseListRecords(array(
+								'-list'=>$recs,
+								'-tableclass'=>'wacss_table striped sticky',
+								'name_class'=>'w_nowrap',
+								'-tableheight'=>'500px',
+								'-pretable'=>"Search for: ".implode(' OR ',$modules),
+								'-listfields'=>'name,version,description,stars',
+								'url_options'=>array('target'=>'_blank','href'=>'%url%'),
+								'stars_options'=>array('class'=>'align-right','number_format'=>0)
+							));
+							setView('install_table',1);
+							return;
+						}
+						else{
+							$installs[]=array(
+								'cmd'=>'',
+								'stdout'=>'No matches found. <a href="https://juliahub.com/ui/Packages" target="_blank" class="w_link">Browse JuliaHub</a>'
+							);
+						}
+					break;
+					case 'install':
+						foreach($modules as $module){
+							$cmd="julia -e \"using Pkg; Pkg.add(\\\"{$module}\\\")\"";
+							$installs[]=cmdResults($cmd);
+						}
+					break;
+					case 'uninstall':
+						foreach($modules as $module){
+							$cmd="julia -e \"using Pkg; Pkg.rm(\\\"{$module}\\\")\"";
+							$installs[]=cmdResults($cmd);
+						}
+					break;
+				}
+				setView('installs',1);
+				return;
+			}
+			$result=array('lang'=>'julia');
+			list($result['body'],$result['modules'])=langJuliaInfo();
 			setView('lang_results',1);
 			return;
 		break;
