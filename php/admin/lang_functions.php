@@ -30,9 +30,22 @@ function langPHPInfo(){
 	return array($body,$menu);
 }
 function langPythonInfo(){
+	// Check if python3 exists
+	$check=isWindows()?'where python3 2>nul':'which python3 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#306998;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-python"></span> Python</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Python3 is not installed or not in PATH</div></div>',array());
+	}
 	//get pythoninfo contents
 	$pypath=getWasqlPath('python');
-	$out=cmdResults("python3 \"{$pypath}/pythoninfo.py\" 2>&1");
+	$pyfile="{$pypath}/pythoninfo.py";
+	// Check if pythoninfo.py exists
+	if(!file_exists($pyfile)){
+		$header='<header class="align-left"><div style="background:#306998;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-python"></span> Python</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Script Missing</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">pythoninfo.py script not found at: '.encodeHtml($pyfile).'</div></div>',array());
+	}
+	$out=cmdResults("python3 \"{$pyfile}\" 2>&1");
 	$data=$out['stdout'];
 	//get modules for left side menu by parsing pythoninfo contents
 	preg_match_all('/\<section\>(.+?)\<\/section\>/ism',$data,$sections);
@@ -61,6 +74,13 @@ function langPythonInfo(){
 	return array($data,$menu);
 }
 function langPerlInfo(){
+	// Check if perl exists
+	$check=isWindows()?'where perl 2>nul':'which perl 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Perl is not installed or not in PATH</div></div>',array());
+	}
 	$modules=array();
 	$menu=array();
 	$out=cmdResults('perl -V 2>&1');
@@ -75,7 +95,10 @@ function langPerlInfo(){
 			continue;
 		}
 		if(!strlen($section)){continue;}
-		list($k,$v)=preg_split('/\=/',$line,2);
+		$parts=preg_split('/\=/',$line,2);
+		if(count($parts) < 1){continue;}
+		$k=isset($parts[0])?trim($parts[0]):'';
+		$v=isset($parts[1])?trim($parts[1]):'';
 		if($section=='@INC' && $k!='.'){$incpaths[]=$k;}
 		if(!strlen($v) || stringContains($k,':')){continue;}
 		//echo $section.'<br>'.$line;exit;
@@ -164,10 +187,10 @@ function langPerlInfo(){
 						$line=preg_replace('/S\<(.+?)\>/','<span class="w_nowrap">\1</span>',$line);
 						$line=preg_replace('/C\<(.+?)\>/','<code>\1</code>',$line);
 						if($list==1){
-							$items[]=utf8_encode($line);
+							$items[]=$line;
 							continue;
 						}
-						$pod[$head][]=utf8_encode($line);
+						$pod[$head][]=$line;
 						$loops+=1;
 						if($loops >= $maxloops){break;}
 					}
@@ -229,22 +252,37 @@ ENDOFHEADER;
 	return array($data,$menu);
 }
 function langNodeInfo(){
+	// Check if node exists
+	$nodecmd=isWindows()?'node':'node';
+	$check=isWindows()?'where node 2>nul':'which node 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background-color:#000000;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-node-dot-js"></span> Node</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Node.js is not installed or not in PATH</div></div>',array());
+	}
 	$modules=array();
 	$menu=array();
-	//get node modules
+	//get node modules with cache expiration (24 hours)
 	$tpath=getWasqlTempPath();
-	if(file_exists("{$tpath}/npm_modules.json")){
-		$json=decodeJSON(getFileContents("{$tpath}/npm_modules.json"));
+	$cachefile="{$tpath}/npm_modules.json";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$json=null;
+	if(file_exists($cachefile) && $cache_age < 86400){
+		$json=decodeJSON(getFileContents($cachefile));
 		if(!is_array($json)){
-			$out=cmdResults('npm.cmd ls --g --json');
-			$json=decodeJSON($out['stdout']);
+			$json=null;
 		}
 	}
-	else{
-		$out=cmdResults('npm.cmd ls --g --json');
+	if(!is_array($json)){
+		$npmcmd=isWindows()?'npm.cmd':'npm';
+		$out=cmdResults("{$npmcmd} ls --g --json");
 		$json=decodeJSON($out['stdout']);
+		// Cache the results
+		if(is_array($json)){
+			setFileContents($cachefile,encodeJSON($json));
+		}
 	}
-	$out=cmdResults("node -v");
+	$out=cmdResults("{$nodecmd} -v");
 	$version=$out['stdout'];
 	$header=<<<ENDOFHEADER
 <header class="align-left">
@@ -254,15 +292,18 @@ function langNodeInfo(){
 	</div>
 </header>
 ENDOFHEADER;
-	if(!is_array($json)){return array($header,array());}
-	
+	if(!is_array($json) || !isset($json['dependencies']) || !is_array($json['dependencies'])){
+		return array($header,array());
+	}
+
 	foreach($json['dependencies'] as $module=>$info){
 		$k=strtolower($module);
 		$version=isset($info['version'])?$info['version']:'';
 		$dependencies=array();
 		if(isset($info['dependencies']) && is_array($info['dependencies'])){
 			foreach($info['dependencies'] as $dname=>$dinfo){
-				$dependencies[]="{$dname} - v{$dinfo['version']}";
+				$dversion=isset($dinfo['version'])?$dinfo['version']:'unknown';
+				$dependencies[]="{$dname} - v{$dversion}";
 			}
 		}
 		$dependencies=implode('<br>',$dependencies);
@@ -287,19 +328,40 @@ ENDOFSECTION;
 	return array($data,$menu);
 }
 function langLuaInfo(){
-	$modules=array();
-	$menu=array();
-	//get lua modules
-	$tpath=getWasqlTempPath();
-	if(file_exists("{$tpath}/lua_modules.txt")){
-		$lines=file("{$tpath}/lua_modules.txt");
+	// Check if lua exists
+	$check=isWindows()?'where lua 2>nul':'which lua 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;"><div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div><div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Not Installed</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Lua is not installed or not in PATH</div></div>',array());
 	}
-	else{
-		$out=cmdResults('luarocks list --porcelain 2>&1');
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-	}
+	// Check if luarocks exists
+	$check=isWindows()?'where luarocks 2>nul':'which luarocks 2>/dev/null';
+	$test=cmdResults($check);
 	$out=cmdResults("lua -v 2>&1");
 	$version=$out['stdout'];
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;"><div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div><div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Version '.$version.'</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">LuaRocks is not installed or not in PATH. LuaRocks is required to manage Lua modules.</div></div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	//get lua modules with cache expiration (24 hours)
+	$tpath=getWasqlTempPath();
+	$cachefile="{$tpath}/lua_modules.txt";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$lines=null;
+	if(file_exists($cachefile) && $cache_age < 86400){
+		$lines=file($cachefile);
+	}
+	if(!is_array($lines) || count($lines)==0){
+		$out=cmdResults('luarocks list --porcelain 2>&1');
+		$lines=preg_split('/[\r\n]+/',$out['stdout']);
+		// Cache the results only if we got valid output
+		if(is_array($lines) && count($lines) > 0 && !stringContains($out['stdout'],'command not found')){
+			setFileContents($cachefile,implode(PHP_EOL,$lines));
+		}
+	}
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;">
@@ -309,7 +371,24 @@ function langLuaInfo(){
 </header>
 ENDOFHEADER;
 	foreach($lines as $line){
-		list($module,$version,$status,$path)=preg_split('/\s+/is',trim($line));
+		$line=trim($line);
+		if(!strlen($line)){continue;}
+		// Parse porcelain format: module\tversion\tstatus\tpath
+		// Split by tab first, fall back to multiple spaces
+		$parts=preg_split('/\t+/',$line);
+		if(count($parts) < 2){
+			// Fallback to splitting by multiple spaces if tab splitting didn't work
+			$parts=preg_split('/\s{2,}/',$line);
+		}
+		if(count($parts) < 2){
+			// Single space split as last resort
+			$parts=preg_split('/\s+/',$line,4);
+		}
+		$module=isset($parts[0])?trim($parts[0]):'';
+		$version=isset($parts[1])?trim($parts[1]):'';
+		$status=isset($parts[2])?trim($parts[2]):'';
+		$path=isset($parts[3])?trim($parts[3]):'';
+
 		if(!strlen($module)){continue;}
 		$k=strtolower($module);
 		$info='';
@@ -318,6 +397,8 @@ ENDOFHEADER;
 <table>
 <tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$module}</td></tr>
 <tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Status</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$status}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Location</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;word-break:break-all;">{$path}</td></tr>
 </table>
 ENDOFSECTION;
 		$menu[$k]=$module;
@@ -333,9 +414,22 @@ ENDOFSECTION;
 	return array($data,$menu);
 }
 function langRInfo(){
-	//get pythoninfo contents
+	// Check if Rscript exists
+	$check=isWindows()?'where Rscript 2>nul':'which Rscript 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-r"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">R is not installed or not in PATH</div></div>',array());
+	}
+	//get rinfo contents
 	$rpath=getWasqlPath('R');
-	$out=cmdResults("rscript \"{$rpath}/rinfo.R\" 2>&1");
+	$rfile="{$rpath}/rinfo.R";
+	// Check if rinfo.R exists
+	if(!file_exists($rfile)){
+		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-r"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Script Missing</div></div></header>';
+		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">rinfo.R script not found at: '.encodeHtml($rfile).'</div></div>',array());
+	}
+	$out=cmdResults("rscript \"{$rfile}\" 2>&1");
 	//echo printValue($out);exit;
 	$data=$out['stdout'];
 	//get modules for left side menu by parsing pythoninfo contents

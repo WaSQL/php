@@ -19,7 +19,7 @@
 	<li class="active"><a href="#" data-lang="php" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-php"></span> PHP</a></li>
 	<li><a href="#" data-lang="python" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-python"></span> Python</a></li>
 	<li><a href="#" data-lang="perl" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-perl"></span> Perl</a></li>
-	<li><a href="#" data-lang="nodejs" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-nodejs"></span> NodeJs</a></li>
+	<li><a href="#" data-lang="nodejs" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-nodejs"></span> NodeJs</a></li>
 	<li><a href="#" data-lang="lua" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="icon-program-lua"></span> Lua</a></li>
 	<li><a href="#" data-lang="r" data-setprocessing="lang_tab_processing" data-_menu="lang" data-nav="/php/admin.php" data-div="lang_results" data-tab="1" onclick="return wacss.nav(this);"><span class="brand-r"></span> R</a></li>
 	<li><a href="#" id="lang_tab_processing" style="border:0px;"></a></li>
@@ -35,11 +35,11 @@
 			<input type="hidden" name="lang" value="<?=$result['lang'];?>">
 			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;gap:3px">
 				<input class="wacss_input is-mobile-responsive" name="module" type="text" placeholder="module name" required autofocus>
-				<select name="title" class="wacss_select is-mobile-responsive">
+				<select name="title" class="wacss_select is-mobile-responsive" onchange="if(this.value=='uninstall'){if(!confirm('Are you sure you want to uninstall this module? This may break dependencies.')){this.value='search';}}">
 					<option value="search">Search</option>
 					<option value="install">Install</option>
 					<option value="uninstall">Uninstall</option>
-					
+
 				</select>
 				<button id="installbutton" type="submit" class="wacss_button is-mobile-responsive">Go</button>
 			</div>

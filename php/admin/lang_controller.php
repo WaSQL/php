@@ -15,7 +15,14 @@
 				}
 				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
 				foreach($modules as $m=>$module){
-					$modules[$m]=trim($module);
+					$module=trim($module);
+					// Validate module name to prevent command injection
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid module name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
 				}
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
@@ -54,7 +61,7 @@
 									$cmd="yum install php-{$module}";
 								break;
 								default:
-									$cmd="apt-get install php-{$module}";
+									$cmd="apt-get install -y php-{$module}";
 								break;
 							}
 							$installs[]=cmdResults($cmd);
@@ -72,7 +79,7 @@
 									$cmd="yum uninstall php-{$module}";
 								break;
 								default:
-									$cmd="apt-get uninstall php-{$module}";
+									$cmd="apt-get remove -y php-{$module}";
 								break;
 							}
 							$installs[]=cmdResults($cmd);
@@ -92,16 +99,58 @@
 			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
 				foreach($modules as $m=>$module){
-					$modules[$m]=trim($module);
+					$module=trim($module);
+					// Validate module name to prevent command injection
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid module name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
+				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
 				}
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
+						$url='https://pypi.org/pypi?%3Aaction=search&term='.implode('+OR+',array_map('urlencode',$modules)).'&submit=search';
+						$recs=array();
 						foreach($modules as $module){
+							// Use PyPI JSON API for better search results
+							$apiurl="https://pypi.org/pypi/{$module}/json";
+							$post=postURL($apiurl,array('-method'=>'GET','-json'=>1,'-nossl'=>1,'-timeout'=>5));
+							if(isset($post['json_array']['info'])){
+								$info=$post['json_array']['info'];
+								$recs[]=array(
+									'name'=>$info['name'],
+									'version'=>$info['version'],
+									'summary'=>$info['summary'],
+									'author'=>$info['author'],
+									'home_page'=>$info['home_page']
+								);
+							}
+						}
+						if(count($recs)){
+							$install_table=databaseListRecords(array(
+								'-list'=>$recs,
+								'-tableclass'=>'wacss_table striped sticky',
+								'name_class'=>'w_nowrap',
+								'-tableheight'=>'500px',
+								'-pretable'=>"Search for: ".implode(' OR ',$modules),
+								'-listfields'=>'name,version,summary,author',
+								'home_page_options'=>array('target'=>'_blank','href'=>'%home_page%')
+							));
+							setView('install_table',1);
+							return;
+						}
+						else{
 							$installs[]=array(
-								'cmd'=>$module,
-								'stdout'=>'<a href="https://pypi.org/search/?q='.$module.'" target="_blank" class="btn w_whiteback w_link">Search for '.$module.'</a>'
+								'cmd'=>'',
+								'stdout'=>'No exact matches found. <a href="https://pypi.org/search/?q='.implode('+OR+',array_map('urlencode',$modules)).'" target="_blank" class="w_link">Search PyPI</a>'
 							);
-						}	
+						}
 					break;
 					case 'install':
 						foreach($modules as $module){
@@ -136,7 +185,7 @@
 									$cmd="yum uninstall python3-{$module}";
 								break;
 								case 'ubuntu':
-									$cmd="apt-get uninstall python3-{$module}";
+									$cmd="apt-get remove -y python3-{$module}";
 								break;
 								default:
 									$cmd="python3 -m pip uninstall {$module}";
@@ -159,7 +208,19 @@
 			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
 				foreach($modules as $m=>$module){
-					$modules[$m]=trim($module);
+					$module=trim($module);
+					// Validate module name to prevent command injection (Perl modules can have ::)
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.\:]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid module name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
+				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
 				}
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
@@ -227,18 +288,31 @@
 			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
 				foreach($modules as $m=>$module){
-					$modules[$m]=trim($module);
+					$module=trim($module);
+					// Validate module name to prevent command injection (NPM allows @scope/package)
+					if(!preg_match('/^[\@a-zA-Z0-9\_\-\.\/]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid module name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
 				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
+				}
+				$npmcmd=isWindows()?'npm.cmd':'npm';
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
 						$recs=array();
 						foreach($modules as $module){
-							$cmd="npm.cmd search {$module}";
+							$cmd="{$npmcmd} search {$module}";
 							$out=cmdResults($cmd);
 							$crecs=csv2Arrays($out['stdout'],array('separator'=>'|','-lowercase'=>1,'-nospaces'=>1));
 							//echo printValue($crecs);exit;
 							foreach($crecs as $crec){$recs[]=$crec;}
-						}	
+						}
 						$recs=sortArrayByKeys($recs,array('Package'=>SORT_ASC));
 						$install_table=databaseListRecords(array(
 							'-list'=>$recs,
@@ -253,13 +327,13 @@
 					break;
 					case 'install':
 						foreach($modules as $module){
-							$cmd="npm.cmd -g install {$module}";
+							$cmd="{$npmcmd} -g install {$module}";
 							$installs[]=cmdResults($cmd);
-						}	
+						}
 					break;
 					case 'uninstall':
 						foreach($modules as $module){
-							$cmd="npm.cmd -g uninstall {$module}";
+							$cmd="{$npmcmd} -g uninstall {$module}";
 							$installs[]=cmdResults($cmd);
 						}
 						
@@ -278,7 +352,19 @@
 			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
 				foreach($modules as $m=>$module){
-					$modules[$m]=trim($module);
+					$module=trim($module);
+					// Validate module name to prevent command injection
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid module name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
+				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
 				}
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
@@ -339,7 +425,19 @@
 			if($_REQUEST['title'] && strlen($_REQUEST['title']) && isset($_REQUEST['module']) && strlen($_REQUEST['module'])){
 				$modules=preg_split('/[\,\ ]+/',trim($_REQUEST['module']));
 				foreach($modules as $m=>$module){
-					$modules[$m]=trim($module);
+					$module=trim($module);
+					// Validate module name to prevent command injection
+					if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/', $module)){
+						$installs[]=array('cmd'=>'','stdout'=>'<div class="w_error">Invalid module name: ' . encodeHtml($module) . '</div>');
+						unset($modules[$m]);
+						continue;
+					}
+					$modules[$m]=$module;
+				}
+				// Check if any valid modules remain after validation
+				if(count($installs) > 0 && count($modules) == 0){
+					setView('installs',1);
+					return;
 				}
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
