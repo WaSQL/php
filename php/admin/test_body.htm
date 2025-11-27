@@ -19,45 +19,19 @@
 <h2 style="margin:0px;position:sticky;top:35px;">WaSQL Tests</h2>
 <div class="row">
 	<div class="col s2" style="position:sticky;top:59px;">
-		<ul class="nav-list buttons <?=$CONFIG['admin_color'];?>">
-			<li class="active"><a href="#form-elements" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="form-elements" onclick="return wacss.nav(this);">Form Elements</a></li>
-			<li><a href="#nav-tabs" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="nav-tabs" onclick="return wacss.nav(this);">Nav-Tabs</a></li>
-			<li><a href="#nav-list" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="nav-list" onclick="return wacss.nav(this);">Nav-List</a></li>
-			<li><a href="#data-navigate" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="data-navigate" onclick="return wacss.nav(this);">Data-Navigate</a></li>
-			<li><a href="#behaviors" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="behaviors" onclick="return wacss.nav(this);">Behaviors</a></li>
-			<li><a href="#flexbutton" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="flexbutton" onclick="return wacss.nav(this);">FlexButton</a></li>
-			<li><a href="#chartjs" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="chartjs" onclick="return wacss.nav(this);">ChartJs</a></li>
-			<li><a href="#languages" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="languages" onclick="return wacss.nav(this);">Languages</a></li>
+		<ul class="wacss_tabs is-vertical is-boxed <?=$CONFIG['admin_color'];?>">
+			<li class="is-active"><a href="#form-elements" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="form-elements" onclick="return wacss.nav(this);">Form Elements</a></li>
+			<li><a href="#nav-tabs" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="nav-tabs" onclick="return wacss.nav(this);">Nav-Tabs</a></li>
+			<li><a href="#nav-list" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="nav-list" onclick="return wacss.nav(this);">Nav-List</a></li>
+			<li><a href="#data-navigate" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="data-navigate" onclick="return wacss.nav(this);">Data-Navigate</a></li>
+			<li><a href="#behaviors" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="behaviors" onclick="return wacss.nav(this);">Behaviors</a></li>
+			<li><a href="#flexbutton" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="flexbutton" onclick="return wacss.nav(this);">FlexButton</a></li>
+			<li><a href="#chartjs" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="chartjs" onclick="return wacss.nav(this);">ChartJs</a></li>
+			<li><a href="#languages" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="languages" onclick="return wacss.nav(this);">Languages</a></li>
 		</ul>
 	</div>
 	<div class="col s10" id="test_content">
-		<button type="button" class="btn w_blue" onclick="wacss.modalPopup('this is modal content','modal title');">Modal Create</button>
-		<button type="button" class="btn w_orange" onclick="wacss.modalPopup(new Date().getTime());">Modal Update</button>
-		<form method="POST" name="uploadform" action="/php/admin.php" enctype="multipart/form-data" onsubmit="return wacss.ajaxPost(this,'modal');">
-			<input type="hidden" name="_menu" value="test" />
-			<input type="hidden" name="multipart" value="1" />
-			<div class="row">
-				<div class="col s6">
-					<?=buildFormFile('file1',array('autonumber'=>1,'multiple'=>1,'path'=>'/uploads'));?>
-				</div>
-				<div class="col s6">
-					<?=buildFormFile('file2',array('autonumber'=>1,'path'=>'/uploads'));?>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col s6">
-					<?=buildFormText('name',array('placeholder'=>'name','value'=>'john doe'));?>
-				</div>
-				<div class="col s6">
-					<?=buildFormSelect('age',array(12=>12,43=>43,53=>53),array('placeholder'=>'age'));?>
-				</div>
-			</div>
-			<div class="row w_padtop">
-				<div class="col s12 align-right">
-					<button type="submit" class="btn w_blue">Upload</button>
-				</div>
-			</div>
-		</form>
+		<?=renderView('form-elements');?>
 	</div>
 </div>
 </view:default>
@@ -773,7 +747,7 @@ LIMIT 10
 </view:chartjs>
 
 <view:languages>
-<table class="table striped bordered">
+<table class="wacss_table striped bordered">
 	<tr>
 		<th>Language</th>
 		<th>Sample Code</th>
@@ -807,8 +781,8 @@ import platform
 print(platform.python_version())
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">
@@ -833,8 +807,8 @@ print(wasql.user('username'))
 	console.log(process.version);
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">
@@ -861,8 +835,8 @@ print(wasql.user('username'))
 	print "v".$];
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">
@@ -887,8 +861,8 @@ print(wasql.user('username'))
 	print(_VERSION);
 ?>
 		<div class="align-right">
-			<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button>
-			<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
+			<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button>
+			<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
 		</div>
 		</th>
 		<td class="w_nowrap">
@@ -915,8 +889,8 @@ v<?ruby
 	puts RUBY_VERSION
 ?>
 			<div class="align-right">
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
-				<button class="btn btn-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
+				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
 			</div>
 		</th>
 		<td class="w_nowrap">

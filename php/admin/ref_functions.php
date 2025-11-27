@@ -3,7 +3,7 @@
 function refShowList($tab){
 	$listopts=array(
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped bordered condensed is-sticky',
+		'-tableclass'=>'wacss_table striped bordered condensed sticky',
 		'-tdstyle'=>"font-family:monospace",
 		'-tableheight'=>'80vh',
 		'-anchormap'=>'name'

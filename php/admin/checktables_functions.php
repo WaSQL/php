@@ -4,7 +4,7 @@ function checktablesList(){
 	$opts=array(
 		'-list'=>$recs,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped bordered',
+		'-tableclass'=>'wacss_table striped bordered',
 		//'table_checkbox'=>1
 	);
 	return databaseListRecords($opts);

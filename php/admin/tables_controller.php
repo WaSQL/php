@@ -37,7 +37,7 @@
     		$message=databaseListRecords(array(
     			'-list'=>$recs,
     			'-hidesearch'=>1,
-    			'-tableclass'=>'table striped bordered'
+    			'-tableclass'=>'wacss_table striped bordered'
     		));
 			setView('message',1);
 			return;

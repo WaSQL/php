@@ -17,9 +17,9 @@
 		<form method="post" name="manualsearchform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results');">
 			<input type="hidden" name="_menu" value="manual" />
 			<input type="hidden" name="func" value="search" />
-			<div class="btn-group width100" >
-				<input type="text" autofocus="true" class="form-control input width100" name="search" placeholder="search for what ..." required="required" />
-				<button type="submit" class="btn <?=configValue('admin_color');?>">Search</button>
+			<div class="wacss_buttons" >
+				<input type="text" autofocus="true" class="wacss_input is-mobile-responsive" name="search" placeholder="search for what ..." style="width:150px;" required="required" />
+				<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>">Search</button>
 			</div>
 		</form>
 		<h4 style="margin-top:10px;" class="<?=configValue('admin_color');?>">Code Files</h4>
@@ -44,7 +44,7 @@
 <view:filenames>
 	<view:filename>
 		<div>
-			<a href="#" onclick="return manualNav(this);" data-div="names_<?=sha1($rec['afile']);?>" data-func="names" data-afile="<?=$rec['afile'];?>" class="btn" style="margin-bottom:3px;"><?=base64_decode($rec['afile']);?> (<?=$rec['cnt'];?>)</a>
+			<a href="#" onclick="return manualNav(this);" data-div="names_<?=sha1($rec['afile']);?>" data-func="names" data-afile="<?=$rec['afile'];?>" class="wacss_button is-mobile-responsive" style="margin-bottom:3px;"><?=base64_decode($rec['afile']);?> (<?=$rec['cnt'];?>)</a>
 			<div id="names_<?=sha1($rec['afile']);?>" style="margin-left:20px;"></div>
 		</div>
 	</view:filename>

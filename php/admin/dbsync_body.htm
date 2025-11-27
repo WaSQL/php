@@ -12,7 +12,7 @@
 					<div><label class="w_bigger w_bold">Source</label><?=dbsyncFormField('source');?></div>
 					<div style="margin-left:5px"><label class="w_bigger w_bold">Target</label><?=dbsyncFormField('target');?></div>
 					<div style="text-align: center;margin:0 5px;"><div><label>Diffs</label></div><input type="checkbox" name="diffs" value="1" data-type="checkbox" class="<?=configValue('admin_color');?>" /></div>
-					<div><label>&nbsp;</label><button type="submit" class="btn" onclick="document.dbsync_form.tab.value='tables-indexes"><span class="icon-sync-diff"></span> Compare</button></div>
+					<div><label>&nbsp;</label><button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" onclick="document.dbsync_form.tab.value='tables-indexes"><span class="icon-sync-diff wacss_right3"></span> Compare</button></div>
 				</div>
 			</form>
 		</div>
@@ -50,18 +50,18 @@
 	<?=$diff;?>
 	<view:sync_fields_button>
 	<div class="align-right">
-		<button type="button" id="sync_fields_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_fields" data-table="<?=$table;?>" data-confirm="Confirm sync fields?" data-source="<?=$source;?>" data-setprocessing="sync_fields_button" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
-		<button type="button" id="ddl_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop2" data-status="different" data-func="ddl" data-table="<?=$table;?>" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-database"></span> DDL</button>
+		<button type="button" id="sync_fields_button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_fields" data-table="<?=$table;?>" data-confirm="Confirm sync fields?" data-source="<?=$source;?>" data-setprocessing="sync_fields_button" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+		<button type="button" id="ddl_button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop2" data-status="different" data-func="ddl" data-table="<?=$table;?>" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-database"></span> DDL</button>
 	</div>
 	</view:sync_fields_button>
 	<view:sync_indexes_button>
 	<div class="align-right w_top">
-		<button type="button" id="sync_indexes_button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_indexes" data-table="<?=$table;?>" data-confirm="Confirm sync indexes?" data-setprocessing="sync_indexes_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+		<button type="button" id="sync_indexes_button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="sync_indexes" data-table="<?=$table;?>" data-confirm="Confirm sync indexes?" data-setprocessing="sync_indexes_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
 	</div>
 	</view:sync_indexes_button>
 	<view:sync_procedure_button>
 	<div class="align-left" style="margin-top:10px">
-		<button type="button" id="sync_procedure_button" class="btn button" onclick="dbsyncFunc(this);" data-div="centerpop" data-status="<?=$status;?>" data-func="sync_procedure" data-name="<?=$name;?>" data-type="<?=$type;?>" data-confirm="Confirm sync <?=$type;?>?" data-setprocessing="sync_procedure_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
+		<button type="button" id="sync_procedure_button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);" data-div="centerpop" data-status="<?=$status;?>" data-func="sync_procedure" data-name="<?=$name;?>" data-type="<?=$type;?>" data-confirm="Confirm sync <?=$type;?>?" data-setprocessing="sync_procedure_button" data-source="<?=$source;?>" data-target="<?=$target;?>"><span class="icon-sync"></span> Syncronize</button>
 	</div>
 	</view:sync_procedure_button>
 	<?=buildOnLoad("centerObject('centerpop');");?>

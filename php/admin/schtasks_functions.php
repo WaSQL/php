@@ -127,7 +127,7 @@ function schtasksList(){
 	$stats['status']=encodeJson($stats['status']);
 	$stats['run_as_user']=encodeJson($stats['run_as_user']);
 	$pretable=<<<ENDOFPRETABLE
-<table class="table condensed striped">
+<table class="wacss_table condensed striped">
 	<tr>
 		<th class="w_smaller">Status</th>
 		<th class="w_smaller">State</th>
@@ -145,7 +145,7 @@ ENDOFPRETABLE;
 		'-truecount'=>1,
 		'-pretable'=>$pretable,
 		'-listfields'=>'taskname,location,status,scheduled_task_state,task_to_run,schedule_type,last_status,run_as_user,comment',
-		'-tableclass'=>'table striped bordered sticky',
+		'-tableclass'=>'wacss_table striped bordered sticky',
 		'_menu'=>'schtasks',
 		'-tableheight'=>'75vh',
 		'-results_eval'=>'schtasksListExtra',

@@ -27,11 +27,11 @@
 				</div>
 				<div class="col-sm-2" style="padding:0px;">
 					<label>Days</label>
-					<input type="text" class="form-control" name="wasql_queries_days" value="<?=$recs['wasql_queries_days']['key_value'];?>" />
+					<input type="text" class="wacss_input is-mobile-responsive" name="wasql_queries_days" value="<?=$recs['wasql_queries_days']['key_value'];?>" />
 				</div>
 				<div class="col-sm-2" style="padding:0px;">
 					<label>RunTime</label>
-					<input type="text" class="form-control" name="wasql_queries_time" value="<?=$recs['wasql_queries_time']['key_value'];?>" />
+					<input type="text" class="wacss_input is-mobile-responsive" name="wasql_queries_time" value="<?=$recs['wasql_queries_time']['key_value'];?>" />
 				</div>
 			</div>
 			<div class="row">
@@ -107,8 +107,8 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-6">
-			<button type="submit" class="btn <?=$CONFIG['admin_color'];?>"><span class="icon-save"></span> Save Settings</button>
-			<a href="/php/admin.php?_menu=settings" class="btn <?=$CONFIG['admin_color'];?>"><span class="icon-refresh"></span> Refresh</a>
+			<button type="submit" class="wacss_button is-mobile-responsive <?=$CONFIG['admin_color'];?>"><span class="icon-save"></span> Save Settings</button>
+			<a href="/php/admin.php?_menu=settings" class="wacss_button is-mobile-responsive <?=$CONFIG['admin_color'];?>"><span class="icon-refresh"></span> Refresh</a>
 		</div>
 
 		<div class="col-sm-6" id="set_process">
@@ -121,13 +121,13 @@
 				Config
 			</h3>
 			<div>Values set for this host in the WaSQL config.xml file</div>
-			<table class="table table-striped">
+			<table class="wacss_table table-striped">
 				<tr><th>Host</th><td><?=$_SERVER['HTTP_HOST'];?></td></tr>
 				<tr><th>IP Addr</th><td><?=$_SERVER['SERVER_ADDR'];?></td></tr>
 			</table>
 		</div>
 		<div class="col-sm-8">
-			<table class="table table-striped table-condensed">
+			<table class="wacss_table table-striped table-condensed">
 				<view:configrow>
 				<tr>
 					<th><?=$key;?></th>

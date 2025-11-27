@@ -8,7 +8,7 @@
 	$finfo=getDBFieldInfo('_pages');
 	$mfields=array('meta_image','meta_title','meta_description','meta_keywords');
 	if(!isset($finfo['meta_image'])){
-		$sql="alter table _pages add meta_image varchar(255) NULL";
+		$sql="ALTER TABLE _pages ADD meta_image varchar(255) NULL";
 		$ok=executeSQL($sql);
 		$adir="{$_SERVER['DOCUMENT_ROOT']}/images";
 		if(!is_dir($adir)){
@@ -25,7 +25,7 @@
 		));
 	}
 	if(!isset($finfo['google_id'])){
-		$sql="alter table _pages add google_id varchar(255) NULL";
+		$sql="ALTER TABLE _pages ADD google_id varchar(255) NULL";
 		$ok=executeSQL($sql);
 		$id=addDBRecord(array('-table'=>"_fielddata",
 			'tablename'		=> '_pages',
@@ -38,7 +38,7 @@
 		));
 	}
 	if(!isset($finfo['title'])){
-		$sql="alter table _pages add title varchar(75) NULL";
+		$sql="ALTER TABLE _pages ADD title varchar(75) NULL";
 		$ok=executeSQL($sql);
 		$id=addDBRecord(array('-table'=>"_fielddata",
 			'tablename'		=> '_pages',
@@ -52,7 +52,7 @@
 	}
 
 	if(!isset($finfo['meta_description'])){
-		$sql="alter table _pages add meta_description varchar(160) NULL";
+		$sql="ALTER TABLE _pages ADD meta_description varchar(160) NULL";
 		$ok=executeSQL($sql);
 		$id=addDBRecord(array('-table'=>"_fielddata",
 			'tablename'		=> '_pages',
@@ -67,7 +67,7 @@
 		));
 	}
 	if(!isset($finfo['meta_robots'])){
-		$sql="alter table _pages add meta_robots varchar(50) NULL";
+		$sql="ALTER TABLE _pages ADD meta_robots varchar(50) NULL";
 		$ok=executeSQL($sql);
 		$id=addDBRecord(array('-table'=>"_fielddata",
 			'tablename'		=> '_pages',

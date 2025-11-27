@@ -12,7 +12,10 @@ if(!is_file("{$progpath}/xlsx-reader/master.zip")){
 	$xfile='https://github.com/AsperaGmbH/xlsx-reader/archive/refs/heads/master.zip';
 	wget($xfile,"{$progpath}/xlsx-reader/master.zip");
 	if(!is_file("{$progpath}/xlsx-reader/master.zip")){
-		echo "Error: unable to install xlsx-reader automatically.";
+		echo <<<ENDOFMESSAGE
+<p>PHP Extra xlsx-reader requires a download and install before use</p>
+<p>Download https://github.com/AsperaGmbH/xlsx-reader/archive/refs/heads/master.zip and then unzip to {$progpath}/xlsx-reader/</p>
+ENDOFMESSAGE;
 		exit;
 	}
 	loadExtras('zipfile');

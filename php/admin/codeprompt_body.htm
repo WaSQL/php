@@ -57,14 +57,14 @@
 		<input type="hidden" name="_menu" value="codeprompt">
 		<input type="hidden" name="func" value="code">
 		<input type="hidden" name="code_select" value="">
-		<textarea class="form-control" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;padding:10px;" placeholder="Code" id="code_full" name="code_full"><?=codepromptGetValue();?></textarea>
+		<textarea class="wacss_textarea" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;padding:10px;" placeholder="Code" id="code_full" name="code_full"><?=codepromptGetValue();?></textarea>
 		<div class="w_padtop" style="display:flex;justify-content: space-between;">
 			<div style="display:flex;">
-				<button style="align-self:center;" type="submit" onclick="codepromptSetFunc('code');" class="btn w_blue">Run Input Contents</button>
+				<button style="align-self:center;" type="submit" onclick="codepromptSetFunc('code');" class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?>">Run Input Contents</button>
 				<div  style="margin-left:15px;align-self:center;" id="codeprompt_processing"></div>
 			</div>
 			<div>
-				<button type="submit" onclick="codepromptSetFunc('code_prompt_load');" class="btn w_yellow">Load Code Prompt</button>
+				<button type="submit" onclick="codepromptSetFunc('code_prompt_load');" class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?> is-outlined"><span class="icon-history wacss_right5"></span> Load Code Prompt</button>
 			</div>
 		</div>
 	</form>

@@ -152,11 +152,15 @@ function cronLogRefreshTimer(){
 
 
 <view:pid>
+<div id="pid_found">
 <?=printValue($rec);?>
-<div class="align-right">
-	<a href="#" class="w_red w_link" onclick="return wacss.ajaxGet('<?=configValue('admin_form_url');?>','centerpop',{_menu:'cron',func:'kill',id:this.dataset.cron_pid,title:this.title,setprocessing:'cron_processing'});" data-cron_pid="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
+</div>
+<div class="align-right" id="killpid_results">
+	<a href="#" class="w_red w_link" data-div="killpid_results" data-nav="/php/admin.php" data-_menu="cron" data-func="kill" onclick="return wacss.nav(this);" data-setprocessing="killpid_results" data-confirm="kill process?" data-id="<?=$rec['pid'];?>" title="kill process">Kill Process</a>
 </div>
 </view:pid>
+
+<view:wasql_killpid><?=$results;?></view:wasql_killpid>
 
 <view:nopid>
 	<h3>No process found with pid of <?=$pid;?></h3>

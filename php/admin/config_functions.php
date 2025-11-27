@@ -31,7 +31,7 @@ function configBuildFormField($field,$cparams=array()){
 			);
 			$params=array(
 				'id'=>'config_auth_method',
-				'class'=>'select',
+				'class'=>'wacss_select is-mobile-responsive',
 				'required'=>1,
 				'onchange'=>"return configAuthMethodChanged(this);",
 				'data-nav'=>"/php/admin.php",
@@ -51,7 +51,7 @@ function configBuildFormField($field,$cparams=array()){
 			);
 			$params=array(
 				'id'=>'config_okta_auth_method',
-				'class'=>'select',
+				'class'=>'wacss_select is-mobile-responsive',
 				'required'=>1,
 				// 'onchange'=>"return configOktaAuthMethodChanged(this);",
 				'data-nav'=>"/php/admin.php",
@@ -66,20 +66,30 @@ function configBuildFormField($field,$cparams=array()){
 		break;
 		case 'admin_color':
 			//w_blue,w_gray,w_green,w_red,w_yellow,w_orange,w_teal,w_light,w_dark
-			$opts=array(
-				'w_blue'=>'Blue',
-				'w_gray'=>'Gray',
-				'w_green'=>'Green',
-				'w_red'=>'Red',
-				'w_yellow'=>'Yellow',
-				'w_orange'=>'Orange',
-				'w_teal'=>'Teal',
-				'w_light'=>'Light',
-				'w_dark'=>'Dark'
+			// $opts=array(
+			// 	'w_blue'=>'Blue',
+			// 	'w_gray'=>'Gray',
+			// 	'w_green'=>'Green',
+			// 	'w_red'=>'Red',
+			// 	'w_yellow'=>'Yellow',
+			// 	'w_orange'=>'Orange',
+			// 	'w_teal'=>'Teal',
+			// 	'w_light'=>'Light',
+			// 	'w_dark'=>'Dark'
+			// );
+			$opts = array(
+			    'is-primary' => 'Primary (Turquoise)',
+			    'is-link' => 'Link (Blue)',
+			    'is-info' => 'Info (Cyan)',
+			    'is-success' => 'Success (Green)',
+			    'is-warning' => 'Warning (Yellow)',
+			    'is-danger' => 'Danger (Red)',
+			    'is-light' => 'Light (White)',
+			    'is-dark' => 'Dark (Grey)'
 			);
 			$params=array(
 				'id'=>'config_auth_method',
-				'class'=>'select',
+				'class'=>'wacss_select is-mobile-responsive',
 				'value'=>$CONFIG[$field]
 			);
 			foreach($cparams as $k=>$v){
@@ -100,7 +110,7 @@ function configBuildFormField($field,$cparams=array()){
 			$params=array(
 				'id'=>'wasql_synchronize_slave',
 				'message'=>' -- Target Host --',
-				'class'=>'select',
+				'class'=>'wacss_select is-mobile-responsive',
 				'value'=>$CONFIG[$field]
 			);
 			foreach($cparams as $k=>$v){
@@ -118,8 +128,7 @@ function configBuildFormField($field,$cparams=array()){
 			}
 			$params=array(
 				'value'=>$CONFIG[$field],
-				'-display'=>'column',
-				'width'=>4
+				'-display'=>'flex'
 			);
 			foreach($cparams as $k=>$v){
 				if(isset($params[$k]) && !strlen($v)){unset($params[$k]);}
@@ -134,7 +143,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'okta_client_id':
 		case 'okta_client_secret':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'requiredif'=>'okta_auth_method:oauth2',
 				'value'=>$CONFIG[$field],
 			);
@@ -148,7 +157,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'okta_simplesamlphp_config_technicalcontact_name':
 		case 'okta_simplesamlphp_config_technicalcontact_email':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'requiredif'=>'okta_auth_method:saml',
 				'value'=>$CONFIG[$field],
 				'id'=>strtolower($field)
@@ -158,7 +167,7 @@ function configBuildFormField($field,$cparams=array()){
 		// Custom params for specific Okta SAML inputs
 		case 'okta_simplesamlphp_config_session__duration_int':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'requiredif'=>'okta_auth_method:saml',
 				'value'=>$CONFIG[$field],
 				'onchange'=>'configUpdateSessionCookieLifetimeInputValue(this);',
@@ -202,7 +211,7 @@ function configBuildFormField($field,$cparams=array()){
 		//********************************
 		default:
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'required'=>1,
 				'value'=>$CONFIG[$field]
 			);
@@ -219,7 +228,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'ldap_password':
 		case 'smtppass':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'required'=>1,
 				'value'=>$CONFIG[$field]
 			);
@@ -231,7 +240,7 @@ function configBuildFormField($field,$cparams=array()){
 		break;
 		case 'smtpport':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'type'=>'number',
 				'required'=>1,
 				'value'=>$CONFIG[$field]
@@ -258,8 +267,8 @@ function configBuildFormField($field,$cparams=array()){
 				'0'=>'No'
 			);
 			$params=array(
-				'1_class'=>'btn w_green',
-				'0_class'=>'btn w_red',
+				'1_class'=>'wacss_button is-success is-mobile-responsive',
+				'0_class'=>'wacss_button is-danger is-mobile-responsive',
 				'value'=>$CONFIG[$field]
 			);
 			foreach($cparams as $k=>$v){
@@ -271,7 +280,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'wasql_queries_user':
 		case 'log_queries_user':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'value'=>$CONFIG[$field]
 			);
 			foreach($cparams as $k=>$v){
@@ -285,7 +294,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'log_queries_time':
 		case 'log_queries_days':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'value'=>$CONFIG[$field],
 				'inputtype'=>'number'
 			);
@@ -304,7 +313,7 @@ function configBuildFormField($field,$cparams=array()){
 		case 'custom_log_2':
 		case 'custom_log_3':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'value'=>$CONFIG[$field],
 			);
 			foreach($cparams as $k=>$v){
@@ -315,7 +324,7 @@ function configBuildFormField($field,$cparams=array()){
 		break;
 		case 'login_title':
 			$params=array(
-				'class'=>'input',
+				'class'=>'wacss_input is-mobile-responsive',
 				'value'=>$CONFIG[$field]
 			);
 			foreach($cparams as $k=>$v){
@@ -350,7 +359,7 @@ function configCheckSchema(){
 	//_config
 	$finfo=getDBFieldInfo('_config');
 	if(stringContains($finfo['name']['_dbtype_ex'],'varchar(50)')){
-		$ok=executeSQL("alter table _config modify name varchar(200) NOT NULL UNIQUE");
+		$ok=executeSQL("ALTER TABLE _config MODIFY name varchar(200) NOT NULL UNIQUE");
 	}
 	//category
 	if(!isset($finfo['category'])){
@@ -398,7 +407,7 @@ function configShowlist($category,$opts=array()){
 		'-table'=>'_config',
 		'-nocache'=>1,
 		'category'=>$category,
-		'-tableclass'=>'table condensed striped bordered',
+		'-tableclass'=>'wacss_table condensed striped bordered',
 		'-listview'=>getView('config_item'),
 		'-simplesearch'=>1,
 		'-onsubmit'=>"return pagingSubmit(this,'main_content');",

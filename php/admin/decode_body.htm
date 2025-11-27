@@ -27,8 +27,8 @@
 		<form method="POST" name="decoder_form1" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'decoder1');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
-			<div class="w_padtop text-right"><button class="btn <?=configValue('admin_color');?>" type="submit">Decode <?=$type;?></button></div>
+			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
+			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode <?=$type;?></button></div>
 		</form>
 	</div>
 	<div class="col-sm-6">
@@ -36,8 +36,8 @@
 		<form method="POST" name="decoder_form2" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'decoder2');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
-			<div class="w_padtop text-right"><button class="btn <?=configValue('admin_color');?>" type="submit">Decode <?=$type;?></button></div>
+			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
+			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode <?=$type;?></button></div>
 		</form>
 	</div>
 </div>
@@ -60,8 +60,8 @@
 		<form method="POST" name="url_form1" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results1');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>_encode">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
-			<div class="w_padtop text-right"><button class="btn <?=configValue('admin_color');?>" type="submit">Encode</button></div>
+			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
+			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Encode</button></div>
 		</form>
 	</div>
 	<div class="col-sm-6">
@@ -69,8 +69,8 @@
 		<form method="POST" name="url_form2" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results2');">
 			<input type="hidden" name="_menu" value="decode">
 			<input type="hidden" name="func" value="<?=$type;?>_decode">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="form-control" placeholder="Enter <?=$type;?> here"></textarea>
-			<div class="w_padtop text-right"><button class="btn <?=configValue('admin_color');?>" type="submit">Decode</button></div>
+			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
+			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode</button></div>
 		</form>
 	</div>
 </div>
@@ -101,14 +101,14 @@
 				</div>
 				<div style="margin-left:15px;">
 					<div><label>Transparent</label></div>
-					<select name="transparent" class="select" style="width:" required>
+					<select name="transparent" class="wacss_select is-mobile-responsive" style="width:" required>
 						<option value="0" selected>No</option>
 						<option value="1">Yes</option>
 					</select>
 				</div>
 				<div style="margin-left:15px;">
 					<label>Error Level</label>
-					<select name="eclevel" class="select" required>
+					<select name="eclevel" class="wacss_select is-mobile-responsive" required>
 						<option value="L">L - up to 7% damage</option>
 						<option value="M">M - up to 15% damage</option>
 						<option value="Q">Q - up to 25% damage</option>
@@ -117,11 +117,11 @@
 				</div>
 				<div style="margin-left:15px;">
 					<div><label>Size</label></div>
-					<input type="number" min="1" mask="[0-9]" name="size" class="input" value="5" style="width:80px;" required>
+					<input type="number" min="1" mask="[0-9]" name="size" class="wacss_input is-mobile-responsive" value="5" style="width:80px;" required>
 				</div>
 				<div style="margin-left:15px;">
 					<div><label>Margin</label></div>
-					<input type="number" min="0" mask="[0-9]" name="margin" class="input" value="4" style="width:80px;" required>
+					<input type="number" min="0" mask="[0-9]" name="margin" class="wacss_input is-mobile-responsive" value="4" style="width:80px;" required>
 				</div>
 			</div>
 		</view:qrcode_sizes>
@@ -129,8 +129,8 @@
 	</div>
 	<input type="hidden" name="_menu" value="decode">
 	<input type="hidden" name="func" value="<?=$type;?>">
-	<textarea cols="7" rows="10" wrap="off" autofocus="true" name="content" class="form-control" placeholder="One per line"></textarea>
-	<div class="w_padtop text-right"><button class="btn <?=configValue('admin_color');?>" type="submit">Generate</button></div>
+	<textarea cols="7" rows="10" wrap="off" autofocus="true" name="content" class="wacss_textarea is-mobile-responsive" placeholder="One per line"></textarea>
+	<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Generate</button></div>
 </form>
 </div>
 <div id="results">

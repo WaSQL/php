@@ -33,15 +33,15 @@
 		<form class="w_form" name="moduleform" data-onload="document.moduleform.module.select();" data-setprocessing="installbutton" method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'centerpop');" style="width:100%;margin-bottom:10px;">
 			<input type="hidden" name="_menu" value="lang">
 			<input type="hidden" name="lang" value="<?=$result['lang'];?>">
-			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
-				<input  style="flex:1;" class="input" name="module" type="text" placeholder="module name" required autofocus>
-				<select name="title" style="width:110px;font-size:0.9rem;">
+			<div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;gap:3px">
+				<input class="wacss_input is-mobile-responsive" name="module" type="text" placeholder="module name" required autofocus>
+				<select name="title" class="wacss_select is-mobile-responsive">
 					<option value="search">Search</option>
 					<option value="install">Install</option>
 					<option value="uninstall">Uninstall</option>
 					
 				</select>
-				<button id="installbutton" type="submit" class="btn">Go</button>
+				<button id="installbutton" type="submit" class="wacss_button is-mobile-responsive">Go</button>
 			</div>
 		</form>
 		<h3><?=count($result['modules']);?> Modules Installed</h3>

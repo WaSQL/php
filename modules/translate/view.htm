@@ -45,7 +45,7 @@
 <view:translate_locales>
 	<dblistrecords 
 		-divid="list_locales"
-		-tableclass="table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover" 
+		-tableclass="wacss_table is-condensed is-bordered is-striped" 
 		-listfields="flag4x3,locale,entry_cnt,confirmed_cnt" 
 		-results_eval="translateListLocalesExtra" 
 		entry_cnt_displayname="Entries" 
@@ -154,7 +154,7 @@
 
 <view:selectlang>
 	<dblistrecords
-		-tableclass="table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover"
+		-tableclass="wacss_table is-condensed is-bordered is-striped"
 		-listfields="locale,name,country"
 		-trclass="w_pointer"
 		-onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/addlang/%locale%','translate_nulldiv',{setprocessing:0,cp_title:'Locale Set'})"

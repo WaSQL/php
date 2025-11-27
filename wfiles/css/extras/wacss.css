@@ -3972,7 +3972,9 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
     margin-bottom: 0.5rem;
 }
-/*-------------- wacss_leftmenu BEGIN --------------*/
+/* ==========================================================================
+   wacss_leftmenu COMPONENT
+   ========================================================================== */
 #wacss_leftmenu-toggle {display: none;}
 .wacss_leftmenu {
   position: fixed;
@@ -4106,9 +4108,10 @@ h1, h2, h3, h4, h5, h6 {
 .wacss_leftmenu.w_black [class^="icon-"]::before{color:#FFF;}
 .wacss_leftmenu.w_black .wacss_leftmenu-tab{background:#343a40;}
 .wacss_leftmenu.w_black .wacss_leftmenu-tab::before,.wacss_leftmenu.w_black .wacss_leftmenu-tab::after {background:#FFF;}
-/*-------------- wacss_leftmenu END --------------*/
 
-/*-------------- wacss_treeview BEGIN --------------*/
+/* ==========================================================================
+   wacss_treeview COMPONENT
+   ========================================================================== */
 .wacss_treeview {
   --treeview_spacing: 1.2rem;
   --treeview_radius: 10px;
@@ -4335,8 +4338,6 @@ ul.wacss_treeview{
 .wacss_leftmenu.w_black .wacss_treeview summary:focus-visible {outline-color: #f8f9fa;}
 .wacss_leftmenu.w_black .wacss_treeview summary::before{background: #f8f9fa;color:#343a40;}
 .wacss_leftmenu.w_black .wacss_treeview [class^="icon-"]::before{color:#f8f9fa;}
-
-/*-------------- wacss_treeview END --------------*/
 /* add the URL’s to links, so you can actually see what a link is linking to when printed */
 @media (print) {
   a[href]::after {

@@ -54,7 +54,7 @@ function cronDetailsList($id){
 	}
 	$rtn=databaseListRecords(array(
 		'-list'=>$recs,
-		'-tableclass'=>'table striped bordered condensed',
+		'-tableclass'=>'wacss_table striped bordered condensed',
 		'-listfields'=>'date,time,run,action',
 		'-results_eval'=>'cronDetailsListExtra',
 		'-table_data-onload'=>"wacss.nav(document.querySelector('#tr_{$recs[0]['_id']}'));",
@@ -122,7 +122,7 @@ function cronDetailsLog($id,$field='log'){
 	$rtn.= databaseListRecords(array(
 		'-list'=>$recs,
 		'-listfields'=>'time,elapsed,message',
-		'-table_class'=>'table striped bordered condensed',
+		'-table_class'=>'wacss_table striped bordered condensed',
 		'-table_data-onload'=>"document.querySelector('#cron_details_log').scrollTop=document.querySelector('#cron_details_log').scrollHeight;",
 		'-hidesearch'=>1,
 		'time_class'=>'align-right w_nowrap',
@@ -184,7 +184,7 @@ function cronList(){
 		'-searchopers'=>'ct,eq,neq,ca,ea,ib,nb',
 		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,logcount,last_run,run_length,run_memory,run_format,frequency_max',
 		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
-		'-tableclass'=>'table striped bordered',
+		'-tableclass'=>'wacss_table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
 		'-editfields'=>'frequency_max,cron_pid,groupname',

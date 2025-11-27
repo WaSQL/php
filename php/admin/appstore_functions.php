@@ -2,7 +2,7 @@
 function appstoreApps(){
 	$opts=array(
 		'-table'=>'_pages',
-		'-tableclass'=>'table striped bordered sticky collapsed',
+		'-tableclass'=>'wacss_table striped bordered sticky collapsed',
 		'-where'=>"coalesce(_app->>'\$.key','') != ''",
 		'-fields'=>'_id,_app,name,_cdate,_edate,title,description',
 		'-listfields'=>'_id,name,actions',
@@ -28,17 +28,17 @@ ENDOFNAME;
 		//actions
 		$actions=array('<div style="display:flex;flex-wrap:wrap;justify-content:flex-end;">');
 		//action - setup
-		$actions[]='<a href="/'.$name.'/postinstall" title="Run once after install" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-circle w_green"></span> Post Install Setup</a>';
+		$actions[]='<a href="/'.$name.'/postinstall" title="Run once after install" target="_blank" class="wacss_button is-mobile-responsive" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-circle w_green"></span> Post Install Setup</a>';
 		//action - settings
-		$actions[]='<a href="/'.$name.'/settings" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-gear w_blue"></span> App Settings</a>';
+		$actions[]='<a href="/'.$name.'/settings" target="_blank" class="wacss_button is-mobile-responsive" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-gear w_blue"></span> App Settings</a>';
 		//action - settings
-		$actions[]='<a href="/'.$name.'/documentation" target="_blank" class="btn w_pointer" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-help-circled w_teal"></span> App Documentation</a>';
+		$actions[]='<a href="/'.$name.'/documentation" target="_blank" class="wacss_button is-mobile-responsive" style="align-self:center;margin-left:10px;margin-bottom:5px;"><span class="icon-help-circled w_teal"></span> App Documentation</a>';
 		//action - update
-		$actions[]='<button class="btn w_pointer" style="margin-bottom:5px;" data-confirm="Update '.$name.'?" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.nav(this);"><span class="icon-refresh"></span> Update App</button>';
+		$actions[]='<button class="wacss_button is-mobile-responsive" style="margin-bottom:5px;" data-confirm="Update '.$name.'?" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.nav(this);"><span class="icon-refresh"></span> Update App</button>';
 		//action - show appkey
-		$actions[]='<button class="btn w_pointer" style="margin-bottom:5px;" data-appkey="'.$rec['appkey'].'" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.copy2Clipboard(this.dataset.appkey);return false;"><span class="icon-lock w_gold"></span> Copy Appkey</button>';
+		$actions[]='<button class="wacss_button is-mobile-responsive" style="margin-bottom:5px;" data-appkey="'.$rec['appkey'].'" data-_func="update" data-div="actions_'.$rec['_id'].'" onclick="wacss.copy2Clipboard(this.dataset.appkey);return false;"><span class="icon-lock w_gold"></span> Copy Appkey</button>';
 		//action - uninstall
-		$actions[]='<button class="btn w_pointer w_danger" style="margin-left:10px;" data-id="'.$rec['_id'].'" data-confirm="UNINSTALL '.$name.'? [newline][newline]This will remove ALL '.$name.' related files.[newline][newline]ARE YOU SURE? Click OK to confirm." data-_func="uninstall" data-div="appstore_content" onclick="wacss.nav(this);"><span class="icon-erase w_danger"></span> Uninstall App</button>';
+		$actions[]='<button class="wacss_button is-mobile-responsive w_danger" style="margin-left:10px;" data-id="'.$rec['_id'].'" data-confirm="UNINSTALL '.$name.'? [newline][newline]This will remove ALL '.$name.' related files.[newline][newline]ARE YOU SURE? Click OK to confirm." data-_func="uninstall" data-div="appstore_content" onclick="wacss.nav(this);"><span class="icon-erase w_danger"></span> Uninstall App</button>';
 		$actions[]='</div>';
 		$actions[]='<div id="actions_'.$rec['_id'].'"></div>';
 		$rec['actions']=implode(PHP_EOL,$actions);
@@ -48,15 +48,15 @@ ENDOFNAME;
 function appstoreInit(){
 	$finfo=getDBFieldInfo('_pages');
 	if(!isset($finfo['_app'])){
-		$query="alter table _pages add _app json NULL";
+		$query="ALTER TABLE _pages ADD _app JSON NULL";
 		$ok=executeSQL($query);
 	}
 	if(!isset($finfo['meta'])){
-		$query="alter table _pages add meta json NULL";
+		$query="ALTER TABLE _pages ADD meta JSON NULL";
 		$ok=executeSQL($query);
 	}
 	if(!isset($finfo['settings'])){
-		$query="alter table _pages add settings json NULL";
+		$query="ALTER TABLE _pages ADD settings JSON NULL";
 		$ok=executeSQL($query);
 	}
 	return true;

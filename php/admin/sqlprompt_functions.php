@@ -25,7 +25,7 @@ function sqlpromptShowHistory($dbname){
 	$CONFIG['paging']=20;
 	global $USER;
 	$opts=array(
-		'-tableclass'=>'table striped bordered condensed',
+		'-tableclass'=>'wacss_table striped bordered condensed',
 		'-table'=>'_queries',
 		'-action'=>'/php/admin.php',
 		'-onsubmit'=>"return pagingSubmit(this,'show_history_list');",
@@ -183,7 +183,7 @@ function sqlpromtFormatSQL($query){
 function sqlpromptShowlist($recs,$listopts=array()){
 	$opts=array(
 		'-list'=>$recs,
-		'-tableclass'=>'table bordered striped responsive',
+		'-tableclass'=>'wacss_table bordered striped responsive',
 		'-hidesearch'=>1,
 		'-sorting'=>1
 	);
@@ -198,7 +198,7 @@ function sqlpromptShowlist($recs,$listopts=array()){
 function sqlpromptListRecords($table,$listopts=array()){
 	$opts=array(
 		'-table'=>$table,
-		'-tableclass'=>'table bordered striped responsive',
+		'-tableclass'=>'wacss_table bordered striped responsive',
 		'-sorting'=>1,
 		'-export'=>1,
 		'-onsubmit'=>"return pagingSubmit(this,'sqlprompt_results');",
@@ -236,7 +236,7 @@ function sqlpromptListResults($recs,$listopts=array()){
 	}
 	$opts=array(
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped bordered condensed responsive'
+		'-tableclass'=>'wacss_table striped bordered condensed responsive'
 	);
 	if(is_array($listopts)){
 		foreach($listopts as $k=>$v){
@@ -308,7 +308,7 @@ function sqlpromptListFields($recs){
 	$opts=array(
 		'-list'=>$recs,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped condensed responsive',
+		'-tableclass'=>'wacss_table striped condensed responsive',
 		'-listfields'=>'_dbfield,_dbtype_ex',
 		'-thclass'=>'w_smallest',
 		'-tdclass'=>'w_smallest',
@@ -332,7 +332,7 @@ function sqlpromptListIndexes($recs){
 	$opts=array(
 		'-list'=>$recs,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped condensed responsive',
+		'-tableclass'=>'wacss_table striped condensed responsive',
 		'-listfields'=>'key_name,column_name,is_primary,is_unique,seq_in_index',
 		'-thclass'=>'w_smallest',
 		'-tdclass'=>'w_smallest',

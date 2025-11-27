@@ -998,13 +998,14 @@ function commonSearchFiltersForm($params=array()){
 		$rtn .= '	<textarea name="'.$k.'">'.$v.'</textarea>'.PHP_EOL;
 	}
 	$rtn .= '</div>'.PHP_EOL;
-	//default class to w_form-control
-	if(empty($params['class'])){$params['class']='w_form-control';}
+	//default class to wacss_input is-mobile-responsive
+	if(empty($params['class'])){$params['class']='wacss_input is-mobile-responsive';}
 	//if(empty($params['style'])){$params['style']='min-width:75px';}
+	$btnclass=commonCoalesce($params['-search_button_class'],'wacss_button is-mobile-responsive');
 	if(isset($params['-quickfilters'])){
 		//button => filter_field filter_operator filter_value, ...
 		$buttons=array();
-		$quickclass=isset($params['-quickfilters_class'])?$params['-quickfilters_class']:'button btn is-info btn-primary';
+		$quickclass=commonCoalesce($params['-quickfilters_class'],$btnclass);
 		foreach($params['-quickfilters'] as $name=>$str){
 			if(is_array($str)){
 				if(isset($str['class'])){
@@ -1109,7 +1110,7 @@ function commonSearchFiltersForm($params=array()){
 	    	$vals[$field]=$dname;
 		}
 	}
-	$btnclass='btn';
+	$btnclass='wacss_button is-mobile-responsive';
 	if(isset($params['-search_button_class'])){
 		$btnclass=$params['-search_button_class'];
 	}
@@ -1119,9 +1120,7 @@ function commonSearchFiltersForm($params=array()){
 		if(!isset($params['-simplesearch'])){
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
-			if(isset($params['-search_select_class'])){
-				$cparams['class']=$params['-search_select_class'];
-			}
+			$cparams['class']=commonCoalesce($params['-search_select_class'],'wacss_select is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -1162,9 +1161,7 @@ function commonSearchFiltersForm($params=array()){
 				}
 			}
 			$cparams=array();
-			if(isset($params['-search_select_class'])){
-				$cparams['class']=$params['-search_select_class'];
-			}
+			$cparams['class']=commonCoalesce($params['-search_select_class'],'wacss_select is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -1173,9 +1170,7 @@ function commonSearchFiltersForm($params=array()){
 
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
-			if(isset($params['-search_input_class'])){
-				$cparams['class']=$params['-search_input_class'];
-			}
+			$cparams['class']=commonCoalesce($params['-search_input_class'],'wacss_input is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -1203,9 +1198,7 @@ function commonSearchFiltersForm($params=array()){
 					$vals["{$fld} desc"]="{$orderbyname} {$dname} DESC";
 				}
 				$cparams=array();
-				if(isset($params['-search_select_class'])){
-					$cparams['class']=$params['-search_select_class'];
-				}
+				$cparams['class']=commonCoalesce($params['-search_select_class'],'wacss_select is-mobile-responsive');
 				if(isset($params['-formname'])){
 					$cparams['-formname']=$params['-formname'];
 				}
@@ -1221,9 +1214,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .='<input type="hidden" name="filter_operator" value="ct" >'.PHP_EOL;
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
-			if(isset($params['-search_input_class'])){
-				$cparams['class']=$params['-search_input_class'];
-			}
+			$cparams['class']=commonCoalesce($params['-search_input_class'],'wacss_input is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -2527,6 +2518,7 @@ function buildFormColor($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	$tag='';
 	$tag.='<div class="w_colorfield"';
@@ -2603,6 +2595,7 @@ function buildFormColorHexagon($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	$tag='';
 	$tag.='<div class="w_colorfield"';
@@ -2679,6 +2672,7 @@ function buildFormColorBox($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	$tag='';
 	$tag.='<div class="w_colorfield"';
@@ -2741,7 +2735,7 @@ function buildFormCombo($name,$opts=array(),$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
 	$params['list']=$params['id'].'_datalist';
@@ -2786,6 +2780,7 @@ function buildFormDate($name,$params=array()){
 	if(isset($params['-required']) && $params['-required']){$params['required']=1;}
 	elseif(isset($params['required']) && $params['required']){$params['required']=1;}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['data-behavior']='flatpickr';
 	$params['value']=buildFormValueParam($name,$params);
 	if(strlen($params['value'])){
@@ -2915,7 +2910,7 @@ function buildFormHidden($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['value']=buildFormValueParam($name,$params);
 	$params['name']=$name;
@@ -2945,7 +2940,7 @@ function buildFormPassword($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_input is-mobile-responsive';}
 	//if(!isset($params['onfocus'])){$params['onfocus']='this.select();';}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	$params['value']=buildFormValueParam($name,$params);
@@ -2957,13 +2952,13 @@ function buildFormPassword($name,$params=array()){
 	}
 	$tag .='>'.PHP_EOL;
 	if(isset($params['data-lock_icon'])){
-		$tag .= '	<span class="btn w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
+		$tag .= '	<span class="wacss_button is-mobile-responsive w_white"><span class="icon-lock"></span></span>'.PHP_EOL;
 	}
 	$tag .= '	<input type="password" value="'.encodeHtml($params['value']).'"';
 	$tag .= setTagAttributes($params);
 	$tag .= ' >'.PHP_EOL; 
 	if(isset($params['data-show_icon'])){
-		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" ><span title="show password"><label for="showpassword" class="w_pointer"><span class="icon-eye"></span></label></span>'.PHP_EOL;
+		$tag .= '<input type="checkbox" value="1" id="showpassword" onclick="formShowPassword(\''.$params['id'].'\',this.checked);" style="display:none;" ><label for="showpassword" class="w_pointer" title="show password" style="display:flex;"><span class="icon-eye" style="align-self:center;"></span></label>'.PHP_EOL;
 	}	
 	$tag .= '</div>'.PHP_EOL;
 
@@ -3176,7 +3171,7 @@ function buildFormLatLon($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_input is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	if($params['value']=='latlon' && $params['defaultval']=='latlon'){
 		$params['value']='';
@@ -3367,7 +3362,7 @@ function buildFormMultiSelect($name,$pairs=array(),$params=array()){
 	$dname="-- {$dname} --";
 	//class
 	$class='';
-	if(isset($params['class'])){$class=str_replace('w_form-control','',$params['class']);}
+	if(isset($params['class'])){$class=str_replace('wacss_select is-mobile-responsive','',$params['class']);}
 	if(isset($params['size'])){
 		switch(strtolower($params['size'])){
 	    	case 'small':$class='w_small';break;
@@ -3637,7 +3632,9 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 		if(strlen($image)){
 			$rtn.=' data-image="1"';
 		}
-
+		if(isset($params['-color'])){
+			$rtn .= ' data-color="'.$params['-color'].'"';
+		}
 		//displayif
 		if(isset($params["{$tval}_displayif"])){
 			$rtn .= ' data-displayif="'.$params["{$tval}_displayif"].'"';
@@ -3745,7 +3742,7 @@ function buildFormRadioCheckbox($name, $opts=array(), $params=array()){
 			$othername=preg_replace('/\[\]$/is','',$input_name).'_'.preg_replace('/\?$/','',$tval);
 			$othervalue=$_REQUEST[$othername];
 			$rtn.=<<<ENDOFOTHER
-<input type="text" style="margin-left:5px;font-size:0.9rem;" id="{$opt_id}_other" name="{$othername}" value="{$othervalue}" data-onhide="value:{$opt_id}_other:" data-ondisplay="focus:{$opt_id}_other:" placeholder="Enter ..." data-displayif="{$input_name}:{$tval}">
+<input type="text" class="wacss_input is-mobile-responsive wacss_left5" id="{$opt_id}_other" name="{$othername}" value="{$othervalue}" data-onhide="value:{$opt_id}_other:" data-ondisplay="focus:{$opt_id}_other:" placeholder="Enter ..." data-displayif="{$input_name}:{$tval}">
 ENDOFOTHER;
 		}
 		$rtn.='	</div>'.PHP_EOL;
@@ -3770,7 +3767,7 @@ ENDOFOTHER;
  *   - [-icon]      (string) CSS class for the scan icon. Default: 'icon-qrcode'.
  *   - [name]       (string) Override for the field name.
  *   - [id]         (string) Element id. Default: "{-formname}_{name}".
- *   - [class]      (string) Input CSS class. Default: 'w_form-control'.
+ *   - [class]      (string) Input CSS class. Default: 'wacss_input is-mobile-responsive'.
  *   - [style]      (string) Inline styles; function appends right-side radius adjustments.
  *   - [requiredif] (string) Sets data-requiredif attribute.
  *   - [displayif]  (string) Sets data-displayif attribute.
@@ -3784,7 +3781,7 @@ ENDOFOTHER;
  * echo buildFormQrcode('sku', [
  *   '-formname' => 'product',
  *   '-icon'     => 'icon-barcode',
- *   'class'     => 'w_form-control w_text',
+ *   'class'     => 'input is-medium',
  * ]);
  */
 function buildFormQrcode($name,$params=array()){
@@ -3792,7 +3789,7 @@ function buildFormQrcode($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['class']=commonCoalesce($params['class'],'wacss_input');
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
@@ -3842,7 +3839,7 @@ function buildFormBarcode($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['class']=commonCoalesce($params['class'],'wacss_input');
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
@@ -3904,7 +3901,7 @@ function buildFormText($name,$params=array()){
 	if(!isset($params['-type'])){$params['-type']='text';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	$params['class']=commonCoalesce($params['class'],'wacss_input');
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	//ksort($params);return printValue($params);
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -3952,7 +3949,7 @@ function buildFormTextarea($name,$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
 	if(!isset($params['wrapper_id'])){$params['wrapper_id']=$params['id'].'_wrapper';}
 	if(!isset($params['wrapper_style'])){$params['wrapper_style']='';}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_textarea is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	//echo '<textarea class="textarea">'.$params['value'].'</textarea>';exit;
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
@@ -5145,7 +5142,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.preg_replace('/[^a-z0-9\_]+/','_',$name);}
 	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
 	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	//return printValue($pairs);
 	if(!isset($pairs) || !is_array($pairs)){
 		$pairs=[];
@@ -5261,8 +5258,8 @@ ENDOFOTHER;
     	}
     	//set the input class to match the select class if possible
     	$oclass=array();
-    	if(stringContains($params['class'],'select')){$oclass[]='input';}
-    	else{$oclass[]='w_form-control';}
+    	if(stringContains($params['class'],'select')){$oclass[]='wacss_input is-mobile-responsive';}
+    	else{$oclass[]='wacss_input is-mobile-responsive';}
     	if(stringContains($params['class'],'is-small')){$oclass[]='is-small';}
     	if(stringContains($params['class'],'is-medium')){$oclass[]='is-medium';}
     	if(stringContains($params['class'],'is-large')){$oclass[]='is-large';}
@@ -5290,7 +5287,7 @@ function buildFormSelectCountry($name='country',$params=array('message'=>'-- cou
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	//get a list of country codes that exist in the states table - place these first
 	$query="select distinct(country) as code from states";
@@ -5343,7 +5340,7 @@ function buildFormSelectColor($name='color',$params=array('message'=>'-- color -
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	//get colors
 	$recopts=array(
@@ -5647,7 +5644,7 @@ function buildFormSelectMonth($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	$opts=array(
 		1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'May',6=>'Jun',
@@ -5686,7 +5683,7 @@ function buildFormSelectState($name='state',$country='US',$params=array('message
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	if(!isDBTable('states')){
 		return 'missing States table';
@@ -5720,7 +5717,7 @@ function buildFormSelectTimezone($name='timezone',$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	$zones=timezoneList($params);
 	//groups
@@ -5745,7 +5742,7 @@ function buildFormSelectYear($name,$params=array()){
 	if(!isset($params['-backwards'])){$params['-backwards']=0;}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
-	if(!isset($params['class'])){$params['class']='w_form-control';}
+	if(!isset($params['class'])){$params['class']='wacss_select is-mobile-responsive';}
 	$params['value']=buildFormValueParam($name,$params);
 	$tvals=selectYears($params['-years'],2,$params['-backwards']);
 	$dvals=selectYears($params['-years'],4,$params['-backwards']);
@@ -6002,7 +5999,7 @@ function buildFormStarRating($name, $params=array()){
 * @usage if(!buildDir('/var/www/test/folder/sub/test')){return 'failed to build dir';}
 */
 function buildFormSubmit($val='Submit',$name='',$onclick='',$class=''){
-	$rtn = '<button class="btn '.$class.'" type="submit" value="'.$val.'"';
+	$rtn = '<button class="wacss_button is-mobile-responsive '.$class.'" type="submit" value="'.$val.'"';
 	if(strlen($name)){$rtn .= ' name="'.$name.'"';}
 	if(strlen($onclick)){$rtn .= ' onclick="'.$onclick.'"';}
 	$rtn .= '> '.$val."</button>";
@@ -12224,7 +12221,7 @@ function fileManager($startdir='',$params=array()){
 	if($params['-rights'] == 'all'){
 		$pretable .= '	<div style="display:flex;flex-direction:column;margin-top:10px;">'.PHP_EOL;
 		$pretable .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
-		$pretable .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" >'.PHP_EOL;
+		$pretable .= '			<input type="text" id="_newdir" class="wacss_input is-mobile-responsive" style="max-width:500px;" name="_newdir" value="" >'.PHP_EOL;
 		$pretable .= '	</div>'.PHP_EOL;
 		}
 	if($params['-rights'] != 'readonly'){
@@ -12728,7 +12725,7 @@ function fileManagerOLD($startdir='',$params=array()){
 	if($params['-rights'] == 'all'){
 		$rtn .= '	<div style="display:flex;flex-direction:column;margin-top:10px;">'.PHP_EOL;
 		$rtn .= '			<label for="_newdir">New Directory Name</label>'.PHP_EOL;
-		$rtn .= '			<input type="text" id="_newdir" class="w_form-control" style="max-width:500px;" name="_newdir" value="" >'.PHP_EOL;
+		$rtn .= '			<input type="text" id="_newdir" class="wacss_input is-mobile-responsive" style="max-width:500px;" name="_newdir" value="" >'.PHP_EOL;
 		$rtn .= '	</div>'.PHP_EOL;
 		}
 	if($params['-rights'] != 'readonly'){
@@ -13452,7 +13449,7 @@ function generatePassword($length=9, $strength=2) {
 }
 //---------- begin function generateGUID--------------------
 /**
-* @describe creates a password with specified strength
+* @describe creates a guid
 * @param [curly] boolean - show curly brackets - defaults to false
 * @param [hyphen] - include hypyens - defaults to true
 * @return string

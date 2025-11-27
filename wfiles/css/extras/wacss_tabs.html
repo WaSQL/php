@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaCSS Tabs Component Demo</title>
+    <link rel="stylesheet" href="wacss_v2.css">
+    <script type="text/javascript" src="/wfiles/js/extras/wacss.js"> </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            background-color: #f5f5f5;
+        }
+        code {
+            background: #f2f2f2;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.875em;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-section">
+        <h2>Interactive wacss_tabs Demo</h2>
+        <!-- The Demo Tabs -->
+        <div class="wacss_tabs" id="demo-tabs">
+            <ul>
+                <li class="is-active"><a data-tab="tab1" onclick="wacss.setActiveTab(this);">Dashboard</a></li>
+                <li><a data-tab="tab2" onclick="wacss.setActiveTab(this);">Analytics</a></li>
+                <li><a data-tab="tab3" onclick="wacss.setActiveTab(this);">Reports</a></li>
+                <li><a data-tab="tab4" onclick="wacss.setActiveTab(this);">Settings</a></li>
+            </ul>
+        </div>
+        <p><code id="class-display" style="border:1px solid #ccc;padding:10px 15px;overflow:hidden;">&lt;div class="wacss_tabs"&gt;</code></p>
+        <p>Use the buttons below to change the tabs' style, color, size, and alignment in real-time.</p>
+        <!-- Control Buttons -->
+        <div class="wacss_box">
+            <div class="control-group">
+                <h3>Style:</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <button class="wacss_button is-active" onclick="changeStyle('');wacss.setActiveTab(this);">Default</button>
+                    <button class="wacss_button" onclick="changeStyle('is-boxed');wacss.setActiveTab(this);">Boxed</button>
+                    <button class="wacss_button" onclick="changeStyle('is-toggle');wacss.setActiveTab(this);">Toggle</button>
+                    <button class="wacss_button" onclick="changeStyle('is-toggle is-toggle-rounded');wacss.setActiveTab(this);">Toggle Rounded</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Color:</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <button class="wacss_button is-active" onclick="changeColor('');wacss.setActiveTab(this);">Default (Blue)</button>
+                    <button class="wacss_button is-primary" onclick="changeColor('is-primary');wacss.setActiveTab(this);">Primary</button>
+                    <button class="wacss_button is-info" onclick="changeColor('is-info');wacss.setActiveTab(this);">Info</button>
+                    <button class="wacss_button is-success" onclick="changeColor('is-success');wacss.setActiveTab(this);">Success</button>
+                    <button class="wacss_button is-warning" onclick="changeColor('is-warning');wacss.setActiveTab(this);">Warning</button>
+                    <button class="wacss_button is-danger" onclick="changeColor('is-danger');wacss.setActiveTab(this);">Danger</button>
+                    <button class="wacss_button is-dark" onclick="changeColor('is-dark');wacss.setActiveTab(this);">Dark</button>
+                    <button class="wacss_button is-light" onclick="changeColor('is-light');wacss.setActiveTab(this);">Light</button>
+                    <button class="wacss_button is-black" onclick="changeColor('is-black');wacss.setActiveTab(this);">Black</button>
+                    <button class="wacss_button is-white" onclick="changeColor('is-white');wacss.setActiveTab(this);">White</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Size:</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <button class="wacss_button" onclick="changeSize('is-tiny');wacss.setActiveTab(this);">Tiny</button>
+                    <button class="wacss_button" onclick="changeSize('is-small');wacss.setActiveTab(this);">Small</button>
+                    <button class="wacss_button is-active" onclick="changeSize('');wacss.setActiveTab(this);">Normal</button>
+                    <button class="wacss_button" onclick="changeSize('is-medium');wacss.setActiveTab(this);">Medium</button>
+                    <button class="wacss_button" onclick="changeSize('is-large');wacss.setActiveTab(this);">Large</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Alignment:</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <button class="wacss_button is-active" onclick="changeAlignment('');wacss.setActiveTab(this);">Left</button>
+                    <button class="wacss_button" onclick="changeAlignment('is-centered');wacss.setActiveTab(this);">Centered</button>
+                    <button class="wacss_button" onclick="changeAlignment('is-right');wacss.setActiveTab(this);">Right</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Width:</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <button class="wacss_button is-active" onclick="changeWidth('');wacss.setActiveTab(this);">Auto</button>
+                    <button class="wacss_button" onclick="changeWidth('is-fullwidth');wacss.setActiveTab(this);">Fullwidth</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Orientation:</h3>
+                <div style="display:flex;flex-wrap:wrap;gap:15px;">
+                    <button class="wacss_button is-active" onclick="changeOrientation('');wacss.setActiveTab(this);">Horizontal</button>
+                    <button class="wacss_button" onclick="changeOrientation('is-vertical');wacss.setActiveTab(this);">Vertical Left</button>
+                    <button class="wacss_button" onclick="changeOrientation('is-vertical-right');wacss.setActiveTab(this);">Vertical Right</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Style changing functions
+        function changeStyle(styleClass) {
+            const tabs = document.getElementById('demo-tabs');
+            const styles = ['is-boxed', 'is-toggle', 'is-toggle-rounded'];
+            // Remove all style classes
+            styles.forEach(function(style) {tabs.classList.remove(style);});
+            // Add new style class(es) if provided
+            if (styleClass) {
+                const classes = styleClass.split(' ');
+                classes.forEach(function(cls) {tabs.classList.add(cls);});
+            }
+            updateClassDisplay();
+        }
+
+        function changeColor(colorClass) {
+            const tabs = document.getElementById('demo-tabs');
+            const colors = ['is-primary', 'is-link', 'is-info', 'is-success', 'is-warning', 'is-danger',
+                          'is-white', 'is-black', 'is-light', 'is-dark'];
+            // Remove all color classes
+            colors.forEach(function(color) {tabs.classList.remove(color);});
+            // Add new color class if provided
+            if (colorClass) {tabs.classList.add(colorClass);}
+            updateClassDisplay();
+        }
+
+        function changeSize(sizeClass) {
+            const tabs = document.getElementById('demo-tabs');
+            const sizes = ['is-tiny', 'is-small', 'is-medium', 'is-large'];
+            // Remove all size classes
+            sizes.forEach(function(size) {tabs.classList.remove(size);});
+            // Add new size class if provided
+            if (sizeClass) {tabs.classList.add(sizeClass);}
+            updateClassDisplay();
+        }
+
+        function changeAlignment(alignClass) {
+            const tabs = document.getElementById('demo-tabs');
+            const alignments = ['is-centered', 'is-right'];
+            // Remove all alignment classes
+            alignments.forEach(function(align) {tabs.classList.remove(align);});
+            // Add new alignment class if provided
+            if (alignClass) {tabs.classList.add(alignClass);}
+            updateClassDisplay();
+        }
+
+        function changeWidth(widthClass) {
+            const tabs = document.getElementById('demo-tabs');
+            const widths = ['is-fullwidth'];
+            // Remove all width classes
+            widths.forEach(function(width) {tabs.classList.remove(width);});
+            // Add new width class if provided
+            if (widthClass) {tabs.classList.add(widthClass);}
+            updateClassDisplay();
+        }
+
+        function changeOrientation(orientationClass) {
+            const tabs = document.getElementById('demo-tabs');
+            const orientations = ['is-vertical', 'is-vertical-right'];
+            // Remove all orientation classes
+            orientations.forEach(function(orient) {tabs.classList.remove(orient);});
+            // Add new orientation class if provided
+            if (orientationClass) {tabs.classList.add(orientationClass);}
+            updateClassDisplay();
+        }
+
+        function updateClassDisplay() {
+            const tabs = document.getElementById('demo-tabs');
+            const classes = Array.from(tabs.classList).filter(cls => cls !== 'wacss_tabs');
+            let classString = 'wacss_tabs';
+            if (classes.length > 0) {
+                classString += ' ' + classes.join(' ');
+            }
+            document.getElementById('class-display').textContent = '<div class="' + classString + '">';
+        }
+    </script>
+</body>
+</html>

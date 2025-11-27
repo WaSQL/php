@@ -33,7 +33,7 @@ function systemShowList($recs,$listopts=array()){
 		'_menu'=>'system',
 		'-onsubmit'=>"return pagingSubmit(this,'system_content');",
 		'-formname'=>'systemlist',
-		'-tableclass'=>'table table-responsive responsive bordered striped is-bordered is-striped is-fullwidth is-sticky',
+		'-tableclass'=>'wacss_table responsive bordered striped fullwidth sticky',
 		'-tableheight'=>'80vh',
 	);
 	foreach($listopts as $k=>$v){

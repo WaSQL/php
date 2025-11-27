@@ -47,7 +47,7 @@ function zipcodesListCountries(){
 	}
 	$recs=sortArrayByKeys($recs, array('exists'=>SORT_DESC, 'name'=>SORT_ASC));
 	$opts=array(
-		'-tableclass'=>'table striped narrow bordered sticky',
+		'-tableclass'=>'wacss_table striped narrow bordered sticky',
 		'-listfields'=>'id,name,code,zipcodes',
 		'-list'=>$recs,
 		'-hidesearch'=>1,

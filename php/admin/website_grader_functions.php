@@ -352,7 +352,7 @@ function websiteGraderGetBaseURL(){
 function websiteGraderList($recs,$listopts=array()){
 	$opts=array(
 		'-list'=>$recs,
-		'-tableclass'=>'table bordered is-narrow condensed striped',
+		'-tableclass'=>'wacss_table bordered condensed striped',
 		'-hidesearch'=>1,
 		'source_class'=>'w_nowrap',
 		'page_class'=>'w_nowrap',

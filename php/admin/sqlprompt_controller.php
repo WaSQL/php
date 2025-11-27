@@ -990,7 +990,7 @@ ENDOFQUERY;
 								echo databaseListRecords(array(
 									'-list'=>array($lastquery),
 									'-hidesearch'=>1,
-									'-tableclass'=>'table striped bordered condensed'
+									'-tableclass'=>'wacss_table striped bordered condensed'
 								));
 								exit;
 							break;
@@ -999,7 +999,7 @@ ENDOFQUERY;
 								echo databaseListRecords(array(
 									'-list'=>array($lastquery),
 									'-hidesearch'=>1,
-									'-tableclass'=>'table striped bordered condensed'
+									'-tableclass'=>'wacss_table striped bordered condensed'
 								));
 								echo '</div>'.PHP_EOL;
 								echo '</body>'.PHP_EOL;
@@ -1084,7 +1084,7 @@ ENDOFQUERY;
 						echo databaseListRecords(array(
 							'-csv'=>$afile,
 							'-hidesearch'=>1,
-							'-tableclass'=>'table striped bordered condensed'
+							'-tableclass'=>'wacss_table striped bordered condensed'
 						));
 						exit;
 					break;
@@ -1093,7 +1093,7 @@ ENDOFQUERY;
 						echo databaseListRecords(array(
 							'-csv'=>$afile,
 							'-hidesearch'=>1,
-							'-tableclass'=>'table striped bordered condensed'
+							'-tableclass'=>'wacss_table striped bordered condensed'
 						));
 						echo '</div>'.PHP_EOL;
 						echo '</body>'.PHP_EOL;
@@ -1368,9 +1368,12 @@ ENDOFQUERY;
 					$cdb['dbschemas']=array();
 					foreach($dbschemas as $dbschema){
 						$dbschema=trim($dbschema);
-						$cdb['dbschemas'][]='<a  style="text-align:center;border-radius:15px;border:1px solid #ccc;padding:3px 5px;margin-bottom:2px;" href="#" onclick="wacss.setActiveTab(document.querySelector(\'#db_'.$cdb['name'].'\'));sqlpromptSetDB('."'{$cdb['name']}','{$dbschema}'".')">'.$dbschema.'</a>';
+						$cdb['dbschemas'][]=array(
+							'name'=>$dbschema,
+							'dbname'=>$cdb['name']
+						);
 					}
-					//echo '<xmp>'.implode(PHP_EOL,$db['dbschemas']).'</xmp>';exit;
+					//echo '<xmp>'.implode(PHP_EOL,$cdb['dbschemas']).'</xmp>';exit;
 				}
 				$groups[$group][]=$cdb;
 				$tabs[]=$cdb;

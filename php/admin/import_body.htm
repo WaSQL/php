@@ -27,7 +27,7 @@
 				<div style="flex: 2;margin-left:10px;"><label>Upsert On</label><?=importBuildFormField('csvtable_upserton');?></div>
 			</div>
 			<div style="margin-top:15px;"><label>Where</label><?=importBuildFormField('csvtable_where');?></div>
-			<div style="margin:15px 0;"><button type="submit" onclick="document.importform.filetype.value='csv';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
+			<div style="margin:15px 0;"><button type="submit" onclick="document.importform.filetype.value='csv';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
 		</div>
 		<div style="flex: 3;padding:10px;">
 			<div class="w_bold w_bigger"><span class="icon-file-code"></span> XML Import Options</div>
@@ -35,7 +35,7 @@
 			<div><?=importBuildFormField('xmloptions');?></div>
 			<label>Merge Fields</label>
 			<div><?=importBuildFormField('xmlmerge');?></div>
-			<div class="w_padtop w_padbot"><button type="submit" onclick="document.importform.filetype.value='xml';" class="button btn <?=configValue('admin_color');?>"><span class="icon-file-code"></span> Import XML File</button></div>
+			<div class="w_padtop w_padbot"><button type="submit" onclick="document.importform.filetype.value='xml';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-code"></span> Import XML File</button></div>
 		</div>
 </div>
 </form>

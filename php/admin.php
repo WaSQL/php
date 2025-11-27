@@ -40,8 +40,21 @@ loadExtras('translate');
 
 
 loadExtrasJs(array('wacss','chartist','pikaday','alertify','html5','nicedit','codemirror'));
-loadExtrasCss(array('wacss','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
+loadExtrasCss(array('wacss','wacss_v2','dropdown','alertify','admin','accordian','dropdown','socialbuttons','treeview','pikaday'));
 set_error_handler("wasqlErrorHandler",E_ALL);
+
+//map old admin_color values
+switch($CONFIG['admin_color']){
+    case 'w_blue': $CONFIG['admin_color'] = 'is-link'; break;
+    case 'w_gray': $CONFIG['admin_color'] = 'is-dark'; break;
+    case 'w_green': $CONFIG['admin_color'] = 'is-success'; break;
+    case 'w_red': $CONFIG['admin_color'] = 'is-danger'; break;
+    case 'w_yellow': $CONFIG['admin_color'] = 'is-warning'; break;
+    case 'w_orange': $CONFIG['admin_color'] = 'is-warning'; break;
+    case 'w_teal': $CONFIG['admin_color'] = 'is-info'; break;
+    case 'w_light': $CONFIG['admin_color'] = 'is-light'; break;
+    case 'w_dark': $CONFIG['admin_color'] = 'is-dark'; break;
+}
 
 //check for url_eval
 if(isset($CONFIG['admin_eval'])){
@@ -535,7 +548,7 @@ if(count($_REQUEST)==1){
 		case 'env':
 			echo buildHtmlBegin();
 			echo '<div class="w_lblue w_bold w_big"><span class="icon-server w_grey w_big"></span> REMOTE Variables</div>'.PHP_EOL;
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(!stringBeginsWith($key,'remote') && !stringBeginsWith($key,'http')){continue;}
@@ -859,7 +872,7 @@ if(isAjax()){
 					}
 				//show total records for this table
 				echo "<div>Record Count: {$tcnt}</div>\n";
-				echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+				echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive is-tiny">'.PHP_EOL;
 				echo buildTableTH(array('Field','Type','Len','Null','Recs','Nulls'));
 				//echo printValue($finfo);
 				foreach($finfo as $info){
@@ -1334,9 +1347,9 @@ $js=<<<ENDOFJSSCRIPT
 		c=getObject(c);
 		var tabs=GetElementsByAttribute('button', 'data-group', 'synctabletabs');
 		for(var i=0;i<tabs.length;i++){
-			setClassName(tabs[i],'btn');
+			setClassName(tabs[i],'wacss_button');
 		}
-		setClassName(c,'btn yellow active');
+		setClassName(c,'wacss_button is-warning is-active');
 		var sdiv=c.getAttribute('data-div');
 		setText('syncDiv',getText(sdiv));
 		return true;
@@ -1432,7 +1445,7 @@ if(isset($_REQUEST['_menu'])){
 			exit;
 		break;
 		case 'editor':
-			echo '<table class="table table-responsive table-striped table-bordered" width="100%"><tr valign="top">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive" width="100%"><tr valign="top">'.PHP_EOL;
 			echo '	<td class="nowrap">'.PHP_EOL;
 			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/wasql_admin.png" class="w_middle" alt="Inline Editor Menu" /> Inline Editor Menu</div>'.PHP_EOL;
 			echo '	<div id="w_editor_nav">'.PHP_EOL;
@@ -1443,7 +1456,7 @@ if(isset($_REQUEST['_menu'])){
 			echo '</tr></table>'.PHP_EOL;
 			break;
 		case 'contentmanager':
-			echo '<table class="table table-responsive table-striped table-bordered" width="100%"><tr valign="top">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive" width="100%"><tr valign="top">'.PHP_EOL;
 			echo '	<td class="nowrap">'.PHP_EOL;
 			echo '	<div class="w_bold" style="padding-bottom:8px;border-bottom:1px solid #000;"><img src="/wfiles/iconsets/32/contentmanager.png" class="w_middle" alt="content manager" /> Content Manager</div>'.PHP_EOL;
 			echo '	<div id="w_editor_nav">'.PHP_EOL;
@@ -1505,7 +1518,7 @@ ENDOFX;
 		case 'env':
 			//Server Variables
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_grey"></span> Server Variables</div>'.PHP_EOL;
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1518,7 +1531,7 @@ ENDOFX;
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-file-image w_big"></span> List Iconsets</div>'.PHP_EOL;
 			echo '<hr size="1" style="padding:0px;margin:0px;">'.PHP_EOL;
 			$iconsets=listIconsets();
-			echo '<table class="table table-responsive table-striped">'.PHP_EOL;
+			echo '<table class="wacss_table is-striped is-mobile-responsive">'.PHP_EOL;
 			echo '<tr>';
 			$cnt=0;
 			foreach($iconsets as $name){
@@ -1539,7 +1552,7 @@ ENDOFX;
 			echo '</tr></table>'.PHP_EOL;
 			//echo printValue($iconsets);
 			break;
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1606,7 +1619,7 @@ ENDOFX;
 			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_black"></span> System Info</div>'.PHP_EOL;
 			$info=getServerInfo();
 			//first show all the items that are not arrays
-			echo '<table class="table table-responsive table-bordered table-striped condensed">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Name','Description'));
 			foreach($info as $key=>$val){
 				if(!strlen($key)){continue;}
@@ -1630,7 +1643,7 @@ ENDOFX;
 						}
 					else{$fields[$x]=1;}
 					}
-				echo '<table class="table table-responsive table-bordered table-striped condensed">'.PHP_EOL;
+				echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 				echo buildTableTH(array_keys($fields));
 				foreach($val as $x=>$subval){
 					$svals=array();
@@ -1653,7 +1666,7 @@ ENDOFX;
 			break;
 			//$info=getServerInfo();
 			echo printValue($info);
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			//echo buildTableTH(array('Variable','Value'));
 
             echo buildTableEnd();
@@ -1779,7 +1792,7 @@ ENDOFX;
 			$uinfo=getUserInfo($USER);
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-user"></span> Profile  <a href="#" onclick="return ajaxGet(\'/php/index.php\',\'modal\',{_action:\'editform\',_table:\'_users\',_id:'.$USER['_id'].',cp_title:\'Edit My Profile\'});" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></h2>'.PHP_EOL;
 			
-			echo '<table class="table table-responsive table-bordered table-striped">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Field','Value'));
 			foreach($USER as $key=>$val){
 				if(preg_match('/^\_/',$key)){continue;}
@@ -1925,7 +1938,7 @@ ENDOFX;
 			*/
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-table"></span> Tables</h2>'.PHP_EOL;
 			echo buildFormBegin('',array('_menu'=>'tables','update'=>1));
-			echo '<table class="table table-responsive table-bordered table-striped sortable">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive is-sortable">'.PHP_EOL;
 			echo '<thead>'.PHP_EOL;
 			echo '	<tr>'.PHP_EOL;
 			echo '		<th>Action</th>'.PHP_EOL;
@@ -2045,7 +2058,7 @@ ENDOFX;
 				'-query'				=>	"show table status",
 				'-hidesearch'			=> 1,
 				'-listfields'			=> 'name,rows,avg_row_length,data_length,index_length,auto_increment,collation,engine',
-				'-tableclass'			=> "table table-responsive table-bordered table-striped",
+				'-tableclass'			=> "wacss_table is-bordered is-striped is-mobile-responsive",
 				'name_href'				=> "/php/admin.php?_menu=list&_table_=%name%",
 				'rows_options'	=>array(
 					'eval'				=>	"return number_format(%rows%,0);",
@@ -2102,7 +2115,7 @@ ENDOFX;
 					echo '			<div class="w_small">Enter fields below (i.e. firstname varchar(255) NOT NULL)</div>'.PHP_EOL;
 					$value=$error==1?$_REQUEST['_schema']:'';
 					echo '			<textarea data-required="1" data-behavior="sqleditor" data-requiredmsg="Enter table fields" name="_schema" style="width:450px;height:400px;">'.$value.'</textarea>'.PHP_EOL;
-					echo '			<div class="w_padtop"><button type="submit" class="btn">Create</button></div>'.PHP_EOL;
+					echo '			<div class="w_padtop"><button type="submit" class="wacss_button">Create</button></div>'.PHP_EOL;
 					echo '		</form>'.PHP_EOL;
 					echo buildOnLoad('document.new_table._table_.focus();');
 					echo '</td><td>'.PHP_EOL;
@@ -2175,7 +2188,7 @@ ENDOFX;
 			echo '		<div class="w_smallest">Enter tablename followed by fields for that table tabbed in. See example on right.</div>'.PHP_EOL;
 			$val=isset($_REQUEST['_schema'])?$_REQUEST['_schema']:'';
 			echo '		<textarea data-behavior="sqleditor" data-required="1" name="_schema" style="width:450px;height:400px;">'.$val.'</textarea>'.PHP_EOL;
-			echo '		<div class="w_padtop"><button type="submit" class="btn">Create</button>'.PHP_EOL;
+			echo '		<div class="w_padtop"><button type="submit" class="wacss_button">Create</button>'.PHP_EOL;
 			echo '	</form>'.PHP_EOL;
 			echo '</td><td>'.PHP_EOL;
 			//reference: http://www.htmlite.com/mysql003.php
@@ -2280,7 +2293,7 @@ LIST_TABLE:
 			    $idurl=buildUrl($parts) . '&_id=%_id%';
 				$recopts=array(
 					'_menu'			=>$_REQUEST['_menu'],
-					'-tableclass'	=> "table table-responsive table-bordered table-striped",
+					'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive",
 					'-bulkedit'		=> 1,
 					'-export'		=> 1,
 					//'-export_displaynames'=>1,
@@ -2330,7 +2343,7 @@ LIST_TABLE:
 								'name'=>'',
 								'icon'=>'icon-file-txt w_gray',
 								'title'=>'view log',
-								'class'=>'btn w_white',
+								'class'=>'wacss_button is-white',
 								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'user',title:'User Log'});",
 							),
 							array(
@@ -2338,21 +2351,21 @@ LIST_TABLE:
 								'icon'=>'icon-mark w_green',
 								'title'=>'active',
 								'filter'=>'active eq 1',
-								'class'=>'btn w_white'
+								'class'=>'wacss_button is-white'
 							),
 							array(
 								'name'=>'',
 								'icon'=>'icon-user-admin w_red',
 								'title'=>'admins',
 								'filter'=>'utype eq 0',
-								'class'=>'btn w_white'
+								'class'=>'wacss_button is-white'
 							),
 							array(
 								'name'=>'',
 								'icon'=>'icon-mark w_gray',
 								'title'=>'NOT active',
 								'filter'=>'active eq 0',
-								'class'=>'btn w_white'
+								'class'=>'wacss_button is-white'
 							),
 						);
 					break;
@@ -2366,7 +2379,7 @@ LIST_TABLE:
 								'name'=>'',
 								'icon'=>'icon-file-txt w_gray',
 								'title'=>'view log',
-								'class'=>'btn w_white',
+								'class'=>'wacss_button is-white',
 								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'translate',title:'Translation Log'});",
 							),
 							array(
@@ -2374,14 +2387,14 @@ LIST_TABLE:
 								'icon'=>'icon-mark w_green',
 								'title'=>'confirmed',
 								'filter'=>'confirmed eq 1',
-								'class'=>'btn w_white'
+								'class'=>'wacss_button is-white'
 							),
 							array(
 								'name'=>'',
 								'icon'=>'icon-mark w_danger',
 								'title'=>'failed',
 								'filter'=>'failed eq 1',
-								'class'=>'btn w_white'
+								'class'=>'wacss_button is-white'
 							),
 						);
 					break;
@@ -2419,20 +2432,20 @@ LIST_TABLE:
 						$recopts['-quickfilters']=array(
 							'Not Blank'=>array(
 								'filter'=>'current_value nb',
-								'class'=>"btn w_white"
+								'class'=>"wacss_button is-white"
 								),
 							'Show WaSQL'=>array(
 								'filter'=>'name ct wasql',
-								'class'=>"btn w_white"
+								'class'=>"wacss_button is-white"
 								),
 							'Show Custom'=>array(
 								'filter'=>'description ct custom',
-								'class'=>"btn ".$CONFIG['admin_color']
+								'class'=>"wacss_button ".$CONFIG['admin_color']
 								),
 							'Add'=>array(
 								'icon'=>'icon-plus',
 								'onclick'=>"return ajaxGet('/php/admin.php','modal',{_menu:'add',_table_:'_config',title:'Add Custom',description:'Custom Setting'});",
-								'class'=>"btn ".$CONFIG['admin_color']
+								'class'=>"wacss_button ".$CONFIG['admin_color']
 								)
 						);
 					break;
@@ -2631,7 +2644,7 @@ LIST_TABLE:
 				echo '<tr valign="top"><td>'.PHP_EOL;
 				echo databaseListRecords(array(
 					'_menu'			=>$_REQUEST['_menu'],
-					'-tableclass'	=> "table table-responsive table-bordered table-striped",
+					'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive",
 					'_table_'		=>$_REQUEST['_table_'],
 					'-list'			=>$list
 				));
@@ -2660,7 +2673,7 @@ LIST_TABLE:
 				$list=getDBSchema();
 				echo databaseListRecords(array(
 					'_menu'			=>$_REQUEST['_menu'],
-					'-tableclass'	=> "table table-responsive table-bordered table-striped",
+					'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive",
 					'_table_'		=>$_REQUEST['_table_'],
 					'-list'			=>$list
 				));
@@ -2816,7 +2829,7 @@ LIST_TABLE:
 		        }
 			echo $currentTable.' Table</div>'.PHP_EOL;
 			echo '<table class="w_nopad"><tr valign="top"><td>'.PHP_EOL;
-			echo '<table class="table table-responsive table-striped table-bordered table-hover">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo '<tr><th colspan="7"><span class="icon-database-empty"></span> Database Properties</th><th colspan="8"><span class="icon-newspaper"></span> META Properties</th></tr>'.PHP_EOL;
 			echo '	<tr>'.PHP_EOL;
 			echo '		<th class="w_smallest">Name</th>'.PHP_EOL;
@@ -2905,7 +2918,7 @@ LIST_TABLE:
             //$list=getDBSchema(array($currentTable));
             $list=$tinfo['fieldinfo'];
 			echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
-			echo '<table class="table table-responsive table-bordered">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-mobile-responsive">'.PHP_EOL;
             echo '	<tr><th><span class="icon-edit"></span> Table Schema Editor</th></tr>'.PHP_EOL;
             echo '	<tr valign="top"><td>'.PHP_EOL;
             $height='300px';
@@ -2935,7 +2948,7 @@ LIST_TABLE:
             echo '<tr valign="top"><td colspan="2">'.PHP_EOL;
             echo buildFormBegin('',array('_menu'=>"properties",'_table_'=>$currentTable));
             echo buildFormSubmit("Save Changes","do",'',$CONFIG['admin_color']);
-            echo '<table class="table table-responsive table-bordered table-striped table-responsive">'.PHP_EOL;
+            echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
             //General Table Settings
             echo '	<tr valign="top">'.PHP_EOL;
 			echo '		<th colspan="2" class="w_align_left"><span class="icon-table w_grey w_big"></span> General Table Settings</th>'.PHP_EOL;
@@ -3154,7 +3167,7 @@ LIST_TABLE:
 				echo databaseListRecords(array(
 					'-list'					=>$list,
 					'-listfields'			=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
-					'-tableclass'			=> "table table-responsive table-bordered table-striped",
+					'-tableclass'			=> "wacss_table is-bordered is-striped is-mobile-responsive",
 					'action_displayname'	=> '<span class="icon-download w_big"></span>  <span class="icon-undo w_big"></span> Actions',
 					'size_verbose_displayname'	=> 'Size',
 					'_cdate_displayname'	=> 'Date Created',
@@ -3172,7 +3185,7 @@ LIST_TABLE:
 		case 'email':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-email"></span> Email</h2>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"email",'-name'=>"emailform"));
-			echo '<table class="table table-responsive table-striped table-bordered">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo '	<tr valign="top" class="w_align_left">'.PHP_EOL;
 			$tables=getDBTables();
 			echo '		<th>Table<br><select onchange="document.emailform.submit();" name="_table_"><option value=""></option>'.PHP_EOL;
@@ -3211,10 +3224,10 @@ LIST_TABLE:
 
 				}
 			echo '</table>'.PHP_EOL;
-			echo '<button type="submit" class="btn" name="do">Refresh</button>'.PHP_EOL;
+			echo '<button type="submit" class="wacss_button" name="do">Refresh</button>'.PHP_EOL;
 			if(isset($recs) && is_array($recs)){
 				if(strlen($_REQUEST['message'])){
-					echo '<button class="btn" type="submit" name="do" onclick="return confirm(\'Send Email Now to recipients shown?\');">Send Email</button>'.PHP_EOL;
+					echo '<button class="wacss_button" type="submit" name="do" onclick="return confirm(\'Send Email Now to recipients shown?\');">Send Email</button>'.PHP_EOL;
 					}
 				echo '<p><b>Recipeints List:</b></p>'.PHP_EOL;
 				echo '<div style="margin-left:25px;height:200px;overflow:auto;padding-right:25px;">'.PHP_EOL;
@@ -3274,7 +3287,7 @@ LIST_TABLE:
 			}
 			echo databaseListRecords(array(
 				'-list'				=>$recs,
-				'-tableclass'			=> "table table-responsive table-bordered table-striped",
+				'-tableclass'			=> "wacss_table is-bordered is-striped is-mobile-responsive",
 				'-fields'			=> "_id,active,firstname,lastname,username,type,pw_score,created,edited,accessed",
 				'strong_pw_align'	=>'center',
 				'username_href'		=> "/php/admin.php?_menu=edit&_id=%_id%&_table_=_users&_menu2=user_report",
@@ -3288,7 +3301,7 @@ LIST_TABLE:
 		case 'grep':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-search"></span> Database Search</h2>'.PHP_EOL;
 			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
-			echo '<table class="table table-responsive table-striped table-bordered" style="width:600px;height:auto;">'.PHP_EOL;
+			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive" style="width:600px;height:auto;margin-bottom:10px;">'.PHP_EOL;
 			echo '	<tr valign="top" align="center"><th>Filters:</th>'.PHP_EOL;
 			echo '		<th>Schema<br><input type="checkbox" class="form-control" name="_grep_schema" value="1">'."</th>\n";
 			echo '		<th>Records<br><input type="checkbox" class="form-control" name="_grep_records" value="1" checked>'."</th>\n";
@@ -3315,7 +3328,7 @@ LIST_TABLE:
 				//grep Schema?
 				if($grep['schema']==1){
 					echo '<div class="w_bold w_big w_dblue">Schema Results</div>'.PHP_EOL;
-					echo '<table class="table table-responsive table-striped table-bordered">'.PHP_EOL;
+					echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 					echo '	<tr><th>Table</th><th>Fields</th></tr>'.PHP_EOL;
 					foreach($tables as $table){
 						if(strlen($grep['table']) && $table != $grep['table']){continue;}
@@ -3337,7 +3350,7 @@ LIST_TABLE:
 						echo '<div class="w_bold w_big w_dblue">Record Results</div>'.PHP_EOL;
 						echo databaseListRecords(array(
 							'-list'=>$results,
-							'-tableclass'	=> "table table-responsive table-bordered table-striped",
+							'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive",
 							'_id_href'=>"/php/admin.php?_table_=%tablename%&_menu=edit&_id=%_id%"
 						));
 					}
@@ -3538,7 +3551,7 @@ function adminConfigView(){
 				<input type="hidden" name="_editfield" value="current_value">
 				<div style="display:flex;justify-content:flex-end;align-items:flex-end;margin:0 7px 7px 0;">
 					<div>[cvedit]</div>
-					<button type="submit" class="btn"><span class="icon-save"></span></button>
+					<button type="submit" class="wacss_button"><span class="icon-save"></span></button>
 				</div>
 			</form>
 		</div>
@@ -3960,7 +3973,7 @@ function tableOptions($table='',$params=array()){
 				if(!isset($tableoptions[$option])){continue;}
 				$title=$tableoptions[$option][0];
 				$spanclass=$tableoptions[$option][1];
-				$class='btn';
+				$class='wacss_button';
 				$href="/php/admin.php?_menu={$option}&_table_={$table}";
 				if($option == 'trigger'){
                 	if(isset($trigger['_id'])){
@@ -4314,7 +4327,7 @@ function adminShowSyncChanges($stables=array()){
 		$rtn .= '		<div table="'.$table.'" id="'.$syncTableDiv.'">'.PHP_EOL;
 		$rtn .=  databaseListRecords(array(
 			'-list'			=> $changes[$table],'_id_align'=>"left",
-			'-tableclass'	=> "table table-responsive table-bordered table-striped",
+			'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive",
 			'-tableid'		=> "synctable{$table}",
 			'diff_align'	=> "center",
 			'synctab'		=> $table,

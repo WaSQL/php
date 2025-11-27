@@ -30,7 +30,7 @@
 						$recs=sortArrayByKeys($recs,array('downloads'=>SORT_DESC));
 						$install_table=databaseListRecords(array(
 							'-list'=>$recs,
-							'-tableclass'=>'table striped sticky',
+							'-tableclass'=>'wacss_table striped sticky',
 							'name_class'=>'w_nowrap',
 							'date_class'=>'w_nowrap w_small',
 							'-tableheight'=>'500px',
@@ -189,7 +189,7 @@
 						$recs=sortArrayByKeys($recs,array('timestamp'=>SORT_DESC));
 						$install_table=databaseListRecords(array(
 							'-list'=>$recs,
-							'-tableclass'=>'table striped sticky',
+							'-tableclass'=>'wacss_table striped sticky',
 							'name_class'=>'w_nowrap',
 							'date_class'=>'w_nowrap w_small',
 							'-tableheight'=>'500px',
@@ -242,7 +242,7 @@
 						$recs=sortArrayByKeys($recs,array('Package'=>SORT_ASC));
 						$install_table=databaseListRecords(array(
 							'-list'=>$recs,
-							'-tableclass'=>'table striped sticky',
+							'-tableclass'=>'wacss_table striped sticky',
 							'name_class'=>'w_nowrap',
 							'date_class'=>'w_nowrap',
 							'-tableheight'=>'500px',
@@ -304,7 +304,7 @@
 						$recs=sortArrayByKeys($recs,array('name'=>SORT_ASC));
 						$install_table=databaseListRecords(array(
 							'-list'=>$recs,
-							'-tableclass'=>'table striped sticky',
+							'-tableclass'=>'wacss_table striped sticky',
 							'name_class'=>'w_nowrap',
 							'-tableheight'=>'500px',
 							'-listfields'=>'name,version'
@@ -350,7 +350,7 @@
 						$recs=sortArrayByKeys($recs,array('package'=>SORT_ASC));
 						$install_table=databaseListRecords(array(
 							'-list'=>$recs,
-							'-tableclass'=>'table striped sticky',
+							'-tableclass'=>'wacss_table striped sticky',
 							'name_class'=>'w_nowrap',
 							'-tableheight'=>'500px',
 							'-listfields'=>'package,version'

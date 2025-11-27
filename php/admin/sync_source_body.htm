@@ -43,8 +43,8 @@
 	<div style="margin-top:15px;">Username</div>
 	<div><input type="text" name="user" autocomplete="sync_source_auth_user" value="" class="input" required="required" /></div>
 	<div style="margin-top:5px;">Password</div>
-	<div><input type="password" name="pass" autocomplete="sync_source_auth_pass" value="" class="input" required="required" /></div>
-	<div style="margin-top:10px;"><button type="submit" class="btn">Submit</button></div>
+	<div><input type="password" name="pass" autocomplete="sync_source_auth_pass" value="" class="wasql_input is-mobile-responsive" required="required" /></div>
+	<div style="margin-top:10px;"><button type="submit" class="wacss_button is-mobile-responsive">Submit</button></div>
 	<view:failed>
 	<div style="margin-top:10px;" class="w_red">Authorization failed</div>
 	</view:failed>
@@ -80,7 +80,7 @@
 		</view:diff_details>
 		<?=renderEach('diff_details',$diffs,'diff');?>
 	</div>
-	<div style="border-top:1px solid #CCC;padding-top:10px;"><button type="button" onclick="sync_sourceSync(<?=$rec['_id'];?>);" class="btn btn-large btn-warning"><span class="icon-sync"></span> Synchronize</a></div>
+	<div style="border-top:1px solid #CCC;padding-top:10px;"><button type="button" onclick="sync_sourceSync(<?=$rec['_id'];?>);" class="wacss_button is-mobile-responsive"><span class="icon-sync"></span> Synchronize</a></div>
 </div>
 </view:sync_diffs>
 

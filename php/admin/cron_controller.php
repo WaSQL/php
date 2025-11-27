@@ -28,9 +28,34 @@ switch(strtolower($_REQUEST['func'])){
 		return;
 	break;
 	case 'kill':
-		$id=(integer)$_REQUEST['id'];
-		$out=cmdResults("sudo kill {$id}");
-		usleep(250);
+		$pid=(integer)$_REQUEST['id'];
+		$tempdir=getWasqlPath('php/temp');
+		if(is_file("{$tempdir}/wasql.killpid.log")){
+			unlink("{$tempdir}/wasql.killpid.log");
+		}
+		setFileContents("{$tempdir}/wasql.killpid",$pid);
+		//wait for the killpid.log file
+		$startwait=microtime(true);
+		$killpid=0;
+		while(microtime(true)-$startwait < 30){
+			if(is_file("{$tempdir}/wasql.killpid.log")){
+				$results=getFileContents("{$tempdir}/wasql.killpid.log");
+				$ok=editDBRecord(array(
+					'-table'=>'_cron',
+					'-where'=>"cron_pid={$pid}",
+					'running'=>0,
+					'cron_pid'=>0
+				));
+				$results.='<div>Updated cron to reflect it is no longer running</div>';
+				setView('wasql_killpid',1);
+				return;;
+			}
+			sleep(1);
+		}
+		$results="Kill pid process Failed - cron.php does not seem to be running";
+		setView('wasql_killpid',1);
+		return;
+	break;
 	case 'pid':
 		loadExtras('system');
 		$pid=(integer)$_REQUEST['id'];

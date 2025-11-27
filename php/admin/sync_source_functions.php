@@ -25,7 +25,7 @@ function sync_sourceAddEdit($id=0){
 	);
 	if($id > 0){
 		$opts['_id']=$id;
-		$opts['-custombutton']='<button type="button" onclick="sync_sourceAddEdit(0);" class="button btn btn-danger"><span class="icon-block"></span> Cancel Edit</button>';
+		$opts['-custombutton']='<button type="button" onclick="sync_sourceAddEdit(0);" class="wacss_button is-mobile-responsive is-danger"><span class="icon-block"></span> Cancel Edit</button>';
 		$opts['-hide']='clone,reset';
 	}
 	else{
@@ -45,7 +45,7 @@ function sync_sourceList(){
 		'-table'=>'sync_source',
 		'-action'=>'/php/admin.php',
 		'_menu'=>'sync_source',
-		'-tableclass'=>'table striped bordered narrow sticky',
+		'-tableclass'=>'wacss_table striped bordered narrow sticky',
 		'-tableheight'=>'70vh',
 		'-listfields'=>'action,table_name,table_id,sync_fields,source_domain,source_id,last_sync',
 		'action_class'=>'align-right',
@@ -56,8 +56,8 @@ function sync_sourceList(){
 }
 function sync_sourceListExtra($recs){
 	foreach($recs as $i=>$rec){
-		$recs[$i]['action']='<button type="button" onclick="sync_sourceCheck('.$rec['_id'].');" class="button btn btn-warning"><span class="icon-sync"></span> Check</button>';
-		$recs[$i]['action'].='<button type="button" onclick="sync_sourceAddEdit('.$rec['_id'].');" class="button btn"><span class="icon-edit"></span> Edit</button>';
+		$recs[$i]['action']='<button type="button" onclick="sync_sourceCheck('.$rec['_id'].');" class="wacss_button is-mobile-responsive is-warning"><span class="icon-sync"></span> Check</button>';
+		$recs[$i]['action'].='<button type="button" onclick="sync_sourceAddEdit('.$rec['_id'].');" class="wacss_button is-mobile-responsive"><span class="icon-edit"></span> Edit</button>';
 	}
 	return $recs;
 }

@@ -102,7 +102,7 @@
 			$sync=databaseListRecords(array(
 				'-list'=>$recs,
 				'-hidesearch'=>1,
-				'-tableclass'=>'table bordered striped is-sticky',
+				'-tableclass'=>'wacss_table bordered striped sticky',
 				'-tableheight'=>'80vh',
 			));
 			setView('view_sync',1);
@@ -127,7 +127,7 @@
 			$sync=databaseListRecords(array(
 				'-list'=>$recs,
 				'-hidesearch'=>1,
-				'-tableclass'=>'table bordered striped is-sticky',
+				'-tableclass'=>'wacss_table bordered striped sticky',
 				'-tableheight'=>'80vh',
 			));
 			setView('view_sync',1);

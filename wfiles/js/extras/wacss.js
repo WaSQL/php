@@ -8815,34 +8815,47 @@ var wacss = {
 	* @return boolean false
 	* @usage onclick="return wacss.setActiveTab(this);"
 	*/
-	setActiveTab: function(el){
-		el=wacss.getObject(el);
-		//get parent ul - can be either nav-tabs or nav-list
-	    let p=wacss.getParent(el,'ul','nav-tabs');
-	    if(p === null){
-	    	p=wacss.getParent(el,'ul','nav-list')
+	setActiveTab: function(element){
+		element=wacss.getObject(element);
+		if(undefined == element){return false;}
+		let parent = element.parentElement;
+	    let tagName = element.tagName.toLowerCase();
+	    let siblingSelector='';
+	    switch(tagName){
+	        case 'a':
+	            let pli=wacss.getParent(element,'li');
+	            if(undefined != pli){
+	                siblingSelector='li';
+	                element=pli;
+	                let pul=wacss.getParent(pli,'ul');
+	                if(undefined != pul){parent=pul;}
+	                else{
+	                    let pol=wacss.getParent(pli,'ol');
+	                    if(undefined != pol){parent=pol;}
+	                }
+	            }
+	        break;
+	        case 'li':
+	            siblingSelector='li';
+	            let pul2=wacss.getParent(element,'ul');
+	            if(undefined != pul2){parent=pul2;}
+	            else{
+	                let pol2=wacss.getParent(element,'ol');
+	                if(undefined != pol2){parent=pol2;}
+	            }
+	        break;
+	        case 'button':
+	            siblingSelector='button';
+	        break;
 	    }
-	    if(p === null){
-	    	return false;
-	    }
-	    //get parents li tags and unset any active class
-	    let list=p.querySelectorAll('li');
-	    for(let i=0;i<list.length;i++){
-	        wacss.removeClass(list[i],'active');
-	    }
-	    //add active class to the li
-	    if(el.nodeName.toLowerCase()=='li'){
-	    	wacss.addClass(el,'active');	
-	    }
-	    else{
-			let li=wacss.getParent(el,'li');
-			let lip=wacss.getParent(li,'ul');
-			if(!lip.classList.contains('nav-tabs')){
-				wacss.addClass(li,'active');
-				li=wacss.getParent(lip,'li');
-			}
-	    	wacss.addClass(li,'active');
-	    }
+	    //get the siblings
+	    let siblings = parent.querySelectorAll(siblingSelector);
+	    //determine the activeClassName by checking the siblings
+		let activeClassName = Array.from(siblings).some(el => el.classList.contains('is-active')) ? 'is-active' : 'active';
+		//remove any active classnames in any siblings
+		siblings.forEach(el => el.classList.remove(activeClassName));
+		//add the classname to the current element
+		element.classList.add(activeClassName);
 	    return false;
 	},
 	setProcessingTimer: function(){

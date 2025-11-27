@@ -151,7 +151,7 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 	}
 	foreach($recs as $key=>$rec){
 		$cols=array();
-		$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="'.$recs[$key]['diff'].'" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+		$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="'.$recs[$key]['diff'].'" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 		switch(strtolower($recs[$key]['diff'])){
 			case 'new':
 				$recs[$key]['status'].='<div class="align-left w_gray"><span class="icon-plus" style="margin-right:5px;"></span><translate>New</translate></div>';
@@ -195,7 +195,7 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 	$listopts=array(
 		'-list'=>$xrecs,
 		'-listfields'=>'object_name,object_type,overload,status',
-		'-tableclass'=>'table bordered striped is-sticky',
+		'-tableclass'=>'wacss_table bordered striped is-sticky',
 		'-hidesearch'=>1
 	);
 
@@ -352,14 +352,14 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-mark w_success"></span> Same '.$fieldcount.' Fields in Both';
 				$cols[]=implode('<br />',$lines);
 				//view
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 			case 'new':
 				$fieldcount=count($tablefields['source'][$table]);
 				$lines[]='<span class="icon-block w_danger"></span> Table ONLY exists in Source DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 				
 			break;
 			case 'different':
@@ -375,14 +375,14 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-block w_danger"></span> '.$msg;
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 			case 'missing':
 				$fieldcount=count($tablefields['target'][$table]);
 				$lines[]='<span class="icon-warning w_danger"></span> Table ONLY exists in Target DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//pull from target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_fields" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 		}
 		$recs[$table]['schema']='';
@@ -405,7 +405,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-mark w_success"></span> Same '.$fieldcount.' indexes in Both';
 				$cols[]=implode('<br />',$lines);
 				//view
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 				
 			break;
 			case 'new':
@@ -413,7 +413,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-block w_danger"></span> Indexes ONLY exists in Source DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';			
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';			
 			break;
 			case 'different':
 				$sfieldcount=count($tableindexes['source'][$table]);
@@ -428,14 +428,14 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-block w_danger"></span> '.$msg;
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 			case 'missing':
 				$fieldcount=count($tableindexes['target'][$table]);
 				$lines[]='<span class="icon-warning w_danger"></span> Indexes ONLY exists in Target DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//pull from target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_indexes" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 		}
 		$recs[$table]['indexes']='';
@@ -458,7 +458,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-mark w_success"></span> Same '.$fieldcount.' constraints in Both';
 				$cols[]=implode('<br />',$lines);
 				//view
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="same" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 				
 			break;
 			case 'new':
@@ -466,7 +466,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-block w_danger"></span> constraints ONLY exists in Source DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';			
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="new" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';			
 			break;
 			case 'different':
 				$sfieldcount=count($tableconstraints['source'][$table]);
@@ -481,14 +481,14 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				$lines[]='<span class="icon-block w_danger"></span> '.$msg;
 				$cols[]=implode('<br />',$lines);
 				//push to target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="different" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 			case 'missing':
 				$fieldcount=count($tableconstraints['target'][$table]);
 				$lines[]='<span class="icon-warning w_danger"></span> constraints ONLY exists in Target DB ('.$fieldcount.' fields)';
 				$cols[]=implode('<br />',$lines);
 				//pull from target
-				$cols[]='<button type="button" class="btn button" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
+				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
 		}
 		$recs[$table]['constraints']='';
@@ -508,7 +508,7 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 		'-list'=>$xrecs,
 		'-listfields'=>'table,schema,indexes,constraints',
 		//'-pretable'=>'<hr size="1" style="margin:0px;" />',
-		'-tableclass'=>'table bordered striped is-sticky',
+		'-tableclass'=>'wacss_table bordered striped is-sticky',
 		'-hidesearch'=>1
 	);
 
@@ -582,7 +582,7 @@ function dbsyncShowDifferentList($recs){
 	global $dbsyncShowDifferentListCenter;
 	$listopts=array(
 		'-list'=>$recs,
-		'-tableclass'=>'table condensed striped bordered',
+		'-tableclass'=>'wacss_table condensed striped bordered',
 		'-hidesearch'=>1,
 		'is_unique_checkmark'=>1
 	);

@@ -3,7 +3,7 @@
 	<div class="row w_padtop">
 		<div>
 			<div class="w_right w_padright">
-				<a href="#" class="btn btn-default" onclick="return wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'new'});"><span class="icon-plus"></span> new report</a>
+				<a href="#" class="wacss_button is-mobile-responsive" onclick="return wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'new'});"><span class="icon-plus"></span> new report</a>
 			</div>
 			<div class="w_bigger w_lblue w_bold"><span class="icon-chart-line"></span> WaSQL Reports</div>
 		</div>
@@ -37,7 +37,7 @@
 
 <view:reports>
 	<div class="w_bold w_big"><?=$menu;?></div>
-	<table class="table table-striped table-condensed table-hover table-bordered">
+	<table class="wacss_table striped condensed hover bordered">
 		<tr>
 			<td>Name</td>
 			<td>desription</td>
@@ -84,7 +84,7 @@
 				</p>
 			</view:_option>
 			<?=renderEach('_option',$report['options'],array('-alias'=>'option'));?>
-			<div><button type="submit" onclick="document.optionsform.func.value='report';" class="btn btn-warning">Run Report</button></div>
+			<div><button type="submit" onclick="document.optionsform.func.value='report';" class="wacss_button is-mobile-responsive">Run Report</button></div>
 			</form>
 		</div>
 		<div class="col-xs-10">
@@ -94,13 +94,13 @@
 					<td nowrap><a title="Edit Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick="wacss.ajaxGet('/php/admin.php','reports',{_menu:'reports',func:'edit',id:'<?=$report['_id'];?>'});"><span class="icon-edit"></span> edit report</a></td>
 					<td nowrap><a title="Export Report" style="padding:0 3px 0 3px;" class="w_link" href="#" onclick=document.optionsform.func.value='export';document.optionsform.submit();return false;"><span class="icon-export"></span>csv export</a></td>
 					<td width="100%" align="right">
-						<div class="btn-group">
+						<div class="wacss_buttons">
 							<view:_page_prev>
-							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_prev'];?>';wacss.ajaxPost(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-left"></span></button>
+							<button type="button" onclick="document.optionsform.limit.value='<?=$report['limit_prev'];?>';wacss.ajaxPost(document.optionsform,'reports');" class="wacss_button is-mobile-responsive"><span class="icon-arrow-left"></span></button>
 							</view:_page_prev>
 							<?=renderViewIf(isset($report['limit_prev']),'_page_prev',$report,array('-alias'=>'report'));?>
 							<view:_page_next>
-							<button type="buttom" onclick="document.optionsform.limit.value='<?=$report['limit_next'];?>';wacss.ajaxPost(document.optionsform,'reports');" class="btn btn-default"><span class="icon-arrow-right"></span></button>
+							<button type="button" onclick="document.optionsform.limit.value='<?=$report['limit_next'];?>';wacss.ajaxPost(document.optionsform,'reports');" class="wacss_button is-mobile-responsive"><span class="icon-arrow-right"></span></button>
 							</view:_page_next>
 							<?=renderViewIf(isset($report['limit_next']),'_page_next',$report,array('-alias'=>'report'));?>
 						</div>
@@ -108,7 +108,7 @@
 				</tr>
 			</table>
 			<div style="max-height:500px;overflow:auto;padding-right:3px;">
-			<table class="table table-striped table-condensed table-bordered">
+			<table class="wacss_table striped condensed bordered">
 				<tr>
 					<view:_th><th><?=ucwords(str_replace('_',' ',$field));?></th></view:_th>
 					<?=renderEach('_th',$report['fields'],array('-alias'=>'field'));?>

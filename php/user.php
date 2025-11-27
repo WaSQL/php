@@ -1788,13 +1788,13 @@ function userLoginForm($params=array()){
 		'-form_title'			=> '',
 		'-username_name'		=> 'username',
 		'-username_text'		=> 'Username',
-		'-username_class'		=> 'browser-default input',
+		'-username_class'		=> 'wacss_input',
 		'-username_style'		=> '',
 		'-username_id'			=> 'loginform_username',
 		'-username_title'		=> 'loginform_username',
 		'-username_pre_text'	=> '',
 		'-username_pre_class'	=> 'icon-user w_biggest',
-		'-username_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
+		'-username_pre_style'	=> 'align-self:center;margin-right:3px;',
 		'-username_pre_id'		=> '',
 		'-username_pre_title'	=> '',
 		'-username_post_text'	=> '',
@@ -1803,18 +1803,18 @@ function userLoginForm($params=array()){
 		'-username_post_id'		=> '',
 		'-username_post_title'	=> '',
 		'-password_text'		=> 'password',
-		'-password_class'		=> 'browser-default input',
+		'-password_class'		=> 'wacss_input',
 		'-password_style'		=> '',
 		'-password_id'			=> 'loginform_password',
 		'-password_title'		=> 'loginform_password',
 		'-password_pre_text'	=> '',
 		'-password_pre_class'	=> 'icon-lock w_biggest',
-		'-password_pre_style'	=> 'vertical-align:middle;margin-right:3px;',
+		'-password_pre_style'	=> 'align-self:center;margin-right:3px;',
 		'-password_pre_id'		=> '',
 		'-password_pre_title'	=> '',
 		'-password_post_text'	=> '',
 		'-password_post_class'	=> 'icon-eye',
-		'-password_post_style'	=> 'vertical-align:middle;margin-left:3px;',
+		'-password_post_style'	=> 'align-self:center;margin-left:3px;',
 		'-password_post_id'		=> '',
 		'-password_post_title'	=> '',
 		'-remind_text'			=> 'Remind Me',
@@ -1823,7 +1823,7 @@ function userLoginForm($params=array()){
 		'-remind_id'			=> '',
 		'-remind_title'			=> 'Click here if you need your login information emailed to you.',
 		'-login_text'			=> 'Login',
-		'-login_class'			=> 'btn button',
+		'-login_class'			=> 'wacss_button is-info',
 		'-login_style'			=> '',
 		'-login_id'				=> '',
 		'-login_title'			=> ''
@@ -1923,10 +1923,10 @@ function userLoginForm($params=array()){
 	//username_pre
 	$prefix='-username_pre';
 	if(strlen($params["{$prefix}_text"])){
-		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+		$form .= '<div style="display:flex;">'.$params["{$prefix}_text"].'</div>';
 	}
 	else{
-		$form .= '<div><span';
+		$form .= '<div style="display:flex;"><span';
 		$tagopts=array();
 		foreach($attributes as $key){
 			$tkey="{$prefix}_{$key}";
@@ -1964,10 +1964,10 @@ function userLoginForm($params=array()){
 	//username_post
 	$prefix='-username_post';
 	if(strlen($params["{$prefix}_text"])){
-		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+		$form .= '<div style="display:flex;">'.$params["{$prefix}_text"].'</div>';
 	}
 	else{
-		$form .= '<div><span';
+		$form .= '<div style="display:flex;"><span';
 		$tagopts=array();
 		foreach($attributes as $key){
 			$tkey="{$prefix}_{$key}";
@@ -1984,10 +1984,10 @@ function userLoginForm($params=array()){
 	//password_pre
 	$prefix='-password_pre';
 	if(strlen($params["{$prefix}_text"])){
-		$form .= '<div>'.$params["{$prefix}_text"].'</div>';
+		$form .= '<div style="display:flex;">'.$params["{$prefix}_text"].'</div>';
 	}
 	else{
-		$form .= '<div><span';
+		$form .= '<div style="display:flex;"><span';
 		$tagopts=array();
 		foreach($attributes as $key){
 			$tkey="{$prefix}_{$key}";
@@ -2007,26 +2007,8 @@ function userLoginForm($params=array()){
 			$tagopts[$key]=$params[$tkey];
 		}
 	}
-	//$form .= printValue($tagopts);
 	$tagopts['data-show_icon']=1;
 	$form .= '		'.buildFormPassword('password',$tagopts);
-	//password_post
-	// $prefix='-password_post';
-	// if(strlen($params["{$prefix}_text"])){
-	// 	$form .= '<div>'.$params["{$prefix}_text"].'</div>';
-	// }
-	// else{
-	// 	$form .= '<div style="cursor:pointer;" onmouseover="this.title=document.'.$params['-form_name'].'.password.value;" onmouseout="this.title=\'\';"><span';
-	// 	$tagopts=array();
-	// 	foreach($attributes as $key){
-	// 		$tkey="{$prefix}_{$key}";
-	// 		if(isset($params[$tkey]) && strlen($params[$tkey])){
-	// 			$tagopts[$key]=$params[$tkey];
-	// 		}
-	// 	}
-	// 	$form .= setTagAttributes($tagopts);
-	// 	$form .= "></span></div>".PHP_EOL;
-	// }
 	$form .= '	</div>'.PHP_EOL;
 	//remind me and login
 	$form .= '	<div style="display:flex;flex-direction:row;justify-content:space-between;margin-top:10px;">'.PHP_EOL;

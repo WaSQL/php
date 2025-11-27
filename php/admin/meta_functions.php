@@ -7,7 +7,7 @@ function metaShowList(){
 		'-listfields'=>'_id,name,_template,meta_image,title,meta_description,meta_robots,google_id',
 		'-where'=>'_template != 1',
 		'-order'=>'_template,name',
-		'-tableclass'=>'table bordered is-bordered striped is-striped',
+		'-tableclass'=>'wacss_table bordered striped',
 		'-editfields'=>'meta_image,title,meta_description,meta_robots,google_id',
 		'-sorting'=>1,
 		'title_displayname'=>'Title <span class="icon-info-circled" data-tooltip="id:title_help"></span> <div id="title_help" style="display:none">'.metaHelp('title').'</div>',

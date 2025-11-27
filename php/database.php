@@ -1248,7 +1248,7 @@ function databaseListRecords($params=array()){
 	if(!is_array($params) && (stringBeginsWith($params,"select ") || stringBeginsWith($params,"with "))){
 		$params=array(
 			'-query'=>$params,
-			'-tableclass'=>'table striped bordered condensed',
+			'-tableclass'=>'wacss_table is-striped is-bordered is-condensed',
 			'-hidesearch'=>1
 		);
 	}
@@ -4714,7 +4714,7 @@ function addEditDBForm($params=array(),$customcode=''){
 	elseif(isset($params['-ajax']) && strlen($params['-ajax'])){$onsubmit="ajaxSubmitForm(this,'{$params['-ajax']}');return false;";}
 	//onchange
 	if(!isset($params['-onchange'])){
-		$params['-onchange']="wacss.formChanged(this);";
+		$params['-onchange']="wacss.formChanged(this,event);";
 	}
     //form enctype
     if(isset($params['-enctype'])){$enctype=$params['-enctype'];}
@@ -11551,7 +11551,7 @@ function listDBRecords($params=array(),$customcode=''){
 		$rtn .= buildFormBegin($params['-action'],$params['-form']);
     	}
     //set table class
-	$tableclass='table table-bordered table-striped table-responsive';
+	$tableclass='wacss_table is-bordered is-striped is-mobile-responsive';
 	//add the sortable class if there is only one page of records or is sorting is turned off
 	if(!isset($paging['-next']) || isset($params['-nosort'])){
 		$tableclass .= ' sortable';

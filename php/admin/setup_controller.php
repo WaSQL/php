@@ -110,7 +110,7 @@
 						// $ok.PHP_EOL;
 					}
 					$message='<h1 class="w_success">Clone Complete</h1>';
-					$message.='<a href="/" class="btn btn-lg btn-primary">Refresh</a>';
+					$message.='<a href="/" class="wacss_button is-mobile-responsive">Refresh</a>';
 				}
 				else{
 					$message="Failed: {$afile} not found";
@@ -141,7 +141,7 @@
 		$message=<<<ENDOFMESSAGE
 <h1 class="w_success">{$_REQUEST['starttype']} Site Created.</h1>
 <div style="font-size:0.7rem;padding:15px;">{$okmsg}</div>
-<div><a href="/" class="btn button is-success" style="font-size:1.5rem;border:1px solid #c7c7c7;padding:3px 5px;text-decoration:none;font-weight:bold;background:#f0f0f0;border-radius:3px;">Goto Homepage</a></div>
+<div><a href="/" class="wacss_button is-mobile_repsonsive" style="font-size:1.5rem;border:1px solid #c7c7c7;padding:3px 5px;text-decoration:none;font-weight:bold;background:#f0f0f0;border-radius:3px;">Goto Homepage</a></div>
 <script>
 setTimeout(function(){location.reload();}, 5000);
 </script>

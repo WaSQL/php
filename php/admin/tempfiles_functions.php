@@ -90,7 +90,7 @@ function tempfilesShowList($ext,$sort){
 	return databaseListRecords(array(
 		'-list'=>$files,
 		'-hidesearch'=>1,
-		'-tableclass'=>'table striped bordered condensed',
+		'-tableclass'=>'wacss_table striped bordered condensed',
 		'-listfields'=>implode(',',$fields),
 		'_cdate_age_verbose_displayname'=>'Created',
 		'_adate_age_verbose_displayname'=>'Accessed',
@@ -116,7 +116,7 @@ function tempfilesShowListExtra($recs){
 		//size to verboseSize
 		$recs[$i]['size']=verboseSize($rec['size']);
 		//action - select, view, delete
-		$recs[$i]['action']='<input type="checkbox" name="file[]" value="'.$rec['name'].'" class="input selectfile" />';
+		$recs[$i]['action']='<input type="checkbox" name="file[]" value="'.$rec['name'].'" class="selectfile" />';
 		//viewfile
 		$recs[$i]['action'].=<<<ENDOFACTION
 <a href="#" style="display:inline;margin-left:8px;" data-div="centerpop" data-title="{$rec['name']}" data-nav="/php/admin.php" data-_menu="tempfiles" data-func="view_file" data-file="{$rec['name']}" onclick="return wacss.nav(this);"><span class="icon-file-txt w_info"></span></a>

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WaCSS</title>
+    <link rel="shortcut icon" href="/wfiles/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/wfiles/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/wfiles/favicon-16x16.png">
+    <link type="text/css" rel="stylesheet" href="/wfiles/css/extras/wacss.css">
+    <link type="text/css" rel="stylesheet" href="/wfiles/css/extras/wacss_v2.css">
+    <script async type="text/javascript" src="/wfiles/js/extras/wacss.js"></script>
+    <style>
+         code[class^="language-"] {
+              display: inline-block;
+              background-color: whitesmoke;
+              color: #4a4a4a;
+              border:1px solid #ccc;
+              padding:1rem;
+              margin: 1rem 0;
+              font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+              font-size: 0.75rem;
+              line-height: 1.5;
+              border-radius: 6px;
+              white-space: pre;
+              position: relative;
+          }
+
+          code[class^="language-"]::before {
+              content: attr(class);
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              background-color: whitesmoke;
+              font-weight: bold;
+              border-bottom:1px solid #ccc;
+              padding: 0.25rem 0.75rem;
+              font-size: 0.75rem;
+              text-transform: uppercase;
+              border-radius: 6px 6px 0 0;
+          }
+    </style>
+</head>
+<body class="has-wacss_navbar-fixed-top">
+    <!-- WaCSS Navbar Example -->
+    <ul class="wacss_navbar is-fixed-top is-info">
+        <!-- WaSQL -->
+        <li class="has-dropdown"><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png"></a>
+            <ul>
+                <li><a href="/php/admin.php?_menu=about"><span class="icon-wasql-about w_bigger"></span> About</a></li>
+                <li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-wasql-doc w_bigger"></span>  Docs</a></li>
+                <li><a href="/php/admin.php?_menu=config"><span class="icon-wasql-config w_bigger"></span> Config</a></li>
+                <li><a href="/php/admin.php?_menu=update_wasql" data-confirm="Update WaSQL? Are you sure?" onclick="return confirm(this.dataset.confirm);"><span class="icon-git" id="helpmenu_wasql_icon"></span> Update</a></li>
+                <li><hr size="1"></li>
+                <li class="w_bold"><a href="/php/admin.php?_menu=appstore"><span class="material-storefront w_bigger"></span> Appstore</a></li>
+                <li><hr size="1"></li>
+                <li><a href="/php/admin.php?_menu=dashboard"><span class="icon-th-thumb-empty"></span> Table Stats</a></li>
+                <li class="right"><a href="/php/admin.php?_menu=clearmin" title="Clear minify cache" onclick="return wacss.ajaxGet('/php/admin.php','modal',{_menu:'clearmin',cp_color:'w_blue'});"><span class="icon-erase"></span> <span class="hidden-sm-down">Clear Min</span></a></li>
+                <li><a href="/php/admin.php?_menu=translate"><span class="icon-translate"></span> Translate Manager</a></li>
+                <li><hr size="1"></li>
+                
+                <li><a href="/php/admin.php?_menu=test"><span class="icon-mark"></span> WaSQL Tests</a></li>
+                <li><a href="/php/admin.php?_menu=rebuild" onclick="return confirm('Rebuild WaSQL Tables?');"><span class="icon-table"></span> Rebuild Tables</a></li>
+                
+                <li><a href="/php/admin.php?_menu=tempfiles"><span class="icon-file-code"></span> Manage Temp Files</a></li>
+            </ul>
+
+        </li>
+        
+        <!-- Database -->
+        <li class="has-dropdown"><a href="#database" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down">Database</span></a>
+            <ul>
+                <li><a href="/php/admin.php?_menu=sqlprompt"><span class="icon-prompt"></span> SQL Prompt</a></li>
+                <li><a href="/php/admin.php?_menu=grep"><span class="icon-search"></span> Search</a></li>
+                <li><a href="/php/admin.php?_menu=backups"><span class="icon-save"></span> Backup/Restore</a></li>
+                <li><a href="/php/admin.php?_menu=checktables"><span class="icon-mark"></span> Check Tables</a></li>
+                <li><a href="/php/admin.php?_menu=optimize"><span class="icon-optimize"></span> Optimize</a></li>
+                <li><a href="/php/admin.php?_menu=import"><span class="icon-import"></span> Import</a></li>
+                <li><a href="/php/admin.php?_menu=export"><span class="icon-export"></span> Export</a></li>
+                <li><hr size="1"></li>
+                <li><a href="/php/admin.php?_menu=dbsync"><span class="icon-database"></span> DB Sync Tool</a></li>
+            </ul>
+        </li>
+        <!-- Tables -->
+        <li class="has-dropdown"><a href="#tables" class="dropdown" onclick="return false;"><span class="icon-database"></span> <span class="hidden-sm-down">Tables</span></a>
+            <ul>
+                <li class="has-dropdown"><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> List / Manage</a></li>
+                
+                                <li><a href="#Ungrouped" class="dropdown" onclick="return false;"><span class="icon-group"></span> Ungrouped Tables</a>
+                    <ul>
+                        
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=contact_form" class="dropdown"><span class="icon-list"></span> contact_form</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">contact_form Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=contact_form"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=contact_form"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=contact_form"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=contact_form"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=contact_form"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=contact_form"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=contact_form" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- contact_form --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=contact_form" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- contact_form --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=countries" class="dropdown"><span class="icon-list"></span> countries</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">countries Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=countries"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=countries"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=countries"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=countries"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=countries"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=countries"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=countries" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- countries --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=countries" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- countries --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=datatrax_templates" class="dropdown"><span class="icon-list"></span> datatrax_templates</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">datatrax_templates Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=datatrax_templates"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=datatrax_templates"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=datatrax_templates"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=datatrax_templates"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=datatrax_templates"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=datatrax_templates"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=datatrax_templates" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- datatrax_templates --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=datatrax_templates" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- datatrax_templates --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=openstreetmap" class="dropdown"><span class="icon-list"></span> openstreetmap</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">openstreetmap Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=openstreetmap"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=openstreetmap"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=openstreetmap"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=openstreetmap"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=openstreetmap"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=openstreetmap"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=openstreetmap" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- openstreetmap --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=openstreetmap" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- openstreetmap --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=states" class="dropdown"><span class="icon-list"></span> states</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">states Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=states"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=states"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=states"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=states"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=states"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=states"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=states" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- states --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=states" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- states --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=tasks" class="dropdown"><span class="icon-list"></span> tasks</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">tasks Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=tasks"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=tasks"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=tasks"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=tasks"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=tasks"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=tasks"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=tasks" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- tasks --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=tasks" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- tasks --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=test" class="dropdown"><span class="icon-list"></span> test</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">test Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=test"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=test"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=test"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=test"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=test"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=test"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=test" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- test --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=test" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- test --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li class="has-dropdown"><a href="/php/admin.php?_menu=list&amp;_table_=v_states_ca" class="dropdown"><span class="icon-list"></span> v_states_ca</a>
+                            <ul>
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">v_states_ca Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=v_states_ca"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=v_states_ca"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=v_states_ca"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=v_states_ca"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=v_states_ca"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=v_states_ca"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=v_states_ca" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- v_states_ca --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=v_states_ca" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- v_states_ca --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=v_states_us" class="dropdown"><span class="icon-list"></span> v_states_us</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">v_states_us Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=v_states_us"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=v_states_us"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=v_states_us"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=v_states_us"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=v_states_us"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=v_states_us"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=v_states_us" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- v_states_us --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=v_states_us" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- v_states_us --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                        
+                    </ul>
+                </li>
+                                <li><a href="#WaSQL" class="dropdown" onclick="return false;"><span class="icon-group"></span> WaSQL Tables</a>
+                    <ul style="padding-bottom:15px;padding-top:10px;">
+                        
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_access" class="dropdown"><span class="icon-list"></span> _access</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_access Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_access"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_access"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_access"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_access"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_access"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_access"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_access" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _access --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_access" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _access --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_access_summary" class="dropdown"><span class="icon-list"></span> _access_summary</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_access_summary Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_access_summary"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_access_summary"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_access_summary"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_access_summary"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_access_summary"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_access_summary"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_access_summary" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _access_summary --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_access_summary" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _access_summary --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_changelog" class="dropdown"><span class="icon-list"></span> _changelog</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_changelog Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_changelog"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_changelog"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_changelog"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_changelog"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_changelog"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_changelog"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_changelog" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _changelog --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_changelog" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _changelog --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_config" class="dropdown"><span class="icon-list"></span> _config</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_config Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_config"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_config"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_config"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_config"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_config"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_config"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_config" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _config --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_config" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _config --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_cron" class="dropdown"><span class="icon-list"></span> _cron</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_cron Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_cron"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_cron"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_cron"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_cron"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_cron"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_cron"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_cron" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _cron --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_cron" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _cron --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_cron_log" class="dropdown"><span class="icon-list"></span> _cron_log</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_cron_log Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_cron_log"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_cron_log"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_cron_log"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_cron_log"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_cron_log"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_cron_log"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_cron_log" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _cron_log --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_cron_log" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _cron_log --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_docs" class="dropdown"><span class="icon-list"></span> _docs</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_docs Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_docs"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_docs"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_docs"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_docs"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_docs"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_docs"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_docs" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _docs --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_docs" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _docs --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_docs_files" class="dropdown"><span class="icon-list"></span> _docs_files</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_docs_files Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_docs_files"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_docs_files"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_docs_files"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_docs_files"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_docs_files"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_docs_files"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_docs_files" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _docs_files --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_docs_files" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _docs_files --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_fielddata" class="dropdown"><span class="icon-list"></span> _fielddata</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_fielddata Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_fielddata"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_fielddata"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_fielddata"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_fielddata"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_fielddata"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_fielddata"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_fielddata" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _fielddata --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_fielddata" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _fielddata --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_files" class="dropdown"><span class="icon-list"></span> _files</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_files Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_files"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_files"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_files"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_files"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_files"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_files"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_files" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _files --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_files" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _files --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_forms" class="dropdown"><span class="icon-list"></span> _forms</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_forms Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_forms"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_forms"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_forms"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_forms"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_forms"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_forms"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_forms" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _forms --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_forms" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _forms --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_history" class="dropdown"><span class="icon-list"></span> _history</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_history Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_history"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_history"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_history"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_history"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_history"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_history"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_history" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _history --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_history" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _history --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_html_entities" class="dropdown"><span class="icon-list"></span> _html_entities</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_html_entities Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_html_entities"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_html_entities"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_html_entities"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_html_entities"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_html_entities"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_html_entities"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_html_entities" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _html_entities --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_html_entities" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _html_entities --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_minify" class="dropdown"><span class="icon-list"></span> _minify</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_minify Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_minify"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_minify"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_minify"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_minify"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_minify"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_minify"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_minify" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _minify --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_minify" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _minify --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_pages" class="dropdown"><span class="icon-list"></span> _pages</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_pages Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_pages"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_pages"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_pages"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_pages"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_pages"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_pages"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_pages" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _pages --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_pages" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _pages --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_posteditlog" class="dropdown"><span class="icon-list"></span> _posteditlog</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_posteditlog Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_posteditlog"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_posteditlog"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_posteditlog"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_posteditlog"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_posteditlog"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_posteditlog"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_posteditlog" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _posteditlog --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_posteditlog" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _posteditlog --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_prompts" class="dropdown"><span class="icon-list"></span> _prompts</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_prompts Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_prompts"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_prompts"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_prompts"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_prompts"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_prompts"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_prompts"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_prompts" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _prompts --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_prompts" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _prompts --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_queries" class="dropdown"><span class="icon-list"></span> _queries</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_queries Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_queries"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_queries"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_queries"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_queries"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_queries"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_queries"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_queries" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _queries --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_queries" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _queries --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_reports" class="dropdown"><span class="icon-list"></span> _reports</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_reports Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_reports"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_reports"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_reports"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_reports"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_reports"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_reports"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_reports" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _reports --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_reports" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _reports --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_sessions" class="dropdown"><span class="icon-list"></span> _sessions</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_sessions Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_sessions"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_sessions"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_sessions"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_sessions"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_sessions"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_sessions"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_sessions" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _sessions --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_sessions" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _sessions --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_settings" class="dropdown"><span class="icon-list"></span> _settings</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_settings Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_settings"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_settings"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_settings"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_settings"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_settings"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_settings"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_settings" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _settings --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_settings" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _settings --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_synchronize" class="dropdown"><span class="icon-list"></span> _synchronize</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_synchronize Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_synchronize"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_synchronize"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_synchronize"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_synchronize"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_synchronize"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_synchronize"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_synchronize" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _synchronize --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_synchronize" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _synchronize --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_tabledata" class="dropdown"><span class="icon-list"></span> _tabledata</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_tabledata Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_tabledata"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_tabledata"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_tabledata"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_tabledata"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_tabledata"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_tabledata"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_tabledata" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _tabledata --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_tabledata" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _tabledata --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_templates" class="dropdown"><span class="icon-list"></span> _templates</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_templates Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_templates"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_templates"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_templates"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_templates"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_templates"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_templates"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_templates" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _templates --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_templates" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _templates --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_terminal" class="dropdown"><span class="icon-list"></span> _terminal</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_terminal Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_terminal"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_terminal"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_terminal"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_terminal"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_terminal"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_terminal"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_terminal" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _terminal --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_terminal" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _terminal --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_translations" class="dropdown"><span class="icon-list"></span> _translations</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_translations Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_translations"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_translations"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_translations"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_translations"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_translations"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_translations"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_translations" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _translations --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_translations" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _translations --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_triggers" class="dropdown"><span class="icon-list"></span> _triggers</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_triggers Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_triggers"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_triggers"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_triggers"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_triggers"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_triggers"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_triggers"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_triggers" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _triggers --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_triggers" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _triggers --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                                                <li><a href="/php/admin.php?_menu=list&amp;_table_=_users" class="dropdown"><span class="icon-list"></span> _users</a>
+                            <ul style="padding-bottom:15px;padding-top:10px;">
+    <li class="w_bigger align-center"><a href="#" onclick="return false;">_users Actions</a></li>
+    <li><hr size="1"></li>
+    <li><a href="/php/admin.php?_menu=list&amp;_table_=_users"><span class="icon-list"></span> List</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_users"><span class="icon-plus"></span> Add New</a></li>
+    <li><a href="/php/admin.php?_menu=properties&amp;_table_=_users"><span class="icon-table-add"></span> Properties</a></li>
+    
+    <li><a href="/php/admin.php?_menu=indexes&amp;_table_=_users"><span class="icon-optimize"></span> Show Indexes</a></li>
+    <li><a href="/php/admin.php?_menu=add&amp;_table_=_models&amp;name=_users"><span class="icon-toggle-on"></span> Triggers</a></li>
+    <li><a href="/php/admin.php?_menu=backup&amp;_table_=_users"><span class="icon-save"></span> Backup</a></li>
+    <li><a href="/php/admin.php?_menu=truncate&amp;_table_=_users" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Purge all records from this table?\r\nTHIS IS IRREVERSIBLE!!!\r\n\r\TABLE NAME: -- _users --\r\nTABLE ACTION: Truncate\r\nClick OK to confirm.');"><span class="icon-blank"></span> Truncate</a></li>
+    <li><a href="/php/admin.php?_menu=drop&amp;_table_=_users" onclick="return confirm('PLEASE READ THIS CAREFULLY!!!!!!\r\nTHIS WILL DELETE ALL RECORDS IN THIS TABLE!!!\r\nARE YOU SURE you want to Permanently Delete this table and all records in it?\r\n\r\nTABLE NAME: -- _users --\r\nTABLE ACTION: Drop\r\nClick OK to confirm.');"><span class="icon-erase"></span> Delete</a></li>
+</ul>
+                        </li>
+                        
+                    </ul>
+                </li>
+                
+            </ul>
+        </li>
+        <!-- Pages -->
+        <li><a href="#pages" class="dropdown" onclick="return false;"><span class="icon-file-doc"></span> <span class="hidden-sm-down">Pages</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_pages"><span class="icon-list"></span> List</a></li>
+                <li><a href="/php/admin.php?_menu=meta"><span class="icon-website"></span> Metatags</a></li>
+                <li><a href="/php/admin.php?_menu=properties&amp;_table_=_pages"><span class="icon-table-add"></span> Properties</a></li>
+                <li><a href="/php/admin.php?_menu=add&amp;_table_=_pages"><span class="icon-plus"></span> Add New</a></li>
+                <li><hr size="1"></li>
+                
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=5">5. page2</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=19">19. osm</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=4">4. page1</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=16">16. test</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=1">1. index</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=17">17. testbed</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=2">2. topnav</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=10">10. brocade</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=15">15. adb</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=9">9. cron_test</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=12">12. fmq</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=14">14. slideshow</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=11">11. camera</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=8">8. schwab</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_pages&amp;_id=7">7. sandbox</a></li>
+                
+            </ul>
+        </li>
+        <!-- Templates -->
+        <li><a href="#templates" class="dropdown" onclick="return false;"><span class="icon-file-docs"></span> <span class="hidden-sm-down">Templates</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_templates"><span class="icon-list"></span> List</a></li>
+                <li><a href="/php/admin.php?_menu=properties&amp;_table_=_templates"><span class="icon-table-add"></span> Properties</a></li>
+                <li><a href="/php/admin.php?_menu=add&amp;_table_=_templates"><span class="icon-plus"></span> Add New</a></li>
+                <li><hr size="1"></li>
+                
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_templates&amp;_id=1">1. blank</a></li>
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_templates&amp;_id=2">2. Main</a></li>
+                
+            </ul>
+        </li>
+        <!-- Users -->
+        <li><a href="#users" class="dropdown" onclick="return false;"><span class="icon-users"></span> <span class="hidden-sm-down">Users</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_users"><span class="icon-list"></span> List</a></li>
+                <li><a href="/php/admin.php?_menu=properties&amp;_table_=_users"><span class="icon-table-add"></span> Properties</a></li>
+                <li><a href="/php/admin.php?_menu=add&amp;_table_=_users"><span class="icon-plus"></span> Add New</a></li>
+                <li><hr size="1"></li>
+                
+                                <li><a href="/php/admin.php?_menu=edit&amp;_table_=_users&amp;_id=1">1. admin</a></li>
+                
+            </ul>
+        </li>
+        
+                <!-- Crons -->
+        <li><a href="#crons" class="dropdown" onclick="return false;"><span class="icon-cron"></span> <span class="hidden-sm-down">Crons</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=cron"><span class="icon-cron"></span> Cron Manager</a></li>
+                <li><a href="/php/admin.php?_menu=properties&amp;_table_=_cron"><span class="icon-table-add"></span> Cron Properties</a></li>
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_cron_log"><span class="icon-list"></span> List Cron Logs</a></li>
+                <li><a href="/php/admin.php?_menu=properties&amp;_table_=_cron_log"><span class="icon-table-add"></span> Cron Log Properties</a></li>
+            </ul>
+        </li>
+        
+        
+                <!-- Queries -->
+        <li><a href="#queries" class="dropdown" onclick="return false;"><span class="icon-sql"></span> <span class="hidden-sm-down">Queries</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_queries"><span class="icon-list"></span> List</a></li>
+                <li><a href="/php/admin.php?_menu=properties&amp;_table_=_queries"><span class="icon-table-add"></span> Properties</a></li>
+                <li><a href="/php/admin.php?_menu=add&amp;_table_=_queries"><span class="icon-plus"></span> Add New</a></li>
+                
+            </ul>
+        </li>
+        
+        
+        
+        
+                <!-- Synchronize -->
+        <li><a href="#sync" class="dropdown" onclick="return false;"><span class="icon-sync"></span> <span class="hidden-sm-down">Synchronize</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=synchronize"><span class="icon-sync"></span> Pending Changes</a></li>
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_synchronize"><span class="icon-history"></span> Sync History</a></li>
+                <li><a href="/php/admin.php?_menu=datasync"><span class="icon-database"></span> Synchronize Database Tables</a></li>
+                
+            </ul>
+        </li>
+        
+        
+        
+        
+        
+        
+        <!-- Tools -->
+        <li class="right" style="padding-right:15px;"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-tools"></span> <span class="hidden-sm-down">Tools</span></a>
+            <ul style="left:initial;right:0px;padding-bottom:15px;padding-top:10px">
+
+                <li><a href="/php/admin.php?_menu=codeprompt"><span class="icon-code w_big"></span> Code Prompt</a></li>
+                <li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> Decode/Encode</a></li>
+                <li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> Terminal</a></li>
+                <li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>
+                
+                                <li><a href="/php/admin.php?_menu=schtasks"><span class="brand-windows" style="background:#fff;"></span> Scheduled Tasks</a></li>
+                
+                <li><hr size="1"></li>
+                <li><a href="/php/admin.php?_menu=fonts"><span class="icon-font"></span> Fonts</a></li>
+                <li><a href="/php/admin.php?_menu=font_brands"><span class="icon-slideshow"></span> Brand Icons</a></li>
+                <li><a href="/php/admin.php?_menu=font_materials"><span class="icon-slideshow"></span> Material Icons</a></li>
+                <li><a href="/php/admin.php?_menu=font_icons"><span class="icon-slideshow"></span> WaSQL Icons</a></li>
+                <li><hr size="1"></li>
+                <li><a href="/php/admin.php?_menu=lang"><span class="icon-circle"></span> Langauge Info</a></li>
+                <li><a href="/php/admin.php?_menu=ref" class="w_small">CSS3 / HTML5 / PHP</a></li>  
+                
+                <li><hr size="1"></li>
+                
+                <li><a href="/php/admin.php?_menu=website_grader"><span class="icon-globe"></span> Website Checker</a></li>
+                <li><a href="/php/admin.php?_menu=ab"><span class="icon-feather"></span> Apache Bench</a></li>          
+                <li><a href="/php/admin.php?_menu=env"><span class="icon-server"></span> Server Vars</a></li>
+                <li><a href="/php/admin.php?_menu=system"><span class="icon-server"></span> System Info</a></li>
+                <li><a href="/php/admin.php?_menu=list&amp;_table_=_html_entities"><span class="icon-encoding"></span> HTML Entities</a></li>
+            </ul>
+        </li>
+        <!-- User -->
+        <li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down">admin</span></a>
+            <ul style="padding-bottom:15px;padding-top:10px;">
+                <li><a href="/php/admin.php?_menu=profile"><span class="icon-user-portal"></span> Profile</a></li>
+                <li><a href="/php/admin.php?_menu=postedit"><span class="icon-wasql-postedit w_bigger"></span> postEdit</a></li>
+                <li><a href="/php/admin.php?_menu=dasql"><span class="icon-wasql-dasql w_bigger"></span> DaSQL</a></li>
+                <li><a href="/php/admin.php?_logout=1"><span class="icon-logout"></span> Log Off</a></li>
+            </ul>
+        </li>
+    </ul>
+
+    <!-- Page Content -->
+    <div style="padding:15px 20px;">
+        <div class="wacss_tabs is-boxed" style="margin-bottom:10px;">
+            <ul data-active="is-active">
+                <li><a href="#wacss_navbar" data-onload="wacss.setActiveTab(this);" onclick="wacss.setActiveTab(this);">Navbar</a></li>
+                <li><a href="#wacss_tabs" onclick="wacss.setActiveTab(this);">Tabs</a></li>
+                <li><a href="#wacss_modal" onclick="wacss.setActiveTab(this);">Modal</a></li>
+                <li><a href="#wacss_menu" onclick="wacss.setActiveTab(this);">Menu</a></li>
+                <li><a href="#wacss_pagination" onclick="wacss.setActiveTab(this);">Pagination</a></li>
+                <li><a href="#wacss_progress" onclick="wacss.setActiveTab(this);">Progress</a></li>
+            </ul>
+        </div>
+        <a name="wacss_navbar" class="wacss_title">WaCSS Navbar - Responsive Navigation</a>
+        <div class="demo-section">
+            <ul>
+                <li><strong>Clean Bulma-like styling</strong> - Professional appearance with smooth hover effects</li>
+                <li><strong>3-level dropdown support</strong> - Nested ul elements up to 3 levels deep</li>
+                <li><strong>Desktop hover navigation</strong> - Dropdowns appear on hover for desktop users</li>
+                <li><strong>Mobile-responsive design</strong> - Hamburger menu for mobile and tablet devices</li>
+                <li><strong>Touch-friendly</strong> - Click-to-open dropdowns on mobile devices</li>
+                <li><strong>Semantic HTML structure</strong> - Uses proper ul/li elements throughout</li>
+                <li><strong>Brand/logo area</strong> - Dedicated space for site branding</li>
+                <li><strong>Right-aligned items</strong> - Support for login/signup buttons</li>
+                <li><strong>Dropdown dividers</strong> - Visual separation in dropdown menus</li>
+                <li><strong>Smooth animations</strong> - CSS transitions for better user experience</li>
+            </ul>
+        </div>
+        <h3>With Color Variant</h3>
+            <code>&lt;nav class="wacss_navbar is-primary"&gt;</code>
+            <div style="display:flex;gap:5px;">
+                <button type="button" class="wacss_button is-small" onclick="changeColor('wacss_navbar','');">none</button>
+                <button type="button" class="wacss_button is-small is-white" onclick="changeColor('wacss_navbar','is-white');">is-white</button>
+                <button type="button" class="wacss_button is-small is-black" onclick="changeColor('wacss_navbar','is-black');">is-black</button>
+                <button type="button" class="wacss_button is-small is-light" onclick="changeColor('wacss_navbar','is-light');">is-light</button>
+                <button type="button" class="wacss_button is-small is-dark" onclick="changeColor('wacss_navbar','is-dark');">is-dark</button>
+                <button type="button" class="wacss_button is-small is-primary" onclick="changeColor('wacss_navbar','is-primary');">is-primary</button>
+                <button type="button" class="wacss_button is-small is-link" onclick="changeColor('wacss_navbar','is-link');">is-link</button>
+                <button type="button" class="wacss_button is-small is-info" onclick="changeColor('wacss_navbar','is-info');">is-info</button>
+                <button type="button" class="wacss_button is-small is-success" onclick="changeColor('wacss_navbar','is-success');">is-success</button>
+                <button type="button" class="wacss_button is-small is-warning" onclick="changeColor('wacss_navbar','is-warning');">is-warning</button>
+                <button type="button" class="wacss_button is-small is-danger" onclick="changeColor('wacss_navbar','is-danger');">is-danger</button>
+            </div>
+
+            <h3>With Size Variant</h3>
+            <code>&lt;nav class="wacss_navbar is-small"&gt;</code>
+            <div style="display:flex;gap:5px;">
+                <button type="button" class="wacss_button" onclick="changeSize('wacss_navbar','');">none</button>
+                <button type="button" class="wacss_button is-tiny" onclick="changeSize('wacss_navbar','is-tiny');">is-tiny</button>
+                <button type="button" class="wacss_button is-small" onclick="changeSize('wacss_navbar','is-small');">is-small</button>
+                <button type="button" class="wacss_button is-medium" onclick="changeSize('wacss_navbar','is-medium');">is-medium</button>
+                <button type="button" class="wacss_button is-large" onclick="changeSize('wacss_navbar','is-large');">is-large</button>
+            </div>
+        <div class="demo-section">
+            <h2>Usage</h2>
+            <p>To use this navbar, simply apply the <code>wacss_navbar</code> class to your ul element and structure your navigation using nested ul/li elements:</p>
+            
+<code class="language-html">
+<xmp>
+  <ul class="wacss_navbar">
+      <li class="navbar-brand">
+          <a href="#">Brand</a>
+      </li>
+
+      <button class="navbar-burger">
+          <span></span>
+          <span></span>
+          <span></span>
+      </button>
+
+      <ul class="navbar-menu">
+          <li><a href="#">Home</a></li>
+          <li class="has-dropdown">
+              <a href="#">Services</a>
+              <ul>
+                  <li><a href="#">Web Design</a></li>
+                  <li><a href="#">Development</a></li>
+              </ul>
+          </li>
+      </ul>
+  </ul>
+  </xmp>
+</code>
+            
+            <p><strong>Key classes:</strong></p>
+            <ul>
+                <li><code>wacss_navbar</code> - Main navbar container</li>
+                <li><code>navbar-brand</code> - Brand/logo area</li>
+                <li><code>navbar-burger</code> - Mobile hamburger menu button</li>
+                <li><code>navbar-menu</code> - Main navigation container</li>
+                <li><code>has-dropdown</code> - Apply to li elements that contain nested ul</li>
+                <li><code>navbar-end</code> - Right-align navigation items</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h2>Responsive Behavior</h2>
+            <p><strong>Desktop (1024px+):</strong> Horizontal layout with hover dropdowns</p>
+            <p><strong>Mobile/Tablet (&lt;1024px):</strong> Collapsible menu with click-to-open dropdowns</p>
+            <p><strong>Touch devices:</strong> Hover effects are disabled, dropdowns open on click</p>
+        </div>
+    </div>
+
+    <script>
+        function changeColor(classname,newclass){
+            const colors = new Array(
+                'is-white','is-black','is-light','is-dark','is-primary','is-link','is-info','is-success','is-warning','is-danger'
+            );
+            let el=document.querySelector('.'+classname);
+            for(const color of colors){
+                el.classList.remove(color);
+            }
+            if(newclass.length){
+                el.classList.add(newclass);
+            }
+        }
+        function changeSize(classname,newsize){
+            const sizes = new Array(
+                'is-tiny','is-small','is-medium','is-large'
+            );
+            let el=document.querySelector('.'+classname);
+            for(const size of sizes){
+                el.classList.remove(size);
+            }
+            if(newsize.length){
+                el.classList.add(newsize);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile hamburger menu toggle
+            const navbarBurger = document.querySelector('.navbar-burger');
+            const navbarMenu = document.querySelector('.navbar-menu');
+            const dropdowns = document.querySelectorAll('.has-dropdown');
+            
+            if (navbarBurger && navbarMenu) {
+                navbarBurger.addEventListener('click', function() {
+                    const isActive = navbarBurger.classList.toggle('is-active');
+                    navbarMenu.classList.toggle('is-active');
+                    navbarBurger.setAttribute('aria-expanded', isActive);
+                    
+                    // On mobile, when hamburger menu opens, all dropdowns are automatically expanded via CSS
+                    // No need for individual dropdown toggling in mobile view
+                });
+            }
+            
+            // Desktop-only dropdown functionality (hover behavior is handled by CSS)
+            // On mobile, all dropdowns are automatically expanded when menu is open
+            dropdowns.forEach(dropdown => {
+                const dropdownLink = dropdown.querySelector('a');
+                
+                dropdownLink.addEventListener('click', function(e) {
+                    // Only handle clicks on desktop for dropdown functionality
+                    // On mobile, all dropdowns are expanded automatically
+                    if (window.innerWidth >= 1024) {
+                        // Desktop: allow normal link behavior, dropdowns work via hover
+                        return;
+                    } else {
+                        // Mobile: prevent navigation since dropdowns are expanded
+                        // Allow links without dropdowns to work normally
+                        if (dropdown.classList.contains('has-dropdown')) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.wacss_navbar')) {
+                    // Close mobile menu
+                    navbarBurger.classList.remove('is-active');
+                    navbarMenu.classList.remove('is-active');
+                    navbarBurger.setAttribute('aria-expanded', false);
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    // Desktop: close mobile menu
+                    navbarBurger.classList.remove('is-active');
+                    navbarMenu.classList.remove('is-active');
+                    navbarBurger.setAttribute('aria-expanded', false);
+                }
+            });
+            
+            // Close mobile menu when clicking on any navigation link
+            const navLinks = document.querySelectorAll('.navbar-menu a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 1024) {
+                        // Close mobile menu after clicking a link
+                        navbarBurger.classList.remove('is-active');
+                        navbarMenu.classList.remove('is-active');
+                        navbarBurger.setAttribute('aria-expanded', false);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

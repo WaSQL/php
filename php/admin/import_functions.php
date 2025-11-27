@@ -86,7 +86,7 @@ function importBuildFormField($name){
 			return buildFormCheckbox('xmloptions',$opts,$params);
 		break;
 		case 'xmlmerge':
-			$params=array('class'=>'textarea','height'=>100);
+			$params=array('class'=>'wacss_textarea is-mobile-responsive','height'=>100);
 			return buildFormTextarea('xmlmerge',$params);
 		break;
 		case 'csvtable':
@@ -97,7 +97,7 @@ function importBuildFormField($name){
 				$opts[$table]=$table;
 			}
 			$params=array(
-				'class'=>'select',
+				'class'=>'wacss_select is-mobile-responsive',
 				'required'=>'required',
 				'onchange' => "if(this.value=='Create NEW Table'){showId('newtable');hideId('picktable');}else{hideId('newtable');showId('picktable');}",
 				'message'=>'-- Table to Import Into --'
@@ -105,28 +105,28 @@ function importBuildFormField($name){
 			return buildFormSelect('csvtable',$opts,$params);
 		break;
 		case 'csvtable_db':
-			$params=array('class'=>'select','value'=>isset($_REQUEST['csvtable_db'])?$_REQUEST['csvtable_db']:$CONFIG['database']);
+			$params=array('class'=>'wacss_select is-mobile-responsive','value'=>isset($_REQUEST['csvtable_db'])?$_REQUEST['csvtable_db']:$CONFIG['database']);
 			return buildFormSelectDatabase('csvtable_db',$params);
 		break;
 		case 'csvtable_name':
-			$params=array('class'=>'input','placeholder'=>'[schema_name.]table_name');
+			$params=array('class'=>'wacss_input is-mobile-responsive','placeholder'=>'[schema_name.]table_name');
 			return buildFormText('csvtable_name',$params);
 		break;
 		case 'csvtable_chunk':
-			$params=array('class'=>'input','value'=>isset($_REQUEST['csvtable_chunk'])?$_REQUEST['csvtable_chunk']:1000);
+			$params=array('class'=>'wacss_input is-mobile-responsive','value'=>isset($_REQUEST['csvtable_chunk'])?$_REQUEST['csvtable_chunk']:1000);
 			return buildFormText('csvtable_chunk',$params);
 		break;
 		case 'csvtable_upsert':
-			$params=array('class'=>'input',
+			$params=array('class'=>'wacss_input is-mobile-responsive',
 				'placeholder'=>'field1,field2,...','value'=>isset($_REQUEST['csvtable_upsert'])?$_REQUEST['csvtable_upsert']:'');
 			return buildFormText('csvtable_upsert',$params);
 		break;
 		case 'csvtable_upserton':
-			$params=array('class'=>'input','placeholder'=>'pkey','value'=>isset($_REQUEST['csvtable_upserton'])?$_REQUEST['csvtable_upserton']:'');
+			$params=array('class'=>'wacss_input is-mobile-responsive','placeholder'=>'pkey','value'=>isset($_REQUEST['csvtable_upserton'])?$_REQUEST['csvtable_upserton']:'');
 			return buildFormText('csvtable_upserton',$params);
 		break;
 		case 'csvtable_where':
-			$params=array('class'=>'textarea','placeholder'=>'where clause','value'=>isset($_REQUEST['csvtable_where'])?$_REQUEST['csvtable_where']:'');
+			$params=array('class'=>'wacss_textarea is-mobile-responsive','placeholder'=>'where clause','value'=>isset($_REQUEST['csvtable_where'])?$_REQUEST['csvtable_where']:'');
 			return buildFormTextarea('csvtable_where',$params);
 		break;
 	}

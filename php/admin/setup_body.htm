@@ -26,7 +26,7 @@
 		</div>
 		<div class="row">
 			<div class="col-sm-8 col-sm-offset-2 text-center">
-				<table class="table table-striped table-condensed" style="border:1px solid #ccc;">
+				<table class="wacss_table striped condensed" style="border:1px solid #ccc;">
 					<tr>
 						<th class="text-center">Host</th>
 						<th class="text-center">Type</th>
@@ -51,7 +51,7 @@
 						<form method="post" action="/" onsubmit="return setupSubmitForm(this);">
 							<?=renderEach('template',$templates,'template');?>
 							<div class="text-right w_padtop">
-								<button type="submit" class="btn btn-primary btn-lg">Install <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+								<button type="submit" class="wacss_button is-mobile-responsive">Install <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
 							</div>
 						</form>
 					</div>
@@ -65,18 +65,18 @@
 							<input type="hidden" name="starttype" value="clone">
 							<div>
 								<label class="w_red">Website to clone (must be running WaSQL)</label>
-								<?=buildFormText('clone_url',array('required'=>1,'class'=>'form-control input-lg'));?>
+								<?=buildFormText('clone_url',array('required'=>1));?>
 							</div>
 							<div>
 								<label class="w_red">Username (must be an admin)</label>
-								<?=buildFormText('clone_un',array('required'=>1,'class'=>'form-control input-lg'));?>
+								<?=buildFormText('clone_un',array('required'=>1));?>
 							</div>
 							<div>
 								<label class="w_red">Password</label>
-								<?=buildFormPassword('clone_pw',array('required'=>1,'class'=>'form-control input-lg'));?>
+								<?=buildFormPassword('clone_pw',array('required'=>1));?>
 							</div>
 							<div class="text-right w_padtop">
-								<button type="submit" class="btn btn-success btn-lg">Clone <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
+								<button type="submit" class="wacss_button is-mobile-responsive">Clone <span class="icon-arrow-right" style="vertical-align: middle;"></span></button>
 							</div>
 						</form>
 					</div>

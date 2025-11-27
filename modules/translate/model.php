@@ -65,7 +65,7 @@ function translateList(){
 	$opts=array(
 		'-divid' => "list_translations",
 		'-table' => "_translations" ,
-		'-tableclass' => "table table-condensed table-bordered table-hover table-bordered condensed striped bordered hover",
+		'-tableclass' => "wacss_table is-condensed is-bordered is-striped",
 		'-listfields' => "_id,source,translation,confirmed",
 		'-action' => "/{$MODULE['ajaxpage']}/listnext/{$locale}",
 		'-onsubmit' => "return pagingSubmit(this,'list_translations')",

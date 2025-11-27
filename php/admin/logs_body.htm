@@ -10,9 +10,9 @@
 	<form method="POST" name="logform" action="/php/admin.php">
 		<input type="hidden" name="_menu" value="logs" />
 		<div style="display:flex;flex-wrap: nowrap;align-items: center;">
-			<input style="margin-right:5px;" type="text" name="includes" class="input" placeholder="Includes" value="<?=$_REQUEST['includes'];?>" />
-			<input style="margin-right:5px;" type="text" name="excludes" class="input" placeholder="Excludes" value="<?=$_REQUEST['excludes'];?>"  />
-            <button type="submit" class="btn button btn-primary w_nowrap">
+			<input style="margin-right:5px;" type="text" name="includes" class="wacss_input is-mobile-responsive" placeholder="Includes" value="<?=$_REQUEST['includes'];?>" />
+			<input style="margin-right:5px;" type="text" name="excludes" class="wacss_input is-mobile-responsive" placeholder="Excludes" value="<?=$_REQUEST['excludes'];?>"  />
+            <button type="submit" class="wacss_button is-mobile-responsive">
             	<span style="font-size:0.6rem;" class="w_white" id="refresh" data-behavior="countdown" data-onzero="logsRefresh"><?=$refresh;?></span>
             	<span class="icon-refresh"></span>
             </button>

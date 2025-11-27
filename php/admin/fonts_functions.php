@@ -28,7 +28,7 @@ function fontsList(){
 	return databaseListRecords(array(
 		'-list'=>fontsGetFonts(),
 		'-listfields'=>'name,code,example',
-		'-tableclass'=>'table striped bordered',
+		'-tableclass'=>'wacss_table striped bordered',
 		'name_options'=>array(
 			'displayname'=>'Font Name',
 			'class'=>'w_nowrap'

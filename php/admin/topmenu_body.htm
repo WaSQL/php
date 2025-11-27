@@ -9,8 +9,13 @@
   		top:1px;
 	}
 </style>
-<nav class="nav w_noprint topmenu <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
-	<ul class="w_noprint">
+<nav class="wacss_navbar w_noprint <?=$CONFIG['admin_color'];?>" id="admin_menu" data-color="<?=$CONFIG['admin_color'];?>" style="position:sticky;top:0px;z-index:9999;">
+	<button class="wacss_navbar-burger" aria-label="menu" aria-expanded="false">
+		<span></span>
+		<span></span>
+		<span></span>
+	</button>
+	<ul class="left">
 		<!-- WaSQL -->
 		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
 			<ul  style="padding-bottom:15px;padding-top:10px;">
@@ -172,7 +177,10 @@
 		</li>
 		</view:errors>
 		<?=renderViewIf(isset($CONFIG['wasql_errors']) && $CONFIG['wasql_errors']==1,'errors');?>
-		
+		</view:admin>
+	</ul>
+	<ul class="right">
+		</view:admin>
 		<!-- Tools -->
 		<li class="right" style="padding-right:15px;"><a href="#user" class="dropdown" onclick="return false;"><span id="topmenu_help_icon" class="icon-tools"></span> <span class="hidden-sm-down">Tools</span></a>
 			<ul style="left:initial;right:0px;padding-bottom:15px;padding-top:10px">

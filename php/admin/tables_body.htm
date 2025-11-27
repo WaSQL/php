@@ -3,10 +3,10 @@
 <div style="display:flex;justify-content: space-between;padding-top:15px;">
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-tables"></span> Tables</h2>
 	<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">
-		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add new" data-func="add_single"><span class="icon-table-add w_bigger w_green"></span> </button> 
-		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add multiple" data-func="add_multiple"><span class="icon-table-add w_bigger w_red"></span> </button> 
-		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="add prebuilt table(s)" data-func="add_prebuilt"><span class="icon-table-add w_bigger w_blue"></span> </button> 
-		<button type="button" style="margin-right:4px;" class="btn w_white" onclick="return tablesNav(this);" title="refresh" data-func="tables_list"><span class="icon-list w_gray"></span> </button>
+		<button type="button" style="margin-right:4px;" class="wacss_button is-mobile-responsive" onclick="return tablesNav(this);" title="add new" data-func="add_single"><span class="icon-table-add w_bigger w_green"></span> </button> 
+		<button type="button" style="margin-right:4px;" class="wacss_button is-mobile-responsive" onclick="return tablesNav(this);" title="add multiple" data-func="add_multiple"><span class="icon-table-add w_bigger w_red"></span> </button> 
+		<button type="button" style="margin-right:4px;" class="wacss_button is-mobile-responsive" onclick="return tablesNav(this);" title="add prebuilt table(s)" data-func="add_prebuilt"><span class="icon-table-add w_bigger w_blue"></span> </button> 
+		<button type="button" style="margin-right:4px;" class="wacss_button is-mobile-responsive" onclick="return tablesNav(this);" title="refresh" data-func="tables_list"><span class="icon-list w_gray"></span> </button>
 	</div>
 </div>
 <div class="container-fluid">
@@ -37,7 +37,7 @@
 	<input type="hidden" name="func" value="change_charset" />
 	<div style="display:flex;margin-bottom:10px;">
 		<div><?=tablesBuildCharsets();?></div>
-		<div style="margin-left:3px;"><button class="btn" type="submit"><span class="icon-checkbox"></span> Convert Selected</button></div>
+		<div style="margin-left:3px;"><button class="wacss_button is-mobile-responsive" type="submit"><span class="icon-checkbox"></span> Convert Selected</button></div>
 	</div>
 </view:change_charset>
 
@@ -53,7 +53,7 @@
 			<div><?=buildFormText('tablename',array('placeholder'=>'table name','required'=>1));?></div>
 			<div class="w_nowrap w_padtop">Table Fields: (i.e.  firstname varchar(255) NOT NULL)</div>
 			<div><?=buildFormTextarea('tablefields',array('style'=>'height:60vh;','placeholder'=>'fieldname fieldtype','required'=>1));?></div>
-			<div class="align-right w_padtop"><button class="btn" type="submit">Create</button></div>
+			<div class="align-right w_padtop"><button class="wacss_button is-mobile-responsive" type="submit">Create</button></div>
 		</div>
 		<div style="flex:3;margin-left:15px;" class="w_nowrap" id="add_result">
 			<?=listDBDataTypes();?>
@@ -72,7 +72,7 @@
 		<div style="flex:1;" class="w_padtop" class="w_nowrap">
 			<div class="w_nowrap">Table Definitions:</div>
 			<div><?=buildFormTextarea('tablefields',array('style'=>'height:60vh;','placeholder'=>"tablename\n\tfieldname fieldtype\n\tfieldname fieldtype\ntablename\n\tfieldname fieldtype\n\tfieldname fieldtype",'required'=>1));?></div>
-			<div class="align-right w_padtop"><button class="btn" type="submit">Create Multiple</button></div>
+			<div class="align-right w_padtop"><button class="wacss_button is-mobile-responsive" type="submit">Create Multiple</button></div>
 		</div>
 		<div style="flex:3;margin-left:15px;" class="w_nowrap" id="add_result">
 			<?=listDBDataTypes();?>

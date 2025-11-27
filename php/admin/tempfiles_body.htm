@@ -36,26 +36,28 @@
 	}
 </script>
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-file-code"></span> Manage Temp Files</h2>
-<div class="w_right" style="margin-bottom:5px;">
-	<a href="#clear_tab" onclick="return tempfilesClearTab();" class="button btn btn-orange"><span class="icon-tab"></span> Clear Current Tab</a>
-	<a href="#clear_checked" onclick="return tempfilesClearChecked();" class="button btn btn-yellow"><span class="icon-checkbox"></span> Clear Checked Files</a>
-	<a href="#refresh" onclick="return tempfilesRefresh();" class="button btn btn-blue"><span class="icon-refresh"></span></a>
-	<a style="margin-left:50px;" href="/php/admin.php?_menu=tempfiles&func=clear_all" onclick="if(!confirm('Are you sure?')){return false;}" class="button btn btn-danger"><span class="icon-erase"></span> Clear All Tabs</a>
-</div>
 <form method="post" name="tempfiles_form" action="/php/admin.php">
 	<input type="hidden" name="_menu" value="tempfiles">
 	<input type="hidden" name="ext" value="<?=$tabs[0]['name'];?>">
 	<input type="hidden" name="sort" value="name" >
 	<input type="hidden" name="func" value="list">
 	<input type="hidden" name="setprocessing" value="0">
-<ul class="nav-tabs <?=configValue('admin_color');?>">
-	<view:tab>
-	<li class="<?=$tab['class'];?>">
-		<a href="#" onclick="return tempfilesNavTab(this);" data-name="<?=$tab['name'];?>"><?=$tab['name'];?> (<?=$tab['count'];?>)</a>
-	</li>
-	</view:tab>
-	<?=renderEach('tab',$tabs,'tab');?>
-</ul>
+<div style="display:flex;flex-wrap: wrap;justify-content: space-between;gap:15px;">
+	<ul class="nav-tabs <?=configValue('admin_color');?>">
+		<view:tab>
+		<li class="<?=$tab['class'];?>">
+			<a href="#" onclick="return tempfilesNavTab(this);" data-name="<?=$tab['name'];?>"><?=$tab['name'];?> (<?=$tab['count'];?>)</a>
+		</li>
+		</view:tab>
+		<?=renderEach('tab',$tabs,'tab');?>
+	</ul>
+	<div style="display:flex;flex-wrap: wrap;gap:5px;">
+		<a href="#clear_tab" onclick="return tempfilesClearTab();" class="wacss_button is-mobile-responsive is-light"><span class="icon-tab wacss_right5"></span> Clear Current Tab</a>
+		<a href="#clear_checked" onclick="return tempfilesClearChecked();" class="wacss_button is-mobile-responsive is-warning"><span class="icon-checkbox wacss_right5"></span> Clear Checked</a>
+		<a href="#refresh" onclick="return tempfilesRefresh();" class="wacss_button is-mobile-responsive is-link"><span class="icon-refresh"></span></a>
+		<a href="/php/admin.php?_menu=tempfiles&func=clear_all" onclick="if(!confirm('Are you sure?')){return false;}" class="wacss_button is-mobile-responsive is-danger"><span class="icon-erase wacss_right5"></span> Clear All</a>
+	</div>
+</div>
 <div id="tempfiles_content">
 	<?=tempfilesShowList($tabs[0]['name'],'name');?>
 </div>

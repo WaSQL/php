@@ -171,6 +171,29 @@ ENDOFSQL;
 			$message="Cmd: {$out['cmd']}<br><pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #ccc;border-radius:3px;\">{$out['stdout']}".PHP_EOL.$out['stderr']."</pre>";
 			$ok=setFileContents("{$tpath}/wasql.update.log",$message);
 		}
+		//check for wasql.killpid file
+		if(is_file("{$tpath}/wasql.killpid")){
+			$pid=getFileContents("{$tpath}/wasql.killpid");
+			unlink("{$tpath}/wasql.killpid");
+			unlink("{$tpath}/wasql.killpid.log");
+			$pid=preg_replace('/[^0-9]+/','',trim($pid));
+			if(strlen($pid)){
+				if(isWindows()){$cmd="taskkill /PID {$pid} /F";}
+				else{$cmd="kill {$pid}";}
+				$out=cmdResults($cmd);
+				$message='';
+				if(isset($out['cmd'])){
+					$message.="Cmd: {$out['cmd']}<br>".PHP_EOL;
+				}
+				if(isset($out['stdout']) && strlen($out['stdout'])){
+					$message.="<pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #149900;border-radius:3px;\">{$out['stdout']}</pre>".PHP_EOL;
+				}
+				if(isset($out['stderr']) && strlen($out['stderr'])){
+					$message.="<pre style=\"margin-bottom:0px;margin-left:10px;padding:10px;background:#f0f0f0;display:inline-block;border:1px solid #c00d25;border-radius:3px;\">{$out['stderr']}</pre>".PHP_EOL;
+				}
+				$ok=setFileContents("{$tpath}/wasql.killpid.log",$message);
+			}
+		}
 		//cleanup _cron_log older than 1 year or $CONFIG['cronlog_max']
 		if(!isset($CONFIG['cronlog_max']) || !isNum($CONFIG['cronlog_max'])){$CONFIG['cronlog_max']=365;}
 		$ok=cleanupDBRecords('_cron_log',$CONFIG['cronlog_max']);

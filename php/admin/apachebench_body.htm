@@ -6,42 +6,42 @@ ApacheBench (ab) is a single-threaded command line computer program for measurin
 		<form method="post" action="/php/admin.php" data-setprocessing="ab_results" onsubmit="return wacss.ajaxPost(this,'ab_results');">
 			<input type="hidden" name="_menu" value="ab" />
 			<input type="hidden" name="func" value="run" />
-			<div style="display:flex;justify-content: flex-start;align-content: flex-start;margin-top:20px;">
+			<div style="display:flex;justify-content: flex-start;align-content: flex-start;margin-top:10px;gap:10px;">
 				<div>
 					<label>Total Requests</label>
-					<input type="number" class="input browser-default" name="requests" value="" required="required" />
+					<input type="number" class="wacss_input is-mobile-responsive" name="requests" value="" required="required" />
 				</div>
-				<div style="margin-left:10px;">
+				<div>
 					<label>Concurent Requests</label>
-					<input type="number" class="input browser-default" name="concurrency" value="" required="required" />
+					<input type="number" class="wacss_input is-mobile-responsive" name="concurrency" value="" required="required" />
 				</div>
 			</div>
-			<div style="margin-top:20px;">
+			<div style="margin-top:10px;">
 				<label>URL/Endpoint ([https://]hostname[:port]/path)</label>
-				<input type="text" class="input browser-default" name="url" value="" required="required" />
+				<input type="text" class="wacss_input is-mobile-responsive" name="url" value="" required="required" />
 			</div>
-			<div style="margin-top:20px;">
-				<label>Basic Authentication - optional (username:password)</label>
-				<input type="text" class="input browser-default" name="basic_auth" value="" />
+			<div style="margin-top:10px;">
+				<label>Basic Auth - optional (username:password)</label>
+				<input type="text" class="wacss_input is-mobile-responsive" name="basic_auth" value="" />
 			</div>
-			<div style="margin-top:20px;">
+			<div style="margin-top:10px;">
 				<label>Headers - optional</label>
-				<textarea class="textarea browser-default" name="headers"></textarea>
+				<textarea class="wacss_textarea is-mobile-responsive" name="headers"></textarea>
 			</div>
-			<div style="margin-top:20px;">
+			<div style="margin-top:10px;">
 				<label>Payload - optional</label>
-				<textarea class="textarea browser-default" name="payload"></textarea>
+				<textarea class="wacss_textarea is-mobile-responsive" name="payload"></textarea>
 			</div>
-			<div style="margin-top:20px;">
+			<div style="margin-top:10px;">
 				<label>Proxy Server - optional (server:port)</label>
-				<input type="text" class="input browser-default" name="proxy" value="" />
+				<input type="text" class="wacss_input is-mobile-responsive" name="proxy" value="" />
 			</div>
-			<div style="margin-top:20px;">
-				<label>Proxy Authentication - optional (username:password)</label>
-				<input type="text" class="input browser-default" name="proxy_auth" value="" />
+			<div style="margin-top:10px;">
+				<label>Proxy Auth - optional (username:password)</label>
+				<input type="text" class="wacss_input is-mobile-responsive" name="proxy_auth" value="" />
 			</div>
-			<div style="margin-top:20px;">
-				<button type="submit"  class="button btn">Run Test</button>
+			<div style="margin-top:10px;">
+				<button type="submit"  class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?>">Run Test</button>
 			</div>
 		</form>
 	</div>

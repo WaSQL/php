@@ -1,15 +1,14 @@
 <view:default>
-<div style="display:flex;flex-wrap:wrap;justify-content:space-between;margin-top:10px;">
-	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="material-storefront"></span> WaSQL Appstore</h2>
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;margin-top:10px;gap:10px;">
+	<h2 style="margin:0px;padding:6px;"><a target="_blank" class="wacss_button <?=configValue('admin_color');?> is-outlined is-mobile-responsive" href="https://appstore.wasql.com"><span class="material-storefront"></span> WaSQL Appstore <span class="icon-link-ext wacss_left5"></span></a></h2>
 	<form method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'appstore_content');">
 		<input type="hidden" name="_menu" value="appstore">
 		<input type="hidden" name="_func" value="install">
 		<div style="display:flex">
-			<input style="font-size:1.0rem;width:35vw;border-right:0px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;" type="text" name="appkey" placeholder="App KEY" required>
-			<button type="submit" style="border-left:0px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;" class="btn <?=configValue('admin_color');?>">Install App</button>
+			<input class="wacss_input is-mobile-responsive" style="border-right:0px;border-top-right-radius: 0px;border-bottom-right-radius: 0px;" type="text" name="appkey" placeholder="App KEY" required>
+			<button type="submit" style="border-left:0px;border-top-left-radius: 0px;border-bottom-left-radius: 0px;" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>">Install App</button>
 		</div>
 	</form>
-	<h2 style="padding:6px;align-self: center;"><a target="_blank" class="w_link w_blue" href="https://appstore.wasql.com"><span class="icon-link-ext"></span> Browse Appstore</a></h2>
 </div>
 <div style="padding:10px;" id="appstore_content">
 	<div class="align-right"></div>

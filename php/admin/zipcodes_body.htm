@@ -2,7 +2,7 @@
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-map-marker"></span> Import Zipcodes</h2>
 <form method="post" action="/php/admin.php" onsubmit="setProcessing('zipcodes_process');">
 	<input type="hidden" name="_menu" value="zipcodes" />
-	<button type="submit" class="button btn">Import</button>
+	<button type="submit" class="wacss_button is-mobile-responsive">Import</button>
 	<div style="margin-top:5px;display:flex;justify-content: flex-start;">
 		<div id="zipcodes_list">
 			<?=renderView('zipcodes_list');?>

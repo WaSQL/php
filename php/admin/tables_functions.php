@@ -3,12 +3,12 @@ loadExtras('translate');
 function tablesList(){
 	global $CONFIG;
 	$opts=array(
-		'-query'				=>	"show table status",
+		'-query'				=>	"SHOW TABLE status",
 		'-pretable'				=> evalPHP(getView('change_charset')),
 		'-posttable'			=> '</form>',
 		'-listfields'			=> 'select,name,field_count,rows,avg_row_length,data_length,index_count,index_length,auto_increment,collation,engine',
 		'-hidesearch'			=>1,
-		'-tableclass'			=> "table table-responsive table-bordered table-striped",
+		'-tableclass'			=> "wacss_table bordered striped is-mobile-responsive is-sticky",
 		'name_href'				=> "/php/admin.php?_menu=list&_table_=%name%",
 		'field_count_options'	=> array(
 				'class'			=> 'align-right'
