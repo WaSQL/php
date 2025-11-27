@@ -35,7 +35,28 @@ function langPythonInfo(){
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
 		$header='<header class="align-left"><div style="background:#306998;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-python"></span> Python</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
-		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Python3 is not installed or not in PATH</div></div>',array());
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Python3 is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download Python from <a href="https://www.python.org/downloads/" target="_blank" class="w_link">python.org/downloads</a></li><li>Run the installer</li><li>Check "Add Python to PATH" during installation</li><li>Restart your terminal/command prompt</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install python3</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install python3</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install python3</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
 	//get pythoninfo contents
 	$pypath=getWasqlPath('python');
@@ -79,7 +100,28 @@ function langPerlInfo(){
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
 		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
-		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Perl is not installed or not in PATH</div></div>',array());
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Perl is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download Strawberry Perl from <a href="https://strawberryperl.com/" target="_blank" class="w_link">strawberryperl.com</a></li><li>Run the installer (MSI package)</li><li>Restart your terminal/command prompt</li></ol><p>Alternative: <a href="https://www.activestate.com/products/perl/" target="_blank" class="w_link">ActivePerl</a></p>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install perl</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install perl</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install perl</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
 	$modules=array();
 	$menu=array();
@@ -258,7 +300,28 @@ function langNodeInfo(){
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
 		$header='<header class="align-left"><div style="background-color:#000000;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-node-dot-js"></span> Node</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
-		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Node.js is not installed or not in PATH</div></div>',array());
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Node.js is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download Node.js LTS from <a href="https://nodejs.org/" target="_blank" class="w_link">nodejs.org</a></li><li>Run the installer (MSI package)</li><li>Follow the installation wizard</li><li>Restart your terminal/command prompt</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install nodejs npm</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install nodejs npm</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install nodejs npm</pre><p>Or use NodeSource repository for latest version:</p><pre>curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -<br>apt-get install -y nodejs</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
 	$modules=array();
 	$menu=array();
@@ -333,7 +396,28 @@ function langLuaInfo(){
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
 		$header='<header class="align-left"><div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;"><div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div><div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Not Installed</div></div></header>';
-		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">Lua is not installed or not in PATH</div></div>',array());
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Lua is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download Lua binaries from <a href="http://luabinaries.sourceforge.net/" target="_blank" class="w_link">luabinaries.sourceforge.net</a></li><li>Extract the ZIP file to a folder (e.g., C:\\Lua)</li><li>Add the Lua folder to your PATH environment variable</li><li>Restart your terminal/command prompt</li></ol><p>Alternative: Use <a href="https://github.com/rjpcomputing/luaforwindows" target="_blank" class="w_link">Lua for Windows</a> (includes LuaRocks)</p>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install lua</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install lua</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install lua5.4</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
 	// Check if luarocks exists
 	$check=isWindows()?'where luarocks 2>nul':'which luarocks 2>/dev/null';
@@ -342,7 +426,28 @@ function langLuaInfo(){
 	$version=$out['stdout'];
 	if(empty(trim($test['stdout']))){
 		$header='<header class="align-left"><div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;"><div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div><div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Version '.$version.'</div></div></header>';
-		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">LuaRocks is not installed or not in PATH. LuaRocks is required to manage Lua modules.</div></div>',array());
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>LuaRocks is not installed or not in PATH</h3><p>LuaRocks is required to manage Lua modules.</p><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download LuaRocks from <a href="https://luarocks.org/" target="_blank" class="w_link">luarocks.org</a></li><li>Follow the Windows installation guide</li><li>Or use <a href="https://github.com/rjpcomputing/luaforwindows" target="_blank" class="w_link">Lua for Windows</a> which includes LuaRocks</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install luarocks</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install luarocks</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install luarocks</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
 	$modules=array();
 	$menu=array();
@@ -419,7 +524,28 @@ function langRInfo(){
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
 		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-r"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
-		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">R is not installed or not in PATH</div></div>',array());
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>R is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download R from <a href="https://cran.r-project.org/bin/windows/base/" target="_blank" class="w_link">CRAN</a></li><li>Run the installer (EXE package)</li><li>Follow the installation wizard</li><li>Restart your terminal/command prompt</li></ol><p>Optional: Install <a href="https://posit.co/download/rstudio-desktop/" target="_blank" class="w_link">RStudio</a> for an IDE</p>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install epel-release<br>dnf install R</pre>';
+				break;
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>yum install epel-release<br>yum install R</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install r-base r-base-dev</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
 	//get rinfo contents
 	$rpath=getWasqlPath('R');
