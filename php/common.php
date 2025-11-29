@@ -10236,7 +10236,6 @@ function evalPHP($strings){
 				if(is_null($val)){$val='';}
 				$ob=ob_get_contents();
 				ob_clean();
-				ob_flush();
 				if(strlen(trim($ob)) && strlen(trim($val))){
 					if(stringContains($ob,'wasqlDebug')){
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$ob,$strings[$sIndex]);
@@ -10261,8 +10260,7 @@ function evalPHP($strings){
 			}
 		}
 	}
-	ob_clean();
-	ob_flush();
+	ob_end_clean();
 	showAllErrors();
 	$rtn=implode('',$strings);
 	return $rtn;
