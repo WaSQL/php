@@ -1893,3 +1893,10 @@
 .icon-volume-high:before {
   content: "\eb3d";
 }
+/* force colors */
+[class^="icon-"].white:before, 
+[class*=" icon-"].white:before,
+[class^="icon-"].is-white:before, 
+[class*=" icon-"].is-white:before {
+  color:#FFFFFF !important;
+}

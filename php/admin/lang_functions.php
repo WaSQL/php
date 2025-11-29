@@ -127,7 +127,7 @@ function langRubyInfo(){
 	$check=isWindows()?'where ruby 2>nul':'which ruby 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby"></span> Ruby</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby is-white"></span> Ruby</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Ruby is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -157,7 +157,7 @@ function langRubyInfo(){
 	$out=cmdResults("ruby -v 2>&1");
 	$version=$out['stdout'];
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby"></span> Ruby</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version '.$version.'</div></div></header>';
+		$header='<header class="align-left"><div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby is-white"></span> Ruby</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version '.$version.'</div></div></header>';
 		return array('<div class="align-center" style="width:934px;">'.$header.'<div class="w_padding w_error">RubyGems (gem command) is not available. It should be included with Ruby installation.</div></div>',array());
 	}
 	$modules=array();
@@ -187,7 +187,7 @@ function langRubyInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#CC342D;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby"></span> Ruby</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-ruby is-white"></span> Ruby</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
 	</div>
 </header>
@@ -775,7 +775,7 @@ function langJuliaInfo(){
 	$juliacmd=langFindJulia();
 	$check_result=cmdResults("{$juliacmd} --version 2>&1");
 	if(empty(trim($check_result['stdout'])) || stringContains($check_result['stdout'],'not found') || stringContains($check_result['stdout'],'not recognized')){
-		$header='<header class="align-left"><div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-julia"></span> Julia</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-julia is-white"></span> Julia</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Julia is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -842,7 +842,7 @@ function langJuliaInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-julia"></span> Julia</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-julia is-white"></span> Julia</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
 	</div>
 </header>
@@ -932,7 +932,7 @@ function langBashInfo(){
 	$check=isWindows()?'where bash 2>nul':'which bash 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#4EAA25;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-terminal"></span> Bash</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#4EAA25;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-bash is-white"></span> Bash</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Bash is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -952,7 +952,7 @@ function langBashInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#4EAA25;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-terminal"></span> Bash</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-bash is-white"></span> Bash</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">{$version}</div>
 	</div>
 </header>
@@ -968,7 +968,7 @@ function langPowershellInfo(){
 	$check=isWindows()?'where powershell 2>nul':'which pwsh 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#5391FE;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-powershell"></span> PowerShell</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#5391FE;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-powershell is-white"></span> PowerShell</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>PowerShell is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -1028,7 +1028,7 @@ function langPowershellInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#5391FE;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-powershell"></span> PowerShell</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-powershell is-white"></span> PowerShell</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">{$version}</div>
 	</div>
 </header>
@@ -1068,7 +1068,7 @@ function langGroovyInfo(){
 	$check=isWindows()?'where groovy 2>nul':'which groovy 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy is-white"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Groovy is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -1100,7 +1100,7 @@ function langGroovyInfo(){
 
 	// Check for JAVA_HOME or javac errors
 	if(stringContains($version,'JAVA_HOME not set') || stringContains($version,'cannot find javac')){
-		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Java JDK Required</div></div></header>';
+		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy is-white"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Java JDK Required</div></div></header>';
 		$os=langLinuxOSName();
 
 		// Check if java runtime exists
@@ -1169,7 +1169,7 @@ function langGroovyInfo(){
 	// Check for other errors
 	$rtncode=isset($out['rtncode'])?$out['rtncode']:0;
 	if(stringContains($version,'error') || stringContains($version,'Error') || $rtncode != 0){
-		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Error</div></div></header>';
+		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy is-white"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Error</div></div></header>';
 		$instructions='<div class="w_padding"><div class="w_error"><b>Error running Groovy:</b><pre style="margin-top:10px;">'.encodeHtml($version).'</pre></div></div>';
 		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
@@ -1217,7 +1217,7 @@ function langGroovyInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy is-white"></span> Groovy</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$groovy_version}</div>
 	</div>
 </header>
@@ -1322,7 +1322,7 @@ function langTclInfo(){
 	$check=isWindows()?'where tclsh 2>nul':'which tclsh 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#1C71D8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-tcl"></span> Tcl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#1C71D8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-tcl is-white"></span> Tcl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Tcl is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -1384,7 +1384,7 @@ function langTclInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#1C71D8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-tcl"></span> Tcl</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-tcl is-white"></span> Tcl</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
 	</div>
 </header>
@@ -1430,7 +1430,7 @@ ENDOFSECTION;
 function langVBScriptInfo(){
 	// VBScript only works on Windows
 	if(!isWindows()){
-		$header='<header class="align-left"><div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript"></span> VBScript</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Windows Only</div></div></header>';
+		$header='<header class="align-left"><div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript is-white"></span> VBScript</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Windows Only</div></div></header>';
 		$instructions='<div class="w_padding"><h3>VBScript is a Windows-only scripting language</h3><p>VBScript (Visual Basic Scripting Edition) is only available on Windows operating systems. It comes pre-installed with Windows and is executed using cscript.exe or wscript.exe.</p></div>';
 		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
@@ -1438,7 +1438,7 @@ function langVBScriptInfo(){
 	$check='where cscript 2>nul';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript"></span> VBScript</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Found</div></div></header>';
+		$header='<header class="align-left"><div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript is-white"></span> VBScript</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Found</div></div></header>';
 		$instructions='<div class="w_padding"><h3>VBScript (cscript.exe) not found</h3><p>VBScript should be pre-installed on Windows. Check your system PATH or Windows installation.</p></div>';
 		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
@@ -1454,7 +1454,7 @@ function langVBScriptInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript"></span> VBScript</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript is-white"></span> VBScript</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">{$version}</div>
 	</div>
 </header>
