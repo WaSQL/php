@@ -395,7 +395,13 @@ function translateHTML($html, $locale=''){
 	if(!stringContains((string)$html,'<translate>')){return (string)$html;}
 	// set locale if not specified
 	if(!strlen($locale)){
-		$locale = $_SESSION['REMOTE_LANG'] = commonCoalesce($_SESSION['REMOTE_LANG'], $_REQUEST['REMOTE_LANG'], 'en-us');
+		if(isset($_REQUEST['REMOTE_LANG'])){
+			$locale = $_SESSION['REMOTE_LANG'] = $_REQUEST['REMOTE_LANG'];
+		}
+		elseif(isset($_SESSION['REMOTE_LANG'])){
+			$locale = $_SESSION['REMOTE_LANG'];
+		}
+		else{$locale =  'en-us';}
 	}
 	global $CONFIG;
 	if(!isset($CONFIG['database'])){return (string)$html;}
