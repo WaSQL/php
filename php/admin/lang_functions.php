@@ -709,7 +709,7 @@ function langRInfo(){
 	$check=isWindows()?'where Rscript 2>nul':'which Rscript 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-r"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-r is-white"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>R is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -738,7 +738,7 @@ function langRInfo(){
 	$rfile="{$rpath}/rinfo.R";
 	// Check if rinfo.R exists
 	if(!file_exists($rfile)){
-		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="brand-r"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Script Missing</div></div></header>';
+		$header='<header class="align-left"><div style="background:#165CAA;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-r is-white"></span> R</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Script Missing</div></div></header>';
 		return array('<div class="align-center w_error" style="width:934px;">'.$header.'<div class="w_padding">rinfo.R script not found at: '.encodeHtml($rfile).'</div></div>',array());
 	}
 	$out=cmdResults("rscript \"{$rfile}\" 2>&1");
