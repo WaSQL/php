@@ -12581,6 +12581,20 @@ ENDOFERR;
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
+/**
+* @exclude  - this function is for internal use only
+*/
+function pythonFormat($json){
+	// Convert JSON format to Python format
+	$python = preg_replace('/:\s*null\b/', ': None', $json);
+	$python = preg_replace('/:\s*true\b/', ': True', $python);
+	$python = preg_replace('/:\s*false\b/', ': False', $python);
+	return $python;
+}
+//---------- begin function evalPythonCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
 function evalPythonCode($lang,$evalcode){
 	$lines=preg_split('/[\r\n]+/',$evalcode);
 	//$_REQUEST['view']='howdy <b class="w_bigg">du</b>';
@@ -12667,16 +12681,16 @@ ENDOFCONTENT;
 	}
 	if(!isset($_SESSION)){$_SESSION=[];}
 	$wasql=array(
-		'USER'=>"USER = ".json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'CONFIG'=>"CONFIG = ".json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'PAGE'=>"PAGE = ".json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'TEMPLATE'=>"TEMPLATE = ".json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'PASSTHRU'=>"PASSTHRU = ".json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'DATABASE'=>"DATABASE = ".json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'REQUEST'=>"REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'SESSION'=>"SESSION = ".json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'SERVER'=>"SERVER = ".json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'CRONTHRU'=>"CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)
+		'USER'=>"USER = ".pythonFormat(json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'CONFIG'=>"CONFIG = ".pythonFormat(json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'PAGE'=>"PAGE = ".pythonFormat(json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'TEMPLATE'=>"TEMPLATE = ".pythonFormat(json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'PASSTHRU'=>"PASSTHRU = ".pythonFormat(json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'DATABASE'=>"DATABASE = ".pythonFormat(json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'REQUEST'=>"REQUEST = ".pythonFormat(json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'SESSION'=>"SESSION = ".pythonFormat(json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'SERVER'=>"SERVER = ".pythonFormat(json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'CRONTHRU'=>"CRONTHRU = ".pythonFormat(json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -12961,7 +12975,7 @@ function evalCleanupGlobal($arr){
 				unset($arr[$k]);
 			}
 		}
-		elseif(!strlen($v) || $v=='null'){
+		elseif(is_null($v) || $v==='null' || (is_string($v) && strlen($v)==0)){
 			unset($arr[$k]);
 		}
 	}
