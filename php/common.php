@@ -10076,7 +10076,6 @@ function evalPHP_ob($string, $flags) {
 function evalPHP($strings){
 	global $CONFIG;
 	global $PAGE;
-	$getWasqlTempPath=getWasqlTempPath();
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
@@ -10133,7 +10132,7 @@ function evalPHP($strings){
 					case 'perl':
 						$val=evalPerlCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;;
+						$c=1;
 					break;
 					case 'lua':
 						//https://www.educba.com/lua-json/
@@ -10195,20 +10194,19 @@ function evalPHP($strings){
 					}
 					else{
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
-						// On Linux, make the script executable
-						if(!isWindows()){
-							chmod("{$tmppath}/{$tmpfile}", 0755);
-						}
+						chmod("{$tmppath}/{$tmpfile}", 0755);
 						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
 					}
 					$out = cmdResults($command);
 					if($out['rtncode']==0){
-						unlink("{$tmppath}/{$tmpfile}");
+						@unlink("{$tmppath}/{$tmpfile}");
 						$val=$out['stdout'];
 					}	
 					else{
 						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT).'</pre>';
 					}
+				// Clean up temp file on error
+					@unlink("{$tmppath}/{$tmpfile}");
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 				continue;
@@ -10234,7 +10232,7 @@ function evalPHP($strings){
 				@trigger_error('');
 				$val=@eval($evalcode);
 				if(is_null($val)){$val='';}
-				$ob=ob_get_contents();
+				$ob=(ob_get_level() > 0) ? ob_get_contents() : "";
 				if(ob_get_level() > 0){ob_clean();}
 				if(strlen(trim($ob)) && strlen(trim($val))){
 					if(stringContains($ob,'wasqlDebug')){
