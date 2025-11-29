@@ -10079,6 +10079,7 @@ function evalPHP($strings){
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
+	$buffer_level_start = ob_get_level();
 	ob_start();
 	
 	$cntA=count($strings);
@@ -10258,7 +10259,10 @@ function evalPHP($strings){
 			}
 		}
 	}
-	if(ob_get_level() > 0){ob_clean();}
+	// Close the output buffer we started
+	if(ob_get_level() > $buffer_level_start){
+		ob_end_clean();
+	}
 	showAllErrors();
 	$rtn=implode('',$strings);
 	return $rtn;
