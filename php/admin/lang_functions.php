@@ -7,6 +7,34 @@ function langLinuxOSName(){
 	if(isset($info['os']['name'])){return $info['os']['name'];}
 	return 'unknown';
 }
+function langFindJulia(){
+	// Try to find julia command
+	$check=isWindows()?'where julia 2>nul':'which julia 2>/dev/null';
+	$test=cmdResults($check);
+	// On Windows, also check common installation locations
+	if(isWindows() && empty(trim($test['stdout']))){
+		$common_paths=array(
+			getenv('LOCALAPPDATA').'\\Microsoft\\WindowsApps\\julia.exe',
+			getenv('APPDATA').'\\Microsoft\\WindowsApps\\julia.exe',
+			'C:\\Program Files\\Julia\\bin\\julia.exe',
+			'C:\\Julia\\bin\\julia.exe'
+		);
+		foreach($common_paths as $path){
+			if(file_exists($path)){
+				return '"'.$path.'"';
+			}
+		}
+	}
+	// Return full path if found
+	if(trim($test['stdout'])){
+		$paths=preg_split('/[\r\n]+/',trim($test['stdout']));
+		if(isset($paths[0]) && strlen(trim($paths[0]))){
+			return '"'.trim($paths[0]).'"';
+		}
+	}
+	// Fallback to just 'julia' command
+	return 'julia';
+}
 function langPHPInfo(){
 	//get phpinfo contents
 	ob_start();
@@ -143,11 +171,17 @@ function langRubyInfo(){
 		$lines=file($cachefile);
 	}
 	if(!is_array($lines) || count($lines)==0){
-		$out=cmdResults('gem list --local 2>&1');
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		// Cache the results only if we got valid output
-		if(is_array($lines) && count($lines) > 0 && !stringContains($out['stdout'],'command not found')){
-			setFileContents($cachefile,implode(PHP_EOL,$lines));
+		// Get all gems including system/default gems (no --local flag shows all gems)
+		$output=shell_exec('gem list 2>&1');
+		if($output){
+			$lines=preg_split('/[\r\n]+/',$output);
+			// Cache the results only if we got valid output
+			if(is_array($lines) && count($lines) > 0 && !stringContains($output,'command not found')){
+				setFileContents($cachefile,implode(PHP_EOL,$lines));
+			}
+		}
+		else{
+			$lines=array();
 		}
 	}
 	$header=<<<ENDOFHEADER
@@ -173,18 +207,20 @@ ENDOFHEADER;
 			$k=strtolower($gemname);
 
 			// Get gem info
-			$info_out=cmdResults("gem info {$gemname} --local 2>&1");
+			$info_output=shell_exec("gem info {$gemname} --local 2>&1");
 			$description='';
 			$homepage='';
 			$author='';
-			if(preg_match('/Author[s]?\:\s*(.+?)$/im',$info_out['stdout'],$im)){
-				$author=trim($im[1]);
-			}
-			if(preg_match('/Homepage\:\s*(.+?)$/im',$info_out['stdout'],$im)){
-				$homepage=trim($im[1]);
-			}
-			if(preg_match('/Description\:\s*(.+?)$/im',$info_out['stdout'],$im)){
-				$description=trim($im[1]);
+			if($info_output){
+				if(preg_match('/Author[s]?\:\s*(.+?)$/im',$info_output,$im)){
+					$author=trim($im[1]);
+				}
+				if(preg_match('/Homepage\:\s*(.+?)$/im',$info_output,$im)){
+					$homepage=trim($im[1]);
+				}
+				if(preg_match('/Description\:\s*(.+?)$/im',$info_output,$im)){
+					$description=trim($im[1]);
+				}
 			}
 
 			$modules[$k]=<<<ENDOFSECTION
@@ -242,8 +278,12 @@ function langPerlInfo(){
 	}
 	$modules=array();
 	$menu=array();
-	$out=cmdResults('perl -V 2>&1');
-	$lines=preg_split('/[\r\n]+/',$out['stdout']);
+	$output=shell_exec('perl -V 2>&1');
+	if(!$output){
+		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Error</div></div></header>';
+		return array('<div class="align-center" style="width:934px;">'.$header.'<div class="w_padding w_error">Failed to execute perl -V command</div></div>',array());
+	}
+	$lines=preg_split('/[\r\n]+/',$output);
 	$perlinfo=array();
 	$section='';
 	$incpaths=array();
@@ -265,22 +305,34 @@ function langPerlInfo(){
 	}
 	if(count($incpaths)){
 		$perlinfo['Platform']['incpaths']=implode('<br>',$incpaths);
-		foreach($incpaths as $incpath){
-			$files=listFilesEx($incpath,array('ext'=>'pm'));
-			foreach($files as $file){
-				$section=getFileName($file['name'],1);
-				$k=strtolower($section);
-				$menu[$k]=$section;
-				$perlinfo[$section]=array(
-					'Name'=>$file['name'],
-					'Location'=>$file['afile']
+		// Use Perl to find all .pm files in @INC paths
+		// Filter out empty paths
+		$incpaths = array_filter($incpaths, function($p){ return strlen(trim($p)) > 0; });
+		$inc_list = implode(' ', array_map(function($p){ return escapeshellarg($p); }, $incpaths));
+		// Use escapeshellarg to properly escape the Perl code and chr(10) for newlines
+		$perl_code = 'use File::Find; find(sub { print $File::Find::name, chr(10) if /\.pm$/}, @ARGV)';
+		$find_cmd = 'perl -e ' . escapeshellarg($perl_code) . ' ' . $inc_list . ' 2>&1';
+		$module_files = shell_exec($find_cmd);
+		if($module_files){
+			$file_list = preg_split('/[\r\n]+/', trim($module_files));
+			foreach($file_list as $filepath){
+				if(!strlen($filepath)){continue;} // Skip empty lines
+				$filename = basename($filepath);
+				$section = getFileName($filename, 1);
+				$k = strtolower($section);
+				if(isset($menu[$k])){continue;} // Skip duplicates
+				$menu[$k] = $section;
+				$perlinfo[$section] = array(
+					'Name' => $filename,
+					'Location' => $filepath
 				);
 				//parse the file a bit to figure out version, author etc
+				// Note: Skip file parsing on Windows/MSYS as Unix paths aren't accessible to PHP
 				// Open the file for reading
-				$maxloops=1000;
-				$loops=0;
-				$pod=array();
-				if($fh = fopen($file['afile'], 'rb')){
+				$maxloops = 1000;
+				$loops = 0;
+				$pod = array();
+				if(@$fh = fopen($filepath, 'rb')){
 					$head='';
 					$items=array();
 					$list=0;
@@ -378,12 +430,12 @@ function langPerlInfo(){
 		}
 	}
 	ksort($menu);
-	$out=cmdResults("perl -v 2>&1");
+	$out=shell_exec("perl -v 2>&1");
 	$version='';
-	if(preg_match('/\(v([0-9\.]+?)\)/',$out['stdout'],$m)){
+	if(preg_match('/\(v([0-9\.]+?)\)/',$out,$m)){
 		$version=$m[1];
 	}
-	elseif(preg_match('/\ v([0-9\.]+?)\ /',$out['stdout'],$m)){
+	elseif(preg_match('/\ v([0-9\.]+?)\ /',$out,$m)){
 		$version=$m[1];
 	}
 	$header=<<<ENDOFHEADER
@@ -455,15 +507,15 @@ function langNodeInfo(){
 	}
 	if(!is_array($json)){
 		$npmcmd=isWindows()?'npm.cmd':'npm';
-		$out=cmdResults("{$npmcmd} ls --g --json");
-		$json=decodeJSON($out['stdout']);
+		$out=shell_exec("{$npmcmd} ls --g --json 2>&1");
+		$json=decodeJSON($out);
 		// Cache the results
 		if(is_array($json)){
 			setFileContents($cachefile,encodeJSON($json));
 		}
 	}
-	$out=cmdResults("{$nodecmd} -v");
-	$version=$out['stdout'];
+	$version_out=shell_exec("{$nodecmd} -v 2>&1");
+	$version=trim($version_out);
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background-color:#000000;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
@@ -472,11 +524,31 @@ function langNodeInfo(){
 	</div>
 </header>
 ENDOFHEADER;
-	if(!is_array($json) || !isset($json['dependencies']) || !is_array($json['dependencies'])){
-		return array($header,array());
+
+	// Get built-in Node.js modules
+	$builtin_out=shell_exec("{$nodecmd} -p \"require('module').builtinModules.join('\\n')\" 2>&1");
+	if($builtin_out){
+		$builtin_modules=preg_split('/[\r\n]+/',trim($builtin_out));
+		foreach($builtin_modules as $module){
+			if(!strlen(trim($module))){continue;}
+			// Skip internal modules that start with underscore
+			if(strpos($module,'_')===0){continue;}
+			$k=strtolower($module);
+			$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$module}">{$module}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Name</td><td style="text-align:left;min-width:300px;background-color:#CCCCCC80;">{$module}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Type</td><td style="text-align:left;min-width:300px;background-color:#CCCCCC80;">Built-in Core Module</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Version</td><td style="text-align:left;min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+</table>
+ENDOFSECTION;
+			$menu[$k]=$module;
+		}
 	}
 
-	foreach($json['dependencies'] as $module=>$info){
+	// Add npm global modules if available
+	if(is_array($json) && isset($json['dependencies']) && is_array($json['dependencies'])){
+		foreach($json['dependencies'] as $module=>$info){
 		$k=strtolower($module);
 		$version=isset($info['version'])?$info['version']:'';
 		$dependencies=array();
@@ -496,6 +568,7 @@ ENDOFHEADER;
 </table>
 ENDOFSECTION;
 		$menu[$k]=$module;
+		}
 	}
 	$data='<div class="align-center" style="width:934px;">';
 	$data.=$header;
@@ -510,8 +583,8 @@ ENDOFSECTION;
 function langLuaInfo(){
 	// Check if lua exists
 	$check=isWindows()?'where lua 2>nul':'which lua 2>/dev/null';
-	$test=cmdResults($check);
-	if(empty(trim($test['stdout']))){
+	$test=shell_exec($check);
+	if(empty(trim($test))){
 		$header='<header class="align-left"><div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;"><div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div><div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Lua is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
@@ -536,54 +609,12 @@ function langLuaInfo(){
 		$instructions.='</div>';
 		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
 	}
-	// Check if luarocks exists
-	$check=isWindows()?'where luarocks 2>nul':'which luarocks 2>/dev/null';
-	$test=cmdResults($check);
-	$out=cmdResults("lua -v 2>&1");
-	$version=$out['stdout'];
-	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;"><div style="font-size:clamp(24px,3vw,48px);color:#2c2d72"><span class="brand-lua"></span> Lua</div><div style="font-size:clamp(11px,2vw,18px);color:#2c2d72">Version '.$version.'</div></div></header>';
-		$os=langLinuxOSName();
-		$instructions='<div class="w_padding"><h3>LuaRocks is not installed or not in PATH</h3><p>LuaRocks is required to manage Lua modules.</p><h4>Installation Instructions:</h4>';
-		if(isWindows()){
-			$instructions.='<p><b>Windows:</b></p><ol><li>Download LuaRocks from <a href="https://luarocks.org/" target="_blank" class="w_link">luarocks.org</a></li><li>Follow the Windows installation guide</li><li>Or use <a href="https://github.com/rjpcomputing/luaforwindows" target="_blank" class="w_link">Lua for Windows</a> which includes LuaRocks</li></ol>';
-		}
-		else{
-			switch(strtolower($os)){
-				case 'almalinux':
-					$instructions.='<p><b>AlmaLinux:</b></p><pre>dnf install luarocks</pre>';
-				break;
-				case 'redhat':
-				case 'centos':
-				case 'fedora':
-					$instructions.='<p><b>'.$os.':</b></p><pre>yum install luarocks</pre>';
-				break;
-				default:
-					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>apt-get update<br>apt-get install luarocks</pre>';
-				break;
-			}
-		}
-		$instructions.='</div>';
-		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
-	}
+	// Get Lua version
+	$version_out=shell_exec("lua -v 2>&1");
+	$version=trim($version_out);
 	$modules=array();
 	$menu=array();
-	//get lua modules with cache expiration (24 hours)
-	$tpath=getWasqlTempPath();
-	$cachefile="{$tpath}/lua_modules.txt";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$lines=null;
-	if(file_exists($cachefile) && $cache_age < 86400){
-		$lines=file($cachefile);
-	}
-	if(!is_array($lines) || count($lines)==0){
-		$out=cmdResults('luarocks list --porcelain 2>&1');
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		// Cache the results only if we got valid output
-		if(is_array($lines) && count($lines) > 0 && !stringContains($out['stdout'],'command not found')){
-			setFileContents($cachefile,implode(PHP_EOL,$lines));
-		}
-	}
+
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#ccc;padding:10px 20px;margin-bottom:20px;border:1px solid #999;">
@@ -592,7 +623,44 @@ function langLuaInfo(){
 	</div>
 </header>
 ENDOFHEADER;
-	foreach($lines as $line){
+
+	// Add built-in Lua standard libraries
+	$builtin_libraries = array('string', 'table', 'math', 'io', 'os', 'debug', 'coroutine', 'package', 'utf8');
+	foreach($builtin_libraries as $library){
+		$k=strtolower($library);
+		$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$library}">{$library}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$library}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Type</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">Built-in Standard Library</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#0000004D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+</table>
+ENDOFSECTION;
+		$menu[$k]=$library;
+	}
+
+	// Get LuaRocks modules with cache expiration (24 hours)
+	$tpath=getWasqlTempPath();
+	$cachefile="{$tpath}/lua_modules.txt";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$lines=null;
+	if(file_exists($cachefile) && $cache_age < 86400){
+		$lines=file($cachefile);
+	}
+	if(!is_array($lines) || count($lines)==0){
+		$out=shell_exec('luarocks list --porcelain 2>&1');
+		if($out){
+			$lines=preg_split('/[\r\n]+/',$out);
+			// Cache the results only if we got valid output
+			if(is_array($lines) && count($lines) > 0 && !stringContains($out,'command not found')){
+				setFileContents($cachefile,implode(PHP_EOL,$lines));
+			}
+		}
+	}
+
+	// Add LuaRocks modules if available
+	if(is_array($lines)){
+		foreach($lines as $line){
 		$line=trim($line);
 		if(!strlen($line)){continue;}
 		// Parse porcelain format: module\tversion\tstatus\tpath
@@ -624,6 +692,7 @@ ENDOFHEADER;
 </table>
 ENDOFSECTION;
 		$menu[$k]=$module;
+		}
 	}
 	$data='<div class="align-center" style="width:934px;">';
 	$data.=$header;
@@ -703,9 +772,9 @@ function langRInfo(){
 }
 function langJuliaInfo(){
 	// Check if julia exists
-	$check=isWindows()?'where julia 2>nul':'which julia 2>/dev/null';
-	$test=cmdResults($check);
-	if(empty(trim($test['stdout']))){
+	$juliacmd=langFindJulia();
+	$check_result=cmdResults("{$juliacmd} --version 2>&1");
+	if(empty(trim($check_result['stdout'])) || stringContains($check_result['stdout'],'not found') || stringContains($check_result['stdout'],'not recognized')){
 		$header='<header class="align-left"><div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-julia"></span> Julia</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Julia is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
@@ -732,10 +801,28 @@ function langJuliaInfo(){
 	}
 	$modules=array();
 	$menu=array();
-	$out=cmdResults("julia --version 2>&1");
-	$version=$out['stdout'];
-	// Get installed packages using Julia's Pkg
+	// Use the version we already got from the check
+	$version=$check_result['stdout'];
 	$tpath=getWasqlTempPath();
+
+	// Get standard library packages with caching (24 hours)
+	$stdlib_cachefile="{$tpath}/julia_stdlib.txt";
+	$stdlib_cache_age=file_exists($stdlib_cachefile)?time()-filemtime($stdlib_cachefile):86400;
+	$stdlib_data='';
+	if(file_exists($stdlib_cachefile) && $stdlib_cache_age < 86400){
+		$stdlib_data=getFileContents($stdlib_cachefile);
+	}
+	if(!strlen($stdlib_data)){
+		$cmd="{$juliacmd} -e \"using Pkg; stdlib_pkgs = Pkg.Types.stdlibs(); pkg_list = sort(collect(Set(values(stdlib_pkgs)))); for pkg in pkg_list; println(pkg); end\" 2>&1";
+		$out=cmdResults($cmd);
+		$stdlib_data=$out['stdout'];
+		// Cache the results only if we got valid output
+		if(strlen($stdlib_data) && !stringContains($stdlib_data,'command not found')){
+			setFileContents($stdlib_cachefile,$stdlib_data);
+		}
+	}
+
+	// Get user-installed packages with caching (24 hours)
 	$cachefile="{$tpath}/julia_packages.txt";
 	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
 	$pkgdata='';
@@ -743,7 +830,7 @@ function langJuliaInfo(){
 		$pkgdata=getFileContents($cachefile);
 	}
 	if(!strlen($pkgdata)){
-		$cmd='julia -e "using Pkg; Pkg.status()" 2>&1';
+		$cmd="{$juliacmd} -e \"using Pkg; Pkg.status()\" 2>&1";
 		$out=cmdResults($cmd);
 		$pkgdata=$out['stdout'];
 		// Cache the results only if we got valid output
@@ -751,6 +838,7 @@ function langJuliaInfo(){
 			setFileContents($cachefile,$pkgdata);
 		}
 	}
+
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#9558B2;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
@@ -759,24 +847,57 @@ function langJuliaInfo(){
 	</div>
 </header>
 ENDOFHEADER;
-	$lines=preg_split('/[\r\n]+/',$pkgdata);
-	foreach($lines as $line){
+
+	// Parse standard library packages
+	$stdlib_lines=preg_split('/[\r\n]+/',$stdlib_data);
+	$stdlib_count=0;
+	foreach($stdlib_lines as $line){
+		$line=trim($line);
+		if(!strlen($line)){continue;}
+		// Parse format: ("PackageName", v"1.2.3")
+		if(preg_match('/^\(\"(.+?)\",\s*v\"(.+?)\"\)$/i',$line,$m)){
+			$pkgname=trim($m[1]);
+			$pkgver=trim($m[2]);
+
+			if(!strlen($pkgname)){continue;}
+			$k='stdlib_'.strtolower($pkgname);
+			$stdlib_count++;
+
+			$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$pkgname}">{$pkgname} <span style="color:#9558B2;font-size:0.6em;">[Standard Library]</span></a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgname}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgver}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Type</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">Built-in Standard Library</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Documentation</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;"><a href="https://docs.julialang.org/en/v1/stdlib/{$pkgname}/" target="_blank" class="w_link">{$pkgname} Docs</a></td></tr>
+</table>
+ENDOFSECTION;
+			$menu[$k]=$pkgname;
+		}
+	}
+
+	// Parse user-installed packages
+	$user_count=0;
+	$user_lines=preg_split('/[\r\n]+/',$pkgdata);
+	foreach($user_lines as $line){
 		$line=trim($line);
 		if(!strlen($line)){continue;}
 		// Parse Pkg.status() format: [hash] PackageName v1.2.3
 		if(preg_match('/^\[([a-f0-9]+)\]\s+(\S+)\s+v?(.+?)$/i',$line,$m)){
 			$hash=trim($m[1]);
 			$pkgname=trim($m[2]);
-			$version=trim($m[3]);
+			$pkgver=trim($m[3]);
 
 			if(!strlen($pkgname)){continue;}
-			$k=strtolower($pkgname);
+			$k='user_'.strtolower($pkgname);
+			$user_count++;
 
 			$modules[$k]=<<<ENDOFSECTION
-<h2><a name="module_{$pkgname}">{$pkgname}</a></h2>
+<h2><a name="module_{$pkgname}">{$pkgname} <span style="color:#4ade80;font-size:0.6em;">[User Installed]</span></a></h2>
 <table>
 <tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgname}</td></tr>
-<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$version}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgver}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">Type</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">User Installed Package</td></tr>
 <tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">UUID</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$hash}</td></tr>
 <tr><td class="align-left w_small w_nowrap" style="background:#9558B24D;width:300px;">JuliaHub</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;"><a href="https://juliahub.com/ui/Packages/{$pkgname}" target="_blank" class="w_link">{$pkgname}</a></td></tr>
 </table>
@@ -784,8 +905,602 @@ ENDOFSECTION;
 			$menu[$k]=$pkgname;
 		}
 	}
+
 	$data='<div class="align-center" style="width:934px;">';
 	$data.=$header;
+
+	// Add summary section
+	$data.='<div class="w_padding" style="background:#9558B21A;margin-bottom:20px;padding:15px;border-left:4px solid #9558B2;">';
+	$data.='<h3 style="margin-top:0;">Package Summary</h3>';
+	$data.='<p><b>Standard Library Packages:</b> '.$stdlib_count.' (built-in with Julia)</p>';
+	$data.='<p><b>User-Installed Packages:</b> '.$user_count.' (installed via Pkg.add)</p>';
+	if($user_count==0){
+		$data.='<p style="color:#666;font-style:italic;">To install packages: <code>julia -e "using Pkg; Pkg.add(\"PackageName\")"</code></p>';
+	}
+	$data.='</div>';
+
+	ksort($modules);
+	ksort($menu);
+	foreach($modules as $k=>$section){
+		$data.=$section;
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langBashInfo(){
+	// Check if bash exists
+	$check=isWindows()?'where bash 2>nul':'which bash 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#4EAA25;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-terminal"></span> Bash</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Bash is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Install Git for Windows from <a href="https://git-scm.com/download/win" target="_blank" class="w_link">git-scm.com</a> (includes Git Bash)</li><li>Or install Windows Subsystem for Linux (WSL): <pre>wsl --install</pre></li><li>Restart your terminal</li></ol>';
+		}
+		else{
+			$instructions.='<p><b>Linux/Unix:</b> Bash is usually pre-installed. Check your PATH or install bash package.</p>';
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	$out=cmdResults("bash --version 2>&1");
+	$lines=preg_split('/[\r\n]+/',$out['stdout']);
+	$version=isset($lines[0])?$lines[0]:'Unknown';
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#4EAA25;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-terminal"></span> Bash</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">{$version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	$data.='<div class="w_padding"><p>Bash is a Unix shell and command language. Modules are typically system packages or custom scripts.</p></div>';
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langPowershellInfo(){
+	// Check if powershell exists
+	$check=isWindows()?'where powershell 2>nul':'which pwsh 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#5391FE;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-powershell"></span> PowerShell</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>PowerShell is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b> PowerShell 5.1 comes pre-installed on Windows 10/11. For PowerShell Core 7+:</p><ol><li>Download from <a href="https://github.com/PowerShell/PowerShell/releases" target="_blank" class="w_link">PowerShell Releases</a></li><li>Run the MSI installer</li><li>Follow the installation wizard</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>sudo dnf install powershell</pre><p>Or download RPM from <a href="https://github.com/PowerShell/PowerShell/releases" target="_blank" class="w_link">PowerShell Releases</a></p>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>sudo apt-get update<br>sudo apt-get install -y wget apt-transport-https software-properties-common<br>wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb<br>sudo dpkg -i packages-microsoft-prod.deb<br>sudo apt-get update<br>sudo apt-get install -y powershell</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	$cmd=isWindows()?"powershell -Command \"\$PSVersionTable.PSVersion.ToString()\"":"pwsh -Command \"\$PSVersionTable.PSVersion.ToString()\"";
+	$out=cmdResults($cmd);
+	$version=trim($out['stdout']);
+	if(empty($version) || stringContains($version,'Major')){
+		// Fallback to formatted string if ToString() doesn't work
+		$cmd=isWindows()?"powershell -Command \"Write-Output \\\"$(\$PSVersionTable.PSVersion.Major).$(\$PSVersionTable.PSVersion.Minor).$(\$PSVersionTable.PSVersion.Build).$(\$PSVersionTable.PSVersion.Revision)\\\"\"":"pwsh -Command \"Write-Output \\\"$(\$PSVersionTable.PSVersion.Major).$(\$PSVersionTable.PSVersion.Minor).$(\$PSVersionTable.PSVersion.Build).$(\$PSVersionTable.PSVersion.Revision)\\\"\"";
+		$out=cmdResults($cmd);
+		$version=trim($out['stdout']);
+	}
+	// Get installed modules
+	$tpath=getWasqlTempPath();
+	$cachefile="{$tpath}/powershell_modules.txt";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$pkgdata='';
+	// Allow force refresh via URL parameter
+	$force_refresh = isset($_REQUEST['refresh']) && $_REQUEST['refresh'] == '1';
+	if($force_refresh && file_exists($cachefile)){
+		unlink($cachefile);
+		$cache_age=86400;
+	}
+	if(file_exists($cachefile) && $cache_age < 3600){
+		// Reduced cache to 1 hour for faster updates
+		$pkgdata=getFileContents($cachefile);
+	}
+	if(!strlen($pkgdata)){
+		// Use Get-Module -ListAvailable to show ALL modules (not just gallery-installed)
+		$listcmd=isWindows()?"powershell -Command \"Get-Module -ListAvailable | Select-Object Name,Version | Sort-Object Name | Format-Table -AutoSize\"":"pwsh -Command \"Get-Module -ListAvailable | Select-Object Name,Version | Sort-Object Name | Format-Table -AutoSize\"";
+		$out=cmdResults($listcmd);
+		$pkgdata=$out['stdout'];
+		if(strlen($pkgdata) && !stringContains($pkgdata,'command not found') && !stringContains($pkgdata,'error')){
+			setFileContents($cachefile,$pkgdata);
+		}
+	}
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#5391FE;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-powershell"></span> PowerShell</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">{$version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+	$lines=preg_split('/[\r\n]+/',$pkgdata);
+	foreach($lines as $line){
+		$line=trim($line);
+		if(!strlen($line) || stringBeginsWith($line,'Name') || stringBeginsWith($line,'---')){continue;}
+		$parts=preg_split('/\s+/',$line,2);
+		if(count($parts)<2){continue;}
+		$modname=trim($parts[0]);
+		$modver=trim($parts[1]);
+		if(!strlen($modname)){continue;}
+		$k=strtolower($modname);
+		$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$modname}">{$modname}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#5391FE4D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$modname}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#5391FE4D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$modver}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#5391FE4D;width:300px;">PowerShell Gallery</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;"><a href="https://www.powershellgallery.com/packages/{$modname}" target="_blank" class="w_link">{$modname}</a></td></tr>
+</table>
+ENDOFSECTION;
+		$menu[$k]=$modname;
+	}
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	ksort($modules);
+	ksort($menu);
+	foreach($modules as $k=>$section){
+		$data.=$section;
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langGroovyInfo(){
+	// Check if groovy exists
+	$check=isWindows()?'where groovy 2>nul':'which groovy 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Groovy is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Install using SDKMAN: <pre>sdk install groovy</pre></li><li>Or download binary from <a href="https://groovy.apache.org/download.html" target="_blank" class="w_link">groovy.apache.org</a></li><li>Extract and add bin directory to PATH</li><li>Requires Java JDK 8+</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>curl -s "https://get.sdkman.io" | bash<br>source "$HOME/.sdkman/bin/sdkman-init.sh"<br>sdk install groovy</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>sudo apt-get install groovy</pre><p>Or using SDKMAN:</p><pre>curl -s "https://get.sdkman.io" | bash<br>source "$HOME/.sdkman/bin/sdkman-init.sh"<br>sdk install groovy</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+
+	// Groovy is installed, now check if it can run (requires Java JDK)
+	$modules=array();
+	$menu=array();
+	$groovy_cmd=isWindows()?'groovy.bat':'groovy';
+	$out=cmdResults("{$groovy_cmd} --version 2>&1");
+	$version=$out['stdout'];
+
+	// Check for JAVA_HOME or javac errors
+	if(stringContains($version,'JAVA_HOME not set') || stringContains($version,'cannot find javac')){
+		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Java JDK Required</div></div></header>';
+		$os=langLinuxOSName();
+
+		// Check if java runtime exists
+		$java_check=cmdResults(isWindows()?'where java 2>nul':'which java 2>/dev/null');
+		$javac_check=cmdResults(isWindows()?'where javac 2>nul':'which javac 2>/dev/null');
+		$has_java=!empty(trim($java_check['stdout']));
+		$has_javac=!empty(trim($javac_check['stdout']));
+
+		$instructions='<div class="w_padding">';
+		$instructions.='<div class="w_error" style="margin-bottom:20px;padding:15px;"><b>Error:</b> Groovy is installed but cannot run.<br><pre style="margin-top:10px;">'.encodeHtml($version).'</pre></div>';
+		$instructions.='<h3>Groovy requires Java JDK (not just JRE)</h3>';
+		$instructions.='<p><b>Current Status:</b></p><ul>';
+		$instructions.='<li>✓ Groovy is installed at: '.encodeHtml(trim($test['stdout'])).'</li>';
+		if($has_java){
+			$java_version=cmdResults('java -version 2>&1');
+			$instructions.='<li>✓ Java Runtime (JRE) is installed</li>';
+			$instructions.='<li style="color:#999;margin-left:20px;">'.encodeHtml(trim(preg_split('/[\r\n]+/',$java_version['stdout'])[0])).'</li>';
+		}
+		else{
+			$instructions.='<li>✗ Java Runtime (JRE) is NOT installed</li>';
+		}
+		if($has_javac){
+			$instructions.='<li>✓ Java Compiler (javac) is available</li>';
+		}
+		else{
+			$instructions.='<li><b style="color:#c00;">✗ Java Compiler (javac) is NOT available - THIS IS THE PROBLEM</b></li>';
+		}
+		$instructions.='</ul>';
+
+		$instructions.='<h4>Solution: Install Java JDK</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows - Option 1: Oracle JDK</b></p>';
+			$instructions.='<ol><li>Download JDK from <a href="https://www.oracle.com/java/technologies/downloads/" target="_blank" class="w_link">Oracle JDK Downloads</a></li>';
+			$instructions.='<li>Run the installer (choose the full JDK, not just JRE)</li>';
+			$instructions.='<li>Set JAVA_HOME environment variable:<pre>setx JAVA_HOME "C:\\Program Files\\Java\\jdk-21" /M</pre></li>';
+			$instructions.='<li>Add to PATH:<pre>setx PATH "%PATH%;%JAVA_HOME%\\bin" /M</pre></li>';
+			$instructions.='<li>Restart your terminal/command prompt</li></ol>';
+			$instructions.='<p><b>Windows - Option 2: Eclipse Temurin (OpenJDK)</b></p>';
+			$instructions.='<ol><li>Download from <a href="https://adoptium.net/" target="_blank" class="w_link">Adoptium Temurin</a></li>';
+			$instructions.='<li>Run the MSI installer (includes automatic JAVA_HOME setup)</li>';
+			$instructions.='<li>Restart your terminal</li></ol>';
+			$instructions.='<p><b>Windows - Option 3: Using Chocolatey</b></p>';
+			$instructions.='<pre>choco install temurin21</pre>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>sudo dnf install java-17-openjdk-devel</pre>';
+					$instructions.='<p>Then set JAVA_HOME in ~/.bashrc:</p><pre>export JAVA_HOME=/usr/lib/jvm/java-17-openjdk<br>export PATH=$JAVA_HOME/bin:$PATH</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>sudo apt-get update<br>sudo apt-get install openjdk-17-jdk</pre>';
+					$instructions.='<p>Then set JAVA_HOME in ~/.bashrc:</p><pre>export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64<br>export PATH=$JAVA_HOME/bin:$PATH</pre>';
+				break;
+			}
+			$instructions.='<p><b>Or using SDKMAN (recommended):</b></p>';
+			$instructions.='<pre>curl -s "https://get.sdkman.io" | bash<br>source "$HOME/.sdkman/bin/sdkman-init.sh"<br>sdk install java</pre>';
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+
+	// Check for other errors
+	$rtncode=isset($out['rtncode'])?$out['rtncode']:0;
+	if(stringContains($version,'error') || stringContains($version,'Error') || $rtncode != 0){
+		$header='<header class="align-left"><div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Error</div></div></header>';
+		$instructions='<div class="w_padding"><div class="w_error"><b>Error running Groovy:</b><pre style="margin-top:10px;">'.encodeHtml($version).'</pre></div></div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+
+	// Success - Groovy is working
+	// Parse version info
+	$version_lines=preg_split('/[\r\n]+/',trim($version));
+	$groovy_version='';
+	$jvm_version='';
+	$vendor='';
+	$os_info='';
+	foreach($version_lines as $line){
+		if(preg_match('/Groovy Version:\s*(.+?)\s+JVM:\s*(.+?)\s+Vendor:\s*(.+?)\s+OS:\s*(.+?)$/i',$line,$m)){
+			$groovy_version=$m[1];
+			$jvm_version=$m[2];
+			$vendor=$m[3];
+			$os_info=$m[4];
+		}
+	}
+	if(empty($groovy_version)){$groovy_version=$version;}
+
+	// Get Java version
+	$java_ver_out=cmdResults('java -version 2>&1');
+	$java_version='Unknown';
+	$java_stdout=isset($java_ver_out['stdout'])?$java_ver_out['stdout']:'';
+	if(preg_match('/version "(.+?)"/i',$java_stdout,$m)){
+		$java_version=$m[1];
+	}
+
+	// Find GROOVY_HOME
+	$groovy_home='';
+	$groovy_cmd_path=trim($test['stdout']);
+	$groovy_paths=preg_split('/[\r\n]+/',$groovy_cmd_path);
+	$groovy_cmd=$groovy_paths[0];
+	// Try to determine GROOVY_HOME from groovy command path
+	if(isWindows()){
+		// On Windows: C:\path\to\groovy\bin\groovy.bat -> C:\path\to\groovy
+		$groovy_home=dirname(dirname($groovy_cmd));
+	}
+	else{
+		// On Unix: /path/to/groovy/bin/groovy -> /path/to/groovy
+		$groovy_home=dirname(dirname($groovy_cmd));
+	}
+
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#4298B8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-groovy"></span> Groovy</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$groovy_version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+
+	// Get Groovy lib directory JARs (system packages)
+	$lib_dir="{$groovy_home}/lib";
+	$jar_files=array();
+	if(is_dir($lib_dir)){
+		$files=listFilesEx($lib_dir,array('ext'=>'jar'));
+		foreach($files as $file){
+			$jarname=getFileName($file['name'],1);
+			$jarsize=verboseSize($file['size']);
+			$k=strtolower($jarname);
+			$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$jarname}">{$jarname} <span style="color:#4ade80;font-size:0.6em;">[System Library]</span></a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$jarname}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Type</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">System JAR Library</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Location</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;word-break:break-all;">{$file['afile']}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Size</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$jarsize}</td></tr>
+</table>
+ENDOFSECTION;
+			$menu[$k]=$jarname;
+		}
+	}
+
+	// Get Grape dependencies (user-installed packages)
+	$grapes_dir=getenv('HOME').'/.groovy/grapes';
+	if(isWindows()){
+		$grapes_dir=getenv('USERPROFILE').'/.groovy/grapes';
+	}
+	$grape_count=0;
+	if(is_dir($grapes_dir)){
+		// List all grape packages
+		$grape_dirs=listDirectories($grapes_dir);
+		foreach($grape_dirs as $group_dir){
+			$artifact_dirs=listDirectories($group_dir);
+			foreach($artifact_dirs as $artifact_dir){
+				$version_dirs=listDirectories($artifact_dir);
+				foreach($version_dirs as $version_dir){
+					$group=basename($group_dir);
+					$artifact=basename($artifact_dir);
+					$ver=basename($version_dir);
+					$grape_count++;
+					$k='grape_'.strtolower($group.'_'.$artifact);
+					$grape_jars=listFilesEx($version_dir,array('ext'=>'jar','maxdepth'=>1));
+					$jar_list='';
+					foreach($grape_jars as $jar){
+						$jar_list.=basename($jar['name']).' ('.verboseSize($jar['size']).')<br>';
+					}
+					if(empty($jar_list)){$jar_list='No JARs found';}
+					$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$k}">{$group}:{$artifact} <span style="color:#9558B2;font-size:0.6em;">[Grape Dependency]</span></a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Group</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$group}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Artifact</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$artifact}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$ver}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Type</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">Grape Cached Dependency</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">Location</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;word-break:break-all;">{$version_dir}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#4298B84D;width:300px;">JAR Files</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$jar_list}</td></tr>
+</table>
+ENDOFSECTION;
+					$menu[$k]="{$group}:{$artifact}";
+				}
+			}
+		}
+	}
+
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+
+	// Add summary section
+	$system_lib_count=count($jar_files);
+	if(isset($modules)){
+		$total_modules=count($modules);
+		$system_lib_count=$total_modules-$grape_count;
+	}
+	$data.='<div class="w_padding" style="background:#4298B81A;margin-bottom:20px;padding:15px;border-left:4px solid #4298B8;">';
+	$data.='<h3 style="margin-top:0;">Groovy Environment</h3>';
+	$data.='<p><b>Groovy Version:</b> '.encodeHtml($groovy_version).'</p>';
+	$data.='<p><b>Java Version:</b> '.encodeHtml($java_version).' ('.$vendor.')</p>';
+	$data.='<p><b>JVM:</b> '.encodeHtml($jvm_version).'</p>';
+	$data.='<p><b>Groovy Home:</b> '.encodeHtml($groovy_home).'</p>';
+	$data.='<p><b>System Libraries:</b> '.$system_lib_count.' JAR files in lib directory</p>';
+	$data.='<p><b>Grape Dependencies:</b> '.$grape_count.' cached packages</p>';
+	if($grape_count==0){
+		$data.='<p style="color:#666;font-style:italic;">To install Grape packages, use <code>@Grab</code> annotation in your Groovy scripts</p>';
+	}
+	$data.='</div>';
+
+	ksort($modules);
+	ksort($menu);
+	foreach($modules as $k=>$section){
+		$data.=$section;
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langTclInfo(){
+	// Check if tclsh exists
+	$check=isWindows()?'where tclsh 2>nul':'which tclsh 2>/dev/null';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#1C71D8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-tcl"></span> Tcl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$os=langLinuxOSName();
+		$instructions='<div class="w_padding"><h3>Tcl is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
+		if(isWindows()){
+			$instructions.='<p><b>Windows:</b></p><ol><li>Download ActiveTcl from <a href="https://www.activestate.com/products/tcl/" target="_blank" class="w_link">ActiveState</a></li><li>Or download from <a href="https://www.tcl.tk/software/tcltk/" target="_blank" class="w_link">tcl.tk</a></li><li>Run the installer</li><li>Add to PATH if needed</li></ol>';
+		}
+		else{
+			switch(strtolower($os)){
+				case 'almalinux':
+				case 'redhat':
+				case 'centos':
+				case 'fedora':
+					$instructions.='<p><b>'.$os.':</b></p><pre>sudo dnf install tcl</pre>';
+				break;
+				default:
+					$instructions.='<p><b>Ubuntu/Debian:</b></p><pre>sudo apt-get install tcl</pre>';
+				break;
+			}
+		}
+		$instructions.='</div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	// Get Tcl version using temp file (more reliable than echo pipe)
+	$tmpfile=getWasqlTempPath().'/tcl_version.tcl';
+	$tclcode='puts $tcl_version';
+	setFileContents($tmpfile,$tclcode);
+	$out=cmdResults("tclsh \"{$tmpfile}\" 2>&1");
+	if(file_exists($tmpfile)){unlink($tmpfile);}
+	$version=trim($out['stdout']);
+
+	// Get list of available packages
+	$tpath=getWasqlTempPath();
+	$cachefile="{$tpath}/tcl_packages.txt";
+	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
+	$pkgdata='';
+	// Allow force refresh
+	$force_refresh = isset($_REQUEST['refresh']) && $_REQUEST['refresh'] == '1';
+	if($force_refresh && file_exists($cachefile)){
+		unlink($cachefile);
+		$cache_age=86400;
+	}
+	if(file_exists($cachefile) && $cache_age < 3600){
+		$pkgdata=getFileContents($cachefile);
+	}
+	if(!strlen($pkgdata)){
+		// Try to get package list using temp file
+		$tmpfile=getWasqlTempPath().'/tcl_packages.tcl';
+		$tclcode='foreach pkg [lsort [package names]] { puts "$pkg [package provide $pkg]" }';
+		setFileContents($tmpfile,$tclcode);
+		$out=cmdResults("tclsh \"{$tmpfile}\" 2>&1");
+		if(file_exists($tmpfile)){unlink($tmpfile);}
+		$pkgdata=$out['stdout'];
+		if(strlen($pkgdata) && !stringContains($pkgdata,'error')){
+			setFileContents($cachefile,$pkgdata);
+		}
+	}
+
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#1C71D8;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-tcl"></span> Tcl</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+
+	// Parse package list
+	$lines=preg_split('/[\r\n]+/',$pkgdata);
+	foreach($lines as $line){
+		$line=trim($line);
+		if(!strlen($line)){continue;}
+		$parts=preg_split('/\s+/',$line,2);
+		if(count($parts)<1){continue;}
+		$pkgname=trim($parts[0]);
+		$pkgver=isset($parts[1])?trim($parts[1]):'(loaded)';
+		if(!strlen($pkgname)){continue;}
+		$k=strtolower($pkgname);
+		$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$k}">{$pkgname}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#1C71D84D;width:300px;">Package</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgname}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#1C71D84D;width:300px;">Version</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$pkgver}</td></tr>
+</table>
+ENDOFSECTION;
+		$menu[$k]=$pkgname;
+	}
+
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	if(count($modules) > 0){
+		$data.='<div class="w_padding"><p>Tcl (Tool Command Language) packages. These are built-in and loaded packages available in your Tcl installation.</p></div>';
+		ksort($modules);
+		ksort($menu);
+		foreach($modules as $k=>$section){
+			$data.=$section;
+		}
+	}
+	else{
+		$data.='<div class="w_padding"><p>Tcl (Tool Command Language) is a scripting language. Packages are typically installed using teacup or from source. Use <code>package require PackageName</code> to load packages.</p></div>';
+	}
+	$data.='</div>';
+	return array($data,$menu);
+}
+function langVBScriptInfo(){
+	// VBScript only works on Windows
+	if(!isWindows()){
+		$header='<header class="align-left"><div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript"></span> VBScript</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Windows Only</div></div></header>';
+		$instructions='<div class="w_padding"><h3>VBScript is a Windows-only scripting language</h3><p>VBScript (Visual Basic Scripting Edition) is only available on Windows operating systems. It comes pre-installed with Windows and is executed using cscript.exe or wscript.exe.</p></div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	// Check if cscript exists
+	$check='where cscript 2>nul';
+	$test=cmdResults($check);
+	if(empty(trim($test['stdout']))){
+		$header='<header class="align-left"><div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript"></span> VBScript</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Found</div></div></header>';
+		$instructions='<div class="w_padding"><h3>VBScript (cscript.exe) not found</h3><p>VBScript should be pre-installed on Windows. Check your system PATH or Windows installation.</p></div>';
+		return array('<div class="align-center" style="width:934px;">'.$header.$instructions.'</div>',array());
+	}
+	$modules=array();
+	$menu=array();
+	// Get VBScript version
+	$tmpfile=getWasqlTempPath().'/vbs_version.vbs';
+	$vbscode='WScript.Echo "VBScript " & ScriptEngineMajorVersion & "." & ScriptEngineMinorVersion & "." & ScriptEngineBuildVersion';
+	setFileContents($tmpfile,$vbscode);
+	$out=cmdResults("cscript //Nologo \"{$tmpfile}\" 2>&1");
+	if(file_exists($tmpfile)){unlink($tmpfile);}
+	$version=trim($out['stdout']);
+	$header=<<<ENDOFHEADER
+<header class="align-left">
+	<div style="background:#854CC7;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-vbscript"></span> VBScript</div>
+		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">{$version}</div>
+	</div>
+</header>
+ENDOFHEADER;
+	// List common COM objects that VBScript can use
+	$common_objects = array(
+		'Scripting.FileSystemObject' => 'File system access (files, folders, drives)',
+		'Scripting.Dictionary' => 'Associative arrays / hash tables',
+		'WScript.Shell' => 'Execute commands, access registry, environment variables',
+		'WScript.Network' => 'Network operations (map drives, printer connections)',
+		'MSXML2.DOMDocument' => 'XML parsing and manipulation',
+		'MSXML2.ServerXMLHTTP' => 'HTTP requests / AJAX',
+		'ADODB.Connection' => 'Database connectivity (SQL Server, Access, etc)',
+		'ADODB.Recordset' => 'Database result sets',
+		'CDO.Message' => 'Send email via SMTP',
+		'Shell.Application' => 'Windows Shell operations',
+		'InternetExplorer.Application' => 'Automate Internet Explorer',
+		'Excel.Application' => 'Automate Microsoft Excel (if installed)',
+		'Word.Application' => 'Automate Microsoft Word (if installed)',
+		'Outlook.Application' => 'Automate Microsoft Outlook (if installed)',
+		'SAPI.SpVoice' => 'Text-to-speech',
+	);
+
+	foreach($common_objects as $progid => $description){
+		$tmpfile=getWasqlTempPath().'/vbs_test_'.md5($progid).'.vbs';
+		$testcode="On Error Resume Next\nSet obj = CreateObject(\"{$progid}\")\nIf Err.Number = 0 Then\n    WScript.Echo \"OK\"\nElse\n    WScript.Echo \"ERROR\"\nEnd If";
+		setFileContents($tmpfile,$testcode);
+		$out=cmdResults("cscript //Nologo \"{$tmpfile}\" 2>&1");
+		if(file_exists($tmpfile)){unlink($tmpfile);}
+		$available = trim($out['stdout']) == 'OK';
+		$status = $available ? '<span style="color:#4ade80;">Available</span>' : '<span style="color:#999;">Not Available</span>';
+		$k=strtolower(str_replace('.','_',$progid));
+		$modules[$k]=<<<ENDOFSECTION
+<h2><a name="module_{$k}">{$progid}</a></h2>
+<table>
+<tr><td class="align-left w_small w_nowrap" style="background:#854CC74D;width:300px;">COM Object</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$progid}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#854CC74D;width:300px;">Status</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$status}</td></tr>
+<tr><td class="align-left w_small w_nowrap" style="background:#854CC74D;width:300px;">Description</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$description}</td></tr>
+</table>
+ENDOFSECTION;
+		$menu[$k]=$progid;
+	}
+
+	$data='<div class="align-center" style="width:934px;">';
+	$data.=$header;
+	$data.='<div class="w_padding"><p>VBScript (Visual Basic Scripting Edition) is a Windows-only scripting language. It uses <b>COM objects</b> instead of modules/packages. Below are commonly available COM objects:</p></div>';
 	ksort($modules);
 	ksort($menu);
 	foreach($modules as $k=>$section){

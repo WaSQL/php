@@ -578,6 +578,8 @@
 					setView('installs',1);
 					return;
 				}
+				// Get julia command path
+				$juliacmd=langFindJulia();
 				switch(strtolower($_REQUEST['title'])){
 					case 'search':
 						$recs=array();
@@ -621,13 +623,13 @@
 					break;
 					case 'install':
 						foreach($modules as $module){
-							$cmd="julia -e \"using Pkg; Pkg.add(\\\"{$module}\\\")\"";
+							$cmd="{$juliacmd} -e \"using Pkg; Pkg.add(\\\"{$module}\\\")\"";
 							$installs[]=cmdResults($cmd);
 						}
 					break;
 					case 'uninstall':
 						foreach($modules as $module){
-							$cmd="julia -e \"using Pkg; Pkg.rm(\\\"{$module}\\\")\"";
+							$cmd="{$juliacmd} -e \"using Pkg; Pkg.rm(\\\"{$module}\\\")\"";
 							$installs[]=cmdResults($cmd);
 						}
 					break;
@@ -637,6 +639,39 @@
 			}
 			$result=array('lang'=>'julia');
 			list($result['body'],$result['modules'])=langJuliaInfo();
+			setView('lang_results',1);
+			return;
+		break;
+		case 'bash':
+			$result=array('lang'=>'bash');
+			list($result['body'],$result['modules'])=langBashInfo();
+			setView('lang_results',1);
+			return;
+		break;
+		case 'powershell':
+		case 'pwsh':
+		case 'ps1':
+			$result=array('lang'=>'powershell');
+			list($result['body'],$result['modules'])=langPowershellInfo();
+			setView('lang_results',1);
+			return;
+		break;
+		case 'groovy':
+			$result=array('lang'=>'groovy');
+			list($result['body'],$result['modules'])=langGroovyInfo();
+			setView('lang_results',1);
+			return;
+		break;
+		case 'tcl':
+			$result=array('lang'=>'tcl');
+			list($result['body'],$result['modules'])=langTclInfo();
+			setView('lang_results',1);
+			return;
+		break;
+		case 'vbscript':
+		case 'vbs':
+			$result=array('lang'=>'vbscript');
+			list($result['body'],$result['modules'])=langVBScriptInfo();
 			setView('lang_results',1);
 			return;
 		break;

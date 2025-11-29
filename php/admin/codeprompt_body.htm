@@ -41,23 +41,110 @@
 		frm.code_select.value=getSelText(frm.code_full);
 		return wacss.ajaxPost(frm,'codeprompt_results');
 	}
+	function codepromptSetActiveLang(){
+		const textarea = document.getElementById('code_full');
+        if (!textarea) {return false;}
+        const content = textarea.value;
+        // 1. Get the first line
+        const firstLine = content.split('\n')[0];
+        // 2. Strip surrounding whitespace and convert to lowercase for robust comparison
+        const trimmedLine = firstLine.trim().toLowerCase();
+        const prefix = '<'+'?';
+        if (trimmedLine.startsWith(prefix)) {
+            // 4. Strip the prefix (length is 2) and return the rest
+            const languageTag = trimmedLine.substring(prefix.length);
+            // Optional: You might want to strip trailing whitespace if any exists after the tag
+            let lang='php';
+            switch(languageTag.trim()){
+            	case 'python':
+            	case 'py':
+            		lang='python';
+            	break;
+            	case 'perl':
+            	case 'pl':
+            		lang='perl';
+            	break;
+            	case 'r':
+            		lang='r';
+            	break;
+            	case 'tcl':
+            		lang='tcl';
+            	break;
+            	case 'node':
+            	case 'nodejs':
+            		lang='node';
+            	break;
+            	case 'lua':
+            		lang='lua';
+            	break;
+            	case 'ruby':
+            	case 'rb':
+            		lang='ruby';
+            	break;
+            	case 'julia':
+            	case 'jl':
+            		lang='julia';
+            	break;
+            	case 'bash':
+            	case 'sh':
+            		lang='bash';
+            	break;
+            	case 'powershell':
+            	case 'pwsh':
+            	case 'ps1':
+            		lang='powershell';
+            	break;
+            	case 'groovy':
+            	case 'gsh':
+            		lang='groovy';
+            	break;
+            	case 'vbscript':
+            	case 'vbs':
+            		lang='vbscript';
+            	break;
+            }
+            wacss.setActiveTab('lang_tab_'+lang);
+            return false;
+        }
+        // 5. If it doesn't match the prefix, return an empty string (or the full line, depending on required behavior)
+        return false;
+	}
 	document.onkeydown = codepromptCheckKey;
 </script>
 <div style="display:flex;flex-direction:column;">
-	<h2 style="display:flex;padding:10px 0;" class="<?=configValue('admin_color');?>"><span class="icon-code"></span> Code Prompt
-			<span class="icon-program-php w_pointer" title="PHP" style="margin-left:10px;font-size:1.3em;" onclick="codepromptSetLang('php')"></span> 
-			<span class="icon-program-python w_pointer" title="Python" style="margin-left:10px;" onclick="codepromptSetLang('py')"></span>
-			<span class="icon-program-perl w_pointer" title="Perl" style="margin-left:10px;" onclick="codepromptSetLang('pl')"></span>
-			<span class="brand-r w_pointer" title="R" style="margin-left:10px;font-size:1.3em;" onclick="codepromptSetLang('r')"></span>
-			<img src="/wfiles/program-tcl.svg" style="height:32px;width:auto;margin-left:10px;cursor:pointer;" title="Tcl" onclick="codepromptSetLang('tcl')">
-			<span class="icon-program-nodejs w_pointer" title="NodeJs" style="margin-left:10px;" onclick="codepromptSetLang('node')"></span>
-			<span class="icon-program-lua w_pointer" title="Lua" style="margin-left:10px;" onclick="codepromptSetLang('lua')"></span>
-	</h2>
-	<form method="post" action="<?=$CONFIG['codeprompt_path'];?>" data-setprocessing="codeprompt_processing" name="codeprompt" onsubmit="return codepromptSubmit(this);">
+	<div class="wacss_buttons" style="flex-wrap:wrap;gap:1px;margin-top:10px;">
+		<!-- PHP -->
+		<button id="lang_tab_php" type="button" class="is-active wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('php')" title="PHP"><span class="icon-program-php wacss_right3"></span> PHP</button>
+		<!-- Python -->
+		<button id="lang_tab_python" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('py')" title="Python"><span class="icon-program-python wacss_right3"></span>Python</button>
+		<!-- Perl -->
+		<button id="lang_tab_perl" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('pl')" title="Perl"><span class="icon-program-perl wacss_right3"></span>Perl</button>
+		<!-- R -->
+		<button id="lang_tab_r" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('r')" title="R"><span class="icon-program-r wacss_right3"></span>R</button>
+		<!-- Tcl -->
+		<button id="lang_tab_tcl" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('tcl')" title="Tcl"><span class="icon-program-tcl wacss_right3"></span>Tcl</button>
+		<!-- Node -->
+		<button id="lang_tab_node" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('node')" title="Node"><span class="icon-program-nodejs wacss_right3"></span>Node</button>
+		<!-- Lua -->
+		<button id="lang_tab_lua" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('lua')" title="Lua"><span class="icon-program-lua wacss_right3"></span>Lua</button>
+		<!-- Ruby -->
+		<button id="lang_tab_ruby" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('rb')" title="Ruby"><span class="icon-program-ruby wacss_right3"></span>Ruby</button>
+		<!-- Julia -->
+		<button id="lang_tab_julia" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('julia')" title="Julia">Julia</button>
+		<!-- Bash -->
+		<button id="lang_tab_bash" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('bash')" title="Bash"><span class="icon-terminal wacss_right3"></span>Bash</button>
+		<!-- Powershell -->
+		<button id="lang_tab_powershell" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('powershell')" title="PowerShell"><span class="icon-program-powershell wacss_right3"></span>PowerShell</button>
+		<!-- Groovy -->
+		<button id="lang_tab_groovy" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('groovy')" title="Groovy"><span class="icon-program-groovy wacss_right3"></span>Groovy</button>
+		<!-- VBScript -->
+		<button id="lang_tab_vbscript" type="button" class="wacss_button is-tab is-small is-outlined is-mobile-responsive <?=configValue('admin_color');?>" onclick="wacss.setActiveTab(this);codepromptSetLang('vbs')" title="VBScript"><span class="icon-program-vbscript wacss_right3"></span>VBScript</button>
+	</div>
+	<form method="post" action="<?=$CONFIG['codeprompt_path'];?>" data-setprocessing="codeprompt_processing" name="codeprompt" onsubmit="return codepromptSubmit(this);" data-onload="codepromptSetActiveLang();">
 		<input type="hidden" name="_menu" value="codeprompt">
 		<input type="hidden" name="func" value="code">
 		<input type="hidden" name="code_select" value="">
-		<textarea class="wacss_textarea" autofocus="true" data-behavior="loadtextfile tabs" style="height:200px;padding:10px;" placeholder="Code" id="code_full" name="code_full"><?=codepromptGetValue();?></textarea>
+		<textarea class="wacss_textarea" autofocus="true" data-behavior="loadtextfile tabs" style="height:250px;padding:10px;" placeholder="Code" id="code_full" name="code_full"><?=codepromptGetValue();?></textarea>
 		<div class="w_padtop" style="display:flex;justify-content: space-between;">
 			<div style="display:flex;">
 				<button style="align-self:center;" type="submit" onclick="codepromptSetFunc('code');" class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?>">Run Input Contents</button>

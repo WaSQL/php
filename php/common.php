@@ -10103,13 +10103,18 @@ function evalPHP($strings){
 		$cntB=count($evalmatches[1]);
 		for($ex=0;$ex<$cntB;$ex++){
 			$evalcode=$evalmatches[1][$ex];
-			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell) 
-			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua|R|rscript|tcl)[\ \r\n]+(.+)/ism',$evalcode,$g)){
+			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell), powershell, groovy
+			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua|R|rscript|tcl|julia|jl|powershell|pwsh|ps1|groovy)[\ \r\n]+(.+)/ism',$evalcode,$g)){
 				$evalcode=preg_replace('/^'.$g[1].'/i','',$evalcode);
 				$lang=commonGetLangInfo($g[1]);
 				$lang['evalcode_md5']=md5($evalcode);
 				$c=0;
 				switch(strtolower($lang['name'])){
+					case 'julia':
+						$val=evalJuliaCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
 					case 'tcl':
 						$val=evalTclCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
@@ -10139,6 +10144,27 @@ function evalPHP($strings){
 					case 'nodejs':
 						//https://www.educba.com/lua-json/
 						$val=evalNodejsCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
+					case 'bash':
+						$val=evalBashCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
+					case 'powershell':
+						$val=evalPowershellCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
+					case 'groovy':
+						$val=evalGroovyCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
+					case 'vbscript':
+					case 'vbs':
+						$val=evalVBScriptCode($lang,$evalcode);
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 						$c=1;
 					break;
@@ -10190,6 +10216,7 @@ function evalPHP($strings){
 			$evalcode=preg_replace('/^\=\/\*(.+?)\*\//','',$evalcode);
 			$evalcode=preg_replace('/^\=/','return ',$evalcode);
 			$evalcheck="error_reporting(E_ERROR | E_PARSE);\nreturn true;\n". trim($evalcode);
+			//echo "<pre>{$evalcheck}</pre><hr>".PHP_EOL;
 			@trigger_error('');
 			@eval($evalcheck);
 			$e=error_get_last();
@@ -10235,6 +10262,1242 @@ function evalPHP($strings){
 	showAllErrors();
 	$rtn=implode('',$strings);
 	return $rtn;
+}
+//---------- begin function evalJuliaCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalJuliaCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.jl",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.jl",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(jl|julia)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.jl";
+		$pagecode="include(\"page_{$lang['evalcode_md5']}.jl\");";
+		$content=<<<ENDOFCONTENT
+#! julia
+
+using JSON3
+
+{$code}
+
+ENDOFCONTENT;
+		setFileContents($files['page'],$content);
+	}
+	//create a wasql.jl file
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	if(!isset($_SESSION)){$_SESSION=[];}
+
+	// Write JSON data to separate files to avoid escaping issues
+	$json_files=array(
+		'USER'=>json_encode(evalCleanupGlobal($USER)),
+		'CONFIG'=>json_encode(evalCleanupGlobal($CONFIG)),
+		'PAGE'=>json_encode(evalCleanupGlobal($p)),
+		'TEMPLATE'=>json_encode(evalCleanupGlobal($t)),
+		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU)),
+		'DATABASE'=>json_encode(evalCleanupGlobal($db)),
+		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST)),
+		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION)),
+		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER)),
+		'CRONTHRU'=>json_encode(evalCleanupGlobal($CRONTHRU))
+	);
+
+	$wasql=array();
+	foreach($json_files as $varname=>$json_content){
+		$json_file="{$wasqlTempPath}/{$varname}_{$lang['evalcode_md5']}.json";
+		setFileContents($json_file,$json_content);
+		$files[strtolower($varname).'_json']=$json_file;
+		$json_filename=getFileName($json_file);
+		$wasql[$varname]="const {$varname} = JSON3.read(read(\"{$json_filename}\", String))";
+	}
+
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$json_content=json_encode(evalCleanupGlobal($$var));
+			$json_file="{$wasqlTempPath}/{$var}_{$lang['evalcode_md5']}.json";
+			setFileContents($json_file,$json_content);
+			$files[strtolower($var).'_json']=$json_file;
+			$json_filename=getFileName($json_file);
+			$wasql[$var]="const {$var} = JSON3.read(read(\"{$json_filename}\", String))";
+		}
+	}
+	$content=<<<ENDOFCONTENT
+#! julia
+
+# Auto-install JSON3 if not available
+try
+	using JSON3
+catch e
+	if isa(e, ArgumentError) && occursin("JSON3", string(e))
+		println("Installing JSON3 package (first-time setup)...")
+		using Pkg
+		Pkg.add("JSON3")
+		using JSON3
+	else
+		rethrow(e)
+	end
+end
+
+# Global constants - parsed from JSON files to avoid escaping issues
+{$wasql['USER']}
+{$wasql['CONFIG']}
+{$wasql['PAGE']}
+{$wasql['TEMPLATE']}
+{$wasql['PASSTHRU']}
+{$wasql['DATABASE']}
+{$wasql['REQUEST']}
+{$wasql['SESSION']}
+{$wasql['SERVER']}
+{$wasql['CRONTHRU']}
+
+# Helper functions to access PHP globals
+function wasqlUser(k::String)
+	return haskey(USER, k) ? USER[k] : ""
+end
+
+function wasqlConfig(k::String)
+	return haskey(CONFIG, k) ? CONFIG[k] : ""
+end
+
+function wasqlPage(k::String)
+	return haskey(PAGE, k) ? PAGE[k] : ""
+end
+
+function wasqlTemplate(k::String)
+	return haskey(TEMPLATE, k) ? TEMPLATE[k] : ""
+end
+
+function wasqlPassthru(k::String)
+	return haskey(PASSTHRU, k) ? PASSTHRU[k] : ""
+end
+
+function wasqlDatabase(k::String)
+	return haskey(DATABASE, k) ? DATABASE[k] : ""
+end
+
+function wasqlRequest(k::String)
+	return haskey(REQUEST, k) ? REQUEST[k] : ""
+end
+
+function wasqlSession(k::String)
+	return haskey(SESSION, k) ? SESSION[k] : ""
+end
+
+function wasqlServer(k::String)
+	return haskey(SERVER, k) ? SERVER[k] : ""
+end
+
+function wasqlCronthru(k::String)
+	return haskey(CRONTHRU, k) ? CRONTHRU[k] : ""
+end
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#! julia
+
+# Auto-install JSON3 if not available
+try
+	using JSON3
+catch e
+	if isa(e, ArgumentError) && occursin("JSON3", string(e))
+		println("Installing JSON3 package (first-time setup)...")
+		using Pkg
+		Pkg.add("JSON3")
+		using JSON3
+	else
+		rethrow(e)
+	end
+end
+
+include("wasql_{$lang['evalcode_md5']}.jl");
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($command,'',$wasqlTempPath);
+	//remove any jl files in temp older than 1 day - wasqlTempPath
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','jl');
+	//check return code
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'julia'){
+			foreach($files as $name=>$afile){
+				unlink($afile);
+			}
+		}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}
+	else{
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Julia Script Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalBashCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalBashCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.sh",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.sh",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(bash|sh)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.sh";
+		$pagecode="source \"{$wasqlTempPath}/page_{$lang['evalcode_md5']}.sh\"";
+		$content=<<<ENDOFCONTENT
+#!/bin/bash
+
+{$code}
+
+ENDOFCONTENT;
+		setFileContents($files['page'],$content);
+	}
+	//create a wasql.sh file with helper functions and variables
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	if(!isset($_SESSION)){$_SESSION=[];}
+	// Create JSON strings for each global variable
+	$wasql=array(
+		'USER'=>json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'CONFIG'=>json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'PAGE'=>json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'TEMPLATE'=>json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'DATABASE'=>json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'CRONTHRU'=>json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)
+	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]=json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+		}
+	}
+	// Escape single quotes in JSON for bash strings
+	foreach($wasql as $key => $value){
+		$wasql[$key]=str_replace("'","'\\''", $value);
+	}
+	$content=<<<ENDOFCONTENT
+#!/bin/bash
+
+# WaSQL global variables as JSON strings
+export WASQL_USER='{$wasql['USER']}'
+export WASQL_CONFIG='{$wasql['CONFIG']}'
+export WASQL_PAGE='{$wasql['PAGE']}'
+export WASQL_TEMPLATE='{$wasql['TEMPLATE']}'
+export WASQL_PASSTHRU='{$wasql['PASSTHRU']}'
+export WASQL_DATABASE='{$wasql['DATABASE']}'
+export WASQL_REQUEST='{$wasql['REQUEST']}'
+export WASQL_SESSION='{$wasql['SESSION']}'
+export WASQL_SERVER='{$wasql['SERVER']}'
+export WASQL_CRONTHRU='{$wasql['CRONTHRU']}'
+
+# Helper function to get value from JSON using jq if available, otherwise use grep/sed
+wasql_get() {
+    local var_name="\$1"
+    local key="\$2"
+    local json_var="WASQL_\${var_name}"
+    local json_value="\${!json_var}"
+
+    # Try using jq if available
+    if command -v jq &> /dev/null; then
+        echo "\$json_value" | jq -r ".\$key // empty"
+    else
+        # Fallback: simple grep/sed approach for basic string values
+        # Note: This is limited and won't handle complex nested structures
+        echo "\$json_value" | grep -o "\"\$key\":\"[^\"]*\"" | sed 's/.*:\"\\(.*\\)\"/\\1/'
+    fi
+}
+
+# Convenience functions for accessing WaSQL variables
+wasqlUser() {
+    wasql_get "USER" "\$1"
+}
+
+wasqlConfig() {
+    wasql_get "CONFIG" "\$1"
+}
+
+wasqlPage() {
+    wasql_get "PAGE" "\$1"
+}
+
+wasqlTemplate() {
+    wasql_get "TEMPLATE" "\$1"
+}
+
+wasqlPassthru() {
+    # PASSTHRU is an array, get by index
+    local idx="\$1"
+    if command -v jq &> /dev/null; then
+        echo "\$WASQL_PASSTHRU" | jq -r ".[\$idx] // empty"
+    else
+        echo ""
+    fi
+}
+
+wasqlDatabase() {
+    wasql_get "DATABASE" "\$1"
+}
+
+wasqlRequest() {
+    wasql_get "REQUEST" "\$1"
+}
+
+wasqlSession() {
+    wasql_get "SESSION" "\$1"
+}
+
+wasqlServer() {
+    wasql_get "SERVER" "\$1"
+}
+
+wasqlCronthru() {
+    wasql_get "CRONTHRU" "\$1"
+}
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#!/bin/bash
+
+source "{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.sh"
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($command,'',$wasqlTempPath);
+	//remove any sh files in temp older than 1 day - wasqlTempPath
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','sh');
+	//check return code
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'bash'){
+			foreach($files as $name=>$afile){
+				if(file_exists($afile)){
+					unlink($afile);
+				}
+			}
+		}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}
+	else{
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Bash Script Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalPowershellCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalPowershellCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.ps1",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.ps1",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(powershell|pwsh|ps1)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.ps1";
+		$pagecode=". '{$wasqlTempPath}/page_{$lang['evalcode_md5']}.ps1'";
+		$content=<<<ENDOFCONTENT
+# PowerShell Script
+
+{$code}
+
+ENDOFCONTENT;
+		setFileContents($files['page'],$content);
+	}
+	//create a wasql.ps1 file with helper functions and variables
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	if(!isset($_SESSION)){$_SESSION=[];}
+	// Use base64 encoding to avoid string escaping issues
+	$wasql=array(
+		'USER'=>base64_encode(json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'CONFIG'=>base64_encode(json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'PAGE'=>base64_encode(json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'TEMPLATE'=>base64_encode(json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'PASSTHRU'=>base64_encode(json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'DATABASE'=>base64_encode(json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'REQUEST'=>base64_encode(json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'SESSION'=>base64_encode(json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'SERVER'=>base64_encode(json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)),
+		'CRONTHRU'=>base64_encode(json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))
+	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]=base64_encode(json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
+		}
+	}
+	// Use base64 encoding for PowerShell
+	$content=<<<ENDOFCONTENT
+# WaSQL PowerShell Module
+
+# Parse JSON globals from base64
+\$global:WASQL_USER = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['USER']}')) | ConvertFrom-Json
+
+\$global:WASQL_CONFIG = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['CONFIG']}')) | ConvertFrom-Json
+
+\$global:WASQL_PAGE = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['PAGE']}')) | ConvertFrom-Json
+
+\$global:WASQL_TEMPLATE = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['TEMPLATE']}')) | ConvertFrom-Json
+
+\$global:WASQL_PASSTHRU = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['PASSTHRU']}')) | ConvertFrom-Json
+
+\$global:WASQL_DATABASE = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['DATABASE']}')) | ConvertFrom-Json
+
+\$global:WASQL_REQUEST = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['REQUEST']}')) | ConvertFrom-Json
+
+\$global:WASQL_SESSION = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['SESSION']}')) | ConvertFrom-Json
+
+\$global:WASQL_SERVER = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['SERVER']}')) | ConvertFrom-Json
+
+\$global:WASQL_CRONTHRU = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('{$wasql['CRONTHRU']}')) | ConvertFrom-Json
+
+# Helper functions for accessing WaSQL variables
+function wasqlUser {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_USER -and \$global:WASQL_USER.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_USER.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlConfig {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_CONFIG -and \$global:WASQL_CONFIG.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_CONFIG.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlPage {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_PAGE -and \$global:WASQL_PAGE.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_PAGE.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlTemplate {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_TEMPLATE -and \$global:WASQL_TEMPLATE.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_TEMPLATE.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlPassthru {
+    param([int]\$index)
+    if (\$null -ne \$global:WASQL_PASSTHRU -and \$index -lt \$global:WASQL_PASSTHRU.Count) {
+        return \$global:WASQL_PASSTHRU[\$index]
+    }
+    return ""
+}
+
+function wasqlDatabase {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_DATABASE -and \$global:WASQL_DATABASE.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_DATABASE.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlRequest {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_REQUEST -and \$global:WASQL_REQUEST.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_REQUEST.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlSession {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_SESSION -and \$global:WASQL_SESSION.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_SESSION.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlServer {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_SERVER -and \$global:WASQL_SERVER.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_SERVER.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+function wasqlCronthru {
+    param([string]\$key)
+    if (\$null -ne \$global:WASQL_CRONTHRU -and \$global:WASQL_CRONTHRU.PSObject.Properties.Name -contains \$key) {
+        return \$global:WASQL_CRONTHRU.PSObject.Properties[\$key].Value
+    }
+    return ""
+}
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+# PowerShell Main Script
+
+# Enable strict error handling
+\$ErrorActionPreference = "Stop"
+
+# Source the WaSQL module
+. '{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.ps1'
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} -ExecutionPolicy Bypass -File \"{$filename}\" 2>&1";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($command,'',$wasqlTempPath);
+	//remove any ps1 files in temp older than 1 day - wasqlTempPath
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','ps1');
+	//check return code
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'powershell'){
+			foreach($files as $name=>$afile){
+				if(file_exists($afile)){
+					unlink($afile);
+				}
+			}
+		}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}
+	else{
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded PowerShell Script Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalGroovyCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalGroovyCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.groovy",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.groovy",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?groovy/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.groovy";
+		$pagecode="evaluate(new File('{$wasqlTempPath}/page_{$lang['evalcode_md5']}.groovy'))";
+		$content=<<<ENDOFCONTENT
+// Groovy Script
+
+{$code}
+
+ENDOFCONTENT;
+		setFileContents($files['page'],$content);
+	}
+	//create a wasql.groovy file with helper functions and variables
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	if(!isset($_SESSION)){$_SESSION=[];}
+	// Create JSON strings for each global variable
+	$wasql=array(
+		'USER'=>json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'CONFIG'=>json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'PAGE'=>json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'TEMPLATE'=>json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'DATABASE'=>json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'CRONTHRU'=>json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)
+	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]=json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+		}
+	}
+	// Escape single quotes and backslashes for Groovy triple-quoted strings
+	foreach($wasql as $key => $value){
+		$wasql[$key]=str_replace('\\','\\\\',$value);
+		$wasql[$key]=str_replace("'","\\'",$wasql[$key]);
+	}
+	$content=<<<ENDOFCONTENT
+// WaSQL Groovy Module
+import groovy.json.JsonSlurper
+
+// Parse JSON globals - use script binding variables (no 'def') for access in functions
+jsonSlurper = new JsonSlurper()
+WASQL_USER = jsonSlurper.parseText('''{$wasql['USER']}''')
+WASQL_CONFIG = jsonSlurper.parseText('''{$wasql['CONFIG']}''')
+WASQL_PAGE = jsonSlurper.parseText('''{$wasql['PAGE']}''')
+WASQL_TEMPLATE = jsonSlurper.parseText('''{$wasql['TEMPLATE']}''')
+WASQL_PASSTHRU = jsonSlurper.parseText('''{$wasql['PASSTHRU']}''')
+WASQL_DATABASE = jsonSlurper.parseText('''{$wasql['DATABASE']}''')
+WASQL_REQUEST = jsonSlurper.parseText('''{$wasql['REQUEST']}''')
+WASQL_SESSION = jsonSlurper.parseText('''{$wasql['SESSION']}''')
+WASQL_SERVER = jsonSlurper.parseText('''{$wasql['SERVER']}''')
+WASQL_CRONTHRU = jsonSlurper.parseText('''{$wasql['CRONTHRU']}''')
+
+// Helper functions for accessing WaSQL variables
+def wasqlUser(key) {
+    return WASQL_USER.containsKey(key) ? WASQL_USER[key] : ""
+}
+
+def wasqlConfig(key) {
+    return WASQL_CONFIG.containsKey(key) ? WASQL_CONFIG[key] : ""
+}
+
+def wasqlPage(key) {
+    return WASQL_PAGE.containsKey(key) ? WASQL_PAGE[key] : ""
+}
+
+def wasqlTemplate(key) {
+    return WASQL_TEMPLATE.containsKey(key) ? WASQL_TEMPLATE[key] : ""
+}
+
+def wasqlPassthru(index) {
+    return (index < WASQL_PASSTHRU.size()) ? WASQL_PASSTHRU[index] : ""
+}
+
+def wasqlDatabase(key) {
+    return WASQL_DATABASE.containsKey(key) ? WASQL_DATABASE[key] : ""
+}
+
+def wasqlRequest(key) {
+    return WASQL_REQUEST.containsKey(key) ? WASQL_REQUEST[key] : ""
+}
+
+def wasqlSession(key) {
+    return WASQL_SESSION.containsKey(key) ? WASQL_SESSION[key] : ""
+}
+
+def wasqlServer(key) {
+    return WASQL_SERVER.containsKey(key) ? WASQL_SERVER[key] : ""
+}
+
+def wasqlCronthru(key) {
+    return WASQL_CRONTHRU.containsKey(key) ? WASQL_CRONTHRU[key] : ""
+}
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	// Include wasql code directly in main script for proper scope access
+	$content=<<<ENDOFCONTENT
+// Groovy Main Script
+import groovy.json.JsonSlurper
+
+// Parse JSON globals - use script binding variables (no 'def') for access in functions
+jsonSlurper = new JsonSlurper()
+WASQL_USER = jsonSlurper.parseText('''{$wasql['USER']}''')
+WASQL_CONFIG = jsonSlurper.parseText('''{$wasql['CONFIG']}''')
+WASQL_PAGE = jsonSlurper.parseText('''{$wasql['PAGE']}''')
+WASQL_TEMPLATE = jsonSlurper.parseText('''{$wasql['TEMPLATE']}''')
+WASQL_PASSTHRU = jsonSlurper.parseText('''{$wasql['PASSTHRU']}''')
+WASQL_DATABASE = jsonSlurper.parseText('''{$wasql['DATABASE']}''')
+WASQL_REQUEST = jsonSlurper.parseText('''{$wasql['REQUEST']}''')
+WASQL_SESSION = jsonSlurper.parseText('''{$wasql['SESSION']}''')
+WASQL_SERVER = jsonSlurper.parseText('''{$wasql['SERVER']}''')
+WASQL_CRONTHRU = jsonSlurper.parseText('''{$wasql['CRONTHRU']}''')
+
+// Helper functions for accessing WaSQL variables
+def wasqlUser(key) {
+    return WASQL_USER.containsKey(key) ? WASQL_USER[key] : ""
+}
+
+def wasqlConfig(key) {
+    return WASQL_CONFIG.containsKey(key) ? WASQL_CONFIG[key] : ""
+}
+
+def wasqlPage(key) {
+    return WASQL_PAGE.containsKey(key) ? WASQL_PAGE[key] : ""
+}
+
+def wasqlTemplate(key) {
+    return WASQL_TEMPLATE.containsKey(key) ? WASQL_TEMPLATE[key] : ""
+}
+
+def wasqlPassthru(index) {
+    return (index < WASQL_PASSTHRU.size()) ? WASQL_PASSTHRU[index] : ""
+}
+
+def wasqlDatabase(key) {
+    return WASQL_DATABASE.containsKey(key) ? WASQL_DATABASE[key] : ""
+}
+
+def wasqlRequest(key) {
+    return WASQL_REQUEST.containsKey(key) ? WASQL_REQUEST[key] : ""
+}
+
+def wasqlSession(key) {
+    return WASQL_SESSION.containsKey(key) ? WASQL_SESSION[key] : ""
+}
+
+def wasqlServer(key) {
+    return WASQL_SERVER.containsKey(key) ? WASQL_SERVER[key] : ""
+}
+
+def wasqlCronthru(key) {
+    return WASQL_CRONTHRU.containsKey(key) ? WASQL_CRONTHRU[key] : ""
+}
+
+// Include page code if present
+{$pagecode}
+
+// User code
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($command,'',$wasqlTempPath);
+	//remove any groovy files in temp older than 1 day - wasqlTempPath
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','groovy');
+	//check return code
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'groovy'){
+			foreach($files as $name=>$afile){
+				if(file_exists($afile)){
+					unlink($afile);
+				}
+			}
+		}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}
+	else{
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Groovy Script Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalVBScriptCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalVBScriptCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.vbs",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.vbs",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?vbscript/is','',rtrim($code));
+		$code=preg_replace('/^\<\?vbs/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.vbs";
+		$pagecode="ExecuteGlobal CreateObject(\"Scripting.FileSystemObject\").OpenTextFile(\"{$wasqlTempPath}/page_{$lang['evalcode_md5']}.vbs\", 1).ReadAll()";
+		$content=<<<ENDOFCONTENT
+' VBScript Page Code
+
+{$code}
+
+ENDOFCONTENT;
+		setFileContents($files['page'],$content);
+	}
+	//create a wasql.vbs file with helper functions - VBScript doesn't support JSON natively
+	//so we'll create simple getter functions for common values
+	$wasql=array();
+
+	//Helper function to escape VBScript strings properly
+	$escapeVBScriptString = function($value) {
+		if(!is_scalar($value)){return '';}
+		$value = (string)$value;
+		//Escape double quotes
+		$value = str_replace('"', '""', $value);
+		//Handle newlines - VBScript can't have literal newlines in strings
+		//Replace with VBScript Chr() concatenation
+		if(strpos($value, "\r\n") !== false || strpos($value, "\n") !== false || strpos($value, "\r") !== false){
+			//Build VBScript string concatenation for newlines
+			$value = str_replace("\r\n", '" & Chr(13) & Chr(10) & "', $value);
+			$value = str_replace("\n", '" & Chr(10) & "', $value);
+			$value = str_replace("\r", '" & Chr(13) & "', $value);
+			//Clean up empty concatenations
+			$value = str_replace('"" & ', '', $value);
+			$value = str_replace(' & ""', '', $value);
+		}
+		return $value;
+	};
+
+	//USER - create individual functions for each user property
+	if(isset($USER) && is_array($USER)){
+		foreach($USER as $key=>$value){
+			if(is_scalar($value)){
+				$wasql['USER'][$key]=$escapeVBScriptString($value);
+			}
+		}
+	}
+
+	//CONFIG - create individual functions for each config property
+	if(isset($CONFIG) && is_array($CONFIG)){
+		foreach($CONFIG as $key=>$value){
+			if(is_scalar($value)){
+				$wasql['CONFIG'][$key]=$escapeVBScriptString($value);
+			}
+		}
+	}
+
+	//SERVER
+	if(isset($_SERVER) && is_array($_SERVER)){
+		foreach($_SERVER as $key=>$value){
+			if(is_scalar($value)){
+				$wasql['SERVER'][$key]=$escapeVBScriptString($value);
+			}
+		}
+	}
+
+	//REQUEST
+	if(isset($_REQUEST) && is_array($_REQUEST)){
+		foreach($_REQUEST as $key=>$value){
+			if(is_scalar($value)){
+				$wasql['REQUEST'][$key]=$escapeVBScriptString($value);
+			}
+		}
+	}
+
+	//SESSION
+	if(isset($_SESSION) && is_array($_SESSION)){
+		foreach($_SESSION as $key=>$value){
+			if(is_scalar($value)){
+				$wasql['SESSION'][$key]=$escapeVBScriptString($value);
+			}
+		}
+	}
+
+	//PASSTHRU
+	if(isset($PASSTHRU) && is_array($PASSTHRU)){
+		foreach($PASSTHRU as $key=>$value){
+			if(is_scalar($value)){
+				$wasql['PASSTHRU'][$key]=$escapeVBScriptString($value);
+			}
+		}
+	}
+
+	//Create VBScript helper functions using base64 encoding for stability
+	$vbsFunctions = '';
+
+	//Add base64 decode function
+	$vbsFunctions .= "\r\n' Base64 decode function\r\n";
+	$vbsFunctions .= "Function Base64Decode(strData)\r\n";
+	$vbsFunctions .= "    Dim objXML, objNode\r\n";
+	$vbsFunctions .= "    Set objXML = CreateObject(\"MSXML2.DOMDocument\")\r\n";
+	$vbsFunctions .= "    Set objNode = objXML.createElement(\"b64\")\r\n";
+	$vbsFunctions .= "    objNode.dataType = \"bin.base64\"\r\n";
+	$vbsFunctions .= "    objNode.text = strData\r\n";
+	$vbsFunctions .= "    Base64Decode = BinaryToString(objNode.nodeTypedValue)\r\n";
+	$vbsFunctions .= "    Set objNode = Nothing\r\n";
+	$vbsFunctions .= "    Set objXML = Nothing\r\n";
+	$vbsFunctions .= "End Function\r\n";
+	$vbsFunctions .= "\r\n";
+	$vbsFunctions .= "Function BinaryToString(Binary)\r\n";
+	$vbsFunctions .= "    Dim I, S\r\n";
+	$vbsFunctions .= "    For I = 1 To LenB(Binary)\r\n";
+	$vbsFunctions .= "        S = S & Chr(AscB(MidB(Binary, I, 1)))\r\n";
+	$vbsFunctions .= "    Next\r\n";
+	$vbsFunctions .= "    BinaryToString = S\r\n";
+	$vbsFunctions .= "End Function\r\n";
+
+	//Create wasqlUser function with base64 values
+	$vbsFunctions .= "\r\n' Helper function to get USER values\r\n";
+	$vbsFunctions .= "Function wasqlUser(key)\r\n";
+	if(isset($wasql['USER']) && count($wasql['USER']) > 0){
+		$vbsFunctions .= "    Select Case LCase(key)\r\n";
+		foreach($wasql['USER'] as $key=>$value){
+			$b64 = base64_encode($value);
+			$vbsFunctions .= "        Case \"{$key}\"\r\n";
+			$vbsFunctions .= "            wasqlUser = Base64Decode(\"{$b64}\")\r\n";
+		}
+		$vbsFunctions .= "        Case Else\r\n";
+		$vbsFunctions .= "            wasqlUser = \"\"\r\n";
+		$vbsFunctions .= "    End Select\r\n";
+	}
+	else{
+		$vbsFunctions .= "    wasqlUser = \"\"\r\n";
+	}
+	$vbsFunctions .= "End Function\r\n";
+
+	//Create wasqlConfig function with base64 values
+	$vbsFunctions .= "\r\n' Helper function to get CONFIG values\r\n";
+	$vbsFunctions .= "Function wasqlConfig(key)\r\n";
+	if(isset($wasql['CONFIG']) && count($wasql['CONFIG']) > 0){
+		$vbsFunctions .= "    Select Case LCase(key)\r\n";
+		foreach($wasql['CONFIG'] as $key=>$value){
+			$b64 = base64_encode($value);
+			$vbsFunctions .= "        Case \"{$key}\"\r\n";
+			$vbsFunctions .= "            wasqlConfig = Base64Decode(\"{$b64}\")\r\n";
+		}
+		$vbsFunctions .= "        Case Else\r\n";
+		$vbsFunctions .= "            wasqlConfig = \"\"\r\n";
+		$vbsFunctions .= "    End Select\r\n";
+	}
+	else{
+		$vbsFunctions .= "    wasqlConfig = \"\"\r\n";
+	}
+	$vbsFunctions .= "End Function\r\n";
+
+	//Create wasqlServer function with base64 values
+	$vbsFunctions .= "\r\n' Helper function to get SERVER values\r\n";
+	$vbsFunctions .= "Function wasqlServer(key)\r\n";
+	if(isset($wasql['SERVER']) && count($wasql['SERVER']) > 0){
+		$vbsFunctions .= "    Select Case UCase(key)\r\n";
+		foreach($wasql['SERVER'] as $key=>$value){
+			$b64 = base64_encode($value);
+			$vbsFunctions .= "        Case \"{$key}\"\r\n";
+			$vbsFunctions .= "            wasqlServer = Base64Decode(\"{$b64}\")\r\n";
+		}
+		$vbsFunctions .= "        Case Else\r\n";
+		$vbsFunctions .= "            wasqlServer = \"\"\r\n";
+		$vbsFunctions .= "    End Select\r\n";
+	}
+	else{
+		$vbsFunctions .= "    wasqlServer = \"\"\r\n";
+	}
+	$vbsFunctions .= "End Function\r\n";
+
+	//Create wasqlRequest function with base64 values
+	$vbsFunctions .= "\r\n' Helper function to get REQUEST values\r\n";
+	$vbsFunctions .= "Function wasqlRequest(key)\r\n";
+	if(isset($wasql['REQUEST']) && count($wasql['REQUEST']) > 0){
+		$vbsFunctions .= "    Select Case LCase(key)\r\n";
+		foreach($wasql['REQUEST'] as $key=>$value){
+			$b64 = base64_encode($value);
+			$vbsFunctions .= "        Case \"{$key}\"\r\n";
+			$vbsFunctions .= "            wasqlRequest = Base64Decode(\"{$b64}\")\r\n";
+		}
+		$vbsFunctions .= "        Case Else\r\n";
+		$vbsFunctions .= "            wasqlRequest = \"\"\r\n";
+		$vbsFunctions .= "    End Select\r\n";
+	}
+	else{
+		$vbsFunctions .= "    wasqlRequest = \"\"\r\n";
+	}
+	$vbsFunctions .= "End Function\r\n";
+
+	//Create wasqlSession function with base64 values
+	$vbsFunctions .= "\r\n' Helper function to get SESSION values\r\n";
+	$vbsFunctions .= "Function wasqlSession(key)\r\n";
+	if(isset($wasql['SESSION']) && count($wasql['SESSION']) > 0){
+		$vbsFunctions .= "    Select Case LCase(key)\r\n";
+		foreach($wasql['SESSION'] as $key=>$value){
+			$b64 = base64_encode($value);
+			$vbsFunctions .= "        Case \"{$key}\"\r\n";
+			$vbsFunctions .= "            wasqlSession = Base64Decode(\"{$b64}\")\r\n";
+		}
+		$vbsFunctions .= "        Case Else\r\n";
+		$vbsFunctions .= "            wasqlSession = \"\"\r\n";
+		$vbsFunctions .= "    End Select\r\n";
+	}
+	else{
+		$vbsFunctions .= "    wasqlSession = \"\"\r\n";
+	}
+	$vbsFunctions .= "End Function\r\n";
+
+	//Create wasqlPassthru function with base64 values
+	$vbsFunctions .= "\r\n' Helper function to get PASSTHRU values\r\n";
+	$vbsFunctions .= "Function wasqlPassthru(key)\r\n";
+	if(isset($wasql['PASSTHRU']) && count($wasql['PASSTHRU']) > 0){
+		$vbsFunctions .= "    Select Case LCase(key)\r\n";
+		foreach($wasql['PASSTHRU'] as $key=>$value){
+			$b64 = base64_encode($value);
+			$vbsFunctions .= "        Case \"{$key}\"\r\n";
+			$vbsFunctions .= "            wasqlPassthru = Base64Decode(\"{$b64}\")\r\n";
+		}
+		$vbsFunctions .= "        Case Else\r\n";
+		$vbsFunctions .= "            wasqlPassthru = \"\"\r\n";
+		$vbsFunctions .= "    End Select\r\n";
+	}
+	else{
+		$vbsFunctions .= "    wasqlPassthru = \"\"\r\n";
+	}
+	$vbsFunctions .= "End Function\r\n";
+
+	$content=<<<ENDOFCONTENT
+' WaSQL VBScript Helper Functions
+' Provides access to PHP globals through simple getter functions
+
+{$vbsFunctions}
+
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+' VBScript Main Script
+
+ExecuteGlobal CreateObject("Scripting.FileSystemObject").OpenTextFile("{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.vbs", 1).ReadAll()
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command = "cscript //Nologo \"{$filename}\" 2>&1";
+	//cmdResults($cmd,$args='',$dir='',$timeout=0)
+	$out = cmdResults($command,'',$wasqlTempPath);
+	//remove any vbs files in temp older than 1 day
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','vbs');
+	//check return code
+	if(isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		if(!isset($_REQUEST['debug']) || $_REQUEST['debug'] != 'vbscript'){
+			foreach($files as $name=>$afile){
+				if(file_exists($afile)){
+					unlink($afile);
+				}
+			}
+		}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}
+	else{
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded VBScript Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
 }
 //---------- begin function evalNodejsCode
 /**
@@ -10296,16 +11559,19 @@ ENDOFCONTENT;
 			$json=str_replace('\\"','',$json);
 			$precode[]="local {$varname} = json.decode('".$json."');";
 	*/
+	if(!isset($_SESSION)){$_SESSION=[];}
+	// Use base64 encoding to avoid string escaping issues
 	$wasql=array(
-		'USER'=>"let USER = ".json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'CONFIG'=>"let CONFIG = ".json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'PAGE'=>"let PAGE = ".json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'TEMPLATE'=>"let TEMPLATE = ".json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'PASSTHRU'=>"let PASSTHRU = ".json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'DATABASE'=>"let DATABASE = ".json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'REQUEST'=>"let REQUEST = ".json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'SESSION'=>"let SESSION = ".json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";",
-		'CRONTHRU'=>"let CRONTHRU = ".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).";"
+		'USER'=>"let USER = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'CONFIG'=>"let CONFIG = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'PAGE'=>"let PAGE = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'TEMPLATE'=>"let TEMPLATE = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'PASSTHRU'=>"let PASSTHRU = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'DATABASE'=>"let DATABASE = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'REQUEST'=>"let REQUEST = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'SESSION'=>"let SESSION = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'SERVER'=>"let SERVER = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());",
+		'CRONTHRU'=>"let CRONTHRU = JSON.parse(Buffer.from('".base64_encode(json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."', 'base64').toString());"
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -10351,6 +11617,10 @@ exports.request = function(k){
 exports.session = function(k){
 	{$wasql['SESSION']}
 	return SESSION[k] || "";
+}
+exports.server = function(k){
+	{$wasql['SERVER']}
+	return SERVER[k] || "";
 }
 exports.cronthru = function(k){
 	{$wasql['CRONTHRU']}
@@ -10469,16 +11739,19 @@ ENDOFCONTENT;
 			$json=str_replace('\\"','',$json);
 			$precode[]="local {$varname} = json.decode('".$json."');";
 	*/
+	if(!isset($_SESSION)){$_SESSION=[];}
+	// Use base64 encoding to avoid string escaping issues
 	$wasql=array(
-		'USER'=>"local USER = json.decode('".encodeJSON(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'CONFIG'=>"local CONFIG = json.decode('".encodeJSON(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'PAGE'=>"local PAGE = json.decode('".json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'TEMPLATE'=>"local TEMPLATE = json.decode('".json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'PASSTHRU'=>"local PASSTHRU = json.decode('".json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'DATABASE'=>"local DATABASE = json.decode('".json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'REQUEST'=>"local REQUEST = json.decode('".json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'SESSION'=>"local SESSION = json.decode('".json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');",
-		'CRONTHRU'=>"local CRONTHRU = json.decode('".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE| JSON_UNESCAPED_SLASHES)."');"
+		'USER'=>"local USER = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'CONFIG'=>"local CONFIG = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'PAGE'=>"local PAGE = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'TEMPLATE'=>"local TEMPLATE = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'PASSTHRU'=>"local PASSTHRU = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'DATABASE'=>"local DATABASE = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'REQUEST'=>"local REQUEST = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'SESSION'=>"local SESSION = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'SERVER'=>"local SERVER = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));",
+		'CRONTHRU'=>"local CRONTHRU = json.decode(base64Decode('".base64_encode(json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."'));"
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -10494,6 +11767,23 @@ ENDOFCONTENT;
 #! lua
 
 json = require "json";
+
+-- Base64 decode function
+function base64Decode(data)
+	local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	data = string.gsub(data, '[^'..b..'=]', '')
+	return (data:gsub('.', function(x)
+		if (x == '=') then return '' end
+		local r,f='',(b:find(x)-1)
+		for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
+		return r;
+	end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+		if (#x ~= 8) then return '' end
+		local c=0
+		for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
+		return string.char(c)
+	end))
+end
 
 function wasqlUser(k)
 	{$wasql['USER']}
@@ -10526,6 +11816,10 @@ end
 function wasqlSession(k)
 	{$wasql['SESSION']}
 	return SESSION[k];
+end
+function wasqlServer(k)
+	{$wasql['SERVER']}
+	return SERVER[k];
 end
 function wasqlCronthru(k)
 	{$wasql['CRONTHRU']}
@@ -10606,7 +11900,7 @@ function evalPerlCode($lang,$evalcode){
 		$code=preg_replace('/\?\>$/is','',ltrim($code));
 		$code=trim($code);
 		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.pl";
-		$pagecode="require \"page_{$lang['evalcode_md5']}.pl\";";
+		$pagecode="require \"{$wasqlTempPath}/page_{$lang['evalcode_md5']}.pl\";";
 		$content=<<<ENDOFCONTENT
 #! perl
 
@@ -10638,6 +11932,7 @@ ENDOFCONTENT;
 			$json=str_replace('\\"','',$json);
 			$precode[]="local {$varname} = json.decode('".$json."');";
 	*/
+	if(!isset($_SESSION)){$_SESSION=[];}
 	$wasql=array(
 		'USER'=>"my %USER = ".evalGlobal2Perl($USER),
 		'CONFIG'=>"my %CONFIG = ".evalGlobal2Perl($CONFIG),
@@ -10647,6 +11942,7 @@ ENDOFCONTENT;
 		'DATABASE'=>"my %DATABASE = ".evalGlobal2Perl($db),
 		'REQUEST'=>"my %REQUEST = ".evalGlobal2Perl($_REQUEST),
 		'SESSION'=>"my %SESSION = ".evalGlobal2Perl($_SESSION),
+		'SERVER'=>"my %SERVER = ".evalGlobal2Perl($_SERVER),
 		'CRONTHRU'=>"my %CRONTHRU = ".evalGlobal2Perl($CRONTHRU)
 	);
 	//add any additional globals
@@ -10702,6 +11998,11 @@ sub wasqlSession{
 	{$wasql['SESSION']}
 	return \$SESSION{\$k} || "";
 }
+sub wasqlServer{
+	my (\$k) = @_;
+	{$wasql['SERVER']}
+	return \$SERVER{\$k} || "";
+}
 sub wasqlCronthru{
 	my (\$k) = @_;
 	{$wasql['CRONTHRU']}
@@ -10714,7 +12015,7 @@ ENDOFCONTENT;
 	$content=<<<ENDOFCONTENT
 #! perl
 
-require "wasql_{$lang['evalcode_md5']}.pl";
+require "{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.pl";
 {$pagecode}
 
 {$evalcode}
@@ -10838,17 +12139,18 @@ ENDOFCONTENT;
 		if(isset($t[$fld])){unset($t[$fld]);}
 	}
 	if(!isset($_SESSION)){$_SESSION=[];}
+	// Create JSON strings for each global variable
 	$wasql=array(
-		'USER'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'CONFIG'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'PAGE'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'TEMPLATE'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'PASSTHRU'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'DATABASE'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'REQUEST'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'SESSION'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'SERVER'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\"",
-		'CRONTHRU'=>"set jsondict \"\"\"".PHP_EOL.json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).PHP_EOL."\"\"\""
+		'USER'=>json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'CONFIG'=>json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'PAGE'=>json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'TEMPLATE'=>json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'DATABASE'=>json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'CRONTHRU'=>json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -10857,12 +12159,49 @@ ENDOFCONTENT;
 		}
 		foreach($CONFIG['eval_globals'] as $var){
 			global $$var;
-			$wasql[$var]="{$var} = ".json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+			$wasql[$var]=json_encode(evalCleanupGlobal($$var),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 		}
+	}
+	// Escape special characters for Tcl strings
+	foreach($wasql as $key => $value){
+		// Escape backslashes first (must be first!)
+		$wasql[$key]=str_replace('\\','\\\\',$value);
+		// Escape Tcl special characters
+		$wasql[$key]=str_replace('"','\\"',$wasql[$key]);
+		$wasql[$key]=str_replace('[','\\[',$wasql[$key]);
+		$wasql[$key]=str_replace(']','\\]',$wasql[$key]);
+		$wasql[$key]=str_replace('$','\\$',$wasql[$key]);
+		$wasql[$key]=str_replace("\n",'\\n',$wasql[$key]);
+		$wasql[$key]=str_replace("\r",'\\r',$wasql[$key]);
 	}
 	$content=<<<ENDOFCONTENT
 #! tcl
 
+# WaSQL global variables as JSON strings
+set WASQL_USER "{$wasql['USER']}"
+set WASQL_CONFIG "{$wasql['CONFIG']}"
+set WASQL_PAGE "{$wasql['PAGE']}"
+set WASQL_TEMPLATE "{$wasql['TEMPLATE']}"
+set WASQL_PASSTHRU "{$wasql['PASSTHRU']}"
+set WASQL_DATABASE "{$wasql['DATABASE']}"
+set WASQL_REQUEST "{$wasql['REQUEST']}"
+set WASQL_SESSION "{$wasql['SESSION']}"
+set WASQL_SERVER "{$wasql['SERVER']}"
+set WASQL_CRONTHRU "{$wasql['CRONTHRU']}"
+
+# Helper proc to extract value from JSON string using regex
+proc wasql_get {var_name key} {
+    upvar #0 WASQL_\$var_name json_value
+
+    # Simple regex-based JSON value extraction
+    # Matches "key":"value" pattern
+    if {[regexp "\"\$key\":\"(\[^\"\]*?)\"" \$json_value match value]} {
+        return \$value
+    }
+    return ""
+}
+
+# Helper paths
 proc wasqlTclPath {} {
 	return "{$wasqlTclPath}"
 }
@@ -10875,121 +12214,45 @@ proc wasqlTempPath {} {
 	return "{$wasqlTempPath}"
 }
 
-proc wasqlUSER {k} {
-	{$wasql['USER']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+# Convenience procedures for accessing WaSQL variables
+proc wasqlUSER {key} {
+    return [wasql_get USER \$key]
 }
 
-proc wasqlCONFIG {k} {
-	{$wasql['CONFIG']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlCONFIG {key} {
+    return [wasql_get CONFIG \$key]
 }
 
-proc wasqlPAGE {k} {
-	{$wasql['PAGE']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlPAGE {key} {
+    return [wasql_get PAGE \$key]
 }
 
-proc wasqlTEMPLATE {k} {
-	{$wasql['TEMPLATE']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlTEMPLATE {key} {
+    return [wasql_get TEMPLATE \$key]
 }
 
-proc wasqlPASSTHRU {k} {
-	{$wasql['PASSTHRU']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlPASSTHRU {key} {
+    return [wasql_get PASSTHRU \$key]
 }
 
-proc wasqlDATABASE {k} {
-	{$wasql['DATABASE']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlDATABASE {key} {
+    return [wasql_get DATABASE \$key]
 }
 
-proc wasqlSESSION {k} {
-	{$wasql['SESSION']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlREQUEST {key} {
+    return [wasql_get REQUEST \$key]
 }
 
-proc wasqlSERVER {k} {
-	{$wasql['SERVER']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
-
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlSESSION {key} {
+    return [wasql_get SESSION \$key]
 }
 
-proc wasqlCRONTHRU {k} {
-	{$wasql['CRONTHRU']}
-	# Extract the value at the specified key using dict get
-	set value [dict get $jsondict $k]
+proc wasqlSERVER {key} {
+    return [wasql_get SERVER \$key]
+}
 
-	# Check if the value is not empty
-	if { [string length $value] > 0 } {
-		return $value
-	} else {
-		return ""
-	}
+proc wasqlCRONTHRU {key} {
+    return [wasql_get CRONTHRU \$key]
 }
 
 ENDOFCONTENT;
@@ -10998,9 +12261,17 @@ ENDOFCONTENT;
 #! Tcl
 
 source "{$files['wasql']}"
-source "{$wasqlTclPath}/config.tcl"
-source "{$wasqlTclPath}/common.tcl"
-source "{$wasqlTclPath}/db.tcl"
+
+# Optionally load WaSQL Tcl libraries if available (may require external packages)
+if {[file exists "{$wasqlTclPath}/config.tcl"]} {
+	catch {source "{$wasqlTclPath}/config.tcl"}
+}
+if {[file exists "{$wasqlTclPath}/common.tcl"]} {
+	catch {source "{$wasqlTclPath}/common.tcl"}
+}
+if {[file exists "{$wasqlTclPath}/db.tcl"]} {
+	catch {source "{$wasqlTclPath}/db.tcl"}
+}
 
 {$evalcode}
 ENDOFCONTENT;
@@ -11116,17 +12387,18 @@ ENDOFCONTENT;
 		if(isset($t[$fld])){unset($t[$fld]);}
 	}
 	if(!isset($_SESSION)){$_SESSION=[];}
+	// Use base64 encoding to avoid string escaping issues
 	$wasql=array(
-		'USER'=>"USER <- fromJSON('".json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'CONFIG'=>"CONFIG <- fromJSON('".json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'PAGE'=>"PAGE <- fromJSON('".json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'TEMPLATE'=>"TEMPLATE <- fromJSON('".json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'PASSTHRU'=>"PASSTHRU <- fromJSON('".json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'DATABASE'=>"DATABASE <- fromJSON('".json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'REQUEST'=>"REQUEST <- fromJSON('".json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'SESSION'=>"SESSION <- fromJSON('".json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'SERVER'=>"SERVER <- fromJSON('".json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')",
-		'CRONTHRU'=>"CRONTHRU <- fromJSON('".json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."')"
+		'USER'=>"USER <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($USER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'CONFIG'=>"CONFIG <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($CONFIG),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'PAGE'=>"PAGE <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'TEMPLATE'=>"TEMPLATE <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'PASSTHRU'=>"PASSTHRU <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'DATABASE'=>"DATABASE <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'REQUEST'=>"REQUEST <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'SESSION'=>"SESSION <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'SERVER'=>"SERVER <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))",
+		'CRONTHRU'=>"CRONTHRU <- fromJSON(rawToChar(base64enc::base64decode('".base64_encode(json_encode(evalCleanupGlobal($CRONTHRU),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE))."')))"
 	);
 	//add any additional globals
 	if(isset($CONFIG['eval_globals'])){
@@ -11140,6 +12412,19 @@ ENDOFCONTENT;
 	}
 	$content=<<<ENDOFCONTENT
 #! Rscript
+
+# Define global variables
+{$wasql['USER']}
+{$wasql['CONFIG']}
+{$wasql['PAGE']}
+{$wasql['TEMPLATE']}
+{$wasql['PASSTHRU']}
+{$wasql['DATABASE']}
+{$wasql['REQUEST']}
+{$wasql['SESSION']}
+{$wasql['SERVER']}
+{$wasql['CRONTHRU']}
+
 wasqlRPath <- function(){
 	return("{$wasqlRPath}")
 }
@@ -11153,8 +12438,7 @@ wasqlTempPath <- function(){
 }
 
 wasqlUSER <- function(k) {
-	{$wasql['USER']}
-	if (!is.null(USER[[k]])) { 
+	if (!is.null(USER[[k]])) {
 	  return(USER[[k]])
 	} else {
 	  return("")
@@ -11162,8 +12446,7 @@ wasqlUSER <- function(k) {
 }
 
 wasqlCONFIG <- function(k) {
-	{$wasql['CONFIG']}
-	if (!is.null(CONFIG[[k]])) { 
+	if (!is.null(CONFIG[[k]])) {
 	  return(CONFIG[[k]])
 	} else {
 	  return(CONFIG)
@@ -11171,8 +12454,7 @@ wasqlCONFIG <- function(k) {
 }
 
 wasqlPAGE <- function(k) {
-	{$wasql['PAGE']}
-	if (!is.null(PAGE[[k]])) { 
+	if (!is.null(PAGE[[k]])) {
 	  return(PAGE[[k]])
 	} else {
 	  return("")
@@ -11180,17 +12462,15 @@ wasqlPAGE <- function(k) {
 }
 
 wasqlTEMPLATE <- function(k) {
-	{$wasql['TEMPLATE']}
-	if (!is.null(TEMPLATE[[k]])) { 
+	if (!is.null(TEMPLATE[[k]])) {
 	  return(TEMPLATE[[k]])
 	} else {
 	  return("")
 	}
 }
 
-wasqlPASSTHRU <- function(k) {
-	{$wasql['PASSTHRU']}
-	if (!is.null(PASSTHRU[[k]])) { 
+wasqlPASSHRU <- function(k) {
+	if (!is.null(PASSTHRU[[k]])) {
 	  return(PASSTHRU[[k]])
 	} else {
 	  return("")
@@ -11198,17 +12478,23 @@ wasqlPASSTHRU <- function(k) {
 }
 
 wasqlDATABASE <- function(k) {
-	{$wasql['DATABASE']}
-	if (!is.null(DATABASE[[k]])) { 
+	if (!is.null(DATABASE[[k]])) {
 	  return(DATABASE[[k]])
 	} else {
 	  return("")
 	}
 }
 
+wasqlREQUEST <- function(k) {
+	if (!is.null(REQUEST[[k]])) {
+	  return(REQUEST[[k]])
+	} else {
+	  return("")
+	}
+}
+
 wasqlSESSION <- function(k) {
-	{$wasql['SESSION']}
-	if (!is.null(SESSION[[k]])) { 
+	if (!is.null(SESSION[[k]])) {
 	  return(SESSION[[k]])
 	} else {
 	  return("")
@@ -11216,8 +12502,7 @@ wasqlSESSION <- function(k) {
 }
 
 wasqlSERVER <- function(k) {
-	{$wasql['SERVER']}
-	if (!is.null(SERVER[[k]])) { 
+	if (!is.null(SERVER[[k]])) {
 	  return(SERVER[[k]])
 	} else {
 	  return("")
@@ -11225,8 +12510,7 @@ wasqlSERVER <- function(k) {
 }
 
 wasqlCRONTHRU <- function(k) {
-	{$wasql['CRONTHRU']}
-	if (!is.null(CRONTHRU[[k]])) { 
+	if (!is.null(CRONTHRU[[k]])) {
 	  return(CRONTHRU[[k]])
 	} else {
 	  return("")
@@ -11237,15 +12521,16 @@ ENDOFCONTENT;
 	$content=<<<ENDOFCONTENT
 #! Rscript
 
+	suppressPackageStartupMessages(library(base64enc, quietly = TRUE))
 	suppressPackageStartupMessages(library(tidyverse))
 	suppressPackageStartupMessages(library(jsonlite, quietly = TRUE))
 	suppressPackageStartupMessages(library(htmlTable, quietly = TRUE))
-	
+
 	source("{$files['wasql']}")
 	source("{$wasqlRPath}/common.R")
 	source("{$wasqlRPath}/config.R")
 	source("{$wasqlRPath}/db.R")
-	
+
 
 {$evalcode}
 ENDOFCONTENT;
@@ -11685,6 +12970,17 @@ function evalCleanupGlobal($arr){
 */
 function commonGetLangInfo($lang){
 	switch(strtolower($lang)){
+		case 'julia':
+		case 'jl':
+			//Julia
+			$lang=array(
+				'name'=>'julia',
+				'comment'=>'#',
+				'ext'=>'jl',
+				'exe'=>'julia',
+				'shebang'=>'#!/usr/bin/env julia'
+			);
+		break;
 		case 'tcl':
 			//Tcl
 			$lang=array(
@@ -11790,6 +13086,29 @@ function commonGetLangInfo($lang){
 				'ext'=>'vbs',
 				'exe'=>'cscript //Nologo',
 				'shebang'=>''
+			);
+		break;
+		case 'powershell':
+		case 'pwsh':
+		case 'ps1':
+			//PowerShell
+			$lang=array(
+				'name'=>'powershell',
+				'comment'=>'#',
+				'ext'=>'ps1',
+				'exe'=>'powershell',
+				'shebang'=>'#!/usr/bin/env pwsh'
+			);
+		break;
+		case 'groovy':
+			//Groovy
+			$groovy_exe=isWindows()?'groovy.bat':'groovy';
+			$lang=array(
+				'name'=>'groovy',
+				'comment'=>'//',
+				'ext'=>'groovy',
+				'exe'=>$groovy_exe,
+				'shebang'=>'#!/usr/bin/env groovy'
 			);
 		break;
 		default:
