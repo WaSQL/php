@@ -10455,6 +10455,7 @@ include("wasql_{$lang['evalcode_md5']}.jl");
 
 {$evalcode}
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
@@ -10529,6 +10530,7 @@ function evalBashCode($lang,$evalcode){
 {$code}
 
 ENDOFCONTENT;
+		$content = str_replace("\r", "", $content); // Convert to Unix line endings
 		setFileContents($files['page'],$content);
 	}
 	//create a wasql.sh file with helper functions and variables
@@ -10655,6 +10657,7 @@ wasqlCronthru() {
 }
 
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['wasql'],$content);
 	$content=<<<ENDOFCONTENT
 #!/bin/bash
@@ -10664,6 +10667,7 @@ source "{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.sh"
 
 {$evalcode}
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
@@ -11150,6 +11154,7 @@ def wasqlCronthru(key) {
 // User code
 {$evalcode}
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
@@ -12279,6 +12284,7 @@ if {[file exists "{$wasqlTclPath}/db.tcl"]} {
 
 {$evalcode}
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
@@ -12538,6 +12544,7 @@ ENDOFCONTENT;
 
 {$evalcode}
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
@@ -12803,6 +12810,7 @@ except Exception as err:
 
 {$evalcode}
 ENDOFCONTENT;
+	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
 	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
