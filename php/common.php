@@ -10195,6 +10195,10 @@ function evalPHP($strings){
 					}
 					else{
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
+						// On Linux, make the script executable
+						if(!isWindows()){
+							chmod("{$tmppath}/{$tmpfile}", 0755);
+						}
 						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
 					}
 					$out = cmdResults($command);
