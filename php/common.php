@@ -13271,22 +13271,38 @@ function commonGetPrecodeForVar($lang,$arr,$varname){
 	if(!is_array($arr) || !count($arr)){return array();}
 	foreach($arr as $k=>$v){
 		//remove arrays and values with a slash
-		if(is_array($v) || in_array($k,$skips) || stringContains($v,"\\") || !strlen($v) || isXML($v)){
+		// Skip arrays, special keys, values with backslashes, or XML
+		// But preserve null, false, and empty strings for proper conversion
+		if(is_array($v) || in_array($k,$skips)){
 			unset($arr[$k]);
 			continue;
 		}
-		//skip xml or multiline values
-		$lines=preg_split('/[\r\n]/',$v);
-		if(count($lines) > 1){
-			unset($arr[$k]);
-			continue;
+		// Only check strlen/stringContains for non-null, non-boolean values
+		if(!is_null($v) && !is_bool($v)){
+			if(stringContains($v,"\\") || (is_string($v) && strlen($v) == 0) || isXML($v)){
+				unset($arr[$k]);
+				continue;
+			}
+		}
+		//skip xml or multiline values (only check strings)
+		if(is_string($v)){
+			$lines=preg_split('/[\r\n]/',$v);
+			if(count($lines) > 1){
+				unset($arr[$k]);
+				continue;
+			}
 		}
 	}
 	//echo "commonGetPrecodeForVar for {$lang}".printValue($arr);exit;
 	if(!count($arr)){return array();}
 	switch(strtolower($lang['name'])){
 		case 'python':
-			$precode[]="{$varname} = ".json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+			$json = json_encode($arr,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+			// Convert JSON to Python format: null->None, true->True, false->False
+			$python = preg_replace('/:\s*null\b/', ': None', $json);
+			$python = preg_replace('/:\s*true\b/', ': True', $python);
+			$python = preg_replace('/:\s*false\b/', ': False', $python);
+			$precode[]="{$varname} = ".$python;
 		break;
 		case 'perl':
 			$precode[]="our %{$varname} = (";
