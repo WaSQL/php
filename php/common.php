@@ -10194,7 +10194,7 @@ function evalPHP($strings){
 					}
 					else{
 						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
-						chmod("{$tmppath}/{$tmpfile}", 0755);
+						@chmod("{$tmppath}/{$tmpfile}", 0755);
 						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
 					}
 					$out = cmdResults($command);
@@ -10204,9 +10204,9 @@ function evalPHP($strings){
 					}	
 					else{
 						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT).'</pre>';
+					// Clean up temp file on error
+						@unlink("{$tmppath}/{$tmpfile}");
 					}
-				// Clean up temp file on error
-					@unlink("{$tmppath}/{$tmpfile}");
 				}
 				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 				continue;
