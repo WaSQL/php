@@ -10557,7 +10557,7 @@ ENDOFCONTENT;
 		'PAGE'=>json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'TEMPLATE'=>json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'DATABASE'=>json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'DATABASE'=>json_encode(evalCleanupGlobal($DATABASE),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
@@ -11008,7 +11008,7 @@ ENDOFCONTENT;
 		'PAGE'=>json_encode(evalCleanupGlobal($p),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'TEMPLATE'=>json_encode(evalCleanupGlobal($t),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
-		'DATABASE'=>json_encode(evalCleanupGlobal($db),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
+		'DATABASE'=>json_encode(evalCleanupGlobal($DATABASE),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
 		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE),
@@ -11148,6 +11148,66 @@ def wasqlCronthru(key) {
     return WASQL_CRONTHRU.containsKey(key) ? WASQL_CRONTHRU[key] : ""
 }
 
+// Auto-load WaSQL Groovy db module - uses WASQL_DATABASE and WASQL_CONFIG from above
+try {
+    // Find WaSQL root directory
+    def findWasqlRoot = {
+        def currentDir = new File('.').absoluteFile
+
+        // Try current directory first
+        def groovyDir = new File(currentDir, 'groovy')
+        if (groovyDir.exists() && new File(groovyDir, 'db.groovy').exists()) {
+            return currentDir.absolutePath
+        }
+
+        // Try parent directories
+        currentDir = currentDir.parentFile
+        while (currentDir != null) {
+            groovyDir = new File(currentDir, 'groovy')
+            if (groovyDir.exists() && new File(groovyDir, 'db.groovy').exists()) {
+                return currentDir.absolutePath
+            }
+            currentDir = currentDir.parentFile
+        }
+
+        // Try common paths
+        def possiblePaths = ['D:/wasql', 'C:/wasql', '/var/www/wasql']
+        for (path in possiblePaths) {
+            def testDir = new File(path, 'groovy')
+            if (testDir.exists() && new File(testDir, 'db.groovy').exists()) {
+                return path
+            }
+        }
+
+        return null
+    }
+
+    def wasqlRoot = findWasqlRoot()
+    if (wasqlRoot) {
+        def groovyPath = new File(wasqlRoot, 'groovy').absolutePath
+
+        // Create shell with access to current binding (so db.groovy can see WASQL_DATABASE, etc.)
+        def shell = new GroovyShell(this.binding)
+
+        // Load db module
+        db = shell.parse(new File(groovyPath, 'db.groovy'))
+
+        // Explicitly set DATABASE and CONFIG in the db module from our WASQL variables
+        db.DATABASE = WASQL_DATABASE
+        db.CONFIG = WASQL_CONFIG
+
+        // Optionally load common module for utility functions
+        try {
+            common = shell.parse(new File(groovyPath, 'common.groovy'))
+        } catch (Exception ce) {
+            // common module is optional
+        }
+    }
+} catch (Exception e) {
+    // Module loading failed - user can still load manually if needed
+    System.err.println("Warning: Could not auto-load Groovy db module: " + e.message)
+}
+
 // Include page code if present
 {$pagecode}
 
@@ -11157,7 +11217,18 @@ ENDOFCONTENT;
 	$content = str_replace("\r", "", $content); // Convert to Unix line endings
 	setFileContents($files['main'],$content);
 	$filename=getFileName($files['main']);
-	$command = "{$lang['exe']} \"{$filename}\" 2>&1";
+
+	// Build classpath for JDBC drivers and other dependencies
+	$classpath = '';
+	$groovyLibPath = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . 'groovy' . DIRECTORY_SEPARATOR . 'lib';
+	if (is_dir($groovyLibPath)) {
+		$jars = glob($groovyLibPath . DIRECTORY_SEPARATOR . '*.jar');
+		if (!empty($jars)) {
+			$classpath = ' -cp "' . implode(PATH_SEPARATOR, $jars) . '"';
+		}
+	}
+
+	$command = "{$lang['exe']}{$classpath} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($command,'',$wasqlTempPath);
 	//remove any groovy files in temp older than 1 day - wasqlTempPath
