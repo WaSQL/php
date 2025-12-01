@@ -10306,12 +10306,6 @@ ENDOFCONTENT;
 		setFileContents($files['page'],$content);
 	}
 	//create a wasql.jl file
-	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
-		$db=$DATABASE[$CONFIG['database']];
-	}
-	else{
-		$db=array();
-	}
 	$removes=array('body','functions','controller','js','js_min','css','css_min');
 	$p=$PAGE;
 	foreach($removes as $fld){
@@ -10325,16 +10319,16 @@ ENDOFCONTENT;
 
 	// Write JSON data to separate files to avoid escaping issues
 	$json_files=array(
-		'USER'=>json_encode(evalCleanupGlobal($USER)),
-		'CONFIG'=>json_encode(evalCleanupGlobal($CONFIG)),
-		'PAGE'=>json_encode(evalCleanupGlobal($p)),
-		'TEMPLATE'=>json_encode(evalCleanupGlobal($t)),
-		'PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU)),
-		'DATABASE'=>json_encode(evalCleanupGlobal($db)),
-		'REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST)),
-		'SESSION'=>json_encode(evalCleanupGlobal($_SESSION)),
-		'SERVER'=>json_encode(evalCleanupGlobal($_SERVER)),
-		'CRONTHRU'=>json_encode(evalCleanupGlobal($CRONTHRU))
+		'WASQL_USER'=>json_encode(evalCleanupGlobal($USER)),
+		'WASQL_CONFIG'=>json_encode(evalCleanupGlobal($CONFIG)),
+		'WASQL_PAGE'=>json_encode(evalCleanupGlobal($p)),
+		'WASQL_TEMPLATE'=>json_encode(evalCleanupGlobal($t)),
+		'WASQL_PASSTHRU'=>json_encode(evalCleanupGlobal($PASSTHRU)),
+		'WASQL_DATABASE'=>json_encode(evalCleanupGlobal($DATABASE)),
+		'WASQL_REQUEST'=>json_encode(evalCleanupGlobal($_REQUEST)),
+		'WASQL_SESSION'=>json_encode(evalCleanupGlobal($_SESSION)),
+		'WASQL_SERVER'=>json_encode(evalCleanupGlobal($_SERVER)),
+		'WASQL_CRONTHRU'=>json_encode(evalCleanupGlobal($CRONTHRU))
 	);
 
 	$wasql=array();
@@ -10379,56 +10373,174 @@ catch e
 end
 
 # Global constants - parsed from JSON files to avoid escaping issues
-{$wasql['USER']}
-{$wasql['CONFIG']}
-{$wasql['PAGE']}
-{$wasql['TEMPLATE']}
-{$wasql['PASSTHRU']}
-{$wasql['DATABASE']}
-{$wasql['REQUEST']}
-{$wasql['SESSION']}
-{$wasql['SERVER']}
-{$wasql['CRONTHRU']}
+{$wasql['WASQL_USER']}
+{$wasql['WASQL_CONFIG']}
+{$wasql['WASQL_PAGE']}
+{$wasql['WASQL_TEMPLATE']}
+{$wasql['WASQL_PASSTHRU']}
+{$wasql['WASQL_DATABASE']}
+{$wasql['WASQL_REQUEST']}
+{$wasql['WASQL_SESSION']}
+{$wasql['WASQL_SERVER']}
+{$wasql['WASQL_CRONTHRU']}
 
-# Helper functions to access PHP globals
-function wasqlUser(k::String)
-	return haskey(USER, k) ? USER[k] : ""
+# Auto-load WaSQL Julia db module
+try
+	# Find WaSQL root directory
+	function find_wasql_root()
+		current_dir = pwd()
+
+		# Try parent directories
+		test_dir = current_dir
+		for i in 1:5  # Try up to 5 levels up
+			julia_dir = joinpath(test_dir, "julia")
+			db_file = joinpath(julia_dir, "db.jl")
+
+			if isdir(julia_dir) && isfile(db_file)
+				return test_dir
+			end
+
+			parent = dirname(test_dir)
+			if parent == test_dir
+				break  # Reached root
+			end
+			test_dir = parent
+		end
+
+		# Try common paths
+		possible_paths = ["D:/wasql", "C:/wasql", "/var/www/wasql", "D:\\\\wasql", "C:\\\\wasql"]
+		for path in possible_paths
+			julia_dir = joinpath(path, "julia")
+			db_file = joinpath(julia_dir, "db.jl")
+			if isdir(julia_dir) && isfile(db_file)
+				return path
+			end
+		end
+
+		return nothing
+	end
+
+	wasql_root = find_wasql_root()
+	if wasql_root !== nothing
+		julia_path = joinpath(wasql_root, "julia")
+		db_file = joinpath(julia_path, "db.jl")
+
+		# Load db module - it will auto-install required packages
+		include(db_file)
+		# Make WaSQLDb available as 'db' for convenient access
+		global db = WaSQLDb
+	else
+		println(stderr, "ERROR: Could not find WaSQL julia directory with db.jl")
+		println(stderr, "Current directory: ", pwd())
+		println(stderr, "Searched from: ", pwd(), " up to root")
+		println(stderr, "Also tried: D:/wasql, C:/wasql, /var/www/wasql")
+	end
+catch err
+	# Module loading failed - user can still load manually if needed
+	println(stderr, "ERROR: Failed to load Julia db module: ", err)
+	Base.showerror(stderr, err, catch_backtrace())
+	println(stderr)
 end
 
-function wasqlConfig(k::String)
-	return haskey(CONFIG, k) ? CONFIG[k] : ""
+# Helper functions to access WaSQL globals
+"""
+    wasqlUser(key::String)
+
+Retrieves a value from the WASQL_USER global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlUser(key::String)
+    return haskey(WASQL_USER, key) ? WASQL_USER[key] : ""
 end
 
-function wasqlPage(k::String)
-	return haskey(PAGE, k) ? PAGE[k] : ""
+"""
+    wasqlConfig(key::String)
+
+Retrieves a value from the WASQL_CONFIG global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlConfig(key::String)
+    return haskey(WASQL_CONFIG, key) ? WASQL_CONFIG[key] : ""
 end
 
-function wasqlTemplate(k::String)
-	return haskey(TEMPLATE, k) ? TEMPLATE[k] : ""
+"""
+    wasqlPage(key::String)
+
+Retrieves a value from the WASQL_PAGE global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlPage(key::String)
+    return haskey(WASQL_PAGE, key) ? WASQL_PAGE[key] : ""
 end
 
-function wasqlPassthru(k::String)
-	return haskey(PASSTHRU, k) ? PASSTHRU[k] : ""
+"""
+    wasqlTemplate(key::String)
+
+Retrieves a value from the WASQL_TEMPLATE global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlTemplate(key::String)
+    return haskey(WASQL_TEMPLATE, key) ? WASQL_TEMPLATE[key] : ""
 end
 
-function wasqlDatabase(k::String)
-	return haskey(DATABASE, k) ? DATABASE[k] : ""
+"""
+    wasqlPassthru(key::Union{String,Int})
+
+Retrieves a value from the WASQL_PASSTHRU global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlPassthru(key::Union{String,Int})
+    return haskey(WASQL_PASSTHRU, key) ? WASQL_PASSTHRU[key] : ""
 end
 
-function wasqlRequest(k::String)
-	return haskey(REQUEST, k) ? REQUEST[k] : ""
+"""
+    wasqlDatabase(key::String)
+
+Retrieves a value from the WASQL_DATABASE global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlDatabase(key::String)
+    return haskey(WASQL_DATABASE, key) ? WASQL_DATABASE[key] : ""
 end
 
-function wasqlSession(k::String)
-	return haskey(SESSION, k) ? SESSION[k] : ""
+"""
+    wasqlRequest(key::String)
+
+Retrieves a value from the WASQL_REQUEST global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlRequest(key::String)
+    return haskey(WASQL_REQUEST, key) ? WASQL_REQUEST[key] : ""
 end
 
-function wasqlServer(k::String)
-	return haskey(SERVER, k) ? SERVER[k] : ""
+"""
+    wasqlSession(key::String)
+
+Retrieves a value from the WASQL_SESSION global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlSession(key::String)
+    return haskey(WASQL_SESSION, key) ? WASQL_SESSION[key] : ""
 end
 
-function wasqlCronthru(k::String)
-	return haskey(CRONTHRU, k) ? CRONTHRU[k] : ""
+"""
+    wasqlServer(key::String)
+
+Retrieves a value from the WASQL_SERVER global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlServer(key::String)
+    return haskey(WASQL_SERVER, key) ? WASQL_SERVER[key] : ""
+end
+
+"""
+    wasqlCronthru(key::String)
+
+Retrieves a value from the WASQL_CRONTHRU global by key.
+Returns empty string if key doesn't exist.
+"""
+function wasqlCronthru(key::String)
+    return haskey(WASQL_CRONTHRU, key) ? WASQL_CRONTHRU[key] : ""
 end
 
 ENDOFCONTENT;

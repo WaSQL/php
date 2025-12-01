@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(julia -e:*)",
+      "Bash(julia --check-bounds=no -e:*)",
+      "Bash(test:*)",
+      "Bash(find:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
