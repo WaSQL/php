@@ -15,6 +15,7 @@ References
 
 import groovy.sql.Sql
 import java.sql.SQLException
+import groovy.json.JsonOutput
 
 /**
  * Adds an index to a SQLite table
@@ -166,9 +167,11 @@ def executePS(String query, List args, Map params = [:]) {
  * @param query String SQL query to execute
  * @param params Map containing connection parameters and optional:
  *   filename: if provided, writes results to CSV file instead of returning list
- * @return List of Maps (records) or filename string if filename provided, or error message on failure
+ *   format: 'json' (default) or 'list' for native Groovy list format
+ * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
  * @usage
- *   def recs = sqlitedb.queryResults(query, params)
+ *   def json = sqlitedb.queryResults(query, params)
+ *   def recs = sqlitedb.queryResults(query, params + [format: 'list'])
  */
 def queryResults(String query, Map params = [:]) {
 	def sql = null
@@ -182,31 +185,37 @@ def queryResults(String query, Map params = [:]) {
 		// Check if we should write to CSV file
 		if (params.containsKey('filename')) {
 			def csvFile = new File(params.filename)
-			def writer = csvFile.newWriter('UTF-8')
+			def writer = null
+			try {
+				writer = csvFile.newWriter('UTF-8')
 
-			// Execute query and process results
-			def firstRow = true
-			def fieldNames = []
+				// Execute query and process results
+				def firstRow = true
+				def fieldNames = []
 
-			sql.eachRow(query) { row ->
-				// Get field names from first row
-				if (firstRow) {
-					fieldNames = row.toRowResult().keySet().collect { it.toLowerCase() }
-					// Write header row
-					writer.writeLine(fieldNames.collect { escapeCSV(it) }.join(','))
-					firstRow = false
+				sql.eachRow(query) { row ->
+					// Get field names from first row
+					if (firstRow) {
+						fieldNames = row.toRowResult().keySet().collect { it.toLowerCase() }
+						// Write header row
+						writer.writeLine(fieldNames.collect { escapeCSV(it) }.join(','))
+						firstRow = false
+					}
+
+					// Write data row
+					def values = fieldNames.collect { fieldName ->
+						def value = row.toRowResult()[fieldName]
+						escapeCSV(value?.toString() ?: '')
+					}
+					writer.writeLine(values.join(','))
 				}
 
-				// Write data row
-				def values = fieldNames.collect { fieldName ->
-					def value = row.toRowResult()[fieldName]
-					escapeCSV(value?.toString() ?: '')
+				return params.filename
+			} finally {
+				if (writer != null) {
+					writer.close()
 				}
-				writer.writeLine(values.join(','))
 			}
-
-			writer.close()
-			return params.filename
 
 		} else {
 			// Return list of maps
@@ -224,7 +233,9 @@ def queryResults(String query, Map params = [:]) {
 				recs << rec
 			}
 
-			return recs
+			// Return JSON by default, or native format if requested
+			def format = params.getOrDefault('format', 'json')
+			return (format == 'json') ? JsonOutput.toJson(recs) : recs
 		}
 
 	} catch (SQLException err) {

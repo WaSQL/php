@@ -10960,6 +10960,220 @@ function evalGroovyCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//lets check for a database connection request
+	if(stringContains($evalcode,'db.')){
+		$dbtypes=array();
+		$groovyLibPath=getWaSQLPath('groovy/lib');
+		foreach($DATABASE as $db=>$dbinfo){
+			if(stringContains($evalcode,$db)){
+				//echo $db.printValue($dbinfo);exit;
+				$dbtypes[$dbinfo['dbtype']]+=1;
+			}
+		}
+		//echo 'dbtypes'.printValue($dbtypes);
+
+		// Helper function to get dependencies from Maven POM (optional future enhancement)
+		$getPomDependencies = function($groupId, $artifactId, $version) {
+			// Example: getPomDependencies('net.sf.ucanaccess', 'ucanaccess', '5.0.1')
+			// Returns array of dependencies with their versions
+			// This allows automatic version resolution based on library's declared requirements
+			$groupPath = str_replace('.', '/', $groupId);
+			$pomUrl = "https://repo1.maven.org/maven2/{$groupPath}/{$artifactId}/{$version}/{$artifactId}-{$version}.pom";
+
+			$post = postURL($pomUrl, array('-method'=>'GET', '-nossl'=>1, '-xml'=>1));
+			$deps = array();
+
+			if(isset($post['xml_array']['project']['dependencies']['dependency'])){
+				$dependencies = $post['xml_array']['project']['dependencies']['dependency'];
+				// Handle single dependency (not array) vs multiple dependencies (array)
+				if(isset($dependencies['groupId'])){
+					$dependencies = array($dependencies);
+				}
+				foreach($dependencies as $dep){
+					if(isset($dep['artifactId']) && isset($dep['version'])){
+						$deps[$dep['artifactId']] = $dep['version'];
+					}
+				}
+			}
+			return $deps;
+		};
+		// Usage example: $deps = $getPomDependencies('net.sf.ucanaccess', 'ucanaccess', '5.0.1');
+		// Result: array('hsqldb' => '2.5.1', 'jackcess' => '4.0.4', ...)
+
+		// Version compatibility matrix - ONLY for known incompatibility issues
+		// Default behavior: use 'latest' version from Maven
+		// Only specify versions here when there's a documented breaking change
+		// Format: 'dbtype' => array('library' => 'version' or 'latest')
+		$versionMap = array(
+			'snowflake' => array(
+				'snowflake-jdbc' => 'latest' // Snowflake JDBC driver - no known issues
+			),
+			'oracle' => array(
+				'ojdbc11' => 'latest'       // Oracle JDBC driver - no known issues
+			),
+			'mssql' => array(
+				'mssql-jdbc' => 'latest'    // Microsoft SQL Server JDBC driver - no known issues
+			),
+			'sqlsrv' => array(
+				'mssql-jdbc' => 'latest'    // Alias for mssql
+			),
+			'msaccess' => array(
+				// Note: UCanAccess development is stalled. Latest 5.0.1 has known issues with HSQLDB 2.7+
+				// Until UCanAccess is updated, we must use older compatible versions
+				// See: https://github.com/spannm/ucanaccess/issues
+				'ucanaccess' => 'latest',   // Currently 5.0.1
+				'hsqldb' => '2.5.1',        // CRITICAL: UCanAccess 5.0.1 incompatible with HSQLDB 2.7+
+				'jackcess' => 'latest',     // Auto-downloads latest compatible version
+				'commons-lang3' => 'latest',
+				'commons-logging' => 'latest'
+			),
+			// Future approach: Could parse library POM files to get declared dependencies
+			// Example: Parse ucanaccess-5.0.1.pom to automatically determine compatible versions
+		);
+
+		$lib=array();
+		foreach($dbtypes as $dbtype=>$cnt){
+			if(isset($lib[$dbtype])){continue;}
+			switch(strtolower($dbtype)){
+				case 'postgres':
+				case 'postgresql':
+					$lib[$dbtype]=array(
+						'jar'=>'https://repo1.maven.org/maven2/org/postgresql/postgresql/{version}/postgresql-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/org/postgresql/postgresql/maven-metadata.xml'
+					);
+				break;
+				case 'mysql':
+				case 'mysqli':
+					$lib[$dbtype]=array(
+						'jar'=>'https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/{version}/mysql-connector-j-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/maven-metadata.xml'
+					);
+				break;
+				case 'sqlite':
+				case 'sqlite3':
+					$lib[$dbtype]=array(
+						'jar'=>'https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/{version}/sqlite-jdbc-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/maven-metadata.xml'
+					);
+					//slf4j-nop (no-operation - silences all logging)
+					$lib['slf4j-nop']=array(
+						'jar'=>'https://repo1.maven.org/maven2/org/slf4j/slf4j-nop/{version}/slf4j-nop-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/org/slf4j/slf4j-nop/maven-metadata.xml'
+					);
+				break;
+				case 'firebird':
+					$lib[$dbtype]=array(
+						'jar'=>'https://repo1.maven.org/maven2/org/firebirdsql/jdbc/jaybird/{version}/jaybird-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/org/firebirdsql/jdbc/jaybird/maven-metadata.xml'
+					);
+				break;
+				case 'snowflake':
+					$lib['snowflake-jdbc']=array(
+						'name'=>'snowflake-jdbc',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/{version}/snowflake-jdbc-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/maven-metadata.xml'
+					);
+				break;
+				case 'oracle':
+					$lib['ojdbc11']=array(
+						'name'=>'ojdbc11',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/{version}/ojdbc11-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/maven-metadata.xml'
+					);
+				break;
+				case 'mssql':
+				case 'sqlsrv':
+					$lib['mssql-jdbc']=array(
+						'name'=>'mssql-jdbc',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/{version}/mssql-jdbc-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/maven-metadata.xml'
+					);
+				break;
+				case 'msaccess':
+					$lib['ucanaccess']=array(
+						'name'=>'ucanaccess',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/net/sf/ucanaccess/ucanaccess/{version}/ucanaccess-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/net/sf/ucanaccess/ucanaccess/maven-metadata.xml'
+					);
+					//Access file reader/writer
+					$lib['jackcess']=array(
+						'name'=>'jackcess',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/com/healthmarketscience/jackcess/jackcess/{version}/jackcess-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/com/healthmarketscience/jackcess/jackcess/maven-metadata.xml'
+					);
+					//commons-lang3
+					$lib['commons-lang3']=array(
+						'name'=>'commons-lang3',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/{version}/commons-lang3-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/maven-metadata.xml'
+					);
+					//commons-logging
+					$lib['commons-logging']=array(
+						'name'=>'commons-logging',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/commons-logging/commons-logging/{version}/commons-logging-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/commons-logging/commons-logging/maven-metadata.xml'
+					);
+					//hsqldb
+					$lib['hsqldb']=array(
+						'name'=>'hsqldb',
+						'dbtype'=>$dbtype,
+						'jar'=>'https://repo1.maven.org/maven2/org/hsqldb/hsqldb/{version}/hsqldb-{version}.jar',
+						'meta'=>'https://repo1.maven.org/maven2/org/hsqldb/hsqldb/maven-metadata.xml'
+					);
+				break;
+			}
+		}
+		//echo 'lib'.printValue($lib);exit;
+		foreach($lib as $name=>$libinfo){
+			$version='';
+
+			// Check if this library has a specific version requirement in the version map
+			$dbtype = isset($libinfo['dbtype']) ? strtolower($libinfo['dbtype']) : '';
+			$libname = isset($libinfo['name']) ? $libinfo['name'] : $name;
+
+			if($dbtype && isset($versionMap[$dbtype][$libname])){
+				// Use version from compatibility map
+				$version = $versionMap[$dbtype][$libname];
+			}
+
+			// If version is 'latest' or empty, fetch from Maven metadata
+			if(empty($version) || $version === 'latest'){
+				$post=postURL($libinfo['meta'],array(
+					'-method'=>'GET',
+					'-nossl'=>1,
+					'-xml'=>1
+				));
+				//echo printValue($post['xml_array']);exit;
+				if(isset($post['xml_array']['metadata']['versioning']['release'])){
+					$version=$post['xml_array']['metadata']['versioning']['release'];
+				}
+				elseif(isset($post['xml_array']['metadata']['versioning']['latest'])){
+					$version=$post['xml_array']['metadata']['versioning']['latest'];
+				}
+			}
+
+			if(strlen($version)){
+				$jarurl=str_replace('{version}',$version,$libinfo['jar']);
+				$localfile=getFileName($jarurl);
+				$localafile="{$groovyLibPath}/{$localfile}";
+				//echo "jarurl: {$jarurl}<br>Localfile:{$localfile}<br>";exit;
+				if(!file_exists($localafile)){
+					//echo "getting: {$jarurl}<br>Localfile:{$localfile}<br>";
+					$wget_results=wget($jarurl,$localafile);
+					//echo printValue($wget_results);exit;
+				}
+			}
+			//echo printValue($post['xml_array']);exit;
+		}
+	}
+
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);

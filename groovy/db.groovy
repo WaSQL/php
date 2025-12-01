@@ -127,7 +127,11 @@ def queryResults(String dbname, String query, Map params = [:]) {
             return "Unsupported database type: ${dbtype}"
         }
     } catch (Exception err) {
-        return common.debug(err)
+        // Robust error handling that doesn't depend on common module
+        def errorMsg = "Database error: ${err.message}"
+        System.err.println(errorMsg)
+        err.printStackTrace()
+        return errorMsg
     }
 }
 
@@ -193,7 +197,11 @@ def executeSQL(String dbname, String query, Map params = [:]) {
             return "Unsupported database type: ${dbtype}"
         }
     } catch (Exception err) {
-        return common.debug(err)
+        // Robust error handling that doesn't depend on common module
+        def errorMsg = "Database error: ${err.message}"
+        System.err.println(errorMsg)
+        err.printStackTrace()
+        return errorMsg
     }
 }
 
@@ -256,7 +264,11 @@ def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
             return "Unsupported database type: ${dbtype}"
         }
     } catch (Exception err) {
-        return common.debug(err)
+        // Robust error handling that doesn't depend on common module
+        def errorMsg = "Database error: ${err.message}"
+        System.err.println(errorMsg)
+        err.printStackTrace()
+        return errorMsg
     }
 }
 
