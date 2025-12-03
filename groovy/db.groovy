@@ -145,15 +145,48 @@ try {
  * @usage recs = db.queryResults('dbtest', 'select * from states')
  */
 def queryResults(String dbname, String query, Map params = [:]) {
-    println("[queryResults] Called with dbname='${dbname}'")
-    println("[queryResults] DATABASE is ${DATABASE == null ? 'NULL' : 'not null'}")
-    println("[queryResults] DATABASE size: ${DATABASE?.size() ?: 0}")
-    println("[queryResults] DATABASE keys: ${DATABASE?.keySet()}")
+    // Ensure DATABASE is initialized - reload if null
+    if (DATABASE == null || DATABASE.size() == 0) {
+        println("[queryResults] DATABASE is null or empty, loading config.groovy...")
 
-    // Ensure DATABASE is initialized
-    if (DATABASE == null) {
-        println("[queryResults] WARNING: DATABASE was null, initializing to empty map")
-        DATABASE = [:]
+        // Try to load config.groovy
+        try {
+            def configScript = null
+
+            // Try to find config.groovy using multiple methods
+            def locations = [
+                new File('groovy/config.groovy'),
+                new File('../config.groovy'),
+                new File('config.groovy'),
+                new File('/var/www/wasql_stage/groovy/config.groovy')
+            ]
+
+            for (def loc : locations) {
+                if (loc.exists()) {
+                    configScript = loc
+                    break
+                }
+            }
+
+            if (configScript != null && configScript.exists()) {
+                println("[queryResults] Loading config from: ${configScript.absolutePath}")
+                def shell = new GroovyShell()
+                def configModule = shell.evaluate(configScript)
+                DATABASE = configModule.DATABASE
+                CONFIG = configModule.CONFIG
+                println("[queryResults] Loaded ${DATABASE?.size() ?: 0} databases: ${DATABASE?.keySet()}")
+            } else {
+                println("[queryResults] ERROR: config.groovy not found. Tried locations:")
+                locations.each { println("  - ${it.absolutePath}") }
+                DATABASE = [:]
+                CONFIG = [:]
+            }
+        } catch (Exception e) {
+            println("[queryResults] ERROR loading config: ${e.message}")
+            e.printStackTrace()
+            DATABASE = [:]
+            CONFIG = [:]
+        }
     }
 
     // Ensure params is not null (can happen with trailing commas on some platforms)
