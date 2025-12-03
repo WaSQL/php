@@ -1,0 +1,5 @@
+# Ignore all shortcut files (user-specific)
+*.shortcut
+
+# Keep the README
+!README.md
