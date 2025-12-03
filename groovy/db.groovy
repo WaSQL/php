@@ -145,8 +145,14 @@ try {
  * @usage recs = db.queryResults('dbtest', 'select * from states')
  */
 def queryResults(String dbname, String query, Map params = [:]) {
+    println("[queryResults] Called with dbname='${dbname}'")
+    println("[queryResults] DATABASE is ${DATABASE == null ? 'NULL' : 'not null'}")
+    println("[queryResults] DATABASE size: ${DATABASE?.size() ?: 0}")
+    println("[queryResults] DATABASE keys: ${DATABASE?.keySet()}")
+
     // Ensure DATABASE is initialized
     if (DATABASE == null) {
+        println("[queryResults] WARNING: DATABASE was null, initializing to empty map")
         DATABASE = [:]
     }
 
@@ -157,8 +163,11 @@ def queryResults(String dbname, String query, Map params = [:]) {
 
     if (!DATABASE.containsKey(dbname)) {
         def available = DATABASE.keySet().size() > 0 ? DATABASE.keySet().join(', ') : 'none'
+        println("[queryResults] ERROR: Database '${dbname}' not found. Available: ${available}")
         return "Database '${dbname}' not found in config.xml. Available databases: ${available}"
     }
+
+    println("[queryResults] Database '${dbname}' found in DATABASE map")
 
     def dbtype = DATABASE[dbname].dbtype?.toLowerCase()
 
