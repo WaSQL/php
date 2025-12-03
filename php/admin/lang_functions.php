@@ -162,26 +162,24 @@ function langRubyInfo(){
 	}
 	$modules=array();
 	$menu=array();
-	//get ruby gems with cache expiration (24 hours)
-	$tpath=getWasqlTempPath();
-	$cachefile="{$tpath}/ruby_gems.txt";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$lines=null;
-	if(file_exists($cachefile) && $cache_age < 86400){
-		$lines=file($cachefile);
-	}
-	if(!is_array($lines) || count($lines)==0){
-		// Get all gems including system/default gems (no --local flag shows all gems)
-		$output=shell_exec('gem list 2>&1');
-		if($output){
-			$lines=preg_split('/[\r\n]+/',$output);
-			// Cache the results only if we got valid output
-			if(is_array($lines) && count($lines) > 0 && !stringContains($output,'command not found')){
-				setFileContents($cachefile,implode(PHP_EOL,$lines));
+	// Use Ruby one-liner to get all gem info in one command (much faster than individual gem info calls)
+	// This outputs JSON array with name, versions, author, homepage, and description for all installed gems
+	$ruby_cmd='ruby -W0 -rjson -e "specs=Gem::Specification.all; gems={}; specs.each{|s| k=s.name.downcase; if !gems[k] || Gem::Version.new(s.version) > Gem::Version.new(gems[k][\'version\']) then gems[k]={\'name\'=>s.name,\'version\'=>s.version.to_s,\'versions\'=>[],\'author\'=>(s.authors.is_a?(Array) ? s.authors.join(\', \') : s.authors.to_s),\'homepage\'=>s.homepage.to_s,\'description\'=>s.description.to_s.gsub(/[\\r\\n]+/,\' \')}; end; }; specs.each{|s| k=s.name.downcase; gems[k][\'versions\'] << s.version.to_s if gems[k]; }; gems.each{|k,g| g[\'versions\']=g[\'versions\'].uniq.sort{|a,b| Gem::Version.new(b) <=> Gem::Version.new(a)}.join(\', \'); }; puts JSON.generate(gems.values)"';
+	$output=shell_exec($ruby_cmd);
+	$gem_data=array();
+	if($output && !stringContains($output,'command not found')){
+		// Remove any warning lines that might appear before the JSON
+		$lines=preg_split('/[\r\n]+/',trim($output));
+		foreach($lines as $i=>$line){
+			if(substr(trim($line),0,1)==='['){
+				// Found the JSON start, take everything from here
+				$output=implode("\n",array_slice($lines,$i));
+				break;
 			}
 		}
-		else{
-			$lines=array();
+		$gem_data=json_decode($output,true);
+		if(!is_array($gem_data)){
+			$gem_data=array();
 		}
 	}
 	$header=<<<ENDOFHEADER
@@ -192,38 +190,18 @@ function langRubyInfo(){
 	</div>
 </header>
 ENDOFHEADER;
-	foreach($lines as $line){
-		$line=trim($line);
-		if(!strlen($line)){continue;}
-		// Parse gem list format: gem_name (version1, version2, ...)
-		if(preg_match('/^(.+?)\s+\((.+?)\)$/',$line,$m)){
-			$gemname=trim($m[1]);
-			$versions=trim($m[2]);
-			// Get primary version (first one listed)
-			$vparts=preg_split('/\,\s*/',$versions);
-			$version=isset($vparts[0])?trim($vparts[0]):'';
+	foreach($gem_data as $gem){
+		$gemname=$gem['name'];
+		$version=$gem['version'];
+		$versions=$gem['versions'];
+		$author=encodeHtml($gem['author']);
+		$homepage=encodeHtml($gem['homepage']);
+		$description=encodeHtml($gem['description']);
 
-			if(!strlen($gemname)){continue;}
-			$k=strtolower($gemname);
+		if(!strlen($gemname)){continue;}
+		$k=strtolower($gemname);
 
-			// Get gem info
-			$info_output=shell_exec("gem info {$gemname} --local 2>&1");
-			$description='';
-			$homepage='';
-			$author='';
-			if($info_output){
-				if(preg_match('/Author[s]?\:\s*(.+?)$/im',$info_output,$im)){
-					$author=trim($im[1]);
-				}
-				if(preg_match('/Homepage\:\s*(.+?)$/im',$info_output,$im)){
-					$homepage=trim($im[1]);
-				}
-				if(preg_match('/Description\:\s*(.+?)$/im',$info_output,$im)){
-					$description=trim($im[1]);
-				}
-			}
-
-			$modules[$k]=<<<ENDOFSECTION
+		$modules[$k]=<<<ENDOFSECTION
 <h2><a name="module_{$gemname}">{$gemname}</a></h2>
 <table>
 <tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Name</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;">{$gemname}</td></tr>
@@ -234,8 +212,7 @@ ENDOFHEADER;
 <tr><td class="align-left w_small w_nowrap" style="background:#CC342D4D;width:300px;">Homepage</td><td class="align-left w_small" style="min-width:300px;background-color:#CCCCCC80;word-break:break-all;">{$homepage}</td></tr>
 </table>
 ENDOFSECTION;
-			$menu[$k]=$gemname;
-		}
+		$menu[$k]=$gemname;
 	}
 	$data='<div class="align-center" style="width:934px;">';
 	$data.=$header;
@@ -494,25 +471,12 @@ function langNodeInfo(){
 	}
 	$modules=array();
 	$menu=array();
-	//get node modules with cache expiration (24 hours)
-	$tpath=getWasqlTempPath();
-	$cachefile="{$tpath}/npm_modules.json";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$json=null;
-	if(file_exists($cachefile) && $cache_age < 86400){
-		$json=decodeJSON(getFileContents($cachefile));
-		if(!is_array($json)){
-			$json=null;
-		}
-	}
+	// Get node modules
+	$npmcmd=isWindows()?'npm.cmd':'npm';
+	$out=shell_exec("{$npmcmd} ls --g --json 2>&1");
+	$json=decodeJSON($out);
 	if(!is_array($json)){
-		$npmcmd=isWindows()?'npm.cmd':'npm';
-		$out=shell_exec("{$npmcmd} ls --g --json 2>&1");
-		$json=decodeJSON($out);
-		// Cache the results
-		if(is_array($json)){
-			setFileContents($cachefile,encodeJSON($json));
-		}
+		$json=array();
 	}
 	$version_out=shell_exec("{$nodecmd} -v 2>&1");
 	$version=trim($version_out);
@@ -639,23 +603,11 @@ ENDOFSECTION;
 		$menu[$k]=$library;
 	}
 
-	// Get LuaRocks modules with cache expiration (24 hours)
-	$tpath=getWasqlTempPath();
-	$cachefile="{$tpath}/lua_modules.txt";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$lines=null;
-	if(file_exists($cachefile) && $cache_age < 86400){
-		$lines=file($cachefile);
-	}
-	if(!is_array($lines) || count($lines)==0){
-		$out=shell_exec('luarocks list --porcelain 2>&1');
-		if($out){
-			$lines=preg_split('/[\r\n]+/',$out);
-			// Cache the results only if we got valid output
-			if(is_array($lines) && count($lines) > 0 && !stringContains($out,'command not found')){
-				setFileContents($cachefile,implode(PHP_EOL,$lines));
-			}
-		}
+	// Get LuaRocks modules
+	$out=shell_exec('luarocks list --porcelain 2>&1');
+	$lines=array();
+	if($out){
+		$lines=preg_split('/[\r\n]+/',$out);
 	}
 
 	// Add LuaRocks modules if available
@@ -803,41 +755,36 @@ function langJuliaInfo(){
 	$menu=array();
 	// Use the version we already got from the check
 	$version=$check_result['stdout'];
+
+	// Write Julia code to temp file to avoid quoting issues
 	$tpath=getWasqlTempPath();
+	$julia_script="{$tpath}/julia_info_".uniqid().".jl";
+	$julia_code=<<<'JULIASCRIPT'
+using Pkg
+println("===STDLIB===")
+stdlib_pkgs = Pkg.Types.stdlibs()
+pkg_list = sort(collect(Set(values(stdlib_pkgs))))
+for pkg in pkg_list
+    println(pkg)
+end
+println("===USER===")
+Pkg.status()
+JULIASCRIPT;
+	setFileContents($julia_script,$julia_code);
 
-	// Get standard library packages with caching (24 hours)
-	$stdlib_cachefile="{$tpath}/julia_stdlib.txt";
-	$stdlib_cache_age=file_exists($stdlib_cachefile)?time()-filemtime($stdlib_cachefile):86400;
-	$stdlib_data='';
-	if(file_exists($stdlib_cachefile) && $stdlib_cache_age < 86400){
-		$stdlib_data=getFileContents($stdlib_cachefile);
-	}
-	if(!strlen($stdlib_data)){
-		$cmd="{$juliacmd} -e \"using Pkg; stdlib_pkgs = Pkg.Types.stdlibs(); pkg_list = sort(collect(Set(values(stdlib_pkgs)))); for pkg in pkg_list; println(pkg); end\" 2>&1";
-		$out=cmdResults($cmd);
-		$stdlib_data=$out['stdout'];
-		// Cache the results only if we got valid output
-		if(strlen($stdlib_data) && !stringContains($stdlib_data,'command not found')){
-			setFileContents($stdlib_cachefile,$stdlib_data);
-		}
-	}
+	// Execute Julia script
+	$cmd="{$juliacmd} \"{$julia_script}\" 2>&1";
+	$out=cmdResults($cmd);
+	$combined_output=$out['stdout'];
 
-	// Get user-installed packages with caching (24 hours)
-	$cachefile="{$tpath}/julia_packages.txt";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$pkgdata='';
-	if(file_exists($cachefile) && $cache_age < 86400){
-		$pkgdata=getFileContents($cachefile);
-	}
-	if(!strlen($pkgdata)){
-		$cmd="{$juliacmd} -e \"using Pkg; Pkg.status()\" 2>&1";
-		$out=cmdResults($cmd);
-		$pkgdata=$out['stdout'];
-		// Cache the results only if we got valid output
-		if(strlen($pkgdata) && !stringContains($pkgdata,'command not found')){
-			setFileContents($cachefile,$pkgdata);
-		}
-	}
+	// Clean up temp file
+	@unlink($julia_script);
+
+	// Split output into stdlib and user sections
+	$parts=preg_split('/===USER===/',preg_replace('/===STDLIB===/','',$combined_output));
+	$stdlib_data=isset($parts[0])?trim($parts[0]):'';
+	$pkgdata=isset($parts[1])?trim($parts[1]):'';
+
 
 	$header=<<<ENDOFHEADER
 <header class="align-left">
@@ -1002,29 +949,9 @@ function langPowershellInfo(){
 		$version=trim($out['stdout']);
 	}
 	// Get installed modules
-	$tpath=getWasqlTempPath();
-	$cachefile="{$tpath}/powershell_modules.txt";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$pkgdata='';
-	// Allow force refresh via URL parameter
-	$force_refresh = isset($_REQUEST['refresh']) && $_REQUEST['refresh'] == '1';
-	if($force_refresh && file_exists($cachefile)){
-		unlink($cachefile);
-		$cache_age=86400;
-	}
-	if(file_exists($cachefile) && $cache_age < 3600){
-		// Reduced cache to 1 hour for faster updates
-		$pkgdata=getFileContents($cachefile);
-	}
-	if(!strlen($pkgdata)){
-		// Use Get-Module -ListAvailable to show ALL modules (not just gallery-installed)
-		$listcmd=isWindows()?"powershell -Command \"Get-Module -ListAvailable | Select-Object Name,Version | Sort-Object Name | Format-Table -AutoSize\"":"pwsh -Command \"Get-Module -ListAvailable | Select-Object Name,Version | Sort-Object Name | Format-Table -AutoSize\"";
-		$out=cmdResults($listcmd);
-		$pkgdata=$out['stdout'];
-		if(strlen($pkgdata) && !stringContains($pkgdata,'command not found') && !stringContains($pkgdata,'error')){
-			setFileContents($cachefile,$pkgdata);
-		}
-	}
+	$listcmd=isWindows()?"powershell -Command \"Get-Module -ListAvailable | Select-Object Name,Version | Sort-Object Name | Format-Table -AutoSize\"":"pwsh -Command \"Get-Module -ListAvailable | Select-Object Name,Version | Sort-Object Name | Format-Table -AutoSize\"";
+	$out=cmdResults($listcmd);
+	$pkgdata=$out['stdout'];
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#5391FE;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
@@ -1253,11 +1180,11 @@ ENDOFSECTION;
 	$grape_count=0;
 	if(is_dir($grapes_dir)){
 		// List all grape packages
-		$grape_dirs=listDirectories($grapes_dir);
+		$grape_dirs=glob($grapes_dir.'/*',GLOB_ONLYDIR);
 		foreach($grape_dirs as $group_dir){
-			$artifact_dirs=listDirectories($group_dir);
+			$artifact_dirs=glob($group_dir.'/*',GLOB_ONLYDIR);
 			foreach($artifact_dirs as $artifact_dir){
-				$version_dirs=listDirectories($artifact_dir);
+				$version_dirs=glob($artifact_dir.'/*',GLOB_ONLYDIR);
 				foreach($version_dirs as $version_dir){
 					$group=basename($group_dir);
 					$artifact=basename($artifact_dir);
@@ -1355,31 +1282,12 @@ function langTclInfo(){
 	$version=trim($out['stdout']);
 
 	// Get list of available packages
-	$tpath=getWasqlTempPath();
-	$cachefile="{$tpath}/tcl_packages.txt";
-	$cache_age=file_exists($cachefile)?time()-filemtime($cachefile):86400;
-	$pkgdata='';
-	// Allow force refresh
-	$force_refresh = isset($_REQUEST['refresh']) && $_REQUEST['refresh'] == '1';
-	if($force_refresh && file_exists($cachefile)){
-		unlink($cachefile);
-		$cache_age=86400;
-	}
-	if(file_exists($cachefile) && $cache_age < 3600){
-		$pkgdata=getFileContents($cachefile);
-	}
-	if(!strlen($pkgdata)){
-		// Try to get package list using temp file
-		$tmpfile=getWasqlTempPath().'/tcl_packages.tcl';
-		$tclcode='foreach pkg [lsort [package names]] { puts "$pkg [package provide $pkg]" }';
-		setFileContents($tmpfile,$tclcode);
-		$out=cmdResults("tclsh \"{$tmpfile}\" 2>&1");
-		if(file_exists($tmpfile)){unlink($tmpfile);}
-		$pkgdata=$out['stdout'];
-		if(strlen($pkgdata) && !stringContains($pkgdata,'error')){
-			setFileContents($cachefile,$pkgdata);
-		}
-	}
+	$tmpfile=getWasqlTempPath().'/tcl_packages.tcl';
+	$tclcode='foreach pkg [lsort [package names]] { puts "$pkg [package provide $pkg]" }';
+	setFileContents($tmpfile,$tclcode);
+	$out=cmdResults("tclsh \"{$tmpfile}\" 2>&1");
+	if(file_exists($tmpfile)){unlink($tmpfile);}
+	$pkgdata=$out['stdout'];
 
 	$header=<<<ENDOFHEADER
 <header class="align-left">
