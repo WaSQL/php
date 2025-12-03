@@ -1759,6 +1759,138 @@ fieldset[disabled] .wacss_button.is-danger.is-inverted.is-outlined {
   border-color: transparent !important;
   color: #cc0f35 !important;
 }
+.wacss_button.is-gray,
+.wacss_button.is-grey {
+  background-color: #e0e0e0;
+  border-color: transparent;
+  color: #000;
+}
+.wacss_button.is-gray:hover,
+.wacss_button.is-gray.is-hovered,
+.wacss_button.is-grey:hover,
+.wacss_button.is-grey.is-hovered {
+  background-color: #d5d5d5;
+  border-color: transparent;
+  color: #000;
+}
+.wacss_button.is-gray:focus,
+.wacss_button.is-gray.is-focused,
+.wacss_button.is-grey:focus,
+.wacss_button.is-grey.is-focused {
+  border-color: transparent;
+  color: #000;
+}
+
+.wacss_button.is-gray:active,
+.wacss_button.is-gray.is-active,
+.wacss_button.is-grey:active,
+.wacss_button.is-grey.is-active {
+  background-color: #cccccc !important;
+  border-color: transparent !important;
+  color: #000 !important;
+}
+.wacss_button.is-gray[disabled],
+fieldset[disabled] .wacss_button.is-gray,
+.wacss_button.is-grey[disabled],
+fieldset[disabled] .wacss_button.is-grey {
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
+  box-shadow: none;
+}
+.wacss_button.is-gray.is-inverted,
+.wacss_button.is-grey.is-inverted {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #e0e0e0;
+}
+.wacss_button.is-gray.is-inverted:hover,
+.wacss_button.is-gray.is-inverted.is-hovered,
+.wacss_button.is-grey.is-inverted:hover,
+.wacss_button.is-grey.is-inverted.is-hovered {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+.wacss_button.is-gray.is-inverted[disabled],
+fieldset[disabled] .wacss_button.is-gray.is-inverted,
+.wacss_button.is-grey.is-inverted[disabled],
+fieldset[disabled] .wacss_button.is-grey.is-inverted {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-color: transparent;
+  box-shadow: none;
+  color: #e0e0e0;
+}
+.wacss_button.is-gray.is-outlined,
+.wacss_button.is-grey.is-outlined {
+  background-color: transparent;
+  border-color: #e0e0e0;
+  color: #000;
+}
+.wacss_button.is-gray.is-outlined:hover,
+.wacss_button.is-gray.is-outlined.is-hovered,
+.wacss_button.is-gray.is-outlined:focus,
+.wacss_button.is-gray.is-outlined.is-focused,
+.wacss_button.is-grey.is-outlined:hover,
+.wacss_button.is-grey.is-outlined.is-hovered,
+.wacss_button.is-grey.is-outlined:focus,
+.wacss_button.is-grey.is-outlined.is-focused {
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
+  color: #000;
+}
+.wacss_button.is-gray.is-outlined[disabled],
+fieldset[disabled] .wacss_button.is-gray.is-outlined,
+.wacss_button.is-grey.is-outlined[disabled],
+fieldset[disabled] .wacss_button.is-grey.is-outlined {
+  background-color: transparent;
+  border-color: #e0e0e0;
+  box-shadow: none;
+  color: #999;
+}
+.wacss_button.is-gray.is-inverted.is-outlined,
+.wacss_button.is-grey.is-inverted.is-outlined {
+  background-color: transparent;
+  border-color: rgba(0, 0, 0, 0.7);
+  color: rgba(0, 0, 0, 0.7);
+}
+.wacss_button.is-gray.is-inverted.is-outlined:hover,
+.wacss_button.is-gray.is-inverted.is-outlined.is-hovered,
+.wacss_button.is-gray.is-inverted.is-outlined:focus,
+.wacss_button.is-gray.is-inverted.is-outlined.is-focused,
+.wacss_button.is-grey.is-inverted.is-outlined:hover,
+.wacss_button.is-grey.is-inverted.is-outlined.is-hovered,
+.wacss_button.is-grey.is-inverted.is-outlined:focus,
+.wacss_button.is-grey.is-inverted.is-outlined.is-focused {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #e0e0e0;
+}
+.wacss_button.is-gray.is-inverted.is-outlined[disabled],
+fieldset[disabled] .wacss_button.is-gray.is-inverted.is-outlined,
+.wacss_button.is-grey.is-inverted.is-outlined[disabled],
+fieldset[disabled] .wacss_button.is-grey.is-inverted.is-outlined {
+  background-color: transparent;
+  border-color: rgba(0, 0, 0, 0.7);
+  box-shadow: none;
+  color: rgba(0, 0, 0, 0.7);
+}
+.wacss_button.is-gray.is-light,
+.wacss_button.is-grey.is-light {
+  background-color: #f5f5f5;
+  color: #000;
+}
+.wacss_button.is-gray.is-light:hover,
+.wacss_button.is-gray.is-light.is-hovered,
+.wacss_button.is-grey.is-light:hover,
+.wacss_button.is-grey.is-light.is-hovered {
+  background-color: #eeeeee;
+  border-color: transparent;
+  color: #000;
+}
+.wacss_button.is-gray.is-light:active,
+.wacss_button.is-gray.is-light.is-active,
+.wacss_button.is-grey.is-light:active,
+.wacss_button.is-grey.is-light.is-active {
+  background-color: #e8e8e8 !important;
+  border-color: transparent !important;
+  color: #000 !important;
+}
 
 /* ==========================================================================
    wacss_dropdown COMPONENT
