@@ -145,49 +145,8 @@ try {
  * @usage recs = db.queryResults('dbtest', 'select * from states')
  */
 def queryResults(String dbname, String query, Map params = [:]) {
-    // Ensure DATABASE is initialized - reload if null
-    if (DATABASE == null || DATABASE.size() == 0) {
-        println("[queryResults] DATABASE is null or empty, loading config.groovy...")
-
-        // Try to load config.groovy
-        try {
-            def configScript = null
-
-            // Try to find config.groovy using multiple methods
-            def locations = [
-                new File('groovy/config.groovy'),
-                new File('../config.groovy'),
-                new File('config.groovy'),
-                new File('/var/www/wasql_stage/groovy/config.groovy')
-            ]
-
-            for (def loc : locations) {
-                if (loc.exists()) {
-                    configScript = loc
-                    break
-                }
-            }
-
-            if (configScript != null && configScript.exists()) {
-                println("[queryResults] Loading config from: ${configScript.absolutePath}")
-                def shell = new GroovyShell()
-                def configModule = shell.evaluate(configScript)
-                DATABASE = configModule.DATABASE
-                CONFIG = configModule.CONFIG
-                println("[queryResults] Loaded ${DATABASE?.size() ?: 0} databases: ${DATABASE?.keySet()}")
-            } else {
-                println("[queryResults] ERROR: config.groovy not found. Tried locations:")
-                locations.each { println("  - ${it.absolutePath}") }
-                DATABASE = [:]
-                CONFIG = [:]
-            }
-        } catch (Exception e) {
-            println("[queryResults] ERROR loading config: ${e.message}")
-            e.printStackTrace()
-            DATABASE = [:]
-            CONFIG = [:]
-        }
-    }
+    // Ensure DATABASE is loaded
+    ensureDatabaseLoaded()
 
     // Ensure params is not null (can happen with trailing commas on some platforms)
     if (params == null) {
@@ -280,10 +239,9 @@ def queryResults(String dbname, String query, Map params = [:]) {
  * @usage ok = db.executeSQL('dbtest', 'INSERT INTO users...')
  */
 def executeSQL(String dbname, String query, Map params = [:]) {
-    // Ensure DATABASE is initialized
-    if (DATABASE == null) {
-        DATABASE = [:]
-    }
+    // Ensure DATABASE is loaded
+    ensureDatabaseLoaded()
+
     if (params == null) {
         params = [:]
     }
@@ -360,10 +318,9 @@ def executeSQL(String dbname, String query, Map params = [:]) {
  * @usage ok = db.executePS('dbtest', 'INSERT INTO users VALUES (?, ?)', [name: 'John', email: 'john@example.com'])
  */
 def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
-    // Ensure DATABASE is initialized
-    if (DATABASE == null) {
-        DATABASE = [:]
-    }
+    // Ensure DATABASE is loaded
+    ensureDatabaseLoaded()
+
     if (params == null) {
         params = [:]
     }
@@ -437,10 +394,9 @@ def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
  * @usage sql = db.connect('dbtest')
  */
 def connect(String dbname, Map params = [:]) {
-    // Ensure DATABASE is initialized
-    if (DATABASE == null) {
-        DATABASE = [:]
-    }
+    // Ensure DATABASE is loaded
+    ensureDatabaseLoaded()
+
     if (params == null) {
         params = [:]
     }
@@ -512,6 +468,57 @@ def connect(String dbname, Map params = [:]) {
     } catch (Exception err) {
         common.abort(err)
         return null
+    }
+}
+
+/**
+ * Ensures DATABASE is loaded - helper function
+ * @return void
+ */
+private def ensureDatabaseLoaded() {
+    if (DATABASE != null && DATABASE.size() > 0) {
+        return // Already loaded
+    }
+
+    println("[db.groovy] DATABASE is null or empty, loading config.groovy...")
+
+    try {
+        def configScript = null
+
+        // Try to find config.groovy using multiple methods
+        def locations = [
+            new File('groovy/config.groovy'),
+            new File('../config.groovy'),
+            new File('config.groovy'),
+            new File('/var/www/wasql_stage/groovy/config.groovy')
+        ]
+
+        for (def loc : locations) {
+            if (loc.exists()) {
+                configScript = loc
+                break
+            }
+        }
+
+        if (configScript != null && configScript.exists()) {
+            println("[db.groovy] Loading config from: ${configScript.absolutePath}")
+            // Use the current classloader and binding to ensure XML classes are available
+            def shell = new GroovyShell(this.class.classLoader, this.binding)
+            def configModule = shell.evaluate(configScript)
+            DATABASE = configModule.DATABASE
+            CONFIG = configModule.CONFIG
+            println("[db.groovy] Loaded ${DATABASE?.size() ?: 0} databases: ${DATABASE?.keySet()}")
+        } else {
+            println("[db.groovy] ERROR: config.groovy not found. Tried locations:")
+            locations.each { println("  - ${it.absolutePath}") }
+            DATABASE = [:]
+            CONFIG = [:]
+        }
+    } catch (Exception e) {
+        println("[db.groovy] ERROR loading config: ${e.message}")
+        e.printStackTrace()
+        DATABASE = [:]
+        CONFIG = [:]
     }
 }
 
