@@ -6,6 +6,8 @@ References:
     Dynamically loads database drivers based on dbtype from config.xml
 */
 
+System.err.println("[db.groovy] Loading db.groovy module...")
+
 import groovy.sql.Sql
 import groovy.transform.Field
 
@@ -21,9 +23,12 @@ try {
     // These are set in the main script by common.php's evalGroovyCode function
     DATABASE = WASQL_DATABASE
     CONFIG = WASQL_CONFIG
+    System.err.println("[db.groovy] Loaded from PHP/WASQL variables: DATABASE has ${DATABASE?.size() ?: 0} entries")
 } catch (MissingPropertyException e) {
+    System.err.println("[db.groovy] WASQL variables not available (standalone mode)")
     // Not running embedded, WASQL variables not available - will load modules below
 } catch (Exception e) {
+    System.err.println("[db.groovy] Error accessing WASQL variables: ${e.message}")
     // Other error - will load modules below
 }
 
