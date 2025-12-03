@@ -482,48 +482,6 @@ private def ensureDatabaseLoaded() {
 
     println("[db.groovy] DATABASE is null or empty, loading config.xml...")
 
-    // First check if XML support is available
-    try {
-        Class.forName('groovy.xml.XmlSlurper')
-    } catch (ClassNotFoundException e) {
-        println("")
-        println("=" * 70)
-        println("ERROR: Groovy XML support not available!")
-        println("=" * 70)
-        println("")
-        println("The groovy.xml.XmlSlurper class is required but not found.")
-        println("")
-        println("This usually means:")
-        println("  1. Groovy is not properly installed")
-        println("  2. The Groovy XML module is missing")
-        println("")
-        println("To fix this:")
-        println("")
-        println("On Ubuntu/Debian:")
-        println("  sudo apt-get install groovy")
-        println("  # or")
-        println("  sudo apt-get install groovy-all")
-        println("")
-        println("On RedHat/CentOS:")
-        println("  sudo yum install groovy")
-        println("")
-        println("Using SDKMAN:")
-        println("  curl -s https://get.sdkman.io | bash")
-        println("  sdk install groovy")
-        println("")
-        println("Manual installation:")
-        println("  1. Download Groovy from https://groovy.apache.org/download.html")
-        println("  2. Extract and add to PATH")
-        println("  3. Ensure GROOVY_HOME is set")
-        println("")
-        println("Current Groovy version: ${GroovySystem.version}")
-        println("=" * 70)
-        println("")
-        DATABASE = [:]
-        CONFIG = [:]
-        return
-    }
-
     try {
         def configXml = null
 
@@ -545,8 +503,37 @@ private def ensureDatabaseLoaded() {
         if (configXml != null && configXml.exists()) {
             println("[db.groovy] Loading config from: ${configXml.absolutePath}")
 
-            // Parse XML directly using XmlSlurper
-            def xml = new groovy.xml.XmlSlurper().parse(configXml)
+            // Try to load XmlSlurper dynamically to avoid compile-time dependency
+            def xmlSlurperClass = null
+            try {
+                xmlSlurperClass = Class.forName('groovy.xml.XmlSlurper')
+            } catch (ClassNotFoundException e) {
+                println("")
+                println("=" * 70)
+                println("ERROR: Groovy XML support not available!")
+                println("=" * 70)
+                println("")
+                println("The groovy.xml.XmlSlurper class is required but not found.")
+                println("")
+                println("To fix this on Ubuntu/Debian:")
+                println("  sudo apt-get install groovy-all")
+                println("")
+                println("Or download groovy-all.jar from:")
+                println("  https://repo1.maven.org/maven2/org/codehaus/groovy/groovy-all/")
+                println("  And add to: /usr/share/groovy/lib/")
+                println("")
+                println("Current Groovy version: ${GroovySystem.version}")
+                println("Groovy home: ${System.getenv('GROOVY_HOME') ?: 'not set'}")
+                println("=" * 70)
+                println("")
+                DATABASE = [:]
+                CONFIG = [:]
+                return
+            }
+
+            // Parse XML using dynamically loaded class
+            def parser = xmlSlurperClass.newInstance()
+            def xml = parser.parse(configXml)
 
             DATABASE = [:]
             xml.database.each { db ->
