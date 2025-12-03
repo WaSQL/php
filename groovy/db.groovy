@@ -504,31 +504,39 @@ private def ensureDatabaseLoaded() {
             println("[db.groovy] Loading config from: ${configXml.absolutePath}")
 
             // Try to load XmlSlurper dynamically to avoid compile-time dependency
+            // Try both groovy.xml (2.x+) and groovy.util (1.x) packages
             def xmlSlurperClass = null
             try {
                 xmlSlurperClass = Class.forName('groovy.xml.XmlSlurper')
-            } catch (ClassNotFoundException e) {
-                println("")
-                println("=" * 70)
-                println("ERROR: Groovy XML support not available!")
-                println("=" * 70)
-                println("")
-                println("The groovy.xml.XmlSlurper class is required but not found.")
-                println("")
-                println("To fix this on Ubuntu/Debian:")
-                println("  sudo apt-get install groovy-all")
-                println("")
-                println("Or download groovy-all.jar from:")
-                println("  https://repo1.maven.org/maven2/org/codehaus/groovy/groovy-all/")
-                println("  And add to: /usr/share/groovy/lib/")
-                println("")
-                println("Current Groovy version: ${GroovySystem.version}")
-                println("Groovy home: ${System.getenv('GROOVY_HOME') ?: 'not set'}")
-                println("=" * 70)
-                println("")
-                DATABASE = [:]
-                CONFIG = [:]
-                return
+            } catch (ClassNotFoundException e1) {
+                try {
+                    // Try older package location for Groovy 1.x
+                    xmlSlurperClass = Class.forName('groovy.util.XmlSlurper')
+                } catch (ClassNotFoundException e2) {
+                    println("")
+                    println("=" * 70)
+                    println("ERROR: Groovy XML support not available!")
+                    println("=" * 70)
+                    println("")
+                    println("The XmlSlurper class is required but not found.")
+                    println("Tried: groovy.xml.XmlSlurper (Groovy 2.x+)")
+                    println("       groovy.util.XmlSlurper (Groovy 1.x)")
+                    println("")
+                    println("To fix this on Ubuntu/Debian:")
+                    println("  sudo apt-get install groovy-all")
+                    println("")
+                    println("Or download groovy-all.jar from:")
+                    println("  https://repo1.maven.org/maven2/org/codehaus/groovy/groovy-all/")
+                    println("  And add to: /usr/share/groovy/lib/")
+                    println("")
+                    println("Current Groovy version: ${GroovySystem.version}")
+                    println("Groovy home: ${System.getenv('GROOVY_HOME') ?: 'not set'}")
+                    println("=" * 70)
+                    println("")
+                    DATABASE = [:]
+                    CONFIG = [:]
+                    return
+                }
             }
 
             // Parse XML using dynamically loaded class
