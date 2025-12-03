@@ -30,12 +30,69 @@ try {
 // If not available, load config module (standalone mode)
 if (DATABASE == null || CONFIG == null) {
     try {
-        def configScript = new File(new File(getClass().protectionDomain.codeSource.location.path).parent, 'config.groovy')
-        def configModule = new GroovyShell(this.binding).evaluate(configScript)
-        if (DATABASE == null) DATABASE = configModule.DATABASE
-        if (CONFIG == null) CONFIG = configModule.CONFIG
+        // Try multiple methods to find config.groovy
+        def configScript = null
+
+        // Method 0: Check environment variable
+        def configPath = System.getenv('WASQL_CONFIG_PATH')
+        if (configPath) {
+            configScript = new File(configPath, 'config.groovy')
+            if (!configScript.exists()) {
+                configScript = null
+            }
+        }
+
+        // Method 1: Try using script location
+        if (configScript == null || !configScript.exists()) {
+            try {
+                def scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
+                configScript = new File(scriptDir, 'config.groovy')
+                if (!configScript.exists()) {
+                    configScript = null
+                }
+            } catch (Exception e1) {
+                // Method 1 failed
+            }
+        }
+
+        // Method 2: Try current directory
+        if (configScript == null || !configScript.exists()) {
+            configScript = new File('config.groovy')
+            if (!configScript.exists()) {
+                configScript = null
+            }
+        }
+
+        // Method 3: Try script's directory using different approach
+        if (configScript == null || !configScript.exists()) {
+            try {
+                def thisFile = new File(getClass().protectionDomain.codeSource.location.toURI())
+                if (thisFile.isFile()) {
+                    configScript = new File(thisFile.parentFile, 'config.groovy')
+                } else {
+                    configScript = new File(thisFile, 'config.groovy')
+                }
+                if (!configScript.exists()) {
+                    configScript = null
+                }
+            } catch (Exception e3) {
+                // Method 3 failed
+            }
+        }
+
+        if (configScript != null && configScript.exists()) {
+            def configModule = new GroovyShell(this.binding).evaluate(configScript)
+            if (DATABASE == null) DATABASE = configModule.DATABASE
+            if (CONFIG == null) CONFIG = configModule.CONFIG
+        } else {
+            System.err.println("Warning: Could not find config.groovy in any expected location")
+            System.err.println("Hint: Set WASQL_CONFIG_PATH environment variable to the directory containing config.groovy")
+            DATABASE = [:]
+            CONFIG = [:]
+        }
     } catch (Exception e) {
         System.err.println("Warning: Could not load config module: ${e.message}")
+        e.printStackTrace()
         DATABASE = [:]
         CONFIG = [:]
     }

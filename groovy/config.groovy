@@ -11,10 +11,44 @@ Installation:
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.GPathResult
 
-// Get paths
-def scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
-def parentPath = new File(scriptDir).parentFile.absolutePath
-def configFile = "${parentPath}${File.separator}config.xml"
+// Get paths - try multiple methods for cross-platform compatibility
+def scriptDir = null
+def parentPath = null
+def configFile = null
+
+try {
+    // Method 1: Using codeSource location
+    scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
+    parentPath = new File(scriptDir).parentFile.absolutePath
+    configFile = "${parentPath}${File.separator}config.xml"
+
+    // Check if config exists, if not try other methods
+    if (!new File(configFile).exists()) {
+        throw new Exception("Config not found at ${configFile}")
+    }
+} catch (Exception e1) {
+    try {
+        // Method 2: Using URI to handle URL encoding properly
+        def thisFile = new File(getClass().protectionDomain.codeSource.location.toURI())
+        scriptDir = thisFile.isFile() ? thisFile.parentFile.absolutePath : thisFile.absolutePath
+        parentPath = new File(scriptDir).parentFile.absolutePath
+        configFile = "${parentPath}${File.separator}config.xml"
+
+        if (!new File(configFile).exists()) {
+            throw new Exception("Config not found at ${configFile}")
+        }
+    } catch (Exception e2) {
+        // Method 3: Try current directory's parent
+        scriptDir = new File('.').absolutePath
+        parentPath = new File(scriptDir).parentFile.absolutePath
+        configFile = "${parentPath}${File.separator}config.xml"
+
+        if (!new File(configFile).exists()) {
+            // Method 4: Try ../config.xml relative
+            configFile = "../config.xml"
+        }
+    }
+}
 
 // HTTP_HOST - default to localhost for command line stuff
 // Remove 'def' to make these script binding variables accessible to other scripts
