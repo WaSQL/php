@@ -58,14 +58,18 @@ HTTP_HOST = System.getenv('HTTP_HOST') ?: 'localhost'
 ALLCONFIG = [:]
 try {
     def xmlFile = new File(configFile)
+    System.err.println("Looking for config.xml at: ${xmlFile.absolutePath}")
     if (xmlFile.exists()) {
+        System.err.println("Found config.xml, loading...")
         def xmlText = xmlFile.text
         def xml = new XmlSlurper().parseText(xmlText)
 
         // Convert XML to Map recursively
         ALLCONFIG = xmlToMap(xml)
     } else {
-        System.err.println("Config file not found: ${configFile}")
+        System.err.println("Config file not found: ${xmlFile.absolutePath}")
+        System.err.println("Tried paths:")
+        System.err.println("  - ${xmlFile.absolutePath}")
     }
 } catch (Exception e) {
     System.err.println("Error parsing config.xml: ${e.message}")
@@ -91,6 +95,9 @@ if (ALLCONFIG.database) {
         }
     }
 }
+
+// Show what was loaded
+System.err.println("Loaded ${DATABASE.size()} database(s): ${DATABASE.keySet()}")
 
 // CONFIG
 CONFIG = [:]

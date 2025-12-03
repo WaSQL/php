@@ -130,7 +130,8 @@ def queryResults(String dbname, String query, Map params = [:]) {
     }
 
     if (!DATABASE.containsKey(dbname)) {
-        return "Database '${dbname}' not found in config.xml"
+        def available = DATABASE.keySet().size() > 0 ? DATABASE.keySet().join(', ') : 'none'
+        return "Database '${dbname}' not found in config.xml. Available databases: ${available}"
     }
 
     def dbtype = DATABASE[dbname].dbtype?.toLowerCase()
@@ -220,7 +221,8 @@ def executeSQL(String dbname, String query, Map params = [:]) {
     }
 
     if (!DATABASE.containsKey(dbname)) {
-        return "Database '${dbname}' not found in config.xml"
+        def available = DATABASE.keySet().size() > 0 ? DATABASE.keySet().join(', ') : 'none'
+        return "Database '${dbname}' not found in config.xml. Available databases: ${available}"
     }
 
     def dbtype = DATABASE[dbname].dbtype?.toLowerCase()
@@ -302,7 +304,8 @@ def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
     }
 
     if (!DATABASE.containsKey(dbname)) {
-        return "Database '${dbname}' not found in config.xml"
+        def available = DATABASE.keySet().size() > 0 ? DATABASE.keySet().join(', ') : 'none'
+        return "Database '${dbname}' not found in config.xml. Available databases: ${available}"
     }
 
     def dbtype = DATABASE[dbname].dbtype?.toLowerCase()
