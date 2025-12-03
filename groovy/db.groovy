@@ -62,6 +62,16 @@ try {
  * @usage recs = db.queryResults('dbtest', 'select * from states')
  */
 def queryResults(String dbname, String query, Map params = [:]) {
+    // Ensure DATABASE is initialized
+    if (DATABASE == null) {
+        DATABASE = [:]
+    }
+
+    // Ensure params is not null (can happen with trailing commas on some platforms)
+    if (params == null) {
+        params = [:]
+    }
+
     if (!DATABASE.containsKey(dbname)) {
         return "Database '${dbname}' not found in config.xml"
     }
@@ -144,6 +154,14 @@ def queryResults(String dbname, String query, Map params = [:]) {
  * @usage ok = db.executeSQL('dbtest', 'INSERT INTO users...')
  */
 def executeSQL(String dbname, String query, Map params = [:]) {
+    // Ensure DATABASE is initialized
+    if (DATABASE == null) {
+        DATABASE = [:]
+    }
+    if (params == null) {
+        params = [:]
+    }
+
     if (!DATABASE.containsKey(dbname)) {
         return "Database '${dbname}' not found in config.xml"
     }
@@ -215,6 +233,17 @@ def executeSQL(String dbname, String query, Map params = [:]) {
  * @usage ok = db.executePS('dbtest', 'INSERT INTO users VALUES (?, ?)', [name: 'John', email: 'john@example.com'])
  */
 def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
+    // Ensure DATABASE is initialized
+    if (DATABASE == null) {
+        DATABASE = [:]
+    }
+    if (params == null) {
+        params = [:]
+    }
+    if (args == null) {
+        args = [:]
+    }
+
     if (!DATABASE.containsKey(dbname)) {
         return "Database '${dbname}' not found in config.xml"
     }
@@ -280,6 +309,14 @@ def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
  * @usage sql = db.connect('dbtest')
  */
 def connect(String dbname, Map params = [:]) {
+    // Ensure DATABASE is initialized
+    if (DATABASE == null) {
+        DATABASE = [:]
+    }
+    if (params == null) {
+        params = [:]
+    }
+
     if (!DATABASE.containsKey(dbname)) {
         return null
     }
