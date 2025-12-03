@@ -546,8 +546,9 @@ private def ensureDatabaseLoaded() {
             DATABASE = [:]
             xml.database.each { db ->
                 def dbMap = [:]
-                db.children().each { child ->
-                    dbMap[child.name()] = child.text()
+                // Get all attributes from the database element
+                db.attributes().each { key, value ->
+                    dbMap[key] = value
                 }
                 if (dbMap.name) {
                     DATABASE[dbMap.name] = dbMap
