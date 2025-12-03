@@ -15,12 +15,14 @@ import groovy.xml.slurpersupport.GPathResult
 def scriptDir = null
 def parentPath = null
 def configFile = null
+def attemptedPaths = []
 
 try {
     // Method 1: Using codeSource location
     scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
     parentPath = new File(scriptDir).parentFile.absolutePath
     configFile = "${parentPath}${File.separator}config.xml"
+    attemptedPaths << new File(configFile).absolutePath
 
     // Check if config exists, if not try other methods
     if (!new File(configFile).exists()) {
@@ -33,6 +35,7 @@ try {
         scriptDir = thisFile.isFile() ? thisFile.parentFile.absolutePath : thisFile.absolutePath
         parentPath = new File(scriptDir).parentFile.absolutePath
         configFile = "${parentPath}${File.separator}config.xml"
+        attemptedPaths << new File(configFile).absolutePath
 
         if (!new File(configFile).exists()) {
             throw new Exception("Config not found at ${configFile}")
@@ -42,10 +45,12 @@ try {
         scriptDir = new File('.').absolutePath
         parentPath = new File(scriptDir).parentFile.absolutePath
         configFile = "${parentPath}${File.separator}config.xml"
+        attemptedPaths << new File(configFile).absolutePath
 
         if (!new File(configFile).exists()) {
             // Method 4: Try ../config.xml relative
             configFile = "../config.xml"
+            attemptedPaths << new File(configFile).absolutePath
         }
     }
 }
@@ -58,22 +63,29 @@ HTTP_HOST = System.getenv('HTTP_HOST') ?: 'localhost'
 ALLCONFIG = [:]
 try {
     def xmlFile = new File(configFile)
-    System.err.println("Looking for config.xml at: ${xmlFile.absolutePath}")
     if (xmlFile.exists()) {
-        System.err.println("Found config.xml, loading...")
+        System.err.println("Found config.xml at: ${xmlFile.absolutePath}")
         def xmlText = xmlFile.text
         def xml = new XmlSlurper().parseText(xmlText)
 
         // Convert XML to Map recursively
         ALLCONFIG = xmlToMap(xml)
     } else {
-        System.err.println("Config file not found: ${xmlFile.absolutePath}")
-        System.err.println("Tried paths:")
-        System.err.println("  - ${xmlFile.absolutePath}")
+        System.err.println("Config file not found!")
+        System.err.println("Searched in the following locations:")
+        attemptedPaths.eachWithIndex { path, idx ->
+            System.err.println("  ${idx + 1}. ${path}")
+        }
+        System.err.println("\nCurrent working directory: ${new File('.').absolutePath}")
+        System.err.println("Script location: ${getClass().protectionDomain.codeSource.location}")
     }
 } catch (Exception e) {
     System.err.println("Error parsing config.xml: ${e.message}")
     e.printStackTrace()
+    System.err.println("\nSearched in the following locations:")
+    attemptedPaths.eachWithIndex { path, idx ->
+        System.err.println("  ${idx + 1}. ${path}")
+    }
 }
 
 // DATABASE
