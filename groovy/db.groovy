@@ -6,7 +6,7 @@ References:
     Dynamically loads database drivers based on dbtype from config.xml
 */
 
-System.err.println("[db.groovy] Loading db.groovy module...")
+println("[db.groovy] Loading db.groovy module...")
 
 import groovy.sql.Sql
 import groovy.transform.Field
@@ -23,18 +23,18 @@ try {
     // These are set in the main script by common.php's evalGroovyCode function
     DATABASE = WASQL_DATABASE
     CONFIG = WASQL_CONFIG
-    System.err.println("[db.groovy] Loaded from PHP/WASQL variables: DATABASE has ${DATABASE?.size() ?: 0} entries")
+    println("[db.groovy] Loaded from PHP/WASQL variables: DATABASE has ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
 } catch (MissingPropertyException e) {
-    System.err.println("[db.groovy] WASQL variables not available (standalone mode)")
+    println("[db.groovy] WASQL variables not available (standalone mode)")
     // Not running embedded, WASQL variables not available - will load modules below
 } catch (Exception e) {
-    System.err.println("[db.groovy] Error accessing WASQL variables: ${e.message}")
+    println("[db.groovy] Error accessing WASQL variables: ${e.message}")
     // Other error - will load modules below
 }
 
 // If not available, load config module (standalone mode)
 if (DATABASE == null || CONFIG == null) {
-    System.err.println("[db.groovy] DATABASE is null, attempting to load config.groovy...")
+    println("[db.groovy] DATABASE is null, attempting to load config.groovy...")
     def attemptedConfigPaths = []
 
     try {
@@ -93,35 +93,35 @@ if (DATABASE == null || CONFIG == null) {
         }
 
         if (configScript != null && configScript.exists()) {
-            System.err.println("[db.groovy] Found config.groovy at: ${configScript.absolutePath}")
-            System.err.println("[db.groovy] Evaluating config.groovy...")
+            println("[db.groovy] Found config.groovy at: ${configScript.absolutePath}")
+            println("[db.groovy] Evaluating config.groovy...")
             def configModule = new GroovyShell(this.binding).evaluate(configScript)
             if (DATABASE == null) DATABASE = configModule.DATABASE
             if (CONFIG == null) CONFIG = configModule.CONFIG
-            System.err.println("[db.groovy] Config loaded. DATABASE has ${DATABASE?.size() ?: 0} entries")
+            println("[db.groovy] Config loaded. DATABASE has ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
         } else {
-            System.err.println("[db.groovy] ERROR: Could not find config.groovy!")
-            System.err.println("[db.groovy] Searched in the following locations:")
+            println("[db.groovy] ERROR: Could not find config.groovy!")
+            println("[db.groovy] Searched in the following locations:")
             attemptedConfigPaths.eachWithIndex { path, idx ->
-                System.err.println("  ${idx + 1}. ${path}")
+                println("  ${idx + 1}. ${path}")
             }
-            System.err.println("[db.groovy] Current working directory: ${new File('.').absolutePath}")
-            System.err.println("[db.groovy] Hint: Set WASQL_CONFIG_PATH environment variable to the directory containing config.groovy")
+            println("[db.groovy] Current working directory: ${new File('.').absolutePath}")
+            println("[db.groovy] Hint: Set WASQL_CONFIG_PATH environment variable to the directory containing config.groovy")
             DATABASE = [:]
             CONFIG = [:]
         }
     } catch (Exception e) {
-        System.err.println("[db.groovy] ERROR loading config module: ${e.message}")
+        println("[db.groovy] ERROR loading config module: ${e.message}")
         e.printStackTrace()
-        System.err.println("[db.groovy] Searched in the following locations:")
+        println("[db.groovy] Searched in the following locations:")
         attemptedConfigPaths.eachWithIndex { path, idx ->
-            System.err.println("  ${idx + 1}. ${path}")
+            println("  ${idx + 1}. ${path}")
         }
         DATABASE = [:]
         CONFIG = [:]
     }
 } else {
-    System.err.println("[db.groovy] DATABASE already loaded with ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
+    println("[db.groovy] DATABASE already loaded with ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
 }
 
 // Load common module for error handling
