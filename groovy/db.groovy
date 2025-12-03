@@ -31,7 +31,7 @@ try {
 if (DATABASE == null || CONFIG == null) {
     try {
         def configScript = new File(new File(getClass().protectionDomain.codeSource.location.path).parent, 'config.groovy')
-        def configModule = new GroovyShell(this.binding).parse(configScript)
+        def configModule = new GroovyShell(this.binding).evaluate(configScript)
         if (DATABASE == null) DATABASE = configModule.DATABASE
         if (CONFIG == null) CONFIG = configModule.CONFIG
     } catch (Exception e) {

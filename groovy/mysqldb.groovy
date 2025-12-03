@@ -14,6 +14,7 @@ References
 import groovy.sql.Sql
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import groovy.json.JsonGenerator
 import java.sql.SQLException
 
 /**
@@ -209,7 +210,15 @@ def queryResults(String query, Map params = [:]) {
 
 			// Return JSON by default, or native format if requested
 			def format = params.getOrDefault('format', 'json')
-			return (format == 'json') ? JsonOutput.toJson(recs) : recs
+			if (format == 'json') {
+				// Use JsonGenerator to output actual UTF-8 characters instead of Unicode escape sequences
+				def generator = new JsonGenerator.Options()
+					.disableUnicodeEscaping()
+					.build()
+				return generator.toJson(recs)
+			} else {
+				return recs
+			}
 		}
 
 	} catch (SQLException err) {

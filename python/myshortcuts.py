@@ -1,10 +1,8 @@
 """
 myshortcuts.py
-Simple text-expander using SQLite and settings from myshortcuts.json,
-including hotkey Ctrl+Shift+M to detect add/update commands.
+Simple text-expander using file-based storage and settings from myshortcuts.json.
 """
 
-import sqlite3
 import time
 import threading
 from pathlib import Path
@@ -12,7 +10,6 @@ import pyperclip
 import keyboard
 import sys
 import json
-import re
 
 CONFIG_FILE = Path(__file__).with_name("myshortcuts.json")
 
@@ -21,14 +18,20 @@ def load_config():
     if not CONFIG_FILE.exists():
         print(f"Config file {CONFIG_FILE} not found.")
         sys.exit(1)
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing config file {CONFIG_FILE}: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error reading config file {CONFIG_FILE}: {e}")
+        sys.exit(1)
 
 config = load_config()
-DB_PATH = Path(config.get("database", "myshortcuts.db"))
+SHORTCUTS_FOLDER = Path(config.get("shortcuts_folder", "myshortcuts"))
 MAX_BUFFER = int(config.get("max_buffer", 200))
 SEPARATORS = set(config.get("separators", [" ", "\n", "\t", ".", ",", ";", ":", "!", "?", ")", "]", "}", "\"", "'"]))
-UPDATE_HOTKEY = config.get("update_hotkey", "ctrl+shift+m")
 DEBUG = config.get("debug", 0)
 
 # Key name to character mapping
@@ -75,67 +78,95 @@ KEY_MAP = {
 }
 
 class MyShortcutsStore:
-    def __init__(self, db_path):
-        self.db_path = Path(db_path)
-        self._ensure_db()
+    def __init__(self, shortcuts_folder):
+        self.shortcuts_folder = Path(shortcuts_folder)
+        self._ensure_folder()
 
-    def _ensure_db(self):
-        if not self.db_path.exists():
-            conn = sqlite3.connect(self.db_path)
-            conn.execute("""
-                CREATE TABLE myshortcuts (
-                    trigger TEXT PRIMARY KEY,
-                    expansion TEXT NOT NULL
-                )
-            """)
-            conn.commit()
-            conn.close()
-            print(f"Database created at {self.db_path}")
+    def _ensure_folder(self):
+        if not self.shortcuts_folder.exists():
+            self.shortcuts_folder.mkdir(parents=True, exist_ok=True)
+            print(f"Shortcuts folder created at {self.shortcuts_folder}")
+
+    def _trigger_to_filename(self, trigger):
+        """Convert trigger (e.g., ';li') to filename (e.g., 'li.shortcut')"""
+        # Strip leading semicolon if present
+        name = trigger.lstrip(';')
+
+        # Security: Prevent path traversal by removing path separators
+        # Only allow alphanumeric, dash, underscore, and space
+        name = ''.join(c for c in name if c.isalnum() or c in '-_ ')
+
+        if not name:
+            raise ValueError(f"Invalid trigger name: {trigger}")
+
+        return f"{name}.shortcut"
+
+    def _filename_to_trigger(self, filename):
+        """Convert filename (e.g., 'li.shortcut') to trigger (e.g., ';li')"""
+        # Remove .shortcut extension
+        name = filename.replace('.shortcut', '')
+        return f";{name}"
 
     def get_expansion(self, trigger):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT expansion FROM myshortcuts WHERE trigger = ?", (trigger,))
-        row = cur.fetchone()
-        conn.close()
-        return row[0] if row else None
+        try:
+            filename = self._trigger_to_filename(trigger)
+            filepath = self.shortcuts_folder / filename
+
+            if not filepath.exists():
+                return None
+
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read()
+        except ValueError as e:
+            if DEBUG:
+                print(f"Invalid trigger name: {e}")
+            return None
+        except Exception as e:
+            if DEBUG:
+                print(f"Error reading shortcut file: {e}")
+            return None
 
     def add_or_update(self, trigger, expansion):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        cur.execute("INSERT INTO myshortcuts(trigger, expansion) VALUES(?, ?) ON CONFLICT(trigger) DO UPDATE SET expansion=excluded.expansion", (trigger, expansion))
-        conn.commit()
-        conn.close()
-    
-    def list_all_shortcuts(self):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT trigger, expansion FROM myshortcuts ORDER BY trigger")
-        rows = cur.fetchall()
-        conn.close()
-        return rows
-    
+        try:
+            filename = self._trigger_to_filename(trigger)
+            filepath = self.shortcuts_folder / filename
+
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(expansion)
+            if DEBUG:
+                print(f"Saved shortcut to {filepath}")
+        except ValueError as e:
+            if DEBUG:
+                print(f"Invalid trigger name: {e}")
+        except Exception as e:
+            if DEBUG:
+                print(f"Error writing shortcut file: {e}")
+
+
     def delete_shortcut(self, trigger):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        
-        if DEBUG:
-            # Check what's in the database before deletion
-            cur.execute("SELECT trigger, expansion FROM myshortcuts WHERE trigger = ?", (trigger,))
-            existing = cur.fetchone()
-            print(f"Before deletion - trigger '{trigger}' exists: {existing is not None}")
-            if existing:
-                print(f"Existing entry: {existing}")
-        
-        cur.execute("DELETE FROM myshortcuts WHERE trigger = ?", (trigger,))
-        deleted = cur.rowcount > 0
-        
-        if DEBUG:
-            print(f"Delete operation result: {deleted}, rowcount: {cur.rowcount}")
-        
-        conn.commit()
-        conn.close()
-        return deleted
+        try:
+            filename = self._trigger_to_filename(trigger)
+            filepath = self.shortcuts_folder / filename
+
+            if DEBUG:
+                print(f"Attempting to delete: {filepath}")
+                print(f"File exists: {filepath.exists()}")
+
+            if not filepath.exists():
+                return False
+
+            filepath.unlink()
+            if DEBUG:
+                print(f"Successfully deleted {filepath}")
+            return True
+        except ValueError as e:
+            if DEBUG:
+                print(f"Invalid trigger name: {e}")
+            return False
+        except Exception as e:
+            if DEBUG:
+                print(f"Error deleting shortcut: {e}")
+            return False
 
 def safe_paste(text):
     try:
@@ -174,20 +205,6 @@ def safe_paste(text):
         if DEBUG:
             print(f"Text length that failed to paste: {len(text)}")
 
-def get_clipboard_with_retry(max_attempts=3, delay=0.1):
-    """Get clipboard content with retry logic to handle timing issues."""
-    for attempt in range(max_attempts):
-        try:
-            content = pyperclip.paste()
-            if content is not None:
-                return content
-            time.sleep(delay)
-        except Exception as e:
-            if attempt == max_attempts - 1:
-                print(f"Error reading clipboard after {max_attempts} attempts: {e}")
-                return ""
-            time.sleep(delay)
-    return ""
 
 class Expander:
     def __init__(self, store: MyShortcutsStore):
@@ -197,9 +214,7 @@ class Expander:
 
     def start(self):
         keyboard.hook(self.on_event)
-        keyboard.add_hotkey(UPDATE_HOTKEY, self.handle_update_hotkey)
         print(f"MyShortcuts running. Press Ctrl+C in console to stop.")
-        print(f"Update hotkey is '{UPDATE_HOTKEY}'")
         try:
             keyboard.wait()
         except KeyboardInterrupt:
@@ -262,64 +277,48 @@ class Expander:
 
     def _maybe_update_or_expand(self):
         buf = self.buffer.rstrip()
-        
+
         if DEBUG:
             print(f"_maybe_update_or_expand called with buffer: {repr(buf)}")
-        
+
         # Look for the last complete command starting with ;
         # Find all ; positions and check each one
         semicolon_positions = []
         for i, char in enumerate(buf):
             if char == ';':
                 semicolon_positions.append(i)
-        
+
         if not semicolon_positions:
             if DEBUG:
                 print("No ; found in buffer")
             return
-            
+
         # Check from the last ; position
         last_semicolon = semicolon_positions[-1]
         token = buf[last_semicolon:]
-        
+
         if DEBUG:
             print(f"_maybe_update_or_expand called. Token: {repr(token)}")
-        
+
         if not token or not token.startswith(';'):
             if DEBUG:
                 print("Token doesn't start with ; or is empty")
             return
-            
-        # Check for update command: ;trigger<message>
-        if '<' in token and token.endswith('>'):
-            parts = token[1:-1].split('<', 1)  # Remove ; and >, split on first <
-            if len(parts) == 2:
-                trigger = ';' + parts[0]
-                message = parts[1]
-                self.store.add_or_update(trigger, message)
-                if DEBUG:
-                    print(f"Auto-updated trigger '{trigger}' with expansion ({len(message)} chars)")
-                return
-        
+
         # Check for expansion command: ;trigger>
         if token.endswith('>') and '<' not in token and len(token) > 2:
             trigger = token[:-1]  # Remove the >
-            
+
             if DEBUG:
                 print(f"Processing token: {repr(token)}, trigger: {repr(trigger)}")
-            
-            # Handle special system commands
-            if trigger == ';list':
-                if DEBUG:
-                    print("Handling list command")
-                self._handle_list_command()
-                return
-            elif trigger.startswith(';delete:'):
+
+            # Handle special delete command
+            if trigger.startswith(';delete:'):
                 if DEBUG:
                     print(f"Handling delete command: {repr(trigger)}")
                 self._handle_delete_command(trigger, token)  # Pass both trigger and original token
                 return
-            
+
             if DEBUG:
                 print(f"Looking for expansion of trigger: {repr(trigger)}")
             expansion = self.store.get_expansion(trigger)
@@ -327,11 +326,11 @@ class Expander:
                 if DEBUG:
                     print(f"Found expansion: {repr(expansion)}")
                 chars_to_erase = len(token)
-                    
+
                 for _ in range(chars_to_erase):
                     keyboard.send('backspace')
                     time.sleep(0.005)
-                
+
                 safe_paste(expansion)
                 self.buffer = ""
             else:
@@ -340,35 +339,6 @@ class Expander:
         else:
             if DEBUG:
                 print(f"Token doesn't match expansion pattern. Token: {repr(token)}")
-    
-    def _handle_list_command(self):
-        """Handle the ;list> command to show all shortcuts."""
-        shortcuts = self.store.list_all_shortcuts()
-        
-        if not shortcuts:
-            output = "No shortcuts found in database."
-        else:
-            output_lines = ["=== MyShortcuts List ==="]
-            for trigger, expansion in shortcuts:
-                # Truncate long expansions for display
-                display_expansion = expansion.replace('\n', '\\n').replace('\r', '\\r')
-                if len(display_expansion) > 60:
-                    display_expansion = display_expansion[:57] + "..."
-                output_lines.append(f"{trigger} → {display_expansion}")
-            output_lines.append(f"\nTotal: {len(shortcuts)} shortcuts")
-            output_lines.append("\nTo delete a shortcut, use: ;delete:trigger_name>")
-            output = "\n".join(output_lines)
-        
-        # Erase the ;list> command
-        chars_to_erase = len(";list>")
-        for _ in range(chars_to_erase):
-            keyboard.send('backspace')
-            time.sleep(0.005)
-        
-        safe_paste(output)
-        self.buffer = ""
-        if DEBUG:
-            print("Listed all shortcuts")
     
     def _handle_delete_command(self, trigger, original_token):
         """Handle the ;delete:trigger_name> command to delete a shortcut."""
@@ -405,9 +375,6 @@ class Expander:
                 output = f"Shortcut not found: {target_trigger}"
                 if DEBUG:
                     print(f"Shortcut not found for deletion: {target_trigger}")
-                    # Additional debug: List all shortcuts to see what exists
-                    all_shortcuts = self.store.list_all_shortcuts()
-                    print(f"All shortcuts in database: {all_shortcuts}")
         
         # Use the original token length to erase the correct number of characters
         chars_to_erase = len(original_token)
@@ -422,59 +389,9 @@ class Expander:
         safe_paste(output)
         self.buffer = ""
 
-    def handle_update_hotkey(self):
-        if DEBUG:
-            print(f"Hotkey pressed! Buffer: {repr(self.buffer)}")
-        with self.lock:
-            # Look for incomplete update commands: ;trigger< or ;trigger<partial text
-            pattern = r";([^\s<>]+)<([^>]*?)$"
-            match = re.search(pattern, self.buffer)
-            
-            if not match:
-                if DEBUG:
-                    print("No incomplete update command found in buffer.")
-                return
-
-            trigger = ";" + match.group(1)
-            existing_text = match.group(2)
-            
-            # Get clipboard content with improved error handling and retry logic
-            clipboard_content = get_clipboard_with_retry()
-            
-            if DEBUG:
-                print(f"Clipboard content length: {len(clipboard_content)}")
-                print(f"First 100 chars of clipboard: {repr(clipboard_content[:100])}")
-            
-            # Combine existing text with clipboard
-            if existing_text:
-                message = existing_text + clipboard_content
-            else:
-                message = clipboard_content
-            
-            # Replace \n literals with actual newlines
-            message = message.replace('\\n', '\n')
-            
-            # Save to database
-            self.store.add_or_update(trigger, message)
-            
-            if DEBUG:
-                print(f"Updated trigger '{trigger}' with clipboard content ({len(message)} chars)")
-                print(f"Final message preview: {repr(message[-50:])}")  # Show last 50 chars
-
-            # Remove the incomplete command from input
-            start = match.start()
-            command_length = len(match.group(0))
-            
-            # Remove from buffer
-            self.buffer = self.buffer[:start] + self.buffer[start + command_length:]
-
-            # Send backspaces to remove the command from the input field
-            for _ in range(command_length):
-                keyboard.send('backspace')
-                time.sleep(0.005)
 
 def main():
-    store = MyShortcutsStore(DB_PATH)
+    store = MyShortcutsStore(SHORTCUTS_FOLDER)
     expander = Expander(store)
     expander.start()
 

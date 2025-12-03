@@ -1,7 +1,6 @@
 {
-  "database": "myshortcuts.db",
+  "shortcuts_folder": "myshortcuts",
   "max_buffer": 200,
   "separators": [" ", "\n", "\t", ".", ",", ";", ":", "!", "?", ")", "]", "}", "\"", "'"],
-  "update_hotkey": "ctrl+shift+m",
   "debug": 0
 }

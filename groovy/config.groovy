@@ -39,9 +39,9 @@ try {
 }
 
 // DATABASE
-def DATABASE = [:]
-if (ALLCONFIG.hosts?.database) {
-    def dbList = ALLCONFIG.hosts.database
+DATABASE = [:]
+if (ALLCONFIG.database) {
+    def dbList = ALLCONFIG.database
     if (dbList instanceof Map) {
         // Single database
         def db = dbList
@@ -59,16 +59,16 @@ if (ALLCONFIG.hosts?.database) {
 }
 
 // CONFIG
-def CONFIG = [:]
-if (ALLCONFIG.hosts?.host) {
-    def hostList = ALLCONFIG.hosts.host
+CONFIG = [:]
+if (ALLCONFIG.host) {
+    def hostList = ALLCONFIG.host
     def hosts = hostList instanceof List ? hostList : [hostList]
 
     hosts.each { chost ->
         if (chost instanceof Map && chost.name == HTTP_HOST) {
             // Load allhost keys first
-            if (ALLCONFIG.hosts?.allhost) {
-                ALLCONFIG.hosts.allhost.each { k, v ->
+            if (ALLCONFIG.allhost) {
+                ALLCONFIG.allhost.each { k, v ->
                     CONFIG[k] = v
                 }
             }
