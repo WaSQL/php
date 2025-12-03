@@ -12,3 +12,5 @@ s.bat
 php.bat
 php_errors.log
 dasql.ini
+# Claude Code configuration
+.claude/

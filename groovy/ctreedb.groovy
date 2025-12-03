@@ -1,16 +1,16 @@
 /**
 Installation
-	Download Microsoft JDBC Driver for SQL Server from:
-	https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
+	FairCom c-treeACE JDBC driver can be downloaded from:
+	https://www.faircom.com/products/faircom-db
 
-	Or use Gradle/Maven dependency:
-		implementation 'com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11'
+	Required JAR files (should be in lib folder):
+		- ctreeJDBC.jar
 
-	For standalone usage, place mssql-jdbc-x.x.x.jre11.jar in the classpath
+	For standalone usage, place ctreeJDBC.jar in the classpath
 
 References
-	https://docs.microsoft.com/en-us/sql/connect/jdbc/working-with-a-connection
-	https://docs.microsoft.com/en-us/sql/connect/jdbc/using-statements-with-sql
+	https://docs.faircom.com/doc/ctreeACE/JDBC_Developer_Guide.pdf
+	https://www.faircom.com/products/faircom-db
 */
 
 import groovy.sql.Sql
@@ -19,100 +19,78 @@ import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
 /**
- * Adds an index to a MS SQL Server table
- * @param params Map containing:
- *   -table: table name (required)
- *   -fields: field(s) to add to index, comma-separated (required)
- *   -unique: if present, creates unique index
- *   -fulltext: if present, creates fulltext index
- *   -name: specific name for index (optional)
- * @return boolean true on success, error message string on failure
- * @usage
- *   def params = [
- *     '-table': 'states',
- *     '-fields': 'code'
- *   ]
- *   def ok = mssqldb.addIndex(params)
- */
-def addIndex(Map params) {
-	// Check required parameters
-	if (!params.containsKey('-table')) {
-		return "mssqldb.addIndex error: No Table Specified"
-	}
-	if (!params.containsKey('-fields')) {
-		return "mssqldb.addIndex error: No Fields Specified"
-	}
-
-	// Check for unique and fulltext
-	def unique = ''
-	def prefix = ''
-
-	if (params.containsKey('-unique')) {
-		unique = ' UNIQUE'
-		prefix += 'U'
-	}
-	if (params.containsKey('-fulltext')) {
-		// MS SQL Server uses different syntax for fulltext indexes
-		// This would need CREATE FULLTEXT INDEX which has different syntax
-		return "Fulltext indexes require special syntax for MS SQL Server - not implemented in this function"
-	}
-
-	// Build index name if not passed in
-	if (!params.containsKey('-name')) {
-		params['-name'] = "${prefix}_${params['-table']}_${params['-fields'].replace(',', '_')}"
-	}
-
-	// Create query - MS SQL Server uses IF NOT EXISTS differently
-	def query = """
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '${params['-name']}' AND object_id = OBJECT_ID('${params['-table']}'))
-		CREATE ${unique} INDEX ${params['-name']} ON ${params['-table']} (${params['-fields']})
-	"""
-
-	// Execute query
-	return executeSQL(query, params)
-}
-
-/**
- * Creates and returns a database connection
+ * Creates and returns a database connection to FairCom c-treeACE
  * @param params Map containing connection parameters:
- *   dbhost: database host
+ *   dbhost: c-treeACE server hostname or IP (default: localhost)
+ *   dbport: c-treeACE server port (default: 6597)
  *   dbuser: database username
  *   dbpass: database password
- *   dbname: database name
- *   dbport: database port (default: 1433)
+ *   dbname: database name (optional)
+ *   connect: full JDBC URL if provided (overrides other params)
  * @return Sql connection object
  * @usage
- *   def sql = mssqldb.connect(params)
+ *   def sql = ctreedb.connect(params)
  */
 def connect(Map params) {
-	if (!params.dbhost) {
-		System.err.println("Missing dbhost attribute in database tag named '${params.name}'")
-		System.exit(123)
-	}
-
-	def dbhost = params.dbhost
 	def dbuser = params.dbuser ?: ''
 	def dbpass = params.dbpass ?: ''
-	def dbname = params.dbname ?: ''
-	def dbport = params.dbport ?: '1433'
-
-	// Handle PHP-style "host, port" format (e.g., "10.144.243.105, 1433")
-	if (dbhost.contains(',')) {
-		def parts = dbhost.split(',')
-		dbhost = parts[0].trim()
-		if (parts.size() > 1 && parts[1].trim().isNumber()) {
-			dbport = parts[1].trim()
-		}
-	}
 
 	try {
-		def url = "jdbc:sqlserver://${dbhost}:${dbport};databaseName=${dbname};encrypt=false"
-		def driver = 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
+		def url
 
+		// Check if custom connect string is provided
+		if (params.connect) {
+			def connectStr = params.connect
+
+			// Check if it's an ODBC-style connection string (contains semicolons and key=value pairs)
+			if (connectStr.contains(';') && connectStr.contains('=')) {
+				// Parse ODBC connection string: DRIVER={...};Server=...;Port=...;Database=...
+				def odbcParams = [:]
+				connectStr.split(';').each { param ->
+					def parts = param.split('=', 2)
+					if (parts.size() == 2) {
+						def key = parts[0].trim().toLowerCase()
+						def value = parts[1].trim().replaceAll(/^\{|\}$/, '') // Remove curly braces
+						odbcParams[key] = value
+					}
+				}
+
+				// Build JDBC URL from ODBC parameters
+				def server = odbcParams['server'] ?: odbcParams['host'] ?: 'localhost'
+				def port = odbcParams['port'] ?: '6597'
+				def database = odbcParams['database'] ?: odbcParams['db'] ?: ''
+
+				url = "jdbc:ctree://${server}:${port}"
+				if (database) {
+					url += "/${database}"
+				}
+			}
+			// Otherwise assume it's a JDBC URL
+			else if (connectStr.startsWith('jdbc:ctree://')) {
+				url = connectStr
+			}
+			// Assume it's just the host part
+			else {
+				url = "jdbc:ctree://${connectStr}:6597"
+			}
+		} else {
+			// Build c-treeACE JDBC URL from parameters
+			def dbhost = params.dbhost ?: 'localhost'
+			def dbport = params.dbport ?: '6597'
+			def dbname = params.dbname ?: ''
+
+			url = "jdbc:ctree://${dbhost}:${dbport}"
+			if (dbname) {
+				url += "/${dbname}"
+			}
+		}
+
+		def driver = 'ctree.jdbc.ctreeDriver'
 		def sql = Sql.newInstance(url, dbuser, dbpass, driver)
+
 		return sql
 	} catch (Exception err) {
-		System.err.println("MS SQL Server Connection Error: ${err.message}")
+		System.err.println("c-treeACE Connection Error: ${err.message}")
 		err.printStackTrace()
 		return null
 	}
@@ -124,7 +102,7 @@ def connect(Map params) {
  * @param params Map containing connection parameters
  * @return boolean true on success, error message string on failure
  * @usage
- *   def ok = mssqldb.executeSQL(query, params)
+ *   def ok = ctreedb.executeSQL(query, params)
  */
 def executeSQL(String query, Map params = [:]) {
 	def sql = null
@@ -132,7 +110,7 @@ def executeSQL(String query, Map params = [:]) {
 		// Connect
 		sql = connect(params)
 		if (sql == null) {
-			return "Failed to connect to database"
+			return "Failed to connect to c-treeACE"
 		}
 
 		// Execute the query
@@ -163,7 +141,7 @@ def executeSQL(String query, Map params = [:]) {
  * @return boolean true on success, error message string on failure
  * @usage
  *   def query = "INSERT INTO users (name, email) VALUES (?, ?)"
- *   def ok = mssqldb.executePS(query, ['John Doe', 'john@example.com'], params)
+ *   def ok = ctreedb.executePS(query, ['John Doe', 'john@example.com'], params)
  */
 def executePS(String query, List args, Map params = [:]) {
 	def sql = null
@@ -171,7 +149,7 @@ def executePS(String query, List args, Map params = [:]) {
 		// Connect
 		sql = connect(params)
 		if (sql == null) {
-			return "Failed to connect to database"
+			return "Failed to connect to c-treeACE"
 		}
 
 		// Execute the prepared statement
@@ -202,8 +180,8 @@ def executePS(String query, List args, Map params = [:]) {
  *   format: 'json' (default) or 'list' for native Groovy list format
  * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
  * @usage
- *   def json = mssqldb.queryResults(query, params)
- *   def recs = mssqldb.queryResults(query, params + [format: 'list'])
+ *   def json = ctreedb.queryResults(query, params)
+ *   def recs = ctreedb.queryResults(query, params + [format: 'list'])
  */
 def queryResults(String query, Map params = [:]) {
 	def sql = null
@@ -211,7 +189,7 @@ def queryResults(String query, Map params = [:]) {
 		// Connect
 		sql = connect(params)
 		if (sql == null) {
-			return "Failed to connect to database"
+			return "Failed to connect to c-treeACE"
 		}
 
 		// Check if we should write to CSV file

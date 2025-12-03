@@ -218,6 +218,8 @@ def queryResults(String query, Map params = [:]) {
 			def writer = null
 			try {
 				writer = csvFile.newWriter('UTF-8')
+				// Write UTF-8 BOM (Byte Order Mark) for proper Excel/app recognition
+				writer.write('\uFEFF')
 
 				// Execute query and process results
 				def firstRow = true

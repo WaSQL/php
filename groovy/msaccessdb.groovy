@@ -1,16 +1,21 @@
 /**
 Installation
-	Download Microsoft JDBC Driver for SQL Server from:
-	https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
+	UCanAccess is a pure Java JDBC driver for MS Access databases
+	https://github.com/spannm/ucanaccess
 
-	Or use Gradle/Maven dependency:
-		implementation 'com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11'
+	Required JAR files (should be in lib folder):
+		- ucanaccess-x.x.x.jar
+		- commons-lang3-x.x.x.jar
+		- commons-logging-x.x.jar
+		- hsqldb-x.x.x.jar
+		- jackcess-x.x.x.jar
 
-	For standalone usage, place mssql-jdbc-x.x.x.jre11.jar in the classpath
+	Maven/Gradle dependency:
+		implementation 'net.sf.ucanaccess:ucanaccess:5.0.1'
 
 References
-	https://docs.microsoft.com/en-us/sql/connect/jdbc/working-with-a-connection
-	https://docs.microsoft.com/en-us/sql/connect/jdbc/using-statements-with-sql
+	https://github.com/spannm/ucanaccess
+	http://ucanaccess.sourceforge.net/site.html
 */
 
 import groovy.sql.Sql
@@ -19,100 +24,31 @@ import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
 /**
- * Adds an index to a MS SQL Server table
- * @param params Map containing:
- *   -table: table name (required)
- *   -fields: field(s) to add to index, comma-separated (required)
- *   -unique: if present, creates unique index
- *   -fulltext: if present, creates fulltext index
- *   -name: specific name for index (optional)
- * @return boolean true on success, error message string on failure
- * @usage
- *   def params = [
- *     '-table': 'states',
- *     '-fields': 'code'
- *   ]
- *   def ok = mssqldb.addIndex(params)
- */
-def addIndex(Map params) {
-	// Check required parameters
-	if (!params.containsKey('-table')) {
-		return "mssqldb.addIndex error: No Table Specified"
-	}
-	if (!params.containsKey('-fields')) {
-		return "mssqldb.addIndex error: No Fields Specified"
-	}
-
-	// Check for unique and fulltext
-	def unique = ''
-	def prefix = ''
-
-	if (params.containsKey('-unique')) {
-		unique = ' UNIQUE'
-		prefix += 'U'
-	}
-	if (params.containsKey('-fulltext')) {
-		// MS SQL Server uses different syntax for fulltext indexes
-		// This would need CREATE FULLTEXT INDEX which has different syntax
-		return "Fulltext indexes require special syntax for MS SQL Server - not implemented in this function"
-	}
-
-	// Build index name if not passed in
-	if (!params.containsKey('-name')) {
-		params['-name'] = "${prefix}_${params['-table']}_${params['-fields'].replace(',', '_')}"
-	}
-
-	// Create query - MS SQL Server uses IF NOT EXISTS differently
-	def query = """
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '${params['-name']}' AND object_id = OBJECT_ID('${params['-table']}'))
-		CREATE ${unique} INDEX ${params['-name']} ON ${params['-table']} (${params['-fields']})
-	"""
-
-	// Execute query
-	return executeSQL(query, params)
-}
-
-/**
- * Creates and returns a database connection
+ * Creates and returns a database connection to MS Access
  * @param params Map containing connection parameters:
- *   dbhost: database host
- *   dbuser: database username
- *   dbpass: database password
- *   dbname: database name
- *   dbport: database port (default: 1433)
+ *   dbname: path to .mdb or .accdb file
  * @return Sql connection object
  * @usage
- *   def sql = mssqldb.connect(params)
+ *   def sql = msaccessdb.connect(params)
  */
 def connect(Map params) {
-	if (!params.dbhost) {
-		System.err.println("Missing dbhost attribute in database tag named '${params.name}'")
-		System.exit(123)
-	}
+	def dbname = params.dbname
 
-	def dbhost = params.dbhost
-	def dbuser = params.dbuser ?: ''
-	def dbpass = params.dbpass ?: ''
-	def dbname = params.dbname ?: ''
-	def dbport = params.dbport ?: '1433'
-
-	// Handle PHP-style "host, port" format (e.g., "10.144.243.105, 1433")
-	if (dbhost.contains(',')) {
-		def parts = dbhost.split(',')
-		dbhost = parts[0].trim()
-		if (parts.size() > 1 && parts[1].trim().isNumber()) {
-			dbport = parts[1].trim()
-		}
+	if (!dbname) {
+		System.err.println("MS Access Connection Error: No database file specified")
+		return null
 	}
 
 	try {
-		def url = "jdbc:sqlserver://${dbhost}:${dbport};databaseName=${dbname};encrypt=false"
-		def driver = 'com.microsoft.sqlserver.jdbc.SQLServerDriver'
+		// Basic connection - with HSQLDB 2.5.1, no special properties needed
+		// If you need memory mode for small databases, add: ;memory=true
+		def url = "jdbc:ucanaccess://${dbname}"
+		def driver = 'net.ucanaccess.jdbc.UcanaccessDriver'
 
-		def sql = Sql.newInstance(url, dbuser, dbpass, driver)
+		def sql = Sql.newInstance(url, null, null, driver)
 		return sql
 	} catch (Exception err) {
-		System.err.println("MS SQL Server Connection Error: ${err.message}")
+		System.err.println("MS Access Connection Error: ${err.message}")
 		err.printStackTrace()
 		return null
 	}
@@ -124,7 +60,7 @@ def connect(Map params) {
  * @param params Map containing connection parameters
  * @return boolean true on success, error message string on failure
  * @usage
- *   def ok = mssqldb.executeSQL(query, params)
+ *   def ok = msaccessdb.executeSQL(query, params)
  */
 def executeSQL(String query, Map params = [:]) {
 	def sql = null
@@ -132,7 +68,7 @@ def executeSQL(String query, Map params = [:]) {
 		// Connect
 		sql = connect(params)
 		if (sql == null) {
-			return "Failed to connect to database"
+			return "Failed to connect to MS Access database"
 		}
 
 		// Execute the query
@@ -163,7 +99,7 @@ def executeSQL(String query, Map params = [:]) {
  * @return boolean true on success, error message string on failure
  * @usage
  *   def query = "INSERT INTO users (name, email) VALUES (?, ?)"
- *   def ok = mssqldb.executePS(query, ['John Doe', 'john@example.com'], params)
+ *   def ok = msaccessdb.executePS(query, ['John Doe', 'john@example.com'], params)
  */
 def executePS(String query, List args, Map params = [:]) {
 	def sql = null
@@ -171,7 +107,7 @@ def executePS(String query, List args, Map params = [:]) {
 		// Connect
 		sql = connect(params)
 		if (sql == null) {
-			return "Failed to connect to database"
+			return "Failed to connect to MS Access database"
 		}
 
 		// Execute the prepared statement
@@ -202,8 +138,8 @@ def executePS(String query, List args, Map params = [:]) {
  *   format: 'json' (default) or 'list' for native Groovy list format
  * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
  * @usage
- *   def json = mssqldb.queryResults(query, params)
- *   def recs = mssqldb.queryResults(query, params + [format: 'list'])
+ *   def json = msaccessdb.queryResults(query, params)
+ *   def recs = msaccessdb.queryResults(query, params + [format: 'list'])
  */
 def queryResults(String query, Map params = [:]) {
 	def sql = null
@@ -211,7 +147,7 @@ def queryResults(String query, Map params = [:]) {
 		// Connect
 		sql = connect(params)
 		if (sql == null) {
-			return "Failed to connect to database"
+			return "Failed to connect to MS Access database"
 		}
 
 		// Check if we should write to CSV file
