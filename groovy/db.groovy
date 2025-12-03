@@ -480,36 +480,88 @@ private def ensureDatabaseLoaded() {
         return // Already loaded
     }
 
-    println("[db.groovy] DATABASE is null or empty, loading config.groovy...")
+    println("[db.groovy] DATABASE is null or empty, loading config.xml...")
+
+    // First check if XML support is available
+    try {
+        Class.forName('groovy.xml.XmlSlurper')
+    } catch (ClassNotFoundException e) {
+        println("")
+        println("=" * 70)
+        println("ERROR: Groovy XML support not available!")
+        println("=" * 70)
+        println("")
+        println("The groovy.xml.XmlSlurper class is required but not found.")
+        println("")
+        println("This usually means:")
+        println("  1. Groovy is not properly installed")
+        println("  2. The Groovy XML module is missing")
+        println("")
+        println("To fix this:")
+        println("")
+        println("On Ubuntu/Debian:")
+        println("  sudo apt-get install groovy")
+        println("  # or")
+        println("  sudo apt-get install groovy-all")
+        println("")
+        println("On RedHat/CentOS:")
+        println("  sudo yum install groovy")
+        println("")
+        println("Using SDKMAN:")
+        println("  curl -s https://get.sdkman.io | bash")
+        println("  sdk install groovy")
+        println("")
+        println("Manual installation:")
+        println("  1. Download Groovy from https://groovy.apache.org/download.html")
+        println("  2. Extract and add to PATH")
+        println("  3. Ensure GROOVY_HOME is set")
+        println("")
+        println("Current Groovy version: ${GroovySystem.version}")
+        println("=" * 70)
+        println("")
+        DATABASE = [:]
+        CONFIG = [:]
+        return
+    }
 
     try {
-        def configScript = null
+        def configXml = null
 
-        // Try to find config.groovy using multiple methods
+        // Try to find config.xml in parent directory
         def locations = [
-            new File('groovy/config.groovy'),
-            new File('../config.groovy'),
-            new File('config.groovy'),
-            new File('/var/www/wasql_stage/groovy/config.groovy')
+            new File('../config.xml'),
+            new File('config.xml'),
+            new File('/var/www/wasql_stage/config.xml'),
+            new File('/var/www/wasql/config.xml')
         ]
 
         for (def loc : locations) {
             if (loc.exists()) {
-                configScript = loc
+                configXml = loc
                 break
             }
         }
 
-        if (configScript != null && configScript.exists()) {
-            println("[db.groovy] Loading config from: ${configScript.absolutePath}")
-            // Use the current classloader and binding to ensure XML classes are available
-            def shell = new GroovyShell(this.class.classLoader, this.binding)
-            def configModule = shell.evaluate(configScript)
-            DATABASE = configModule.DATABASE
-            CONFIG = configModule.CONFIG
-            println("[db.groovy] Loaded ${DATABASE?.size() ?: 0} databases: ${DATABASE?.keySet()}")
+        if (configXml != null && configXml.exists()) {
+            println("[db.groovy] Loading config from: ${configXml.absolutePath}")
+
+            // Parse XML directly using XmlSlurper
+            def xml = new groovy.xml.XmlSlurper().parse(configXml)
+
+            DATABASE = [:]
+            xml.database.each { db ->
+                def dbMap = [:]
+                db.children().each { child ->
+                    dbMap[child.name()] = child.text()
+                }
+                if (dbMap.name) {
+                    DATABASE[dbMap.name] = dbMap
+                }
+            }
+
+            println("[db.groovy] Loaded ${DATABASE.size()} databases: ${DATABASE.keySet()}")
         } else {
-            println("[db.groovy] ERROR: config.groovy not found. Tried locations:")
+            println("[db.groovy] ERROR: config.xml not found. Tried locations:")
             locations.each { println("  - ${it.absolutePath}") }
             DATABASE = [:]
             CONFIG = [:]
