@@ -178,13 +178,24 @@ def executePS(String query, List args, Map params = [:]) {
  * @param params Map containing connection parameters and optional:
  *   filename: if provided, writes results to CSV file instead of returning list
  *   format: 'json' (default) or 'list' for native Groovy list format
+ *   skiperrors: if true, skips problematic rows and continues processing (default: false)
+ *   fetchsize: number of rows to fetch at once from database (default: 1000, 0 for driver default)
+ *   batchsize: number of rows to buffer before writing to file (default: 100)
+ *   maxerrors: max consecutive errors before aborting (default: 100, only applies when skiperrors=true)
+ *   notrim: if true, skips trimming whitespace from values (faster, default: false)
  * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
  * @usage
  *   def json = ctreedb.queryResults(query, params)
  *   def recs = ctreedb.queryResults(query, params + [format: 'list'])
+ *   def csv = ctreedb.queryResults(query, params + [filename: 'output.csv', skiperrors: true, fetchsize: 5000, batchsize: 500])
  */
 def queryResults(String query, Map params = [:]) {
 	def sql = null
+	def skipErrors = params.getOrDefault('skiperrors', false)
+	def fetchSize = params.getOrDefault('fetchsize', 1000)
+	def batchSize = params.getOrDefault('batchsize', 100)
+	def noTrim = params.getOrDefault('notrim', false)
+
 	try {
 		// Connect
 		sql = connect(params)
@@ -201,25 +212,128 @@ def queryResults(String query, Map params = [:]) {
 				// Write UTF-8 BOM (Byte Order Mark) for proper Excel/app recognition
 				writer.write('\uFEFF')
 
-				// Execute query and process results
-				def firstRow = true
-				def fieldNames = []
+				// Use optimized manual ResultSet iteration for CSV output (always fastest)
+				def stmt = sql.connection.createStatement()
 
-				sql.eachRow(query) { row ->
-					// Get field names from first row
-					if (firstRow) {
-						fieldNames = row.toRowResult().keySet().collect { it.toLowerCase() }
-						// Write header row
-						writer.writeLine(fieldNames.collect { escapeCSV(it) }.join(','))
-						firstRow = false
+				// Set fetch size for optimal performance (small size = more resilient)
+				if (fetchSize > 0) {
+					stmt.setFetchSize(fetchSize)
+				}
+
+				// Set query timeout to prevent hanging (60 seconds)
+				stmt.setQueryTimeout(60)
+
+				def rs = stmt.executeQuery(query)
+				def errorCount = 0
+				def successCount = 0
+				def consecutiveErrors = 0
+				def maxConsecutiveErrors = params.getOrDefault('maxerrors', 100) // Allow override, default 100
+
+				try {
+					def rsmd = rs.getMetaData()
+					def columnCount = rsmd.getColumnCount()
+
+					// Get field names from metadata (only once)
+					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
+
+					// Write header row
+					def headerLine = new StringBuilder()
+					fieldNames.eachWithIndex { name, idx ->
+						if (idx > 0) headerLine.append(',')
+						headerLine.append(escapeCSV(name))
+					}
+					writer.writeLine(headerLine.toString())
+
+					// Batch buffer for writing
+					def batchBuffer = new StringBuilder(batchSize * 200) // Estimate 200 chars per line
+					def batchCount = 0
+
+					// Process each row with optimized string building
+					while (true) {
+						try {
+							if (!rs.next()) break
+
+							// Build CSV line using StringBuilder (much faster than collect + join)
+							def line = new StringBuilder(columnCount * 30) // Estimate 30 chars per field
+
+							for (int i = 1; i <= columnCount; i++) {
+								if (i > 1) line.append(',')
+
+								try {
+									def value = rs.getObject(i)
+									if (value != null) {
+										def strValue = value.toString()
+										if (!noTrim) {
+											strValue = strValue.trim()
+										}
+										line.append(escapeCSV(strValue))
+									}
+								} catch (Exception e) {
+									if (skipErrors) {
+										System.err.println("Warning: Error reading column '${fieldNames[i-1]}': ${e.message}")
+										// Leave empty field
+									} else {
+										throw e
+									}
+								}
+							}
+
+							// Add to batch buffer
+							batchBuffer.append(line).append('\n')
+							batchCount++
+							successCount++
+							consecutiveErrors = 0 // Reset on success
+
+							// Flush batch when it reaches batchSize
+							if (batchCount >= batchSize) {
+								writer.write(batchBuffer.toString())
+								batchBuffer.setLength(0)
+								batchCount = 0
+							}
+
+						} catch (SQLException e) {
+							if (skipErrors) {
+								errorCount++
+								consecutiveErrors++
+								def errorMsg = e.message?.toLowerCase() ?: ''
+								System.err.println("Warning: Skipping row due to error: ${e.message}")
+
+								// Check for fatal cursor errors - stop immediately
+								if (errorMsg.contains('cursor not opened') || errorMsg.contains('cursor') && errorMsg.contains('closed')) {
+									System.err.println("Error: Fatal cursor error detected. Cursor is broken and cannot continue.")
+									System.err.println("Info: Successfully processed ${successCount} rows before cursor failure.")
+									break
+								}
+
+								// Show progress every 10 errors
+								if (errorCount % 10 == 0) {
+									System.err.println("Progress: ${successCount} successful, ${errorCount} errors so far...")
+								}
+
+								// Only abort if we hit max consecutive errors
+								if (consecutiveErrors >= maxConsecutiveErrors) {
+									System.err.println("Error: Aborting after ${maxConsecutiveErrors} consecutive errors. Successfully processed ${successCount} rows so far.")
+									break
+								}
+								continue
+							} else {
+								throw e
+							}
+						}
 					}
 
-					// Write data row
-					def values = fieldNames.collect { fieldName ->
-						def value = row.toRowResult()[fieldName]
-						escapeCSV(value?.toString() ?: '')
+					// Write remaining buffered lines
+					if (batchCount > 0) {
+						writer.write(batchBuffer.toString())
 					}
-					writer.writeLine(values.join(','))
+
+				} finally {
+					rs.close()
+					stmt.close()
+				}
+
+				if (skipErrors && errorCount > 0) {
+					System.err.println("Warning: Skipped ${errorCount} rows due to errors. Successfully processed ${successCount} rows.")
 				}
 
 				return params.filename
@@ -232,17 +346,97 @@ def queryResults(String query, Map params = [:]) {
 		} else {
 			// Return list of maps
 			def recs = []
+			def errorCount = 0
+			def consecutiveErrors = 0
+			def maxConsecutiveErrors = params.getOrDefault('maxerrors', 100) // Allow override, default 100
 
-			sql.eachRow(query) { row ->
-				def rec = [:]
-				def rowResult = row.toRowResult()
+			if (skipErrors) {
+				// Use manual ResultSet iteration for better error handling
+				def stmt = sql.connection.createStatement()
 
-				// Convert to lowercase field names for consistency
-				rowResult.each { key, value ->
-					rec[key.toLowerCase()] = value
+				// Set fetch size for optimal performance
+				if (fetchSize > 0) {
+					stmt.setFetchSize(fetchSize)
 				}
 
-				recs << rec
+				// Set query timeout to prevent hanging (60 seconds)
+				stmt.setQueryTimeout(60)
+
+				def rs = stmt.executeQuery(query)
+
+				try {
+					def rsmd = rs.getMetaData()
+					def columnCount = rsmd.getColumnCount()
+
+					// Get field names from metadata
+					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
+
+					// Process each row with error handling
+					while (true) {
+						try {
+							if (!rs.next()) break
+
+							def rec = [:]
+							fieldNames.withIndex().each { fieldName, idx ->
+								try {
+									rec[fieldName] = rs.getObject(idx + 1)
+								} catch (Exception e) {
+									System.err.println("Warning: Error reading column '${fieldName}': ${e.message}")
+									rec[fieldName] = null
+								}
+							}
+							recs << rec
+							consecutiveErrors = 0 // Reset on success
+
+						} catch (SQLException e) {
+							errorCount++
+							consecutiveErrors++
+							def errorMsg = e.message?.toLowerCase() ?: ''
+							System.err.println("Warning: Skipping row due to error: ${e.message}")
+
+							// Check for fatal cursor errors - stop immediately
+							if (errorMsg.contains('cursor not opened') || errorMsg.contains('cursor') && errorMsg.contains('closed')) {
+								System.err.println("Error: Fatal cursor error detected. Cursor is broken and cannot continue.")
+								System.err.println("Info: Successfully processed ${recs.size()} rows before cursor failure.")
+								break
+							}
+
+							// Show progress every 10 errors
+							if (errorCount % 10 == 0) {
+								System.err.println("Progress: ${recs.size()} successful, ${errorCount} errors so far...")
+							}
+
+							// Only abort if we hit max consecutive errors
+							if (consecutiveErrors >= maxConsecutiveErrors) {
+								System.err.println("Error: Aborting after ${maxConsecutiveErrors} consecutive errors. Successfully processed ${recs.size()} rows so far.")
+								break
+							}
+							// Try to continue to next row
+							continue
+						}
+					}
+				} finally {
+					rs.close()
+					stmt.close()
+				}
+
+				if (errorCount > 0) {
+					System.err.println("Warning: Skipped ${errorCount} rows due to errors. Successfully processed ${recs.size()} rows.")
+				}
+
+			} else {
+				// Original behavior - fail on first error
+				sql.eachRow(query) { row ->
+					def rec = [:]
+					def rowResult = row.toRowResult()
+
+					// Convert to lowercase field names for consistency
+					rowResult.each { key, value ->
+						rec[key.toLowerCase()] = value
+					}
+
+					recs << rec
+				}
 			}
 
 			// Return JSON by default, or native format if requested
