@@ -29,6 +29,9 @@ try {
 
 // If not available, load config module (standalone mode)
 if (DATABASE == null || CONFIG == null) {
+    System.err.println("[db.groovy] DATABASE is null, attempting to load config.groovy...")
+    def attemptedConfigPaths = []
+
     try {
         // Try multiple methods to find config.groovy
         def configScript = null
@@ -36,7 +39,9 @@ if (DATABASE == null || CONFIG == null) {
         // Method 0: Check environment variable
         def configPath = System.getenv('WASQL_CONFIG_PATH')
         if (configPath) {
-            configScript = new File(configPath, 'config.groovy')
+            def envPath = new File(configPath, 'config.groovy')
+            attemptedConfigPaths << envPath.absolutePath
+            configScript = envPath
             if (!configScript.exists()) {
                 configScript = null
             }
@@ -46,18 +51,22 @@ if (DATABASE == null || CONFIG == null) {
         if (configScript == null || !configScript.exists()) {
             try {
                 def scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
-                configScript = new File(scriptDir, 'config.groovy')
+                def method1Path = new File(scriptDir, 'config.groovy')
+                attemptedConfigPaths << method1Path.absolutePath
+                configScript = method1Path
                 if (!configScript.exists()) {
                     configScript = null
                 }
             } catch (Exception e1) {
-                // Method 1 failed
+                attemptedConfigPaths << "Method 1 failed: ${e1.message}"
             }
         }
 
         // Method 2: Try current directory
         if (configScript == null || !configScript.exists()) {
-            configScript = new File('config.groovy')
+            def method2Path = new File('config.groovy')
+            attemptedConfigPaths << method2Path.absolutePath
+            configScript = method2Path
             if (!configScript.exists()) {
                 configScript = null
             }
@@ -67,35 +76,47 @@ if (DATABASE == null || CONFIG == null) {
         if (configScript == null || !configScript.exists()) {
             try {
                 def thisFile = new File(getClass().protectionDomain.codeSource.location.toURI())
-                if (thisFile.isFile()) {
-                    configScript = new File(thisFile.parentFile, 'config.groovy')
-                } else {
-                    configScript = new File(thisFile, 'config.groovy')
-                }
+                def method3Path = thisFile.isFile() ? new File(thisFile.parentFile, 'config.groovy') : new File(thisFile, 'config.groovy')
+                attemptedConfigPaths << method3Path.absolutePath
+                configScript = method3Path
                 if (!configScript.exists()) {
                     configScript = null
                 }
             } catch (Exception e3) {
-                // Method 3 failed
+                attemptedConfigPaths << "Method 3 failed: ${e3.message}"
             }
         }
 
         if (configScript != null && configScript.exists()) {
+            System.err.println("[db.groovy] Found config.groovy at: ${configScript.absolutePath}")
+            System.err.println("[db.groovy] Evaluating config.groovy...")
             def configModule = new GroovyShell(this.binding).evaluate(configScript)
             if (DATABASE == null) DATABASE = configModule.DATABASE
             if (CONFIG == null) CONFIG = configModule.CONFIG
+            System.err.println("[db.groovy] Config loaded. DATABASE has ${DATABASE?.size() ?: 0} entries")
         } else {
-            System.err.println("Warning: Could not find config.groovy in any expected location")
-            System.err.println("Hint: Set WASQL_CONFIG_PATH environment variable to the directory containing config.groovy")
+            System.err.println("[db.groovy] ERROR: Could not find config.groovy!")
+            System.err.println("[db.groovy] Searched in the following locations:")
+            attemptedConfigPaths.eachWithIndex { path, idx ->
+                System.err.println("  ${idx + 1}. ${path}")
+            }
+            System.err.println("[db.groovy] Current working directory: ${new File('.').absolutePath}")
+            System.err.println("[db.groovy] Hint: Set WASQL_CONFIG_PATH environment variable to the directory containing config.groovy")
             DATABASE = [:]
             CONFIG = [:]
         }
     } catch (Exception e) {
-        System.err.println("Warning: Could not load config module: ${e.message}")
+        System.err.println("[db.groovy] ERROR loading config module: ${e.message}")
         e.printStackTrace()
+        System.err.println("[db.groovy] Searched in the following locations:")
+        attemptedConfigPaths.eachWithIndex { path, idx ->
+            System.err.println("  ${idx + 1}. ${path}")
+        }
         DATABASE = [:]
         CONFIG = [:]
     }
+} else {
+    System.err.println("[db.groovy] DATABASE already loaded with ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
 }
 
 // Load common module for error handling
