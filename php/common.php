@@ -11554,6 +11554,19 @@ ENDOFCONTENT;
 		}
 	}
 
+	// Check if groovyclient (GroovyServ) is available for faster execution
+	// GroovyServ reduces startup time from ~5s to <1s by keeping JVM running
+	// Cache the detection result to avoid repeated checks
+	static $groovyServAvailable = null;
+	if ($groovyServAvailable === null) {
+		$groovyclient = cmdResults('groovyclient -v 2>&1');
+		$groovyServAvailable = (isset($groovyclient['rtncode']) && $groovyclient['rtncode'] == 0);
+	}
+	if ($groovyServAvailable) {
+		// Replace 'groovy' with 'groovyclient' in the executable
+		$lang['exe'] = str_replace('groovy', 'groovyclient', $lang['exe']);
+	}
+
 	$command = "{$lang['exe']}{$classpath} \"{$filename}\" 2>&1";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($command,'',$wasqlTempPath);

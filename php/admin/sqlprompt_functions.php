@@ -355,6 +355,12 @@ function sqlpromptBuildQuery($db,$name,$str=''){
 	global $DATABASE;
 	//echo printValue($DATABASE[$db]);exit;
 	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'memgraph':
+			loadExtras('databases/memgraph');
+			global $dbh_memgraph;
+			$dbh_memgraph='';
+			return trim(memgraphNamedQuery($name,$str));
+		break;
 		case 'mssql':
 			loadExtras('mssql');
 			global $dbh_mssql;
@@ -426,6 +432,12 @@ function sqlpromptNamedQueries(){
 	$db=$_REQUEST['db'];
 	$recs=array();
 	switch(strtolower($DATABASE[$db]['dbtype'])){
+		case 'memgraph':
+			loadExtras('databases/memgraph');
+			global $dbh_memgraph;
+			$dbh_memgraph='';
+			$recs=memgraphNamedQueryList();
+		break;
 		case 'mssql':
 			loadExtras('mssql');
 			global $dbh_mssql;

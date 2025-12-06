@@ -70,6 +70,10 @@
 			$table=addslashes($_REQUEST['table']);
 			//echo "TABLE: {$table}";exit;
 			switch(strtolower($db['dbtype'])){
+				case 'memgraph':
+					$sql="MATCH (n:{$table}) RETURN n LIMIT 5";
+					$_SESSION['sql_last']=$sql;
+				break;
 				case 'mssql':
 					$sql="SELECT * FROM {$table} OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY";
 				break;
@@ -121,6 +125,10 @@
 		case 'count_records':
 			$table=addslashes($_REQUEST['table']);
 			switch(strtolower($db['dbtype'])){
+				case 'memgraph':
+					$sql="MATCH (n:{$table}) RETURN count(n) AS cnt";
+					$_SESSION['sql_last']=$sql;
+				break;
 				case 'ctree':
 					$sql="SELECT COUNT(*) AS cnt FROM admin.{$table}";
 				break;
@@ -137,7 +145,7 @@
 					else{
 						$schema=$db['dbschema'];
 					}
-					
+
 					if(strlen($schema)){
 						$table="{$schema}.{$table}";
 					}
@@ -962,6 +970,7 @@ ENDOFQUERY;
 				$recs=array();
 				$qstart=microtime(true);
 				$_SESSION['debugValue_lastm']=array();
+				//echo printValue($params);exit;
 				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
 				$qstop=microtime(true);
 				

@@ -199,6 +199,7 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 	global $dbh_msexcel;
 	global $dbh_mscsv;
 	global $dbh_firebird;
+	global $dbh_memgraph;
 	if(is_null($db)){
 		return "Invalid  db: null";
 	}
@@ -288,6 +289,11 @@ function dbFunctionCall($func,$db,$args1='',$args2='',$args3='',$args4=''){
 			loadExtras('firebird');
 			$dbh_firebird='';
 			$func="firebird".ucfirst($func);
+		break;
+		case 'memgraph':
+			loadExtras('databases/memgraph');
+			$dbh_memgraph='';
+			$func="memgraph".ucfirst($func);
 		break;
 		default:
 			loadExtras('mysql');
@@ -760,6 +766,14 @@ function dbGetRecords($db,$params){
 	if(isset($params['-query']) && stringBeginsWith(trim($params['-query']),'-- duckdb')){
 		loadExtras('duckdb');
 		return duckdbQueryResults(trim($params['-query']),$params);
+	}
+	//check for memgraph cypher queries
+	if(isset($params['-query']) && preg_match('/^(match|create|merge|return|with|call|unwind|optional|show)/i',trim($params['-query']))){
+		global $DATABASE;
+		if(isset($DATABASE[$db]) && strtolower($DATABASE[$db]['dbtype']) == 'memgraph'){
+			loadExtras('databases/memgraph');
+			return memgraphQueryResults(trim($params['-query']),$params);
+		}
 	}
 	return dbFunctionCall('getDBRecords',$db,$params);
 }
