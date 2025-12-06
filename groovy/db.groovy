@@ -6,8 +6,6 @@ References:
     Dynamically loads database drivers based on dbtype from config.xml
 */
 
-println("[db.groovy] Loading db.groovy module...")
-
 import groovy.sql.Sql
 import groovy.transform.Field
 
@@ -23,18 +21,14 @@ try {
     // These are set in the main script by common.php's evalGroovyCode function
     DATABASE = WASQL_DATABASE
     CONFIG = WASQL_CONFIG
-    println("[db.groovy] Loaded from PHP/WASQL variables: DATABASE has ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
 } catch (MissingPropertyException e) {
-    println("[db.groovy] WASQL variables not available (standalone mode)")
     // Not running embedded, WASQL variables not available - will load modules below
 } catch (Exception e) {
-    println("[db.groovy] Error accessing WASQL variables: ${e.message}")
     // Other error - will load modules below
 }
 
 // If not available, load config module (standalone mode)
 if (DATABASE == null || CONFIG == null) {
-    println("[db.groovy] DATABASE is null, attempting to load config.groovy...")
     def attemptedConfigPaths = []
 
     try {
@@ -93,12 +87,9 @@ if (DATABASE == null || CONFIG == null) {
         }
 
         if (configScript != null && configScript.exists()) {
-            println("[db.groovy] Found config.groovy at: ${configScript.absolutePath}")
-            println("[db.groovy] Evaluating config.groovy...")
             def configModule = new GroovyShell(this.binding).evaluate(configScript)
             if (DATABASE == null) DATABASE = configModule.DATABASE
             if (CONFIG == null) CONFIG = configModule.CONFIG
-            println("[db.groovy] Config loaded. DATABASE has ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
         } else {
             println("[db.groovy] ERROR: Could not find config.groovy!")
             println("[db.groovy] Searched in the following locations:")
@@ -120,8 +111,6 @@ if (DATABASE == null || CONFIG == null) {
         DATABASE = [:]
         CONFIG = [:]
     }
-} else {
-    println("[db.groovy] DATABASE already loaded with ${DATABASE?.size() ?: 0} entries: ${DATABASE?.keySet()}")
 }
 
 // Load common module for error handling
@@ -158,8 +147,6 @@ def queryResults(String dbname, String query, Map params = [:]) {
         println("[queryResults] ERROR: Database '${dbname}' not found. Available: ${available}")
         return "Database '${dbname}' not found in config.xml. Available databases: ${available}"
     }
-
-    println("[queryResults] Database '${dbname}' found in DATABASE map")
 
     def dbtype = DATABASE[dbname].dbtype?.toLowerCase()
 
@@ -480,8 +467,6 @@ private def ensureDatabaseLoaded() {
         return // Already loaded
     }
 
-    println("[db.groovy] DATABASE is null or empty, loading config.xml...")
-
     try {
         def configXml = null
 
@@ -501,8 +486,6 @@ private def ensureDatabaseLoaded() {
         }
 
         if (configXml != null && configXml.exists()) {
-            println("[db.groovy] Loading config from: ${configXml.absolutePath}")
-
             // Try to load XmlSlurper dynamically to avoid compile-time dependency
             // Try both groovy.xml (2.x+) and groovy.util (1.x) packages
             def xmlSlurperClass = null
@@ -554,8 +537,6 @@ private def ensureDatabaseLoaded() {
                     DATABASE[dbMap.name] = dbMap
                 }
             }
-
-            println("[db.groovy] Loaded ${DATABASE.size()} databases: ${DATABASE.keySet()}")
         } else {
             println("[db.groovy] ERROR: config.xml not found. Tried locations:")
             locations.each { println("  - ${it.absolutePath}") }

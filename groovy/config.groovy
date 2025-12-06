@@ -108,9 +108,6 @@ if (ALLCONFIG.database) {
     }
 }
 
-// Show what was loaded
-System.err.println("Loaded ${DATABASE.size()} database(s): ${DATABASE.keySet()}")
-
 // CONFIG
 CONFIG = [:]
 if (ALLCONFIG.host) {
