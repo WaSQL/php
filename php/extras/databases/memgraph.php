@@ -130,7 +130,7 @@ function memgraphQueryResults($query='',$params=array()){
 
 	// Trim and validate query starts with valid Cypher keyword
 	$query = trim($query);
-	if(!preg_match('/^(match|create|merge|return|with|call|unwind|optional|show|explain|profile)/i', $query)){
+	if(!preg_match('/^(drop|match|create|merge|return|with|call|unwind|optional|show|explain|profile)/i', $query)){
 		debugValue("memgraphQueryResults: Invalid query format: {$query}");
 		return array();
 	}
@@ -556,17 +556,19 @@ function memgraphGetDBTables(){
 * @usage $props=memgraphGetDBNodeProperties('Person');
 */
 function memgraphGetDBNodeProperties($label){
-	$query = "MATCH (n:{$label}) RETURN keys(n) as props LIMIT 100";
+	$query = <<<ENDOFQUERY
+MATCH (n:{$label})
+  WITH n
+  LIMIT 1000
+  UNWIND keys(n) as prop
+  RETURN DISTINCT prop
+  ORDER BY prop
+ENDOFQUERY;
 	$recs = memgraphQueryResults($query);
-
 	$properties = array();
 	foreach($recs as $rec){
-		if(isset($rec['props']) && is_array($rec['props'])){
-			foreach($rec['props'] as $prop){
-				if(!in_array($prop, $properties)){
-					$properties[] = $prop;
-				}
-			}
+		if(!in_array($rec['prop'], $properties)){
+			$properties[] = $rec['prop'];
 		}
 	}
 	sort($properties);
@@ -575,7 +577,26 @@ function memgraphGetDBNodeProperties($label){
 
 // Alias for compatibility with WaSQL naming convention
 function memgraphGetDBFields($label){
-	return memgraphGetDBNodeProperties($label);
+	$query=<<<ENDOFQUERY
+MATCH (n:{$label})
+  WITH n
+  LIMIT 2000
+  UNWIND keys(n) as propKey
+  WITH propKey, n[propKey] as propValue
+  RETURN DISTINCT
+      propKey as property,
+      CASE
+          WHEN propValue IS NULL THEN 'null'
+          WHEN propValue = true OR propValue = false THEN 'boolean'
+          WHEN toInteger(propValue) = propValue THEN 'integer'
+          WHEN toFloat(propValue) = propValue THEN 'float'
+          ELSE 'string'
+      END as datatype
+  ORDER BY property
+ENDOFQUERY;
+	$recs = memgraphQueryResults($query);
+	return $recs;
+	//return memgraphGetDBNodeProperties($label);
 }
 
 //---------- begin function memgraphGetDBFieldInfo ----------
@@ -586,25 +607,28 @@ function memgraphGetDBFields($label){
 * @usage $fields=memgraphGetDBFieldInfo('Person');
 */
 function memgraphGetDBFieldInfo($label){
-	$props = memgraphGetDBNodeProperties($label);
-
+	$query=<<<ENDOFQUERY
+MATCH (n:{$label})
+  WITH n
+  LIMIT 2000
+  UNWIND keys(n) as propKey
+  WITH propKey, n[propKey] as propValue
+  RETURN DISTINCT
+      propKey as property,
+      CASE
+          WHEN propValue IS NULL THEN 'null'
+          WHEN propValue = true OR propValue = false THEN 'boolean'
+          WHEN toInteger(propValue) = propValue THEN 'integer'
+          WHEN toFloat(propValue) = propValue THEN 'float'
+          ELSE 'string'
+      END as datatype
+  ORDER BY property
+ENDOFQUERY;
+	$recs = memgraphQueryResults($query);
 	$fieldInfo = array();
-	foreach($props as $prop){
-		// Get a sample value to determine type
-		$query = "MATCH (n:{$label}) WHERE n.{$prop} IS NOT NULL RETURN n.{$prop} as val LIMIT 1";
-		$recs = memgraphQueryResults($query);
-
-		$type = 'string';
-		if(isset($recs[0]['val'])){
-			$val = $recs[0]['val'];
-			if(is_numeric($val)){
-				$type = is_int($val) ? 'integer' : 'float';
-			}
-			elseif(is_bool($val)){
-				$type = 'boolean';
-			}
-		}
-
+	foreach($recs as $rec){
+		$prop=$rec['property'];
+		$type=$rec['datatype'];
 		$fieldInfo[$prop] = array(
 			'_dbfield' => $prop,
 			'name' => $prop,
@@ -613,7 +637,7 @@ function memgraphGetDBFieldInfo($label){
 			'type' => $type
 		);
 	}
-
+	
 	return $fieldInfo;
 }
 
@@ -1055,36 +1079,33 @@ function memgraphNamedQuery($name,$str=''){
 		case 'stats':
 			return <<<ENDOFQUERY
 MATCH (n)
-WITH count(n) as node_count
-MATCH ()-[r]->()
-WITH node_count, count(r) as rel_count
-MATCH (n)
-WITH node_count, rel_count, DISTINCT labels(n) as labelList
-UNWIND labelList as label
-WITH node_count, rel_count, count(DISTINCT label) as label_count
-MATCH ()-[r]->()
-WITH node_count, rel_count, label_count, DISTINCT type(r) as relType
-RETURN
-	node_count as nodes,
-	rel_count as relationships,
-	label_count as labels,
-	count(DISTINCT relType) as relationship_types
-LIMIT 1
+  WITH count(n) as node_count
+  MATCH ()-[r]->()
+  WITH node_count, count(r) as rel_count
+  MATCH (n)
+  WITH node_count, rel_count, n
+  LIMIT 10000
+  WITH node_count, rel_count, labels(n) as labelList
+  UNWIND labelList as label
+  WITH node_count, rel_count, collect(DISTINCT label) as all_labels
+  MATCH ()-[r]->()
+  WITH node_count, rel_count, all_labels, type(r) as relType
+  LIMIT 1000
+  RETURN
+      node_count as nodes,
+      rel_count as relationships,
+      size(all_labels) as labels,
+      count(DISTINCT relType) as relationship_types
 ENDOFQUERY;
 		break;
 
 		case 'labels':
 			return <<<ENDOFQUERY
 MATCH (n)
-WITH DISTINCT labels(n) as labelList
-UNWIND labelList as label
-WITH label
-MATCH (n)
-WHERE label IN labels(n)
-RETURN
-	label as name,
-	count(n) as node_count
-ORDER BY node_count DESC, name
+		WITH DISTINCT labels(n) as labelList
+		UNWIND labelList as label
+		RETURN DISTINCT label
+		ORDER BY label
 ENDOFQUERY;
 		break;
 
