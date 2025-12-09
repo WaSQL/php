@@ -7706,7 +7706,7 @@ var wacss = {
 		if(undefined != frm){
 			frm=wacss.getObject(frm);
 			if(undefined != frm){
-				let els=frm.querySelectorAll('input[name],select[name]');
+				let els=frm.querySelectorAll('input[name],select[name],textarea[name]');
 				for(let i=0;i<els.length;i++){
 					switch(els[i].type){
 						case 'checkbox':
