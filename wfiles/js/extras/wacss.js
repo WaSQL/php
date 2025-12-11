@@ -1814,19 +1814,20 @@ var wacss = {
 	},
 	/**
 	* @name wacss.formFieldGetValue
-	* @describe gets the value of a form input element. For checkboxes, radios, and select multiple, returns only checked/selected values joined with colons.
+	* @describe gets the value of a form input element. For checkboxes, radios, and select multiple, returns only checked/selected values.
 	* @param mixed element object or id
-	* @return string value or colon-separated values for multiple selections
+	* @param [boolean] asArray if true, return multiple values as array instead of colon-separated string
+	* @return mixed string value, colon-separated string, or array if asArray is true
 	* @usage wacss.formFieldGetValue('myInput');
-	* @usage wacss.formFieldGetValue(document.getElementById('mySelect'));
+	* @usage wacss.formFieldGetValue('mySelect', true);
 	*/
-	formFieldGetValue:function(element) {
+	formFieldGetValue:function(element, asArray) {
 		element=wacss.getObject(element);
-		if (!element || !element.tagName){return '';}
+		if (!element || !element.tagName){return asArray ? [] : '';}
 		let tagName = element.tagName.toLowerCase();
 		let type = (element.type || '').toLowerCase();
-		//define formFieldGetInputGroup function
-		function formFieldGetInputGroup(el, inputType) {
+		//define formFieldGetValue_GetInputGroup function
+		function formFieldGetValue_GetInputGroup(el, inputType) {
 			let form = el.form;
 			let name = el.name;
 			if (!form || !name){return [el];}
@@ -1834,12 +1835,17 @@ var wacss = {
 				return e.type === inputType && e.name === name;
 			});
 		}
+		//define helper to return array or colon-separated string
+		function formFieldGetValue_FormatMultiple(arr) {
+			return asArray ? arr : arr.join(':');
+		}
 		// Select elements may be single or multiple
 		if (tagName === 'select') {
 			if (element.multiple) {
-				return Array.from(element.selectedOptions).map(function(opt) { 
+				let values = Array.from(element.selectedOptions).map(function(opt) { 
 					return opt.value; 
-				}).join(':');
+				});
+				return formFieldGetValue_FormatMultiple(values);
 			}
 			return element.value;
 		}
@@ -1850,32 +1856,35 @@ var wacss = {
 		// Input elements
 		if (tagName === 'input') {
 			switch (type) {
-				case 'checkbox': {
-					//get all inputs with the same name
-					let checkGroup = formFieldGetInputGroup(element, 'checkbox');
-					if (checkGroup.length > 1) {
-						return checkGroup.filter(function(el) { 
-							return el.checked; 
-						}).map(function(el) { 
-							return el.value; 
-						}).join(':');
-					}
-					return element.checked ? element.value : '';
+			case 'checkbox': {
+				//get all inputs with the same name
+				let checkGroup = formFieldGetValue_GetInputGroup(element, 'checkbox');
+				if (checkGroup.length > 1) {
+					let values = checkGroup.filter(function(el) { 
+						return el.checked; 
+					}).map(function(el) { 
+						return el.value; 
+					});
+					return formFieldGetValue_FormatMultiple(values);
 				}
-				case 'radio': {
-					let radioGroup = formFieldGetInputGroup(element, 'radio');
-					let checked = radioGroup.find(function(el) { return el.checked; });
-					return checked ? checked.value : '';
-				}
-				case 'file':
-					return Array.from(element.files).map(function(f) { 
-						return f.name; 
-					}).join(':');
-				case 'number':
-				case 'range':
-					return element.value !== '' ? element.valueAsNumber : '';
-				default:
-					return element.value;
+				return element.checked ? element.value : '';
+			}
+			case 'radio': {
+				let radioGroup = formFieldGetValue_GetInputGroup(element, 'radio');
+				let checked = radioGroup.find(function(el) { return el.checked; });
+				return checked ? checked.value : '';
+			}
+			case 'file':{
+				let files = Array.from(element.files).map(function(f) { 
+					return f.name; 
+				});
+				return formFieldGetValue_FormatMultiple(files);
+			}
+			case 'number':
+			case 'range':
+				return element.value !== '' ? element.valueAsNumber : '';
+			default:
+				return element.value;
 			}
 		}
 		return element.value || '';
