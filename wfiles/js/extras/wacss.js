@@ -1812,6 +1812,74 @@ var wacss = {
 		el.style.display='none';
 		return true;
 	},
+	/**
+	* @name wacss.formFieldGetValue
+	* @describe gets the value of a form input element. For checkboxes, radios, and select multiple, returns only checked/selected values joined with colons.
+	* @param mixed element object or id
+	* @return string value or colon-separated values for multiple selections
+	* @usage wacss.formFieldGetValue('myInput');
+	* @usage wacss.formFieldGetValue(document.getElementById('mySelect'));
+	*/
+	formFieldGetValue:function(element) {
+		element=wacss.getObject(element);
+		if (!element || !element.tagName){return '';}
+		let tagName = element.tagName.toLowerCase();
+		let type = (element.type || '').toLowerCase();
+		//define formFieldGetInputGroup function
+		function formFieldGetInputGroup(el, inputType) {
+			let form = el.form;
+			let name = el.name;
+			if (!form || !name){return [el];}
+			return Array.from(form.elements).filter(function(e) {
+				return e.type === inputType && e.name === name;
+			});
+		}
+		// Select elements may be single or multiple
+		if (tagName === 'select') {
+			if (element.multiple) {
+				return Array.from(element.selectedOptions).map(function(opt) { 
+					return opt.value; 
+				}).join(':');
+			}
+			return element.value;
+		}
+		// Textarea
+		if (tagName === 'textarea') {
+			return element.value;
+		}
+		// Input elements
+		if (tagName === 'input') {
+			switch (type) {
+				case 'checkbox': {
+					//get all inputs with the same name
+					let checkGroup = formFieldGetInputGroup(element, 'checkbox');
+					if (checkGroup.length > 1) {
+						return checkGroup.filter(function(el) { 
+							return el.checked; 
+						}).map(function(el) { 
+							return el.value; 
+						}).join(':');
+					}
+					return element.checked ? element.value : '';
+				}
+				case 'radio': {
+					let radioGroup = formFieldGetInputGroup(element, 'radio');
+					let checked = radioGroup.find(function(el) { return el.checked; });
+					return checked ? checked.value : '';
+				}
+				case 'file':
+					return Array.from(element.files).map(function(f) { 
+						return f.name; 
+					}).join(':');
+				case 'number':
+				case 'range':
+					return element.value !== '' ? element.valueAsNumber : '';
+				default:
+					return element.value;
+			}
+		}
+		return element.value || '';
+	},
 	formIsIfTrue: function(frm,ifstr){
 		//age:5
 		//age:5,12
