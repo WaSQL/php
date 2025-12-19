@@ -15,29 +15,10 @@ var wacss = {
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	EOL: '\n',
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
-	CRLF: '\r\n',
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
-	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" data-timer="3" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
-	processing_timeout:undefined,
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
 	hoverDiv:'',
-	/**
-	* @name wacss.abort
-	* @describe alerts and returns false
-	* @param msg text
-	* @return boolean false
-	* @usage wacss.abort('failed');
-	*/
 	abort: function(msg){
 		//info: shows alert msg and returns false
-		alert(msg);
+		console.error(msg);
 		return false;
 	},
 	/**
@@ -162,31 +143,26 @@ var wacss = {
 		}
 		//load
 	    xmlhttp.onload = function(){
-	    	//console.log('load');
-	    	this.ajaxevent='load';
+		    	this.ajaxevent='load';
 	    	this.ajaxtext=this.responseText;
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    //error
 	    xmlhttp.onerror = function(){
-	    	//console.log('error');
-	    	this.ajaxevent='error';
+		    	this.ajaxevent='error';
 	    	this.ajaxtext='&#9888; ajax request error';
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    xmlhttp.ontimeout = function(){
-	    	//console.log('timeout');
-	    	this.ajaxevent='timeout';
+		    	this.ajaxevent='timeout';
 	    	this.ajaxtext='&#128359; ajax request timed out';
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    xmlhttp.onabort = function(){
-	    	//console.log('abort');
-	    	this.ajaxevent='abort';
+		    	this.ajaxevent='abort';
 	    	this.ajaxtext='&#x2718; ajax request aborted';
 	    	wacss.ajaxProcessResponse(this);
 	    };
-		//make the request
 	    xmlhttp.open("GET", aurl.toString(), true);
 	    //timeout
 	    if(undefined != params.timeout){xmlhttp.timeout=parseInt(params.timeout);}
@@ -200,6 +176,14 @@ var wacss = {
 	    //always return false
 	    return false;
 	},
+	/**
+	* @name wacss.alertMessage
+	* @describe displays an alert message in a centerpop that fades away
+	* @param string msg - message to display
+	* @param number timer - milliseconds before fade out (default 4000)
+	* @return boolean false
+	* @usage wacss.alertMessage('Error occurred', 5000);
+	*/
 	alertMessage: function(msg,timer){
 		if(undefined==timer){timer=4000;}
 		timer=parseInt(timer);
@@ -215,6 +199,14 @@ var wacss = {
 		}, timer);
 	    return false;
 	},
+	/**
+	* @name wacss.ajaxPost
+	* @describe submits a form via AJAX POST request and displays results in specified div
+	* @param mixed frm
+	* @param mixed div
+	* @return mixed
+	* @usage wacss.ajaxPost();
+	*/
 	ajaxPost: function(frm,div) {
 	    let xmlhttp = new XMLHttpRequest();
 	    let url=frm.getAttribute('action');
@@ -302,27 +294,23 @@ var wacss = {
 		}
 	    //load
 	    xmlhttp.onload = function(){
-	    	//console.log('load');
-	    	this.ajaxevent='load';
+		    	this.ajaxevent='load';
 	    	this.ajaxtext=this.responseText;
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    //error
 	    xmlhttp.onerror = function(){
-	    	//console.log('error');
-	    	this.ajaxevent='error';
+		    	this.ajaxevent='error';
 	    	this.ajaxtext='&#9888; ajax request error';
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    xmlhttp.ontimeout = function(){
-	    	//console.log('timeout');
-	    	this.ajaxevent='timeout';
+		    	this.ajaxevent='timeout';
 	    	this.ajaxtext='&#128359; ajax request timed out';
 	    	wacss.ajaxProcessResponse(this);
 	    };
 	    xmlhttp.onabort = function(){
-	    	//console.log('abort');
-	    	this.ajaxevent='abort';
+		    	this.ajaxevent='abort';
 	    	this.ajaxtext='&#x2718; ajax request aborted';
 	    	wacss.ajaxProcessResponse(this);
 	    };
@@ -372,6 +360,13 @@ var wacss = {
 	    xmlhttp.send(data);
 	    return false;
 	},
+	/**
+	* @name wacss.ajaxProcessResponse
+	* @describe processes the response from an AJAX request and updates the target div
+	* @param object obj - XMLHttpRequest object with div, ajaxtext/responseText properties
+	* @return void
+	* @usage wacss.ajaxProcessResponse(xmlhttp);
+	*/
 	ajaxProcessResponse: function(obj){
 		let div=wacss.getObject(obj.div);
 		let txt=obj.ajaxtext || obj.responseText;
@@ -384,9 +379,7 @@ var wacss = {
 		        	}
 				break;
 				default:
-					console.log('dom object does not exist');
-    				//console.log(txt);
-				break;
+					break;
 			}
     	}
         else{
@@ -506,8 +499,7 @@ var wacss = {
 			if(undefined != pobj){
 				pobj.appendChild(tagdiv);
 			}
-			else{console.log(params['-parent']+' does not exist');}
-		}
+			}
 		return tagdiv;
 	},
 	/**
@@ -520,10 +512,10 @@ var wacss = {
 	* @usage myform.appendChild(el);
 	*/
 	buildFormSelect: function(fieldname, opts, params){
-		if(undefined == fieldname || !fieldname.length){alert('buildFormSelect Error: no name');return undefined;}
+		if(undefined == fieldname || !fieldname.length){console.error('buildFormSelect Error: no name');return undefined;}
 		fieldname = fieldname.replace(/[\[\]]+$/, '');
 		if(undefined == params){params={};}
-		if(undefined == opts){alert('buildFormSelect Error: no opts');return undefined;}
+		if(undefined == opts){console.error('buildFormSelect Error: no opts');return undefined;}
 		if(undefined == params['-formname']){params['-formname']='addedit';}
 		if(undefined == params['id']){params['id']=params['-formname']+'_'+fieldname;}
 	    let tag = document.createElement("select");
@@ -544,8 +536,7 @@ var wacss = {
 			if(undefined != pobj){
 				pobj.appendChild(tag);
 			}
-			else{console.log(params['-parent']+' does not exist');}
-		}
+			}
 		return tag;
 	},
 	/**
@@ -558,7 +549,7 @@ var wacss = {
 	* @usage myform.appendChild(el);
 	*/
 	buildFormText:function (fieldname,params){
-		if(undefined == fieldname){alert('buildFormText requires fieldname');return undefined;}
+		if(undefined == fieldname){console.error('buildFormText requires fieldname');return undefined;}
 		if(undefined == params){params={};}
 		if(undefined == params['-formname']){params['-formname']='addedit';}
 		if(undefined == params.id){params.id=params['-formname']+'_'+fieldname;}
@@ -579,10 +570,16 @@ var wacss = {
 			if(undefined != pobj){
 				pobj.appendChild(tag);
 			}
-			else{console.log(params['-parent']+' does not exist');}
-		}
+			}
 		return tag;
 	},
+	/**
+	* @name wacss.callFunc
+	* @describe calls a JavaScript function by name with optional arguments
+	* @param mixed params
+	* @return mixed
+	* @usage wacss.callFunc();
+	*/
 	callFunc: function(params){
 		if(undefined == params){return false;}
 		if(undefined == params.func){return false;}
@@ -646,6 +643,13 @@ var wacss = {
 			return wacss.removeObj(document.getElementById('centerpop'));
 		}
 	},
+	/**
+	* @name wacss.chartjsDrawTotals
+	* @describe draws total values in the center of a chart
+	* @param object chart - Chart.js chart object
+	* @return void
+	* @usage wacss.chartjsDrawTotals(myChart);
+	*/
 	chartjsDrawTotals: function(chart){
 		let width = chart.chart.width,
 	    height = chart.chart.height,
@@ -711,23 +715,9 @@ var wacss = {
 			return !element.contains(evt.relatedTarget);
 		}
 	},
-	/**
-	* @name wacss.containsHTML
-	* @describe returns true if string contains HTML
-	* @param str string
-	* @return boolean
-	* @usage if(wacss.containsHTML(str)){...}
-	*/
 	containsHTML: function(str){
 		return (/[\<\>]/.test(str));
 	},
-	/**
-	* @name wacss.containsSpaces
-	* @describe returns true if string contains spaces
-	* @param str string
-	* @return boolean
-	* @usage if(wacss.containsSpaces(str)){...}
-	*/
 	containsSpaces: function(str){
 		return (/[\ ]/.test(wacss.trim(str)));
 	},
@@ -800,9 +790,6 @@ var wacss = {
 		p.querySelector('label[for]').style.backgroundColor=el.dataset.color;
 		p.querySelector('input[type="checkbox"]').checked=false;
 	},
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
 	colorwheelClose: function(el){
 		let p=wacss.getParent(el,'div');
 		if(undefined==p){return false;}
@@ -887,9 +874,15 @@ var wacss = {
 	debugValue: function(id){
 		const el = document.getElementById(id);
 		if (el && typeof console !== "undefined" && typeof console.log === "function") {
-		  console.log(el.innerHTML);
 		}
 	},
+	/**
+	* @name wacss.dismiss
+	* @describe dismisses a fade-away element after checking if user is hovering over it
+	* @param object el - DOM element to dismiss
+	* @return boolean false
+	* @usage wacss.dismiss(element);
+	*/
 	dismiss: function(el){
 		/* if the user is hovering over it, do not close.*/
 		if(el.parentElement.querySelector(':hover') == el){
@@ -905,12 +898,6 @@ var wacss = {
 			wacss.removeObj(el);
 		},1000);
 	},
-	/**
-	* @name wacss.documentHeight
-	* @describe returns the full height of the document.
-	* @return integer
-	* @usage let h=wacss.documentHeight();
-	*/
 	documentHeight: function(){
 		return Math.max( document.body.scrollHeight, document.body.offsetHeight, 
                        document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
@@ -937,17 +924,13 @@ var wacss = {
 		return false;
 	},
 	/**
-	 * Fades away a DOM element
-	 * @param {HTMLElement} element - The DOM element to fade away
-	 * @param {Object} options - Configuration options
-	 * @param {number} options.delay - Time to wait before starting fade in milliseconds (default: 4000)
-	 * @param {number} options.duration - Fade duration in milliseconds (default: 1500)
-	 * @param {boolean} options.remove - Whether to remove the element after fading (default: false)
-	 * @example 
-	 * 		fadeaway(document.getElementById('myElement'));
-	 * 		fadeaway(document.getElementById('myElement'), { remove: true });
-	 *		fadeaway(document.getElementById('myElement'), { delay: 2000, duration: 1000, remove: true });
-	 */
+	* @name wacss.fadeaway
+	* @describe fades out an element over time with optional removal
+	* @param object element
+	* @param object options = {}
+	* @return mixed
+	* @usage wacss.fadeaway();
+	*/
 	fadeaway:function(element, options = {}) {
 		element=wacss.getObject(element);
 		if(undefined == element){return false;}
@@ -977,6 +960,14 @@ var wacss = {
 			element.style.opacity = '0';
 		}, delay);
 	},
+	/**
+	* @name wacss.filemanagerReorder
+	* @describe reorders files in the filemanager interface
+	* @param object dragel
+	* @param object dropel
+	* @return mixed
+	* @usage wacss.filemanagerReorder();
+	*/
 	filemanagerReorder:function(dragel,dropel){
 		let action=dragel.dataset.action || dropel.dataset.action;
 		let dir=dragel.dataset.dir || dropel.dataset.dir;
@@ -996,6 +987,13 @@ var wacss = {
   		let cleaned = ('' + str).replace(/[^0-9]+/g, '');
   		return cleaned;
 	},
+	/**
+	* @name wacss.formatHexcolor
+	* @describe formats a string to be a valid hex color code
+	* @param string str - string to format
+	* @return string - formatted hex color code or empty string
+	* @usage let color = wacss.formatHexcolor('#FF00GG');
+	*/
 	formatHexcolor: function(str){
   		let cleaned = ('' + str).replace(/[^abcdef0-9]+/g, '');
   		cleaned=cleaned.substr(0,8);
@@ -1007,15 +1005,28 @@ var wacss = {
   		}
   		return '';
 	},
+	/**
+	* @name wacss.formatJSON
+	* @describe formats a JSON string with proper indentation
+	* @param string str - JSON string to format
+	* @return string - formatted JSON string
+	* @usage let formatted = wacss.formatJSON('{"name":"value"}');
+	*/
 	formatJSON: function(str){
 	    try {
 	        let jsonobj = JSON.parse(str);
 	        return JSON.stringify(jsonobj, null, '\t');
 	    } catch (e) {
-	        console.error("wacss.formatJSON error:", e);
 	        return str; // fallback: return the original string
 	    }
 	},
+	/**
+	* @name wacss.formatPhone
+	* @describe formats a string to be a valid phone number
+	* @param string str - string to format
+	* @return string - formatted phone number
+	* @usage let phone = wacss.formatPhone('1234567890');
+	*/
 	formatPhone: function(str){
   		//Filter only numbers from the input
   		let cleaned = ('' + str).replace(/[^0-9]+/g, '');
@@ -1030,6 +1041,14 @@ var wacss = {
   		}
   		return cleaned;
 	},
+	/**
+	* @name wacss.formChanged
+	* @describe checks if form values have changed from their original state
+	* @param mixed frm
+	* @param mixed event
+	* @return mixed
+	* @usage wacss.formChanged();
+	*/
 	formChanged: function(frm,event){
 		if(!event){event=window.event;}
 		//mark the element that changed
@@ -1085,16 +1104,13 @@ var wacss = {
 		els=frm.querySelectorAll('[data-hideif]');
 		for(let i=0;i<els.length;i++){
 			if(wacss.formIsIfTrue(frm,els[i].dataset.hideif)){
-				if(debug==1){console.log('hideif to none:'+els[i]);}
 				els[i].style.display='none';
 			}
 			else{
 				if(undefined != els[i].dataset.display){
-					if(debug==1){console.log('hideif to display:'+els[i]);}
 					els[i].style.display=els[i].dataset.display;
 				}
 				else{
-					if(debug==1){console.log('hideif to initial:'+els[i]);}
 					els[i].style.display='initial';
 				}
 			}
@@ -1107,11 +1123,9 @@ var wacss = {
 					els[i].setAttribute('onclick','return false');
 					els[i].setAttribute('onclickx','1');
 				}
-				if(debug==1){console.log('readonly set:'+els[i]);}
 				els[i].setAttribute('readonly','readonly');
 			}
 			else{
-				if(debug==1){console.log('readonly unset:'+els[i]);}
 				els[i].removeAttribute('readonly');
 				if(els[i].hasAttribute('onclickx')){
 					els[i].removeAttribute('onclick');
@@ -1124,10 +1138,8 @@ var wacss = {
 		for(let i=0;i<els.length;i++){
 			if(wacss.formIsIfTrue(frm,els[i].dataset.requiredif)){
 				els[i].setAttribute('required','required');
-				if(debug==1){console.log('requiredif set:'+els[i]);}
 			}
 			else{
-				if(debug==1){console.log('requiredif unset:'+els[i]);}
 				els[i].removeAttribute('required');
 				if(els[i].hasAttribute('data-required')){
 					els[i].removeAttribute('data-required');
@@ -1138,13 +1150,11 @@ var wacss = {
 		els=frm.querySelectorAll('[data-blankif]');
 		for(let i=0;i<els.length;i++){
 			if(wacss.formIsIfTrue(frm,els[i].dataset.blankif)){
-				if(debug==1){console.log('blankif set:'+els[i]);}
 				switch(els[i].type.toLowerCase()){
 					case 'radio':
 					case 'checkbox':
 						//store all checked values into blankx
 						//els[i].dataset.blankx=new Array();
-						console.error('blankif does not support checkbox and radio inputs');
 					break;
 					case 'textarea':
 						els[i].dataset.blankx=wacss.trim(els[i].innerHTML);
@@ -1161,13 +1171,11 @@ var wacss = {
 				}
 			}
 			else{
-				if(debug==1){console.log('blankif unset:'+els[i]);}
 				if(undefined != els[i].dataset.blankx){
 					switch(els[i].type.toLowerCase()){
 						case 'radio':
 						case 'checkbox':
 							//not supported
-							console.error('blankif does not support checkbox and radio inputs');
 						break;
 						case 'textarea':
 							//is this textarea a codemirror
@@ -1191,11 +1199,9 @@ var wacss = {
 			let eclass=parts.shift();
 			let ifstr=parts.join(':');
 			if(wacss.formIsIfTrue(frm,ifstr)){
-				if(debug==1){console.log('classif added:'+els[i]);}
 				els[i].classList.add(eclass);
 			}
 			else{
-				if(debug==1){console.log('classif removed:'+els[i]);}
 				els[i].classList.remove(eclass);
 			}
 		}
@@ -1225,6 +1231,12 @@ var wacss = {
 		}
 		return;
 	},
+	/**
+	* @name wacss.formFileUploadInit
+	* @describe initializes file upload functionality for form inputs
+	* @return mixed
+	* @usage wacss.formFileUploadInit();
+	*/
 	formFileUploadInit: function(){
 		let els=document.querySelectorAll('input[type="file"].fileupload');
 		if(els.length==0){return false;}
@@ -1292,6 +1304,13 @@ var wacss = {
 			
 		}
 	},
+	/**
+	* @name wacss.formFileUpload
+	* @describe handles file upload for form file inputs
+	* @param object el
+	* @return mixed
+	* @usage wacss.formFileUpload();
+	*/
 	formFileUpload: function(el){
 		if(undefined==el || undefined==el.files){
 			return true;
@@ -1448,7 +1467,7 @@ var wacss = {
 	    if (files.length) {
 	      for (const file of files) {
 	        if (!looksLikeImage(file)) {
-	          alert('All selected files must be valid image files.');
+	          console.error('All selected files must be valid image files.');
 	          el.value = '';
 	          return true;
 	        }
@@ -1611,6 +1630,13 @@ var wacss = {
 	  }
 	},
 	// Preview handler for videos (and still works fine if an image is uploaded)
+	/**
+	* @name wacss.formFileVideoUpload
+	* @describe handles video file upload for form inputs
+	* @param object el
+	* @return mixed
+	* @usage wacss.formFileVideoUpload();
+	*/
 	formFileVideoUpload: function (el) {
 		el = wacss.getObject(el);
 		if (!el || !el.files) { return true; }
@@ -1765,6 +1791,14 @@ var wacss = {
 			});
 		}
 	},
+	/**
+	* @name wacss.formFileCaptureMode
+	* @describe sets capture mode for file input (camera, video, etc)
+	* @param object el
+	* @param mixed mode
+	* @return mixed
+	* @usage wacss.formFileCaptureMode();
+	*/
 	formFileCaptureMode: function(el,mode){
 		el=wacss.getObject(el);
 		if(undefined==el){return false;}
@@ -1786,6 +1820,13 @@ var wacss = {
 		el.removeAttribute('multiple');
 		return true;
 	},
+	/**
+	* @name wacss.formFileCaptureErase
+	* @describe erases captured file/image from file input
+	* @param object el
+	* @return mixed
+	* @usage wacss.formFileCaptureErase();
+	*/
 	formFileCaptureErase: function(el){
 		el=wacss.getObject(el);
 		if(undefined==el || undefined==el.dataset.id){
@@ -1889,6 +1930,14 @@ var wacss = {
 		}
 		return element.value || '';
 	},
+	/**
+	* @name wacss.formIsIfTrue
+	* @describe evaluates conditional expressions for form field visibility/behavior
+	* @param mixed frm
+	* @param mixed ifstr
+	* @return mixed
+	* @usage wacss.formIsIfTrue();
+	*/
 	formIsIfTrue: function(frm,ifstr){
 		//age:5
 		//age:5,12
@@ -1897,12 +1946,10 @@ var wacss = {
 		//age:5,12 and color:red,green
 		//Step 1. split ifstr into sets
 		if(undefined==ifstr || ifstr.length==0){
-			//console.error('formIsIfTrue Error - ifstr not defined');
 			return false;
 		}
 		ifstr=wacss.trim(ifstr);
 		if(ifstr.length==0){
-			//console.error('formIsIfTrue Error - ifstr is empty');
 			return false;
 		}
 		let oper='';
@@ -1976,26 +2023,15 @@ var wacss = {
 		}
 		if(oper=='or'){
 			if(tvals.length > 0){
-				//console.log(ifstr+' = true (or)');
 				return true;
 			}
-			//console.log(ifstr+' = false (or)');
 			return false;
 		}
 		if(tvals.length==sets.length){
-			//console.log(ifstr+' = true (and)');
 			return true;
 		}
-		//console.log(ifstr+' = false (and)');
 		return false;
 	},
-	/**
-	* @name wacss.formValidate
-	* @describe validates form with all the special attributes. i.e. data-requiredif
-	* @param frm object - form
-	* @return boolean
-	* @usage if(!wacss.formValidate(frm)){return false;}
-	*/
 	formValidate: function(frm){   
     	
 	},
@@ -2031,6 +2067,47 @@ var wacss = {
 	    return rv;
 	},
 	/**
+	* @name wacss.GetElementsByAttribute
+	* @describe returns array of elements with specified tag name and attribute value
+	* @param string tag - tag name to search for
+	* @param string att - attribute name
+	* @param string val - value to match (regex supported)
+	* @return array - array of matching elements
+	* @usage let divs = wacss.GetElementsByAttribute('div', 'data-type', 'form');
+	*/
+	GetElementsByAttribute: function(tag, att, val){
+        if(undefined == val){return new Array();}
+        if(val.length==0){return new Array();}
+		val=val.replace(/\[(.*)\]$/,"\\\[$1\\\]");
+        var a, list, found = new Array(), re = new RegExp(val, 'i');
+        list = document.getElementsByTagName(tag);
+        for (var i = 0; i < list.length; ++i) {
+            a = list[i].getAttribute(att);
+            if (undefined == a && undefined != list[i][att]){a = list[i][att];}
+            if (undefined == a && att=='for' && undefined != list[i]["htmlFor"]){a = list[i]["htmlFor"];}
+            if (undefined == a && att=='class' && undefined != list[i]["className"]){a = list[i]["className"];}
+            if (typeof(a)=='string' && (val.length==0 || a.search(re) != -1)) {
+               found[found.length] = list[i];
+            }
+        }
+        return found;
+	},
+	/**
+	* @name wacss.hideElementsByAttribute
+	* @describe hides elements with specified tag name and attribute value
+	* @param string tag - tag name to search for
+	* @param string att - attribute name
+	* @param string val - value to match (regex supported)
+	* @return boolean
+	* @usage wacss.hideElementsByAttribute('div', 'data-hide', '1');
+	*/
+	hideElementsByAttribute: function(tag, att, val){
+		var list = wacss.GetElementsByAttribute(tag, att, val);
+		for (var i = 0; i < list.length; ++i) {
+			list[i].style.display='none';
+    	}
+	},
+	/**
 	* @name wacss.getViewportSize
 	* @describe return width and height of viewport
 	* @param [w] object defaults to window
@@ -2054,11 +2131,9 @@ var wacss = {
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	geoLocation: function(fld,opts){
-		//fld can be a function: (lat,long) or an input field to set value to: [lat,long] 
 		let fldObj=wacss.getObject(fld);
 		if(undefined==fldObj){
 			if(!wacss.function_exists(fld)){
-				console.log("wacss.getGeoLocation error: "+fld+' is undefined');
 				return false;
 			}
 		}
@@ -2083,8 +2158,6 @@ var wacss = {
     		navigator.geoOptions=options;
     		navigator.geolocation.getCurrentPosition(
     			function(position){
-    				//console.log(navigator.geoSetFld);
-    				//console.log(wacss.function_exists(navigator.geoSetFld));
     				if (wacss.function_exists(navigator.geoSetFld)){
     					window[navigator.geoSetFld](position.coords.latitude,position.coords.longitude,navigator.geoOptions);
     				}
@@ -2113,28 +2186,19 @@ var wacss = {
 	    				}
 	    				else{
 	    					if(undefined != navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
-	    						alert(err.message);
+	    						console.error(err.message);
 	    					}
 	    					else{
 		    					let errfld=document.querySelector(navigator.geoSetFldFailed);
 		    					if(undefined != errfld){
 		    						wacss.setText(wacss.getObject(errfld),err.message);
 		    					}
-		    					else{
-		    						console.log('wacss.getGeoLocation error. Invalid onerror value');
-		    						console.log(navigator.geoSetFldFailed);
-		    						console.log(err.message);
-		    					}
 		    				}
 	    				}
     				}
     				else{
     					if(undefined != navigator.geoOptions.showmap && navigator.geoOptions.showmap==1){
-    						alert(err.message);
-    					}
-    					else{
-    						console.log('wacss.getGeoLocation error. No onerror set.');
-    						console.log(navigator.geoOptions);
+    						console.error(err.message);
     					}
     				}
     				return false;
@@ -2148,13 +2212,9 @@ var wacss = {
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	geoLocationMap: function(lat,long,params){
-		//console.log('geoLocationMap');
-		lat=parseFloat(lat);
+			lat=parseFloat(lat);
 		long=parseFloat(long);
-		//console.log(lat);
-		//console.log(long);
-		//console.log(params);
-		if(undefined == params){params={};}
+					if(undefined == params){params={};}
 		if(undefined == params.displayname){params.displayname='Click on map to select';}
 		params.lat=lat;
 		params.long=long;
@@ -2199,9 +2259,7 @@ var wacss = {
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	geoLocationMapContent:function(params){
-		//console.log('geoLocationMapContent');
-		//console.log(params);
-		if(undefined == params){params={};}
+				if(undefined == params){params={};}
 		params.zoom=params.zoom||13;
 		//return;
 		let myLatlng={ lat: params.lat, lng: params.long };
@@ -2256,8 +2314,7 @@ var wacss = {
 				map.params=params;
 				// Configure the click listener.
 				map.addListener("click", (mapsMouseEvent) => {
-					//console.log(map.params.input);
-					let latlon=mapsMouseEvent.latLng.toJSON();
+						let latlon=mapsMouseEvent.latLng.toJSON();
 					let latlonval='['+latlon.lat+','+latlon.lng+']';
 				  	// Close the current InfoWindow.
 				  	infoWindow.close();
@@ -2366,6 +2423,15 @@ var wacss = {
 		if(typeof(cObj.parentNode) == "object"){return cObj.parentNode;}
 		else{return wacss.getParent(pobj,name,classname);}
 	},
+	/**
+	* @name wacss.getParentByAtt
+	* @describe finds parent element by attribute name
+	* @param mixed obj
+	* @param mixed att
+	* @param mixed val
+	* @return mixed
+	* @usage wacss.getParentByAtt();
+	*/
 	getParentByAtt: function(obj,att,val){
 		if(undefined == obj){return null;}
 		if(undefined != att){
@@ -2438,8 +2504,7 @@ var wacss = {
 	   let row=new Array();
 	   if(undefined == ptable){
 	       //no parent table - log and return
-	       console.log('wacss.getTableRowValues Error - no parent table');
-	       if(s==1){return str;}
+		       if(s==1){return str;}
 	       return row; 
 	   }
 	   let keys=new Array();
@@ -2476,6 +2541,205 @@ var wacss = {
 	   }
 	   if(s==1){return str;}
 	   return row;
+	},
+	/**
+	* @name wacss.cloneDiv
+	* @describe clones a div and all form elements in it, auto-incrementing names, ids, and tabindexes
+	* @param string div - div id to clone
+	* @param number c - set to 1 to create clone
+	* @return boolean
+	* @usage onclick="return wacss.cloneDiv('mydivid',1);"
+	*/
+	cloneDiv: function(div,c){
+		var divObj = wacss.getObject(div);
+		if(undefined == divObj){console.error('cloneDiv Error: No id found for '+div);return false;}
+		if(undefined == divObj.getAttribute('data-cnt')){
+			divObj.setAttribute('data-cnt',1);
+		}
+		if(undefined == divObj.getAttribute('data-max')){
+			divObj.setAttribute('data-max',0);
+		}
+		var cnt=parseInt(divObj.getAttribute('data-cnt'));
+		var max_cnt=0;
+		if(undefined != divObj.getAttribute('data-max')){
+			max_cnt=parseInt(divObj.getAttribute('data-max'));
+		}
+		if(undefined == divObj.getAttribute('id')){
+			divObj.id='c' + wacss.guid();
+			divObj.setAttribute('id',divObj.id);
+		}
+		if(max_cnt > 0 && cnt >= max_cnt){
+			return false;
+		}
+		if(undefined == divObj.getAttribute('data-init')){
+			divObj.setAttribute('data-init',1);
+			var cloneDiv=document.createElement('div');
+			cloneDiv.setAttribute('id','clonebutton');
+			cloneDiv.className='col-sm-1 w_noprint';
+			cloneDiv.innerHTML='<label>Clone</label><button type="button" class="btn btn-default btn-sm" onclick="wacss.cloneDiv(\''+divObj.id+'\',1)"><span class="icon-plus"></span></button>';
+			divObj.insertAdjacentElement('afterBegin',cloneDiv);
+			return true;
+		}
+		if(undefined != c && c==1){
+			var count=cnt;
+			cnt++;
+			divObj.setAttribute('data-cnt',cnt);
+			var clone=divObj.cloneNode(true);
+			clone.setAttribute('id',divObj.id+'_'+count);
+			let list=clone.querySelectorAll("*");
+			for(var i=0;i<list.length;i++){
+				if(undefined != list[i].id){
+		    		var cid=list[i].id;
+		    		if(cid.length){list[i].setAttribute('id',cid+'_'+count);}
+				}
+				if(undefined != list[i].name){
+					var cname=list[i].name;
+					if(cname.length){list[i].setAttribute('name',cname+'_'+count);}
+				}
+				if(undefined != list[i].getAttribute('for')){
+		    		var cfor=list[i].getAttribute('for');
+					if(cfor.length){list[i].setAttribute('for',cfor+'_'+count);}
+				}
+				if(undefined != list[i].getAttribute('data-id')){
+		    		var cv=list[i].getAttribute('data-id');
+					if(cv.length){list[i].setAttribute('data-id',cv+'_'+count);}
+				}
+				if(undefined != list[i].getAttribute('data-behavior')){
+		    		var att=list[i].getAttribute('data-behavior');
+		    		var matches=att.match(/\@raid\((.+?)\)/);
+		    		if(undefined != matches && undefined != matches[1]){
+						var newval='@raid('+matches[1]+'_'+count+')';
+						list[i].setAttribute('data-behavior',newval);
+					}
+				}
+				if(undefined != list[i].getAttribute('data-clear')){
+					if (list[i].type && list[i].type === 'checkbox') {
+		            	list[i].checked=false;
+					}
+					else if (list[i].type && list[i].type === 'radio') {
+		            	list[i].checked=false;
+					}
+					else{
+						wacss.setText(list[i],'');
+					}
+				}
+				if(undefined != list[i].getAttribute('data-display')){
+					wacss.setStyle(list[i],'display',list[i].getAttribute('data-display'));
+				}
+			}
+			list=clone.querySelectorAll("[id=clonebutton]");
+			for(let i=0;i<list.length;i++){
+				list[i].style.visibility='hidden';
+			}
+			divObj.insertAdjacentElement('afterEnd',clone);
+			if(typeof wacss.initBehaviors === 'function'){
+				wacss.initBehaviors();
+			}
+			return true;
+		}
+	},
+	/**
+	* @name wacss.cloneTableRow
+	* @describe clones a table row and all elements in it, auto-incrementing names, ids, and tabindexes
+	* @param string tid - table id
+	* @param object opts - options: {copies:1, row:'last'}
+	* @return boolean
+	* @usage onclick="return wacss.cloneTableRow('mytableid');"
+	*/
+	cloneTableRow: function(tid,opts){
+		var dTable = wacss.getObject(tid);
+		if(undefined == dTable){console.error('cloneTableRow Error: No table id found for '+tid);return false;}
+		var opt={
+	        copies:1,
+	        row:'last'
+		}
+		if(opts){
+			for (var key in opts){
+				opt[key]=opts[key];
+			}
+		}
+		var rowCount = dTable.rows.length;
+		var cloneRow = rowCount-1;
+		if(wacss.isNum(opt.row)){cloneRow=opt.row;}
+		var lastindex=0;
+		var focusobj=null;
+		for (c=0;c<dTable.rows[cloneRow].cells.length;c++){
+			var cellkids=dTable.rows[cloneRow].cells[c].getElementsByTagName('*');
+			for(ci=0;ci<cellkids.length;ci++){
+		    	if(undefined != cellkids[ci].tabIndex && wacss.isNum(cellkids[ci].tabIndex) && parseInt(cellkids[ci].tabIndex) > 0){
+					lastindex=parseInt(cellkids[ci].tabIndex);
+					focusobj=cellkids[ci];
+				}
+			}
+		}
+		tabx=lastindex+1;
+		var xval=0;
+		for(var x=0;x<opt.copies;x++){
+			xval++;
+			var newRow =dTable.insertRow(rowCount);
+			for (c=0;c<dTable.rows[cloneRow].cells.length;c++){
+				var cellkids=dTable.rows[cloneRow].cells[c].getElementsByTagName('*');
+				var td=newRow.insertCell(c);
+				if(cellkids.length ==0){
+					var val=dTable.rows[cloneRow].cells[c].innerHTML;
+					if(wacss.isNum(val)){
+						val=parseInt(val)+xval;
+					}
+					td.innerHTML=val;
+	                continue;
+				}
+				var myregexp=/^(.+?)([0-9]+)$/;
+				for(ci=0;ci<cellkids.length;ci++){
+	                var clone = cellkids[ci].cloneNode(true);
+	                if(undefined != clone.id && clone.id.length > 0){
+	                    var match = myregexp.exec(clone.id);
+						if (match != null) {
+							var newnum=parseInt(match[2])+1;
+							clone.id=match[1]+newnum;
+						}
+						else{clone.id=clone.id+xval;}
+					}
+	                if(undefined != clone.name && clone.name.length > 0){
+	                    var match = myregexp.exec(clone.name);
+						if (match != null) {
+							var newnum=parseInt(match[2])+1;
+							clone.name=match[1]+newnum;
+						}
+						else{clone.name=clone.name+xval;}
+					}
+					if(undefined != clone.tagName){
+						if(clone.tagName=='INPUT'){clone.value='';}
+						if(clone.tagName=='TEXTAREA'){clone.innerHTML='';}
+						if(clone.tagName=='SELECT'){clone.options[clone.selectedIndex].value = false;}
+						if(clone.tagName=='IMG' && undefined != clone.dataset.clear && clone.dataset.clear==1){
+							clone.src='/wfiles/clear.gif';
+						}
+					}
+	                if(undefined != clone.tabIndex && wacss.isNum(clone.tabIndex) && clone.tabIndex > 0){
+	                	clone.tabIndex=tabx;
+	                	tabx=tabx+1;
+					}
+	                var newobj=td.appendChild(clone);
+				}
+			}
+			rowCount = dTable.rows.length;
+		}
+		if(focusobj!=null){
+			focusobj.focus();
+		}
+		return true;
+	},
+	/**
+	* @name wacss.delTableRow
+	* @describe deletes a table row
+	* @param object source - element within the row to delete
+	* @param string tid - table id
+	* @return boolean
+	* @usage onclick="wacss.delTableRow(this,'mytableid');"
+	*/
+	delTableRow: function(source,tid){
+		let oRow = source.parentNode.parentNode;
+	    document.getElementById(tid).deleteRow(oRow.rowIndex);
 	},
 	/**
 	* @name wacss.getText
@@ -2630,14 +2894,12 @@ var wacss = {
 	        return position;
 	        
 	    } catch (error) {
-	        console.error('getLatLon error:', error.message);
 	        return false;
 	    }
 	},
 	getQrcodeBarcode: async function (inputElement, scanButton) {
 		inputElement=wacss.getObject(inputElement);
 		if(!inputElement){
-			console.error('getQrcodeBarcode Error: No inputElement');
 			return false;
 		}
 		scanButton=wacss.getObject(scanButton);
@@ -2800,7 +3062,6 @@ var wacss = {
 					case 'PDF_417': return validatePDF_417(decodedText);
 					case 'QR_CODE': return false;
 					default:
-						console.warn('Unknown barcode format:', format);
 						return false;
 				}
 			} catch (err) {
@@ -2892,7 +3153,6 @@ var wacss = {
 				try {
 					await scanner.stop();
 				} catch (err) {
-					console.error('Error stopping scanner:', err);
 				}
 				window.__qrScannerActive = false;
 				isScanning = false;
@@ -2978,13 +3238,11 @@ var wacss = {
 								const fn = new Function('code', 'el', 'btn', inputElement.dataset.onscan);
 								fn(decodedText, inputElement, scanButton);
 							} catch (err) {
-								console.error('Error in data-onscan handler:', err);
 							}
 						}
 						
 						closeScanner();
 					} catch (err) {
-						console.error('Error processing scan result:', err);
 						closeScanner();
 					}
 				},
@@ -2993,10 +3251,16 @@ var wacss = {
 			window.__qrScannerActive = true;
 			isScanning = true;
 		} catch (err) {
-			console.error('QRCode/Barcode Scanner start failed:', err);
 			await closeScanner();
 		}
 	},
+	/**
+	* @name wacss.mapLatLon
+	* @describe displays a map with latitude/longitude coordinates
+	* @param object el
+	* @return mixed
+	* @usage wacss.mapLatLon();
+	*/
 	mapLatLon: function(el){
 		el=wacss.getObject(el);
 		if(undefined==el){return false;}
@@ -3035,6 +3299,13 @@ var wacss = {
 	    }
 	    return _p8() + _p8(true) + _p8(true) + _p8();
 	},
+	/**
+	* @name wacss.hexToRgb
+	* @describe converts hex color code to RGB object
+	* @param string hex - hex color code (#RRGGBB or RRGGBB)
+	* @return object - {r: number, g: number, b: number} or null if invalid
+	* @usage let rgb = wacss.hexToRgb('#FF0000');
+	*/
 	hexToRgb: function(hex) {
 		if(undefined==hex){
 			return {
@@ -3067,14 +3338,6 @@ var wacss = {
 		}
 		;
     },
-    /**
-	* @name wacss.loadJsText
-	* @describe loads a text string as a javascript function
-	* @param string function name
-	* @param string function body
-	* @return boolean true
-	* @usage wacss.loadJsText('myfunc',str); myfunc();
-	*/
 	loadJsText:function(name,body){
 		let code = 'this.f = function ' + name + '() {'+body+'}';
 		eval(code);
@@ -3112,6 +3375,59 @@ var wacss = {
 	    }
 	},
 	/**
+	* @name wacss.nl2br
+	* @describe converts newlines to HTML line breaks
+	* @param string str - string to convert
+	* @param boolean is_xhtml - use XHTML-style breaks (default true)
+	* @return string - converted string
+	* @usage let html = wacss.nl2br("line1\nline2");
+	* @source http://phpjs.org/functions
+	*/
+	nl2br: function(str,is_xhtml){
+		let breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';
+	    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1' + breakTag + '$2');
+	},
+	/**
+	* @name wacss.getWordCount
+	* @describe returns word count of text in an element
+	* @param mixed id - element or element id
+	* @return number - word count
+	* @usage let count = wacss.getWordCount('myTextarea');
+	*/
+	getWordCount: function(id){
+		var s=wacss.getText(id);
+		s = s.replace(/(^\s*)|(\s*$)/gi,"");
+		s = s.replace(/[ ]{2,}/gi," ");
+		s = s.replace(/\n /,"\n");
+		var wordcount = s.split(' ').length;
+		return wordcount || 0;
+	},
+	/**
+	* @name wacss.isFunction
+	* @describe checks if a variable is a function
+	* @param mixed functionToCheck - variable to check
+	* @return boolean - true if function, false otherwise
+	* @usage if(wacss.isFunction(myFunc)){...}
+	*/
+	isFunction: function(functionToCheck) {
+		var getType = {};
+		return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
+	},
+	/**
+	* @name wacss.scrollToDivId
+	* @describe scrolls to a div id inside a scrollable parent div
+	* @param string pdiv - parent scrollable div id
+	* @param string sdiv - target div id to scroll to
+	* @return boolean false
+	* @usage wacss.scrollToDivId('scrollContainer', 'targetDiv');
+	*/
+	scrollToDivId: function(pdiv,sdiv){
+		let t=document.getElementById(sdiv).offsetTop-10;
+		if(t < 0){t=0;}
+		document.getElementById(pdiv).scrollTop = t;
+		return false;
+	},
+	/**
 	* @name wacss.in_array
 	* @describe emulates PHP function
 	* @param needle string
@@ -3124,10 +3440,55 @@ var wacss = {
 	in_array: function(needle, haystack) {
 	    let length = haystack.length;
 	    for(let i = 0; i < length; i++) {
-	    	//console.log('in_array',haystack[i],needle);
-	        if(haystack[i] == needle){return true;}
+		        if(haystack[i] == needle){return true;}
 	    }
 	    return false;
+	},
+	/**
+	* @name wacss.array_keys
+	* @describe returns array of keys from an array, optionally filtered by search value
+	* @param array arr - the input array
+	* @param mixed search_value - optional value to filter by
+	* @param boolean argStrict - use strict comparison
+	* @return array - array of keys
+	* @usage let keys = wacss.array_keys({a:1, b:2, c:3});
+	* @source http://phpjs.org/functions
+	*/
+	array_keys: function(arr,search_value,argStrict){
+	    let searchstr = typeof search_value !== 'undefined',
+	        tmp_arr = [],
+	        strict = !!argStrict,
+	        include = true,
+	        key = '';
+		for (key in arr) {
+	        if (arr.hasOwnProperty(key)) {
+				include = true;
+	            if (searchstr) {
+	                if (strict && arr[key] !== search_value) {include = false;}
+					else if (arr[key] != search_value) {include = false;}
+	            }
+	            if (include) {tmp_arr[tmp_arr.length] = key;}
+	        }
+	    }
+	    return tmp_arr;
+	},
+	/**
+	* @name wacss.array_values
+	* @describe returns array of values from an associative array
+	* @param array arr - the input array
+	* @return array - array of values
+	* @usage let values = wacss.array_values({a:1, b:2, c:3});
+	* @source http://phpjs.org/functions
+	*/
+	array_values: function(arr){
+	    let tmp_arr = [],
+	        cnt = 0;
+	    let key = '';
+	    for (key in arr) {
+	        tmp_arr[cnt] = arr[key];
+	        cnt++;
+	    }
+	    return tmp_arr;
 	},
 	/**
 	* @name wacss.init
@@ -3137,19 +3498,19 @@ var wacss = {
 	*/
 	init: function(){
 		/*wacssedit*/
-		try{wacss.initOnloads();}catch(e){console.log('wacss.initOnloads failed');}
-		try{wacss.initWacssEdit();}catch(e){console.log('wacss.initWacssEdit failed');}
-		try{wacss.initChartJs();}catch(e){console.log('wacss.initChartJs failed');}
-		try{wacss.initTabs();}catch(e){console.log('wacss.initTabs failed');}
-		try{wacss.initCodeMirror();}catch(e){console.log('wacss.initCodeMirror failed');}
-		try{wacss.initDropdowns();}catch(e){console.log('wacss.initDropdowns failed');}
-		try{wacss.initEditor();}catch(e){console.log('wacss.initEditor failed');}
-		try{wacss.initWhiteboard();}catch(e){console.log('wacss.initWhiteboard failed');}
-		try{wacss.initSignaturePad();}catch(e){console.log('wacss.initSignaturePad failed');}
-		try{wacss.initDrag();}catch(e){console.log('wacss.initDrag failed');}
-		try{wacss.initHovers();}catch(e){console.log('wacss.initHovers failed');}
-		try{wacss.leftMenu('init');}catch(e){console.log('wacss.leftMenu failed');}
-		try{wacss.initDatePicker();}catch(e){console.log('wacss.initDatePicker failed');}
+		try{wacss.initOnloads();}catch(e){}
+		try{wacss.initWacssEdit();}catch(e){}
+		try{wacss.initChartJs();}catch(e){}
+		try{wacss.initTabs();}catch(e){}
+		try{wacss.initCodeMirror();}catch(e){}
+		try{wacss.initDropdowns();}catch(e){}
+		try{wacss.initEditor();}catch(e){}
+		try{wacss.initWhiteboard();}catch(e){}
+		try{wacss.initSignaturePad();}catch(e){}
+		try{wacss.initDrag();}catch(e){}
+		try{wacss.initHovers();}catch(e){}
+		try{wacss.leftMenu('init');}catch(e){}
+		try{wacss.initDatePicker();}catch(e){}
 		return false;
 	},
 
@@ -3255,7 +3616,6 @@ var wacss = {
 		/* <div draggable="true" dropzones="div.drop1">...</div> */
 		let draggables=document.querySelectorAll('[draggable="true"]');;
 		for(let i=0;i<draggables.length;i++){
-			//console.log(draggables[i]);
 			//check to see if we have already initialized this one
 			if(undefined != draggables[i].dataset.draggable_initialized){
 				continue;
@@ -3275,9 +3635,8 @@ var wacss = {
 				}
 				else{el=this;}
 				if(undefined==el){
-					console.log('wacss.initDrag ondrag start error: no el');
+					return false;
 				}
-				//console.log('drag start '+el.id);
 				ev.dataTransfer.setData("Text", el.id);
 				el.classList.add('dragging');
 			}
@@ -3290,9 +3649,8 @@ var wacss = {
 				}
 				else{el=this;}
 				if(undefined==el){
-					console.log('wacss.initDrag ondrag start error: no el');
+					return false;
 				}
-				//console.log('drag end '+el.id);
 				ev.dataTransfer.clearData("Text");
 				el.classList.remove('dragging');
 			}
@@ -3329,25 +3687,20 @@ var wacss = {
 				let dragid = ev.dataTransfer.getData("Text");
 				let dragel=document.getElementById(dragid);
 				if(undefined==dragel){
-					console.log('wacss.initDrag ondrop error: no dragel');
 					return false;
 				}
 				let tel=ev.target;
 				if(undefined == tel.dataset.ondrop){
-					console.log('getting parent');
 					tel=wacss.getParentByAtt(tel,'data-ondrop');
 				}
 				if(undefined==tel){
-					console.log('wacss.initDrag ondrop error: no tel');
 					return false;
 				}
 				tel.classList.remove('dropping');
 				if(undefined==tel.dataset.ondrop){
-					console.log('wacss.initDrag ondrop error: no ondrop in tel');
 					return false;
 				}
 				if(tel.dataset.ondrop.length==0){
-					console.log('wacss.initDrag ondrop error: ondrop is blank in tel');
 					return false;
 				}
 				if(tel.dataset.ondrop.indexOf('wacss.') !=-1){
@@ -3359,6 +3712,13 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.initChartJsBehavior
+	* @describe initializes Chart.js behavior for chart elements
+	* @param string chartid
+	* @return mixed
+	* @usage wacss.initChartJsBehavior();
+	*/
 	initChartJsBehavior: function(chartid){
 		let list=document.querySelectorAll('[data-behavior="chartjs"]');
 		if(undefined != chartid){
@@ -3367,14 +3727,12 @@ var wacss = {
 		if(list.length==0){return false;}
 		//load Chart is it is not already loaded
 		if (typeof Chart === 'undefined') {
-			//console.log('loading Chartjs, etc');
-			wacss.loadScript('/wfiles/js/extras/chart.min.js');
+				wacss.loadScript('/wfiles/js/extras/chart.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
 		}
 		if (typeof Chart === 'undefined') {
-			console.log('Error in initChartJsBehavior: Chartjs is not defined');
-			return false;
+				return false;
 		}
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
@@ -3414,22 +3772,16 @@ var wacss = {
 	    let bcolors=new Array();
 		for(let i=0;i<list.length;i++){
 			if(undefined==list[i].id){
-				console.log('Error in initChartJsBehavior: missing id attribute');
-				console.log(list[i]);
-				continue;
+						continue;
 			}
 			if(undefined==list[i].dataset.type){
-				console.log('Error in initChartJsBehavior: missing data-type attribute');
-				console.log(list[i]);
-				continue;
+						continue;
 			}
 			if(undefined==chartid && undefined!=list[i].dataset.initialized){continue;}
 			list[i].dataset.initialized=1;
 			let datadiv=document.querySelector('#'+list[i].id+'_data'); 
 			if(undefined==datadiv){
-				console.log('Error in initChartJsBehavior: missing data div attribute');
-				console.log(list[i]);
-				continue;
+						continue;
 			}
 			//setup the config: type, data, options
 			let lconfig = {
@@ -3455,6 +3807,13 @@ var wacss = {
             		tooltips: {enabled:false,intersect: false,mode:'index'},
             		plugins:{
             			labels:{
+	/**
+	* @name wacss.fontColor
+	* @describe determines appropriate font color (light/dark) based on background color
+	* @param mixed data
+	* @return mixed
+	* @usage wacss.fontColor();
+	*/
             				fontColor:function (data) {
 								let rgb = {};
 								rgb=wacss.hexToRgb(data.dataset.backgroundColor[data.index]);
@@ -3641,8 +4000,7 @@ var wacss = {
 			list[i].appendChild(lcanvas);
 			let lctx = lcanvas.getContext('2d');
 			if(undefined != list[i].dataset.debug){
-				console.log(JSON.stringify(lconfig,null,2));
-			}
+				}
 			wacss.chartjs[list[i].id] = new Chart(lctx, lconfig);
 			//onclick
 			if(undefined != list[i].dataset.onclick){
@@ -3679,20 +4037,25 @@ var wacss = {
 			}
 		}
 	},
+	/**
+	* @name wacss.initChartJs
+	* @describe initializes Chart.js charts on the page
+	* @param string initid
+	* @return mixed
+	* @usage wacss.initChartJs();
+	*/
 	initChartJs: function(initid){
 		wacss.initChartJsBehavior();
 		let list=document.querySelectorAll('div.chartjs,div[data-behavior="chartjs"]');
 		if(undefined==list || list.length==0){return false;}
 		//load Chart is it is not already loaded
 		if (typeof Chart === 'undefined') {
-			//console.log('loading Chartjs, etc');
-			wacss.loadScript('/wfiles/js/extras/chart.min.js');
+				wacss.loadScript('/wfiles/js/extras/chart.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
 		}
 		if (typeof Chart === 'undefined') {
-			console.log('Error in initChartJsBehavior: Chartjs is not defined');
-			return false;
+				return false;
 		}
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
@@ -3730,24 +4093,19 @@ var wacss = {
 	    );
 	    let colors=new Array();
 	    let bcolors=new Array();
-		//console.log(list);
-		for(let i=0;i<list.length;i++){
+			for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){
-				console.log('missing id',list[i]);
-				continue;
+					continue;
 			}
 			if(undefined != initid && list[i].id != initid){
 				continue;
 			}
 			if(undefined == list[i].getAttribute('data-type')){
-				console.log('missing data-type',list[i]);
-				continue;
+					continue;
 			}
 			//check for data element
-			//console.log('initChartJs: '+list[i].id);
-			if(undefined == document.getElementById(list[i].id+'_data')){
-				console.log('missing data div',list[i]);
-				continue;
+				if(undefined == document.getElementById(list[i].id+'_data')){
+					continue;
 			}
 			list[i].setAttribute('data-initialized',1);
 			let type=list[i].dataset.type.toLowerCase();
@@ -3819,8 +4177,7 @@ var wacss = {
 						let gv2=max-gv1;
 						let color=list[i].dataset.color || '#009300';
 	        			
-						//console.log(type);
-						let gconfig = {
+							let gconfig = {
 							type:'doughnut',
 							data: {
 								datasets: [{
@@ -3883,8 +4240,7 @@ var wacss = {
 						    afterDraw: function(chart) {
 						    	if(undefined != chart.config.centerText){
 						        	if ( undefined != chart.config.centerText.display){
-						        		//console.log(chart);
-						        		wacss.chartjsDrawTotals(chart);	
+							        		wacss.chartjsDrawTotals(chart);	
 						        	} 
 						        }
 						    }
@@ -3922,8 +4278,7 @@ var wacss = {
 				case 'bar':
 				case 'horizontalbar':
 				case 'doughnut':
-					//console.log('barline');
-					if(undefined != wacss.chartjs[list[i].id]){
+						if(undefined != wacss.chartjs[list[i].id]){
 						//check for canvas
 						let ck=list[i].querySelector('canvas');
 						if(undefined != ck){	
@@ -4032,9 +4387,7 @@ var wacss = {
 							}
 
 						}
-						//console.log('list: '+i);
-						//console.log(list[i]);
-						//beginatzero
+								//beginatzero
 						if(undefined != list[i].getAttribute('data-beginatzero') && 
 							(list[i].getAttribute('data-beginatzero')==1 || list[i].getAttribute('data-beginatzero').toLowerCase()=='true')
 							){
@@ -4052,8 +4405,7 @@ var wacss = {
 							}
 						}
 	        			//look for datasets;
-	        			//console.log(colors);
-	        			let datasets=datadiv.querySelectorAll('dataset');
+		        			let datasets=datadiv.querySelectorAll('dataset');
 	        			let datasetLabels=new Array();
 	        			for(let d=0;d<datasets.length;d++){
 	        				//require data-label
@@ -4215,8 +4567,7 @@ var wacss = {
 		        			else{
 		        				wacss.chartjs[list[i].id].config.data.labels=pielabels;
 		        			}
-		        			//console.log(wacss.chartjs[list[i].id].config);
-	        				wacss.chartjs[list[i].id].update();
+			        				wacss.chartjs[list[i].id].update();
 	        				foundchart=1;
 		        		}
 					}
@@ -4271,16 +4622,14 @@ var wacss = {
 							    }
 	        				}
 	        			};
-	        			//console.log(pconfig.options.plugins);
-	        			if(undefined != labels && labels.length > 0){
+		        			if(undefined != labels && labels.length > 0){
 							pconfig.data.labels=labels;
 						}
 	        			let pcanvas=document.createElement('canvas');
 	        			list[i].appendChild(pcanvas);
 	        			let pctx = pcanvas.getContext('2d');
 						wacss.chartjs[list[i].id]  = new Chart(pctx, pconfig);
-						//console.log(pconfig);
-						/* check for data-onclick */
+							/* check for data-onclick */
 						if(undefined != list[i].dataset.onclick){
 							pcanvas.parentobj=list[i];
 							pcanvas.chartobj=wacss.chartjs[list[i].id];
@@ -4311,6 +4660,12 @@ var wacss = {
 		}
 		return true;
 	},
+	/**
+	* @name wacss.initDatePicker
+	* @describe initializes date picker functionality for input fields
+	* @return mixed
+	* @usage wacss.initDatePicker();
+	*/
 	initDatePicker: function(){
 		let els=document.querySelectorAll('input[data-behavior="flatpickr"],input[data-behavior="date"],input[data-behavior="datepicker"]');
 		if(!els.length){return false;}
@@ -4322,8 +4677,15 @@ var wacss = {
 			els[i].dataset.initdatepicker=1;
 			let lang=els[i].dataset.lang || nlang;
 			let config={
+	/**
+	* @name wacss.errorHandler
+	* @describe handles and logs JavaScript errors
+	* @param mixed err
+	* @return mixed
+	* @usage wacss.errorHandler();
+	*/
 				errorHandler: function (err) {
-					alert(err);
+					console.error(err);
 		          	return false;
 		        	}
 			};
@@ -4550,8 +4912,7 @@ var wacss = {
 	      			config.locale.toggleTitle = "点击切换 12/24 小时时制";
 				break;
 			}
-			//console.log(config);
-			flatpickr(els[i],config);
+				flatpickr(els[i],config);
 		}
 		return false;
 	},
@@ -4597,8 +4958,7 @@ var wacss = {
 				let txt='';
 				wacss.hoverDiv.style.display='initial';
 				if(hoverEls[i].dataset.hover.indexOf('id:')===0){
-					//console.log("hover id");
-					//get content from a different id
+						//get content from a different id
 					let txtid=wacss.trim(wacss.str_replace('id:','',hoverEls[i].dataset.hover));
 					let txtel=document.querySelector('#'+txtid);
 					if(undefined != txtel){
@@ -4607,14 +4967,12 @@ var wacss = {
 				}
 				else if(hoverEls[i].dataset.hover.indexOf('js:')===0){
 					//call a function
-					//console.log("hover js");
-					let f=wacss.trim(wacss.str_replace('js:','',hoverEls[i].dataset.hover));
+						let f=wacss.trim(wacss.str_replace('js:','',hoverEls[i].dataset.hover));
 					let jsfunc=new Function(f);
 					txt=jsfunc();
 				}
 				else{
-					//console.log("hover");
-					txt=hoverEls[i].dataset.hover;
+						txt=hoverEls[i].dataset.hover;
 				}
 				wacss.hoverDiv.style.width='initial';
 				wacss.hoverDiv.style.height='initial';
@@ -4622,9 +4980,7 @@ var wacss = {
 				wacss.hoverDiv.hoverParent=this;
 				let drect=this.getBoundingClientRect();
 				let hrect=wacss.hoverDiv.getBoundingClientRect();
-				//console.log(drect);
-				//console.log(hrect);
-				
+						
 				let vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
 				//let vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
 				switch(this.dataset.position.toLowerCase()){
@@ -4633,8 +4989,7 @@ var wacss = {
 						wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
 						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
 						if(!wacss.inViewport(wacss.hoverDiv)){
-							//console.log('not in viewport')
-							wacss.hoverDiv.dataset.position='below';
+								wacss.hoverDiv.dataset.position='below';
 							wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
 						}
@@ -4645,8 +5000,7 @@ var wacss = {
 						wacss.hoverDiv.style.top=parseInt(drect.top+drect.height+2)+'px';
 						wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
 						if(!wacss.inViewport(wacss.hoverDiv)){
-							//console.log('not in viewport')
-							wacss.hoverDiv.dataset.position='above';
+								wacss.hoverDiv.dataset.position='above';
 							wacss.hoverDiv.style.top=parseInt(drect.top-hrect.height-2)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.left)+'px';
 						}
@@ -4656,7 +5010,6 @@ var wacss = {
 						wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
 						wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
 						if(!wacss.inViewport(wacss.hoverDiv)){
-							//console.log('not in viewport');
 							wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
 						}
@@ -4683,7 +5036,6 @@ var wacss = {
 							wacss.hoverDiv.style.top=parseInt(drect.top+2)+'px';
 							wacss.hoverDiv.style.left=parseInt(drect.left+drect.width+2)+'px';
 							if(!wacss.inViewport(wacss.hoverDiv)){
-								//console.log('not in viewport');
 								wacss.hoverDiv.style.width=parseInt(vw-drect.right-5)+'px';
 								wacss.hoverDiv.style.left=parseInt(drect.right)+'px';
 							}
@@ -4692,8 +5044,7 @@ var wacss = {
 
 				}
 				
-				//console.log(wacss.hoverDiv.innerHTML);
-				
+					
 			},false);
 			hoverEls[i].addEventListener('mouseout',function(){
 				//remove wacss.hoverDiv content
@@ -4705,6 +5056,12 @@ var wacss = {
 			},false);
 		}
 	},
+	/**
+	* @name wacss.initCodeMirror
+	* @describe initializes CodeMirror editor instances
+	* @return mixed
+	* @usage wacss.initCodeMirror();
+	*/
 	initCodeMirror: function(){
 		/*convert texteara to codemirror */
 		let list=document.querySelectorAll('textarea.code[data-mode]');
@@ -4852,9 +5209,7 @@ var wacss = {
 	  			}
 	  		}
 	  		if(undefined != list[i].dataset.debug){
-	  			console.log(list[i]);
-	  			console.log(params);
-	  		}
+		  		}
 			let cm = CodeMirror.fromTextArea(list[i], params);
 			//save the codemirror object to the textarea so we can find it easier
 			cm.dataset.textarea=list[i].id;
@@ -4869,6 +5224,13 @@ var wacss = {
 	  		});
 	  	}
 	},
+	/**
+	* @name wacss.inViewport
+	* @describe checks if an element is visible in the viewport
+	* @param object elem
+	* @return mixed
+	* @usage wacss.inViewport();
+	*/
 	inViewport: function(elem) {
 		elem=wacss.getObject(elem);
 	    let bounding = elem.getBoundingClientRect();
@@ -4879,6 +5241,12 @@ var wacss = {
 	        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
 	    );
 	},
+	/**
+	* @name wacss.initDropdowns
+	* @describe initializes dropdown menus and select elements
+	* @return mixed
+	* @usage wacss.initDropdowns();
+	*/
 	initDropdowns: function(){
 		let els=document.querySelectorAll('[data-dropdown]:not([data-dropdown_initialized="1"])');
 		if(els.length==0){return false;}
@@ -5042,6 +5410,12 @@ var wacss = {
 			
 		}
 	},
+	/**
+	* @name wacss.initEditor
+	* @describe initializes WYSIWYG text editor instances
+	* @return mixed
+	* @usage wacss.initEditor();
+	*/
 	initEditor: function(){
 		let els=document.querySelectorAll('textarea[data-behavior="editor"]');
 		if(els.length==0){return false;}
@@ -5059,9 +5433,7 @@ var wacss = {
 			editor.onkeydown=function(e){
 				let evt = e || window.event;
 			    let keyCode = evt.charCode || evt.keyCode;
-			    //console.log(evt.ctrlKey)
-			    //console.log(keyCode);
-			    //get the selected text, if any
+					    //get the selected text, if any
 			    let sel = '';
 			    if (window.getSelection) {
 			        sel = window.getSelection().toString();
@@ -5099,7 +5471,7 @@ var wacss = {
 			    			help+='Ctrl+i => italic selection'+wacss.CRLF;
 			    			help+='Ctrl+u => underline selection'+wacss.CRLF;
 			    			help+='Alt+c => clear all formatting';
-			    			alert(help);
+			    			console.error(help);
 			    		}
 			    	break;
 			    	case 67:
@@ -5121,10 +5493,7 @@ var wacss = {
 			});
 			//update the textarea anytime it changes
 			editor.addEventListener("input", function(ie) {
-				//console.log(this.innerHTML);
-				//console.log(this.innerText);
-				//console.log(this.textContent);
-				this.saveto.innerHTML=this.innerText;
+							this.saveto.innerHTML=this.innerText;
 				this.saveto.dataset.wacss_changed=1;
 			});
 			editor.save=function() {
@@ -5136,6 +5505,12 @@ var wacss = {
 			els[e].parentNode.insertBefore(editor, els[e].nextSibling);
 		}
 	},
+	/**
+	* @name wacss.initOnloads
+	* @describe executes functions that should run on page load
+	* @return mixed
+	* @usage wacss.initOnloads();
+	*/
 	initOnloads: function(){
 		let onloads=document.querySelectorAll('[data-onload],[data-wacss_onload]');
 		let initcnt=0;
@@ -5156,9 +5531,7 @@ var wacss = {
 					let cfunc=new Function(funcstr);
 					cfunc();
 				}catch(e){
-					console.log('initOnloads Failed For:');
-					console.log(funcstr);
-				}
+								}
 			}
 		}
 		return initcnt;
@@ -5318,11 +5691,9 @@ var wacss = {
 						return false;
 					default:
 						// Unknown format, accept it
-						console.warn('Unknown barcode format:', format);
 						return false;
 				}
 			} catch (err) {
-				//console.error('Validation error:', err);
 				return true; // Accept on validation error to avoid blocking user
 			}
 		};
@@ -5404,8 +5775,7 @@ var wacss = {
 				if (input) {
 					input.dataset.inputtype_set = inputType;
 				}
-				//console.log('Input type (data-input):'+inputType);
-				// Conditionally set formats based on data-input attribute
+					// Conditionally set formats based on data-input attribute
 				let formats;
 				let qrboxConfig;
 				if (inputType === 'qrcode') {
@@ -5456,11 +5826,9 @@ var wacss = {
 							const format = decodedResult?.result?.format?.formatName || 'UNKNOWN';
 							const isValid = validateBarcode(decodedText, format, inputType);
 							if (!isValid) {
-								//console.warn(`Invalid ${format} checksum: ${decodedText}. Rescanning...`);
 								return; // Don't close scanner, let user try again
 							}
-							//console.log(`Valid ${format} scanned:`, decodedText);
-							if (input) {
+								if (input) {
 								const tag = input.tagName.toLowerCase();
 
 								if (tag === 'input' || tag === 'textarea') {
@@ -5482,13 +5850,11 @@ var wacss = {
 										const fn = new Function('code', 'el', 'btn', input.dataset.onscan);
 										fn(decodedText, input, button);
 									} catch (err) {
-										console.error('Error in data-onscan handler:', err);
 									}
 								}
 							}
 							closeScanner(button); // auto-close after successful read
 						} catch (err) {
-							console.error('Error processing scan result:', err);
 							closeScanner(button);
 						}
 					},
@@ -5496,7 +5862,6 @@ var wacss = {
 				);
 				isScanning = true;
 			} catch (err) {
-				console.error('QRCode/Barcode Scanner start failed:', err);
 				await closeScanner(button);
 			}
 		};
@@ -5505,7 +5870,6 @@ var wacss = {
 				try { 
 					await scanner.stop(); 
 				} catch (err) {
-					console.error('Error stopping scanner:', err);
 				}
 				isScanning = false;
 			}
@@ -5552,7 +5916,6 @@ var wacss = {
 				el.parentElement?.querySelector('#_scanicon, .icon-qrcode');
 			if (!scanButton) {
 				el.dataset.error = 'no scanbutton';
-				console.warn('No scan button found for input:', el.id);
 				continue;
 			}
 			scanButton.dataset.inputid = el.id;
@@ -5682,10 +6045,8 @@ var wacss = {
 					databar.push(wacss.ucwords(btns[db]));
 				}
 			}
-			//console.log('databar',databar);
-			for(name in buttons){
-				//console.log(name);
-				if(databar.length > 0 && !wacss.in_array(name,databar)){
+				for(name in buttons){
+					if(databar.length > 0 && !wacss.in_array(name,databar)){
 					continue;
 				}
 				let li=document.createElement('li');
@@ -6368,18 +6729,15 @@ var wacss = {
 			list[i].onclick=function(event){
 				event.preventDefault();
 				let cmd=this.getAttribute('data-cmd');
-				//console.log('onclick',cmd);
-				let tid=this.getAttribute('data-txt');
+					let tid=this.getAttribute('data-txt');
 				let tobj=wacss.getObject(tid);
 				let pobj=wacss.getObject(this.dataset.parent_id);
 				if(undefined == tobj){
-					console.log('wacssedit code error: no tobj');
-					return false;
+						return false;
 				}
 				let dobj=wacss.getObject(tid+'_wacsseditor');
 				if(undefined == dobj){
-					console.log('wacssedit code error: no dobj');
-					wacss.initWacssEditElements();
+						wacss.initWacssEditElements();
 					return false;
 				}
 				switch(cmd){
@@ -6393,7 +6751,7 @@ var wacss = {
 					case 'link':
 						let sel=document.getSelection();
 						if(sel.type.toLowerCase()!='range'){
-							alert('Select text first');
+							console.error('Select text first');
 							return false;
 						}
 						let lurl=prompt('ENTER URL','https://');
@@ -6417,8 +6775,7 @@ var wacss = {
 						return false;
 					break;
 					case 'fullscreen':
-						//console.log('fullscreen');
-						let navobj=wacss.getParent(this,'nav');
+							let navobj=wacss.getParent(this,'nav');
 						let t=wacss.getObject(navobj.dataset.parent_id);
 						let wrapper=wacss.getObject(t.id+'_wrapper');
 						let editor=wacss.getObject(t.id+'_wacsseditor');
@@ -6442,8 +6799,7 @@ var wacss = {
 								let eid=this.getAttribute('data-editor');
 								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
-									console.log('textarea update failed: no eid: '+eid);
-									wacss.initWacssEditElements();
+										wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.innerHTML=this.innerHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -6455,8 +6811,7 @@ var wacss = {
 								let eid=this.getAttribute('data-editor');
 								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
-									console.log('textarea update failed: no eid: '+eid);
-									wacss.initWacssEditElements();
+										wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.innerHTML=this.value;
@@ -6468,8 +6823,7 @@ var wacss = {
 								let eid=this.getAttribute('data-editor');
 								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
-									console.log('textarea update failed: no eid: '+eid);
-									wacss.initWacssEditElements();
+										wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.innerHTML=this.value;
@@ -6481,8 +6835,7 @@ var wacss = {
 								let eid=this.getAttribute('data-editor');
 								let tobj=wacss.getObject(eid);
 								if(undefined == tobj){
-									console.log('textarea update failed: no eid: '+eid);
-									wacss.initWacssEditElements();
+										wacss.initWacssEditElements();
 									return false;
 								}
 								tobj.value=this.innerHTML;
@@ -6493,13 +6846,11 @@ var wacss = {
 					break;
 					default:
 						if(undefined == this.getAttribute('data-arg')){
-							//console.log(cmd);
-							document.execCommand(cmd,false,null);
+								document.execCommand(cmd,false,null);
 						}
 						else{
 							let arg=this.getAttribute('data-arg');
-							//console.log(cmd,arg);
-							document.execCommand(cmd,false,arg);
+								document.execCommand(cmd,false,arg);
 						}
 						tobj.innerHTML=dobj.innerHTML;
 						wacss.initWacssEditElements();
@@ -6511,6 +6862,12 @@ var wacss = {
 		}
 		wacss.initWacssEditElements();
 	},
+	/**
+	* @name wacss.initWacssEditElements
+	* @describe initializes inline editing for wacss elements
+	* @return mixed
+	* @usage wacss.initWacssEditElements();
+	*/
 	initWacssEditElements: function(){
 		let list=document.querySelectorAll('[contenteditable] .wacssform_one');
 		for(let i=0;i<list.length;i++){
@@ -6531,21 +6888,22 @@ var wacss = {
 			}
 		}
 	},
+	/**
+	* @name wacss.initSignaturePad
+	* @describe initializes signature pad for capturing signatures
+	* @return mixed
+	* @usage wacss.initSignaturePad();
+	*/
 	initSignaturePad:function(){
 		let list=document.querySelectorAll('textarea[data-behavior="signature_pad"]');
-		//console.log("initSignaturePad found "+list.length);
-		for(let i=0;i<list.length;i++){
+			for(let i=0;i<list.length;i++){
 			//require id
 			if(undefined == list[i].id){
-				console.log("wacss.initSignaturePad Error - No ID");
-				console.log(list[i]);
-				continue;
+						continue;
 			}
 			//require name
 			if(undefined == list[i].name){
-				console.log("wacss.initSignaturePad Error - No name");
-				console.log(list[i]);
-				continue;
+						continue;
 			}
 			//initialize this object so we only build it once
 			if(undefined != list[i].dataset.initialized){continue;}
@@ -6602,9 +6960,7 @@ var wacss = {
 			// call signature_pad
 			wrapper.pad=new SignaturePad(wrapper.canvas);
 			if(undefined == wrapper.pad){
-				console.log("wacss.initSignaturePad Error - failed to create SignaturePad object");
-				console.log(wrapper.canvas);
-				continue;
+						continue;
 			}
 			//load image?
 			if(list[i].innerHTML.length){
@@ -6762,6 +7118,12 @@ var wacss = {
 			wrapper.toolbar.appendChild(wrapper.toolbar.clear);
 		}
 	},
+	/**
+	* @name wacss.initWhiteboard
+	* @describe initializes whiteboard drawing functionality
+	* @return mixed
+	* @usage wacss.initWhiteboard();
+	*/
 	initWhiteboard: function () {
 	  const list = document.querySelectorAll('textarea[data-behavior="whiteboard"]');
 	  for (let i = 0; i < list.length; i++) {
@@ -7183,12 +7545,6 @@ var wacss = {
 	    top.addEventListener('pointerleave', endDraw, false);
 	  }
 	},
-	/**
-	* @name wacss.isMobile
-	* @describe return true if device is a mobile device
-	* @return boolean
-	* @usage if(wacss.isMobile()){...}
-	*/
 	isMobile: function() {
 		let check = false;
   		(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
@@ -7298,54 +7654,23 @@ var wacss = {
 	  		return false;
 		}
 	},
-	/**
-	* @name wacss.isFirefox
-	* @describe return true if browser is Firefox
-	* @return boolean
-	* @usage if(wacss.isFirefox()){...}
-	*/
 	isFirefox: function(){
 		let agt=navigator.userAgent.toLowerCase();
 		return (agt.indexOf('firefox')!=-1);
 	},
-	/**
-	* @name wacss.isOpera
-	* @describe return true if browser is Opera
-	* @return boolean
-	* @usage if(wacss.isOpera()){...}
-	*/
 	isOpera: function(){
 		let agt=navigator.userAgent.toLowerCase();
 		return agt.indexOf("opera")!=-1;
 	},
-	/**
-	* @name wacss.isIE
-	* @describe return true if browser is Internet Explorer
-	* @return boolean
-	* @usage if(wacss.isIE()){...}
-	*/
 	isIE: function(){
 		let agt=navigator.userAgent.toLowerCase();
 		return agt.indexOf("msie")!=-1 && !commonIsOpera;
 	},
-	/**
-	* @name wacss.isMobileOrTablet
-	* @describe return true if device is a mobile or a tablet device
-	* @return boolean
-	* @usage if(wacss.isMobileOrTablet()){...}
-	*/
 	isMobileOrTablet: function() {
 		let check = false;
   		(function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
   		return check;
 	},
-	/**
-	* @name wacss.isNum
-	* @describe return true if n is a number
-	* @params n mixed
-	* @return boolean
-	* @usage if(wacss.isNum(x)){...}
-	*/
 	isNum: function(n) {
 	  return !isNaN(parseFloat(n)) && isFinite(n);
 	},
@@ -7369,22 +7694,16 @@ var wacss = {
 	        function(position) {
 	            if(undefined==inp.dataset.counter){inp.dataset.counter=0;}
 	            inp.dataset.counter=parseInt(inp.dataset.counter)+1;
-	            //console.log('Try: '+inp.dataset.counter);
-	            //console.log(inp.dataset);
-	            let latitude = position.coords.latitude;
+			            let latitude = position.coords.latitude;
 	            let longitude = position.coords.longitude;
 	            let accuracy = position.coords.accuracy;
 	            inp.value='['+position.coords.latitude+','+position.coords.longitude+','+position.coords.accuracy+','+inp.dataset.counter+']';
 	            ico.title='try: '+inp.dataset.counter+', Accuracy: '+position.coords.accuracy;
-	            //console.log('isMobile:');
-	            //console.log(!wacss.isMobile());
-	            if(!wacss.isMobile() || parseInt(position.coords.accuracy) <= 10 || inp.dataset.counter > 5){
+			            if(!wacss.isMobile() || parseInt(position.coords.accuracy) <= 10 || inp.dataset.counter > 5){
 	              	ico.className=ico.class_orig;
 	              	inp.style.borderColor=inp.color_orig;
 	              	window.navigator.geolocation.clearWatch(latlonId);
-	              	//console.log('latlon set');
-	              	//console.log(position.coords);
-	              	return false;
+			              	return false;
 	            }
 	        },
 	        function error(msg){
@@ -7392,19 +7711,25 @@ var wacss = {
 	          	inp.style.borderColor=inp.color_orig;
 	          	window.navigator.geolocation.clearWatch(latlonId);
 	          	ico.title=ico.title+' - ERROR: '+msg;
-	          	//console.log('latlon error');
-	          	//console.log(this);
-	          	return false;
+			          	return false;
 	        },
 	        {maximumAge:500, timeout:10000, enableHighAccuracy: true});
 	    } else {
 	    	ico.className=ico.class_orig;
 	        inp.style.borderColor=inp.color_orig;
 	        ico.title=ico.title+' - ERROR: '+"Geolocation API is not supported in your browser. Unable to set LatLon";
-	        console.log(ico.title);
-	    }
+		    }
 	    return false;
 	},
+	/**
+	* @name wacss.listen
+	* @describe adds an event listener to an element with fallback support
+	* @param string evnt - event name (e.g., 'click', 'change')
+	* @param mixed elem - DOM element or element ID
+	* @param function func - callback function
+	* @return boolean
+	* @usage wacss.listen('click', 'myButton', myFunction);
+	*/
 	listen: function(evnt, elem, func) {
 	    if (elem.addEventListener){ 
 	    	// W3C DOM
@@ -7416,9 +7741,16 @@ var wacss = {
 	         return r;
 	    }
 	    else{
-	    	console.log('wacss.listen failed. Browser does not support event listeners');
-	    }
+		    }
 	},
+	/**
+	* @name wacss.loadCSS
+	* @describe dynamically loads a CSS file
+	* @param mixed file
+	* @param mixed notify
+	* @return mixed
+	* @usage wacss.loadCSS();
+	*/
 	loadCSS: function(file,notify) {
 	    let link = document.createElement('link');
 	    if(undefined != notify && notify==1){
@@ -7436,6 +7768,14 @@ var wacss = {
 	loadJs: function(file,notify) {
 		return wacss.loadScript(file,notify);
 	},
+	/**
+	* @name wacss.loadScript
+	* @describe dynamically loads and executes a script file
+	* @param mixed file
+	* @param mixed func
+	* @return mixed
+	* @usage wacss.loadScript();
+	*/
 	loadScript: function(file,func) {
 	    let script = document.createElement('script');
 	    script.src = file;
@@ -7455,9 +7795,15 @@ var wacss = {
 		document.head.appendChild(script);
 		return true;
 	},
+	/**
+	* @name wacss.log
+	* @describe logs a message to the console if available
+	* @param mixed m - message to log
+	* @return void
+	* @usage wacss.log('Debug message');
+	*/
 	log: function(m){
 		if (typeof console != 'undefined' && typeof console.log != 'undefined'){
-			console.log(m);
 		}
 	},
 	makeMovable: function(obj,hdr) {
@@ -7504,12 +7850,6 @@ var wacss = {
 			document.onmousemove = null;
 		}
 	},
-	/**
-	* @name wacss.mobileHideAddressBar
-	* @describe hides the address bar so the page looks like an app
-	* @return boolean
-	* @usage if(x){wacss.mobileHideAddressBar();}
-	*/
 	mobileHideAddressBar: function(){
 		return window.scrollto(0,1);
 	},
@@ -7557,6 +7897,15 @@ var wacss = {
 			return m;
 		}
 	},
+	/**
+	* @name wacss.modalPopupId
+	* @describe creates a modal popup with specified ID
+	* @param string id
+	* @param mixed title
+	* @param mixed params
+	* @return mixed
+	* @usage wacss.modalPopupId();
+	*/
 	modalPopupId: function(id,title,params){
 		let htm='';
 		if(undefined != document.querySelector(id)){
@@ -7567,6 +7916,15 @@ var wacss = {
 		}
 		return wacss.modalPopup(htm,title,params);
 	},
+	/**
+	* @name wacss.modalPopup
+	* @describe creates and displays a modal popup
+	* @param mixed htm
+	* @param mixed title
+	* @param mixed params
+	* @return mixed
+	* @usage wacss.modalPopup();
+	*/
 	modalPopup: function(htm,title,params){
 		if(undefined == params){params={overlay:1};}
 		if(undefined == title){title='&nbsp;';}
@@ -7685,9 +8043,7 @@ var wacss = {
 		//check to make sure that el has data-nav
 		let elobj=wacss.getObject(el);
 		if(undefined == elobj){
-			console.log('invalid object passed to wacss.nav');
-			console.log(el);
-			return false;
+					return false;
 		}
 		//stop propigation
 		if(window.event && undefined != el.dataset.nav){
@@ -7737,8 +8093,7 @@ var wacss = {
 		if(undefined==opts){opts={};}
 		//find the div 
 		let div=opts.div || elobj.dataset.div || pli.dataset.div || pul.dataset.div || ptd.dataset.div || ptr.dataset.div || 'main_content';
-		//console.log('wacss.nav - div: '+div);
-		//confirm?
+			//confirm?
 		let has_confirm=opts.confirm || elobj.dataset.confirm || pli.dataset.confirm || pul.dataset.confirm || ptd.dataset.confirm || ptr.dataset.confirm;
 		if(undefined != has_confirm && has_confirm.length > 0){
 			let txt=has_confirm.replace(/\[newline\]/g,wacss.EOL);
@@ -7836,8 +8191,7 @@ var wacss = {
 		}
 		//nav
 		let nav=opts.nav || elobj.dataset.nav || pli.dataset.nav || pul.dataset.nav || ptd.dataset.nav || ptr.dataset.nav || elobj.getAttribute('href');
-		//console.log('wacss.nav - nav: '+nav);
-		//scrollto
+			//scrollto
 		let scrollto=opts.scrollto || elobj.dataset.scrollto || pli.dataset.scrollto || pul.dataset.scrollto || ptd.dataset.scrollto || ptr.dataset.scrollto || '';
 		//handle data-nav id: for cases where we are not doing ajax
 		if(nav.indexOf('id:') == 0){
@@ -7847,8 +8201,7 @@ var wacss = {
 				let content=cidobj.value || cidobj.innerHTML || cidobj.innerText || '';
 				document.querySelector('#'+div).innerHTML=content;
 				if(scrollto=='bottom'){
-					console.log('scrolling to bottom');
-					document.querySelector('#'+div).scrollTop=document.querySelector('#'+div).scrollHeight;
+						document.querySelector('#'+div).scrollTop=document.querySelector('#'+div).scrollHeight;
 				}
 				return false;
 			}
@@ -8010,6 +8363,13 @@ var wacss = {
 		return wacss.ajaxGet(nav,div,params);
 
 	},
+	/**
+	* @name wacss.navMobileToggle
+	* @describe toggles mobile navigation menu
+	* @param object el
+	* @return mixed
+	* @usage wacss.navMobileToggle();
+	*/
 	navMobileToggle: function(el){
 		let navs=document.querySelectorAll('.nav');
 		for(let n=0;n<navs.length;n++){
@@ -8028,6 +8388,13 @@ var wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.openUrl
+	* @describe opens a URL in a new window or tab
+	* @param string url
+	* @return mixed
+	* @usage wacss.openUrl();
+	*/
 	openUrl: function(url) {
 		if (!url || typeof url !== 'string') {
 			return false;
@@ -8048,12 +8415,10 @@ var wacss = {
 		try {
 			const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
 			if (!newWindow) {
-				console.warn('wacss.openUrl Error - Failed to open new tab - popup may be blocked');
 				return false;
 			}
 			return true;
 		} catch (err) {
-			console.error('wacss.openUrl Error - Error opening URL:', err);
 			return false;
 		}
 	},
@@ -8145,7 +8510,7 @@ var wacss = {
 	pagingBulkEdit: function(frm){
 		if(!frm || !frm.filter_field || !frm.filter_bulkedit){return false;}
 		let field=(frm.filter_field.value||'').trim();
-		if(!field || field==='*'){ alert('select a field to edit'); return false; }
+		if(!field || field==='*'){ console.error('select a field to edit'); return false; }
 		let editval='';
 		if(!frm.filter_value || (frm.filter_value.value||'').length===0){ editval='NULL'; }
 		else{ editval="'"+frm.filter_value.value+"'"; }
@@ -8211,11 +8576,11 @@ var wacss = {
 		let oper  = (frm.filter_operator.value||'').trim();
 		let val   = (frm.filter_value && frm.filter_value.value||'').trim();
 
-		if(field.length==0){alert('select a filter field');return false;}
-		if(oper.length==0){alert('select a filter operator');return false;}
+		if(field.length==0){console.error('select a filter field');return false;}
+		if(oper.length==0){console.error('select a filter operator');return false;}
 
 		if(field == '*' && (oper == 'ib' || oper == 'nb')){
-			alert('select a field to check for null values on');
+			console.error('select a field to check for null values on');
 			if(frm.filter_field && frm.filter_field.focus){frm.filter_field.focus();}
 			return false;
 		}
@@ -8461,6 +8826,14 @@ var wacss = {
 		});
 		return true;
 	},
+	/**
+	* @name wacss.removeClass
+	* @describe removes a class from an element
+	* @param mixed element - DOM element or element ID
+	* @param string classToRemove - class name to remove
+	* @return boolean true
+	* @usage wacss.removeClass('myDiv', 'active');
+	*/
 	removeClass: function(element, classToRemove) {
 		element=wacss.getObject(element);
 		if(undefined == element.className){return;}
@@ -8485,13 +8858,6 @@ var wacss = {
 	        return;
 	    }
 	},
-	/**
-	* @name wacss.removeId
-	* @describe removes specified object from the DOM
-	* @param string divid
-	* @return boolean
-	* @usage wacss.removeId('centerpop');
-	*/
 	removeId: function(divid){
 		//info: removes specified id
 		let obj=wacss.getObject(divid);
@@ -8549,8 +8915,7 @@ var wacss = {
 		return new Promise(function(resolve){
 			// No files to process
 			if (!input || !input.files || input.files.length === 0){
-				console.log('resizeImage-no files to process');
-				resolve(false);
+					resolve(false);
 				return;
 			}
 			// Derive max dims from data-* or params or default
@@ -8690,6 +9055,13 @@ var wacss = {
 	*   value:#selector,textValue
 	*   call:functionName or call:namespace.functionName
 	*/
+	/**
+	* @name wacss.runOnDisplay
+	* @describe executes actions when element is displayed
+	* @param object elContainer
+	* @return mixed
+	* @usage wacss.runOnDisplay();
+	*/
 	runOnDisplay: function (elContainer) {
 		if (!elContainer || !elContainer.dataset) { return false; }
 		const spec = (elContainer.dataset.ondisplay || '').trim();
@@ -8746,11 +9118,11 @@ var wacss = {
 					}
 					if (typeof fn === 'function') {
 						try { fn(target); }
-						catch (e) { console.error('data-ondisplay call error:', e); }
+						catch (e) { }
 					}
 				break;
 				default:
-					if (window && window.console) { console.warn('Unknown data-ondisplay action:', action); }
+					if (window && window.console) { }
 				break;
 			}
 		});
@@ -8772,9 +9144,15 @@ var wacss = {
 	*   value:#selector,textValue
 	*   call:functionName or call:namespace.functionName
 	*/
+	/**
+	* @name wacss.runOnHide
+	* @describe executes actions when element is hidden
+	* @param object elContainer
+	* @return mixed
+	* @usage wacss.runOnHide();
+	*/
 	runOnHide: function (elContainer) {
-		//console.log('runOnHide');
-		if (!elContainer || !elContainer.dataset) { return false; }
+			if (!elContainer || !elContainer.dataset) { return false; }
 		const spec = (elContainer.dataset.onhide || '').trim();
 		if (!spec || spec.length==0) { return false; }
 		// Allow multiple actions separated by ';'
@@ -8829,11 +9207,11 @@ var wacss = {
 					}
 					if (typeof fn === 'function') {
 						try { fn(target); }
-						catch (e) { console.error('data-onhide call error:', e); }
+						catch (e) { }
 					}
 				break;
 				default:
-					if (window && window.console) { console.warn('Unknown data-onhide action:', action); }
+					if (window && window.console) { }
 				break;
 			}
 		});
@@ -8935,9 +9313,14 @@ var wacss = {
 		element.classList.add(activeClassName);
 	    return false;
 	},
+	/**
+	* @name wacss.setProcessingTimer
+	* @describe sets timer display during processing operations
+	* @return mixed
+	* @usage wacss.setProcessingTimer();
+	*/
 	setProcessingTimer: function(){
-		//console.log('setProcessingTimer');
-		if(undefined != wacss.processing_timeout){
+			if(undefined != wacss.processing_timeout){
 			clearTimeout(wacss.processing_timeout);
 		}
 		let t=document.getElementById('processing_timer');
@@ -8952,10 +9335,16 @@ var wacss = {
 	    t.innerText = [hrs, mins, secs]
 	        .map(v => String(v).padStart(2, '0'))
 	        .join(':');
-	    //console.log(t.innerText);
-	    t.dataset.timer=seconds+1;
+		    t.dataset.timer=seconds+1;
 		wacss.processing_timeout=setTimeout(wacss.setProcessingTimer, 1000);
 	},
+	/**
+	* @name wacss.setSliderText
+	* @describe updates text display for slider inputs
+	* @param mixed fld
+	* @return mixed
+	* @usage wacss.setSliderText();
+	*/
 	setSliderText:function(fld){
 		var val=fld.value;
 		var attr=wacss.getAllAttributes(fld);
@@ -9046,12 +9435,10 @@ var wacss = {
 		let p=wacss.getParent(el,'div');
 		//return false if in readonly mode
 		if(undefined==p){
-			console.log('setStarRating is missing a div parent');
-			return false;
+				return false;
 		}
 		if(undefined!=p.dataset.readonly){
-			console.log('setStarRating is set to readonly');
-			return false;
+				return false;
 		}
 	    let n=parseInt(el.dataset.value);
 		let stars=p.querySelectorAll('span');
@@ -9060,24 +9447,19 @@ var wacss = {
 			n=0;
 		}
 		//set field value
-		//console.log('setStarRating set to '+n);
-		//console.log(stars);
-		p.querySelector('input').value=n;
+				p.querySelector('input').value=n;
 		for(let i=0;i<stars.length;i++){
-			console.log(stars[i].classList);
-			let s=parseInt(stars[i].dataset.value);
+				let s=parseInt(stars[i].dataset.value);
 			if(s <= n){
 				stars[i].classList.remove('icon-star-half-empty');
 				stars[i].classList.remove('icon-star-empty');
 				stars[i].classList.add('icon-star');
-				//console.log(s+' star');
-			}
+				}
 			else{
 				stars[i].classList.remove('icon-star-half-empty');
 				stars[i].classList.remove('icon-star');
 	            stars[i].classList.add('icon-star-empty');
-				//console.log(s+' star-empty');
-			}
+				}
 		}
 		return true;
 	},
@@ -9383,15 +9765,6 @@ var wacss = {
 	    }
 	    return true;
 	},
-	/**
-	* @name wacss.speak
-	* @param sentence string
-	* @param params - json object. volume,name,lang,rate,pitch,gender
-	* @return false
-	* @usage wacss.speak('hello bob');
-	* @usage wacss.speak('hello bob',{volume:0.3,name:'Sally',lang:'en-US'});
-	* @usage wacss.speak('hello bob',{volume:0.3,gender:'male'});
-	*/
 	speakStop: function(vol){
 		window.speechSynthesis.cancel();
 		return true;
@@ -9404,6 +9777,14 @@ var wacss = {
 		window.speechSynthesis.resume();
 		return true;
 	},
+	/**
+	* @name wacss.speak
+	* @describe converts text to speech and plays it
+	* @param mixed txt
+	* @param mixed params
+	* @return mixed
+	* @usage wacss.speak();
+	*/
 	speak: function(txt,params){
 		if(undefined == params){params={};}
 		params.txt=txt;
@@ -9565,8 +9946,7 @@ var wacss = {
 				}
 				
 				if(params.txt.indexOf('<') != -1){
-					console.log('ssml');
-					msg.input={ssml:params.txt};
+						msg.input={ssml:params.txt};
 					window.speechSynthesis.speak(msg);
 					return true;
 				}
@@ -9578,8 +9958,7 @@ var wacss = {
 			}
 		}
 		else{
-			console.log('wacss.speak error: speechSynthesis is not supported in your browser or OS');
-		}
+			}
 		return false;
 	},
 	/**
@@ -9610,14 +9989,6 @@ var wacss = {
 
 	    return sa ? s : s[0];
 	},
-	/**
-	* @name wacss.strtolower
-	* @describe lowercases a string - emulates PHP function
-	* @param str string
-	* @return string
-	* @usage let uc=wacss.strtolower(str);
-	* @sourece https://phpjs.org/functions
-	*/
 	strtolower: function(str) {
 	    // info: Makes a string lowercase
 	    //source: http://phpjs.org/functions
@@ -9931,7 +10302,6 @@ var wacss = {
             };
             
             recognition.onerror = (e) => {
-                console.error('Speech recognition error:', e.error);
                 status.textContent = `Error: ${e.error}`;
                 status.style.color = '#f44336';
                 stopListening();
@@ -10048,13 +10418,24 @@ var wacss = {
 		};
 		t.appendChild(c);
 		document.getElementById('wacss_toasts').appendChild(t);
-		//console.log('timer',params);
-		setTimeout(function(){
+			setTimeout(function(){
 			wacss.dismiss(t);
 			},params.timer
 		);
 		return false;
 	},
+	/**
+	* @name wacss.toggleClass
+	* @describe toggles a CSS class on an element
+	* @param string id
+	* @param mixed class1
+	* @param mixed class2
+	* @param string myid
+	* @param mixed myclass1
+	* @param mixed myclass2
+	* @return mixed
+	* @usage wacss.toggleClass();
+	*/
 	toggleClass: function(id,class1,class2,myid,myclass1,myclass2){
 		let obj=wacss.getObject(id);
 		if(undefined == obj){return;}
@@ -10082,6 +10463,13 @@ var wacss = {
 			else{wacss.addClass(obj,myclass1);}
 		}
 	},
+	/**
+	* @name wacss.toggleFullscreen
+	* @describe toggles fullscreen mode for an element
+	* @param object el
+	* @return mixed
+	* @usage wacss.toggleFullscreen();
+	*/
 	toggleFullscreen: function(el) {
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
@@ -10109,25 +10497,10 @@ var wacss = {
 			}
 		else{return "";}
 	},
-	/**
-	* @name wacss.ucfirst
-	* @describe upper cases the first char of a string - emulates PHP function
-	* @param str string
-	* @return string
-	* @usage let ucf=wacss.ucfirst(str);
-	* @sourece https://phpjs.org/functions
-	*/
 	ucfirst: function(str) {
 	    let f = str.charAt(0).toUpperCase();
 	    return f + str.substr(1);
 	},
-	/**
-	* @name wacss.ucwords
-	* @describe upper cases a string - emulates PHP function
-	* @param str string
-	* @return string
-	* @usage let uc=wacss.ucwords(str);
-	*/
 	ucwords: function(str){
 		str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
 		    return letter.toUpperCase();
@@ -10156,6 +10529,13 @@ var wacss = {
 		//str=str.replace(/\s/g,"+");
 	    return str;
 	},
+	/**
+	* @name wacss.verboseSize
+	* @describe converts file size in bytes to human-readable format (KB, MB, GB)
+	* @param mixed bytes
+	* @return mixed
+	* @usage wacss.verboseSize();
+	*/
 	verboseSize: function(bytes) {
 	  var i = -1;
 	  var byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -10171,8 +10551,7 @@ var wacss = {
 	* @describe converts a number representing seconds into a string that describes how long
 	* @param s number
 	* @return string
-	* @usage console.log(wacss.verboseTime(12321));
-	*/
+	* @usage 	*/
 	verboseTime: function(s){
 		if(isNaN(s)){return s;}
 		let secs = parseInt(s, 10);
