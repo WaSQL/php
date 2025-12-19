@@ -364,16 +364,28 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	}
 	gitLog($cred_debug, 'info');
 
+	// Store credential helper path for cleanup
+	$cred_helper_file = null;
+
 	if($needs_credentials && $has_credentials){
 		$username = $_SESSION['git_credentials']['username'];
 		$password = $_SESSION['git_credentials']['password'];
 
-		// Add inline credential configuration to git command
-		// This passes credentials directly without needing helper scripts
-		$cmd_parts[] = '-c';
-		$cmd_parts[] = escapeshellarg("credential.helper=!f() { echo username={$username}; echo password={$password}; }; f");
+		// Create a simple credential helper batch file
+		// GIT_ASKPASS will be called by git when it needs credentials
+		$cred_helper_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'git_askpass_' . uniqid() . '.bat';
 
-		gitLog("Added credentials to command for user: {$username}", 'info');
+		// Batch file content: output username or password based on what git asks for
+		$bat_content = "@echo off\r\n";
+		$bat_content .= "echo %1 | findstr /C:\"Username\" >nul && echo {$username} && exit /b\r\n";
+		$bat_content .= "echo {$password}\r\n";
+
+		file_put_contents($cred_helper_file, $bat_content);
+
+		// Tell git to use our batch file for credentials via environment variable
+		putenv("GIT_ASKPASS={$cred_helper_file}");
+
+		gitLog("Created credential helper at: {$cred_helper_file}", 'info');
 	} else {
 		gitLog("Credentials NOT added to command", 'warning');
 	}
@@ -450,7 +462,16 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		$git_path_escaped = str_replace('/', '\\', $_SESSION['git_path']);
 
 		// Set environment variables inline for Windows
-		$env_prefix = 'set GIT_TERMINAL_PROMPT=0 && set GIT_EDITOR=cmd /c exit 0 && set EDITOR=true && set GIT_ASKPASS=echo && ';
+		$env_prefix = 'set GIT_TERMINAL_PROMPT=0 && set GIT_EDITOR=cmd /c exit 0 && set EDITOR=true';
+
+		// Add GIT_ASKPASS if we have a credential helper
+		if($cred_helper_file && file_exists($cred_helper_file)){
+			$env_prefix .= ' && set GIT_ASKPASS=' . $cred_helper_file;
+		} else {
+			$env_prefix .= ' && set GIT_ASKPASS=echo';
+		}
+
+		$env_prefix .= ' && ';
 		$full_cmd = $env_prefix . 'cd /d "' . $git_path_escaped . '" && ' . $cmd . ' 2>&1';
 
 		// Debug log the command
@@ -491,6 +512,12 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		set_time_limit($old_timeout);
 
 		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Completed, output lines: " . count($output) . "\n", FILE_APPEND);
+
+		// Cleanup credential helper file on Windows
+		if($cred_helper_file && file_exists($cred_helper_file)){
+			@unlink($cred_helper_file);
+			gitLog("Cleaned up credential helper", 'info');
+		}
 	} else {
 		// Unix/Linux: Use proc_open with stream_select (original reliable method)
 		$descriptors = array(
@@ -557,6 +584,12 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 
 	// Restore original directory
 	chdir($original_dir);
+
+	// Cleanup credential helper file on Unix/Linux
+	if(!$is_windows && $cred_helper_file && file_exists($cred_helper_file)){
+		@unlink($cred_helper_file);
+		gitLog("Cleaned up credential helper", 'info');
+	}
 
 	$success = ($exit_code === 0);
 
