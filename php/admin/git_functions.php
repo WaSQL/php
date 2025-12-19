@@ -326,7 +326,7 @@ function gitGetPath(){
  */
 function gitCommand($command, $args = array(), $return_array = false, $log_command = true){
 	// Immediate debug logging
-	$tpath = getWaSQLPath('admin');
+	$tpath = getWaSQLPath('php/admin');
 	$debug_file = "{$tpath}/git_debug.log";
 	file_put_contents($debug_file, date('Y-m-d H:i:s') . " - gitCommand called: {$command}\n", FILE_APPEND);
 
@@ -482,40 +482,42 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 			gitLog("Windows command: " . preg_replace('/password=[^\s]+/', 'password=***', $full_cmd), 'info');
 		}
 
-		// Execute and capture output using popen for better Windows compatibility
+		// Execute and capture output - use file-based approach to avoid blocking
 		$output_lines = array();
+		$output_file = sys_get_temp_dir() . '\\git_output_' . uniqid() . '.txt';
 
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Using popen for execution\n", FILE_APPEND);
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Using file-based execution\n", FILE_APPEND);
 
-		// Use popen which is more reliable for long-running commands on Windows
-		$handle = popen($full_cmd, 'r');
+		// Redirect output to file and execute in background
+		$file_cmd = $full_cmd . " > " . escapeshellarg($output_file) . " 2>&1";
 
-		if($handle){
-			// Read output with timeout
-			stream_set_blocking($handle, false);
-			$output_str = '';
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Executing: {$file_cmd}\n", FILE_APPEND);
 
-			while(!feof($handle) && (time() - $start_time) < $timeout){
-				$chunk = fread($handle, 8192);
-				if($chunk !== false && $chunk !== ''){
-					$output_str .= $chunk;
-				}
-				usleep(100000); // 100ms
-			}
+		// Execute command - this should return immediately if backgrounded properly
+		exec($file_cmd, $dummy_output, $exit_code);
 
-			// Get remaining output
-			while(($chunk = fread($handle, 8192)) !== false && $chunk !== ''){
-				$output_str .= $chunk;
-			}
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After exec, waiting for output file\n", FILE_APPEND);
 
-			$exit_code = pclose($handle);
+		// Wait for output file to appear and have content
+		$wait_count = 0;
+		while($wait_count < ($timeout * 10) && (!file_exists($output_file) || filesize($output_file) == 0)){
+			usleep(100000); // 100ms
+			$wait_count++;
+		}
+
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Output file check complete, waited {$wait_count} iterations\n", FILE_APPEND);
+
+		// Read output from file
+		if(file_exists($output_file)){
+			$output_str = file_get_contents($output_file);
 			$output_lines = explode("\n", trim($output_str));
+			@unlink($output_file);
 
-			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After popen, exit code: {$exit_code}, output lines: " . count($output_lines) . "\n", FILE_APPEND);
+			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Read " . count($output_lines) . " lines from output file\n", FILE_APPEND);
 		} else {
-			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - popen failed!\n", FILE_APPEND);
-			$output_lines = array('Failed to execute command');
+			$output_lines = array('No output file generated');
 			$exit_code = -1;
+			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Output file never appeared!\n", FILE_APPEND);
 		}
 
 		// Check if we exceeded timeout (approximate)
