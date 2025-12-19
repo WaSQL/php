@@ -125,8 +125,14 @@ switch($func){
 			$git['success'] = 'Pull completed successfully';
 			gitLog("Git pull completed successfully", 'info');
 		} else {
-			$recs = array($result['error']);
-			$git['error'] = 'Pull failed: ' . $result['error'];
+			// Provide helpful error messages
+			$error_msg = $result['error'];
+			if(isset($result['timed_out']) && $result['timed_out']){
+				$error_msg = "Pull timed out after 120 seconds. Check your network connection and remote repository access.";
+			}
+			$recs = array($error_msg);
+			$git['error'] = 'Pull failed';
+			$git['warning'] = $error_msg;
 			gitLog("Git pull failed: " . $result['error'], 'error');
 		}
 		setView('git_details', 1);
@@ -318,8 +324,19 @@ switch($func){
 				$git['success'] = "Committed and pushed {$push} file(s)";
 				gitLog("Pushed {$push} commits to remote", 'info');
 			} else {
-				$recs[] = "Push failed: " . $result['error'];
-				$git['error'] = "Committed {$push} file(s) but push failed: " . $result['error'];
+				// Provide helpful error messages based on the failure
+				$error_msg = $result['error'];
+				if(isset($result['timed_out']) && $result['timed_out']){
+					$error_msg = "Push timed out after 120 seconds. Check your network connection and remote repository access.";
+				} elseif(strpos($error_msg, 'Permission denied') !== false){
+					$error_msg = "Push failed: Permission denied. Check your SSH keys and remote repository access.";
+				} elseif(strpos($error_msg, 'Authentication failed') !== false){
+					$error_msg = "Push failed: Authentication failed. Check your credentials.";
+				}
+
+				$recs[] = "Push failed: " . $error_msg;
+				$git['error'] = "Committed {$push} file(s) but push failed";
+				$git['warning'] = $error_msg;
 				gitLog("Push failed: " . $result['error'], 'error');
 			}
 		} else {
