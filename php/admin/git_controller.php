@@ -118,6 +118,32 @@ $func = strtolower(trim($_REQUEST['func']));
 gitLog("Git action initiated: {$func}", 'info');
 
 switch($func){
+	case 'set_credentials':
+		// Store git credentials in session
+		if(isset($_REQUEST['git_username']) && isset($_REQUEST['git_password'])){
+			$_SESSION['git_credentials'] = array(
+				'username' => trim($_REQUEST['git_username']),
+				'password' => trim($_REQUEST['git_password']),
+				'timestamp' => time()
+			);
+			$git['success'] = 'Credentials saved successfully';
+			gitLog("Git credentials stored for user: " . $USER['username'], 'info');
+			echo '<div class="alert alert-success"><strong>Success!</strong> Credentials saved. <a href="/php/admin.php?_menu=git" class="wacss_button is-primary is-small">Continue</a></div>';
+		} else {
+			$git['error'] = 'Missing username or password';
+			echo '<div class="alert alert-danger"><strong>Error!</strong> Missing credentials.</div>';
+		}
+		return;
+	break;
+
+	case 'clear_credentials':
+		// Clear stored credentials
+		unset($_SESSION['git_credentials']);
+		$git['success'] = 'Credentials cleared';
+		gitLog("Git credentials cleared for user: " . $USER['username'], 'info');
+		return;
+	break;
+
 	case 'pull':
 		$result = gitCommand('pull', array('-v'));
 		if($result['success']){
