@@ -351,6 +351,19 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	$needs_credentials = in_array($command, array('push', 'pull', 'fetch', 'clone'));
 	$has_credentials = isset($_SESSION['git_credentials']) && is_array($_SESSION['git_credentials']) && $_SESSION['git_credentials'] !== 'skip';
 
+	// Debug credential check
+	$cred_debug = "Command: {$command}, Needs creds: " . ($needs_credentials ? 'YES' : 'NO');
+	$cred_debug .= ", Has creds: " . ($has_credentials ? 'YES' : 'NO');
+	if(isset($_SESSION['git_credentials'])){
+		$cred_debug .= ", Creds type: " . gettype($_SESSION['git_credentials']);
+		if(is_array($_SESSION['git_credentials'])){
+			$cred_debug .= ", Username: " . (isset($_SESSION['git_credentials']['username']) ? 'SET' : 'NOT SET');
+		}
+	} else {
+		$cred_debug .= ", Creds: NOT SET IN SESSION";
+	}
+	gitLog($cred_debug, 'info');
+
 	if($needs_credentials && $has_credentials){
 		$username = $_SESSION['git_credentials']['username'];
 		$password = $_SESSION['git_credentials']['password'];
@@ -359,6 +372,10 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		// This passes credentials directly without needing helper scripts
 		$cmd_parts[] = '-c';
 		$cmd_parts[] = escapeshellarg("credential.helper=!f() { echo username={$username}; echo password={$password}; }; f");
+
+		gitLog("Added credentials to command for user: {$username}", 'info');
+	} else {
+		gitLog("Credentials NOT added to command", 'warning');
 	}
 
 	$cmd_parts[] = escapeshellarg($command);
