@@ -482,22 +482,40 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 			gitLog("Windows command: " . preg_replace('/password=[^\s]+/', 'password=***', $full_cmd), 'info');
 		}
 
-		// Execute and capture output
+		// Execute and capture output using popen for better Windows compatibility
 		$output_lines = array();
 
-		// Try shell_exec first as it might be more reliable on Windows
-		$shell_output = shell_exec($full_cmd);
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Using popen for execution\n", FILE_APPEND);
 
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After shell_exec\n", FILE_APPEND);
+		// Use popen which is more reliable for long-running commands on Windows
+		$handle = popen($full_cmd, 'r');
 
-		if($shell_output !== null){
-			$output_lines = explode("\n", trim($shell_output));
-			$exit_code = 0; // shell_exec doesn't provide exit code
+		if($handle){
+			// Read output with timeout
+			stream_set_blocking($handle, false);
+			$output_str = '';
+
+			while(!feof($handle) && (time() - $start_time) < $timeout){
+				$chunk = fread($handle, 8192);
+				if($chunk !== false && $chunk !== ''){
+					$output_str .= $chunk;
+				}
+				usleep(100000); // 100ms
+			}
+
+			// Get remaining output
+			while(($chunk = fread($handle, 8192)) !== false && $chunk !== ''){
+				$output_str .= $chunk;
+			}
+
+			$exit_code = pclose($handle);
+			$output_lines = explode("\n", trim($output_str));
+
+			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After popen, exit code: {$exit_code}, output lines: " . count($output_lines) . "\n", FILE_APPEND);
 		} else {
-			// Fallback to exec
-			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - shell_exec failed, trying exec\n", FILE_APPEND);
-			exec($full_cmd, $output_lines, $exit_code);
-			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After exec, exit code: {$exit_code}\n", FILE_APPEND);
+			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - popen failed!\n", FILE_APPEND);
+			$output_lines = array('Failed to execute command');
+			$exit_code = -1;
 		}
 
 		// Check if we exceeded timeout (approximate)
