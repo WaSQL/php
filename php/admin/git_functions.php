@@ -645,7 +645,7 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	);
 }
 
-/**
+/****
  * Logs git operations for audit trail and security monitoring
  *
  * Creates audit log entries in the _gitlog database table (if it exists) and
