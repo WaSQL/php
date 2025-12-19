@@ -620,7 +620,7 @@ function gitLog($message, $level = 'info'){
 	$username = isset($USER['username']) ? $USER['username'] : 'unknown';
 
 	// Always log to file
-	$tpath = getWaSQLPath('admin');
+	$tpath = getWaSQLPath('php/admin');
 	$logfile = "{$tpath}/git.log";
 	$log_entry = array(
 		'timestamp' => date('Y-m-d H:i:s'),
@@ -631,6 +631,7 @@ function gitLog($message, $level = 'info'){
 		'ip_address' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'CLI'
 	);
 	$log_entry_json = encodeJSON($log_entry);
+	//echo $logfile.$log_entry_json;exit;
 	appendFileContents($logfile, $log_entry_json . PHP_EOL);
 
 	// Also log to PHP error log for critical errors
