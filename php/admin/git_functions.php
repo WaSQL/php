@@ -345,7 +345,7 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		$cmd_parts[] = escapeshellarg($arg);
 	}
 	$cmd = implode(' ', $cmd_parts);
-
+	//echo $cmd;exit;
 	// Save current directory
 	$original_dir = getcwd();
 
@@ -362,12 +362,22 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		);
 	}
 
-	// Set environment to prevent interactive prompts
+	// Detect platform for cross-platform compatibility
+	$is_windows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+
+	// Set environment to prevent interactive prompts (platform-specific)
 	$env_vars = array(
-		'GIT_TERMINAL_PROMPT' => '0',  // Disable git credential prompts
-		'GIT_SSH_COMMAND' => 'ssh -o BatchMode=yes -o ConnectTimeout=10',  // Non-interactive SSH
-		'GIT_ASKPASS' => 'echo'  // Prevent password prompts
+		'GIT_TERMINAL_PROMPT' => '0'  // Disable git credential prompts
 	);
+
+	// Platform-specific SSH configuration
+	if(!$is_windows){
+		$env_vars['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes -o ConnectTimeout=10';
+		$env_vars['GIT_ASKPASS'] = 'echo';
+	} else {
+		// Windows-specific settings
+		$env_vars['GIT_ASKPASS'] = 'echo';
+	}
 
 	foreach($env_vars as $key => $value){
 		putenv("{$key}={$value}");
@@ -385,52 +395,92 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	$exit_code = -1;
 
 	if(is_resource($process)){
-		// Close stdin
+		// Close stdin immediately
 		fclose($pipes[0]);
 
 		// Set timeout - 60 seconds for most commands, 120 for push/pull
 		$timeout = in_array($command, array('push', 'pull')) ? 120 : 60;
 		$start_time = time();
 
-		// Read output with timeout
-		stream_set_blocking($pipes[1], false);
-		stream_set_blocking($pipes[2], false);
-
 		$stdout = '';
 		$stderr = '';
 
-		while(time() - $start_time < $timeout){
-			$read = array($pipes[1], $pipes[2]);
-			$write = null;
-			$except = null;
+		// Platform-specific output handling for reliability
+		if($is_windows){
+			// Windows: Use blocking reads with periodic process checks
+			// stream_select() is unreliable on Windows with process pipes, especially under Apache
+			stream_set_blocking($pipes[1], true);
+			stream_set_blocking($pipes[2], true);
 
-			if(stream_select($read, $write, $except, 1) > 0){
-				foreach($read as $stream){
-					$data = fread($stream, 8192);
-					if($stream === $pipes[1]){
-						$stdout .= $data;
-					} else {
-						$stderr .= $data;
+			// Read with timeout using non-blocking process checks
+			while(true){
+				// Check if we've exceeded timeout
+				if(time() - $start_time >= $timeout){
+					// Windows: proc_terminate without signal parameter
+					proc_terminate($process);
+
+					// Force kill if still running
+					$status = proc_get_status($process);
+					if($status['running'] && isset($status['pid'])){
+						exec("taskkill /F /T /PID {$status['pid']} 2>&1");
 					}
+
+					$stderr .= "\nOperation timed out after {$timeout} seconds";
+					$exit_code = 124;
+					break;
+				}
+
+				// Check if process is still running
+				$status = proc_get_status($process);
+				if(!$status['running']){
+					// Process finished - read all remaining output
+					$stdout = stream_get_contents($pipes[1]);
+					$stderr = stream_get_contents($pipes[2]);
+					$exit_code = $status['exitcode'];
+					break;
+				}
+
+				// Sleep briefly to avoid CPU spinning (100ms)
+				usleep(100000);
+			}
+		} else {
+			// Unix/Linux: Use stream_select for efficient non-blocking I/O
+			stream_set_blocking($pipes[1], false);
+			stream_set_blocking($pipes[2], false);
+
+			while(time() - $start_time < $timeout){
+				$read = array($pipes[1], $pipes[2]);
+				$write = null;
+				$except = null;
+
+				if(stream_select($read, $write, $except, 1) > 0){
+					foreach($read as $stream){
+						$data = fread($stream, 8192);
+						if($stream === $pipes[1]){
+							$stdout .= $data;
+						} else {
+							$stderr .= $data;
+						}
+					}
+				}
+
+				// Check if process is still running
+				$status = proc_get_status($process);
+				if(!$status['running']){
+					// Process finished, read any remaining output
+					$stdout .= stream_get_contents($pipes[1]);
+					$stderr .= stream_get_contents($pipes[2]);
+					$exit_code = $status['exitcode'];
+					break;
 				}
 			}
 
-			// Check if process is still running
-			$status = proc_get_status($process);
-			if(!$status['running']){
-				// Process finished, read any remaining output
-				$stdout .= stream_get_contents($pipes[1]);
-				$stderr .= stream_get_contents($pipes[2]);
-				$exit_code = $status['exitcode'];
-				break;
+			// Unix timeout handling with SIGKILL
+			if(time() - $start_time >= $timeout){
+				proc_terminate($process, 9); // SIGKILL
+				$stderr .= "\nOperation timed out after {$timeout} seconds";
+				$exit_code = 124;
 			}
-		}
-
-		// If we timed out, terminate the process
-		if(time() - $start_time >= $timeout){
-			proc_terminate($process, 9); // SIGKILL
-			$stderr .= "\nOperation timed out after {$timeout} seconds";
-			$exit_code = 124; // Timeout exit code
 		}
 
 		fclose($pipes[1]);
