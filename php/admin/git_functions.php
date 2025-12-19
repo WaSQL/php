@@ -362,37 +362,126 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		);
 	}
 
-	// Execute command
+	// Set environment to prevent interactive prompts
+	$env_vars = array(
+		'GIT_TERMINAL_PROMPT' => '0',  // Disable git credential prompts
+		'GIT_SSH_COMMAND' => 'ssh -o BatchMode=yes -o ConnectTimeout=10',  // Non-interactive SSH
+		'GIT_ASKPASS' => 'echo'  // Prevent password prompts
+	);
+
+	foreach($env_vars as $key => $value){
+		putenv("{$key}={$value}");
+	}
+
+	// Execute command with timeout using proc_open for better control
+	$descriptors = array(
+		0 => array('pipe', 'r'),  // stdin
+		1 => array('pipe', 'w'),  // stdout
+		2 => array('pipe', 'w')   // stderr
+	);
+
+	$process = proc_open($cmd, $descriptors, $pipes);
 	$output = array();
-	$exit_code = 0;
-	exec($cmd . ' 2>&1', $output, $exit_code);
+	$exit_code = -1;
+
+	if(is_resource($process)){
+		// Close stdin
+		fclose($pipes[0]);
+
+		// Set timeout - 60 seconds for most commands, 120 for push/pull
+		$timeout = in_array($command, array('push', 'pull')) ? 120 : 60;
+		$start_time = time();
+
+		// Read output with timeout
+		stream_set_blocking($pipes[1], false);
+		stream_set_blocking($pipes[2], false);
+
+		$stdout = '';
+		$stderr = '';
+
+		while(time() - $start_time < $timeout){
+			$read = array($pipes[1], $pipes[2]);
+			$write = null;
+			$except = null;
+
+			if(stream_select($read, $write, $except, 1) > 0){
+				foreach($read as $stream){
+					$data = fread($stream, 8192);
+					if($stream === $pipes[1]){
+						$stdout .= $data;
+					} else {
+						$stderr .= $data;
+					}
+				}
+			}
+
+			// Check if process is still running
+			$status = proc_get_status($process);
+			if(!$status['running']){
+				// Process finished, read any remaining output
+				$stdout .= stream_get_contents($pipes[1]);
+				$stderr .= stream_get_contents($pipes[2]);
+				$exit_code = $status['exitcode'];
+				break;
+			}
+		}
+
+		// If we timed out, terminate the process
+		if(time() - $start_time >= $timeout){
+			proc_terminate($process, 9); // SIGKILL
+			$stderr .= "\nOperation timed out after {$timeout} seconds";
+			$exit_code = 124; // Timeout exit code
+		}
+
+		fclose($pipes[1]);
+		fclose($pipes[2]);
+		proc_close($process);
+
+		// Combine stdout and stderr
+		$combined_output = trim($stdout . "\n" . $stderr);
+		$output = preg_split('/[\r\n]+/', $combined_output);
+		$output = array_filter($output, function($line){ return !empty(trim($line)); });
+	} else {
+		$output = array('Failed to execute command');
+		$exit_code = -1;
+	}
 
 	// Restore original directory
 	chdir($original_dir);
 
 	$success = ($exit_code === 0);
 
+	// Special handling for timeout
+	$timed_out = ($exit_code === 124);
+
 	// Log the command execution (optional)
 	if($log_command){
-		gitLog("Git command: {$cmd} | Exit code: {$exit_code}", $success ? 'info' : 'error');
+		$log_msg = "Git command: {$cmd} | Exit code: {$exit_code}";
+		if($timed_out){
+			$log_msg .= " | TIMEOUT";
+		}
+		gitLog($log_msg, $success ? 'info' : 'error');
 	}
 
+	// Convert output array to string
+	$output_str = implode("\n", $output);
+
 	if($return_array){
-		$output_str = implode("\n", $output);
 		return array(
 			'success' => $success,
 			'output' => $output,
 			'error' => $success ? '' : $output_str,
-			'exit_code' => $exit_code
+			'exit_code' => $exit_code,
+			'timed_out' => $timed_out
 		);
 	}
 
-	$output_str = implode("\n", $output);
 	return array(
 		'success' => $success,
 		'output' => $output_str,
 		'error' => $success ? '' : $output_str,
-		'exit_code' => $exit_code
+		'exit_code' => $exit_code,
+		'timed_out' => $timed_out
 	);
 }
 
