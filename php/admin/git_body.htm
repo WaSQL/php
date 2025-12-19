@@ -1,17 +1,18 @@
  <view:default>
-<script language="javascript">
-function gitCall(func,div){
-	if(undefined == div){div='git_details';}
-	return wacss.ajaxGet('/php/admin.php',div,{_menu:'git',func:func});
-}
-</script>
 <div class="container-fluid">
 	<h3 class="wacss_top10"><span class="icon-git"></span> Repository - <?=$_SESSION['git_path'];?></h3>
+
+	<?=renderViewIf(isset($git['error']),'error_message',$git);?>
+	<?=renderViewIf(isset($git['success']),'success_message',$git);?>
+	<?=renderViewIf(isset($git['warning']),'warning_message',$git);?>
+
 	<div class="row wacss_top10">
 		<div class="col-sm-9 w_padtop">
 			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'git_details');">
 			<input type="hidden" name="_menu" value="git" />
 			<input type="hidden" name="func" value="" />
+			<input type="hidden" name="confirm_remove" value="0" />
+			<input type="hidden" name="confirm_revert" value="0" />
 			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
 			<table class="wacss_table striped bordered hover condensed">
 				<tr>
@@ -30,45 +31,44 @@ function gitCall(func,div){
 					<td>
 						<view:compare>
 						<div class="w_right">
-							<a href="#" class="w_link w_padright" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'diff',file:'<?=$file['b64'];?>'});" title="compare"><span class="icon-compare w_big"></span></a>
-							<a href="#" class="w_link w_padright" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'git',func:'log',file:'<?=$file['b64'];?>'});"  title="view history log"><span class="icon-history w_big"></span></a>
+							<a href="#" class="w_link w_padright" data-nav="/php/admin.php" data-div="centerpop" data-title="Compare Changes - <?=getFileName($file['name']);?>" data-_menu="git" data-func="diff" data-file="<?=$file['b64'];?>" onclick="return wacss.nav(this);" title="compare"><span class="icon-compare w_orange w_big"></span></a>
+							<a href="#" class="w_link w_padright" data-nav="/php/admin.php" data-div="centerpop" data-title="Commit History" data-_menu="git" data-func="log" data-file="<?=$file['b64'];?>" onclick="return wacss.nav(this);" title="view history log"><span class="icon-history w_big"></span></a>
 						</div>
 						</view:compare>
 						<?=renderViewIf($file['status'] != 'new','compare',$file,'file');?>
-						<label for="id_<?=$file['sha'];?>" title="<?=$file['afile'];?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=$file['name'];?></label>
+						<label for="id_<?=$file['sha'];?>" title="<?=$file['afile'];?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=encodeHtml($file['name']);?></label>
 					</td>
-					<td><a href="#" title="Check all off this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=$file['status'];?></a></td>
-					<td class="text-right"><?=$file['age_verbose'];?></td>
-					<td class="text-right"><?=$file['lines'];?></td>
-					<td><input type="text" name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?$_REQUEST[$key]:'';?>" class="wacss_input is-mobile-responsive" placeholder="commit message" /></td>
+					<td><a href="#" title="Check all of this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=encodeHtml($file['status']);?></a></td>
+					<td class="text-right"><?=isset($file['age_verbose'])?$file['age_verbose']:'';?></td>
+					<td class="text-right"><?=isset($file['lines'])?$file['lines']:'';?></td>
+					<td><input type="text" name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?encodeHtml($_REQUEST[$key]):'';?>" class="wacss_input is-mobile-responsive" placeholder="commit message (3-500 chars)" maxlength="500" /></td>
 				</tr>
 				</view:file>
 				<?=renderEach('file',$git['files'],'file');?>
 			</table>
-			<input type="text" name="msg" value="<?=$_REQUEST['msg'];?>" class="wacss_input is-mobile-responsive" placeholder="global commit message" />
+			<input type="text" name="msg" value="<?=isset($_REQUEST['msg'])?encodeHtml($_REQUEST['msg']):'';?>" class="wacss_input is-mobile-responsive" placeholder="global commit message (3-500 chars)" maxlength="500" />
 			<div class="w_padtop">
 				<div class="w_right">
 					<a href="/php/admin.php?_menu=git" class="wacss_button is-mobile-responsive"><span class="icon-refresh w_big"></span> Refresh</a>
-					<button class="wacss_button is-mobile-responsive is-primary" type="button" onclick="return gitCall('pull');"><span class="icon-download"></span> Pull</button>
-
+					<a href="#" class="wacss_button is-mobile-responsive is-primary" data-nav="/php/admin.php" data-div="git_details" data-_menu="git" data-func="pull" onclick="return wacss.nav(this);"><span class="icon-download"></span> Pull</a>
 				</div>
 				<button class="wacss_button is-mobile-responsive is-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add</button>
-				<button class="wacss_button is-mobile-responsive is-danger" type="submit" onclick="if(!confirm('Remove?')){return false;}else{document.gitform.func.value='remove';return true;}"><span class="icon-minus"></span> Remove</button>
-				<button class="wacss_button is-mobile-responsive is-warning" type="submit" onclick="if(!confirm('Revert back, losing your changes?')){return false;}else{document.gitform.func.value='revert';return true;}"><span class="icon-backward"></span> Revert</button>
+				<button class="wacss_button is-mobile-responsive is-danger" type="submit" onclick="if(!confirm('Remove selected files from git tracking? This cannot be undone.')){return false;}else{document.gitform.func.value='remove';document.gitform.confirm_remove.value='1';return true;}"><span class="icon-minus"></span> Remove</button>
+				<button class="wacss_button is-mobile-responsive is-warning" type="submit" onclick="if(!confirm('Revert selected files, losing all changes? This cannot be undone.')){return false;}else{document.gitform.func.value='revert';document.gitform.confirm_revert.value='1';return true;}"><span class="icon-backward"></span> Revert</button>
 				<button class="wacss_button is-mobile-responsive is-success" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push</button>
 			</div>
 			</form>
 			<div class="w_padtop" id="git_details">
-				<?=renderViewIf(isset($git['details'][0]),'git_details',$git['details'],'recs');?>
+				<?=renderViewIf(isset($recs[0]),'git_details',$recs,'recs');?>
 			</div>
 		</div>
 		<div class="col-sm-3 w_padtop">
 			<ul class="nav nav-tabs">
-				<li class="active w_pointer"><a href\"#" onclick="return setActiveNav(this,'/php/admin.php','git_info',{_menu:'git','func':'status'});">Status</a></li>
-				<li class="w_pointer"><a href\"#" onclick="return setActiveNav(this,'/php/admin.php','git_info',{_menu:'git','func':'config'});">Config</a></li>
+				<li class="active w_pointer"><a href="#" data-tab="1" data-nav="/php/admin.php" data-div="git_info" data-_menu="git" data-func="status" onclick="return wacss.nav(this);">Status</a></li>
+				<li class="w_pointer"><a href="#" data-tab="1" data-nav="/php/admin.php" data-div="git_info" data-_menu="git" data-func="config" onclick="return wacss.nav(this);">Config</a></li>
 			</ul>
 			<div id="git_info" class="well w_nowrap" style="overflow:auto;">
-				<?=nl2br($git['status']);?>
+				<?=isset($git['status'])?nl2br(encodeHtml($git['status'])):'';?>
 			</div>
 		</div>
 	</div>
@@ -76,53 +76,102 @@ function gitCall(func,div){
 </view:default>
 
 <view:git_status>
-	<?=nl2br($git['status']);?>
+	<?=nl2br(encodeHtml($git['status']));?>
 </view:git_status>
 
 <view:git_config>
-	<?=nl2br($git['config']);?>
+	<?=nl2br(encodeHtml($git['config']));?>
 </view:git_config>
 
+<view:error_message>
+	<div class="alert alert-danger w_top10">
+		<strong><span class="icon-warning"></span> Error:</strong> <?=encodeHtml($git['error']);?>
+	</div>
+</view:error_message>
+
+<view:success_message>
+	<div class="alert alert-success w_top10">
+		<strong><span class="icon-check"></span> Success:</strong> <?=encodeHtml($git['success']);?>
+	</div>
+</view:success_message>
+
+<view:warning_message>
+	<div class="alert alert-warning w_top10">
+		<strong><span class="icon-warning"></span> Warning:</strong> <?=encodeHtml($git['warning']);?>
+	</div>
+</view:warning_message>
+
+<view:not_authenticated>
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-lock"></span> Authentication Required</h3>
+			<p>You must be logged in to access git management.</p>
+			<a href="/php/admin.php?_menu=login" class="wacss_button is-primary">Login</a>
+		</div>
+	</div>
+</view:not_authenticated>
+
+<view:not_authorized>
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-lock"></span> Access Denied</h3>
+			<p>You must be an administrator to access git management.</p>
+			<p>This security violation has been logged.</p>
+		</div>
+	</div>
+</view:not_authorized>
+
 <view:not_enabled>
-	<h3>Git is not Enabled</h3>
-	To enable git use the settings option in the top right menu
+	<div class="container-fluid">
+		<div class="alert alert-warning w_top20">
+			<h3><span class="icon-warning"></span> Git is not Enabled</h3>
+			<p>To enable git management, use the settings option in the top right menu.</p>
+			<ul>
+				<li>Set <strong>wasql_git</strong> to <code>1</code></li>
+				<li>Set <strong>wasql_git_path</strong> to your repository path</li>
+			</ul>
+		</div>
+	</div>
 </view:not_enabled>
 
 <view:invalid_path>
-	<h3>Invalid Git Path</h3>
-	To set the git path use the settings option in the top right menu
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-warning"></span> Invalid Git Path</h3>
+			<p>The configured git path is invalid or not a git repository.</p>
+			<p>To set the git path, use the settings option in the top right menu.</p>
+			<ul>
+				<li>Ensure the path exists and is accessible</li>
+				<li>Ensure it contains a <code>.git</code> directory</li>
+				<li>Check file system permissions</li>
+			</ul>
+		</div>
+	</div>
 </view:invalid_path>
 
 <view:details>
-	<div class="w_centerpop_title">Git File Contents - <?=$file['name'];?></div>
-	<div class="w_centerpop_content">
 		<textarea style="width:700px;height:400px;" data-behavior="<?=$behavior;?>"><?=encodeHtml($content);?></textarea>
-	</div>
 </view:details>
 
 <view:git_diff>
-	<div class="w_centerpop_title">Diff - <?=$file;?></div>
-	<div class="w_centerpop_content" style="max-height:500px;max-width:800px;overflow:auto;">
+<div data-onload="wacss.centerpopCenter();">
 	<view:rec>
 		<div class="<?=$rec['class'];?>"><?=$rec['line'];?></div>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
-	</div>
+</div>
 </view:git_diff>
 
 <view:git_log>
-	<div class="w_centerpop_title">Log - <?=$file;?></div>
-	<div class="w_centerpop_content" style="max-height:500px;max-width:800px;overflow:auto;">
 	<view:rec>
-		<div><?=$rec;?></div>
+		<div><?=encodeHtml($rec);?></div>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
-	</div>
 </view:git_log>
 
 <view:git_details>
 	<view:rec>
-		<div><?=$rec;?></div>
+		<div><?=encodeHtml($rec);?></div>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
 </view:git_details>
