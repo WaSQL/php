@@ -9,11 +9,12 @@
 	<div class="row wacss_top10">
 		<div class="col-sm-9 w_padtop">
 			<form method="post" name="gitform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'git_details');">
-			<input type="hidden" name="_menu" value="git" />
-			<input type="hidden" name="func" value="" />
-			<input type="hidden" name="confirm_remove" value="0" />
-			<input type="hidden" name="confirm_revert" value="0" />
-			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>" />
+			<input type="hidden" name="_menu" value="git">
+			<input type="hidden" name="func" value="">
+			<input type="hidden" name="setprocessing" value="gitform_processing">
+			<input type="hidden" name="confirm_remove" value="0">
+			<input type="hidden" name="confirm_revert" value="0">
+			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>">
 			<table class="wacss_table striped bordered hover condensed">
 				<tr>
 					<th><?=buildFormCheckAll('data-class','file',array('-label'=>''));?></th>
@@ -26,7 +27,7 @@
 				<view:file>
 				<tr>
 					<td>
-						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>" />
+						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>">
 					</td>
 					<td>
 						<view:compare>
@@ -41,21 +42,20 @@
 					<td><a href="#" title="Check all of this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=encodeHtml($file['status']);?></a></td>
 					<td class="text-right"><?=isset($file['age_verbose'])?$file['age_verbose']:'';?></td>
 					<td class="text-right"><?=isset($file['lines'])?$file['lines']:'';?></td>
-					<td><input type="text" name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?encodeHtml($_REQUEST[$key]):'';?>" class="wacss_input is-mobile-responsive" placeholder="commit message (3-500 chars)" maxlength="500" /></td>
+					<td><input type="text" name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?encodeHtml($_REQUEST[$key]):'';?>" class="wacss_input is-mobile-responsive" placeholder="commit message (3-500 chars)" maxlength="500"></td>
 				</tr>
 				</view:file>
 				<?=renderEach('file',$git['files'],'file');?>
 			</table>
-			<input type="text" name="msg" value="<?=isset($_REQUEST['msg'])?encodeHtml($_REQUEST['msg']):'';?>" class="wacss_input is-mobile-responsive" placeholder="global commit message (3-500 chars)" maxlength="500" />
-			<div class="w_padtop">
-				<div class="w_right">
-					<a href="/php/admin.php?_menu=git" class="wacss_button is-mobile-responsive"><span class="icon-refresh w_big"></span> Refresh</a>
-					<a href="#" class="wacss_button is-mobile-responsive is-primary" data-nav="/php/admin.php" data-div="git_details" data-_menu="git" data-func="pull" onclick="return wacss.nav(this);"><span class="icon-download"></span> Pull</a>
-				</div>
+			<input type="text" name="msg" value="<?=isset($_REQUEST['msg'])?encodeHtml($_REQUEST['msg']):'';?>" class="wacss_input is-mobile-responsive" placeholder="global commit message (3-500 chars)" maxlength="500">
+			<div class="w_padtop" style="display:flex;gap:10px;">
 				<button class="wacss_button is-mobile-responsive is-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add</button>
 				<button class="wacss_button is-mobile-responsive is-danger" type="submit" onclick="if(!confirm('Remove selected files from git tracking? This cannot be undone.')){return false;}else{document.gitform.func.value='remove';document.gitform.confirm_remove.value='1';return true;}"><span class="icon-minus"></span> Remove</button>
 				<button class="wacss_button is-mobile-responsive is-warning" type="submit" onclick="if(!confirm('Revert selected files, losing all changes? This cannot be undone.')){return false;}else{document.gitform.func.value='revert';document.gitform.confirm_revert.value='1';return true;}"><span class="icon-backward"></span> Revert</button>
 				<button class="wacss_button is-mobile-responsive is-success" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push</button>
+				<div id="gitform_processing" style="flex:1;"></div>
+				<a href="/php/admin.php?_menu=git" class="wacss_button is-mobile-responsive"><span class="icon-refresh w_big"></span> Refresh</a>
+				<a href="#" class="wacss_button is-mobile-responsive is-primary" data-nav="/php/admin.php" data-div="git_details" data-_menu="git" data-func="pull" onclick="return wacss.nav(this);"><span class="icon-download"></span> Pull</a>
 			</div>
 			</form>
 			<div class="w_padtop" id="git_details">
