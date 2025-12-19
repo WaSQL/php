@@ -325,6 +325,11 @@ function gitGetPath(){
  * }
  */
 function gitCommand($command, $args = array(), $return_array = false, $log_command = true){
+	// Immediate debug logging
+	$tpath = getWaSQLPath('admin');
+	$debug_file = "{$tpath}/git_debug.log";
+	file_put_contents($debug_file, date('Y-m-d H:i:s') . " - gitCommand called: {$command}\n", FILE_APPEND);
+
 	// Validate command is allowed
 	static $allowed_commands = array('status', 'add', 'rm', 'checkout', 'commit', 'push', 'pull', 'diff', 'log', 'config');
 	if(!in_array($command, $allowed_commands)){
@@ -345,7 +350,11 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		$cmd_parts[] = escapeshellarg($arg);
 	}
 	$cmd = implode(' ', $cmd_parts);
-	//echo $cmd;exit;
+
+	// Debug logging
+	if($log_command){
+		gitLog("Executing command: {$cmd}", 'info');
+	}
 	// Save current directory
 	$original_dir = getcwd();
 
@@ -365,6 +374,41 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	// Detect platform for cross-platform compatibility
 	$is_windows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
 
+	// Check if we need to inject credentials (for push/pull/fetch operations)
+	$needs_credentials = in_array($command, array('push', 'pull', 'fetch', 'clone'));
+	$has_credentials = isset($_SESSION['git_credentials']) && is_array($_SESSION['git_credentials']) && $_SESSION['git_credentials'] !== 'skip';
+
+	// Set up git credential helper if we have credentials
+	if($needs_credentials && $has_credentials){
+		// Create a temporary credential helper script
+		$cred_username = escapeshellarg($_SESSION['git_credentials']['username']);
+		$cred_password = escapeshellarg($_SESSION['git_credentials']['password']);
+
+		if($is_windows){
+			// Windows: Create batch file credential helper
+			$cred_helper = sys_get_temp_dir() . '\\git_cred_' . uniqid() . '.bat';
+			$cred_content = "@echo off\n";
+			$cred_content .= "echo username=" . $_SESSION['git_credentials']['username'] . "\n";
+			$cred_content .= "echo password=" . $_SESSION['git_credentials']['password'] . "\n";
+			file_put_contents($cred_helper, $cred_content);
+
+			// Set git to use our credential helper
+			putenv('GIT_ASKPASS=' . $cred_helper);
+			putenv('GIT_TERMINAL_PROMPT=0');
+		} else {
+			// Unix/Linux: Create shell script credential helper
+			$cred_helper = sys_get_temp_dir() . '/git_cred_' . uniqid() . '.sh';
+			$cred_content = "#!/bin/sh\n";
+			$cred_content .= "echo username=" . $_SESSION['git_credentials']['username'] . "\n";
+			$cred_content .= "echo password=" . $_SESSION['git_credentials']['password'] . "\n";
+			file_put_contents($cred_helper, $cred_content);
+			chmod($cred_helper, 0700);
+
+			putenv('GIT_ASKPASS=' . $cred_helper);
+			putenv('GIT_TERMINAL_PROMPT=0');
+		}
+	}
+
 	// Set environment to prevent interactive prompts (platform-specific)
 	$env_vars = array(
 		'GIT_TERMINAL_PROMPT' => '0',  // Disable git credential prompts
@@ -376,10 +420,14 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	// Platform-specific SSH configuration
 	if(!$is_windows){
 		$env_vars['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes -o ConnectTimeout=10';
-		$env_vars['GIT_ASKPASS'] = 'echo';
+		if(!$has_credentials){
+			$env_vars['GIT_ASKPASS'] = 'echo';
+		}
 	} else {
 		// Windows-specific settings
-		$env_vars['GIT_ASKPASS'] = 'echo';
+		if(!$has_credentials){
+			$env_vars['GIT_ASKPASS'] = 'echo';
+		}
 		// On Windows, use a command that exits immediately
 		$env_vars['GIT_EDITOR'] = 'cmd /c exit 0';
 	}
@@ -388,87 +436,98 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 		putenv("{$key}={$value}");
 	}
 
-	// Execute command with timeout using proc_open for better control
-	$descriptors = array(
-		0 => array('pipe', 'r'),  // stdin
-		1 => array('pipe', 'w'),  // stdout
-		2 => array('pipe', 'w')   // stderr
-	);
-
-	$process = proc_open($cmd, $descriptors, $pipes);
+	// Platform-specific execution for reliability
 	$output = array();
 	$exit_code = -1;
+	$timeout = in_array($command, array('push', 'pull')) ? 120 : 60;
 
-	if(is_resource($process)){
-		// Close stdin immediately
-		fclose($pipes[0]);
+	if($is_windows){
+		// Debug logging
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Windows execution path\n", FILE_APPEND);
 
-		// Set timeout - 60 seconds for most commands, 120 for push/pull
-		$timeout = in_array($command, array('push', 'pull')) ? 120 : 60;
+		// Windows: Use direct exec() which is simpler and more reliable under Apache
+		// Increase PHP timeout to handle long-running git operations
+		$old_timeout = ini_get('max_execution_time');
+		set_time_limit($timeout + 30);
+
 		$start_time = time();
 
-		$stdout = '';
-		$stderr = '';
+		// Build command with environment variables set inline
+		$git_path_escaped = str_replace('/', '\\', $_SESSION['git_path']);
 
-		// Platform-specific output handling for reliability
-		if($is_windows){
-			// Windows: Use non-blocking reads to avoid deadlock
-			// stream_select() is unreliable on Windows with process pipes, especially under Apache
-			// BUT we must read output continuously to prevent pipe buffer deadlock
-			stream_set_blocking($pipes[1], false);
-			stream_set_blocking($pipes[2], false);
+		// Set environment variables inline for Windows
+		$env_prefix = 'set GIT_TERMINAL_PROMPT=0 && set GIT_EDITOR=cmd /c exit 0 && set EDITOR=true';
 
-			// Read with timeout, continuously draining output to prevent deadlock
-			while(true){
-				// Check if we've exceeded timeout
-				if(time() - $start_time >= $timeout){
-					// Windows: proc_terminate without signal parameter
-					proc_terminate($process);
+		// Add credential helper if available
+		if($needs_credentials && $has_credentials && isset($cred_helper)){
+			$env_prefix .= ' && set GIT_ASKPASS=' . $cred_helper;
+		}
 
-					// Force kill if still running
-					$status = proc_get_status($process);
-					if($status['running'] && isset($status['pid'])){
-						exec("taskkill /F /T /PID {$status['pid']} 2>&1");
-					}
+		$env_prefix .= ' && ';
+		$full_cmd = $env_prefix . 'cd /d "' . $git_path_escaped . '" && ' . $cmd . ' 2>&1';
 
-					$stderr .= "\nOperation timed out after {$timeout} seconds";
-					$exit_code = 124;
-					break;
-				}
+		// Debug log the command
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - About to exec: {$full_cmd}\n", FILE_APPEND);
 
-				// Continuously read available output to prevent pipe buffer from filling
-				// This prevents deadlock where git blocks on write and we block on proc_get_status
-				$read_stdout = fread($pipes[1], 8192);
-				$read_stderr = fread($pipes[2], 8192);
+		// Log the actual command being executed
+		if($log_command){
+			gitLog("Windows command: " . preg_replace('/password=[^\s]+/', 'password=***', $full_cmd), 'info');
+		}
 
-				if($read_stdout !== false && $read_stdout !== ''){
-					$stdout .= $read_stdout;
-				}
-				if($read_stderr !== false && $read_stderr !== ''){
-					$stderr .= $read_stderr;
-				}
+		// Execute and capture output
+		$output_lines = array();
 
-				// Check if process is still running
-				$status = proc_get_status($process);
-				if(!$status['running']){
-					// Process finished - read any remaining output
-					while(($chunk = fread($pipes[1], 8192)) !== false && $chunk !== ''){
-						$stdout .= $chunk;
-					}
-					while(($chunk = fread($pipes[2], 8192)) !== false && $chunk !== ''){
-						$stderr .= $chunk;
-					}
-					$exit_code = $status['exitcode'];
-					break;
-				}
+		// Try shell_exec first as it might be more reliable on Windows
+		$shell_output = shell_exec($full_cmd);
 
-				// Sleep briefly to avoid CPU spinning (50ms)
-				usleep(50000);
-			}
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After shell_exec\n", FILE_APPEND);
+
+		if($shell_output !== null){
+			$output_lines = explode("\n", trim($shell_output));
+			$exit_code = 0; // shell_exec doesn't provide exit code
 		} else {
-			// Unix/Linux: Use stream_select for efficient non-blocking I/O
+			// Fallback to exec
+			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - shell_exec failed, trying exec\n", FILE_APPEND);
+			exec($full_cmd, $output_lines, $exit_code);
+			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After exec, exit code: {$exit_code}\n", FILE_APPEND);
+		}
+
+		// Check if we exceeded timeout (approximate)
+		if((time() - $start_time) >= $timeout){
+			$output_lines[] = "Operation may have timed out";
+			$exit_code = 124;
+		}
+
+		$output = array_filter($output_lines, function($line){ return !empty(trim($line)); });
+
+		// Restore PHP timeout
+		set_time_limit($old_timeout);
+
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Completed, output lines: " . count($output) . "\n", FILE_APPEND);
+
+		// Cleanup credential helper file
+		if($needs_credentials && $has_credentials && isset($cred_helper) && file_exists($cred_helper)){
+			@unlink($cred_helper);
+		}
+	} else {
+		// Unix/Linux: Use proc_open with stream_select (original reliable method)
+		$descriptors = array(
+			0 => array('pipe', 'r'),  // stdin
+			1 => array('pipe', 'w'),  // stdout
+			2 => array('pipe', 'w')   // stderr
+		);
+
+		$process = proc_open($cmd, $descriptors, $pipes);
+
+		if(is_resource($process)){
+			fclose($pipes[0]);
+
+			$start_time = time();
 			stream_set_blocking($pipes[1], false);
 			stream_set_blocking($pipes[2], false);
+
+			$stdout = '';
+			$stderr = '';
 
 			while(time() - $start_time < $timeout){
 				$read = array($pipes[1], $pipes[2]);
@@ -486,10 +545,8 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 					}
 				}
 
-				// Check if process is still running
 				$status = proc_get_status($process);
 				if(!$status['running']){
-					// Process finished, read any remaining output
 					$stdout .= stream_get_contents($pipes[1]);
 					$stderr .= stream_get_contents($pipes[2]);
 					$exit_code = $status['exitcode'];
@@ -497,29 +554,32 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 				}
 			}
 
-			// Unix timeout handling with SIGKILL
 			if(time() - $start_time >= $timeout){
-				proc_terminate($process, 9); // SIGKILL
+				proc_terminate($process, 9);
 				$stderr .= "\nOperation timed out after {$timeout} seconds";
 				$exit_code = 124;
 			}
+
+			fclose($pipes[1]);
+			fclose($pipes[2]);
+			proc_close($process);
+
+			$combined_output = trim($stdout . "\n" . $stderr);
+			$output = preg_split('/[\r\n]+/', $combined_output);
+			$output = array_filter($output, function($line){ return !empty(trim($line)); });
+		} else {
+			$output = array('Failed to execute command');
+			$exit_code = -1;
 		}
-
-		fclose($pipes[1]);
-		fclose($pipes[2]);
-		proc_close($process);
-
-		// Combine stdout and stderr
-		$combined_output = trim($stdout . "\n" . $stderr);
-		$output = preg_split('/[\r\n]+/', $combined_output);
-		$output = array_filter($output, function($line){ return !empty(trim($line)); });
-	} else {
-		$output = array('Failed to execute command');
-		$exit_code = -1;
 	}
 
 	// Restore original directory
 	chdir($original_dir);
+
+	// Cleanup credential helper file (Unix/Linux)
+	if(!$is_windows && $needs_credentials && $has_credentials && isset($cred_helper) && file_exists($cred_helper)){
+		@unlink($cred_helper);
+	}
 
 	$success = ($exit_code === 0);
 
@@ -596,27 +656,22 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
  */
 function gitLog($message, $level = 'info'){
 	global $USER;
-	static $table_exists = null;
-
-	// Cache table existence check for performance
-	if($table_exists === null){
-		$table_exists = isDBTable('_gitlog');
-	}
 
 	$username = isset($USER['username']) ? $USER['username'] : 'unknown';
 
-	// Only log to database if _gitlog table exists
-	if($table_exists){
-		$log_entry = array(
-			'-table' => '_gitlog',
-			'username' => $username,
-			'message' => $message,
-			'level' => $level,
-			'ip_address' => $_SERVER['REMOTE_ADDR'],
-			'timestamp' => date('Y-m-d H:i:s')
-		);
-		addDBRecord($log_entry);
-	}
+	// Always log to file
+	$tpath = getWaSQLPath('admin');
+	$logfile = "{$tpath}/git.log";
+	$log_entry = array(
+		'timestamp' => date('Y-m-d H:i:s'),
+		'unixtime' => time(),
+		'username' => $username,
+		'message' => $message,
+		'level' => $level,
+		'ip_address' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'CLI'
+	);
+	$log_entry_json = encodeJSON($log_entry);
+	appendFileContents($logfile, $log_entry_json . PHP_EOL);
 
 	// Also log to PHP error log for critical errors
 	if($level === 'error'){
