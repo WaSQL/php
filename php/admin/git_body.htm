@@ -1,7 +1,11 @@
  <view:default>
 <div class="container-fluid">
-	<h3 class="wacss_top10"><span class="icon-git"></span> Repository - <?=$_SESSION['git_path'];?></h3>
+	<h3 class="wacss_top10">
+		<span class="icon-git"></span> Repository - <?=$_SESSION['git_path'];?>
+		<?=renderViewIf(isset($_SESSION['git_credentials']),'credentials_status');?>
+	</h3>
 
+	<?=renderViewIf(!isset($_SESSION['git_credentials']),'credentials_prompt');?>
 	<?=renderViewIf(isset($git['error']),'error_message',$git);?>
 	<?=renderViewIf(isset($git['success']),'success_message',$git);?>
 	<?=renderViewIf(isset($git['warning']),'warning_message',$git);?>
@@ -175,3 +179,40 @@
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
 </view:git_details>
+
+<view:credentials_prompt>
+	<div class="alert alert-info w_top10">
+		<form method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'cred_result');">
+			<input type="hidden" name="_menu" value="git">
+			<input type="hidden" name="func" value="set_credentials">
+			<h4><span class="icon-key"></span> Git Credentials Required</h4>
+			<p>To push/pull from the remote repository, please enter your git credentials. These will be stored securely in your session.</p>
+			<div class="row">
+				<div class="col-sm-6">
+					<label>Username / Email:</label>
+					<input type="text" name="git_username" class="wacss_input" placeholder="your-username" required>
+				</div>
+				<div class="col-sm-6">
+					<label>Password / Token:</label>
+					<input type="password" name="git_password" class="wacss_input" placeholder="password or personal access token" required>
+					<small>For GitHub/GitLab, use a Personal Access Token instead of password</small>
+				</div>
+			</div>
+			<div class="w_padtop">
+				<button type="submit" class="wacss_button is-primary"><span class="icon-check"></span> Save Credentials</button>
+				<button type="button" class="wacss_button" onclick="$_SESSION['git_credentials']='skip';location.reload();"><span class="icon-forward"></span> Skip (SSH Keys)</button>
+			</div>
+			<div id="cred_result" class="w_padtop"></div>
+		</form>
+	</div>
+</view:credentials_prompt>
+
+<view:credentials_status>
+	<small style="margin-left:20px;">
+		<span class="icon-check w_green"></span>
+		<?$creds=$_SESSION['git_credentials'];return is_array($creds) ? 'Authenticated as ' . encodeHtml($creds['username']) : 'Using SSH Keys';?>
+		<a href="#" class="w_link" data-nav="/php/admin.php" data-div="git_main" data-_menu="git" data-func="clear_credentials" onclick="return confirm('Clear stored credentials?') && wacss.nav(this);" title="Clear credentials">
+			<span class="icon-close w_red"></span>
+		</a>
+	</small>
+</view:credentials_status>
