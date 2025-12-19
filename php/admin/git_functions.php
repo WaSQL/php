@@ -488,12 +488,13 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 
 		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Using file-based execution\n", FILE_APPEND);
 
-		// Redirect output to file and execute in background
-		$file_cmd = $full_cmd . " > " . escapeshellarg($output_file) . " 2>&1";
+		// Redirect output to file and execute detached using START command
+		// START /B runs without creating window, returns immediately
+		$file_cmd = 'start /B cmd /c "' . $full_cmd . ' > ' . $output_file . ' 2>&1"';
 
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Executing: {$file_cmd}\n", FILE_APPEND);
+		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Executing with START: {$file_cmd}\n", FILE_APPEND);
 
-		// Execute command - this should return immediately if backgrounded properly
+		// Execute command - START should return immediately
 		exec($file_cmd, $dummy_output, $exit_code);
 
 		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After exec, waiting for output file\n", FILE_APPEND);
