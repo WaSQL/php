@@ -367,7 +367,10 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 
 	// Set environment to prevent interactive prompts (platform-specific)
 	$env_vars = array(
-		'GIT_TERMINAL_PROMPT' => '0'  // Disable git credential prompts
+		'GIT_TERMINAL_PROMPT' => '0',  // Disable git credential prompts
+		'GIT_EDITOR' => 'true',         // Prevent editor from opening (use 'true' command that exits immediately)
+		'EDITOR' => 'true',             // Fallback editor prevention
+		'VISUAL' => 'true'              // Fallback visual editor prevention
 	);
 
 	// Platform-specific SSH configuration
@@ -377,6 +380,8 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 	} else {
 		// Windows-specific settings
 		$env_vars['GIT_ASKPASS'] = 'echo';
+		// On Windows, use a command that exits immediately
+		$env_vars['GIT_EDITOR'] = 'cmd /c exit 0';
 	}
 
 	foreach($env_vars as $key => $value){
@@ -407,12 +412,13 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 
 		// Platform-specific output handling for reliability
 		if($is_windows){
-			// Windows: Use blocking reads with periodic process checks
+			// Windows: Use non-blocking reads to avoid deadlock
 			// stream_select() is unreliable on Windows with process pipes, especially under Apache
-			stream_set_blocking($pipes[1], true);
-			stream_set_blocking($pipes[2], true);
+			// BUT we must read output continuously to prevent pipe buffer deadlock
+			stream_set_blocking($pipes[1], false);
+			stream_set_blocking($pipes[2], false);
 
-			// Read with timeout using non-blocking process checks
+			// Read with timeout, continuously draining output to prevent deadlock
 			while(true){
 				// Check if we've exceeded timeout
 				if(time() - $start_time >= $timeout){
@@ -430,18 +436,34 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
 					break;
 				}
 
+				// Continuously read available output to prevent pipe buffer from filling
+				// This prevents deadlock where git blocks on write and we block on proc_get_status
+				$read_stdout = fread($pipes[1], 8192);
+				$read_stderr = fread($pipes[2], 8192);
+
+				if($read_stdout !== false && $read_stdout !== ''){
+					$stdout .= $read_stdout;
+				}
+				if($read_stderr !== false && $read_stderr !== ''){
+					$stderr .= $read_stderr;
+				}
+
 				// Check if process is still running
 				$status = proc_get_status($process);
 				if(!$status['running']){
-					// Process finished - read all remaining output
-					$stdout = stream_get_contents($pipes[1]);
-					$stderr = stream_get_contents($pipes[2]);
+					// Process finished - read any remaining output
+					while(($chunk = fread($pipes[1], 8192)) !== false && $chunk !== ''){
+						$stdout .= $chunk;
+					}
+					while(($chunk = fread($pipes[2], 8192)) !== false && $chunk !== ''){
+						$stderr .= $chunk;
+					}
 					$exit_code = $status['exitcode'];
 					break;
 				}
 
-				// Sleep briefly to avoid CPU spinning (100ms)
-				usleep(100000);
+				// Sleep briefly to avoid CPU spinning (50ms)
+				usleep(50000);
 			}
 		} else {
 			// Unix/Linux: Use stream_select for efficient non-blocking I/O
