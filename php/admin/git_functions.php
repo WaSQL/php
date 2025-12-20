@@ -300,6 +300,18 @@ function gitCmd($command,$args=array(), $timeout = 30) {
         'GIT_ASKPASS' => 'echo',
         'HOME' => getWaSQLPath(),
     ];
+    $gpath=getFilePath($CONFIG['git_cmd']);
+
+    $env = [
+	    'GIT_TERMINAL_PROMPT' => '0',
+	    'GIT_ASKPASS' => 'echo',
+	    'HOME' => getWaSQLPath(),
+	    'PATH' => $gpath.";". getenv('PATH'),
+	    'SYSTEMROOT' => getenv('SYSTEMROOT') ?: 'C:\\Windows',
+	    'USERPROFILE' => getWaSQLPath(),
+	    'APPDATA' => getWaSQLPath(),
+	    'LOCALAPPDATA' => getWaSQLPath(),
+	];
     
     $desc = [
         0 => ['pipe', 'r'],
