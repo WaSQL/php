@@ -37,7 +37,7 @@
  * - gitFileInfo()              - Get list of modified files with metadata
  * - gitValidateFilePath()      - Validate file paths for security
  * - gitGetPath()               - Get git repository path from settings
- * - gitCommand()               - Execute git commands safely
+ * - gitCmd()               - Execute git commands safely
  * - gitLog()                   - Log operations for audit trail
  * - gitValidateCommitMessage() - Validate commit message quality
  *
@@ -81,7 +81,8 @@
 function gitFileInfo(){
 	global $git;
 
-	$result = gitCommand('status', array('-s'), false, false);
+	$result = gitCmd('status', array('-s'));
+	//echo printValue($result);exit;
 	if($result['success'] === false){
 		$git['error'] = $result['error'];
 		$git['files'] = array();
@@ -272,6 +273,124 @@ function gitGetPath(){
 	return $path;
 }
 
+function gitInit(){
+	if(isset($_SESSION['gitInit'])){return false;}
+	$_SESSION['gitInit']=1;
+	global $CONFIG;
+	if(!isset($CONFIG['git_user'])){return false;}
+	if(!isset($CONFIG['git_token'])){return false;}
+	// Set remote with credentials once
+	gitCmd("git remote set-url origin https://{$CONFIG['git_user']}:{$CONFIG['git_token']}@github.com/user/repo.git");
+	return true;
+}
+function gitCmd($command,$args=array(), $timeout = 30) {
+	global $CONFIG;
+	//init
+	$ok=gitInit();
+	// Quote the git path explicitly for Windows
+	$cmd_parts = array('"' . $CONFIG['git_cmd'] . '"');
+
+	$cmd_parts[] = escapeshellarg($command);
+	foreach($args as $arg){
+		$cmd_parts[] = escapeshellarg($arg);
+	}
+	$cmd = implode(' ', $cmd_parts);
+    $env = [
+        'GIT_TERMINAL_PROMPT' => '0',
+        'GIT_ASKPASS' => 'echo',
+        'HOME' => getWaSQLPath(),
+    ];
+    
+    $desc = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+    
+    $proc = proc_open($cmd, $desc, $pipes, getWaSQLPath(), $env);
+    
+    if (!is_resource($proc)) {
+        return array(
+        	'success'=>false,
+        	'cmd'=>$cmd,
+        	'output' => '', 
+        	'error' => 'Failed to start process', 
+        	'exit_code' => -1
+        );
+    }
+    
+    fclose($pipes[0]);
+    
+    // Set non-blocking
+    stream_set_blocking($pipes[1], false);
+    stream_set_blocking($pipes[2], false);
+    
+    $stdout = '';
+    $stderr = '';
+    $start = time();
+    
+    while (true) {
+        $read = [$pipes[1], $pipes[2]];
+        $write = null;
+        $except = null;
+        
+        // Check timeout
+        $remaining = $timeout - (time() - $start);
+        if ($remaining <= 0) {
+            proc_terminate($proc, 9);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($proc);
+            return array(
+            	'success'=>false,
+            	'cmd'=>$cmd,
+            	'output' => $stdout, 
+            	'error' => $stderr . PHP_EOL."Process timed out after {$timeout}s", 
+            	'exit_code' => -1
+            );
+        }
+        
+        $ready = stream_select($read, $write, $except, min($remaining, 1));
+        
+        if ($ready === false) {
+            break;
+        }
+        
+        foreach ($read as $pipe) {
+            $data = fread($pipe, 8192);
+            if ($pipe === $pipes[1]) {
+                $stdout .= $data;
+            } else {
+                $stderr .= $data;
+            }
+        }
+        
+        // Check if process has finished
+        $status = proc_get_status($proc);
+        if (!$status['running']) {
+            // Drain remaining output
+            $stdout .= stream_get_contents($pipes[1]);
+            $stderr .= stream_get_contents($pipes[2]);
+            break;
+        }
+    }
+    
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    
+    $status = proc_get_status($proc);
+    $exitCode = $status['running'] ? -1 : $status['exitcode'];
+    proc_close($proc);
+    
+    return array(
+    	'success'=>$exitCode==0?true:false,
+    	'cmd'=>$cmd,
+    	'output' => $stdout, 
+    	'error' => $stderr, 
+    	'exit_code' => $exitCode
+    );
+}
+
 /**
  * Executes a git command safely with proper escaping and error handling
  *
@@ -308,18 +427,18 @@ function gitGetPath(){
  *
  * @example
  * // Simple status check
- * $result = gitCommand('status', array('-s'));
+ * $result = gitCmd('status', array('-s'));
  * if($result['success']){
  *     echo $result['output'];
  * }
  *
  * @example
  * // Add multiple files
- * $result = gitCommand('add', array('file1.php', 'file2.php'));
+ * $result = gitCmd('add', array('file1.php', 'file2.php'));
  *
  * @example
  * // Get log as array without logging
- * $result = gitCommand('log', array('--max-count=10'), true, false);
+ * $result = gitCmd('log', array('--max-count=10'), true, false);
  * foreach($result['output'] as $line){
  *     echo $line;
  * }
