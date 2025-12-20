@@ -279,6 +279,16 @@ function gitInit(){
 	global $CONFIG;
 	if(!isset($CONFIG['git_user'])){return false;}
 	if(!isset($CONFIG['git_token'])){return false;}
+	$configs = [
+        ['config', ['--global', 'http.lowSpeedLimit', '1000']],
+        ['config', ['--global', 'http.lowSpeedTime', '10']],
+        ['config', ['--global', 'http.connectTimeout', '10']],
+        ['config', ['--global', 'credential.helper', '']],  // Disable credential helper
+    ];
+    
+    foreach ($configs as $cfg) {
+        gitCmd($cfg[0], $cfg[1], 5);
+    }
 	// Set remote with credentials once
 	gitCmd("git remote set-url origin https://{$CONFIG['git_user']}:{$CONFIG['git_token']}@github.com/user/repo.git");
 	return true;
@@ -295,22 +305,21 @@ function gitCmd($command,$args=array(), $timeout = 30) {
 		$cmd_parts[] = escapeshellarg($arg);
 	}
 	$cmd = implode(' ', $cmd_parts);
-    $env = [
-        'GIT_TERMINAL_PROMPT' => '0',
-        'GIT_ASKPASS' => 'echo',
-        'HOME' => getWaSQLPath(),
-    ];
     $gpath=getFilePath($CONFIG['git_cmd']);
 
     $env = [
-	    'GIT_TERMINAL_PROMPT' => '0',
-	    'GIT_ASKPASS' => 'echo',
+    	'GIT_TERMINAL_PROMPT' => '0',
+	    'GIT_ASKPASS' => '',
+	    'GIT_SSH_COMMAND' => '',
+	    'GIT_HTTP_LOW_SPEED_LIMIT' => '1000',
+	    'GIT_HTTP_LOW_SPEED_TIME' => '10',
 	    'HOME' => getWaSQLPath(),
 	    'PATH' => $gpath.";". getenv('PATH'),
 	    'SYSTEMROOT' => getenv('SYSTEMROOT') ?: 'C:\\Windows',
 	    'USERPROFILE' => getWaSQLPath(),
 	    'APPDATA' => getWaSQLPath(),
 	    'LOCALAPPDATA' => getWaSQLPath(),
+	    'GIT_SSL_NO_VERIFY' => '1',
 	];
     
     $desc = [
