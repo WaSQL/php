@@ -3705,13 +3705,14 @@ function adminGetPHPInfo(){
  * @exclude  - this function is for internal use only and thus excluded from the manual
  */
 function adminViewPage($menu){
-	$progpath=dirname(__FILE__);
+	$ppath=getWasqlPath('php');
 	$menu=strtolower($menu);
-	if(is_file("{$progpath}/admin/{$menu}_functions.php")){
-    	include_once("{$progpath}/admin/{$menu}_functions.php");
+	//if(stringContains($menu,'git')){echo "menu:{$menu}<br>";}
+	if(is_file("{$ppath}/admin/{$menu}_functions.php")){
+    	include_once("{$ppath}/admin/{$menu}_functions.php");
 	}
-	$body=getFileContents("{$progpath}/admin/{$menu}_body.htm");
-	$controller=getFileContents("{$progpath}/admin/{$menu}_controller.php");
+	$body=getFileContents("{$ppath}/admin/{$menu}_body.htm");
+	$controller=getFileContents("{$ppath}/admin/{$menu}_controller.php");
 	$rtn = evalPHP(array($controller,$body));
 	$rtn=processTranslateTags($rtn);
     return $rtn;

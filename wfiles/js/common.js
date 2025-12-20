@@ -615,6 +615,7 @@ function isDST(){
 	}
 }
 //isFunction
+//Note: moved to wacss.isFunction
 function isFunction(functionToCheck) {
 	var getType = {};
 	return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
@@ -649,6 +650,7 @@ function appendText(obj,val,lf){
 	setText(obj,newval);
 }
 //Clone Div
+//Note: moved to wacss.cloneDiv
 function cloneDiv(div,c){
 	//info: use to clone a div and all form elements in the div.  It will automatically incriment any names, ids, and tabindexes
 	//usage: onclick="return cloneTableRow('mytableid');"
@@ -756,6 +758,7 @@ function cloneDiv(div,c){
 		return true;
 	}
 }
+//Note: moved to wacss.cloneTableRow
 //Clone table row
 function cloneTableRow(tid,opts){
 	//info: use to clone a table row, and all elements in the row.  It will automatically incriment any names, ids, and tabindexes
@@ -861,6 +864,7 @@ function cloneTableRow(tid,opts){
 	}
 	return true;
 }
+//Note: moved to wacss.delTableRow
 function delTableRow(source,tid){
 	//info: use to delete current table row
 	//usage: <td><img src="/wfiles/iconsets/16/cancel.png" style="cursor:pointer" onclick="delTableRow(this,'mytableid');" /></td>
@@ -1066,6 +1070,7 @@ function ajaxExpand(divid,url,opts){
     return false;
 }
 //function goToAnchor
+//Note: moved to wacss.scrollToDivId
 function scrollToDivId(pdiv,sdiv){
 	//info:scroll to a div id inside of a scrollable div
 	let t=document.getElementById(sdiv).offsetTop-10;
@@ -1353,6 +1358,7 @@ function anchorExists(aname){
 	if(list.count==1){return true;}
 	return false;
 }
+//Note: moved to wacss.GetElementsByAttribute
 function GetElementsByAttribute(tag, att, val){
 	//info: GetElementsByAttribute - returns an array of tags that have an attribute of value.
     //usage: GetElementsByAttribute(tagname, attributename,stringtomatch)
@@ -1374,6 +1380,7 @@ function GetElementsByAttribute(tag, att, val){
             }
         return found;
         }
+//Note: moved to wacss.hideElementsByAttribute
 function hideElementsByAttribute(tag, att, val){
 	//info: hides elements specified
     //usage: hideElementsByAttribute(tagname, attributename,stringtomatch)
@@ -1699,6 +1706,7 @@ function getWindowScrollPosition(){
 			document.body.parentNode ||
 			document.body).scrollTop;
 }
+//Note: moved to wacss.getWordCount
 function getWordCount(id){
 	var s=getText(id);
 	//remove all extra spaces (double spaces etc) before counting
@@ -2264,6 +2272,7 @@ function ucwords(str){
         return $1.toUpperCase();
     });
 }
+//Note: moved to wacss.array_values
 function array_values(arr){
     //info: Return just the values from an array
     //source: http://phpjs.org/functions
@@ -2275,6 +2284,7 @@ function array_values(arr){
     }
     return tmp_arr;
 }
+//Note: moved to wacss.array_keys
 function array_keys(arr,search_value,argStrict){
     //info: Return just the keys from an array, optionally only for the specified search_value
     //source: http://phpjs.org/functions
@@ -2332,6 +2342,7 @@ function array_walk(array,funcname,userdata){
     }
     return true;
 }
+//Note: moved to wacss.nl2br
 function nl2br(str,is_xhtml){
     //info: Converts newlines to HTML line breaks
     //source: http://phpjs.org/functions

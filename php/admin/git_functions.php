@@ -1,89 +1,116 @@
 <?php
 /**
- * Git Management Functions for WaSQL
+ * Git Management Functions for WaSQL - API Version
  *
- * Production-ready git repository management with comprehensive security,
- * error handling, audit logging, and performance optimizations.
+ * Production-ready git repository management using Git hosting APIs (GitHub, GitLab, Bitbucket).
+ * This version uses direct API calls instead of local git commands for a cloud-first workflow.
  *
- * This module provides a secure web interface for managing git repositories
- * through the WaSQL admin panel. All operations are protected against common
- * security vulnerabilities including command injection, path traversal, and
- * unauthorized access.
+ * This module provides a secure web interface for managing git repositories through
+ * remote APIs, allowing file operations without requiring a local git installation.
  *
  * Key Features:
- * - Secure git command execution with whitelisting and argument escaping
- * - Path traversal protection for all file operations
- * - Comprehensive audit logging for compliance and security monitoring
- * - Performance optimizations for large repositories (200+ files)
- * - Authentication and authorization checks for all operations
- * - Detailed error handling and user feedback
+ * - Direct API integration with GitHub, GitLab, and Bitbucket
+ * - File synchronization between local and remote repositories
+ * - Secure API authentication via tokens
+ * - Comprehensive error handling and user feedback
+ * - Audit logging for compliance and security monitoring
  *
  * Security Measures:
- * - Command injection prevention via escapeshellarg()
  * - Path traversal blocking (../, absolute paths, null bytes)
- * - Whitelist of allowed git commands only
  * - Admin-only access with authentication checks
+ * - API tokens stored securely in CONFIG
  * - All operations logged with username and IP address
  * - Input validation for all user-supplied data
  *
- * Performance Features:
- * - Cached realpath lookups
- * - Batch git operations (add multiple files at once)
- * - Optional logging for frequent operations
- * - Smart line counting (skip files > 1MB)
- * - Static variable caching where appropriate
- *
  * Functions provided:
- * - gitFileInfo()              - Get list of modified files with metadata
+ * - gitFileInfo()              - Get list of modified files comparing local with remote
  * - gitValidateFilePath()      - Validate file paths for security
  * - gitGetPath()               - Get git repository path from settings
- * - gitCmd()               - Execute git commands safely
  * - gitLog()                   - Log operations for audit trail
  * - gitValidateCommitMessage() - Validate commit message quality
+ * - gitApiCall()               - Wrapper for API calls with error handling
  *
  * @package    WaSQL
  * @subpackage GitManagement
- * @version    2.0
+ * @version    3.0 - API Edition
  * @author     WaSQL Development Team
  * @copyright  Copyright (c) 2024 WaSQL
  * @license    See WaSQL license
  *
  * @see git_controller.php For request handling and business logic
  * @see git_body.htm For user interface views
- * @see git_table.sql For audit log database schema
- * @see GIT_README.md For complete documentation
- * @see GIT_PERFORMANCE.md For performance optimization details
+ * @see gitapi.php For API functions
  */
 
+// Include the Git API library
+$progpath = dirname(__FILE__);
+require_once("{$progpath}/../extras/gitapi.php");
+
 /**
- * Retrieves and parses git status information for modified files
+ * Execute local git status command
  *
- * Executes 'git status -s' and parses the output to build a list of modified files
- * with their status, file age, line count, and other metadata. Populates the global
- * $git array with file information for display and processing.
+ * Executes 'git status -s' locally to see what files have changed.
+ * This is the one exception where we use local git instead of API.
  *
- * Performance optimizations:
- * - Caches realpath of git directory (called once vs N times)
- * - Caches current time for age calculations
- * - Skips line counting for files larger than 1MB
- * - Does not log command execution (frequent operation)
+ * @return array Result with 'success', 'output', 'error' keys
+ *
+ * @since 3.0
+ */
+function gitLocalStatus(){
+	$original_dir = getcwd();
+
+	if(!isset($_SESSION['git_path']) || !chdir($_SESSION['git_path'])){
+		return array(
+			'success' => false,
+			'output' => '',
+			'error' => 'Invalid git path'
+		);
+	}
+
+	$output = array();
+	$exit_code = 0;
+	exec('git status -s 2>&1', $output, $exit_code);
+
+	chdir($original_dir);
+
+	return array(
+		'success' => $exit_code === 0,
+		'output' => implode("\n", $output),
+		'error' => $exit_code !== 0 ? implode("\n", $output) : ''
+	);
+}
+
+/**
+ * Retrieves file information using local git status
+ *
+ * Uses local 'git status' to see what files have changed, then prepares
+ * them for upload via API.
  *
  * @global array $git Array to store git status information including:
- *                     - 'status': Raw git status output
  *                     - 'files': Array of file information
  *                     - 'b64sha': Mapping of base64 file names to SHA hashes
  *                     - 'error': Error message if operation fails
  *
  * @return void
  *
- * @since 2.0
+ * @since 3.0
  */
 function gitFileInfo(){
-	global $git;
+	global $git, $CONFIG;
 
-	$result = gitCmd('status', array('-s'));
-	//echo printValue($result);exit;
-	if($result['success'] === false){
+	if(!isset($_SESSION['git_path']) || !is_dir($_SESSION['git_path'])){
+		$git['error'] = 'Invalid git path';
+		$git['files'] = array();
+		return;
+	}
+
+	$git['files'] = array();
+	$git['b64sha'] = array();
+
+	// Use local git status to see what changed
+	$result = gitLocalStatus();
+
+	if(!$result['success']){
 		$git['error'] = $result['error'];
 		$git['files'] = array();
 		return;
@@ -91,7 +118,6 @@ function gitFileInfo(){
 
 	$git['status'] = $result['output'];
 	$lines = preg_split('/[\r\n]+/', trim($git['status']));
-	$git['b64sha'] = array();
 
 	// Cache realpath of git directory for performance
 	$git_realpath = realpath($_SESSION['git_path']);
@@ -163,7 +189,7 @@ function gitFileInfo(){
 			$rec['age'] = $age;
 			$rec['age_verbose'] = verboseTime($age);
 
-			// Only count lines for small files or use fast method
+			// Only count lines for small files
 			$filesize = filesize($afile_real);
 			if($filesize > 0 && $filesize < 1048576){ // Skip line count for files > 1MB
 				$rec['lines'] = getFileLineCount($afile_real);
@@ -174,6 +200,9 @@ function gitFileInfo(){
 
 		$git['files'][] = $rec;
 	}
+
+	// Track files in session for later operations
+	$_SESSION['git_tracked_files'] = $git['files'];
 }
 
 /**
@@ -184,20 +213,11 @@ function gitFileInfo(){
  * - Blocks absolute paths (C:/ or /)
  * - Blocks null byte injection
  *
- * This function is called before any file operation to prevent path traversal
- * attacks that could access files outside the git repository.
- *
  * @param string $path File path to validate (relative path expected)
  *
- * @return bool True if path is safe and can be used, false if dangerous
+ * @return bool True if path is safe, false if dangerous
  *
- * @since 2.0
- *
- * @example
- * gitValidateFilePath('src/file.php')      // Returns true
- * gitValidateFilePath('../etc/passwd')     // Returns false
- * gitValidateFilePath('/etc/passwd')       // Returns false
- * gitValidateFilePath("file\0.php")        // Returns false
+ * @since 3.0
  */
 function gitValidateFilePath($path){
 	// Block directory traversal attempts
@@ -219,30 +239,13 @@ function gitValidateFilePath($path){
 }
 
 /**
- * Retrieves git configuration from database settings and validates repository
+ * Retrieves git configuration from database settings
  *
- * Checks the _settings table for git configuration (wasql_git and wasql_git_path)
- * and validates that the path is a valid git repository. Returns the absolute
- * path to the repository or an error code.
+ * Checks the _settings table for git configuration and validates settings.
  *
- * Error codes returned:
- * - 'not_enabled': Git management is disabled (wasql_git != 1)
- * - 'invalid_path': Path doesn't exist, isn't a directory, or isn't a git repository
+ * @return string Repository path or error code ('not_enabled', 'invalid_path')
  *
- * @return string Absolute path to git repository, or error code string
- *                ('not_enabled', 'invalid_path')
- *
- * @since 2.0
- *
- * @example
- * $path = gitGetPath();
- * if($path === 'not_enabled'){
- *     // Show enable git message
- * } elseif($path === 'invalid_path'){
- *     // Show invalid path message
- * } else {
- *     // Use $path as repository directory
- * }
+ * @since 3.0
  */
 function gitGetPath(){
 	$recs = getDBRecords(array(
@@ -265,551 +268,56 @@ function gitGetPath(){
 		return 'invalid_path';
 	}
 
-	// Verify it's actually a git repository
-	if(!is_dir($path . DIRECTORY_SEPARATOR . '.git')){
-		return 'invalid_path';
-	}
-
 	return $path;
 }
 
-function gitInit(){
-	if(isset($_SESSION['gitInit'])){return false;}
-	$_SESSION['gitInit']=1;
-	global $CONFIG;
-	if(!isset($CONFIG['git_user'])){return false;}
-	if(!isset($CONFIG['git_token'])){return false;}
-	$configs = [
-        ['config', ['--global', 'http.lowSpeedLimit', '1000']],
-        ['config', ['--global', 'http.lowSpeedTime', '10']],
-        ['config', ['--global', 'http.connectTimeout', '10']],
-        ['config', ['--global', 'credential.helper', '']],  // Disable credential helper
-    ];
-    
-    foreach ($configs as $cfg) {
-        gitCmd($cfg[0], $cfg[1], 5);
-    }
-	// Set remote with credentials once
-	gitCmd("git remote set-url origin https://{$CONFIG['git_user']}:{$CONFIG['git_token']}@github.com/user/repo.git");
-	return true;
-}
-function gitCmd($command,$args=array(), $timeout = 30) {
-	global $CONFIG;
-	//init
-	$ok=gitInit();
-	// Quote the git path explicitly for Windows
-	$cmd_parts = array('"' . $CONFIG['git_cmd'] . '"');
-
-	$cmd_parts[] = escapeshellarg($command);
-	foreach($args as $arg){
-		$cmd_parts[] = escapeshellarg($arg);
+/**
+ * Wrapper function for Git API calls with error handling and logging
+ *
+ * Provides a consistent interface for making API calls with automatic
+ * error handling, logging, and response formatting.
+ *
+ * @param string $function API function name (e.g., 'gitapiPush', 'gitapiCommit')
+ * @param array $params Parameters to pass to the function
+ * @param bool $log_call Whether to log this call (default: true)
+ *
+ * @return array Result array with 'success', 'data', 'error' keys
+ *
+ * @since 3.0
+ */
+function gitApiCall($function, $params = array(), $log_call = true){
+	if(!function_exists($function)){
+		$error = "API function not found: {$function}";
+		if($log_call){
+			gitLog($error, 'error');
+		}
+		return array(
+			'success' => false,
+			'error' => $error,
+			'data' => null
+		);
 	}
-	$cmd = implode(' ', $cmd_parts);
-    $gpath=getFilePath($CONFIG['git_cmd']);
 
-    $env = [
-    	'GIT_TERMINAL_PROMPT' => '0',
-	    'GIT_ASKPASS' => '',
-	    'GIT_SSH_COMMAND' => '',
-	    'GIT_HTTP_LOW_SPEED_LIMIT' => '1000',
-	    'GIT_HTTP_LOW_SPEED_TIME' => '10',
-	    'HOME' => getWaSQLPath(),
-	    'PATH' => $gpath.";". getenv('PATH'),
-	    'SYSTEMROOT' => getenv('SYSTEMROOT') ?: 'C:\\Windows',
-	    'USERPROFILE' => getWaSQLPath(),
-	    'APPDATA' => getWaSQLPath(),
-	    'LOCALAPPDATA' => getWaSQLPath(),
-	    'GIT_SSL_NO_VERIFY' => '1',
-	];
-    
-    $desc = [
-        0 => ['pipe', 'r'],
-        1 => ['pipe', 'w'],
-        2 => ['pipe', 'w'],
-    ];
-    
-    $proc = proc_open($cmd, $desc, $pipes, getWaSQLPath(), $env);
-    
-    if (!is_resource($proc)) {
-        return array(
-        	'success'=>false,
-        	'cmd'=>$cmd,
-        	'output' => '', 
-        	'error' => 'Failed to start process', 
-        	'exit_code' => -1
-        );
-    }
-    
-    fclose($pipes[0]);
-    
-    // Set non-blocking
-    stream_set_blocking($pipes[1], false);
-    stream_set_blocking($pipes[2], false);
-    
-    $stdout = '';
-    $stderr = '';
-    $start = time();
-    
-    while (true) {
-        $read = [$pipes[1], $pipes[2]];
-        $write = null;
-        $except = null;
-        
-        // Check timeout
-        $remaining = $timeout - (time() - $start);
-        if ($remaining <= 0) {
-            proc_terminate($proc, 9);
-            fclose($pipes[1]);
-            fclose($pipes[2]);
-            proc_close($proc);
-            return array(
-            	'success'=>false,
-            	'cmd'=>$cmd,
-            	'output' => $stdout, 
-            	'error' => $stderr . PHP_EOL."Process timed out after {$timeout}s", 
-            	'exit_code' => -1
-            );
-        }
-        
-        $ready = stream_select($read, $write, $except, min($remaining, 1));
-        
-        if ($ready === false) {
-            break;
-        }
-        
-        foreach ($read as $pipe) {
-            $data = fread($pipe, 8192);
-            if ($pipe === $pipes[1]) {
-                $stdout .= $data;
-            } else {
-                $stderr .= $data;
-            }
-        }
-        
-        // Check if process has finished
-        $status = proc_get_status($proc);
-        if (!$status['running']) {
-            // Drain remaining output
-            $stdout .= stream_get_contents($pipes[1]);
-            $stderr .= stream_get_contents($pipes[2]);
-            break;
-        }
-    }
-    
-    fclose($pipes[1]);
-    fclose($pipes[2]);
-    
-    $status = proc_get_status($proc);
-    $exitCode = $status['running'] ? -1 : $status['exitcode'];
-    proc_close($proc);
-    
-    return array(
-    	'success'=>$exitCode==0?true:false,
-    	'cmd'=>$cmd,
-    	'output' => $stdout, 
-    	'error' => $stderr, 
-    	'exit_code' => $exitCode
-    );
+	if($log_call){
+		gitLog("Calling API function: {$function}", 'info');
+	}
+
+	$result = call_user_func($function, $params);
+
+	if(isset($result['success']) && !$result['success']){
+		if($log_call){
+			$error_msg = isset($result['error']) ? $result['error'] : 'Unknown error';
+			gitLog("API call failed: {$function} - {$error_msg}", 'error');
+		}
+	}
+
+	return $result;
 }
 
 /**
- * Executes a git command safely with proper escaping and error handling
- *
- * This is the core function for all git operations. It provides:
- * - Command whitelisting (only allowed commands can execute)
- * - Automatic argument escaping via escapeshellarg()
- * - Directory management (changes to repo dir and back)
- * - Error capture (stderr redirected to stdout)
- * - Optional logging for audit trail
- *
- * Security features:
- * - Only whitelisted commands allowed (status, add, rm, checkout, commit, push, pull, diff, log, config)
- * - All arguments are escaped with escapeshellarg()
- * - Commands execute within the git repository directory
- * - Invalid commands are logged and rejected
- *
- * Performance features:
- * - Static command whitelist (created once per request)
- * - Optional logging (disable for frequent read operations)
- * - Efficient output handling for both string and array modes
- *
- * @param string $command Git subcommand name (must be in whitelist)
- * @param array  $args    Arguments for the command (automatically escaped)
- * @param bool   $return_array Whether to return output as array of lines (default: false)
- * @param bool   $log_command  Whether to log this command execution (default: true)
- *
- * @return array Associative array with keys:
- *               - 'success' (bool): True if exit code was 0
- *               - 'output' (string|array): Command output (string or array based on $return_array)
- *               - 'error' (string): Error message (empty if success)
- *               - 'exit_code' (int): Command exit code
- *
- * @since 2.0
- *
- * @example
- * // Simple status check
- * $result = gitCmd('status', array('-s'));
- * if($result['success']){
- *     echo $result['output'];
- * }
- *
- * @example
- * // Add multiple files
- * $result = gitCmd('add', array('file1.php', 'file2.php'));
- *
- * @example
- * // Get log as array without logging
- * $result = gitCmd('log', array('--max-count=10'), true, false);
- * foreach($result['output'] as $line){
- *     echo $line;
- * }
- */
-function gitCommand($command, $args = array(), $return_array = false, $log_command = true){
-	// Immediate debug logging
-	$tpath = getWaSQLPath('php/admin');
-	$debug_file = "{$tpath}/git_debug.log";
-	file_put_contents($debug_file, date('Y-m-d H:i:s') . " - gitCommand called: {$command}\n", FILE_APPEND);
-
-	// Validate command is allowed
-	static $allowed_commands = array('status', 'add', 'rm', 'checkout', 'commit', 'push', 'pull', 'diff', 'log', 'config');
-	if(!in_array($command, $allowed_commands)){
-		if($log_command){
-			gitLog("Attempted to execute disallowed git command: {$command}", 'error');
-		}
-		return array(
-			'success' => false,
-			'output' => '',
-			'error' => 'Disallowed git command',
-			'exit_code' => -1
-		);
-	}
-
-	// Build command with escaped arguments
-	$cmd_parts = array('git');
-
-	// Add credential config if needed (BEFORE the command)
-	$needs_credentials = in_array($command, array('push', 'pull', 'fetch', 'clone'));
-	$has_credentials = isset($_SESSION['git_credentials']) && is_array($_SESSION['git_credentials']) && $_SESSION['git_credentials'] !== 'skip';
-
-	// Debug credential check
-	$cred_debug = "Command: {$command}, Needs creds: " . ($needs_credentials ? 'YES' : 'NO');
-	$cred_debug .= ", Has creds: " . ($has_credentials ? 'YES' : 'NO');
-	if(isset($_SESSION['git_credentials'])){
-		$cred_debug .= ", Creds type: " . gettype($_SESSION['git_credentials']);
-		if(is_array($_SESSION['git_credentials'])){
-			$cred_debug .= ", Username: " . (isset($_SESSION['git_credentials']['username']) ? 'SET' : 'NOT SET');
-		}
-	} else {
-		$cred_debug .= ", Creds: NOT SET IN SESSION";
-	}
-	gitLog($cred_debug, 'info');
-
-	// Store credential helper path for cleanup
-	$cred_helper_file = null;
-
-	if($needs_credentials && $has_credentials){
-		$username = $_SESSION['git_credentials']['username'];
-		$password = $_SESSION['git_credentials']['password'];
-
-		// Create a simple credential helper batch file
-		// GIT_ASKPASS will be called by git when it needs credentials
-		$cred_helper_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'git_askpass_' . uniqid() . '.bat';
-
-		// Batch file content: output username or password based on what git asks for
-		$bat_content = "@echo off\r\n";
-		$bat_content .= "echo %1 | findstr /C:\"Username\" >nul && echo {$username} && exit /b\r\n";
-		$bat_content .= "echo {$password}\r\n";
-
-		file_put_contents($cred_helper_file, $bat_content);
-
-		// Tell git to use our batch file for credentials via environment variable
-		putenv("GIT_ASKPASS={$cred_helper_file}");
-
-		gitLog("Created credential helper at: {$cred_helper_file}", 'info');
-	} else {
-		gitLog("Credentials NOT added to command", 'warning');
-	}
-
-	$cmd_parts[] = escapeshellarg($command);
-	foreach($args as $arg){
-		$cmd_parts[] = escapeshellarg($arg);
-	}
-	$cmd = implode(' ', $cmd_parts);
-
-	// Debug logging
-	if($log_command){
-		$safe_cmd = preg_replace('/password=[^\s;]+/', 'password=***', $cmd);
-		gitLog("Executing command: {$safe_cmd}", 'info');
-	}
-	// Save current directory
-	$original_dir = getcwd();
-
-	// Change to git directory
-	if(!chdir($_SESSION['git_path'])){
-		if($log_command){
-			gitLog("Failed to change to git directory: {$_SESSION['git_path']}", 'error');
-		}
-		return array(
-			'success' => false,
-			'output' => '',
-			'error' => 'Failed to access repository directory',
-			'exit_code' => -1
-		);
-	}
-
-	// Detect platform for cross-platform compatibility
-	$is_windows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
-
-	// Set environment to prevent interactive prompts (platform-specific)
-	$env_vars = array(
-		'GIT_TERMINAL_PROMPT' => '0',  // Disable git credential prompts
-		'GIT_EDITOR' => 'true',         // Prevent editor from opening (use 'true' command that exits immediately)
-		'EDITOR' => 'true',             // Fallback editor prevention
-		'VISUAL' => 'true'              // Fallback visual editor prevention
-	);
-
-	// Platform-specific SSH configuration
-	if(!$is_windows){
-		$env_vars['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes -o ConnectTimeout=10';
-		$env_vars['GIT_ASKPASS'] = 'echo';
-	} else {
-		// Windows-specific settings
-		$env_vars['GIT_ASKPASS'] = 'echo';
-		$env_vars['GIT_EDITOR'] = 'cmd /c exit 0';
-	}
-
-	foreach($env_vars as $key => $value){
-		putenv("{$key}={$value}");
-	}
-
-	// Platform-specific execution for reliability
-	$output = array();
-	$exit_code = -1;
-	$timeout = in_array($command, array('push', 'pull')) ? 120 : 60;
-
-	if($is_windows){
-		// Debug logging
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Windows execution path\n", FILE_APPEND);
-
-		// Windows: Use direct exec() which is simpler and more reliable under Apache
-		// Increase PHP timeout to handle long-running git operations
-		$old_timeout = ini_get('max_execution_time');
-		set_time_limit($timeout + 30);
-
-		$start_time = time();
-
-		// Build command with environment variables set inline
-		$git_path_escaped = str_replace('/', '\\', $_SESSION['git_path']);
-
-		// Set environment variables inline for Windows
-		$env_prefix = 'set GIT_TERMINAL_PROMPT=0 && set GIT_EDITOR=cmd /c exit 0 && set EDITOR=true';
-
-		// Add GIT_ASKPASS if we have a credential helper
-		if($cred_helper_file && file_exists($cred_helper_file)){
-			$env_prefix .= ' && set GIT_ASKPASS=' . $cred_helper_file;
-		} else {
-			$env_prefix .= ' && set GIT_ASKPASS=echo';
-		}
-
-		$env_prefix .= ' && ';
-		$full_cmd = $env_prefix . 'cd /d "' . $git_path_escaped . '" && ' . $cmd . ' 2>&1';
-
-		// Debug log the command
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - About to exec: {$full_cmd}\n", FILE_APPEND);
-
-		// Log the actual command being executed
-		if($log_command){
-			gitLog("Windows command: " . preg_replace('/password=[^\s]+/', 'password=***', $full_cmd), 'info');
-		}
-
-		// Execute and capture output - use file-based approach to avoid blocking
-		$output_lines = array();
-		$output_file = sys_get_temp_dir() . '\\git_output_' . uniqid() . '.txt';
-
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Using file-based execution\n", FILE_APPEND);
-
-		// Redirect output to file and execute detached using START command
-		// START /B runs without creating window, returns immediately
-		$file_cmd = 'start /B cmd /c "' . $full_cmd . ' > ' . $output_file . ' 2>&1"';
-
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Executing with START: {$file_cmd}\n", FILE_APPEND);
-
-		// Execute command - START should return immediately
-		exec($file_cmd, $dummy_output, $exit_code);
-
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - After exec, waiting for output file\n", FILE_APPEND);
-
-		// Wait for output file to appear and have content
-		$wait_count = 0;
-		while($wait_count < ($timeout * 10) && (!file_exists($output_file) || filesize($output_file) == 0)){
-			usleep(100000); // 100ms
-			$wait_count++;
-		}
-
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Output file check complete, waited {$wait_count} iterations\n", FILE_APPEND);
-
-		// Read output from file
-		if(file_exists($output_file)){
-			$output_str = file_get_contents($output_file);
-			$output_lines = explode("\n", trim($output_str));
-			@unlink($output_file);
-
-			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Read " . count($output_lines) . " lines from output file\n", FILE_APPEND);
-		} else {
-			$output_lines = array('No output file generated');
-			$exit_code = -1;
-			file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Output file never appeared!\n", FILE_APPEND);
-		}
-
-		// Check if we exceeded timeout (approximate)
-		if((time() - $start_time) >= $timeout){
-			$output_lines[] = "Operation may have timed out";
-			$exit_code = 124;
-		}
-
-		$output = array_filter($output_lines, function($line){ return !empty(trim($line)); });
-
-		// Restore PHP timeout
-		set_time_limit($old_timeout);
-
-		file_put_contents($debug_file, date('Y-m-d H:i:s') . " - Completed, output lines: " . count($output) . "\n", FILE_APPEND);
-
-		// Cleanup credential helper file on Windows
-		if($cred_helper_file && file_exists($cred_helper_file)){
-			@unlink($cred_helper_file);
-			gitLog("Cleaned up credential helper", 'info');
-		}
-	} else {
-		// Unix/Linux: Use proc_open with stream_select (original reliable method)
-		$descriptors = array(
-			0 => array('pipe', 'r'),  // stdin
-			1 => array('pipe', 'w'),  // stdout
-			2 => array('pipe', 'w')   // stderr
-		);
-
-		$process = proc_open($cmd, $descriptors, $pipes);
-
-		if(is_resource($process)){
-			fclose($pipes[0]);
-
-			$start_time = time();
-			stream_set_blocking($pipes[1], false);
-			stream_set_blocking($pipes[2], false);
-
-			$stdout = '';
-			$stderr = '';
-
-			while(time() - $start_time < $timeout){
-				$read = array($pipes[1], $pipes[2]);
-				$write = null;
-				$except = null;
-
-				if(stream_select($read, $write, $except, 1) > 0){
-					foreach($read as $stream){
-						$data = fread($stream, 8192);
-						if($stream === $pipes[1]){
-							$stdout .= $data;
-						} else {
-							$stderr .= $data;
-						}
-					}
-				}
-
-				$status = proc_get_status($process);
-				if(!$status['running']){
-					$stdout .= stream_get_contents($pipes[1]);
-					$stderr .= stream_get_contents($pipes[2]);
-					$exit_code = $status['exitcode'];
-					break;
-				}
-			}
-
-			if(time() - $start_time >= $timeout){
-				proc_terminate($process, 9);
-				$stderr .= "\nOperation timed out after {$timeout} seconds";
-				$exit_code = 124;
-			}
-
-			fclose($pipes[1]);
-			fclose($pipes[2]);
-			proc_close($process);
-
-			$combined_output = trim($stdout . "\n" . $stderr);
-			$output = preg_split('/[\r\n]+/', $combined_output);
-			$output = array_filter($output, function($line){ return !empty(trim($line)); });
-		} else {
-			$output = array('Failed to execute command');
-			$exit_code = -1;
-		}
-	}
-
-	// Restore original directory
-	chdir($original_dir);
-
-	// Cleanup credential helper file on Unix/Linux
-	if(!$is_windows && $cred_helper_file && file_exists($cred_helper_file)){
-		@unlink($cred_helper_file);
-		gitLog("Cleaned up credential helper", 'info');
-	}
-
-	$success = ($exit_code === 0);
-
-	// Special handling for timeout
-	$timed_out = ($exit_code === 124);
-
-	// Log the command execution (optional)
-	if($log_command){
-		$log_msg = "Git command: {$cmd} | Exit code: {$exit_code}";
-		if($timed_out){
-			$log_msg .= " | TIMEOUT";
-		}
-		gitLog($log_msg, $success ? 'info' : 'error');
-	}
-
-	// Convert output array to string
-	$output_str = implode("\n", $output);
-
-	if($return_array){
-		return array(
-			'success' => $success,
-			'output' => $output,
-			'error' => $success ? '' : $output_str,
-			'exit_code' => $exit_code,
-			'timed_out' => $timed_out
-		);
-	}
-
-	return array(
-		'success' => $success,
-		'output' => $output_str,
-		'error' => $success ? '' : $output_str,
-		'exit_code' => $exit_code,
-		'timed_out' => $timed_out
-	);
-}
-
-/****
  * Logs git operations for audit trail and security monitoring
  *
- * Creates audit log entries in the _gitlog database table (if it exists) and
- * also logs critical errors to the PHP error log. Provides a complete audit
- * trail of all git operations for security and compliance.
- *
- * Log levels:
- * - 'info': Normal operations (commits, adds, status checks)
- * - 'warning': Security warnings (invalid paths, unauthorized access attempts)
- * - 'error': Operation failures (command errors, permission issues)
- *
- * Performance optimization:
- * - Caches table existence check in static variable (checked once per request)
- * - Only queries database if _gitlog table exists
- *
- * Database log includes:
- * - Username (from global $USER or 'unknown')
- * - Message describing the operation
- * - Log level (info/warning/error)
- * - IP address of user
- * - Timestamp of operation
+ * Creates audit log entries and logs critical errors to PHP error log.
  *
  * @global array $USER Current user information array
  *
@@ -818,12 +326,7 @@ function gitCommand($command, $args = array(), $return_array = false, $log_comma
  *
  * @return void
  *
- * @since 2.0
- *
- * @example
- * gitLog("File committed: config.php | Message: Update settings", 'info');
- * gitLog("Invalid file path detected: ../../etc/passwd", 'warning');
- * gitLog("Git pull failed: Permission denied", 'error');
+ * @since 3.0
  */
 function gitLog($message, $level = 'info'){
 	global $USER;
@@ -842,42 +345,24 @@ function gitLog($message, $level = 'info'){
 		'ip_address' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'CLI'
 	);
 	$log_entry_json = encodeJSON($log_entry);
-	//echo $logfile.$log_entry_json;exit;
 	appendFileContents($logfile, $log_entry_json . PHP_EOL);
 
 	// Also log to PHP error log for critical errors
 	if($level === 'error'){
-		error_log("WaSQL Git [{$username}]: {$message}");
+		error_log("WaSQL Git API [{$username}]: {$message}");
 	}
 }
 
 /**
- * Validates commit message meets minimum requirements for quality and safety
+ * Validates commit message meets minimum requirements
  *
- * Enforces commit message standards to ensure meaningful commit history:
- * - Minimum length: 3 characters (prevents empty or too-short messages)
- * - Maximum length: 500 characters (prevents extremely long messages)
- *
- * The message is trimmed before validation, so leading/trailing whitespace
- * doesn't count toward the length requirements.
- *
- * Validation rules:
- * - Too short (< 3 chars): "fix", "wip", ".", etc. are rejected
- * - Too long (> 500 chars): Essays or overly verbose messages are rejected
- * - Empty/whitespace only: Rejected after trimming
+ * Enforces commit message standards to ensure meaningful commit history.
  *
  * @param string $message Commit message to validate
  *
  * @return bool True if message meets requirements, false otherwise
  *
- * @since 2.0
- *
- * @example
- * gitValidateCommitMessage("Update config")          // Returns true (valid)
- * gitValidateCommitMessage("fix")                    // Returns false (too short)
- * gitValidateCommitMessage("")                       // Returns false (empty)
- * gitValidateCommitMessage("   ")                    // Returns false (whitespace only)
- * gitValidateCommitMessage(str_repeat("a", 501))     // Returns false (too long)
+ * @since 3.0
  */
 function gitValidateCommitMessage($message){
 	$message = trim($message);
@@ -894,4 +379,184 @@ function gitValidateCommitMessage($message){
 
 	return true;
 }
+
+/**
+ * Get file content from local file system
+ *
+ * Reads a file from the local git directory with security checks.
+ *
+ * @param string $filePath Relative file path
+ *
+ * @return array Result with 'success', 'content', 'error' keys
+ *
+ * @since 3.0
+ */
+function gitGetLocalFile($filePath){
+	global $git;
+
+	if(!gitValidateFilePath($filePath)){
+		return array(
+			'success' => false,
+			'error' => 'Invalid file path',
+			'content' => null
+		);
+	}
+
+	$local_path = realpath($_SESSION['git_path']);
+	$afile = $local_path . DIRECTORY_SEPARATOR . $filePath;
+	$afile_real = realpath($afile);
+
+	// Security check
+	if($afile_real === false || strpos($afile_real, $local_path) !== 0){
+		return array(
+			'success' => false,
+			'error' => 'File path security violation',
+			'content' => null
+		);
+	}
+
+	if(!file_exists($afile_real)){
+		return array(
+			'success' => false,
+			'error' => 'File not found',
+			'content' => null
+		);
+	}
+
+	$content = file_get_contents($afile_real);
+	if($content === false){
+		return array(
+			'success' => false,
+			'error' => 'Failed to read file',
+			'content' => null
+		);
+	}
+
+	return array(
+		'success' => true,
+		'content' => $content,
+		'error' => null
+	);
+}
+
+/**
+ * Get file SHA from remote repository
+ *
+ * Required for GitHub API file updates. Retrieves the current file's SHA from remote.
+ *
+ * @param string $filePath Relative file path
+ * @param array $params Optional API parameters
+ *
+ * @return string|null File SHA or null if not found
+ *
+ * @since 3.0
+ */
+function gitGetRemoteFileSha($filePath, $params = array()){
+	$result = gitapiGetFile($filePath, $params);
+
+	if($result['success'] && isset($result['data']['sha'])){
+		return $result['data']['sha'];
+	}
+
+	return null;
+}
+
+/**
+ * Smart diff algorithm using Longest Common Subsequence (LCS)
+ *
+ * This function implements a proper diff algorithm that intelligently detects
+ * which lines were added, deleted, or remain unchanged. Unlike simple line-by-line
+ * comparison, this algorithm understands when lines have been moved or reordered.
+ *
+ * The algorithm works by:
+ * 1. Finding the longest common subsequence of lines between old and new files
+ * 2. Using the LCS to identify which lines are unchanged (in common)
+ * 3. Marking lines not in the LCS as added or deleted
+ *
+ * This produces a more readable diff that groups related changes together
+ * and doesn't show spurious additions/deletions when lines are merely reordered.
+ *
+ * @param array $old_lines Array of lines from old version
+ * @param array $new_lines Array of lines from new version
+ *
+ * @return array Array of diff items, each with:
+ *   - type: 'same', 'delete', or 'insert'
+ *   - line: The line content
+ *   - old_num: Line number in old file (for same/delete)
+ *   - new_num: Line number in new file (for same/insert)
+ *
+ * @example
+ * $diff = gitSmartDiff($remote_lines, $local_lines);
+ * foreach($diff as $item){
+ *     if($item['type'] == 'delete'){
+ *         echo "- " . $item['line'];
+ *     } elseif($item['type'] == 'insert'){
+ *         echo "+ " . $item['line'];
+ *     } else {
+ *         echo "  " . $item['line'];
+ *     }
+ * }
+ *
+ * @since 3.0
+ */
+function gitSmartDiff($old_lines, $new_lines){
+	$old_count = count($old_lines);
+	$new_count = count($new_lines);
+
+	// Compute LCS lengths using dynamic programming
+	$lcs = array();
+	for($i = 0; $i <= $old_count; $i++){
+		$lcs[$i] = array_fill(0, $new_count + 1, 0);
+	}
+
+	for($i = 1; $i <= $old_count; $i++){
+		for($j = 1; $j <= $new_count; $j++){
+			if($old_lines[$i - 1] === $new_lines[$j - 1]){
+				$lcs[$i][$j] = $lcs[$i - 1][$j - 1] + 1;
+			} else {
+				$lcs[$i][$j] = max($lcs[$i - 1][$j], $lcs[$i][$j - 1]);
+			}
+		}
+	}
+
+	// Backtrack to build the diff
+	$diff = array();
+	$i = $old_count;
+	$j = $new_count;
+
+	while($i > 0 || $j > 0){
+		if($i > 0 && $j > 0 && $old_lines[$i - 1] === $new_lines[$j - 1]){
+			// Lines are the same
+			array_unshift($diff, array(
+				'type' => 'same',
+				'line' => $old_lines[$i - 1],
+				'old_num' => $i,
+				'new_num' => $j
+			));
+			$i--;
+			$j--;
+		} elseif($j > 0 && ($i == 0 || $lcs[$i][$j - 1] >= $lcs[$i - 1][$j])){
+			// Line was inserted in new version
+			array_unshift($diff, array(
+				'type' => 'insert',
+				'line' => $new_lines[$j - 1],
+				'old_num' => null,
+				'new_num' => $j
+			));
+			$j--;
+		} elseif($i > 0 && ($j == 0 || $lcs[$i][$j - 1] < $lcs[$i - 1][$j])){
+			// Line was deleted from old version
+			array_unshift($diff, array(
+				'type' => 'delete',
+				'line' => $old_lines[$i - 1],
+				'old_num' => $i,
+				'new_num' => null
+			));
+			$i--;
+		}
+	}
+
+	return $diff;
+}
+
 ?>
