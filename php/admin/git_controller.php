@@ -35,7 +35,6 @@
  * @global array $USER Current user information
  * @global array $git  Git operation data and results
  * @global array $CONFIG Configuration including API settings
- * @global array $_SESSION Session data including git_path
  * @global array $_REQUEST Request parameters (func, files, msg_*, etc.)
  *
  * Response Variables Set:
@@ -74,26 +73,50 @@ if(!isAdmin()){
 	return;
 }
 
-// Initialize git path
-if(!isset($_SESSION['git_path']) || !strlen($_SESSION['git_path'])){
-	$_SESSION['git_path'] = getWasqlPath();
+// Initialize git repository settings from $GITREPO
+global $GITREPO;
+global $current_repo;
+// Check if GITREPO is configured
+if(!isset($GITREPO) || !is_array($GITREPO) || count($GITREPO) == 0){
+	setView('no_repos_configured', 1);
+	return;
 }
-
-if(!isset($_SESSION['git_path']) || !strlen($_SESSION['git_path'])){
-	$p = gitGetPath();
-	switch(strtolower($p)){
-		case 'not_enabled':
-		case 'invalid_path':
-			setView($p, 1);
-			return;
-		break;
-		default:
-			$_SESSION['git_path'] = $p;
+//set current repo
+if(isset($_REQUEST['current_repo']) && isset($GITREPO[$_REQUEST['current_repo']])){
+	$GITREPO[$_REQUEST['current_repo']]['class']='active';
+	$current_repo=$GITREPO[$_REQUEST['current_repo']];
+}
+else{
+	foreach($GITREPO as $i=>$current_repo){
+		$GITREPO[$i]['class']=$current_repo['class']='active';
 		break;
 	}
 }
+global $CONFIG;
+// Set git path from current repo
+if(isset($current_repo['path']) && is_dir($current_repo['path'])){
+	$CONFIG['gitapi_path'] = realpath($current_repo['path']);
+} else {
+	setView('invalid_repo_path', 1);
+	return;
+}
+//ksort($CONFIG);
+//ksort($current_repo);
+//echo printValue($current_repo).printValue($CONFIG);exit;
+// Set API configuration from current repo
+$CONFIG['gitapi_name'] = isset($current_repo['name']) ? $current_repo['name'] : 'WaSQL';
+$CONFIG['gitapi_path'] = isset($current_repo['path']) ? $current_repo['path'] : 'd:/wasql';
+$CONFIG['gitapi_provider'] = isset($current_repo['provider']) ? $current_repo['provider'] : 'github';
+$CONFIG['gitapi_token'] = isset($current_repo['token']) ? $current_repo['token'] : '';
+$CONFIG['gitapi_owner'] = isset($current_repo['owner']) ? $current_repo['owner'] : '';
+$CONFIG['gitapi_repo'] = isset($current_repo['repo']) ? $current_repo['repo'] : '';
+$CONFIG['gitapi_branch'] = isset($current_repo['branch']) ? $current_repo['branch'] : 'master';
+$CONFIG['gitapi_ssl_verify'] = isset($current_repo['ssl_verify']) ? $current_repo['ssl_verify'] : 'false';
+if(isset($current_repo['baseurl'])){
+	$CONFIG['gitapi_baseurl'] = $current_repo['baseurl'];
+}
 
-global $git, $CONFIG;
+global $git;
 $git = array(
 	'details' => array(),
 	'files' => array(),
@@ -163,11 +186,11 @@ switch($func){
 
 			// Mark files for upload (store in session)
 			if(count($files_to_add) > 0){
-				if(!isset($_SESSION['git_staged_files'])){
-					$_SESSION['git_staged_files'] = array();
+				if(!isset($CONFIG['git_staged_files'])){
+					$CONFIG['git_staged_files'] = array();
 				}
 				foreach($files_to_add as $file){
-					$_SESSION['git_staged_files'][$file] = true;
+					$CONFIG['git_staged_files'][$file] = true;
 					$recs[] = "Staged for upload: {$file}";
 				}
 				$git['success'] = count($files_to_add) . ' file(s) staged for upload';
@@ -199,7 +222,7 @@ switch($func){
 
 		$push_count = 0;
 		$commit_errors = array();
-		$git_realpath = realpath($_SESSION['git_path']);
+		$git_realpath = realpath($CONFIG['gitapi_path']);
 
 		foreach($_REQUEST['files'] as $bfile){
 			$file = base64_decode($bfile);
@@ -275,6 +298,19 @@ switch($func){
 		if($push_count > 0){
 			$git['success'] = "Uploaded {$push_count} file(s) to remote repository";
 			gitLog("Uploaded {$push_count} files via API", 'info');
+
+			// Sync local repository with remote after successful push
+			$recs[] = "--- Syncing local repository with remote ---";
+			$pull_result = gitapiPull(array());
+			if($pull_result['success']){
+				$recs[] = "Local repository synced successfully";
+				gitLog("Local repository synced after API push", 'info');
+			} else {
+				$error_msg = isset($pull_result['error']) ? $pull_result['error'] : 'Unknown error';
+				$recs[] = "Warning: Could not sync local repository: {$error_msg}";
+				$recs[] = "You may need to run 'git pull' manually from command line";
+				gitLog("Failed to sync local repository after API push: " . $error_msg, 'warning');
+			}
 		} else {
 			$git['error'] = 'No files were uploaded';
 		}
@@ -284,7 +320,7 @@ switch($func){
 		}
 
 		// Clear staged files
-		unset($_SESSION['git_staged_files']);
+		unset($CONFIG['git_staged_files']);
 
 		setView('git_details', 1);
 		return;
@@ -304,15 +340,18 @@ switch($func){
 	break;
 
 	case 'config':
-		// Display API configuration
-		global $CONFIG;
+		// Display API configuration for current repository
 		$config_lines = array();
-		$config_lines[] = "API Provider: " . (isset($CONFIG['gitapi_provider']) ? $CONFIG['gitapi_provider'] : 'Not set');
+		$config_lines[] = "Current Repository: " . $current_repo['name'];
+		$config_lines[] = "Local Path: " . $current_repo['path'];
+		$config_lines[] = "";
+		$config_lines[] = "API Provider: " . $CONFIG['gitapi_provider'];
 		$config_lines[] = "API Base URL: " . (isset($CONFIG['gitapi_baseurl']) ? $CONFIG['gitapi_baseurl'] : 'Using default');
-		$config_lines[] = "Repository Owner: " . (isset($CONFIG['gitapi_owner']) ? $CONFIG['gitapi_owner'] : 'Not set');
-		$config_lines[] = "Repository Name: " . (isset($CONFIG['gitapi_repo']) ? $CONFIG['gitapi_repo'] : 'Not set');
-		$config_lines[] = "Default Branch: " . (isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'main');
-		$config_lines[] = "API Token: " . (isset($CONFIG['gitapi_token']) && strlen($CONFIG['gitapi_token']) > 0 ? 'Set (****)' : 'Not set');
+		$config_lines[] = "Repository Owner: " . $CONFIG['gitapi_owner'];
+		$config_lines[] = "Repository Name: " . $CONFIG['gitapi_repo'];
+		$config_lines[] = "Branch: " . $CONFIG['gitapi_branch'];
+		$config_lines[] = "SSL Verify: " . $CONFIG['gitapi_ssl_verify'];
+		$config_lines[] = "API Token: " . (strlen($CONFIG['gitapi_token']) > 0 ? 'Set (****)' : 'Not set');
 
 		$git['config'] = implode("\n", $config_lines);
 		setView('git_config', 1);
@@ -480,6 +519,175 @@ switch($func){
 		}
 
 		setView('git_log', 1);
+		return;
+	break;
+
+	case 'add_to_gitignore':
+		// Add file/folder to .gitignore
+		if(!isset($_REQUEST['file'])){
+			$git['error'] = 'No file specified';
+			$recs = array('No file specified');
+			setView('git_details', 1);
+			return;
+		}
+
+		$file = base64_decode($_REQUEST['file']);
+
+		// Validate file path
+		if(!gitValidateFilePath($file)){
+			$git['error'] = 'Invalid file path';
+			$recs = array("Invalid file path: {$file}");
+			gitLog("Invalid file path in gitignore operation: {$file}", 'warning');
+			setView('git_details', 1);
+			return;
+		}
+
+		$git_realpath = realpath($CONFIG['gitapi_path']);
+		if($git_realpath === false){
+			$git['error'] = "Invalid gitapi_path: {$CONFIG['gitapi_path']}";
+			$recs = array('Invalid gitapi_path');
+			setView('git_details', 1);
+			return;
+		}
+
+		$afile = $git_realpath . DIRECTORY_SEPARATOR . $file;
+		$afile_real = realpath($afile);
+
+		// Security check - ensure file is within git path (or doesn't exist yet)
+		if($afile_real === false){
+			// File doesn't exist yet, use constructed path for SHA
+			$file_sha = sha1($afile);
+		} else {
+			// File exists, use realpath for SHA (matches gitFileInfo)
+			$file_sha = sha1($afile_real);
+
+			if(strpos($afile_real, $git_realpath) !== 0){
+				$git['error'] = 'File path security violation';
+				$recs = array("Security violation: File must be within git repository");
+				gitLog("Security violation in gitignore operation: {$file}", 'warning');
+				setView('git_details', 1);
+				return;
+			}
+		}
+
+		// Get .gitignore path
+		$gitignore_path = $git_realpath . DIRECTORY_SEPARATOR . '.gitignore';
+
+		// Read current .gitignore content
+		$gitignore_content = '';
+		if(file_exists($gitignore_path)){
+			$gitignore_content = file_get_contents($gitignore_path);
+		}
+
+		// Convert to Unix line endings for consistent processing
+		$gitignore_content = str_replace("\r\n", "\n", $gitignore_content);
+		$lines = explode("\n", $gitignore_content);
+
+		// Check if entry already exists
+		$entry_exists = false;
+		foreach($lines as $line){
+			$line = trim($line);
+			if($line === $file || $line === '/' . $file){
+				$entry_exists = true;
+				break;
+			}
+		}
+
+		if($entry_exists){
+			$recs = array("Already in .gitignore: {$file}");
+			$git['warning'] = 'Entry already exists in .gitignore';
+			$git['deleted_sha'] = $file_sha;
+		} else {
+			// Add entry to .gitignore
+			$new_entry = $file;
+
+			// Ensure file ends with newline before appending
+			if(!empty($gitignore_content) && substr($gitignore_content, -1) !== "\n"){
+				$new_entry = "\n" . $new_entry;
+			}
+			$new_entry .= "\n";
+
+			// Append to .gitignore
+			if(file_put_contents($gitignore_path, $gitignore_content . $new_entry)){
+				$recs = array("Added to .gitignore: {$file}");
+				$git['success'] = 'Added to .gitignore successfully';
+				$git['deleted_sha'] = $file_sha;
+				gitLog("Added to .gitignore: {$file}", 'info');
+			} else {
+				$recs = array("Failed to update .gitignore: {$file}");
+				$git['error'] = 'Failed to update .gitignore';
+				gitLog("Failed to update .gitignore: {$file}", 'error');
+			}
+		}
+
+		setView('git_details', 1);
+		return;
+	break;
+
+	case 'delete_file':
+		// Delete local file (for new/untracked files)
+		if(!isset($_REQUEST['file'])){
+			$git['error'] = 'No file specified';
+			$recs = array('No file specified');
+			setView('git_details', 1);
+			return;
+		}
+
+		$file = base64_decode($_REQUEST['file']);
+
+		// Validate file path
+		if(!gitValidateFilePath($file)){
+			$git['error'] = 'Invalid file path';
+			$recs = array("Invalid file path: {$file}");
+			gitLog("Invalid file path in delete operation: {$file}", 'warning');
+			setView('git_details', 1);
+			return;
+		}
+
+		$git_realpath = realpath($CONFIG['gitapi_path']);
+		if($git_realpath === false){
+			$git['error'] = 'Invalid gitapi_path: '.$CONFIG['gitapi_path'];
+			$recs = array('Invalid gitapi_path');
+			setView('git_details', 1);
+			return;
+		}
+
+		$afile = $git_realpath . DIRECTORY_SEPARATOR . $file;
+		$afile_real = realpath($afile);
+
+		// Security check - ensure file is within git path
+		if($afile_real === false || strpos($afile_real, $git_realpath) !== 0){
+			$git['error'] = 'File path security violation';
+			$recs = array("Security violation: File must be within git repository");
+			gitLog("Security violation in delete operation: {$file}", 'warning');
+			setView('git_details', 1);
+			return;
+		}
+
+		// Check if file exists
+		if(!file_exists($afile_real)){
+			$git['error'] = 'File not found';
+			$recs = array("File not found: {$file}");
+			setView('git_details', 1);
+			return;
+		}
+
+		// Calculate sha for identifying the row
+		$file_sha = sha1($afile_real);
+
+		// Delete the file
+		if(unlink($afile_real)){
+			$recs = array("Successfully deleted: {$file}");
+			$git['success'] = 'File deleted successfully';
+			$git['deleted_sha'] = $file_sha;
+			gitLog("Deleted local file: {$file}", 'info');
+		} else {
+			$recs = array("Failed to delete: {$file}");
+			$git['error'] = 'Failed to delete file';
+			gitLog("Failed to delete local file: {$file}", 'error');
+		}
+
+		setView('git_details', 1);
 		return;
 	break;
 
