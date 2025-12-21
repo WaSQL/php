@@ -8,7 +8,7 @@
 		</view:gitrepo>
 		<?=renderEach('gitrepo',$GITREPO,'repo');?>
 	</ul>
-	<div class="w_bold w_biggest w_pad"><?=$current_repo['path'];?></div>
+	<div class="w_bold w_biggest w_pad"><?=isset($current_repo['path'])?$current_repo['path']:$current_repo['gitapi_path'];?></div>
 	<?=renderViewIf(isset($git['error']),'error_message',$git);?>
 	<?=renderViewIf(isset($git['success']),'success_message',$git);?>
 	<?=renderViewIf(isset($git['warning']),'warning_message',$git);?>
@@ -169,8 +169,8 @@
 		<div class="alert alert-warning w_top20">
 			<h3><span class="icon-warning"></span> No Git Repositories Configured</h3>
 			<p>No git repositories are configured in config.xml.</p>
-			<p>To configure git repositories, add <code>&lt;git&gt;</code> tags to your config.xml file:</p>
-			<pre>&lt;git
+			<p>To configure git repositories, add <code>&lt;gitrepo&gt;</code> tags to your config.xml file:</p>
+			<pre>&lt;gitrepo
     name="MyRepo"
     path="d:/path/to/repo"
     provider="github"
@@ -179,7 +179,8 @@
     repo="repository"
     branch="master"
 /&gt;</pre>
-			<p>You can add multiple <code>&lt;git&gt;</code> tags to manage multiple repositories.</p>
+			<p><small>Note: Attributes can use either format: <code>token</code> or <code>gitapi_token</code>, <code>owner</code> or <code>gitapi_owner</code>, etc.</small></p>
+			<p>You can add multiple <code>&lt;gitrepo&gt;</code> tags to manage multiple repositories.</p>
 		</div>
 	</div>
 </view:no_repos_configured>
@@ -188,8 +189,9 @@
 	<div class="container-fluid">
 		<div class="alert alert-danger w_top20">
 			<h3><span class="icon-warning"></span> Invalid Repository Path</h3>
-			<p>The path specified for repository <strong><?=$CONFIG['path'];?></strong> is invalid or does not exist.</p>
-			<p>Check your config.xml and ensure the gitrepo<code>path</code> attribute points to a valid directory.</p>
+			<p>The path specified for repository <strong><?=$current_repo['name'];?></strong> is invalid or does not exist.</p>
+			<p>Path: <code><?=isset($current_repo['path'])?$current_repo['path']:$current_repo['gitapi_path'];?></code></p>
+			<p>Check your config.xml and ensure the <code>&lt;gitrepo&gt;</code> tag's <code>path</code> attribute points to a valid directory.</p>
 		</div>
 	</div>
 </view:invalid_repo_path>
