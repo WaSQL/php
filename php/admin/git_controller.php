@@ -74,7 +74,59 @@ if(!isAdmin()){
 }
 
 // Initialize git repository settings from $GITREPO
+// Read gitrepo tags from config.xml and populate $GITREPO global
 global $GITREPO;
+if(!isset($GITREPO) || !is_array($GITREPO)){
+	$GITREPO = array();
+	// Read config.xml to get gitrepo configurations
+	$progpath = dirname(__FILE__);
+	$config_file = '';
+	if(is_file("{$progpath}/../config.xml")){
+		$config_file = "{$progpath}/../config.xml";
+	}
+	elseif(is_file("{$progpath}/../../config.xml")){
+		$config_file = "{$progpath}/../../config.xml";
+	}
+
+	if(strlen($config_file) && is_file($config_file)){
+		$xml = readXML($config_file);
+		$json = json_encode($xml);
+		$xml = json_decode($json, true);
+
+		// Check for gitrepo tags
+		if(isset($xml['gitrepo'])){
+			// Check if single gitrepo tag
+			if(isset($xml['gitrepo']['@attributes'])){
+				$xml['gitrepo'] = array($xml['gitrepo']);
+			}
+
+			// Process each gitrepo tag
+			foreach($xml['gitrepo'] as $gitrepo){
+				if(!isset($gitrepo['@attributes']['name'])){
+					// If no name, generate one from path
+					if(isset($gitrepo['@attributes']['path'])){
+						$name = basename($gitrepo['@attributes']['path']);
+					}
+					elseif(isset($gitrepo['@attributes']['gitapi_path'])){
+						$name = basename($gitrepo['@attributes']['gitapi_path']);
+					}
+					else{
+						continue;
+					}
+				}
+				else{
+					$name = $gitrepo['@attributes']['name'];
+				}
+				$name = strtolower($name);
+				$GITREPO[$name] = array();
+				foreach($gitrepo['@attributes'] as $k => $v){
+					$GITREPO[$name][$k] = $v;
+				}
+			}
+		}
+	}
+}
+
 global $current_repo;
 // Check if GITREPO is configured
 if(!isset($GITREPO) || !is_array($GITREPO) || count($GITREPO) == 0){
@@ -93,9 +145,17 @@ else{
 	}
 }
 global $CONFIG;
-// Set git path from current repo
+// Set git path from current repo (support both 'path' and 'gitapi_path' attributes)
+$repo_path = null;
 if(isset($current_repo['path']) && is_dir($current_repo['path'])){
-	$CONFIG['gitapi_path'] = realpath($current_repo['path']);
+	$repo_path = $current_repo['path'];
+}
+elseif(isset($current_repo['gitapi_path']) && is_dir($current_repo['gitapi_path'])){
+	$repo_path = $current_repo['gitapi_path'];
+}
+
+if($repo_path && is_dir($repo_path)){
+	$CONFIG['gitapi_path'] = realpath($repo_path);
 } else {
 	setView('invalid_repo_path', 1);
 	return;
@@ -103,16 +163,38 @@ if(isset($current_repo['path']) && is_dir($current_repo['path'])){
 //ksort($CONFIG);
 //ksort($current_repo);
 //echo printValue($current_repo).printValue($CONFIG);exit;
-// Set API configuration from current repo
+// Set API configuration from current repo - support both with and without gitapi_ prefix
 $CONFIG['gitapi_name'] = isset($current_repo['name']) ? $current_repo['name'] : 'WaSQL';
-$CONFIG['gitapi_path'] = isset($current_repo['path']) ? $current_repo['path'] : 'd:/wasql';
-$CONFIG['gitapi_provider'] = isset($current_repo['provider']) ? $current_repo['provider'] : 'github';
-$CONFIG['gitapi_token'] = isset($current_repo['token']) ? $current_repo['token'] : '';
-$CONFIG['gitapi_owner'] = isset($current_repo['owner']) ? $current_repo['owner'] : '';
-$CONFIG['gitapi_repo'] = isset($current_repo['repo']) ? $current_repo['repo'] : '';
-$CONFIG['gitapi_branch'] = isset($current_repo['branch']) ? $current_repo['branch'] : 'master';
-$CONFIG['gitapi_ssl_verify'] = isset($current_repo['ssl_verify']) ? $current_repo['ssl_verify'] : 'false';
-if(isset($current_repo['baseurl'])){
+
+// Provider: check gitapi_provider first, then provider
+$CONFIG['gitapi_provider'] = isset($current_repo['gitapi_provider']) ? $current_repo['gitapi_provider'] :
+                              (isset($current_repo['provider']) ? $current_repo['provider'] : 'github');
+
+// Token: check gitapi_token first, then token
+$CONFIG['gitapi_token'] = isset($current_repo['gitapi_token']) ? $current_repo['gitapi_token'] :
+                          (isset($current_repo['token']) ? $current_repo['token'] : '');
+
+// Owner: check gitapi_owner first, then owner
+$CONFIG['gitapi_owner'] = isset($current_repo['gitapi_owner']) ? $current_repo['gitapi_owner'] :
+                          (isset($current_repo['owner']) ? $current_repo['owner'] : '');
+
+// Repo: check gitapi_repo first, then repo
+$CONFIG['gitapi_repo'] = isset($current_repo['gitapi_repo']) ? $current_repo['gitapi_repo'] :
+                         (isset($current_repo['repo']) ? $current_repo['repo'] : '');
+
+// Branch: check gitapi_branch first, then branch
+$CONFIG['gitapi_branch'] = isset($current_repo['gitapi_branch']) ? $current_repo['gitapi_branch'] :
+                           (isset($current_repo['branch']) ? $current_repo['branch'] : 'master');
+
+// SSL Verify: check gitapi_ssl_verify first, then ssl_verify
+$CONFIG['gitapi_ssl_verify'] = isset($current_repo['gitapi_ssl_verify']) ? $current_repo['gitapi_ssl_verify'] :
+                                (isset($current_repo['ssl_verify']) ? $current_repo['ssl_verify'] : 'false');
+
+// Base URL: check gitapi_baseurl first, then baseurl
+if(isset($current_repo['gitapi_baseurl'])){
+	$CONFIG['gitapi_baseurl'] = $current_repo['gitapi_baseurl'];
+}
+elseif(isset($current_repo['baseurl'])){
 	$CONFIG['gitapi_baseurl'] = $current_repo['baseurl'];
 }
 
@@ -135,32 +217,27 @@ gitLog("Git API action initiated: {$func}", 'info');
 
 switch($func){
 	case 'pull':
-		// Fetch latest commits from remote repository
+		// Pull latest changes from remote repository using git command
 		$result = gitapiPull(array());
 		if($result['success']){
-			$recs = array('Pull completed successfully - Latest commits fetched');
-			if(isset($result['data']) && is_array($result['data'])){
-				$commit_count = count($result['data']);
-				$recs[] = "Found {$commit_count} recent commit(s)";
-				// Show first 5 commits
-				$show_count = min(5, $commit_count);
-				for($i = 0; $i < $show_count; $i++){
-					$commit = $result['data'][$i];
-					if(isset($commit['sha']) && isset($commit['commit']['message'])){
-						$short_sha = substr($commit['sha'], 0, 7);
-						$message = $commit['commit']['message'];
-						$recs[] = "{$short_sha}: {$message}";
+			$recs = array('Pull completed successfully');
+			if(isset($result['output']) && strlen($result['output'])){
+				// Show git pull output
+				$output_lines = explode("\n", $result['output']);
+				foreach($output_lines as $line){
+					if(strlen(trim($line)) > 0){
+						$recs[] = $line;
 					}
 				}
 			}
 			$git['success'] = 'Pull completed successfully';
-			gitLog("Git API pull completed successfully", 'info');
+			gitLog("Git pull completed successfully", 'info');
 		} else {
 			$error_msg = isset($result['error']) ? $result['error'] : 'Unknown error';
 			$recs = array("Pull failed: {$error_msg}");
 			$git['error'] = 'Pull failed';
 			$git['warning'] = $error_msg;
-			gitLog("Git API pull failed: " . $error_msg, 'error');
+			gitLog("Git pull failed: " . $error_msg, 'error');
 		}
 		setView('git_details', 1);
 		return;
@@ -219,6 +296,27 @@ switch($func){
 			setView('git_details', 1);
 			return;
 		}
+
+		// PRE-FLIGHT CHECK: Ensure local repo is up to date before pushing via API
+		$recs[] = "--- Checking if local repository is up to date ---";
+		$pull_check = gitapiPull(array());
+		if($pull_check['success']){
+			if(isset($pull_check['output']) && strlen($pull_check['output'])){
+				$recs[] = "Local repository status: " . $pull_check['output'];
+				// Check if pull brought in changes
+				if(strpos($pull_check['output'], 'Already up to date') === false &&
+				   strpos($pull_check['output'], 'Already up-to-date') === false){
+					$recs[] = "Local repository was updated from remote";
+					gitLog("Local repository updated before API push", 'info');
+				}
+			}
+		} else {
+			$recs[] = "Warning: Could not verify local repository is up to date";
+			$recs[] = "Error: " . $pull_check['error'];
+			$recs[] = "You may need to run 'git pull' manually before pushing";
+			gitLog("Pre-flight pull check failed: " . $pull_check['error'], 'warning');
+		}
+		$recs[] = "";
 
 		$push_count = 0;
 		$commit_errors = array();
