@@ -57,9 +57,10 @@ require_once("{$progpath}/../extras/gitapi.php");
  * @since 3.0
  */
 function gitLocalStatus(){
+	global $CONFIG;
 	$original_dir = getcwd();
 
-	if(!isset($_SESSION['git_path']) || !chdir($_SESSION['git_path'])){
+	if(!isset($CONFIG['gitapi_path']) || !chdir($CONFIG['gitapi_path'])){
 		return array(
 			'success' => false,
 			'output' => '',
@@ -98,7 +99,7 @@ function gitLocalStatus(){
 function gitFileInfo(){
 	global $git, $CONFIG;
 
-	if(!isset($_SESSION['git_path']) || !is_dir($_SESSION['git_path'])){
+	if(!isset($CONFIG['gitapi_path']) || !is_dir($CONFIG['gitapi_path'])){
 		$git['error'] = 'Invalid git path';
 		$git['files'] = array();
 		return;
@@ -120,7 +121,7 @@ function gitFileInfo(){
 	$lines = preg_split('/[\r\n]+/', trim($git['status']));
 
 	// Cache realpath of git directory for performance
-	$git_realpath = realpath($_SESSION['git_path']);
+	$git_realpath = realpath($CONFIG['gitapi_path']);
 	if($git_realpath === false){
 		$git['error'] = 'Invalid git path';
 		$git['files'] = array();
@@ -202,7 +203,7 @@ function gitFileInfo(){
 	}
 
 	// Track files in session for later operations
-	$_SESSION['git_tracked_files'] = $git['files'];
+	$CONFIG['git_tracked_files'] = $git['files'];
 }
 
 /**
@@ -392,7 +393,7 @@ function gitValidateCommitMessage($message){
  * @since 3.0
  */
 function gitGetLocalFile($filePath){
-	global $git;
+	global $git, $CONFIG;
 
 	if(!gitValidateFilePath($filePath)){
 		return array(
@@ -402,7 +403,7 @@ function gitGetLocalFile($filePath){
 		);
 	}
 
-	$local_path = realpath($_SESSION['git_path']);
+	$local_path = realpath($CONFIG['gitapi_path']);
 	$afile = $local_path . DIRECTORY_SEPARATOR . $filePath;
 	$afile_real = realpath($afile);
 
