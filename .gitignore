@@ -16,3 +16,4 @@ dasql.ini
 .claude/
 composer.json
 php/admin/git.log
+vendor/
