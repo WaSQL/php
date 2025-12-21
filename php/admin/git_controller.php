@@ -335,7 +335,13 @@ switch($func){
 
 			// Calculate sha for message lookup
 			$afile = $git_realpath . DIRECTORY_SEPARATOR . $file;
-			$sha = sha1(realpath($afile));
+			$afile_real = realpath($afile);
+			if($afile_real === false){
+				$recs[] = "File not found locally: {$file}";
+				$commit_errors[] = $file;
+				continue;
+			}
+			$sha = sha1($afile_real);
 			$msg = '';
 
 			// Get commit message
@@ -362,12 +368,15 @@ switch($func){
 
 			$content = $local_file_result['content'];
 
+			// Convert Windows paths to forward slashes for API
+			$api_file_path = str_replace('\\', '/', $file);
+
 			// Check if file exists on remote (to determine create vs update)
-			$remote_sha = gitGetRemoteFileSha($file);
+			$remote_sha = gitGetRemoteFileSha($api_file_path);
 
 			if($remote_sha !== null){
 				// File exists - update it
-				$result = gitapiUpdateFile($file, $content, $msg, array('sha' => $remote_sha));
+				$result = gitapiUpdateFile($api_file_path, $content, $msg, array('sha' => $remote_sha));
 				if($result['success']){
 					$recs[] = "Updated on remote: {$file} - {$msg}";
 					$push_count++;
@@ -376,10 +385,11 @@ switch($func){
 					$error_msg = isset($result['error']) ? $result['error'] : 'Unknown error';
 					$recs[] = "Failed to update {$file}: {$error_msg}";
 					$commit_errors[] = $file;
+					gitLog("API update failed for {$file}: {$error_msg}", 'error');
 				}
 			} else {
 				// File doesn't exist - create it
-				$result = gitapiCreateFile($file, $content, $msg);
+				$result = gitapiCreateFile($api_file_path, $content, $msg);
 				if($result['success']){
 					$recs[] = "Created on remote: {$file} - {$msg}";
 					$push_count++;
@@ -387,7 +397,15 @@ switch($func){
 				} else {
 					$error_msg = isset($result['error']) ? $result['error'] : 'Unknown error';
 					$recs[] = "Failed to create {$file}: {$error_msg}";
+
+					// Try to give more helpful error message
+					if(strpos($error_msg, 'Not Found') !== false || strpos($error_msg, '404') !== false){
+						$recs[] = "Tip: Try using git CLI to commit this file first, or ensure parent directory exists on remote";
+						$recs[] = "Run: git add \"{$file}\" && git commit -m \"{$msg}\" && git push";
+					}
+
 					$commit_errors[] = $file;
+					gitLog("API create failed for {$file}: {$error_msg}", 'error');
 				}
 			}
 		}
