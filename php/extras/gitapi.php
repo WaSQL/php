@@ -1216,10 +1216,16 @@ function gitapiPull($params = array()) {
         if ($pop_code === 0) {
             $output[] = "Successfully restored your local changes";
         } else {
-            // Stash pop failed (probably conflicts)
+            // Stash pop failed (probably conflicts) - abort the pop to avoid conflict markers
+            exec('git reset --merge 2>&1');  // Reset to clean state
             $output[] = "Warning: Could not auto-restore stashed changes (conflicts detected)";
             $output[] = "Your changes are safely stashed. Run 'git stash list' to see them";
-            $output[] = "Run 'git stash pop' manually to restore them";
+            $output[] = "";
+            $output[] = "To manually restore and resolve conflicts:";
+            $output[] = "  git stash pop";
+            $output[] = "  (resolve any conflicts)";
+            $output[] = "  git add <resolved-files>";
+            $output[] = "  git commit";
         }
     }
 
