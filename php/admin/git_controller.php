@@ -318,9 +318,68 @@ switch($func){
 		}
 		$recs[] = "";
 
+		// PRE-FLIGHT CHECK: Filter out new files in subdirectories (API limitation)
+		$git_realpath = realpath($CONFIG['gitapi_path']);
+		$filtered_files = array();
+		$skipped_new_subdirs = array();
+
+		foreach($_REQUEST['files'] as $bfile){
+			$file = base64_decode($bfile);
+			$afile = $git_realpath . DIRECTORY_SEPARATOR . $file;
+			$afile_real = realpath($afile);
+
+			// Check if this is a new file in a subdirectory
+			$is_new_file = !isset($git['b64sha'][$bfile]); // Not tracked
+			$is_in_subdir = (strpos($file, '/') !== false || strpos($file, '\\') !== false);
+
+			if($is_new_file && $is_in_subdir){
+				// Check if file exists on remote
+				$remote_sha = gitGetRemoteFileSha(str_replace('\\', '/', $file));
+				if($remote_sha === null){
+					// New file in subdirectory - skip it
+					$skipped_new_subdirs[] = $file;
+					continue;
+				}
+			}
+
+			$filtered_files[] = $bfile;
+		}
+
+		// Report skipped files
+		if(count($skipped_new_subdirs) > 0){
+			$recs[] = "--- Skipped new files in subdirectories (GitHub API limitation) ---";
+			foreach($skipped_new_subdirs as $file){
+				$recs[] = "Skipped: {$file}";
+			}
+			$recs[] = "";
+			$recs[] = "To commit these files, use git CLI:";
+			foreach($skipped_new_subdirs as $file){
+				$recs[] = "  git add \"{$file}\"";
+			}
+			$recs[] = "  git commit -m \"Add new files\"";
+			$recs[] = "  git push";
+			$recs[] = "";
+			$recs[] = "After the first commit, you can update these files via Browser UI.";
+			$recs[] = "";
+			gitLog("Skipped " . count($skipped_new_subdirs) . " new files in subdirectories", 'info');
+		}
+
+		// Check if we have any files left to process
+		if(count($filtered_files) == 0){
+			if(count($skipped_new_subdirs) > 0){
+				$git['warning'] = 'All selected files were skipped (new files in subdirectories)';
+			} else {
+				$git['error'] = 'No files to upload';
+			}
+			setView('git_details', 1);
+			return;
+		}
+
+		// Update the files array to only include files we can push
+		$_REQUEST['files'] = $filtered_files;
+
 		$push_count = 0;
 		$commit_errors = array();
-		$git_realpath = realpath($CONFIG['gitapi_path']);
 
 		foreach($_REQUEST['files'] as $bfile){
 			$file = base64_decode($bfile);
