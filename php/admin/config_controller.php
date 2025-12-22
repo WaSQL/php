@@ -8,7 +8,32 @@
 	switch(strtolower($_REQUEST['func'])){
 		case 'config_logs_view_file':
 			$afile=$_REQUEST['file'];
+			// Security: Validate file path to prevent path traversal attacks
+			$isAllowed=false;
 			if(file_exists($afile)){
+				$realPath=realpath($afile);
+				// Define allowed log directories (common locations)
+				$allowedDirs=array(
+					'/var/log',
+					'C:\\Windows\\Logs',
+					'C:\\xampp\\apache\\logs',
+					'C:\\xampp\\mysql\\data',
+					'/usr/local/var/log',
+					'/var/lib/mysql',
+					'/opt/homebrew/var/log'
+				);
+				// Check if file is within allowed directories
+				foreach($allowedDirs as $allowedDir){
+					if(is_dir($allowedDir)){
+						$allowedPath=realpath($allowedDir);
+						if($allowedPath && strpos($realPath,$allowedPath)===0){
+							$isAllowed=true;
+							break;
+						}
+					}
+				}
+			}
+			if($isAllowed && file_exists($afile)){
 				$content=tailFile($afile,200);
 				$lines=preg_split('/[\r\n]/',$content);
 				$filesize=verboseSize(filesize($afile));
@@ -30,8 +55,8 @@
 				$content=implode(PHP_EOL,$lines);
 			}
 			else{
-				$title=$afile;
-				$content='NO SUCH FILE:';
+				$title='Access Denied';
+				$content='<div class="w_danger">Access Denied: File path not authorized or file does not exist.</div>';
 			}
 			setView('config_logs_view_file',1);
 			return;
@@ -64,6 +89,19 @@
 			}
 		case 'config_users_wasql':
 		case 'config_users_ldap':
+			switch(strtolower($_REQUEST['process'])){
+				case 'save':
+					$ok=configSave();
+					// Clear session when auth settings change to force re-authentication
+					$_SESSION=array();
+					setView('config_users_save',1);
+					return;
+					break;
+				default:
+			}
+			setView($_REQUEST['func'],1);
+			return;
+		break;
 		case 'config_sync_form':
 		case 'config_mail_form':
 		case 'config_uploads_form':
@@ -73,7 +111,7 @@
 			switch(strtolower($_REQUEST['process'])){
 				case 'save':
 					$ok=configSave();
-					$_SESSION=array();
+					// No session clear needed for non-auth config changes
 					setView('config_users_save',1);
 					return;
 					break;
