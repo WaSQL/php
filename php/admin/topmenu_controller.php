@@ -1,6 +1,7 @@
 <?php
 	global $CONFIG;
 	global $SETTINGS;
+	global $GITREPO;
 	if($_REQUEST['_menu']=='logs' && ($_REQUEST['func']=='tail' || $_REQUEST['func']=='tail_refresh')){
 		setView('blank',1);
 		return;
