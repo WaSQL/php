@@ -1,4 +1,82 @@
 <?php
+function manualRebuildDocs(){
+	// Rebuild all documentation by parsing all code files
+	//php
+	$path=getWasqlPath('php');
+	$files=listFilesEx($path,array('ext'=>'php'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//php/extras
+	$path=getWasqlPath('php/extras');
+	$files=listFilesEx($path,array('ext'=>'php'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//python
+	$path=getWasqlPath('python');
+	$files=listFilesEx($path,array('ext'=>'py'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//python/extras
+	$path=getWasqlPath('python/extras');
+	$files=listFilesEx($path,array('ext'=>'py'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//js
+	$path=getWasqlPath('wfiles/js');
+	$files=listFilesEx($path,array('ext'=>'js'));
+	foreach($files as $file){
+		if(stringEndsWith($file['name'],'min.js')){continue;}
+		$ok=manualParseFile($file['afile']);
+	}
+	//js/extras
+	$path=getWasqlPath('wfiles/js/extras');
+	$files=listFilesEx($path,array('ext'=>'js'));
+	foreach($files as $file){
+		if(stringEndsWith($file['name'],'min.js')){continue;}
+		$ok=manualParseFile($file['afile']);
+	}
+	//get functions in pages
+	$recs=getDBRecords(array(
+		'-table'=>'_pages',
+		'-where'=>"length(functions) > 20",
+		'-fields'=>'_id,name'
+	));
+	if(is_array($recs)){
+		foreach($recs as $rec){
+			$afile="_pages:{$rec['_id']}:functions:{$rec['name']}";
+			$ok=manualParseFile($afile);
+		}
+	}
+	$recs=getDBRecords(array(
+		'-table'=>'_pages',
+		'-where'=>"body like '<?php%'",
+		'-fields'=>'_id,name'
+	));
+	if(is_array($recs)){
+		foreach($recs as $rec){
+			$afile="_pages:{$rec['_id']}:body:{$rec['name']}";
+			$ok=manualParseFile($afile);
+		}
+	}
+	//get functions in templates
+	$recs=getDBRecords(array(
+		'-table'=>'_templates',
+		'-where'=>"length(functions) > 20",
+		'-fields'=>'_id,name'
+	));
+	if(is_array($recs)){
+		foreach($recs as $rec){
+			$afile="_templates:{$rec['_id']}:functions:{$rec['name']}";
+			$ok=manualParseFile($afile);
+		}
+	}
+	return true;
+}
+
 function manualGetCategories(){
 	$query=<<<ENDOFQUERY
 	SELECT
@@ -9,6 +87,9 @@ function manualGetCategories(){
 	ORDER BY category
 ENDOFQUERY;
 	$recs=getDBRecords($query);
+	if(!is_array($recs)){
+		return array();
+	}
 	foreach($recs as $i=>$rec){
 		switch(strtolower($rec['category'])){
 			case 'template php':
@@ -29,15 +110,20 @@ ENDOFQUERY;
 	return $recs;
 }
 function manualGetFileNames($category){
+	// Escape category to prevent SQL injection
+	$category_escaped=addslashes($category);
 	$query=<<<ENDOFQUERY
 	SELECT
 		COUNT(*) as cnt,
 		afile
 	FROM _docs
-	WHERE category='{$category}'
+	WHERE category='{$category_escaped}'
 	GROUP BY afile
 ENDOFQUERY;
 	$recs=getDBRecords($query);
+	if(!is_array($recs)){
+		return array();
+	}
 	foreach($recs as $i=>$rec){
 		$recs[$i]['afile_decoded']=base64_decode($rec['afile']);
 		$recs[$i]['file_path']=getFilePath($recs[$i]['afile_decoded']);
@@ -47,6 +133,8 @@ ENDOFQUERY;
 	return $recs;
 }
 function manualGetNames($afile){
+	// Escape afile to prevent SQL injection
+	$afile_escaped=addslashes($afile);
 	$query=<<<ENDOFQUERY
 	SELECT
 		_id,
@@ -55,10 +143,13 @@ function manualGetNames($afile){
 		info,
 		length(info) as info_length
 	FROM _docs
-	where afile='{$afile}'
+	where afile='{$afile_escaped}'
 	order by name
 ENDOFQUERY;
 	$recs=getDBRecords($query);
+	if(!is_array($recs)){
+		return array();
+	}
 	foreach($recs as $i=>$rec){
 		if(isset($rec['info_length']) && $rec['info_length'] < 10 ){
 			$recs[$i]['class']='w_red';
@@ -85,12 +176,20 @@ function manualParseFile($file){
 			'-index'=>'afile'
 		));
 	}
-	
+
 	global $CONFIG;
 	$recs=array();
 	$lines=array();
 	if(is_file($file)){
 		$file=strtolower(realpath($file));
+
+		// Path traversal protection - ensure file is within WaSQL directories
+		$wasql_path=strtolower(getWasqlPath());
+		if(strpos($file, $wasql_path) !== 0){
+			// File is outside WaSQL directory - reject it
+			return 0;
+		}
+
 		$md5=md5_file($file);
 		if(isset($docs_files[$file]['afile_md5']) && $docs_files[$file]['afile_md5']==$md5){
 			return;
