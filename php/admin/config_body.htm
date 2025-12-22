@@ -38,10 +38,10 @@
 
 <view:config_users_wasql>
 <form method="post" name="userswasqlform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_users_wasql" />
-	<input type="hidden" name="auth_method" value="wasql" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_users_wasql">
+	<input type="hidden" name="auth_method" value="wasql">
+	<input type="hidden" name="process" value="save">
 	<div style="display:flex;gap:15px;" class="wacss_top10">
 		<button type="submit" class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?>">Save</button>
 		<div id="config_users_save"></div>
@@ -52,10 +52,10 @@
 
 <view:config_users_ldap>
 <form method="post" name="usersldapform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_users_ldap" />
-	<input type="hidden" name="auth_method" value="ldap" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_users_ldap">
+	<input type="hidden" name="auth_method" value="ldap">
+	<input type="hidden" name="process" value="save">
 	<?=renderView('config_users_ldap_settings');?>
 	<div style="display:flex;gap:15px;" class="wacss_top10">
 		<button type="submit" class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?>">Save</button>
@@ -94,10 +94,10 @@
 
 <view:config_users_okta>
 <form method="post" name="usersoktaform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_users_okta" />
-	<input type="hidden" name="auth_method" value="okta" /
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_users_okta">
+	<input type="hidden" name="auth_method" value="okta">
+	<input type="hidden" name="process" value="save">
 	<?=renderView('config_users_okta_settings');?>
 	<div style="display:flex;gap:15px;" class="wacss_top10">
 		<button type="submit" class="wacss_button  is-mobile-responsive <?=configValue('admin_color');?>">Save</button>
@@ -109,10 +109,10 @@
 
 <view:config_users_okta_ldap>
 <form method="post" name="usersoktaldapform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_users_okta_ldap" />
-	<input type="hidden" name="auth_method" value="okta_ldap" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_users_okta_ldap">
+	<input type="hidden" name="auth_method" value="okta_ldap">
+	<input type="hidden" name="process" value="save">
 	<?=renderView('config_users_okta_settings');?>
 	<?=renderView('config_users_okta_ldap_settings');?>
 	<div style="display:flex;gap:15px;" class="wacss_top10">
@@ -147,10 +147,10 @@
 		<div><label>Service Provider ID</label><?=configBuildFormField('okta_simplesamlphp_service_provider_id');?></div>
 		<!-- SimpleSAMLphp configuration settings -->
 		<div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:flex-start; align-items:flex-start;">
-			<input type="hidden" name="okta_simplesamlphp_config_secretsalt" value="wasqllqsawwasqllqsaw" />
+			<input type="hidden" name="okta_simplesamlphp_config_secretsalt" value="<?=isset($CONFIG['okta_simplesamlphp_config_secretsalt']) && strlen($CONFIG['okta_simplesamlphp_config_secretsalt']) ? $CONFIG['okta_simplesamlphp_config_secretsalt'] : 'wasqllqsawwasqllqsaw';?>">
 			<?=configBuildFormField('okta_simplesamlphp_config_session__cookie__domain');?>
 			<?=configBuildFormField('okta_simplesamlphp_config_session__cookie__lifetime_int');?>
-			<input type="hidden" name="okta_simplesamlphp_config_store__type" value="sql" />
+			<input type="hidden" name="okta_simplesamlphp_config_store__type" value="sql">
 			<?=configBuildFormField('okta_simplesamlphp_config_store__sql__dsn');?>
 			<div style="min-width:175px;"><label>Auth. Admin Password</label><?=configBuildFormField('okta_simplesamlphp_config_auth__adminpassword');?></div>
 			<div style="min-width:175px;"><label>Session Duration (Seconds)</label><?=configBuildFormField('okta_simplesamlphp_config_session__duration_int');?></div>
@@ -181,9 +181,9 @@
 <view:config_sync>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-sync"></span> Syncronize Settings</div>
 <form method="post" name="syncform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_sync_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_sync_form">
+	<input type="hidden" name="process" value="save">
 	<div style="display:flex;flex-wrap:wrap;gap:15px;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div><label>Enable Sync?</label><?=configBuildFormField('wasql_synchronize');?></div>
 		<div data-displayif="wasql_synchronize:1"><label>Target</label><?=configBuildFormField('wasql_synchronize_slave');?></div>
@@ -199,9 +199,9 @@
 <view:config_database>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-database"></span> Database Settings</div>
 <form method="post" action="/php/admin.php" name="databaseform" onchange="wacss.formChanged(this)" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_database_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_database_form">
+	<input type="hidden" name="process" value="save">
 	<div class="w_lgrayback w_bold wacss_top10" style="padding:5px 9px;">Commands</div>
 	<div class="wacss_top10"><label>Mysql Backup Command</label><?=configBuildFormField('backup_cmd',array('required'=>''));?></div>
 	<div class="w_lgrayback w_bold wacss_top10" style="padding:5px 9px;">Slow Query Logging</div>
@@ -230,9 +230,9 @@
 <view:config_crons>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-cron"></span> Cron Settings</div>
 <form method="post" name="cronsform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_sync_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_sync_form">
+	<input type="hidden" name="process" value="save">
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Enable Crons?</label><?=configBuildFormField('wasql_crons');?></div>
 	</div>
@@ -247,9 +247,9 @@
 <view:config_logs>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Logs</div>
 <form method="post" name="logsform" onchange="wacss.formChanged(this);" action="/php/admin.php" name="config_logs_form" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_logs_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_logs_form">
+	<input type="hidden" name="process" value="save">
 	<div class="w_lgrayback w_bold wacss_top10" style="padding:5px 9px;"><span class="icon-database-mysql"></span> Mysql</div>
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-end;align-items: flex-end;gap:15px;">
 		<div style="min-width:175px;"><label>Error Log Location</label><?=configBuildFormField('mysql_error_log');?></div>
@@ -306,9 +306,9 @@
 <view:config_mail>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-mail"></span> SendMail Settings</div>
 <form method="post" name="mailform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_mail_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_mail_form">
+	<input type="hidden" name="process" value="save">
 	<div class="w_lgrayback w_bold wacss_top10" style="padding:5px 9px;">SMTP Settings</div>
 	<div style="display:flex;flex-wrap:wrap;gap:15px;justify-content: flex-start;align-items: flex-start;">
 		<div style="min-width:175px;"><label>Host</label><?=configBuildFormField('smtp');?></div>
@@ -333,9 +333,9 @@
 <view:config_uploads>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-upload"></span> File Uploads</div>
 <form method="post" name="uploadsform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_uploads_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_uploads_form">
+	<input type="hidden" name="process" value="save">
 	<div class="w_lgrayback w_bold wacss_top10" style="padding:5px 9px;"><span class="icon-file-image"></span> Image Conversions</div>
 	<div style="display:flex;justify-content: flex-start;align-items: flex-start;margin:5px 0 10px 0;">
 		<div style="flex:1;"><label>Command</label><?=configBuildFormField('convert_command');?></div>
@@ -363,9 +363,9 @@
 <view:config_misc>
 <div class="w_biggest <?=configValue('admin_color');?>"><span class="icon-dots"></span> Misc Settings</div>
 <form method="post" name="miscform" onchange="wacss.formChanged(this);" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'config_users_save');">
-	<input type="hidden" name="_menu" value="config" />
-	<input type="hidden" name="func" value="config_misc_form" />
-	<input type="hidden" name="process" value="save" />
+	<input type="hidden" name="_menu" value="config">
+	<input type="hidden" name="func" value="config_misc_form">
+	<input type="hidden" name="process" value="save">
 	<div><label>Is Stage?</label><?=configBuildFormField('stage');?></div>
 	<div style="display:flex;flex-wrap: wrap;justify-content: flex-start;align-items: flex-start;gap:15px;">
 		<div style="min-width:175px;"><label>Admin Color/Theme</label><?=configBuildFormField('admin_color');?></div>
