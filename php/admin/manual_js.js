@@ -12,7 +12,10 @@ function manualNav(el) {
 	}
 	let params={setprocessing:0};
 	for(key in el.dataset){
-		params[key]=el.dataset[key];
+		// Check hasOwnProperty to prevent prototype pollution
+		if(el.dataset.hasOwnProperty(key)){
+			params[key]=el.dataset[key];
+		}
 	}
 	params['_menu']='manual';
 	return wacss.ajaxGet('/php/admin.php',div,params);
