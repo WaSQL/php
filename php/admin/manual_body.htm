@@ -35,8 +35,8 @@
 </view:default>
 
 <view:category>
-	<li><a href="#" onclick="return manualNav(this);" data-div="filenames_<?=$rec['category'];?>" data-func="filenames" data-category="<?=$rec['category'];?>"><icon class="<?=$rec['icon'];?>"></icon> <?=$rec['category'];?> (<?=$rec['cnt'];?>)</a>
-		<div id="filenames_<?=$rec['category'];?>" style="margin-left:20px;padding-left:5px;border-left:1px solid #ccc;"></div>
+	<li><a href="#" onclick="return manualNav(this);" data-div="filenames_<?=encodeHtml($rec['category']);?>" data-func="filenames" data-category="<?=encodeHtml($rec['category']);?>"><icon class="<?=encodeHtml($rec['icon']);?>"></icon> <?=encodeHtml($rec['category']);?> (<?=encodeHtml($rec['cnt']);?>)</a>
+		<div id="filenames_<?=encodeHtml($rec['category']);?>" style="margin-left:20px;padding-left:5px;border-left:1px solid #ccc;"></div>
 
 	</li>
 </view:category>
@@ -44,8 +44,8 @@
 <view:filenames>
 	<view:filename>
 		<div>
-			<a href="#" onclick="return manualNav(this);" data-div="names_<?=sha1($rec['afile']);?>" data-func="names" data-afile="<?=$rec['afile'];?>" class="wacss_button is-mobile-responsive" style="margin-bottom:3px;"><?=base64_decode($rec['afile']);?> (<?=$rec['cnt'];?>)</a>
-			<div id="names_<?=sha1($rec['afile']);?>" style="margin-left:20px;"></div>
+			<a href="#" onclick="return manualNav(this);" data-div="names_<?=encodeHtml(sha1($rec['afile']));?>" data-func="names" data-afile="<?=encodeHtml($rec['afile']);?>" class="wacss_button is-mobile-responsive" style="margin-bottom:3px;"><?=encodeHtml(base64_decode($rec['afile']));?> (<?=encodeHtml($rec['cnt']);?>)</a>
+			<div id="names_<?=encodeHtml(sha1($rec['afile']));?>" style="margin-left:20px;"></div>
 		</div>
 	</view:filename>
 	<?=renderEach('filename',$filenames,'rec');?>
@@ -53,7 +53,7 @@
 
 <view:names>
 	<view:name>
-		<div><a href="#" data-docid="<?=$rec['_id'];?>" onclick="return manualNav(this);" data-div="results" data-func="docid" class="<?=$rec['class'];?> w_link w_block" style="margin-bottom:3px;"><?=$rec['name'];?> (Line <?=$rec['afile_line'];?>)</a></div>
+		<div><a href="#" data-docid="<?=encodeHtml($rec['_id']);?>" onclick="return manualNav(this);" data-div="results" data-func="docid" class="<?=encodeHtml($rec['class']);?> w_link w_block" style="margin-bottom:3px;"><?=encodeHtml($rec['name']);?> (Line <?=encodeHtml($rec['afile_line']);?>)</a></div>
 	</view:name>
 	<?=renderEach('name',$names,'rec');?>
 </view:names>
@@ -61,8 +61,8 @@
 <view:search_results>
 	<view:rec>
 	<div style="display:flex;justify-content:space-between;flex-wrap: wrap;align-content: flex-start;">
-		<div class="w_bold w_bigger"><span class="w_biggest brand-<?=strtolower($rec['category']);?>"></span> <?=$rec['name'];?></div>
-		<div class="w_gray w_smaller">found on line <?=$rec['afile_line'];?> in <?=base64_decode($rec['afile']);?></div>
+		<div class="w_bold w_bigger"><span class="w_biggest brand-<?=encodeHtml(strtolower($rec['category']));?>"></span> <?=encodeHtml($rec['name']);?></div>
+		<div class="w_gray w_smaller">found on line <?=encodeHtml($rec['afile_line']);?> in <?=encodeHtml(base64_decode($rec['afile']));?></div>
 	</div>
 	<div style="margin-left:30px;">
 		<div class="w_gray" style="margin:0 0 10px 20px;"><?=$rec['describe'];?></div>
