@@ -40,10 +40,11 @@ if(isset($xml['comment'])){
 global $DATABASE;
 global $CONFIG;
 global $ALLCONFIG;
+global $GITREPO;
 //build CONFIG array
 $CONFIG=array();
 if(!isset($_SERVER['UNIQUE_HOST'])){parseEnv();}
-/* Load Global configurations from allhost if it exists */
+/* Load database tags */
 $DATABASE=array();
 if(isset($xml['database'][0])){
 	foreach($xml['database'] as $database){
@@ -54,6 +55,19 @@ if(isset($xml['database'][0])){
 			$DATABASE[$name][$k]=$v;
 		}
 	}
+}
+/* Load database tags */
+$GITREPO=array();
+if(isset($xml['gitrepo'][0])){
+	foreach($xml['gitrepo'] as $gitrepo){
+		if(!isset($gitrepo['@attributes']['name'])){continue;}
+		$name=$gitrepo['@attributes']['name'];
+		$name=strtolower($name);
+		foreach($gitrepo['@attributes'] as $k=>$v){
+			$GITREPO[$name][$k]=$v;
+		}
+	}
+	unset($xml['gitrepo']);
 }
 $ConfigXml=array();
 $allhost=array();
