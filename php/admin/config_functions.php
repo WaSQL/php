@@ -13,7 +13,12 @@ function configSave(){
 		);
 		$ok=addDBRecord($addopts);
 		if(!isNum($ok)){
-			echo $ok;exit;
+			// Log the actual error for debugging
+			debugValue(array('configSave_error'=>$ok,'field'=>$k));
+			commonLogMessage('config',json_encode(array('error'=>'Failed to save config','field'=>$k,'message'=>$ok)));
+			// Show generic error to user (do not expose database details)
+			echo '<div class="w_danger">Error saving configuration. Please check logs for details.</div>';
+			exit;
 		}
 	}
 	return 1;
