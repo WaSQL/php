@@ -189,6 +189,10 @@
 				<li><a href="/php/admin.php?_menu=decode"><span class="icon-qrcode"></span> Decode/Encode</a></li>
 				<li><a href="/php/admin.php?_menu=terminal"><span class="icon-prompt"></span> Terminal</a></li>
 				<li><a href="/php/admin.php?_menu=files"><span class="icon-attach"></span> File Manager</a></li>
+				<view:gitrepo>
+				<li><a href="/php/admin.php?_menu=git"><span class="icon-site-git" style="background:#fff;"></span> Git Repos</a></li>
+				</view:gitrepo>
+				<?=renderViewIf(isset($GITREPO) && is_array($GITREPO) && count($GITREPO),'gitrepo');?>
 				<view:schtasks_menu>
 				<li><a href="/php/admin.php?_menu=schtasks"><span class="brand-windows" style="background:#fff;"></span> Scheduled Tasks</a></li>
 				</view:schtasks_menu>
