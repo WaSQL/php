@@ -16,6 +16,7 @@ $wasql_debugValueContent='';
 //echo "Before COMMON";exit;
 include_once("{$progpath}/common.php");
 global $CONFIG;
+global $GITREPO;
 $CONFIG['translate_source_id']=-1;
 include_once("{$progpath}/config.php");
 //is SSL required for admin?
