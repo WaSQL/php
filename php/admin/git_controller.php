@@ -76,57 +76,6 @@ if(!isAdmin()){
 // Initialize git repository settings from $GITREPO
 // Read gitrepo tags from config.xml and populate $GITREPO global
 global $GITREPO;
-if(!isset($GITREPO) || !is_array($GITREPO)){
-	$GITREPO = array();
-	// Read config.xml to get gitrepo configurations
-	$progpath = dirname(__FILE__);
-	$config_file = '';
-	if(is_file("{$progpath}/../config.xml")){
-		$config_file = "{$progpath}/../config.xml";
-	}
-	elseif(is_file("{$progpath}/../../config.xml")){
-		$config_file = "{$progpath}/../../config.xml";
-	}
-
-	if(strlen($config_file) && is_file($config_file)){
-		$xml = readXML($config_file);
-		$json = json_encode($xml);
-		$xml = json_decode($json, true);
-
-		// Check for gitrepo tags
-		if(isset($xml['gitrepo'])){
-			// Check if single gitrepo tag
-			if(isset($xml['gitrepo']['@attributes'])){
-				$xml['gitrepo'] = array($xml['gitrepo']);
-			}
-
-			// Process each gitrepo tag
-			foreach($xml['gitrepo'] as $gitrepo){
-				if(!isset($gitrepo['@attributes']['name'])){
-					// If no name, generate one from path
-					if(isset($gitrepo['@attributes']['path'])){
-						$name = basename($gitrepo['@attributes']['path']);
-					}
-					elseif(isset($gitrepo['@attributes']['gitapi_path'])){
-						$name = basename($gitrepo['@attributes']['gitapi_path']);
-					}
-					else{
-						continue;
-					}
-				}
-				else{
-					$name = $gitrepo['@attributes']['name'];
-				}
-				$name = strtolower($name);
-				$GITREPO[$name] = array();
-				foreach($gitrepo['@attributes'] as $k => $v){
-					$GITREPO[$name][$k] = $v;
-				}
-			}
-		}
-	}
-}
-
 global $current_repo;
 // Check if GITREPO is configured
 if(!isset($GITREPO) || !is_array($GITREPO) || count($GITREPO) == 0){
