@@ -1,4 +1,48 @@
 <?php
+//Input validation functions
+function exportValidateFilename($filename){
+	//Prevent path traversal and ensure safe filename
+	if(preg_match('/\.\./',$filename) || preg_match('/[\/\\\\]/',$filename)){
+		return false;
+	}
+	//Only allow alphanumeric, underscore, hyphen, and dot
+	if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/',$filename)){
+		return false;
+	}
+	return true;
+}
+
+function exportValidateTableName($table){
+	//Only allow alphanumeric, underscore, and hyphen
+	if(!preg_match('/^[a-zA-Z0-9\_\-]+$/',$table)){
+		return false;
+	}
+	return true;
+}
+
+function exportValidateTableArray($tables,$validTables){
+	//Filter table array to only include valid table names
+	$filtered=array();
+	foreach($tables as $table){
+		if(exportValidateTableName($table) && in_array($table,$validTables)){
+			$filtered[]=$table;
+		}
+	}
+	return $filtered;
+}
+
+function exportValidateIdArray($ids){
+	//Filter ID array to only include valid integers
+	$filtered=array();
+	foreach($ids as $id){
+		$id=(integer)$id;
+		if($id > 0){
+			$filtered[]=$id;
+		}
+	}
+	return $filtered;
+}
+
 function pageGetTables(){
 	$tables=getDBTables();
 	foreach($tables as $i=>$table){
@@ -21,10 +65,18 @@ function pageGetTemplates(){
 	));
 }
 function pageBuildExport($filename,$schema=array(),$meta=array(),$data=array(),$pages=array(),$templates=array()){
+	//Validate filename one more time
+	if(!exportValidateFilename($filename)){
+		echo '<div class="w_bold w_danger">Invalid filename</div>';
+		return false;
+	}
 	if(!preg_match('/\.xml$/i',$filename)){$filename.='.xml';}
+
 	global $CONFIG;
 	$xmldata=xmlHeader();
-	$xmldata.='<export dbname="'.$CONFIG['dbname'].'" timestamp="'.time().'">'."".PHP_EOL;
+	//Encode dbname for XML attribute
+	$dbname=encodeHtml($CONFIG['dbname']);
+	$xmldata.='<export dbname="'.$dbname.'" timestamp="'.time().'">'."".PHP_EOL;
 	$tables=pageGetTables();
 	foreach($tables as $table){
 		if(in_array($table,$schema)){
@@ -96,7 +148,7 @@ function pageBuildExport($filename,$schema=array(),$meta=array(),$data=array(),$
 	}
 	//templates?
     $fields=getDBFields('_templates',1);
-    foreach($pages as $id){
+    foreach($templates as $id){
 		$rec=getDBRecord(array('-table'=>'_templates','_id'=>$id));
 		$xmldata .= '<xmldata name="_templates">'.PHP_EOL;
 		foreach($fields as $field){
