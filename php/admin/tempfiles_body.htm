@@ -38,15 +38,15 @@
 <h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-file-code"></span> Manage Temp Files</h2>
 <form method="post" name="tempfiles_form" action="/php/admin.php">
 	<input type="hidden" name="_menu" value="tempfiles">
-	<input type="hidden" name="ext" value="<?=$tabs[0]['name'];?>">
+	<input type="hidden" name="ext" value="<?=encodeHtml($tabs[0]['name']);?>">
 	<input type="hidden" name="sort" value="name" >
 	<input type="hidden" name="func" value="list">
 	<input type="hidden" name="setprocessing" value="0">
 <div style="display:flex;flex-wrap: wrap;justify-content: space-between;gap:15px;">
 	<ul class="nav-tabs <?=configValue('admin_color');?>">
 		<view:tab>
-		<li class="<?=$tab['class'];?>">
-			<a href="#" onclick="return tempfilesNavTab(this);" data-name="<?=$tab['name'];?>"><?=$tab['name'];?> (<?=$tab['count'];?>)</a>
+		<li class="<?=encodeHtml($tab['class']);?>">
+			<a href="#" onclick="return tempfilesNavTab(this);" data-name="<?=encodeHtml($tab['name']);?>"><?=encodeHtml($tab['name']);?> (<?=encodeHtml($tab['count']);?>)</a>
 		</li>
 		</view:tab>
 		<?=renderEach('tab',$tabs,'tab');?>
