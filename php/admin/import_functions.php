@@ -1,27 +1,104 @@
 <?php
+//Input validation functions
+function importValidateDatabaseName($name){
+	//Only allow alphanumeric, underscore, and hyphen
+	if(!preg_match('/^[a-zA-Z0-9\_\-]+$/',$name)){
+		return false;
+	}
+	return true;
+}
+
+function importValidateTableName($name){
+	//Allow schema.table format with alphanumeric, underscore, hyphen, and dot
+	if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/',$name)){
+		return false;
+	}
+	return true;
+}
+
+function importValidateFieldName($name){
+	//Only allow alphanumeric, underscore, and comma (for lists)
+	if(!preg_match('/^[a-zA-Z0-9\_\,]+$/',$name)){
+		return false;
+	}
+	return true;
+}
+
+function importValidateFilePath($filepath){
+	//Ensure file is in temp directory
+	$tempPath=getWasqlPath('/php/temp');
+	$realFilePath=realpath($filepath);
+	$realTempPath=realpath($tempPath);
+
+	if(!$realFilePath || !$realTempPath){
+		return false;
+	}
+
+	//Check if file is within temp directory
+	if(strpos($realFilePath,$realTempPath)!==0){
+		return false;
+	}
+
+	return true;
+}
+
 function importProcessXML($params){
+	//Validate file path before processing
+	if(!isset($params['file_abspath']) || !importValidateFilePath($params['file_abspath'])){
+		return "Invalid file path";
+	}
+	if(!file_exists($params['file_abspath'])){
+		return "File does not exist";
+	}
+
 	$items=exportFile2Array($params['file_abspath']);
-	unlink($params['file_abspath']);
+
+	//Safely delete the uploaded file
+	if(file_exists($params['file_abspath']) && importValidateFilePath($params['file_abspath'])){
+		unlink($params['file_abspath']);
+	}
+
 	return importXmlData($items,$params);
 }
 function importProcessCSV($params){
 	global $results;
 	global $fieldinfo;
 	global $importrecs_total;
-	if(!isset($params['file_abspath']) || !is_file($params['file_abspath'])){
-		return "Select a csv file to upload. {$params['file_abspath']} does not exist.";
+
+	//Validate file path
+	if(!isset($params['file_abspath']) || !importValidateFilePath($params['file_abspath'])){
+		return "Invalid file path";
 	}
-	if(!strlen($params['csvtable_db'])){
+	if(!is_file($params['file_abspath'])){
+		return "Select a csv file to upload. File does not exist.";
+	}
+
+	//Validate database name
+	if(!isset($params['csvtable_db']) || !strlen($params['csvtable_db'])){
 		return "Select a database for CSV import";
 	}
-	if(!strlen($params['csvtable_name'])){
+	if(!importValidateDatabaseName($params['csvtable_db'])){
+		return "Invalid database name. Only alphanumeric characters, underscores, and hyphens are allowed.";
+	}
+
+	//Validate table name
+	if(!isset($params['csvtable_name']) || !strlen($params['csvtable_name'])){
 		return "Select a table name for CSV import";
+	}
+	if(!importValidateTableName($params['csvtable_name'])){
+		return "Invalid table name. Only alphanumeric characters, underscores, hyphens, and dots are allowed.";
 	}
 	if(!dbIsTable($params['csvtable_db'],$params['csvtable_name'])){
 		$fields=getCSVSchema($params['file_abspath']);
 		//check for upserton and make that field unique
-		if(isset($params['csvtable_upserton']) && isset($fields[$params['csvtable_upserton']])){
-			$fields[$params['csvtable_upserton']].= ' NOT NULL UNIQUE';
+		if(isset($params['csvtable_upserton']) && strlen($params['csvtable_upserton'])){
+			//Validate field name
+			if(!importValidateFieldName($params['csvtable_upserton'])){
+				return "Invalid upserton field name. Only alphanumeric characters and underscores are allowed.";
+			}
+			if(isset($fields[$params['csvtable_upserton']])){
+				$fields[$params['csvtable_upserton']].= ' NOT NULL UNIQUE';
+			}
 		}
         //create the table
         $ok = dbCreateTable($params['csvtable_db'],$params['csvtable_name'],$fields);
@@ -31,21 +108,34 @@ function importProcessCSV($params){
 	}
 	$cparams=array();
 	$cparams['-csv']=$params['file_abspath'];
-	//upsert?
-	if(isset($_REQUEST['csvtable_upsert']) && strlen(trim($_REQUEST['csvtable_upsert']))){
-		$cparams['-upsert']=$_REQUEST['csvtable_upsert'];
+
+	//upsert - validate field names
+	if(isset($params['csvtable_upsert']) && strlen(trim($params['csvtable_upsert']))){
+		if(!importValidateFieldName($params['csvtable_upsert'])){
+			return "Invalid upsert field name(s). Only alphanumeric characters, underscores, and commas are allowed.";
+		}
+		$cparams['-upsert']=$params['csvtable_upsert'];
 	}
-	//upserton?
-	if(isset($_REQUEST['csvtable_upserton']) && strlen(trim($_REQUEST['csvtable_upserton']))){
-		$cparams['-upserton']=$_REQUEST['csvtable_upserton'];
+
+	//upserton - validate field name
+	if(isset($params['csvtable_upserton']) && strlen(trim($params['csvtable_upserton']))){
+		if(!importValidateFieldName($params['csvtable_upserton'])){
+			return "Invalid upserton field name. Only alphanumeric characters and underscores are allowed.";
+		}
+		$cparams['-upserton']=$params['csvtable_upserton'];
 	}
-	//upsertwhere?
-	if(isset($_REQUEST['csvtable_where']) && strlen(trim($_REQUEST['csvtable_where']))){
-		$cparams['-upsertwhere']=$_REQUEST['csvtable_where'];
+
+	//upsertwhere - passed through to dbAddRecords which should handle SQL safely
+	if(isset($params['csvtable_where']) && strlen(trim($params['csvtable_where']))){
+		$cparams['-upsertwhere']=$params['csvtable_where'];
 	}
-	//chunk?
-	if(isset($_REQUEST['csvtable_chunk']) && strlen(trim($_REQUEST['csvtable_chunk']))){
-		$cparams['-chunk']=$_REQUEST['csvtable_chunk'];
+
+	//chunk - validate as integer
+	if(isset($params['csvtable_chunk']) && strlen(trim($params['csvtable_chunk']))){
+		$chunk=(integer)$params['csvtable_chunk'];
+		if($chunk > 0){
+			$cparams['-chunk']=$chunk;
+		}
 	}
 	//import
 	$stime=microtime(true);
