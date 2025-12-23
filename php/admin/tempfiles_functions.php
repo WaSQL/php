@@ -1,4 +1,56 @@
 <?php
+//Input validation helper functions
+function tempfilesValidateFileName($filename){
+	//Prevent path traversal attacks
+	if(preg_match('/\.\./',$filename) || preg_match('/[\/\\\\]/',$filename)){
+		return false;
+	}
+	//Only allow alphanumeric, dash, underscore, and dot
+	if(!preg_match('/^[a-zA-Z0-9\-\_\.]+$/',$filename)){
+		return false;
+	}
+	return true;
+}
+
+function tempfilesValidateExtension($ext){
+	//Allow extensions for WaSQL supported languages and common temp file types
+	$allowed=array(
+		//Common temp/data files
+		'log','txt','csv','tsv','gsv','json','xml','sql','md','yaml','yml','ini','conf','config','lock',
+		//PHP
+		'php',
+		//Python
+		'py','pyc','pyw',
+		//Perl
+		'pl','pm',
+		//Node.js/JavaScript
+		'js','mjs','cjs',
+		//Lua
+		'lua',
+		//Tcl
+		'tcl',
+		//Ruby
+		'rb','rake','gemspec',
+		//R
+		'r','rdata','rds',
+		//Julia
+		'jl',
+		//Bash
+		'sh','bash',
+		//PowerShell
+		'ps1','psm1','psd1',
+		//Groovy
+		'groovy','gradle',
+		//VBScript
+		'vbs','vba',
+		//HTML/CSS
+		'html','htm','css',
+		//Batch
+		'bat','cmd'
+	);
+	return in_array(strtolower($ext),$allowed);
+}
+
 function tempfilesShowFileLines($content,$scrollto=0){
 	$content=encodeHtml($content);
 	$lines=preg_split('/[\r\n]+/',$content);
@@ -51,11 +103,16 @@ function tempfilesShowList($ext,$sort){
 	$uids=[];
 	foreach($files as $i=>$file){
 		if(preg_match('/\_u([0-9]+?)\_/',$file['name'],$m)){
-			if(!in_array($m[1],$uids)){$uids[]=$m[1];}
+			//Validate as integer to prevent SQL injection
+			$uid=(integer)$m[1];
+			if($uid > 0 && !in_array($uid,$uids)){
+				$uids[]=$uid;
+			}
 		}
 	}
 	$usermap=[];
 	if(count($uids)){
+		//UIDs are now guaranteed to be integers
 		$uidstr=implode(',',$uids);
 		$usermap=getDBRecords(array(
 			'-table'=>'_users',
