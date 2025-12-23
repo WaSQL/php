@@ -22,19 +22,19 @@
 					<view:table>
 					<tr>
 						<td>
-							<?=buildFormCheckall('data-table',$table,array('-label'=>$table));?>
+							<?=buildFormCheckall('data-table',encodeHtml($table),array('-label'=>encodeHtml($table)));?>
 						</td>
 						<td>
-							<input data-table="<?=$table;?>" data-export="table" type="checkbox" name="export_schema[]" id="ck_<?=$table;?>_schema" value="<?=$table;?>" />
-							<label for="ck_<?=$table;?>_schema"></label>
+							<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_schema[]" id="ck_<?=encodeHtml($table);?>_schema" value="<?=encodeHtml($table);?>" />
+							<label for="ck_<?=encodeHtml($table);?>_schema"></label>
 						</td>
 						<td>
-							<input data-table="<?=$table;?>" data-export="table" type="checkbox" name="export_meta[]" id="ck_<?=$table;?>_meta" value="<?=$table;?>" />
-							<label for="ck_<?=$table;?>_meta"></label>
+							<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_meta[]" id="ck_<?=encodeHtml($table);?>_meta" value="<?=encodeHtml($table);?>" />
+							<label for="ck_<?=encodeHtml($table);?>_meta"></label>
 						</td>
 						<td>
-							<input data-table="<?=$table;?>" data-export="table" type="checkbox" name="export_data[]" id="ck_<?=$table;?>_data" value="<?=$table;?>" />
-							<label for="ck_<?=$table;?>_data"></label>
+							<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_data[]" id="ck_<?=encodeHtml($table);?>_data" value="<?=encodeHtml($table);?>" />
+							<label for="ck_<?=encodeHtml($table);?>_data"></label>
 						</td>
 					</tr>
 					</view:table>
@@ -52,10 +52,10 @@
 					</tr>
 					<view:epage>
 					<tr>
-						<td><?=$epage['_id'];?></td>
+						<td><?=encodeHtml($epage['_id']);?></td>
 						<td>
-							<input data-export="page" type="checkbox" name="export_pages[]" id="ck_<?=$epage['_id'];?>_page" value="<?=$epage['_id'];?>" />
-							<label for="ck_<?=$epage['_id'];?>_page"><?=$epage['name'];?></label>
+							<input data-export="page" type="checkbox" name="export_pages[]" id="ck_<?=encodeHtml($epage['_id']);?>_page" value="<?=encodeHtml($epage['_id']);?>" />
+							<label for="ck_<?=encodeHtml($epage['_id']);?>_page"><?=encodeHtml($epage['name']);?></label>
 						</td>
 					</tr>
 					</view:epage>
@@ -73,10 +73,10 @@
 					</tr>
 					<view:et>
 					<tr>
-						<td><?=$et['_id'];?></td>
+						<td><?=encodeHtml($et['_id']);?></td>
 						<td>
-							<input data-export="template" type="checkbox" name="export_templates[]" id="ck_<?=$et['_id'];?>_template" value="<?=$et['_id'];?>" />
-							<label for="ck_<?=$et['_id'];?>_template"><?=$et['name'];?></label>
+							<input data-export="template" type="checkbox" name="export_templates[]" id="ck_<?=encodeHtml($et['_id']);?>_template" value="<?=encodeHtml($et['_id']);?>" />
+							<label for="ck_<?=encodeHtml($et['_id']);?>_template"><?=encodeHtml($et['name']);?></label>
 						</td>
 					</tr>
 					</view:et>
@@ -100,7 +100,8 @@
 <view:export>
 	<div class="w_centerpop_title"><span class="icon-export"></span> Export</div>
 	<div class="w_centerpop_content" style="max-width:600px;max-height:400px;overflow:auto;">
-		<?=printValue($_REQUEST);?>
+		<div class="w_bold w_success"><span class="icon-checkmark"></span> Export file generated successfully</div>
+		<p>Your export file has been created and should download automatically.</p>
 	</div>
 </view:export>
 
