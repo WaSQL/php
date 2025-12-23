@@ -14,14 +14,34 @@
 		break;
 		case 'export':
 			setView('export',1);
-			//export_schema, export_meta, export_data
-			//export_pages, export_templates
-			$filename=addslashes($_REQUEST['name']);
-			$schema=isset($_REQUEST['export_schema']) && is_array($_REQUEST['export_schema']) && count($_REQUEST['export_schema'])?$_REQUEST['export_schema']:array();
-			$meta=isset($_REQUEST['export_meta']) && is_array($_REQUEST['export_meta']) && count($_REQUEST['export_meta'])?$_REQUEST['export_meta']:array();
-			$data=isset($_REQUEST['export_data']) && is_array($_REQUEST['export_data']) && count($_REQUEST['export_data'])?$_REQUEST['export_data']:array();
-			$pages=isset($_REQUEST['export_pages']) && is_array($_REQUEST['export_pages']) && count($_REQUEST['export_pages'])?$_REQUEST['export_pages']:array();
-			$templates=isset($_REQUEST['export_templates']) && is_array($_REQUEST['export_templates']) && count($_REQUEST['export_templates'])?$_REQUEST['export_templates']:array();
+			//Validate filename - prevent path traversal
+			if(!isset($_REQUEST['name']) || !strlen(trim($_REQUEST['name']))){
+				echo '<div class="w_bold w_danger">Filename is required</div>';
+				return;
+			}
+			$filename=trim($_REQUEST['name']);
+			if(!exportValidateFilename($filename)){
+				echo '<div class="w_bold w_danger">Invalid filename. Only alphanumeric characters, underscores, hyphens, and dots are allowed.</div>';
+				return;
+			}
+
+			//Get and validate arrays
+			$schema=isset($_REQUEST['export_schema']) && is_array($_REQUEST['export_schema'])?$_REQUEST['export_schema']:array();
+			$meta=isset($_REQUEST['export_meta']) && is_array($_REQUEST['export_meta'])?$_REQUEST['export_meta']:array();
+			$data=isset($_REQUEST['export_data']) && is_array($_REQUEST['export_data'])?$_REQUEST['export_data']:array();
+			$pages=isset($_REQUEST['export_pages']) && is_array($_REQUEST['export_pages'])?$_REQUEST['export_pages']:array();
+			$templates=isset($_REQUEST['export_templates']) && is_array($_REQUEST['export_templates'])?$_REQUEST['export_templates']:array();
+
+			//Validate table names
+			$validTables=pageGetTables();
+			$schema=exportValidateTableArray($schema,$validTables);
+			$meta=exportValidateTableArray($meta,$validTables);
+			$data=exportValidateTableArray($data,$validTables);
+
+			//Validate page and template IDs
+			$pages=exportValidateIdArray($pages);
+			$templates=exportValidateIdArray($templates);
+
 			$ok=pageBuildExport($filename,$schema,$meta,$data,$pages,$templates);
 			return;
 		break;
