@@ -11,13 +11,32 @@
 </p>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;">
 <pre id="dasql_ini_entry" class="w_smaller w_gray" style="margin-top:0px;padding-top:0px;">
-[<?=$_SERVER['UNIQUE_HOST'];?>]
-db=<?=$CONFIG['database'];?>
-authkey=<?=userValue('_auth');?>
-base_url=https://<?=$_SERVER['HTTP_HOST'];?>
+[<?=encodeHtml($_SERVER['UNIQUE_HOST']);?>]
+db=<?=encodeHtml($CONFIG['database']);?>
+authkey=<span id="authkey_display">••••••••••••••••</span><span id="authkey_value" style="display:none;"><?=encodeHtml(userValue('_auth'));?></span>
+base_url=https://<?=encodeHtml($_SERVER['HTTP_HOST']);?>
 output_format=dos
 </pre>
-<span style="margin-left:15px;" class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="wacss.copy2Clipboard(trim(getText('dasql_ini_entry')));"></span>
+<span style="margin-left:15px;" class="icon-copy w_gray w_pointer" title="copy to clipboard" onclick="
+	var pre = document.getElementById('dasql_ini_entry');
+	var authValue = trim(getText('authkey_value'));
+	var fullText = trim(pre.innerText || pre.textContent);
+	fullText = fullText.replace('••••••••••••••••', authValue).replace(authValue, authValue);
+	wacss.copy2Clipboard(fullText);
+"></span>
+<span style="margin-left:15px;" class="icon-eye w_gray w_pointer" id="toggle_authkey" title="show/hide auth key" onclick="
+	var display = document.getElementById('authkey_display');
+	var value = document.getElementById('authkey_value');
+	if(display.style.display === 'none') {
+		display.style.display = 'inline';
+		value.style.display = 'none';
+		this.className = 'icon-eye w_gray w_pointer';
+	} else {
+		display.style.display = 'none';
+		value.style.display = 'inline';
+		this.className = 'icon-eye-off w_gray w_pointer';
+	}
+"></span>
 </div>
 <p>
 	Possible host attributes and their explanations are as follows :
@@ -38,8 +57,8 @@ output_format=dos
 		<li>In Sublime Text navigate to Tools->Developer->New Plugin</li>
 		<li>Replace the contents with the contents found in custom_exec.py.sample file in the dasql directory.</li>
 		<li>Save and name this custom_exec.py</li>
-		<li>create a file called <?=$_SERVER['UNIQUE_HOST'];?>.sql and place it in the same dasql directory</li>
-		<li>Open <?=$_SERVER['UNIQUE_HOST'];?>.sql in Sublime and write a query</li>
+		<li>create a file called <?=encodeHtml($_SERVER['UNIQUE_HOST']);?>.sql and place it in the same dasql directory</li>
+		<li>Open <?=encodeHtml($_SERVER['UNIQUE_HOST']);?>.sql in Sublime and write a query</li>
 		<li>Enter CTRL-B to execute the query</li>
 	</ol>
 </p>
