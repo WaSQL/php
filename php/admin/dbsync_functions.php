@@ -1,5 +1,47 @@
 <?php
 loadExtras('translate');
+
+//Input validation functions
+function dbsyncValidateDatabaseName($name){
+	//Validate database name format (alphanumeric, underscore, hyphen)
+	if(!isset($name) || !strlen($name)){
+		return false;
+	}
+	//Only allow alphanumeric, underscore, and hyphen
+	if(!preg_match('/^[a-zA-Z0-9\_\-]+$/',$name)){
+		return false;
+	}
+	return true;
+}
+
+function dbsyncValidateTableName($table){
+	//Only allow alphanumeric, underscore, hyphen, and dot (for schema.table)
+	if(!preg_match('/^[a-zA-Z0-9\_\-\.]+$/',$table)){
+		return false;
+	}
+	return true;
+}
+
+function dbsyncValidateProcedureName($name){
+	//Only allow alphanumeric, underscore, and hyphen
+	if(!preg_match('/^[a-zA-Z0-9\_\-]+$/',$name)){
+		return false;
+	}
+	return true;
+}
+
+function dbsyncValidateProcedureType($type){
+	//Only allow specific procedure types
+	$allowed=array('function','procedure','trigger','view','package');
+	return in_array(strtolower($type),$allowed);
+}
+
+function dbsyncValidateViewName($view){
+	//Only allow specific view names
+	$allowed=array('default','compare','tables_indexes','compare_tables_indexes','compare_functions_procedures','view_diff','view_sync','ddl','showlist');
+	return in_array(strtolower($view),$allowed);
+}
+
 function dbsyncSyncIndexes($sync){
 	$recs=array();
 	//source
