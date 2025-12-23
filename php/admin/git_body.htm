@@ -67,7 +67,7 @@
 				<button class="wacss_button is-mobile-responsive is-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add</button>
 				<button class="wacss_button is-mobile-responsive is-danger" type="submit" onclick="if(!confirm('Remove selected files from git tracking? This cannot be undone.')){return false;}else{document.gitform.func.value='remove';document.gitform.confirm_remove.value='1';return true;}"><span class="icon-minus"></span> Remove</button>
 				<button class="wacss_button is-mobile-responsive is-warning" type="submit" onclick="if(!confirm('Revert selected files, losing all changes? This cannot be undone.')){return false;}else{document.gitform.func.value='revert';document.gitform.confirm_revert.value='1';return true;}"><span class="icon-backward"></span> Revert</button>
-				<button class="wacss_button is-mobile-responsive is-success" type="submit" onclick="document.gitform.func.value='commit_push';"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push</button>
+				<button class="wacss_button is-mobile-responsive is-success" type="submit" onclick="return gitConfirmCommitPush();"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push</button>
 				<div id="gitform_processing" style="flex:1;"></div>
 				<a href="/php/admin.php?_menu=git" class="wacss_button is-mobile-responsive"><span class="icon-refresh w_big"></span> Refresh</a>
 				<a href="#" class="wacss_button is-mobile-responsive is-primary" data-nav="/php/admin.php" data-div="git_details" data-form="gitform" data-func="pull" onclick="return wacss.nav(this);"><span class="icon-download"></span> Pull</a>
@@ -245,6 +245,41 @@ function gitRemoveDeletedRow(sha){
 			}, 500);
 		}
 	}
+}
+
+function gitConfirmCommitPush(){
+	// Get all file checkboxes
+	var checkboxes = document.querySelectorAll('input[name="files[]"]');
+	var checkedFiles = [];
+
+	// Collect checked files
+	for(var i = 0; i < checkboxes.length; i++){
+		if(checkboxes[i].checked){
+			var label = document.querySelector('label[for="' + checkboxes[i].id + '"]');
+			if(label){
+				checkedFiles.push(label.textContent.trim());
+			}
+		}
+	}
+
+	// Validate that at least one file is checked
+	if(checkedFiles.length === 0){
+		alert('No files selected. Please check at least one file to commit and push.');
+		return false;
+	}
+
+	// Build confirmation message
+	var fileList = checkedFiles.join('\n  - ');
+	var confirmMsg = 'Commit and push ' + checkedFiles.length + ' file(s)?\n\n  - ' + fileList;
+
+	// Confirm with user
+	if(!confirm(confirmMsg)){
+		return false;
+	}
+
+	// Set the func value and proceed with submission
+	document.gitform.func.value = 'commit_push';
+	return true;
 }
 </script>
 
