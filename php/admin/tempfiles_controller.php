@@ -1,11 +1,22 @@
 <?php
+//Access control check
+if(!isAdmin()){
+	echo '<div class="w_bold w_danger">Access Denied: Admin privileges required</div>';
+	exit;
+}
+
 global $path;
 $path=getWasqlPath('/php/temp');
+
 switch(strtolower($_REQUEST['func'])){
 	case 'view':
 	break;
 	case 'clear_tab':
 		$ext=$_REQUEST['ext'];
+		if(!tempfilesValidateExtension($ext)){
+			echo '<div class="w_bold w_danger">Invalid extension</div>';
+			exit;
+		}
 		cleanupDirectory($path,1,'min',$ext);
 		$tabs=tempfilesGetTabs();
 		setView('default');
@@ -13,30 +24,72 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'clear_checked':
 		$ext=$_REQUEST['ext'];
+		if(!tempfilesValidateExtension($ext)){
+			echo '<div class="w_bold w_danger">Invalid extension</div>';
+			exit;
+		}
 		$names=preg_split('/\;/',$_REQUEST['files']);
 		foreach($names as $name){
+			if(!tempfilesValidateFileName($name)){
+				continue; //Skip invalid filenames
+			}
 			$afile="{$path}/{$name}.{$ext}";
-			unlink($afile);
+			//Double-check the file is within the temp directory
+			$realPath=realpath($afile);
+			if($realPath && strpos($realPath,realpath($path))===0 && file_exists($afile)){
+				unlink($afile);
+			}
 		}
 		setView('list',1);
 	break;
 	case 'clear_file':
 		$ext=$_REQUEST['ext'];
 		$file=$_REQUEST['file'];
+		if(!tempfilesValidateExtension($ext)){
+			echo '<div class="w_bold w_danger">Invalid extension</div>';
+			exit;
+		}
+		if(!tempfilesValidateFileName($file)){
+			echo '<div class="w_bold w_danger">Invalid filename</div>';
+			exit;
+		}
 		$afile="{$path}/{$file}";
+		//Validate the file is within the temp directory
+		$realPath=realpath($afile);
+		if(!$realPath || strpos($realPath,realpath($path))!==0){
+			echo '<div class="w_bold w_danger">Invalid file path</div>';
+			exit;
+		}
 		if($ext != 'log'){
 			//matching logfile?
 			$logfile=preg_replace('/\.'.$ext.'$/','.log',$afile);
-			if(file_exists($logfile)){
+			$logRealPath=realpath($logfile);
+			if(file_exists($logfile) && $logRealPath && strpos($logRealPath,realpath($path))===0){
 				unlink($logfile);
 			}
 		}
-		unlink($afile);
+		if(file_exists($afile)){
+			unlink($afile);
+		}
 		setView('list',1);
 	break;
 	case 'view_file':
 		$file=$_REQUEST['file'];
+		if(!tempfilesValidateFileName($file)){
+			echo '<div class="w_bold w_danger">Invalid filename</div>';
+			exit;
+		}
 		$afile="{$path}/{$file}";
+		//Validate the file is within the temp directory
+		$realPath=realpath($afile);
+		if(!$realPath || strpos($realPath,realpath($path))!==0){
+			echo '<div class="w_bold w_danger">Invalid file path</div>';
+			exit;
+		}
+		if(!file_exists($afile)){
+			echo '<div class="w_bold w_danger">File not found</div>';
+			exit;
+		}
 		if(filesize($afile) > 2000000){
 			$content=tailFile($afile,300);
 		}
@@ -54,9 +107,19 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'list':
 		$ext=$_REQUEST['ext'];
+		if(!tempfilesValidateExtension($ext)){
+			echo '<div class="w_bold w_danger">Invalid extension</div>';
+			exit;
+		}
 		$sort='name';
 		if(isset($_REQUEST['sort']) && strlen($_REQUEST['sort'])){
-			$sort=$_REQUEST['sort'];
+			//Validate sort parameter to prevent injection
+			$allowedSorts=array('name','username','db','size','_cdate_age_verbose','_adate_age_verbose',
+				'name desc','username desc','db desc','size desc','_cdate_age_verbose desc','_adate_age_verbose desc',
+				'name asc','username asc','db asc','size asc','_cdate_age_verbose asc','_adate_age_verbose asc');
+			if(in_array(strtolower($_REQUEST['sort']),$allowedSorts)){
+				$sort=$_REQUEST['sort'];
+			}
 		}
 		setView('list',1);
 		return;
@@ -66,55 +129,4 @@ switch(strtolower($_REQUEST['func'])){
 		setView('default');
 	break;
 }
-return;
-	$progpath=dirname(__FILE__);
-	$tempdir="{$progpath}/temp";
-	if(isset($_REQUEST['delete']) && is_array($_REQUEST['delete'])){
-    	foreach($_REQUEST['delete'] as $file){
-        	$file=decodeBase64($file);
-        	unlink("{$tempdir}/{$file}");
-        	//echo "unlink {$tempdir}/{$file}<br>";
-		}
-	}
-	elseif(isset($_REQUEST['file'])){
-		$files=listFilesEx($tempdir,array('name'=>decodeBase64($_REQUEST['file'])));
-		$file=$files[0];
-		unset($files);
-		switch($file['ext']){
-        	case 'php':$behavior='phpeditor';break;
-			case 'js':$behavior='jseditor';break;
-			case 'css':$behavior='csseditor';break;
-			case 'pl':$behavior='perleditor';break;
-			case 'rb':$behavior='rubyeditor';break;
-			case 'sql':$behavior='sqleditor';break;
-			case 'xml':$behavior='xmleditor';break;
-			case 'txt':$behavior='txteditor';break;
-        	default:
-        		$behavior='';
-        	break;
-		}
-		if($file['lines'] < 500){
-			$content=getFileContents($file['afile']);
-		}
-		else{
-			$content="NOTE: File is too large to view full contents. Only showing first 500 lines below:\r\n\r\n";
-			$content .= getFileContentsPartial($file['afile'],0,500);
-			$content .= "\r\n\r\nNOTE: File is too large to view full contents. Only showing first 500 lines above:";
-		}
-		setView('details',1);
-		return;
-	}
-	setView('default',1);
-	$files=listFilesEx($tempdir);
-	$exts=array();
-	foreach($files as $i=>$file){
-		$exts[$file['ext']]+=1;
-		$files[$i]['sha_name']=sha1($file['name']);
-	}
-	ksort($exts);
-	foreach($exts as $ext=>$cnt){
-		break;
-	}
-	$sortkey=isset($_REQUEST['sort'])?$_REQUEST['sort']:'name';
-	$files=sortArrayByKey($files,$sortkey,SORT_ASC);
 ?>
