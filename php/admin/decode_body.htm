@@ -3,12 +3,12 @@
 	<div class="row w_noprint">
 		<div class="col-sm-12">
 			<ul class="nav-tabs <?=configValue('admin_color');?>">
-				<li class="active"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'json_forms',showprocessing:false});"><span class="icon-json"></span> JSON</a></li>
-				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'base64_forms',showprocessing:false});">BASE64</a></li>
-				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'url_forms',showprocessing:false});"><span class="icon-link"></span> URL</a></li>
-				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'html_forms',showprocessing:false});"><span class="icon-html5"></span> HTML</a></li>
-				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'qrcode_form',showprocessing:false});"><span class="icon-qrcode"></span> QRCode Generator</a></li>
-				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode','func':'barcode_form',showprocessing:false});"><span class="icon-barcode"></span> Barcode Generator</a></li>
+				<li class="active"><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode',func:'json_forms',showprocessing:false});"><span class="icon-json"></span> JSON</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode',func:'base64_forms',showprocessing:false});">BASE64</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode',func:'url_forms',showprocessing:false});"><span class="icon-link"></span> URL</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode',func:'html_forms',showprocessing:false});"><span class="icon-html5"></span> HTML</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode',func:'qrcode_form',showprocessing:false});"><span class="icon-qrcode"></span> QRCode Generator</a></li>
+				<li><a href="#" onclick="return setActiveNav(this,'/php/admin.php','forms',{_menu:'decode',func:'barcode_form',showprocessing:false});"><span class="icon-barcode"></span> Barcode Generator</a></li>
 			</ul>
 		</div>
 	</div>
@@ -23,31 +23,31 @@
 <view:decode_forms>
 <div class="row w_noprint">
 	<div class="col-sm-6">
-		<h3><?=$type;?> Decoder 1</h3>
+		<h3><?=encodeHtml($type);?> Decoder 1</h3>
 		<form method="POST" name="decoder_form1" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'decoder1');">
 			<input type="hidden" name="_menu" value="decode">
-			<input type="hidden" name="func" value="<?=$type;?>">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
-			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode <?=$type;?></button></div>
+			<input type="hidden" name="func" value="<?=encodeHtml($type);?>">
+			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=encodeHtml($type);?>" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=encodeHtml($type);?> here"></textarea>
+			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode <?=encodeHtml($type);?></button></div>
 		</form>
 	</div>
 	<div class="col-sm-6">
-		<h3><?=$type;?> Decoder 2</h3>
+		<h3><?=encodeHtml($type);?> Decoder 2</h3>
 		<form method="POST" name="decoder_form2" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'decoder2');">
 			<input type="hidden" name="_menu" value="decode">
-			<input type="hidden" name="func" value="<?=$type;?>">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="<?=$type;?>" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
-			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode <?=$type;?></button></div>
+			<input type="hidden" name="func" value="<?=encodeHtml($type);?>">
+			<textarea cols="7" rows="10" wrap="off" name="<?=encodeHtml($type);?>" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=encodeHtml($type);?> here"></textarea>
+			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode <?=encodeHtml($type);?></button></div>
 		</form>
 	</div>
 </div>
-<div style="display:flex;">
-	<div style="flex:1;position: relative;">
-		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#decoder1').innerText);"></span>
+<div style="display:flex;gap:10px;">
+	<div style="flex:1;position:relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" title="Copy to clipboard" onclick="wacss.copy2Clipboard((document.querySelector('#decoder1').textContent || document.querySelector('#decoder1').innerText));"></span>
 		<div id="decoder1"></div>
 	</div>
-	<div style="flex:1;position: relative;">
-		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#decoder2').innerText);"></span>
+	<div style="flex:1;position:relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" title="Copy to clipboard" onclick="wacss.copy2Clipboard((document.querySelector('#decoder2').textContent || document.querySelector('#decoder2').innerText));"></span>
 		<div id="decoder2"></div>
 	</div>
 </div>
@@ -56,31 +56,31 @@
 <view:encode_decode_forms>
 <div class="row w_noprint">
 	<div class="col-sm-6">
-		<h3><?=$type;?> Encoder</h3>
+		<h3><?=encodeHtml($type);?> Encoder</h3>
 		<form method="POST" name="url_form1" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results1');">
 			<input type="hidden" name="_menu" value="decode">
-			<input type="hidden" name="func" value="<?=$type;?>_encode">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
+			<input type="hidden" name="func" value="<?=encodeHtml($type);?>_encode">
+			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="wacss_textarea is-mobile-responsive" placeholder="Enter text to encode"></textarea>
 			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Encode</button></div>
 		</form>
 	</div>
 	<div class="col-sm-6">
-		<h3><?=$type;?> Decoder</h3>
+		<h3><?=encodeHtml($type);?> Decoder</h3>
 		<form method="POST" name="url_form2" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results2');">
 			<input type="hidden" name="_menu" value="decode">
-			<input type="hidden" name="func" value="<?=$type;?>_decode">
-			<textarea cols="7" rows="10" wrap="off" autofocus="true" name="str" class="wacss_textarea is-mobile-responsive" placeholder="Enter <?=$type;?> here"></textarea>
+			<input type="hidden" name="func" value="<?=encodeHtml($type);?>_decode">
+			<textarea cols="7" rows="10" wrap="off" name="str" class="wacss_textarea is-mobile-responsive" placeholder="Enter text to decode"></textarea>
 			<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Decode</button></div>
 		</form>
 	</div>
 </div>
-<div style="display:flex;">
-	<div style="flex:1;position: relative;">
-		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#results1').innerText);"></span>
+<div style="display:flex;gap:10px;">
+	<div style="flex:1;position:relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" title="Copy to clipboard" onclick="wacss.copy2Clipboard((document.querySelector('#results1').textContent || document.querySelector('#results1').innerText));"></span>
 		<div id="results1"></div>
 	</div>
-	<div style="flex:1;position: relative;">
-		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#results2').innerText);"></span>
+	<div style="flex:1;position:relative;">
+		<span style="position:absolute;top:-5px;right:-5px;cursor:pointer;" class="icon-copy w_small w_gray" title="Copy to clipboard" onclick="wacss.copy2Clipboard((document.querySelector('#results2').textContent || document.querySelector('#results2').innerText));"></span>
 		<div id="results2"></div>
 	</div>
 </div>
@@ -89,8 +89,8 @@
 <view:encode_form>
 <div class="w_noprint">
 <form method="POST" name="encode_form" enctype="multipart/form-data" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results');">
-	<div style="display:flex;justify-content: space-between;">
-		<h3 class="w_noprint"><?=$type;?> Generater</h3>
+	<div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+		<h3 class="w_noprint"><?=encodeHtml($type);?> Generator</h3>
 		<view:qrcode_sizes>
 			<div style="display:flex;flex:1;flex-wrap:wrap;margin-bottom:10px;">
 				<div style="margin-left:15px;">
@@ -101,7 +101,7 @@
 				</div>
 				<div style="margin-left:15px;">
 					<div><label>Transparent</label></div>
-					<select name="transparent" class="wacss_select is-mobile-responsive" style="width:" required>
+					<select name="transparent" class="wacss_select is-mobile-responsive" required>
 						<option value="0" selected>No</option>
 						<option value="1">Yes</option>
 					</select>
@@ -117,19 +117,19 @@
 				</div>
 				<div style="margin-left:15px;">
 					<div><label>Size</label></div>
-					<input type="number" min="1" mask="[0-9]" name="size" class="wacss_input is-mobile-responsive" value="5" style="width:80px;" required>
+					<input type="number" min="1" max="40" name="size" class="wacss_input is-mobile-responsive" value="5" style="width:80px;" required>
 				</div>
 				<div style="margin-left:15px;">
 					<div><label>Margin</label></div>
-					<input type="number" min="0" mask="[0-9]" name="margin" class="wacss_input is-mobile-responsive" value="4" style="width:80px;" required>
+					<input type="number" min="0" max="10" name="margin" class="wacss_input is-mobile-responsive" value="4" style="width:80px;" required>
 				</div>
 			</div>
 		</view:qrcode_sizes>
 		<?=renderViewIf($type=='qrcode','qrcode_sizes');?>
 	</div>
 	<input type="hidden" name="_menu" value="decode">
-	<input type="hidden" name="func" value="<?=$type;?>">
-	<textarea cols="7" rows="10" wrap="off" autofocus="true" name="content" class="wacss_textarea is-mobile-responsive" placeholder="One per line"></textarea>
+	<input type="hidden" name="func" value="<?=encodeHtml($type);?>">
+	<textarea cols="7" rows="10" wrap="off" autofocus="true" name="content" class="wacss_textarea is-mobile-responsive" placeholder="One per line (max 100)"></textarea>
 	<div class="w_padtop text-right"><button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit">Generate</button></div>
 </form>
 </div>
@@ -144,3 +144,23 @@
 <view:results>
 	<?=$results;?>
 </view:results>
+
+<view:not_authenticated>
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-lock"></span> Authentication Required</h3>
+			<p>You must be logged in to access decode utilities.</p>
+			<a href="/php/admin.php?_menu=login" class="wacss_button is-primary">Login</a>
+		</div>
+	</div>
+</view:not_authenticated>
+
+<view:not_authorized>
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-lock"></span> Access Denied</h3>
+			<p>You must be an administrator to access decode utilities.</p>
+			<p>This security violation has been logged.</p>
+		</div>
+	</div>
+</view:not_authorized>
