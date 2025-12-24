@@ -20,79 +20,79 @@
 <div style="max-width:90vw;">
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Task Name:</label>
-		<div style="flex:9;"><?=$rec['taskname'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['taskname']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Location:</label>
-		<div style="flex:9;"><?=$rec['location'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['location']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Author:</label>
-		<div style="flex:9;"><?=$rec['author'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['author']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Description:</label>
-		<div style="flex:9;"><?=$rec['comment'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['comment']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Task To Run:</label>
-		<div style="flex:9;"><?=$rec['task_to_run'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['task_to_run']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Start In:</label>
-		<div style="flex:9;"><?=$rec['start_in'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['start_in']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Run as User:</label>
-		<div style="flex:9;"><?=$rec['run_as_user'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['run_as_user']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Next Run Time:</label>
-		<div style="flex:9;"><?=$rec['next_run_time'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['next_run_time']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Last Run Time:</label>
-		<div style="flex:9;"><?=$rec['last_run_time'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['last_run_time']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Last Result:</label>
-		<div style="flex:9;"><?=$rec['last_result'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['last_result']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Scheduled Task State:</label>
-		<div style="flex:9;"><?=$rec['scheduled_task_state'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['scheduled_task_state']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Status:</label>
-		<div style="flex:9;"><?=$rec['status'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['status']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Idle Time:</label>
-		<div style="flex:9;"><?=$rec['idle_time'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['idle_time']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Power Management:</label>
-		<div style="flex:9;"><?=$rec['power_management'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['power_management']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Schedule Type:</label>
-		<div style="flex:9;"><?=$rec['schedule_type'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['schedule_type']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Months:</label>
-		<div style="flex:9;"><?=$rec['months'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['months']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Days:</label>
-		<div style="flex:9;"><?=$rec['days'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['days']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">Start Date/Time:</label>
-		<div style="flex:9;"><?=$rec['start_date'];?> <?=$rec['start_time'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['start_date']);?> <?=encodeHtml($rec['start_time']);?></div>
 	</div>
 	<div style="display:flex;flex-wrap: wrap;margin-top:5px;">
 		<label style="flex:3;">End Date:</label>
-		<div style="flex:9;"><?=$rec['end_date'];?></div>
+		<div style="flex:9;"><?=encodeHtml($rec['end_date']);?></div>
 	</div>
 </div>
 <?=buildOnLoad("centerObject('centerpop');");?>
