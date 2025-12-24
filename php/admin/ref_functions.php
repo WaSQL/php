@@ -17,8 +17,8 @@ function refShowList($tab){
 			//fix tags
 			foreach($recs as $i=>$rec){
 				$recs[$i]['category']=preg_replace('/[^a-z0-9\-]+/i','',$rec['category']);
-				$recs[$i]['function']='<xmp style="margin:0px;white-space:inherit;">'.$rec['function'].'</xmp>';
-				$recs[$i]['description']='<xmp style="margin:0px;white-space:inherit;">'.$rec['description'].'</xmp>';
+				$recs[$i]['function']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['function']).'</pre>';
+				$recs[$i]['description']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['description']).'</pre>';
 			}
 		break;
 		case 'html_tags':
@@ -28,8 +28,8 @@ function refShowList($tab){
 			foreach($xrecs as $i=>$rec){
 				$recs[]=array(
 					'name'=>preg_replace('/[^a-z0-9\-]+/i','',$rec['tag']),
-					'tag'=>'<xmp style="margin:0px;white-space:inherit;">'.$rec['tag'].'</xmp>',
-					'description'=>'<xmp style="margin:0px;white-space:inherit;">'.$rec['description'].'</xmp>'
+					'tag'=>'<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['tag']).'</pre>',
+					'description'=>'<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['description']).'</pre>'
 				);
 			}
 		break;
@@ -39,8 +39,8 @@ function refShowList($tab){
 			//fix tags
 			foreach($recs as $i=>$rec){
 				$recs[$i]['attribute']=preg_replace('/[^a-z0-9\-]+/i','',$rec['attribute']);
-				$recs[$i]['belongs_to']='<xmp style="margin:0px;white-space:inherit;">'.$rec['belongs_to'].'</xmp>';
-				$recs[$i]['description']='<xmp style="margin:0px;white-space:inherit;">'.$rec['description'].'</xmp>';
+				$recs[$i]['belongs_to']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['belongs_to']).'</pre>';
+				$recs[$i]['description']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['description']).'</pre>';
 			}
 		break;
 		case 'html_events':
@@ -49,7 +49,7 @@ function refShowList($tab){
 			//fix tags
 			foreach($recs as $i=>$rec){
 				$recs[$i]['attribute']=preg_replace('/[^a-z0-9\-]+/i','',$rec['attribute']);
-				$recs[$i]['description']='<xmp style="margin:0px;white-space:inherit;">'.$rec['description'].'</xmp>';
+				$recs[$i]['description']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['description']).'</pre>';
 			}
 		break;
 		case 'css_styles':
@@ -58,8 +58,8 @@ function refShowList($tab){
 			//fix tags
 			foreach($recs as $i=>$rec){
 				$recs[$i]['attribute']=preg_replace('/[^a-z0-9\-]+/i','',$rec['attribute']);
-				$recs[$i]['value']='<xmp style="margin:0px;white-space:inherit;">'.$rec['value'].'</xmp>';
-				$recs[$i]['description']='<xmp style="margin:0px;white-space:inherit;">'.$rec['description'].'</xmp>';
+				$recs[$i]['value']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['value']).'</pre>';
+				$recs[$i]['description']='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($rec['description']).'</pre>';
 			}
 		break;
 		case 'sql_reference':
@@ -116,7 +116,7 @@ function refShowList($tab){
 			//fix tags
 			foreach($recs as $i=>$rec){
 				foreach($rec as $k=>$v){
-					$recs[$i][$k]="<xmp style=\"margin:0px;white-space:inherit;\">{$v}</xmp>";
+					$recs[$i][$k]='<pre style="margin:0px;white-space:inherit;">'.encodeHtml($v).'</pre>';
 				}
 			}
 		break;
