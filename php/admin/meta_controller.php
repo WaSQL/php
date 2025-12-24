@@ -12,7 +12,7 @@
 		$ok=executeSQL($sql);
 		$adir="{$_SERVER['DOCUMENT_ROOT']}/images";
 		if(!is_dir($adir)){
-			mkdir($adir,0777,1);
+			mkdir($adir,0755,1);
 		}
 		$id=addDBRecord(array('-table'=>"_fielddata",
 			'tablename'		=> '_pages',
