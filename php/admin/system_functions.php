@@ -2,7 +2,7 @@
 function systemGetProcessListExtra($recs){
 	global $ADMINPAGE;
 	foreach($recs as $i=>$rec){
-		$recs[$i]['command']='<div style="max-width:200px;text-overflow: ellipsis;overflow:hidden;white-space:nowrap;" title="'.$rec['command'].'">'.$rec['command'].'</div>';
+		$recs[$i]['command']='<div style="max-width:200px;text-overflow: ellipsis;overflow:hidden;white-space:nowrap;" title="'.encodeHtml($rec['command']).'">'.encodeHtml($rec['command']).'</div>';
 	}
 	return $recs;
 }
@@ -18,7 +18,7 @@ function systemGetDriveSpaceExtra($recs){
 			continue;
 		}
 		if(isset($ADMINPAGE["mounted_{$rec['mounted']}_icon"])){
-			$recs[$i]['filesystem']='<span class="'.$ADMINPAGE["mounted_{$rec['mounted']}_icon"].'"></span> '.$rec['filesystem'];
+			$recs[$i]['filesystem']='<span class="'.encodeHtml($ADMINPAGE["mounted_{$rec['mounted']}_icon"]).'"></span> '.encodeHtml($rec['filesystem']);
 		}
 
 	}
@@ -33,16 +33,16 @@ function systemShowList($recs,$listopts=array()){
 		'_menu'=>'system',
 		'-onsubmit'=>"return pagingSubmit(this,'system_content');",
 		'-formname'=>'systemlist',
-		'-tableclass'=>'wacss_table responsive bordered striped fullwidth sticky',
-		'-tableheight'=>'80vh',
+		'-tableclass'=>'wacss_table bordered striped fullwidth sticky',
 	);
 	foreach($listopts as $k=>$v){
 		if(is_array($v)){$opts[$k]=$v;}
 		elseif(!strlen($v)){unset($opts[$k]);}
 		else{$opts[$k]=$v;}
 	}
-	if(isset($_REQUEST['filter_order'])){
-		$fld=$_REQUEST['filter_order'];
+	if(isset($_REQUEST['filter_order']) && strlen($_REQUEST['filter_order'])){
+		// Sanitize field name - only allow alphanumeric, underscore, dash, and space
+		$fld = preg_replace('/[^a-z0-9_\-\s]/i', '', $_REQUEST['filter_order']);
 		$opts['-order']=$fld;
 		if(stringEndsWith($fld,' desc')){
 			$fld=str_replace(' desc','',$fld);
@@ -51,6 +51,7 @@ function systemShowList($recs,$listopts=array()){
 		else{
 			$sort=SORT_ASC;
 		}
+		// Only sort if the field actually exists in the data
 		if(isset($recs[0][$fld])){
 			$opts['-list']=sortArrayByKey($recs,$fld,$sort);
 		}
