@@ -12,7 +12,22 @@ if(!isset($ADMINPAGE['ajaxpage'])){
 if(!isset($ADMINPAGE['ajaxdiv'])){
 	$ADMINPAGE['ajaxdiv']='system_content';
 }
-switch(strtolower($_REQUEST['tab'])){
+
+// Validate tab parameter - whitelist only
+$valid_tabs = array('info', 'uptime', 'os', 'drives', 'memory', 'network', 'processes', 'diskstats');
+
+// If tab is not set or invalid, go to default case (initial page load)
+if(!isset($_REQUEST['tab'])){
+	$tab = '';
+}
+elseif(in_array(strtolower($_REQUEST['tab']), $valid_tabs)){
+	$tab = strtolower($_REQUEST['tab']);
+}
+else{
+	$tab = ''; // Invalid tab - go to default
+}
+
+switch($tab){
 	case 'info':
 		$info=getServerUptime();
 		$recs=array();
@@ -155,7 +170,6 @@ switch(strtolower($_REQUEST['tab'])){
 		$recs=systemGetProcessList();
 		$listopts=array(
 			'tab'=>'processes',
-			//'-pretable'=>json_encode($_REQUEST),
 			'pid_class'=>'align-right',
 			'mem_usage_options'=>array(
 				'class'=>'align-right w_nowrap',
@@ -177,9 +191,56 @@ switch(strtolower($_REQUEST['tab'])){
 	break;
 	case 'diskstats':
 		if(isWindows()){
-			$recs=array(
-				array('note'=>'Disk Stats is Not available on windows yet')
-			);
+			// Windows: Use WMIC to get disk I/O statistics
+			$out=cmdResults('wmic diskdrive get DeviceID,Model,Size,Status,BytesPerSector /format:csv');
+			$lines=preg_split('/[\r\n]+/',$out['stdout']);
+			$recs=array();
+			$headers=array();
+			foreach($lines as $idx=>$line){
+				$line=trim($line);
+				if(!strlen($line)){continue;}
+				$parts=preg_split('/\,/',$line);
+				if($idx==0){
+					// First line is headers
+					foreach($parts as $i=>$part){
+						$headers[$i]=strtolower(trim($part));
+					}
+					continue;
+				}
+				if(count($parts)<2){continue;}
+				$rec=array();
+				foreach($parts as $i=>$part){
+					if(isset($headers[$i])){
+						$rec[$headers[$i]]=trim($part);
+					}
+				}
+				if(isset($rec['deviceid']) && strlen($rec['deviceid'])){
+					// Get additional I/O stats using PowerShell
+					$deviceNum=preg_replace('/[^0-9]+/','',$rec['deviceid']);
+					if(strlen($deviceNum)){
+						$ps_cmd='powershell -Command "Get-Counter \'\PhysicalDisk('.$deviceNum.' *)\\*\' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty CounterSamples | Select-Object Path,CookedValue | ConvertTo-Csv -NoTypeInformation"';
+						$ps_out=cmdResults($ps_cmd);
+						if(isset($ps_out['stdout']) && strlen($ps_out['stdout'])){
+							$ps_lines=preg_split('/[\r\n]+/',$ps_out['stdout']);
+							foreach($ps_lines as $ps_idx=>$ps_line){
+								if($ps_idx==0){continue;} // Skip header
+								$ps_line=trim($ps_line);
+								if(!strlen($ps_line)){continue;}
+								// Parse CSV: "Path","CookedValue"
+								if(preg_match('/\"([^\"]+)\"\,\"([^\"]+)\"/',$ps_line,$matches)){
+									$counter_path=$matches[1];
+									$counter_value=$matches[2];
+									if(preg_match('/\\\\([^\\\\]+)$/',$counter_path,$m)){
+										$counter_name=strtolower(str_replace(' ','_',$m[1]));
+										$rec[$counter_name]=round($counter_value,2);
+									}
+								}
+							}
+						}
+					}
+					$recs[]=$rec;
+				}
+			}
 		}
 		else{
 			$fieldstr='major_number,minor_number,device_name,reads_completed_successfully,reads_merged,sectors_read,time_spent,reading_ms,writes_completed,writes_merged,sectors_written,time_spent_writing_ms,ios_currently_in_progress,time_spent_doing_i/os_ms,weighted_time_spent_doing_ios_ms,discards_completed_successfully,discards_merged,sectors_discarded,time_spent_discarding,flush_requests_completed_successfully,time_spent_flushing';
@@ -193,7 +254,6 @@ switch(strtolower($_REQUEST['tab'])){
 				$line=trim($line);
 				if(!strlen($line)){continue;}
 				$parts=preg_split('/[^a-zA-Z0-9\-]+/ism',$line);
-				//echo $line.printValue($parts);exit;
 				$rec=array();
 				foreach($fields as $i=>$field){
 					$rec[$field]=$parts[$i];
