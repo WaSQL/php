@@ -26,12 +26,10 @@ switch(strtolower($_REQUEST['func'])){
 		return;	
 	break;
 	case 'list':
-		//echo "list";exit;
 		setView('list',1);
 		return;
 	break;
 	default:
-		//echo "default";exit;
 		setView('default');
 	break;
 }
