@@ -2,10 +2,10 @@
 <style>
 <view:fontcss>
 @font-face {
-  font-family: "<?=$font['name'];?>";
-  src:  url("<?=$font['wpath'];?>/<?=$font['name'];?>.ttf") format("truetype"), /* Safari, Android, iOS */
-        url("<?=$font['wpath'];?>/<?=$font['name'];?>.woff") format("woff"), /* Modern Browsers */
-        url("<?=$font['wpath'];?>/<?=$font['name'];?>.woff2") format("woff2"); /* Modern Browsers */
+  font-family: "<?=encodeHtml($font['name']);?>";
+  src:  url("<?=encodeHtml($font['wpath']);?>/<?=encodeHtml($font['name']);?>.ttf") format("truetype"), /* Safari, Android, iOS */
+        url("<?=encodeHtml($font['wpath']);?>/<?=encodeHtml($font['name']);?>.woff") format("woff"), /* Modern Browsers */
+        url("<?=encodeHtml($font['wpath']);?>/<?=encodeHtml($font['name']);?>.woff2") format("woff2"); /* Modern Browsers */
   font-weight: normal;
   font-style: normal;
 }
