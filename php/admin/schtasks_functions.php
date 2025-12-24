@@ -140,11 +140,36 @@ function schtasksList(){
 	</tr>
 </table>
 ENDOFPRETABLE;
+	$filter_order=isset($_REQUEST['filter_order'])?$_REQUEST['filter_order']:'';
+	$pretable=<<<ENDOFPRE
+<form method="post" name="searchfiltersform" action="/php/admin.php" onsubmit="return wacss.pagingSubmit(this);">
+	<input type="hidden" name="_menu" value="schtasks">
+	<input type="hidden" name="_filters" value="">
+	<input type="hidden" name="filter_order" value="{$filter_order}">
+</form>
+ENDOFPRE;
+	$listfields=array('taskname','location','status','scheduled_task_state','task_to_run','schedule_type','run_as_user','comment');
+	//sort recs
+	if(isset($_REQUEST['filter_order']) && strlen($_REQUEST['filter_order'])){
+		foreach($listfields as $listfield){
+			if(stringBeginsWith($_REQUEST['filter_order'],$listfield)){
+				if(stringEndsWith($_REQUEST['filter_order'],' desc')){
+					$recs=sortArrayByKeys($recs,array($listfield=>SORT_DESC));
+				}
+				else{
+					$recs=sortArrayByKeys($recs,array($listfield=>SORT_ASC));
+				}
+				break;
+			}
+		}
+	}
 	$opts=array(
 		'-list'=>$recs,
 		'-truecount'=>1,
 		'-pretable'=>$pretable,
-		'-listfields'=>'taskname,location,status,scheduled_task_state,task_to_run,schedule_type,last_status,run_as_user,comment',
+		'-listfields'=>$listfields,
+		'-pretable'=>$pretable,
+		'-sorting'=>1,
 		'-tableclass'=>'wacss_table striped bordered sticky',
 		'_menu'=>'schtasks',
 		'-tableheight'=>'75vh',
@@ -163,7 +188,7 @@ function schtasksListExtra($recs){
 		//scheduled_task_state
 		switch(strtolower($rec['scheduled_task_state'])){
 			case 'enabled':
-				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="disable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Disable this task?" class="icon-mark w_bold w_success w_pointer" title="click to disablee"></span> '.$rec['scheduled_task_state'];
+				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="disable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Disable this task?" class="icon-mark w_bold w_success w_pointer" title="click to disable"></span> '.$rec['scheduled_task_state'];
 			break;
 			case 'disabled':
 				$recs[$i]['scheduled_task_state']='<span data-id="'.$rec['id'].'" data-div="schtasks_results" data-_menu="schtasks" data-func="enable" data-nav="'.$CONFIG['admin_form_url'].'" onclick="wacss.nav(this);" data-confirm="Enable this task?" class="icon-block w_bold w_danger w_pointer" title="click to enable"></span> '.$rec['scheduled_task_state'];
@@ -171,10 +196,7 @@ function schtasksListExtra($recs){
 		}
 		//clicking on taskname gives full details
 		$recs[$i]['taskname']=<<<ENDOFTASKNAME
-<div style="display:flex;align-items: flex-start;">
-	<div style="flex:1">{$rec['taskname']}</div>
-	<span style="margin-left:5px;" data-id="{$rec['id']}" data-div="centerpop" data-_menu="schtasks" data-func="details" data-nav="{$CONFIG['admin_form_url']}" onclick="wacss.nav(this);" data-title="Details - {$rec['taskname']}" class="icon-export w_pointer" title="click to enable"></span>
-</div>
+	<a class="w_link" data-id="{$rec['id']}" href="#" data-div="centerpop" data-_menu="schtasks" data-func="details" data-nav="{$CONFIG['admin_form_url']}" onclick="return wacss.nav(this);" data-title="Details - {$rec['taskname']}" title="click to view details">{$rec['taskname']}</a>
 ENDOFTASKNAME;
 		//status
 		switch(strtolower($rec['status'])){
@@ -189,7 +211,7 @@ ENDOFTASKNAME;
 			break;
 		}
 		if(isXML($rec['comment'])){
-			$recs[$i]['comment']="<xmp style=\"text-wrap:inherit\">{$rec['comment']}</xmp>";
+			$recs[$i]['comment']="<pre style=\"text-wrap:inherit;margin:0;\">".encodeHtml($rec['comment'])."</pre>";
 		}
 		$brands=array('microsoft','lenovo','dell','samsung','hp','apple','google','mozilla');
 		foreach($brands as $brand){
