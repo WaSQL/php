@@ -8,16 +8,17 @@ function fontsGetFonts(){
 			unset($files[$i]);
 			continue;
 		}
-		$files[$i]['example']='<span style="font-family:'.$files[$i]['name'].'">'.loremIpsum(300).'</span>';
+		$files[$i]['example']='<span style="font-family:'.encodeHtml($files[$i]['name']).'">'.loremIpsum(300).'</span>';
 		if(stringEndsWith($files[$i]['path'],'extras')){
 			$files[$i]['wpath']='/wfiles/fonts/extras';
 		}
 		else{
 			$files[$i]['wpath']='/wfiles/fonts';
 		}
+		$font_name_encoded = encodeHtml($files[$i]['name']);
 		$files[$i]['code']=<<<ENDOFCODE
 <div style="display:flex;justify-content:space-between;">
-	<div id="fontcode_{$i}">loadExtrasFont('{$files[$i]['name']}');</div>
+	<div id="fontcode_{$i}">loadExtrasFont('{$font_name_encoded}');</div>
 	<div class="w_pointer w_small w_gray" onclick="wacss.copy2Clipboard(document.querySelector('#fontcode_{$i}').innerText);"><span class="icon-copy"></span></div>
 </div>
 ENDOFCODE;
