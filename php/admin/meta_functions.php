@@ -5,6 +5,7 @@ function metaShowList(){
 		'-action'=>'/php/admin.php',
 		'_menu'=>'meta',
 		'-listfields'=>'_id,name,_template,meta_image,title,meta_description,meta_robots,google_id',
+		'-searchfields'=>'_id,name,_template',
 		'-where'=>'_template != 1',
 		'-order'=>'_template,name',
 		'-tableclass'=>'wacss_table bordered striped',
@@ -66,7 +67,7 @@ ENDOFTEXT;
 		break;
 		case 'google_id':
 			return <<< ENDOFTEXT
-			<div class="w_big w_bold">Used in <span class="icon-size-google"></span> Google analyitcs</div>
+			<div class="w_big w_bold">Used in <span class="icon-size-google"></span> Google analytics</div>
 ENDOFTEXT;
 		break;
 	}
