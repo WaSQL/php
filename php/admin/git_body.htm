@@ -277,6 +277,13 @@ function gitConfirmCommitPush(){
 		return false;
 	}
 
+	// IMPORTANT: Disable unchecked checkboxes so they don't get submitted
+	for(var i = 0; i < checkboxes.length; i++){
+		if(!checkboxes[i].checked){
+			checkboxes[i].disabled = true;
+		}
+	}
+
 	// Set the func value and proceed with submission
 	document.gitform.func.value = 'commit_push';
 	return true;
