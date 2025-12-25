@@ -46,18 +46,17 @@ function translateGetLangSelections(){
 	return $recs;
 }
 function translateGetLangSelectionsExtra($recs){
-	//echo printValue($used);exit;
-	foreach($recs as $i=>$rec){
-
-	}
+	// Post-processing hook for language selections
+	// Can be extended to add additional formatting or data
 	return $recs;
 }
 function translateGetWasqlValue(){
 	global $MODULE;
 	return 0;
-	//echo printValue($MODULE);exit;
-	$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
-	return $wasql;
+	//Note: wasql flag is currently hardcoded to 0
+	//If needed in future, uncomment below to use MODULE setting:
+	//$wasql=isset($MODULE['wasql'])?(integer)$MODULE['wasql']:1;
+	//return $wasql;
 }
 function translateList(){
 	global $MODULE;
@@ -114,7 +113,7 @@ function translateListExtra($recs){
 	}
 	$idstr=implode(',',$ids);
 	//sourcemap
-	$source_locale=translateGetSourceLocale();	
+	$source_locale=translateGetSourceLocale();
 	$opts=array(
 		'-table'=>'_translations',
 		'-where'=>"wasql=0 and locale='{$source_locale}' and identifier in (select identifier from _translations where wasql=0 and locale='{$locale}' and _id in ({$idstr}))",
@@ -171,7 +170,6 @@ function translateListLocales(){
 	global $MODULE;
 	$wasql=translateGetWasqlValue();
 	$recs=translateGetLocalesUsed(0,$wasql);
-	//echo 'recs'.printValue($recs).printValue($MODULE);exit;
 	$localesmap=array();
 	foreach(translateGetLocales() as $locale){
 		$localesmap[$locale['lang']][]=$locale;
@@ -206,8 +204,6 @@ function translateListLocalesExtra($recs){
 	$current_locale=isset($_SESSION['REMOTE_LANG'])?strtolower($_SESSION['REMOTE_LANG']):strtolower($_SERVER['REMOTE_LANG']);
 	$confirm_msg=translateText('Delete?','',1);
 	foreach($recs as $i=>$rec){
-		//echo printValue($rec);exit;
-
 		$recs[$i]['flag4x3'] = <<<ENDOFFLAG
 <div style="display:flex;justify-content:space-between;align-items:center;width:max-content;">
 	<div style="margin-right:10px;flex:1;align-self:left;">
