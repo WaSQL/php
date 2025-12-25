@@ -27,7 +27,6 @@
 	if(!isDBTable('countries')){
 		$ok=createWasqlTables('countries');
 	}
-	//echo "LANG:".$_SESSION['REMOTE_LANG'];exit;
 	if(!isset($_SESSION['REMOTE_LANG']) || !strlen($_SESSION['REMOTE_LANG'])){
 		$_SESSION['REMOTE_LANG']=$_SERVER['REMOTE_LANG'];
 	}
@@ -38,10 +37,14 @@
 		case 'bulktranslate':
 			$locale=addslashes($_REQUEST['passthru'][$p1]);
 			$idstr=str_replace(':',',',$_REQUEST['passthru'][$p2]);
+			// Security: Validate that idstr only contains numbers, commas, and colons to prevent SQL injection
+			if(!preg_match('/^[0-9,:]+$/', $idstr)){
+				echo '<span class="w_red w_bold">Invalid ID format</span>';
+				exit;
+			}
 			$target=translateGetLocaleInfo($locale);
 			$locale=translateGetSourceLocale();
 			$source=translateGetLocaleInfo($locale);
-			//echo printValue($_REQUEST);exit;
 			//get the source texts
 			$topts=array(
 				'-table'	=> '_translations',
@@ -53,23 +56,19 @@
 				$topts['-where']="locale ='{$source['locale']}' and identifier in (select identifier from _translations where _id in ({$idstr})) and  source_id in (0,{$CONFIG['translate_source_id']})";
 			}
 			$trecs=getDBRecords($topts);
-			//echo printValue($topts).printValue($trecs);exit;
 			$source['lines']=array();
 			foreach($trecs as $trec){
 				$map=translateMapText($trec['translation']);
 				$source['lines'][]=$map['maptext'];
 			}
-			//echo printValue($topts).printValue($source);exit;
-			//echo $locale.printValue($info);exit;
 			setView('bulktranslate',1);
 			return;
 		break;
 		case 'bulktranslate_process':
-			//echo printValue($_REQUEST);exit;
 			$slines=preg_split('/[\r\n]/',trim($_REQUEST['source']));
 			$tlines=preg_split('/[\r\n]/',trim($_REQUEST['target']));
 			if(count($slines) != count($tlines)){
-				echo '<span class="w_red w_bold">Line Counts do not match between source('.count($slines).') and target('.count($tlines).')</span>';
+				echo '<span class="w_red w_bold">Line count mismatch. Please verify your translations.</span>';
 				exit;
 			}
 			$source_locale=addslashes($_REQUEST['source_locale']);
@@ -80,7 +79,7 @@
 				'locale'=>$source_locale,
 				'-index'=>'identifier'
 			);
-			
+
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 				$sopts['-where']="source_id in (0,{$CONFIG['translate_source_id']})";
 			}
@@ -98,14 +97,12 @@
 					$eopts['source_id']=$CONFIG['translate_source_id'];
 				}
 				$ok=editDBRecord($eopts);
-				//echo $ok.printValue($eopts).PHP_EOL.$sline.PHP_EOL.$identifier.PHP_EOL.printValue($source_map).PHP_EOL;
 			}
 			echo '<span class="icon-mark w_green w_bold"></span> Updated '.count($slines).' translations. Refresh to see changes.';
 			exit;
 		break;
 		case 'locale':
 			$locale=addslashes($_REQUEST['passthru'][$p1]);
-			//echo $locale.printValue($_REQUEST);exit;
 			setView('default');
 		break;
 		case 'deletelocale':
@@ -130,7 +127,11 @@
 			return;
 		break;
 		case 'setlocale':
-			$_SESSION['REMOTE_LANG']=$_REQUEST['passthru'][$p1];
+			// Security: Validate locale format before storing in session (e.g., en, en-US, en_US, fr-FR, zh-CN, etc.)
+			$new_locale=$_REQUEST['passthru'][$p1];
+			if(preg_match('/^[a-z]{2,3}([-_][a-zA-Z]{2,3})?$/i', $new_locale)){
+				$_SESSION['REMOTE_LANG']=$new_locale;
+			}
 			setView('setlocale',1);
 			return;
 		break;
@@ -185,13 +186,11 @@
 			if(isset($CONFIG['translate_source_id']) && isNum($CONFIG['translate_source_id'])){
 				$sopts['source_id']=$CONFIG['translate_source_id'];
 			}
-			//echo printValue($sopts);exit;
 			$source_rec=getDBRecord($sopts);
 			$rec['source']=$source_rec['translation'];
 			//get info
 
 			$source=translateGetLocaleInfo($source_locale);
-			//echo $source_locale.printValue($source);exit;
 			$dest=translateGetLocaleInfo($rec['locale']);
 			//build google translate link
 			switch(strtolower($dest['lang'])){
