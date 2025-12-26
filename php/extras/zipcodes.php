@@ -44,7 +44,7 @@ function zipcodesCreateTable(){
 	$ok = createDBTable($table,$fields);
 	//indexes
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"name"));
-	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"country_code,postal_code",'-unique'=>true));
+	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"country_code,postal_code,name",'-unique'=>true));
 	$ok=addDBIndex(array('-table'=>$table,'-fields'=>"updated"));
 }
 
@@ -91,8 +91,10 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 		//$out=cmdResults($cmd);
 		if(is_file($local_file)){
 			if(!$truncate){
-				//clean out the zipcodes for this country
-				$ok=executeSQL("delete from zipcodes where country_code='{$country}'");
+				//clean out the zipcodes for this country - sanitize country code for SQL
+				$country_safe=preg_replace('/[^A-Z]/','',strtoupper($country));
+				$ok=executeSQL("delete from zipcodes where country_code='{$country_safe}'");
+				$rtn[$country]['deleted_existing']=$ok;
 			}
 			$zipcodesRecs=array();
 			$files=zipExtract($local_file);
@@ -100,6 +102,8 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 				$fname=getFileName($file,1);
 				if($fname==$country){
 					$rtn[$country]['file']=$file;
+					$cdate=date('Y-m-d');
+					$cuser=isset($USER['_id']) ? $USER['_id'] : 0;
 					$rtn[$country]['lines_total']=processCSVFileLines($file,'zipcodesProcessLine',array(
 						'-separator'=>"\t",
 						'-fields'	=> array(
@@ -118,15 +122,53 @@ function zipcodesImportCountry($country_codes,$truncate=false){
 			//cleanup
 			cleanDir("{$progpath}/temp/zipcodes_{$country}");
 			rmdir("{$progpath}/temp/zipcodes_{$country}");
-			$addopts=array('-recs'=>$zipcodesRecs,'-ignore'=>1);
-			$ok=dbAddRecords($CONFIG['database'],'zipcodes',$addopts);
+			$rtn[$country]['records_in_array']=count($zipcodesRecs);
+			if(count($zipcodesRecs) > 0){
+				// Get table fields and filter records to only include fields that exist
+				$table_fields=getDBFieldInfo('zipcodes');
+				$valid_fields=array_keys($table_fields);
+				$filtered_recs=array();
+				$removed_fields=array();
+				foreach($zipcodesRecs as $rec){
+					$filtered_rec=array();
+					foreach($rec as $field=>$value){
+						if(in_array($field,$valid_fields)){
+							$filtered_rec[$field]=$value;
+						}
+						else{
+							$removed_fields[$field]=1;
+						}
+					}
+					$filtered_recs[]=$filtered_rec;
+				}
+				if(count($removed_fields) > 0){
+					$rtn[$country]['removed_fields']=array_keys($removed_fields);
+				}
+				// Debug: Check format of first record
+				$rtn[$country]['first_record_sample']=array_slice($filtered_recs,0,1);
+				$rtn[$country]['database']=$CONFIG['database'];
+				$rtn[$country]['filtered_count']=count($filtered_recs);
+
+				// Insert records
+				$addopts=array('-recs'=>$filtered_recs,'-ignore'=>1,'-upsert'=>'ignore');
+				$ok=dbAddRecords($CONFIG['database'],'zipcodes',$addopts);
+				$rtn[$country]['db_result']=$ok;
+				//Verify records were actually inserted
+				$verify_count=getDBCount(array('-table'=>'zipcodes','country_code'=>$country));
+				$rtn[$country]['verified_in_database']=$verify_count;
+			}
+			else{
+				$rtn[$country]['error']='No records in array after processing';
+			}
 			//echo "dbAddRecords".printValue($ok).printValue($addopts);exit;
 		}
 		else{
-			return "download Failed:".printValue($out);
+			$rtn[$country]['error']="download Failed";
+			$rtn[$country]['remote_file']=$remote_file;
 		}
 	}
-	return $country_codes;
+	$rtn['success']=true;
+	return $rtn;
 }
 //---------- begin function zipcodesGetClosestRecords ----------
 /**
