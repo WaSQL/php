@@ -17,10 +17,22 @@
 */
 function mysqlAddDBFields($table,$fields=array(),$maintain_order=1){
 	$recs=array();
+	// Escape table name to prevent SQL injection
+	$table_safe = mysqlEscapeIdentifier($table);
+	if($table_safe === false){
+		return array(array('error'=>'Invalid table name'));
+	}
 	foreach($fields as $name=>$type){
 		$crec=array('name'=>$name,'type'=>$type);
-		$fieldstr="{$name} {$type}";
-		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		// Escape field name to prevent SQL injection
+		$name_safe = mysqlEscapeIdentifier($name);
+		if($name_safe === false){
+			$crec['error']='Invalid field name';
+			$recs[]=$crec;
+			continue;
+		}
+		$fieldstr="{$name_safe} {$type}";
+		$crec['query']="ALTER TABLE {$table_safe} ADD ({$fieldstr})";
 		$crec['result']=mysqlExecuteSQL($crec['query']);
 		$recs[]=$crec;
 	}
@@ -37,9 +49,21 @@ function mysqlAddDBFields($table,$fields=array(),$maintain_order=1){
 */
 function mysqlDropDBFields($table,$fields=array()){
 	$recs=array();
+	// Escape table name to prevent SQL injection
+	$table_safe = mysqlEscapeIdentifier($table);
+	if($table_safe === false){
+		return array(array('error'=>'Invalid table name'));
+	}
 	foreach($fields as $name){
 		$crec=array('name'=>$name);
-		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		// Escape field name to prevent SQL injection
+		$name_safe = mysqlEscapeIdentifier($name);
+		if($name_safe === false){
+			$crec['error']='Invalid field name';
+			$recs[]=$crec;
+			continue;
+		}
+		$crec['query']="ALTER TABLE {$table_safe} DROP ({$name_safe})";
 		$crec['result']=mysqlExecuteSQL($crec['query']);
 		$recs[]=$crec;
 	}
@@ -240,6 +264,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		));
 		return 0;
 	}
+	//foreach($recs as $rec){echo "HERE".printValue($rec).printValue($rfields).printValue($fieldinfo);exit;}
 	//verify we can connect to the db
 	$dbh_mysql='';
 	while($tries < 4){
@@ -261,7 +286,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	$fieldstr=implode(',',$fields);
 	//echo "DEBUG".printValue($recs);exit;
 	//if possible use the JSON way so we can insert more efficiently
-	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
+	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	if(strlen($jsonstr)){
 		//define field_defs
 		//Acceptable datatypes for regular column of JSON table are VARCHAR(n), NVARCHAR(n), INT, BIGINT, DOUBLE, DECIMAL, SMALLDECIMAL, TIMESTAMP, SECONDDATE, DATE and TIME
@@ -271,6 +296,9 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				case 'char':
 				case 'nchar':
 					$type=str_replace('char','varchar',$fieldinfo[$field]['_dbtype_ex']);
+				break;
+				case 'float':
+					$type='double';
 				break;
 				case 'varchar':
 				case 'nvarchar':
@@ -329,7 +357,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				//Note: Mysql does not support WHERE in an insert statement yet before version 8
 			}
 		}
-		//echo "<pre>{$query}</pre>";exit;
+		//echo "<pre>{$query}</pre>".$jsonstr.printValue($fieldinfo);exit;
 		//prepare and execute
 		$stmt=mysqli_prepare($dbh_mysql,$query);
 		if(!is_resource($stmt) &&  !is_object($stmt)){
@@ -341,13 +369,24 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			try{
 				mysqli_stmt_execute($stmt);
 			}
-			catch (Exception $e) {
-				$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-				debugValue(array($DATABASE['_lastquery']['error'],$query,$fieldinfo));
+			catch (Throwable $e) {
+				$err=array(
+					'status'=>"execute failed",
+					'error'=>mysqli_error($dbh_mysql),
+					'exception'=>$e->getMessage(),
+					'code'=>$e->getCode(),
+					'file'=>$e->getFile(),
+					'line'=>$e->getLine(),
+					'query'=>$query
+				);
+				//echo "Execute failed: ".printValue($err);exit;
+				$DATABASE['_lastquery']['error']=$err;
+				debugValue($DATABASE['_lastquery']);
 				return 0;
 			}
 			return count($recs);
 		}
+		//echo "No failures but not recs".printValue($DATABASE['_lastquery']);exit;
 		return 0;
 	}
 	//JSON method did not work, try standard prepared statement method	
@@ -460,7 +499,19 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 function mysqlGetDDL($type,$name){
 	$type=strtoupper($type);
 	$name=strtolower($name);
-	$query="SHOW CREATE {$type} {$name}";
+	// Escape identifier to prevent SQL injection
+	$name_safe = mysqlEscapeIdentifier($name);
+	if($name_safe === false){
+		debugValue("mysqlGetDDL: Invalid name");
+		return false;
+	}
+	// Validate type to prevent SQL injection
+	$valid_types = array('TABLE', 'VIEW', 'FUNCTION', 'PROCEDURE', 'TRIGGER', 'EVENT', 'DATABASE');
+	if(!in_array($type, $valid_types)){
+		debugValue("mysqlGetDDL: Invalid type '{$type}'");
+		return false;
+	}
+	$query="SHOW CREATE {$type} {$name_safe}";
 	$field='create_'.strtolower($name);
 	$recs=mysqlQueryResults($query);
 	//echo $query.printValue($recs);exit;
@@ -546,6 +597,8 @@ function mysqlGetAllTableFields($schema=''){
 		debugValue('mysqlGetAllTableFields error: schema is not defined in config.xml');
 		return null;
 	}
+	// Escape schema name to prevent SQL injection
+	$schema_safe = mysqlEscapeString($schema);
 	$query=<<<ENDOFQUERY
 		SELECT
 			table_name as table_name,
@@ -553,7 +606,7 @@ function mysqlGetAllTableFields($schema=''){
 			column_type as type_name
 		FROM information_schema.columns
 		WHERE
-			table_schema='{$schema}'
+			table_schema='{$schema_safe}'
 		ORDER BY table_name,column_name
 ENDOFQUERY;
 	$recs=mysqlQueryResults($query);
@@ -587,9 +640,11 @@ function mysqlGetAllTableIndexes($schema=''){
 		debugValue('mysqlGetAllTableIndexes error: schema is not defined in config.xml');
 		return null;
 	}
+	// Escape schema name to prevent SQL injection
+	$schema_safe = mysqlEscapeString($schema);
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
-SELECT 
+SELECT
 	table_name,
    	index_name,
    	JSON_ARRAYAGG(column_name) AS index_keys,
@@ -598,10 +653,10 @@ SELECT
         	ELSE 1
         	END AS is_unique
 FROM information_schema.statistics
-WHERE 
+WHERE
 	table_schema NOT IN ('information_schema','mysql','performance_schema','sys')
-    	AND index_schema = '{$schema}'
-GROUP BY 
+    	AND index_schema = '{$schema_safe}'
+GROUP BY
 	index_schema,
 	index_name,
 	non_unique,
@@ -642,15 +697,17 @@ function mysqlGetAllProcedures($dbname=''){
 		debugValue('mysqlGetAllProcedures error: dbname is not defined in config.xml');
 		return null;
 	}
+	// Escape dbname to prevent SQL injection
+	$dbname_safe = mysqlEscapeString($dbname);
 	$query=<<<ENDOFQUERY
-SELECT 
+SELECT
     r.routine_name AS object_name
     ,r.routine_type AS object_type
     ,MD5(r.routine_definition) AS hash
     ,GROUP_CONCAT( DISTINCT p.parameter_name ORDER BY p.parameter_name SEPARATOR ', ')  args
 FROM information_schema.routines r
    LEFT OUTER JOIN information_schema.parameters p ON p.specific_name=r.specific_name AND p.parameter_mode='IN'
-WHERE r.routine_schema='{$dbname}'
+WHERE r.routine_schema='{$dbname_safe}'
 GROUP BY
 	r.routine_name,
 	r.routine_type,
@@ -1090,17 +1147,26 @@ function mysqlDBConnect($params=array()){
 		$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
 		if(!is_object($dbh_mysql)){
 			$err=@mysqli_connect_error();
-			echo "mysqlDBConnect error:{$err}".printValue($params);
-			exit;
-
+			$CONFIG['mysql_error']=$err;
+			debugValue("mysqlDBConnect error: Connection failed");
+			return null;
 		}
 		//note: this caused issues with vietnam language
 		//$dbh_mysql->set_charset("utf8mb4");
 		return $dbh_mysql;
 	}
-	catch (Exception $e) {
-		echo "dbh_mysql exception" . printValue($e);
-		exit;
+	catch (Throwable $e) {
+		$err=array(
+			'status'=>"dbh_mysql exception",
+			'error'=>@mysqli_connect_error(),
+			'exception'=>$e->getMessage(),
+			'code'=>$e->getCode(),
+			'file'=>$e->getFile(),
+			'line'=>$e->getLine()
+		);
+		$CONFIG['mysql_error']=$e->getMessage();
+		debugValue($err);
+		return null;
 	}
 }
 //---------- begin function mysqlExecuteSQL ----------
@@ -1172,7 +1238,10 @@ function mysqlGetDBCount($params=array()){
 	$query=mysqlGetDBRecords($params);
 	//echo "HERE".$query.printValue($params);exit;
 	if(!stringContains($query,'where')){
-	 	$query="SELECT table_rows FROM information_schema.tables WHERE table_schema='{$dbname}' AND table_name='{$params['-table']}'";
+		// Escape identifiers to prevent SQL injection
+		$dbname_safe = mysqlEscapeString($dbname);
+		$table_safe = mysqlEscapeString($params['-table']);
+	 	$query="SELECT table_rows FROM information_schema.tables WHERE table_schema='{$dbname_safe}' AND table_name='{$table_safe}'";
 	 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
 	 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
 	 		return (integer)$recs[0]['table_rows'];
@@ -1197,7 +1266,13 @@ function mysqlGetDBCount($params=array()){
 * @usage $fields=mysqlGetDBFieldInfo('notes');
 */
 function mysqlGetDBFieldInfo($table=''){
-	$query="show full columns from {$table}";
+	// Escape table name to prevent SQL injection
+	$table_safe = mysqlEscapeIdentifier($table);
+	if($table_safe === false){
+		debugValue("mysqlGetDBFieldInfo: Invalid table name");
+		return array();
+	}
+	$query="show full columns from {$table_safe}";
 	$recs=mysqlQueryResults($query);
 	$info=array();
 	foreach($recs as $i=>$rec){
@@ -1280,15 +1355,19 @@ function mysqlGetDBExpression($table,$field,$schema=''){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
 	$dbname=strtolower($DATABASE[$CONFIG['db']]['dbname']);
+	// Escape identifiers to prevent SQL injection
+	$dbname_safe = mysqlEscapeString($dbname);
+	$table_safe = mysqlEscapeString($table);
+	$field_safe = mysqlEscapeString($field);
 $query=<<<ENDOFSQL
 	SELECT
 		generation_expression as exp
 	FROM
 		information_schema.columns
 	WHERE
-		table_schema='{$dbname}'
-		and table_name='{$table}'
-		and column_name='{$field}'
+		table_schema='{$dbname_safe}'
+		and table_name='{$table_safe}'
+		and column_name='{$field_safe}'
 ENDOFSQL;
 	$rec=mysqlQueryResults($query);
 	if(!isset($rec['exp'])){return '';}
@@ -1467,6 +1546,24 @@ function mysqlEscapeString($str){
 	}
 	return $str;
 }
+//---------- begin function mysqlEscapeIdentifier ----------
+/**
+* @describe escapes database identifiers (table names, column names, schema names) for MySQL
+* @param $str string - identifier to escape
+* @return string - escaped identifier with backticks
+* @usage $safe_table = mysqlEscapeIdentifier($table);
+*/
+function mysqlEscapeIdentifier($str){
+	// Remove any existing backticks and escape backticks in the identifier
+	$str = str_replace('`', '``', $str);
+	// Only allow alphanumeric, underscore, dollar sign, and period (for schema.table)
+	// This prevents SQL injection in identifiers
+	if(!preg_match('/^[a-zA-Z0-9_\$\.]+$/', $str)){
+		debugValue("mysqlEscapeIdentifier: Invalid identifier characters in '{$str}'");
+		return false;
+	}
+	return '`' . $str . '`';
+}
 //---------- begin function mysqlIsDBTable ----------
 /**
 * @describe returns true if table exists
@@ -1487,7 +1584,14 @@ function mysqlIsDBTable($table,$params=array()){
 	$table=strtolower($table);
 	$parts=preg_split('/\./',$table,2);
 	if(count($parts)==2){
-		$query="SHOW tables FROM {$parts[0]} WHERE tables_in_{$parts[0]} = '{$table}'";
+		// Escape identifiers to prevent SQL injection
+		$schema_safe = mysqlEscapeIdentifier($parts[0]);
+		$table_safe = mysqlEscapeString($table);
+		if($schema_safe === false){
+			debugValue("mysqlIsDBTable: Invalid schema name");
+			return false;
+		}
+		$query="SHOW tables FROM {$schema_safe} WHERE tables_in_{$parts[0]} = '{$table_safe}'";
 		$recs=mysqlQueryResults($query);
 		if(isset($recs[0])){return true;}
 	}
@@ -1521,8 +1625,14 @@ function mysqlGetDBTables($params=array()){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
 	$dbname=strtolower($DATABASE[$CONFIG['db']]['dbname']);
+	// Escape identifier to prevent SQL injection
+	$dbname_safe = mysqlEscapeIdentifier($dbname);
+	if($dbname_safe === false){
+		debugValue("mysqlGetDBTables: Invalid database name");
+		return array();
+	}
 	$tables=array();
-	$query="show FULL tables FROM {$dbname} WHERE TABLE_TYPE = 'BASE TABLE'";
+	$query="show FULL tables FROM {$dbname_safe} WHERE TABLE_TYPE = 'BASE TABLE'";
 	$recs=mysqlQueryResults($query);
 	$k="tables_in_{$dbname}";
 	foreach($recs as $rec){
@@ -1543,8 +1653,14 @@ function mysqlGetDBViews($params=array()){
 		$CONFIG['db']=$_REQUEST['db'];
 	}
 	$dbname=strtolower($DATABASE[$CONFIG['db']]['dbname']);
+	// Escape identifier to prevent SQL injection
+	$dbname_safe = mysqlEscapeIdentifier($dbname);
+	if($dbname_safe === false){
+		debugValue("mysqlGetDBViews: Invalid database name");
+		return array();
+	}
 	$tables=array();
-	$query="show FULL tables FROM {$dbname} WHERE TABLE_TYPE = 'VIEW'";
+	$query="show FULL tables FROM {$dbname_safe} WHERE TABLE_TYPE = 'VIEW'";
 	$recs=mysqlQueryResults($query);
 	$k="tables_in_{$dbname}";
 	foreach($recs as $rec){
@@ -1852,8 +1968,15 @@ function mysqlNamedQuery($name,$str=''){
 	else{
 		$dbname=strtoupper($DATABASE[$CONFIG['db']]['dbname']);
 	}
+	// Escape dbname to prevent SQL injection in named queries
+	$dbname_safe = mysqlEscapeString($dbname);
 	switch(strtolower($name)){
 		case 'kill':
+			// Validate that $str is a positive integer (process ID)
+			if(!isNum($str) || $str <= 0){
+				debugValue("mysqlNamedQuery: Invalid process ID for KILL command");
+				return false;
+			}
 			return "KILL {$str}";
 		break;
 		case 'stats':
@@ -1944,23 +2067,23 @@ ENDOFQUERY;
 -- ----------------- Functions --------------------------------
 -- listopts:definition_options={"class":"w_pre w_smaller"}
 -- ------------------ SQL -------------------------------
-SELECT 
+SELECT
 	r.routine_name AS name,
 	r.created,
 	r.last_altered AS modified,
 	GROUP_CONCAT(pi.parameter_name, ' ', pi.data_type) AS inputs,
 	po.data_type AS output,
 	definer AS created_by,
-	r.routine_definition AS definition 
+	r.routine_definition AS definition
 FROM information_schema.routines r
-LEFT JOIN information_schema.parameters pi 
+LEFT JOIN information_schema.parameters pi
 	on pi.specific_schema=r.routine_schema and pi.specific_name=r.routine_name and pi.parameter_mode='IN'
-LEFT JOIN information_schema.parameters po 
+LEFT JOIN information_schema.parameters po
 	on po.specific_schema=r.routine_schema and po.specific_name=r.routine_name and po.parameter_mode is null
-WHERE 
-	r.routine_type = 'FUNCTION' 
-	AND r.routine_schema = '{$dbname}'
-GROUP BY 
+WHERE
+	r.routine_type = 'FUNCTION'
+	AND r.routine_schema = '{$dbname_safe}'
+GROUP BY
     r.routine_name, r.created, r.last_altered, po.data_type, definer, r.routine_definition
 ENDOFQUERY;
 		break;
@@ -1969,23 +2092,23 @@ ENDOFQUERY;
 -- ----------------- Procedures --------------------------------
 -- listopts:definition_options={"class":"w_pre w_smaller"}
 -- ------------------ SQL -------------------------------
-SELECT 
+SELECT
 	r.routine_name AS name,
 	r.created,
 	r.last_altered AS modified,
 	GROUP_CONCAT(pi.parameter_name, ' ', pi.data_type) AS inputs,
 	po.data_type AS output,
 	definer AS created_by,
-	r.routine_definition AS definition 
+	r.routine_definition AS definition
 FROM information_schema.routines r
-LEFT JOIN information_schema.parameters pi 
+LEFT JOIN information_schema.parameters pi
 	on pi.specific_schema=r.routine_schema and pi.specific_name=r.routine_name and pi.parameter_mode='IN'
-LEFT JOIN information_schema.parameters po 
+LEFT JOIN information_schema.parameters po
 	on po.specific_schema=r.routine_schema and po.specific_name=r.routine_name and po.parameter_mode is null
-WHERE 
-	r.routine_type = 'PROCEDURE' 
-	AND r.routine_schema = '{$dbname}'
-GROUP BY 
+WHERE
+	r.routine_type = 'PROCEDURE'
+	AND r.routine_schema = '{$dbname_safe}'
+GROUP BY
     r.routine_name, r.created, r.last_altered, po.data_type, definer, r.routine_definition
 ENDOFQUERY;
 		break;
@@ -2009,10 +2132,10 @@ SELECT
 	t.table_collation,
 	t.table_comment
 FROM information_schema.tables t,
-(SELECT COUNT(*) field_count,table_name FROM information_schema.columns WHERE table_schema='{$dbname}' GROUP BY table_name ) c 
+(SELECT COUNT(*) field_count,table_name FROM information_schema.columns WHERE table_schema='{$dbname_safe}' GROUP BY table_name ) c
 WHERE
-	t.table_name =c.table_name 
-	AND t.table_schema='{$dbname}'
+	t.table_name =c.table_name
+	AND t.table_schema='{$dbname_safe}'
 ENDOFQUERY;
 		break;
 		case 'views':
@@ -2025,7 +2148,7 @@ SELECT
 	view_definition as definition
 FROM information_schema.views
 WHERE
-	table_schema='{$dbname}'
+	table_schema='{$dbname_safe}'
 ENDOFQUERY;
 		break;
 		case 'indexes':
@@ -2034,7 +2157,7 @@ ENDOFQUERY;
 -- listopts:is_unique_options={"checkmark":"1","checkmark_icon":"icon-mark w_blue"}
 -- listopts:is_primary_options={"checkmark":"1","checkmark_icon":"icon-mark w_red"}
 -- ------------------ SQL -------------------------------
-SELECT 
+SELECT
 	table_name,
   	index_name,
   	JSON_ARRAYAGG(column_name) AS index_keys,
@@ -2047,10 +2170,10 @@ SELECT
         ELSE 0
     END AS is_primary
 FROM information_schema.statistics
-WHERE 
+WHERE
 	table_schema NOT IN ('information_schema', 'mysql','performance_schema', 'sys')
-	AND index_schema = '{$dbname}'
-GROUP BY 
+	AND index_schema = '{$dbname_safe}'
+GROUP BY
 	index_schema,
 	index_name,
 	non_unique,
@@ -2089,7 +2212,9 @@ function mysqlOptimizations($params=array()){
 	$recs=mysqlQueryResults("SELECT Engine, Support, Comment, Transactions, XA, Savepoints FROM information_schema.ENGINES ORDER BY Engine ASC");
 	foreach($recs as $rec){
 		$key=strtolower($rec['engine']);
-		$xrecs=mysqlQueryResults("SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND ENGINE = '{$rec['engine']}'");
+		// Escape engine name to prevent SQL injection
+		$engine_safe = mysqlEscapeString($rec['engine']);
+		$xrecs=mysqlQueryResults("SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND ENGINE = '{$engine_safe}'");
 		$rec['count']=$xrecs[0]['count'];
 		$results['engines'][$key]=$rec;
 	}
