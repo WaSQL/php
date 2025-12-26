@@ -10,9 +10,9 @@
 		break;
 		case 'add_single_process':
 			$errors=array();
-			$tablename=str_replace('/[^a-z0-9]/is','_',$_REQUEST['tablename']);
+			$tablename=preg_replace('/[^a-z0-9_]/is','_',$_REQUEST['tablename']);
 			if(isDBTable($tablename)){
-				$errors[]="{$tablename} already exists";
+				$errors[]=encodeHtml($tablename)." already exists";
 			}
 			else{
 				$ok=createDBTableFromText($tablename,$_REQUEST['tablefields']);
@@ -48,10 +48,11 @@
 			return;
 		break;
 		case 'add_prebuilt_process':
-			if(isDBTable($_REQUEST['tablename'])){
-            	dropDBTable($_REQUEST['tablename'],1);
+			$tablename=preg_replace('/[^a-z0-9_]/is','_',$_REQUEST['tablename']);
+			if(isDBTable($tablename)){
+            	dropDBTable($tablename,1);
             }
-            $ok=createWasqlTables($_REQUEST['tablename']);
+            $ok=createWasqlTables($tablename);
             $message=printValue($ok);
             setView('message',1);
 			return;
@@ -73,18 +74,24 @@
 				return;
 			}
 			
-			$charset=$_REQUEST['charset'];
+			$charset=preg_replace('/[^a-z0-9_]/is','',$_REQUEST['charset']);
 
 			$messages=array();
 			foreach($_REQUEST['select'] as $table){
+				// Validate table name to prevent SQL injection
+				$table=preg_replace('/[^a-z0-9_]/is','',$table);
+				if(!isDBTable($table)){
+					$messages[]='Invalid table: '.encodeHtml($table);
+					continue;
+				}
 				$runsql='ALTER TABLE '.$table.' CONVERT TO CHARACTER SET '.$charset;
-				$cmessage = $runsql.' ...'.PHP_EOL;
+				$cmessage = encodeHtml($runsql).' ...'.PHP_EOL;
 				$ck=executeSQL($runsql);
 				if(isset($ck['result'])){
-					if($ck['result'] != 1){$cmessage .= "FAILED: {$ck['query']}";}
+					if($ck['result'] != 1){$cmessage .= "FAILED: ".encodeHtml($ck['query']);}
 					else{$cmessage .= 'SUCCESS';}
 					}
-				elseif($ck !=1){$cmessage .= "FAILED: {$ck}";}
+				elseif($ck !=1){$cmessage .= "FAILED: ".encodeHtml($ck);}
 				else{$cmessage .= 'SUCCESS';}
 				$messages[]=$cmessage;
 			}
