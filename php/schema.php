@@ -72,7 +72,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -98,7 +98,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -138,7 +138,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -155,7 +155,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -218,7 +218,7 @@ function createWasqlTable($table=''){
 						'description'=>'Custom setting in _settings table'
 					);
 				}
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-recs'=>$recs,'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-recs'=>$recs,'-ignore'=>1,'-upsert'=>'ignore'));
 				//debugValue($ok);
 				//echo $ok.printValue($recs);exit;
 			}
@@ -263,7 +263,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -310,7 +310,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -332,7 +332,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -349,7 +349,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 			break;
@@ -363,7 +363,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -395,7 +395,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -415,7 +415,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -433,7 +433,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -452,7 +452,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -468,7 +468,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -494,7 +494,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -545,7 +545,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -580,7 +580,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -607,7 +607,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -631,7 +631,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -736,7 +736,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -763,7 +763,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -795,7 +795,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -812,7 +812,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 			return 1;
 		break;
@@ -869,7 +869,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
 		return 1;
 		break;
@@ -922,19 +922,19 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
             return 1;
 		break;
 		case 'colors':
 			$fields['hex']=databaseDataType('varchar(7)');
-			$fields['name']=databaseDataType('varchar(100)');
+			$fields['name']=databaseDataType('varchar(255)');
 			$fields['red']=databaseDataType('int');
 			$fields['green']=databaseDataType('int');
 			$fields['blue']=databaseDataType('int');
-			$fields['hue']=databaseDataType('int');
-			$fields['saturation']='decimal(12,10)';
-			$fields['lightness']='decimal(4,2)';
+			$fields['hue']='decimal(18,14)';
+			$fields['saturation']='decimal(18,14)';
+			$fields['lightness']='decimal(6,2)';
 			$fields['contrast_ratio']=databaseDataType('int');
 			$fields['contrast_color']=databaseDataType('varchar(7)');
 			$ok = createDBTable($table,$fields,'InnoDB');
@@ -946,7 +946,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
             return 1;
 		break;
@@ -965,7 +965,7 @@ function createWasqlTable($table=''){
             //populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1));
+				$ok=dbAddRecords($CONFIG['database'],$table,array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore'));
 			}
             return 1;
 		break;
@@ -991,7 +991,7 @@ function createWasqlTable($table=''){
 			//populate the table 
 			$progpath=dirname(__FILE__);
 			if(is_file("{$progpath}/schema/{$table}.csv")){
-				$addopts=array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1);
+				$addopts=array('-csv'=>"{$progpath}/schema/{$table}.csv",'-ignore'=>1,'-upsert'=>'ignore');
 				$ok=dbAddRecords($CONFIG['database'],$table,$addopts);
 				//ho printValue($ok).printValue($addopts);exit;
 			}
