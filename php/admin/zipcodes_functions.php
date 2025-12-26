@@ -16,9 +16,9 @@ function zipcodesListCountries(){
 		$query="select count(*) cnt,country_code from zipcodes group by country_code";
 		$zrecs=getDBRecords(array('-query'=>$query,'-index'=>'country_code'));
 	}
-	$post=postURL('http://download.geonames.org/export/zip/',array('-method'=>'GET'));
+	$post=postURL('https://download.geonames.org/export/zip/',array('-method'=>'GET'));
 	if(isset($post['error'])){
-		return $post['error'];
+		return encodeHtml($post['error']);
 	}
 	$ok=preg_match_all('/href\=\"([a-z]{2,2})\.zip\"/ism',$post['body'],$m);
 	$recs=array();
@@ -26,7 +26,7 @@ function zipcodesListCountries(){
 		$lcode=strtolower($code);
 		$rec=array(
 			'code'=>$code,
-			'name'=>$cmap[$code]
+			'name'=>isset($cmap[$code]) ? $cmap[$code] : $code
 		);
 		if(isset($zrecs[$code])){
 			$rec['icon']='icon-mark';
@@ -65,11 +65,11 @@ function zipcodesListCountries(){
 function zipcodesListCountriesExtra($recs){
 	foreach($recs as $i=>$rec){
 		if($rec['exists']==1){
-			$recs[$i]['name']='<span class="w_right icon-mark w_success"></span>'.$rec['name'];
-			$recs[$i]['id']='<input type="checkbox" class="checkbox w_red" data-type="checkbox" name="country_codes[]" value="'.$rec['code'].'" />';
+			$recs[$i]['name']='<span class="w_right icon-mark w_success"></span>'.encodeHtml($rec['name']);
+			$recs[$i]['id']='<input type="checkbox" class="checkbox w_red" data-type="checkbox" name="country_codes[]" value="'.encodeHtml($rec['code']).'" />';
 		}
 		else{
-			$recs[$i]['id']='<input type="checkbox" class="country checkbox w_green" data-type="checkbox" name="country_codes[]" value="'.$rec['code'].'" />';
+			$recs[$i]['id']='<input type="checkbox" class="country checkbox w_green" data-type="checkbox" name="country_codes[]" value="'.encodeHtml($rec['code']).'" />';
 		}
 		
 	}
