@@ -79,14 +79,14 @@ ENDOFQUERY;
 		$recs[$i]['field_count']='';
 		if(isset($frecs[$table])){
 			$cnt=$frecs[$table]['field_count'];
-			$recs[$i]['field_count']='<div class="w_pointer align-right" style="display:block;width:100%;" data-tip="'.$table.' fields:<hr>'.$frecs[$table]['fields'].'" data-tip_position="right">'.$cnt.'</div>';
+			$recs[$i]['field_count']='<div class="w_pointer align-right" style="display:block;width:100%;" data-tip="'.encodeHtml($table).' fields:<hr>'.encodeHtml($frecs[$table]['fields']).'" data-tip_position="right">'.$cnt.'</div>';
 		}
 		if(isset($irecs[$table])){
 			$cnt=$irecs[$table]['index_count'];
-			$recs[$i]['index_count']='<div class="w_pointer align-right" style="display:block;width:100%;" data-tip="'.$table.' indexes:<hr>'.$irecs[$table]['indexes'].'" data-tip_position="right">'.$cnt.'</div>';
+			$recs[$i]['index_count']='<div class="w_pointer align-right" style="display:block;width:100%;" data-tip="'.encodeHtml($table).' indexes:<hr>'.encodeHtml($irecs[$table]['indexes']).'" data-tip_position="right">'.$cnt.'</div>';
 		}
 		if(!stringContains($rec['collation'],'utf')){
-			$recs[$i]['collation']='<span class="w_red">'.$rec['collation'].'</span>';
+			$recs[$i]['collation']='<span class="w_red">'.encodeHtml($rec['collation']).'</span>';
 		}
 	}
 	return $recs;
