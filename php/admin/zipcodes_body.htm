@@ -8,7 +8,67 @@
 			<?=renderView('zipcodes_list');?>
 		</div>
 		<div id="zipcodes_process" style="padding-left:15px;">
-			<?=json_encode($results);?>
+			<?php
+			if(isset($results)){
+				echo '<h3>Import Results</h3>';
+				if(isset($results['success'])){
+					foreach($results as $key=>$val){
+						if($key=='success' || $key=='country_codes'){continue;}
+						echo '<div style="margin:10px 0;padding:10px;border:1px solid #ccc;">';
+						echo '<h4>'.encodeHtml($key).'</h4>';
+						if(isset($val['error'])){
+							echo '<div class="w_red">Error: '.encodeHtml($val['error']).'</div>';
+							if(isset($val['remote_file'])){
+								echo '<div>Remote File: '.encodeHtml($val['remote_file']).'</div>';
+							}
+						}
+						else{
+							if(isset($val['deleted_existing'])){
+								echo '<div>Deleted Existing Records: '.encodeHtml(print_r($val['deleted_existing'],true)).'</div>';
+							}
+							if(isset($val['lines_total'])){
+								echo '<div>Lines Processed: '.encodeHtml($val['lines_total']).'</div>';
+							}
+							if(isset($val['records_in_array'])){
+								echo '<div>Records in Array: '.encodeHtml($val['records_in_array']).'</div>';
+							}
+							if(isset($val['removed_fields'])){
+								echo '<div class="w_orange"><b>Removed Fields (not in table):</b> '.encodeHtml(implode(', ',$val['removed_fields'])).'</div>';
+							}
+							if(isset($val['database'])){
+								echo '<div>Database: '.encodeHtml($val['database']).'</div>';
+							}
+							if(isset($val['filtered_count'])){
+								echo '<div>Filtered Records Count: '.encodeHtml($val['filtered_count']).'</div>';
+							}
+							if(isset($val['first_record_sample'])){
+								echo '<div style="margin:5px 0;padding:5px;background:#f0f0f0;"><b>First Record Sample:</b><pre style="margin:5px 0;font-size:11px;">'.encodeHtml(print_r($val['first_record_sample'],true)).'</pre></div>';
+							}
+							if(isset($val['db_result'])){
+								if(is_numeric($val['db_result']) && $val['db_result'] > 0){
+									echo '<div class="w_green"><b>Database Insert Result: '.encodeHtml($val['db_result']).' records</b></div>';
+								}
+								else{
+									echo '<div class="w_red"><b>Database Insert Result: '.encodeHtml(print_r($val['db_result'],true)).'</b></div>';
+								}
+							}
+							if(isset($val['verified_in_database'])){
+								if($val['verified_in_database'] > 0){
+									echo '<div class="w_green"><b>✓ VERIFIED: '.encodeHtml($val['verified_in_database']).' records in database</b></div>';
+								}
+								else{
+									echo '<div class="w_red"><b>✗ WARNING: 0 records found in database!</b></div>';
+								}
+							}
+						}
+						echo '</div>';
+					}
+				}
+				else{
+					echo '<pre>'.encodeHtml(json_encode($results,JSON_PRETTY_PRINT)).'</pre>';
+				}
+			}
+			?>
 		</div>
 	</div>
 </form>
