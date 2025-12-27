@@ -6,6 +6,36 @@
 		*
 */
 
+//---------- begin function sqliteQuoteIdentifier ----------
+/**
+* @describe safely quotes table and column names to prevent SQL injection
+* @param $identifier string - table or column name
+* @return string - safely quoted identifier or false on invalid input
+* @usage $safe_table = sqliteQuoteIdentifier($table);
+*/
+function sqliteQuoteIdentifier($identifier){
+	// Remove any existing quotes and whitespace
+	$identifier = trim($identifier);
+	// Allow schema.table notation
+	if(strpos($identifier, '.') !== false){
+		$parts = explode('.', $identifier);
+		$quoted = array();
+		foreach($parts as $part){
+			// Only allow alphanumeric, underscore, and basic safe characters
+			if(!preg_match('/^[a-zA-Z0-9_]+$/', $part)){
+				return false; // Invalid identifier
+			}
+			$quoted[] = '"' . str_replace('"', '""', $part) . '"';
+		}
+		return implode('.', $quoted);
+	}
+	// Single identifier - validate and quote
+	if(!preg_match('/^[a-zA-Z0-9_]+$/', $identifier)){
+		return false; // Invalid identifier
+	}
+	return '"' . str_replace('"', '""', $identifier) . '"';
+}
+
 //---------- begin function sqliteAddDBIndex--------------------
 /**
 * @describe add an index to a table
@@ -47,9 +77,32 @@ function sqliteAddDBIndex($params=array()){
     	$fieldstr=substr($fieldstr,0,60);
 	}
 	if(!isset($params['-name'])){$params['-name']=str_replace('.','_',"{$prefix}_{$params['-table']}_{$fieldstr}");}
+
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($params['-table']);
+	if($safe_table === false){
+		return 'sqliteAddDBIndex Error: Invalid table name';
+	}
+
+	// Validate and quote index name
+	$safe_index = sqliteQuoteIdentifier($params['-name']);
+	if($safe_index === false){
+		return 'sqliteAddDBIndex Error: Invalid index name';
+	}
+
+	// Validate and quote field names
+	$safe_fields = array();
+	foreach($params['-fields'] as $field){
+		$safe_field = sqliteQuoteIdentifier($field);
+		if($safe_field === false){
+			return 'sqliteAddDBIndex Error: Invalid field name';
+		}
+		$safe_fields[] = $safe_field;
+	}
+	$fieldstr = implode(", ", $safe_fields);
+
 	//build and execute
-	$fieldstr=implode(", ",$params['-fields']);
-	$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
+	$query="CREATE {$unique} INDEX IF NOT EXISTS {$safe_index} on {$safe_table} ({$fieldstr})";
 	return sqliteExecuteSQL($query);
 }
 
@@ -99,6 +152,13 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 		return debugValue("sqliteAddDBRecordsProcess Error: recs is empty"); 
 	}
 	$table=$params['-table'];
+
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($table);
+	if($safe_table === false){
+		return debugValue("sqliteAddDBRecordsProcess Error: Invalid table name");
+	}
+
 	$fieldinfo=sqliteGetDBFieldInfo($table,1);
 	//indexes must be normal - fix if not
 	$xrecs=array();
@@ -145,18 +205,29 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 		));
 		return 0;
 	}
-	$fieldstr=implode(',',$fields);
+
+	// Validate and quote field names
+	$safe_fields = array();
+	foreach($fields as $fld){
+		$safe_field = sqliteQuoteIdentifier($fld);
+		if($safe_field === false){
+			return debugValue("sqliteAddDBRecordsProcess Error: Invalid field name: {$fld}");
+		}
+		$safe_fields[$fld] = $safe_field;
+	}
+	$fieldstr = implode(',', array_values($safe_fields));
+
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
-		
+
 		$extracts=array();
 		foreach($fields as $fld){
-			$extracts[]="JSON_EXTRACT(value,'\$.{$fld}') as {$fld}";
+			$extracts[]="JSON_EXTRACT(value,'\$.{$fld}') as {$safe_fields[$fld]}";
 		}
 		$extractstr=implode(','.PHP_EOL,$extracts);
 		$query=<<<ENDOFQUERY
-			INSERT OR REPLACE INTO {$table} ($fieldstr)
+			INSERT OR REPLACE INTO {$safe_table} ($fieldstr)
 			  SELECT
 			    {$extractstr}
 			  FROM JSON_EACH(?)
@@ -195,7 +266,7 @@ ENDOFQUERY;
 		}
 	}
 	//JSON method did not work, try standard prepared statement method
-	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	$query="INSERT INTO {$safe_table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -251,11 +322,24 @@ ENDOFQUERY;
 *	$ok=sqliteAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function sqliteAddDBFields($table,$fields=array(),$maintain_order=1){
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($table);
+	if($safe_table === false){
+		return array(array('error'=>'sqliteAddDBFields Error: Invalid table name'));
+	}
+
 	$recs=array();
 	foreach($fields as $name=>$type){
+		// Validate and quote field name
+		$safe_field = sqliteQuoteIdentifier($name);
+		if($safe_field === false){
+			$recs[]=array('name'=>$name,'type'=>$type,'error'=>'Invalid field name');
+			continue;
+		}
+
 		$crec=array('name'=>$name,'type'=>$type);
-		$fieldstr="{$name} {$type}";
-		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$fieldstr="{$safe_field} {$type}";
+		$crec['query']="ALTER TABLE {$safe_table} ADD ({$fieldstr})";
 		$crec['result']=sqliteExecuteSQL($crec['query']);
 		$recs[]=$crec;
 	}
@@ -271,10 +355,23 @@ function sqliteAddDBFields($table,$fields=array(),$maintain_order=1){
 *	$ok=sqliteDropDBFields('comments',array('comment','age'));
 */
 function sqliteDropDBFields($table,$fields=array()){
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($table);
+	if($safe_table === false){
+		return array(array('error'=>'sqliteDropDBFields Error: Invalid table name'));
+	}
+
 	$recs=array();
 	foreach($fields as $name){
+		// Validate and quote field name
+		$safe_field = sqliteQuoteIdentifier($name);
+		if($safe_field === false){
+			$recs[]=array('name'=>$name,'error'=>'Invalid field name');
+			continue;
+		}
+
 		$crec=array('name'=>$name);
-		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		$crec['query']="ALTER TABLE {$safe_table} DROP ({$safe_field})";
 		$crec['result']=sqliteExecuteSQL($crec['query']);
 		$recs[]=$crec;
 	}
@@ -290,6 +387,12 @@ function sqliteDropDBFields($table,$fields=array()){
 *	$ok=sqliteAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function sqliteAlterDBTable($table,$fields=array(),$maintain_order=1){
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($table);
+	if($safe_table === false){
+		return array('sqliteAlterDBTable Error: Invalid table name');
+	}
+
 	$info=sqliteGetDBFieldInfo($table);
 	if(!is_array($info) || !count($info)){
 		debugValue("sqliteAlterDBTable - {$table} is missing or has no fields".printValue($table));
@@ -302,26 +405,39 @@ function sqliteAlterDBTable($table,$fields=array(),$maintain_order=1){
 		$lname=strtolower($name);
 		$uname=strtoupper($name);
 		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
-		$addfields[]="{$name} {$type}";
+
+		// Validate and quote field name
+		$safe_field = sqliteQuoteIdentifier($name);
+		if($safe_field === false){
+			$rtn[]="Invalid field name: {$name}";
+			continue;
+		}
+		$addfields[]="{$safe_field} {$type}";
 	}
 	$dropfields=array();
 	foreach($info as $name=>$finfo){
 		$lname=strtolower($name);
 		$uname=strtoupper($name);
 		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
-			$dropfields[]=$name;
+			// Validate and quote field name
+			$safe_field = sqliteQuoteIdentifier($name);
+			if($safe_field === false){
+				$rtn[]="Invalid field name: {$name}";
+				continue;
+			}
+			$dropfields[]=$safe_field;
 		}
 	}
 	if(count($dropfields)){
 		$fieldstr=implode(', ',$dropfields);
-		$query="ALTER TABLE {$table} DROP ({$fieldstr})";
+		$query="ALTER TABLE {$safe_table} DROP ({$fieldstr})";
 		$ok=sqliteExecuteSQL($query);
 		$rtn[]=$query;
 		$rtn[]=$ok;
 	}
 	if(count($addfields)){
 		$fieldstr=implode(', ',$addfields);
-		$query="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$query="ALTER TABLE {$safe_table} ADD ({$fieldstr})";
 		$ok=sqliteExecuteSQL($query);
 		$rtn[]=$query;
 		$rtn[]=$ok;
@@ -342,10 +458,16 @@ function sqliteEscapeString($str){
 */
 function sqliteGetTableDDL($table,$schema=''){
 	$table=strtolower($table);
+	// Validate table name (no quotes needed for WHERE comparison with string literal)
+	if(!preg_match('/^[a-zA-Z0-9_\.]+$/', $table)){
+		return 'sqliteGetTableDDL Error: Invalid table name';
+	}
+	// Escape single quotes for SQL string literal
+	$escaped_table = str_replace("'", "''", $table);
 	$query=<<<ENDOFQUERY
 		SELECT sql
 		FROM sqlite_master
-		WHERE lower(name)='{$table}'
+		WHERE lower(name)='{$escaped_table}'
 ENDOFQUERY;
 	$recs=sqliteQueryResults($query);
 	if(isset($recs[0]['sql'])){
@@ -522,7 +644,14 @@ function sqliteDelDBRecord($params=array()){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
 	}
-	$query="delete from {$params['-table']} where " . $params['-where'];
+
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($params['-table']);
+	if($safe_table === false){
+		return 'sqliteDelDBRecord Error: Invalid table name';
+	}
+
+	$query="delete from {$safe_table} where " . $params['-where'];
 	return sqliteExecuteSQL($query);
 }
 //---------- begin function sqliteDelDBRecordById--------------------
@@ -585,13 +714,27 @@ function sqliteCreateDBTable($table='',$fields=array()){
 	//lowercase the tablename and replace spaces with underscores
 	$table=strtolower(trim($table));
 	$table=str_replace(' ','_',$table);
-	$query="create table {$table} (";
+
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($table);
+	if($safe_table === false){
+		return 'sqliteCreateDBTable Error: Invalid table name';
+	}
+
+	$query="create table {$safe_table} (";
 	//echo printValue($fields);exit;
 	foreach($fields as $field=>$attributes){
 		//lowercase the fieldname and replace spaces with underscores
 		$field=strtolower(trim($field));
 		$field=str_replace(' ','_',$field);
-		$query .= "{$field} {$attributes},";
+
+		// Validate and quote field name
+		$safe_field = sqliteQuoteIdentifier($field);
+		if($safe_field === false){
+			return "sqliteCreateDBTable Error: Invalid field name: {$field}";
+		}
+
+		$query .= "{$safe_field} {$attributes},";
    	}
     $query=preg_replace('/\,$/','',$query);
     $query .= ")";
@@ -599,9 +742,9 @@ function sqliteCreateDBTable($table='',$fields=array()){
 	//clear the cache
 	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
   	if(!isset($query_result['error']) && $query_result==true){
-		//success creating table.  Now to through the fields and create any instant meta data found
+		//success creating table.  Now go through the fields and create any instant meta data found
 		foreach($fields as $field=>$attributes){
-        	instantDBMeta($ori_table,$field,$attributes);
+        	instantDBMeta($table,$field,$attributes); // Fixed: was $ori_table
 		}
 		return 1;
 	}
@@ -620,10 +763,16 @@ function sqliteGetDBTableIndexes($tablename=''){
 	}
 	$filter='';
 	if(strlen($tablename)){
-		$filter="and m.tbl_name = '{$tablename}'";
+		// Validate table name for filter
+		if(!preg_match('/^[a-zA-Z0-9_\.]+$/', $tablename)){
+			return array();
+		}
+		// Escape single quotes for SQL string literal
+		$escaped_tablename = str_replace("'", "''", $tablename);
+		$filter="and m.tbl_name = '{$escaped_tablename}'";
 	}
 	$query=<<<ENDOFQUERY
-	SELECT 
+	SELECT
 		m.tbl_name as table_name,
 		il.name as key_name,
 		ii.name as column_name,
@@ -635,7 +784,7 @@ function sqliteGetDBTableIndexes($tablename=''){
   	FROM sqlite_master AS m,
 	    pragma_index_list(m.name) AS il,
 	    pragma_index_info(il.name) AS ii
- 	WHERE 
+ 	WHERE
  		m.type = 'table'
  		{$filter}
  	GROUP BY
@@ -864,11 +1013,24 @@ function sqliteIsDBTable($table,$params=array()){
 	$table=strtolower($table);
 	$parts=preg_split('/\./',$table,2);
 	if(count($parts)==2){
-		$query="SELECT name FROM {$parts[0]}.sqlite_master WHERE type='table' and name = '{$table}'";
+		// Validate schema and table names
+		if(!preg_match('/^[a-zA-Z0-9_]+$/', $parts[0]) || !preg_match('/^[a-zA-Z0-9_]+$/', $parts[1])){
+			return false;
+		}
+		// Escape single quotes for SQL string literal
+		$escaped_table = str_replace("'", "''", $parts[1]);
+		$safe_schema = sqliteQuoteIdentifier($parts[0]);
+		$query="SELECT name FROM {$safe_schema}.sqlite_master WHERE type='table' and name = '{$escaped_table}'";
 		$table=$parts[1];
 	}
 	else{
-		$query="SELECT name FROM sqlite_master WHERE type='table' and name = '{$table}'";
+		// Validate table name
+		if(!preg_match('/^[a-zA-Z0-9_]+$/', $table)){
+			return false;
+		}
+		// Escape single quotes for SQL string literal
+		$escaped_table = str_replace("'", "''", $table);
+		$query="SELECT name FROM sqlite_master WHERE type='table' and name = '{$escaped_table}'";
 	}
 	$recs=sqliteQueryResults($query);
 	if(isset($recs[0]['name'])){return true;}
@@ -956,14 +1118,31 @@ function sqliteAddDBRecord($params){
 	elseif(isset($fields['_cuser'])){
 		$params['_cuser']=isset($USER['username'])?$USER['username']:0;
 	}
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($params['-table']);
+	if($safe_table === false){
+		debugValue(array("sqliteAddDBRecord Error","Invalid table name"));
+		return;
+	}
+
 	$binds=array();
 	$vals=array();
 	$flds=array();
+	$safe_flds=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!isset($fields[$k])){continue;}
+
+		// Validate and quote field name
+		$safe_field = sqliteQuoteIdentifier($k);
+		if($safe_field === false){
+			debugValue(array("sqliteAddDBRecord Error","Invalid field name: {$k}"));
+			continue;
+		}
+
 		$vals[]=$v;
 		$flds[]=$k;
+		$safe_flds[]=$safe_field;
         $binds[]='?';
 	}
 	if(!count($flds)){
@@ -971,11 +1150,11 @@ function sqliteAddDBRecord($params){
 		debugValue(array("sqliteAddDBRecord Error",$e));
     	return;
 	}
-	$fldstr=implode(', ',$flds);
+	$fldstr=implode(', ',$safe_flds);
 	$bindstr=implode(',',$binds);
 
     $query=<<<ENDOFQUERY
-		INSERT INTO {$params['-table']}
+		INSERT INTO {$safe_table}
 			({$fldstr})
 		VALUES
 			({$bindstr})
@@ -1070,15 +1249,31 @@ function sqliteEditDBRecord($params,$id=0,$opts=array()){
 	elseif(isset($fields['_euser'])){
 		$params['_euser']=$USER['username'];
 	}
+
+	// Validate and quote table name
+	$safe_table = sqliteQuoteIdentifier($params['-table']);
+	if($safe_table === false){
+		debugValue(array("sqliteEditDBRecord Error","Invalid table name"));
+		return;
+	}
+
 	$updates=array();
 	$vals=array();
 	$flds=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!isset($fields[$k])){continue;}
+
+		// Validate and quote field name
+		$safe_field = sqliteQuoteIdentifier($k);
+		if($safe_field === false){
+			debugValue(array("sqliteEditDBRecord Error","Invalid field name: {$k}"));
+			continue;
+		}
+
 		$vals[]=$v;
 		$flds[]=$k;
-        $updates[]="{$k}=?";
+        $updates[]="{$safe_field}=?";
 	}
 	if(!count($flds)){
 		$e="No fields";
@@ -1087,7 +1282,7 @@ function sqliteEditDBRecord($params,$id=0,$opts=array()){
 	}
 	$updatestr=implode(', ',$updates);
     $query=<<<ENDOFQUERY
-		UPDATE {$params['-table']}
+		UPDATE {$safe_table}
 		SET {$updatestr}
 		WHERE {$params['-where']}
 ENDOFQUERY;
@@ -1280,7 +1475,13 @@ function sqliteGetDBCount($params=array()){
 	$params['-queryonly']=1;
 	$query=sqliteGetDBRecords($params);
 	if(!stringContains($query,'where')){
-	 	$query1="SELECT tbl,stat FROM sqlite_stat1 where tbl='{$params['-table']}' limit 1";
+		// Validate table name for sqlite_stat1 query
+		if(!preg_match('/^[a-zA-Z0-9_\.]+$/', $params['-table'])){
+			return 0;
+		}
+		// Escape single quotes for SQL string literal
+		$escaped_table = str_replace("'", "''", $params['-table']);
+	 	$query1="SELECT tbl,stat FROM sqlite_stat1 where tbl='{$escaped_table}' limit 1";
 	 	$recs=sqliteQueryResults($query1);
 	 	//echo "HERE".$query.printValue($recs);
 	 	if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
@@ -1332,7 +1533,14 @@ function sqliteTruncateDBTable($table){
 	else{$tables=array($table);}
 	foreach($tables as $table){
 		if(!sqliteIsDBTable($table)){return "No such table: {$table}.";}
-		$result=sqliteExecuteSQL("DELETE FROM {$table}");
+
+		// Validate and quote table name
+		$safe_table = sqliteQuoteIdentifier($table);
+		if($safe_table === false){
+			return "sqliteTruncateDBTable Error: Invalid table name: {$table}";
+		}
+
+		$result=sqliteExecuteSQL("DELETE FROM {$safe_table}");
 		if(isset($result['error'])){
 			return $result['error'];
 	        }
@@ -1422,9 +1630,8 @@ function sqliteEnumQueryResults($data,$params=array()){
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			odbc_free_result($result);
+			$data->finalize(); // Fixed: was odbc_free_result
 			return 'sqliteQueryResults error: Failed to open '.$params['-filename'];
-			exit;
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
@@ -1470,7 +1677,7 @@ function sqliteEnumQueryResults($data,$params=array()){
 		}
 		elseif(isset($params['-process'])){
 			$ok=call_user_func($params['-process'],$rec);
-			$x++;
+			$i++; // Fixed: was $x which was undefined
 			continue;
 		}
 		elseif(isset($params['-index']) && isset($rec[$params['-index']])){
@@ -1540,6 +1747,13 @@ function sqliteGetDBRecords($params){
 		unset($params['-query']);
 	}
 	else{
+		// Validate and quote table name
+		$safe_table = sqliteQuoteIdentifier($params['-table']);
+		if($safe_table === false){
+			debugValue(array("sqliteGetDBRecords Error","Invalid table name"));
+			return array();
+		}
+
 		//determine fields to return
 		if(!empty($params['-fields'])){
 			if(!is_array($params['-fields'])){;
@@ -1558,12 +1772,20 @@ function sqliteGetDBRecords($params){
 			$k=strtolower($k);
 			if(!strlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
+
+			// Validate and quote field name for upper() comparison
+			$safe_field = sqliteQuoteIdentifier($k);
+			if($safe_field === false){
+				debugValue(array("sqliteGetDBRecords Error","Invalid field name: {$k}"));
+				continue;
+			}
+
 			if(is_array($params[$k])){
 	            $params[$k]=implode(':',$params[$k]);
 			}
 	        $params[$k]=str_replace("'","''",$params[$k]);
 	        $v=strtoupper($params[$k]);
-	        $ands[]="upper({$k})='{$v}'";
+	        $ands[]="upper({$safe_field})='{$v}'";
 		}
 		//check for -where
 		if(!empty($params['-where'])){
@@ -1576,16 +1798,21 @@ function sqliteGetDBRecords($params){
 		if(count($ands)){
 			$wherestr='WHERE '.implode(' and ',$ands);
 		}
-	    $query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    $query="SELECT {$params['-fields']} FROM {$safe_table} {$wherestr}";
 	    if(isset($params['-order'])){
+	    	// Validate ORDER BY to prevent injection
+	    	if(!preg_match('/^[a-zA-Z0-9_\.\,\s\(\)]+$/', $params['-order'])){
+	    		debugValue(array("sqliteGetDBRecords Error","Invalid ORDER BY clause"));
+	    		return array();
+	    	}
     		$query .= " ORDER BY {$params['-order']}";
     	}
     	//offset and limit
     	if(!isset($params['-nolimit'])){
-	    	$offset=isset($params['-offset'])?$params['-offset']:0;
+	    	$offset=isset($params['-offset'])?(int)$params['-offset']:0;
 	    	$limit=25;
-	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
-	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	if(!empty($params['-limit'])){$limit=(int)$params['-limit'];}
+	    	elseif(!empty($CONFIG['paging'])){$limit=(int)$CONFIG['paging'];}
 	    	$query .= " LIMIT {$limit} OFFSET {$offset}";
 	    }
 	}
