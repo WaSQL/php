@@ -30,7 +30,23 @@ function duckdbAddDBIndex($params=array()){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
 	}
-	
+
+	// Safely quote table identifier
+	$safe_table = duckdbQuoteIdentifier($params['-table']);
+	if($safe_table === false){
+		return 'duckdbAddDBIndex Error: Invalid table name';
+	}
+
+	// Safely quote field identifiers
+	$safe_fields = array();
+	foreach($params['-fields'] as $field){
+		$safe_field = duckdbQuoteIdentifier(trim($field));
+		if($safe_field === false){
+			return "duckdbAddDBIndex Error: Invalid field name: {$field}";
+		}
+		$safe_fields[] = $safe_field;
+	}
+
 	//fulltext or unique
 	$fulltext=$params['-fulltext']?' FULLTEXT':'';
 	$unique=$params['-unique']?' UNIQUE':'';
@@ -45,10 +61,18 @@ function duckdbAddDBIndex($params=array()){
 	if(strlen($fieldstr) > 60){
     	$fieldstr=substr($fieldstr,0,60);
 	}
-	if(!isset($params['-name'])){$params['-name']=str_replace('.','_',"{$prefix}_{$params['-table']}_{$fieldstr}");}
+	if(!isset($params['-name'])){
+		$name_base = str_replace('.','_',"{$prefix}_{$params['-table']}_{$fieldstr}");
+		$params['-name'] = $name_base;
+	}
+	// Safely quote index name
+	$safe_index_name = duckdbQuoteIdentifier($params['-name']);
+	if($safe_index_name === false){
+		return 'duckdbAddDBIndex Error: Invalid index name';
+	}
 	//build and execute
-	$fieldstr=implode(", ",$params['-fields']);
-	$query="CREATE {$unique} INDEX IF NOT EXISTS {$params['-name']} on {$params['-table']} ({$fieldstr})";
+	$fieldstr=implode(", ",$safe_fields);
+	$query="CREATE {$unique} INDEX IF NOT EXISTS {$safe_index_name} ON {$safe_table} ({$fieldstr})";
 	return duckdbExecuteSQL($query);
 }
 
@@ -194,7 +218,24 @@ ENDOFQUERY;
 		}
 	}
 	//JSON method did not work, try standard prepared statement method
-	$query="INSERT INTO {$table} ({$fieldstr}) VALUES ".PHP_EOL;
+	// Safely quote table identifier
+	$safe_table = duckdbQuoteIdentifier($table);
+	if($safe_table === false){
+		debugValue("duckdbAddDBRecordsProcess Error: Invalid table name");
+		return 0;
+	}
+	// Safely quote field identifiers
+	$safe_fields = array();
+	foreach($fields as $fld){
+		$safe_fld = duckdbQuoteIdentifier($fld);
+		if($safe_fld === false){
+			debugValue("duckdbAddDBRecordsProcess Error: Invalid field name: {$fld}");
+			return 0;
+		}
+		$safe_fields[] = $safe_fld;
+	}
+	$safe_fieldstr = implode(',', $safe_fields);
+	$query="INSERT INTO {$safe_table} ({$safe_fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
 	foreach($recs as $i=>$rec){
 		foreach($rec as $k=>$v){
@@ -217,22 +258,34 @@ ENDOFQUERY;
 		if(!is_array($params['-upsert'])){
 			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
 		}
+		// Safely quote the upsert on field
+		$safe_upserton = duckdbQuoteIdentifier(trim($params['-upserton']));
+		if($safe_upserton === false){
+			debugValue("duckdbAddDBRecordsProcess Error: Invalid upserton field name");
+			return 0;
+		}
 		/*
-			ON CONFLICT (id) DO UPDATE SET 
+			ON CONFLICT (id) DO UPDATE SET
 			  id=excluded.id, username=excluded.username,
 			  password=excluded.password, level=excluded.level,email=excluded.email
 		*/
 		if(strtolower($params['-upsert'][0])=='ignore'){
-			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO NOTHING";
+			$query.=PHP_EOL."ON CONFLICT ({$safe_upserton}) DO NOTHING";
 		}
 		else{
-			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO UPDATE SET";
+			$query.=PHP_EOL."ON CONFLICT ({$safe_upserton}) DO UPDATE SET";
 			$flds=array();
 			foreach($params['-upsert'] as $fld){
-				$flds[]="{$fld}=excluded.{$fld}";
+				$safe_fld = duckdbQuoteIdentifier(trim($fld));
+				if($safe_fld === false){
+					debugValue("duckdbAddDBRecordsProcess Error: Invalid upsert field name: {$fld}");
+					continue;
+				}
+				$flds[]="{$safe_fld}=excluded.{$safe_fld}";
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
 			if(isset($params['-upsertwhere'])){
+				// Note: -upsertwhere should be constructed safely by caller
 				$query.=" WHERE {$params['-upsertwhere']}";
 			}
 		}
@@ -250,11 +303,22 @@ ENDOFQUERY;
 *	$ok=duckdbAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function duckdbAddDBFields($table,$fields=array(),$maintain_order=1){
+	// Safely quote table identifier
+	$safe_table = duckdbQuoteIdentifier($table);
+	if($safe_table === false){
+		return array(array('error' => 'Invalid table name'));
+	}
 	$recs=array();
 	foreach($fields as $name=>$type){
+		// Safely quote field identifier
+		$safe_field = duckdbQuoteIdentifier($name);
+		if($safe_field === false){
+			$recs[] = array('name'=>$name,'error'=>'Invalid field name');
+			continue;
+		}
 		$crec=array('name'=>$name,'type'=>$type);
-		$fieldstr="{$name} {$type}";
-		$crec['query']="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$fieldstr="{$safe_field} {$type}";
+		$crec['query']="ALTER TABLE {$safe_table} ADD ({$fieldstr})";
 		$crec['result']=duckdbExecuteSQL($crec['query']);
 		$recs[]=$crec;
 	}
@@ -270,10 +334,21 @@ function duckdbAddDBFields($table,$fields=array(),$maintain_order=1){
 *	$ok=duckdbDropDBFields('comments',array('comment','age'));
 */
 function duckdbDropDBFields($table,$fields=array()){
+	// Safely quote table identifier
+	$safe_table = duckdbQuoteIdentifier($table);
+	if($safe_table === false){
+		return array(array('error' => 'Invalid table name'));
+	}
 	$recs=array();
 	foreach($fields as $name){
+		// Safely quote field identifier
+		$safe_field = duckdbQuoteIdentifier($name);
+		if($safe_field === false){
+			$recs[] = array('name'=>$name,'error'=>'Invalid field name');
+			continue;
+		}
 		$crec=array('name'=>$name);
-		$crec['query']="ALTER TABLE {$table} DROP ({$name})";
+		$crec['query']="ALTER TABLE {$safe_table} DROP ({$safe_field})";
 		$crec['result']=duckdbExecuteSQL($crec['query']);
 		$recs[]=$crec;
 	}
@@ -289,6 +364,11 @@ function duckdbDropDBFields($table,$fields=array()){
 *	$ok=duckdbAlterDBTable('comments',array('comment'=>"varchar(1000) NULL"));
 */
 function duckdbAlterDBTable($table,$fields=array(),$maintain_order=1){
+	// Safely quote table identifier
+	$safe_table = duckdbQuoteIdentifier($table);
+	if($safe_table === false){
+		return array('error' => 'Invalid table name');
+	}
 	$info=duckdbGetDBFieldInfo($table);
 	if(!is_array($info) || !count($info)){
 		debugValue("duckdbAlterDBTable - {$table} is missing or has no fields".printValue($table));
@@ -301,26 +381,38 @@ function duckdbAlterDBTable($table,$fields=array(),$maintain_order=1){
 		$lname=strtolower($name);
 		$uname=strtoupper($name);
 		if(isset($info[$name]) || isset($info[$lname]) || isset($info[$uname])){continue;}
-		$addfields[]="{$name} {$type}";
+		// Safely quote field identifier
+		$safe_field = duckdbQuoteIdentifier($name);
+		if($safe_field === false){
+			$rtn[] = "Invalid field name: {$name}";
+			continue;
+		}
+		$addfields[]="{$safe_field} {$type}";
 	}
 	$dropfields=array();
 	foreach($info as $name=>$finfo){
 		$lname=strtolower($name);
 		$uname=strtoupper($name);
 		if(!isset($fields[$name]) && !isset($fields[$lname]) && !isset($fields[$uname])){
-			$dropfields[]=$name;
+			// Safely quote field identifier
+			$safe_field = duckdbQuoteIdentifier($name);
+			if($safe_field === false){
+				$rtn[] = "Invalid field name: {$name}";
+				continue;
+			}
+			$dropfields[]=$safe_field;
 		}
 	}
 	if(count($dropfields)){
 		$fieldstr=implode(', ',$dropfields);
-		$query="ALTER TABLE {$table} DROP ({$fieldstr})";
+		$query="ALTER TABLE {$safe_table} DROP ({$fieldstr})";
 		$ok=duckdbExecuteSQL($query);
 		$rtn[]=$query;
 		$rtn[]=$ok;
 	}
 	if(count($addfields)){
 		$fieldstr=implode(', ',$addfields);
-		$query="ALTER TABLE {$table} ADD ({$fieldstr})";
+		$query="ALTER TABLE {$safe_table} ADD ({$fieldstr})";
 		$ok=duckdbExecuteSQL($query);
 		$rtn[]=$query;
 		$rtn[]=$ok;
@@ -330,6 +422,35 @@ function duckdbAlterDBTable($table,$fields=array(),$maintain_order=1){
 function duckdbEscapeString($str){
 	$str = str_replace("'","''",$str);
 	return $str;
+}
+//---------- begin function duckdbQuoteIdentifier ----------
+/**
+* @describe safely quotes table and column names to prevent SQL injection
+* @param $identifier string - table or column name
+* @return string - safely quoted identifier
+* @usage $safe_table = duckdbQuoteIdentifier($table);
+*/
+function duckdbQuoteIdentifier($identifier){
+	// Remove any existing quotes and whitespace
+	$identifier = trim($identifier);
+	// Allow schema.table notation
+	if(strpos($identifier, '.') !== false){
+		$parts = explode('.', $identifier);
+		$quoted = array();
+		foreach($parts as $part){
+			// Only allow alphanumeric, underscore, and basic safe characters
+			if(!preg_match('/^[a-zA-Z0-9_]+$/', $part)){
+				return false; // Invalid identifier
+			}
+			$quoted[] = '"' . str_replace('"', '""', $part) . '"';
+		}
+		return implode('.', $quoted);
+	}
+	// Single identifier - validate and quote
+	if(!preg_match('/^[a-zA-Z0-9_]+$/', $identifier)){
+		return false; // Invalid identifier
+	}
+	return '"' . str_replace('"', '""', $identifier) . '"';
 }
 //---------- begin function duckdbGetTableDDL ----------
 /**
@@ -349,8 +470,21 @@ function duckdbGetTableDDL($table,$schema=''){
 	else{
 		$DATABASE['_lastquery']['dbname']='';
 	}
-	$cmd="duckdb -c \".schema {$table}\"";
-	if(strlen($DATABASE['_lastquery']['dbname'])){$cmd.=" \"{$DATABASE['_lastquery']['dbname']}\"";}
+	// Validate table name to prevent command injection
+	// Only allow alphanumeric, underscore, and dot for schema.table notation
+	if(!preg_match('/^[a-zA-Z0-9_\.]+$/', $table)){
+		$DATABASE['_lastquery']['error']='Invalid table name';
+		debugValue($DATABASE['_lastquery']);
+		return 'Invalid table name';
+	}
+	// Properly escape table name for shell command
+	$safe_table = escapeshellarg($table);
+	$cmd="duckdb -c \".schema {$safe_table}\"";
+	if(strlen($DATABASE['_lastquery']['dbname'])){
+		// Properly escape database path for shell command
+		$safe_dbname = escapeshellarg($DATABASE['_lastquery']['dbname']);
+		$cmd.=" {$safe_dbname}";
+	}
 	$out=cmdResults($cmd);
 	//echo "<pre>{$query}</pre>".printValue($cmd);exit;
 	if(isset($out['stderr']) && strlen($out['stderr'])){
@@ -522,7 +656,13 @@ function duckdbDelDBRecord($params=array()){
 			$params['-table']="{$schema}.{$params['-table']}";
 		}
 	}
-	$query="delete from {$params['-table']} where " . $params['-where'];
+	// Safely quote table identifier to prevent SQL injection
+	$safe_table = duckdbQuoteIdentifier($params['-table']);
+	if($safe_table === false){
+		return 'duckdbDelDBRecord error: Invalid table name.';
+	}
+	// Note: -where clause should be constructed safely by the caller using prepared statements or proper escaping
+	$query="DELETE FROM {$safe_table} WHERE " . $params['-where'];
 	return duckdbExecuteSQL($query);
 }
 //---------- begin function duckdbDelDBRecordById--------------------
@@ -585,23 +725,33 @@ function duckdbCreateDBTable($table='',$fields=array()){
 	//lowercase the tablename and replace spaces with underscores
 	$table=strtolower(trim($table));
 	$table=str_replace(' ','_',$table);
-	$query="create table {$table} (";
+	// Safely quote table identifier
+	$safe_table = duckdbQuoteIdentifier($table);
+	if($safe_table === false){
+		return "duckdbCreateDBTable error: Invalid table name";
+	}
+	$field_definitions = array();
 	//echo printValue($fields);exit;
 	foreach($fields as $field=>$attributes){
 		//lowercase the fieldname and replace spaces with underscores
 		$field=strtolower(trim($field));
 		$field=str_replace(' ','_',$field);
-		$query .= "{$field} {$attributes},";
+		// Safely quote field identifier
+		$safe_field = duckdbQuoteIdentifier($field);
+		if($safe_field === false){
+			return "duckdbCreateDBTable error: Invalid field name: {$field}";
+		}
+		// Note: attributes should be validated/sanitized by caller as they define column types
+		$field_definitions[] = "{$safe_field} {$attributes}";
    	}
-    $query=preg_replace('/\,$/','',$query);
-    $query .= ")";
+	$query = "CREATE TABLE {$safe_table} (" . implode(', ', $field_definitions) . ")";
 	$query_result=duckdbExecuteSQL($query);
 	//clear the cache
 	clearDBCache(array('databaseTables','getDBFieldInfo','isDBTable'));
   	if(!isset($query_result['error']) && $query_result==true){
-		//success creating table.  Now to through the fields and create any instant meta data found
+		//success creating table.  Now go through the fields and create any instant meta data found
 		foreach($fields as $field=>$attributes){
-        	instantDBMeta($ori_table,$field,$attributes);
+        	instantDBMeta($table,$field,$attributes);
 		}
 		return 1;
 	}
@@ -768,61 +918,128 @@ function duckdbDBConnect($params=array()){
 			realpath("{$_SERVER['DOCUMENT_ROOT']}/../../{$params['-dbname']}"),
 			realpath("../{$params['-dbname']}")
 		);
+		$found = false;
 		foreach($cfiles as $cfile){
-			if(file_exists($cfile)){
+			if($cfile && file_exists($cfile)){
 				$params['-dbname']=$cfile;
+				$found = true;
+				break;
 			}
+		}
+		// If database still doesn't exist and not in readonly mode, it will be created
+		// If in readonly mode and file doesn't exist, fail
+		if(!$found && isset($params['-readonly']) && $params['-readonly']==1){
+			$CONFIG['duckdb_error']="dbname does not exist and readonly mode is enabled";
+			debugValue("duckdbDBConnect error: {$CONFIG['duckdb_error']}");
+			return null;
 		}
 		//echo printValue($cfiles).printValue($params);exit;
 	}
 	$CONFIG['duckdb_dbname_realpath']=$params['-dbname'];
 	//echo printValue($params);exit;
 	global $dbh_duckdb;
-	if($dbh_duckdb){return $dbh_duckdb;}
+	// Check if existing connection is still valid
+	if($dbh_duckdb){
+		try{
+			// Test the connection with a simple query
+			$test = @$dbh_duckdb->query("SELECT 1");
+			if($test){
+				$test->finalize();
+				return $dbh_duckdb;
+			}
+		}
+		catch(Exception $e){
+			// Connection is dead, clear it and reconnect
+			$dbh_duckdb = null;
+		}
+	}
 	try{
 		if(isset($params['-readonly']) && $params['-readonly']==1){
+			if(!defined('duckdb3_OPEN_READONLY')){
+				$CONFIG['duckdb_error']="duckdb3 extension not loaded";
+				debugValue("duckdbDBConnect error: duckdb3 extension not loaded");
+				return null;
+			}
 			$dbh_duckdb = new duckdb3($params['-dbname'],duckdb3_OPEN_READONLY);
 		}
 		else{
-			$dbh_duckdb = new duckdb3($params['-dbname'],duckdb3_OPEN_READWRITE | duckdb3_OPEN_CREATE);	
+			if(!defined('duckdb3_OPEN_READWRITE') || !defined('duckdb3_OPEN_CREATE')){
+				$CONFIG['duckdb_error']="duckdb3 extension not loaded";
+				debugValue("duckdbDBConnect error: duckdb3 extension not loaded");
+				return null;
+			}
+			$dbh_duckdb = new duckdb3($params['-dbname'],duckdb3_OPEN_READWRITE | duckdb3_OPEN_CREATE);
 		}
-		
+
+		if(!$dbh_duckdb){
+			$CONFIG['duckdb_error']="Failed to create database connection";
+			debugValue("duckdbDBConnect error: Failed to create database connection");
+			return null;
+		}
+
 		$dbh_duckdb->busyTimeout(5000);
 		//register some PHP functions so we can use them in queries
-		if(!$dbh_duckdb->createFunction("config_value", "configValue", 1)){
-			debugValue("unable to create config_value function");
+		// Check if functions exist before registering
+		if(function_exists("configValue")){
+			if(!$dbh_duckdb->createFunction("config_value", "configValue", 1)){
+				debugValue("unable to create config_value function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("user_value", "userValue", 1)){
-			debugValue("unable to create user_value function");
+		if(function_exists("userValue")){
+			if(!$dbh_duckdb->createFunction("user_value", "userValue", 1)){
+				debugValue("unable to create user_value function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("is_user", "isUser", 0)){
-			debugValue("unable to create is_user function");
+		if(function_exists("isUser")){
+			if(!$dbh_duckdb->createFunction("is_user", "isUser", 0)){
+				debugValue("unable to create is_user function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("is_admin", "isAdmin", 0)){
-			debugValue("unable to create is_admin function");
+		if(function_exists("isAdmin")){
+			if(!$dbh_duckdb->createFunction("is_admin", "isAdmin", 0)){
+				debugValue("unable to create is_admin function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("verbose_size", "verboseSize", -1)){
-			debugValue("unable to create verbose_size function");
+		if(function_exists("verboseSize")){
+			if(!$dbh_duckdb->createFunction("verbose_size", "verboseSize", -1)){
+				debugValue("unable to create verbose_size function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("verbose_time", "verboseTime", -1)){
-			debugValue("unable to create verbose_time function");
+		if(function_exists("verboseTime")){
+			if(!$dbh_duckdb->createFunction("verbose_time", "verboseTime", -1)){
+				debugValue("unable to create verbose_time function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("verbose_number", "verboseNumber", -1)){
-			debugValue("unable to create verbose_number function");
+		if(function_exists("verboseNumber")){
+			if(!$dbh_duckdb->createFunction("verbose_number", "verboseNumber", -1)){
+				debugValue("unable to create verbose_number function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("format_phone", "commonFormatPhone", 1)){
-			debugValue("unable to create format_phone function");
+		if(function_exists("commonFormatPhone")){
+			if(!$dbh_duckdb->createFunction("format_phone", "commonFormatPhone", 1)){
+				debugValue("unable to create format_phone function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("string_contains", "stringContains", 2)){
-			debugValue("unable to create string_contains function");
+		if(function_exists("stringContains")){
+			if(!$dbh_duckdb->createFunction("string_contains", "stringContains", 2)){
+				debugValue("unable to create string_contains function");
+			}
 		}
-		if(!$dbh_duckdb->createFunction("php_version", "phpversion")){
-			debugValue("unable to create php_version function");
+		if(function_exists("phpversion")){
+			if(!$dbh_duckdb->createFunction("php_version", "phpversion")){
+				debugValue("unable to create php_version function");
+			}
 		}
 
 		// WAL mode has better control over concurrency.
 		// Source: https://www.duckdb.org/wal.html
-		$dbh_duckdb->exec('PRAGMA journal_mode = wal;');
+		try{
+			$dbh_duckdb->exec('PRAGMA journal_mode = wal;');
+		}
+		catch(Exception $e){
+			// WAL mode might not be supported, continue anyway
+			debugValue("Warning: Could not set WAL mode - " . $e->getMessage());
+		}
 		return $dbh_duckdb;
 	}
 	catch (Exception $e) {
@@ -847,17 +1064,32 @@ function duckdbDBConnect($params=array()){
 */
 function duckdbIsDBTable($table,$params=array()){
 	if(!strlen($table)){
-		echo "duckdbIsDBTable error: No table";
-		return null;
+		debugValue("duckdbIsDBTable error: No table");
+		return false;
+	}
+	// Validate table name
+	if(!preg_match('/^[a-zA-Z0-9_\.]+$/', $table)){
+		debugValue("duckdbIsDBTable error: Invalid table name");
+		return false;
 	}
 	$table=strtolower($table);
 	$parts=preg_split('/\./',$table,2);
 	if(count($parts)==2){
-		$query="SELECT name FROM {$parts[0]}.duckdb_master WHERE type='table' and name = '{$table}'";
-		$table=$parts[1];
+		// Safely quote schema and table identifiers
+		$safe_schema = duckdbQuoteIdentifier($parts[0]);
+		$safe_table = duckdbQuoteIdentifier($parts[1]);
+		if($safe_schema === false || $safe_table === false){
+			debugValue("duckdbIsDBTable error: Invalid schema or table name");
+			return false;
+		}
+		// Escape table name for comparison in WHERE clause
+		$escaped_table = duckdbEscapeString($table);
+		$query="SELECT name FROM {$safe_schema}.duckdb_master WHERE type='table' AND name = '{$escaped_table}'";
 	}
 	else{
-		$query="SELECT name FROM duckdb_master WHERE type='table' and name = '{$table}'";
+		// Escape table name for comparison in WHERE clause
+		$escaped_table = duckdbEscapeString($table);
+		$query="SELECT name FROM duckdb_master WHERE type='table' AND name = '{$escaped_table}'";
 	}
 	$recs=duckdbQueryResults($query);
 	if(isset($recs[0]['name'])){return true;}
@@ -1247,31 +1479,43 @@ function duckdbGetDBFieldInfo($tablename,$params=array()){
 * @usage $cnt=duckdbGetDBCount(array('-table'=>'states'));
 */
 function duckdbGetDBCount($params=array()){
-	if(!isset($params['-table'])){return null;}
+	if(!isset($params['-table'])){
+		debugValue("duckdbGetDBCount error: No table specified");
+		return null;
+	}
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
 	unset($params['-limit']);
 	unset($params['-offset']);
 	$params['-queryonly']=1;
 	$query=duckdbGetDBRecords($params);
+	if(!$query || !is_string($query)){
+		debugValue("duckdbGetDBCount error: Invalid query returned");
+		return 0;
+	}
 	if(!stringContains($query,'where')){
-	 	$query1="SELECT tbl,stat FROM duckdb_stat1 where tbl='{$params['-table']}' limit 1";
-	 	$recs=duckdbQueryResults($query1);
-	 	//echo "HERE".$query.printValue($recs);
-	 	if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
-	 		$parts=preg_split('/\ /',$recs[0]['stat'],2);
-	 		return (integer)$parts[0];
+		// Try to get count from statistics table (faster)
+		$safe_table = duckdbQuoteIdentifier($params['-table']);
+		if($safe_table !== false){
+			$escaped_table = duckdbEscapeString($params['-table']);
+	 		$query1="SELECT tbl,stat FROM duckdb_stat1 WHERE tbl='{$escaped_table}' LIMIT 1";
+	 		$recs=duckdbQueryResults($query1);
+	 		//echo "HERE".$query.printValue($recs);
+	 		if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
+	 			$parts=preg_split('/\ /',$recs[0]['stat'],2);
+	 			return (integer)$parts[0];
+	 		}
 	 	}
 	}
 	//echo "HERE".$query.printValue($params);
 	$recs=duckdbQueryResults($query);
 	//echo "HERE2".$query.printValue($recs);exit;
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
-	if(!isset($recs[0]['cnt'])){
-		debugValue($recs);
+	if(!is_array($recs) || !isset($recs[0]['cnt'])){
+		debugValue("duckdbGetDBCount error: Invalid result set");
 		return 0;
 	}
-	return $recs[0]['cnt'];
+	return (integer)$recs[0]['cnt'];
 }
 //---------- begin function duckdbListDBDatatypes ----
 /**
@@ -1333,7 +1577,12 @@ function duckdbTruncateDBTable($table){
 	else{$tables=array($table);}
 	foreach($tables as $table){
 		if(!duckdbIsDBTable($table)){return "No such table: {$table}.";}
-		$result=duckdbExecuteSQL("DELETE FROM {$table}");
+		// Safely quote table identifier
+		$safe_table = duckdbQuoteIdentifier($table);
+		if($safe_table === false){
+			return "Invalid table name: {$table}";
+		}
+		$result=duckdbExecuteSQL("DELETE FROM {$safe_table}");
 		if(isset($result['error'])){
 			return $result['error'];
 	        }
@@ -1447,8 +1696,13 @@ function duckdbQueryResults($query,$params=array()){
 		$filename='duckdb_'.sha1($query).'.sql';
 		$afile="{$tpath}/{$filename}";
 		$ok=setFileContents($afile,$query);
-		$cmd="duckdb -csv -c \".read {$afile}\"";
-		if(strlen($DATABASE['_lastquery']['dbname'])){$cmd.=" \"{$DATABASE['_lastquery']['dbname']}\"";}
+		// Properly escape file path for shell command
+		$safe_afile = escapeshellarg($afile);
+		$cmd="duckdb -csv -c \".read {$safe_afile}\"";
+		if(strlen($DATABASE['_lastquery']['dbname'])){
+			$safe_dbname = escapeshellarg($DATABASE['_lastquery']['dbname']);
+			$cmd.=" {$safe_dbname}";
+		}
 		$out=cmdResults($cmd);
 		//echo "<pre>{$query}</pre>".printValue($cmd);exit;
 		if(isset($out['stderr']) && strlen($out['stderr'])){
@@ -1457,10 +1711,29 @@ function duckdbQueryResults($query,$params=array()){
 			debugValue($DATABASE['_lastquery']);
     		return 0;
 		}
-		unlink($afile);
+		// Safely delete temp file
+		if(file_exists($afile)){
+			unlink($afile);
+		}
 		//call duckdb again to return the count
-		$cmd="duckdb -json -c \"SELECT count(*) AS cnt FROM read_csv('{$csvfile}');\"";
+		// Escape path for SQL (single quotes for DuckDB's read_csv function)
+		$escaped_csv = str_replace("'", "''", $csvfile);
+		// Write count query to temp file to avoid shell escaping issues
+		$count_query = "SELECT count(*) AS cnt FROM read_csv('{$escaped_csv}')";
+		$count_filename = 'duckdb_count_'.sha1($count_query).'.sql';
+		$count_file = "{$tpath}/{$count_filename}";
+		setFileContents($count_file, $count_query);
+		$safe_count_file = escapeshellarg($count_file);
+		$cmd="duckdb -json -c \".read {$safe_count_file}\"";
+		if(strlen($DATABASE['_lastquery']['dbname'])){
+			$safe_dbname = escapeshellarg($DATABASE['_lastquery']['dbname']);
+			$cmd.=" {$safe_dbname}";
+		}
 		$out=cmdResults($cmd);
+		// Clean up temp file
+		if(file_exists($count_file)){
+			unlink($count_file);
+		}
 		if(isset($out['stderr']) && strlen($out['stderr'])){
 			$DATABASE['_lastquery']['error']=$out['stderr'];
 			debugValue($DATABASE['_lastquery']);
@@ -1476,8 +1749,13 @@ function duckdbQueryResults($query,$params=array()){
 		$filename='duckdb_'.sha1($query).'.sql';
 		$afile="{$tpath}/{$filename}";
 		$ok=setFileContents($afile,$query);
-		$cmd="duckdb -json -c \".read {$afile}\"";
-		if(strlen($DATABASE['_lastquery']['dbname'])){$cmd.=" \"{$DATABASE['_lastquery']['dbname']}\"";}
+		// Properly escape file path for shell command
+		$safe_afile = escapeshellarg($afile);
+		$cmd="duckdb -json -c \".read {$safe_afile}\"";
+		if(strlen($DATABASE['_lastquery']['dbname'])){
+			$safe_dbname = escapeshellarg($DATABASE['_lastquery']['dbname']);
+			$cmd.=" {$safe_dbname}";
+		}
 		$out=cmdResults($cmd);
 		if(isset($out['stderr']) && strlen($out['stderr'])){
 			$DATABASE['_lastquery']['error']=$out['stderr'];
@@ -1485,7 +1763,10 @@ function duckdbQueryResults($query,$params=array()){
     		return array();
 		}
 		$recs=decodeJSON($out['stdout']);
-		unlink($afile);
+		// Safely delete temp file
+		if(file_exists($afile)){
+			unlink($afile);
+		}
 		return $recs;
 	}
 }
@@ -1531,6 +1812,12 @@ function duckdbGetDBRecords($params){
 		unset($params['-query']);
 	}
 	else{
+		// Safely quote table identifier
+		$safe_table = duckdbQuoteIdentifier($params['-table']);
+		if($safe_table === false){
+			debugValue("duckdbGetDBRecords Error: Invalid table name");
+			return array();
+		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
 			if(!is_array($params['-fields'])){;
@@ -1539,9 +1826,34 @@ function duckdbGetDBRecords($params){
 					$params['-fields'][$i]=trim($field);
 				}
 			}
-			$params['-fields']=implode(',',$params['-fields']);
+			// Handle wildcard or complex field expressions
+			if(count($params['-fields']) == 1 && $params['-fields'][0] == '*'){
+				$field_list = '*';
+			}
+			else{
+				// Safely quote each field identifier if it's a simple field name
+				$safe_fields = array();
+				foreach($params['-fields'] as $field){
+					$field = trim($field);
+					// Allow complex expressions (with spaces, functions, etc.) to pass through
+					// Only quote simple field names
+					if(preg_match('/^[a-zA-Z0-9_]+$/', $field)){
+						$safe_field = duckdbQuoteIdentifier($field);
+						if($safe_field !== false){
+							$safe_fields[] = $safe_field;
+						}
+					}
+					else{
+						// Complex expression - pass through (caller responsible for safety)
+						$safe_fields[] = $field;
+					}
+				}
+				$field_list = implode(',',$safe_fields);
+			}
 		}
-		if(empty($params['-fields'])){$params['-fields']='*';}
+		else{
+			$field_list = '*';
+		}
 		//echo printValue($params);
 		$fields=duckdbGetDBFieldInfo($params['-table']);
 		$ands=array();
@@ -1554,29 +1866,38 @@ function duckdbGetDBRecords($params){
 			}
 	        $params[$k]=str_replace("'","''",$params[$k]);
 	        $v=strtoupper($params[$k]);
-	        $ands[]="upper({$k})='{$v}'";
+	        // Safely quote field identifier in WHERE clause
+	        $safe_field = duckdbQuoteIdentifier($k);
+	        if($safe_field === false){
+	        	debugValue("duckdbGetDBRecords Error: Invalid field name in filter: {$k}");
+	        	continue;
+	        }
+	        $ands[]="upper({$safe_field})='{$v}'";
 		}
 		//check for -where
 		if(!empty($params['-where'])){
+			// Note: -where clause should be constructed safely by caller
 			$ands[]= "({$params['-where']})";
 		}
 		if(isset($params['-filter'])){
+			// Note: -filter clause should be constructed safely by caller
 			$ands[]= "({$params['-filter']})";
 		}
 		$wherestr='';
 		if(count($ands)){
 			$wherestr='WHERE '.implode(' and ',$ands);
 		}
-	    $query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+	    $query="SELECT {$field_list} FROM {$safe_table} {$wherestr}";
 	    if(isset($params['-order'])){
+	    	// Note: -order clause should be constructed safely by caller
     		$query .= " ORDER BY {$params['-order']}";
     	}
     	//offset and limit
     	if(!isset($params['-nolimit'])){
-	    	$offset=isset($params['-offset'])?$params['-offset']:0;
+	    	$offset=isset($params['-offset'])?intval($params['-offset']):0;
 	    	$limit=25;
-	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
-	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	if(!empty($params['-limit'])){$limit=intval($params['-limit']);}
+	    	elseif(!empty($CONFIG['paging'])){$limit=intval($CONFIG['paging']);}
 	    	$query .= " LIMIT {$limit} OFFSET {$offset}";
 	    }
 	}
@@ -1595,12 +1916,20 @@ function duckdbGetDBRecords($params){
 * @usage $cnt=duckdbGetDBRecordsCount(array('-table'=>'tesl));
 */
 function duckdbGetDBRecordsCount($params=array()){
+	if(!isset($params['-table'])){
+		debugValue("duckdbGetDBRecordsCount error: No table specified");
+		return 0;
+	}
 	$params['-fields']='count(*) cnt';
 	if(isset($params['-order'])){unset($params['-order']);}
 	if(isset($params['-limit'])){unset($params['-limit']);}
 	if(isset($params['-offset'])){unset($params['-offset']);}
 	$recs=duckdbGetDBRecords($params);
-	return $recs[0]['cnt'];
+	if(!is_array($recs) || !isset($recs[0]['cnt'])){
+		debugValue("duckdbGetDBRecordsCount error: Invalid result set");
+		return 0;
+	}
+	return (integer)$recs[0]['cnt'];
 }
 function duckdbNamedQueryList(){
 	return array(
