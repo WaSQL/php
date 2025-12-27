@@ -15,12 +15,41 @@
 	insert into all_colors.csv (code,name,hex,red,green,blue) values('alice_test','test','#111222',1,2,3)
 
 	NOTE: Delete and Update are not supported - only select and inserts
-	
+
 	References:
 		https://www.microsoft.com/en-us/download/details.aspx?id=54920
 		https://www.connectionstrings.com/microsoft-text-odbc-driver/
 		https://docs.querona.io/quickstart/how-to/text-microsoft-odbc.html
 0*/
+//---------- begin function mscsvQuoteIdentifier ----------
+/**
+* @describe safely quotes table and column names to prevent SQL injection
+* @param $identifier string - table or column name
+* @return string - safely quoted identifier or false on invalid input
+* @usage $safe_table = mscsvQuoteIdentifier($table);
+*/
+function mscsvQuoteIdentifier($identifier){
+	// Remove any existing quotes and whitespace
+	$identifier = trim($identifier);
+	// Allow schema.table notation
+	if(strpos($identifier, '.') !== false){
+		$parts = explode('.', $identifier);
+		$quoted = array();
+		foreach($parts as $part){
+			// Only allow alphanumeric, underscore, and basic safe characters
+			if(!preg_match('/^[a-zA-Z0-9_]+$/', $part)){
+				return false; // Invalid identifier
+			}
+			$quoted[] = '[' . str_replace(']', ']]', $part) . ']';
+		}
+		return implode('.', $quoted);
+	}
+	// Single identifier - validate and quote
+	if(!preg_match('/^[a-zA-Z0-9_]+$/', $identifier)){
+		return false; // Invalid identifier
+	}
+	return '[' . str_replace(']', ']]', $identifier) . ']';
+}
 //---------- begin function mscsvGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index
@@ -83,6 +112,16 @@ function mscsvGetAllTableIndexes($schema=''){
 function mscsvDBConnect(){
 	global $dbh_mscsv;
 	$params=mscsvParseConnectParams();
+	// Validate dbname parameter
+	if(!isset($params['-dbname']) || !strlen($params['-dbname'])){
+		debugValue("mscsvDBConnect error: No dbname configured");
+		return false;
+	}
+	// Validate directory exists
+	if(!is_dir($params['-dbname'])){
+		debugValue("mscsvDBConnect error: Directory does not exist: {$params['-dbname']}");
+		return false;
+	}
 	$dir=getFilePath($params['-dbname']);
 	/*
 
@@ -92,7 +131,7 @@ function mscsvDBConnect(){
 		$driver='Driver={Microsoft Access Text Driver (*.txt, *.csv)}';
 	}
 	else{
-		$driver='Driver={Microsoft Text Driver (*.txt; *.csv)}';	
+		$driver='Driver={Microsoft Text Driver (*.txt; *.csv)}';
 	}
 	$parts=array(
 		$driver,
@@ -109,8 +148,20 @@ function mscsvDBConnect(){
 	);
 	$params['-connect']=implode(';',$parts);
 	//odbc_connect('Driver={Microsoft Access Text Driver (*.txt, *.csv)};Dbq=c:/temp;FIL=text;DriverId=27;Extensions=asc,csv,tab,txt;ImportMixedTypes=Text;ReadOnly=false;IMEX=1;DelimitedBy=|;MaxScanRows=2;Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=2;HDR=YES','','');
-	$dbh_mscsv = odbc_connect($params['-connect'], '','');
-	return $dbh_mscsv;
+	try{
+		$dbh_mscsv = odbc_connect($params['-connect'], '','');
+		if(!$dbh_mscsv){
+			$error = "mscsvDBConnect error: Connection failed - " . odbc_errormsg();
+			debugValue($error);
+			return false;
+		}
+		return $dbh_mscsv;
+	}
+	catch (Exception $e){
+		$error = "mscsvDBConnect exception: " . $e->getMessage();
+		debugValue($error);
+		return false;
+	}
 }
 //---------- begin function mscsvExecuteSQL ----------
 /**
@@ -158,7 +209,10 @@ function mscsvExecuteSQL($query,$return_error=1){
 * @usage $cnt=mscsvGetDBCount(array('-table'=>'states'));
 */
 function mscsvGetDBCount($params=array()){
-	if(!isset($params['-table'])){return null;}
+	if(!isset($params['-table'])){
+		debugValue("mscsvGetDBCount error: No table specified");
+		return null;
+	}
 	//echo printValue($params);exit;
 	$params['-fields']="count(*) as cnt";
 	unset($params['-order']);
@@ -167,7 +221,7 @@ function mscsvGetDBCount($params=array()){
 	//$params['-debug']=1;
 	$recs=mscsvGetDBRecords($params);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
-	if(!isset($recs[0]['cnt'])){
+	if(!is_array($recs) || !isset($recs[0]['cnt'])){
 		debugValue(array(
 			'function'=>'mscsvGetDBCount',
 			'message'=>'get count failed',
@@ -176,7 +230,7 @@ function mscsvGetDBCount($params=array()){
 		));
 		return 0;
 	}
-	return $recs[0]['cnt'];
+	return (integer)$recs[0]['cnt'];
 }
 
 //---------- begin function mscsvGetDBFields ----------
@@ -187,27 +241,48 @@ function mscsvGetDBCount($params=array()){
 * @usage $fieldinfo=mscsvGetDBFieldInfo('test');
 */
 function mscsvGetDBFields($table,$allfields=0){
+	// Validate and quote table name to prevent SQL injection
+	if(!strlen($table)){
+		debugValue("mscsvGetDBFields error: No table specified");
+		return array();
+	}
 	$table=strtolower($table);
-	$query="select top 2 * from {$table}";
+	$safe_table = mscsvQuoteIdentifier($table);
+	if($safe_table === false){
+		debugValue("mscsvGetDBFields error: Invalid table name");
+		return array();
+	}
+	$query="SELECT TOP 2 * FROM {$safe_table}";
 	global $dbh_mscsv;
 	$dbh_mscsv='';
 	$fields=array();
 	try{
 		$dbh_mscsv = mscsvDBConnect();
+		if(!$dbh_mscsv){
+			debugValue("mscsvGetDBFields error: Connection failed");
+			return array();
+		}
 		$cols = odbc_exec($dbh_mscsv, $query);
+		if(!$cols){
+			$error = "mscsvGetDBFields error: Query failed - " . odbc_errormsg($dbh_mscsv);
+			debugValue($error);
+			$dbh_mscsv='';
+			return array();
+		}
     	$ncols = odbc_num_fields($cols);
 		for($n=1; $n<=$ncols; $n++) {
       		$name = odbc_field_name($cols, $n);
      		$fields[]=$name;
     	}
+    	odbc_free_result($cols);
 		$dbh_mscsv='';
 		return $fields;
 	}
 	catch (Exception $e) {
-		$error=array("mscsvGetDBFields Exception",$e,$params);
+		$error="mscsvGetDBFields Exception: ".$e->getMessage();
 	    debugValue($error);
 	    $dbh_mscsv='';
-	    return json_encode($error);
+	    return array();
 	}
 	$dbh_mscsv='';
 	return array();
@@ -220,15 +295,35 @@ function mscsvGetDBFields($table,$allfields=0){
 * @usage $fieldinfo=mscsvGetDBFieldInfo('test');
 */
 function mscsvGetDBFieldInfo($table){
+	// Validate and quote table name to prevent SQL injection
+	if(!strlen($table)){
+		debugValue("mscsvGetDBFieldInfo error: No table specified");
+		return array();
+	}
 	$table=strtolower($table);
-	$query="select top 2 * from {$table}";
+	$safe_table = mscsvQuoteIdentifier($table);
+	if($safe_table === false){
+		debugValue("mscsvGetDBFieldInfo error: Invalid table name");
+		return array();
+	}
+	$query="SELECT TOP 2 * FROM {$safe_table}";
 	//echo "mscsvDBConnect".printValue($params);exit;
 	global $dbh_mscsv;
 	$dbh_mscsv='';
 	$fields=array();
 	try{
 		$dbh_mscsv = mscsvDBConnect();
+		if(!$dbh_mscsv){
+			debugValue("mscsvGetDBFieldInfo error: Connection failed");
+			return array();
+		}
 		$result = odbc_exec($dbh_mscsv, $query);
+		if(!$result){
+			$error = "mscsvGetDBFieldInfo error: Query failed - " . odbc_errormsg($dbh_mscsv);
+			debugValue($error);
+			$dbh_mscsv='';
+			return array();
+		}
 		$recs=array();
 		//echo "{$query}<br>";
 		for($i=1;$i<=odbc_num_fields($result);$i++){
@@ -254,10 +349,10 @@ function mscsvGetDBFieldInfo($table){
 		return $recs;
 	}
 	catch (Exception $e) {
-		$error=array("mscsvGetDBFieldInfo Exception",$e,$params);
+		$error="mscsvGetDBFieldInfo Exception: ".$e->getMessage();
 	    debugValue($error);
 	    $dbh_mscsv='';
-	    return json_encode($error);
+	    return array();
 	}
 	$dbh_mscsv='';
 	return array();
@@ -332,6 +427,12 @@ function mscsvGetDBRecords($params){
 				$params['-table']="{$schema}.{$params['-table']}";
 			}
 		}
+		// Safely quote table identifier
+		$safe_table = mscsvQuoteIdentifier($params['-table']);
+		if($safe_table === false){
+			debugValue("mscsvGetDBRecords error: Invalid table name");
+			return array();
+		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
 			if(!is_array($params['-fields'])){;
@@ -340,9 +441,34 @@ function mscsvGetDBRecords($params){
 					$params['-fields'][$i]=trim($field);
 				}
 			}
-			$params['-fields']=implode(',',$params['-fields']);
+			// Handle wildcard or complex field expressions
+			if(count($params['-fields']) == 1 && $params['-fields'][0] == '*'){
+				$field_list = '*';
+			}
+			else{
+				// Safely quote each field identifier if it's a simple field name
+				$safe_fields = array();
+				foreach($params['-fields'] as $field){
+					$field = trim($field);
+					// Allow complex expressions (with spaces, functions, etc.) to pass through
+					// Only quote simple field names
+					if(preg_match('/^[a-zA-Z0-9_]+$/', $field)){
+						$safe_field = mscsvQuoteIdentifier($field);
+						if($safe_field !== false){
+							$safe_fields[] = $safe_field;
+						}
+					}
+					else{
+						// Complex expression - pass through (caller responsible for safety)
+						$safe_fields[] = $field;
+					}
+				}
+				$field_list = implode(',',$safe_fields);
+			}
 		}
-		if(empty($params['-fields'])){$params['-fields']='*';}
+		else{
+			$field_list = '*';
+		}
 		$fields=mscsvGetDBFieldInfo($params['-table'],$params);
 		//echo printValue($fields);
 		$ands=array();
@@ -354,27 +480,35 @@ function mscsvGetDBRecords($params){
 	            $params[$k]=implode(':',$params[$k]);
 			}
 	        $params[$k]=str_replace("'","''",$params[$k]);
-	        switch(strtolower($fields[$k])){
+	        // Safely quote field identifier in WHERE clause
+	        $safe_field = mscsvQuoteIdentifier($k);
+	        if($safe_field === false){
+	        	debugValue("mscsvGetDBRecords error: Invalid field name in filter: {$k}");
+	        	continue;
+	        }
+	        switch(strtolower($fields[$k]['type'])){
 	        	case 'char':
 	        	case 'varchar':
 	        		$v=strtoupper($params[$k]);
-	        		$ands[]="upper({$k})='{$v}'";
+	        		$ands[]="UPPER({$safe_field})='{$v}'";
 	        	break;
 	        	case 'int':
 	        	case 'int4':
 	        	case 'numeric':
-	        		$ands[]="{$k}={$v}";
+	        		$ands[]="{$safe_field}={$v}";
 	        	break;
 	        	default:
-	        		$ands[]="{$k}='{$v}'";
+	        		$ands[]="{$safe_field}='{$v}'";
 	        	break;
-	        } 
+	        }
 		}
 		//check for -where
 		if(!empty($params['-where'])){
+			// Note: -where clause should be constructed safely by caller
 			$ands[]= "({$params['-where']})";
 		}
 		if(isset($params['-filter'])){
+			// Note: -filter clause should be constructed safely by caller
 			$ands[]= "({$params['-filter']})";
 		}
 		$wherestr='';
@@ -383,23 +517,44 @@ function mscsvGetDBRecords($params){
 		}
 		$paginate='';
     	if(!isset($params['-nolimit'])){
-	    	$offset=isset($params['-offset'])?$params['-offset']:0;
+	    	$offset=isset($params['-offset'])?intval($params['-offset']):0;
 	    	$limit=25;
-	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
-	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
+	    	if(!empty($params['-limit'])){$limit=intval($params['-limit']);}
+	    	elseif(!empty($CONFIG['paging'])){$limit=intval($CONFIG['paging']);}
 	    	$paginate=$offset+$limit;
 	    }
-	    //$query="SELECT {$paginate} {$params['-fields']} FROM {$params['-table']} {$wherestr}";
-	    $orderby=1;
+	    //$query="SELECT {$paginate} {$field_list} FROM {$safe_table} {$wherestr}";
+	    $orderby='1';
 	    if(isset($params['-order'])){
-    		$orderby = "{$params['-order']}";
+	    	// Validate order by - only allow simple field names or numeric positions
+	    	$order_parts = preg_split('/\,/', $params['-order']);
+	    	$safe_order_parts = array();
+	    	foreach($order_parts as $part){
+	    		$part = trim($part);
+	    		// Check if it's a field name with optional ASC/DESC
+	    		if(preg_match('/^([a-zA-Z0-9_]+)(\s+(ASC|DESC))?$/i', $part, $matches)){
+	    			$field_name = $matches[1];
+	    			$direction = isset($matches[3]) ? ' ' . strtoupper($matches[3]) : '';
+	    			$safe_field = mscsvQuoteIdentifier($field_name);
+	    			if($safe_field !== false){
+	    				$safe_order_parts[] = $safe_field . $direction;
+	    			}
+	    		}
+	    		elseif(is_numeric($part)){
+	    			// Numeric position is safe
+	    			$safe_order_parts[] = intval($part);
+	    		}
+	    	}
+	    	if(count($safe_order_parts) > 0){
+	    		$orderby = implode(', ', $safe_order_parts);
+	    	}
     	}
     	if(isNum($paginate)){
     		$query=<<<ENDOFQUERY
 				SELECT *  FROM (
-					SELECT Top {$limit} * FROM (
-				        SELECT TOP {$paginate} {$params['-fields']}
-				        FROM {$params['-table']}
+					SELECT TOP {$limit} * FROM (
+				        SELECT TOP {$paginate} {$field_list}
+				        FROM {$safe_table}
 				        ORDER BY {$orderby}
 				    ) sub
 				   ORDER BY {$orderby} DESC
@@ -408,7 +563,7 @@ function mscsvGetDBRecords($params){
 ENDOFQUERY;
 		}
 		else{
-			$query="SELECT {$params['-fields']} FROM {$params['-table']} {$wherestr}";
+			$query="SELECT {$field_list} FROM {$safe_table} {$wherestr}";
 		}
 	}
 	if(isset($params['-debug'])){return $query;}
@@ -596,14 +751,17 @@ function mscsvParseConnectParams($params=array()){
 			//$params['-dbname_source']="CONFIG mscsv_dbname";
 		}
 		else{
-			$params['-dbname']=$CONFIG['mscsv_dbname'];
-			//$params['-dbname_source']="set to username";
+			// No dbname configured - set to empty string to avoid undefined variable
+			$params['-dbname']='';
+			//$params['-dbname_source']="not configured";
 		}
 	}
 	else{
 		//$params['-dbname_source']="passed in";
 	}
-	$CONFIG['mscsv_dbname']=$params['-dbname'];
+	if(isset($params['-dbname'])){
+		$CONFIG['mscsv_dbname']=$params['-dbname'];
+	}
 	//dbport
 	if(!isset($params['-dbport'])){
 		if(isset($CONFIG['dbport_mscsv'])){
@@ -713,25 +871,26 @@ function mscsvQueryResults($query='',$params=array()){
 function mscsvEnumQueryResults($result,$params=array(),$query=''){
 	global $mscsvStopProcess;
 	$i=0;
+	$header=0; // Initialize header flag
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
 		if(isset($params['-append'])){
 			//append
     		$fh = fopen($params['-filename'],"ab");
+    		$header=1; // Skip header when appending
 		}
 		else{
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			pg_free_result($result);
+			odbc_free_result($result); // Fixed: was pg_free_result
 			return 'mscsvEnumQueryResults error: Failed to open '.$params['-filename'];
-			exit;
 		}
 		if(isset($params['-logfile'])){
 			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
 		}
-		
+
 	}
 	else{$recs=array();}
 	while(odbc_fetch_row($result)){
