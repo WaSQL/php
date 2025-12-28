@@ -1,14 +1,18 @@
 var wacss = {
 	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
+	* @exclude  - this variable is for internal use only and thus excluded from the manual
 	*/
-	version: '2024.0124',
+	version: '2025.1228',
 	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
+	* @exclude  - this variable is for internal use only and thus excluded from the manual
+	*/
+	processing: '<span class="icon-spin4 w_spin"></span>',
+	/**
+	* @exclude  - this variable is for internal use only and thus excluded from the manual
 	*/
 	author: 'WaSQL.com',
 	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
+	* @exclude  - this variable is for internal use only and thus excluded from the manual
 	*/
 	chartjs:{},
 	/**
@@ -874,6 +878,7 @@ var wacss = {
 	debugValue: function(id){
 		const el = document.getElementById(id);
 		if (el && typeof console !== "undefined" && typeof console.log === "function") {
+			console.log(el.innerText);
 		}
 	},
 	/**
