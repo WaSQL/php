@@ -1,6 +1,6 @@
 <?php
 /*
-	msexcel.php - a collection of Microsoft Access Database functions for use by WaSQL.
+	msexcel.php - a collection of Microsoft Excel Database functions for use by WaSQL.
 
 	<database
         group="MS Excel"
@@ -15,9 +15,69 @@
 		https://stackoverflow.com/questions/5029531/using-microsoft-excel-via-an-odbc-driver-with-php/5029625
 		https://m.php.cn/manual/view/1903.html
 		https://www.youtube.com/watch?v=l-7P-9VVjw
+
+	Required PHP Extensions:
+		- odbc: For database connectivity
+		- zip: For reading xlsx files (ZipArchive class recommended, fallback to deprecated zip_* functions)
 */
 
+// Check for required PHP extensions
+if(!extension_loaded('odbc')){
+	trigger_error('msexcel.php requires the PHP odbc extension to be loaded', E_USER_WARNING);
+}
+if(!extension_loaded('zip')){
+	trigger_error('msexcel.php requires the PHP zip extension for xlsx file support', E_USER_WARNING);
+}
+if(!class_exists('ZipArchive')){
+	trigger_error('msexcel.php: ZipArchive class not available, will fallback to deprecated zip_* functions', E_USER_NOTICE);
+}
 
+
+//---------- begin function msexcelCloseDBConnection ----------
+/**
+* @describe properly closes a msexcel database connection
+* @param $conn resource - connection resource to close
+* @return boolean - true if closed successfully
+* @usage msexcelCloseDBConnection($dbh_msexcel);
+*/
+function msexcelCloseDBConnection($conn=null){
+	global $dbh_msexcel;
+	if($conn!==null && is_resource($conn)){
+		@odbc_close($conn);
+		return true;
+	}
+	if(isset($dbh_msexcel) && is_resource($dbh_msexcel)){
+		@odbc_close($dbh_msexcel);
+		$dbh_msexcel=null;
+		return true;
+	}
+	return false;
+}
+//---------- begin function msexcelValidateIdentifier ----------
+/**
+* @describe validates SQL identifiers (table names, field names) to prevent SQL injection
+* @param $identifier string - identifier to validate
+* @return string - validated identifier or empty string if invalid
+* @usage $safe_table=msexcelValidateIdentifier($table);
+*/
+function msexcelValidateIdentifier($identifier){
+	// Remove any characters that aren't alphanumeric, underscore, dollar sign, or brackets
+	// Excel sheet names can contain spaces and special characters, wrapped in brackets
+	$identifier=trim($identifier);
+	// Check for null bytes and other control characters
+	if(preg_match('/[\x00-\x1F\x7F]/',$identifier)){
+		return '';
+	}
+	// For Excel sheet names in bracket notation like [Sheet1$]
+	if(preg_match('/^\[[\w\s\-\.]+\$\]$/',$identifier)){
+		return $identifier;
+	}
+	// For regular identifiers (letters, numbers, underscore, dollar)
+	if(preg_match('/^[\w\$]+$/',$identifier)){
+		return $identifier;
+	}
+	return '';
+}
 //---------- begin function msexcelGetAllTableFields ----------
 /**
 * @describe returns fields of all tables with the table name as the index
@@ -80,6 +140,48 @@ function msexcelGetAllTableIndexes($schema=''){
 function msexcelDBConnect(){
 	global $dbh_msexcel;
 	$params=msexcelParseConnectParams();
+
+	// Validate database file exists
+	if(empty($params['-dbname'])){
+		debugValue(array(
+			'function'=>'msexcelDBConnect',
+			'message'=>'Database file name not specified',
+			'params'=>$params
+		));
+		return false;
+	}
+	if(!file_exists($params['-dbname'])){
+		debugValue(array(
+			'function'=>'msexcelDBConnect',
+			'message'=>'Database file does not exist',
+			'file'=>$params['-dbname']
+		));
+		return false;
+	}
+
+	// Validate file extension
+	$ext=strtolower(getFileExtension($params['-dbname']));
+	$valid_extensions=array('xls','xlsx','xlsm','xlsb');
+	if(!in_array($ext,$valid_extensions)){
+		debugValue(array(
+			'function'=>'msexcelDBConnect',
+			'message'=>'Invalid file extension. Must be xls, xlsx, xlsm, or xlsb',
+			'file'=>$params['-dbname'],
+			'extension'=>$ext
+		));
+		return false;
+	}
+
+	// Validate file is readable
+	if(!is_readable($params['-dbname'])){
+		debugValue(array(
+			'function'=>'msexcelDBConnect',
+			'message'=>'Database file is not readable',
+			'file'=>$params['-dbname']
+		));
+		return false;
+	}
+
 	$dir=getFilePath($params['-dbname']);
 	/*
 		DriverID=790;
@@ -112,7 +214,24 @@ function msexcelDBConnect(){
 		'Extended Properties="Mode=ReadWrite;ReadOnly=false;MaxScanRows=2;HDR=YES"',
 	);
 	$params['-connect']=implode(';',$parts);
-	$dbh_msexcel = odbc_connect($params['-connect'], '','');
+
+	// Suppress ODBC warnings and handle errors gracefully
+	$dbh_msexcel = @odbc_connect($params['-connect'], '','');
+
+	if(!$dbh_msexcel){
+		$error_msg = '';
+		if(function_exists('odbc_errormsg')){
+			$error_msg = odbc_errormsg();
+		}
+		debugValue(array(
+			'function'=>'msexcelDBConnect',
+			'message'=>'ODBC connection failed',
+			'file'=>$params['-dbname'],
+			'odbc_error'=>$error_msg
+		));
+		return false;
+	}
+
 	return $dbh_msexcel;
 }
 //---------- begin function msexcelExecuteSQL ----------
@@ -133,25 +252,37 @@ function msexcelExecuteSQL($query){
 		'query'=>$query,
 		'function'=>'msexcelExecuteSQL'
 	);
-	$dbh_msexcel='';
+	$local_conn=null;
 	try{
-		$dbh_msexcel = msexcelDBConnect();
-		$cols = odbc_exec($dbh_msexcel, $query);
-		$dbh_msexcel='';
+		$local_conn = msexcelDBConnect();
+		if(!$local_conn){
+			$DATABASE['_lastquery']['error']='Failed to connect to database';
+			$DATABASE['_lastquery']['stop']=microtime(true);
+			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+			debugValue($DATABASE['_lastquery']);
+			return 0;
+		}
+		$result = odbc_exec($local_conn, $query);
+		msexcelCloseDBConnection($local_conn);
+		if(!$result){
+			$DATABASE['_lastquery']['error']='Query execution failed';
+			$DATABASE['_lastquery']['stop']=microtime(true);
+			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+			debugValue($DATABASE['_lastquery']);
+			return 0;
+		}
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return 1;
 	}
 	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']=$e;
+		$DATABASE['_lastquery']['error']=$e->getMessage();
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		debugValue($DATABASE['_lastquery']);
-	    $dbh_msexcel='';
+	    msexcelCloseDBConnection($local_conn);
 	    return 0;
 	}
-	$dbh_msexcel='';
-	$DATABASE['_lastquery']['stop']=microtime(true);
-	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-	return 0;
 }
 //---------- begin function msexcelGetDBCount--------------------
 /**
@@ -192,29 +323,62 @@ function msexcelGetDBCount($params=array()){
 */
 function msexcelGetDBFields($table,$allfields=0){
 	$table=strtolower($table);
+	// Validate table name to prevent SQL injection
+	$validated_table=msexcelValidateIdentifier($table);
+	if(empty($validated_table)){
+		debugValue(array(
+			'function'=>'msexcelGetDBFields',
+			'message'=>'invalid table name',
+			'table'=>$table
+		));
+		return array();
+	}
+	$table=$validated_table;
 	$query="select top 2 * from {$table}";
-	global $dbh_msexcel;
-	$dbh_msexcel='';
+	$local_conn=null;
 	$fields=array();
 	try{
-		$dbh_msexcel = msexcelDBConnect();
-		$cols = odbc_exec($dbh_msexcel, $query);
+		$local_conn = msexcelDBConnect();
+		if(!$local_conn){
+			debugValue(array(
+				'function'=>'msexcelGetDBFields',
+				'message'=>'Failed to connect to database',
+				'table'=>$table
+			));
+			return array();
+		}
+		$cols = odbc_exec($local_conn, $query);
+		if(!$cols){
+			msexcelCloseDBConnection($local_conn);
+			debugValue(array(
+				'function'=>'msexcelGetDBFields',
+				'message'=>'Query execution failed',
+				'table'=>$table,
+				'query'=>$query
+			));
+			return array();
+		}
     	$ncols = odbc_num_fields($cols);
 		for($n=1; $n<=$ncols; $n++) {
       		$name = odbc_field_name($cols, $n);
      		$fields[]=$name;
     	}
-		$dbh_msexcel='';
+    	odbc_free_result($cols);
+		msexcelCloseDBConnection($local_conn);
 		return $fields;
 	}
 	catch (Exception $e) {
-		$error=array("msexcelGetDBFields Exception",$e,$params);
+		$error=array(
+			"function"=>"msexcelGetDBFields",
+			"message"=>"Exception occurred",
+			"exception"=>$e->getMessage(),
+			"table"=>$table,
+			"query"=>$query
+		);
 	    debugValue($error);
-	    $dbh_msexcel='';
-	    return json_encode($error);
+	    msexcelCloseDBConnection($local_conn);
+	    return array();
 	}
-	$dbh_msexcel='';
-	return array();
 }
 //---------- begin function msexcelGetDBFieldInfo ----------
 /**
@@ -225,14 +389,41 @@ function msexcelGetDBFields($table,$allfields=0){
 */
 function msexcelGetDBFieldInfo($table){
 	$table=strtolower($table);
+	// Validate table name to prevent SQL injection
+	$validated_table=msexcelValidateIdentifier($table);
+	if(empty($validated_table)){
+		debugValue(array(
+			'function'=>'msexcelGetDBFieldInfo',
+			'message'=>'invalid table name',
+			'table'=>$table
+		));
+		return array();
+	}
+	$table=$validated_table;
 	$query="select top 2 * from {$table}";
-	//echo "msexcelDBConnect".printValue($params);exit;
-	global $dbh_msexcel;
-	$dbh_msexcel='';
+	$local_conn=null;
 	$fields=array();
 	try{
-		$dbh_msexcel = msexcelDBConnect();
-		$result = odbc_exec($dbh_msexcel, $query);
+		$local_conn = msexcelDBConnect();
+		if(!$local_conn){
+			debugValue(array(
+				'function'=>'msexcelGetDBFieldInfo',
+				'message'=>'Failed to connect to database',
+				'table'=>$table
+			));
+			return array();
+		}
+		$result = odbc_exec($local_conn, $query);
+		if(!$result){
+			msexcelCloseDBConnection($local_conn);
+			debugValue(array(
+				'function'=>'msexcelGetDBFieldInfo',
+				'message'=>'Query execution failed',
+				'table'=>$table,
+				'query'=>$query
+			));
+			return array();
+		}
 		$recs=array();
 		for($i=1;$i<=odbc_num_fields($result);$i++){
 			$field=strtolower(odbc_field_name($result,$i));
@@ -252,17 +443,21 @@ function msexcelGetDBFieldInfo($table){
 			$recs[$field]['_dblength']=$recs[$field]['length'];
 	    }
 	    odbc_free_result($result);
-	    $dbh_msexcel='';
+	    msexcelCloseDBConnection($local_conn);
 		return $recs;
 	}
 	catch (Exception $e) {
-		$error=array("msexcelGetDBFieldInfo Exception",$e,$params);
+		$error=array(
+			"function"=>"msexcelGetDBFieldInfo",
+			"message"=>"Exception occurred",
+			"exception"=>$e->getMessage(),
+			"table"=>$table,
+			"query"=>$query
+		);
 	    debugValue($error);
-	    $dbh_msexcel='';
-	    return json_encode($error);
+	    msexcelCloseDBConnection($local_conn);
+	    return array();
 	}
-	$dbh_msexcel='';
-	return array();
 }
 function msexcelGetDBIndexes($table=''){
 	return msexcelGetDBTableIndexes($table);
@@ -309,9 +504,12 @@ function msexcelGetDBRecords($params){
 			$params=array();
 		}
 		else{
-			echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
-			$ok=msexcelExecuteSQL($params);
-			return $ok;
+			debugValue(array(
+				'function'=>'msexcelGetDBRecords',
+				'message'=>'invalid params - not a table or query',
+				'params'=>$params
+			));
+			return null;
 		}
 	}
 	elseif(isset($params['-query'])){
@@ -332,6 +530,17 @@ function msexcelGetDBRecords($params){
 			$parts=preg_split('/\./',$params['-table'],2);
 			$params['-table']=$parts[1];
 		}
+		// Validate table name to prevent SQL injection
+		$validated_table=msexcelValidateIdentifier($params['-table']);
+		if(empty($validated_table)){
+			debugValue(array(
+				'function'=>'msexcelGetDBRecords',
+				'message'=>'invalid table name',
+				'table'=>$params['-table']
+			));
+			return null;
+		}
+		$params['-table']=$validated_table;
 		//determine fields to return
 		if(!empty($params['-fields'])){
 			if(!is_array($params['-fields'])){;
@@ -353,8 +562,11 @@ function msexcelGetDBRecords($params){
 			if(is_array($params[$k])){
 	            $params[$k]=implode(':',$params[$k]);
 			}
-	        $params[$k]=str_replace("'","''",$params[$k]);
-	        switch(strtolower($fields[$k])){
+	        // SQL Injection Prevention: Escape single quotes by doubling them (SQL standard)
+	        // Additional validation: Remove null bytes and control characters
+	        $params[$k]=str_replace("\0",'',$params[$k]); // Remove null bytes
+	        $params[$k]=str_replace("'","''",$params[$k]); // Escape single quotes
+	        switch(strtolower($fields[$k]['_dbtype'])){
 	        	case 'char':
 	        	case 'varchar':
 	        		$v=strtoupper($params[$k]);
@@ -450,55 +662,191 @@ function msexcelGetDBTables($params=array()){
 		$tables=msexcelGetSheetNamesFromXlsx($params['-dbname']);
 		return $tables;
 	}
-	echo "Tables not supported for xls yet...";exit;
-	global $dbh_msexcel;
-	$dbh_msexcel='';
+	// XLS format requires ODBC table listing - not yet fully supported
+	debugValue(array(
+		'function'=>'msexcelGetDBTables',
+		'message'=>'XLS format table listing not fully supported, use XLSX format',
+		'ext'=>$ext
+	));
+	// Continue with ODBC method for xls files
+	$local_conn=null;
 	$tables=array();
 	try{
-		$dbh_msexcel = msexcelDBConnect();
-		$result = odbc_tables($dbh_msexcel);
-		echo printValue($result);
+		$local_conn = msexcelDBConnect();
+		if(!$local_conn){
+			debugValue(array(
+				'function'=>'msexcelGetDBTables',
+				'message'=>'Failed to connect to database',
+				'params'=>$params
+			));
+			return array();
+		}
+		$result = odbc_tables($local_conn);
+		if(!$result){
+			msexcelCloseDBConnection($local_conn);
+			debugValue(array(
+				'function'=>'msexcelGetDBTables',
+				'message'=>'Failed to retrieve table list',
+				'params'=>$params
+			));
+			return array();
+		}
 		$tblRow = 1;
 		while (odbc_fetch_row($result)){
 			if(odbc_result($result,"TABLE_TYPE")=="TABLE"){
 		    	$tables[]= odbc_result($result,"TABLE_NAME");
-		  	}  
+		  	}
 		}
+		odbc_free_result($result);
 		sort($tables);
-		$dbh_msexcel='';
+		msexcelCloseDBConnection($local_conn);
 		return $tables;
 	}
 	catch (Exception $e) {
-		$error=array("msexcelGetDBTables Exception",$e,$params);
+		$error=array(
+			"function"=>"msexcelGetDBTables",
+			"message"=>"Exception occurred",
+			"exception"=>$e->getMessage(),
+			"params"=>$params
+		);
 	    debugValue($error);
-	    $dbh_msexcel='';
-	    return json_encode($error);
+	    msexcelCloseDBConnection($local_conn);
+	    return array();
 	}
-	$dbh_msexcel='';
-	return array();
 }
 function msexcelGetSheetNamesFromXlsx($file){
-	$worksheetNames = array ();
-    $zip = zip_open ( $file );
-    while ( $entry = zip_read ( $zip ) ) {
-        $entry_name = zip_entry_name ( $entry );
-        if ($entry_name == 'xl/workbook.xml') {
-            if (zip_entry_open ( $zip, $entry, "r" )) {
-                $buf = zip_entry_read ( $entry, zip_entry_filesize ( $entry ) );
-                $workbook = simplexml_load_string ( $buf );
-                foreach ( $workbook->sheets as $sheets ) {
-                    foreach( $sheets as $sheet) {
-                        $attributes=(array)$sheet->attributes();
-                        $worksheetNames[]='['.$attributes['@attributes']['name'].'$]';
-                    }
-                }
-                zip_entry_close ( $entry );
-            }
-            break;
-        }
-    }
-    zip_close ( $zip );
-    return $worksheetNames;
+	// Validate file exists and is readable
+	if(!file_exists($file)){
+		debugValue(array(
+			'function'=>'msexcelGetSheetNamesFromXlsx',
+			'message'=>'File does not exist',
+			'file'=>$file
+		));
+		return array();
+	}
+	if(!is_readable($file)){
+		debugValue(array(
+			'function'=>'msexcelGetSheetNamesFromXlsx',
+			'message'=>'File is not readable',
+			'file'=>$file
+		));
+		return array();
+	}
+
+	// Validate file extension
+	$ext=strtolower(getFileExtension($file));
+	if($ext!=='xlsx'){
+		debugValue(array(
+			'function'=>'msexcelGetSheetNamesFromXlsx',
+			'message'=>'Invalid file extension. Must be xlsx',
+			'file'=>$file,
+			'extension'=>$ext
+		));
+		return array();
+	}
+
+	// Validate file is actually a zip file (xlsx files are zip archives)
+	// Check for ZIP file signature (PK\x03\x04 or PK\x05\x06)
+	$fh = @fopen($file, 'rb');
+	if($fh){
+		$header = fread($fh, 4);
+		fclose($fh);
+		if(substr($header, 0, 2) !== 'PK'){
+			debugValue(array(
+				'function'=>'msexcelGetSheetNamesFromXlsx',
+				'message'=>'File is not a valid zip/xlsx file (missing ZIP signature). File may be HTML or another format with wrong extension.',
+				'file'=>$file,
+				'header'=>bin2hex($header)
+			));
+			return array();
+		}
+	}
+
+	$worksheetNames = array();
+
+	// Use ZipArchive instead of deprecated zip_* functions
+	if(class_exists('ZipArchive')){
+		$zip = new ZipArchive();
+		$result = $zip->open($file);
+		if($result !== true){
+			debugValue(array(
+				'function'=>'msexcelGetSheetNamesFromXlsx',
+				'message'=>'Failed to open zip file with ZipArchive',
+				'file'=>$file,
+				'error_code'=>$result
+			));
+			return array();
+		}
+
+		$xml = $zip->getFromName('xl/workbook.xml');
+		$zip->close();
+
+		if($xml === false){
+			debugValue(array(
+				'function'=>'msexcelGetSheetNamesFromXlsx',
+				'message'=>'Failed to read workbook.xml from xlsx file',
+				'file'=>$file
+			));
+			return array();
+		}
+
+		$workbook = @simplexml_load_string($xml);
+		if($workbook === false){
+			debugValue(array(
+				'function'=>'msexcelGetSheetNamesFromXlsx',
+				'message'=>'Failed to parse workbook.xml',
+				'file'=>$file
+			));
+			return array();
+		}
+
+		foreach($workbook->sheets as $sheets){
+			foreach($sheets as $sheet){
+				$attributes = (array)$sheet->attributes();
+				if(isset($attributes['@attributes']['name'])){
+					$worksheetNames[] = '['.$attributes['@attributes']['name'].'$]';
+				}
+			}
+		}
+	}
+	else{
+		// Fallback to deprecated zip_* functions if ZipArchive not available
+		$zip = @zip_open($file);
+		if(is_int($zip)){
+			debugValue(array(
+				'function'=>'msexcelGetSheetNamesFromXlsx',
+				'message'=>'Failed to open zip file (ZipArchive not available, using deprecated zip_open)',
+				'file'=>$file,
+				'error_code'=>$zip
+			));
+			return array();
+		}
+
+		while($entry = zip_read($zip)){
+			$entry_name = zip_entry_name($entry);
+			if($entry_name == 'xl/workbook.xml'){
+				if(zip_entry_open($zip, $entry, "r")){
+					$buf = zip_entry_read($entry, zip_entry_filesize($entry));
+					$workbook = @simplexml_load_string($buf);
+					if($workbook !== false){
+						foreach($workbook->sheets as $sheets){
+							foreach($sheets as $sheet){
+								$attributes = (array)$sheet->attributes();
+								if(isset($attributes['@attributes']['name'])){
+									$worksheetNames[] = '['.$attributes['@attributes']['name'].'$]';
+								}
+							}
+						}
+					}
+					zip_entry_close($entry);
+				}
+				break;
+			}
+		}
+		zip_close($zip);
+	}
+
+	return $worksheetNames;
 }
 //---------- begin function msexcelGetDBTablePrimaryKeys ----------
 /**
@@ -567,7 +915,9 @@ function msexcelParseConnectParams($params=array()){
 	}
 	//echo "HERE".printValue($params);exit;
 	if(isMsexcel()){
-		$params['-dbhost']=$CONFIG['dbhost'];
+		if(isset($CONFIG['dbhost'])){
+			$params['-dbhost']=$CONFIG['dbhost'];
+		}
 		if(isset($CONFIG['dbname'])){
 			$params['-dbname']=$CONFIG['dbname'];
 		}
@@ -601,8 +951,10 @@ function msexcelParseConnectParams($params=array()){
 	else{
 		//$params['-dbhost_source']="passed in";
 	}
-	$CONFIG['msexcel_dbhost']=$params['-dbhost'];
-	
+	if(isset($params['-dbhost'])){
+		$CONFIG['msexcel_dbhost']=$params['-dbhost'];
+	}
+
 	//dbuser
 	if(!isset($params['-dbuser'])){
 		if(isset($CONFIG['dbuser_msexcel'])){
@@ -617,7 +969,9 @@ function msexcelParseConnectParams($params=array()){
 	else{
 		//$params['-dbuser_source']="passed in";
 	}
-	$CONFIG['msexcel_dbuser']=$params['-dbuser'];
+	if(isset($params['-dbuser'])){
+		$CONFIG['msexcel_dbuser']=$params['-dbuser'];
+	}
 	//dbpass
 	if(!isset($params['-dbpass'])){
 		if(isset($CONFIG['dbpass_msexcel'])){
@@ -632,7 +986,9 @@ function msexcelParseConnectParams($params=array()){
 	else{
 		//$params['-dbpass_source']="passed in";
 	}
-	$CONFIG['msexcel_dbpass']=$params['-dbpass'];
+	if(isset($params['-dbpass'])){
+		$CONFIG['msexcel_dbpass']=$params['-dbpass'];
+	}
 	//dbname
 	if(!isset($params['-dbname'])){
 		if(isset($CONFIG['dbname_msexcel'])){
@@ -651,7 +1007,9 @@ function msexcelParseConnectParams($params=array()){
 	else{
 		//$params['-dbname_source']="passed in";
 	}
-	$CONFIG['msexcel_dbname']=$params['-dbname'];
+	if(isset($params['-dbname'])){
+		$CONFIG['msexcel_dbname']=$params['-dbname'];
+	}
 	//dbport
 	if(!isset($params['-dbport'])){
 		if(isset($CONFIG['dbport_msexcel'])){
@@ -670,7 +1028,9 @@ function msexcelParseConnectParams($params=array()){
 	else{
 		//$params['-dbport_source']="passed in";
 	}
-	$CONFIG['msexcel_dbport']=$params['-dbport'];
+	if(isset($params['-dbport'])){
+		$CONFIG['msexcel_dbport']=$params['-dbport'];
+	}
 	//dbschema
 	if(!isset($params['-dbschema'])){
 		if(isset($CONFIG['dbschema_msexcel'])){
@@ -685,7 +1045,9 @@ function msexcelParseConnectParams($params=array()){
 	else{
 		//$params['-dbuser_source']="passed in";
 	}
-	$CONFIG['msexcel_dbschema']=$params['-dbschema'];
+	if(isset($params['-dbschema'])){
+		$CONFIG['msexcel_dbschema']=$params['-dbschema'];
+	}
 	//connect
 	if(!isset($params['-connect'])){
 		if(isset($CONFIG['msexcel_connect'])){
@@ -722,32 +1084,55 @@ function msexcelQueryResults($query='',$params=array()){
 		'time'=>0,
 		'error'=>'',
 		'query'=>$query,
-		'function'=>'msexcelExecuteSQL'
+		'function'=>'msexcelQueryResults'
 	);
+
+	// Validate query input
 	$query=trim($query);
-	global $USER;
-	global $dbh_msexcel;
-	$dbh_msexcel=msexcelDBConnect();
+	if(empty($query)){
+		$DATABASE['_lastquery']['error']='Empty query provided';
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+		debugValue($DATABASE['_lastquery']);
+		return array();
+	}
+
+	$local_conn=null;
 	try{
-		$result=odbc_exec($dbh_msexcel,$query);
-		if(!$result){
-			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_msexcel);
+		$local_conn=msexcelDBConnect();
+		if(!$local_conn){
+			$DATABASE['_lastquery']['error']='Failed to connect to database';
+			$DATABASE['_lastquery']['stop']=microtime(true);
+			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 			debugValue($DATABASE['_lastquery']);
 			return array();
 		}
-		$results=msexcelEnumQueryResults($result,$params);
+
+		$result=odbc_exec($local_conn,$query);
+		if(!$result){
+			$DATABASE['_lastquery']['error']=odbc_errormsg($local_conn);
+			$DATABASE['_lastquery']['stop']=microtime(true);
+			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+			debugValue($DATABASE['_lastquery']);
+			msexcelCloseDBConnection($local_conn);
+			return array();
+		}
+
+		$results=msexcelEnumQueryResults($result,$params,$query);
+		msexcelCloseDBConnection($local_conn);
+
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;
 	}
 	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']=$e;
+		$DATABASE['_lastquery']['error']=$e->getMessage();
+		$DATABASE['_lastquery']['stop']=microtime(true);
+		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		debugValue($DATABASE['_lastquery']);
+		msexcelCloseDBConnection($local_conn);
 		return array();
 	}
-	$DATABASE['_lastquery']['stop']=microtime(true);
-	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
-	return array();
 }
 //---------- begin function msexcelEnumQueryResults ----------
 /**
@@ -760,25 +1145,77 @@ function msexcelQueryResults($query='',$params=array()){
 function msexcelEnumQueryResults($result,$params=array(),$query=''){
 	global $msexcelStopProcess;
 	$i=0;
+
+	// Validate result resource
+	if(!is_resource($result)){
+		debugValue(array(
+			'function'=>'msexcelEnumQueryResults',
+			'message'=>'Invalid result resource provided'
+		));
+		return array();
+	}
+
 	if(isset($params['-filename'])){
 		$starttime=microtime(true);
+		$header=0;
+
+		// Validate filename
+		if(empty($params['-filename'])){
+			odbc_free_result($result);
+			debugValue(array(
+				'function'=>'msexcelEnumQueryResults',
+				'message'=>'Empty filename provided'
+			));
+			return 0;
+		}
+
+		// Validate directory exists
+		$dir=dirname($params['-filename']);
+		if(!is_dir($dir)){
+			odbc_free_result($result);
+			debugValue(array(
+				'function'=>'msexcelEnumQueryResults',
+				'message'=>'Directory does not exist',
+				'directory'=>$dir
+			));
+			return 0;
+		}
+
 		if(isset($params['-append'])){
 			//append
-    		$fh = fopen($params['-filename'],"ab");
+    		$fh = @fopen($params['-filename'],"ab");
+    		$header=1; // Don't write header when appending
 		}
 		else{
-			if(file_exists($params['-filename'])){unlink($params['-filename']);}
-    		$fh = fopen($params['-filename'],"wb");
+			if(file_exists($params['-filename'])){
+				if(!@unlink($params['-filename'])){
+					odbc_free_result($result);
+					debugValue(array(
+						'function'=>'msexcelEnumQueryResults',
+						'message'=>'Failed to delete existing file',
+						'file'=>$params['-filename']
+					));
+					return 0;
+				}
+			}
+    		$fh = @fopen($params['-filename'],"wb");
 		}
     	if(!isset($fh) || !is_resource($fh)){
-			pg_free_result($result);
-			return 'msexcelEnumQueryResults error: Failed to open '.$params['-filename'];
-			exit;
+			odbc_free_result($result);
+			debugValue(array(
+				'function'=>'msexcelEnumQueryResults',
+				'message'=>'Failed to open file for writing',
+				'file'=>$params['-filename']
+			));
+			return 0;
 		}
 		if(isset($params['-logfile'])){
-			setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+			$logdir=dirname($params['-logfile']);
+			if(is_dir($logdir)){
+				setFileContents($params['-logfile'],$query.PHP_EOL.PHP_EOL);
+			}
 		}
-		
+
 	}
 	else{$recs=array();}
 	while(odbc_fetch_row($result)){
