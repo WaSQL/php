@@ -1,25 +1,22 @@
 var wacss = {
 	/**
-	* @exclude  - this variable is for internal use only and thus excluded from the manual
+	* @exclude  - these are for internal use only and thus excluded from the manual
 	*/
 	version: '2025.1228',
-	/**
-	* @exclude  - this variable is for internal use only and thus excluded from the manual
-	*/
-	processing: '<span class="icon-spin4 w_spin"></span>',
-	/**
-	* @exclude  - this variable is for internal use only and thus excluded from the manual
-	*/
+	processing: '<div style="display:flex;"><span class="icon-spin4 w_spin" style="align-self:center"></span><span id="processing_timer" data-timer="3" style="margin-left:10px;align-self:center;font-size:0.7rem;"></span></div>',
+	processing_timeout:undefined,
 	author: 'WaSQL.com',
-	/**
-	* @exclude  - this variable is for internal use only and thus excluded from the manual
-	*/
 	chartjs:{},
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
 	EOL: '\n',
+	CRLF: '\r\n',
 	hoverDiv:'',
+	/**
+	* @name wacss.abort
+	* @describe alerts and returns false
+	* @param msg text
+	* @return boolean false
+	* @usage wacss.abort('failed');
+	*/
 	abort: function(msg){
 		//info: shows alert msg and returns false
 		console.error(msg);
