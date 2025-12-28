@@ -33,16 +33,16 @@ CREATE SERVER ods_old
   FOR postgres
   SERVER ods_old
   OPTIONS (
-    user 'svc_dexpdq',
-    password '7Gx5cHVkKWmZYifW6GuPeo2H3'
+    user 'YOUR_USERNAME',
+    password 'YOUR_PASSWORD'
   );
 
   CREATE USER MAPPING
   FOR svc_dexpdq
   SERVER ods_old
   OPTIONS (
-    user 'svc_dexpdq',
-    password '7Gx5cHVkKWmZYifW6GuPeo2H3'
+    user 'YOUR_USERNAME',
+    password 'YOUR_PASSWORD'
   );
 
 CREATE EXTENSION file_fdw;
@@ -189,6 +189,116 @@ SELECT
 		
 
 */
+
+/*
+* ====================================================================
+* SECURITY NOTICE
+* ====================================================================
+* This file contains functions for PostgreSQL database operations.
+*
+* IMPORTANT SECURITY CONSIDERATIONS:
+*
+* 1. SQL INJECTION PREVENTION:
+*    - Never pass unsanitized user input directly to -where, -order, -filter, or -query parameters
+*    - Always use field-specific parameters (e.g., 'name'=>$value) which are automatically parameterized
+*    - If you must use -where with user input, use postgresqlValidateIdentifier() for identifiers
+*      and proper escaping for values
+*
+* 2. TABLE AND COLUMN NAMES:
+*    - Table and column names cannot be parameterized in PostgreSQL
+*    - Use postgresqlValidateIdentifier() to validate all table/column names from user input
+*    - Only allow alphanumeric characters, underscores, and dots in identifiers
+*
+* 3. SENSITIVE DATA:
+*    - Never hardcode credentials in code
+*    - Use environment variables or secure configuration files
+*    - Never log sensitive data like passwords or tokens
+*
+* 4. ERROR HANDLING:
+*    - Errors are logged via debugValue()
+*    - Ensure debugValue() doesn't expose sensitive info in production
+*
+* 5. CONNECTION SECURITY:
+*    - Always use SSL/TLS connections in production
+*    - Set password_encryption to 'on' in postgresql.conf
+*    - Use strong passwords and rotate them regularly
+*
+* PRODUCTION DEPLOYMENT CHECKLIST:
+* ================================
+* [ ] Set pgsql.auto_reset_persistent = On in php.ini
+* [ ] Configure SSL/TLS for database connections
+* [ ] Use environment variables for credentials (never hardcode)
+* [ ] Set password_encryption = on in postgresql.conf
+* [ ] Configure pg_hba.conf to restrict access by IP
+* [ ] Enable query logging for audit purposes
+* [ ] Set appropriate connection limits
+* [ ] Configure connection pooling (pgBouncer recommended)
+* [ ] Set statement_timeout to prevent long-running queries
+* [ ] Enable and configure autovacuum
+* [ ] Set up monitoring and alerting
+* [ ] Configure regular backups
+* [ ] Review and limit user permissions
+* [ ] Disable debugValue() output in production or log to secure location
+* [ ] Test error handling and recovery procedures
+* ====================================================================
+*/
+
+//---------- begin function postgresqlValidateIdentifier--------------------
+/**
+* @describe validates a database identifier (table name, column name, schema name) to prevent SQL injection
+* @param identifier string - the identifier to validate
+* @param allow_dot boolean - whether to allow dots (for schema.table notation)
+* @return string - validated identifier or false if invalid
+* @usage $safe_table = postgresqlValidateIdentifier($user_input_table, true);
+*/
+function postgresqlValidateIdentifier($identifier, $allow_dot = true) {
+	if (!is_string($identifier) || strlen($identifier) === 0) {
+		return false;
+	}
+
+	// Remove any whitespace
+	$identifier = trim($identifier);
+
+	// Check for valid identifier pattern
+	// Allow: alphanumeric, underscore, and optionally dot
+	$pattern = $allow_dot ? '/^[a-zA-Z_][a-zA-Z0-9_\.]*$/' : '/^[a-zA-Z_][a-zA-Z0-9_]*$/';
+
+	if (!preg_match($pattern, $identifier)) {
+		debugValue(array(
+			'function' => 'postgresqlValidateIdentifier',
+			'message' => 'Invalid identifier detected - potential SQL injection attempt',
+			'identifier' => $identifier
+		));
+		return false;
+	}
+
+	// Check for reserved keywords that shouldn't be used as identifiers
+	$reserved = array('select', 'insert', 'update', 'delete', 'drop', 'create', 'alter', 'truncate',
+					  'union', 'exec', 'execute', 'declare', 'cast', 'convert');
+	$lower_id = strtolower($identifier);
+
+	if (in_array($lower_id, $reserved)) {
+		debugValue(array(
+			'function' => 'postgresqlValidateIdentifier',
+			'message' => 'Reserved keyword used as identifier',
+			'identifier' => $identifier
+		));
+		return false;
+	}
+
+	// Max length check (PostgreSQL identifier limit is 63 bytes)
+	if (strlen($identifier) > 63) {
+		debugValue(array(
+			'function' => 'postgresqlValidateIdentifier',
+			'message' => 'Identifier exceeds maximum length of 63 characters',
+			'identifier' => $identifier
+		));
+		return false;
+	}
+
+	return $identifier;
+}
+
 //---------- begin function postgresqlAddDBRecords--------------------
 /**
 * @describe add multiple records into a table
@@ -833,6 +943,23 @@ function postgresqlAddDBIndex($params=array()){
 	if(!isset($params['-table'])){return 'postgresqlAddDBIndex Error: No table';}
 	if(!isset($params['-fields'])){return 'postgresqlAddDBIndex Error: No fields';}
 	if(!is_array($params['-fields'])){$params['-fields']=preg_split('/\,+/',$params['-fields']);}
+
+	//validate table name
+	$table_valid = postgresqlValidateIdentifier($params['-table'], true);
+	if($table_valid === false){
+		return 'postgresqlAddDBIndex Error: Invalid table name';
+	}
+	$params['-table'] = $table_valid;
+
+	//validate field names
+	foreach($params['-fields'] as $i => $field){
+		$field_valid = postgresqlValidateIdentifier(trim($field), false);
+		if($field_valid === false){
+			return "postgresqlAddDBIndex Error: Invalid field name '{$field}'";
+		}
+		$params['-fields'][$i] = $field_valid;
+	}
+
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetDBSchema();
@@ -877,6 +1004,14 @@ function postgresqlAddDBRecord($params=array()){
 	global $USER;
 	global $CONFIG;
 	if(!isset($params['-table'])){return 'postgresqlAddRecord error: No table specified.';}
+
+	//validate table name
+	$table_valid = postgresqlValidateIdentifier($params['-table'], true);
+	if($table_valid === false){
+		return 'postgresqlAddRecord error: Invalid table name';
+	}
+	$params['-table'] = $table_valid;
+
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetDBSchema();
@@ -1143,16 +1278,25 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 	$function='createDBTable';
 	if(strlen($table)==0){return "postgresqlCreateDBTable error: No table";}
 	if(count($fields)==0){return "postgresqlCreateDBTable error: No fields";}
+
+	//lowercase the tablename and replace spaces with underscores
+	$table=strtolower(trim($table));
+	$table=str_replace(' ','_',$table);
+
+	//validate table name
+	$table_valid = postgresqlValidateIdentifier($table, true);
+	if($table_valid === false){
+		return 'postgresqlCreateDBTable Error: Invalid table name';
+	}
+	$table = $table_valid;
+
 	//check for schema name
 	$schema=postgresqlGetDBSchema();
 	if(stringContains($table,'.')){
 		list($schema,$table)=preg_split('/\./',$table,2);
 	}
 	$table="{$schema}.{$table}";
-	global $CONFIG;	
-	//lowercase the tablename and replace spaces with underscores
-	$table=strtolower(trim($table));
-	$table=str_replace(' ','_',$table);
+	global $CONFIG;
 	$ori_table=$table;
 	$query="create table {$table} (".PHP_EOL;
 	$lines=array();
@@ -1183,6 +1327,21 @@ function postgresqlCreateDBTable($table='',$fields=array()){
 function postgresqlDropDBIndex($params=array()){
 	if(!isset($params['-table'])){return 'postgresqlDropDBIndex Error: No table';}
 	if(!isset($params['-name'])){return 'postgresqlDropDBIndex Error: No name';}
+
+	//validate table name
+	$table_valid = postgresqlValidateIdentifier($params['-table'], true);
+	if($table_valid === false){
+		return 'postgresqlDropDBIndex Error: Invalid table name';
+	}
+	$params['-table'] = $table_valid;
+
+	//validate index name
+	$name_valid = postgresqlValidateIdentifier($params['-name'], false);
+	if($name_valid === false){
+		return 'postgresqlDropDBIndex Error: Invalid index name';
+	}
+	$params['-name'] = $name_valid;
+
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetDBSchema();
@@ -1299,6 +1458,9 @@ function postgresqlDBConnect(){
 * @param params array
 *	-table string - name of table
 *	-where string - where clause to filter what records are deleted
+*		SECURITY WARNING: The -where parameter is not parameterized.
+*		NEVER pass unsanitized user input directly to -where.
+*		Use field-specific parameters when possible, or validate/sanitize all user input.
 * @return boolean
 * @usage $id=postgresqlDelDBRecord(array('-table'=> '_tabledata','-where'=> "_id=4"));
 */
@@ -1306,6 +1468,16 @@ function postgresqlDelDBRecord($params=array()){
 	global $USER;
 	if(!isset($params['-table'])){return 'postgresqlDelDBRecord error: No table specified.';}
 	if(!isset($params['-where'])){return 'postgresqlDelDBRecord Error: No where';}
+
+	//validate table name
+	$table_valid = postgresqlValidateIdentifier($params['-table'], true);
+	if($table_valid === false){
+		$err = 'postgresqlDelDBRecord error: Invalid table name';
+		debugValue($err);
+		return $err;
+	}
+	$params['-table'] = $table_valid;
+
 	//check for schema name
 	if(!stringContains($params['-table'],'.')){
 		$schema=postgresqlGetDBSchema();
@@ -1505,6 +1677,19 @@ function postgresqlGetDBCount($params=array()){
 	global $CONFIG;
 	global $DATABASE;
 	if(!isset($params['-table'])){return null;}
+
+	//validate table name
+	$table_valid = postgresqlValidateIdentifier($params['-table'], true);
+	if($table_valid === false){
+		debugValue(array(
+			'function'=>'postgresqlGetDBCount',
+			'message'=>'Invalid table name',
+			'table'=>$params['-table']
+		));
+		return null;
+	}
+	$params['-table'] = $table_valid;
+
 	$parts=preg_split('/\./',$params['-table']);
 	if(count($parts)==2){
 		$dbschema=strtolower($parts[0]);
@@ -2140,7 +2325,13 @@ function postgresqlGetDBRecord($params=array()){
 *	[-offset] mixed - query offset limit
 *	[-fields] mixed - fields to return
 *	[-where] string - string to add to where clause
+*		SECURITY WARNING: -where is not parameterized. Never pass unsanitized user input.
 *	[-filter] string - string to add to where clause
+*		SECURITY WARNING: -filter is not parameterized. Never pass unsanitized user input.
+*	[-order] string - ORDER BY clause
+*		SECURITY WARNING: -order is not parameterized. Never pass unsanitized user input.
+*	[-query] string - raw SQL query
+*		SECURITY WARNING: -query is not parameterized. Never pass unsanitized user input.
 *	[-host] - server to connect to
 * 	[-dbname] - name of ODBC connection
 * 	[-dbuser] - username
@@ -2175,6 +2366,19 @@ function postgresqlGetDBRecords($params){
 			));
 	    	return null;
 		}
+
+		//validate table name
+		$table_valid = postgresqlValidateIdentifier($params['-table'], true);
+		if($table_valid === false){
+			debugValue(array(
+				'function'=>'postgresqlGetDBRecords',
+				'message'=>'Invalid table name',
+				'table'=>$params['-table']
+			));
+			return null;
+		}
+		$params['-table'] = $table_valid;
+
 		//check for schema name
 		if(!stringContains($params['-table'],'.')){
 			$schema=postgresqlGetDBSchema();
@@ -2825,9 +3029,14 @@ function postgresqlQueryResults($query='',$params=array()){
 	}
 	//set application name?
 	if(isset($params['-application_name'])){
-		$appname=str_replace("'",'',$params['-application_name']);
-		$appname=substr($appname,0,64);
-		$ok=pg_query($dbh_postgresql,"SET application_name TO '{$appname}'");
+		// Sanitize application name: remove quotes, limit to 64 chars, allow only safe characters
+		$appname = preg_replace('/[^a-zA-Z0-9_\-\. ]/', '', $params['-application_name']);
+		$appname = substr($appname, 0, 64);
+		if(strlen($appname) > 0){
+			// Use pg_escape_literal for proper escaping
+			$appname_escaped = pg_escape_literal($dbh_postgresql, $appname);
+			$ok = pg_query($dbh_postgresql, "SET application_name TO {$appname_escaped}");
+		}
 	}
 	$data=pg_query($dbh_postgresql,$query);
 	if(!$data && stringContains(pg_last_error($dbh_postgresql),'server closed the connection unexpectedly')){
@@ -2863,7 +3072,26 @@ function postgresqlQueryResults($query='',$params=array()){
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return $results;
 }
+/**
+* @describe analyzes a query using PostgreSQL's EXPLAIN ANALYZE
+* @param query string - SQL query to analyze
+*		SECURITY WARNING: Query parameter is not parameterized.
+*		Only use this with trusted, pre-validated queries. Never with user input.
+*		This function is intended for internal query analysis only.
+* @param params array - optional parameters
+* @return array - query plan analysis with performance suggestions
+*/
 function postgresqlQueryExplainResults($query='', $params=array()) {
+	if(empty($query)){
+		return 'Error: No query provided';
+	}
+
+	// Validate that this is a SELECT query (EXPLAIN only works with SELECT)
+	$query_trimmed = trim($query);
+	if(!preg_match('/^(with|select)\s/i', $query_trimmed)){
+		return 'Error: EXPLAIN can only be used with SELECT or WITH queries';
+	}
+
     $query = 'EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)' . PHP_EOL . $query;
     $recs = postgresqlQueryResults($query);
     if(!isset($recs[0]['query plan'])){
