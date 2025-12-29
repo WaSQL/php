@@ -246,24 +246,32 @@ switch($func){
 			return;
 		}
 
-		// PRE-FLIGHT CHECK: Ensure local repo is up to date before pushing via API
-		$recs[] = "--- Checking if local repository is up to date ---";
-		$pull_check = gitapiPull(array('auto_stash' => false));
-		if($pull_check['success']){
-			if(isset($pull_check['output']) && strlen($pull_check['output'])){
-				$recs[] = "Local repository status: " . $pull_check['output'];
-				// Check if pull brought in changes
-				if(strpos($pull_check['output'], 'Already up to date') === false &&
-				   strpos($pull_check['output'], 'Already up-to-date') === false){
-					$recs[] = "Local repository was updated from remote";
-					gitLog("Local repository updated before API push", 'info');
+		// PRE-FLIGHT CHECK: Fetch from remote to check for updates
+		// Note: We skip pulling since we have local changes we're about to push
+		$recs[] = "--- Checking remote repository status ---";
+
+		$original_dir = getcwd();
+		if(chdir($CONFIG['gitapi_path'])){
+			exec('git fetch origin 2>&1', $fetch_output, $fetch_code);
+
+			if($fetch_code === 0){
+				$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
+				exec("git rev-list HEAD..origin/{$branch} --count 2>&1", $behind_output, $behind_code);
+
+				if($behind_code === 0 && isset($behind_output[0])){
+					$commits_behind = intval(trim($behind_output[0]));
+					if($commits_behind > 0){
+						$recs[] = "Warning: Remote is {$commits_behind} commit(s) ahead";
+						$recs[] = "Your push will succeed, but you may want to pull after to get latest changes";
+					} else {
+						$recs[] = "Local and remote are in sync";
+					}
 				}
+			} else {
+				$recs[] = "Note: Could not check remote status (push will still work)";
 			}
-		} else {
-			$recs[] = "Warning: Could not verify local repository is up to date";
-			$recs[] = "Error: " . $pull_check['error'];
-			$recs[] = "You may need to run 'git pull' manually before pushing";
-			gitLog("Pre-flight pull check failed: " . $pull_check['error'], 'warning');
+
+			chdir($original_dir);
 		}
 		$recs[] = "";
 
