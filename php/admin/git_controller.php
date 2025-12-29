@@ -329,6 +329,7 @@ switch($func){
 
 		$push_count = 0;
 		$commit_errors = array();
+		$pushed_files = array(); // Track successfully pushed files for local sync
 
 		foreach($_REQUEST['files'] as $bfile){
 			$file = base64_decode($bfile);
@@ -388,6 +389,7 @@ switch($func){
 				if($result['success']){
 					$recs[] = "Updated on remote: {$file} - {$msg}";
 					$push_count++;
+					$pushed_files[] = $file; // Track for local sync
 					gitLog("File updated via API: {$file} | Message: {$msg}", 'info');
 				} else {
 					$error_msg = isset($result['error']) ? $result['error'] : 'Unknown error';
@@ -401,6 +403,7 @@ switch($func){
 				if($result['success']){
 					$recs[] = "Created on remote: {$file} - {$msg}";
 					$push_count++;
+					$pushed_files[] = $file; // Track for local sync
 					gitLog("File created via API: {$file} | Message: {$msg}", 'info');
 				} else {
 					$error_msg = isset($result['error']) ? $result['error'] : 'Unknown error';
@@ -423,17 +426,48 @@ switch($func){
 			$git['success'] = "Uploaded {$push_count} file(s) to remote repository";
 			gitLog("Uploaded {$push_count} files via API", 'info');
 
-			// Sync local repository with remote after successful push
-			$recs[] = "--- Syncing local repository with remote ---";
-			$pull_result = gitapiPull(array('auto_stash' => false));
-			if($pull_result['success']){
-				$recs[] = "Local repository synced successfully";
-				gitLog("Local repository synced after API push", 'info');
+			// Sync only the pushed files locally (leave unchecked files untouched)
+			$recs[] = "--- Syncing pushed files with remote ---";
+
+			$original_dir = getcwd();
+			if(chdir($CONFIG['gitapi_path'])){
+				// Fetch latest from remote
+				exec('git fetch origin 2>&1', $fetch_output, $fetch_code);
+
+				if($fetch_code === 0){
+					$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
+					$sync_errors = 0;
+
+					// Sync each successfully pushed file
+					foreach($pushed_files as $file){
+						$safe_file = escapeshellarg($file);
+						exec("git checkout origin/{$branch} -- {$safe_file} 2>&1", $checkout_output, $checkout_code);
+
+						if($checkout_code === 0){
+							$recs[] = "Synced locally: {$file}";
+						} else {
+							$recs[] = "Warning: Could not sync {$file} locally";
+							$sync_errors++;
+						}
+					}
+
+					if($sync_errors === 0){
+						$recs[] = "All pushed files synced successfully";
+						gitLog("Synced {$push_count} pushed files locally", 'info');
+					} else {
+						$recs[] = "Some files could not be synced locally";
+						gitLog("Partial sync: {$sync_errors} files failed", 'warning');
+					}
+				} else {
+					$recs[] = "Warning: Could not fetch from remote";
+					$recs[] = "Your changes are on remote but local sync failed";
+					gitLog("Failed to fetch after API push", 'warning');
+				}
+
+				chdir($original_dir);
 			} else {
-				$error_msg = isset($pull_result['error']) ? $pull_result['error'] : 'Unknown error';
-				$recs[] = "Warning: Could not sync local repository: {$error_msg}";
-				$recs[] = "You may need to run 'git pull' manually from command line";
-				gitLog("Failed to sync local repository after API push: " . $error_msg, 'warning');
+				$recs[] = "Warning: Could not access git directory for sync";
+				gitLog("Could not chdir to git path for sync", 'warning');
 			}
 		} else {
 			$git['error'] = 'No files were uploaded';
