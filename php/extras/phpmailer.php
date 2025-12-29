@@ -193,18 +193,34 @@ function phpmailerSendMail($params=array()){
 		}
 		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe From {$_SERVER['HTTP_HOST']}>");
 	}
-	//From
+	//From - parse "Name <email>" format if not using separate fromname param
 	if(isset($params['fromname'])){
 		$mail->SetFrom($params['from'], $params['fromname']);
 	}
 	else{
-		$mail->SetFrom($params['from']);
+		// Check if from contains "Name <email>" format
+		if(preg_match('/(.+?)\<(.+?)\>/', $params['from'], $ematch)){
+			$fromName = trim($ematch[1]);
+			$fromEmail = trim($ematch[2]);
+			$mail->SetFrom($fromEmail, $fromName);
+		}
+		else{
+			$mail->SetFrom($params['from']);
+		}
 	}
 	//To
 	if(!is_array($params['to'])){$params['to']=preg_split('/[\,\;]+/',$params['to']);}
 	foreach($params['to'] as $to){
 		if(is_array($to) && isEmail($to[0])){
 			$mail->AddAddress($to[0], $to[1]);  // Add a recipient and name
+		}
+		elseif(preg_match('/(.+?)\<(.+?)\>/', $to, $ematch)){
+			// Parse "Name <email>" format
+			$toName = trim($ematch[1]);
+			$toEmail = trim($ematch[2]);
+			if(isEmail($toEmail)){
+				$mail->AddAddress($toEmail, $toName);
+			}
 		}
 		elseif(isEmail($to)){
 			$mail->AddAddress($to);               // Name is optional
@@ -216,6 +232,14 @@ function phpmailerSendMail($params=array()){
 		foreach($params['cc'] as $cc){
 			if(is_array($cc) && isEmail($cc[0])){
 				$mail->addCC($cc[0], $cc[1]);  // Add a recipient and name
+			}
+			elseif(preg_match('/(.+?)\<(.+?)\>/', $cc, $ematch)){
+				// Parse "Name <email>" format
+				$ccName = trim($ematch[1]);
+				$ccEmail = trim($ematch[2]);
+				if(isEmail($ccEmail)){
+					$mail->addCC($ccEmail, $ccName);
+				}
 			}
 			elseif(isEmail($cc)){
 				$mail->addCC($cc);               // Name is optional
@@ -229,6 +253,14 @@ function phpmailerSendMail($params=array()){
 			if(is_array($bcc) && isEmail($bcc[0])){
 				$mail->addBCC($bcc[0], $bcc[1]);  // Add a recipient and name
 			}
+			elseif(preg_match('/(.+?)\<(.+?)\>/', $bcc, $ematch)){
+				// Parse "Name <email>" format
+				$bccName = trim($ematch[1]);
+				$bccEmail = trim($ematch[2]);
+				if(isEmail($bccEmail)){
+					$mail->addBCC($bccEmail, $bccName);
+				}
+			}
 			elseif(isEmail($bcc)){
 				$mail->addBCC($bcc);               // Name is optional
 			}
@@ -240,6 +272,14 @@ function phpmailerSendMail($params=array()){
 		foreach($params['reply-to'] as $to){
 			if(is_array($to) && isEmail($to[0])){
 				$mail->AddReplyTo($to[0], $to[1]);  // Add a recipient and name
+			}
+			elseif(preg_match('/(.+?)\<(.+?)\>/', $to, $ematch)){
+				// Parse "Name <email>" format
+				$replyName = trim($ematch[1]);
+				$replyEmail = trim($ematch[2]);
+				if(isEmail($replyEmail)){
+					$mail->AddReplyTo($replyEmail, $replyName);
+				}
 			}
 			elseif(isEmail($to)){
 				$mail->AddReplyTo($to);               // Name is optional
