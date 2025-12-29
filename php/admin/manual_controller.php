@@ -2,7 +2,7 @@
 // Authentication check - ensure user is logged in
 global $USER;
 if(!isUser()){
-	echo buildFormMsg('Access Denied: You must be logged in to view documentation.','error');
+	echo '<div class="w_error">Access Denied: You must be logged in to view documentation.</div>';
 	exit;
 }
 
@@ -111,7 +111,7 @@ switch(strtolower($_REQUEST['func'])){
 	case 'rebuild':
 		// Only allow rebuild if explicitly requested
 		if(!isset($_REQUEST['confirm']) || $_REQUEST['confirm'] !== 'yes'){
-			echo buildFormMsg('To rebuild documentation, add &confirm=yes to the URL. Warning: This may take several minutes.','warning');
+			echo '<div class="w_warning">To rebuild documentation, add &confirm=yes to the URL. Warning: This may take several minutes.</div>';
 			exit;
 		}
 		// Set time limit for long-running rebuild operation
@@ -119,7 +119,7 @@ switch(strtolower($_REQUEST['func'])){
 		manualRebuildDocs();
 		$categories=manualGetCategories();
 		setView('default',1);
-		echo buildFormMsg('Documentation rebuilt successfully.','success');
+		echo '<div class="w_success">Documentation rebuilt successfully.</div>';
 	break;
 	default:
 		// Create tables if they don't exist
@@ -133,7 +133,7 @@ switch(strtolower($_REQUEST['func'])){
 		// Check if documentation exists, if not suggest rebuild
 		$doc_count=getDBCount(array('-table'=>'_docs'));
 		if($doc_count == 0){
-			echo buildFormMsg('Documentation database is empty. <a href="?_menu=manual&func=rebuild&confirm=yes">Click here to build documentation</a> (this may take several minutes).','info');
+			echo '<div class="w_info">Documentation database is empty. <a href="?_menu=manual&func=rebuild&confirm=yes">Click here to build documentation</a> (this may take several minutes).</div>';
 			exit;
 		}
 
