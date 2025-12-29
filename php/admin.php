@@ -3307,7 +3307,7 @@ LIST_TABLE:
 			echo '		<th>Schema<br><input type="checkbox" class="form-control" name="_grep_schema" value="1">'."</th>\n";
 			echo '		<th>Records<br><input type="checkbox" class="form-control" name="_grep_records" value="1" checked>'."</th>\n";
 			$tables=getDBTables();
-			echo '		<th>Table<br><select name="_table_" class="form-control"><option value=""></option>'.PHP_EOL;
+			echo '		<th>Table<br><select name="_table_" class="wacss_select"><option value=""></option>'.PHP_EOL;
 			foreach($tables as $table){
 				echo '				<option value="'.$table.'"';
 				if(isset($_REQUEST['_table_']) && $_REQUEST['_table_']==$table){echo ' selected';}
@@ -3315,7 +3315,7 @@ LIST_TABLE:
             	}
 			echo '			</select>'."</th>\n";
 			echo '	</tr><tr><th>Text:</th>'.PHP_EOL;
-			echo '		<td colspan="3"><input type="text" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" class="form-control" maxlength="255"> '."</td>\n";
+			echo '		<td colspan="3"><input type="text" class="wacss_input" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" class="form-control" maxlength="255"> '."</td>\n";
 			echo '	</tr></table>'.PHP_EOL;
 			echo buildFormSubmit('Search Database','','','icon-search');
 			echo buildFormEnd();
