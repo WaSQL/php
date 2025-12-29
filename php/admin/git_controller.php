@@ -167,7 +167,7 @@ gitLog("Git API action initiated: {$func}", 'info');
 switch($func){
 	case 'pull':
 		// Pull latest changes from remote repository using git command
-		$result = gitapiPull(array());
+		$result = gitapiPull(array('auto_stash' => false));
 		if($result['success']){
 			$recs = array('Pull completed successfully');
 			if(isset($result['output']) && strlen($result['output'])){
@@ -248,7 +248,7 @@ switch($func){
 
 		// PRE-FLIGHT CHECK: Ensure local repo is up to date before pushing via API
 		$recs[] = "--- Checking if local repository is up to date ---";
-		$pull_check = gitapiPull(array());
+		$pull_check = gitapiPull(array('auto_stash' => false));
 		if($pull_check['success']){
 			if(isset($pull_check['output']) && strlen($pull_check['output'])){
 				$recs[] = "Local repository status: " . $pull_check['output'];
@@ -425,7 +425,7 @@ switch($func){
 
 			// Sync local repository with remote after successful push
 			$recs[] = "--- Syncing local repository with remote ---";
-			$pull_result = gitapiPull(array());
+			$pull_result = gitapiPull(array('auto_stash' => false));
 			if($pull_result['success']){
 				$recs[] = "Local repository synced successfully";
 				gitLog("Local repository synced after API push", 'info');
