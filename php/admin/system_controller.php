@@ -238,6 +238,47 @@ switch($tab){
 							}
 						}
 					}
+
+					// Calculate useful derived metrics
+					// Activity percentage (inverse of idle)
+					if(isset($rec['%_idle_time'])){
+						$rec['activity_pcnt']=max(0,100-$rec['%_idle_time']);
+					}
+					// Read/Write ratio and IOPS
+					if(isset($rec['disk_reads/sec'])){
+						$rec['reads_per_sec']=$rec['disk_reads/sec'];
+					}
+					if(isset($rec['disk_writes/sec'])){
+						$rec['writes_per_sec']=$rec['disk_writes/sec'];
+					}
+					if(isset($rec['disk_transfers/sec'])){
+						$rec['total_iops']=$rec['disk_transfers/sec'];
+					}
+					if(isset($rec['reads_per_sec']) && isset($rec['writes_per_sec'])){
+						$total_ops=$rec['reads_per_sec']+$rec['writes_per_sec'];
+						if($total_ops>0){
+							$rec['read_pcnt']=round(($rec['reads_per_sec']/$total_ops)*100,1);
+							$rec['write_pcnt']=round(($rec['writes_per_sec']/$total_ops)*100,1);
+						}
+					}
+					// Throughput in MB/s
+					if(isset($rec['disk_read_bytes/sec'])){
+						$rec['read_throughput']=$rec['disk_read_bytes/sec'];
+					}
+					if(isset($rec['disk_write_bytes/sec'])){
+						$rec['write_throughput']=$rec['disk_write_bytes/sec'];
+					}
+					if(isset($rec['disk_bytes/sec'])){
+						$rec['total_throughput']=$rec['disk_bytes/sec'];
+					}
+					// Latency indicators
+					if(isset($rec['avg._disk_sec/read'])){
+						$rec['read_latency_ms']=$rec['avg._disk_sec/read']*1000;
+					}
+					if(isset($rec['avg._disk_sec/write'])){
+						$rec['write_latency_ms']=$rec['avg._disk_sec/write']*1000;
+					}
+
 					$recs[]=$rec;
 				}
 			}
@@ -263,6 +304,71 @@ switch($tab){
 		}
 		$listopts=array(
 			'tab'=>'diskstats',
+			// Basic disk info
+			'model_class'=>'w_bold',
+			'size_options'=>array(
+				'class'=>'align-right',
+				'eval'=>"return verboseSize(%size%);"
+			),
+			'status_class'=>'align-center',
+			// Activity metrics
+			'activity_pcnt_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Activity',
+				'eval'=>"return number_format(%activity_pcnt%,1).'%';"
+			),
+			// IOPS
+			'reads_per_sec_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Reads/s',
+				'eval'=>"return number_format(%reads_per_sec%,2);"
+			),
+			'writes_per_sec_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Writes/s',
+				'eval'=>"return number_format(%writes_per_sec%,2);"
+			),
+			'total_iops_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Total IOPS',
+				'eval'=>"return number_format(%total_iops%,2);"
+			),
+			// Throughput
+			'read_throughput_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Read',
+				'eval'=>"return verboseSize(%read_throughput%).'/s';"
+			),
+			'write_throughput_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Write',
+				'eval'=>"return verboseSize(%write_throughput%).'/s';"
+			),
+			'total_throughput_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Total',
+				'eval'=>"return verboseSize(%total_throughput%).'/s';"
+			),
+			// Latency
+			'read_latency_ms_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Read Latency',
+				'eval'=>"return number_format(%read_latency_ms%,2).' ms';"
+			),
+			'write_latency_ms_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Write Latency',
+				'eval'=>"return number_format(%write_latency_ms%,2).' ms';"
+			),
+			// Queue depth
+			'current_disk_queue_length_options'=>array(
+				'class'=>'align-right',
+				'displayname'=>'Queue Depth',
+				'eval'=>"return %current_disk_queue_length%;"
+			),
+			// Only show the most useful fields by default
+			'-listfields'=>'model,size,status,activity_pcnt,total_iops,total_throughput,read_latency_ms,write_latency_ms,current_disk_queue_length',
+			'-results_eval'=>'systemGetDiskStatsExtra'
 		);
 		setView('list',1);
 		return;
