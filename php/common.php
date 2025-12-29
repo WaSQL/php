@@ -24909,7 +24909,7 @@ function sendMail($params=array()){
 		if(isset($params[$fld])){
 		    if(preg_match('/(.+?)\<(.+?)\>/',$params[$fld],$ematch)){
 				array_push($headers,ucfirst($fld).': ' . $params[$fld]);
-				$params[$fld]=$ematch['2'];
+				$params[$fld]=$ematch[2];
 		    }
 		    elseif($fld != 'to'){array_push($headers,ucfirst($fld).': ' . $params[$fld]);}
 		}
