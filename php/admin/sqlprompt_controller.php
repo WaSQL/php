@@ -91,6 +91,43 @@
 				case 'msaccess':
 					$sql="SELECT TOP 5 * FROM {$table}";
 				break;
+				case 'duckdb':
+					loadExtras('duckdb');
+					$CONFIG['db']=$db['name'];
+					if(duckdbIsFileMode()){
+						$filepath=duckdbGetDataFilePath();
+						$readfunc=duckdbGetReadFunction($filepath);
+						$escaped_path=str_replace("'","''",$filepath);
+						// Get column names and create aliases for normalized names
+						$schema_recs=dbQueryResults($db['name'],"DESCRIBE SELECT * FROM {$readfunc}('{$escaped_path}')");
+						if(is_array($schema_recs) && count($schema_recs)){
+							$cols=array();
+							foreach($schema_recs as $rec){
+								$original=$rec['column_name'];
+								$normalized=sqlpromptNormalizeColumnName($original);
+								// If only difference is case, just use lowercase (DuckDB is case-insensitive)
+								if(strtolower($original)==$normalized){
+									$cols[]="\t{$normalized}";
+								}
+								else{
+									// Has spaces or special chars - need alias
+									$quoted_orig=$original;
+									if(preg_match('/[^a-z0-9_]/i',$original)){
+										$quoted_orig="\"{$original}\"";
+									}
+									$cols[]="\t{$quoted_orig} AS {$normalized}";
+								}
+							}
+							$sql="SELECT\n".implode(",\n",$cols)."\nFROM {$readfunc}('{$escaped_path}')\nLIMIT 5";
+						}
+						else{
+							$sql="SELECT * FROM {$readfunc}('{$escaped_path}') LIMIT 5";
+						}
+					}
+					else{
+						$sql="SELECT * FROM {$table} LIMIT 5";
+					}
+				break;
 				case 'postgresql':
 				case 'postgres':
 					if(strlen($db['dbschema'])){
@@ -132,6 +169,19 @@
 				case 'ctree':
 					$sql="SELECT COUNT(*) AS cnt FROM admin.{$table}";
 				break;
+				case 'duckdb':
+					loadExtras('duckdb');
+					$CONFIG['db']=$db['name'];
+					if(duckdbIsFileMode()){
+						$filepath=duckdbGetDataFilePath();
+						$readfunc=duckdbGetReadFunction($filepath);
+						$escaped_path=str_replace("'","''",$filepath);
+						$sql="SELECT COUNT(*) AS cnt FROM {$readfunc}('{$escaped_path}')";
+					}
+					else{
+						$sql="SELECT COUNT(*) AS cnt FROM {$table}";
+					}
+				break;
 				case 'mysql':
 				case 'mysqli':
 					$sql="SELECT COUNT(*) AS cnt FROM {$table}";
@@ -158,6 +208,55 @@
 		case 'ddl':
 			$table=addslashes($_REQUEST['table']);
 			$db=$_REQUEST['db'];
+			if(strtolower($DATABASE[$db]['dbtype'])=='duckdb'){
+				loadExtras('duckdb');
+				$CONFIG['db']=$db;
+				if(duckdbIsFileMode()){
+					$filepath=duckdbGetDataFilePath();
+					$readfunc=duckdbGetReadFunction($filepath);
+					$escaped_path=str_replace("'","''",$filepath);
+					// Get schema information
+					$schema_recs=dbQueryResults($db,"DESCRIBE SELECT * FROM {$readfunc}('{$escaped_path}')");
+					if(is_array($schema_recs) && count($schema_recs)){
+						// Generate CREATE TABLE statement
+						$tablename=getFileName($filepath,1); // filename without extension
+						$lines=array();
+						$lines[]="-- Schema for: {$filepath}";
+						$lines[]="-- Format: ".strtoupper(getFileExtension($filepath));
+						$lines[]="-- Note: Use this CREATE TABLE statement in your target database (MySQL, PostgreSQL, etc.) to prepare for importing this file's data";
+						$lines[]="";
+						$lines[]="CREATE TABLE {$tablename} (";
+						$cols=array();
+						foreach($schema_recs as $rec){
+							$colname=$rec['column_name'];
+							$coltype=$rec['column_type'];
+							// Normalize column name (lowercase, underscores)
+							$colname=sqlpromptNormalizeColumnName($colname);
+							// Convert DuckDB types to more generic SQL types
+							$coltype=preg_replace('/^BIGINT$/i','BIGINT',$coltype);
+							$coltype=preg_replace('/^INTEGER$/i','INTEGER',$coltype);
+							$coltype=preg_replace('/^DOUBLE$/i','DOUBLE PRECISION',$coltype);
+							$coltype=preg_replace('/^TIMESTAMP$/i','TIMESTAMP',$coltype);
+							$coltype=preg_replace('/^DATE$/i','DATE',$coltype);
+							$coltype=preg_replace('/^BOOLEAN$/i','BOOLEAN',$coltype);
+							$coltype=preg_replace('/^VARCHAR$/i','VARCHAR(255)',$coltype);
+							// Quote column names that might be reserved words
+							if(in_array($colname,array('index','order','group','user','date','time','key','value','type','name'))){
+								$colname="`{$colname}`";
+							}
+							$cols[]="\t{$colname} {$coltype}";
+						}
+						$lines[]=implode(",\n",$cols);
+						$lines[]=");";
+						$sql=implode("\n",$lines);
+					}
+					else{
+						$sql="-- Unable to retrieve schema for: {$filepath}";
+					}
+					setView('monitor_sql_norun',1);
+					return;
+				}
+			}
 			$parts=preg_split('/\./',$table,2);
 			if(count($parts)==2){
 				$sql=dbGetTableDDL($db,$parts[1],$parts[0]);
@@ -174,6 +273,42 @@
 		case 'desc':
 			$table=addslashes($_REQUEST['table']);
 			$db=$_REQUEST['db'];
+			if(strtolower($DATABASE[$db]['dbtype'])=='duckdb'){
+				loadExtras('duckdb');
+				$CONFIG['db']=$db;
+				if(duckdbIsFileMode()){
+					$filepath=duckdbGetDataFilePath();
+					$readfunc=duckdbGetReadFunction($filepath);
+					$escaped_path=str_replace("'","''",$filepath);
+					// Get column names and create aliases for normalized names
+					$schema_recs=dbQueryResults($db,"DESCRIBE SELECT * FROM {$readfunc}('{$escaped_path}')");
+					if(is_array($schema_recs) && count($schema_recs)){
+						$cols=array();
+						foreach($schema_recs as $rec){
+							$original=$rec['column_name'];
+							$normalized=sqlpromptNormalizeColumnName($original);
+							// If only difference is case, just use lowercase (DuckDB is case-insensitive)
+							if(strtolower($original)==$normalized){
+								$cols[]="\t{$normalized}";
+							}
+							else{
+								// Has spaces or special chars - need alias
+								$quoted_orig=$original;
+								if(preg_match('/[^a-z0-9_]/i',$original)){
+									$quoted_orig="\"{$original}\"";
+								}
+								$cols[]="\t{$quoted_orig} AS {$normalized}";
+							}
+						}
+						$sql="DESCRIBE\nSELECT\n".implode(",\n",$cols)."\nFROM {$readfunc}('{$escaped_path}')";
+					}
+					else{
+						$sql="DESCRIBE SELECT * FROM {$readfunc}('{$escaped_path}')";
+					}
+					setView('monitor_sql',1);
+					return;
+				}
+			}
 			$parts=preg_split('/\./',$table,2);
 			if(count($parts)==2){
 				$sql="desc {$table}";
