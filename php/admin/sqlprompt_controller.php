@@ -95,7 +95,8 @@
 					loadExtras('duckdb');
 					$CONFIG['db']=$db['name'];
 					if(duckdbIsFileMode()){
-						$filepath=duckdbGetDataFilePath();
+						// Get file path - if folder mode, pass table name
+						$filepath=duckdbGetDataFilePath($table);
 						$readfunc=duckdbGetReadFunction($filepath);
 						$escaped_path=str_replace("'","''",$filepath);
 						// Get column names and create aliases for normalized names
@@ -173,7 +174,8 @@
 					loadExtras('duckdb');
 					$CONFIG['db']=$db['name'];
 					if(duckdbIsFileMode()){
-						$filepath=duckdbGetDataFilePath();
+						// Get file path - if folder mode, pass table name
+						$filepath=duckdbGetDataFilePath($table);
 						$readfunc=duckdbGetReadFunction($filepath);
 						$escaped_path=str_replace("'","''",$filepath);
 						$sql="SELECT COUNT(*) AS cnt FROM {$readfunc}('{$escaped_path}')";
@@ -212,7 +214,8 @@
 				loadExtras('duckdb');
 				$CONFIG['db']=$db;
 				if(duckdbIsFileMode()){
-					$filepath=duckdbGetDataFilePath();
+					// Get file path - if folder mode, pass table name
+					$filepath=duckdbGetDataFilePath($table);
 					$readfunc=duckdbGetReadFunction($filepath);
 					$escaped_path=str_replace("'","''",$filepath);
 					// Get schema information
@@ -277,7 +280,8 @@
 				loadExtras('duckdb');
 				$CONFIG['db']=$db;
 				if(duckdbIsFileMode()){
-					$filepath=duckdbGetDataFilePath();
+					// Get file path - if folder mode, pass table name
+					$filepath=duckdbGetDataFilePath($table);
 					$readfunc=duckdbGetReadFunction($filepath);
 					$escaped_path=str_replace("'","''",$filepath);
 					// Get column names and create aliases for normalized names
