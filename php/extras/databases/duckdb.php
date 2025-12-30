@@ -1376,6 +1376,24 @@ ENDOFQUERY;
 * @usage $tables=duckdbGetDBTables();
 */
 function duckdbGetDBTables($params=array()){
+	// If in folder mode, return all supported files as tables
+	if(duckdbIsFolderMode()){
+		global $DATABASE;
+		global $CONFIG;
+		$db=$CONFIG['db'];
+		$folder=$DATABASE[$db]['dbname'];
+		$tables=array();
+		$supported_exts=array('csv','json','parquet','xlsx','xls');
+		$files=duckdbGetFiles($folder);
+		foreach($files as $file){
+			$ext=strtolower(getFileExtension($file));
+			if(in_array($ext,$supported_exts)){
+				$tables[]=getFileName($file);
+			}
+		}
+		sort($tables);
+		return $tables;
+	}
 	// If in file mode, return the data filename as the table name
 	if(duckdbIsFileMode()){
 		$filepath=duckdbGetDataFilePath();
@@ -1426,7 +1444,8 @@ function duckdbGetDBFieldInfo($tablename,$params=array()){
 	//echo "duckdbGetDBFieldInfo:{$key}({$tablename})".printValue($params).PHP_EOL;
 	// If in file mode, use DESCRIBE to get column info from the data file
 	if(duckdbIsFileMode()){
-		$filepath=duckdbGetDataFilePath();
+		// Get file path - if folder mode, pass table name
+		$filepath=duckdbGetDataFilePath($tablename);
 		$readfunc=duckdbGetReadFunction($filepath);
 		// Escape single quotes in path
 		$escaped_path=str_replace("'","''",$filepath);
@@ -1736,10 +1755,86 @@ function duckdbQueryResults($query,$params=array()){
 		$out=cmdResults($cmd);
 		//echo "<pre>{$query}</pre>".printValue($cmd);exit;
 		if(isset($out['stderr']) && strlen($out['stderr'])){
-			$DATABASE['_lastquery']['cmd']=$cmd;
-			$DATABASE['_lastquery']['error']=$out['stderr'];
-			debugValue($DATABASE['_lastquery']);
-    		return 0;
+			// Check if this is a CSV sniffing error and retry with explicit parameters
+			if(stringContains($out['stderr'],'sniffing file') || stringContains($out['stderr'],'CSV Parsing dialect')){
+				// First, check for and remove BOM if present
+				$bom_check=null;
+				$retry_query=$query;
+
+				// Extract filepath from read_csv() call
+				if(preg_match('/read_csv\(\'([^\']+)\'\)/',$query,$matches)){
+					$filepath=$matches[1];
+					$bom_check=duckdbCheckAndRemoveBOM($filepath);
+					if($bom_check['had_bom']){
+						// Replace filepath in query with BOM-free version
+						$retry_query=str_replace("read_csv('{$filepath}')","read_csv('{$bom_check['path']}')",$query);
+					}
+				}
+
+				// Replace ALL read_csv calls with robust parameters that handle problematic CSVs
+				// Use strict_mode=false, ignore_errors=true, null_padding=true for maximum tolerance
+				$retry_query=preg_replace(
+					'/read_csv\(\'([^\']+)\'\)/',
+					'read_csv(\'$1\', all_varchar=true, header=true, delim=\',\', quote=\'"\', escape=\'"\', strict_mode=false, ignore_errors=true, null_padding=true)',
+					$retry_query
+				);
+				// If no replacement happened, try with escaped quotes
+				if($retry_query==$query){
+					$retry_query=preg_replace(
+						'/read_csv\("([^"]+)"\)/',
+						'read_csv("$1", all_varchar=true, header=true, delim=\',\', quote=\'"\', escape=\'"\', strict_mode=false, ignore_errors=true, null_padding=true)',
+						$retry_query
+					);
+				}
+				// Only retry if we actually changed something
+				if($retry_query!=$query){
+					$retry_filename='duckdb_retry_'.sha1($retry_query).'.sql';
+					$retry_afile="{$tpath}/{$retry_filename}";
+					$ok=setFileContents($retry_afile,$retry_query);
+					$safe_retry_afile = escapeshellarg($retry_afile);
+					$retry_cmd="duckdb -csv -c \".read {$safe_retry_afile}\"";
+					if(strlen($DATABASE['_lastquery']['dbname'])){
+						$safe_dbname = escapeshellarg($DATABASE['_lastquery']['dbname']);
+						$retry_cmd.=" {$safe_dbname}";
+					}
+					$retry_out=cmdResults($retry_cmd);
+					// Safely delete retry temp file
+					if(file_exists($retry_afile)){
+						unlink($retry_afile);
+					}
+					// Safely delete BOM temp file if it was created
+					if($bom_check && $bom_check['temp'] && file_exists($bom_check['path'])){
+						unlink($bom_check['path']);
+					}
+					// If retry succeeded, continue with count query
+					if(!isset($retry_out['stderr']) || !strlen($retry_out['stderr'])){
+						$out=$retry_out;
+						$query=$retry_query; // Update query for count
+					}
+					else{
+						// Retry failed, return error
+						$DATABASE['_lastquery']['cmd']=$retry_cmd;
+						$DATABASE['_lastquery']['error']=$retry_out['stderr'];
+						$DATABASE['_lastquery']['retry_attempted']=true;
+						debugValue($DATABASE['_lastquery']);
+						return 0;
+					}
+				}
+				else{
+					// No read_csv found to replace, return original error
+					$DATABASE['_lastquery']['cmd']=$cmd;
+					$DATABASE['_lastquery']['error']=$out['stderr'];
+					debugValue($DATABASE['_lastquery']);
+					return 0;
+				}
+			}
+			else{
+				// Not a CSV sniffing error, return original error
+				$DATABASE['_lastquery']['cmd']=$cmd;
+				$DATABASE['_lastquery']['error']=$out['stderr'];
+				debugValue($DATABASE['_lastquery']);
+				return 0;
+			}
 		}
 		// Safely delete temp file
 		if(file_exists($afile)){
@@ -1788,9 +1883,95 @@ function duckdbQueryResults($query,$params=array()){
 		}
 		$out=cmdResults($cmd);
 		if(isset($out['stderr']) && strlen($out['stderr'])){
-			$DATABASE['_lastquery']['error']=$out['stderr'];
-			debugValue($DATABASE['_lastquery']);
-    		return array();
+			// Check if this is a CSV sniffing error and retry with explicit parameters
+			if(stringContains($out['stderr'],'sniffing file') || stringContains($out['stderr'],'CSV Parsing dialect')){
+				// First, check for and remove BOM if present
+				$bom_check=null;
+				$retry_query=$query;
+
+				// Extract filepath from read_csv() call
+				if(preg_match('/read_csv\(\'([^\']+)\'\)/',$query,$matches)){
+					$filepath=$matches[1];
+					$bom_check=duckdbCheckAndRemoveBOM($filepath);
+					if($bom_check['had_bom']){
+						// Replace filepath in query with BOM-free version
+						$retry_query=str_replace("read_csv('{$filepath}')","read_csv('{$bom_check['path']}')",$query);
+					}
+				}
+
+				// Replace ALL read_csv calls with robust parameters that handle problematic CSVs
+				// Use strict_mode=false, ignore_errors=true, null_padding=true for maximum tolerance
+				$retry_query=preg_replace(
+					'/read_csv\(\'([^\']+)\'\)/',
+					'read_csv(\'$1\', all_varchar=true, header=true, delim=\',\', quote=\'"\', escape=\'"\', strict_mode=false, ignore_errors=true, null_padding=true)',
+					$retry_query
+				);
+				// If no replacement happened, try with escaped quotes
+				if($retry_query==$query){
+					$retry_query=preg_replace(
+						'/read_csv\("([^"]+)"\)/',
+						'read_csv("$1", all_varchar=true, header=true, delim=\',\', quote=\'"\', escape=\'"\', strict_mode=false, ignore_errors=true, null_padding=true)',
+						$retry_query
+					);
+				}
+				// Only retry if we actually changed something
+				if($retry_query!=$query){
+					$retry_filename='duckdb_retry_'.sha1($retry_query).'.sql';
+					$retry_afile="{$tpath}/{$retry_filename}";
+					$ok=setFileContents($retry_afile,$retry_query);
+					$safe_retry_afile = escapeshellarg($retry_afile);
+					$retry_cmd="duckdb -json -c \".read {$safe_retry_afile}\"";
+					if(strlen($DATABASE['_lastquery']['dbname'])){
+						$safe_dbname = escapeshellarg($DATABASE['_lastquery']['dbname']);
+						$retry_cmd.=" {$safe_dbname}";
+					}
+					$retry_out=cmdResults($retry_cmd);
+					// Safely delete retry temp file
+					if(file_exists($retry_afile)){
+						unlink($retry_afile);
+					}
+					// Safely delete BOM temp file if it was created
+					if($bom_check && $bom_check['temp'] && file_exists($bom_check['path'])){
+						unlink($bom_check['path']);
+					}
+					// If retry succeeded, use retry results
+					if(!isset($retry_out['stderr']) || !strlen($retry_out['stderr'])){
+						$out=$retry_out;
+					}
+					else{
+						// Retry failed, return error
+						$DATABASE['_lastquery']['cmd']=$retry_cmd;
+						$DATABASE['_lastquery']['error']=$retry_out['stderr'];
+						$DATABASE['_lastquery']['retry_attempted']=true;
+						debugValue($DATABASE['_lastquery']);
+						// Safely delete original temp file
+						if(file_exists($afile)){
+							unlink($afile);
+						}
+						return array();
+					}
+				}
+				else{
+					// Couldn't extract filename, return original error
+					$DATABASE['_lastquery']['error']=$out['stderr'];
+					debugValue($DATABASE['_lastquery']);
+					// Safely delete temp file
+					if(file_exists($afile)){
+						unlink($afile);
+					}
+					return array();
+				}
+			}
+			else{
+				// Not a CSV sniffing error, return original error
+				$DATABASE['_lastquery']['error']=$out['stderr'];
+				debugValue($DATABASE['_lastquery']);
+				// Safely delete temp file
+				if(file_exists($afile)){
+					unlink($afile);
+				}
+				return array();
+			}
 		}
 		$recs=decodeJSON($out['stdout']);
 		// Safely delete temp file
@@ -1804,7 +1985,12 @@ function duckdbSetDBName(){
 	global $DATABASE;
 	global $CONFIG;
 	$db=$CONFIG['db'];
-	$file_ext=getFileExtension($DATABASE[$db]['dbname']);
+	$dbname=$DATABASE[$db]['dbname'];
+	// Check if it's a directory
+	if(is_dir($dbname)){
+		return ':memory:';
+	}
+	$file_ext=getFileExtension($dbname);
 	//set
 	switch(strtolower($file_ext)){
 		case 'csv':
@@ -1816,7 +2002,21 @@ function duckdbSetDBName(){
 			return ':memory:';
 		break;
 	}
-	return $DATABASE[$db]['dbname'];
+	return $dbname;
+}
+//---------- begin function duckdbIsFolderMode ----------
+/**
+* @describe checks if current database is a folder
+* @return boolean
+* @usage if(duckdbIsFolderMode()){...}
+*/
+function duckdbIsFolderMode(){
+	global $DATABASE;
+	global $CONFIG;
+	if(!isset($CONFIG['db'])){return false;}
+	$db=$CONFIG['db'];
+	if(!isset($DATABASE[$db]['dbname'])){return false;}
+	return is_dir($DATABASE[$db]['dbname']);
 }
 //---------- begin function duckdbIsFileMode ----------
 /**
@@ -1830,6 +2030,8 @@ function duckdbIsFileMode(){
 	if(!isset($CONFIG['db'])){return false;}
 	$db=$CONFIG['db'];
 	if(!isset($DATABASE[$db]['dbname'])){return false;}
+	// Check if it's a folder - folder mode is a type of file mode
+	if(is_dir($DATABASE[$db]['dbname'])){return true;}
 	$file_ext=getFileExtension($DATABASE[$db]['dbname']);
 	return in_array(strtolower($file_ext), array('csv','json','parquet','xlsx','xls'));
 }
@@ -1845,14 +2047,21 @@ function duckdbIsCSVMode(){
 //---------- begin function duckdbGetDataFilePath ----------
 /**
 * @describe returns the data file path if in file mode
+* @param $table string - optional table name (required for folder mode)
 * @return string - data file path or empty string
 * @usage $filepath=duckdbGetDataFilePath();
+* @usage $filepath=duckdbGetDataFilePath('customers.csv'); // for folder mode
 */
-function duckdbGetDataFilePath(){
+function duckdbGetDataFilePath($table=''){
 	global $DATABASE;
 	global $CONFIG;
 	if(!duckdbIsFileMode()){return '';}
 	$db=$CONFIG['db'];
+	// If folder mode and table specified, return full path to file
+	if(duckdbIsFolderMode() && strlen($table)){
+		$folder=$DATABASE[$db]['dbname'];
+		return rtrim($folder,'/').'/'.$table;
+	}
 	return $DATABASE[$db]['dbname'];
 }
 //---------- begin function duckdbGetCSVFilePath ----------
@@ -1864,25 +2073,166 @@ function duckdbGetDataFilePath(){
 function duckdbGetCSVFilePath(){
 	return duckdbGetDataFilePath();
 }
+//---------- begin function duckdbCheckAndRemoveBOM ----------
+/**
+* @describe checks if a file has a BOM (Byte Order Mark) and returns a path to a BOM-free version
+* @param $filepath string - path to check
+* @return array - ['path'=>path to use, 'had_bom'=>boolean, 'temp'=>boolean if temp file created]
+* @usage $result=duckdbCheckAndRemoveBOM('/path/to/file.csv');
+*/
+function duckdbCheckAndRemoveBOM($filepath){
+	$result=array('path'=>$filepath,'had_bom'=>false,'temp'=>false);
+	if(!file_exists($filepath)){
+		return $result;
+	}
+	// Read first 4 bytes to check for BOM
+	$fh=fopen($filepath,'rb');
+	if(!$fh){
+		return $result;
+	}
+	$bytes=fread($fh,4);
+	fclose($fh);
+
+	$bom_found=false;
+	$bom_length=0;
+
+	// Check for common BOMs
+	if(substr($bytes,0,3)==="\xEF\xBB\xBF"){
+		// UTF-8 BOM
+		$bom_found=true;
+		$bom_length=3;
+	}
+	elseif(substr($bytes,0,2)==="\xFE\xFF"){
+		// UTF-16 BE BOM
+		$bom_found=true;
+		$bom_length=2;
+	}
+	elseif(substr($bytes,0,2)==="\xFF\xFE"){
+		// UTF-16 LE BOM
+		$bom_found=true;
+		$bom_length=2;
+	}
+
+	if($bom_found){
+		// Create temp file without BOM
+		$result['had_bom']=true;
+		$result['temp']=true;
+		$tpath=sys_get_temp_dir();
+		$temp_file=$tpath.'/duckdb_nobom_'.sha1($filepath).'.'.getFileExtension($filepath);
+
+		// Read entire file and skip BOM
+		$content=file_get_contents($filepath);
+		$content=substr($content,$bom_length);
+		file_put_contents($temp_file,$content);
+
+		$result['path']=$temp_file;
+	}
+
+	return $result;
+}
 //---------- begin function duckdbGetReadFunction ----------
 /**
 * @describe returns the appropriate DuckDB read function based on file extension
 * @param $filepath string - path to the data file
-* @return string - DuckDB read function name (read_csv, read_json, etc.)
+* @param $options array - optional parameters for the read function
+* @return string - DuckDB read function call with parameters
 * @usage $func=duckdbGetReadFunction('/path/to/file.csv');
+* @usage $func=duckdbGetReadFunction('/path/to/file.csv', array('delim'=>',','header'=>true));
 */
-function duckdbGetReadFunction($filepath){
+function duckdbGetReadFunction($filepath, $options=array()){
 	$file_ext=strtolower(getFileExtension($filepath));
+	$func='';
 	switch($file_ext){
-		case 'csv': return 'read_csv';
-		case 'json': return 'read_json';
-		case 'parquet': return 'read_parquet';
-		case 'xlsx': return 'read_xlsx';
+		case 'csv':
+			$func='read_csv';
+		break;
+		case 'json':
+			$func='read_json';
+		break;
+		case 'parquet':
+			$func='read_parquet';
+		break;
+		case 'xlsx':
+			$func='read_xlsx';
+		break;
 		case 'xls':
 			// XLS not directly supported, suggest conversion
-			return 'read_xlsx'; // User would need to convert XLS to XLSX first
-		default: return 'read_csv';
+			$func='read_xlsx'; // User would need to convert XLS to XLSX first
+		break;
+		default:
+			$func='read_csv';
+		break;
 	}
+
+	// If options provided and this is CSV, add parameters
+	if($func=='read_csv' && count($options)){
+		$params=array();
+		foreach($options as $k=>$v){
+			if(is_bool($v)){
+				$params[]="{$k}=".($v?'true':'false');
+			}
+			elseif(is_string($v)){
+				$params[]="{$k}='{$v}'";
+			}
+			else{
+				$params[]="{$k}={$v}";
+			}
+		}
+		return $func.'('.implode(', ',$params).')';
+	}
+
+	return $func;
+}
+//---------- begin function duckdbBuildReadQuery ----------
+/**
+* @describe builds a read query with automatic retry logic for CSV files
+* @param $filepath string - path to the data file
+* @param $query_template string - query template with {READ_FUNC} placeholder
+* @return string - complete query
+* @usage $query=duckdbBuildReadQuery('/path/to/file.csv', 'SELECT * FROM {READ_FUNC}');
+*/
+function duckdbBuildReadQuery($filepath, $query_template=''){
+	$escaped_path=str_replace("'","''",$filepath);
+	$file_ext=strtolower(getFileExtension($filepath));
+
+	// For CSV files, try auto-detection first
+	if($file_ext=='csv'){
+		$readfunc="read_csv('{$escaped_path}')";
+		if(strlen($query_template)){
+			return str_replace('{READ_FUNC}',$readfunc,$query_template);
+		}
+		return $readfunc;
+	}
+
+	// For other file types, use standard function
+	$readfunc=duckdbGetReadFunction($filepath);
+	$readfunc_call="{$readfunc}('{$escaped_path}')";
+	if(strlen($query_template)){
+		return str_replace('{READ_FUNC}',$readfunc_call,$query_template);
+	}
+	return $readfunc_call;
+}
+//---------- begin function duckdbGetFiles ----------
+/**
+* @describe returns list of files in a directory
+* @param $dir string - directory path
+* @return array - array of filenames (not full paths)
+* @usage $files=duckdbGetFiles('/path/to/folder');
+*/
+function duckdbGetFiles($dir){
+	$files=array();
+	if(!is_dir($dir)){return $files;}
+	$handle=opendir($dir);
+	if(!$handle){return $files;}
+	while(false !== ($entry = readdir($handle))){
+		if($entry == '.' || $entry == '..'){continue;}
+		$fullpath=rtrim($dir,'/').'/'.$entry;
+		if(is_file($fullpath)){
+			$files[]=$entry;
+		}
+	}
+	closedir($handle);
+	return $files;
 }
 //---------- begin function duckdbGetDBRecord ----------
 /**
@@ -1934,7 +2284,8 @@ function duckdbGetDBRecords($params){
 		}
 		// If in file mode, convert table reference to appropriate read function
 		if(duckdbIsFileMode()){
-			$filepath=duckdbGetDataFilePath();
+			// Get file path - if folder mode, pass table name
+			$filepath=duckdbGetDataFilePath($params['-table']);
 			$readfunc=duckdbGetReadFunction($filepath);
 			// Escape single quotes in path
 			$escaped_path=str_replace("'","''",$filepath);
