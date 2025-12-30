@@ -1376,11 +1376,17 @@ ENDOFQUERY;
 * @usage $tables=duckdbGetDBTables();
 */
 function duckdbGetDBTables($params=array()){
+	// If in file mode, return the data filename as the table name
+	if(duckdbIsFileMode()){
+		$filepath=duckdbGetDataFilePath();
+		$filename=getFileName($filepath);
+		return array($filename);
+	}
 	$tables=array();
 	$query=<<<ENDOFQUERY
-	SELECT table_name AS name 
-	FROM information_schema.tables 
-	WHERE 
+	SELECT table_name AS name
+	FROM information_schema.tables
+	WHERE
 		table_schema = 'main'
 	ORDER BY table_name
 ENDOFQUERY;
@@ -1418,10 +1424,39 @@ function duckdbGetDBFieldInfo($tablename,$params=array()){
 	//check cache
 	if(isset($duckdbGetDBFieldInfoCache[$key])){return $duckdbGetDBFieldInfoCache[$key];}
 	//echo "duckdbGetDBFieldInfo:{$key}({$tablename})".printValue($params).PHP_EOL;
+	// If in file mode, use DESCRIBE to get column info from the data file
+	if(duckdbIsFileMode()){
+		$filepath=duckdbGetDataFilePath();
+		$readfunc=duckdbGetReadFunction($filepath);
+		// Escape single quotes in path
+		$escaped_path=str_replace("'","''",$filepath);
+		$query="DESCRIBE SELECT * FROM {$readfunc}('{$escaped_path}')";
+		$xrecs=duckdbQueryResults($query);
+		$recs=array();
+		$i=0;
+		foreach($xrecs as $rec){
+			$name=strtolower($rec['column_name']);
+			$recs[$name]=array(
+				'table'=>$tablename,
+				'_dbtable'=>$tablename,
+				'name'=>$rec['column_name'],
+				'_dbfield'=>strtolower($rec['column_name']),
+				'_dbtype'=>$rec['column_type'],
+				'_dbdefault'=>'',
+				'_dbnull'=>'YES',
+				'_dbprimarykey'=>'NO',
+				'type'=>$rec['column_type'],
+				'_dbtype_ex'=>strtolower($rec['column_type'])
+			);
+			$i++;
+		}
+		$duckdbGetDBFieldInfoCache[$key]=$recs;
+		return $recs;
+	}
 	//check for dbname.tablename
 	$parts=preg_split('/\./',$tablename,2);
 	if(count($parts)==2){
-		$query="PRAGMA {$parts[0]}.table_info({$parts[1]})";	
+		$query="PRAGMA {$parts[0]}.table_info({$parts[1]})";
 	}
 	else{
 		$query="PRAGMA table_info({$tablename})";
@@ -1633,12 +1668,7 @@ function duckdbQueryResults($query,$params=array()){
 		'params'=>$params
 	);
 	$db=$CONFIG['db'];
-	if(isset($DATABASE[$db]['dbtype']) && $DATABASE[$db]['dbtype']=='duckdb'){
-		$DATABASE['_lastquery']['dbname']=$DATABASE[$db]['dbname'];
-	}
-	else{
-		$DATABASE['_lastquery']['dbname']='';
-	}
+	$DATABASE['_lastquery']['dbname']=duckdbSetDBName();
 	//return printValue($DATABASE);
 
 	$tpath=getWasqlTempPath();
@@ -1770,6 +1800,90 @@ function duckdbQueryResults($query,$params=array()){
 		return $recs;
 	}
 }
+function duckdbSetDBName(){
+	global $DATABASE;
+	global $CONFIG;
+	$db=$CONFIG['db'];
+	$file_ext=getFileExtension($DATABASE[$db]['dbname']);
+	//set
+	switch(strtolower($file_ext)){
+		case 'csv':
+		case 'json':
+		case 'parquet':
+		case 'xlsx':
+		case 'xls':
+			//If dbname is a data file, use in-memory database instead
+			return ':memory:';
+		break;
+	}
+	return $DATABASE[$db]['dbname'];
+}
+//---------- begin function duckdbIsFileMode ----------
+/**
+* @describe checks if current database is a data file (CSV, JSON, Parquet, XLSX, XLS)
+* @return boolean
+* @usage if(duckdbIsFileMode()){...}
+*/
+function duckdbIsFileMode(){
+	global $DATABASE;
+	global $CONFIG;
+	if(!isset($CONFIG['db'])){return false;}
+	$db=$CONFIG['db'];
+	if(!isset($DATABASE[$db]['dbname'])){return false;}
+	$file_ext=getFileExtension($DATABASE[$db]['dbname']);
+	return in_array(strtolower($file_ext), array('csv','json','parquet','xlsx','xls'));
+}
+//---------- begin function duckdbIsCSVMode ----------
+/**
+* @describe checks if current database is a CSV file (alias for duckdbIsFileMode for backward compatibility)
+* @return boolean
+* @usage if(duckdbIsCSVMode()){...}
+*/
+function duckdbIsCSVMode(){
+	return duckdbIsFileMode();
+}
+//---------- begin function duckdbGetDataFilePath ----------
+/**
+* @describe returns the data file path if in file mode
+* @return string - data file path or empty string
+* @usage $filepath=duckdbGetDataFilePath();
+*/
+function duckdbGetDataFilePath(){
+	global $DATABASE;
+	global $CONFIG;
+	if(!duckdbIsFileMode()){return '';}
+	$db=$CONFIG['db'];
+	return $DATABASE[$db]['dbname'];
+}
+//---------- begin function duckdbGetCSVFilePath ----------
+/**
+* @describe returns the CSV file path if in CSV mode (alias for duckdbGetDataFilePath for backward compatibility)
+* @return string - CSV file path or empty string
+* @usage $csvpath=duckdbGetCSVFilePath();
+*/
+function duckdbGetCSVFilePath(){
+	return duckdbGetDataFilePath();
+}
+//---------- begin function duckdbGetReadFunction ----------
+/**
+* @describe returns the appropriate DuckDB read function based on file extension
+* @param $filepath string - path to the data file
+* @return string - DuckDB read function name (read_csv, read_json, etc.)
+* @usage $func=duckdbGetReadFunction('/path/to/file.csv');
+*/
+function duckdbGetReadFunction($filepath){
+	$file_ext=strtolower(getFileExtension($filepath));
+	switch($file_ext){
+		case 'csv': return 'read_csv';
+		case 'json': return 'read_json';
+		case 'parquet': return 'read_parquet';
+		case 'xlsx': return 'read_xlsx';
+		case 'xls':
+			// XLS not directly supported, suggest conversion
+			return 'read_xlsx'; // User would need to convert XLS to XLSX first
+		default: return 'read_csv';
+	}
+}
 //---------- begin function duckdbGetDBRecord ----------
 /**
 * @describe retrieves a single record from DB based on params
@@ -1817,6 +1931,14 @@ function duckdbGetDBRecords($params){
 		if($safe_table === false){
 			debugValue("duckdbGetDBRecords Error: Invalid table name");
 			return array();
+		}
+		// If in file mode, convert table reference to appropriate read function
+		if(duckdbIsFileMode()){
+			$filepath=duckdbGetDataFilePath();
+			$readfunc=duckdbGetReadFunction($filepath);
+			// Escape single quotes in path
+			$escaped_path=str_replace("'","''",$filepath);
+			$safe_table="{$readfunc}('{$escaped_path}')";
 		}
 		//determine fields to return
 		if(!empty($params['-fields'])){
