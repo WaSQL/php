@@ -569,4 +569,24 @@ function sqlpromptBuildTop5Ctree($db,$table){
 	$sql.="FROM admin.{$table}";
 	return $sql;
 }
+//---------- begin function sqlpromptNormalizeColumnName ----------
+/**
+* @describe normalizes column names to lowercase with underscores
+* @param $name string - column name
+* @return string - normalized column name
+* @usage $normalized=sqlpromptNormalizeColumnName('First Name');
+*/
+function sqlpromptNormalizeColumnName($name){
+	// Convert to lowercase
+	$name=strtolower($name);
+	// Replace spaces with underscores
+	$name=str_replace(' ','_',$name);
+	// Replace other special characters with underscores
+	$name=preg_replace('/[^a-z0-9_]/','_',$name);
+	// Remove consecutive underscores
+	$name=preg_replace('/_+/','_',$name);
+	// Remove leading/trailing underscores
+	$name=trim($name,'_');
+	return $name;
+}
 ?>
