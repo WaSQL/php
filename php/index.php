@@ -24,9 +24,12 @@ ini_set('POST_MAX_SIZE', '128M');
 ini_set('UPLOAD_MAX_FILESIZE', '120M');
 ini_set('max_execution_time', 86400);
 set_time_limit(86400);
-error_reporting(E_ALL & ~E_NOTICE);
 $_SERVER['TIME_START']=microtime(true);
 $progpath=dirname(__FILE__);
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', dirname($progpath) . '/logs/wasql_errors.log');
 //set the default time zone
 date_default_timezone_set('America/Denver');
 //includes
