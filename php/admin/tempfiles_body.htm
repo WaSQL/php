@@ -17,6 +17,14 @@
 		window.location='/php/admin.php?_menu=tempfiles&func=clear_tab&ext='+ext;
 		return false;
 	}
+	function tempfilesClearOlderThan(){
+		let xdays=prompt('Clear older than how many days?');
+		xdays=parseInt(xdays);
+		if(xdays < 1){return false;}
+		if(!confirm('Clear all temp files older than \''+xdays+'\' days?')){return false;}
+		window.location='/php/admin.php?_menu=tempfiles&func=clear_older&xdays='+xdays;
+		return false;
+	}
 	function tempfilesClearChecked(){
 		if(document.tempfiles_form.ext.value.length==0){return false;}
 		let ext=document.tempfiles_form.ext.value;
@@ -53,6 +61,7 @@
 	</ul>
 	<div style="display:flex;flex-wrap: wrap;gap:5px;">
 		<a href="#clear_tab" onclick="return tempfilesClearTab();" class="wacss_button is-mobile-responsive is-light"><span class="icon-tab wacss_right5"></span> Clear Current Tab</a>
+		<a href="#clear_tab" title="clear older than X days (will prompt you for the days)" onclick="return tempfilesClearOlderThan();" class="wacss_button is-mobile-responsive is-light"><span class="icon-history wacss_right5"></span> Clear Older Than</a>
 		<a href="#clear_checked" onclick="return tempfilesClearChecked();" class="wacss_button is-mobile-responsive is-warning"><span class="icon-checkbox wacss_right5"></span> Clear Checked</a>
 		<a href="#refresh" onclick="return tempfilesRefresh();" class="wacss_button is-mobile-responsive is-link"><span class="icon-refresh"></span></a>
 		<a href="/php/admin.php?_menu=tempfiles&func=clear_all" onclick="if(!confirm('Are you sure?')){return false;}" class="wacss_button is-mobile-responsive is-danger"><span class="icon-erase wacss_right5"></span> Clear All</a>

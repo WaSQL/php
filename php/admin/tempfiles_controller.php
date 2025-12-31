@@ -22,6 +22,15 @@ switch(strtolower($_REQUEST['func'])){
 		setView('default');
 		return;
 	break;
+	case 'clear_older':
+		$xdays=$_REQUEST['xdays'];
+		if($xdays > 0){
+			cleanupDirectory($path,$xdays,'day');
+		}
+		$tabs=tempfilesGetTabs();
+		setView('default');
+		return;
+	break;
 	case 'clear_checked':
 		$ext=$_REQUEST['ext'];
 		if(!tempfilesValidateExtension($ext)){
