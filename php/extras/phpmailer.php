@@ -337,7 +337,7 @@ function phpmailerSendMail($params=array()){
 			}
 			else{
             	$cid=encodeCRC($inline);
-				$filename=getFileName($afile);
+				$filename=getFileName($inline);
 				//$path,$cid,$name
 				$mail->AddEmbeddedImage($inline,$cid,$filename);
 			}
