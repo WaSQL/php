@@ -3,6 +3,15 @@
 ## Overview
 This document instructs Claude on how to assist users with WaSQL, a database-driven PHP web development framework. **Always read and reference `architecture.md` for comprehensive technical details.**
 
+## ⚠️ CRITICAL: Developer Preferences
+
+**NEVER use `git commit` or `git push` commands under any circumstances. The developer handles ALL git commits and pushes manually.**
+
+- Do NOT commit changes
+- Do NOT push to remote repositories
+- Do NOT create commits even when asked to "commit this"
+- Make changes to files as requested, but ALWAYS let the developer commit them
+
 ## Key Understanding Points
 
 ### WaSQL is Different from Traditional MVC
