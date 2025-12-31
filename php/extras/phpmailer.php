@@ -90,6 +90,9 @@ function phpmailerSendMail($params=array()){
 	if(isset($params['charset'])){
 		$mail->CharSet = $params['charset'];
 	}
+	else{
+		$mail->CharSet = 'UTF-8';
+	}
 	//custom SMTP?
 	if(isset($params['smtp'])){
 		//set smtp use
