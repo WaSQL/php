@@ -133,6 +133,7 @@ function tempfilesShowList($ext,$sort){
 		}
 	}
 	$fields[]='_cdate_age_verbose';
+	$fields[]='_edate_age_verbose';
 	$fields[]='_adate_age_verbose';
 	$fields[]='size';
 	if(preg_match('/^(.+?)\ desc$/i',$sort,$m)){
@@ -150,17 +151,20 @@ function tempfilesShowList($ext,$sort){
 		'-tableclass'=>'wacss_table striped bordered condensed',
 		'-listfields'=>implode(',',$fields),
 		'_cdate_age_verbose_displayname'=>'Created',
+		'_edate_age_verbose_displayname'=>'Modified',
 		'_adate_age_verbose_displayname'=>'Accessed',
 		'-th_name_onclick'=>"return tempfilesSortBy('%field% desc');",
 		'-th_username_onclick'=>"return tempfilesSortBy('%field% desc');",
 		'-th_db_onclick'=>"return tempfilesSortBy('%field% desc');",
 		'-th__cdate_age_verbose_onclick'=>"return tempfilesSortBy('%field% desc');",
+		'-th__edate_age_verbose_onclick'=>"return tempfilesSortBy('%field% desc');",
 		'-th__adate_age_verbose_onclick'=>"return tempfilesSortBy('%field% desc');",
 		'-th_size_onclick'=>"return tempfilesSortBy('%field% desc');",
 		'-th_name_class'=>'w_pointer',
 		'-th_username_class'=>'w_pointer',
 		'-th_db_class'=>'w_pointer',
 		'-th__cdate_age_verbose_class'=>'w_pointer',
+		'-th__edate_age_verbose_class'=>'w_pointer',
 		'-th__adate_age_verbose_class'=>'w_pointer',
 		'-th_size_class'=>'w_pointer',
 		'-results_eval'=>'tempfilesShowListExtra',
