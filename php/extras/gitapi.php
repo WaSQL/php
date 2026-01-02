@@ -23,6 +23,86 @@
 // ========================================
 
 /**
+ * Execute a git command with automatic handling of dubious ownership errors
+ *
+ * This is a wrapper function that executes any git command and automatically
+ * resolves "dubious ownership" errors by adding the repository to safe.directory.
+ * This is particularly important when the web server runs as a different user
+ * (e.g., NT AUTHORITY/SYSTEM on Windows IIS) than the repository owner.
+ *
+ * @param string $command The git command to execute (without 'git' prefix)
+ * @param string $repo_path The repository path (optional, uses $CONFIG['gitapi_path'] if not provided)
+ *
+ * @return array Result with 'success', 'output', 'error', 'exit_code' keys
+ *
+ * @since 3.0
+ */
+function gitExecCommand($command, $repo_path = null){
+	global $CONFIG;
+
+	// Use provided path or default to config path
+	if($repo_path === null){
+		$repo_path = isset($CONFIG['gitapi_path']) ? $CONFIG['gitapi_path'] : null;
+	}
+
+	if($repo_path === null || !is_dir($repo_path)){
+		return array(
+			'success' => false,
+			'output' => '',
+			'error' => 'Invalid git path',
+			'exit_code' => 1
+		);
+	}
+
+	$original_dir = getcwd();
+	if(!chdir($repo_path)){
+		return array(
+			'success' => false,
+			'output' => '',
+			'error' => 'Cannot change to git directory',
+			'exit_code' => 1
+		);
+	}
+
+	$output = array();
+	$exit_code = 0;
+	$git_command = "git {$command} 2>&1";
+	exec($git_command, $output, $exit_code);
+
+	// Check for dubious ownership error and auto-fix it
+	if($exit_code !== 0){
+		$error_output = implode("\n", $output);
+		if(strpos($error_output, 'dubious ownership') !== false || strpos($error_output, 'detected dubious ownership') !== false){
+			// Add safe.directory exception
+			$safe_output = array();
+			$safe_exit_code = 0;
+			$escaped_path = escapeshellarg($repo_path);
+			exec("git config --global --add safe.directory {$escaped_path} 2>&1", $safe_output, $safe_exit_code);
+
+			if($safe_exit_code === 0){
+				// Retry the command after adding exception
+				$output = array();
+				$exit_code = 0;
+				exec($git_command, $output, $exit_code);
+
+				if($exit_code === 0 && function_exists('gitLog')){
+					gitLog("Auto-resolved dubious ownership for: {$repo_path}", 'info');
+				}
+			}
+		}
+	}
+
+	chdir($original_dir);
+
+	return array(
+		'success' => $exit_code === 0,
+		'output' => implode("\n", $output),
+		'error' => $exit_code !== 0 ? implode("\n", $output) : '',
+		'exit_code' => $exit_code
+	);
+}
+
+/**
  * Execute a Git API request using CURL
  *
  * @param string $endpoint API endpoint path
@@ -1099,39 +1179,15 @@ function gitapiPush($params = array()) {
  * @return array Result with 'success', 'is_clean', 'output' keys
  */
 function gitapiIsClean() {
-    global $CONFIG;
+    $result = gitExecCommand('status --porcelain');
 
-    $path = isset($CONFIG['gitapi_path']) ? $CONFIG['gitapi_path'] : '';
-    if (!strlen($path) || !is_dir($path)) {
-        return array(
-            'success' => false,
-            'is_clean' => false,
-            'error' => 'Invalid git path'
-        );
-    }
-
-    $original_dir = getcwd();
-    if (!chdir($path)) {
-        return array(
-            'success' => false,
-            'is_clean' => false,
-            'error' => 'Could not change to git directory'
-        );
-    }
-
-    $output = array();
-    $exit_code = 0;
-    exec('git status --porcelain 2>&1', $output, $exit_code);
-
-    chdir($original_dir);
-
-    $is_clean = ($exit_code === 0 && empty($output));
+    $is_clean = ($result['success'] && empty($result['output']));
 
     return array(
-        'success' => $exit_code === 0,
+        'success' => $result['success'],
         'is_clean' => $is_clean,
-        'output' => implode("\n", $output),
-        'error' => $exit_code !== 0 ? implode("\n", $output) : ''
+        'output' => $result['output'],
+        'error' => $result['error']
     );
 }
 
@@ -1153,28 +1209,6 @@ function gitapiIsClean() {
 function gitapiPull($params = array()) {
     global $CONFIG;
 
-    // Get the local path
-    $path = isset($CONFIG['gitapi_path']) ? $CONFIG['gitapi_path'] : '';
-    if (!strlen($path) || !is_dir($path)) {
-        return array(
-            'success' => false,
-            'error' => 'Invalid git path for pull operation',
-            'output' => ''
-        );
-    }
-
-    // Save current directory
-    $original_dir = getcwd();
-
-    // Change to git directory
-    if (!chdir($path)) {
-        return array(
-            'success' => false,
-            'error' => 'Could not change to git directory',
-            'output' => ''
-        );
-    }
-
     // Get branch name
     $branch = isset($params['branch']) ? $params['branch'] :
               (isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master');
@@ -1187,14 +1221,12 @@ function gitapiPull($params = array()) {
 
     // Check if there are uncommitted changes
     if ($auto_stash) {
-        $status_output = array();
-        exec('git status --porcelain 2>&1', $status_output, $status_code);
+        $status_result = gitExecCommand('status --porcelain');
 
-        if ($status_code === 0 && !empty($status_output)) {
+        if ($status_result['success'] && !empty($status_result['output'])) {
             // There are uncommitted changes - stash them
-            $stash_output = array();
-            exec('git stash save "Auto-stash before Browser UI pull" 2>&1', $stash_output, $stash_code);
-            if ($stash_code === 0) {
+            $stash_result = gitExecCommand('stash save "Auto-stash before Browser UI pull"');
+            if ($stash_result['success']) {
                 $output[] = "Auto-stashed local changes before pull";
                 $stashed = true;
             }
@@ -1202,22 +1234,22 @@ function gitapiPull($params = array()) {
     }
 
     // Execute git pull
-    $pull_output = array();
-    $exit_code = 0;
-    exec("git pull origin {$branch} 2>&1", $pull_output, $exit_code);
+    $pull_result = gitExecCommand("pull origin {$branch}");
 
-    $output = array_merge($output, $pull_output);
+    if (!empty($pull_result['output'])) {
+        $pull_lines = explode("\n", $pull_result['output']);
+        $output = array_merge($output, $pull_lines);
+    }
 
     // If we stashed changes and pull succeeded, try to pop the stash
-    if ($stashed && $exit_code === 0) {
-        $pop_output = array();
-        exec('git stash pop 2>&1', $pop_output, $pop_code);
+    if ($stashed && $pull_result['success']) {
+        $pop_result = gitExecCommand('stash pop');
 
-        if ($pop_code === 0) {
+        if ($pop_result['success']) {
             $output[] = "Successfully restored your local changes";
         } else {
             // Stash pop failed (probably conflicts) - abort the pop to avoid conflict markers
-            exec('git reset --merge 2>&1');  // Reset to clean state
+            gitExecCommand('reset --merge');  // Reset to clean state
             $output[] = "Warning: Could not auto-restore stashed changes (conflicts detected)";
             $output[] = "Your changes are safely stashed. Run 'git stash list' to see them";
             $output[] = "";
@@ -1229,15 +1261,12 @@ function gitapiPull($params = array()) {
         }
     }
 
-    // Restore original directory
-    chdir($original_dir);
-
     $output_str = implode("\n", $output);
 
     return array(
-        'success' => $exit_code === 0,
+        'success' => $pull_result['success'],
         'output' => $output_str,
-        'error' => $exit_code !== 0 ? $output_str : '',
+        'error' => !$pull_result['success'] ? $pull_result['error'] : '',
         'data' => $output,
         'stashed' => $stashed
     );
