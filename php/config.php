@@ -33,6 +33,10 @@ if(isset($xml['host']['@attributes'])){
 if(isset($xml['database']['@attributes'])){
 	$xml['database']=array($xml['database']);
 }
+//check for single gitrepo
+if(isset($xml['gitrepo']['@attributes'])){
+	$xml['gitrepo']=array($xml['gitrepo']);
+}
 //remove comments
 if(isset($xml['comment'])){
 	unset($xml['comment']);
@@ -56,7 +60,7 @@ if(isset($xml['database'][0])){
 		}
 	}
 }
-/* Load database tags */
+/* Load gitrepo tags */
 $GITREPO=array();
 if(isset($xml['gitrepo'][0])){
 	foreach($xml['gitrepo'] as $gitrepo){
