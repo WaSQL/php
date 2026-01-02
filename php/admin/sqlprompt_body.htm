@@ -24,6 +24,13 @@
 		max-width:80vw;
 		overflow: auto;
 	}
+	.truncateTable {
+	    max-width: 200px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: inline-block; /* or block */
+	}
 </style>
 <div style="display:flex;justify-content: space-between;margin-top:10px;">
 	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>">
@@ -85,7 +92,7 @@
 		<div id="sqlprompt_results" style="display:grid;">
 			<div id="setprocessing"></div>
 		</div>
-		<div style="display:none"><div data-db="<?=configValue('database');?>" id="nulldiv"><?=buildOnLoad("wacss.loadScript('/php/admin/sqlprompt_js.js');wacss.init();document.sqlprompt.db.value='".configValue('database')."';");?></div></div>
+		<div style="display:none"><div data-onload="wacss.loadScript('/php/admin/sqlprompt_js.js');wacss.init();document.sqlprompt.db.value=this.dataset.db;console.log('sqlprompt ready');" data-db="<?=configValue('database');?>" id="nulldiv"></div></div>
 	</div>
 </div>
 </view:default>
@@ -100,7 +107,11 @@
 <div style="max-height:40vh;overflow:auto;padding-right:5px">
 	<ul style="margin-top:0px;" class="nav-list <?=configValue('admin_color');?>"  >
 		<view:table>
-			<li><a style="display:flex;" href="#" onclick="sqlpromptFields('<?=$table;?>');"><span class="icon-square-plus" id="<?=$table;?>_icon" style="margin-right:5px;"></span> <?=$table;?></a>
+			<li>
+				<a style="display:flex;" href="#" onclick="sqlpromptFields('<?=$table;?>');">
+					<span class="icon-square-plus" id="<?=$table;?>_icon" style="margin-right:5px;"></span> 
+					<span title="<?=$table;?>" class="truncateTable"><?=$table;?></span>
+				</a>
 				<div id="<?=preg_replace('/[^a-z0-9\_]+/is','',$table);?>_fields" style="margin-left:15px;padding-left:0px;border-left:1px solid #CCC;"></div>
 			</li>
 		</view:table>
@@ -117,13 +128,14 @@
 </view:tables_fields>
 
 <view:toast_query>
-	<div id="toast_query"><div><?=$_REQUEST['query'];?></div><div><?=encodeJSON($recs);?></div></div>
-	<?=buildOnLoad("wacss.toast(document.getElementById('toast_query').innerHTML);");?>
+	<div id="toast_query" data-onload="wacss.toast(document.getElementById('toast_query').innerHTML);">
+		<div><?=$_REQUEST['query'];?></div>
+		<div><?=encodeJSON($recs);?></div>
+	</div>
 </view:toast_query>
 
 <view:load_prompt>
-	<div id="load_prompt"><?=$load_prompt;?></div>
-	<?=buildOnLoad("sqlpromptSetValue(getText('load_prompt'));");?>
+	<div id="load_prompt" data-onload="sqlpromptSetValue(getText('load_prompt'));"><?=$load_prompt;?></div>
 </view:load_prompt>
 
 <view:sqlprompt_named_query>
@@ -131,13 +143,11 @@
 </view:sqlprompt_named_query>
 
 <view:monitor_sql>
-	<div id="monitor_sql_query"><?=commonTrim($sql);?></div>
-	<?=buildOnLoad("sqlpromptMonitorSQL();");?>
+	<div id="monitor_sql_query" data-onload="sqlpromptMonitorSQL();"><?=commonTrim($sql);?></div>
 </view:monitor_sql>
 
 <view:monitor_sql_norun>
-	<div id="monitor_sql_query"><?=commonTrim($sql);?></div>
-	<?=buildOnLoad("sqlpromptMonitorSQL(1);");?>
+	<div id="monitor_sql_query" data-onload="sqlpromptMonitorSQL(1);"><?=commonTrim($sql);?></div>
 </view:monitor_sql_norun>
 
 <view:tabs>
