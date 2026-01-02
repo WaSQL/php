@@ -24,9 +24,21 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'clear_older':
 		$xdays=$_REQUEST['xdays'];
-		if($xdays > 0){
-			cleanupDirectory($path,$xdays,'day');
+		//Validate input
+		if(!is_numeric($xdays) || $xdays <= 0){
+			echo '<div class="w_bold w_danger">Error: Days must be a positive number</div>';
+			exit;
 		}
+		//Convert to integer for safety
+		$xdays=(integer)$xdays;
+		//Call cleanup and check result
+		$result=cleanupDirectory($path,$xdays,'days');
+		if($result === false){
+			echo '<div class="w_bold w_danger">Error: Failed to cleanup directory. Check that the temp directory exists and is writable.</div>';
+			exit;
+		}
+		//Show success message with count
+		$_SESSION['tempfiles_message']="<div class='w_bold w_success'><span class='icon-success'></span> Successfully deleted {$result} file(s) older than {$xdays} day(s)</div>";
 		$tabs=tempfilesGetTabs();
 		setView('default');
 		return;
