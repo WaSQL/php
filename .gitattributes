@@ -1,0 +1,2 @@
+# Force minified JS files to use LF line endings
+*.min.js text eol=lf
