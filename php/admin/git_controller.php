@@ -250,15 +250,14 @@ switch($func){
 		// Note: We skip pulling since we have local changes we're about to push
 		$recs[] = "--- Checking remote repository status ---";
 
-		$original_dir = getcwd();
-		if(chdir($CONFIG['gitapi_path'])){
-			exec('git fetch origin 2>&1', $fetch_output, $fetch_code);
+		$fetch_result = gitExecCommand('fetch origin');
+		if($fetch_result['success']){
+			$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
+			$behind_result = gitExecCommand("rev-list HEAD..origin/{$branch} --count");
 
-			if($fetch_code === 0){
-				$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
-				exec("git rev-list HEAD..origin/{$branch} --count 2>&1", $behind_output, $behind_code);
-
-				if($behind_code === 0 && isset($behind_output[0])){
+			if($behind_result['success']){
+				$behind_output = explode("\n", $behind_result['output']);
+				if(isset($behind_output[0])){
 					$commits_behind = intval(trim($behind_output[0]));
 					if($commits_behind > 0){
 						$recs[] = "Warning: Remote is {$commits_behind} commit(s) ahead";
@@ -267,11 +266,9 @@ switch($func){
 						$recs[] = "Local and remote are in sync";
 					}
 				}
-			} else {
-				$recs[] = "Note: Could not check remote status (push will still work)";
 			}
-
-			chdir($original_dir);
+		} else {
+			$recs[] = "Note: Could not check remote status (push will still work)";
 		}
 		$recs[] = "";
 
@@ -437,45 +434,36 @@ switch($func){
 			// Sync only the pushed files locally (leave unchecked files untouched)
 			$recs[] = "--- Syncing pushed files with remote ---";
 
-			$original_dir = getcwd();
-			if(chdir($CONFIG['gitapi_path'])){
-				// Fetch latest from remote
-				exec('git fetch origin 2>&1', $fetch_output, $fetch_code);
+			// Fetch latest from remote
+			$fetch_result = gitExecCommand('fetch origin');
+			if($fetch_result['success']){
+				$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
+				$sync_errors = 0;
 
-				if($fetch_code === 0){
-					$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
-					$sync_errors = 0;
+				// Sync each successfully pushed file
+				foreach($pushed_files as $file){
+					$safe_file = escapeshellarg($file);
+					$checkout_result = gitExecCommand("checkout origin/{$branch} -- {$safe_file}");
 
-					// Sync each successfully pushed file
-					foreach($pushed_files as $file){
-						$safe_file = escapeshellarg($file);
-						exec("git checkout origin/{$branch} -- {$safe_file} 2>&1", $checkout_output, $checkout_code);
-
-						if($checkout_code === 0){
-							$recs[] = "Synced locally: {$file}";
-						} else {
-							$recs[] = "Warning: Could not sync {$file} locally";
-							$sync_errors++;
-						}
-					}
-
-					if($sync_errors === 0){
-						$recs[] = "All pushed files synced successfully";
-						gitLog("Synced {$push_count} pushed files locally", 'info');
+					if($checkout_result['success']){
+						$recs[] = "Synced locally: {$file}";
 					} else {
-						$recs[] = "Some files could not be synced locally";
-						gitLog("Partial sync: {$sync_errors} files failed", 'warning');
+						$recs[] = "Warning: Could not sync {$file} locally";
+						$sync_errors++;
 					}
-				} else {
-					$recs[] = "Warning: Could not fetch from remote";
-					$recs[] = "Your changes are on remote but local sync failed";
-					gitLog("Failed to fetch after API push", 'warning');
 				}
 
-				chdir($original_dir);
+				if($sync_errors === 0){
+					$recs[] = "All pushed files synced successfully";
+					gitLog("Synced {$push_count} pushed files locally", 'info');
+				} else {
+					$recs[] = "Some files could not be synced locally";
+					gitLog("Partial sync: {$sync_errors} files failed", 'warning');
+				}
 			} else {
-				$recs[] = "Warning: Could not access git directory for sync";
-				gitLog("Could not chdir to git path for sync", 'warning');
+				$recs[] = "Warning: Could not fetch from remote";
+				$recs[] = "Your changes are on remote but local sync failed";
+				gitLog("Failed to fetch after API push", 'warning');
 			}
 		} else {
 			$git['error'] = 'No files were uploaded';
