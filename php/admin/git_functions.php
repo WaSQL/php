@@ -463,6 +463,101 @@ function gitGetRemoteFileSha($filePath, $params = array()){
 }
 
 /**
+ * Simple diff algorithm for large files
+ *
+ * This is a memory-efficient diff implementation for files too large for the LCS algorithm.
+ * Uses a greedy matching approach that works well for files that are mostly similar.
+ *
+ * @param array $old_lines Array of lines from old version
+ * @param array $new_lines Array of lines from new version
+ *
+ * @return array Array of diff items with same structure as gitSmartDiff()
+ *
+ * @since 3.0
+ */
+function gitSimpleDiff($old_lines, $new_lines){
+	$diff = array();
+	$old_count = count($old_lines);
+	$new_count = count($new_lines);
+	$i = 0;
+	$j = 0;
+
+	while($i < $old_count || $j < $new_count){
+		if($i < $old_count && $j < $new_count && $old_lines[$i] === $new_lines[$j]){
+			// Lines match
+			$diff[] = array(
+				'type' => 'same',
+				'line' => $old_lines[$i],
+				'old_num' => $i + 1,
+				'new_num' => $j + 1
+			);
+			$i++;
+			$j++;
+		} elseif($i < $old_count && $j < $new_count){
+			// Lines differ - check if either line appears ahead
+			$old_ahead = false;
+			$new_ahead = false;
+
+			// Look ahead a few lines to see if we can sync up
+			for($k = 1; $k <= min(10, $new_count - $j); $k++){
+				if($old_lines[$i] === $new_lines[$j + $k]){
+					$old_ahead = true;
+					break;
+				}
+			}
+
+			for($k = 1; $k <= min(10, $old_count - $i); $k++){
+				if($new_lines[$j] === $old_lines[$i + $k]){
+					$new_ahead = true;
+					break;
+				}
+			}
+
+			// Decide whether to treat as insert or delete
+			if($new_ahead && !$old_ahead){
+				// Old line deleted
+				$diff[] = array(
+					'type' => 'delete',
+					'line' => $old_lines[$i],
+					'old_num' => $i + 1,
+					'new_num' => null
+				);
+				$i++;
+			} else {
+				// New line inserted (or both/neither - default to insert)
+				$diff[] = array(
+					'type' => 'insert',
+					'line' => $new_lines[$j],
+					'old_num' => null,
+					'new_num' => $j + 1
+				);
+				$j++;
+			}
+		} elseif($i < $old_count){
+			// Only old lines remain - all deleted
+			$diff[] = array(
+				'type' => 'delete',
+				'line' => $old_lines[$i],
+				'old_num' => $i + 1,
+				'new_num' => null
+			);
+			$i++;
+		} else {
+			// Only new lines remain - all inserted
+			$diff[] = array(
+				'type' => 'insert',
+				'line' => $new_lines[$j],
+				'old_num' => null,
+				'new_num' => $j + 1
+			);
+			$j++;
+		}
+	}
+
+	return $diff;
+}
+
+/**
  * Smart diff algorithm using Longest Common Subsequence (LCS)
  *
  * This function implements a proper diff algorithm that intelligently detects
@@ -476,6 +571,9 @@ function gitGetRemoteFileSha($filePath, $params = array()){
  *
  * This produces a more readable diff that groups related changes together
  * and doesn't show spurious additions/deletions when lines are merely reordered.
+ *
+ * NOTE: For files larger than 5000 lines, this automatically falls back to
+ * gitSimpleDiff() to avoid memory exhaustion.
  *
  * @param array $old_lines Array of lines from old version
  * @param array $new_lines Array of lines from new version
@@ -503,6 +601,14 @@ function gitGetRemoteFileSha($filePath, $params = array()){
 function gitSmartDiff($old_lines, $new_lines){
 	$old_count = count($old_lines);
 	$new_count = count($new_lines);
+
+	// For very large files, skip the expensive LCS algorithm
+	// The LCS requires O(n*m) memory which causes issues with large files
+	// Threshold: 5000 lines - above this, use simple line-by-line diff
+	$max_lines_for_lcs = 5000;
+	if($old_count > $max_lines_for_lcs || $new_count > $max_lines_for_lcs){
+		return gitSimpleDiff($old_lines, $new_lines);
+	}
 
 	// Compute LCS lengths using dynamic programming
 	$lcs = array();
