@@ -51,14 +51,34 @@ require_once("{$progpath}/../extras/gitapi.php");
  *
  * Executes 'git status -s' locally to see what files have changed.
  * This is the one exception where we use local git instead of API.
- * Automatically handles "dubious ownership" errors by adding safe.directory exception.
  *
  * @return array Result with 'success', 'output', 'error' keys
  *
  * @since 3.0
  */
 function gitLocalStatus(){
-	return gitExecCommand('status -s');
+	global $CONFIG;
+	$original_dir = getcwd();
+
+	if(!isset($CONFIG['gitapi_path']) || !chdir($CONFIG['gitapi_path'])){
+		return array(
+			'success' => false,
+			'output' => '',
+			'error' => 'Invalid git path'
+		);
+	}
+
+	$output = array();
+	$exit_code = 0;
+	exec('git status -s 2>&1', $output, $exit_code);
+
+	chdir($original_dir);
+
+	return array(
+		'success' => $exit_code === 0,
+		'output' => implode("\n", $output),
+		'error' => $exit_code !== 0 ? implode("\n", $output) : ''
+	);
 }
 
 /**
@@ -90,7 +110,7 @@ function gitFileInfo(){
 
 	// Use local git status to see what changed
 	$result = gitLocalStatus();
-	//echo printValue($result);exit;
+
 	if(!$result['success']){
 		$git['error'] = $result['error'];
 		$git['files'] = array();
