@@ -9515,64 +9515,140 @@ function deleteDirectory($dir=''){
     }
 //---------- begin function cleanupDirectory
 /**
-* @describe removes files from directory older than x days old. x defaults to 5 days
+* @describe removes files from directory older than specified time period
 * @param dir string
-*	absolute path of directory to cleanup
+*	absolute path of directory to cleanup (required)
 * @param num integer
-*	units old - any file older than this is removed
-* @param unit string - mon,day,hour,min
+*	number of time units - files older than this are removed (default: 5)
+* @param unit string
+*	time unit: years/yrs, months/mon, days, hours/hrs, minutes/min, seconds/sec (default: 'days')
+* @param ext string
+*	optional file extension filter without leading dot (e.g., 'log', 'tmp')
 *
-* @return boolean
-*	returns true upon success
-* @usage $ok=cleanupDirectory($dir[,3]);
+* @return integer|false
+*	returns number of files successfully deleted, or false on error
+* @usage $count=cleanupDirectory('/path/to/temp', 3, 'days');
+* @usage $count=cleanupDirectory('/var/log', 7, 'days', 'log');
 */
 function cleanupDirectory($dir='',$num=5,$unit='days',$ext=''){
-	$cnt=0;
-	if ($handle = opendir($dir)) {
-		while (false !== ($file = readdir($handle))) {
-			if ($file[0] == '.' || is_dir($dir.'/'.$file)) {continue;}
-			if(strlen($ext) && !stringEndsWith($file,".{$ext}")){continue;}
-			$mtime=filemtime($dir.'/'.$file);
-			$ttime=time();
-			switch(strtolower($unit)){
-				case 'yr':
-				case 'yrs':
-				case 'year':
-				case 'years':
-					$ctime=(integer)($num *31536000);
-					break;
-				case 'mon':
-				case 'month':
-				case 'months':
-					$ctime=(integer)($num *2629743);
-					break;
-				case 'day':
-				case 'days':
-					$ctime=(integer)($num *86400);
-					break;
-				case 'hrs':
-				case 'hour':
-				case 'hours':
-					$ctime=(integer)($num *3600);
-					break;
-				case 'min':
-				case 'minute':
-				case 'minutes':
-					$ctime=(integer)($num *60);
-					break;
-				default:
-					$ctime=$num;
-					break;
-			}
-			$dtime=$ttime - $mtime;
-		    if ($dtime > $ctime) {
-		    	unlink($dir.'/'.$file);
-		    	$cnt++;
-		    }
-		}
-	    closedir($handle);
+	// Input validation
+	if(empty($dir)){
+		debugValue("cleanupDirectory: directory parameter is required");
+		return false;
 	}
-	return $cnt;
+	if(!is_dir($dir)){
+		debugValue("cleanupDirectory: '{$dir}' is not a valid directory");
+		return false;
+	}
+	if(!is_numeric($num) || $num < 0){
+		debugValue("cleanupDirectory: num must be a positive number");
+		return false;
+	}
+
+	// Normalize directory path - remove trailing slash
+	$dir = rtrim($dir, '/\\');
+
+	// Calculate time threshold ONCE before loop (not per file)
+	$currentTime = time();
+	switch(strtolower($unit)){
+		case 'yr':
+		case 'yrs':
+		case 'year':
+		case 'years':
+			$thresholdSeconds = (integer)($num * 31536000);
+			break;
+		case 'mon':
+		case 'month':
+		case 'months':
+			$thresholdSeconds = (integer)($num * 2629743);
+			break;
+		case 'day':
+		case 'days':
+			$thresholdSeconds = (integer)($num * 86400);
+			break;
+		case 'hr':
+		case 'hrs':
+		case 'hour':
+		case 'hours':
+			$thresholdSeconds = (integer)($num * 3600);
+			break;
+		case 'min':
+		case 'minute':
+		case 'minutes':
+			$thresholdSeconds = (integer)($num * 60);
+			break;
+		case 'sec':
+		case 'second':
+		case 'seconds':
+			$thresholdSeconds = (integer)$num;
+			break;
+		default:
+			// Assume seconds if unit not recognized
+			$thresholdSeconds = (integer)$num;
+			break;
+	}
+
+	// Open directory
+	$handle = opendir($dir);
+	if($handle === false){
+		debugValue("cleanupDirectory: failed to open directory '{$dir}'");
+		return false;
+	}
+
+	$deletedCount = 0;
+	$errorCount = 0;
+
+	// Process each file
+	while(false !== ($file = readdir($handle))){
+		// Skip . and .. and hidden files
+		if($file[0] == '.'){
+			continue;
+		}
+
+		// Build full path using DIRECTORY_SEPARATOR for cross-platform compatibility
+		$filePath = $dir . DIRECTORY_SEPARATOR . $file;
+
+		// Skip directories
+		if(is_dir($filePath)){
+			continue;
+		}
+
+		// Apply extension filter if specified
+		if(strlen($ext) && !stringEndsWith($file, ".{$ext}")){
+			continue;
+		}
+
+		// Get file modification time with error checking
+		$mtime = @filemtime($filePath);
+		if($mtime === false){
+			debugValue("cleanupDirectory: failed to get mtime for '{$filePath}'");
+			$errorCount++;
+			continue;
+		}
+
+		// Calculate file age
+		$fileAge = $currentTime - $mtime;
+
+		// Delete if older than threshold
+		if($fileAge > $thresholdSeconds){
+			if(@unlink($filePath)){
+				$deletedCount++;
+			}
+			else{
+				debugValue("cleanupDirectory: failed to delete '{$filePath}'");
+				$errorCount++;
+			}
+		}
+	}
+
+	closedir($handle);
+
+	// Log summary if there were errors
+	if($errorCount > 0){
+		debugValue("cleanupDirectory: completed with {$errorCount} error(s), deleted {$deletedCount} file(s)");
+	}
+
+	return $deletedCount;
 }
 //---------- begin function diffText
 /**
