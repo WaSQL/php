@@ -135,7 +135,8 @@ function gitapiRequest($endpoint, $params = array()) {
         return array(
             'success' => false,
             'error' => 'Authentication token not provided (gitapi_token)',
-            'status_code' => 0
+            'status_code' => 0,
+            'endpoint'=>$endpoint
         );
     }
 
@@ -194,7 +195,8 @@ function gitapiRequest($endpoint, $params = array()) {
         return array(
             'success' => false,
             'error' => 'CURL error: ' . $error,
-            'status_code' => $statusCode
+            'status_code' => $statusCode,
+            'endpoint'=>$endpoint
         );
     }
 
@@ -209,7 +211,8 @@ function gitapiRequest($endpoint, $params = array()) {
         'data' => $responseData !== null ? $responseData : $responseBody,
         'error' => $success ? null : (isset($responseData['message']) ? $responseData['message'] : $responseBody),
         'status_code' => $statusCode,
-        'headers' => gitapiParseHeaders($responseHeaders)
+        'headers' => gitapiParseHeaders($responseHeaders),
+        'endpoint'=>$endpoint
     );
 }
 
@@ -537,9 +540,14 @@ function gitapiGetFile($filePath, $params = array()) {
 
     $ref = isset($params['ref']) ? $params['ref'] : $branch;
 
-    $endpoint = $provider === 'gitlab' ?
-                "{$repoPath}/repository/files/" . urlencode($filePath) . "?ref={$ref}" :
-                "{$repoPath}/contents/" . ltrim($filePath, '/') . "?ref={$ref}";
+    if ($provider === 'gitlab') {
+        // GitLab requires file path with encoded slashes
+        $encodedFilePath = str_replace('/', '%2F', $filePath);
+        $endpoint = "{$repoPath}/repository/files/{$encodedFilePath}?ref={$ref}";
+    } else {
+        // GitHub uses normal path
+        $endpoint = "{$repoPath}/contents/" . ltrim($filePath, '/') . "?ref={$ref}";
+    }
 
     return gitapiRequest($endpoint, array_merge($params, array('method' => 'GET')));
 }
@@ -597,7 +605,9 @@ function gitapiCreateFile($filePath, $content, $message, $params = array()) {
         } elseif (isset($USER['email'])) {
             $data['author_email'] = $USER['email'];
         }
-        $endpoint = "{$repoPath}/repository/files/" . urlencode($filePath);
+        // GitLab requires file path with encoded slashes
+        $encodedFilePath = str_replace('/', '%2F', $filePath);
+        $endpoint = "{$repoPath}/repository/files/{$encodedFilePath}";
     } else {
         // GitHub
         $data['message'] = $message;
@@ -677,7 +687,9 @@ function gitapiUpdateFile($filePath, $content, $message, $params = array()) {
         } elseif (isset($USER['email'])) {
             $data['author_email'] = $USER['email'];
         }
-        $endpoint = "{$repoPath}/repository/files/" . urlencode($filePath);
+        // GitLab requires file path with encoded slashes
+        $encodedFilePath = str_replace('/', '%2F', $filePath);
+        $endpoint = "{$repoPath}/repository/files/{$encodedFilePath}";
         $method = 'PUT';
     } else {
         // GitHub requires file SHA
@@ -761,7 +773,9 @@ function gitapiDeleteFile($filePath, $message, $params = array()) {
         } elseif (isset($USER['email'])) {
             $data['author_email'] = $USER['email'];
         }
-        $endpoint = "{$repoPath}/repository/files/" . urlencode($filePath);
+        // GitLab requires file path with encoded slashes
+        $encodedFilePath = str_replace('/', '%2F', $filePath);
+        $endpoint = "{$repoPath}/repository/files/{$encodedFilePath}";
     } else {
         // GitHub requires file SHA
         if (!isset($params['sha']) || !strlen($params['sha'])) {
