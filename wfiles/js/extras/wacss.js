@@ -5219,13 +5219,14 @@ var wacss = {
 		  		}
 			let cm = CodeMirror.fromTextArea(list[i], params);
 			//save the codemirror object to the textarea so we can find it easier
-			cm.dataset.textarea=list[i].id;
-			cm.style.overflow='hidden !important';
+			let textareaId = list[i].id;
+			cm.getWrapperElement().dataset.textarea=textareaId;
+			cm.getWrapperElement().style.overflow='hidden !important';
 			list[i].codemirror=cm;
 			//save changes to textarea
 	  		cm.on('change', function(cm){
 	  			cm.save();
-	  			let txtel=document.getElementById(this.dataset.textarea);
+	  			let txtel=document.getElementById(textareaId);
 	  			if(txtel){
 	  				txtel.dataset.wacss_changed=1;
 	  			}
