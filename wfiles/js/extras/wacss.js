@@ -5066,7 +5066,7 @@ var wacss = {
 	*/
 	initCodeMirror: function(){
 		/*convert texteara to codemirror */
-		let list=document.querySelectorAll('textarea.code[data-mode]');
+		let list=document.querySelectorAll('textarea.code[data-mode]:not([data-codemirror_initialized])');
 		if(undefined == list || list.length==0){return false;}
 		//set some defaults
 		let defaults={
@@ -5098,7 +5098,8 @@ var wacss = {
 		}
 		for(let i=0;i<list.length;i++){
 			//check to see if we have already initialized this element
-			if(undefined != list[i].codemirror){continue;}
+			if(undefined != list[i].dataset.codemirror_initialized){continue;}
+			list[i].dataset.codemirror_initialized='1';
 			//generate a unique id if one does not exist
 			if(undefined == list[i].id){
 				list[i].id='codemirror_'+Math.random().toString(36).slice(2);
@@ -5195,6 +5196,10 @@ var wacss = {
 				case 'sql':
 				case 'text/x-sql':
 					params.mode='text/x-sql';
+					curr_defaults.lineNumbers = true;
+					curr_defaults.hintOptions = {
+						completeSingle: false
+					};
 				break;
 				case 'vbscript':
 				case 'text/vbscript':
@@ -5215,6 +5220,7 @@ var wacss = {
 			let cm = CodeMirror.fromTextArea(list[i], params);
 			//save the codemirror object to the textarea so we can find it easier
 			cm.dataset.textarea=list[i].id;
+			cm.style.overflow='hidden !important';
 			list[i].codemirror=cm;
 			//save changes to textarea
 	  		cm.on('change', function(cm){
