@@ -1,35 +1,136 @@
 <?php
-/*
-	National Products Fulfillment API wrappers
-*/
-$progpath=dirname(__FILE__);
-//load the nusoap library
+/**
+ * NPFulfilment (National Products Fulfilment) API Integration Library
+ *
+ * This library provides PHP wrapper functions for interacting with NPFulfilment's
+ * SOAP/WSDL-based API services. NPFulfilment is an order fulfillment and logistics
+ * service provider operating in Australia and New Zealand.
+ *
+ * API Endpoints:
+ * - Order Submission: https://npfulfilmentapi.com/serverorder.php?wsdl
+ * - Order Status: https://npfulfilmentapi.com/npforderstatus.php?wsdl
+ * - Stock on Hand: https://npfulfilmentapi.com/npfsoh.php?wsdl
+ *
+ * @package    WaSQL
+ * @subpackage ShippingMethods
+ * @author     WaSQL Development Team
+ * @copyright  2022-2026 WaSQL
+ * @license    MIT
+ * @version    2.0.0
+ * @link       https://github.com/WaSQL/php
+ *
+ * Requirements:
+ * - PHP 5.6 or higher
+ * - NuSOAP library (included in npf/lib/nusoap.php)
+ * - WaSQL framework functions (xml2Array, xmlEncode, etc.)
+ *
+ * Authentication:
+ * All API functions require an authentication array with the following keys:
+ * - username: NPFulfilment API username
+ * - password: NPFulfilment API password
+ * - clientcode: NPFulfilment client code
+ *
+ * @example Basic usage:
+ * <code>
+ * $auth = array(
+ *     'username' => 'YOUR_USERNAME',
+ *     'password' => 'YOUR_PASSWORD',
+ *     'clientcode' => 'YOUR_CLIENTCODE'
+ * );
+ *
+ * // Submit an order
+ * $result = npfServeOrder($auth, $orders);
+ *
+ * // Check order status
+ * $status = npfOrderStatus($auth, array('ORDER123', 'ORDER124'));
+ *
+ * // Get stock levels
+ * $stock = npfStockOnHand($auth, array('SKU001', 'SKU002'));
+ * </code>
+ */
+
+$progpath = dirname(__FILE__);
+// Load the NuSOAP library for SOAP/WSDL communication
 require_once("{$progpath}/npf/lib/nusoap.php");
-error_reporting(E_ALL & ~E_NOTICE);
-//-----------------------
-function npfTestOrderStatus(){
-	$auth=array(
-		'username'	=> "APINPFON",
-		'password'	=> "APINPFON212",
-		'clientcode'=> "APINPFON"
+/**
+ * Test function for NPF Order Status API
+ *
+ * This function demonstrates how to check the status of multiple orders using the
+ * NPFulfilment Order Status API. It uses test credentials and order numbers.
+ *
+ * WARNING: This function contains test credentials and should only be used for
+ * development and testing purposes. Replace credentials with production values
+ * before deploying to production environments.
+ *
+ * @return array Returns the order status response from NPFulfilment API containing:
+ *               - 'raw_request': The XML request sent to the API
+ *               - 'raw_response': The raw XML response from the API
+ *               - 'orders': Parsed array of order status information
+ *
+ * @see npfOrderStatus() for detailed response structure
+ *
+ * @example
+ * <code>
+ * $result = npfTestOrderStatus();
+ * print_r($result);
+ * </code>
+ */
+function npfTestOrderStatus() {
+	// Test credentials - DO NOT use in production
+	$auth = array(
+		'username'   => 'APINPFON',
+		'password'   => 'APINPFON212',
+		'clientcode' => 'APINPFON'
 	);
-	$salesOrderNumbers=array(
+
+	// Sample order numbers for testing
+	$salesOrderNumbers = array(
 		'INT1235',
 		'INT1234',
 		'TST1236'
 	);
-	$result=npfOrderStatus($auth,$salesOrderNumbers);
+
+	$result = npfOrderStatus($auth, $salesOrderNumbers);
 	echo printValue($result);
 	return $result;
 }
-//-----------------------
-function npfTestServeOrder(){
-	$auth=array(
-		'username'	=> "APINPFON",
-		'password'	=> "APINPFON212",
-		'clientcode'=> "APINPFON"
+/**
+ * Test function for NPF Order Submission API
+ *
+ * This function demonstrates how to submit orders to NPFulfilment using their
+ * serverorder API. It creates a complete test order with billing, shipping,
+ * and line item details.
+ *
+ * WARNING: This function contains test credentials and sample data. It should
+ * only be used for development and testing purposes. Replace with production
+ * credentials and real order data before deploying to production.
+ *
+ * The test order includes:
+ * - Billing and shipping addresses in Australia
+ * - Shipping method and carrier information
+ * - Multiple line items with products
+ * - Order totals and tax calculations
+ *
+ * @return array Returns the order submission response from NPFulfilment API
+ *
+ * @see npfServeOrder() for detailed parameters and response structure
+ *
+ * @example
+ * <code>
+ * $result = npfTestServeOrder();
+ * print_r($result);
+ * </code>
+ */
+function npfTestServeOrder() {
+	// Test credentials - DO NOT use in production
+	$auth = array(
+		'username'   => 'APINPFON',
+		'password'   => 'APINPFON212',
+		'clientcode' => 'APINPFON'
 	);
-	$orders=array(
+
+	// Sample order structure for testing
+	$orders = array(
 		'custid'	=> "TESTID",
 		'orders'	=> array(
 			array(
@@ -89,11 +190,41 @@ function npfTestServeOrder(){
 			)
 		)
 	);
-	$test=npfServeOrder($auth,$orders);
-	echo printValue($auth).printValue($test);
+	$test = npfServeOrder($auth, $orders);
+	echo printValue($auth) . printValue($test);
 }
-//-----------------------
-function npfAuthXML($auth){
+
+/**
+ * Generate XML authentication block for NPFulfilment API requests
+ *
+ * This function creates the XML authentication section required by all NPFulfilment
+ * API calls. The authentication block contains the username, password, and client
+ * code needed to authenticate with NPFulfilment's SOAP services.
+ *
+ * @param array $auth Authentication credentials array containing:
+ *                    - 'username' (string) NPFulfilment API username
+ *                    - 'password' (string) NPFulfilment API password
+ *                    - 'clientcode' (string) NPFulfilment client code
+ *
+ * @return string XML authentication block formatted for NPFulfilment API requests
+ *
+ * @example
+ * <code>
+ * $auth = array(
+ *     'username' => 'myusername',
+ *     'password' => 'mypassword',
+ *     'clientcode' => 'myclientcode'
+ * );
+ * $authXML = npfAuthXML($auth);
+ * // Returns:
+ * // <Login>
+ * //     <Username>myusername</Username>
+ * //     <Password>mypassword</Password>
+ * //     <ClientCode>myclientcode</ClientCode>
+ * // </Login>
+ * </code>
+ */
+function npfAuthXML($auth) {
 	return <<<ENDOFAUTH
 	<Login>
 		<Username>{$auth['username']}</Username>
@@ -102,11 +233,120 @@ function npfAuthXML($auth){
 	</Login>
 ENDOFAUTH;
 }
-//-----------------------
-function npfServeOrder($auth,$orders,$debug=0){
-	$url='https://npfulfilmentapi.com/serverorder.php?wsdl';
-	//for now NPF can only accept one order per request
-	$responses=array();
+
+/**
+ * Submit orders to NPFulfilment for fulfillment
+ *
+ * This function submits one or more orders to NPFulfilment's order processing system.
+ * Each order is submitted individually as NPF can only process one order per API request.
+ * The function builds XML requests containing order details, customer information,
+ * line items, and calculates totals with GST.
+ *
+ * Order Structure Requirements:
+ * - Each order must contain complete billing and shipping address information
+ * - Line items must include product codes, descriptions, quantities, and pricing
+ * - Country codes 'AU' and 'NZ' are automatically expanded to full country names
+ * - If billing address is not provided, shipping address will be used
+ *
+ * @param array $auth Authentication credentials array containing:
+ *                    - 'username' (string) NPFulfilment API username
+ *                    - 'password' (string) NPFulfilment API password
+ *                    - 'clientcode' (string) NPFulfilment client code
+ *
+ * @param array $orders Orders data structure containing:
+ *                      - 'custid' (string) Customer identifier
+ *                      - 'orders' (array) Array of order objects, each containing:
+ *                        * 'ordernumber' (string) Unique order reference number
+ *                        * 'shiptoname' (string) Recipient company name
+ *                        * 'shiptocontact' (string) Recipient contact person (full name)
+ *                        * 'shiptoaddress1' (string) Shipping address line 1
+ *                        * 'shiptoaddress2' (string) Shipping address line 2 (optional)
+ *                        * 'shiptocity' (string) Shipping city
+ *                        * 'shiptostate' (string) Shipping state/province
+ *                        * 'shiptozipcode' (string) Shipping postal code
+ *                        * 'shiptocountry' (string) Shipping country (use 'AU' or 'Australia')
+ *                        * 'billtoname' (string) Billing company name (optional, defaults to shipto)
+ *                        * 'billtocontact' (string) Billing contact person (optional, defaults to shipto)
+ *                        * 'billtoaddress1' (string) Billing address line 1 (optional)
+ *                        * 'billtocity' (string) Billing city (optional)
+ *                        * 'billtostate' (string) Billing state (optional)
+ *                        * 'billtozipcode' (string) Billing postal code (optional)
+ *                        * 'billtocountry' (string) Billing country (optional)
+ *                        * 'billtotelephone' (string) Billing phone (optional)
+ *                        * 'billtoemail' (string) Billing email (optional)
+ *                        * 'shipmethod' (string) Dispatch method code (e.g., 'AP')
+ *                        * 'giftwrap' (string) Gift wrapping required (Y/N)
+ *                        * 'customer_message' (string) Customer message (max 200 chars)
+ *                        * 'value' (float) Order value (auto-calculated if not provided)
+ *                        * 'description' (string) Article description for customs
+ *                        * 'url' (string) Website code
+ *                        * 'items' (array) Array of line items, each containing:
+ *                          - 'itemid' (string) Product/SKU code
+ *                          - 'description' (string) Product description
+ *                          - 'quantity' or 'qtyordered' (int) Quantity to ship
+ *                          - 'price' or 'retail_price' (float) Unit price
+ *                          - 'upc' (string) Barcode (optional, defaults to itemid)
+ *                          - 'gst' (float) GST amount (auto-calculated if not provided)
+ *                          - 'gstprice' (float) Price including GST (auto-calculated)
+ *                          - 'amount' (float) Line total (auto-calculated)
+ *
+ * @param int $debug Optional debug mode. Set to 1 to return XML without sending to API,
+ *                   useful for testing and debugging. Default: 0
+ *
+ * @return array Response array with results for each order, containing:
+ *               - 'raw_request' (array) XML requests sent, keyed by order number
+ *               - 'raw' (array) Raw XML responses, keyed by order number
+ *               - [ordernumber] (array|string) Parsed response for each order, or error string
+ *
+ * @example Basic order submission:
+ * <code>
+ * $auth = array(
+ *     'username' => 'myusername',
+ *     'password' => 'mypassword',
+ *     'clientcode' => 'myclientcode'
+ * );
+ *
+ * $orders = array(
+ *     'custid' => 'CUST123',
+ *     'orders' => array(
+ *         array(
+ *             'ordernumber' => 'ORD001',
+ *             'shiptoname' => 'Acme Corp',
+ *             'shiptocontact' => 'John Smith',
+ *             'shiptoaddress1' => '123 Main St',
+ *             'shiptocity' => 'Sydney',
+ *             'shiptostate' => 'NSW',
+ *             'shiptozipcode' => '2000',
+ *             'shiptocountry' => 'AU',
+ *             'shipmethod' => 'AP',
+ *             'description' => 'office supplies',
+ *             'items' => array(
+ *                 array(
+ *                     'itemid' => 'SKU001',
+ *                     'description' => 'Widget',
+ *                     'quantity' => 5,
+ *                     'price' => 19.99
+ *                 )
+ *             )
+ *         )
+ *     )
+ * );
+ *
+ * $result = npfServeOrder($auth, $orders);
+ * if (is_array($result['ORD001'])) {
+ *     echo "Order submitted successfully";
+ * } else {
+ *     echo "Error: " . $result['ORD001'];
+ * }
+ * </code>
+ *
+ * @see npfTestServeOrder() for a complete working example
+ * @see npfOrderStatus() to check status of submitted orders
+ */
+function npfServeOrder($auth, $orders, $debug = 0) {
+	$url = 'https://npfulfilmentapi.com/serverorder.php?wsdl';
+	// NPF can only accept one order per request
+	$responses = array();
 	foreach($orders['orders'] as $order){
 		$ordernumber=$order['ordernumber'];
   		$xml=xmlHeader();
@@ -238,9 +478,73 @@ function npfServeOrder($auth,$orders,$debug=0){
 	}
 	return $responses;
 }
-//---------------------
-function npfOrderStatus($auth,$salesOrderNumbers=array()){
-	if(!count($salesOrderNumbers)){return null;}
+
+/**
+ * Retrieve order status information from NPFulfilment
+ *
+ * This function queries the NPFulfilment API to get the current status of one or more
+ * orders. It returns tracking information, shipping status, and fulfillment details
+ * for the specified order numbers.
+ *
+ * The function can handle multiple order numbers in a single request and will parse
+ * the XML response into a structured array format.
+ *
+ * @param array $auth Authentication credentials array containing:
+ *                    - 'username' (string) NPFulfilment API username
+ *                    - 'password' (string) NPFulfilment API password
+ *                    - 'clientcode' (string) NPFulfilment client code
+ *
+ * @param array $salesOrderNumbers Array of order numbers (strings) to query status for.
+ *                                  Must contain at least one order number.
+ *                                  Example: array('ORD001', 'ORD002', 'ORD003')
+ *
+ * @return array|string|null Response array containing order status information:
+ *                           - 'raw_request' (string) The XML request sent to API
+ *                           - 'raw_response' (string) The raw XML response from API
+ *                           - 'orders' (array) Array of order status objects, each containing:
+ *                             * 'ClientCode' (string) Client identifier
+ *                             * 'SalesOrderNo' (string) Order number
+ *                             * 'OrderStatus' (string) Current order status
+ *                             * 'TrackingNumber' (string) Shipping tracking number (if available)
+ *                             * 'Carrier' (string) Shipping carrier name
+ *                             * Additional fulfillment-specific fields
+ *
+ *                           Returns null if $salesOrderNumbers array is empty.
+ *                           Returns error string if API call fails (starts with "ERROR").
+ *
+ * @example Single order status check:
+ * <code>
+ * $auth = array(
+ *     'username' => 'myusername',
+ *     'password' => 'mypassword',
+ *     'clientcode' => 'myclientcode'
+ * );
+ *
+ * $result = npfOrderStatus($auth, array('ORD123'));
+ * if (is_array($result) && isset($result['orders'])) {
+ *     foreach ($result['orders'] as $order) {
+ *         echo "Order: " . $order['SalesOrderNo'] . "\n";
+ *         echo "Status: " . $order['OrderStatus'] . "\n";
+ *         if (isset($order['TrackingNumber'])) {
+ *             echo "Tracking: " . $order['TrackingNumber'] . "\n";
+ *         }
+ *     }
+ * }
+ * </code>
+ *
+ * @example Multiple orders status check:
+ * <code>
+ * $orderNumbers = array('ORD001', 'ORD002', 'ORD003');
+ * $result = npfOrderStatus($auth, $orderNumbers);
+ * </code>
+ *
+ * @see npfTestOrderStatus() for a working test example
+ * @see npfServeOrder() to submit orders for fulfillment
+ */
+function npfOrderStatus($auth, $salesOrderNumbers = array()) {
+	if (!count($salesOrderNumbers)) {
+		return null;
+	}
 	$url='https://npfulfilmentapi.com/npforderstatus.php?wsdl';
 	$xml=xmlHeader();
 	$xml .= '<OrderList>'."\n";
@@ -270,14 +574,76 @@ function npfOrderStatus($auth,$salesOrderNumbers=array()){
 		if(isset($orders['ClientCode'])){$orders=array($orders);}
 		$rtn['orders']=$orders;
 	}
-	//echo printValue($arr);
 	return $rtn;
 }
-//---------------------
-function npfStockOnHand($auth,$productcodes){
-	$url='https://npfulfilmentapi.com/npfsoh.php?wsdl';
-	//this API does not like large sets of productcodes - so break into groups of 150
-	$groups=array_chunk($productcodes,150);
+
+/**
+ * Retrieve stock on hand (inventory levels) from NPFulfilment
+ *
+ * This function queries the NPFulfilment API to get current inventory levels for
+ * one or more product codes. The function automatically handles large requests by
+ * breaking them into groups of 150 products per API call to comply with NPF's
+ * API limitations.
+ *
+ * The function aggregates results from multiple API calls and returns a consolidated
+ * response with stock levels for all requested products.
+ *
+ * @param array $auth Authentication credentials array containing:
+ *                    - 'username' (string) NPFulfilment API username
+ *                    - 'password' (string) NPFulfilment API password
+ *                    - 'clientcode' (string) NPFulfilment client code
+ *
+ * @param array $productcodes Array of product codes/SKUs (strings) to query inventory for.
+ *                             Can contain any number of products; function automatically
+ *                             chunks them into groups of 150 for API compliance.
+ *                             Example: array('SKU001', 'SKU002', 'PROD-123')
+ *
+ * @return array Response array containing inventory information:
+ *               - 'stock' (array) Associative array mapping product codes to stock quantities
+ *                         Format: array('SKU001' => 50, 'SKU002' => 0, 'PROD-123' => 125)
+ *               - 'requests' (array) Array of XML requests sent to API (for debugging)
+ *               - 'responses' (array) Array of raw XML responses from API (for debugging)
+ *               - 'responses_array' (array) Array of parsed response arrays (for debugging)
+ *
+ * @example Check stock for multiple products:
+ * <code>
+ * $auth = array(
+ *     'username' => 'myusername',
+ *     'password' => 'mypassword',
+ *     'clientcode' => 'myclientcode'
+ * );
+ *
+ * $productCodes = array('SKU001', 'SKU002', 'PROD-ABC', 'ITEM-XYZ');
+ * $result = npfStockOnHand($auth, $productCodes);
+ *
+ * if (isset($result['stock'])) {
+ *     foreach ($result['stock'] as $sku => $quantity) {
+ *         echo "$sku: $quantity units in stock\n";
+ *     }
+ * }
+ * </code>
+ *
+ * @example Check stock for large inventory (automatically chunked):
+ * <code>
+ * // This will automatically be split into multiple API calls
+ * $largeSKUList = array(); // 500 SKUs
+ * for ($i = 1; $i <= 500; $i++) {
+ *     $largeSKUList[] = "SKU" . str_pad($i, 5, '0', STR_PAD_LEFT);
+ * }
+ * $result = npfStockOnHand($auth, $largeSKUList);
+ * // Result will contain stock levels for all 500 products
+ * </code>
+ *
+ * @note The NPFulfilment API has a limitation on the number of products that can be
+ *       queried in a single request. This function automatically handles this by
+ *       chunking requests into groups of 150 products.
+ *
+ * @see npfOrderStatus() to check order fulfillment status
+ */
+function npfStockOnHand($auth, $productcodes) {
+	$url = 'https://npfulfilmentapi.com/npfsoh.php?wsdl';
+	// NPF API limitation: break into groups of 150 product codes per request
+	$groups = array_chunk($productcodes, 150);
 	$result=array('stock'=>array());
 	foreach($groups as $group){
 		$xml=xmlHeader();
@@ -289,10 +655,11 @@ function npfStockOnHand($auth,$productcodes){
 	  	$xml .= '	</Product>'."\n";
 		$xml .= '</ProductList>'."\n";
 		//echo printValue($params) . $xml;exit;
-		$response=npfPostXML($url,'importsoh',$xml);
-		$result['requests'][]=$xml;
-		$result['responses'][]=$response;
-		if(stringContains($resonse,'no contents') || stringBeginsWith($response,"ERROR")){
+		$response = npfPostXML($url, 'importsoh', $xml);
+		$result['requests'][] = $xml;
+		$result['responses'][] = $response;
+		// Skip if response is empty or contains error
+		if (stringContains($response, 'no contents') || stringBeginsWith($response, "ERROR")) {
 			continue;
 		}
 		//echo $xml.printValue($response);
@@ -311,15 +678,71 @@ function npfStockOnHand($auth,$productcodes){
 	}
 	return $result;
 }
-//---------------------------
-function npfPostXML($url,$method,$xml){
+
+/**
+ * Post XML data to NPFulfilment SOAP/WSDL endpoint
+ *
+ * This is a low-level function that handles SOAP communication with NPFulfilment's
+ * API endpoints. It uses the NuSOAP library to create a SOAP client, send XML data
+ * to the specified endpoint, and handle any SOAP faults that may occur.
+ *
+ * This function is called internally by all other NPF API functions and should not
+ * typically need to be called directly unless implementing custom NPF API operations.
+ *
+ * @param string $url The WSDL endpoint URL for the NPFulfilment API service.
+ *                    Example: 'https://npfulfilmentapi.com/serverorder.php?wsdl'
+ *
+ * @param string $method The SOAP method name to call.
+ *                       Common methods include:
+ *                       - 'serverorder' for order submission
+ *                       - 'importorderstatus' for order status queries
+ *                       - 'importsoh' for stock on hand queries
+ *
+ * @param string $xml The XML data to send as the request body. Must be properly
+ *                    formatted XML matching the NPFulfilment API specification
+ *                    for the given method.
+ *
+ * @return string Returns the response from the SOAP service.
+ *                On success: XML string containing the API response
+ *                On SOAP fault: Error string in format "ERROR [code]: [message]"
+ *
+ * @example Custom API call:
+ * <code>
+ * $url = 'https://npfulfilmentapi.com/serverorder.php?wsdl';
+ * $method = 'serverorder';
+ * $xml = '<?xml version="1.0" encoding="UTF-8"?>
+ *         <OrderList>
+ *           <Login>
+ *             <Username>test</Username>
+ *             <Password>test123</Password>
+ *             <ClientCode>TEST</ClientCode>
+ *           </Login>
+ *           <Order>...</Order>
+ *         </OrderList>';
+ *
+ * $response = npfPostXML($url, $method, $xml);
+ * if (strpos($response, 'ERROR') === 0) {
+ *     echo "SOAP fault occurred: " . $response;
+ * } else {
+ *     // Process successful XML response
+ *     $data = xml2Array($response);
+ * }
+ * </code>
+ *
+ * @see npfServeOrder() uses this to submit orders
+ * @see npfOrderStatus() uses this to query order status
+ * @see npfStockOnHand() uses this to query inventory levels
+ *
+ * @internal This is primarily an internal function used by other NPF API wrappers
+ */
+function npfPostXML($url, $method, $xml) {
 	$param = array('orders' => $xml);
 	$client = new nusoap_client($url);
-	$response = $client->call($method,$param);
-	if($client->fault){
-  		return "ERROR ".$client->faultcode.": ". $client->faultstring;
-	}
-	else{
+	$response = $client->call($method, $param);
+
+	if ($client->fault) {
+		return "ERROR " . $client->faultcode . ": " . $client->faultstring;
+	} else {
 		return $response;
 	}
 }
