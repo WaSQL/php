@@ -10152,6 +10152,14 @@ function evalPHP_ob($string, $flags) {
 function evalPHP($strings){
 	global $CONFIG;
 	global $PAGE;
+	//set the pid if ajaxRequestId is present
+	$pidfile='';
+	if(isset($_REQUEST['AjaxRequestUniqueId'])){
+		$tpath=getWasqlTempPath();
+		$pid=getmypid();
+		$pidfile="{$tpath}/{$_REQUEST['AjaxRequestUniqueId']}.pid";
+		setFileContents($pidfile,$pid);
+	}
 	//allow for both echo and return values but not both
 	if(!is_array($strings)){$strings=array($strings);}
 	//ob_start('evalPHP_ob');
@@ -10341,6 +10349,9 @@ function evalPHP($strings){
 	}
 	showAllErrors();
 	$rtn=implode('',$strings);
+	if(strlen($pidfile) && file_exists($pidfile)){
+		unlink($pidfile);
+	}
 	return $rtn;
 }
 //---------- begin function evalJuliaCode
