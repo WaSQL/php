@@ -438,7 +438,9 @@ function writeFiles(){
 			// Determine file extension from content
 			// Detection priority: HTML directive > JSON > language tags > filename > fallback
 			// Check first 50 chars of content for performance while catching most detection patterns
-			$checkstr=trim(substr($content,0,50));
+			// Remove UTF-8 BOM if present (\xEF\xBB\xBF)
+			$contentCheck = substr($content, 0, 3) === "\xEF\xBB\xBF" ? substr($content, 3, 50) : substr($content, 0, 50);
+			$checkstr=trim($contentCheck);
 			$checklen=strlen($checkstr);
 
 			// Priority 1: Explicit extension directive via HTML comment (<!--ext:xxx-->)
@@ -454,6 +456,10 @@ function writeFiles(){
 			// Priority 3: Language-specific opening tags (WaSQL multi-language support)
 			// PHP: <?php or <?=
 			elseif($checklen > 0 && stringBeginsWith($checkstr,'<?php')){
+				$ext='php';
+			}
+			// PHP short echo tag (<?=) at start
+			elseif($checklen > 0 && stringBeginsWith($checkstr,'<?=')){
 				$ext='php';
 			}
 			// Python: <?py or <?python
@@ -507,9 +513,10 @@ function writeFiles(){
 			elseif(isset($info['name']) && stringEndsWith($info['name'],'.md')){
 				$ext='md';
 			}
-			// Priority 5: Fallback - check for PHP short echo tag (<?=)
-			// Common in template files that don't start with <?php
-			elseif($checklen > 0 && stringContains($checkstr,'<?=')){
+			// Priority 5: Fallback - check for PHP tags
+			// PHP short tag (<?  ) - after checking all other language tags
+			// Must come last to avoid conflicting with other <?lang tags
+			elseif($checklen > 0 && stringBeginsWith($checkstr,'<?') && !stringBeginsWith($checkstr,'<?xml')){
 				$ext='php';
 			}
 			// If no detection matched, $ext retains its value from the switch statement above (lines 386-414)
