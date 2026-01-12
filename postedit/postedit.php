@@ -434,12 +434,85 @@ function writeFiles(){
 				mkdir($path,0777,true);
 			}
 			$content=base64_decode(trim($content));
-			//check content to see if it starts with php
-			$checkstr=trim(substr($content,0,10));
-			if(stringEndsWith($info['name'],'.py')){$ext='py';}
-			elseif(stringContains($checkstr,'php')){$ext='php';}
-			elseif(stringContains($checkstr,'py')){$ext='py';}
-			elseif(stringContains($checkstr,'?=')){$ext='php';}
+
+			// Determine file extension from content
+			// Detection priority: HTML directive > JSON > language tags > filename > fallback
+			// Check first 50 chars of content for performance while catching most detection patterns
+			$checkstr=trim(substr($content,0,50));
+			$checklen=strlen($checkstr);
+
+			// Priority 1: Explicit extension directive via HTML comment (<!--ext:xxx-->)
+			// Allows developers to override automatic detection when needed
+			if($checklen > 0 && preg_match('/^\<\!\-\-ext\:([a-z0-9]+)\-\-\>/i', $checkstr, $extMatch)){
+				$ext=strtolower($extMatch[1]);
+			}
+			// Priority 2: JSON content detection (starts with { or [)
+			// Must come before language tag checks since JSON doesn't use opening tags
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'{') || stringBeginsWith($checkstr,'['))){
+				$ext='json';
+			}
+			// Priority 3: Language-specific opening tags (WaSQL multi-language support)
+			// PHP: <?php or <?=
+			elseif($checklen > 0 && stringBeginsWith($checkstr,'<?php')){
+				$ext='php';
+			}
+			// Python: <?py or <?python
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'<?py') || stringBeginsWith($checkstr,'<?python'))){
+				$ext='py';
+			}
+			// Node.js/JavaScript: <?node or <?js
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'<?node') || stringBeginsWith($checkstr,'<?js'))){
+				$ext='js';
+			}
+			// Ruby: <?ruby or <?rb
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'<?ruby') || stringBeginsWith($checkstr,'<?rb'))){
+				$ext='rb';
+			}
+			// Perl: <?perl or <?pl
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'<?perl') || stringBeginsWith($checkstr,'<?pl'))){
+				$ext='pl';
+			}
+			// VBScript: <?vbscript or <?vbs
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'<?vbscript') || stringBeginsWith($checkstr,'<?vbs'))){
+				$ext='vbs';
+			}
+			// Lua: <?lua
+			elseif($checklen > 0 && stringBeginsWith($checkstr,'<?lua')){
+				$ext='lua';
+			}
+			// Bash/Shell: <?bash or <?sh
+			elseif($checklen > 0 && (stringBeginsWith($checkstr,'<?bash') || stringBeginsWith($checkstr,'<?sh'))){
+				$ext='sh';
+			}
+			// Priority 4: Check filename for extension hint
+			// Useful when content doesn't have language tags but filename indicates type
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.py')){
+				$ext='py';
+			}
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.rb')){
+				$ext='rb';
+			}
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.pl')){
+				$ext='pl';
+			}
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.vbs')){
+				$ext='vbs';
+			}
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.lua')){
+				$ext='lua';
+			}
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.sh')){
+				$ext='sh';
+			}
+			elseif(isset($info['name']) && stringEndsWith($info['name'],'.md')){
+				$ext='md';
+			}
+			// Priority 5: Fallback - check for PHP short echo tag (<?=)
+			// Common in template files that don't start with <?php
+			elseif($checklen > 0 && stringContains($checkstr,'<?=')){
+				$ext='php';
+			}
+			// If no detection matched, $ext retains its value from the switch statement above (lines 386-414)
 	    	$afile="{$path}/{$name}.{$info['table']}.{$field}.{$info['_id']}.{$ext}";
 	    	file_put_contents($afile,$content);
 			$md5sha=md5_file($afile).sha1_file($afile);
