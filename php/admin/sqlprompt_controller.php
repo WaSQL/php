@@ -496,7 +496,7 @@ ENDOFQUERY;
 			$sql_full=stripslashes($_REQUEST['sql_full']);
 			if(strlen($sql_full)){
 				$prompt='sql_prompt_'.$db['name'];
-				$editor_content=$sql_full=$_REQUEST['editor_content'];
+				$editor_content=$_REQUEST['editor_content'];
 				$ok=addDBRecord(array(
 					'-table'=>'_prompts',
 					'name'=>$prompt,
