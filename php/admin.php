@@ -663,6 +663,7 @@ if(isAjax()){
 		case 'schtasks':
 		case 'export':
 		case 'fonts':
+		case 'postportal':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);
@@ -1422,6 +1423,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'schtasks':
 		case 'export':
 		case 'fonts':
+		case 'postportal':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);

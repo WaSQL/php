@@ -1,0 +1,242 @@
+<view:default>
+<div class="container-fluid" style="margin-top:10px;" data-onload="wacss.loadScript('/php/admin/postportal_js.js');">
+	<div style="display:flex;">
+		<span class="icon-forward" title="PostPortal" style="align-self: center;margin-right:10px;border:2px solid #ff672e;border-radius:50%;padding:3px;color:#ff672e;"></span>
+		<ul class="nav-tabs <?=configValue('admin_color');?>" style="align-self: center;">
+			<li class="active"><a href="#" id="postportal_nav_requests" data-tab="1" data-_menu="postportal" data-func="request" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-forward"></span> Requests</a></li>
+			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="history" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-history"></span> History</a></li>
+			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="environment" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-gear"></span> Environment</a></li>
+		</ul>
+	</div>
+	<div class="w_padtop" id="main_content">
+	<?=renderView('request');?>
+	</div>
+</div>
+</view:default>
+
+<view:request>
+<form method="POST" name="postportal_form" action="/php/admin.php" onsubmit="return postportal.sendRequest(this,'request_content');" onchange="wacss.formChanged(this,event);">
+	<input type="hidden" name="_menu" value="postportal">
+	<input type="hidden" name="func" value="request_send">
+	<input type="hidden" name="setprocessing" value="request_content">
+	<div class="row">
+		<div class="col-sm-2">
+			<?=postportalFormField('method');?>
+		</div>
+		<div class="col-sm-8">
+			<?=postportalFormField('url');?>
+		</div>
+		<div class="col-sm-2">
+			<button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit" style="width:100%;"><span class="icon-send"></span> Send Request</button>
+		</div>
+	</div>
+
+	<div class="w_padtop">
+		<ul class="nav-tabs is-small">
+			<li class="active"><a href="#" onclick="return postportal.switchTab(this, 'params_tab');">Params</a></li>
+			<li><a href="#" onclick="return postportal.switchTab(this, 'auth_tab');">Authorization</a></li>
+			<li><a href="#" onclick="return postportal.switchTab(this, 'headers_tab');">Headers</a></li>
+			<li><a href="#" onclick="return postportal.switchTab(this, 'body_tab');">Body</a></li>
+		</ul>
+
+		<div id="params_tab" class="postportal-tab-content" style="display:block;padding:15px;border:1px solid #ddd;border-top:none;">
+			<div class="w_gray w_small w_padbot">Query parameters will be automatically appended to the URL</div>
+			<div id="params_container">
+				<div class="param-row" style="display:flex;gap:10px;margin-bottom:5px;">
+					<input type="text" class="wacss_input" placeholder="Key" style="flex:1;">
+					<input type="text" class="wacss_input" placeholder="Value" style="flex:1;">
+					<button type="button" class="wacss_button is-small" onclick="postportal.removeParam(this);">Remove</button>
+				</div>
+			</div>
+			<button type="button" class="wacss_button is-small w_padtop" onclick="postportal.addParam();">Add Parameter</button>
+		</div>
+
+		<div id="auth_tab" class="postportal-tab-content" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;">
+			<div class="w_padbot">
+				<label>Auth Type:</label>
+				<?=postportalFormField('auth_type');?>
+			</div>
+
+			<div id="auth_basic" data-displayif="auth_type:basic">
+				<div class="w_padbot">
+					<label>Username:</label>
+					<?=postportalFormField('auth_username');?>
+				</div>
+				<div class="w_padbot">
+					<label>Password:</label>
+					<?=postportalFormField('auth_password');?>
+				</div>
+			</div>
+
+			<div id="auth_bearer" data-displayif="auth_type:bearer">
+				<div class="w_padbot">
+					<label>Token:</label>
+					<?=postportalFormField('auth_token');?>
+				</div>
+			</div>
+		</div>
+
+		<div id="headers_tab" class="postportal-tab-content" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;">
+			<div class="w_gray w_small w_padbot">Enter headers in Key: Value format, one per line</div>
+			<?=postportalFormField('headers');?>
+		</div>
+
+		<div id="body_tab" class="postportal-tab-content" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;">
+			<div class="w_gray w_small w_padbot">Request body (for POST, PUT, PATCH requests)</div>
+			<?=postportalFormField('body');?>
+		</div>
+	</div>
+
+	<div class="w_padtop">
+		<label><input type="checkbox" name="save_history" value="1" checked> Save to history</label>
+	</div>
+</form>
+<div id="request_content" style="margin-top:20px;">
+	<?=renderViewIf(strlen($hid),'request_response',$request_data,'request_data');?>
+</div>
+</view:request>
+
+<view:debug>DEBUG<?=printValue($request_data);?></view:debug>
+
+<view:request_response>
+<div class="w_padtop">
+	<h3><span class="icon-check"></span> Response</h3>
+
+	<div class="w_padbot" style="display:flex;gap:10px;">
+		<view:request_id>
+		<div>
+			<strong>Id:</strong> <?=$request_data['id'];?>
+		</div>
+		</view:request_id>
+		<?=renderViewIf(isset($request_data['id']),'request_id',$request_data,'request_data');?>
+		<view:request_timestamp>
+		<div>
+			<strong>Timestamp:</strong> <?=$request_data['timestamp'];?>
+		</div>
+		</view:request_timestamp>
+		<?=renderViewIf(isset($request_data['timestamp']),'request_timestamp',$request_data,'request_data');?>
+		<div>
+			<strong>Status:</strong>
+			<span class="w_bold <?=($request_data['response']['status'] >= 200 && $request_data['response']['status'] < 300 ? 'w_success' : ($request_data['response']['status'] >= 400 ? 'w_danger' : 'w_warning'));?>">
+				<?=$request_data['response']['status'];?> <?=$request_data['response']['status_text'];?>
+			</span>
+		</div>
+		<div>
+			<strong>Time:</strong> <?=$request_data['duration'];?> ms
+		</div>
+		<div>
+			<strong>Size:</strong> <?=postportalFormatBytes(strlen($request_data['response']['body']));?>
+		</div>
+	</div>
+
+	<view:error_message>
+		<div class="alert alert-danger">
+			<strong>Error:</strong> <?=encodeHtml($request_data['response']['error']);?>
+		</div>
+	</view:error_message>
+	<?=renderViewIf(!empty($request_data['response']['error']), 'error_message',$request_data,'request_data');?>
+
+	<ul class="nav-tabs is-small">
+		<li class="active"><a href="#" onclick="return postportal.switchResponseTab(this, 'request_headers_tab');"><span class="icon-forward"></span> Request Headers (<?=count($request_data['request_headers']);?>)</a></li>
+		<li><a href="#" onclick="return postportal.switchResponseTab(this, 'request_body_tab');"><span class="icon-forward"></span> Request Body (<?=postportalFormatBytes($request_data['request_body']);?>)</a></li>
+		<li><a href="#" onclick="return postportal.switchResponseTab(this, 'response_headers_tab');"><span class="icon-backward"></span>Response Headers (<?=count($request_data['response']['headers']);?>)</a></li>
+		<li class="active"><a href="#" onclick="return postportal.switchResponseTab(this, 'response_body_tab');"><span class="icon-backward"></span>Response Body (<?=postportalFormatBytes($request_data['response']['body']);?>)</a></li>
+	</ul>
+	<div id="request_headers_tab" class="postportal-response-tab" style="display:block;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
+		<?=postportalHeadersList($request_data['request_headers']);?>
+	</div>
+	<div id="request_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
+		<pre><?=$request_data['request_body'];?></pre>
+	</div>
+	<div id="response_headers_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
+		<?=postportalHeadersList($request_data['response']['headers']);?>
+	</div>
+	<div id="response_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
+		<?=postportalFormatResponse($request_data['response']['body'],$request_data['response']['headers']);?>
+	</div>
+
+</div>
+
+<view:response_header_row>
+	<tr>
+		<td><?=encodeHtml($header['key']);?></td>
+		<td><?=encodeHtml($header['value']);?></td>
+	</tr>
+</view:response_header_row>
+</view:request_response>
+
+
+
+
+
+<view:history>
+	<h3><span class="icon-history"></span> Request History</h3>
+
+	<div class="w_padbot text-right">
+		<button class="wacss_button is-danger" data-nav="/php/admin.php" data-_menu="postportal" data-func="history_clear" data-div="history_content" data-confirm="Clear All Your History?" onclick="return wacss.nav(this);">Clear History</button>
+	</div>
+	<div id="history_content" style="margin-top:20px;">
+		<?=postportalHistoryList();?>
+	</div>
+</view:history>
+
+<view:history_list><?=postportalHistoryList();?></view:history_list>
+
+<view:environment>
+<div class="w_padtop">
+	<h3><span class="icon-cog"></span> Environment Variables</h3>
+
+	<div class="w_padbot">
+		<div class="alert alert-info">
+			<strong>Usage:</strong> Use variables in your requests with double curly braces: <code>{{variable_name}}</code>
+			<br>Example: <code>https://api.example.com/users/{{user_id}}</code>
+		</div>
+	</div>
+
+	<form method="POST" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'environment_content');">
+		<input type="hidden" name="_menu" value="postportal">
+		<input type="hidden" name="func" value="environment_save">
+
+		<div style="display:flex;gap:10px;margin-bottom:15px;">
+			<input type="text" name="env_key" class="wacss_input" placeholder="Variable name (e.g., api_key)" required style="flex:1;">
+			<input type="text" name="env_value" class="wacss_input" placeholder="Variable value" required style="flex:2;">
+			<button type="submit" class="wacss_button <?=configValue('admin_color');?>">Add Variable</button>
+		</div>
+	</form>
+</div>
+<div id="environment_content" style="margin-top:20px;">
+	<?=postportalEnvironmentList();?>
+</div>
+</view:environment>
+<view:environment_list>
+<?=postportalEnvironmentList();?>
+</view:environment_list>
+
+
+
+
+<view:error>
+	<div class="alert alert-danger">
+		<strong>Error:</strong> <?=encodeHtml($error);?>
+	</div>
+</view:error>
+
+<view:not_authenticated>
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-lock"></span> Authentication Required</h3>
+			<p>You must be logged in to access postportal utilities.</p>
+			<a href="/php/admin.php?_menu=login" class="wacss_button is-primary">Login</a>
+		</div>
+	</div>
+</view:not_authenticated>
+
+<view:not_authorized>
+	<div class="container-fluid">
+		<div class="alert alert-danger w_top20">
+			<h3><span class="icon-lock"></span> Access Denied</h3>
+			<p>You must be an administrator to access postportal utilities.</p>
+			<p>This security violation has been logged.</p>
+		</div>
+	</div>
+</view:not_authorized>
