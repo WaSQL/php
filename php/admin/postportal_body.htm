@@ -2,17 +2,24 @@
 <div class="container-fluid" style="margin-top:10px;" data-onload="wacss.loadScript('/php/admin/postportal_js.js');">
 	<div style="display:flex;">
 		<span class="icon-forward" title="PostPortal" style="align-self: center;margin-right:10px;border:2px solid #ff672e;border-radius:50%;padding:3px;color:#ff672e;"></span>
-		<ul class="nav-tabs <?=configValue('admin_color');?>" style="align-self: center;">
+		<ul class="nav-tabs <?=configValue('admin_color');?>" style="flex:1;align-self: center;">
 			<li class="active"><a href="#" id="postportal_nav_requests" data-tab="1" data-_menu="postportal" data-func="request" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-forward"></span> Requests</a></li>
 			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="history" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-history"></span> History</a></li>
 			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="environment" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-gear"></span> Environment</a></li>
 		</ul>
+		<button type="button" class="wacss_button is-small is-rounded is-mobile-responsive" data-nav="/php/admin.php" data-div="centerpop" data-_menu="postportal" data-func="documentation" onclick="return wacss.nav(this);"><span class="icon-help"></span> Help</button>
 	</div>
 	<div class="w_padtop" id="main_content">
 	<?=renderView('request');?>
 	</div>
 </div>
 </view:default>
+
+<view:documentation>
+<div style="width:90vw" data-onload="wacss.centerObject('wacss_centerpop');">
+	<?=$documentation;?>
+</div>
+</view:documentation>
 
 <view:request>
 <form method="POST" name="postportal_form" action="/php/admin.php" onsubmit="return postportal.sendRequest(this,'request_content');" onchange="wacss.formChanged(this,event);">
@@ -105,24 +112,24 @@
 	<div class="w_padbot" style="display:flex;gap:10px;">
 		<view:request_id>
 		<div>
-			<strong>Id:</strong> <?=$request_data['id'];?>
+			<strong>Id:</strong> <?=encodeHtml($request_data['id']);?>
 		</div>
 		</view:request_id>
 		<?=renderViewIf(isset($request_data['id']),'request_id',$request_data,'request_data');?>
 		<view:request_timestamp>
 		<div>
-			<strong>Timestamp:</strong> <?=$request_data['timestamp'];?>
+			<strong>Timestamp:</strong> <?=encodeHtml($request_data['timestamp']);?>
 		</div>
 		</view:request_timestamp>
 		<?=renderViewIf(isset($request_data['timestamp']),'request_timestamp',$request_data,'request_data');?>
 		<div>
 			<strong>Status:</strong>
 			<span class="w_bold <?=($request_data['response']['status'] >= 200 && $request_data['response']['status'] < 300 ? 'w_success' : ($request_data['response']['status'] >= 400 ? 'w_danger' : 'w_warning'));?>">
-				<?=$request_data['response']['status'];?> <?=$request_data['response']['status_text'];?>
+				<?=encodeHtml($request_data['response']['status']);?> <?=encodeHtml($request_data['response']['status_text']);?>
 			</span>
 		</div>
 		<div>
-			<strong>Time:</strong> <?=$request_data['duration'];?> ms
+			<strong>Time:</strong> <?=encodeHtml($request_data['duration']);?> ms
 		</div>
 		<div>
 			<strong>Size:</strong> <?=postportalFormatBytes(strlen($request_data['response']['body']));?>
@@ -146,7 +153,7 @@
 		<?=postportalHeadersList($request_data['request_headers']);?>
 	</div>
 	<div id="request_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
-		<pre><?=$request_data['request_body'];?></pre>
+		<pre><?=encodeHtml($request_data['request_body']);?></pre>
 	</div>
 	<div id="response_headers_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
 		<?=postportalHeadersList($request_data['response']['headers']);?>

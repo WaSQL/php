@@ -30,10 +30,22 @@ if(!isAdmin()){
 //check for postportal in USER table. It may by null for !isset will not work
 if(!array_key_exists('_postportal', $USER)){
 	$USER['_postportal']=array();
-	$ok=executeSQL("ALTER TABLE _users ADD _postportal JSON");
+	// Check if column exists before adding it
+	$cols = getDBFieldInfo('_users', '_postportal');
+	if(!isset($cols['_id'])){
+		$ok=executeSQL("ALTER TABLE _users ADD _postportal JSON");
+		if(!$ok){
+			// Column may already exist from another session, continue
+		}
+	}
 }
 else{
+	// Decode JSON with error handling
 	$USER['_postportal_ex']=decodeJSON($USER['_postportal']);
+	if(!is_array($USER['_postportal_ex'])){
+		// Invalid JSON, reset to empty array
+		$USER['_postportal_ex']=array();
+	}
 }
 
 // Initialize func parameter
@@ -43,6 +55,13 @@ if(!isset($_REQUEST['func'])){
 
 $func = strtolower(trim($_REQUEST['func']));
 switch($func){
+	case 'documentation':
+		loadExtras('markdown');
+		$ptmp=getWaSQLPath('php/admin');
+		$documentation=markdown2Html(getFileContents("{$ptmp}/postportal.md"));
+		setView('documentation',1);
+		return;
+	break;
 	case 'request':
 		$hid='';
 		$request_data=array();
@@ -92,10 +111,17 @@ switch($func){
 			setView('error', 1);
 			return;
 		}
-		// Parse headers
+		// Parse headers with size limit
 		$request_headers = array();
 		if(isset($_REQUEST['headers']) && strlen(trim($_REQUEST['headers'])) > 0){
-			$header_lines = preg_split('/[\r\n]+/', trim($_REQUEST['headers']));
+			$headers_input = trim($_REQUEST['headers']);
+			// Limit headers to 100KB
+			if(strlen($headers_input) > 102400){
+				$error = 'Request headers too large (max 100KB)';
+				setView('error', 1);
+				return;
+			}
+			$header_lines = preg_split('/[\r\n]+/', $headers_input);
 			foreach($header_lines as $line){
 				if(strpos($line, ':') !== false){
 					list($name, $value) = explode(':', $line, 2);
@@ -103,8 +129,13 @@ switch($func){
 				}
 			}
 		}
-		// Get request body
+		// Get request body with size limit (10MB max)
 		$request_body = isset($_REQUEST['body']) ? $_REQUEST['body'] : '';
+		if(strlen($request_body) > 10485760){
+			$error = 'Request body too large (max 10MB)';
+			setView('error', 1);
+			return;
+		}
 		// Get auth settings
 		$auth_type = isset($_REQUEST['auth_type']) ? $_REQUEST['auth_type'] : 'none';
 		if($auth_type == 'basic' && isset($_REQUEST['auth_username']) && isset($_REQUEST['auth_password'])){
@@ -134,7 +165,11 @@ switch($func){
 		);
 		// Save to history?
 		if(isset($_REQUEST['save_history']) && $_REQUEST['save_history'] == '1'){
-			postportalSaveHistory($request_data);
+			$save_result = postportalSaveHistory($request_data);
+			if(!$save_result){
+				// History save failed, but continue to show response
+				$request_data['history_save_error'] = true;
+			}
 		}
 
 		//$request_data['response']['body']='...';echo printValue($request_data);exit;
@@ -148,6 +183,11 @@ switch($func){
 	break;
 	case 'history_clear':
 		$result = postportalClearHistory();
+		if(!$result){
+			$error = 'Failed to clear history. Please try again.';
+			setView('error', 1);
+			return;
+		}
 		setView('history_list', 1);
 		return;
 	break;
@@ -158,6 +198,11 @@ switch($func){
 			return;
 		}
 		$result = postportalDeleteHistory($_REQUEST['id']);
+		if(!$result){
+			$error = 'Failed to delete history item. Please try again.';
+			setView('error', 1);
+			return;
+		}
 		setView('history_list', 1);
 		return;
 	break;
@@ -178,7 +223,20 @@ switch($func){
 			return;
 		}
 
-		$result = postportalSaveEnvironment(trim($_REQUEST['env_key']), trim($_REQUEST['env_value']));
+		// Validate environment key format (alphanumeric and underscore only)
+		$env_key = trim($_REQUEST['env_key']);
+		if(!preg_match('/^[a-zA-Z0-9_]+$/', $env_key)){
+			$error = 'Environment key must contain only letters, numbers, and underscores';
+			setView('error', 1);
+			return;
+		}
+
+		$result = postportalSaveEnvironment($env_key, trim($_REQUEST['env_value']));
+		if(!$result){
+			$error = 'Failed to save environment variable. Please try again.';
+			setView('error', 1);
+			return;
+		}
 		setView('environment_list', 1);
 		return;
 	break;
@@ -190,6 +248,11 @@ switch($func){
 			return;
 		}
 		$result = postportalDeleteEnvironment($_REQUEST['env_key']);
+		if(!$result){
+			$error = 'Failed to delete environment variable. Please try again.';
+			setView('error', 1);
+			return;
+		}
 		setView('environment_list', 1);
 		return;
 	break;

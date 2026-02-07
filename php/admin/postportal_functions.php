@@ -135,9 +135,21 @@ function postportalSendRequest($url, $method = 'GET', $headers = array(), $body 
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		// Set timeout (30 seconds)
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-		// Verify SSL certificates (set to false for testing with self-signed certs)
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		// Set maximum response size (50MB) to prevent memory exhaustion
+		curl_setopt($ch, CURLOPT_MAXFILESIZE, 52428800);
+		// SSL Certificate Verification
+		// SECURITY NOTE: For production, you should verify SSL certificates
+		// Set CURLOPT_SSL_VERIFYPEER to true and provide a CA bundle path
+		// Currently disabled to allow testing with self-signed certificates
+		$verify_ssl = false; // Set to true in production environments
+		if($verify_ssl){
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+			// Optionally set CA bundle: curl_setopt($ch, CURLOPT_CAINFO, '/path/to/cacert.pem');
+		} else {
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		}
 		// Execute request
 		$result = curl_exec($ch);
 		// Get request info
@@ -145,7 +157,9 @@ function postportalSendRequest($url, $method = 'GET', $headers = array(), $body 
 		$response['info'] = $info;
 		// Check for errors
 		if(curl_errno($ch)){
-			$response['error'] = curl_error($ch);
+			$error_code = curl_errno($ch);
+			$error_msg = curl_error($ch);
+			$response['error'] = "cURL Error ({$error_code}): {$error_msg}";
 		} else {
 			// Parse headers and body
 			$header_size = $info['header_size'];
@@ -218,21 +232,33 @@ function postportalFormatResponse($body, $headers){
 	}
 	// Format based on content type
 	if(strpos($content_type, 'application/json') !== false){
-		// Pretty print JSON
+		// Pretty print JSON with error handling
 		$json = json_decode($body);
 		if(json_last_error() === JSON_ERROR_NONE){
 			return '<pre class="w_code">' . encodeHtml(json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+		} else {
+			// JSON parsing failed, show error and raw content
+			$error_msg = json_last_error_msg();
+			return '<div class="alert alert-warning"><strong>JSON Parse Error:</strong> ' . encodeHtml($error_msg) . '</div>' .
+			       '<pre class="w_code">' . encodeHtml($body) . '</pre>';
 		}
 	} elseif(strpos($content_type, 'text/html') !== false){
 		// Show HTML as rendered and as code
 		return '<pre class="w_code">' . encodeHtml($body) . '</pre>';
 	} elseif(strpos($content_type, 'text/xml') !== false || strpos($content_type, 'application/xml') !== false){
-		// Pretty print XML
+		// Pretty print XML with error handling
+		libxml_use_internal_errors(true);
 		$xml = simplexml_load_string($body);
 		if($xml !== false){
 			$dom = dom_import_simplexml($xml)->ownerDocument;
 			$dom->formatOutput = true;
+			libxml_clear_errors();
 			return '<pre class="w_code">' . encodeHtml($dom->saveXML()) . '</pre>';
+		} else {
+			// XML parsing failed, show errors
+			$errors = libxml_get_errors();
+			libxml_clear_errors();
+			// Fall through to show as plain text
 		}
 	}
 	// Default: show as plain text
@@ -280,7 +306,8 @@ function postportalSaveHistory($request_data){
 	$request_data['id']=$id;
 	$request_data['timestamp']=date('Y-m-d H:i:s');
 	$USER['_postportal_ex']['history'][$id]=$request_data;
-	//only store the last 50 in history
+	// Only store the last 15 requests in history to prevent database bloat
+	// Adjust this limit based on your needs
 	if(count($USER['_postportal_ex']['history']) > 15){
 		$USER['_postportal_ex']['history']=sortArrayByKeys($USER['_postportal_ex']['history'],array('timestamp'=>SORT_ASC));
 		while(count($USER['_postportal_ex']['history']) > 15){
@@ -290,6 +317,10 @@ function postportalSaveHistory($request_data){
 	$ok=editDBRecordById('_users',$USER['_id'],array(
 		'_postportal'=>$USER['_postportal_ex']
 	));
+	if(!is_numeric($ok)){
+		// Database update failed
+		return false;
+	}
 	return true;
 }
 
@@ -326,6 +357,10 @@ function postportalClearHistory(){
 	$ok=editDBRecordById('_users',$USER['_id'],array(
 		'_postportal'=>$USER['_postportal_ex']
 	));
+	if(!is_numeric($ok)){
+		// Database update failed
+		return false;
+	}
 	return true;
 }
 function postportalDeleteHistory($id){
@@ -340,6 +375,10 @@ function postportalDeleteHistory($id){
 	$ok=editDBRecordById('_users',$USER['_id'],array(
 		'_postportal'=>$USER['_postportal_ex']
 	));
+	if(!is_numeric($ok)){
+		// Database update failed
+		return false;
+	}
 	return true;
 }
 function postportalHeadersList($recs){
@@ -380,6 +419,10 @@ function postportalSaveEnvironment($key, $value){
 	$ok=editDBRecordById('_users',$USER['_id'],array(
 		'_postportal'=>$USER['_postportal_ex']
 	));
+	if(!is_numeric($ok)){
+		// Database update failed
+		return false;
+	}
 	return true;
 }
 
@@ -424,6 +467,10 @@ function postportalDeleteEnvironment($k){
 	$ok=editDBRecordById('_users',$USER['_id'],array(
 		'_postportal'=>$USER['_postportal_ex']
 	));
+	if(!is_numeric($ok)){
+		// Database update failed
+		return false;
+	}
 	return true;
 }
 
