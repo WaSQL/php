@@ -1,4 +1,4 @@
-var wacss = {
+const wacss = {
 	/**
 	* @exclude  - these are for internal use only and thus excluded from the manual
 	*/
@@ -58,52 +58,60 @@ var wacss = {
 	* @usage wacss.ajaxGet('/t/1/index/show,'mydiv',{color:"red",age:35});
 	*/
 	ajaxGet: function(url,div,params) {
-	    let xmlhttp = new XMLHttpRequest();
-	    xmlhttp.recenter='';
-	    xmlhttp.div=div;
+		if(undefined==params){params={};}
+	    // Create response object to mimic XMLHttpRequest structure
+	    let responseObj = {
+	        recenter: '',
+	        div: div,
+	        processing: undefined,
+	        ajaxevent: '',
+	        ajaxtext: '',
+	        responseText: ''
+	    };
+
 	    let cp={};
 	    if(typeof(div)==='string'){
 	    	switch(div.toLowerCase()){
 	    		case 'centerpop':
 	    		case 'wacss_centerpop':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop';}
 	    			cp=wacss.createCenterpop(params.title);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop1':
 	    		case 'wacss_centerpop1':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop1');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop1';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop1');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop1';}
 	    			cp=wacss.createCenterpop(params.title,1);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop2':
 	    		case 'wacss_centerpop2':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop2');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop2');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop2';}
 	    			cp=wacss.createCenterpop(params.title,2);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop3':
 	    		case 'wacss_centerpop3':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop3');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop3');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop2';}
 	    			cp=wacss.createCenterpop(params.title,3);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'modal':
 	    			params.overlay=1;
 	    			let modal=wacss.modalPopup(wacss.setprocessing,params.title,params);
-	    			xmlhttp.div=modal.querySelector('#wacss_modal_content');
+	    			responseObj.div=modal.querySelector('#wacss_modal_content');
 	    		break;
 	    	}
 	    }
 		//set processing
 		if(undefined==params.setprocessing){
-			xmlhttp.div.innerHTML=wacss.processing;
-			if(undefined != xmlhttp.recenter && xmlhttp.recenter.length > 0){
-        		wacss.centerObject(xmlhttp.recenter);
+			responseObj.div.innerHTML=wacss.processing;
+			if(undefined != responseObj.recenter && responseObj.recenter.length > 0){
+        		wacss.centerObject(responseObj.recenter);
         	}
         	setTimeout(wacss.setProcessingTimer, 3000);
 		}
@@ -125,7 +133,7 @@ var wacss = {
 			let pdiv=wacss.getObject(params.setprocessing);
 			if(undefined != pdiv){
 				pdiv.previous=pdiv.innerHTML;
-				xmlhttp.processing=pdiv;
+				responseObj.processing=pdiv;
 				pdiv.innerHTML=wacss.processing;
 				setTimeout(wacss.setProcessingTimer, 3000);
 			}
@@ -142,38 +150,71 @@ var wacss = {
 			if (typeof v === 'undefined' || v === null || (typeof v === 'string' && v.length === 0)) continue;
 			aparams.append(k, v);
 		}
-		//load
-	    xmlhttp.onload = function(){
-		    	this.ajaxevent='load';
-	    	this.ajaxtext=this.responseText;
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    //error
-	    xmlhttp.onerror = function(){
-		    	this.ajaxevent='error';
-	    	this.ajaxtext='&#9888; ajax request error';
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    xmlhttp.ontimeout = function(){
-		    	this.ajaxevent='timeout';
-	    	this.ajaxtext='&#128359; ajax request timed out';
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    xmlhttp.onabort = function(){
-		    	this.ajaxevent='abort';
-	    	this.ajaxtext='&#x2718; ajax request aborted';
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    xmlhttp.open("GET", aurl.toString(), true);
-	    //timeout
-	    if(undefined != params.timeout){xmlhttp.timeout=parseInt(params.timeout);}
-	    else{
-	    	let divobj=wacss.getObject(div);
-	    	if(undefined != divobj && undefined != divobj.dataset.timeout){
-	    		xmlhttp.timeout=parseInt(divobj.dataset.timeout);
-	    	}
-	    }
-	    xmlhttp.send();
+
+		// Setup timeout handling with AbortController
+		const controller = new AbortController();
+		const signal = controller.signal;
+		let timeoutId = null;
+
+		// Determine timeout value
+		let timeoutMs = 0;
+		if(undefined != params.timeout){
+			timeoutMs = parseInt(params.timeout);
+		}
+		else{
+			let divobj=wacss.getObject(div);
+			if(undefined != divobj && undefined != divobj.dataset.timeout){
+				timeoutMs = parseInt(divobj.dataset.timeout);
+			}
+		}
+
+		// Set timeout if specified
+		if(timeoutMs > 0){
+			timeoutId = setTimeout(() => {
+				controller.abort();
+			}, timeoutMs);
+		}
+
+		// Perform fetch request
+		fetch(aurl.toString(), {
+			method: 'GET',
+			signal: signal,
+			credentials: 'same-origin'
+		})
+		.then(response => {
+			if(timeoutId){clearTimeout(timeoutId);}
+
+			// Check if response is ok (status 200-299)
+			if(!response.ok){
+				throw new Error(`HTTP error ${response.status}`);
+			}
+
+			return response.text();
+		})
+		.then(text => {
+			// Success - load event
+			responseObj.ajaxevent = 'load';
+			responseObj.ajaxtext = text;
+			responseObj.responseText = text;
+			wacss.ajaxProcessResponse(responseObj);
+		})
+		.catch(error => {
+			if(timeoutId){clearTimeout(timeoutId);}
+
+			// Determine error type
+			if(error.name === 'AbortError'){
+				// Timeout
+				responseObj.ajaxevent = 'timeout';
+				responseObj.ajaxtext = '&#128359; ajax request timed out';
+			}
+			else{
+				// Network or other error
+				responseObj.ajaxevent = 'error';
+				responseObj.ajaxtext = '&#9888; ajax request error';
+			}
+			wacss.ajaxProcessResponse(responseObj);
+		});
+
 	    //always return false
 	    return false;
 	},
@@ -188,7 +229,7 @@ var wacss = {
 	alertMessage: function(msg,timer){
 		if(undefined==timer){timer=4000;}
 		timer=parseInt(timer);
-		html='<div class="w_fade_away w_big w_red">'+msg+'</div>'+"\n";
+		const html=`<div class="w_fade_away w_big w_red">${msg}</div>\n`;
 		let cp=wacss.createCenterpop('Alert',2);
 		cp.innerHTML=html;
 		setTimeout(() => {
@@ -209,11 +250,10 @@ var wacss = {
 	* @usage wacss.ajaxPost();
 	*/
 	ajaxPost: function(frm,div) {
-	    let xmlhttp = new XMLHttpRequest();
 	    let url=frm.getAttribute('action');
 	    //some quick checks
-	    for(var i=0;i<frm.length;i++){
-			let atts=getAllAttributes(frm[i]);
+	    for(let i=0;i<frm.length;i++){
+			let atts=wacss.getAllAttributes(frm[i]);
 			if(undefined != atts.disabled){continue;}
 			if(undefined != atts.readonly){continue;}
 			if(frm[i].type == 'hidden'){continue;}
@@ -244,7 +284,17 @@ var wacss = {
 	            }
 			}
 		}
-	    xmlhttp.div=div;
+
+	    // Create response object to mimic XMLHttpRequest structure
+	    let responseObj = {
+	        recenter: '',
+	        div: div,
+	        processing: undefined,
+	        ajaxevent: '',
+	        ajaxtext: '',
+	        responseText: ''
+	    };
+
 	    let cp={};
 	    let params={};
 	    params.title=frm.title.value||frm.dataset.title||'Information';
@@ -252,36 +302,36 @@ var wacss = {
 	    	switch(div.toLowerCase()){
 	    		case 'centerpop':
 	    		case 'wacss_centerpop':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop';}
 	    			cp=wacss.createCenterpop(params.title);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop1':
 	    		case 'wacss_centerpop1':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop1');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop1';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop1');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop1';}
 	    			cp=wacss.createCenterpop(params.title,1);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop2':
 	    		case 'wacss_centerpop2':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop2');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop2');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop2';}
 	    			cp=wacss.createCenterpop(params.title,2);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'centerpop3':
 	    		case 'wacss_centerpop3':
-	    			xmlhttp.div=wacss.getObject('wacss_centerpop3');
-	    			if(undefined==xmlhttp.div){xmlhttp.recenter='wacss_centerpop2';}
+	    			responseObj.div=wacss.getObject('wacss_centerpop3');
+	    			if(undefined==responseObj.div){responseObj.recenter='wacss_centerpop2';}
 	    			cp=wacss.createCenterpop(params.title,3);
-	    			xmlhttp.div=cp.querySelector('.wacss_centerpop_content');
+	    			responseObj.div=cp.querySelector('.wacss_centerpop_content');
 	    		break;
 	    		case 'modal':
 	    			params.overlay=1;
 	    			let modal=wacss.modalPopup(wacss.setprocessing,params.title,params);
-	    			xmlhttp.div=modal.querySelector('#wacss_modal_content');
+	    			responseObj.div=modal.querySelector('#wacss_modal_content');
 	    		break;
 	    	}
 	    }
@@ -293,28 +343,7 @@ var wacss = {
 				cpop_close.dataset.formchanged=0;
 			}
 		}
-	    //load
-	    xmlhttp.onload = function(){
-		    	this.ajaxevent='load';
-	    	this.ajaxtext=this.responseText;
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    //error
-	    xmlhttp.onerror = function(){
-		    	this.ajaxevent='error';
-	    	this.ajaxtext='&#9888; ajax request error';
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    xmlhttp.ontimeout = function(){
-		    	this.ajaxevent='timeout';
-	    	this.ajaxtext='&#128359; ajax request timed out';
-	    	wacss.ajaxProcessResponse(this);
-	    };
-	    xmlhttp.onabort = function(){
-		    	this.ajaxevent='abort';
-	    	this.ajaxtext='&#x2718; ajax request aborted';
-	    	wacss.ajaxProcessResponse(this);
-	    };
+
 	    //set processing
 	    let processing=0;
 	    if(undefined != frm.dataset.setprocessing){
@@ -341,24 +370,81 @@ var wacss = {
 			let pdiv=wacss.getObject(processing);
 			if(undefined != pdiv){
 				pdiv.previous=pdiv.innerHTML;
-				xmlhttp.processing=pdiv;
+				responseObj.processing=pdiv;
 				pdiv.innerHTML=wacss.processing;
 				setTimeout(wacss.setProcessingTimer, 3000);
 			}
 		}
+
 	    let data = new FormData(frm);
 	    //add AjaxRequestUniqueId
 	    data.append('AjaxRequestUniqueId',wacss.ajaxUniqueID());
-	    xmlhttp.open("POST", url, true);
-	    //timeout
-	    if(undefined != frm.dataset.timeout){xmlhttp.timeout=parseInt(frm.dataset.timeout);}
-	    else{
-	    	let divobj=wacss.getObject(div);
-	    	if(undefined != divobj && undefined != divobj.dataset.timeout){
-	    		xmlhttp.timeout=parseInt(divobj.dataset.timeout);
-	    	}
-	    }
-	    xmlhttp.send(data);
+
+		// Setup timeout handling with AbortController
+		const controller = new AbortController();
+		const signal = controller.signal;
+		let timeoutId = null;
+
+		// Determine timeout value
+		let timeoutMs = 0;
+		if(undefined != frm.dataset.timeout){
+			timeoutMs = parseInt(frm.dataset.timeout);
+		}
+		else{
+			let divobj=wacss.getObject(div);
+			if(undefined != divobj && undefined != divobj.dataset.timeout){
+				timeoutMs = parseInt(divobj.dataset.timeout);
+			}
+		}
+
+		// Set timeout if specified
+		if(timeoutMs > 0){
+			timeoutId = setTimeout(() => {
+				controller.abort();
+			}, timeoutMs);
+		}
+
+		// Perform fetch request
+		fetch(url, {
+			method: 'POST',
+			body: data,
+			signal: signal,
+			credentials: 'same-origin'
+		})
+		.then(response => {
+			if(timeoutId){clearTimeout(timeoutId);}
+
+			// Check if response is ok (status 200-299)
+			if(!response.ok){
+				throw new Error(`HTTP error ${response.status}`);
+			}
+
+			return response.text();
+		})
+		.then(text => {
+			// Success - load event
+			responseObj.ajaxevent = 'load';
+			responseObj.ajaxtext = text;
+			responseObj.responseText = text;
+			wacss.ajaxProcessResponse(responseObj);
+		})
+		.catch(error => {
+			if(timeoutId){clearTimeout(timeoutId);}
+
+			// Determine error type
+			if(error.name === 'AbortError'){
+				// Timeout
+				responseObj.ajaxevent = 'timeout';
+				responseObj.ajaxtext = '&#128359; ajax request timed out';
+			}
+			else{
+				// Network or other error
+				responseObj.ajaxevent = 'error';
+				responseObj.ajaxtext = '&#9888; ajax request error';
+			}
+			wacss.ajaxProcessResponse(responseObj);
+		});
+
 	    return false;
 	},
 	/**
@@ -1052,7 +1138,6 @@ var wacss = {
 	* @usage wacss.formChanged();
 	*/
 	formChanged: function(frm,event){
-		if(!event){event=window.event;}
 		//mark the element that changed
 		if (typeof event === 'object' && typeof event.type === 'string' && event.type=='change') {
 	        const changedElement = event.target || event.srcElement;
@@ -2081,9 +2166,10 @@ var wacss = {
         if(undefined == val){return new Array();}
         if(val.length==0){return new Array();}
 		val=val.replace(/\[(.*)\]$/,"\\\[$1\\\]");
-        var a, list, found = new Array(), re = new RegExp(val, 'i');
-        list = document.getElementsByTagName(tag);
-        for (var i = 0; i < list.length; ++i) {
+        let a, found = new Array();
+        const re = new RegExp(val, 'i');
+        const list = document.querySelectorAll(tag);
+        for (let i = 0; i < list.length; ++i) {
             a = list[i].getAttribute(att);
             if (undefined == a && undefined != list[i][att]){a = list[i][att];}
             if (undefined == a && att=='for' && undefined != list[i]["htmlFor"]){a = list[i]["htmlFor"];}
@@ -2104,8 +2190,8 @@ var wacss = {
 	* @usage wacss.hideElementsByAttribute('div', 'data-hide', '1');
 	*/
 	hideElementsByAttribute: function(tag, att, val){
-		var list = wacss.GetElementsByAttribute(tag, att, val);
-		for (var i = 0; i < list.length; ++i) {
+		const list = wacss.GetElementsByAttribute(tag, att, val);
+		for (let i = 0; i < list.length; ++i) {
 			list[i].style.display='none';
     	}
 	},
@@ -2369,8 +2455,8 @@ var wacss = {
 			catch(e){}
 	    	//try getElementById
 			if(undefined != document.getElementById(obj)){return document.getElementById(obj);}
-			else if(undefined != document.getElementsByName(obj)){
-				let els=document.getElementsByName(obj);
+			else if(undefined != document.querySelectorAll(`[name="${obj}"]`)){
+				let els=document.querySelectorAll(`[name="${obj}"]`);
 				if(els.length ==1){return els[0];}
 	        	}
 			else if(undefined != document.all[obj]){return document.all[obj];}
@@ -2519,7 +2605,7 @@ var wacss = {
 	       for (let j = 0, col; col = tableRow.cells[j]; j ++) {
 	           //iterate through columns
 	           //columns would be accessed using the "col" variable assigned in the for loop
-	           var cval;
+	           let cval;
 	           if(i==0){
 	               cval=wacss.getText(col);
 	               keys.push(cval);
@@ -2553,16 +2639,16 @@ var wacss = {
 	* @usage onclick="return wacss.cloneDiv('mydivid',1);"
 	*/
 	cloneDiv: function(div,c){
-		var divObj = wacss.getObject(div);
-		if(undefined == divObj){console.error('cloneDiv Error: No id found for '+div);return false;}
+		const divObj = wacss.getObject(div);
+		if(undefined == divObj){console.error(`cloneDiv Error: No id found for ${div}`);return false;}
 		if(undefined == divObj.getAttribute('data-cnt')){
 			divObj.setAttribute('data-cnt',1);
 		}
 		if(undefined == divObj.getAttribute('data-max')){
 			divObj.setAttribute('data-max',0);
 		}
-		var cnt=parseInt(divObj.getAttribute('data-cnt'));
-		var max_cnt=0;
+		let cnt=parseInt(divObj.getAttribute('data-cnt'));
+		let max_cnt=0;
 		if(undefined != divObj.getAttribute('data-max')){
 			max_cnt=parseInt(divObj.getAttribute('data-max'));
 		}
@@ -2575,42 +2661,42 @@ var wacss = {
 		}
 		if(undefined == divObj.getAttribute('data-init')){
 			divObj.setAttribute('data-init',1);
-			var cloneDiv=document.createElement('div');
+			const cloneDiv=document.createElement('div');
 			cloneDiv.setAttribute('id','clonebutton');
 			cloneDiv.className='col-sm-1 w_noprint';
-			cloneDiv.innerHTML='<label>Clone</label><button type="button" class="btn btn-default btn-sm" onclick="wacss.cloneDiv(\''+divObj.id+'\',1)"><span class="icon-plus"></span></button>';
+			cloneDiv.innerHTML=`<label>Clone</label><button type="button" class="btn btn-default btn-sm" onclick="wacss.cloneDiv('${divObj.id}',1)"><span class="icon-plus"></span></button>`;
 			divObj.insertAdjacentElement('afterBegin',cloneDiv);
 			return true;
 		}
 		if(undefined != c && c==1){
-			var count=cnt;
+			const count=cnt;
 			cnt++;
 			divObj.setAttribute('data-cnt',cnt);
-			var clone=divObj.cloneNode(true);
+			const clone=divObj.cloneNode(true);
 			clone.setAttribute('id',divObj.id+'_'+count);
 			let list=clone.querySelectorAll("*");
-			for(var i=0;i<list.length;i++){
+			for(let i=0;i<list.length;i++){
 				if(undefined != list[i].id){
-		    		var cid=list[i].id;
+		    		const cid=list[i].id;
 		    		if(cid.length){list[i].setAttribute('id',cid+'_'+count);}
 				}
 				if(undefined != list[i].name){
-					var cname=list[i].name;
+					const cname=list[i].name;
 					if(cname.length){list[i].setAttribute('name',cname+'_'+count);}
 				}
 				if(undefined != list[i].getAttribute('for')){
-		    		var cfor=list[i].getAttribute('for');
+		    		const cfor=list[i].getAttribute('for');
 					if(cfor.length){list[i].setAttribute('for',cfor+'_'+count);}
 				}
 				if(undefined != list[i].getAttribute('data-id')){
-		    		var cv=list[i].getAttribute('data-id');
+		    		const cv=list[i].getAttribute('data-id');
 					if(cv.length){list[i].setAttribute('data-id',cv+'_'+count);}
 				}
 				if(undefined != list[i].getAttribute('data-behavior')){
-		    		var att=list[i].getAttribute('data-behavior');
-		    		var matches=att.match(/\@raid\((.+?)\)/);
+		    		const att=list[i].getAttribute('data-behavior');
+		    		const matches=att.match(/\@raid\((.+?)\)/);
 		    		if(undefined != matches && undefined != matches[1]){
-						var newval='@raid('+matches[1]+'_'+count+')';
+						const newval='@raid('+matches[1]+'_'+count+')';
 						list[i].setAttribute('data-behavior',newval);
 					}
 				}
@@ -2649,24 +2735,24 @@ var wacss = {
 	* @usage onclick="return wacss.cloneTableRow('mytableid');"
 	*/
 	cloneTableRow: function(tid,opts){
-		var dTable = wacss.getObject(tid);
-		if(undefined == dTable){console.error('cloneTableRow Error: No table id found for '+tid);return false;}
-		var opt={
+		const dTable = wacss.getObject(tid);
+		if(undefined == dTable){console.error(`cloneTableRow Error: No table id found for ${tid}`);return false;}
+		const opt={
 	        copies:1,
 	        row:'last'
 		}
 		if(opts){
-			for (var key in opts){
+			for (let key in opts){
 				opt[key]=opts[key];
 			}
 		}
-		var rowCount = dTable.rows.length;
-		var cloneRow = rowCount-1;
+		let rowCount = dTable.rows.length;
+		let cloneRow = rowCount-1;
 		if(wacss.isNum(opt.row)){cloneRow=opt.row;}
-		var lastindex=0;
-		var focusobj=null;
+		let lastindex=0;
+		let focusobj=null;
 		for (c=0;c<dTable.rows[cloneRow].cells.length;c++){
-			var cellkids=dTable.rows[cloneRow].cells[c].getElementsByTagName('*');
+			const cellkids=dTable.rows[cloneRow].cells[c].getElementsByTagName('*');
 			for(ci=0;ci<cellkids.length;ci++){
 		    	if(undefined != cellkids[ci].tabIndex && wacss.isNum(cellkids[ci].tabIndex) && parseInt(cellkids[ci].tabIndex) > 0){
 					lastindex=parseInt(cellkids[ci].tabIndex);
@@ -2675,36 +2761,36 @@ var wacss = {
 			}
 		}
 		tabx=lastindex+1;
-		var xval=0;
-		for(var x=0;x<opt.copies;x++){
+		let xval=0;
+		for(let x=0;x<opt.copies;x++){
 			xval++;
-			var newRow =dTable.insertRow(rowCount);
+			const newRow =dTable.insertRow(rowCount);
 			for (c=0;c<dTable.rows[cloneRow].cells.length;c++){
-				var cellkids=dTable.rows[cloneRow].cells[c].getElementsByTagName('*');
-				var td=newRow.insertCell(c);
+				const cellkids=dTable.rows[cloneRow].cells[c].getElementsByTagName('*');
+				const td=newRow.insertCell(c);
 				if(cellkids.length ==0){
-					var val=dTable.rows[cloneRow].cells[c].innerHTML;
+					let val=dTable.rows[cloneRow].cells[c].innerHTML;
 					if(wacss.isNum(val)){
 						val=parseInt(val)+xval;
 					}
 					td.innerHTML=val;
 	                continue;
 				}
-				var myregexp=/^(.+?)([0-9]+)$/;
+				const myregexp=/^(.+?)([0-9]+)$/;
 				for(ci=0;ci<cellkids.length;ci++){
-	                var clone = cellkids[ci].cloneNode(true);
+	                const clone = cellkids[ci].cloneNode(true);
 	                if(undefined != clone.id && clone.id.length > 0){
-	                    var match = myregexp.exec(clone.id);
+	                    let match = myregexp.exec(clone.id);
 						if (match != null) {
-							var newnum=parseInt(match[2])+1;
+							const newnum=parseInt(match[2])+1;
 							clone.id=match[1]+newnum;
 						}
 						else{clone.id=clone.id+xval;}
 					}
 	                if(undefined != clone.name && clone.name.length > 0){
-	                    var match = myregexp.exec(clone.name);
+	                    let match = myregexp.exec(clone.name);
 						if (match != null) {
-							var newnum=parseInt(match[2])+1;
+							const newnum=parseInt(match[2])+1;
 							clone.name=match[1]+newnum;
 						}
 						else{clone.name=clone.name+xval;}
@@ -2721,7 +2807,7 @@ var wacss = {
 	                	clone.tabIndex=tabx;
 	                	tabx=tabx+1;
 					}
-	                var newobj=td.appendChild(clone);
+	                const newobj=td.appendChild(clone);
 				}
 			}
 			rowCount = dTable.rows.length;
@@ -3397,11 +3483,11 @@ var wacss = {
 	* @usage let count = wacss.getWordCount('myTextarea');
 	*/
 	getWordCount: function(id){
-		var s=wacss.getText(id);
+		let s=wacss.getText(id);
 		s = s.replace(/(^\s*)|(\s*$)/gi,"");
 		s = s.replace(/[ ]{2,}/gi," ");
 		s = s.replace(/\n /,"\n");
-		var wordcount = s.split(' ').length;
+		const wordcount = s.split(' ').length;
 		return wordcount || 0;
 	},
 	/**
@@ -3412,7 +3498,7 @@ var wacss = {
 	* @usage if(wacss.isFunction(myFunc)){...}
 	*/
 	isFunction: function(functionToCheck) {
-		var getType = {};
+		const getType = {};
 		return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
 	},
 	/**
@@ -5440,8 +5526,7 @@ var wacss = {
 			els[e].editor=editor;
 			//enable special keys
 			editor.onkeydown=function(e){
-				let evt = e || window.event;
-			    let keyCode = evt.charCode || evt.keyCode;
+			    let keyCode = e.charCode || e.keyCode;
 					    //get the selected text, if any
 			    let sel = '';
 			    if (window.getSelection) {
@@ -5452,27 +5537,27 @@ var wacss = {
 			    switch(keyCode){
 			    	case 9:
 			    		//tab
-			    		evt.preventDefault();
+			    		e.preventDefault();
 			    		document.execCommand('insertHTML', false, '\u0009');
 			    	break;
 			    	case 85:
-			    		if(evt.altKey && sel.length){
+			    		if(e.altKey && sel.length){
 			    			//Alt+U => uppercase
-			    			evt.preventDefault();
+			    			e.preventDefault();
 			    			document.execCommand('insertHTML', false, sel.toUpperCase());
 			    		}
 			    	break;
 			    	case 76:
-			    		if(evt.altKey && sel.length){
+			    		if(e.altKey && sel.length){
 			    			//Alt+l => lowercase
-			    			evt.preventDefault();
+			    			e.preventDefault();
 			    			document.execCommand('insertHTML', false, sel.toLowerCase());
 			    		}
 			    	break;
 			    	case 72:
-			    		if(evt.altKey){
+			    		if(e.altKey){
 			    			//Alt+h => help
-			    			evt.preventDefault();
+			    			e.preventDefault();
 			    			let help='EDITOR COMMAND REFERENCE:'+wacss.CRLF+wacss.CRLF;
 			    			help+='Alt+u => uppercase selection'+wacss.CRLF;
 			    			help+='Alt+l => lowercase selection'+wacss.CRLF;
@@ -5484,10 +5569,10 @@ var wacss = {
 			    		}
 			    	break;
 			    	case 67:
-			    		if(evt.altKey){
+			    		if(e.altKey){
 			    			//Alt+c => clear formatting
 			    			if(confirm('Clear all formatting?')){
-			    				evt.preventDefault();
+			    				e.preventDefault();
 			    				this.textContent=this.innerText;
 			    			}
 			    		}
@@ -7732,25 +7817,15 @@ var wacss = {
 	},
 	/**
 	* @name wacss.listen
-	* @describe adds an event listener to an element with fallback support
+	* @describe adds an event listener to an element
 	* @param string evnt - event name (e.g., 'click', 'change')
 	* @param mixed elem - DOM element or element ID
 	* @param function func - callback function
-	* @return boolean
+	* @return void
 	* @usage wacss.listen('click', 'myButton', myFunction);
 	*/
 	listen: function(evnt, elem, func) {
-	    if (elem.addEventListener){ 
-	    	// W3C DOM
-	    	elem.addEventListener(evnt,func,false);
-	    }  
-	    else if (elem.attachEvent) { 
-	    	// IE DOM
-	         let r = elem.attachEvent("on"+evnt, func);
-	         return r;
-	    }
-	    else{
-		    }
+	    elem.addEventListener(evnt, func, false);
 	},
 	/**
 	* @name wacss.loadCSS
@@ -7832,7 +7907,6 @@ var wacss = {
 			obj.style.cursor='move';
 		}
   		function makeMovableMouseDown(e) {
-			e = e || window.event;
 			e.preventDefault();
 			// get the mouse cursor position at startup:
 			obj.pos3 = e.clientX;
@@ -7842,7 +7916,6 @@ var wacss = {
 			document.onmousemove = makeMovableDrag;
   		}
 		function makeMovableDrag(e) {
-			e = e || window.event;
 			e.preventDefault();
 			// calculate the new cursor position:
 			obj.pos1 = obj.pos3 - e.clientX;
@@ -8044,9 +8117,9 @@ var wacss = {
 	* @name wacss.nav
 	* @describe navigation based on data-nav and data-div
 	* @param el element (this)
-	* @param opts object additional instructions not in dataset
+	* @param opts object additional instructions not in dataset (can also be event object)
 	* @return string placed in element specified by data-div
-	* @usage <a href="#" data-nav="/t/1/index/test" data-div="centerpop" onclick="return wacss.nav(this);">test</a>
+	* @usage <a href="#" data-nav="/t/1/index/test" data-div="centerpop" onclick="return wacss.nav(this, event);">test</a>
 	*/
 	nav: function(el,opts){
 		//check to make sure that el has data-nav
@@ -8055,8 +8128,8 @@ var wacss = {
 					return false;
 		}
 		//stop propigation
-		if(window.event && undefined != el.dataset.nav){
-			window.event.stopImmediatePropagation();
+		if(opts && opts.stopImmediatePropagation && undefined != el.dataset.nav){
+			opts.stopImmediatePropagation();
 		}
 		//get parent
 		let ptr=wacss.getParent(elobj,'tr');
@@ -8797,7 +8870,6 @@ var wacss = {
 		return false;
 	},
 	preventDefault: function(evt){
-		evt = evt || window.event;
 		if (evt.preventDefault){evt.preventDefault();}
 		if (evt.stopPropagation){evt.stopPropagation();}
 	 	if (evt.cancelBubble !== null){evt.cancelBubble = true;}
@@ -8900,7 +8972,7 @@ var wacss = {
 		}
 		catch(e){}
 		try{
-			document.getElementsByTagName('BODY')[0].removeChild(obj);
+			document.body.removeChild(obj);
 	    	if(undefined == obj){return true;}
 		}
 		catch(e){}
@@ -9355,12 +9427,12 @@ var wacss = {
 	* @usage wacss.setSliderText();
 	*/
 	setSliderText:function(fld){
-		var val=fld.value;
-		var attr=wacss.getAllAttributes(fld);
+		const val=fld.value;
+		const attr=wacss.getAllAttributes(fld);
 		if(undefined == attr["data-label"]){return;}
 		if(undefined != attr['data-labelmap']){
 			attr['data-labelmap']=str_replace("'",'"',attr['data-labelmap']);
-	    	var map=JSON.parse(attr['data-labelmap']);
+	    	const map=JSON.parse(attr['data-labelmap']);
 	    	if(undefined != map[val]){
 				wacss.setText(attr['data-label'],map[val]);
 				return;
@@ -10546,8 +10618,8 @@ var wacss = {
 	* @usage wacss.verboseSize();
 	*/
 	verboseSize: function(bytes) {
-	  var i = -1;
-	  var byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
+	  let i = -1;
+	  const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
 	  do {
 	    bytes /= 1024;
 	    i++;
