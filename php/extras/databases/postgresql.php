@@ -890,12 +890,6 @@ function postgresqlGetTableDDL($table,$schema=''){
 	$fields=array();
 	foreach($fieldinfo as $field=>$info){
 		$fld=" {$info['_dbfield']} {$info['_dbtype_ex']}";
-		if(in_array($info['primary_key'],array('true','yes',1))){
-			$fld.=' PRIMARY KEY';
-		}
-		elseif(in_array($field,$pkeys)){
-			$fld.=' PRIMARY KEY';
-		}
 		if($info['identity']=='a'){
 			$fld.=' GENERATED ALWAYS AS IDENTITY';
 		}
@@ -913,15 +907,21 @@ function postgresqlGetTableDDL($table,$schema=''){
 				if($info['_dbtype']=='bigint'){
 					$fld=str_replace(' bigint',' bigserial',$fld);
 				}
-				elseif($info['_dbtype']=='int'){
-					$fld=str_replace(' int',' serial',$fld);
+				elseif($info['_dbtype']=='integer'){
+					$fld=str_replace(' integer',' serial',$fld);
 				}
 			}
 			else{
 				$fld.=" DEFAULT {$info['default']}";
 			}
 		}
+		if(!empty($info['uniquekey']) && !in_array($field,$pkeys)){
+			$fld.=' UNIQUE';
+		}
 		$fields[]=$fld;
+	}
+	if(count($pkeys) > 0){
+		$fields[]=" PRIMARY KEY (".implode(', ',$pkeys).")";
 	}
 	$ddl="CREATE TABLE {$schema}.{$table} (".PHP_EOL;
 	$ddl.=implode(','.PHP_EOL,$fields);
@@ -2165,13 +2165,12 @@ ENDOFQUERY;
 		a.attnum as numeric_precision,
 		'' as numeric_precision_radix,
 		'' as udt_name,
-		CASE WHEN p.contype = 'p' THEN true ELSE false END AS primarykey,
-    CASE WHEN p.contype = 'u' THEN true ELSE false END AS uniquekey,
+		CASE WHEN EXISTS (SELECT 1 FROM pg_constraint pc WHERE pc.conrelid = c.oid AND pc.contype = 'p' AND a.attnum = ANY(pc.conkey)) THEN true ELSE false END AS primarykey,
+		CASE WHEN EXISTS (SELECT 1 FROM pg_constraint pc WHERE pc.conrelid = c.oid AND pc.contype = 'u' AND a.attnum = ANY(pc.conkey)) THEN true ELSE false END AS uniquekey,
 		a.attidentity as is_identity
 	FROM pg_attribute a
 		LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum)
 		JOIN pg_class c on a.attrelid = c.oid
-		LEFT JOIN pg_constraint p ON p.conrelid = c.oid AND a.attnum = ANY (p.conkey)
 		JOIN pg_namespace s on c.relnamespace = s.oid
 	WHERE a.attnum > 0 
 		AND NOT a.attisdropped			--<< no dropped (dead) columns
@@ -2194,6 +2193,7 @@ ENDOFQUERYNEW;
 			'num'		=> $rec['numeric_precision'],
 			'size'		=> $rec['numeric_precision_radix'],
 			'identity'	=> in_array($rec['is_identity'],array('a','d'))?$rec['is_identity']:0,
+			'uniquekey'	=> in_array($rec['uniquekey'],array('t',true,'true',1)),
 		);
 		//nullable
 		switch(strtolower($rec['not_null'])){
@@ -2212,22 +2212,8 @@ ENDOFQUERYNEW;
 			break;
 		}
 		//echo printValue($field);
-		//_dbtype_ex
-		switch(strtolower($field['_dbtype'])){
-			case 'bigint':
-			case 'integer':
-			case 'timestamp':
-				$field['_dbtype_ex']=$field['_dbtype'];
-			break;
-			default:
-				if(strlen($rec['character_maximum_length']) && $rec['character_maximum_length'] != '-1'){
-					$field['_dbtype_ex']="{$rec['data_type']}({$rec['character_maximum_length']})";
-				}
-				else{
-					$field['_dbtype_ex']=$field['_dbtype'];
-				}
-			break;
-		}
+		//_dbtype_ex - format_type already includes length/precision where applicable
+		$field['_dbtype_ex']=$field['_dbtype'];
 		
 		//default
 		if(strlen($rec['column_default'])){
