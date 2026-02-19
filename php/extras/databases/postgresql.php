@@ -2193,7 +2193,7 @@ ENDOFQUERYNEW;
 			'num'		=> $rec['numeric_precision'],
 			'size'		=> $rec['numeric_precision_radix'],
 			'identity'	=> in_array($rec['is_identity'],array('a','d'))?$rec['is_identity']:0,
-			'uniquekey'	=> in_array($rec['uniquekey'],array('t',true,'true',1)),
+			'uniquekey'	=> ($rec['uniquekey'] === 't'),
 		);
 		//nullable
 		switch(strtolower($rec['not_null'])){
