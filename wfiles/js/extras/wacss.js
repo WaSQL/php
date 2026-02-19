@@ -929,9 +929,9 @@ const wacss = {
 			if(cp){
 				let formchanges=cp.querySelectorAll('form [data-wacss_changed]');
 				if(formchanges.length){
-					if(!confirm('Form content has changed. Closing will lose your changes. Confirm.')){
-						return false;
-					}
+					// if(!confirm('Form content has changed. Closing will lose your changes. Confirm.')){
+					// 	return false;
+					// }
 				}
 			}
 			let mcp=wacss.getObject(this.closeid);
@@ -7947,9 +7947,9 @@ const wacss = {
 		if(mc){
 			let formchanges=mc.querySelectorAll('form [data-wacss_changed]');
 			if(formchanges.length){
-				if(!confirm('Form content has changed. Closing will lose your changes. Confirm.')){
-					return false;
-				}
+				// if(!confirm('Form content has changed. Closing will lose your changes. Confirm.')){
+				// 	return false;
+				// }
 			}
 		}
 		if(undefined != document.getElementById('wacss_modal_overlay')){
