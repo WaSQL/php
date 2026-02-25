@@ -199,7 +199,11 @@ function ldapGetUsers($params=array()){
 	global $ldapInfo;
 	//set the pageSize dynamically
 	if(!isset($ldapInfo['page_size'])){
-		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+		if(isset($ldapInfo['connection']) && $ldapInfo['connection']){
+			ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+		} else {
+			$ldapInfo['page_size']=500;
+		}
 	}
 	//set search to perform
 	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
@@ -318,7 +322,11 @@ function ldapGetUsersAll(){
 	global $ldapInfo;
 	//set the pageSize dynamically
 	if(!isset($ldapInfo['page_size'])){
-		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+		if(isset($ldapInfo['connection']) && $ldapInfo['connection']){
+			ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+		} else {
+			$ldapInfo['page_size']=500;
+		}
 	}
 	//set search to perform
 	$ldapInfo['lastsearch'] = "(&(objectClass=user)(objectCategory=person))";
@@ -415,7 +423,11 @@ function ldapSearch($str,$checkfields='sAMAccountName,name,email,title',$returnf
 	}
 	//set the pageSize dynamically
 	if(!isset($ldapInfo['page_size'])){
-		ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+		if(isset($ldapInfo['connection']) && $ldapInfo['connection']){
+			ldap_get_option($ldapInfo['connection'],LDAP_OPT_SIZELIMIT,$ldapInfo['page_size']);
+		} else {
+			$ldapInfo['page_size']=500;
+		}
 	}
 	$filter='';
 	$filters=array();
