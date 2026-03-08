@@ -4655,12 +4655,13 @@ ENDOFERASE;
 		}
 	}
 	$datatagstr=implode(' ',$datatags);
+	//return $params['multiple'];
 	$tag=<<<ENDOFTAG
-<div data-inputtype="file_image" data-display="inline-flex" data-debug="1" style="{$params['style']}">
+<div data-inputtype="file_image" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
 	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-color:#FFF;background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
-	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} onchange="wacss.formFileImageUpload(this);" {$params['multiple']}>
+	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileImageUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
 	<label for="{$params['id']}" title="Rear facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','environment');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
@@ -22436,10 +22437,13 @@ function processInlineFiles(){
 					$crc=encodeCRC(sha1($encodedString));
 					$name=getFileName($name,1) . '_' . $crc . '.' . $ext;
 				}
-				//remove spaces from the name
+				//remove spaces and [] from the name
 				$name=str_replace(' ','_',$name);
+				$name=str_replace('[]','',$name);
 				$apath=str_replace('//','/',$apath);
 				$path=str_replace('//','/',$path);
+				$apath=str_replace('[]','',$apath);
+				$path=str_replace('[]','',$path);
 				$afile="{$apath}/{$name}";
 				$_REQUEST["{$key}_abspath"]=$afile;
 				//$_REQUEST["{$key}_base64_debug"]['afile']=$afile;
@@ -23931,7 +23935,7 @@ function processFileUploads($docroot=''){
 	 			continue;
 	 		}
 	 	}
-		//echo printValue($_REQUEST);
+		//echo printValue($_REQUEST).printValue($pfiles);exit;
 	 	foreach($pfiles as $pi=>$file){
 			if($file['name']=='blob' && isset($_SERVER['HTTP_X_BLOB_NAME'])){
             	$file['name']=$_SERVER['HTTP_X_BLOB_NAME'];
@@ -23944,6 +23948,8 @@ function processFileUploads($docroot=''){
             //get the weburl and the abs path of the file
 			$webpath='/' . $file['name'];
 			$abspath=$docroot . $webpath;
+			$webpath=str_replace('[]','',$webpath);
+			$abspath=str_replace('[]','',$abspath);
 			//clean up filename
 			$_REQUEST[$file['pname'].'_ori']=$file['name'];
             $file['name']=preg_replace('/\%20+/','_',$file['name']);
@@ -23988,6 +23994,8 @@ function processFileUploads($docroot=''){
 					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
+					$webpath=str_replace('[]','',$webpath);
+					$abspath=str_replace('[]','',$abspath);
 				}
 			}
 			elseif(strlen($_REQUEST[$file['iname'].'_path'])){
@@ -23997,11 +24005,15 @@ function processFileUploads($docroot=''){
 					$cpath=getWasqlPath('php/temp');
 					$webpath="/php/temp/{$file['name']}";
 					$abspath="{$cpath}/{$file['name']}";
+					$webpath=str_replace('[]','',$webpath);
+					$abspath=str_replace('[]','',$abspath);
 				}
 				elseif(isAdmin() && is_dir($path) && stringContains($path,$wpath)){
                 	$cpath=$path;
                 	$webpath='/'.str_replace($wpath,'',$path).'/'. $file['name'];
                 	$abspath=$path.'/'. $file['name'];
+                	$webpath=str_replace('[]','',$webpath);
+					$abspath=str_replace('[]','',$abspath);
 				}
 				else{
 					$cpath=$docroot . $path;
@@ -24012,6 +24024,8 @@ function processFileUploads($docroot=''){
 					}
 					$webpath = $path .'/'. $file['name'];
 					$abspath = $docroot . $webpath;
+					$webpath=str_replace('[]','',$webpath);
+					$abspath=str_replace('[]','',$abspath);
 				}
 			}
 			elseif(strlen($_REQUEST['_path'])){
@@ -24024,6 +24038,8 @@ function processFileUploads($docroot=''){
 				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
+				$webpath=str_replace('[]','',$webpath);
+				$abspath=str_replace('[]','',$abspath);
 			}
 			else{
 				$path='/uploads';
@@ -24035,9 +24051,14 @@ function processFileUploads($docroot=''){
 				}
 				$webpath = $path .'/'. $file['name'];
 				$abspath = $docroot . $webpath;
+				$webpath=str_replace('[]','',$webpath);
+				$abspath=str_replace('[]','',$abspath);
 			}
 			$webpath=str_replace('//','/',$webpath);
             $abspath=str_replace('//','/',$abspath);
+            $webpath=str_replace('[]','',$webpath);
+            $abspath=str_replace('[]','',$abspath);
+            //echo $abspath;exit;
             $absdir=getFilePath($abspath);
             if(!is_dir($absdir)){
 				@trigger_error("");
@@ -24066,6 +24087,8 @@ function processFileUploads($docroot=''){
                     	if(mergeChunkedFiles($xfiles,"{$absdir}/{$realname}")){
 							$abspath="{$absdir}/{$realname}";
 							$webpath = "{$path}/{$realname}";
+							$webpath=str_replace('[]','',$webpath);
+							$abspath=str_replace('[]','',$abspath);
 							$_REQUEST[$file['pname'].'_abspath']=$abspath;
 						}
 
@@ -24075,6 +24098,8 @@ function processFileUploads($docroot=''){
 				$abspath=commonProcessFileActions($file['iname'],$abspath);
 				$realname=getFileName($abspath);
 				$webpath = "{$path}/{$realname}";
+				$webpath=str_replace('[]','',$webpath);
+				$abspath=str_replace('[]','',$abspath);
 				//
             	$_REQUEST[$file['pname']]=$webpath;
             	$_REQUEST[$file['pname'].'_abspath']=$abspath;

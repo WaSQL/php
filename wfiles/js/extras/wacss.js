@@ -1494,7 +1494,7 @@ const wacss = {
 	  const looksLikeImage = (f) => {
 	    if (f.type && f.type.startsWith('image/')) return true;
 	    const name = (f.name || '').toLowerCase();
-	    return /\.(png|jpe?g|gif|webp|bmp|heic|heif|avif|svg)$/.test(name);
+	    return /\.(png|jpe?g|gif|webp|bmp|heic|heifs?|avif|svg|tiff?)$/.test(name);
 	  };
 
 	  const canDecodeViaImg = (url) => new Promise((res, rej) => {
@@ -1525,26 +1525,9 @@ const wacss = {
 	    return out || blob;
 	  };
 
-	  const replaceInputFiles = (inputEl, newBlobs, baseName) => {
-	    // Replace FileList with DataTransfer (widely supported in modern mobile/desktop Chromium/WebKit)
-	    const dt = new DataTransfer();
-	    newBlobs.forEach((b, i) => {
-	      const ext = (b.type === 'image/jpeg') ? '.jpg'
-	               : (b.type === 'image/png')  ? '.png'
-	               : (b.type === 'image/webp') ? '.webp'
-	               : (/\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(baseName||'')) ? ''
-	               : '';
-	      const name = (baseName || `converted_${i}`) + ext;
-	      dt.items.add(new File([b], name, { type: b.type || 'application/octet-stream' }));
-	    });
-	    inputEl.files = dt.files;
-	    return inputEl.files;
-	  };
-
 	  const likelyHeicHeif = (file) => {
 	    const n = (file.name || '').toLowerCase();
-	    return file.type === 'image/heic' || file.type === 'image/heif' ||
-	           /\.hei[cf]$/.test(n);
+	    return /^image\/hei[cf]/.test(file.type) || /\.hei[cf]s?$/.test(n);
 	  };
 
 	  uiBusy.on();
@@ -1608,62 +1591,76 @@ const wacss = {
 	    }
 
 	    // ---- HEIC/HEIF handling (widest compatibility path) ----
-	    // Work on the first file for preview. (Your badge still shows count for multi-select.)
-	    let first = files[0];
-	    let previewBlob = first;
-
-	    // If type missing, we still try normal decode; if it fails and name suggests HEIC, try conversions.
-	    const firstLooksHeic = likelyHeicHeif(first);
-
-	    // 1) Try quick decode via <img>. If it works, we're done.
-	    let tmpUrl = URL.createObjectURL(first);
-	    let canDecode = true;
-	    try { await canDecodeViaImg(tmpUrl); }
-	    catch { canDecode = false; }
-	    finally { try { URL.revokeObjectURL(tmpUrl); } catch(e){} }
-
-	    if (!canDecode) {
-	      // 2) Try WebCodecs ImageDecoder (native HEIC on some devices)
-	      if (firstLooksHeic && await canUseImageDecoder(first.type || 'image/heic')) {
-	        try {
-	          previewBlob = await decodeWithImageDecoderToJPEG(first);
-	        } catch {/* fall through */}
+	    // Helper: try to convert a single file to a decodable format; returns converted blob or original
+	    const tryConvertFile = async (file) => {
+	      const looksHeic = likelyHeicHeif(file);
+	      let converted = file;
+	      // 1) Try quick decode via <img>. If it works, we're done.
+	      const tmpUrl = URL.createObjectURL(file);
+	      let canDecode = true;
+	      try { await canDecodeViaImg(tmpUrl); }
+	      catch { canDecode = false; }
+	      finally { try { URL.revokeObjectURL(tmpUrl); } catch(e){} }
+	      if (canDecode) return file;
+	      // 2) WebCodecs ImageDecoder (native HEIC on some devices)
+	      if (looksHeic && await canUseImageDecoder(file.type || 'image/heic')) {
+	        try { converted = await decodeWithImageDecoderToJPEG(file); } catch {/* fall through */}
 	      }
-
-	      // 3) Try heic2any (if included on the page)
-	      if (!await canDecodeViaImg(URL.createObjectURL(previewBlob)).catch(()=>false)) {
-	        if (firstLooksHeic && typeof window.heic2any === 'function') {
+	      // 3) heic2any (if included on the page)
+	      const _chk3 = URL.createObjectURL(converted);
+	      const _still3 = !await canDecodeViaImg(_chk3).catch(()=>false);
+	      URL.revokeObjectURL(_chk3);
+	      if (_still3) {
+	        if (looksHeic && typeof window.heic2any === 'function') {
 	          try {
-	            const out = await window.heic2any({ blob: first, toType: 'image/jpeg', quality: parseFloat(el.dataset.quality || '0.92') });
-	            previewBlob = Array.isArray(out) ? out[0] : out;
+	            const out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: parseFloat(el.dataset.quality || '0.92') });
+	            converted = Array.isArray(out) ? out[0] : out;
 	          } catch {/* fall through */}
 	        }
 	      }
+	      return converted;
+	    };
 
-	      // 4) As a last resort, let your resizer convert by drawing to canvas (if not already used)
-	      if (!await canDecodeViaImg(URL.createObjectURL(previewBlob)).catch(()=>false)) {
-	        if (el.dataset.resizer !== undefined && el.dataset.resizing !== "1") {
-	          el.dataset.resizing = "1";
-	          el.removeAttribute("data-resizer");
-	          try { await wacss.resizeImage(el); }
-	          finally { el.setAttribute("data-resizer","1"); delete el.dataset.resizing; }
-	          files = el.files || [];
-	          if (!files.length) return true;
-	          first = files[0];
-	          previewBlob = first;
-	        }
+	    // Convert all selected files sequentially (handles multi-select HEIC correctly)
+	    const origFiles = Array.from(files);
+	    const convertedBlobs = [];
+	    for (const file of origFiles) {
+	      convertedBlobs.push(await tryConvertFile(file));
+	    }
+	    let first = origFiles[0];
+	    let previewBlob = convertedBlobs[0];
+
+	    // 4) Resizer fallback if first file is still not decodable
+	    const _chk4 = URL.createObjectURL(previewBlob);
+	    const _still4 = !await canDecodeViaImg(_chk4).catch(()=>false);
+	    URL.revokeObjectURL(_chk4);
+	    if (_still4) {
+	      if (el.dataset.resizer !== undefined && el.dataset.resizing !== "1") {
+	        el.dataset.resizing = "1";
+	        el.removeAttribute("data-resizer");
+	        try { await wacss.resizeImage(el); }
+	        finally { el.setAttribute("data-resizer","1"); delete el.dataset.resizing; }
+	        files = el.files || [];
+	        if (!files.length) return true;
+	        first = files[0];
+	        previewBlob = first;
 	      }
 	    }
 
-	    // ---- If we converted the blob, replace the input's FileList so upload uses the normalized file ----
-	    if (previewBlob !== first) {
-	      const newType = previewBlob.type || 'image/jpeg';
-	      const baseName = (first.name || 'photo').replace(/\.[^.]+$/, '');
-	      const replaced = replaceInputFiles(el, [previewBlob], baseName);
-	      if (replaced && replaced.length) {
-	        files = replaced;
-	        first = replaced[0];
-	      }
+	    // ---- Replace FileList with all converted files if any were changed ----
+	    if (convertedBlobs.some((b, i) => b !== origFiles[i])) {
+	      const dt = new DataTransfer();
+	      origFiles.forEach((orig, i) => {
+	        const blob = convertedBlobs[i];
+	        const ext = (blob.type === 'image/jpeg') ? '.jpg'
+	                 : (blob.type === 'image/png')  ? '.png'
+	                 : (blob.type === 'image/webp') ? '.webp' : '';
+	        const baseName = (orig.name || `file_${i}`).replace(/\.[^.]+$/, '');
+	        dt.items.add(new File([blob], baseName + ext, { type: blob.type || 'application/octet-stream' }));
+	      });
+	      el.files = dt.files;
+	      files = el.files;
+	      first = files[0];
 	    }
 
 	    // ---- Final preview (background-image) ----
@@ -1889,22 +1886,29 @@ const wacss = {
 	formFileCaptureMode: function(el,mode){
 		el=wacss.getObject(el);
 		if(undefined==el){return false;}
+		// Store original multiple state before first modification
+		if(!el.hasAttribute('data-has-multiple')){
+			el.setAttribute('data-has-multiple',el.hasAttribute('multiple')?'1':'0');
+		}
 		//set capture mode
-		if (mode === 'user' || mode === 'environment') {
-			el.setAttribute('capture', mode);     // lens hint
-		} 
-		else {
-			el.removeAttribute('capture');        // open picker (gallery/files)
+		if(mode==='user'||mode==='environment'){
+			el.setAttribute('capture',mode);     // lens hint
+			el.removeAttribute('multiple');      // multiple breaks capture on many browsers
+		}
+		else{
+			el.removeAttribute('capture');       // open picker (gallery/files)
+			// Restore multiple if it was originally present
+			if(el.getAttribute('data-has-multiple')==='1'){
+				el.setAttribute('multiple','');
+			}
 		}
 		//check remove if present
-		if(undefined != el.id){
+		if(undefined!=el.id){
 			let remove=document.getElementById(el.id+'_remove');
-			if(undefined != remove){
+			if(undefined!=remove){
 				remove.checked=true;
 			}
 		}
-		// Ensure 'multiple' is not present, as it breaks capture on many browsers
-		el.removeAttribute('multiple');
 		return true;
 	},
 	/**
