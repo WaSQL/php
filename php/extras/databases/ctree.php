@@ -174,6 +174,7 @@ function ctreeDBConnect($params=array()){
 			}
 			exit;
 		}
+		$ok=ctreeSetTimeouts($dbh_ctree_single);
 		return $dbh_ctree_single;
 	}
 	global $dbh_ctree;
@@ -202,6 +203,7 @@ function ctreeDBConnect($params=array()){
 				exit;
 			}
 		}
+		$ok=ctreeSetTimeouts($dbh_ctree);
 		return $dbh_ctree;
 	}
 	catch (Exception $e) {
@@ -209,6 +211,10 @@ function ctreeDBConnect($params=array()){
 		exit;
 
 	}
+}
+function ctreeSetTimeouts($dbh) {
+    odbc_setoption($dbh, 1, 113, 30);    // connection timeout: 30s
+    odbc_setoption($dbh, 1, 0, 10800);   // query timeout: 3 hours
 }
 function ctreeDBConnectOLD(){
 	$ok=dbSetLast(array(
