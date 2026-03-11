@@ -213,8 +213,8 @@ function ctreeDBConnect($params=array()){
 	}
 }
 function ctreeSetTimeouts($dbh) {
-    odbc_setoption($dbh, 1, 113, 30);    // connection timeout: 30s
-    odbc_setoption($dbh, 1, 0, 10800);   // query timeout: 3 hours
+    odbc_setoption($dbh, 1, 113, 60);    // SQL_ATTR_CONNECTION_TIMEOUT: 60s (connection option)
+    // SQL_QUERY_TIMEOUT is a statement option (function=2) and cannot be set on a connection handle
 }
 function ctreeDBConnectOLD(){
 	$ok=dbSetLast(array(
@@ -918,7 +918,7 @@ function ctreeParseConnectParams($params=array()){
 		}
 		//add connect_timeout
 		if(!stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=";CONNECT_TIMEOUT=10";
+			$params['-connect'].=";CONNECT_TIMEOUT=60";
 		}
 	}
 	else{
