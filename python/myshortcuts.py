@@ -236,7 +236,7 @@ class Expander:
         
         with self.lock:
             # Handle regular characters (letters, numbers, and some symbols)
-            if len(key) == 1 and (key.isalnum() or key in ';()<>:'):
+            if key and len(key) == 1 and (key.isalnum() or key in ';()<>:'):
                 self.buffer += key
                 if DEBUG:
                     print(f"Buffer: {repr(self.buffer)}")
