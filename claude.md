@@ -27,6 +27,27 @@ This document instructs Claude on how to assist users with WaSQL, a database-dri
 - **No PHP if/endif in views** - use `renderViewIf()` with `<view:name>` blocks
 - **Use `global $USER;`** for built-in user management
 - **Variables set in controller are available in views** directly
+- **Use `data-displayif` to conditionally show/hide form sections** - add `data-displayif="fieldname:value"` to a container div; WaSQL will show it when the named field equals the value and hide it otherwise. Works with nested JSON fields (e.g. `data-displayif="shipto>is_gift:Y"`). Do NOT use manual `onchange` JS for this purpose:
+  ```html
+  <!-- CORRECT - WaSQL handles show/hide automatically -->
+  <div id="gift_message_row" data-displayif="shipto>is_gift:Y">
+      <label>Gift Message</label>
+      <div>[shipto>gift_message]</div>
+  </div>
+  ```
+- **No PHP tags inside heredocs** - `<?php ?>` inside a heredoc causes a syntax error. Instead, compute the conditional value into a variable BEFORE the heredoc, then interpolate with `{$variable}`:
+  ```php
+  // WRONG - causes syntax error:
+  $msg = <<<EOT
+  <?php if($x): ?>some text<?php endif; ?>
+  EOT;
+
+  // CORRECT:
+  $conditional = $x ? 'some text' : '';
+  $msg = <<<EOT
+  {$conditional}
+  EOT;
+  ```
 
 ### Development Workflow
 1. **Database First**: New pages/components must be created via WaSQL web interface
