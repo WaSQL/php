@@ -945,7 +945,7 @@ function commonSearchFiltersForm($params=array()){
 	$rtn .= setTagAttributes($atts);
 	$rtn .= '>'.PHP_EOL;
 	if(empty($params['-offset'])){
-		$params['-offset']=!empty($_REQUEST['filter_offset'])?$_REQUEST['filter_offset']:0;
+		$params['-offset']=!empty($_REQUEST['filter_offset'])?(int)$_REQUEST['filter_offset']:0;
 	}
 	$rtn .= '<div style="display:none;">'.PHP_EOL;
 	$rtn .= '	<input type="hidden" name="filter_offset" value="'.$params['-offset'].'" >'.PHP_EOL;
@@ -1185,7 +1185,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .= '		</div>'.PHP_EOL;
 			$rtn .= '		<div data-set="2" class="w_flex w_flexrow w_flexnowrap">'.PHP_EOL;
 			//order
-			if(!empty($params['-showorder']) && $params['-showorder']==1){
+			if(!empty($params['-showorder']) && $params['-showorder']==1 && !empty($params['-listfields']) && is_array($params['-listfields'])){
 				$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 				$vals=array();
 				$orderbyname='Order By';
@@ -1206,7 +1206,7 @@ function commonSearchFiltersForm($params=array()){
 				$rtn .= '			</div>'.PHP_EOL;	
 			}
 			else{
-				$rtn .= '	<input type="hidden" name="filter_order" value="'.$_REQUEST['filter_order'].'" >'.PHP_EOL;
+				$rtn .= '	<input type="hidden" name="filter_order" value="'.encodeHtml($_REQUEST['filter_order']).'" >'.PHP_EOL;
 			}
 		}
 		else{
@@ -1346,9 +1346,8 @@ function commonSearchFiltersForm($params=array()){
 				case 'nb': $doper='Is Not Blank';$dval='';break;
 			}
 			$dfield=ucwords(str_replace('_',' ',$dfield));
-			$dstr="{$dfield} {$doper} {$dval}";
-			//$dstr='hello doob';
-        	$rtn .= '<div class="w_pagingfilter" data-field="'.$field.'" data-operator="'.$oper.'" data-value="'.$val.'" id="'.$fid.'">'.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
+			$dstr=encodeHtml($dfield).' '.encodeHtml($doper).' '.(strlen($dval)?"'".encodeHtml($val)."'":'');
+        	$rtn .= '<div class="w_pagingfilter" data-field="'.encodeHtml($field).'" data-operator="'.encodeHtml($oper).'" data-value="'.encodeHtml($val).'" id="'.$fid.'">'.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
 			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="wacss.pagingClearFilters(getParent(this,\'form\'));"></div>'.PHP_EOL;
