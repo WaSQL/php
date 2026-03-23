@@ -584,7 +584,10 @@ ENDOFQUERY;
 					exit;
 				}
 				$out=cmdResults($m[1]);
-				echo "CMD: {$out['cmd']}, DIR: {$out['cmd']}, RUNTIME: {$out['runtime']}, RTNCODE: {$out['rtncode']}".PHP_EOL;
+				echo "CMD: {$out['cmd']}".PHP_EOL;
+				echo "DIR: {$out['dir']}".PHP_EOL;
+				echo "RUNTIME: {$out['runtime']}".PHP_EOL;
+				echo "RTNCODE: {$out['rtncode']}".PHP_EOL;
 				echo "=========================================================================================".PHP_EOL;
 				if(isset($out['stdout'])){
 					echo $out['stdout'].PHP_EOL;
