@@ -62,6 +62,90 @@ if interpreter:
         print(rtn)
     params['arg_query']=''
 else:
+    if sys.argv[1].lower().endswith('.cli'):
+        #.cli file - run the selected line as a shell command on the remote WaSQL host
+        cli_query = sys.argv[3].strip() if len(sys.argv) > 3 else ''
+        #if selection was written to a temp file, read the content
+        if os.path.isfile(cli_query):
+            with open(cli_query, 'r', encoding='utf-8') as _f:
+                cli_query = _f.read().strip()
+        if not len(cli_query):
+            print('DaSQL CLI: no command selected')
+            sys.exit(0)
+        #double backslashes so PHP stripslashes() doesn't eat them
+        cli_query = cli_query.replace('\\', '\\\\')
+        data={
+            'db': params['db'],
+            'func':'sql',
+            'format':params['output_format'],
+            '-nossl':1,
+            'offset':0,
+            'username':os.environ["USERNAME"].lower(),
+            'AjaxRequestUniqueId':'dasql.py',
+            '_auth': params.get('authkey',''),
+            '_menu': 'sqlprompt',
+            'sql_full':'cmd>'+cli_query
+        }
+        if 'apikey' in params:
+            data['apikey']=params['apikey']
+            data['username']=params['username']
+            data['_auth']=1
+        elif 'authkey' in params:
+            data['_auth']=params['authkey']
+        elif 'tauthkey' in params:
+            data['_tauth']=params['tauthkey']
+        elif 'username' in params:
+            data['_login']=1
+            data['username']=params['username']
+            data['password']=params['password']
+        elif 'email' in params:
+            data['_login']=1
+            data['email']=params['email']
+            data['password']=params['password']
+        elif 'phone' in params:
+            data['_login']=1
+            data['phone']=params['phone']
+            data['password']=params['password']
+        url=params['base_url'].rstrip('/')+'/php/admin.php'
+        urllib3.disable_warnings()
+        try:
+            r = requests.post(url,data,verify=False)
+        except requests.exceptions.Timeout:
+            print('DaSQL CLI: Timeout error')
+            sys.exit(1)
+        except requests.exceptions.ConnectionError:
+            print('DaSQL CLI: ConnectionError trying to connect to {}'.format(params['base_url']))
+            sys.exit(4)
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
+        output = r.content.decode('ISO-8859-1').replace('\r\n', '\n').replace('\r', '\n')
+        # reformat the single-line header "CMD: x, DIR: y, RUNTIME: z, RTNCODE: n" onto separate lines
+        lines = output.splitlines()
+        result = []
+        rtncode = None
+        for line in lines:
+            if line.startswith('CMD:') and ', DIR:' in line:
+                for part in re.split(r',\s*(?=CMD:|DIR:|RUNTIME:|RTNCODE:)', line):
+                    part = part.strip()
+                    if part.startswith('DIR:'):
+                        continue
+                    result.append(part)
+                    if part.startswith('RTNCODE:'):
+                        rtncode = part.split(':', 1)[1].strip()
+            elif line.startswith('DIR:'):
+                pass
+            elif line.startswith('RTNCODE:'):
+                result.append(line.strip())
+                rtncode = line.split(':', 1)[1].strip()
+            else:
+                result.append(line)
+        # insert STATUS after RTNCODE
+        rtncode_idx = next((i for i, l in enumerate(result) if l.startswith('RTNCODE:')), None)
+        if rtncode is not None and rtncode_idx is not None:
+            status = 'Success' if rtncode == '0' else 'Failure'
+            result.insert(rtncode_idx + 1, 'STATUS: {}'.format(status))
+        print('\n'.join(result))
+        sys.exit(0)
     dir_name=os.path.splitext(os.path.basename(sys.argv[2]))[0]
 
     if len(params['arg_query']) > 0 and os.path.isfile(params['arg_query']):
