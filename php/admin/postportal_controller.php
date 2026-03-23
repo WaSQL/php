@@ -32,7 +32,7 @@ if(!array_key_exists('_postportal', $USER)){
 	$USER['_postportal']=array();
 	// Check if column exists before adding it
 	$cols = getDBFieldInfo('_users', '_postportal');
-	if(!isset($cols['_id'])){
+	if(!isset($cols['_postportal'])){
 		$ok=executeSQL("ALTER TABLE _users ADD _postportal JSON");
 		if(!$ok){
 			// Column may already exist from another session, continue
