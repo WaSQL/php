@@ -7,8 +7,8 @@
 		https://docs.faircom.com/doc/sqlref/sqlref.pdf
 */
 
-ini_set('max_execution_time', 86400);
-set_time_limit(86400);
+ini_set('max_execution_time', 1800);
+set_time_limit(1800);
 
 //---------- begin function ctreeGetAllTableFields ----------
 /**
@@ -213,8 +213,8 @@ function ctreeDBConnect($params=array()){
 	}
 }
 function ctreeSetTimeouts($dbh) {
-    odbc_setoption($dbh, 1, 113, 180);    // SQL_ATTR_CONNECTION_TIMEOUT: 60s (connection option)
-    // SQL_QUERY_TIMEOUT is a statement option (function=2) and cannot be set on a connection handle
+    // SQL_ATTR_CONNECTION_TIMEOUT (option 113) applies to connection establishment only, not query execution
+    // Query timeout for FairCom must be set via QUERY_TIMEOUT= in the connection string (see ctreeParseConnectParams)
 }
 function ctreeDBConnectOLD(){
 	$ok=dbSetLast(array(
@@ -264,7 +264,7 @@ function ctreeExecuteSQL($query,$return_error=1){
 	if(commonStrlen(dbGetLast('error'))){return 0;}
 	$ok=dbSetLast(array('query'=>$query));
 	if($resource = odbc_prepare($dbh_ctree, $query)){
-		odbc_setoption($resource, 2, 0, 86400);  // SQL_QUERY_TIMEOUT = 24h on statement handle
+		odbc_setoption($resource, 2, 0, 1800);  // SQL_QUERY_TIMEOUT = 30min on statement handle (FairCom may ignore; rely on QUERY_TIMEOUT in connection string)
 		if(odbc_execute($resource)){
 			if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
 			$resource=null;
@@ -917,9 +917,13 @@ function ctreeParseConnectParams($params=array()){
 			//ODBC;DSN=REPL01;HOST=repl01.dot.infotraxsys.com;UID=dot_dels;DATABASE=liveSQL;SERVICE=6597;CHARSET NAME=;MAXROWS=;OPTIONS=;;PRSRVCUR=OFF;;FILEDSN=;SAVEFILE=;FETCH_SIZE=;QUERY_TIMEOUT=;SCROLLCUR=OF
 			$params['-connect']="odbc:Driver={c-treeACE ODBC Driver};Host={$CONFIG['ctree_dbhost']};Database={$CONFIG['ctree_dbname']};Port={$CONFIG['ctree_dbport']}";
 		}
-		//add connect_timeout
-		if(!stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=";CONNECT_TIMEOUT=180";
+		//add connect_timeout (connection establishment timeout)
+		if(!stringContains($params['-connect'],'CONNECT_TIMEOUT') && !stringContains($params['-connect'],'connect_timeout')){
+			$params['-connect'].=";CONNECT_TIMEOUT=30";
+		}
+		//add query_timeout - FairCom ODBC driver honors this in the connection string (odbc_setoption is ignored)
+		if(!stringContains($params['-connect'],'QUERY_TIMEOUT') && !stringContains($params['-connect'],'query_timeout')){
+			$params['-connect'].=";QUERY_TIMEOUT=1800";
 		}
 	}
 	else{
@@ -981,7 +985,7 @@ function ctreeQueryResults($query='',$params=array()){
 		$breakout=0;
 		//echo $cquery.printValue($params);exit;
 		if($resource = odbc_prepare($dbh_ctree, $cquery)){
-			odbc_setoption($resource, 2, 0, 86400);  // SQL_QUERY_TIMEOUT = 24h on statement handle
+			odbc_setoption($resource, 2, 0, 1800);  // SQL_QUERY_TIMEOUT = 30min on statement handle (FairCom may ignore; rely on QUERY_TIMEOUT in connection string)
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
 				if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
