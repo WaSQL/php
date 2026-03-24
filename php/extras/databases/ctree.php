@@ -213,7 +213,7 @@ function ctreeDBConnect($params=array()){
 	}
 }
 function ctreeSetTimeouts($dbh) {
-    odbc_setoption($dbh, 1, 113, 60);    // SQL_ATTR_CONNECTION_TIMEOUT: 60s (connection option)
+    odbc_setoption($dbh, 1, 113, 180);    // SQL_ATTR_CONNECTION_TIMEOUT: 60s (connection option)
     // SQL_QUERY_TIMEOUT is a statement option (function=2) and cannot be set on a connection handle
 }
 function ctreeDBConnectOLD(){
@@ -264,6 +264,7 @@ function ctreeExecuteSQL($query,$return_error=1){
 	if(commonStrlen(dbGetLast('error'))){return 0;}
 	$ok=dbSetLast(array('query'=>$query));
 	if($resource = odbc_prepare($dbh_ctree, $query)){
+		odbc_setoption($resource, 2, 0, 86400);  // SQL_QUERY_TIMEOUT = 24h on statement handle
 		if(odbc_execute($resource)){
 			if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
 			$resource=null;
@@ -918,7 +919,7 @@ function ctreeParseConnectParams($params=array()){
 		}
 		//add connect_timeout
 		if(!stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=";CONNECT_TIMEOUT=60";
+			$params['-connect'].=";CONNECT_TIMEOUT=180";
 		}
 	}
 	else{
@@ -980,6 +981,7 @@ function ctreeQueryResults($query='',$params=array()){
 		$breakout=0;
 		//echo $cquery.printValue($params);exit;
 		if($resource = odbc_prepare($dbh_ctree, $cquery)){
+			odbc_setoption($resource, 2, 0, 86400);  // SQL_QUERY_TIMEOUT = 24h on statement handle
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
 				if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
