@@ -4,3 +4,5 @@ test.csv
 website_check_*
 myshortcuts.db
 secrets_scanner.log
+migrations/
+.env

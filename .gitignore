@@ -18,3 +18,5 @@ composer.json
 php/admin/git.log
 vendor/
 nul
+.env
+migrations/
