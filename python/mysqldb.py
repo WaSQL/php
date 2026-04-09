@@ -19,7 +19,6 @@ import os
 import sys
 try:
 	import json
-	import mysql.connector
 	import config
 	import common
 	import db
@@ -97,15 +96,31 @@ def connect(params):
 	if 'dbname' in params:
 		dbconfig['database'] = params['dbname']
 
+	# Try mysql.connector first, fall back to pymysql
+	_driver = None
+	_buffered = False
 	try:
-		conn_mysql = mysql.connector.connect(**dbconfig)
+		import mysql.connector as _driver
+		_buffered = True
+	except ImportError:
+		pass
+	if _driver is None:
+		try:
+			import pymysql as _driver
+			dbconfig.pop('auth_plugin', None)  # pymysql does not support auth_plugin
+		except ImportError:
+			print("No MySQL driver found. Install one: pip install mysql-connector-python or pip install pymysql")
+			sys.exit(3)
+
+	try:
+		conn_mysql = _driver.connect(**dbconfig)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
 	try:
-		cur_mysql = conn_mysql.cursor(dictionary=False,buffered=True)
+		cur_mysql = conn_mysql.cursor(dictionary=False, buffered=True) if _buffered else conn_mysql.cursor()
 	except Exception as err:
-		common.abort(sys.exc_info(),err) 
+		common.abort(sys.exc_info(),err)
 
 	return cur_mysql, conn_mysql
 

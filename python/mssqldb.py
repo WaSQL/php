@@ -162,7 +162,7 @@ def queryResults(query,params):
 			return params['filename']
 		else:
 			recs = []
-			for rec in cur_msexcel.fetchall():
+			for rec in cur_mssql.fetchall():
 				#convert to a dictionary manually since it is not built into the driver
 				rec=dict(zip(fields, rec))
 				#call json.dumps to convert date objects to strings in results

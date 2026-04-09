@@ -15,7 +15,6 @@ import os
 import sys
 try:
 	import json
-	import psycopg
 	import config
 	import common
 	import db
@@ -107,8 +106,19 @@ def connect(params):
 	if 'dbkeepalives_count' in params:
 		dbconfig['keepalives_count'] = params['dbkeepalives_count']
 
+	_pg = None
 	try:
-		conn_postgres = psycopg.connect(**dbconfig)
+		import psycopg as _pg
+	except ImportError:
+		pass
+	if _pg is None:
+		try:
+			import psycopg2 as _pg
+		except ImportError:
+			print("No PostgreSQL driver found. Install one: pip install \"psycopg[binary]\" or pip install psycopg2-binary")
+			sys.exit(3)
+	try:
+		conn_postgres = _pg.connect(**dbconfig)
 	except Exception as err:
 		common.abort(sys.exc_info(),err)
 
