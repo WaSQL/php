@@ -951,7 +951,7 @@ if(isset($CONFIG['mobile_template']) && isMobileDevice() && !isset($_REQUEST['_t
 checkDBTableSchema('_pages');
 $view=databaseEscapeString($_REQUEST['_view']);
 $_REQUEST['_viewfield']='body';
-if(stringContains($view,'.')){
+if(stringContains($view,'.') && !stringBeginsWith('.well-known/')){
 	$ext=getFileExtension($_REQUEST['_view']);
 	if(in_array($ext,array('xml','json','csv','phtm'))){
 		$view=getFileName($_REQUEST['_view'],1);
