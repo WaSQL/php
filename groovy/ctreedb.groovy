@@ -16,6 +16,7 @@ References
 import groovy.sql.Sql
 import java.sql.SQLException
 import groovy.json.JsonOutput
+import groovy.json.JsonGenerator
 
 
 /**
@@ -59,6 +60,10 @@ def connect(Map params) {
 				def server = odbcParams['server'] ?: odbcParams['host'] ?: 'localhost'
 				def port = odbcParams['port'] ?: '6597'
 				def database = odbcParams['database'] ?: odbcParams['db'] ?: ''
+
+				// Extract credentials from ODBC UID/PWD keys if not already set
+				if (!dbuser) dbuser = odbcParams['uid'] ?: odbcParams['user'] ?: ''
+				if (!dbpass) dbpass = odbcParams['pwd'] ?: odbcParams['password'] ?: ''
 
 				url = "jdbc:ctree://${server}:${port}"
 				if (database) {
@@ -199,6 +204,11 @@ def executePS(String query, List args, Map params = [:]) {
  *   def csv = ctreedb.queryResults(query, params + [filename: 'output.csv', skiperrors: true, fetchsize: 5000, batchsize: 500])
  */
 def queryResults(String query, Map params = [:]) {
+	// Ensure stdout uses UTF-8 so raw Unicode characters in JSON output are not
+	// corrupted to '?' when Groovy runs as a PHP subprocess on Linux.
+	// System.setOut is a JVM-global change and remains active for the caller's println.
+	System.setOut(new java.io.PrintStream(System.out, true, 'UTF-8'))
+
 	def sql = null
 	def skipErrors = params.getOrDefault('skiperrors', false)
 	def fetchSize = params.getOrDefault('fetchsize', 1000)
@@ -489,7 +499,10 @@ def queryResults(String query, Map params = [:]) {
 			// Return JSON by default, or native format if requested
 			def format = params.getOrDefault('format', 'json')
 			if (format == 'json') {
-				return JsonOutput.toJson(recs)
+				def generator = new JsonGenerator.Options()
+					.disableUnicodeEscaping()
+					.build()
+				return generator.toJson(recs)
 			} else {
 				return recs
 			}
