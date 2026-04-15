@@ -11,8 +11,24 @@
 
 import groovy.sql.Sql
 import groovy.xml.XmlSlurper
+import java.lang.management.ManagementFactory
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
+
+// ── Suppress Java 17+ restricted-native-access warnings ──────────────────────
+// ctreeJDBC calls System.loadLibrary internally; --enable-native-access is a
+// startup flag that cannot be set once the JVM is running.  If it is absent,
+// re-exec this process with the flag injected before anything else loads.
+def jvmFlags = ManagementFactory.getRuntimeMXBean().inputArguments
+if (!jvmFlags.any { it.contains('enable-native-access') }) {
+    def info = ProcessHandle.current().info()
+    def cmd  = info.command().orElse(null)
+    def argv = info.arguments().map { it as List }.orElse(null)
+    if (cmd && argv != null) {
+        System.exit(new ProcessBuilder([cmd, '--enable-native-access=ALL-UNNAMED'] + argv)
+            .inheritIO().start().waitFor())
+    }
+}
 
 // ── Auto-load JDBC driver from ./lib if not already on classpath ───────────────
 
