@@ -434,17 +434,55 @@ def queryResults(String query, Map params = [:]) {
 				}
 
 			} else {
-				// Original behavior - fail on first error
-				sql.eachRow(query) { row ->
-					def rec = [:]
-					def rowResult = row.toRowResult()
+				// Use manual ResultSet iteration with explicit charset decoding.
+				// sql.eachRow / toRowResult() use the JVM default charset to convert
+				// database bytes to Strings — on Linux that default is often ASCII or
+				// ISO-8859-1, which replaces CJK characters with '?'. Reading raw bytes
+				// and decoding them ourselves guarantees the correct encoding.
+				def encoding = params.getOrDefault('encoding', 'UTF-8')
+				def charTypes = [java.sql.Types.CHAR, java.sql.Types.VARCHAR,
+				                 java.sql.Types.LONGVARCHAR, java.sql.Types.NCHAR,
+				                 java.sql.Types.NVARCHAR, java.sql.Types.LONGNVARCHAR] as Set
 
-					// Convert to lowercase field names for consistency
-					rowResult.each { key, value ->
-						rec[key.toLowerCase()] = value
+				def stmt2 = sql.connection.createStatement()
+				if (fetchSize > 0) {
+					stmt2.setFetchSize(fetchSize)
+				}
+				stmt2.setQueryTimeout(60)
+				def rs2 = stmt2.executeQuery(query)
+
+				try {
+					def rsmd2 = rs2.getMetaData()
+					def columnCount2 = rsmd2.getColumnCount()
+					def fieldNames2 = (1..columnCount2).collect { rsmd2.getColumnName(it).toLowerCase() }
+					def colTypes2 = (1..columnCount2).collect { rsmd2.getColumnType(it) }
+
+					while (rs2.next()) {
+						def rec = [:]
+						for (int i = 1; i <= columnCount2; i++) {
+							def fieldName = fieldNames2[i - 1]
+							if (colTypes2[i - 1] in charTypes) {
+								def bytes = rs2.getBytes(i)
+								if (bytes != null) {
+									def val = new String(bytes, encoding)
+									rec[fieldName] = noTrim ? val : val.trim()
+								} else {
+									rec[fieldName] = null
+								}
+							} else {
+								def val = rs2.getObject(i)
+								if (val instanceof String && !noTrim) {
+									rec[fieldName] = val.trim()
+								} else {
+									rec[fieldName] = val
+								}
+							}
+						}
+						recs << rec
 					}
-
-					recs << rec
+				} finally {
+					rs2.close()
+					stmt2.close()
 				}
 			}
 
