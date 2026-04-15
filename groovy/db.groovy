@@ -9,12 +9,6 @@ References:
 import groovy.sql.Sql
 import groovy.transform.Field
 
-// Force UTF-8 stdout/stderr so multi-byte characters (Japanese, Korean, etc.)
-// are not corrupted to '?' on Linux, where the JVM may default to ASCII or
-// ISO-8859-1 when running as a subprocess (e.g. called from PHP).
-System.setOut(new java.io.PrintStream(System.out, true, 'UTF-8'))
-System.setErr(new java.io.PrintStream(System.err, true, 'UTF-8'))
-
 // Use WASQL variables passed from PHP (if available)
 // Otherwise try to load config module for standalone usage
 // @Field makes these accessible to functions in this script
