@@ -10366,6 +10366,10 @@ function evalJuliaCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -10707,6 +10711,10 @@ function evalBashCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -10921,6 +10929,10 @@ function evalPowershellCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -11159,6 +11171,10 @@ function evalGroovyCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	//lets check for a database connection request
 	if(stringContains($evalcode,'db.')){
 		$dbtypes=array();
@@ -11706,6 +11722,10 @@ function evalVBScriptCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -12017,6 +12037,10 @@ function evalNodejsCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -12188,6 +12212,10 @@ function evalLuaCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -12389,6 +12417,10 @@ function evalPerlCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -12597,6 +12629,10 @@ function evalTclCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -12846,6 +12882,10 @@ function evalRCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
@@ -13120,6 +13160,10 @@ function evalPythonCode($lang,$evalcode){
 	global $PASSTHRU;
 	global $DATABASE;
 	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
 	$CRONTHRU['pid']=getmypid();
 	$wasqlTempPath=getWasqlTempPath();
 	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
