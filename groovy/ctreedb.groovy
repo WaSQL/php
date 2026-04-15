@@ -254,6 +254,11 @@ def queryResults(String query, Map params = [:]) {
 
 					// Get field names from metadata (only once)
 					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
+					def colTypes = (1..columnCount).collect { rsmd.getColumnType(it) }
+					def encoding = params.getOrDefault('encoding', 'UTF-8')
+					def charTypes = [java.sql.Types.CHAR, java.sql.Types.VARCHAR,
+					                 java.sql.Types.LONGVARCHAR, java.sql.Types.NCHAR,
+					                 java.sql.Types.NVARCHAR, java.sql.Types.LONGNVARCHAR] as Set
 
 					// Write header row
 					def headerLine = new StringBuilder()
@@ -279,13 +284,20 @@ def queryResults(String query, Map params = [:]) {
 								if (i > 1) line.append(',')
 
 								try {
-									def value = rs.getObject(i)
-									if (value != null) {
-										def strValue = value.toString()
-										if (!noTrim) {
-											strValue = strValue.trim()
+									if (colTypes[i - 1] in charTypes) {
+										def bytes = rs.getBytes(i)
+										if (bytes != null) {
+											def strValue = new String(bytes, encoding)
+											if (!noTrim) strValue = strValue.trim()
+											line.append(escapeCSV(strValue))
 										}
-										line.append(escapeCSV(strValue))
+									} else {
+										def value = rs.getObject(i)
+										if (value != null) {
+											def strValue = value.toString()
+											if (!noTrim) strValue = strValue.trim()
+											line.append(escapeCSV(strValue))
+										}
 									}
 								} catch (Exception e) {
 									if (skipErrors) {
@@ -389,6 +401,11 @@ def queryResults(String query, Map params = [:]) {
 
 					// Get field names from metadata
 					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
+					def colTypes = (1..columnCount).collect { rsmd.getColumnType(it) }
+					def encoding = params.getOrDefault('encoding', 'UTF-8')
+					def charTypes = [java.sql.Types.CHAR, java.sql.Types.VARCHAR,
+					                 java.sql.Types.LONGVARCHAR, java.sql.Types.NCHAR,
+					                 java.sql.Types.NVARCHAR, java.sql.Types.LONGNVARCHAR] as Set
 
 					// Process each row with error handling
 					while (true) {
@@ -398,7 +415,14 @@ def queryResults(String query, Map params = [:]) {
 							def rec = [:]
 							fieldNames.withIndex().each { fieldName, idx ->
 								try {
-									rec[fieldName] = rs.getObject(idx + 1)
+									def col = idx + 1
+									if (colTypes[idx] in charTypes) {
+										def bytes = rs.getBytes(col)
+										rec[fieldName] = bytes != null ? new String(bytes, encoding).with { noTrim ? it : it.trim() } : null
+									} else {
+										def val = rs.getObject(col)
+										rec[fieldName] = (val instanceof String && !noTrim) ? val.trim() : val
+									}
 								} catch (Exception e) {
 									System.err.println("Warning: Error reading column '${fieldName}': ${e.message}")
 									rec[fieldName] = null
