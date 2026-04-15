@@ -491,12 +491,22 @@ def queryResults(String query, Map params = [:]) {
 					def fieldNames2 = (1..columnCount2).collect { rsmd2.getColumnName(it).toLowerCase() }
 					def colTypes2 = (1..columnCount2).collect { rsmd2.getColumnType(it) }
 
+					// DEBUG: log column type codes and raw bytes for first row
+					if (params.debug) {
+						System.err.println("DEBUG column types: " + fieldNames2.withIndex().collect { name, i -> "${name}=${colTypes2[i]}" }.join(', '))
+						System.err.println("DEBUG charTypes set: ${charTypes}")
+					}
+
 					while (rs2.next()) {
 						def rec = [:]
 						for (int i = 1; i <= columnCount2; i++) {
 							def fieldName = fieldNames2[i - 1]
 							if (colTypes2[i - 1] in charTypes) {
 								def bytes = rs2.getBytes(i)
+								// DEBUG: log raw bytes for first row to see if driver already corrupted them
+								if (params.debug && recs.isEmpty()) {
+									System.err.println("DEBUG ${fieldName} getBytes: " + bytes?.toList()?.collect { String.format('%02X', it & 0xFF) }?.join(' '))
+								}
 								if (bytes != null) {
 									def val = new String(bytes, encoding)
 									rec[fieldName] = noTrim ? val : val.trim()
@@ -504,6 +514,10 @@ def queryResults(String query, Map params = [:]) {
 									rec[fieldName] = null
 								}
 							} else {
+								// DEBUG: log type miss for first row
+								if (params.debug && recs.isEmpty()) {
+									System.err.println("DEBUG ${fieldName} type ${colTypes2[i-1]} not in charTypes — using getObject")
+								}
 								def val = rs2.getObject(i)
 								if (val instanceof String && !noTrim) {
 									rec[fieldName] = val.trim()
