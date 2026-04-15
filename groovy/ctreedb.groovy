@@ -86,7 +86,16 @@ def connect(Map params) {
 		}
 
 		def driver = 'ctree.jdbc.ctreeDriver'
-		def sql = Sql.newInstance(url, dbuser, dbpass, driver)
+
+		// Pass charset as a connection property so multi-byte characters
+		// (Japanese, Korean, etc.) are not corrupted to '?' by the driver.
+		// Use params.charset to override if needed (default: UTF-8).
+		def props = new java.util.Properties()
+		props.setProperty('user', dbuser)
+		props.setProperty('password', dbpass)
+		props.setProperty('charSet', params.charset ?: 'UTF-8')
+
+		def sql = Sql.newInstance(url, props, driver)
 
 		return sql
 	} catch (Exception err) {
