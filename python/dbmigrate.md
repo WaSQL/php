@@ -1,4 +1,4 @@
-# dbmigrate.py
+# DBmigrate
 
 A lightweight, extensible database migration tool written in Python. Supports plain SQL migration
 files and works with any database that has a Python DB-API 2.0 driver. Inspired by
@@ -43,12 +43,28 @@ install whichever you have. Both use `charset='utf8mb4'` by default.
 
 ## Installation
 
-No installation required. Copy `dbmigrate.py` into your project or onto your `$PATH`.
+No installation required. The repo includes wrapper scripts so you can call `dbmigrate`
+directly without typing `python dbmigrate.py` every time.
+
+**Windows** — `dbmigrate.bat` is picked up automatically by CMD and PowerShell when run
+from the project directory (or anywhere on `%PATH%`):
+
+```bat
+dbmigrate status
+dbmigrate --db hana-t2 up
+```
+
+**Linux / macOS** — make `dbmigrate.sh` executable once, then call it as `dbmigrate`:
 
 ```bash
-cp dbmigrate.py /usr/local/bin/dbmigrate
-chmod +x /usr/local/bin/dbmigrate
+chmod +x dbmigrate.sh
+
+# Optionally symlink onto your PATH:
+ln -s "$(pwd)/dbmigrate.sh" /usr/local/bin/dbmigrate
 ```
+
+Both scripts simply delegate to `python3 dbmigrate.py "$@"` — all flags and arguments
+pass through unchanged.
 
 ---
 
@@ -58,21 +74,21 @@ The fastest way to get started is with `env-from-config` (WaSQL projects) or `in
 
 ```bash
 # WaSQL project: pull settings from config.xml, create migrations folder and .env in one step
-python dbmigrate.py env-from-config wasql_test_17
+dbmigrate env-from-config wasql_test_17
 
 # Non-WaSQL project: create migrations folder and .env stub
-python dbmigrate.py init
+dbmigrate init
 
 # Edit .env to set DATABASE_URL, then:
-python dbmigrate.py new create_users_table
-python dbmigrate.py up
+dbmigrate new create_users_table
+dbmigrate up
 ```
 
 ---
 
 ## .env File
 
-`dbmigrate.py` automatically loads `.env` from the current directory before running.
+`dbmigrate` automatically loads `.env` from the current directory before running.
 All settings can be placed here so you never have to pass flags on every command.
 
 ```bash
@@ -105,14 +121,14 @@ DATABASE_URL=postgres://user:pass@host/mydb  # production db
 command by exporting in the shell:
 
 ```bash
-DATABASE_URL="postgres://user:pass@staging-host/mydb" python dbmigrate.py status
+DATABASE_URL="postgres://user:pass@staging-host/mydb" dbmigrate status
 ```
 
 To use a different `.env` file:
 
 ```bash
-python dbmigrate.py --env-file .env.production status
-python dbmigrate.py --env-file .env.staging up
+dbmigrate --env-file .env.production status
+dbmigrate --env-file .env.staging up
 ```
 
 ### .env variables reference
@@ -167,7 +183,7 @@ DATABASE_URL="firebird://user:pass@host/path/to/database.fdb"
 The `--url` flag overrides everything for a single command:
 
 ```bash
-python dbmigrate.py --url postgres://user:pass@host/mydb status
+dbmigrate --url postgres://user:pass@host/mydb status
 ```
 
 ---
@@ -177,8 +193,8 @@ python dbmigrate.py --url postgres://user:pass@host/mydb status
 ### `init` — Set up a new project
 
 ```bash
-python dbmigrate.py init
-python dbmigrate.py --path ./db/migrations init
+dbmigrate init
+dbmigrate --path ./db/migrations init
 ```
 
 Creates the migrations directory and a `.env` stub if they don't already exist. Existing
@@ -190,9 +206,9 @@ files are left untouched. Shows next steps when done.
 
 Next steps:
   Edit .env and set DATABASE_URL, or run:
-    dbmigrate.py env-from-config <name>
-  dbmigrate.py new <migration_name>
-  dbmigrate.py up
+    dbmigrate env-from-config <name>
+  dbmigrate new <migration_name>
+  dbmigrate up
 ```
 
 The generated `.env` stub:
@@ -210,10 +226,10 @@ MIGRATION_STYLE=one
 
 ```bash
 # List all supported databases defined in config.xml
-python dbmigrate.py env-from-config
+dbmigrate env-from-config
 
 # Write DATABASE_URL to .env and run init
-python dbmigrate.py env-from-config <name>
+dbmigrate env-from-config <name>
 ```
 
 Reads `../config.xml` (relative to `dbmigrate.py`) and builds a `DATABASE_URL` from the
@@ -229,17 +245,17 @@ Snowflake entries automatically encode `dbschema`, `dbwarehouse`, and `dbrole` a
 parameters in the URL. Passwords with special characters are percent-encoded.
 
 ```bash
-python dbmigrate.py env-from-config wasql_test_17
-# Created .env
+dbmigrate env-from-config wasql_test_17
+# Created .env.wasql_test_17
 #   DATABASE_URL=mysql://wasql_dbuser:***@localhost/wasql_test_17
-#   created migrations
-#   exists  .env
+#   created migrations/wasql_test_17
+#   created .env.wasql_test_17
 ```
 
 Use `--config` to point at a different `config.xml`:
 
 ```bash
-python dbmigrate.py --config /path/to/config.xml env-from-config mydb
+dbmigrate --config /path/to/config.xml env-from-config mydb
 ```
 
 ---
@@ -247,7 +263,7 @@ python dbmigrate.py --config /path/to/config.xml env-from-config mydb
 ### `new` — Create a migration
 
 ```bash
-python dbmigrate.py new <name> [--style one|dbmate|two|golang-migrate]
+dbmigrate new <name> [--style one|dbmate|two|golang-migrate]
 ```
 
 Generates a timestamped migration file (or pair) in the migrations directory.
@@ -255,16 +271,16 @@ The style defaults to `MIGRATION_STYLE` in `.env` (which defaults to `one`).
 
 ```bash
 # Single-file style (default when MIGRATION_STYLE=one or MIGRATION_STYLE=dbmate)
-python dbmigrate.py new create_users_table
+dbmigrate new create_users_table
 # → migrations/20240601120000_create_users_table.sql
 
 # Two-file style (use --style two or set MIGRATION_STYLE=two in .env)
-python dbmigrate.py new create_users_table --style two
+dbmigrate new create_users_table --style two
 # → migrations/20240601120000_create_users_table.up.sql
 # → migrations/20240601120000_create_users_table.down.sql
 
 # Custom migrations path
-python dbmigrate.py --path ./db/migrations new create_orders
+dbmigrate --path ./db/migrations new create_orders
 ```
 
 Migration names must contain only letters, digits, underscores, and hyphens, and must
@@ -275,7 +291,7 @@ start with a letter or digit.
 ### `status` — Show migration status
 
 ```bash
-python dbmigrate.py status
+dbmigrate status
 ```
 
 Lists all migration files and whether each has been applied. Also reports versions
@@ -304,11 +320,11 @@ running `up` or `down`.
 
 ```bash
 # Apply all pending migrations
-python dbmigrate.py up
+dbmigrate up
 
 # Apply the next N pending migrations
-python dbmigrate.py up 1
-python dbmigrate.py up 3
+dbmigrate up 1
+dbmigrate up 3
 ```
 
 Each migration runs in a transaction. On failure the transaction rolls back and the
@@ -325,10 +341,10 @@ migrations are split on `GO` batch separators in addition to semicolons.
 
 ```bash
 # Roll back the last migration (default)
-python dbmigrate.py down
+dbmigrate down
 
 # Roll back the last N migrations
-python dbmigrate.py down 3
+dbmigrate down 3
 ```
 
 If a migration has no down script, `down` exits with an error rather than silently skipping.
@@ -338,8 +354,8 @@ If a migration has no down script, `down` exits with an error rather than silent
 ### `version` — Print version
 
 ```bash
-python dbmigrate.py version
-# dbmigrate.py 1.0.0
+dbmigrate version
+# dbmigrate 1.0.0
 ```
 
 Requires no database connection.
@@ -351,8 +367,9 @@ Requires no database connection.
 | Flag | Default | Description |
 |---|---|---|
 | `--url URL` | — | Database URL. Overrides `DATABASE_URL` and `.env` |
-| `--env-file FILE` | `.env` | Path to `.env` file |
-| `--path DIR` | `./migrations` (or `MIGRATIONS_DIR`) | Migrations directory |
+| `--db NAME` | — | Database name. Derives `--env-file` and `--path` automatically (see below) |
+| `--env-file FILE` | `.env` (or `.env.<db>`) | Path to `.env` file |
+| `--path DIR` | `./migrations` (or `./migrations/<db>`) | Migrations directory |
 | `--config FILE` | `../config.xml` | Path to WaSQL `config.xml` (used by `env-from-config`) |
 
 ---
@@ -420,7 +437,7 @@ Both styles can coexist in the same migrations directory across different versio
 
 ## Schema Migrations Table
 
-`dbmigrate.py` creates and manages the tracking table automatically. The table name
+`dbmigrate` creates and manages the tracking table automatically. The table name
 defaults to `schema_migrations` and can be changed via `MIGRATIONS_TABLE` (or
 `DBMATE_MIGRATIONS_TABLE`) in `.env`.
 
@@ -448,9 +465,56 @@ The version stored is the numeric prefix of the migration filename (e.g. `202406
 
 ---
 
+## Per-Database Migrations (onemcp / WaSQL)
+
+When working with multiple databases via the onemcp MCP server, use `--db <name>` to
+scope all dbmigrate commands to a specific database. The flag automatically resolves:
+
+- `--env-file` → `.env.<name>` (e.g. `.env.hana-t2`)
+- `--path` → `./migrations/<name>` (e.g. `./migrations/hana-t2`)
+
+### Setup (one time per database)
+
+```bash
+# Pulls DATABASE_URL from config.xml, writes .env.hana-t2, creates migrations/hana-t2/
+dbmigrate env-from-config hana-t2
+```
+
+### Daily use
+
+```bash
+# After "use hana-t2" in the MCP session:
+dbmigrate --db hana-t2 status
+dbmigrate --db hana-t2 new add_orders_table
+dbmigrate --db hana-t2 up
+```
+
+### Resulting layout
+
+```
+.env.hana-t1
+.env.hana-t2
+.env.ods
+.env.dexpdq
+migrations/
+  hana-t1/
+  hana-t2/
+  ods/
+  dexpdq/
+```
+
+You can still override either default explicitly:
+
+```bash
+# Use --db for the database but a custom migrations path
+dbmigrate --db hana-t2 --path ./db/custom-migrations status
+```
+
+---
+
 ## Multiple Repos / Multiple Databases
 
-Each repo keeps its own `.env` with its own `DATABASE_URL`. Running `dbmigrate.py` from
+Each repo keeps its own `.env` with its own `DATABASE_URL`. Running `dbmigrate` from
 inside a repo picks up that repo's `.env` automatically.
 
 ```
@@ -466,7 +530,7 @@ repo-b/
 ### Makefile pattern
 
 ```makefile
-MIGRATE = python /path/to/dbmigrate.py --path ./migrations
+MIGRATE = dbmigrate --path ./migrations
 
 .PHONY: migrate-new migrate-up migrate-down migrate-status
 
@@ -535,7 +599,7 @@ The driver is activated automatically when its URL scheme is detected in `DATABA
 
 ## Comparison with dbmate and golang-migrate
 
-| Feature                       | dbmigrate.py       | dbmate         | golang-migrate |
+| Feature                       | dbmigrate          | dbmate         | golang-migrate |
 |-------------------------------|--------------------|----------------|----------------|
 | Language                      | Python             | Go             | Go             |
 | PostgreSQL                    | yes                | yes            | yes            |
@@ -647,7 +711,7 @@ GRANT INSERT, DELETE ON mydb.schema_migrations TO 'migrator'@'%';
 
 ### Concurrency
 
-`dbmigrate.py` does not acquire an advisory lock. Running two `up` commands simultaneously
+`dbmigrate` does not acquire an advisory lock. Running two `up` commands simultaneously
 against the same database will cause the second to fail on the duplicate-key insert — but
 on MySQL any DDL already executed is permanent. Ensure only one migration process runs at
 a time (CI serialization, deployment locks, etc.).
@@ -663,7 +727,7 @@ a time (CI serialization, deployment locks, etc.).
 ## Troubleshooting
 
 **`Migrations directory not found`**
-Run `python dbmigrate.py init` (or `env-from-config`) to create it.
+Run `dbmigrate init` (or `env-from-config`) to create it.
 
 **`No -- migrate:up marker found`**
 Single-file migrations must contain a `-- migrate:up` line. Check for typos.
@@ -688,7 +752,7 @@ and network reachability.
 Install either: `pip install mysql-connector-python` or `pip install pymysql`.
 
 **`Database 'X' not found in config.xml`**
-Run `python dbmigrate.py env-from-config` (no name) to list supported entries.
+Run `dbmigrate env-from-config` (no name) to list supported entries.
 
 **Migration applied but schema change is missing**
 The migration may have partially succeeded. Check the database manually. If the tracking

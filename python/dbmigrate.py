@@ -1123,9 +1123,9 @@ def cmd_init(migrations_dir, env_file):
         print("\nNext steps:")
         if str(epath) in created:
             print(f"  Edit {epath} and set DATABASE_URL, or run:")
-            print(f"    dbmigrate.py env-from-config <name>")
-        print(f"  dbmigrate.py new <migration_name>")
-        print(f"  dbmigrate.py up")
+            print(f"    dbmigrate env-from-config <name>")
+        print(f"  dbmigrate new <migration_name>")
+        print(f"  dbmigrate up")
 
 
 # ---------------------------------------------------------------------------
@@ -1168,8 +1168,8 @@ def main():
         epilog=__doc__,
     )
     parser.add_argument(
-        '--env-file', default='.env', metavar='FILE',
-        help='Path to .env file (default: .env). Existing env vars take precedence.',
+        '--env-file', default=None, metavar='FILE',
+        help='Path to .env file. Defaults to .env.<db> if --db is set, otherwise .env.',
     )
     parser.add_argument(
         '--url', default=None,
@@ -1187,6 +1187,11 @@ def main():
     parser.add_argument(
         '--config', default=_default_config, metavar='FILE',
         help=f'Path to config.xml (default: {_default_config})',
+    )
+    parser.add_argument(
+        '--db', default=None, metavar='NAME',
+        help='Database name. Sets --env-file to .env.<name> and --path to ./migrations/<name> '
+             'unless those are explicitly provided.',
     )
 
     sub = parser.add_subparsers(dest='command', metavar='command')
@@ -1222,13 +1227,31 @@ def main():
 
     args = parser.parse_args()
 
-    # Load .env first — existing env vars and --url always win
+    # Resolve env-file and path using --db, then env-from-config name, then defaults.
+    # Priority: explicit flag > --db derivation > env-from-config name derivation > fallback.
+    db = args.db
+
+    if args.env_file is None:
+        if db:
+            args.env_file = f'.env.{db}'
+        elif args.command == 'env-from-config' and args.name:
+            args.env_file = f'.env.{args.name}'
+        else:
+            args.env_file = '.env'
+
+    if args.path is None:
+        if db:
+            args.path = f'./migrations/{db}'
+        elif args.command == 'env-from-config' and args.name:
+            args.path = f'./migrations/{args.name}'
+
+    # Load .env — existing env vars and --url always win
     load_env_file(args.env_file)
 
     # Resolve URL: --url flag > DATABASE_URL env var (possibly just loaded from .env)
     url = args.url or os.environ.get('DATABASE_URL')
 
-    # Resolve migrations directory: --path > MIGRATIONS_DIR / DBMATE_MIGRATIONS_DIR > default
+    # Resolve migrations directory: resolved above > MIGRATIONS_DIR / DBMATE_MIGRATIONS_DIR > default
     if args.path is None:
         args.path = (
             os.environ.get('MIGRATIONS_DIR')
