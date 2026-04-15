@@ -254,12 +254,6 @@ def queryResults(String query, Map params = [:]) {
 
 					// Get field names from metadata (only once)
 					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
-					def colTypes = (1..columnCount).collect { rsmd.getColumnType(it) }
-					def encoding = params.getOrDefault('encoding', 'UTF-8')
-					def charTypes = [java.sql.Types.CHAR, java.sql.Types.VARCHAR,
-					                 java.sql.Types.LONGVARCHAR, java.sql.Types.NCHAR,
-					                 java.sql.Types.NVARCHAR, java.sql.Types.LONGNVARCHAR] as Set
-
 					// Write header row
 					def headerLine = new StringBuilder()
 					fieldNames.eachWithIndex { name, idx ->
@@ -284,20 +278,11 @@ def queryResults(String query, Map params = [:]) {
 								if (i > 1) line.append(',')
 
 								try {
-									if (colTypes[i - 1] in charTypes) {
-										def bytes = rs.getBytes(i)
-										if (bytes != null) {
-											def strValue = new String(bytes, encoding)
-											if (!noTrim) strValue = strValue.trim()
-											line.append(escapeCSV(strValue))
-										}
-									} else {
-										def value = rs.getObject(i)
-										if (value != null) {
-											def strValue = value.toString()
-											if (!noTrim) strValue = strValue.trim()
-											line.append(escapeCSV(strValue))
-										}
+									def value = rs.getObject(i)
+									if (value != null) {
+										def strValue = value.toString()
+										if (!noTrim) strValue = strValue.trim()
+										line.append(escapeCSV(strValue))
 									}
 								} catch (Exception e) {
 									if (skipErrors) {
@@ -401,12 +386,6 @@ def queryResults(String query, Map params = [:]) {
 
 					// Get field names from metadata
 					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
-					def colTypes = (1..columnCount).collect { rsmd.getColumnType(it) }
-					def encoding = params.getOrDefault('encoding', 'UTF-8')
-					def charTypes = [java.sql.Types.CHAR, java.sql.Types.VARCHAR,
-					                 java.sql.Types.LONGVARCHAR, java.sql.Types.NCHAR,
-					                 java.sql.Types.NVARCHAR, java.sql.Types.LONGNVARCHAR] as Set
-
 					// Process each row with error handling
 					while (true) {
 						try {
@@ -415,14 +394,7 @@ def queryResults(String query, Map params = [:]) {
 							def rec = [:]
 							fieldNames.withIndex().each { fieldName, idx ->
 								try {
-									def col = idx + 1
-									if (colTypes[idx] in charTypes) {
-										def bytes = rs.getBytes(col)
-										rec[fieldName] = bytes != null ? new String(bytes, encoding).with { noTrim ? it : it.trim() } : null
-									} else {
-										def val = rs.getObject(col)
-										rec[fieldName] = (val instanceof String && !noTrim) ? val.trim() : val
-									}
+									rec[fieldName] = rs.getObject(idx + 1)
 								} catch (Exception e) {
 									System.err.println("Warning: Error reading column '${fieldName}': ${e.message}")
 									rec[fieldName] = null
@@ -468,16 +440,9 @@ def queryResults(String query, Map params = [:]) {
 				}
 
 			} else {
-				// Use manual ResultSet iteration with explicit charset decoding.
-				// sql.eachRow / toRowResult() use the JVM default charset to convert
-				// database bytes to Strings — on Linux that default is often ASCII or
-				// ISO-8859-1, which replaces CJK characters with '?'. Reading raw bytes
-				// and decoding them ourselves guarantees the correct encoding.
-				def encoding = params.getOrDefault('encoding', 'UTF-8')
-				def charTypes = [java.sql.Types.CHAR, java.sql.Types.VARCHAR,
-				                 java.sql.Types.LONGVARCHAR, java.sql.Types.NCHAR,
-				                 java.sql.Types.NVARCHAR, java.sql.Types.LONGNVARCHAR] as Set
-
+				// Use getObject() directly — the cTree JDBC driver handles charset
+				// conversion internally; getBytes() on char columns returns already-
+				// corrupted bytes (0x3F) because the driver converts before we can intercept.
 				def stmt2 = sql.connection.createStatement()
 				if (fetchSize > 0) {
 					stmt2.setFetchSize(fetchSize)
@@ -489,41 +454,16 @@ def queryResults(String query, Map params = [:]) {
 					def rsmd2 = rs2.getMetaData()
 					def columnCount2 = rsmd2.getColumnCount()
 					def fieldNames2 = (1..columnCount2).collect { rsmd2.getColumnName(it).toLowerCase() }
-					def colTypes2 = (1..columnCount2).collect { rsmd2.getColumnType(it) }
-
-					// DEBUG: log column type codes and raw bytes for first row
-					if (params.debug) {
-						System.err.println("DEBUG column types: " + fieldNames2.withIndex().collect { name, i -> "${name}=${colTypes2[i]}" }.join(', '))
-						System.err.println("DEBUG charTypes set: ${charTypes}")
-					}
 
 					while (rs2.next()) {
 						def rec = [:]
 						for (int i = 1; i <= columnCount2; i++) {
 							def fieldName = fieldNames2[i - 1]
-							if (colTypes2[i - 1] in charTypes) {
-								def bytes = rs2.getBytes(i)
-								// DEBUG: log raw bytes for first row to see if driver already corrupted them
-								if (params.debug && recs.isEmpty()) {
-									System.err.println("DEBUG ${fieldName} getBytes: " + bytes?.toList()?.collect { String.format('%02X', it & 0xFF) }?.join(' '))
-								}
-								if (bytes != null) {
-									def val = new String(bytes, encoding)
-									rec[fieldName] = noTrim ? val : val.trim()
-								} else {
-									rec[fieldName] = null
-								}
+							def val = rs2.getObject(i)
+							if (val instanceof String && !noTrim) {
+								rec[fieldName] = val.trim()
 							} else {
-								// DEBUG: log type miss for first row
-								if (params.debug && recs.isEmpty()) {
-									System.err.println("DEBUG ${fieldName} type ${colTypes2[i-1]} not in charTypes — using getObject")
-								}
-								def val = rs2.getObject(i)
-								if (val instanceof String && !noTrim) {
-									rec[fieldName] = val.trim()
-								} else {
-									rec[fieldName] = val
-								}
+								rec[fieldName] = val
 							}
 						}
 						recs << rec
