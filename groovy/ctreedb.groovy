@@ -18,6 +18,21 @@ import java.sql.SQLException
 import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
+// Force JVM default charset to UTF-8 before the ctree JDBC driver loads.
+// On Linux the JVM may start with ASCII/ISO-8859-1 as the default charset
+// (especially when invoked as a subprocess from PHP with a sparse environment),
+// and the ctree JDBC driver uses that charset to decode bytes into Java Strings.
+System.err.println("[ctreedb] JVM default charset BEFORE reset: ${java.nio.charset.Charset.defaultCharset()}")
+System.setProperty("file.encoding", "UTF-8")
+try {
+	def charsetField = java.nio.charset.Charset.class.getDeclaredField("defaultCharset")
+	charsetField.setAccessible(true)
+	charsetField.set(null, null)  // null forces re-read from file.encoding on next access
+} catch (Exception e) {
+	System.err.println("[ctreedb] Could not reset defaultCharset via reflection: ${e.message}")
+}
+System.err.println("[ctreedb] JVM default charset AFTER reset: ${java.nio.charset.Charset.defaultCharset()}")
+
 /**
  * Creates and returns a database connection to FairCom c-treeACE
  * @param params Map containing connection parameters:
