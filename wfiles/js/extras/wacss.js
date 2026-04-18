@@ -8402,10 +8402,16 @@ const wacss = {
 		}
 		
 		let url=opts.url || elobj.dataset.url || pli.dataset.url || ptd.dataset.url || ptr.dataset.url;
+		let state=opts.state || elobj.dataset.state || pli.dataset.state || pul.dataset.state || ptd.dataset.state || ptr.dataset.state;
 		if(url){
 			params.url=url;
 			params.title=title;
 			document.title=params.title;
+			let stateObj={};
+			if(state){
+				try{stateObj=JSON.parse(state);}catch(e){stateObj={state:state};}
+			}
+			history.pushState(stateObj,title||'',url);
 		}
 		//if div is "window", pop up a new window.
 		if(div=='window'){
