@@ -8404,16 +8404,21 @@ const wacss = {
 		let url=opts.url || elobj.dataset.url || pli.dataset.url || ptd.dataset.url || ptr.dataset.url;
 		if(url){
 			if(title.length){document.title=title;}
+			if(!elobj.id){if(!wacss._navIdSeq){wacss._navIdSeq=0;}elobj.id='wacss_nav_'+(++wacss._navIdSeq);}
 			if(!wacss._popstateListening){
 				wacss._popstateListening=true;
 				window.addEventListener('popstate',function(e){
 					if(e.state && e.state.nav && e.state.div){
-						let p=Object.assign({},e.state.params||{},{popstate:1});
-						wacss.ajaxGet(e.state.nav,e.state.div,p);
+						let el=e.state.elid ? document.getElementById(e.state.elid) : null;
+						if(el){wacss.nav(el);}
+						else{
+							let p=Object.assign({},e.state.params||{},{popstate:1});
+							wacss.ajaxGet(e.state.nav,e.state.div,p);
+						}
 					}
 				});
 			}
-			history.pushState({div:div,nav:nav,params:params},title||'',url);
+			history.pushState({div:div,nav:nav,params:params,elid:elobj.id},title||'',url);
 		}
 		//if div is "window", pop up a new window.
 		if(div=='window'){
