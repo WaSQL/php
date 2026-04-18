@@ -8403,14 +8403,13 @@ const wacss = {
 		
 		let url=opts.url || elobj.dataset.url || pli.dataset.url || ptd.dataset.url || ptr.dataset.url;
 		if(url){
-			params.url=url;
-			params.title=title;
-			document.title=params.title;
+			if(title.length){document.title=title;}
 			if(!wacss._popstateListening){
 				wacss._popstateListening=true;
 				window.addEventListener('popstate',function(e){
 					if(e.state && e.state.nav && e.state.div){
-						wacss.ajaxGet(e.state.nav,e.state.div,e.state.params||{});
+						let p=Object.assign({},e.state.params||{},{popstate:1});
+						wacss.ajaxGet(e.state.nav,e.state.div,p);
 					}
 				});
 			}
