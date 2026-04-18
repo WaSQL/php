@@ -8410,15 +8410,19 @@ const wacss = {
 				window.addEventListener('popstate',function(e){
 					if(e.state && e.state.nav && e.state.div){
 						let el=e.state.elid ? document.getElementById(e.state.elid) : null;
+						wacss._popstateFiring=true;
 						if(el){wacss.nav(el);}
 						else{
 							let p=Object.assign({},e.state.params||{},{popstate:1});
 							wacss.ajaxGet(e.state.nav,e.state.div,p);
 						}
+						wacss._popstateFiring=false;
 					}
 				});
 			}
-			history.pushState({div:div,nav:nav,params:params,elid:elobj.id},title||'',url);
+			if(!wacss._popstateFiring){
+				history.pushState({div:div,nav:nav,params:params,elid:elobj.id},title||'',url);
+			}
 		}
 		//if div is "window", pop up a new window.
 		if(div=='window'){
