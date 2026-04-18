@@ -8410,11 +8410,11 @@ const wacss = {
 				wacss._popstateListening=true;
 				window.addEventListener('popstate',function(e){
 					if(e.state && e.state.nav && e.state.div){
-						wacss.nav(null,{div:e.state.div,nav:e.state.nav});
+						wacss.ajaxGet(e.state.nav,e.state.div,e.state.params||{});
 					}
 				});
 			}
-			history.pushState({div:div,nav:nav},title||'',url);
+			history.pushState({div:div,nav:nav,params:params},title||'',url);
 		}
 		//if div is "window", pop up a new window.
 		if(div=='window'){
