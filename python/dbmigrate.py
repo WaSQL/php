@@ -13,6 +13,8 @@ Commands:
   dbmigrate.py down [N]                Roll back N migrations (default 1)
   dbmigrate.py status                  Show applied/pending status
   dbmigrate.py new <name>              Create new migration file(s)
+  dbmigrate.py reset [--force]         Clear migration history and delete all migration files
+  dbmigrate.py learn                   Print a quick-start reference
   dbmigrate.py version                 Print version and exit
 
 Connection (first match wins):
@@ -49,7 +51,7 @@ import os
 import re
 import sys
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
@@ -311,7 +313,7 @@ class PostgresDriver(BaseDriver):
     def ensure_migrations_table(self):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
-                version BIGINT PRIMARY KEY,
+                version varchar(128) PRIMARY KEY NOT NULL,
                 applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
         """)
@@ -319,13 +321,13 @@ class PostgresDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [str(version)])
 
 
 @register_driver(['mysql', 'mariadb', 'mysqli'])
@@ -378,7 +380,7 @@ class MySQLDriver(BaseDriver):
     def ensure_migrations_table(self):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
-                version BIGINT PRIMARY KEY,
+                version varchar(128) PRIMARY KEY NOT NULL,
                 applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -386,13 +388,13 @@ class MySQLDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [str(version)])
 
 
 @register_driver(['mssql', 'sqlserver'])
@@ -437,7 +439,7 @@ class SQLServerDriver(BaseDriver):
         self.execute(f"""
             IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{self.table}')
             CREATE TABLE {self.table} (
-                version BIGINT PRIMARY KEY,
+                version varchar(128) NOT NULL PRIMARY KEY,
                 applied_at DATETIME2 NOT NULL DEFAULT GETUTCDATE()
             )
         """)
@@ -445,10 +447,10 @@ class SQLServerDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES ({self._ph})", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES ({self._ph})", [str(version)])
 
     def execute_script(self, sql):
         """
@@ -466,7 +468,7 @@ class SQLServerDriver(BaseDriver):
         return cur
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = {self._ph}", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = {self._ph}", [str(version)])
 
 
 @register_driver(['sqlite', 'sqlite3'])
@@ -482,7 +484,7 @@ class SQLiteDriver(BaseDriver):
     def ensure_migrations_table(self):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
-                version INTEGER PRIMARY KEY,
+                version varchar(128) PRIMARY KEY NOT NULL,
                 applied_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
         """)
@@ -490,13 +492,13 @@ class SQLiteDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['ctree'])
@@ -528,7 +530,7 @@ class CTreeDriver(BaseDriver):
         try:
             self.execute(f"""
                 CREATE TABLE {self.table} (
-                    version BIGINT PRIMARY KEY,
+                    version varchar(128) NOT NULL PRIMARY KEY,
                     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
                 )
             """)
@@ -538,13 +540,13 @@ class CTreeDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['firebird'])
@@ -572,7 +574,7 @@ class FirebirdDriver(BaseDriver):
         try:
             self.execute(f"""
                 CREATE TABLE {self.table} (
-                    version BIGINT NOT NULL PRIMARY KEY,
+                    version varchar(128) NOT NULL PRIMARY KEY,
                     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
                 )
             """)
@@ -582,13 +584,13 @@ class FirebirdDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['hana'])
@@ -616,7 +618,7 @@ class HanaDriver(BaseDriver):
         try:
             self.execute(f"""
                 CREATE TABLE IF NOT EXISTS {self.table} (
-                    version BIGINT PRIMARY KEY,
+                    version varchar(128) NOT NULL PRIMARY KEY,
                     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
                 )
             """)
@@ -626,13 +628,13 @@ class HanaDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['snowflake'])
@@ -664,7 +666,7 @@ class SnowflakeDriver(BaseDriver):
     def ensure_migrations_table(self):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
-                version BIGINT PRIMARY KEY,
+                version varchar(128) PRIMARY KEY NOT NULL,
                 applied_at TIMESTAMP_TZ NOT NULL DEFAULT CURRENT_TIMESTAMP()
             )
         """)
@@ -672,13 +674,13 @@ class SnowflakeDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [str(version)])
 
 
 @register_driver(['oracle'])
@@ -706,7 +708,7 @@ class OracleDriver(BaseDriver):
         try:
             self.execute(f"""
                 CREATE TABLE {self.table} (
-                    version NUMBER PRIMARY KEY,
+                    version varchar(128) NOT NULL PRIMARY KEY,
                     applied_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL
                 )
             """)
@@ -716,13 +718,13 @@ class OracleDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {row[0] for row in cur.fetchall()}
+        return {int(row[0]) for row in cur.fetchall()}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (:1)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (:1)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = :1", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = :1", [str(version)])
 
 
 # ---------------------------------------------------------------------------
@@ -898,6 +900,12 @@ def cmd_status(driver, migrations):
         print("No migration files found.")
         return
 
+    tty = sys.stdout.isatty()
+    def gray(s):   return f'\033[2m{s}\033[0m'   if tty else s
+    def green(s):  return f'\033[32m{s}\033[0m'  if tty else s
+    def yellow(s): return f'\033[33m{s}\033[0m'  if tty else s
+    def bold(s):   return f'\033[1m{s}\033[0m'   if tty else s
+
     col_v = len("Version")
     col_l = len("Label")
     if migrations:
@@ -908,23 +916,156 @@ def cmd_status(driver, migrations):
         col_l = max(col_l, len("<file missing>"))
 
     header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  {'Status':<10}  Down?"
-    print(header)
+    print(bold(header))
     print("-" * len(header))
 
     for version, label, _, down_sql in migrations:
-        status   = "applied" if version in applied else "pending"
-        has_down = "yes"     if down_sql            else "no"
-        print(f"{version:<{col_v}}  {label:<{col_l}}  {status:<10}  {has_down}")
+        is_applied = version in applied
+        status   = "applied" if is_applied else "pending"
+        has_down = "yes"     if down_sql   else "no"
+        row = f"{version:<{col_v}}  {label:<{col_l}}  {status:<10}  {has_down}"
+        print(gray(row) if is_applied else green(row))
 
     for version in orphaned:
-        print(f"{version:<{col_v}}  {'<file missing>':<{col_l}}  {'orphaned':<10}  ?")
+        row = f"{version:<{col_v}}  {'<file missing>':<{col_l}}  {'orphaned':<10}  ?"
+        print(yellow(row))
 
     total  = len(migrations)
     n_app  = len([m for m in migrations if m[0] in applied])
     n_pend = total - n_app
-    print(f"\n{total} migrations: {n_app} applied, {n_pend} pending.")
+    print(f"\n{total} migrations: {gray(f'{n_app} applied')}, {green(f'{n_pend} pending')}.")
     if orphaned:
-        print(f"{len(orphaned)} orphaned (applied in DB but no file on disk).")
+        print(yellow(f"{len(orphaned)} orphaned (applied in DB but no file on disk)."))
+
+
+def _unique_timestamp(migrations_dir):
+    """Return a YYYYMMDDHHmmSS timestamp that doesn't collide with any existing migration file."""
+    path = Path(migrations_dir)
+    existing = set()
+    if path.exists():
+        re_version = re.compile(r'^(\d+)[_\-]')
+        for f in path.iterdir():
+            m = re_version.match(f.name)
+            if m:
+                existing.add(m.group(1))
+    ts = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
+    while ts in existing:
+        ts = (datetime.strptime(ts, '%Y%m%d%H%M%S').replace(tzinfo=timezone.utc)
+              + timedelta(seconds=1)).strftime('%Y%m%d%H%M%S')
+    return ts
+
+
+def cmd_learn():
+    """Print a quick-start reference for dbmigrate."""
+    import shutil
+
+    tty = sys.stdout.isatty()
+    def bold(s):   return f'\033[1m{s}\033[0m'  if tty else s
+    def cyan(s):   return f'\033[36m{s}\033[0m' if tty else s
+    def green(s):  return f'\033[32m{s}\033[0m' if tty else s
+    def yellow(s): return f'\033[33m{s}\033[0m' if tty else s
+    def dim(s):    return f'\033[2m{s}\033[0m'  if tty else s
+
+    width = min(shutil.get_terminal_size((80, 24)).columns, 100)
+    rule  = dim('─' * width)
+
+    def section(title):
+        print(f'\n{bold(cyan(title))}')
+        print(rule)
+
+    print(bold(f'\n  dbmigrate {__version__} — quick reference'))
+    print(rule)
+
+    section('1. SETUP')
+    print('  Create a .env file in your project directory:')
+    print(f'    {green("DATABASE_URL")}=postgres://user:pass@host:5432/mydb')
+    print(f'    {green("MIGRATIONS_DIR")}=./migrations      {dim("# default")}')
+    print(f'    {green("MIGRATION_STYLE")}=one              {dim("# one=single file  two=separate up/down files")}')
+    print()
+    print('  Or pull settings directly from WaSQL config.xml:')
+    print(f'    {yellow("dbmigrate env-from-config")} <dbname>')
+
+    section('2. DAILY WORKFLOW')
+    rows = [
+        ('dbmigrate new <name>',   'Create a timestamped migration file in ./migrations'),
+        ('dbmigrate up',           'Apply all pending migrations'),
+        ('dbmigrate up 1',         'Apply only the next pending migration'),
+        ('dbmigrate down',         'Roll back the last applied migration'),
+        ('dbmigrate down 3',       'Roll back the last 3 migrations'),
+        ('dbmigrate status',       'Show what is applied vs pending'),
+        ('dbmigrate reset',        'Wipe history + delete migration files (dev only)'),
+        ('dbmigrate reset --force','Same but skip the confirmation prompt'),
+    ]
+    for cmd, desc in rows:
+        print(f'  {yellow(f"{cmd:<38}")}  {desc}')
+
+    section('3. MIGRATION FILE  (single-file style, MIGRATION_STYLE=one)')
+    print(f'  {dim("-- migrate:up")}')
+    print(f'  CREATE TABLE orders (')
+    print(f'      id         bigserial PRIMARY KEY,')
+    print(f'      created_at timestamptz NOT NULL DEFAULT now()')
+    print(f'  );')
+    print()
+    print(f'  {dim("-- migrate:down")}')
+    print(f'  DROP TABLE IF EXISTS orders;')
+
+    section('4. TIPS')
+    tips = [
+        ('--path is a GLOBAL flag — place it before the subcommand:',
+         '  dbmigrate --path ./db/migrations new create_orders'),
+        ('Timestamps never collide — running new 5× in one second gives',
+         '  …12, …13, …14, …15, …16 automatically.'),
+        ('Guard against re-runs after partial failures:',
+         '  CREATE TABLE IF NOT EXISTS …   /   DROP TABLE IF EXISTS …'),
+        ('PostgreSQL: CREATE INDEX CONCURRENTLY cannot run inside a',
+         '  transaction — put it alone in its own migration file.'),
+        ('Never edit an applied migration.',
+         '  Create a new one to correct it instead.'),
+    ]
+    for line1, line2 in tips:
+        print(f'  {line1}')
+        print(f'  {dim(line2)}')
+        print()
+
+    section('5. GLOBAL FLAGS')
+    flags = [
+        ('--path DIR',       'Migrations directory  (default: ./migrations)'),
+        ('--db NAME',        'Scopes --path → ./migrations/<name> and --env-file → .env.<name>'),
+        ('--url URL',        'DB connection URL — overrides .env and $DATABASE_URL'),
+        ('--env-file FILE',  'Alternative .env file  (default: .env)'),
+    ]
+    for flag, desc in flags:
+        print(f'  {yellow(f"{flag:<20}")}  {desc}')
+
+    print()
+
+
+def cmd_reset(driver, migrations_dir, force=False):
+    """Truncate the schema_migrations tracking table and delete all migration files."""
+    if not force:
+        ans = input(
+            f"This will clear {driver.table} and delete all files in '{migrations_dir}'. "
+            "Type 'yes' to confirm: "
+        )
+        if ans.strip().lower() != 'yes':
+            print("Aborted.")
+            return
+
+    driver.execute(f"DELETE FROM {driver.table}")
+    driver.commit()
+    print(f"Migration history cleared from {driver.table}.")
+
+    path = Path(migrations_dir)
+    if path.exists():
+        deleted = 0
+        for f in sorted(path.iterdir()):
+            if f.is_file() and f.suffix.lower() == '.sql':
+                f.unlink()
+                print(f"  Deleted {f.name}")
+                deleted += 1
+        print(f"{deleted} migration file(s) deleted from {migrations_dir}.")
+    else:
+        print(f"Migrations directory '{migrations_dir}' does not exist — nothing to delete.")
 
 
 def cmd_new(name, migrations_dir, style='two'):
@@ -934,7 +1075,7 @@ def cmd_new(name, migrations_dir, style='two'):
             f"Invalid migration name '{name}'. "
             "Use only letters, digits, underscores, and hyphens."
         )
-    ts   = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
+    ts   = _unique_timestamp(migrations_dir)
     path = Path(migrations_dir)
     path.mkdir(parents=True, exist_ok=True)
 
@@ -1207,6 +1348,11 @@ def main():
     sub.add_parser('init',    help='Create migrations directory and .env stub')
     sub.add_parser('status',  help='Show applied/pending status of all migrations')
     sub.add_parser('version', help='Print dbmigrate.py version and exit')
+    sub.add_parser('learn',   help='Print a quick-start reference')
+
+    p_reset = sub.add_parser('reset', help='Clear all rows from the migrations tracking table')
+    p_reset.add_argument('--force', action='store_true',
+                         help='Skip confirmation prompt')
 
     p_new = sub.add_parser('new', help='Create a new migration')
     p_new.add_argument('name', help='Migration name in snake_case (e.g. create_users_table)')
@@ -1281,6 +1427,10 @@ def main():
         print(f"dbmigrate.py {__version__}")
         return
 
+    if args.command == 'learn':
+        cmd_learn()
+        return
+
     if args.command == 'init':
         cmd_init(args.path, args.env_file)
         return
@@ -1305,6 +1455,11 @@ def main():
     driver = get_driver(url, table=migrations_table)
     try:
         driver.ensure_migrations_table()
+
+        if args.command == 'reset':
+            cmd_reset(driver, migrations_dir=args.path, force=args.force)
+            return
+
         migrations = find_migrations(args.path)
 
         if args.command == 'up':

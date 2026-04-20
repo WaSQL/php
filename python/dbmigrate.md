@@ -1,4 +1,9 @@
-# DBmigrate
+<svg xmlns="http://www.w3.org/2000/svg" height="40" viewBox="0 0 27.426098 32" style="float:left; margin-right:12px; margin-top:4px">
+  <path fill="#5f8fd3" d="m 13.728,13.728 q 4.224,0 7.904,-0.768 3.68,-0.768 5.792,-2.272 v 3.04 q 0,1.216 -1.824,2.272 -1.824,1.056 -5.024,1.664 -3.2,0.608 -6.848,0.64 -3.648,0.032 -6.88,-0.64 Q 3.616,16.992 1.856,16 0.096,15.008 0,13.728 v -3.04 q 2.112,1.504 5.792,2.272 3.68,0.768 7.936,0.768 z m 0,13.696 q 4.224,0 7.904,-0.768 3.68,-0.768 5.792,-2.272 v 3.04 q 0,1.248 -1.824,2.304 -1.824,1.056 -5.024,1.664 Q 17.376,32 13.728,32 10.08,32 6.848,31.392 3.616,30.784 1.856,29.728 0.096,28.672 0,27.424 v -3.04 q 2.112,1.504 5.792,2.272 3.68,0.768 7.936,0.768 z m 0,-6.848 q 4.224,0 7.904,-0.768 3.68,-0.768 5.792,-2.272 v 3.04 q 0,1.216 -1.824,2.272 -1.824,1.056 -5.024,1.664 -3.2,0.608 -6.848,0.64 -3.648,0.032 -6.88,-0.64 Q 3.616,23.84 1.856,22.848 0.096,21.856 0,20.576 v -3.04 q 2.112,1.504 5.792,2.272 3.68,0.768 7.936,0.768 z M 13.728,0 q 3.712,0 6.848,0.608 3.136,0.608 5.024,1.664 1.888,1.056 1.824,2.304 v 2.272 q 0,1.248 -1.824,2.304 -1.824,1.056 -5.024,1.664 -3.2,0.608 -6.848,0.608 -3.648,0 -6.88,-0.608 Q 3.616,10.208 1.856,9.152 0.096,8.096 0,6.848 V 4.576 Q 0,3.328 1.856,2.272 3.712,1.216 6.848,0.608 9.984,0 13.728,0 Z"/>
+  <path fill="#d35f5f" d="m 13.728,0 7.36,11.648004 H 6.368 Z m 0,32.000004 -7.36,-11.712 h 14.72 z"/>
+</svg>
+
+# <span style="color:#5f8fd3">DB</span><span style="color:#d35f5f">migrate</span>
 
 A lightweight, extensible database migration tool written in Python. Supports plain SQL migration
 files and works with any database that has a Python DB-API 2.0 driver. Inspired by
@@ -10,9 +15,9 @@ files and works with any database that has a Python DB-API 2.0 driver. Inspired 
 
 - Plain SQL migration files — no proprietary DSL
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
-- `init`, `up`, `down`, `status`, `new`, `version`, and `env-from-config` commands
-- Timestamp-versioned migrations to avoid conflicts across developers
-- Tracks applied migrations in a configurable table (default: `schema_migrations`)
+- `init`, `up`, `down`, `status`, `new`, `reset`, `learn`, `version`, and `env-from-config` commands
+- Timestamp-versioned migrations — `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
+- Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
 - Built-in drivers for PostgreSQL, MySQL/MariaDB, SQL Server, SQLite, Oracle, SAP HANA, Snowflake, FairCom cTree, and Firebird
 - `.env` file support compatible with dbmate
 - `env-from-config` pulls connection settings directly from WaSQL's `config.xml`
@@ -286,6 +291,10 @@ dbmigrate --path ./db/migrations new create_orders
 Migration names must contain only letters, digits, underscores, and hyphens, and must
 start with a letter or digit.
 
+**Timestamp collision avoidance** — if the current second is already taken by an existing
+file, `new` increments by one second until it finds a free slot. Running `new` five times
+rapidly will produce `…12`, `…13`, `…14`, `…15`, `…16` with no manual intervention needed.
+
 ---
 
 ### `status` — Show migration status
@@ -297,18 +306,28 @@ dbmigrate status
 Lists all migration files and whether each has been applied. Also reports versions
 recorded in the database that have no file on disk (orphaned).
 
+When writing to a terminal, output is color-coded:
+
+| Color | Meaning |
+|---|---|
+| Gray / dim | Applied — already in the database |
+| Green | Pending — not yet applied |
+| Yellow | Orphaned — applied in DB but file is missing |
+
 ```
 Version          Label                                Status      Down?
 ------------------------------------------------------------------------
-20240601120000   create_users_table                   applied     yes
-20240602083000   add_email_index                      applied     yes
-20240603094500   add_orders_table                     pending     yes
-20240604110000   add_audit_log                        pending     no
-20240530000000   <file missing>                       orphaned    ?
+20240601120000   create_users_table                   applied     yes   ← gray
+20240602083000   add_email_index                      applied     yes   ← gray
+20240603094500   add_orders_table                     pending     yes   ← green
+20240604110000   add_audit_log                        pending     no    ← green
+20240530000000   <file missing>                       orphaned    ?     ← yellow
 
 4 migrations: 2 applied, 2 pending.
 1 orphaned (applied in DB but no file on disk).
 ```
+
+Colors are suppressed automatically when output is piped or redirected.
 
 The `Down?` column indicates whether a rollback migration exists. Orphaned entries
 mean a version was applied but the file was later deleted — investigate before
@@ -348,6 +367,47 @@ dbmigrate down 3
 ```
 
 If a migration has no down script, `down` exits with an error rather than silently skipping.
+
+---
+
+### `reset` — Wipe migration history and files
+
+```bash
+# Interactive — prompts for confirmation
+dbmigrate reset
+
+# Skip confirmation prompt
+dbmigrate reset --force
+
+# Target a specific migrations directory
+dbmigrate --path ./db/migrations reset --force
+```
+
+Deletes all rows from the `schema_migrations` tracking table **and** removes every `.sql`
+file from the migrations directory. Use this to wipe a dev environment and start from
+scratch.
+
+> **Warning:** This is destructive and irreversible. The database schema itself is **not**
+> touched — only the migration history records and migration files are removed.
+
+```bash
+# Typical dev reset workflow
+dbmigrate reset --force
+# (re-create your migration files)
+dbmigrate up
+```
+
+---
+
+### `learn` — Quick-start reference
+
+```bash
+dbmigrate learn
+```
+
+Prints a formatted quick-start reference covering setup, daily workflow, migration file
+format, tips, and global flags. No database connection required. Output is color-coded
+when writing to a terminal and plain text when piped or redirected.
 
 ---
 
@@ -444,24 +504,28 @@ defaults to `schema_migrations` and can be changed via `MIGRATIONS_TABLE` (or
 ```sql
 -- PostgreSQL
 CREATE TABLE schema_migrations (
-    version    BIGINT PRIMARY KEY,
+    version    varchar(128) PRIMARY KEY NOT NULL,
     applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- MySQL / MariaDB
 CREATE TABLE schema_migrations (
-    version    BIGINT PRIMARY KEY,
+    version    varchar(128) PRIMARY KEY NOT NULL,
     applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- SQL Server
 CREATE TABLE schema_migrations (
-    version    BIGINT PRIMARY KEY,
+    version    varchar(128) NOT NULL PRIMARY KEY,
     applied_at DATETIME2 NOT NULL DEFAULT GETUTCDATE()
 );
 ```
 
-The version stored is the numeric prefix of the migration filename (e.g. `20240601120000`).
+The version stored is the numeric prefix of the migration filename as a string
+(e.g. `'20240601120000'`). Using `varchar(128)` matches the schema created by dbmate,
+so a `schema_migrations` table created by either tool is fully interoperable with the
+other. If a table already exists with a different column type (e.g. `BIGINT`), dbmigrate
+reads it correctly by converting values to integers for comparison internally.
 
 ---
 
@@ -574,7 +638,7 @@ class MyDBDriver(BaseDriver):
         try:
             self.execute(f"""
                 CREATE TABLE {self.table} (
-                    version    BIGINT PRIMARY KEY,
+                    version    varchar(128) NOT NULL PRIMARY KEY,
                     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
                 )
             """)
@@ -584,13 +648,13 @@ class MyDBDriver(BaseDriver):
 
     def applied_versions(self):
         cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {{row[0] for row in cur.fetchall()}}
+        return {{int(row[0]) for row in cur.fetchall()}}
 
     def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [version])
+        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
 
     def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [version])
+        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 ```
 
 The driver is activated automatically when its URL scheme is detected in `DATABASE_URL`.
@@ -739,7 +803,8 @@ The migration has no down script. Add one or roll back manually.
 The URL scheme is not recognized. Check your `DATABASE_URL` prefix.
 
 **`Duplicate migration version N: file1 and file2`**
-Two files share the same numeric prefix. Rename one before running any commands.
+Two files share the same numeric prefix. Rename one — or use `dbmigrate new` which avoids
+this automatically by incrementing the timestamp until a free slot is found.
 
 **`Invalid migration name`**
 Names must use only letters, digits, underscores, and hyphens, starting with a letter or digit.
@@ -753,6 +818,13 @@ Install either: `pip install mysql-connector-python` or `pip install pymysql`.
 
 **`Database 'X' not found in config.xml`**
 Run `dbmigrate env-from-config` (no name) to list supported entries.
+
+**`status` shows all migrations as `pending` and applied versions as `orphaned`**
+The `schema_migrations.version` column is a type that doesn't compare equal to the integer
+versions parsed from filenames (e.g. the table was created by dbmate with a `varchar`
+column but an older dbmigrate stored integers, or vice versa). dbmigrate handles this
+automatically by converting all versions to integers for comparison — but if you hit this,
+run `dbmigrate reset --force` and re-apply.
 
 **Migration applied but schema change is missing**
 The migration may have partially succeeded. Check the database manually. If the tracking
