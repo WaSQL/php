@@ -55,7 +55,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.0.0'
+__version__ = '1.26.4'
 
 
 # ---------------------------------------------------------------------------
@@ -901,10 +901,11 @@ def cmd_status(driver, migrations):
         return
 
     tty = sys.stdout.isatty()
-    def gray(s):   return f'\033[2m{s}\033[0m'   if tty else s
-    def green(s):  return f'\033[32m{s}\033[0m'  if tty else s
-    def yellow(s): return f'\033[33m{s}\033[0m'  if tty else s
-    def bold(s):   return f'\033[1m{s}\033[0m'   if tty else s
+    def gray(s):   return f'\033[2m{s}\033[0m'                if tty else s
+    def green(s):  return f'\033[32m{s}\033[0m'               if tty else s
+    def yellow(s): return f'\033[33m{s}\033[0m'               if tty else s
+    def bold(s):   return f'\033[1m{s}\033[0m'                if tty else s
+    def blue(s):   return f'\033[38;2;95;143;211m{s}\033[0m'  if tty else s
 
     col_v = len("Version")
     col_l = len("Label")
@@ -916,7 +917,7 @@ def cmd_status(driver, migrations):
         col_l = max(col_l, len("<file missing>"))
 
     header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  {'Status':<10}  Down?"
-    print(bold(header))
+    print(bold(blue(header)))
     print("-" * len(header))
 
     for version, label, _, down_sql in migrations:
@@ -960,20 +961,20 @@ def cmd_learn():
     import shutil
 
     tty = sys.stdout.isatty()
-    def bold(s):   return f'\033[1m{s}\033[0m'  if tty else s
-    def cyan(s):   return f'\033[36m{s}\033[0m' if tty else s
-    def green(s):  return f'\033[32m{s}\033[0m' if tty else s
-    def yellow(s): return f'\033[33m{s}\033[0m' if tty else s
-    def dim(s):    return f'\033[2m{s}\033[0m'  if tty else s
+    def bold(s):   return f'\033[1m{s}\033[0m'             if tty else s
+    def blue(s):   return f'\033[38;2;95;143;211m{s}\033[0m' if tty else s
+    def green(s):  return f'\033[32m{s}\033[0m'             if tty else s
+    def yellow(s): return f'\033[33m{s}\033[0m'             if tty else s
+    def dim(s):    return f'\033[2m{s}\033[0m'              if tty else s
 
     width = min(shutil.get_terminal_size((80, 24)).columns, 100)
     rule  = dim('─' * width)
 
     def section(title):
-        print(f'\n{bold(cyan(title))}')
+        print(f'\n{bold(blue(title))}')
         print(rule)
 
-    print(bold(f'\n  dbmigrate {__version__} — quick reference'))
+    print(bold(f'\n  DBmigrate {__version__} — Quick Reference Guide'))
     print(rule)
 
     section('1. SETUP')
