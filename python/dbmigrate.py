@@ -35,6 +35,7 @@ Connection (first match wins):
   MIGRATION_STYLE       one|dbmate|two|golang-migrate  (default: one)
   MIGRATIONS_DIR        Path to migrations directory   (default: ./migrations)
   MIGRATIONS_TABLE      Tracking table name            (default: schema_migrations)
+  WASQL_PATH            Directory containing config.xml (used by env-from-config)
   DBMATE_MIGRATIONS_DIR      alias for MIGRATIONS_DIR
   DBMATE_MIGRATIONS_TABLE    alias for MIGRATIONS_TABLE
 
@@ -55,7 +56,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.26.4'
+__version__ = '1.26.5'
 
 
 # ---------------------------------------------------------------------------
@@ -1327,8 +1328,8 @@ def main():
     _default_config = str(_script_dir.parent / 'config.xml')
 
     parser.add_argument(
-        '--config', default=_default_config, metavar='FILE',
-        help=f'Path to config.xml (default: {_default_config})',
+        '--config', default=None, metavar='FILE',
+        help=f'Path to config.xml. Priority: this flag > WASQL_PATH in .env > {_default_config}',
     )
     parser.add_argument(
         '--db', default=None, metavar='NAME',
@@ -1394,6 +1395,14 @@ def main():
 
     # Load .env — existing env vars and --url always win
     load_env_file(args.env_file)
+
+    # Resolve config.xml: --config flag > WASQL_PATH in .env > default
+    if args.config is None:
+        wasql_path = os.environ.get('WASQL_PATH', '').strip()
+        if wasql_path:
+            args.config = str(Path(wasql_path) / 'config.xml')
+        else:
+            args.config = _default_config
 
     # Resolve URL: --url flag > DATABASE_URL env var (possibly just loaded from .env)
     url = args.url or os.environ.get('DATABASE_URL')
