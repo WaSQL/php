@@ -183,16 +183,10 @@ const wacss = {
 		})
 		.then(response => {
 			if(timeoutId){clearTimeout(timeoutId);}
-
-			// Check if response is ok (status 200-299)
-			if(!response.ok){
-				throw new Error(`HTTP error ${response.status}`);
-			}
-
+			responseObj._status = response.status;
 			return response.text();
 		})
 		.then(text => {
-			// Success - load event
 			responseObj.ajaxevent = 'load';
 			responseObj.ajaxtext = text;
 			responseObj.responseText = text;
@@ -413,16 +407,10 @@ const wacss = {
 		})
 		.then(response => {
 			if(timeoutId){clearTimeout(timeoutId);}
-
-			// Check if response is ok (status 200-299)
-			if(!response.ok){
-				throw new Error(`HTTP error ${response.status}`);
-			}
-
+			responseObj._status = response.status;
 			return response.text();
 		})
 		.then(text => {
-			// Success - load event
 			responseObj.ajaxevent = 'load';
 			responseObj.ajaxtext = text;
 			responseObj.responseText = text;
