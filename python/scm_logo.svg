@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+   width="215" height="295.51019" viewBox="0 0 215 295.51019" fill="none">
+  <defs>
+    <linearGradient id="ringGradient" x1="200" y1="100" x2="200" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5B9BD5"/>
+      <stop offset="100%" stop-color="#2E75B6"/>
+    </linearGradient>
+    <linearGradient id="ringGradientT" href="#ringGradient" gradientTransform="translate(-92.5,-32.380952)"/>
+    <linearGradient id="arrowGradient" x1="200" y1="50" x2="200" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E06666"/>
+      <stop offset="100%" stop-color="#C00000"/>
+    </linearGradient>
+    <linearGradient id="arrowTop" href="#arrowGradient" gradientTransform="translate(0,-7.6190476)"/>
+    <linearGradient id="arrowBottom" href="#arrowGradient" gradientTransform="translate(-0.54421769,-22.312925)"/>
+  </defs>
+  <path d="m 7.5,87.619048 c 0,-20 200,-20 200,0 0,20.000002 -200,20.000002 -200,0"
+     stroke="url(#ringGradientT)" stroke-width="15"/>
+  <path d="m 7.5,147.61905 c 0,-20 200,-20 200,0 0,20 -200,20 -200,0"
+     stroke="url(#ringGradientT)" stroke-width="15"/>
+  <path d="m 7.5,207.61905 c 0,-20 200,-20 200,0 0,20 -200,20 -200,0"
+     stroke="url(#ringGradientT)" stroke-width="15"/>
+  <rect x="97.5" y="47.619049" width="20" height="210.61224" fill="#2e75b6" opacity="0.3"/>
+  <g transform="translate(-92.5,-32.380952)">
+    <path d="m 200,32.380952 40,60 h -80 z" fill="url(#arrowTop)"/>
+    <rect x="190" y="92.380951" width="20" height="40" fill="url(#arrowTop)"/>
+  </g>
+  <g transform="translate(-92.5,-42.176871)">
+    <path d="m 199.45578,337.68707 -40,-60 h 80 z" fill="url(#arrowBottom)"/>
+    <rect x="189.45578" y="237.68707" width="20" height="40" fill="url(#arrowBottom)"/>
+  </g>
+  <text x="111.80492" y="160.26646"
+     font-family="Arial, sans-serif" font-size="54.6631px" font-weight="bold"
+     text-anchor="middle" fill="#4d4d4d"
+     transform="scale(0.95519131,1.0469107)">SCM</text>
+</svg>

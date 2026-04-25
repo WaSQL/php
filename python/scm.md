@@ -1,22 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" height="40" viewBox="0 0 27.426098 32" style="float:left; margin-right:12px; margin-top:4px">
-  <path fill="#5f8fd3" d="m 13.728,13.728 q 4.224,0 7.904,-0.768 3.68,-0.768 5.792,-2.272 v 3.04 q 0,1.216 -1.824,2.272 -1.824,1.056 -5.024,1.664 -3.2,0.608 -6.848,0.64 -3.648,0.032 -6.88,-0.64 Q 3.616,16.992 1.856,16 0.096,15.008 0,13.728 v -3.04 q 2.112,1.504 5.792,2.272 3.68,0.768 7.936,0.768 z m 0,13.696 q 4.224,0 7.904,-0.768 3.68,-0.768 5.792,-2.272 v 3.04 q 0,1.248 -1.824,2.304 -1.824,1.056 -5.024,1.664 Q 17.376,32 13.728,32 10.08,32 6.848,31.392 3.616,30.784 1.856,29.728 0.096,28.672 0,27.424 v -3.04 q 2.112,1.504 5.792,2.272 3.68,0.768 7.936,0.768 z m 0,-6.848 q 4.224,0 7.904,-0.768 3.68,-0.768 5.792,-2.272 v 3.04 q 0,1.216 -1.824,2.272 -1.824,1.056 -5.024,1.664 -3.2,0.608 -6.848,0.64 -3.648,0.032 -6.88,-0.64 Q 3.616,23.84 1.856,22.848 0.096,21.856 0,20.576 v -3.04 q 2.112,1.504 5.792,2.272 3.68,0.768 7.936,0.768 z M 13.728,0 q 3.712,0 6.848,0.608 3.136,0.608 5.024,1.664 1.888,1.056 1.824,2.304 v 2.272 q 0,1.248 -1.824,2.304 -1.824,1.056 -5.024,1.664 -3.2,0.608 -6.848,0.608 -3.648,0 -6.88,-0.608 Q 3.616,10.208 1.856,9.152 0.096,8.096 0,6.848 V 4.576 Q 0,3.328 1.856,2.272 3.712,1.216 6.848,0.608 9.984,0 13.728,0 Z"/>
-  <path fill="#d35f5f" d="m 13.728,0 7.36,11.648004 H 6.368 Z m 0,32.000004 -7.36,-11.712 h 14.72 z"/>
+<svg xmlns="http://www.w3.org/2000/svg"
+   width="215" height="295.51019" viewBox="0 0 215 295.51019" fill="none"
+   style="float:left; margin-right:16px; margin-top:4px; height:80px; width:auto">
+  <defs>
+    <linearGradient id="ringGradient" x1="200" y1="100" x2="200" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5B9BD5"/>
+      <stop offset="100%" stop-color="#2E75B6"/>
+    </linearGradient>
+    <linearGradient id="ringGradientT" href="#ringGradient" gradientTransform="translate(-92.5,-32.380952)"/>
+    <linearGradient id="arrowGradient" x1="200" y1="50" x2="200" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E06666"/>
+      <stop offset="100%" stop-color="#C00000"/>
+    </linearGradient>
+    <linearGradient id="arrowTop" href="#arrowGradient" gradientTransform="translate(0,-7.6190476)"/>
+    <linearGradient id="arrowBottom" href="#arrowGradient" gradientTransform="translate(-0.54421769,-22.312925)"/>
+  </defs>
+  <path d="m 7.5,87.619048 c 0,-20 200,-20 200,0 0,20.000002 -200,20.000002 -200,0"
+     stroke="url(#ringGradientT)" stroke-width="15"/>
+  <path d="m 7.5,147.61905 c 0,-20 200,-20 200,0 0,20 -200,20 -200,0"
+     stroke="url(#ringGradientT)" stroke-width="15"/>
+  <path d="m 7.5,207.61905 c 0,-20 200,-20 200,0 0,20 -200,20 -200,0"
+     stroke="url(#ringGradientT)" stroke-width="15"/>
+  <rect x="97.5" y="47.619049" width="20" height="210.61224" fill="#2e75b6" opacity="0.3"/>
+  <g transform="translate(-92.5,-32.380952)">
+    <path d="m 200,32.380952 40,60 h -80 z" fill="url(#arrowTop)"/>
+    <rect x="190" y="92.380951" width="20" height="40" fill="url(#arrowTop)"/>
+  </g>
+  <g transform="translate(-92.5,-42.176871)">
+    <path d="m 199.45578,337.68707 -40,-60 h 80 z" fill="url(#arrowBottom)"/>
+    <rect x="189.45578" y="237.68707" width="20" height="40" fill="url(#arrowBottom)"/>
+  </g>
+  <text x="111.80492" y="160.26646"
+     font-family="Arial, sans-serif" font-size="54.6631px" font-weight="bold"
+     text-anchor="middle" fill="#4d4d4d"
+     transform="scale(0.95519131,1.0469107)">SCM</text>
 </svg>
 
-# <span style="color:#5f8fd3">DB</span><span style="color:#d35f5f">migrate</span>
+# SCM - Schema Change Manager
 
-A lightweight, extensible database migration tool written in Python. Supports plain SQL migration
-files and works with any database that has a Python DB-API 2.0 driver. Inspired by
+A lightweight, extensible database schema management tool written in Python. Supports plain SQL migration files and works with any database that has a Python DB-API 2.0 driver. Inspired by
 [dbmate](https://github.com/amacneil/dbmate) and [golang-migrate](https://github.com/golang-migrate/migrate).
 
 ---
 
 ## Features
 
-- Plain SQL migration files — no proprietary DSL
+- Plain SQL migration files -- no proprietary DSL
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
-- `init`, `up`, `down`, `status`, `new`, `reset`, `learn`, `version`, and `env-from-config` commands
-- Timestamp-versioned migrations — `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
+- `init`, `up`, `down`, `status`, `new`, `reset`, `undo`, `learn`, `version`, and `env-from-config` commands
+- Timestamp-versioned migrations -- `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
 - Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
 - Built-in drivers for PostgreSQL, MySQL/MariaDB, SQL Server, SQLite, Oracle, SAP HANA, Snowflake, FairCom cTree, and Firebird
 - `.env` file support compatible with dbmate
@@ -41,34 +72,34 @@ Python 3.8+. Install the driver package for your database:
 | FairCom cTree    | pyodbc + Faircom ODBC Driver     | `pip install pyodbc` + install Faircom driver |
 | Firebird         | fdb                              | `pip install fdb`                             |
 
-MySQL connections try `mysql-connector-python` first and fall back to `pymysql` automatically —
+MySQL connections try `mysql-connector-python` first and fall back to `pymysql` automatically --
 install whichever you have. Both use `charset='utf8mb4'` by default.
 
 ---
 
 ## Installation
 
-No installation required. The repo includes wrapper scripts so you can call `dbmigrate`
-directly without typing `python dbmigrate.py` every time.
+No installation required. The repo includes wrapper scripts so you can call `scm`
+directly without typing `python scm.py` every time.
 
-**Windows** — `dbmigrate.bat` is picked up automatically by CMD and PowerShell when run
+**Windows** -- `scm.bat` is picked up automatically by CMD and PowerShell when run
 from the project directory (or anywhere on `%PATH%`):
 
 ```bat
-dbmigrate status
-dbmigrate --db hana-t2 up
+scm status
+scm --db hana-t2 up
 ```
 
-**Linux / macOS** — make `dbmigrate.sh` executable once, then call it as `dbmigrate`:
+**Linux / macOS** -- make `scm.sh` executable once, then call it as `scm`:
 
 ```bash
-chmod +x dbmigrate.sh
+chmod +x scm.sh
 
 # Optionally symlink onto your PATH:
-ln -s "$(pwd)/dbmigrate.sh" /usr/local/bin/dbmigrate
+ln -s "$(pwd)/scm.sh" /usr/local/bin/scm
 ```
 
-Both scripts simply delegate to `python3 dbmigrate.py "$@"` — all flags and arguments
+Both scripts simply delegate to `python3 scm.py "$@"` -- all flags and arguments
 pass through unchanged.
 
 ---
@@ -79,25 +110,25 @@ The fastest way to get started is with `env-from-config` (WaSQL projects) or `in
 
 ```bash
 # WaSQL project: pull settings from config.xml, create migrations folder and .env in one step
-dbmigrate env-from-config wasql_test_17
+scm env-from-config wasql_test_17
 
 # Non-WaSQL project: create migrations folder and .env stub
-dbmigrate init
+scm init
 
 # Edit .env to set DATABASE_URL, then:
-dbmigrate new create_users_table
-dbmigrate up
+scm new create_users_table
+scm up
 ```
 
 ---
 
 ## .env File
 
-`dbmigrate` automatically loads `.env` from the current directory before running.
+`scm` automatically loads `.env` from the current directory before running.
 All settings can be placed here so you never have to pass flags on every command.
 
 ```bash
-# .env — minimum required
+# .env -- minimum required
 DATABASE_URL=mysql://user:pass@localhost/mydb
 
 # Optional settings (shown with defaults)
@@ -126,22 +157,22 @@ DATABASE_URL=postgres://user:pass@host/mydb  # production db
 command by exporting in the shell:
 
 ```bash
-DATABASE_URL="postgres://user:pass@staging-host/mydb" dbmigrate status
+DATABASE_URL="postgres://user:pass@staging-host/mydb" scm status
 ```
 
 To use a different `.env` file:
 
 ```bash
-dbmigrate --env-file .env.production status
-dbmigrate --env-file .env.staging up
+scm --env-file .env.production status
+scm --env-file .env.staging up
 ```
 
 ### .env variables reference
 
 | Variable | Aliases | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | — | *(required)* | Database connection URL |
-| `MIGRATION_STYLE` | — | `one` | File style for `new`: `one`/`dbmate` = single file, `two`/`golang-migrate` = separate up/down files |
+| `DATABASE_URL` | -- | *(required)* | Database connection URL |
+| `MIGRATION_STYLE` | -- | `one` | File style for `new`: `one`/`dbmate` = single file, `two`/`golang-migrate` = separate up/down files |
 | `MIGRATIONS_DIR` | `DBMATE_MIGRATIONS_DIR` | `./migrations` | Path to migrations directory |
 | `MIGRATIONS_TABLE` | `DBMATE_MIGRATIONS_TABLE` | `schema_migrations` | Name of the tracking table in the database |
 
@@ -188,18 +219,18 @@ DATABASE_URL="firebird://user:pass@host/path/to/database.fdb"
 The `--url` flag overrides everything for a single command:
 
 ```bash
-dbmigrate --url postgres://user:pass@host/mydb status
+scm --url postgres://user:pass@host/mydb status
 ```
 
 ---
 
 ## Commands
 
-### `init` — Set up a new project
+### `init` -- Set up a new project
 
 ```bash
-dbmigrate init
-dbmigrate --path ./db/migrations init
+scm init
+scm --path ./db/migrations init
 ```
 
 Creates the migrations directory and a `.env` stub if they don't already exist. Existing
@@ -211,9 +242,9 @@ files are left untouched. Shows next steps when done.
 
 Next steps:
   Edit .env and set DATABASE_URL, or run:
-    dbmigrate env-from-config <name>
-  dbmigrate new <migration_name>
-  dbmigrate up
+    scm env-from-config <name>
+  scm new <migration_name>
+  scm up
 ```
 
 The generated `.env` stub:
@@ -227,17 +258,17 @@ MIGRATION_STYLE=one
 
 ---
 
-### `env-from-config` — Configure from WaSQL config.xml
+### `env-from-config` -- Configure from WaSQL config.xml
 
 ```bash
 # List all supported databases defined in config.xml
-dbmigrate env-from-config
+scm env-from-config
 
 # Write DATABASE_URL to .env and run init
-dbmigrate env-from-config <name>
+scm env-from-config <name>
 ```
 
-Reads `../config.xml` (relative to `dbmigrate.py`) and builds a `DATABASE_URL` from the
+Reads `../config.xml` (relative to `scm.py`) and builds a `DATABASE_URL` from the
 named `<database>` entry's attributes (`dbtype`, `dbhost`, `dbport`, `dbuser`, `dbpass`,
 `dbname`). Creates or updates `DATABASE_URL` in `.env` in-place, then automatically runs
 `init` to create the migrations folder.
@@ -250,7 +281,7 @@ Snowflake entries automatically encode `dbschema`, `dbwarehouse`, and `dbrole` a
 parameters in the URL. Passwords with special characters are percent-encoded.
 
 ```bash
-dbmigrate env-from-config wasql_test_17
+scm env-from-config wasql_test_17
 # Created .env.wasql_test_17
 #   DATABASE_URL=mysql://wasql_dbuser:***@localhost/wasql_test_17
 #   created migrations/wasql_test_17
@@ -260,15 +291,15 @@ dbmigrate env-from-config wasql_test_17
 Use `--config` to point at a different `config.xml`:
 
 ```bash
-dbmigrate --config /path/to/config.xml env-from-config mydb
+scm --config /path/to/config.xml env-from-config mydb
 ```
 
 ---
 
-### `new` — Create a migration
+### `new` -- Create a migration
 
 ```bash
-dbmigrate new <name> [--style one|dbmate|two|golang-migrate]
+scm new <name> [--style one|dbmate|two|golang-migrate]
 ```
 
 Generates a timestamped migration file (or pair) in the migrations directory.
@@ -276,31 +307,31 @@ The style defaults to `MIGRATION_STYLE` in `.env` (which defaults to `one`).
 
 ```bash
 # Single-file style (default when MIGRATION_STYLE=one or MIGRATION_STYLE=dbmate)
-dbmigrate new create_users_table
+scm new create_users_table
 # → migrations/20240601120000_create_users_table.sql
 
 # Two-file style (use --style two or set MIGRATION_STYLE=two in .env)
-dbmigrate new create_users_table --style two
+scm new create_users_table --style two
 # → migrations/20240601120000_create_users_table.up.sql
 # → migrations/20240601120000_create_users_table.down.sql
 
 # Custom migrations path
-dbmigrate --path ./db/migrations new create_orders
+scm --path ./db/migrations new create_orders
 ```
 
 Migration names must contain only letters, digits, underscores, and hyphens, and must
 start with a letter or digit.
 
-**Timestamp collision avoidance** — if the current second is already taken by an existing
+**Timestamp collision avoidance** -- if the current second is already taken by an existing
 file, `new` increments by one second until it finds a free slot. Running `new` five times
-rapidly will produce `…12`, `…13`, `…14`, `…15`, `…16` with no manual intervention needed.
+rapidly will produce `...12`, `...13`, `...14`, `...15`, `...16` with no manual intervention needed.
 
 ---
 
-### `status` — Show migration status
+### `status` -- Show migration status
 
 ```bash
-dbmigrate status
+scm status
 ```
 
 Lists all migration files and whether each has been applied. Also reports versions
@@ -310,9 +341,9 @@ When writing to a terminal, output is color-coded:
 
 | Color | Meaning |
 |---|---|
-| Gray / dim | Applied — already in the database |
-| Green | Pending — not yet applied |
-| Yellow | Orphaned — applied in DB but file is missing |
+| Gray / dim | Applied -- already in the database |
+| Green | Pending -- not yet applied |
+| Yellow | Orphaned -- applied in DB but file is missing |
 
 ```
 Version          Label                                Status      Down?
@@ -330,24 +361,24 @@ Version          Label                                Status      Down?
 Colors are suppressed automatically when output is piped or redirected.
 
 The `Down?` column indicates whether a rollback migration exists. Orphaned entries
-mean a version was applied but the file was later deleted — investigate before
+mean a version was applied but the file was later deleted -- investigate before
 running `up` or `down`.
 
 ---
 
-### `up` — Apply migrations
+### `up` -- Apply migrations
 
 ```bash
 # Apply all pending migrations
-dbmigrate up
+scm up
 
 # Apply the next N pending migrations
-dbmigrate up 1
-dbmigrate up 3
+scm up 1
+scm up 3
 ```
 
 Each migration runs in a transaction. On failure the transaction rolls back and the
-command exits immediately — migrations applied before the failure are preserved.
+command exits immediately -- migrations applied before the failure are preserved.
 
 SQL statements are split by a context-aware parser that handles semicolons inside
 `-- line comments`, `/* block comments */`, and `'string literals'`. PostgreSQL migrations
@@ -356,31 +387,31 @@ migrations are split on `GO` batch separators in addition to semicolons.
 
 ---
 
-### `down` — Roll back migrations
+### `down` -- Roll back migrations
 
 ```bash
 # Roll back the last migration (default)
-dbmigrate down
+scm down
 
 # Roll back the last N migrations
-dbmigrate down 3
+scm down 3
 ```
 
 If a migration has no down script, `down` exits with an error rather than silently skipping.
 
 ---
 
-### `reset` — Wipe migration history and files
+### `reset` -- Wipe migration history and files
 
 ```bash
-# Interactive — prompts for confirmation
-dbmigrate reset
+# Interactive -- prompts for confirmation
+scm reset
 
 # Skip confirmation prompt
-dbmigrate reset --force
+scm reset --force
 
 # Target a specific migrations directory
-dbmigrate --path ./db/migrations reset --force
+scm --path ./db/migrations reset --force
 ```
 
 Deletes all rows from the `schema_migrations` tracking table **and** removes every `.sql`
@@ -388,21 +419,48 @@ file from the migrations directory. Use this to wipe a dev environment and start
 scratch.
 
 > **Warning:** This is destructive and irreversible. The database schema itself is **not**
-> touched — only the migration history records and migration files are removed.
+> touched -- only the migration history records and migration files are removed.
 
 ```bash
 # Typical dev reset workflow
-dbmigrate reset --force
+scm reset --force
 # (re-create your migration files)
-dbmigrate up
+scm up
 ```
 
 ---
 
-### `learn` — Quick-start reference
+### `undo` -- Delete pending migration files
 
 ```bash
-dbmigrate learn
+scm undo
+```
+
+Lists all pending (unapplied) migrations numbered, prompts you to select which to remove,
+then deletes the file(s) from disk and removes any tracking record from the database —
+as if the migration was never created.
+
+```
+Pending migrations:
+  1. 20240603094500_add_orders_table
+  2. 20240604110000_add_audit_log
+
+Enter number(s) to undo (e.g. 1  or  1,3  or  1-3), blank to cancel: 2
+  Deleted  20240604110000_add_audit_log.sql
+```
+
+Selection supports single numbers (`1`), comma or space separated lists (`1,3`), and
+ranges (`1-3`). Blank input cancels with no changes made.
+
+> **Note:** This removes migration files that have not yet been applied. To roll back an
+> already-applied migration, use `scm down` instead.
+
+---
+
+### `learn` -- Quick-start reference
+
+```bash
+scm learn
 ```
 
 Prints a formatted quick-start reference covering setup, daily workflow, migration file
@@ -411,11 +469,11 @@ when writing to a terminal and plain text when piped or redirected.
 
 ---
 
-### `version` — Print version
+### `version` -- Print version
 
 ```bash
-dbmigrate version
-# dbmigrate 1.0.0
+scm version
+# scm 1.0.0
 ```
 
 Requires no database connection.
@@ -426,8 +484,8 @@ Requires no database connection.
 
 | Flag | Default | Description |
 |---|---|---|
-| `--url URL` | — | Database URL. Overrides `DATABASE_URL` and `.env` |
-| `--db NAME` | — | Database name. Derives `--env-file` and `--path` automatically (see below) |
+| `--url URL` | -- | Database URL. Overrides `DATABASE_URL` and `.env` |
+| `--db NAME` | -- | Database name. Derives `--env-file` and `--path` automatically (see below) |
 | `--env-file FILE` | `.env` (or `.env.<db>`) | Path to `.env` file |
 | `--path DIR` | `./migrations` (or `./migrations/<db>`) | Migrations directory |
 | `--config FILE` | `../config.xml` | Path to WaSQL `config.xml` (used by `env-from-config`) |
@@ -458,7 +516,7 @@ Rules:
 
 ## File Styles
 
-### Single-file style (dbmate) — default
+### Single-file style (dbmate) -- default
 
 `20240601120000_create_users.sql`
 ```sql
@@ -497,7 +555,7 @@ Both styles can coexist in the same migrations directory across different versio
 
 ## Schema Migrations Table
 
-`dbmigrate` creates and manages the tracking table automatically. The table name
+`scm` creates and manages the tracking table automatically. The table name
 defaults to `schema_migrations` and can be changed via `MIGRATIONS_TABLE` (or
 `DBMATE_MIGRATIONS_TABLE`) in `.env`.
 
@@ -524,7 +582,7 @@ CREATE TABLE schema_migrations (
 The version stored is the numeric prefix of the migration filename as a string
 (e.g. `'20240601120000'`). Using `varchar(128)` matches the schema created by dbmate,
 so a `schema_migrations` table created by either tool is fully interoperable with the
-other. If a table already exists with a different column type (e.g. `BIGINT`), dbmigrate
+other. If a table already exists with a different column type (e.g. `BIGINT`), scm
 reads it correctly by converting values to integers for comparison internally.
 
 ---
@@ -532,7 +590,7 @@ reads it correctly by converting values to integers for comparison internally.
 ## Per-Database Migrations (onemcp / WaSQL)
 
 When working with multiple databases via the onemcp MCP server, use `--db <name>` to
-scope all dbmigrate commands to a specific database. The flag automatically resolves:
+scope all scm commands to a specific database. The flag automatically resolves:
 
 - `--env-file` → `.env.<name>` (e.g. `.env.hana-t2`)
 - `--path` → `./migrations/<name>` (e.g. `./migrations/hana-t2`)
@@ -541,16 +599,16 @@ scope all dbmigrate commands to a specific database. The flag automatically reso
 
 ```bash
 # Pulls DATABASE_URL from config.xml, writes .env.hana-t2, creates migrations/hana-t2/
-dbmigrate env-from-config hana-t2
+scm env-from-config hana-t2
 ```
 
 ### Daily use
 
 ```bash
 # After "use hana-t2" in the MCP session:
-dbmigrate --db hana-t2 status
-dbmigrate --db hana-t2 new add_orders_table
-dbmigrate --db hana-t2 up
+scm --db hana-t2 status
+scm --db hana-t2 new add_orders_table
+scm --db hana-t2 up
 ```
 
 ### Resulting layout
@@ -571,14 +629,14 @@ You can still override either default explicitly:
 
 ```bash
 # Use --db for the database but a custom migrations path
-dbmigrate --db hana-t2 --path ./db/custom-migrations status
+scm --db hana-t2 --path ./db/custom-migrations status
 ```
 
 ---
 
 ## Multiple Repos / Multiple Databases
 
-Each repo keeps its own `.env` with its own `DATABASE_URL`. Running `dbmigrate` from
+Each repo keeps its own `.env` with its own `DATABASE_URL`. Running `scm` from
 inside a repo picks up that repo's `.env` automatically.
 
 ```
@@ -594,21 +652,21 @@ repo-b/
 ### Makefile pattern
 
 ```makefile
-MIGRATE = dbmigrate --path ./migrations
+MIGRATE = scm --path ./migrations
 
 .PHONY: migrate-new migrate-up migrate-down migrate-status
 
 migrate-new:
-	$(MIGRATE) new $(name)
+  $(MIGRATE) new $(name)
 
 migrate-up:
-	$(MIGRATE) up
+  $(MIGRATE) up
 
 migrate-down:
-	$(MIGRATE) down $(n)
+  $(MIGRATE) down $(n)
 
 migrate-status:
-	$(MIGRATE) status
+  $(MIGRATE) status
 ```
 
 ---
@@ -663,7 +721,7 @@ The driver is activated automatically when its URL scheme is detected in `DATABA
 
 ## Comparison with dbmate and golang-migrate
 
-| Feature                       | dbmigrate          | dbmate         | golang-migrate |
+| Feature                       | scm          | dbmate         | golang-migrate |
 |-------------------------------|--------------------|----------------|----------------|
 | Language                      | Python             | Go             | Go             |
 | PostgreSQL                    | yes                | yes            | yes            |
@@ -730,16 +788,16 @@ ALTER TABLE users ADD COLUMN tier VARCHAR(20) NOT NULL DEFAULT 'free';
 
 ### Database-specific DDL behaviour
 
-**PostgreSQL** — DDL is transactional. `CREATE INDEX CONCURRENTLY` cannot run inside a
+**PostgreSQL** -- DDL is transactional. `CREATE INDEX CONCURRENTLY` cannot run inside a
 transaction; put it alone in its own migration file.
 
-**MySQL / MariaDB** — DDL is **not transactional**. A failed migration may partially apply
+**MySQL / MariaDB** -- DDL is **not transactional**. A failed migration may partially apply
 and cannot be automatically rolled back. Keep each DDL change in its own file.
 
-**SQL Server** — DDL is transactional. Use `GO` to separate batches that must run
+**SQL Server** -- DDL is transactional. Use `GO` to separate batches that must run
 independently.
 
-**SQLite** — DDL is transactional. Does not support `ADD COLUMN IF NOT EXISTS` or
+**SQLite** -- DDL is transactional. Does not support `ADD COLUMN IF NOT EXISTS` or
 `DROP COLUMN` before version 3.35.0.
 
 ### Data migrations
@@ -756,7 +814,7 @@ independently.
 
 - Store `DATABASE_URL` in `.env`, never hardcoded in scripts or committed to version control.
 - Add `.env` to `.gitignore`.
-- Use a dedicated migration user with only the permissions needed — not the application's
+- Use a dedicated migration user with only the permissions needed -- not the application's
   runtime user or a superuser.
 - The `--url` flag exposes credentials in shell history and process lists. Prefer `.env`.
 
@@ -775,8 +833,8 @@ GRANT INSERT, DELETE ON mydb.schema_migrations TO 'migrator'@'%';
 
 ### Concurrency
 
-`dbmigrate` does not acquire an advisory lock. Running two `up` commands simultaneously
-against the same database will cause the second to fail on the duplicate-key insert — but
+`scm` does not acquire an advisory lock. Running two `up` commands simultaneously
+against the same database will cause the second to fail on the duplicate-key insert -- but
 on MySQL any DDL already executed is permanent. Ensure only one migration process runs at
 a time (CI serialization, deployment locks, etc.).
 
@@ -791,19 +849,19 @@ a time (CI serialization, deployment locks, etc.).
 ## Troubleshooting
 
 **`Migrations directory not found`**
-Run `dbmigrate init` (or `env-from-config`) to create it.
+Run `scm init` (or `env-from-config`) to create it.
 
 **`No -- migrate:up marker found`**
 Single-file migrations must contain a `-- migrate:up` line. Check for typos.
 
-**`No down migration for X — cannot roll back`**
+**`No down migration for X -- cannot roll back`**
 The migration has no down script. Add one or roll back manually.
 
 **`Unsupported database scheme`**
 The URL scheme is not recognized. Check your `DATABASE_URL` prefix.
 
 **`Duplicate migration version N: file1 and file2`**
-Two files share the same numeric prefix. Rename one — or use `dbmigrate new` which avoids
+Two files share the same numeric prefix. Rename one -- or use `scm new` which avoids
 this automatically by incrementing the timestamp until a free slot is found.
 
 **`Invalid migration name`**
@@ -817,14 +875,14 @@ and network reachability.
 Install either: `pip install mysql-connector-python` or `pip install pymysql`.
 
 **`Database 'X' not found in config.xml`**
-Run `dbmigrate env-from-config` (no name) to list supported entries.
+Run `scm env-from-config` (no name) to list supported entries.
 
 **`status` shows all migrations as `pending` and applied versions as `orphaned`**
 The `schema_migrations.version` column is a type that doesn't compare equal to the integer
 versions parsed from filenames (e.g. the table was created by dbmate with a `varchar`
-column but an older dbmigrate stored integers, or vice versa). dbmigrate handles this
-automatically by converting all versions to integers for comparison — but if you hit this,
-run `dbmigrate reset --force` and re-apply.
+column but an older scm stored integers, or vice versa). scm handles this
+automatically by converting all versions to integers for comparison -- but if you hit this,
+run `scm reset --force` and re-apply.
 
 **Migration applied but schema change is missing**
 The migration may have partially succeeded. Check the database manually. If the tracking

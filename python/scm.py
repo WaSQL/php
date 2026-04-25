@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-dbmigrate.py - Extensible database migration tool.
+scm.py - Extensible database migration tool.
 
 Supports two file styles:
   - Single-file (dbmate):    000001_name.sql  with -- migrate:up / -- migrate:down markers
   - Two-file (golang-migrate): 000001_name.up.sql + 000001_name.down.sql
 
 Commands:
-  dbmigrate.py init                    Create migrations dir and .env stub
-  dbmigrate.py env-from-config [name]  Set DATABASE_URL from WaSQL config.xml + run init
-  dbmigrate.py up [N]                  Apply all (or N) pending migrations
-  dbmigrate.py down [N]                Roll back N migrations (default 1)
-  dbmigrate.py status                  Show applied/pending status
-  dbmigrate.py new <name>              Create new migration file(s)
-  dbmigrate.py reset [--force]         Clear migration history and delete all migration files
-  dbmigrate.py learn                   Print a quick-start reference
-  dbmigrate.py version                 Print version and exit
+  scm.py init                    Create migrations dir and .env stub
+  scm.py env-from-config [name]  Set DATABASE_URL from WaSQL config.xml + run init
+  scm.py up [N]                  Apply all (or N) pending migrations
+  scm.py down [N]                Roll back N migrations (default 1)
+  scm.py status                  Show applied/pending status
+  scm.py new <name>              Create new migration file(s)
+  scm.py reset [--force]         Clear migration history and delete all migration files
+  scm.py undo                    Interactively delete pending (unapplied) migration files
+  scm.py learn                   Print a quick-start reference
+  scm.py version                 Print version and exit
 
 Connection (first match wins):
   --url flag > DATABASE_URL env var > DATABASE_URL in .env
@@ -958,7 +959,7 @@ def _unique_timestamp(migrations_dir):
 
 
 def cmd_learn():
-    """Print a quick-start reference for dbmigrate."""
+    """Print a quick-start reference for scm."""
     import shutil
 
     tty = sys.stdout.isatty()
@@ -985,18 +986,19 @@ def cmd_learn():
     print(f'    {green("MIGRATION_STYLE")}=one              {dim("# one=single file  two=separate up/down files")}')
     print()
     print('  Or pull settings directly from WaSQL config.xml:')
-    print(f'    {yellow("dbmigrate env-from-config")} <dbname>')
+    print(f'    {yellow("scm env-from-config")} <dbname>')
 
     section('2. DAILY WORKFLOW')
     rows = [
-        ('dbmigrate new <name>',   'Create a timestamped migration file in ./migrations'),
-        ('dbmigrate up',           'Apply all pending migrations'),
-        ('dbmigrate up 1',         'Apply only the next pending migration'),
-        ('dbmigrate down',         'Roll back the last applied migration'),
-        ('dbmigrate down 3',       'Roll back the last 3 migrations'),
-        ('dbmigrate status',       'Show what is applied vs pending'),
-        ('dbmigrate reset',        'Wipe history + delete migration files (dev only)'),
-        ('dbmigrate reset --force','Same but skip the confirmation prompt'),
+        ('scm new <name>',   'Create a timestamped migration file in ./migrations'),
+        ('scm up',           'Apply all pending migrations'),
+        ('scm up 1',         'Apply only the next pending migration'),
+        ('scm down',         'Roll back the last applied migration'),
+        ('scm down 3',       'Roll back the last 3 migrations'),
+        ('scm status',       'Show what is applied vs pending'),
+        ('scm reset',        'Wipe history + delete migration files (dev only)'),
+        ('scm reset --force','Same but skip the confirmation prompt'),
+        ('scm undo',         'Interactively delete pending (unapplied) migration files'),
     ]
     for cmd, desc in rows:
         print(f'  {yellow(f"{cmd:<38}")}  {desc}')
@@ -1014,7 +1016,7 @@ def cmd_learn():
     section('4. TIPS')
     tips = [
         ('--path is a GLOBAL flag — place it before the subcommand:',
-         '  dbmigrate --path ./db/migrations new create_orders'),
+         '  scm --path ./db/migrations new create_orders'),
         ('Timestamps never collide — running new 5× in one second gives',
          '  …12, …13, …14, …15, …16 automatically.'),
         ('Guard against re-runs after partial failures:',
@@ -1068,6 +1070,78 @@ def cmd_reset(driver, migrations_dir, force=False):
         print(f"{deleted} migration file(s) deleted from {migrations_dir}.")
     else:
         print(f"Migrations directory '{migrations_dir}' does not exist — nothing to delete.")
+
+
+def cmd_undo(driver, migrations, migrations_dir):
+    """List pending migrations, prompt for selection, then delete files + DB records."""
+    applied = driver.applied_versions()
+    pending = [m for m in migrations if m[0] not in applied]
+
+    if not pending:
+        print("No pending migrations to undo.")
+        return
+
+    tty = sys.stdout.isatty()
+    def yellow(s): return f'\033[33m{s}\033[0m' if tty else s
+    def bold(s):   return f'\033[1m{s}\033[0m'  if tty else s
+    def red(s):    return f'\033[31m{s}\033[0m'  if tty else s
+
+    print(bold("Pending migrations:"))
+    for i, (version, label, _, _) in enumerate(pending, 1):
+        print(f"  {yellow(str(i))}. {version}_{label}")
+    print()
+
+    raw = input("Enter number(s) to undo (e.g. 1  or  1,3  or  1-3), blank to cancel: ").strip()
+    if not raw:
+        print("Aborted.")
+        return
+
+    selected_indices = set()
+    for part in re.split(r'[\s,]+', raw):
+        part = part.strip()
+        if not part:
+            continue
+        range_m = re.match(r'^(\d+)-(\d+)$', part)
+        if range_m:
+            lo, hi = int(range_m.group(1)), int(range_m.group(2))
+            selected_indices.update(range(lo, hi + 1))
+        elif re.match(r'^\d+$', part):
+            selected_indices.add(int(part))
+        else:
+            print(f"Invalid selection '{part}'. Aborted.")
+            return
+
+    invalid = [i for i in selected_indices if i < 1 or i > len(pending)]
+    if invalid:
+        print(f"Invalid number(s): {', '.join(str(i) for i in sorted(invalid))}. Aborted.")
+        return
+
+    targets = [pending[i - 1] for i in sorted(selected_indices)]
+    path = Path(migrations_dir)
+    re_prefix = re.compile(r'^(\d+)[_\-]')
+
+    for version, label, _, _ in targets:
+        version_str = str(version)
+        deleted = []
+        for f in sorted(path.iterdir()):
+            if not f.is_file():
+                continue
+            fm = re_prefix.match(f.name)
+            if fm and fm.group(1) == version_str:
+                f.unlink()
+                deleted.append(f.name)
+
+        try:
+            driver.remove_migration(version)
+            driver.commit()
+        except Exception:
+            driver.rollback()
+
+        if deleted:
+            for fname in deleted:
+                print(f"  Deleted  {fname}")
+        else:
+            print(f"  {red('Warning:')} no files found for version {version_str}")
 
 
 def cmd_new(name, migrations_dir, style='two'):
@@ -1150,13 +1224,13 @@ def cmd_env_from_config(config_file, db_name, env_file, migrations_dir='./migrat
             dbtype = databases[name].get('dbtype', '').lower()
             if dbtype in _DBTYPE_SCHEME:
                 print(f"  {name} ({dbtype})")
-        print(f"\nUsage: dbmigrate.py env-from-config <name>")
+        print(f"\nUsage: scm.py env-from-config <name>")
         return
 
     if db_name not in databases:
         sys.exit(
             f"Database '{db_name}' not found in config.xml.\n"
-            "Run 'dbmigrate.py env-from-config' (no name) to list available entries."
+            "Run 'scm.py env-from-config' (no name) to list available entries."
         )
 
     db = databases[db_name]
@@ -1266,9 +1340,9 @@ def cmd_init(migrations_dir, env_file):
         print("\nNext steps:")
         if str(epath) in created:
             print(f"  Edit {epath} and set DATABASE_URL, or run:")
-            print(f"    dbmigrate env-from-config <name>")
-        print(f"  dbmigrate new <migration_name>")
-        print(f"  dbmigrate up")
+            print(f"    scm env-from-config <name>")
+        print(f"  scm new <migration_name>")
+        print(f"  scm up")
 
 
 # ---------------------------------------------------------------------------
@@ -1305,7 +1379,7 @@ def get_driver(url, table='schema_migrations'):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog='dbmigrate.py',
+        prog='scm.py',
         description='Extensible database migration tool (postgres, mysql, sqlite, mssql).',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
@@ -1349,7 +1423,7 @@ def main():
 
     sub.add_parser('init',    help='Create migrations directory and .env stub')
     sub.add_parser('status',  help='Show applied/pending status of all migrations')
-    sub.add_parser('version', help='Print dbmigrate.py version and exit')
+    sub.add_parser('version', help='Print scm.py version and exit')
     sub.add_parser('learn',   help='Print a quick-start reference')
 
     p_reset = sub.add_parser('reset', help='Clear all rows from the migrations tracking table')
@@ -1363,6 +1437,8 @@ def main():
         help='one = single file with markers (dbmate style), two = separate up/down files. '
              'Defaults to MIGRATION_STYLE in .env, then "two".',
     )
+
+    sub.add_parser('undo', help='Interactively delete pending (unapplied) migration files')
 
     p_efc = sub.add_parser(
         'env-from-config',
@@ -1434,7 +1510,7 @@ def main():
         sys.exit(0)
 
     if args.command == 'version':
-        print(f"dbmigrate.py {__version__}")
+        print(f"scm.py {__version__}")
         return
 
     if args.command == 'learn':
@@ -1478,6 +1554,8 @@ def main():
             cmd_down(driver, migrations, n=args.n)
         elif args.command == 'status':
             cmd_status(driver, migrations)
+        elif args.command == 'undo':
+            cmd_undo(driver, migrations, migrations_dir=args.path)
     finally:
         driver.close()
 
