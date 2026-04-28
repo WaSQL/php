@@ -42,6 +42,22 @@ A lightweight, extensible database schema management tool written in Python. Sup
 
 ---
 
+## Rules for Claude
+
+When working with schema changes in this project:
+
+1. **Never run DDL directly.** Do not execute `CREATE TABLE`, `ALTER TABLE`, `DROP TABLE`, or any other DDL statement via a database tool or query runner. Always generate an SCM migration script instead.
+
+2. **Always create a git branch before creating a migration.** Before running `scm new`, create and check out a new branch named for the migration (e.g. `git checkout -b migration/add_orders_table`). Never create a migration file on `main` or `master`.
+
+3. **Use `scm new <name>` to create migration files**, then write the SQL into the generated file. Do not hand-write migration filenames — let `scm new` handle the timestamp.
+
+4. **Include a down migration** in every file unless the operation is truly irreversible, in which case add a SQL comment explaining why.
+
+After creating the migration file, show the user the file path and remind them to run `scm --db <name> up` to apply it.
+
+---
+
 ## Features
 
 - Plain SQL migration files -- no proprietary DSL

@@ -1469,7 +1469,11 @@ def main():
         elif args.command == 'env-from-config' and args.name:
             args.path = f'./migrations/{args.name}'
 
-    # Load .env — existing env vars and --url always win
+    # Load .env — existing env vars and --url always win.
+    # Always load the base .env first so globals like WASQL_PATH are available
+    # even when the db-specific file (e.g. .env.ccv2_int1) doesn't exist yet.
+    if args.env_file != '.env':
+        load_env_file('.env')
     load_env_file(args.env_file)
 
     # Resolve config.xml: --config flag > WASQL_PATH in .env > default
