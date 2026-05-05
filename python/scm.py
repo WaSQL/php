@@ -271,6 +271,9 @@ class BaseDriver:
     def rollback(self):
         self.conn.rollback()
 
+    def set_application_name(self, name):
+        pass
+
     def ensure_migrations_table(self):
         raise NotImplementedError
 
@@ -311,6 +314,10 @@ class PostgresDriver(BaseDriver):
         cur = self.conn.cursor()
         cur.execute(sql)
         return cur
+
+    def set_application_name(self, name):
+        self.execute("SET application_name = %s", [name])
+        self.conn.commit()
 
     def ensure_migrations_table(self):
         self.execute(f"""
@@ -841,7 +848,7 @@ def parse_single_file(content, filename=''):
 # Commands
 # ---------------------------------------------------------------------------
 
-def cmd_up(driver, migrations, n=None):
+def cmd_up(driver, migrations, n=None, dry_run=False):
     applied = driver.applied_versions()
     pending = [m for m in migrations if m[0] not in applied]
 
@@ -852,9 +859,17 @@ def cmd_up(driver, migrations, n=None):
     if n is not None:
         pending = pending[:n]
 
+    if dry_run:
+        for version, label, up_sql, _ in pending:
+            print(f"-- {version}_{label}")
+            print(up_sql)
+            print()
+        return
+
     for version, label, up_sql, _ in pending:
         print(f"Applying  {version}_{label} ...", end=' ', flush=True)
         try:
+            driver.set_application_name(f"scm:{version}_{label}")
             driver.execute_script(up_sql)
             driver.record_migration(version)
             driver.commit()
@@ -991,8 +1006,10 @@ def cmd_learn():
     section('2. DAILY WORKFLOW')
     rows = [
         ('scm new <name>',   'Create a timestamped migration file in ./migrations'),
-        ('scm up',           'Apply all pending migrations'),
-        ('scm up 1',         'Apply only the next pending migration'),
+        ('scm up',               'Apply all pending migrations'),
+        ('scm up 1',             'Apply only the next pending migration'),
+        ('scm up --dry-run',     'Preview SQL for all pending migrations without applying'),
+        ('scm up 1 --dry-run',   'Preview SQL for the next pending migration without applying'),
         ('scm down',         'Roll back the last applied migration'),
         ('scm down 3',       'Roll back the last 3 migrations'),
         ('scm status',       'Show what is applied vs pending'),
@@ -1416,6 +1433,8 @@ def main():
     p_up = sub.add_parser('up', help='Apply pending migrations')
     p_up.add_argument('n', nargs='?', type=int, metavar='N',
                       help='Max number of migrations to apply (default: all)')
+    p_up.add_argument('--dry-run', action='store_true',
+                      help='Print the SQL that would be executed without applying anything')
 
     p_down = sub.add_parser('down', help='Roll back migrations')
     p_down.add_argument('n', nargs='?', type=int, default=1, metavar='N',
@@ -1425,6 +1444,7 @@ def main():
     sub.add_parser('status',  help='Show applied/pending status of all migrations')
     sub.add_parser('version', help='Print scm.py version and exit')
     sub.add_parser('learn',   help='Print a quick-start reference')
+    sub.add_parser('help',    help='Print a quick-start reference (alias for learn)')
 
     p_reset = sub.add_parser('reset', help='Clear all rows from the migrations tracking table')
     p_reset.add_argument('--force', action='store_true',
@@ -1517,7 +1537,7 @@ def main():
         print(f"scm.py {__version__}")
         return
 
-    if args.command == 'learn':
+    if args.command in ('learn', 'help'):
         cmd_learn()
         return
 
@@ -1553,7 +1573,7 @@ def main():
         migrations = find_migrations(args.path)
 
         if args.command == 'up':
-            cmd_up(driver, migrations, n=args.n)
+            cmd_up(driver, migrations, n=args.n, dry_run=args.dry_run)
         elif args.command == 'down':
             cmd_down(driver, migrations, n=args.n)
         elif args.command == 'status':
