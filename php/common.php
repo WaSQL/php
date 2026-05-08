@@ -19498,6 +19498,54 @@ function isSpider($agent='',$return_name=0){
 function isSearchBot($agent='',$return_name=0){
 	return isSpider($agent,$return_name);
 	}
+//---------- begin function isSecurityAgent ----------
+/**
+ * Detects if the requesting client is an enterprise security scanner or link-scrubbing bot.
+ * This function checks the HTTP User-Agent against a list of known signatures used by 
+ * security vendors (like Proofpoint, Mimecast, and Microsoft Safelinks) that "detonate" 
+ * links in emails to scan for malicious content. This helps prevent bot-driven 
+ * "ghost clicks" from skewing engagement metrics.
+ * @param string $agent Optional. The User-Agent string to check. If omitted, 
+ *                      defaults to $_SERVER['HTTP_USER_AGENT'].
+ * @return bool Returns true if a security agent signature is detected, false otherwise.
+ */
+function isSecurityAgent($agent = '') {
+    // If no agent passed, grab it from the server global
+    $agent = strtolower($agent ? $agent : $_SERVER['HTTP_USER_AGENT']);
+    if (!$agent) { return false; }
+
+    // These strings are commonly found in the User-Agents of 
+    // enterprise security appliances and link-scrubbing services.
+    $security_signatures = array(
+        'ppops',                // Proofpoint (URLDefense)
+        'proofpoint',           // Proofpoint General
+        'url-attribution',      // URL Attribution Service
+        'mimecast',             // Mimecast
+        'safelinks',            // Microsoft Outlook SafeLinks
+        'cisco-amp',            // Cisco Advanced Malware Protection
+        'fireeye',              // FireEye/Trellix
+        'barracuda',            // Barracuda Networks
+        'cyren',                // Cyren Security
+        'sonicwall',            // SonicWall
+        'trend micro',          // Trend Micro Scan
+        'fortinet',             // FortiGate/Fortinet
+        'sophos',               // Sophos Security
+        'forcepoint',           // Forcepoint
+        'zscaler',              // Zscaler
+        'mcafee',               // McAfee/Treallix
+        'crawler',              // General catch-all for headless agents
+        'headless'              // Headless Chrome (common in security bots)
+    );
+
+    foreach ($security_signatures as $signature) {
+        // Using stringContains (a WaSQL helper)
+        if (stringContains($agent, $signature)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 //---------- begin function isWindows ----------
 /**
 * @describe returns true if the server is windows
