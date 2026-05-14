@@ -9,10 +9,15 @@ Supports two file styles:
 Commands:
   scm.py init                    Create migrations dir and .env stub
   scm.py env-from-config [name]  Set DATABASE_URL from WaSQL config.xml + run init
-  scm.py up [N]                  Apply all (or N) pending migrations
-  scm.py down [N]                Roll back N migrations (default 1)
-  scm.py status                  Show applied/pending status
   scm.py new <name>              Create new migration file(s)
+  scm.py up [N] [--dry-run]      Apply all (or N) pending migrations
+  scm.py down [N] [--dry-run]    Roll back N migrations (default 1)
+  scm.py goto <version>          Migrate to a specific version (forward or backward)
+  scm.py status                  Show applied/pending status
+  scm.py history                 Show applied migrations with timestamps
+  scm.py show <version>          Print SQL for a specific migration (no DB required)
+  scm.py baseline [version]      Mark migrations applied without running SQL
+  scm.py repair                  Remove orphaned tracking records from the database
   scm.py reset [--force]         Clear migration history and delete all migration files
   scm.py undo                    Interactively delete pending (unapplied) migration files
   scm.py learn                   Print a quick-start reference
@@ -280,6 +285,11 @@ class BaseDriver:
     def applied_versions(self):
         """Return a set of version ints that have been applied."""
         raise NotImplementedError
+
+    def applied_history(self):
+        """Return list of (version_str, applied_at_str) ordered by version."""
+        cur = self.execute(f"SELECT version, applied_at FROM {self.table} ORDER BY version")
+        return [(str(row[0]), str(row[1])) for row in cur.fetchall()]
 
     def record_migration(self, version):
         raise NotImplementedError
@@ -880,7 +890,7 @@ def cmd_up(driver, migrations, n=None, dry_run=False):
             sys.exit(f"Error: {e}")
 
 
-def cmd_down(driver, migrations, n=1):
+def cmd_down(driver, migrations, n=1, dry_run=False):
     applied = driver.applied_versions()
     applied_migrations = [m for m in reversed(migrations) if m[0] in applied]
 
@@ -889,6 +899,18 @@ def cmd_down(driver, migrations, n=1):
         return
 
     targets = applied_migrations[:n]
+
+    if dry_run:
+        for version, label, _, down_sql in targets:
+            if not down_sql:
+                sys.exit(
+                    f"No down migration for {version}_{label} — cannot roll back.\n"
+                    "Add a down migration or roll back manually."
+                )
+            print(f"-- {version}_{label}")
+            print(down_sql)
+            print()
+        return
 
     for version, label, _, down_sql in targets:
         if not down_sql:
@@ -906,6 +928,175 @@ def cmd_down(driver, migrations, n=1):
             driver.rollback()
             print("FAILED")
             sys.exit(f"Error: {e}")
+
+
+def cmd_goto(driver, migrations, target_version, dry_run=False):
+    """Migrate to exactly target_version — forward or backward, whatever is needed."""
+    version_nums = [m[0] for m in migrations]
+    if target_version not in version_nums:
+        sys.exit(
+            f"Version {target_version} not found in the migrations directory.\n"
+            "Run 'scm status' to see available versions."
+        )
+
+    applied = driver.applied_versions()
+
+    # Newest-first rollback candidates: applied and above target
+    to_rollback = [m for m in reversed(migrations) if m[0] in applied and m[0] > target_version]
+    # Oldest-first apply candidates: not applied and at or below target
+    to_apply    = [m for m in migrations          if m[0] not in applied and m[0] <= target_version]
+
+    if not to_rollback and not to_apply:
+        print(f"Already at version {target_version}. Nothing to do.")
+        return
+
+    if dry_run:
+        for version, label, _, down_sql in to_rollback:
+            if not down_sql:
+                sys.exit(
+                    f"No down migration for {version}_{label} — cannot roll back.\n"
+                    "Add a down migration or roll back manually."
+                )
+            print(f"-- rollback {version}_{label}")
+            print(down_sql)
+            print()
+        for version, label, up_sql, _ in to_apply:
+            print(f"-- apply {version}_{label}")
+            print(up_sql)
+            print()
+        return
+
+    for version, label, _, down_sql in to_rollback:
+        if not down_sql:
+            sys.exit(
+                f"No down migration for {version}_{label} — cannot roll back.\n"
+                "Add a down migration or roll back manually."
+            )
+        print(f"Rollback  {version}_{label} ...", end=' ', flush=True)
+        try:
+            driver.execute_script(down_sql)
+            driver.remove_migration(version)
+            driver.commit()
+            print("OK")
+        except Exception as e:
+            driver.rollback()
+            print("FAILED")
+            sys.exit(f"Error: {e}")
+
+    for version, label, up_sql, _ in to_apply:
+        print(f"Applying  {version}_{label} ...", end=' ', flush=True)
+        try:
+            driver.set_application_name(f"scm:{version}_{label}")
+            driver.execute_script(up_sql)
+            driver.record_migration(version)
+            driver.commit()
+            print("OK")
+        except Exception as e:
+            driver.rollback()
+            print("FAILED")
+            sys.exit(f"Error: {e}")
+
+
+def cmd_show(migrations, target_version):
+    """Print the up and down SQL for a specific migration version."""
+    for version, label, up_sql, down_sql in migrations:
+        if version == target_version:
+            print(f"-- {version}_{label} (up)")
+            print(up_sql)
+            if down_sql:
+                print(f"\n-- {version}_{label} (down)")
+                print(down_sql)
+            return
+    sys.exit(
+        f"Version {target_version} not found in the migrations directory.\n"
+        "Run 'scm status' to see available versions."
+    )
+
+
+def cmd_history(driver, migrations):
+    """Show applied migrations with timestamps."""
+    rows = driver.applied_history()
+    if not rows:
+        print("No migrations have been applied.")
+        return
+
+    tty = sys.stdout.isatty()
+    def bold(s):   return f'\033[1m{s}\033[0m'               if tty else s
+    def blue(s):   return f'\033[38;2;95;143;211m{s}\033[0m' if tty else s
+    def yellow(s): return f'\033[33m{s}\033[0m'              if tty else s
+
+    label_map = {m[0]: m[1] for m in migrations}
+
+    col_v = max(len('Version'), max(len(str(r[0])) for r in rows))
+    col_l = max(len('Label'),   max(len(label_map.get(int(r[0]), '<file missing>')) for r in rows))
+
+    header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  Applied At"
+    print(bold(blue(header)))
+    print('-' * len(header))
+
+    for version_str, applied_at in rows:
+        raw_label = label_map.get(int(version_str), '<file missing>')
+        padded_label = f"{raw_label:<{col_l}}"
+        if raw_label == '<file missing>':
+            padded_label = yellow(padded_label)
+        print(f"{version_str:<{col_v}}  {padded_label}  {applied_at}")
+
+    print(f"\n{len(rows)} applied migration(s).")
+
+
+def cmd_baseline(driver, migrations, target_version=None):
+    """Mark migrations as applied without running the SQL."""
+    applied = driver.applied_versions()
+
+    if target_version is not None:
+        version_nums = [m[0] for m in migrations]
+        if target_version not in version_nums:
+            sys.exit(
+                f"Version {target_version} not found in the migrations directory.\n"
+                "Run 'scm status' to see available versions."
+            )
+        to_mark = [m for m in migrations if m[0] <= target_version and m[0] not in applied]
+    else:
+        to_mark = [m for m in migrations if m[0] not in applied]
+
+    if not to_mark:
+        print("Nothing to baseline — all migrations already marked as applied.")
+        return
+
+    for version, label, _, _ in to_mark:
+        driver.record_migration(version)
+        print(f"  Baselined  {version}_{label}")
+    driver.commit()
+    print(f"\n{len(to_mark)} migration(s) marked as applied.")
+
+
+def cmd_repair(driver, migrations):
+    """Remove orphaned tracking records (versions in DB with no file on disk)."""
+    applied  = driver.applied_versions()
+    known    = {m[0] for m in migrations}
+    orphaned = sorted(applied - known)
+
+    if not orphaned:
+        print("No orphaned versions found. Nothing to repair.")
+        return
+
+    tty = sys.stdout.isatty()
+    def yellow(s): return f'\033[33m{s}\033[0m' if tty else s
+
+    print(f"Found {len(orphaned)} orphaned version(s) in {driver.table} with no file on disk:")
+    for v in orphaned:
+        print(f"  {yellow(str(v))}")
+    print()
+
+    ans = input("Remove these from the tracking table? Type 'yes' to confirm: ")
+    if ans.strip().lower() != 'yes':
+        print("Aborted.")
+        return
+
+    for v in orphaned:
+        driver.remove_migration(v)
+    driver.commit()
+    print(f"Removed {len(orphaned)} orphaned record(s) from {driver.table}.")
 
 
 def cmd_status(driver, migrations):
@@ -991,7 +1182,7 @@ def cmd_learn():
         print(f'\n{bold(blue(title))}')
         print(rule)
 
-    print(bold(f'\n  DBmigrate {__version__} — Quick Reference Guide'))
+    print(bold(f'\n  SCM {__version__} — Quick Reference Guide'))
     print(rule)
 
     section('1. SETUP')
@@ -1005,17 +1196,22 @@ def cmd_learn():
 
     section('2. DAILY WORKFLOW')
     rows = [
-        ('scm new <name>',   'Create a timestamped migration file in ./migrations'),
-        ('scm up',               'Apply all pending migrations'),
-        ('scm up 1',             'Apply only the next pending migration'),
-        ('scm up --dry-run',     'Preview SQL for all pending migrations without applying'),
-        ('scm up 1 --dry-run',   'Preview SQL for the next pending migration without applying'),
-        ('scm down',         'Roll back the last applied migration'),
-        ('scm down 3',       'Roll back the last 3 migrations'),
-        ('scm status',       'Show what is applied vs pending'),
-        ('scm reset',        'Wipe history + delete migration files (dev only)'),
-        ('scm reset --force','Same but skip the confirmation prompt'),
-        ('scm undo',         'Interactively delete pending (unapplied) migration files'),
+        ('scm new <name>',        'Create a timestamped migration file in ./migrations'),
+        ('scm up',                'Apply all pending migrations'),
+        ('scm up 1',              'Apply only the next pending migration'),
+        ('scm up --dry-run',      'Preview SQL for pending migrations without applying'),
+        ('scm down',              'Roll back the last applied migration'),
+        ('scm down 3',            'Roll back the last 3 migrations'),
+        ('scm down --dry-run',    'Preview rollback SQL without executing'),
+        ('scm status',            'Show what is applied vs pending'),
+        ('scm history',           'Show applied migrations with timestamps'),
+        ('scm show <version>',    'Print SQL for a specific migration (no DB needed)'),
+        ('scm goto <version>',    'Migrate to a specific version (forward or backward)'),
+        ('scm baseline',          'Mark all migrations applied without running SQL'),
+        ('scm baseline <version>','Mark up to a specific version as applied'),
+        ('scm repair',            'Remove orphaned tracking records from the database'),
+        ('scm undo',              'Interactively delete pending (unapplied) migration files'),
+        ('scm reset --force',     'Wipe history + delete migration files (dev only)'),
     ]
     for cmd, desc in rows:
         print(f'  {yellow(f"{cmd:<38}")}  {desc}')
@@ -1439,6 +1635,8 @@ def main():
     p_down = sub.add_parser('down', help='Roll back migrations')
     p_down.add_argument('n', nargs='?', type=int, default=1, metavar='N',
                         help='Number of migrations to roll back (default: 1)')
+    p_down.add_argument('--dry-run', action='store_true',
+                        help='Print the SQL that would be executed without rolling back anything')
 
     sub.add_parser('init',    help='Create migrations directory and .env stub')
     sub.add_parser('status',  help='Show applied/pending status of all migrations')
@@ -1457,6 +1655,24 @@ def main():
         help='one = single file with markers (dbmate style), two = separate up/down files. '
              'Defaults to MIGRATION_STYLE in .env, then "two".',
     )
+
+    p_goto = sub.add_parser('goto', help='Migrate to a specific version (forward or backward)')
+    p_goto.add_argument('version', type=int, metavar='VERSION',
+                        help='Target migration version (numeric prefix of the filename)')
+    p_goto.add_argument('--dry-run', action='store_true',
+                        help='Print the SQL that would be executed without applying anything')
+
+    p_show = sub.add_parser('show', help='Print SQL for a specific migration version')
+    p_show.add_argument('version', type=int, metavar='VERSION',
+                        help='Migration version (numeric prefix of the filename)')
+
+    sub.add_parser('history', help='Show applied migrations with timestamps')
+
+    p_baseline = sub.add_parser('baseline', help='Mark migrations applied without running SQL')
+    p_baseline.add_argument('version', nargs='?', type=int, default=None, metavar='VERSION',
+                            help='Mark up to this version (default: mark all)')
+
+    sub.add_parser('repair', help='Remove orphaned tracking records from the database')
 
     sub.add_parser('undo', help='Interactively delete pending (unapplied) migration files')
 
@@ -1553,6 +1769,10 @@ def main():
         cmd_env_from_config(args.config, args.name, args.env_file, args.path)
         return
 
+    if args.command == 'show':
+        cmd_show(find_migrations(args.path), target_version=args.version)
+        return
+
     if not url:
         sys.exit(
             "No database URL provided.\n"
@@ -1575,7 +1795,15 @@ def main():
         if args.command == 'up':
             cmd_up(driver, migrations, n=args.n, dry_run=args.dry_run)
         elif args.command == 'down':
-            cmd_down(driver, migrations, n=args.n)
+            cmd_down(driver, migrations, n=args.n, dry_run=args.dry_run)
+        elif args.command == 'goto':
+            cmd_goto(driver, migrations, target_version=args.version, dry_run=args.dry_run)
+        elif args.command == 'history':
+            cmd_history(driver, migrations)
+        elif args.command == 'baseline':
+            cmd_baseline(driver, migrations, target_version=args.version)
+        elif args.command == 'repair':
+            cmd_repair(driver, migrations)
         elif args.command == 'status':
             cmd_status(driver, migrations)
         elif args.command == 'undo':

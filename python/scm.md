@@ -62,7 +62,8 @@ After creating the migration file, show the user the file path and remind them t
 
 - Plain SQL migration files -- no proprietary DSL
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
-- `init`, `up`, `down`, `status`, `new`, `reset`, `undo`, `learn`, `version`, and `env-from-config` commands
+- `init`, `up`, `down`, `goto`, `status`, `history`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn`, `version`, and `env-from-config` commands
+- `--dry-run` flag on `up`, `down`, and `goto` to preview SQL without applying changes
 - Timestamp-versioned migrations -- `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
 - Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
 - Built-in drivers for PostgreSQL, MySQL/MariaDB, SQL Server, SQLite, Oracle, SAP HANA, Snowflake, FairCom cTree, and Firebird
@@ -411,9 +412,119 @@ scm down
 
 # Roll back the last N migrations
 scm down 3
+
+# Preview rollback SQL without executing it
+scm down --dry-run
+scm down 3 --dry-run
 ```
 
 If a migration has no down script, `down` exits with an error rather than silently skipping.
+
+---
+
+### `goto` -- Migrate to a specific version
+
+```bash
+scm goto <version>
+scm goto <version> --dry-run
+```
+
+Migrates the database to exactly the named version — forward or backward, whatever is needed. After the command completes, the target version's up migration is applied and all migrations above it are not.
+
+```bash
+# Currently at 20240603 — roll back to 20240601
+scm goto 20240601120000
+
+# Currently at 20240601 — apply forward to 20240603
+scm goto 20240603110000
+
+# Preview without touching the database
+scm goto 20240601120000 --dry-run
+```
+
+`goto` rolls back (newest first) any applied migrations above the target, then applies (oldest first) any pending migrations at or below the target. If the database is already at the target version, it exits immediately with no changes.
+
+If any migration in the rollback path has no down script, `goto` exits with an error before making any changes.
+
+---
+
+### `history` -- Show applied migrations with timestamps
+
+```bash
+scm history
+```
+
+Lists every migration that has been applied, along with the timestamp recorded in the tracking table. Versions whose file has since been deleted are highlighted in yellow.
+
+```
+Version          Label                   Applied At
+-----------------------------------------------------
+20240601120000   create_users_table      2024-06-01 12:03:44+00
+20240602083000   add_email_index         2024-06-02 09:11:07+00
+20240603094500   add_orders_table        2024-06-03 10:22:31+00
+
+3 applied migration(s).
+```
+
+---
+
+### `show` -- Print SQL for a migration
+
+```bash
+scm show <version>
+```
+
+Prints the up and down SQL for the named version without connecting to the database. Useful for reviewing what a migration does before applying it.
+
+```bash
+scm show 20240601120000
+# -- 20240601120000_create_users_table (up)
+# CREATE TABLE users ( ... );
+#
+# -- 20240601120000_create_users_table (down)
+# DROP TABLE users;
+```
+
+---
+
+### `baseline` -- Mark migrations applied without running SQL
+
+```bash
+scm baseline                   # mark all migrations as applied
+scm baseline <version>         # mark up to a specific version
+```
+
+Records migrations in the tracking table without executing their SQL. Essential when adopting SCM on a database that was built before migration tracking was introduced — the schema already exists, you just need to tell SCM where it stands.
+
+```bash
+# Database already has all schema up through 20240602083000;
+# tell SCM without touching the schema:
+scm baseline 20240602083000
+#   Baselined  20240601120000_create_users_table
+#   Baselined  20240602083000_add_email_index
+#
+# 2 migration(s) marked as applied.
+```
+
+After `baseline`, `scm up` will only apply migrations created after the baseline point.
+
+---
+
+### `repair` -- Remove orphaned tracking records
+
+```bash
+scm repair
+```
+
+Finds versions recorded in the tracking table that have no corresponding file on disk (orphaned), lists them, and prompts before removing. Use this when a migration file was deleted after it was applied, leaving a stale record that blocks `status` and `goto`.
+
+```
+Found 1 orphaned version(s) in schema_migrations with no file on disk:
+  20240530000000
+
+Remove these from the tracking table? Type 'yes' to confirm: yes
+Removed 1 orphaned record(s) from schema_migrations.
+```
 
 ---
 
@@ -757,7 +868,11 @@ The driver is activated automatically when its URL scheme is detected in `DATABA
 | `init` command                | yes                | yes            | no             |
 | Configurable tracking table   | yes                | yes            | yes            |
 | WaSQL config.xml integration  | yes                | no             | no             |
-| `goto` version                | no                 | no             | yes            |
+| `goto` version                | yes                | no             | yes            |
+| `history` command             | yes                | no             | no             |
+| `show` command                | yes                | no             | no             |
+| `baseline` command            | yes                | no             | no             |
+| `repair` command              | yes                | no             | no             |
 | Extensible drivers            | yes                | no             | limited        |
 | Dependencies                  | pip packages only  | none (binary)  | none (binary)  |
 
