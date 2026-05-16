@@ -614,6 +614,18 @@ foreach($_REQUEST as $key=>$val){
 //check for Config Settings
 global $ConfigSettings;
 $ConfigSettings=getDBAdminSettings();
+//handle MCP
+if(isset($_REQUEST['_menu'])){
+	switch(strtolower($_REQUEST['_menu'])){
+		case 'wamcp':
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			echo $htm;
+			exit;
+		break;
+	}
+}
 //Handle ajax requests
 if(isAjax()){
 	if(!isUser()){
@@ -637,6 +649,13 @@ if(isAjax()){
 	}
 
 	switch(strtolower($_REQUEST['_menu'])){
+		case 'wamcp':
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			echo $htm;
+			exit;
+		break;
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
@@ -1398,6 +1417,13 @@ echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.
 //process _menu request
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
+		case 'wamcp':
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			echo $htm;
+			exit;
+		break;
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
