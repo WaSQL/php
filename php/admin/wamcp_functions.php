@@ -63,18 +63,36 @@ function wamcpGetToolsList() {
     $none = new stdClass();
     $tools = array(
         array(
-            'name'        => 'db',
+            'name'        => 'help',
+            'description' => 'List all available WaMCP tools with a description of each.',
+            'inputSchema' => array('type' => 'object', 'properties' => $none)
+        ),
+        array(
+            'name'        => 'databases',
+            'description' => 'List available databases grouped by type. Do NOT use SHOW DATABASES — always call this tool. Pass an optional dbtype to filter (e.g. "mysql", "postgresql").',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array('dbtype' => array('type' => 'string', 'description' => 'Optional: filter by database type, e.g. mysql, postgresql, mssql'))
+            )
+        ),
+        array(
+            'name'        => 'setdb',
+            'description' => 'Set the active database for this session by ID. If the ID is unknown, call the databases tool to list available IDs.',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array('db_id' => array('type' => 'string', 'description' => 'Database ID to activate')),
+                'required'   => array('db_id')
+            )
+        ),
+        array(
+            'name'        => 'getdb',
             'description' => 'Display current database connection info (host, user, version, charset).',
             'inputSchema' => array('type' => 'object', 'properties' => $none)
         ),
         array(
-            'name'        => 'ddl',
-            'description' => 'Return the CREATE TABLE statement for a specified table.',
-            'inputSchema' => array(
-                'type'       => 'object',
-                'properties' => array('tablename' => array('type' => 'string', 'description' => 'Table name')),
-                'required'   => array('tablename')
-            )
+            'name'        => 'getuser',
+            'description' => 'Display info about the currently authenticated user.',
+            'inputSchema' => array('type' => 'object', 'properties' => $none)
         ),
         array(
             'name'        => 'tables',
@@ -109,6 +127,20 @@ function wamcpGetToolsList() {
             )
         ),
         array(
+            'name'        => 'ddl',
+            'description' => 'Return the CREATE TABLE statement for a specified table.',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array('tablename' => array('type' => 'string', 'description' => 'Table name')),
+                'required'   => array('tablename')
+            )
+        ),
+        array(
+            'name'        => 'indexes',
+            'description' => 'List all indexes across every table in the active database.',
+            'inputSchema' => array('type' => 'object', 'properties' => $none)
+        ),
+        array(
             'name'        => 'idx',
             'description' => 'Return all indexes defined on a specified table.',
             'inputSchema' => array(
@@ -118,28 +150,8 @@ function wamcpGetToolsList() {
             )
         ),
         array(
-            'name'        => 'running_queries',
-            'description' => 'Show currently executing queries (excludes idle/Sleep connections).',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'sessions',
-            'description' => 'Show all active database sessions including idle ones.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'table_locks',
-            'description' => 'Show tables currently held under a lock.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
             'name'        => 'views',
             'description' => 'List all views in the active database.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'indexes',
-            'description' => 'List all indexes across every table in the active database.',
             'inputSchema' => array('type' => 'object', 'properties' => $none)
         ),
         array(
@@ -162,18 +174,25 @@ function wamcpGetToolsList() {
             )
         ),
         array(
-            'name'        => 'databases',
-            'description' => 'List available databases grouped by type. Do NOT use SHOW DATABASES — always call this tool. Pass an optional dbtype to filter (e.g. "mysql", "postgresql").',
-            'inputSchema' => array(
-                'type'       => 'object',
-                'properties' => array('dbtype' => array('type' => 'string', 'description' => 'Optional: filter by database type, e.g. mysql, postgresql, mssql'))
-            )
+            'name'        => 'queries',
+            'description' => 'Show currently executing queries (excludes idle/Sleep connections).',
+            'inputSchema' => array('type' => 'object', 'properties' => $none)
+        ),
+        array(
+            'name'        => 'sessions',
+            'description' => 'Show all active database sessions including idle ones.',
+            'inputSchema' => array('type' => 'object', 'properties' => $none)
+        ),
+        array(
+            'name'        => 'locks',
+            'description' => 'Show tables currently held under a lock.',
+            'inputSchema' => array('type' => 'object', 'properties' => $none)
         )
     );
 
     $db_id_prop = array('type' => 'string', 'description' => 'Optional: target database ID. Call the databases tool to list available IDs.');
     foreach ($tools as &$tool) {
-        if ($tool['name'] === 'databases') continue;
+        if (in_array($tool['name'], array('databases', 'setdb', 'help', 'getuser'))) continue;
         $props = $tool['inputSchema']['properties'];
         if ($props instanceof stdClass) {
             $tool['inputSchema']['properties'] = array('db_id' => $db_id_prop);
@@ -189,7 +208,21 @@ function wamcpGetToolsList() {
 
 function wamcpDispatchTool($name, $args, $db_id) {
     if ($name === 'databases') {
-        return wamcpToolDatabases();
+        return wamcpToolDatabases(isset($args['dbtype']) ? $args['dbtype'] : '');
+    }
+    if ($name === 'help') {
+        return wamcpToolHelp();
+    }
+    if ($name === 'getuser') {
+        return wamcpToolGetUser();
+    }
+    if ($name === 'setdb') {
+        $target = isset($args['db_id']) ? $args['db_id'] : '';
+        if (!$target) return wamcpToolError('db_id is required');
+        $result = wamcpSetDatabase($target);
+        return $result['success']
+            ? wamcpToolText($result['message'])
+            : wamcpToolError($result['error']);
     }
     if (!empty($args['db_id'])) {
         $db_id = $args['db_id'];
@@ -202,7 +235,7 @@ function wamcpDispatchTool($name, $args, $db_id) {
     $dbname    = wamcpGetDbName($db_id);
 
     switch ($name) {
-        case 'db':
+        case 'getdb':
             return wamcpToolDb($db_id, $dbname);
         case 'ddl':
             if (!$tablename) return wamcpToolError('tablename is required');
@@ -216,11 +249,11 @@ function wamcpDispatchTool($name, $args, $db_id) {
         case 'idx':
             if (!$tablename) return wamcpToolError('tablename is required');
             return wamcpToolIdx($db_id, $tablename);
-        case 'running_queries':
+        case 'queries':
             return wamcpToolRunningQueries($db_id);
         case 'sessions':
             return wamcpToolSessions($db_id);
-        case 'table_locks':
+        case 'locks':
             return wamcpToolTableLocks($db_id);
         case 'views':
             return wamcpToolViews($db_id, $dbname);
@@ -244,12 +277,20 @@ function wamcpDispatchTool($name, $args, $db_id) {
 // ── Tool Implementations ──────────────────────────────────────────────────────
 
 function wamcpToolDb($db_id, $dbname) {
-    $sql  = "SELECT DATABASE() AS db_name, USER() AS connected_user,
-                    @@hostname AS host, @@version AS version,
-                    @@character_set_server AS charset, @@collation_server AS collation";
-    $rows = dbQueryResults($db_id, $sql);
-    if (!is_array($rows)) return wamcpToolError('Could not retrieve connection info');
-    $out = wamcpToMarkdownTable($rows);
+    global $DATABASE;
+    $db = $DATABASE[$db_id];
+    $row = array(
+        'id'     => $db_id,
+        'name'   => $dbname,
+        'dbtype' => isset($db['dbtype'])   ? $db['dbtype']   : 'mysql',
+        'host'   => isset($db['dbhost'])   ? $db['dbhost']   : '',
+        'port'   => isset($db['dbport'])   ? $db['dbport']   : '',
+        'user'   => isset($db['dbuser'])   ? $db['dbuser']   : '',
+        'file'   => isset($db['dbfile'])   ? $db['dbfile']   : '',
+    );
+    // remove empty fields so the table stays clean
+    $row = array_filter($row, function($v) { return $v !== ''; });
+    $out = wamcpToMarkdownTable(array($row));
     $instructions = wamcpDbtypeInstructions($db_id);
     if ($instructions) $out .= "\n\n" . $instructions;
     return wamcpToolText($out);
@@ -467,6 +508,26 @@ function wamcpToolDatabases($dbtype = '') {
     return wamcpToolText(implode("\n\n", $lines));
 }
 
+function wamcpToolGetUser() {
+    global $USER;
+    if (empty($USER)) return wamcpToolError('No authenticated user found.');
+    $fields = array('_id', 'firstname', 'lastname', 'username', 'email', 'wamcp');
+    $row = array();
+    foreach ($fields as $f) {
+        $row[$f] = isset($USER[$f]) ? $USER[$f] : '';
+    }
+    return wamcpToolText(wamcpToMarkdownTable(array($row)));
+}
+
+function wamcpToolHelp() {
+    $tools = wamcpGetToolsList();
+    $lines = array('| Tool | Description |', '| --- | --- |');
+    foreach ($tools as $tool) {
+        $lines[] = '| ' . $tool['name'] . ' | ' . $tool['description'] . ' |';
+    }
+    return wamcpToolText(implode("\n", $lines));
+}
+
 function wamcpToolQuery($db_id, $sql) {
     try {
         $rows = dbQueryResults($db_id, $sql);
@@ -532,12 +593,13 @@ function wamcpGetDbName($db_id) {
 function wamcpGetUserState() {
     global $USER;
     if (empty($USER['_id'])) return array();
-    //add wamcp field if it does not exist
-    if(!isset($USER['wamcp'])){
-        $ok=executeSQL("ALTER TABLE _users ADD COLUMN wamcp JSON NULL;");
+    $rec = getDBRecord(array('-table' => '_users', '_id' => $USER['_id'], '-nocache' => 1));
+    if (!$rec) return array();
+    if (!array_key_exists('wamcp', $rec)) {
+        executeSQL("ALTER TABLE _users ADD COLUMN wamcp JSON NULL;");
         return array();
     }
-    $state = json_decode($USER['wamcp'], true);
+    $state = json_decode($rec['wamcp'], true);
     return is_array($state) ? $state : array();
 }
 
@@ -546,7 +608,7 @@ function wamcpSetUserState($key, $value) {
     if (empty($USER['_id'])) return;
     $state = wamcpGetUserState();
     $state[$key] = $value;
-    editDBRecord(array('-table' => '_users', '_id' => $USER['_id'], 'wamcp' => json_encode($state)));
+    editDBRecordById('_users',$USER['_id'],array('wamcp'=>$state));
 }
 
 function wamcpGetUserDb() {
@@ -582,13 +644,14 @@ function wamcpGetDatabase($db_id) {
     return null;
 }
 
-function wamcpUseDatabase($db_id) {
+function wamcpSetDatabase($db_id) {
+    global $USER;
     $db = wamcpGetDatabase($db_id);
     if (!$db) {
         return array('success' => false, 'error' => "Database '{$db_id}' not found or is excluded from WaMCP.");
     }
     wamcpSetUserState('db', $db_id);
-    $msg = "Database set to '{$db_id}'.";
+    $msg = "Database set to '{$db_id}' for user {$USER['_id']}.";
     $instructions = wamcpDbtypeInstructions($db_id);
     if ($instructions) $msg .= "\n\n" . $instructions;
     return array('success' => true, 'message' => $msg);

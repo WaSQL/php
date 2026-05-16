@@ -8,8 +8,8 @@ global $wamcp_result;
 //log the last request
 $input = file_get_contents('php://input');
 $data  = json_decode($input, true);
-$logfile=getWaSQLTempPath().'/wamcp.log';
-setFileContents($logfile,printValue(array("REQUEST",$_REQUEST,"PAYLOAD",$data,"SERVER",$_SERVER)));
+// $logfile=getWaSQLTempPath().'/wamcp.log';
+// setFileContents($logfile,printValue(array("REQUEST",$_REQUEST,"PAYLOAD",$data,"SERVER",$_SERVER)));
 // MCP JSON-RPC over HTTP
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
@@ -52,9 +52,9 @@ switch ($func) {
         echo json_encode(array('success' => true, 'databases' => $wamcp_result));
         exit;
     break;
-    case 'use_database':
+    case 'setdb':
         $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : '';
-        $wamcp_result = wamcpUseDatabase($db_id);
+        $wamcp_result = wamcpSetDatabase($db_id);
         header('Content-Type: application/json');
         echo json_encode($wamcp_result);
         exit;
@@ -71,7 +71,7 @@ switch ($func) {
         echo json_encode($wamcp_result);
         exit;
     break;
-    case 'running_queries':
+    case 'queries':
         $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : wamcpGetUserDb();
         if (empty($db_id)) {
             $wamcp_result = array('success' => false, 'error' => 'No database selected');
