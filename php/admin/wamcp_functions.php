@@ -380,28 +380,22 @@ function wamcpToolDdl($db_id, $tablename) {
 }
 
 function wamcpToolTables($db_id, $dbname, $filter) {
-    $where = "TABLE_SCHEMA = " . wamcpQ($dbname) . " AND TABLE_TYPE = 'BASE TABLE'";
-    if ($filter) $where .= " AND TABLE_NAME LIKE " . wamcpQ("%{$filter}%");
-    $sql  = "SELECT TABLE_NAME, ENGINE, TABLE_ROWS,
-                    ROUND(DATA_LENGTH/1024/1024,2) AS data_mb, CREATE_TIME
-             FROM information_schema.TABLES
-             WHERE {$where}
-             ORDER BY TABLE_NAME";
-    $rows = dbQueryResults($db_id, $sql);
-    if (!is_array($rows)) return wamcpToolError('Could not retrieve tables');
+    $tables = dbGetTables($db_id);
+    if (!is_array($tables)) return wamcpToolError('Could not retrieve tables');
+    $rows=array();
+    foreach($tables as $table){
+        $rows[]=array('tablename'=>$table);
+    }
     return wamcpToolText(wamcpToMarkdownTable($rows));
 }
 
 function wamcpToolFields($db_id, $dbname, $tablename, $filter) {
-    $where = "TABLE_SCHEMA = " . wamcpQ($dbname) . " AND TABLE_NAME = " . wamcpQ($tablename);
-    if ($filter) $where .= " AND COLUMN_NAME LIKE " . wamcpQ("%{$filter}%");
-    $sql  = "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY,
-                    COLUMN_DEFAULT, EXTRA, COLUMN_COMMENT
-             FROM information_schema.COLUMNS
-             WHERE {$where}
-             ORDER BY ORDINAL_POSITION";
-    $rows = dbQueryResults($db_id, $sql);
-    if (!is_array($rows)) return wamcpToolError('Could not retrieve fields');
+    $fields=dbGetTableFields($db_id,$tablename);
+    if (!is_array($fields)) return wamcpToolError('Could not retrieve fields');
+    $rows=array();
+    foreach($fields as $field){
+        $rows[]=$field;
+    }
     return wamcpToolText(wamcpToMarkdownTable($rows));
 }
 
