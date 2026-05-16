@@ -1,6 +1,6 @@
 <?php
 // WaSQL_auth header is extracted into $_REQUEST['_auth'] by user.php bootstrap
-// before this controller runs, so isUser() validates it for both MCP and web UI.
+// before this controller runs, so isAdmin() validates it for both MCP and web UI.
 global $DATABASE;
 global $USER;
 global $PASSTHRU;
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($data && isset($data['jsonrpc']) && $data['jsonrpc'] === '2.0') {
             header('Content-Type: application/json');
             $id = isset($data['id']) ? $data['id'] : null;
-            if (!isUser()) {
+            if (!isAdmin()) {
                 echo json_encode(array('jsonrpc' => '2.0', 'id' => $id,
                     'error' => array('code' => -32001, 'message' => 'Unauthorized')));
                 exit;
@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Web UI — same isUser() auth
-if (!isUser()) {
+// Web UI — same isAdmin() auth
+if (!isAdmin()) {
     header('Content-Type: application/json');
     echo json_encode(array('success' => false, 'error' => 'Authentication required'));
     exit;

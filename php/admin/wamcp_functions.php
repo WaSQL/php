@@ -163,8 +163,11 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'databases',
-            'description' => 'List only the databases that are enabled for WaMCP (have the wamcp attribute set). Do NOT use SHOW DATABASES — always call this tool to list available databases.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
+            'description' => 'List available databases grouped by type. Do NOT use SHOW DATABASES — always call this tool. Pass an optional dbtype to filter (e.g. "mysql", "postgresql").',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array('dbtype' => array('type' => 'string', 'description' => 'Optional: filter by database type, e.g. mysql, postgresql, mssql'))
+            )
         )
     );
 
@@ -192,7 +195,7 @@ function wamcpDispatchTool($name, $args, $db_id) {
         $db_id = $args['db_id'];
     }
     if (!wamcpGetDatabase($db_id)) {
-        return wamcpToolError("Database '{$db_id}' not found or not enabled for WaMCP.");
+        return wamcpToolError("Database '{$db_id}' not found or is excluded from WaMCP.");
     }
     $tablename = isset($args['tablename']) ? preg_replace('/[^a-zA-Z0-9_]/', '', $args['tablename']) : '';
     $filter    = isset($args['filter'])    ? $args['filter']    : '';
@@ -232,7 +235,7 @@ function wamcpDispatchTool($name, $args, $db_id) {
             if (!$sql) return wamcpToolError('sql is required');
             return wamcpToolQuery($db_id, $sql);
         case 'databases':
-            return wamcpToolDatabases();
+            return wamcpToolDatabases(isset($args['dbtype']) ? $args['dbtype'] : '');
         default:
             return wamcpToolError("Unknown tool: {$name}");
     }
@@ -246,7 +249,85 @@ function wamcpToolDb($db_id, $dbname) {
                     @@character_set_server AS charset, @@collation_server AS collation";
     $rows = dbQueryResults($db_id, $sql);
     if (!is_array($rows)) return wamcpToolError('Could not retrieve connection info');
-    return wamcpToolText(wamcpToMarkdownTable($rows));
+    $out = wamcpToMarkdownTable($rows);
+    $instructions = wamcpDbtypeInstructions($db_id);
+    if ($instructions) $out .= "\n\n" . $instructions;
+    return wamcpToolText($out);
+}
+
+function wamcpDbtypeInstructions($db_id) {
+    global $DATABASE;
+    $dbtype = isset($DATABASE[$db_id]['dbtype']) ? strtolower($DATABASE[$db_id]['dbtype']) : 'mysql';
+    switch ($dbtype) {
+        case 'ctree':
+        case 'ctreeace':
+            return <<<INST
+**FairCom c-treeACE SQL Query Notes**
+- Pagination: use `FIRST n` and `SKIP n` — NOT `LIMIT` / `OFFSET`
+  ```sql
+  SELECT FIRST 25 SKIP 50 * FROM mytable;
+  ```
+- No `SHOW TABLES` — use the `tables` tool instead
+- No `SHOW CREATE TABLE` — use the `ddl` tool instead
+- String concatenation: use `||` not `CONCAT()`
+- Use `TOP n` as an alternative to `FIRST n` for single-page fetches
+- Date literals: `DATE '2024-01-15'` format
+- Boolean: use `1`/`0` — no native BOOLEAN type
+INST;
+
+        case 'mssql':
+        case 'sqlsrv':
+            return <<<INST
+**Microsoft SQL Server Query Notes**
+- Pagination: use `OFFSET / FETCH NEXT` (requires `ORDER BY`)
+  ```sql
+  SELECT * FROM mytable ORDER BY id OFFSET 50 ROWS FETCH NEXT 25 ROWS ONLY;
+  ```
+- Alternatively use `TOP n` for simple row limits: `SELECT TOP 25 * FROM mytable`
+- String concatenation: use `+` or `CONCAT()`
+- Use `GETDATE()` for current timestamp, `GETUTCDATE()` for UTC
+- Wrap identifiers in `[square brackets]` if they conflict with reserved words
+INST;
+
+        case 'postgresql':
+        case 'pgsql':
+            return <<<INST
+**PostgreSQL Query Notes**
+- Pagination: `LIMIT n OFFSET n` (standard)
+- String concatenation: use `||` or `CONCAT()`
+- Use `NOW()` or `CURRENT_TIMESTAMP` for current time
+- Identifiers are case-sensitive when quoted; unquoted identifiers are lowercased
+- Use `ILIKE` for case-insensitive pattern matching instead of `LIKE`
+- Use `::type` cast syntax: `SELECT '2024-01-15'::date`
+INST;
+
+        case 'oracle':
+            return <<<INST
+**Oracle Query Notes**
+- Pagination: use `FETCH FIRST n ROWS ONLY` / `OFFSET n ROWS` (Oracle 12c+)
+  ```sql
+  SELECT * FROM mytable ORDER BY id OFFSET 50 ROWS FETCH NEXT 25 ROWS ONLY;
+  ```
+- For older Oracle: use `ROWNUM` in a subquery
+- No `AUTO_INCREMENT` — use sequences or `GENERATED AS IDENTITY`
+- Use `SYSDATE` for current date/time, `SYSTIMESTAMP` for full precision
+- `NULL` handling: use `NVL(col, default)` instead of `COALESCE()` where needed
+- String concatenation: use `||`
+INST;
+
+        case 'sqlite':
+            return <<<INST
+**SQLite Query Notes**
+- Pagination: `LIMIT n OFFSET n` (standard)
+- No stored procedures or functions
+- Loosely typed — column types are advisory only
+- No `RIGHT JOIN` or `FULL OUTER JOIN` support
+- Use `strftime()` for date/time formatting
+INST;
+
+        default:
+            return '';
+    }
 }
 
 function wamcpToolDdl($db_id, $tablename) {
@@ -361,14 +442,29 @@ function wamcpToolRoutines($db_id, $dbname, $type) {
     return wamcpToolText(wamcpToMarkdownTable($rows));
 }
 
-function wamcpToolDatabases() {
+function wamcpToolDatabases($dbtype = '') {
     $list = wamcpListDatabases();
-    if (empty($list)) return wamcpToolText('No WaMCP-enabled databases configured.');
-    $rows = array();
-    foreach ($list as $db) {
-        $rows[] = array('id' => $db['id'], 'wamcp_name' => $db['name'], 'display_name' => $db['displayname']);
+    if ($dbtype) {
+        $dbtype = strtolower($dbtype);
+        $list = array_filter($list, function($db) use ($dbtype) {
+            return strtolower($db['dbtype']) === $dbtype;
+        });
     }
-    return wamcpToolText(wamcpToMarkdownTable($rows));
+    if (empty($list)) {
+        $msg = $dbtype ? "No {$dbtype} databases available." : 'No databases available.';
+        return wamcpToolText($msg);
+    }
+    $groups = array();
+    foreach ($list as $db) {
+        $groups[$db['dbtype']][] = array('id' => $db['id'], 'name' => $db['name']);
+    }
+    ksort($groups);
+    $lines = array();
+    foreach ($groups as $type => $dbs) {
+        $lines[] = "### {$type}";
+        $lines[] = wamcpToMarkdownTable($dbs);
+    }
+    return wamcpToolText(implode("\n\n", $lines));
 }
 
 function wamcpToolQuery($db_id, $sql) {
@@ -467,20 +563,20 @@ function wamcpListDatabases() {
     global $DATABASE;
     $databases = array();
     foreach ($DATABASE as $key => $db) {
-        if (isset($db['wamcp']) && strlen($db['wamcp'])) {
-            $databases[] = array(
-                'id'          => $key,
-                'name'        => $db['wamcp'],
-                'displayname' => isset($db['displayname']) ? $db['displayname'] : (isset($db['dbname']) ? $db['dbname'] : $key)
-            );
-        }
+        if (isset($db['wamcp']) && $db['wamcp'] === 'false') continue;
+        $databases[] = array(
+            'id'          => $key,
+            'name'        => isset($db['wamcp']) ? $db['wamcp'] : $key,
+            'displayname' => isset($db['displayname']) ? $db['displayname'] : (isset($db['dbname']) ? $db['dbname'] : $key),
+            'dbtype'      => isset($db['dbtype']) ? $db['dbtype'] : 'mysql'
+        );
     }
     return $databases;
 }
 
 function wamcpGetDatabase($db_id) {
     global $DATABASE;
-    if (isset($DATABASE[$db_id]) && isset($DATABASE[$db_id]['wamcp'])) {
+    if (isset($DATABASE[$db_id]) && !(isset($DATABASE[$db_id]['wamcp']) && $DATABASE[$db_id]['wamcp'] === 'false')) {
         return $DATABASE[$db_id];
     }
     return null;
@@ -489,16 +585,19 @@ function wamcpGetDatabase($db_id) {
 function wamcpUseDatabase($db_id) {
     $db = wamcpGetDatabase($db_id);
     if (!$db) {
-        return array('success' => false, 'error' => "Database '{$db_id}' not found or not enabled for WaMCP.");
+        return array('success' => false, 'error' => "Database '{$db_id}' not found or is excluded from WaMCP.");
     }
     wamcpSetUserState('db', $db_id);
-    return array('success' => true, 'message' => "Database set to '{$db['wamcp']}' ({$db_id})");
+    $msg = "Database set to '{$db_id}'.";
+    $instructions = wamcpDbtypeInstructions($db_id);
+    if ($instructions) $msg .= "\n\n" . $instructions;
+    return array('success' => true, 'message' => $msg);
 }
 
 function wamcpQueryDatabase($db_id, $query) {
     $db = wamcpGetDatabase($db_id);
     if (!$db) {
-        return array('success' => false, 'error' => "Database '{$db_id}' not found or not enabled for WaMCP.");
+        return array('success' => false, 'error' => "Database '{$db_id}' not found or is excluded from WaMCP.");
     }
     try {
         $recs = dbQueryResults($db_id, $query);
@@ -514,7 +613,7 @@ function wamcpQueryDatabase($db_id, $query) {
 function wamcpSeeRunningQueries($db_id) {
     $db = wamcpGetDatabase($db_id);
     if (!$db) {
-        return array('success' => false, 'error' => "Database '{$db_id}' not found or not enabled for WaMCP.");
+        return array('success' => false, 'error' => "Database '{$db_id}' not found or is excluded from WaMCP.");
     }
     $dbtype = strtolower(isset($db['dbtype']) ? $db['dbtype'] : 'mysql');
     switch ($dbtype) {
