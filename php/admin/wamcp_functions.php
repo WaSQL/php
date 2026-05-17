@@ -245,7 +245,7 @@ function wamcpDbtypeInstructions($db_id) {
         case 'ctreeace':
             return <<<INST
 **FairCom c-treeACE SQL Query Notes**
-- Pagination: use `FIRST n` and `SKIP n` — NOT `LIMIT` / `OFFSET`
+- Pagination: use `TOP n` and `SKIP n` — NOT `LIMIT` / `OFFSET`
   ```sql
   SELECT FIRST 25 SKIP 50 * FROM mytable;
   ```
