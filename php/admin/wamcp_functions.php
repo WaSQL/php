@@ -77,11 +77,11 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'setdb',
-            'description' => 'Set the active database for this session by ID. If the ID is unknown, call the databases tool to list available IDs.',
+            'description' => 'Set the active database for this session by name/ID. If the name is unknown, call the databases tool to list available names.',
             'inputSchema' => array(
                 'type'       => 'object',
-                'properties' => array('db_id' => array('type' => 'string', 'description' => 'Database ID to activate')),
-                'required'   => array('db_id')
+                'properties' => array('dbname' => array('type' => 'string', 'description' => 'Database name/ID to activate')),
+                'required'   => array('dbname')
             )
         ),
         array(
@@ -104,24 +104,12 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'fields',
-            'description' => 'List columns for a table, optionally filtered by a substring. Alias: fld.',
+            'description' => 'List columns for a table, optionally filtered by a substring.',
             'inputSchema' => array(
                 'type'       => 'object',
                 'properties' => array(
                     'tablename' => array('type' => 'string'),
                     'filter'    => array('type' => 'string', 'description' => 'Optional substring filter on column name')
-                ),
-                'required' => array('tablename')
-            )
-        ),
-        array(
-            'name'        => 'fld',
-            'description' => 'Alias for fields.',
-            'inputSchema' => array(
-                'type'       => 'object',
-                'properties' => array(
-                    'tablename' => array('type' => 'string'),
-                    'filter'    => array('type' => 'string')
                 ),
                 'required' => array('tablename')
             )
@@ -137,32 +125,15 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'indexes',
-            'description' => 'List all indexes across every table in the active database.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'idx',
-            'description' => 'Return all indexes defined on a specified table.',
+            'description' => 'Return all indexes defined on a specified table, optionally filtered by column name.',
             'inputSchema' => array(
                 'type'       => 'object',
-                'properties' => array('tablename' => array('type' => 'string')),
+                'properties' => array(
+                    'tablename' => array('type' => 'string', 'description' => 'Table name'),
+                    'filter'    => array('type' => 'string', 'description' => 'Optional substring filter on column_name')
+                ),
                 'required'   => array('tablename')
             )
-        ),
-        array(
-            'name'        => 'views',
-            'description' => 'List all views in the active database.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'functions',
-            'description' => 'List all stored functions in the active database.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'procedures',
-            'description' => 'List all stored procedures in the active database.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
         ),
         array(
             'name'        => 'query',
@@ -173,21 +144,6 @@ function wamcpGetToolsList() {
                 'required'   => array('sql')
             )
         ),
-        array(
-            'name'        => 'queries',
-            'description' => 'Show currently executing queries (excludes idle/Sleep connections).',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'sessions',
-            'description' => 'Show all active database sessions including idle ones.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        ),
-        array(
-            'name'        => 'locks',
-            'description' => 'Show tables currently held under a lock.',
-            'inputSchema' => array('type' => 'object', 'properties' => $none)
-        )
     );
 
     $db_id_prop = array('type' => 'string', 'description' => 'Optional: target database ID. Call the databases tool to list available IDs.');
@@ -217,8 +173,8 @@ function wamcpDispatchTool($name, $args, $db_id) {
         return wamcpToolGetUser();
     }
     if ($name === 'setdb') {
-        $target = isset($args['db_id']) ? $args['db_id'] : '';
-        if (!$target) return wamcpToolError('db_id is required');
+        $target = isset($args['dbname']) ? $args['dbname'] : '';
+        if (!$target) return wamcpToolError('dbname is required');
         $result = wamcpSetDatabase($target);
         return $result['success']
             ? wamcpToolText($result['message'])
@@ -241,28 +197,13 @@ function wamcpDispatchTool($name, $args, $db_id) {
             if (!$tablename) return wamcpToolError('tablename is required');
             return wamcpToolDdl($db_id, $tablename);
         case 'tables':
-            return wamcpToolTables($db_id, $dbname, $filter);
+            return wamcpToolTables($db_id, $filter);
         case 'fields':
-        case 'fld':
             if (!$tablename) return wamcpToolError('tablename is required');
-            return wamcpToolFields($db_id, $dbname, $tablename, $filter);
-        case 'idx':
-            if (!$tablename) return wamcpToolError('tablename is required');
-            return wamcpToolIdx($db_id, $tablename);
-        case 'queries':
-            return wamcpToolRunningQueries($db_id);
-        case 'sessions':
-            return wamcpToolSessions($db_id);
-        case 'locks':
-            return wamcpToolTableLocks($db_id);
-        case 'views':
-            return wamcpToolViews($db_id, $dbname);
+            return wamcpToolFields($db_id, $tablename, $filter);
         case 'indexes':
-            return wamcpToolIndexes($db_id, $dbname);
-        case 'functions':
-            return wamcpToolRoutines($db_id, $dbname, 'FUNCTION');
-        case 'procedures':
-            return wamcpToolRoutines($db_id, $dbname, 'PROCEDURE');
+            if (!$tablename) return wamcpToolError('tablename is required');
+            return wamcpToolIndexes($db_id, $tablename, $filter);
         case 'query':
             $sql = isset($args['sql']) ? $args['sql'] : '';
             if (!$sql) return wamcpToolError('sql is required');
@@ -372,38 +313,32 @@ INST;
 }
 
 function wamcpToolDdl($db_id, $tablename) {
-    $rows = dbQueryResults($db_id, "SHOW CREATE TABLE `{$tablename}`");
-    if (!is_array($rows) || empty($rows)) return wamcpToolError("Table '{$tablename}' not found");
-    $row = $rows[0];
-    $ddl = isset($row['Create Table']) ? $row['Create Table'] : (isset($row[1]) ? $row[1] : '');
+    $ddl=dbGetTableDDL($db_id,$tablename);
     return wamcpToolText("```sql\n{$ddl}\n```");
 }
 
-function wamcpToolTables($db_id, $dbname, $filter) {
-    $tables = dbGetTables($db_id);
-    if (!is_array($tables)) return wamcpToolError('Could not retrieve tables');
-    $rows=array();
-    foreach($tables as $table){
-        $rows[]=array('tablename'=>$table);
+function wamcpToolTables($db_id, $filter = '') {
+    $rows = dbQueryResults($db_id, "tables");
+    if (!is_array($rows)) return wamcpToolError('Could not retrieve tables');
+    if ($filter) {
+        $rows = array_filter($rows, function($row) use ($filter) {
+            return stripos($row['name'], $filter) !== false;
+        });
     }
-    return wamcpToolText(wamcpToMarkdownTable($rows));
+    return wamcpToolText(wamcpToMarkdownTable(array_values($rows)));
 }
 
-function wamcpToolFields($db_id, $dbname, $tablename, $filter) {
-    $fields=dbGetTableFields($db_id,$tablename);
-    if (!is_array($fields)) return wamcpToolError('Could not retrieve fields');
-    $rows=array();
-    foreach($fields as $field){
-        $rows[]=$field;
+function wamcpToolFields($db_id, $tablename, $filter) {
+    $rows = dbQueryResults($db_id, "fld {$tablename}");
+    if (!is_array($rows)) return wamcpToolError("Could not retrieve fields for '{$tablename}'");
+    if ($filter) {
+        $rows = array_filter($rows, function($row) use ($filter) {
+            return stripos($row['name'], $filter) !== false;
+        });
     }
-    return wamcpToolText(wamcpToMarkdownTable($rows));
+    return wamcpToolText(wamcpToMarkdownTable(array_values($rows)));
 }
 
-function wamcpToolIdx($db_id, $tablename) {
-    $rows = dbQueryResults($db_id, "SHOW INDEX FROM `{$tablename}`");
-    if (!is_array($rows)) return wamcpToolError("Could not retrieve indexes for '{$tablename}'");
-    return wamcpToolText(wamcpToMarkdownTable($rows));
-}
 
 function wamcpToolRunningQueries($db_id) {
     $sql  = "SELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, LEFT(INFO,200) AS query_preview
@@ -441,36 +376,36 @@ function wamcpToolTableLocks($db_id) {
     return wamcpToolText(wamcpToMarkdownTable($rows));
 }
 
-function wamcpToolViews($db_id, $dbname) {
+function wamcpToolViews($db_id, $dbname, $filter = '') {
+    $filterClause = $filter ? " AND TABLE_NAME LIKE " . wamcpQ('%' . $filter . '%') : '';
     $sql  = "SELECT TABLE_NAME, IS_UPDATABLE, DEFINER, SECURITY_TYPE,
                     LEFT(VIEW_DEFINITION,300) AS definition_preview
              FROM information_schema.VIEWS
-             WHERE TABLE_SCHEMA = " . wamcpQ($dbname) . "
+             WHERE TABLE_SCHEMA = " . wamcpQ($dbname) . $filterClause . "
              ORDER BY TABLE_NAME";
     $rows = dbQueryResults($db_id, $sql);
     if (!is_array($rows)) return wamcpToolError('Could not retrieve views');
     return wamcpToolText(wamcpToMarkdownTable($rows));
 }
 
-function wamcpToolIndexes($db_id, $dbname) {
-    $sql  = "SELECT TABLE_NAME, INDEX_NAME,
-                    GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX) AS columns,
-                    NON_UNIQUE, INDEX_TYPE
-             FROM information_schema.STATISTICS
-             WHERE TABLE_SCHEMA = " . wamcpQ($dbname) . "
-             GROUP BY TABLE_NAME, INDEX_NAME, NON_UNIQUE, INDEX_TYPE
-             ORDER BY TABLE_NAME, INDEX_NAME";
-    $rows = dbQueryResults($db_id, $sql);
-    if (!is_array($rows)) return wamcpToolError('Could not retrieve indexes');
-    return wamcpToolText(wamcpToMarkdownTable($rows));
+function wamcpToolIndexes($db_id, $tablename, $filter = '') {
+    $rows = dbQueryResults($db_id, "idx {$tablename}");
+    if (!is_array($rows)) return wamcpToolError("Could not retrieve indexes for '{$tablename}'");
+    if ($filter) {
+        $rows = array_filter($rows, function($row) use ($filter) {
+            return stripos($row['column_name'], $filter) !== false;
+        });
+    }
+    return wamcpToolText(wamcpToMarkdownTable(array_values($rows)));
 }
 
-function wamcpToolRoutines($db_id, $dbname, $type) {
+function wamcpToolRoutines($db_id, $dbname, $type, $filter = '') {
+    $filterClause = $filter ? " AND ROUTINE_NAME LIKE " . wamcpQ('%' . $filter . '%') : '';
     $sql  = "SELECT ROUTINE_NAME, DATA_TYPE AS return_type, SECURITY_TYPE, DEFINER,
                     LEFT(ROUTINE_DEFINITION,300) AS body_preview
              FROM information_schema.ROUTINES
              WHERE ROUTINE_SCHEMA = " . wamcpQ($dbname) . "
-               AND ROUTINE_TYPE = " . wamcpQ($type) . "
+               AND ROUTINE_TYPE = " . wamcpQ($type) . $filterClause . "
              ORDER BY ROUTINE_NAME";
     $rows = dbQueryResults($db_id, $sql);
     if (!is_array($rows)) return wamcpToolError("Could not retrieve {$type}s");
