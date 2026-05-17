@@ -458,6 +458,11 @@ function wamcpToolHelp() {
 }
 
 function wamcpToolQuery($db_id, $sql) {
+    $keyword = strtoupper(preg_match('/^\s*(\w+)/', $sql, $m) ? $m[1] : '');
+    $allowed = array('SELECT', 'SHOW', 'EXPLAIN', 'WITH', 'DESCRIBE', 'DESC');
+    if (!in_array($keyword, $allowed)) {
+        return wamcpToolError('Only read-only queries are permitted (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH).');
+    }
     try {
         $rows = dbQueryResults($db_id, $sql);
         if (is_array($rows) && !empty($rows)) {
