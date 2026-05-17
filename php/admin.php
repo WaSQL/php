@@ -618,10 +618,27 @@ $ConfigSettings=getDBAdminSettings();
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
 		case 'wamcp':
+			if($_SERVER['REQUEST_METHOD']=='GET'){
+				adminSetHeaders();
+				$js=adminGetJavascript();
+				$params=array(
+					'js'=>$js,
+					'title'=>$_SERVER['HTTP_HOST'].' Admin'
+					);
+				echo buildHtmlBegin($params);
+				echo adminViewPage('topmenu');
+				echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.PHP_EOL;
+
+				echo '<div class="content">'.PHP_EOL;
+			}
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);
 			echo $htm;
+			if($_SERVER['REQUEST_METHOD']=='GET'){
+				echo '</div></div>'.PHP_EOL;
+				echo buildHtmlEnd();
+			}
 			exit;
 		break;
 	}
@@ -649,13 +666,6 @@ if(isAjax()){
 	}
 
 	switch(strtolower($_REQUEST['_menu'])){
-		case 'wamcp':
-			$htm=adminViewPage($_REQUEST['_menu']);
-			//check for translate tags
-			$htm=processTranslateTags($htm);
-			echo $htm;
-			exit;
-		break;
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
@@ -1357,41 +1367,7 @@ if(isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='logs'){
 }
 
 adminSetHeaders();
-$js=<<<ENDOFJSSCRIPT
-<script type="text/javascript">
-	//---------- begin function syncTableClick ----
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
-	function syncTableClick(c){
-		c=getObject(c);
-		var tabs=GetElementsByAttribute('button', 'data-group', 'synctabletabs');
-		for(var i=0;i<tabs.length;i++){
-			setClassName(tabs[i],'wacss_button');
-		}
-		setClassName(c,'wacss_button is-warning is-active');
-		var sdiv=c.getAttribute('data-div');
-		setText('syncDiv',getText(sdiv));
-		return true;
-	}
-	//---------- begin function renameBackup ----
-	/**
-	* @exclude  - this function is for internal use only and thus excluded from the manual
-	*/
-	function renameBackup(obj){
-		alertify.renameBackup=getObject(obj);
-		alertify.prompt('<span class="icon-rename w_bigger w_grey"> New Filename:</span>', function (e, str) {
-			if (e) {
-				var obj=alertify.renameBackup;
-				obj.href+='&name='+str;
-				alertify.renameBackup='';
-				window.location=obj.href;
-			}
-		});
-		return false;
-	}
-</script>
-ENDOFJSSCRIPT;
+$js=adminGetJavascript();
 $params=array(
 	'js'=>$js,
 	'title'=>$_SERVER['HTTP_HOST'].' Admin'
@@ -1417,13 +1393,6 @@ echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.
 //process _menu request
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
-		case 'wamcp':
-			$htm=adminViewPage($_REQUEST['_menu']);
-			//check for translate tags
-			$htm=processTranslateTags($htm);
-			echo $htm;
-			exit;
-		break;
 		case 'tempfiles':
 		case 'git':
 		case 'reports':
@@ -3441,6 +3410,47 @@ echo '</div>'.PHP_EOL;
 echo showWasqlErrors();
 echo "</body>\n</html>";
 exit;
+//---------- begin function adminAddEditOpts
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function adminGetJavascript(){
+	return <<<ENDOFJSSCRIPT
+<script type="text/javascript">
+	//---------- begin function syncTableClick ----
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	function syncTableClick(c){
+		c=getObject(c);
+		var tabs=GetElementsByAttribute('button', 'data-group', 'synctabletabs');
+		for(var i=0;i<tabs.length;i++){
+			setClassName(tabs[i],'wacss_button');
+		}
+		setClassName(c,'wacss_button is-warning is-active');
+		var sdiv=c.getAttribute('data-div');
+		setText('syncDiv',getText(sdiv));
+		return true;
+	}
+	//---------- begin function renameBackup ----
+	/**
+	* @exclude  - this function is for internal use only and thus excluded from the manual
+	*/
+	function renameBackup(obj){
+		alertify.renameBackup=getObject(obj);
+		alertify.prompt('<span class="icon-rename w_bigger w_grey"> New Filename:</span>', function (e, str) {
+			if (e) {
+				var obj=alertify.renameBackup;
+				obj.href+='&name='+str;
+				alertify.renameBackup='';
+				window.location=obj.href;
+			}
+		});
+		return false;
+	}
+</script>
+ENDOFJSSCRIPT;
+}
 //---------- begin function adminAddEditOpts
 /**
 * @exclude  - this function is for internal use only and thus excluded from the manual

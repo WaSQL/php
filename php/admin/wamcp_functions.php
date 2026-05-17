@@ -137,7 +137,7 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'query',
-            'description' => 'Execute an arbitrary SQL query and return the result set.',
+            'description' => 'Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) and return the result set.',
             'inputSchema' => array(
                 'type'       => 'object',
                 'properties' => array('sql' => array('type' => 'string', 'description' => 'SQL statement to execute')),
@@ -208,8 +208,6 @@ function wamcpDispatchTool($name, $args, $db_id) {
             $sql = isset($args['sql']) ? $args['sql'] : '';
             if (!$sql) return wamcpToolError('sql is required');
             return wamcpToolQuery($db_id, $sql);
-        case 'databases':
-            return wamcpToolDatabases(isset($args['dbtype']) ? $args['dbtype'] : '');
         default:
             return wamcpToolError("Unknown tool: {$name}");
     }
@@ -245,7 +243,7 @@ function wamcpDbtypeInstructions($db_id) {
         case 'ctreeace':
             return <<<INST
 **FairCom c-treeACE SQL Query Notes**
-- Pagination: use `TOP n` and `SKIP n` — NOT `LIMIT` / `OFFSET`
+- Pagination: use `FIRST n` and `SKIP n` — NOT `LIMIT` / `OFFSET`
   ```sql
   SELECT FIRST 25 SKIP 50 * FROM mytable;
   ```

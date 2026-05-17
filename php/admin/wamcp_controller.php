@@ -5,23 +5,22 @@ global $DATABASE;
 global $USER;
 global $PASSTHRU;
 global $wamcp_result;
-//log the last request
-$input = file_get_contents('php://input');
-$data  = json_decode($input, true);
-// $logfile=getWaSQLTempPath().'/wamcp.log';
-// setFileContents($logfile,printValue(array("REQUEST",$_REQUEST,"PAYLOAD",$data,"SERVER",$_SERVER)));
+// Web UI — same isAdmin() auth
+if (!isAdmin()) {
+    header('Content-Type: application/json');
+    echo json_encode(array('success' => false, 'error' => 'Authentication required'));
+    exit;
+}
+
 // MCP JSON-RPC over HTTP
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contentType = isset($_SERVER['CONTENT_TYPE']) ? $_SERVER['CONTENT_TYPE'] : '';
     if (strpos($contentType, 'application/json') !== false) {
+        $input = file_get_contents('php://input');
+        $data  = json_decode($input, true);
         if ($data && isset($data['jsonrpc']) && $data['jsonrpc'] === '2.0') {
             header('Content-Type: application/json');
             $id = isset($data['id']) ? $data['id'] : null;
-            if (!isAdmin()) {
-                echo json_encode(array('jsonrpc' => '2.0', 'id' => $id,
-                    'error' => array('code' => -32001, 'message' => 'Unauthorized')));
-                exit;
-            }
             // db_id from URL path segment, then user's saved db, then first enabled db
             $db_id = (isset($PASSTHRU[0]) && strlen($PASSTHRU[0])) ? $PASSTHRU[0] : wamcpGetUserDb();
             if (!$db_id) {
@@ -35,14 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Web UI — same isAdmin() auth
-if (!isAdmin()) {
-    header('Content-Type: application/json');
-    echo json_encode(array('success' => false, 'error' => 'Authentication required'));
-    exit;
-}
-
-$func = isset($_REQUEST['func']) ? strtolower(trim($_REQUEST['func'])) : 'list_databases';
+$func = isset($_REQUEST['func']) ? strtolower(trim($_REQUEST['func'])) : '';
 $wamcp_result = array();
 
 switch ($func) {
@@ -83,11 +75,11 @@ switch ($func) {
         exit;
     break;
     default:
-        $wamcp_result = array(
-            'databases'  => wamcpListDatabases(),
-            'current_db' => wamcpGetUserDb()
-        );
+        loadExtras('markdown');
+        $apath=getWaSQLPath('php/admin');
+        $md = getFileContents("{$apath}/wamcp.md");
+        $docs=markdown2Html($md);
         setView('default', 1);
-        break;
+    break;
 }
 ?>

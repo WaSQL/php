@@ -10,24 +10,20 @@ WaMCP is a PHP page (`wamcp`) that speaks the [MCP JSON-RPC 2.0 protocol](https:
 
 ### Available Tools
 
-| Tool | Description |
-|---|---|
-| `databases` | List all WaMCP-enabled databases. **Always call this before querying.** |
-| `db` | Show connection info for the active database |
-| `tables` | List tables (optional substring filter) |
-| `fields` / `fld` | List columns for a table |
-| `ddl` | Show `CREATE TABLE` statement |
-| `idx` | Show indexes on a table |
-| `views` | List all views |
-| `indexes` | List all indexes in the database |
-| `functions` | List stored functions |
-| `procedures` | List stored procedures |
-| `running_queries` | Show currently executing queries |
-| `sessions` | Show all active sessions |
-| `table_locks` | Show tables held under a lock |
-| `query` | Execute any SQL and return results |
+| Tool | Parameters | Description |
+|---|---|---|
+| `help` | | List all available tools with descriptions |
+| `databases` | `[dbtype]` | List WaMCP-enabled databases, optionally filtered by type (mysql, postgresql, mssql, etc.) |
+| `setdb` | `{dbname}` | Set the active database for this session |
+| `getdb` | | Show connection info for the active database |
+| `getuser` | | Show info about the authenticated user |
+| `tables` | `[filter]` | List tables, optionally filtered by name substring |
+| `fields` | `{tablename} [filter]` | List columns for a table, optionally filtered by name substring |
+| `ddl` | `{tablename}` | Show the `CREATE TABLE` statement for a table |
+| `indexes` | `{tablename} [filter]` | Show indexes on a table, optionally filtered by column name |
+| `query` | `{sql}` | Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) |
 
-All tools except `databases` accept an optional `db_id` argument to target a specific database per-call.
+All tools except `databases`, `setdb`, `help`, and `getuser` accept an optional `db_id` argument to target a specific database per-call.
 
 ### Database Targeting
 
@@ -45,27 +41,28 @@ User database preference persists across sessions — selecting a database once 
 
 All databases in your WaSQL server config are available to WaMCP by default. To **exclude** a database, set `wamcp=false` in its config block:
 
-```ini
-[internal_db]
-dbtype      = mysqli
-host        = localhost
-dbname      = internal_db
-username    = myuser
-password    = mypassword
-wamcp       = false             ; hides this database from WaMCP
+```xml
+<database
+    name="internal_db"
+    dbtype="mysqli"
+    dbhost="localhost"
+    dbname="internal_db"
+    dbuser="myuser"
+    dbpass="mypassword"
+    wamcp="false" />
 ```
 
 You can also set `wamcp` to a friendly display name — that name will appear in the `databases` tool output:
 
-```ini
-[mydb]
-dbtype      = mysqli
-host        = localhost
-dbname      = mydb
-username    = myuser
-password    = mypassword
-wamcp       = My Database       ; optional display name
-displayname = My Database
+```xml
+<database
+    name="mydb"
+    dbtype="mysqli"
+    dbhost="localhost"
+    dbname="mydb"
+    dbuser="myuser"
+    dbpass="mypassword"
+    wamcp="My Database" />
 ```
 
 Access also requires the user to be a **WaSQL admin** (`isAdmin()`). Standard user accounts cannot connect.
@@ -134,12 +131,7 @@ Refer to your editor's MCP documentation for the exact config file location.
 
 ## Setup: ChatGPT
 
-ChatGPT does not natively support the MCP protocol. Options:
-
-- **Custom GPT Actions** — Write an OpenAPI schema that wraps WaMCP's HTTP endpoint as a REST API. This requires a publicly accessible WaSQL instance and a thin adapter layer translating OpenAPI calls to MCP JSON-RPC.
-- **MCP bridge** — Tools like [mcp-proxy](https://github.com/sparfenyuk/mcp-proxy) can expose an MCP server over SSE/stdio for clients that don't speak HTTP MCP natively.
-
-Native MCP support in ChatGPT is expected but not yet available as of mid-2026.
+Add WaMCP as a remote MCP server in ChatGPT Settings → Connectors → Add MCP Server. Use the same HTTP endpoint and pass the `WaSQL_auth` token as a custom header.
 
 ---
 
@@ -159,6 +151,7 @@ The server responds to `initialize`, `tools/list`, and `tools/call` in standard 
 ## Security Notes
 
 - The `WaSQL_auth` token authenticates as a specific WaSQL user — that user's permissions apply to all queries.
-- Only databases with the `wamcp` attribute set are ever exposed; the tool actively refuses `SHOW DATABASES` and similar broad queries.
+- All databases are exposed by default; set `wamcp="false"` on any database you want to hide from WaMCP.
+- The `query` tool only permits read-only statements (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) — write operations are rejected.
 - For production, run WaSQL behind HTTPS so the auth token is not transmitted in plaintext.
 - Each user has their own token. Revoke access by changing the user's password or disabling their account in the WaSQL admin.
