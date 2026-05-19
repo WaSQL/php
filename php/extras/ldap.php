@@ -1192,7 +1192,7 @@ function ldapSchema($attributes=array()){
         		$schema_info[$attribute][$k]=$vals[0];
         	}
         	//omsyntax
-        	switch((integer)$schema_info[$attribute]['omsyntax']){
+        	switch((int)$schema_info[$attribute]['omsyntax']){
         		case 1:$schema_info[$attribute]['omsyntax_name']='Boolean';break;
         		case 2:$schema_info[$attribute]['omsyntax_name']='Integer';break;
         		case 3:$schema_info[$attribute]['omsyntax_name']='Large Integer';break;
