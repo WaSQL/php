@@ -13390,6 +13390,113 @@ ENDOFERR;
 		return $err;
 	}
 }
+//---------- begin function commonCastAs
+/**
+ * Cast $val to the specified type, accepting both canonical and non-canonical names.
+ *
+ * Supported types (case-insensitive):
+ *   int      : int, integer, long, smallint, tinyint, mediumint
+ *   bigint   : bigint, int8, long long  (returns float; precise up to 2^53)
+ *   bool     : bool, boolean, bit
+ *   float    : float, double, real, decimal, numeric, number
+ *   string   : string, varchar, char, text, binary, nvarchar, nchar, ntext
+ *   array    : array
+ *   object   : object
+ *   null     : null, unset
+ *   json     : json  (returns JSON-encoded string of $val)
+ *
+ * @param mixed  $val   Value to cast
+ * @param string $type  Target type name
+ * @param bool   $strip If true, strips non-numeric chars from strings before numeric casts
+ * @return mixed
+ * @usage $val = commonCastAs($num, 'bigint');
+ */
+function commonCastAs(mixed $val, string $type, bool $strip = false): mixed {
+    $t = strtolower(trim($type));
+    switch ($t) {
+        case 'int':
+        case 'integer':
+        case 'long':
+        case 'smallint':
+        case 'tinyint':
+        case 'mediumint':
+            if ($strip && is_string($val)) {
+                $neg = preg_match('/^\s*-/', $val) ? '-' : '';
+                $val = $neg . preg_replace('/\D/', '', $val);
+                if ($val === '' || $val === '-') { return 0; }
+            }
+            return (int) $val;
+
+        case 'bigint':
+        case 'int8':
+        case 'long long':
+            if ($strip && is_string($val)) {
+                $neg = preg_match('/^\s*-/', $val) ? '-' : '';
+                $val = $neg . preg_replace('/\D/', '', $val);
+                if ($val === '' || $val === '-') { return 0.0; }
+            }
+            return (float) $val;
+
+        case 'bool':
+        case 'boolean':
+        case 'bit':
+            return (bool) $val;
+
+        case 'float':
+        case 'double':
+        case 'real':
+        case 'decimal':
+        case 'numeric':
+        case 'number':
+            if ($strip && is_string($val)) {
+                $neg = preg_match('/^\s*-/', $val) ? '-' : '';
+                $val = preg_replace('/[^\d.]/', '', $val);
+                // Collapse multiple dots: keep only the first
+                if (substr_count($val, '.') > 1) {
+                    $parts = explode('.', $val);
+                    $val = array_shift($parts) . '.' . implode('', $parts);
+                }
+                $val = $neg . $val;
+                if ($val === '' || $val === '-' || $val === '.' || $val === '-.') { return 0.0; }
+            }
+            return (float) $val;
+
+        case 'string':
+        case 'varchar':
+        case 'char':
+        case 'text':
+        case 'binary':
+        case 'nvarchar':
+        case 'nchar':
+        case 'ntext':
+            return (string) $val;
+
+        case 'array':
+            return (array) $val;
+
+        case 'object':
+            return (object) $val;
+
+        case 'null':
+        case 'unset':
+            return null;
+
+        case 'json':
+            $result = json_encode($val);
+            if ($result === false) {
+                trigger_error(
+                    "commonCastAs: json_encode failed: " . json_last_error_msg(),
+                    E_USER_WARNING
+                );
+                return null;
+            }
+            return $result;
+
+        default:
+            trigger_error("commonCastAs: unknown type '{$type}'", E_USER_WARNING);
+            return $val;
+    }
+}
 //---------- begin function commonCertInfo
 /**
 * @describe queries a domains SSL or TLS cert and returns info like:
