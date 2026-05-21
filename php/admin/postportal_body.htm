@@ -158,8 +158,14 @@
 	<div id="response_headers_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
 		<?=postportalHeadersList($request_data['response']['headers']);?>
 	</div>
-	<div id="response_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
+	<div id="response_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;position:relative;">
+		<view:copy_response_button>
+		<span class="icon-copy w_pointer" style="position:absolute;top:8px;right:12px;font-size:1.2em;z-index:1;" title="Copy to clipboard" onclick="wacss.copy2Clipboard(document.getElementById('response_body_content').innerText);return false;"></span>
+		</view:copy_response_button>
+		<?=renderViewIf(strlen($request_data['response']['body']),'copy_response_button',$request_data,'request_data');?>
+		<div id="response_body_content">
 		<?=postportalFormatResponse($request_data['response']['body'],$request_data['response']['headers']);?>
+		</div>
 	</div>
 
 </div>
