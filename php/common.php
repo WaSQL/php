@@ -8401,7 +8401,7 @@ function renderView($view, $params=array(), $opts=array()){
 			exit;
 		break;
 		case 'md':
-		case 'markdown';
+		case 'markdown':
 			//convert markdown
 			loadExtras('markdown');
 			$rtn=markdown2html($rtn);
