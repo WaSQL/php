@@ -28,6 +28,18 @@ set WASQL_GROOVY_PORT=8080
 groovy -cp "groovy/lib/*" groovy/server.groovy
 ```
 
+## Authentication
+
+Every request must include a secret token in the `X-WaSQL-Token` header. Requests without a valid token receive `401 Unauthorized`.
+
+The token is generated at startup (a random UUID) and written to `groovy/server.token`. PHP reads this file and sends the token with each request. To use a fixed token instead, set the `WASQL_GROOVY_TOKEN` environment variable before starting the server.
+
+```
+X-WaSQL-Token: 550e8400-e29b-41d4-a716-446655440000
+```
+
+`server.token` is listed in `.gitignore` and deleted when the server shuts down.
+
 ## Endpoints
 
 All endpoints listen on `127.0.0.1:7070` (localhost only).
@@ -240,21 +252,25 @@ The server writes its process ID to `groovy/server.pid` on startup and deletes i
 ## PowerShell Examples
 
 ```powershell
+# Read token from file
+$token = (Get-Content 'groovy\server.token').Trim()
+$headers = @{ 'X-WaSQL-Token' = $token }
+
 # Health check
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/ping'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/ping' -Headers $headers
 
 # Query
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/query/mydb' -Method Post -ContentType 'text/plain' -Body 'SELECT * FROM users LIMIT 5'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/query/mydb' -Method Post -Headers $headers -ContentType 'text/plain' -Body 'SELECT * FROM users LIMIT 5'
 
 # Execute
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/execute/mydb' -Method Post -ContentType 'text/plain' -Body "UPDATE users SET active = 1 WHERE id = 5"
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/execute/mydb' -Method Post -Headers $headers -ContentType 'text/plain' -Body "UPDATE users SET active = 1 WHERE id = 5"
 
 # Eval
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/eval' -Method Post -ContentType 'text/plain' -Body 'return 1 + 1'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/eval' -Method Post -Headers $headers -ContentType 'text/plain' -Body 'return 1 + 1'
 
 # Reload modules
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/reload'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/reload' -Headers $headers
 
 # Stop server
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/exit'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/exit' -Headers $headers
 ```

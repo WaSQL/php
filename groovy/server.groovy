@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicLong
 @Field long   IDLE_TIMEOUT_MS = 10L * 60 * 1000
 @Field String SCRIPT_DIR      = new File(getClass().protectionDomain.codeSource.location.path).parent
 @Field File   PID_FILE        = new File(SCRIPT_DIR, 'server.pid')
+@Field File   TOKEN_FILE      = new File(SCRIPT_DIR, 'server.token')
+@Field String TOKEN           = System.getenv('WASQL_GROOVY_TOKEN') ?: UUID.randomUUID().toString()
 @Field String PID             = ManagementFactory.getRuntimeMXBean().getName().split('@')[0]
 @Field long   startedAt       = System.currentTimeMillis()
 @Field def    lastActivity    = new AtomicLong(System.currentTimeMillis())
@@ -152,9 +154,23 @@ String wrapErr(String msg) {
     return JsonOutput.toJson([success: false, error: msg])
 }
 
+// 400 for caller errors (bad SQL, missing params), 500 for server/driver errors.
+int errorCode(Exception e) {
+    (e instanceof IllegalArgumentException
+  || e instanceof java.sql.SQLSyntaxErrorException
+  || e instanceof UnsupportedOperationException) ? 400 : 500
+}
+
+boolean checkAuth(HttpExchange ex) {
+    if (ex.requestHeaders.getFirst('X-WaSQL-Token') == TOKEN) return true
+    respond(ex, 401, wrapErr('Unauthorized'))
+    return false
+}
+
 void doShutdown(String reason) {
     log("Shutting down: ${reason}")
     PID_FILE.delete()
+    TOKEN_FILE.delete()
     serverRef?.stop(2)
     schedulerRef?.shutdownNow()
     System.exit(0)
@@ -185,6 +201,16 @@ try { loadModule('db');     log("Pre-loaded 'db'")     } catch (Exception e) { l
 
 log("Ready: ${modules.size()} module(s) — ${modules.keySet().sort().join(', ')}")
 
+// Suppress groovy.sql WARNING logs — errors are returned as JSON; stack traces are noise.
+// Must run AFTER modules are loaded so groovy.sql.Sql's static LOG field holds a strong
+// reference to the logger, preventing it from being GC'd and recreated with default settings.
+['groovy.sql', 'groovy.sql.Sql'].each { name ->
+    java.util.logging.Logger.getLogger(name).with {
+        level             = java.util.logging.Level.OFF
+        useParentHandlers = false
+    }
+}
+
 // ── HTTP server ────────────────────────────────────────────────────────────────
 
 def server    = HttpServer.create(new InetSocketAddress('127.0.0.1', PORT), 50)
@@ -207,6 +233,7 @@ schedulerRef = scheduler
 
 // GET /ping
 server.createContext('/ping') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         respond(ex, 200, JsonOutput.toJson([
@@ -223,6 +250,7 @@ server.createContext('/ping') { HttpExchange ex ->
 
 // POST /query/{dbname}  — body is raw SQL, returns queryResults as JSON
 server.createContext('/query/') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         def dbname = pathParam(ex, '/query/')
@@ -234,12 +262,13 @@ server.createContext('/query/') { HttpExchange ex ->
         respond(ex, 200, wrapOk(result))
     } catch (Exception e) {
         log("/query error: ${e.message}")
-        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
 
 // POST /execute/{dbname}  — body is raw SQL, returns executeSQL as JSON
 server.createContext('/execute/') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         def dbname = pathParam(ex, '/execute/')
@@ -251,12 +280,13 @@ server.createContext('/execute/') { HttpExchange ex ->
         respond(ex, 200, wrapOk(result))
     } catch (Exception e) {
         log("/execute error: ${e.message}")
-        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
 
 // POST /executeps/{dbname}  — body is JSON { "query": "...", "args": {} }
 server.createContext('/executeps/') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         def dbname = pathParam(ex, '/executeps/')
@@ -274,7 +304,7 @@ server.createContext('/executeps/') { HttpExchange ex ->
         respond(ex, 200, wrapOk(result))
     } catch (Exception e) {
         log("/executeps error: ${e.message}")
-        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
 
@@ -283,6 +313,7 @@ server.createContext('/executeps/') { HttpExchange ex ->
 // "output" = stdout captured via binding 'out' (PrintWriter per request — fully concurrent).
 // "result" = return value of the script.
 server.createContext('/eval') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         def script = ex.requestBody.getText('UTF-8').trim()
@@ -323,12 +354,13 @@ server.createContext('/eval') { HttpExchange ex ->
         }
     } catch (Exception e) {
         log("/eval error: ${e.message}")
-        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
 
 // GET/POST /reload  — flush module cache; next request recompiles from disk
 server.createContext('/reload') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         def cleared = modules.keySet().sort()
@@ -344,6 +376,7 @@ server.createContext('/reload') { HttpExchange ex ->
 // POST /shutdown  (or GET — accepts any method)
 // POST /exit      — alias
 def shutdownHandler = { HttpExchange ex ->
+    if (!checkAuth(ex)) return
     try { respond(ex, 200, JsonOutput.toJson([status: 'shutting down', pid: PID])) } catch (Exception ignored) {}
     Thread.start { Thread.sleep(200); doShutdown("HTTP ${ex.requestURI.path} request") }
 }
@@ -351,10 +384,12 @@ server.createContext('/shutdown', shutdownHandler)
 server.createContext('/exit',     shutdownHandler)
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-Runtime.runtime.addShutdownHook(new Thread({ PID_FILE.delete() }))
-PID_FILE.text = "${PID}\n"
+Runtime.runtime.addShutdownHook(new Thread({ PID_FILE.delete(); TOKEN_FILE.delete() }))
+PID_FILE.text   = "${PID}\n"
+TOKEN_FILE.text = "${TOKEN}\n"
 server.start()
 log("Listening on 127.0.0.1:${PORT}  PID ${PID}")
+log("Token file: ${TOKEN_FILE.path}")
 log("Auto-shutdown after ${IDLE_TIMEOUT_MS / 60000 as long} min idle")
 
 // ── Idle watchdog ─────────────────────────────────────────────────────────────

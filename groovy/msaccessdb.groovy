@@ -48,9 +48,7 @@ def connect(Map params) {
 		def sql = Sql.newInstance(url, null, null, driver)
 		return sql
 	} catch (Exception err) {
-		System.err.println("MS Access Connection Error: ${err.message}")
-		err.printStackTrace()
-		return null
+		throw err
 	}
 }
 
@@ -67,23 +65,14 @@ def executeSQL(String query, Map params = [:]) {
 	try {
 		// Connect
 		sql = connect(params)
-		if (sql == null) {
-			return "Failed to connect to MS Access database"
-		}
 
 		// Execute the query
 		sql.execute(query)
 		sql.commit()
 		return true
 
-	} catch (SQLException err) {
-		System.err.println("SQL Error: ${err.message}")
-		err.printStackTrace()
-		return "SQL Error: ${err.message}"
 	} catch (Exception err) {
-		System.err.println("Error: ${err.message}")
-		err.printStackTrace()
-		return "Error: ${err.message}"
+		throw err
 	} finally {
 		if (sql != null) {
 			sql.close()
@@ -106,23 +95,14 @@ def executePS(String query, List args, Map params = [:]) {
 	try {
 		// Connect
 		sql = connect(params)
-		if (sql == null) {
-			return "Failed to connect to MS Access database"
-		}
 
 		// Execute the prepared statement
 		sql.executeUpdate(query, args)
 		sql.commit()
 		return true
 
-	} catch (SQLException err) {
-		System.err.println("SQL Error: ${err.message}")
-		err.printStackTrace()
-		return "SQL Error: ${err.message}"
 	} catch (Exception err) {
-		System.err.println("Error: ${err.message}")
-		err.printStackTrace()
-		return "Error: ${err.message}"
+		throw err
 	} finally {
 		if (sql != null) {
 			sql.close()
@@ -156,9 +136,6 @@ def queryResults(String query, Map params = [:]) {
 	try {
 		// Connect
 		sql = connect(params)
-		if (sql == null) {
-			return "Failed to connect to MS Access database"
-		}
 
 		// Check if we should write to CSV file
 		if (params.containsKey('filename')) {
@@ -317,14 +294,8 @@ def queryResults(String query, Map params = [:]) {
 			}
 		}
 
-	} catch (SQLException err) {
-		System.err.println("SQL Error: ${err.message}")
-		err.printStackTrace()
-		return "SQL Error: ${err.message}"
 	} catch (Exception err) {
-		System.err.println("Error: ${err.message}")
-		err.printStackTrace()
-		return "Error: ${err.message}"
+		throw err
 	} finally {
 		if (sql != null) {
 			sql.close()
