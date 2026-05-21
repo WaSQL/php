@@ -93,6 +93,7 @@ import java.util.concurrent.atomic.AtomicLong
     mscsv     : 'mscsvdb',
     msexcel   : 'msexceldb',
     firebird  : 'firebirddb',
+    duckdb    : 'duckdb',
 ]
 
 // ── Methods ───────────────────────────────────────────────────────────────────
