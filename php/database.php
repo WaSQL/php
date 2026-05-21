@@ -142,6 +142,21 @@ function dbTuner($db='',$pargs=array()){
 	}
 	return implode(PHP_EOL,$lines);
 }
+//counts the number of items in a where clause (where in)
+function dbCountWhereIn(string $sql): int {
+	if (!preg_match_all('/\bIN\s*\(([^)]*)\)/is', $sql, $matches)) {
+		return 0;
+	}
+		$total = 0;
+	foreach ($matches[1] as $group) {
+		$items = array_filter(
+			array_map('trim', explode(',', $group)),
+			fn($item) => $item !== ''
+		);
+		$total += count($items);
+	}
+	return $total;
+}
 //---------- begin function dbISQL
 /**
 * @describe calls isql command line to execute query and returns results
