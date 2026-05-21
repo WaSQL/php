@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong
 // ── Shared state (@Field = Script instance field, visible from methods + threads) ──
 
 @Field int    PORT            = (System.getenv('WASQL_GROOVY_PORT') ?: '7070').toInteger()
-@Field long   IDLE_TIMEOUT_MS = 10L * 60 * 1000
+@Field long   IDLE_TIMEOUT_MS = { def m = System.getenv('WASQL_GROOVY_IDLE_MINUTES'); m ? m.toLong() * 60_000L : 10L * 60_000L }()
 @Field String SCRIPT_DIR      = new File(getClass().protectionDomain.codeSource.location.path).parent
 @Field File   PID_FILE        = new File(SCRIPT_DIR, 'server.pid')
 @Field File   TOKEN_FILE      = new File(SCRIPT_DIR, 'server.token')
@@ -391,15 +391,17 @@ TOKEN_FILE.text = "${TOKEN}\n"
 server.start()
 log("Listening on 127.0.0.1:${PORT}  PID ${PID}")
 log("Token file: ${TOKEN_FILE.path}")
-log("Auto-shutdown after ${IDLE_TIMEOUT_MS / 60000 as long} min idle")
+log("Auto-shutdown: ${IDLE_TIMEOUT_MS > 0 ? "${IDLE_TIMEOUT_MS / 60000 as long} min idle" : 'disabled'}")
 
 // ── Idle watchdog ─────────────────────────────────────────────────────────────
 scheduler.scheduleAtFixedRate({
     try {
-        long idleMs = System.currentTimeMillis() - lastActivity.get()
-        if (idleMs >= IDLE_TIMEOUT_MS) {
-            log("Idle for ${idleMs / 60000 as long} min — shutting down")
-            doShutdown('idle timeout')
+        if (IDLE_TIMEOUT_MS > 0) {
+            long idleMs = System.currentTimeMillis() - lastActivity.get()
+            if (idleMs >= IDLE_TIMEOUT_MS) {
+                log("Idle for ${idleMs / 60000 as long} min — shutting down")
+                doShutdown('idle timeout')
+            }
         }
     } catch (Exception e) {
         log("Watchdog error: ${e.message}")
