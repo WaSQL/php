@@ -87,7 +87,7 @@ function cronDetailsListExtra($recs){
 		$recs[$i]['time']=date('h:i a',$header['timestamp']);
 		if(isset($footer['timestamp'])){
 			$elapsed=$footer['timestamp']-$header['timestamp'];	
-			$recs[$i]['run']=(integer)$elapsed;
+			$recs[$i]['run']=(int)$elapsed;
 		}
 		else{
 			$recs[$i]['run']=0;
@@ -355,10 +355,10 @@ function cronListExtra($recs){
 	//echo printValue($recs);exit;
 	foreach($recs as $i=>$rec){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
-		$pid=$recs[$i]['cron_pid_ori']=(integer)$recs[$i]['cron_pid'];
+		$pid=$recs[$i]['cron_pid_ori']=(int)$recs[$i]['cron_pid'];
 		$name=$rec['name'];
 		//if cron_pid and not running something is wrong.
-		if($pid != 0 && (integer)$rec['running']==0){
+		if($pid != 0 && (int)$rec['running']==0){
 			$recs[$i]['cron_pid']='<span class="w_danger">'.$rec['cron_pid'].'</span>';
 		}
 		//pid lookup

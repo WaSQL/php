@@ -269,7 +269,7 @@ function cronLogRefreshTimer(){
 			<view:killpid>
 			<a href="#" style="align-self:center;margin-left:10px;" class="w_link" data-setprocessing="cron_processing" data-_menu="cron" data-nav="/php/admin.php" data-div="wacss_modal_content" data-func="kill" data-id="<?=$cron['_id'];?>" data-title="Edit Cron" onclick="return wacss.nav(this);" title="Kill process ID <?=$cron['cron_pid'];?>"><span class="icon-cancel-squared w_danger"></span></a>
 			</view:killpid>
-			<?=renderViewIf((integer)$cron['cron_pid'] > 0,'killpid',$cron,'cron');?>
+			<?=renderViewIf((int)$cron['cron_pid'] > 0,'killpid',$cron,'cron');?>
 			<div id="cron_processing" style="align-self:center;margin-left:5px;font-size:12px;display:inline-block;width:50px;height:12px;overflow:hidden;"></div>
 		</td>
 	</tr>

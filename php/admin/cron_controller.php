@@ -8,7 +8,7 @@ if(!isset($CONFIG['admin_form_url'])){
 }
 switch(strtolower($_REQUEST['func'])){
 	case 'run':
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		$ok=editDBRecordById('_cron',$id,array('run_now'=>1));
 		$cron=getDBRecordById('_cron',$id);
 		setView('details',1);
@@ -23,12 +23,12 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'edit':
 		//echo "edit";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		setView('addedit',1);
 		return;
 	break;
 	case 'kill':
-		$pid=(integer)$_REQUEST['id'];
+		$pid=(int)$_REQUEST['id'];
 		$tempdir=getWasqlPath('php/temp');
 		if(is_file("{$tempdir}/wasql.killpid.log")){
 			unlink("{$tempdir}/wasql.killpid.log");
@@ -58,7 +58,7 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'pid':
 		loadExtras('system');
-		$pid=(integer)$_REQUEST['id'];
+		$pid=(int)$_REQUEST['id'];
 		$recs=systemGetProcessList();
 		foreach($recs as $rec){
 			if($rec['pid']==$pid){
@@ -89,21 +89,21 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'details':
 		//echo "details";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		$cron=getDBRecordById('_cron',$id);
 		setView('details',1);
 		return;
 	break;
 	case 'details_log':
 		//echo "details";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		$field='log';
 		setView('details_log',1);
 		return;
 	break;
 	case 'details_body':
 		//echo "details";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		$log=getDBRecord(array(
 			'-table'=>'_cron_log',
 			'_id'=>$id,
@@ -137,20 +137,20 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'details_body_body':
 		//echo "details";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		$field='body';
 		setView('details_body_body',1);
 		return;
 	break;
 	case 'details_body_params':
 		//echo "details";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		$field='body';
 		setView('details_body_params',1);
 		return;
 	break;
 	case 'set_field_value':
-		$cron_id=(integer)$_REQUEST['cron_id'];
+		$cron_id=(int)$_REQUEST['cron_id'];
 		$fld=$_REQUEST['fld'];
 		$val=$_REQUEST['val'];
 		$ok=editDBRecordById('_cron',$cron_id,array($fld=>$val));
@@ -171,9 +171,9 @@ switch(strtolower($_REQUEST['func'])){
 	break;
 	case 'cron_result':
 		//echo "cron_result";exit;
-		$id=(integer)$_REQUEST['id'];
+		$id=(int)$_REQUEST['id'];
 		if($id==0){
-			$id=(integer)$_REQUEST['cron_id'];
+			$id=(int)$_REQUEST['cron_id'];
 			$path=getWaSQLPath('php/temp');
 			$commonCronLogFile="{$path}/{$CONFIG['name']}_cronlog_{$id}.txt";
 			$log=array('run_error'=>'');
