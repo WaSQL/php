@@ -134,8 +134,7 @@ void respond(HttpExchange ex, int code, String json) {
     ex.responseHeaders.set('Content-Type', 'application/json; charset=UTF-8')
     ex.sendResponseHeaders(code, b.length)
     def os = ex.responseBody
-    os.write(b)
-    os.close()
+    try { os.write(b) } finally { os.close() }
 }
 
 // If the driver already returned a JSON string embed it raw; otherwise serialize.
@@ -193,9 +192,10 @@ def scheduler = Executors.newSingleThreadScheduledExecutor()
 
 // Pin the script classloader on every handler thread so ServiceLoader (FastStringService etc.)
 // finds Groovy services regardless of which child GroovyClassLoader module loading left behind.
-def scriptCL = getClass().classLoader
+def scriptCL   = getClass().classLoader
+def threadCount = new java.util.concurrent.atomic.AtomicInteger(0)
 server.setExecutor(Executors.newCachedThreadPool({ Runnable r ->
-    def t = new Thread(r)
+    def t = new Thread(r, "wasql-handler-${threadCount.incrementAndGet()}")
     t.contextClassLoader = scriptCL
     return t
 } as java.util.concurrent.ThreadFactory))
@@ -280,13 +280,16 @@ server.createContext('/executeps/') { HttpExchange ex ->
 
 // POST /eval  — body is raw Groovy script
 // Runs arbitrary Groovy with db, common, config modules in binding.
-// "output" = stdout, "result" = return value of the script.
+// "output" = stdout captured via binding 'out' (PrintWriter per request — fully concurrent).
+// "result" = return value of the script.
 server.createContext('/eval') { HttpExchange ex ->
     lastActivity.set(System.currentTimeMillis())
-    def origOut = System.out
     try {
         def script = ex.requestBody.getText('UTF-8').trim()
         if (!script) throw new IllegalArgumentException("Request body must contain a Groovy script")
+
+        def baos    = new ByteArrayOutputStream()
+        def capture = new PrintWriter(new OutputStreamWriter(baos, 'UTF-8'), true)
 
         def binding = new Binding()
         ['db', 'common', 'config'].each { name ->
@@ -295,22 +298,16 @@ server.createContext('/eval') { HttpExchange ex ->
         }
         binding.setVariable('DATABASE',   DATABASE)
         binding.setVariable('SCRIPT_DIR', SCRIPT_DIR)
+        binding.setVariable('out',        capture)  // println routes here, not System.out
 
-        def baos    = new ByteArrayOutputStream()
-        def capture = new PrintStream(baos, true, 'UTF-8')
         def result
         def evalErr = null
-
-        synchronized (this) {
-            System.setOut(capture)
-            try {
-                result = new GroovyShell(getClass().classLoader, binding).evaluate(script)
-            } catch (Exception e) {
-                evalErr = e
-            } finally {
-                System.setOut(origOut)
-                capture.flush()
-            }
+        try {
+            result = new GroovyShell(getClass().classLoader, binding).evaluate(script)
+        } catch (Exception e) {
+            evalErr = e
+        } finally {
+            capture.flush()
         }
 
         def output = baos.toString('UTF-8')
@@ -320,12 +317,11 @@ server.createContext('/eval') { HttpExchange ex ->
             respond(ex, 500, JsonOutput.toJson([success: false, error: evalErr.message, output: output]))
         } else {
             def resultJson
-            try   { resultJson = JsonOutput.toJson(result) }
-            catch (Exception ignored) { resultJson = JsonOutput.toJson(result?.toString()) }
+            try   { resultJson = JSON.toJson(result) }
+            catch (Exception ignored) { resultJson = JSON.toJson(result?.toString()) }
             respond(ex, 200, "{\"success\":true,\"output\":${JsonOutput.toJson(output)},\"result\":${resultJson}}")
         }
     } catch (Exception e) {
-        System.setOut(origOut)
         log("/eval error: ${e.message}")
         try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
     }
@@ -334,10 +330,15 @@ server.createContext('/eval') { HttpExchange ex ->
 // GET/POST /reload  — flush module cache; next request recompiles from disk
 server.createContext('/reload') { HttpExchange ex ->
     lastActivity.set(System.currentTimeMillis())
-    def cleared = modules.keySet().sort()
-    modules.clear()
-    log("Module cache cleared: ${cleared.join(', ') ?: '(none)'}")
-    respond(ex, 200, JsonOutput.toJson([status: 'reloaded', cleared: cleared]))
+    try {
+        def cleared = modules.keySet().sort()
+        modules.clear()
+        log("Module cache cleared: ${cleared.join(', ') ?: '(none)'}")
+        respond(ex, 200, JsonOutput.toJson([status: 'reloaded', cleared: cleared]))
+    } catch (Exception e) {
+        log("/reload error: ${e.message}")
+        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+    }
 }
 
 // POST /shutdown  (or GET — accepts any method)
@@ -358,9 +359,13 @@ log("Auto-shutdown after ${IDLE_TIMEOUT_MS / 60000 as long} min idle")
 
 // ── Idle watchdog ─────────────────────────────────────────────────────────────
 scheduler.scheduleAtFixedRate({
-    long idleMs = System.currentTimeMillis() - lastActivity.get()
-    if (idleMs >= IDLE_TIMEOUT_MS) {
-        log("Idle for ${idleMs / 60000 as long} min — shutting down")
-        doShutdown('idle timeout')
+    try {
+        long idleMs = System.currentTimeMillis() - lastActivity.get()
+        if (idleMs >= IDLE_TIMEOUT_MS) {
+            log("Idle for ${idleMs / 60000 as long} min — shutting down")
+            doShutdown('idle timeout')
+        }
+    } catch (Exception e) {
+        log("Watchdog error: ${e.message}")
     }
 }, 60, 60, TimeUnit.SECONDS)
