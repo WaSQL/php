@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* 
 	http://php.net/manual/en/oci8.configuration.php
 	https://www.oracle.com/database/technologies/xe-downloads.html
@@ -1744,7 +1744,7 @@ function oracleGetDBCount($params=array()){
 	 	$recs=oracleQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
-	 		return (integer)$recs[0]['cnt'];
+	 		return (int)$recs[0]['cnt'];
 	 	}
 	}
 	$recs=oracleQueryResults($query);

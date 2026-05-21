@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
 	
@@ -321,24 +321,24 @@ switch(strtolower($table)){
     $offset=0;
     $limit=0;
     if(preg_match('/([\s\r\n]+)limit([\s\r\n]+)(.+)$/is',$query,$m)){
-    	$limit=(integer)trim($m[3]);
+    	$limit=(int)trim($m[3]);
     	$query=preg_replace('/([\s\r\n]+)limit([\s\r\n]+)(.+)$/is','',$query);
     }
     if(preg_match('/([\s\r\n]+)start([\s\r\n]+)(.+)$/is',$query,$m)){
-    	$offset=(integer)trim($m[3]);
+    	$offset=(int)trim($m[3]);
     	$query=preg_replace('/([\s\r\n]+)start([\s\r\n]+)(.+)$/is','',$query);
     }
     $poffset=0;
     $plimit=5000;
     if(isset($CONFIG['gigya_limit'])){
-    	$plimit=(integer)$CONFIG['gigya_limit'];
+    	$plimit=(int)$CONFIG['gigya_limit'];
     }
     //max plimit is 10,000 per API
     if($plimit > 10000){$plimit=10000;}
     //set a maxloops as a safety precaution - this will limit the total number of records to 50M rows
     $maxloops=5000;
     if(isset($CONFIG['gigya_maxloops'])){
-    	$maxloops=(integer)$CONFIG['gigya_maxloops'];
+    	$maxloops=(int)$CONFIG['gigya_maxloops'];
     }
     if($limit > 0 && $limit < $plimit){
     	$plimit=$limit;

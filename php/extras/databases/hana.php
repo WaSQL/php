@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
 	HANA System Tables
@@ -39,8 +39,8 @@ function hanaAddDBRecords($table='',$params=array()){
 	}
 	if(!isset($params['-chunk'])){$params['-chunk']=1000;}
 	//set chunk max to 50,000
-	if((integer)$params['-chunk'] > 50000){$params['-chunk']=50000;}
-	$params['-chunk']=(integer)$params['-chunk'];
+	if((int)$params['-chunk'] > 50000){$params['-chunk']=50000;}
+	$params['-chunk']=(int)$params['-chunk'];
 	$params['-table']=$table;
 	//require either -recs or -csv
 	if(!isset($params['-recs']) && !isset($params['-csv'])){
@@ -2169,7 +2169,7 @@ function hanaGetDBCount($params=array()){
 	 	$recs=hanaQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
-	 		return (integer)$recs[0]['cnt'];
+	 		return (int)$recs[0]['cnt'];
 	 	}
 	}
 	$recs=hanaQueryResults($query);

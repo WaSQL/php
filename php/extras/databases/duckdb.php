@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
 	duckdb ODBC Extension:
@@ -1557,7 +1557,7 @@ function duckdbGetDBCount($params=array()){
 	 		//echo "HERE".$query.printValue($recs);
 	 		if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
 	 			$parts=preg_split('/\ /',$recs[0]['stat'],2);
-	 			return (integer)$parts[0];
+	 			return (int)$parts[0];
 	 		}
 	 	}
 	}
@@ -1569,7 +1569,7 @@ function duckdbGetDBCount($params=array()){
 		debugValue("duckdbGetDBCount error: Invalid result set");
 		return 0;
 	}
-	return (integer)$recs[0]['cnt'];
+	return (int)$recs[0]['cnt'];
 }
 //---------- begin function duckdbListDBDatatypes ----
 /**
@@ -2402,7 +2402,7 @@ function duckdbGetDBRecordsCount($params=array()){
 		debugValue("duckdbGetDBRecordsCount error: Invalid result set");
 		return 0;
 	}
-	return (integer)$recs[0]['cnt'];
+	return (int)$recs[0]['cnt'];
 }
 function duckdbNamedQueryList(){
 	return array(

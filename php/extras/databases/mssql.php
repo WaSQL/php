@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	sqlsrv requires php 7.2 or greater.
 	in order to install sqlsrv you will need pecl and unixodbc 
@@ -13,7 +13,7 @@
 */
 //settings for old PHP versions that use mssql_connect
 global $CONFIG;
-if((integer)phpversion() < 7){
+if((int)phpversion() < 7){
 	ini_set('mssql.charset', 'UTF-8');
 	ini_set('mssql.max_persistent',5);
 	ini_set('mssql.secure_connection ',0);
@@ -1012,7 +1012,7 @@ function mssqlDBConnect($params=array()){
 		exit;
 	}
 	//php 7 and greater no longer use mssql_connect
-	if((integer)phpversion()>=7){
+	if((int)phpversion()>=7){
 		//$serverName = "serverName\sqlexpress"; //serverName\instanceName
 		//If values for the UID and PWD keys are not specified, the connection will be attempted using Windows Authentication.
 		if(!isset($params['-connect'])){
@@ -1257,7 +1257,7 @@ function mssqlGetDBCount($params=array()){
 	 	$query="SELECT schema_name,table_name,record_count as cnt FROM dba_tables where schema_name='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
 	 	$recs=mssqlQueryResults($query);
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
-	 		return (integer)$recs[0]['cnt'];
+	 		return (int)$recs[0]['cnt'];
 	 	}
 	}
 	$recs=mssqlQueryResults($query);
@@ -1727,7 +1727,7 @@ function mssqlQueryResults($query='',$params=array()){
 	);
 	$dbh_mssql=mssqlDBConnect($params);
 	//php 7 and greater no longer use mssql_connect
-	if((integer)phpversion()>=7){
+	if((int)phpversion()>=7){
 		if(!$dbh_mssql){
 			$errors=(array)sqlsrv_errors();
 			if(isset($errors[0]['message'])){
@@ -1868,7 +1868,7 @@ function mssqlEnumQueryResults($data,$params=array()){
 		$writefile=1;
 	}
 	//php 7 and greater no longer use mssql_connect
-	if((integer)phpversion()>=7){
+	if((int)phpversion()>=7){
 		while( $row = sqlsrv_fetch_array( $data, SQLSRV_FETCH_ASSOC) ) {
 			//check for mssqlStopProcess request
 			if(isset($mssqlStopProcess) && $mssqlStopProcess==1){
@@ -2007,7 +2007,7 @@ function mssqlExecuteSQL($query){
 	);
 	$dbh_mssql=mssqlDBConnect();
 	//php 7 and greater no longer use mssql_connect
-	if((integer)phpversion()>=7){
+	if((int)phpversion()>=7){
 		if(!$dbh_mssql){
 			$errors=(array)sqlsrv_errors();
 			if(isset($errors[0]['message'])){

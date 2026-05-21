@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	mscsv.php - a collection of Microsoft Text functions for use by WaSQL.
 	
@@ -230,7 +230,7 @@ function mscsvGetDBCount($params=array()){
 		));
 		return 0;
 	}
-	return (integer)$recs[0]['cnt'];
+	return (int)$recs[0]['cnt'];
 }
 
 //---------- begin function mscsvGetDBFields ----------

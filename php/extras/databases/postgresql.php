@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	postgresql.php - a collection of postgresqls functions for use by WaSQL.
 	
@@ -1720,7 +1720,7 @@ function postgresqlGetDBCount($params=array()){
 	 	$recs=postgresqlQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
 	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
-	 		return (integer)$recs[0]['cnt'];
+	 		return (int)$recs[0]['cnt'];
 	 	}
 	}
 	$recs=postgresqlQueryResults($query);
@@ -4372,7 +4372,7 @@ ENDOFSQL;
 			'details'=>"Log of long queries is deactivated.  It will be more difficult to optimize query performance. Setting log_min_duration_statement causes the duration of each completed statement to be logged if the statement ran for at least the specified amount of time. If this value is specified without units, it is taken as milliseconds. Setting this to zero prints all statement durations. Minus-one (the default) disables logging statement durations. For example, if you set it to 250ms then all SQL statements that run 250ms or longer will be logged. Enabling this parameter can be helpful in tracking down unoptimized queries in your applications."
 		);
 	}
-	elseif((integer)$postgres['log_min_duration_statement'] < 1000  ){
+	elseif((int)$postgres['log_min_duration_statement'] < 1000  ){
 		$recs[]=array(
 			'priority'=>'3-low',
 			'advice'=>'increase log_min_duration_statement to something > 1000 (ms)',

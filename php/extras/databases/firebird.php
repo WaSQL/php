@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
 	firebird Database functions
@@ -206,7 +206,7 @@ function firebirdAddDBRecordsProcess($recs,$params=array()){
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
 		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
-		if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
+		if((int)$v1>8 || ((int)$v1==8 && (int)$v2 > 0) || ((int)$v1==8 && (int)$v2==0 && (int)$v3 >=20)){
 			//firebird version 8 and newer
 			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
@@ -993,7 +993,7 @@ function firebirdGetDBCount($params=array()){
 	 	$query="select table_rows from information_schema.tables where table_schema='{$dbname}' and table_name='{$params['-table']}'";
 	 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
 	 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
-	 		return (integer)$recs[0]['table_rows'];
+	 		return (int)$recs[0]['table_rows'];
 	 	}
 	}
 	$recs=firebirdQueryResults($query);
@@ -1669,16 +1669,16 @@ function firebirdOptimizations($params=array()){
 	}
 	//aria
 	$recs=firebirdQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='Aria'");
-	$results['aria_index_length']=(integer)$recs[0]['val'];
+	$results['aria_index_length']=(int)$recs[0]['val'];
 	if(isset($results['aria_pagecache_read_requests'])){
-		$results['aria_keys_from_memory_pcnt']=(integer)(100 - (($results['aria_pagecache_reads']/$results['aria_pagecache_read_requests'])*100));
+		$results['aria_keys_from_memory_pcnt']=(int)(100 - (($results['aria_pagecache_reads']/$results['aria_pagecache_read_requests'])*100));
 	}
 	//innoDB
 	$results['innodb_buffer_pool_read_ratio']=$results['innodb_buffer_pool_reads'] * 100 / $results['innodb_buffer_pool_read_requests'];
 	$recs=firebirdQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val from information_schema.TABLES where ENGINE='InnoDB'");
-	$results['innodb_index_length']=(integer)$recs[0]['val'];
+	$results['innodb_index_length']=(int)$recs[0]['val'];
 	$recs=firebirdQueryResults("SELECT IFNULL(SUM(DATA_LENGTH),0) AS data_length from information_schema.TABLES where ENGINE='InnoDB'");
-	$results['innodb_data_length']=(integer)$recs[0]['val'];
+	$results['innodb_data_length']=(int)$recs[0]['val'];
 	if($results['innodb_index_length'] > 0){
 		$results['innodb_buffer_pool_free_pcnt']=$results['innodb_buffer_pool_pages_free']/$results['innodb_buffer_pool_pages_total'];
 	}
@@ -1686,7 +1686,7 @@ function firebirdOptimizations($params=array()){
 		$results['binlog_cache_size']=0;
 	}
 	if($results['max_heap_table_size'] < $results['tmp_table_size']){
-		$results['effective_tmp_table_size']=(integer)$results['max_heap_table_size'];
+		$results['effective_tmp_table_size']=(int)$results['max_heap_table_size'];
 	}
 	else{
 		$results['effective_tmp_table_size']=$results['tmp_table_size'];
@@ -1694,17 +1694,17 @@ function firebirdOptimizations($params=array()){
 	$results['per_thread_buffer_size']=$results['read_buffer_size']+$results['read_rnd_buffer_size']+$results['sort_buffer_size']+$results['thread_stack']+$results['net_buffer_length']+$results['join_buffer_size']+$results['binlog_cache_size'];
 	$results['per_thread_buffers']=$results['per_thread_buffer_size']*$results['max_connections'];
 	$results['per_thread_max_buffers']=$results['per_thread_buffer_size']*$results['max_used_connections'];
-	$results['innodb_buffer_pool_size']=(integer)$results['innodb_buffer_pool_size'];
-	$results['innodb_additional_mem_pool_size']=(integer)$results['innodb_additional_mem_pool_size'];
-	$results['innodb_log_buffer_size']=(integer)$results['innodb_log_buffer_size'];
-	$results['query_cache_size']=(integer)$results['query_cache_size'];
+	$results['innodb_buffer_pool_size']=(int)$results['innodb_buffer_pool_size'];
+	$results['innodb_additional_mem_pool_size']=(int)$results['innodb_additional_mem_pool_size'];
+	$results['innodb_log_buffer_size']=(int)$results['innodb_log_buffer_size'];
+	$results['query_cache_size']=(int)$results['query_cache_size'];
 	$results['global_buffer_size']=$results['tmp_table_size']+$results['innodb_buffer_pool_size']+$results['innodb_additional_mem_pool_size']+$results['innodb_log_buffer_size']+$results['key_buffer_size']+$results['query_cache_size']+$results['aria_pagecache_buffer_size'];
 	//max_memory
 	$results['max_memory']=$results['global_buffer_size']+$results['per_thread_max_buffers'];
 	//total_memory
 	$results['total_memory']=$results['global_buffer_size']+$results['per_thread_buffers'];
 	//key buffer size
-	if((integer)$results['key_reads']==0){
+	if((int)$results['key_reads']==0){
 		$results['key_cache_miss_rate']=0;
 		$results['key_buffer_free_pcnt']=$results['key_blocks_unused']*$results['key_cache_block_size']/$results['key_buffer_size']*100;
 		$results['key_buffer_used_pcnt']=100-$results['key_buffer_free_pcnt'];

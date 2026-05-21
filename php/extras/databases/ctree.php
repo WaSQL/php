@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	ctree.php - a collection of cTREE Database functions for use by WaSQL.
 	
@@ -762,7 +762,7 @@ function ctreeParseConnectParams($params=array()){
 				break;
 				case 'pool':
 				case 'dbpool':
-					$params['-pool']=(integer)$v;
+					$params['-pool']=(int)$v;
 				break;
 				default:
 					$params["-{$k}"]=$v;
@@ -964,7 +964,7 @@ function ctreeQueryResults($query='',$params=array()){
 	$allcounts=0;
 	$skip=0;
 	$top=10000;
-	if(isset($params['-batch_count'])){$top=(integer)$params['-batch_count'];}
+	if(isset($params['-batch_count'])){$top=(int)$params['-batch_count'];}
 	$ctreeQueryResultsTemp['-linecount']=0;
 	$ctreeQueryResultsTemp['-header']=0;
 	$ctreeQueryResultsTemp['-showsql']=1;
@@ -1071,7 +1071,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	if(!isset($params['-filename_writecount'])){
 		$params['-filename_writecount']=1000;
 	}
-	$params['-filename_writecount']=(integer)$params['-filename_writecount'];
+	$params['-filename_writecount']=(int)$params['-filename_writecount'];
 	if($params['-filename_writecount'] < 100){
 		$params['-filename_writecount']=100;
 	}
