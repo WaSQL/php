@@ -22,15 +22,16 @@ No additional configuration or classpath setup is needed.
 | `mysql-connector-j-*.jar` | MySQL Connector/J | mysqldb.groovy |
 | `postgresql-*.jar` | PostgreSQL JDBC Driver | postgresdb.groovy |
 | `mssql-jdbc-*.jar` | Microsoft SQL Server JDBC Driver | mssqldb.groovy |
-| `ojdbc11-*.jar` | Oracle JDBC Driver (Thin) | oracledb.groovy |
+| `ojdbc11-*.jar` | Oracle JDBC Driver (Thin) — only one version needed, see note below | oracledb.groovy |
 | `snowflake-jdbc-*.jar` | Snowflake JDBC Driver | snowflakedb.groovy |
 | `sqlite-jdbc-*.jar` | SQLite JDBC Driver | sqlitedb.groovy |
-| `ucanaccess-*.jar` | MS Access JDBC Driver | msaccessdb.groovy |
-| `jackcess-*.jar` | Dependency for UCanAccess | msaccessdb.groovy |
-| `hsqldb-*.jar` | Dependency for UCanAccess | msaccessdb.groovy |
-| `commons-lang3-*.jar` | Apache Commons (dependency) | msaccessdb.groovy |
-| `commons-logging-*.jar` | Apache Commons Logging (dependency) | msaccessdb.groovy |
-| `slf4j-nop-*.jar` | SLF4J No-Op Logger | Various |
+| `duckdb_jdbc-*.jar` | DuckDB JDBC Driver | duckdb.groovy |
+| `ucanaccess-*.jar` | MS Access / CSV / Excel JDBC Driver | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
+| `jackcess-*.jar` | Dependency for UCanAccess | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
+| `hsqldb-*.jar` | Dependency for UCanAccess | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
+| `commons-lang3-*.jar` | Apache Commons (dependency) | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
+| `commons-logging-*.jar` | Apache Commons Logging (dependency) | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
+| `slf4j-nop-*.jar` | SLF4J No-Op Logger — suppresses noisy logging from drivers | Various |
 
 ## Obtaining Missing JAR Files
 
@@ -49,9 +50,11 @@ No additional configuration or classpath setup is needed.
 **Additional files needed:**
 - `libctsqlshm64.so` (Linux) or equivalent native library for your platform
 
+---
+
 ### SAP HANA (hanadb.groovy)
 
-**Required:** `ngdbc.jar` (or `hanaJDBC.jar`)
+**Required:** `ngdbc.jar`
 
 **Download:**
 - Official SAP Tools: https://tools.hana.ondemand.com/#hanatools
@@ -65,9 +68,11 @@ implementation 'com.sap.cloud.db.jdbc:ngdbc:2.16.14'
 **Documentation:**
 - https://help.sap.com/docs/SAP_HANA_PLATFORM/0eec0d68141541d1b07893a39944924e/ff15928cf5594d78b841fbbe649f04b4.html
 
+---
+
 ### MySQL (mysqldb.groovy)
 
-**Required:** `mysql-connector-j-*.jar` (formerly mysql-connector-java)
+**Required:** `mysql-connector-j-*.jar`
 
 **Download:**
 - Official site: https://dev.mysql.com/downloads/connector/j/
@@ -76,10 +81,10 @@ implementation 'com.sap.cloud.db.jdbc:ngdbc:2.16.14'
 
 **Maven/Gradle:**
 ```gradle
-implementation 'mysql:mysql-connector-java:8.0.33'
-// or newer:
 implementation 'com.mysql:mysql-connector-j:9.5.0'
 ```
+
+---
 
 ### PostgreSQL (postgresdb.groovy)
 
@@ -94,27 +99,32 @@ implementation 'com.mysql:mysql-connector-j:9.5.0'
 implementation 'org.postgresql:postgresql:42.7.8'
 ```
 
+---
+
 ### Microsoft SQL Server (mssqldb.groovy)
 
 **Required:** `mssql-jdbc-*.jar`
 
 **Download:**
-- Official site: https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
+- Official site: https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server
 - Download the `.tar.gz` or `.zip` file
-- Extract and copy the appropriate JAR (e.g., `mssql-jdbc-13.3.0.jre11-preview.jar`)
+- Extract and copy the appropriate JAR (e.g., `mssql-jdbc-13.3.0.jre11.jar`)
 
 **Maven/Gradle:**
 ```gradle
-implementation 'com.microsoft.sqlserver:mssql-jdbc:13.3.0.jre11-preview'
+implementation 'com.microsoft.sqlserver:mssql-jdbc:13.3.0.jre11'
 ```
+
+---
 
 ### Oracle (oracledb.groovy)
 
-**Required:** `ojdbc11-*.jar` (or ojdbc8/ojdbc10 depending on Java version)
+**Required:** one `ojdbc11-*.jar` (pick the version that matches your Oracle database)
+
+> **Note:** Two versions are included in this folder (`ojdbc11-9.5.0.jar` and `ojdbc11-23.26.0.0.0.jar`). You only need one — use the version that matches your Oracle server. If unsure, use the newer `23.x` jar for Oracle 19c+.
 
 **Download:**
 - Official site: https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html
-- Download the appropriate JDBC driver for your Oracle version
 - For Java 11+: use `ojdbc11.jar`
 - For Java 8: use `ojdbc8.jar`
 
@@ -125,12 +135,14 @@ implementation 'com.oracle.database.jdbc:ojdbc11:23.26.0.0.0'
 
 **Note:** You may need to accept Oracle's license agreement to download.
 
+---
+
 ### Snowflake (snowflakedb.groovy)
 
 **Required:** `snowflake-jdbc-*.jar`
 
 **Download:**
-- Official docs: https://docs.snowflake.com/en/user-guide/jdbc-download.html
+- Official docs: https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-download
 - Maven Central: https://repo1.maven.org/maven2/net/snowflake/snowflake-jdbc/
 
 **Maven/Gradle:**
@@ -138,41 +150,84 @@ implementation 'com.oracle.database.jdbc:ojdbc11:23.26.0.0.0'
 implementation 'net.snowflake:snowflake-jdbc:3.27.1'
 ```
 
-**Note:** The Snowflake JDBC driver is quite large (~84MB) as it includes many dependencies.
+**Note:** The Snowflake JDBC driver is large (~84MB) as it bundles many dependencies.
+
+---
 
 ### SQLite (sqlitedb.groovy)
 
 **Required:** `sqlite-jdbc-*.jar`
 
 **Download:**
-- GitHub: https://github.com/xerial/sqlite-jdbc
+- GitHub releases: https://github.com/xerial/sqlite-jdbc/releases
 - Maven Central: https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/
 
 **Maven/Gradle:**
 ```gradle
-implementation 'org.xerial:sqlite-jdbc:3.51.0.0'
+implementation 'org.xerial:sqlite-jdbc:3.51.1.0'
 ```
 
-### MS Access (msaccessdb.groovy)
+---
 
-**Required (multiple files):**
-- `ucanaccess-*.jar`
-- `jackcess-*.jar`
-- `hsqldb-*.jar`
-- `commons-lang3-*.jar`
-- `commons-logging-*.jar`
+### DuckDB (duckdb.groovy)
+
+**Required:** `duckdb_jdbc-*.jar`
+
+DuckDB is an in-process analytical database — no server required. Ideal for fast local queries over CSV, Parquet, and other file formats.
 
 **Download:**
-- UCanAccess GitHub: https://github.com/spannm/ucanaccess
-- Download the release ZIP which includes all dependencies
-- Extract all JAR files to this folder
+- GitHub releases: https://github.com/duckdb/duckdb-java/releases
+- Maven Central: https://repo1.maven.org/maven2/org/duckdb/duckdb_jdbc/
+
+**Maven/Gradle:**
+```gradle
+implementation 'org.duckdb:duckdb_jdbc:1.5.2.1'
+```
+
+**Documentation:**
+- https://duckdb.org/docs/api/java
+
+---
+
+### MS Access / CSV / Excel (msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy)
+
+All three drivers share the same UCanAccess engine. **All five JARs are required.**
+
+| JAR | Purpose |
+|-----|---------|
+| `ucanaccess-*.jar` | Core UCanAccess driver |
+| `jackcess-*.jar` | Reads/writes Access file format |
+| `hsqldb-*.jar` | In-memory SQL engine used by UCanAccess |
+| `commons-lang3-*.jar` | Apache Commons utility dependency |
+| `commons-logging-*.jar` | Apache Commons logging dependency |
+
+**Download:**
+- UCanAccess GitHub: https://github.com/spannm/ucanaccess (release ZIP includes all five JARs)
+- SourceForge: https://sourceforge.net/projects/ucanaccess/
 
 **Maven/Gradle:**
 ```gradle
 implementation 'io.github.spannm:ucanaccess:5.0.1'
 ```
 
-**Note:** UCanAccess requires multiple dependencies. Make sure to include all of them.
+---
+
+### Firebird (firebirddb.groovy)
+
+**Required:** `jaybird-full-*.jar`
+
+> **Note:** No Jaybird JAR is currently present in this folder. Add one if you need Firebird connectivity.
+
+**Download:**
+- Official site: https://firebirdsql.org/en/jdbc-driver/
+- GitHub releases: https://github.com/FirebirdSQL/jaybird/releases
+
+**Maven/Gradle:**
+```gradle
+implementation 'org.firebirdsql.jdbc:jaybird:5.0.6.java11'
+```
+
+---
 
 ## Version Compatibility
 
@@ -208,15 +263,19 @@ To add support for a new database type:
 
 ## License Notes
 
-- Each JDBC driver has its own license
-- SAP HANA NGDBC: SAP proprietary license
-- Oracle JDBC: Oracle Technology Network License Agreement
-- MySQL Connector: GPL v2 with FOSS exception
-- PostgreSQL JDBC: BSD License
-- MS SQL Server JDBC: Microsoft Software License
-- Snowflake JDBC: Apache License 2.0
-- SQLite JDBC: Apache License 2.0
-- UCanAccess: Apache License 2.0
-- c-treeACE: FairCom proprietary license
+| Driver | License |
+|--------|---------|
+| MySQL Connector/J | GPL v2 with FOSS exception |
+| PostgreSQL JDBC | BSD 2-Clause |
+| Microsoft SQL Server JDBC | MIT |
+| Oracle JDBC (ojdbc) | Oracle Technology Network License |
+| Snowflake JDBC | Apache 2.0 |
+| SQLite JDBC | Apache 2.0 |
+| DuckDB JDBC | MIT |
+| UCanAccess | Apache 2.0 |
+| SAP HANA NGDBC | SAP proprietary |
+| c-treeACE JDBC | FairCom proprietary |
+| Jaybird (Firebird) | LGPL 2.1 |
+| SLF4J | MIT |
 
 Ensure you comply with the license terms for any drivers you use.
