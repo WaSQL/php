@@ -219,8 +219,6 @@ DATABASE.each { dbname, dbconf ->
         } catch (Exception e) {
             log("Warning: driver '${modName}' not available — skipping database '${dbname}'")
         }
-    } else {
-        log("Warning: no driver mapped for dbtype='${dbtype}' (database '${dbname}')")
     }
 }
 if (missingJarDrivers) log("Skipped (jar not found): ${missingJarDrivers.sort().join(', ')}")
