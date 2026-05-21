@@ -96,6 +96,20 @@ import java.util.concurrent.atomic.AtomicLong
     duckdb    : 'duckdb',
 ]
 
+// JDBC driver class for each module — used to detect missing lib jars at startup.
+@Field Map DRIVER_CLASS_MAP = [
+    ctreedb    : 'ctree.jdbc.ctreeDriver',
+    duckdb     : 'org.duckdb.DuckDBDriver',
+    hanadb     : 'com.sap.db.jdbc.Driver',
+    msaccessdb : 'net.ucanaccess.jdbc.UcanaccessDriver',
+    mssqldb    : 'com.microsoft.sqlserver.jdbc.SQLServerDriver',
+    mysqldb    : 'com.mysql.cj.jdbc.Driver',
+    oracledb   : 'oracle.jdbc.OracleDriver',
+    postgresdb : 'org.postgresql.Driver',
+    snowflakedb: 'net.snowflake.client.jdbc.SnowflakeDriver',
+    sqlitedb   : 'org.sqlite.JDBC',
+]
+
 // ── Methods ───────────────────────────────────────────────────────────────────
 
 void log(String msg) {
@@ -182,10 +196,22 @@ void doShutdown(String reason) {
 def cfg = loadModule('config')
 DATABASE = cfg.DATABASE as Map
 
+def jarAvailableCache = [:] as HashMap  // modName → Boolean
+
 DATABASE.each { dbname, dbconf ->
     def dbtype  = (dbconf.dbtype ?: '').toLowerCase()
     def modName = DRIVER_MAP.find { k, _ -> dbtype.startsWith(k) }?.value
     if (modName) {
+        boolean jarOk = jarAvailableCache.computeIfAbsent(modName) { n ->
+            def cls = DRIVER_CLASS_MAP[n]
+            if (!cls) return true
+            try { Class.forName(cls); return true }
+            catch (ClassNotFoundException ignored) { return false }
+        }
+        if (!jarOk) {
+            log("Warning: driver '${modName}' jar not found — skipping database '${dbname}'")
+            return
+        }
         try {
             loadModule(modName)
             log("Pre-loaded '${modName}' for database '${dbname}'")
