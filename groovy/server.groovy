@@ -197,6 +197,7 @@ def cfg = loadModule('config')
 DATABASE = cfg.DATABASE as Map
 
 def jarAvailableCache = [:] as HashMap  // modName → Boolean
+def missingJarDrivers = [] as LinkedHashSet
 
 DATABASE.each { dbname, dbconf ->
     def dbtype  = (dbconf.dbtype ?: '').toLowerCase()
@@ -209,7 +210,7 @@ DATABASE.each { dbname, dbconf ->
             catch (ClassNotFoundException ignored) { return false }
         }
         if (!jarOk) {
-            log("Warning: driver '${modName}' jar not found — skipping database '${dbname}'")
+            missingJarDrivers << modName
             return
         }
         try {
@@ -222,6 +223,7 @@ DATABASE.each { dbname, dbconf ->
         log("Warning: no driver mapped for dbtype='${dbtype}' (database '${dbname}')")
     }
 }
+if (missingJarDrivers) log("Skipped (jar not found): ${missingJarDrivers.sort().join(', ')}")
 
 try { loadModule('common'); log("Pre-loaded 'common'") } catch (Exception e) { log("Warning: could not pre-load common — ${e.message}") }
 try { loadModule('db');     log("Pre-loaded 'db'")     } catch (Exception e) { log("Warning: could not pre-load db — ${e.message}") }
