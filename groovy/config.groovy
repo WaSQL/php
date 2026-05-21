@@ -150,8 +150,8 @@ if (ALLCONFIG.host) {
 def xmlToMap(node) {
     def map = [:]
 
-    if (node.children().size() == 0) {
-        // Leaf node - return text value
+    if (node.children().size() == 0 && node.attributes().size() == 0) {
+        // Pure text leaf node - return text value
         return node.text()
     }
 
