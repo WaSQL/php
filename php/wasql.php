@@ -13,7 +13,7 @@ function wasqlAKD($t){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function wasqlAKF($m){
-	global $PAGE;switch((integer)$m){case 1:$m="Invalid Appkey for {$PAGE['name']}";break;case 2:$m="Your temporary Appkey for {$PAGE['name']} has expired.";break;}$t=getDBRecord(array('-table'=>'_templates','-where'=>'_id > 1','-order'=>'_id','-fields'=>'_id'));$PAGE=array('_id'=>99999,'_template'=>$t['_id'],'body'=>'<div style="margin-top:25px;font-size:1.4rem;"><span class="material-storefront w_bigger w_red"></span> '.$m.'</div>');return false;
+	global $PAGE;switch((int)$m){case 1:$m="Invalid Appkey for {$PAGE['name']}";break;case 2:$m="Your temporary Appkey for {$PAGE['name']} has expired.";break;}$t=getDBRecord(array('-table'=>'_templates','-where'=>'_id > 1','-order'=>'_id','-fields'=>'_id'));$PAGE=array('_id'=>99999,'_template'=>$t['_id'],'body'=>'<div style="margin-top:25px;font-size:1.4rem;"><span class="material-storefront w_bigger w_red"></span> '.$m.'</div>');return false;
 }
 /**
 * @describe returns true if your WaSQL version is current
@@ -646,8 +646,8 @@ function apiRequest($url='',$opts=array()){
         $results['error'] = $e->faultstring;
         }
     if(isset($results['xml'])){
-		$results['return_count']=(integer)$results['xml']->items->return_count;
-		$results['total_count']=(integer)$results['xml']->items->total_count;
+		$results['return_count']=(int)$results['xml']->items->return_count;
+		$results['total_count']=(int)$results['xml']->items->total_count;
 		if(strlen((string)$results['xml']->status)){
 			$results['status']=(string)$results['xml']->status;
 			}
@@ -831,7 +831,7 @@ function minifyCssFile($v=''){
 		'extras'=>$_SESSION['w_MINIFY']['extras_css'],
 		'tid'=>$TEMPLATE['_id'],
 		'pid'=>$PAGE['_id'],
-		'min'=>(integer)$CONFIG['minify_css']
+		'min'=>(int)$CONFIG['minify_css']
 	);
 	if(isset($_SESSION['w_MINIFY']['cssfiles'][0])){
 		$css['cssfiles']=$_SESSION['w_MINIFY']['cssfiles'];
@@ -940,7 +940,7 @@ function minifyJsFile($v=''){
 		'extras'=>$_SESSION['w_MINIFY']['extras_js'],
 		'tid'=>$TEMPLATE['_id'],
 		'pid'=>$PAGE['_id'],
-		'min'=>(integer)$CONFIG['minify_js']
+		'min'=>(int)$CONFIG['minify_js']
 	);
 	if(isset($_SESSION['w_MINIFY']['jsfiles'][0])){
 		$js['jsfiles']=$_SESSION['w_MINIFY']['jsfiles'];
@@ -1008,7 +1008,7 @@ function wasqlSetMinify($backend=0){
 	}
 	//device_isIE
 	if($_SERVER['REMOTE_BROWSER']=='msie'){
-		switch((integer)$_SERVER['REMOTE_BROWSER_VERSION']){
+		switch((int)$_SERVER['REMOTE_BROWSER_VERSION']){
 			case 6:$_SESSION['w_MINIFY']['device_isIE6']=1;break;
         	case 7:$_SESSION['w_MINIFY']['device_isIE7']=1;break;
         	case 8:$_SESSION['w_MINIFY']['device_isIE8']=1;break;
@@ -1658,7 +1658,7 @@ function wasqlGetStates($d=0,$country='US'){
 		foreach($recs as $rec){
 			$vals[$rec['code']]=$rec['name'];
 		}
-		switch((integer)$d){
+		switch((int)$d){
 			case 0:
 			default:
 				return implode("\r\n",array_keys($vals));

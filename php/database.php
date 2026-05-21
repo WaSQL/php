@@ -2524,7 +2524,7 @@ ENDOFPRETABLE;
 	foreach($params['-list'] as $row=>$rec){
 		if(isset($rec['_id'])){
 			$recid=removeHtml($rec['_id']);
-			$recid=(integer)$recid;
+			$recid=(int)$recid;
 		}
 		else{$recid=0;}
 		$rtn .= '		<tr data-row="'.$row.'"';
@@ -2609,7 +2609,7 @@ ENDOFPRETABLE;
 			}
 			//number_format
 			if(isset($params[$fld."_number_format"])){
-				$p=(integer)$params[$fld."_number_format"];
+				$p=(int)$params[$fld."_number_format"];
 				$value=preg_replace('/[^0-9\.]+/','',$value);
 				if(strlen($value)){
 					if($p==0){
@@ -2618,7 +2618,7 @@ ENDOFPRETABLE;
 					   		$value = gmp_intval($bigInt);
 					   	}
 					   	else{
-							$value=(integer)$value;
+							$value=(int)$value;
 						}
 					}	
 					$value=number_format($value,$p);
@@ -2633,8 +2633,8 @@ ENDOFPRETABLE;
             if(isset($params[$fld."_substr"])){
             	$sparts=preg_split('/\,/',$params[$fld."_substr"]);
             	switch(count($sparts)){
-            		case 1:$value=substr($value,0,(integer)$sparts[0]);break;
-            		case 2:$value=substr($value,(integer)$sparts[0],(integer)$sparts[1]);break;
+            		case 1:$value=substr($value,0,(int)$sparts[0]);break;
+            		case 2:$value=substr($value,(int)$sparts[0],(int)$sparts[1]);break;
             	}
 			}
 			//phone
@@ -5729,7 +5729,7 @@ function addDBRecord($params=array()){
 			}
         }
 		elseif($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
-			if(is_array($val)){$val=(integer)$val[0];}
+			if(is_array($val)){$val=(int)$val[0];}
 			if(!is_numeric($val) && strtolower($val) != 'null'){return 'addDBRecord Datatype Mismatch: numeric field "'.$key.'" is type "'.$info[$key]['_dbtype'].'" and requires a numeric value';}
 			array_push($vals,$val);
 			if(isset($upserts[$key])){$upserts[$key]=$val;}
@@ -5870,11 +5870,11 @@ function addDBRecord($params=array()){
    //  }
     if(count($upserts)){
 		//VALUES() to refer to the new row is deprecated with version 8
-		$euser=isset($USER['_id'])?(integer)$USER['_id']:0;
+		$euser=isset($USER['_id'])?(int)$USER['_id']:0;
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
 		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
-		if((integer)$v1>8 || ((integer)$v1==8 && (integer)$v2 > 0) || ((integer)$v1==8 && (integer)$v2==0 && (integer)$v3 >=20)){
+		if((int)$v1>8 || ((int)$v1==8 && (int)$v2 > 0) || ((int)$v1==8 && (int)$v2==0 && (int)$v3 >=20)){
 			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
 			$flds=array();
 			
@@ -7781,7 +7781,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 				}
 			}
 			if($info[$key]['_dbtype'] =='int' || $info[$key]['_dbtype'] =='tinyint' || $info[$key]['_dbtype'] =='real'){
-				if(is_array($val)){$val=(integer)$val[0];}
+				if(is_array($val)){$val=(int)$val[0];}
 				if(strlen($val)==0){
 					if(isset($info[$key]['_dbflags']) && strlen($info[$key]['_dbflags']) && stristr("not_null",$info[$key]['_dbflags'])){
 						if(isset($info[$key]['default']) && strlen($info[$key]['default'])){
@@ -8359,7 +8359,7 @@ function getDBCount($params=array()){
 		 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1,'-nocache'=>1));
 		 	//echo $query.printValue($recs);exit;
 		 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
-		 		return (integer)$recs[0]['table_rows'];
+		 		return (int)$recs[0]['table_rows'];
 		 	}
 		}
 		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1,'-nocache'=>1));
@@ -9104,8 +9104,8 @@ function getDBFieldSelections($info=array()){
         }
         elseif(preg_match('/^([0-9]+?)\.\.([0-9]+)$/',$tvals,$tvmatch)){
 			$selections['tvals']=array();
-			$start=(integer)$tvmatch[1];
-			$end=(integer)$tvmatch[2];
+			$start=(int)$tvmatch[1];
+			$end=(int)$tvmatch[2];
 			for($x=$start;$x <= $end;$x++){
                 array_push($selections['tvals'],$x);
             }
@@ -9169,7 +9169,7 @@ function getDBPaging($recs_count,$page_count=20,$limit_start=0){
 	}
 
 	if(isset($_REQUEST['_start']) && isNum($_REQUEST['_start'])){
-		$limit_start=(integer)$_REQUEST['_start'];
+		$limit_start=(int)$_REQUEST['_start'];
 	}
 	$limit_cnt=$page_count+$limit_start;
 	if($limit_cnt > $recs_count){$limit_cnt = $recs_count;}
@@ -9277,7 +9277,7 @@ function logDBQuery($query,$start,$function,$tablename='',$fields='',$rowcount=0
 	$ok=addDBRecord($addopts);
 
 	//wasql_queries_days
-	$qdays=(integer)$CONFIG['wasql_queries_days'];
+	$qdays=(int)$CONFIG['wasql_queries_days'];
 	if($qdays==0){$qdays=10;}
 	if($qdays > 0){
 		$query="DELETE FROM _queries WHERE function_name!='sql_prompt' and _cdate < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL {$qdays} DAY))";
@@ -9897,7 +9897,7 @@ function getDBSiteStats(){
 		'7'=>3,'8'=>3,'9'=>3,
 		'10'=>4,'11'=>4,'12'=>4
 		);
-	$currentQuarter=$quarters[(integer)$currentMonth];
+	$currentQuarter=$quarters[(int)$currentMonth];
 	$currentYear=date("Y");
 	if(!isDBTable('_access')){
 		return '<div class="w_bold w_big">No access table found</div>'.PHP_EOL;
@@ -9918,7 +9918,7 @@ function getDBSiteStats(){
 		//month
 		$cmonth=date("m",$rec['_cdate_utime']);
 		//quarter
-		$cquarter=$quarters[(integer)$cmonth];
+		$cquarter=$quarters[(int)$cmonth];
 		//year
 		$cyear=date("Y",$rec['_cdate_utime']);
 		//http_host
@@ -11298,7 +11298,7 @@ function listDBRecords($params=array(),$customcode=''){
 	$idfield=isset($params['-id'])?$params['-id']:'_id';
 	$rtn='';
 	if(isset($params['-table']) && $params['-table']=='_cron'){$rtn .= '<div id="cronlist">'.PHP_EOL;}
-	elseif(isset($params['-ajax']) && (integer)$params['-ajax']==1){
+	elseif(isset($params['-ajax']) && (int)$params['-ajax']==1){
 		$params['-ajaxid']='list_'.sha1(json_encode($params,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
 		$rtn .= '<div id="'.$params['-ajaxid'].'">'.PHP_EOL;
 	}

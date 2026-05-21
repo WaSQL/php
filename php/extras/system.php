@@ -23,10 +23,10 @@ function systemGetMemory(){
 			$k=strtolower($k);
 			$os[$k]=$v;
 		}
-		$systemGetMemoryCache['total']=(integer)$os['totalvisiblememorysize']*1024;
-		$systemGetMemoryCache['free']=(integer)$os['freephysicalmemory']*1024;
+		$systemGetMemoryCache['total']=(int)$os['totalvisiblememorysize']*1024;
+		$systemGetMemoryCache['free']=(int)$os['freephysicalmemory']*1024;
 		$systemGetMemoryCache['used']=$systemGetMemoryCache['total']-$systemGetMemoryCache['free'];
-		$systemGetMemoryCache['pcnt_used']=(integer)(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100);
+		$systemGetMemoryCache['pcnt_used']=(int)(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100);
 		$systemGetMemoryCache['pcnt_free']=100-$systemGetMemoryCache['pcnt_used'];
 		//$systemGetMemoryCache['pcnt_used']=number_format($systemGetMemoryCache['pcnt_used'],2);
 	}
@@ -43,20 +43,20 @@ function systemGetMemory(){
 				}
 				$systemGetMemoryCache['total']=systemUnixMemsize($info['memtotal']);
 				$systemGetMemoryCache['free']=systemUnixMemsize($info['memfree']);
-				$systemGetMemoryCache['pcnt_free'] = (integer)(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100);
+				$systemGetMemoryCache['pcnt_free'] = (int)(($systemGetMemoryCache['free']/$systemGetMemoryCache['total'])*100);
 				if(isset($info['memavailable'])){
 					$systemGetMemoryCache['available']=systemUnixMemsize($info['memavailable']);
-					$systemGetMemoryCache['pcnt_available'] = (integer)(($systemGetMemoryCache['available']/$systemGetMemoryCache['total'])*100);
+					$systemGetMemoryCache['pcnt_available'] = (int)(($systemGetMemoryCache['available']/$systemGetMemoryCache['total'])*100);
 				}
 				$systemGetMemoryCache['used'] = $systemGetMemoryCache['total'] - $systemGetMemoryCache['free'];
 				$systemGetMemoryCache['pcnt_used']=100-$systemGetMemoryCache['pcnt_free'];
 				if(isset($info['buffers'])){
 					$systemGetMemoryCache['buffers']=systemUnixMemsize($info['buffers']);
-					$systemGetMemoryCache['pcnt_buffers'] = (integer)(($systemGetMemoryCache['buffers']/$systemGetMemoryCache['total'])*100);
+					$systemGetMemoryCache['pcnt_buffers'] = (int)(($systemGetMemoryCache['buffers']/$systemGetMemoryCache['total'])*100);
 				}
 				if(isset($info['cached'])){
 					$systemGetMemoryCache['cached']=systemUnixMemsize($info['cached']);
-					$systemGetMemoryCache['pcnt_cached'] = (integer)(($systemGetMemoryCache['cached']/$systemGetMemoryCache['total'])*100);
+					$systemGetMemoryCache['pcnt_cached'] = (int)(($systemGetMemoryCache['cached']/$systemGetMemoryCache['total'])*100);
 				}
 			}
 			elseif (preg_match('~:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)~', $meminfo[1], $matches)){
@@ -150,12 +150,12 @@ function systemGetDriveSpace($nohtml=0){
 	}
 	//figure out used_pcnt with a bar graph
 	foreach($recs as $i=>$rec){
-		$rec['size']=(integer)$rec['size'];
+		$rec['size']=(int)$rec['size'];
 		if($rec['size'] == 0){
 			unset($recs[$i]);
 			continue;
 		}
-		$rec['available']=(integer)$rec['available'];
+		$rec['available']=(int)$rec['available'];
 		$rec['used']=$recs[$i]['used']=$rec['size']-$rec['available'];
 		if($rec['size'] >0){
 			$pcnt=round(($recs[$i]['used']/$rec['size'])*100,0);
@@ -547,7 +547,7 @@ function systemGetPidInfo($pids=array()){
 			//fix mem_usage
 			if(isset($rec['mem_usage'])){
 				$rec['mem_usage']=str_replace(',','',$rec['mem_usage']);
-				if(preg_match('/\ k$/i',$rec['mem_usage'])){$rec['mem_usage']=(integer)$rec['mem_usage']*1000;}
+				if(preg_match('/\ k$/i',$rec['mem_usage'])){$rec['mem_usage']=(int)$rec['mem_usage']*1000;}
 			}
 			$precs[]=$rec;
 		}
@@ -580,7 +580,7 @@ function getServerUptime(){
 		//current time 
 		$context['current_time'] = strftime('%B %d, %Y, %I:%M:%S %p');
 		//get uptime from net statistics workstation
-		$rtn = @`net statistics workstation`;
+		$rtn = @shell_exec('net statistics workstation');
 		$lines=preg_split('/[\r\n]+/',trim($rtn));
 		foreach($lines as $line){
 			if(preg_match('/^Statistics\ since\ (.+)$/is',trim($line),$m)){
@@ -604,7 +604,7 @@ function getServerUptime(){
 		if (!empty($context['load_averages']) && preg_match('~^([^ ]+?) ([^ ]+?) ([^ ]+)~', $context['load_averages'], $matches) != 0){
 			$context['load_averages'] = array($matches[1], $matches[2], $matches[3]);
 		}
-		elseif (($context['load_averages'] = @`uptime 2>/dev/null`) != null && preg_match('~load average[s]?: (\d+\.\d+), (\d+\.\d+), (\d+\.\d+)~i', $context['load_averages'], $matches) != 0){
+		elseif (($context['load_averages'] = @shell_exec('uptime 2>/dev/null')) != null && preg_match('~load average[s]?: (\d+\.\d+), (\d+\.\d+), (\d+\.\d+)~i', $context['load_averages'], $matches) != 0){
 			$context['load_averages'] = array($matches[1], $matches[2], $matches[3]);
 		}
 		else{
@@ -614,7 +614,7 @@ function getServerUptime(){
 		$uptime = @implode('', @getServerInfoFileData('/proc/uptime'));
 		if (!empty($uptime)){
 			list($uptime,$idletime)=preg_split('/\ /',$uptime);
-			$uptime=(integer)$uptime;
+			$uptime=(int)$uptime;
 			$context['uptime']=$uptime;
 			$context['uptime_verbose']=verboseTime($uptime);
 		}
@@ -631,7 +631,7 @@ function getServerInfoLinux($show_process=0){
 	if (!empty($context['load_averages']) && preg_match('~^([^ ]+?) ([^ ]+?) ([^ ]+)~', $context['load_averages'], $matches) != 0){
 		$context['load_averages'] = array($matches[1], $matches[2], $matches[3]);
 		}
-	elseif (($context['load_averages'] = @`uptime 2>/dev/null`) != null && preg_match('~load average[s]?: (\d+\.\d+), (\d+\.\d+), (\d+\.\d+)~i', $context['load_averages'], $matches) != 0){
+	elseif (($context['load_averages'] = @shell_exec('uptime 2>/dev/null')) != null && preg_match('~load average[s]?: (\d+\.\d+), (\d+\.\d+), (\d+\.\d+)~i', $context['load_averages'], $matches) != 0){
 		$context['load_averages'] = array($matches[1], $matches[2], $matches[3]);
 		}
 	else{
@@ -641,7 +641,7 @@ function getServerInfoLinux($show_process=0){
 	$uptime = @implode('', @getServerInfoFileData('/proc/uptime'));
 	if (!empty($uptime)){
 		list($uptime,$idletime)=preg_split('/\ /',$uptime);
-		$uptime=(integer)$uptime;
+		$uptime=(int)$uptime;
 		$context['uptime']=$uptime;
 		$context['uptime_verbose']=verboseTime($uptime);
 		}
@@ -655,7 +655,7 @@ function getServerInfoLinux($show_process=0){
 		}
 	else{
 		// Solaris, perhaps?
-		$cpuinfo = @`psrinfo -pv 2>/dev/null`;
+		$cpuinfo = @shell_exec('psrinfo -pv 2>/dev/null');
 		if (!empty($cpuinfo)){
 			if (preg_match('~clock (\d+)~', $cpuinfo, $match) != 0){$context['cpu_info']['mhz'] = $match[1];}
 			$cpuinfo = explode("\n", $cpuinfo);
@@ -663,9 +663,9 @@ function getServerInfoLinux($show_process=0){
 			}
 		else{
 			// BSD?
-			$cpuinfo = @`sysctl hw.model 2>/dev/null`;
+			$cpuinfo = @shell_exec('sysctl hw.model 2>/dev/null');
 			if (preg_match('~hw\.model:(.+)~', $cpuinfo, $match) != 0){$context['cpu_info']['model'] = trim($match[1]);}
-			$cpuinfo = @`sysctl dev.cpu.0.freq 2>/dev/null`;
+			$cpuinfo = @shell_exec('sysctl dev.cpu.0.freq 2>/dev/null');
 			if (preg_match('~dev\.cpu\.0\.freq:(.+)~', $cpuinfo, $match) != 0){$context['cpu_info']['mhz'] = trim($match[1]);}
 			}
 		}
@@ -721,7 +721,7 @@ function getServerInfoLinux($show_process=0){
 		}
 	// Maybe a generic free?
 	elseif (empty($context['memory_usage'])){
-		$meminfo = explode("\n", @`free -k 2>/dev/null | awk '{ if ($2 * 1 > 0) print $2, $3, $4; }'`);
+		$meminfo = explode("\n", @shell_exec("free -k 2>/dev/null | awk '{ if (\$2 * 1 > 0) print \$2, \$3, \$4; }'"));
 		if (!empty($meminfo[0])){
 			$meminfo[0] = explode(' ', $meminfo[0]);
 			$meminfo[1] = explode(' ', $meminfo[1]);
@@ -737,14 +737,14 @@ function getServerInfoLinux($show_process=0){
 	// Solaris, Mac OS X, or FreeBSD?
 	if (empty($context['memory_usage'])){
 		// Well, Solaris will have kstat.
-		$meminfo = explode("\n", @`kstat -p unix:0:system_pages:physmem unix:0:system_pages:freemem 2>/dev/null | awk '{ print $2 }'`);
+		$meminfo = explode("\n", @shell_exec("kstat -p unix:0:system_pages:physmem unix:0:system_pages:freemem 2>/dev/null | awk '{ print \$2 }'"));
 		if (!empty($meminfo[0])){
-			$pagesize = `/usr/bin/pagesize`;
+			$pagesize = shell_exec('/usr/bin/pagesize');
 			$context['memory_usage']['total'] = unix_memsize($meminfo[0] * $pagesize);
 			$context['memory_usage']['free'] = unix_memsize($meminfo[1] * $pagesize);
 			$context['memory_usage']['free_pcnt'] = round(($context['memory_usage']['free']/$context['memory_usage']['total'])*100,0);
 			$context['memory_usage']['used'] = $context['memory_usage']['total'] - $context['memory_usage']['free'];
-			$meminfo = explode("\n", @`swap -l 2>/dev/null | awk '{ if ($4 * 1 > 0) print $4, $5; }'`);
+			$meminfo = explode("\n", @shell_exec("swap -l 2>/dev/null | awk '{ if (\$4 * 1 > 0) print \$4, \$5; }'"));
 			$context['memory_usage']['swap_total'] = 0;
 			$context['memory_usage']['swap_free'] = 0;
 			foreach ($meminfo as $memline){
@@ -758,16 +758,16 @@ function getServerInfoLinux($show_process=0){
 		}
 	if (empty($context['memory_usage'])){
 		// FreeBSD should have hw.physmem.
-		$meminfo = @`sysctl hw.physmem 2>/dev/null`;
+		$meminfo = @shell_exec('sysctl hw.physmem 2>/dev/null');
 		if (!empty($meminfo) && preg_match('~hw\.physmem: (\d+)~i', $meminfo, $match) != 0){
 			$context['memory_usage']['total'] = unix_memsize($match[1]);
-			$meminfo = @`sysctl hw.pagesize vm.stats.vm.v_free_count 2>/dev/null`;
+			$meminfo = @shell_exec('sysctl hw.pagesize vm.stats.vm.v_free_count 2>/dev/null');
 			if (!empty($meminfo) && preg_match('~hw\.pagesize: (\d+)~i', $meminfo, $match1) != 0 && preg_match('~vm\.stats\.vm\.v_free_count: (\d+)~i', $meminfo, $match2) != 0){
 				$context['memory_usage']['free'] = $match1[1] * $match2[1] / 1024;
 				$context['memory_usage']['free_pcnt'] = round(($context['memory_usage']['free']/$context['memory_usage']['total'])*100,0);
 				$context['memory_usage']['used'] = $context['memory_usage']['total'] - $context['memory_usage']['free'];
 				}
-			$meminfo = @`swapinfo 2>/dev/null | awk '{ print $2, $4; }'`;
+			$meminfo = @shell_exec("swapinfo 2>/dev/null | awk '{ print \$2, \$4; }'");
 			if (preg_match('~(\d+) (\d+)~', $meminfo, $match) != 0){
 				$context['memory_usage']['swap_total'] = $match[1];
 				$context['memory_usage']['swap_free'] = $match[2];
@@ -776,7 +776,7 @@ function getServerInfoLinux($show_process=0){
 			}
 		// Let's guess Mac OS X?
 		else{
-			$meminfo = @`top -l1 2>/dev/null`;
+			$meminfo = @shell_exec('top -l1 2>/dev/null');
 			if (!empty($meminfo) && preg_match('~PhysMem: (?:.+?) ([\d\.]+\w) used, ([\d\.]+\w) free~', $meminfo, $match) != 0){
 				$context['memory_usage']['used'] = unix_memsize($match[1]);
 				$context['memory_usage']['free'] = unix_memsize($match[2]);
@@ -809,22 +809,22 @@ function getServerInfoLinux($show_process=0){
 		$context['operating_system']['name'] = trim($temp[0]);
 		}
 	else{
-		$context['operating_system']['name'] = trim(@`uname -s -r 2>/dev/null`);
+		$context['operating_system']['name'] = trim(@shell_exec('uname -s -r 2>/dev/null'));
 		}
 	if($show_process==0){return $context;}
 	//running processes
 	$context['running_processes'] = array();
-	$processes = @`ps auxc 2>/dev/null | awk '{ print $2, $3, $4, $8, $11, $12 }'`;
+	$processes = @shell_exec("ps auxc 2>/dev/null | awk '{ print \$2, \$3, \$4, \$8, \$11, \$12 }'");
 	if (empty($processes)){
-		$processes = @`ps aux 2>/dev/null | awk '{ print $2, $3, $4, $8, $11, $12 }'`;
+		$processes = @shell_exec("ps aux 2>/dev/null | awk '{ print \$2, \$3, \$4, \$8, \$11, \$12 }'");
 		}
 	// Maybe it's Solaris?
 	if (empty($processes)){
-		$processes = @`ps -eo pid,pcpu,pmem,s,fname 2>/dev/null | awk '{ print $1, $2, $3, $4, $5, $6 }'`;
+		$processes = @shell_exec("ps -eo pid,pcpu,pmem,s,fname 2>/dev/null | awk '{ print \$1, \$2, \$3, \$4, \$5, \$6 }'");
 		}
 	// Okay, how about QNX?
 	if (empty($processes)){
-		$processes = @`ps -eo pid,pcpu,comm 2>/dev/null | awk '{ print $1, $2, 0, "", $5, $6 }'`;
+		$processes = @shell_exec("ps -eo pid,pcpu,comm 2>/dev/null | awk '{ print \$1, \$2, 0, \"\", \$5, \$6 }'");
 		}
 	if (!empty($processes)){
 		$processes = explode("\n", $processes);
@@ -938,7 +938,7 @@ function getServerInfoWindows(){
 		}
 	//operating system
 	$context['operating_system']['type'] = 'windows';
-	$context['operating_system']['name'] = `ver`;
+	$context['operating_system']['name'] = shell_exec('ver');
 	if (empty($context['operating_system']['name'])){$context['operating_system']['name'] = 'Microsoft Windows';}
 	else{$context['operating_system']['name']=trim($context['operating_system']['name']);}
 	//running processes
@@ -960,7 +960,7 @@ function systemMountsList(){
 df -B1 | awk '{print \$1","\$2","\$3","\$4","\$5","\$6","\$7","\$8}' >{$outfile}
 ENDOFCMD;
 	$cmd=trim($cmd);
-	$out=`$cmd`;
+	$out=shell_exec($cmd);
 	if(is_file($outfile)){
 		$lines=file($outfile);
 		unlink($outfile);
@@ -1042,7 +1042,7 @@ function nmap($server,$ports){
 //---------- begin function getSystemInfoWindows
 function getSystemInfoWindows(){
 	//running systeminfo /fo csv crashes on xp pro sp3.. so we use list instead
-	$systeminfo = @`systeminfo /fo list`;
+	$systeminfo = @shell_exec('systeminfo /fo list');
 	$lines=preg_split('/[\r\n]+/',trim($systeminfo));
 	$lastkey='';
 	$info=array();
@@ -1233,7 +1233,7 @@ function mountsInfo(){
         $parts=preg_split('/\//',$tmp,2);
         $mount['server']=$parts[0];
         $mount['path']=$parts[1];
-        $mount['pcnt_used']=(integer)(str_replace('%','',$mount['pcnt_used']));
+        $mount['pcnt_used']=(int)(str_replace('%','',$mount['pcnt_used']));
         $mount['bytes']=round(($mount['bytes']*1024),0);
         $mount['bytes_used']=round(($mount['bytes_used']*1024),0);
         $mount['bytes_free']=round(($mount['bytes_free']*1024),0);

@@ -623,7 +623,7 @@ function commonCronLog($msg,$echomsg=1){
 function commonGetMyPid(){
 	global $CRONTHRU;
 	if(isset($CRONTHRU['pid']) && isNum($CRONTHRU['pid'])){
-		return (integer)$CRONTHRU['pid'];
+		return (int)$CRONTHRU['pid'];
 	}
 	else{
 		return getmypid();
@@ -1772,7 +1772,7 @@ function buildIECompatible($version=0){
     	return '';
 	}
 	if($version==0){
-		$version=(integer)$_SERVER['REMOTE_BROWSER_VERSION'];
+		$version=(int)$_SERVER['REMOTE_BROWSER_VERSION'];
 		if($version < 7){return '';}
 	}
 	return '<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE'.$version.'" >';
@@ -8757,7 +8757,7 @@ function getCalendar($monthyear='',$params=array()){
 	$calendar['current']['weekday']=$calendar['daynames']['long'][$calendar['current']['wday']];
 	$calendar['current']['month']=$calendar['monthnames']['long'][$calendar['current']['mon']-1];
 	
-    $monthnameindex=(integer)date('n',$monthyear) - 1;
+    $monthnameindex=(int)date('n',$monthyear) - 1;
 
 	$calendar['current']['month_short']=$calendar['monthnames']['short'][$monthnameindex];
 	$calendar['current']['month_med']=$calendar['monthnames']['short'][$monthnameindex];
@@ -9555,36 +9555,36 @@ function cleanupDirectory($dir='',$num=5,$unit='days',$ext=''){
 		case 'yrs':
 		case 'year':
 		case 'years':
-			$thresholdSeconds = (integer)($num * 31536000);
+			$thresholdSeconds = (int)($num * 31536000);
 			break;
 		case 'mon':
 		case 'month':
 		case 'months':
-			$thresholdSeconds = (integer)($num * 2629743);
+			$thresholdSeconds = (int)($num * 2629743);
 			break;
 		case 'day':
 		case 'days':
-			$thresholdSeconds = (integer)($num * 86400);
+			$thresholdSeconds = (int)($num * 86400);
 			break;
 		case 'hr':
 		case 'hrs':
 		case 'hour':
 		case 'hours':
-			$thresholdSeconds = (integer)($num * 3600);
+			$thresholdSeconds = (int)($num * 3600);
 			break;
 		case 'min':
 		case 'minute':
 		case 'minutes':
-			$thresholdSeconds = (integer)($num * 60);
+			$thresholdSeconds = (int)($num * 60);
 			break;
 		case 'sec':
 		case 'second':
 		case 'seconds':
-			$thresholdSeconds = (integer)$num;
+			$thresholdSeconds = (int)$num;
 			break;
 		default:
 			// Assume seconds if unit not recognized
-			$thresholdSeconds = (integer)$num;
+			$thresholdSeconds = (int)$num;
 			break;
 	}
 
@@ -13947,7 +13947,7 @@ function selectYears($cnt=10,$digits=2,$backwards=0){
 	$format=$digits==2?'y':'Y';
 	$year=date($format);
 	for($x=0;$x<$cnt;$x++){
-    	$years[]=$backwards==0?(integer)$year+$x:(integer)$year-$x;
+    	$years[]=$backwards==0?(int)$year+$x:(int)$year-$x;
 	}
 	return $years;
 }
@@ -15363,7 +15363,7 @@ function generateGUID($curly=false,$hyphen=true){
         else { return trim( com_create_guid(), '{}' ); }
     }
     else {
-        mt_srand( (integer)microtime() * 10000 );    // optional for php 4.2.0 and up.
+        mt_srand( (int)microtime() * 10000 );    // optional for php 4.2.0 and up.
         $charid = strtoupper( md5(uniqid(rand(), true)) );
         $dash = $hyphen ? chr( 45 ) : "";    // "-"
         $left_curly = $curly ? chr(123) : "";     //  "{"
@@ -15754,7 +15754,7 @@ function getHolidayList($params=array()){
 	if(!isset($params['year']) || !strlen($params['year']) || $params['year']=date('Y') < 1970){
 		$params['year']=date('Y');
 	}
-	$params['year']=(integer)$params['year'];
+	$params['year']=(int)$params['year'];
 	if($params['year'] < 1970 || $params['year'] > 2030){
 		$params['year']=date('Y');
 	}
@@ -16514,13 +16514,13 @@ function getGUID($force=0){
 		}
 	if(isset($_SERVER['PHPSESSID'])){
 		$t1=$_SERVER['PHPSESSID'];
-		$t2=(integer)(rand(0,round((microtime(true)/1000),0)));
+		$t2=(int)(rand(0,round((microtime(true)/1000),0)));
 		$t3=microtime(true);
 		$guid=sha1($t1+$t2+$t3);
 		}
 	elseif(function_exists('session_id')){
-    	$t1 = (integer)session_id();
-    	$t2=(integer)(rand(0,round((microtime(true)/1000),0)));
+    	$t1 = (int)session_id();
+    	$t2=(int)(rand(0,round((microtime(true)/1000),0)));
 		$t3=microtime(true);
 		$guid=sha1($t1+$t2+$t3);
 	}
@@ -16532,7 +16532,7 @@ function getGUID($force=0){
 			if(strlen($_SERVER[$env])){$gstr .= $_SERVER[$env];}
 		}
 		$t1=$gstr;
-		$t2=(integer)(rand(0,round((microtime(true)/1000),0)));
+		$t2=(int)(rand(0,round((microtime(true)/1000),0)));
 		$t3= microtime(true);
 		$guid=sha1($t1+$t2+$t3);
 	}
@@ -16925,7 +16925,7 @@ function processCSVLines($file,$func_name,$params=array()){
 			//pass array to function
 			if(isset($params['-chunk'])){
 				$chunk[]=$set['line'];
-				if(count($chunk)==(integer)$params['-chunk']){
+				if(count($chunk)==(int)$params['-chunk']){
 					$ok=call_user_func($func_name,$chunk,$passthru);
 					$chunk=array();
 				}
@@ -17971,7 +17971,7 @@ function getFilePath($file=''){
 * 	$hexcolor=getRandomColor(true,40);
 */
 function getRandomColor($showpound=1,$alpha='') {
-	$showpound=(integer)$showpound;
+	$showpound=(int)$showpound;
 	$color=sprintf("%02X%02X%02X", mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
 	/*
 		Another way - not sure what one is best/faster though
@@ -17989,7 +17989,7 @@ function getRandomColor($showpound=1,$alpha='') {
 * @usage $alpha=getHexAlpha(38);
 */
 function getHexAlpha($pcnt=0) {
-	$pcnt=(integer)$pcnt;
+	$pcnt=(int)$pcnt;
 	switch($pcnt){
 		case 100:return 'FF';break;
 		case 99:return 'FC';break;
@@ -18846,9 +18846,9 @@ function isDate($str=''){
 	if($ok==0){return false;}
 	//YYYY-mm-dd or mm-dd-YYYY - make sure none of the tuplets are zero  (2015-10-00)
 	if(preg_match('/([0-9]{2,4})[\-\.\/]([0-9]{2,2})[\-\.\/]([0-9]{2,4})/s',$str,$m)){
-		if((integer)$m[1] == 0){return false;}
-		if((integer)$m[2] == 0){return false;}
-		if((integer)$m[3] == 0){return false;}
+		if((int)$m[1] == 0){return false;}
+		if((int)$m[2] == 0){return false;}
+		if((int)$m[3] == 0){return false;}
 	}
 	$time=strtotime($str);
 	if(!strlen($time)|| $time==0){return false;}
@@ -18876,13 +18876,13 @@ function isDateTime($str=''){
 	$y=date('Y',$time);
 	if(!checkdate($m,$d,$y)){return false;}
 	if(preg_match('/([0-9]{1,2})\:([0-9]{2,2})\:([0-9]{2,2})/s',$str,$m)){
-		if((integer)$m[1] > 23){return false;}
-		if((integer)$m[2] > 59){return false;}
-		if((integer)$m[3] > 59){return false;}
+		if((int)$m[1] > 23){return false;}
+		if((int)$m[2] > 59){return false;}
+		if((int)$m[3] > 59){return false;}
 	}
 	if(preg_match('/([0-9]{1,2})\:([0-9]{2,2})\ (am|pm)/is',$str,$m)){
-		if((integer)$m[1] > 23){return false;}
-		if((integer)$m[2] > 59){return false;}
+		if((int)$m[1] > 23){return false;}
+		if((int)$m[2] > 59){return false;}
 	}
 	if(!preg_match('/[0-9]{1,2}\:[0-9]{2,2}/is',$str)){return false;}
 	return true;
@@ -19864,22 +19864,22 @@ function listFilesEx($dir='.',$params=array()){
 					switch(strtolower($m[1])){
 						case 'between':
 							$nums=preg_split('/\ and\ /i',trim($m[2]),2);
-							if((integer)$fileinfo[$key] < (integer)$nums[0] || (integer)$fileinfo[$key] > (integer)$nums[1]){$skip++;}
+							if((int)$fileinfo[$key] < (int)$nums[0] || (int)$fileinfo[$key] > (int)$nums[1]){$skip++;}
 							break;
 						case '>':
-							if((integer)$fileinfo[$key] <= (integer)$m[2]){$skip++;}
+							if((int)$fileinfo[$key] <= (int)$m[2]){$skip++;}
 							break;
 						case '<':
-							if((integer)$fileinfo[$key] >= (integer)$m[2]){$skip++;}
+							if((int)$fileinfo[$key] >= (int)$m[2]){$skip++;}
 							break;
 						case '>=':
-							if((integer)$fileinfo[$key] < (integer)$m[2]){$skip++;}
+							if((int)$fileinfo[$key] < (int)$m[2]){$skip++;}
 							break;
 						case '<=':
-							if((integer)$fileinfo[$key] > (integer)$m[2]){$skip++;}
+							if((int)$fileinfo[$key] > (int)$m[2]){$skip++;}
 							break;
 						case '=':
-							if((integer)$fileinfo[$key] != (integer)$m[2]){$skip++;}
+							if((int)$fileinfo[$key] != (int)$m[2]){$skip++;}
 							break;
                     	}
                 	}
@@ -20569,7 +20569,7 @@ function getAgentBrowser($agent=''){
 				}
 				//fix for MSIE 8 -  it reports 7
 				if($browser['browser']=='msie'){
-					$version=(integer)$browser['version'];
+					$version=(int)$browser['version'];
 					if($version==7 && preg_match('/compatible/i',$browser['agent']) && preg_match('/trident\/4.0/i',$browser['agent'])){
 						$browser['version']=8;
 					}
@@ -22691,7 +22691,7 @@ function processActions(){
 			if(!isset($_REQUEST['_fields']) && isset($_REQUEST['_formfields'])){
             	$_REQUEST['_fields']=preg_replace('/\,+$/','',$_REQUEST['_formfields']);
 			}
-			if(strlen($_REQUEST['_table']) && (integer)$_REQUEST['_id'] > 0 && strlen($_REQUEST['_fields'])){
+			if(strlen($_REQUEST['_table']) && (int)$_REQUEST['_id'] > 0 && strlen($_REQUEST['_fields'])){
 				$rec=getDBRecord(array('-table'=>$_REQUEST['_table'],'_id'=>$_REQUEST['_id'],'-nocache'=>1,'-relate'=>array('_euser'=>'_users')));
 				$timestamp=time();
 				$_REQUEST['edit_rec']=$rec;
@@ -23984,7 +23984,7 @@ function processFileUploads($docroot=''){
 	 		elseif($file['error'] != 0 && !strlen($file['tmp_name'])){
 	 			unset($pfiles[$pi]);
 	 			unset($_FILES[$file['iname']]);
-	 			switch((integer)$file['error']){
+	 			switch((int)$file['error']){
 	 				case 1:
 	 					$message="The uploaded file exceeds the upload_max_filesize directive in php.ini";
 	 				break;
