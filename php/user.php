@@ -995,27 +995,27 @@ function userGetTimeout($type,$rec=array()){
 		switch(strtolower(trim($parts[1]))){
 			case 'year':
 			case 'years':
-				$days=(integer)$parts[0]*365;
+				$days=(int)$parts[0]*365;
 				$seconds=$days*86400;
 			break;
 			case 'month':
 			case 'months':
-				$days=(integer)$parts[0]*30;
+				$days=(int)$parts[0]*30;
 				$seconds=$days*86400;
 			break;
 			case 'day':
 			case 'days':
-				$days=(integer)$parts[0];
+				$days=(int)$parts[0];
 				$seconds=$days*86400;
 			break;
 			case 'hour':
 			case 'hours':
-				$hours=(integer)$parts[0];
+				$hours=(int)$parts[0];
 				$seconds=$hours*3600;
 			break;
 			case 'minute':
 			case 'minutes':
-				$minutes=(integer)$parts[0];
+				$minutes=(int)$parts[0];
 				$seconds=$minutes*60;
 			break;
 			default:
@@ -1085,27 +1085,27 @@ function userDecodeCookieCode($code){
 			switch(strtolower(trim($parts[1]))){
 				case 'year':
 				case 'years':
-					$days=(integer)$parts[0]*365;
+					$days=(int)$parts[0]*365;
 					$seconds=$days*86400;
 				break;
 				case 'month':
 				case 'months':
-					$days=(integer)$parts[0]*30;
+					$days=(int)$parts[0]*30;
 					$seconds=$days*86400;
 				break;
 				case 'day':
 				case 'days':
-					$days=(integer)$parts[0];
+					$days=(int)$parts[0];
 					$seconds=$days*86400;
 				break;
 				case 'hour':
 				case 'hours':
-					$hours=(integer)$parts[0];
+					$hours=(int)$parts[0];
 					$seconds=$hours*3600;
 				break;
 				case 'minute':
 				case 'minutes':
-					$minutes=(integer)$parts[0];
+					$minutes=(int)$parts[0];
 					$seconds=$minutes*60;
 				break;
 				default:
