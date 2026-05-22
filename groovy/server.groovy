@@ -147,8 +147,12 @@ String pathParam(HttpExchange ex, String prefix) {
 }
 
 void respond(HttpExchange ex, int code, String json) {
-    byte[] b = json.getBytes('UTF-8')
-    ex.responseHeaders.set('Content-Type', 'application/json; charset=UTF-8')
+    respondAs(ex, code, 'application/json; charset=UTF-8', json)
+}
+
+void respondAs(HttpExchange ex, int code, String contentType, String body) {
+    byte[] b = body.getBytes('UTF-8')
+    ex.responseHeaders.set('Content-Type', contentType)
     ex.sendResponseHeaders(code, b.length)
     def os = ex.responseBody
     try { os.write(b) } finally { os.close() }
@@ -219,6 +223,8 @@ DATABASE.each { dbname, dbconf ->
         } catch (Exception e) {
             log("Warning: driver '${modName}' not available — skipping database '${dbname}'")
         }
+    } else {
+        log("Warning: no driver mapped for dbtype='${dbtype}' (database '${dbname}')")
     }
 }
 if (missingJarDrivers) log("Skipped (jar not found): ${missingJarDrivers.sort().join(', ')}")
@@ -385,6 +391,27 @@ server.createContext('/eval') { HttpExchange ex ->
     }
 }
 
+// GET /databases  — list all configured databases grouped by dbtype
+server.createContext('/databases') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    lastActivity.set(System.currentTimeMillis())
+    try {
+        def grouped = [:].withDefault { [] }
+        DATABASE.each { dbname, dbconf ->
+            def dbtype  = (dbconf.dbtype ?: '').toLowerCase()
+            def modName = DRIVER_MAP.find { mk, _ -> dbtype.startsWith(mk) }?.value
+            if (modName && modules.containsKey(modName)) {
+                grouped[dbtype] << dbname
+            }
+        }
+        def result = grouped.collectEntries { type, names -> [type, names.sort()] }.sort()
+        respond(ex, 200, wrapOk(result))
+    } catch (Exception e) {
+        log("/databases error: ${e.message}")
+        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+    }
+}
+
 // GET/POST /reload  — flush module cache; next request recompiles from disk
 server.createContext('/reload') { HttpExchange ex ->
     if (!checkAuth(ex)) return
@@ -409,6 +436,174 @@ def shutdownHandler = { HttpExchange ex ->
 }
 server.createContext('/shutdown', shutdownHandler)
 server.createContext('/exit',     shutdownHandler)
+
+// GET /openapi — OpenAPI 3.0 JSON spec (unauthenticated)
+Closure buildSpec = {
+    def dbNames = DATABASE.keySet().sort()
+    def dbNameEnum = dbNames ?: ['mydb']
+    return [
+        openapi: '3.0.3',
+        info: [
+            title  : 'WaSQL Groovy Server',
+            version: '1.0.0',
+            description: "Persistent Groovy/SQL daemon. Authenticate via the **X-WaSQL-Token** header (value is in groovy/server.token). Port: ${PORT}."
+        ],
+        servers: [[ url: "http://127.0.0.1:${PORT}" ]],
+        components: [
+            securitySchemes: [
+                TokenAuth: [ type: 'apiKey', in: 'header', name: 'X-WaSQL-Token' ]
+            ]
+        ],
+        security: [[ TokenAuth: [] ]],
+        paths: [
+            '/databases': [
+                get: [
+                    summary    : 'List all configured databases grouped by type',
+                    operationId: 'databases',
+                    responses  : [
+                        '200': [ description: 'Databases by type', content: [ 'application/json': [ schema: [ type: 'object', properties: [ success: [type:'boolean'], data: [type:'object', additionalProperties: [type:'array', items:[type:'string']], example: [mysql:['mydb','cms'], postgresql:['analytics']]] ] ] ] ] ]
+                    ]
+                ]
+            ],
+            '/ping': [
+                get: [
+                    summary    : 'Health check',
+                    operationId: 'ping',
+                    responses  : [
+                        '200': [ description: 'Server status', content: [ 'application/json': [ schema: [ type: 'object', properties: [ status: [type:'string'], pid: [type:'string'], uptime: [type:'integer'], modules: [type:'array', items:[type:'string']] ] ] ] ] ]
+                    ]
+                ]
+            ],
+            '/query/{dbname}': [
+                post: [
+                    summary    : 'Run a SELECT query, returns rows as JSON array',
+                    operationId: 'query',
+                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string', enum: dbNameEnum] ]],
+                    requestBody: [ required: true, content: [ 'text/plain': [ schema: [type:'string', example:'SELECT * FROM users LIMIT 10'] ] ] ],
+                    responses  : [
+                        '200': [ description: 'Query results', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], data:[type:'array'] ] ] ] ] ],
+                        '400': [ description: 'Bad SQL or missing params' ],
+                        '500': [ description: 'Driver / server error' ]
+                    ]
+                ]
+            ],
+            '/execute/{dbname}': [
+                post: [
+                    summary    : 'Execute a non-SELECT statement (INSERT/UPDATE/DELETE/DDL)',
+                    operationId: 'execute',
+                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string', enum: dbNameEnum] ]],
+                    requestBody: [ required: true, content: [ 'text/plain': [ schema: [type:'string', example:'DELETE FROM sessions WHERE expired = 1'] ] ] ],
+                    responses  : [
+                        '200': [ description: 'Rows affected', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], data:[type:'integer'] ] ] ] ] ],
+                        '400': [ description: 'Bad SQL or missing params' ],
+                        '500': [ description: 'Driver / server error' ]
+                    ]
+                ]
+            ],
+            '/executeps/{dbname}': [
+                post: [
+                    summary    : 'Execute a parameterised statement',
+                    operationId: 'executeps',
+                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string', enum: dbNameEnum] ]],
+                    requestBody: [ required: true, content: [ 'application/json': [ schema: [ type:'object', required:['query'], properties: [ query:[type:'string', example:'UPDATE users SET name=:name WHERE id=:id'], args:[type:'object', example:[name:'Alice', id:1]] ] ] ] ] ],
+                    responses  : [
+                        '200': [ description: 'Result', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], data:[type:'integer'] ] ] ] ] ],
+                        '400': [ description: 'Bad SQL or missing params' ],
+                        '500': [ description: 'Driver / server error' ]
+                    ]
+                ]
+            ],
+            '/eval': [
+                post: [
+                    summary    : 'Evaluate arbitrary Groovy (db, common, config modules in binding)',
+                    operationId: 'eval',
+                    requestBody: [ required: true, content: [ 'text/plain': [ schema: [type:'string', example:"db.queryResults('SELECT 1', [:])"] ] ] ],
+                    responses  : [
+                        '200': [ description: 'Script result', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], output:[type:'string'], result:[description:'Return value of the script'] ] ] ] ] ],
+                        '500': [ description: 'Script threw an exception' ]
+                    ]
+                ]
+            ],
+            '/reload': [
+                get: [
+                    summary    : 'Flush module cache — next request recompiles .groovy files from disk',
+                    operationId: 'reload',
+                    responses  : [
+                        '200': [ description: 'Cache cleared', content: [ 'application/json': [ schema: [ type:'object', properties: [ status:[type:'string'], cleared:[type:'array', items:[type:'string']] ] ] ] ] ]
+                    ]
+                ]
+            ],
+            '/shutdown': [
+                post: [
+                    summary    : 'Graceful shutdown',
+                    operationId: 'shutdown',
+                    responses  : [ '200': [ description: 'Shutting down' ] ]
+                ]
+            ],
+            '/exit': [
+                post: [
+                    summary    : 'Alias for /shutdown',
+                    operationId: 'exit',
+                    responses  : [ '200': [ description: 'Shutting down' ] ]
+                ]
+            ]
+        ]
+    ]
+}
+
+server.createContext('/openapi') { HttpExchange ex ->
+    lastActivity.set(System.currentTimeMillis())
+    respond(ex, 200, JSON.toJson(buildSpec()))
+}
+
+// GET /  — RapidDoc UI (unauthenticated)
+server.createContext('/') { HttpExchange ex ->
+    if (ex.requestURI.path != '/') { respond(ex, 404, wrapErr('Not found')); return }
+    lastActivity.set(System.currentTimeMillis())
+    def html = """\
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>WaSQL Groovy Server — API Docs</title>
+  <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    rapi-doc img { max-height: 50px; padding: 8px 12px; }
+  </style>
+</head>
+<body>
+<rapi-doc
+  spec-url="/openapi"
+  heading-text="WaSQL Groovy Server"
+  show-info="true"
+  allow-try="true"
+  allow-search="true"
+  persist-auth="true"
+  show-curl-before-try="true"
+  api-key-name="X-WaSQL-Token"
+  api-key-location="header"
+  api-key-value="${TOKEN}"
+  theme="light"
+  bg-color="#ffffff"
+  text-color="#111827"
+  header-color="#0056b3"
+  primary-color="#f89723"
+  nav-bg-color="#0d1b35"
+  nav-text-color="#a0c4ff"
+  nav-hover-bg-color="#0086ff"
+  nav-hover-text-color="#ffffff"
+  nav-accent-color="#f89723"
+>
+  <img slot="logo" src="https://www.wasql.com/images/wasql_logo.png" />
+  <style slot="rapidoc-style">
+    input { background-color: #ffffff !important; color: #111827 !important; }
+  </style>
+</rapi-doc>
+</body>
+</html>"""
+    respondAs(ex, 200, 'text/html; charset=UTF-8', html)
+}
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 Runtime.runtime.addShutdownHook(new Thread({ PID_FILE.delete(); TOKEN_FILE.delete() }))
