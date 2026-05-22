@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	Show record icon if log queries is on
 		set at config, database level
@@ -383,7 +383,7 @@
 				return;
 			}
 			$begin=microtime(true);
-			$offset=(integer)$_REQUEST['offset'];
+			$offset=(int)$_REQUEST['offset'];
 			$limit=30;
 			$recs=getCSVRecords($afile,array(
 				'-start'=>$offset,
@@ -1293,7 +1293,7 @@ ENDOFQUERY;
 				}
 			}
 			$qtime=isset($lastquery['time'])?$lastquery['time']:0;
-			$offset=(integer)$_REQUEST['offset'];
+			$offset=(int)$_REQUEST['offset'];
 			$limit=30;
 			$next=$offset+$limit;
 			$recs=getCSVRecords($afile,array(
@@ -1316,7 +1316,7 @@ ENDOFQUERY;
 				if(isset($CONFIG['log_queries_time']) && isNum($CONFIG['log_queries_time']) && $lastquery['time'] < $CONFIG['log_queries_time']){$log=0;}
 				//log_queries_days
 				if(isset($CONFIG['log_queries_days']) && isNum($CONFIG['log_queries_days'])){
-					$qdays=(integer)$CONFIG['log_queries_days'];
+					$qdays=(int)$CONFIG['log_queries_days'];
 					if($qdays > 0){
 						$query="DELETE FROM _queries WHERE function_name='sql_prompt' and _cdate < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL {$qdays} DAY))";
 						$ok=executeSQL($query);
@@ -1395,7 +1395,7 @@ ENDOFQUERY;
 					'user_id'=>$USER['_id']
 				));
 				if(isset($srec['_id'])){
-					$ecnt=(integer)($srec['exported'])+1;
+					$ecnt=(int)($srec['exported'])+1;
 					$ok=editDBRecordById('_queries',$srec['_id'],array('exported'=>$ecnt));
 				}
 				pushFile($afile);

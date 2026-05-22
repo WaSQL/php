@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* 
 	Getting a list of world city populations turns out to be quite difficult
 		http://opengeocode.org/download/cow.php
@@ -126,7 +126,7 @@ function citiesImportCountry($country_codes,$truncate=false){
 		$ok=executeSQL("LOCK TABLES cities WRITE");
 		if(!$truncate){$ok=executeSQL("delete from cities where country_code='{$country_code}'");}
 		$csvfile="{$progpath}/temp/cities_{$country['name']}.csv";
-		$cyear=(integer)date('Y');
+		$cyear=(int)date('Y');
 		$endyear=5 * ceil($cyear / 5);
 		$startyear=$endyear-5;
 		unlink($csvfile);

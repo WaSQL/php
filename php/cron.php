@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	Instructions:
 		run cron_old.php from a command-line every minute as follows
@@ -61,7 +61,7 @@ if($dbversion >= 5.7){
 }
 global $databaseCache;
 $etime=microtime(true)-$starttime;
-$etime=(integer)$etime;
+$etime=(int)$etime;
 $pid_check=1;
 $apache_log=1;
 $tail=1;
@@ -140,7 +140,7 @@ ENDOFWHERE;
 		if(is_file($runnow_afile)){
 			$runid=getfileContents($runnow_afile);
 			unlink($runnow_afile);
-			$runid=(integer)$runid;
+			$runid=(int)$runid;
 			$wherestr="_id={$runid} and running != 1";
 			$ok=cronMessage("Run Now File found. Set wherestr: {$wherestr}");
 			$runnow=1;
@@ -215,7 +215,7 @@ ENDOFWHERE;
 												//hour passed. check minute
 												//echo $rec['name']." hour passed";exit;
 												if(isset($json['minute'][0])){
-													$cmin=(integer)date('i');
+													$cmin=(int)date('i');
 													if($json['minute'][0]==-1 || in_array($cmin,$json['minute'])){
 														//minute passed
 														$run=1;
@@ -535,7 +535,7 @@ ENDOFWHERE;
 			}
 		}	
 		$etime=microtime(true)-$starttime;
-		$etime=(integer)$etime;
+		$etime=(int)$etime;
 		$tail=0;
 	}
 }
@@ -572,7 +572,7 @@ function cronCleanRecords($cron=array()){
 function cronLogTails(){
 	global $CONFIG;
 	$logs=array();
-	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
+	$rowcount=isset($CONFIG['logs_rowcount'])?(int)$CONFIG['logs_rowcount']:100;
 	$tempdir=getWasqlPath('php/temp');
 	foreach($CONFIG as $k=>$v){
 		$lk=strtolower($k);
@@ -589,7 +589,7 @@ function cronLogTails(){
 			if(is_file($afile)){
 				$mtime=filemtime($afile);
 				$etime=time()-$mtime;
-				if((integer)$etime < 10){
+				if((int)$etime < 10){
 					$skip=1;
 				}
 			}

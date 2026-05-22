@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 //minify the js files in wfiles/js. updated July 2019
 /* first, lets determine the current page, template, domain, and user */
 error_reporting(E_ALL & ~E_NOTICE);
@@ -329,15 +329,15 @@ function minifyFiles($path,$names){
 			);
 			continue;
 		}
-		if(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}.min.js")){
+		if(isset($CONFIG['minify_js']) && (int)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}.min.js")){
 			$file=realpath("{$path}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		elseif(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}/{$name}.min.js")){
+		elseif(isset($CONFIG['minify_js']) && (int)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}/{$name}.min.js")){
 			$file=realpath("{$path}/{$name}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		elseif(isset($CONFIG['minify_js']) && (integer)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}/{$name}.min.js")){
+		elseif(isset($CONFIG['minify_js']) && (int)$CONFIG['minify_js']==1 && is_file("{$path}/{$name}/{$name}.min.js")){
 			$file=realpath("{$path}/{$name}/{$name}.min.js");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}

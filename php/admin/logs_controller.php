@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 	global $CONFIG;
 	switch(strtolower($_REQUEST['func'])){
 		case 'filter':
@@ -43,7 +43,7 @@
 			return;
 		break;
 	}
-	$refresh=isset($CONFIG['logs_refresh'])?(integer)$CONFIG['logs_refresh']:60;
+	$refresh=isset($CONFIG['logs_refresh'])?(int)$CONFIG['logs_refresh']:60;
 	$includes=array();
 	if(isset($_REQUEST['includes']) && strlen(trim($_REQUEST['includes']))){
 		$includes=preg_split('/\s/',trim($_REQUEST['includes']));

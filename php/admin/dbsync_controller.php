@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 	//CRITICAL: Access control check - DB Sync is a sensitive operation
 	if(!isAdmin()){
 		echo '<div class="w_bold w_danger">Access Denied: Admin privileges required</div>';
@@ -60,7 +60,7 @@
 			$target=$_REQUEST['target'];
 
 			//Validate diffs parameter
-			$diffs=isset($_REQUEST['diffs']) && isNum($_REQUEST['diffs'])?(integer)$_REQUEST['diffs']:0;
+			$diffs=isset($_REQUEST['diffs']) && isNum($_REQUEST['diffs'])?(int)$_REQUEST['diffs']:0;
 
 			//Validate tab/view name
 			if(isset($_REQUEST['tab'])){

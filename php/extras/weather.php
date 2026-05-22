@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $progpath=dirname(__FILE__);
 include_once("$progpath/weather/phpweatherlib.php");
 /* References:
@@ -127,7 +127,7 @@ function weatherNDFDgenByDay($zip='',$params=array()){
 		$index=0;
 		foreach($xml->data->parameters->temperature[0] as $temp){
 			if(isset($forecast['forecast'][$index]) && isNum((string)$temp)){
-				$forecast['forecast'][$index]['max']=(integer)$temp;
+				$forecast['forecast'][$index]['max']=(int)$temp;
 				$index++;
 				}
         	}
@@ -135,7 +135,7 @@ function weatherNDFDgenByDay($zip='',$params=array()){
         $index=0;
 		foreach($xml->data->parameters->temperature[1] as $temp){
 			if(isset($forecast['forecast'][$index]) && isNum((string)$temp)){
-				$forecast['forecast'][$index]['min']=(integer)$temp;
+				$forecast['forecast'][$index]['min']=(int)$temp;
 				$index++;
 				}
         	}
@@ -143,7 +143,7 @@ function weatherNDFDgenByDay($zip='',$params=array()){
         $index=0;
 		foreach($xml->data->parameters->precipitation->value as $val){
 			if(isset($forecast['forecast'][$index]) && isNum((string)$val)){
-				$forecast['forecast'][$index]['precipitation']=(integer)$val;
+				$forecast['forecast'][$index]['precipitation']=(int)$val;
 				$index++;
 				}
         	}

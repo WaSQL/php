@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Authentication check - ensure user is logged in
 global $USER;
 if(!isUser()){
@@ -18,7 +18,7 @@ if(is_file($docfile)){
 }
 switch(strtolower($_REQUEST['func'])){
 	case 'docid':
-		$docid=(integer)$_REQUEST['docid'];
+		$docid=(int)$_REQUEST['docid'];
 		if($docid <= 0){
 			setView('no_results',1);
 			return;

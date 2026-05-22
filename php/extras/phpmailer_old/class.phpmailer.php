@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * PHPMailer - PHP email creation and transport class.
  * PHP Version 5
@@ -1660,7 +1660,7 @@ class PHPMailer
             }
             $host = $hostinfo[3];
             $port = $this->Port;
-            $tport = (integer)$hostinfo[4];
+            $tport = (int)$hostinfo[4];
             if ($tport > 0 and $tport < 65536) {
                 $port = $tport;
             }

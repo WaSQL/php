@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 //Input validation functions
 function importValidateDatabaseName($name){
 	//Only allow alphanumeric, underscore, and hyphen
@@ -132,7 +132,7 @@ function importProcessCSV($params){
 
 	//chunk - validate as integer
 	if(isset($params['csvtable_chunk']) && strlen(trim($params['csvtable_chunk']))){
-		$chunk=(integer)$params['csvtable_chunk'];
+		$chunk=(int)$params['csvtable_chunk'];
 		if($chunk > 0){
 			$cparams['-chunk']=$chunk;
 		}

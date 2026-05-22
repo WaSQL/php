@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 //Input validation functions
 function exportValidateFilename($filename){
 	//Prevent path traversal and ensure safe filename
@@ -35,7 +35,7 @@ function exportValidateIdArray($ids){
 	//Filter ID array to only include valid integers
 	$filtered=array();
 	foreach($ids as $id){
-		$id=(integer)$id;
+		$id=(int)$id;
 		if($id > 0){
 			$filtered[]=$id;
 		}

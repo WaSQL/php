@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $progpath=dirname(__FILE__);
 /*
 	Google Add to Calendar link example:
@@ -133,7 +133,7 @@ function adwordsTargetingIdea($params=array()){
 						$val=strtolower((string)$dataobj->value->value->text);
 						}
 					else{
-						$val=strtolower((integer)$dataobj->value->value);
+						$val=strtolower((int)$dataobj->value->value);
                     	}
                     $entry[$key]=$val;
                 	}
@@ -430,8 +430,8 @@ function getGoogleStats($params=array()){
 	    foreach($entry->dxpmetric as $metric){
 			$info=parseSimpleAttributes($metric);
 			$name=preg_replace('/^ga:/','',$info['name']);
-			if($info['type']=='integer'){$val=(integer)$info['value'];}
-			else if($info['type']=='time'){$val=(integer)$info['value'];}
+			if($info['type']=='integer'){$val=(int)$info['value'];}
+			else if($info['type']=='time'){$val=(int)$info['value'];}
 			else{$val=(string)$info['value'];}
 			if($name=='newVisits'){$name='uniqueVisitors';}
 			if($name=='visitors'){$name='webVisitors';}
@@ -494,8 +494,8 @@ function getGoogleCalendar($params=array()){
 	    foreach($entry->dxpmetric as $metric){
 			$info=parseSimpleAttributes($metric);
 			$name=preg_replace('/^ga:/','',$info['name']);
-			if($info['type']=='integer'){$val=(integer)$info['value'];}
-			else if($info['type']=='time'){$val=(integer)$info['value'];}
+			if($info['type']=='integer'){$val=(int)$info['value'];}
+			else if($info['type']=='time'){$val=(int)$info['value'];}
 			else{$val=(string)$info['value'];}
 			if($name=='newVisits'){$name='uniqueVisitors';}
 			if($name=='visitors'){$name='webVisitors';}

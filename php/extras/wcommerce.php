@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	wcommerce - WaSQL functions to support an e-commerce site
 	References:
@@ -47,7 +47,7 @@ function wcommerceAdd2Cart($id,$params=array()){
 		$rtn['cart_id']=$rec['_id'];
 	}
 	else{
-		$rtn['quantity']=$opts['quantity']=(integer)$params['qty'];
+		$rtn['quantity']=$opts['quantity']=(int)$params['qty'];
 		//get photo
 		$rtn['photos']=$product['photos']=wcommerceProductImages($product);
 		if(count($product['photos'])){
@@ -1638,7 +1638,7 @@ switch(strtolower(\$PASSTHRU[0])){
 		setView(\$PASSTHRU[0],1);
 	break;
 	case 'add2cart':
-		\$id=(integer)\$_REQUEST['id'];
+		\$id=(int)\$_REQUEST['id'];
 		\$rtn=wcommerceAdd2Cart(\$id,\$_REQUEST);
 		if(isset(\$rtn['error'])){
 			\$message="ERROR: {\$rtn['error']}";
@@ -1693,8 +1693,8 @@ switch(strtolower(\$PASSTHRU[0])){
 	case 'manage_setvalue':
 		\$table=\$PASSTHRU[1];
 		\$field=\$PASSTHRU[2];
-		\$id=(integer)\$PASSTHRU[3];
-		\$value=(integer)\$PASSTHRU[4];
+		\$id=(int)\$PASSTHRU[3];
+		\$value=(int)\$PASSTHRU[4];
 		if(\$field=='selected' && \$table=='wcommerce_products'){
 			\$rec=getDBRecordById(\$table,\$id);
 			\$name=str_replace("'","''",\$rec['name']);
@@ -1727,36 +1727,36 @@ switch(strtolower(\$PASSTHRU[0])){
 				return;
 			break;
 			case 'addedit':
-				\$id=(integer)\$PASSTHRU[2];
+				\$id=(int)\$PASSTHRU[2];
 				setView('manage_orders_addedit',1);
 				return;
 			break;
 			case 'view':
-				\$id=(integer)\$PASSTHRU[2];
+				\$id=(int)\$PASSTHRU[2];
 				\$order=wcommerceGetOrder(\$id);
 				setView('manage_orders_view',1);
 				return;
 			break;
 			case 'ship':
-				\$id=(integer)\$PASSTHRU[2];
+				\$id=(int)\$PASSTHRU[2];
 				\$order=getDBRecordById('wcommerce_orders',\$id);
 				setView('manage_orders_shipped',1);
 				return;
 			break;
 			case 'deliver':
-				\$id=(integer)\$PASSTHRU[2];
+				\$id=(int)\$PASSTHRU[2];
 				\$order=getDBRecordById('wcommerce_orders',\$id);
 				setView('manage_orders_delivered',1);
 				return;
 			break;
 			case 'ship_item':
-				\$id=(integer)\$PASSTHRU[2];
+				\$id=(int)\$PASSTHRU[2];
 				\$item=getDBRecordById('wcommerce_orders_items',\$id);
 				setView('manage_orders_items_shipped',1);
 				return;
 			break;
 			case 'deliver_item':
-				\$id=(integer)\$PASSTHRU[2];
+				\$id=(int)\$PASSTHRU[2];
 				\$order=getDBRecordById('wcommerce_orders_items',\$id);
 				setView('manage_orders_items_delivered',1);
 				return;

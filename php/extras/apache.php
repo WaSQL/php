@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	CONFIG SETTINGS:
 		apache_access_log="{full path to access log}" -if set then it will trigger the cron to read and parse
@@ -237,7 +237,7 @@ function apacheParseLogFileLine($line){
 	preg_match("/^(\S+) (\S+) (\S+) \[([^:]+):(\d+:\d+:\d+) ([^\]]+)\] \"(\S+) (.*?) (\S+)\" (\S+) (\S+) (\".*?\") (\".*?\")$/", $line, $matches);
 	if(!empty($matches[1])){
 		//skip 301 redirects
-		//if((integer)$matches[10]==301){return null;}
+		//if((int)$matches[10]==301){return null;}
 		//skip local access
 		if(isset($CONFIG['apache_access_skip_local']) && $CONFIG['apache_access_skip_local']==1){
 			if(stringBeginsWith($matches[1],'10.')){return null;}

@@ -1,4 +1,4 @@
-<?
+﻿<?
 global $USER;
 if(!strlen($_REQUEST['tn'])){return "No Tracking Number";}
 $rtn='';
@@ -67,7 +67,7 @@ try{
 		$rtn .= '	<tr><td class="w_bold">Ship Method</td><td colspan="2">'.$shipMethod.'</td></tr>'."\n";
 		$rtn .= '	<tr><td class="w_bold">Status</td><td colspan="2">'.$status.'</td></tr>'."\n";
 		if(isset($response->TrackDetails->PackageCount)){
-			$count=(integer)$response->TrackDetails->PackageCount;
+			$count=(int)$response->TrackDetails->PackageCount;
 			$rtn .= '	<tr><td class="w_bold">Package Count</td><td colspan="2">'.$count.'</td></tr>'."\n";
         	}
 		if(isset($response->TrackDetails->ActualDeliveryTimestamp)){

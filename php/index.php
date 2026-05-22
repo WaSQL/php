@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $starttime=microtime(true);
 $loadtimes=array();
 //verify a few functions
@@ -357,7 +357,7 @@ if(isset($_REQUEST['ping']) && $request_count==1){
 	else{
 		$out=cmdResults('wmic os get lastbootuptime');
 		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$boottime=(integer)$lines[1];
+		$boottime=(int)$lines[1];
 		$bootdate=substr($boottime, 0,4).'-'.substr($boottime, 4,2).'-'.substr($boottime, 6,2);
 		$bootdate .= ' '.substr($boottime, 8,2).':'.substr($boottime, 10,2).':'.substr($boottime, 12,2);
 		$json['bootdate']=$bootdate;

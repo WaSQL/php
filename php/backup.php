@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	backup script to automate backing up database and files
 	Use:
@@ -50,7 +50,7 @@ foreach($ALLCONFIG as $site=>$host){
 		$found=0;
 		$days=preg_split('/\,/',$host['backup_email_days']);
 		foreach($days as $day){
-			if((integer)$day==(integer)$cday){$found=1;break;}
+			if((int)$day==(int)$cday){$found=1;break;}
 		}
 		if($found==0){continue;}
 	}
@@ -121,7 +121,7 @@ foreach($ALLCONFIG as $site=>$host){
 	}
 	//cleanup
 	if(!isset($host['backup_retain_days'])){$host['backup_retain_days']=5;}
-	$days=(integer)$host['backup_retain_days'];
+	$days=(int)$host['backup_retain_days'];
 	if($days < 1){$days=1;}
 	$ok=cleanupDirectory($host['backup_dir'],$days);
 	//email

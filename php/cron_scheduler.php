@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	Instructions:
 		run cron_scheduler.php from a command-line every minute as follows
@@ -69,7 +69,7 @@ if($dbversion < 5.7){
 
 global $databaseCache;
 $etime=microtime(true)-$starttime;
-$etime=(integer)$etime;
+$etime=(int)$etime;
 $pid_check=1;
 $wherestr_all=cronBuildWhere();
 if(!count($ConfigXml)){exit;}
@@ -86,7 +86,7 @@ elseif(in_array('twice',$argv)){
 	$loop_max=2;
 }
 elseif(isset($argv[1]) && isNum($argv[1])){
-	$loop_max=(integer)$argv[1];
+	$loop_max=(int)$argv[1];
 }
 $loop_cnt=0;
 
@@ -473,7 +473,7 @@ function cronCleanRecords($cron=array()){
 function cronLogTails(){
 	global $CONFIG;
 	$logs=array();
-	$rowcount=isset($CONFIG['logs_rowcount'])?(integer)$CONFIG['logs_rowcount']:100;
+	$rowcount=isset($CONFIG['logs_rowcount'])?(int)$CONFIG['logs_rowcount']:100;
 	$tempdir=getWasqlPath('php/temp');
 	foreach($CONFIG as $k=>$v){
 		$lk=strtolower($k);
@@ -490,7 +490,7 @@ function cronLogTails(){
 			if(is_file($afile)){
 				$mtime=filemtime($afile);
 				$etime=time()-$mtime;
-				if((integer)$etime < 10){
+				if((int)$etime < 10){
 					$skip=1;
 				}
 			}

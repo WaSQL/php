@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 //Input validation helper functions
 function tempfilesValidateFileName($filename){
 	//Prevent path traversal attacks
@@ -60,7 +60,7 @@ function tempfilesShowFileLines($content,$scrollto=0){
 		$outlines[]="<code id=\"line_{$n}\">{$line}</code>";
 	}
 	$rtn=implode(PHP_EOL,$outlines);
-	if((integer)$scrollto > 0){
+	if((int)$scrollto > 0){
 		$rtn.=<<<ENDOFSCRIPT
 <script>
 		let el=document.getElementById('line_{$scrollto}');
@@ -104,7 +104,7 @@ function tempfilesShowList($ext,$sort){
 	foreach($files as $i=>$file){
 		if(preg_match('/\_u([0-9]+?)\_/',$file['name'],$m)){
 			//Validate as integer to prevent SQL injection
-			$uid=(integer)$m[1];
+			$uid=(int)$m[1];
 			if($uid > 0 && !in_array($uid,$uids)){
 				$uids[]=$uid;
 			}

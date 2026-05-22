@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 //Access control check
 if(!isAdmin()){
 	echo '<div class="w_bold w_danger">Access Denied: Admin privileges required</div>';
@@ -30,7 +30,7 @@ switch(strtolower($_REQUEST['func'])){
 			exit;
 		}
 		//Convert to integer for safety
-		$xdays=(integer)$xdays;
+		$xdays=(int)$xdays;
 		//Call cleanup and check result
 		$result=cleanupDirectory($path,$xdays,'days');
 		if($result === false){

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $progpath=dirname(__FILE__);
 require_once "{$progpath}/authnet/AuthorizeNet.php";
 /* Functions for Authorize.net Advanced Integration Method (AIM)
@@ -806,7 +806,7 @@ function authnetCharge($params=array()){
 			}
       	}
     //response_code: 1=approved, 2=declined, 3=error
-    switch((integer)$result['response_code']){
+    switch((int)$result['response_code']){
 		case 1: $result['response_text']='approved';break;
 		case 2: $result['response_text']='declined';break;
 		case 3: $result['response_text']='error';break;

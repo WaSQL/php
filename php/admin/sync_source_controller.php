@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
@@ -30,12 +30,12 @@
 			return;
 		break;
 		case 'addedit':
-			$id=(integer)$_REQUEST['id'];
+			$id=(int)$_REQUEST['id'];
 			setView('sync_source_addedit',1);
 			return;
 		break;
 		case 'sync':
-			$id=(integer)$_REQUEST['id'];
+			$id=(int)$_REQUEST['id'];
 			$rec=getDBRecordById('sync_source',$id);
 			$fields=preg_split('/\,+/',$rec['sync_fields']);
 			foreach($fields as $i=>$field){
@@ -65,7 +65,7 @@
 			return;
 		break;
 		case 'check':
-			$rec=getDBRecordById('sync_source',(integer)$_REQUEST['id']);
+			$rec=getDBRecordById('sync_source',(int)$_REQUEST['id']);
 			$url="https://{$rec['source_domain']}/php/admin.php";
 			$fields=preg_split('/\,+/',$rec['sync_fields']);
 			foreach($fields as $i=>$field){

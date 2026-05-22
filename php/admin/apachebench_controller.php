@@ -1,12 +1,12 @@
-<?php
+﻿<?php
 /*
 	https://httpd.apache.org/docs/2.4/programs/ab.html
 */
 switch(strtolower($_REQUEST['func'])){
 	case 'run':
 		// Validate and sanitize inputs
-		$n=(integer)$_REQUEST['requests'];
-		$c=(integer)$_REQUEST['concurrency'];
+		$n=(int)$_REQUEST['requests'];
+		$c=(int)$_REQUEST['concurrency'];
 
 		// Validate numeric inputs
 		if($n <= 0 || $n > 100000){

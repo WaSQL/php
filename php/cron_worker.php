@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 	Instructions:
 		run cron_worker.php from a command-line every minute as follows
@@ -69,7 +69,7 @@ if($dbversion < 5.7){
 
 global $databaseCache;
 $etime=microtime(true)-$starttime;
-$etime=(integer)$etime;
+$etime=(int)$etime;
 $pid_check=1;
 if(!count($ConfigXml)){exit;}
 $tpath=getWaSQLPath('php/temp');
@@ -318,7 +318,7 @@ ENDOFSQL;
 		);
 		$ok=editDBRecordById('_cron',$cronrec['_id'],$eopts);
 		$etime=microtime(true)-$starttime;
-		$etime=(integer)$etime;
+		$etime=(int)$etime;
 		$cron_pid=getmypid();
 		cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, process_pid: {$cron_pid} finished");
 	}
