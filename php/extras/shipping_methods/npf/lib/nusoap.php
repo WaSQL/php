@@ -6936,7 +6936,7 @@ class nusoap_parser extends nusoap_base {
 			// raw UTF-8 that, e.g., might not map to iso-8859-1
 			// TODO: this can also be handled with xml_parser_set_option($this->parser, XML_OPTION_TARGET_ENCODING, "ISO-8859-1");
 			if($this->decode_utf8){
-				$data = utf8_decode($data);
+				$data = mb_convert_encoding($data, 'ISO-8859-1', 'UTF-8');
 			}
 		}
         $this->message[$pos]['cdata'] .= $data;
@@ -7007,13 +7007,13 @@ class nusoap_parser extends nusoap_base {
 			return (int) $value;
 		}
 		if ($type == 'float' || $type == 'double' || $type == 'decimal') {
-			return (double) $value;
+			return (float) $value;
 		}
 		if ($type == 'boolean') {
 			if (strtolower($value) == 'false' || strtolower($value) == 'f') {
 				return false;
 			}
-			return (boolean) $value;
+			return (bool) $value;
 		}
 		if ($type == 'base64' || $type == 'base64Binary') {
 			$this->debug('Decode base64 value');

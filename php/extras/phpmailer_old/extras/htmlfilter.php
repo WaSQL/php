@@ -45,7 +45,7 @@ function tln_tagprint($tagname, $attary, $tagtype)
         $fulltag = '<' . $tagname;
         if (is_array($attary) && sizeof($attary)) {
             $atts = array();
-            while (list($attname, $attvalue) = each($attary)) {
+            foreach ($attary as $attname => $attvalue) {
                 array_push($atts, "$attname=$attvalue");
             }
             $fulltag .= ' ' . join(' ', $atts);
@@ -521,7 +521,7 @@ function tln_fixatts(
     $bad_attvals,
     $add_attr_to_tag
 ) {
-    while (list($attname, $attvalue) = each($attary)) {
+    foreach ($attary as $attname => $attvalue) {
         /**
          * See if this attribute should be removed.
          */
@@ -529,7 +529,7 @@ function tln_fixatts(
             if (preg_match($matchtag, $tagname)) {
                 foreach ($matchattrs as $matchattr) {
                     if (preg_match($matchattr, $attname)) {
-                        unset($attary{$attname});
+                        unset($attary[$attname]);
                         continue;
                     }
                 }

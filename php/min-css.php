@@ -2218,10 +2218,10 @@ class CssMin
 	public static function initialise()
 		{
 		// Create the class index for autoloading or including
-		if(!function_exists('each')){return false;}
 		$paths = array(dirname(__FILE__));
-		while (list($i, $path) = each($paths))
+		for ($i = 0; $i < count($paths); $i++)
 			{
+			$path = $paths[$i];
 			$subDirectorys = glob($path . "*", GLOB_MARK | GLOB_ONLYDIR | GLOB_NOSORT);
 			if (is_array($subDirectorys))
 				{
@@ -2294,7 +2294,7 @@ class CssMin
 	 */
 	public static function setVerbose($to)
 		{
-		self::$isVerbose = (boolean) $to;
+		self::$isVerbose = (bool) $to;
 		return self::$isVerbose;
 		}
 	/**

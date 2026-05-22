@@ -110,6 +110,6 @@ if(isset($_SESSION['tempfiles_message'])){
 		    color: #999;
 		}
 	</style>
-	<pre class="viewfile" id="view_file"><?=tempfilesShowFileLines($content,(integer)$_REQUEST['line']);?></pre>
+	<pre class="viewfile" id="view_file"><?=tempfilesShowFileLines($content,(int)$_REQUEST['line']);?></pre>
 	</div>
 </view:view_file>

@@ -136,7 +136,7 @@ abstract class Util
         }
 
         if (is_string($value) && self::$isMbstringAvailable && mb_detect_encoding($value, "UTF-8", true) != "UTF-8") {
-            return utf8_encode($value);
+            return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
         } else {
             return $value;
         }

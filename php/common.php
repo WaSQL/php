@@ -7257,7 +7257,7 @@ function array2XML($buffer=array(),$main='main',$item='item',$skip=0){
 			if(preg_match('/^[0-9]/',$key)){continue;}
 			//skip blank values
 			if(strlen($value)==0){continue;}
-			$val=utf8_encode($value);
+			$val=mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
 			$val=xmlEncodeCDATA($val);
             $xml .= "        <{$key}>".$val."</{$key}>\n";
         	}
@@ -7343,7 +7343,7 @@ function arrays2RSS($recs = array(), $params = array()) {
             $val = $rec[$sourceField];
             
             if (!isset($params['-utf8']) || $params['-utf8'] == 1) {
-                $val = utf8_encode($val);
+                $val = mb_convert_encoding($val, 'UTF-8', 'ISO-8859-1');
             }
             if (!isset($params['-encode']) || $params['-encode'] == 1) {
                 $val = xmlEncodeCDATA($val);
@@ -10021,7 +10021,7 @@ function encodeQP($data , $line_max = 76){
 	$eol    = MAIL_MIMEPART_CRLF;
 	$escape = '=';
 	$output = '';
-	while(list(, $line) = each($lines)){
+	foreach($lines as $line){
 		$line    = preg_split('||', $line, -1, PREG_SPLIT_NO_EMPTY);
 		$linlen     = count($line);
 		$newline = '';
@@ -15205,7 +15205,7 @@ function fileStat($file) {
 function fixEncoding($in_str=''){
 	$cur_encoding = mb_detect_encoding($in_str) ;
 	if($cur_encoding == "UTF-8" && mb_check_encoding($in_str,"UTF-8")){return $in_str;}
-	else{return utf8_encode($in_str);}
+	else{return mb_convert_encoding($in_str, 'UTF-8', 'ISO-8859-1');}
 	}
 //---------- begin function fixMicrosoft ----------
 /**
@@ -15974,7 +15974,7 @@ function getRemoteEnv(){
 	foreach($_SERVER as $key=>$val){
 		if(is_array($val) || !strlen($val)){continue;}
         	if(preg_match('/^(REMOTE\_|GUID|HTTP\_USER\_AGENT)/i',$key)){
-            $val=utf8_encode($val);
+            $val=mb_convert_encoding($val, 'UTF-8', 'ISO-8859-1');
 			$val=xmlEncodeCDATA($val);
             $xml .= "        <{$key}>".$val."</{$key}>\n";
 		}
@@ -17646,7 +17646,7 @@ function getCSVFileContents($file,$params=array()){
 	    for ($c=0; $c < count($data); $c++) {
 			$val=trim($data[$c]);
 			if(isset($params['-utf8_encode']) && $params['-utf8_encode']){
-				$val=utf8_encode($val);
+				$val=mb_convert_encoding($val, 'UTF-8', 'ISO-8859-1');
 			}
 			$field=$fields[$c];
 			//echo "c:{$c}, Field:{$field}, val:{$val}";exit;
