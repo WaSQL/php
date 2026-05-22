@@ -101,7 +101,7 @@ file_put_contents($postedit['alock'],$postedit['pid']);
 $postedit['folder']=!empty($postedit['alias'])?$postedit['alias']:$postedit['name'];
 $basefolder=$postedit['folder'];
 //allow timer to be set in postedit.xml
-$postedit['timer']=!empty($postedit['timer'])?(integer)$postedit['timer']:20;
+$postedit['timer']=!empty($postedit['timer'])?(int)$postedit['timer']:20;
 //allow timezone to be set
 if(!empty($postedit['timezone'])){
 	date_default_timezone_set($postedit['timezone']);
@@ -329,8 +329,9 @@ function writeFiles(){
 		abortMessage($msg);
 	}
 	//echo $post['body'];exit;
-	//convert xml to array
-	$xml = simplexml_load_string($post['body'],'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
+	//convert xml to array - strip UTF-8 BOM(s) that break simplexml_load_string
+	$body = preg_replace('/^(\xEF\xBB\xBF)+/', '', $post['body']);
+	$xml = simplexml_load_string($body,'SimpleXMLElement',LIBXML_NOCDATA | LIBXML_PARSEHUGE );
 	$xml=(array)$xml;
 	//check for fatal xml errors
 	if(isset($xml['fatal_error'])){
