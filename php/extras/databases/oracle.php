@@ -1332,6 +1332,11 @@ function oracleDBConnect($params=array()){
 		debugValue("oracleDBConnect error: no connect params".printValue($params));
 		return null;
 	}
+	// Inject CONNECT_TIMEOUT into TNS descriptor if not already set.
+	// oci_connect() has no timeout param — it must live in the descriptor string.
+	if(is_string($params['-connect']) && stripos($params['-connect'],'CONNECT_TIMEOUT')===false){
+		$params['-connect']=str_ireplace('(DESCRIPTION=','(DESCRIPTION=(CONNECT_TIMEOUT=5)',$params['-connect']);
+	}
 	if(isset($params['-single'])){
 		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset'],$params['-dbsysdba']);
 		if(!is_resource($dbh_single)){

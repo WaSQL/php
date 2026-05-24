@@ -1411,6 +1411,11 @@ function postgresqlDBConnect(){
 		debugValue("postgresqlDBConnect error: No connect params".printValue($params));
 		return '';
 	}
+	// Guarantee connect_timeout regardless of how the connection string was built
+	// (parseConnectParams only adds it when building the string from scratch)
+	if(!stringContains($params['-connect'],'connect_timeout')){
+		$params['-connect'].=" connect_timeout=5";
+	}
 	global $dbh_postgresql;
 	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
 	set_error_handler('postgresExceptionErrorHandler');
@@ -1421,8 +1426,8 @@ function postgresqlDBConnect(){
 		$err=$e->getMessage();
 		restore_error_handler();
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 10 seconds" . printValue($params));
-		sleep(10);
+		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 1 second" . printValue($params));
+		sleep(1);
 		set_error_handler('postgresExceptionErrorHandler');
 		try{
 			$dbh_postgresql = pg_connect($params['-connect']);
@@ -1431,8 +1436,8 @@ function postgresqlDBConnect(){
 			$err=$e->getMessage();
 			restore_error_handler();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-			debugValue("postgresqlDBConnect exception: {$err}. Will retry in 60 seconds" . printValue($params));
-			sleep(60);
+			debugValue("postgresqlDBConnect exception: {$err}. Will retry in 3 seconds" . printValue($params));
+			sleep(3);
 			set_error_handler('postgresExceptionErrorHandler');
 			try{
 				$dbh_postgresql = pg_connect($params['-connect']);
@@ -2969,7 +2974,7 @@ function postgresqlParseConnectParams($params=array()){
 		}
 		//add connect_timeout
 		if(!stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=" connect_timeout=10";
+			$params['-connect'].=" connect_timeout=5";
 		}
 		//add sslmode=disable
 		if(!stringContains($params['-connect'],'sslmode')){

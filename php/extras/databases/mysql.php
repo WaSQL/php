@@ -975,7 +975,7 @@ function mysqlParseConnectParams($params=array()){
 			//$params['-dbport_source']="CONFIG mysql_dbport";
 		}
 		else{
-			$params['-dbport']=5432;
+			$params['-dbport']=3306;
 			//$params['-dbport_source']="default port";
 		}
 	}
@@ -1144,11 +1144,15 @@ function mysqlDBConnect($params=array()){
 		else{$host=$params['-dbhost'];}
 		if(!commonStrlen($host)){$host='127.0.0.1';}
 		$host=gethostbyname($host);
-		$dbh_mysql = mysqli_connect($host,$params['-dbuser'],$params['-dbpass'],$params['-dbname']);
-		if(!is_object($dbh_mysql)){
+		$port=isset($params['-dbport']) ? (int)$params['-dbport'] : 3306;
+		// mysqli_connect() has no timeout parameter; use init+options+real_connect
+		$dbh_mysql = mysqli_init();
+		mysqli_options($dbh_mysql, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+		$connected = @mysqli_real_connect($dbh_mysql, $host, $params['-dbuser'], $params['-dbpass'], $params['-dbname'], $port);
+		if(!$connected || !is_object($dbh_mysql)){
 			$err=@mysqli_connect_error();
 			$CONFIG['mysql_error']=$err;
-			debugValue("mysqlDBConnect error: Connection failed");
+			debugValue("mysqlDBConnect error: Connection failed - {$err}");
 			return null;
 		}
 		//note: this caused issues with vietnam language

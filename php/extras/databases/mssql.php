@@ -1019,6 +1019,10 @@ function mssqlDBConnect($params=array()){
 			echo "mssqlDBConnect error: no connect params".printValue($params);
 			exit;
 		}
+		// Guarantee LoginTimeout regardless of how the connect array was built
+		if(is_array($params['-connect']) && !isset($params['-connect']['LoginTimeout'])){
+			$params['-connect']['LoginTimeout']=5;
+		}
 		$params['phpversion']=phpversion();
 		if(isset($params['-dbuser']) && strlen($params['-dbuser'])){
 			$params['-connect']['UID']=$params['-dbuser'];
