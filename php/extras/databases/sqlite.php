@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 /*
 	sqlite3 Database functions

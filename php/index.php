@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $starttime=microtime(true);
 $loadtimes=array();
 //verify a few functions

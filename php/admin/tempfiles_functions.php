@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 //Input validation helper functions
 function tempfilesValidateFileName($filename){
 	//Prevent path traversal attacks

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	Instructions:
 		run cron_scheduler.php from a command-line every minute as follows

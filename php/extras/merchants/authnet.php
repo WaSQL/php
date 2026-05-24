@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $progpath=dirname(__FILE__);
 require_once "{$progpath}/authnet/AuthorizeNet.php";
 /* Functions for Authorize.net Advanced Integration Method (AIM)

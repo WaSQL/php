@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* 
 	Getting a list of world city populations turns out to be quite difficult
 		http://opengeocode.org/download/cow.php

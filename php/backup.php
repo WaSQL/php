@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	backup script to automate backing up database and files
 	Use:

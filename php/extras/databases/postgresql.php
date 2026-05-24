@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	postgresql.php - a collection of postgresqls functions for use by WaSQL.
 	

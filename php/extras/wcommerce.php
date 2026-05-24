@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	wcommerce - WaSQL functions to support an e-commerce site
 	References:

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 //Input validation functions
 function importValidateDatabaseName($name){
 	//Only allow alphanumeric, underscore, and hyphen

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 	global $CONFIG;
 	switch(strtolower($_REQUEST['func'])){
 		case 'filter':

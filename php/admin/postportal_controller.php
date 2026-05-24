@@ -97,7 +97,7 @@ switch($func){
 			return;
 		}
 		// Validate URL format
-		$url = trim($_REQUEST['url']);
+		$url = postportalReplaceVariables(trim($_REQUEST['url']));
 		if(!filter_var($url, FILTER_VALIDATE_URL)){
 			$error = 'Invalid URL format';
 			setView('error', 1);
@@ -114,7 +114,7 @@ switch($func){
 		// Parse headers with size limit
 		$request_headers = array();
 		if(isset($_REQUEST['headers']) && strlen(trim($_REQUEST['headers'])) > 0){
-			$headers_input = trim($_REQUEST['headers']);
+			$headers_input = postportalReplaceVariables(trim($_REQUEST['headers']));
 			// Limit headers to 100KB
 			if(strlen($headers_input) > 102400){
 				$error = 'Request headers too large (max 100KB)';
@@ -130,28 +130,37 @@ switch($func){
 			}
 		}
 		// Get request body with size limit (10MB max)
-		$request_body = isset($_REQUEST['body']) ? $_REQUEST['body'] : '';
+		$request_body = postportalReplaceVariables(isset($_REQUEST['body']) ? $_REQUEST['body'] : '');
 		if(strlen($request_body) > 10485760){
 			$error = 'Request body too large (max 10MB)';
 			setView('error', 1);
 			return;
 		}
+		// Build send_headers: resolve @file: references for the actual request only.
+		// $request_headers retains @file: literals so history never stores secret values.
+		$send_headers = $request_headers;
+		foreach($send_headers as $i => $header){
+			if(stringBeginsWith(trim($header['value']), '@file:')){
+				$filepath = trim(substr($header['value'], 6));
+				if(is_file($filepath)){
+					$send_headers[$i]['value'] = trim(getFileContents($filepath));
+				}
+			}
+		}
 		// Get auth settings
 		$auth_type = isset($_REQUEST['auth_type']) ? $_REQUEST['auth_type'] : 'none';
 		if($auth_type == 'basic' && isset($_REQUEST['auth_username']) && isset($_REQUEST['auth_password'])){
-			$request_headers[]=array(
-				'name'=>'Authorization',
-				'value' => 'Basic ' . base64_encode($_REQUEST['auth_username'] . ':' . $_REQUEST['auth_password'])
-			);
+			$auth_header = array('name'=>'Authorization','value'=>'Basic '.base64_encode($_REQUEST['auth_username'].':'.$_REQUEST['auth_password']));
+			$request_headers[] = $auth_header;
+			$send_headers[]    = $auth_header;
 		} elseif($auth_type == 'bearer' && isset($_REQUEST['auth_token'])){
-			$request_headers[]=array(
-				'name'=>'Authorization',
-				'value' => 'Bearer ' . trim($_REQUEST['auth_token'])
-			);
+			$auth_header = array('name'=>'Authorization','value'=>'Bearer '.trim($_REQUEST['auth_token']));
+			$request_headers[] = $auth_header;
+			$send_headers[]    = $auth_header;
 		}
 		// Make the request
 		$start_time = microtime(true);
-		$response = postportalSendRequest($url, $method, $request_headers, $request_body);
+		$response = postportalSendRequest($url, $method, $send_headers, $request_body);
 		$duration = round((microtime(true) - $start_time) * 1000, 2);
 
 		// Format response for display

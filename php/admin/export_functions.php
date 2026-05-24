@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 //Input validation functions
 function exportValidateFilename($filename){
 	//Prevent path traversal and ensure safe filename

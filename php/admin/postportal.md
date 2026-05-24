@@ -19,7 +19,7 @@ PostPortal is a built-in API testing tool that lets you send HTTP requests and i
 
 1. Log in to your WaSQL admin interface as an administrator
 2. Click on **PostPortal** in the admin menu
-3. You'll see three main tabs: **Requests**, **History**, and **Environment**
+3. You'll see four main tabs: **Requests**, **History**, **Environment**, and **Documentation**
 
 > **Note:** PostPortal is only available to administrators for security reasons.
 
@@ -41,8 +41,6 @@ You'll see the response with user information from GitHub's API!
 ## The Request Builder
 
 ### Basic Request
-
-<img src="request-builder.png" alt="Request Builder" />
 
 **1. HTTP Method**
 Choose from:
@@ -143,6 +141,17 @@ User-Agent: MyApp/1.0
 - Custom authentication
 - Requesting specific response formats
 
+#### Reading a Header Value from a File
+
+Use `@file:` followed by an absolute path to load a header value from a file on the server. The file contents are trimmed and substituted at request time — the raw value is never stored in history.
+
+```
+Authorization: Bearer @file:/var/secrets/api_token.txt
+X-API-Key: @file:/etc/myapp/keys/api.key
+```
+
+This is useful for tokens that rotate or that you don't want stored in the database.
+
 ---
 
 ### Body Tab
@@ -176,14 +185,14 @@ Send data with POST, PUT, or PATCH requests.
 
 ## Understanding Responses
 
-After sending a request, you'll see:
+After sending a request, you'll see status information and four tabs. **Response Body is shown by default.**
 
 ### Status Information
 
 - **Status Code** - Color-coded for quick understanding:
-  - 🟢 **Green (2xx)** - Success! Everything worked
-  - 🟡 **Yellow (3xx)** - Redirect or cached response
-  - 🔴 **Red (4xx/5xx)** - Error (client or server)
+  - Green (2xx) - Success! Everything worked
+  - Yellow (3xx) - Redirect or cached response
+  - Red (4xx/5xx) - Error (client or server)
 
 - **Time** - How long the request took in milliseconds
 - **Size** - Response body size
@@ -202,43 +211,41 @@ After sending a request, you'll see:
 
 ### Response Tabs
 
+**Response Body** *(default)*
+The actual data returned. Automatically formatted for:
+- **JSON** - Pretty-printed
+- **XML** - Indented and formatted
+- **HTML** - Shown as escaped code
+- **Plain Text** - Displayed as-is
+
+Use the copy icon in the top-right corner of the response body to copy the content to your clipboard.
+
+**Response Headers**
+Shows headers the server sent back. Check for content type, rate limiting, caching, and server information.
+
 **Request Headers**
 Shows what headers you sent. Useful for verifying authentication was included.
 
 **Request Body**
 Shows the exact data you sent. Good for confirming format.
 
-**Response Headers**
-Shows headers the server sent back. Check for:
-- Content type
-- Rate limiting information
-- Caching headers
-- Server information
-
-**Response Body**
-The actual data returned. Automatically formatted for:
-- **JSON** - Pretty-printed and syntax-highlighted
-- **XML** - Indented and formatted
-- **HTML** - Shown as code
-- **Plain Text** - Displayed as-is
-
 ---
 
 ## Request History
 
-PostPortal automatically saves your last 15 requests so you can easily replay them.
+PostPortal saves requests to your personal history. The **Save to history** checkbox at the bottom of the request form is checked by default — uncheck it when you don't want a request saved.
 
 ### Using History
 
 1. Click the **History** tab
 2. Find the request you want to replay
-3. Click the ▶️ forward arrow icon
-4. The request loads into the builder—modify if needed and send again!
+3. Click the forward arrow icon
+4. The request loads into the builder — modify if needed and send again
 
 ### Managing History
 
-- **Replay** - ▶️ icon loads the request
-- **Delete** - ❌ icon removes individual requests
+- **Replay** - Arrow icon loads the request into the builder
+- **Delete** - X icon removes individual requests
 - **Clear History** - Removes all saved requests
 
 **What's Saved:**
@@ -256,7 +263,7 @@ PostPortal automatically saves your last 15 requests so you can easily replay th
 
 ## Environment Variables
 
-Store values you use repeatedly like API keys, base URLs, or user IDs.
+Store values you use repeatedly like API keys, base URLs, or user IDs. Environment variables are substituted in the **URL**, **Headers**, and **Body** before the request is sent.
 
 ### Creating Variables
 
@@ -400,28 +407,44 @@ Params Tab:
 
 ---
 
+### Example 6: Token from a File
+
+**Goal:** Use a rotating bearer token stored on disk
+
+```
+Method: GET
+URL: https://api.example.com/data
+Headers:
+  Authorization: Bearer @file:/var/secrets/token.txt
+```
+
+The server reads `/var/secrets/token.txt` at request time and substitutes the trimmed contents as the header value.
+
+---
+
 ## Tips & Best Practices
 
 ### Organization Tips
 
-✅ **Use Environment Variables** for anything you use repeatedly
-✅ **Save useful requests** by using history
-✅ **Name your variables clearly** - `api_key` not `k1`
-✅ **Test with small requests first** then add complexity
+- Use **Environment Variables** for anything you use repeatedly
+- Use **Save to history** (checked by default) to keep a record of useful requests
+- Name your variables clearly — `api_key` not `k1`
+- Test with simple requests first, then add complexity
 
 ### Debugging Tips
 
-🔍 **Check the status code first** - it tells you what went wrong
-🔍 **Look at response headers** - they often contain clues
-🔍 **Compare request vs response** - did you send what you thought?
-🔍 **Use history** to see if something changed between attempts
+- Check the status code first — it tells you what went wrong
+- Look at response headers — they often contain clues
+- Compare request vs response — did you send what you thought?
+- Use history to see if something changed between attempts
 
 ### Security Tips
 
-🔒 **Store API keys in environment variables**, not in URLs
-🔒 **Clear history** after testing with sensitive data
-🔒 **Don't share screenshots** of responses with tokens
-🔒 **Use test accounts** when developing
+- Store API keys in environment variables, not in URLs
+- Use `@file:` for tokens that shouldn't be stored in the database at all
+- Clear history after testing with sensitive data
+- Don't share screenshots of responses with tokens
+- Use test accounts when developing
 
 ---
 
@@ -469,13 +492,6 @@ Params Tab:
 
 ---
 
-## Keyboard Shortcuts
-
-- **Ctrl+Enter** - Send request (when focus is in form)
-- **Ctrl+K** - Focus URL field
-
----
-
 ## Limits & Restrictions
 
 - **History:** Last 15 requests saved per user
@@ -493,7 +509,7 @@ Params Tab:
 A: No, environment variables are private to each user account.
 
 **Q: Can I export my request history?**
-A: Not currently. Use your browser's copy/paste to save important requests.
+A: Not currently. Use your browser's copy button on the response body to save important responses.
 
 **Q: Does PostPortal work with GraphQL APIs?**
 A: Yes! Use POST method with your GraphQL query in the body.
@@ -502,7 +518,7 @@ A: Yes! Use POST method with your GraphQL query in the body.
 A: Yes, as long as the WaSQL server can reach that URL.
 
 **Q: Is my data secure?**
-A: Yes, all data is stored in your database and only accessible by your user account. History and environment variables are private.
+A: Yes, all data is stored in your database and only accessible by your user account. History and environment variables are private. Use `@file:` for secrets you don't want stored in the database at all.
 
 **Q: Can I use PostPortal for file uploads?**
 A: Limited support. You can send file data in the body, but there's no file picker interface.
@@ -565,11 +581,10 @@ X-API-Key: {{api_key}}
 
 PostPortal gives you everything you need to test APIs right from your WaSQL admin interface:
 
-✅ Send any HTTP request (GET, POST, PUT, DELETE, etc.)
-✅ Authenticate with Basic Auth or Bearer tokens
-✅ View formatted responses (JSON, XML, HTML)
-✅ Save and replay requests from history
-✅ Store reusable values in environment variables
-✅ All your data stays private and secure
-
-**Start testing APIs in seconds—no external tools required!**
+- Send any HTTP request (GET, POST, PUT, DELETE, PATCH, OPTIONS)
+- Authenticate with Basic Auth or Bearer tokens
+- View formatted responses (JSON, XML, HTML)
+- Save and replay requests from history
+- Store reusable values in environment variables
+- Load sensitive header values from server-side files with `@file:`
+- All your data stays private and secure

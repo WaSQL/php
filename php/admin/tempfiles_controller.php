@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 //Access control check
 if(!isAdmin()){
 	echo '<div class="w_bold w_danger">Access Denied: Admin privileges required</div>';

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* 	Functions to handle our own sessions so that multiple request from the same session are not waiting on each other.
 	Since we use sessions a lot, this makes sense.
 

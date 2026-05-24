@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	Show record icon if log queries is on
 		set at config, database level

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	sqlsrv requires php 7.2 or greater.
 	in order to install sqlsrv you will need pecl and unixodbc 

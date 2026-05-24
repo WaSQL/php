@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $progpath=dirname(__FILE__);
 include_once("$progpath/weather/phpweatherlib.php");
 /* References:

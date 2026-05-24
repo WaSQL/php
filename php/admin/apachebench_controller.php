@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	https://httpd.apache.org/docs/2.4/programs/ab.html
 */

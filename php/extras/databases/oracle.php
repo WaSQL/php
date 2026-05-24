@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* 
 	http://php.net/manual/en/oci8.configuration.php
 	https://www.oracle.com/database/technologies/xe-downloads.html

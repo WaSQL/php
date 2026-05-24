@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	ctree.php - a collection of cTREE Database functions for use by WaSQL.
 	

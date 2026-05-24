@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	mscsv.php - a collection of Microsoft Text functions for use by WaSQL.
 	

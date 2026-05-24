@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 	CONFIG SETTINGS:
 		apache_access_log="{full path to access log}" -if set then it will trigger the cron to read and parse

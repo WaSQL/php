@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;

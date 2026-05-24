@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 	//CRITICAL: Access control check - DB Sync is a sensitive operation
 	if(!isAdmin()){
 		echo '<div class="w_bold w_danger">Access Denied: Admin privileges required</div>';

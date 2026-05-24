@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $progpath=dirname(__FILE__);
 /*
 	Google Add to Calendar link example:

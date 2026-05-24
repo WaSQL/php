@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 /*
 	firebird Database functions

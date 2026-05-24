@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 function logsGetLogs($includes=array(),$excludes=array()){
 	global $CONFIG;
 	$logs=array();

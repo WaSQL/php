@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Authentication check - ensure user is logged in
 global $USER;
 if(!isUser()){

@@ -6,8 +6,8 @@
 			<li class="active"><a href="#" id="postportal_nav_requests" data-tab="1" data-_menu="postportal" data-func="request" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-forward"></span> Requests</a></li>
 			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="history" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-history"></span> History</a></li>
 			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="environment" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-gear"></span> Environment</a></li>
+			<li><a href="#" data-tab="1" data-_menu="postportal" data-func="documentation" data-nav="/php/admin.php" data-div="main_content" onclick="return wacss.nav(this);"><span class="icon-info-circled"></span> Documentation</a></li>
 		</ul>
-		<button type="button" class="wacss_button is-small is-rounded is-mobile-responsive" data-nav="/php/admin.php" data-div="centerpop" data-_menu="postportal" data-func="documentation" onclick="return wacss.nav(this);"><span class="icon-help"></span> Help</button>
 	</div>
 	<div class="w_padtop" id="main_content">
 	<?=renderView('request');?>
@@ -144,12 +144,12 @@
 	<?=renderViewIf(!empty($request_data['response']['error']), 'error_message',$request_data,'request_data');?>
 
 	<ul class="nav-tabs is-small">
-		<li class="active"><a href="#" onclick="return postportal.switchResponseTab(this, 'request_headers_tab');"><span class="icon-forward"></span> Request Headers (<?=count($request_data['request_headers']);?>)</a></li>
+		<li><a href="#" onclick="return postportal.switchResponseTab(this, 'request_headers_tab');"><span class="icon-forward"></span> Request Headers (<?=count($request_data['request_headers']);?>)</a></li>
 		<li><a href="#" onclick="return postportal.switchResponseTab(this, 'request_body_tab');"><span class="icon-forward"></span> Request Body (<?=postportalFormatBytes($request_data['request_body']);?>)</a></li>
 		<li><a href="#" onclick="return postportal.switchResponseTab(this, 'response_headers_tab');"><span class="icon-backward"></span>Response Headers (<?=count($request_data['response']['headers']);?>)</a></li>
 		<li class="active"><a href="#" onclick="return postportal.switchResponseTab(this, 'response_body_tab');"><span class="icon-backward"></span>Response Body (<?=postportalFormatBytes($request_data['response']['body']);?>)</a></li>
 	</ul>
-	<div id="request_headers_tab" class="postportal-response-tab" style="display:block;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
+	<div id="request_headers_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
 		<?=postportalHeadersList($request_data['request_headers']);?>
 	</div>
 	<div id="request_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
@@ -158,7 +158,7 @@
 	<div id="response_headers_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;">
 		<?=postportalHeadersList($request_data['response']['headers']);?>
 	</div>
-	<div id="response_body_tab" class="postportal-response-tab" style="display:none;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;position:relative;">
+	<div id="response_body_tab" class="postportal-response-tab" style="display:block;padding:15px;border:1px solid #ddd;border-top:none;max-height:600px;overflow:auto;position:relative;">
 		<view:copy_response_button>
 		<span class="icon-copy w_pointer" style="position:absolute;top:8px;right:12px;font-size:1.2em;z-index:1;" title="Copy to clipboard" onclick="wacss.copy2Clipboard(document.getElementById('response_body_content').innerText);return false;"></span>
 		</view:copy_response_button>

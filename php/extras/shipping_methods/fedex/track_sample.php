@@ -1,4 +1,4 @@
-﻿<?
+<?
 global $USER;
 if(!strlen($_REQUEST['tn'])){return "No Tracking Number";}
 $rtn='';
