@@ -135,6 +135,8 @@ function postportalSendRequest($url, $method = 'GET', $headers = array(), $body 
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		// Set timeout (30 seconds)
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		// Auto-decompress gzip/deflate/br responses
+		curl_setopt($ch, CURLOPT_ENCODING, '');
 		// Set maximum response size (50MB) to prevent memory exhaustion
 		curl_setopt($ch, CURLOPT_MAXFILESIZE, 52428800);
 		// SSL Certificate Verification
@@ -235,7 +237,7 @@ function postportalFormatResponse($body, $headers){
 		// Pretty print JSON with error handling
 		$json = json_decode($body);
 		if(json_last_error() === JSON_ERROR_NONE){
-			return '<pre class="w_code">' . encodeHtml(json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)) . '</pre>';
+			return '<pre class="w_code">' . encodeHtml(json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) . '</pre>';
 		} else {
 			// JSON parsing failed, show error and raw content
 			$error_msg = json_last_error_msg();
