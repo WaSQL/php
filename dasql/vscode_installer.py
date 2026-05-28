@@ -224,19 +224,19 @@ def createKeybindingsJson():
     """Create keybindings.json configuration for DaSQL."""
     keybindings_config = [
         {
-            "key": "ctrl+b",
+            "key": "f8",
             "command": "workbench.action.tasks.runTask",
             "args": "DaSQL: Execute Selection",
             "when": "editorTextFocus"
         },
         {
-            "key": "ctrl+shift+b",
+            "key": "shift+f8",
             "command": "workbench.action.tasks.runTask",
             "args": "DaSQL: Execute Current Line",
             "when": "editorTextFocus"
         },
         {
-            "key": "ctrl+alt+b",
+            "key": "ctrl+f8",
             "command": "workbench.action.tasks.runTask",
             "args": "DaSQL: Execute Entire File",
             "when": "editorTextFocus"
@@ -380,9 +380,9 @@ def main():
         print("1. Restart VS Code to load the new configuration")
         print("2. Open a SQL file or any file you want to execute with DaSQL")
         print("3. Use the following keyboard shortcuts:")
-        print("   - Ctrl+B: Execute selected text")
-        print("   - Ctrl+Shift+B: Execute current line")
-        print("   - Ctrl+Alt+B: Execute entire file")
+        print("   - F8: Execute selected text")
+        print("   - Shift+F8: Execute current line")
+        print("   - Ctrl+F8: Execute entire file")
         print("4. Or use Ctrl+Shift+P and search for 'DaSQL' to run tasks manually")
         print("\nNote: Make sure python3 and dasql.py are accessible from your system PATH")
     else:

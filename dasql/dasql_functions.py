@@ -50,7 +50,7 @@ def previewHTML(html_file, browser_path=None):
         print("⚠️ Could not find a known browser. Please pass `browser_path='path/to/browser.exe'`.")
         sys.exit(1)
 
-    subprocess.Popen([browser_exe, html_file], shell=True)
+    subprocess.Popen([browser_exe, html_file], shell=False)
 
 #---------- function previewMarkdown
 # @description Renders a Markdown file to HTML and opens it in a browser.  
@@ -91,9 +91,10 @@ def previewMarkdown(markdown_file, browser_path=None):
         <meta charset="utf-8">
         <title>Markdown Preview</title>
         <style>
-            body {{ font-family: Arial, sans-serif; padding: 2em; max-width: 800px; margin: auto; }}
-            pre {{ background: #f4f4f4; padding: 1em; overflow: auto; }}
-            code {{ background: #f4f4f4; padding: 0.2em 0.4em; }}
+            body {{ font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; padding: 2em; max-width: 860px; margin: auto; }}
+            pre {{ background: #f4f4f4; padding: 0.6em 0.8em 0.75em; overflow: auto; line-height: 1.5; }}
+            code {{ font-family: 'Consolas', 'Cascadia Code', 'Menlo', 'Monaco', monospace; font-size: 0.9em; background: #f4f4f4; padding: 0.2em 0.4em; }}
+            pre code {{ background: none; padding: 0; font-size: 0.875em; }}
 
             /* Tables */
             table {{ border-collapse: collapse; width: 100%; margin: 1em 0; }}
@@ -154,7 +155,7 @@ def previewMarkdown(markdown_file, browser_path=None):
         print("⚠️ Unable to view markdown. Could not find a known browser.")
         sys.exit(1)
 
-    subprocess.Popen([browser_exe, html_file], shell=True)
+    subprocess.Popen([browser_exe, html_file], shell=False)
 
 def evalCode(lang,ext,code):
     handle, name = tempfile.mkstemp(suffix=".{}".format(ext),prefix="dasql_",text=True)

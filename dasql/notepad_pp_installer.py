@@ -71,7 +71,8 @@ def get_latest_nppexec_url():
     """Get the latest NppExec release URL from GitHub"""
     try:
         api_url = "https://api.github.com/repos/d0vgan/nppexec/releases/latest"
-        with urllib.request.urlopen(api_url) as response:
+        req = urllib.request.Request(api_url, headers={'User-Agent': 'DaSQL-installer'})
+        with urllib.request.urlopen(req) as response:
             data = json.loads(response.read().decode())
         
         is_64bit = platform.machine().endswith('64')
@@ -98,7 +99,8 @@ def download_nppexec():
     
     if not url:
         print("Using fallback NppExec version...")
-        url = "https://github.com/d0vgan/nppexec/releases/download/v0.8.6/NppExec_0_8_6_dll_x64.zip"
+        arch = 'x64' if platform.machine().endswith('64') else 'x86'
+        url = f"https://github.com/d0vgan/nppexec/releases/download/v0.8.6/NppExec_0_8_6_dll_{arch}.zip"
         version = "v0.8.6"
     
     try:

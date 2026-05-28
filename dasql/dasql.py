@@ -30,6 +30,9 @@ script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 inifile = os.path.join(script_directory, "dasql.ini")
 
 # Read the file content without BOM
+if not os.path.isfile(inifile):
+    print("DaSQL: dasql.ini not found. Copy dasql.ini.sample to dasql.ini and configure it.")
+    sys.exit(1)
 file_content = df.readFileWithoutBOM(inifile)
 
 # Use configparser to parse the content
@@ -80,7 +83,7 @@ else:
             'format':params['output_format'],
             '-nossl':1,
             'offset':0,
-            'username':os.environ["USERNAME"].lower(),
+            'username':os.environ.get("USERNAME", os.environ.get("USER", "")).lower(),
             'AjaxRequestUniqueId':'dasql.py',
             '_auth': params.get('authkey',''),
             '_menu': 'sqlprompt',
@@ -158,7 +161,7 @@ else:
             for key in section:
                 params[key]=section[key]
             #set query to file contents
-            file = open(params['arg_query'], mode='r')
+            file = open(params['arg_query'], mode='r', encoding='utf-8')
             params['query'] = file.read()
             file.close()
             if(params['arg_query'].endswith('_deleteme')):
@@ -171,7 +174,7 @@ else:
             for key in section:
                 params[key]=section[key]
             #set query to file contents
-            file = open(params['arg_query'], mode='r')
+            file = open(params['arg_query'], mode='r', encoding='utf-8')
             params['query'] = file.read()
             file.close()
             if(params['arg_query'].endswith('_deleteme')):
@@ -210,7 +213,7 @@ else:
                     for key in section:
                         params[key]=section[key]
                     #set query to file contents
-                    file = open(params['arg_query'], mode='r')
+                    file = open(params['arg_query'], mode='r', encoding='utf-8')
                     params['query'] = file.read()
                     file.close()
                     if(params['arg_query'].endswith('_deleteme')):
@@ -245,7 +248,7 @@ else:
                     for key in section:
                         params[key]=section[key]
                     #set query to file contents
-                    file = open(params['arg_query'], mode='r')
+                    file = open(params['arg_query'], mode='r', encoding='utf-8')
                     params['query'] = file.read()
                     file.close()
                     if(params['arg_query'].endswith('_deleteme')):
@@ -257,7 +260,7 @@ else:
                     for key in section:
                         params[key]=section[key]
                     #set query to file contents
-                    file = open(params['arg_query'], mode='r')
+                    file = open(params['arg_query'], mode='r', encoding='utf-8')
                     params['query'] = file.read()
                     file.close()
                     if(params['arg_query'].endswith('_deleteme')):
@@ -266,7 +269,7 @@ else:
 
                 params['arg_query']=''
         elif os.path.isfile(sys.argv[2]):
-            file = open(sys.argv[2], mode='r')
+            file = open(sys.argv[2], mode='r', encoding='utf-8')
             params['query'] = file.read()
             file.close()
             if(sys.argv[2].endswith('_deleteme')):
@@ -389,7 +392,7 @@ else:
         if params['query'].endswith('?>'):
             params['query']=params['query'][:len(params['query'])-2]
         df.evalCode('lua','lua',params['query'])
-    elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","explain","select","insert","update","delete","with","create","alter","drop","truncate","grant","revoke","comment","explain","analyze","describe","desc","show","use","set","reset","call","execute","do","declare","fetch","copy","load","import","export","merge","lock","unload","begin","end","reindex")):
+    elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","explain","select","insert","update","delete","with","create","alter","drop","truncate","grant","revoke","comment","explain","analyze","describe","desc","show","use","set","reset","call","execute","exec","do","declare","fetch","copy","load","import","export","merge","lock","unload","begin","end","reindex","pragma","vacuum","refresh","checkpoint")):
         #prepare the key/value pairs to pass to WaSQL base_url
         data={
             'db': params['db'],
@@ -397,9 +400,9 @@ else:
             'format':params['output_format'],
             '-nossl':1,
             'offset':0,
-            'username':os.environ["USERNAME"].lower(),
+            'username':os.environ.get("USERNAME", os.environ.get("USER", "")).lower(),
             'AjaxRequestUniqueId':'dasql.py',
-            '_auth': params['authkey'],
+            '_auth': params.get('authkey',''),
             '_menu': 'sqlprompt',
             'sql_full':params['query']
         }
@@ -426,7 +429,7 @@ else:
             data['password']=params['password']
 
         #set the url to post to
-        url=params['base_url']+'/php/admin.php'
+        url=params['base_url'].rstrip('/')+'/php/admin.php'
         #disable ssl cert warnings since this is just an internal url anyway
         urllib3.disable_warnings()
 
