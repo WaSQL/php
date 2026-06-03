@@ -1031,6 +1031,216 @@ function dbQueryResults($db,$query,$params=array()){
 	}
 	return $recs;
 }
+//---------- begin function dbGroovyQueryResults
+/**
+* @describe Runs a SQL SELECT query through the persistent WaSQL Groovy server
+*           (groovy/server.groovy), starting the server automatically if it is
+*           not already running.  The first call after a cold start blocks while
+*           the JVM initialises (typically 5-15 s); all subsequent calls return
+*           in under 100 ms because the JVM and JDBC connections stay warm.
+* @param db string - database name as configured in config.xml
+* @param query string - SQL SELECT query
+* @param params array [optional]
+*	-index string  field name to key the returned array by
+* @return array|string  array of record-arrays on success; error string on failure
+* @usage
+*	$recs=dbGroovyQueryResults('mydb','SELECT * FROM users WHERE active=1');
+*	$map=dbGroovyQueryResults('mydb','SELECT id,name FROM products',['-index'=>'id']);
+*/
+function dbGroovyQueryResults($db,$query,$params=array()){
+	global $CONFIG;
+	$groovyDir=rtrim(str_replace('\\','/',getWasqlPath('/groovy')),'/');
+	if(isset($CONFIG['groovy_port'])){$port=$CONFIG['groovy_port'];}
+	else{$port=7070;}
+	$tokenFile=$groovyDir.DIRECTORY_SEPARATOR.'server.token';
+	$baseUrl="http://127.0.0.1:{$port}";
+
+	$err=dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl);
+	if($err!==null){return $err;}
+
+	$token=trim(@file_get_contents($tokenFile));
+	if(!strlen($token)){return 'dbGroovyQueryResults error: server.token is empty';}
+
+	$json=dbGroovyHttp('POST',"{$baseUrl}/query/".rawurlencode($db),$token,$query,'text/plain',30);
+	if($json===false){
+		return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}";
+	}
+
+	$resp=json_decode($json,true);
+	if(!is_array($resp)){return 'dbGroovyQueryResults error: invalid JSON from Groovy server';}
+	if(empty($resp['success'])){
+		$msg=isset($resp['error'])?$resp['error']:'unknown error';
+		if(stripos($msg,'not found in config.xml')!==false){
+			return "dbGroovyQueryResults error: database '{$db}' is not loaded in the Groovy server. "
+			      ."Confirm '{$db}' is in config.xml and its JDBC driver JAR is in groovy/lib/.";
+		}
+		return "dbGroovyQueryResults error: {$msg}";
+	}
+
+	$recs=(isset($resp['data'])&&is_array($resp['data']))?$resp['data']:array();
+
+	if(!empty($params['-index'])){
+		$idx=$params['-index'];
+		$out=array();
+		foreach($recs as $rec){
+			if(isset($rec[$idx])){$out[$rec[$idx]]=$rec;}
+			else{$out[]=$rec;}
+		}
+		return $out;
+	}
+	return $recs;
+}
+// ── Groovy server internal helpers ────────────────────────────────────────────
+/**
+* Ensures the Groovy HTTP server is running, starting it if necessary.
+* Uses an exclusive file lock to prevent concurrent launch races.
+* Returns null on success, an error string on failure.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
+	//fast path — server already up
+	if(dbGroovyPing($baseUrl,$tokenFile)){return null;}
+
+	$lockFile=$groovyDir.DIRECTORY_SEPARATOR.'server-launch.lock';
+	$fh=@fopen($lockFile,'c');
+	if($fh===false){return "dbGroovyQueryResults error: cannot create lock file {$lockFile}";}
+	if(!flock($fh,LOCK_EX)){
+		fclose($fh);
+		return 'dbGroovyQueryResults error: cannot acquire Groovy server launch lock';
+	}
+	$result=null;
+	try{
+		//re-check after acquiring lock — another process may have started it while we waited
+		if(!dbGroovyPing($baseUrl,$tokenFile)){
+			$result=dbGroovyLaunchServer($groovyDir);
+			if($result===null){
+				//wait up to 30 s for the JVM to finish initialising
+				$ready=false;
+				for($i=0;$i<30;$i++){
+					sleep(1);
+					if(dbGroovyPing($baseUrl,$tokenFile)){$ready=true;break;}
+				}
+				if(!$ready){
+					$result='dbGroovyQueryResults error: Groovy server did not become ready within 30 seconds';
+				}
+			}
+		}
+	}
+	finally{
+		flock($fh,LOCK_UN);
+		fclose($fh);
+	}
+	return $result;
+}
+/**
+* Returns true if the server answers /ping with status=ok using the stored token.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyPing($baseUrl,$tokenFile){
+	if(!is_file($tokenFile)){return false;}
+	$token=trim(@file_get_contents($tokenFile));
+	if(!strlen($token)){return false;}
+	$json=dbGroovyHttp('GET',"{$baseUrl}/ping",$token,null,null,2);
+	if($json===false){return false;}
+	$resp=@json_decode($json,true);
+	return isset($resp['status'])&&$resp['status']==='ok';
+}
+/**
+* Launches server.groovy as a detached background process.
+* Returns null on success, an error string on failure.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyLaunchServer($groovyDir){
+	$exe=dbGroovyFindExe();
+	if($exe===null){
+		return "dbGroovyQueryResults error: 'groovy' executable not found. "
+		      ."Install Groovy (https://groovy-lang.org) and add it to PATH, or set GROOVY_HOME.";
+	}
+	$script=$groovyDir.DIRECTORY_SEPARATOR.'server.groovy';
+	if(!is_file($script)){
+		return "dbGroovyQueryResults error: server.groovy not found at {$script}";
+	}
+	$libDir=$groovyDir.DIRECTORY_SEPARATOR.'lib';
+
+	if(PHP_OS_FAMILY==='Windows'){
+		//Java resolves the classpath wildcard itself — cmd.exe does not need to expand it.
+		//"start /B" inside a cmd /c context detaches the child immediately.
+		$q=function($s){return '"'.str_replace('"','""',$s).'"';};
+		$cmd='start /B "" '.$q($exe).' -cp "'.$libDir.'\\*" '.$q($script);
+		$ph=@popen($cmd,'r');
+		if($ph!==false){pclose($ph);}
+	}
+	else{
+		$cmd='nohup '.escapeshellarg($exe)
+		    .' -cp '.escapeshellarg($libDir.'/*')
+		    .' '.escapeshellarg($script)
+		    .' >/dev/null 2>&1 &';
+		@exec($cmd);
+	}
+	return null;
+}
+/**
+* Returns the full path to the groovy executable, or null if not found.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyFindExe(){
+	global $CONFIG;
+	$home=$CONFIG['groovy_home'];
+	if(PHP_OS_FAMILY==='Windows'){
+		@exec('where groovy 2>NUL',$out,$ret);
+		if($ret===0&&!empty($out[0])&&is_file(trim($out[0]))){return trim($out[0]);}
+		if($home){
+			$home=rtrim($home,'\\/');
+			foreach(['bin\\groovy.bat','bin\\groovy.cmd','bin\\groovy'] as $rel){
+				if(is_file($home.'\\'.$rel)){return $home.'\\'.$rel;}
+			}
+		}
+	}
+	else{
+		@exec('which groovy 2>/dev/null',$out,$ret);
+		if($ret===0&&!empty($out[0])&&is_executable(trim($out[0]))){return trim($out[0]);}
+		if($home&&is_executable(rtrim($home,'/').'/bin/groovy')){return rtrim($home,'/').'/bin/groovy';}
+		foreach(['/usr/local/bin/groovy','/usr/bin/groovy','/opt/groovy/bin/groovy'] as $p){
+			if(is_executable($p)){return $p;}
+		}
+	}
+	return null;
+}
+/**
+* Makes an HTTP GET or POST to the Groovy server.
+* Prefers cURL; falls back to file_get_contents (requires allow_url_fopen=On).
+* Returns the response body string, or false on connection failure.
+*/
+function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec){
+	if(function_exists('curl_init')){
+		$headers=["X-WaSQL-Token: {$token}"];
+		if($contentType){$headers[]="Content-Type: {$contentType}";}
+		$ch=curl_init($url);
+		curl_setopt_array($ch,[
+			CURLOPT_RETURNTRANSFER=>true,
+			CURLOPT_TIMEOUT       =>$timeoutSec,
+			CURLOPT_CONNECTTIMEOUT=>min($timeoutSec,5),
+			CURLOPT_HTTPHEADER    =>$headers,
+			CURLOPT_CUSTOMREQUEST =>$method,
+		]);
+		if($body!==null){curl_setopt($ch,CURLOPT_POSTFIELDS,$body);}
+		$resp=curl_exec($ch);
+		$ok=!curl_errno($ch);
+		curl_close($ch);
+		return $ok?$resp:false;
+	}
+	//fallback: stream context (requires allow_url_fopen=On)
+	$hdrs="X-WaSQL-Token: {$token}";
+	if($contentType){$hdrs.="\r\nContent-Type: {$contentType}";}
+	$opts=['http'=>[
+		'method'       =>$method,
+		'header'       =>$hdrs,
+		'timeout'      =>$timeoutSec,
+		'ignore_errors'=>true,
+	]];
+	if($body!==null){$opts['http']['content']=$body;}
+	return @file_get_contents($url,false,stream_context_create($opts));
+}
 //---------- begin function pyQueryResults
 /**
 * @describe returns an records set from a database using python
