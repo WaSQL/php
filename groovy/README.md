@@ -23,18 +23,13 @@ This works out of the box — no server required. The downside is that every cal
 
 ### 2. Persistent server via `server.groovy` (fast, recommended for production)
 
-`server.groovy` is a long-running HTTP daemon that keeps the JVM and all compiled modules warm between requests. WaSQL automatically routes `<?groovy ?>` calls through the server when it detects `groovy/server.pid`, falling back to the inline path if the server is not running.
+`server.groovy` is a long-running HTTP daemon that keeps the JVM and all compiled modules warm between requests. WaSQL automatically routes `dbGroovyQueryResults()` calls through the server, starting it automatically if it is not already running.
 
 ```php
-// Same evalPHP call — WaSQL routes it through the warm server automatically:
-$result = evalPHP(<<<'GROOVY'
-<?groovy
-return db.queryResults("SELECT * FROM products WHERE active = 1", DATABASE.mydb)
-?>
-GROOVY);
+$recs = dbGroovyQueryResults('mydb', 'SELECT * FROM users WHERE active = 1');
 ```
 
-With the server running, the same call completes in **under 100ms** because the JVM, JDBC drivers, and database connections are already loaded.
+With the server running, calls complete in **under 100ms** because the JVM, JDBC drivers, and database connections are already loaded.
 
 ## How the Server Works
 
@@ -43,28 +38,93 @@ On first start the server:
 2. Pre-compiles every DB driver module needed by the configured databases
 3. Pre-loads the `common` and `db` modules
 4. Starts an HTTP listener on `127.0.0.1:7070`
-5. Writes its PID to `groovy/server.pid`
+5. Writes its PID and auth token to the WaSQL temp directory
 
 Subsequent requests hit the already-warm JVM with compiled modules cached in memory.
 
-The server shuts itself down automatically after **10 minutes of idle** (no requests). It can also be stopped manually via the `/exit` endpoint. The PID file is deleted on shutdown.
+The server shuts itself down automatically after **60 minutes of idle** by default. It can be stopped manually via the `/shutdown` endpoint.
 
 ## Starting the Server
 
-```bash
-groovy -cp "groovy/lib/*" groovy/server.groovy
-```
-
-Override the default port with an environment variable:
+WaSQL starts the server automatically on the first `dbGroovyQueryResults()` call. To start it manually:
 
 ```bash
-set WASQL_GROOVY_PORT=8080
-groovy -cp "groovy/lib/*" groovy/server.groovy
+# Linux
+WASQL_GROOVY_PID_FILE=/var/www/wasql/php/temp/wasql-groovy-server.pid \
+WASQL_GROOVY_TOKEN_FILE=/var/www/wasql/php/temp/wasql-groovy-server.token \
+groovy -cp "groovy/lib/jar1.jar:groovy/lib/jar2.jar" groovy/server.groovy
+
+# Windows
+set WASQL_GROOVY_PID_FILE=C:\wasql\php\temp\wasql-groovy-server.pid
+set WASQL_GROOVY_TOKEN_FILE=C:\wasql\php\temp\wasql-groovy-server.token
+groovy -cp "groovy\lib\jar1.jar;groovy\lib\jar2.jar" groovy\server.groovy
 ```
+
+> **Note:** List JDBC JARs explicitly — Groovy's `-cp` handler does not expand the `*` wildcard. WaSQL's auto-start does this automatically via `glob()`.
+
+## Stopping the Server
+
+```bash
+# Via the shutdown endpoint (cleanest — flushes connections, deletes pid/token files)
+curl -s -X POST http://127.0.0.1:7070/shutdown \
+  -H "X-WaSQL-Token: $(cat /var/www/wasql/php/temp/wasql-groovy-server.token)"
+
+# Via the PID file
+kill $(cat /var/www/wasql/php/temp/wasql-groovy-server.pid)
+
+# By process name
+pkill -f server.groovy        # Linux
+taskkill /F /IM java.exe      # Windows (kills all java processes)
+```
+
+---
+
+## Configuration
+
+All settings are controlled via environment variables. None are required — the defaults are production-safe.
+
+### Full environment variable reference
+
+| Variable | Default | Description |
+|---|---|---|
+| `WASQL_GROOVY_PORT` | `7070` | HTTP port the server listens on |
+| `WASQL_GROOVY_THREADS` | `32` | Max concurrent request handler threads |
+| `WASQL_GROOVY_MAX_BODY_MB` | `16` | Max request body size in megabytes (protects against runaway SQL) |
+| `WASQL_GROOVY_IDLE_MINUTES` | `60` | Minutes of inactivity before auto-shutdown; `0` disables auto-shutdown |
+| `WASQL_GROOVY_TOKEN` | *(random UUID)* | Fix the auth token to a specific value (useful when a process supervisor restarts the server and PHP must not re-read a new token) |
+| `WASQL_GROOVY_PID_FILE` | `groovy/server.pid` | Path where the server writes its PID |
+| `WASQL_GROOVY_TOKEN_FILE` | `groovy/server.token` | Path where the server writes its auth token |
+
+WaSQL's auto-start sets `WASQL_GROOVY_PID_FILE` and `WASQL_GROOVY_TOKEN_FILE` to `php/temp/wasql-groovy-server.{pid,token}` so the web server user (which typically cannot write to the `groovy/` source directory) can create them.
+
+### Startup log
+
+On start the server logs its active configuration:
+
+```
+[wasql-groovy] 11:56:21 Listening on 127.0.0.1:7070  PID 12345
+[wasql-groovy] 11:56:21 Token file: /var/www/wasql/php/temp/wasql-groovy-server.token
+[wasql-groovy] 11:56:21 Threads: 32  Queue: 512  Max body: 16 MB
+[wasql-groovy] 11:56:21 Auto-shutdown: 60 min idle
+```
+
+### PHP query timeout
+
+The PHP helper `dbGroovyQueryResults()` defaults to a **300-second** HTTP timeout. Override per-call with `-timeout`:
+
+```php
+// Default — 300 seconds
+$recs = dbGroovyQueryResults('mydb', $sql);
+
+// Large export — 600 seconds
+$recs = dbGroovyQueryResults('mydb', $sql, ['-timeout' => 600]);
+```
+
+---
 
 ## Keeping the Server Running
 
-By default the server shuts itself down after **10 minutes of idle** to conserve resources. There are two approaches depending on how you want to manage it.
+By default the server shuts itself down after **60 minutes of idle** to conserve resources. There are two approaches depending on how you want to manage it.
 
 ### Option A — Disable auto-shutdown and use a process manager (recommended for production)
 
@@ -83,13 +143,17 @@ After=network.target
 User=www-data
 WorkingDirectory=/var/www/wasql
 Environment=WASQL_GROOVY_IDLE_MINUTES=0
-ExecStart=/usr/bin/groovy -cp "groovy/lib/*" groovy/server.groovy
+Environment=WASQL_GROOVY_PID_FILE=/var/www/wasql/php/temp/wasql-groovy-server.pid
+Environment=WASQL_GROOVY_TOKEN_FILE=/var/www/wasql/php/temp/wasql-groovy-server.token
+ExecStart=/usr/bin/groovy -cp "groovy/lib/ctreeJDBC.jar" groovy/server.groovy
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+> Replace the `-cp` value with the actual JARs in your `groovy/lib/` directory.
 
 ```bash
 sudo systemctl daemon-reload
@@ -103,59 +167,72 @@ Run once in an elevated PowerShell session:
 
 ```powershell
 $action  = New-ScheduledTaskAction -Execute 'groovy' `
-               -Argument '-cp "groovy/lib/*" groovy/server.groovy' `
+               -Argument '-cp "groovy\lib\ctreeJDBC.jar" groovy\server.groovy' `
                -WorkingDirectory 'C:\wasql'
 $trigger = New-ScheduledTaskTrigger -AtStartup
-$env     = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 0)
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Hours 0)
 $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -RunLevel Highest
 Register-ScheduledTask -TaskName 'WaSQL Groovy Bridge' `
-    -Action $action -Trigger $trigger -Settings $env -Principal $principal
+    -Action $action -Trigger $trigger -Settings $settings -Principal $principal
 ```
 
-Add `WASQL_GROOVY_IDLE_MINUTES=0` to the system environment variables so the registered task picks it up.
+Set these in system environment variables so the task picks them up:
+- `WASQL_GROOVY_IDLE_MINUTES=0`
+- `WASQL_GROOVY_PID_FILE=C:\wasql\php\temp\wasql-groovy-server.pid`
+- `WASQL_GROOVY_TOKEN_FILE=C:\wasql\php\temp\wasql-groovy-server.token`
 
 ---
 
-### Option B — Let it idle-shutdown and restart it automatically (lightweight)
+### Option B — Let it idle-shutdown and restart automatically (lightweight)
 
-Keep the default idle timeout and use a scheduled job that checks the PID file every 9 minutes. If the process is gone, it starts a new one.
+Keep the default idle timeout and use a scheduled job that checks the PID file periodically.
 
 **Linux — crontab**
 
-Create a wrapper script at `/var/www/wasql/groovy/start-if-stopped.sh`:
+Create `/var/www/wasql/groovy/start-if-stopped.sh`:
 
 ```bash
 #!/bin/bash
 WASQL_DIR="/var/www/wasql"
-PID_FILE="$WASQL_DIR/groovy/server.pid"
+PID_FILE="$WASQL_DIR/php/temp/wasql-groovy-server.pid"
 
 if [ -f "$PID_FILE" ] && kill -0 "$(cat $PID_FILE)" 2>/dev/null; then
     exit 0  # already running
 fi
 
+export WASQL_GROOVY_PID_FILE="$WASQL_DIR/php/temp/wasql-groovy-server.pid"
+export WASQL_GROOVY_TOKEN_FILE="$WASQL_DIR/php/temp/wasql-groovy-server.token"
+
+# List JARs explicitly — Groovy does not expand wildcards in -cp
+JARS=$(find "$WASQL_DIR/groovy/lib" -name '*.jar' | paste -sd ':')
+
 cd "$WASQL_DIR"
-nohup groovy -cp "groovy/lib/*" groovy/server.groovy >/dev/null 2>&1 &
+setsid nohup groovy -cp "$JARS" groovy/server.groovy \
+    >"$WASQL_DIR/php/temp/wasql-groovy-server-start.log" 2>&1 &
 ```
 
 ```bash
 chmod +x /var/www/wasql/groovy/start-if-stopped.sh
 crontab -e
-# Add:
-*/9 * * * * /var/www/wasql/groovy/start-if-stopped.sh
+# Add (checks every 55 minutes — just under the 60-minute idle timeout):
+*/55 * * * * /var/www/wasql/groovy/start-if-stopped.sh
 ```
 
-**Windows — Task Scheduler (every 9 minutes)**
+**Windows — Task Scheduler (every 55 minutes)**
 
 Create `C:\wasql\groovy\start-if-stopped.ps1`:
 
 ```powershell
-$pidFile = 'C:\wasql\groovy\server.pid'
+$pidFile = 'C:\wasql\php\temp\wasql-groovy-server.pid'
 if (Test-Path $pidFile) {
     $id = (Get-Content $pidFile).Trim()
     if (Get-Process -Id $id -ErrorAction SilentlyContinue) { exit }
 }
+$env:WASQL_GROOVY_PID_FILE   = 'C:\wasql\php\temp\wasql-groovy-server.pid'
+$env:WASQL_GROOVY_TOKEN_FILE = 'C:\wasql\php\temp\wasql-groovy-server.token'
+$jars = (Get-ChildItem 'C:\wasql\groovy\lib\*.jar').FullName -join ';'
 Start-Process groovy `
-    -ArgumentList '-cp "groovy/lib/*" groovy/server.groovy' `
+    -ArgumentList "-cp `"$jars`" groovy\server.groovy" `
     -WorkingDirectory 'C:\wasql' `
     -WindowStyle Hidden
 ```
@@ -165,7 +242,7 @@ Register the task:
 ```powershell
 $action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
                -Argument '-NonInteractive -File C:\wasql\groovy\start-if-stopped.ps1'
-$trigger = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Minutes 9) `
+$trigger = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Minutes 55) `
                -Once -At (Get-Date)
 Register-ScheduledTask -TaskName 'WaSQL Groovy Watch' `
     -Action $action -Trigger $trigger -RunLevel Highest -Force
@@ -173,37 +250,16 @@ Register-ScheduledTask -TaskName 'WaSQL Groovy Watch' `
 
 ---
 
-### Configuring the idle timeout
-
-The timeout is set via the `WASQL_GROOVY_IDLE_MINUTES` environment variable. Set it to `0` to disable auto-shutdown.
-
-| Value | Behaviour |
-|---|---|
-| *(unset)* | Default — shuts down after **10 minutes** of no requests |
-| `30` | Shuts down after 30 minutes of no requests |
-| `0` | Auto-shutdown **disabled** — runs until stopped manually or by the OS |
-
-```bash
-# Linux
-export WASQL_GROOVY_IDLE_MINUTES=0
-groovy -cp "groovy/lib/*" groovy/server.groovy
-
-# Windows
-set WASQL_GROOVY_IDLE_MINUTES=0
-groovy -cp "groovy/lib/*" groovy/server.groovy
-```
-
----
-
 ## Calling the Groovy Server
 
-Every request to `http://127.0.0.1:7070` must include the `X-WaSQL-Token` header. Read the token from `groovy/server.token` and include it with each call.
+Every request to `http://127.0.0.1:7070` must include the `X-WaSQL-Token` header. Read the token from the token file and include it with each call.
 
 ### PHP helper
 
 ```php
 function groovyRequest($path, $body = null, $contentType = 'text/plain') {
-    $token = trim(file_get_contents(__DIR__ . '/groovy/server.token'));
+    $tokenFile = dirname(__DIR__) . '/php/temp/wasql-groovy-server.token';
+    $token = trim(file_get_contents($tokenFile));
     $opts  = [
         'http' => [
             'method'  => $body === null ? 'GET' : 'POST',
@@ -221,7 +277,7 @@ function groovyRequest($path, $body = null, $contentType = 'text/plain') {
 ```python
 import json, urllib.request, pathlib
 
-TOKEN_FILE = pathlib.Path(__file__).parent / 'groovy' / 'server.token'
+TOKEN_FILE = pathlib.Path('/var/www/wasql/php/temp/wasql-groovy-server.token')
 BASE_URL   = 'http://127.0.0.1:7070'
 
 def groovy_request(path, body=None, content_type='text/plain'):
@@ -324,15 +380,19 @@ result = groovy_request('/eval', script)
 
 ---
 
-### Reload modules (after editing a .groovy file)
+### Reload modules and config (after editing config.xml or a .groovy file)
+
+Re-reads `config.xml` and recompiles all modules from disk without restarting the server.
 
 **PHP**
 ```php
-groovyRequest('/reload');
+$result = groovyRequest('/reload');
+// $result['databases'] → list of all databases now loaded
 ```
 **Python**
 ```python
-groovy_request('/reload')
+result = groovy_request('/reload')
+# result['databases'] → list of all databases now loaded
 ```
 
 ---
@@ -341,11 +401,11 @@ groovy_request('/reload')
 
 **PHP**
 ```php
-groovyRequest('/exit');
+groovyRequest('/shutdown');
 ```
 **Python**
 ```python
-groovy_request('/exit')
+groovy_request('/shutdown')
 ```
 
 ---
@@ -360,30 +420,26 @@ The server uses two layers of protection:
 
 ### Token lifecycle
 
-On startup the server generates a random UUID token and writes it to `groovy/server.token`:
-
-```
-groovy/server.token  →  550e8400-e29b-41d4-a716-446655440000
-```
-
-PHP reads this file at request time and forwards the token in the header:
+On startup the server generates a random UUID token and writes it to the token file (`php/temp/wasql-groovy-server.token` when auto-started by PHP):
 
 ```
 X-WaSQL-Token: 550e8400-e29b-41d4-a716-446655440000
 ```
 
-On shutdown (idle timeout, `/exit`, or process termination) `server.token` is deleted automatically. The file is also listed in `.gitignore` so it is never committed.
+On shutdown (idle timeout, `/shutdown`, or process termination) the token file is deleted automatically. The file is listed in `.gitignore` so it is never committed.
 
 ### Using a fixed token
 
-Set `WASQL_GROOVY_TOKEN` before starting the server to pin a specific value instead of generating a random one at each start:
+Set `WASQL_GROOVY_TOKEN` before starting the server to pin a specific value:
 
 ```bash
-set WASQL_GROOVY_TOKEN=my-secret-token
-groovy -cp "groovy/lib/*" groovy/server.groovy
+export WASQL_GROOVY_TOKEN=my-secret-token
+groovy -cp "..." groovy/server.groovy
 ```
 
-This is useful when the server is managed by a process supervisor that restarts it and PHP cannot re-read a newly generated token in time.
+This is useful when a process supervisor restarts the server and PHP cannot re-read a newly generated token in time.
+
+---
 
 ## JDBC Drivers
 
@@ -545,38 +601,43 @@ return rows
 - **`result`** — the return value of the script (last expression or explicit `return`)
 - **`output`** — anything printed to stdout (`println`, `print`) during execution
 
-Both can be populated at the same time:
-```groovy
-println "fetching users..."
-return db.queryResults("SELECT * FROM users", DATABASE.mydb)
-```
-```json
-{
-  "success": true,
-  "output": "fetching users...\n",
-  "result": [{ "id": 1, "name": "Alice" }]
-}
-```
-
 ---
 
 ### `GET /reload`
 
-Flushes the in-memory module cache. The next request to any endpoint will recompile modules from disk. Use this during development after editing a `.groovy` module file without restarting the server.
+Re-reads `config.xml` and flushes the in-memory module cache. Modules are recompiled from disk on the next request. Use this after editing `config.xml` (to add/remove a database) or after editing a `.groovy` module file, without restarting the server.
 
 **Response:**
 ```json
 {
   "status": "reloaded",
-  "cleared": ["common", "config", "db", "mysqldb"]
+  "cleared": ["common", "config", "ctreedb", "db"],
+  "databases": ["ctree_dev", "ctree_prod", "mydb"]
 }
 ```
 
 ---
 
-### `GET /exit` or `GET /shutdown`
+### `GET /databases`
 
-Gracefully stops the server. Deletes the PID file and exits.
+Lists all configured databases that have a loaded driver, grouped by type.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "ctree": ["ctree_dev", "ctree_prod"],
+    "mysql": ["mydb"]
+  }
+}
+```
+
+---
+
+### `GET /exit` or `POST /shutdown`
+
+Gracefully stops the server. Deletes the PID and token files, waits up to 5 seconds for in-flight requests to finish, then exits.
 
 **Response:**
 ```json
@@ -595,7 +656,7 @@ All endpoints return a consistent error shape on failure:
 ```json
 {
   "success": false,
-  "error": "Database 'foo' not found in config.xml"
+  "error": "Database 'foo' not found in config.xml. Available: bar, baz"
 }
 ```
 
@@ -624,32 +685,43 @@ The server normalizes JDBC types to JSON-friendly values automatically:
 | PostgreSQL `json` / `jsonb` | Embedded JSON object |
 | Numbers, booleans, nulls | Native JSON |
 
-## PID File
+## PID and Token Files
 
-The server writes its process ID to `groovy/server.pid` on startup and deletes it on shutdown. PHP can use this file to check whether the server is running before attempting a connection, and to start it if not.
+When auto-started by PHP, the server writes its PID and auth token to the WaSQL temp directory:
+
+```
+php/temp/wasql-groovy-server.pid
+php/temp/wasql-groovy-server.token
+```
+
+Both files are deleted automatically on shutdown. Override the locations via `WASQL_GROOVY_PID_FILE` and `WASQL_GROOVY_TOKEN_FILE`.
 
 ## PowerShell Examples
 
 ```powershell
 # Read token from file
-$token = (Get-Content 'groovy\server.token').Trim()
+$token = (Get-Content 'php\temp\wasql-groovy-server.token').Trim()
 $headers = @{ 'X-WaSQL-Token' = $token }
 
 # Health check
 Invoke-RestMethod -Uri 'http://127.0.0.1:7070/ping' -Headers $headers
 
 # Query
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/query/mydb' -Method Post -Headers $headers -ContentType 'text/plain' -Body 'SELECT * FROM users LIMIT 5'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/query/mydb' -Method Post `
+    -Headers $headers -ContentType 'text/plain' -Body 'SELECT * FROM users LIMIT 5'
 
 # Execute
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/execute/mydb' -Method Post -Headers $headers -ContentType 'text/plain' -Body "UPDATE users SET active = 1 WHERE id = 5"
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/execute/mydb' -Method Post `
+    -Headers $headers -ContentType 'text/plain' `
+    -Body "UPDATE users SET active = 1 WHERE id = 5"
 
 # Eval
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/eval' -Method Post -Headers $headers -ContentType 'text/plain' -Body 'return 1 + 1'
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/eval' -Method Post `
+    -Headers $headers -ContentType 'text/plain' -Body 'return 1 + 1'
 
-# Reload modules
+# Reload config and modules
 Invoke-RestMethod -Uri 'http://127.0.0.1:7070/reload' -Headers $headers
 
 # Stop server
-Invoke-RestMethod -Uri 'http://127.0.0.1:7070/exit' -Headers $headers
+Invoke-RestMethod -Uri 'http://127.0.0.1:7070/shutdown' -Method Post -Headers $headers
 ```
