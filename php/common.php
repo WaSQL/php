@@ -11670,7 +11670,7 @@ ENDOFCONTENT;
 		$lang['exe'] = str_replace('groovy', 'groovyclient', $lang['exe']);
 	}
 
-	$command = "{$lang['exe']}{$classpath} \"{$filename}\" 2>&1";
+	$command = "{$lang['exe']}{$classpath} \"{$filename}\"";
 	//cmdResults($cmd,$args='',$dir='',$timeout=0)
 	$out = cmdResults($command,'',$wasqlTempPath);
 	//remove any groovy files in temp older than 1 day - wasqlTempPath

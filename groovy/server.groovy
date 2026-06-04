@@ -419,7 +419,7 @@ server.createContext('/reload') { HttpExchange ex ->
     try {
         def cleared = modules.keySet().sort()
         modules.clear()
-        def cfg = loadModule('config')
+        cfg = loadModule('config')
         DATABASE = cfg.DATABASE as Map
         log("Module cache cleared and config reloaded: ${cleared.join(', ') ?: '(none)'}")
         respond(ex, 200, JsonOutput.toJson([status: 'reloaded', cleared: cleared, databases: DATABASE.keySet().sort()]))
