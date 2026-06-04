@@ -34,8 +34,8 @@ import java.util.concurrent.atomic.AtomicLong
 @Field int    PORT            = (System.getenv('WASQL_GROOVY_PORT') ?: '7070').toInteger()
 @Field long   IDLE_TIMEOUT_MS = { def m = System.getenv('WASQL_GROOVY_IDLE_MINUTES'); m ? m.toLong() * 60_000L : 10L * 60_000L }()
 @Field String SCRIPT_DIR      = new File(getClass().protectionDomain.codeSource.location.path).parent
-@Field File   PID_FILE        = new File(SCRIPT_DIR, 'server.pid')
-@Field File   TOKEN_FILE      = new File(SCRIPT_DIR, 'server.token')
+@Field File   PID_FILE        = new File(System.getenv('WASQL_GROOVY_PID_FILE')   ?: (SCRIPT_DIR + '/server.pid'))
+@Field File   TOKEN_FILE      = new File(System.getenv('WASQL_GROOVY_TOKEN_FILE') ?: (SCRIPT_DIR + '/server.token'))
 @Field String TOKEN           = System.getenv('WASQL_GROOVY_TOKEN') ?: UUID.randomUUID().toString()
 @Field String PID             = ManagementFactory.getRuntimeMXBean().getName().split('@')[0]
 @Field long   startedAt       = System.currentTimeMillis()

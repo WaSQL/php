@@ -1052,7 +1052,8 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 	$groovyDir=rtrim(str_replace('\\','/',getWasqlPath('/groovy')),'/');
 	if(isset($CONFIG['groovy_port'])){$port=$CONFIG['groovy_port'];}
 	else{$port=7070;}
-	$tokenFile=$groovyDir.DIRECTORY_SEPARATOR.'server.token';
+	$tempDir=getWaSQLPath('php/temp');
+	$tokenFile=$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.token';
 	$baseUrl="http://127.0.0.1:{$port}";
 
 	$err=dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl);
@@ -1166,7 +1167,10 @@ function dbGroovyLaunchServer($groovyDir){
 	// so wildcard expansion ("lib/*") does NOT work — each JAR must be listed explicitly.
 	$jars=is_dir($libDir)?glob($libDir.DIRECTORY_SEPARATOR.'*.jar'):[];
 
-	$logFile=getWaSQLPath('php/temp').DIRECTORY_SEPARATOR.'wasql-groovy-server-start.log';
+	$tempDir=getWaSQLPath('php/temp');
+	$logFile  =$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server-start.log';
+	$pidFile  =$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.pid';
+	$tokenFile=$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.token';
 
 	if(PHP_OS_FAMILY==='Windows'){
 		// proc_open with create_process_group breaks the child out of IIS's Job Object,
@@ -1175,9 +1179,13 @@ function dbGroovyLaunchServer($groovyDir){
 		$q=function($s){return '"'.str_replace('"','""',$s).'"';};
 		$cpArg=!empty($jars)?' -cp "'.implode(';',$jars).'"':'';
 		$desc=[0=>['file','NUL','r'],1=>['file',$logFile,'w'],2=>['file',$logFile,'a']];
+		$env=array_merge(getenv()?:[],[
+			'WASQL_GROOVY_PID_FILE'   =>$pidFile,
+			'WASQL_GROOVY_TOKEN_FILE' =>$tokenFile,
+		]);
 		$ph=@proc_open(
 			$q($exe).$cpArg.' '.$q($script),
-			$desc,$pipes,$groovyDir,null,
+			$desc,$pipes,$groovyDir,$env,
 			['bypass_shell'=>false,'create_process_group'=>true]
 		);
 		if($ph===false){
@@ -1192,7 +1200,9 @@ function dbGroovyLaunchServer($groovyDir){
 		// Falls back to nohup-only if setsid is not available.
 		$setsid=is_executable('/usr/bin/setsid')?'/usr/bin/setsid '
 		       :(is_executable('/bin/setsid')?'/bin/setsid ':'');
-		$cmd=$setsid.'nohup '.escapeshellarg($exe)
+		$envPrefix='WASQL_GROOVY_PID_FILE='.escapeshellarg($pidFile)
+		          .' WASQL_GROOVY_TOKEN_FILE='.escapeshellarg($tokenFile).' ';
+		$cmd=$envPrefix.$setsid.'nohup '.escapeshellarg($exe)
 		    .$cpArg
 		    .' '.escapeshellarg($script)
 		    .' >'.escapeshellarg($logFile).' 2>&1 &';
