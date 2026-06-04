@@ -31,8 +31,10 @@ import java.util.concurrent.atomic.AtomicLong
 
 // ── Shared state (@Field = Script instance field, visible from methods + threads) ──
 
-@Field int    PORT            = (System.getenv('WASQL_GROOVY_PORT') ?: '7070').toInteger()
-@Field long   IDLE_TIMEOUT_MS = { def m = System.getenv('WASQL_GROOVY_IDLE_MINUTES'); m ? m.toLong() * 60_000L : 10L * 60_000L }()
+@Field int    PORT            = (System.getenv('WASQL_GROOVY_PORT')    ?: '7070').toInteger()
+@Field int    THREADS         = (System.getenv('WASQL_GROOVY_THREADS') ?: '32').toInteger()
+@Field int    MAX_BODY_MB     = (System.getenv('WASQL_GROOVY_MAX_BODY_MB') ?: '16').toInteger()
+@Field long   IDLE_TIMEOUT_MS = { def m = System.getenv('WASQL_GROOVY_IDLE_MINUTES'); m ? m.toLong() * 60_000L : 60L * 60_000L }()
 @Field String SCRIPT_DIR      = new File(getClass().protectionDomain.codeSource.location.path).parent
 @Field File   PID_FILE        = new File(System.getenv('WASQL_GROOVY_PID_FILE')   ?: (SCRIPT_DIR + '/server.pid'))
 @Field File   TOKEN_FILE      = new File(System.getenv('WASQL_GROOVY_TOKEN_FILE') ?: (SCRIPT_DIR + '/server.token'))
@@ -41,7 +43,7 @@ import java.util.concurrent.atomic.AtomicLong
 @Field long   startedAt       = System.currentTimeMillis()
 @Field def    lastActivity    = new AtomicLong(System.currentTimeMillis())
 @Field def    modules         = new java.util.concurrent.ConcurrentHashMap<String, Object>()
-@Field Map    DATABASE        = [:]
+@Field volatile Map DATABASE   = [:]
 @Field def    serverRef       = null
 @Field def    schedulerRef    = null
 
@@ -114,6 +116,17 @@ import java.util.concurrent.atomic.AtomicLong
 
 void log(String msg) {
     System.err.println("[wasql-groovy] ${new Date().format('HH:mm:ss')} $msg")
+}
+
+String readBody(HttpExchange ex) {
+    long max = MAX_BODY_MB * 1024L * 1024L
+    def len = ex.requestHeaders.getFirst('Content-Length')
+    if (len && len.toLong() > max)
+        throw new IllegalArgumentException("Request body exceeds ${MAX_BODY_MB} MB limit")
+    def bytes = ex.requestBody.readNBytes((int) Math.min(max + 1, Integer.MAX_VALUE))
+    if (bytes.length > max)
+        throw new IllegalArgumentException("Request body exceeds ${MAX_BODY_MB} MB limit")
+    return new String(bytes, 'UTF-8').trim()
 }
 
 Object loadModule(String name) {
@@ -190,8 +203,9 @@ void doShutdown(String reason) {
     log("Shutting down: ${reason}")
     PID_FILE.delete()
     TOKEN_FILE.delete()
-    serverRef?.stop(2)
-    schedulerRef?.shutdownNow()
+    serverRef?.stop(5)
+    schedulerRef?.shutdown()
+    schedulerRef?.awaitTermination(5, TimeUnit.SECONDS)
     System.exit(0)
 }
 
@@ -246,18 +260,24 @@ log("Ready: ${modules.size()} module(s) — ${modules.keySet().sort().join(', ')
 
 // ── HTTP server ────────────────────────────────────────────────────────────────
 
-def server    = HttpServer.create(new InetSocketAddress('127.0.0.1', PORT), 50)
+def server    = HttpServer.create(new InetSocketAddress('127.0.0.1', PORT), 256)
 def scheduler = Executors.newSingleThreadScheduledExecutor()
 
-// Pin the script classloader on every handler thread so ServiceLoader (FastStringService etc.)
-// finds Groovy services regardless of which child GroovyClassLoader module loading left behind.
-def scriptCL   = getClass().classLoader
+// Bounded thread pool — prevents unbounded thread growth under sustained load.
+// CallerRunsPolicy applies backpressure when the queue is full rather than dropping requests.
+def scriptCL    = getClass().classLoader
 def threadCount = new java.util.concurrent.atomic.AtomicInteger(0)
-server.setExecutor(Executors.newCachedThreadPool({ Runnable r ->
+def threadFactory = { Runnable r ->
     def t = new Thread(r, "wasql-handler-${threadCount.incrementAndGet()}")
     t.contextClassLoader = scriptCL
     return t
-} as java.util.concurrent.ThreadFactory))
+} as java.util.concurrent.ThreadFactory
+server.setExecutor(new java.util.concurrent.ThreadPoolExecutor(
+    THREADS, THREADS, 60L, TimeUnit.SECONDS,
+    new java.util.concurrent.LinkedBlockingQueue<Runnable>(512),
+    threadFactory,
+    new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy()
+))
 
 serverRef    = server
 schedulerRef = scheduler
@@ -286,13 +306,15 @@ server.createContext('/query/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
+        def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/query/')
-        def query  = ex.requestBody.getText('UTF-8').trim()
+        def query  = readBody(ex)
         if (!dbname) throw new IllegalArgumentException("URL must be /query/{dbname}")
         if (!query)  throw new IllegalArgumentException("Request body must contain a SQL query")
         def drv    = resolveDriver(dbname)
         def result = drv.driver.queryResults(query, drv.params + [format: 'list'])
         respond(ex, 200, wrapOk(result))
+        log("/query ${dbname} — ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/query error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
@@ -304,13 +326,15 @@ server.createContext('/execute/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
+        def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/execute/')
-        def query  = ex.requestBody.getText('UTF-8').trim()
+        def query  = readBody(ex)
         if (!dbname) throw new IllegalArgumentException("URL must be /execute/{dbname}")
         if (!query)  throw new IllegalArgumentException("Request body must contain a SQL statement")
         def drv    = resolveDriver(dbname)
         def result = drv.driver.executeSQL(query, drv.params)
         respond(ex, 200, wrapOk(result))
+        log("/execute ${dbname} — ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/execute error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
@@ -323,7 +347,7 @@ server.createContext('/executeps/') { HttpExchange ex ->
     lastActivity.set(System.currentTimeMillis())
     try {
         def dbname = pathParam(ex, '/executeps/')
-        def req    = new JsonSlurper().parseText(ex.requestBody.getText('UTF-8'))
+        def req    = new JsonSlurper().parseText(readBody(ex))
         if (!dbname)    throw new IllegalArgumentException("URL must be /executeps/{dbname}")
         if (!req.query) throw new IllegalArgumentException("Body must include 'query'")
         def drv    = resolveDriver(dbname)
@@ -349,7 +373,7 @@ server.createContext('/eval') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
-        def script = ex.requestBody.getText('UTF-8').trim()
+        def script = readBody(ex)
         if (!script) throw new IllegalArgumentException("Request body must contain a Groovy script")
 
         def baos    = new ByteArrayOutputStream()
@@ -614,6 +638,7 @@ TOKEN_FILE.text = "${TOKEN}\n"
 server.start()
 log("Listening on 127.0.0.1:${PORT}  PID ${PID}")
 log("Token file: ${TOKEN_FILE.path}")
+log("Threads: ${THREADS}  Queue: 512  Max body: ${MAX_BODY_MB} MB")
 log("Auto-shutdown: ${IDLE_TIMEOUT_MS > 0 ? "${IDLE_TIMEOUT_MS / 60000 as long} min idle" : 'disabled'}")
 
 // ── Idle watchdog ─────────────────────────────────────────────────────────────
