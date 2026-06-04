@@ -1162,19 +1162,36 @@ function dbGroovyLaunchServer($groovyDir){
 	}
 	$libDir=$groovyDir.DIRECTORY_SEPARATOR.'lib';
 
+	// Groovy processes -cp via its own classloader before the JVM launcher sees it,
+	// so wildcard expansion ("lib/*") does NOT work — each JAR must be listed explicitly.
+	$jars=is_dir($libDir)?glob($libDir.DIRECTORY_SEPARATOR.'*.jar'):[];
+
+	$logFile=$groovyDir.DIRECTORY_SEPARATOR.'server-start.log';
+
 	if(PHP_OS_FAMILY==='Windows'){
-		//Java resolves the classpath wildcard itself — cmd.exe does not need to expand it.
-		//"start /B" inside a cmd /c context detaches the child immediately.
+		// proc_open with create_process_group breaks the child out of IIS's Job Object,
+		// preventing the Groovy JVM from being killed when the HTTP request ends.
+		// stdout/stderr go to server-start.log so startup errors are diagnosable.
 		$q=function($s){return '"'.str_replace('"','""',$s).'"';};
-		$cmd='start /B "" '.$q($exe).' -cp "'.$libDir.'\\*" '.$q($script);
-		$ph=@popen($cmd,'r');
-		if($ph!==false){pclose($ph);}
+		$cpArg=!empty($jars)?' -cp "'.implode(';',$jars).'"':'';
+		$desc=[0=>['file','NUL','r'],1=>['file',$logFile,'w'],2=>['file',$logFile,'a']];
+		$ph=@proc_open(
+			$q($exe).$cpArg.' '.$q($script),
+			$desc,$pipes,$groovyDir,null,
+			['bypass_shell'=>false,'create_process_group'=>true]
+		);
+		if($ph===false){
+			return "dbGroovyQueryResults error: proc_open failed to launch Groovy server. "
+			      ."Check that groovy is executable and review ".$logFile;
+		}
+		// intentionally no proc_close — the Groovy server is a long-running daemon
 	}
 	else{
+		$cpArg=!empty($jars)?' -cp '.escapeshellarg(implode(':',$jars)):'';
 		$cmd='nohup '.escapeshellarg($exe)
-		    .' -cp '.escapeshellarg($libDir.'/*')
+		    .$cpArg
 		    .' '.escapeshellarg($script)
-		    .' >/dev/null 2>&1 &';
+		    .' >'.$logFile.' 2>&1 &';
 		@exec($cmd);
 	}
 	return null;
