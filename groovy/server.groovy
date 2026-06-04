@@ -45,22 +45,22 @@ import java.util.concurrent.atomic.AtomicLong
 @Field def    serverRef       = null
 @Field def    schedulerRef    = null
 
-@Field def DT_FMT = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
-@Field def D_FMT  = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd')
-@Field def T_FMT  = java.time.format.DateTimeFormatter.ofPattern('HH:mm:ss')
+@Field def DT_FMT   = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
+@Field def DATE_FMT = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd')
+@Field def TIME_FMT = java.time.format.DateTimeFormatter.ofPattern('HH:mm:ss')
 
 @Field def JSON = {
     def opts = new JsonGenerator.Options()
         .disableUnicodeEscaping()
         // ── SQL legacy types ──────────────────────────────────────────────────
         .addConverter(java.sql.Timestamp)          { v -> v.toLocalDateTime().format(DT_FMT) }
-        .addConverter(java.sql.Date)               { v -> v.toLocalDate().format(D_FMT) }
-        .addConverter(java.sql.Time)               { v -> v.toLocalTime().format(T_FMT) }
+        .addConverter(java.sql.Date)               { v -> v.toLocalDate().format(DATE_FMT) }
+        .addConverter(java.sql.Time)               { v -> v.toLocalTime().format(TIME_FMT) }
         .addConverter(java.util.Date)              { v -> v.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime().format(DT_FMT) }
         // ── java.time types (specific before Temporal catch-all) ─────────────
         .addConverter(java.time.LocalDateTime)     { v -> v.format(DT_FMT) }
-        .addConverter(java.time.LocalDate)         { v -> v.format(D_FMT) }
-        .addConverter(java.time.LocalTime)         { v -> v.format(T_FMT) }
+        .addConverter(java.time.LocalDate)         { v -> v.format(DATE_FMT) }
+        .addConverter(java.time.LocalTime)         { v -> v.format(TIME_FMT) }
         .addConverter(java.time.OffsetDateTime)    { v -> v.toLocalDateTime().format(DT_FMT) }
         .addConverter(java.time.ZonedDateTime)     { v -> v.toLocalDateTime().format(DT_FMT) }
         .addConverter(java.time.temporal.Temporal) { v -> v.toString() }
