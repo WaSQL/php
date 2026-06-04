@@ -1062,20 +1062,28 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 	$token=trim(@file_get_contents($tokenFile));
 	if(!strlen($token)){return 'dbGroovyQueryResults error: server.token is empty';}
 
-	$json=dbGroovyHttp('POST',"{$baseUrl}/query/".rawurlencode($db),$token,$query,'text/plain',30);
-	if($json===false){
-		return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}";
-	}
-
-	$resp=json_decode($json,true);
-	if(!is_array($resp)){return 'dbGroovyQueryResults error: invalid JSON from Groovy server';}
-	if(empty($resp['success'])){
-		$msg=isset($resp['error'])?$resp['error']:'unknown error';
-		if(stripos($msg,'not found in config.xml')!==false){
-			return "dbGroovyQueryResults error: database '{$db}' is not loaded in the Groovy server. "
-			      ."Confirm '{$db}' is in config.xml and its JDBC driver JAR is in groovy/lib/.";
+	$resp=null;
+	for($attempt=0;$attempt<2;$attempt++){
+		$json=dbGroovyHttp('POST',"{$baseUrl}/query/".rawurlencode($db),$token,$query,'text/plain',30);
+		if($json===false){
+			return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}";
 		}
-		return "dbGroovyQueryResults error: {$msg}";
+		$resp=json_decode($json,true);
+		if(!is_array($resp)){return 'dbGroovyQueryResults error: invalid JSON from Groovy server';}
+		if(empty($resp['success'])){
+			$msg=isset($resp['error'])?$resp['error']:'unknown error';
+			if(stripos($msg,'not found in config.xml')!==false&&$attempt===0){
+				//config.xml was updated after server started — reload and retry once
+				dbGroovyHttp('GET',"{$baseUrl}/reload",$token,null,null,10);
+				continue;
+			}
+			if(stripos($msg,'not found in config.xml')!==false){
+				return "dbGroovyQueryResults error: database '{$db}' is not loaded in the Groovy server. "
+				      ."Confirm '{$db}' is in config.xml and its JDBC driver JAR is in groovy/lib/.";
+			}
+			return "dbGroovyQueryResults error: {$msg}";
+		}
+		break;
 	}
 
 	$recs=(isset($resp['data'])&&is_array($resp['data']))?$resp['data']:array();

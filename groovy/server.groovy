@@ -419,8 +419,10 @@ server.createContext('/reload') { HttpExchange ex ->
     try {
         def cleared = modules.keySet().sort()
         modules.clear()
-        log("Module cache cleared: ${cleared.join(', ') ?: '(none)'}")
-        respond(ex, 200, JsonOutput.toJson([status: 'reloaded', cleared: cleared]))
+        def cfg = loadModule('config')
+        DATABASE = cfg.DATABASE as Map
+        log("Module cache cleared and config reloaded: ${cleared.join(', ') ?: '(none)'}")
+        respond(ex, 200, JsonOutput.toJson([status: 'reloaded', cleared: cleared, databases: DATABASE.keySet().sort()]))
     } catch (Exception e) {
         log("/reload error: ${e.message}")
         try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
