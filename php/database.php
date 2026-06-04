@@ -1064,7 +1064,8 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 
 	$resp=null;
 	for($attempt=0;$attempt<2;$attempt++){
-		$json=dbGroovyHttp('POST',"{$baseUrl}/query/".rawurlencode($db),$token,$query,'text/plain',30);
+		$timeout=isset($params['-timeout'])?(int)$params['-timeout']:300;
+		$json=dbGroovyHttp('POST',"{$baseUrl}/query/".rawurlencode($db),$token,$query,'text/plain',$timeout);
 		if($json===false){
 			return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}";
 		}

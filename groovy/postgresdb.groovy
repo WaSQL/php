@@ -216,6 +216,9 @@ def queryResults(String query, Map params = [:]) {
 					stmt.setFetchSize(fetchSize)
 				}
 
+				// Set query timeout to prevent hanging (300 seconds)
+				stmt.setQueryTimeout(300)
+
 				def rs = stmt.executeQuery(query)
 				def errorCount = 0
 				def successCount = 0

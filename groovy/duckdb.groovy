@@ -141,6 +141,7 @@ def queryResults(String query, Map params = [:]) {
 
 				def stmt = sql.connection.createStatement()
 				if (fetchSize > 0) stmt.setFetchSize(fetchSize)
+				stmt.setQueryTimeout(300)
 				def rs = stmt.executeQuery(query)
 
 				def errorCount       = 0
