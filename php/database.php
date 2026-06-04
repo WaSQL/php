@@ -1101,7 +1101,7 @@ function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
 	//fast path — server already up
 	if(dbGroovyPing($baseUrl,$tokenFile)){return null;}
 
-	$lockFile=$groovyDir.DIRECTORY_SEPARATOR.'server-launch.lock';
+	$lockFile=getWaSQLPath('php/temp').DIRECTORY_SEPARATOR.'wasql-groovy-server-launch.lock';
 	$fh=@fopen($lockFile,'c');
 	if($fh===false){return "dbGroovyQueryResults error: cannot create lock file {$lockFile}";}
 	if(!flock($fh,LOCK_EX)){
