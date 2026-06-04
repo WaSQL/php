@@ -1166,7 +1166,7 @@ function dbGroovyLaunchServer($groovyDir){
 	// so wildcard expansion ("lib/*") does NOT work — each JAR must be listed explicitly.
 	$jars=is_dir($libDir)?glob($libDir.DIRECTORY_SEPARATOR.'*.jar'):[];
 
-	$logFile=$groovyDir.DIRECTORY_SEPARATOR.'server-start.log';
+	$logFile=getWaSQLPath('php/temp').DIRECTORY_SEPARATOR.'wasql-groovy-server-start.log';
 
 	if(PHP_OS_FAMILY==='Windows'){
 		// proc_open with create_process_group breaks the child out of IIS's Job Object,
@@ -1188,10 +1188,14 @@ function dbGroovyLaunchServer($groovyDir){
 	}
 	else{
 		$cpArg=!empty($jars)?' -cp '.escapeshellarg(implode(':',$jars)):'';
-		$cmd='nohup '.escapeshellarg($exe)
+		// setsid creates a new session so the JVM survives the web request's process-group cleanup.
+		// Falls back to nohup-only if setsid is not available.
+		$setsid=is_executable('/usr/bin/setsid')?'/usr/bin/setsid '
+		       :(is_executable('/bin/setsid')?'/bin/setsid ':'');
+		$cmd=$setsid.'nohup '.escapeshellarg($exe)
 		    .$cpArg
 		    .' '.escapeshellarg($script)
-		    .' >'.$logFile.' 2>&1 &';
+		    .' >'.escapeshellarg($logFile).' 2>&1 &';
 		@exec($cmd);
 	}
 	return null;
