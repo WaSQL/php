@@ -1078,8 +1078,7 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 				continue;
 			}
 			if(stripos($msg,'not found in config.xml')!==false){
-				return "dbGroovyQueryResults error: database '{$db}' is not loaded in the Groovy server. "
-				      ."Confirm '{$db}' is in config.xml and its JDBC driver JAR is in groovy/lib/.";
+				return "dbGroovyQueryResults error: {$msg}";
 			}
 			return "dbGroovyQueryResults error: {$msg}";
 		}

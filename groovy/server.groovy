@@ -133,7 +133,7 @@ Object loadModule(String name) {
 
 Map resolveDriver(String dbname) {
     def dbconf = DATABASE[dbname]
-    if (!dbconf) throw new IllegalArgumentException("Database '${dbname}' not found in config.xml")
+    if (!dbconf) throw new IllegalArgumentException("Database '${dbname}' not found in config.xml. Available: ${DATABASE.keySet().sort().join(', ')}")
     def dbtype  = (dbconf.dbtype ?: '').toLowerCase()
     def modName = DRIVER_MAP.find { k, _ -> dbtype.startsWith(k) }?.value
     if (!modName) throw new IllegalArgumentException("Unsupported database type: '${dbtype}'")
