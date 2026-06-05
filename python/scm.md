@@ -62,7 +62,7 @@ After creating the migration file, show the user the file path and remind them t
 
 - Plain SQL migration files -- no proprietary DSL
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
-- `init`, `up`, `down`, `goto`, `status`, `history`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn`, `version`, and `env-from-config` commands
+- `init`, `up`, `down`, `goto`, `status`, `history`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn`, `version`, `who`/`dbs`, and `env-from-config` commands
 - `--dry-run` flag on `up`, `down`, and `goto` to preview SQL without applying changes
 - Timestamp-versioned migrations -- `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
 - Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
@@ -581,6 +581,33 @@ ranges (`1-3`). Blank input cancels with no changes made.
 
 > **Note:** This removes migration files that have not yet been applied. To roll back an
 > already-applied migration, use `scm down` instead.
+
+---
+
+### `who` / `dbs` -- Show current database
+
+```bash
+scm who
+scm dbs
+scm --db hana-t2 who
+```
+
+Displays the database the current configuration points to — useful before running `status`,
+`up`, or `down` to confirm you're on the right database. No connection is made; it only
+parses the resolved `DATABASE_URL`.
+
+```
+Current database
+────────────────────────────────────────
+  env file    .env
+  driver      mysql
+  host        localhost
+  database    mydb
+  user        myuser
+  url         mysql://myuser:***@localhost/mydb
+```
+
+When `--db` is used, the `--db` name and the derived `.env.<name>` file are shown as well.
 
 ---
 

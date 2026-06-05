@@ -22,6 +22,8 @@ Commands:
   scm.py undo                    Interactively delete pending (unapplied) migration files
   scm.py learn                   Print a quick-start reference
   scm.py version                 Print version and exit
+  scm.py who                     Show which database the current config points to
+  scm.py dbs                     Alias for who
 
 Connection (first match wins):
   --url flag > DATABASE_URL env var > DATABASE_URL in .env
@@ -1203,6 +1205,7 @@ def cmd_learn():
         ('scm down',              'Roll back the last applied migration'),
         ('scm down 3',            'Roll back the last 3 migrations'),
         ('scm down --dry-run',    'Preview rollback SQL without executing'),
+        ('scm who',               'Show which database the current config points to'),
         ('scm status',            'Show what is applied vs pending'),
         ('scm history',           'Show applied migrations with timestamps'),
         ('scm show <version>',    'Print SQL for a specific migration (no DB needed)'),
@@ -1559,6 +1562,141 @@ def cmd_init(migrations_dir, env_file):
 
 
 # ---------------------------------------------------------------------------
+# who / dbs commands
+# ---------------------------------------------------------------------------
+
+def _parse_url_fields(url):
+    """Return (scheme, host, port_str, dbname, user) from a URL string, or None if unparseable."""
+    if not url:
+        return None
+    try:
+        p = urlparse(url)
+        scheme = re.sub(r'\+.*$', '', p.scheme.lower()).replace('postgresql', 'postgres')
+        return (
+            scheme,
+            p.hostname or '',
+            f':{p.port}' if p.port else '',
+            p.path.lstrip('/') or '',
+            p.username or '',
+        )
+    except Exception:
+        return None
+
+
+def cmd_who(url, env_file, db=None):
+    """Show which database the current configuration points to."""
+    tty = sys.stdout.isatty()
+    def bold(s):  return f'\033[1m{s}\033[0m'               if tty else s
+    def blue(s):  return f'\033[38;2;95;143;211m{s}\033[0m' if tty else s
+    def dim(s):   return f'\033[2m{s}\033[0m'               if tty else s
+    def green(s): return f'\033[32m{s}\033[0m'              if tty else s
+
+    if not url:
+        print("No DATABASE_URL configured.")
+        print(f"  env file: {env_file}")
+        print(f"  Set DATABASE_URL in {env_file} or pass --url.")
+        return
+
+    fields = _parse_url_fields(url)
+    if not fields:
+        print(f"Could not parse DATABASE_URL in {env_file}.")
+        return
+    scheme, host, port, dbname, user = fields
+
+    label_w = 10
+    print(bold(blue('Current database')))
+    print(dim('─' * 40))
+    if db:
+        print(f"  {'--db':<{label_w}}  {green(db)}")
+    print(f"  {'env file':<{label_w}}  {env_file}")
+    print(f"  {'driver':<{label_w}}  {scheme}")
+    print(f"  {'host':<{label_w}}  {host}{port}")
+    print(f"  {'database':<{label_w}}  {green(dbname or '(none)')}")
+    print(f"  {'user':<{label_w}}  {user or '(none)'}")
+    print(f"  {'url':<{label_w}}  {dim(redact_url(url))}")
+
+
+def cmd_dbs():
+    """List all configured databases by scanning .env and .env.* files."""
+    tty = sys.stdout.isatty()
+    def bold(s):  return f'\033[1m{s}\033[0m'               if tty else s
+    def blue(s):  return f'\033[38;2;95;143;211m{s}\033[0m' if tty else s
+    def dim(s):   return f'\033[2m{s}\033[0m'               if tty else s
+    def green(s): return f'\033[32m{s}\033[0m'              if tty else s
+    def yellow(s):return f'\033[33m{s}\033[0m'              if tty else s
+
+    # Collect .env and .env.<name> files in the current directory
+    cwd = Path('.')
+    env_files = []
+    base = cwd / '.env'
+    if base.exists():
+        env_files.append(('.env', None))           # (filename, --db name)
+    for f in sorted(cwd.iterdir()):
+        if f.name.startswith('.env.') and f.is_file():
+            db_name = f.name[len('.env.'):]
+            env_files.append((f.name, db_name))
+
+    if not env_files:
+        print("No .env files found in the current directory.")
+        return
+
+    # Parse each file independently (don't let one bleed into the next)
+    rows = []
+    for filename, db_name in env_files:
+        env_vars = {}
+        path = Path(filename)
+        with path.open(encoding='utf-8') as fh:
+            for line in fh:
+                line = line.rstrip('\n')
+                line = re.sub(r'^\s*export\s+', '', line)
+                stripped = line.strip()
+                if not stripped or stripped.startswith('#'):
+                    continue
+                m = re.match(r'^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)', line)
+                if not m:
+                    continue
+                key, value = m.group(1), m.group(2)
+                if (value.startswith('"') and value.endswith('"')) or \
+                   (value.startswith("'") and value.endswith("'")):
+                    value = value[1:-1]
+                else:
+                    value = re.sub(r'\s+#.*$', '', value).strip()
+                env_vars[key] = value
+
+        url = env_vars.get('DATABASE_URL', '')
+        fields = _parse_url_fields(url) if url else None
+        rows.append((filename, db_name, url, fields))
+
+    # Column widths
+    col_db  = max(len('--db'),      max(len(db or '(default)') for _, db, _, _ in rows))
+    col_env = max(len('env file'),  max(len(fn)                 for fn, _, _, _ in rows))
+    col_drv = max(len('driver'),    max(len(f[0]) if f else len('?') for _, _, _, f in rows))
+    col_hst = max(len('host'),      max(len((f[1]+f[2]) if f else '?') for _, _, _, f in rows))
+    col_dbn = max(len('database'),  max(len(f[3]) if f else len('(none)') for _, _, _, f in rows))
+
+    header = (f"{'--db':<{col_db}}  {'env file':<{col_env}}  "
+              f"{'driver':<{col_drv}}  {'host':<{col_hst}}  {'database':<{col_dbn}}")
+    print(bold(blue(header)))
+    print(dim('─' * len(header)))
+
+    for filename, db_name, url, fields in rows:
+        label = db_name or '(default)'
+        if fields:
+            scheme, host, port, dbname, _ = fields
+            print(f"{green(label):<{col_db + 9}}  "   # +9 for ANSI codes
+                  f"{filename:<{col_env}}  "
+                  f"{scheme:<{col_drv}}  "
+                  f"{(host+port):<{col_hst}}  "
+                  f"{(dbname or '(none)'):<{col_dbn}}")
+        else:
+            print(f"{yellow(label):<{col_db + 9}}  "
+                  f"{filename:<{col_env}}  "
+                  f"{'(not configured)'}")
+
+    print(dim(f"\n{len(rows)} env file(s) found.  Use --db <name> to target one."))
+
+
+# ---------------------------------------------------------------------------
 # Driver resolution
 # ---------------------------------------------------------------------------
 
@@ -1676,6 +1814,9 @@ def main():
 
     sub.add_parser('undo', help='Interactively delete pending (unapplied) migration files')
 
+    sub.add_parser('who', help='Show which database the current --db / .env points to')
+    sub.add_parser('dbs', help='List all configured databases (.env and .env.* files)')
+
     p_efc = sub.add_parser(
         'env-from-config',
         help='Create or update .env with DATABASE_URL from config.xml',
@@ -1771,6 +1912,14 @@ def main():
 
     if args.command == 'show':
         cmd_show(find_migrations(args.path), target_version=args.version)
+        return
+
+    if args.command == 'who':
+        cmd_who(url, args.env_file, db=args.db)
+        return
+
+    if args.command == 'dbs':
+        cmd_dbs()
         return
 
     if not url:
