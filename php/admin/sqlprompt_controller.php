@@ -486,6 +486,10 @@ ENDOFQUERY;
 					echo "EXPLAIN Plans are not yet supported for {$db['dbtype']} yet.";exit;
 				break;
 			}
+			if(isset($_REQUEST['format']) && strtolower($_REQUEST['format'])=='json'){
+				echo encodeJson($recs);
+				exit;
+			}
 			setView(array('results','success'),1);
 			return;
 		break;
