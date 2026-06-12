@@ -116,8 +116,53 @@ chmod +x scm.sh
 ln -s "$(pwd)/scm.sh" /usr/local/bin/scm
 ```
 
-Both scripts simply delegate to `python3 scm.py "$@"` -- all flags and arguments
-pass through unchanged.
+Each wrapper resolves `scm.py` next to itself (via `%~dp0` on Windows and
+`$BASH_SOURCE` on Linux/macOS) and prefers `python3`, falling back to `python`
+when `python3` is not on `PATH`. All flags and arguments pass through unchanged.
+
+### Running from any folder (PATH install)
+
+`scm` is **context-aware**: every per-project input is resolved relative to the
+**current working directory**, not to where `scm.py` lives. That means you can put
+a single copy on your `PATH` and run it from any WaSQL site:
+
+| Resolved from current directory | Notes |
+|---|---|
+| `.env` / `.env.<db>` | Loaded from the CWD on every run |
+| `migrations/` (or `migrations/<db>`) | Defaults to `./migrations` relative to CWD |
+| `config.xml` (for `env-from-config`) | Found by walking **up** from the CWD to the site root |
+| `dbs` listing | Scans the CWD for `.env` and `.env.*` files |
+
+**Windows** -- add the folder containing `scm.bat` and `scm.py` to your `PATH`:
+
+```powershell
+# Current user, persists across sessions (restart the terminal afterward)
+[Environment]::SetEnvironmentVariable(
+    'Path',
+    [Environment]::GetEnvironmentVariable('Path', 'User') + ';C:\wasql\python',
+    'User')
+```
+
+Then from any site:
+
+```bat
+cd C:\anysite\python
+scm who                    :: reads C:\anysite\.env
+scm env-from-config mydb   :: reads C:\anysite\config.xml (walked up from CWD)
+scm up
+```
+
+**Linux / macOS** -- symlink the wrapper onto your `PATH` (shown above) and run
+`scm` from inside any project; it picks up that project's `.env`, `migrations/`,
+and `config.xml` automatically.
+
+> Keep `scm.bat`/`scm.sh` and `scm.py` together in the same folder -- the wrapper
+> locates `scm.py` beside itself, so they must not be separated.
+
+`config.xml` discovery walks up from the CWD to the site root (WaSQL keeps
+`config.xml` one level above the language folder, e.g. `<site>/config.xml` with
+`<site>/python/`). To override discovery, set `WASQL_PATH` in `.env` or pass
+`--config /path/to/config.xml`.
 
 ---
 
@@ -192,6 +237,7 @@ scm --env-file .env.staging up
 | `MIGRATION_STYLE` | -- | `one` | File style for `new`: `one`/`dbmate` = single file, `two`/`golang-migrate` = separate up/down files |
 | `MIGRATIONS_DIR` | `DBMATE_MIGRATIONS_DIR` | `./migrations` | Path to migrations directory |
 | `MIGRATIONS_TABLE` | `DBMATE_MIGRATIONS_TABLE` | `schema_migrations` | Name of the tracking table in the database |
+| `WASQL_PATH` | -- | *(discovered)* | Directory containing `config.xml`, used by `env-from-config`. Overrides the walk-up-from-CWD discovery |
 
 ---
 
@@ -285,10 +331,12 @@ scm env-from-config
 scm env-from-config <name>
 ```
 
-Reads `../config.xml` (relative to `scm.py`) and builds a `DATABASE_URL` from the
-named `<database>` entry's attributes (`dbtype`, `dbhost`, `dbport`, `dbuser`, `dbpass`,
-`dbname`). Creates or updates `DATABASE_URL` in `.env` in-place, then automatically runs
-`init` to create the migrations folder.
+Locates `config.xml` by walking **up** from the current directory to the WaSQL
+site root (overridable via `WASQL_PATH` in `.env` or the `--config` flag) and
+builds a `DATABASE_URL` from the named `<database>` entry's attributes (`dbtype`,
+`dbhost`, `dbport`, `dbuser`, `dbpass`, `dbname`). Creates or updates
+`DATABASE_URL` in `.env` in-place, then automatically runs `init` to create the
+migrations folder.
 
 Only database entries with supported dbtypes are listed: `postgres`, `mysql`, `mysqli`,
 `mariadb`, `mssql`, `sqlserver`, `sqlite`, `ctree`, `firebird`, `hana`, `snowflake`,
@@ -642,7 +690,7 @@ Requires no database connection.
 | `--db NAME` | -- | Database name. Derives `--env-file` and `--path` automatically (see below) |
 | `--env-file FILE` | `.env` (or `.env.<db>`) | Path to `.env` file |
 | `--path DIR` | `./migrations` (or `./migrations/<db>`) | Migrations directory |
-| `--config FILE` | `../config.xml` | Path to WaSQL `config.xml` (used by `env-from-config`) |
+| `--config FILE` | *(discovered)* | Path to WaSQL `config.xml` (used by `env-from-config`). Default is found by walking up from the CWD; `WASQL_PATH` in `.env` overrides |
 
 ---
 

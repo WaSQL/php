@@ -1728,6 +1728,25 @@ def get_driver(url, table='schema_migrations'):
 # CLI
 # ---------------------------------------------------------------------------
 
+def _find_config_xml():
+    """Locate config.xml by walking up from the current working directory.
+
+    WaSQL keeps config.xml at the site root, one level above the language
+    folder (python/, php/, groovy/, ...). Walking up from CWD lets a single
+    scm installed on PATH operate on whichever site you're standing in, rather
+    than always reading the config.xml next to the script.
+
+    Falls back to <script_dir>/../config.xml (the original behavior) when no
+    config.xml is found at or above the current directory.
+    """
+    cwd = Path.cwd().resolve()
+    for d in (cwd, *cwd.parents):
+        candidate = d / 'config.xml'
+        if candidate.exists():
+            return str(candidate)
+    return str(Path(__file__).resolve().parent.parent / 'config.xml')
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog='scm.py',
@@ -1748,9 +1767,11 @@ def main():
         help='Path to migrations directory. Defaults to MIGRATIONS_DIR in .env, then ./migrations',
     )
 
-    # Default config.xml path: one directory above this script (same as config.py)
-    _script_dir = Path(__file__).resolve().parent
-    _default_config = str(_script_dir.parent / 'config.xml')
+    # Default config.xml path: search from the current directory upward so scm
+    # works from any WaSQL site when installed on PATH. WaSQL keeps config.xml at
+    # the site root, one level above the language folder (python/, php/, ...).
+    # Falls back to the script's own layout if no config.xml is found above CWD.
+    _default_config = _find_config_xml()
 
     parser.add_argument(
         '--config', default=None, metavar='FILE',
