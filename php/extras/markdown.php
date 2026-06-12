@@ -44,6 +44,16 @@ function markdown2Html($txt, $params=array()){
 function markdown2Email($txt, $params=array()) {
     //first convert markdown to HTML
     $html = markdown2Html($txt,$params);
+    // rewrite relative src/href paths to absolute using baseurl param
+    if (!empty($params['baseurl'])) {
+        $base = rtrim($params['baseurl'], '/');
+        $html = preg_replace_callback('/<img([^>]*)\ssrc="(\/[^"]*)"([^>]*)>/i', function($m) use ($base) {
+            return '<img' . $m[1] . ' src="' . $base . $m[2] . '"' . $m[3] . '>';
+        }, $html);
+        $html = preg_replace_callback('/href="(\/[^"]*)"/i', function($m) use ($base) {
+            return 'href="' . $base . $m[1] . '"';
+        }, $html);
+    }
 
     // Email-friendly inline styles
     $emailStyles = array(
@@ -56,8 +66,8 @@ function markdown2Email($txt, $params=array()) {
         '<p>' => '<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;margin:10px 0;color:#333;">',
         '<strong>' => '<strong style="font-weight:bold;">',
         '<em>' => '<em style="font-style:italic;">',
-        '<ul>' => '<ul style="margin:10px 0;padding-left:20px;">',
-        '<ol>' => '<ol style="margin:10px 0;padding-left:20px;">',
+        '<ul>' => '<ul style="margin:10px 0 10px 0;padding-left:20px;margin-left:20px;">',
+        '<ol>' => '<ol style="margin:10px 0 10px 0;padding-left:20px;margin-left:20px;">',
         '<li>' => '<li style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;margin:5px 0;">',
         '<blockquote>' => '<blockquote style="border-left:4px solid #ccc;margin:15px 0;padding-left:15px;font-style:italic;color:#666;">',
         '<code>' => '<code style="background-color:#f4f4f4;padding:2px 4px;border-radius:3px;font-family:monospace;font-size:13px;">',
@@ -69,7 +79,10 @@ function markdown2Email($txt, $params=array()) {
         '<th>'=> '<th style="padding:3px 5px;">',
         '<td>'=> '<td style="padding:3px 5px;">'
     );
-    return str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
+    $html = str_replace(array_keys($emailStyles), array_values($emailStyles), $html);
+    // style img tags (str_replace can't be used since img already has attributes)
+    $html = preg_replace('/<img\s/i', '<img style="display:block;max-width:100%;height:auto;border:0;" ', $html);
+    return $html;
 }
 
 //---------- begin function markdownFromHtml--------------------
