@@ -1052,7 +1052,11 @@ function snowflakeGetDBTables($params=array()){
 *	$fieldinfo=snowflakeGetDBFieldInfo('abcschema.abc');
 */
 function snowflakeGetDBFieldInfo($table,$params=array()){
+	global $CONFIG;
+	global $DATABASE;
 	$parts=preg_split('/\./',$table);
+	$dbname='';
+	$schema='';
 	switch(count($parts)){
 		case 3:
 			$dbname=strtoupper($parts[0]);
@@ -1063,20 +1067,35 @@ function snowflakeGetDBFieldInfo($table,$params=array()){
 			$schema=strtoupper($parts[0]);
 			$table=strtoupper($parts[1]);
 		break;
+		default:
+			$table=strtoupper($parts[0]);
+		break;
 	}
-	//new method - use information_schema instead of 1=0
+	if(empty($schema)){
+		$db_key=isset($CONFIG['db']) ? $CONFIG['db'] : '';
+		if($db_key && isset($DATABASE[$db_key]['dbschema'])){
+			$schema=strtoupper($DATABASE[$db_key]['dbschema']);
+		}
+		elseif(isset($CONFIG['snowflake_schema'])){
+			$schema=strtoupper($CONFIG['snowflake_schema']);
+		}
+	}
+	$catalog = $dbname ? "{$dbname}.information_schema" : "information_schema";
+	// CAST character columns to bounded sizes — the Snowflake ODBC driver pre-allocates
+	// per-row buffers based on reported max column size. Without CAST, DATA_TYPE is
+	// VARCHAR(65535) which causes multi-hundred-MB allocations for any non-trivial table.
 	$query=<<<ENDOFQUERY
 		SELECT
-			lower(table_name) AS "table",
-			lower(table_name) AS "_dbtable",
-			lower(column_name) AS "name",
-			lower(column_name) AS "_dbfield",
-			lower(data_type) AS "type",
-			lower(data_type) AS "_dbtype",
+			CAST(lower(table_name) AS VARCHAR(256)) AS "table",
+			CAST(lower(table_name) AS VARCHAR(256)) AS "_dbtable",
+			CAST(lower(column_name) AS VARCHAR(256)) AS "name",
+			CAST(lower(column_name) AS VARCHAR(256)) AS "_dbfield",
+			CAST(lower(data_type) AS VARCHAR(256)) AS "type",
+			CAST(lower(data_type) AS VARCHAR(256)) AS "_dbtype",
 			numeric_scale AS "scale",
 			numeric_precision AS "precision",
 			character_maximum_length AS "length"
-		FROM dis_prod.information_schema.columns 
+		FROM {$catalog}.columns
 		WHERE
 			table_schema='{$schema}'
 			AND table_name='{$table}'
