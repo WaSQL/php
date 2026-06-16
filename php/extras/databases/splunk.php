@@ -137,7 +137,6 @@ function splunkQueryResults($query,$params=array()){
     }
 
     if(!$complete){
-        echo "job timed out after {$attempts} attempts and {$sleepcnt} seconds".printValue($debug);exit;
         return "job timed out after {$attempts} attempts and {$sleepcnt} seconds";
     }
 
@@ -153,7 +152,7 @@ function splunkQueryResults($query,$params=array()){
             if(file_exists($params['-filename'])){unlink($params['-filename']);}
             $fh = fopen($params['-filename'],"wb");
         }
-        if(!isset($fh) || !is_resource($fh)){
+        if(!isset($fh) || !commonIsResourceOrObject($fh)){
             return "Failed to create {$params['-filename']}";
         }
         if(isset($params['-logfile'])){
@@ -163,8 +162,8 @@ function splunkQueryResults($query,$params=array()){
     else{$recs=array();}
     $totalCount = null;
     $header=0;
-    $offset=commonCoalesce($params['offset'],0);
-    $limit=commonCoalesce($params['limit'],1000);
+    $offset=commonCoalesce($params['-offset'],0);
+    $limit=commonCoalesce($params['-limit'],1000);
     $pcount=1;
     do {
         // Get results with pagination parameters

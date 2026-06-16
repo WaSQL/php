@@ -42,11 +42,11 @@ if(!class_exists('ZipArchive')){
 */
 function msexcelCloseDBConnection($conn=null){
 	global $dbh_msexcel;
-	if($conn!==null && is_resource($conn)){
+	if($conn!==null && commonIsResourceOrObject($conn)){
 		@odbc_close($conn);
 		return true;
 	}
-	if(isset($dbh_msexcel) && is_resource($dbh_msexcel)){
+	if(isset($dbh_msexcel) && commonIsResourceOrObject($dbh_msexcel)){
 		@odbc_close($dbh_msexcel);
 		$dbh_msexcel=null;
 		return true;
@@ -604,7 +604,7 @@ function msexcelGetDBRecords($params){
 	    //$query="SELECT {$paginate} {$params['-fields']} FROM {$params['-table']} {$wherestr}";
 	    $orderby=1;
 	    if(isset($params['-order'])){
-    		$orderby = "{$params['-order']}";
+    		$orderby = preg_replace('/[^a-zA-Z0-9_,. ]/', '', $params['-order']);
     	}
     	if(isNum($paginate)){
     		$query=<<<ENDOFQUERY
@@ -1147,7 +1147,7 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 	$i=0;
 
 	// Validate result resource
-	if(!is_resource($result)){
+	if(!commonIsResourceOrObject($result)){
 		debugValue(array(
 			'function'=>'msexcelEnumQueryResults',
 			'message'=>'Invalid result resource provided'
@@ -1200,7 +1200,7 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 			}
     		$fh = @fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			odbc_free_result($result);
 			debugValue(array(
 				'function'=>'msexcelEnumQueryResults',
@@ -1228,7 +1228,7 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 			$field=strtolower(odbc_field_name($result,$z));
 	        $rec[$field]=odbc_result($result,$z);
 	    }
-	    if(isset($fh) && is_resource($fh)){
+	    if(isset($fh) && commonIsResourceOrObject($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1262,7 +1262,7 @@ function msexcelEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	odbc_free_result($result);
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

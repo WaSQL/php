@@ -156,7 +156,7 @@ function elasticQueryResults($query,$params=array()){
 		'-port'=>$db['dbport'],
 		'-nossl'=>1,
 		'format'=>'json',
-		'-method'=>'HEAD'
+		'-method'=>'POST'
 	));
 	if(isset($post['json_array']['error']['root_cause'][0]['reason'])){
 		return "ERROR: ".$post['json_array']['error']['root_cause'][0]['reason'];
@@ -198,7 +198,7 @@ function elasticQueryResults($query,$params=array()){
 		return $recs_count;
 	}
 	elseif(isset($params['-fieldinfo'])){
-		return $fieldinfo;
+		return array();
 	}
 	return $recs;
 }

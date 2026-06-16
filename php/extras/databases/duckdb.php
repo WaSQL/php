@@ -189,7 +189,7 @@ ENDOFQUERY;
 		if(!$dbh_duckdb){
 			$err=array(
 				'msg'=>"duckdbAddDBRecordsProcess error",
-				'error'	=> $dbh_duckdb->lastErrorMsg(),
+				'error'	=> 'Database connection failed',
 				'query'	=> $query
 			);
 	    	debugValue(array("duckdbAddDBRecord Connect Error",$err));
@@ -542,21 +542,13 @@ function duckdbGetAllTableIndexes($schema=''){
 	}
 	//key_name,column_name,seq_in_index,non_unique
 	$query=<<<ENDOFQUERY
-	SELECT 
-		m.tbl_name as table_name,
-		il.name as index_name,
-		group_concat(ii.name) as index_keys,
-		il.[unique] as is_unique
-  	FROM duckdb_master AS m,
-	    pragma_index_list(m.name) AS il,
-	    pragma_index_info(il.name) AS ii
- 	WHERE 
- 		m.type = 'table'
- 	GROUP BY
- 		m.tbl_name,
-		il.name,
-		il.[unique]
- 	ORDER BY 1,2
+	SELECT
+		table_name,
+		index_name,
+		is_unique,
+		is_primary
+	FROM duckdb_indexes()
+	ORDER BY table_name, index_name
 ENDOFQUERY;
 	$recs=duckdbQueryResults($query);
 	//echo "{$CONFIG['db']}--{$schema}".$query.'<hr>'.printValue($recs);exit;
@@ -939,7 +931,7 @@ function duckdbDBConnect($params=array()){
 	//echo printValue($params);exit;
 	global $dbh_duckdb;
 	// Check if existing connection is still valid
-	if($dbh_duckdb){
+	if(commonIsResourceOrObject($dbh_duckdb)){
 		try{
 			// Test the connection with a simple query
 			$test = @$dbh_duckdb->query("SELECT 1");
@@ -1194,7 +1186,7 @@ ENDOFQUERY;
 	if(!$dbh_duckdb){
 		$err=array(
 			'msg'=>"duckdbAddDBRecord error",
-			'error'	=> $dbh_duckdb->lastErrorMsg(),
+			'error'	=> 'Database connection failed',
 			'query'	=> $query
 		);
     	debugValue(array("duckdbAddDBRecord Connect Error",$err));
@@ -1305,7 +1297,7 @@ ENDOFQUERY;
 	if(!$dbh_duckdb){
     	$err=array(
 			'msg'=>"duckdbEditDBRecord error",
-			'error'	=> $dbh_duckdb->lastErrorMsg(),
+			'error'	=> 'Database connection failed',
 			'query'	=> $query
 		);
     	debugValue(array("duckdbEditDBRecord Connect Error",$err));

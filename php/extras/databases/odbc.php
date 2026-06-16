@@ -338,7 +338,7 @@ function odbcDBConnect($params=array()){
 		else{
 			$dbh_odbc_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
 		}
-		if(!is_resource($dbh_odbc_single)){
+		if(!commonIsResourceOrObject($dbh_odbc_single)){
 			$e=odbc_errormsg();
 			$error=array("odbcDBConnect Error",$e);
 	    	debugValue($error);
@@ -347,7 +347,7 @@ function odbcDBConnect($params=array()){
 		return $dbh_odbc_single;
 	}
 	
-	if(is_resource($dbh_odbc)){return $dbh_odbc;}
+	if(commonIsResourceOrObject($dbh_odbc)){return $dbh_odbc;}
 
 	try{
 		if(isset($params['-cursor'])){
@@ -356,7 +356,7 @@ function odbcDBConnect($params=array()){
 		else{
 			$dbh_odbc = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
 		}
-		if(!is_resource($dbh_odbc)){
+		if(!commonIsResourceOrObject($dbh_odbc)){
 			//wait a few seconds and try again
 			sleep(2);
 			if(isset($params['-cursor'])){
@@ -365,7 +365,7 @@ function odbcDBConnect($params=array()){
 			else{
 				$dbh_odbc = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
-			if(!is_resource($dbh_odbc)){
+			if(!commonIsResourceOrObject($dbh_odbc)){
 				$e=odbc_errormsg();
 				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 				$error=array("odbcDBConnect Error",$e,$params);
@@ -454,12 +454,12 @@ function odbcClearConnection(){
 function odbcExecuteSQL($query,$params=array()){
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcExecuteSQL Connect Error",$e));
     	return json_encode($e);
@@ -554,12 +554,12 @@ function odbcAddDBRecord($params){
 ENDOFQUERY;
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcAddRecord Connect Error",$e));
     	return json_encode($e);
@@ -567,7 +567,7 @@ ENDOFQUERY;
 	try{
 		if(!isset($odbcAddDBRecordCache[$params['-table']]['stmt'])){
 			$odbcAddDBRecordCache[$params['-table']]['stmt']    = odbc_prepare($dbh_odbc, $query);
-			if(!is_resource($odbcAddDBRecordCache[$params['-table']]['stmt'])){
+			if(!commonIsResourceOrObject($odbcAddDBRecordCache[$params['-table']]['stmt'])){
 				$e=odbc_errormsg();
 				$err=array("odbcAddDBRecord prepare Error",$e,$query);
 				debugValue($err);
@@ -668,31 +668,31 @@ function odbcEditDBRecord($params,$id=0,$opts=array()){
 ENDOFQUERY;
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcEditRecord Connect Error",$e));
     	return json_encode($e);
 	}
 	try{
 		$odbc_stmt    = odbc_prepare($dbh_odbc, $query);
-		if(!is_resource($odbc_stmt)){
+		if(!commonIsResourceOrObject($odbc_stmt)){
 			$e=odbc_errormsg();
 			debugValue(array("odbcEditDBRecord2 prepare Error",$e));
-    		return 1;
+    		return 0;
 		}
 		$success = odbc_execute($odbc_stmt,$vals);
 		//echo $vals[5].$query.printValue($success).printValue($vals);
 	}
 	catch (Exception $e) {
 		debugValue(array("odbcEditDBRecord2 try Error",$e));
-    	return;
+    	return 0;
 	}
-	return 0;
+	return 1;
 }
 //---------- begin function odbcReplaceDBRecord ----------
 /**
@@ -763,12 +763,12 @@ function odbcReplaceDBRecord($params){
 ENDOFQUERY;
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcReplaceDBRecord Connect Error",$e));
     	return json_encode($e);
@@ -897,12 +897,12 @@ function odbcGetDBRecords($params){
 function odbcGetDBSchemas($params=array()){
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcGetDBSchemas Connect Error",$e));
     	return json_encode($e);
@@ -946,19 +946,19 @@ function odbcGetDBSchemas($params=array()){
 function odbcGetDBTables($params=array()){
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcGetDBTables Connect Error",$e));
     	return json_encode($e);
 	}
 	try{
 		$result=odbc_tables($dbh_odbc);
-		if(!is_resource($result)){
+		if(!commonIsResourceOrObject($result)){
 			$e=odbc_errormsg($dbh_odbc);
 			$error=array("odbcGetDBTables Error",$e);
 			debugValue($error);
@@ -1003,12 +1003,12 @@ function odbcGetDBTables($params=array()){
 function odbcGetDBFieldInfo($table,$params=array()){
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcGetDBFieldInfo Connect Error",$e));
     	return json_encode($e);
@@ -1087,12 +1087,12 @@ function odbcGetDBCount($params=array()){
 function odbcQueryHeader($query,$params=array()){
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcQueryHeader Connect Error",$e));
     	return json_encode($e);
@@ -1145,12 +1145,12 @@ function odbcQueryResults($query,$params=array()){
 	$starttime=microtime(true);
 	global $dbh_odbc;
 	$dbh_odbc=odbcDBConnect($params);
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
 		$dbh_odbc='';
 		usleep(100);
 		$dbh_odbc=odbcDBConnect($params);
 	}
-	if(!is_resource($dbh_odbc)){
+	if(!commonIsResourceOrObject($dbh_odbc)){
     	$e=odbc_errormsg();
     	debugValue(array("odbcQueryResults Connect Error",$e));
     	return json_encode($e);
@@ -1217,7 +1217,7 @@ function odbcQueryResults($query,$params=array()){
     		$fh = fopen($params['-filename'],"wb");
 		}
 		
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			odbc_free_result($result);
 			$error=array("odbcQueryResults Error",'Failed to open file',$query,$params);
 			debugValue($error);
@@ -1246,7 +1246,7 @@ function odbcQueryResults($query,$params=array()){
 			$field=strtolower(odbc_field_name($result,$z));
 	        $rec[$field]=odbc_result($result,$z);
 	    }
-	    if(isset($fh) && is_resource($fh)){
+	    if(isset($fh) && commonIsResourceOrObject($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1280,7 +1280,7 @@ function odbcQueryResults($query,$params=array()){
 		}
 	}
 	odbc_free_result($result);
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

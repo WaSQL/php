@@ -426,19 +426,20 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//verify we can connect to the db
 	$dbh_postgresql='';
+	$tries=0;
 	while($tries < 4){
 		$dbh_postgresql='';
 		$dbh_postgresql=postgresqlDBConnect($params);
-		if(is_resource($dbh_postgresql) || is_object($dbh_postgresql)){
+		if(commonIsResourceOrObject($dbh_postgresql)){
 			break;
 		}
 		sleep(2);
 	}
-	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+	if(!commonIsResourceOrObject($dbh_postgresql)){
 		debugValue(array(
 			'function'=>'postgresqlAddDBRecordsProcess',
 			'message'=>'postgresqlDBConnect error',
-			'error'=>"Connect Error" . pg_last_error(),
+			'error'=>"Connect Error" . (error_get_last()['message'] ?? 'PostgreSQL connection failed'),
 		));
 		return 0;
 	}
@@ -510,6 +511,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 				$query.="WHERE {$params['-upsertwhere']}".PHP_EOL;
 			}
 		}
+		$query_name = "pg_adddbrecords_json_" . getmypid();
 		if(isset($params['-debug']) && $params['-debug']==1){
 			return array(
 					'dbh'=>$dbh_postgresql,
@@ -521,7 +523,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		try{
 			$pg_adddbrecords_stmt = pg_prepare($dbh_postgresql,$query_name, $query);
-			if(!is_resource($pg_adddbrecords_stmt) && !is_object($pg_adddbrecords_stmt)){
+			if(!commonIsResourceOrObject($pg_adddbrecords_stmt)){
 				debugValue(array(
 					'function'=>'postgresqlAddDBRecordsProcess',
 					'message'=>'pg_prepare error',
@@ -668,19 +670,20 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 			return $query;
 		}
 		$dbh_postgresql='';
+		$tries=0;
 		while($tries < 4){
 			$dbh_postgresql='';
 			$dbh_postgresql=postgresqlDBConnect($params);
-			if(is_resource($dbh_postgresql) || is_object($dbh_postgresql)){
+			if(commonIsResourceOrObject($dbh_postgresql)){
 				break;
 			}
 			sleep(2);
 		}
-		if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+		if(!commonIsResourceOrObject($dbh_postgresql)){
 			debugValue(array(
 				'function'=>'postgresqlAddDBRecordsProcess',
 				'message'=>'postgresqlDBConnect error',
-				'error'=>"Connect Error" . pg_last_error(),
+				'error'=>"Connect Error" . (error_get_last()['message'] ?? 'PostgreSQL connection failed'),
 				'query'=>$query,
 			));
 			return $total_count;
@@ -688,7 +691,7 @@ function postgresqlAddDBRecordsProcess($recs,$params=array()){
 		//echo $query;exit;
 		try{
 			$pg_adddbrecords_stmt = pg_prepare($dbh_postgresql,$query_name, $query);
-			if(!is_resource($pg_adddbrecords_stmt) && !is_object($pg_adddbrecords_stmt)){
+			if(!commonIsResourceOrObject($pg_adddbrecords_stmt)){
 				debugValue(array(
 					'function'=>'postgresqlAddDBRecordsProcess',
 					'message'=>'pg_prepare error',
@@ -1142,7 +1145,7 @@ ENDOFQUERY;
 	}
 
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+	if(!commonIsResourceOrObject($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
@@ -1156,7 +1159,7 @@ ENDOFQUERY;
     	return null;
 	}
 	$result=pg_query_params($dbh_postgresql,$query,$values);
-	if(!is_resource($result)){
+	if(!commonIsResourceOrObject($result)){
 		$err=pg_last_error($dbh_postgresql);
 		debugValue(array(
 			'function'=>'postgresqlAddDBRecord',
@@ -1417,7 +1420,7 @@ function postgresqlDBConnect(){
 		$params['-connect'].=" connect_timeout=5";
 	}
 	global $dbh_postgresql;
-	//if(is_resource($dbh_postgresql)){return $dbh_postgresql;}
+	//if(commonIsResourceOrObject($dbh_postgresql)){return $dbh_postgresql;}
 	set_error_handler('postgresExceptionErrorHandler');
 	try{
 		$dbh_postgresql = pg_connect($params['-connect']);
@@ -1451,7 +1454,7 @@ function postgresqlDBConnect(){
 		}
 	}
 	restore_error_handler();
-	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+	if(!commonIsResourceOrObject($dbh_postgresql)){
 		return '';
 	}
 	//set log_error_verbosity for better error messages
@@ -1578,7 +1581,7 @@ function postgresqlEditDBRecord($params=array(),$id=0,$opts=array()){
 		{$output}
 ENDOFQUERY;
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+	if(!commonIsResourceOrObject($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
 	}
 	if(!$dbh_postgresql){
@@ -1590,7 +1593,9 @@ ENDOFQUERY;
 		));
     	return;
 	}
-	$query_name='pg_editdbrecord_'.getmypid();
+	$pid=getmypid();
+	$query_name="pg_editdbrecord_{$pid}";
+	@pg_query($dbh_postgresql, "DEALLOCATE \"pg_editdbrecord_{$pid}\"");
 	if(!pg_prepare($dbh_postgresql,$query_name,$query)){
 		debugValue(array(
 			'function'=>'postgresqlEditDBRecord',
@@ -2402,7 +2407,7 @@ function postgresqlGetDBRecords($params){
 			}
 			elseif(!strlen(trim($params[$k]))){continue;}	
 	        $params[$k]=str_replace("'","''",$params[$k]);
-	        switch(strtolower($fields[$k])){
+	        switch(strtolower($fields[$k]['_dbtype'])){
 	        	case 'char':
 	        	case 'varchar':
 	        		$v=strtoupper($params[$k]);
@@ -2441,7 +2446,7 @@ function postgresqlGetDBRecords($params){
 	    	$limit=25;
 	    	if(!empty($params['-limit'])){$limit=$params['-limit'];}
 	    	elseif(!empty($CONFIG['paging'])){$limit=$CONFIG['paging'];}
-	    	$query .= " OFFSET {$offset} ROWS FETCH NEXT {$limit} ROWS ONLY";
+	    	$query .= " LIMIT {$limit} OFFSET {$offset}";
 	    }
 	}
 	if(isset($params['-debug'])){return $query;}
@@ -2454,7 +2459,7 @@ function postgresqlGetDBRecords($params){
 */
 function postgresqlGetDBVersion(){
 	global $dbh_postgresql;
-	if(!is_resource($dbh_postgresql) && !is_object($dbh_postgresql)){
+	if(!commonIsResourceOrObject($dbh_postgresql)){
 		$dbh_postgresql=postgresqlDBConnect();
 	}
 	return pg_version($dbh_postgresql);	
@@ -3488,7 +3493,7 @@ function postgresqlExtractColumnsFromFilter($filter) {
 */
 function postgresqlEnumQueryResults($data,$params=array()){
 	global $postgresqlStopProcess;
-	if(!is_resource($data) && !is_object($data)){return null;}
+	if(!commonIsResourceOrObject($data)){return null;}
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
@@ -3518,7 +3523,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			pg_free_result($result);
 			debugValue('postgresqlEnumQueryResults error: Failed to open '.$params['-filename']);
 			return array();
@@ -3531,7 +3536,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	$writefile=0;
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	while ($rec = @pg_fetch_assoc($data)){
@@ -3558,7 +3563,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 					if(file_exists($params['-filename'])){unlink($params['-filename']);}
 		    		$fh = fopen($params['-filename'],"wb");
 				}
-		    	if(!isset($fh) || !is_resource($fh)){
+		    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 					pg_free_result($dbh_postgresql_result);
 					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 					debugValue($DATABASE['_lastquery']);
@@ -3603,7 +3608,7 @@ function postgresqlEnumQueryResults($data,$params=array()){
 				if(file_exists($params['-filename'])){unlink($params['-filename']);}
 		    	$fh = fopen($params['-filename'],"wb");
 				
-		    	if(!isset($fh) || !is_resource($fh)){
+		    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 					pg_free_result($dbh_postgresql_result);
 					$DATABASE['_lastquery']['error']='failed to open file: '.$params['-filename'];
 					debugValue($DATABASE['_lastquery']);

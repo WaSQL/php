@@ -19242,6 +19242,17 @@ function isParams($p,$params=array()){
 function isRequest($r){
 	return isParams($r,$_REQUEST);
 	}
+//---------- begin function isResourceOrObject($e) ----------
+/**
+* @describe returns true if $e is a resource OR and object. 
+* @param e mixed element to check
+* @return boolean
+*	returns true if $e is a resource OR and objecty
+* @usage if(isResourceOrObject($e)){...}
+*/
+function commonIsResourceOrObject($e){
+	return is_resource($e) || is_object($e);
+}
 //---------- begin function isSessionActive ----------
 /**
 * @describe returns true if sessions are active

@@ -267,19 +267,20 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	//foreach($recs as $rec){echo "HERE".printValue($rec).printValue($rfields).printValue($fieldinfo);exit;}
 	//verify we can connect to the db
 	$dbh_mysql='';
+	$tries=0;
 	while($tries < 4){
 		$dbh_mysql='';
 		$dbh_mysql=mysqlDBConnect($params);
-		if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+		if(commonIsResourceOrObject($dbh_mysql)){
 			break;
 		}
 		sleep(2);
 	}
-	if(!is_resource($dbh_mysql) && !is_object($dbh_mysql)){
+	if(!commonIsResourceOrObject($dbh_mysql)){
 		debugValue(array(
 			'function'=>'mysqlAddDBRecordsProcess',
 			'message'=>'mysqlDBConnect error',
-			'error'=>"Connect Error" . pg_last_error(),
+			'error'=>"Connect Error" . mysqli_connect_error(),
 		));
 		return 0;
 	}
@@ -332,8 +333,8 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			$query.=" ON DUPLICATE KEY UPDATE";
 			$upserts=$params['-upsert'];
 			//VALUES() to refer to the new row is deprecated with version 8.0.20+
-			$recs=mysqlQueryResults('SELECT VERSION() AS value');
-			$version=$recs[0];
+			$version_recs=mysqlQueryResults('SELECT VERSION() AS value');
+			$version=$version_recs[0];
 			list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
 			if((int)$v1>8 || ((int)$v1==8 && (int)$v2 > 0) || ((int)$v1==8 && (int)$v2==0 && (int)$v3 >=20)){
 				//mysql version 8 and newer
@@ -360,7 +361,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		//echo "<pre>{$query}</pre>".$jsonstr.printValue($fieldinfo);exit;
 		//prepare and execute
 		$stmt=mysqli_prepare($dbh_mysql,$query);
-		if(!is_resource($stmt) &&  !is_object($stmt)){
+		if(!commonIsResourceOrObject($stmt) &&  !commonIsResourceOrObject($dbh_mysql)){
 			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 			debugValue(array($DATABASE['_lastquery']['error'],$query,$fieldinfo));
 			return 0;
@@ -433,8 +434,8 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	if(isset($params['-upsert'][0])){
 		$upserts=$params['-upsert'];
 		//VALUES() to refer to the new row is deprecated with version 8.0.20+
-		$recs=mysqlQueryResults('SELECT VERSION() AS value');
-		$version=$recs[0];
+		$version_recs=mysqlQueryResults('SELECT VERSION() AS value');
+		$version=$version_recs[0];
 		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
 		if((int)$v1>8 || ((int)$v1==8 && (int)$v2 > 0) || ((int)$v1==8 && (int)$v2==0 && (int)$v3 >=20)){
 			//mysql version 8 and newer
@@ -463,19 +464,19 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			}
 		}
 	}
-	if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+	if(commonIsResourceOrObject($dbh_mysql)){
 		//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
 	}
 
 	$dbh_mysql='';
 	$dbh_mysql=mysqlDBConnect();
-	if(!is_resource($dbh_mysql) && !is_object($dbh_mysql)){
+	if(!commonIsResourceOrObject($dbh_mysql)){
 		$mysqlAddDBRecordsResults['errors'][]=mysqli_connect_error();
 		debugValue(mysqli_connect_error());
     		return 0;
 	}
 	$stmt=mysqli_prepare($dbh_mysql,$query);
-	if(!is_resource($stmt) &&  !is_object($stmt)){
+	if(!commonIsResourceOrObject($stmt) &&  !commonIsResourceOrObject($dbh_mysql)){
 		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 		debugValue(array($DATABASE['_lastquery']['error'],$query));
 		return 0;
@@ -483,7 +484,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	//echo "HERE".printValue($stmt).mysqli_error($dbh_mysql).printValue($types).printValue($values);exit;
 	if(mysqli_stmt_bind_param($stmt, implode('',$types),...$values)){
 		mysqli_stmt_execute($stmt);
-		return $rec_cnt;
+		return count($recs);
 	}
 	return 0;
 }
@@ -1149,7 +1150,7 @@ function mysqlDBConnect($params=array()){
 		$dbh_mysql = mysqli_init();
 		mysqli_options($dbh_mysql, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
 		$connected = @mysqli_real_connect($dbh_mysql, $host, $params['-dbuser'], $params['-dbpass'], $params['-dbname'], $port);
-		if(!$connected || !is_object($dbh_mysql)){
+		if(!$connected || !commonIsResourceOrObject($dbh_mysql)){
 			$err=@mysqli_connect_error();
 			$CONFIG['mysql_error']=$err;
 			debugValue("mysqlDBConnect error: Connection failed - {$err}");
@@ -1534,7 +1535,7 @@ function mysqlGetDBWhere($params,$info=array()){
 }
 function mysqlEscapeString($str){
 	global $dbh_mysql;
-	if(is_resource($dbh_mysql) || is_object($dbh_mysql)){
+	if(commonIsResourceOrObject($dbh_mysql)){
 		if(function_exists('mysqli_real_escape_string')){
 			$str=mysqli_real_escape_string($dbh_mysql,$str);
 		}
@@ -1838,8 +1839,8 @@ function mysqlEnumQueryResults($data,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
-			mysqli_free_result($result);
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
+			mysqli_free_result($data);
 			return 'mysqlEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
@@ -1848,7 +1849,7 @@ function mysqlEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	$writefile=0;
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	if(is_bool($data)){return array(array('status'=>$data));}

@@ -203,33 +203,10 @@ function firebirdAddDBRecordsProcess($recs,$params=array()){
 	}
 	$query.=implode(','.PHP_EOL,$values);
 	if(isset($params['-upsert'][0])){
-		//VALUES() to refer to the new row is deprecated with version 8.0.20+
-		$version=getDBRecord("SHOW VARIABLES LIKE 'version'");
-		list($v1,$v2,$v3)=preg_split('/\./',$version['value'],3);
-		if((int)$v1>8 || ((int)$v1==8 && (int)$v2 > 0) || ((int)$v1==8 && (int)$v2==0 && (int)$v3 >=20)){
-			//firebird version 8 and newer
-			$query.=PHP_EOL."AS new"." ON DUPLICATE KEY UPDATE";
-			$flds=array();
-			foreach($params['-upsert'] as $fld){
-				$flds[]="{$fld}=new.{$fld}";
-			}
-			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere'])){
-				$query.=" WHERE {$params['-upsertwhere']}";
-			}
-		}
-		else{
-			//before firebird version 8.0.20
-			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
-			$flds=array();
-			foreach($params['-upsert'] as $fld){
-				$flds[]="{$fld}=VALUES({$fld})";
-			}
-			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere'])){
-				$query.=" WHERE {$params['-upsertwhere']}";
-			}
-		}
+		// Firebird upsert: convert INSERT to UPDATE OR INSERT ... MATCHING (pk)
+		$upsert_keys=implode(',', $params['-upsert']);
+		$query=str_replace('INSERT INTO','UPDATE OR INSERT INTO',$query);
+		$query.=PHP_EOL." MATCHING ({$upsert_keys})";
 	}
 	//echo printValue($params).$query;exit;
 	$ok=firebirdExecuteSQL($query);
@@ -898,21 +875,21 @@ function firebirdDBConnect($params=array()){
 	global $CONFIG;
 	$params=firebirdParseConnectParams($params);
 	global $dbh_firebird;
-	if($dbh_firebird){return $dbh_firebird;}
+	if(commonIsResourceOrObject($dbh_firebird)){return $dbh_firebird;}
 	try{
 		$dbh_firebird = ibase_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
 
-		if(!is_resource($dbh_firebird)){
+		if(!commonIsResourceOrObject($dbh_firebird)){
 			$err=@ibase_errmsg();
-			echo "firebirdDBConnect error:{$err}".printValue($params);
-			exit;
+			debugValue(array('function'=>'firebirdDBConnect','error'=>$err));
+			return null;
 
 		}
 		return $dbh_firebird;
 	}
 	catch (Exception $e) {
-		echo "dbh_firebird exception" . printValue($e);
-		exit;
+		debugValue(array('function'=>'firebirdDBConnect','exception'=>$e->getMessage()));
+		return null;
 	}
 }
 //---------- begin function firebirdExecuteSQL ----------
@@ -941,8 +918,9 @@ function firebirdExecuteSQL($query,$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_firebird;
-	$dbh_firebird='';
-	$dbh_firebird=firebirdDBConnect();
+	if(!commonIsResourceOrObject($dbh_firebird)){
+		$dbh_firebird=firebirdDBConnect();
+	}
 	if(!$dbh_firebird){
 		$DATABASE['_lastquery']['error']=ibase_errmsg();
 		debugValue($DATABASE['_lastquery']);
@@ -1364,7 +1342,7 @@ function firebirdGetDBViews($params=array()){
 	}
 	$dbname=strtolower($DATABASE[$CONFIG['db']]['dbname']);
 	$tables=array();
-	$query="show FULL tables FROM {$dbname} WHERE TABLE_TYPE = 'VIEW'";
+	$query="SELECT TRIM(rdb\$relation_name) as name FROM rdb\$relations WHERE rdb\$view_blr IS NOT NULL AND rdb\$system_flag = 0 ORDER BY 1";
 	$recs=firebirdQueryResults($query);
 	$k="tables_in_{$dbname}";
 	foreach($recs as $rec){
@@ -1395,8 +1373,9 @@ function firebirdQueryResults($query='',$params=array()){
 	$query=trim($query);
 	global $USER;
 	global $dbh_firebird;
-	$dbh_firebird='';
-	$dbh_firebird=firebirdDBConnect();
+	if(!commonIsResourceOrObject($dbh_firebird)){
+		$dbh_firebird=firebirdDBConnect();
+	}
 	if(!$dbh_firebird){
 		$DATABASE['_lastquery']['error']='connect failed: '.ibase_errmsg();
 		debugValue($DATABASE['_lastquery']);
@@ -1448,8 +1427,8 @@ function firebirdEnumQueryResults($data,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
-			ibase_free_result($result);
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
+			if(commonIsResourceOrObject($data)){ibase_free_result($data);}
 			return 'firebirdEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
@@ -1461,7 +1440,7 @@ function firebirdEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	$writefile=0;
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	while ($row = @ibase_fetch_assoc($data)){
@@ -1639,6 +1618,7 @@ ENDOFQUERY;
 
 */
 function firebirdOptimizations($params=array()){
+	return array(); // stub — Firebird-specific implementation pending
 	$results=array();
 	//version
 	$recs=firebirdQueryResults('SELECT version() as val');

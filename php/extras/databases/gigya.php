@@ -234,7 +234,7 @@ function gigyaQueryResults($query,$params=array()){
 			break;
 		}
 	}
-	if(!strlen($table)){return "Invalid Table name: ".printValue($m);}
+	if(!strlen($table)){return "Invalid Table name: ".(isset($m) ? printValue($m) : 'unknown');}
 	//custom_filters
 	$qlines=preg_split('/[\r\n]+/',$query);
 	$custom_filters=array();
@@ -830,6 +830,7 @@ function gigyaGetDBRecords($params){
 		$ands=array();
 		foreach($params as $k=>$v){
 			$k=strtolower($k);
+			if(is_array($v)){continue;}
 			if(!strlen(trim($v))){continue;}
 			if(!isset($fields[$k])){continue;}
 			if(is_array($params[$k])){

@@ -181,12 +181,12 @@ function mscsvExecuteSQL($query,$return_error=1){
 		'query'=>$query,
 		'function'=>'mscsvExecuteSQL'
 	);
-	global $dbh_msexcel;
-	$dbh_msexcel='';
+	global $dbh_mscsv;
+	$dbh_mscsv='';
 	try{
-		$dbh_msexcel = mscsvDBConnect();
-		$cols = odbc_exec($dbh_msexcel, $query);
-		$dbh_msexcel='';
+		$dbh_mscsv = mscsvDBConnect();
+		$cols = odbc_exec($dbh_mscsv, $query);
+		$dbh_mscsv='';
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return 1;
@@ -194,10 +194,10 @@ function mscsvExecuteSQL($query,$return_error=1){
 	catch (Exception $e) {
 		$DATABASE['_lastquery']['error']=$e;
 		debugValue($DATABASE['_lastquery']);
-	    $dbh_msexcel='';
+	    $dbh_mscsv='';
 	    return 0;
 	}
-	$dbh_msexcel='';
+	$dbh_mscsv='';
 	return 0;
 }
 //---------- begin function mscsvGetDBCount--------------------
@@ -883,7 +883,7 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			odbc_free_result($result); // Fixed: was pg_free_result
 			return 'mscsvEnumQueryResults error: Failed to open '.$params['-filename'];
 		}
@@ -903,7 +903,7 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 			$field=strtolower(odbc_field_name($result,$z));
 	        $rec[$field]=odbc_result($result,$z);
 	    }
-	    if(isset($fh) && is_resource($fh)){
+	    if(isset($fh) && commonIsResourceOrObject($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -937,7 +937,7 @@ function mscsvEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	odbc_free_result($result);
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

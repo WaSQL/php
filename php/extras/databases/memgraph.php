@@ -20,7 +20,9 @@
 */
 
 // Load Composer autoloader
-require_once(__DIR__ . '/../../../vendor/autoload.php');
+if(file_exists(__DIR__ . '/../../../vendor/autoload.php')){
+	require_once(__DIR__ . '/../../../vendor/autoload.php');
+}
 
 use Laudis\Neo4j\ClientBuilder;
 use Laudis\Neo4j\Databags\Statement;
@@ -40,7 +42,7 @@ use Laudis\Neo4j\Databags\Statement;
 function memgraphDBConnect($params=array()){
 	$params=memgraphParseConnectParams($params);
 	global $dbh_memgraph;
-	if(is_object($dbh_memgraph)){return $dbh_memgraph;}
+	if(commonIsResourceOrObject($dbh_memgraph)){return $dbh_memgraph;}
 
 	try{
 		// Build connection URL
@@ -138,9 +140,9 @@ function memgraphQueryResults($query='',$params=array()){
 	global $dbh_memgraph;
 
 	// Only connect if we don't already have a connection
-	if(!is_object($dbh_memgraph)){
+	if(!commonIsResourceOrObject($dbh_memgraph)){
 		$dbh_memgraph=memgraphDBConnect($params);
-		if(!is_object($dbh_memgraph)){
+		if(!commonIsResourceOrObject($dbh_memgraph)){
 			debugValue("memgraphQueryResults: Failed to connect");
 			return array();
 		}
@@ -170,7 +172,7 @@ function memgraphQueryResults($query='',$params=array()){
 			foreach($result->keys() as $key){
 				$value = $result->get($key);
 				// Handle Node objects
-				if(is_object($value) && method_exists($value, 'getProperties')){
+				if(commonIsResourceOrObject($value) && method_exists($value, 'getProperties')){
 					$rec[$key] = $value->getProperties();
 				}
 				// Handle arrays and primitives
@@ -206,7 +208,7 @@ function memgraphQueryResults($query='',$params=array()){
 							if(is_array($subValue)){
 								$flatRec[$subKey] = json_encode($subValue);
 							}
-							elseif(is_object($subValue)){
+							elseif(commonIsResourceOrObject($subValue)){
 								// Handle Neo4j/Memgraph objects
 								if(method_exists($subValue, 'toArray')){
 									$flatRec[$subKey] = json_encode($subValue->toArray());
@@ -223,13 +225,13 @@ function memgraphQueryResults($query='',$params=array()){
 							}
 						}
 					}
-					elseif(is_object($value)){
+					elseif(commonIsResourceOrObject($value)){
 						// Handle Neo4j/Memgraph objects
 						if(method_exists($value, 'toArray')){
 							// CypherMap and similar objects have toArray()
 							$arrayValue = $value->toArray();
 							foreach($arrayValue as $subKey => $subValue){
-								if(is_object($subValue)){
+								if(commonIsResourceOrObject($subValue)){
 									$flatRec[$subKey] = json_encode($subValue);
 								}
 								elseif(is_array($subValue)){
@@ -244,7 +246,7 @@ function memgraphQueryResults($query='',$params=array()){
 							// Handle iterable objects
 							$arrayValue = iterator_to_array($value);
 							foreach($arrayValue as $subKey => $subValue){
-								if(is_object($subValue) || is_array($subValue)){
+								if(commonIsResourceOrObject($subValue) || is_array($subValue)){
 									$flatRec[$subKey] = json_encode($subValue);
 								}
 								else{
@@ -323,9 +325,9 @@ function memgraphExecuteSQL($query, $params=array()){
 	if(!commonStrlen($query)){return 0;}
 
 	global $dbh_memgraph;
-	if(!is_object($dbh_memgraph)){
+	if(!commonIsResourceOrObject($dbh_memgraph)){
 		$dbh_memgraph=memgraphDBConnect($params);
-		if(!is_object($dbh_memgraph)){
+		if(!commonIsResourceOrObject($dbh_memgraph)){
 			debugValue("memgraphExecuteSQL: Failed to connect");
 			return false;
 		}
@@ -426,12 +428,12 @@ function memgraphGetDBRecords($params){
 				if(is_array($value)){
 					// If value is an array (node properties), merge them
 					foreach($value as $subKey => $subValue){
-						if(!is_array($subValue) && !is_object($subValue)){
+						if(!is_array($subValue) && !commonIsResourceOrObject($subValue)){
 							$flatRec[$subKey] = $subValue;
 						}
 					}
 				}
-				elseif(!is_object($value)){
+				elseif(!commonIsResourceOrObject($value)){
 					$flatRec[$key] = $value;
 				}
 			}
@@ -674,13 +676,7 @@ function memgraphCreateNode($params=array()){
 
 	$query = "CREATE (n:{$label} {{$propStr}}) RETURN id(n) as node_id";
 
-	// Debug output
-	echo "Debug: Query = {$query}<br>\n";
-	echo "Debug: Params = <pre>" . print_r($queryParams, true) . "</pre><br>\n";
-
 	$recs = memgraphQueryResults($query, array_merge($params, $queryParams));
-
-	echo "Debug: Results = <pre>" . print_r($recs, true) . "</pre><br>\n";
 
 	if(isset($recs[0]['node_id'])){
 		return $recs[0]['node_id'];
@@ -703,7 +699,7 @@ function memgraphUpdateNode($params=array()){
 		return false;
 	}
 
-	$id = $params['-id'];
+	$id = intval($params['-id']);
 	$props = isset($params['-properties']) ? $params['-properties'] : array();
 
 	// Build SET clause
@@ -734,7 +730,7 @@ function memgraphDeleteNode($params=array()){
 		return false;
 	}
 
-	$id = $params['-id'];
+	$id = intval($params['-id']);
 	$detach = isset($params['-detach']) ? $params['-detach'] : true;
 
 	$deleteClause = $detach ? "DETACH DELETE n" : "DELETE n";
@@ -759,9 +755,9 @@ function memgraphCreateRelationship($params=array()){
 		return false;
 	}
 
-	$from = $params['-from'];
-	$to = $params['-to'];
-	$type = $params['-type'];
+	$from = intval($params['-from']);
+	$to = intval($params['-to']);
+	$type = preg_replace('/[^a-zA-Z_]/', '', $params['-type']);
 	$props = isset($params['-properties']) ? $params['-properties'] : array();
 
 	// Build property string

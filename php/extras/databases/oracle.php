@@ -149,19 +149,20 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	}
 	//verify we can connect to the db
 	$dbh_oracle='';
+	$tries=0;
 	while($tries < 4){
 		$dbh_oracle='';
 		$dbh_oracle=oracleDBConnect($params);
-		if(is_resource($dbh_oracle) || is_object($dbh_oracle)){
+		if(commonIsResourceOrObject($dbh_oracle)){
 			break;
 		}
 		sleep(2);
 	}
-	if(!is_resource($dbh_oracle) && !is_object($dbh_oracle)){
+	if(!commonIsResourceOrObject($dbh_oracle)){
 		debugValue(array(
 			'function'=>'oracleAddDBRecordsProcess',
 			'message'=>'oracleDBConnect error',
-			'error'=>"Connect Error" . pg_last_error(),
+			'error'=>"Connect Error" . json_encode(oci_error()),
 		));
 		return 0;
 	}
@@ -381,27 +382,15 @@ function oracleAddDBRecordsProcess($recs,$params=array()){
 	}
 	if(!is_null($dbh_oracle=oracleDBConnect())){
 		if($stid = oci_parse($dbh_oracle,$query)){
-			if(oci_bind_by_name($stid, ":text_jsonstr", $jsonstr,-1,SQLT_LNG)){
-				if(oci_execute($stid)){
-					oci_commit($dbh_oracle);
-					return count($recs);
-				}
-				else{
-					oci_free_statement($stid);
-					debugValue(array(
-			    		'function'=>"oracleAddDBRecordsProcess",
-			    		'action'=>'oci_execute',
-			    		'error'=>oci_error($dbh_oracle),
-			    		'query'=>$query
-			    	));
-			    	return 0;
-				}
+			if(oci_execute($stid)){
+				oci_commit($dbh_oracle);
+				return count($recs);
 			}
 			else{
 				oci_free_statement($stid);
 				debugValue(array(
 		    		'function'=>"oracleAddDBRecordsProcess",
-		    		'action'=>'oci_bind_by_name',
+		    		'action'=>'oci_execute',
 		    		'error'=>oci_error($dbh_oracle),
 		    		'query'=>$query
 		    	));
@@ -508,7 +497,7 @@ function oracleGetTriggerDDL($name,$schema=''){
 * @usage $txt=oracleGetProcedureText('sample');
 */
 function oracleGetProcedureText($name='',$type='',$schema=''){
-	$table=strtoupper($table);
+	$name=strtoupper($name);
 	if(!strlen($schema)){
 		$schema=oracleGetDBSchema();
 	}
@@ -1102,20 +1091,20 @@ function oracleAddDBRecord($params){
 		}
 	}
 	//build the query with bind variables
-	$fields=array_keys($values);
-	foreach($fields as $i=>$field){
+	$fieldNames=array_keys($values);
+	foreach($fieldNames as $i=>$field){
 		if(oracleIsReservedWord($field)){
-			$fields[$i]='"'.strtoupper($field).'"';
+			$fieldNames[$i]='"'.strtoupper($field).'"';
 		}
 	}
-	$fieldstr=implode(', ',$fields);
+	$fieldstr=implode(', ',$fieldNames);
 	$bindstr=implode(', ',array_values($bindvars));
     $query="INSERT INTO {$params['-table']} ({$fieldstr}) values ({$bindstr})";
     if(isset($params['-return'])){
     	$query .= " RETURNING {$params['-return']} INTO :returnval";
     }
     $stid = oci_parse($dbh_oracle, $query);
-    if (!is_resource($stid)){
+    if (!commonIsResourceOrObject($stid)){
     	$out=array(
     		'function'=>"oracleAddDBRecord",
     		'connection'=>$dbh_oracle,
@@ -1289,7 +1278,7 @@ function oracleAutoCommit($stid,$onoff=0){
 * @usage $ok=oracleCommit();
 */
 function oracleCommit($conn=''){
-	if(is_resource($conn)){
+	if(!commonIsResourceOrObject($conn)){
 		global $dbh_oracle;
 		$conn=$dbh_oracle;
 	}
@@ -1339,7 +1328,7 @@ function oracleDBConnect($params=array()){
 	}
 	if(isset($params['-single'])){
 		$dbh_single = oci_connect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset'],$params['-dbsysdba']);
-		if(!is_resource($dbh_single)){
+		if(!commonIsResourceOrObject($dbh_single)){
 			$err=json_encode(oci_error());
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
@@ -1352,10 +1341,10 @@ function oracleDBConnect($params=array()){
 		return $dbh_single;
 	}
 	global $dbh_oracle;
-	if(is_resource($dbh_oracle)){return $dbh_oracle;}
+	if(commonIsResourceOrObject($dbh_oracle)){return $dbh_oracle;}
 	try{
 		$dbh_oracle = oci_pconnect($params['-dbuser'],$params['-dbpass'],$params['-connect'],$params['-charset'],$params['-dbsysdba']);
-		if(!is_resource($dbh_oracle)){
+		if(!commonIsResourceOrObject($dbh_oracle)){
 			$err=oci_error();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
@@ -1479,7 +1468,7 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
     $query="update {$params['-table']} set {$setstr} where {$params['-where']}";
     $stid = oci_parse($dbh_oracle, $query);
     //check for parse errors
-    if(!is_resource($stid)){
+    if(!commonIsResourceOrObject($stid)){
     	$out=array(
     		'function'=>"oracleEditDBRecord",
     		'connection'=>$dbh_oracle,
@@ -1820,6 +1809,7 @@ function oracleGetDBFieldInfo($table,$params=array()){
 	//primary keys
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
 	//echo $table.printValue($pkeys);exit;
+	$table = preg_replace('/[^a-zA-Z0-9_$#.]/', '', $table);
 	$query="SELECT * FROM {$table} WHERE 0=".rand(1,1000);
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!$stid){
@@ -2227,7 +2217,7 @@ function oracleEnumQueryResults($res,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			oci_free_result($res);
 			return 'oracleEnumQueryResults error: Failed to open '.$params['-filename'];
 		}
@@ -2239,7 +2229,7 @@ function oracleEnumQueryResults($res,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	$writefile=0;
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	$fetchopts=OCI_ASSOC+OCI_RETURN_NULLS;
@@ -2252,7 +2242,7 @@ function oracleEnumQueryResults($res,$params=array()){
 		$rec=array();
 		foreach ($row as $field=>$val){
 			$field=strtolower($field);
-			if(is_resource($val)){
+			if(commonIsResourceOrObject($val)){
 				oci_execute($val);
 				//get the fields
 				$xfields=array();
@@ -2569,7 +2559,7 @@ function oracleQueryResults($query='',$params=array()){
 	}
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
-	if(!is_resource($stid)){
+	if(!commonIsResourceOrObject($stid)){
 		$DATABASE['_lastquery']['error']='oci_parse error: '.printValue(oci_error($dbh_oracle));
 		debugValue($DATABASE['_lastquery']);
     	oci_close($dbh_oracle);

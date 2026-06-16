@@ -164,7 +164,7 @@ function ctreeDBConnect($params=array()){
 		else{
 			$dbh_ctree_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 		}
-		if(!is_resource($dbh_ctree_single) && !is_object($dbh_ctree_single)){
+		if(!commonIsResourceOrObject($dbh_ctree_single)){
 			$err=odbc_errormsg();
 			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			echo "ctreeDBConnect single connect error:{$err}".printValue($params);
@@ -178,7 +178,7 @@ function ctreeDBConnect($params=array()){
 		return $dbh_ctree_single;
 	}
 	global $dbh_ctree;
-	if(is_resource($dbh_ctree) || is_object($dbh_ctree)){return $dbh_ctree;}
+	if(commonIsResourceOrObject($dbh_ctree)){return $dbh_ctree;}
 
 	try{
 		if(isset($params['-cursor'])){
@@ -187,7 +187,7 @@ function ctreeDBConnect($params=array()){
 		else{
 			$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass']);
 		}
-		if(!is_resource($dbh_ctree) && !is_object($dbh_ctree)){
+		if(!commonIsResourceOrObject($dbh_ctree)){
 			//wait a few seconds and try again
 			sleep(2);
 			if(isset($params['-cursor'])){
@@ -196,7 +196,7 @@ function ctreeDBConnect($params=array()){
 			else{
 				$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
-			if(!is_resource($dbh_ctree) && !is_object($dbh_ctree)){
+			if(!commonIsResourceOrObject($dbh_ctree)){
 				$err=odbc_errormsg();
 				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 				echo "ctreeDBConnect error:{$err}".printValue($params);
@@ -227,17 +227,17 @@ function ctreeDBConnectOLD(){
 		return false;
 	}
 	global $dbh_ctree;
-	if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
+	if(commonIsResourceOrObject($dbh_ctree)){return $dbh_ctree;}
 	//try a few times to connect
 	$tries=0;
 	$exc='';
 	while($tries < 5){
 		$dbh_ctree = odbc_connect($params['-connect'],$params['-dbuser'],$params['-dbpass']);
-		if(is_object($dbh_ctree) || is_resource($dbh_ctree)){return $dbh_ctree;}
+		if(commonIsResourceOrObject($dbh_ctree)){return $dbh_ctree;}
 		$tries+=1;
 		sleep(5);
 	}
-	if(!is_resource($dbh_ctree) && !is_object($dbh_ctree)){
+	if(!commonIsResourceOrObject($dbh_ctree)){
 		$ok=dbSetLast(array('error'=>odbc_errormsg()));
 		debugValue(dbGetLast());
 		return false;
@@ -266,9 +266,9 @@ function ctreeExecuteSQL($query,$return_error=1){
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		odbc_setoption($resource, 2, 0, 1800);  // SQL_QUERY_TIMEOUT = 30min on statement handle (FairCom may ignore; rely on QUERY_TIMEOUT in connection string)
 		if(odbc_execute($resource)){
-			if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
+			if(commonIsResourceOrObject($resource)){odbc_free_result($resource);}
 			$resource=null;
-			if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
+			if(commonIsResourceOrObject($dbh_ctree)){odbc_close($dbh_ctree);}
 			$dbh_ctree=null;
 			return true;
 		}
@@ -528,7 +528,6 @@ function ctreeGetDBRecords($params){
 			$params=array();
 		}
 		else{
-			echo $params.PHP_EOL."REQUEST: ".PHP_EOL.printValue($_REQUEST);exit;
 			$ok=ctreeExecuteSQL($params);
 			return $ok;
 		}
@@ -692,6 +691,7 @@ ENDOFQUERY;
 }
 function ctreeGetDBSchema(){
 	global $CONFIG;
+	global $DATABASE;
 	$params=ctreeParseConnectParams();
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
 		return $DATABASE[$CONFIG['db']]['dbschema'];
@@ -988,7 +988,7 @@ function ctreeQueryResults($query='',$params=array()){
 			odbc_setoption($resource, 2, 0, 1800);  // SQL_QUERY_TIMEOUT = 30min on statement handle (FairCom may ignore; rely on QUERY_TIMEOUT in connection string)
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
-				if(is_resource($resource) || is_object($resource)){odbc_free_result($resource);}
+				if(commonIsResourceOrObject($resource)){odbc_free_result($resource);}
 				$resource=null;
 				//echo "HERE:{$crecs}:".$cquery.printValue($params);exit;
 				if(isset($params['-filename']) || isset($params['-webhook_url']) || isset($params['-process'])){
@@ -1039,7 +1039,7 @@ function ctreeQueryResults($query='',$params=array()){
 			break;
 		}
 	}
-	if(is_resource($dbh_ctree) || is_object($dbh_ctree)){odbc_close($dbh_ctree);}
+	if(commonIsResourceOrObject($dbh_ctree)){odbc_close($dbh_ctree);}
 	$dbh_ctree=null;
 	if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 		//unlink($params['-logfile']);
@@ -1064,7 +1064,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	global $dbh_ctree;
 	global $ctreeStopProcess;
 	global $ctreeQueryResultsTemp;
-	if(!is_resource($result) && !is_object($result)){return null;}
+	if(!commonIsResourceOrObject($result)){return null;}
 	unset($fh);
 	$starttime=microtime(true);
 	$recs=array();
@@ -1174,7 +1174,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	@odbc_fetch_row($result, 0);   // reset cursor
-	if(is_resource($resource) || is_object($resource)){odbc_free_result($result);}
+	if(commonIsResourceOrObject($result)){odbc_free_result($result);}
 	$result=null;
 	$rec_count=count($recs);
 	if(isset($params['-filename']) && $rec_count>0){

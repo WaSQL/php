@@ -157,19 +157,20 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//verify we can connect to the db
 	$dbh_mssql='';
+	$tries=0;
 	while($tries < 4){
 		$dbh_mssql='';
 		$dbh_mssql=mssqlDBConnect($params);
-		if(is_resource($dbh_mssql) || is_object($dbh_mssql)){
+		if(commonIsResourceOrObject($dbh_mssql)){
 			break;
 		}
 		sleep(2);
 	}
-	if(!is_resource($dbh_mssql) && !is_object($dbh_mssql)){
+	if(!commonIsResourceOrObject($dbh_mssql)){
 		debugValue(array(
 			'function'=>'mssqlAddDBRecordsProcess',
 			'message'=>'mssqlDBConnect error',
-			'error'=>"Connect Error" . pg_last_error(),
+			'error'=>'Connect Error: ' . (error_get_last()['message'] ?? 'MSSQL connection failed'),
 		));
 		return 0;
 	}
@@ -324,7 +325,7 @@ function mssqlAddDBRecordsProcess($recs,$params=array()){
 			$parameters_count=0;
 		}
 	}
-	$chunks[]=$chunks[]=array(
+	$chunks[]=array(
 		'valuesets'=>$valuesets,
 		'values'=>$values
 	);
@@ -989,7 +990,7 @@ function mssqlParseConnectParams($params=array()){
 	if(!isset($CONFIG['mssql_dbname']) && isset($params['-dbname'])){
 		$CONFIG['mssql_dbname']=$params['-dbname'];
 	}
-	$CONFIG['mssql_dbname']=$dbname;
+	if(isset($dbname)){ $CONFIG['mssql_dbname']=$dbname; }
 	return $params;
 }
 
@@ -1008,16 +1009,16 @@ function mssqlParseConnectParams($params=array()){
 function mssqlDBConnect($params=array()){
 	$params=mssqlParseConnectParams($params);
 	if(!isset($params['-dbname']) && !isset($params['-connect'])){
-		echo "mssqlDBConnect error: no connect params".printValue($params);
-		exit;
+		debugValue(array('function'=>'mssqlDBConnect','error'=>'no connect params'));
+		return null;
 	}
 	//php 7 and greater no longer use mssql_connect
 	if((int)phpversion()>=7){
 		//$serverName = "serverName\sqlexpress"; //serverName\instanceName
 		//If values for the UID and PWD keys are not specified, the connection will be attempted using Windows Authentication.
 		if(!isset($params['-connect'])){
-			echo "mssqlDBConnect error: no connect params".printValue($params);
-			exit;
+			debugValue(array('function'=>'mssqlDBConnect','error'=>'no connect params'));
+			return null;
 		}
 		// Guarantee LoginTimeout regardless of how the connect array was built
 		if(is_array($params['-connect']) && !isset($params['-connect']['LoginTimeout'])){
@@ -1035,52 +1036,52 @@ function mssqlDBConnect($params=array()){
 		}
 		try{
 			$dbh_mssql = sqlsrv_connect( $params['-dbhost'], $params['-connect']);
-			if(!is_resource($dbh_mssql) && !is_object($dbh_mssql)){
+			if(!commonIsResourceOrObject($dbh_mssql)){
 				$errs=sqlsrv_errors();
-				echo "mssqlDBConnect error:".printValue($errs).printValue($params);
-				exit;
+				debugValue(array('function'=>'mssqlDBConnect','error'=>$errs));
+				return null;
 			}
 			return $dbh_mssql;
 		}
 		catch (Exception $e) {
-			echo "mssqlDBConnect exception" . printValue($e);
-			exit;
+			debugValue(array('function'=>'mssqlDBConnect','exception'=>$e->getMessage()));
+			return null;
 		}
 	}
 	//php is not 7 or greater - use mssql_connect
 	if(isset($params['-single'])){
 		$dbh_single = mssql_connect($params['-dbhost'],$params['-dbuser'],$params['-dbpass']);
-		if(!is_resource($dbh_single) && !is_object($dbh_single)){
+		if(!commonIsResourceOrObject($dbh_single)){
 			$err=mssql_get_last_message();
-			echo "mssqlDBConnect single connect error:{$err}".printValue($params);
-			exit;
+			debugValue(array('function'=>'mssqlDBConnect','error'=>$err));
+			return null;
 		}
 		return $dbh_single;
 	}
 	global $dbh_mssql;
-	if(is_resource($dbh_mssql) || is_object($dbh_mssql)){return $dbh_mssql;}
+	if(commonIsResourceOrObject($dbh_mssql)){return $dbh_mssql;}
 
 	try{
 		$dbh_mssql = mssql_pconnect($params['-dbhost'],$params['-dbuser'],$params['-dbpass']);
-		if(!is_resource($dbh_mssql) && !is_object($dbh_mssql)){
+		if(!commonIsResourceOrObject($dbh_mssql)){
 			$err=mssql_get_last_message();
-			echo "mssqlDBConnect error:{$err}".printValue($params);
-			exit;
+			debugValue(array('function'=>'mssqlDBConnect','error'=>$err));
+			return null;
 
 		}
 		if(isset($params['-dbname'])){
 			$ok=mssql_select_db($params['-dbname'],$dbh_mssql);
 			if (!$ok) {
 				$err=mssql_get_last_message();
-				echo "mssqlDBConnect error:{$err}".printValue($params);
-				exit;
+				debugValue(array('function'=>'mssqlDBConnect','error'=>$err));
+				return null;
 			}
 		return $dbh_mssql;
 		}
 	}
 	catch (Exception $e) {
-		echo "mssqlDBConnect exception" . printValue($e);
-		exit;
+		debugValue(array('function'=>'mssqlDBConnect','exception'=>$e->getMessage()));
+		return null;
 	}
 }
 //---------- begin function mssqlAddDBRecord ----------
@@ -1755,7 +1756,6 @@ function mssqlQueryResults($query='',$params=array()){
 		if( $data === false ) {
 			$errors=(array)sqlsrv_errors();
 			sqlsrv_close($dbh_mssql);
-			echo $query.printValue($errors);exit;
 			if(isset($errors[0]['message'])){
 				$errors=array(
 					'function'=>'mssqlQueryResults',
@@ -1854,7 +1854,7 @@ function mssqlEnumQueryResults($data,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			odbc_free_result($result);
 			return 'mssqlEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
@@ -1868,7 +1868,7 @@ function mssqlEnumQueryResults($data,$params=array()){
 	$recs=array();
 	$i=0;
 	$writefile=0;
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	//php 7 and greater no longer use mssql_connect
@@ -2031,7 +2031,7 @@ function mssqlExecuteSQL($query){
 	    }
 		$dbh_mssql=mssqlDBConnect();
 
-		$stmt = sqlsrv_prepare($dbh_mssql, $query,array($json));
+		$stmt = sqlsrv_prepare($dbh_mssql, $query, array());
 		if (!($stmt)){
 			$errors=(array)sqlsrv_errors();
 			sqlsrv_close($dbh_mssql);

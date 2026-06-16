@@ -208,7 +208,7 @@ function msaccessDBConnect(){
 	);
 	$params['-connect']=implode(';',$parts);
 	$dbh_msaccess = odbc_connect($params['-connect'], $params['-dbuser'],$params['-dbpass']);
-	if(!is_resource($dbh_msaccess)){
+	if(!commonIsResourceOrObject($dbh_msaccess)){
 		debugValue(odbc_errormsg());
 		return null;
 	}
@@ -233,16 +233,25 @@ function msaccessExecuteSQL($query,$return_error=1){
 		'function'=>'msaccessExecuteSQL'
 	);
 	$dbh_msaccess=msaccessDBConnect();
-	if(!is_resource($dbh_msaccess)){return 0;}
+	if(!commonIsResourceOrObject($dbh_msaccess)){return 0;}
 	try{
-		$stmt = $dbh_msaccess->prepare($query);
-		$stmt->execute();
-		$stmt->closeCursor(); // this is not even required
-		$stmt = null; // doing this is mandatory for connection to get closed
+		$stmt = odbc_prepare($dbh_msaccess, $query);
+		if(!$stmt){
+			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_msaccess);
+			debugValue($DATABASE['_lastquery']);
+			return 0;
+		}
+		$result = odbc_execute($stmt);
+		if(!$result){
+			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_msaccess);
+			debugValue($DATABASE['_lastquery']);
+			return 0;
+		}
+		odbc_close($dbh_msaccess);
 		$dbh_msaccess = null;
 	}
 	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']='try/catch failed: '.$e->errorInfo;
+		$DATABASE['_lastquery']['error']='try/catch failed: '.$e->getMessage();
 		debugValue($DATABASE['_lastquery']);
 		return 0;
 	}
@@ -309,7 +318,7 @@ function msaccessGetDBFields($table,$allfields=0){
 	$fields=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
-		if(!is_resource($dbh_msaccess)){return array();}
+		if(!commonIsResourceOrObject($dbh_msaccess)){return array();}
 		$cols = odbc_exec($dbh_msaccess, $query);
     	$ncols = odbc_num_fields($cols);
 		for($n=1; $n<=$ncols; $n++) {
@@ -345,7 +354,7 @@ function msaccessGetDBFieldInfo($table){
 	$fields=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
-		if(!is_resource($dbh_msaccess)){return array();}
+		if(!commonIsResourceOrObject($dbh_msaccess)){return array();}
 		$result = odbc_exec($dbh_msaccess, $query);
 		if(!$result){
 			$e=odbc_errormsg($dbh_msaccess);
@@ -388,7 +397,6 @@ function msaccessGetDBIndexes($table=''){
 	return msaccessGetDBTableIndexes($table);
 }
 function msaccessGetDBTableIndexes($table=''){
-	return array();
 	$table=strtolower($table);
 	$params=msaccessParseConnectParams();
 	//echo "msaccessDBConnect".printValue($params);exit;
@@ -397,10 +405,10 @@ function msaccessGetDBTableIndexes($table=''){
 	$fields=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
-		if(!is_resource($dbh_msaccess)){return array();}
+		if(!commonIsResourceOrObject($dbh_msaccess)){return array();}
 		$statistics = odbc_statistics($dbh_msaccess, '', '', $table, SQL_INDEX_ALL, SQL_QUICK);
 		while (($row = odbc_fetch_array($statistics))) {
-		    echo printValue($row);exit;
+		    $fields[]=$row;
 		}
 		
 		$dbh_msaccess='';
@@ -507,7 +515,7 @@ function msaccessGetDBRecords($params){
 	            $params[$k]=implode(':',$params[$k]);
 			}
 	        $params[$k]=str_replace("'","''",$params[$k]);
-	        switch(strtolower($fields[$k])){
+	        switch(strtolower($fields[$k]['type'] ?? $fields[$k])){
 	        	case 'char':
 	        	case 'varchar':
 	        		$v=strtoupper($params[$k]);
@@ -603,7 +611,7 @@ function msaccessGetDBTables($params=array()){
 	$tables=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
-		if(!is_resource($dbh_msaccess)){return array();}
+		if(!commonIsResourceOrObject($dbh_msaccess)){return array();}
 		$result = odbc_tables($dbh_msaccess);
 		$tblRow = 1;
 		while (odbc_fetch_row($result)){
@@ -645,6 +653,7 @@ ENDOFQUERY;
 }
 function msaccessGetDBSchema(){
 	global $CONFIG;
+	global $DATABASE;
 	$params=msaccessParseConnectParams();
 	if(isset($CONFIG['db']) && isset($DATABASE[$CONFIG['db']]['dbschema'])){
 		return $DATABASE[$CONFIG['db']]['dbschema'];
@@ -874,7 +883,7 @@ function msaccessQueryResults($query='',$params=array()){
 		'function'=>'msaccessQueryResults'
 	);
 	$dbh_msaccess=msaccessDBConnect();
-	if(!is_resource($dbh_msaccess)){return array();}
+	if(!commonIsResourceOrObject($dbh_msaccess)){return array();}
 	try{
 		$result=odbc_exec($dbh_msaccess,$query);
 		if(!$result){
@@ -918,8 +927,8 @@ function msaccessEnumQueryResults($result,$params=array(),$query=''){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
-			pg_free_result($result);
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
+			odbc_free_result($result);
 			return 'postgresqlEnumQueryResults error: Failed to open '.$params['-filename'];
 			exit;
 		}
@@ -939,7 +948,8 @@ function msaccessEnumQueryResults($result,$params=array(),$query=''){
 			$field=strtolower(odbc_field_name($result,$z));
 	        $rec[$field]=odbc_result($result,$z);
 	    }
-	    if(isset($fh) && is_resource($fh)){
+	$header=0;
+	    if(isset($fh) && commonIsResourceOrObject($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -973,7 +983,7 @@ function msaccessEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	odbc_free_result($result);
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;

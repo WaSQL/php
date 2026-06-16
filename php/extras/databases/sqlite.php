@@ -1582,7 +1582,7 @@ function sqliteQueryResults($query,$params=array()){
 	$dbh_sqlite->enableExceptions(true);
 	try{
 		$results=$dbh_sqlite->query($query);
-		if(!is_object($results)){
+		if(!commonIsResourceOrObject($results)){
 			$DATABASE['_lastquery']['error']='query error';
 			debugValue($DATABASE['_lastquery']);
 			return array();
@@ -1600,7 +1600,7 @@ function sqliteQueryResults($query,$params=array()){
 		return $recs;
 	}
 	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']='HERE'.$e->getMessage();
+		$DATABASE['_lastquery']['error']=$e->getMessage();
 		debugValue($DATABASE['_lastquery']);
 		return array();
 	}
@@ -1615,7 +1615,7 @@ function sqliteQueryResults($query,$params=array()){
 */
 function sqliteEnumQueryResults($data,$params=array()){
 	global $sqliteStopProcess;
-	if(!is_object($data)){return null;}
+	if(!commonIsResourceOrObject($data)){return null;}
 	$header=0;
 	unset($fh);
 	//write to file or return a recordset?
@@ -1629,7 +1629,7 @@ function sqliteEnumQueryResults($data,$params=array()){
 			if(file_exists($params['-filename'])){unlink($params['-filename']);}
     		$fh = fopen($params['-filename'],"wb");
 		}
-    	if(!isset($fh) || !is_resource($fh)){
+    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
 			$data->finalize(); // Fixed: was odbc_free_result
 			return 'sqliteQueryResults error: Failed to open '.$params['-filename'];
 		}
@@ -1641,7 +1641,7 @@ function sqliteEnumQueryResults($data,$params=array()){
 	else{$recs=array();}
 	$i=0;
 	$writefile=0;
-	if(isset($fh) && is_resource($fh)){
+	if(isset($fh) && commonIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	while ($xrec = $data->fetchArray(SQLITE3_ASSOC)) {

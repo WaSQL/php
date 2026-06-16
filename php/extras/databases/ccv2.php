@@ -155,6 +155,7 @@ function ccv2GetDBFieldInfo($table,$params=array()){
 	global $DATABASE;
 	global $CONFIG;
 	$db=$DATABASE[$CONFIG['db']];
+	$schema='';
 	$parts=preg_split('/\./',$table);
 	if(count($parts)==2){
 		$schema=$parts[0];
@@ -254,7 +255,6 @@ function ccv2QueryResults($query,$params=array()){
 		debugValue($headers);
 		return $headers;
 	}
-	echo "HERE".printValue($headers);exit;
 	$url=$db['dbhost'].'/hac/console/flexsearch/execute';
 	$ccv2params=array(
 		'-method'=>'POST',
@@ -268,7 +268,6 @@ function ccv2QueryResults($query,$params=array()){
 	    "commit"=>"False",
 	    "maxCount"=>"5000"
 	);
-	$json=encodeJSON($json);
 	$post=postURL($url,$ccv2params);
 	if($post['curl_info']['http_code'] >= 400){return 'ERROR:'.printValue($post);}
 	if(isset($post['json_array']['exception']['sqlserverError'])){
