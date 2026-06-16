@@ -158,11 +158,11 @@ function snowflakeEscapeString($str){
 function snowflakeGetDBRecordById($table='',$id=0,$relate=1,$fields=""){
 	if(!strlen($table)){return "snowflakeGetDBRecordById Error: No Table";}
 	if($id == 0){return "snowflakeGetDBRecordById Error: No ID";}
-	$recopts=array('-table'=>$table,'_id'=>$id);
+	$recopts=array('-table'=>$table,'_id'=>$id,'-limit'=>1);
 	if($relate){$recopts['-relate']=1;}
 	if(strlen($fields)){$recopts['-fields']=$fields;}
-	$rec=snowflakeGetDBRecord($recopts);
-	return $rec;
+	$recs=snowflakeGetDBRecords($recopts);
+	return isset($recs[0]) ? $recs[0] : array();
 }
 //---------- begin function snowflakeEditDBRecordById--------------------
 /**
@@ -196,7 +196,6 @@ function snowflakeEditDBRecordById($table='',$id=0,$params=array()){
 	$idstr=implode(',',$ids);
 	$params['-table']=$table;
 	$params['-where']="_id in ({$idstr})";
-	$recopts=array('-table'=>$table,'_id'=>$id);
 	return snowflakeEditDBRecord($params);
 }
 //---------- begin function snowflakeDelDBRecordById--------------------
@@ -228,9 +227,8 @@ function snowflakeDelDBRecordById($table='',$id=0){
 	$idstr=implode(',',$ids);
 	$params=array();
 	$params['-table']=$table;
-	$params['-where']="_id in ({$idstr})";
-	$recopts=array('-table'=>$table,'_id'=>$id);
-	return snowflakeDelDBRecord($params);
+	$query="DELETE FROM {$table} WHERE _id in ({$idstr})";
+	return snowflakeExecuteSQL($query,$params);
 }
 //---------- begin function snowflakeListRecords
 /**
@@ -362,8 +360,8 @@ function snowflakeDBConnect($params=array()){
 		$connect_name=$params['-dbname'];
 	}
 	else{
-		echo "snowflakeDBConnect error: no dbname or connect param".printValue($params);
-		exit;
+		debugValue(array("snowflakeDBConnect error: no dbname or connect param",$params));
+		return null;
 	}
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
@@ -690,6 +688,7 @@ function snowflakeEditDBRecord($params,$id=0,$opts=array()){
 		$params['_euser']=$USER['username'];
 	}
 	$vals=array();
+	$updates=array();
 	foreach($params as $k=>$v){
 		$k=strtolower($k);
 		if(!isset($fields[$k])){continue;}
@@ -732,16 +731,15 @@ ENDOFQUERY;
 		if(!commonIsResourceOrObject($snowflake_stmt)){
 			$e=odbc_errormsg();
 			debugValue(array("snowflakeEditDBRecord2 prepare Error",$e));
-    		return 1;
+    		return 0;
 		}
 		$success = odbc_execute($snowflake_stmt,$vals);
-		//echo $vals[5].$query.printValue($success).printValue($vals);
 	}
 	catch (Exception $e) {
 		debugValue(array("snowflakeEditDBRecord2 try Error",$e));
-    	return;
+    	return 0;
 	}
-	return 0;
+	return 1;
 }
 //---------- begin function snowflakeReplaceDBRecord ----------
 /**
@@ -951,13 +949,13 @@ function snowflakeGetDBSchemas($params=array()){
 		$result=odbc_tables($dbh_snowflake);
 		if(!$result){
 			$e=odbc_errormsg($dbh_snowflake);
-			$error=array("snowflakeGetDBSchemas Error",$e,$query);
+			$error=array("snowflakeGetDBSchemas Error",$e);
 			debugValue($error);
 			return json_encode($error);
 		}
 	}
 	catch (Exception $e) {
-		$error=array("snowflakeGetDBSchemas Error",$e,$query);
+		$error=array("snowflakeGetDBSchemas Error",$e);
 		debugValue($error);
 		return json_encode($error);
 	}
@@ -1020,7 +1018,7 @@ function snowflakeGetDBTables($params=array()){
 		}
 	}
 	catch (Exception $e) {
-		$error=array("snowflakeGetDBSchemas Error",$e,$query);
+		$error=array("snowflakeGetDBTables Error",$e);
 		debugValue($error);
 		return json_encode($error);
 	}
@@ -1124,72 +1122,6 @@ ENDOFQUERY;
 		}
 	}
 	return $recs;
-	//old method
-	global $dbh_snowflake;
-	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
-		$dbh_snowflake='';
-		usleep(100);
-		$dbh_snowflake=snowflakeDBConnect($params);
-	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
-    	$e=odbc_errormsg();
-    	debugValue(array("snowflakeGetDBFieldInfo Connect Error",$e));
-    	return json_encode($e);
-	}
-	$query="select * from {$table} where 1=0";
-	try{
-		$result=odbc_exec($dbh_snowflake,$query);
-		if(!$result){
-			$e=odbc_errormsg($dbh_snowflake);
-			$error=array("snowflakeGetDBSchemas Error",$e,$query);
-			debugValue($error);
-			return json_encode($error);
-		}
-	}
-	catch (Exception $e) {
-		$error=array("snowflakeGetDBSchemas Error",$e,$query);
-		debugValue($error);
-		return json_encode($error);
-	}
-	$recs=array();
-	for($i=1;$i<=odbc_num_fields($result);$i++){
-		$field=strtolower(odbc_field_name($result,$i));
-        $recs[$field]=array(
-        	'table'		=> $table,
-        	'_dbtable'	=> $table,
-			'name'		=> $field,
-			'_dbfield'	=> $field,
-			'type'		=> strtolower(odbc_field_type($result,$i)),
-			'scale'		=> strtolower(odbc_field_scale($result,$i)),
-			'precision'	=> strtolower(odbc_field_precision($result,$i)),
-			'length'	=> strtolower(odbc_field_len($result,$i)),
-			'num'		=> strtolower(odbc_field_num($result,$i))
-		);
-		$recs[$field]['_dbtype']=$recs[$field]['type'];
-		$recs[$field]['_dblength']=$recs[$field]['length'];
-		//_dbtype_ex
-		switch(strtolower($recs[$field]['_dbtype'])){
-			case 'bigint':
-			case 'integer':
-			case 'timestamp':
-			case 'date':
-			case 'datetime':
-			case 'time':
-			case 'timestampntz':
-				$recs[$field]['_dbtype_ex']=$recs[$field]['_dbtype'];
-			break;
-			case 'decimal':
-			case 'number':
-				$recs[$field]['_dbtype_ex']="{$recs[$field]['_dbtype']}({$recs[$field]['precision']},{$recs[$field]['scale']})";
-			break;
-			default:
-				$recs[$field]['_dbtype_ex']="{$recs[$field]['_dbtype']}({$recs[$field]['precision']})";
-			break;
-		}
-    }
-    odbc_free_result($result);
-	return $recs;
 }
 //---------- begin function snowflakeGetDBCount--------------------
 /**
@@ -1209,8 +1141,7 @@ function snowflakeGetDBCount($params=array()){
 	$recs=snowflakeGetDBRecords($params);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){
-		$error=array("snowflakeGetDBCount Error",$e,$query);
-		debugValue($error);
+		debugValue(array("snowflakeGetDBCount Error",$recs));
 		return 0;
 	}
 	return $recs[0]['cnt'];
@@ -1355,9 +1286,16 @@ function snowflakeQueryResults($query,$params=array()){
 	    // (Use the same values you already set from $DATABASE[$db])
 	    $ok = setFileContents($sqlfile, $query);
 
-	    $constr = <<<ENDOFCON
+		$accountname='';
+	if(isset($DATABASE[$db]['dbaccount'])){
+		$accountname=$DATABASE[$db]['dbaccount'];
+	}
+	elseif(isset($DATABASE[$db]['dbhost'])){
+		$accountname=preg_replace('/\.snowflakecomputing\.com.*/i','',$DATABASE[$db]['dbhost']);
+	}
+    $constr = <<<ENDOFCON
 [connections]
-accountname=doterra
+accountname={$accountname}
 username={$DATABASE[$db]['dbuser']}
 password={$DATABASE[$db]['dbpass']}
 dbname={$DATABASE[$db]['dbname']}
@@ -1456,14 +1394,14 @@ ENDOFCON;
 				}
 			}
 			else{
-				$DATABASE['_lastquery']['error']='exec failed: '.$error;
+				$DATABASE['_lastquery']['error']='exec failed: '.$e;
 				debugValue($DATABASE['_lastquery']);
 		    	return 0;
 			}
 		}
 	}
 	catch (Exception $e) {
-		$DATABASE['_lastquery']['error']='exec failed: '.$e->errorInfo;
+		$DATABASE['_lastquery']['error']='exec failed: '.$e->getMessage();
 		debugValue($DATABASE['_lastquery']);
     	return 0;
 	}
@@ -1526,6 +1464,7 @@ ENDOFCON;
 		$writefile=1;
 	}
 	$i=0;
+	$x=0;
 	while($rec=odbc_fetch_array($result)){
 		//lowercase the field names
 		$rec=array_change_key_case($rec);
