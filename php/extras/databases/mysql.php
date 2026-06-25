@@ -1242,16 +1242,6 @@ function mysqlGetDBCount($params=array()){
 	$params['-queryonly']=1;
 	$query=mysqlGetDBRecords($params);
 	//echo "HERE".$query.printValue($params);exit;
-	if(!stringContains($query,'where')){
-		// Escape identifiers to prevent SQL injection
-		$dbname_safe = mysqlEscapeString($dbname);
-		$table_safe = mysqlEscapeString($params['-table']);
-	 	$query="SELECT table_rows FROM information_schema.tables WHERE table_schema='{$dbname_safe}' AND table_name='{$table_safe}'";
-	 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
-	 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
-	 		return (int)$recs[0]['table_rows'];
-	 	}
-	}
 	$recs=mysqlQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){

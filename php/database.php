@@ -8602,15 +8602,6 @@ function getDBCount($params=array()){
 		$params['-fields']="count(*) as cnt";
 		unset($params['-order']);
 		$query=getDBQuery($params);
-		//if no where clause, get the count from information_schema.tables
-		if(!isset($params['-truecount']) && !stringContains($query,'where')){
-		 	$query="select table_rows from information_schema.tables where table_schema='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
-		 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1,'-nocache'=>1));
-		 	//echo $query.printValue($recs);exit;
-		 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
-		 		return (int)$recs[0]['table_rows'];
-		 	}
-		}
 		$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1,'-nocache'=>1));
 		if(!isset($recs[0]['cnt'])){
 			debugValue($recs);
