@@ -16,7 +16,7 @@ function tempfilesValidateExtension($ext){
 	//Allow extensions for WaSQL supported languages and common temp file types
 	$allowed=array(
 		//Common temp/data files
-		'log','txt','csv','tsv','gsv','json','xml','sql','md','yaml','yml','ini','conf','config','lock',
+		'log','txt','csv','tsv','gsv','json','xml','sql','md','yaml','yml','ini','conf','config','lock','pid','tmp',
 		//PHP
 		'php',
 		//Python
