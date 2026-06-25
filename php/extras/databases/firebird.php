@@ -967,13 +967,6 @@ function firebirdGetDBCount($params=array()){
 	$params['-queryonly']=1;
 	$query=firebirdGetDBRecords($params);
 	//echo "HERE".$query.printValue($params);exit;
-	if(!stringContains($query,'where')){
-	 	$query="select table_rows from information_schema.tables where table_schema='{$dbname}' and table_name='{$params['-table']}'";
-	 	$recs=getDBRecords(array('-query'=>$query,'-nolog'=>1));
-	 	if(isset($recs[0]['table_rows']) && isNum($recs[0]['table_rows'])){
-	 		return (int)$recs[0]['table_rows'];
-	 	}
-	}
 	$recs=firebirdQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){

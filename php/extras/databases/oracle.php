@@ -1737,7 +1737,7 @@ function oracleGetDBCount($params=array()){
 	 	$query="SELECT owner,table_name,num_rows AS cnt FROM dba_tables WHERE LOWER(owner)='{$dbschema}' AND LOWER(table_name)='{$table}'";
 	 	$recs=oracleQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
-	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt']) && $recs[0]['cnt'] > 0){
 	 		return (int)$recs[0]['cnt'];
 	 	}
 	}

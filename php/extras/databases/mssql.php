@@ -1258,13 +1258,6 @@ function mssqlGetDBCount($params=array()){
 	unset($params['-offset']);
 	$params['-queryonly']=1;
 	$query=mssqlGetDBRecords($params);
-	if(!stringContains($query,'where') && strlen($CONFIG['dbname'])){
-	 	$query="SELECT schema_name,table_name,record_count as cnt FROM dba_tables where schema_name='{$CONFIG['dbname']}' and table_name='{$params['-table']}'";
-	 	$recs=mssqlQueryResults($query);
-	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
-	 		return (int)$recs[0]['cnt'];
-	 	}
-	}
 	$recs=mssqlQueryResults($query);
 	//if($params['-table']=='states'){echo $query.printValue($recs);exit;}
 	if(!isset($recs[0]['cnt'])){

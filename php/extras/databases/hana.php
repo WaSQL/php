@@ -2168,7 +2168,7 @@ function hanaGetDBCount($params=array()){
 	 	$query="SELECT schema_name,table_name,record_count AS cnt FROM sys.m_tables WHERE LOWER(schema_name)='{$dbschema}' AND LOWER(table_name)='{$table}'";
 	 	$recs=hanaQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
-	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt']) && $recs[0]['cnt'] > 0){
 	 		return (int)$recs[0]['cnt'];
 	 	}
 	}

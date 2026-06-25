@@ -1729,7 +1729,7 @@ function postgresqlGetDBCount($params=array()){
 	 	$query="SELECT schemaname,relname,n_live_tup AS cnt FROM pg_stat_user_tables WHERE LOWER(schemaname)='{$dbschema}' AND LOWER(relname)='{$table}'";
 	 	$recs=postgresqlQueryResults($query);
 	 	//echo $query.printValue($recs);exit;
-	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt'])){
+	 	if(isset($recs[0]['cnt']) && isNum($recs[0]['cnt']) && $recs[0]['cnt'] > 0){
 	 		return (int)$recs[0]['cnt'];
 	 	}
 	}

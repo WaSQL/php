@@ -1486,7 +1486,7 @@ function sqliteGetDBCount($params=array()){
 	 	//echo "HERE".$query.printValue($recs);
 	 	if(isset($recs[0]['stat']) && strlen($recs[0]['stat'])){
 	 		$parts=preg_split('/\ /',$recs[0]['stat'],2);
-	 		return (int)$parts[0];
+	 		if((int)$parts[0] > 0){ return (int)$parts[0]; }
 	 	}
 	}
 	//echo "HERE".$query.printValue($params);
