@@ -47,9 +47,9 @@
 					<td class="w_nowrap align-center align-middle"><div id="actions_<?=$rec['name'];?>" class="w_grey">
 						<view:error><?=$rec['error'];?></view:error>
 						<view:actions>
-							<view:sync_from_target><a href="#" class="w_grey" style="display:inline;" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_from_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_primary"></span> sync FROM target</a></view:sync_from_target>
+							<view:sync_from_target><a href="#" class="w_grey" style="display:inline;" data-nav="/php/admin.php" data-div="centerpop" data-_menu="datasync" data-func="sync_from_target" data-title="Sync FROM Target: <?=$rec['name'];?>" data-table="<?=$rec['name'];?>"  onclick="return wacss.nav(this);"><span class="icon-sync w_primary"></span> sync FROM target</a></view:sync_from_target>
 							<?=renderViewIf($rec['target_records']>0,'sync_from_target',$rec,'rec');?>
-							<view:sync_to_target><a href="#" class="w_grey w_padleft" style="display:inline;" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'datasync',func:'sync_to_target',table:'<?=$rec['name'];?>'});"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
+							<view:sync_to_target><a href="#" class="w_grey w_padleft" style="display:inline;" data-nav="/php/admin.php" data-div="centerpop" data-_menu="datasync" data-func="sync_to_target" data-title="Sync FROM Target: <?=$rec['name'];?>" data-table="<?=$rec['name'];?>"  onclick="return wacss.nav(this);"><span class="icon-sync w_danger"></span> sync TO target</a></view:sync_to_target>
 							<?=renderViewIf($rec['source_records']>0,'sync_to_target',$rec,'rec');?>
 
 						</view:actions>
@@ -66,8 +66,6 @@
 </view:default>
 
 <view:datasync_verify>
-<div class="w_centerpop_title"><span class="icon-sync w_white"></span> <?=$title;?></div>
-<div class="w_centerpop_content" style="max-width:400px;">
 	<view:sync_to_target>
 		<div class="w_bigger w_padtop text-center">Replace all '<?=$table;?>' records on the target database with the ones in this database?</div>
 		<div class="w_padtop w_bigger text-center w_nowrap"><label class="w_primary">Are you sure? This CANNOT be undone!</label></div>
@@ -87,7 +85,6 @@
 		</div>
 	</form>
 	<?=buildOnLoad("centerObject('centerpop');");?>
-</div>
 </view:datasync_verify>
 
 <view:results>
