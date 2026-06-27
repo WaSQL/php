@@ -4581,6 +4581,109 @@ ENDOFTAG;
 	$tag.='</div>';
 	return $tag;
 }
+//---------- begin function buildFormFileAudio
+/**
+* @describe builds an audio file upload input with preview, capture, erase, and remove support
+* @param name string - the field name for the file input
+* @param params array - optional settings
+*	[-formname] string - form name used to build the input id. defaults to addedit
+*	[id] string - explicit input id. defaults to {-formname}_{name}
+*	[name] string - overrides name
+*	[accept] string - accept attribute. defaults to audio/*
+*	[multiple] - if set, allows multiple file selection
+*	[path] string - server path (relative to DOCUMENT_ROOT) to store uploads in. defaults to /files/{name}
+*	[defaultval|data-path] string - used as path if path is not set
+*	[autonumber|data-autonumber|tvals|behavior] - if set, posts an autonumber flag for the upload handler
+*	[resize|data-resize] - posted to the upload handler (unused for audio but kept for parity)
+*	[text] string - browse label text. defaults to Browse or Browse Audio when multiple
+*	[style] string - style applied to the wrapper div. defaults to height:40px;
+*	[requiredif] string - sets data-requiredif on the input
+*	[data-*] - any data attribute is passed through to the file input
+* @return string - the html for the audio file upload input
+* @usage $tag=buildFormFileAudio('sound_file',array('multiple'=>1,'path'=>'/files/audio'));
+*/
+function buildFormFileAudio($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
+	if(!isset($params['style'])){$params['style']='height:40px;';}
+	if(!isset($params['text'])){
+		if(isset($params['multiple'])){$params['text']='Browse Audio';}
+		else{$params['text']='Browse';}
+	}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=preg_replace('/[^a-z0-9\-\_]+/','_',$params['-formname'].'_'.$name);}
+	$params['value']=buildFormValueParam($name,$params);
+	$params['name']=$name;
+	if(isset($params['multiple']) && !stringEndsWith($params['name'],'[]')){
+		$params['name'].='[]';
+	}
+	if(isset($params['multiple'])){$params['multiple']='multiple';}
+	else{$params['multiple']='';}
+	if(!isset($params['accept'])){$params['accept']='audio/*';}
+	if(!isset($params['class'])){$params['class']='';}
+	//set path of where to store this file in
+	if(!isset($params['path'])){
+    	if(isset($params['defaultval']) && strlen($params['defaultval'])){$params['path']=$params['defaultval'];}
+    	elseif(isset($params['data-path']) && strlen($params['data-path'])){$params['path']=$params['data-path'];}
+    	elseif(isset($_REQUEST["{$name}_path"]) && strlen($_REQUEST["{$name}_path"])){$params['path']=$_REQUEST["{$name}_path"];}
+    	else{$params['path']="/files/{$params['name']}";}
+	}
+	//create path if it does not exist
+	$apath=$_SERVER['DOCUMENT_ROOT'].$params['path'];
+	if(!is_dir($apath)){
+		buildDir($apath);
+	}
+	$hidden=array();
+	$hidden[]=buildFormHidden("{$name}_path",array('value'=>$params['path']));
+	//autonumber?
+	if(isset($params['autonumber']) || isset($params['data-autonumber']) || (isset($params['tvals']) && $params['tvals'] == 'autonumber') || (isset($params['behavior']) && $params['behavior'] == 'autonumber')){
+		$hidden[]=buildFormHidden("{$name}_autonumber",array('value'=>1));
+    }
+    //resize after upload?
+    if(isset($params['resize']) || isset($params['data-resize'])){
+    	$resize=isset($params['resize'])?$params['resize']:$params['data-resize'];
+		$hidden[]=buildFormHidden("{$name}_resize",array('value'=>$resize));
+		unset($params['data-resize']);
+    }
+    //preview?
+    $erase='';
+    if(strlen($params['value'])){
+    	$hidden[]=buildFormHidden("{$name}_prev",array('value'=>$params['value']));
+    	$erase=<<<ENDOFERASE
+<label title="Erase" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileCaptureErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
+ENDOFERASE;
+	}
+	else{
+		$erase=<<<ENDOFERASE
+<label title="Erase" style="display:none;" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileCaptureErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
+ENDOFERASE;
+	}
+	$hiddenstr=implode(PHP_EOL."\t",$hidden);
+	//data params
+	$datatags=array();
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'data-')){
+			$datatags[]="{$k}=\"{$v}\"";
+		}
+	}
+	$datatagstr=implode(' ',$datatags);
+	//filename used as the preview tooltip/modal header
+	$fname=strlen($params['value'])?basename($params['value']):'';
+	//gray out the preview when there is nothing to preview
+	$pvclass=strlen($params['value'])?'':'w_gray';
+	$tag=<<<ENDOFTAG
+<div data-inputtype="file_audio" data-display="inline-flex" style="{$params['style']}">
+	{$hiddenstr}
+	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="audio" data-placeholder="<span class='icon-file-audio'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);"><span class="icon-file-audio"></span></div>
+	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileAudioUpload(this);">
+	{$erase}
+	<label for="{$params['id']}" id="{$params['id']}_browse" title="Browse for audio" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer" style="display:flex;justify-content:center;align-items:center;gap:3px;">{$params['text']}</label>
+</div>
+ENDOFTAG;
+	return $tag;
+}
 function buildFormFileImage($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
@@ -4654,12 +4757,20 @@ ENDOFERASE;
 		}
 	}
 	$datatagstr=implode(' ',$datatags);
+	//icon placeholder shown when there is no thumbnail to display
+	$ficon=strlen($params['value'])?'':'<span class="icon-file-image"></span>';
+	//filename used as the preview tooltip/modal header
+	$fname=strlen($params['value'])?basename($params['value']):'';
+	//gray out the preview when there is nothing to preview
+	$pvclass=strlen($params['value'])?'':'w_gray';
+	//only set a background thumbnail when there is a value (avoid url('') resolving to the page)
+	$bgstyle=strlen($params['value'])?"background-image:url('{$params['value']}');":'';
 	//return $params['multiple'];
 	$tag=<<<ENDOFTAG
 <div data-inputtype="file_image" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-color:#FFF;background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showImage(this);"></div>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="image" data-placeholder="<span class='icon-file-image'></span>" style="background-color:#FFF;{$bgstyle}display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$ficon}</div>
 	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileImageUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
@@ -4672,6 +4783,7 @@ ENDOFTAG;
 function buildFormFileVideo($name,$params=array()){
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(!isset($params['-icon'])){$params['-icon']='icon-upload w_big w_danger';}
+	if(!isset($params['style'])){$params['style']='height:40px;';}
 	if(!isset($params['text'])){
 		if(isset($params['multiple'])){$params['text']='Browse Videos';}
 		else{$params['text']='Browse';}
@@ -4703,7 +4815,7 @@ function buildFormFileVideo($name,$params=array()){
 	$hidden=array();
 	$hidden[]=buildFormHidden("{$name}_path",array('value'=>$params['path']));
 	//autonumber?
-	if(isset($params['autonumber']) || isset($params['data-autonumber']) || $params['tvals'] == 'autonumber' || $params['behavior'] == 'autonumber'){
+	if(isset($params['autonumber']) || isset($params['data-autonumber']) || (isset($params['tvals']) && $params['tvals'] == 'autonumber') || (isset($params['behavior']) && $params['behavior'] == 'autonumber')){
 		$hidden[]=buildFormHidden("{$name}_autonumber",array('value'=>1));
     }
     //resize after upload?
@@ -4712,7 +4824,6 @@ function buildFormFileVideo($name,$params=array()){
 		$hidden[]=buildFormHidden("{$name}_resize",array('value'=>$resize));
 		unset($params['data-resize']);
     }
-    $hiddenstr=implode(PHP_EOL."\t",$hidden);
     //preview?
     $erase='';
     if(strlen($params['value'])){
@@ -4726,17 +4837,29 @@ ENDOFERASE;
 <label title="Erase" style="display:none;" id="{$params['id']}_erase" data-id="{$params['id']}" onclick="return wacss.formFileCaptureErase(this);" class="w_biggest w_pointer"><span class="icon-erase"></span></label>
 ENDOFERASE;
 	}
+	$hiddenstr=implode(PHP_EOL."\t",$hidden);
+	//data params
+	$datatags=array();
+	foreach($params as $k=>$v){
+		if(stringBeginsWith($k,'data-')){
+			$datatags[]="{$k}=\"{$v}\"";
+		}
+	}
+	$datatagstr=implode(' ',$datatags);
+	//filename used as the preview tooltip/modal header
+	$fname=strlen($params['value'])?basename($params['value']):'';
+	//gray out the preview when there is nothing to preview
+	$pvclass=strlen($params['value'])?'':'w_gray';
 	$tag=<<<ENDOFTAG
-<div data-inputtype="file_image" data-display="inline-flex">
-	<input type="hidden" value="{$params['path']}" name="{$name}_path">
+<div data-inputtype="file_video" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" data-behavior="file_preview" style="background-image:url('{$params['value']}');" title="Click to preview" onclick="wacss.showVideo(this);"></div>
-	<input type="file" accept="{$params['accept']}" name="{$name}" id="{$params['id']}" style="display:none;" value="" onchange="wacss.formFileVideoUpload(this);" {$params['multiple']}>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="video" data-placeholder="<span class='icon-file-video'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);"><span class="icon-file-video"></span></div>
+	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileVideoUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
 	<label for="{$params['id']}" title="Rear facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','environment');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','environment');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_rear"></span></label>
-	<label for="{$params['id']}" title="Browse for image" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer">{$params['text']}</label>
+	<label for="{$params['id']}" id="{$params['id']}_browse" title="Browse for video" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer" style="display:flex;justify-content:center;align-items:center;gap:3px;">{$params['text']}</label>
 </div>
 ENDOFTAG;
 	return $tag;

@@ -1545,6 +1545,10 @@ const wacss = {
 	      preview.style.backgroundImage = '';
 	      preview.style.backgroundPosition = '';
 	      preview.style.backgroundSize = '';
+	      preview.innerHTML = preview.dataset.placeholder || '';
+	      preview.title = '';
+	      wacss._revokeSrclist(preview);
+	      preview.classList.add('w_gray');
 	      return true;
 	    }
 
@@ -1571,6 +1575,10 @@ const wacss = {
 	        preview.style.backgroundImage = '';
 	        preview.style.backgroundPosition = '';
 	        preview.style.backgroundSize = '';
+	        preview.innerHTML = preview.dataset.placeholder || '';
+	        preview.title = '';
+	        wacss._revokeSrclist(preview);
+	        preview.classList.add('w_gray');
 	        return true;
 	      }
 	    } else if (el.dataset.resizing === "1") {
@@ -1652,6 +1660,8 @@ const wacss = {
 	    }
 
 	    // ---- Final preview (background-image) ----
+	    // drop any placeholder icon so it does not sit on top of the thumbnail
+	    preview.innerHTML = '';
 	    const url = URL.createObjectURL(previewBlob);
 	    preview.dataset.objurl = url;
 	    preview.style.backgroundImage = `url("${url}")`;
@@ -1684,6 +1694,13 @@ const wacss = {
 	      });
 	      preview.appendChild(badge);
 	    }
+
+	    // ---- Header/tooltip = selected file name ----
+	    preview.title = (first && first.name) ? first.name : '';
+
+	    // ---- Store all sources for full multi-file preview & enable preview ----
+	    wacss._setSrclist(preview, files);
+	    preview.classList.remove('w_gray');
 
 	    // ---- Ancillary controls ----
 	    const erase = document.getElementById(id + '_erase');
@@ -1731,8 +1748,17 @@ const wacss = {
 			delete preview.dataset.blobUrl;
 		}
 		// Nothing selected
-		if (!files.length) { return true; }
+		if (!files.length) {
+			preview.innerHTML = preview.dataset.placeholder || '';
+			preview.title = '';
+			wacss._revokeSrclist(preview);
+			preview.classList.add('w_gray');
+			return true;
+		}
 		const file = files[0];
+		preview.title = file.name || '';
+		wacss._setSrclist(preview, files);
+		preview.classList.remove('w_gray');
 		const isVideo = /^video\//i.test(file.type);
 		const isImage = /^image\//i.test(file.type);
 		const mode = (el.dataset.previewMode || 'inline-video').toLowerCase(); // 'inline-video' | 'thumbnail'
@@ -1864,6 +1890,86 @@ const wacss = {
 		}
 	},
 	/**
+	* @name wacss.formFileAudioUpload
+	* @describe handles audio file upload for form inputs
+	* @param object el
+	* @return mixed
+	* @usage wacss.formFileAudioUpload();
+	*/
+	formFileAudioUpload: function (el) {
+		el = wacss.getObject(el);
+		if (!el || !el.files) { return true; }
+		const id = el.id || el.dataset.id || 'unknown';
+		const preview = document.getElementById(id + '_preview');
+		if (!preview) { return true; }
+		const files = el.files || [];
+		preview.dataset.fcnt = files.length;
+		// Run optional inline handler
+		if (el.dataset.onfile !== undefined) {
+			try { new Function(el.dataset.onfile)(); } catch (e) { /* no-op */ }
+		}
+		// Clean up any previous preview content + blob URL
+		const oldBadge = document.getElementById(id + '_badge');
+		if (oldBadge) { oldBadge.remove(); }
+		if (preview.dataset.blobUrl) {
+			try { URL.revokeObjectURL(preview.dataset.blobUrl); } catch (e) {}
+			delete preview.dataset.blobUrl;
+		}
+		// Nothing selected
+		if (!files.length) {
+			preview.innerHTML = preview.dataset.placeholder || '<span class="icon-file-audio"></span>';
+			preview.removeAttribute('data-src');
+			preview.title = '';
+			wacss._revokeSrclist(preview);
+			preview.classList.add('w_gray');
+			return true;
+		}
+		const file = files[0];
+		preview.title = file.name || '';
+		wacss._setSrclist(preview, files);
+		preview.classList.remove('w_gray');
+		const isAudio = /^audio\//i.test(file.type);
+		// Point the preview at a playable blob so wacss.showAudio can use it
+		const url = URL.createObjectURL(file);
+		preview.dataset.blobUrl = url;
+		preview.dataset.src = url;
+		// Show an audio icon (audio has no visual thumbnail)
+		if (isAudio) {
+			preview.innerHTML = '<span class="icon-file-audio"></span>';
+		} else {
+			preview.textContent = file.name;
+		}
+		// Multi-file count badge (same look/feel as the image/video previews)
+		if (files.length > 1) {
+			preview.style.position = 'relative';
+			const badge = document.createElement('div');
+			badge.textContent = files.length;
+			badge.id = id + '_badge';
+			badge.style.position = 'absolute';
+			badge.style.bottom = '-2px';
+			badge.style.right = '-2px';
+			badge.style.width = '16px';
+			badge.style.height = '16px';
+			badge.style.backgroundColor = '#ff4444';
+			badge.style.color = 'white';
+			badge.style.borderRadius = '50%';
+			badge.style.fontSize = '10px';
+			badge.style.fontWeight = 'bold';
+			badge.style.display = 'flex';
+			badge.style.alignItems = 'center';
+			badge.style.justifyContent = 'center';
+			badge.style.border = '2px solid white';
+			badge.style.boxSizing = 'border-box';
+			preview.appendChild(badge);
+		}
+		// Mirror the erase/remove toggles
+		const erase = document.getElementById(id + '_erase');
+		if (erase) { erase.style.display = 'block'; }
+		const remove = document.getElementById(id + '_remove');
+		if (remove) { remove.checked = false; }
+		return true;
+	},
+	/**
 	* @name wacss.formFileCaptureMode
 	* @describe sets capture mode for file input (camera, video, etc)
 	* @param object el
@@ -1929,6 +2035,11 @@ const wacss = {
 			badge.parentNode.removeChild(badge);
 		}
 		preview.style.backgroundImage='none';
+		preview.innerHTML=preview.dataset.placeholder || '';
+		preview.removeAttribute('data-src');
+		preview.title='';
+		wacss._revokeSrclist(preview);
+		preview.classList.add('w_gray');
 		el.style.display='none';
 		return true;
 	},
@@ -9759,6 +9870,7 @@ const wacss = {
 		}
 		//if video is youtube we have to add an iframe instead of a video element
 		let video_src=el.getAttribute('src')  || el.dataset.src || el.getAttribute('href');
+		if(undefined == video_src || null == video_src || !video_src.length){return false;}
 		let vid={};
 		if(
 			video_src.toLowerCase().indexOf('youtube') != -1 
@@ -9797,6 +9909,157 @@ const wacss = {
 		document.body.appendChild(d);
 		z=z-2;
 		// Build modal-overlay.
+		let v=document.createElement('div');
+		v.style.zIndex=z;
+		v.style.display='block';
+		v.style.width='100vw';
+		v.style.height=wacss.documentHeight()+'px';
+		v.style.position='absolute';
+		v.style.top='0px';
+		v.style.left='0px';
+		v.style.background='rgba(0,0,0,0.5)';
+		v.id=d.id+'_overlay';
+		v.setAttribute('data-target',d.id);
+		v.onclick=function(){
+			wacss.removeId(this.getAttribute('data-target'));
+			wacss.removeId(this.id);
+		};
+		document.body.appendChild(v);
+		wacss.centerObject(d);
+		return v;
+	},
+	/**
+	* @name wacss._revokeSrclist
+	* @describe revokes any blob: object URLs stored in a preview element's data-srclist and clears it
+	* @param object preview DOM element
+	* @return void
+	* @usage wacss._revokeSrclist(preview);
+	*/
+	_revokeSrclist: function(preview){
+		if(undefined == preview || undefined == preview.dataset.srclist){return;}
+		try{
+			JSON.parse(preview.dataset.srclist).forEach(function(it){
+				if(it && it.src && it.src.indexOf('blob:')===0){ try{ URL.revokeObjectURL(it.src); }catch(e){} }
+			});
+		}catch(e){}
+		delete preview.dataset.srclist;
+	},
+	/**
+	* @name wacss._setSrclist
+	* @describe builds blob object URLs for all selected files and stores them (with names) on the preview's data-srclist for full multi-file preview
+	* @param object preview DOM element
+	* @param object files a FileList or array of File objects
+	* @return array the list of {src,name} objects created
+	* @usage wacss._setSrclist(preview, el.files);
+	*/
+	_setSrclist: function(preview, files){
+		wacss._revokeSrclist(preview);
+		let list=Array.prototype.slice.call(files || []).map(function(f){
+			return {src:URL.createObjectURL(f), name:f.name};
+		});
+		preview.dataset.srclist=JSON.stringify(list);
+		return list;
+	},
+	/**
+	* @name wacss.showFilePreview
+	* @describe previews one or more files (image/video/audio) for a file_* preview element. Media type comes from data-mediatype; sources come from data-srclist (JSON, set on upload) or data-src/href/background-image (a stored value). Renders every file with its name and does nothing when there is no file to preview.
+	* @param mixed DOM element or id of the preview element
+	* @param number z optional z-index, defaults to 999980
+	* @return mixed the overlay element, or false when there is nothing to preview
+	* @usage wacss.showFilePreview(this);
+	*/
+	showFilePreview: function(el,z){
+		el=wacss.getObject(el);
+		if(undefined == el){return false;}
+		let type=(el.dataset.mediatype || 'image').toLowerCase();
+		//build the list of items to preview
+		let items=[];
+		if(undefined != el.dataset.srclist && el.dataset.srclist.length){
+			try{ items=JSON.parse(el.dataset.srclist) || []; }catch(e){ items=[]; }
+		}
+		if(!items.length){
+			let src=el.getAttribute('src') || el.dataset.src || el.getAttribute('href');
+			if(undefined == src || null == src || !src.length){
+				//fall back to a background-image (image previews)
+				let bg=window.getComputedStyle(el).backgroundImage;
+				if(bg && bg !== 'none'){
+					let m=bg.match(/url\(['"]?([^'")]+)['"]?\)/);
+					if(m){ src=m[1]; }
+				}
+			}
+			if(undefined != src && null != src && src.length){
+				items=[{src:src, name:el.title || src.substring(src.lastIndexOf('/')+1)}];
+			}
+		}
+		//nothing to preview -> do nothing
+		if(!items.length){return false;}
+		z=z||999980;
+		//modal box
+		let d=document.createElement('div');
+		d.id='modal1';
+		d.tabindex=0;
+		d.style.zIndex=z;
+		d.style.display='block';
+		d.style.background='#FFF';
+		d.style.padding='10px';
+		d.style.border='1px outset #747392';
+		d.style.borderRadius='3px';
+		d.style.position='absolute';
+		d.style.textAlign='center';
+		d.style.maxWidth='80vw';
+		d.style.maxHeight='85vh';
+		d.style.overflow='auto';
+		d.style.transform='scaleX(1) scaleY(1)';
+		let centered=false;
+		items.forEach(function(item){
+			if(undefined == item || undefined == item.src || !item.src.length){return;}
+			let wrap=document.createElement('div');
+			wrap.style.marginBottom = items.length>1 ? '12px' : '0px';
+			let media;
+			if(type==='video'){
+				media=document.createElement('video');
+				media.src=item.src;
+				media.setAttribute('controls','');
+				media.setAttribute('playsinline','');
+				if(items.length===1){ media.setAttribute('autoplay',''); }
+				media.style.maxWidth='100%';
+				media.style.maxHeight='70vh';
+			}
+			else if(type==='audio'){
+				media=document.createElement('audio');
+				media.src=item.src;
+				media.setAttribute('controls','');
+				if(items.length===1){ media.setAttribute('autoplay',''); }
+				media.style.width='280px';
+				media.style.maxWidth='100%';
+			}
+			else{
+				media=document.createElement('img');
+				media.src=item.src;
+				media.style.maxWidth='100%';
+				media.style.maxHeight='70vh';
+				media.style.display='block';
+				media.style.margin='0 auto';
+			}
+			//recenter the modal once the first media is ready
+			if(!centered){
+				centered=true;
+				media.d=d;
+				let recenter=function(){ wacss.centerObject(this.d); };
+				if(type==='audio' || type==='video'){ media.oncanplay=recenter; }
+				else{ media.onload=recenter; }
+			}
+			let cap=document.createElement('div');
+			cap.className='w_bold align-center';
+			cap.style.padding='4px 8px';
+			cap.textContent=item.name || '';
+			wrap.appendChild(media);
+			if(cap.textContent.length){ wrap.appendChild(cap); }
+			d.appendChild(wrap);
+		});
+		document.body.appendChild(d);
+		z=z-2;
+		//build modal overlay
 		let v=document.createElement('div');
 		v.style.zIndex=z;
 		v.style.display='block';

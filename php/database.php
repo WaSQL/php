@@ -5002,7 +5002,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		if(is_array($fields)){
 			foreach($fields as $field){
 				if(isset($info['fieldinfo'][$field]['_dbtype_ex']) && stringContains($info['fieldinfo'][$field]['_dbtype_ex'],' stored ')){continue;}
-				if(isset($info['fieldinfo'][$field]['inputtype']) && ($info['fieldinfo'][$field]['inputtype']=='file' || $info['fieldinfo'][$field]['inputtype']=='file_image')){
+				if(isset($info['fieldinfo'][$field]['inputtype']) && in_array($info['fieldinfo'][$field]['inputtype'],array('file','file_image','file_video','file_audio'))){
 	                $enctype="multipart/form-data";
 	                break;
             	}
@@ -5011,7 +5011,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		elseif(isset($info['fieldinfo'][$fields]['_dbtype_ex']) && stringContains($info['fieldinfo'][$fields]['_dbtype_ex'],' stored ')){
 	        continue;
 	    }
-		elseif(isset($info['fieldinfo'][$fields]['inputtype']) && ($info['fieldinfo'][$fields]['inputtype']=='file' || $info['fieldinfo'][$fields]['inputtype']=='file_image')){
+		elseif(isset($info['fieldinfo'][$fields]['inputtype']) && in_array($info['fieldinfo'][$fields]['inputtype'],array('file','file_image','file_video','file_audio'))){
 	        $enctype="multipart/form-data";
 	        break;
 	    }
@@ -8939,8 +8939,14 @@ function getDBFieldTag($params=array()){
 		case 'file':
 			$tag=buildFormFile($info[$field]['name'],$info[$field]);
 		break;
+		case 'file_audio':
+			$tag=buildFormFileAudio($info[$field]['name'],$info[$field]);
+		break;
 		case 'file_image':
 			$tag=buildFormFileImage($info[$field]['name'],$info[$field]);
+		break;
+		case 'file_video':
+			$tag=buildFormFileVideo($info[$field]['name'],$info[$field]);
 		break;
 		case 'formula':
 		break;
