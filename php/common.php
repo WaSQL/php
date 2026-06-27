@@ -4672,11 +4672,13 @@ ENDOFERASE;
 	$fname=strlen($params['value'])?basename($params['value']):'';
 	//gray out the preview when there is nothing to preview
 	$pvclass=strlen($params['value'])?'':'w_gray';
+	//play icon when a file is attached, otherwise the file-type placeholder icon
+	$aicon=strlen($params['value'])?'<span class="icon-play"></span>':'<span class="icon-file-audio"></span>';
 	$tag=<<<ENDOFTAG
 <div data-inputtype="file_audio" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="audio" data-placeholder="<span class='icon-file-audio'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);"><span class="icon-file-audio"></span></div>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="audio" data-placeholder="<span class='icon-file-audio'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$aicon}</div>
 	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileAudioUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" id="{$params['id']}_browse" title="Browse for audio" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer" style="display:flex;justify-content:center;align-items:center;gap:3px;">{$params['text']}</label>
@@ -4850,11 +4852,13 @@ ENDOFERASE;
 	$fname=strlen($params['value'])?basename($params['value']):'';
 	//gray out the preview when there is nothing to preview
 	$pvclass=strlen($params['value'])?'':'w_gray';
+	//play icon when a file is attached, otherwise the file-type placeholder icon
+	$vicon=strlen($params['value'])?'<span class="icon-play"></span>':'<span class="icon-file-video"></span>';
 	$tag=<<<ENDOFTAG
 <div data-inputtype="file_video" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="video" data-placeholder="<span class='icon-file-video'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);"><span class="icon-file-video"></span></div>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="video" data-placeholder="<span class='icon-file-video'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$vicon}</div>
 	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileVideoUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>

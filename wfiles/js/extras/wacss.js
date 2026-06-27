@@ -1759,40 +1759,9 @@ const wacss = {
 		preview.title = file.name || '';
 		wacss._setSrclist(preview, files);
 		preview.classList.remove('w_gray');
-		const isVideo = /^video\//i.test(file.type);
-		const isImage = /^image\//i.test(file.type);
-		const mode = (el.dataset.previewMode || 'inline-video').toLowerCase(); // 'inline-video' | 'thumbnail'
-		const showControls = (el.dataset.controls === '1' || el.dataset.controls === 'true');
-		// --- VIDEO ---
-		if (isVideo) {
-			if (mode === 'thumbnail') {
-				// Generate a still and use it like your image preview
-				makeVideoThumb(file).then((dataUrl) => {
-					preview.style.backgroundImage = 'url(' + dataUrl + ')';
-					preview.style.backgroundPosition = 'center';
-					preview.style.backgroundSize = 'cover';
-				}).catch(() => {
-					// Fallback to inline if thumbnailing fails
-					injectInlineVideo(preview, file, showControls);
-				});
-			} else {
-				injectInlineVideo(preview, file, showControls);
-			}
-		}
-		// --- IMAGE (fallback to your existing behavior) ---
-		else if (isImage) {
-			const url = URL.createObjectURL(file);
-			preview.dataset.blobUrl = url;
-			preview.style.backgroundImage = 'url(' + url + ')';
-			preview.style.backgroundPosition = 'center';
-			preview.style.backgroundSize = 'cover';
-		}
-		// --- OTHER TYPES ---
-		else {
-			preview.textContent = file.name;
-		}
-
-		// Multi-file count badge (same look/feel as your original)
+		// Show a play icon to indicate the attached video can be previewed on click
+		preview.innerHTML = '<span class="icon-play"></span>';
+		// Multi-file count badge
 		if (files.length > 1) {
 			preview.style.position = 'relative';
 			const badge = document.createElement('div');
@@ -1815,79 +1784,12 @@ const wacss = {
 			badge.style.boxSizing = 'border-box';
 			preview.appendChild(badge);
 		}
-		// Mirror your erase/remove toggles
+		// Mirror the erase/remove toggles
 		const erase = document.getElementById(id + '_erase');
 		if (erase) { erase.style.display = 'block'; }
 		const remove = document.getElementById(id + '_remove');
 		if (remove) { remove.checked = false; }
 		return true;
-		// --- Helpers ---
-		function injectInlineVideo(previewEl, f, withControls) {
-			const url = URL.createObjectURL(f);
-			previewEl.dataset.blobUrl = url;
-			const v = document.createElement('video');
-			v.src = url;
-			v.preload = 'metadata';
-			v.muted = true;
-			v.playsInline = true;                    // iOS Safari inline playback
-			v.setAttribute('playsinline', '');       // attribute form (extra-safe for iOS)
-			v.setAttribute('webkit-playsinline', '');// legacy iOS
-			if (withControls) { v.controls = true; }
-			// Fill the preview box similar to your image cover behavior
-			v.style.width = '100%';
-			v.style.height = '100%';
-			v.style.objectFit = 'cover';
-			v.style.display = 'block';
-			// Optional: grab first frame as poster once available (nice visual before play)
-			v.addEventListener('loadeddata', () => {
-				try {
-					const c = document.createElement('canvas');
-					c.width = v.videoWidth || 640;
-					c.height = v.videoHeight || 360;
-					const ctx = c.getContext('2d');
-					ctx.drawImage(v, 0, 0, c.width, c.height);
-					v.setAttribute('poster', c.toDataURL('image/jpeg', 0.8));
-				} catch (e) { /* non-fatal */ }
-			}, { once: true });
-			previewEl.appendChild(v);
-		}
-		function makeVideoThumb(f) {
-			return new Promise((resolve, reject) => {
-				const url = URL.createObjectURL(f);
-				const v = document.createElement('video');
-				v.preload = 'metadata';
-				v.muted = true;
-				v.playsInline = true;
-				v.src = url;
-				const cleanup = () => { try { URL.revokeObjectURL(url); } catch (e) {} };
-				v.addEventListener('loadeddata', () => {
-					try {
-						// Draw first available frame
-						const vw = v.videoWidth || 640;
-						const vh = v.videoHeight || 360;
-						// Bound the thumbnail width for performance
-						const targetW = Math.min(640, vw);
-						const targetH = Math.round(targetW * (vh / vw));
-
-						const c = document.createElement('canvas');
-						c.width = targetW;
-						c.height = targetH;
-						c.getContext('2d').drawImage(v, 0, 0, targetW, targetH);
-
-						const dataUrl = c.toDataURL('image/jpeg', 0.85);
-						cleanup();
-						resolve(dataUrl);
-					} catch (e) {
-						cleanup();
-						reject(e);
-					}
-				}, { once: true });
-				v.addEventListener('error', () => {
-					cleanup();
-					reject(new Error('Unable to read video for thumbnail.'));
-				}, { once: true });
-			});
-		}
 	},
 	/**
 	* @name wacss.formFileAudioUpload
@@ -1929,13 +1831,9 @@ const wacss = {
 		wacss._setSrclist(preview, files);
 		preview.classList.remove('w_gray');
 		const isAudio = /^audio\//i.test(file.type);
-		// Point the preview at a playable blob so wacss.showAudio can use it
-		const url = URL.createObjectURL(file);
-		preview.dataset.blobUrl = url;
-		preview.dataset.src = url;
-		// Show an audio icon (audio has no visual thumbnail)
+		// Show a play icon to indicate the attached audio can be previewed on click
 		if (isAudio) {
-			preview.innerHTML = '<span class="icon-file-audio"></span>';
+			preview.innerHTML = '<span class="icon-play"></span>';
 		} else {
 			preview.textContent = file.name;
 		}
