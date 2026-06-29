@@ -9864,12 +9864,23 @@ const wacss = {
 	* @param mixed DOM element or id of the preview element
 	* @param number z optional z-index, defaults to 999980
 	* @return mixed the overlay element, or false when there is nothing to preview
+	* @attributes data-fullsize show a "Full size" link that opens the file in a new tab. data-download show a "Download" link. data-caption text shown as a caption below the preview. data-fullsize and data-download are enabled by the attribute being present; set to 0/false/no to disable.
 	* @usage wacss.showFilePreview(this);
+	* @usage <img ... data-fullsize data-download data-caption="My photo" onclick="wacss.showFilePreview(this);">
 	*/
 	showFilePreview: function(el,z){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
 		let type=(el.dataset.mediatype || 'image').toLowerCase();
+		//optional controls - attribute present enables it unless explicitly 0/false/no
+		let attrOn=function(name){
+			if(!el.hasAttribute('data-'+name)){return false;}
+			let v=(el.getAttribute('data-'+name) || '').toLowerCase();
+			return v!=='0' && v!=='false' && v!=='no';
+		};
+		let showFull=attrOn('fullsize');
+		let showDl=attrOn('download');
+		let caption=el.dataset.caption || '';
 		//build the list of items to preview
 		let items=[];
 		if(undefined != el.dataset.srclist && el.dataset.srclist.length){
@@ -9953,8 +9964,39 @@ const wacss = {
 			cap.textContent=item.name || '';
 			wrap.appendChild(media);
 			if(cap.textContent.length){ wrap.appendChild(cap); }
+			//optional full-size / download links
+			if(showFull || showDl){
+				let ctrl=document.createElement('div');
+				ctrl.className='align-center';
+				ctrl.style.padding='2px 8px';
+				if(showFull){
+					let a=document.createElement('a');
+					a.href=item.src;
+					a.target='_blank';
+					a.rel='noopener';
+					a.textContent=(type==='image') ? 'Full size' : 'Open';
+					a.style.marginRight='12px';
+					ctrl.appendChild(a);
+				}
+				if(showDl){
+					let a=document.createElement('a');
+					a.href=item.src;
+					a.setAttribute('download', item.name || '');
+					a.textContent='Download';
+					ctrl.appendChild(a);
+				}
+				wrap.appendChild(ctrl);
+			}
 			d.appendChild(wrap);
 		});
+		//optional caption below the preview
+		if(caption.length){
+			let cdiv=document.createElement('div');
+			cdiv.className='align-center';
+			cdiv.style.padding='6px 8px';
+			cdiv.textContent=caption;
+			d.appendChild(cdiv);
+		}
 		document.body.appendChild(d);
 		z=z-2;
 		//build modal overlay
