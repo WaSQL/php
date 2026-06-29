@@ -9864,9 +9864,9 @@ const wacss = {
 	* @param mixed DOM element or id of the preview element
 	* @param number z optional z-index, defaults to 999980
 	* @return mixed the overlay element, or false when there is nothing to preview
-	* @attributes data-fullsize show a "Full size" link that opens the file in a new tab. data-download show a "Download" link. data-caption text shown as a caption below the preview. data-fullsize and data-download are enabled by the attribute being present; set to 0/false/no to disable.
+	* @attributes data-fullscreen show a full-size icon that puts the media into fullscreen (in the same window via the Fullscreen API). data-download show a download icon. The caption/filename and these icons share a flex bar below the media: data-caption text (or the filename when no caption) sits on the left, the download/full-size icons and a close icon on the right. data-fullscreen and data-download are enabled by the attribute being present; set to 0/false/no to disable.
 	* @usage wacss.showFilePreview(this);
-	* @usage <img ... data-fullsize data-download data-caption="My photo" onclick="wacss.showFilePreview(this);">
+	* @usage <img ... data-fullscreen data-download data-caption="My photo" onclick="wacss.showFilePreview(this);">
 	*/
 	showFilePreview: function(el,z){
 		el=wacss.getObject(el);
@@ -9878,7 +9878,7 @@ const wacss = {
 			let v=(el.getAttribute('data-'+name) || '').toLowerCase();
 			return v!=='0' && v!=='false' && v!=='no';
 		};
-		let showFull=attrOn('fullsize');
+		let showFull=attrOn('fullscreen');
 		let showDl=attrOn('download');
 		let caption=el.dataset.caption || '';
 		//build the list of items to preview
@@ -9958,45 +9958,56 @@ const wacss = {
 				if(type==='audio' || type==='video'){ media.oncanplay=recenter; }
 				else{ media.onload=recenter; }
 			}
-			let cap=document.createElement('div');
-			cap.className='w_bold align-center';
-			cap.style.padding='4px 8px';
-			cap.textContent=item.name || '';
 			wrap.appendChild(media);
-			if(cap.textContent.length){ wrap.appendChild(cap); }
-			//optional full-size / download links
-			if(showFull || showDl){
-				let ctrl=document.createElement('div');
-				ctrl.className='align-center';
-				ctrl.style.padding='2px 8px';
-				if(showFull){
-					let a=document.createElement('a');
-					a.href=item.src;
-					a.target='_blank';
-					a.rel='noopener';
-					a.textContent=(type==='image') ? 'Full size' : 'Open';
-					a.style.marginRight='12px';
-					ctrl.appendChild(a);
-				}
-				if(showDl){
-					let a=document.createElement('a');
-					a.href=item.src;
-					a.setAttribute('download', item.name || '');
-					a.textContent='Download';
-					ctrl.appendChild(a);
-				}
-				wrap.appendChild(ctrl);
+			//controls bar: caption (or filename) on the left taking the available space, download + full-size + close icons on the right
+			let labeltext = caption.length ? caption : (item.name || '');
+			let bar=document.createElement('div');
+			bar.style.display='flex';
+			bar.style.alignItems='center';
+			bar.style.gap='12px';
+			bar.style.padding='4px 8px';
+			let label=document.createElement('div');
+			label.style.flex='1';
+			//no caption -> the filename is centered; with a caption it sits to the left
+			label.className = caption.length ? 'w_bold' : 'w_bold align-center';
+			label.textContent=labeltext;
+			bar.appendChild(label);
+			if(showDl){
+				let a=document.createElement('a');
+				a.href=item.src;
+				a.setAttribute('download', item.name || '');
+				a.title='Download';
+				a.className='w_link';
+				a.innerHTML='<span class="icon-download"></span>';
+				bar.appendChild(a);
 			}
+			if(showFull){
+				let fs=document.createElement('label');
+				fs.className='w_pointer';
+				fs.title='Full size';
+				fs.innerHTML='<span class="material-fullscreen w_bigger"></span>';
+				fs.media=media;
+				fs.onclick=function(){
+					let m=this.media;
+					let req=m.requestFullscreen || m.webkitRequestFullscreen || m.msRequestFullscreen;
+					if(req){ req.call(m); }
+				};
+				bar.appendChild(fs);
+			}
+			//close button - tears down the modal and its overlay
+			let closebtn=document.createElement('label');
+			closebtn.title='Close';
+			closebtn.className='w_pointer w_link';
+			closebtn.innerHTML='<span class="icon-close"></span>';
+			closebtn.dataset.target=d.id;
+			closebtn.onclick=function(){
+				wacss.removeId(this.dataset.target+'_overlay');
+				wacss.removeId(this.dataset.target);
+			};
+			bar.appendChild(closebtn);
+			wrap.appendChild(bar);
 			d.appendChild(wrap);
 		});
-		//optional caption below the preview
-		if(caption.length){
-			let cdiv=document.createElement('div');
-			cdiv.className='align-center';
-			cdiv.style.padding='6px 8px';
-			cdiv.textContent=caption;
-			d.appendChild(cdiv);
-		}
 		document.body.appendChild(d);
 		z=z-2;
 		//build modal overlay

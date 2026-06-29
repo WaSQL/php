@@ -41,7 +41,7 @@
 	<div style="display:flex;flex-wrap:wrap;margin-top:15px;">
 		<div class="w_nowrap" style="width: 200px;font-weight:bold;">Image File (file_image)</div>
 		<div style="flex:5;display:flex;flex-wrap:wrap;">
-			<div style="margin:0 10px 10px 0;"><div>with value</div><div><?=buildFormFileImage('image_file',array('value'=>'/wfiles/file_image.png'));?></div></div>
+			<div style="margin:0 10px 10px 0;"><div>with value</div><div><?=buildFormFileImage('image_file',array('value'=>'/wfiles/file_image.png','data-download'=>1,'data-fullscreen'=>1,'data-caption'=>'This is a sample caption.'));?></div></div>
 			<div style="margin:0 10px 10px 0;"><div>empty</div><div><?=buildFormFileImage('image_file_empty');?></div></div>
 				<div style="margin:0 10px 10px 0;"><div>multiple</div><div><?=buildFormFileImage('image_files',array('multiple'=>1));?></div></div>
 		</div>
@@ -49,7 +49,7 @@
 	<div style="display:flex;flex-wrap:wrap;margin-top:15px;">
 		<div class="w_nowrap" style="width: 200px;font-weight:bold;">Video File (file_video)</div>
 		<div style="flex:5;display:flex;flex-wrap:wrap;">
-			<div style="margin:0 10px 10px 0;"><div>with value</div><div><?=buildFormFileVideo('video_file_val',array('value'=>'/wfiles/file_video.mp4'));?></div></div>
+			<div style="margin:0 10px 10px 0;"><div>with value</div><div><?=buildFormFileVideo('video_file_val',array('value'=>'/wfiles/file_video.mp4','data-fullscreen'=>1));?></div></div>
 				<div style="margin:0 10px 10px 0;"><div>empty</div><div><?=buildFormFileVideo('video_file');?></div></div>
 			<div style="margin:0 10px 10px 0;"><div>multiple</div><div><?=buildFormFileVideo('video_files',array('multiple'=>1));?></div></div>
 		</div>

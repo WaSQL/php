@@ -4660,14 +4660,21 @@ ENDOFERASE;
 ENDOFERASE;
 	}
 	$hiddenstr=implode(PHP_EOL."\t",$hidden);
-	//data params
+	//data params - separate the preview-modal controls (they belong on the preview div, not the file input)
 	$datatags=array();
+	$previewtags=array();
+	$previewkeys=array('data-fullscreen','data-download','data-caption');
 	foreach($params as $k=>$v){
-		if(stringBeginsWith($k,'data-')){
+		if(!stringBeginsWith($k,'data-')){continue;}
+		if(in_array($k,$previewkeys)){
+			$previewtags[]="{$k}=\"".str_replace('"','&quot;',$v)."\"";
+		}
+		else{
 			$datatags[]="{$k}=\"{$v}\"";
 		}
 	}
 	$datatagstr=implode(' ',$datatags);
+	$previewtagstr=implode(' ',$previewtags);
 	//filename used as the preview tooltip/modal header
 	$fname=strlen($params['value'])?basename($params['value']):'';
 	//gray out the preview when there is nothing to preview
@@ -4678,7 +4685,7 @@ ENDOFERASE;
 <div data-inputtype="file_audio" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="audio" data-placeholder="<span class='icon-file-audio'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$aicon}</div>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="audio" data-placeholder="<span class='icon-file-audio'></span>" data-src="{$params['value']}" {$previewtagstr} style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$aicon}</div>
 	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileAudioUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" id="{$params['id']}_browse" title="Browse for audio" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','none');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','none');" class="w_biggest w_pointer" style="display:flex;justify-content:center;align-items:center;gap:3px;">{$params['text']}</label>
@@ -4750,15 +4757,22 @@ ENDOFERASE;
 ENDOFERASE;
 	}
 	$hiddenstr=implode(PHP_EOL."\t",$hidden);
-	//data params
+	//data params - separate the preview-modal controls (they belong on the preview div, not the file input)
 	$datatags=array();
+	$previewtags=array();
+	$previewkeys=array('data-fullscreen','data-download','data-caption');
 	//return printValue($params);
 	foreach($params as $k=>$v){
-		if(stringBeginsWith($k,'data-')){
+		if(!stringBeginsWith($k,'data-')){continue;}
+		if(in_array($k,$previewkeys)){
+			$previewtags[]="{$k}=\"".str_replace('"','&quot;',$v)."\"";
+		}
+		else{
 			$datatags[]="{$k}=\"{$v}\"";
 		}
 	}
 	$datatagstr=implode(' ',$datatags);
+	$previewtagstr=implode(' ',$previewtags);
 	//icon placeholder shown when there is no thumbnail to display
 	$ficon=strlen($params['value'])?'':'<span class="icon-file-image"></span>';
 	//filename used as the preview tooltip/modal header
@@ -4772,7 +4786,7 @@ ENDOFERASE;
 <div data-inputtype="file_image" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="image" data-placeholder="<span class='icon-file-image'></span>" style="background-color:#FFF;{$bgstyle}display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$ficon}</div>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="image" data-placeholder="<span class='icon-file-image'></span>" {$previewtagstr} style="background-color:#FFF;{$bgstyle}display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$ficon}</div>
 	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileImageUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
@@ -4840,14 +4854,21 @@ ENDOFERASE;
 ENDOFERASE;
 	}
 	$hiddenstr=implode(PHP_EOL."\t",$hidden);
-	//data params
+	//data params - separate the preview-modal controls (they belong on the preview div, not the file input)
 	$datatags=array();
+	$previewtags=array();
+	$previewkeys=array('data-fullscreen','data-download','data-caption');
 	foreach($params as $k=>$v){
-		if(stringBeginsWith($k,'data-')){
+		if(!stringBeginsWith($k,'data-')){continue;}
+		if(in_array($k,$previewkeys)){
+			$previewtags[]="{$k}=\"".str_replace('"','&quot;',$v)."\"";
+		}
+		else{
 			$datatags[]="{$k}=\"{$v}\"";
 		}
 	}
 	$datatagstr=implode(' ',$datatags);
+	$previewtagstr=implode(' ',$previewtags);
 	//filename used as the preview tooltip/modal header
 	$fname=strlen($params['value'])?basename($params['value']):'';
 	//gray out the preview when there is nothing to preview
@@ -4858,7 +4879,7 @@ ENDOFERASE;
 <div data-inputtype="file_video" data-display="inline-flex" style="{$params['style']}">
 	{$hiddenstr}
 	<input type="checkbox" value="1" id="{$params['id']}_remove" name="{$name}_remove" style="display:none;">
-	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="video" data-placeholder="<span class='icon-file-video'></span>" data-src="{$params['value']}" style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$vicon}</div>
+	<div id="{$params['id']}_preview" class="{$pvclass}" data-behavior="file_preview" data-mediatype="video" data-placeholder="<span class='icon-file-video'></span>" data-src="{$params['value']}" {$previewtagstr} style="background-color:#FFF;display:flex;justify-content:center;align-items:center;" title="{$fname}" onclick="wacss.showFilePreview(this);">{$vicon}</div>
 	<input type="file" accept="{$params['accept']}" name="{$params['name']}" id="{$params['id']}" style="display:none;" value="" {$datatagstr} {$params['multiple']} onchange="wacss.formFileVideoUpload(this);">
 	{$erase}
 	<label for="{$params['id']}" title="Front facing camera" onpointerdown="wacss.formFileCaptureMode('{$params['id']}','user');" ontouchstart="wacss.formFileCaptureMode('{$params['id']}','user');" class="w_biggest w_pointer w_mobile-only"><span class="material-camera_front"></span></label>
