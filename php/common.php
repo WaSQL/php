@@ -9109,6 +9109,7 @@ function getCalendar($monthyear='',$params=array()){
 					$calendar['groupnames'][$rec['group']]=array('icon'=>$rec['icon'],'name'=>$rec['group']);
 				}
 				$rec['month']=$edate['month'];
+				$rec['mon']=$edate['mon'];
 				$rec['year']=$edate['year'];
 				$params['-events']['mday'][$edate['mday']][]=$rec;
             }
@@ -9334,6 +9335,7 @@ function getCalendar($monthyear='',$params=array()){
 		$cdate['name']			= $calendar['daynames']['long'][$cdate['wday']];
 		$cdate['date']			= "{$cdate['year']}-{$cdate['mon']}-{$cdate['mday']}";
 		$cdate['month']			= $calendar['current']['month'];
+		$cdate['mon']			= $calendar['current']['mon'];
 		$cdate['next_month']=1;
 		$cdate['events']=array();
 		$calendar['weeks'][$row][]=$cdate;
