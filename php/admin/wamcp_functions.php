@@ -11,6 +11,114 @@ function wamcpDefaultDatabase() {
     return !empty($list) ? $list[0]['id'] : '';
 }
 
+// ── daSQL remote connections (dasql/dasql.ini) ────────────────────────────────
+// A dasql.ini [section] is exposed as a wamcp database ONLY when it defines both
+// base_url and wamcp=true. No [global] merge — each section must stand alone.
+// This lets wamcp query remote WaSQL hosts without a local driver, and without a
+// matching <database> entry in config.xml.
+function wamcpLoadDasqlSections() {
+    static $cache = null;
+    if ($cache !== null) return $cache;
+    $cache = array();
+    $inifile = getWaSQLPath('dasql') . '/dasql.ini';
+    if (!is_file($inifile)) return $cache;
+    $data = commonParseIni($inifile);
+    if (!is_array($data)) return $cache;
+    foreach ($data as $name => $vals) {
+        if (!is_array($vals)) continue;
+        if ($name === 'global') continue;               // reserved
+        if (strpos($name, ':') !== false) continue;     // shortcut sections, e.g. [name:shortcut]
+        $base = isset($vals['base_url']) ? trim($vals['base_url']) : '';
+        if ($base === '') continue;                      // must define its own base_url (no [global] merge)
+        $wamcp = isset($vals['wamcp']) ? strtolower(trim($vals['wamcp'])) : '';
+        if (!in_array($wamcp, array('true', '1', 'yes', 'on'))) continue;  // must opt in
+        $base = rtrim($base, '/');
+        $db   = isset($vals['db']) ? trim($vals['db']) : '';
+        $cache[$name] = array(
+            'id'          => $name,
+            'dbtype'      => 'dasql',
+            'base_url'    => $base,
+            'dbhost'      => $base,
+            'db'          => $db,
+            'dbname'      => $db !== '' ? $db : $name,
+            'authkey'     => isset($vals['authkey'])  ? trim($vals['authkey'])  : '',
+            'apikey'      => isset($vals['apikey'])   ? trim($vals['apikey'])   : '',
+            'tauthkey'    => isset($vals['tauthkey']) ? trim($vals['tauthkey']) : '',
+            'username'    => isset($vals['username']) ? trim($vals['username']) : '',
+            'password'    => isset($vals['password']) ? trim($vals['password']) : '',
+            'displayname' => isset($vals['displayname']) ? trim($vals['displayname']) : $name,
+        );
+    }
+    return $cache;
+}
+
+// Returns the dasql section config for a db_id, or null. Section names are
+// lowercased by commonParseIni, so match case-insensitively.
+function wamcpGetDasqlSection($db_id) {
+    $sections = wamcpLoadDasqlSections();
+    $lk = strtolower($db_id);
+    return isset($sections[$lk]) ? $sections[$lk] : null;
+}
+
+// Runs SQL against a remote WaSQL host the same way dasql.py does: POST to
+// {base_url}/php/admin.php with func=sql. $format='json' returns an array of
+// row objects; any other format returns the raw response body (used for ddl).
+function wamcpRemoteSql($conf, $sql, $format = 'json') {
+    $url = rtrim($conf['base_url'], '/') . '/php/admin.php';
+    $params = array(
+        'db'                  => $conf['db'],
+        'func'                => 'sql',
+        'format'              => $format,
+        'offset'              => 0,
+        '_menu'               => 'sqlprompt',
+        'AjaxRequestUniqueId' => 'wamcp',
+        'sql_full'            => $sql,
+        '-nossl'              => 1,
+        '-follow'             => 1,
+        '-timeout'            => 120,
+    );
+    // Auth — same precedence dasql.py uses (dasql.py:410-429).
+    if (!empty($conf['apikey']) && !empty($conf['username'])) {
+        $params['apikey']   = $conf['apikey'];
+        $params['username'] = $conf['username'];   // postURL turns these into WaSQL headers
+    } elseif (!empty($conf['authkey'])) {
+        $params['_auth'] = $conf['authkey'];        // postURL sends WaSQL-Auth header
+    } elseif (!empty($conf['tauthkey'])) {
+        $params['_tauth'] = $conf['tauthkey'];
+    } elseif (!empty($conf['username']) && !empty($conf['password'])) {
+        $params['_login']   = 1;
+        $params['username'] = $conf['username'];
+        $params['password'] = $conf['password'];
+    }
+    $res  = postURL($url, $params);
+    if (!empty($res['error'])) {
+        throw new Exception("daSQL remote error: {$res['error']}");
+    }
+    $body = isset($res['body']) ? trim($res['body']) : '';
+    $body = preg_replace('/^\xEF\xBB\xBF/', '', $body);   // strip BOM if present
+    if ($format !== 'json') {
+        return $body;
+    }
+    $data = json_decode($body, true);
+    // Success returns an array of rows. "No results" returns a JSON-encoded
+    // string wrapper ("{\"result\":\"no results\"}"), which decodes to a
+    // non-list — treat anything that isn't a list of rows as empty.
+    if (is_array($data) && (empty($data) || isset($data[0]))) {
+        return $data;
+    }
+    return array();
+}
+
+// Central query path for every wamcp tool: route dasql databases to the remote
+// WaSQL host, everything else through the local WaSQL DB layer.
+function wamcpQueryRows($db_id, $sql) {
+    $db = wamcpGetDatabase($db_id);
+    if ($db && isset($db['dbtype']) && strtolower($db['dbtype']) === 'dasql') {
+        return wamcpRemoteSql($db, $sql, 'json');
+    }
+    return dbQueryResults($db_id, $sql);
+}
+
 // ── MCP Request Router ────────────────────────────────────────────────────────
 
 function wamcpHandleMcpRequest($request, $db_id) {
@@ -216,8 +324,8 @@ function wamcpDispatchTool($name, $args, $db_id) {
 // ── Tool Implementations ──────────────────────────────────────────────────────
 
 function wamcpToolDb($db_id, $dbname) {
-    global $DATABASE;
-    $db = $DATABASE[$db_id];
+    $db = wamcpGetDatabase($db_id);
+    if (!$db) return wamcpToolError("Database '{$db_id}' not found or is excluded from WaMCP.");
     $row = array(
         'id'     => $db_id,
         'name'   => $dbname,
@@ -236,8 +344,8 @@ function wamcpToolDb($db_id, $dbname) {
 }
 
 function wamcpDbtypeInstructions($db_id) {
-    global $DATABASE;
-    $dbtype = isset($DATABASE[$db_id]['dbtype']) ? strtolower($DATABASE[$db_id]['dbtype']) : 'mysql';
+    $db = wamcpGetDatabase($db_id);
+    $dbtype = ($db && isset($db['dbtype'])) ? strtolower($db['dbtype']) : 'mysql';
     switch ($dbtype) {
         case 'ctree':
         case 'ctreeace':
@@ -311,12 +419,17 @@ INST;
 }
 
 function wamcpToolDdl($db_id, $tablename) {
-    $ddl=dbGetTableDDL($db_id,$tablename);
+    $db = wamcpGetDatabase($db_id);
+    if ($db && isset($db['dbtype']) && strtolower($db['dbtype']) === 'dasql') {
+        $ddl = trim((string)wamcpRemoteSql($db, "ddl {$tablename}", 'dos'));
+    } else {
+        $ddl = dbGetTableDDL($db_id, $tablename);
+    }
     return wamcpToolText("```sql\n{$ddl}\n```");
 }
 
 function wamcpToolTables($db_id, $filter = '') {
-    $rows = dbQueryResults($db_id, "tables");
+    $rows = wamcpQueryRows($db_id, "tables");
     if (!is_array($rows)) return wamcpToolError('Could not retrieve tables');
     if ($filter) {
         $rows = array_filter($rows, function($row) use ($filter) {
@@ -327,7 +440,7 @@ function wamcpToolTables($db_id, $filter = '') {
 }
 
 function wamcpToolFields($db_id, $tablename, $filter) {
-    $rows = dbQueryResults($db_id, "fld {$tablename}");
+    $rows = wamcpQueryRows($db_id, "fld {$tablename}");
     if (!is_array($rows)) return wamcpToolError("Could not retrieve fields for '{$tablename}'");
     if ($filter) {
         $rows = array_filter($rows, function($row) use ($filter) {
@@ -387,7 +500,7 @@ function wamcpToolViews($db_id, $dbname, $filter = '') {
 }
 
 function wamcpToolIndexes($db_id, $tablename, $filter = '') {
-    $rows = dbQueryResults($db_id, "idx {$tablename}");
+    $rows = wamcpQueryRows($db_id, "idx {$tablename}");
     if (!is_array($rows)) return wamcpToolError("Could not retrieve indexes for '{$tablename}'");
     if ($filter) {
         $rows = array_filter($rows, function($row) use ($filter) {
@@ -462,7 +575,7 @@ function wamcpToolQuery($db_id, $sql) {
         return wamcpToolError('Only read-only queries are permitted (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH).');
     }
     try {
-        $rows = dbQueryResults($db_id, $sql);
+        $rows = wamcpQueryRows($db_id, $sql);
         if (is_array($rows) && !empty($rows)) {
             return wamcpToolText(count($rows) . " rows returned.\n\n" . wamcpToMarkdownTable($rows));
         }
@@ -517,7 +630,10 @@ function wamcpQ($value) {
 
 function wamcpGetDbName($db_id) {
     global $DATABASE;
-    return isset($DATABASE[$db_id]['dbname']) ? $DATABASE[$db_id]['dbname'] : $db_id;
+    if (isset($DATABASE[$db_id]['dbname'])) return $DATABASE[$db_id]['dbname'];
+    $sec = wamcpGetDasqlSection($db_id);
+    if ($sec) return $sec['dbname'];
+    return $db_id;
 }
 
 // ── Per-user state (stored in _users.wamcp JSON column) ──────────────────────
@@ -556,8 +672,10 @@ function wamcpGetUserDb() {
 function wamcpListDatabases() {
     global $DATABASE;
     $databases = array();
+    $seen = array();
     foreach ($DATABASE as $key => $db) {
         if (isset($db['wamcp']) && $db['wamcp'] === 'false') continue;
+        $seen[strtolower($key)] = true;
         $databases[] = array(
             'id'          => $key,
             'name'        => isset($db['wamcp']) ? $db['wamcp'] : $key,
@@ -565,15 +683,28 @@ function wamcpListDatabases() {
             'dbtype'      => isset($db['dbtype']) ? $db['dbtype'] : 'mysql'
         );
     }
+    // Add dasql.ini remote sections not already defined in config.xml.
+    foreach (wamcpLoadDasqlSections() as $key => $sec) {
+        if (isset($seen[strtolower($key)])) continue;   // config.xml wins
+        $databases[] = array(
+            'id'          => $key,
+            'name'        => $key,
+            'displayname' => $sec['displayname'],
+            'dbtype'      => 'dasql'
+        );
+    }
     return $databases;
 }
 
 function wamcpGetDatabase($db_id) {
     global $DATABASE;
-    if (isset($DATABASE[$db_id]) && !(isset($DATABASE[$db_id]['wamcp']) && $DATABASE[$db_id]['wamcp'] === 'false')) {
+    // config.xml is primary and wins on name collisions.
+    if (isset($DATABASE[$db_id])) {
+        if (isset($DATABASE[$db_id]['wamcp']) && $DATABASE[$db_id]['wamcp'] === 'false') return null;
         return $DATABASE[$db_id];
     }
-    return null;
+    // Not in config.xml — fall back to a dasql.ini remote section.
+    return wamcpGetDasqlSection($db_id);
 }
 
 function wamcpSetDatabase($db_id) {
@@ -595,7 +726,7 @@ function wamcpQueryDatabase($db_id, $query) {
         return array('success' => false, 'error' => "Database '{$db_id}' not found or is excluded from WaMCP.");
     }
     try {
-        $recs = dbQueryResults($db_id, $query);
+        $recs = wamcpQueryRows($db_id, $query);
         if (is_array($recs)) {
             return array('success' => true, 'records' => $recs, 'count' => count($recs));
         }
