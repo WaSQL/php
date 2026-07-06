@@ -64,7 +64,16 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.26.5'
+__version__ = '1.27.0'
+
+
+def current_user():
+    """OS user recorded in applied_by / migrated_by.
+
+    Derived from the USERNAME environment variable (Windows), falling back to
+    USER on POSIX shells. Returns '' when neither is set.
+    """
+    return os.environ.get('USERNAME') or os.environ.get('USER') or ''
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +250,17 @@ class BaseDriver:
     All drivers use DB-API 2.0 compatible connections where possible.
     """
 
+    # DB-API parameter placeholder for this driver. Postgres/MySQL/Snowflake use
+    # '%s', Oracle uses ':1'; '?' (the default) suits the rest.
+    placeholder = '?'
+
+    # Template for adding a column to a pre-existing tracking table. SQL Server,
+    # Oracle, and HANA need their own syntax (overridden in those drivers).
+    ADD_COLUMN_SQL = "ALTER TABLE {table} ADD COLUMN {col} varchar(255)"
+
+    # Columns added on top of the original dbmate (version, applied_at) schema.
+    EXTRA_COLUMNS = ('name', 'applied_by', 'migrated_by')
+
     def __init__(self, url, table='schema_migrations'):
         self.url = url
         self.table = table
@@ -284,20 +304,84 @@ class BaseDriver:
     def ensure_migrations_table(self):
         raise NotImplementedError
 
+    def ensure_columns(self):
+        """Add name/applied_by/migrated_by to a tracking table that predates them
+        (created by an older scm or by dbmate). New tables already include them via
+        ensure_migrations_table, so this is a no-op there — each ADD runs in its own
+        transaction and is rolled back when the column already exists.
+        """
+        for col in self.EXTRA_COLUMNS:
+            try:
+                self.execute(self.ADD_COLUMN_SQL.format(table=self.table, col=col))
+                self.commit()
+            except Exception:
+                self.rollback()
+
     def applied_versions(self):
         """Return a set of version ints that have been applied."""
-        raise NotImplementedError
+        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
+        return {int(row[0]) for row in cur.fetchall()}
+
+    def applied_names(self):
+        """Return {version:int -> name:str} recorded in the tracking table.
+
+        Lets status/repair/history report what an orphaned migration was after its
+        file has been deleted from disk.
+        """
+        cur = self.execute(f"SELECT version, name FROM {self.table}")
+        out = {}
+        for row in cur.fetchall():
+            try:
+                v = int(row[0])
+            except (TypeError, ValueError):
+                continue
+            if row[1]:
+                out[v] = str(row[1])
+        return out
 
     def applied_history(self):
-        """Return list of (version_str, applied_at_str) ordered by version."""
-        cur = self.execute(f"SELECT version, applied_at FROM {self.table} ORDER BY version")
-        return [(str(row[0]), str(row[1])) for row in cur.fetchall()]
+        """Return list of (version_str, applied_at_str, applied_by_str, name_str)."""
+        cur = self.execute(
+            f"SELECT version, applied_at, applied_by, name FROM {self.table} ORDER BY version"
+        )
+        return [(str(r[0]), str(r[1]), (r[2] or ''), (r[3] or '')) for r in cur.fetchall()]
 
-    def record_migration(self, version):
-        raise NotImplementedError
+    def record_migration(self, version, name=None):
+        ph = self.placeholder
+        user = current_user()
+        self.execute(
+            f"INSERT INTO {self.table} (version, name, applied_by, migrated_by) "
+            f"VALUES ({ph}, {ph}, {ph}, {ph})",
+            [str(version), name, user, user],
+        )
 
     def remove_migration(self, version):
-        raise NotImplementedError
+        self.execute(f"DELETE FROM {self.table} WHERE version = {self.placeholder}", [str(version)])
+
+    def backfill_names(self, migrations):
+        """Populate name for already-applied rows that predate the name column.
+
+        Matches applied versions to migration files on disk and fills in any row
+        whose name is still NULL/empty. Never overwrites an existing name, so it is
+        safe to run on every command.
+        """
+        label_map = {m[0]: m[1] for m in migrations}
+        if not label_map:
+            return
+        ph = self.placeholder
+        changed = False
+        for version in self.applied_versions():
+            name = label_map.get(version)
+            if not name:
+                continue
+            self.execute(
+                f"UPDATE {self.table} SET name = {ph} "
+                f"WHERE version = {ph} AND (name IS NULL OR name = '')",
+                [name, str(version)],
+            )
+            changed = True
+        if changed:
+            self.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -306,6 +390,8 @@ class BaseDriver:
 
 @register_driver(['postgres', 'postgresql'])
 class PostgresDriver(BaseDriver):
+
+    placeholder = '%s'
 
     def connect(self):
         pg = None
@@ -335,24 +421,19 @@ class PostgresDriver(BaseDriver):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
                 version varchar(128) PRIMARY KEY NOT NULL,
-                applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                name varchar(255),
+                applied_by varchar(255),
+                migrated_by varchar(255)
             )
         """)
         self.commit()
 
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [str(version)])
-
 
 @register_driver(['mysql', 'mariadb', 'mysqli'])
 class MySQLDriver(BaseDriver):
+
+    placeholder = '%s'
 
     def connect(self):
         p = urlparse(self.url)
@@ -402,20 +483,13 @@ class MySQLDriver(BaseDriver):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
                 version varchar(128) PRIMARY KEY NOT NULL,
-                applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                name varchar(255),
+                applied_by varchar(255),
+                migrated_by varchar(255)
             )
         """)
         self.commit()
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [str(version)])
 
 
 @register_driver(['mssql', 'sqlserver'])
@@ -425,6 +499,9 @@ class SQLServerDriver(BaseDriver):
     pip install pyodbc
     pip install pymssql
     """
+
+    # SQL Server's ALTER TABLE ADD has no COLUMN keyword.
+    ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar(255)"
 
     def connect(self):
         p = urlparse(self.url)
@@ -437,7 +514,7 @@ class SQLServerDriver(BaseDriver):
                 password=p.password,
                 database=p.path.lstrip('/'),
             )
-            self._ph = '%s'
+            self.placeholder = '%s'
             return
         except ImportError:
             pass
@@ -450,7 +527,7 @@ class SQLServerDriver(BaseDriver):
                 f"UID={p.username};PWD={p.password}"
             )
             self.conn = pyodbc.connect(conn_str, autocommit=False)
-            self._ph = '?'
+            self.placeholder = '?'
             return
         except ImportError:
             pass
@@ -461,17 +538,13 @@ class SQLServerDriver(BaseDriver):
             IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{self.table}')
             CREATE TABLE {self.table} (
                 version varchar(128) NOT NULL PRIMARY KEY,
-                applied_at DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+                applied_at DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                name varchar(255),
+                applied_by varchar(255),
+                migrated_by varchar(255)
             )
         """)
         self.commit()
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES ({self._ph})", [str(version)])
 
     def execute_script(self, sql):
         """
@@ -488,9 +561,6 @@ class SQLServerDriver(BaseDriver):
                 cur.execute(stmt)
         return cur
 
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = {self._ph}", [str(version)])
-
 
 @register_driver(['sqlite', 'sqlite3'])
 class SQLiteDriver(BaseDriver):
@@ -506,20 +576,13 @@ class SQLiteDriver(BaseDriver):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
                 version varchar(128) PRIMARY KEY NOT NULL,
-                applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+                applied_at TEXT NOT NULL DEFAULT (datetime('now')),
+                name varchar(255),
+                applied_by varchar(255),
+                migrated_by varchar(255)
             )
         """)
         self.commit()
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['ctree'])
@@ -529,6 +592,9 @@ class CTreeDriver(BaseDriver):
     pip install pyodbc
     URL: ctree://user:pass@host:6597/dbname
     """
+
+    # FairCom's ALTER TABLE ADD has no COLUMN keyword.
+    ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar(255)"
 
     def connect(self):
         try:
@@ -552,22 +618,15 @@ class CTreeDriver(BaseDriver):
             self.execute(f"""
                 CREATE TABLE {self.table} (
                     version varchar(128) NOT NULL PRIMARY KEY,
-                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                    name varchar(255),
+                    applied_by varchar(255),
+                    migrated_by varchar(255)
                 )
             """)
             self.commit()
         except Exception:
             self.rollback()  # table already exists
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['firebird'])
@@ -576,6 +635,9 @@ class FirebirdDriver(BaseDriver):
     Requires fdb. pip install fdb
     URL: firebird://user:pass@host/dbname
     """
+
+    # Firebird's ALTER TABLE ADD has no COLUMN keyword.
+    ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar(255)"
 
     def connect(self):
         try:
@@ -596,22 +658,15 @@ class FirebirdDriver(BaseDriver):
             self.execute(f"""
                 CREATE TABLE {self.table} (
                     version varchar(128) NOT NULL PRIMARY KEY,
-                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                    name varchar(255),
+                    applied_by varchar(255),
+                    migrated_by varchar(255)
                 )
             """)
             self.commit()
         except Exception:
             self.rollback()  # table already exists
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['hana'])
@@ -620,6 +675,9 @@ class HanaDriver(BaseDriver):
     Requires hdbcli. pip install hdbcli
     URL: hana://user:pass@host:39015/
     """
+
+    # HANA's ALTER TABLE ADD wraps the column definition in parentheses.
+    ADD_COLUMN_SQL = "ALTER TABLE {table} ADD ({col} varchar(255))"
 
     def connect(self):
         try:
@@ -640,22 +698,15 @@ class HanaDriver(BaseDriver):
             self.execute(f"""
                 CREATE TABLE IF NOT EXISTS {self.table} (
                     version varchar(128) NOT NULL PRIMARY KEY,
-                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                    name varchar(255),
+                    applied_by varchar(255),
+                    migrated_by varchar(255)
                 )
             """)
             self.commit()
         except Exception:
             self.rollback()
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (?)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = ?", [str(version)])
 
 
 @register_driver(['snowflake'])
@@ -664,6 +715,8 @@ class SnowflakeDriver(BaseDriver):
     Requires snowflake-connector-python. pip install snowflake-connector-python
     URL: snowflake://user:pass@account/database?warehouse=X&schema=Y&role=Z
     """
+
+    placeholder = '%s'
 
     def connect(self):
         try:
@@ -688,20 +741,13 @@ class SnowflakeDriver(BaseDriver):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
                 version varchar(128) PRIMARY KEY NOT NULL,
-                applied_at TIMESTAMP_TZ NOT NULL DEFAULT CURRENT_TIMESTAMP()
+                applied_at TIMESTAMP_TZ NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+                name varchar(255),
+                applied_by varchar(255),
+                migrated_by varchar(255)
             )
         """)
         self.commit()
-
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
-
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (%s)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = %s", [str(version)])
 
 
 @register_driver(['oracle'])
@@ -711,6 +757,10 @@ class OracleDriver(BaseDriver):
     pip install oracledb
     URL: oracle://user:pass@host:1521/service_name
     """
+
+    placeholder = ':1'
+    # Oracle uses VARCHAR2 and has no COLUMN keyword on ALTER TABLE ADD.
+    ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar2(255)"
 
     def connect(self):
         cx = None
@@ -730,22 +780,41 @@ class OracleDriver(BaseDriver):
             self.execute(f"""
                 CREATE TABLE {self.table} (
                     version varchar(128) NOT NULL PRIMARY KEY,
-                    applied_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL
+                    applied_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
+                    name varchar2(255),
+                    applied_by varchar2(255),
+                    migrated_by varchar2(255)
                 )
             """)
             self.commit()
         except Exception:
             self.rollback()  # ORA-00955: table already exists
 
-    def applied_versions(self):
-        cur = self.execute(f"SELECT version FROM {self.table} ORDER BY version")
-        return {int(row[0]) for row in cur.fetchall()}
+    def record_migration(self, version, name=None):
+        user = current_user()
+        self.execute(
+            f"INSERT INTO {self.table} (version, name, applied_by, migrated_by) "
+            f"VALUES (:1, :2, :3, :4)",
+            [str(version), name, user, user],
+        )
 
-    def record_migration(self, version):
-        self.execute(f"INSERT INTO {self.table} (version) VALUES (:1)", [str(version)])
-
-    def remove_migration(self, version):
-        self.execute(f"DELETE FROM {self.table} WHERE version = :1", [str(version)])
+    def backfill_names(self, migrations):
+        label_map = {m[0]: m[1] for m in migrations}
+        if not label_map:
+            return
+        changed = False
+        for version in self.applied_versions():
+            name = label_map.get(version)
+            if not name:
+                continue
+            self.execute(
+                f"UPDATE {self.table} SET name = :1 "
+                f"WHERE version = :2 AND (name IS NULL OR name = '')",
+                [name, str(version)],
+            )
+            changed = True
+        if changed:
+            self.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -883,7 +952,7 @@ def cmd_up(driver, migrations, n=None, dry_run=False):
         try:
             driver.set_application_name(f"scm:{version}_{label}")
             driver.execute_script(up_sql)
-            driver.record_migration(version)
+            driver.record_migration(version, name=label)
             driver.commit()
             print("OK")
         except Exception as e:
@@ -990,7 +1059,7 @@ def cmd_goto(driver, migrations, target_version, dry_run=False):
         try:
             driver.set_application_name(f"scm:{version}_{label}")
             driver.execute_script(up_sql)
-            driver.record_migration(version)
+            driver.record_migration(version, name=label)
             driver.commit()
             print("OK")
         except Exception as e:
@@ -1016,7 +1085,7 @@ def cmd_show(migrations, target_version):
 
 
 def cmd_history(driver, migrations):
-    """Show applied migrations with timestamps."""
+    """Show applied migrations with timestamps and who applied them."""
     rows = driver.applied_history()
     if not rows:
         print("No migrations have been applied.")
@@ -1029,19 +1098,25 @@ def cmd_history(driver, migrations):
 
     label_map = {m[0]: m[1] for m in migrations}
 
-    col_v = max(len('Version'), max(len(str(r[0])) for r in rows))
-    col_l = max(len('Label'),   max(len(label_map.get(int(r[0]), '<file missing>')) for r in rows))
+    def label_for(version_str, stored_name):
+        # Prefer the on-disk label; fall back to the name stored at apply time so
+        # an orphaned (file-deleted) migration is still identifiable.
+        return label_map.get(int(version_str)) or stored_name or '<file missing>'
 
-    header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  Applied At"
+    col_v = max(len('Version'), max(len(str(r[0])) for r in rows))
+    col_l = max(len('Label'),   max(len(label_for(r[0], r[3])) for r in rows))
+    col_b = max(len('By'),      max(len(r[2]) for r in rows))
+
+    header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  {'By':<{col_b}}  Applied At"
     print(bold(blue(header)))
     print('-' * len(header))
 
-    for version_str, applied_at in rows:
-        raw_label = label_map.get(int(version_str), '<file missing>')
-        padded_label = f"{raw_label:<{col_l}}"
-        if raw_label == '<file missing>':
+    for version_str, applied_at, applied_by, stored_name in rows:
+        label = label_for(version_str, stored_name)
+        padded_label = f"{label:<{col_l}}"
+        if label_map.get(int(version_str)) is None:
             padded_label = yellow(padded_label)
-        print(f"{version_str:<{col_v}}  {padded_label}  {applied_at}")
+        print(f"{version_str:<{col_v}}  {padded_label}  {applied_by:<{col_b}}  {applied_at}")
 
     print(f"\n{len(rows)} applied migration(s).")
 
@@ -1066,7 +1141,7 @@ def cmd_baseline(driver, migrations, target_version=None):
         return
 
     for version, label, _, _ in to_mark:
-        driver.record_migration(version)
+        driver.record_migration(version, name=label)
         print(f"  Baselined  {version}_{label}")
     driver.commit()
     print(f"\n{len(to_mark)} migration(s) marked as applied.")
@@ -1085,9 +1160,11 @@ def cmd_repair(driver, migrations):
     tty = sys.stdout.isatty()
     def yellow(s): return f'\033[33m{s}\033[0m' if tty else s
 
+    names = driver.applied_names()
     print(f"Found {len(orphaned)} orphaned version(s) in {driver.table} with no file on disk:")
     for v in orphaned:
-        print(f"  {yellow(str(v))}")
+        nm = names.get(v)
+        print(f"  {yellow(str(v))}  {nm}" if nm else f"  {yellow(str(v))}")
     print()
 
     ans = input("Remove these from the tracking table? Type 'yes' to confirm: ")
@@ -1105,6 +1182,7 @@ def cmd_status(driver, migrations):
     applied  = driver.applied_versions()
     known    = {m[0] for m in migrations}
     orphaned = sorted(applied - known)  # in DB but no file on disk
+    names    = driver.applied_names() if orphaned else {}
 
     if not migrations and not orphaned:
         print("No migration files found.")
@@ -1125,6 +1203,7 @@ def cmd_status(driver, migrations):
     if orphaned:
         col_v = max(col_v, max(len(str(v)) for v in orphaned))
         col_l = max(col_l, len("<file missing>"))
+        col_l = max(col_l, max((len(names.get(v, '')) for v in orphaned), default=0))
 
     header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  {'Status':<10}  Down?"
     print(bold(blue(header)))
@@ -1138,7 +1217,8 @@ def cmd_status(driver, migrations):
         print(gray(row) if is_applied else green(row))
 
     for version in orphaned:
-        row = f"{version:<{col_v}}  {'<file missing>':<{col_l}}  {'orphaned':<10}  ?"
+        label = names.get(version, '<file missing>')
+        row = f"{version:<{col_v}}  {label:<{col_l}}  {'orphaned':<10}  ?"
         print(yellow(row))
 
     total  = len(migrations)
@@ -1728,6 +1808,23 @@ def get_driver(url, table='schema_migrations'):
 # CLI
 # ---------------------------------------------------------------------------
 
+def _resolve_db_migrations_dir(name):
+    """Migrations directory for --db <name>.
+
+    Uses ./migrations/<name> when that per-database folder exists; otherwise falls
+    back to the shared ./migrations. This lets one set of migrations be applied to
+    many systems (dev/stage/prod) — each selected by its own .env.<name> — without
+    keeping a separate per-database migrations folder. An explicit --path or a
+    MIGRATIONS_DIR in the .env always overrides this.
+    """
+    per_db = f'./migrations/{name}'
+    if os.path.isdir(per_db):
+        return per_db
+    if os.path.isdir('./migrations'):
+        return './migrations'
+    return per_db
+
+
 def _find_config_xml():
     """Locate config.xml by walking up from the current working directory.
 
@@ -1861,18 +1958,17 @@ def main():
         else:
             args.env_file = '.env'
 
-    if args.path is None:
-        if db:
-            args.path = f'./migrations/{db}'
-        elif args.command == 'env-from-config' and args.name:
-            args.path = f'./migrations/{args.name}'
+    # Migrations directory is resolved after .env is loaded (below), so a
+    # MIGRATIONS_DIR in the env can override the --db derivation.
 
     # Load .env — existing env vars and --url always win.
-    # Always load the base .env first so globals like WASQL_PATH are available
-    # even when the db-specific file (e.g. .env.ccv2_int1) doesn't exist yet.
+    # load_env_file is first-wins (it never overwrites an already-set var), so the
+    # db-specific file (e.g. .env.ccv2_int1) MUST be loaded first to take precedence
+    # for DATABASE_URL and friends. The base .env is loaded afterward only to fill in
+    # globals like WASQL_PATH that the db-specific file doesn't define.
+    load_env_file(args.env_file)
     if args.env_file != '.env':
         load_env_file('.env')
-    load_env_file(args.env_file)
 
     # Resolve config.xml: --config flag > WASQL_PATH in .env > default
     if args.config is None:
@@ -1885,13 +1981,23 @@ def main():
     # Resolve URL: --url flag > DATABASE_URL env var (possibly just loaded from .env)
     url = args.url or os.environ.get('DATABASE_URL')
 
-    # Resolve migrations directory: resolved above > MIGRATIONS_DIR / DBMATE_MIGRATIONS_DIR > default
+    # Resolve migrations directory (after .env is loaded):
+    #   explicit --path  >  MIGRATIONS_DIR / DBMATE_MIGRATIONS_DIR  >  --db derivation  >  ./migrations
+    #
+    # The --db derivation uses ./migrations/<name> when that per-database folder
+    # exists, otherwise the shared ./migrations — so the same migration set can be
+    # applied across many systems (dev/stage/prod), each with its own .env.<name>,
+    # without keeping a separate per-database migrations folder.
     if args.path is None:
-        args.path = (
-            os.environ.get('MIGRATIONS_DIR')
-            or os.environ.get('DBMATE_MIGRATIONS_DIR')
-            or './migrations'
-        )
+        env_dir = os.environ.get('MIGRATIONS_DIR') or os.environ.get('DBMATE_MIGRATIONS_DIR')
+        if env_dir:
+            args.path = env_dir
+        elif db:
+            args.path = _resolve_db_migrations_dir(db)
+        elif args.command == 'env-from-config' and args.name:
+            args.path = _resolve_db_migrations_dir(args.name)
+        else:
+            args.path = './migrations'
 
     # Resolve migrations table: MIGRATIONS_TABLE / DBMATE_MIGRATIONS_TABLE > default
     migrations_table = (
@@ -1955,12 +2061,14 @@ def main():
     driver = get_driver(url, table=migrations_table)
     try:
         driver.ensure_migrations_table()
+        driver.ensure_columns()  # add name/applied_by/migrated_by to pre-existing tables
 
         if args.command == 'reset':
             cmd_reset(driver, migrations_dir=args.path, force=args.force)
             return
 
         migrations = find_migrations(args.path)
+        driver.backfill_names(migrations)  # record name for rows applied before the column existed
 
         if args.command == 'up':
             cmd_up(driver, migrations, n=args.n, dry_run=args.dry_run)
