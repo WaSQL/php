@@ -62,7 +62,7 @@
 			return;
 		break;
 		case 'toast_query':
-			$recs=dbQueryResults($_REQUEST['db'],$_REQUEST['query']);
+			$recs=sqlpromptQueryResults($_REQUEST['db'],$_REQUEST['query']);
 			setView('toast_query',1);
 			return;
 		break;
@@ -428,9 +428,9 @@
 				case 'hana':
 					$stmt_name='hep_'.encodeBase64(microtime(true));
 					$sql="EXPLAIN PLAN SET statement_name='{$stmt_name}' FOR ".PHP_EOL.$_SESSION['sql_last'];
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 					$sql="SELECT * FROM sys.explain_plan_table WHERE statement_name='{$stmt_name}'";
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 					foreach($recs as $i=>$rec){
 						unset($recs[$i]['statement_name']);
 					}
@@ -440,38 +440,38 @@
 				case 'postgres':
 					$sql="EXPLAIN".PHP_EOL.$_SESSION['sql_last'];
 					//echo $sql;exit;
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				case 'snowflake':
 					$sql="EXPLAIN USING TABULAR".PHP_EOL.$_SESSION['sql_last'];
 					//echo $sql;exit;
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				case 'ctree':
 					//EXPLAIN PLAN FOR <SQL statement>
 					$sql="EXPLAIN PLAN FOR ".$_SESSION['sql_last'];
 					//echo $sql;exit;
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				case 'sqlite':
 					$sql="EXPLAIN QUERY PLAN".PHP_EOL.$_SESSION['sql_last'];
 					//echo $sql;exit;
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				case 'duckdb':
 					$sql="EXPLAIN".PHP_EOL.$_SESSION['sql_last'];
 					//echo $sql;exit;
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				case 'mssql':
 					$sql=str_replace("'","''",$_SESSION['sql_last']);
 					$sql = "EXEC sp_executesql N'SET STATISTICS PROFILE ON; {$sql}; SET STATISTICS PROFILE OFF'";
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				case 'oracle':
 					$stmt_id='oep_'.encodeBase64(microtime(true));
 					$sql="EXPLAIN PLAN SET statement_id='{$stmt_id}' INTO plan_table FOR".PHP_EOL.$_SESSION['sql_last'];
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 					$sql=<<<ENDOFQUERY
 SELECT id, LPAD(' ',2*(LEVEL-1))||operation operation, options,
    object_name, object_alias, position 
@@ -480,7 +480,7 @@ START WITH id = 0 AND statement_id = '{$stmt_id}'
 CONNECT BY PRIOR id = parent_id AND statement_id = '{$stmt_id}'
 ORDER BY id
 ENDOFQUERY;
-					$recs=dbQueryResults($db['name'],$sql);
+					$recs=sqlpromptQueryResults($db['name'],$sql);
 				break;
 				default:
 					echo "EXPLAIN Plans are not yet supported for {$db['dbtype']} yet.";exit;
@@ -928,7 +928,7 @@ ENDOFQUERY;
 				exit;
 			}
 			elseif($skip==0 && preg_match('/^tables(.*)$/is',$lcq,$m)){
-				$recs=dbQueryResults($db['name'],$lcq);
+				$recs=sqlpromptQueryResults($db['name'],$lcq);
 				$csv=arrays2CSV($recs);
 				$tpath=getWasqlPath('php/temp');
 				$shastr=sha1($_SESSION['sql_last']);
@@ -993,7 +993,7 @@ ENDOFQUERY;
 				$_SESSION['sql_last']=sqlpromptBuildQuery($db['name'],'kill',$m[1]);
 			}
 			elseif($skip==0 && preg_match('/^(fields|fld)\ (.+)$/is',$lcq,$m)){
-				$recs=dbQueryResults($db['name'],$lcq);
+				$recs=sqlpromptQueryResults($db['name'],$lcq);
 				$csv=arrays2CSV($recs);
 				$tpath=getWasqlPath('php/temp');
 				$shastr=sha1($_SESSION['sql_last']);
@@ -1007,7 +1007,7 @@ ENDOFQUERY;
 			}
 			elseif($skip==0 && preg_match('/^idx\ (.+)$/is',$lcq,$m)){
 				//echo "Get Indexes of {$m[1]}, skip:{$skip}, lcq: {$lcq}";exit;
-				$recs=dbQueryResults($db['name'],$lcq);
+				$recs=sqlpromptQueryResults($db['name'],$lcq);
 				$csv=arrays2CSV($recs);
 				$tpath=getWasqlPath('php/temp');
 				$shastr=sha1($_SESSION['sql_last']);
@@ -1088,6 +1088,111 @@ ENDOFQUERY;
 				}
 				$recs_count=getFileLineCount($afile)-1;
 				//echo $afile;exit;
+			}
+			elseif($skip==0 && isset($db['groovy']) && $db['groovy']==1){
+				//Run the query through the persistent Groovy/JDBC server instead of ODBC.
+				//We pass -filename so the server streams the result set straight to the
+				//same CSV file the ODBC path uses (no large result set held in memory);
+				//pagination, export, display and logging all reuse the code below.
+				//On success dbGroovyQueryResults returns the CSV path; on failure it
+				//returns an error string, so is_file() tells the two apart.
+				$tpath=getWasqlPath('php/temp');
+				$shastr=sha1($_SESSION['sql_last']);
+				$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+				$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+				$afile="{$tpath}/{$filename}";
+				if(is_file($afile)){unlink($afile);}
+				$params=array('-query'=>$_SESSION['sql_last']);
+				$grade=databaseGradeSQL($params['-query'],0);
+				$recs_show=30;
+				$recs=array();
+				$qstart=microtime(true);
+				$result=dbGroovyQueryResults($db['name'],$_SESSION['sql_last'],array('-filename'=>$afile));
+				$qstop=microtime(true);
+				$lastquery=array();
+				$lastquery['time']=round(($qstop-$qstart),3);
+				//no file written means the query failed and $result holds the error string
+				if(!is_file($result)){
+					$lastquery['error']=$result;
+					if(isset($_REQUEST['format'])){
+						switch(strtolower($_REQUEST['format'])){
+							case 'json':
+								echo encodeJson($lastquery);
+								exit;
+							break;
+							case 'xml':
+								echo arrays2XML(array($lastquery));
+								exit;
+							break;
+							case 'table':
+								echo databaseListRecords(array(
+									'-list'=>array($lastquery),
+									'-hidesearch'=>1,
+									'-tableclass'=>'wacss_table striped bordered condensed'
+								));
+								exit;
+							break;
+							case 'html':
+								echo sqlpromptHTMLHead();
+								echo databaseListRecords(array(
+									'-list'=>array($lastquery),
+									'-hidesearch'=>1,
+									'-tableclass'=>'wacss_table striped bordered condensed'
+								));
+								echo '</div>'.PHP_EOL;
+								echo '</body>'.PHP_EOL;
+								echo '</html>'.PHP_EOL;
+								exit;
+							break;
+							case 'csv':
+							case 'dos':
+								echo $lastquery['error'];
+								exit;
+							break;
+						}
+					}
+					else{
+						setView(array('error'),1);
+						return;
+					}
+				}
+				//The Groovy driver writes a header row and terminates every row (incl. the
+				//last) with a newline, so the raw line count is (data rows + header + a
+				//trailing empty line). Subtract 2 to get the real row count.
+				$recs_count=$_SESSION['sql_last_count']=max(0,getFileLineCount($afile)-2);
+				if($recs_count < 1){
+					$recs_count=0;
+					$recs=array();
+					if(isset($_REQUEST['format'])){
+						switch(strtolower($_REQUEST['format'])){
+							case 'json':
+								echo encodeJson("{\"result\":\"no results\"}");
+								exit;
+							break;
+							case 'xml':
+								echo arrays2XML(array("{\"result\":\"no results\"}"));
+								exit;
+							break;
+							case 'table':
+								setView('no_results_table',1);
+								return;
+							break;
+							case 'html':
+								setView('no_results_html',1);
+								return;
+							break;
+							case 'csv':
+							case 'dos':
+								setView('no_results_dos',1);
+								return;
+							break;
+						}
+					}
+					else{
+						setView('no_results',1);
+						return;
+					}
+				}
 			}
 			elseif($skip==0){
 				$tpath=getWasqlPath('php/temp');
@@ -1459,6 +1564,16 @@ ENDOFQUERY;
 				'-query'=>$_SESSION['sql_last'],
 			);
 			$recs=array();
+			//groovy dbs stream the export to disk via the Groovy/JDBC server
+			if(isset($db['groovy']) && $db['groovy']==1){
+				$gf=dbGroovyQueryResults($db['name'],$_SESSION['sql_last'],array('-filename'=>$afile));
+				if(is_file($gf)){
+					pushFile($gf);
+					exit;
+				}
+				echo $gf;
+				exit;
+			}
 			$recs_count=dbGetRecords($db['name'],$params);
 			if(is_file($afile)){
 				pushFile($afile);

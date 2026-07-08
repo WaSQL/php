@@ -646,6 +646,7 @@ function dbGetDDL($db,$table,$schema){
 * @usage $createsql=dbGetTableDDL($db,$table);
 */
 function dbGetTableDDL($db,$table,$schema=''){
+	if(dbIsGroovy($db)){return dbGroovyGetTableDDL($db,$table,$schema);}
 	return dbFunctionCall('getTableDDL',$db,$table,$schema);
 }
 //---------- begin function dbGetTableIndexes
@@ -657,6 +658,7 @@ function dbGetTableDDL($db,$table,$schema=''){
 * @usage $recs=dbGetTableIndexes($db,$table);
 */
 function dbGetTableIndexes($db,$table,$schema=''){
+	if(dbIsGroovy($db)){return dbGroovyGetTableIndexes($db,$table);}
 	return dbFunctionCall('getDBTableIndexes',$db,$table,$schema);
 }
 //---------- begin function dbGetTablePrimaryKeys
@@ -801,6 +803,7 @@ function dbGetRecords($db,$params){
 *	$procedures=dbGetAllProcedures('pg_local');
 */
 function dbGetTableFields($db,$table){
+	if(dbIsGroovy($db)){return dbGroovyGetTableFields($db,$table);}
 	return dbFunctionCall('getDBFieldInfo',$db,$table);
 }
 //---------- begin function dbGetSchemas
@@ -812,6 +815,7 @@ function dbGetTableFields($db,$table){
 *	$recs=dbGetSchemas('pg_local');
 */
 function dbGetTables($db){
+	if(dbIsGroovy($db)){return dbGroovyGetTables($db);}
 	return dbFunctionCall('getDBTables',$db);
 }
 //---------- begin function dbGrep
@@ -1042,13 +1046,32 @@ function dbQueryResults($db,$query,$params=array()){
 * @param query string - SQL SELECT query
 * @param params array [optional]
 *	-index string  field name to key the returned array by
-* @return array|string  array of record-arrays on success; error string on failure
+*	-filename string  full path to a CSV file. When set, the server streams the
+*		result set straight to this file on disk (avoids loading large result
+*		sets into memory) and the function returns the filename instead of an array.
+*	-fetchsize int  JDBC fetch size (only used with -filename)
+*	-batchsize int  rows buffered before each disk write (only used with -filename)
+*	-skiperrors bool  skip unreadable rows instead of aborting (only used with -filename)
+*	-timeout int  HTTP timeout in seconds (default 300)
+* @return array|string  array of record-arrays on success; the CSV filename when
+*	-filename is set; error string on failure (test with is_file() in -filename mode)
 * @usage
 *	$recs=dbGroovyQueryResults('mydb','SELECT * FROM users WHERE active=1');
 *	$map=dbGroovyQueryResults('mydb','SELECT id,name FROM products',['-index'=>'id']);
+*	$file=dbGroovyQueryResults('mydb','SELECT * FROM big_table',['-filename'=>'/tmp/out.csv']);
 */
 function dbGroovyQueryResults($db,$query,$params=array()){
 	global $CONFIG;
+	//Mirror dbQueryResults input handling so this is a drop-in replacement.
+	//The duckdb passthrough and the fields/idx/tables shortcuts are metadata
+	//lookups that are independent of the query engine, so delegate them to
+	//dbQueryResults rather than sending non-SQL text to the Groovy server.
+	if(stringBeginsWith(trim($query),'-- duckdb')
+		|| preg_match('/^(fields|fld)\ (.+)$/is',trim($query))
+		|| preg_match('/^idx\ (.+)$/is',trim($query))
+		|| preg_match('/^tables(.*)$/is',trim($query))){
+		return dbQueryResults($db,$query,$params);
+	}
 	$groovyDir=rtrim(str_replace('\\','/',getWasqlPath('/groovy')),'/');
 	if(isset($CONFIG['groovy_port'])){$port=$CONFIG['groovy_port'];}
 	else{$port=7070;}
@@ -1062,10 +1085,28 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 	$token=trim(@file_get_contents($tokenFile));
 	if(!strlen($token)){return 'dbGroovyQueryResults error: server.token is empty';}
 
+	//when -filename is set, stream the result set to a CSV file on disk (server-side)
+	//via the /queryfile endpoint instead of returning rows — use for large result sets.
+	$tofile=!empty($params['-filename']);
+	if($tofile){
+		$endpoint='/queryfile/';
+		$reqtype='application/json';
+		$reqarr=array('query'=>$query,'filename'=>$params['-filename']);
+		if(isset($params['-fetchsize'])){$reqarr['fetchsize']=(int)$params['-fetchsize'];}
+		if(isset($params['-batchsize'])){$reqarr['batchsize']=(int)$params['-batchsize'];}
+		if(isset($params['-skiperrors'])){$reqarr['skiperrors']=$params['-skiperrors']?true:false;}
+		$reqbody=json_encode($reqarr);
+	}
+	else{
+		$endpoint='/query/';
+		$reqtype='text/plain';
+		$reqbody=$query;
+	}
+
 	$resp=null;
 	for($attempt=0;$attempt<2;$attempt++){
 		$timeout=isset($params['-timeout'])?(int)$params['-timeout']:300;
-		$json=dbGroovyHttp('POST',"{$baseUrl}/query/".rawurlencode($db),$token,$query,'text/plain',$timeout);
+		$json=dbGroovyHttp('POST',"{$baseUrl}{$endpoint}".rawurlencode($db),$token,$reqbody,$reqtype,$timeout);
 		if($json===false){
 			return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}";
 		}
@@ -1086,7 +1127,26 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		break;
 	}
 
+	//-filename mode: the server wrote the CSV to disk — return its path.
+	//Caller checks is_file() to tell success from an error string.
+	if($tofile){
+		if(isset($resp['data']['filename']) && strlen($resp['data']['filename'])){
+			return $resp['data']['filename'];
+		}
+		return $params['-filename'];
+	}
+
 	$recs=(isset($resp['data'])&&is_array($resp['data']))?$resp['data']:array();
+
+	//check for single ref cursor that returns a table (matches dbQueryResults)
+	if(isset($recs[0]) && is_array($recs[0]) && count(array_keys($recs[0]))==1){
+		foreach($recs[0] as $k=>$v){
+			if(is_array($v)){
+				$recs=$v;
+				break;
+			}
+		}
+	}
 
 	if(!empty($params['-index'])){
 		$idx=$params['-index'];
@@ -1098,6 +1158,159 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		return $out;
 	}
 	return $recs;
+}
+//---------- begin function dbGroovyMeta
+/**
+* @describe Fetches schema metadata (tables/columns/indexes/ddl) from the Groovy
+*	server's JDBC DatabaseMetaData — an ODBC-free alternative to the per-dbtype
+*	catalog queries. Used by dbGetTables/dbGetTableFields/dbGetTableIndexes/
+*	dbGetTableDDL when a database is flagged groovy="1" in config.xml.
+* @param db string - database name as configured in config.xml
+* @param op string - tables|columns|indexes|ddl
+* @param table string [optional] - table name (required for columns/indexes/ddl)
+* @param schema string [optional] - schema; blank = all schemas
+* @return array|string - decoded metadata on success, error string on failure
+* @exclude - internal helper for the dbGroovy* metadata wrappers
+*/
+function dbGroovyMeta($db,$op,$table='',$schema=''){
+	global $CONFIG;
+	$port=isset($CONFIG['groovy_port'])?$CONFIG['groovy_port']:7070;
+	$groovyDir=rtrim(str_replace('\\','/',getWasqlPath('/groovy')),'/');
+	$tempDir=getWaSQLPath('php/temp');
+	$tokenFile=$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.token';
+	$baseUrl="http://127.0.0.1:{$port}";
+
+	$err=dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl);
+	if($err!==null){return $err;}
+
+	$token=trim(@file_get_contents($tokenFile));
+	if(!strlen($token)){return 'dbGroovyMeta error: server.token is empty';}
+
+	$url="{$baseUrl}/meta/".rawurlencode($db)."?op=".rawurlencode($op);
+	if(strlen($table)){$url.="&table=".rawurlencode($table);}
+	if(strlen($schema)){$url.="&schema=".rawurlencode($schema);}
+
+	for($attempt=0;$attempt<2;$attempt++){
+		$json=dbGroovyHttp('GET',$url,$token,null,null,120);
+		if($json===false){return "dbGroovyMeta error: cannot reach Groovy server on port {$port}";}
+		$resp=json_decode($json,true);
+		if(!is_array($resp)){return 'dbGroovyMeta error: invalid JSON from Groovy server';}
+		if(empty($resp['success'])){
+			$msg=isset($resp['error'])?$resp['error']:'unknown error';
+			//config.xml updated after the server started — reload and retry once
+			if(stripos($msg,'not found in config.xml')!==false&&$attempt===0){
+				dbGroovyHttp('GET',"{$baseUrl}/reload",$token,null,null,10);
+				continue;
+			}
+			return "dbGroovyMeta error: {$msg}";
+		}
+		return isset($resp['data'])?$resp['data']:array();
+	}
+	return "dbGroovyMeta error: unknown error";
+}
+//---------- begin function dbGroovyGetTables
+/**
+* @describe returns an array of table names via the Groovy server (ODBC-free)
+* @param db string - database name as configured in config.xml
+* @return array|string - list of table names, or error string on failure
+* @usage $tables=dbGroovyGetTables('mydb');
+*/
+function dbGroovyGetTables($db){
+	return dbGroovyMeta($db,'tables');
+}
+//---------- begin function dbGroovyGetTableFields
+/**
+* @describe returns field info keyed by field name via the Groovy server (ODBC-free).
+*	Output matches the shape of the per-dbtype getDBFieldInfo functions.
+* @param db string - database name as configured in config.xml
+* @param table string - table name (schema-qualified allowed: schema.table)
+* @return array|string - field info keyed by field name, or error string on failure
+* @usage $fields=dbGroovyGetTableFields('mydb','users');
+*/
+function dbGroovyGetTableFields($db,$table){
+	$schema='';
+	if(stringContains($table,'.')){
+		$parts=preg_split('/\./',$table,2);
+		$schema=$parts[0];
+		$table=$parts[1];
+	}
+	$data=dbGroovyMeta($db,'columns',$table,$schema);
+	if(!is_array($data)){return $data;}
+	$fields=array();
+	foreach($data as $col){
+		$name=strtolower($col['name']);
+		$type=strtolower($col['type']);
+		$len=(int)$col['size'];
+		$scale=(int)$col['scale'];
+		$typeex=$type;
+		if($scale>0){$typeex="{$type}({$len},{$scale})";}
+		elseif($len>0 && preg_match('/char|numeric|decimal/i',$type)){$typeex="{$type}({$len})";}
+		$fields[$name]=array(
+			'_dbtable'=>$table,
+			'table'=>$table,
+			'name'=>$name,
+			'_dbfield'=>$name,
+			'_dbtype'=>$type,
+			'type'=>$type,
+			'_dbtype_ex'=>$typeex,
+			'length'=>$len,
+			'_dblength'=>$len,
+			'num'=>$len,
+			'size'=>$scale,
+			'nullable'=>((int)$col['nullable']===0?'N':'Y'),
+			'default'=>isset($col['default'])?$col['default']:''
+		);
+	}
+	return $fields;
+}
+//---------- begin function dbGroovyGetTableIndexes
+/**
+* @describe returns index info via the Groovy server (ODBC-free). Output matches
+*	the shape expected by the SQL Prompt index list (key_name, column_name,
+*	is_primary, is_unique, seq_in_index, index_type).
+* @param db string - database name as configured in config.xml
+* @param table string - table name (schema-qualified allowed: schema.table)
+* @return array|string - list of index rows, or error string on failure
+* @usage $indexes=dbGroovyGetTableIndexes('mydb','users');
+*/
+function dbGroovyGetTableIndexes($db,$table){
+	$schema='';
+	if(stringContains($table,'.')){
+		$parts=preg_split('/\./',$table,2);
+		$schema=$parts[0];
+		$table=$parts[1];
+	}
+	return dbGroovyMeta($db,'indexes',$table,$schema);
+}
+//---------- begin function dbGroovyGetTableDDL
+/**
+* @describe returns a CREATE TABLE statement via the Groovy server (ODBC-free),
+*	built from JDBC DatabaseMetaData columns and primary keys.
+* @param db string - database name as configured in config.xml
+* @param table string - table name (schema-qualified allowed: schema.table)
+* @param schema string [optional] - schema name
+* @return string - CREATE TABLE statement, or error string on failure
+* @usage $ddl=dbGroovyGetTableDDL('mydb','users');
+*/
+function dbGroovyGetTableDDL($db,$table,$schema=''){
+	if(!strlen($schema) && stringContains($table,'.')){
+		$parts=preg_split('/\./',$table,2);
+		$schema=$parts[0];
+		$table=$parts[1];
+	}
+	return dbGroovyMeta($db,'ddl',$table,$schema);
+}
+//---------- begin function dbIsGroovy
+/**
+* @describe returns true when the given database is flagged groovy="1" in config.xml
+* @param db string - database name as configured in config.xml
+* @return boolean
+* @usage if(dbIsGroovy($db)){...}
+*/
+function dbIsGroovy($db){
+	global $DATABASE;
+	$db=strtolower(trim($db));
+	return isset($DATABASE[$db]['groovy']) && $DATABASE[$db]['groovy']==1;
 }
 // ── Groovy server internal helpers ────────────────────────────────────────────
 /**

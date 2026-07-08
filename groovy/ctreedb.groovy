@@ -56,10 +56,14 @@ def connect(Map params) {
 					}
 				}
 
-				// Build JDBC URL from ODBC parameters
-				def server = odbcParams['server'] ?: odbcParams['host'] ?: 'localhost'
-				def port = odbcParams['port'] ?: '6597'
-				def database = odbcParams['database'] ?: odbcParams['db'] ?: ''
+				// Build JDBC URL from ODBC parameters.
+				// A DSN-style string (DSN=...;UID=...;PWD=...) carries no Server/Port/Database,
+				// so fall back to the explicit dbhost/dbport/dbname params when absent — otherwise
+				// the URL degrades to jdbc:ctree://localhost:6597 with no database, which the
+				// driver rejects with acceptsURL()==false ("No suitable driver found").
+				def server = odbcParams['server'] ?: odbcParams['host'] ?: params.dbhost ?: 'localhost'
+				def port = odbcParams['port'] ?: params.dbport ?: '6597'
+				def database = odbcParams['database'] ?: odbcParams['db'] ?: params.dbname ?: ''
 
 				// Extract credentials from ODBC UID/PWD keys if not already set
 				if (!dbuser) dbuser = odbcParams['uid'] ?: odbcParams['user'] ?: ''

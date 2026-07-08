@@ -1,5 +1,23 @@
 <?php
 loadExtras('translate');
+//---------- begin function sqlpromptQueryResults ----------
+/**
+* @describe Runs a SQL Prompt query, routing through the persistent Groovy/JDBC
+*	server when the database is flagged groovy="1" in config.xml, otherwise
+*	using the standard dbQueryResults (ODBC) path. Drop-in for dbQueryResults.
+* @param dbname string - database name as configured in config.xml
+* @param query string - SQL query
+* @param params array [optional] - passed through to the underlying function
+* @return array|string - records on success, error string on failure
+* @usage $recs=sqlpromptQueryResults($db['name'],$sql);
+*/
+function sqlpromptQueryResults($dbname,$query,$params=array()){
+	global $DATABASE;
+	if(isset($DATABASE[$dbname]['groovy']) && $DATABASE[$dbname]['groovy']==1){
+		return dbGroovyQueryResults($dbname,$query,$params);
+	}
+	return dbQueryResults($dbname,$query,$params);
+}
 function sqlpromptHTMLHead($title=''){
 	$cssfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyCssFile('wacss,bulma');
 	$jsfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyJsFile('wacss,bulma');

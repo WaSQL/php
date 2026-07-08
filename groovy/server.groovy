@@ -159,6 +159,116 @@ String pathParam(HttpExchange ex, String prefix) {
     URLDecoder.decode(ex.requestURI.path.substring(prefix.length()), 'UTF-8').trim()
 }
 
+// Parses the request's query string into a map (URL-decoded).
+Map queryParams(HttpExchange ex) {
+    def out = [:]
+    def raw = ex.requestURI.rawQuery
+    if (raw) raw.split('&').each { pair ->
+        def kv = pair.split('=', 2)
+        if (kv.length && kv[0]) out[URLDecoder.decode(kv[0], 'UTF-8')] = kv.length > 1 ? URLDecoder.decode(kv[1], 'UTF-8') : ''
+    }
+    return out
+}
+
+// ── JDBC DatabaseMetaData helpers (ODBC-free schema introspection) ─────────────
+// A blank/absent schema means "all schemas" (null pattern).
+
+List metaTables(md, String schema) {
+    def rs = md.getTables(null, (schema ?: null), '%', ['TABLE'] as String[])
+    def out = []
+    try { while (rs.next()) out << rs.getString('TABLE_NAME') } finally { rs.close() }
+    out.sort()
+}
+
+// Column introspection via ResultSetMetaData of "SELECT * FROM t WHERE 1=0".
+// This is 100x faster than DatabaseMetaData.getColumns() on some drivers
+// (e.g. the FairCom ctree driver, where getColumns() does a full catalog scan
+// taking ~27s vs ~0.4s here) and works for every JDBC driver. The trade-off is
+// that column DEFAULT values are not available from ResultSetMetaData.
+List metaColumns(conn, md, String schema, String table) {
+    if (!table) throw new IllegalArgumentException("meta columns: 'table' is required")
+    // resolve the schema (needed to qualify the table) when the caller didn't supply one
+    def eff = schema
+    if (!eff) {
+        def rt = md.getTables(null, null, table, ['TABLE'] as String[])
+        try { if (rt.next()) eff = rt.getString('TABLE_SCHEM') } finally { rt.close() }
+    }
+    // guard: only simple identifiers may be interpolated into the introspection SQL
+    def ok = { s -> s == null || s ==~ /[A-Za-z0-9_$#]+/ }
+    if (!ok(eff) || !ok(table)) throw new IllegalArgumentException("invalid table/schema name")
+    def ref = eff ? "${eff}.${table}" : table
+    def st = conn.createStatement()
+    def out = []
+    try {
+        def rs = st.executeQuery("SELECT * FROM ${ref} WHERE 1=0")
+        try {
+            def m  = rs.getMetaData()
+            int cc = m.getColumnCount()
+            for (int i = 1; i <= cc; i++) {
+                out << [
+                    name    : m.getColumnName(i),
+                    type    : m.getColumnTypeName(i),
+                    size    : m.getPrecision(i),
+                    scale   : m.getScale(i),
+                    nullable: (m.isNullable(i) == java.sql.ResultSetMetaData.columnNoNulls) ? 0 : 1,
+                    'default': null,
+                    position: i
+                ]
+            }
+        } finally { rs.close() }
+    } finally { st.close() }
+    out
+}
+
+Map metaPrimaryKey(md, String schema, String table) {
+    def rs = md.getPrimaryKeys(null, (schema ?: null), table)
+    def name = null
+    def cols = [] as LinkedHashSet
+    try { while (rs.next()) { name = rs.getString('PK_NAME'); cols << rs.getString('COLUMN_NAME') } } finally { rs.close() }
+    [name: name, cols: cols]
+}
+
+List metaIndexes(md, String schema, String table) {
+    if (!table) throw new IllegalArgumentException("meta indexes: 'table' is required")
+    def pk = metaPrimaryKey(md, schema, table)
+    def rs = md.getIndexInfo(null, (schema ?: null), table, false, false)
+    def out = []
+    try {
+        while (rs.next()) {
+            def iname = rs.getString('INDEX_NAME')
+            if (iname == null) continue   // tableIndexStatistic row has a null index name
+            out << [
+                key_name    : iname,
+                column_name : rs.getString('COLUMN_NAME'),
+                seq_in_index: rs.getInt('ORDINAL_POSITION'),
+                is_unique   : rs.getBoolean('NON_UNIQUE') ? 0 : 1,
+                is_primary  : (iname == pk.name) ? 1 : 0,
+                index_type  : rs.getInt('TYPE')
+            ]
+        }
+    } finally { rs.close() }
+    out
+}
+
+String metaDDL(conn, md, String schema, String table) {
+    def cols = metaColumns(conn, md, schema, table)
+    if (!cols) return "-- table not found: ${schema ? schema + '.' : ''}${table}"
+    def pk = metaPrimaryKey(md, schema, table)
+    def lines = cols.collect { col ->
+        def t = col.type
+        def lt = (col.type ?: '').toLowerCase()
+        if (col.scale && col.scale > 0)      t = "${col.type}(${col.size},${col.scale})"
+        else if (col.size && col.size > 0 && (lt.contains('char') || lt in ['numeric', 'decimal'])) t = "${col.type}(${col.size})"
+        def line = "\t${col.name} ${t}"
+        if (col.nullable == 0) line += ' NOT NULL'
+        if (col.'default' != null && col.'default'.toString().trim()) line += " DEFAULT ${col.'default'}"
+        line
+    }
+    if (pk.cols) lines << "\tPRIMARY KEY (${pk.cols.join(', ')})"
+    def name = schema ? "${schema}.${table}" : table
+    "CREATE TABLE ${name} (\n" + lines.join(',\n') + "\n)"
+}
+
 void respond(HttpExchange ex, int code, String json) {
     respondAs(ex, code, 'application/json; charset=UTF-8', json)
 }
@@ -318,6 +428,70 @@ server.createContext('/query/') { HttpExchange ex ->
     } catch (Exception e) {
         log("/query error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
+    }
+}
+
+// POST /queryfile/{dbname}  — body is JSON { "query":"...", "filename":"...", optional tuning }
+// Streams the result set straight to a CSV file on disk (driver-side) instead of
+// returning rows in the response — use for large result sets. The driver's
+// queryResults(...) writes the file and returns its path; we echo that back as
+// { filename: "..." }. PHP counts the rows from the file it now owns.
+server.createContext('/queryfile/') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    lastActivity.set(System.currentTimeMillis())
+    try {
+        def t0     = System.currentTimeMillis()
+        def dbname = pathParam(ex, '/queryfile/')
+        def req    = new JsonSlurper().parseText(readBody(ex))
+        if (!dbname)       throw new IllegalArgumentException("URL must be /queryfile/{dbname}")
+        if (!req.query)    throw new IllegalArgumentException("Body must include 'query'")
+        if (!req.filename) throw new IllegalArgumentException("Body must include 'filename'")
+        def drv   = resolveDriver(dbname)
+        def extra = [filename: req.filename as String]
+        if (req.fetchsize  != null) extra.fetchsize  = req.fetchsize as int
+        if (req.batchsize  != null) extra.batchsize  = req.batchsize as int
+        if (req.skiperrors != null) extra.skiperrors = req.skiperrors as boolean
+        def result = drv.driver.queryResults(req.query as String, drv.params + extra)
+        respond(ex, 200, wrapOk([filename: result]))
+        log("/queryfile ${dbname} → ${result} ${System.currentTimeMillis()-t0}ms")
+    } catch (Exception e) {
+        log("/queryfile error: ${e.message}")
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
+    }
+}
+
+// GET /meta/{dbname}?op=tables|columns|indexes|ddl[&table=..&schema=..]
+// ODBC-free schema introspection via JDBC DatabaseMetaData. Blank schema = all schemas.
+server.createContext('/meta/') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    lastActivity.set(System.currentTimeMillis())
+    def sql = null
+    try {
+        def t0     = System.currentTimeMillis()
+        def dbname = pathParam(ex, '/meta/')
+        if (!dbname) throw new IllegalArgumentException("URL must be /meta/{dbname}")
+        def q      = queryParams(ex)
+        def op     = (q.op ?: 'tables').toLowerCase()
+        def table  = q.table
+        def schema = (q.schema != null && q.schema != '') ? q.schema : null
+        def drv    = resolveDriver(dbname)
+        sql        = drv.driver.connect(drv.params)
+        def md     = sql.connection.metaData
+        def result
+        switch (op) {
+            case 'tables':  result = metaTables(md, schema);                      break
+            case 'columns': result = metaColumns(sql.connection, md, schema, table); break
+            case 'indexes': result = metaIndexes(md, schema, table);              break
+            case 'ddl':     result = metaDDL(sql.connection, md, schema, table);  break
+            default: throw new IllegalArgumentException("Unknown meta op: '${op}' (use tables|columns|indexes|ddl)")
+        }
+        respond(ex, 200, wrapOk(result))
+        log("/meta ${dbname} op=${op}${table ? ' table=' + table : ''} — ${System.currentTimeMillis()-t0}ms")
+    } catch (Exception e) {
+        log("/meta error: ${e.message}")
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
+    } finally {
+        if (sql != null) try { sql.close() } catch (Exception ignored) {}
     }
 }
 
