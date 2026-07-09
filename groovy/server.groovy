@@ -321,6 +321,13 @@ void doShutdown(String reason) {
 
 // ── Initialise ────────────────────────────────────────────────────────────────
 
+// Write the pid file and register cleanup BEFORE the (slow) module preload so the
+// launching process can detect that the JVM is alive during startup. If we waited
+// until just before server.start(), a caller polling for liveness would see no pid
+// file for the entire compile phase and wrongly conclude the process had crashed.
+Runtime.runtime.addShutdownHook(new Thread({ PID_FILE.delete(); TOKEN_FILE.delete() }))
+PID_FILE.text = "${PID}\n"
+
 def cfg = loadModule('config')
 DATABASE = cfg.DATABASE as Map
 
@@ -806,8 +813,9 @@ server.createContext('/') { HttpExchange ex ->
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-Runtime.runtime.addShutdownHook(new Thread({ PID_FILE.delete(); TOKEN_FILE.delete() }))
-PID_FILE.text   = "${PID}\n"
+// pid file + shutdown hook were written early (see Initialise). Write the token
+// only now, once startup succeeded, so a caller never authenticates against a
+// half-initialised server.
 TOKEN_FILE.text = "${TOKEN}\n"
 server.start()
 log("Listening on 127.0.0.1:${PORT}  PID ${PID}")

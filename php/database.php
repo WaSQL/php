@@ -1483,11 +1483,15 @@ function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
 				if($startTimeout<5){$startTimeout=5;}
 				$ready=false;
 				$died=false;
+				$sawAlive=false;
 				for($i=0;$i<$startTimeout;$i++){
 					sleep(1);
 					if(dbGroovyPing($baseUrl,$tokenFile)){$ready=true;break;}
-					//bail out early once the process is gone — no point waiting the full timeout
-					if($i>=2 && !dbGroovyServerAlive()){$died=true;break;}
+					//Only conclude the process crashed if we saw it alive and then it vanished.
+					//A missing pid file early on just means the JVM hasn't written it yet — do NOT
+					//treat that as "died", or we race the server's own startup and bail too soon.
+					if(dbGroovyServerAlive()){$sawAlive=true;}
+					elseif($sawAlive){$died=true;break;}
 				}
 				if(!$ready){
 					$logFile=dbGroovyLogFile();
