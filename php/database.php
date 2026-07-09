@@ -1362,6 +1362,71 @@ function dbGroovyServerAlive(){
 	return $ret===0 && count($out)>1;
 }
 /**
+* Returns true if a TCP connection to the host/port in $baseUrl succeeds — i.e.
+* something is already listening there. Used to tell "port occupied by a stale/
+* foreign server" from "nothing there" so we don't launch a doomed JVM.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyPortInUse($baseUrl){
+	$p=parse_url($baseUrl);
+	$host=isset($p['host'])?$p['host']:'127.0.0.1';
+	$port=isset($p['port'])?(int)$p['port']:7070;
+	$errno=0;$errstr='';
+	$fp=@fsockopen($host,$port,$errno,$errstr,2);
+	if($fp){fclose($fp);return true;}
+	return false;
+}
+/**
+* Best-effort description of the process listening on $port — pid + command where
+* the OS lets us see it. Returns '' when nothing can be determined. Used to make
+* "port in use" errors name the actual offending process.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyPortProcess($port){
+	$port=(int)$port;
+	if(PHP_OS_FAMILY==='Windows'){
+		$out=array();
+		@exec('netstat -ano -p TCP 2>NUL',$out);
+		$pid=0;
+		foreach($out as $line){
+			//  proto  local            foreign          state        pid
+			if(preg_match('/:'.$port.'\s+\S+\s+LISTENING\s+(\d+)/i',$line,$m)){$pid=(int)$m[1];break;}
+		}
+		if($pid<=0){return '';}
+		$name='';
+		$tl=array();
+		@exec('tasklist /FI "PID eq '.$pid.'" /FO CSV /NH 2>NUL',$tl);
+		if(!empty($tl[0]) && preg_match('/^"([^"]+)"/',trim($tl[0]),$m)){$name=$m[1];}
+		return strlen($name)?"pid {$pid} ({$name})":"pid {$pid}";
+	}
+	//Linux/macOS — try ss first, then lsof, then fuser
+	$out=array();$ret=1;
+	@exec('ss -ltnp 2>/dev/null',$out,$ret);
+	if($ret===0){
+		foreach($out as $line){
+			if(preg_match('/:'.$port.'\s/',$line) && preg_match('/pid=(\d+)[^)]*/',$line,$m)){
+				$pid=(int)$m[1];
+				$name='';
+				if(preg_match('/"([^"]+)"/',$line,$n)){$name=$n[1];}
+				return strlen($name)?"pid {$pid} ({$name})":"pid {$pid}";
+			}
+		}
+	}
+	$out=array();$ret=1;
+	@exec('lsof -nP -iTCP:'.$port.' -sTCP:LISTEN 2>/dev/null',$out,$ret);
+	if($ret===0){
+		foreach($out as $line){
+			if(preg_match('/^(\S+)\s+(\d+)/',$line,$m) && strtolower($m[1])!=='command'){
+				return "pid {$m[2]} ({$m[1]})";
+			}
+		}
+	}
+	$out=array();$ret=1;
+	@exec('fuser '.$port.'/tcp 2>/dev/null',$out,$ret);
+	if($ret===0 && !empty($out[0]) && preg_match('/(\d+)/',$out[0],$m)){return "pid {$m[1]}";}
+	return '';
+}
+/**
 * Ensures the Groovy HTTP server is running, starting it if necessary.
 * Uses an exclusive file lock to prevent concurrent launch races.
 * Returns null on success, an error string on failure.
@@ -1379,10 +1444,36 @@ function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
 		fclose($fh);
 		return 'dbGroovyQueryResults error: cannot acquire Groovy server launch lock';
 	}
+	$pidFile=getWaSQLPath('php/temp').DIRECTORY_SEPARATOR.'wasql-groovy-server.pid';
 	$result=null;
 	try{
 		//re-check after acquiring lock — another process may have started it while we waited
 		if(!dbGroovyPing($baseUrl,$tokenFile)){
+			//The port is occupied but /ping did not answer ok with our token. Launching now
+			//would just bomb with "Address already in use", so surface an actionable error
+			//instead of looping. Most common cause: a manually-started `groovy server.groovy`
+			//is holding the port — a manual run writes its token to groovy/server.token, but
+			//WaSQL reads php/temp/wasql-groovy-server.token, so the tokens never match.
+			if(dbGroovyPortInUse($baseUrl)){
+				$logFile=dbGroovyLogFile();
+				$p=parse_url($baseUrl);
+				$host=isset($p['host'])?$p['host']:'127.0.0.1';
+				$port=isset($p['port'])?(int)$p['port']:7070;
+				$proc=dbGroovyPortProcess($port);
+				$who=strlen($proc)?"is held by {$proc}":"is in use";
+				$result="dbGroovyQueryResults error: TCP port {$port} on {$host} {$who}, but that server did not answer "
+				       ."/ping with WaSQL's stored token. This is most likely a stale or manually-started Groovy server "
+				       ."from a previous attempt (a manual `groovy server.groovy` writes its token to groovy/server.token, "
+				       ."but WaSQL reads {$tokenFile}, so the tokens never match), or another service on the same port.";
+				if(is_file($pidFile)){
+					$lastpid=(int)trim(@file_get_contents($pidFile));
+					if($lastpid>0){$result.=" WaSQL's last known Groovy pid was {$lastpid}.";}
+				}
+				$result.=" Stop that process (e.g. `kill ".(strlen($proc)?preg_replace('/^pid (\d+).*/','$1',$proc):"<pid>")."` on Linux, "
+				       ."or find it with `lsof -i :{$port}` / `ss -ltnp sport = :{$port}`), or set <groovy_port> to a free port "
+				       ."in config.xml. Log: {$logFile}";
+				return $result;
+			}
 			$result=dbGroovyLaunchServer($groovyDir);
 			if($result===null){
 				//wait for the JVM to finish initialising. A cold start has to boot the
@@ -1401,7 +1492,11 @@ function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
 				if(!$ready){
 					$logFile=dbGroovyLogFile();
 					$tail=dbGroovyLogTail(40);
-					if($died){
+					if(stripos($tail,'BindException')!==false || stripos($tail,'Address already in use')!==false){
+						$state="the Groovy process could not bind {$baseUrl} — the port is already in use "
+						       ."(another Groovy server or service is holding it; stop it or set <groovy_port> in config.xml)";
+					}
+					elseif($died){
 						$state="the Groovy process exited during startup (see the log for the JVM/Groovy error)";
 					}
 					elseif(dbGroovyServerAlive()){
