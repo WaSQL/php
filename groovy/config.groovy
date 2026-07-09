@@ -8,8 +8,16 @@ Installation:
     Groovy includes XmlSlurper by default - no additional dependencies needed
 */
 
-import groovy.xml.XmlSlurper
-import groovy.xml.slurpersupport.GPathResult
+// XmlSlurper lived in groovy.util through Groovy 3.x and moved to groovy.xml in
+// Groovy 4. Load it reflectively so this script compiles and runs on any version
+// (a hard `import groovy.xml.XmlSlurper` fails to compile on Groovy 2.5/3.x).
+// GPathResult is only referenced in a doc comment below, so it needs no import.
+def newXmlSlurper = {
+    def cls
+    try { cls = Class.forName('groovy.xml.XmlSlurper') }          // Groovy 4+
+    catch (ClassNotFoundException ignored) { cls = Class.forName('groovy.util.XmlSlurper') } // Groovy 2.x/3.x
+    cls.getDeclaredConstructor().newInstance()
+}
 
 // Get paths - try multiple methods for cross-platform compatibility
 def scriptDir = null
@@ -66,7 +74,7 @@ try {
     if (xmlFile.exists()) {
         System.err.println("Found config.xml at: ${xmlFile.absolutePath}")
         def xmlText = xmlFile.text
-        def xml = new XmlSlurper().parseText(xmlText)
+        def xml = newXmlSlurper().parseText(xmlText)
 
         // Convert XML to Map recursively
         ALLCONFIG = xmlToMap(xml)

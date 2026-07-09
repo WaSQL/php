@@ -10,7 +10,6 @@
  */
 
 import groovy.sql.Sql
-import groovy.xml.XmlSlurper
 import java.lang.management.ManagementFactory
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -115,10 +114,19 @@ def parseDbNode = { node ->
     ]
 }
 
+// XmlSlurper moved from groovy.util (Groovy ≤3.x) to groovy.xml (Groovy 4+);
+// load it reflectively so this runs on any Groovy version.
+def newXmlSlurper = {
+    def cls
+    try { cls = Class.forName('groovy.xml.XmlSlurper') }
+    catch (ClassNotFoundException ignored) { cls = Class.forName('groovy.util.XmlSlurper') }
+    cls.getDeclaredConstructor().newInstance()
+}
+
 def loadConfig = { String dbName ->
     def configFile = findConfigFile()
     if (!configFile) { println "Error: config.xml not found"; return null }
-    def xml = new XmlSlurper().parse(configFile)
+    def xml = newXmlSlurper().parse(configFile)
     def found = null
     xml.database.each { db -> if (db.@name.text() == dbName) found = parseDbNode(db) }
     found
@@ -127,7 +135,7 @@ def loadConfig = { String dbName ->
 def loadAllCtreeDbs = {
     def configFile = findConfigFile()
     if (!configFile) return []
-    def xml = new XmlSlurper().parse(configFile)
+    def xml = newXmlSlurper().parse(configFile)
     def result = []
     xml.database.each { db -> if (db.@dbtype.text() == 'ctree') result << parseDbNode(db) }
     result

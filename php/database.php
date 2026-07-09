@@ -1545,8 +1545,12 @@ function dbGroovyLaunchServer($groovyDir){
 	$exe=dbGroovyFindExe();
 	if($exe===null){
 		return "dbGroovyQueryResults error: 'groovy' executable not found. "
-		      ."Install Groovy (https://groovy-lang.org) and add it to PATH, or set GROOVY_HOME.";
+		      ."Install Groovy (https://groovy-lang.org) and add it to PATH, or set <groovy_home> in config.xml.";
 	}
+	//Pre-flight: bail out with a clear reason if Groovy/Java are too old, rather than
+	//launching a server that will only die with cryptic compilation errors.
+	$verErr=dbGroovyCheckVersions($exe);
+	if($verErr!==null){return $verErr;}
 	$script=$groovyDir.DIRECTORY_SEPARATOR.'server.groovy';
 	if(!is_file($script)){
 		return "dbGroovyQueryResults error: server.groovy not found at {$script}";
@@ -1608,23 +1612,78 @@ function dbGroovyLaunchServer($groovyDir){
 */
 function dbGroovyFindExe(){
 	global $CONFIG;
-	$home=$CONFIG['groovy_home'];
+	$home=isset($CONFIG['groovy_home'])?trim($CONFIG['groovy_home']):'';
 	if(PHP_OS_FAMILY==='Windows'){
-		@exec('where groovy 2>NUL',$out,$ret);
-		if($ret===0&&!empty($out[0])&&is_file(trim($out[0]))){return trim($out[0]);}
-		if($home){
-			$home=rtrim($home,'\\/');
+		//An explicit groovy_home wins over PATH — a box may have an old/unwanted
+		//groovy earlier on PATH, so honour the admin's configured install first.
+		if(strlen($home)){
+			$h=rtrim($home,'\\/');
 			foreach(['bin\\groovy.bat','bin\\groovy.cmd','bin\\groovy'] as $rel){
-				if(is_file($home.'\\'.$rel)){return $home.'\\'.$rel;}
+				if(is_file($h.'\\'.$rel)){return $h.'\\'.$rel;}
 			}
 		}
+		@exec('where groovy 2>NUL',$out,$ret);
+		if($ret===0&&!empty($out[0])&&is_file(trim($out[0]))){return trim($out[0]);}
 	}
 	else{
+		//groovy_home takes precedence over `which groovy`, so the system/EPEL groovy
+		//on PATH (often ancient — e.g. CentOS 7 ships Groovy 1.8, which cannot parse
+		//modern syntax) does not shadow a newer groovy the admin installed.
+		if(strlen($home)&&is_executable(rtrim($home,'/').'/bin/groovy')){return rtrim($home,'/').'/bin/groovy';}
 		@exec('which groovy 2>/dev/null',$out,$ret);
 		if($ret===0&&!empty($out[0])&&is_executable(trim($out[0]))){return trim($out[0]);}
-		if($home&&is_executable(rtrim($home,'/').'/bin/groovy')){return rtrim($home,'/').'/bin/groovy';}
-		foreach(['/usr/local/bin/groovy','/usr/bin/groovy','/opt/groovy/bin/groovy'] as $p){
+		foreach(['/usr/local/bin/groovy','/opt/groovy/bin/groovy','/usr/bin/groovy'] as $p){
 			if(is_executable($p)){return $p;}
+		}
+	}
+	return null;
+}
+/**
+* Verifies the resolved groovy is new enough for server.groovy to compile and run.
+* server.groovy needs Groovy 2.5+ (JsonGenerator.Options API) on Java 8+ (java.time,
+* com.sun.net.httpserver). Runs `groovy --version`, which prints e.g.
+*   "Groovy Version: 2.5.6 JVM: 1.8.0_292 Vendor: ... OS: ..."
+* Returns null when OK (or when the versions can't be parsed — we let startup surface
+* any real problem), or a descriptive error string when a version is too old.
+* Minimums are overridable via config.xml: groovy_min_version / java_min_version.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyCheckVersions($exe){
+	global $CONFIG;
+	//minimum supported versions (major-only for Java, major.minor for Groovy)
+	$minGroovy=isset($CONFIG['groovy_min_version'])?$CONFIG['groovy_min_version']:'2.5';
+	$minGparts=explode('.',$minGroovy);
+	$minGmaj=isset($minGparts[0])?(int)$minGparts[0]:2;
+	$minGmin=isset($minGparts[1])?(int)$minGparts[1]:5;
+	$minJava=isset($CONFIG['java_min_version'])?(int)$CONFIG['java_min_version']:8;
+
+	$out=array();$ret=1;
+	@exec(escapeshellarg($exe).' --version 2>&1',$out,$ret);
+	$text=trim(implode("\n",$out));
+	if(!strlen($text)){
+		return "dbGroovyQueryResults error: could not run `".basename($exe)." --version` (exit {$ret}). "
+		      ."Check that Groovy and a JRE are installed and executable by the web-server user "
+		      ."(resolved groovy: {$exe}).";
+	}
+
+	//Groovy version — "Groovy Version: X.Y[.Z]"
+	if(preg_match('/Groovy\s+Version:\s*([0-9]+)\.([0-9]+)/i',$text,$m)){
+		$gmaj=(int)$m[1];$gmin=(int)$m[2];
+		if($gmaj<$minGmaj || ($gmaj===$minGmaj && $gmin<$minGmin)){
+			return "dbGroovyQueryResults error: Groovy {$gmaj}.{$gmin} is too old — the WaSQL Groovy server "
+			      ."requires Groovy {$minGmaj}.{$minGmin} or newer. Install a newer Groovy and point <groovy_home> "
+			      ."at it in config.xml. Reported: {$text}";
+		}
+	}
+
+	//JVM version — "JVM: 1.8.0_x" (Java 8) or "JVM: 11.0.2" / "17.0.10" (Java 9+)
+	if(preg_match('/JVM:\s*([0-9]+)(?:\.([0-9]+))?/i',$text,$m)){
+		$jmaj=(int)$m[1];
+		if($jmaj===1 && isset($m[2])){$jmaj=(int)$m[2];}   //1.8 -> 8
+		if($jmaj<$minJava){
+			return "dbGroovyQueryResults error: Java {$jmaj} is too old — the WaSQL Groovy server requires "
+			      ."Java {$minJava} or newer (it uses java.time and com.sun.net.httpserver). Install a newer JRE "
+			      ."(or set JAVA_HOME for the web-server user to a newer one). Reported: {$text}";
 		}
 	}
 	return null;
