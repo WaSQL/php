@@ -1314,12 +1314,61 @@ function dbIsGroovy($db){
 }
 // ── Groovy server internal helpers ────────────────────────────────────────────
 /**
+* Returns the full path to the Groovy server's startup/runtime log.
+* Lives in the WaSQL logs directory alongside the other framework logs
+* (cron.log, upload.log, etc.) so it can be tailed from the admin Logs view.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyLogFile(){
+	return getWaSQLPath('logs').DIRECTORY_SEPARATOR.'groovy-server.log';
+}
+/**
+* Returns the last $maxLines lines of the Groovy server log, or a short
+* placeholder string when the log is missing/empty. Used to surface the
+* real JVM/Groovy startup error in dbGroovy* error messages.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyLogTail($maxLines=40){
+	$logFile=dbGroovyLogFile();
+	if(!is_file($logFile)){return "(no log file yet at {$logFile})";}
+	$data=@file_get_contents($logFile);
+	if($data===false){return "(cannot read log file {$logFile})";}
+	if(!strlen(trim($data))){return "(log file {$logFile} is empty — the process may not have written anything yet)";}
+	$rows=preg_split('/\r\n|\r|\n/',rtrim($data));
+	if(count($rows)>$maxLines){$rows=array_slice($rows,-$maxLines);}
+	return implode("\n",$rows);
+}
+/**
+* Returns true if the PID recorded in the Groovy server pid file is a live
+* process. Lets us tell "still booting / hung" from "crashed on startup".
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyServerAlive(){
+	$pidFile=getWaSQLPath('php/temp').DIRECTORY_SEPARATOR.'wasql-groovy-server.pid';
+	if(!is_file($pidFile)){return false;}
+	$pid=(int)trim(@file_get_contents($pidFile));
+	if($pid<=0){return false;}
+	if(PHP_OS_FAMILY==='Windows'){
+		$out=array();
+		@exec('tasklist /FI "PID eq '.$pid.'" /NH 2>NUL',$out);
+		foreach($out as $line){if(strpos($line,(string)$pid)!==false){return true;}}
+		return false;
+	}
+	//Linux/macOS
+	if(is_dir("/proc/{$pid}")){return true;}
+	if(function_exists('posix_kill')){return @posix_kill($pid,0);}
+	$out=array();$ret=1;
+	@exec('ps -p '.$pid.' 2>/dev/null',$out,$ret);
+	return $ret===0 && count($out)>1;
+}
+/**
 * Ensures the Groovy HTTP server is running, starting it if necessary.
 * Uses an exclusive file lock to prevent concurrent launch races.
 * Returns null on success, an error string on failure.
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
+	global $CONFIG;
 	//fast path — server already up
 	if(dbGroovyPing($baseUrl,$tokenFile)){return null;}
 
@@ -1336,14 +1385,35 @@ function dbGroovyEnsureServer($groovyDir,$tokenFile,$baseUrl){
 		if(!dbGroovyPing($baseUrl,$tokenFile)){
 			$result=dbGroovyLaunchServer($groovyDir);
 			if($result===null){
-				//wait up to 30 s for the JVM to finish initialising
+				//wait for the JVM to finish initialising. A cold start has to boot the
+				//JVM and compile every db module, which on a first Linux run can take
+				//well over 30 s — make the wait configurable via groovy_start_timeout.
+				$startTimeout=isset($CONFIG['groovy_start_timeout'])?(int)$CONFIG['groovy_start_timeout']:60;
+				if($startTimeout<5){$startTimeout=5;}
 				$ready=false;
-				for($i=0;$i<30;$i++){
+				$died=false;
+				for($i=0;$i<$startTimeout;$i++){
 					sleep(1);
 					if(dbGroovyPing($baseUrl,$tokenFile)){$ready=true;break;}
+					//bail out early once the process is gone — no point waiting the full timeout
+					if($i>=2 && !dbGroovyServerAlive()){$died=true;break;}
 				}
 				if(!$ready){
-					$result='dbGroovyQueryResults error: Groovy server did not become ready within 30 seconds';
+					$logFile=dbGroovyLogFile();
+					$tail=dbGroovyLogTail(40);
+					if($died){
+						$state="the Groovy process exited during startup (see the log for the JVM/Groovy error)";
+					}
+					elseif(dbGroovyServerAlive()){
+						$state="the Groovy process is still running but never answered /ping on {$baseUrl} within {$startTimeout}s "
+						       ."(still compiling modules, blocked on a database connection, or listening on a different port)";
+					}
+					else{
+						$state="the Groovy process never started (check that 'groovy' is on PATH / groovy_home is set and that {$logFile} is writable)";
+					}
+					$result="dbGroovyQueryResults error: Groovy server did not become ready within {$startTimeout} seconds — {$state}.\n"
+					       ."Log: {$logFile}\n"
+					       ."--- last log lines ---\n{$tail}";
 				}
 			}
 		}
@@ -1389,7 +1459,9 @@ function dbGroovyLaunchServer($groovyDir){
 	$jars=is_dir($libDir)?glob($libDir.DIRECTORY_SEPARATOR.'*.jar'):[];
 
 	$tempDir=getWaSQLPath('php/temp');
-	$logFile  =$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server-start.log';
+	//startup/runtime log goes in the WaSQL logs dir with the rest of the framework logs;
+	//pid/token are runtime state, so they stay in php/temp.
+	$logFile  =dbGroovyLogFile();
 	$pidFile  =$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.pid';
 	$tokenFile=$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.token';
 
