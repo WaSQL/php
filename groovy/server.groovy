@@ -123,10 +123,28 @@ String readBody(HttpExchange ex) {
     def len = ex.requestHeaders.getFirst('Content-Length')
     if (len && len.toLong() > max)
         throw new IllegalArgumentException("Request body exceeds ${MAX_BODY_MB} MB limit")
-    def bytes = ex.requestBody.readNBytes((int) Math.min(max + 1, Integer.MAX_VALUE))
+    // Read at most max+1 bytes so we can still detect an over-limit body when no
+    // Content-Length is sent. InputStream.readNBytes(int) is Java 9+, so do it by
+    // hand to keep the server compatible with Java 8.
+    def bytes = readUpTo(ex.requestBody, (int) Math.min(max + 1, Integer.MAX_VALUE))
     if (bytes.length > max)
         throw new IllegalArgumentException("Request body exceeds ${MAX_BODY_MB} MB limit")
     return new String(bytes, 'UTF-8').trim()
+}
+
+// Reads up to `cap` bytes from the stream (Java 8 safe; no readNBytes/readAllBytes).
+byte[] readUpTo(InputStream is, int cap) {
+    def buf = new ByteArrayOutputStream()
+    byte[] chunk = new byte[8192]
+    int total = 0
+    while (total < cap) {
+        int want = Math.min(chunk.length, cap - total)
+        int n = is.read(chunk, 0, want)
+        if (n == -1) break
+        buf.write(chunk, 0, n)
+        total += n
+    }
+    return buf.toByteArray()
 }
 
 Object loadModule(String name) {
@@ -327,6 +345,12 @@ void doShutdown(String reason) {
 // file for the entire compile phase and wrongly conclude the process had crashed.
 Runtime.runtime.addShutdownHook(new Thread({ PID_FILE.delete(); TOKEN_FILE.delete() }))
 PID_FILE.text = "${PID}\n"
+
+// Log the Groovy and Java versions first thing — makes version-mismatch bugs
+// (e.g. a Java 9+ API called on a Java 8 JVM) obvious straight from the log.
+log("Groovy ${GroovySystem.version} | Java ${System.getProperty('java.version')} " +
+    "(${System.getProperty('java.vm.name')} ${System.getProperty('java.vm.version')}) | " +
+    "${System.getProperty('java.home')}")
 
 def cfg = loadModule('config')
 DATABASE = cfg.DATABASE as Map
