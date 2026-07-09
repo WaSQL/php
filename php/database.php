@@ -1022,6 +1022,16 @@ function dbQueryResults($db,$query,$params=array()){
 		}
 		return $recs;
 	}
+	//Route databases flagged groovy="1" through the persistent Groovy/JDBC server.
+	//This runs AFTER the duckdb/fields/idx/tables shortcuts above: those return early
+	//(and their metadata already routes to the Groovy server via dbGetTable*), so only
+	//real SQL queries reach here. Placing the dispatch here — rather than at the top —
+	//also prevents infinite recursion with dbGroovyQueryResults, which delegates those
+	//same shortcut queries back to dbQueryResults. Pass '-nogroovy'=>1 to force the
+	//native (ODBC/driver) path for a groovy-flagged db.
+	if(dbIsGroovy($db) && empty($params['-nogroovy'])){
+		return dbGroovyQueryResults($db,$query,$params);
+	}
 	//call respective DB function
 	$recs=dbFunctionCall('queryResults',$db,$query,$params);
 	//check for single ref cursor that returns a table
