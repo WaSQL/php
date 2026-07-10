@@ -863,27 +863,82 @@ function commonCronUnpauseGroup($group){
 /**
 * @describe formats a phone number
 * @param string phone number
-* @return string - formatted phone number (xxx) xxx-xxxx
-* @usage commonFormatPhone('8014584741');
+* @param format string - optional. named format to output. defaults to 'paren'
+*	paren          - (xxx) xxx-xxxx          [default, preserves legacy behavior]
+*	dash           - xxx-xxx-xxxx
+*	dot            - xxx.xxx.xxxx
+*	space          - xxx xxx xxxx
+*	plain          - xxxxxxxxxx               (digits only)
+*	e164           - +1xxxxxxxxxx             (E.164, no separators)
+*	international   - +1 xxx-xxx-xxxx
+*	us             - +1 (xxx) xxx-xxxx
+* @return string - formatted phone number
+* @usage
+*	commonFormatPhone('8014584741');                  // (801) 458-4741
+*	commonFormatPhone('8014584741','e164');           // +18014584741
+*	commonFormatPhone('18014584741','international');  // +1 801-458-4741
 */
-function commonFormatPhone($phone) {
+function commonFormatPhone($phone,$format='paren') {
 	// note: making sure we have something
 	if(!isset($phone[3])) { return ''; }
-	// note: strip out everything but numbers 
+	// note: strip out everything but numbers
 	$phone = preg_replace("/[^0-9]/", "", $phone);
 	$length = strlen($phone);
+	$format = strtolower(trim($format));
+	// note: split into country code (cc), area (a), prefix (p), line (l)
+	$cc='1';
 	switch($length) {
 		case 7:
-			return preg_replace("/([0-9]{3})([0-9]{4})/", "$1-$2", $phone);
+			$a='';
+			$p=substr($phone,0,3);
+			$l=substr($phone,3,4);
 		break;
 		case 10:
-			return preg_replace("/([0-9]{3})([0-9]{3})([0-9]{4})/", "($1) $2-$3", $phone);
+			$a=substr($phone,0,3);
+			$p=substr($phone,3,3);
+			$l=substr($phone,6,4);
 		break;
 		case 11:
-			return preg_replace("/([0-9]{1})([0-9]{3})([0-9]{3})([0-9]{4})/", "$1($2) $3-$4", $phone);
+			$cc=substr($phone,0,1);
+			$a=substr($phone,1,3);
+			$p=substr($phone,4,3);
+			$l=substr($phone,7,4);
 		break;
 		default:
+			// note: cannot parse - return digits (or e164 if requested) as best-effort
+			if($format=='e164'){ return "+{$phone}"; }
 			return $phone;
+		break;
+	}
+	// note: build the requested format. when no area code (7 digit), fall back to prefix-line only
+	switch($format){
+		case 'dash':
+			return strlen($a) ? "{$a}-{$p}-{$l}" : "{$p}-{$l}";
+		break;
+		case 'dot':
+			return strlen($a) ? "{$a}.{$p}.{$l}" : "{$p}.{$l}";
+		break;
+		case 'space':
+			return strlen($a) ? "{$a} {$p} {$l}" : "{$p} {$l}";
+		break;
+		case 'plain':
+			return "{$a}{$p}{$l}";
+		break;
+		case 'e164':
+			return strlen($a) ? "+{$cc}{$a}{$p}{$l}" : "{$p}{$l}";
+		break;
+		case 'international':
+			return strlen($a) ? "+{$cc} {$a}-{$p}-{$l}" : "{$p}-{$l}";
+		break;
+		case 'us':
+			return strlen($a) ? "+{$cc} ({$a}) {$p}-{$l}" : "{$p}-{$l}";
+		break;
+		case 'paren':
+		default:
+			// note: legacy default output
+			if(strlen($a)==0){ return "{$p}-{$l}"; }
+			if($length==11){ return "{$cc}({$a}) {$p}-{$l}"; }
+			return "({$a}) {$p}-{$l}";
 		break;
 	}
 }
