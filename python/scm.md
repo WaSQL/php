@@ -42,6 +42,26 @@ A lightweight, extensible database schema management tool written in Python. Sup
 
 ---
 
+## Install
+
+Want to install **just scm** (without the full WaSQL repo) and run it from any
+project on your machine? See **[scm-readme.md](scm-readme.md)** for a complete
+walkthrough — downloading the file(s), installing a database driver, adding `scm`
+to your PATH on **Linux, macOS, and Windows**, and keeping it updated from GitHub.
+
+The quickest path, if you just want updates via `git pull`:
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/WaSQL/php.git wasql-scm
+cd wasql-scm && git sparse-checkout set python
+# scm now lives in ./python — see scm-readme.md to put it on your PATH
+```
+
+The [Installation](#installation) section below covers using the wrapper scripts
+from within a WaSQL checkout.
+
+---
+
 ## Rules for Claude
 
 When working with schema changes in this project:
