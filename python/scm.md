@@ -62,7 +62,7 @@ After creating the migration file, show the user the file path and remind them t
 
 - Plain SQL migration files -- no proprietary DSL
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
-- `init`, `up`, `down`, `goto`, `status`, `history`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn`, `version`, `who`/`dbs`, and `env-from-config` commands
+- `init`, `up`, `down`, `goto`, `status`, `history`, `report`, `ddl`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn`, `version`, `who`/`dbs`, and `env-from-config` commands
 - `--dry-run` flag on `up`, `down`, and `goto` to preview SQL without applying changes
 - Timestamp-versioned migrations -- `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
 - Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
@@ -197,6 +197,7 @@ DATABASE_URL=mysql://user:pass@localhost/mydb
 MIGRATION_STYLE=one
 # MIGRATIONS_DIR=./migrations
 # MIGRATIONS_TABLE=schema_migrations
+# MIGRATIONS_SCHEMA=public
 ```
 
 ### Supported syntax
@@ -237,6 +238,7 @@ scm --env-file .env.staging up
 | `MIGRATION_STYLE` | -- | `one` | File style for `new`: `one`/`dbmate` = single file, `two`/`golang-migrate` = separate up/down files |
 | `MIGRATIONS_DIR` | `DBMATE_MIGRATIONS_DIR` | `./migrations` | Path to migrations directory |
 | `MIGRATIONS_TABLE` | `DBMATE_MIGRATIONS_TABLE` | `schema_migrations` | Name of the tracking table in the database |
+| `MIGRATIONS_SCHEMA` | `DBMATE_MIGRATIONS_SCHEMA` | `public` (Postgres) | Schema the tracking table lives in. On PostgreSQL this defaults to `public` so `search_path` can't scatter it; other drivers use the connection's default schema unless set |
 | `WASQL_PATH` | -- | *(discovered)* | Directory containing `config.xml`, used by `env-from-config`. Overrides the walk-up-from-CWD discovery |
 
 ---
@@ -516,6 +518,78 @@ Version          Label                   Applied At
 
 ---
 
+### `report` -- Migration activity report
+
+```bash
+scm report
+```
+
+Queries the tracking table and summarizes migration activity: totals (applied /
+pending / orphaned), the first and last migrations applied, a per-user breakdown
+(who applied how many, and their first/last activity), and the ten most recent
+migrations. Useful for auditing who changed the schema and when.
+
+```
+Migration Activity Report
+────────────────────────────────────────────
+  database        public.schema_migrations
+  applied         12
+  pending         2
+  first applied   2024-06-01 12:03:44+00  20240601120000 create_users_table
+  last applied    2024-07-09 08:15:02+00  20240709081502 add_orders
+
+By user
+User     Count  First                       Last
+-------------------------------------------------
+alice        8  2024-06-01 12:03:44+00      2024-07-09 08:15:02+00
+bob          4  2024-06-12 09:20:11+00      2024-06-30 14:02:55+00
+
+Recent activity (last 10)
+Version          Label              By     Applied At
+-----------------------------------------------------
+20240709081502   add_orders         alice  2024-07-09 08:15:02+00
+...
+```
+
+The `who`/`when` columns are populated from `applied_by` and `applied_at`, which
+scm records automatically on every `up` (see the tracking table columns below).
+
+---
+
+### `ddl` -- Verify the tracking table columns
+
+```bash
+scm ddl
+```
+
+Reports the tracking table's fully-qualified name and schema, then checks that it
+has every column scm expects (`version`, `applied_at`, `name`, `applied_by`,
+`migrated_by`). Missing columns are flagged; any extra columns are listed for
+information. scm **self-heals** missing columns on every run — it adds
+`name`/`applied_by`/`migrated_by`, and also `applied_at` (with the correct typed
+default) on databases that allow it — so `ddl` normally reports everything
+present. Columns it still shows as MISSING are ones the database can't add via
+`ALTER` (see below).
+
+```
+Tracking table
+────────────────────────────────────────
+  table       public.schema_migrations
+  schema      public
+
+Columns
+────────────────────────────────────────
+  present  version
+  present  applied_at
+  present  name
+  present  applied_by
+  present  migrated_by
+
+All expected columns present.
+```
+
+---
+
 ### `show` -- Print SQL for a migration
 
 ```bash
@@ -652,8 +726,13 @@ Current database
   host        localhost
   database    mydb
   user        myuser
+  tracking    schema_migrations
   url         mysql://myuser:***@localhost/mydb
 ```
+
+The `tracking` line shows the fully-qualified table where migration state is
+recorded — on PostgreSQL this is `public.schema_migrations` by default (or
+whatever `MIGRATIONS_SCHEMA`/`MIGRATIONS_TABLE` are set to).
 
 When `--db` is used, the `--db` name and the derived `.env.<name>` file are shown as well.
 
@@ -786,6 +865,48 @@ The version stored is the numeric prefix of the migration filename as a string
 so a `schema_migrations` table created by either tool is fully interoperable with the
 other. If a table already exists with a different column type (e.g. `BIGINT`), scm
 reads it correctly by converting values to integers for comparison internally.
+
+### Which schema the table lives in
+
+scm records `applied_at`, `name`, `applied_by`, and `migrated_by` alongside
+`version` so `history` and `report` can show what happened, who did it, and when.
+
+**Self-healing:** on existing tables that predate these columns (created by an
+older scm or by dbmate), scm adds the missing columns automatically on the next
+run — `name`/`applied_by`/`migrated_by` on every database, and `applied_at` (with
+the driver's correct typed default) on PostgreSQL, MySQL/MariaDB, SQL Server,
+Oracle, SAP HANA, and Firebird. Each `ALTER` runs in its own transaction and
+rolls back harmlessly on failure, so healing never aborts a run. Existing rows
+get the healing time stamped into a newly-added `applied_at`, which is why that
+column is only ever missing on a hand-built table.
+
+SQLite, Snowflake, and FairCom cTree don't allow a non-constant default on
+`ADD COLUMN`, so a missing `applied_at` on those must be added by hand (or the
+table recreated). `version` is the primary key and is never auto-added. Run
+`scm ddl` to confirm the table has every expected column.
+
+On **PostgreSQL**, an unqualified `schema_migrations` is created in the first
+writable schema on the connection's `search_path` — which can differ between
+users and environments, so the table can end up in different schemas and scm
+would appear to "lose" migration history. To prevent this, scm qualifies the
+table with a schema and defaults that schema to **`public`** on PostgreSQL. The
+schema is created with `CREATE SCHEMA IF NOT EXISTS` when needed.
+
+Override the schema per database in `.env`:
+
+```bash
+# .env
+MIGRATIONS_SCHEMA=migrations      # track schema_migrations in a dedicated schema
+```
+
+Other drivers leave the schema unset by default and use the connection's default
+schema; setting `MIGRATIONS_SCHEMA` qualifies the table on those too.
+
+> **Adopting this on an existing Postgres database:** if `schema_migrations` was
+> previously created in a non-`public` schema via `search_path`, scm will now
+> look in `public` and see an empty table — making all migrations appear pending.
+> Either set `MIGRATIONS_SCHEMA` to the old schema, move/rename the existing
+> table into `public`, or re-establish state with `scm baseline <version>`.
 
 ---
 

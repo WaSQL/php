@@ -15,6 +15,8 @@ Commands:
   scm.py goto <version>          Migrate to a specific version (forward or backward)
   scm.py status                  Show applied/pending status
   scm.py history                 Show applied migrations with timestamps
+  scm.py report                  Activity report: who applied what, and when
+  scm.py ddl                     Verify the tracking table has all expected columns
   scm.py show <version>          Print SQL for a specific migration (no DB required)
   scm.py baseline [version]      Mark migrations applied without running SQL
   scm.py repair                  Remove orphaned tracking records from the database
@@ -43,9 +45,11 @@ Connection (first match wins):
   MIGRATION_STYLE       one|dbmate|two|golang-migrate  (default: one)
   MIGRATIONS_DIR        Path to migrations directory   (default: ./migrations)
   MIGRATIONS_TABLE      Tracking table name            (default: schema_migrations)
+  MIGRATIONS_SCHEMA     Tracking table schema          (default: public on Postgres)
   WASQL_PATH            Directory containing config.xml (used by env-from-config)
   DBMATE_MIGRATIONS_DIR      alias for MIGRATIONS_DIR
   DBMATE_MIGRATIONS_TABLE    alias for MIGRATIONS_TABLE
+  DBMATE_MIGRATIONS_SCHEMA   alias for MIGRATIONS_SCHEMA
 
 Adding a new database driver:
   1. Subclass BaseDriver
@@ -64,7 +68,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.27.0'
+__version__ = '1.29.0'
 
 
 def current_user():
@@ -258,12 +262,34 @@ class BaseDriver:
     # Oracle, and HANA need their own syntax (overridden in those drivers).
     ADD_COLUMN_SQL = "ALTER TABLE {table} ADD COLUMN {col} varchar(255)"
 
+    # Template for healing a tracking table that is missing applied_at. Uses the
+    # same type + default as ensure_migrations_table so a healed table matches a
+    # freshly created one, and each driver sets it. None means the driver cannot
+    # safely add applied_at via ALTER (e.g. SQLite/Snowflake disallow a
+    # non-constant default on ADD COLUMN) — in that case `ddl` reports it and it
+    # must be added by hand. Existing rows are stamped with the healing time,
+    # which is why applied_at is only ever missing on a hand-built table.
+    ADD_APPLIED_AT_SQL = None
+
     # Columns added on top of the original dbmate (version, applied_at) schema.
     EXTRA_COLUMNS = ('name', 'applied_by', 'migrated_by')
 
-    def __init__(self, url, table='schema_migrations'):
+    # Full set of columns the tracking table should have. Used by the `ddl`
+    # command to verify nothing is missing.
+    EXPECTED_COLUMNS = ('version', 'applied_at', 'name', 'applied_by', 'migrated_by')
+
+    # Schema to create the tracking table in by default. Postgres overrides this
+    # with 'public' so search_path never decides where schema_migrations lands;
+    # every other driver leaves it unset (None) and uses the connection default.
+    DEFAULT_SCHEMA = None
+
+    def __init__(self, url, table='schema_migrations', schema=None):
         self.url = url
-        self.table = table
+        self.table_name = table          # bare, unqualified name (for catalog lookups)
+        self.schema = schema
+        # Qualified identifier used in all DML/DDL so the table is resolved
+        # explicitly rather than via the connection's search_path.
+        self.table = f'{schema}.{table}' if schema else table
         self.conn = None
 
     def connect(self):
@@ -304,13 +330,42 @@ class BaseDriver:
     def ensure_migrations_table(self):
         raise NotImplementedError
 
-    def ensure_columns(self):
-        """Add name/applied_by/migrated_by to a tracking table that predates them
-        (created by an older scm or by dbmate). New tables already include them via
-        ensure_migrations_table, so this is a no-op there — each ADD runs in its own
-        transaction and is rolled back when the column already exists.
+    def table_columns(self):
+        """Return the lowercased column names present in the tracking table.
+
+        Uses a no-op SELECT so it works uniformly across every DB-API driver
+        (cursor.description is populated even for an empty result set).
         """
+        cur = self.execute(f"SELECT * FROM {self.table} WHERE 1=0")
+        return [d[0].lower() for d in cur.description]
+
+    def ensure_columns(self):
+        """Heal a tracking table that is missing scm's columns — add applied_at
+        (typed timestamp + default) and name/applied_by/migrated_by if absent.
+
+        New tables already include every column via ensure_migrations_table, so
+        this is a no-op there: each column is only added when genuinely missing.
+        Every ALTER runs in its own transaction and rolls back on failure, so a
+        driver that can't add a column (or a permission error) never aborts the
+        run — it just leaves the column for `ddl` to report.
+        """
+        try:
+            existing = set(self.table_columns())
+        except Exception:
+            self.rollback()
+            existing = set()
+
+        # applied_at needs a typed default, so it has its own per-driver SQL.
+        if 'applied_at' not in existing and self.ADD_APPLIED_AT_SQL:
+            try:
+                self.execute(self.ADD_APPLIED_AT_SQL.format(table=self.table))
+                self.commit()
+            except Exception:
+                self.rollback()
+
         for col in self.EXTRA_COLUMNS:
+            if col.lower() in existing:
+                continue
             try:
                 self.execute(self.ADD_COLUMN_SQL.format(table=self.table, col=col))
                 self.commit()
@@ -393,6 +448,13 @@ class PostgresDriver(BaseDriver):
 
     placeholder = '%s'
 
+    # Pin the tracking table to a fixed schema so the connection's search_path
+    # can't scatter schema_migrations across schemas. Overridable via
+    # MIGRATIONS_SCHEMA in .env.
+    DEFAULT_SCHEMA = 'public'
+
+    ADD_APPLIED_AT_SQL = "ALTER TABLE {table} ADD COLUMN applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()"
+
     def connect(self):
         pg = None
         try:
@@ -418,6 +480,9 @@ class PostgresDriver(BaseDriver):
         self.conn.commit()
 
     def ensure_migrations_table(self):
+        if self.schema:
+            self.execute(f'CREATE SCHEMA IF NOT EXISTS "{self.schema}"')
+            self.commit()
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
                 version varchar(128) PRIMARY KEY NOT NULL,
@@ -434,6 +499,8 @@ class PostgresDriver(BaseDriver):
 class MySQLDriver(BaseDriver):
 
     placeholder = '%s'
+
+    ADD_APPLIED_AT_SQL = "ALTER TABLE {table} ADD COLUMN applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP"
 
     def connect(self):
         p = urlparse(self.url)
@@ -502,6 +569,7 @@ class SQLServerDriver(BaseDriver):
 
     # SQL Server's ALTER TABLE ADD has no COLUMN keyword.
     ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar(255)"
+    ADD_APPLIED_AT_SQL = "ALTER TABLE {table} ADD applied_at DATETIME2 NOT NULL DEFAULT GETUTCDATE()"
 
     def connect(self):
         p = urlparse(self.url)
@@ -535,7 +603,7 @@ class SQLServerDriver(BaseDriver):
 
     def ensure_migrations_table(self):
         self.execute(f"""
-            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{self.table}')
+            IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{self.table_name}')
             CREATE TABLE {self.table} (
                 version varchar(128) NOT NULL PRIMARY KEY,
                 applied_at DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
@@ -638,6 +706,7 @@ class FirebirdDriver(BaseDriver):
 
     # Firebird's ALTER TABLE ADD has no COLUMN keyword.
     ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar(255)"
+    ADD_APPLIED_AT_SQL = "ALTER TABLE {table} ADD applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"
 
     def connect(self):
         try:
@@ -678,6 +747,7 @@ class HanaDriver(BaseDriver):
 
     # HANA's ALTER TABLE ADD wraps the column definition in parentheses.
     ADD_COLUMN_SQL = "ALTER TABLE {table} ADD ({col} varchar(255))"
+    ADD_APPLIED_AT_SQL = "ALTER TABLE {table} ADD (applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)"
 
     def connect(self):
         try:
@@ -761,6 +831,7 @@ class OracleDriver(BaseDriver):
     placeholder = ':1'
     # Oracle uses VARCHAR2 and has no COLUMN keyword on ALTER TABLE ADD.
     ADD_COLUMN_SQL = "ALTER TABLE {table} ADD {col} varchar2(255)"
+    ADD_APPLIED_AT_SQL = "ALTER TABLE {table} ADD applied_at TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL"
 
     def connect(self):
         cx = None
@@ -1121,6 +1192,147 @@ def cmd_history(driver, migrations):
     print(f"\n{len(rows)} applied migration(s).")
 
 
+def cmd_ddl(driver):
+    """Verify the tracking table has every column scm expects, and report the schema."""
+    tty = sys.stdout.isatty()
+    def bold(s):   return f'\033[1m{s}\033[0m'                if tty else s
+    def blue(s):   return f'\033[38;2;95;143;211m{s}\033[0m'  if tty else s
+    def green(s):  return f'\033[32m{s}\033[0m'               if tty else s
+    def red(s):    return f'\033[31m{s}\033[0m'               if tty else s
+    def dim(s):    return f'\033[2m{s}\033[0m'                if tty else s
+
+    try:
+        present = set(driver.table_columns())
+    except Exception as e:
+        driver.rollback()
+        sys.exit(f"Could not read the tracking table {driver.table}: {e}")
+
+    print(bold(blue('Tracking table')))
+    print(dim('─' * 40))
+    print(f"  {'table':<10}  {driver.table}")
+    print(f"  {'schema':<10}  {driver.schema or '(connection default)'}")
+    print()
+
+    print(bold(blue('Columns')))
+    print(dim('─' * 40))
+    missing = []
+    for col in driver.EXPECTED_COLUMNS:
+        if col.lower() in present:
+            print(f"  {green('present')}  {col}")
+        else:
+            print(f"  {red('MISSING')}  {col}")
+            missing.append(col)
+
+    # Any extra columns beyond what scm manages — informational only.
+    extra = sorted(present - {c.lower() for c in driver.EXPECTED_COLUMNS})
+    if extra:
+        print()
+        for col in extra:
+            print(f"  {dim('extra')}    {col}")
+
+    print()
+    if missing:
+        print(red(f"{len(missing)} expected column(s) missing: {', '.join(missing)}."))
+        if 'version' in missing:
+            print(dim("  version is the primary key — scm cannot add it; the table is unusable "
+                      "without it. Recreate the tracking table."))
+        if 'applied_at' in missing and not driver.ADD_APPLIED_AT_SQL:
+            print(dim("  applied_at cannot be added via ALTER on this database "
+                      "(no non-constant default on ADD COLUMN) — add it by hand to match "
+                      "a fresh table, or recreate the table."))
+        print(dim("  scm self-heals missing columns on every run (up/status/...); "
+                  "columns still shown above could not be added automatically."))
+    else:
+        print(green("All expected columns present."))
+
+
+def cmd_report(driver, migrations):
+    """Activity report on the tracking table: who applied what, and when."""
+    rows = driver.applied_history()   # (version, applied_at, applied_by, name)
+
+    tty = sys.stdout.isatty()
+    def bold(s):   return f'\033[1m{s}\033[0m'                if tty else s
+    def blue(s):   return f'\033[38;2;95;143;211m{s}\033[0m'  if tty else s
+    def green(s):  return f'\033[32m{s}\033[0m'               if tty else s
+    def yellow(s): return f'\033[33m{s}\033[0m'               if tty else s
+    def dim(s):    return f'\033[2m{s}\033[0m'                if tty else s
+
+    known    = {m[0] for m in migrations}
+    applied  = {int(r[0]) for r in rows if str(r[0]).lstrip('-').isdigit()}
+    pending  = [m for m in migrations if m[0] not in applied]
+    orphaned = sorted(applied - known)
+    label_map = {m[0]: m[1] for m in migrations}
+
+    def label_for(version_str, stored_name):
+        try:
+            v = int(version_str)
+        except (TypeError, ValueError):
+            v = None
+        return label_map.get(v) or stored_name or '<file missing>'
+
+    print(bold(blue('Migration Activity Report')))
+    print(dim('─' * 44))
+    print(f"  {'database':<14}  {driver.table}")
+    print(f"  {'applied':<14}  {len(rows)}")
+    print(f"  {'pending':<14}  {len(pending)}")
+    if orphaned:
+        print(f"  {'orphaned':<14}  {yellow(str(len(orphaned)))}")
+
+    if not rows:
+        print()
+        print("No migrations have been applied yet.")
+        return
+
+    # First / last applied, ordered by the recorded timestamp.
+    by_time = sorted(rows, key=lambda r: (r[1] or ''))
+    first, last = by_time[0], by_time[-1]
+    print(f"  {'first applied':<14}  {first[1]}  {dim(f'{first[0]} {label_for(first[0], first[3])}')}")
+    print(f"  {'last applied':<14}  {last[1]}  {dim(f'{last[0]} {label_for(last[0], last[3])}')}")
+
+    # ---- By user ----------------------------------------------------------
+    users = {}
+    for version, applied_at, applied_by, _ in rows:
+        who = applied_by or '(unknown)'
+        u = users.setdefault(who, {'count': 0, 'first': applied_at, 'last': applied_at})
+        u['count'] += 1
+        if (applied_at or '') < (u['first'] or ''):
+            u['first'] = applied_at
+        if (applied_at or '') > (u['last'] or ''):
+            u['last'] = applied_at
+
+    print()
+    print(bold(blue('By user')))
+    col_u = max(len('User'), max(len(u) for u in users))
+    col_c = max(len('Count'), max(len(str(v['count'])) for v in users.values()))
+    header = f"{'User':<{col_u}}  {'Count':>{col_c}}  {'First':<26}  Last"
+    print(header)
+    print('-' * len(header))
+    for who in sorted(users, key=lambda k: (-users[k]['count'], k)):
+        u = users[who]
+        print(f"{who:<{col_u}}  {u['count']:>{col_c}}  {str(u['first']):<26}  {u['last']}")
+
+    # ---- Recent activity --------------------------------------------------
+    recent = sorted(rows, key=lambda r: (r[1] or ''), reverse=True)[:10]
+    print()
+    print(bold(blue(f'Recent activity (last {len(recent)})')))
+    col_v = max(len('Version'), max(len(str(r[0])) for r in recent))
+    col_l = max(len('Label'),   max(len(label_for(r[0], r[3])) for r in recent))
+    col_b = max(len('By'),      max(len(r[2] or '') for r in recent))
+    header = f"{'Version':<{col_v}}  {'Label':<{col_l}}  {'By':<{col_b}}  Applied At"
+    print(header)
+    print('-' * len(header))
+    for version, applied_at, applied_by, stored_name in recent:
+        label = label_for(version, stored_name)
+        padded = f"{label:<{col_l}}"
+        if label_map.get(int(version) if str(version).lstrip('-').isdigit() else None) is None:
+            padded = yellow(padded)
+        print(f"{version:<{col_v}}  {padded}  {(applied_by or ''):<{col_b}}  {applied_at}")
+
+    if pending:
+        print()
+        print(green(f"{len(pending)} migration(s) pending — run 'scm up' to apply."))
+
+
 def cmd_baseline(driver, migrations, target_version=None):
     """Mark migrations as applied without running the SQL."""
     applied = driver.applied_versions()
@@ -1271,6 +1483,7 @@ def cmd_learn():
     print('  Create a .env file in your project directory:')
     print(f'    {green("DATABASE_URL")}=postgres://user:pass@host:5432/mydb')
     print(f'    {green("MIGRATIONS_DIR")}=./migrations      {dim("# default")}')
+    print(f'    {green("MIGRATIONS_SCHEMA")}=public          {dim("# Postgres: schema for the tracking table")}')
     print(f'    {green("MIGRATION_STYLE")}=one              {dim("# one=single file  two=separate up/down files")}')
     print()
     print('  Or pull settings directly from WaSQL config.xml:')
@@ -1288,6 +1501,8 @@ def cmd_learn():
         ('scm who',               'Show which database the current config points to'),
         ('scm status',            'Show what is applied vs pending'),
         ('scm history',           'Show applied migrations with timestamps'),
+        ('scm report',            'Activity report: who applied what, and when'),
+        ('scm ddl',               'Verify the tracking table has all expected columns'),
         ('scm show <version>',    'Print SQL for a specific migration (no DB needed)'),
         ('scm goto <version>',    'Migrate to a specific version (forward or backward)'),
         ('scm baseline',          'Mark all migrations applied without running SQL'),
@@ -1626,7 +1841,8 @@ def cmd_init(migrations_dir, env_file):
             'DATABASE_URL=\n'
             'MIGRATION_STYLE=one\n'
             '# MIGRATIONS_DIR=./migrations\n'
-            '# MIGRATIONS_TABLE=schema_migrations\n',
+            '# MIGRATIONS_TABLE=schema_migrations\n'
+            '# MIGRATIONS_SCHEMA=public\n',
             encoding='utf-8',
         )
         print(f"  created {epath}")
@@ -1663,7 +1879,7 @@ def _parse_url_fields(url):
         return None
 
 
-def cmd_who(url, env_file, db=None):
+def cmd_who(url, env_file, db=None, table='schema_migrations', schema=None):
     """Show which database the current configuration points to."""
     tty = sys.stdout.isatty()
     def bold(s):  return f'\033[1m{s}\033[0m'               if tty else s
@@ -1683,6 +1899,11 @@ def cmd_who(url, env_file, db=None):
         return
     scheme, host, port, dbname, user = fields
 
+    # Resolve the effective tracking schema for display: explicit MIGRATIONS_SCHEMA
+    # wins, else Postgres defaults to 'public' (matching get_driver).
+    eff_schema = schema or ('public' if scheme == 'postgres' else None)
+    tracking = f'{eff_schema}.{table}' if eff_schema else table
+
     label_w = 10
     print(bold(blue('Current database')))
     print(dim('─' * 40))
@@ -1693,6 +1914,7 @@ def cmd_who(url, env_file, db=None):
     print(f"  {'host':<{label_w}}  {host}{port}")
     print(f"  {'database':<{label_w}}  {green(dbname or '(none)')}")
     print(f"  {'user':<{label_w}}  {user or '(none)'}")
+    print(f"  {'tracking':<{label_w}}  {tracking}")
     print(f"  {'url':<{label_w}}  {dim(redact_url(url))}")
 
 
@@ -1780,7 +2002,7 @@ def cmd_dbs():
 # Driver resolution
 # ---------------------------------------------------------------------------
 
-def get_driver(url, table='schema_migrations'):
+def get_driver(url, table='schema_migrations', schema=None):
     parsed = urlparse(url)
     scheme = parsed.scheme.lower()
 
@@ -1796,7 +2018,12 @@ def get_driver(url, table='schema_migrations'):
             f"See source to add a custom driver."
         )
 
-    driver = DRIVERS[scheme](url, table=table)
+    cls = DRIVERS[scheme]
+    # An explicit MIGRATIONS_SCHEMA wins; otherwise fall back to the driver's
+    # default (Postgres → 'public', everything else → connection default).
+    if schema is None:
+        schema = cls.DEFAULT_SCHEMA
+    driver = cls(url, table=table, schema=schema)
     try:
         driver.connect()
     except Exception as e:
@@ -1924,6 +2151,10 @@ def main():
 
     sub.add_parser('history', help='Show applied migrations with timestamps')
 
+    sub.add_parser('report', help='Activity report: who applied what, and when')
+
+    sub.add_parser('ddl', help='Verify the tracking table has all expected columns')
+
     p_baseline = sub.add_parser('baseline', help='Mark migrations applied without running SQL')
     p_baseline.add_argument('version', nargs='?', type=int, default=None, metavar='VERSION',
                             help='Mark up to this version (default: mark all)')
@@ -2006,6 +2237,14 @@ def main():
         or 'schema_migrations'
     )
 
+    # Resolve tracking schema: MIGRATIONS_SCHEMA / DBMATE_MIGRATIONS_SCHEMA > driver default.
+    # Left as None here so each driver can pick its own default (Postgres → 'public').
+    migrations_schema = (
+        os.environ.get('MIGRATIONS_SCHEMA')
+        or os.environ.get('DBMATE_MIGRATIONS_SCHEMA')
+        or None
+    )
+
     # Resolve migration style: --style flag > MIGRATION_STYLE env var > 'two'
     # Aliases: 'dbmate' = 'one', 'golang-migrate' = 'two'
     _STYLE_ALIASES = {'dbmate': 'one', 'golang-migrate': 'two', 'one': 'one', 'two': 'two'}
@@ -2042,7 +2281,8 @@ def main():
         return
 
     if args.command == 'who':
-        cmd_who(url, args.env_file, db=args.db)
+        cmd_who(url, args.env_file, db=args.db,
+                table=migrations_table, schema=migrations_schema)
         return
 
     if args.command == 'dbs':
@@ -2058,7 +2298,7 @@ def main():
             "  3. Pass --url postgres://user:pass@host/dbname"
         )
 
-    driver = get_driver(url, table=migrations_table)
+    driver = get_driver(url, table=migrations_table, schema=migrations_schema)
     try:
         driver.ensure_migrations_table()
         driver.ensure_columns()  # add name/applied_by/migrated_by to pre-existing tables
@@ -2078,6 +2318,10 @@ def main():
             cmd_goto(driver, migrations, target_version=args.version, dry_run=args.dry_run)
         elif args.command == 'history':
             cmd_history(driver, migrations)
+        elif args.command == 'report':
+            cmd_report(driver, migrations)
+        elif args.command == 'ddl':
+            cmd_ddl(driver)
         elif args.command == 'baseline':
             cmd_baseline(driver, migrations, target_version=args.version)
         elif args.command == 'repair':

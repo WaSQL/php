@@ -1,6 +1,7 @@
 # Claude Code configuration
 .claude/
-
+server-launch.lock
+server-start.log
 # Groovy server runtime
 server.pid
 server.token
