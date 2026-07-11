@@ -67,7 +67,7 @@ def generateToolsXml(dasql_dir, python_exe):
     def tool(name, description, param_arg3):
         params = (
             '&quot;' + dasql_py + '&quot;'
-            ' &quot;$FileNameWithoutExtension$&quot;'
+            ' &quot;$FileName$&quot;'
             ' &quot;$FileDir$&quot;'
             ' ' + param_arg3
         )

@@ -67,6 +67,18 @@ if interpreter:
 else:
     if sys.argv[1].lower().endswith('.cli'):
         #.cli file - run the selected line as a shell command on the remote WaSQL host
+        #load the matching ini section (by filename, then by directory) so the command
+        #targets that section's server/db/auth instead of falling back to [global] only
+        cli_section=os.path.splitext(os.path.basename(sys.argv[1]))[0]
+        cli_dir=os.path.splitext(os.path.basename(sys.argv[2]))[0] if len(sys.argv) > 2 else ''
+        if config.has_section(cli_section):
+            section_name=cli_section
+            for _k,_v in config.items(cli_section):
+                params[_k]=_v
+        elif cli_dir and config.has_section(cli_dir):
+            section_name=cli_dir
+            for _k,_v in config.items(cli_dir):
+                params[_k]=_v
         cli_query = sys.argv[3].strip() if len(sys.argv) > 3 else ''
         #if selection was written to a temp file, read the content
         if os.path.isfile(cli_query):

@@ -53,7 +53,7 @@ endfunction
 
 function! s:DaSQLRun(query)
     if empty(a:query) | echo 'DaSQL: nothing to run' | return | endif
-    let fname   = expand('%:t:r')
+    let fname   = expand('%:t')
     let dirname = expand('%:h:t')
     let result  = system(g:dasql_py3 . ' '
                 \ . shellescape(g:dasql_py) . ' '
@@ -99,7 +99,7 @@ local function _dasql_run(query)
         vim.notify('DaSQL: nothing to run', vim.log.levels.WARN)
         return
     end
-    local fname   = vim.fn.expand('%:t:r')
+    local fname   = vim.fn.expand('%:t')
     local dirname = vim.fn.expand('%:h:t')
     local result  = vim.fn.system(
         _dasql_py3

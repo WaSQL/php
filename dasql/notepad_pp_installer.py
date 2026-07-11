@@ -241,11 +241,11 @@ SCI_SENDMSG SCI_GETSELTEXT 0 @""
 set local F = $(MSG_LPARAM)
 set sourcefile = $(SYS.TEMP)\\$(NAME_PART).source_tmp
 sel_saveto "$(sourcefile)" :a
-$(Python_Exe) "$(DaSQL_Dir)\\dasql.py" "$(NAME_PART)" "$(SYS.TEMP)" "$(sourcefile)"
+$(Python_Exe) "$(DaSQL_Dir)\\dasql.py" "$(FILE_NAME)" "$(SYS.TEMP)" "$(sourcefile)"
 cmd /c del /f /q "$(sourcefile)"
 GOTO FINISH
 :NOSELECTION
-$(Python_Exe) "$(DaSQL_Dir)\\dasql.py" "$(NAME_PART)" "$(SYS.TEMP)" "$(CURRENT_LINESTR)"
+$(Python_Exe) "$(DaSQL_Dir)\\dasql.py" "$(FILE_NAME)" "$(SYS.TEMP)" "$(CURRENT_LINESTR)"
 GOTO FINISH
 :FINISH"""
     
