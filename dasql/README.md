@@ -240,18 +240,30 @@ Open a `.sql` file whose name matches a section (e.g. `mydb.sql` → `[mydb]`). 
 
 ## Special commands
 
-These prefixes work on any line, in any file, regardless of the matched section:
+These prefixes work on any line, in any file, regardless of the matched section. The **Runs** column shows whether the code executes on your machine or on the WaSQL server:
 
-| Prefix | What it does | Example |
-|--------|-------------|---------|
-| `math>` or `calc>` | Evaluate a Python expression | `math> 1024 * 1024 * 512` |
-| `cmd>` | Run a local shell command | `cmd> dir C:\data` |
-| `C:\path>command` | Run a local command in a directory | `C:\projects>git status` |
-| `http...` | Open a URL in your browser | `https://example.com` |
-| `{...}` / `[...]` | Pretty-print a JSON string | `{"key":"value"}` |
-| `<?php ... ?>` | Execute a PHP snippet | `<?php echo date('Y-m-d'); ?>` |
-| `<?py ... ?>` | Execute a Python snippet | `<?py print(2**32) ?>` |
-| `<?lua ... ?>` | Execute a Lua snippet | `<?lua print(os.time()) ?>` |
+| Prefix | What it does | Runs | Example |
+|--------|-------------|------|---------|
+| `math>` or `calc>` | Evaluate a Python expression | Local | `math> 1024 * 1024 * 512` |
+| `cmd>` | Run a shell command | Local | `cmd> dir C:\data` |
+| `C:\path>command` | Run a command in a directory | Local | `C:\projects>git status` |
+| `http...` | Open a URL in your browser | Local | `https://example.com` |
+| `{...}` / `[...]` | Pretty-print a JSON string | Local | `{"key":"value"}` |
+| `<?php ... ?>` | Execute a PHP snippet | Local | `<?php echo date('Y-m-d'); ?>` |
+| `<?py ... ?>` | Execute a Python snippet | Local | `<?py print(2**32) ?>` |
+| `<?lua ... ?>` | Execute a Lua snippet | Local | `<?lua print(os.time()) ?>` |
+| `php>` | Run PHP on the **server** | Remote | `php> echo phpversion();` |
+| `py>` | Run Python on the **server** | Remote | `py> import sys; print(sys.version)` |
+| `lua>` | Run Lua on the **server** | Remote | `lua> print(_VERSION)` |
+
+### Local vs. remote code (`<?php?>` vs. `php>`)
+
+The two look similar but run in completely different places:
+
+- **`<?php ?>` / `<?py ?>` / `<?lua ?>`** run **locally**, using your machine's own `php`/`python`/`lua`. They have no access to WaSQL — no framework functions, no database, no server config.
+- **`php>` / `py>` / `lua>`** run **on the WaSQL server** (the one your section's `base_url` points to), in the real WaSQL environment. Server-side PHP can call framework functions (`getDBRecords()`, `commonGetSetting()`, …), reach the database, and see the actual PHP version, extensions, and config. **These require admin rights** — WaSQL rejects them otherwise. They run the code the same way a `.cli` file runs a shell command remotely.
+
+> `lua>` needs the matching server-side handler in `sqlprompt_controller.php`. `php>` and `py>` are built into WaSQL already.
 
 ---
 
@@ -270,6 +282,16 @@ If you press F8 on a **script file** (not a `.sql`), DaSQL runs it through the r
 | `.sh` | `bash` |
 | `.md` / `.markdown` | Rendered to HTML and opened in the browser |
 | `.html` / `.htm` | Opened in the browser |
+
+These run **locally**, using your machine's interpreters.
+
+### `.php` / `.py` / `.lua` files in the DaSQL directory run on the server
+
+There's one exception: if the `.php`, `.py`, or `.lua` file lives **in the DaSQL directory** (next to `dasql.py`) **and its name matches a configured section**, pressing F8 runs its **entire contents on the WaSQL server** instead of locally — the same way a `.cli` file runs remotely. The filename selects the target (`sales.php` → `[sales]` → that section's `base_url`), and it uses the server's `php>`/`py>`/`lua>` runner, so it needs admin rights.
+
+This mirrors the local behavior (a local script runs the whole file) but executes it in the real WaSQL environment — with framework functions, the database, and the server's actual interpreter versions.
+
+The section-match requirement is deliberate: it targets the right server and keeps DaSQL's own files (`dasql.py`, the `*_installer.py` scripts, …) running locally rather than being shipped to a server. A `.php`/`.py`/`.lua` file **anywhere else**, or one with no matching section, still runs locally.
 
 ---
 

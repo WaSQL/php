@@ -17,6 +17,67 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import dasql_functions as df
 
 
+def postToWaSQL(params, sql_full):
+    """POST a sql_full string to WaSQL's admin SQL prompt and return the decoded response.
+    Shared by the SQL, .cli (cmd>), and remote php>/py>/lua> paths so auth + transport
+    live in one place. Exits the process on connection-level errors, just like the
+    original inline handlers did."""
+    data={
+        'db': params.get('db',''),
+        'func':'sql',
+        'format':params.get('output_format','dos'),
+        '-nossl':1,
+        'offset':0,
+        'username':os.environ.get("USERNAME", os.environ.get("USER", "")).lower(),
+        'AjaxRequestUniqueId':'dasql.py',
+        '_auth': params.get('authkey',''),
+        '_menu': 'sqlprompt',
+        'sql_full':sql_full
+    }
+    #WaSQL supports multiple authentication methods: set auth method based on params
+    if 'apikey' in params:
+        data['apikey']=params['apikey']
+        data['username']=params['username']
+        data['_auth']=1
+    elif 'authkey' in params:
+        data['_auth']=params['authkey']
+    elif 'tauthkey' in params:
+        data['_tauth']=params['tauthkey']
+    elif 'username' in params:
+        data['_login']=1
+        data['username']=params['username']
+        data['password']=params['password']
+    elif 'email' in params:
+        data['_login']=1
+        data['email']=params['email']
+        data['password']=params['password']
+    elif 'phone' in params:
+        data['_login']=1
+        data['phone']=params['phone']
+        data['password']=params['password']
+    #post to the WaSQL admin endpoint (ssl cert warnings disabled - internal url)
+    url=params['base_url'].rstrip('/')+'/php/admin.php'
+    urllib3.disable_warnings()
+    try:
+        r = requests.post(url,data,verify=False)
+    except requests.exceptions.Timeout:
+        print('DaSQL: Timeout error')
+        sys.exit(1)
+    except requests.exceptions.TooManyRedirects:
+        print('DaSQL: TooManyRedirects error')
+        sys.exit(2)
+    except requests.exceptions.HTTPError:
+        print('DaSQL: Http Error:')
+        sys.exit(3)
+    except requests.exceptions.ConnectionError:
+        print('DaSQL: ConnectionError trying to connect to {}'.format(params.get('base_url','')))
+        sys.exit(4)
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+    #decode as ISO-8859-1 to avoid invalid continuation byte errors
+    return r.content.decode('ISO-8859-1')
+
+
 # Check if any arguments were passed
 if len(sys.argv) < 3:
     print("No arguments provided. Please provide at least one argument.")
@@ -53,8 +114,24 @@ params['arg_query']=''
 for arg in sys.argv[1:]:
     params['arg_query']+="{}  ".format(arg)
 params['arg_query']=params['arg_query'].strip()
+#decide whether this file should run on the REMOTE WaSQL server:
+# - a .cli file                                  -> shell command   (cmd>)
+# - a .php/.py/.lua file living in the DaSQL dir -> server-side code (php>/py>/lua>)
+#everything else falls through to the local interpreter / SQL handling below.
+remote_prefix=None
+remote_ext=os.path.splitext(sys.argv[1].lower())[1]
+if sys.argv[1].lower().endswith('.cli'):
+    remote_prefix='cmd>'
+elif remote_ext in ('.php','.py','.lua'):
+    #a .php/.py/.lua file runs on the server only when it lives in the DaSQL directory AND
+    #its name matches a configured section. The section-match requirement targets the right
+    #server and keeps DaSQL's own files (dasql.py, *_installer.py, ...) running locally.
+    remote_base=os.path.splitext(os.path.basename(sys.argv[1]))[0]
+    if os.path.isfile(os.path.join(script_directory, os.path.basename(sys.argv[1]))) and config.has_section(remote_base):
+        remote_prefix={'.php':'php>','.py':'py>','.lua':'lua>'}[remote_ext]
+
 interpreter = df.getInterpreter(sys.argv[1])
-if interpreter:
+if remote_prefix is None and interpreter:
     #print("interpreter:{}".format(interpreter))
     if interpreter == 'markdown':
         df.previewMarkdown(sys.argv[1])
@@ -65,101 +142,85 @@ if interpreter:
         print(rtn)
     params['arg_query']=''
 else:
-    if sys.argv[1].lower().endswith('.cli'):
-        #.cli file - run the selected line as a shell command on the remote WaSQL host
-        #load the matching ini section (by filename, then by directory) so the command
-        #targets that section's server/db/auth instead of falling back to [global] only
-        cli_section=os.path.splitext(os.path.basename(sys.argv[1]))[0]
-        cli_dir=os.path.splitext(os.path.basename(sys.argv[2]))[0] if len(sys.argv) > 2 else ''
-        if config.has_section(cli_section):
-            section_name=cli_section
-            for _k,_v in config.items(cli_section):
+    if remote_prefix is not None:
+        #remote execution: run on the server the same way a .cli does.
+        #load the matching ini section (by filename, then by directory) so we target
+        #that section's server/db/auth instead of falling back to [global] only.
+        remote_section=os.path.splitext(os.path.basename(sys.argv[1]))[0]
+        remote_dir=os.path.splitext(os.path.basename(sys.argv[2]))[0] if len(sys.argv) > 2 else ''
+        if config.has_section(remote_section):
+            section_name=remote_section
+            for _k,_v in config.items(remote_section):
                 params[_k]=_v
-        elif cli_dir and config.has_section(cli_dir):
-            section_name=cli_dir
-            for _k,_v in config.items(cli_dir):
+        elif remote_dir and config.has_section(remote_dir):
+            section_name=remote_dir
+            for _k,_v in config.items(remote_dir):
                 params[_k]=_v
-        cli_query = sys.argv[3].strip() if len(sys.argv) > 3 else ''
-        #if selection was written to a temp file, read the content
-        if os.path.isfile(cli_query):
-            with open(cli_query, 'r', encoding='utf-8') as _f:
-                cli_query = _f.read().strip()
-        if not len(cli_query):
-            print('DaSQL CLI: no command selected')
-            sys.exit(0)
-        #double backslashes so PHP stripslashes() doesn't eat them
-        cli_query = cli_query.replace('\\', '\\\\')
-        data={
-            'db': params['db'],
-            'func':'sql',
-            'format':params['output_format'],
-            '-nossl':1,
-            'offset':0,
-            'username':os.environ.get("USERNAME", os.environ.get("USER", "")).lower(),
-            'AjaxRequestUniqueId':'dasql.py',
-            '_auth': params.get('authkey',''),
-            '_menu': 'sqlprompt',
-            'sql_full':'cmd>'+cli_query
-        }
-        if 'apikey' in params:
-            data['apikey']=params['apikey']
-            data['username']=params['username']
-            data['_auth']=1
-        elif 'authkey' in params:
-            data['_auth']=params['authkey']
-        elif 'tauthkey' in params:
-            data['_tauth']=params['tauthkey']
-        elif 'username' in params:
-            data['_login']=1
-            data['username']=params['username']
-            data['password']=params['password']
-        elif 'email' in params:
-            data['_login']=1
-            data['email']=params['email']
-            data['password']=params['password']
-        elif 'phone' in params:
-            data['_login']=1
-            data['phone']=params['phone']
-            data['password']=params['password']
-        url=params['base_url'].rstrip('/')+'/php/admin.php'
-        urllib3.disable_warnings()
-        try:
-            r = requests.post(url,data,verify=False)
-        except requests.exceptions.Timeout:
-            print('DaSQL CLI: Timeout error')
-            sys.exit(1)
-        except requests.exceptions.ConnectionError:
-            print('DaSQL CLI: ConnectionError trying to connect to {}'.format(params['base_url']))
-            sys.exit(4)
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
-        output = r.content.decode('ISO-8859-1').replace('\r\n', '\n').replace('\r', '\n')
-        # reformat the single-line header "CMD: x, DIR: y, RUNTIME: z, RTNCODE: n" onto separate lines
-        lines = output.splitlines()
-        result = []
-        rtncode = None
-        for line in lines:
-            if line.startswith('CMD:') and ', DIR:' in line:
-                for part in re.split(r',\s*(?=CMD:|DIR:|RUNTIME:|RTNCODE:)', line):
-                    part = part.strip()
-                    if part.startswith('DIR:'):
-                        continue
-                    result.append(part)
-                    if part.startswith('RTNCODE:'):
-                        rtncode = part.split(':', 1)[1].strip()
-            elif line.startswith('DIR:'):
-                pass
-            elif line.startswith('RTNCODE:'):
-                result.append(line.strip())
-                rtncode = line.split(':', 1)[1].strip()
-            else:
-                result.append(line)
-        # insert STATUS after RTNCODE
-        rtncode_idx = next((i for i, l in enumerate(result) if l.startswith('RTNCODE:')), None)
-        if rtncode is not None and rtncode_idx is not None:
-            status = 'Success' if rtncode == '0' else 'Failure'
-            result.insert(rtncode_idx + 1, 'STATUS: {}'.format(status))
-        print('\n'.join(result))
+        if remote_prefix == 'cmd>':
+            #.cli: run the selected command line (read a temp/file path if one was passed)
+            remote_query = sys.argv[3].strip() if len(sys.argv) > 3 else ''
+            if os.path.isfile(remote_query):
+                with open(remote_query, 'r', encoding='utf-8') as _f:
+                    remote_query = _f.read().strip()
+            if not len(remote_query):
+                print('DaSQL: no command selected')
+                sys.exit(0)
+        else:
+            #.php/.py/.lua: run the ENTIRE file on the server. This mirrors how a local
+            #script runs the whole file - just on the remote host instead of locally.
+            script_path = sys.argv[1] if os.path.isfile(sys.argv[1]) else os.path.join(script_directory, os.path.basename(sys.argv[1]))
+            if not os.path.isfile(script_path):
+                print('DaSQL: could not find {} in the DaSQL directory'.format(os.path.basename(sys.argv[1])))
+                sys.exit(0)
+            with open(script_path, 'r', encoding='utf-8') as _f:
+                remote_query = _f.read().strip()
+            if not len(remote_query):
+                print('DaSQL: nothing to run')
+                sys.exit(0)
+            #the server wraps php>/py>/lua> code in <?lang ?>, so strip a surrounding
+            #<?php ?> wrapper from .php files to avoid a double-wrapped (broken) block.
+            if remote_prefix == 'php>':
+                _c = remote_query
+                if _c.lower().startswith('<?php'):
+                    _c = _c[5:]
+                elif _c.startswith('<?'):
+                    _c = _c[2:]
+                if _c.rstrip().endswith('?>'):
+                    _c = _c.rstrip()[:-2]
+                remote_query = _c.strip()
+        #double backslashes so the server's stripslashes() doesn't eat them
+        remote_query = remote_query.replace('\\', '\\\\')
+        output = postToWaSQL(params, remote_prefix+remote_query).replace('\r\n', '\n').replace('\r', '\n')
+        if remote_prefix == 'cmd>':
+            # reformat the single-line header "CMD: x, DIR: y, RUNTIME: z, RTNCODE: n" onto separate lines
+            lines = output.splitlines()
+            result = []
+            rtncode = None
+            for line in lines:
+                if line.startswith('CMD:') and ', DIR:' in line:
+                    for part in re.split(r',\s*(?=CMD:|DIR:|RUNTIME:|RTNCODE:)', line):
+                        part = part.strip()
+                        if part.startswith('DIR:'):
+                            continue
+                        result.append(part)
+                        if part.startswith('RTNCODE:'):
+                            rtncode = part.split(':', 1)[1].strip()
+                elif line.startswith('DIR:'):
+                    pass
+                elif line.startswith('RTNCODE:'):
+                    result.append(line.strip())
+                    rtncode = line.split(':', 1)[1].strip()
+                else:
+                    result.append(line)
+            # insert STATUS after RTNCODE
+            rtncode_idx = next((i for i, l in enumerate(result) if l.startswith('RTNCODE:')), None)
+            if rtncode is not None and rtncode_idx is not None:
+                status = 'Success' if rtncode == '0' else 'Failure'
+                result.insert(rtncode_idx + 1, 'STATUS: {}'.format(status))
+            print('\n'.join(result))
+        else:
+            #code output from the server - print as-is
+            print(output.rstrip())
         sys.exit(0)
     dir_name=os.path.splitext(os.path.basename(sys.argv[2]))[0]
 
@@ -415,68 +476,18 @@ else:
         if params['query'].endswith('?>'):
             params['query']=params['query'][:len(params['query'])-2]
         df.evalCode('lua','lua',params['query'])
+    elif len(params['query']) > 0 and params['query'].lower().startswith(('php>','py>','lua>')):
+        #run PHP/python/lua code on the REMOTE WaSQL server (admins only), the same way a
+        #.cli's cmd> runs a shell command there - the server evals the code server-side.
+        #normalise "lang> code" -> "lang>code" so a space after > doesn't become a leading
+        #indent (which breaks python/lua). double backslashes so stripslashes() keeps escapes.
+        _m = re.match(r'(?is)^(php|py|lua)\>\s*(.*)$', params['query'])
+        remote_code = (_m.group(1).lower()+'>'+_m.group(2)).replace('\\', '\\\\')
+        output = postToWaSQL(params, remote_code).replace('\r\n', '\n').replace('\r', '\n')
+        print(output.rstrip())
     elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","explain","select","insert","update","delete","with","create","alter","drop","truncate","grant","revoke","comment","explain","analyze","describe","desc","show","use","set","reset","call","execute","exec","do","declare","fetch","copy","load","import","export","merge","lock","unload","begin","start transaction","start","commit","rollback","savepoint","release","end","reindex","pragma","vacuum","refresh","checkpoint")):
-        #prepare the key/value pairs to pass to WaSQL base_url
-        data={
-            'db': params['db'],
-            'func':'sql',
-            'format':params['output_format'],
-            '-nossl':1,
-            'offset':0,
-            'username':os.environ.get("USERNAME", os.environ.get("USER", "")).lower(),
-            'AjaxRequestUniqueId':'dasql.py',
-            '_auth': params.get('authkey',''),
-            '_menu': 'sqlprompt',
-            'sql_full':params['query']
-        }
-        #WaSQL supports multiple authentication methods: set auth method based on params
-        if 'apikey' in params:
-            data['apikey']=params['apikey']
-            data['username']=params['username']
-            data['_auth']=1
-        elif 'authkey' in params:
-            data['_auth']=params['authkey']
-        elif 'tauthkey' in params:
-            data['_tauth']=params['tauthkey']
-        elif 'username' in params:
-            data['_login']=1
-            data['username']=params['username']
-            data['password']=params['password']
-        elif 'email' in params:
-            data['_login']=1
-            data['email']=params['email']
-            data['password']=params['password']
-        elif 'phone' in params:
-            data['_login']=1
-            data['phone']=params['phone']
-            data['password']=params['password']
-
-        #set the url to post to
-        url=params['base_url'].rstrip('/')+'/php/admin.php'
-        #disable ssl cert warnings since this is just an internal url anyway
-        urllib3.disable_warnings()
-
-        #call localhost to run the query
-        try:
-            r = requests.post(url,data,verify=False)
-        except requests.exceptions.Timeout:
-            # Maybe set up for a retry, or continue in a retry loop
-            print('DaSQL: Timeout error')
-            sys.exit(1)
-        except requests.exceptions.TooManyRedirects:
-            # Tell the user their URL was bad and try a different one
-            print('DaSQL: TooManyRedirects error')
-            sys.exit(2)
-        except requests.exceptions.HTTPError as errh:
-            print ("DaSQL: Http Error:")
-            sys.exit(3)
-        except requests.exceptions.ConnectionError as errc:
-            print ("DaSQL: ConnectionError trying to connect to {}".format(params['base_url']))
-            sys.exit(4)
-        except requests.exceptions.RequestException as e:  # This is the correct syntax
-            raise SystemExit(e)
-        #changed decode from 'utf-8-sig' to 'ISO-8859-1' to get rid of invalid continuation byte error
-        for line in r.content.decode('ISO-8859-1').splitlines():
+        #run the query on the WaSQL server and print the results
+        for line in postToWaSQL(params, params['query']).splitlines():
             line=line.strip()
             if len(line):
                 print(line)

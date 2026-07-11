@@ -577,6 +577,15 @@ ENDOFQUERY;
 				echo evalPHP($str);
 				exit;
 			}
+			elseif(preg_match('/^lua\>(.+)/is',trim($_SESSION['sql_last']),$m)){
+				if(!isAdmin()){
+					echo "You must have admin rights to execute lua on this server";
+					exit;
+				}
+				$str='<?'.'lua'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
+				echo evalPHP($str);
+				exit;
+			}
 			elseif(preg_match('/^json\>(.+)/is',trim($_SESSION['sql_last']),$m)){
 				$arr=decodeJSON($m[1]);
 				echo printValue($arr);
@@ -674,6 +683,10 @@ ENDOFQUERY;
 						$recs[]=array(
 							'command'=>'py>{python code}',
 							'description'=>"Admins only: run python code on the server and return the results"
+						);
+						$recs[]=array(
+							'command'=>'lua>{lua code}',
+							'description'=>"Admins only: run lua code on the server and return the results"
 						);
 						$recs[]=array(
 							'command'=>'cmd>{some command}',
