@@ -46,7 +46,7 @@ DaSQL is a single, lightweight Python script (`dasql.py`) that acts as a bridge 
 3. It POSTs your query to `{base_url}/php/admin.php` using WaSQL's authenticated SQL prompt.
 4. WaSQL runs the query against the target database and returns the results, which DaSQL prints back into your editor's panel.
 
-Because the **filename drives the connection**, you switch databases simply by editing a different `.sql` file. A file named `byuward.sql` runs against the `[byuward]` section; `swanprints_live.sql` runs against `[swanprints_live]`.
+Because the **filename drives the connection**, you switch databases simply by editing a different `.sql` file. A file named `sales.sql` runs against the `[sales]` section; `reporting.sql` runs against `[reporting]`.
 
 **Why it's useful:**
 
@@ -90,7 +90,7 @@ pip install requests chardet markdown
 
 ## Quick start
 
-1. Put the DaSQL folder somewhere permanent, e.g. `d:\wasql\dasql`.
+1. Put the DaSQL folder somewhere permanent, e.g. `C:\wasql\dasql` (Windows) or `~/wasql/dasql` (macOS/Linux).
 2. Copy `dasql.ini.sample` to `dasql.ini`.
 3. Edit `dasql.ini` — set `base_url` and `authkey` in `[global]`, and add a section for each database.
 4. Run the installer for your editor (see [Editor setup](#editor-setup)).
@@ -123,14 +123,14 @@ Any key valid in a section is also valid in `[global]` as a default.
 One section per database. The **section name must match the `.sql` filename** you'll open (without the extension).
 
 ```ini
-[byuward]
-db            = byuward_dev
-base_url      = https://dev.byuward.us
+[sales]
+db            = sales_dev
+base_url      = https://dev.example.com
 authkey       = YOUR_WASQL_AUTH_KEY
 output_format = dos
 ```
 
-Open `byuward.sql`, press F8, and the query runs against the `byuward_dev` database on `dev.byuward.us`.
+Open `sales.sql`, press F8, and the query runs against the `sales_dev` database on `dev.example.com`.
 
 | Key | Meaning |
 |-----|---------|
@@ -277,7 +277,7 @@ If you press F8 on a **script file** (not a `.sql`), DaSQL runs it through the r
 
 Files ending in `.cli` send the selected line to the **remote WaSQL server** as a shell command. Select a command, press F8, and DaSQL prints the server-side output, the return code, and a `STATUS: Success`/`Failure` line — handy for server maintenance without opening a separate SSH session.
 
-The `.cli` file's name selects the target the same way `.sql` files do: `byuward.cli` runs its commands on the server defined by the `[byuward]` section (`dev.byuward.us`), not on your local machine.
+The `.cli` file's name selects the target the same way `.sql` files do: `sales.cli` runs its commands on the server defined by the `[sales]` section (`dev.example.com`), not on your local machine.
 
 ---
 
@@ -286,7 +286,7 @@ The `.cli` file's name selects the target the same way `.sql` files do: `byuward
 All installers run from the DaSQL directory:
 
 ```
-cd d:\wasql\dasql
+cd C:\wasql\dasql
 python <installer_name>.py
 ```
 
@@ -310,7 +310,7 @@ It copies `custom_exec.py` into Sublime's User packages directory, installs and 
        "target": "execute_selection_exec",
        "cancel": {"kill": true},
        "shell_cmd": "python3 dasql.py \"\\$fname\" \"\\$dirname\" \"\\$selection\"",
-       "working_dir": "d:\\wasql\\dasql",
+       "working_dir": "C:\\wasql\\dasql",
        "word_wrap": false,
        "quiet": true,
        "save_untitled_files": true
@@ -335,8 +335,8 @@ python notepad_pp_installer.py
 It locates Notepad++, installs the NppExec plugin if missing, and writes the DaSQL execution script (`nppexec_dasql_config.txt`) into the NppExec config directory. The generated script hard-codes your detected Python path and the DaSQL directory, e.g.:
 
 ```
-set local Python_Exe = C:\Webserver\bin\Python311\python3.exe
-set local DaSQL_Dir  = d:\wasql\dasql
+set local Python_Exe = C:\Python311\python.exe
+set local DaSQL_Dir  = C:\wasql\dasql
 ```
 
 **Manual steps after the installer:**
