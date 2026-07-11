@@ -304,6 +304,17 @@ else:
     if len(params['arg_query']) > 0:
         params['query']=params['arg_query']
     params['query']=params['query'].strip()
+    #stdin fallback: editors that pipe the selection to stdin instead of passing it
+    #as an argument (e.g. Geany, gedit, and other Unix filters) leave the query empty,
+    #so read it from stdin when we still have nothing. isatty() guards against blocking
+    #on an interactive terminal, where nothing is piped in.
+    if len(params['query']) == 0 and not sys.stdin.isatty():
+        try:
+            stdin_query=sys.stdin.read()
+            if stdin_query:
+                params['query']=stdin_query.strip()
+        except Exception:
+            pass
     #if the line starts with two dashes, remove them.
     if params['query'].startswith('-- '):
         params['query']=params['query'][3:].strip()

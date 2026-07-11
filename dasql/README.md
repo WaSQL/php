@@ -1,56 +1,86 @@
 # DaSQL — DOS Access to SQL
 
-Run SQL queries against any [WaSQL](https://wasql.com)-connected database directly from **Notepad++**, **Sublime Text**, **VS Code**, **JetBrains IDEs**, or **Vim/Neovim** — and from the command line. Select a query, press **F8**, and see results in a panel — no separate database client required.
+DaSQL lets you run SQL queries (and scripts, and shell commands) against **any database your [WaSQL](https://wasql.com) server can reach** — right from inside your text editor or the command line. Select some SQL, press **F8**, and the results print into the editor's output panel. No separate database client, no VPN, no direct database credentials on your machine.
 
 ---
 
-## Table of Contents
+## Contents
 
-- [What is DaSQL?](#what-is-dasql)
+- [What DaSQL is](#what-dasql-is)
+- [How it works](#how-it-works)
 - [Requirements](#requirements)
-- [Installation](#installation)
-- [Configuration](#configuration)
+- [Quick start](#quick-start)
+- [`dasql.ini` explained](#dasqlini-explained)
+  - [The `[global]` section](#the-global-section)
+  - [Database sections](#database-sections)
   - [Authentication methods](#authentication-methods)
   - [Output formats](#output-formats)
-  - [Per-section settings](#per-section-settings)
+  - [Default queries](#default-queries)
   - [Shortcuts](#shortcuts)
+  - [Generating a section from the WaSQL admin menu](#generating-a-section-from-the-wasql-admin-menu)
 - [Running queries](#running-queries)
   - [From the command line](#from-the-command-line)
   - [From an editor](#from-an-editor)
 - [Special commands](#special-commands)
-- [Running scripts](#running-scripts)
-- [CLI mode](#cli-mode)
+- [Running scripts and files](#running-scripts-and-files)
+- [`.cli` — run commands on the WaSQL host](#cli--run-commands-on-the-wasql-host)
 - [Editor setup](#editor-setup)
-  - [Notepad++](#notepad)
   - [Sublime Text](#sublime-text)
+  - [Notepad++](#notepad)
   - [Visual Studio Code](#visual-studio-code)
   - [JetBrains IDEs](#jetbrains-ides)
   - [Vim / Neovim](#vim--neovim)
+  - [Zed](#zed)
+  - [Emacs](#emacs)
+  - [Other editors (Geany, gedit, …)](#other-editors-geany-gedit-)
 - [Troubleshooting](#troubleshooting)
 
 ---
 
-## What is DaSQL?
+## What DaSQL is
 
-DaSQL is a lightweight Python script that acts as a bridge between your text editor and any database connected to a WaSQL server. It works by sending the selected text (or current line) to WaSQL's SQL engine via HTTP and printing the results back to the editor's output panel.
+DaSQL is a single, lightweight Python script (`dasql.py`) that acts as a bridge between your editor and WaSQL's SQL engine. When you press F8:
 
-**Key benefits:**
+1. The editor hands DaSQL the **filename**, the **directory**, and the **selected text** (or current line).
+2. DaSQL reads `dasql.ini`, finds the section that matches the filename, and pulls that database's connection details.
+3. It POSTs your query to `{base_url}/php/admin.php` using WaSQL's authenticated SQL prompt.
+4. WaSQL runs the query against the target database and returns the results, which DaSQL prints back into your editor's panel.
 
-- Query any database your WaSQL server has access to — MySQL, PostgreSQL, SQL Server, Oracle, SAP HANA, cTree, and more — all from the same file
-- Switch databases by changing which `.sql` file you are editing; the filename drives the connection
-- Works in every major editor through a single Python script and a config file
-- Supports running PHP, Python, Lua, and other scripts from the same interface
-- No VPN or direct database credentials needed on the client — authentication goes through WaSQL
+Because the **filename drives the connection**, you switch databases simply by editing a different `.sql` file. A file named `byuward.sql` runs against the `[byuward]` section; `swanprints_live.sql` runs against `[swanprints_live]`.
+
+**Why it's useful:**
+
+- Query **any** database WaSQL is connected to — MySQL, PostgreSQL, SQL Server, Oracle, SAP HANA, cTree, SQLite, and more — all from the same editor, with the same keystroke.
+- No database drivers or credentials on the client. Auth goes through WaSQL.
+- Works identically across Sublime, Notepad++, VS Code, JetBrains IDEs, Vim/Neovim, Zed, and Emacs — plus any editor that can pipe a selection to a command (Geany, gedit, …).
+- Doubles as a runner for PHP, Python, Lua, shell commands, JSON pretty-printing, and quick math.
+
+---
+
+## How it works
+
+```
+┌────────────┐   filename + selection    ┌───────────┐   HTTP POST    ┌──────────────┐
+│  Your      │ ────────────────────────► │  dasql.py │ ─────────────► │  WaSQL server │
+│  editor    │        (F8)               │  + .ini   │  /php/admin.php│  (SQL engine) │
+│            │ ◄──────────────────────── │           │ ◄───────────── │              │
+└────────────┘        results            └───────────┘    results     └──────────────┘
+                                                                              │
+                                                                    ┌─────────┴─────────┐
+                                                                    │ MySQL / Postgres  │
+                                                                    │ SQL Server / etc. │
+                                                                    └───────────────────┘
+```
 
 ---
 
 ## Requirements
 
 - **Python 3.8+**
-- **WaSQL server** with at least one database configured
-- A WaSQL auth key (found under the profile menu in the WaSQL admin portal)
+- A **WaSQL server** with at least one database configured
+- A **WaSQL auth key** (found under the profile menu in the WaSQL admin portal)
 
-Install Python dependencies:
+Install the Python dependencies:
 
 ```
 pip install requests chardet markdown
@@ -58,36 +88,61 @@ pip install requests chardet markdown
 
 ---
 
-## Installation
+## Quick start
 
-1. Place the DaSQL folder somewhere permanent (e.g. `C:\wasql\dasql`).
+1. Put the DaSQL folder somewhere permanent, e.g. `d:\wasql\dasql`.
 2. Copy `dasql.ini.sample` to `dasql.ini`.
-3. Edit `dasql.ini` and set your `base_url` and `authkey` in the `[global]` section.
+3. Edit `dasql.ini` — set `base_url` and `authkey` in `[global]`, and add a section for each database.
 4. Run the installer for your editor (see [Editor setup](#editor-setup)).
+5. Open a `.sql` file named after one of your sections, select a query, and press **F8**.
 
 ---
 
-## Configuration
+## `dasql.ini` explained
 
-`dasql.ini` is a standard INI file. The `[global]` section sets defaults; each named section defines a database connection.
+`dasql.ini` is a plain INI file that lives **next to `dasql.py`** (DaSQL always looks for it in its own directory). `[global]` holds defaults that apply to every query; each named section defines one database connection and can override any global value.
+
+> `dasql.ini` is git-ignored — it holds your auth keys, so it never gets committed. Start from `dasql.ini.sample`.
+
+### The `[global]` section
+
+`global` is the only reserved section name. Its keys are loaded first for every query, then overridden by whichever database section matches the file.
 
 ```ini
 [global]
-base_url     = https://your-wasql-server.example.com
-authkey      = YOUR_AUTH_KEY
-output_format = csv
-db           =
+base_url      = https://your-wasql-server.example.com
+authkey       = YOUR_WASQL_AUTH_KEY
+output_format = dos
+db            =
+```
 
-[my_database]
-db           = my_database
+Any key valid in a section is also valid in `[global]` as a default.
+
+### Database sections
+
+One section per database. The **section name must match the `.sql` filename** you'll open (without the extension).
+
+```ini
+[byuward]
+db            = byuward_dev
+base_url      = https://dev.byuward.us
+authkey       = YOUR_WASQL_AUTH_KEY
 output_format = dos
 ```
 
-Open a file named `my_database.sql` in your editor and press F8 — DaSQL automatically uses the `[my_database]` section.
+Open `byuward.sql`, press F8, and the query runs against the `byuward_dev` database on `dev.byuward.us`.
+
+| Key | Meaning |
+|-----|---------|
+| `db` | The database name/connection as configured **inside WaSQL** (often differs from the section name). |
+| `base_url` | The WaSQL server to send the query to. |
+| `authkey` (or other auth keys) | How to authenticate — see below. |
+| `output_format` | How results are formatted — see below. |
+| `query` | An optional default query for this section. |
 
 ### Authentication methods
 
-DaSQL supports all six WaSQL authentication methods. Add whichever one applies to your section (or `[global]`):
+DaSQL supports all six WaSQL authentication methods. Put whichever applies in the section (or in `[global]`):
 
 | Method | Keys required |
 |--------|--------------|
@@ -98,42 +153,34 @@ DaSQL supports all six WaSQL authentication methods. Add whichever one applies t
 | Email + password | `email = ...` and `password = ...` |
 | Phone + password | `phone = ...` and `password = ...` |
 
+Auth key is the usual choice — it's what the WaSQL admin menu generates for you (see below).
+
 ### Output formats
+
+Set `output_format` per section or globally:
 
 | Format | Description |
 |--------|-------------|
-| `dos` | Fixed-width tabular — best for editors |
-| `csv` | Comma-separated values |
-| `json` | JSON array of objects |
-| `xml` | XML |
-| `html` | HTML table |
-| `table` | Markdown-style table |
+| `dos` | Fixed-width tabular columns — **best for editor panels** and the most reliable with odd encodings. |
+| `csv` | Comma-separated values. |
+| `json` | JSON array of objects. |
+| `xml` | XML. |
+| `html` | HTML table. |
+| `table` | Markdown-style table. |
 
-### Per-section settings
+### Default queries
 
-Any key in `[global]` can be overridden in a named section:
-
-```ini
-[reporting]
-db            = reporting_db
-base_url      = https://reporting.example.com
-authkey       = REPORTING_AUTH_KEY
-output_format = dos
-```
-
-A section can also store a default query:
+A section can carry a query that runs when you press F8 on an otherwise-empty/non-SQL line:
 
 ```ini
 [slow_queries]
 db    = production
-query = SELECT pid, query, state FROM pg_stat_activity WHERE state != 'idle' ORDER BY query_start
+query = SELECT pid, query, state FROM pg_stat_activity WHERE state <> 'idle' ORDER BY query_start
 ```
-
-Pressing F8 on any line of `slow_queries.sql` with nothing selected runs that default query.
 
 ### Shortcuts
 
-Define reusable query aliases inside `dasql.ini`. A shortcut specific to a section overrides a global one with the same name.
+Shortcuts are named, reusable queries. A shortcut is its own INI section named `section:shortcut` (or `global:shortcut`). Type the shortcut's name on a line, press F8, and DaSQL substitutes the stored query. A section-specific shortcut overrides a global one with the same name.
 
 ```ini
 [global:tables]
@@ -143,7 +190,19 @@ query = SELECT table_name FROM information_schema.tables WHERE table_schema = 'p
 query = SELECT relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC
 ```
 
-Type `tables` on any line and press F8. When editing `mydb.sql`, the section-specific version runs; all other files use the global version.
+Type `tables` and press F8: while editing `mydb.sql` you get the Postgres stats version; every other file gets the global version.
+
+### Generating a section from the WaSQL admin menu
+
+You don't have to hand-write sections. **WaSQL can generate the `dasql.ini` entry for any database for you:**
+
+1. Log into the WaSQL admin portal.
+2. Open the **user menu** (top-right profile/user menu).
+3. Choose the **DaSQL** menu option.
+
+WaSQL produces a ready-to-paste `[section]` block for that database — already filled in with the correct `db`, `base_url`, `authkey`, and `output_format`. Copy it into your `dasql.ini`, save a matching `.sql` file (e.g. `sectionname.sql`), and you're connected.
+
+This is the recommended way to add databases: the auth key and `db` value come straight from the server, so there's nothing to get wrong.
 
 ---
 
@@ -155,45 +214,50 @@ Type `tables` on any line and press F8. When editing `mydb.sql`, the section-spe
 python3 dasql.py <section> <dirname> <query>
 ```
 
-The most common patterns:
+Common patterns:
 
 ```bash
 # Run a query against a named section
 python3 dasql.py mydb . "select count(*) from orders"
 
-# Run a .sql file (filename must match an ini section)
+# Run a .sql file (its name must match an ini section)
 python3 dasql.py mydb.sql . mydb.sql
 
 # Run a saved shortcut
 python3 dasql.py mydb . tables
+
+# Pipe the query in on stdin (handy for scripts and Unix-style editors)
+echo "select count(*) from orders" | python3 dasql.py mydb .
 ```
+
+DaSQL strips a single leading comment marker (`-- ` or `#`) from the query, so lines commented in your `.sql` file still run.
 
 ### From an editor
 
-Open a `.sql` file whose name matches a section in `dasql.ini` (e.g. `mydb.sql` for the `[mydb]` section). Select the SQL you want to run and press **F8**. With nothing selected, the current line is executed.
+Open a `.sql` file whose name matches a section (e.g. `mydb.sql` → `[mydb]`). **Select** the SQL and press **F8**. With nothing selected, the **current line** runs.
 
 ---
 
 ## Special commands
 
-These work on any line regardless of which `.sql` file is open:
+These prefixes work on any line, in any file, regardless of the matched section:
 
 | Prefix | What it does | Example |
 |--------|-------------|---------|
-| `math>` or `calc>` | Evaluates a Python expression | `math> 1024 * 1024 * 512` |
-| `cmd>` | Runs a shell command | `cmd> dir C:\data` |
-| `C:\path>command` | Runs a shell command in a specific directory | `C:\projects>git status` |
-| `http...` | Opens a URL in the default browser | `https://example.com` |
-| `{...}` or `[...]` | Pretty-prints a JSON string | `{"key":"value"}` |
-| `<?php ... ?>` | Executes a PHP snippet | `<?php echo date('Y-m-d'); ?>` |
-| `<?py ... ?>` | Executes a Python snippet | `<?py print(2**32) ?>` |
-| `<?lua ... ?>` | Executes a Lua snippet | `<?lua print(os.time()) ?>` |
+| `math>` or `calc>` | Evaluate a Python expression | `math> 1024 * 1024 * 512` |
+| `cmd>` | Run a local shell command | `cmd> dir C:\data` |
+| `C:\path>command` | Run a local command in a directory | `C:\projects>git status` |
+| `http...` | Open a URL in your browser | `https://example.com` |
+| `{...}` / `[...]` | Pretty-print a JSON string | `{"key":"value"}` |
+| `<?php ... ?>` | Execute a PHP snippet | `<?php echo date('Y-m-d'); ?>` |
+| `<?py ... ?>` | Execute a Python snippet | `<?py print(2**32) ?>` |
+| `<?lua ... ?>` | Execute a Lua snippet | `<?lua print(os.time()) ?>` |
 
 ---
 
-## Running scripts
+## Running scripts and files
 
-If you open a script file directly (not a `.sql` file), DaSQL runs it through the appropriate interpreter based on the file extension or shebang line:
+If you press F8 on a **script file** (not a `.sql`), DaSQL runs it through the right interpreter, chosen by extension or shebang:
 
 | Extension / shebang | Interpreter |
 |--------------------|------------|
@@ -204,63 +268,29 @@ If you open a script file directly (not a `.sql` file), DaSQL runs it through th
 | `.js` | `node` |
 | `.lua` | `lua` |
 | `.sh` | `bash` |
-| `.md` / `.markdown` | Rendered to HTML and opened in browser |
-| `.html` / `.htm` | Opened in browser |
+| `.md` / `.markdown` | Rendered to HTML and opened in the browser |
+| `.html` / `.htm` | Opened in the browser |
 
 ---
 
-## CLI mode
+## `.cli` — run commands on the WaSQL host
 
-Files with a `.cli` extension let you run shell commands on the **remote WaSQL host**. Select a command line and press F8 — DaSQL sends it to the server and displays the output locally, including the exit code and a Success/Failure status line.
+Files ending in `.cli` send the selected line to the **remote WaSQL server** as a shell command. Select a command, press F8, and DaSQL prints the server-side output, the return code, and a `STATUS: Success`/`Failure` line — handy for server maintenance without opening a separate SSH session.
 
-This is useful for running server-side maintenance commands without needing a separate SSH session.
+The `.cli` file's name selects the target the same way `.sql` files do: `byuward.cli` runs its commands on the server defined by the `[byuward]` section (`dev.byuward.us`), not on your local machine.
 
 ---
 
 ## Editor setup
 
-All installers are run from the DaSQL directory:
+All installers run from the DaSQL directory:
 
 ```
-cd C:\wasql\dasql
+cd d:\wasql\dasql
 python <installer_name>.py
 ```
 
----
-
-### Notepad++
-
-**Automatic installer:**
-
-```
-python notepad_pp_installer.py
-```
-
-The installer will:
-- Locate your Notepad++ installation
-- Download and install the NppExec plugin if not already present
-- Write the DaSQL execution script to the NppExec config directory
-
-**Manual steps required after the installer finishes:**
-
-1. Open Notepad++
-2. Go to **Plugins → NppExec → Advanced Options**
-3. Under *Menu Items*:
-   - Item name: `DaSQL`
-   - Associated script: `DaSQL`
-   - Click **Add/Modify**, then **OK**
-4. Restart Notepad++
-5. Go to **Settings → Shortcut Mapper → Plugin commands**
-6. Find `DaSQL` in the list, double-click it, and set the shortcut to **F8**
-
-**Usage:**
-
-| Action | How |
-|--------|-----|
-| Run selected text | Select SQL and press **F8** |
-| Run current line | Press **F8** with nothing selected |
-
----
+Every integration passes the **filename with its extension** to `dasql.py`, so `.sql` sections, `.cli` files, and script files are all detected correctly.
 
 ### Sublime Text
 
@@ -270,25 +300,55 @@ The installer will:
 python sublime_installer.py
 ```
 
-The installer will:
-- Copy `custom_exec.py` to the Sublime Text user packages directory
-- Copy and configure `DaSQL.sublime-build` with the correct working directory
-- Add an **F8** key binding
+It copies `custom_exec.py` into Sublime's User packages directory, installs and configures `DaSQL.sublime-build` with the correct working directory, and adds an **F8** key binding.
 
-**Manual steps:**
+**Manual setup (if you'd rather do it by hand):**
 
-1. Restart Sublime Text
-2. Go to **Tools → Build System → DaSQL** to activate the build system
+1. **Tools → Build System → New Build System**, replace the contents with `DaSQL.sublime-build.sample`, and save it as `DaSQL.sublime-build`. It should look like:
+   ```json
+   {
+       "target": "execute_selection_exec",
+       "cancel": {"kill": true},
+       "shell_cmd": "python3 dasql.py \"\\$fname\" \"\\$dirname\" \"\\$selection\"",
+       "working_dir": "d:\\wasql\\dasql",
+       "word_wrap": false,
+       "quiet": true,
+       "save_untitled_files": true
+   }
+   ```
+2. Copy `custom_exec.py.sample` to Sublime's User packages folder (`C:\Users\{YOU}\AppData\Roaming\Sublime Text 3\Packages\User`) and rename it `custom_exec.py`.
+3. Set the build system: **Tools → Build System → DaSQL**.
+4. Copy `dasql.ini.sample` to `dasql.ini` and add a section per database.
 
-**Usage:**
+**Usage:** select SQL and press **F8**; with nothing selected, the current line runs. Opening a `.py`/`.php`/etc. file and pressing F8 runs it as a script.
 
-| Action | How |
-|--------|-----|
-| Run selected text | Select SQL and press **F8** |
-| Run current line | Press **F8** with nothing selected |
-| Run a script file | Open a `.py`, `.php`, etc. file and press **F8** |
+### Notepad++
 
----
+DaSQL runs in Notepad++ through the **NppExec** plugin.
+
+**Automatic installer:**
+
+```
+python notepad_pp_installer.py
+```
+
+It locates Notepad++, installs the NppExec plugin if missing, and writes the DaSQL execution script (`nppexec_dasql_config.txt`) into the NppExec config directory. The generated script hard-codes your detected Python path and the DaSQL directory, e.g.:
+
+```
+set local Python_Exe = C:\Webserver\bin\Python311\python3.exe
+set local DaSQL_Dir  = d:\wasql\dasql
+```
+
+**Manual steps after the installer:**
+
+1. Open Notepad++.
+2. **Plugins → NppExec → Advanced Options**, under *Menu Items*: Item name `DaSQL`, Associated script `DaSQL`, click **Add/Modify**, then **OK**.
+3. Restart Notepad++.
+4. **Settings → Shortcut Mapper → Plugin commands**, find `DaSQL`, double-click, and assign **F8**.
+
+**Fully manual install (no installer):** install the NppExec plugin (**Plugins → Plugins Admin → NppExec → Install**), turn on **Plugins → NppExec → No Internal Messages**, press **F6**, paste the contents of `notepad_pp_plugin.txt` (adjust `Python_Dir` and `DaSQL_Dir` at the top), and save the script as `DaSQL`.
+
+**Usage:** select SQL and press **F8** (or your mapped key); with nothing selected, the current line runs.
 
 ### Visual Studio Code
 
@@ -298,13 +358,7 @@ The installer will:
 python vscode_installer.py
 ```
 
-The installer will:
-- Add three DaSQL tasks to your user-level `tasks.json`
-- Add key bindings to `keybindings.json`
-
-**Manual steps:**
-
-1. Restart VS Code
+It adds three DaSQL tasks to your user-level `tasks.json` and the key bindings to `keybindings.json`. Restart VS Code.
 
 **Usage:**
 
@@ -314,13 +368,11 @@ The installer will:
 | Execute current line | **Shift+F8** |
 | Execute entire file | **Ctrl+F8** |
 
-You can also run tasks manually via **Ctrl+Shift+P → Run Task → DaSQL: ...**.
-
----
+You can also run them from **Ctrl+Shift+P → Run Task → DaSQL: …**.
 
 ### JetBrains IDEs
 
-Supported IDEs: IntelliJ IDEA, PyCharm, DataGrip, WebStorm, PhpStorm, GoLand, Rider, CLion, and others.
+Works with IntelliJ IDEA, PyCharm, DataGrip, WebStorm, PhpStorm, GoLand, Rider, CLion, and others.
 
 **Automatic installer:**
 
@@ -328,30 +380,15 @@ Supported IDEs: IntelliJ IDEA, PyCharm, DataGrip, WebStorm, PhpStorm, GoLand, Ri
 python jetbrains_installer.py
 ```
 
-The installer writes a `DaSQL.xml` External Tools configuration to every detected JetBrains IDE config directory.
+It writes a `DaSQL.xml` External Tools configuration into every detected JetBrains config directory.
 
-**Manual steps required after the installer finishes:**
+**Manual steps after the installer:**
 
-1. Restart the IDE
-2. Go to **Settings → Tools → External Tools**
-   Confirm the *DaSQL* group contains *Execute Selection* and *Execute File*
-3. Go to **Settings → Keymap**
-4. Search for `DaSQL` in the keymap search box
-5. Double-click **Execute Selection** → **Add Keyboard Shortcut** → press **F8**
-6. Double-click **Execute File** → **Add Keyboard Shortcut** → press **Ctrl+F8**
+1. Restart the IDE.
+2. **Settings → Tools → External Tools** — confirm the *DaSQL* group has *Execute Selection* and *Execute File*.
+3. **Settings → Keymap**, search `DaSQL`: assign **F8** to *Execute Selection* and **Ctrl+F8** to *Execute File*.
 
-**Usage:**
-
-| Action | Shortcut |
-|--------|----------|
-| Execute selected text | **F8** |
-| Execute entire file | **Ctrl+F8** |
-
-Results appear in the **Run** tool window at the bottom of the IDE.
-
-> **DataGrip tip:** DaSQL complements DataGrip's built-in query runner — use DaSQL when you need to query a database that DataGrip's connection doesn't directly cover, or to run cross-database comparisons.
-
----
+Results appear in the **Run** tool window.
 
 ### Vim / Neovim
 
@@ -361,15 +398,7 @@ Results appear in the **Run** tool window at the bottom of the IDE.
 python vim_installer.py
 ```
 
-The installer:
-- Detects Vim and/or Neovim in your PATH
-- For Neovim: appends a Lua config block to `init.lua` if it exists, falls back to `init.vim`, or creates `init.lua` if neither exists
-- For Vim: appends a VimL config block to `_vimrc` (Windows) or `.vimrc` (Unix)
-- Is safe to re-run — skips if the DaSQL config block is already present
-
-**Manual steps:**
-
-1. Restart Vim / Neovim
+It detects Vim and/or Neovim and appends a DaSQL config block to `init.lua`/`init.vim` (Neovim) or `_vimrc`/`.vimrc` (Vim). It's safe to re-run — it skips if the block is already present. Restart Vim/Neovim.
 
 **Usage:**
 
@@ -379,28 +408,87 @@ The installer:
 | Visual | Execute selection | **F8** |
 | Normal | Execute entire file | **Ctrl+F8** |
 
-Results appear in a `DaSQL-Output` split at the bottom of the screen. Press `Ctrl+W W` to jump between the output and your SQL file.
+Output opens in a `DaSQL-Output` split; `Ctrl+W W` jumps between it and your SQL file.
+
+### Zed
+
+**Automatic installer:**
+
+```
+python zed_installer.py
+```
+
+It adds two DaSQL tasks to Zed's global `tasks.json` and binds them in `keymap.json`, then points them at the current DaSQL directory. Restart Zed.
+
+The tasks pass Zed's `$ZED_FILE` (the full path, *with* extension), `$ZED_DIRNAME`, and `$ZED_SELECTED_TEXT`, so `.sql` sections, `.cli` files, and script files all resolve correctly.
+
+**Usage:**
+
+| Action | Shortcut |
+|--------|----------|
+| Execute selection | **F8** |
+| Execute entire file | **Ctrl+F8** |
+
+Results appear in Zed's terminal panel. You can also run them from the command palette: **task: spawn → DaSQL: …**.
+
+> **Note:** Zed has no "current line" task variable, so select the line (or any text) before pressing **F8**. Zed's Windows build is still preview — on macOS/Linux the config dir is `~/.config/zed`; on Windows the installer targets `%APPDATA%\Zed`.
+
+### Emacs
+
+**Automatic installer:**
+
+```
+python emacs_installer.py
+```
+
+It appends a DaSQL elisp block to your init file (`~/.emacs.d/init.el`, `~/.emacs`, or `~/.config/emacs/init.el`), with your Python path and `dasql.py` path baked in. It's safe to re-run — it skips if the block is already present. Restart Emacs, or run `M-x eval-buffer` on your init file.
+
+**Usage:**
+
+| Action | Key |
+|--------|-----|
+| Execute region, or current line if nothing is selected | **F8** |
+| Execute entire buffer | **Ctrl+F8** |
+
+Results appear in a `*DaSQL Output*` buffer.
+
+### Other editors (Geany, gedit, …)
+
+`dasql.py` reads the query from **stdin** when it isn't passed as an argument. That means any editor that can pipe the current selection to an external command works — you don't need a dedicated installer. Wire up a custom/external tool that:
+
+1. runs `python3 dasql.py "<filename-with-extension>" "<dir>"` from the DaSQL directory, and
+2. pipes the selection to the command's standard input.
+
+The filename (with its extension) still selects the `dasql.ini` section, exactly as with the F8 integrations.
+
+- **Geany** — *Edit → Format → Send Selection to → Set Custom Commands*, or a Build command that pipes the selection.
+- **gedit** — enable the built-in **External Tools** plugin, set *Input: Current selection* and *Output: Bottom pane*, and call `dasql.py` with `$GEDIT_CURRENT_DOCUMENT_NAME` and its directory.
+
+Because the filename is passed through, `.cli` files and scripts are detected here too.
 
 ---
 
 ## Troubleshooting
 
 **`DaSQL: dasql.ini not found`**
-Copy `dasql.ini.sample` to `dasql.ini` and fill in your `base_url` and `authkey`.
+Copy `dasql.ini.sample` to `dasql.ini` (in the same folder as `dasql.py`) and set `base_url` and `authkey`.
 
 **`DaSQL: ConnectionError trying to connect to ...`**
-Check that `base_url` in your ini section is correct and the WaSQL server is reachable.
+Check `base_url` in the matched section and confirm the WaSQL server is reachable.
 
 **`DaSQL: Timeout error`**
-The WaSQL server did not respond in time. Check server health or network connectivity.
+The server didn't respond in time — check server health and network.
 
 **`DaSQL: not sure what to do with this`**
-The query didn't match any recognised SQL keyword or special prefix. Check for typos at the start of the query, or verify the line doesn't begin with a comment (`--` or `#`) — DaSQL strips leading comment markers automatically, but only one level deep.
+The line didn't start with a recognized SQL keyword or special prefix. Check for a typo at the start, or a comment marker deeper than one level (DaSQL strips only one leading `--`/`#`).
 
-**Results appear garbled (encoding issues)**
-Set `output_format = dos` in your section — the `dos` format handles encoding most reliably for editor output panels.
+**A `.cli` command ran on my computer instead of the server**
+The `.cli` file's name must match a section in `dasql.ini`, and your editor integration must pass the filename **with** its `.cli` extension. Re-run your editor's installer if you set it up before this was fixed.
+
+**Results look garbled (encoding issues)**
+Set `output_format = dos` — it's the most robust for editor output panels.
 
 **F8 does nothing in the editor**
-- Confirm the build system / plugin is active (editor-specific; see setup steps above)
-- Check that `dasql.ini` exists and the filename of your open file matches a section name
-- Run `python3 dasql.py mysection . "select 1"` directly from the command line to isolate whether the issue is with DaSQL or the editor integration
+- Confirm the build system / plugin / task is active (see your editor's setup above).
+- Confirm `dasql.ini` exists and your open file's name matches a section.
+- Isolate the problem by running it directly: `python3 dasql.py mysection . "select 1"`. If that works, the issue is the editor integration, not DaSQL.
