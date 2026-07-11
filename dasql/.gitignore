@@ -1,4 +1,5 @@
 *.sql
+*.cli
 dasql.ini
 __pycache__
 nppexec_dasql_config.txt
