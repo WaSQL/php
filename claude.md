@@ -271,7 +271,7 @@ Full data-access function set (all have a verbose `database*` alias, e.g. `datab
 - `editDBRecord($opts)` / `editDBRecordById($table,$id,$values)` — update.
 - `delDBRecord($opts)` / `delDBRecordById($table,$id)` — delete.
 - `dbAddRecords($db,$table,['-recs'=>$rows])` — bulk insert.
-- `listDBRecords($opts)` — render an HTML data-grid (see below).
+- `databaseListRecords($opts)` — render an HTML data-grid (see below). **Preferred over the older `listDBRecords` alias**, which is being phased out; use `databaseListRecords` in new code.
 - `executeSQL($sql)` — run raw SQL (used in crons/DDL).
 
 ### `-` option keys for data access
@@ -285,16 +285,38 @@ Full data-access function set (all have a verbose `database*` alias, e.g. `datab
 - `-debug` — dump the generated SQL.
 - `-results_eval` / `-results_eval_params` — callback run over the result set to compute extra columns.
 
-### `listDBRecords` — HTML data grid
-Two modes: `['-list'=>$prefetchedRecs]`, or query mode with `-table`. Presentation keys: `-listfields` (columns to show), `-action`, `-tableclass`, `-tableheight`, `-hidesearch`, `-searchfields`, `-sorting`, `-export`. Per-column overrides use a dashless `fieldname_options` array with HTML attrs and `%_id%` token substitution:
+### `databaseListRecords` — HTML data grid
+(Formerly `listDBRecords` — that alias still works but is being replaced; write `databaseListRecords`.) Two modes: `['-list'=>$prefetchedRecs]`, or query mode with `-table`. Presentation keys: `-listfields` (columns to show), `-action`, `-tableclass`, `-tableheight`, `-hidesearch`, `-searchfields`, `-sorting`, `-export`. Per-column overrides use a dashless `fieldname_options` array with HTML attrs and `%_id%` token substitution. **Keep the (often lengthy) option array in a `functions` helper, not inline in the controller — see "Thin controller" below:**
 ```php
-return listDBRecords(['-table'=>'modq_scripts','-listfields'=>'_id,name,_cdate',
-  'name_options'=>['data-nav'=>'/t/1/modq/scripts/addedit/%_id%']]);
+// in the page's functions field (the "model"):
+function pageScriptsGrid(){
+  return databaseListRecords(['-table'=>'modq_scripts','-listfields'=>'_id,name,_cdate',
+    'name_options'=>['data-nav'=>'/t/1/modq/scripts/addedit/%_id%']]);
+}
+// controller just calls it:
+$grid = pageScriptsGrid();
 ```
 
 ### System tables & audit columns
 - **Leading-underscore tables are framework/system tables:** `_pages`, `_templates`, `_users`, `_cron`, `_fielddata`, `_translations`, `_tabledata`. App/business tables have no leading underscore, and are often module-prefixed (`sb_task`, `modq_scripts`, `wcommerce_orders`).
 - **Every record carries audit columns:** `_id` (PK), `_cdate` (created), `_edate` (edited), `_cuser` (creating user id), `_euser` (editing user id).
+
+## Page-field roles — think MVC (thin controller)
+The page record's fields map onto MVC roles; respect the separation:
+- **`controller` = the Controller.** Keep it THIN — it decides *what* happens: routes on `$PASSTHRU`, checks auth, picks the view with `setView()`, and calls functions to fetch/build data. It should read like a table of contents, not an implementation.
+- **`functions` = the Model.** Put the real work here: DB queries, `databaseListRecords` grids, computed data, business logic — especially anything with lengthy option arrays. The controller calls a named helper (`$grid = pageThingGrid();`) instead of inlining a 10-line `['-table'=>…]` array.
+- **`body` (`<view:...>` blocks) = the View.** Presentation only; it consumes variables the controller set and calls `renderView`/`renderEach`.
+```php
+// controller (thin): route + delegate
+switch(strtolower($PASSTHRU[0])){
+  case 'pages': $grid = pageSamplePagesGrid(); setView('tab_pages',1); break;  // lengthy params live in functions
+  default:      setView('default'); break;
+}
+// functions (model): the lengthy call lives here
+function pageSamplePagesGrid(){
+  return databaseListRecords(['-table'=>'_pages','-listfields'=>'_id,name,_edate','-order'=>'_edate desc','-limit'=>12]);
+}
+```
 
 ## Views & templates (deeper than the basics)
 - A `body` field is a set of named `<view:name>...</view:name>` blocks. **Defining a view never outputs it** — WaSQL extracts every block into a registry and the block text is removed from where it sits. It only appears when a `renderView`/`renderViewIf`/`renderEach` call names it, or `setView()` selects it as the page output.
@@ -337,11 +359,34 @@ if(!isAdmin()){ setView('no_access',1); return; }  // logged in but not admin
 - There is **no group/role function** in real use; per-page allow-lists are done with `in_array($USER['username'], [...])` or a `$PAGE['settings_ex']['admins']` map. Logoff via URL `/?_logoff=1`.
 
 ## Client-side JS
+- **Standardize on the `wacss.*` library.** All new client-side JS should call the framework's `wacss.*` methods rather than the older bare global helpers or hand-rolled functions. When a `wacss.*` method exists for what you need (nav, form post, tabs, conditional fields, modals, toasts…), use it — do NOT reinvent it. Bare legacy globals (`ajaxSubmitForm`, `ajaxGet`, `submitForm`) still work for existing code but are not for new code, and writing your own DOM helpers when a `wacss.*` one exists is a mistake.
 - **AJAX nav (the workhorse):** `<a data-nav="/t/1/page/action" data-div="target_id" onclick="return wacss.nav(this);">`. Optional `data-setprocessing="0"` (spinner toggle), `data-onload="jsToRunAfterLoad();"`.
-- **AJAX form submit (dominant idiom):** `<form action="/t/1/page/action" onsubmit="return ajaxSubmitForm(this,'target_div');">` — response injected into the div. Newer: `wacss.ajaxPost(this,'div')`. Full-page submit: `submitForm(this)`.
+- **Tabbed navigation — use the built-in, do NOT hand-roll a highlight helper.** Add `data-tab="1"` to a `wacss.nav` anchor and it does two things: AJAX-loads `data-nav` into `data-div` AND calls `wacss.setActiveTab(this)` to move the active-class among the sibling tabs automatically. Never write your own `setActiveTab`/`swapTab` JS — that was a past mistake:
+  ```html
+  <nav class="tabs">
+    <a data-tab="1" data-nav="/t/1/page/greeting" data-div="content" onclick="return wacss.nav(this);">Greeting</a>
+    <a data-tab="1" data-nav="/t/1/page/features" data-div="content" onclick="return wacss.nav(this);">Features</a>
+  </nav>
+  <div id="content"></div>
+  ```
+  `setActiveTab` accepts either the classic `w_tabs` structure (`<ul><li><a>…</a></li></ul>` — toggles the `<li>`) OR flat anchor/button tabs (`<nav><a>…</a></nav>` — toggles the `<a>` itself). It auto-detects whether siblings use the `is-active` or `active` class and toggles that one.
+- **AJAX form submit (preferred idiom): `wacss.ajaxPost`.** `<form action="/t/1/page/action" onsubmit="return wacss.ajaxPost(this,'target_div');">` — response injected into the div. We are standardizing on the `wacss.*` library, so use `wacss.ajaxPost(this,'div')`, NOT the older bare `ajaxSubmitForm(this,'div')` (still works, but don't write new code with it). Full-page submit: `submitForm(this)`.
+- **`data-displayif`/`data-readonlyif` require `wacss.formChanged` wired to the form's `onchange`** — the conditional show/hide is re-evaluated on change, so the form tag needs `onchange="wacss.formChanged(this,event);"`. Without it the fields never toggle:
+  ```html
+  <form action="/t/1/page/action" onchange="wacss.formChanged(this,event);" onsubmit="return wacss.ajaxPost(this,'target_div');">
+  ```
 - Direct calls: `ajaxGet(url, targetDivId, {setprocessing:0})`, `wacss.ajaxGet(url,div,params)`.
 - Other useful `wacss.*`: `wacss.modalPopup`/`modalClose`, `wacss.toast`, `wacss.copy2Clipboard`, `wacss.initTabs`/`setActiveTab`, `wacss.pagingExport`, `wacss.initDatePicker`, `wacss.initSignaturePad`, `wacss.speak`.
 - `pushData($data, 'csv', 'file.csv')` — stream a typed download to the browser (CSV export is the main use).
+
+## Styling / CSS
+- **Use framework classes, don't invent them.** Just like the `wacss.*` JS push, we are standardizing styling onto the framework's own classes. The canonical stylesheet is **`wfiles/css/extras/wacss_v2.css`** — `wacss_`-prefixed classes that use **Bulma-style `is-*` modifiers**. If the site loads **Bulma**, prefer Bulma's equivalents (same `is-*` modifier convention). Never hand-invent class names (e.g. `w_btn`, `w_input`, `w_table` do NOT exist), and don't reach for the **legacy** `wfiles/css/wasql.css` classes (`.w_button`, `.w_button_black`, …) in new code.
+- Canonical `wacss_v2.css` classes:
+  - **Button:** `class="wacss_button is-primary"` (modifiers: `is-primary`/`is-info`/`is-success`/`is-warning`/`is-danger`/`is-link`/`is-light`/`is-dark`, sizes `is-small`/`is-medium`/`is-large`, plus `is-rounded`/`is-fullwidth`/`is-outlined`). Group buttons in a `.wacss_buttons` container (gap utilities `wacss_gap3/5/10/15`). Bulma equivalent: `class="button is-primary"`.
+  - **Input / control:** `class="wacss_input"` (pass via the `buildForm*` `'class'` param), wrappers `.wacss_control`. Bulma: `class="input"`.
+  - **Table:** `class="wacss_table is-striped"` (also `is-bordered`/`is-hoverable`/`is-fullwidth`), wrapper `.wacss_table-container`. For `databaseListRecords` set `'-tableclass'=>'wacss_table is-striped'`. Bulma: `class="table is-striped"`.
+  - **Utilities:** spacing `wacss_top10`/`wacss_bot20`…, alignment `wacss_align-left`/`-center`/`-right`.
+- **Only write custom page `css` for genuinely page-specific layout** that no framework class covers — reach for `wacss_v2.css`/Bulma first, and remember the page's own `css` field is auto-injected (don't `<link>` it yourself).
 
 ## Form building
 Two signatures across the `buildForm*` family:
@@ -362,7 +407,9 @@ Two signatures across the `buildForm*` family:
 - `verifyForm` is NOT used — validation is `required` attributes plus manual controller checks.
 
 ### `data-*` attributes
-- `data-displayif="scope>field:value"` / `data-readonlyif="..."` (938× — very common) — conditional show / read-only. Scope ∈ `data`, `account`, `meta`. Value optional (bare = truthy), comma-separated = OR. E.g. `data-displayif="data>send_email:Y"`, `data-displayif="meta>type:gb,gb_notes"`.
+- `data-displayif="field:value"` / `data-readonlyif="..."` (938× — very common) — conditional show / read-only, re-evaluated by `wacss.formChanged` (the form's `onchange` must call it — see the Client-side JS section). Value optional (bare = truthy), comma-separated = OR. **Requires the form to have a control literally named `field`.**
+  - **Plain field:** for a normal form field named `mood`, it is just `data-displayif="mood:curious"` — NOT `data>mood`.
+  - **Nested JSON field (the `scope>field` form):** the `>` addresses an attribute *inside* a JSON field. `data-displayif="data>send_email:Y"` means "the JSON field named `data` has attribute `send_email` == Y" — so `scope>attr` requires an actual JSON field named `scope` (commonly `data`, `account`, or `meta`). Only use `scope>` when the control really is a JSON field with sub-attributes; for a flat field use the bare name. E.g. `data-displayif="meta>type:gb,gb_notes"`.
 - `data-confirm` (confirm dialog before action), `data-format` (input formatting), `data-required` (conditional required), `data-toggle`/`data-target` (show/hide), `data-tab`, `data-tip`/`data-tooltip`.
 
 ## `_triggers` — DB record lifecycle hooks

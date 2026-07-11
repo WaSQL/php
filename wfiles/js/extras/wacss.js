@@ -9379,6 +9379,7 @@ const wacss = {
 	        case 'a':
 	            let pli=wacss.getParent(element,'li');
 	            if(undefined != pli){
+	                //classic w_tabs structure: <ul><li><a>...</a></li></ul> - the <li> is the tab
 	                siblingSelector='li';
 	                element=pli;
 	                let pul=wacss.getParent(pli,'ul');
@@ -9387,6 +9388,11 @@ const wacss = {
 	                    let pol=wacss.getParent(pli,'ol');
 	                    if(undefined != pol){parent=pol;}
 	                }
+	            }
+	            else{
+	                //flat anchor tabs: <nav><a data-tab>...</a></nav> - the anchor itself is the tab
+	                siblingSelector='a';
+	                parent=element.parentElement;
 	            }
 	        break;
 	        case 'li':
@@ -9401,7 +9407,14 @@ const wacss = {
 	        case 'button':
 	            siblingSelector='button';
 	        break;
+	        default:
+	            //any other tab element (e.g. <div>/<span> based tabs): treat it as its own sibling set
+	            siblingSelector=tagName;
+	        break;
 	    }
+	    //safety net: never call querySelectorAll('') - an empty selector throws a SyntaxError
+	    if(!siblingSelector.length){siblingSelector=tagName;}
+	    if(undefined == parent){return false;}
 	    //get the siblings
 	    let siblings = parent.querySelectorAll(siblingSelector);
 	    //determine the activeClassName by checking the siblings
