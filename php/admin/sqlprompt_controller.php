@@ -1212,7 +1212,12 @@ ENDOFQUERY;
 					//'-cursor'=>SQL_CUR_USE_ODBC,
 					'-query'=>$_SESSION['sql_last'],
 					//'-process'=>'sqlpromptCaptureFirstRows'
-					'-ignore_case'=>1
+					'-ignore_case'=>1,
+					//allow multiple ;-separated statements from a .sql file/dasql to all run.
+					//Postgres already does this natively via pg_query(); the mysql driver honors
+					//-multi to match (runs every statement, shows the last result set). Ignored by
+					//drivers that don't support it.
+					'-multi'=>1
 				);
 
 				$grade=databaseGradeSQL($params['-query'],0);

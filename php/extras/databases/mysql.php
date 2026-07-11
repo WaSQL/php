@@ -1700,6 +1700,47 @@ function mysqlQueryResults($query = '', $params = array()) {
     $result = null;
 
     try {
+        // Multi-statement support (opt-in via -multi, set only by the sqlprompt/dasql path).
+        // Mirrors PostgreSQL's pg_query(): run every ;-separated statement in order and
+        // surface the LAST result set. We deliberately do NOT enable this for normal app
+        // queries - mysqli_query() blocks multi-statements as a SQL-injection safeguard and
+        // that protection must stay on everywhere except this explicit interactive path.
+        // The guard only triggers when the string actually holds more than one statement, so
+        // single-statement calls keep the well-tested insert-id / affected-rows handling below.
+        if (!empty($params['-multi']) && empty($params['-values']) && preg_match('/;\s*\S/', rtrim($query, "; \t\r\n"))) {
+            mysqli_multi_query($dbh_mysql, $query);
+            $lastResult = null;
+            do {
+                $res = mysqli_store_result($dbh_mysql);
+                if ($res instanceof mysqli_result) {
+                    // keep only the most recent result set; free any earlier ones
+                    if ($lastResult instanceof mysqli_result) { mysqli_free_result($lastResult); }
+                    $lastResult = $res;
+                }
+                if (!mysqli_more_results($dbh_mysql)) { break; }
+                // MYSQLI_REPORT_STRICT makes a failing statement throw here (earlier
+                // statements already ran server-side) and it lands in the catch below.
+                mysqli_next_result($dbh_mysql);
+            } while (true);
+
+            if ($lastResult instanceof mysqli_result) {
+                // last statement returned rows - stream/return them like a normal SELECT
+                $rows = mysqlEnumQueryResults($lastResult, $params);
+                mysqli_free_result($lastResult);
+            } else {
+                // all statements were writes (INSERT/UPDATE/DDL) - report a status row
+                $statusRec = array('status' => 'OK', 'affected_rows' => max(0, mysqli_affected_rows($dbh_mysql)));
+                if (isset($params['-filename'])) {
+                    setFileContents($params['-filename'], "\xEF\xBB\xBF" . arrays2CSV(array($statusRec)));
+                    $rows = 1;
+                } else {
+                    $rows = array($statusRec);
+                }
+            }
+            $DATABASE['_lastquery']['stop'] = microtime(true);
+            $DATABASE['_lastquery']['time'] = $DATABASE['_lastquery']['stop'] - $DATABASE['_lastquery']['start'];
+            return $rows;
+        }
         $hasParams = !empty($params['-values']);
         if ($hasParams) {
             // Validate placeholder count

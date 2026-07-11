@@ -392,7 +392,7 @@ else:
         if params['query'].endswith('?>'):
             params['query']=params['query'][:len(params['query'])-2]
         df.evalCode('lua','lua',params['query'])
-    elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","explain","select","insert","update","delete","with","create","alter","drop","truncate","grant","revoke","comment","explain","analyze","describe","desc","show","use","set","reset","call","execute","exec","do","declare","fetch","copy","load","import","export","merge","lock","unload","begin","end","reindex","pragma","vacuum","refresh","checkpoint")):
+    elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","explain","select","insert","update","delete","with","create","alter","drop","truncate","grant","revoke","comment","explain","analyze","describe","desc","show","use","set","reset","call","execute","exec","do","declare","fetch","copy","load","import","export","merge","lock","unload","begin","start transaction","start","commit","rollback","savepoint","release","end","reindex","pragma","vacuum","refresh","checkpoint")):
         #prepare the key/value pairs to pass to WaSQL base_url
         data={
             'db': params['db'],
