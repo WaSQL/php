@@ -492,3 +492,84 @@ const ws = new WebSocket(page.webSocketDebuggerUrl);
 
 That's the whole method: **one HTTP call to find the tab, one WebSocket to control it, and
 `Runtime.evaluate` to read/act on the page.** No frameworks, just Node and Chrome.
+
+---
+
+## 11. How this differs from the "Claude for Chrome" extension
+
+People often ask whether this raw-CDP method is "the same thing" as the **Claude for Chrome**
+browser extension. Short answer: they share DNA but solve different problems.
+
+The surprising part: **the extension also uses the Chrome DevTools Protocol under the hood** —
+it drives the browser with "full mouse, keyboard, and screenshot control" via CDP, the same
+protocol this document is about. So the difference is *not* the transport. The real
+differences are **who's driving, which browser/session, and what guardrails exist.**
+
+### What the extension is (current as of Dec 2025)
+
+- A **Manifest V3 browser extension** (Chrome and Microsoft Edge only) that is **generally
+  available to paid plans** (Pro, Max, Team, Enterprise) — no longer a research preview.
+- It runs an **agentic loop**: you ask Claude (Sonnet 4.5) in **natural language**, and the
+  model decides which of its ~21 browser tools to call (click, type, navigate, read DOM,
+  screenshot, manage tabs, handle dialogs, upload files…), iterating until done.
+- It reads the page as an **accessibility tree** (ARIA roles/labels/structure) plus
+  screenshots — not just raw pixels.
+- It acts inside **your real, logged-in browser session**, so it inherits your existing
+  auth to every site you're signed into (Gmail, Jira, AWS, your local dev server…).
+- It has a **safety model** you don't get from raw CDP: three permission modes
+  (ask-per-action by default, follow-a-plan pre-authorization, or skip-all-checks),
+  per-domain allow/deny, mandatory confirmation on irreversible/harmful actions
+  (purchases, password changes), content blocking for high-risk categories, and
+  prompt-injection defenses (Anthropic reports residual injection success dropping from
+  ~23.6% to ~11.2% with defenses — explicitly "not foolproof," so start with trusted sites).
+- It **pauses for you** on CAPTCHAs and login screens.
+- It is **not user-scriptable** — there's no imperative "call these tools in this order" API;
+  you steer it with prompts and it chooses the steps.
+
+> There's also a middle option: **Claude Code's own Chrome integration** (`code.claude.com/docs/en/chrome`),
+> which lets the CLI/VS Code agent use a Chrome instance. That's agent-driven like the
+> extension, but wired into the coding agent.
+
+### What our CDP method is
+
+- **You** write an imperative script (`send('Page.navigate', …)`, `send('Runtime.evaluate', …)`).
+  It's **deterministic and repeatable** — the same script does the same thing every run,
+  which is exactly what you want for regression checks and CI.
+- It typically drives a **dedicated debug-profile Chrome** you launched (or attaches to a
+  visible one you started with `--remote-debugging-port`) — not your everyday profile.
+- **No guardrails and no model in the loop** — the script has full, unmediated control.
+  That's a feature for automation you wrote and trust, and a footgun if you point it at
+  something destructive.
+- It lives in the **same local agent that edits your code**, enabling the tight
+  "edit source → clear cache → re-screenshot → assert" loop this repo uses. It has no
+  dependency on a Claude subscription, cloud round-trips, or the extension being installed.
+
+### Side by side
+
+| Aspect | Claude for Chrome (extension) | Raw CDP (this doc) |
+|---|---|---|
+| Underlying protocol | **CDP** (same as us) | **CDP** |
+| Who decides the steps | Claude, agentically (you prompt in natural language) | You, imperatively (you write the script) |
+| Determinism | Non-deterministic (model chooses) | Deterministic / repeatable |
+| Browser & session | Your **real, logged-in** browser (Chrome/Edge) | A **dedicated debug-profile** browser (or an attached one) |
+| Authentication | Reuses your existing logins | You log in / manage session yourself |
+| Safety model | Permission gates, per-domain allow-lists, confirmations, injection defenses | None — full control, you own the risk |
+| Scriptable / CI-able | No (prompt-driven) | Yes |
+| Setup | Install extension, sign in (paid plan) | Launch Chrome with a debug port; connect a WebSocket |
+| Availability | Paid Claude plans; Chrome/Edge; no WSL; not via Bedrock/Vertex/Foundry | Anywhere you can run Chrome + Node |
+| Handles CAPTCHA/login | Pauses and asks you | Your script must handle it |
+| Best for | Ad-hoc "go do this task in my browser" using your real sessions | Precise, reproducible automation tied to your codebase |
+
+### Which to use
+
+- **This CDP method** when you need a *reproducible* result driven by *your* code — the
+  screenshot/verify/regression loop against a site you're editing (our whole use case here).
+- **The extension** when you want to hand Claude a fuzzy, one-off web task ("book this,"
+  "pull the numbers from that dashboard") and let it figure out the steps in your own
+  authenticated browser, with confirmation prompts guarding the risky bits.
+
+*Sources: [claude.com/claude-for-chrome](https://claude.com/claude-for-chrome),
+[claude.com/blog/claude-for-chrome](https://claude.com/blog/claude-for-chrome),
+[Claude Code + Chrome docs](https://code.claude.com/docs/en/chrome),
+[Get started with Claude in Chrome (Help Center)](https://support.claude.com/en/articles/12012173-get-started-with-claude-in-chrome).
+Extension details reflect Dec 2025 documentation and may change.*
