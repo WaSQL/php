@@ -1,5 +1,10 @@
 *.sql
 *.cli
+*.php
+*.lua
+*.py
+!dasql.py
+!dasql_functions.py
 dasql.ini
 __pycache__
 nppexec_dasql_config.txt

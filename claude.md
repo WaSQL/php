@@ -406,6 +406,50 @@ Two signatures across the `buildForm*` family:
 - `getCSVFileContents($file)` — CSV file → array of record arrays. `arrays2CSV($recs[,'-noheader'=>1])` — inverse. `setFileContents($file,$data)` — write (auto-serializes arrays).
 - `verifyForm` is NOT used — validation is `required` attributes plus manual controller checks.
 
+### How `addEditDBForm` saves — the save is GLOBAL, not tied to the target page
+`addEditDBForm` only *renders* the form. On submit it carries hidden `_table` + `_action` fields, and the framework saves the record at **bootstrap** (`index.php`: `if(isset($_REQUEST['_action'])){ processActions(); }`) — **before** the page controller runs and regardless of which page/route the form posts to. Consequences:
+- **`-action` can point at ANY route.** The save happens no matter what; the action route's only job is to render the *response* (typically a refreshed list/section). You do NOT need to call `addEditDBForm` again on the receiving page to persist the edit.
+- So the idiomatic "edit → refresh a section" flow is: point `-action` at a route that re-queries and re-renders, and `wacss.ajaxPost` the form into the div you want replaced. Use `-nocache` on that re-query so the just-saved row is included.
+- **One form builder can serve multiple host pages** by swapping only `-action`/`-onsubmit` target. Pass a "source" hint (e.g. an extra passthru segment `/addedit/{id}/index`) into the builder and branch:
+  ```php
+  function fooAddedit($id,$src=''){
+    $action="/t/1/portal/foo/list"; $target='portal_content';   // default host
+    if(strtolower($src)=='index'){ $action="/t/1/index/foo"; $target='foo'; }  // alt host
+    $opts=['-table'=>'foo','-action'=>$action,'-onsubmit'=>"return wacss.ajaxPost(this,'{$target}');", ...];
+    if($id>0){$opts['_id']=$id;}
+    return addEditDBForm($opts);
+  }
+  ```
+
+### Section-refresh pattern (one view serves full-page render AND AJAX partial)
+To make a page section independently reloadable (e.g. after an inline edit), factor its markup into a **standalone `<view:section_name>` block** and render it two ways:
+- **Full page:** inside the section wrapper, `<section id="thething"><?=renderView('section_name',$data,'var');?></section>`.
+- **AJAX partial:** add a `PASSTHRU` case that re-fetches the data and `setView('section_name',1)` (the `1` clears other views so only the section renders inside the blank `/t/1/` template), then `return;`.
+- **Refresh trigger:** any `wacss.nav`/`wacss.ajaxPost` to `/t/1/{page}/{that_action}` with `data-div` / target = the section wrapper's `id`. The section's `id` and the target div are the same thing — the AJAX response replaces the wrapper's inner HTML.
+```php
+// controller
+case 'calendar':
+    $events=indexUpcomingEvents();   // re-query (use -nocache)
+    setView('calendar_section',1);
+    return;
+break;
+```
+```html
+<!-- body: full-page render -->
+<section id="calendar" class="section"><?=renderView('calendar_section',$events,'events');?></section>
+<!-- body: the reusable block -->
+<view:calendar_section> ... <?=renderEach('event_card',$events,'event');?> ... </view:calendar_section>
+```
+Combined with the global-save behavior above, an edit form whose `-action` is `/t/1/index/calendar` and whose `ajaxPost` target is `calendar` will save, then drop the freshly-rendered section back into `#calendar`.
+- **Close the launching modal on success via `data-onload` on the reloaded partial.** When the form was opened in the `centerpop` modal, put `data-onload="wacss.centerpopClose();"` on the section's root element. `data-onload` runs after the AJAX content is injected, so on a *successful* save the fresh section re-renders (closing the modal); if the save fails the form re-renders instead (modal stays open). This beats calling close in the form's `onsubmit`, which would close the modal before knowing the result:
+  ```html
+  <view:calendar_section>
+    <div class="container" data-onload="wacss.centerpopClose();">
+      ...
+    </div>
+  </view:calendar_section>
+  ```
+
 ### `data-*` attributes
 - `data-displayif="field:value"` / `data-readonlyif="..."` (938× — very common) — conditional show / read-only, re-evaluated by `wacss.formChanged` (the form's `onchange` must call it — see the Client-side JS section). Value optional (bare = truthy), comma-separated = OR. **Requires the form to have a control literally named `field`.**
   - **Plain field:** for a normal form field named `mood`, it is just `data-displayif="mood:curious"` — NOT `data>mood`.
@@ -462,5 +506,6 @@ A `_cron` table tracks jobs (`run_cmd` URL, `run_every`, `cron_pid`, `running`);
 - `ai_patterns.md` - Corrected code patterns and examples
 - `quick_reference.md` - Function reference and common patterns (note: its `isLoggedIn`/`hasPermission` are wrong — see corrections above)
 - `architecture.md` - Complete technical documentation
+- `postedit.md` - How AI should work on a PostEdit-mirrored WaSQL site: launch Chrome in debug mode, resolve a site from `postedit.xml`, screenshot it via the DevTools Protocol, and make edits through the auto-syncing PostEdit file mirror
 
 Remember: WaSQL's database-driven architecture and unique syntax are its strengths. Help users embrace this approach with the correct syntax patterns rather than fighting against it.
