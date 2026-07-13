@@ -3874,47 +3874,15 @@ function databaseParseFilters($params=array()){
 		$params['-filters']=preg_split('/[\r\n\ ]+/',trim($params['-filters']));
 	}
 	//echo printValue($params['-filters']);exit;
-	if(count($params['-filters'])==1 && stringBeginsWith($params['-filters'][0],'1-ct-')){
-		//this is a simplesearch
-		list($field,$oper,$val)=preg_split('/\-/',$params['-filters'][0],3);
-		$val=trim($val);
-		$lval=strtolower($val);
-		$val=str_replace("'","''",$val);
-		$lval=str_replace("'","''",$lval);
-		$ors=array();
-		$searchfields=0;
-		if(isset($params['-searchfields'])){
-			$searchfields=1;
-			if(!is_array($params['-searchfields'])){
-				$params['-searchfields']=preg_split('/[\,\ ]+/',trim($params['-searchfields']));
-			}
+	//normalize -searchfields once. The "1" field is the simplesearch "all fields"
+	//placeholder, and when -searchfields is set the simplesearch is limited to those
+	//fields - regardless of how many filters are present (see the $field=='1' handling below).
+	$searchfields=array();
+	if(isset($params['-searchfields'])){
+		if(!is_array($params['-searchfields'])){
+			$params['-searchfields']=preg_split('/[\,\ ]+/',trim($params['-searchfields']));
 		}
-		foreach($params['-info'] as $field=>$info){
-			if($searchfields==1 && !in_array($field,$params['-searchfields'])){continue;}
-			switch(strtolower($params['-database'])){
-				case 'oracle':
-				case 'hana':
-				case 'odbc':
-				case 'mssql':
-				case 'sqlite':
-				case 'duckdb':
-					$ors[]="lower({$field}) like '%{$lval}%'";
-				break;
-				case 'postgres':
-				case 'postgresql':
-					$ors[]="lower(cast({$field} as text)) like '%{$lval}%'";
-				break;
-				case 'snowflake':
-					$ors[]="{$field} ilike '%{$val}%'";
-				break;
-				default:
-					//mysql is case insensitive
-					$ors[]="{$field} like '%{$val}%'";
-				break;
-			}
-		}
-		$orstr=implode(' OR ',$ors);
-		return array("({$orstr})");
+		$searchfields=$params['-searchfields'];
 	}
 	foreach($params['-filters'] as $filter){
 		if(is_array($filter) || !strlen($filter)){continue;}
@@ -3923,6 +3891,37 @@ function databaseParseFilters($params=array()){
 		$lval=strtolower($val);
 		$val=str_replace("'","''",$val);
 		$lval=str_replace("'","''",$lval);
+		//the "1" field is the simplesearch "all fields" placeholder - expand it across the
+		//-searchfields (when set) or all fields, regardless of how many filters there are.
+		if($field=='1'){
+			$fields=count($searchfields) ? $searchfields : array_keys($params['-info']);
+			$ors=array();
+			foreach($fields as $sfield){
+				switch(strtolower($params['-database'])){
+					case 'oracle':
+					case 'hana':
+					case 'odbc':
+					case 'mssql':
+					case 'sqlite':
+					case 'duckdb':
+						$ors[]="lower({$sfield}) like '%{$lval}%'";
+					break;
+					case 'postgres':
+					case 'postgresql':
+						$ors[]="lower(cast({$sfield} as text)) like '%{$lval}%'";
+					break;
+					case 'snowflake':
+						$ors[]="{$sfield} ilike '%{$val}%'";
+					break;
+					default:
+						//mysql is case insensitive
+						$ors[]="{$sfield} like '%{$val}%'";
+					break;
+				}
+			}
+			if(count($ors)){$wheres[]='('.implode(' OR ',$ors).')';}
+			continue;
+		}
 		switch(strtolower($oper)){
 			case 'ct':
 				//contains
