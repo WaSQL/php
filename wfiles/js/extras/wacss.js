@@ -3593,6 +3593,7 @@ const wacss = {
 		try{wacss.initTabs();}catch(e){}
 		try{wacss.initCodeMirror();}catch(e){}
 		try{wacss.initDropdowns();}catch(e){}
+		try{wacss.initNavbars();}catch(e){}
 		try{wacss.initEditor();}catch(e){}
 		try{wacss.initWhiteboard();}catch(e){}
 		try{wacss.initSignaturePad();}catch(e){}
@@ -3600,6 +3601,65 @@ const wacss = {
 		try{wacss.initHovers();}catch(e){}
 		try{wacss.leftMenu('init');}catch(e){}
 		try{wacss.initDatePicker();}catch(e){}
+		return false;
+	},
+
+	/**
+	* @name wacss.initNavbars
+	* @describe wires up each .wacss_navbar for mobile.
+	* @describe 1) the .wacss_navbar-burger button toggles the is-active class on the navbar (css shows/hides the full menu based on that class) and keeps aria-expanded in sync.
+	* @describe 2) any top-level li marked .wacss_navbar-always is kept in the bar on small screens (logo, user) and opens its own dropdown on tap by toggling is-open (touch has no :hover). Tapping outside or opening the burger closes them.
+	* @return false
+	* @usage wacss.initNavbars();
+	*/
+	initNavbars: function(){
+		let bars=document.querySelectorAll('.wacss_navbar:not([data-navbar_initialized="1"])');
+		if(bars.length){
+			for(let n=0;n<bars.length;n++){
+				let navbar=bars[n];
+				//flag as initialized so we do not bind twice
+				navbar.dataset.navbar_initialized=1;
+				//1) burger toggles the full mobile menu
+				let burger=navbar.querySelector('.wacss_navbar-burger');
+				if(undefined != burger && null != burger){
+					burger.addEventListener('click',function(evt){
+						wacss.preventDefault(evt);
+						let active=navbar.classList.toggle('is-active');
+						this.setAttribute('aria-expanded',active?'true':'false');
+						//closing/opening the burger clears any open quick dropdowns
+						let opened=navbar.querySelectorAll('.wacss_navbar-always.is-open');
+						for(let o=0;o<opened.length;o++){opened[o].classList.remove('is-open');}
+						return false;
+					});
+				}
+				//2) always-visible quick items open their dropdown on tap
+				let items=navbar.querySelectorAll(':scope > ul > li.wacss_navbar-always > a');
+				for(let i=0;i<items.length;i++){
+					items[i].addEventListener('click',function(evt){
+						//only intercept dropdown parents (a bare link should just navigate)
+						if(!this.classList.contains('dropdown')){return true;}
+						wacss.preventDefault(evt);
+						let li=this.parentNode;
+						let willOpen=!li.classList.contains('is-open');
+						//close any sibling quick dropdowns first
+						let sibs=navbar.querySelectorAll('.wacss_navbar-always.is-open');
+						for(let s=0;s<sibs.length;s++){sibs[s].classList.remove('is-open');}
+						if(willOpen){li.classList.add('is-open');}
+						return false;
+					});
+				}
+			}
+		}
+		//close quick dropdowns when clicking/tapping anywhere outside them (bind once)
+		if(undefined == document.body.dataset.navbar_doc_bound){
+			document.body.dataset.navbar_doc_bound=1;
+			document.addEventListener('click',function(evt){
+				let open=document.querySelectorAll('.wacss_navbar-always.is-open');
+				for(let o=0;o<open.length;o++){
+					if(!open[o].contains(evt.target)){open[o].classList.remove('is-open');}
+				}
+			});
+		}
 		return false;
 	},
 

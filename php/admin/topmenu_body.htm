@@ -17,7 +17,7 @@
 	</button>
 	<ul class="left">
 		<!-- WaSQL -->
-		<li><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
+		<li class="wacss_navbar-always"><a href="#logo" onclick="return false;" class="dropdown"><img src="/wfiles/wasql_admin.png" /></a>
 			<ul  style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=about"><span class="icon-wasql-about w_bigger"></span> About</a></li>
 				<li><a href="/php/admin.php?_menu=manual" class="w_small"><span class="icon-wasql-doc w_bigger"></span>  Docs</a></li>
@@ -54,7 +54,7 @@
 			</ul>
 		</li>
 		<!-- Tables -->
-		<li><a href="#tables" class="dropdown" onclick="return false;"><span class="icon-table"></span> <span class="hidden-sm-down">Tables</span></a>
+		<li class="wacss_navbar-always" title="Tables"><a href="#tables" class="dropdown" onclick="return false;"><span class="icon-table"></span> <span class="hidden-sm-down">Tables</span></a>
 			<ul  style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=tables"><span class="icon-list"></span> List / Manage</a></li>
 				<view:tables_group>
@@ -73,7 +73,7 @@
 			</ul>
 		</li>
 		<!-- Pages -->
-		<li><a href="#pages" class="dropdown" onclick="return false;"><span class="icon-file-doc"></span> <span class="hidden-sm-down">Pages</span></a>
+		<li class="wacss_navbar-always" title="Pages"><a href="#pages" class="dropdown" onclick="return false;"><span class="icon-file-doc"></span> <span class="hidden-sm-down">Pages</span></a>
 			<ul  style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_pages"><span class="icon-list"></span> List</a></li>
 				<li><a href="/php/admin.php?_menu=meta"><span class="icon-website"></span> Metatags</a></li>
@@ -100,7 +100,7 @@
 			</ul>
 		</li>
 		<!-- Users -->
-		<li><a href="#users" class="dropdown" onclick="return false;"><span class="icon-users"></span> <span class="hidden-sm-down">Users</span></a>
+		<li class="wacss_navbar-always" title="Users"><a href="#users" class="dropdown" onclick="return false;"><span class="icon-users"></span> <span class="hidden-sm-down">Users</span></a>
 			<ul style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=list&_table_=_users"><span class="icon-list"></span> List</a></li>
 				<li><a href="/php/admin.php?_menu=properties&_table_=_users"><span class="icon-table-add"></span> Properties</a></li>
@@ -216,7 +216,7 @@
 			</ul>
 		</li>
 		<!-- User -->
-		<li class="right"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down"><?=$USER['username'];?></span></a>
+		<li class="right wacss_navbar-always"><a href="#user" class="dropdown" onclick="return false;"><span class="icon-user"></span> <span class="hidden-sm-down"><?=$USER['username'];?></span></a>
 			<ul style="padding-bottom:15px;padding-top:10px;">
 				<li><a href="/php/admin.php?_menu=profile"><span class="icon-user-portal"></span> Profile</a></li>
 				<li><a href="/php/admin.php?_menu=postedit"><span class="icon-wasql-postedit w_bigger"></span> postEdit</a></li>

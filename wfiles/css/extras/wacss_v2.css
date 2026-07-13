@@ -4879,27 +4879,84 @@ label.wacss_panel-block:hover {
         display: block;
     }
 
-    /* Hide menus by default on mobile */
+    /* Closed bar: keep the two menus inline but show ONLY the always-visible
+       quick items (WaSQL logo + user menu); everything else lives behind the
+       burger. This uses the otherwise-empty bar space on small screens. */
+    .wacss_navbar {
+        flex-wrap: wrap;
+    }
     .wacss_navbar > ul {
+        display: flex;
+    }
+    .wacss_navbar > ul.left {
+        order: 1;
+        margin-right: auto;
+    }
+    .wacss_navbar > ul.right {
+        order: 2;
+        margin-left: 0;
+    }
+    .wacss_navbar-burger {
+        order: 3;
+        margin-left: 0;
+    }
+    .wacss_navbar > ul > li {
         display: none;
     }
-
-    /* Show menus when navbar is active */
-    .wacss_navbar.is-active > ul {
+    .wacss_navbar > ul > li.wacss_navbar-always {
         display: flex;
-        flex-direction: column;
-        width: 100%;
+    }
+
+    /* Closed bar: an always-visible item opens its own dropdown on tap
+       (is-open added by wacss.initNavbars, since touch has no :hover) */
+    .wacss_navbar > ul > li.wacss_navbar-always > ul {
+        display: none;
         position: absolute;
         top: 100%;
         left: 0;
+        min-width: 240px;
         background: #ffffff;
         border: 1px solid #dbdbdb;
         border-top: none;
         z-index: 9998;
         box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px;
     }
+    .wacss_navbar > ul.right > li.wacss_navbar-always > ul {
+        left: auto;
+        right: 0;
+    }
+    .wacss_navbar > ul > li.wacss_navbar-always.is-open > ul {
+        display: block;
+    }
 
-    /* Stack menu items vertically on mobile */
+    /* Open (burger tapped): the bar becomes a vertical scrollable panel,
+       burger pinned top-right, both menus stacked below WITHOUT overlapping */
+    .wacss_navbar.is-active {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        max-height: 100vh;
+        max-height: 100dvh;
+        overflow-y: auto;
+    }
+    .wacss_navbar.is-active .wacss_navbar-burger {
+        order: -1;
+        align-self: flex-end;
+        margin: 0;
+        flex: 0 0 auto;
+    }
+    .wacss_navbar.is-active > ul {
+        order: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        position: static;
+        background: #ffffff;
+        border: none;
+        box-shadow: none;
+    }
+
+    /* Show every item (including the quick ones) when the panel is open */
     .wacss_navbar.is-active > ul > li {
         display: block;
         width: 100%;
@@ -4919,6 +4976,20 @@ label.wacss_panel-block:hover {
     .wacss_navbar.is-active > ul.left,
     .wacss_navbar.is-active > ul.right {
         margin: 0;
+    }
+
+    /* When open, the quick-item dropdown flows inline like the rest (override
+       the absolute closed-bar styling above so it stacks, not overlaps) */
+    .wacss_navbar.is-active > ul > li.wacss_navbar-always > ul {
+        position: static;
+        left: auto;
+        right: auto;
+        min-width: 0;
+        width: 100%;
+        border: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        background: transparent;
+        box-shadow: none;
     }
 
     /* Level 2 dropdowns - full width on mobile */
