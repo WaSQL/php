@@ -4,6 +4,71 @@ DaSQL lets you run SQL queries (and scripts, and shell commands) against **any d
 
 ---
 
+## For AI agents (quick reference)
+
+> This block is a machine-oriented summary of what DaSQL is and exactly how it decides what to do. The rest of the document is the human-facing guide. If you are an AI assisting with this repo, read this section first.
+
+**What it is:** `dasql.py` is a single Python bridge. It takes a **filename**, a **directory**, and a **query/selection**, reads `dasql.ini` (always in `dasql.py`'s own folder), matches a `[section]`, and POSTs the query to `{base_url}/php/admin.php` (WaSQL's authenticated SQL prompt). WaSQL runs it against the target database and returns text, which DaSQL prints to stdout.
+
+**Core rule — the filename picks the connection.** The `.sql`/`.cli`/`.php`/`.py`/`.lua` filename (minus extension) must match a `dasql.ini` section name; that section supplies `db`, `base_url`, `authkey`, and `output_format`. If no section matches the filename, DaSQL tries the *directory* name as a section. `[global]` provides defaults for every section.
+
+**Invocation:** `python dasql.py <filename-with-ext> <dirname> <query>`. If `<query>` is empty and stdin is piped, the query is read from **stdin**. A single leading `-- ` / `--` / `#` is stripped from the query.
+
+**Key files:**
+- `dasql.py` — the bridge / dispatcher (all routing logic lives here).
+- `dasql_functions.py` — helpers: `runScript`, `getInterpreter`, `evalCode`, `previewMarkdown`, `previewHTML`, `readFileWithoutBOM`.
+- `dasql.ini` — connections + shortcuts (git-ignored; holds auth keys). `dasql.ini.sample` is the template.
+- `*_installer.py` — one per editor (Sublime, VS Code, JetBrains, Vim/Neovim, Zed, Emacs, Notepad++). They wire an **F8** action that calls `dasql.py`. These run **locally** and must never be shipped to a server.
+- `*.sql` files in the repo are saved query sets, one per section.
+
+**Dispatch decision (the order `dasql.py` actually uses):**
+1. Filename ends in `.cli` → send the line to the server as a shell command (`cmd>`), targeting the matching section's server.
+2. Filename is `.php`/`.py`/`.lua` **AND** lives in the DaSQL dir **AND** its name matches a section → run the **whole file on the server** (`php>`/`py>`/`lua>`, admin-only).
+3. Otherwise, a script file with a known interpreter/shebang (`.php .py .pl .rb .js .lua .r .sh`) → run **locally**; `.md`/`.html` → render/open in browser.
+4. Otherwise treat the input as a query line and apply the prefix rules below; a bare word may resolve to a shortcut (`[section:name]`, else `[global:name]`).
+
+**Query prefixes** — `math>`/`calc>` (local Python eval), `cmd>` (local shell), `C:\path>cmd` (local shell in dir), `http…` (open URL), `{…}`/`[…]` (pretty-print JSON via local PHP), `<?php?>`/`<?py?>`/`<?lua?>` (run locally), `php>`/`py>`/`lua>` (run on the **server**, admin-only). Anything starting with a SQL keyword (select/insert/update/… plus `tables`, `ddl`, `help`, etc.) is sent to the server as SQL.
+
+**Local vs. remote is the critical distinction:** `<?php?>`/`<?py?>`/`<?lua?>` and `cmd>`/`math>` run on the user's machine with no WaSQL access; `php>`/`py>`/`lua>`, `.cli`, and in-dir `.php`/`.py`/`.lua` files run **on the WaSQL server** in the real framework environment and require admin rights.
+
+**Output formats** (`output_format`): `dos` (fixed-width, most robust — default), `csv`, `json`, `xml`, `html`, `table`.
+
+**When helping with this repo:** don't hardcode auth keys (they come from the WaSQL admin menu's DaSQL option); keep `dasql.ini` out of commits; installer scripts stay local; server-side prefixes need admin rights. Per this project's rules, never run `git commit`/`git push`.
+
+### Remote debugging: DaSQL + WaMCP
+
+An AI working on a WaSQL site has **two complementary remote tools**. Use them together to diagnose a live server without SSH or a DB client.
+
+**WaMCP** (the `wamcp` MCP server) — *read-only, structured, inside the database.* Answers "what does the data/schema look like?" Tools:
+
+| Tool | Use it to |
+|------|-----------|
+| `databases` / `setdb` / `getdb` | List reachable databases, pick the active one, confirm host/user/version/charset. |
+| `getuser` | Confirm which user/permissions the session is running as. |
+| `tables` / `fields` / `ddl` / `indexes` | Inspect schema — tables, columns, `CREATE TABLE`, indexes. |
+| `query` | Run a **read-only** query (SELECT/SHOW/EXPLAIN/DESCRIBE/WITH) and get the result set. |
+
+Prefer WaMCP for anything that is a question *about the database*: confirming a column exists, checking a setting stored in a table, reading `commonGetSetting`-style config rows, verifying row counts, inspecting server variables via `SHOW`.
+
+**DaSQL** — *remote execution, outside/around the database.* Answers "what's happening on the box?" It runs OS shell commands and server-side PHP/Python/Lua **on the WaSQL host** (admin auth required):
+
+- **`.cli` file** (e.g. `myserver.cli`) — each selected line is a **shell command run on the server**. This is the workhorse for OS-level diagnostics.
+- **`php>` / `py>` / `lua>`** prefixes (or a whole in-dir `.php`/`.py`/`.lua` file named after a section) — run server-side code in the real WaSQL environment: call framework functions, read `$CONFIG`/`$DATABASE`, `commonGetSetting()`, check the actual PHP version/extensions, inspect file paths.
+
+**What this combination unlocks (concrete diagnostics):**
+
+- **Drive / disk space** — `.cli`: `df -h` (Linux) or `wmic logicaldisk get size,freespace,caption` (Windows).
+- **Read log files** — `.cli`: `tail -n 200 /var/log/wasql/error.log`, `grep -i error …`.
+- **Server reports / health** — `.cli`: `free -m`, `top -bn1`, `ps aux | grep php`, `uptime`, `systemctl status …`.
+- **Confirm database settings** — WaMCP `getdb` + `query "SHOW VARIABLES LIKE 'max_connections'"`; or DaSQL `php>` to dump `$DATABASE['DBNAME']` / `$CONFIG['...']` as WaSQL actually sees it.
+- **Confirm framework/site config** — DaSQL `php>echo printValue($CONFIG);` or `php>echo commonGetSetting('company','name');` to read live config the DB alone won't show.
+- **Verify files on disk** — `.cli`: `ls -la`, `cat config.xml` (careful with secrets), check that an uploaded/generated file exists and its size.
+- **Check running crons / processes** — WaMCP `query` against the `_cron` table for job state, plus `.cli` `ps`/`pgrep` to see if the process is actually alive.
+
+**Rule of thumb:** if the answer lives *in a table or the schema*, reach for **WaMCP** (read-only, safe, structured). If it lives *on the operating system, the filesystem, or in the running PHP process* — disk, logs, memory, config files, process list — reach for **DaSQL** (`.cli` for shell, `php>`/`py>`/`lua>` for server code). Both target the server chosen by the active DB / matched section, so confirm you're pointed at the intended environment (watch for staging vs. prod) before running anything with side effects. Keep DaSQL diagnostics **read-only** unless the user explicitly asks for a change.
+
+---
+
 ## Contents
 
 - [What DaSQL is](#what-dasql-is)
