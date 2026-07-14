@@ -9933,7 +9933,7 @@ const wacss = {
 	},
 	/**
 	* @name wacss.showFilePreview
-	* @describe previews one or more files (image/video/audio) for a file_* preview element. Media type comes from data-mediatype; sources come from data-srclist (JSON, set on upload) or data-src/href/background-image (a stored value). Renders every file with its name and does nothing when there is no file to preview.
+	* @describe previews one or more files (image/video/audio) for a file_* preview element. Media type comes from data-mediatype, or is inferred from the element's tag (video/audio/img) or the source file extension. Sources come from data-srclist (JSON, set on upload) or data-src/href/background-image (a stored value). Renders every file with its name and does nothing when there is no file to preview.
 	* @param mixed DOM element or id of the preview element
 	* @param number z optional z-index, defaults to 999980
 	* @return mixed the overlay element, or false when there is nothing to preview
@@ -9944,7 +9944,23 @@ const wacss = {
 	showFilePreview: function(el,z){
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
-		let type=(el.dataset.mediatype || 'image').toLowerCase();
+		//determine the media type: explicit data-mediatype wins, then the element's tag, then the source file extension
+		let type=(el.dataset.mediatype || '').toLowerCase();
+		if(!type.length){
+			let tag=(el.tagName || '').toLowerCase();
+			if(tag==='video' || tag==='audio' || tag==='img'){
+				type = (tag==='img') ? 'image' : tag;
+			}
+			else{
+				//infer from the source file extension (strip any #t=/?query fragments first)
+				let probe=el.getAttribute('src') || el.dataset.src || el.getAttribute('href') || '';
+				probe=probe.split('#')[0].split('?')[0];
+				let ext=probe.substring(probe.lastIndexOf('.')+1).toLowerCase();
+				if(['mp4','m4v','mov','webm','ogv','ogg','mkv','avi'].indexOf(ext)>=0){ type='video'; }
+				else if(['mp3','wav','m4a','aac','flac','oga','weba'].indexOf(ext)>=0){ type='audio'; }
+				else{ type='image'; }
+			}
+		}
 		//optional controls - attribute present enables it unless explicitly 0/false/no
 		let attrOn=function(name){
 			if(!el.hasAttribute('data-'+name)){return false;}
