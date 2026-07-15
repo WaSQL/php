@@ -350,6 +350,8 @@ function pageSamplePagesGrid(){
 - **Nesting `<view:>` blocks is purely cosmetic** (for readability). An inner block still only renders where something explicitly calls it. Don't expect an inline nested view to appear in place.
 - Render functions: `renderView($name[,$data[,$var]])`, `renderViewIf($cond,$name[,$data[,$var]])`, `renderViewIfElse($cond,$a,$b,...)`, `renderViewSwitch($val,$map,...)`, `renderEach($name,$array[,$var])`. The view name and loop-var name are independent: `renderEach('photo',$product['photos'],'photo')`.
 - `getView($name)` returns a view's raw string (used to feed `-fields`/`-listview` in form options). Wrap in `evalPHP(getView(...))` when the view layout contains PHP to evaluate.
+- **`renderView($name,$data)` exposes `$data` inside the view as `$params`** (the whole passed value — array, string, etc.). Access it as `$params['title']` etc., or rename it with the `-alias` opt (`renderView('addedit',$data,'row')` → `$row` in the view). There is also a `-format=>'addeditdbform'` opt that renders the view's `[fieldname]` layout as an `addEditDBForm` (pass `-table`).
+- **⚠️ `<view:>` blocks are only registered in `$VIEWS` during BODY rendering, NOT when the controller/functions run.** So a function that calls `getView('..._fields')` or `renderView(...)` must be invoked from the **body** (inside a `<view:>` block), not precomputed in the controller — calling too early throws `renderView Error: There is no view named X` and `getView` returns empty. Idiom (matches real sites): the controller just routes and `setView('form',1); return;`, and the body block builds it: `<view:form><?=pageAddEditForm($tab,$id);?></view:form>`. Grid/`databaseListRecords` builders that don't touch `getView` are fine to call from the controller.
 
 ### `setView($name)` vs `setView($name, 1)` — critical
 - **The second arg `1` clears all previously-set views**, making `$name` the only view rendered. `setView($name)` (no `1`) is **cumulative** — it ADDS to the list, so multiple `setView` calls render multiple views in order.
@@ -403,6 +405,7 @@ if(!isAdmin()){ setView('no_access',1); return; }  // logged in but not admin
   <form action="/t/1/page/action" onchange="wacss.formChanged(this,event);" onsubmit="return wacss.ajaxPost(this,'target_div');">
   ```
 - Direct calls: `ajaxGet(url, targetDivId, {setprocessing:0})`, `wacss.ajaxGet(url,div,params)`.
+- **Opening a centerpop modal — just target the `centerpop` div; there is no explicit "open" function.** Give any `wacss.nav`/`wacss.ajaxGet` a target div of **`centerpop`** and it self-creates the modal and loads the response into it: `<a data-nav="/t/1/page/addedit/0" data-div="centerpop" onclick="return wacss.nav(this);">`, or `wacss.ajaxGet('/t/1/page/addedit/'+id,'centerpop',{title:'Edit'})`. Div-name keywords: `centerpop`, `centerpop1`/`2`/`3` (stacked), and `modal`. Title via the `{title:...}` param or a `data-title` attr. Close with `wacss.centerpopClose()`.
 - Other useful `wacss.*`: `wacss.modalPopup`/`modalClose`, `wacss.toast`, `wacss.copy2Clipboard`, `wacss.initTabs`/`setActiveTab`, `wacss.pagingExport`, `wacss.initDatePicker`, `wacss.initSignaturePad`, `wacss.speak`.
 - `pushData($data, 'csv', 'file.csv')` — stream a typed download to the browser (CSV export is the main use).
 
@@ -412,6 +415,7 @@ if(!isAdmin()){ setView('no_access',1); return; }  // logged in but not admin
   - **Button:** `class="wacss_button is-primary"` (modifiers: `is-primary`/`is-info`/`is-success`/`is-warning`/`is-danger`/`is-link`/`is-light`/`is-dark`, sizes `is-small`/`is-medium`/`is-large`, plus `is-rounded`/`is-fullwidth`/`is-outlined`). Group buttons in a `.wacss_buttons` container (gap utilities `wacss_gap3/5/10/15`). Bulma equivalent: `class="button is-primary"`.
   - **Input / control:** `class="wacss_input"` (pass via the `buildForm*` `'class'` param), wrappers `.wacss_control`. Bulma: `class="input"`.
   - **Table:** `class="wacss_table is-striped"` (also `is-bordered`/`is-hoverable`/`is-fullwidth`), wrapper `.wacss_table-container`. For `databaseListRecords` set `'-tableclass'=>'wacss_table is-striped'`. Bulma: `class="table is-striped"`.
+    - **Sticky header rows:** add `is-sticky` (the table becomes a scroll block with a pinned `thead`; height variants `is-short`≈200px / `is-tall`≈600px / `is-full-height`, default 80vh). Requires the `wacss_table` base class (NOT Bulma `table`) — e.g. `'-tableclass'=>'wacss_table is-striped is-fullwidth is-sticky is-tall'`. Tradeoff: `is-sticky` forces `table-layout:fixed` + `white-space:nowrap;text-overflow:ellipsis`, so wide cells truncate. Because the sticky is a class on the `<table>` itself (self-contained), it survives a section-refresh (unlike wrapper-scoped sticky CSS — see the section-refresh gotcha).
   - **Utilities:** spacing `wacss_top10`/`wacss_bot20`…, alignment `wacss_align-left`/`-center`/`-right`.
 - **Only write custom page `css` for genuinely page-specific layout** that no framework class covers — reach for `wacss_v2.css`/Bulma first, and remember the page's own `css` field is auto-injected (don't `<link>` it yourself).
 
@@ -477,8 +481,65 @@ Combined with the global-save behavior above, an edit form whose `-action` is `/
     </div>
   </view:calendar_section>
   ```
-  - **Rule of thumb: any centerpop-launched form's response view should carry `data-onload="wacss.centerpopClose();"` on its root** — that's what makes the modal disappear after a successful submit.
+  - **Rule of thumb: put `data-onload="wacss.centerpopClose();"` on the POST-SUBMIT refresh response — i.e. the section/grid the form reloads into (`ajaxPost` target) — NOT on the form's own open-response.** That's what makes the modal disappear after a successful submit. **⚠️ If you put it on the add/edit form's own root, the modal closes itself the instant it opens** (the form loads into the centerpop, its `data-onload` fires, and it closes) — a real bug that's easy to hit. **`wacss.centerpopClose()` is a safe no-op when no centerpop is open** (it only acts if a `#wacss_centerpop` element exists), so the *same* refreshed section/grid view can carry this attribute and be reused for ordinary non-modal refreshes (tab switch, delete) without harm.
   - **Point the form's `ajaxPost` target at the *scoped inner* refresh div, NOT the whole tab container.** If a list/section's CSS (or JS) is scoped to a wrapper id (e.g. `#thing_list .foo{...}`) and you refresh by replacing the *outer* container, the re-rendered markup lands **outside** that id, so the scoped rules stop applying (symptom seen once: action icons that were `display:flex` collapsed to vertical, and a frozen/sticky table lost its stickiness, after an edit-submit). Targeting the inner scoped div (e.g. `wacss.ajaxPost(this,'thing_list')`) keeps the refreshed content inside the id — scoped CSS keeps working — and also preserves sibling controls (an "Add new" button that lives next to, but outside, the list div).
+
+### CRUD-tab pattern — the standard recipe for a "manage {things}" tab (list + centerpop add/edit)
+This is the **preferred structure for any admin/config screen that manages one or more tables in tabs** (list rows, click to add/edit in a modal, save-and-refresh). It keeps the controller a pure router and puts each table's list/form in its own named views + functions. Build every new such tab this way.
+
+**Controller = generic router by view name** (no per-tab `if`s beyond the allow-list; each route just `setView`s a block and `return`s):
+```php
+switch(strtolower($PASSTHRU[0])){
+  case 'locations': case 'ou': case 'emails': case 'groups':   // one case per tab
+    switch(strtolower($PASSTHRU[1])){
+      case 'list':    setView("{$PASSTHRU[0]}_{$PASSTHRU[1]}",1); return;   // {tab}_list
+      case 'addedit': $id=(integer)$PASSTHRU[2];
+                      setView("{$PASSTHRU[0]}_{$PASSTHRU[1]}",1); return;   // {tab}_addedit
+    }
+    setView($PASSTHRU[0],1); return;                                       // {tab} (list wrapper)
+  default: setView('default'); break;                                     // full page
+}
+```
+
+**Functions = per-tab trio** (`functions` field): `manage{Tab}List()` → `databaseListRecords`, optional `manage{Tab}ListExtra()` → a `-results_eval` that builds friendly/combined display columns, and `manage{Tab}Addedit($id)` → `addEditDBForm`. The **whole row** opens the edit modal, and search/paging + the add/edit submit all target the inner `{tab}_list` div:
+```php
+function manageThingsList(){
+  return databaseListRecords(array(
+    '-table'=>'st_things','-tableclass'=>'table bordered striped is-hoverable',
+    '-listfields'=>'_id,active,mapfield,label',      // computed cols allowed (built in ListExtra)
+    '-results_eval'=>'manageThingsListExtra',
+    '-nocache'=>1,'active_checkmark'=>1,'-order'=>'is_default desc,name',
+    '-action'=>'/t/1/manage/things/list',            // search/paging posts here...
+    '-onsubmit'=>"return wacss.pagingSubmit(this,'things_list');",   // ...and refreshes the div
+    '-tr_data-nav'=>"/t/1/manage/things/addedit/%_id%",             // whole-row → centerpop edit
+    '-tr_data-div'=>'centerpop','-tr_onclick'=>"return wacss.nav(this);",
+    '-tr_data-title'=>"Edit Thing %_id%"
+  ));
+}
+function manageThingsAddedit($id=0){
+  $opts=array('-table'=>'st_things','-style_all'=>'width:100%',
+    '-action'=>'/t/1/manage/things/list',                          // save → re-render the list
+    '-onsubmit'=>"return wacss.ajaxPost(this,'things_list');",
+    '-fields'=>getView('things_addedit_fields'),                   // layout view (see getView gotcha)
+    'active_options'=>array('inputtype'=>'checkbox','tvals'=>1,'dvals'=>'&nbsp;'));
+  if($id>0){$opts['_id']=$id;}
+  return addEditDBForm($opts);
+}
+```
+
+**Views = four named blocks per tab** (`body` field):
+```html
+<view:things>                                        <!-- list wrapper: New button + list div -->
+  <div class="align-right"><a class="button is-info is-outlined is-small" href="#"
+    data-nav="/t/1/manage/things/addedit/0" data-div="centerpop" data-title="Add Thing"
+    onclick="return wacss.nav(this);"><span class="icon-plus right5"></span> New Thing</a></div>
+  <div id="things_list"><?=manageThingsList();?></div>
+</view:things>
+<view:things_list><div data-onload="wacss.centerpopClose();"><?=manageThingsList();?></div></view:things_list>
+<view:things_addedit><?=manageThingsAddedit($id);?></view:things_addedit>
+<view:things_addedit_fields> ...layout with [field] placeholders, root has data-onload="wacss.centerpopCenter();"... </view:things_addedit_fields>
+```
+Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **global save** fires (see `addEditDBForm` section) and the response re-renders `{tab}_list` into `#things_list`; because that list view's root carries `data-onload="wacss.centerpopClose();"`, a **successful** save closes the modal while a validation failure re-renders the form inside the still-open centerpop. The full page's `#manage_content` starts on the first tab with `<?=renderView('things');?>`. Tabs are `wacss.nav` + `data-tab="1"` anchors (see Client-side JS). **Do not** reintroduce a single shared `panel`/`form` view or per-cell `_onclick` edit handlers — the per-tab views + whole-row `-tr_data-nav` are the pattern.
 
 ### `data-*` attributes
 - `data-displayif="field:value"` / `data-readonlyif="..."` (938× — very common) — conditional show / read-only, re-evaluated by `wacss.formChanged` (the form's `onchange` must call it — see the Client-side JS section). Value optional (bare = truthy), comma-separated = OR. **Requires the form to have a control literally named `field`.**
