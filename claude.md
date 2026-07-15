@@ -307,7 +307,32 @@ $grid = pageScriptsGrid();
 The page record's fields map onto MVC roles; respect the separation:
 - **`controller` = the Controller.** Keep it THIN — it decides *what* happens: routes on `$PASSTHRU`, checks auth, picks the view with `setView()`, and calls functions to fetch/build data. It should read like a table of contents, not an implementation.
 - **`functions` = the Model.** Put the real work here: DB queries, `databaseListRecords` grids, computed data, business logic — especially anything with lengthy option arrays. The controller calls a named helper (`$grid = pageThingGrid();`) instead of inlining a 10-line `['-table'=>…]` array.
+  - **Every function gets a PHPDoc/JSDoc block — PHP in `functions`, JS in the `js` field.** Document each function with a `/** ... */` block above the signature — a one-line summary, then `@param {type} $name description` for each argument and `@return {type} description`. WaSQL harvests these to build its documentation, and they make the `functions`/`js` fields self-explanatory. Prefer this over loose `//` comments for describing what a function does (inline `//` notes inside the body are still fine). This applies to **JavaScript functions in the `js` field too** (JSDoc: `@param {HTMLElement} card`, `@return {void}`), including named nested helpers. Keep section-separator comments (`//--Members--`, `//--- appointments ---`) — put the docblock below the separator, above the function. Mark an internal helper you want left OUT of the generated manual with an `@exclude` tag in its block (`/** @exclude - excluded from the manual */`).
+    ```php
+    /**
+     * Build the "Stay Connected" cards for the current ward.
+     *
+     * @param array $bishopric Bishopric records (from commonGetBishopric()); used to find the bishop's email.
+     * @return array Connect-card arrays; empty when nothing is configured.
+     */
+    function indexGetSiteConnections($bishopric){ ... }
+    ```
+    ```js
+    /**
+     * Add dropped/selected files to the pending upload and re-render the list.
+     *
+     * @param {FileList} files Files from the input change or a drop event.
+     * @return {void}
+     */
+    function indexActivityAddFiles(files){ ... }
+    ```
 - **`body` (`<view:...>` blocks) = the View.** Presentation only; it consumes variables the controller set and calls `renderView`/`renderEach`.
+
+**Fetch data in the case that needs it — not before the switch.** Only put a query/computation ABOVE the `switch($PASSTHRU[0])` if EVERY branch (including the AJAX-partial cases) actually uses it. Data used only by the `default` (full-page) view belongs INSIDE `case default:` — otherwise every lightweight AJAX partial (`/t/1/page/calendar`, a modal form, a section refresh) needlessly pays for a full-page-only fetch on every request. Scope each variable to the narrowest branch that consumes it.
+
+**Even a modest block of data-building logic goes in `functions`, not the controller.** If assembling a variable takes more than a line or two (loops, conditionals, string building), extract it to a named `functions` helper (`$connect = indexGetSiteConnections($bishopric);`) so the controller stays a readable table of contents. This is the same rule as the lengthy-`databaseListRecords`-array case — it applies to ANY non-trivial computation, not just grids.
+
+**Name variables for the reader.** Use descriptive names (`$site`, not `$s`; `$bishopric`, not `$b` in outer scope) so the controller/functions read as intent. Short loop-locals (`$b` inside a tight `foreach`) are fine.
 ```php
 // controller (thin): route + delegate
 switch(strtolower($PASSTHRU[0])){
