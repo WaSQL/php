@@ -2774,6 +2774,58 @@ table.is-sticky tr:first-child th, table.sticky tr:first-child th{
   border-top:0px !important;
 }
 
+/* ----------------  Sticky table (sticky header row + frozen first column) ----------------
+   Wrap any table in <div class="wacss_sticky">...</div> to get a sticky header
+   row AND a frozen first column while the table scrolls inside the panel.
+   Sticky positioning needs overflow on BOTH axes: overflow-x:auto alone forces
+   overflow-y to compute to auto and breaks a panel-relative sticky header, so
+   the wrapper is a bounded scroll panel (it scrolls internally, not the page).
+     height:   set --wacss-sticky-h (e.g. style="--wacss-sticky-h:60vh") or add .is-fullheight
+     cell bg:  set --wacss-sticky-bg (frozen/sticky cells must be opaque to cover scrolled content)
+   Modifiers:  .is-headeronly (header only, no frozen column)
+               .is-colonly    (frozen column only, no sticky header)
+               .is-fullheight (remove the height cap)
+   Requires the table to use <thead> for its header row. */
+.wacss_sticky{
+  --wacss-sticky-h:70vh;
+  --wacss-sticky-bg:#fff;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  width:100%;
+  max-height:var(--wacss-sticky-h);
+}
+.wacss_sticky.is-fullheight{max-height:none;}
+.wacss_sticky>table{width:100%;}
+/* sticky header row - stays visible while scrolling down */
+.wacss_sticky>table thead th{
+  position:sticky;
+  top:0;
+  z-index:3;
+  background:var(--wacss-sticky-bg);
+  box-shadow:0 2px 4px -2px rgba(0,0,0,.15);
+}
+/* frozen first column - stays visible while scrolling right */
+.wacss_sticky>table tbody td:first-child{
+  position:sticky;
+  left:0;
+  z-index:2;
+  background:var(--wacss-sticky-bg);
+  box-shadow:2px 0 5px -2px rgba(0,0,0,.15);
+}
+/* top-left corner (first header cell) must sit above both sticky layers */
+.wacss_sticky>table thead th:first-child{
+  left:0;
+  z-index:4;
+  box-shadow:2px 2px 5px -2px rgba(0,0,0,.15);
+}
+/* header-only: drop the frozen first column */
+.wacss_sticky.is-headeronly>table tbody td:first-child{position:static;box-shadow:none;}
+.wacss_sticky.is-headeronly>table thead th:first-child{box-shadow:0 2px 4px -2px rgba(0,0,0,.15);}
+/* column-only: drop the sticky header row */
+.wacss_sticky.is-colonly>table thead th{position:static;box-shadow:none;}
+.wacss_sticky.is-colonly>table tbody td:first-child{box-shadow:2px 0 5px -2px rgba(0,0,0,.15);}
+.wacss_sticky.is-colonly>table thead th:first-child{position:sticky;left:0;top:auto;z-index:4;}
+
 table.table.condensed td, table.table.condensed th,
 table.table.table-condensed td, table.table.table-condensed th {
     padding: .2rem;
