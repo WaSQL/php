@@ -12,6 +12,8 @@ This document instructs Claude on how to assist users with WaSQL, a database-dri
 - Do NOT create commits even when asked to "commit this"
 - Make changes to files as requested, but ALWAYS let the developer commit them
 
+**NEVER modify core platform / framework files when building a site or app.** The WaSQL core under `php/` (e.g. `php/common.php`, `php/database.php`, `php/user.php`, the `php/extras/**` engines) is shared by hundreds of sites — a change for one site's feature can break all of them, and column/table names like `sites`/`site_id` collide across sites. Keep ALL site/app logic in the **database** where it belongs: a page's `functions`/`controller`/`body`, shared helpers in **`functions_common`** (loaded via `loadDBFunctions`), or a **template's `functions`**. If a feature seems to *need* a core hook, do it in the DB layer instead (e.g. add explicit filters at each call site, or a shared helper), and surface the limitation to the developer rather than editing core. Genuine framework enhancements are a separate, deliberate decision the developer makes — never bundle them into site work.
+
 ## Key Understanding Points
 
 ### WaSQL is Different from Traditional MVC
@@ -450,6 +452,8 @@ Combined with the global-save behavior above, an edit form whose `-action` is `/
     </div>
   </view:calendar_section>
   ```
+  - **Rule of thumb: any centerpop-launched form's response view should carry `data-onload="wacss.centerpopClose();"` on its root** — that's what makes the modal disappear after a successful submit.
+  - **Point the form's `ajaxPost` target at the *scoped inner* refresh div, NOT the whole tab container.** If a list/section's CSS (or JS) is scoped to a wrapper id (e.g. `#thing_list .foo{...}`) and you refresh by replacing the *outer* container, the re-rendered markup lands **outside** that id, so the scoped rules stop applying (symptom seen once: action icons that were `display:flex` collapsed to vertical, and a frozen/sticky table lost its stickiness, after an edit-submit). Targeting the inner scoped div (e.g. `wacss.ajaxPost(this,'thing_list')`) keeps the refreshed content inside the id — scoped CSS keeps working — and also preserves sibling controls (an "Add new" button that lives next to, but outside, the list div).
 
 ### `data-*` attributes
 - `data-displayif="field:value"` / `data-readonlyif="..."` (938× — very common) — conditional show / read-only, re-evaluated by `wacss.formChanged` (the form's `onchange` must call it — see the Client-side JS section). Value optional (bare = truthy), comma-separated = OR. **Requires the form to have a control literally named `field`.**
