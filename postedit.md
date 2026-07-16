@@ -54,11 +54,11 @@ its css = `...<page>._pages.css.<id>.css`, controller = `...controller.<id>.php`
 
 The user usually has Chrome open on the page being edited; after a save they can just refresh to see the change (the DB is already updated). Add a cache-buster query param (`?cb=1`) when checking, since CSS/JS are served as a hashed minified bundle (`/w_min/minify_...css`) — the page's own `css`/`js` fields are compiled into that bundle, not inlined.
 
-### ⚠️ Nudge the window by 1px before screenshotting (force a reflow)
+### ⚠️ The 1px reflow nudge (baked into `shot.js` — you don't do it by hand)
 
-**After a change/refresh, resize the browser by 1 pixel (then back) before you screenshot.** Some WaSQL layouts don't settle until a `resize` event fires — AJAX-loaded tab content, sticky/frozen tables, flex reflow, and (notably) a window that was resized while the page thought it was another width. Without the nudge you can screenshot a **stale/unsettled layout** and diagnose it as a real bug when it isn't.
+Some WaSQL layouts don't settle until a `resize` event fires — AJAX-loaded tab content, sticky/frozen tables, flex reflow, Chart.js canvases, and (notably) a window navigated while the page still thinks it's another width. Without a nudge you can capture a **stale/unsettled layout** and misdiagnose it as a real bug.
 
-This is easy to prove: navigate with the window set to a new width and the page can still report the *old* `innerWidth` (e.g. window at 800px but `window.innerWidth === 390`); a 1px nudge makes it recompute to the true width. Nudge via CDP `Browser.getWindowForTarget` → `Browser.setWindowBounds` ({width: w+1}, then {width: w}). The reusable `nudge.js` helper is in the **Appendix**. Sequence: **edit → PostEdit syncs → navigate/refresh → nudge 1px → screenshot.**
+**The canonical `shot.js` (Appendix) performs the nudge automatically** right before every capture — it toggles the emulated width +1px then back, firing `resize`. So the sequence is simply **edit → PostEdit syncs → navigate/refresh → run `shot.js`**; the settle step can't be forgotten because it lives inside the helper. (Proof it matters: a page navigated at 800px can still report `window.innerWidth === 390` until a 1px nudge recomputes it.) If you ever screenshot the user's own visible window some other way, replicate the toggle via CDP `Browser.setWindowBounds` ({width: w+1} then {width: w}).
 
 ## Database access (wamcp)
 
@@ -107,7 +107,9 @@ Not stored in the repo (don't put it under `postedit/postEditFiles/**` — that 
   `Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | ? { $_.CommandLine -like '*<unique-dir>*' } | % { Stop-Process -Id $_.ProcessId -Force }`
 
 ```js
-// Faithful mobile screenshot via CDP device emulation.
+// Faithful mobile screenshot via CDP device emulation, WITH an automatic 1px
+// reflow nudge so layouts settle (AJAX tabs, sticky tables, flex, Chart.js) — the
+// settle step lives in the helper so it can't be forgotten. See "The 1px reflow nudge".
 // usage: node shot.js <port> <url> <outfile> [width]
 const [,, PORT, URL, OUT, W] = process.argv;
 const width = parseInt(W || '390', 10);
@@ -122,11 +124,17 @@ async function main() {
   ws.addEventListener('message', ev => { const msg = JSON.parse(ev.data); if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg.result); pending.delete(msg.id); } });
   await new Promise(res => ws.addEventListener('open', res));
 
+  const metrics = w => send('Emulation.setDeviceMetricsOverride', { width: w, height: 844, deviceScaleFactor: 2, mobile: true });
   await send('Page.enable');
   await send('Runtime.enable');
-  await send('Emulation.setDeviceMetricsOverride', { width, height: 844, deviceScaleFactor: 2, mobile: true });
+  await metrics(width);
   await send('Page.navigate', { url: URL });
   await new Promise(r => setTimeout(r, 2500));
+  // --- automatic 1px nudge: toggle width +1 then back to fire a resize so the layout settles ---
+  await metrics(width + 1);
+  await new Promise(r => setTimeout(r, 200));
+  await metrics(width);
+  await new Promise(r => setTimeout(r, 400));
   const h = await send('Runtime.evaluate', { expression: 'document.documentElement.scrollHeight', returnByValue: true });
   const height = Math.min(h.result.value, 4000);
   const shot = await send('Page.captureScreenshot', {
@@ -140,32 +148,6 @@ async function main() {
 main().catch(e => { console.error(e); process.exit(1); });
 ```
 
+(Attaching to the user's **visible** Chrome? The device-metrics override — and its nudge — temporarily forces a mobile viewport on their tab. For a desktop capture set a desktop `width` with `mobile:false`, or add a final `Emulation.clearDeviceMetricsOverride` so their view returns to normal.)
+
 To find horizontal-overflow offenders, reuse the same connection boilerplate but `Emulation.setDeviceMetricsOverride` to the target width, then `Runtime.evaluate` a snippet returning every element whose `getBoundingClientRect().right > document.documentElement.clientWidth`.
-
-## Appendix — `nudge.js` (1px reflow helper)
-
-Also not stored in the repo — write it to the scratchpad. Resizes the visible debug Chrome window by 1px and back to fire a `resize` event so the layout settles. Run **after refreshing, before screenshotting** (see "Nudge the window by 1px" above). Usage: `node nudge.js 9222`.
-
-```js
-// Resize the visible Chrome window by 1px (then back) to force a reflow.
-// usage: node nudge.js <port>
-const [,, PORT] = process.argv;
-async function main() {
-  const list = await (await fetch(`http://localhost:${PORT}/json`)).json();
-  const page = list.find(t => t.type === 'page' && t.webSocketDebuggerUrl);
-  const ws = new WebSocket(page.webSocketDebuggerUrl);
-  let id = 0; const pending = new Map();
-  const send = (m, p = {}) => new Promise(res => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method: m, params: p })); });
-  ws.addEventListener('message', ev => { const msg = JSON.parse(ev.data); if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg.result); pending.delete(msg.id); } });
-  await new Promise(res => ws.addEventListener('open', res));
-
-  const { windowId, bounds } = await send('Browser.getWindowForTarget', { targetId: page.id });
-  const w = bounds.width;
-  await send('Browser.setWindowBounds', { windowId, bounds: { width: w + 1 } });
-  await new Promise(r => setTimeout(r, 300));
-  await send('Browser.setWindowBounds', { windowId, bounds: { width: w } });
-  console.log('nudged window', windowId, 'from', w, '->', w + 1, '->', w);
-  ws.close();
-}
-main().catch(e => { console.error(e); process.exit(1); });
-```

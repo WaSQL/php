@@ -1,602 +1,96 @@
 # WaSQL Framework Instructions for Claude
 
-## Overview
-This document instructs Claude on how to assist users with WaSQL, a database-driven PHP web development framework. **Always read and reference `architecture.md` for comprehensive technical details.**
+WaSQL is a **database-driven** PHP framework: page logic lives in `_pages` table records (fields `name`, `body`, `functions`, `controller`, `js`, `css`), not files — a MySQL dump is the entire site. This file is the **always-loaded core**: the rules and gotchas that apply to nearly every task. Deep, feature-specific detail lives in **`wasql_reference.md`** (read the section that matches your task). Other docs: `architecture.md` (full technical), `postedit.md` (working on a live PostEdit-mirrored site), `ai_patterns.md`/`quick_reference.md` (examples — note `quick_reference.md`'s `isLoggedIn`/`hasPermission` are WRONG; see Corrections).
 
 ## ⚠️ CRITICAL: Developer Preferences
+**NEVER `git commit` or `git push`** — the developer handles ALL commits/pushes manually. Make file changes as requested, but never commit them, even when asked to "commit this."
 
-**NEVER use `git commit` or `git push` commands under any circumstances. The developer handles ALL git commits and pushes manually.**
+**NEVER modify core platform / framework files when building a site or app.** The WaSQL core under `php/` (`php/common.php`, `php/database.php`, `php/user.php`, `php/extras/**`) is shared by hundreds of sites — a change for one site can break all of them. Keep ALL site/app logic in the **database**: a page's `functions`/`controller`/`body`, shared helpers in **`functions_common`** (loaded via `loadDBFunctions`), or a **template's `functions`**. If a feature seems to *need* a core hook, do it in the DB layer instead and surface the limitation to the developer. Genuine framework enhancements are a separate, deliberate decision the developer makes — never bundle them into site work.
 
-- Do NOT commit changes
-- Do NOT push to remote repositories
-- Do NOT create commits even when asked to "commit this"
-- Make changes to files as requested, but ALWAYS let the developer commit them
-
-**NEVER modify core platform / framework files when building a site or app.** The WaSQL core under `php/` (e.g. `php/common.php`, `php/database.php`, `php/user.php`, the `php/extras/**` engines) is shared by hundreds of sites — a change for one site's feature can break all of them, and column/table names like `sites`/`site_id` collide across sites. Keep ALL site/app logic in the **database** where it belongs: a page's `functions`/`controller`/`body`, shared helpers in **`functions_common`** (loaded via `loadDBFunctions`), or a **template's `functions`**. If a feature seems to *need* a core hook, do it in the DB layer instead (e.g. add explicit filters at each call site, or a shared helper), and surface the limitation to the developer rather than editing core. Genuine framework enhancements are a separate, deliberate decision the developer makes — never bundle them into site work.
-
-## Key Understanding Points
-
-### WaSQL is Different from Traditional MVC
-- **All logic is stored in database records**, not files
-- Pages are records in the `_pages` table with fields: `name`, `body`, `functions`, `controller`, `js`, `css`
-- This provides enhanced security (harder to hack) and instant portability (MySQL dump = entire site)
-
-### Critical Syntax Rules
-- **No `setValue()` function** - set variables directly: `$message = 'Hello';`
-- **Use `$_REQUEST` not `$_POST`** for form data
-- **Use `global $PASSTHRU;` not `$_REQUEST['passthru']`** for URL routing
-- **All inline PHP needs semicolons**: `<?=$variable;?>` not `<?=$variable?>`
-- **No PHP if/endif in views** - use `renderViewIf()` with `<view:name>` blocks
-- **Use `global $USER;`** for built-in user management
-- **Variables set in controller are available in views** directly
-- **Use `data-displayif` to conditionally show/hide form sections** - add `data-displayif="fieldname:value"` to a container div; WaSQL will show it when the named field equals the value and hide it otherwise. Works with nested JSON fields (e.g. `data-displayif="shipto>is_gift:Y"`). Do NOT use manual `onchange` JS for this purpose:
-  ```html
-  <!-- CORRECT - WaSQL handles show/hide automatically -->
-  <div id="gift_message_row" data-displayif="shipto>is_gift:Y">
-      <label>Gift Message</label>
-      <div>[shipto>gift_message]</div>
-  </div>
-  ```
-- **No PHP tags inside heredocs** - `<?php ?>` inside a heredoc causes a syntax error. Instead, compute the conditional value into a variable BEFORE the heredoc, then interpolate with `{$variable}`:
-  ```php
-  // WRONG - causes syntax error:
-  $msg = <<<EOT
-  <?php if($x): ?>some text<?php endif; ?>
-  EOT;
-
-  // CORRECT:
-  $conditional = $x ? 'some text' : '';
-  $msg = <<<EOT
-  {$conditional}
-  EOT;
-  ```
-
-### Development Workflow
-1. **Database First**: New pages/components must be created via WaSQL web interface
-2. **PostEdit Sync**: Use `p.bat alias` to download database records as local files
-3. **Modern Editing**: Edit with VS Code, PhpStorm, etc. with full IDE support
-4. **Auto-Sync**: Changes automatically update database records
-5. **Environment Promotion**: Use synchronization feature to promote changes through dev → stage → prod
-
-## When Helping Users
-
-### Code Generation Rules
-- **Always use proper WaSQL syntax** from the corrected patterns
-- **Set variables in controller**: `$users = getDBRecords(['-table' => 'users']);`
-- **Use variables in views**: `<?=renderEach('user_row', $users, 'user');?>`
-- **Use `renderViewIf()` for conditionals**: Never `<?php if: ?><?php endif; ?>`
-- **All conditional content goes in `<view:name>` blocks**
-
-### Common User Scenarios
-
-#### "How do I create a new page?"
-```php
-// 1. Create page record via WaSQL web interface
-// 2. Run PostEdit to sync: p.bat your-alias
-// 3. Edit the generated files in your IDE
-// 4. Changes auto-sync back to database
-```
-
-#### "How do I display data?"
-```php
-// In controller field:
-$users = getDBRecords(['-table' => 'users', '-limit' => 10]);
-
-// In body field:
-<?=renderEach('user_card', $users, 'user');?>
-
-<view:user_card>
-<div class="user"><?=encodeHtml($user['name']);?></div>
-</view:user_card>
-```
-
-#### "How do I handle forms?"
-
-**Option 1: Using addEditDBForm (Recommended - Automatic Processing)**
-```php
-// In functions field:
-function pageAddEdit($id = 0) {
-    $opts = array(
-        '-table' => 'users',
-        '-fields' => getView('form_fields'),
-        'name_options' => array('required' => 1),
-        'email_options' => array('required' => 1, 'inputtype' => 'email')
-    );
-    if($id > 0) {
-        $opts['_id'] = $id;
-    }
-    return addEditDBForm($opts); // Automatically handles add/update
-}
-
-// In controller field:
-global $PASSTHRU;
-$id = $PASSTHRU[1] ?? 0;
-// No manual save handling needed - addEditDBForm does it automatically
-
-// In body field:
-<?=pageAddEdit($id);?>
-```
-
-**Option 2: Manual Form Processing**
-```php
-// In controller field:
-if($_REQUEST['action'] == 'save_user') {
-    // Manual processing when coding forms manually in view
-    $result = addDBRecord([
-        '-table' => 'users',
-        'name' => $_REQUEST['name'],
-        'email' => $_REQUEST['email']
-    ]);
-    if(is_numeric($result)) {
-        $success = 'User saved successfully';
-        setView('success');
-    } else {
-        $error = $result;
-        setView('error');
-    }
-}
-
-// In body field: Manual HTML form
-<form method="post">
-    <input type="hidden" name="action" value="save_user">
-    <input type="text" name="name" required>
-    <input type="email" name="email" required>
-    <button type="submit">Save</button>
-</form>
-```
-
-#### "How do I check if user is logged in?"
-```php
-// In controller field:
-global $USER;
-if(!isUser()) {
-    setView('login_required');
-    return;
-}
-
-$currentUser = $USER;
-$userName = $USER['name'];
-```
-
-#### "How do I handle URL routing?"
-```php
-// In controller field:
-global $PASSTHRU;
-switch(strtolower($PASSTHRU[0])){
-    case 'edit':
-        $id = $PASSTHRU[1]; // From URL: /page/edit/123
-        $record = getDBRecord(['-table' => 'items', '_id' => $id]);
-        setView('edit_form');
-    break;
-    case 'list':
-        $items = getDBRecords(['-table' => 'items']);
-        setView('item_list');
-    break;
-    default:
-        // Default view automatically loads if no setView() called
-        $welcomeMsg = 'Welcome to our site';
-    break;
-}
-```
-
-#### "How do I use AJAX navigation?"
-```html
-<!-- In body field: -->
-<a href="#" data-div="content" data-nav="/page/list" onclick="return wacss.nav(this);">
-    Load List
-</a>
-
-<div id="content">
-    <!-- AJAX content loads here -->
-</div>
-```
-
-### Architecture Guidance
-- **Reference `architecture.md`** for detailed technical information
-- **Explain the database-driven approach** when users seem confused
-- **Emphasize the PostEdit workflow** for modern development experience
-- **Highlight security benefits** of database-stored logic
-
-### File Structure (PostEdit)
-When users ask about local development, explain the PostEdit file naming:
-`{name}.{table}.{field}.{_id}.{extension}`
-
-Example: `about._pages.body.13.html`
-
-### Multi-Language Support
-WaSQL supports PHP, Python, Node.js, Ruby, Perl, VBScript, Lua, Bash in the same application.
-All languages receive the same request/session/server variables.
-
-## What NOT to Do
-- Don't suggest `setValue()` - it doesn't exist
-- Don't use `pageValue()` for variables - only for page fields
-- Don't suggest `$_POST` - use `$_REQUEST`
-- Don't use `$_REQUEST['passthru']` - use `global $PASSTHRU;`
-- Don't suggest PHP if/endif syntax in views
-- Don't forget semicolons in inline PHP
-- Don't suggest traditional file-based MVC patterns
-- Don't recommend creating separate PHP files for models/controllers
-- Don't suggest frameworks like Laravel/Symfony as alternatives
-- Don't ignore WaSQL's database-first architecture
-
-## What TO Do
-- Always use correct WaSQL syntax from `ai_patterns.md`
-- Set variables directly in controller: `$var = 'value';`
-- Use `renderViewIf()` and `<view:name>` blocks for conditionals
-- Use `global $PASSTHRU;` for URL routing
-- Use `global $USER;` for user management
-- Suggest using PostEdit for local development
-- Recommend proper WaSQL functions and patterns
-- Explain the security and portability benefits
-- Reference `architecture.md` for detailed information
-
-## Code Review Checklist
-When reviewing or generating WaSQL code, verify:
-
-✅ **Variables set in controller**: `$items = getDBRecords(...);`  
-✅ **Proper inline PHP syntax**: `<?=$variable;?>`  
-✅ **Use $_REQUEST not $_POST**: `$_REQUEST['name']`  
-✅ **Global $PASSTHRU for routing**: `global $PASSTHRU;`  
-✅ **Global $USER for auth**: `global $USER;`  
-✅ **renderViewIf for conditionals**: Never `<?php if: ?>`  
-✅ **All conditionals in view blocks**: `<view:name>content</view:name>`  
-✅ **encodeHtml for user data**: `<?=encodeHtml($user['name']);?>`  
-✅ **Semicolons in inline PHP**: Required for all statements  
-
----
-
-# Real-World Patterns (verified against ~100 production WaSQL sites)
-
-The following is distilled from the actual sites in `postedit/postEditFiles`. These are the idioms that appear across real, shipped WaSQL applications. Prefer them over the simpler examples above when they conflict.
-
-## ⚠️ Corrections to older docs
-- **`isLoggedIn()` and `hasPermission()` do NOT exist.** They appear in `quick_reference.md` but are used in **zero** real sites and are not defined in the framework. Use `isUser()` (login check) and `isAdmin()` (admin check) — these are the real functions (used in ~700 and ~300 files respectively).
-- **`getDBRecord`/`getDBRecords` filter by `_id`, not `id`.** Primary keys are `_id` (leading underscore). `getDBRecord(['-table'=>'items','_id'=>$id])`.
-- **`is_numeric()` works, but the framework idiom is `isNum()`** (used ~4000× vs 48× for `is_numeric`). See the DB-write gotcha below.
-
-## Database access — the core mental model
-Options are ONE associative array. **Keys starting with `-` are directives; keys without a dash are data** — an implicit `column = value` WHERE filter for reads/counts/deletes, or the column values to write for add/edit.
-
-```php
-// dashless _id is a WHERE filter:
-$rec  = getDBRecord(['-table'=>'items','_id'=>$id]);
-// dashless keys are the columns being written:
-$ok   = editDBRecord(['-table'=>'items','-where'=>"_id={$id}",'status_id'=>3,'name'=>$name]);
-$newid= addDBRecord(['-table'=>'items','name'=>$name,'active'=>1]);
-```
-
-Full data-access function set (all have a verbose `database*` alias, e.g. `databaseGetRecords`; the short `*DB*` form is standard):
-- `getDBRecord($opts)` / `getDBRecordById($table,$id)` — one record.
-- `getDBRecords($opts)` — array of records.
-- `getDBCount($opts)` — integer count.
-- `addDBRecord($opts)` — insert; **returns the new numeric id, or an error STRING on failure.**
-- `editDBRecord($opts)` / `editDBRecordById($table,$id,$values)` — update.
-- `delDBRecord($opts)` / `delDBRecordById($table,$id)` — delete.
-- `dbAddRecords($db,$table,['-recs'=>$rows])` — bulk insert.
-- `databaseListRecords($opts)` — render an HTML data-grid (see below). **Preferred over the older `listDBRecords` alias**, which is being phased out; use `databaseListRecords` in new code.
-- `executeSQL($sql)` — run raw SQL (used in crons/DDL).
-
-### `-` option keys for data access
-- `-table` — table name. `-fields` — comma list of columns to SELECT. `-where` — raw SQL WHERE fragment.
-- `-order` — ORDER BY (supports `desc`). `-limit` / `-start` — paging.
-- `-index` — re-key the returned array by a column (e.g. `'-index'=>'username'`).
-- `-query` — supply full raw SQL, bypassing the `-table`/`-where` builder.
-- `-relate` — array `fk_column => related_table`; auto-expands foreign keys into the result.
-- `-upsert` / `-upserton` — comma list of columns; turns add/edit into an upsert keyed on them.
-- `-nocache` — bypass the query cache (use in crons and after writes).
-- `-debug` — dump the generated SQL.
-- `-results_eval` / `-results_eval_params` — callback run over the result set to compute extra columns.
-
-### `databaseListRecords` — HTML data grid
-(Formerly `listDBRecords` — that alias still works but is being replaced; write `databaseListRecords`.) Two modes: `['-list'=>$prefetchedRecs]`, or query mode with `-table`. Presentation keys: `-listfields` (columns to show), `-action`, `-tableclass`, `-tableheight`, `-hidesearch`, `-searchfields`, `-sorting`, `-export`. Per-column overrides use a dashless `fieldname_options` array with HTML attrs and `%_id%` token substitution. **Keep the (often lengthy) option array in a `functions` helper, not inline in the controller — see "Thin controller" below:**
-```php
-// in the page's functions field (the "model"):
-function pageScriptsGrid(){
-  return databaseListRecords(['-table'=>'modq_scripts','-listfields'=>'_id,name,_cdate',
-    'name_options'=>['data-nav'=>'/t/1/modq/scripts/addedit/%_id%']]);
-}
-// controller just calls it:
-$grid = pageScriptsGrid();
-```
-
-### System tables & audit columns
-- **Leading-underscore tables are framework/system tables:** `_pages`, `_templates`, `_users`, `_cron`, `_fielddata`, `_translations`, `_tabledata`. App/business tables have no leading underscore, and are often module-prefixed (`sb_task`, `modq_scripts`, `wcommerce_orders`).
-- **Every record carries audit columns:** `_id` (PK), `_cdate` (created), `_edate` (edited), `_cuser` (creating user id), `_euser` (editing user id).
+## ⚠️ Gotchas that will bite you (skim before every task)
+1. **Each `<?…?>` block in a view is eval'd SEPARATELY** — a control structure CANNOT span islands. `<?php foreach(...){ ?>…<?php } ?>` → `Parse error: Unclosed '{'` (a 500). Keep a loop/if inside ONE block, use `renderEach`/`renderViewIf`, or **build the HTML in a `functions` helper that returns a string** (what `databaseListRecords` does).
+2. **No `<?php ?>` inside heredocs** — compute the value into a variable *before* the heredoc, interpolate `{$var}`.
+3. **DB writes return the new id on success or an error STRING on failure** — test `isNum($id)`, never truthiness: `if(!isNum($id)){ $error=$id; … }`.
+4. **`<view:>` blocks are only registered during BODY rendering**, not when controller/functions run — so `getView()`/`renderView()` for a form must be called **from the body** (`<view:form><?=pageAddEdit($id);?></view:form>`), not precomputed in the controller (else "no view named X").
+5. **Inline PHP needs semicolons**: `<?=$var;?>` not `<?=$var?>`.
+6. **`$_REQUEST` not `$_POST`; `global $PASSTHRU;` not `$_REQUEST['passthru']`** for routing.
+7. **Primary key is `_id` (not `id`).** JSON text columns are decoded into a sibling `*_ex` array (`$PAGE['meta_ex']`) — read the `_ex`, write back the raw column; always `json_decode(...,true)`.
+8. **`data-displayif`/`data-readonlyif` need `onchange="wacss.formChanged(this,event);"` on the `<form>`** or they never toggle.
+9. **`setView($name,1)`** (2nd arg `1`) clears other views — use it for AJAX partials & login/error short-circuits, then `return;`. Plain `setView($name)` is cumulative (adds).
+10. **AJAX partials go through the `/t/1/` blank template** (no chrome). Every `data-nav`/`ajaxGet`/AJAX form action that loads a div uses `/t/1/…`.
+11. **`sendMail` body key is `'message'`** (not `body`/`html`) or mail sends empty silently.
+12. **Don't invent class names or DOM helpers** — use `wacss_v2.css`/Bulma classes and `wacss.*` JS (see below).
+13. **PostEdit screenshots:** after edit→auto-sync→refresh, **nudge the window 1px before screenshotting** so the layout settles (baked into the `shot.js` helper in `postedit.md` — use it).
 
 ## Page-field roles — think MVC (thin controller)
-The page record's fields map onto MVC roles; respect the separation:
-- **`controller` = the Controller.** Keep it THIN — it decides *what* happens: routes on `$PASSTHRU`, checks auth, picks the view with `setView()`, and calls functions to fetch/build data. It should read like a table of contents, not an implementation.
-- **`functions` = the Model.** Put the real work here: DB queries, `databaseListRecords` grids, computed data, business logic — especially anything with lengthy option arrays. The controller calls a named helper (`$grid = pageThingGrid();`) instead of inlining a 10-line `['-table'=>…]` array.
-  - **Every function gets a PHPDoc/JSDoc block — PHP in `functions`, JS in the `js` field.** Document each function with a `/** ... */` block above the signature — a one-line summary, then `@param {type} $name description` for each argument and `@return {type} description`. WaSQL harvests these to build its documentation, and they make the `functions`/`js` fields self-explanatory. Prefer this over loose `//` comments for describing what a function does (inline `//` notes inside the body are still fine). This applies to **JavaScript functions in the `js` field too** (JSDoc: `@param {HTMLElement} card`, `@return {void}`), including named nested helpers. Keep section-separator comments (`//--Members--`, `//--- appointments ---`) — put the docblock below the separator, above the function. Mark an internal helper you want left OUT of the generated manual with an `@exclude` tag in its block (`/** @exclude - excluded from the manual */`).
-    ```php
-    /**
-     * Build the "Stay Connected" cards for the current ward.
-     *
-     * @param array $bishopric Bishopric records (from commonGetBishopric()); used to find the bishop's email.
-     * @return array Connect-card arrays; empty when nothing is configured.
-     */
-    function indexGetSiteConnections($bishopric){ ... }
-    ```
-    ```js
-    /**
-     * Add dropped/selected files to the pending upload and re-render the list.
-     *
-     * @param {FileList} files Files from the input change or a drop event.
-     * @return {void}
-     */
-    function indexActivityAddFiles(files){ ... }
-    ```
-- **`body` (`<view:...>` blocks) = the View.** Presentation only; it consumes variables the controller set and calls `renderView`/`renderEach`.
-
-**Fetch data in the case that needs it — not before the switch.** Only put a query/computation ABOVE the `switch($PASSTHRU[0])` if EVERY branch (including the AJAX-partial cases) actually uses it. Data used only by the `default` (full-page) view belongs INSIDE `case default:` — otherwise every lightweight AJAX partial (`/t/1/page/calendar`, a modal form, a section refresh) needlessly pays for a full-page-only fetch on every request. Scope each variable to the narrowest branch that consumes it.
-
-**Even a modest block of data-building logic goes in `functions`, not the controller.** If assembling a variable takes more than a line or two (loops, conditionals, string building), extract it to a named `functions` helper (`$connect = indexGetSiteConnections($bishopric);`) so the controller stays a readable table of contents. This is the same rule as the lengthy-`databaseListRecords`-array case — it applies to ANY non-trivial computation, not just grids.
-
-**Name variables for the reader.** Use descriptive names (`$site`, not `$s`; `$bishopric`, not `$b` in outer scope) so the controller/functions read as intent. Short loop-locals (`$b` inside a tight `foreach`) are fine.
+- **`controller` = Controller.** Keep it THIN: route on `$PASSTHRU`, check auth, pick the view with `setView()`, call functions to fetch/build data. Reads like a table of contents.
+- **`functions` = Model.** The real work: DB queries, grids, computed data, business logic, and **any HTML-string building** (lengthy option arrays, loops/conditionals). Controller calls a named helper (`$grid = pageThingGrid();`).
+- **`body` (`<view:name>` blocks) = View.** Presentation only; consumes controller variables, calls `renderView`/`renderEach`/`renderViewIf`.
+- **Fetch data in the branch that needs it** — only put a query ABOVE the `switch($PASSTHRU[0])` if EVERY branch (incl. AJAX partials) uses it; data for the full-page `default` view belongs inside `case default:`.
+- **Name variables for the reader** (`$bishopric`, not `$b`, in outer scope). Every function gets a PHPDoc/JSDoc block (see `wasql_reference.md` → PHPDoc convention).
 ```php
 // controller (thin): route + delegate
 switch(strtolower($PASSTHRU[0])){
-  case 'pages': $grid = pageSamplePagesGrid(); setView('tab_pages',1); break;  // lengthy params live in functions
+  case 'pages': $grid = pageSamplePagesGrid(); setView('tab_pages',1); return;
   default:      setView('default'); break;
 }
-// functions (model): the lengthy call lives here
+// functions (model): lengthy call lives here
 function pageSamplePagesGrid(){
   return databaseListRecords(['-table'=>'_pages','-listfields'=>'_id,name,_edate','-order'=>'_edate desc','-limit'=>12]);
 }
 ```
 
-## Views & templates (deeper than the basics)
-- A `body` field is a set of named `<view:name>...</view:name>` blocks. **Defining a view never outputs it** — WaSQL extracts every block into a registry and the block text is removed from where it sits. It only appears when a `renderView`/`renderViewIf`/`renderEach` call names it, or `setView()` selects it as the page output.
-- **Nesting `<view:>` blocks is purely cosmetic** (for readability). An inner block still only renders where something explicitly calls it. Don't expect an inline nested view to appear in place.
-- Render functions: `renderView($name[,$data[,$var]])`, `renderViewIf($cond,$name[,$data[,$var]])`, `renderViewIfElse($cond,$a,$b,...)`, `renderViewSwitch($val,$map,...)`, `renderEach($name,$array[,$var])`. The view name and loop-var name are independent: `renderEach('photo',$product['photos'],'photo')`.
-- `getView($name)` returns a view's raw string (used to feed `-fields`/`-listview` in form options). Wrap in `evalPHP(getView(...))` when the view layout contains PHP to evaluate.
-- **`renderView($name,$data)` exposes `$data` inside the view as `$params`** (the whole passed value — array, string, etc.). Access it as `$params['title']` etc., or rename it with the `-alias` opt (`renderView('addedit',$data,'row')` → `$row` in the view). There is also a `-format=>'addeditdbform'` opt that renders the view's `[fieldname]` layout as an `addEditDBForm` (pass `-table`).
-- **⚠️ `<view:>` blocks are only registered in `$VIEWS` during BODY rendering, NOT when the controller/functions run.** So a function that calls `getView('..._fields')` or `renderView(...)` must be invoked from the **body** (inside a `<view:>` block), not precomputed in the controller — calling too early throws `renderView Error: There is no view named X` and `getView` returns empty. Idiom (matches real sites): the controller just routes and `setView('form',1); return;`, and the body block builds it: `<view:form><?=pageAddEditForm($tab,$id);?></view:form>`. Grid/`databaseListRecords` builders that don't touch `getView` are fine to call from the controller.
+## Data access (essentials)
+Options are ONE associative array. **Keys starting with `-` are directives; keys without a dash are data** — an implicit `column = value` WHERE filter for reads/counts/deletes, or the column values to write for add/edit.
+```php
+$rec  = getDBRecord(['-table'=>'items','_id'=>$id]);                 // dashless _id = WHERE filter
+$ok   = editDBRecord(['-table'=>'items','-where'=>"_id={$id}",'status_id'=>3]); // dashless = columns written
+$newid= addDBRecord(['-table'=>'items','name'=>$name,'active'=>1]);  // returns new id, or error STRING
+```
+Function set (all have a verbose `database*` alias; short form is standard): `getDBRecord`/`getDBRecordById`, `getDBRecords`, `getDBCount`, `addDBRecord`, `editDBRecord`/`editDBRecordById`, `delDBRecord`/`delDBRecordById`, `dbAddRecords` (bulk), `databaseListRecords` (HTML grid — preferred over the phased-out `listDBRecords`), `executeSQL` (raw). A raw SQL string also works: `getDBRecord("SHOW GLOBAL STATUS LIKE 'Uptime'")` → `$rec['value']`.
+- Framework idiom is **`isNum()`** (not `is_numeric`), **`isUser()`/`isAdmin()`** (not `isLoggedIn`/`hasPermission`).
+- **Querying a different DB connection** (postgres/hana/mssql/c-tree registered in `config.xml`) uses the **`db*` family** with the connection name first: `dbQueryResults('conn',$sql)`, `dbGetRecord('conn',$sql)`, `dbGetCount`, `dbListRecords`, `dbExecuteSQL`. → full detail in `wasql_reference.md`.
+- Full `-` option keys (`-fields`, `-where`, `-order`, `-limit`, `-index`, `-query`, `-relate`, `-upsert`, `-nocache`, `-results_eval`…) and the `databaseListRecords` grid → `wasql_reference.md`.
+- System tables have a leading underscore (`_pages`, `_users`, `_fielddata`…). Every record has audit cols `_id/_cdate/_edate/_cuser/_euser`.
 
-### `setView($name)` vs `setView($name, 1)` — critical
-- **The second arg `1` clears all previously-set views**, making `$name` the only view rendered. `setView($name)` (no `1`) is **cumulative** — it ADDS to the list, so multiple `setView` calls render multiple views in order.
-  ```php
-  setView('default');              // list = [default]
-  if(isUser()){ setView('user'); } // list = [default, user] — BOTH render
-  setView('login', 1);             // list = [login] — clears the rest, only login renders
-  ```
-- **The first arg can be a string (one view) OR an array (multiple views)** — `setView(['header','content','footer'])` sets several at once (combine with `1` to also clear anything set before: `setView(['header','content'], 1)`).
-- For AJAX/partial responses and login/error short-circuits you use `setView($name, 1)` so only that one view is rendered; always follow with `return;`. (The chrome-less output for AJAX comes from the `/t/1/` blank template, not from this arg — see below.)
+## Routing, views & templates (essentials)
+- URLs: `/{page}/{action}/{arg1}…` → `$PASSTHRU[0]`, `[1]`… A `/t/{templateId}/` prefix picks a template; **template id 1 is blank** (chrome-less) — that's what makes AJAX partials return only inner content.
+- Views: a `<view:name>…</view:name>` block is registered but **not output** until a `renderView`/`renderViewIf`/`renderEach` names it or `setView()` selects it. `renderView($name,$data)` exposes `$data` inside as `$params` (rename with a 3rd arg: `renderView('x',$d,'row')` → `$row`).
+- Pages are wrapped by their `template_id` `_templates` record (`<?=pageValue('body');?>`). A page's own `css`/`js` fields are **auto-injected** — don't `<link>`/`<script>` them yourself (framework bundles/extras are fine).
+- `loadDBFunctions('functions_common')` loads another page's `functions` into scope (convention for shared helpers). `includePage('name/arg1/…')` renders another page inline. `minifyCssFile('wacss,bulma')`/`minifyJsFile(...)` return combined bundle URLs.
+- Deeper: setView semantics, the getView/BODY-render gotcha, section-refresh, CRUD-tab recipe → `wasql_reference.md`.
 
-### Templates
-- A page is wrapped by the `_templates` record named in its `template_id` field. Templates have the same `body`/`functions`/`css`/`js` fields and drop the page in with `<?=pageValue('body');?>`.
-- Template meta helpers (`templateMetaTitle/Description/Keywords/Image/Site`, `templateActiveMenu`) are **per-site copies defined in each template's `functions`**, not framework built-ins — they read from `global $PAGE`.
-- A page's own `css` and `js` fields are **auto-injected by the framework** when the page renders. Do NOT manually `<link>`/`<script>` a page's own css/js.
-
-### Cross-page includes & shared functions
-- `includePage('topnav')` / `includePage('bugshoney/webhook/add/.../{$id}')` — render another page (with optional passthru segments) inline.
-- `loadDBFunctions('functions_common')` (or an array of names) — load another page's `functions` field into scope so its helpers are callable. **Convention: put shared helpers in a page like `functions_common` and `loadDBFunctions` it** (commonly done in the template's `functions`).
-- Asset bundles: `minifyCssFile('wacss,bulma')` / `minifyJsFile('wacss,bulma')` return a URL to a combined minified bundle. `wacss` (the framework CSS/JS) is almost always included.
-- `<translate>Text</translate>` wraps UI strings for localization; the framework substitutes the translated string.
-
-## The `/t/{id}/` route (essential for AJAX)
-URLs take the form `/{page}/{action}/{arg1}/{arg2}...` → `$PASSTHRU[0]`, `[1]`, `[2]`... A `/t/{templateId}/` prefix selects a specific template by id. **Template id 1 is a blank template** (no header/footer/chrome), so **`/t/1/` is what makes AJAX partials return only the inner content** — every `data-nav` / `ajaxGet` / AJAX form `action` that loads into a div uses `/t/1/...`. Pair it with `setView($view, 1)` in the controller so only that one view renders inside the blank template.
-
-## Auth reality
+## Auth
 ```php
 global $USER; global $PASSTHRU;
-if(!isUser()){ setView('login',1); return; }      // not logged in
-if(!isAdmin()){ setView('no_access',1); return; }  // logged in but not admin
+if(!isUser()){ setView('login',1); return; }        // not logged in
+if(!isAdmin()){ setView('no_access',1); return; }    // logged in but not admin
 ```
-- `$USER` fields: `_id`, `username`, `email`, `firstname`, `lastname`, `user_type`, plus JSON `_ex` variants (`user_type_ex`, `filters_ex`). Read `$USER['field']` directly.
-- `userLoginForm(['-action'=>'/'.pageValue('name')])` renders the login form. `userValue('field')` echoes a user field in templates.
-- There is **no group/role function** in real use; per-page allow-lists are done with `in_array($USER['username'], [...])` or a `$PAGE['settings_ex']['admins']` map. Logoff via URL `/?_logoff=1`.
+`$USER` fields (`_id`, `username`, `email`, `firstname`, `lastname`, `user_type`, JSON `_ex` variants) read directly. `userLoginForm(['-action'=>'/'.pageValue('name')])` renders login. No group/role function in real use — per-page allow-lists via `in_array($USER['username'],[...])`. Logoff: `/?_logoff=1`.
 
-## Client-side JS
-- **Standardize on the `wacss.*` library.** All new client-side JS should call the framework's `wacss.*` methods rather than the older bare global helpers or hand-rolled functions. When a `wacss.*` method exists for what you need (nav, form post, tabs, conditional fields, modals, toasts…), use it — do NOT reinvent it. Bare legacy globals (`ajaxSubmitForm`, `ajaxGet`, `submitForm`) still work for existing code but are not for new code, and writing your own DOM helpers when a `wacss.*` one exists is a mistake.
-- **AJAX nav (the workhorse):** `<a data-nav="/t/1/page/action" data-div="target_id" onclick="return wacss.nav(this);">`. Optional `data-setprocessing="0"` (spinner toggle), `data-onload="jsToRunAfterLoad();"`.
-- **Tabbed navigation — use the built-in, do NOT hand-roll a highlight helper.** Add `data-tab="1"` to a `wacss.nav` anchor and it does two things: AJAX-loads `data-nav` into `data-div` AND calls `wacss.setActiveTab(this)` to move the active-class among the sibling tabs automatically. Never write your own `setActiveTab`/`swapTab` JS — that was a past mistake:
-  ```html
-  <nav class="tabs">
-    <a data-tab="1" data-nav="/t/1/page/greeting" data-div="content" onclick="return wacss.nav(this);">Greeting</a>
-    <a data-tab="1" data-nav="/t/1/page/features" data-div="content" onclick="return wacss.nav(this);">Features</a>
-  </nav>
-  <div id="content"></div>
-  ```
-  `setActiveTab` accepts either the classic `w_tabs` structure (`<ul><li><a>…</a></li></ul>` — toggles the `<li>`) OR flat anchor/button tabs (`<nav><a>…</a></nav>` — toggles the `<a>` itself). It auto-detects whether siblings use the `is-active` or `active` class and toggles that one.
-- **AJAX form submit (preferred idiom): `wacss.ajaxPost`.** `<form action="/t/1/page/action" onsubmit="return wacss.ajaxPost(this,'target_div');">` — response injected into the div. We are standardizing on the `wacss.*` library, so use `wacss.ajaxPost(this,'div')`, NOT the older bare `ajaxSubmitForm(this,'div')` (still works, but don't write new code with it). Full-page submit: `submitForm(this)`.
-- **`data-displayif`/`data-readonlyif` require `wacss.formChanged` wired to the form's `onchange`** — the conditional show/hide is re-evaluated on change, so the form tag needs `onchange="wacss.formChanged(this,event);"`. Without it the fields never toggle:
-  ```html
-  <form action="/t/1/page/action" onchange="wacss.formChanged(this,event);" onsubmit="return wacss.ajaxPost(this,'target_div');">
-  ```
-- Direct calls: `ajaxGet(url, targetDivId, {setprocessing:0})`, `wacss.ajaxGet(url,div,params)`.
-- **Opening a centerpop modal — just target the `centerpop` div; there is no explicit "open" function.** Give any `wacss.nav`/`wacss.ajaxGet` a target div of **`centerpop`** and it self-creates the modal and loads the response into it: `<a data-nav="/t/1/page/addedit/0" data-div="centerpop" onclick="return wacss.nav(this);">`, or `wacss.ajaxGet('/t/1/page/addedit/'+id,'centerpop',{title:'Edit'})`. Div-name keywords: `centerpop`, `centerpop1`/`2`/`3` (stacked), and `modal`. Title via the `{title:...}` param or a `data-title` attr. Close with `wacss.centerpopClose()`.
-- Other useful `wacss.*`: `wacss.modalPopup`/`modalClose`, `wacss.toast`, `wacss.copy2Clipboard`, `wacss.initTabs`/`setActiveTab`, `wacss.pagingExport`, `wacss.initDatePicker`, `wacss.initSignaturePad`, `wacss.speak`.
-- `pushData($data, 'csv', 'file.csv')` — stream a typed download to the browser (CSV export is the main use).
+## Client-side JS (essentials)
+- **Standardize on `wacss.*`** — don't reinvent nav/post/tabs/modals/toasts or hand-roll DOM helpers when a `wacss.*` method exists. Legacy bare globals (`ajaxSubmitForm`, `ajaxGet`) work for old code but not for new.
+- **AJAX nav:** `<a data-nav="/t/1/page/action" data-div="target" onclick="return wacss.nav(this);">`. **Tabs:** add `data-tab="1"` to a `wacss.nav` anchor — it AJAX-loads AND moves the active class (never hand-roll `setActiveTab`). **AJAX form:** `<form action="/t/1/page/action" onsubmit="return wacss.ajaxPost(this,'target_div');">`.
+- **Centerpop modal:** target a div named `centerpop` (`data-div="centerpop"`) — it self-creates the modal; close with `wacss.centerpopClose()` (safe no-op if none open). Others: `wacss.toast`, `wacss.copy2Clipboard`, `wacss.initDatePicker`, `wacss.pagingSubmit`. `pushData($data,'csv','file.csv')` streams a download.
 
-## Styling / CSS
-- **Use framework classes, don't invent them.** Just like the `wacss.*` JS push, we are standardizing styling onto the framework's own classes. The canonical stylesheet is **`wfiles/css/extras/wacss_v2.css`** — `wacss_`-prefixed classes that use **Bulma-style `is-*` modifiers**. If the site loads **Bulma**, prefer Bulma's equivalents (same `is-*` modifier convention). Never hand-invent class names (e.g. `w_btn`, `w_input`, `w_table` do NOT exist), and don't reach for the **legacy** `wfiles/css/wasql.css` classes (`.w_button`, `.w_button_black`, …) in new code.
-- Canonical `wacss_v2.css` classes:
-  - **Button:** `class="wacss_button is-primary"` (modifiers: `is-primary`/`is-info`/`is-success`/`is-warning`/`is-danger`/`is-link`/`is-light`/`is-dark`, sizes `is-small`/`is-medium`/`is-large`, plus `is-rounded`/`is-fullwidth`/`is-outlined`). Group buttons in a `.wacss_buttons` container (gap utilities `wacss_gap3/5/10/15`). Bulma equivalent: `class="button is-primary"`.
-  - **Input / control:** `class="wacss_input"` (pass via the `buildForm*` `'class'` param), wrappers `.wacss_control`. Bulma: `class="input"`.
-  - **Table:** `class="wacss_table is-striped"` (also `is-bordered`/`is-hoverable`/`is-fullwidth`), wrapper `.wacss_table-container`. For `databaseListRecords` set `'-tableclass'=>'wacss_table is-striped'`. Bulma: `class="table is-striped"`.
-    - **Sticky header rows:** add `is-sticky` (the table becomes a scroll block with a pinned `thead`; height variants `is-short`≈200px / `is-tall`≈600px / `is-full-height`, default 80vh). Requires the `wacss_table` base class (NOT Bulma `table`) — e.g. `'-tableclass'=>'wacss_table is-striped is-fullwidth is-sticky is-tall'`. Tradeoff: `is-sticky` forces `table-layout:fixed` + `white-space:nowrap;text-overflow:ellipsis`, so wide cells truncate. Because the sticky is a class on the `<table>` itself (self-contained), it survives a section-refresh (unlike wrapper-scoped sticky CSS — see the section-refresh gotcha).
-  - **Utilities:** spacing `wacss_top10`/`wacss_bot20`…, alignment `wacss_align-left`/`-center`/`-right`.
-- **Only write custom page `css` for genuinely page-specific layout** that no framework class covers — reach for `wacss_v2.css`/Bulma first, and remember the page's own `css` field is auto-injected (don't `<link>` it yourself).
-
-## Form building
-Two signatures across the `buildForm*` family:
-- Simple: `buildForm{Type}($name, $paramsArray)` — Text, Textarea, Date, Time, Datetime, Hidden, File, Signature, etc.
-- Choice: `buildForm{Type}($name, $optsArray, $paramsArray)` where `$optsArray` is a `value=>label` map — Select, MultiSelect, Checkbox, Radio, Combo, ButtonSelect, StarRating.
-
-`$paramsArray` keys: `class`, `style`, `required`, `placeholder`, `value`, `message` (select prompt), `onchange`, `readonly`, `disabled`, `width`, `height`, and for files `path`/`autonumber`. Most common: `buildFormSelect` (~700×), `buildFormText`, `buildFormTextarea`, `buildFormDate`, `buildFormMultiSelect`, `buildFormCheckbox`, `buildFormFile`. (No `buildFormEmail`/`buildFormNumber`/`buildFormSubmit` — submit is a plain `<button type="submit">`.)
-
-### `addEditDBForm($opts)` option keys
-- Form-level (`-`): `-table`, `-fields`, `-action`, `-focus`/`-nofocus`, `-order`, `-where`, `-format`, `-formname`, `-hidefields`, `-editfields`, `-preform`/`-postform`, `-pretable`/`-posttable`, `-onsubmit`, `-noguid`. Bare `_id` toggles edit vs insert mode (present = edit).
-- Per-field: `fieldname_options => [...]` (richest — keys `inputtype`, `class`, `style`, `displayname`, `required`, `message`, `tvals`, `dvals`, `value`, `values`, `width`, `height`, `-display`, `-format`, `readonly`, `onchange`, `placeholder`), or the shorthands `fieldname_class`, `fieldname_required`, `fieldname_style`, `fieldname_value`, `fieldname_displayname`, etc.
-- **`tvals`/`dvals`** = the true-values / display-values for a select/radio/checkbox (newline- or comma-separated, parallel lists). Field metadata is often seeded in the **`_fielddata`** table (`tablename`, `fieldname`, `inputtype`, `tvals`, `dvals`, `displayname`, `required`, `mask`, `defaultval`, `width`).
-- **Do NOT re-specify in `fieldname_options` (or `databaseListRecords`) anything already defined in `_fielddata`.** `_fielddata` is the authoritative default source for `inputtype`, `tvals`/`dvals`, `required`, `mask`, `defaultval`, `displayname`, etc. — `addEditDBForm`/`databaseListRecords` read it automatically. Only pass a `*_options` key when the value must **differ** from the `_fielddata` default (e.g. a page-specific `displayname`, a page-specific `required`, `autocomplete`, an `onchange`). Duplicating the `_fielddata` select/checkbox definition inline is redundant and drifts out of sync. If a field's metadata is wrong for *every* page, fix it once in `_fielddata` (which also fixes the WaSQL backend), not per-form.
-- The `[fieldname]` bracket placeholder inside a `*_fields` view is replaced with that field's rendered input control.
-
-### Form processing helpers
-- `processFileUploads()` — call in the controller before saving; moves `$_FILES` to disk and populates `$_REQUEST['file_abspath']`.
-- `getCSVFileContents($file)` — CSV file → array of record arrays. `arrays2CSV($recs[,'-noheader'=>1])` — inverse. `setFileContents($file,$data)` — write (auto-serializes arrays).
-- `verifyForm` is NOT used — validation is `required` attributes plus manual controller checks.
-
-### How `addEditDBForm` saves — the save is GLOBAL, not tied to the target page
-`addEditDBForm` only *renders* the form. On submit it carries hidden `_table` + `_action` fields, and the framework saves the record at **bootstrap** (`index.php`: `if(isset($_REQUEST['_action'])){ processActions(); }`) — **before** the page controller runs and regardless of which page/route the form posts to. Consequences:
-- **`-action` can point at ANY route.** The save happens no matter what; the action route's only job is to render the *response* (typically a refreshed list/section). You do NOT need to call `addEditDBForm` again on the receiving page to persist the edit.
-- So the idiomatic "edit → refresh a section" flow is: point `-action` at a route that re-queries and re-renders, and `wacss.ajaxPost` the form into the div you want replaced. Use `-nocache` on that re-query so the just-saved row is included.
-- **One form builder can serve multiple host pages** by swapping only `-action`/`-onsubmit` target. Pass a "source" hint (e.g. an extra passthru segment `/addedit/{id}/index`) into the builder and branch:
-  ```php
-  function fooAddedit($id,$src=''){
-    $action="/t/1/portal/foo/list"; $target='portal_content';   // default host
-    if(strtolower($src)=='index'){ $action="/t/1/index/foo"; $target='foo'; }  // alt host
-    $opts=['-table'=>'foo','-action'=>$action,'-onsubmit'=>"return wacss.ajaxPost(this,'{$target}');", ...];
-    if($id>0){$opts['_id']=$id;}
-    return addEditDBForm($opts);
-  }
-  ```
-
-### Section-refresh pattern (one view serves full-page render AND AJAX partial)
-To make a page section independently reloadable (e.g. after an inline edit), factor its markup into a **standalone `<view:section_name>` block** and render it two ways:
-- **Full page:** inside the section wrapper, `<section id="thething"><?=renderView('section_name',$data,'var');?></section>`.
-- **AJAX partial:** add a `PASSTHRU` case that re-fetches the data and `setView('section_name',1)` (the `1` clears other views so only the section renders inside the blank `/t/1/` template), then `return;`.
-- **Refresh trigger:** any `wacss.nav`/`wacss.ajaxPost` to `/t/1/{page}/{that_action}` with `data-div` / target = the section wrapper's `id`. The section's `id` and the target div are the same thing — the AJAX response replaces the wrapper's inner HTML.
-```php
-// controller
-case 'calendar':
-    $events=indexUpcomingEvents();   // re-query (use -nocache)
-    setView('calendar_section',1);
-    return;
-break;
-```
-```html
-<!-- body: full-page render -->
-<section id="calendar" class="section"><?=renderView('calendar_section',$events,'events');?></section>
-<!-- body: the reusable block -->
-<view:calendar_section> ... <?=renderEach('event_card',$events,'event');?> ... </view:calendar_section>
-```
-Combined with the global-save behavior above, an edit form whose `-action` is `/t/1/index/calendar` and whose `ajaxPost` target is `calendar` will save, then drop the freshly-rendered section back into `#calendar`.
-- **Close the launching modal on success via `data-onload` on the reloaded partial.** When the form was opened in the `centerpop` modal, put `data-onload="wacss.centerpopClose();"` on the section's root element. `data-onload` runs after the AJAX content is injected, so on a *successful* save the fresh section re-renders (closing the modal); if the save fails the form re-renders instead (modal stays open). This beats calling close in the form's `onsubmit`, which would close the modal before knowing the result:
-  ```html
-  <view:calendar_section>
-    <div class="container" data-onload="wacss.centerpopClose();">
-      ...
-    </div>
-  </view:calendar_section>
-  ```
-  - **Rule of thumb: put `data-onload="wacss.centerpopClose();"` on the POST-SUBMIT refresh response — i.e. the section/grid the form reloads into (`ajaxPost` target) — NOT on the form's own open-response.** That's what makes the modal disappear after a successful submit. **⚠️ If you put it on the add/edit form's own root, the modal closes itself the instant it opens** (the form loads into the centerpop, its `data-onload` fires, and it closes) — a real bug that's easy to hit. **`wacss.centerpopClose()` is a safe no-op when no centerpop is open** (it only acts if a `#wacss_centerpop` element exists), so the *same* refreshed section/grid view can carry this attribute and be reused for ordinary non-modal refreshes (tab switch, delete) without harm.
-  - **Point the form's `ajaxPost` target at the *scoped inner* refresh div, NOT the whole tab container.** If a list/section's CSS (or JS) is scoped to a wrapper id (e.g. `#thing_list .foo{...}`) and you refresh by replacing the *outer* container, the re-rendered markup lands **outside** that id, so the scoped rules stop applying (symptom seen once: action icons that were `display:flex` collapsed to vertical, and a frozen/sticky table lost its stickiness, after an edit-submit). Targeting the inner scoped div (e.g. `wacss.ajaxPost(this,'thing_list')`) keeps the refreshed content inside the id — scoped CSS keeps working — and also preserves sibling controls (an "Add new" button that lives next to, but outside, the list div).
-
-### CRUD-tab pattern — the standard recipe for a "manage {things}" tab (list + centerpop add/edit)
-This is the **preferred structure for any admin/config screen that manages one or more tables in tabs** (list rows, click to add/edit in a modal, save-and-refresh). It keeps the controller a pure router and puts each table's list/form in its own named views + functions. Build every new such tab this way.
-
-**Controller = generic router by view name** (no per-tab `if`s beyond the allow-list; each route just `setView`s a block and `return`s):
-```php
-switch(strtolower($PASSTHRU[0])){
-  case 'locations': case 'ou': case 'emails': case 'groups':   // one case per tab
-    switch(strtolower($PASSTHRU[1])){
-      case 'list':    setView("{$PASSTHRU[0]}_{$PASSTHRU[1]}",1); return;   // {tab}_list
-      case 'addedit': $id=(integer)$PASSTHRU[2];
-                      setView("{$PASSTHRU[0]}_{$PASSTHRU[1]}",1); return;   // {tab}_addedit
-    }
-    setView($PASSTHRU[0],1); return;                                       // {tab} (list wrapper)
-  default: setView('default'); break;                                     // full page
-}
-```
-
-**Functions = per-tab trio** (`functions` field): `manage{Tab}List()` → `databaseListRecords`, optional `manage{Tab}ListExtra()` → a `-results_eval` that builds friendly/combined display columns, and `manage{Tab}Addedit($id)` → `addEditDBForm`. The **whole row** opens the edit modal, and search/paging + the add/edit submit all target the inner `{tab}_list` div:
-```php
-function manageThingsList(){
-  return databaseListRecords(array(
-    '-table'=>'st_things','-tableclass'=>'table bordered striped is-hoverable',
-    '-listfields'=>'_id,active,mapfield,label',      // computed cols allowed (built in ListExtra)
-    '-results_eval'=>'manageThingsListExtra',
-    '-nocache'=>1,'active_checkmark'=>1,'-order'=>'is_default desc,name',
-    '-action'=>'/t/1/manage/things/list',            // search/paging posts here...
-    '-onsubmit'=>"return wacss.pagingSubmit(this,'things_list');",   // ...and refreshes the div
-    '-tr_data-nav'=>"/t/1/manage/things/addedit/%_id%",             // whole-row → centerpop edit
-    '-tr_data-div'=>'centerpop','-tr_onclick'=>"return wacss.nav(this);",
-    '-tr_data-title'=>"Edit Thing %_id%"
-  ));
-}
-function manageThingsAddedit($id=0){
-  $opts=array('-table'=>'st_things','-style_all'=>'width:100%',
-    '-action'=>'/t/1/manage/things/list',                          // save → re-render the list
-    '-onsubmit'=>"return wacss.ajaxPost(this,'things_list');",
-    '-fields'=>getView('things_addedit_fields'),                   // layout view (see getView gotcha)
-    'active_options'=>array('inputtype'=>'checkbox','tvals'=>1,'dvals'=>'&nbsp;'));
-  if($id>0){$opts['_id']=$id;}
-  return addEditDBForm($opts);
-}
-```
-
-**Views = four named blocks per tab** (`body` field):
-```html
-<view:things>                                        <!-- list wrapper: New button + list div -->
-  <div class="align-right"><a class="button is-info is-outlined is-small" href="#"
-    data-nav="/t/1/manage/things/addedit/0" data-div="centerpop" data-title="Add Thing"
-    onclick="return wacss.nav(this);"><span class="icon-plus right5"></span> New Thing</a></div>
-  <div id="things_list"><?=manageThingsList();?></div>
-</view:things>
-<view:things_list><div data-onload="wacss.centerpopClose();"><?=manageThingsList();?></div></view:things_list>
-<view:things_addedit><?=manageThingsAddedit($id);?></view:things_addedit>
-<view:things_addedit_fields> ...layout with [field] placeholders, root has data-onload="wacss.centerpopCenter();"... </view:things_addedit_fields>
-```
-Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **global save** fires (see `addEditDBForm` section) and the response re-renders `{tab}_list` into `#things_list`; because that list view's root carries `data-onload="wacss.centerpopClose();"`, a **successful** save closes the modal while a validation failure re-renders the form inside the still-open centerpop. The full page's `#manage_content` starts on the first tab with `<?=renderView('things');?>`. Tabs are `wacss.nav` + `data-tab="1"` anchors (see Client-side JS). **Do not** reintroduce a single shared `panel`/`form` view or per-cell `_onclick` edit handlers — the per-tab views + whole-row `-tr_data-nav` are the pattern.
-
-### `data-*` attributes
-- `data-displayif="field:value"` / `data-readonlyif="..."` (938× — very common) — conditional show / read-only, re-evaluated by `wacss.formChanged` (the form's `onchange` must call it — see the Client-side JS section). Value optional (bare = truthy), comma-separated = OR. **Requires the form to have a control literally named `field`.**
-  - **Plain field:** for a normal form field named `mood`, it is just `data-displayif="mood:curious"` — NOT `data>mood`.
-  - **Nested JSON field (the `scope>field` form):** the `>` addresses an attribute *inside* a JSON field. `data-displayif="data>send_email:Y"` means "the JSON field named `data` has attribute `send_email` == Y" — so `scope>attr` requires an actual JSON field named `scope` (commonly `data`, `account`, or `meta`). Only use `scope>` when the control really is a JSON field with sub-attributes; for a flat field use the bare name. E.g. `data-displayif="meta>type:gb,gb_notes"`.
-- `data-confirm` (confirm dialog before action), `data-format` (input formatting), `data-required` (conditional required), `data-toggle`/`data-target` (show/hide), `data-tab`, `data-tip`/`data-tooltip`.
-
-## `_triggers` — DB record lifecycle hooks
-A table can have `_triggers/{table}/{table}._triggers.functions.{id}.php` defining specially-named functions the framework auto-calls around writes and reads. **Naming: `{table}{Event}`** where Event ∈ `AddBefore`/`AddSuccess`/`AddFailure`, `EditBefore`/`EditSuccess`/`EditFailure`, `DeleteBefore`/`DeleteSuccess`/`DeleteFailure`, `GetRecord`. Special `_users` hooks: `_usersLogin`/`_usersLogout`. **Each function receives an array (`$params`) and MUST return it.**
-```php
-function calendar_eventsAddBefore($params=array()){
-    $params['content']=encodeJson(commonParseIni($params['content_ini']));
-    return $params;   // MUST return
-}
-```
-
-## `_prompts` — saved query/code console (NOT AI prompts)
-`_prompts/{name}/{name}._prompts.body.{id}.{ext}` are the saved bodies of WaSQL's built-in query/code runner console: `sql_prompt_{dbname}` (SQL for a named DB connection), `php_prompt` / `code_prompt` (PHP/Python scratch snippets). They are NOT LLM prompts.
-
-## `cron_*` pages
-Scheduled tasks are pages named `cron_*` whose logic lives in the **`body`** field (`.php`), run headless via a `/t/1/{page}` URL. Pattern:
-```php
-$ok=commonCronLogInit('cron_sendmail');
-$recs=getDBRecords(['-table'=>'sendmail','sent'=>0,'-limit'=>60,'-nocache'=>1]);
-if(!isset($recs[0]['_id'])){ commonCronLog('nothing to do'); return; }
-foreach($recs as $rec){
-    $ok=sendMail(decodeJson($rec['sendopts']));
-    editDBRecordById('sendmail',$rec['_id'],['sent'=>1,'sent_date'=>'NOW()']);
-    commonCronLog($ok);
-}
-```
-A `_cron` table tracks jobs (`run_cmd` URL, `run_every`, `cron_pid`, `running`); `cron_check_crons` is a watchdog that resets dead jobs.
+## Styling (essentials)
+- **Use framework classes; don't invent them.** Canonical stylesheet **`wfiles/css/extras/wacss_v2.css`** — `wacss_`-prefixed classes with **Bulma-style `is-*` modifiers**; if the site loads **Bulma**, use Bulma's equivalents. `w_btn`/`w_input`/`w_table` do NOT exist; avoid legacy `wasql.css` (`.w_button`…) in new code.
+- Button `class="wacss_button is-primary"` (Bulma `button is-primary`); input `wacss_input` (Bulma `input`); table `wacss_table is-striped` (add `is-sticky` for pinned header — needs the `wacss_table` base, survives section-refresh). Only write custom page `css` for genuinely page-specific layout.
 
 ## Config & environment
-- **`isDBStage()` is the ONLY environment switch** (no `isDev`/`isProd`). Returns true on the staging/dev DB. Branch data caps, mail redirection, and hardcoded IDs on it: `if(isDBStage()){ $params['to']=$USER['email']; }`.
-- **Two config sources, don't confuse them:** static/secret/connection config lives in **`config.xml`** → read via `$CONFIG['...']` / `$DATABASE['DBNAME']` (never hardcode API tokens). Site-editable branding/company/website settings live in the DB → read via `commonGetSetting('group','key')` (e.g. `commonGetSetting('company','name')`).
+- **`isDBStage()` is the ONLY environment switch** (no `isDev`/`isProd`) — true on staging/dev DB.
+- **Two config sources:** static/secret/connection config in **`config.xml`** → `$CONFIG['...']` / `$DATABASE['DBNAME']` (never hardcode tokens). Site-editable branding/settings in the DB → `commonGetSetting('group','key')`.
 
 ## Utility helpers worth knowing
-`printValue($x)` (dump to HTML — the universal debug tool), `debugValue($x)` (log without halting), `sortArrayByKeys($recs,['col'=>SORT_ASC])`, `truncateWords($str,160)`, `removeHtml($str)`, `encodeURL($str)`, `formatMoney($n)`, `commonFormatPhone($x)`, `getFileExtension($path)`, `getFileContents`/`setFileContents`, `isNum`/`isEmail`/`isDate`/`isAjax`/`isSpider`/`isMobileDevice`, `commonStrlen` (multibyte-safe — prefer over `strlen`, ~1900×), `encodeJson`/`decodeJson` (framework wrappers over json_encode/decode). Email: `sendMail(['to'=>..,'subject'=>..,'message'=>..])` or the branded wrapper `commonSendMail(...)`. Dates: there is no framework wrapper — native `strtotime()`/`date()` is the norm.
+`printValue($x)` (dump — universal debug), `debugValue($x)`, `sortArrayByKeys`, `truncateWords`, `removeHtml`, `encodeURL`, `formatMoney`, `commonFormatPhone`, `getFileExtension`, `getFileContents`/`setFileContents`, `isNum`/`isEmail`/`isDate`/`isAjax`, `commonStrlen` (multibyte — prefer over `strlen`), `encodeJson`/`decodeJson`, `encodeHtml` (always escape user data in views). Email: `sendMail(['to'=>,'subject'=>,'message'=>])` or branded `commonSendMail(...)`. Dates: native `strtotime()`/`date()`.
 
-## Critical gotchas
-- **DB writes return the new numeric id on success, or an error STRING on failure. Never test truthiness — test `isNum()`:**
-  ```php
-  $id = addDBRecord([...]);
-  if(!isNum($id)){ $error = $id; setView('error'); return; }  // $id holds the error message
-  ```
-- **`_ex` columns are JSON decoded to arrays.** A DB text column holding JSON (`meta`, `settings`, `user_type`, `filters`) is decoded into a sibling `*_ex` key: `$PAGE['meta_ex']=json_decode($PAGE['meta'],true);`. Read the `_ex` array; write back the encoded raw column. **Always pass `true` to `json_decode`** — the whole codebase assumes associative arrays.
-- **`sendMail` body key is `'message'`, not `'body'`/`'html'`.** Wrong key sends empty mail silently.
-- **Debug breadcrumbs are left commented in production** (`//echo printValue($_REQUEST);exit;`) — idiomatic, re-enabled ad hoc; don't "clean them up".
-- **`$_REQUEST`, `$PAGE`, `$USER`, `$PASSTHRU` are all accessed as arrays** and (except `$_REQUEST`) require `global` in functions.
+## Corrections to older docs
+- **`isLoggedIn()` / `hasPermission()` do NOT exist** (they appear in `quick_reference.md` — wrong). Use `isUser()` / `isAdmin()`.
+- **Filter by `_id`, not `id`.** **`setValue()` does not exist** — set variables directly.
 
----
+## Where to find more
+- **`wasql_reference.md`** — deep per-feature detail: data-access options & grids, named DB connections, views/templates internals, form building & `addEditDBForm` global-save, section-refresh, CRUD-tab recipe, **Chart.js extra**, **server/system health**, `_triggers`/`_prompts`/`cron_*`, PHPDoc convention, copy-paste scenarios. Open the section matching your task.
+- **`postedit.md`** — working on a live PostEdit-mirrored site: "work on {alias} {page}" startup, resolve the alias from `postedit.xml`, `setdb`, launch debug Chrome, edit→auto-sync→refresh→**nudge 1px**→screenshot.
+- **`architecture.md`** — complete technical documentation.
 
-## Additional Resources
-- `ai_patterns.md` - Corrected code patterns and examples
-- `quick_reference.md` - Function reference and common patterns (note: its `isLoggedIn`/`hasPermission` are wrong — see corrections above)
-- `architecture.md` - Complete technical documentation
-- `postedit.md` - How AI should work on a PostEdit-mirrored WaSQL site: launch Chrome in debug mode, resolve a site from `postedit.xml`, screenshot it via the DevTools Protocol, and make edits through the auto-syncing PostEdit file mirror
-
-Remember: WaSQL's database-driven architecture and unique syntax are its strengths. Help users embrace this approach with the correct syntax patterns rather than fighting against it.
+Remember: WaSQL's database-driven architecture and unique syntax are its strengths — work with them, not against them.
