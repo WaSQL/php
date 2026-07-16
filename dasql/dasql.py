@@ -134,7 +134,11 @@ interpreter = df.getInterpreter(sys.argv[1])
 if remote_prefix is None and interpreter:
     #print("interpreter:{}".format(interpreter))
     if interpreter == 'markdown':
-        df.previewMarkdown(sys.argv[1])
+        #`dasql file.md mp3` (or audio/tts) converts to speech instead of previewing
+        if len(sys.argv) > 2 and sys.argv[2].lower() in ('mp3','audio','tts'):
+            df.markdownToMp3(sys.argv[1])
+        else:
+            df.previewMarkdown(sys.argv[1])
     elif interpreter == 'html':
         df.previewHTML(sys.argv[1])
     else:

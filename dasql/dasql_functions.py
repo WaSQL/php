@@ -157,6 +157,113 @@ def previewMarkdown(markdown_file, browser_path=None):
 
     subprocess.Popen([browser_exe, html_file], shell=False)
 
+#---------- function markdownToText
+# @description Converts a Markdown file into clean, speech-friendly plain text.
+#              Renders the Markdown to HTML, then strips tags and drops fenced
+#              code blocks so a TTS engine reads prose rather than syntax noise.
+# @param markdown_file: Path to the Markdown file to convert
+# @type markdown_file: str
+# @return: Clean spoken-word text
+# @rtype: str
+def markdownToText(markdown_file):
+    from html.parser import HTMLParser
+    from html import unescape
+
+    with open(markdown_file, 'r', encoding='utf-8') as f:
+        md_content = f.read()
+
+    html = markdown.markdown(md_content, extensions=['fenced_code', 'tables', 'sane_lists'])
+
+    #block tags that should force a line/paragraph break in the spoken output
+    block_tags = {'p','div','br','li','tr','h1','h2','h3','h4','h5','h6','blockquote','pre'}
+    #tags whose text content we skip entirely (code is unpleasant to listen to)
+    skip_tags = {'pre','code'}
+
+    class SpeechExtractor(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.parts = []
+            self.skip_depth = 0
+        def handle_starttag(self, tag, attrs):
+            if tag in skip_tags:
+                self.skip_depth += 1
+            if tag in block_tags:
+                self.parts.append('\n')
+        def handle_endtag(self, tag):
+            if tag in skip_tags and self.skip_depth > 0:
+                self.skip_depth -= 1
+            if tag in block_tags:
+                self.parts.append('\n')
+        def handle_data(self, data):
+            if self.skip_depth == 0:
+                self.parts.append(data)
+
+    parser = SpeechExtractor()
+    parser.feed(html)
+    text = unescape(''.join(parser.parts))
+
+    #collapse runs of blank lines and trailing spaces into tidy paragraphs
+    text = re.sub(r'[ \t]+', ' ', text)
+    lines = [ln.strip() for ln in text.splitlines()]
+    text = '\n'.join(ln for ln in lines if ln)
+    return text.strip()
+
+#---------- function markdownToMp3
+# @description Converts a Markdown file to an MP3 audio file using Microsoft
+#              Edge neural text-to-speech (edge-tts), then opens it in the
+#              default media player. Great for listening to docs on the go.
+# @param markdown_file: Path to the Markdown file to convert
+# @type markdown_file: str
+# @param voice: edge-tts neural voice name (optional)
+# @type voice: str
+# @param play: Whether to auto-play the resulting MP3 (default True)
+# @type play: bool
+# @return: Path to the generated MP3 file
+# @rtype: str
+def markdownToMp3(markdown_file, voice='en-US-AndrewNeural', play=True):
+    try:
+        import edge_tts
+    except ImportError:
+        print("⚠️ edge-tts is not installed. Run: python -m pip install edge-tts")
+        sys.exit(1)
+    import asyncio
+
+    text = markdownToText(markdown_file)
+    if not text:
+        print("⚠️ Nothing to read - the Markdown produced no spoken text.")
+        sys.exit(1)
+
+    mp3_file = os.path.splitext(markdown_file)[0] + '.mp3'
+
+    async def _synth():
+        communicate = edge_tts.Communicate(text, voice)
+        await communicate.save(mp3_file)
+
+    print("🔊 Converting to speech ({} chars) using {} ...".format(len(text), voice))
+    #edge-tts occasionally returns NoAudioReceived transiently - retry a few times
+    attempts = 3
+    for attempt in range(1, attempts + 1):
+        try:
+            asyncio.run(_synth())
+            if os.path.getsize(mp3_file) > 0:
+                break
+            raise RuntimeError("empty audio file")
+        except Exception as e:
+            if attempt == attempts:
+                print("⚠️ Text-to-speech failed after {} attempts: {}".format(attempts, e))
+                sys.exit(1)
+            print("   attempt {} failed ({}), retrying ...".format(attempt, type(e).__name__))
+    print("✅ Saved {}".format(mp3_file))
+
+    if play:
+        try:
+            os.startfile(mp3_file)  # Windows: open in default media player
+        except AttributeError:
+            #non-Windows fallback
+            opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+            subprocess.Popen([opener, mp3_file])
+    return mp3_file
+
 def evalCode(lang,ext,code):
     handle, name = tempfile.mkstemp(suffix=".{}".format(ext),prefix="dasql_",text=True)
     handle = os.fdopen(handle, mode="wt",encoding="utf-8")

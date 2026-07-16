@@ -6,5 +6,11 @@
 	"working_dir":"d:\\wasql\\dasql",
 	"word_wrap": false,
 	"quiet":true,
-	"save_untitled_files":true
+	"save_untitled_files":true,
+	"variants": [
+		{
+			"name": "Markdown to MP3",
+			"shell_cmd": "python3 dasql.py \"\\$fname\" mp3"
+		}
+	]
 }
