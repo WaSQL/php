@@ -54,6 +54,12 @@ its css = `...<page>._pages.css.<id>.css`, controller = `...controller.<id>.php`
 
 The user usually has Chrome open on the page being edited; after a save they can just refresh to see the change (the DB is already updated). Add a cache-buster query param (`?cb=1`) when checking, since CSS/JS are served as a hashed minified bundle (`/w_min/minify_...css`) — the page's own `css`/`js` fields are compiled into that bundle, not inlined.
 
+### ⚠️ Nudge the window by 1px before screenshotting (force a reflow)
+
+**After a change/refresh, resize the browser by 1 pixel (then back) before you screenshot.** Some WaSQL layouts don't settle until a `resize` event fires — AJAX-loaded tab content, sticky/frozen tables, flex reflow, and (notably) a window that was resized while the page thought it was another width. Without the nudge you can screenshot a **stale/unsettled layout** and diagnose it as a real bug when it isn't.
+
+This is easy to prove: navigate with the window set to a new width and the page can still report the *old* `innerWidth` (e.g. window at 800px but `window.innerWidth === 390`); a 1px nudge makes it recompute to the true width. Nudge via CDP `Browser.getWindowForTarget` → `Browser.setWindowBounds` ({width: w+1}, then {width: w}). The reusable `nudge.js` helper is in the **Appendix**. Sequence: **edit → PostEdit syncs → navigate/refresh → nudge 1px → screenshot.**
+
 ## Database access (wamcp)
 
 - `mcp__wamcp__setdb` with `dbname: "{alias}"` once per session, then `mcp__wamcp__query` (read-only SQL) / `mcp__wamcp__tables` / `mcp__wamcp__fields`. If the alias isn't a valid db name, `mcp__wamcp__databases` lists them.
@@ -135,3 +141,31 @@ main().catch(e => { console.error(e); process.exit(1); });
 ```
 
 To find horizontal-overflow offenders, reuse the same connection boilerplate but `Emulation.setDeviceMetricsOverride` to the target width, then `Runtime.evaluate` a snippet returning every element whose `getBoundingClientRect().right > document.documentElement.clientWidth`.
+
+## Appendix — `nudge.js` (1px reflow helper)
+
+Also not stored in the repo — write it to the scratchpad. Resizes the visible debug Chrome window by 1px and back to fire a `resize` event so the layout settles. Run **after refreshing, before screenshotting** (see "Nudge the window by 1px" above). Usage: `node nudge.js 9222`.
+
+```js
+// Resize the visible Chrome window by 1px (then back) to force a reflow.
+// usage: node nudge.js <port>
+const [,, PORT] = process.argv;
+async function main() {
+  const list = await (await fetch(`http://localhost:${PORT}/json`)).json();
+  const page = list.find(t => t.type === 'page' && t.webSocketDebuggerUrl);
+  const ws = new WebSocket(page.webSocketDebuggerUrl);
+  let id = 0; const pending = new Map();
+  const send = (m, p = {}) => new Promise(res => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method: m, params: p })); });
+  ws.addEventListener('message', ev => { const msg = JSON.parse(ev.data); if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg.result); pending.delete(msg.id); } });
+  await new Promise(res => ws.addEventListener('open', res));
+
+  const { windowId, bounds } = await send('Browser.getWindowForTarget', { targetId: page.id });
+  const w = bounds.width;
+  await send('Browser.setWindowBounds', { windowId, bounds: { width: w + 1 } });
+  await new Promise(r => setTimeout(r, 300));
+  await send('Browser.setWindowBounds', { windowId, bounds: { width: w } });
+  console.log('nudged window', windowId, 'from', w, '->', w + 1, '->', w);
+  ws.close();
+}
+main().catch(e => { console.error(e); process.exit(1); });
+```
