@@ -109,6 +109,7 @@ Two signatures across the `buildForm*` family:
 - **`tvals`/`dvals`** = the true-values / display-values for a select/radio/checkbox (newline- or comma-separated, parallel lists). Field metadata is often seeded in the **`_fielddata`** table (`tablename`, `fieldname`, `inputtype`, `tvals`, `dvals`, `displayname`, `required`, `mask`, `defaultval`, `width`).
 - **Do NOT re-specify in `fieldname_options` (or `databaseListRecords`) anything already defined in `_fielddata`.** `_fielddata` is the authoritative default source for `inputtype`, `tvals`/`dvals`, `required`, `mask`, `defaultval`, `displayname`, etc. — `addEditDBForm`/`databaseListRecords` read it automatically. Only pass a `*_options` key when the value must **differ** from the `_fielddata` default. If a field's metadata is wrong for *every* page, fix it once in `_fielddata` (which also fixes the WaSQL backend), not per-form.
 - The `[fieldname]` bracket placeholder inside a `*_fields` view is replaced with that field's rendered input control.
+- **Auto-hidden passthrough — don't hand-roll hidden fields.** Any dashless `$opts` key that is NOT one of the `-fields` (and isn't a `{field}_{option}`/`{field}_options` for a rendered field, a reserved `_`/`-` key, or blank) is emitted **automatically** as a hidden passthrough input so it posts with the form (`addEditDBForm` leftover-params loop, `database.php`). So to inject e.g. `site_id`, just pass `'site_id'=>intval(commonSiteId())` — **do NOT** also append `[site_id]` (or `,site_id`) to `-fields` **nor** set `'site_id_options'=>array('inputtype'=>'hidden')`. That pattern is redundant; the bare dashless value alone becomes the hidden field (numeric/array → `<input type="hidden">`, string → `<textarea>`). Works in edit mode too (stamps the passed value). This is the correct way to scope forms by ward.
 
 ### Form processing helpers
 - `processFileUploads()` — call in the controller before saving; moves `$_FILES` to disk and populates `$_REQUEST['file_abspath']`.
@@ -333,6 +334,17 @@ global $USER;
 if(!isUser()){ setView('login_required',1); return; }
 $userName = $USER['firstname'];
 ```
+- **`$USER` already IS the current user's full `_users` record** — every column is on it (`_id`, `username`, `email`, `firstname`, `lastname`, `utype`, `perms`, custom cols…). **Never re-fetch the logged-in user** with `getDBRecordById('_users',$USER['_id'])` / `getDBRecord(['-table'=>'_users','_id'=>$USER['_id']])` — read the field straight off `$USER`.
+- **JSON columns decode into a sibling `*_ex` array on the same record** (`perms`→`perms_ex`, `data`→`data_ex`, `meta`→`meta_ex`). Prefer the `_ex` variant; if it isn't populated yet, decode once and cache it back onto the global so later reads reuse it — don't build a separate static cache or query the DB:
+  ```php
+  function commonUserPerms(){
+    if(!isUser()){return array();}
+    global $USER;
+    if(!isset($USER['perms_ex'])){ $USER['perms_ex']=decodeJSON($USER['perms']); }
+    return $USER['perms_ex'];
+  }
+  ```
+  Writing back to a JSON column still targets the raw column (`perms`), not `perms_ex` (see CLAUDE.md gotcha #7).
 
 **URL routing:**
 ```php

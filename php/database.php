@@ -5322,6 +5322,7 @@ function dropDBIndex($indexname,$tablename){
 *	[-rec_eval_params] - additonal params to send the the rec_eval function as a second param
 *	[{fieldname}_{option}] string - sets {option} for {field}.  age_displayname=>'Your Age'
 *	[{fieldname}_options] array - sets multiple options for {field}  age_options=>array('displayname'=>Your Age','style'=>'...')
+*	[{passthru}] mixed - any dashless param that is NOT one of the -fields (and not a {field}_{option}/{field}_options for a rendered field) is automatically emitted as a hidden passthrough input so it posts with the form (numeric/array => <input type="hidden">, string => <textarea>). Use this to inject a value like site_id WITHOUT adding it to -fields or setting {field}_options=>array('inputtype'=>'hidden'); just pass site_id=>N. Blank values and reserved _/- keys are skipped.
 * @note if a {field} is a json datatype you can manually create fields to populate it as follows: {field}>{subfield}>{subsubfield}
 * @return string - HTML form
 * @usage addEditDBForm(array('-table'=>"comments"));
