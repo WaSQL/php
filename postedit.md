@@ -32,14 +32,14 @@ Do these first:
 
 ## Ensure the PostEdit watcher is running (auto-launch if not)
 
-Edits sync to the DB **only while the watcher for that alias is running** (`p {alias}` = `php postedit\postedit.php {alias}` — a blocking loop that mirrors the DB down and pushes local saves back). Before editing:
+Edits sync to the DB **only while the watcher for that alias is running** (`php postedit\postedit.php {alias}` — a blocking loop that mirrors the DB down and pushes local saves back; the repo `p.bat`/`p` wrapper is just this one line, but **do NOT rely on `p.bat`** — launched via `Start-Process cmd` it often fails with `'p.bat' is not recognized`, so invoke `php` directly). Before editing:
 
 1. **Detect it by process, not by the lock file.** A watcher is live for `{alias}` iff a `php` process's command line contains `postedit.php {alias}`:
    - Windows: `Get-CimInstance Win32_Process -Filter "Name='php.exe'" | ? { $_.CommandLine -like '*postedit.php {alias}*' }`
    - macOS/Linux: `pgrep -af "postedit.php {alias}"`
    There is also a PID lock file `postedit/{sanitized-host}_lock.txt` (host with non-alphanumerics stripped), but **lock files go stale** — a hard-killed watcher can leave its file behind (older builds orphaned it on CTRL-C). Treat the lock file as a hint only; confirm the PID inside it is a live `postedit.php` process before trusting it.
 2. **If not running, launch it in its OWN persistent console** — never inside a blocking tool call: it loops forever and also reads STDIN to answer conflict prompts (`Overwrite? Y/N`, `Refresh Now? Y/N`).
-   - Windows: `Start-Process cmd -ArgumentList '/k','p.bat {alias}'` (or a new terminal tab/window running `p {alias}`).
+   - Windows: `Start-Process cmd -ArgumentList '/k','cd /d C:\wasql && php postedit\postedit.php {alias}'` (run the `php` command directly — the `cd /d` guarantees the relative `postedit\postedit.php` path resolves; `php` must be on PATH, e.g. `C:\webserver\bin\php-*\php.exe`). Do **not** use `p.bat {alias}` here — it fails to resolve in that spawned cmd. Then verify with the process check above (the lock file may lag a few seconds behind the running process).
    - macOS/Linux: run `php postedit/postedit.php {alias}` in a new terminal / `tmux` pane.
 3. **⚠️ Launching re-syncs from the DB, destructively.** On startup the watcher **backs up `postEditFiles/{alias}` to `{alias}_bak`, deletes the working files, and re-downloads them fresh from the DB.** So auto-launching **discards any un-synced local edits** (recoverable from `{alias}_bak`). Only auto-launch when the local mirror has no pending changes; if it might, tell the user and confirm first.
 
