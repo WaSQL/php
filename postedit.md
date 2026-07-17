@@ -19,14 +19,29 @@ Do these first:
    ```
    <chrome-exe> --remote-debugging-port=9222 --user-data-dir="<chrome-debug-profile>" --no-first-run --no-default-browser-check --new-window "https://{name}/{page}"
    ```
-   - `<chrome-exe>` — the Chrome/Chromium executable for this OS (Windows: `C:\Program Files\Google\Chrome\Application\chrome.exe`; macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`; Linux: `google-chrome` or `chromium`).
+   - `<chrome-exe>` — the Chrome/Chromium executable for this OS. On **Windows** it may be under **either** `C:\Program Files\Google\Chrome\Application\chrome.exe` **or** `C:\Program Files (x86)\Google\Chrome\Application\chrome.exe` — check both, or read the authoritative path from the registry `HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe`. macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`; Linux: `google-chrome` or `chromium`.
    - `<chrome-debug-profile>` — a **dedicated** profile dir **outside the repo and separate from your normal Chrome profile** (e.g. a temp dir). A dedicated dir (a) guarantees the debug port takes effect even if Chrome is already running, and (b) persists the site login/session across runs.
+   - **Launch it as a detached, persistent process so the debug port actually binds** — NOT as a shell background job (`chrome … &`) that a wrapping agent/tool may reap before Chrome finishes initializing (a reaped launch = no port on 9222). On **Windows** use PowerShell `Start-Process "<chrome-exe>" -ArgumentList @("--remote-debugging-port=9222", …)`; on macOS/Linux use `nohup <chrome-exe> … &` / `setsid` / `open -a`.
 
    Wait ~5s, then confirm with `curl -s http://localhost:9222/json` that a page target for `{name}` exists. If a Chrome is already running on port 9222 for a different site, just `Page.navigate` its existing target to the new URL instead of launching a second instance. If the user prefers their own already-open Chrome, they can launch it with `--remote-debugging-port=9222` and you attach to that.
-5. **Edit → auto-sync → refresh:** edit the PostEdit files; PostEdit auto-syncs to the DB; refresh/re-screenshot with a `?cb=<n>` cache-buster. (See "The edit loop".)
-6. Everything else (WaSQL syntax, where things live, gotchas) is below and in the repo `CLAUDE.md`.
+5. **Make sure the watcher is running** (edits only sync while it is) — see *Ensure the PostEdit watcher is running* below; launch it for `{alias}` if it isn't.
+6. **Edit → auto-sync → refresh:** edit the PostEdit files; PostEdit auto-syncs to the DB; refresh/re-screenshot with a `?cb=<n>` cache-buster. (See "The edit loop".)
+7. Everything else (WaSQL syntax, where things live, gotchas) is below and in the repo `CLAUDE.md`.
 
 > **Permissions:** launching Chrome, calling `setdb`/querying the DB, and editing files under `postedit/postEditFiles/{alias}` all run under whatever permission mode the user has set — respect it. A developer may pre-authorize this routine so you don't re-prompt each time; if so, that grant lives in their personal companion file, not here. The one hard prohibition from the repo `CLAUDE.md` always holds: **never `git commit` / `git push`.**
+
+## Ensure the PostEdit watcher is running (auto-launch if not)
+
+Edits sync to the DB **only while the watcher for that alias is running** (`p {alias}` = `php postedit\postedit.php {alias}` — a blocking loop that mirrors the DB down and pushes local saves back). Before editing:
+
+1. **Detect it by process, not by the lock file.** A watcher is live for `{alias}` iff a `php` process's command line contains `postedit.php {alias}`:
+   - Windows: `Get-CimInstance Win32_Process -Filter "Name='php.exe'" | ? { $_.CommandLine -like '*postedit.php {alias}*' }`
+   - macOS/Linux: `pgrep -af "postedit.php {alias}"`
+   There is also a PID lock file `postedit/{sanitized-host}_lock.txt` (host with non-alphanumerics stripped), but **lock files go stale** — a hard-killed watcher can leave its file behind (older builds orphaned it on CTRL-C). Treat the lock file as a hint only; confirm the PID inside it is a live `postedit.php` process before trusting it.
+2. **If not running, launch it in its OWN persistent console** — never inside a blocking tool call: it loops forever and also reads STDIN to answer conflict prompts (`Overwrite? Y/N`, `Refresh Now? Y/N`).
+   - Windows: `Start-Process cmd -ArgumentList '/k','p.bat {alias}'` (or a new terminal tab/window running `p {alias}`).
+   - macOS/Linux: run `php postedit/postedit.php {alias}` in a new terminal / `tmux` pane.
+3. **⚠️ Launching re-syncs from the DB, destructively.** On startup the watcher **backs up `postEditFiles/{alias}` to `{alias}_bak`, deletes the working files, and re-downloads them fresh from the DB.** So auto-launching **discards any un-synced local edits** (recoverable from `{alias}_bak`). Only auto-launch when the local mirror has no pending changes; if it might, tell the user and confirm first.
 
 ## What a PostEdit site is
 

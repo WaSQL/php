@@ -97,6 +97,20 @@ $postedit['firsttime']=1;
 //echo "obtaining lock: {$postedit['alock']} ...";
 file_put_contents($postedit['alock'],$postedit['pid']);
 //echo "success".PHP_EOL;
+//release our lock on ANY exit, including CTRL-C / CTRL-BREAK (previously these orphaned the lock file).
+register_shutdown_function('posteditReleaseLock');
+if(function_exists('sapi_windows_set_ctrl_handler')){
+	//Windows console CTRL-C / CTRL-BREAK: a handler suppresses the default kill, so we clean up and exit ourselves.
+	sapi_windows_set_ctrl_handler(function($event){ posteditReleaseLock(); exit(0); });
+}
+elseif(function_exists('pcntl_signal')){
+	//*nix SIGINT (CTRL-C) / SIGTERM. pcntl_async_signals is PHP 7.1+; on older PHP we fall back
+	//to a manual pcntl_signal_dispatch() each iteration of the main loop below.
+	if(function_exists('pcntl_async_signals')){pcntl_async_signals(true);}
+	$posteditSignalHandler=function($signo=0){ posteditReleaseLock(); exit(0); };
+	pcntl_signal(SIGINT, $posteditSignalHandler);
+	pcntl_signal(SIGTERM, $posteditSignalHandler);
+}
 //create the base dir
 $postedit['folder']=!empty($postedit['alias'])?$postedit['alias']:$postedit['name'];
 $basefolder=$postedit['folder'];
@@ -135,6 +149,8 @@ $cliname="postedit - ".getFileName($postedit['afolder']);
 cli_set_process_title($cliname);
 while(1){
 	sleep(1);
+	//deliver pending *nix signals on PHP < 7.1 (no async signals); harmless no-op otherwise / on Windows
+	if(function_exists('pcntl_signal_dispatch')){pcntl_signal_dispatch();}
 	shutdown_check();
 	$mypid=getmypid();
 	if($postedit['pid'] != $mypid){
@@ -602,6 +618,16 @@ function buildHostUrl(){
 	else{$http='https';}
 	$url="{$http}://{$postedit['name']}/php/index.php";
 	return $url;
+}
+function posteditReleaseLock(){
+	global $postedit;
+	if(isset($postedit['alock']) && is_file($postedit['alock'])){
+		//only remove the lock if it's still ours (PID match), or empty/unreadable — never yank a lock another instance took over.
+		$lockpid=trim((string)@file_get_contents($postedit['alock']));
+		if($lockpid === '' || $lockpid === (string)getmypid()){
+			@unlink($postedit['alock']);
+		}
+	}
 }
 function abortMessage($msg){
 	global $postedit;
