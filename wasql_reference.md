@@ -11,6 +11,7 @@ This is the companion to `CLAUDE.md`. `CLAUDE.md` holds the always-relevant rule
 | Working with views / templates / getView | [Views & templates (deep)](#views--templates-deep) |
 | Building or saving a form | [Form building](#form-building) · [How addEditDBForm saves](#how-addeditdbform-saves--the-save-is-global) |
 | Making a section reload via AJAX | [Section-refresh pattern](#section-refresh-pattern) |
+| Making a value/row open a detail modal (no form) | [Read-only detail popup (centerpop)](#read-only-detail-popup-centerpop) |
 | Building a "manage {things}" admin tab | [CRUD-tab pattern](#crud-tab-pattern) |
 | Adding a chart | [Chart.js extra](#chartjs-the-chartjs-extra) |
 | Building a server/DB health or monitoring page | [Server / system health in PHP](#server--system-health-in-php) |
@@ -50,7 +51,7 @@ $grid = pageScriptsGrid();
 - **Every record carries audit columns:** `_id` (PK), `_cdate` (created), `_edate` (edited), `_cuser` (creating user id), `_euser` (editing user id).
 
 ## Named / secondary DB connections
-The standard `getDBRecord`/`getDBRecords`/`getDBCount`/`addDBRecord`/`editDBRecord`/`executeSQL` functions hit the **current site DB**. To query a *different* connection registered in `config.xml` (e.g. a PostgreSQL warehouse named `postgres_ods`, a HANA/c-tree source), use the **`db*` wrapper family** — the connection name is always the **first argument**. It dispatches through `dbFunctionCall()`, which looks the name up in the global `$DATABASE` array, detects its `dbtype` (postgres/hana/mssql/mysql…), loads the right engine, and runs the type-specific query. This — not `-dbname` — is the idiom real multi-source sites (dexpdq, ctreepo) use.
+The standard `getDBRecord`/`getDBRecords`/`getDBCount`/`addDBRecord`/`editDBRecord`/`executeSQL` functions hit the **current site DB**. To query a *different* connection registered in `config.xml` (e.g. a PostgreSQL warehouse named `postgres_ods`, a HANA/c-tree source), use the **`db*` wrapper family** — the connection name is always the **first argument**. It dispatches through `dbFunctionCall()`, which looks the name up in the global `$DATABASE` array, detects its `dbtype` (postgres/hana/mssql/mysql…), loads the right engine, and runs the type-specific query. This — not `-dbname` — is the idiom real multi-source sites use.
 ```php
 $rows = dbQueryResults('postgres_ods', "SELECT ... LIMIT 50"); // raw SQL -> array of rows
 $rec  = dbGetRecord('postgres_ods', "SELECT pg_postmaster_start_time() AS started"); // one row
@@ -163,6 +164,25 @@ Combined with the global-save behavior above, an edit form whose `-action` is `/
   - **Rule of thumb: put `data-onload="wacss.centerpopClose();"` on the POST-SUBMIT refresh response** — the section/grid the form reloads into (`ajaxPost` target) — **NOT on the form's own open-response.** ⚠️ If you put it on the add/edit form's own root, the modal closes itself the instant it opens. `wacss.centerpopClose()` is a safe no-op when no centerpop is open, so the same refreshed section can carry this attribute and be reused for non-modal refreshes (tab switch, delete) without harm.
   - **Point the form's `ajaxPost` target at the *scoped inner* refresh div, NOT the whole tab container.** If a list/section's CSS/JS is scoped to a wrapper id (e.g. `#thing_list .foo{...}`) and you refresh by replacing the *outer* container, the re-rendered markup lands **outside** that id, so scoped rules stop applying (symptom: action icons collapsed, a sticky table lost stickiness after edit-submit). Target the inner scoped div (`wacss.ajaxPost(this,'thing_list')`) to keep scoped CSS working and preserve sibling controls.
 
+## Read-only detail popup (centerpop)
+To let a value/row **open a modal showing more detail** (a drill-down list, a query result, a record's full data) — no form, just display — pair a `wacss.nav` link with the self-creating `centerpop` div and an AJAX partial that renders a functions-built HTML string. This is the read-only sibling of the CRUD-tab pattern (which puts a *form* in the centerpop).
+- **Link:** `data-nav="/t/1/{page}/{action}"` + `data-div="centerpop"` + `onclick="return wacss.nav(this);"`. Add **`data-title="…"`** — `wacss.nav` reads it off the anchor and passes it to `wacss.createCenterpop` as the modal's title bar; the modal self-provides its ✕ close, so a pure viewer needs **no** `centerpopClose` wiring (that's only for closing after a successful *form* submit — see Section-refresh).
+- **Controller:** one PASSTHRU case per popup → `setView('pop_x',1); return;` (the blank `/t/1/` template makes it chrome-less).
+- **Body:** a `<view:pop_x>` block that just echoes a **functions** helper returning the HTML string. Build the table/markup in the model so the view has no brace-spanning `<?php ?>` islands (CLAUDE.md gotcha #1). The helper is where the query lives — `dbQueryResults('conn',$sql)` for a named connection, `getDBRecords(...)` for the site DB — and it returns an error/empty-state notification string when there are no rows.
+- **Make the trigger conditional:** only wrap the value in the link when there's something to show (e.g. count > 0); otherwise render the plain value with no link.
+```php
+// functions: a reusable link helper + a conditional trigger
+function xPopLink($nav,$title,$label){
+  return '<a href="#" data-nav="'.$nav.'" data-div="centerpop" data-title="'.encodeHtml($title).'"'
+    .' onclick="return wacss.nav(this);">'.$label.'</a>';
+}
+$locksVal = $n>0 ? xPopLink('/t/1/index/pglocks','Sessions Waiting on Locks',$n) : $n; // link only when non-zero
+// controller:  case 'pglocks': setView('pop_pglocks',1); return;
+// body:        <view:pop_pglocks><?=xLocksHtml();?></view:pop_pglocks>   (xLocksHtml() runs the query, returns a table string)
+```
+
+---
+
 ## CRUD-tab pattern
 The **preferred structure for any admin/config screen that manages one or more tables in tabs** (list rows, click to add/edit in a modal, save-and-refresh). Keeps the controller a pure router and puts each table's list/form in its own named views + functions. Build every new such tab this way.
 
@@ -230,7 +250,7 @@ The bundled chart library is **`/wfiles/js/extras/chart.min.js` — Chart.js v2.
 **Gotchas (verified):**
 - `wacss.loadScript` is **async** and `initChartJs` bails when `Chart` is still undefined → the first call can silently no-op (race). If you need charts guaranteed on first paint, load `chart.min.js` with a plain synchronous `<script src=…>` in the page body (it's a framework asset, fine to include — not the page's own css/js field).
 - `initChartJs`'s loop over `.chartjs` has **no idempotency guard**, and `wacss.init()` calls it directly *and* via `initOnloads` — so repeated calls (initial load + a `data-onload`) **double-render** (duplicate canvases). Do NOT put both `class="chartjs"` and `data-behavior="chartjs"` on one container either (also double-builds).
-- **For a section that AJAX-refreshes** (e.g. an auto-refreshing dashboard), don't fight the auto-parser: give canvases a **non-triggering** class (e.g. `ods-chart`, no `chartjs`/`data-behavior`), stash the full v2 config in a `data-chart` attr via `htmlspecialchars(json_encode($cfg),ENT_QUOTES)`, and run your own JS that **destroys prior instances then `new Chart(cv.getContext('2d'),cfg)`**, wired through the refreshed partial's `data-onload`. Idempotent and race-free. (Reference implementation: the `ods` site index dashboard.)
+- **For a section that AJAX-refreshes** (e.g. an auto-refreshing dashboard), don't fight the auto-parser: give canvases a **non-triggering** class (e.g. `app-chart`, no `chartjs`/`data-behavior`), stash the full v2 config in a `data-chart` attr via `htmlspecialchars(json_encode($cfg),ENT_QUOTES)`, and run your own JS that **destroys prior instances then `new Chart(cv.getContext('2d'),cfg)`**, wired through the refreshed partial's `data-onload`. Idempotent and race-free.
 
 ## Server / system health in PHP
 The web PHP runs **as apache on the site's own Linux host**, so for a health/monitoring page you can read metrics locally without SSH:
