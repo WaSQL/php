@@ -229,7 +229,7 @@ function langPerlInfo(){
 	$check=isWindows()?'where perl 2>nul':'which perl 2>/dev/null';
 	$test=cmdResults($check);
 	if(empty(trim($test['stdout']))){
-		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
+		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl is-white"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Not Installed</div></div></header>';
 		$os=langLinuxOSName();
 		$instructions='<div class="w_padding"><h3>Perl is not installed or not in PATH</h3><h4>Installation Instructions:</h4>';
 		if(isWindows()){
@@ -257,7 +257,7 @@ function langPerlInfo(){
 	$menu=array();
 	$output=shell_exec('perl -V 2>&1');
 	if(!$output){
-		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Error</div></div></header>';
+		$header='<header class="align-left"><div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;"><div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl is-white"></span> Perl</div><div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Error</div></div></header>';
 		return array('<div class="align-center" style="width:934px;">'.$header.'<div class="w_padding w_error">Failed to execute perl -V command</div></div>',array());
 	}
 	$lines=preg_split('/[\r\n]+/',$output);
@@ -418,7 +418,7 @@ function langPerlInfo(){
 	$header=<<<ENDOFHEADER
 <header class="align-left">
 	<div style="background:#003e62;padding:10px 20px;margin-bottom:20px;border:1px solid #000;">
-		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl"></span> Perl</div>
+		<div style="font-size:clamp(24px,3vw,48px);color:#FFF;"><span class="icon-program-perl is-white"></span> Perl</div>
 		<div style="font-size:clamp(11px,2vw,18px);color:#FFF;">Version {$version}</div>
 	</div>
 </header>

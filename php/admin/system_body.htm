@@ -6,9 +6,9 @@
 		return wacss.ajaxPost(document.system_form,'<?=$ADMINPAGE['ajaxdiv'];?>');
 	}
 </script>
-<h2 style="margin:10px 0 0 0;padding:6px;" class="<?=configValue('admin_color');?>">
+<div class="wadmin-head">
 	<span class="icon-server"></span> System
-</h2>
+</div>
 <form method="post" data-setprocessing="<?=$ADMINPAGE['ajaxdiv'];?>" name="system_form" action="<?=$ADMINPAGE['ajaxpage'];?>">
 	<input type="hidden" name="_menu" value="system" />
 	<input type="hidden" name="tab" value="info" />

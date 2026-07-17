@@ -27,16 +27,19 @@
 }
 .statbox .count{
 	font-size: 50px;
+	color: #363636;
 }
+.statbox .name{color:#5a5a5a;}
 .statbox .counts table td{
 	font-size: 11px;
 	color: #a4a5a7;
 }
 </style>
-<div class="align-right w_small" style="margin-top:10px;color:#CCC;">
-	Note: to add custom tables to this page set dashboard_tables to config.xml to the tables you want to see.
+<div class="wadmin-head" style="margin-bottom:4px;"><span class="icon-th-thumb-empty"></span> Table Stats</div>
+<div class="w_small" style="margin:0 0 6px;color:#9a9a9a;">
+	Note: to show custom tables here, set <code>dashboard_tables</code> in config.xml to the tables you want to see.
 </div>
-<div style="padding:50px 25px;display:flex;flex-wrap: wrap;justify-content: center;">
+<div style="padding:20px 5px;display:flex;flex-wrap: wrap;justify-content: center;">
 	<?=renderEach('stat',$stats,'stat');?>
 </div>
 </view:default>

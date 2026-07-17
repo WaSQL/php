@@ -8139,13 +8139,28 @@ function dumpDB($table=''){
 		
 	}
 	$dump['iswindows']=isWindows();
-	if(!isWindows() || (isset($CONFIG['gzip']) && $CONFIG['gzip']==1)){
-    	$dump['command'] .= " | gzip -9";
-    	$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
+	if(isWindows()){
+		//Windows executes commands with bypass_shell=true (no cmd.exe), so shell
+		//operators like ">" (redirect) and "|" (pipe) are handed to mysqldump as
+		//literal arguments instead of being interpreted - which is why a plain
+		//"mysqldump ... > file" fails with: Couldn't find table: ">".
+		//Capture mysqldump's stdout and write the dump file ourselves instead.
+		$gzip=(isset($CONFIG['gzip']) && $CONFIG['gzip']==1)?true:false;
+		if($gzip){$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);}
+		$dump['result']=cmdResults($dump['command']);
+		$sqlout=isset($dump['result']['stdout'])?$dump['result']['stdout']:'';
+		//only write a file when we actually captured dump output (not a usage/error message)
+		if(strlen(trim($sqlout)) && !preg_match('/^Usage\:/i',ltrim($sqlout))){
+			file_put_contents($dump['afile'],$gzip?gzencode($sqlout,9):$sqlout);
+		}
 	}
-	$dump['command'] .= "  > \"{$dump['afile']}\"";
-	//echo printValue($dump).printValue($CONFIG);exit;
-	$dump['result']=cmdResults($dump['command']);
+	else{
+		//non-Windows runs through a real shell, so redirect/pipe work as written
+		$dump['command'] .= " | gzip -9";
+		$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
+		$dump['command'] .= "  > \"{$dump['afile']}\"";
+		$dump['result']=cmdResults($dump['command']);
+	}
 	if(is_file($dump['afile']) && !filesize($dump['afile'])){
     	unlink($dump['afile']);
 	}

@@ -688,6 +688,7 @@ fieldset[disabled] .wacss_select {
   border-radius: 4px;
   box-shadow: none;
   display: inline-flex;
+  gap: 0.45em;
   font-size: 1rem;
   height: 2.5em;
   justify-content: flex-start;
@@ -4395,8 +4396,10 @@ label.wacss_panel-block:hover {
     margin: 0;
     list-style: none;
     background: #ff9800;
-    border: 1px solid #e68a00;
     width:100% !important;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06), 0 4px 14px rgba(0, 0, 0, 0.10);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Reset all UL/LI */
@@ -4404,12 +4407,21 @@ label.wacss_panel-block:hover {
     list-style: none;
     margin: 0;
     padding: 0;
+    background: transparent;
 }
 
 .wacss_navbar li {
     position: relative;
-    font-size: 16px;
-    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Thin dividers inside menus */
+.wacss_navbar ul hr {
+    border: none;
+    border-top: 1px solid #ececf0;
+    margin: 6px 10px;
+    height: 0;
 }
 
 /* Links */
@@ -4418,10 +4430,17 @@ label.wacss_panel-block:hover {
     text-decoration: none;
     color: #fff;
     padding: 8px 15px 8px 12px;
+    font-weight: 500;
+    transition: background-color 0.16s ease, color 0.16s ease;
 }
 
 .wacss_navbar a:hover {
-    background: #e68a00;
+    background: rgba(0, 0, 0, 0.10);
+}
+
+.wacss_navbar a:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: -2px;
 }
 
 /* Level 1 - horizontal */
@@ -4455,13 +4474,21 @@ label.wacss_panel-block:hover {
     justify-items: space-between;
     
 }
-/* level 1 dropdown arrow */
-.wacss_navbar > ul > li > a::after {
-    content: '\1F893';
-    font-size: 1.0rem;
-    position: absolute;
-    right:2px;
-    bottom:0px;
+/* level 1 dropdown caret (only for items that open a menu) */
+.wacss_navbar > ul > li > a.dropdown::after {
+    content: '';
+    display: inline-block;
+    width: 0.42em;
+    height: 0.42em;
+    margin-left: 0.15em;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-0.18em) rotate(45deg);
+    opacity: 0.8;
+    transition: transform 0.18s ease;
+}
+.wacss_navbar > ul > li:hover > a.dropdown::after {
+    transform: translateY(0.06em) rotate(-135deg);
 }
 
 /* Level 2 - dropdown below */
@@ -4470,23 +4497,28 @@ label.wacss_panel-block:hover {
     position: absolute;
     top: 100%;
     left: 0;
-    min-width: 200px;
+    min-width: 220px;
     background: #ffffff;
-    border: 1px solid #dbdbdb;
-    padding: 10px 0;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+    border-radius: 0 0 12px 12px;
 }
 
 /* Dropdown links - dark text on white background */
 .wacss_navbar > ul > li > ul a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
     color: #4a4a4a;
+    padding: 8px 14px;
+    border-radius: 7px;
+    white-space: nowrap;
 }
 
 .wacss_navbar > ul > li > ul a:hover {
-    background: #f5f5f5;
-    color: #363636;
+    background: #f1f2f4;
+    color: #1a1a1a;
 }
 
 /* Level 2 dropdowns in right menu - align to right edge */
@@ -4499,13 +4531,22 @@ label.wacss_panel-block:hover {
 .wacss_navbar > ul > li:hover > ul {
     display: block;
 }
-/* level 2 and 3 expansion arrow */
+/* level 2 and 3 expansion caret */
+.wacss_navbar > ul > li > ul a.dropdown {
+    padding-right: 28px;
+}
 .wacss_navbar > ul > li > ul a.dropdown::after {
-    content: '\1F892';
-    font-size: 1.0rem;
+    content: '';
     position: absolute;
-    right:3px;
-    bottom:10px;
+    right: 13px;
+    top: 50%;
+    width: 0.4em;
+    height: 0.4em;
+    margin-top: -0.28em;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    opacity: 0.55;
 }
 
 /* Level 2 items - vertical */
@@ -4519,12 +4560,12 @@ label.wacss_panel-block:hover {
     position: absolute;
     left: 100%;
     top: 0;
-    min-width: 200px;
+    min-width: 220px;
     background: #ffffff;
-    border: 1px solid #dbdbdb;
-    padding: 10px 0;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px;
-    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
 }
 
 /* Level 3 dropdowns in right menu - open to the left */
@@ -4551,10 +4592,10 @@ label.wacss_panel-block:hover {
     top: 0;
     min-width: 250px;
     background: #ffffff;
-    border: 1px solid #dbdbdb;
-    padding: 10px 0;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px;
-    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 6px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
 }
 
 /* Level 4 dropdowns in right menu - open to the left */
@@ -4580,6 +4621,11 @@ label.wacss_panel-block:hover {
     border: none;
     background: transparent;
     color: #fff;
+    border-radius: 8px;
+    transition: background-color 0.16s ease;
+}
+.wacss_navbar-burger:hover {
+    background: rgba(0, 0, 0, 0.10);
 }
 
 /* Burger lines */
@@ -4619,239 +4665,77 @@ label.wacss_panel-block:hover {
     transform: translateX(-50%) translateY(-8px) rotate(-45deg);
 }
 
-/* wacss_navbar colors */
-/* is-primary (Bulma turquoise) */
+/* wacss_navbar colors — set the bar background; the translucent hover on
+   ".wacss_navbar a:hover" darkens any color consistently, so per-color hover
+   rules are no longer needed. Light bars get dark text; dark bars get a light
+   hover overlay. */
 .wacss_navbar.is-primary,
-.wacss_navbar.is-turquoise {
-    background: #00d1b2;
-    border-color: #00b89c;
-}
-.wacss_navbar.is-primary > ul > li > a:hover,
-.wacss_navbar.is-turquoise > ul > li > a:hover {
-    background: #00b89c;
-}
-.wacss_navbar.is-primary > ul,
-.wacss_navbar.is-turquoise > ul {
-    background: #00d1b2;
-    border-color: #00b89c;
-}
+.wacss_navbar.is-turquoise { background: #00d1b2; }
 
-/* is-link (Bulma blue) */
 .wacss_navbar.is-link,
-.wacss_navbar.is-blue {
-    background: #485fc7;
-    border-color: #3a51bb;
-}
-.wacss_navbar.is-link > ul > li > a:hover,
-.wacss_navbar.is-blue > ul > li > a:hover {
-    background: #3a51bb;
-}
-.wacss_navbar.is-link > ul,
-.wacss_navbar.is-blue > ul {
-    background: #485fc7;
-    border-color: #3a51bb;
-}
+.wacss_navbar.is-blue { background: #485fc7; }
 
-/* is-info (Bulma cyan/light blue) */
 .wacss_navbar.is-info,
-.wacss_navbar.is-cyan {
-    background: #3e8ed0;
-    border-color: #2b7eb8;
-}
-.wacss_navbar.is-info > ul > li > a:hover,
-.wacss_navbar.is-cyan > ul > li > a:hover {
-    background: #2b7eb8;
-}
-.wacss_navbar.is-info > ul,
-.wacss_navbar.is-cyan > ul {
-    background: #3e8ed0;
-    border-color: #2b7eb8;
-}
+.wacss_navbar.is-cyan { background: #3e8ed0; }
 
-/* is-success (Bulma green) */
 .wacss_navbar.is-success,
-.wacss_navbar.is-green {
-    background: #48c78e;
-    border-color: #3aba7e;
-}
-.wacss_navbar.is-success > ul > li > a:hover,
-.wacss_navbar.is-green > ul > li > a:hover {
-    background: #3aba7e;
-}
-.wacss_navbar.is-success > ul,
-.wacss_navbar.is-green > ul {
-    background: #48c78e;
-    border-color: #3aba7e;
-}
+.wacss_navbar.is-green { background: #48c78e; }
 
-/* is-warning (Bulma yellow) */
 .wacss_navbar.is-warning,
-.wacss_navbar.is-yellow {
-    background: #ffe08a;
-    border-color: #ffd970;
-}
-.wacss_navbar.is-warning > ul > li > a:hover,
-.wacss_navbar.is-yellow > ul > li > a:hover {
-    background: #ffd970;
-}
-.wacss_navbar.is-warning > ul,
-.wacss_navbar.is-yellow > ul {
-    background: #ffe08a;
-    border-color: #ffd970;
-}
+.wacss_navbar.is-yellow { background: #ffe08a; }
 .wacss_navbar.is-warning a,
-.wacss_navbar.is-yellow a {
-    color: #333;
-}
+.wacss_navbar.is-yellow a,
 .wacss_navbar.is-warning .wacss_navbar-burger,
-.wacss_navbar.is-yellow .wacss_navbar-burger {
-    color: #333;
-}
+.wacss_navbar.is-yellow .wacss_navbar-burger { color: #333; }
 
-/* is-danger (Bulma red) */
 .wacss_navbar.is-danger,
-.wacss_navbar.is-red {
-    background: #f14668;
-    border-color: #ef2e55;
-}
-.wacss_navbar.is-danger > ul > li > a:hover,
-.wacss_navbar.is-red > ul > li > a:hover {
-    background: #ef2e55;
-}
-.wacss_navbar.is-danger > ul,
-.wacss_navbar.is-red > ul {
-    background: #f14668;
-    border-color: #ef2e55;
-}
+.wacss_navbar.is-red { background: #f14668; }
 
-/* is-orange (custom) */
-.wacss_navbar.is-orange {
-    background: #ff9800;
-    border-color: #e68a00;
-}
-.wacss_navbar.is-orange > ul > li > a:hover {
-    background: #e68a00;
-}
-.wacss_navbar.is-orange > ul {
-    background: #ff9800;
-    border-color: #e68a00;
-}
+.wacss_navbar.is-orange { background: #ff9800; }
 
-/* is-white */
-.wacss_navbar.is-white {
-    background: #ffffff;
-    border-color: #dbdbdb;
-}
-.wacss_navbar.is-white > ul > li > a:hover {
-    background: #f5f5f5;
-}
-.wacss_navbar.is-white > ul {
-    background: #ffffff;
-    border-color: #dbdbdb;
-}
-.wacss_navbar.is-white a {
-    color: #333;
-}
-.wacss_navbar.is-white .wacss_navbar-burger {
-    color: #333;
-}
+.wacss_navbar.is-white { background: #ffffff; }
+.wacss_navbar.is-white a,
+.wacss_navbar.is-white .wacss_navbar-burger { color: #333; }
 
-/* is-black */
-.wacss_navbar.is-black {
-    background: #0a0a0a;
-    border-color: #000000;
-}
-.wacss_navbar.is-black > ul > li > a:hover {
-    background: #1a1a1a;
-}
-.wacss_navbar.is-black > ul {
-    background: #0a0a0a;
-    border-color: #000000;
-}
+.wacss_navbar.is-light { background: #f5f5f5; }
+.wacss_navbar.is-light a,
+.wacss_navbar.is-light .wacss_navbar-burger { color: #333; }
 
-/* is-light */
-.wacss_navbar.is-light {
-    background: #f5f5f5;
-    border-color: #dbdbdb;
-}
-.wacss_navbar.is-light > ul > li > a:hover {
-    background: #eeeeee;
-}
-.wacss_navbar.is-light > ul {
-    background: #f5f5f5;
-    border-color: #dbdbdb;
-}
-.wacss_navbar.is-light a {
-    color: #333;
-}
-.wacss_navbar.is-light .wacss_navbar-burger {
-    color: #333;
-}
+.wacss_navbar.is-black { background: #0a0a0a; }
 
-/* is-dark */
-.wacss_navbar.is-dark {
-    background: #363636;
-    border-color: #2a2a2a;
-}
-.wacss_navbar.is-dark > ul > li > a:hover {
-    background: #2a2a2a;
-}
-.wacss_navbar.is-dark > ul {
-    background: #363636;
-    border-color: #2a2a2a;
-}
+.wacss_navbar.is-dark { background: #363636; }
 
-/* is-gray or is-grey */
 .wacss_navbar.is-gray,
-.wacss_navbar.is-grey {
-    background: #7a7a7a;
-    border-color: #666666;
-}
-.wacss_navbar.is-gray > ul > li > a:hover,
-.wacss_navbar.is-grey > ul > li > a:hover {
-    background: #666666;
-}
-.wacss_navbar.is-gray > ul,
-.wacss_navbar.is-grey > ul {
-    background: #7a7a7a;
-    border-color: #666666;
+.wacss_navbar.is-grey { background: #7a7a7a; }
+
+/* Dark bars: use a light hover overlay instead of the default dark one */
+.wacss_navbar.is-black > ul > li > a:hover,
+.wacss_navbar.is-dark > ul > li > a:hover {
+    background: rgba(255, 255, 255, 0.14);
 }
 
-/* wacss_navbar sizes */
+/* Dropdown items always sit on a white panel, so keep their text dark
+   regardless of the bar color modifier above */
+.wacss_navbar.is-white > ul > li > ul a,
+.wacss_navbar.is-light > ul > li > ul a,
+.wacss_navbar.is-warning > ul > li > ul a,
+.wacss_navbar.is-yellow > ul > li > ul a { color: #4a4a4a; }
+
+/* wacss_navbar sizes (carets use em units, so they scale with these) */
 /* is-small */
 .wacss_navbar.is-small li {
-    font-size: 14px;
+    font-size: 13px;
 }
 .wacss_navbar.is-small a {
     padding: 6px 12px 6px 10px;
 }
-.wacss_navbar.is-small > ul > li > a::after {
-    font-size: 0.85rem;
-    right: 1px;
-    bottom: 0px;
-}
-.wacss_navbar.is-small > ul > li > ul a.dropdown::after {
-    font-size: 0.85rem;
-    right: 2px;
-    bottom: 8px;
-}
 
 /* is-medium (default size) */
 .wacss_navbar.is-medium li {
-    font-size: 16px;
+    font-size: 15px;
 }
 .wacss_navbar.is-medium a {
     padding: 8px 15px 8px 12px;
-}
-.wacss_navbar.is-medium > ul > li > a::after {
-    font-size: 1.0rem;
-    right: 2px;
-    bottom: 0px;
-}
-.wacss_navbar.is-medium > ul > li > ul a.dropdown::after {
-    font-size: 1.0rem;
-    right: 3px;
-    bottom: 10px;
 }
 
 /* is-large */
@@ -4861,15 +4745,36 @@ label.wacss_panel-block:hover {
 .wacss_navbar.is-large a {
     padding: 10px 18px 10px 15px;
 }
-.wacss_navbar.is-large > ul > li > a::after {
-    font-size: 1.15rem;
-    right: 3px;
-    bottom: 1px;
+
+/* wacss_navbar desktop polish: hover indicator bar + dropdown entrance animation */
+@media screen and (min-width: 1024px) {
+    .wacss_navbar > ul > li > a::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 0;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background: currentColor;
+        opacity: 0.9;
+        transform: scaleX(0);
+        transform-origin: center;
+        transition: transform 0.18s ease;
+        pointer-events: none;
+    }
+    .wacss_navbar > ul > li:hover > a::before {
+        transform: scaleX(1);
+    }
+    .wacss_navbar > ul > li:hover > ul,
+    .wacss_navbar > ul > li > ul > li:hover > ul,
+    .wacss_navbar > ul > li > ul > li > ul > li:hover > ul {
+        animation: wacssNavDrop 0.16s ease;
+    }
 }
-.wacss_navbar.is-large > ul > li > ul a.dropdown::after {
-    font-size: 1.15rem;
-    right: 4px;
-    bottom: 12px;
+@keyframes wacssNavDrop {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* wacss_navbar responsive */
@@ -5046,11 +4951,12 @@ label.wacss_panel-block:hover {
         padding-left: 55px;
     }
 
-    /* Change dropdown arrows to down arrows on mobile since everything stacks */
+    /* Point sub-menu carets downward on mobile since everything stacks */
     .wacss_navbar.is-active > ul > li > ul a.dropdown::after {
-        content: '\1F893';
-        right: 10px;
-        bottom: 10px;
+        right: 16px;
+        top: 16px;
+        margin-top: 0;
+        transform: rotate(45deg);
     }
 
     /* Mobile: show all dropdowns by default (no hover needed) */
@@ -5068,5 +4974,56 @@ label.wacss_panel-block:hover {
     .wacss_navbar.is-active > ul > li > ul > li > ul > li:hover > ul {
         display: block;
     }
+}
+
+/* ====================== WASQL ADMIN PAGE UI HELPERS ====================== */
+/* Reusable, theme-neutral building blocks for the admin pages: a spaced page
+   heading, a soft card, and a card title with a divider. */
+.wadmin-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 22px 0 16px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #363636;
+}
+.wadmin-head [class*="icon-"],
+.wadmin-head [class*="material-"] {
+    opacity: 0.6;
+}
+.wadmin-card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    padding: 18px 20px;
+    margin-bottom: 18px;
+}
+.wadmin-card-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #363636;
+    margin: 0 0 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.wadmin-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #7a7a7a;
+}
+
+/* is-white forces an icon-font glyph white, overriding the hardcoded brand colors
+   baked into .icon-program-*:before (e.g. Perl #003859, Ruby #cc342d). Needed so
+   those icons stay visible when placed on their own dark brand-color banners. */
+[class*="icon-"].is-white::before,
+[class*="icon-"].is-white::after {
+    color: #fff;
 }
 

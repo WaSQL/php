@@ -557,14 +557,23 @@ function commonCronLogDelete(){
 }
 //---------- begin function commonCronLog
 /**
-* @describe records an error on this cron run
-* @param msg string  - error message to record
+* @describe records a message on the current cron run. By default the message is appended
+*	to the cron log's 'log' JSON array (as {timestamp,message}). Optionally target a specific
+*	_cron_log column with $field: if that column is a JSON type the message is APPENDED to its
+*	array, otherwise the column value is OVERWRITTEN. This lets crons write easy-to-parse values.
+* @param msg mixed - message (or value) to record. Arrays/objects are JSON encoded.
+* @param echomsg boolean - default 1. also echo the message to stdout.
+* @param field string - default ''. Optional _cron_log column to write to (JSON column = append, other = overwrite).
 * @return ok boolean
-* @usage 
+* @usage
 *	$ok=commonCronLog($msg);
 *	$ok=commonCronLog($PASSTHRU);
+*	//overwrite a custom column (add e.g. an integer record_count column to _cron_log first):
+*	$ok=commonCronLog(9,0,'record_count');
+*	//append to a custom JSON column:
+*	$ok=commonCronLog($errmsg,0,'errors');
 */
-function commonCronLog($msg,$echomsg=1){
+function commonCronLog($msg,$echomsg=1,$field=''){
 	if(!is_string($msg) && !isNum($msg)){
 		$msg=encodeJson($msg);
 	}
@@ -594,10 +603,27 @@ function commonCronLog($msg,$echomsg=1){
 		}
 		return false;
 	}	
+	//resolve the target column. Default (and any bad/unknown value) is the 'log' JSON array.
+	if(!is_string($field) || !strlen(trim($field)) || trim($field)=='log'){
+		$field='log';
+		$fieldisjson=true;
+	}
+	else{
+		$field=preg_replace('/[^a-zA-Z0-9_]/','',trim($field));
+		$info=getDBFieldInfo('_cron_log');
+		if(!strlen($field) || !isset($info[$field])){
+			//unknown column - fall back to the default log so the message is not lost
+			$field='log';
+			$fieldisjson=true;
+		}
+		else{
+			$fieldisjson=(strtolower($info[$field]['_dbtype'])=='json');
+		}
+	}
 	$cronlog=getDBRecord(array(
 		'-table'=>'_cron_log',
 		'_id'=>$cron['cronlog_id'],
-		'-fields'=>'_id,log',
+		'-fields'=>"_id,{$field}",
 		'-nocache'=>1
 	));
 	if(!isset($cronlog['_id'])){
@@ -606,15 +632,20 @@ function commonCronLog($msg,$echomsg=1){
 		}
 		return false;
 	}
-	$log=decodeJson($cronlog['log']);
-	if(!is_array($log)){$log=[];}
-	//get the current time from the DB so we are not reliant on timezone
-	
-	$log[]=array(
-		'timestamp'=>$current_time,
-		'message'=>$msg
-	);
-	$ok=editDBRecordById('_cron_log',$cronlog['_id'],array('log'=>encodeJson($log)));
+	if($fieldisjson){
+		//JSON column - append this message to its array (timestamp so it stays parseable)
+		$arr=decodeJson($cronlog[$field]);
+		if(!is_array($arr)){$arr=array();}
+		$arr[]=array(
+			'timestamp'=>$current_time,
+			'message'=>$msg
+		);
+		$ok=editDBRecordById('_cron_log',$cronlog['_id'],array($field=>encodeJson($arr)));
+	}
+	else{
+		//non-JSON column - overwrite its value
+		$ok=editDBRecordById('_cron_log',$cronlog['_id'],array($field=>$msg));
+	}
 	if($echomsg==1){
 		echo "{$current_time}:{$msg}".PHP_EOL;
 	}

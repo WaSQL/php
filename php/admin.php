@@ -706,7 +706,7 @@ if(isAjax()){
 		break;
 		case 'clearmin':
 			wasqlClearMinCache();
-			echo "Min Cache Cleared<br />Refreshing Page";
+			echo '<div class="w_success" style="padding:6px 0;"><span class="icon-mark"></span> Minify cache cleared. Refreshing&hellip;</div>';
 			echo buildOnLoad("window.location=window.location;");
 			exit;
 		break;
@@ -1514,7 +1514,7 @@ ENDOFX;
 		break;
 		case 'env':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_grey"></span> Server Variables</div>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-server w_grey"></span> Server Variables</div>'.PHP_EOL;
 			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Variable','Value'));
 			foreach($_SERVER as $key=>$val){
@@ -1525,7 +1525,7 @@ ENDOFX;
 			break;
 		case 'iconsets':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-file-image w_big"></span> List Iconsets</div>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-file-image w_big"></span> List Iconsets</div>'.PHP_EOL;
 			echo '<hr size="1" style="padding:0px;margin:0px;">'.PHP_EOL;
 			$iconsets=listIconsets();
 			echo '<table class="wacss_table is-striped is-mobile-responsive">'.PHP_EOL;
@@ -1559,7 +1559,7 @@ ENDOFX;
 			break;
 		case 'font_icons':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-slideshow"></span> WaSQL Font Icons</div>'.PHP_EOL;
 			echo 'Usage: <span class="icon-tag"></span> <xmp style="display:inline;"><span class="icon-tag"></span></xmp>'.PHP_EOL;
 			echo '<hr size="1" />'.PHP_EOL;
 			$icons=wasqlFontIcons();
@@ -1576,7 +1576,7 @@ ENDOFX;
 		break;
 		case 'font_brands':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> Brands Font Icons</div>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-slideshow"></span> Brands Font Icons</div>'.PHP_EOL;
 			echo 'Usage: call loadExtrasCss(brands) -  <span class="brand-apache"></span> <xmp style="display:inline;"><span class="brand-apache"></span></xmp>'.PHP_EOL;
 			echo '<hr size="1" />'.PHP_EOL;
 			$icons=wasqlFontIcons('extras/brands','brand');
@@ -1594,7 +1594,7 @@ ENDOFX;
 		break;
 		case 'font_materials':
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-slideshow"></span> Materials Font Icons</div>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-slideshow"></span> Materials Font Icons</div>'.PHP_EOL;
 			echo 'Usage: call loadExtrasCss(materials) - <span class="material-directions_run"></span> <xmp style="display:inline;"><span class="material-directions_run"></span></xmp>'.PHP_EOL;
 			echo '<hr size="1" />'.PHP_EOL;
 			$icons=wasqlFontIcons('extras/materials','material');
@@ -1613,7 +1613,7 @@ ENDOFX;
 		case 'system_old':
 			$ok=loadExtras('system');
 			//Server Variables
-			echo '<div class="w_lblue w_bold w_bigger"><span class="icon-server w_black"></span> System Info</div>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-server w_black"></span> System Info</div>'.PHP_EOL;
 			$info=getServerInfo();
 			//first show all the items that are not arrays
 			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
@@ -1678,6 +1678,7 @@ ENDOFX;
 				goto LIST_TABLE;
 			}
 			else{
+				echo '<div class="wadmin-head"><span class="icon-table"></span> Rebuild Tables</div>'.PHP_EOL;
 	    		clearDBCache(array('databaseTables','isDBTable'));
 				$wtables=getWasqlTables();
 				$tables=getDBTables();
@@ -1787,7 +1788,7 @@ ENDOFX;
 		case 'profile':
 			//My Profile
 			$uinfo=getUserInfo($USER);
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-user"></span> Profile  <a href="#" onclick="return ajaxGet(\'/php/index.php\',\'modal\',{_action:\'editform\',_table:\'_users\',_id:'.$USER['_id'].',cp_title:\'Edit My Profile\'});" class="w_link w_lblue w_bold"><span class="icon-edit"></span> edit</a></h2>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-user"></span> Profile <a href="#" onclick="return ajaxGet(\'/php/index.php\',\'modal\',{_action:\'editform\',_table:\'_users\',_id:'.$USER['_id'].',cp_title:\'Edit My Profile\'});" class="w_link w_lblue w_bold" style="font-size:.9rem;"><span class="icon-edit"></span> edit</a></div>'.PHP_EOL;
 			
 			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
 			echo buildTableTH(array('Field','Value'));
@@ -1832,7 +1833,7 @@ ENDOFX;
 			exit;
 		break;
 		case 'update_wasql':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-refresh"></span> Update WaSQL - </h2>'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-refresh"></span> Update WaSQL</div>'.PHP_EOL;
 			$tempdir=getWasqlPath('php/temp');
 			if(is_file("{$tempdir}/wasql.update.log")){
 				unlink("{$tempdir}/wasql.update.log");
@@ -1861,9 +1862,9 @@ ENDOFX;
 		case 'about':
 			//show DB Info, Current User, Link to WaSQL, Version
 			global $CONFIG;
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-wasql-about w_biggest"></span> About WaSQL</h2>'.PHP_EOL;
-			echo '<div class="row"><div class="col s12 m6">';
-			echo '<table class="table striped">'.PHP_EOL;
+			echo '<div class="wadmin-head"><span class="icon-wasql-about"></span> About WaSQL</div>'.PHP_EOL;
+			echo '<div class="wadmin-card" style="max-width:940px;">'.PHP_EOL;
+			echo '<table class="wacss_table is-striped">'.PHP_EOL;
 			//versions
 			$versions=getAllVersions();
 			echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Version Information</th></tr>'.PHP_EOL;
@@ -1916,7 +1917,7 @@ ENDOFX;
 				echo "<tr><th align=\"left\">{$key}:</th><td>{$val}</td></tr>\n";
             	}
             echo '</table>'.PHP_EOL;
-            echo '</div></div>';
+            echo '</div>'.PHP_EOL;
 			break;
 		case 'stats':
 			//Site Stats from the _access table
@@ -2131,7 +2132,7 @@ ENDOFX;
 						}
 						else{
 							echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-							echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
+							echo '<div class="wadmin-head" style="margin-top:14px;">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 							$addopts=array(
 								'-action'=>'/php/admin.php',
 								'-table'=>$_REQUEST['_table_'],
@@ -2160,7 +2161,7 @@ ENDOFX;
 							break;
 						}
 						echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-						echo '<div class="w_lblue w_bold w_bigger">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
+						echo '<div class="wadmin-head" style="margin-top:14px;">Add New Record to '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 						$addopts=array(
 							'-action'=>'/php/admin.php',
 							'-table'=>$_REQUEST['_table_'],
@@ -2215,7 +2216,7 @@ ENDOFX;
 			}
 			if(isset($_REQUEST['_table_']) && isNum($_REQUEST['_id'])){
 				echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-				echo '<div class="w_lblue w_bold w_bigger">Edit Record #'.$_REQUEST['_id'].' in '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
+				echo '<div class="wadmin-head" style="margin-top:14px;">Edit Record #'.$_REQUEST['_id'].' in '.$_REQUEST['_table_'].' table.</div>'.PHP_EOL;
 				$rec=getDBRecord(array(
 					'-table'=>$_REQUEST['_table_'],
 					'_id'=>$_REQUEST['_id'],
@@ -2322,7 +2323,7 @@ LIST_TABLE:
 				}
 				//table Options header
                 echo tableOptions($_REQUEST['_table_'],array('-format'=>'table','-notext'=>1));
-				echo '<div class="w_lblue w_bold w_bigger">List Records in ';
+				echo '<div class="wadmin-head" style="margin-top:14px;">List Records in ';
 				switch(strtolower($_REQUEST['_table_'])){
 					case '_config':
 						echo '<span class="icon-gear w_gray w_big"></span>';
@@ -2819,7 +2820,7 @@ LIST_TABLE:
 			sort($fields);
 			//echo printValue($_REQUEST);
 			unset($_REQUEST);
-            echo '<div class="w_lblue w_bold w_bigger"><span class="icon-properties w_danger"></span> Table Properties for ';
+            echo '<div class="wadmin-head"><span class="icon-properties w_danger"></span> Table Properties for ';
 			$img=getImageSrc(strtolower($currentTable));
 				if(strlen($img)){
 					echo  '<img src="'.$img.'" class="w_bottom" alt="" /> ';
@@ -3041,7 +3042,21 @@ LIST_TABLE:
 		case 'backup':
 			$_REQUEST['func']="backup";
 		case 'backups':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-save"></span> Backup / <span class="icon-undo"></span> Restore</h2>'.PHP_EOL;
+			echo <<<'STYLE'
+<style>
+.backup-head{display:flex;align-items:center;gap:10px;margin:22px 0 16px;font-size:1.5rem;font-weight:700;color:#363636;}
+.backup-head .icon-save,.backup-head .icon-undo{opacity:.6;}
+.backup-card{max-width:960px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:18px 20px;margin-bottom:18px;}
+.backup-card-title{display:flex;align-items:center;gap:9px;font-size:1.1rem;font-weight:700;color:#363636;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.06);}
+.backup-card-title .backup-count{background:#eef1ff;color:#3a51bb;border-radius:999px;padding:3px 12px;font-size:.8rem;font-weight:600;}
+.backup-info{display:flex;flex-wrap:wrap;gap:12px 30px;margin-bottom:16px;}
+.backup-info-item{display:flex;flex-direction:column;gap:4px;}
+.backup-info-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#7a7a7a;}
+.backup-info-item code{background:#f4f5f7;border:1px solid rgba(0,0,0,.06);border-radius:6px;padding:5px 10px;font-family:monospace;font-size:.9rem;color:#363636;}
+.backup-actions{display:flex;gap:10px;flex-wrap:wrap;}
+</style>
+STYLE;
+			echo '<div class="backup-head"><span class="icon-save"></span> Backup / <span class="icon-undo"></span> Restore</div>'.PHP_EOL;
 			$backupdir=getWasqlPath('sh/backups');
 			if(isset($_REQUEST['func'])){
             	switch(strtolower($_REQUEST['func'])){
@@ -3137,12 +3152,15 @@ LIST_TABLE:
                 	break;
 				}
 			}
-			echo '<div>Backup Directory: '.$backupdir.'</div>'.PHP_EOL;
-			echo '<div>DBName: '.$CONFIG['dbname'].'</div>'.PHP_EOL;
 			$files=listFilesEx($backupdir,array('name'=>$CONFIG['dbname'].'__'));
-
 			echo buildFormBegin('',array('_menu'=>'backups','func'=>'','-name'=>'backupform'));
-			echo buildFormSubmit('Backup Now','func','','icon-save');
+			echo '<div class="backup-card">'.PHP_EOL;
+			echo '	<div class="backup-info">'.PHP_EOL;
+			echo '		<div class="backup-info-item"><span class="backup-info-label">Backup Directory</span><code>'.encodeHtml($backupdir).'</code></div>'.PHP_EOL;
+			echo '		<div class="backup-info-item"><span class="backup-info-label">Database</span><code>'.encodeHtml($CONFIG['dbname']).'</code></div>'.PHP_EOL;
+			echo '	</div>'.PHP_EOL;
+			echo '	<div class="backup-actions">'.buildFormSubmit('Backup Now','func','','icon-save '.configValue('admin_color')).'</div>'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
 			if(is_array($files) && count($files)){
 				$list=array();
 				$filecnt=count($files);
@@ -3156,11 +3174,10 @@ LIST_TABLE:
 	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="return renameBackup(this);" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_grey w_big"></span></a>';
 					$list[]=$rec;
 				}
-				//echo printValue($list);
 				//sort by newest first
 				$list=sortArrayByKey($list,'_cdate_age',SORT_ASC);
-				//display list
-				echo '<div style="padding:15px;">'.PHP_EOL;
+				echo '<div class="backup-card">'.PHP_EOL;
+				echo '	<div class="backup-card-title"><span class="icon-history"></span> Existing Backups <span class="backup-count">'.count($list).'</span></div>'.PHP_EOL;
 				echo databaseListRecords(array(
 					'-list'					=>$list,
 					'-listfields'			=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
@@ -3173,8 +3190,8 @@ LIST_TABLE:
 					'_cdate_age_verbose_align'	=> 'right',
 					'name_checkbox'			=>1
 					));
+				echo '	<div class="backup-actions" style="margin-top:14px;">'.buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');",'icon-cancel w_big is-danger').'</div>'.PHP_EOL;
 				echo '</div>'.PHP_EOL;
-				echo buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');",'icon-cancel w_big');
 			}
 			echo buildFormEnd();
 			//echo printValue($_REQUEST);
@@ -3296,24 +3313,54 @@ LIST_TABLE:
 			//$pw=userIsEncryptedPW($ruser['password'])?userDecryptPW($ruser['password']):$ruser['password'];
 			break;
 		case 'grep':
-			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-search"></span> Database Search</h2>'.PHP_EOL;
-			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
-			echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive" style="width:600px;height:auto;margin-bottom:10px;">'.PHP_EOL;
-			echo '	<tr valign="top" align="center"><th>Filters:</th>'.PHP_EOL;
-			echo '		<th>Schema<br><input type="checkbox" class="form-control" name="_grep_schema" value="1">'."</th>\n";
-			echo '		<th>Records<br><input type="checkbox" class="form-control" name="_grep_records" value="1" checked>'."</th>\n";
 			$tables=getDBTables();
-			echo '		<th>Table<br><select name="_table_" class="wacss_select"><option value=""></option>'.PHP_EOL;
+			$searchval=encodeHtml(requestValue('_grep_string'));
+			$submitted=(isset($_REQUEST['_grep_string']) && strlen($_REQUEST['_grep_string']));
+			//preserve the checkbox states across a submit (default both-on for a fresh page)
+			$optrecords=$submitted?((isset($_REQUEST['_grep_records']) && $_REQUEST['_grep_records']==1)?' checked':''):' checked';
+			$optschema=(isset($_REQUEST['_grep_schema']) && $_REQUEST['_grep_schema']==1)?' checked':'';
+			$curtable=isset($_REQUEST['_table_'])?$_REQUEST['_table_']:'_pages';
+			//build the table filter options
+			$tableopts='<option value="">All tables</option>';
 			foreach($tables as $table){
-				echo '				<option value="'.$table.'"';
-				if(isset($_REQUEST['_table_']) && $_REQUEST['_table_']==$table){echo ' selected';}
-				echo '>'.$table.'</option>'.PHP_EOL;
-            	}
-			echo '			</select>'."</th>\n";
-			echo '	</tr><tr><th>Text:</th>'.PHP_EOL;
-			echo '		<td colspan="3"><input type="text" class="wacss_input" name="_grep_string" value="'.encodeHtml(requestValue('_grep_string')).'" class="form-control" maxlength="255"> '."</td>\n";
-			echo '	</tr></table>'.PHP_EOL;
-			echo buildFormSubmit('Search Database','','','icon-search');
+				$sel=($curtable==$table)?' selected':'';
+				$tableopts.='<option value="'.encodeHtml($table).'"'.$sel.'>'.encodeHtml($table).'</option>';
+			}
+			//page-scoped styling (layout only; the controls themselves use wacss classes)
+			echo <<<'STYLE'
+<style>
+.dbsearch-head{display:flex;align-items:center;gap:10px;margin:22px 0 16px;font-size:1.5rem;font-weight:700;color:#363636;}
+.dbsearch-head .icon-search{opacity:.55;}
+.dbsearch-card{max-width:820px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:18px;}
+.dbsearch-inputrow{display:flex;gap:10px;align-items:stretch;}
+.dbsearch-inputwrap{position:relative;flex:1;}
+.dbsearch-inputwrap .icon-search{position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.45;pointer-events:none;}
+.dbsearch-card input[name=_grep_string]{width:100%;padding:12px 14px 12px 38px;font-size:1.05rem;border-radius:10px;}
+.dbsearch-btn{padding:0 22px;font-size:1rem;border-radius:10px;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;}
+.dbsearch-filters{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(0,0,0,.06);}
+.dbsearch-filters label{display:flex;align-items:center;gap:7px;font-size:.95rem;color:#4a4a4a;cursor:pointer;margin:0;white-space:nowrap;}
+.dbsearch-filters input[type=checkbox]{width:16px;height:16px;cursor:pointer;}
+.dbsearch-tablefilter{margin-left:auto;}
+.dbsearch-tablefilter select{min-width:190px;}
+.dbsearch-resulthead{display:flex;align-items:center;gap:10px;font-size:1.15rem;font-weight:600;color:#363636;margin:24px 0 10px;}
+.dbsearch-resulthead .dbsearch-count{background:#eef1ff;color:#3a51bb;border-radius:999px;padding:3px 12px;font-size:.8rem;font-weight:600;}
+.dbsearch-empty{max-width:820px;background:#fff8e6;border:1px solid #ffe08a;border-radius:10px;padding:14px 18px;color:#7a5b00;}
+@media (max-width:600px){.dbsearch-inputrow{flex-direction:column;}.dbsearch-tablefilter{margin-left:0;}}
+</style>
+STYLE;
+			echo '<div class="dbsearch-head"><span class="icon-search"></span> Database Search</div>'.PHP_EOL;
+			echo buildFormBegin('/php/admin.php',array('-multipart'=>true,'_menu'=>"grep",'-name'=>"grepform"));
+			echo '<div class="dbsearch-card">'.PHP_EOL;
+			echo '	<div class="dbsearch-inputrow">'.PHP_EOL;
+			echo '		<div class="dbsearch-inputwrap"><span class="icon-search"></span><input type="text" class="wacss_input" name="_grep_string" value="'.$searchval.'" maxlength="255" autocomplete="off" placeholder="Search for a value across your database…"></div>'.PHP_EOL;
+			echo '		<button type="submit" class="wacss_button '.configValue('admin_color').' dbsearch-btn"><span class="icon-search"></span> Search</button>'.PHP_EOL;
+			echo '	</div>'.PHP_EOL;
+			echo '	<div class="dbsearch-filters">'.PHP_EOL;
+			echo '		<label title="Search inside the data stored in each table"><input type="checkbox" name="_grep_records" value="1"'.$optrecords.'> Search record data</label>'.PHP_EOL;
+			echo '		<label title="Search table/column names instead of data"><input type="checkbox" name="_grep_schema" value="1"'.$optschema.'> Search field names (schema)</label>'.PHP_EOL;
+			echo '		<label class="dbsearch-tablefilter">Limit to <select name="_table_" class="wacss_select">'.$tableopts.'</select></label>'.PHP_EOL;
+			echo '	</div>'.PHP_EOL;
+			echo '</div>'.PHP_EOL;
 			echo buildFormEnd();
 			echo buildOnLoad("document.grepform._grep_string.focus();");
 			if(isset($_REQUEST['_grep_string']) && strlen($_REQUEST['_grep_string'])){
@@ -3321,12 +3368,13 @@ LIST_TABLE:
 				$grep['string']=$_REQUEST['_grep_string'];
 				if(isset($_REQUEST['_grep_schema']) && $_REQUEST['_grep_schema']==1){$grep['schema']=1;}
 				if(isset($_REQUEST['_grep_records']) && $_REQUEST['_grep_records']==1){$grep['records']=1;}
+				if(isset($_REQUEST['_table_']) && strlen($_REQUEST['_table_'])){$grep['table']=$_REQUEST['_table_'];}
 				//echo printValue($grep);
 				//grep Schema?
 				if($grep['schema']==1){
-					echo '<div class="w_bold w_big w_dblue">Schema Results</div>'.PHP_EOL;
+					echo '<div class="dbsearch-resulthead"><span class="icon-table"></span> Schema matches</div>'.PHP_EOL;
 					echo '<table class="wacss_table is-bordered is-striped is-mobile-responsive">'.PHP_EOL;
-					echo '	<tr><th>Table</th><th>Fields</th></tr>'.PHP_EOL;
+					echo '	<tr><th>Table</th><th>Matching fields</th></tr>'.PHP_EOL;
 					foreach($tables as $table){
 						if(strlen($grep['table']) && $table != $grep['table']){continue;}
 						$info=getDBFieldInfo($table);
@@ -3344,15 +3392,24 @@ LIST_TABLE:
 					if(isset($_REQUEST['_table_']) && strlen($_REQUEST['_table_'])){$tables[]=$_REQUEST['_table_'];}
 					$results=grepDBTables($grep['string'],$tables);
 					if(is_array($results)){
-						echo '<div class="w_bold w_big w_dblue">Record Results</div>'.PHP_EOL;
-						echo databaseListRecords(array(
-							'-list'=>$results,
-							'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive",
-							'_id_href'=>"/php/admin.php?_table_=%tablename%&_menu=edit&_id=%_id%"
-						));
+						$cnt=count($results);
+						$badge=$cnt.' match'.($cnt==1?'':'es');
+						echo '<div class="dbsearch-resulthead"><span class="icon-list"></span> Record matches <span class="dbsearch-count">'.$badge.'</span></div>'.PHP_EOL;
+						if($cnt){
+							//drop the noisy (repeated) fields_checked column from the grid
+							foreach($results as $ri=>$rr){unset($results[$ri]['fields_checked']);}
+							echo databaseListRecords(array(
+								'-list'=>$results,
+								'-tableclass'	=> "wacss_table is-bordered is-striped is-mobile-responsive is-sticky",
+								'_id_href'=>"/php/admin.php?_table_=%tablename%&_menu=edit&_id=%_id%"
+							));
+						}
+						else{
+							echo '<div class="dbsearch-empty">No records found containing &ldquo;'.$searchval.'&rdquo;.</div>'.PHP_EOL;
+						}
 					}
 					else{
-						echo $results;
+						echo '<div class="dbsearch-empty">'.$results.'</div>'.PHP_EOL;
 					}
             	}
 			}

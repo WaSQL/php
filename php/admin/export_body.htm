@@ -1,98 +1,104 @@
 <view:default>
-<div class="container-fluid">
-	<div class="row">
-		<div class="col-sm-12">
-			<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-export"></span> Export</h2>
-		</div>
-	</div>
+<style>
+.export-wrap{max-width:1200px;}
+.export-head{display:flex;align-items:center;gap:10px;margin:22px 0 16px;font-size:1.5rem;font-weight:700;color:#363636;}
+.export-head .icon-export{opacity:.6;}
+.export-cols{display:flex;gap:18px;flex-wrap:wrap;align-items:stretch;}
+.export-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:16px 18px;display:flex;flex-direction:column;flex:1;min-width:280px;}
+.export-card.is-tables{flex:1.5;}
+.export-card-title{font-size:1.05rem;font-weight:700;color:#363636;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid rgba(0,0,0,.06);}
+.export-scroll{height:380px;overflow:auto;border:1px solid rgba(0,0,0,.06);border-radius:10px;}
+.export-scroll table{width:100%;margin:0;}
+.export-scroll th{position:sticky;top:0;z-index:2;background:#f4f5f7;box-shadow:0 2px 3px rgba(0,0,0,.08);}
+.export-footer{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap;}
+.export-footer .export-name{flex:0 0 340px;max-width:100%;}
+</style>
+<div class="export-wrap">
+	<div class="export-head"><span class="icon-export"></span> Export</div>
 	<form method="post" action="/php/admin.php" onsubmit="return submitForm(this);">
 		<input type="hidden" name="_menu" value="export" />
 		<input type="hidden" name="func" value="export" />
-	<div class="row">
-		<div class="col-sm-4">
-			<h4><?=buildFormCheckall('data-export','table',array('-label'=>'User Tables'));?></h4>
-			<div class="table-responsive well" style="background-color:inherit;padding-left:0px;padding-right:0px;height:400px;overflow:auto;">
-				<table class="wacss_table is-striped">
-					<tr>
-						<th>Table</th>
-						<th>Schema</th>
-						<th>Meta</th>
-						<th>Data</th>
-					</tr>
-					<view:table>
-					<tr>
-						<td>
-							<?=buildFormCheckall('data-table',encodeHtml($table),array('-label'=>encodeHtml($table)));?>
-						</td>
-						<td>
-							<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_schema[]" id="ck_<?=encodeHtml($table);?>_schema" value="<?=encodeHtml($table);?>" />
-							<label for="ck_<?=encodeHtml($table);?>_schema"></label>
-						</td>
-						<td>
-							<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_meta[]" id="ck_<?=encodeHtml($table);?>_meta" value="<?=encodeHtml($table);?>" />
-							<label for="ck_<?=encodeHtml($table);?>_meta"></label>
-						</td>
-						<td>
-							<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_data[]" id="ck_<?=encodeHtml($table);?>_data" value="<?=encodeHtml($table);?>" />
-							<label for="ck_<?=encodeHtml($table);?>_data"></label>
-						</td>
-					</tr>
-					</view:table>
-					<?=renderEach('table',$tables,'table');?>
-				</table>
+		<div class="export-cols">
+			<div class="export-card is-tables">
+				<div class="export-card-title"><?=buildFormCheckall('data-export','table',array('-label'=>'User Tables'));?></div>
+				<div class="export-scroll">
+					<table class="wacss_table is-striped">
+						<tr>
+							<th>Table</th>
+							<th>Schema</th>
+							<th>Meta</th>
+							<th>Data</th>
+						</tr>
+						<view:table>
+						<tr>
+							<td>
+								<?=buildFormCheckall('data-table',encodeHtml($table),array('-label'=>encodeHtml($table)));?>
+							</td>
+							<td>
+								<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_schema[]" id="ck_<?=encodeHtml($table);?>_schema" value="<?=encodeHtml($table);?>" />
+								<label for="ck_<?=encodeHtml($table);?>_schema"></label>
+							</td>
+							<td>
+								<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_meta[]" id="ck_<?=encodeHtml($table);?>_meta" value="<?=encodeHtml($table);?>" />
+								<label for="ck_<?=encodeHtml($table);?>_meta"></label>
+							</td>
+							<td>
+								<input data-table="<?=encodeHtml($table);?>" data-export="table" type="checkbox" name="export_data[]" id="ck_<?=encodeHtml($table);?>_data" value="<?=encodeHtml($table);?>" />
+								<label for="ck_<?=encodeHtml($table);?>_data"></label>
+							</td>
+						</tr>
+						</view:table>
+						<?=renderEach('table',$tables,'table');?>
+					</table>
+				</div>
+			</div>
+			<div class="export-card">
+				<div class="export-card-title"><?=buildFormCheckall('data-export','page',array('-label'=>'Pages'));?></div>
+				<div class="export-scroll">
+					<table class="wacss_table is-striped">
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+						</tr>
+						<view:epage>
+						<tr>
+							<td><?=encodeHtml($epage['_id']);?></td>
+							<td>
+								<input data-export="page" type="checkbox" name="export_pages[]" id="ck_<?=encodeHtml($epage['_id']);?>_page" value="<?=encodeHtml($epage['_id']);?>" />
+								<label for="ck_<?=encodeHtml($epage['_id']);?>_page"><?=encodeHtml($epage['name']);?></label>
+							</td>
+						</tr>
+						</view:epage>
+						<?=renderEach('epage',$epages,'epage');?>
+					</table>
+				</div>
+			</div>
+			<div class="export-card">
+				<div class="export-card-title"><?=buildFormCheckall('data-export','template',array('-label'=>'Templates'));?></div>
+				<div class="export-scroll">
+					<table class="wacss_table is-striped">
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+						</tr>
+						<view:et>
+						<tr>
+							<td><?=encodeHtml($et['_id']);?></td>
+							<td>
+								<input data-export="template" type="checkbox" name="export_templates[]" id="ck_<?=encodeHtml($et['_id']);?>_template" value="<?=encodeHtml($et['_id']);?>" />
+								<label for="ck_<?=encodeHtml($et['_id']);?>_template"><?=encodeHtml($et['name']);?></label>
+							</td>
+						</tr>
+						</view:et>
+						<?=renderEach('et',$etemplates,'et');?>
+					</table>
+				</div>
 			</div>
 		</div>
-		<div class="col-sm-3">
-			<h4><?=buildFormCheckall('data-export','page',array('-label'=>'Pages'));?></h4>
-			<div class="table-responsive well" style="background-color:inherit;padding-left:0px;padding-right:0px;height:400px;overflow:auto;">
-				<table class="wacss_table is-striped">
-					<tr>
-						<th>ID</th>
-						<th>Name</th>
-					</tr>
-					<view:epage>
-					<tr>
-						<td><?=encodeHtml($epage['_id']);?></td>
-						<td>
-							<input data-export="page" type="checkbox" name="export_pages[]" id="ck_<?=encodeHtml($epage['_id']);?>_page" value="<?=encodeHtml($epage['_id']);?>" />
-							<label for="ck_<?=encodeHtml($epage['_id']);?>_page"><?=encodeHtml($epage['name']);?></label>
-						</td>
-					</tr>
-					</view:epage>
-					<?=renderEach('epage',$epages,'epage');?>
-				</table>
-			</div>
-		</div>
-		<div class="col-sm-3">
-			<h4><?=buildFormCheckall('data-export','template',array('-label'=>'Templates'));?></h4>
-			<div class="table-responsive well" style="background-color:inherit;padding-left:0px;padding-right:0px;height:400px;overflow:auto;">
-				<table class="wacss_table is-striped">
-					<tr>
-						<th>ID</th>
-						<th>Name</th>
-					</tr>
-					<view:et>
-					<tr>
-						<td><?=encodeHtml($et['_id']);?></td>
-						<td>
-							<input data-export="template" type="checkbox" name="export_templates[]" id="ck_<?=encodeHtml($et['_id']);?>_template" value="<?=encodeHtml($et['_id']);?>" />
-							<label for="ck_<?=encodeHtml($et['_id']);?>_template"><?=encodeHtml($et['name']);?></label>
-						</td>
-					</tr>
-					</view:et>
-					<?=renderEach('et',$etemplates,'et');?>
-				</table>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-sm-3">
-			<?=buildFormText('name',array('placeholder'=>'name of export file','required'=>1));?>
-		</div>
-		<div class="col-sm-3">
+		<div class="export-footer">
+			<div class="export-name"><?=buildFormText('name',array('placeholder'=>'name of export file','required'=>1));?></div>
 			<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-export wacss_right3"></span> Export to File</button>
 		</div>
-	</div>
 	</form>
 </div>
 </view:default>
@@ -104,4 +110,3 @@
 		<p>Your export file has been created and should download automatically.</p>
 	</div>
 </view:export>
-

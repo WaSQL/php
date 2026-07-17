@@ -81,7 +81,7 @@ function websiteGraderPage(){
 				$recs[]=array(
 					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
 					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
-					'suggestions'=>'Title is too long ({$len} chars. Best between 40 and 80)'
+					'suggestions'=>"Title is too long ({$len} chars. Best between 40 and 80)"
 				);
 			}
 			elseif($len < 40){
@@ -194,8 +194,8 @@ function websiteGraderPage(){
 				);
 			}
 		}
-		//twitter
-		$check_fields=array('title','description','image:src','site','creator');
+		//twitter (X) cards - card type + image are required for a card to render; image:src is deprecated in favor of image
+		$check_fields=array('card','title','description','image');
 		foreach($check_fields as $field){
 			if(!isset($meta["twitter:{$field}"])){
 				$recs[]=array(
@@ -350,6 +350,10 @@ function websiteGraderGetBaseURL(){
 	return $websiteGraderGetBaseURLCache;
 }
 function websiteGraderList($recs,$listopts=array()){
+	//no issues found - show a clear pass message instead of an empty table
+	if(!is_array($recs) || !count($recs)){
+		return '<div class="w_success" style="padding:8px 2px 4px;"><span class="icon-mark"></span> All checks passed &mdash; no issues found.</div>';
+	}
 	$opts=array(
 		'-list'=>$recs,
 		'-tableclass'=>'wacss_table bordered condensed striped',
@@ -364,5 +368,131 @@ function websiteGraderList($recs,$listopts=array()){
 	}
 	return databaseListRecords($opts);
 
+}
+//---------- begin AI Optimization (AIO) checks ----------
+/*
+	AIO = optimizing to be found, understood, and cited by AI answer engines
+	(ChatGPT/OpenAI, Claude, Perplexity, Google AI Overviews, Copilot, etc.).
+	Signals checked:
+		- llms.txt (emerging standard guiding AI crawlers to key content)
+		- AI crawler access in robots.txt (are the major AI bots allowed?)
+		- JSON-LD structured data (Schema.org) so AI can extract entities
+		- a single, clear H1 per page
+		- <html lang> so AI/readers detect the content language
+		- an authorship signal (meta author or Person/Organization schema) for E-E-A-T
+*/
+function websiteGraderAIO(){
+	$recs=array();
+	$baseurl=websiteGraderGetBaseURL();
+	$rootlink='<span class="w_nowrap">/ (site root)</span>';
+	//---- llms.txt ----
+	$info=websiteGraderGetURLHeader("{$baseurl}/llms.txt");
+	if(isset($info['http_code']) && $info['http_code']==404){
+		$recs[]=array(
+			'page'=>$rootlink,
+			'element'=>'<xmp style="margin:0px;">/llms.txt</xmp>',
+			'suggestions'=>'llms.txt is missing. This emerging standard lets AI assistants (ChatGPT, Claude, Perplexity, ...) discover your most important content. Add a markdown /llms.txt that links to your key pages and docs.'
+		);
+	}
+	//---- AI crawler access in robots.txt ----
+	$aibots=array('GPTBot','OAI-SearchBot','ChatGPT-User','ClaudeBot','anthropic-ai','Claude-Web','PerplexityBot','Perplexity-User','Google-Extended','Applebot-Extended','CCBot','Amazonbot','Bytespider','Meta-ExternalAgent','cohere-ai');
+	$robots=websiteGraderGetURLBody("{$baseurl}/robots.txt");
+	if(strlen(trim($robots))){
+		$blocked=websiteGraderRobotsBlockedBots($robots,$aibots);
+		if(count($blocked)){
+			$recs[]=array(
+				'page'=>$rootlink,
+				'element'=>'<xmp style="margin:0px;">robots.txt</xmp>',
+				'suggestions'=>'robots.txt blocks these AI crawlers, so your content will NOT be read or cited by them: <b>'.encodeHtml(implode(', ',$blocked)).'</b>. Remove the Disallow rules for any AI engine you want to appear in.'
+			);
+		}
+	}
+	//---- per-page AIO checks ----
+	$gpages=websiteGraderActivePages();
+	foreach($gpages as $gpage){
+		$body=websiteGraderGetPageBody($gpage['name']);
+		$link=websiteGraderPageEditLink($gpage['_id'],$gpage['name']);
+		//<html lang>
+		if(!preg_match('/<html[^>]*\blang\s*=\s*["\'][a-z]/si',$body)){
+			$recs[]=array(
+				'page'=>$link,
+				'element'=>'<xmp style="margin:0px;"><html lang="en"></xmp>',
+				'suggestions'=>'The &lt;html&gt; tag has no lang attribute. AI models and screen readers use it to detect the content language.'
+			);
+		}
+		//JSON-LD structured data (Schema.org)
+		if(!preg_match('/<script[^>]*type\s*=\s*["\']application\/ld\+json["\']/si',$body)){
+			$recs[]=array(
+				'page'=>$link,
+				'element'=>'<xmp style="margin:0px;"><script type="application/ld+json">{ ... }</script></xmp>',
+				'suggestions'=>'No JSON-LD structured data (Schema.org) found. AI answer engines rely on it to understand entities (Organization, Article, Product, FAQ, Breadcrumb). Add the relevant schema.'
+			);
+		}
+		//exactly one H1
+		$h1cnt=preg_match_all('/<h1[\s>]/si',$body,$m);
+		if($h1cnt==0){
+			$recs[]=array(
+				'page'=>$link,
+				'element'=>'<xmp style="margin:0px;"><h1>...</h1></xmp>',
+				'suggestions'=>'No H1 heading found. A single, clear H1 tells search and AI crawlers the main topic of the page.'
+			);
+		}
+		elseif($h1cnt > 1){
+			$recs[]=array(
+				'page'=>$link,
+				'element'=>"<xmp style=\"margin:0px;\">{$h1cnt} <h1> tags</xmp>",
+				'suggestions'=>"Found {$h1cnt} H1 tags. Use exactly one H1 per page so crawlers can identify the primary topic."
+			);
+		}
+		//authorship / authority signal (E-E-A-T)
+		if(!preg_match('/<meta[^>]*name\s*=\s*["\']author["\']/si',$body) && !preg_match('/"@type"\s*:\s*"(Person|Organization)"/si',$body)){
+			$recs[]=array(
+				'page'=>$link,
+				'element'=>'<xmp style="margin:0px;"><meta name="author" content="..." /></xmp>',
+				'suggestions'=>'No authorship signal (meta author or Person/Organization schema). AI engines weigh authorship &amp; authority (E-E-A-T) when choosing which sources to cite.'
+			);
+		}
+	}
+	return $recs;
+}
+function websiteGraderGetURLBody($url){
+	$post=postURL($url,array('-method'=>'GET','-nossl'=>1));
+	return isset($post['body'])?$post['body']:'';
+}
+//parse robots.txt and return which of $bots are Disallowed from the site root
+function websiteGraderRobotsBlockedBots($robots,$bots){
+	$lines=preg_split('/\r\n|\r|\n/',$robots);
+	$groups=array();//agent(lowercased) => array of disallow paths
+	$curagents=array();
+	$sawrule=false;
+	foreach($lines as $line){
+		$line=trim(preg_replace('/#.*$/','',$line));
+		if(!strlen($line)){continue;}
+		if(preg_match('/^user-agent\s*:\s*(.+)$/i',$line,$m)){
+			//a User-agent line following rule lines begins a new group
+			if($sawrule){$curagents=array();$sawrule=false;}
+			$agent=strtolower(trim($m[1]));
+			$curagents[]=$agent;
+			if(!isset($groups[$agent])){$groups[$agent]=array();}
+		}
+		elseif(preg_match('/^disallow\s*:\s*(.*)$/i',$line,$m)){
+			$sawrule=true;
+			$path=trim($m[1]);
+			foreach($curagents as $a){$groups[$a][]=$path;}
+		}
+		elseif(preg_match('/^allow\s*:/i',$line)){
+			$sawrule=true;
+		}
+	}
+	$blocked=array();
+	foreach($bots as $bot){
+		$key=strtolower($bot);
+		//most-specific group wins; fall back to * only if no specific group
+		$dis=isset($groups[$key])?$groups[$key]:(isset($groups['*'])?$groups['*']:array());
+		foreach($dis as $d){
+			if($d==='/'){$blocked[]=$bot;break;}
+		}
+	}
+	return $blocked;
 }
 ?>

@@ -1,5 +1,5 @@
 <view:default>
-<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-prompt"></span> Command Terminal</h2>
+<div class="wadmin-head"><span class="icon-prompt"></span> Command Terminal</div>
 <div class="w_flex w_flexrow w_flexnowrap" style="margin-top:15px;padding: 0 15px;">
 	<div style="flex-grow: 3" id="terminalinputarea" style="overflow:hidden;">
 		<form method="post" autocomplete="off" action="/<?=pageValue('name');?>" name="terminalform" onsubmit="return wacss.ajaxPost(this,'stdout');">

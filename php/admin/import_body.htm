@@ -1,48 +1,66 @@
 <view:default>
+<style>
+.import-wrap{max-width:1100px;}
+.import-head{display:flex;align-items:center;gap:10px;margin:22px 0 16px;font-size:1.5rem;font-weight:700;color:#363636;}
+.import-head .icon-import{opacity:.6;}
+.import-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:20px;}
+.import-file-card{margin-bottom:18px;}
+.import-cols{display:flex;gap:18px;flex-wrap:wrap;align-items:stretch;}
+.import-cols > .import-card{flex:1;min-width:320px;display:flex;flex-direction:column;}
+.import-card-title{display:flex;align-items:center;gap:9px;font-size:1.1rem;font-weight:700;color:#363636;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.06);}
+.import-card-title .subtle{font-weight:400;font-size:.82rem;color:#9a9a9a;margin-left:auto;}
+.import-field{margin-bottom:14px;}
+.import-field > label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#7a7a7a;margin-bottom:5px;}
+.import-field .req{color:#e0245e;font-weight:700;}
+.import-row{display:flex;gap:12px;}
+.import-row .import-field{flex:1;}
+.import-row .import-field.narrow{flex:0 0 34%;}
+.import-checks{margin-bottom:12px;}
+.import-actions{margin-top:auto;padding-top:16px;border-top:1px solid rgba(0,0,0,.06);}
+.import-results{margin-bottom:18px;border:1px solid #cdd9ee;border-radius:12px;background:#f6faff;padding:14px 16px;}
+.import-results .import-results-title{font-weight:700;color:#2b6cb0;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.import-results textarea{width:100%;height:160px;border:1px solid #cdd7e5;border-radius:8px;background:#fff;padding:10px;font-family:monospace;font-size:.85rem;}
+@media (max-width:720px){.import-row{flex-direction:column;gap:0;}.import-row .import-field.narrow{flex:1;}}
+</style>
 <form method="post" name="importform" enctype="multipart/form-data" action="/php/admin.php" onsubmit="return submitForm(this);">
 <input type="hidden" name="_menu" value="import" />
 <input type="hidden" name="func" value="process" />
 <input type="hidden" name="filetype" value="xml" />
-<div class="container">
-	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-import"></span> Import</h2>
+<div class="import-wrap">
+	<div class="import-head"><span class="icon-import"></span> Import</div>
 	<view:processed>
-	<div  style="border:1px dashed #ccc;padding:3px;border-radius: 3px;">
-		<div class="w_bigger <?=configValue('admin_color');?>">Import Results</div>
-		<textarea style="height:150px;width:100%;border:0px;"><?=json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);?></textarea>
+	<div class="import-results">
+		<div class="import-results-title"><span class="icon-mark"></span> Import Results</div>
+		<textarea readonly><?=json_encode($results,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);?></textarea>
 	</div>
 	</view:processed>
-	<div>
+	<div class="import-card import-file-card">
+		<div class="import-card-title"><span class="icon-attach"></span> Choose a file <span class="subtle">.csv or .xml</span></div>
 		<?=importBuildFormField('file');?>
 	</div>
-	<div style="display:flex;align-items: flex-start;flex-wrap: wrap;border-top:1px dashed #ccc;padding-top:10px;margin-top:15px;">
-		<div style="flex:5;padding:10px;">
-			<div class="w_bold w_bigger"><span class="icon-file-txt"></span> CSV Import Options</div>
-			<div style="margin-top:5px;"><label class="w_red">Database</label><?=importBuildFormField('csvtable_db');?></div>
-			<div style="display:flex;margin-top:15px;">
-				<div style="flex:5;"><label class="w_red">Table Name</label><?=importBuildFormField('csvtable_name');?></div>
-				<div style="flex: 2;margin-left:10px;"><label class="w_red">Chunk Size</label><?=importBuildFormField('csvtable_chunk');?></div>
+	<div class="import-cols">
+		<div class="import-card">
+			<div class="import-card-title"><span class="icon-file-txt"></span> CSV Import Options</div>
+			<div class="import-field"><label>Database <span class="req">*</span></label><?=importBuildFormField('csvtable_db');?></div>
+			<div class="import-row">
+				<div class="import-field"><label>Table Name <span class="req">*</span></label><?=importBuildFormField('csvtable_name');?></div>
+				<div class="import-field narrow"><label>Chunk Size</label><?=importBuildFormField('csvtable_chunk');?></div>
 			</div>
-			<div style="display:flex;margin-top:15px;">
-				<div style="flex:5;"><label>Upsert</label><?=importBuildFormField('csvtable_upsert');?></div>
-				<div style="flex: 2;margin-left:10px;"><label>Upsert On</label><?=importBuildFormField('csvtable_upserton');?></div>
+			<div class="import-row">
+				<div class="import-field"><label>Upsert</label><?=importBuildFormField('csvtable_upsert');?></div>
+				<div class="import-field narrow"><label>Upsert On</label><?=importBuildFormField('csvtable_upserton');?></div>
 			</div>
-			<div style="margin-top:15px;"><label>Where</label><?=importBuildFormField('csvtable_where');?></div>
-			<div style="margin:15px 0;"><button type="submit" onclick="document.importform.filetype.value='csv';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
+			<div class="import-field"><label>Where</label><?=importBuildFormField('csvtable_where');?></div>
+			<div class="import-actions"><button type="submit" onclick="document.importform.filetype.value='csv';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
 		</div>
-		<div style="flex: 3;padding:10px;">
-			<div class="w_bold w_bigger"><span class="icon-file-code"></span> XML Import Options</div>
-			<div class="w_padtop"><?=importBuildFormField('xmltypes');?></div>
-			<div><?=importBuildFormField('xmloptions');?></div>
-			<label>Merge Fields</label>
-			<div><?=importBuildFormField('xmlmerge');?></div>
-			<div class="w_padtop w_padbot"><button type="submit" onclick="document.importform.filetype.value='xml';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-code"></span> Import XML File</button></div>
+		<div class="import-card">
+			<div class="import-card-title"><span class="icon-file-code"></span> XML Import Options</div>
+			<div class="import-checks"><?=importBuildFormField('xmltypes');?></div>
+			<div class="import-checks"><?=importBuildFormField('xmloptions');?></div>
+			<div class="import-field"><label>Merge Fields</label><?=importBuildFormField('xmlmerge');?></div>
+			<div class="import-actions"><button type="submit" onclick="document.importform.filetype.value='xml';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-code"></span> Import XML File</button></div>
 		</div>
+	</div>
 </div>
 </form>
 </view:default>
-
-
-
-
-
-

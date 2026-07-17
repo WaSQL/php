@@ -16,7 +16,7 @@
 		wacss.toast(JSON.stringify(p,null,'<br>'));
 	}
 </script>
-<h2 style="margin:0px;position:sticky;top:35px;">WaSQL Tests</h2>
+<div class="wadmin-head"><span class="icon-mark"></span> WaSQL Tests</div>
 <div class="row">
 	<div class="col s2" style="position:sticky;top:59px;">
 		<ul class="wacss_tabs is-vertical is-boxed <?=$CONFIG['admin_color'];?>">
@@ -30,7 +30,7 @@
 			<li><a href="#languages" data-tab="1" data-div="test_content" data-nav="/php/admin.php" data-_menu="test" data-test="languages" onclick="return wacss.nav(this);">Languages</a></li>
 		</ul>
 	</div>
-	<div class="col s10" id="test_content">
+	<div class="col s10 wadmin-card" id="test_content">
 		<?=renderView('form-elements');?>
 	</div>
 </div>

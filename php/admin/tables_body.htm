@@ -1,7 +1,7 @@
 <view:default>
 <?=buildOnLoad("wacss.loadScript('/php/admin/tables_js.js');");?>
-<div style="display:flex;justify-content: space-between;padding-top:15px;">
-	<h2 style="margin:0px;padding:6px;" class="<?=configValue('admin_color');?>"><span class="icon-tables"></span> Tables</h2>
+<div style="display:flex;justify-content: space-between;align-items:center;">
+	<div class="wadmin-head" style="margin:16px 0;"><span class="icon-tables"></span> Tables</div>
 	<div style="margin-bottom:5px;display:flex;flex-direction:row;justify-content:flex-end;align-items:center;">
 		<button type="button" style="margin-right:4px;" class="wacss_button is-mobile-responsive" onclick="return tablesNav(this);" title="add new" data-func="add_single"><span class="icon-table-add w_bigger w_green"></span> </button> 
 		<button type="button" style="margin-right:4px;" class="wacss_button is-mobile-responsive" onclick="return tablesNav(this);" title="add multiple" data-func="add_multiple"><span class="icon-table-add w_bigger w_red"></span> </button> 
@@ -11,7 +11,7 @@
 </div>
 <div class="container-fluid">
 	<div class="row" style="margin-bottom:10px;">
-		<div class="col-sm-12" id="tables_content">
+		<div class="col-sm-12 wadmin-card" id="tables_content">
 				<?=renderView('tables_list');?>
 			</form>
 		</div>

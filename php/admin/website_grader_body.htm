@@ -1,11 +1,14 @@
 <view:default>
 <div style="display:flex;flex-wrap:nowrap;" class="w_padtop">
-	<div class="w_bigger" style="flex:15;margin-bottom: 0px;"><span class="icon-globe w_success"></span> Website Checker</div>
+	<div class="wadmin-head" style="flex:15;margin:16px 0;"><span class="icon-globe w_success"></span> Website Checker</div>
 </div>
 <div class="w_bigger w_bold w_gray">Base URL <?=websiteGraderGetBaseURL();?></div>
 <div class="w_bigger w_bold w_gray">Base Template ID <?=websiteGraderActiveTemplate();?></div>
-<div class="w_bigger w_bold w_gray w_padtop">Pages Check <?=$recs['page_grade'];?></div>
+<div class="w_bigger w_bold w_gray w_padtop">SEO &mdash; Pages Check <?=$recs['page_grade'];?></div>
 <?=websiteGraderList($recs['page']);?>
+<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-slideshow"></span> AI Optimization (AIO) <?=$recs['aio_grade'];?></div>
+<div class="w_small w_gray" style="margin-bottom:6px;">How well AI answer engines (ChatGPT, Claude, Perplexity, Google AI Overviews) can find, read, and cite this site.</div>
+<?=websiteGraderList($recs['aio']);?>
 <div class="w_bigger w_bold w_gray w_padtop">Misc Checks <?=$recs['misc_grade'];?></div>
 <?=websiteGraderList($recs['misc']);?>
 

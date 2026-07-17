@@ -22,15 +22,15 @@
 <div style="margin-top:10px;display: flex;flex-direction: row;justify-content: flex-start;">
 	<div style="flex-grow:1;margin-right:10px;">
 		<div style="display: flex;flex-direction: row;justify-content: space-between;">
-			<div class="w_big w_bold w_nowrap"><?=$MODULE['title'];?></div>
+			<div class="wadmin-head w_nowrap" style="margin:0;font-size:1.35rem;"><?=$MODULE['title'];?></div>
 			<view:set_locale_button>
 				<? global $MODULE;?>
-			<button type="button" style="margin-left: 5px;white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><wtranslate>Set Locale</wtranslate></button>
+			<button type="button" style="margin-left: 5px;white-space: nowrap;" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlocale','modal',{cp_title:this.innerText});"><span class="icon-globe"></span> <wtranslate>Set Locale</wtranslate></button>
 			</view:set_locale_button>
 			<?=renderViewIf(translateHasPermission('set_locale'),'set_locale_button');?>
 			<view:add_locales_button>
 				<? global $MODULE;?>
-			<button type="button" style="white-space: nowrap;" class="btn <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><wtranslate>Add Locales</wtranslate></button>
+			<button type="button" style="white-space: nowrap;" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" onclick="return ajaxGet('/<?=$MODULE['ajaxpage'];?>/selectlang','modal',{cp_title:this.innerText});"><span class="icon-plus"></span> <wtranslate>Add Locales</wtranslate></button>
 			</view:add_locales_button>
 			<?=renderViewIf(translateHasPermission('add_locale'),'add_locales_button');?>
 		</div>

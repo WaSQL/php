@@ -1,6 +1,6 @@
 <view:default>
 <?=buildOnLoad("wacss.loadScript('/php/admin/config_js.js');");?>
-<h1 style="margin:0px;padding:6px 6px 12px 6px;" class="w_biggest <?=configValue('admin_color');?>"><span class="icon-wasql-config w_biggest"></span> WaSQL Configuration</h1>
+<div class="wadmin-head"><span class="icon-wasql-config"></span> WaSQL Configuration</div>
 
 <div style="margin-top: 0px;padding:0 8px 8px 0;display:flex;gap:15px;justify-content: flex-start;align-items: flex-start;max-width:90vw;overflow:auto;">
 	<div id="left_content">
@@ -15,7 +15,7 @@
 			<li><a href="#config_misc" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="config" data-div="main_content" data-func="config_misc"><span class="icon-dots wacss_right5"></span> Misc Settings</a></li>
 		</ul>
 	</div>
-	<div id="main_content" style="flex:1;width:100%;">
+	<div id="main_content" class="wadmin-card" style="flex:1;width:100%;margin-bottom:0;">
     	<?=renderView('config_users');?>
   	</div>
 </div>

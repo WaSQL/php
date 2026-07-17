@@ -31,6 +31,11 @@
 	if(!count($recs['page'])){
 		$recs['page_grade']='<span class="icon-mark w_success"></span>';
 	}
+	//AI optimization (AIO)
+	$recs['aio']=websiteGraderAIO();
+	if(!count($recs['aio'])){
+		$recs['aio_grade']='<span class="icon-mark w_success"></span>';
+	}
 
 	setView('default');
 ?>
