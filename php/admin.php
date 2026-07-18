@@ -670,6 +670,7 @@ if(isAjax()){
 		case 'git':
 		case 'reports':
 		case 'htmlbox':
+		case 'website_grader':
 		case 'settings':
 		case 'synchronize':
 		case 'datasync':

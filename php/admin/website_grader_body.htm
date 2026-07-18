@@ -2,18 +2,27 @@
 <div style="display:flex;flex-wrap:nowrap;" class="w_padtop">
 	<div class="wadmin-head" style="flex:15;margin:16px 0;"><span class="icon-globe w_success"></span> Website Checker</div>
 </div>
-<div class="w_bigger w_bold w_gray">Base URL <?=websiteGraderGetBaseURL();?></div>
-<div class="w_bigger w_bold w_gray">Base Template ID <?=websiteGraderActiveTemplate();?></div>
-<div class="w_bigger w_bold w_gray w_padtop">SEO &mdash; Pages Check <?=$recs['page_grade'];?></div>
-<?=websiteGraderList($recs['page']);?>
-<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-slideshow"></span> AI Optimization (AIO) <?=$recs['aio_grade'];?></div>
-<div class="w_small w_gray" style="margin-bottom:6px;">How well AI answer engines (ChatGPT, Claude, Perplexity, Google AI Overviews) can find, read, and cite this site.</div>
-<?=websiteGraderList($recs['aio']);?>
-<div class="w_bigger w_bold w_gray w_padtop">Misc Checks <?=$recs['misc_grade'];?></div>
-<?=websiteGraderList($recs['misc']);?>
-
+<div class="w_gray" style="margin-bottom:12px;">Enter any website URL to crawl the live site and grade its SEO &amp; AI Optimization (AIO). Results come in two forms: a checklist of what to fix, and a copy/paste prompt you can hand to an AI to generate the fixes.</div>
+<form method="post" action="/php/admin.php" data-setprocessing="grader_results" onsubmit="return wacss.ajaxPost(this,'grader_results');">
+	<input type="hidden" name="_menu" value="website_grader" />
+	<input type="hidden" name="func" value="run" />
+	<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+		<div style="flex:1 1 240px;min-width:0;">
+			<label>Website URL</label>
+			<input type="text" class="wacss_input is-mobile-responsive" name="url" value="<?=encodeHtml(isset($_REQUEST['url'])?$_REQUEST['url']:'');?>" placeholder="https://example.com" required="required" style="width:100%;box-sizing:border-box;" />
+		</div>
+		<div style="flex:0 0 110px;">
+			<label>Max Pages</label>
+			<input type="number" class="wacss_input is-mobile-responsive" name="maxpages" value="20" min="1" max="50" style="width:100%;box-sizing:border-box;" />
+		</div>
+		<div style="flex:0 0 auto;">
+			<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-search"></span> Check Site</button>
+		</div>
+	</div>
+</form>
+<div id="grader_results" style="margin-top:18px;"></div>
 </view:default>
 
-
-
-
+<view:result>
+<?=websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$grader_error);?>
+</view:result>

@@ -1,475 +1,1005 @@
 <?php
 /*
-	https://moz.com/blog/the-ultimate-guide-to-seo-meta-tags
-	https://clutch.co/seo-firms/resources/meta-tags-that-improve-seo
+	Website Checker (SEO + AIO grader)
 
-	DONE: Title tag
-	DONE: Meta description
-	DONE: Canonical tag
-	DONE: Alt and title attributes in images
-	DONE: Robots meta tag
-	DONE: Open graph meta tags for facebook
-		https://developers.facebook.com/tools/debug
-		https://www.opengraph.xyz/
-		The recommended resolution for an OG image is 1200 pixels x 627 pixels (1.91/1 ratio) but don't exceed the 5MB size limit.
-	DONE: twitter meta tags
-	Header tags
-	DONE: viewport meta tag for responsive
-	broken links
-	DONE: images that are too large
-	DONE: sitemap.xml
-	DONE: robots.txt
-	meta description actually describes page content
-	short descriptive URLs (page names)
-	one H1 tag on each page
-	revelent external links
-	descriptive alt tags of images
-	loads fast
-	check for duplicate content
-	socail media links - instagram, facebook, youtube
-	SSL
-	enough content
-	title tag has to be unique per page
+	Given ANY website URL, this crawls the live site (it does NOT rely on the local
+	_pages table), fetches a bounded set of same-host HTML pages, and grades them for
+	SEO and AI Optimization (AIO). Output comes in TWO forms:
+		1. a report card - EVERY check shown with a Pass/Fail status, category
+		   sub-scores, and an overall percentage grade + description
+		   (websiteGraderRenderResults)
+		2. a copy/paste AI prompt so an assistant can generate the fixes
+		   (websiteGraderAIPrompt)
+	Plus a visual social / link-share preview (websiteGraderRenderSocialPreview).
+
+	SEO references:
+		https://moz.com/blog/the-ultimate-guide-to-seo-meta-tags
+	AIO = optimizing to be found, understood, and cited by AI answer engines
+	(ChatGPT/OpenAI, Claude, Perplexity, Google AI Overviews, Copilot, etc.).
 */
-function websiteGraderMisc(){
-	$recs=array();
-	$baseurl=websiteGraderGetBaseURL();
-	$files=array('robots.txt','sitemap.xml');
-	foreach($files as $file){
-		//check for robots.txt
-		$info=websiteGraderGetURLHeader("{$baseurl}/{$file}");
-		if($info['http_code']==404){
-			$recs[]=array(
-				'source'=>"/",
-				'element'=>"/{$file}",
-				'suggestions'=>"{$file} is missing"
-			);
-		}
+
+//---------- URL / crawl helpers ----------
+
+/**
+ * @describe normalize a user-entered URL: trim and ensure an http(s) scheme.
+ * @param url string
+ * @return string
+ */
+function websiteGraderNormalizeURL($url){
+	$url=trim($url);
+	if(!strlen($url)){return '';}
+	if(!preg_match('#^https?://#i',$url)){
+		$url='https://'.$url;
 	}
-	return $recs;
+	return $url;
 }
-function websiteGraderPage(){
-	$recs=array();
-	$gpages=websiteGraderActivePages();
-	foreach($gpages as $gpage){
-		$body=websiteGraderGetPageBody($gpage['name']);
-		if(!preg_match('/<head>(.*)<\/head>/si',$body,$m)){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\"><head></head></xmp>",
-				'suggestions'=>'Head tag is missing all together'
-			);
-			continue;
-		}
-		$head=$m[1];
-		/**** Check for Title tag ***/
-		$title='';
-		if(preg_match('/<title>(.+?)<\/title>/si',$head,$m)){
-			$title=$m[1];
-		}
-		//title should be between 40 - 80 chars in length
-		if(!strlen($title)){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\"><title></title></xmp>",
-				'suggestions'=>'Title is missing'
-			);
-		}
-		else{
-			$len=strlen($title);
-			if($len > 80){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
-					'suggestions'=>"Title is too long ({$len} chars. Best between 40 and 80)"
-				);
-			}
-			elseif($len < 40){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",
-					'suggestions'=>"Title is too short ({$len} chars. Best between 40 and 80)"
-				);
-			}
-		}
-		/**** Check meta tags ***/
-		$meta=array();
-		preg_match_all('/<meta[^>]*>/si', $head, $matches);
-		foreach($matches[0] as $str){
-			$atts=parseHtmlTagAttributes($str);
-			if(isset($atts['name'])){
-				$key=strtolower($atts['name']);
-				$meta[$key]=array(
-					'atts'=>$atts,
-					'str'=>$str
-				);
-			}
-			elseif(isset($atts['property'])){
-				$key=strtolower($atts['property']);
-				$meta[$key]=array(
-					'atts'=>$atts,
-					'str'=>$str
-				);
-			}
-			
-		}
-		ksort($meta);
-		//description should be between 150 - 160 chars in length
-		if(!isset($meta['description'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>'<xmp style="margin:0px;"><meta name="description" content="{your description here}" /></xmp>',
-				'suggestions'=>'Meta description tag is missing'
-			);
-		}
-		elseif(!isset($meta['description']['atts']['content'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
-				'suggestions'=>'Meta description tag is missing content attribute'
-			);
-		}
-		else{
-			$len=strlen($meta['description']['atts']['content']);
-			if($len > 160){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
-					'suggestions'=>"Meta description is too long ({$len} chars. Best between 140 and 160)"
-				);
-			}
-			elseif($len < 140){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>"<xmp style=\"margin:0px;\">{$meta['description']['str']}</xmp>",
-					'suggestions'=>"Meta description is too short ({$len} chars. Best between 140 and 160)"
-				);
-			}
-		}
-		//robots
-		if(!isset($meta['robots'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>'<xmp style="margin:0px;"><meta name="robots" content="index, follow" /></xmp>',
-				'suggestions'=>'Meta robots tag is missing'
-			);
-		}
-		elseif(!isset($meta['robots']['atts']['content'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\">{$meta['robots']['str']}</xmp>",
-				'suggestions'=>'Meta robots tag is missing content attribute'
-			);
-		}
-		elseif(stringContains($meta['robots']['atts']['content'],'noindex')){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\">{$meta['robots']['str']}</xmp>",
-				'suggestions'=>'Meta robots tag specifies to NOT index this page'
-			);
-		}
-		//viewport
-		if(!isset($meta['viewport'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>'<xmp style="margin:0px;"><meta name="viewport" content="width=device-width,initial-scale=1.0" /></xmp>',
-				'suggestions'=>'Meta robots tag is missing'
-			);
-		}
-		elseif(!isset($meta['viewport']['atts']['content'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\">{$meta['viewport']['str']}</xmp>",
-				'suggestions'=>'Meta viewport tag is missing content attribute'
-			);
-		}
-		//open graph
-		$check_fields=array('type','title','description','image','url','site_name');
-		foreach($check_fields as $field){
-			if(!isset($meta["og:{$field}"])){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>'<xmp style="margin:0px;"><meta property="og:'.$field.'" content="{your content here}" /></xmp>',
-					'suggestions'=>"Open Graph Meta {$field} is missing"
-				);
-			}
-		}
-		//twitter (X) cards - card type + image are required for a card to render; image:src is deprecated in favor of image
-		$check_fields=array('card','title','description','image');
-		foreach($check_fields as $field){
-			if(!isset($meta["twitter:{$field}"])){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>'<xmp style="margin:0px;"><meta name="twitter:'.$field.'" content="{your content here}" /></xmp>',
-					'suggestions'=>"Twitter Meta {$field} is missing"
-				);
-			}
-		}
-		/**** Check link tags ***/
-		$link=array();
-		preg_match_all('/<link[^>]*>/si', $head, $matches);
-		foreach($matches[0] as $str){
-			$atts=parseHtmlTagAttributes($str);
-			if(!isset($atts['rel'])){continue;}
-			$key=strtolower($atts['rel']);
-			$link[$key]=array(
-				'atts'=>$atts,
-				'str'=>$str
-			);
-		}
-		ksort($link);
-		//canonical tag check
-		if(!isset($link['canonical'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>'<xmp style="margin:0px;"><link rel="canonical" href="{your href here}" /></xmp>',
-				'suggestions'=>'Canonical link is missing'
-			);
-		}
-		elseif(!isset($link['canonical']['atts']['href'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
-				'suggestions'=>'Canonical link is missing href attribute'
-			);
-		}
-		elseif($gpage['name'] != 'index' && !stringContains($link['canonical']['atts']['href'],$gpage['name'])){
-			$recs[]=array(
-				'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-				'element'=>"<xmp style=\"margin:0px;\">{$link['canonical']['str']}</xmp>",
-				'suggestions'=>"Canonical link is should include page name "
-			);
-		}
-		/**** Check img tags ***/
-		$img=array();
-		preg_match_all('/<img[^>]*>/si', $body, $matches);
-		foreach($matches[0] as $str){
-			$atts=parseHtmlTagAttributes($str);
-			$missing=array();
-			if(!isset($atts['alt'])){
-				$missing[]="missing alt attribute";
-			}
-			if(!isset($atts['src'])){
-				$missing[]="missing src attribute";
-			}
-			else{
-				$src=$atts['src'];
-				if(stringBeginsWith($src,'//')){
-					$src='https:'.$src;
-				}
-				elseif(stringBeginsWith($src,'/')){
-					$src=websiteGraderGetBaseURL().$src;
-				}
-				$info=websiteGraderGetURLHeader($src);
-				//max filesize of 300,000 bytes
-				if($info['download_content_length'] > 300000){
-					$missing[]="image size is too large (>300k)";
-				}
-			}
-			///<a href="/php/admin.php?_menu=edit&_table_=_pages&_id=1
-			if(count($missing)){
-				$recs[]=array(
-					'page'=>websiteGraderPageEditLink($gpage['_id'],$gpage['name']),
-					'element'=>"<xmp style=\"margin:0px;\">{$str}</xmp>",
-					'suggestions'=>implode('<br />'.PHP_EOL,$missing)
-				);
-			}
-		}
-		ksort($link);
-	}
-	//echo printValue($meta);
-	return $recs;
-}
-function websiteGraderPageEditLink($id,$name){
-	$link="<a target=\"_blank\" class=\"w_link\" href=\"/php/admin.php?_menu=edit&_table_=_pages&_id={$id}\">{$id} - {$name} <sup class=\"icon-edit w_smallest\"></sup></a>";
-	return $link;
-}
-function websiteGraderGetURLHeader($url){
-	$info=array();
-	$curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_FILETIME, true);
-    curl_setopt($curl, CURLOPT_NOBODY, true);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_HEADER, true);
-    $header = curl_exec($curl);
-    $info = curl_getinfo($curl);
-    curl_close($curl);
-    return $info;
-}
-function websiteGraderActivePages(){
-	global $websiteGraderActivePagesCache;
-	if(isset($websiteGraderActivePagesCache[0])){
-		return $websiteGraderActivePagesCache;
-	}
-	$template_id=websiteGraderActiveTemplate();
-	//echo "DEBUG".printValue($template);exit;
-	$opts=array(
-		'-table'=>'_pages',
-		'_template'=>$template_id,
-		'-fields'=>'_id,name,permalink'
+
+/**
+ * @describe fetch a URL and return body + status info (follows redirects, ignores SSL/cert issues).
+ * @param url string
+ * @return array [body, http_code, content_type, final_url, error]
+ */
+function websiteGraderFetch($url){
+	$post=postURL($url,array('-method'=>'GET','-follow'=>1,'-nossl'=>1,'-timeout'=>25,'-timeout_connect'=>10));
+	$info=isset($post['curl_info']) && is_array($post['curl_info'])?$post['curl_info']:array();
+	return array(
+		'body'=>isset($post['body'])?$post['body']:'',
+		'http_code'=>isset($info['http_code'])?$info['http_code']:0,
+		'content_type'=>isset($info['content_type'])?$info['content_type']:'',
+		'final_url'=>isset($info['url']) && strlen($info['url'])?$info['url']:$url,
+		'error'=>isset($post['error'])?$post['error']:''
 	);
-	//echo printValue($template).printValue($opts);
-	$websiteGraderActivePagesCache=getDBRecords($opts);
-	return $websiteGraderActivePagesCache;
 }
-function websiteGraderActiveTemplate(){
-	global $websiteGraderActiveTemplateCache;
-	if(isNum($websiteGraderActiveTemplateCache)){
-		return $websiteGraderActiveTemplateCache;
+
+/**
+ * @describe resolve an href found in a page to an absolute URL.
+ * @param href string, pageurl string, baseurl string
+ * @return string absolute url, or '' if it should be skipped
+ */
+function websiteGraderAbsoluteURL($href,$pageurl,$baseurl){
+	$href=trim($href);
+	if(!strlen($href)){return '';}
+	if(preg_match('/^(mailto:|tel:|javascript:|data:|#)/i',$href)){return '';}
+	if(preg_match('#^https?://#i',$href)){return $href;}
+	if(stringBeginsWith($href,'//')){
+		$scheme=parse_url($baseurl,PHP_URL_SCHEME);
+		return $scheme.':'.$href;
 	}
-	$rec=getDBRecord(array(
-		'-table'=>'_pages',
-		'-where'=>"name='index' or permalink='index'",
-		'-fields'=>'_id,_template,name'
+	if(stringBeginsWith($href,'/')){
+		return rtrim($baseurl,'/').$href;
+	}
+	$path=parse_url($pageurl,PHP_URL_PATH);
+	if(!strlen($path)){$path='/';}
+	$dir=preg_replace('#/[^/]*$#','/',$path);
+	if(!strlen($dir)){$dir='/';}
+	return rtrim($baseurl,'/').$dir.$href;
+}
+
+/**
+ * @describe canonicalize a URL for crawl de-duplication: lowercase scheme/host, drop the
+ *   default port and fragment, collapse repeated slashes, drop a trailing "/index"|"/default"
+ *   (with optional .html/.htm/.php/.aspx), and strip the trailing slash (except root). This is
+ *   what makes "/", "/index", "/index.html", and "/shop/" all resolve to one page.
+ * @param url string
+ * @return string
+ */
+function websiteGraderCanonicalURL($url){
+	$p=parse_url($url);
+	if($p===false || !isset($p['host'])){return $url;}
+	$scheme=isset($p['scheme'])?strtolower($p['scheme']):'http';
+	$host=strtolower($p['host']);
+	$port='';
+	if(isset($p['port']) && !(($scheme=='http' && $p['port']==80) || ($scheme=='https' && $p['port']==443))){
+		$port=':'.$p['port'];
+	}
+	$path=isset($p['path'])?$p['path']:'/';
+	$path=preg_replace('#/+#','/',$path);
+	$path=preg_replace('#/(index|default)(\.(html?|php|aspx?))?$#i','/',$path);
+	if(strlen($path) > 1){
+		$path=rtrim($path,'/');
+		if(!strlen($path)){$path='/';}
+	}
+	$query=isset($p['query']) && strlen($p['query'])?'?'.$p['query']:'';
+	return "{$scheme}://{$host}{$port}{$path}{$query}";
+}
+
+/**
+ * @describe extract same-host, crawlable page links from an HTML body (canonicalized + deduped).
+ * @param body string, pageurl string, baseurl string, host string
+ * @return array of absolute URLs (deduped)
+ */
+function websiteGraderExtractLinks($body,$pageurl,$baseurl,$host){
+	$links=array();
+	if(!preg_match_all('/<a\b[^>]*\bhref\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/si',$body,$m)){
+		return array();
+	}
+	foreach($m[1] as $href){
+		$href=trim($href," \t\n\r\0\x0B\"'");
+		$abs=websiteGraderAbsoluteURL($href,$pageurl,$baseurl);
+		if(!strlen($abs)){continue;}
+		$abs=preg_replace('/#.*$/','',$abs);
+		if(!strlen($abs)){continue;}
+		$parts=parse_url($abs);
+		if(!isset($parts['host']) || strtolower($parts['host'])!=strtolower($host)){continue;}
+		if(preg_match('/\.(jpe?g|png|gif|svg|webp|ico|css|js|pdf|zip|gz|mp4|mp3|avi|mov|woff2?|ttf|eot|xml|json|csv|xlsx?|docx?)(\?|$)/i',$abs)){continue;}
+		$abs=websiteGraderCanonicalURL($abs);
+		$links[$abs]=1;
+	}
+	return array_keys($links);
+}
+
+/**
+ * @describe human-readable byte size (e.g. 412 KB, 1.4 MB).
+ * @param bytes number
+ * @return string
+ */
+function websiteGraderFormatBytes($bytes){
+	$bytes=(float)$bytes;
+	if($bytes >= 1048576){return round($bytes/1048576,1).' MB';}
+	if($bytes >= 1024){return round($bytes/1024).' KB';}
+	return round($bytes).' B';
+}
+
+/**
+ * @describe crawl a website starting at $starturl, following same-host links up to $maxpages.
+ * @param starturl string, maxpages int
+ * @return array [baseurl, scheme, host, pages(array of [url,body]), robots] OR [error]
+ */
+function websiteGraderCrawl($starturl,$maxpages){
+	if($maxpages < 1){$maxpages=1;}
+	if($maxpages > 50){$maxpages=50;}
+	$start=websiteGraderFetch($starturl);
+	if(strlen($start['error'])){
+		return array('error'=>"Could not reach {$starturl}: {$start['error']}");
+	}
+	if(!isNum($start['http_code']) || $start['http_code']==0){
+		return array('error'=>"Could not connect to {$starturl}. Check the URL and try again.");
+	}
+	if($start['http_code'] >= 400){
+		return array('error'=>"{$starturl} returned HTTP {$start['http_code']}. Cannot grade a page that does not load.");
+	}
+	if(!preg_match('/html/i',$start['content_type']) && !preg_match('/<html/i',$start['body'])){
+		return array('error'=>"{$starturl} did not return an HTML page (content-type: ".htmlspecialchars($start['content_type']).").");
+	}
+	$finalurl=$start['final_url'];
+	$parts=parse_url($finalurl);
+	$scheme=isset($parts['scheme'])?strtolower($parts['scheme']):'https';
+	$host=isset($parts['host'])?$parts['host']:'';
+	$port=isset($parts['port'])?':'.$parts['port']:'';
+	$baseurl="{$scheme}://{$host}{$port}";
+	$finalurl=websiteGraderCanonicalURL($finalurl);
+	$pages=array();
+	$visited=array();
+	$pages[$finalurl]=array('url'=>$finalurl,'body'=>$start['body']);
+	$visited[$finalurl]=1;
+	$queue=websiteGraderExtractLinks($start['body'],$finalurl,$baseurl,$host);
+	while(count($pages) < $maxpages && count($queue)){
+		$url=array_shift($queue);
+		if(isset($visited[$url])){continue;}
+		$visited[$url]=1;
+		$res=websiteGraderFetch($url);
+		if($res['http_code'] < 200 || $res['http_code'] >= 400){continue;}
+		if(!preg_match('/html/i',$res['content_type']) && !preg_match('/<html/i',$res['body'])){continue;}
+		$pages[$url]=array('url'=>$url,'body'=>$res['body']);
+		if(count($pages) >= $maxpages){break;}
+		$newlinks=websiteGraderExtractLinks($res['body'],$url,$baseurl,$host);
+		foreach($newlinks as $l){
+			if(!isset($visited[$l]) && !in_array($l,$queue)){$queue[]=$l;}
+		}
+	}
+	$rres=websiteGraderFetch("{$baseurl}/robots.txt");
+	$robots=($rres['http_code'] >= 200 && $rres['http_code'] < 400)?$rres['body']:'';
+	return array(
+		'baseurl'=>$baseurl,
+		'scheme'=>$scheme,
+		'host'=>$host,
+		'pages'=>array_values($pages),
+		'robots'=>$robots
+	);
+}
+
+/**
+ * @describe HEAD request for a URL - returns curl_getinfo (http_code, download_content_length, ...).
+ * @param url string
+ * @return array
+ */
+function websiteGraderGetURLHeader($url){
+	$curl=curl_init();
+	curl_setopt($curl,CURLOPT_URL,$url);
+	curl_setopt($curl,CURLOPT_FILETIME,true);
+	curl_setopt($curl,CURLOPT_NOBODY,true);
+	curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
+	curl_setopt($curl,CURLOPT_HEADER,true);
+	curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
+	curl_setopt($curl,CURLOPT_MAXREDIRS,10);
+	curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
+	curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
+	curl_setopt($curl,CURLOPT_CONNECTTIMEOUT,10);
+	curl_setopt($curl,CURLOPT_TIMEOUT,20);
+	curl_setopt($curl,CURLOPT_USERAGENT,'Mozilla/5.0 (compatible; WaSQL-WebsiteChecker/1.0)');
+	$header=curl_exec($curl);
+	$info=curl_getinfo($curl);
+	curl_close($curl);
+	return $info;
+}
+
+/**
+ * @describe render an external link to a crawled page (opens in a new tab).
+ * @param url string
+ * @return string
+ */
+function websiteGraderPageLink($url){
+	$safe=htmlspecialchars($url,ENT_QUOTES);
+	return "<a target=\"_blank\" rel=\"noopener\" class=\"w_link\" href=\"{$safe}\">{$safe} <sup class=\"icon-link-ext w_smallest\"></sup></a>";
+}
+
+/**
+ * @describe bound the number of remote image size checks per request so a large crawl stays responsive.
+ * @return bool
+ */
+function websiteGraderImgCheckAllowed(){
+	global $websiteGraderImgChecks;
+	if(!isNum($websiteGraderImgChecks)){$websiteGraderImgChecks=0;}
+	if($websiteGraderImgChecks >= 60){return false;}
+	$websiteGraderImgChecks++;
+	return true;
+}
+
+//---------- checks engine ----------
+
+/**
+ * @describe accumulate one instance of a check. Each check tracks pass/total across
+ *   pages so we can show a Pass/Fail status and compute a grade.
+ * @param checks array (by ref), key string, label string, category string, ok bool, fail array|null
+ * @return void
+ */
+function websiteGraderAddCheck(&$checks,$key,$label,$category,$ok,$fail=null){
+	if(!isset($checks[$key])){
+		$checks[$key]=array('key'=>$key,'label'=>$label,'category'=>$category,'pass'=>0,'total'=>0,'fails'=>array());
+	}
+	$checks[$key]['total']++;
+	if($ok){$checks[$key]['pass']++;}
+	elseif($fail!==null){$checks[$key]['fails'][]=$fail;}
+	return;
+}
+
+/**
+ * @describe display order + labels for check categories.
+ * @return array key => label
+ */
+function websiteGraderCategories(){
+	return array(
+		'SEO'=>'SEO &mdash; Page Checks',
+		'Social'=>'Social / Open Graph',
+		'AIO'=>'AI Optimization (AIO)',
+		'Misc'=>'Misc / Technical'
+	);
+}
+
+/**
+ * @describe run every SEO/AIO/Social/Misc check against the crawl and return the results.
+ * @param baseurl string, pages array of [url,body], robots string
+ * @return array of check results (key => [label,category,pass,total,fails])
+ */
+function websiteGraderRunChecks($baseurl,$pages,$robots){
+	$checks=array();
+	//===== site-wide (Misc / AIO) =====
+	//HTTPS / SSL
+	$ssl_ok=stringBeginsWith(strtolower($baseurl),'https://');
+	websiteGraderAddCheck($checks,'ssl','HTTPS / SSL','Misc',$ssl_ok,$ssl_ok?null:array(
+		'suggestion'=>'Site is served over plain HTTP. Serve it over HTTPS (SSL) &mdash; a ranking signal and required for trust.'
 	));
-	$websiteGraderActiveTemplateCache=$rec['_template'];
-	return $websiteGraderActiveTemplateCache;
-}
-function websiteGraderGetPageBody($name){
-	global $websiteGraderGetPageBodyCache;
-	if(isset($websiteGraderGetPageBodyCache[$name])){
-		return $websiteGraderGetPageBodyCache[$name];
+	//robots.txt
+	$rc=websiteGraderGetURLHeader("{$baseurl}/robots.txt");
+	$robots_ok=!(isset($rc['http_code']) && $rc['http_code']==404);
+	websiteGraderAddCheck($checks,'robots','robots.txt present','Misc',$robots_ok,$robots_ok?null:array(
+		'element'=>'<xmp style="margin:0px;">/robots.txt</xmp>','suggestion'=>'robots.txt is missing. Add one to guide search/AI crawlers.'
+	));
+	//sitemap.xml
+	$sc=websiteGraderGetURLHeader("{$baseurl}/sitemap.xml");
+	$sitemap_ok=!(isset($sc['http_code']) && $sc['http_code']==404);
+	websiteGraderAddCheck($checks,'sitemap','sitemap.xml present','Misc',$sitemap_ok,$sitemap_ok?null:array(
+		'element'=>'<xmp style="margin:0px;">/sitemap.xml</xmp>','suggestion'=>'sitemap.xml is missing. Add one so crawlers can find all your pages.'
+	));
+	//llms.txt (AIO)
+	$lc=websiteGraderGetURLHeader("{$baseurl}/llms.txt");
+	$llms_ok=!(isset($lc['http_code']) && $lc['http_code']==404);
+	websiteGraderAddCheck($checks,'llms','llms.txt present','AIO',$llms_ok,$llms_ok?null:array(
+		'element'=>'<xmp style="margin:0px;">/llms.txt</xmp>','suggestion'=>'llms.txt is missing. This emerging standard lets AI assistants (ChatGPT, Claude, Perplexity, ...) discover your key content. Add a markdown /llms.txt linking to your important pages.'
+	));
+	//AI crawler access (AIO)
+	$aibots=array('GPTBot','OAI-SearchBot','ChatGPT-User','ClaudeBot','anthropic-ai','Claude-Web','PerplexityBot','Perplexity-User','Google-Extended','Applebot-Extended','CCBot','Amazonbot','Bytespider','Meta-ExternalAgent','cohere-ai');
+	$blocked=strlen(trim($robots))?websiteGraderRobotsBlockedBots($robots,$aibots):array();
+	$ai_ok=count($blocked)==0;
+	websiteGraderAddCheck($checks,'aiaccess','AI crawlers allowed','AIO',$ai_ok,$ai_ok?null:array(
+		'element'=>'<xmp style="margin:0px;">robots.txt</xmp>',
+		'suggestion'=>'robots.txt blocks these AI crawlers, so your content will NOT be read or cited by them: '.encodeHtml(implode(', ',$blocked)).'. Remove the Disallow rules for any AI engine you want to appear in.'
+	));
+
+	//===== per-page =====
+	foreach($pages as $gpage){
+		$url=$gpage['url'];
+		$body=$gpage['body'];
+		$link=websiteGraderPageLink($url);
+		$parsed=websiteGraderParseMeta($body);
+		$title=$parsed['title'];
+		$meta=$parsed['meta'];
+		$head=$body;
+		if(preg_match('/<head[^>]*>(.*)<\/head>/si',$body,$m)){$head=$m[1];}
+
+		//--- SEO ---
+		//head present
+		$head_ok=(bool)preg_match('/<head[\s>]/si',$body);
+		websiteGraderAddCheck($checks,'head','Has &lt;head&gt; section','SEO',$head_ok,$head_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><head></head></xmp>','suggestion'=>'Head tag is missing entirely.'
+		));
+		//title
+		$tlen=commonStrlen($title);
+		$title_ok=false;$t_sugg='';
+		if(!strlen(trim($title))){$t_sugg='Title is missing.';}
+		elseif($tlen > 80){$t_sugg="Title is too long ({$tlen} chars; best 40-80).";}
+		elseif($tlen < 40){$t_sugg="Title is too short ({$tlen} chars; best 40-80).";}
+		else{$title_ok=true;}
+		websiteGraderAddCheck($checks,'title','Title tag (40-80 chars)','SEO',$title_ok,$title_ok?null:array(
+			'page'=>$link,'element'=>"<xmp style=\"margin:0px;\"><title>{$title}</title></xmp>",'suggestion'=>$t_sugg
+		));
+		//meta description
+		$desc=isset($meta['description'])?$meta['description']:null;
+		$desc_ok=false;$d_sugg='';
+		if($desc===null){$d_sugg='Meta description is missing.';}
+		else{
+			$dlen=commonStrlen($desc);
+			if($dlen > 160){$d_sugg="Meta description is too long ({$dlen} chars; best 140-160).";}
+			elseif($dlen < 140){$d_sugg="Meta description is too short ({$dlen} chars; best 140-160).";}
+			else{$desc_ok=true;}
+		}
+		websiteGraderAddCheck($checks,'description','Meta description (140-160 chars)','SEO',$desc_ok,$desc_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="description" content="'.encodeHtml((string)$desc).'" /></xmp>','suggestion'=>$d_sugg
+		));
+		//meta robots
+		$rob=isset($meta['robots'])?$meta['robots']:null;
+		$rob_ok=false;$r_sugg='';
+		if($rob===null){$r_sugg='Meta robots tag is missing (add content="index, follow").';}
+		elseif(stringContains($rob,'noindex')){$r_sugg='Meta robots is set to noindex &mdash; this page will NOT be indexed.';}
+		else{$rob_ok=true;}
+		websiteGraderAddCheck($checks,'metarobots','Meta robots tag','SEO',$rob_ok,$rob_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="robots" content="index, follow" /></xmp>','suggestion'=>$r_sugg
+		));
+		//viewport
+		$vp=isset($meta['viewport'])?trim($meta['viewport']):'';
+		$vp_ok=strlen($vp)?true:false;
+		websiteGraderAddCheck($checks,'viewport','Responsive viewport meta','SEO',$vp_ok,$vp_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="viewport" content="width=device-width,initial-scale=1.0" /></xmp>','suggestion'=>'Viewport meta tag is missing (needed for mobile/responsive rendering).'
+		));
+		//canonical
+		$canonical_ok=false;
+		if(preg_match_all('/<link[^>]*>/si',$head,$lm)){
+			foreach($lm[0] as $ls){
+				$la=parseHtmlTagAttributes($ls);
+				if(isset($la['rel']) && strtolower($la['rel'])=='canonical'){
+					if(isset($la['href']) && strlen(trim($la['href']))){$canonical_ok=true;}
+					break;
+				}
+			}
+		}
+		websiteGraderAddCheck($checks,'canonical','Canonical link','SEO',$canonical_ok,$canonical_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><link rel="canonical" href="{page url}" /></xmp>','suggestion'=>'Canonical link is missing (helps avoid duplicate-content issues).'
+		));
+		//images alt + size
+		$imgitems=array();
+		preg_match_all('/<img[^>]*>/si',$body,$im);
+		foreach($im[0] as $is){
+			$ia=parseHtmlTagAttributes($is);
+			$probs=array();
+			if(!isset($ia['alt'])){$probs[]='missing alt';}
+			if(!isset($ia['src'])){$probs[]='missing src';}
+			else{
+				$src=$ia['src'];
+				if(stringBeginsWith($src,'//')){$src='https:'.$src;}
+				elseif(stringBeginsWith($src,'/')){
+					$pp=parse_url($url);
+					$src="{$pp['scheme']}://{$pp['host']}".(isset($pp['port'])?":{$pp['port']}":'').$src;
+				}
+				if(preg_match('#^https?://#i',$src) && websiteGraderImgCheckAllowed()){
+					$hinfo=websiteGraderGetURLHeader($src);
+					if(isset($hinfo['download_content_length']) && $hinfo['download_content_length'] > 300000){
+						$probs[]=websiteGraderFormatBytes($hinfo['download_content_length']).' &mdash; too large (keep under ~300 KB)';
+					}
+				}
+			}
+			if(count($probs)){
+				$label_src=encodeHtml(isset($ia['src'])?$ia['src']:'(no src)');
+				$imgitems[]=$label_src.': '.implode(', ',$probs);
+			}
+		}
+		$img_ok=count($imgitems)==0;
+		websiteGraderAddCheck($checks,'images','Images have alt &amp; reasonable size','SEO',$img_ok,$img_ok?null:array(
+			'page'=>$link,'suggestion'=>count($imgitems).' image(s) need attention (missing alt text or oversized).','items'=>$imgitems
+		));
+
+		//--- Social (Open Graph + Twitter) ---
+		$ogfields=array('type','title','description','image','url','site_name');
+		$ogmissing=array();
+		foreach($ogfields as $f){if(!isset($meta["og:{$f}"])){$ogmissing[]="og:{$f}";}}
+		$og_ok=count($ogmissing)==0;
+		websiteGraderAddCheck($checks,'opengraph','Open Graph tags complete','Social',$og_ok,$og_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta property="og:image" content="..." /></xmp>','suggestion'=>'Missing Open Graph tags: '.implode(', ',$ogmissing).'. These control how the link looks when shared to Facebook, LinkedIn, iMessage, Slack, etc.'
+		));
+		$twfields=array('card','title','description','image');
+		$twmissing=array();
+		foreach($twfields as $f){if(!isset($meta["twitter:{$f}"])){$twmissing[]="twitter:{$f}";}}
+		$tw_ok=count($twmissing)==0;
+		websiteGraderAddCheck($checks,'twitter','Twitter/X card tags complete','Social',$tw_ok,$tw_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="twitter:card" content="summary_large_image" /></xmp>','suggestion'=>'Missing Twitter/X card tags: '.implode(', ',$twmissing).'. These control how the link looks when shared to X.'
+		));
+
+		//--- AIO ---
+		$lang_ok=(bool)preg_match('/<html[^>]*\blang\s*=\s*["\'][a-z]/si',$body);
+		websiteGraderAddCheck($checks,'htmllang','&lt;html lang&gt; set','AIO',$lang_ok,$lang_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><html lang="en"></xmp>','suggestion'=>'The &lt;html&gt; tag has no lang attribute. AI models and screen readers use it to detect the content language.'
+		));
+		$jsonld_ok=(bool)preg_match('/<script[^>]*type\s*=\s*["\']application\/ld\+json["\']/si',$body);
+		websiteGraderAddCheck($checks,'jsonld','JSON-LD structured data','AIO',$jsonld_ok,$jsonld_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><script type="application/ld+json">{ ... }</script></xmp>','suggestion'=>'No JSON-LD structured data (Schema.org) found. AI answer engines rely on it to understand entities (Organization, Article, Product, FAQ, Breadcrumb).'
+		));
+		$h1cnt=preg_match_all('/<h1[\s>]/si',$body,$hm);
+		$h1_ok=($h1cnt==1);
+		$h1_sugg=($h1cnt==0)?'No H1 heading found. A single, clear H1 tells search and AI crawlers the main topic.':"Found {$h1cnt} H1 tags. Use exactly one H1 per page.";
+		websiteGraderAddCheck($checks,'h1','Exactly one H1','AIO',$h1_ok,$h1_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><h1>...</h1></xmp>','suggestion'=>$h1_sugg
+		));
+		$author_ok=(preg_match('/<meta[^>]*name\s*=\s*["\']author["\']/si',$body) || preg_match('/"@type"\s*:\s*"(Person|Organization)"/si',$body))?true:false;
+		websiteGraderAddCheck($checks,'authorship','Authorship / E-E-A-T signal','AIO',$author_ok,$author_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="author" content="..." /></xmp>','suggestion'=>'No authorship signal (meta author or Person/Organization schema). AI engines weigh authorship &amp; authority (E-E-A-T) when choosing sources to cite.'
+		));
 	}
-	$baseurl=websiteGraderGetBaseURL();
-	$url="{$baseurl}/{$name}";
-	$post=postURL($url,array('-method'=>'GET','-nossl'=>1));
-	$websiteGraderGetPageBodyCache[$name]=$post['body'];
-	return $websiteGraderGetPageBodyCache[$name];
+	return $checks;
 }
-function websiteGraderGetBaseURL(){
-	global $websiteGraderGetBaseURLCache;
-	if(strlen($websiteGraderGetBaseURLCache)){
-		return $websiteGraderGetBaseURLCache;
+
+/**
+ * @describe map a percentage to a color used for badges/rings.
+ * @param pct number
+ * @return string hex color
+ */
+function websiteGraderGradeColor($pct){
+	if($pct >= 90){return '#1f9d55';}
+	if($pct >= 80){return '#3aa757';}
+	if($pct >= 70){return '#c98a00';}
+	if($pct >= 50){return '#d97706';}
+	return '#d64545';
+}
+
+/**
+ * @describe compute the overall grade (percent + description) from all check instances.
+ * @param checks array
+ * @return array [percent, pass, total, label, letter, color]
+ */
+function websiteGraderGrade($checks){
+	$pass=0;$total=0;
+	foreach($checks as $c){$pass+=$c['pass'];$total+=$c['total'];}
+	$pct=$total?(int)round($pass/$total*100):0;
+	if($pct >= 90){$label='Excellent &mdash; well optimized';$letter='A';}
+	elseif($pct >= 80){$label='Good but could use some tweaks';$letter='B';}
+	elseif($pct >= 70){$label='Fair &mdash; several improvements needed';$letter='C';}
+	elseif($pct >= 50){$label='Needs work';$letter='D';}
+	else{$label='Poor &mdash; significant issues';$letter='F';}
+	return array('percent'=>$pct,'pass'=>$pass,'total'=>$total,'label'=>$label,'letter'=>$letter,'color'=>websiteGraderGradeColor($pct));
+}
+
+/**
+ * @describe grade for a single category.
+ * @param checks array, cat string
+ * @return array [percent, pass, total]
+ */
+function websiteGraderCategoryGrade($checks,$cat){
+	$pass=0;$total=0;
+	foreach($checks as $c){
+		if($c['category']!=$cat){continue;}
+		$pass+=$c['pass'];$total+=$c['total'];
 	}
-	$prefix='http';
-	if(isSSL()){$prefix='https';}
-	elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){$prefix='https';}
-	elseif(isset($_SERVER['HTTP_X_FORWARDED_SERVER'])){$prefix='https';}
-	$websiteGraderGetBaseURLCache="{$prefix}://{$_SERVER['HTTP_HOST']}";
-	return $websiteGraderGetBaseURLCache;
+	$pct=$total?(int)round($pass/$total*100):100;
+	return array('percent'=>$pct,'pass'=>$pass,'total'=>$total);
 }
+
+//---------- output builders ----------
+
+/**
+ * @describe FORM 1 (report card): grade hero + social preview + all checks (Pass/Fail) + AI prompt panel.
+ * @param grade array, checks array, social array, baseurl string, pages array, error string
+ * @return string HTML
+ */
+function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$error=''){
+	if(strlen($error)){
+		return '<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> '.encodeHtml($error).'</div>';
+	}
+	$cnt=count($pages);
+	$rtn='';
+	//scoped, responsive styles (mobile / tablet / desktop)
+	$rtn.='<style>'.PHP_EOL;
+	$rtn.='.wg_results td{vertical-align:top;}'.PHP_EOL;
+	$rtn.='.wg_results table{max-width:100%;}'.PHP_EOL;
+	$rtn.='.wg_tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}'.PHP_EOL;
+	$rtn.='.wg_results td xmp{display:block;margin:0;white-space:pre-wrap;word-break:break-word;max-width:52vw;font-size:12px;}'.PHP_EOL;
+	$rtn.='.wg_cards{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}'.PHP_EOL;
+	$rtn.='.wg_cards>div{flex:1 1 340px;min-width:0;max-width:100%;}'.PHP_EOL;
+	$rtn.='.wg_hero{display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:#f7f8fa;border:1px solid #e6e8eb;border-radius:12px;padding:18px 20px;margin:4px 0 6px;}'.PHP_EOL;
+	$rtn.='.wg_pill{display:inline-block;color:#fff;border-radius:11px;padding:2px 10px;font-size:12px;font-weight:600;margin:2px 6px 2px 0;white-space:nowrap;}'.PHP_EOL;
+	$rtn.='.wg_tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:2px solid #e3e6ea;margin:16px 0 14px;}'.PHP_EOL;
+	$rtn.='.wg_tabs a{padding:8px 14px;color:#4a5560;text-decoration:none;font-weight:600;cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;}'.PHP_EOL;
+	$rtn.='.wg_tabs a:hover{color:#1a5fb4;}'.PHP_EOL;
+	$rtn.='.wg_tabs a.is-active,.wg_tabs a.active{color:#1a5fb4;border-bottom-color:#1a5fb4;}'.PHP_EOL;
+	$rtn.='.wg_tabpill{font-size:11px;padding:1px 6px;border-radius:9px;color:#fff;}'.PHP_EOL;
+	$rtn.='#grader_ai_prompt{max-width:100%;box-sizing:border-box;overflow:auto;white-space:pre-wrap;}'.PHP_EOL;
+	$rtn.='@media (max-width:820px){.wg_results td xmp{max-width:56vw;font-size:11px;}}'.PHP_EOL;
+	$rtn.='@media (max-width:560px){.wg_tablewrap table{min-width:600px;}.wg_results td xmp{max-width:320px;font-size:11px;}.wg_cards{gap:16px;}.wg_hero{padding:14px;}.wg_tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}}'.PHP_EOL;
+	$rtn.='</style>'.PHP_EOL;
+	$rtn.='<div class="wg_results">'.PHP_EOL;
+	//scan summary (always visible)
+	$rtn.='<div class="w_bigger w_bold w_gray">Scanned <span class="w_dblue">'.htmlspecialchars($baseurl).'</span></div>'.PHP_EOL;
+	$rtn.='<div class="w_gray" style="margin-bottom:8px;">Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site.</div>'.PHP_EOL;
+	$rtn.='<details style="margin-bottom:10px;"><summary class="w_link w_pointer">Pages crawled ('.$cnt.')</summary><div class="w_small" style="padding:6px 0 0 12px;">';
+	foreach($pages as $p){$rtn.=websiteGraderPageLink($p['url']).'<br />'.PHP_EOL;}
+	$rtn.='</div></details>'.PHP_EOL;
+	//grade hero (always visible)
+	$rtn.=websiteGraderRenderGradeHero($grade,$checks);
+	//tabbed sections
+	$rtn.='<div class="wg_tabwrapper">'.PHP_EOL;
+	$rtn.=websiteGraderRenderTabNav($checks);
+	$rtn.='<div class="wg_panel" id="wg_seo">'.websiteGraderRenderChecksTable($checks,'SEO','SEO &mdash; Page Checks').'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_social" style="display:none;">'.websiteGraderRenderChecksTable($checks,'Social','Social / Open Graph').'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_aio" style="display:none;">'.websiteGraderRenderChecksTable($checks,'AIO','AI Optimization (AIO)').'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_misc" style="display:none;">'.websiteGraderRenderChecksTable($checks,'Misc','Misc / Technical').'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_preview" style="display:none;">'.websiteGraderRenderSocialPreview($social).'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_ai" style="display:none;">'.websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social).'</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;//.wg_tabwrapper
+	$rtn.='</div>'.PHP_EOL;//.wg_results
+	return $rtn;
+}
+
+/**
+ * @describe render the tab bar. Each tab shows/hides its panel client-side (no re-crawl) and
+ *   uses wacss.setActiveTab for the active-class handling.
+ * @param checks array
+ * @return string HTML
+ */
+function websiteGraderRenderTabNav($checks){
+	$tabs=array(
+		array('id'=>'wg_seo','label'=>'SEO','cat'=>'SEO'),
+		array('id'=>'wg_social','label'=>'Open Graph','cat'=>'Social'),
+		array('id'=>'wg_aio','label'=>'AIO','cat'=>'AIO'),
+		array('id'=>'wg_misc','label'=>'Technical','cat'=>'Misc'),
+		array('id'=>'wg_preview','label'=>'Preview','cat'=>''),
+		array('id'=>'wg_ai','label'=>'Fix with AI','cat'=>'')
+	);
+	$rtn='<nav class="wg_tabs">'.PHP_EOL;
+	$first=true;
+	foreach($tabs as $t){
+		$cls=$first?' is-active':'';
+		$pill='';
+		if(strlen($t['cat'])){
+			$cg=websiteGraderCategoryGrade($checks,$t['cat']);
+			if($cg['total'] > 0){
+				$pill=' <span class="wg_tabpill" style="background:'.websiteGraderGradeColor($cg['percent']).';">'.$cg['percent'].'%</span>';
+			}
+		}
+		$onclick="var r=this.closest('.wg_tabwrapper');r.querySelectorAll('.wg_panel').forEach(function(p){p.style.display='none';});var t=r.querySelector('#".$t['id']."');if(t){t.style.display='';}return wacss.setActiveTab(this);";
+		$rtn.='<a href="#" class="wg_tab'.$cls.'" onclick="'.$onclick.'">'.$t['label'].$pill.'</a>'.PHP_EOL;
+		$first=false;
+	}
+	$rtn.='</nav>'.PHP_EOL;
+	return $rtn;
+}
+
+/**
+ * @describe render the overall-grade hero (percent ring + description + per-category pills).
+ * @param grade array, checks array
+ * @return string HTML
+ */
+function websiteGraderRenderGradeHero($grade,$checks){
+	$pct=$grade['percent'];
+	$color=$grade['color'];
+	$ring='background:conic-gradient('.$color.' '.$pct.'%, #e3e6ea 0);';
+	$rtn='<div class="wg_hero">'.PHP_EOL;
+	$rtn.='<div style="width:118px;height:118px;border-radius:50%;'.$ring.'display:flex;align-items:center;justify-content:center;flex:0 0 auto;">'.PHP_EOL;
+	$rtn.='	<div style="width:90px;height:90px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">'.PHP_EOL;
+	$rtn.='		<div style="font-size:30px;font-weight:700;line-height:1;color:'.$color.';">'.$pct.'%</div>'.PHP_EOL;
+	$rtn.='		<div style="font-size:11px;color:#8a9099;letter-spacing:.5px;">GRADE '.$grade['letter'].'</div>'.PHP_EOL;
+	$rtn.='	</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	$rtn.='<div style="flex:1 1 240px;min-width:0;">'.PHP_EOL;
+	$rtn.='	<div style="font-size:20px;font-weight:700;color:'.$color.';line-height:1.2;">'.$grade['label'].'</div>'.PHP_EOL;
+	$rtn.='	<div class="w_gray" style="margin:3px 0 8px;">'.$grade['pass'].' of '.$grade['total'].' checks passed</div>'.PHP_EOL;
+	$rtn.='	<div>'.PHP_EOL;
+	foreach(websiteGraderCategories() as $cat=>$label){
+		$cg=websiteGraderCategoryGrade($checks,$cat);
+		if($cg['total']==0){continue;}
+		$plain=trim(preg_replace('/&mdash;.*$/','',str_replace('&amp;','&',$label)));
+		$rtn.='<span class="wg_pill" style="background:'.websiteGraderGradeColor($cg['percent']).';">'.encodeHtml($plain).' '.$cg['percent'].'%</span>'.PHP_EOL;
+	}
+	$rtn.='	</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	return $rtn;
+}
+
+/**
+ * @describe render all checks in a category as a table with a Pass/Fail Status column.
+ * @param checks array, cat string, label string
+ * @return string HTML
+ */
+function websiteGraderRenderChecksTable($checks,$cat,$label){
+	$rows=array();
+	foreach($checks as $c){if($c['category']==$cat){$rows[]=$c;}}
+	if(!count($rows)){return '';}
+	$cg=websiteGraderCategoryGrade($checks,$cat);
+	$pill='<span class="wg_pill" style="background:'.websiteGraderGradeColor($cg['percent']).';">'.$cg['percent'].'%</span>';
+	$rtn='<div class="w_bigger w_bold w_gray w_padtop">'.$label.' '.$pill.'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_tablewrap"><table class="wacss_table is-bordered is-striped is-narrow" style="width:100%;">'.PHP_EOL;
+	$rtn.='<thead><tr><th style="width:86px;">Status</th><th style="width:22%;">Check</th><th>Details</th></tr></thead><tbody>'.PHP_EOL;
+	foreach($rows as $c){
+		$ok=($c['pass']==$c['total'] && count($c['fails'])==0);
+		if($ok){$status='<span class="w_success w_bold w_nowrap"><span class="icon-mark"></span> Pass</span>';}
+		else{$status='<span class="w_danger w_bold w_nowrap"><span class="icon-warning"></span> Fail</span>';}
+		$rtn.='<tr><td>'.$status.'</td><td>'.$c['label'].'</td><td>'.websiteGraderCheckDetails($c,$ok).'</td></tr>'.PHP_EOL;
+	}
+	$rtn.='</tbody></table></div>'.PHP_EOL;
+	return $rtn;
+}
+
+/**
+ * @describe render the Details cell for a check (pass summary, or the failing pages + fixes).
+ * @param c array (a single check), ok bool
+ * @return string HTML
+ */
+function websiteGraderCheckDetails($c,$ok){
+	if($ok){
+		if($c['total'] > 1){return '<span class="w_gray">All '.$c['total'].' pages OK</span>';}
+		return '<span class="w_gray">OK</span>';
+	}
+	$fails=$c['fails'];
+	$failcount=count($fails);
+	$out='<div class="w_bold w_danger" style="margin-bottom:4px;">'.$failcount.' of '.$c['total'].' failed</div>'.PHP_EOL;
+	$cap=6;$more=0;
+	if($failcount > $cap){$more=$failcount-$cap;$fails=array_slice($fails,0,$cap);}
+	$out.='<div class="w_small">';
+	foreach($fails as $f){
+		$out.='<div style="margin-bottom:6px;">';
+		if(isset($f['page']) && strlen($f['page'])){$out.=$f['page'].'<br />';}
+		if(isset($f['suggestion']) && strlen($f['suggestion'])){$out.='<span class="w_gray">'.$f['suggestion'].'</span>';}
+		if(isset($f['element']) && strlen($f['element'])){$out.=$f['element'];}
+		if(isset($f['items']) && is_array($f['items']) && count($f['items'])){
+			$out.='<ul style="margin:3px 0 0 16px;padding:0;">';
+			foreach($f['items'] as $it){$out.='<li>'.$it.'</li>';}
+			$out.='</ul>';
+		}
+		$out.='</div>';
+	}
+	if($more > 0){$out.='<div class="w_gray">&hellip;and '.$more.' more page'.($more==1?'':'s').'</div>';}
+	$out.='</div>';
+	return $out;
+}
+
+/**
+ * @describe render a set of issue recs as an HTML grid (legacy helper; kept for reuse).
+ * @param recs array, listopts array
+ * @return string
+ */
 function websiteGraderList($recs,$listopts=array()){
-	//no issues found - show a clear pass message instead of an empty table
 	if(!is_array($recs) || !count($recs)){
 		return '<div class="w_success" style="padding:8px 2px 4px;"><span class="icon-mark"></span> All checks passed &mdash; no issues found.</div>';
 	}
 	$opts=array(
 		'-list'=>$recs,
-		'-tableclass'=>'wacss_table bordered condensed striped',
-		'-hidesearch'=>1,
-		'source_class'=>'w_nowrap',
-		'page_class'=>'w_nowrap',
-		'element_style'=>'max-width:60vw;text-overflow:ellipsis;overflow:hidden;'
+		'-tableclass'=>'wacss_table is-bordered is-striped is-narrow',
+		'-hidesearch'=>1
 	);
 	foreach($listopts as $k=>$v){
 		if(!strlen($v)){unset($opts[$k]);}
 		else{$opts[$k]=$v;}
 	}
-	return databaseListRecords($opts);
+	return '<div class="wg_tablewrap">'.databaseListRecords($opts).'</div>';
+}
 
+//---------- Fix with AI (FORM 2) ----------
+
+/**
+ * @describe render the copy/paste AI prompt inside a read-only textarea with a copy button.
+ * @param baseurl string, pages array, checks array, grade array, social array
+ * @return string HTML
+ */
+function websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social=array()){
+	$prompt=websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social);
+	$rtn='';
+	$rtn.='<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-copy"></span> Fix with AI</div>'.PHP_EOL;
+	$rtn.='<div class="w_small w_gray" style="margin-bottom:6px;">Copy this summary and paste it into Claude, ChatGPT, or any AI assistant to get the exact fixes for every failed check above.</div>'.PHP_EOL;
+	$rtn.='<div style="position:relative;">'.PHP_EOL;
+	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').value,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
+	$rtn.='	<textarea id="grader_ai_prompt" class="wacss_textarea" readonly="readonly" rows="18" wrap="soft" style="width:100%;font-family:monospace;font-size:12px;">'.encodeHtml($prompt).'</textarea>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	return $rtn;
 }
-//---------- begin AI Optimization (AIO) checks ----------
-/*
-	AIO = optimizing to be found, understood, and cited by AI answer engines
-	(ChatGPT/OpenAI, Claude, Perplexity, Google AI Overviews, Copilot, etc.).
-	Signals checked:
-		- llms.txt (emerging standard guiding AI crawlers to key content)
-		- AI crawler access in robots.txt (are the major AI bots allowed?)
-		- JSON-LD structured data (Schema.org) so AI can extract entities
-		- a single, clear H1 per page
-		- <html lang> so AI/readers detect the content language
-		- an authorship signal (meta author or Person/Organization schema) for E-E-A-T
-*/
-function websiteGraderAIO(){
-	$recs=array();
-	$baseurl=websiteGraderGetBaseURL();
-	$rootlink='<span class="w_nowrap">/ (site root)</span>';
-	//---- llms.txt ----
-	$info=websiteGraderGetURLHeader("{$baseurl}/llms.txt");
-	if(isset($info['http_code']) && $info['http_code']==404){
-		$recs[]=array(
-			'page'=>$rootlink,
-			'element'=>'<xmp style="margin:0px;">/llms.txt</xmp>',
-			'suggestions'=>'llms.txt is missing. This emerging standard lets AI assistants (ChatGPT, Claude, Perplexity, ...) discover your most important content. Add a markdown /llms.txt that links to your key pages and docs.'
-		);
+
+/**
+ * @describe build the plain-text AI prompt: overall grade + social summary + every FAILED check.
+ * @param baseurl string, pages array, checks array, grade array, social array
+ * @return string plain text (markdown)
+ */
+function websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social=array()){
+	$lines=array();
+	$lines[]="# SEO & AI Optimization (AIO) audit for {$baseurl}";
+	$lines[]="";
+	$gradeplain=trim(html_entity_decode(preg_replace('/&mdash;/','-',$grade['label']),ENT_QUOTES));
+	$lines[]="Overall grade: {$grade['percent']}% (".$grade['letter'].") - {$gradeplain}. {$grade['pass']} of {$grade['total']} checks passed across ".count($pages)." crawled page(s).";
+	$lines[]="";
+	$lines[]="Please fix the FAILED checks listed below. For each, I give the check name, the affected page(s), an example element, and the problem. Provide the exact HTML, meta tags, JSON-LD structured data, robots.txt rules, or file contents to add or change. Where an issue repeats across pages, give one reusable solution.";
+	//social summary
+	$soclines=websiteGraderSocialPromptLines($social);
+	if(count($soclines)){
+		$lines[]="";
+		$lines[]="## Social / link-share preview (how the home page looks when pasted into Facebook, X/Twitter, iMessage, Slack, etc.)";
+		foreach($soclines as $sl){$lines[]=$sl;}
 	}
-	//---- AI crawler access in robots.txt ----
-	$aibots=array('GPTBot','OAI-SearchBot','ChatGPT-User','ClaudeBot','anthropic-ai','Claude-Web','PerplexityBot','Perplexity-User','Google-Extended','Applebot-Extended','CCBot','Amazonbot','Bytespider','Meta-ExternalAgent','cohere-ai');
-	$robots=websiteGraderGetURLBody("{$baseurl}/robots.txt");
-	if(strlen(trim($robots))){
-		$blocked=websiteGraderRobotsBlockedBots($robots,$aibots);
-		if(count($blocked)){
-			$recs[]=array(
-				'page'=>$rootlink,
-				'element'=>'<xmp style="margin:0px;">robots.txt</xmp>',
-				'suggestions'=>'robots.txt blocks these AI crawlers, so your content will NOT be read or cited by them: <b>'.encodeHtml(implode(', ',$blocked)).'</b>. Remove the Disallow rules for any AI engine you want to appear in.'
-			);
-		}
-	}
-	//---- per-page AIO checks ----
-	$gpages=websiteGraderActivePages();
-	foreach($gpages as $gpage){
-		$body=websiteGraderGetPageBody($gpage['name']);
-		$link=websiteGraderPageEditLink($gpage['_id'],$gpage['name']);
-		//<html lang>
-		if(!preg_match('/<html[^>]*\blang\s*=\s*["\'][a-z]/si',$body)){
-			$recs[]=array(
-				'page'=>$link,
-				'element'=>'<xmp style="margin:0px;"><html lang="en"></xmp>',
-				'suggestions'=>'The &lt;html&gt; tag has no lang attribute. AI models and screen readers use it to detect the content language.'
-			);
-		}
-		//JSON-LD structured data (Schema.org)
-		if(!preg_match('/<script[^>]*type\s*=\s*["\']application\/ld\+json["\']/si',$body)){
-			$recs[]=array(
-				'page'=>$link,
-				'element'=>'<xmp style="margin:0px;"><script type="application/ld+json">{ ... }</script></xmp>',
-				'suggestions'=>'No JSON-LD structured data (Schema.org) found. AI answer engines rely on it to understand entities (Organization, Article, Product, FAQ, Breadcrumb). Add the relevant schema.'
-			);
-		}
-		//exactly one H1
-		$h1cnt=preg_match_all('/<h1[\s>]/si',$body,$m);
-		if($h1cnt==0){
-			$recs[]=array(
-				'page'=>$link,
-				'element'=>'<xmp style="margin:0px;"><h1>...</h1></xmp>',
-				'suggestions'=>'No H1 heading found. A single, clear H1 tells search and AI crawlers the main topic of the page.'
-			);
-		}
-		elseif($h1cnt > 1){
-			$recs[]=array(
-				'page'=>$link,
-				'element'=>"<xmp style=\"margin:0px;\">{$h1cnt} <h1> tags</xmp>",
-				'suggestions'=>"Found {$h1cnt} H1 tags. Use exactly one H1 per page so crawlers can identify the primary topic."
-			);
-		}
-		//authorship / authority signal (E-E-A-T)
-		if(!preg_match('/<meta[^>]*name\s*=\s*["\']author["\']/si',$body) && !preg_match('/"@type"\s*:\s*"(Person|Organization)"/si',$body)){
-			$recs[]=array(
-				'page'=>$link,
-				'element'=>'<xmp style="margin:0px;"><meta name="author" content="..." /></xmp>',
-				'suggestions'=>'No authorship signal (meta author or Person/Organization schema). AI engines weigh authorship &amp; authority (E-E-A-T) when choosing which sources to cite.'
-			);
+	//failed checks by category
+	$anyfail=false;
+	foreach(websiteGraderCategories() as $cat=>$label){
+		$catplain=trim(html_entity_decode(preg_replace('/&mdash;.*$/','',$label),ENT_QUOTES));
+		foreach($checks as $c){
+			if($c['category']!=$cat){continue;}
+			if($c['pass']==$c['total'] && !count($c['fails'])){continue;}
+			$anyfail=true;
+			$clabel=trim(html_entity_decode($c['label'],ENT_QUOTES));
+			$lines[]="";
+			$lines[]="## [{$catplain}] {$clabel} — ".count($c['fails'])." of {$c['total']} failing";
+			$fails=$c['fails'];
+			if(count($fails) > 25){$fails=array_slice($fails,0,25);}
+			foreach($fails as $f){
+				$loc='';
+				if(isset($f['page']) && preg_match('/href="([^"]+)"/i',$f['page'],$mm)){$loc=html_entity_decode($mm[1],ENT_QUOTES);}
+				$sugg=isset($f['suggestion'])?websiteGraderPlainText($f['suggestion']):'';
+				$line='- ';
+				if(strlen($loc)){$line.="[{$loc}] ";}
+				$line.=$sugg;
+				$lines[]=$line;
+				if(isset($f['element']) && strlen($f['element'])){
+					$lines[]="    element: ".websiteGraderPlainElement($f['element']);
+				}
+				if(isset($f['items']) && is_array($f['items'])){
+					foreach($f['items'] as $it){$lines[]="    - ".websiteGraderPlainText($it);}
+				}
+			}
 		}
 	}
-	return $recs;
+	if(!$anyfail){
+		$lines[]="";
+		$lines[]="No failed checks — the site passed every SEO/AIO/Social check. Suggest any advanced, optional improvements (including social share-card polish) you would still recommend.";
+	}
+	return implode("\n",$lines);
 }
-function websiteGraderGetURLBody($url){
-	$post=postURL($url,array('-method'=>'GET','-nossl'=>1));
-	return isset($post['body'])?$post['body']:'';
+
+/**
+ * @describe strip HTML from a suggestion string for the plain-text AI prompt.
+ * @param html string
+ * @return string
+ */
+function websiteGraderPlainText($html){
+	$s=preg_replace('#<xmp[^>]*>(.*?)</xmp>#is','$1',$html);
+	$s=preg_replace('#<br\s*/?>#i',' ',$s);
+	$s=strip_tags($s);
+	$s=html_entity_decode($s,ENT_QUOTES);
+	$s=preg_replace('/\s+/',' ',$s);
+	return trim($s);
 }
-//parse robots.txt and return which of $bots are Disallowed from the site root
+
+/**
+ * @describe unwrap an <xmp> example element to its literal text (keeps the example tag intact) for the AI prompt.
+ * @param html string
+ * @return string
+ */
+function websiteGraderPlainElement($html){
+	$s=preg_replace('#<xmp[^>]*>(.*?)</xmp>#is','$1',$html);
+	$s=preg_replace('#<br\s*/?>#i',' ',$s);
+	$s=html_entity_decode($s,ENT_QUOTES);
+	$s=preg_replace('/[\r\n]+/',' ',$s);
+	$s=preg_replace('/\s+/',' ',$s);
+	return trim($s);
+}
+
+//---------- social / link-share preview ----------
+
+/**
+ * @describe parse a page's <title> and meta tags (name/property => content) for social/link previews.
+ * @param body string
+ * @return array [title, meta(assoc)]
+ */
+function websiteGraderParseMeta($body){
+	$title='';
+	if(preg_match('/<title>(.+?)<\/title>/si',$body,$m)){
+		$title=trim(html_entity_decode($m[1],ENT_QUOTES));
+	}
+	$head=$body;
+	if(preg_match('/<head[^>]*>(.*)<\/head>/si',$body,$m)){$head=$m[1];}
+	$meta=array();
+	preg_match_all('/<meta[^>]*>/si',$head,$matches);
+	foreach($matches[0] as $str){
+		$atts=parseHtmlTagAttributes($str);
+		$key='';
+		if(isset($atts['property'])){$key=strtolower($atts['property']);}
+		elseif(isset($atts['name'])){$key=strtolower($atts['name']);}
+		if(!strlen($key) || !isset($atts['content'])){continue;}
+		$meta[$key]=html_entity_decode($atts['content'],ENT_QUOTES);
+	}
+	return array('title'=>$title,'meta'=>$meta);
+}
+
+/**
+ * @describe resolve the Open Graph / Twitter values a share card would use for a page (with fallbacks).
+ * @param page array [url,body], baseurl string
+ * @return array of resolved fields + image status
+ */
+function websiteGraderSocialData($page,$baseurl){
+	$url=$page['url'];
+	$parsed=websiteGraderParseMeta($page['body']);
+	$title=$parsed['title'];
+	$meta=$parsed['meta'];
+	$get=function($k) use ($meta){return isset($meta[$k])?trim($meta[$k]):'';};
+	$og_title=strlen($get('og:title'))?$get('og:title'):$title;
+	$og_desc=strlen($get('og:description'))?$get('og:description'):$get('description');
+	$og_image=$get('og:image');
+	$og_site=strlen($get('og:site_name'))?$get('og:site_name'):parse_url($baseurl,PHP_URL_HOST);
+	$og_url=strlen($get('og:url'))?$get('og:url'):$url;
+	$tw_card=strtolower($get('twitter:card'));
+	$tw_title=strlen($get('twitter:title'))?$get('twitter:title'):$og_title;
+	$tw_desc=strlen($get('twitter:description'))?$get('twitter:description'):$og_desc;
+	$tw_image=strlen($get('twitter:image'))?$get('twitter:image'):$og_image;
+	if(strlen($og_image)){$og_image=websiteGraderAbsoluteURL($og_image,$url,$baseurl);}
+	if(strlen($tw_image)){$tw_image=websiteGraderAbsoluteURL($tw_image,$url,$baseurl);}
+	$img_ok=false;$img_note='';
+	if(strlen($og_image)){
+		$info=websiteGraderGetURLHeader($og_image);
+		$code=isset($info['http_code'])?$info['http_code']:0;
+		if($code>=200 && $code<400){$img_ok=true;}
+		else{$img_note="og:image URL does not load (HTTP {$code}).";}
+	}
+	return array(
+		'url'=>$url,
+		'host'=>parse_url($url,PHP_URL_HOST),
+		'title'=>$title,
+		'og_title'=>$og_title,'og_desc'=>$og_desc,'og_image'=>$og_image,'og_site'=>$og_site,'og_url'=>$og_url,
+		'tw_card'=>$tw_card,'tw_title'=>$tw_title,'tw_desc'=>$tw_desc,'tw_image'=>$tw_image,
+		'img_ok'=>$img_ok,'img_note'=>$img_note
+	);
+}
+
+/**
+ * @describe clip a string to a representative preview length (multibyte-aware), with a fallback when empty.
+ * @param str string, max int, fallback string
+ * @return string
+ */
+function websiteGraderClip($str,$max,$fallback=''){
+	$str=trim($str);
+	if(!strlen($str)){return $fallback;}
+	if(commonStrlen($str)<=$max){return $str;}
+	return rtrim(mb_substr($str,0,$max)).'…';
+}
+
+/**
+ * @describe placeholder box shown in a card when there is no share image.
+ * @return string HTML
+ */
+function websiteGraderNoImageBox(){
+	return '<div style="height:200px;background:#e9ebee;display:flex;align-items:center;justify-content:center;color:#90949c;font-size:13px;">No share image (og:image)</div>';
+}
+
+/**
+ * @describe render the visual link-share preview cards (Open Graph + X/Twitter) plus preview-specific warnings.
+ * @param social array from websiteGraderSocialData
+ * @return string HTML
+ */
+function websiteGraderRenderSocialPreview($social){
+	if(!is_array($social) || !isset($social['url'])){return '';}
+	$hostlc=encodeHtml($social['host']);
+	//Open Graph card (Facebook, LinkedIn, iMessage, WhatsApp, Slack, Discord)
+	$og_title=encodeHtml(websiteGraderClip($social['og_title'],88,'(no title)'));
+	$og_desc=encodeHtml(websiteGraderClip($social['og_desc'],200,'(no description)'));
+	if($social['img_ok']){
+		$ogimg='<div style="height:260px;overflow:hidden;background:#e9ebee;"><img src="'.htmlspecialchars($social['og_image'],ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="og image" /></div>';
+	}
+	else{$ogimg=websiteGraderNoImageBox();}
+	$ogcard='<div style="width:500px;max-width:100%;border:1px solid #dadde1;border-radius:8px;overflow:hidden;background:#fff;font-family:Helvetica,Arial,sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.1);">';
+	$ogcard.=$ogimg;
+	$ogcard.='<div style="padding:10px 12px;background:#f2f3f5;">';
+	$ogcard.='<div style="text-transform:uppercase;color:#606770;font-size:12px;letter-spacing:.3px;">'.$hostlc.'</div>';
+	$ogcard.='<div style="font-weight:600;font-size:16px;color:#1d2129;line-height:1.3;margin:2px 0;">'.$og_title.'</div>';
+	$ogcard.='<div style="color:#606770;font-size:14px;line-height:1.3;">'.$og_desc.'</div>';
+	$ogcard.='</div></div>';
+	//X / Twitter card
+	$tw_title=encodeHtml(websiteGraderClip($social['tw_title'],70,'(no title)'));
+	$tw_desc=encodeHtml(websiteGraderClip($social['tw_desc'],140,'(no description)'));
+	$is_large=($social['tw_card']=='summary_large_image' || $social['tw_card']=='');
+	$twimg_url=strlen($social['tw_image'])?$social['tw_image']:$social['og_image'];
+	$tw_has_img=strlen($twimg_url) && $social['img_ok'];
+	$twcard='<div style="width:500px;max-width:100%;border:1px solid #cfd9de;border-radius:16px;overflow:hidden;background:#fff;font-family:Helvetica,Arial,sans-serif;">';
+	if($is_large){
+		if($tw_has_img){
+			$twcard.='<div style="height:250px;overflow:hidden;background:#e9ebee;position:relative;"><img src="'.htmlspecialchars($twimg_url,ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="twitter image" /><span style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.75);color:#fff;font-size:13px;padding:2px 6px;border-radius:4px;">'.$tw_title.'</span></div>';
+		}
+		else{$twcard.=websiteGraderNoImageBox();}
+		$twcard.='<div style="padding:8px 12px;color:#536471;font-size:13px;">'.$hostlc.'</div>';
+	}
+	else{
+		$twcard.='<div style="display:flex;align-items:stretch;">';
+		if($tw_has_img){
+			$twcard.='<div style="width:130px;flex:0 0 130px;overflow:hidden;background:#e9ebee;"><img src="'.htmlspecialchars($twimg_url,ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="twitter image" /></div>';
+		}
+		$twcard.='<div style="padding:10px 12px;">';
+		$twcard.='<div style="color:#536471;font-size:13px;">'.$hostlc.'</div>';
+		$twcard.='<div style="font-size:15px;color:#0f1419;font-weight:600;line-height:1.3;">'.$tw_title.'</div>';
+		$twcard.='<div style="color:#536471;font-size:14px;line-height:1.3;">'.$tw_desc.'</div>';
+		$twcard.='</div></div>';
+	}
+	$twcard.='</div>';
+	//preview-specific warnings
+	$warns=array();
+	if(!strlen(trim($social['og_image']))){
+		$warns[]='<b>No og:image</b> &mdash; links shared to Facebook, LinkedIn, iMessage, Slack, etc. will show <b>no thumbnail</b>. Add <code>&lt;meta property="og:image" content="..." /&gt;</code> (recommended 1200&times;630).';
+	}
+	elseif(!$social['img_ok']){
+		$warns[]='<b>og:image problem</b> &mdash; '.encodeHtml($social['img_note']).' Fix the URL so the share thumbnail loads.';
+	}
+	if(!strlen(trim($social['og_title']))){$warns[]='<b>No title</b> for the share card (missing both &lt;title&gt; and og:title).';}
+	if(!strlen(trim($social['og_desc']))){$warns[]='<b>No description</b> &mdash; the share card will have little/no descriptive text.';}
+	if(!strlen(trim($social['tw_card']))){$warns[]='<b>twitter:card not set</b> &mdash; X may render only a plain link. Add <code>&lt;meta name="twitter:card" content="summary_large_image" /&gt;</code>.';}
+	$warnhtml='';
+	if(count($warns)){
+		$warnhtml.='<ul style="margin:8px 0 0 0;padding-left:18px;color:#a15c00;">';
+		foreach($warns as $w){$warnhtml.='<li style="margin-bottom:4px;">'.$w.'</li>';}
+		$warnhtml.='</ul>';
+	}
+	else{$warnhtml='<div class="w_success" style="padding:6px 0;"><span class="icon-mark"></span> Share card looks complete (title, description, and image all present).</div>';}
+	//assemble
+	$rtn='<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-share"></span> Social / Link Preview</div>'.PHP_EOL;
+	$rtn.='<div class="w_small w_gray" style="margin-bottom:10px;">How <span class="w_dblue">'.encodeHtml($social['url']).'</span> looks when pasted into Facebook, LinkedIn, iMessage, WhatsApp, Slack, Discord (Open Graph) and X / Twitter.</div>'.PHP_EOL;
+	$rtn.='<div class="wg_cards">'.PHP_EOL;
+	$rtn.='<div><div class="w_small w_bold w_gray" style="margin-bottom:6px;">Facebook / LinkedIn / Messaging</div>'.$ogcard.'</div>'.PHP_EOL;
+	$rtn.='<div><div class="w_small w_bold w_gray" style="margin-bottom:6px;">X / Twitter'.(strlen($social['tw_card'])?' ('.encodeHtml($social['tw_card']).')':' (no twitter:card)').'</div>'.$twcard.'</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	$rtn.=$warnhtml;
+	return $rtn;
+}
+
+/**
+ * @describe plain-text lines summarizing the social share card for the AI prompt.
+ * @param social array from websiteGraderSocialData
+ * @return array of lines (empty if no social data)
+ */
+function websiteGraderSocialPromptLines($social){
+	if(!is_array($social) || !isset($social['url'])){return array();}
+	$lines=array();
+	$lines[]="Home page previewed: {$social['url']}";
+	$lines[]="- og:title: ".(strlen(trim($social['og_title']))?$social['og_title']:'(missing)');
+	$lines[]="- og:description: ".(strlen(trim($social['og_desc']))?$social['og_desc']:'(missing)');
+	$lines[]="- og:image: ".(strlen(trim($social['og_image']))?($social['og_image'].($social['img_ok']?' (loads OK)':' (DOES NOT LOAD)')):'(missing)');
+	$lines[]="- og:site_name: ".(strlen(trim($social['og_site']))?$social['og_site']:'(missing)');
+	$lines[]="- twitter:card: ".(strlen(trim($social['tw_card']))?$social['tw_card']:'(missing — X may not show a rich card)');
+	$lines[]="- twitter:image: ".(strlen(trim($social['tw_image']))?$social['tw_image']:'(missing)');
+	$lines[]="Please recommend the exact Open Graph and Twitter meta tags (including an og:image at 1200x630) to make the share/link preview look great across Facebook, X/Twitter, and messaging apps.";
+	return $lines;
+}
+
+/**
+ * @describe parse robots.txt and return which of $bots are Disallowed from the site root.
+ * @param robots string, bots array
+ * @return array of blocked bot names
+ */
 function websiteGraderRobotsBlockedBots($robots,$bots){
 	$lines=preg_split('/\r\n|\r|\n/',$robots);
-	$groups=array();//agent(lowercased) => array of disallow paths
+	$groups=array();
 	$curagents=array();
 	$sawrule=false;
 	foreach($lines as $line){
 		$line=trim(preg_replace('/#.*$/','',$line));
 		if(!strlen($line)){continue;}
 		if(preg_match('/^user-agent\s*:\s*(.+)$/i',$line,$m)){
-			//a User-agent line following rule lines begins a new group
 			if($sawrule){$curagents=array();$sawrule=false;}
 			$agent=strtolower(trim($m[1]));
 			$curagents[]=$agent;
@@ -487,7 +1017,6 @@ function websiteGraderRobotsBlockedBots($robots,$bots){
 	$blocked=array();
 	foreach($bots as $bot){
 		$key=strtolower($bot);
-		//most-specific group wins; fall back to * only if no specific group
 		$dis=isset($groups[$key])?$groups[$key]:(isset($groups['*'])?$groups['*']:array());
 		foreach($dis as $d){
 			if($d==='/'){$blocked[]=$bot;break;}

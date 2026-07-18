@@ -1,41 +1,55 @@
 <?php
 /*
-	https://github.com/rkonstadinos/seo-techniques-tool/tree/master/seo-techniques
-	
-	https://www.semrush.com/blog/seo-checklist/?kw=&cmp=US_SRCH_DSA_Blog_SEO_New_EN&label=dsa_pagefeed&Network=g&Device=c&utm_content=460045215351&kwid=dsa-944982275753&cmpid=8012574163&agpid=106525566694&gclid=CjwKCAjw0On8BRAgEiwAincsHM810xCs2_X0yut7ZbkYG5hrSO8-X8tCE1z2RHwypJy3z1tV3UgeJhoCXEUQAvD_BwE
-
-	robots.txt
-	sitemap.xml
-	ssl/https
-	domain-authority
-	meta tags on page match content
-	title on links
-	responsive
-
-	ads.txt
-	site.webmanifest
-	asset-manifest.json
-
+	Website Checker controller (thin): route on $_REQUEST['func'].
+	  - default (no func) : show the URL entry form (view: default)
+	  - func=run          : crawl the entered URL, run SEO/AIO/misc checks,
+	                         build results, and render the AJAX partial (view: result)
+	All the real work lives in website_grader_functions.php.
 */
 	global $CONFIG;
-	$stats=array();
-	//check if all images have alt tags
-	$recs=array();
-	//misc
-	$recs['misc']=websiteGraderMisc();
-	if(!count($recs['misc'])){
-		$recs['misc_grade']='<span class="icon-mark w_success"></span>';
+	switch(strtolower($_REQUEST['func'])){
+		case 'run':
+			//defaults so the result view can always render safely
+			$grader_error='';
+			$baseurl='';
+			$pages=array();
+			$checks=array();
+			$grade=array('percent'=>0,'pass'=>0,'total'=>0,'label'=>'','letter'=>'','color'=>'#888');
+			$social=array();
+			//validate URL
+			$starturl=websiteGraderNormalizeURL($_REQUEST['url']);
+			if(!filter_var($starturl,FILTER_VALIDATE_URL)){
+				$grader_error='Please enter a valid website URL (e.g. https://example.com).';
+				setView('result',1);
+				break;
+			}
+			$parts=parse_url($starturl);
+			if(!isset($parts['scheme']) || !in_array(strtolower($parts['scheme']),array('http','https'))){
+				$grader_error='URL must use http or https.';
+				setView('result',1);
+				break;
+			}
+			//how many pages to crawl
+			$maxpages=(int)$_REQUEST['maxpages'];
+			if($maxpages < 1){$maxpages=20;}
+			if($maxpages > 50){$maxpages=50;}
+			//crawl the live site
+			$crawl=websiteGraderCrawl($starturl,$maxpages);
+			if(isset($crawl['error'])){
+				$grader_error=$crawl['error'];
+				setView('result',1);
+				break;
+			}
+			$baseurl=$crawl['baseurl'];
+			$pages=$crawl['pages'];
+			//run all checks, grade them, and gather the social preview data
+			$checks=websiteGraderRunChecks($baseurl,$pages,$crawl['robots']);
+			$grade=websiteGraderGrade($checks);
+			$social=count($pages)?websiteGraderSocialData($pages[0],$baseurl):array();
+			setView('result',1);
+		break;
+		default:
+			setView('default');
+		break;
 	}
-	//head
-	$recs['page']=websiteGraderPage();
-	if(!count($recs['page'])){
-		$recs['page_grade']='<span class="icon-mark w_success"></span>';
-	}
-	//AI optimization (AIO)
-	$recs['aio']=websiteGraderAIO();
-	if(!count($recs['aio'])){
-		$recs['aio_grade']='<span class="icon-mark w_success"></span>';
-	}
-
-	setView('default');
 ?>
