@@ -308,7 +308,7 @@ function websiteGraderRunChecks($baseurl,$pages,$robots){
 		'element'=>'<xmp style="margin:0px;">/llms.txt</xmp>','suggestion'=>'llms.txt is missing. This emerging standard lets AI assistants (ChatGPT, Claude, Perplexity, ...) discover your key content. Add a markdown /llms.txt linking to your important pages.'
 	));
 	//AI crawler access (AIO)
-	$aibots=array('GPTBot','OAI-SearchBot','ChatGPT-User','ClaudeBot','anthropic-ai','Claude-Web','PerplexityBot','Perplexity-User','Google-Extended','Applebot-Extended','CCBot','Amazonbot','Bytespider','Meta-ExternalAgent','cohere-ai');
+	$aibots=array('GPTBot','OAI-SearchBot','ChatGPT-User','ClaudeBot','anthropic-ai','Claude-Web','Claude-SearchBot','Claude-User','PerplexityBot','Perplexity-User','Google-Extended','Google-CloudVertexBot','Applebot','Applebot-Extended','CCBot','Amazonbot','Bytespider','Meta-ExternalAgent','Meta-ExternalFetcher','cohere-ai','MistralAI-User','DuckAssistBot','YouBot');
 	$blocked=strlen(trim($robots))?websiteGraderRobotsBlockedBots($robots,$aibots):array();
 	$ai_ok=count($blocked)==0;
 	websiteGraderAddCheck($checks,'aiaccess','AI crawlers allowed','AIO',$ai_ok,$ai_ok?null:array(
@@ -534,9 +534,14 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$erro
 	$rtn.='@media (max-width:560px){.wg_tablewrap table{min-width:600px;}.wg_results td xmp{max-width:320px;font-size:11px;}.wg_cards{gap:16px;}.wg_hero{padding:14px;}.wg_tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}}'.PHP_EOL;
 	$rtn.='</style>'.PHP_EOL;
 	$rtn.='<div class="wg_results">'.PHP_EOL;
-	//scan summary (always visible)
+	//scan summary + share/email action (always visible)
+	$rtn.='<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">'.PHP_EOL;
+	$rtn.='<div style="flex:1 1 auto;min-width:0;">'.PHP_EOL;
 	$rtn.='<div class="w_bigger w_bold w_gray">Scanned <span class="w_dblue">'.htmlspecialchars($baseurl).'</span></div>'.PHP_EOL;
 	$rtn.='<div class="w_gray" style="margin-bottom:8px;">Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site.</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	$rtn.='<div style="flex:0 0 auto;">'.websiteGraderEmailButton().'</div>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
 	$rtn.='<details style="margin-bottom:10px;"><summary class="w_link w_pointer">Pages crawled ('.$cnt.')</summary><div class="w_small" style="padding:6px 0 0 12px;">';
 	foreach($pages as $p){$rtn.=websiteGraderPageLink($p['url']).'<br />'.PHP_EOL;}
 	$rtn.='</div></details>'.PHP_EOL;
@@ -1023,5 +1028,262 @@ function websiteGraderRobotsBlockedBots($robots,$bots){
 		}
 	}
 	return $blocked;
+}
+
+//---------- share / email the report ----------
+
+/**
+ * @describe render the "Email Report" button shown in the results header. It opens the email
+ *   form in the shared centerpop modal (self-creating), which POSTs back to func=email.
+ * @return string HTML
+ */
+function websiteGraderEmailButton(){
+	return '<a href="#" class="wacss_button is-small" data-nav="/php/admin.php?_menu=website_grader&func=emailform" data-div="centerpop" onclick="return wacss.nav(this);" title="Email this report to someone"><span class="icon-mail"></span> Email Report</a>';
+}
+
+/**
+ * @describe stash the just-computed report in the session so the email step can rebuild it
+ *   without re-crawling (guarantees the emailed report matches what is on screen).
+ * @param baseurl string, checks array, grade array, social array, pages array of [url,body]
+ * @return void
+ */
+function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages){
+	$urls=array();
+	foreach($pages as $p){if(isset($p['url'])){$urls[]=$p['url'];}}
+	$_SESSION['websiteGraderReport']=array(
+		'baseurl'=>$baseurl,
+		'checks'=>$checks,
+		'grade'=>$grade,
+		'social'=>$social,
+		'pages'=>$urls,
+		'when'=>date('M j, Y g:i a')
+	);
+	return;
+}
+
+/**
+ * @describe render the email form (loaded into the centerpop modal). Recipient + optional
+ *   note; from/reply-to default to the logged-in admin. Submits to func=email via ajaxPost.
+ * @return string HTML
+ */
+function websiteGraderEmailForm(){
+	global $USER;
+	if(!isset($_SESSION['websiteGraderReport']['baseurl'])){
+		return '<div class="w_centerpop_title"><span class="icon-mail"></span> Email Report</div>'
+			.'<div class="w_centerpop_content"><div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> No report is loaded. Run a site check first, then email the results.</div></div>';
+	}
+	$rep=$_SESSION['websiteGraderReport'];
+	$host=parse_url($rep['baseurl'],PHP_URL_HOST);
+	$myemail=(isset($USER['email']) && isEmail($USER['email']))?$USER['email']:'';
+	$myname=trim((isset($USER['firstname'])?$USER['firstname']:'').' '.(isset($USER['lastname'])?$USER['lastname']:''));
+	if(!strlen($myname) && isset($USER['username'])){$myname=$USER['username'];}
+	$rtn='<div class="w_centerpop_title"><span class="icon-mail"></span> Email SEO &amp; AIO Report</div>'.PHP_EOL;
+	$rtn.='<div class="w_centerpop_content" style="min-width:300px;max-width:460px;">'.PHP_EOL;
+	$rtn.='<div class="w_small w_gray" style="margin-bottom:10px;">Send the '.encodeHtml($rep['grade']['percent']).'% report for <span class="w_dblue">'.encodeHtml($host).'</span> ('.count($rep['pages']).' page'.(count($rep['pages'])==1?'':'s').' crawled) as a formatted email.</div>'.PHP_EOL;
+	$rtn.='<form method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,\'grader_email_status\');">'.PHP_EOL;
+	$rtn.='	<input type="hidden" name="_menu" value="website_grader" />'.PHP_EOL;
+	$rtn.='	<input type="hidden" name="func" value="email" />'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Send to (email)</label>'.PHP_EOL;
+	$rtn.='		<input type="email" class="wacss_input" name="to" required="required" placeholder="name@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Your name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='		<input type="text" class="wacss_input" name="fromname" value="'.encodeHtml($myname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Reply-to <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='		<input type="email" class="wacss_input" name="replyto" value="'.encodeHtml($myemail).'" placeholder="you@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:10px;"><label class="w_bold">Note <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='		<textarea class="wacss_textarea" name="note" rows="3" placeholder="Add a short message&hellip;" style="width:100%;box-sizing:border-box;"></textarea></div>'.PHP_EOL;
+	$rtn.='	<div style="display:flex;gap:8px;justify-content:flex-end;">'.PHP_EOL;
+	$rtn.='		<button type="button" class="wacss_button" onclick="wacss.centerpopClose();return false;">Cancel</button>'.PHP_EOL;
+	$rtn.='		<button type="submit" class="wacss_button '.configValue('admin_color').'"><span class="icon-mail"></span> Send Report</button>'.PHP_EOL;
+	$rtn.='	</div>'.PHP_EOL;
+	$rtn.='	<div id="grader_email_status" style="margin-top:10px;"></div>'.PHP_EOL;
+	$rtn.='</form>'.PHP_EOL;
+	$rtn.='</div>'.PHP_EOL;
+	return $rtn;
+}
+
+/**
+ * @describe does the report have any failing checks (i.e. is an AI fix file "necessary")?
+ * @param checks array
+ * @return bool
+ */
+function websiteGraderHasFailures($checks){
+	foreach($checks as $c){
+		if($c['pass']==$c['total'] && !count($c['fails'])){continue;}
+		return true;
+	}
+	return false;
+}
+
+/**
+ * @describe write the AI fix prompt to a temp .md file for email attachment, return its path ('' on failure).
+ * @param host string, prompt string
+ * @return string full path or ''
+ */
+function websiteGraderWriteFixFile($host,$prompt){
+	$safe=preg_replace('/[^a-z0-9\.\-]/i','_',$host);
+	if(!strlen($safe)){$safe='site';}
+	$file=rtrim(sys_get_temp_dir(),'/\\').DIRECTORY_SEPARATOR.'seo-aio-fixes-'.$safe.'-'.getmypid().'.md';
+	$ok=setFileContents($file,$prompt);
+	return is_file($file)?$file:'';
+}
+
+/**
+ * @describe validate the recipient, build the report email from the session, and send it.
+ *   When the report has failing checks, an AI-ready fix .md file is attached. Returns a
+ *   status message (AJAX partial) to drop into grader_email_status.
+ * @return string HTML status
+ */
+function websiteGraderSendReport(){
+	global $USER;
+	global $CONFIG;
+	$to=trim(isset($_REQUEST['to'])?$_REQUEST['to']:'');
+	if(!isEmail($to)){
+		return '<div class="w_danger" style="padding:8px 0;"><span class="icon-warning"></span> Please enter a valid recipient email address.</div>';
+	}
+	if(!isset($_SESSION['websiteGraderReport']['baseurl'])){
+		return '<div class="w_danger" style="padding:8px 0;"><span class="icon-warning"></span> The report expired. Close this, re-run the check, and try again.</div>';
+	}
+	$rep=$_SESSION['websiteGraderReport'];
+	$note=trim(isset($_REQUEST['note'])?$_REQUEST['note']:'');
+	$fromname=trim(isset($_REQUEST['fromname'])?$_REQUEST['fromname']:'');
+	$replyto=trim(isset($_REQUEST['replyto'])?$_REQUEST['replyto']:'');
+	$host=parse_url($rep['baseurl'],PHP_URL_HOST);
+	//from address: config email_from is the deliverable sender; reply-to routes replies to the admin
+	$from=isset($CONFIG['email_from'])?$CONFIG['email_from']:(isset($USER['email'])?$USER['email']:'');
+	if(!isEmail($from)){
+		return '<div class="w_danger" style="padding:8px 0;"><span class="icon-warning"></span> No valid sender address is configured (config.xml <b>email_from</b>). Cannot send mail from this site.</div>';
+	}
+	$fromheader=strlen($fromname)?($fromname.' <'.$from.'>'):$from;
+	$subject='SEO & AIO Report: '.$host.' — '.$rep['grade']['percent'].'% (Grade '.$rep['grade']['letter'].')';
+	$message=websiteGraderEmailHTML($rep,$note,$fromname);
+	$mailopts=array('to'=>$to,'from'=>$fromheader,'subject'=>$subject,'message'=>$message);
+	if(isEmail($replyto)){$mailopts['reply-to']=$replyto;}
+	//attach the AI-ready fix file only when there are issues to fix
+	$fixfile='';
+	if(websiteGraderHasFailures($rep['checks'])){
+		$prompt=websiteGraderAIPrompt($rep['baseurl'],$rep['pages'],$rep['checks'],$rep['grade'],$rep['social']);
+		$fixfile=websiteGraderWriteFixFile($host,$prompt);
+		if(strlen($fixfile)){$mailopts['attach']=array($fixfile);}
+	}
+	$err=sendMail($mailopts);
+	//clean up the temp attachment
+	if(strlen($fixfile) && is_file($fixfile)){@unlink($fixfile);}
+	//sendMail returns null (native mail) OR 1 (phpmailer/SMTP path) on success; an error STRING on failure
+	$sent=($err===null || $err===1 || $err==='1' || $err===true);
+	if($sent){
+		return '<div class="w_success" style="padding:8px 0;"><span class="icon-mark"></span> Report sent to <b>'.encodeHtml($to).'</b>.</div>'
+			.buildOnLoad("setTimeout(function(){wacss.centerpopClose();wacss.toast('Report emailed to ".addslashes($to)."','is-success');},900);");
+	}
+	return '<div class="w_danger" style="padding:8px 0;"><span class="icon-warning"></span> Could not send the email:<br />'.encodeHtml(removeHtml((string)$err)).'</div>';
+}
+
+/**
+ * @describe build the HTML email body for the report: grade hero, per-category scores,
+ *   failed checks grouped by category, and the social share summary. Inline styles + tables
+ *   so it renders in email clients (Gmail, Outlook, Apple Mail).
+ * @param rep array (the stored report), note string, fromname string
+ * @return string HTML (xml so sendMail sends it as multipart/html)
+ */
+function websiteGraderEmailHTML($rep,$note='',$fromname=''){
+	$baseurl=$rep['baseurl'];
+	$host=parse_url($baseurl,PHP_URL_HOST);
+	$grade=$rep['grade'];
+	$checks=$rep['checks'];
+	$color=$grade['color'];
+	$gradeplain=trim(html_entity_decode(preg_replace('/&mdash;/','-',$grade['label']),ENT_QUOTES));
+	$pagecnt=count($rep['pages']);
+	$font='font-family:Helvetica,Arial,sans-serif;';
+	$h='<div style="'.$font.'max-width:640px;margin:0 auto;color:#1d2129;font-size:14px;line-height:1.5;">'.PHP_EOL;
+	//header
+	$h.='<div style="border-bottom:3px solid '.$color.';padding-bottom:10px;margin-bottom:16px;">';
+	$h.='<div style="font-size:12px;letter-spacing:.5px;color:#8a9099;text-transform:uppercase;">SEO &amp; AI Optimization Report</div>';
+	$h.='<div style="font-size:22px;font-weight:700;color:#1d2129;">'.encodeHtml($host).'</div>';
+	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
+	$h.='</div>'.PHP_EOL;
+	//optional note
+	if(strlen($note)){
+		$h.='<div style="background:#f7f8fa;border:1px solid #e6e8eb;border-radius:8px;padding:12px 14px;margin-bottom:16px;">';
+		if(strlen($fromname)){$h.='<div style="font-size:12px;color:#8a9099;margin-bottom:4px;">Note from '.encodeHtml($fromname).':</div>';}
+		$h.='<div style="white-space:pre-wrap;">'.nl2br(encodeHtml($note)).'</div></div>'.PHP_EOL;
+	}
+	//grade hero
+	$h.='<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#f7f8fa;border:1px solid #e6e8eb;border-radius:12px;margin-bottom:18px;"><tr>';
+	$h.='<td style="padding:16px 18px;vertical-align:middle;width:110px;text-align:center;">';
+	$h.='<div style="display:inline-block;width:88px;height:88px;border-radius:50%;background:'.$color.';color:#fff;text-align:center;">';
+	$h.='<div style="font-size:26px;font-weight:700;padding-top:20px;line-height:1;">'.$grade['percent'].'%</div>';
+	$h.='<div style="font-size:11px;letter-spacing:.5px;opacity:.9;">GRADE '.$grade['letter'].'</div></div></td>';
+	$h.='<td style="padding:16px 18px 16px 4px;vertical-align:middle;">';
+	$h.='<div style="font-size:18px;font-weight:700;color:'.$color.';">'.$gradeplain.'</div>';
+	$h.='<div style="color:#606770;font-size:13px;margin-top:2px;">'.$grade['pass'].' of '.$grade['total'].' checks passed</div></td>';
+	$h.='</tr></table>'.PHP_EOL;
+	//category scores
+	$h.='<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin-bottom:18px;">';
+	foreach(websiteGraderCategories() as $cat=>$label){
+		$cg=websiteGraderCategoryGrade($checks,$cat);
+		if($cg['total']==0){continue;}
+		$plain=trim(preg_replace('/&mdash;.*$/','',str_replace('&amp;','&',$label)));
+		$ccolor=websiteGraderGradeColor($cg['percent']);
+		$h.='<tr><td style="padding:6px 0;border-bottom:1px solid #eef0f2;font-weight:600;">'.encodeHtml($plain).'</td>';
+		$h.='<td style="padding:6px 0;border-bottom:1px solid #eef0f2;text-align:right;color:#606770;font-size:12px;">'.$cg['pass'].'/'.$cg['total'].'</td>';
+		$h.='<td style="padding:6px 0 6px 10px;border-bottom:1px solid #eef0f2;text-align:right;width:52px;"><span style="display:inline-block;background:'.$ccolor.';color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:600;">'.$cg['percent'].'%</span></td></tr>';
+	}
+	$h.='</table>'.PHP_EOL;
+	//failed checks by category
+	$anyfail=false;
+	$fh='';
+	foreach(websiteGraderCategories() as $cat=>$label){
+		$catplain=trim(preg_replace('/&mdash;.*$/','',str_replace('&amp;','&',$label)));
+		$catrows='';
+		foreach($checks as $c){
+			if($c['category']!=$cat){continue;}
+			if($c['pass']==$c['total'] && !count($c['fails'])){continue;}
+			$anyfail=true;
+			$clabel=trim(html_entity_decode($c['label'],ENT_QUOTES));
+			$catrows.='<div style="margin:10px 0 4px;font-weight:700;color:#1d2129;">'.encodeHtml($clabel).' <span style="color:#d64545;font-weight:600;font-size:12px;">('.count($c['fails']).' of '.$c['total'].' failing)</span></div>';
+			$fails=$c['fails'];
+			$cap=8;$more=0;
+			if(count($fails) > $cap){$more=count($fails)-$cap;$fails=array_slice($fails,0,$cap);}
+			$catrows.='<ul style="margin:0 0 0 18px;padding:0;color:#4a5560;font-size:13px;">';
+			foreach($fails as $f){
+				$loc='';
+				if(isset($f['page']) && preg_match('/href="([^"]+)"/i',$f['page'],$mm)){$loc=html_entity_decode($mm[1],ENT_QUOTES);}
+				$sugg=isset($f['suggestion'])?websiteGraderPlainText($f['suggestion']):'';
+				$catrows.='<li style="margin-bottom:4px;">';
+				if(strlen($loc)){$catrows.='<a href="'.htmlspecialchars($loc,ENT_QUOTES).'" style="color:#1a5fb4;">'.encodeHtml($loc).'</a> — ';}
+				$catrows.=encodeHtml($sugg).'</li>';
+			}
+			if($more > 0){$catrows.='<li style="color:#8a9099;">…and '.$more.' more page'.($more==1?'':'s').'</li>';}
+			$catrows.='</ul>';
+		}
+		if(strlen($catrows)){
+			$fh.='<div style="margin-bottom:14px;"><div style="font-size:13px;font-weight:700;color:#8a9099;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #e6e8eb;padding-bottom:4px;margin-bottom:4px;">'.encodeHtml($catplain).'</div>'.$catrows.'</div>';
+		}
+	}
+	if($anyfail){
+		$h.='<div style="font-size:16px;font-weight:700;margin-bottom:6px;">Issues to fix</div>'.PHP_EOL;
+		$h.='<div style="background:#fff8e6;border:1px solid #f0e0b0;border-radius:8px;padding:10px 12px;margin-bottom:12px;color:#8a6d00;font-size:13px;">📎 An AI-ready fix file (<b>seo-aio-fixes-'.encodeHtml($host).'.md</b>) is attached. Paste its contents into Claude, ChatGPT, or any AI assistant to generate the exact HTML, meta tags, and structured data to fix every item below.</div>'.PHP_EOL;
+		$h.=$fh;
+	}
+	else{
+		$h.='<div style="background:#eafbea;border:1px solid #bfe6bf;border-radius:8px;padding:12px 14px;color:#1f7a1f;margin-bottom:14px;">✓ Every SEO, Social, AIO, and technical check passed — no issues found.</div>'.PHP_EOL;
+	}
+	//social summary
+	$soclines=websiteGraderSocialPromptLines($rep['social']);
+	if(count($soclines)){
+		$h.='<div style="font-size:16px;font-weight:700;margin:18px 0 6px;">Social / link-share preview</div>';
+		$h.='<ul style="margin:0 0 0 18px;padding:0;color:#4a5560;font-size:13px;">';
+		//skip the first (page url) and the trailing instruction line; show the field lines
+		foreach($soclines as $i=>$sl){
+			if($i==0 || $i==count($soclines)-1){continue;}
+			$h.='<li style="margin-bottom:3px;">'.encodeHtml($sl).'</li>';
+		}
+		$h.='</ul>'.PHP_EOL;
+	}
+	//footer
+	$h.='<div style="border-top:1px solid #e6e8eb;margin-top:18px;padding-top:10px;color:#8a9099;font-size:12px;">';
+	$h.='Generated by the WaSQL Website Checker'.(strlen($fromname)?(' &middot; sent by '.encodeHtml($fromname)):'').'.'.($anyfail?' See the attached fix file to generate the exact fixes with AI.':'');
+	$h.='</div>'.PHP_EOL;
+	$h.='</div>'.PHP_EOL;
+	return $h;
 }
 ?>

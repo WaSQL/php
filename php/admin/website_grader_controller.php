@@ -46,7 +46,19 @@
 			$checks=websiteGraderRunChecks($baseurl,$pages,$crawl['robots']);
 			$grade=websiteGraderGrade($checks);
 			$social=count($pages)?websiteGraderSocialData($pages[0],$baseurl):array();
+			//stash the report so it can be emailed without re-crawling
+			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages);
 			setView('result',1);
+		break;
+		case 'emailform':
+			//show the "email this report" form inside the centerpop modal
+			$email_form=websiteGraderEmailForm();
+			setView('emailform',1);
+		break;
+		case 'email':
+			//validate + build the report email from the session and send it
+			$email_status=websiteGraderSendReport();
+			setView('email_result',1);
 		break;
 		default:
 			setView('default');
