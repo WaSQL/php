@@ -220,11 +220,23 @@ if($watcherPid){
 	out("• watcher : NOT running (left alone; --no-watcher)");
 } else {
 	// Launch the watcher in its own persistent console. Use the SAME php that
-	// runs this script so PATH quirks don't matter.
+	// runs this script (PHP_BINARY) so PATH quirks don't matter and no php path
+	// is ever hard-coded.
 	$php = PHP_BINARY;
 	if($IS_WIN){
-		$cmd = 'cmd /k "cd /d ' . $ROOT . ' && \"' . $php . '\" postedit\\postedit.php ' . $alias . '"';
-		launchDetached($cmd, true, 'postedit-' . $alias);
+		// Nesting quotes through popen -> cmd /c -> start -> cmd /k is fragile:
+		// a quoted php path combined with '&&' on one line trips cmd's quote
+		// parser (it then tries to run the quoted php path as a bare command).
+		// Emit a tiny launcher .bat and run THAT instead - one clean quoted arg,
+		// no nested quoting. Fixed per-alias name so temp files don't accumulate.
+		$bat = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-watch-' . $alias . '.bat';
+		file_put_contents($bat,
+			"@echo off\r\n"
+			. 'cd /d "' . $ROOT . '"' . "\r\n"
+			. 'title postedit-' . $alias . "\r\n"
+			. '"' . $php . '" postedit\\postedit.php ' . $alias . "\r\n"
+		);
+		launchDetached('cmd /k "' . $bat . '"', true, 'postedit-' . $alias);
 	} else {
 		launchDetached('"' . $php . '" ' . $ROOT . '/postedit/postedit.php ' . $alias, false);
 	}
@@ -280,6 +292,10 @@ async function main() {
   const height = Math.min(h.result.value, 4000);
   const shot = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { x: 0, y: 0, width, height, scale: 1 } });
   fs.writeFileSync(OUT, Buffer.from(shot.data, 'base64'));
+  // IMPORTANT: we attached to the user's VISIBLE Chrome tab, so the mobile
+  // device-metrics override must be cleared or their live view stays stuck at
+  // the emulated (narrow) width. Capture first, then restore full-width.
+  await send('Emulation.clearDeviceMetricsOverride');
   console.log('wrote', OUT, 'width', width, 'height', height);
   ws.close();
 }

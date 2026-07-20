@@ -187,6 +187,17 @@ Combined with the global-save behavior above, an edit form whose `-action` is `/
   - **Rule of thumb: put `data-onload="wacss.centerpopClose();"` on the POST-SUBMIT refresh response** — the section/grid the form reloads into (`ajaxPost` target) — **NOT on the form's own open-response.** ⚠️ If you put it on the add/edit form's own root, the modal closes itself the instant it opens. `wacss.centerpopClose()` is a safe no-op when no centerpop is open, so the same refreshed section can carry this attribute and be reused for non-modal refreshes (tab switch, delete) without harm.
   - **Point the form's `ajaxPost` target at the *scoped inner* refresh div, NOT the whole tab container.** If a list/section's CSS/JS is scoped to a wrapper id (e.g. `#thing_list .foo{...}`) and you refresh by replacing the *outer* container, the re-rendered markup lands **outside** that id, so scoped rules stop applying (symptom: action icons collapsed, a sticky table lost stickiness after edit-submit). Target the inner scoped div (`wacss.ajaxPost(this,'thing_list')`) to keep scoped CSS working and preserve sibling controls.
 
+### Prefer `data-onload` on a rendered element over `buildOnLoad()`
+**When an element is already being drawn, attach load-time JS as a `data-onload` attribute on that element instead of emitting a separate `<?=buildOnLoad("…");?>` script block.** `data-onload` runs after the element (including AJAX-injected content) is inserted, keeps the behavior co-located with the markup it acts on, and avoids a stray trailing script island. Use `this` inside the attribute to reference the element itself.
+```html
+<!-- preferred: behavior lives on the form being drawn -->
+<form name="jiraform" data-onload="wacss.initTabs();if(this.comment){this.comment.focus();}" …>…</form>
+<!-- avoid: a separate script island doing the same thing -->
+<form name="jiraform" …>…</form>
+<?=buildOnLoad("wacss.initTabs();document.jiraform.comment.focus();");?>
+```
+Reserve `buildOnLoad()` for load-time JS that isn't tied to a specific element you're rendering (e.g. a one-off `window.history.pushState(...)`, or initializing something global). If the natural host element doesn't exist yet, add a minimal wrapper `<div data-onload="…">` rather than a bare script block.
+
 ## Read-only detail popup (centerpop)
 To let a value/row **open a modal showing more detail** (a drill-down list, a query result, a record's full data) — no form, just display — pair a `wacss.nav` link with the self-creating `centerpop` div and an AJAX partial that renders a functions-built HTML string. This is the read-only sibling of the CRUD-tab pattern (which puts a *form* in the centerpop).
 - **Link:** `data-nav="/t/1/{page}/{action}"` + `data-div="centerpop"` + `onclick="return wacss.nav(this);"`. Add **`data-title="…"`** — `wacss.nav` reads it off the anchor and passes it to `wacss.createCenterpop` as the modal's title bar; the modal self-provides its ✕ close, so a pure viewer needs **no** `centerpopClose` wiring (that's only for closing after a successful *form* submit — see Section-refresh).
