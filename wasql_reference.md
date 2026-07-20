@@ -74,6 +74,29 @@ $ok   = dbExecuteSQL('postgres_ods', $sql); // non-SELECT
 - **`renderView($name,$data)` exposes `$data` inside the view as `$params`** (the whole passed value — array, string, etc.). Access it as `$params['title']` etc., or rename it with the `-alias` opt (`renderView('addedit',$data,'row')` → `$row` in the view). There is also a `-format=>'addeditdbform'` opt that renders the view's `[fieldname]` layout as an `addEditDBForm` (pass `-table`).
 - **⚠️ `<view:>` blocks are only registered in `$VIEWS` during BODY rendering, NOT when the controller/functions run.** So a function that calls `getView('..._fields')` or `renderView(...)` must be invoked from the **body** (inside a `<view:>` block), not precomputed in the controller — calling too early throws `renderView Error: There is no view named X` and `getView` returns empty. Idiom: the controller just routes and `setView('form',1); return;`, and the body block builds it: `<view:form><?=pageAddEditForm($tab,$id);?></view:form>`. Grid/`databaseListRecords` builders that don't touch `getView` are fine to call from the controller.
 
+### Conditional views: prefer `renderViewIf`/`renderViewIfElse` over inline ternary HTML
+**Prefer a named `<view:>` + a conditional render over an inline `<?=$cond ? '<html…>' : '<html…>';?>` ternary.** The ternary crams two chunks of escaped HTML onto one line — unreadable and easy to break. A view keeps the markup as real, editable HTML and the branch as a one-liner. Exact signatures (verified in `php/common.php`):
+- `renderViewIf($cond, $view[, $params[, $opts]])` — renders `$view` when `$cond` is truthy, else returns `''`.
+- `renderViewIfElse($cond, $viewIf, $viewElse[, $params[, $opts]])` — renders `$viewIf` when truthy, otherwise `$viewElse`.
+- `$params` is the value exposed inside the view. **The trailing string arg is the alias — the variable name the passed data is bound to *inside* the view** (no leading `$`); default is `$params`. It's the same mechanism as `renderView`'s 3rd arg and `renderEach`'s loop-var name. So `renderViewIfElse($cond,'a','b',$info,'info')` → read `$info[key]` inside; `renderViewIfElse($cond,'a','b',$info,'rec')` → read `$rec[key]` inside (same data, different variable name). Whatever you pass as the data becomes that variable, so pass a sub-array (`$info['1st_counselor']`) when you want a generic view to read generic keys (`$info['picture']`).
+- To pass **extra keys** to a reused view (e.g. per-card `initials`/`avatar` for one generic `avatar` view), use the array form of `$opts`: `-alias` sets the variable name and any **dashless keys are merged into the params** (only when that key is empty in the data): `renderViewIfElse($cond,'leader_picture','avatar',$person,array('-alias'=>'info','initials'=>'B','avatar'=>'ward-avatar-bishop'))` → inside, `$info['picture']` (from `$person`) and `$info['initials']`/`$info['avatar']` (from opts).
+
+**Instead of** an inline ternary:
+```php
+<?=strlen($info['1st_counselor']['picture']) ? '<img src="'.encodeHtml($info['1st_counselor']['picture']).'" alt="">' : '<div class="ward-avatar ward-avatar-c1">1</div>';?>
+```
+**do** this:
+```php
+<view:leader_picture>
+  <img src="<?=encodeHtml($info['picture']);?>" alt="" onclick="wacss.showFilePreview(this);">
+</view:leader_picture>
+<view:avatar><div class="ward-avatar"><?=encodeHtml($info['initials']);?></div></view:avatar>
+
+<?=renderViewIfElse(strlen($info['1st_counselor']['picture']),'leader_picture','avatar',$info['1st_counselor'],'info');?>
+```
+- **⚠️ The closing tag MUST be the named form `</view:name>`, NOT a generic `</view>`.** The parser matches `<view:name>(.+?)</view:\1>` with a backreference (`php/common.php` ~L8043), so a bare `</view>` silently fails to register the block and you get `renderView Error: There is no view named X`.
+- **Reuse one generic view for many callers.** Because the alias renames the passed data, a single `<view:avatar>`/`<view:leader_picture>` can serve all four bishopric cards — pass each person as the params and let the view read `$info` (or whatever alias). Don't clone a near-identical view per card.
+
 ### `setView($name)` vs `setView($name, 1)`
 - **The second arg `1` clears all previously-set views**, making `$name` the only view rendered. `setView($name)` (no `1`) is **cumulative** — it ADDS to the list, so multiple `setView` calls render multiple views in order.
   ```php

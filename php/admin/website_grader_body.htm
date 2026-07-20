@@ -24,13 +24,19 @@
 </view:default>
 
 <view:result>
+<div data-onload="wacss.centerpopClose();">
 <?=websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$grader_error);?>
+</div>
 </view:result>
 
 <view:emailform>
+<div data-onload="wacss.centerpopClose();">
 <?=$email_form;?>
+</div>
 </view:emailform>
 
 <view:email_result>
+<div data-onload="wacss.centerpopClose();">
 <?=$email_status;?>
+</div>
 </view:email_result>
