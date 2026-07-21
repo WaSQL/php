@@ -18,7 +18,7 @@ $progpath=dirname(__FILE__);
 function zipCreate($files=array(),$zipfile='zipfile.zip'){
 	if(file_exists($zipfile)){unlink($zipfile);}
 	$zip = new ZipArchive;
-	if ($zip->open($zipfile,ZIPARCHIVE::CREATE) == TRUE) {
+	if ($zip->open($zipfile,ZIPARCHIVE::CREATE) === TRUE) {
 		foreach($files as $file){
 			//The 2nd parameter in addFile is the name of the file inside the zip
 			$filename=getFileName($file);
@@ -41,7 +41,7 @@ function zipCreate($files=array(),$zipfile='zipfile.zip'){
 */
 function zipPushData($files=array(),$zipfile='zipfile.zip'){
 	$zip = new ZipArchive;
-	if ($zip->open($zipfile) == TRUE) {
+	if ($zip->open($zipfile) === TRUE) {
 		foreach($files as $file){
 			//The 2nd parameter in addFile is the name of the file inside the zip
 			$filename=getFileName($file);
@@ -71,7 +71,7 @@ function zipExtract( $zipfile,$newpath=''){
     if(!strlen($newpath)){$newpath="{$zippath}/{$zipname}";}
 	$zip = new ZipArchive;
 	$files=array();
-	if ($zip->open($zipfile) == TRUE) {
+	if ($zip->open($zipfile) === TRUE) {
  		for ($i = 0; $i < $zip->numFiles; $i++) {
      		$file= $zip->statIndex($i);
      		if($file['size']==0){
@@ -112,7 +112,7 @@ function zipExtract( $zipfile,$newpath=''){
 function zipPushFile($zipfile, $filename) {
 	$content='';
 	$zip = new ZipArchive;
-	if ($zip->open($zipfile) == TRUE) {
+	if ($zip->open($zipfile) === TRUE) {
  		for ($i = 0; $i < $zip->numFiles; $i++) {
      		$file= $zip->statIndex($i);
      		if ($file['name']==$filename) {
@@ -141,7 +141,7 @@ function zipPushFile($zipfile, $filename) {
 function zipGetFileContents($zipfile, $filename) {
 	$content='';
 	$zip = new ZipArchive;
-	if ($zip->open($zipfile) == TRUE) {
+	if ($zip->open($zipfile) === TRUE) {
  		for ($i = 0; $i < $zip->numFiles; $i++) {
      		$file= $zip->statIndex($i);
      		if ($file['name']==$filename) {
@@ -165,7 +165,7 @@ function zipGetFileContents($zipfile, $filename) {
 function zipGetFileThumbnail($zipfile) {
 	$content='';
 	$zip = new ZipArchive;
-	if ($zip->open($zipfile) == TRUE) {
+	if ($zip->open($zipfile) === TRUE) {
  		for ($i = 0; $i < $zip->numFiles; $i++) {
      		$file= $zip->statIndex($i);
      		if (preg_match('/\.(jpg|png|jpeg|gif|svg)$/i',$file['name'])) {
@@ -212,7 +212,7 @@ function zipListFiles( $zipfile){
 	if(!file_exists($zipfile)){return false;}
 	$zip = new ZipArchive;
 	$files=array();
-	if ($zip->open($zipfile,ZipArchive::RDONLY) == true) {
+	if ($zip->open($zipfile,ZipArchive::RDONLY) === true) {
 		echo "zip:".printValue($zip);
 		$filecnt=$zip->numFiles;
 		echo "Filecnt:{$filecnt}<br>".PHP_EOL;
