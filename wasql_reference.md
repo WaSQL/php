@@ -155,10 +155,32 @@ Two signatures across the `buildForm*` family:
   }
   ```
 
-### `data-*` attributes (conditional show/hide/format)
-- `data-displayif="field:value"` / `data-readonlyif="..."` (very common) — conditional show / read-only, re-evaluated by `wacss.formChanged` (**the form's `onchange` must call `wacss.formChanged(this,event)`** or the fields never toggle). Value optional (bare = truthy), comma-separated = OR. **Requires the form to have a control literally named `field`.**
-  - **Plain field:** for a normal form field named `mood`, it is just `data-displayif="mood:curious"` — NOT `data>mood`.
-  - **Nested JSON field (the `scope>field` form):** the `>` addresses an attribute *inside* a JSON field. `data-displayif="data>send_email:Y"` means "the JSON field named `data` has attribute `send_email` == Y" — so `scope>attr` requires an actual JSON field named `scope` (commonly `data`, `account`, `meta`). For a flat field use the bare name.
+### `data-*` conditional attributes (show / hide / require / read-only)
+A field (or any wrapping element) can react to *other* fields' current values. Put the `data-*if` attribute on the element you want to affect; its value is a **condition string** referring to controls elsewhere in the same form. `wacss.formIsIfTrue(form, condition)` evaluates it. The family:
+
+| attribute | effect when the condition is **true** |
+|---|---|
+| `data-displayif` | element is **shown** (else `display:none`); fires `data-ondisplay`/`data-onhide` on transitions |
+| `data-hideif` | element is **hidden** (the inverse of displayif) |
+| `data-readonlyif` | inputs inside get `readonly` (and clicks blocked) |
+| `data-requiredif` | inputs inside get `required` |
+| `data-blankif` | inputs inside are blanked (value stashed in `data-blankx`, restored when false) |
+| `data-classif="cls:condition"` | toggles CSS class `cls` (first `:`-segment is the class, the rest is the condition) |
+
+**Condition grammar** (`wacss.formIsIfTrue`):
+- `field` — bare name, true when that control has a **non-empty value** (a "0" counts as present — it has length).
+- `field:value` — true when the control's value **==** `value`.
+- `field:a,b,c` — comma-separated list = **OR** (true if the value matches any).
+- Combine multiple clauses with ` and ` / ` && ` (all must hold) **or** ` or ` / ` || ` (any). Don't mix and/or in one string.
+- The referenced control must **exist in the form** and be literally named `field` (matched by `[name="field"]`, `[name="field[]"]`, or `[id="field"]`). Selects use the selected option's value; checkboxes/radios use checked values. If the named control is absent the clause is simply skipped (contributes nothing) — a frequent cause of "my condition never fires".
+  - **Plain field:** for a normal field named `mood`, use `data-displayif="mood:curious"` — NOT `data>mood`.
+  - **Nested JSON field (`scope>field`):** the `>` addresses an attribute *inside* a JSON field, because `addEditDBForm` names such inputs `scope>attr`. `data-displayif="data>send_email:Y"` needs an actual JSON field named `data` with sub-attribute `send_email`. For a flat field use the bare name.
+
+**When conditions are evaluated (timing):**
+- **On change** — the form must call `wacss.formChanged(this,event)` from its `onchange` (`addEditDBForm` wires this automatically; hand-built forms need `onchange="wacss.formChanged(this,event);"` or the fields never react to edits).
+- **On load** — `wacss.initFormConditionals()` runs one `formChanged` pass per form so the **initial** state is correct without touching anything. It is invoked from `wacss.init()` (full-page forms) and from the end of `wacss.initWacssEdit()` (which is the `data-onload` handler on `addEditDBForm` output, so AJAX-inserted forms — e.g. a centerpop edit — get it too). The on-load pass passes no event, so it never flags the form/centerpop as "changed".
+  - This is what makes the **`data-hideif="_id"` idiom** work: `addEditDBForm` emits a hidden `_id` field that is populated on **edit** and empty on **add**, so `data-hideif="_id"` hides a field (e.g. an auto-assigned `site_id`) on the edit form yet shows it when adding — correctly, right on load.
+  - ⚠️ Historically these only toggled on the *first change*; if you're on a site whose `wacss.js`/`wacss.min.js` predates `initFormConditionals`, the initial state won't apply until the user edits a field — rebuild/redeploy the bundle to pick up the on-load behavior.
 - `data-confirm` (confirm dialog), `data-format` (input formatting), `data-required` (conditional required), `data-toggle`/`data-target`, `data-tab`, `data-tip`/`data-tooltip`.
 
 ---

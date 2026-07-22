@@ -19785,7 +19785,22 @@ function isSpider($agent='',$return_name=0){
 		'yahoo!slurp','yammybot','yodaobot','yandexbot',
 		'webalta','WebCollage','wget',
 		'Yandex',
-		'zermelo','ZyBorg'
+		'zermelo','ZyBorg',
+		//--- modern AI / LLM crawlers (lowercase: matched against the lowercased agent) ---
+		'gptbot','oai-searchbot','chatgpt-user','claudebot','anthropic-ai','claude-web','claude-user','ccbot',
+		'perplexitybot','perplexity-user','bytespider','amazonbot','applebot','meta-externalagent','meta-externalfetcher',
+		'facebookbot','google-extended','cohere-ai','ai2bot','diffbot','omgili','omgilibot','youbot','imagesift',
+		'timpibot','webzio','friendlycrawler','pandalytics',
+		//--- SEO / analytics / commercial crawlers ---
+		'mj12bot','dotbot','semrushbot','ahrefsbot','dataforseobot','dataforseo','petalbot','petalsearch','mojeekbot',
+		'seznambot','barkrowler','yisouspider','zoominfobot','megaindex','linkdexbot','exabot','seokicks','turnitinbot',
+		'sitecheckerbotcrawler','screaming frog seo spider','awariobot','magpie-crawler','grapeshotcrawler','seostar',
+		//--- link-preview / social fetchers (not human page views) ---
+		'linkedinbot','slackbot','discordbot','telegrambot','whatsapp','pinterestbot','redditbot','embedly',
+		'flipboardproxy','skypeuripreview','vkshare','qwantify','w3c_validator',
+		//--- generic automation / scraping clients ---
+		'python-requests','python-urllib','scrapy','go-http-client','okhttp','node-fetch','axios','headlesschrome',
+		'phantomjs','libwww-perl','apache-httpclient','guzzlehttp','zgrab','masscan'
 		);
 	$bots_beginswith=array(
 		'BlackWidow','Bot mailto:craftbot@yahoo.com',
