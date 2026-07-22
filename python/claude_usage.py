@@ -61,9 +61,11 @@ def parse(root, since=None):
     user_msgs = 0
     assistant_msgs = 0
 
-    files = glob.glob(os.path.join(root, "*", "*.jsonl"))
+    files = glob.glob(os.path.join(root, "**", "*.jsonl"), recursive=True)
     for fp in files:
-        folder = os.path.basename(os.path.dirname(fp))
+        # first path segment under root is the project folder, even for
+        # nested subagent transcripts (root/<project>/<sessionId>/subagents/*.jsonl)
+        folder = os.path.relpath(fp, root).split(os.sep)[0]
         try:
             fh = open(fp, "r", encoding="utf-8", errors="replace")
         except OSError:
@@ -384,7 +386,7 @@ PAGE = r"""<!doctype html>
 <div class="wrap">
   <header>
     <div>
-      <h1>Claude Code Usage</h1>
+      <h1 id="title">Claude Code Usage</h1>
       <div class="sub" id="subtitle"></div>
     </div>
     <button class="toggle" onclick="toggleTheme()">&#9686; Theme</button>
@@ -463,6 +465,17 @@ const projShort = p => (p.replace(/^C--Users-[^-]+-?/,'~/').replace(/-/g,'/')) |
 let charts=[];
 function ink(){return {ink:cssv('--ink'),ink2:cssv('--ink2'),muted:cssv('--muted'),
   grid:cssv('--grid'),axis:cssv('--axis'),surface:cssv('--surface')};}
+
+function renderHeader(){
+  const projs=Object.keys(DATA.by_project);
+  if(projs.length===1){
+    const name=projShort(projs[0]);
+    document.title='Claude Usage — '+name;
+    document.getElementById('title').textContent='Claude Code Usage — '+name;
+  } else {
+    document.getElementById('title').textContent='Claude Code Usage — '+projs.length+' projects';
+  }
+}
 
 function renderTiles(){
   const t=DATA.totals, days=DATA.active_days||1;
@@ -578,7 +591,7 @@ function toggleTheme(){
   buildAll();
 }
 
-renderTiles(); renderTips(); renderTable(); buildAll();
+renderHeader(); renderTiles(); renderTips(); renderTable(); buildAll();
 </script>
 </body>
 </html>"""
@@ -612,12 +625,16 @@ def open_in_chrome(path):
     url = "file://" + os.path.abspath(path).replace("\\", "/")
     chrome = find_chrome()
     if chrome:
-        import subprocess
-        subprocess.Popen([chrome, url])
-        print("Opened in Chrome.")
-        return
+        try:
+            import subprocess
+            subprocess.Popen([chrome, url])
+            print("Opened in Chrome.")
+            return
+        except OSError as e:
+            print(f"Could not launch Chrome ({e}) -- falling back to your default browser.")
+    else:
+        print("Chrome not found -- opening your default browser instead.")
     webbrowser.open(url)
-    print("Chrome not found -- opened in your default browser.")
 
 
 # --------------------------------------------------------------------------- #
