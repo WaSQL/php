@@ -1126,8 +1126,10 @@ const wacss = {
 	* @usage wacss.formChanged();
 	*/
 	formChanged: function(frm,event){
+		//is this a real user-initiated change event? (vs. an initial on-load evaluation - see wacss.initFormConditionals)
+		let isChange = (typeof event === 'object' && typeof event.type === 'string' && event.type=='change');
 		//mark the element that changed
-		if (typeof event === 'object' && typeof event.type === 'string' && event.type=='change') {
+		if (isChange) {
 	        const changedElement = event.target || event.srcElement;
 	        if(changedElement.name){
 		        changedElement.dataset.wacss_changed=1;
@@ -1135,11 +1137,14 @@ const wacss = {
 	    }
 		let debug=0;
 		//check to see if we are in a centerpop. If so mark the wacss_centerpop_close that we have changed
-		let cpop=wacss.getParent(frm,'div','wacss_centerpop');
-		if(undefined != cpop){
-			let cpop_close=cpop.querySelector('.wacss_centerpop_close');
-			if(undefined != cpop_close){
-				cpop_close.dataset.formchanged=1;
+		//(only on an actual change - an initial on-load evaluation must not flag the popup as edited)
+		if(isChange){
+			let cpop=wacss.getParent(frm,'div','wacss_centerpop');
+			if(undefined != cpop){
+				let cpop_close=cpop.querySelector('.wacss_centerpop_close');
+				if(undefined != cpop_close){
+					cpop_close.dataset.formchanged=1;
+				}
 			}
 		}
 		//data-classif="w_red:age:4"
@@ -1305,6 +1310,26 @@ const wacss = {
 			}
 		}
 		return;
+	},
+	/**
+	* @name wacss.initFormConditionals
+	* @describe evaluates data-displayif/hideif/readonlyif/requiredif/blankif/classif on load so the
+	*           initial state is correct without waiting for the first onchange. Runs wacss.formChanged
+	*           (with no event, so nothing is flagged as changed) once per form that uses these attributes.
+	* @param root [element] - optional scope to search within (defaults to document); pass a container to
+	*           init just-inserted (e.g. AJAX-loaded) forms.
+	* @return void
+	* @usage wacss.initFormConditionals();  //or wacss.initFormConditionals(myLoadedDiv);
+	*/
+	initFormConditionals: function(root){
+		let scope = (undefined != root && root.querySelectorAll) ? root : document;
+		let forms = scope.querySelectorAll('form');
+		for(let i=0;i<forms.length;i++){
+			//only touch forms that actually use conditional attributes
+			if(forms[i].querySelector('[data-displayif],[data-hideif],[data-readonlyif],[data-requiredif],[data-blankif],[data-classif]')){
+				try{wacss.formChanged(forms[i],{});}catch(e){}
+			}
+		}
 	},
 	/**
 	* @name wacss.formFileUploadInit
@@ -3589,6 +3614,7 @@ const wacss = {
 		/*wacssedit*/
 		try{wacss.initOnloads();}catch(e){}
 		try{wacss.initWacssEdit();}catch(e){}
+		try{wacss.initFormConditionals();}catch(e){}
 		try{wacss.initChartJs();}catch(e){}
 		try{wacss.initTabs();}catch(e){}
 		try{wacss.initCodeMirror();}catch(e){}
@@ -7016,6 +7042,9 @@ const wacss = {
 			};
 		}
 		wacss.initWacssEditElements();
+		//evaluate form conditionals (data-hideif/displayif/...) on load - covers AJAX-inserted forms
+		//whose data-onload runs initWacssEdit after insertion
+		try{wacss.initFormConditionals();}catch(e){}
 	},
 	/**
 	* @name wacss.initWacssEditElements
