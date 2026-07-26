@@ -101,7 +101,7 @@ def load_env_file(env_file='.env'):
     if not path.exists():
         return
 
-    with path.open(encoding='utf-8') as f:
+    with path.open(encoding='utf-8-sig') as f:
         for line in f:
             line = line.rstrip('\n')
 
@@ -941,7 +941,9 @@ def find_migrations(migrations_dir):
 
     def _read(filepath):
         try:
-            return filepath.read_text(encoding='utf-8')
+            # utf-8-sig transparently drops a leading BOM (common when files are
+            # written by PowerShell/Windows editors) so '-- migrate:up' still matches
+            return filepath.read_text(encoding='utf-8-sig')
         except UnicodeDecodeError:
             sys.exit(f"Cannot read {filepath.name}: file is not valid UTF-8.")
 
@@ -1947,7 +1949,7 @@ def cmd_dbs():
     for filename, db_name in env_files:
         env_vars = {}
         path = Path(filename)
-        with path.open(encoding='utf-8') as fh:
+        with path.open(encoding='utf-8-sig') as fh:
             for line in fh:
                 line = line.rstrip('\n')
                 line = re.sub(r'^\s*export\s+', '', line)
