@@ -9059,6 +9059,7 @@ function getDBCharset(){
 */
 function getDBCount($params=array()){
 	global $CONFIG;
+	if(!is_array($params)){$params=array('-table'=>$params);}
 	if(isPostgreSQL()){return postgresqlGetDBCount($params);}
 	elseif(isSqlite()){return sqliteGetDBCount($params);}
 	elseif(isOracle()){return oracleGetDBCount($params);}

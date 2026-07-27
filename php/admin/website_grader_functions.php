@@ -47,6 +47,7 @@ function websiteGraderFetch($url){
 		'http_code'=>isset($info['http_code'])?$info['http_code']:0,
 		'content_type'=>isset($info['content_type'])?$info['content_type']:'',
 		'final_url'=>isset($info['url']) && strlen($info['url'])?$info['url']:$url,
+		'headers'=>isset($post['headers']) && is_array($post['headers'])?$post['headers']:array(),
 		'error'=>isset($post['error'])?$post['error']:''
 	);
 }
@@ -170,7 +171,7 @@ function websiteGraderCrawl($starturl,$maxpages){
 	$finalurl=websiteGraderCanonicalURL($finalurl);
 	$pages=array();
 	$visited=array();
-	$pages[$finalurl]=array('url'=>$finalurl,'body'=>$start['body']);
+	$pages[$finalurl]=array('url'=>$finalurl,'body'=>$start['body'],'headers'=>$start['headers']);
 	$visited[$finalurl]=1;
 	$queue=websiteGraderExtractLinks($start['body'],$finalurl,$baseurl,$host);
 	while(count($pages) < $maxpages && count($queue)){
@@ -180,7 +181,7 @@ function websiteGraderCrawl($starturl,$maxpages){
 		$res=websiteGraderFetch($url);
 		if($res['http_code'] < 200 || $res['http_code'] >= 400){continue;}
 		if(!preg_match('/html/i',$res['content_type']) && !preg_match('/<html/i',$res['body'])){continue;}
-		$pages[$url]=array('url'=>$url,'body'=>$res['body']);
+		$pages[$url]=array('url'=>$url,'body'=>$res['body'],'headers'=>$res['headers']);
 		if(count($pages) >= $maxpages){break;}
 		$newlinks=websiteGraderExtractLinks($res['body'],$url,$baseurl,$host);
 		foreach($newlinks as $l){
@@ -501,14 +502,204 @@ function websiteGraderCategoryGrade($checks,$cat){
 	return array('percent'=>$pct,'pass'=>$pass,'total'=>$total);
 }
 
+//---------- technology detection ----------
+
+/**
+ * @describe signature list used to fingerprint the technology stack of a crawled site
+ *   (CMS, e-commerce, JS framework, analytics, CDN, server, language, etc.) - a lightweight,
+ *   built-in equivalent of what BuiltWith/Wappalyzer report, based only on the page bodies
+ *   and response headers already gathered during the crawl (no external API calls).
+ * @return array of [category,name,type(body|header),header,pattern]
+ */
+function websiteGraderTechSignatures(){
+	return array(
+		//--- CMS / Platform ---
+		array('category'=>'CMS','name'=>'WordPress','type'=>'body','pattern'=>'#/wp-content/|/wp-includes/|<meta[^>]+name=["\']generator["\'][^>]+content=["\']WordPress#i'),
+		array('category'=>'CMS','name'=>'Drupal','type'=>'body','pattern'=>'#Drupal\.settings|/sites/default/files/|<meta[^>]+name=["\']generator["\'][^>]+content=["\']Drupal#i'),
+		array('category'=>'CMS','name'=>'Joomla','type'=>'body','pattern'=>'#/media/jui/|<meta[^>]+name=["\']generator["\'][^>]+content=["\']Joomla#i'),
+		array('category'=>'CMS','name'=>'Wix','type'=>'body','pattern'=>'#static\.wixstatic\.com|wix\.com/service-pages#i'),
+		array('category'=>'CMS','name'=>'Squarespace','type'=>'body','pattern'=>'#squarespace\.com|static1\.squarespace\.com#i'),
+		array('category'=>'CMS','name'=>'Webflow','type'=>'body','pattern'=>'#assets-global\.website-files\.com|data-wf-site=|data-wf-page=#i'),
+		array('category'=>'CMS','name'=>'Ghost','type'=>'body','pattern'=>'#<meta[^>]+name=["\']generator["\'][^>]+content=["\']Ghost#i'),
+		array('category'=>'CMS','name'=>'HubSpot CMS','type'=>'body','pattern'=>'#hs-scripts\.com|hs-banner\.com|hubspot\.net/cta/#i'),
+		array('category'=>'CMS','name'=>'Contentful','type'=>'body','pattern'=>'#images\.ctfassets\.net#i'),
+		//--- E-commerce ---
+		array('category'=>'Ecommerce','name'=>'Shopify','type'=>'body','pattern'=>'#cdn\.shopify\.com|Shopify\.theme|shopify-section#i'),
+		array('category'=>'Ecommerce','name'=>'WooCommerce','type'=>'body','pattern'=>'#/plugins/woocommerce/|woocommerce-#i'),
+		array('category'=>'Ecommerce','name'=>'Magento','type'=>'body','pattern'=>'#Mage\.Cookies|/skin/frontend/|Magento_#i'),
+		array('category'=>'Ecommerce','name'=>'BigCommerce','type'=>'body','pattern'=>'#cdn\d*\.bigcommerce\.com#i'),
+		//--- JS Framework ---
+		array('category'=>'JS Framework','name'=>'Next.js','type'=>'body','pattern'=>'#__NEXT_DATA__|/_next/static/#i'),
+		array('category'=>'JS Framework','name'=>'Nuxt.js','type'=>'body','pattern'=>'#__NUXT__|/_nuxt/#i'),
+		array('category'=>'JS Framework','name'=>'React','type'=>'body','pattern'=>'#data-reactroot|react-dom(\.production|\.min)?\.js#i'),
+		array('category'=>'JS Framework','name'=>'Vue.js','type'=>'body','pattern'=>'#\bvue(\.runtime)?(\.min)?\.js\b|data-v-[0-9a-f]{6,}#i'),
+		array('category'=>'JS Framework','name'=>'Angular','type'=>'body','pattern'=>'#\bng-version\s*=|\bangular(\.min)?\.js\b#i'),
+		array('category'=>'JS Framework','name'=>'Svelte','type'=>'body','pattern'=>'#__svelte|svelte-[a-z0-9]{6,}#i'),
+		//--- JS Library ---
+		array('category'=>'JS Library','name'=>'jQuery','type'=>'body','pattern'=>'#jquery(\-[\d\.]+)?(\.min)?\.js#i'),
+		array('category'=>'JS Library','name'=>'Alpine.js','type'=>'body','pattern'=>'#alpinejs|\bx-data\s*=#i'),
+		array('category'=>'JS Library','name'=>'GSAP','type'=>'body','pattern'=>'#gsap(\.min)?\.js#i'),
+		//--- CSS Framework ---
+		array('category'=>'CSS Framework','name'=>'Bootstrap','type'=>'body','pattern'=>'#bootstrap(\.min)?\.css|bootstrap(\.bundle)?(\.min)?\.js#i'),
+		array('category'=>'CSS Framework','name'=>'Tailwind CSS','type'=>'body','pattern'=>'#tailwind(\.min)?\.css|tailwindcss#i'),
+		array('category'=>'CSS Framework','name'=>'Bulma','type'=>'body','pattern'=>'#bulma(\.min)?\.css#i'),
+		array('category'=>'CSS Framework','name'=>'Foundation','type'=>'body','pattern'=>'#foundation(\.min)?\.css#i'),
+		//--- Analytics & Tracking ---
+		array('category'=>'Analytics','name'=>'Google Analytics (GA4)','type'=>'body','pattern'=>'#googletagmanager\.com/gtag/js|gtag\(\s*[\'"]config[\'"]#i'),
+		array('category'=>'Analytics','name'=>'Google Universal Analytics','type'=>'body','pattern'=>'#google-analytics\.com/analytics\.js|ga\(\s*[\'"]create[\'"]#i'),
+		array('category'=>'Analytics','name'=>'Meta / Facebook Pixel','type'=>'body','pattern'=>'#connect\.facebook\.net/[^"\']*/fbevents\.js#i'),
+		array('category'=>'Analytics','name'=>'Hotjar','type'=>'body','pattern'=>'#static\.hotjar\.com#i'),
+		array('category'=>'Analytics','name'=>'Segment','type'=>'body','pattern'=>'#cdn\.segment\.com#i'),
+		array('category'=>'Analytics','name'=>'Mixpanel','type'=>'body','pattern'=>'#cdn\.mxpnl\.com#i'),
+		array('category'=>'Analytics','name'=>'Microsoft Clarity','type'=>'body','pattern'=>'#clarity\.ms/tag#i'),
+		//--- Tag Manager ---
+		array('category'=>'Tag Manager','name'=>'Google Tag Manager','type'=>'body','pattern'=>'#googletagmanager\.com/gtm\.js#i'),
+		//--- CDN ---
+		array('category'=>'CDN','name'=>'Cloudflare','type'=>'header','header'=>'server','pattern'=>'#cloudflare#i'),
+		array('category'=>'CDN','name'=>'Cloudflare','type'=>'header','header'=>'cf-ray','pattern'=>'#.#'),
+		array('category'=>'CDN','name'=>'Fastly','type'=>'header','header'=>'x-served-by','pattern'=>'#fastly#i'),
+		array('category'=>'CDN','name'=>'Amazon CloudFront','type'=>'header','header'=>'via','pattern'=>'#cloudfront#i'),
+		array('category'=>'CDN','name'=>'Akamai','type'=>'header','header'=>'server','pattern'=>'#akamaighost#i'),
+		//--- Hosting / PaaS ---
+		array('category'=>'Hosting','name'=>'Vercel','type'=>'header','header'=>'server','pattern'=>'#vercel#i'),
+		array('category'=>'Hosting','name'=>'Vercel','type'=>'header','header'=>'x-vercel-id','pattern'=>'#.#'),
+		array('category'=>'Hosting','name'=>'Netlify','type'=>'header','header'=>'server','pattern'=>'#netlify#i'),
+		array('category'=>'Hosting','name'=>'GitHub Pages','type'=>'header','header'=>'server','pattern'=>'#github\.com#i'),
+		array('category'=>'Hosting','name'=>'WP Engine','type'=>'header','header'=>'x-powered-by','pattern'=>'#wp\s*engine#i'),
+		//--- Web Server ---
+		array('category'=>'Web Server','name'=>'Nginx','type'=>'header','header'=>'server','pattern'=>'#nginx#i'),
+		array('category'=>'Web Server','name'=>'Apache','type'=>'header','header'=>'server','pattern'=>'#apache#i'),
+		array('category'=>'Web Server','name'=>'Microsoft-IIS','type'=>'header','header'=>'server','pattern'=>'#microsoft-iis#i'),
+		array('category'=>'Web Server','name'=>'LiteSpeed','type'=>'header','header'=>'server','pattern'=>'#litespeed#i'),
+		//--- Programming Language ---
+		array('category'=>'Language','name'=>'PHP','type'=>'header','header'=>'x-powered-by','pattern'=>'#php#i'),
+		array('category'=>'Language','name'=>'PHP','type'=>'header','header'=>'set-cookie','pattern'=>'#PHPSESSID#i'),
+		array('category'=>'Language','name'=>'ASP.NET','type'=>'header','header'=>'x-powered-by','pattern'=>'#asp\.net#i'),
+		array('category'=>'Language','name'=>'ASP.NET','type'=>'header','header'=>'x-aspnet-version','pattern'=>'#.#'),
+		array('category'=>'Language','name'=>'ASP.NET','type'=>'header','header'=>'set-cookie','pattern'=>'#ASP\.NET_SessionId#i'),
+		array('category'=>'Language','name'=>'Express (Node.js)','type'=>'header','header'=>'x-powered-by','pattern'=>'#express#i'),
+		//--- Fonts ---
+		array('category'=>'Font','name'=>'Google Fonts','type'=>'body','pattern'=>'#fonts\.googleapis\.com|fonts\.gstatic\.com#i'),
+		array('category'=>'Font','name'=>'Font Awesome','type'=>'body','pattern'=>'#font-?awesome#i'),
+		array('category'=>'Font','name'=>'Adobe Fonts (Typekit)','type'=>'body','pattern'=>'#use\.typekit\.net#i'),
+		//--- Chat / Support Widget ---
+		array('category'=>'Widget','name'=>'Intercom','type'=>'body','pattern'=>'#widget\.intercom\.io#i'),
+		array('category'=>'Widget','name'=>'Drift','type'=>'body','pattern'=>'#js\.driftt\.com#i'),
+		array('category'=>'Widget','name'=>'Zendesk Chat','type'=>'body','pattern'=>'#static\.zdassets\.com#i'),
+		array('category'=>'Widget','name'=>'Crisp','type'=>'body','pattern'=>'#client\.crisp\.chat#i'),
+		array('category'=>'Widget','name'=>'Tawk.to','type'=>'body','pattern'=>'#embed\.tawk\.to#i'),
+		//--- Payment ---
+		array('category'=>'Payment','name'=>'Stripe','type'=>'body','pattern'=>'#js\.stripe\.com#i'),
+		array('category'=>'Payment','name'=>'PayPal','type'=>'body','pattern'=>'#paypal\.com/sdk/js#i')
+	);
+}
+
+/**
+ * @describe fingerprint the technology stack of the crawled site (CMS, e-commerce, JS
+ *   framework/library, CSS framework, analytics, tag manager, CDN, hosting, web server,
+ *   language, fonts, chat widgets, payment) by matching page bodies + response headers
+ *   against websiteGraderTechSignatures(). No external API is called.
+ * @param pages array of [url,body,headers], robots string
+ * @return array category => array of technology names (deduped, unsorted)
+ */
+function websiteGraderDetectTech($pages,$robots){
+	$body='';
+	$headerlist=array();
+	foreach($pages as $p){
+		if(isset($p['body'])){$body.="\n".$p['body'];}
+		if(isset($p['headers']) && is_array($p['headers'])){$headerlist[]=$p['headers'];}
+	}
+	$body.="\n".$robots;
+	$found=array();
+	foreach(websiteGraderTechSignatures() as $sig){
+		$hit=false;
+		if($sig['type']=='body'){
+			if(preg_match($sig['pattern'],$body)){$hit=true;}
+		}
+		else{
+			foreach($headerlist as $headers){
+				if(!isset($headers[$sig['header']])){continue;}
+				$val=$headers[$sig['header']];
+				if(is_array($val)){$val=implode(' ',$val);}
+				if(preg_match($sig['pattern'],$val)){$hit=true;break;}
+			}
+		}
+		if(!$hit){continue;}
+		if(!isset($found[$sig['category']])){$found[$sig['category']]=array();}
+		if(!in_array($sig['name'],$found[$sig['category']])){$found[$sig['category']][]=$sig['name'];}
+	}
+	return $found;
+}
+
+/**
+ * @describe display order + labels for technology categories.
+ * @return array key => label
+ */
+function websiteGraderTechCategories(){
+	return array(
+		'CMS'=>'CMS / Platform',
+		'Ecommerce'=>'E-commerce',
+		'JS Framework'=>'JavaScript Framework',
+		'JS Library'=>'JavaScript Library',
+		'CSS Framework'=>'CSS Framework',
+		'Analytics'=>'Analytics &amp; Tracking',
+		'Tag Manager'=>'Tag Manager',
+		'CDN'=>'CDN',
+		'Hosting'=>'Hosting / PaaS',
+		'Web Server'=>'Web Server',
+		'Language'=>'Programming Language',
+		'Font'=>'Fonts',
+		'Widget'=>'Chat / Support Widget',
+		'Payment'=>'Payment'
+	);
+}
+
+/**
+ * @describe render the detected-technology table (BuiltWith-style): one row per category
+ *   with the technology name(s) found, ordered by websiteGraderTechCategories().
+ * @param tech array category => array of names (from websiteGraderDetectTech)
+ * @return string HTML
+ */
+function websiteGraderRenderTechTable($tech){
+	$rtn='<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-globe"></span> Technology Detected</div>'.PHP_EOL;
+	$rtn.='<div class="w_small w_gray" style="margin-bottom:8px;">Based on the crawled pages\' HTML, scripts, and response headers &mdash; a lightweight, built-in equivalent of BuiltWith/Wappalyzer (may miss things only a live JS-execution scanner would catch).</div>'.PHP_EOL;
+	$any=false;
+	foreach(websiteGraderTechCategories() as $cat=>$label){if(isset($tech[$cat]) && count($tech[$cat])){$any=true;break;}}
+	if(!$any){
+		return $rtn.'<div class="w_gray" style="padding:8px 0;">No specific technology signatures were detected on this site.</div>';
+	}
+	$rtn.='<div class="wg_tablewrap"><table class="wacss_table is-bordered is-striped is-narrow" style="width:100%;">'.PHP_EOL;
+	$rtn.='<thead><tr><th style="width:26%;">Category</th><th>Technology</th></tr></thead><tbody>'.PHP_EOL;
+	foreach(websiteGraderTechCategories() as $cat=>$label){
+		if(!isset($tech[$cat]) || !count($tech[$cat])){continue;}
+		$names=$tech[$cat];
+		sort($names);
+		$rtn.='<tr><td>'.$label.'</td><td>'.encodeHtml(implode(', ',$names)).'</td></tr>'.PHP_EOL;
+	}
+	$rtn.='</tbody></table></div>'.PHP_EOL;
+	return $rtn;
+}
+
+/**
+ * @describe total count of distinct technologies detected across all categories (used for
+ *   the Technology tab's pill badge).
+ * @param tech array category => array of names
+ * @return int
+ */
+function websiteGraderTechCount($tech){
+	$n=0;
+	if(is_array($tech)){foreach($tech as $names){$n+=count($names);}}
+	return $n;
+}
+
 //---------- output builders ----------
 
 /**
- * @describe FORM 1 (report card): grade hero + social preview + all checks (Pass/Fail) + AI prompt panel.
- * @param grade array, checks array, social array, baseurl string, pages array, error string
+ * @describe FORM 1 (report card): grade hero + social preview + all checks (Pass/Fail) + technology + AI prompt panel.
+ * @param grade array, checks array, social array, baseurl string, pages array, tech array, error string
  * @return string HTML
  */
-function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$error=''){
+function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error=''){
 	if(strlen($error)){
 		return '<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> '.encodeHtml($error).'</div>';
 	}
@@ -540,7 +731,7 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$erro
 	$rtn.='<div class="w_bigger w_bold w_gray">Scanned <span class="w_dblue">'.htmlspecialchars($baseurl).'</span></div>'.PHP_EOL;
 	$rtn.='<div class="w_gray" style="margin-bottom:8px;">Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site.</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
-	$rtn.='<div style="flex:0 0 auto;">'.websiteGraderEmailButton().'</div>'.PHP_EOL;
+	$rtn.='<div style="flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;">'.websiteGraderEmailButton().websiteGraderDownloadButton().'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
 	$rtn.='<details style="margin-bottom:10px;"><summary class="w_link w_pointer">Pages crawled ('.$cnt.')</summary><div class="w_small" style="padding:6px 0 0 12px;">';
 	foreach($pages as $p){$rtn.=websiteGraderPageLink($p['url']).'<br />'.PHP_EOL;}
@@ -549,11 +740,12 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$erro
 	$rtn.=websiteGraderRenderGradeHero($grade,$checks);
 	//tabbed sections
 	$rtn.='<div class="wg_tabwrapper">'.PHP_EOL;
-	$rtn.=websiteGraderRenderTabNav($checks);
+	$rtn.=websiteGraderRenderTabNav($checks,$tech);
 	$rtn.='<div class="wg_panel" id="wg_seo">'.websiteGraderRenderChecksTable($checks,'SEO','SEO &mdash; Page Checks').'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_social" style="display:none;">'.websiteGraderRenderChecksTable($checks,'Social','Social / Open Graph').'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_aio" style="display:none;">'.websiteGraderRenderChecksTable($checks,'AIO','AI Optimization (AIO)').'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_misc" style="display:none;">'.websiteGraderRenderChecksTable($checks,'Misc','Misc / Technical').'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_tech" style="display:none;">'.websiteGraderRenderTechTable($tech).'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_preview" style="display:none;">'.websiteGraderRenderSocialPreview($social).'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_ai" style="display:none;">'.websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social).'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;//.wg_tabwrapper
@@ -564,15 +756,16 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$erro
 /**
  * @describe render the tab bar. Each tab shows/hides its panel client-side (no re-crawl) and
  *   uses wacss.setActiveTab for the active-class handling.
- * @param checks array
+ * @param checks array, tech array
  * @return string HTML
  */
-function websiteGraderRenderTabNav($checks){
+function websiteGraderRenderTabNav($checks,$tech=array()){
 	$tabs=array(
 		array('id'=>'wg_seo','label'=>'SEO','cat'=>'SEO'),
 		array('id'=>'wg_social','label'=>'Open Graph','cat'=>'Social'),
 		array('id'=>'wg_aio','label'=>'AIO','cat'=>'AIO'),
 		array('id'=>'wg_misc','label'=>'Technical','cat'=>'Misc'),
+		array('id'=>'wg_tech','label'=>'Technology','cat'=>''),
 		array('id'=>'wg_preview','label'=>'Preview','cat'=>''),
 		array('id'=>'wg_ai','label'=>'Fix with AI','cat'=>'')
 	);
@@ -585,6 +778,12 @@ function websiteGraderRenderTabNav($checks){
 			$cg=websiteGraderCategoryGrade($checks,$t['cat']);
 			if($cg['total'] > 0){
 				$pill=' <span class="wg_tabpill" style="background:'.websiteGraderGradeColor($cg['percent']).';">'.$cg['percent'].'%</span>';
+			}
+		}
+		elseif($t['id']=='wg_tech'){
+			$tcount=websiteGraderTechCount($tech);
+			if($tcount > 0){
+				$pill=' <span class="wg_tabpill" style="background:#5a6472;">'.$tcount.'</span>';
 			}
 		}
 		$onclick="var r=this.closest('.wg_tabwrapper');r.querySelectorAll('.wg_panel').forEach(function(p){p.style.display='none';});var t=r.querySelector('#".$t['id']."');if(t){t.style.display='';}return wacss.setActiveTab(this);";
@@ -1042,12 +1241,60 @@ function websiteGraderEmailButton(){
 }
 
 /**
- * @describe stash the just-computed report in the session so the email step can rebuild it
- *   without re-crawling (guarantees the emailed report matches what is on screen).
- * @param baseurl string, checks array, grade array, social array, pages array of [url,body]
+ * @describe render the "Download Report" button shown next to Email Report. It links straight
+ *   to func=download - a plain navigation (not AJAX), so the browser's native file-download
+ *   flow (Content-Disposition: attachment, via pushFile) handles the save.
+ * @return string HTML
+ */
+function websiteGraderDownloadButton(){
+	return '<a href="/php/admin.php?_menu=website_grader&func=download" class="wacss_button is-small" title="Download the full report as a zip file"><span class="icon-download"></span> Download Report</a>';
+}
+
+/**
+ * @describe build the full report (report.html, plus fixes.md when there are failing checks)
+ *   from the session-stashed result, zip it, and push the zip to the browser as a download.
+ *   Named so it identifies the site and the date the report was generated. Exits via pushFile.
+ * @return void (exits)
+ */
+function websiteGraderDownloadReport(){
+	if(!isset($_SESSION['websiteGraderReport']['baseurl'])){
+		header('Content-type: text/plain');
+		echo 'No report is loaded. Run a site check first, then download the report.';
+		exit;
+	}
+	$rep=$_SESSION['websiteGraderReport'];
+	$host=parse_url($rep['baseurl'],PHP_URL_HOST);
+	$safehost=preg_replace('/[^a-z0-9\.\-]+/i','-',(string)$host);
+	$safehost=trim($safehost,'-');
+	if(!strlen($safehost)){$safehost='site';}
+	$zipname="{$safehost}-seo-aio-report-".date('Y-m-d').'.zip';
+	$zippath=rtrim(sys_get_temp_dir(),'/\\').DIRECTORY_SEPARATOR.'seo-aio-report-'.$safehost.'-'.getmypid().'-'.mt_rand(1000,9999).'.zip';
+	$zip=new ZipArchive();
+	if($zip->open($zippath,ZipArchive::CREATE|ZipArchive::OVERWRITE)!==true){
+		header('Content-type: text/plain');
+		echo 'Could not build the report zip.';
+		exit;
+	}
+	$reporthtml=websiteGraderEmailHTML($rep);
+	$reportdoc='<!doctype html>'.PHP_EOL.'<html><head><meta charset="utf-8" /><title>SEO &amp; AIO Report: '.encodeHtml((string)$host).'</title></head><body style="margin:0;padding:20px;background:#fff;">'.PHP_EOL.$reporthtml.'</body></html>';
+	$zip->addFromString('report.html',$reportdoc);
+	if(websiteGraderHasFailures($rep['checks'])){
+		$prompt=websiteGraderAIPrompt($rep['baseurl'],$rep['pages'],$rep['checks'],$rep['grade'],$rep['social']);
+		$zip->addFromString('fixes.md',$prompt);
+	}
+	$zip->close();
+	pushFile($zippath,array('-filename'=>$zipname,'-ctype'=>'application/zip','-destroy'=>1));
+	exit;
+}
+
+/**
+ * @describe stash the just-computed report in the session so the email/download steps can
+ *   rebuild it without re-crawling (guarantees the emailed/downloaded report matches what is
+ *   on screen).
+ * @param baseurl string, checks array, grade array, social array, pages array of [url,body], tech array
  * @return void
  */
-function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages){
+function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array()){
 	$urls=array();
 	foreach($pages as $p){if(isset($p['url'])){$urls[]=$p['url'];}}
 	$_SESSION['websiteGraderReport']=array(
@@ -1056,6 +1303,7 @@ function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages){
 		'grade'=>$grade,
 		'social'=>$social,
 		'pages'=>$urls,
+		'tech'=>$tech,
 		'when'=>date('M j, Y g:i a')
 	);
 	return;
@@ -1278,6 +1526,20 @@ function websiteGraderEmailHTML($rep,$note='',$fromname=''){
 			$h.='<li style="margin-bottom:3px;">'.encodeHtml($sl).'</li>';
 		}
 		$h.='</ul>'.PHP_EOL;
+	}
+	//technology detected
+	$tech=isset($rep['tech']) && is_array($rep['tech'])?$rep['tech']:array();
+	$techrows='';
+	foreach(websiteGraderTechCategories() as $cat=>$catlabel){
+		if(!isset($tech[$cat]) || !count($tech[$cat])){continue;}
+		$names=$tech[$cat];
+		sort($names);
+		$plaincat=trim(html_entity_decode(preg_replace('/&amp;/','&',$catlabel),ENT_QUOTES));
+		$techrows.='<tr><td style="padding:4px 8px 4px 0;font-weight:600;color:#1d2129;border-bottom:1px solid #eef0f2;">'.encodeHtml($plaincat).'</td><td style="padding:4px 0;color:#4a5560;border-bottom:1px solid #eef0f2;">'.encodeHtml(implode(', ',$names)).'</td></tr>';
+	}
+	if(strlen($techrows)){
+		$h.='<div style="font-size:16px;font-weight:700;margin:18px 0 6px;">Technology detected</div>'.PHP_EOL;
+		$h.='<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;">'.$techrows.'</table>'.PHP_EOL;
 	}
 	//footer
 	$h.='<div style="border-top:1px solid #e6e8eb;margin-top:18px;padding-top:10px;color:#8a9099;font-size:12px;">';
