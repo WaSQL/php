@@ -306,4 +306,229 @@ function sqlpromptPaginate(offset){
 	document.sqlprompt.offset.value=0;
 	return false;
 }
+/**
+* @name sqlpromptFormatSQL
+* @describe reformats the SQL in the editor: indents clauses, uppercases keywords/functions, lowercases identifiers
+* @return boolean false
+* @usage onclick="return sqlpromptFormatSQL();"
+*/
+var sqlpromptFormatSQL=(function(){
+	var KEYWORDS=new Set((
+		'SELECT FROM WHERE GROUP BY ORDER HAVING LIMIT OFFSET '+
+		'INSERT INTO VALUES UPDATE SET DELETE REPLACE '+
+		'JOIN INNER LEFT RIGHT FULL OUTER CROSS ON USING '+
+		'AND OR NOT IN IS NULL LIKE BETWEEN EXISTS ALL ANY SOME '+
+		'UNION EXCEPT INTERSECT DISTINCT AS '+
+		'CASE WHEN THEN ELSE END '+
+		'CREATE TABLE VIEW INDEX DROP ALTER ADD COLUMN PRIMARY KEY FOREIGN REFERENCES '+
+		'DEFAULT UNIQUE CONSTRAINT CASCADE '+
+		'ASC DESC '+
+		'BEGIN COMMIT ROLLBACK TRANSACTION '+
+		'WITH RECURSIVE '+
+		'TRUE FALSE'
+	).split(/\s+/));
+	var FUNCTION_HINT=new Set((
+		'COUNT SUM AVG MIN MAX NOW DATE_FORMAT CONCAT CONCAT_WS IFNULL COALESCE '+
+		'CAST CONVERT SUBSTRING SUBSTR LENGTH TRIM LTRIM RTRIM UPPER LOWER '+
+		'ROUND FLOOR CEIL CEILING ABS IF GROUP_CONCAT DATEDIFF DATE_ADD DATE_SUB '+
+		'CURDATE CURTIME UNIX_TIMESTAMP FROM_UNIXTIME YEAR MONTH DAY HOUR MINUTE SECOND '+
+		'REPLACE LOCATE INSTR LEFT RIGHT REVERSE REPEAT LPAD RPAD FORMAT'
+	).split(/\s+/));
+	var CLAUSE_START=new Set(['SELECT','FROM','WHERE','GROUP BY','ORDER BY','HAVING','LIMIT',
+		'INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','UNION','UNION ALL','EXCEPT','INTERSECT',
+		'JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL JOIN','FULL OUTER JOIN','LEFT OUTER JOIN',
+		'RIGHT OUTER JOIN','CROSS JOIN']);
+	//clauses whose comma-separated items each get their own indented line
+	var BREAK_LIST_CLAUSES=new Set(['SELECT','SET','VALUES','INSERT INTO']);
+
+	function tokenize(sql){
+		var re=/(--[^\n]*)|(\/\*[\s\S]*?\*\/)|('(?:[^'\\]|\\.)*')|("(?:[^"\\]|\\.)*")|(`(?:[^`]|``)*`)|([A-Za-z_][A-Za-z0-9_]*)|([0-9]+\.?[0-9]*)|(\s+)|(.)/g;
+		var tokens=[],m;
+		while((m=re.exec(sql))!==null){
+			if(m[1]!==undefined){tokens.push({type:'comment',v:m[1]});}
+			else if(m[2]!==undefined){tokens.push({type:'comment',v:m[2]});}
+			else if(m[3]!==undefined){tokens.push({type:'string',v:m[3]});}
+			else if(m[4]!==undefined){tokens.push({type:'string',v:m[4]});}
+			else if(m[5]!==undefined){tokens.push({type:'ident_q',v:m[5]});}
+			else if(m[6]!==undefined){tokens.push({type:'word',v:m[6]});}
+			else if(m[7]!==undefined){tokens.push({type:'number',v:m[7]});}
+			else if(m[8]!==undefined){tokens.push({type:'space',v:m[8]});}
+			else{tokens.push({type:'punct',v:m[9]});}
+		}
+		return tokens;
+	}
+
+	function formatSQL(sql){
+		sql=sql.trim();
+		if(!sql.length){return sql;}
+		var tokens=tokenize(sql).filter(function(t){return t.type!=='space';});
+
+		//pass 1: case-normalize words (keywords upper, known functions upper, other identifiers lower)
+		for(var i=0;i<tokens.length;i++){
+			var t=tokens[i];
+			if(t.type!=='word'){continue;}
+			var upper=t.v.toUpperCase();
+			if(KEYWORDS.has(upper)){
+				t.v=upper;
+				t.isKeyword=true;
+			}
+			else if(FUNCTION_HINT.has(upper)){
+				t.v=upper;
+				t.isFunc=true;
+			}
+			else{
+				t.v=t.v.toLowerCase();
+			}
+		}
+
+		//pass 2: merge multi-word keyword phrases (GROUP BY, LEFT OUTER JOIN, etc.) into single logical tokens
+		var merged=[];
+		for(var i2=0;i2<tokens.length;i2++){
+			var t2=tokens[i2];
+			if(t2.isKeyword){
+				var phrase=t2.v;
+				var j=i2;
+				while(true){
+					var n1=tokens[j+1];
+					if(n1 && n1.isKeyword){
+						var candidate=phrase+' '+n1.v;
+						if(CLAUSE_START.has(candidate)
+							|| (phrase==='GROUP' && n1.v==='BY')
+							|| (phrase==='ORDER' && n1.v==='BY')
+							|| (phrase==='INSERT' && n1.v==='INTO')
+							|| (phrase==='DELETE' && n1.v==='FROM')
+							|| (['UNION','EXCEPT','INTERSECT'].indexOf(phrase)>-1 && n1.v==='ALL')
+							|| (['LEFT','RIGHT','FULL','INNER','CROSS'].indexOf(phrase)>-1 && (n1.v==='JOIN'||n1.v==='OUTER'))
+							|| (phrase.slice(-5)==='OUTER' && n1.v==='JOIN')
+						){
+							phrase=candidate;
+							j++;
+							continue;
+						}
+					}
+					break;
+				}
+				merged.push({type:'word',v:phrase,isKeyword:true,isClauseStart:CLAUSE_START.has(phrase)});
+				i2=j;
+			}
+			else{
+				merged.push(t2);
+			}
+		}
+
+		//pass 3: render with line breaks + indentation
+		var IND='\t';
+		var out='';
+		var depth=0;
+		var currentClause=null; //top-level clause we're currently inside (at depth 0)
+		var noSpaceBefore=false;
+		var lastWasTrueKeyword=false; //true SQL keyword (VALUES/IN/EXISTS/AS/...), not a function/identifier
+
+		function trimTrail(){
+			if(/\n[ \t]*$/.test(out)){return;} //preserve indentation just written by newline()
+			out=out.replace(/[ \t]+$/,'');
+		}
+		function newline(level){
+			out=out.replace(/[ \t\n]+$/,''); //collapse any trailing whitespace/blank lines to none
+			out+='\n'+IND.repeat(Math.max(0,level));
+			noSpaceBefore=true;
+		}
+
+		for(var k=0;k<merged.length;k++){
+			var tk=merged[k];
+
+			if(tk.type==='punct' && tk.v==='('){
+				if(lastWasTrueKeyword){out+=' ';}
+				else{trimTrail();}
+				out+='(';
+				depth++;
+				noSpaceBefore=true;
+				lastWasTrueKeyword=false;
+				continue;
+			}
+			if(tk.type==='punct' && tk.v===')'){
+				depth=Math.max(0,depth-1);
+				trimTrail();
+				out+=')';
+				noSpaceBefore=false;
+				lastWasTrueKeyword=false;
+				continue;
+			}
+			if(tk.type==='comment'){
+				if(!noSpaceBefore && out.length){out+=' ';}
+				out+=tk.v;
+				//a line comment (--) eats to end of line, so anything after it must start fresh
+				newline(0);
+				currentClause=null;
+				lastWasTrueKeyword=false;
+				continue;
+			}
+			if(tk.type==='punct' && tk.v===';'){
+				trimTrail();
+				out+=';';
+				newline(0);
+				currentClause=null;
+				lastWasTrueKeyword=false;
+				continue;
+			}
+			if(tk.type==='punct' && tk.v==='.'){
+				trimTrail();
+				out+='.';
+				noSpaceBefore=true;
+				lastWasTrueKeyword=false;
+				continue;
+			}
+			if(tk.type==='punct' && tk.v===','){
+				trimTrail();
+				out+=',';
+				if(depth===0 && BREAK_LIST_CLAUSES.has(currentClause)){
+					newline(1);
+				}
+				else{
+					out+=' ';
+					noSpaceBefore=true;
+				}
+				lastWasTrueKeyword=false;
+				continue;
+			}
+			if(tk.isKeyword && tk.isClauseStart && depth===0){
+				currentClause=tk.v;
+				if(out.length){newline(0);}
+				else{trimTrail();}
+				out+=tk.v;
+				noSpaceBefore=false;
+				lastWasTrueKeyword=true;
+				continue;
+			}
+			if((tk.v==='AND'||tk.v==='OR') && depth===0){
+				newline(1);
+				out+=tk.v;
+				noSpaceBefore=false;
+				lastWasTrueKeyword=true;
+				continue;
+			}
+
+			if(!noSpaceBefore && out.length){out+=' ';}
+			out+=tk.v;
+			noSpaceBefore=false;
+			lastWasTrueKeyword=!!(tk.isKeyword && !tk.isFunc);
+		}
+		return out.trim();
+	}
+
+	//the button-facing entry point: reads the current editor content (whichever mode is active), formats it, writes it back
+	return function sqlpromptFormatSQL(){
+		let obj=getObject('sql_full');
+		if(undefined != obj.codemirror){
+			obj.codemirror.save();
+		}
+		else if(undefined != obj.editor){
+			obj.editor.save();
+		}
+		let sql=getText('sql_full');
+		if(!sql || !sql.replace(/\s+/g,'').length){return false;}
+		sqlpromptSetValue(formatSQL(sql));
+		return false;
+	};
+})();
 document.onkeydown=sqlpromptCheckKey;
