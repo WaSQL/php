@@ -8086,6 +8086,24 @@ function processTranslateTags($htm){
 * </chartjs>
 * 
 */
+//---------- begin function commonReplaceFirst
+/**
+* @describe replaces only the FIRST occurrence of a string, unlike str_replace
+* @param string $htm - the haystack
+* @param string $find - the string to replace
+* @param string $replace - what to put in its place
+* @return string
+* @usage $htm=commonReplaceFirst($htm,$tag,$rendered);
+* @notes tag processors loop over each matched tag and build a uniquely-identified block
+*	for it, so replacing every occurrence would give two identical tags the same generated
+*	id (and leave a later loop pass with nothing to replace).
+*/
+function commonReplaceFirst($htm,$find,$replace){
+	$pos=strpos($htm,$find);
+	if($pos===false){return $htm;}
+	return substr_replace($htm,$replace,$pos,strlen($find));
+}
+//---------- begin function commonProcessChartjsTags
 function commonProcessChartjsTags($htm){
 	global $CONFIG;
 	if(!stringContains($htm,'<chartjs')){return $htm;}
@@ -8195,13 +8213,13 @@ function commonProcessChartjsTags($htm){
 			}
 			if(!isset($recs[0])){
 				$replace_str='';
-				$htm=str_replace($chartjs_tag,$replace_str,$htm);
+				$htm=commonReplaceFirst($htm,$chartjs_tag,$replace_str);
 				continue;
 			}
 			if(!isset($recs[0]['label']) || !isset($recs[0]['value'])){
 				$replace_str='<error>Query Must return label, and value</error>';
 				$replace_str.="<query>{$chartjs_contents}</query>";
-				$htm=str_replace($chartjs_tag,$replace_str,$htm);
+				$htm=commonReplaceFirst($htm,$chartjs_tag,$replace_str);
 				continue;
 			}
 			if(isset($chartjs_attributes['data-name'])){
@@ -8286,7 +8304,7 @@ function commonProcessChartjsTags($htm){
 				$replace_str="<xmp>{$replace_str}</xmp>";
 			}
 			//echo "<xmp>{$replace_str}</xmp>".printValue($values).printValue($recs);exit;
-			$htm=str_replace($chartjs_tag,$replace_str,$htm);
+			$htm=commonReplaceFirst($htm,$chartjs_tag,$replace_str);
 			continue;
 		}
 
@@ -8425,7 +8443,7 @@ function commonProcessChartjsTags($htm){
 			$replace_str.='<options>'.$optionstr.'</options>'.PHP_EOL;
 		}
 		$replace_str.='</div>'.PHP_EOL;
-		$htm=str_replace($chartjs_tag,$replace_str,$htm);
+		$htm=commonReplaceFirst($htm,$chartjs_tag,$replace_str);
 	}
 	if(stringContains($htm,'<chartjs')){
     	debugValue("chartjs Tag Error detected - perhaps a malformed 'chartjs' tag");
