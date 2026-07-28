@@ -7,6 +7,9 @@ const wacss = {
 	processing_timeout:undefined,
 	author: 'WaSQL.com',
 	chartjs:{},
+	//retry budget for the async chart.min.js load in initChartJs/initChartJsBehavior
+	chartjsWaits:0,
+	chartjsWaitsMax:20,
 	EOL: '\n',
 	CRLF: '\r\n',
 	hoverDiv:'',
@@ -3907,8 +3910,15 @@ const wacss = {
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
 		}
 		if (typeof Chart === 'undefined') {
+				//loadScript is async, so Chart is never defined on the call that requested
+				//it - come back once it has landed instead of silently drawing nothing
+				if(wacss.chartjsWaits < wacss.chartjsWaitsMax){
+					wacss.chartjsWaits+=1;
+					setTimeout(function(){wacss.initChartJsBehavior(chartid);},250);
+				}
 				return false;
 		}
+		wacss.chartjsWaits=0;
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
 	        'rgba(75,192,192,0.4)',
@@ -4230,8 +4240,15 @@ const wacss = {
 			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
 		}
 		if (typeof Chart === 'undefined') {
+				//loadScript is async, so Chart is never defined on the call that requested
+				//it - come back once it has landed instead of silently drawing nothing
+				if(wacss.chartjsWaits < wacss.chartjsWaitsMax){
+					wacss.chartjsWaits+=1;
+					setTimeout(function(){wacss.initChartJs(initid);},250);
+				}
 				return false;
 		}
+		wacss.chartjsWaits=0;
 		let gcolors = new Array(
 	        'rgba(255,159,64,0.4)',
 	        'rgba(75,192,192,0.4)',
@@ -4465,8 +4482,12 @@ const wacss = {
 		        			for(let ud=0;ud<udatasets.length;ud++){
 		        				//require data-label
 		        				let json=JSON.parse(udatasets[ud].innerText);  			
+								//doughnut and pie colour one slice per value, so they take the whole
+								//colors array; bar and line take one colour per dataset
+								let udbgcolor=udatasets[ud].getAttribute('data-backgroundColor')
+									|| ((type=='doughnut' || type=='pie') ? colors : colors[ud]);
 								let udataset={
-									backgroundColor: udatasets[ud].getAttribute('data-backgroundColor') || colors[ud],
+									backgroundColor: udbgcolor,
 		                            type:udatasets[ud].getAttribute('data-type') || list[i].getAttribute('data-type'),
 									data: json,
 									fill:false,
@@ -4592,9 +4613,12 @@ const wacss = {
 								else{fill=false;}
 							}   
 							else{fill=false;}				
+							//doughnut and pie colour one slice per value, so they take the whole
+							//colors/bcolors arrays; bar and line take one colour per dataset
+							let dslice=(type=='doughnut' || type=='pie');
 							let dataset={
-								backgroundColor: datasets[d].dataset.backgroundcolor || datasets[d].dataset.backgroundColor || colors[d],
-								borderColor: datasets[d].dataset.bordercolor || datasets[d].dataset.borderColor || bcolors[d],
+								backgroundColor: datasets[d].dataset.backgroundcolor || datasets[d].dataset.backgroundColor || (dslice ? colors : colors[d]),
+								borderColor: datasets[d].dataset.bordercolor || datasets[d].dataset.borderColor || (dslice ? bcolors : bcolors[d]),
 	                            borderWidth:1,
 	                            borderRadius:3,
 	                            type:datasets[d].dataset.type || list[i].dataset.type || 'line',

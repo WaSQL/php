@@ -299,14 +299,61 @@ Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **
 ---
 
 ## Chart.js (the `chartjs` extra)
-The bundled chart library is **`/wfiles/js/extras/chart.min.js` — Chart.js v2.8.0** (use v2 option syntax: `options.legend`, `options.title`, `scales.yAxes:[{ticks:{beginAtZero,max}}]`, `cutoutPercentage`, `maintainAspectRatio`; NOT v3+). There is **no PHP charting engine** — it's client-side, driven by `wacss.initChartJs()`.
+The bundled chart library is **`/wfiles/js/extras/chart.min.js` — Chart.js v2.8.0** (use v2 option syntax: `options.legend`, `options.title`, `scales.yAxes:[{ticks:{beginAtZero,max}}]`, `cutoutPercentage`, `maintainAspectRatio`; NOT v3+). There is **no PHP charting engine** — rendering is client-side.
 
-**wacss contract (the normal path):** a container `<div class="chartjs" id="X" data-type="pie|doughnut|bar|line|time|gauge">` plus a sibling hidden `<div id="X_data">` holding custom tags parsed by the initializer — `<options>{JSON}</options>`, `<labels>[JSON]</labels>`, optional `<colors>`/`<bcolors>`, and one or more `<dataset data-label="…">[JSON]</dataset>`. Kick off with `<?=buildOnLoad("wacss.initChartJs();");?>`. Build the labels/datasets in PHP and `json_encode` them into the tags.
+### The WaSQL way: the `chartjs` tag (start here)
+Write a **`chartjs` tag** in the page body (or return one from a `functions` helper) and the framework does the rest. `commonProcessChartjsTags()` (`php/common.php`) runs in the render pipeline **after `evalPHP`**, so helper-returned tags are processed normally, and it runs for `/t/1/` AJAX partials too. It rewrites the tag into `<div data-behavior="chartjs" id="…">` + a hidden `#{id}_data` block, then `wacss` builds the Chart.js instance client-side and registers it as `wacss.chartjs[divId]`.
 
-**Gotchas (verified):**
-- `wacss.loadScript` is **async** and `initChartJs` bails when `Chart` is still undefined → the first call can silently no-op (race). If you need charts guaranteed on first paint, load `chart.min.js` with a plain synchronous `<script src=…>` in the page body (it's a framework asset, fine to include — not the page's own css/js field).
-- `initChartJs`'s loop over `.chartjs` has **no idempotency guard**, and `wacss.init()` calls it directly *and* via `initOnloads` — so repeated calls (initial load + a `data-onload`) **double-render** (duplicate canvases). Do NOT put both `class="chartjs"` and `data-behavior="chartjs"` on one container either (also double-builds).
-- **For a section that AJAX-refreshes** (e.g. an auto-refreshing dashboard), don't fight the auto-parser: give canvases a **non-triggering** class (e.g. `app-chart`, no `chartjs`/`data-behavior`), stash the full v2 config in a `data-chart` attr via `htmlspecialchars(json_encode($cfg),ENT_QUOTES)`, and run your own JS that **destroys prior instances then `new Chart(cv.getContext('2d'),cfg)`**, wired through the refreshed partial's `data-onload`. Idempotent and race-free.
+```html
+<!-- SQL form: the framework runs the query. data-db picks the connection (default = site DB) -->
+<chartjs data-type="bar" data-db="ddfa_postgres" data-onclick="myChartClick"
+    data-popurl="/t/1/status/day/{key}" class="my-chart-box">
+    SELECT to_char(d,'YYYY-MM-DD') AS label, count(*) AS value, uname AS dataset FROM … GROUP BY 1,3
+    <options>{"responsive":true,"maintainAspectRatio":false}</options>
+</chartjs>
+```
+- **Query must return `label` and `value`**; an optional `dataset` column splits it into series, optional `color`/`bcolor` columns become the palette. Otherwise you get `<error>Query Must return label, and value</error>`.
+- **`[key]` substitution:** any `[foo]` in the SQL is replaced with `$_REQUEST['foo']` before it runs.
+- **`data-process="funcName"`** post-processes the recordset in PHP before it becomes chart data.
+- **JSON form** (data already computed in PHP — `/proc` metrics, counters): give each `<dataset>` a JSON array and supply `<labels>` yourself, plus optional `<colors>`/`<bcolors>`/`<options>`:
+  ```html
+  <chartjs data-type="doughnut" class="my-chart-box">
+      <dataset data-label="Memory" data-borderwidth="2">[3.7,121.6]</dataset>
+      <labels>["Used","Available"]</labels>
+      <colors>["#48c774","#eceffa"]</colors>
+      <bcolors>["#ffffff","#ffffff"]</bcolors>
+      <options>{…}</options>
+  </chartjs>
+  ```
+- Every attribute on the tag lands on the generated div, which is also the **sized box** — put your height class there and set `maintainAspectRatio:false`.
+
+### Click-through: `data-onclick`
+`data-onclick="myFunc"` makes bars/slices clickable; wacss calls `window.myFunc(params)` with `params.xvalue` (the clicked **label**), `params.yvalue`, `params.dataset`, `params.parent_id` (the chart div's id — `params.parent`, the element, from the other builder), plus `color`/`x`/`y`. There is no per-point payload, so **carry the drill-down config in your own `data-*` attributes on the tag** and read them back off `parent_id`, and make the **label the key you need** (e.g. `YYYY-MM-DD`, or the raw role name — not a prettified version):
+```js
+function myChartClick(params){
+    var div=document.getElementById(params.parent_id)||params.parent;
+    var url=div.getAttribute('data-popurl').replace('{key}',encodeURIComponent(params.xvalue));
+    return dstPop(url,'',div.getAttribute('data-popdiv'));  // see wacss.nav(el,{nav,div,title})
+}
+```
+Hit-testing uses **`'point'` (intersect) mode** — the click must land on the bar itself, not just its column.
+
+**Opening a centerpop from JS** (no anchor in the markup): `wacss.nav(el,{nav:url,div:'centerpop',title:t})` takes everything from `opts`, so append a **bare** throwaway `<a>` and pass that (nav forwards every `data-*` on the element as a request parameter, so don't hand it the chart div). Targets `centerpop`, `centerpop1`, `centerpop2`, `centerpop3` **stack**, so a popup's chart can drill into `centerpop1` and leave the first popup open behind it.
+
+### How the two builders interact (not a bug — worth knowing)
+`wacss.initChartJs()` first calls `initChartJsBehavior()` (which builds every `[data-behavior="chartjs"]` element and marks it `data-initialized`), then runs its own richer builder over `div.chartjs, div[data-behavior="chartjs"]`. That second pass is **not** a duplicate build: when `wacss.chartjs[id]` already exists and the div has a canvas it takes an **update path** — it rewrites the existing chart's config from the `_data` block and calls `.update()`. So charts stay at one canvas, re-calling `initChartJs()` is how you refresh a chart in place (`wacss.initChartJs('mychartid')` targets one), and `initChartJs` owns the extra types/features (`gauge`, `data-recs`, per-point colours). Putting both `class="chartjs"` and `data-behavior="chartjs"` on one container is harmless — `querySelectorAll` returns each element once.
+
+### Gotchas (all verified the hard way)
+- **NEVER write the literal tag name in an HTML comment** (or any output text). The processor is a regex over the rendered HTML: `<!-- builds the chartjs tags -->` is read as a real opening tag and swallows everything up to the next real closing tag, dumping your page markup into a hidden `_data` div. Use a PHP comment (`<?php /* … */ ?>`) instead. Same hazard for the other tag processors (`dblistrecords`, …).
+- **An `<options>` block replaces wacss's default options wholesale.** Its defaults set `events:false` and `tooltips.enabled:false`, so supplying options is usually what you want — but then don't also use `data-stacked` / `data-title` / `data-beginatzero` / `data-legenddisplay` / `data-render`, which mutate `options` *after* yours is parsed (`data-stacked` replaces `options.scales` entirely, `data-render` assumes `options.plugins.labels` exists). Put stacking and axis config in your own JSON.
+- **Colours in the single-query SQL form:** with more than one `dataset` value, core assigns each series a colour from a fixed rgba palette, so you can't get semantic colours (green success / red error) that way — use per-`<dataset>` `data-backgroundcolor` (JSON form, or SQL inside each `<dataset>`).
+- **AJAX-refreshed sections:** only `wacss.initOnloads()` runs after an AJAX injection, not `wacss.init()` — so re-run the chart init from the injected partial's `data-onload` (`data-onload="wacss.initChartJs();"`). Builds are idempotent per div, so this is safe on every refresh.
+- **Deploying to a site with an older core** — three bugs were fixed 2026-07-28; a site whose `php/common.php` / `wacss.js` predate that will still show them, and `wacss.min.js` must be re-minified for the JS fixes to take effect:
+  - doughnut/pie built by `initChartJs` (either path) got **one** `backgroundColor` instead of the per-slice array → **solid rings**. Bar/line were unaffected.
+  - the multi-dataset SQL form died on **PHP 8**: `json_encode(array_values($labels,JSON_…))` passed the flags as a second argument to `array_values()` → `ArgumentCountError` (`php/common.php` 8410/8413/8419).
+  - `chart.min.js` lazy-load race: `wacss.loadScript` is async and both initializers bailed on the same call with no retry, so charts could silently never draw. Now they re-try every 250ms up to `wacss.chartjsWaitsMax`. Belt-and-braces on an old core: load it with a plain synchronous `<script src="/wfiles/js/extras/chart.min.js">` in the page body (framework asset — fine to include; the page's own css/js fields are the auto-injected ones).
+  - Page-level workaround if you can't update core: from a `data-onload`, deferred a tick so it runs after `wacss.init()`, destroy `wacss.chartjs[div.id]`, remove the div's canvases, `removeAttribute('data-initialized')`, then `wacss.initChartJsBehavior(div.id)` — that builder honours `<colors>`. Flag each div as done so refreshes only build new ones.
+- **Fully hand-rolled alternative** (what to do if you want nothing to do with the above): give canvases a non-triggering class, stash the v2 config in a `data-chart` attribute via `htmlspecialchars(json_encode($cfg),ENT_QUOTES)`, and in your own JS destroy prior instances then `new Chart(cv.getContext('2d'),cfg)`. Race-free and idempotent, but you give up `data-onclick`, `data-db` and the SQL forms.
 
 ## Server / system health in PHP
 The web PHP runs **as apache on the site's own Linux host**, so for a health/monitoring page you can read metrics locally without SSH:

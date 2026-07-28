@@ -8407,16 +8407,16 @@ function commonProcessChartjsTags($htm){
 			$replace_str.="</{$innertag_name}>".PHP_EOL;
 		}
 		if(count($labels)){
-			$replace_str .= '<labels>'.json_encode(array_values($labels,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</labels>'.PHP_EOL;
+			$replace_str .= '<labels>'.json_encode(array_values($labels),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</labels>'.PHP_EOL;
 		}
 		if(count($colors)){
-			$replace_str .= '<colors>'.json_encode(array_values($colors,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</colors>'.PHP_EOL;
+			$replace_str .= '<colors>'.json_encode(array_values($colors),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</colors>'.PHP_EOL;
 		}
 		elseif(strlen($colorstr)){
 			$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
 		}
 		if(count($bcolors)){
-			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)).'</bcolors>'.PHP_EOL;
+			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</bcolors>'.PHP_EOL;
 		}
 		elseif(strlen($bcolorstr)){
 			$replace_str.='<bcolors>'.$bcolorstr.'</bcolors>'.PHP_EOL;
