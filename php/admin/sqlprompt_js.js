@@ -100,18 +100,15 @@ function sqlpromptSetValue(v){
 	}
 	//console.log(v);
 	document.sqlprompt.sql_select.value='';
-	let sql=v;
-	let doc = new DOMParser().parseFromString(sql, "text/html");
-	sql=doc.documentElement.innerText;
-	let obj=getObject('sql_full');
-	if(undefined != obj.editor){
-		setText(obj.editor,'');
-		setText(obj.editor,v);
-		obj.editor.save();
+	//v is PLAIN text: assign it as text, never as innerHTML. setText() on the
+	//contenteditable used innerHTML, so a "<b>" inside a string literal was parsed
+	//as markup and silently dropped from the query
+	if(undefined != el.editor){
+		el.editor.textContent=v;
+		el.editor.save();
 	}
 	else{
-		setText('sql_full','');
-		setText('sql_full',sql);
+		el.value=v;
 	}
 	return false;
 }
@@ -338,11 +335,53 @@ var sqlpromptFormatSQL=(function(){
 		'INSERT INTO','VALUES','UPDATE','SET','DELETE FROM','UNION','UNION ALL','EXCEPT','INTERSECT',
 		'JOIN','INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL JOIN','FULL OUTER JOIN','LEFT OUTER JOIN',
 		'RIGHT OUTER JOIN','CROSS JOIN']);
-	//clauses whose comma-separated items each get their own indented line
-	var BREAK_LIST_CLAUSES=new Set(['SELECT','SET','VALUES','INSERT INTO']);
+	//clauses whose comma-separated items each get their own indented line. a single-item
+	//clause has no top-level comma to break on, so "GROUP BY 1" stays on one line while
+	//"GROUP BY a, b" breaks
+	var BREAK_LIST_CLAUSES=new Set(['SELECT','SET','VALUES','INSERT INTO','GROUP BY','ORDER BY']);
+	//...except these two, which are pulled back onto one line when the whole clause fits
+	var SOFT_BREAK_CLAUSES=/^(GROUP BY|ORDER BY)\b/;
+	var MAX_INLINE_CLAUSE=100;
+	//a word right after one of these names a table, never a function - "insert into t(a,b)"
+	var TABLE_CONTEXT=new Set(['FROM','INTO','JOIN','UPDATE','TABLE','VIEW']);
+	//operators that hug what is on either side of them
+	var TIGHT_OPERATORS=new Set(['.','::','->','->>']);
+
+	//strips the leading/trailing spaces and tabs off every line so pasted indentation
+	//(and the &nbsp; the contenteditable editor leaves behind) can never leak into the output
+	function stripIndent(sql){
+		return sql.replace(/\u00a0/g,' ').replace(/\r\n?/g,'\n').split('\n').map(function(line){
+			return line.replace(/^[ \t]+/,'').replace(/[ \t]+$/,'');
+		}).join('\n').trim();
+	}
+
+	//pulls a broken-up GROUP BY / ORDER BY back onto a single line when the joined clause
+	//stays under MAX_INLINE_CLAUSE characters, so "ORDER BY 1, 2" does not get split
+	function rejoinShortClauses(text){
+		var lines=text.split('\n');
+		var kept=[];
+		for(var i=0;i<lines.length;i++){
+			if(!SOFT_BREAK_CLAUSES.test(lines[i])){kept.push(lines[i]);continue;}
+			//the clause's items are the indented lines that follow, each hanging off a comma
+			var joined=lines[i];
+			var last=i;
+			while(last+1<lines.length && /,$/.test(lines[last]) && /^\t/.test(lines[last+1])){
+				last++;
+				joined+=' '+lines[last].replace(/^\t+/,'');
+			}
+			if(last>i && joined.length<MAX_INLINE_CLAUSE){
+				kept.push(joined);
+				i=last;
+			}
+			else{kept.push(lines[i]);}
+		}
+		return kept.join('\n');
+	}
 
 	function tokenize(sql){
-		var re=/(--[^\n]*)|(\/\*[\s\S]*?\*\/)|('(?:[^'\\]|\\.)*')|("(?:[^"\\]|\\.)*")|(`(?:[^`]|``)*`)|([A-Za-z_][A-Za-z0-9_]*)|([0-9]+\.?[0-9]*)|(\s+)|(.)/g;
+		//NOTE: strings allow both doubled ('') and backslash escapes; multi-char operators
+		//(!=, <>, >=, ||, ::, ->>) must match as ONE token or they get split by a space
+		var re=/(--[^\n]*)|(\/\*[\s\S]*?\*\/)|('(?:''|\\.|[^'\\])*')|("(?:""|\\.|[^"\\])*")|(`(?:``|[^`])*`)|([A-Za-z_][A-Za-z0-9_$]*)|([0-9]+\.?[0-9]*)|(<=>|<>|!=|!~\*|!~|<=|>=|\|\||&&|::|->>|->|:=|=)|(\s+)|(.)/g;
 		var tokens=[],m;
 		while((m=re.exec(sql))!==null){
 			if(m[1]!==undefined){tokens.push({type:'comment',v:m[1]});}
@@ -352,31 +391,51 @@ var sqlpromptFormatSQL=(function(){
 			else if(m[5]!==undefined){tokens.push({type:'ident_q',v:m[5]});}
 			else if(m[6]!==undefined){tokens.push({type:'word',v:m[6]});}
 			else if(m[7]!==undefined){tokens.push({type:'number',v:m[7]});}
-			else if(m[8]!==undefined){tokens.push({type:'space',v:m[8]});}
-			else{tokens.push({type:'punct',v:m[9]});}
+			else if(m[8]!==undefined){tokens.push({type:'punct',v:m[8]});}
+			else if(m[9]!==undefined){tokens.push({type:'space',v:m[9]});}
+			else{tokens.push({type:'punct',v:m[10]});}
 		}
 		return tokens;
 	}
 
 	function formatSQL(sql){
-		sql=sql.trim();
+		sql=stripIndent(sql);
 		if(!sql.length){return sql;}
-		var tokens=tokenize(sql).filter(function(t){return t.type!=='space';});
+		//drop the whitespace tokens, but remember where they were: "count(*)" is a function
+		//call, "insert into t (a,b)" is a table followed by a column list
+		var tokens=[];
+		tokenize(sql).forEach(function(t){
+			if(t.type==='space'){
+				if(tokens.length){tokens[tokens.length-1].spaceAfter=true;}
+				return;
+			}
+			tokens.push(t);
+		});
 
-		//pass 1: case-normalize words (keywords upper, known functions upper, other identifiers lower)
+		//pass 1: case-normalize words (keywords upper, functions upper, ALL-CAPS identifiers lower)
 		for(var i=0;i<tokens.length;i++){
 			var t=tokens[i];
 			if(t.type!=='word'){continue;}
 			var upper=t.v.toUpperCase();
-			if(KEYWORDS.has(upper)){
+			//a word glued directly to "(" is a function call - covers DATE, CONVERT_TZ, DATE_TRUNC
+			//and every other db-specific function that will never be in the hint list
+			var nxt=tokens[i+1];
+			var prev=tokens[i-1];
+			var isCall=!!(nxt && nxt.type==='punct' && nxt.v==='(' && !t.spaceAfter
+				&& !(prev && prev.isKeyword && TABLE_CONTEXT.has(prev.v)));
+			if(KEYWORDS.has(upper) && !(isCall && FUNCTION_HINT.has(upper))){
+				//keyword wins over call syntax (IN (...), VALUES (...), USING (...))
+				//unless it is also a known function - LEFT(, RIGHT(, REPLACE(, IF(
 				t.v=upper;
 				t.isKeyword=true;
 			}
-			else if(FUNCTION_HINT.has(upper)){
+			else if(isCall || FUNCTION_HINT.has(upper)){
 				t.v=upper;
 				t.isFunc=true;
 			}
-			else{
+			else if(t.v===upper){
+				//only fold identifiers that were typed in caps. lowercasing a mixed-case
+				//identifier (orderDate, MyTable) breaks case-sensitive databases
 				t.v=t.v.toLowerCase();
 			}
 		}
@@ -422,7 +481,6 @@ var sqlpromptFormatSQL=(function(){
 		var depth=0;
 		var currentClause=null; //top-level clause we're currently inside (at depth 0)
 		var noSpaceBefore=false;
-		var lastWasTrueKeyword=false; //true SQL keyword (VALUES/IN/EXISTS/AS/...), not a function/identifier
 
 		function trimTrail(){
 			if(/\n[ \t]*$/.test(out)){return;} //preserve indentation just written by newline()
@@ -438,12 +496,15 @@ var sqlpromptFormatSQL=(function(){
 			var tk=merged[k];
 
 			if(tk.type==='punct' && tk.v==='('){
-				if(lastWasTrueKeyword){out+=' ';}
-				else{trimTrail();}
+				//only a function name, another "(" or a tight operator hugs the paren.
+				//keywords and table names keep their space: IN (1,2), insert into t (a,b)
+				var pv=merged[k-1];
+				var hug=!!(pv && (pv.isFunc || (pv.type==='punct' && (pv.v==='(' || TIGHT_OPERATORS.has(pv.v)))));
+				if(hug || noSpaceBefore){trimTrail();}
+				else if(out.length){out+=' ';}
 				out+='(';
 				depth++;
 				noSpaceBefore=true;
-				lastWasTrueKeyword=false;
 				continue;
 			}
 			if(tk.type==='punct' && tk.v===')'){
@@ -451,7 +512,6 @@ var sqlpromptFormatSQL=(function(){
 				trimTrail();
 				out+=')';
 				noSpaceBefore=false;
-				lastWasTrueKeyword=false;
 				continue;
 			}
 			if(tk.type==='comment'){
@@ -460,7 +520,6 @@ var sqlpromptFormatSQL=(function(){
 				//a line comment (--) eats to end of line, so anything after it must start fresh
 				newline(0);
 				currentClause=null;
-				lastWasTrueKeyword=false;
 				continue;
 			}
 			if(tk.type==='punct' && tk.v===';'){
@@ -468,14 +527,12 @@ var sqlpromptFormatSQL=(function(){
 				out+=';';
 				newline(0);
 				currentClause=null;
-				lastWasTrueKeyword=false;
 				continue;
 			}
-			if(tk.type==='punct' && tk.v==='.'){
+			if(tk.type==='punct' && TIGHT_OPERATORS.has(tk.v)){
 				trimTrail();
-				out+='.';
+				out+=tk.v;
 				noSpaceBefore=true;
-				lastWasTrueKeyword=false;
 				continue;
 			}
 			if(tk.type==='punct' && tk.v===','){
@@ -488,7 +545,6 @@ var sqlpromptFormatSQL=(function(){
 					out+=' ';
 					noSpaceBefore=true;
 				}
-				lastWasTrueKeyword=false;
 				continue;
 			}
 			if(tk.isKeyword && tk.isClauseStart && depth===0){
@@ -497,23 +553,20 @@ var sqlpromptFormatSQL=(function(){
 				else{trimTrail();}
 				out+=tk.v;
 				noSpaceBefore=false;
-				lastWasTrueKeyword=true;
 				continue;
 			}
 			if((tk.v==='AND'||tk.v==='OR') && depth===0){
 				newline(1);
 				out+=tk.v;
 				noSpaceBefore=false;
-				lastWasTrueKeyword=true;
 				continue;
 			}
 
 			if(!noSpaceBefore && out.length){out+=' ';}
 			out+=tk.v;
 			noSpaceBefore=false;
-			lastWasTrueKeyword=!!(tk.isKeyword && !tk.isFunc);
 		}
-		return out.trim();
+		return rejoinShortClauses(out.trim());
 	}
 
 	//the button-facing entry point: reads the current editor content (whichever mode is active), formats it, writes it back

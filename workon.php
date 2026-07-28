@@ -7,7 +7,8 @@
  *   1. Resolve {alias} -> host from postedit/postedit.xml (build the site URL).
  *   2. Ensure a debug Chrome is up on the debug port and showing the page
  *      (reuse an already-running debug instance; only launch if none).
- *   3. Ensure the PostEdit watcher for {alias} is running (launch if not).
+ *   3. Ensure the PostEdit watcher for {alias} is running (launch if not),
+ *      filtered to the named page so it only syncs/watches that page.
  *   4. Confirm the Chrome target for the page exists.
  *   5. (optional) Capture a mobile screenshot via Node CDP + a 1px reflow nudge.
  *
@@ -24,6 +25,8 @@
  *   --width=N          screenshot viewport width (default: 390)
  *   --shot=PATH        write a screenshot PNG to PATH (skipped if omitted)
  *   --no-watcher       do not launch the PostEdit watcher if it's missing
+ *   --filter=a,b       explicit watcher filter(s) (default: the named page)
+ *   --no-filter        watcher watches ALL records, not just the named page
  *   --no-shot          never screenshot (default when --shot not given)
  *   --chrome=PATH      explicit Chrome executable
  *   --profile=PATH     Chrome debug --user-data-dir (default: temp/wasql-chrome-debug)
@@ -92,6 +95,34 @@ $shotOut = $doShot ? $opts['shot'] : null;
 $doWatch = !isset($opts['no-watcher']);
 $profile = isset($opts['profile']) ? $opts['profile']
 	: sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-chrome-debug';
+
+// ---- watcher filters ------------------------------------------------------
+// postedit.php takes positional filters after the alias ("postedit.php dexpdq
+// sapcc") and only syncs/watches records whose NAME contains one of them
+// (case-insensitive substring). So "work on dexpdq sapcc" -> filter 'sapcc':
+// the startup re-sync pulls down just that page instead of the whole site, and
+// the watcher only listens to those files.
+//   - no page named  -> no filter (watch everything, as before)
+//   - --filter=a,b   -> use those instead of the page
+//   - --no-filter    -> watch everything even though a page was named
+// Filters are reduced to a safe token set: they end up on a command line, and
+// postedit.php splits them on whitespace anyway.
+/** Strip a page/filter down to a single shell-safe token ('sapcc/edit/3?x=1' -> 'sapcc'). */
+function filterToken($s){
+	$s = explode('/', ltrim(strtok((string)$s, '?'), '/'));
+	return strtolower(preg_replace('/[^a-z0-9_\-\.]/i', '', $s[0]));
+}
+$filters = [];
+if(isset($opts['no-filter'])){ $filters = []; }
+elseif(isset($opts['filter']) && $opts['filter'] !== true){
+	foreach(explode(',', $opts['filter']) as $f){
+		$t = filterToken($f);
+		if($t !== ''){ $filters[] = $t; }
+	}
+} elseif($pageGiven){
+	$t = filterToken($page);                 // filter on the page name, not its action args
+	if($t !== ''){ $filters = [$t]; }
+}
 
 // ---- 1. resolve target ----------------------------------------------------
 // "work on wasql" is local framework dev: plain http://localhost/php/admin.php,
@@ -195,27 +226,57 @@ if($chromeUp){
 }
 
 // ---- 3. ensure the PostEdit watcher --------------------------------------
-$watcherPid = null;
+/** Filter args of a running watcher: the tokens after "postedit.php {alias}". null = couldn't parse. */
+function runningFilters($cmdline, $alias){
+	if(!preg_match('/postedit\.php["\']?\s+' . preg_quote($alias, '/') . '(?:\s+(.*))?$/i', trim($cmdline), $m)){
+		return null;
+	}
+	$rest = isset($m[1]) ? trim($m[1]) : '';
+	if($rest === ''){ return []; }
+	return array_values(array_filter(array_map('strtolower', preg_split('/\s+/', $rest)), 'strlen'));
+}
+/** Human-readable filter list. */
+function filterLabel($f){ return count($f) ? implode(', ', $f) : 'none (all records)'; }
+
+$watcherPid = null; $watcherCmd = ''; $watcherRunningFilters = null;
 if($localMode){
 	out("• watcher : n/a (local framework mode - no PostEdit)");
 } else {
 if($IS_WIN){
 	// Query php.exe command lines via PowerShell (wmic is gone on Win11).
+	// Emit "pid|commandline" so we can also see which filters it was started with.
 	$ps = 'Get-CimInstance Win32_Process -Filter "Name=' . "'php.exe'" . '" '
 	    . '| Where-Object { $_.CommandLine -like ' . "'*postedit.php " . $alias . "*'" . ' } '
-	    . '| Select-Object -ExpandProperty ProcessId';
+	    . '| ForEach-Object { "$($_.ProcessId)|$($_.CommandLine)" }';
 	$psFile = tempnam(sys_get_temp_dir(), 'wpe') . '.ps1';
 	file_put_contents($psFile, $ps);
 	$res = @shell_exec('powershell -NoProfile -ExecutionPolicy Bypass -File "' . $psFile . '" 2>nul');
 	@unlink($psFile);
-	if($res && preg_match('/\d+/', $res, $pm)){ $watcherPid = (int)$pm[0]; }
+	if($res && preg_match('/^\s*(\d+)\|(.*)$/m', $res, $pm)){
+		$watcherPid = (int)$pm[1]; $watcherCmd = trim($pm[2]);
+	}
 } else {
-	$res = @shell_exec('pgrep -f "postedit.php ' . $alias . '" 2>/dev/null');
-	if($res && preg_match('/\d+/', $res, $pm)){ $watcherPid = (int)$pm[0]; }
+	$res = @shell_exec('pgrep -af "postedit.php ' . $alias . '" 2>/dev/null');
+	if($res && preg_match('/^\s*(\d+)\s+(.*)$/m', $res, $pm)){
+		$watcherPid = (int)$pm[1]; $watcherCmd = trim($pm[2]);
+	}
 }
 
 if($watcherPid){
-	out("• watcher : running (pid $watcherPid)");
+	$watcherRunningFilters = runningFilters($watcherCmd, $alias);
+	out("• watcher : running (pid $watcherPid, filters: "
+		. ($watcherRunningFilters === null ? 'unknown' : filterLabel($watcherRunningFilters)) . ")");
+	// A watcher already up was started with whatever filters it was started with -
+	// we do NOT restart it, because postedit.php's startup re-sync is destructive
+	// (backs up + deletes + re-downloads the working files). Just flag the mismatch.
+	if(is_array($watcherRunningFilters) && $watcherRunningFilters != $filters){
+		out("  ⚠  wanted filters: " . filterLabel($filters) . " - the running watcher differs.");
+		if(count($filters) && !count($watcherRunningFilters)){
+			out("     (it's watching everything, which still covers '" . implode("','", $filters) . "')");
+		} else {
+			out("     Stop it (Ctrl-C in its console) and re-run workon.php to re-filter.");
+		}
+	}
 } elseif(!$doWatch){
 	out("• watcher : NOT running (left alone; --no-watcher)");
 } else {
@@ -223,6 +284,9 @@ if($watcherPid){
 	// runs this script (PHP_BINARY) so PATH quirks don't matter and no php path
 	// is ever hard-coded.
 	$php = PHP_BINARY;
+	// Filters are appended positionally after the alias; already reduced to safe
+	// tokens above, so no quoting is needed (and postedit.php wants them split).
+	$filterArgs = count($filters) ? ' ' . implode(' ', $filters) : '';
 	if($IS_WIN){
 		// Nesting quotes through popen -> cmd /c -> start -> cmd /k is fragile:
 		// a quoted php path combined with '&&' on one line trips cmd's quote
@@ -234,13 +298,17 @@ if($watcherPid){
 			"@echo off\r\n"
 			. 'cd /d "' . $ROOT . '"' . "\r\n"
 			. 'title postedit-' . $alias . "\r\n"
-			. '"' . $php . '" postedit\\postedit.php ' . $alias . "\r\n"
+			. '"' . $php . '" postedit\\postedit.php ' . $alias . $filterArgs . "\r\n"
 		);
 		launchDetached('cmd /k "' . $bat . '"', true, 'postedit-' . $alias);
 	} else {
-		launchDetached('"' . $php . '" ' . $ROOT . '/postedit/postedit.php ' . $alias, false);
+		launchDetached('"' . $php . '" ' . $ROOT . '/postedit/postedit.php ' . $alias . $filterArgs, false);
 	}
-	out("• watcher : launched for '$alias'");
+	out("• watcher : launched for '$alias' (filters: " . filterLabel($filters) . ")");
+	if(count($filters)){
+		out("     Only records whose name contains '" . implode("' or '", $filters) . "' are synced/watched");
+		out("     (that includes _templates - re-run with --no-filter to work on the template too).");
+	}
 	out("  ⚠  startup re-syncs from the DB: it backs up postEditFiles/$alias to");
 	out("     {$alias}_bak, deletes the working files, and re-downloads them fresh.");
 	out("     Any un-synced local edits are in {$alias}_bak.");
@@ -324,7 +392,8 @@ if(isset($opts['json'])){
 		'alias' => $alias, 'host' => $host, 'page' => $page, 'url' => $url,
 		'port' => $port, 'insecure' => $insecure,
 		'chrome_up' => $chromeUp || $confirmed,
-		'watcher_pid' => $watcherPid, 'watcher_launched' => (!$watcherPid && $doWatch),
+		'watcher_pid' => $watcherPid, 'watcher_launched' => (!$watcherPid && $doWatch && !$localMode),
+		'filters' => $filters, 'watcher_running_filters' => $watcherRunningFilters,
 		'target_confirmed' => $confirmed, 'shot' => $shotWritten,
 	]));
 }
