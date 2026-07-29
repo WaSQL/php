@@ -147,11 +147,11 @@ function dbCountWhereIn(string $sql): int {
 	if (!preg_match_all('/\bIN\s*\(([^)]*)\)/is', $sql, $matches)) {
 		return 0;
 	}
-		$total = 0;
+	$total = 0;
 	foreach ($matches[1] as $group) {
 		$items = array_filter(
 			array_map('trim', explode(',', $group)),
-			fn($item) => $item !== ''
+			function($item){ return $item !== ''; }
 		);
 		$total += count($items);
 	}

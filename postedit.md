@@ -67,7 +67,26 @@ its css = `...<page>._pages.css.<id>.css`, controller = `...controller.<id>.php`
 2. PostEdit **auto-updates the matching DB record** — no manual step. (Verify with a `wamcp` query if unsure, e.g. `SELECT css FROM _pages WHERE _id=<id>`.)
 3. **Refresh Chrome** on the affected page and re-screenshot to see the result.
 
-The user usually has Chrome open on the page being edited; after a save they can just refresh to see the change (the DB is already updated). Add a cache-buster query param (`?cb=1`) when checking, since CSS/JS are served as a hashed minified bundle (`/w_min/minify_...css`) — the page's own `css`/`js` fields are compiled into that bundle, not inlined.
+The user usually has Chrome open on the page being edited; after a save they can just refresh to see the change (the DB is already updated). **`body`/`controller`/`functions` edits show up on a plain refresh** — those are read from the DB on every request.
+
+### ⚠️ `css`/`js` edits need the `w_min` bundle busted (a page `?cb=1` does NOT do it)
+
+A page's own `css`/`js` fields are compiled into a hashed minified bundle (`/w_min/minify_<a>_<b>.css` / `.js`), **not inlined**. Two caches sit in front of your edit and a cache-buster on the *page* URL defeats neither:
+
+1. **The server-side static file.** `minify_css.php`/`minify_js.php` read the page/template records live from the DB but then **write the result to `{docroot}/w_min/minify_<a>_<b>.css`**, which Apache serves directly on every later request. The hash is derived from the *set of sources*, not their content — so it does **not** change when you edit `css`/`js`, and the stale file just keeps being served. `editDBRecord` on `_pages`/`_templates` tries to clear this (`minifyCleanMin()` in `php/database.php`) but only `if(function_exists('minifyCleanMin'))` — during a PostEdit sync the minify extra usually isn't loaded, so **nothing gets cleared**.
+2. **The browser cache.** The bundle is served with `Cache-Control: public`, so Chrome reuses its copy even after the server file is regenerated.
+
+Fix both, in order (run from the page's own context so the session cookies come along):
+
+```js
+// 1. regenerate the server-side bundle — take the hash straight out of the live tag
+var l = [...document.querySelectorAll('link[rel=stylesheet]')].map(x=>x.href).find(x=>x.includes('w_min'));
+var h = l.replace(/^.*minify_/,'').replace(/\.css.*$/,'');
+await fetch('/php/minify_css.php?_minify_='+h, {cache:'no-store'});   // same for /php/minify_js.php with a script[src] hash
+```
+2. **Reload with the browser cache off** — CDP `Network.setCacheDisabled {cacheDisabled:true}` before `Page.navigate` (the `nav.js` pattern), *not* a query param on the page URL.
+
+Symptom to recognize: new CSS rules have no effect (`getComputedStyle` shows the un-styled default) or a new JS function is `ReferenceError: … is not defined`, while a `wamcp` query confirms the `_pages` record already holds the new code.
 
 ### ⚠️ The 1px reflow nudge (baked into `shot.js` — you don't do it by hand)
 
