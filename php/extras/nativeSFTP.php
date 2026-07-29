@@ -25,14 +25,24 @@ declare(strict_types=1);
 
 final class NativeSFTP
 {
-    private string $host;
-    private int $port;
-    private string $username;
-    private ?string $password;
-    private ?string $pubKeyPath;
-    private ?string $privKeyPath;
-    private ?string $passphrase;
-    private ?string $expectedFingerprintHex; // e.g. "ab:cd:ef:..." or "abcdef..." (case-insensitive)
+    // NOTE: untyped properties (with @var docblocks) for PHP 7.3 compatibility.
+    // Typed properties are PHP 7.4+; the constructor casts instead.
+    /** @var string */
+    private $host;
+    /** @var int */
+    private $port;
+    /** @var string */
+    private $username;
+    /** @var string|null */
+    private $password;
+    /** @var string|null */
+    private $pubKeyPath;
+    /** @var string|null */
+    private $privKeyPath;
+    /** @var string|null */
+    private $passphrase;
+    /** @var string|null e.g. "ab:cd:ef:..." or "abcdef..." (case-insensitive) */
+    private $expectedFingerprintHex;
     private $conn = null;     // SSH2 connection resource
     private $sftp = null;     // SSH2 SFTP resource
 
@@ -42,13 +52,14 @@ final class NativeSFTP
             throw new RuntimeException('The ssh2 extension is required. Install via PECL: pecl install ssh2');
         }
 
-        $this->host   = $cfg['host'] ?? 'localhost';
+        // Explicit casts stand in for the property type declarations (PHP 7.4+) removed above.
+        $this->host   = (string)($cfg['host'] ?? 'localhost');
         $this->port   = (int)($cfg['port'] ?? 22);
-        $this->username = $cfg['username'] ?? '';
-        $this->password = $cfg['password'] ?? null;
-        $this->pubKeyPath  = $cfg['pub_key']  ?? null;
-        $this->privKeyPath = $cfg['priv_key'] ?? null;
-        $this->passphrase  = $cfg['passphrase'] ?? null;
+        $this->username = (string)($cfg['username'] ?? '');
+        $this->password = isset($cfg['password']) ? (string)$cfg['password'] : null;
+        $this->pubKeyPath  = isset($cfg['pub_key'])  ? (string)$cfg['pub_key']  : null;
+        $this->privKeyPath = isset($cfg['priv_key']) ? (string)$cfg['priv_key'] : null;
+        $this->passphrase  = isset($cfg['passphrase']) ? (string)$cfg['passphrase'] : null;
         $this->expectedFingerprintHex = isset($cfg['fingerprint_hex']) ? strtolower(preg_replace('/[^0-9a-f]/i', '', $cfg['fingerprint_hex'])) : null;
 
         if ($this->username === '') {
@@ -704,7 +715,7 @@ if (!$ok) {
 
     // ===================== Working Directory Support =====================
     /** @var string|null Current working directory for SFTP operations */
-    private ?string $cwd = null;
+    private $cwd = null;
 
     /**
      * Change working directory. Verifies it is a directory on the server.

@@ -82,7 +82,7 @@ After creating the migration file, show the user the file path and remind them t
 
 - Plain SQL migration files -- no proprietary DSL
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
-- `init`, `up`, `down`, `goto`, `status`, `history`, `report`, `ddl`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn`, `version`, `who`/`dbs`, and `env-from-config` commands
+- `init`, `up`, `down`, `goto`, `status`, `history`, `report`, `ddl`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn` (alias `help`), `version`, `who`, `dbs`, and `env-from-config` commands
 - `--dry-run` flag on `up`, `down`, and `goto` to preview SQL without applying changes
 - Timestamp-versioned migrations -- `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
 - Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
@@ -282,8 +282,9 @@ DATABASE_URL="mysql://user:pass@localhost:3306/mydb"
 # SQL Server
 DATABASE_URL="mssql://user:pass@localhost:1433/mydb"
 
-# SQLite
+# SQLite -- three slashes = absolute path, two = relative to the current directory
 DATABASE_URL="sqlite:///path/to/db.sqlite3"
+DATABASE_URL="sqlite://demo.db"
 
 # Oracle (path is the service name)
 DATABASE_URL="oracle://user:pass@host:1521/myservice"
@@ -339,6 +340,7 @@ DATABASE_URL=
 MIGRATION_STYLE=one
 # MIGRATIONS_DIR=./migrations
 # MIGRATIONS_TABLE=schema_migrations
+# MIGRATIONS_SCHEMA=public
 ```
 
 ---
@@ -386,18 +388,22 @@ scm --config /path/to/config.xml env-from-config mydb
 ### `new` -- Create a migration
 
 ```bash
-scm new <name> [--style one|dbmate|two|golang-migrate]
+scm new <name> [--style one|two]
 ```
 
 Generates a timestamped migration file (or pair) in the migrations directory.
 The style defaults to `MIGRATION_STYLE` in `.env` (which defaults to `one`).
+
+> The `--style` **flag** accepts only `one` or `two`. The `MIGRATION_STYLE` **.env
+> variable** also accepts the aliases `dbmate` (= `one`) and `golang-migrate`
+> (= `two`).
 
 ```bash
 # Single-file style (default when MIGRATION_STYLE=one or MIGRATION_STYLE=dbmate)
 scm new create_users_table
 # → migrations/20240601120000_create_users_table.sql
 
-# Two-file style (use --style two or set MIGRATION_STYLE=two in .env)
+# Two-file style (use --style two or set MIGRATION_STYLE=two/golang-migrate in .env)
 scm new create_users_table --style two
 # → migrations/20240601120000_create_users_table.up.sql
 # → migrations/20240601120000_create_users_table.down.sql
@@ -524,17 +530,23 @@ If any migration in the rollback path has no down script, `goto` exits with an e
 scm history
 ```
 
-Lists every migration that has been applied, along with the timestamp recorded in the tracking table. Versions whose file has since been deleted are highlighted in yellow.
+Lists every migration that has been applied, along with who applied it and the
+timestamp recorded in the tracking table. Versions whose file has since been
+deleted are highlighted in yellow.
 
 ```
-Version          Label                   Applied At
------------------------------------------------------
-20240601120000   create_users_table      2024-06-01 12:03:44+00
-20240602083000   add_email_index         2024-06-02 09:11:07+00
-20240603094500   add_orders_table        2024-06-03 10:22:31+00
+Version          Label                   By      Applied At
+------------------------------------------------------------
+20240601120000   create_users_table      alice   2024-06-01 12:03:44+00
+20240602083000   add_email_index         alice   2024-06-02 09:11:07+00
+20240603094500   add_orders_table        bob     2024-06-03 10:22:31+00
 
 3 applied migration(s).
 ```
+
+The `By` column comes from `applied_by`, which scm records automatically on every
+`up`. Rows applied before that column existed show blank until scm's self-healing
+fills the column in (see [Schema Migrations Table](#schema-migrations-table)).
 
 ---
 
@@ -726,11 +738,10 @@ ranges (`1-3`). Blank input cancels with no changes made.
 
 ---
 
-### `who` / `dbs` -- Show current database
+### `who` -- Show current database
 
 ```bash
 scm who
-scm dbs
 scm --db hana-t2 who
 ```
 
@@ -758,10 +769,36 @@ When `--db` is used, the `--db` name and the derived `.env.<name>` file are show
 
 ---
 
-### `learn` -- Quick-start reference
+### `dbs` -- List every configured database
+
+```bash
+scm dbs
+```
+
+Scans the **current directory** for `.env` and `.env.<name>` files and lists the
+database each one points at — the menu of names you can pass to `--db`. Like `who`,
+it makes no connection; it only parses the URLs it finds.
+
+```
+--db       env file        driver    host             database
+──────────────────────────────────────────────────────────────
+(default)  .env            mysql     localhost        mydb
+hana-t2    .env.hana-t2    hana      hana-t2:39015
+ods        .env.ods        postgres  ods-host:5432    ods
+
+3 env file(s) found.  Use --db <name> to target one.
+```
+
+Each file is parsed independently, so one `.env` can't bleed into another. Files with
+no `DATABASE_URL` are listed in yellow as `(not configured)`.
+
+---
+
+### `learn` (alias `help`) -- Quick-start reference
 
 ```bash
 scm learn
+scm help
 ```
 
 Prints a formatted quick-start reference covering setup, daily workflow, migration file
@@ -774,7 +811,7 @@ when writing to a terminal and plain text when piped or redirected.
 
 ```bash
 scm version
-# scm 1.0.0
+# scm.py 1.29.0
 ```
 
 Requires no database connection.
@@ -788,7 +825,7 @@ Requires no database connection.
 | `--url URL` | -- | Database URL. Overrides `DATABASE_URL` and `.env` |
 | `--db NAME` | -- | Database name. Derives `--env-file` and `--path` automatically (see below) |
 | `--env-file FILE` | `.env` (or `.env.<db>`) | Path to `.env` file |
-| `--path DIR` | `./migrations` (or `./migrations/<db>`) | Migrations directory |
+| `--path DIR` | `./migrations/<db>` if it exists, else `./migrations` | Migrations directory |
 | `--config FILE` | *(discovered)* | Path to WaSQL `config.xml` (used by `env-from-config`). Default is found by walking up from the CWD; `WASQL_PATH` in `.env` overrides |
 
 ---
@@ -936,7 +973,19 @@ When working with multiple databases via the onemcp MCP server, use `--db <name>
 scope all scm commands to a specific database. The flag automatically resolves:
 
 - `--env-file` → `.env.<name>` (e.g. `.env.hana-t2`)
-- `--path` → `./migrations/<name>` (e.g. `./migrations/hana-t2`)
+- `--path` → `./migrations/<name>` **if that folder exists**, otherwise the shared
+  `./migrations` (e.g. `./migrations/hana-t2`)
+
+That fallback is deliberate: it lets **one** set of migration files be applied to many
+systems — dev, stage, prod — each selected by its own `.env.<name>`, without keeping a
+duplicate migrations folder per database. Create `migrations/<name>/` only when a
+database genuinely needs its own migration set. An explicit `--path`, or
+`MIGRATIONS_DIR` in the `.env`, always overrides the derivation.
+
+**`.env` layering:** with `--db <name>`, scm loads `.env.<name>` **first** and then the
+base `.env`. Loading is first-wins, so the per-database file controls `DATABASE_URL`
+while the base `.env` fills in anything it doesn't define (e.g. `WASQL_PATH`). Real
+environment variables and `--url` still beat both.
 
 ### Setup (one time per database)
 
@@ -1073,9 +1122,9 @@ The driver is activated automatically when its URL scheme is detected in `DATABA
 | SQLite                        | yes                | yes            | yes            |
 | Oracle                        | yes (built-in)     | no             | no             |
 | SAP HANA                      | yes (built-in)     | no             | no             |
-| Snowflake                     | yes (built-in)     | no             | no             |
+| Snowflake                     | yes (built-in)     | no             | community      |
 | FairCom cTree                 | yes (built-in)     | no             | no             |
-| Firebird                      | yes (built-in)     | no             | no             |
+| Firebird                      | yes (built-in)     | no             | community      |
 | Single-file migrations        | yes                | yes            | no             |
 | Two-file migrations           | yes                | no             | yes            |
 | Down migrations               | yes                | yes            | yes            |
@@ -1089,8 +1138,21 @@ The driver is activated automatically when its URL scheme is detected in `DATABA
 | `show` command                | yes                | no             | no             |
 | `baseline` command            | yes                | no             | no             |
 | `repair` command              | yes                | no             | no             |
+| `report` (who applied what)   | yes                | no             | no             |
+| `ddl` tracking-table check    | yes                | no             | no             |
+| `undo` pending files          | yes                | no             | no             |
+| `who` / `dbs` inspection      | yes                | no             | no             |
+| `--dry-run` preview           | yes                | no             | no             |
 | Extensible drivers            | yes                | no             | limited        |
 | Dependencies                  | pip packages only  | none (binary)  | none (binary)  |
+
+Driver availability in other tools shifts over time (and some engines are gated behind
+paid editions in Flyway/Liquibase or community-maintained drivers in golang-migrate).
+Check their current docs before relying on a cell above. The reason scm exists is the
+combination in the first column: MySQL, PostgreSQL, SQL Server, Oracle, **SAP HANA**,
+Snowflake, and **FairCom cTree** in a single tool with one command set — no other
+migration tool covers that whole set, and cTree and HANA in particular are supported
+nowhere else.
 
 ---
 
