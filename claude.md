@@ -91,6 +91,7 @@ if(!isAdmin()){ setView('no_access',1); return; }    // logged in but not admin
 ## Styling (essentials)
 - **Use framework classes; don't invent them.** Canonical stylesheet **`wfiles/css/extras/wacss_v2.css`** — `wacss_`-prefixed classes with **Bulma-style `is-*` modifiers**; if the site loads **Bulma**, use Bulma's equivalents. `w_btn`/`w_input`/`w_table` do NOT exist; avoid legacy `wasql.css` (`.w_button`…) in new code.
 - Button `class="wacss_button is-primary"` (Bulma `button is-primary`); input `wacss_input` (Bulma `input`); table `wacss_table is-striped` (add `is-sticky` for pinned header — needs the `wacss_table` base, survives section-refresh). Only write custom page `css` for genuinely page-specific layout.
+- **⚠️ Don't use Bulma's `.title`/`.subtitle` for page headings.** wacss's "bulma css helpers" block ships `.title,.wacss-title{font-size:2.5rem !important}` — that beats `is-4`/`is-6` *and* any page rule, and Bulma's `.title + .subtitle` −1.25rem pull then collapses the two into each other. Give the heading a page-owned class (`.rpt-title`) and size it yourself. Same lesson generally: if a class won't take, check the bundle for an `!important` before adding specificity.
 
 ## Config & environment
 - **`isDBStage()` is the ONLY environment switch** (no `isDev`/`isProd`) — true on staging/dev DB.
