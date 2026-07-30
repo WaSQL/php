@@ -13,7 +13,24 @@ When it finishes you have:
 | Database | `wasql_sample` (user `wasql_dbuser` / `wasql_dbpass`) |
 | Config | `config.xml` in the WaSQL directory |
 
-It replaces the manual "Installation" walkthrough in `README.md`.
+It is the recommended way to install WaSQL and replaces the manual
+"Installation" walkthroughs in `README.md`.
+
+On **Windows** it installs into one tidy web server tree — programs in `bin\`,
+everything that is data in `data\`:
+
+| | |
+|---|---|
+| Apache | `C:\webserver\bin\Apache24` |
+| PHP | `C:\webserver\bin\php-<version>` |
+| MySQL programs | `C:\webserver\bin\mysql-<version>` |
+| DocumentRoot | `C:\webserver\data\htdocs` |
+| MySQL data directory | `C:\webserver\data\mysql` |
+
+Move the whole tree elsewhere with `--webserver-root D:\webserver`, or override
+any single path with `--bin-dir`, `--docroot` and `--mysql-data`. On Linux and
+macOS the distro/Homebrew layout is used instead and the DocumentRoot defaults
+to the WaSQL checkout.
 
 ---
 
@@ -76,7 +93,9 @@ Questions asked (each with a default, Enter accepts):
 | Question | Default |
 |---|---|
 | WaSQL directory | the directory holding `install_localhost.py` |
-| Apache DocumentRoot | the WaSQL directory |
+| Web server root *(Windows only)* | `C:\webserver` |
+| Apache DocumentRoot | `C:\webserver\data\htdocs` (Windows) / the WaSQL directory |
+| MySQL data directory *(Windows only)* | `C:\webserver\data\mysql` |
 | Apache port | `80` |
 | Install Apache/PHP/MySQL if missing? | `y` |
 | WaSQL database name / user / password | `wasql_sample` / `wasql_dbuser` / `wasql_dbpass` |
@@ -88,6 +107,9 @@ Questions asked (each with a default, Enter accepts):
 If `config.xml` already exists and already defines a `localhost` host, the
 script **reads the database name/user/password out of it** and uses those as the
 defaults, so it configures MySQL to match the config WaSQL will actually load.
+In the same spirit, if a previous run already configured a DocumentRoot (there
+is a `wasql.conf` next to the Apache config), that path becomes the default so
+re-running to repair an install never silently moves the site.
 
 Then, in order, it:
 
@@ -97,16 +119,22 @@ Then, in order, it:
    permissions, and copies `sample.htaccess` → `<docroot>/.htaccess`.
 4. Writes `config.xml` (only if needed — see §6).
 5. Configures PHP (extensions, limits, timezone).
-6. Writes the Apache config for WaSQL and validates it with `httpd -t`.
+6. Writes the Apache config for WaSQL, validates it with `httpd -t`, and uses
+   `httpd -S` to name the config file that actually owns `localhost`.
 7. Starts MySQL; creates the database, the user and its grants.
 8. Starts/restarts Apache.
 9. **Verifies through Apache**: fetches a temporary check script that reports
-   the PHP version, loaded extensions, directory writability and a real
-   `mysqli` connection with your configured credentials. The check file is
-   deleted afterwards.
+   the PHP version, loaded extensions, the DocumentRoot Apache really used,
+   directory writability and a real `mysqli` connection with your configured
+   credentials. The check file is deleted afterwards.
 10. Runs WaSQL's own setup wizard over HTTP (`/?starttype=wacss`) to create the
     sample site, tables and the `admin` user.
-11. Prints a summary with URLs, paths, service restart commands and any
+11. **Fetches `/`** and says what it actually renders — the WaSQL setup wizard, a
+    WaSQL page, or (a problem) a web server default page. This is checked server
+    side on purpose: a browser that saw an Apache welcome page before the
+    install will happily keep showing its cached copy, so reload with
+    <kbd>Ctrl</kbd>+<kbd>F5</kbd> before believing the browser over this line.
+12. Prints a summary with URLs, paths, service restart commands and any
     warnings.
 
 ---
@@ -116,7 +144,15 @@ Then, in order, it:
 ```
 -y, --yes              accept every default, ask nothing
 --wasql PATH           WaSQL checkout (default: this script's directory)
---docroot PATH         Apache DocumentRoot (default: the WaSQL dir)
+--webserver-root PATH  Windows: the stack's home; programs in bin\, data in
+                       data\ (default C:\webserver)
+--bin-dir PATH         Windows: install Apache/PHP/MySQL here
+                       (default <webserver-root>\bin)
+--mysql-data PATH      Windows: MySQL datadir
+                       (default <webserver-root>\data\mysql)
+--docroot PATH         Apache DocumentRoot (default:
+                       <webserver-root>\data\htdocs on Windows, else the
+                       WaSQL dir)
 --port N               Apache port (default 80)
 --db-name NAME         WaSQL database (default wasql_sample)
 --db-user USER         WaSQL db user (default wasql_dbuser)
@@ -124,8 +160,14 @@ Then, in order, it:
 --mysql-root-pass PASS set/use this MySQL root password
 --sample NAME          wacss | bulma | bootstrap | blank | none
 --php-version X.Y      Windows only: PHP branch to fetch, e.g. 8.4
+--mysql-version V      Windows only: MySQL series or exact version, e.g. 8.4
+                       or 9.6.0 (default 8.4, the LTS line)
+--use-choco            Windows only: install Apache/MySQL with Chocolatey
+                       instead of plain zips (Chocolatey's paths win)
 --timezone TZ          PHP date.timezone
 --skip-install         do not install packages, only configure what is here
+--repair               re-apply everything to the install that is already
+                       here, restart the services, re-verify (implies --yes)
 --force-config         overwrite an existing config.xml (a backup is kept)
 --strict-sql-mode      leave MySQL sql_mode alone (default: relax it)
 --check                only verify an existing install and exit
@@ -142,8 +184,14 @@ python3 install_localhost.py --dry-run --yes -v
 # health check an existing stack (no admin/root needed, changes nothing)
 python3 install_localhost.py --check --yes
 
+# something broke - re-apply every setting and restart the services
+python3 install_localhost.py --repair
+
 # I already run XAMPP/MAMP/my own stack — just configure it for WaSQL
 python3 install_localhost.py --skip-install
+
+# put the whole Windows stack on another drive
+python install_localhost.py -y --webserver-root D:\webserver
 
 # separate document root, non-standard port, no starter site
 python3 install_localhost.py -y --docroot /var/www/html --port 8080 --sample none
@@ -161,17 +209,33 @@ The script only installs what is missing. An existing Apache, PHP or MySQL
 
 ### Windows
 
-| Component | Source |
-|---|---|
-| Apache | Chocolatey `apache-httpd` (+ `vcredist140`) |
-| PHP | downloaded straight from **windows.php.net** — newest **x64 thread-safe** build (TS is required for `mod_php`), extracted to `C:\php-X.Y` |
-| MySQL | Chocolatey `mysql` |
+Everything is a plain zip download, so the install paths are the ones you asked
+for rather than a package manager's:
 
-Chocolatey is installed automatically if it is not present. The PHP directory
-is appended to the machine `PATH`, and the DLLs PHP needs (`libssl`,
-`libcrypto`, `libssh2`, `libsodium`, …) are pulled in with Apache `LoadFile`
-directives so extensions work even before a reboot refreshes `PATH`.
-Services `Apache2.4` and `MySQL` are registered and set to start automatically.
+| Component | Source | Installed to |
+|---|---|---|
+| Visual C++ x64 runtime | `aka.ms/vs/17/release/vc_redist.x64.exe` (skipped if already present) | system |
+| Apache | **apachelounge.com** — newest x64 build (what `httpd.apache.org` points Windows users at) | `bin\Apache24` |
+| PHP | **windows.php.net** — newest **x64 thread-safe** build (TS is required for `mod_php`) | `bin\php-<version>` |
+| MySQL | **cdn.mysql.com** — newest release of the 8.4 LTS line, or `--mysql-version` | `bin\mysql-<version>` |
+
+MySQL gets a generated `my.ini` (`basedir`, `datadir`, port, error log), its data
+directory is created with `mysqld --initialize-insecure` (so `root` starts with
+no password), and the `MySQL` service is registered against that `my.ini`. An
+existing MySQL service or a datadir that already holds system tables is left
+strictly alone.
+
+The PHP, Apache and MySQL `bin` directories are appended to the machine `PATH`,
+and the DLLs PHP needs (`libssl`, `libcrypto`, `libssh2`, `libsodium`, …) are
+pulled in with Apache `LoadFile` directives so extensions work even before a
+reboot refreshes `PATH`. Services `Apache2.4` and `MySQL` are registered and set
+to start automatically.
+
+`--use-choco` falls back to the older behaviour (Chocolatey `apache-httpd` +
+`mysql`, installing Chocolatey itself if needed). Chocolatey hard-codes
+`C:\tools\Apache24`, `C:\tools\mysql\current` and its own datadir, so the
+`bin\`/`data\` layout above is **not** honoured in that mode. It is also used
+automatically if a download source cannot be reached.
 
 ### Linux
 
@@ -229,12 +293,31 @@ original is always the backup).
 | Arch | `/etc/httpd/conf/extra/wasql.conf` | `Include` added to `httpd.conf` |
 | Windows/macOS | `wasql.conf` next to `httpd.conf` | `Include` added to `httpd.conf` |
 
-The generated vhost sets `DocumentRoot`, `DirectoryIndex index.php`, the
-`/php/` and `/wfiles/` aliases, `AllowOverride All`, `Require local`, and
-WaSQL's rewrite rules (real files/directories pass through, everything else
-goes to `/php/index.php?_view=$1`). `mod_rewrite`, `mod_alias`, `mod_dir` and
-friends are uncommented in `httpd.conf` where needed, and `Listen` is pointed at
-your chosen port.
+The generated vhost sets `DocumentRoot`, the `/php/` and `/wfiles/` aliases,
+`AllowOverride All`, `Require local`, and WaSQL's rewrite rules: the site root
+goes to `/php/index.php?_view=index` first (it is a directory, so the
+"real files and directories pass through" rule would skip it), then real
+files/directories pass through and everything else becomes
+`/php/index.php?_view=$1`. `DirectoryIndex` is **`index.php` only** and
+`Options Indexes` is off, so a stray `index.html` in the document root cannot
+shadow the WaSQL home page and a document root without `index.php` cannot turn
+into a directory listing. `mod_rewrite`, `mod_alias`, `mod_dir` and friends are
+uncommented in `httpd.conf` where needed, and `Listen` is pointed at your chosen
+port.
+
+Two placement details matter, and both exist because a leftover vhost is the
+usual reason `localhost` keeps serving somebody else's welcome page:
+
+* the `Include` goes in **right after the last top-level `LoadModule`** rather
+  than at the end of the file. Apache hands a hostname to the *first* matching
+  `<VirtualHost>`, so a stock `ServerName localhost` vhost included further down
+  can no longer take the site over — and every module we reference is loaded by
+  the time our directives are read.
+* the main server's `DocumentRoot` is repointed at yours too, so a request that
+  never reaches the vhost still lands in the right tree.
+
+After writing the config the installer runs `httpd -S` and names the file that
+actually owns `localhost:<port>`, warning you if it is not the WaSQL one.
 
 **PHP** — a drop-in `99-wasql.ini` in PHP's scan directory (Linux/macOS), or
 direct edits to `php.ini` on Windows (created from `php.ini-development` if
@@ -248,7 +331,16 @@ Required extensions (verified, warned about if missing): `mysqli`, `curl`,
 merely reported: `gd`, `intl`, `exif`, `pdo_mysql`, `soap`, `ldap`, `sqlite3`,
 `bcmath`, `sockets`, `zlib`, `iconv`, `gettext`.
 
-**MySQL** — creates the database (`utf8mb4`), creates the user for
+**Windows document root** — when the document root is not the WaSQL checkout
+(the default on Windows), `php` and `wfiles` are also linked into it as
+directory junctions (`mklink /J`), the same way Linux gets symlinks. The Apache
+aliases already cover the URLs; the junctions keep document-root-relative file
+paths working.
+
+**MySQL** — `--mysql-data` applies to a server this installer creates. An
+already-installed MySQL is never relocated; the installer asks it where its
+files are (`SELECT @@datadir`) and prints that instead. It then creates the
+database (`utf8mb4`), creates the user for
 `'user'@'localhost'` and `'user'@'%'`, and grants `ALL PRIVILEGES ON *.* …
 WITH GRANT OPTION` (WaSQL's admin manages schemas, so it needs this). If MySQL's
 password policy rejects the password, the policy is relaxed on this box and the
@@ -300,11 +392,30 @@ the wizard, which you can complete in a browser.
 
 ---
 
-## 8. Re-running, verifying, rolling back
+## 8. Re-running, repairing, verifying, rolling back
 
-**Re-running is safe.** Generated blocks are replaced in place, directories and
-grants use `IF NOT EXISTS`, and an initialised database is left alone. Re-run it
-after moving the checkout, changing ports, or upgrading PHP.
+**Re-running is how you repair an install.** Nothing here is
+install-once: every generated block is replaced in place, directories and grants
+use `IF NOT EXISTS`, an initialised database and datadir are left alone, and a
+`config.xml` that already maps `localhost` is never touched. Re-run it after
+moving the checkout, changing ports, upgrading PHP, or when something simply
+stopped working:
+
+```bash
+python install_localhost.py --repair
+```
+
+`--repair` implies `--yes`, so it re-applies every setting to what is already on
+the box without asking anything: rewrites the Apache and PHP configuration,
+re-registers and restarts the Apache/MySQL services, recreates any missing
+directory, re-creates the database user and grants, then runs the full
+verification. Packages are only downloaded if a component is missing outright —
+add `--skip-install` to forbid even that.
+
+What a repair run will *not* do: overwrite your `config.xml` (pass
+`--force-config`), replace an existing site (an initialised database is
+detected and the wizard skipped), or touch a MySQL datadir that already holds
+system tables.
 
 **Verify at any time** (no admin needed, nothing is changed):
 
@@ -312,14 +423,18 @@ after moving the checkout, changing ports, or upgrading PHP.
 python3 install_localhost.py --check --yes -v
 ```
 
-It reports the PHP version and SAPI as Apache actually runs it, missing
-extensions, unwritable directories, and whether PHP can really connect to the
-database.
+It reports the PHP version and SAPI as Apache actually runs it, the DocumentRoot
+Apache really used, which config file owns the vhost, missing extensions,
+unwritable directories, whether PHP can really connect to the database, and what
+`http://localhost/` returns.
 
 **Rolling back:** restore the `*.wasql-bak` files, or delete the block between
-the `### BEGIN WaSQL … ### END WaSQL` markers, and restart Apache. Packages
-installed by Chocolatey / apt / dnf / Homebrew are removed with those tools —
-the script does not uninstall anything.
+the `### BEGIN WaSQL … ### END WaSQL` markers, and restart Apache. On Windows,
+programs are plain directories under `bin\` — stop the services
+(`net stop Apache2.4`, `net stop MySQL`), unregister them
+(`httpd -k uninstall -n Apache2.4`, `mysqld --remove MySQL`) and delete the
+directories. Packages installed by Chocolatey / apt / dnf / Homebrew are removed
+with those tools — the script does not uninstall anything.
 
 ---
 
@@ -337,6 +452,18 @@ automatically), or point `--php-version` at a branch that has one.
 **404 on every URL / the check step reports 404** — the DocumentRoot Apache is
 using is not the one you told the installer. Check `DocumentRoot` in
 `httpd.conf`, then re-run with the matching `--docroot`.
+
+**`http://localhost/` shows an Apache welcome page** — first believe the
+installer, not the browser: the last step fetches `/` server side and prints
+what it got. If that line says a WaSQL page is being served, your browser is
+showing a cached copy of whatever used to answer on port 80 — reload with
+<kbd>Ctrl</kbd>+<kbd>F5</kbd>. If it says a web server default page is being
+served, another vhost is answering first; run with `--verbose` to see the
+`httpd -S` dump, and comment out the vhost it names.
+
+**`http://localhost/` shows a "Coming Soon!" page** — that *is* WaSQL: it is the
+`wacss` sample site's own index page (`_pages` record `index`). Log into
+<http://localhost/php/admin.php> (admin / admin) and edit it.
 
 **403 Forbidden** — on Linux, Apache cannot traverse into the checkout
 (permissions on a `/home` path) or SELinux is blocking it. Re-run the installer
