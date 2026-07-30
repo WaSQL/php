@@ -20,7 +20,7 @@
  *   php workon.php <alias> [page] [options]
  *
  * Options:
- *   --page=NAME        page to open (overrides positional; default: index)
+ *   --page=NAME        page to open (overrides positional; default: none)
  *   --port=N           Chrome debug port (default: 9222)
  *   --width=N          screenshot viewport width (default: 390)
  *   --shot=PATH        write a screenshot PNG to PATH (skipped if omitted)
@@ -86,7 +86,7 @@ foreach(array_slice($argv, 1) as $a){
 if($alias === null){ fail('usage: php workon.php <alias> [page] [--options]'); }
 if(isset($opts['page'])){ $page = $opts['page']; }
 $pageGiven = ($page !== null && $page !== '');
-if(!$pageGiven){ $page = 'index'; }
+if(!$pageGiven){ $page = ''; }
 
 $port    = isset($opts['port'])  ? (int)$opts['port']  : 9222;
 $width   = isset($opts['width']) ? (int)$opts['width'] : 390;

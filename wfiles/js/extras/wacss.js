@@ -859,6 +859,67 @@ const wacss = {
 		p.querySelector('input[type="checkbox"]').checked=false;
 	},
 	/**
+	* @name wacss.colorPickerSync
+	* @describe syncs a buildFormColorPicker hex text input to its swatch, native color input, and preset highlight - fires on type/change of the hex text field
+	* @param obj el
+	* @return boolean
+	*/
+	colorPickerSync: function(el){
+		let p=wacss.getParent(el,'div','wacss_colorpicker');
+		if(undefined==p || null==p){return false;}
+		let v=el.value;
+		if(!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)){return false;}
+		let swatch=p.querySelector('.wacss_colorpicker_swatch');
+		let native=p.querySelector('input[type="color"]');
+		if(swatch){swatch.style.backgroundColor=v;}
+		if(native && v.length==7){native.value=v;}
+		wacss.colorPickerMarkActive(p,v);
+	},
+	/**
+	* @name wacss.colorPickerPick
+	* @describe applies a color chosen from the browser's native color picker back to a buildFormColorPicker hex text input and swatch
+	* @param obj el
+	* @return boolean
+	*/
+	colorPickerPick: function(el){
+		let p=wacss.getParent(el,'div','wacss_colorpicker');
+		if(undefined==p || null==p){return false;}
+		let v=el.value;
+		let text=p.querySelector('input[type="text"]');
+		let swatch=p.querySelector('.wacss_colorpicker_swatch');
+		if(text){text.value=v;}
+		if(swatch){swatch.style.backgroundColor=v;}
+		wacss.colorPickerMarkActive(p,v);
+	},
+	/**
+	* @name wacss.colorPickerPreset
+	* @describe applies a clicked preset swatch to a buildFormColorPicker control
+	* @param obj el
+	* @return boolean
+	*/
+	colorPickerPreset: function(el){
+		let p=wacss.getParent(el,'div','wacss_colorpicker');
+		if(undefined==p || null==p){return false;}
+		let v=el.dataset.color;
+		let text=p.querySelector('input[type="text"]');
+		let native=p.querySelector('input[type="color"]');
+		let swatch=p.querySelector('.wacss_colorpicker_swatch');
+		if(text){text.value=v;}
+		if(native){native.value=v;}
+		if(swatch){swatch.style.backgroundColor=v;}
+		wacss.colorPickerMarkActive(p,v);
+	},
+	/**
+	* @exclude  - this function in only used internally by buildFormColorPicker
+	*/
+	colorPickerMarkActive: function(p,v){
+		let btns=p.querySelectorAll('.wacss_colorpicker_preset');
+		for(let i=0;i<btns.length;i++){
+			if(btns[i].dataset.color.toLowerCase()==v.toLowerCase()){btns[i].classList.add('is-active');}
+			else{btns[i].classList.remove('is-active');}
+		}
+	},
+	/**
 	* @exclude  - this function is for internal use only and thus excluded from the manual
 	*/
 	colorwheelSet: function(el){

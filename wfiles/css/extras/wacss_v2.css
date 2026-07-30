@@ -292,6 +292,72 @@ fieldset[disabled] .wacss_input:-ms-input-placeholder {
 }
 
 /* ==========================================================================
+   wacss_colorpicker COMPONENT
+   ========================================================================== */
+.wacss_colorpicker {
+  display: inline-block;
+}
+.wacss_colorpicker_control {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+.wacss_colorpicker_control .wacss_input {
+  width: 8.5em;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+.wacss_colorpicker_swatch {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #dbdbdb, 0 2px 6px rgba(10, 10, 10, 0.15);
+  cursor: pointer;
+  overflow: hidden;
+}
+.wacss_colorpicker_swatch:hover {
+  box-shadow: 0 0 0 1px #b5b5b5, 0 2px 6px rgba(10, 10, 10, 0.2);
+}
+.wacss_colorpicker_swatch input[type="color"] {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  border: none;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.wacss_colorpicker_presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  max-width: 16em;
+  margin-top: 0.6em;
+}
+.wacss_colorpicker_preset {
+  width: 1.4em;
+  height: 1.4em;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(10, 10, 10, 0.1);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.wacss_colorpicker_preset:hover {
+  transform: scale(1.15);
+}
+.wacss_colorpicker_preset.is-active {
+  box-shadow: 0 0 0 2px #3273dc;
+}
+
+/* ==========================================================================
    wacss_textarea COMPONENT
    ========================================================================== */
 .wacss_textarea {

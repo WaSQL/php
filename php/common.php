@@ -2802,9 +2802,87 @@ ENDOFIMG;
 	}
 	$map.=buildFormSelect($name.'colorbox_select',$opts,$sparams);
 	$map.='</nav>'.PHP_EOL;
-	
+
 	//return printValue($opts);
 	return $map;
+}
+//---------- begin function buildFormColorPicker-------------------
+/**
+* @describe creates a modern HTML color control - a round swatch button that opens the browser's native color picker (full custom color support), a hex text input kept in sync with it, and a quick-pick preset palette
+* @param name string - field name
+* @param params array
+*	[-formname] string - specify the form name - defaults to addedit
+*	[-presets] array - override the default preset palette - pass hex=>label pairs
+*	[-nopresets] boolean - suppress the preset swatch row - defaults to false
+*	[value] string - specify the current value - defaults to #3273DC
+*	[required] boolean - make it a required field - defaults to addedit false
+*	[id] string - specify the field id - defaults to formname_fieldname
+* @return string - html color control
+* @usage echo buildFormColorPicker('color');
+*/
+function buildFormColorPicker($name,$params=array()){
+	if(!isset($params['-formname'])){$params['-formname']='addedit';}
+	if(isset($params['name'])){$name=$params['name'];}
+	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
+	if(isset($params['requiredif'])){$params['data-requiredif']=$params['requiredif'];}
+	if(isset($params['displayif'])){$params['data-displayif']=$params['displayif'];}
+	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
+	$params['value']=buildFormValueParam($name,$params);
+	if(!is_string($params['value']) || !strlen($params['value'])){
+		$params['value']='#3273DC';
+	}
+	$nativevalue=$params['value'];
+	if(!preg_match('/^#([0-9a-f]{6})$/i',$nativevalue)){
+		$nativevalue='#000000';
+	}
+	$onchange='wacss.colorPickerSync(this);';
+	if(isset($params['onchange']) && is_string($params['onchange']) && strlen($params['onchange'])){
+		$onchange.=$params['onchange'];
+	}
+	$oninput='wacss.colorPickerSync(this);';
+	if(isset($params['oninput']) && is_string($params['oninput']) && strlen($params['oninput'])){
+		$oninput.=$params['oninput'];
+	}
+	$params['onchange']=$onchange;
+	$params['oninput']=$oninput;
+	$presets=array();
+	if(isset($params['-presets']) && is_array($params['-presets'])){
+		$presets=$params['-presets'];
+	}
+	else{
+		$presets=array(
+			'#E53935'=>'Red','#D81B60'=>'Pink','#8E24AA'=>'Purple','#5E35B1'=>'Deep Purple',
+			'#3949AB'=>'Indigo','#1E88E5'=>'Blue','#00ACC1'=>'Cyan','#00897B'=>'Teal',
+			'#43A047'=>'Green','#7CB342'=>'Light Green','#FDD835'=>'Yellow','#FFB300'=>'Amber',
+			'#FB8C00'=>'Orange','#F4511E'=>'Deep Orange','#6D4C41'=>'Brown','#757575'=>'Grey',
+			'#546E7A'=>'Blue Grey','#000000'=>'Black','#FFFFFF'=>'White'
+		);
+	}
+	$tag='';
+	$tag.='<div class="wacss_colorpicker"';
+	if(isset($params['data-displayif']) && is_string($params['data-displayif']) && strlen($params['data-displayif'])){
+		$tag.=' data-displayif="'.$params['data-displayif'].'"';
+		unset($params['data-displayif']);
+	}
+	$tag.='>'.PHP_EOL;
+	$tag.='	<div class="wacss_colorpicker_control">'.PHP_EOL;
+	$tag.='		<label class="wacss_colorpicker_swatch" style="background-color:'.$params['value'].';" title="Pick a custom color">'.PHP_EOL;
+	$tag.='			<input type="color" value="'.$nativevalue.'" tabindex="-1" oninput="wacss.colorPickerPick(this);">'.PHP_EOL;
+	$tag.='		</label>'.PHP_EOL;
+	$tag.='		<input type="text" name="'.$name.'" value="'.$params['value'].'" placeholder="#RRGGBB" maxlength="7"';
+	$tag.=setTagAttributes($params);
+	$tag.=' >'.PHP_EOL;
+	$tag.='	</div>'.PHP_EOL;
+	if(!isset($params['-nopresets']) || !$params['-nopresets']){
+		$tag.='	<div class="wacss_colorpicker_presets">'.PHP_EOL;
+		foreach($presets as $hex=>$label){
+			$active=(strtolower($hex)==strtolower($params['value'])) ? ' is-active' : '';
+			$tag.='		<button type="button" class="wacss_colorpicker_preset'.$active.'" style="background-color:'.$hex.';" data-color="'.$hex.'" title="'.encodeHtml($label).'" onclick="wacss.colorPickerPreset(this);"></button>'.PHP_EOL;
+		}
+		$tag.='	</div>'.PHP_EOL;
+	}
+	$tag.='</div>'.PHP_EOL;
+	return $tag;
 }
 
 //---------- begin function buildFormCombo--------------------
