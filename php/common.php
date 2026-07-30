@@ -2814,13 +2814,14 @@ ENDOFIMG;
 *	[-formname] string - specify the form name - defaults to addedit
 *	[-presets] array - override the default preset palette - pass hex=>label pairs
 *	[-nopresets] boolean - suppress the preset swatch row - defaults to false
-*	[value] string - specify the current value - defaults to #3273DC
+*	[value] string - specify the current value
 *	[required] boolean - make it a required field - defaults to addedit false
 *	[id] string - specify the field id - defaults to formname_fieldname
 * @return string - html color control
 * @usage echo buildFormColorPicker('color');
 */
 function buildFormColorPicker($name,$params=array()){
+	//return $name.printValue($params);
 	if(!isset($params['-formname'])){$params['-formname']='addedit';}
 	if(isset($params['name'])){$name=$params['name'];}
 	if(!isset($params['id'])){$params['id']=$params['-formname'].'_'.$name;}
@@ -2829,11 +2830,7 @@ function buildFormColorPicker($name,$params=array()){
 	$params['class']=commonCoalesce($params['class'],'wacss_input is-mobile-responsive');
 	$params['value']=buildFormValueParam($name,$params);
 	if(!is_string($params['value']) || !strlen($params['value'])){
-		$params['value']='#3273DC';
-	}
-	$nativevalue=$params['value'];
-	if(!preg_match('/^#([0-9a-f]{6})$/i',$nativevalue)){
-		$nativevalue='#000000';
+		$params['value']='';
 	}
 	$onchange='wacss.colorPickerSync(this);';
 	if(isset($params['onchange']) && is_string($params['onchange']) && strlen($params['onchange'])){
@@ -2867,13 +2864,13 @@ function buildFormColorPicker($name,$params=array()){
 	$tag.='>'.PHP_EOL;
 	$tag.='	<div class="wacss_colorpicker_control">'.PHP_EOL;
 	$tag.='		<label class="wacss_colorpicker_swatch" style="background-color:'.$params['value'].';" title="Pick a custom color">'.PHP_EOL;
-	$tag.='			<input type="color" value="'.$nativevalue.'" tabindex="-1" oninput="wacss.colorPickerPick(this);">'.PHP_EOL;
+	$tag.='			<input type="color" value="'.$params['value'].'" tabindex="-1" oninput="wacss.colorPickerPick(this);">'.PHP_EOL;
 	$tag.='		</label>'.PHP_EOL;
 	$tag.='		<input type="text" name="'.$name.'" value="'.$params['value'].'" placeholder="#RRGGBB" maxlength="7"';
 	$tag.=setTagAttributes($params);
 	$tag.=' >'.PHP_EOL;
 	$tag.='	</div>'.PHP_EOL;
-	if(!isset($params['-nopresets']) || !$params['-nopresets']){
+	if(isset($params['-showresets']) && $params['-showresets']){
 		$tag.='	<div class="wacss_colorpicker_presets">'.PHP_EOL;
 		foreach($presets as $hex=>$label){
 			$active=(strtolower($hex)==strtolower($params['value'])) ? ' is-active' : '';

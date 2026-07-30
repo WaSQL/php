@@ -1552,6 +1552,7 @@ function wasqlGetInputtypes($d=0){
 		'buttonselect_m'=>'Button Select Multiple',
 		'checkbox'		=> 'Checkbox',
 		'color'			=> 'Color Wheel',
+		'color_picker'	=> 'Color Picker (Native)',
 		'color_box'		=> 'Color Box',
 		'color_hexagon'	=> 'Color Hexagon',
 		'combo'			=> 'Combo',

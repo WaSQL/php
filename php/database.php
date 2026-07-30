@@ -9354,6 +9354,9 @@ function getDBFieldTag($params=array()){
 		case 'color':
 			$tag=buildFormColor($info[$field]['name'],$info[$field]);
 		break;
+		case 'color_picker':
+			$tag=buildFormColorPicker($info[$field]['name'],$info[$field]);
+		break;
 		case 'color_box':
 			$tag=buildFormColorBox($info[$field]['name'],$info[$field]);
 		break;
