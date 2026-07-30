@@ -64,6 +64,41 @@ $ok   = dbExecuteSQL('postgres_ods', $sql); // non-SELECT
 - Enumerate configured connections via `global $DATABASE; foreach($DATABASE as $name=>$info){ /* $info['dbtype'],['dbhost'],['dbname']… — NEVER print ['dbpass'] */ }`. Active connection = `$CONFIG['db']`.
 - (Legacy: `getDBRecords(['-dbname'=>'x',...])` also exists — older ODBC-oriented path; prefer the `db*` wrappers in new code.)
 
+### TLS / certificate authentication on a connection
+Every attribute on a `<database>` tag is copied into the driver's params as `-{attr}` (`snowflakeParseConnectParams`, `postgresqlParseConnectParams`, `mysqlParseConnectParams`), so cert auth is pure `config.xml` — no code per site. Shared attribute vocabulary:
+
+| attribute | meaning |
+|---|---|
+| `dbcert` | client cert (mysql/pg) **or** the PKCS#8 private key (snowflake key-pair/JWT) |
+| `dbkey` | client private key, when the driver wants cert and key separately (mysql/pg) |
+| `dbcertpass` | passphrase protecting the key |
+| `dbca` | CA bundle used to verify the *server* |
+| `dbcapath` | directory of CA certs (mysql only) |
+| `dbcipher` | cipher list (mysql only) |
+| `dbauth` | snowflake authenticator — defaults to `SNOWFLAKE_JWT` whenever `dbcert` is set |
+| `dbsslmode` | pg `sslmode`. Auto: `verify-full` if `dbca` set, `require` if only cert/key set, else the old `disable` |
+| `dbssl` / `dbsslverify` | mysql: `dbssl="1"` forces TLS with no client cert; `dbsslverify="0"` accepts a self-signed server cert |
+
+**A hand-written `connect` attribute always wins.** Both snowflake and postgres only *add* keys the connect string doesn't already name (case-insensitive), so existing `connect="…"` connections behave exactly as before.
+
+```xml
+<!-- snowflake key-pair auth: dbpass is no longer required -->
+<database name="snowflake_prod" dbtype="snowflake" dbname="SNOW_DSN" dbuser="SVC_WASQL"
+    dbcert="/etc/wasql/certs/snowflake_prod.p8" dbcertpass="xxx"
+    dbaccount="ab12345" dbwarehouse="WH" dbschema="PUBLIC" dbrole="RPT" />
+<!-- postgres client cert -->
+<database name="pg_ods" dbtype="postgresql" dbhost="db.x.com" dbname="ods" dbuser="svc"
+    dbcert="/etc/wasql/certs/ods.crt" dbkey="/etc/wasql/certs/ods.key" dbca="/etc/wasql/certs/ca.crt" />
+```
+Gotchas, all real:
+- **The key must be readable by the apache user** — `0400 root:root` fails as a generic auth error. All three drivers now pre-check and log the true reason (missing vs. unreadable) via `debugValue`.
+- **Snowflake:** the private key can't be passed as a password, so it goes into the ODBC connect string (`AUTHENTICATOR=SNOWFLAKE_JWT;PRIV_KEY_FILE=…;PRIV_KEY_FILE_PWD=…`) and user/pass are then passed to `odbc_pconnect` as **empty strings** — PHP wraps the string as `DSN=<string>;UID=…;PWD=…` if they aren't, which the driver manager misreads as a DSN name. The *public* key must be registered on the Snowflake user (`ALTER USER x SET RSA_PUBLIC_KEY='…'`).
+- **Snowflake `snowsql="1"` connections** use the CLI, not ODBC: the generated config gets `private_key_path=` + `authenticator=SNOWFLAKE_JWT`, and the passphrase goes through the `SNOWSQL_PRIVATE_KEY_PASSPHRASE` env var (snowsql refuses to read it from the config file).
+- **Postgres:** libpq **rejects a key file that is group/world readable** — `chmod 0600`. `pg_hba.conf` needs `cert` or `clientcert=verify-full`. `sslpassword` needs libpq 14+; on older libpq an encrypted key fails with "invalid connection option".
+- **MySQL:** mysqli has no connect string, so `mysqli_ssl_set()` runs between `mysqli_init()` and `mysqli_real_connect()` (`mysqlSetConnectSSL`). Client-cert *auth* also needs `ALTER USER … REQUIRE X509`. mysqlnd does **not** read `[client]` from `my.cnf`, so the attributes are the only route.
+- Passwords/passphrases are masked in snowflake's connect-error dumps (`snowflakeMaskConnectParams`) — keep using it if you add error paths.
+- **Not covered:** the *main* site DB connection for mysql (`databaseConnect()` in `php/database.php`) takes only host/user/pass/dbname and has no TLS support. Named connections only. Also untouched: hana/mssql/oracle (each needs a different mechanism), and file-based drivers where certs are meaningless.
+
 ---
 
 ## Views & templates (deep)

@@ -240,6 +240,82 @@ function snowflakeListRecords($params=array()){
 }
 
 
+//---------- begin function snowflakeCertFileCheck ----------
+/**
+* @describe verifies a private key / cert file exists and can be read by the web server user
+* @param $path string - path to the key or cert file
+* @return string - empty string if the file is usable, otherwise the reason it is not
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage
+*	$err=snowflakeCertFileCheck('/etc/wasql/certs/snowflake.p8');
+*	if(strlen($err)){echo $err;}
+*/
+function snowflakeCertFileCheck($path){
+	if(!commonStrlen($path)){return 'snowflake dbcert error: no path set';}
+	if(!is_file($path)){return "snowflake dbcert error: file not found - {$path}";}
+	if(!is_readable($path)){return "snowflake dbcert error: file is not readable by the web server user - {$path}";}
+	return '';
+}
+//---------- begin function snowflakeMaskConnectParams ----------
+/**
+* @describe masks passwords in a connect params array so it is safe to log
+* @param $params array
+* @return array - the params with every secret replaced by asterisks
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
+*/
+function snowflakeMaskConnectParams($params=array()){
+	if(!is_array($params)){return $params;}
+	foreach(array('-dbpass','-dbcertpass') as $k){
+		if(isset($params[$k]) && commonStrlen($params[$k])){
+			$params[$k]=preg_replace('/./','*',$params[$k]);
+		}
+	}
+	//the built connect string carries the key passphrase too
+	if(isset($params['-connect'])){
+		$params['-connect']=preg_replace('/(PRIV_KEY_FILE_PWD|PWD|PASSWORD)\s*=[^;]*/i','$1=****',$params['-connect']);
+	}
+	return $params;
+}
+//---------- begin function snowflakeCertConnectString ----------
+/**
+* @describe builds an ODBC connect string for snowflake key-pair (JWT) authentication.
+*	The private key cannot be passed as a password, so it has to travel in the connect string.
+*	Anything already named in the -connect attribute wins - a hand written connect string is never overridden.
+* @param $params array - parsed connect params (-connect or -dbname, -dbuser, -dbcert, -dbcertpass, -dbauth)
+* @return string - the ODBC connect string, or an empty string if there is no DSN to build on
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $connect_name=snowflakeCertConnectString($params);
+*/
+function snowflakeCertConnectString($params=array()){
+	$connect='';
+	if(isset($params['-connect']) && commonStrlen(trim($params['-connect']))){
+		$connect=trim($params['-connect']);
+	}
+	elseif(isset($params['-dbname']) && commonStrlen(trim($params['-dbname']))){
+		$connect=trim($params['-dbname']);
+	}
+	if(!commonStrlen($connect)){return '';}
+	//a bare DSN name has to become DSN=name so the driver manager reads it as a connect string
+	if(!stringContains($connect,'=')){$connect="DSN={$connect}";}
+	$connect=rtrim($connect,'; ');
+	$adds=array();
+	if(isset($params['-dbuser']) && commonStrlen($params['-dbuser'])){
+		$adds['UID']=$params['-dbuser'];
+	}
+	$adds['AUTHENTICATOR']=isset($params['-dbauth']) && commonStrlen($params['-dbauth']) ? $params['-dbauth'] : 'SNOWFLAKE_JWT';
+	if(isset($params['-dbcert']) && commonStrlen($params['-dbcert'])){
+		$adds['PRIV_KEY_FILE']=$params['-dbcert'];
+	}
+	if(isset($params['-dbcertpass']) && commonStrlen($params['-dbcertpass'])){
+		$adds['PRIV_KEY_FILE_PWD']=$params['-dbcertpass'];
+	}
+	foreach($adds as $k=>$v){
+		if(preg_match('/(^|;)\s*'.preg_quote($k,'/').'\s*=/i',$connect)){continue;}
+		$connect.=";{$k}={$v}";
+	}
+	return $connect;
+}
 //---------- begin function snowflakeParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
@@ -315,6 +391,36 @@ function snowflakeParseConnectParams($params=array()){
 	else{
 		$params['-dbuser_source']="passed in";
 	}
+	//dbcert - path to the PKCS#8 private key (rsa_key.p8) used for snowflake key-pair (JWT) auth.
+	//	the matching public key must be registered on the snowflake user: ALTER USER x SET RSA_PUBLIC_KEY='...'
+	if(!isset($params['-dbcert'])){
+		if(isset($CONFIG['dbcert_snowflake'])){
+			$params['-dbcert']=$CONFIG['dbcert_snowflake'];
+			$params['-dbcert_source']="CONFIG dbcert_snowflake";
+		}
+		elseif(isset($CONFIG['snowflake_dbcert'])){
+			$params['-dbcert']=$CONFIG['snowflake_dbcert'];
+			$params['-dbcert_source']="CONFIG snowflake_dbcert";
+		}
+	}
+	else{
+		$params['-dbcert_source']="passed in";
+	}
+	//dbcertpass - passphrase protecting the private key. omit for an unencrypted key
+	if(!isset($params['-dbcertpass'])){
+		if(isset($CONFIG['dbcertpass_snowflake'])){
+			$params['-dbcertpass']=$CONFIG['dbcertpass_snowflake'];
+			$params['-dbcertpass_source']="CONFIG dbcertpass_snowflake";
+		}
+		elseif(isset($CONFIG['snowflake_dbcertpass'])){
+			$params['-dbcertpass']=$CONFIG['snowflake_dbcertpass'];
+			$params['-dbcertpass_source']="CONFIG snowflake_dbcertpass";
+		}
+	}
+	else{
+		$params['-dbcertpass_source']="passed in";
+	}
+	//dbpass is NOT required when a dbcert is set - key-pair auth replaces the password entirely
 	if(!isset($params['-dbpass'])){
 		if(isset($CONFIG['dbpass_snowflake'])){
 			$params['-dbpass']=$CONFIG['dbpass_snowflake'];
@@ -324,10 +430,16 @@ function snowflakeParseConnectParams($params=array()){
 			$params['-dbpass']=$CONFIG['snowflake_dbpass'];
 			$params['-dbpass_source']="CONFIG snowflake_dbpass";
 		}
-		else{return 'snowflakeParseConnectParams Error: No dbpass set';}
+		elseif(!isset($params['-dbcert'])){return 'snowflakeParseConnectParams Error: No dbpass or dbcert set';}
+		else{$params['-dbpass']='';}
 	}
 	else{
 		$params['-dbpass_source']="passed in";
+	}
+	//dbauth - authenticator. defaults to SNOWFLAKE_JWT whenever a dbcert is in play
+	if(isset($params['-dbcert']) && commonStrlen($params['-dbcert']) && !isset($params['-dbauth'])){
+		$params['-dbauth']='SNOWFLAKE_JWT';
+		$params['-dbauth_source']="defaulted for dbcert";
 	}
 	if(isset($CONFIG['snowflake_cursor'])){
 		switch(strtoupper($CONFIG['snowflake_cursor'])){
@@ -360,15 +472,31 @@ function snowflakeDBConnect($params=array()){
 		$connect_name=$params['-dbname'];
 	}
 	else{
-		debugValue(array("snowflakeDBConnect error: no dbname or connect param",$params));
+		debugValue(array("snowflakeDBConnect error: no dbname or connect param",snowflakeMaskConnectParams($params)));
 		return null;
+	}
+	//key-pair (JWT) auth - the private key has to travel in the connect string instead of the password.
+	//	PHP wraps the connect string as DSN=<string>;UID=<u>;PWD=<p> when a user AND password are passed in,
+	//	which the driver manager then reads as a DSN name, so both must be empty here.
+	$dbuser=isset($params['-dbuser']) ? $params['-dbuser'] : '';
+	$dbpass=isset($params['-dbpass']) ? $params['-dbpass'] : '';
+	if(isset($params['-dbcert']) && commonStrlen($params['-dbcert'])){
+		$certerr=snowflakeCertFileCheck($params['-dbcert']);
+		if(commonStrlen($certerr)){
+			$error=array("snowflakeDBConnect Error",$certerr);
+			debugValue($error);
+			return json_encode($error);
+		}
+		$params['-connect']=$connect_name=snowflakeCertConnectString($params);
+		$dbuser='';
+		$dbpass='';
 	}
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
-			$dbh_snowflake_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			$dbh_snowflake_single = odbc_connect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
 		}
 		else{
-			$dbh_snowflake_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
+			$dbh_snowflake_single = odbc_connect($connect_name,$dbuser,$dbpass,SQL_CUR_USE_ODBC);
 		}
 		if(!commonIsResourceOrObject($dbh_snowflake_single)){
 			$e=odbc_errormsg();
@@ -383,24 +511,23 @@ function snowflakeDBConnect($params=array()){
 
 	try{
 		if(isset($params['-cursor'])){
-			$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
 		}
 		else{
-			$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],SQL_CUR_USE_ODBC);
+			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,SQL_CUR_USE_ODBC);
 		}
 		if(!commonIsResourceOrObject($dbh_snowflake)){
 			//wait a few seconds and try again
 			sleep(5);
 			if(isset($params['-cursor'])){
-				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
 			}
 			else{
-				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass );
 			}
 			if(!commonIsResourceOrObject($dbh_snowflake)){
 				$e=odbc_errormsg();
-				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-				$error=array("snowflakeDBConnect Error",$e,$params);
+				$error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
 			    debugValue($error);
 			    return json_encode($error);
 			}
@@ -409,15 +536,14 @@ function snowflakeDBConnect($params=array()){
 			//wait a few seconds and try a third time
 			sleep(5);
 			if(isset($params['-cursor'])){
-				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
 			}
 			else{
-				$dbh_snowflake = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass );
 			}
 			if(!commonIsResourceOrObject($dbh_snowflake)){
 				$e=odbc_errormsg();
-				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-				$error=array("snowflakeDBConnect Error",$e,$params);
+				$error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
 			    debugValue($error);
 			    return json_encode($error);
 			}
@@ -1293,18 +1419,44 @@ function snowflakeQueryResults($query,$params=array()){
 	elseif(isset($DATABASE[$db]['dbhost'])){
 		$accountname=preg_replace('/\.snowflakecomputing\.com.*/i','',$DATABASE[$db]['dbhost']);
 	}
+		$snowuser=isset($DATABASE[$db]['dbuser']) ? $DATABASE[$db]['dbuser'] : '';
+		$snowdbname=isset($DATABASE[$db]['dbname']) ? $DATABASE[$db]['dbname'] : '';
+		$snowschema=isset($DATABASE[$db]['dbschema']) ? $DATABASE[$db]['dbschema'] : '';
+		$snowwarehouse=isset($DATABASE[$db]['dbwarehouse']) ? $DATABASE[$db]['dbwarehouse'] : '';
+		$snowrole=isset($DATABASE[$db]['dbrole']) ? $DATABASE[$db]['dbrole'] : '';
+		$snowcert=isset($DATABASE[$db]['dbcert']) ? $DATABASE[$db]['dbcert'] : '';
+		$snowcertpass=isset($DATABASE[$db]['dbcertpass']) ? $DATABASE[$db]['dbcertpass'] : '';
+		//key-pair (JWT) auth uses private_key_path instead of a password
+		if(commonStrlen($snowcert)){
+			$certerr=snowflakeCertFileCheck($snowcert);
+			if(commonStrlen($certerr)){
+				$DATABASE['_lastquery']['error']=$certerr;
+				debugValue($DATABASE['_lastquery']);
+				flock($lockfh, LOCK_UN);
+				fclose($lockfh);
+				@unlink($lockfile);
+				@unlink($sqlfile);
+				return 0;
+			}
+			$authlines="private_key_path={$snowcert}\nauthenticator=SNOWFLAKE_JWT";
+		}
+		else{
+			$snowpass=isset($DATABASE[$db]['dbpass']) ? $DATABASE[$db]['dbpass'] : '';
+			$authlines="password={$snowpass}\nauthenticator=snowflake";
+		}
     $constr = <<<ENDOFCON
 [connections]
 accountname={$accountname}
-username={$DATABASE[$db]['dbuser']}
-password={$DATABASE[$db]['dbpass']}
-dbname={$DATABASE[$db]['dbname']}
-schemaname={$DATABASE[$db]['dbschema']}
-warehouse={$DATABASE[$db]['dbwarehouse']}
-rolename={$DATABASE[$db]['dbrole']}
-authenticator=snowflake
+username={$snowuser}
+dbname={$snowdbname}
+schemaname={$snowschema}
+warehouse={$snowwarehouse}
+rolename={$snowrole}
+{$authlines}
 ENDOFCON;
 	    setFileContents($confile, $constr);
+	    //the config file holds credentials - keep it to the web server user
+	    @chmod($confile, 0600);
 
 	    // Ensure a clean temp target. We DO NOT delete the final file here (other readers might rely on it).
 	    if (is_file($tmpfile)) { @unlink($tmpfile); }
@@ -1319,7 +1471,11 @@ ENDOFCON;
 	    );
 
 	    $starttime = microtime(true);
+	    //snowsql will only take the private key passphrase from the environment, never from the config file
+	    $setcertpass=commonStrlen($snowcert) && commonStrlen($snowcertpass) && function_exists('putenv') ? 1 : 0;
+	    if($setcertpass==1){putenv("SNOWSQL_PRIVATE_KEY_PASSPHRASE={$snowcertpass}");}
 	    $out = cmdResults($cmd);
+	    if($setcertpass==1){putenv("SNOWSQL_PRIVATE_KEY_PASSPHRASE");}
 	    $DATABASE['_lastquery']['stop'] = microtime(true);
 	    $DATABASE['_lastquery']['time'] = $DATABASE['_lastquery']['stop'] - $DATABASE['_lastquery']['start'];
 

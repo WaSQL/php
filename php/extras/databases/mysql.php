@@ -1102,6 +1102,65 @@ function mysqlParseConnectParamsOLD($params=array()){
 	}
 	return $params;
 }
+//---------- begin function mysqlCertFileCheck ----------
+/**
+* @describe verifies a cert / key / CA file exists and can be read by the web server user
+* @param $path string - path to the file
+* @param $label string - which attribute it came from, used in the message
+* @return string - empty string if the file is usable, otherwise the reason it is not
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage
+*	$err=mysqlCertFileCheck($params['-dbcert'],'dbcert');
+*	if(strlen($err)){echo $err;}
+*/
+function mysqlCertFileCheck($path,$label='dbcert'){
+	if(!commonStrlen($path)){return "mysql {$label} error: no path set";}
+	if($label=='dbcapath'){
+		if(!is_dir($path)){return "mysql {$label} error: directory not found - {$path}";}
+		return '';
+	}
+	if(!is_file($path)){return "mysql {$label} error: file not found - {$path}";}
+	if(!is_readable($path)){return "mysql {$label} error: file is not readable by the web server user - {$path}";}
+	return '';
+}
+//---------- begin function mysqlSetConnectSSL ----------
+/**
+* @describe sets TLS / client certificate options on a mysqli handle. mysqli has no connect string, so this
+*	MUST be called between mysqli_init() and mysqli_real_connect(). Does nothing unless a TLS attribute is set.
+*	dbcert=client cert, dbkey=client private key, dbca=CA bundle, dbcapath=CA directory, dbcipher=cipher list,
+*	dbssl=1 forces TLS with no client cert, dbsslverify=0 allows a self signed server cert.
+* @param $dbh mysqli - handle from mysqli_init()
+* @param $params array - parsed connect params
+* @return integer - the flags to pass to mysqli_real_connect. 0 when TLS is not in use
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $sslflags=mysqlSetConnectSSL($dbh_mysql,$params);
+*/
+function mysqlSetConnectSSL($dbh,$params=array()){
+	$vals=array();
+	foreach(array('dbcert','dbkey','dbca','dbcapath','dbcipher') as $k){
+		$vals[$k]=isset($params["-{$k}"]) && commonStrlen($params["-{$k}"]) ? $params["-{$k}"] : '';
+	}
+	$forcessl=isset($params['-dbssl']) && $params['-dbssl']==1 ? 1 : 0;
+	if($forcessl==0 && !commonStrlen($vals['dbcert'].$vals['dbkey'].$vals['dbca'].$vals['dbcapath'])){return 0;}
+	//log an unusable file but still pass it through so mysqli reports the failure too
+	foreach(array('dbcert','dbkey','dbca','dbcapath') as $k){
+		if(!commonStrlen($vals[$k])){continue;}
+		$err=mysqlCertFileCheck($vals[$k],$k);
+		if(commonStrlen($err)){debugValue("mysqlSetConnectSSL: {$err}");}
+	}
+	mysqli_ssl_set($dbh,
+		commonStrlen($vals['dbkey']) ? $vals['dbkey'] : null,
+		commonStrlen($vals['dbcert']) ? $vals['dbcert'] : null,
+		commonStrlen($vals['dbca']) ? $vals['dbca'] : null,
+		commonStrlen($vals['dbcapath']) ? $vals['dbcapath'] : null,
+		commonStrlen($vals['dbcipher']) ? $vals['dbcipher'] : null
+	);
+	$flags=MYSQLI_CLIENT_SSL;
+	if(isset($params['-dbsslverify']) && $params['-dbsslverify']==0 && defined('MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT')){
+		$flags=$flags | MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT;
+	}
+	return $flags;
+}
 //---------- begin function mysqlDBConnect ----------
 /**
 * @describe connects to a mysql database and returns the handle resource
@@ -1149,7 +1208,9 @@ function mysqlDBConnect($params=array()){
 		// mysqli_connect() has no timeout parameter; use init+options+real_connect
 		$dbh_mysql = mysqli_init();
 		mysqli_options($dbh_mysql, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
-		$connected = @mysqli_real_connect($dbh_mysql, $host, $params['-dbuser'], $params['-dbpass'], $params['-dbname'], $port);
+		//TLS / client cert - must be set before real_connect. returns 0 when no TLS attributes are set
+		$sslflags=mysqlSetConnectSSL($dbh_mysql,$params);
+		$connected = @mysqli_real_connect($dbh_mysql, $host, $params['-dbuser'], $params['-dbpass'], $params['-dbname'], $port, null, $sslflags);
 		if(!$connected || !commonIsResourceOrObject($dbh_mysql)){
 			$err=@mysqli_connect_error();
 			$CONFIG['mysql_error']=$err;

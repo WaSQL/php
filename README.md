@@ -26,7 +26,49 @@ You can find instructional videos at https://www.youtube.com/channel/UC9FSUWNqd6
 ## How can I Help WaSQL become better?
 Feel free to request changes via github.  You can also help by donating to the cause.  Donations can be sent via PayPal to steve.lloyd@gmail.com
 
-## Installation - Windows
+## Installation - the easy way (recommended)
+WaSQL ships an installer that sets up the whole stack for you - **Apache + PHP +
+MySQL** - on **Windows, Linux or macOS**, wires it together, creates the
+database and builds a starter site. It needs nothing but Python 3.8+ and
+administrator/root rights.
+
+```bash
+git clone https://github.com/WaSQL/php.git wasql
+cd wasql
+python install_localhost.py            # Windows: from an elevated prompt
+python3 install_localhost.py           # Linux / macOS (re-execs under sudo)
+```
+
+It asks a few questions (each with a default, Enter accepts), prints the plan,
+then runs unattended. Add `--yes` to accept every default and ask nothing:
+
+```bash
+python install_localhost.py --yes --sample wacss
+```
+
+When it finishes you have <http://localhost/> serving a sample site and
+<http://localhost/php/admin.php> for the admin interface (login **admin /
+admin**).
+
+On Windows the default layout is:
+
+| | |
+|---|---|
+| Apache / PHP / MySQL programs | `C:\webserver\bin\` |
+| DocumentRoot | `C:\webserver\data\htdocs` |
+| MySQL data directory | `C:\webserver\data\mysql` |
+
+Re-running the installer is safe - it repairs an existing install rather than
+duplicating it (`--repair`), and `--check` verifies one without changing
+anything. Full details, every command line option, and troubleshooting are in
+**[install_localhost.md](install_localhost.md)**.
+
+The manual walkthroughs below are kept for reference, or for wiring WaSQL into a
+stack you already run (XAMPP, MAMP, a distro package). To configure an existing
+stack without installing anything, use `python install_localhost.py
+--skip-install`.
+
+## Installation - Windows (manual)
 - **Install git**
 	-  you can install git by going to https://git-scm.com/download/win.  This will download the latest git client.  I suggest selecting "Use Git and optional Unix tools from the Windows Command Prompt".  If you are not comfortable with this option, select "Use Git from the Windows Command Prompt" option. Select the default options for the rest.
 - **Install WaSQL**
@@ -80,7 +122,7 @@ LoadModule rewrite_module modules/mod_rewrite.so
 	- using a browser open http://localhost.  If all went well you will see the sample website wizard. Select the one you want and click on the Install button.
 	- using a browser open http://localhost/a.  This should take you the the wasql admin interface. Enter admin/admin as the default user/pass.
 
-## Installation - Linux
+## Installation - Linux (manual)
 - **Install git**
 	-  if you don't already have it installed, install git.  Depending on your linux flavor this will be different.
 - **Install WaSQL**

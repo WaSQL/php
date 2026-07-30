@@ -2797,6 +2797,66 @@ function postgresqlListRecords($params=array()){
 	$params['-database']='postgresql';
 	return databaseListRecords($params);
 }
+//---------- begin function postgresqlCertFileCheck ----------
+/**
+* @describe verifies a cert / key / CA file exists and can be read by the web server user
+* @param $path string - path to the file
+* @param $label string - which attribute it came from, used in the message
+* @return string - empty string if the file is usable, otherwise the reason it is not
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage
+*	$err=postgresqlCertFileCheck($params['-dbcert'],'dbcert');
+*	if(strlen($err)){echo $err;}
+*/
+function postgresqlCertFileCheck($path,$label='dbcert'){
+	if(!commonStrlen($path)){return "postgresql {$label} error: no path set";}
+	if(!is_file($path)){return "postgresql {$label} error: file not found - {$path}";}
+	if(!is_readable($path)){return "postgresql {$label} error: file is not readable by the web server user - {$path}";}
+	return '';
+}
+//---------- begin function postgresqlAddConnectSSL ----------
+/**
+* @describe adds TLS / client certificate options to the connect string.
+*	Applies to both a built connect string and one passed in via the connect attribute, but only ever ADDS -
+*	anything already named in the connect string wins, so a hand written connect attribute is never overridden.
+*	dbcert=client cert, dbkey=client private key, dbca=CA bundle, dbcertpass=key passphrase, dbsslmode=sslmode.
+*	sslmode defaults to verify-full when a dbca is set, require when only a cert/key is set.
+* @param $params array - parsed connect params
+* @return array - the params with -connect extended
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $params=postgresqlAddConnectSSL($params);
+*/
+function postgresqlAddConnectSSL($params=array()){
+	if(!isset($params['-connect'])){return $params;}
+	//default the mode when certs are in play but no mode was named
+	if(!isset($params['-dbsslmode'])){
+		if(isset($params['-dbca']) && commonStrlen($params['-dbca'])){
+			$params['-dbsslmode']='verify-full';
+		}
+		elseif((isset($params['-dbcert']) && commonStrlen($params['-dbcert'])) || (isset($params['-dbkey']) && commonStrlen($params['-dbkey']))){
+			$params['-dbsslmode']='require';
+		}
+	}
+	$map=array(
+		'sslcert'		=> '-dbcert',
+		'sslkey'		=> '-dbkey',
+		'sslrootcert'	=> '-dbca',
+		'sslpassword'	=> '-dbcertpass',
+		'sslmode'		=> '-dbsslmode'
+	);
+	foreach($map as $key=>$pkey){
+		if(!isset($params[$pkey]) || !commonStrlen($params[$pkey])){continue;}
+		//already named in the connect string - leave it alone
+		if(preg_match('/(^|\s)'.$key.'\s*=/i',$params['-connect'])){continue;}
+		//log an unusable file but still pass it through so libpq reports the failure too
+		if(in_array($pkey,array('-dbcert','-dbkey','-dbca'))){
+			$err=postgresqlCertFileCheck($params[$pkey],ltrim($pkey,'-'));
+			if(commonStrlen($err)){debugValue("postgresqlAddConnectSSL: {$err}");}
+		}
+		$params['-connect'].=" {$key}={$params[$pkey]}";
+	}
+	return $params;
+}
 //---------- begin function postgresqlParseConnectParams ----------
 /**
 * @describe parses the params array and checks in the CONFIG if missing
@@ -2844,6 +2904,10 @@ function postgresqlParseConnectParams($params=array()){
 		if(isset($CONFIG['dbconnect'])){
 			$params['-connect']=$CONFIG['dbconnect'];
 		}
+		//TLS / client certificate attributes
+		foreach(array('dbcert','dbkey','dbca','dbcertpass','dbsslmode') as $k){
+			if(isset($CONFIG[$k])){$params["-{$k}"]=$CONFIG[$k];}
+		}
 	}
 	//dbhost
 	if(!isset($params['-dbhost'])){
@@ -2888,6 +2952,10 @@ function postgresqlParseConnectParams($params=array()){
 		elseif(isset($CONFIG['postgresql_dbpass'])){
 			$params['-dbpass']=$CONFIG['postgresql_dbpass'];
 			//$params['-dbpass_source']="CONFIG postgresql_dbpass";
+		}
+		else{
+			//cert auth (dbcert/dbkey) connects without a password
+			$params['-dbpass']='';
 		}
 	}
 	else{
@@ -2981,14 +3049,22 @@ function postgresqlParseConnectParams($params=array()){
 		if(!stringContains($params['-connect'],'connect_timeout')){
 			$params['-connect'].=" connect_timeout=5";
 		}
-		//add sslmode=disable
+		//add sslmode=disable - skipped when TLS/cert attributes are set, postgresqlAddConnectSSL sets the mode then
 		if(!stringContains($params['-connect'],'sslmode')){
-			$params['-connect'].=" sslmode=disable";
+			$usessl=0;
+			foreach(array('-dbcert','-dbkey','-dbca','-dbsslmode') as $k){
+				if(isset($params[$k]) && commonStrlen($params[$k])){$usessl=1;}
+			}
+			if($usessl==0){
+				$params['-connect'].=" sslmode=disable";
+			}
 		}
 	}
 	else{
 		//$params['-connect_source']="passed in";
 	}
+	//TLS / client cert options - additive only, so a hand written connect attribute is never overridden
+	$params=postgresqlAddConnectSSL($params);
 	return $params;
 }
 //---------- begin function postgresqlQueryResults ----------
