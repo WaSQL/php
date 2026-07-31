@@ -11,8 +11,12 @@
  *      booting/confirming instead of running back-to-back with it.
  *   3. Ensure a debug Chrome is up on the debug port and showing the page
  *      (reuse an already-running debug instance; only launch if none).
- *   4. Confirm the Chrome target for the page exists.
- *   5. (optional) Capture a mobile screenshot via Node CDP + a 1px reflow nudge.
+ *   4. Confirm the Chrome target for the page exists (retrying the tab-open,
+ *      and printing the open tabs if it still fails).
+ *   5. (optional) Capture a mobile screenshot via Node CDP + a 1px reflow nudge,
+ *      creating the output directory if needed.
+ *   6. Print a mirror inventory: the named page's record id and the local path
+ *      + size of each of its fields, plus the other records on disk.
  *
  * It does NOT call the wamcp `setdb` MCP tool - that is a separate MCP call the
  * assistant makes itself. Everything else lives here so the whole routine is a
@@ -21,22 +25,12 @@
  * Usage:
  *   php workon.php <alias> [page] [options]
  *
- * Options:
- *   --page=NAME        page to open (overrides positional; default: none)
- *   --port=N           Chrome debug port (default: 9222)
- *   --width=N          screenshot viewport width (default: 390)
- *   --shot=PATH        write a screenshot PNG to PATH (skipped if omitted)
- *   --no-watcher       do not launch the PostEdit watcher if it's missing
- *   --filter=a,b       explicit watcher filter(s) (default: the named page)
- *   --no-filter        watcher watches ALL records, not just the named page
- *   --no-shot          never screenshot (default when --shot not given)
- *   --chrome=PATH      explicit Chrome executable
- *   --profile=PATH     Chrome debug --user-data-dir (default: temp/wasql-chrome-debug)
- *   --json             emit ONLY a machine-readable JSON summary as the last
- *                       line - suppresses the human-readable "* label : ..."
- *                       lines (they'd otherwise duplicate the same info)
+ * `php workon.php --help` prints the full capability + option reference; that
+ * help text (see usage() below) is the single source of truth, so add new
+ * options there rather than duplicating the list in this header.
  *
- * Exit code 0 on success, non-zero if the page target could not be confirmed.
+ * Exit code 0 on success, 2 if the page target could not be confirmed, 1 on a
+ * usage/setup error.
  */
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
@@ -46,9 +40,88 @@ $ROOT   = __DIR__;                       // repo root (this file lives there)
 $XML    = $ROOT . DIRECTORY_SEPARATOR . 'postedit' . DIRECTORY_SEPARATOR . 'postedit.xml';
 
 // ---- tiny helpers ---------------------------------------------------------
-function out($msg){ fwrite(STDOUT, $msg . PHP_EOL); }
-function err($msg){ fwrite(STDERR, $msg . PHP_EOL); }
+// Every line is also appended to a per-alias log file. Callers are told never
+// to pipe this script through a pager (detached children hold the pipe open and
+// the output is never seen) - the log is the recovery path when that happens
+// anyway, or when a caller redirects to a file it then can't find.
+$LOGFILE = null;
+function logLine($msg){
+	global $LOGFILE;
+	if($LOGFILE){ @file_put_contents($LOGFILE, $msg . PHP_EOL, FILE_APPEND); }
+}
+function out($msg){ fwrite(STDOUT, $msg . PHP_EOL); logLine($msg); }
+function err($msg){ fwrite(STDERR, $msg . PHP_EOL); logLine($msg); }
 function fail($msg){ err('ERROR: ' . $msg); exit(1); }
+
+/** Full capability/option reference - `php workon.php --help`. */
+function usage(){
+	out(<<<'TXT'
+workon.php - one-shot startup for a "work on {site} {page}" session.
+
+  php workon.php <alias|wasql> [page] [options]
+
+Everything below happens in ONE process, so the whole startup costs a single
+permission approval instead of one per step (no separate curl / mkdir / find).
+
+WHAT IT DOES
+  1. Resolves {alias} -> host from postedit/postedit.xml and builds the URL.
+     Alias 'wasql' = local framework mode: http://localhost/php/admin.php,
+     no PostEdit, no watcher, repo files are edited directly.
+  2. Ensures the PostEdit watcher is running for {alias}, FILTERED to the named
+     page (only records whose name contains it are synced/watched -> fast
+     startup). An already-running watcher is reported, never restarted, because
+     postedit.php's startup re-sync is destructive: it backs up postEditFiles/
+     {alias} to {alias}_bak, deletes the working files and re-downloads them.
+  3. Ensures a debug Chrome is up on the debug port and showing the page.
+     Reuses an already-running debug instance (opens a tab in it via PUT on
+     /json/new, with GET + curl fallbacks); only launches Chrome if none.
+  4. Confirms the page's Chrome target exists, retrying the tab-open once. If it
+     still fails, it PRINTS THE OPEN TABS so you can diagnose without a curl.
+  5. Optional mobile screenshot via Node + CDP, with the 1px reflow nudge baked
+     in. Creates the --shot parent directory if it doesn't exist.
+  6. Mirror inventory: the named page's record id and the full local path +
+     size of every one of its fields (body/controller/functions/css/js), then
+     the other records on disk with their ids. Read the field you need straight
+     from this - it replaces the find/ls over postEditFiles.
+
+ARGUMENTS
+  <alias>            postedit.xml alias (e.g. dexpdq), or 'wasql' for local mode
+  [page]             page/record to open and filter on (default: index, or
+                     php/admin.php in local mode)
+
+OPTIONS
+  --page=NAME        page to open (overrides the positional arg)
+  --port=N           Chrome debug port (default: 9222)
+  --chrome=PATH      explicit Chrome executable
+  --profile=PATH     Chrome --user-data-dir (default: temp/wasql-chrome-debug)
+  --shot[=PATH]      write a screenshot PNG (bare --shot -> a temp path)
+  --no-shot          never screenshot (the default when --shot is absent)
+  --width=N          screenshot viewport width (default: 390 = mobile)
+  --no-watcher       do not launch the PostEdit watcher if it's missing
+  --filter=a,b       explicit watcher filter(s) instead of the page name
+  --no-filter        watcher syncs/watches ALL records - needed when you also
+                     need the page's _templates record or other pages
+  --inv-max=N        max "other records" listed in the inventory (default: 40)
+  --no-inventory     skip the mirror inventory entirely
+  --json             emit ONLY a machine-readable JSON summary (last line)
+  --log=PATH         copy all output here (default: temp/wasql-workon-{alias}.log,
+                     truncated each run); --no-log disables it
+  --help             this text
+
+AFTERWARDS (the assistant does these - workon.php cannot)
+  * setdb <name>     wamcp MCP call. The wamcp DB name often differs from the
+                     postedit alias (e.g. dexpdq -> dexpdq_mysql); if the alias
+                     isn't found, list names with the wamcp `databases` tool.
+  * Read the PNG     the screenshot is only written, never displayed.
+
+GOTCHAS
+  * NEVER pipe this through tail/head - it launches detached children and a
+    pager will buffer forever, showing nothing. Redirect to a file instead.
+    Every run also copies its output to temp/wasql-workon-{alias}.log.
+  * Exit code: 0 = target confirmed, 2 = not confirmed, 1 = usage/setup error.
+TXT
+	);
+}
 
 /**
  * GET a debug-endpoint URL, return body or null on failure.
@@ -65,6 +138,37 @@ function httpGet($url, $timeout = 2){
 	]]);
 	$body = @file_get_contents($url, false, $ctx);
 	return ($body === false) ? null : $body;
+}
+
+/**
+ * Open a URL as a new tab in an already-running debug Chrome.
+ *
+ * Chrome 111+ only accepts PUT on /json/new (a GET returns 405), so PUT is
+ * tried first, then the legacy GET, then curl as a last resort.
+ *
+ * IMPORTANT: "the request returned a body" is NOT a success test. httpGet()
+ * sets ignore_errors, so a 405 comes back as a normal body string - which is
+ * why the old `if($new === null)` fallback never fired and the tab silently
+ * never got created. Success = a parseable target object with an id.
+ */
+function newTab($jsonUrl, $url){
+	$endpoint = $jsonUrl . '/new?' . $url;
+	$isTarget = function($body){
+		if(!$body){ return false; }
+		$j = json_decode($body, true);
+		return (is_array($j) && !empty($j['id']));
+	};
+	foreach(['PUT', 'GET'] as $method){
+		$ctx = stream_context_create(['http' => [
+			'method'           => $method,
+			'protocol_version' => 1.1,
+			'timeout'          => 5,
+			'ignore_errors'    => true,
+			'header'           => "Connection: close\r\n",
+		]]);
+		if($isTarget(@file_get_contents($endpoint, false, $ctx))){ return true; }
+	}
+	return $isTarget(@shell_exec('curl -s -X PUT "' . $endpoint . '" 2>&1'));
 }
 
 /**
@@ -104,15 +208,35 @@ foreach(array_slice($argv, 1) as $a){
 	} elseif($alias === null){ $alias = $a; }
 	elseif($page === null){ $page = $a; }
 }
-if($alias === null){ fail('usage: php workon.php <alias> [page] [--options]'); }
+if(isset($opts['help']) || isset($opts['h']) || $alias === '?'){ usage(); exit(0); }
+if($alias === null){
+	err('ERROR: no alias given.');
+	usage();
+	exit(1);
+}
 if(isset($opts['page'])){ $page = $opts['page']; }
 $pageGiven = ($page !== null && $page !== '');
 if(!$pageGiven){ $page = ''; }
 
+// Log file: --log=PATH, or temp/wasql-workon-{alias}.log. Truncated per run so
+// it always holds exactly the last run, never an ever-growing pile.
+if(!isset($opts['no-log'])){
+	$LOGFILE = (isset($opts['log']) && $opts['log'] !== true)
+		? $opts['log']
+		: sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-workon-'
+			. preg_replace('/[^a-z0-9_\-]/i', '', $alias) . '.log';
+	@file_put_contents($LOGFILE, '');
+}
+
 $port    = isset($opts['port'])  ? (int)$opts['port']  : 9222;
 $width   = isset($opts['width']) ? (int)$opts['width'] : 390;
 $doShot  = isset($opts['shot']) && !isset($opts['no-shot']);
-$shotOut = $doShot ? $opts['shot'] : null;
+// `--shot` with no =PATH still means "take one" - fall back to a temp file
+// rather than using the boolean `true` as a filename.
+$shotOut = !$doShot ? null
+	: (($opts['shot'] === true)
+		? sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-shot-' . preg_replace('/[^a-z0-9_\-]/i', '', $alias) . '.png'
+		: $opts['shot']);
 $doWatch = !isset($opts['no-watcher']);
 $profile = isset($opts['profile']) ? $opts['profile']
 	: sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-chrome-debug';
@@ -123,7 +247,9 @@ $jsonMode = isset($opts['json']);
 /** Print a human-readable progress line, unless --json suppresses it. */
 function step($msg){
 	global $jsonMode;
-	if(!$jsonMode){ out($msg); }
+	// Suppressed on stdout under --json, but still logged - the log stays a
+	// complete record of the run regardless of output mode.
+	if(!$jsonMode){ out($msg); } else { logLine($msg); }
 }
 
 // ---- watcher filters ------------------------------------------------------
@@ -315,12 +441,9 @@ if($chromeUp){
 	step("• chrome  : debug instance already up on port $port");
 	if(!$targetForHost($targets, $host)){
 		// Open the page as a new tab in the existing debug instance.
-		$new = httpGet($jsonUrl . '/new?' . $url, 3);         // legacy GET form
-		if($new === null){
-			// Newer Chrome requires PUT; fall back to curl if available.
-			@exec('curl -s -X PUT "' . $jsonUrl . '/new?' . $url . '" 2>&1');
-		}
-		step("• chrome  : opened new tab -> $url");
+		step(newTab($jsonUrl, $url)
+			? "• chrome  : opened new tab -> $url"
+			: "• chrome  : could NOT open a new tab (tried PUT, GET and curl on /json/new)");
 	} else {
 		step("• chrome  : existing tab already on $host");
 	}
@@ -358,17 +481,50 @@ if($chromeUp){
 // ---- 4. confirm the page target ------------------------------------------
 $confirmed = false;
 $deadline  = microtime(true) + 20;          // ~20s ceiling (cold Chrome start); exits early once up
+$retried   = false;
 while(microtime(true) < $deadline){
 	$targets = httpGet($jsonUrl);
 	if($targetForHost($targets, $host)){ $confirmed = true; break; }
+	// One retry after ~8s: if the debug port is answering but our tab still
+	// isn't there, the open request itself failed - re-asking beats waiting out
+	// the rest of the deadline for a tab that was never created.
+	if(!$retried && $targets !== null && microtime(true) > $deadline - 12){
+		$retried = true;
+		newTab($jsonUrl, $url);
+	}
 	usleep(250000);
 }
 step($confirmed
 	? "• target  : confirmed on port $port ✓"
-	: "• target  : NOT confirmed after wait (check Chrome manually) ✗");
+	: "• target  : NOT confirmed after wait ✗");
+if(!$confirmed){
+	// Dump what IS open so the caller can diagnose from this output instead of
+	// having to run a separate curl against the debug endpoint.
+	$list = json_decode((string)$targets, true);
+	if(!is_array($list)){
+		step("     debug port $port is not answering - Chrome may still be booting.");
+	} else {
+		$pages = [];
+		foreach($list as $t){
+			if(!empty($t['url']) && preg_match('#^https?:#i', $t['url'])){ $pages[] = $t['url']; }
+		}
+		step(count($pages) ? '     open tabs: ' . implode("\n                ", $pages)
+		                   : '     no http(s) tabs are open in the debug instance.');
+	}
+}
 
 // ---- 5. optional screenshot ----------------------------------------------
 $shotWritten = null;
+if($doShot && $confirmed){
+	// The caller's --shot path usually lives in a per-session scratchpad dir that
+	// doesn't exist yet. Create it here so the caller needs no separate mkdir.
+	$shotDir = dirname($shotOut);
+	if($shotDir !== '' && $shotDir !== '.' && !is_dir($shotDir)){ @mkdir($shotDir, 0777, true); }
+	if($shotDir !== '' && $shotDir !== '.' && !is_dir($shotDir)){
+		step("• shot    : cannot create directory $shotDir");
+		$doShot = false;
+	}
+}
 if($doShot && $confirmed){
 	$node = null;
 	if($IS_WIN){
@@ -434,12 +590,110 @@ JS);
 	}
 }
 
+// ---- 6. mirror inventory --------------------------------------------------
+// The first thing anyone does after startup is "where are this page's files?" -
+// otherwise a find/ls over postEditFiles. Do it here so it's part of the same
+// approval, and so the answer arrives with the record ids already attached.
+//
+// Mirror layout: postEditFiles/{alias}/{table}/{record}/{record}.{table}.{field}.{id}.{ext}
+$inventory = ['page' => [], 'others' => [], 'truncated' => 0, 'root' => null];
+$invMax    = isset($opts['inv-max']) ? (int)$opts['inv-max'] : 40;
+if(!$localMode && !isset($opts['no-inventory'])){
+	$mirror = $ROOT . DIRECTORY_SEPARATOR . 'postedit' . DIRECTORY_SEPARATOR
+	        . 'postEditFiles' . DIRECTORY_SEPARATOR . $alias;
+	$inventory['root'] = $mirror;
+	step('');
+	step("• mirror  : $mirror");
+	if(!is_dir($mirror)){
+		step('     (nothing on disk yet - the watcher may still be re-syncing)');
+	} else {
+		$token = $pageGiven ? filterToken($page) : '';
+		/**
+		 * Walk the mirror into [recordKey => ['table','name','id','files'=>[field=>[path,size]]]].
+		 * Filenames carry the metadata, so parse them rather than re-querying the DB.
+		 */
+		$collect = function($dir) use (&$collect){
+			$found = [];
+			foreach((array)@scandir($dir) as $e){
+				if($e === '.' || $e === '..' || $e === '.claude'){ continue; }
+				$p = $dir . DIRECTORY_SEPARATOR . $e;
+				if(is_dir($p)){ $found = array_merge($found, $collect($p)); }
+				elseif(is_file($p)){ $found[] = $p; }
+			}
+			return $found;
+		};
+		// A just-launched watcher re-syncs in the background; give the named
+		// page's files a short window to land before reporting them missing.
+		$recs = [];
+		$waitUntil = microtime(true) + (($watcherPid || !$doWatch) ? 0 : 15);
+		do {
+			$recs = [];
+			foreach($collect($mirror) as $f){
+				// {record}.{table}.{field}.{id}.{ext}
+				if(!preg_match('/^(.+)\.([^.]+)\.([^.]+)\.(\d+)\.[^.]+$/', basename($f), $m)){ continue; }
+				$key = $m[2] . '/' . $m[1];
+				if(!isset($recs[$key])){
+					$recs[$key] = ['table' => $m[2], 'name' => $m[1], 'id' => $m[4], 'files' => []];
+				}
+				$recs[$key]['files'][$m[3]] = ['path' => $f, 'size' => (int)@filesize($f)];
+			}
+			$hit = false;
+			foreach($recs as $r){
+				if($token !== '' && strcasecmp($r['name'], $token) === 0){ $hit = true; break; }
+			}
+			if($hit || $token === '' || microtime(true) >= $waitUntil){ break; }
+			usleep(500000);
+		} while(true);
+		ksort($recs);
+
+		// The named page first, in full - that's the record being worked on.
+		foreach($recs as $r){
+			if($token !== '' && strcasecmp($r['name'], $token) === 0){
+				$inventory['page'][] = $r;
+			}
+		}
+		foreach($inventory['page'] as $r){
+			step("     {$r['table']}: {$r['name']}  (id {$r['id']})");
+			ksort($r['files']);
+			foreach($r['files'] as $field => $info){
+				step(sprintf('       %-12s %7d bytes  %s', $field, $info['size'], $info['path']));
+			}
+		}
+		if($token !== '' && !count($inventory['page'])){
+			step("     ⚠  no record named '$token' on disk yet.");
+		}
+
+		// Everything else, one compact line per record.
+		$others = [];
+		foreach($recs as $key => $r){
+			$isPage = false;
+			foreach($inventory['page'] as $p){ if($p['table'] === $r['table'] && $p['name'] === $r['name']){ $isPage = true; } }
+			if(!$isPage){ $others[] = $r; }
+		}
+		$inventory['others'] = $others;
+		if(count($others)){
+			step('     other records on disk (' . count($others) . '):');
+			$shown = array_slice($others, 0, $invMax);
+			foreach($shown as $r){
+				step("       {$r['table']}/{$r['name']} (id {$r['id']}) [" . implode(',', array_keys($r['files'])) . ']');
+			}
+			$inventory['truncated'] = count($others) - count($shown);
+			if($inventory['truncated'] > 0){
+				step("       ... and {$inventory['truncated']} more not listed (--inv-max=N to raise, --no-inventory to skip)");
+			}
+		}
+	}
+}
+
 // ---- summary --------------------------------------------------------------
 step('');
 step($localMode
 	? "Ready. Local framework mode - edit repo files directly. Optionally: setdb localhost (wamcp)"
-	: "Ready. In the assistant, set the DB with: setdb $alias   (wamcp)");
+	: "Ready. In the assistant, set the DB with: setdb $alias   (wamcp)\n"
+	. "  (the wamcp name often differs from the postedit alias - e.g. '{$alias}_mysql';\n"
+	. "   if '$alias' isn't found, list names with the wamcp `databases` tool.)");
 step("Then read the screenshot" . ($shotWritten ? " at:\n  $shotWritten" : " (re-run with --shot=PATH)."));
+if($LOGFILE){ step("Output copied to: $LOGFILE"); }
 
 if($jsonMode){
 	out(json_encode([
@@ -449,6 +703,7 @@ if($jsonMode){
 		'watcher_pid' => $watcherPid, 'watcher_launched' => (!$watcherPid && $doWatch && !$localMode),
 		'filters' => $filters, 'watcher_running_filters' => $watcherRunningFilters,
 		'target_confirmed' => $confirmed, 'shot' => $shotWritten,
+		'log' => $LOGFILE, 'inventory' => $inventory,
 	]));
 }
 
