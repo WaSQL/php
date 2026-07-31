@@ -13,7 +13,7 @@ WaMCP is a PHP page (`wamcp`) that speaks the [MCP JSON-RPC 2.0 protocol](https:
 | Tool | Parameters | Description |
 |---|---|---|
 | `help` | | List all available tools with descriptions |
-| `databases` | `[dbtype]` | List WaMCP-enabled databases, optionally filtered by type (mysql, postgresql, mssql, etc.) |
+| `databases` | `[dbtype] [filter]` | List WaMCP-enabled databases, one compact line per type, optionally filtered by type (mysql, postgresql, mssql, etc.) and/or a substring filter on id/name |
 | `setdb` | `{dbname}` | Set the active database for this session |
 | `getdb` | | Show connection info for the active database |
 | `getuser` | | Show info about the authenticated user |
@@ -21,7 +21,9 @@ WaMCP is a PHP page (`wamcp`) that speaks the [MCP JSON-RPC 2.0 protocol](https:
 | `fields` | `{tablename} [filter]` | List columns for a table, optionally filtered by name substring |
 | `ddl` | `{tablename}` | Show the `CREATE TABLE` statement for a table |
 | `indexes` | `{tablename} [filter]` | Show indexes on a table, optionally filtered by column name |
-| `query` | `{sql}` | Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) |
+| `query` | `{sql} [maxrows] [maxchars] [maxcell] [all]` | Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH). Output is capped by default (50 rows, 4000 chars, 2000 chars/cell) to control token usage — a single row/column result returns the raw value, not a table. Raise the caps, or pass `all:true`, for the full result |
+| `schema` | `[filter] [detail] [maxtables] [all]` | Compact schema overview — `"table: col, col, …"` (or `"col type, …"` with `detail:true`) for every table matching an optional filter. Cheaper than hand-written `information_schema`/`pg_catalog`/`DESCRIBE` queries for a broad look at table shapes. Capped at 30 tables by default |
+| `pagesrc` | `{page} {field} [grep] [lines] [maxchars] [all]` | Fetch one field (`name`, `body`, `functions`, `controller`, `js`, `css`, `meta`) of a single `_pages` record by id or name. Use `grep` or `lines` to pull just a section — far cheaper than `SELECT field FROM _pages` via `query` for large pages |
 
 All tools except `databases`, `setdb`, `help`, and `getuser` accept an optional `db_id` argument to target a specific database per-call.
 

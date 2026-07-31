@@ -428,7 +428,7 @@ $_POST['name']
 12. **Default view loads automatically if no `setView()` called**
 
 ## For Complete Documentation
-- **AI Patterns**: `ai_patterns.md` - Corrected code patterns 
+- **Reference**: `wasql_reference.md` - Deep per-feature detail and copy-paste "Common scenarios"
 - **Architecture**: `architecture.md` - Complete technical documentation
 - **Claude Instructions**: `claude.md` - AI assistant guidelines
 - **PostEdit files**: Check `php/database.php`, `php/common.php`, `php/user.php`

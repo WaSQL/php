@@ -473,7 +473,7 @@ function indexActivityAddFiles(files){ ... }
 
 ## Common scenarios (copy-paste starters)
 
-**Create a new page:** create the page record via the WaSQL web interface → `p.bat {alias}` to sync it down → edit the generated files in your IDE → changes auto-sync back to the DB.
+**Create a new page:** create the page record via the WaSQL web interface → "work on {alias} {page}" (`php workon.php {alias} {page}`, which starts the watcher via `php postedit/postedit.php {alias}` — see `postedit.md`; do NOT use `p.bat`, it's unreliable when launched via `Start-Process`) → edit the generated files in your IDE → changes auto-sync back to the DB.
 
 **Display data:**
 ```php
