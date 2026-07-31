@@ -126,7 +126,11 @@ function wamcpHandleMcpRequest($request, $db_id) {
     $id     = isset($request['id'])     ? $request['id']     : null;
     $params = isset($request['params']) ? $request['params'] : array();
 
-    wamcpLog("MCP {$method} db={$db_id}");
+    // tools/call logs its own detailed entry below (tool name + arg/result
+    // sizes) — logging it here too would just duplicate the line.
+    if ($method !== 'tools/call') {
+        wamcpLog("MCP {$method} db={$db_id}");
+    }
 
     switch ($method) {
         case 'initialize':
@@ -152,7 +156,13 @@ function wamcpHandleMcpRequest($request, $db_id) {
         case 'tools/call':
             $name   = isset($params['name'])      ? $params['name']      : '';
             $args   = isset($params['arguments']) ? $params['arguments'] : array();
-            wamcpSend($id, wamcpDispatchTool($name, $args, $db_id));
+            $result = wamcpDispatchTool($name, $args, $db_id);
+            wamcpLog("MCP tools/call db={$db_id} tool={$name}", array(
+                'args_chars'   => commonStrlen(json_encode($args)),
+                'result_chars' => commonStrlen(json_encode($result)),
+                'is_error'     => !empty($result['isError']),
+            ));
+            wamcpSend($id, $result);
             return;
 
         default:
@@ -177,10 +187,13 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'databases',
-            'description' => 'List available databases grouped by type. Do NOT use SHOW DATABASES — always call this tool. Pass an optional dbtype to filter (e.g. "mysql", "postgresql").',
+            'description' => 'List available databases grouped by type, one compact line per type. Do NOT use SHOW DATABASES — always call this tool. Pass an optional dbtype and/or filter to narrow the list.',
             'inputSchema' => array(
                 'type'       => 'object',
-                'properties' => array('dbtype' => array('type' => 'string', 'description' => 'Optional: filter by database type, e.g. mysql, postgresql, mssql'))
+                'properties' => array(
+                    'dbtype' => array('type' => 'string', 'description' => 'Optional: filter by database type, e.g. mysql, postgresql, mssql'),
+                    'filter' => array('type' => 'string', 'description' => 'Optional: substring filter on database id/name')
+                )
             )
         ),
         array(
@@ -245,11 +258,46 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'query',
-            'description' => 'Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) and return the result set.',
+            'description' => 'Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) and return the result set. Output is capped by default (50 rows, 4000 chars, 2000 chars/cell) to control token usage — a single row/column result is returned as a raw value, not a table. Raise maxrows/maxchars/maxcell, or pass all:true, to get the full result.',
             'inputSchema' => array(
                 'type'       => 'object',
-                'properties' => array('sql' => array('type' => 'string', 'description' => 'SQL statement to execute')),
+                'properties' => array(
+                    'sql'      => array('type' => 'string',  'description' => 'SQL statement to execute'),
+                    'maxrows'  => array('type' => 'integer', 'description' => 'Max rows to return (default 50)'),
+                    'maxchars' => array('type' => 'integer', 'description' => 'Max output characters (default 4000)'),
+                    'maxcell'  => array('type' => 'integer', 'description' => 'Max characters per cell before truncation (default 2000)'),
+                    'all'      => array('type' => 'boolean', 'description' => 'Return the full result, ignoring the caps above (default false)')
+                ),
                 'required'   => array('sql')
+            )
+        ),
+        array(
+            'name'        => 'schema',
+            'description' => 'Compact schema overview — "table: col, col, …" (or "col type, …" with detail:true) for every table matching an optional filter. Cheaper than hand-written information_schema/pg_catalog/DESCRIBE queries for a broad look at table shapes.',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array(
+                    'filter'    => array('type' => 'string',  'description' => 'Optional substring filter on table name'),
+                    'detail'    => array('type' => 'boolean', 'description' => 'Include column types (default false = names only)'),
+                    'maxtables' => array('type' => 'integer', 'description' => 'Max tables to describe (default 30)'),
+                    'all'       => array('type' => 'boolean', 'description' => 'Describe every matching table, ignoring maxtables (default false)')
+                )
+            )
+        ),
+        array(
+            'name'        => 'pagesrc',
+            'description' => 'Fetch one field (name, body, functions, controller, js, css, meta) of a single _pages record by id or name. Use grep or lines to pull just a section instead of the whole field — far cheaper than SELECT field FROM _pages via the query tool for large pages.',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array(
+                    'page'     => array('type' => 'string',  'description' => '_pages._id or name'),
+                    'field'    => array('type' => 'string',  'description' => 'One of: name, body, functions, controller, js, css, meta'),
+                    'grep'     => array('type' => 'string',  'description' => 'Optional substring — return only matching lines, with line numbers'),
+                    'lines'    => array('type' => 'string',  'description' => 'Optional line range, e.g. "1-50", or a single number for the first N lines'),
+                    'maxchars' => array('type' => 'integer', 'description' => 'Max output characters (default 4000)'),
+                    'all'      => array('type' => 'boolean', 'description' => 'Return the full field, ignoring maxchars (default false)')
+                ),
+                'required'   => array('page', 'field')
             )
         ),
     );
@@ -272,7 +320,10 @@ function wamcpGetToolsList() {
 
 function wamcpDispatchTool($name, $args, $db_id) {
     if ($name === 'databases') {
-        return wamcpToolDatabases(isset($args['dbtype']) ? $args['dbtype'] : '');
+        return wamcpToolDatabases(
+            isset($args['dbtype']) ? $args['dbtype'] : '',
+            isset($args['filter']) ? $args['filter'] : ''
+        );
     }
     if ($name === 'help') {
         return wamcpToolHelp();
@@ -315,7 +366,30 @@ function wamcpDispatchTool($name, $args, $db_id) {
         case 'query':
             $sql = isset($args['sql']) ? $args['sql'] : '';
             if (!$sql) return wamcpToolError('sql is required');
-            return wamcpToolQuery($db_id, $sql);
+            return wamcpToolQuery(
+                $db_id, $sql,
+                isset($args['maxrows'])  ? (int)$args['maxrows']  : 50,
+                isset($args['maxchars']) ? (int)$args['maxchars'] : 4000,
+                isset($args['maxcell'])  ? (int)$args['maxcell']  : 2000,
+                !empty($args['all'])
+            );
+        case 'schema':
+            return wamcpToolSchema(
+                $db_id, $filter, !empty($args['detail']),
+                isset($args['maxtables']) ? (int)$args['maxtables'] : 30,
+                !empty($args['all'])
+            );
+        case 'pagesrc':
+            $page  = isset($args['page'])  ? $args['page']  : '';
+            $field = isset($args['field']) ? $args['field'] : '';
+            if ($page === '' || $field === '') return wamcpToolError('page and field are required');
+            return wamcpToolPagesrc(
+                $db_id, $page, $field,
+                isset($args['grep'])     ? $args['grep']     : '',
+                isset($args['lines'])    ? $args['lines']    : '',
+                isset($args['maxchars']) ? (int)$args['maxchars'] : 4000,
+                !empty($args['all'])
+            );
         default:
             return wamcpToolError("Unknown tool: {$name}");
     }
@@ -523,7 +597,7 @@ function wamcpToolRoutines($db_id, $dbname, $type, $filter = '') {
     return wamcpToolText(wamcpToMarkdownTable($rows));
 }
 
-function wamcpToolDatabases($dbtype = '') {
+function wamcpToolDatabases($dbtype = '', $filter = '') {
     $list = wamcpListDatabases();
     if ($dbtype) {
         $dbtype = strtolower($dbtype);
@@ -531,21 +605,30 @@ function wamcpToolDatabases($dbtype = '') {
             return strtolower($db['dbtype']) === $dbtype;
         });
     }
+    if ($filter) {
+        $list = array_filter($list, function($db) use ($filter) {
+            return stripos($db['id'], $filter) !== false || stripos($db['name'], $filter) !== false;
+        });
+    }
     if (empty($list)) {
         $msg = $dbtype ? "No {$dbtype} databases available." : 'No databases available.';
+        if ($filter) $msg = "No databases match filter '{$filter}'" . ($dbtype ? " (type {$dbtype})." : '.');
         return wamcpToolText($msg);
     }
+    // One compact line per dbtype: "id (name)" only when name adds information
+    // beyond id — in practice name equals id for the vast majority of entries,
+    // so a per-group markdown table was mostly duplicating the same string twice.
     $groups = array();
     foreach ($list as $db) {
-        $groups[$db['dbtype']][] = array('id' => $db['id'], 'name' => $db['name']);
+        $label = ($db['name'] !== '' && $db['name'] !== $db['id']) ? "{$db['id']} ({$db['name']})" : $db['id'];
+        $groups[$db['dbtype']][] = $label;
     }
     ksort($groups);
     $lines = array();
-    foreach ($groups as $type => $dbs) {
-        $lines[] = "### {$type}";
-        $lines[] = wamcpToMarkdownTable($dbs);
+    foreach ($groups as $type => $names) {
+        $lines[] = "**{$type}:** " . implode(', ', $names);
     }
-    return wamcpToolText(implode("\n\n", $lines));
+    return wamcpToolText(implode("\n", $lines));
 }
 
 function wamcpToolGetUser() {
@@ -568,21 +651,161 @@ function wamcpToolHelp() {
     return wamcpToolText(implode("\n", $lines));
 }
 
-function wamcpToolQuery($db_id, $sql) {
+function wamcpToolQuery($db_id, $sql, $maxrows = 50, $maxchars = 4000, $maxcell = 2000, $all = false) {
     $keyword = strtoupper(preg_match('/^\s*(\w+)/', $sql, $m) ? $m[1] : '');
     $allowed = array('SELECT', 'SHOW', 'EXPLAIN', 'WITH', 'DESCRIBE', 'DESC');
     if (!in_array($keyword, $allowed)) {
         return wamcpToolError('Only read-only queries are permitted (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH).');
     }
+    if ($maxrows <= 0)  $maxrows  = 50;
+    if ($maxchars <= 0) $maxchars = 4000;
+    if ($maxcell <= 0)  $maxcell  = 2000;
+
     try {
         $rows = wamcpQueryRows($db_id, $sql);
-        if (is_array($rows) && !empty($rows)) {
-            return wamcpToolText(count($rows) . " rows returned.\n\n" . wamcpToMarkdownTable($rows));
+        if (!is_array($rows) || empty($rows)) {
+            return wamcpToolText('Query OK. No rows returned.');
         }
-        return wamcpToolText('Query OK. No rows returned.');
+        $total = count($rows);
+
+        // Single row, single column: the cell IS the whole payload — return the
+        // raw value with no table scaffolding (no header, no "| --- |", no
+        // pipe-escaping). Still subject to the char cap so a giant blob column
+        // can't blow past it.
+        if ($total === 1 && count($rows[0]) === 1) {
+            $val = (string) reset($rows[0]);
+            if (!$all && commonStrlen($val) > $maxchars) {
+                $fullLen = commonStrlen($val);
+                return wamcpToolText(substr($val, 0, $maxchars)
+                    . "\n\n_Truncated: {$fullLen} chars total. Re-run with maxchars raised, or all:true, for the rest._");
+            }
+            return wamcpToolText($val);
+        }
+
+        $shown   = $all ? $rows : array_slice($rows, 0, $maxrows);
+        $cellCap = $all ? null : $maxcell;
+        $out     = $total . " rows returned.\n\n" . wamcpToMarkdownTable($shown, $cellCap);
+
+        if (!$all) {
+            $rowsCut  = $total > count($shown);
+            $charsCut = commonStrlen($out) > $maxchars;
+            if ($charsCut) { $out = substr($out, 0, $maxchars); }
+            if ($rowsCut || $charsCut) {
+                $out .= "\n\n_Truncated: showing " . count($shown) . " of {$total} rows."
+                     .  " Re-run with maxrows/maxchars raised, or all:true, for the rest._";
+            }
+        }
+        return wamcpToolText($out);
     } catch (Exception $e) {
         return wamcpToolError($e->getMessage());
     }
+}
+
+// Compact multi-table schema overview. Reuses the dialect-agnostic "tables"/"fld"
+// shortcuts in dbQueryResults() (same ones wamcpToolTables/wamcpToolFields use)
+// instead of hand-written information_schema/pg_catalog SQL, so it works the same
+// across every dbtype wamcp supports without per-dialect branches.
+function wamcpToolSchema($db_id, $filter = '', $detail = false, $maxtables = 30, $all = false) {
+    if ($maxtables <= 0) $maxtables = 30;
+    $tableRows = wamcpQueryRows($db_id, 'tables');
+    if (!is_array($tableRows)) return wamcpToolError('Could not retrieve tables');
+
+    $names = array();
+    foreach ($tableRows as $row) {
+        $n = isset($row['name']) ? $row['name'] : '';
+        if ($n === '') continue;
+        if ($filter && stripos($n, $filter) === false) continue;
+        $names[] = $n;
+    }
+    if (empty($names)) {
+        return wamcpToolText($filter ? "No tables match filter '{$filter}'." : 'No tables found.');
+    }
+    sort($names);
+    $total = count($names);
+    $shown = ($all || $maxtables <= 0) ? $names : array_slice($names, 0, $maxtables);
+
+    $lines = array();
+    foreach ($shown as $table) {
+        $safe = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+        if ($safe === '') continue;
+        $cols = wamcpQueryRows($db_id, "fld {$safe}");
+        if (!is_array($cols)) continue;
+        $parts = array();
+        foreach ($cols as $c) {
+            $cname = isset($c['name']) ? $c['name'] : '';
+            if ($cname === '') continue;
+            $ctype = isset($c['type']) ? $c['type'] : '';
+            $parts[] = ($detail && $ctype !== '') ? "{$cname} {$ctype}" : $cname;
+        }
+        $lines[] = "**{$safe}**: " . implode(', ', $parts);
+    }
+    $out = implode("\n", $lines);
+    if (!$all && $total > count($shown)) {
+        $out .= "\n\n_Truncated: showing " . count($shown) . " of {$total} tables."
+             .  " Narrow with filter, or raise maxtables/all:true._";
+    }
+    return wamcpToolText($out);
+}
+
+// One field of one _pages record — the direct fix for "SELECT body/functions/css
+// FROM _pages WHERE _id=N" being the single largest source of query bytes (see
+// ai_cleanup.md). field is allow-listed (never interpolated from an open set),
+// page is either cast to int or SQL-escaped via wamcpQ() — never concatenated raw.
+function wamcpToolPagesrc($db_id, $page, $field, $grep = '', $lines = '', $maxchars = 4000, $all = false) {
+    $allowedFields = array('name', 'body', 'functions', 'controller', 'js', 'css', 'meta');
+    $field = strtolower(trim($field));
+    if (!in_array($field, $allowedFields)) {
+        return wamcpToolError('field must be one of: ' . implode(', ', $allowedFields));
+    }
+    if ($maxchars <= 0) $maxchars = 4000;
+
+    $where = is_numeric($page) ? ('_id=' . (int)$page) : ('name=' . wamcpQ($page));
+    $sql   = "SELECT {$field} FROM _pages WHERE {$where}";
+    try {
+        $rows = wamcpQueryRows($db_id, $sql);
+    } catch (Exception $e) {
+        return wamcpToolError($e->getMessage());
+    }
+    if (!is_array($rows) || empty($rows)) {
+        return wamcpToolText("No _pages record found for '{$page}'.");
+    }
+    $val = (string) reset($rows[0]);
+    if ($val === '') {
+        return wamcpToolText("_pages.{$field} is empty for '{$page}'.");
+    }
+
+    if ($grep !== '') {
+        $srcLines = preg_split('/\r\n|\r|\n/', $val);
+        $matched  = array();
+        foreach ($srcLines as $i => $l) {
+            if (stripos($l, $grep) !== false) { $matched[] = ($i + 1) . ': ' . $l; }
+        }
+        if (empty($matched)) {
+            return wamcpToolText("No lines matching '{$grep}' in _pages.{$field} for '{$page}'.");
+        }
+        $out = implode("\n", $matched);
+    } elseif ($lines !== '') {
+        $srcLines = preg_split('/\r\n|\r|\n/', $val);
+        $total    = count($srcLines);
+        if (preg_match('/^(\d+)\s*-\s*(\d+)$/', trim($lines), $m)) {
+            $start = max(1, (int)$m[1]);
+            $end   = min($total, (int)$m[2]);
+        } else {
+            $start = 1;
+            $end   = min($total, max(1, (int)$lines));
+        }
+        $slice = array_slice($srcLines, $start - 1, max(0, $end - $start + 1));
+        $out   = "lines {$start}-{$end} of {$total}:\n\n" . implode("\n", $slice);
+    } else {
+        $out = $val;
+    }
+
+    if (!$all && commonStrlen($out) > $maxchars) {
+        $fullLen = commonStrlen($out);
+        $out = substr($out, 0, $maxchars)
+             . "\n\n_Truncated: {$fullLen} chars total. Use grep/lines to target a section, raise maxchars, or pass all:true._";
+    }
+    return wamcpToolText($out);
 }
 
 // ── Response Helpers ──────────────────────────────────────────────────────────
@@ -606,7 +829,7 @@ function wamcpToolError($msg) {
     return array('content' => array(array('type' => 'text', 'text' => $msg)), 'isError' => true);
 }
 
-function wamcpToMarkdownTable($rows) {
+function wamcpToMarkdownTable($rows, $maxcell = null) {
     if (empty($rows)) return '_No results._';
     $headers = array_keys($rows[0]);
     $lines   = array(
@@ -616,7 +839,11 @@ function wamcpToMarkdownTable($rows) {
     foreach ($rows as $row) {
         $cells = array();
         foreach ($row as $val) {
-            $cells[] = str_replace('|', '\\|', (string)$val);
+            $cell = (string)$val;
+            if ($maxcell && commonStrlen($cell) > $maxcell) {
+                $cell = substr($cell, 0, $maxcell) . '…[truncated]';
+            }
+            $cells[] = str_replace('|', '\\|', $cell);
         }
         $lines[] = '| ' . implode(' | ', $cells) . ' |';
     }
