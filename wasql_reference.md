@@ -50,6 +50,22 @@ $grid = pageScriptsGrid();
 - **Leading-underscore tables are framework/system tables:** `_pages`, `_templates`, `_users`, `_cron`, `_fielddata`, `_translations`, `_tabledata`. App/business tables have no leading underscore, and are often module-prefixed (`sb_task`, `modq_scripts`, `wcommerce_orders`).
 - **Every record carries audit columns:** `_id` (PK), `_cdate` (created), `_edate` (edited), `_cuser` (creating user id), `_euser` (editing user id).
 
+### `_pages.settings` — per-page config a site admin can edit at runtime
+`_pages` has a **`settings`** column intended for exactly this: JSON config *belonging to one page*, so a feature can be tuned from the page's own UI with no DDL, no new table, and no deploy. Read/write it like any other column, from the page itself:
+```php
+$rec=getDBRecord(['-table'=>'_pages','-fields'=>'settings','name'=>pageValue('name'),'-nocache'=>1]);
+$settings=strlen(trim($rec['settings']))?json_decode($rec['settings'],true):[];
+$settings['my_feature']['some_key']=$value;                     // namespace under ONE key
+$ok=editDBRecord(['-table'=>'_pages','-where'=>"name='mypage'",
+	'settings'=>json_encode($settings,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES)]);
+if(!isNum($ok)){ /* $ok is the error string */ }
+```
+- **Namespace your keys and merge, never replace** — the field belongs to the page, not to your feature; a blind overwrite eats anything added later.
+- **Type varies by install.** Newer cores provision it as `JSON` (`php/admin/appstore_functions.php` does `ALTER TABLE _pages ADD settings JSON NULL`), older ones as `mediumtext`. On a **mediumtext** install there is **no automatic `settings_ex`** sibling — you must `json_decode(...,true)` yourself. Handle both: prefer `settings_ex` when present, else decode.
+- **Read with `-nocache`.** Two writers exist (your UI, and PostEdit) so a cached copy goes stale within a request; re-read after writing before re-rendering.
+- **PostEdit mirrors `settings` as a local json file once the field holds a value** — so write it **pretty-printed**, or the mirrored file is one unreadable line that nobody can hand-edit or diff.
+- `pageValue('settings')` also works, but it reads the request-time `$PAGE` global, so it is **stale immediately after your own write** — use it for display, not for read-modify-write.
+
 ## Named / secondary DB connections
 The standard `getDBRecord`/`getDBRecords`/`getDBCount`/`addDBRecord`/`editDBRecord`/`executeSQL` functions hit the **current site DB**. To query a *different* connection registered in `config.xml` (e.g. a PostgreSQL warehouse named `postgres_ods`, a HANA/c-tree source), use the **`db*` wrapper family** — the connection name is always the **first argument**. It dispatches through `dbFunctionCall()`, which looks the name up in the global `$DATABASE` array, detects its `dbtype` (postgres/hana/mssql/mysql…), loads the right engine, and runs the type-specific query. This — not `-dbname` — is the idiom real multi-source sites use.
 ```php
@@ -333,6 +349,11 @@ function manageThingsAddedit($id=0){
 Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **global save** fires and the response re-renders `{tab}_list` into `#things_list`; because that list view's root carries `data-onload="wacss.centerpopClose();"`, a **successful** save closes the modal while a validation failure re-renders the form inside the still-open centerpop. The full page's `#manage_content` starts on the first tab with `<?=renderView('things');?>`. Tabs are `wacss.nav` + `data-tab="1"` anchors. **Do not** reintroduce a single shared `panel`/`form` view or per-cell `_onclick` edit handlers — the per-tab views + whole-row `-tr_data-nav` are the pattern.
 
 ---
+
+## Core helper traps (verified)
+- **`verboseTime()` returns a TRAILING SPACE.** Harmless where HTML collapses whitespace (`verboseTime($s).' ago'`), but visible the moment punctuation follows — `'every '.verboseTime($s).'.'` renders `every 21 days .` — and it doubles up inside a `title`/`alt` attribute, where whitespace is *not* collapsed. `trim(verboseTime($s))` whenever you concatenate punctuation or build an attribute.
+- **`wacss` is a `let`-scoped global, not a property of `window`.** `window.wacss` is `undefined` while the bare identifier `wacss` resolves normally — so inline `onclick="wacss.ajaxPost(...)"` works fine, but probing from the console or CDP `Runtime.evaluate` with `typeof (window.wacss||{}).ajaxPost` reports `undefined` and makes you think the method doesn't exist on that site's build. Probe with the **bare name** (`typeof wacss.ajaxPost`) or `Object.keys(wacss)`.
+- **Don't trust a clicked submit button's `name`/`value` to reach the server** when the form is posted by `wacss.ajaxPost`/`ajaxSubmitForm` — whether the activating button is serialised depends on the serialiser. For a form with two actions (Save / Reset-to-default), use `type="button"` handlers that set a **hidden input** and then post, rather than two named submit buttons.
 
 ## Chart.js (the `chartjs` extra)
 The bundled chart library is **`/wfiles/js/extras/chart.min.js` — Chart.js v2.8.0** (use v2 option syntax: `options.legend`, `options.title`, `scales.yAxes:[{ticks:{beginAtZero,max}}]`, `cutoutPercentage`, `maintainAspectRatio`; NOT v3+). There is **no PHP charting engine** — rendering is client-side.
