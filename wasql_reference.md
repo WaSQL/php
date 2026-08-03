@@ -124,12 +124,27 @@ Gotchas, all real:
 - `getView($name)` returns a view's raw string (used to feed `-fields`/`-listview` in form options). Wrap in `evalPHP(getView(...))` when the view layout contains PHP to evaluate.
 - **`renderView($name,$data)` exposes `$data` inside the view as `$params`** (the whole passed value — array, string, etc.). Access it as `$params['title']` etc., or rename it with the `-alias` opt (`renderView('addedit',$data,'row')` → `$row` in the view). There is also a `-format=>'addeditdbform'` opt that renders the view's `[fieldname]` layout as an `addEditDBForm` (pass `-table`).
 - **⚠️ `<view:>` blocks are only registered in `$VIEWS` during BODY rendering, NOT when the controller/functions run.** So a function that calls `getView('..._fields')` or `renderView(...)` must be invoked from the **body** (inside a `<view:>` block), not precomputed in the controller — calling too early throws `renderView Error: There is no view named X` and `getView` returns empty. Idiom: the controller just routes and `setView('form',1); return;`, and the body block builds it: `<view:form><?=pageAddEditForm($tab,$id);?></view:form>`. Grid/`databaseListRecords` builders that don't touch `getView` are fine to call from the controller.
+- **Everything else — a plain variable the view just reads — belongs in the controller, not inline in the body.** Don't drop a bare `<?php $x = ...; ?>` island into a `<view:>` block to compute a value the markup below it consumes; add the assignment to the matching controller branch (usually `default`) alongside the page's other variables, and let the body just reference `$x`. This keeps the MVC split real: controller/functions = data, body = presentation only. (The `getView`/`renderView`-from-body rule above is the one narrow exception, because that registry genuinely doesn't exist yet in the controller.)
+  ```php
+  // ✗ computed inline in the body, next to the markup that uses it
+  <div class="hero-actions">
+    <?php $groupme=function_exists('indexSiteSocialLinks')?trim(indexSiteSocialLinks()['groupme'] ?? ''):''; ?>
+    <?=renderViewIf(strlen($groupme),'hero_groupme_tile',$groupme,'groupme');?>
+  </div>
+
+  // ✓ controller (default case), body just reads $groupme
+  case default:
+    $groupme=function_exists('indexSiteSocialLinks')?trim(indexSiteSocialLinks()['groupme'] ?? ''):'';
+    setView('default');
+  break;
+  ```
 
 ### Conditional views: prefer `renderViewIf`/`renderViewIfElse` over inline ternary HTML
 **Prefer a named `<view:>` + a conditional render over an inline `<?=$cond ? '<html…>' : '<html…>';?>` ternary.** The ternary crams two chunks of escaped HTML onto one line — unreadable and easy to break. A view keeps the markup as real, editable HTML and the branch as a one-liner. Exact signatures (verified in `php/common.php`):
 - `renderViewIf($cond, $view[, $params[, $opts]])` — renders `$view` when `$cond` is truthy, else returns `''`.
 - `renderViewIfElse($cond, $viewIf, $viewElse[, $params[, $opts]])` — renders `$viewIf` when truthy, otherwise `$viewElse`.
 - `$params` is the value exposed inside the view. **The trailing string arg is the alias — the variable name the passed data is bound to *inside* the view** (no leading `$`); default is `$params`. It's the same mechanism as `renderView`'s 3rd arg and `renderEach`'s loop-var name. So `renderViewIfElse($cond,'a','b',$info,'info')` → read `$info[key]` inside; `renderViewIfElse($cond,'a','b',$info,'rec')` → read `$rec[key]` inside (same data, different variable name). Whatever you pass as the data becomes that variable, so pass a sub-array (`$info['1st_counselor']`) when you want a generic view to read generic keys (`$info['picture']`).
+- **The data arg doesn't have to be an array — a plain scalar works too**, and shows up inside the view as that exact scalar under the alias name (no need to wrap a single value in `array('key'=>$val)` just to unwrap it again inside the view). `renderViewIf(strlen($groupme),'hero_groupme_tile',$groupme,'groupme')` → inside the view, `$groupme` is the string directly (e.g. `<a href="<?=encodeHtml($groupme);?>">`), not `$groupme['groupme']`. Reach for the array form only when the view needs more than one field.
 - To pass **extra keys** to a reused view (e.g. per-card `initials`/`avatar` for one generic `avatar` view), use the array form of `$opts`: `-alias` sets the variable name and any **dashless keys are merged into the params** (only when that key is empty in the data): `renderViewIfElse($cond,'leader_picture','avatar',$person,array('-alias'=>'info','initials'=>'B','avatar'=>'ward-avatar-bishop'))` → inside, `$info['picture']` (from `$person`) and `$info['initials']`/`$info['avatar']` (from opts).
 
 **Instead of** an inline ternary:
@@ -166,6 +181,7 @@ Gotchas, all real:
 ### Cross-page includes & shared functions
 - `includePage('topnav')` / `includePage('bugshoney/webhook/add/.../{$id}')` — render another page (with optional passthru segments) inline.
 - `loadDBFunctions('functions_common')` (or an array of names) — load another page's `functions` field into scope so its helpers are callable. **Convention: put shared helpers in a page like `functions_common` and `loadDBFunctions` it** (commonly done in the template's `functions`).
+- **A function defined in one `_templates` record's `functions` field is invisible to a page using a *different* template.** Multi-tenant/branding helpers, AJAX-partial helpers, etc. commonly get written once in a site's main template (e.g. `wardLabel()` in a "Main" template) and work fine there — until a raw-output page (webmanifest, robots.txt-style, an AJAX endpoint) that renders through the blank `/t/1/` template calls the same helper and gets a fatal/undefined-function or silent fallback. If a helper is needed by more than one template (or by anything that might render blank/AJAX), it belongs in `functions_common` (loaded by every template that calls `loadDBFunctions('functions_common')`), not in a single template's `functions` field.
 - Asset bundles: `minifyCssFile('wacss,bulma')` / `minifyJsFile('wacss,bulma')` return a URL to a combined minified bundle. `wacss` (the framework CSS/JS) is almost always included.
 - `<translate>Text</translate>` wraps UI strings for localization; the framework substitutes the translated string.
 
