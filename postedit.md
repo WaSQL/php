@@ -69,6 +69,12 @@ its css = `...<page>._pages.css.<id>.css`, controller = `...controller.<id>.php`
 
 The user usually has Chrome open on the page being edited; after a save they can just refresh to see the change (the DB is already updated). **`body`/`controller`/`functions` edits show up on a plain refresh** — those are read from the DB on every request.
 
+### ⚠️ PostEdit only syncs fields that were **non-empty at mirror time**
+
+The watcher mirrors DB→disk on startup and then watches the files it wrote. A record field that was `NULL`/empty when it synced produces **no file**, and PostEdit has no idea that field exists — so **creating that file yourself does nothing**: the file sits on disk unsynced and a `wamcp` query shows the column still empty. (Verified: a brand-new `…_pages.css.6.css` never reached the DB, while an edit to an already-mirrored file synced within seconds.)
+
+So when you have new `_pages`/`_templates` records created for you, ask for a **placeholder in every field you intend to use** (`<!-- stub -->`, `//stub`, `.stub{}`) before the watcher starts. If you discover a missing field mid-session: put a stub in it via the admin UI (the running watcher pulls the change down and creates the file), then edit the file. Restarting the watcher also works, but remember it re-syncs destructively.
+
 ### ⚠️ `css`/`js` edits need the `w_min` bundle busted (a page `?cb=1` does NOT do it)
 
 A page's own `css`/`js` fields are compiled into a hashed minified bundle (`/w_min/minify_<a>_<b>.css` / `.js`), **not inlined**. Two caches sit in front of your edit and a cache-buster on the *page* URL defeats neither:
@@ -94,9 +100,21 @@ Some WaSQL layouts don't settle until a `resize` event fires — AJAX-loaded tab
 
 **The canonical `shot.js` (Appendix) performs the nudge automatically** right before every capture — it toggles the emulated width +1px then back, firing `resize`. So the sequence is simply **edit → PostEdit syncs → navigate/refresh → run `shot.js`**; the settle step can't be forgotten because it lives inside the helper. (Proof it matters: a page navigated at 800px can still report `window.innerWidth === 390` until a 1px nudge recomputes it.) If you ever screenshot the user's own visible window some other way, replicate the toggle via CDP `Browser.setWindowBounds` ({width: w+1} then {width: w}).
 
+## Adding a NEW page to a mirrored site (the mirror can't create records)
+
+PostEdit only round-trips records that **already existed when it mirrored**. Writing a new file into `postEditFiles/{alias}/_pages/newpage/…` does nothing — there is no `_pages` row for it, so the watcher ignores it. And wamcp is read-only, so `INSERT` isn't available there either. The working sequence:
+
+1. **Insert the `_pages` row directly** (a small `mysqli` script in the scratchpad; creds come from the host's `<database>` block in `config.xml`). Copy the column values from a sibling page — for an Imago-style site: `name`, `title`, `_template` (the UI template id, **not** 1), `page_type=0`, `postedit=1`, `synchronize=1`. Give **every** field (`body`/`controller`/`functions`/`css`/`js`) a non-empty stub: a field that is empty at mirror time never gets a file (see the empty-field rule above).
+2. **Author the five fields as files** named exactly as PostEdit names them — `{page}._pages.{field}.{id}.{ext}` — and push their contents into the row with the same script (`UPDATE _pages SET {field}=? WHERE _id={id}`). Also `UPDATE _pages SET css_min=null, js_min=null` so the bundles regenerate.
+3. **Restart the watcher** so it starts tracking the new record: kill the `postedit.php {alias}` process and relaunch it (see *Ensure the PostEdit watcher is running*). Its startup re-sync pulls the new page down into the mirror.
+4. **From that point the mirror is the source** — edit `postEditFiles/{alias}/_pages/{page}/…` and let it sync. Keep editing your scratchpad copies and you're maintaining a fork; diff before you copy anything over.
+
+Verify each step in the DB rather than assuming (`select length(functions) from _pages where name='…'`), and before restarting the watcher confirm every mirrored file you edited already matches the DB — the restart **deletes and re-downloads** the working files.
+
 ## Database access (wamcp)
 
 - `mcp__wamcp__setdb` with `dbname: "{alias}"` once per session, then `mcp__wamcp__query` (read-only SQL) / `mcp__wamcp__tables` / `mcp__wamcp__fields`. If the alias isn't a valid db name, `mcp__wamcp__databases` lists them.
+- **wamcp is READ-ONLY.** Schema changes (`CREATE TABLE`, `ALTER`) and any `INSERT`/`UPDATE` need another path: the WaSQL admin SQL console, `mysql` CLI, or a one-off `mysqli` script. Keep the DDL in a versioned `.sql` file in the repo (as `imago_schema.sql` / `imago_wiki_schema.sql` do) rather than only in a throwaway script.
 - Primary keys are `_id`. Audit cols `_cdate/_edate/_cuser/_euser`. System tables have a leading underscore (`_pages`, `_templates`, ...).
 
 ## Screenshots — DO THIS, NOT THAT

@@ -6,7 +6,8 @@
  * prompt, in a single process:
  *   1. Resolve {alias} -> host from postedit/postedit.xml (build the site URL).
  *   2. Ensure the PostEdit watcher for {alias} is running (launch if not),
- *      filtered to the named page so it only syncs/watches that page. Done
+ *      filtered to the named page so it only syncs/watches that page - in a new
+ *      tab of the current Windows Terminal window when there is one. Done
  *      before the Chrome step so its background re-sync overlaps Chrome
  *      booting/confirming instead of running back-to-back with it.
  *   3. Ensure a debug Chrome is up on the debug port and showing the page
@@ -72,6 +73,9 @@ WHAT IT DOES
      startup). An already-running watcher is reported, never restarted, because
      postedit.php's startup re-sync is destructive: it backs up postEditFiles/
      {alias} to {alias}_bak, deletes the working files and re-downloads them.
+     When launched from inside Windows Terminal the watcher goes in a NEW TAB
+     of the current window (focus is handed straight back), so the whole
+     session stays in one window - see --no-tab / --no-chase.
   3. Ensures a debug Chrome is up on the debug port and showing the page.
      Reuses an already-running debug instance (opens a tab in it via PUT on
      /json/new, with GET + curl fallbacks); only launches Chrome if none.
@@ -98,6 +102,11 @@ OPTIONS
   --no-shot          never screenshot (the default when --shot is absent)
   --width=N          screenshot viewport width (default: 390 = mobile)
   --no-watcher       do not launch the PostEdit watcher if it's missing
+  --no-tab           always give the watcher its OWN console window, even when
+                     running inside Windows Terminal (default: add a tab to the
+                     current WT window instead of opening another window)
+  --no-chase         leave focus on the new watcher tab instead of handing it
+                     back to the tab you were working in
   --filter=a,b       explicit watcher filter(s) instead of the page name
   --no-filter        watcher syncs/watches ALL records - needed when you also
                      need the page's _templates record or other pages
@@ -172,6 +181,100 @@ function newTab($jsonUrl, $url){
 }
 
 /**
+ * Resolved path to wt.exe if this process is running inside a Windows Terminal
+ * window, else null. Cached - the `where` probe is a subprocess.
+ *
+ * WT_SESSION is set by Windows Terminal in every shell it hosts, and env vars
+ * are inherited by grandchildren - so it is still visible here even though this
+ * script was started by an assistant/tool that the terminal launched, several
+ * processes down. A legacy conhost console does NOT set it, which is exactly the
+ * distinction needed: conhost has no tabs, so there is nothing to add a tab to.
+ *
+ * The returned path is for detection/reporting only - the command line uses a
+ * bare `wt.exe` (see launchWtTab) - so `where` succeeding, i.e. wt.exe being on
+ * PATH, is the real requirement. It normally is: it's an app-execution alias in
+ * %LOCALAPPDATA%\Microsoft\WindowsApps, which is on an interactive user's PATH.
+ */
+function wtExe($isWin, &$why = null){
+	static $cached = false;                                  // false = not probed yet
+	static $reason = null;
+	if($cached !== false){ $why = $reason; return $cached; }
+	$cached = null;
+	if(!$isWin){ $reason = 'not Windows'; }
+	elseif(!getenv('WT_SESSION')){ $reason = 'WT_SESSION is not set - this console is not a Windows Terminal tab'; }
+	else { $reason = 'wt.exe is not on PATH (`where wt.exe` found nothing)'; }
+	if($isWin && getenv('WT_SESSION')){
+		// `where` succeeding IS the test - do NOT add an is_file()/file_exists()
+		// check on the result. wt.exe is an app-execution ALIAS: a zero-byte
+		// APPEXECLINK reparse point, which PHP's stat cannot follow, so both
+		// is_file() and file_exists() return false for a wt.exe that runs
+		// perfectly well (only lstat() sees it). An existence check here silently
+		// disables tabs on every machine.
+		$where = @shell_exec('where wt.exe 2>nul');
+		if($where && preg_match('/^(.*wt\.exe)\s*$/mi', $where, $m)){
+			$cached = trim($m[1]);
+			$reason = null;
+		}
+	}
+	$why = $reason;
+	return $cached;
+}
+
+/**
+ * Add a tab to the Windows Terminal window hosting this process and run $cmd in
+ * it. Returns true only if wt.exe accepted the request.
+ *
+ * `-w 0` means "the current window", which wt resolves via WT_SESSION - so the
+ * tab lands in the window the user typed `claude "work on ..."` in rather than
+ * opening yet another window.
+ *
+ * Two advantages over `start` in a separate window:
+ *   - The tab's process is a child of WindowsTerminal.exe, not of this script,
+ *     so it cannot inherit a duplicate handle to the caller's stdio pipe - the
+ *     hazard launchDetached() below has to work around with NUL redirection.
+ *   - `; focus-tab -p` hands focus straight back, so the new tab doesn't yank
+ *     the user out of the session they're typing in. This part IS a heuristic:
+ *     the new tab is appended last and focused, so "previous" is whichever tab
+ *     was last before it - correct when the session's tab is the rightmost, the
+ *     normal case. --no-chase turns it off.
+ *
+ * Quoting notes, both learned the hard way in this file:
+ *   - wt splits its OWN command line on ';', so a literal semicolon inside an
+ *     argument has to be escaped as '\;' or it silently truncates the command.
+ *   - PHP's proc_open wraps the command in `cmd /c "..."` on Windows, and cmd
+ *     mangles a command that STARTS with a quote. Hence bare `wt.exe` (found on
+ *     PATH by wtExe) instead of a quoted absolute path; inner quoted args are
+ *     fine because they aren't first.
+ */
+function launchWtTab($cmd, $title, $cwd, $chase = true, &$why = null){
+	$esc  = function($s){ return str_replace(';', '\\;', $s); };
+	$full = 'wt.exe -w 0 new-tab --title "' . $esc($title) . '" -d "' . $esc($cwd) . '" ' . $esc($cmd)
+		. ($chase ? ' ; focus-tab -p' : '');
+	// stderr goes to a temp FILE, not a pipe: wt's complaint is worth reporting,
+	// but a pipe could be inherited by whatever wt spawns and then never sees EOF
+	// (the same hazard launchDetached documents). A file has no such lifetime.
+	$errFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-wt-err.txt';
+	$spec = [0 => ['file', 'NUL', 'r'], 1 => ['file', 'NUL', 'w'], 2 => ['file', $errFile, 'w']];
+	$p = @proc_open($full, $spec, $pipes);
+	if(!is_resource($p)){ $why = 'proc_open could not start wt.exe'; return false; }
+	// wt.exe hands the request to the already-running terminal and exits at once;
+	// it does NOT wait on the tab's process (that one belongs to
+	// WindowsTerminal.exe), so this close returns immediately rather than
+	// blocking for the life of the watcher.
+	//
+	// The exit code is what makes the fallback safe: non-zero means the tab was
+	// never created, so falling back to a separate window cannot double-start the
+	// watcher - and postedit.php's startup re-sync is destructive, so starting it
+	// twice is the one outcome to avoid.
+	$rc = proc_close($p);
+	if($rc === 0){ $why = null; return true; }
+	$err = @file_get_contents($errFile);
+	$err = $err === false ? '' : trim(preg_replace('/\s+/', ' ', $err));
+	$why = "wt.exe refused the request (exit $rc)" . ($err !== '' ? ": $err" : '');
+	return false;
+}
+
+/**
  * Launch a detached process on Windows via `start`, or `nohup ... &` elsewhere.
  * Explicitly redirects the spawned process's own stdio to the null device via
  * proc_open() instead of popen(), which shares THIS PHP process's real stdio.
@@ -238,6 +341,10 @@ $shotOut = !$doShot ? null
 		? sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-shot-' . preg_replace('/[^a-z0-9_\-]/i', '', $alias) . '.png'
 		: $opts['shot']);
 $doWatch = !isset($opts['no-watcher']);
+// Watcher window placement: a tab in the current Windows Terminal window when
+// we're running in one, else its own console window. --no-tab forces the window.
+$useTab  = !isset($opts['no-tab']);
+$doChase = !isset($opts['no-chase']);
 $profile = isset($opts['profile']) ? $opts['profile']
 	: sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-chrome-debug';
 
@@ -326,7 +433,7 @@ function runningFilters($cmdline, $alias){
 /** Human-readable filter list. */
 function filterLabel($f){ return count($f) ? implode(', ', $f) : 'none (all records)'; }
 
-$watcherPid = null; $watcherCmd = ''; $watcherRunningFilters = null;
+$watcherPid = null; $watcherCmd = ''; $watcherRunningFilters = null; $watcherLaunch = null;
 if($localMode){
 	step("• watcher : n/a (local framework mode - no PostEdit)");
 } else {
@@ -388,11 +495,34 @@ if($watcherPid){
 			. 'title postedit-' . $alias . "\r\n"
 			. '"' . $php . '" postedit\\postedit.php ' . $alias . $filterArgs . "\r\n"
 		);
-		launchDetached('cmd /k "' . $bat . '"', true, 'postedit-' . $alias);
+		// Prefer a TAB in the Windows Terminal window the user is already working
+		// in, so `claude "work on {alias}"` doesn't scatter windows across the
+		// desktop. Falls back to a separate console window when this isn't
+		// Windows Terminal, --no-tab was given, or wt refused the request.
+		// `cmd /k` either way: the console stays open after the watcher exits so
+		// its error output is still readable.
+		$run = 'cmd /k "' . $bat . '"';
+		// $tabWhy explains any fall back to a separate window. Without it a
+		// silent fallback is indistinguishable from the feature being absent,
+		// which is exactly the question that gets asked afterwards.
+		$tabWhy = null; $ok = false;
+		if(!$useTab){ $tabWhy = '--no-tab was given'; }
+		elseif(!wtExe($IS_WIN, $tabWhy)){ /* wtExe filled $tabWhy */ }
+		else { $ok = launchWtTab($run, 'postedit-' . $alias, $ROOT, $doChase, $tabWhy); }
+		if(empty($ok)){ launchDetached($run, true, 'postedit-' . $alias); }
+		$watcherLaunch = !empty($ok) ? 'wt-tab' : 'window';
 	} else {
 		launchDetached('"' . $php . '" ' . $ROOT . '/postedit/postedit.php ' . $alias . $filterArgs, false);
+		$watcherLaunch = 'window';
 	}
-	step("• watcher : launched for '$alias' (filters: " . filterLabel($filters) . ")");
+	step("• watcher : launched for '$alias' "
+		. ($watcherLaunch === 'wt-tab'
+			? 'in a new tab of THIS terminal window' . ($doChase ? ' (focus kept here)' : '')
+			: 'in its own console window')
+		. " (filters: " . filterLabel($filters) . ")");
+	if($watcherLaunch === 'window' && !empty($tabWhy)){
+		step("     (no terminal tab: $tabWhy)");
+	}
 	if(count($filters)){
 		step("     Only records whose name contains '" . implode("' or '", $filters) . "' are synced/watched");
 		step("     (that includes _templates - re-run with --no-filter to work on the template too).");
@@ -701,6 +831,7 @@ if($jsonMode){
 		'port' => $port, 'insecure' => $insecure,
 		'chrome_up' => $chromeUp || $confirmed,
 		'watcher_pid' => $watcherPid, 'watcher_launched' => (!$watcherPid && $doWatch && !$localMode),
+		'watcher_launch' => $watcherLaunch,                  // 'wt-tab' | 'window' | null (not launched)
 		'filters' => $filters, 'watcher_running_filters' => $watcherRunningFilters,
 		'target_confirmed' => $confirmed, 'shot' => $shotWritten,
 		'log' => $LOGFILE, 'inventory' => $inventory,

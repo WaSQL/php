@@ -21,6 +21,7 @@ authldap_network,auth,,,only use ldap if the network starts with this value.  se
 authldaps,auth,,,authenticate using this SECURE LDAP server,
 backup_cmd,process,,,run this command when going to backup,
 backup_command,process,,mysqldump,command to backup database - defaults to mysqldump,
+backup_portable,process,,0,rewrite MySQL 8 only collations (utf8mb4_0900_ai_ci) in the dump so it can also be restored on MySQL 5.7 / MariaDB,&buildFormSelectOnOff('current_value');
 codereview,admin,,,setting this to 1 will require a code reviewer to also verify any synchronize changes before they are submitted,&buildFormSelectOnOff('current_value');
 convert,process,,,"allows you to convert images on upload.   bmp-jpg,heic-jpg,tiff-jpg,jpeg-jpg,jpg-jpg",
 convert_command,process,,,Command to use if convert is set,

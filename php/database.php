@@ -8047,6 +8047,32 @@ function dropDBTable($table='',$meta=1){
     	}
     return 1;
 	}
+//---------- begin function dumpDBPortableSQL--------------------
+/**
+* @describe rewrites MySQL 8 only charset/collation names in dump SQL so the dump can also
+*	be restored on MySQL 5.7 or MariaDB.  MySQL 8 tables are utf8mb4_0900_ai_ci by default and
+*	mysqldump writes that name into every CREATE TABLE, so an older server rejects the dump with
+*	"ERROR 1273 (HY000): Unknown collation: 'utf8mb4_0900_ai_ci'".  mysqldump has no flag that
+*	downgrades the names (--compatible does not touch collations), so it is a text rewrite.
+* @param sql string - dump SQL
+* @return string - dump SQL with portable charset/collation names
+* @usage $sql=dumpDBPortableSQL($sql);
+*/
+function dumpDBPortableSQL($sql){
+	$sql=preg_replace('/utf8mb4_0900_[a-z0-9_]+/i','utf8mb4_unicode_ci',$sql);
+	$sql=preg_replace('/utf8mb3/i','utf8',$sql);
+	return $sql;
+	}
+//---------- begin function dumpDBPortableFilter--------------------
+/**
+* @describe returns the shell filter that applies the dumpDBPortableSQL rewrites to a dump stream.
+*	Used on non-Windows where the dump is piped straight to gzip and never held in memory.
+* @return string - a sed command suitable for use in a pipeline
+* @usage $cmd .= ' | '.dumpDBPortableFilter();
+*/
+function dumpDBPortableFilter(){
+	return "sed -E -e 's/utf8mb4_0900_[a-z0-9_]+/utf8mb4_unicode_ci/g' -e 's/utf8mb3/utf8/g'";
+	}
 //---------- begin function dumpDB--------------------
 /**
 * @describe performs a mysqldump and saves file in the sh/backups directory
@@ -8139,6 +8165,11 @@ function dumpDB($table=''){
 		
 	}
 	$dump['iswindows']=isWindows();
+	//set backup_portable=1 in config to write a dump whose collations also restore on
+	//MySQL 5.7 / MariaDB - see dumpDBPortableSQL().  Off by default because it rewrites
+	//utf8mb4_0900_ai_ci to utf8mb4_unicode_ci, which changes the collation of the restored
+	//tables even when restoring back onto MySQL 8.
+	$dump['portable']=((isMysql() || isMysqli()) && isset($CONFIG['backup_portable']) && $CONFIG['backup_portable']==1)?1:0;
 	if(isWindows()){
 		//Windows executes commands with bypass_shell=true (no cmd.exe), so shell
 		//operators like ">" (redirect) and "|" (pipe) are handed to mysqldump as
@@ -8151,11 +8182,13 @@ function dumpDB($table=''){
 		$sqlout=isset($dump['result']['stdout'])?$dump['result']['stdout']:'';
 		//only write a file when we actually captured dump output (not a usage/error message)
 		if(strlen(trim($sqlout)) && !preg_match('/^Usage\:/i',ltrim($sqlout))){
+			if($dump['portable']){$sqlout=dumpDBPortableSQL($sqlout);}
 			file_put_contents($dump['afile'],$gzip?gzencode($sqlout,9):$sqlout);
 		}
 	}
 	else{
 		//non-Windows runs through a real shell, so redirect/pipe work as written
+		if($dump['portable']){$dump['command'] .= ' | '.dumpDBPortableFilter();}
 		$dump['command'] .= " | gzip -9";
 		$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
 		$dump['command'] .= "  > \"{$dump['afile']}\"";

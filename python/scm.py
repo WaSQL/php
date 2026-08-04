@@ -68,7 +68,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.29.0'
+__version__ = '1.30.0'
 
 
 def current_user():
@@ -424,6 +424,12 @@ class BaseDriver:
         if not label_map:
             return
         ph = self.placeholder
+        # Fast path: if no row still needs a name, skip the per-version UPDATE loop.
+        # No LIMIT/TOP here — this runs on every driver and the dialects disagree;
+        # fetchone() reads a single row, which is all the probe needs.
+        cur = self.execute(f"SELECT 1 FROM {self.table} WHERE name IS NULL OR name = ''")
+        if not cur.fetchone():
+            return
         changed = False
         for version in self.applied_versions():
             name = label_map.get(version)
@@ -468,18 +474,54 @@ class PostgresDriver(BaseDriver):
                 sys.exit("No PostgreSQL driver found. Install one:\n  pip install \"psycopg[binary]\"\n  pip install psycopg2-binary")
         self.conn = pg.connect(self.url)
         self.conn.autocommit = False
+        # Surface RAISE NOTICE from migrations to stdout.
+        if pg.__name__ == 'psycopg':
+            self.conn.add_notice_handler(lambda d: sys.stdout.write(f"NOTICE:  {d.message_primary}\n"))
+
+    def _drain_notices(self):
+        # psycopg2 buffers notices on conn.notices; psycopg3's handler is push-based.
+        notices = getattr(self.conn, 'notices', None)
+        if notices:
+            for n in notices:
+                sys.stdout.write(n if n.endswith('\n') else n + '\n')
+            try:
+                notices.clear()
+            except AttributeError:
+                del notices[:]
 
     def execute_script(self, sql):
         """Pass the full script directly — handles dollar-quoting and multi-statement."""
         cur = self.conn.cursor()
         cur.execute(sql)
+        self._drain_notices()
         return cur
 
+    # application_name is a `name`-typed GUC, so the server hard-caps it at
+    # NAMEDATALEN-1 bytes and emits an "identifier ... will be truncated"
+    # NOTICE for anything longer. Trim it client-side instead so long
+    # migration labels don't spray notices through the apply output.
+    APPLICATION_NAME_MAX = 63
+
     def set_application_name(self, name):
-        self.execute("SET application_name = %s", [name])
+        # SET does not accept bind parameters (psycopg3 sends real $1 → syntax error).
+        name = name.encode('utf-8')[:self.APPLICATION_NAME_MAX].decode('utf-8', 'ignore')
+        safe = name.replace("'", "''")
+        self.execute(f"SET application_name = '{safe}'")
         self.conn.commit()
 
     def ensure_migrations_table(self):
+        # Postgres runs the CREATE privilege check before IF NOT EXISTS short-circuits,
+        # so a role without CREATE on the schema fails even when the table exists.
+        # Pre-check via pg_class + pg_namespace (search_path-independent) and only
+        # issue CREATE when the table is genuinely missing.
+        cur = self.execute(
+            "SELECT EXISTS (SELECT 1 FROM pg_class c "
+            "JOIN pg_namespace n ON n.oid = c.relnamespace "
+            "WHERE n.nspname = %s AND c.relname = %s)",
+            [self.schema or 'public', self.table_name],
+        )
+        if cur.fetchone()[0]:
+            return
         if self.schema:
             self.execute(f'CREATE SCHEMA IF NOT EXISTS "{self.schema}"')
             self.commit()

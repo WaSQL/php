@@ -79,6 +79,31 @@ Access also requires the user to be a **WaSQL admin** (`isAdmin()`). Standard us
 
 This token is unique per user and grants the same access level as your WaSQL login. Keep it secret — treat it like a password.
 
+**The token is tied to the user's `_users._id` in a specific database.** It decodes to `{_id}.{encrypted username:apikey}`, and `userDecodeAuthCode()` rejects it unless a `_users` record with that exact `_id` exists *and* its `username` matches. A token therefore stops working if the site's DB is replaced/reinstalled, if the `_users` row is deleted and re-added with a new id, or if the token was copied from a different WaSQL install. Regenerate it from the User Profile page of the install you are pointing at.
+
+---
+
+## Troubleshooting
+
+**MCP client reports a schema/validation error instead of an auth error** — e.g. Claude Code showing
+`invalid_union ... Invalid input: expected "2.0"` and `expected number, received undefined` for `id`:
+
+That is the client failing to parse the response body, not a protocol bug. Reproduce it outside the client:
+
+```bash
+curl -s -X POST "http://your-host/php/admin.php?_menu=wamcp" \
+  -H "Content-Type: application/json" \
+  -H "WaSQL_auth: YOUR_TOKEN" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}'
+```
+
+- A JSON-RPC `error` object naming authentication → the token is stale/wrong for this install (see "Finding Your Auth Token" above). Regenerate it and update the client config.
+- Anything that is not JSON-RPC (HTML, a PHP warning, a `{"success":false,...}` body) → something upstream of the controller printed output; fix that first, since every MCP call will fail schema validation.
+
+Auth failures on a JSON-RPC POST intentionally answer **HTTP 200 with a JSON-RPC error** (code `-32001`), not `401` — a `401` makes MCP clients start an OAuth discovery flow that WaMCP does not implement, which buries the real cause.
+
+**`No WaMCP-enabled database configured`** — every `config.xml` database is exposed unless it carries `wamcp="false"`, so this means no database section resolved at all; check `config.xml` is being read and that the user's saved db (`setdb`) still exists.
+
 ---
 
 ## Setup: Claude Code (CLI)
@@ -156,4 +181,4 @@ The server responds to `initialize`, `tools/list`, and `tools/call` in standard 
 - All databases are exposed by default; set `wamcp="false"` on any database you want to hide from WaMCP.
 - The `query` tool only permits read-only statements (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH) — write operations are rejected.
 - For production, run WaSQL behind HTTPS so the auth token is not transmitted in plaintext.
-- Each user has their own token. Revoke access by changing the user's password or disabling their account in the WaSQL admin.
+- Each user has their own token. Revoke access by **disabling the account** (`active=0`) or removing the `_users` record — the bootstrap refuses an inactive user. Note that changing the password does **not** invalidate an existing token: `userDecodeAuthCode()` validates the `_id`/`username` pair, and the password embedded in the token is decoded but never compared.

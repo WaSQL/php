@@ -405,6 +405,37 @@ function configCheckSchema(){
 		$ok=delDBRecord($opts);
 		//echo printValue($ok).printValue($opts);exit;
 	}
+	//seed any settings added to schema/config.csv since this _config table was built.
+	//schema.php loads that CSV only when it CREATES the table, so a framework setting added
+	//later never shows up in the config UI on an existing site.  current_value is left empty
+	//so adding the row cannot change how the site behaves.
+	global $CONFIG;
+	$spath=getWasqlPath('php/schema');
+	if(is_file("{$spath}/config.csv")){
+		$csv=getCSVFileContents("{$spath}/config.csv");
+		if(isset($csv['items']) && is_array($csv['items'])){
+			$have=array();
+			$recs=getDBRecords(array('-table'=>'_config','-fields'=>'name','-nocache'=>1));
+			if(is_array($recs)){
+				foreach($recs as $rec){$have[strtolower(trim($rec['name']))]=1;}
+			}
+			$add=array();
+			foreach($csv['items'] as $rec){
+				$name=strtolower(trim($rec['name']));
+				if(!strlen($name) || isset($have[$name])){continue;}
+				$add[]=array(
+					'name'				=> $name,
+					'category'			=> $rec['category'],
+					'default_value'		=> $rec['default_value'],
+					'description'		=> $rec['description'],
+					'possible_values'	=> $rec['possible_values']
+				);
+			}
+			if(count($add)){
+				$ok=dbAddRecords($CONFIG['database'],'_config',array('-recs'=>$add,'-ignore'=>1,'-upsert'=>'ignore'));
+			}
+		}
+	}
 }
 function configShowlist($category,$opts=array()){
 	global $configShowDifferentListCenter;
