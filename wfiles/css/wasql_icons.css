@@ -1999,3 +1999,175 @@
 .icon-wrench:before {
   content: "\eb57";
 }
+
+/* ==========================================================================
+   Combo icons (hand-maintained, not IcoMoon-generated)
+   Two-glyph stacks: <span class="icon-{base}-{overlay}"></span>
+   :before = base glyph, :after = overlay glyph on top (absolute, bottom-right).
+   font-family/style is inherited from the [class^="icon-"] rule above, so
+   only `content` needs to be set on each pseudo-element.
+   ========================================================================== */
+
+.icon-article-star, .icon-article-heart, .icon-article-bell, .icon-article-plus,
+.icon-book-star, .icon-book-heart, .icon-book-mark, .icon-book-lock, .icon-book-plus,
+.icon-box-star, .icon-box-heart, .icon-box-mark, .icon-box-lock, .icon-box-bell, .icon-box-plus,
+.icon-bug-star, .icon-bug-heart, .icon-bug-mark, .icon-bug-lock, .icon-bug-bell, .icon-bug-plus, .icon-bug-warning, .icon-bug-lightbulb,
+.icon-calendar-star, .icon-calendar-heart, .icon-calendar-mark, .icon-calendar-lock, .icon-calendar-bell, .icon-calendar-plus, .icon-calendar-warning,
+.icon-camera-star, .icon-camera-heart, .icon-camera-mark, .icon-camera-lock, .icon-camera-bell, .icon-camera-plus,
+.icon-cart-star, .icon-cart-heart, .icon-cart-mark, .icon-cart-lock, .icon-cart-bell, .icon-cart-plus,
+.icon-clock-star, .icon-clock-heart, .icon-clock-mark, .icon-clock-lock, .icon-clock-bell, .icon-clock-plus, .icon-clock-warning,
+.icon-database-star, .icon-database-heart, .icon-database-mark, .icon-database-lock, .icon-database-bell, .icon-database-plus,
+.icon-file-doc-star, .icon-file-doc-heart, .icon-file-doc-mark, .icon-file-doc-lock, .icon-file-doc-bell, .icon-file-doc-plus, .icon-file-doc-warning, .icon-file-doc-lightbulb,
+.icon-warning-star, .icon-warning-heart, .icon-warning-mark, .icon-warning-lock, .icon-warning-bell, .icon-warning-plus, .icon-warning-clock,
+.icon-mail-star, .icon-mail-heart, .icon-mail-mark, .icon-mail-lock, .icon-mail-bell, .icon-mail-plus, .icon-mail-warning, .icon-mail-clock,
+.icon-package-star, .icon-package-heart, .icon-package-mark, .icon-package-lock, .icon-package-bell, .icon-package-plus,
+.icon-user-star, .icon-user-heart, .icon-user-mark, .icon-user-lock, .icon-user-bell, .icon-user-plus, .icon-user-gear,
+.icon-user2-star, .icon-user2-heart, .icon-user2-mark, .icon-user2-lock, .icon-user2-bell, .icon-user2-plus, .icon-user2-gear {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+/* -- base glyphs, grouped by base icon -- */
+.icon-article-star:before, .icon-article-heart:before, .icon-article-bell:before, .icon-article-plus:before {
+  content: "\eab8";
+}
+.icon-book-star:before, .icon-book-heart:before, .icon-book-mark:before, .icon-book-lock:before, .icon-book-plus:before {
+  content: "\e956";
+}
+.icon-box-star:before, .icon-box-heart:before, .icon-box-mark:before, .icon-box-lock:before, .icon-box-bell:before, .icon-box-plus:before {
+  content: "\eae9";
+}
+.icon-bug-star:before, .icon-bug-heart:before, .icon-bug-mark:before, .icon-bug-lock:before, .icon-bug-bell:before, .icon-bug-plus:before, .icon-bug-warning:before, .icon-bug-lightbulb:before {
+  content: "\eabb";
+}
+.icon-calendar-star:before, .icon-calendar-heart:before, .icon-calendar-mark:before, .icon-calendar-lock:before, .icon-calendar-bell:before, .icon-calendar-plus:before, .icon-calendar-warning:before {
+  content: "\eb38";
+}
+.icon-camera-star:before, .icon-camera-heart:before, .icon-camera-mark:before, .icon-camera-lock:before, .icon-camera-bell:before, .icon-camera-plus:before {
+  content: "\ea11";
+}
+.icon-cart-star:before, .icon-cart-heart:before, .icon-cart-mark:before, .icon-cart-lock:before, .icon-cart-bell:before, .icon-cart-plus:before {
+  content: "\eb3b";
+}
+.icon-clock-star:before, .icon-clock-heart:before, .icon-clock-mark:before, .icon-clock-lock:before, .icon-clock-bell:before, .icon-clock-plus:before, .icon-clock-warning:before {
+  content: "\eabd";
+}
+.icon-database-star:before, .icon-database-heart:before, .icon-database-mark:before, .icon-database-lock:before, .icon-database-bell:before, .icon-database-plus:before {
+  content: "\e946";
+}
+.icon-file-doc-star:before, .icon-file-doc-heart:before, .icon-file-doc-mark:before, .icon-file-doc-lock:before, .icon-file-doc-bell:before, .icon-file-doc-plus:before, .icon-file-doc-warning:before, .icon-file-doc-lightbulb:before {
+  content: "\eb43";
+}
+.icon-warning-star:before, .icon-warning-heart:before, .icon-warning-mark:before, .icon-warning-lock:before, .icon-warning-bell:before, .icon-warning-plus:before, .icon-warning-clock:before {
+  content: "\ea03";
+}
+.icon-mail-star:before, .icon-mail-heart:before, .icon-mail-mark:before, .icon-mail-lock:before, .icon-mail-bell:before, .icon-mail-plus:before, .icon-mail-warning:before, .icon-mail-clock:before {
+  content: "\eb24";
+}
+.icon-package-star:before, .icon-package-heart:before, .icon-package-mark:before, .icon-package-lock:before, .icon-package-bell:before, .icon-package-plus:before {
+  content: "\eaad";
+}
+.icon-user-star:before, .icon-user-heart:before, .icon-user-mark:before, .icon-user-lock:before, .icon-user-bell:before, .icon-user-plus:before, .icon-user-gear:before {
+  content: "\e97a";
+}
+.icon-user2-star:before, .icon-user2-heart:before, .icon-user2-mark:before, .icon-user2-lock:before, .icon-user2-bell:before, .icon-user2-plus:before, .icon-user2-gear:before {
+  content: "\eb53";
+}
+
+/* -- star overlay (\e9db): "featured / favorited / primary" -- */
+.icon-article-star:after, .icon-book-star:after, .icon-box-star:after, .icon-bug-star:after,
+.icon-calendar-star:after, .icon-camera-star:after, .icon-cart-star:after, .icon-clock-star:after,
+.icon-database-star:after, .icon-file-doc-star:after, .icon-warning-star:after, .icon-mail-star:after,
+.icon-package-star:after, .icon-user-star:after, .icon-user2-star:after {
+  content: "\e9db";
+}
+
+/* -- heart overlay (\ea5a): "loved / favorited" -- */
+.icon-article-heart:after, .icon-book-heart:after, .icon-box-heart:after, .icon-bug-heart:after,
+.icon-calendar-heart:after, .icon-camera-heart:after, .icon-cart-heart:after, .icon-clock-heart:after,
+.icon-database-heart:after, .icon-file-doc-heart:after, .icon-warning-heart:after, .icon-mail-heart:after,
+.icon-package-heart:after, .icon-user-heart:after, .icon-user2-heart:after {
+  content: "\ea5a";
+}
+
+/* -- bell overlay (\ea9b): "notification" -- */
+.icon-article-bell:after, .icon-box-bell:after, .icon-bug-bell:after,
+.icon-calendar-bell:after, .icon-camera-bell:after, .icon-cart-bell:after, .icon-clock-bell:after,
+.icon-database-bell:after, .icon-file-doc-bell:after, .icon-warning-bell:after, .icon-mail-bell:after,
+.icon-package-bell:after, .icon-user-bell:after, .icon-user2-bell:after {
+  content: "\ea9b";
+}
+
+/* -- mark overlay (\eb4a): "flagged / marked" -- */
+.icon-book-mark:after, .icon-box-mark:after, .icon-bug-mark:after,
+.icon-calendar-mark:after, .icon-camera-mark:after, .icon-cart-mark:after, .icon-clock-mark:after,
+.icon-database-mark:after, .icon-file-doc-mark:after, .icon-warning-mark:after, .icon-mail-mark:after,
+.icon-package-mark:after, .icon-user-mark:after, .icon-user2-mark:after {
+  content: "\eb4a";
+}
+
+/* -- lock overlay (\eb47): "restricted / private / secured" -- */
+.icon-book-lock:after, .icon-box-lock:after, .icon-bug-lock:after,
+.icon-calendar-lock:after, .icon-camera-lock:after, .icon-cart-lock:after, .icon-clock-lock:after,
+.icon-database-lock:after, .icon-file-doc-lock:after, .icon-warning-lock:after, .icon-mail-lock:after,
+.icon-package-lock:after, .icon-user-lock:after, .icon-user2-lock:after {
+  content: "\eb47";
+}
+
+/* -- plus overlay (\eb01): "add" -- */
+.icon-article-plus:after, .icon-book-plus:after, .icon-box-plus:after, .icon-bug-plus:after,
+.icon-calendar-plus:after, .icon-camera-plus:after, .icon-cart-plus:after, .icon-clock-plus:after,
+.icon-database-plus:after, .icon-file-doc-plus:after, .icon-warning-plus:after, .icon-mail-plus:after,
+.icon-package-plus:after, .icon-user-plus:after, .icon-user2-plus:after {
+  content: "\eb01";
+}
+
+/* -- warning overlay (\ea03): "needs attention" -- */
+.icon-bug-warning:after, .icon-calendar-warning:after, .icon-clock-warning:after,
+.icon-file-doc-warning:after, .icon-mail-warning:after {
+  content: "\ea03";
+}
+
+/* -- lightbulb overlay (\ead4): "idea / tip" -- */
+.icon-bug-lightbulb:after, .icon-file-doc-lightbulb:after {
+  content: "\ead4";
+}
+
+/* -- clock overlay (\eabd): "pending / scheduled" -- */
+.icon-warning-clock:after, .icon-mail-clock:after {
+  content: "\eabd";
+}
+
+/* -- gear overlay (\e915): "settings" -- */
+.icon-user-gear:after, .icon-user2-gear:after {
+  content: "\e915";
+}
+
+/* -- shared badge geometry: small, bottom-right corner, scaled down, with a
+   white halo (stacked text-shadow) so the badge reads clearly against the
+   base glyph instead of blending into it -- */
+.icon-article-star:after, .icon-article-heart:after, .icon-article-bell:after, .icon-article-plus:after,
+.icon-book-star:after, .icon-book-heart:after, .icon-book-mark:after, .icon-book-lock:after, .icon-book-plus:after,
+.icon-box-star:after, .icon-box-heart:after, .icon-box-mark:after, .icon-box-lock:after, .icon-box-bell:after, .icon-box-plus:after,
+.icon-bug-star:after, .icon-bug-heart:after, .icon-bug-mark:after, .icon-bug-lock:after, .icon-bug-bell:after, .icon-bug-plus:after, .icon-bug-warning:after, .icon-bug-lightbulb:after,
+.icon-calendar-star:after, .icon-calendar-heart:after, .icon-calendar-mark:after, .icon-calendar-lock:after, .icon-calendar-bell:after, .icon-calendar-plus:after, .icon-calendar-warning:after,
+.icon-camera-star:after, .icon-camera-heart:after, .icon-camera-mark:after, .icon-camera-lock:after, .icon-camera-bell:after, .icon-camera-plus:after,
+.icon-cart-star:after, .icon-cart-heart:after, .icon-cart-mark:after, .icon-cart-lock:after, .icon-cart-bell:after, .icon-cart-plus:after,
+.icon-clock-star:after, .icon-clock-heart:after, .icon-clock-mark:after, .icon-clock-lock:after, .icon-clock-bell:after, .icon-clock-plus:after, .icon-clock-warning:after,
+.icon-database-star:after, .icon-database-heart:after, .icon-database-mark:after, .icon-database-lock:after, .icon-database-bell:after, .icon-database-plus:after,
+.icon-file-doc-star:after, .icon-file-doc-heart:after, .icon-file-doc-mark:after, .icon-file-doc-lock:after, .icon-file-doc-bell:after, .icon-file-doc-plus:after, .icon-file-doc-warning:after, .icon-file-doc-lightbulb:after,
+.icon-warning-star:after, .icon-warning-heart:after, .icon-warning-mark:after, .icon-warning-lock:after, .icon-warning-bell:after, .icon-warning-plus:after, .icon-warning-clock:after,
+.icon-mail-star:after, .icon-mail-heart:after, .icon-mail-mark:after, .icon-mail-lock:after, .icon-mail-bell:after, .icon-mail-plus:after, .icon-mail-warning:after, .icon-mail-clock:after,
+.icon-package-star:after, .icon-package-heart:after, .icon-package-mark:after, .icon-package-lock:after, .icon-package-bell:after, .icon-package-plus:after,
+.icon-user-star:after, .icon-user-heart:after, .icon-user-mark:after, .icon-user-lock:after, .icon-user-bell:after, .icon-user-plus:after, .icon-user-gear:after,
+.icon-user2-star:after, .icon-user2-heart:after, .icon-user2-mark:after, .icon-user2-lock:after, .icon-user2-bell:after, .icon-user2-plus:after, .icon-user2-gear:after {
+  position: absolute;
+  right: -0.2em;
+  bottom: -0.2em;
+  font-size: 0.55em;
+  text-shadow:
+    1px 1px 0 #fff, -1px 1px 0 #fff, 1px -1px 0 #fff, -1px -1px 0 #fff,
+    1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff;
+}

@@ -1783,10 +1783,11 @@ function wasqlFontIcons($name='wasql_icons',$prefix='icon'){
 	//echo printValue($lines);exit;
 	$icons=array();
 	foreach($lines as $line){
-    	if(preg_match('/^\.('.$prefix.'\-.+?)\:/',$line,$m)){
-        	$icons[]=$m[1];
+    	if(preg_match_all('/\.('.$prefix.'\-[a-zA-Z0-9\-]+)/',$line,$m)){
+        	$icons=array_merge($icons,$m[1]);
 		}
 	}
+	$icons=array_unique($icons);
 	sort($icons);
 	return $icons;
 }
