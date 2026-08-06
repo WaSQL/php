@@ -3,14 +3,6 @@
  * WaMCP Functions - MCP server for WaSQL databases
  */
 
-// ── Database helpers ──────────────────────────────────────────────────────────
-
-// Returns the db_id of the first wamcp-enabled database, or empty string if none.
-function wamcpDefaultDatabase() {
-    $list = wamcpListDatabases();
-    return !empty($list) ? $list[0]['id'] : '';
-}
-
 // ── daSQL remote connections (dasql/dasql.ini) ────────────────────────────────
 // A dasql.ini [section] is exposed as a wamcp database ONLY when it defines both
 // base_url and wamcp=true. No [global] merge — each section must stand alone.
@@ -137,7 +129,8 @@ function wamcpHandleMcpRequest($request, $db_id) {
             wamcpSend($id, array(
                 'protocolVersion' => '2024-11-05',
                 'capabilities'    => array('tools' => new stdClass()),
-                'serverInfo'      => array('name' => 'wamcp', 'version' => '1.0.0')
+                'serverInfo'      => array('name' => 'wamcp', 'version' => '1.0.0'),
+                'instructions'    => wamcpInstructions(),
             ));
             return;
 
@@ -175,6 +168,16 @@ function wamcpHandleMcpRequest($request, $db_id) {
     }
 }
 
+// Sent once, in the MCP `initialize` response — most clients (incl. Claude Code)
+// surface this to the model as standing guidance before any tool is called.
+function wamcpInstructions() {
+    return "db_id is required on every tool call that accepts it (query, schema, "
+         . "pagesrc, tables, fields, ddl, indexes, getdb) — call `databases` once "
+         . "to look up ids, then pass db_id on every subsequent call. There is no "
+         . "server-side 'active database'; omitting db_id returns an error rather "
+         . "than guessing which database you meant.";
+}
+
 // ── Tool Registry ─────────────────────────────────────────────────────────────
 
 function wamcpGetToolsList() {
@@ -194,15 +197,6 @@ function wamcpGetToolsList() {
                     'dbtype' => array('type' => 'string', 'description' => 'Optional: filter by database type, e.g. mysql, postgresql, mssql'),
                     'filter' => array('type' => 'string', 'description' => 'Optional: substring filter on database id/name')
                 )
-            )
-        ),
-        array(
-            'name'        => 'setdb',
-            'description' => 'Set the active database for this session by name/ID. If the name is unknown, call the databases tool to list available names.',
-            'inputSchema' => array(
-                'type'       => 'object',
-                'properties' => array('dbname' => array('type' => 'string', 'description' => 'Database name/ID to activate')),
-                'required'   => array('dbname')
             )
         ),
         array(
@@ -302,15 +296,18 @@ function wamcpGetToolsList() {
         ),
     );
 
-    $db_id_prop = array('type' => 'string', 'description' => 'Optional: target database ID. Call the databases tool to list available IDs.');
+    $db_id_prop = array('type' => 'string', 'description' => 'Required: target database ID. Call the databases tool to list available IDs.');
     foreach ($tools as &$tool) {
-        if (in_array($tool['name'], array('databases', 'setdb', 'help', 'getuser'))) continue;
+        if (in_array($tool['name'], array('databases', 'help', 'getuser'))) continue;
         $props = $tool['inputSchema']['properties'];
         if ($props instanceof stdClass) {
             $tool['inputSchema']['properties'] = array('db_id' => $db_id_prop);
         } else {
             $tool['inputSchema']['properties']['db_id'] = $db_id_prop;
         }
+        $required = isset($tool['inputSchema']['required']) ? $tool['inputSchema']['required'] : array();
+        $required[] = 'db_id';
+        $tool['inputSchema']['required'] = $required;
     }
     unset($tool);
     return $tools;
@@ -331,16 +328,11 @@ function wamcpDispatchTool($name, $args, $db_id) {
     if ($name === 'getuser') {
         return wamcpToolGetUser();
     }
-    if ($name === 'setdb') {
-        $target = isset($args['dbname']) ? $args['dbname'] : '';
-        if (!$target) return wamcpToolError('dbname is required');
-        $result = wamcpSetDatabase($target);
-        return $result['success']
-            ? wamcpToolText($result['message'])
-            : wamcpToolError($result['error']);
-    }
     if (!empty($args['db_id'])) {
         $db_id = $args['db_id'];
+    }
+    if (empty($db_id)) {
+        return wamcpToolError('db_id is required. Call the databases tool to list available ids, then pass db_id on this call.');
     }
     if (!wamcpGetDatabase($db_id)) {
         return wamcpToolError("Database '{$db_id}' not found or is excluded from WaMCP.");
@@ -634,7 +626,7 @@ function wamcpToolDatabases($dbtype = '', $filter = '') {
 function wamcpToolGetUser() {
     global $USER;
     if (empty($USER)) return wamcpToolError('No authenticated user found.');
-    $fields = array('_id', 'firstname', 'lastname', 'username', 'email', 'wamcp');
+    $fields = array('_id', 'firstname', 'lastname', 'username', 'email');
     $row = array();
     foreach ($fields as $f) {
         $row[$f] = isset($USER[$f]) ? $USER[$f] : '';
@@ -863,37 +855,6 @@ function wamcpGetDbName($db_id) {
     return $db_id;
 }
 
-// ── Per-user state (stored in _users.wamcp JSON column) ──────────────────────
-
-function wamcpGetUserState() {
-    global $USER;
-    if (empty($USER['_id'])) return array();
-    $rec = getDBRecord(array('-table' => '_users', '_id' => $USER['_id'], '-nocache' => 1));
-    if (!$rec) return array();
-    if (!array_key_exists('wamcp', $rec)) {
-        executeSQL("ALTER TABLE _users ADD COLUMN wamcp JSON NULL;");
-        return array();
-    }
-    $state = json_decode($rec['wamcp'], true);
-    return is_array($state) ? $state : array();
-}
-
-function wamcpSetUserState($key, $value) {
-    global $USER;
-    if (empty($USER['_id'])) return;
-    $state = wamcpGetUserState();
-    $state[$key] = $value;
-    editDBRecordById('_users',$USER['_id'],array('wamcp'=>$state));
-}
-
-function wamcpGetUserDb() {
-    $state = wamcpGetUserState();
-    if (!empty($state['db']) && wamcpGetDatabase($state['db'])) {
-        return $state['db'];
-    }
-    return wamcpDefaultDatabase();
-}
-
 // ── Web UI support functions ──────────────────────────────────────────────────
 
 function wamcpListDatabases() {
@@ -932,19 +893,6 @@ function wamcpGetDatabase($db_id) {
     }
     // Not in config.xml — fall back to a dasql.ini remote section.
     return wamcpGetDasqlSection($db_id);
-}
-
-function wamcpSetDatabase($db_id) {
-    global $USER;
-    $db = wamcpGetDatabase($db_id);
-    if (!$db) {
-        return array('success' => false, 'error' => "Database '{$db_id}' not found or is excluded from WaMCP.");
-    }
-    wamcpSetUserState('db', $db_id);
-    $msg = "Database set to '{$db_id}' for user {$USER['_id']}.";
-    $instructions = wamcpDbtypeInstructions($db_id);
-    if ($instructions) $msg .= "\n\n" . $instructions;
-    return array('success' => true, 'message' => $msg);
 }
 
 function wamcpQueryDatabase($db_id, $query) {

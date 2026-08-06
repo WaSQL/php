@@ -42,14 +42,12 @@ if (!isAdmin()) {
 // MCP JSON-RPC over HTTP
 if (is_array($mcp_data)) {
     header('Content-Type: application/json');
-    $id = isset($mcp_data['id']) ? $mcp_data['id'] : null;
-    // db_id from URL path segment, then user's saved db, then first enabled db
-    $db_id = (isset($PASSTHRU[0]) && strlen($PASSTHRU[0])) ? $PASSTHRU[0] : wamcpGetUserDb();
-    if (!$db_id) {
-        echo json_encode(array('jsonrpc' => '2.0', 'id' => $id,
-            'error' => array('code' => -32602, 'message' => 'No WaMCP-enabled database configured')));
-        exit;
-    }
+    // db_id from the URL path segment, if any (e.g. ?_menu=wamcp/mydb) — a
+    // per-connection default. No other fallback: methods that don't need a db
+    // (initialize, tools/list, databases, help, getuser) never look at this,
+    // and tools that do need one require the db_id argument on the call itself
+    // (enforced in wamcpDispatchTool) rather than silently picking one.
+    $db_id = (isset($PASSTHRU[0]) && strlen($PASSTHRU[0])) ? $PASSTHRU[0] : '';
     wamcpHandleMcpRequest($mcp_data, $db_id);
     exit;
 }
@@ -64,18 +62,11 @@ switch ($func) {
         echo json_encode(array('success' => true, 'databases' => $wamcp_result));
         exit;
     break;
-    case 'setdb':
-        $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : '';
-        $wamcp_result = wamcpSetDatabase($db_id);
-        header('Content-Type: application/json');
-        echo json_encode($wamcp_result);
-        exit;
-    break;
     case 'query':
-        $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : wamcpGetUserDb();
+        $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : '';
         $query = isset($_REQUEST['query']) ? $_REQUEST['query'] : '';
         if (empty($db_id)) {
-            $wamcp_result = array('success' => false, 'error' => 'No database selected');
+            $wamcp_result = array('success' => false, 'error' => 'db_id is required');
         } else {
             $wamcp_result = wamcpQueryDatabase($db_id, $query);
         }
@@ -84,9 +75,9 @@ switch ($func) {
         exit;
     break;
     case 'queries':
-        $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : wamcpGetUserDb();
+        $db_id = isset($_REQUEST['db_id']) ? $_REQUEST['db_id'] : '';
         if (empty($db_id)) {
-            $wamcp_result = array('success' => false, 'error' => 'No database selected');
+            $wamcp_result = array('success' => false, 'error' => 'db_id is required');
         } else {
             $wamcp_result = wamcpSeeRunningQueries($db_id);
         }

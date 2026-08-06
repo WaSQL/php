@@ -14,28 +14,25 @@ WaMCP is a PHP page (`wamcp`) that speaks the [MCP JSON-RPC 2.0 protocol](https:
 |---|---|---|
 | `help` | | List all available tools with descriptions |
 | `databases` | `[dbtype] [filter]` | List WaMCP-enabled databases, one compact line per type, optionally filtered by type (mysql, postgresql, mssql, etc.) and/or a substring filter on id/name |
-| `setdb` | `{dbname}` | Set the active database for this session |
-| `getdb` | | Show connection info for the active database |
+| `getdb` | `[db_id]` | Show connection info for a database |
 | `getuser` | | Show info about the authenticated user |
-| `tables` | `[filter]` | List tables, optionally filtered by name substring |
-| `fields` | `{tablename} [filter]` | List columns for a table, optionally filtered by name substring |
-| `ddl` | `{tablename}` | Show the `CREATE TABLE` statement for a table |
-| `indexes` | `{tablename} [filter]` | Show indexes on a table, optionally filtered by column name |
-| `query` | `{sql} [maxrows] [maxchars] [maxcell] [all]` | Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH). Output is capped by default (50 rows, 4000 chars, 2000 chars/cell) to control token usage — a single row/column result returns the raw value, not a table. Raise the caps, or pass `all:true`, for the full result |
-| `schema` | `[filter] [detail] [maxtables] [all]` | Compact schema overview — `"table: col, col, …"` (or `"col type, …"` with `detail:true`) for every table matching an optional filter. Cheaper than hand-written `information_schema`/`pg_catalog`/`DESCRIBE` queries for a broad look at table shapes. Capped at 30 tables by default |
-| `pagesrc` | `{page} {field} [grep] [lines] [maxchars] [all]` | Fetch one field (`name`, `body`, `functions`, `controller`, `js`, `css`, `meta`) of a single `_pages` record by id or name. Use `grep` or `lines` to pull just a section — far cheaper than `SELECT field FROM _pages` via `query` for large pages |
+| `tables` | `[db_id] [filter]` | List tables, optionally filtered by name substring |
+| `fields` | `{tablename} [db_id] [filter]` | List columns for a table, optionally filtered by name substring |
+| `ddl` | `{tablename} [db_id]` | Show the `CREATE TABLE` statement for a table |
+| `indexes` | `{tablename} [db_id] [filter]` | Show indexes on a table, optionally filtered by column name |
+| `query` | `{sql} [db_id] [maxrows] [maxchars] [maxcell] [all]` | Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH). Output is capped by default (50 rows, 4000 chars, 2000 chars/cell) to control token usage — a single row/column result returns the raw value, not a table. Raise the caps, or pass `all:true`, for the full result |
+| `schema` | `[db_id] [filter] [detail] [maxtables] [all]` | Compact schema overview — `"table: col, col, …"` (or `"col type, …"` with `detail:true`) for every table matching an optional filter. Cheaper than hand-written `information_schema`/`pg_catalog`/`DESCRIBE` queries for a broad look at table shapes. Capped at 30 tables by default |
+| `pagesrc` | `{page} {field} [db_id] [grep] [lines] [maxchars] [all]` | Fetch one field (`name`, `body`, `functions`, `controller`, `js`, `css`, `meta`) of a single `_pages` record by id or name. Use `grep` or `lines` to pull just a section — far cheaper than `SELECT field FROM _pages` via `query` for large pages |
 
-All tools except `databases`, `setdb`, `help`, and `getuser` accept an optional `db_id` argument to target a specific database per-call.
+All tools except `databases`, `help`, and `getuser` **require** a `db_id` argument — declared as a required property in each tool's `inputSchema`, so a compliant MCP client should refuse to call the tool without it. Call `databases` once to look up ids, then pass `db_id` on every subsequent call.
 
 ### Database Targeting
 
-The active database is resolved in this order:
-1. `db_id` argument passed directly to the tool call
-2. `db_id` path segment in the MCP URL (e.g. `?_menu=wamcp/mydb`)
-3. The database saved in the user's profile (`_users.wamcp` JSON column)
-4. The first WaMCP-enabled database in the server config
+WaMCP has no server-side "active database" and no silent default — every call is self-contained. `db_id` is resolved in this order:
+1. `db_id` argument passed directly to the tool call — the only supported way for `tools/call`
+2. `db_id` path segment in the MCP URL (e.g. `?_menu=wamcp/mydb`) — used only as the fallback for MCP methods that don't carry a `db_id` argument at all
 
-User database preference persists across sessions — selecting a database once saves it to `_users.wamcp` for that user.
+If neither resolves a database, the tool returns an error (`db_id is required...`) instead of guessing. There used to be a `setdb` tool that saved a per-user default to `_users.wamcp`, and a fallback to "the first WaMCP-enabled database" — both were removed: the saved default was keyed only by `_users._id`, not by connection, so two agents sharing one `WaSQL_auth` token running at the same time could silently overwrite each other's selected database, and the "first database" fallback meant an omitted `db_id` would silently query the wrong database instead of failing. Requiring `db_id` on every call has no shared state to clobber and no wrong guess to make. The server also sends this guidance as `instructions` in its MCP `initialize` response so compliant clients surface it automatically.
 
 ---
 
@@ -102,7 +99,9 @@ curl -s -X POST "http://your-host/php/admin.php?_menu=wamcp" \
 
 Auth failures on a JSON-RPC POST intentionally answer **HTTP 200 with a JSON-RPC error** (code `-32001`), not `401` — a `401` makes MCP clients start an OAuth discovery flow that WaMCP does not implement, which buries the real cause.
 
-**`No WaMCP-enabled database configured`** — every `config.xml` database is exposed unless it carries `wamcp="false"`, so this means no database section resolved at all; check `config.xml` is being read and that the user's saved db (`setdb`) still exists.
+**`db_id is required`** (tool result with `isError:true`) — the tool call omitted `db_id` and no `db_id` URL path segment was set either. Call `databases` to list valid ids and pass one explicitly; see "Database Targeting" above.
+
+**`Database '{id}' not found or is excluded from WaMCP`** — `db_id` doesn't match any `config.xml` database section (or dasql.ini section), or it matches one carrying `wamcp="false"`. Call `databases` to confirm the exact id.
 
 ---
 
