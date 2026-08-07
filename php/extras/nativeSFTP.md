@@ -1,5 +1,22 @@
 # NativeSFTP – Standalone SFTP Wrapper (phpseclib-free)
 
+> **✅ No longer requires `ext-ssh2`.** The class picks a driver at construction: `ext-ssh2`
+> when the extension is loaded (unchanged code path), otherwise the vendored **phpseclib 3**
+> in `php/extras/phpseclib3/` — pure PHP, no extension, no root. Every method behaves the
+> same either way. Force one with `'driver' => 'ssh2'|'phpseclib'` in the config array, read
+> it back with `getDriver()`.
+>
+> The fallback matters beyond missing extensions: ext-ssh2, libssh (php-curl's `sftp://`) and
+> the OpenSSH CLI all verify host key signatures through OpenSSL, so RHEL 9's DEFAULT crypto
+> policy makes them refuse `ssh-rsa`-only servers such as Salesforce Marketing Cloud's
+> GlobalSCAPE endpoint — with no client-side flag that overrides it. phpseclib connects fine.
+> See *SFTP — which extra to use* in `wasql_reference.md`.
+>
+> Driver differences: `pwd()` uses the SFTP protocol under phpseclib (works on SFTP-only
+> servers) but shells out to `pwd` under ssh2; a relative path stays relative to the login
+> directory under phpseclib, while ssh2 treats every path as absolute from `/`.
+> `php/extras/sftp3.php` remains available as a lighter procedural API over the same library.
+
 `NativeSFTP` is a production-ready, dependency-light SFTP client.  
 This doc covers the **compat surface** we expose so agentic tools (and humans) can drive it predictably, without phpseclib.
 

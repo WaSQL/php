@@ -2,14 +2,29 @@
 declare(strict_types=1);
 
 /**
- * Native SFTP client using PHP's SSH2 extension (ext-ssh2).
+ * Native SFTP client - ext-ssh2 when available, phpseclib 3 as an automatic fallback.
  * - Password or public key auth
  * - Optional server fingerprint verification
  * - List, download, upload, mkdir, rmdir, rename, delete
  *
  * Usage example at bottom.
- * 
- * You need ssh2 installed: 
+ *
+ * TRANSPORT / DRIVERS
+ *  The class picks a driver at construction and every method behaves the same either way:
+ *   1. 'ssh2'      - PHP's SSH2 extension. Preferred when loaded (native, fastest).
+ *   2. 'phpseclib' - the vendored phpseclib 3 in php/extras/phpseclib3/. Pure PHP: no
+ *                    extension, no root.
+ *  Force one with `'driver' => 'ssh2'|'phpseclib'` in the config array; read back with
+ *  getDriver(). If neither is available the constructor throws.
+ *
+ *  ⚠️ The fallback is not only for missing extensions. ext-ssh2, libssh (php-curl's
+ *  sftp://) and the OpenSSH CLI all verify host key signatures through OpenSSL, so on
+ *  RHEL 9 the DEFAULT crypto policy (rh-allow-sha1-signatures = no) makes them refuse any
+ *  server whose only host key is `ssh-rsa` - and no client flag overrides it. phpseclib
+ *  does that math in PHP and connects fine. See "SFTP - which extra to use" in
+ *  wasql_reference.md.
+ *
+ * INSTALLING ext-ssh2 (optional - the fallback works without it):
  *  For windows download the dll
  *      https://github.com/jhanley-com/php-ssh2-windows/blob/master/README.md
  *  then add the following to php.ini
@@ -18,15 +33,30 @@ declare(strict_types=1);
  *      sudo apt-get install php-ssh2
  *  RedHat/CentOS
  *      sudo yum install php-pecl-ssh2
- *  macOS
- *      pecl install ssh2
- * 
+ *  macOS / PECL - pin the version; bare `pecl install ssh2` grabs the PHP 7-only 1.3.1
+ *      pecl install ssh2-1.4.1
+ *
+ * DRIVER DIFFERENCES worth knowing (everything else is identical):
+ *  - pwd()      : ssh2 shells out to `pwd` (fails on SFTP-only servers); phpseclib uses the
+ *                 SFTP protocol's own working directory, so it works everywhere.
+ *  - exec()     : needs a shell on the far side under BOTH drivers. Chrooted/internal-sftp
+ *                 endpoints have none, so chmod()/chown() fall back to protocol ops.
+ *  - paths      : ssh2 treats every path as absolute from /. phpseclib keeps a relative path
+ *                 relative to your login directory (what WinSCP shows). Absolute paths behave
+ *                 identically under both.
  */
 
 final class NativeSFTP
 {
+    const DRIVER_SSH2      = 'ssh2';
+    const DRIVER_PHPSECLIB = 'phpseclib';
+
     // NOTE: untyped properties (with @var docblocks) for PHP 7.3 compatibility.
     // Typed properties are PHP 7.4+; the constructor casts instead.
+    /** @var string which transport is in use - self::DRIVER_* */
+    private $driver;
+    /** @var \phpseclib3\Net\SFTP|null populated only under the phpseclib driver */
+    private $ps = null;
     /** @var string */
     private $host;
     /** @var int */
@@ -48,8 +78,26 @@ final class NativeSFTP
 
     public function __construct(array $cfg)
     {
-        if (!extension_loaded('ssh2')) {
-            throw new RuntimeException('The ssh2 extension is required. Install via PECL: pecl install ssh2');
+        // Driver selection. Prefer ext-ssh2 when it is loaded so existing installs keep the
+        // exact code path they have always run; otherwise fall back to the vendored phpseclib.
+        $want = isset($cfg['driver']) ? strtolower((string)$cfg['driver']) : '';
+        if ($want === self::DRIVER_SSH2 || $want === self::DRIVER_PHPSECLIB) {
+            if ($want === self::DRIVER_SSH2 && !extension_loaded('ssh2')) {
+                throw new RuntimeException("NativeSFTP: driver 'ssh2' was requested but the ssh2 extension is not loaded.");
+            }
+            if ($want === self::DRIVER_PHPSECLIB && !self::loadPhpseclib()) {
+                throw new RuntimeException("NativeSFTP: driver 'phpseclib' was requested but " . __DIR__ . '/phpseclib3/ is missing.');
+            }
+            $this->driver = $want;
+        } elseif (extension_loaded('ssh2')) {
+            $this->driver = self::DRIVER_SSH2;
+        } elseif (self::loadPhpseclib()) {
+            $this->driver = self::DRIVER_PHPSECLIB;
+        } else {
+            throw new RuntimeException(
+                'NativeSFTP: no SFTP transport available. Either install ext-ssh2 (pecl install ssh2-1.4.1) '
+                . 'or restore the vendored phpseclib 3 at ' . __DIR__ . '/phpseclib3/.'
+            );
         }
 
         // Explicit casts stand in for the property type declarations (PHP 7.4+) removed above.
@@ -67,8 +115,152 @@ final class NativeSFTP
         }
     }
 
+    // ===================== Driver plumbing =====================
+
+    /** Which transport this instance is using: 'ssh2' or 'phpseclib'. */
+    public function getDriver(): string
+    {
+        return $this->driver;
+    }
+
+    /** True when running on the pure-PHP fallback. */
+    private function isPs(): bool
+    {
+        return $this->driver === self::DRIVER_PHPSECLIB;
+    }
+
+    /** Load the vendored phpseclib 3 autoloader. Returns false when it is not present. */
+    private static function loadPhpseclib(): bool
+    {
+        if (class_exists('phpseclib3\Net\SFTP')) {
+            return true;
+        }
+        $autoload = __DIR__ . '/phpseclib3/autoload.php';
+        if (!is_file($autoload)) {
+            return false;
+        }
+        require_once $autoload;
+        return class_exists('phpseclib3\Net\SFTP');
+    }
+
+    /** Guard: the phpseclib session must exist before an operation runs. */
+    private function psSftp()
+    {
+        if ($this->ps === null) {
+            throw new RuntimeException('Not connected. Call connect() first.');
+        }
+        return $this->ps;
+    }
+
+    /**
+     * Path for the phpseclib driver: applies chdir() like the ssh2 path does, but does NOT
+     * force a leading slash - phpseclib resolves a relative path against the login directory,
+     * which is what callers (and WinSCP) expect. Absolute paths are untouched.
+     */
+    private function psPath(string $path): string
+    {
+        $path = $this->applyCwd($path);
+        return $path === '' ? '.' : $path;
+    }
+
+    /** stat() for either driver, normalized to the ssh2 shape (mode/size/uid/gid/atime/mtime). */
+    private function statPath(string $path)
+    {
+        if ($this->isPs()) {
+            $st = @$this->psSftp()->stat($this->psPath($path));
+            if (!is_array($st)) {
+                return false;
+            }
+            // phpseclib reports 'type' as NET_SFTP_TYPE_*; synthesize the st_mode bits the
+            // ssh2 stream wrapper returns so callers can keep masking with 0170000.
+            if (!isset($st['mode']) && isset($st['type'])) {
+                $st['mode'] = ($st['type'] == 2 ? 0040000 : 0100000);
+            }
+            return $st;
+        }
+        return @stat($this->sftpPath($this->applyCwd($path)));
+    }
+
+    /** Open the phpseclib session, verify the fingerprint, authenticate. */
+    private function psConnect(int $timeoutSeconds): void
+    {
+        try {
+            $sftp = new \phpseclib3\Net\SFTP($this->host, $this->port, $timeoutSeconds);
+        } catch (\Throwable $e) {
+            throw new RuntimeException("Failed to connect to {$this->host}:{$this->port} - " . $e->getMessage());
+        }
+
+        // Force the handshake NOW. phpseclib otherwise defers connecting until login(), which
+        // would report an unreachable host or a failed algorithm negotiation as "auth failed".
+        // Doing it here also means the host key is verified before credentials go out.
+        try {
+            $hostkey = @$sftp->getServerPublicHostKey();
+        } catch (\Throwable $e) {
+            throw new RuntimeException("Failed to connect to {$this->host}:{$this->port} - " . $e->getMessage());
+        }
+        if ($hostkey === false) {
+            throw new RuntimeException("Failed to connect to {$this->host}:{$this->port}");
+        }
+
+        if ($this->expectedFingerprintHex !== null) {
+            $parts = preg_split('/\s+/', trim((string)$hostkey));
+            $blob  = base64_decode(count($parts) > 1 ? $parts[1] : $parts[0], true);
+            if ($blob === false) {
+                throw new RuntimeException('Server host key could not be decoded.');
+            }
+            // cfg key is fingerprint_hex, historically MD5 hex (what ssh2_fingerprint returns).
+            // Accept a SHA256 base64 digest too, since that is what modern ssh prints.
+            $md5    = strtolower(md5($blob));
+            $sha256 = rtrim(base64_encode(hash('sha256', $blob, true)), '=');
+            $want   = $this->expectedFingerprintHex;
+            if ($want !== $md5 && strtolower(preg_replace('/[^0-9a-z]/i', '', $sha256)) !== $want) {
+                throw new RuntimeException("Server fingerprint mismatch. Expected {$want}, got {$md5} (md5) / SHA256:{$sha256}");
+            }
+        }
+
+        try {
+            if ($this->privKeyPath !== null) {
+                $material = is_file($this->privKeyPath) ? (string)file_get_contents($this->privKeyPath) : $this->privKeyPath;
+                $key = ($this->passphrase !== null && $this->passphrase !== '')
+                    ? \phpseclib3\Crypt\PublicKeyLoader::load($material, $this->passphrase)
+                    : \phpseclib3\Crypt\PublicKeyLoader::load($material);
+                $ok = $sftp->login($this->username, $key);
+            } elseif ($this->password !== null) {
+                $ok = $sftp->login($this->username, $this->password);
+            } else {
+                throw new InvalidArgumentException('Provide either password OR pub_key + priv_key (with optional passphrase).');
+            }
+        } catch (InvalidArgumentException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new RuntimeException('SSH authentication failed: ' . $e->getMessage());
+        }
+        if (!$ok) {
+            throw new RuntimeException('SSH authentication failed.');
+        }
+        $this->ps = $sftp;
+    }
+
+    /** Last server-reported detail for a failed phpseclib operation. */
+    private function psError(): string
+    {
+        try {
+            $msg = (string)$this->psSftp()->getLastSFTPError();
+            return $msg === '' ? '' : " - {$msg}";
+        } catch (\Throwable $e) {
+            return '';
+        }
+    }
+
+    // ===================== Connect =====================
+
     public function connect(int $timeoutSeconds = 15): void
     {
+        if ($this->isPs()) {
+            $this->psConnect($timeoutSeconds);
+            return;
+        }
+
         $methods = [
             'kex' => null,          // let lib negotiate; override if you need specific KEX
             'hostkey' => null,      // e.g. 'ssh-ed25519' or 'ssh-rsa'
@@ -148,6 +340,20 @@ if (!$ok) {
 
     public function list(string $remotePath): array
     {
+        if ($this->isPs()) {
+            $items = @$this->psSftp()->nlist($this->psPath($remotePath));
+            if ($items === false) {
+                throw new RuntimeException("Cannot open directory: {$remotePath}" . $this->psError());
+            }
+            $out = [];
+            foreach ($items as $file) {
+                if ($file === '.' || $file === '..') continue;
+                $out[] = $file;
+            }
+            sort($out);
+            return $out;
+        }
+
         $remotePath = $this->applyCwd($remotePath);
 
         $dir = $this->sftpPath($remotePath);
@@ -170,6 +376,21 @@ if (!$ok) {
      */
     public function exec(string $command, bool $trim = true): string
     {
+        if ($this->isPs()) {
+            $sftp = $this->psSftp();
+            // quiet mode keeps stderr out of exec()'s return so it can be appended separately,
+            // matching the ssh2 driver's stdout . stderr behaviour
+            $sftp->enableQuietMode();
+            $stdout = @$sftp->exec($command);
+            $stderr = (string)$sftp->getStdError();
+            $sftp->disableQuietMode();
+            if ($stdout === false) {
+                throw new RuntimeException("Failed to execute command: {$command}");
+            }
+            $output = (string)$stdout . $stderr;
+            return $trim ? trim($output) : $output;
+        }
+
         if (!is_resource($this->conn)) {
             throw new RuntimeException('Not connected. Call connect() first.');
         }
@@ -199,6 +420,15 @@ if (!$ok) {
      */
     public function pwd(): string
     {
+        // phpseclib can answer from the SFTP layer, so this works on SFTP-only servers where
+        // the ssh2 driver's `pwd` shell-out fails
+        if ($this->isPs()) {
+            $pwd = @$this->psSftp()->pwd();
+            if ($pwd === false) {
+                throw new RuntimeException('Failed to determine the remote working directory.');
+            }
+            return (string)$pwd;
+        }
         return $this->exec('pwd');
     }
 
@@ -208,6 +438,14 @@ if (!$ok) {
      */
     public function realpath(string $path = '.'): string
     {
+        if ($this->isPs()) {
+            $resolved = @$this->psSftp()->realpath($this->psPath($path));
+            if ($resolved === false || $resolved === '') {
+                throw new RuntimeException("Failed to resolve path: {$path}");
+            }
+            return (string)$resolved;
+        }
+
         if (!is_resource($this->sftp)) {
             throw new RuntimeException('Not connected. Call connect() first.');
         }
@@ -260,6 +498,32 @@ if (!$ok) {
      */
     public function tryList(string $remotePath = '.', bool $includeHidden = false): array
     {
+        if ($this->isPs()) {
+            // one round trip: rawlist already carries the type, so no per-entry stat is needed
+            $raw = @$this->psSftp()->rawlist($this->psPath($remotePath));
+            if (!is_array($raw)) {
+                return ['dirs' => [], 'files' => []];
+            }
+            $dirs = [];
+            $files = [];
+            foreach ($raw as $key => $attr) {
+                $attr = (array)$attr;
+                $name = isset($attr['filename']) ? (string)$attr['filename'] : (string)$key;
+                if ($name === '' || $name === '.' || $name === '..') continue;
+                if (!$includeHidden && substr($name, 0, 1) === '.') continue;
+                $fullLogical = ltrim(rtrim($remotePath, '/') . '/' . $name, '/');
+                // NET_SFTP_TYPE_DIRECTORY === 2
+                if (isset($attr['type']) && (int)$attr['type'] === 2) {
+                    $dirs[] = $fullLogical;
+                } else {
+                    $files[] = $fullLogical;
+                }
+            }
+            sort($dirs, SORT_NATURAL | SORT_FLAG_CASE);
+            sort($files, SORT_NATURAL | SORT_FLAG_CASE);
+            return ['dirs' => $dirs, 'files' => $files];
+        }
+
         if (!is_resource($this->sftp)) {
             throw new RuntimeException('Not connected. Call connect() first.');
         }
@@ -379,6 +643,16 @@ if (!$ok) {
 
     public function download(string $remoteFile, string $localFile, bool $overwrite = true): void
     {
+        if ($this->isPs()) {
+            if (!$overwrite && file_exists($localFile)) {
+                throw new RuntimeException("Local file exists: {$localFile}");
+            }
+            if (@$this->psSftp()->get($this->psPath($remoteFile), $localFile) === false) {
+                throw new RuntimeException("Cannot open remote file for reading: {$remoteFile}" . $this->psError());
+            }
+            return;
+        }
+
         $remoteFile = $this->applyCwd($remoteFile);
 
         $src = $this->sftpPath($remoteFile);
@@ -404,6 +678,24 @@ if (!$ok) {
 
     public function upload(string $localFile, string $remoteFile, bool $overwrite = true): void
     {
+        if ($this->isPs()) {
+            if (!is_file($localFile)) {
+                throw new RuntimeException("Local file not found: {$localFile}");
+            }
+            if (!$overwrite && $this->exists($remoteFile)) {
+                throw new RuntimeException("Remote file exists: {$remoteFile}");
+            }
+            $ok = @$this->psSftp()->put(
+                $this->psPath($remoteFile),
+                $localFile,
+                \phpseclib3\Net\SFTP::SOURCE_LOCAL_FILE
+            );
+            if (!$ok) {
+                throw new RuntimeException("Cannot open remote file for writing: {$remoteFile}" . $this->psError());
+            }
+            return;
+        }
+
         $remoteFile = $this->applyCwd($remoteFile);
 
         if (!is_file($localFile)) {
@@ -433,6 +725,15 @@ if (!$ok) {
 
     public function delete(string $remoteFile): void
     {
+        if ($this->isPs()) {
+            // 2nd arg false: phpseclib's delete() recurses by default, which would take out a
+            // whole directory tree if this name ever pointed at a directory
+            if (!@$this->psSftp()->delete($this->psPath($remoteFile), false)) {
+                throw new RuntimeException("Failed to delete remote file: {$remoteFile}" . $this->psError());
+            }
+            return;
+        }
+
         $remoteFile = $this->applyCwd($remoteFile);
 
         $path = $this->sftpPath($remoteFile);
@@ -443,6 +744,29 @@ if (!$ok) {
 
     public function rename(string $remoteFrom, string $remoteTo, bool $overwrite = true): void
     {
+        if ($this->isPs()) {
+            $sftp = $this->psSftp();
+            if (!$this->exists($remoteFrom)) {
+                throw new RuntimeException("Source does not exist: {$remoteFrom}");
+            }
+            // work in pre-cwd (logical) terms here - the helpers apply cwd themselves, so
+            // deriving the parent from an already-resolved path would apply it twice
+            $parent = rtrim(dirname($remoteTo), '/');
+            if ($parent !== '' && $parent !== '.' && $parent !== '/' && !$this->is_dir($parent)) {
+                $this->mkdir($parent, 0755, true);
+            }
+            if ($this->exists($remoteTo)) {
+                if (!$overwrite) {
+                    throw new RuntimeException("Destination exists: {$remoteTo}");
+                }
+                @$sftp->delete($this->psPath($remoteTo), false);
+            }
+            if (!@$sftp->rename($this->psPath($remoteFrom), $this->psPath($remoteTo))) {
+                throw new RuntimeException("Failed to rename {$remoteFrom} to {$remoteTo}" . $this->psError());
+            }
+            return;
+        }
+
         $remoteFrom = $this->applyCwd($remoteFrom);
         $remoteTo   = $this->applyCwd($remoteTo);
 
@@ -522,6 +846,18 @@ if (!$ok) {
 
     public function mkdir(string $remotePath, int $mode = 0755, bool $recursive = false): void
     {
+        if ($this->isPs()) {
+            $sftp = $this->psSftp();
+            $path = $this->psPath($remotePath);
+            if (@$sftp->is_dir($path)) {
+                return;
+            }
+            if (!@$sftp->mkdir($path, $mode, $recursive) && !@$sftp->is_dir($path)) {
+                throw new RuntimeException("Failed to create directory: {$remotePath}" . $this->psError());
+            }
+            return;
+        }
+
         $remotePath = $this->applyCwd($remotePath);
         if (!is_resource($this->sftp)) {
             throw new RuntimeException('Not connected. Call connect() first.');
@@ -560,6 +896,13 @@ if (!$ok) {
 
     public function rmdir(string $remotePath): void
     {
+        if ($this->isPs()) {
+            if (!@$this->psSftp()->rmdir($this->psPath($remotePath))) {
+                throw new RuntimeException("Failed to remove directory: {$remotePath}" . $this->psError());
+            }
+            return;
+        }
+
         $remotePath = $this->applyCwd($remotePath);
 
         $path = $this->sftpPath($remotePath);
@@ -570,6 +913,10 @@ if (!$ok) {
 
     public function exists(string $remotePath): bool
     {
+        if ($this->isPs()) {
+            return (bool)@$this->psSftp()->file_exists($this->psPath($remotePath));
+        }
+
         $remotePath = $this->applyCwd($remotePath);
 
         $path = $this->sftpPath($remotePath);
@@ -578,6 +925,14 @@ if (!$ok) {
 
     public function filesize(string $remotePath): int
     {
+        if ($this->isPs()) {
+            $size = @$this->psSftp()->filesize($this->psPath($remotePath));
+            if ($size === false) {
+                throw new RuntimeException("Failed to stat file size: {$remotePath}");
+            }
+            return (int)$size;
+        }
+
         $remotePath = $this->applyCwd($remotePath);
 
         $path = $this->sftpPath($remotePath);
@@ -590,6 +945,16 @@ if (!$ok) {
 
     public function disconnect(): void
     {
+        // Must stay safe to call when connect() never ran or threw - callers put this in a
+        // finally block.
+        if ($this->isPs()) {
+            if ($this->ps !== null) {
+                try { $this->ps->disconnect(); } catch (\Throwable $e) { /* already gone */ }
+                $this->ps = null;
+            }
+            return;
+        }
+
         // Cleanly close by freeing resources.
         $this->sftp = null;
         if (is_resource($this->conn)) {
@@ -754,11 +1119,40 @@ if (!$ok) {
 
     // ===================== Convenience / Compatibility =====================
 
-    /** put(): alias to upload() */
+    /**
+     * put(): writes $data to $remoteFile. $data may be a LOCAL PATH or literal contents.
+     *
+     * NOTE: this previously read `is_string($data) && is_file($data) ? $data : $data` - both
+     * branches identical - so literal content was always treated as a filename and died in
+     * upload() with "Local file not found". Content is now written directly.
+     */
     public function put(string $remoteFile, $data, $mode = null): bool
     {
-        $remoteFile = $this->applyCwd($remoteFile);
-        $this->upload(is_string($data) && is_file($data) ? $data : $data, $remoteFile, true);
+        // only probe the filesystem for plausible path lengths; is_file() on a large blob of
+        // CSV would be pointless work (and noisy on some platforms)
+        if (is_string($data) && strlen($data) <= 4096 && strpos($data, "\n") === false && @is_file($data)) {
+            $this->upload($data, $remoteFile, true);
+            return true;
+        }
+
+        if ($this->isPs()) {
+            if (!@$this->psSftp()->put($this->psPath($remoteFile), (string)$data)) {
+                throw new RuntimeException("Cannot write remote file: {$remoteFile}" . $this->psError());
+            }
+            return true;
+        }
+
+        $dst = $this->sftpPath($this->applyCwd($remoteFile));
+        $out = @fopen($dst, 'wb');
+        if (!$out) {
+            throw new RuntimeException("Cannot open remote file for writing: {$remoteFile}");
+        }
+        $written = fwrite($out, (string)$data);
+        fflush($out);
+        fclose($out);
+        if ($written === false) {
+            throw new RuntimeException("Write error during put: {$remoteFile}");
+        }
         return true;
     }
 
@@ -797,16 +1191,15 @@ if (!$ok) {
         return $this->exists($path);
     }
 
-    /** Basic is_dir using stream stat and listDirs() */
+    /** Basic is_dir using stat and listDirs() */
     public function is_dir(string $path): bool
     {
-        $path = $this->applyCwd($path);
         try {
-            $uri = $this->sftpPath($path);
-            $st = @stat($uri);
+            $st = $this->statPath($path);          // driver-aware; applies cwd itself
             if (is_array($st) && isset($st['mode'])) {
                 return (($st['mode'] & 0170000) === 0040000);
             }
+            $path = $this->applyCwd($path);
             // fallback using listDirs on parent dir
             $parent = rtrim(dirname($path), '/');
             $name = basename($path);
@@ -820,10 +1213,9 @@ if (!$ok) {
 
     public function is_file(string $path): bool
     {
-        $path = $this->applyCwd($path);
         try {
             if (!$this->exists($path)) return false;
-            $st = @stat($this->sftpPath($path));
+            $st = $this->statPath($path);
             return is_array($st) && isset($st['mode']) && (($st['mode'] & 0170000) === 0100000);
         } catch (\Throwable $e) { return false; }
     }
@@ -859,6 +1251,41 @@ if (!$ok) {
     /** rawlist(): detailed listing built from list() + stat() */
     public function rawlist(string $directory='.', bool $recursive=false): array
     {
+        if ($this->isPs()) {
+            // phpseclib's rawlist already carries every attribute, so this is ONE round trip
+            // rather than the stat-per-entry the ssh2 path below does
+            $raw = @$this->psSftp()->rawlist($this->psPath($directory));
+            if (!is_array($raw)) {
+                return [];
+            }
+            $out = [];
+            foreach ($raw as $key => $attr) {
+                $attr = (array)$attr;
+                $name = isset($attr['filename']) ? (string)$attr['filename'] : (string)$key;
+                if ($name === '' || $name === '.' || $name === '..') continue;
+                $full = rtrim($directory, '/') . '/' . $name;
+                // NET_SFTP_TYPE_DIRECTORY === 2; normalize to this class's string form
+                $type = (isset($attr['type']) && (int)$attr['type'] === 2) ? 'directory' : 'file';
+                $out[$name] = [
+                    'filename' => $name,
+                    'afile'    => $full,
+                    'type'     => $type,
+                    'size'     => isset($attr['size'])  ? (int)$attr['size']  : null,
+                    'mode'     => isset($attr['mode'])  ? (int)$attr['mode']  : null,
+                    'uid'      => isset($attr['uid'])   ? (int)$attr['uid']   : null,
+                    'gid'      => isset($attr['gid'])   ? (int)$attr['gid']   : null,
+                    'atime'    => isset($attr['atime']) ? (int)$attr['atime'] : null,
+                    'mtime'    => isset($attr['mtime']) ? (int)$attr['mtime'] : null,
+                ];
+                if ($recursive && $type === 'directory') {
+                    foreach ($this->rawlist($full, true) as $cn => $cv) {
+                        $out[$name . '/' . $cn] = $cv;
+                    }
+                }
+            }
+            return $out;
+        }
+
         $directory = $this->applyCwd($directory);
         $items = $this->list($directory);
         if (!is_array($items)) return [];
@@ -885,11 +1312,10 @@ if (!$ok) {
         return $out;
     }
 
-    // Metadata helpers
+    // Metadata helpers - all go through statPath(), which is driver-aware and applies cwd
     public function filetype(string $path): ?string
     {
-        $path = $this->applyCwd($path);
-        $st = @stat($this->sftpPath($path));
+        $st = $this->statPath($path);
         if (is_array($st) && isset($st['mode'])) {
             $t = $st['mode'] & 0170000;
             return $t == 0040000 ? 'directory' : ($t == 0100000 ? 'file' : null);
@@ -898,32 +1324,27 @@ if (!$ok) {
     }
     public function fileperms(string $path): ?int
     {
-        $path = $this->applyCwd($path);
-        $st = @stat($this->sftpPath($path));
+        $st = $this->statPath($path);
         return is_array($st) && isset($st['mode']) ? (int)$st['mode'] : null;
     }
     public function fileowner(string $path): ?int
     {
-        $path = $this->applyCwd($path);
-        $st = @stat($this->sftpPath($path));
+        $st = $this->statPath($path);
         return is_array($st) && isset($st['uid']) ? (int)$st['uid'] : null;
     }
     public function filegroup(string $path): ?int
     {
-        $path = $this->applyCwd($path);
-        $st = @stat($this->sftpPath($path));
+        $st = $this->statPath($path);
         return is_array($st) && isset($st['gid']) ? (int)$st['gid'] : null;
     }
     public function fileatime(string $path): ?int
     {
-        $path = $this->applyCwd($path);
-        $st = @stat($this->sftpPath($path));
+        $st = $this->statPath($path);
         return is_array($st) && isset($st['atime']) ? (int)$st['atime'] : null;
     }
     public function filemtime(string $path): ?int
     {
-        $path = $this->applyCwd($path);
-        $st = @stat($this->sftpPath($path));
+        $st = $this->statPath($path);
         return is_array($st) && isset($st['mtime']) ? (int)$st['mtime'] : null;
     }
 
@@ -933,6 +1354,14 @@ if (!$ok) {
         if ($mode < 0 || $mode > 07777) {
             throw new \InvalidArgumentException('chmod() invalid mode; expected octal 0-07777.');
         }
+        if ($this->isPs()) {
+            //phpseclib's signature is chmod($mode, $filename) - same order as this method
+            if (@$this->psSftp()->chmod($mode, $this->psPath($path)) === false) {
+                throw new \RuntimeException(sprintf('chmod(%o, %s) failed.%s', $mode, $path, $this->psError()));
+            }
+            return true;
+        }
+
         $path = $this->applyCwd($path);
         if (!is_resource($this->sftp)) {
             throw new \RuntimeException('Not connected. Call connect() first.');
@@ -952,6 +1381,21 @@ if (!$ok) {
     {
         if ($uid < 0) throw new \InvalidArgumentException('chown() uid must be >= 0.');
         if ($gid !== null && $gid < 0) throw new \InvalidArgumentException('chown() gid must be >= 0.');
+
+        if ($this->isPs()) {
+            // protocol-level, so this works without a remote shell (unlike the ssh2 path below).
+            // NOTE phpseclib takes the filename FIRST - the opposite of this method's signature.
+            $sftp = $this->psSftp();
+            $target = $this->psPath($path);
+            if (@$sftp->chown($target, $uid) === false) {
+                throw new \RuntimeException("chown({$uid}, {$path}) failed." . $this->psError());
+            }
+            if ($gid !== null && @$sftp->chgrp($target, $gid) === false) {
+                throw new \RuntimeException("chgrp({$gid}, {$path}) failed." . $this->psError());
+            }
+            return true;
+        }
+
         $path = $this->applyCwd($path);
         $cmd = 'chown ' . $uid . ($gid === null ? '' : ':' . $gid) . ' ' . escapeshellarg($path);
         $this->exec($cmd);
