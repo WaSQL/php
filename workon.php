@@ -81,6 +81,11 @@ WHAT IT DOES
      /json/new, with GET + curl fallbacks); only launches Chrome if none.
   4. Confirms the page's Chrome target exists, retrying the tab-open once. If it
      still fails, it PRINTS THE OPEN TABS so you can diagnose without a curl.
+     The confirmed tab's id is remembered per alias (temp/wasql-workon-tab-
+     {alias}.json) so a re-run for the same alias reliably comes back to the
+     SAME tab even when other "work on" sessions have other tabs open in the
+     same shared debug Chrome instance - screenshotting targets that exact
+     tab id instead of guessing "the first page tab" in the whole instance.
   5. Optional mobile screenshot via Node + CDP, with the 1px reflow nudge baked
      in. Creates the --shot parent directory if it doesn't exist.
   6. Mirror inventory: the named page's record id and the full local path +
@@ -101,6 +106,15 @@ OPTIONS
   --shot[=PATH]      write a screenshot PNG (bare --shot -> a temp path)
   --no-shot          never screenshot (the default when --shot is absent)
   --width=N          screenshot viewport width (default: 390 = mobile)
+  --reshoot=URL      lightweight follow-up shot during an already-open session:
+                     reuse the remembered tab (no watcher launch, no inventory)
+                     and navigate+screenshot URL. Implies a shot even without
+                     --shot (falls back to a temp path). Use this instead of a
+                     standalone node/CDP screenshot script for "did my edit
+                     work" checks after the initial "work on" call.
+  --no-chrome        skip Chrome entirely - a pure alias/watcher status check
+                     (is the watcher still running?), no tab, no screenshot.
+                     Mutually exclusive with --reshoot.
   --no-watcher       do not launch the PostEdit watcher if it's missing
   --no-tab           always give the watcher its OWN console window, even when
                      running inside Windows Terminal (default: add a tab to the
@@ -160,6 +174,31 @@ function httpGet($url, $timeout = 2){
  * why the old `if($new === null)` fallback never fired and the tab silently
  * never got created. Success = a parseable target object with an id.
  */
+/**
+ * Return the debug target array (id/url/webSocketDebuggerUrl) matching a
+ * remembered target id, or failing that the first target whose URL contains
+ * $host, else null.
+ *
+ * Checking $rememberedId FIRST (not just host) matters once multiple Claude
+ * sessions share one debug Chrome instance: a plain host-substring search
+ * only disambiguates when each session is on a different site, and a caller
+ * (e.g. the screenshot helper) that just grabs "the first tab" is order-
+ * dependent and can grab a different session's tab. Matching the exact id
+ * this alias saved last run makes repeat runs land on the same tab
+ * regardless of what else is open.
+ */
+function findTarget($json, $host, $rememberedId = null){
+	$list = json_decode((string)$json, true);
+	if(!is_array($list)){ return null; }
+	if($rememberedId !== null){
+		foreach($list as $t){ if(!empty($t['id']) && $t['id'] === $rememberedId){ return $t; } }
+	}
+	foreach($list as $t){
+		if(!empty($t['url']) && stripos($t['url'], $host) !== false){ return $t; }
+	}
+	return null;
+}
+
 function newTab($jsonUrl, $url){
 	$endpoint = $jsonUrl . '/new?' . $url;
 	$isTarget = function($body){
@@ -333,14 +372,26 @@ if(!isset($opts['no-log'])){
 
 $port    = isset($opts['port'])  ? (int)$opts['port']  : 9222;
 $width   = isset($opts['width']) ? (int)$opts['width'] : 390;
-$doShot  = isset($opts['shot']) && !isset($opts['no-shot']);
+// --reshoot=URL is a lightweight follow-up screenshot during an already-open
+// session (a different page, or the same page after an edit) - it implies a
+// shot even without an explicit --shot, so it needs to be known before $doShot
+// is decided below.
+$reshootGiven = isset($opts['reshoot']) && $opts['reshoot'] !== true;
+if(isset($opts['reshoot']) && !$reshootGiven){ fail('--reshoot needs a URL, e.g. --reshoot=https://host/page'); }
+$noChrome = isset($opts['no-chrome']);
+if($noChrome && $reshootGiven){ fail('--no-chrome and --reshoot are contradictory (reshoot needs Chrome).'); }
+$doShot  = (isset($opts['shot']) || $reshootGiven) && !isset($opts['no-shot']) && !$noChrome;
 // `--shot` with no =PATH still means "take one" - fall back to a temp file
 // rather than using the boolean `true` as a filename.
 $shotOut = !$doShot ? null
-	: (($opts['shot'] === true)
+	: ((!isset($opts['shot']) || $opts['shot'] === true)
 		? sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-shot-' . preg_replace('/[^a-z0-9_\-]/i', '', $alias) . '.png'
 		: $opts['shot']);
-$doWatch = !isset($opts['no-watcher']);
+// --reshoot assumes an earlier full "work on" call already started the
+// watcher for this alias - re-launching it here would trigger postedit.php's
+// destructive startup re-sync for what's meant to be a quick follow-up shot.
+// --no-chrome is a pure status check, so there is nothing for it to screenshot.
+$doWatch = !isset($opts['no-watcher']) && !$reshootGiven;
 // Watcher window placement: a tab in the current Windows Terminal window when
 // we're running in one, else its own console window. --no-tab forces the window.
 $useTab  = !isset($opts['no-tab']);
@@ -412,10 +463,29 @@ if($localMode){
 	if($host === null){ fail("alias '$alias' not found in postedit.xml"); }
 	$url = 'https://' . $host . '/' . ltrim($page, '/');
 }
+// $host stays whatever the alias resolved to (used to find the session's tab
+// below) - only the navigation target changes to the requested URL.
+if($reshootGiven){ $url = $opts['reshoot']; }
 
-step("• alias   : $alias" . ($localMode ? '  (local framework mode)' : ''));
+step("• alias   : $alias" . ($localMode ? '  (local framework mode)' : '') . ($reshootGiven ? '  (reshoot)' : ''));
 step("• host    : $host" . ($insecure ? ' (self-signed)' : ''));
 step("• url     : $url");
+
+// ---- tab memory ------------------------------------------------------------
+// One debug Chrome instance is shared by every concurrent "work on" session
+// (same default port/profile), so without this a session has no way to tell
+// its own tab apart from another session's once more than one tab is open.
+// Remembering the last confirmed target id per alias lets a session reliably
+// come back to the SAME tab next run instead of matching "the first tab for
+// this host" (wrong once two sessions share a host) or "the first page tab in
+// the list" (wrong the instant a second session's tab exists at all).
+$tabStateFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql-workon-tab-'
+	. preg_replace('/[^a-z0-9_\-]/i', '', $alias) . '.json';
+$rememberedTabId = null;
+if(is_file($tabStateFile)){
+	$decoded = json_decode((string)@file_get_contents($tabStateFile), true);
+	if(is_array($decoded) && !empty($decoded['id'])){ $rememberedTabId = $decoded['id']; }
+}
 
 // ---- 2. ensure the PostEdit watcher ---------------------------------------
 // Launched before Chrome: the watcher's startup re-sync runs in its own
@@ -534,6 +604,12 @@ if($watcherPid){
 }
 
 // ---- 3. ensure debug Chrome ------------------------------------------------
+$matchedTarget = null;                  // set once a target is confirmed; drives step 5's screenshot
+$confirmed     = null;                  // null = not attempted (--no-chrome); bool once step 4 runs
+$chromeUp      = false;
+if($noChrome){
+	step("• chrome  : skipped (--no-chrome - watcher status only)");
+} else {
 // Probe a few times before concluding Chrome is absent: a warm instance answers
 // instantly, but a busy/just-started one can miss a single 3s probe, which would
 // otherwise make us spawn a redundant duplicate instance.
@@ -556,26 +632,17 @@ if($portOpen){
 }
 $chromeUp = ($targets !== null);
 
-/** Does any debug target's URL contain the host? */
-$targetForHost = function($json, $host){
-	if(!$json){ return false; }
-	$list = json_decode($json, true);
-	if(!is_array($list)){ return false; }
-	foreach($list as $t){
-		if(!empty($t['url']) && stripos($t['url'], $host) !== false){ return true; }
-	}
-	return false;
-};
-
 if($chromeUp){
 	step("• chrome  : debug instance already up on port $port");
-	if(!$targetForHost($targets, $host)){
+	$matchedTarget = findTarget($targets, $host, $rememberedTabId);
+	if(!$matchedTarget){
 		// Open the page as a new tab in the existing debug instance.
 		step(newTab($jsonUrl, $url)
 			? "• chrome  : opened new tab -> $url"
 			: "• chrome  : could NOT open a new tab (tried PUT, GET and curl on /json/new)");
 	} else {
-		step("• chrome  : existing tab already on $host");
+		step("• chrome  : existing tab already on $host"
+			. (($rememberedTabId && $matchedTarget['id'] === $rememberedTabId) ? ' (this session\'s remembered tab)' : ''));
 	}
 } else {
 	// Locate Chrome and launch a fresh detached debug instance.
@@ -614,7 +681,8 @@ $deadline  = microtime(true) + 20;          // ~20s ceiling (cold Chrome start);
 $retried   = false;
 while(microtime(true) < $deadline){
 	$targets = httpGet($jsonUrl);
-	if($targetForHost($targets, $host)){ $confirmed = true; break; }
+	$matchedTarget = findTarget($targets, $host, $rememberedTabId);
+	if($matchedTarget){ $confirmed = true; break; }
 	// One retry after ~8s: if the debug port is answering but our tab still
 	// isn't there, the open request itself failed - re-asking beats waiting out
 	// the rest of the deadline for a tab that was never created.
@@ -627,6 +695,13 @@ while(microtime(true) < $deadline){
 step($confirmed
 	? "• target  : confirmed on port $port ✓"
 	: "• target  : NOT confirmed after wait ✗");
+if($confirmed && $matchedTarget && !empty($matchedTarget['id'])){
+	// Remember this tab for next run so a re-invocation of this session's
+	// "work on {alias}" lands back on the SAME tab instead of guessing among
+	// whatever other sessions' tabs are open in the shared debug Chrome.
+	@file_put_contents($tabStateFile, json_encode(['id' => $matchedTarget['id'], 'url' => $matchedTarget['url']]));
+	step("• tab id  : {$matchedTarget['id']} (remembered in $tabStateFile)");
+}
 if(!$confirmed){
 	// Dump what IS open so the caller can diagnose from this output instead of
 	// having to run a separate curl against the debug endpoint.
@@ -642,6 +717,7 @@ if(!$confirmed){
 		                   : '     no http(s) tabs are open in the debug instance.');
 	}
 }
+}                                                            // end of the !$noChrome block opened at step 3
 
 // ---- 5. optional screenshot ----------------------------------------------
 $shotWritten = null;
@@ -665,12 +741,17 @@ if($doShot && $confirmed){
 	// Write the CDP screenshot helper (mobile emulation + 1px reflow nudge) to a temp file.
 	$shotJs = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wasql_shot.js';
 	file_put_contents($shotJs, <<<'JS'
-const [,, PORT, URL, OUT, W] = process.argv;
+const [,, PORT, URL, OUT, W, TARGET_ID] = process.argv;
 const width = parseInt(W || '390', 10);
 const fs = require('fs');
 async function main() {
   const list = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();
-  const page = list.find(t => t.type === 'page' && t.webSocketDebuggerUrl && /https?:/.test(t.url));
+  // Target the exact confirmed tab by id when given - a shared debug Chrome
+  // instance can have other sessions' tabs open, so "the first page tab in
+  // the list" is order-dependent and can grab the wrong session's tab.
+  // TARGET_ID absent (older caller) falls back to that old heuristic.
+  const page = (TARGET_ID && list.find(t => t.id === TARGET_ID))
+    || list.find(t => t.type === 'page' && t.webSocketDebuggerUrl && /https?:/.test(t.url));
   const ws = new WebSocket(page.webSocketDebuggerUrl.replace('localhost', '127.0.0.1'));
   let id = 0; const pending = new Map();
   const send = (m, p = {}) => new Promise(res => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method: m, params: p })); });
@@ -710,7 +791,8 @@ async function main() {
 main().catch(e => { console.error(e); process.exit(1); });
 JS);
 	$shotUrl = $url . (strpos($url, '?') === false ? '?cb=1' : '&cb=1');
-	$cmd = '"' . $node . '" "' . $shotJs . '" ' . $port . ' "' . $shotUrl . '" "' . $shotOut . '" ' . $width;
+	$cmd = '"' . $node . '" "' . $shotJs . '" ' . $port . ' "' . $shotUrl . '" "' . $shotOut . '" ' . $width
+	     . ($matchedTarget && !empty($matchedTarget['id']) ? ' "' . $matchedTarget['id'] . '"' : '');
 	$so  = @shell_exec($cmd . ' 2>&1');
 	if(is_file($shotOut)){
 		$shotWritten = $shotOut;
@@ -728,7 +810,7 @@ JS);
 // Mirror layout: postEditFiles/{alias}/{table}/{record}/{record}.{table}.{field}.{id}.{ext}
 $inventory = ['page' => [], 'others' => [], 'truncated' => 0, 'root' => null];
 $invMax    = isset($opts['inv-max']) ? (int)$opts['inv-max'] : 40;
-if(!$localMode && !isset($opts['no-inventory'])){
+if(!$localMode && !isset($opts['no-inventory']) && !$reshootGiven && !$noChrome){
 	$mirror = $ROOT . DIRECTORY_SEPARATOR . 'postedit' . DIRECTORY_SEPARATOR
 	        . 'postEditFiles' . DIRECTORY_SEPARATOR . $alias;
 	$inventory['root'] = $mirror;
@@ -822,7 +904,9 @@ step($localMode
 	: "Ready. In the assistant, set the DB with: setdb $alias   (wamcp)\n"
 	. "  (the wamcp name often differs from the postedit alias - e.g. '{$alias}_mysql';\n"
 	. "   if '$alias' isn't found, list names with the wamcp `databases` tool.)");
-step("Then read the screenshot" . ($shotWritten ? " at:\n  $shotWritten" : " (re-run with --shot=PATH)."));
+if(!$noChrome){
+	step("Then read the screenshot" . ($shotWritten ? " at:\n  $shotWritten" : " (re-run with --shot=PATH)."));
+}
 if($LOGFILE){ step("Output copied to: $LOGFILE"); }
 
 if($jsonMode){
@@ -833,9 +917,10 @@ if($jsonMode){
 		'watcher_pid' => $watcherPid, 'watcher_launched' => (!$watcherPid && $doWatch && !$localMode),
 		'watcher_launch' => $watcherLaunch,                  // 'wt-tab' | 'window' | null (not launched)
 		'filters' => $filters, 'watcher_running_filters' => $watcherRunningFilters,
-		'target_confirmed' => $confirmed, 'shot' => $shotWritten,
+		'target_confirmed' => $confirmed, 'chrome_skipped' => $noChrome, 'shot' => $shotWritten,
+			'tab_id' => $matchedTarget ? ($matchedTarget['id'] ?? null) : null, 'tab_state_file' => $tabStateFile,
 		'log' => $LOGFILE, 'inventory' => $inventory,
 	]));
 }
 
-exit($confirmed ? 0 : 2);
+exit($noChrome || $confirmed ? 0 : 2);

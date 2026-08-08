@@ -130,6 +130,45 @@ function websiteGraderExtractLinks($body,$pageurl,$baseurl,$host){
 }
 
 /**
+ * @describe detect whether a fetched body is actually an HTML page rather than the plain-text/XML
+ *   file it was requested as. Needed because many sites/frameworks (WaSQL included, via a
+ *   configured "missing page" fallback - see php/index.php) return HTTP 200 with the site's
+ *   normal HTML for ANY unmatched path, so /robots.txt, /sitemap.xml, /llms.txt can all resolve
+ *   to a 200 that is really just the homepage or a "page not found" page.
+ * @param body string
+ * @return bool
+ */
+function websiteGraderLooksLikeHtmlPage($body){
+	return (bool)preg_match('/<html[\s>]|<!doctype\s+html/i',trim((string)$body));
+}
+
+/**
+ * @describe verify a "well-known" file (robots.txt, sitemap.xml, llms.txt) is genuinely present -
+ *   not just "the URL didn't 404". Requires a 2xx status, a non-empty body that is NOT an HTML
+ *   page (see websiteGraderLooksLikeHtmlPage), and optionally a pattern the body must match
+ *   (e.g. sitemap.xml must contain <urlset>/<sitemapindex>).
+ * @param baseurl string, path string (leading slash), requirepattern string|null regex
+ * @return array [ok bool, reason string (why it failed, blank when ok)]
+ */
+function websiteGraderCheckWellKnownFile($baseurl,$path,$requirepattern=null){
+	$res=websiteGraderFetch(rtrim($baseurl,'/').$path);
+	if(!isNum($res['http_code']) || $res['http_code'] < 200 || $res['http_code'] >= 300){
+		return array('ok'=>false,'reason'=>"HTTP {$res['http_code']}");
+	}
+	$body=trim($res['body']);
+	if(!strlen($body)){
+		return array('ok'=>false,'reason'=>'the response body was empty');
+	}
+	if(websiteGraderLooksLikeHtmlPage($body)){
+		return array('ok'=>false,'reason'=>'the URL returned an HTML page (likely a catch-all/"page not found" fallback), not a real file');
+	}
+	if($requirepattern!==null && !preg_match($requirepattern,$body)){
+		return array('ok'=>false,'reason'=>"the response did not look like a valid {$path}");
+	}
+	return array('ok'=>true,'reason'=>'');
+}
+
+/**
  * @describe human-readable byte size (e.g. 412 KB, 1.4 MB).
  * @param bytes number
  * @return string
@@ -189,7 +228,7 @@ function websiteGraderCrawl($starturl,$maxpages){
 		}
 	}
 	$rres=websiteGraderFetch("{$baseurl}/robots.txt");
-	$robots=($rres['http_code'] >= 200 && $rres['http_code'] < 400)?$rres['body']:'';
+	$robots=($rres['http_code'] >= 200 && $rres['http_code'] < 300 && strlen(trim($rres['body'])) && !websiteGraderLooksLikeHtmlPage($rres['body']))?$rres['body']:'';
 	return array(
 		'baseurl'=>$baseurl,
 		'scheme'=>$scheme,
@@ -290,23 +329,20 @@ function websiteGraderRunChecks($baseurl,$pages,$robots){
 	websiteGraderAddCheck($checks,'ssl','HTTPS / SSL','Misc',$ssl_ok,$ssl_ok?null:array(
 		'suggestion'=>'Site is served over plain HTTP. Serve it over HTTPS (SSL) &mdash; a ranking signal and required for trust.'
 	));
-	//robots.txt
-	$rc=websiteGraderGetURLHeader("{$baseurl}/robots.txt");
-	$robots_ok=!(isset($rc['http_code']) && $rc['http_code']==404);
+	//robots.txt - $robots was already fetched+validated (non-empty, not an HTML fallback page) by websiteGraderCrawl()
+	$robots_ok=strlen(trim($robots)) > 0;
 	websiteGraderAddCheck($checks,'robots','robots.txt present','Misc',$robots_ok,$robots_ok?null:array(
-		'element'=>'<xmp style="margin:0px;">/robots.txt</xmp>','suggestion'=>'robots.txt is missing. Add one to guide search/AI crawlers.'
+		'element'=>'<xmp style="margin:0px;">/robots.txt</xmp>','suggestion'=>'robots.txt is missing (the URL either 404s or falls back to a normal HTML page). Add a real robots.txt to guide search/AI crawlers.'
 	));
-	//sitemap.xml
-	$sc=websiteGraderGetURLHeader("{$baseurl}/sitemap.xml");
-	$sitemap_ok=!(isset($sc['http_code']) && $sc['http_code']==404);
-	websiteGraderAddCheck($checks,'sitemap','sitemap.xml present','Misc',$sitemap_ok,$sitemap_ok?null:array(
-		'element'=>'<xmp style="margin:0px;">/sitemap.xml</xmp>','suggestion'=>'sitemap.xml is missing. Add one so crawlers can find all your pages.'
+	//sitemap.xml - must be reachable AND actually contain a <urlset>/<sitemapindex>, not just "not a 404"
+	$sitemapcheck=websiteGraderCheckWellKnownFile($baseurl,'/sitemap.xml','#<urlset\b|<sitemapindex\b#i');
+	websiteGraderAddCheck($checks,'sitemap','sitemap.xml present','Misc',$sitemapcheck['ok'],$sitemapcheck['ok']?null:array(
+		'element'=>'<xmp style="margin:0px;">/sitemap.xml</xmp>','suggestion'=>'sitemap.xml is missing or invalid ('.$sitemapcheck['reason'].'). Add a real XML sitemap so crawlers can find all your pages.'
 	));
-	//llms.txt (AIO)
-	$lc=websiteGraderGetURLHeader("{$baseurl}/llms.txt");
-	$llms_ok=!(isset($lc['http_code']) && $lc['http_code']==404);
-	websiteGraderAddCheck($checks,'llms','llms.txt present','AIO',$llms_ok,$llms_ok?null:array(
-		'element'=>'<xmp style="margin:0px;">/llms.txt</xmp>','suggestion'=>'llms.txt is missing. This emerging standard lets AI assistants (ChatGPT, Claude, Perplexity, ...) discover your key content. Add a markdown /llms.txt linking to your important pages.'
+	//llms.txt (AIO) - must be reachable and NOT just the site's normal HTML page
+	$llmscheck=websiteGraderCheckWellKnownFile($baseurl,'/llms.txt');
+	websiteGraderAddCheck($checks,'llms','llms.txt present','AIO',$llmscheck['ok'],$llmscheck['ok']?null:array(
+		'element'=>'<xmp style="margin:0px;">/llms.txt</xmp>','suggestion'=>'llms.txt is missing or invalid ('.$llmscheck['reason'].'). This emerging standard lets AI assistants (ChatGPT, Claude, Perplexity, ...) discover your key content. Add a markdown /llms.txt linking to your important pages.'
 	));
 	//AI crawler access (AIO)
 	$aibots=array('GPTBot','OAI-SearchBot','ChatGPT-User','ClaudeBot','anthropic-ai','Claude-Web','Claude-SearchBot','Claude-User','PerplexityBot','Perplexity-User','Google-Extended','Google-CloudVertexBot','Applebot','Applebot-Extended','CCBot','Amazonbot','Bytespider','Meta-ExternalAgent','Meta-ExternalFetcher','cohere-ai','MistralAI-User','DuckAssistBot','YouBot');

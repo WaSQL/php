@@ -23,8 +23,9 @@ WaMCP is a PHP page (`wamcp`) that speaks the [MCP JSON-RPC 2.0 protocol](https:
 | `query` | `{sql} [db_id] [maxrows] [maxchars] [maxcell] [all]` | Execute a read-only SQL query (SELECT, SHOW, EXPLAIN, DESCRIBE, WITH). Output is capped by default (50 rows, 4000 chars, 2000 chars/cell) to control token usage — a single row/column result returns the raw value, not a table. Raise the caps, or pass `all:true`, for the full result |
 | `schema` | `[db_id] [filter] [detail] [maxtables] [all]` | Compact schema overview — `"table: col, col, …"` (or `"col type, …"` with `detail:true`) for every table matching an optional filter. Cheaper than hand-written `information_schema`/`pg_catalog`/`DESCRIBE` queries for a broad look at table shapes. Capped at 30 tables by default |
 | `pagesrc` | `{page} {field} [db_id] [grep] [lines] [maxchars] [all]` | Fetch one field (`name`, `body`, `functions`, `controller`, `js`, `css`, `meta`) of a single `_pages` record by id or name. Use `grep` or `lines` to pull just a section — far cheaper than `SELECT field FROM _pages` via `query` for large pages |
+| `website_grade` | `{url} [maxpages]` | Crawl a live website and run the SEO / AI-Optimization (AIO) grader — the same engine as the Website Checker admin page's "Fix with AI" tab. Returns the overall grade plus every failed check (SEO, Open Graph/Twitter, AIO, Misc) with the affected page, example element, and suggested fix. Grades any public URL, not a WaSQL database — does not take/require `db_id` |
 
-All tools except `databases`, `help`, and `getuser` **require** a `db_id` argument — declared as a required property in each tool's `inputSchema`, so a compliant MCP client should refuse to call the tool without it. Call `databases` once to look up ids, then pass `db_id` on every subsequent call.
+All tools except `databases`, `help`, `getuser`, and `website_grade` **require** a `db_id` argument — declared as a required property in each tool's `inputSchema`, so a compliant MCP client should refuse to call the tool without it. Call `databases` once to look up ids, then pass `db_id` on every subsequent call.
 
 ### Database Targeting
 

@@ -294,11 +294,23 @@ function wamcpGetToolsList() {
                 'required'   => array('page', 'field')
             )
         ),
+        array(
+            'name'        => 'website_grade',
+            'description' => 'Crawl a live website and run the SEO / AI-Optimization (AIO) grader (same engine as the Website Checker admin page), returning its "Fix with AI" prompt: overall grade plus every failed check (SEO, Open Graph/Twitter, AIO, Misc) with the affected page, example element, and suggested fix. Grades any public URL — not tied to a WaSQL database, so db_id is not used.',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array(
+                    'url'      => array('type' => 'string',  'description' => 'Website URL to grade, e.g. https://example.com'),
+                    'maxpages' => array('type' => 'integer', 'description' => 'Max same-host pages to crawl (default 20, max 50)')
+                ),
+                'required'   => array('url')
+            )
+        ),
     );
 
     $db_id_prop = array('type' => 'string', 'description' => 'Required: target database ID. Call the databases tool to list available IDs.');
     foreach ($tools as &$tool) {
-        if (in_array($tool['name'], array('databases', 'help', 'getuser'))) continue;
+        if (in_array($tool['name'], array('databases', 'help', 'getuser', 'website_grade'))) continue;
         $props = $tool['inputSchema']['properties'];
         if ($props instanceof stdClass) {
             $tool['inputSchema']['properties'] = array('db_id' => $db_id_prop);
@@ -327,6 +339,12 @@ function wamcpDispatchTool($name, $args, $db_id) {
     }
     if ($name === 'getuser') {
         return wamcpToolGetUser();
+    }
+    if ($name === 'website_grade') {
+        return wamcpToolWebsiteGrade(
+            isset($args['url'])      ? $args['url']      : '',
+            isset($args['maxpages']) ? (int)$args['maxpages'] : 20
+        );
     }
     if (!empty($args['db_id'])) {
         $db_id = $args['db_id'];
@@ -798,6 +816,41 @@ function wamcpToolPagesrc($db_id, $page, $field, $grep = '', $lines = '', $maxch
              . "\n\n_Truncated: {$fullLen} chars total. Use grep/lines to target a section, raise maxchars, or pass all:true._";
     }
     return wamcpToolText($out);
+}
+
+// Crawls a live URL and returns the same "Fix with AI" prompt shown on the
+// Website Checker admin page's "Fix with AI" tab (websiteGraderRenderAIPanel).
+// Not tied to a WaSQL database — website_grader_functions.php is loaded on
+// demand since wamcp's own page load only auto-includes wamcp_functions.php.
+function wamcpToolWebsiteGrade($url, $maxpages = 20) {
+    if (!function_exists('websiteGraderCrawl')) {
+        $fpath = getWaSQLPath('php/admin') . '/website_grader_functions.php';
+        if (!is_file($fpath)) return wamcpToolError('website_grader_functions.php not found.');
+        include_once($fpath);
+    }
+    if (!strlen(trim((string)$url))) return wamcpToolError('url is required.');
+    $starturl = websiteGraderNormalizeURL($url);
+    if (!filter_var($starturl, FILTER_VALIDATE_URL)) {
+        return wamcpToolError('Please provide a valid website URL (e.g. https://example.com).');
+    }
+    $parts = parse_url($starturl);
+    if (!isset($parts['scheme']) || !in_array(strtolower($parts['scheme']), array('http', 'https'))) {
+        return wamcpToolError('URL must use http or https.');
+    }
+    if ($maxpages < 1)  $maxpages = 20;
+    if ($maxpages > 50) $maxpages = 50;
+
+    $crawl = websiteGraderCrawl($starturl, $maxpages);
+    if (isset($crawl['error'])) {
+        return wamcpToolError($crawl['error']);
+    }
+    $baseurl = $crawl['baseurl'];
+    $pages   = $crawl['pages'];
+    $checks  = websiteGraderRunChecks($baseurl, $pages, $crawl['robots']);
+    $grade   = websiteGraderGrade($checks);
+    $social  = count($pages) ? websiteGraderSocialData($pages[0], $baseurl) : array();
+
+    return wamcpToolText(websiteGraderAIPrompt($baseurl, $pages, $checks, $grade, $social));
 }
 
 // ── Response Helpers ──────────────────────────────────────────────────────────
