@@ -296,12 +296,13 @@ function wamcpGetToolsList() {
         ),
         array(
             'name'        => 'addpage',
-            'description' => 'Insert a new stub _pages record — just name and (optionally) template_id; body/controller/functions/js/css are seeded with the same starter content the admin "Add New" page screen prefills (a <view:default>/<view:login> body, an isUser()-gated controller stub, empty functions, placeholder css/js). Fails if a page with that name already exists (name is unique). Follow up with pagesrc/query to fill in the page fields.',
+            'description' => 'Insert a new stub _pages record — just name and (optionally) template_id/permalink; body/controller/functions/js/css are seeded with the same starter content the admin "Add New" page screen prefills (a <view:default>/<view:login> body, an isUser()-gated controller stub, empty functions, placeholder css/js). Fails if a page with that name already exists (name is unique). Follow up with pagesrc/query to fill in the page fields.',
             'inputSchema' => array(
                 'type'       => 'object',
                 'properties' => array(
                     'page'        => array('type' => 'string',  'description' => 'Name for the new _pages record (_pages.name) — this becomes its URL route, e.g. "llms" or "blog/archive". Must not already exist.'),
-                    'template_id' => array('type' => 'integer', 'description' => 'Optional: _pages._template — which _templates record wraps this page. Defaults to 1.')
+                    'template_id' => array('type' => 'integer', 'description' => 'Optional: _pages._template — which _templates record wraps this page. Defaults to 1.'),
+                    'permalink'   => array('type' => 'string',  'description' => 'Optional: _pages.permalink — an alternate live URL route for this page (e.g. "sitemap.xml"). Defaults to empty.')
                 ),
                 'required'   => array('page')
             )
@@ -417,7 +418,8 @@ function wamcpDispatchTool($name, $args, $db_id) {
             if ($page === '') return wamcpToolError('page is required');
             return wamcpToolAddPage(
                 $db_id, $page,
-                isset($args['template_id']) ? $args['template_id'] : 1
+                isset($args['template_id']) ? $args['template_id'] : 1,
+                isset($args['permalink']) ? $args['permalink'] : ''
             );
         default:
             return wamcpToolError("Unknown tool: {$name}");
@@ -850,13 +852,15 @@ function wamcpToolPagesrc($db_id, $page, $field, $grep = '', $lines = '', $maxch
 // call, so we build the INSERT ourselves and verify it landed with a follow-up
 // SELECT (wamcpRemoteSql's non-JSON write response can't be trusted to say
 // whether the write actually succeeded).
-function wamcpToolAddPage($db_id, $name, $template_id = 1) {
+function wamcpToolAddPage($db_id, $name, $template_id = 1, $permalink = '') {
     $name = trim($name);
     if ($name === '') return wamcpToolError('page name is required.');
     if (commonStrlen($name) > 50) return wamcpToolError('page name must be 50 characters or less (_pages.name is varchar(50)).');
     if ($template_id === '' || $template_id === null) $template_id = 1;
     if (!is_numeric($template_id)) return wamcpToolError('template_id must be numeric.');
     $template_id = (int)$template_id;
+    $permalink = trim((string)$permalink);
+    if (commonStrlen($permalink) > 255) return wamcpToolError('permalink must be 255 characters or less (_pages.permalink is varchar(255)).');
 
     try {
         $existing = wamcpQueryRows($db_id, 'SELECT _id FROM _pages WHERE name = ' . wamcpQ($name));
@@ -881,8 +885,8 @@ function wamcpToolAddPage($db_id, $name, $template_id = 1) {
 
     $db = wamcpGetDatabase($db_id);
     if ($db && isset($db['dbtype']) && strtolower($db['dbtype']) === 'dasql') {
-        $sql = "INSERT INTO _pages (name, title, _template, body, controller, functions, css, js, _cuser, _cdate) VALUES ("
-             . wamcpQ($name) . ", " . wamcpQ($name) . ", {$template_id}, "
+        $sql = "INSERT INTO _pages (name, title, _template, permalink, body, controller, functions, css, js, _cuser, _cdate) VALUES ("
+             . wamcpQ($name) . ", " . wamcpQ($name) . ", {$template_id}, " . wamcpQ($permalink) . ", "
              . wamcpQ($stub['body']) . ", " . wamcpQ($stub['controller']) . ", "
              . wamcpQ($stub['functions']) . ", " . wamcpQ($stub['css']) . ", " . wamcpQ($stub['js'])
              . ", 0, CURRENT_TIMESTAMP)";
@@ -902,13 +906,15 @@ function wamcpToolAddPage($db_id, $name, $template_id = 1) {
             'name'      => $name,
             'title'     => $name,
             '_template' => $template_id,
+            'permalink' => $permalink,
         )));
         if (!isNum($newId)) {
             return wamcpToolError(is_string($newId) ? $newId : 'Insert failed.');
         }
     }
 
-    return wamcpToolText("Created _pages stub: id {$newId}, name '{$name}', template {$template_id}.\n\n"
+    $permalinkNote = $permalink !== '' ? ", permalink '{$permalink}'" : '';
+    return wamcpToolText("Created _pages stub: id {$newId}, name '{$name}', template {$template_id}{$permalinkNote}.\n\n"
         . "body/controller/functions/css/js were seeded with the same starter content the admin \"Add New\" page screen uses. "
         . "Use pagesrc to read it back, or query to customize the page fields.");
 }
