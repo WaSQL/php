@@ -881,10 +881,11 @@ function wamcpToolAddPage($db_id, $name, $template_id = 1) {
 
     $db = wamcpGetDatabase($db_id);
     if ($db && isset($db['dbtype']) && strtolower($db['dbtype']) === 'dasql') {
-        $sql = "INSERT INTO _pages (name, _template, body, controller, functions, css, js) VALUES ("
-             . wamcpQ($name) . ", {$template_id}, "
+        $sql = "INSERT INTO _pages (name, title, _template, body, controller, functions, css, js, _cuser, _cdate) VALUES ("
+             . wamcpQ($name) . ", " . wamcpQ($name) . ", {$template_id}, "
              . wamcpQ($stub['body']) . ", " . wamcpQ($stub['controller']) . ", "
-             . wamcpQ($stub['functions']) . ", " . wamcpQ($stub['css']) . ", " . wamcpQ($stub['js']) . ")";
+             . wamcpQ($stub['functions']) . ", " . wamcpQ($stub['css']) . ", " . wamcpQ($stub['js'])
+             . ", 0, CURRENT_TIMESTAMP)";
         try {
             wamcpRemoteSql($db, $sql, 'raw');
             $check = wamcpQueryRows($db_id, 'SELECT _id FROM _pages WHERE name = ' . wamcpQ($name));
@@ -899,6 +900,7 @@ function wamcpToolAddPage($db_id, $name, $template_id = 1) {
         $newId = dbAddRecord($db_id, array_merge($stub, array(
             '-table'    => '_pages',
             'name'      => $name,
+            'title'     => $name,
             '_template' => $template_id,
         )));
         if (!isNum($newId)) {
@@ -989,8 +991,13 @@ function wamcpToMarkdownTable($rows, $maxcell = null) {
 }
 
 // Safe single-quote escape for SQL string literals (used only for config-sourced values).
+// Uses the ANSI-standard doubled-quote form, not addslashes()/backslash-escaping — the
+// dasql raw-SQL path posts sql_full to a remote WaSQL install's sqlprompt endpoint, which
+// strips backslash escapes before running the query, so a backslash-escaped quote reopens
+// the string early and breaks the statement (seen inserting stub page content containing
+// array('-action'=>...) into wasql-dev via addpage).
 function wamcpQ($value) {
-    return "'" . addslashes($value) . "'";
+    return "'" . str_replace("'", "''", $value) . "'";
 }
 
 function wamcpGetDbName($db_id) {
