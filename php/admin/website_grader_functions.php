@@ -317,6 +317,34 @@ function websiteGraderCategories(){
 }
 
 /**
+ * @describe plain-language glossary for the jargon used in check labels (Open Graph, canonical,
+ *   JSON-LD, etc.), in display order. Keyed by the same check 'key' used in websiteGraderAddCheck,
+ *   so the email only shows definitions for terms that actually appear in that report.
+ * @return array key => ['term'=>string,'def'=>string]
+ */
+function websiteGraderTermsGlossary(){
+	return array(
+		'ssl'=>array('term'=>'HTTPS / SSL','def'=>"The padlock icon shown in browsers. It encrypts traffic between your site and its visitors, and search engines favor secure sites over insecure ones."),
+		'title'=>array('term'=>'Title tag','def'=>"The clickable headline shown in search results and browser tabs for a page."),
+		'description'=>array('term'=>'Meta description','def'=>"The short summary shown under a page's title in search results — often what convinces someone to click through."),
+		'metarobots'=>array('term'=>'Meta robots tag','def'=>"A setting that tells search engines whether to index a page and follow its links."),
+		'viewport'=>array('term'=>'Responsive viewport','def'=>"A setting that makes a page resize properly on phones and tablets instead of just looking like a shrunk desktop page."),
+		'canonical'=>array('term'=>'Canonical link','def'=>"A tag that tells search engines which version of a page is the official one, avoiding confusion when the same content can be reached at more than one URL."),
+		'images'=>array('term'=>'Alt text','def'=>"A short written description of an image. It's read aloud by screen readers and used by search engines, since they can't 'see' pictures."),
+		'opengraph'=>array('term'=>'Open Graph','def'=>"A set of tags that control how a link looks when shared on Facebook, LinkedIn, iMessage, Slack, and similar apps — the preview image, title, and description."),
+		'twitter'=>array('term'=>'Twitter/X card','def'=>"Like Open Graph, but for how a link looks when shared on X (formerly Twitter)."),
+		'htmllang'=>array('term'=>'<html lang>','def'=>"A tag declaring what language a page is written in, helping browsers, screen readers, and search engines interpret it correctly."),
+		'jsonld'=>array('term'=>'JSON-LD / structured data','def'=>"Hidden, machine-readable notes on a page describing what it is — an article, product, FAQ, and so on. Search engines and AI tools use it to better understand and display your content. Also called Schema.org markup."),
+		'h1'=>array('term'=>'H1 heading','def'=>"The main heading of a page. Having exactly one clear H1 helps readers and search engines understand what the page is about."),
+		'authorship'=>array('term'=>'Authorship / E-E-A-T','def'=>"Short for Experience, Expertise, Authoritativeness, and Trust — signals, like a named author, that help search engines and AI judge how credible your content is."),
+		'robots'=>array('term'=>'robots.txt','def'=>"A small text file that tells search engines and AI crawlers which parts of your site they're allowed to read."),
+		'sitemap'=>array('term'=>'sitemap.xml','def'=>"A file listing every page on your site, so search engines can find and index all of them."),
+		'llms'=>array('term'=>'llms.txt','def'=>"A newer file, similar to robots.txt, aimed at AI systems — it describes your site's content so AI assistants can find and understand it."),
+		'aiaccess'=>array('term'=>'AI crawlers','def'=>"Automated visitors from AI systems (like the ones behind ChatGPT or Claude) that read your pages so they can reference or cite your content in answers.")
+	);
+}
+
+/**
  * @describe run every SEO/AIO/Social/Misc check against the crawl and return the results.
  * @param baseurl string, pages array of [url,body], robots string
  * @return array of check results (key => [label,category,pass,total,fails])
@@ -1273,7 +1301,7 @@ function websiteGraderRobotsBlockedBots($robots,$bots){
  * @return string HTML
  */
 function websiteGraderEmailButton(){
-	return '<a href="#" class="wacss_button is-small" data-nav="/php/admin.php?_menu=website_grader&func=emailform" data-div="centerpop" onclick="return wacss.nav(this);" title="Email this report to someone"><span class="icon-mail"></span> Email Report</a>';
+	return '<a href="#" class="wacss_button is-small" data-nav="/php/admin.php?_menu=website_grader&func=emailform" data-div="centerpop" data-title="Email SEO &amp; AIO Report" onclick="return wacss.nav(this);" title="Email this report to someone"><span class="icon-mail"></span> Email Report</a>';
 }
 
 /**
@@ -1361,14 +1389,16 @@ function websiteGraderEmailForm(){
 	$myemail=(isset($USER['email']) && isEmail($USER['email']))?$USER['email']:'';
 	$myname=trim((isset($USER['firstname'])?$USER['firstname']:'').' '.(isset($USER['lastname'])?$USER['lastname']:''));
 	if(!strlen($myname) && isset($USER['username'])){$myname=$USER['username'];}
-	$rtn='<div class="w_centerpop_title"><span class="icon-mail"></span> Email SEO &amp; AIO Report</div>'.PHP_EOL;
-	$rtn.='<div class="w_centerpop_content" style="min-width:300px;max-width:460px;">'.PHP_EOL;
+	//$rtn='<div class="w_centerpop_title"><span class="icon-mail"></span> Email SEO &amp; AIO Report</div>'.PHP_EOL;
+	//$rtn.='<div class="w_centerpop_content" style="min-width:300px;max-width:460px;">'.PHP_EOL;
 	$rtn.='<div class="w_small w_gray" style="margin-bottom:10px;">Send the '.encodeHtml($rep['grade']['percent']).'% report for <span class="w_dblue">'.encodeHtml($host).'</span> ('.count($rep['pages']).' page'.(count($rep['pages'])==1?'':'s').' crawled) as a formatted email.</div>'.PHP_EOL;
 	$rtn.='<form method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,\'grader_email_status\');">'.PHP_EOL;
 	$rtn.='	<input type="hidden" name="_menu" value="website_grader" />'.PHP_EOL;
 	$rtn.='	<input type="hidden" name="func" value="email" />'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Send to (email)</label>'.PHP_EOL;
 	$rtn.='		<input type="email" class="wacss_input" name="to" required="required" placeholder="name@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Recipient name <span class="w_gray w_small">(optional, for the greeting)</span></label>'.PHP_EOL;
+	$rtn.='		<input type="text" class="wacss_input" name="toname" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Your name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
 	$rtn.='		<input type="text" class="wacss_input" name="fromname" value="'.encodeHtml($myname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Reply-to <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
@@ -1381,7 +1411,7 @@ function websiteGraderEmailForm(){
 	$rtn.='	</div>'.PHP_EOL;
 	$rtn.='	<div id="grader_email_status" style="margin-top:10px;"></div>'.PHP_EOL;
 	$rtn.='</form>'.PHP_EOL;
-	$rtn.='</div>'.PHP_EOL;
+	//$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
 
@@ -1429,6 +1459,7 @@ function websiteGraderSendReport(){
 	}
 	$rep=$_SESSION['websiteGraderReport'];
 	$note=trim(isset($_REQUEST['note'])?$_REQUEST['note']:'');
+	$toname=trim(isset($_REQUEST['toname'])?$_REQUEST['toname']:'');
 	$fromname=trim(isset($_REQUEST['fromname'])?$_REQUEST['fromname']:'');
 	$replyto=trim(isset($_REQUEST['replyto'])?$_REQUEST['replyto']:'');
 	$host=parse_url($rep['baseurl'],PHP_URL_HOST);
@@ -1439,7 +1470,7 @@ function websiteGraderSendReport(){
 	}
 	$fromheader=strlen($fromname)?($fromname.' <'.$from.'>'):$from;
 	$subject='SEO & AIO Report: '.$host.' — '.$rep['grade']['percent'].'% (Grade '.$rep['grade']['letter'].')';
-	$message=websiteGraderEmailHTML($rep,$note,$fromname);
+	$message=websiteGraderEmailHTML($rep,$note,$fromname,$toname);
 	$mailopts=array('to'=>$to,'from'=>$fromheader,'subject'=>$subject,'message'=>$message);
 	if(isEmail($replyto)){$mailopts['reply-to']=$replyto;}
 	//attach the AI-ready fix file only when there are issues to fix
@@ -1462,13 +1493,14 @@ function websiteGraderSendReport(){
 }
 
 /**
- * @describe build the HTML email body for the report: grade hero, per-category scores,
- *   failed checks grouped by category, and the social share summary. Inline styles + tables
- *   so it renders in email clients (Gmail, Outlook, Apple Mail).
- * @param rep array (the stored report), note string, fromname string
+ * @describe build the HTML email body for the report: warm greeting, grade hero, per-category
+ *   scores, failed checks grouped by category, the social share summary, a plain-language terms
+ *   glossary, and a friendly sign-off. Inline styles + tables so it renders in email clients
+ *   (Gmail, Outlook, Apple Mail).
+ * @param rep array (the stored report), note string, fromname string, toname string
  * @return string HTML (xml so sendMail sends it as multipart/html)
  */
-function websiteGraderEmailHTML($rep,$note='',$fromname=''){
+function websiteGraderEmailHTML($rep,$note='',$fromname='',$toname=''){
 	$baseurl=$rep['baseurl'];
 	$host=parse_url($baseurl,PHP_URL_HOST);
 	$grade=$rep['grade'];
@@ -1484,6 +1516,9 @@ function websiteGraderEmailHTML($rep,$note='',$fromname=''){
 	$h.='<div style="font-size:22px;font-weight:700;color:#1d2129;">'.encodeHtml($host).'</div>';
 	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
 	$h.='</div>'.PHP_EOL;
+	//warm, personal greeting
+	$h.='<div style="margin-bottom:14px;">Hi '.(strlen($toname)?encodeHtml($toname):'there').',</div>'.PHP_EOL;
+	$h.='<div style="margin-bottom:16px;">Here'."'".'s a look at how <b>'.encodeHtml($host).'</b> is doing for search engines and AI visibility'.(strlen($fromname)?(', put together by '.encodeHtml($fromname)):'').'. It scored <b>'.$grade['percent'].'%</b> ('.$grade['pass'].' of '.$grade['total'].' checks passed) &mdash; details are below, along with plain-language explanations for any terms that might be new to you.</div>'.PHP_EOL;
 	//optional note
 	if(strlen($note)){
 		$h.='<div style="background:#f7f8fa;border:1px solid #e6e8eb;border-radius:8px;padding:12px 14px;margin-bottom:16px;">';
@@ -1577,10 +1612,17 @@ function websiteGraderEmailHTML($rep,$note='',$fromname=''){
 		$h.='<div style="font-size:16px;font-weight:700;margin:18px 0 6px;">Technology detected</div>'.PHP_EOL;
 		$h.='<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px;">'.$techrows.'</table>'.PHP_EOL;
 	}
-	//footer
-	$h.='<div style="border-top:1px solid #e6e8eb;margin-top:18px;padding-top:10px;color:#8a9099;font-size:12px;">';
-	$h.='Generated by the WaSQL Website Checker'.(strlen($fromname)?(' &middot; sent by '.encodeHtml($fromname)):'').'.'.($anyfail?' See the attached fix file to generate the exact fixes with AI.':'');
-	$h.='</div>'.PHP_EOL;
+	//terms glossary - only the terms actually used by checks in this report, so it explains
+	//jargon (Open Graph, canonical, JSON-LD, etc.) without padding the email with unused entries
+	$glossaryrows='';
+	foreach(websiteGraderTermsGlossary() as $gkey=>$g){
+		if(!isset($checks[$gkey])){continue;}
+		$glossaryrows.='<div style="margin-bottom:8px;"><span style="font-weight:700;color:#1d2129;">'.encodeHtml($g['term']).'</span> &mdash; <span style="color:#4a5560;">'.encodeHtml($g['def']).'</span></div>'.PHP_EOL;
+	}
+	if(strlen($glossaryrows)){
+		$h.='<div style="font-size:16px;font-weight:700;margin:18px 0 6px;">Terms explained</div>'.PHP_EOL;
+		$h.='<div style="background:#f7f8fa;border:1px solid #e6e8eb;border-radius:8px;padding:14px 16px;font-size:13px;">'.$glossaryrows.'</div>'.PHP_EOL;
+	}
 	$h.='</div>'.PHP_EOL;
 	return $h;
 }
