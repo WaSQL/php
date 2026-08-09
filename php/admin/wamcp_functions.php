@@ -172,7 +172,7 @@ function wamcpHandleMcpRequest($request, $db_id) {
 // surface this to the model as standing guidance before any tool is called.
 function wamcpInstructions() {
     return "db_id is required on every tool call that accepts it (query, schema, "
-         . "pagesrc, tables, fields, ddl, indexes, getdb) — call `databases` once "
+         . "pagesrc, addpage, tables, fields, ddl, indexes, getdb) — call `databases` once "
          . "to look up ids, then pass db_id on every subsequent call. There is no "
          . "server-side 'active database'; omitting db_id returns an error rather "
          . "than guessing which database you meant.";
@@ -295,6 +295,18 @@ function wamcpGetToolsList() {
             )
         ),
         array(
+            'name'        => 'addpage',
+            'description' => 'Insert a new stub _pages record — just name and (optionally) template_id; body/controller/functions/js/css are seeded with the same starter content the admin "Add New" page screen prefills (a <view:default>/<view:login> body, an isUser()-gated controller stub, empty functions, placeholder css/js). Fails if a page with that name already exists (name is unique). Follow up with pagesrc/query to fill in the page fields.',
+            'inputSchema' => array(
+                'type'       => 'object',
+                'properties' => array(
+                    'page'        => array('type' => 'string',  'description' => 'Name for the new _pages record (_pages.name) — this becomes its URL route, e.g. "llms" or "blog/archive". Must not already exist.'),
+                    'template_id' => array('type' => 'integer', 'description' => 'Optional: _pages._template — which _templates record wraps this page. Defaults to 1.')
+                ),
+                'required'   => array('page')
+            )
+        ),
+        array(
             'name'        => 'website_grade',
             'description' => 'Crawl a live website and run the SEO / AI-Optimization (AIO) grader (same engine as the Website Checker admin page), returning its "Fix with AI" prompt: overall grade plus every failed check (SEO, Open Graph/Twitter, AIO, Misc) with the affected page, example element, and suggested fix. Grades any public URL — not tied to a WaSQL database, so db_id is not used.',
             'inputSchema' => array(
@@ -399,6 +411,13 @@ function wamcpDispatchTool($name, $args, $db_id) {
                 isset($args['lines'])    ? $args['lines']    : '',
                 isset($args['maxchars']) ? (int)$args['maxchars'] : 4000,
                 !empty($args['all'])
+            );
+        case 'addpage':
+            $page = isset($args['page']) ? $args['page'] : '';
+            if ($page === '') return wamcpToolError('page is required');
+            return wamcpToolAddPage(
+                $db_id, $page,
+                isset($args['template_id']) ? $args['template_id'] : 1
             );
         default:
             return wamcpToolError("Unknown tool: {$name}");
@@ -816,6 +835,80 @@ function wamcpToolPagesrc($db_id, $page, $field, $grep = '', $lines = '', $maxch
              . "\n\n_Truncated: {$fullLen} chars total. Use grep/lines to target a section, raise maxchars, or pass all:true._";
     }
     return wamcpToolText($out);
+}
+
+// Insert a stub _pages record — the one write wamcp exposes, deliberately narrow:
+// only name and _template are ever caller-supplied. Everything else is seeded
+// with the exact same starter content the admin "Add New" _pages screen prefills
+// (adminDefaultPageValues() in php/admin.php: a <view:default>/<view:login> body,
+// an isUser()-gated controller stub, empty functions, placeholder css/js) — reused
+// live rather than copied, so this stays in sync if that starter content changes.
+// name carries a UNIQUE index, so this double-checks for a collision before
+// inserting rather than surfacing a raw duplicate-key error. Local connections
+// reuse dbAddRecord() (the cross-connection twin of addDBRecord — same
+// audit-column/id-or-error-string behavior); dasql remote sites have no such
+// call, so we build the INSERT ourselves and verify it landed with a follow-up
+// SELECT (wamcpRemoteSql's non-JSON write response can't be trusted to say
+// whether the write actually succeeded).
+function wamcpToolAddPage($db_id, $name, $template_id = 1) {
+    $name = trim($name);
+    if ($name === '') return wamcpToolError('page name is required.');
+    if (commonStrlen($name) > 50) return wamcpToolError('page name must be 50 characters or less (_pages.name is varchar(50)).');
+    if ($template_id === '' || $template_id === null) $template_id = 1;
+    if (!is_numeric($template_id)) return wamcpToolError('template_id must be numeric.');
+    $template_id = (int)$template_id;
+
+    try {
+        $existing = wamcpQueryRows($db_id, 'SELECT _id FROM _pages WHERE name = ' . wamcpQ($name));
+    } catch (Exception $e) {
+        return wamcpToolError($e->getMessage());
+    }
+    if (is_array($existing) && !empty($existing)) {
+        $existingId = reset($existing[0]);
+        return wamcpToolError("A _pages record named '{$name}' already exists (id {$existingId}).");
+    }
+
+    $savedRequest = $_REQUEST;
+    adminDefaultPageValues();
+    $stub = array(
+        'body'       => $_REQUEST['body'],
+        'controller' => $_REQUEST['controller'],
+        'functions'  => $_REQUEST['functions'],
+        'css'        => $_REQUEST['css'],
+        'js'         => $_REQUEST['js'],
+    );
+    $_REQUEST = $savedRequest;
+
+    $db = wamcpGetDatabase($db_id);
+    if ($db && isset($db['dbtype']) && strtolower($db['dbtype']) === 'dasql') {
+        $sql = "INSERT INTO _pages (name, _template, body, controller, functions, css, js) VALUES ("
+             . wamcpQ($name) . ", {$template_id}, "
+             . wamcpQ($stub['body']) . ", " . wamcpQ($stub['controller']) . ", "
+             . wamcpQ($stub['functions']) . ", " . wamcpQ($stub['css']) . ", " . wamcpQ($stub['js']) . ")";
+        try {
+            wamcpRemoteSql($db, $sql, 'raw');
+            $check = wamcpQueryRows($db_id, 'SELECT _id FROM _pages WHERE name = ' . wamcpQ($name));
+        } catch (Exception $e) {
+            return wamcpToolError($e->getMessage());
+        }
+        if (!is_array($check) || empty($check)) {
+            return wamcpToolError("Insert did not appear to succeed — no _pages record found for '{$name}' afterward.");
+        }
+        $newId = reset($check[0]);
+    } else {
+        $newId = dbAddRecord($db_id, array_merge($stub, array(
+            '-table'    => '_pages',
+            'name'      => $name,
+            '_template' => $template_id,
+        )));
+        if (!isNum($newId)) {
+            return wamcpToolError(is_string($newId) ? $newId : 'Insert failed.');
+        }
+    }
+
+    return wamcpToolText("Created _pages stub: id {$newId}, name '{$name}', template {$template_id}.\n\n"
+        . "body/controller/functions/css/js were seeded with the same starter content the admin \"Add New\" page screen uses. "
+        . "Use pagesrc to read it back, or query to customize the page fields.");
 }
 
 // Crawls a live URL and returns the same "Fix with AI" prompt shown on the
