@@ -43,7 +43,7 @@ An AI working on a WaSQL site has **two complementary remote tools**. Use them t
 
 | Tool | Use it to |
 |------|-----------|
-| `databases` / `setdb` / `getdb` | List reachable databases, pick the active one, confirm host/user/version/charset. |
+| `databases` / `getdb` | List reachable databases (resolve a name to its `db_id`), confirm host/user/version/charset. No `setdb` — pass `db_id` on every call. |
 | `getuser` | Confirm which user/permissions the session is running as. |
 | `tables` / `fields` / `ddl` / `indexes` | Inspect schema — tables, columns, `CREATE TABLE`, indexes. |
 | `query` | Run a **read-only** query (SELECT/SHOW/EXPLAIN/DESCRIBE/WITH) and get the result set. |

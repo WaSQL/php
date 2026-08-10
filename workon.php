@@ -19,9 +19,10 @@
  *   6. Print a mirror inventory: the named page's record id and the local path
  *      + size of each of its fields, plus the other records on disk.
  *
- * It does NOT call the wamcp `setdb` MCP tool - that is a separate MCP call the
- * assistant makes itself. Everything else lives here so the whole routine is a
- * single approval.
+ * It does NOT resolve a wamcp db_id or call any wamcp tool - wamcp has no
+ * setdb/session-default database, so the assistant resolves {alias} to a
+ * db_id via the wamcp `databases` tool itself and passes it on every wamcp
+ * call. Everything else lives here so the whole routine is a single approval.
  *
  * Usage:
  *   php workon.php <alias> [page] [options]
@@ -132,9 +133,10 @@ OPTIONS
   --help             this text
 
 AFTERWARDS (the assistant does these - workon.php cannot)
-  * setdb <name>     wamcp MCP call. The wamcp DB name often differs from the
-                     postedit alias (e.g. dexpdq -> dexpdq_mysql); if the alias
-                     isn't found, list names with the wamcp `databases` tool.
+  * Resolve db_id    wamcp has no setdb/session-default database. Call the
+                     wamcp `databases` tool to resolve <name> to a db_id (it
+                     often differs from the postedit alias, e.g. dexpdq ->
+                     dexpdq_mysql), then pass that db_id on every wamcp call.
   * Read the PNG     the screenshot is only written, never displayed.
 
 GOTCHAS
@@ -900,10 +902,11 @@ if(!$localMode && !isset($opts['no-inventory']) && !$reshootGiven && !$noChrome)
 // ---- summary --------------------------------------------------------------
 step('');
 step($localMode
-	? "Ready. Local framework mode - edit repo files directly. Optionally: setdb localhost (wamcp)"
-	: "Ready. In the assistant, set the DB with: setdb $alias   (wamcp)\n"
-	. "  (the wamcp name often differs from the postedit alias - e.g. '{$alias}_mysql';\n"
-	. "   if '$alias' isn't found, list names with the wamcp `databases` tool.)");
+	? "Ready. Local framework mode - edit repo files directly. Optionally resolve 'localhost' to a db_id via the wamcp `databases` tool."
+	: "Ready. wamcp has no setdb/session-default database - resolve '$alias' to a\n"
+	. "  db_id via the wamcp `databases` tool, then pass that db_id on every wamcp call.\n"
+	. "  (the wamcp id often differs from the postedit alias - e.g. '{$alias}_mysql';\n"
+	. "   if '$alias' isn't found, list ids with the wamcp `databases` tool.)");
 if(!$noChrome){
 	step("Then read the screenshot" . ($shotWritten ? " at:\n  $shotWritten" : " (re-run with --shot=PATH)."));
 }

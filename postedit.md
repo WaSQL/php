@@ -13,7 +13,7 @@ The prompt form is **`work on {alias} {page}`** (or "let's work on {alias} {page
 Do these first:
 
 1. **Resolve the alias → host.** Look up `{alias}` in `postedit/postedit.xml` among the `<host ... alias="{alias}">` entries and read that host's `name` attribute (the domain). The site URL is `https://{name}/{page}`. Hosts with `insecure="1"` use a self-signed cert (still `https://`; `curl -k`, Chrome ignores it). Some `name`s are bare hosts, IPs, or `host:port` — use them verbatim.
-2. **Point the DB tools at the site:** call `mcp__wamcp__setdb` with `dbname: "{alias}"`. The wamcp db name usually matches the alias; if it errors, call `mcp__wamcp__databases` to list valid names and pick the match.
+2. **Resolve the site's `db_id`:** call `mcp__wamcp__databases` to find the id matching `{alias}` (it usually matches, but not always — e.g. `dexpdq` → `dexpdq_mysql`). wamcp has no session-default database, so pass this `db_id` explicitly on every subsequent `mcp__wamcp__*` call (`query`, `schema`, `pagesrc`, `tables`, `fields`, `ddl`, `indexes`, `getdb`).
 3. **Recreate the screenshot helper** if it's not already on disk: write `shot.js` (from the Appendix) to the session scratchpad — it's intentionally not stored in the repo. Node 22+ with built-in `fetch`/`WebSocket` is assumed.
 4. **Start Chrome yourself** — launch a *visible* Chrome with the debug port on a **dedicated profile directory** so it works even if the user's normal Chrome is already open, then attach to it (both sides see the same window). Launch it in the background, non-headless, pointed at the resolved URL:
    ```
@@ -28,7 +28,7 @@ Do these first:
 6. **Edit → auto-sync → refresh:** edit the PostEdit files; PostEdit auto-syncs to the DB; refresh/re-screenshot with a `?cb=<n>` cache-buster. (See "The edit loop".)
 7. Everything else (WaSQL syntax, where things live, gotchas) is below and in the repo `CLAUDE.md`.
 
-> **Permissions:** launching Chrome, calling `setdb`/querying the DB, and editing files under `postedit/postEditFiles/{alias}` all run under whatever permission mode the user has set — respect it. A developer may pre-authorize this routine so you don't re-prompt each time; if so, that grant lives in their personal companion file, not here. The one hard prohibition from the repo `CLAUDE.md` always holds: **never `git commit` / `git push`.**
+> **Permissions:** launching Chrome, querying the DB via wamcp, and editing files under `postedit/postEditFiles/{alias}` all run under whatever permission mode the user has set — respect it. A developer may pre-authorize this routine so you don't re-prompt each time; if so, that grant lives in their personal companion file, not here. The one hard prohibition from the repo `CLAUDE.md` always holds: **never `git commit` / `git push`.**
 
 ## Ensure the PostEdit watcher is running (auto-launch if not)
 
@@ -116,7 +116,7 @@ Verify each step in the DB rather than assuming (`select length(functions) from 
 
 ## Database access (wamcp)
 
-- `mcp__wamcp__setdb` with `dbname: "{alias}"` once per session, then `mcp__wamcp__query` (read-only SQL) / `mcp__wamcp__tables` / `mcp__wamcp__fields`. If the alias isn't a valid db name, `mcp__wamcp__databases` lists them.
+- No `setdb`/session default: call `mcp__wamcp__databases` once to resolve `{alias}` to a `db_id`, then pass that `db_id` on every `mcp__wamcp__query` (read-only SQL) / `mcp__wamcp__tables` / `mcp__wamcp__fields` call. If the alias isn't a valid db id, `mcp__wamcp__databases` lists the real ones.
 - **wamcp is READ-ONLY.** Schema changes (`CREATE TABLE`, `ALTER`) and any `INSERT`/`UPDATE` need another path: the WaSQL admin SQL console, `mysql` CLI, or a one-off `mysqli` script. Keep the DDL in a versioned `.sql` file in the repo (as `imago_schema.sql` / `imago_wiki_schema.sql` do) rather than only in a throwaway script.
 - Primary keys are `_id`. Audit cols `_cdate/_edate/_cuser/_euser`. System tables have a leading underscore (`_pages`, `_templates`, ...).
 
