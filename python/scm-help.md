@@ -54,7 +54,7 @@ the two ways to actually use it (by hand, and with Claude/AI).
   3. Open the file, write `CREATE TABLE …` under `-- migrate:up` and `DROP TABLE …` under `-- migrate:down`.
   4. `scm status` to confirm it's pending → `scm up 1` to apply just it.
   5. Verify in the DB, then commit the file.
-- You own correctness: use `IF EXISTS`/`IF NOT EXISTS`, test the `down`, watch DDL that isn't transactional (MySQL).
+- You own correctness: use `IF EXISTS`/`IF NOT EXISTS`, test the `down`, watch DDL that isn't transactional (MySQL). If a statement refuses to run inside a transaction at all (e.g. Postgres `CREATE INDEX CONCURRENTLY`), add `transaction:false` after the marker (see `scm.md`).
 - Good for: people who know SQL well, or changes too sensitive to delegate.
 
 ## 8. Using SCM **with** AI / Claude

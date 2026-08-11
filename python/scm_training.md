@@ -598,6 +598,9 @@ Applying  20260701093000_add_orders_table ... OK
   `-- comments`, `/* blocks */`, and `'literals'` are safe.
 - PostgreSQL files are sent whole, so `$$ ... $$` blocks work. SQL Server also splits on
   `GO`.
+- Some statements refuse to run inside a transaction at all — add `transaction:false`
+  after `-- migrate:up` (or `-- migrate:down`) to run that direction statement-by-statement
+  instead. Single-file (dbmate) style only; see §22.
 
 > **Habits to teach:** `--dry-run` on anything you have not run before, and `up 1` when
 > applying to production so a bad migration fails fast and alone.
@@ -812,7 +815,7 @@ avoid long locks.
 
 | Engine | DDL transactional? | Watch out for |
 |---|---|---|
-| **PostgreSQL** | Yes | `CREATE INDEX CONCURRENTLY` cannot run in a transaction — give it its own file |
+| **PostgreSQL** | Yes | `CREATE INDEX CONCURRENTLY` cannot run in a transaction — add `transaction:false` after `-- migrate:up`/`-- migrate:down` |
 | **MySQL / MariaDB** | **No** | A failed migration can partially apply and cannot be auto rolled back — one DDL change per file |
 | **SQL Server** | Yes | Use `GO` to separate batches that must run independently |
 | **SQLite** | Yes | No `ADD COLUMN IF NOT EXISTS`; no `DROP COLUMN` before 3.35 |

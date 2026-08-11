@@ -3,7 +3,11 @@
 scm.py - Extensible database migration tool.
 
 Supports two file styles:
-  - Single-file (dbmate):    000001_name.sql  with -- migrate:up / -- migrate:down markers
+  - Single-file (dbmate):    000001_name.sql  with -- migrate:up / -- migrate:down markers.
+                             Either marker may add "transaction:false" (dbmate
+                             convention) to run that direction's SQL outside a
+                             transaction, statement-by-statement — needed for things
+                             like Postgres CREATE INDEX CONCURRENTLY.
   - Two-file (golang-migrate): 000001_name.up.sql + 000001_name.down.sql
 
 Commands:
@@ -68,7 +72,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.30.0'
+__version__ = '1.31.0'
 
 
 def current_user():
@@ -318,6 +322,41 @@ class BaseDriver:
             cur.execute(stmt)
         return cur
 
+    def set_autocommit(self, value):
+        """Toggle the connection's autocommit mode.
+
+        Used for `transaction:false` migrations so a statement that refuses to run
+        inside any transaction block (e.g. Postgres CREATE INDEX CONCURRENTLY) is
+        sent outside one. Best-effort: on a driver whose connection object doesn't
+        expose a plain settable `.autocommit` (overridden below for MySQL/SQL Server,
+        which use a method instead), this silently no-ops and the statement still
+        runs — just still wrapped in the connection's normal transaction.
+        """
+        try:
+            self.conn.autocommit = value
+        except Exception:
+            pass
+
+    def execute_script_no_transaction(self, sql):
+        """Execute a multi-statement script with each statement committed on its own,
+        outside any transaction. Override if driver needs special handling (see
+        SQLServerDriver for GO-batch splitting).
+
+        Does NOT handle PostgreSQL dollar-quoting, same as split_sql_statements() —
+        a transaction:false migration should normally be a single statement anyway,
+        since that's the whole point: something the database refuses to run
+        alongside anything else in a transaction.
+        """
+        statements = split_sql_statements(sql)
+        self.set_autocommit(True)
+        try:
+            cur = self.conn.cursor()
+            for stmt in statements:
+                cur.execute(stmt)
+            return cur
+        finally:
+            self.set_autocommit(False)
+
     def commit(self):
         self.conn.commit()
 
@@ -496,6 +535,22 @@ class PostgresDriver(BaseDriver):
         self._drain_notices()
         return cur
 
+    def execute_script_no_transaction(self, sql):
+        """Statement-by-statement with autocommit on — required for statements like
+        CREATE INDEX CONCURRENTLY, which Postgres refuses to run inside a transaction
+        block even an implicit one formed by sending several statements in one call.
+        """
+        statements = split_sql_statements(sql)
+        self.set_autocommit(True)
+        try:
+            cur = self.conn.cursor()
+            for stmt in statements:
+                cur.execute(stmt)
+            self._drain_notices()
+            return cur
+        finally:
+            self.set_autocommit(False)
+
     # application_name is a `name`-typed GUC, so the server hard-caps it at
     # NAMEDATALEN-1 bytes and emits an "identifier ... will be truncated"
     # NOTICE for anything longer. Trim it client-side instead so long
@@ -588,6 +643,15 @@ class MySQLDriver(BaseDriver):
             cur.execute(sql)
         return cur
 
+    def set_autocommit(self, value):
+        # mysql.connector exposes a settable `.autocommit` property; pymysql instead
+        # exposes autocommit as a *method* — plain attribute assignment would just
+        # shadow it on the instance without touching the connection.
+        if getattr(self, '_mysql_buffered', False):
+            self.conn.autocommit = value
+        else:
+            self.conn.autocommit(value)
+
     def ensure_migrations_table(self):
         self.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.table} (
@@ -625,6 +689,7 @@ class SQLServerDriver(BaseDriver):
                 database=p.path.lstrip('/'),
             )
             self.placeholder = '%s'
+            self._mssql_flavor = 'pymssql'
             return
         except ImportError:
             pass
@@ -638,10 +703,18 @@ class SQLServerDriver(BaseDriver):
             )
             self.conn = pyodbc.connect(conn_str, autocommit=False)
             self.placeholder = '?'
+            self._mssql_flavor = 'pyodbc'
             return
         except ImportError:
             pass
         sys.exit("No SQL Server driver found. Install one:\n  pip install pymssql\n  pip install pyodbc")
+
+    def set_autocommit(self, value):
+        # pymssql exposes autocommit as a *method*, not a settable attribute like pyodbc.
+        if getattr(self, '_mssql_flavor', None) == 'pymssql':
+            self.conn.autocommit(value)
+        else:
+            self.conn.autocommit = value
 
     def ensure_migrations_table(self):
         self.execute(f"""
@@ -671,6 +744,21 @@ class SQLServerDriver(BaseDriver):
                 cur.execute(stmt)
         return cur
 
+    def execute_script_no_transaction(self, sql):
+        """Same GO-batch handling as execute_script(), with autocommit on so each
+        batch/statement runs and commits on its own."""
+        sql = sql.replace('\r\n', '\n').replace('\r', '\n')
+        batches = re.split(r'^\s*GO\s*$', sql, flags=re.IGNORECASE | re.MULTILINE)
+        self.set_autocommit(True)
+        try:
+            cur = self.conn.cursor()
+            for batch in batches:
+                for stmt in split_sql_statements(batch):
+                    cur.execute(stmt)
+            return cur
+        finally:
+            self.set_autocommit(False)
+
 
 @register_driver(['sqlite', 'sqlite3'])
 class SQLiteDriver(BaseDriver):
@@ -681,6 +769,11 @@ class SQLiteDriver(BaseDriver):
         db_path = p.netloc + p.path  # handles sqlite:///path and sqlite://path
         self.conn = sqlite3.connect(db_path or ':memory:')
         self.conn.isolation_level = 'DEFERRED'
+
+    def set_autocommit(self, value):
+        # sqlite3's autocommit mode is controlled via isolation_level, not a
+        # settable .autocommit attribute (pre-3.12 DB-API surface).
+        self.conn.isolation_level = None if value else 'DEFERRED'
 
     def ensure_migrations_table(self):
         self.execute(f"""
@@ -989,7 +1082,8 @@ def find_migrations(migrations_dir):
         except UnicodeDecodeError:
             sys.exit(f"Cannot read {filepath.name}: file is not valid UTF-8.")
 
-    # Two-file style takes precedence
+    # Two-file style takes precedence. No -- migrate:up marker line exists to carry
+    # transaction:false, so these always run inside a transaction.
     for version, (label, up_path) in up_files.items():
         up_sql = _read(up_path).strip()
         if not up_sql:
@@ -997,30 +1091,46 @@ def find_migrations(migrations_dir):
         down_sql = None
         if version in down_files:
             down_sql = _read(down_files[version][1]).strip() or None
-        migrations.append((version, label, up_sql, down_sql))
+        migrations.append((version, label, up_sql, down_sql, True, True))
 
     # Single-file style (skip if version already found in two-file)
     for version, (label, filepath) in single_files.items():
         if version in up_files:
             continue
-        up_sql, down_sql = parse_single_file(_read(filepath), filepath.name)
-        migrations.append((version, label, up_sql, down_sql))
+        up_sql, down_sql, up_tx, down_tx = parse_single_file(_read(filepath), filepath.name)
+        migrations.append((version, label, up_sql, down_sql, up_tx, down_tx))
 
     return sorted(migrations, key=lambda x: x[0])
 
 
+_RE_MARKER = re.compile(r'^--\s*migrate:(up|down)(?:\s+transaction:(true|false))?\s*$')
+
+
 def parse_single_file(content, filename=''):
-    """Split dbmate-style single file on -- migrate:up / -- migrate:down markers."""
+    """Split dbmate-style single file on -- migrate:up / -- migrate:down markers.
+
+    Either marker may carry a trailing `transaction:false` (dbmate convention) to
+    mark that direction's SQL as unsafe to run inside a transaction — e.g. Postgres
+    `CREATE INDEX CONCURRENTLY`. Defaults to transaction:true when omitted.
+
+    Returns (up_sql, down_sql, up_transaction, down_transaction).
+    """
     up_lines   = []
     down_lines = []
     current    = None
+    up_tx      = True
+    down_tx    = True
 
     for line in content.splitlines(keepends=True):
         stripped = line.strip().lower()
-        if stripped == '-- migrate:up':
-            current = 'up'
-        elif stripped == '-- migrate:down':
-            current = 'down'
+        m = _RE_MARKER.match(stripped)
+        if m:
+            current = m.group(1)
+            tx = m.group(2) != 'false'
+            if current == 'up':
+                up_tx = tx
+            else:
+                down_tx = tx
         elif current == 'up':
             up_lines.append(line)
         elif current == 'down':
@@ -1037,12 +1147,62 @@ def parse_single_file(content, filename=''):
     if not up_sql:
         sys.exit(f"Empty -- migrate:up section in {filename}.")
 
-    return up_sql, down_sql
+    return up_sql, down_sql, up_tx, down_tx
 
 
 # ---------------------------------------------------------------------------
 # Commands
 # ---------------------------------------------------------------------------
+
+def _apply_migration(driver, version, label, up_sql, up_tx):
+    """Run one migration's up SQL and record it. Exits the process on failure.
+
+    When up_tx is False (dbmate's transaction:false marker), statements run and
+    commit one at a time outside any transaction — required for things like
+    Postgres CREATE INDEX CONCURRENTLY. That also means a failure partway through
+    leaves earlier statements applied but unrecorded; see scm.md.
+    """
+    print(f"Applying  {version}_{label} ...", end=' ', flush=True)
+    try:
+        driver.set_application_name(f"scm:{version}_{label}")
+        if up_tx:
+            driver.execute_script(up_sql)
+        else:
+            driver.execute_script_no_transaction(up_sql)
+        driver.record_migration(version, name=label)
+        driver.commit()
+        print("OK")
+    except Exception as e:
+        driver.rollback()
+        print("FAILED")
+        sys.exit(f"Error: {e}")
+
+
+def _rollback_migration(driver, version, label, down_sql, down_tx):
+    """Run one migration's down SQL and remove its record. Exits the process on failure."""
+    if not down_sql:
+        sys.exit(
+            f"No down migration for {version}_{label} — cannot roll back.\n"
+            "Add a down migration or roll back manually."
+        )
+    print(f"Rollback  {version}_{label} ...", end=' ', flush=True)
+    try:
+        if down_tx:
+            driver.execute_script(down_sql)
+        else:
+            driver.execute_script_no_transaction(down_sql)
+        driver.remove_migration(version)
+        driver.commit()
+        print("OK")
+    except Exception as e:
+        driver.rollback()
+        print("FAILED")
+        sys.exit(f"Error: {e}")
+
+
+def _tx_tag(tx):
+    return '' if tx else '  -- transaction:false'
+
 
 def cmd_up(driver, migrations, n=None, dry_run=False):
     applied = driver.applied_versions()
@@ -1056,24 +1216,14 @@ def cmd_up(driver, migrations, n=None, dry_run=False):
         pending = pending[:n]
 
     if dry_run:
-        for version, label, up_sql, _ in pending:
-            print(f"-- {version}_{label}")
+        for version, label, up_sql, _, up_tx, _ in pending:
+            print(f"-- {version}_{label}{_tx_tag(up_tx)}")
             print(up_sql)
             print()
         return
 
-    for version, label, up_sql, _ in pending:
-        print(f"Applying  {version}_{label} ...", end=' ', flush=True)
-        try:
-            driver.set_application_name(f"scm:{version}_{label}")
-            driver.execute_script(up_sql)
-            driver.record_migration(version, name=label)
-            driver.commit()
-            print("OK")
-        except Exception as e:
-            driver.rollback()
-            print("FAILED")
-            sys.exit(f"Error: {e}")
+    for version, label, up_sql, _, up_tx, _ in pending:
+        _apply_migration(driver, version, label, up_sql, up_tx)
 
 
 def cmd_down(driver, migrations, n=1, dry_run=False):
@@ -1087,33 +1237,19 @@ def cmd_down(driver, migrations, n=1, dry_run=False):
     targets = applied_migrations[:n]
 
     if dry_run:
-        for version, label, _, down_sql in targets:
+        for version, label, _, down_sql, _, down_tx in targets:
             if not down_sql:
                 sys.exit(
                     f"No down migration for {version}_{label} — cannot roll back.\n"
                     "Add a down migration or roll back manually."
                 )
-            print(f"-- {version}_{label}")
+            print(f"-- {version}_{label}{_tx_tag(down_tx)}")
             print(down_sql)
             print()
         return
 
-    for version, label, _, down_sql in targets:
-        if not down_sql:
-            sys.exit(
-                f"No down migration for {version}_{label} — cannot roll back.\n"
-                "Add a down migration or roll back manually."
-            )
-        print(f"Rollback  {version}_{label} ...", end=' ', flush=True)
-        try:
-            driver.execute_script(down_sql)
-            driver.remove_migration(version)
-            driver.commit()
-            print("OK")
-        except Exception as e:
-            driver.rollback()
-            print("FAILED")
-            sys.exit(f"Error: {e}")
+    for version, label, _, down_sql, _, down_tx in targets:
+        _rollback_migration(driver, version, label, down_sql, down_tx)
 
 
 def cmd_goto(driver, migrations, target_version, dry_run=False):
@@ -1137,60 +1273,36 @@ def cmd_goto(driver, migrations, target_version, dry_run=False):
         return
 
     if dry_run:
-        for version, label, _, down_sql in to_rollback:
+        for version, label, _, down_sql, _, down_tx in to_rollback:
             if not down_sql:
                 sys.exit(
                     f"No down migration for {version}_{label} — cannot roll back.\n"
                     "Add a down migration or roll back manually."
                 )
-            print(f"-- rollback {version}_{label}")
+            print(f"-- rollback {version}_{label}{_tx_tag(down_tx)}")
             print(down_sql)
             print()
-        for version, label, up_sql, _ in to_apply:
-            print(f"-- apply {version}_{label}")
+        for version, label, up_sql, _, up_tx, _ in to_apply:
+            print(f"-- apply {version}_{label}{_tx_tag(up_tx)}")
             print(up_sql)
             print()
         return
 
-    for version, label, _, down_sql in to_rollback:
-        if not down_sql:
-            sys.exit(
-                f"No down migration for {version}_{label} — cannot roll back.\n"
-                "Add a down migration or roll back manually."
-            )
-        print(f"Rollback  {version}_{label} ...", end=' ', flush=True)
-        try:
-            driver.execute_script(down_sql)
-            driver.remove_migration(version)
-            driver.commit()
-            print("OK")
-        except Exception as e:
-            driver.rollback()
-            print("FAILED")
-            sys.exit(f"Error: {e}")
+    for version, label, _, down_sql, _, down_tx in to_rollback:
+        _rollback_migration(driver, version, label, down_sql, down_tx)
 
-    for version, label, up_sql, _ in to_apply:
-        print(f"Applying  {version}_{label} ...", end=' ', flush=True)
-        try:
-            driver.set_application_name(f"scm:{version}_{label}")
-            driver.execute_script(up_sql)
-            driver.record_migration(version, name=label)
-            driver.commit()
-            print("OK")
-        except Exception as e:
-            driver.rollback()
-            print("FAILED")
-            sys.exit(f"Error: {e}")
+    for version, label, up_sql, _, up_tx, _ in to_apply:
+        _apply_migration(driver, version, label, up_sql, up_tx)
 
 
 def cmd_show(migrations, target_version):
     """Print the up and down SQL for a specific migration version."""
-    for version, label, up_sql, down_sql in migrations:
+    for version, label, up_sql, down_sql, up_tx, down_tx in migrations:
         if version == target_version:
-            print(f"-- {version}_{label} (up)")
+            print(f"-- {version}_{label} (up){_tx_tag(up_tx)}")
             print(up_sql)
             if down_sql:
-                print(f"\n-- {version}_{label} (down)")
+                print(f"\n-- {version}_{label} (down){_tx_tag(down_tx)}")
                 print(down_sql)
             return
     sys.exit(
@@ -1396,7 +1508,7 @@ def cmd_baseline(driver, migrations, target_version=None):
         print("Nothing to baseline — all migrations already marked as applied.")
         return
 
-    for version, label, _, _ in to_mark:
+    for version, label, _, _, _, _ in to_mark:
         driver.record_migration(version, name=label)
         print(f"  Baselined  {version}_{label}")
     driver.commit()
@@ -1465,7 +1577,7 @@ def cmd_status(driver, migrations):
     print(bold(blue(header)))
     print("-" * len(header))
 
-    for version, label, _, down_sql in migrations:
+    for version, label, _, down_sql, _, _ in migrations:
         is_applied = version in applied
         status   = "applied" if is_applied else "pending"
         has_down = "yes"     if down_sql   else "no"
@@ -1576,8 +1688,8 @@ def cmd_learn():
          '  …12, …13, …14, …15, …16 automatically.'),
         ('Guard against re-runs after partial failures:',
          '  CREATE TABLE IF NOT EXISTS …   /   DROP TABLE IF EXISTS …'),
-        ('PostgreSQL: CREATE INDEX CONCURRENTLY cannot run inside a',
-         '  transaction — put it alone in its own migration file.'),
+        ('Statement cannot run inside a transaction (e.g. Postgres CREATE',
+         '  INDEX CONCURRENTLY)? Add "transaction:false" after -- migrate:up.'),
         ('Never edit an applied migration.',
          '  Create a new one to correct it instead.'),
     ]
@@ -1642,7 +1754,7 @@ def cmd_undo(driver, migrations, migrations_dir):
     def red(s):    return f'\033[31m{s}\033[0m'  if tty else s
 
     print(bold("Pending migrations:"))
-    for i, (version, label, _, _) in enumerate(pending, 1):
+    for i, (version, label, _, _, _, _) in enumerate(pending, 1):
         print(f"  {yellow(str(i))}. {version}_{label}")
     print()
 
@@ -1675,7 +1787,7 @@ def cmd_undo(driver, migrations, migrations_dir):
     path = Path(migrations_dir)
     re_prefix = re.compile(r'^(\d+)[_\-]')
 
-    for version, label, _, _ in targets:
+    for version, label, _, _, _, _ in targets:
         version_str = str(version)
         deleted = []
         for f in sorted(path.iterdir()):

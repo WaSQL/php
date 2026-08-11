@@ -478,6 +478,32 @@ SQL statements are split by a context-aware parser that handles semicolons insid
 are passed as a single string so dollar-quoted blocks (`$$...$$`) work natively. SQL Server
 migrations are split on `GO` batch separators in addition to semicolons.
 
+**`transaction:false`** -- some statements refuse to run inside a transaction block at
+all, e.g. Postgres `CREATE INDEX CONCURRENTLY`. Add `transaction:false` after the marker
+(single-file/dbmate style only) to run that direction statement-by-statement, each one
+committed on its own, instead of wrapped in one transaction:
+
+```sql
+-- migrate:up transaction:false
+CREATE INDEX CONCURRENTLY idx_orders_customer_id ON orders (customer_id);
+
+-- migrate:down transaction:false
+DROP INDEX CONCURRENTLY idx_orders_customer_id;
+```
+
+Up and down are independent -- set it on whichever marker needs it. `scm show`/`scm up
+--dry-run` annotate the SQL with `-- transaction:false` when it applies. Because each
+statement commits immediately, a failure partway through a `transaction:false` migration
+leaves the earlier statements applied but the migration itself unrecorded -- there's no
+atomic rollback to fall back on, so keep these migrations to a single statement where
+possible. Two-file (golang-migrate) migrations have no marker line to carry the option and
+always run inside a transaction.
+
+Support depends on the driver's ability to toggle autocommit: Postgres, MySQL/MariaDB,
+SQLite, and SQL Server all support it. Oracle, HANA, Snowflake, Firebird, and c-tree fall
+back to running inside the connection's normal transaction if the driver doesn't expose a
+way to toggle autocommit.
+
 ---
 
 ### `down` -- Roll back migrations
@@ -869,6 +895,10 @@ CREATE TABLE users (
 -- migrate:down
 DROP TABLE users;
 ```
+
+Either marker can add `transaction:false` (see [`up`](#up----apply-migrations)) to run
+that direction outside a transaction, statement-by-statement -- needed for things like
+`CREATE INDEX CONCURRENTLY`.
 
 ### Two-file style (golang-migrate)
 
