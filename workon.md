@@ -7,7 +7,9 @@ Referenced by `CLAUDE.md`'s "work on {site} [page]" / "work on wasql" trigger re
 php workon.php {alias|wasql} [page] --shot=<scratchpad>/shot.png
 python workon.py {alias|wasql} [page] --shot=<scratchpad>/shot.png
 ```
-If both `php` and `python` are on PATH, prefer `workon.php` (it's the original; `workon.py` is a port kept in sync with it) unless the user's environment favors Python. **`workon.php --help` / `workon.py --help` is the authoritative option/capability list** for either — it documents every flag (`--no-watcher`, `--filter=a,b`, `--no-filter`, `--shot`, `--width=N`, `--port=N`, `--chrome=PATH`, `--reshoot=URL`, `--no-chrome`, `--inv-max=N`, `--no-inventory`, `--log=PATH`, `--json`) and is kept current in the script itself — this file explains *why* and *when*, `--help` explains *what*. When editing behavior, change both scripts together.
+If both `php` and `python` are on PATH, prefer `workon.php` (it's the original; `workon.py` is a port kept in sync with it) unless the user's environment favors Python. **`workon.php --help` / `workon.py --help` is the authoritative option/capability list** for either — it documents every flag (`--no-watcher`, `--filter=a,b`, `--no-filter`, `--shot`, `--width=N`, `--port=N`, `--chrome=PATH`, `--reshoot=URL`, `--no-chrome`, `--inv-max=N`, `--no-inventory`, `--log=PATH`, `--json`) and is kept current in the script itself — this file explains *why* and *when*, `--help` explains *what*.
+
+**⚠️ Whenever you change `workon.php` or `workon.py`, make the same change in the other.** They must stay behaviorally identical (flags, defaults, output text, exit codes, temp-file names) — a fix or new flag added to only one silently breaks parity and whichever script the next session picks depends on the machine, not on which one you happened to edit. Port the change immediately, in the same turn, not as a follow-up.
 
 ## What it does
 
