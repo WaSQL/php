@@ -51,6 +51,7 @@ Connection (first match wins):
   MIGRATIONS_TABLE      Tracking table name            (default: schema_migrations)
   MIGRATIONS_SCHEMA     Tracking table schema          (default: public on Postgres)
   WASQL_PATH            Directory containing config.xml (used by env-from-config)
+  SCM_TIMESTAMPS        0/false to drop start+elapsed times from up/down/goto output
   DBMATE_MIGRATIONS_DIR      alias for MIGRATIONS_DIR
   DBMATE_MIGRATIONS_TABLE    alias for MIGRATIONS_TABLE
   DBMATE_MIGRATIONS_SCHEMA   alias for MIGRATIONS_SCHEMA
@@ -67,12 +68,18 @@ import argparse
 import os
 import re
 import sys
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, quote
 
-__version__ = '1.31.0'
+__version__ = '1.32.0'
+
+# Progress output carries wall-clock timestamps and elapsed times so a long
+# up/down/goto run shows when each migration started and how long it took.
+# Turned off by --no-timestamps (or SCM_TIMESTAMPS=0) for byte-stable output.
+SHOW_TIMESTAMPS = True
 
 
 def current_user():
@@ -1154,6 +1161,44 @@ def parse_single_file(content, filename=''):
 # Commands
 # ---------------------------------------------------------------------------
 
+def _fmt_elapsed(seconds):
+    """Human-readable duration: '0.4s', '42s', '3m 06s', '1h 04m 09s'."""
+    # round() first so 9.99s formats as '10s', not '10.0s'
+    if round(seconds, 1) < 10:
+        return f"{seconds:.1f}s"
+    total = int(round(seconds))
+    hours, rem   = divmod(total, 3600)
+    minutes, sec = divmod(rem, 60)
+    if hours:
+        return f"{hours}h {minutes:02d}m {sec:02d}s"
+    if minutes:
+        return f"{minutes}m {sec:02d}s"
+    return f"{sec}s"
+
+
+def _stamp():
+    """'[HH:MM:SS] ' prefix for a progress line — empty when timestamps are off."""
+    return f"[{datetime.now().strftime('%H:%M:%S')}] " if SHOW_TIMESTAMPS else ''
+
+
+def _took(t0):
+    """' (1m 12s)' suffix for a finished step — empty when timestamps are off."""
+    return f" ({_fmt_elapsed(time.monotonic() - t0)})" if SHOW_TIMESTAMPS else ''
+
+
+def _run_header(summary):
+    """Announce the start of a multi-migration run: 'Started <date time>  <summary>'."""
+    if SHOW_TIMESTAMPS:
+        print(f"Started   {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  {summary}")
+
+
+def _run_footer(summary, t0):
+    """Close out a multi-migration run with the finish time and total elapsed."""
+    if SHOW_TIMESTAMPS:
+        stamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"Finished  {stamp}  {summary} in {_fmt_elapsed(time.monotonic() - t0)}")
+
+
 def _apply_migration(driver, version, label, up_sql, up_tx):
     """Run one migration's up SQL and record it. Exits the process on failure.
 
@@ -1162,7 +1207,8 @@ def _apply_migration(driver, version, label, up_sql, up_tx):
     Postgres CREATE INDEX CONCURRENTLY. That also means a failure partway through
     leaves earlier statements applied but unrecorded; see scm.md.
     """
-    print(f"Applying  {version}_{label} ...", end=' ', flush=True)
+    print(f"{_stamp()}Applying  {version}_{label} ...", end=' ', flush=True)
+    started = time.monotonic()
     try:
         driver.set_application_name(f"scm:{version}_{label}")
         if up_tx:
@@ -1171,10 +1217,10 @@ def _apply_migration(driver, version, label, up_sql, up_tx):
             driver.execute_script_no_transaction(up_sql)
         driver.record_migration(version, name=label)
         driver.commit()
-        print("OK")
+        print(f"OK{_took(started)}")
     except Exception as e:
         driver.rollback()
-        print("FAILED")
+        print(f"FAILED{_took(started)}")
         sys.exit(f"Error: {e}")
 
 
@@ -1185,7 +1231,8 @@ def _rollback_migration(driver, version, label, down_sql, down_tx):
             f"No down migration for {version}_{label} — cannot roll back.\n"
             "Add a down migration or roll back manually."
         )
-    print(f"Rollback  {version}_{label} ...", end=' ', flush=True)
+    print(f"{_stamp()}Rollback  {version}_{label} ...", end=' ', flush=True)
+    started = time.monotonic()
     try:
         if down_tx:
             driver.execute_script(down_sql)
@@ -1193,10 +1240,10 @@ def _rollback_migration(driver, version, label, down_sql, down_tx):
             driver.execute_script_no_transaction(down_sql)
         driver.remove_migration(version)
         driver.commit()
-        print("OK")
+        print(f"OK{_took(started)}")
     except Exception as e:
         driver.rollback()
-        print("FAILED")
+        print(f"FAILED{_took(started)}")
         sys.exit(f"Error: {e}")
 
 
@@ -1222,8 +1269,11 @@ def cmd_up(driver, migrations, n=None, dry_run=False):
             print()
         return
 
+    run_started = time.monotonic()
+    _run_header(f"{len(pending)} migration(s) to apply")
     for version, label, up_sql, _, up_tx, _ in pending:
         _apply_migration(driver, version, label, up_sql, up_tx)
+    _run_footer(f"{len(pending)} applied", run_started)
 
 
 def cmd_down(driver, migrations, n=1, dry_run=False):
@@ -1248,8 +1298,11 @@ def cmd_down(driver, migrations, n=1, dry_run=False):
             print()
         return
 
+    run_started = time.monotonic()
+    _run_header(f"{len(targets)} migration(s) to roll back")
     for version, label, _, down_sql, _, down_tx in targets:
         _rollback_migration(driver, version, label, down_sql, down_tx)
+    _run_footer(f"{len(targets)} rolled back", run_started)
 
 
 def cmd_goto(driver, migrations, target_version, dry_run=False):
@@ -1288,11 +1341,26 @@ def cmd_goto(driver, migrations, target_version, dry_run=False):
             print()
         return
 
+    run_started = time.monotonic()
+    steps = []
+    if to_rollback:
+        steps.append(f"{len(to_rollback)} to roll back")
+    if to_apply:
+        steps.append(f"{len(to_apply)} to apply")
+    _run_header(f"goto {target_version} — {', '.join(steps)}")
+
     for version, label, _, down_sql, _, down_tx in to_rollback:
         _rollback_migration(driver, version, label, down_sql, down_tx)
 
     for version, label, up_sql, _, up_tx, _ in to_apply:
         _apply_migration(driver, version, label, up_sql, up_tx)
+
+    done = []
+    if to_rollback:
+        done.append(f"{len(to_rollback)} rolled back")
+    if to_apply:
+        done.append(f"{len(to_apply)} applied")
+    _run_footer(', '.join(done), run_started)
 
 
 def cmd_show(migrations, target_version):
@@ -1704,6 +1772,7 @@ def cmd_learn():
         ('--db NAME',        'Scopes --path → ./migrations/<name> and --env-file → .env.<name>'),
         ('--url URL',        'DB connection URL — overrides .env and $DATABASE_URL'),
         ('--env-file FILE',  'Alternative .env file  (default: .env)'),
+        ('--no-timestamps',  'Drop the [HH:MM:SS] start + elapsed times from up/down/goto'),
     ]
     for flag, desc in flags:
         print(f'  {yellow(f"{flag:<20}")}  {desc}')
@@ -2262,6 +2331,11 @@ def main():
         help='Database name. Sets --env-file to .env.<name> and --path to ./migrations/<name> '
              'unless those are explicitly provided.',
     )
+    parser.add_argument(
+        '--no-timestamps', action='store_true',
+        help='Omit the [HH:MM:SS] start time and elapsed time from up/down/goto output. '
+             'Same as SCM_TIMESTAMPS=0.',
+    )
 
     sub = parser.add_subparsers(dest='command', metavar='command')
 
@@ -2356,6 +2430,13 @@ def main():
     load_env_file(args.env_file)
     if args.env_file != '.env':
         load_env_file('.env')
+
+    # Progress timestamps: --no-timestamps flag > SCM_TIMESTAMPS in env/.env > on.
+    global SHOW_TIMESTAMPS
+    if args.no_timestamps:
+        SHOW_TIMESTAMPS = False
+    elif os.environ.get('SCM_TIMESTAMPS', '').strip().lower() in ('0', 'false', 'no', 'off'):
+        SHOW_TIMESTAMPS = False
 
     # Resolve config.xml: --config flag > WASQL_PATH in .env > default
     if args.config is None:

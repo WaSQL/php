@@ -84,6 +84,7 @@ After creating the migration file, show the user the file path and remind them t
 - Two file styles: single-file (dbmate) or two-file (golang-migrate)
 - `init`, `up`, `down`, `goto`, `status`, `history`, `report`, `ddl`, `show`, `baseline`, `repair`, `new`, `reset`, `undo`, `learn` (alias `help`), `version`, `who`, `dbs`, and `env-from-config` commands
 - `--dry-run` flag on `up`, `down`, and `goto` to preview SQL without applying changes
+- Timestamped progress output -- each migration shows the clock time it started and how long it took (`--no-timestamps` to suppress)
 - Timestamp-versioned migrations -- `new` auto-increments the timestamp if a collision exists, so running it multiple times in the same second always produces unique versions
 - Tracks applied migrations in a `schema_migrations` table compatible with dbmate (`varchar(128)` version column)
 - Built-in drivers for PostgreSQL, MySQL/MariaDB, SQL Server, SQLite, Oracle, SAP HANA, Snowflake, FairCom cTree, and Firebird
@@ -260,6 +261,7 @@ scm --env-file .env.staging up
 | `MIGRATIONS_TABLE` | `DBMATE_MIGRATIONS_TABLE` | `schema_migrations` | Name of the tracking table in the database |
 | `MIGRATIONS_SCHEMA` | `DBMATE_MIGRATIONS_SCHEMA` | `public` (Postgres) | Schema the tracking table lives in. On PostgreSQL this defaults to `public` so `search_path` can't scatter it; other drivers use the connection's default schema unless set |
 | `WASQL_PATH` | -- | *(discovered)* | Directory containing `config.xml`, used by `env-from-config`. Overrides the walk-up-from-CWD discovery |
+| `SCM_TIMESTAMPS` | -- | `1` | Set to `0`/`false`/`no`/`off` to drop the start and elapsed times from `up`/`down`/`goto` output. Same as `--no-timestamps` |
 
 ---
 
@@ -473,6 +475,36 @@ scm up 3
 Each migration runs in a transaction. On failure the transaction rolls back and the
 command exits immediately -- migrations applied before the failure are preserved.
 
+#### Progress timestamps
+
+`up`, `down`, and `goto` stamp every migration with the wall-clock time it *started* and
+report how long it took, so a long run shows where the time is going while it is still
+running:
+
+```text
+Started   2026-08-11 22:14:03  3 migration(s) to apply
+[22:14:03] Applying  20260811005807_DTW-439_closure_bwt_parent_indexes ... OK (0.4s)
+[22:14:04] Applying  20260811005808_DTW-439_closure_bwt_backfill_empty ... OK (4m 21s)
+[22:18:25] Applying  20260811005809_DTW-439_closure_bwt202505_covering_index ... OK (12m 07s)
+Finished  2026-08-11 22:30:32  3 applied in 16m 29s
+```
+
+The `[HH:MM:SS]` stamp is printed and flushed *before* the SQL is sent, so the currently
+running migration and its start time are visible even while it is still executing -- and a
+migration that never finishes is identifiable by that line alone. Elapsed times use one
+decimal below 10 seconds (`0.4s`), then whole seconds (`42s`), minutes (`3m 06s`), and hours
+(`1h 04m 09s`). A failure prints `FAILED` with the elapsed time before the error.
+
+Any driver chatter -- Postgres `NOTICE:` lines, for instance -- still lands between the
+`Applying ...` line and its `OK`, exactly as before.
+
+Pass `--no-timestamps` (or set `SCM_TIMESTAMPS=0`) to get the older, byte-stable output
+with no times at all -- useful when diffing runs or parsing output in a script:
+
+```bash
+scm --no-timestamps up
+```
+
 SQL statements are split by a context-aware parser that handles semicolons inside
 `-- line comments`, `/* block comments */`, and `'string literals'`. PostgreSQL migrations
 are passed as a single string so dollar-quoted blocks (`$$...$$`) work natively. SQL Server
@@ -522,6 +554,8 @@ scm down 3 --dry-run
 
 If a migration has no down script, `down` exits with an error rather than silently skipping.
 
+Rollbacks are timestamped like `up` -- see [Progress timestamps](#progress-timestamps).
+
 ---
 
 ### `goto` -- Migrate to a specific version
@@ -547,6 +581,10 @@ scm goto 20240601120000 --dry-run
 `goto` rolls back (newest first) any applied migrations above the target, then applies (oldest first) any pending migrations at or below the target. If the database is already at the target version, it exits immediately with no changes.
 
 If any migration in the rollback path has no down script, `goto` exits with an error before making any changes.
+
+Each step is timestamped, and the header names both halves of the plan
+(`goto 20240601120000 — 2 to roll back, 1 to apply`) -- see
+[Progress timestamps](#progress-timestamps).
 
 ---
 
@@ -853,6 +891,7 @@ Requires no database connection.
 | `--env-file FILE` | `.env` (or `.env.<db>`) | Path to `.env` file |
 | `--path DIR` | `./migrations/<db>` if it exists, else `./migrations` | Migrations directory |
 | `--config FILE` | *(discovered)* | Path to WaSQL `config.xml` (used by `env-from-config`). Default is found by walking up from the CWD; `WASQL_PATH` in `.env` overrides |
+| `--no-timestamps` | *(off)* | Drop the `[HH:MM:SS]` start time and elapsed time from `up`/`down`/`goto` output (see [Progress timestamps](#progress-timestamps)) |
 
 ---
 
