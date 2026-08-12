@@ -60,8 +60,13 @@ function websiteGraderFetch($url){
 function websiteGraderAbsoluteURL($href,$pageurl,$baseurl){
 	$href=trim($href);
 	if(!strlen($href)){return '';}
-	if(preg_match('/^(mailto:|tel:|javascript:|data:|#)/i',$href)){return '';}
+	if(stringBeginsWith($href,'#')){return '';}
 	if(preg_match('#^https?://#i',$href)){return $href;}
+	//any OTHER URI scheme (mailto:, tel:, sms:, javascript:, data:, ftp:, whatsapp:, facetime:,
+	//geo:, ...) is an absolute, non-crawlable URI per RFC 3986 - skip it rather than falling
+	//through to relative-path resolution below (which would wrongly turn "sms:5551234567" into
+	//"{current-dir}/sms:5551234567" and queue a fake page for every such link on the page).
+	if(preg_match('/^[a-zA-Z][a-zA-Z0-9+.\-]*:/',$href)){return '';}
 	if(stringBeginsWith($href,'//')){
 		$scheme=parse_url($baseurl,PHP_URL_SCHEME);
 		return $scheme.':'.$href;
@@ -345,12 +350,17 @@ function websiteGraderTermsGlossary(){
 }
 
 /**
- * @describe run every SEO/AIO/Social/Misc check against the crawl and return the results.
- * @param baseurl string, pages array of [url,body], robots string
+ * @describe run every SEO/AIO/Social/Misc check against the crawl and return the results. Pages
+ *   the site deliberately excludes from indexing (robots.txt Disallow, or a noindex meta robots
+ *   tag) are NOT run through the on-page checks - a real search/AI crawler will never evaluate
+ *   them either, so doing so only produces false-positive failures. They're reported separately
+ *   via the optional &$excluded out-param instead of being mixed into the pass/fail counts.
+ * @param baseurl string, pages array of [url,body], robots string, excluded array (by ref, out)
  * @return array of check results (key => [label,category,pass,total,fails])
  */
-function websiteGraderRunChecks($baseurl,$pages,$robots){
+function websiteGraderRunChecks($baseurl,$pages,$robots,&$excluded=array()){
 	$checks=array();
+	$excluded=array();
 	//===== site-wide (Misc / AIO) =====
 	//HTTPS / SSL
 	$ssl_ok=stringBeginsWith(strtolower($baseurl),'https://');
@@ -385,10 +395,26 @@ function websiteGraderRunChecks($baseurl,$pages,$robots){
 	foreach($pages as $gpage){
 		$url=$gpage['url'];
 		$body=$gpage['body'];
-		$link=websiteGraderPageLink($url);
 		$parsed=websiteGraderParseMeta($body);
-		$title=$parsed['title'];
 		$meta=$parsed['meta'];
+		//intentionally-excluded pages (robots.txt Disallow and/or meta robots noindex) get
+		//bucketed here and skip every on-page check below - see the function doc comment.
+		$rob=isset($meta['robots'])?$meta['robots']:null;
+		$noindex=($rob!==null && stringContains($rob,'noindex'));
+		$path=(string)parse_url($url,PHP_URL_PATH);
+		if(!strlen($path)){$path='/';}
+		$query=(string)parse_url($url,PHP_URL_QUERY);
+		if(strlen($query)){$path.='?'.$query;}
+		$robots_blocked=strlen(trim($robots))?websiteGraderRobotsDisallowsPath($robots,$path):false;
+		if($noindex || $robots_blocked){
+			$why=array();
+			if($robots_blocked){$why[]='blocked by robots.txt';}
+			if($noindex){$why[]='meta robots noindex';}
+			$excluded[]=array('url'=>$url,'reason'=>implode(' & ',$why));
+			continue;
+		}
+		$link=websiteGraderPageLink($url);
+		$title=$parsed['title'];
 		$head=$body;
 		if(preg_match('/<head[^>]*>(.*)<\/head>/si',$body,$m)){$head=$m[1];}
 
@@ -421,14 +447,11 @@ function websiteGraderRunChecks($baseurl,$pages,$robots){
 		websiteGraderAddCheck($checks,'description','Meta description (140-160 chars)','SEO',$desc_ok,$desc_ok?null:array(
 			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="description" content="'.encodeHtml((string)$desc).'" /></xmp>','suggestion'=>$d_sugg
 		));
-		//meta robots
-		$rob=isset($meta['robots'])?$meta['robots']:null;
-		$rob_ok=false;$r_sugg='';
-		if($rob===null){$r_sugg='Meta robots tag is missing (add content="index, follow").';}
-		elseif(stringContains($rob,'noindex')){$r_sugg='Meta robots is set to noindex &mdash; this page will NOT be indexed.';}
-		else{$rob_ok=true;}
+		//meta robots - a noindex page was already bucketed into $excluded above and never
+		//reaches here, so the only remaining failure case is the tag being missing entirely.
+		$rob_ok=($rob!==null);
 		websiteGraderAddCheck($checks,'metarobots','Meta robots tag','SEO',$rob_ok,$rob_ok?null:array(
-			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="robots" content="index, follow" /></xmp>','suggestion'=>$r_sugg
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="robots" content="index, follow" /></xmp>','suggestion'=>'Meta robots tag is missing (add content="index, follow").'
 		));
 		//viewport
 		$vp=isset($meta['viewport'])?trim($meta['viewport']):'';
@@ -760,10 +783,11 @@ function websiteGraderTechCount($tech){
 
 /**
  * @describe FORM 1 (report card): grade hero + social preview + all checks (Pass/Fail) + technology + AI prompt panel.
- * @param grade array, checks array, social array, baseurl string, pages array, tech array, error string
+ * @param grade array, checks array, social array, baseurl string, pages array, tech array, error string,
+ *   excluded array of [url,reason] - pages skipped from on-page checks (robots.txt/noindex)
  * @return string HTML
  */
-function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error=''){
+function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array()){
 	if(strlen($error)){
 		return '<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> '.encodeHtml($error).'</div>';
 	}
@@ -800,6 +824,12 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech
 	$rtn.='<details style="margin-bottom:10px;"><summary class="w_link w_pointer">Pages crawled ('.$cnt.')</summary><div class="w_small" style="padding:6px 0 0 12px;">';
 	foreach($pages as $p){$rtn.=websiteGraderPageLink($p['url']).'<br />'.PHP_EOL;}
 	$rtn.='</div></details>'.PHP_EOL;
+	if(is_array($excluded) && count($excluded)){
+		$rtn.='<details style="margin-bottom:10px;"><summary class="w_link w_pointer">Excluded from checks &mdash; robots.txt / noindex ('.count($excluded).')</summary><div class="w_small" style="padding:6px 0 0 12px;">';
+		$rtn.='<div class="w_gray" style="margin-bottom:4px;">These pages are already excluded from indexing by the site itself, so on-page checks (title, H1, canonical, etc.) were skipped for them &mdash; a real search/AI crawler would skip them too.</div>'.PHP_EOL;
+		foreach($excluded as $ex){$rtn.=websiteGraderPageLink($ex['url']).' <span class="w_gray">&mdash; '.encodeHtml($ex['reason']).'</span><br />'.PHP_EOL;}
+		$rtn.='</div></details>'.PHP_EOL;
+	}
 	//grade hero (always visible)
 	$rtn.=websiteGraderRenderGradeHero($grade,$checks);
 	//tabbed sections
@@ -1255,11 +1285,12 @@ function websiteGraderSocialPromptLines($social){
 }
 
 /**
- * @describe parse robots.txt and return which of $bots are Disallowed from the site root.
- * @param robots string, bots array
- * @return array of blocked bot names
+ * @describe parse robots.txt into Allow/Disallow rules for one user-agent group, falling back to
+ *   the "*" (default) group when there is no group specifically named for $agent.
+ * @param robots string, agent string
+ * @return array of ['type'=>'allow'|'disallow','path'=>string]
  */
-function websiteGraderRobotsBlockedBots($robots,$bots){
+function websiteGraderRobotsGroupRules($robots,$agent='*'){
 	$lines=preg_split('/\r\n|\r|\n/',$robots);
 	$groups=array();
 	$curagents=array();
@@ -1269,26 +1300,65 @@ function websiteGraderRobotsBlockedBots($robots,$bots){
 		if(!strlen($line)){continue;}
 		if(preg_match('/^user-agent\s*:\s*(.+)$/i',$line,$m)){
 			if($sawrule){$curagents=array();$sawrule=false;}
-			$agent=strtolower(trim($m[1]));
-			$curagents[]=$agent;
-			if(!isset($groups[$agent])){$groups[$agent]=array();}
+			$a=strtolower(trim($m[1]));
+			$curagents[]=$a;
+			if(!isset($groups[$a])){$groups[$a]=array();}
 		}
-		elseif(preg_match('/^disallow\s*:\s*(.*)$/i',$line,$m)){
+		elseif(preg_match('/^(disallow|allow)\s*:\s*(.*)$/i',$line,$m)){
 			$sawrule=true;
-			$path=trim($m[1]);
-			foreach($curagents as $a){$groups[$a][]=$path;}
-		}
-		elseif(preg_match('/^allow\s*:/i',$line)){
-			$sawrule=true;
+			$type=strtolower($m[1]);
+			$path=trim($m[2]);
+			foreach($curagents as $a){$groups[$a][]=array('type'=>$type,'path'=>$path);}
 		}
 	}
+	$key=strtolower($agent);
+	if(isset($groups[$key])){return $groups[$key];}
+	return isset($groups['*'])?$groups['*']:array();
+}
+
+/**
+ * @describe does a single robots.txt Allow/Disallow path pattern match $path? Supports the "*"
+ *   wildcard (matches anything) and a trailing "$" (anchors the match to the end of $path).
+ * @param pattern string, path string
+ * @return bool
+ */
+function websiteGraderRobotsPatternMatches($pattern,$path){
+	if(!strlen($pattern)){return false;}
+	$endanchor=false;
+	if(substr($pattern,-1)=='$'){$endanchor=true;$pattern=substr($pattern,0,-1);}
+	$re=preg_quote($pattern,'#');
+	$re=str_replace('\*','.*',$re);
+	$re='#^'.$re.($endanchor?'$':'').'#';
+	return (bool)@preg_match($re,$path);
+}
+
+/**
+ * @describe does robots.txt disallow crawling $path for $agent? Uses the standard
+ *   longest-matching-rule-wins algorithm (an Allow can override a shorter Disallow).
+ * @param robots string, path string, agent string
+ * @return bool
+ */
+function websiteGraderRobotsDisallowsPath($robots,$path,$agent='*'){
+	if(!strlen(trim($robots))){return false;}
+	$rules=websiteGraderRobotsGroupRules($robots,$agent);
+	$best=null;$bestlen=-1;
+	foreach($rules as $r){
+		if(!strlen($r['path']) || !websiteGraderRobotsPatternMatches($r['path'],$path)){continue;}
+		$len=commonStrlen($r['path']);
+		if($len > $bestlen){$bestlen=$len;$best=$r['type'];}
+	}
+	return $best=='disallow';
+}
+
+/**
+ * @describe parse robots.txt and return which of $bots are Disallowed from the site root.
+ * @param robots string, bots array
+ * @return array of blocked bot names
+ */
+function websiteGraderRobotsBlockedBots($robots,$bots){
 	$blocked=array();
 	foreach($bots as $bot){
-		$key=strtolower($bot);
-		$dis=isset($groups[$key])?$groups[$key]:(isset($groups['*'])?$groups['*']:array());
-		foreach($dis as $d){
-			if($d==='/'){$blocked[]=$bot;break;}
-		}
+		if(websiteGraderRobotsDisallowsPath($robots,'/',$bot)){$blocked[]=$bot;}
 	}
 	return $blocked;
 }
@@ -1355,10 +1425,11 @@ function websiteGraderDownloadReport(){
  * @describe stash the just-computed report in the session so the email/download steps can
  *   rebuild it without re-crawling (guarantees the emailed/downloaded report matches what is
  *   on screen).
- * @param baseurl string, checks array, grade array, social array, pages array of [url,body], tech array
+ * @param baseurl string, checks array, grade array, social array, pages array of [url,body], tech array,
+ *   excluded array of [url,reason]
  * @return void
  */
-function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array()){
+function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array()){
 	$urls=array();
 	foreach($pages as $p){if(isset($p['url'])){$urls[]=$p['url'];}}
 	$_SESSION['websiteGraderReport']=array(
@@ -1368,6 +1439,7 @@ function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=a
 		'social'=>$social,
 		'pages'=>$urls,
 		'tech'=>$tech,
+		'excluded'=>$excluded,
 		'when'=>date('M j, Y g:i a')
 	);
 	return;
@@ -1514,7 +1586,8 @@ function websiteGraderEmailHTML($rep,$note='',$fromname='',$toname=''){
 	$h.='<div style="border-bottom:3px solid '.$color.';padding-bottom:10px;margin-bottom:16px;">';
 	$h.='<div style="font-size:12px;letter-spacing:.5px;color:#8a9099;text-transform:uppercase;">SEO &amp; AI Optimization Report</div>';
 	$h.='<div style="font-size:22px;font-weight:700;color:#1d2129;">'.encodeHtml($host).'</div>';
-	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
+	$excluded=isset($rep['excluded']) && is_array($rep['excluded'])?$rep['excluded']:array();
+	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled'.(count($excluded)?(' ('.count($excluded).' excluded via robots.txt/noindex)'):'').' &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
 	$h.='</div>'.PHP_EOL;
 	//warm, personal greeting
 	$h.='<div style="margin-bottom:14px;">Hi '.(strlen($toname)?encodeHtml($toname):'there').',</div>'.PHP_EOL;
@@ -1585,6 +1658,16 @@ function websiteGraderEmailHTML($rep,$note='',$fromname='',$toname=''){
 	}
 	else{
 		$h.='<div style="background:#eafbea;border:1px solid #bfe6bf;border-radius:8px;padding:12px 14px;color:#1f7a1f;margin-bottom:14px;">✓ Every SEO, Social, AIO, and technical check passed — no issues found.</div>'.PHP_EOL;
+	}
+	//pages excluded from checks (robots.txt / noindex) - reported separately, not as failures
+	if(count($excluded)){
+		$h.='<div style="font-size:16px;font-weight:700;margin:18px 0 6px;">Excluded from checks ('.count($excluded).')</div>';
+		$h.='<div style="color:#606770;font-size:13px;margin-bottom:6px;">These pages are already excluded from indexing by the site itself, so on-page checks were skipped for them:</div>';
+		$h.='<ul style="margin:0 0 0 18px;padding:0;color:#4a5560;font-size:13px;">';
+		foreach($excluded as $ex){
+			$h.='<li style="margin-bottom:3px;"><a href="'.htmlspecialchars($ex['url'],ENT_QUOTES).'" style="color:#1a5fb4;">'.encodeHtml($ex['url']).'</a> &mdash; '.encodeHtml($ex['reason']).'</li>';
+		}
+		$h.='</ul>'.PHP_EOL;
 	}
 	//social summary
 	$soclines=websiteGraderSocialPromptLines($rep['social']);

@@ -17,6 +17,7 @@
 			$grade=array('percent'=>0,'pass'=>0,'total'=>0,'label'=>'','letter'=>'','color'=>'#888');
 			$social=array();
 			$tech=array();
+			$excludedpages=array();
 			//validate URL
 			$starturl=websiteGraderNormalizeURL($_REQUEST['url']);
 			if(!filter_var($starturl,FILTER_VALIDATE_URL)){
@@ -44,12 +45,12 @@
 			$baseurl=$crawl['baseurl'];
 			$pages=$crawl['pages'];
 			//run all checks, grade them, gather the social preview data, and fingerprint the tech stack
-			$checks=websiteGraderRunChecks($baseurl,$pages,$crawl['robots']);
+			$checks=websiteGraderRunChecks($baseurl,$pages,$crawl['robots'],$excludedpages);
 			$grade=websiteGraderGrade($checks);
 			$social=count($pages)?websiteGraderSocialData($pages[0],$baseurl):array();
 			$tech=websiteGraderDetectTech($pages,$crawl['robots']);
 			//stash the report so it can be emailed/downloaded without re-crawling
-			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech);
+			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech,$excludedpages);
 			setView('result',1);
 		break;
 		case 'emailform':
