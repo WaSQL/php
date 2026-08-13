@@ -8636,7 +8636,7 @@ function commonProcessDBListRecordsTags($htm){
 			$replace_str.=dbListRecords($db,$opts);
 		}
 		$replace_str.='</div>'.PHP_EOL;
-		$htm=str_replace($dblistrecords_tag,$replace_str,$htm);
+		$htm=commonReplaceFirst($htm,$dblistrecords_tag,$replace_str);
 	}
 	if(stringContains($htm,'<dblistrecords')){
     	debugValue("dblistrecords Tag Error detected - perhaps a malformed 'dblistrecords' tag");

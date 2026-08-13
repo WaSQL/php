@@ -4549,6 +4549,7 @@ const wacss = {
 									|| ((type=='doughnut' || type=='pie') ? colors : colors[ud]);
 								let udataset={
 									backgroundColor: udbgcolor,
+									borderColor: udatasets[ud].getAttribute('data-bordercolor') || udatasets[ud].getAttribute('data-borderColor'),
 		                            type:udatasets[ud].getAttribute('data-type') || list[i].getAttribute('data-type'),
 									data: json,
 									fill:false,
@@ -4739,7 +4740,7 @@ const wacss = {
 									dataset.pointBackgroundColor[ds]=dataset.data[ds].pointbackgroundcolor;
 								}
 								if(undefined != dataset.data[ds].pointbordercolor){
-									dataset.pointBorderBolor[ds]=dataset.data[ds].pointbordercolor;
+									dataset.pointBorderColor[ds]=dataset.data[ds].pointbordercolor;
 								}
 								if(undefined != dataset.data[ds].backgroundcolor){
 									dataset.backgroundColor[ds]=dataset.data[ds].backgroundcolor;
@@ -6223,8 +6224,8 @@ const wacss = {
 	initWacssEdit: function(){
 		let list=document.querySelectorAll('textarea.wacssedit');
 		for(let i=0;i<list.length;i++){
-			//generate a unique id if one does not exist
-			if(undefined == list[i].id){
+			//generate a unique id if one does not exist (a DOM element's .id is '' when absent, never undefined)
+			if(!list[i].id){
 				list[i].id='wacssedit_'+Math.random().toString(36).slice(2);
 			}
 			//check to see if we have already initialized this element
