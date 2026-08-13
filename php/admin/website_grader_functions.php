@@ -1011,8 +1011,8 @@ function websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social=array
 	$rtn.='<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-copy"></span> Fix with AI</div>'.PHP_EOL;
 	$rtn.='<div class="w_small w_gray" style="margin-bottom:6px;">Copy this summary and paste it into Claude, ChatGPT, or any AI assistant to get the exact fixes for every failed check above.</div>'.PHP_EOL;
 	$rtn.='<div style="position:relative;">'.PHP_EOL;
-	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').value,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
-	$rtn.='	<textarea id="grader_ai_prompt" class="wacss_textarea" readonly="readonly" rows="18" wrap="soft" style="width:100%;font-family:monospace;font-size:12px;">'.encodeHtml($prompt).'</textarea>'.PHP_EOL;
+	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').textContent,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
+	$rtn.='	<div id="grader_ai_prompt" class="wacss_textarea" style="width:100%;height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;">'.encodeHtml($prompt).'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
