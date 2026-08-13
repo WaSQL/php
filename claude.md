@@ -1,5 +1,7 @@
 # WaSQL Framework Instructions for Claude
 
+**Pronunciation:** when speaking aloud (voice/TTS output), "WaSQL" is pronounced "waskul" — not spelled out letter-by-letter and not "wa-sequel". (The logo at wasql.com prints "(wäh-skul)" as the intended sound, but plain "waskul" is what actually comes out closest via SAPI.) See `claudetalk.md` for the actual `Convert-ForSpeech` implementation.
+
 WaSQL is a **database-driven** PHP framework: page logic lives in `_pages` table records (fields `name`, `body`, `functions`, `controller`, `js`, `css`), not files — a MySQL dump is the entire site. This file is the **always-loaded core**: the rules and gotchas that apply to nearly every task. Deep, feature-specific detail lives in **`wasql_reference.md`** (read the section that matches your task, including its "Common scenarios" copy-paste starters). Other docs: `architecture.md` (full technical), `workon.md` (the `workon.php`/`workon.py` one-command session-startup script — same behavior, use whichever interpreter, `php` or `python`, is on the machine), `postedit.md` (working on a live PostEdit-mirrored site), `quick_reference.md` (examples — note its `isLoggedIn`/`hasPermission` are WRONG; see Corrections). `ai_patterns.md` was removed as redundant/inaccurate — use `wasql_reference.md`'s "Common scenarios" instead.
 
 ## ⚠️ CRITICAL: Developer Preferences
@@ -7,7 +9,7 @@ WaSQL is a **database-driven** PHP framework: page logic lives in `_pages` table
 
 **NEVER modify core platform / framework files when building a site or app.** The WaSQL core under `php/` (`php/common.php`, `php/database.php`, `php/user.php`, `php/extras/**`) is shared by hundreds of sites — a change for one site can break all of them. Keep ALL site/app logic in the **database**: a page's `functions`/`controller`/`body`, shared helpers in **`functions_common`** (loaded via `loadDBFunctions`), or a **template's `functions`**. If a feature seems to *need* a core hook, do it in the DB layer instead and surface the limitation to the developer. Genuine framework enhancements are a separate, deliberate decision the developer makes — never bundle them into site work.
 
-**NEVER use the backend admin UI (`/php/admin.php`) for anything** — not browsing tables, not editing/deleting records, not even cleaning up a test row you created. Only interact with a site through its normal front-end pages/routes. The one exception: `?_menu=clearmin` (busts the `w_min` minify-bundle cache after a `css`/`js` edit — see `postedit.md`). If a task seems to need direct table/record admin, stop and ask the developer to do it themselves.
+**NEVER use the backend admin UI (`/php/admin.php`) for anything** — not browsing tables, not editing/deleting records, not even cleaning up a test row you created. Only interact with a site through its normal front-end pages/routes. Two exceptions: `?_menu=clearmin` (busts the `w_min` minify-bundle cache after a `css`/`js` edit — see `postedit.md`) and `?_menu=synchronize` (navigate here when you finish a task — see `workon.md`). If a task seems to need direct table/record admin, stop and ask the developer to do it themselves.
 
 **NEVER edit minified assets** (`*.min.css`, `*.min.js`) — edit the human-readable source only (e.g. `wacss.css`, not `wacss.min.css`). The developer rebuilds minified bundles with their own build step manually.
 

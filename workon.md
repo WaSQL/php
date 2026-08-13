@@ -30,6 +30,10 @@ It resolves `{alias}` → host from `postedit/postedit.xml` (or handles the loca
 - **It remembers its Chrome tab.** The confirmed tab's id is saved per alias (`%TEMP%/wasql-workon-tab-{alias}.json`), so a later run for the same alias reliably comes back to the same tab even when other "work on" sessions have other tabs open in the same shared debug Chrome instance — screenshots target that exact tab id instead of guessing "the first page tab" in the whole instance.
 - **`--reshoot=URL`** is the lightweight follow-up for "did my edit work" checks later in the same session — it reuses the tab already confirmed this session and just re-navigates + screenshots, skipping the watcher/inventory steps. Prefer it over hand-rolling a separate `node`/CDP screenshot script. **`--no-chrome`** gives a pure watcher-status check (no browser touch) when you just need to confirm the watcher is still alive.
 
+## When you finish a task
+
+**Navigate the debug Chrome to `/php/admin.php?_menu=synchronize`** once the task itself is done (edits made, verified via screenshot/wamcp). This is the second sanctioned exception to CLAUDE.md's "never use the backend admin UI" rule (the first being `?_menu=clearmin`) — it's a deliberate end-of-task step, not general admin-UI browsing, so it doesn't reopen that door for anything else.
+
 ## Manual fallback (only if the script fails)
 
 - **PostEdit-mirrored site**: follow `postedit.md`'s manual steps (resolve the alias, launch debug Chrome, confirm the target, screenshot).

@@ -143,6 +143,14 @@ List installed voices:
 (New-Object -ComObject SAPI.SpVoice).GetVoices() | ForEach-Object { $_.GetDescription() }
 ```
 
+**Pronunciation fixes** - `$phrase` always includes `$project` (the current directory name), spoken
+verbatim by SAPI otherwise. `Convert-ForSpeech` respells known trouble words right before the
+`Speak()` call, speech-only (the toast/log keep the real text) - currently just `wasql` &rarr;
+`waskul` (the official logo guide reads "(wäh-skul)" - short flat-A, as in "wack" - but plain
+`waskul` came out closest via SAPI in practice; several other spellings were tried and rejected, see
+git history). Add more `-replace '(?i)\bWORD\b', 'phonetic'` lines there for any other project name
+SAPI mispronounces.
+
 **Tighten the phrasing** - the `switch -Regex` block in the script matches on educated guesses at
 Claude Code's actual `message` wording. `notification-payloads.log` beside the script records every
 real payload it receives; after a day of use, read that log to see the exact strings your version
