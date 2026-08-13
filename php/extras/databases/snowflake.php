@@ -23,6 +23,27 @@ global $dbh_snowflake;
 * @usage
 *	$ok=snowflakeAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
 */
+//---------- begin function snowflakeIsResourceOrObject--------------------
+/**
+* @describe returns true if $e is a resource OR an object.
+*	Local clone of common.php's commonIsResourceOrObject so this extra does not
+*	depend on the host site running a common.php new enough to define it.
+* @param e mixed - element to check
+* @return boolean - true if $e is a resource or an object
+* @usage if(snowflakeIsResourceOrObject($dbh_snowflake)){...}
+*/
+function snowflakeIsResourceOrObject($e){
+	return is_resource($e) || is_object($e);
+}
+//---------- begin function snowflakeAddDBFields--------------------
+/**
+* @describe adds fields to given table
+* @param table string - name of table to alter
+* @param params array - list of field/attributes to edit
+* @return array - name,type,query,result for each field set
+* @usage
+*	$ok=snowflakeAddDBFields('comments',array('comment'=>"varchar(1000) NULL"));
+*/
 function snowflakeAddDBFields($table,$fields=array(),$maintain_order=1){
 	$recs=array();
 	foreach($fields as $name=>$type){
@@ -498,7 +519,7 @@ function snowflakeDBConnect($params=array()){
 		else{
 			$dbh_snowflake_single = odbc_connect($connect_name,$dbuser,$dbpass,SQL_CUR_USE_ODBC);
 		}
-		if(!commonIsResourceOrObject($dbh_snowflake_single)){
+		if(!snowflakeIsResourceOrObject($dbh_snowflake_single)){
 			$e=odbc_errormsg();
 			$error=array("snowflakeDBConnect Error",$e);
 	    	debugValue($error);
@@ -507,7 +528,7 @@ function snowflakeDBConnect($params=array()){
 		return $dbh_snowflake_single;
 	}
 	
-	if(commonIsResourceOrObject($dbh_snowflake)){return $dbh_snowflake;}
+	if(snowflakeIsResourceOrObject($dbh_snowflake)){return $dbh_snowflake;}
 
 	try{
 		if(isset($params['-cursor'])){
@@ -516,7 +537,7 @@ function snowflakeDBConnect($params=array()){
 		else{
 			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,SQL_CUR_USE_ODBC);
 		}
-		if(!commonIsResourceOrObject($dbh_snowflake)){
+		if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 			//wait a few seconds and try again
 			sleep(5);
 			if(isset($params['-cursor'])){
@@ -525,14 +546,14 @@ function snowflakeDBConnect($params=array()){
 			else{
 				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass );
 			}
-			if(!commonIsResourceOrObject($dbh_snowflake)){
+			if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 				$e=odbc_errormsg();
 				$error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
 			    debugValue($error);
 			    return json_encode($error);
 			}
 		}
-		if(!commonIsResourceOrObject($dbh_snowflake)){
+		if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 			//wait a few seconds and try a third time
 			sleep(5);
 			if(isset($params['-cursor'])){
@@ -541,7 +562,7 @@ function snowflakeDBConnect($params=array()){
 			else{
 				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass );
 			}
-			if(!commonIsResourceOrObject($dbh_snowflake)){
+			if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 				$e=odbc_errormsg();
 				$error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
 			    debugValue($error);
@@ -632,12 +653,12 @@ function snowflakeExecuteSQL($query,$params=array()){
 	);
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$DATABASE['_lastquery']['error']=odbc_errormsg();
 		debugValue($DATABASE['_lastquery']);
     	return 0;
@@ -730,12 +751,12 @@ function snowflakeAddDBRecord($params){
 ENDOFQUERY;
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
     	$e=odbc_errormsg();
     	debugValue(array("snowflakeAddRecord Connect Error",$e));
     	return json_encode($e);
@@ -743,7 +764,7 @@ ENDOFQUERY;
 	try{
 		if(!isset($snowflakeAddDBRecordCache[$params['-table']]['stmt'])){
 			$snowflakeAddDBRecordCache[$params['-table']]['stmt']    = odbc_prepare($dbh_snowflake, $query);
-			if(!commonIsResourceOrObject($snowflakeAddDBRecordCache[$params['-table']]['stmt'])){
+			if(!snowflakeIsResourceOrObject($snowflakeAddDBRecordCache[$params['-table']]['stmt'])){
 				$e=odbc_errormsg();
 				$err=array("snowflakeAddDBRecord prepare Error",$e,$query);
 				debugValue($err);
@@ -842,19 +863,19 @@ function snowflakeEditDBRecord($params,$id=0,$opts=array()){
 ENDOFQUERY;
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
     	$e=odbc_errormsg();
     	debugValue(array("snowflakeEditRecord Connect Error",$e));
     	return json_encode($e);
 	}
 	try{
 		$snowflake_stmt    = odbc_prepare($dbh_snowflake, $query);
-		if(!commonIsResourceOrObject($snowflake_stmt)){
+		if(!snowflakeIsResourceOrObject($snowflake_stmt)){
 			$e=odbc_errormsg();
 			debugValue(array("snowflakeEditDBRecord2 prepare Error",$e));
     		return 0;
@@ -933,12 +954,12 @@ function snowflakeReplaceDBRecord($params){
 ENDOFQUERY;
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
     	$e=odbc_errormsg();
     	debugValue(array("snowflakeReplaceDBRecord Connect Error",$e));
     	return json_encode($e);
@@ -1061,12 +1082,12 @@ function snowflakeGetDBRecords($params){
 function snowflakeGetDBSchemas($params=array()){
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
     	$e=odbc_errormsg();
     	debugValue(array("snowflakeGetDBSchemas Connect Error",$e));
     	return json_encode($e);
@@ -1124,19 +1145,19 @@ function snowflakeGetDBTables($params=array()){
 
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
     	$e=odbc_errormsg();
     	debugValue(array("snowflakeGetDBTables Connect Error",$e));
     	return json_encode($e);
 	}
 	try{
 		$result=odbc_tables($dbh_snowflake);
-		if(!commonIsResourceOrObject($result)){
+		if(!snowflakeIsResourceOrObject($result)){
 			$e=odbc_errormsg($dbh_snowflake);
 			$error=array("snowflakeGetDBTables Error",$e);
 			debugValue($error);
@@ -1284,12 +1305,12 @@ function snowflakeGetDBCount($params=array()){
 function snowflakeQueryHeader($query,$params=array()){
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
     	$e=odbc_errormsg();
     	debugValue(array("snowflakeQueryHeader Connect Error",$e));
     	return json_encode($e);
@@ -1521,12 +1542,12 @@ ENDOFCON;
 	$starttime=microtime(true);
 	global $dbh_snowflake;
 	$dbh_snowflake=snowflakeDBConnect($params);
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$dbh_snowflake='';
 		usleep(100);
 		$dbh_snowflake=snowflakeDBConnect($params);
 	}
-	if(!commonIsResourceOrObject($dbh_snowflake)){
+	if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
 		debugValue($DATABASE['_lastquery']);
     	return 0;
@@ -1597,7 +1618,7 @@ ENDOFCON;
     		$fh = fopen($params['-filename'],"wb");
 		}
 		
-    	if(!isset($fh) || !commonIsResourceOrObject($fh)){
+    	if(!isset($fh) || !snowflakeIsResourceOrObject($fh)){
 			odbc_free_result($result);
 			$DATABASE['_lastquery']['error']='failed to open file';
 			debugValue($DATABASE['_lastquery']);
@@ -1616,7 +1637,7 @@ ENDOFCON;
 		odbc_longreadlen($result,$params['-longreadlen']);
 	}
 	$writefile=0;
-	if(isset($fh) && commonIsResourceOrObject($fh)){
+	if(isset($fh) && snowflakeIsResourceOrObject($fh)){
 		$writefile=1;
 	}
 	$i=0;
@@ -1624,7 +1645,7 @@ ENDOFCON;
 	while($rec=odbc_fetch_array($result)){
 		//lowercase the field names
 		$rec=array_change_key_case($rec);
-	    if(isset($fh) && commonIsResourceOrObject($fh)){
+	    if(isset($fh) && snowflakeIsResourceOrObject($fh)){
         	if($header==0){
             	$csv=arrays2CSV(array($rec));
             	$header=1;
@@ -1658,7 +1679,7 @@ ENDOFCON;
 		}
 	}
 	odbc_free_result($result);
-	if(isset($fh) && commonIsResourceOrObject($fh)){
+	if(isset($fh) && snowflakeIsResourceOrObject($fh)){
 		@fclose($fh);
 		if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 			$elapsed=microtime(true)-$starttime;
