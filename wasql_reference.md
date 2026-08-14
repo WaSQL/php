@@ -159,6 +159,10 @@ $params = "[filename: '".addslashes($csvfile)."', fetchsize: 5000]";
 ```
 Then walk the file with `fgetcsv()` — you get an exact row count for the cost of one pass while materialising only the rows you actually display. Note the header row carries a **UTF-8 BOM** (ctreedb writes one for Excel), so strip `\xEF\xBB\xBF` off the first column name. A worked example is the `run_query` tool in the `mcp` page on dexpdq (`mcpCtreeQueryResults` / `mcpCtreeQueryCsv`).
 
+> ⚠️ **Never treat the CSV existing as success.** ctreedb opens the writer and stamps the BOM *before* it calls `executeQuery`, so any failure — bad column, statement timeout — leaves a 3-byte file on disk. `file_exists()` then passes, the file parses as a header row with no data, and a hard error is reported to your caller as a perfectly ordinary **empty result set**. Success is signalled by ctreedb *printing the filename it wrote*: compare the **last line** of `evalPHP()`'s output against your path. Don't substring-match — the failure path returns `evalGroovyCode`'s HTML block, which quotes the generated script and therefore contains the path too, just never at the end.
+>
+> This is also why `ORDER BY` is where a c-tree statement timeout bites: it forces the engine to sort the entire result before yielding row one, so the timeout fires inside `executeQuery` rather than partway through the fetch loop.
+
 ### TLS / certificate authentication on a connection
 Every attribute on a `<database>` tag is copied into the driver's params as `-{attr}` (`snowflakeParseConnectParams`, `postgresqlParseConnectParams`, `mysqlParseConnectParams`), so cert auth is pure `config.xml` — no code per site. Shared attribute vocabulary:
 
