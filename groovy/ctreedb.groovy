@@ -181,11 +181,13 @@ def executePS(String query, List args, Map params = [:]) {
  *   batchsize: number of rows to buffer before writing to file (default: 100)
  *   maxerrors: max consecutive errors before aborting (default: 100, only applies when skiperrors=true)
  *   notrim: if true, skips trimming whitespace from values (faster, default: false)
+ *   querytimeout: seconds the JDBC driver will let the statement run (default: 600, 0 for no limit)
  * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
  * @usage
  *   def json = ctreedb.queryResults(query, params)
  *   def recs = ctreedb.queryResults(query, params + [format: 'list'])
  *   def csv = ctreedb.queryResults(query, params + [filename: 'output.csv', skiperrors: true, fetchsize: 5000, batchsize: 500])
+ *   def slow = ctreedb.queryResults(query, params + [querytimeout: 3600])
  */
 def queryResults(String query, Map params = [:]) {
 	// Ensure stdout uses UTF-8 so raw Unicode characters in JSON output are not
@@ -198,6 +200,11 @@ def queryResults(String query, Map params = [:]) {
 	def fetchSize = params.getOrDefault('fetchsize', 1000)
 	def batchSize = params.getOrDefault('batchsize', 100)
 	def noTrim = params.getOrDefault('notrim', false)
+	// Statement timeout. Was hardcoded at 600, which silently capped every caller at
+	// 10 minutes with no way to ask for longer. Callers pass querytimeout to override;
+	// note db.groovy copies the connection's config.xml attributes over params AFTER
+	// the caller's, so a querytimeout attribute on the <database> tag wins over both.
+	def queryTimeout = (params.getOrDefault('querytimeout', 600) as String) as Integer
 
 	try {
 		// Connect
@@ -220,8 +227,10 @@ def queryResults(String query, Map params = [:]) {
 					stmt.setFetchSize(fetchSize)
 				}
 
-				// Set query timeout to prevent hanging (60 seconds)
-				stmt.setQueryTimeout(600)
+				// Statement timeout to prevent hanging - see queryTimeout above (0 = no limit)
+				if (queryTimeout > 0) {
+					stmt.setQueryTimeout(queryTimeout)
+				}
 
 				def rs = stmt.executeQuery(query)
 				def errorCount = 0
@@ -356,8 +365,10 @@ def queryResults(String query, Map params = [:]) {
 					stmt.setFetchSize(fetchSize)
 				}
 
-				// Set query timeout to prevent hanging (60 seconds)
-				stmt.setQueryTimeout(600)
+				// Statement timeout to prevent hanging - see queryTimeout above (0 = no limit)
+				if (queryTimeout > 0) {
+					stmt.setQueryTimeout(queryTimeout)
+				}
 
 				def rs = stmt.executeQuery(query)
 
@@ -428,7 +439,9 @@ def queryResults(String query, Map params = [:]) {
 				if (fetchSize > 0) {
 					stmt2.setFetchSize(fetchSize)
 				}
-				stmt2.setQueryTimeout(600)
+				if (queryTimeout > 0) {
+					stmt2.setQueryTimeout(queryTimeout)
+				}
 				def rs2 = stmt2.executeQuery(query)
 
 				try {
