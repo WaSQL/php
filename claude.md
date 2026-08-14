@@ -23,6 +23,8 @@ Two startup phrases select how a session works; recognize them on the first mess
 php workon.php {alias|wasql} [page] --shot=<scratchpad>/shot.png
 python workon.py {alias|wasql} [page] --shot=<scratchpad>/shot.png
 ```
+**"work on {site} [page] using {browser}"** (e.g. "work on dexpdq using firefox") → same command, plus `--browser={browser}` (`chrome`/`firefox`/`edge`, case-insensitive). Omit "using ..." and the script picks one itself — an explicit `--browser`/`WASQL_BROWSER`/persisted `--set-default` always wins, and failing those it auto-detects the user's own OS-default browser (falling back to `chrome` only if that can't be determined) — see `workon.md`'s "Browser choice" section for the full precedence and why Firefox needs a resident broker where Chrome/Edge don't.
+
 Full mechanics, every flag's gotchas, and the manual fallback if the script fails → **`workon.md`**. `php workon.php --help` / `python workon.py --help` is the authoritative flag reference, kept current in the scripts themselves. Read the PNG it writes. **wamcp has no `setdb`/session-default database** — call the wamcp `databases` tool to resolve `{alias}` (or `localhost` for `wasql`) to a `db_id`, then pass that `db_id` explicitly on every subsequent wamcp call (`query`, `schema`, `pagesrc`, `tables`, `fields`, `ddl`, `indexes`, `getdb`).
 
 **⚠️ `workon.php` and `workon.py` must stay in sync.** Any fix, new flag, or behavior change made to one gets ported to the other in the same turn — never edit just one and move on (see `workon.md`).
