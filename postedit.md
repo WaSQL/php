@@ -62,6 +62,14 @@ e.g. a page body = `postedit/postEditFiles/{alias}/_pages/<page>/<page>._pages.b
 its css = `...<page>._pages.css.<id>.css`, controller = `...controller.<id>.php`, etc.
 (Content tables work the same, e.g. `<table>/<name>/<name>.<table>.body.<id>.html`.) Which tables are mirrored is set by the host's `tables=` attribute in `postedit.xml` (defaults to `_models,_pages,_tables`).
 
+### ⚠️ Mirror files are a MIX of CRLF and LF — never anchor a scripted edit on `\n` alone
+Line endings come from whatever wrote the record, so on one site `desk._pages.functions.17.php` and `portal._pages.functions.16.php` are **CRLF** while `functions_sd._pages.body.15.php` and `reports._pages.functions.10.php` in the same mirror are **LF**. Consequences:
+
+- A multi-line `old_string` copied out of a `Read` (which shows LF) silently matches **zero** times in a CRLF file. The `Edit` tool handles this for you; a hand-rolled `python`/`sed` replacement does not — it just reports "0 matches" and you go looking for a typo that isn't there.
+- For scripted edits, normalise first and restore after: read with `newline=''`, remember `crlf = '\r\n' in s`, `s = s.replace('\r\n','\n')`, do the work against `\n` anchors, then convert back before writing. A regex anchor works either way if you separate lines with `\n\s*` (`\s` eats the stray `\r`).
+- Check before you write, not after: `python -c "import io,sys;print('CRLF' if '\r\n' in io.open(sys.argv[1],encoding='utf-8',newline='').read() else 'LF')" <file>`.
+- **Don't "fix" a whole file's endings** — that rewrites every line of the DB field for no behaviour change. Match the file you are in, and if you paste an LF block into a CRLF file, convert that file back to CRLF as a whole so it stays internally consistent.
+
 **A running PostEdit watcher auto-syncs file saves back into the DB.** So the loop is:
 
 1. **Edit** the local PostEdit file.

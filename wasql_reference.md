@@ -11,6 +11,7 @@ This is the companion to `CLAUDE.md`. `CLAUDE.md` holds the always-relevant rule
 | Working with views / templates / getView | [Views & templates (deep)](#views--templates-deep) |
 | Building or saving a form | [Form building](#form-building) · [How addEditDBForm saves](#how-addeditdbform-saves--the-save-is-global) |
 | Making a section reload via AJAX | [Section-refresh pattern](#section-refresh-pattern) |
+| Stopping a refresh from blanking the section it reloads | [Kill the refresh flicker: `setprocessing`](#kill-the-refresh-flicker-point-setprocessing-at-the-button-not-the-section) |
 | Making a value/row open a detail modal (no form) | [Read-only detail popup (centerpop)](#read-only-detail-popup-centerpop) |
 | Building a "manage {things}" admin tab | [CRUD-tab pattern](#crud-tab-pattern) |
 | Adding a chart | [Chart.js extra](#chartjs-the-chartjs-extra) |
@@ -81,6 +82,26 @@ if(preg_match('/\((\d+)\s*,\s*(\d+)\)/',$info['story_points']['_dbtype_ex'],$m))
 ```
 **Why bother:** MySQL here runs **`STRICT_TRANS_TABLES`**, so an over-length string or out-of-range number is **not** truncated/clamped — MySQL refuses the **whole statement**, meaning one bad field silently voids every other field written with it. `editDBRecord` then returns the DB message *with the full SQL appended* (`Out of range value for column 'story_points' at row 1: update … set story_points='546464…'`), and any code that surfaces that string hands the end user your UPDATE statement. Validate ahead of the write, message on the column name, and drive the matching HTML `max`/`maxlength` from the same helper so client and server can't disagree.
 
+### Writing a real NULL: `'<sql>NULL</sql>'`, never PHP `null` and never `''`
+An optional FK or date that the user left blank has to reach the DB as `NULL`. Both obvious ways are wrong, and they fail in opposite directions:
+
+| what you pass | what happens |
+|---|---|
+| PHP `null` (or any non-numeric) on an **int/tinyint/real** column | `addDBRecord` refuses the whole write: `addDBRecord Datatype Mismatch: numeric field "org_id" is type "int" and requires a numeric value`. At least it's loud. |
+| `''` on a **date/datetime** column | Silently stored as **1970-01-01**. The date branch runs `date('Y-m-d',strtotime($val))`, and `strtotime('')` is `false`, which `date()` treats as epoch. |
+
+The framework's own escape hatch is a literal `<sql>…</sql>` wrapper, matched **before** every datatype branch in `addDBRecord` (`php/database.php` ~6393) and in `editDBRecord` (~8461), and emitted into the statement raw:
+```php
+$null='<sql>NULL</sql>';
+$rec['owner_id']    = isNum($opts['owner_id'])   ? (int)$opts['owner_id']  : $null;
+$rec['warranty_end']= isDate($opts['warranty_end'])? $opts['warranty_end'] : $null;
+$rec['cost']        = isNum($opts['cost'])       ? $opts['cost']           : $null;
+```
+- Works uniformly for `int`, `date`, `datetime` and `decimal`, on **both** add and edit — one idiom, no per-type special cases.
+- On an **edit** this is the only way to *clear* a value: simply omitting the key means "leave it alone", so a user who empties a field would see it silently keep its old value.
+- The int columns also accept the literal string `'null'` (case-insensitive), but that does **not** help the date columns, so prefer the `<sql>` form everywhere rather than remembering which type takes which.
+- `<sql>…</sql>` is general-purpose raw SQL, not NULL-specific — `'<sql>NOW()</sql>'`, `'<sql>col+1</sql>'` work the same way.
+
 ### `_pages.settings` — per-page config a site admin can edit at runtime
 `_pages` has a **`settings`** column intended for exactly this: JSON config *belonging to one page*, so a feature can be tuned from the page's own UI with no DDL, no new table, and no deploy. Read/write it like any other column, from the page itself:
 ```php
@@ -110,6 +131,33 @@ $ok   = dbExecuteSQL('postgres_ods', $sql); // non-SELECT
 - PostgreSQL is a first-class `dbtype`; the engine lives in `php/extras/postgresql.php` and is auto-loaded — no manual `loadExtras`.
 - Enumerate configured connections via `global $DATABASE; foreach($DATABASE as $name=>$info){ /* $info['dbtype'],['dbhost'],['dbname']… — NEVER print ['dbpass'] */ }`. Active connection = `$CONFIG['db']`.
 - (Legacy: `getDBRecords(['-dbname'=>'x',...])` also exists — older ODBC-oriented path; prefer the `db*` wrappers in new code.)
+
+### c-tree (FairCom) connections go through Groovy/JDBC — with two hard limits
+A `dbtype="ctree"` connection has **no PHP driver**. `dbQueryResults()` does not reach it; the working idiom is to build a `<?groovy … ?>` island and hand it to `evalPHP()`, which shells out to `groovy` (or `groovyclient`) → `groovy/db.groovy` → `groovy/ctreedb.groovy` → the FairCom JDBC jar in `groovy/lib`:
+```php
+// NOTE: the tags MUST be built by concatenation - a literal php close tag anywhere
+// in a page field silently truncates the rest of that field (CLAUDE.md gotcha #2b).
+$groovy  = '<'.'?'.'groovy'.PHP_EOL;
+$groovy .= "def sql = \"\"\"\n{$sql}\n\"\"\"\n";
+$groovy .= "recs = db.queryResults('{$conn}', sql, [:])\nprintln(recs)";
+$groovy .= PHP_EOL.'?'.'>';
+$rows = decodeJSON(evalPHP($groovy));   // db.queryResults merges $DATABASE[$conn] into the params map
+```
+Two ceilings bite on anything large:
+
+| limit | value | where |
+|---|---|---|
+| JDBC statement timeout | **600 s** default | `groovy/ctreedb.groovy` — pass `querytimeout: N` in the params map to change it, `0` to disable. **Precedence trap:** `db.groovy` copies the connection's `config.xml` attributes over the params map *after* the caller's, so a `querytimeout` attribute on the `<database>` tag overrides what the caller asked for. |
+| result materialisation | every row exists **3×** | groovy list → JSON string on the stdout pipe → decoded PHP array |
+
+Measured on dev-dexpdq: **~40 s per 100,000 single-column rows** end to end. A few hundred thousand rows will blow past any HTTP client's read timeout long before the query itself is the problem.
+
+**For anything that could be big, stream to CSV instead.** `ctreedb.queryResults` writes rows straight to disk as it fetches them when you pass `filename`, and returns only the path — nothing but a filename crosses the pipe:
+```php
+$params = "[filename: '".addslashes($csvfile)."', fetchsize: 5000]";
+// …same island, with $params in place of [:]
+```
+Then walk the file with `fgetcsv()` — you get an exact row count for the cost of one pass while materialising only the rows you actually display. Note the header row carries a **UTF-8 BOM** (ctreedb writes one for Excel), so strip `\xEF\xBB\xBF` off the first column name. A worked example is the `run_query` tool in the `mcp` page on dexpdq (`mcpCtreeQueryResults` / `mcpCtreeQueryCsv`).
 
 ### TLS / certificate authentication on a connection
 Every attribute on a `<database>` tag is copied into the driver's params as `-{attr}` (`snowflakeParseConnectParams`, `postgresqlParseConnectParams`, `mysqlParseConnectParams`), so cert auth is pure `config.xml` — no code per site. Shared attribute vocabulary:
@@ -336,6 +384,30 @@ Combined with the global-save behavior above, an edit form whose `-action` is `/
   - **Rule of thumb: put `data-onload="wacss.centerpopClose();"` on the POST-SUBMIT refresh response** — the section/grid the form reloads into (`ajaxPost` target) — **NOT on the form's own open-response.** ⚠️ If you put it on the add/edit form's own root, the modal closes itself the instant it opens. `wacss.centerpopClose()` is a safe no-op when no centerpop is open, so the same refreshed section can carry this attribute and be reused for non-modal refreshes (tab switch, delete) without harm.
   - **Point the form's `ajaxPost` target at the *scoped inner* refresh div, NOT the whole tab container.** If a list/section's CSS/JS is scoped to a wrapper id (e.g. `#thing_list .foo{...}`) and you refresh by replacing the *outer* container, the re-rendered markup lands **outside** that id, so scoped rules stop applying (symptom: action icons collapsed, a sticky table lost stickiness after edit-submit). Target the inner scoped div (`wacss.ajaxPost(this,'thing_list')`) to keep scoped CSS working and preserve sibling controls.
 
+### Kill the refresh flicker: point `setprocessing` at the button, not the section
+**By default `wacss.ajaxGet(url,div)` replaces the TARGET div's markup with the spinner** (`params.setprocessing === undefined` → `responseObj.div.innerHTML = wacss.processing`, `wacss.js`). So a "Refresh" button over a list blanks the list you were reading and flicks it back — pure flicker on a fast response, and worse if the list is tall enough to move the page. Never hand-roll a skeleton into the target either; that is the same flicker with extra markup.
+
+**Give the trigger an `id` and name it in `setprocessing`:**
+```html
+<button class="button is-small" type="button" id="im_refresh_assigned"
+	onclick="imagoRefreshPanel('assigned');">Refresh</button>
+```
+```js
+// the spinner runs INSIDE the button; the panel keeps its content until the new content lands
+wacss.ajaxGet('/t/1/index/panel/assigned', 'im_panel_assigned', {setprocessing:'im_refresh_assigned'});
+```
+`wacss` stashes that element's markup in `el.previous`, swaps in the spinner, and restores it when the response arrives — so the button reads as busy and re-enables itself with no extra code.
+
+Three values, three meanings:
+
+| `setprocessing` | Effect | Use for |
+| --- | --- | --- |
+| *(omitted)* | spinner replaces the **target div's** content | a target that is empty anyway, or a genuinely slow first load |
+| `'<elementId>'` | spinner replaces **that element's** content, restored on return | any user-clicked refresh/submit — the button, a toolbar, a card header |
+| `0` | **no spinner anywhere** | a refresh the user did not ask for (a stat row re-read after a write) — otherwise the numbers flash away under them |
+
+Also accepts the aliases `centerpop_processing` / `centerpop1_processing` … which map to the matching `wacss_centerpop*_processing` ids. On a **form**, the same thing is read off the form itself — `data-setprocessing="<elementId>"` (or a hidden input named `setprocessing`) — so `wacss.ajaxPost` can show the spinner in the Save button rather than wiping the grid it is about to refresh.
+
 ### Prefer `data-onload` on a rendered element over `buildOnLoad()`
 **When an element is already being drawn, attach load-time JS as a `data-onload` attribute on that element instead of emitting a separate `<?=buildOnLoad("…");?>` script block.** `data-onload` runs after the element (including AJAX-injected content) is inserted, keeps the behavior co-located with the markup it acts on, and avoids a stray trailing script island. Use `this` inside the attribute to reference the element itself.
 ```html
@@ -432,6 +504,7 @@ Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **
   - Same for a literal `'<?xml encoding="UTF-8" ?>'` (the standard `DOMDocument::loadHTML` UTF-8 hint): build it as `'<'.'?xml encoding="UTF-8" ?'.'>'`.
   - **And in `//` comments** — a `//` comment merely *describing* the trap is enough to trigger it. Spell it out in words ("a php close tag") rather than typing the characters.
   - **Exception: a `/* … */` BLOCK comment is safe** — the PHP lexer does not honour a close tag inside one. That's why the `@usage <?=pageFooBar($x);?>` line in a `/** … */` PHPDoc block is fine and why existing pages are full of them; don't "fix" those, and do keep new docblocks consistent with them. Everywhere else (strings, `//` comments, live code) the trap is real.
+  - **The other half of the same rule: a page field's LAST `<?php` MUST be closed with a trailing close tag.** `evalPHP()` locates code with `preg_match_all('/\<\?(.+?)\?\>/sm',…)` (`php/common.php`), so an island with no closing tag **never matches and is never executed** — it stays in the string and is **echoed to the browser as literal text**. Symptom: the top of the rendered page is your own `controller`/`functions` source (starting with `<?php` and its docblock), and every variable that field was supposed to set renders empty — with **no PHP error anywhere**, because nothing was ever parsed. Bites when you rewrite a `controller`/`functions` field wholesale and don't reproduce the trailing close tag the original had; `php -l` passes on the file, so linting cannot catch it. Nothing may follow that final close tag (see the truncation rule above), so it belongs on the last line and nowhere else.
   - Confirm a suspected truncation by reading the generated file named in the error: `php/temp/{host}_php_{hash}.php`. It ends mid-statement exactly where your field went quiet. (WaSQL also strips `/** */` blocks when generating it, so line numbers won't match your source.)
 - **`verboseTime()` returns a TRAILING SPACE.** Harmless where HTML collapses whitespace (`verboseTime($s).' ago'`), but visible the moment punctuation follows — `'every '.verboseTime($s).'.'` renders `every 21 days .` — and it doubles up inside a `title`/`alt` attribute, where whitespace is *not* collapsed. `trim(verboseTime($s))` whenever you concatenate punctuation or build an attribute.
 - **`wacss` is a `let`-scoped global, not a property of `window`.** `window.wacss` is `undefined` while the bare identifier `wacss` resolves normally — so inline `onclick="wacss.ajaxPost(...)"` works fine, but probing from the console or CDP `Runtime.evaluate` with `typeof (window.wacss||{}).ajaxPost` reports `undefined` and makes you think the method doesn't exist on that site's build. Probe with the **bare name** (`typeof wacss.ajaxPost`) or `Object.keys(wacss)`.
