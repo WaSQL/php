@@ -1,6 +1,6 @@
 # postedit — how AI should work on a PostEdit-mirrored WaSQL site
 
-This file tells an AI assistant (e.g. Claude) how to work on **any PostEdit-mirrored WaSQL site**: launch Chrome in debug mode, open the site named by `postedit.xml`, screenshot the rendered page, and make prompted edits by updating the local PostEdit files (which auto-sync to the database). Read it before starting PostEdit work.
+This file tells an AI assistant (e.g. Claude) how to work on **any PostEdit-mirrored WaSQL site**: launch Chrome in debug mode, open the site named by `postedit.xml`, and make prompted edits by updating the local PostEdit files (which auto-sync to the database). Read it before starting PostEdit work. Screenshotting is opt-in, not part of routine startup or every edit — see "Ask before doing post-change QA" in `CLAUDE.md`.
 
 Anything specific to one machine or one site (exact executable paths, a developer's blanket-permission grant, per-site logs) does **not** belong here — keep it in a personal, un-committed companion file outside the repo (see "Personal / machine-specific notes" at the bottom).
 
@@ -14,7 +14,7 @@ Do these first:
 
 1. **Resolve the alias → host.** Look up `{alias}` in `postedit/postedit.xml` among the `<host ... alias="{alias}">` entries and read that host's `name` attribute (the domain). The site URL is `https://{name}/{page}`. Hosts with `insecure="1"` use a self-signed cert (still `https://`; `curl -k`, Chrome ignores it). Some `name`s are bare hosts, IPs, or `host:port` — use them verbatim.
 2. **Resolve the site's `db_id`:** call `mcp__wamcp__databases` to find the id matching `{alias}` (it usually matches, but not always — e.g. `dexpdq` → `dexpdq_mysql`). wamcp has no session-default database, so pass this `db_id` explicitly on every subsequent `mcp__wamcp__*` call (`query`, `schema`, `pagesrc`, `tables`, `fields`, `ddl`, `indexes`, `getdb`).
-3. **Recreate the screenshot helper** if it's not already on disk: write `shot.js` (from the Appendix) to the session scratchpad — it's intentionally not stored in the repo. Node 22+ with built-in `fetch`/`WebSocket` is assumed.
+3. **(Only once actually needed)** recreate the screenshot helper: write `shot.js` (from the Appendix) to the session scratchpad — it's intentionally not stored in the repo, and not needed just to start the session. Node 22+ with built-in `fetch`/`WebSocket` is assumed.
 4. **Start Chrome yourself** — launch a *visible* Chrome with the debug port on a **dedicated profile directory** so it works even if the user's normal Chrome is already open, then attach to it (both sides see the same window). Launch it in the background, non-headless, pointed at the resolved URL:
    ```
    <chrome-exe> --remote-debugging-port=9222 --user-data-dir="<chrome-debug-profile>" --no-first-run --no-default-browser-check --new-window "https://{name}/{page}"
@@ -25,8 +25,9 @@ Do these first:
 
    Wait ~5s, then confirm with `curl -s http://localhost:9222/json` that a page target for `{name}` exists. If a Chrome is already running on port 9222 for a different site, just `Page.navigate` its existing target to the new URL instead of launching a second instance. If the user prefers their own already-open Chrome, they can launch it with `--remote-debugging-port=9222` and you attach to that.
 5. **Make sure the watcher is running** (edits only sync while it is) — see *Ensure the PostEdit watcher is running* below; launch it for `{alias}` if it isn't.
-6. **Edit → auto-sync → refresh:** edit the PostEdit files; PostEdit auto-syncs to the DB; refresh/re-screenshot with a `?cb=<n>` cache-buster. (See "The edit loop".)
-7. Everything else (WaSQL syntax, where things live, gotchas) is below and in the repo `CLAUDE.md`.
+6. **Browser up + watcher running → ask what to work on.** No screenshot needed here — the developer already has the browser in front of them and will flag anything that looks off.
+7. **Edit → auto-sync → ask before refreshing/screenshotting:** edit the PostEdit files; PostEdit auto-syncs to the DB; ask the developer whether they want to check it or want you to refresh/re-screenshot with a `?cb=<n>` cache-buster. (See "The edit loop".)
+8. Everything else (WaSQL syntax, where things live, gotchas) is below and in the repo `CLAUDE.md`.
 
 > **Permissions:** launching Chrome, querying the DB via wamcp, and editing files under `postedit/postEditFiles/{alias}` all run under whatever permission mode the user has set — respect it. A developer may pre-authorize this routine so you don't re-prompt each time; if so, that grant lives in their personal companion file, not here. The one hard prohibition from the repo `CLAUDE.md` always holds: **never `git commit` / `git push`.**
 
@@ -65,7 +66,7 @@ its css = `...<page>._pages.css.<id>.css`, controller = `...controller.<id>.php`
 
 1. **Edit** the local PostEdit file.
 2. PostEdit **auto-updates the matching DB record** — no manual step. (Verify with a `wamcp` query if unsure, e.g. `SELECT css FROM _pages WHERE _id=<id>`.)
-3. **Refresh Chrome** on the affected page and re-screenshot to see the result.
+3. **Ask before refresh-and-screenshot.** Per `CLAUDE.md`'s "Ask before doing post-change QA" — check whether the developer wants to eyeball the result themselves or have you refresh Chrome and re-screenshot it. Only screenshot without asking if they've already said to keep iterating on your own for this task.
 
 The user usually has Chrome open on the page being edited; after a save they can just refresh to see the change (the DB is already updated). **`body`/`controller`/`functions` edits show up on a plain refresh** — those are read from the DB on every request.
 
