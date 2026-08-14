@@ -7,3 +7,4 @@ secrets_scanner.log
 migrations/
 .env
 claude_usage.html
+antigravity_usage.html
