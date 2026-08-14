@@ -1,42 +1,60 @@
 <?php
-	global $CONFIG;
-	global $SETTINGS;
-	global $GITREPO;
-	if($_REQUEST['_menu']=='logs' && ($_REQUEST['func']=='tail' || $_REQUEST['func']=='tail_refresh')){
-		setView('blank',1);
-		return;
-	}
-	if(!isset($CONFIG['admin_color'])){
-		$CONFIG['admin_color']='gray';
-	}
-	setView('default');
-	if(isAdmin()){
-		global $USER;
-		//get wasql_tables
-		$alltables=getDBTables();
-		//build a meta map
-		$meta=getDBRecords(array('-table'=>'_tabledata','-index'=>'tablename','-fields'=>'tablename,tablegroup,synchronize,tabledesc'));
-		foreach($alltables as $table){
-			if(preg_match('/^\_/',$table)){
-				$key='WaSQL';
-			}
-			else{
-				if(isset($meta[$table]['tablegroup']) && strlen($meta[$table]['tablegroup'])){
-					$key=$meta[$table]['tablegroup'];
-				}
-				else{$key='Ungrouped';}
-			}
-			$tables[$key][]=$table;
-		}
-		ksort($tables);
-		//get the last 15 viewed pages
-		$pages=getDBRecords(array('-table'=>'_pages','-fields','_id,name','-order'=>'_edate desc,_adate desc','-limit'=>15));
-		//get the first 15 templates
-		$templates=getDBRecords(array('-table'=>'_templates','-fields','_id,name','-order'=>'name','-limit'=>15));
-		//get the most active 15 users
-		$users=getDBRecords(array('-table'=>'_users','-fields','_id,type,username','-order'=>'_edate desc,_adate desc','-limit'=>15));
-		$prebuilt=topmenuGetPreBuiltTables();
-		setView('admin');
-	}
+global $CONFIG;
+global $SETTINGS;
+global $GITREPO;
+global $USER;
+global $admin_color_class;
+global $is_stage;
+global $totalTableCount;
+global $rendered_tables;
+global $rendered_pages;
+global $rendered_templates;
+global $rendered_users;
+global $rendered_appearance;
+global $theme_attrs;
+global $prebuilt;
 
+// Handle AJAX Appearance Theme Save
+if(isset($_REQUEST['_menu']) && $_REQUEST['_menu'] == 'topmenu' && isset($_REQUEST['func']) && $_REQUEST['func'] == 'theme_save'){
+	$what = isset($_REQUEST['what']) ? strtolower(trim($_REQUEST['what'])) : '';
+	$value = isset($_REQUEST['value']) ? strtolower(trim($_REQUEST['value'])) : '';
+	$res = wasqlSetAppearance($what, $value);
+	if(isset($res['error'])){
+		echo json_encode(array('status'=>'error', 'message'=>$res['error']));
+	} else {
+		$msg = ($res['pref'] == 'mode') ? $res['label'] . ' appearance saved' : $res['label'] . ' theme saved';
+		echo json_encode(array('status'=>'success', 'message'=>$msg, 'pref'=>$res['pref'], 'value'=>$res['value']));
+	}
+	exit;
+}
+
+if(isset($_REQUEST['_menu']) && $_REQUEST['_menu'] == 'logs' && isset($_REQUEST['func']) && ($_REQUEST['func'] == 'tail' || $_REQUEST['func'] == 'tail_refresh')){
+	setView('blank', 1);
+	return;
+}
+
+$admin_color_class = topmenuGetColorClass();
+$is_stage = isDBStage();
+$theme_attrs = wasqlUserThemeAttrs();
+$rendered_appearance = topmenuRenderAppearancePicker();
+
+setView('default');
+if(isAdmin()){
+	$tableData = topmenuGetTablesData();
+	$tables = $tableData['tables'];
+	$tableCounts = $tableData['counts'];
+	$totalTableCount = $tableData['total'];
+
+	$pages = topmenuGetRecentPages(15);
+	$templates = topmenuGetTemplates(15);
+	$users = topmenuGetRecentUsers(15);
+	$prebuilt = topmenuGetPreBuiltTables();
+
+	$rendered_tables = topmenuRenderTableGroupMenu($tables, $tableCounts);
+	$rendered_pages = topmenuRenderRecentPages($pages);
+	$rendered_templates = topmenuRenderTemplates($templates);
+	$rendered_users = topmenuRenderUsers($users);
+
+	setView('admin');
+}
 ?>

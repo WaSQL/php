@@ -8177,7 +8177,10 @@ function dumpDB($table=''){
 		//"mysqldump ... > file" fails with: Couldn't find table: ">".
 		//Capture mysqldump's stdout and write the dump file ourselves instead.
 		$gzip=(isset($CONFIG['gzip']) && $CONFIG['gzip']==1)?true:false;
-		if($gzip){$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);}
+		if($gzip){
+			$dump['file']=preg_replace('/\.sql$/i','.sql.gz',$dump['file']);
+			$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
+		}
 		$dump['result']=cmdResults($dump['command']);
 		$sqlout=isset($dump['result']['stdout'])?$dump['result']['stdout']:'';
 		//only write a file when we actually captured dump output (not a usage/error message)
@@ -8188,9 +8191,13 @@ function dumpDB($table=''){
 	}
 	else{
 		//non-Windows runs through a real shell, so redirect/pipe work as written
+		$gzip=(isset($CONFIG['gzip']) && $CONFIG['gzip']==0)?false:true;
 		if($dump['portable']){$dump['command'] .= ' | '.dumpDBPortableFilter();}
-		$dump['command'] .= " | gzip -9";
-		$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
+		if($gzip){
+			$dump['command'] .= " | gzip -9";
+			$dump['file']=preg_replace('/\.sql$/i','.sql.gz',$dump['file']);
+			$dump['afile']=preg_replace('/\.sql$/i','.sql.gz',$dump['afile']);
+		}
 		$dump['command'] .= "  > \"{$dump['afile']}\"";
 		$dump['result']=cmdResults($dump['command']);
 	}
@@ -8199,10 +8206,11 @@ function dumpDB($table=''){
 	}
 	//check for errors
 	if(is_file($dump['afile'])){
-		if($handle = fopen($dump['afile'],"r")){
-			$sql .= fgets($handle);
-			$sql .= fgets($handle);
-			fclose($handle);
+		$handle = function_exists('gzopen') ? @gzopen($dump['afile'],"r") : @fopen($dump['afile'],"r");
+		if($handle){
+			$sql = function_exists('gzgets') ? gzgets($handle) : fgets($handle);
+			$sql .= function_exists('gzgets') ? gzgets($handle) : fgets($handle);
+			if(function_exists('gzclose')){gzclose($handle);}else{fclose($handle);}
 			if(preg_match('/^Usage\:/i',$sql)){
 				$dump['error']=$sql;
 				unlink($dump['afile']);

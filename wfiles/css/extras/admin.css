@@ -2,26 +2,25 @@
 #adminmenu {
 	margin:0 0 0 0;
 	padding:4px;
-	color:#3a3a3a;
+	color:var(--wa-ink, #3a3a3a);
 	font-weight:bold;
-	font-family:arial;
+	font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 	font-size:13px;
-	border-bottom:1px solid #aaaaaa;
-	/* mainmenu fade colors (gradient) */
-	background-image: -moz-linear-gradient(top, #FFFFFF, #bbbbbb);
-	background-image: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#bbbbbb));
-	}
+	border-bottom:1px solid var(--wa-line, #aaaaaa);
+	background: var(--wa-nav-bg, #0f172a);
+}
 #adminmenu a{
-	color:#3a3a3a;
+	color:var(--wa-nav-ink, #f1f5f9);
 }
 #adminmenu a:hover, #adminmenu a.current {
-	background-color: #e4eaed;
+	background-color: var(--wa-accent-soft, #e4eaed);
+	color: var(--wa-accent, #3b5bfd);
 }
-.mainmenu_fade_color_top{background-color:#FFFFFF;}
-.mainmenu_fade_color_bot{background-color:#4A79B3;}
-.mainmenu_text_color{color:#3465a4;}
-.mainmenu_hover_background{background-color:#e4eaed;}
-.mainmenu_border_color_bot{border-bottom:1px solid #7a93df;}
+.mainmenu_fade_color_top{background-color:var(--wa-card, #FFFFFF);}
+.mainmenu_fade_color_bot{background-color:var(--wa-accent, #4A79B3);}
+.mainmenu_text_color{color:var(--wa-accent, #3465a4);}
+.mainmenu_hover_background{background-color:var(--wa-accent-soft, #e4eaed);}
+.mainmenu_border_color_bot{border-bottom:1px solid var(--wa-line, #7a93df);}
 #adminmenu img, #adminsettings img {
 	vertical-align:middle;
 }
@@ -30,59 +29,59 @@
 }
 /*action menu settings */
 table.actionmenu td{
-	border:1px solid #FFF;
-	}
+	border:1px solid var(--wa-line, #FFF);
+}
 table.actionmenu td a{
 	display:block;
 	padding:2px 3px 2px 3px;
-	border:1px solid #FFFFFF;
-	color:#3465a4;
-	}
+	border:1px solid transparent;
+	color:var(--wa-accent, #3465a4);
+}
 table.actionmenu td a.current, table.actionmenu td a:hover{
-	background-color:#e4eaed;
-	border:1px outset #6699cc;
-	}
+	background-color:var(--wa-accent-soft, #e4eaed);
+	border:1px solid var(--wa-accent, #6699cc);
+	color:var(--wa-accent, #3465a4);
+}
 /*automatically color even rows of ictable tables*/
 table.w_table tr:nth-child(even){
-	background: #f0f3f4;
+	background: var(--wa-line-soft, #f0f3f4);
 }
 table.w_table tr th{
-	background-color:#3465a4;
+	background-color:var(--wa-accent, #3465a4);
 	color:#ffffff;
 }
-table.w_table tr th a, table.w_table tr th a:hover {
-	display:block;
-	font-weight:bold;
-	background-color:#3465a4;
+table.w_table tr th a, table.table tr th a {
 	color:#ffffff;
 }
-.table_header_background{background-color:#3465a4;}
+.table_header_background{background-color:var(--wa-accent, #3465a4);}
 .table_header_text{color:#ffffff;}
-.table_header_reversetext{color:#3465a4;}
-.table_header_reverseback{background-color:#ffffff;}
+.table_header_reversetext{color:var(--wa-accent, #3465a4);}
+.table_header_reverseback{background-color:var(--wa-card, #ffffff);}
 
 ul.dropdown li {
-	color: #3465a4;
+	color: var(--wa-ink, #3465a4);
 	font-size:1.2em;
-	}
+}
 /* when the top menu items are hovered over */
 ul.dropdown li.hover,
 ul.dropdown li:hover {
- 	background-color: #e4eaed;
-	color: #3465a4;
-	}
+ 	background-color: var(--wa-accent-soft, #e4eaed);
+	color: var(--wa-accent, #3465a4);
+}
 /* the color of the menu horizontal menu items under the top menu items */
 ul.dropdown ul li {
-	background-color: #FFFFFF;
-	color: #3465a4;
-	}
+	background-color: var(--wa-card, #FFFFFF);
+	color: var(--wa-ink, #3465a4);
+}
 ul.dropdown a:link,
 ul.dropdown a:visited {
-	color: #3465a4;
-	}
-ul.dropdown a:hover { color: #3465a4; }
-ul.dropdown a:active { color: #3465a4; }
+	color: var(--wa-ink, #3465a4);
+}
+ul.dropdown a:hover { color: var(--wa-accent, #3465a4); }
+ul.dropdown a:active { color: var(--wa-accent, #3465a4); }
 /*admin_body settings*/
 #admin_body{
 	text-align:left;
+	background: var(--wa-bg, #f8fafc);
+	color: var(--wa-ink, #0f172a);
 }

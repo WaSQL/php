@@ -1,0 +1,230 @@
+<style>
+.backup-head{display:flex;align-items:center;gap:10px;margin:18px 0 16px;font-size:1.5rem;font-weight:700;color:#363636;}
+.backup-head .icon-save,.backup-head .icon-undo{opacity:.65;}
+.backup-card{max-width:1080px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:20px 24px;margin-bottom:20px;}
+.backup-card-title{display:flex;align-items:center;gap:10px;font-size:1.15rem;font-weight:700;color:#363636;margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.06);}
+.backup-card-title .backup-count{background:#eef1ff;color:#3a51bb;border-radius:999px;padding:3px 12px;font-size:.82rem;font-weight:600;}
+.backup-info{display:flex;flex-wrap:wrap;gap:16px 32px;margin-bottom:18px;}
+.backup-info-item{display:flex;flex-direction:column;gap:5px;}
+.backup-info-label{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#7a7a7a;}
+.backup-info-item code{background:#f4f5f7;border:1px solid rgba(0,0,0,.06);border-radius:6px;padding:6px 12px;font-family:monospace;font-size:.9rem;color:#363636;}
+.backup-info-value{font-size:1.1rem;font-weight:600;color:#2c3e50;}
+.backup-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.backup-alert{max-width:1080px;border-radius:10px;padding:14px 18px;margin-bottom:18px;line-height:1.5;}
+.backup-alert-success{background:#edf9f0;border:1px solid #b8e8c2;color:#1e6833;}
+.backup-alert-danger{background:#fdf0f0;border:1px solid #f8c3c3;color:#9c1a1a;}
+.backup-alert-warning{background:#fff8e6;border:1px solid #ffe08a;color:#7a5b00;}
+.backup-alert-title{font-weight:700;font-size:1.02rem;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.backup-alert-detail{font-size:.88rem;margin-top:8px;padding-left:24px;}
+.backup-alert pre{background:#272f36;color:#fcfcfc;padding:10px;border-radius:6px;font-size:.82rem;overflow:auto;margin-top:6px;}
+.backup-select-wrap{display:inline-flex;align-items:center;gap:8px;}
+.backup-cmd-panel{display:none;margin-top:16px;background:#1e242b;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px;}
+.backup-cmd-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap;}
+.backup-cmd-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#94a3b8;display:flex;align-items:center;gap:6px;}
+.backup-cmd-code{background:#111827;color:#34d399;padding:12px 14px;border-radius:6px;font-family:Consolas, Monaco, monospace;font-size:0.88rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;margin:0;border:1px solid rgba(255,255,255,0.06);line-height:1.45;}
+.backup-card table.wacss_table thead th{background:#f4f5f7;color:#1e293b;font-weight:700;font-size:0.85rem;padding:10px 12px;border-bottom:2px solid #cbd5e1;}
+.backup-card table.wacss_table thead th label{font-weight:700;color:#1e293b;}
+.backup-card table.wacss_table tbody td{padding:10px 12px;vertical-align:middle;}
+</style>
+
+<script type="text/javascript">
+/**
+ * Prompt user for a new backup filename and trigger rename action.
+ *
+ * @param {HTMLElement} obj Link element containing the rename URL.
+ * @return {boolean} False to prevent standard link navigation.
+ */
+function backupsRename(obj){
+	if(typeof alertify !== 'undefined' && alertify.prompt){
+		alertify.renameBackup = obj;
+		alertify.prompt('<span class="icon-rename w_bigger w_grey"> New Filename:</span>', function (e, str) {
+			if (e && str && str.trim().length) {
+				var target = alertify.renameBackup;
+				var clean = str.trim().replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+				target.href += '&name=' + encodeURIComponent(clean);
+				alertify.renameBackup = '';
+				window.location = target.href;
+			}
+		});
+		return false;
+	}
+	var str = prompt('Enter new filename:');
+	if(str && str.trim().length){
+		var clean = str.trim().replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+		obj.href += '&name=' + encodeURIComponent(clean);
+		window.location = obj.href;
+	}
+	return false;
+}
+
+/**
+ * Toggle visibility of the manual CLI backup command panel.
+ *
+ * @return {boolean} False to prevent default action.
+ */
+function backupsToggleCommand(){
+	var box = document.getElementById('backup_cmd_box');
+	if(!box){ return false; }
+	if(box.style.display === 'none' || box.style.display === ''){
+		box.style.display = 'block';
+		box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+	} else {
+		box.style.display = 'none';
+	}
+	return false;
+}
+
+/**
+ * Dynamically update the CLI backup command text when the target table changes.
+ *
+ * @param {string} table The selected table name.
+ */
+function backupsUpdateTable(table){
+	var dbname = <?=json_encode($CONFIG['dbname']);?>;
+	var baseCmd = <?=json_encode($backup_command);?>;
+	var cmdBox = document.getElementById('backup_cmd_text');
+	if(!cmdBox){ return; }
+
+	table = (table || '').trim();
+	if(table.length){
+		var updated = baseCmd.replace(dbname + ' ', dbname + ' ' + table + ' ');
+		if(updated === baseCmd){
+			updated = baseCmd.replace(dbname, dbname + ' ' + table);
+		}
+		updated = updated.replace(dbname + '__', dbname + '.' + table + '_');
+		cmdBox.innerText = updated;
+	} else {
+		cmdBox.innerText = baseCmd;
+	}
+}
+</script>
+
+<view:default>
+<div class="backup-head"><span class="icon-save"></span> Backup / <span class="icon-undo"></span> Restore</div>
+
+<?php
+if(isset($status) && is_array($status)){
+	$alertClass = 'backup-alert-info';
+	$iconClass = 'icon-info';
+	if($status['type'] == 'success'){
+		$alertClass = 'backup-alert-success';
+		$iconClass = 'icon-check w_success';
+	}
+	elseif($status['type'] == 'danger'){
+		$alertClass = 'backup-alert-danger';
+		$iconClass = 'icon-cancel w_danger';
+	}
+	elseif($status['type'] == 'warning'){
+		$alertClass = 'backup-alert-warning';
+		$iconClass = 'icon-warning w_warning';
+	}
+	echo '<div class="backup-alert ' . $alertClass . '">';
+	echo '	<div class="backup-alert-title"><span class="' . $iconClass . '"></span> ' . encodeHtml($status['title']) . '</div>';
+	if(isset($status['message']) && strlen($status['message'])){
+		echo '	<div class="backup-alert-detail">' . $status['message'] . '</div>';
+	}
+	if(isset($status['error']) && strlen($status['error'])){
+		echo '	<div class="backup-alert-detail"><b>Error:</b> ' . encodeHtml($status['error']) . '</div>';
+	}
+	if(isset($status['command']) && strlen($status['command'])){
+		echo '	<div class="backup-alert-detail"><b>Command:</b> <pre>' . encodeHtml($status['command']) . '</pre></div>';
+	}
+	if(isset($status['result']) && strlen($status['result'])){
+		echo '	<div class="backup-alert-detail"><b>Result:</b> ' . $status['result'] . '</div>';
+	}
+	echo '</div>';
+}
+?>
+
+<form method="post" name="backupform" action="/php/admin.php">
+	<input type="hidden" name="_menu" value="backups">
+	<input type="hidden" name="func" value="backup">
+
+	<div class="backup-card">
+		<div class="backup-info">
+			<div class="backup-info-item">
+				<span class="backup-info-label">Backup Directory</span>
+				<code><?=encodeHtml($backupdir);?></code>
+			</div>
+			<div class="backup-info-item">
+				<span class="backup-info-label">Database</span>
+				<code><?=encodeHtml($CONFIG['dbname']);?></code>
+			</div>
+			<div class="backup-info-item">
+				<span class="backup-info-label">Existing Backups</span>
+				<span class="backup-info-value"><?=encodeHtml($stats['count']);?> (<?=encodeHtml($stats['total_size_verbose']);?>)</span>
+			</div>
+			<div class="backup-info-item">
+				<span class="backup-info-label">Last Backup Date</span>
+				<span class="backup-info-value"><?=encodeHtml($stats['newest_date']);?></span>
+			</div>
+		</div>
+
+		<div class="backup-actions">
+			<div class="backup-select-wrap">
+				<label class="backup-info-label" for="backup_table_select">Target:</label>
+				<select id="backup_table_select" name="_table_" class="wacss_select" onchange="backupsUpdateTable(this.value);">
+					<?=$table_options;?>
+				</select>
+			</div>
+			<button type="submit" class="wacss_button <?=configValue('admin_color');?>">
+				<span class="icon-save"></span> Backup Now
+			</button>
+			<button type="button" class="wacss_button is-light" onclick="return backupsToggleCommand();">
+				<span class="icon-terminal"></span> Show Backup Command
+			</button>
+			<a href="/php/admin.php?_menu=backups" class="wacss_button is-light">
+				<span class="icon-refresh"></span> Refresh
+			</a>
+		</div>
+
+		<div id="backup_cmd_box" class="backup-cmd-panel">
+			<div class="backup-cmd-header">
+				<span class="backup-cmd-title">
+					<span class="icon-terminal"></span> Manual CLI Backup Command
+				</span>
+				<button type="button" class="wacss_button is-small is-light" onclick="wacss.copy2Clipboard(document.getElementById('backup_cmd_text').innerText, 'Backup command copied to clipboard'); return false;">
+					<span class="icon-copy"></span> Copy to Clipboard
+				</button>
+			</div>
+			<pre id="backup_cmd_text" class="backup-cmd-code"><?=encodeHtml($backup_command);?></pre>
+		</div>
+	</div>
+</form>
+
+<form method="post" name="backuplistform" action="/php/admin.php">
+	<input type="hidden" name="_menu" value="backups">
+	<input type="hidden" name="func" value="delete">
+
+	<div class="backup-card">
+		<div class="backup-card-title">
+			<span class="icon-history"></span> Existing Backups 
+			<span class="backup-count"><?=count($files);?></span>
+		</div>
+
+		<div id="backups_grid_content">
+			<?=backupsListBackups($files);?>
+		</div>
+
+		<?php
+		if(is_array($files) && count($files)){
+			echo '<div class="backup-actions" style="margin-top:16px;">';
+			echo '	<button type="submit" class="wacss_button is-danger" onclick="return confirm(\'Delete selected backup files?\\r\\n\\r\\nThis action cannot be undone.\');">';
+			echo '		<span class="icon-cancel"></span> Delete Selected';
+			echo '	</button>';
+			echo '</div>';
+		}
+		?>
+	</div>
+</form>
+</view:default>
+
+<view:list>
+	<?=backupsListBackups();?>
+</view:list>
+
+<view:no_access>
+	<div class="w_bold w_danger" style="padding:20px 10px;">
+		<span class="icon-cancel"></span> Access Denied: Administrator privileges required.
+	</div>
+</view:no_access>

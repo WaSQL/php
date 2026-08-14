@@ -32,6 +32,7 @@ include_once("{$progpath}/wasql.php");
 include_once("{$progpath}/database.php");
 include_once("{$progpath}/sessions.php");
 include_once("{$progpath}/schema.php");
+include_once("{$progpath}/admin/topmenu_functions.php");
 $_SESSION['debugValue_lastm']='';
 global $TEMPLATE;
 global $PAGE;
@@ -694,6 +695,10 @@ if(isAjax()){
 		case 'export':
 		case 'fonts':
 		case 'postportal':
+		case 'backup':
+			if(!isset($_REQUEST['func'])){$_REQUEST['func']="backup";}
+			$_REQUEST['_menu']="backups";
+		case 'backups':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);
@@ -1419,6 +1424,10 @@ if(isset($_REQUEST['_menu'])){
 		case 'export':
 		case 'fonts':
 		case 'postportal':
+		case 'backup':
+			if(!isset($_REQUEST['func'])){$_REQUEST['func']="backup";}
+			$_REQUEST['_menu']="backups";
+		case 'backups':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);
@@ -3039,163 +3048,6 @@ LIST_TABLE:
 			$rtn=optimizeDB();
 			echo "<div>Command: {$rtn['command']}</div>\n";
 			echo nl2br($rtn['result']);
-			break;
-		case 'backup':
-			$_REQUEST['func']="backup";
-		case 'backups':
-			echo <<<'STYLE'
-<style>
-.backup-head{display:flex;align-items:center;gap:10px;margin:22px 0 16px;font-size:1.5rem;font-weight:700;color:#363636;}
-.backup-head .icon-save,.backup-head .icon-undo{opacity:.6;}
-.backup-card{max-width:960px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:18px 20px;margin-bottom:18px;}
-.backup-card-title{display:flex;align-items:center;gap:9px;font-size:1.1rem;font-weight:700;color:#363636;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid rgba(0,0,0,.06);}
-.backup-card-title .backup-count{background:#eef1ff;color:#3a51bb;border-radius:999px;padding:3px 12px;font-size:.8rem;font-weight:600;}
-.backup-info{display:flex;flex-wrap:wrap;gap:12px 30px;margin-bottom:16px;}
-.backup-info-item{display:flex;flex-direction:column;gap:4px;}
-.backup-info-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#7a7a7a;}
-.backup-info-item code{background:#f4f5f7;border:1px solid rgba(0,0,0,.06);border-radius:6px;padding:5px 10px;font-family:monospace;font-size:.9rem;color:#363636;}
-.backup-actions{display:flex;gap:10px;flex-wrap:wrap;}
-</style>
-STYLE;
-			echo '<div class="backup-head"><span class="icon-save"></span> Backup / <span class="icon-undo"></span> Restore</div>'.PHP_EOL;
-			$backupdir=getWasqlPath('sh/backups');
-			if(isset($_REQUEST['func'])){
-            	switch(strtolower($_REQUEST['func'])){
-					case 'restore':
-						$file=decodeBase64($_REQUEST['file']);
-						if(preg_match('/\.gz$/i',$file)){
-                        	$ok=cmdResults("gunzip '{$file}'");
-                        	//echo printValue($ok);
-                        	$file=preg_replace('/\.gz$/i','',$file);
-						}
-						if(is_file($file) && preg_match('/\.sql$/i',$file)){
-							$cmds=array(
-								"mysql -h {$CONFIG['dbhost']} --user='{$CONFIG['dbuser']}' --password='{$CONFIG['dbpass']}' --execute=\"DROP DATABASE {$CONFIG['dbname']}; CREATE DATABASE {$CONFIG['dbname']} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
-								"mysql -h {$CONFIG['dbhost']} --user='{$CONFIG['dbuser']}' --password='{$CONFIG['dbpass']}' --max_allowed_packet=128M --default-character-set=utf8 {$CONFIG['dbname']} < \"{$file}\""
-							);
-							foreach($cmds as $cmd){
-								//echo "<div>{$cmd}</div>\n";
-								$ok=cmdResults($cmd);
-								if(isset($ok['rtncode']) && $ok['rtncode'] != 0){
-									echo printValue($ok);
-									break;
-								}
-							}
-						}
-					break;
-					case 'rename':
-						$file=decodeBase64($_REQUEST['file']);
-						$newname=addslashes($_REQUEST['name']);
-						$newname=str_replace(' ','_',$newname);
-						$newname=preg_replace('/[^a-z0-9\_\-\.]/i','',$newname);
-						$newname=preg_replace('/\_+/','_',$newname);
-						$newname=preg_replace('/\.gz$/i','',$newname);
-						$newname=preg_replace('/\.sql$/i','',$newname);
-						if(strlen($newname)){
-							$newname=$CONFIG['dbname'].'__'.$newname;
-							//$newname=getFileName($newname,1);
-							$filename=getFileName($file);
-							if(preg_match('/\.sql\.gz$/i',$filename)){
-								$afile=str_replace($filename,"{$newname}.sql.gz",$file);
-							}
-							elseif(preg_match('/\.sql$/i',$filename)){
-								$afile=str_replace($filename,"{$newname}.sql",$file);
-							}
-							if($afile != $file){
-                            	rename($file,$afile);
-                            	//echo "{$file} renamed to {$afile}<br>\n";
-							}
-						}
-					break;
-					case 'download':
-						if(isset($_REQUEST['filename'])){
-							$afile=base64_decode($_REQUEST['filename']);
-							if(is_file(($afile))){
-								pushFile($afile);
-							}
-						}
-					break;
-                	case 'backup':
-					case 'backup now':
-						//echo "here".printValue($_REQUEST);exit;
-                		$dump=dumpDB($_REQUEST['_table_']);
-						if(isset($_REQUEST['push']) && $_REQUEST['push']=='filename'){
-							if(is_file($dump['afile']) && filesize($dump['afile'])){
-								echo '<backup>'.base64_encode($dump['afile']).'</backup>';
-							}
-							else{
-								echo '<backup>ERROR:'.$dump['error'].'</backup>';
-							}
-							exit;
-						}
-                		elseif(!isset($dump['success'])){
-							echo '<span class="icon-cancel w_danger"></span> <b>Backup Command Failed</b><br>'.PHP_EOL;
-							echo '<div style="margin-left:50px;">'.PHP_EOL;
-							echo '	<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
-							echo '	<div><b>Error:</b> '.$dump['error'].'</div>'.PHP_EOL;
-							echo '	<div><b>Result:</b> '.printValue($dump['result']).'</div>'.PHP_EOL;
-							echo '</div>'.PHP_EOL;
-						}
-						else{
-							echo '<span class="icon-check w_success"></span> <b>Backup Successful</b><br>'.PHP_EOL;
-							echo '<div class="w_small"><b>Command:</b> '.$dump['command'].'</div>'.PHP_EOL;
-			            }
-                	break;
-                	case 'delete':
-                		if(!is_array($_REQUEST['name']) || !count($_REQUEST['name'])){
-                        	echo '<div>No Files Selected to Delete</div>'.PHP_EOL;
-						}
-						else{
-                        	foreach($_REQUEST['name'] as $name){
-								unlink("{$backupdir}/{$name}");
-							}
-						}
-                	break;
-				}
-			}
-			$files=listFilesEx($backupdir,array('name'=>$CONFIG['dbname'].'__'));
-			echo buildFormBegin('',array('_menu'=>'backups','func'=>'','-name'=>'backupform'));
-			echo '<div class="backup-card">'.PHP_EOL;
-			echo '	<div class="backup-info">'.PHP_EOL;
-			echo '		<div class="backup-info-item"><span class="backup-info-label">Backup Directory</span><code>'.encodeHtml($backupdir).'</code></div>'.PHP_EOL;
-			echo '		<div class="backup-info-item"><span class="backup-info-label">Database</span><code>'.encodeHtml($CONFIG['dbname']).'</code></div>'.PHP_EOL;
-			echo '	</div>'.PHP_EOL;
-			echo '	<div class="backup-actions">'.buildFormSubmit('Backup Now','func','','icon-save '.configValue('admin_color')).'</div>'.PHP_EOL;
-			echo '</div>'.PHP_EOL;
-			if(is_array($files) && count($files)){
-				$list=array();
-				$filecnt=count($files);
-				for($x=0;$x<$filecnt;$x++){
-					if(!stringBeginsWith($files[$x]['name'],$CONFIG['dbname'].'__')){
-                    	continue;
-					}
-					$rec=$files[$x];
-	            	$rec['action']='<a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_pushfile='.encodeBase64($rec['afile']).'" data-tooltip="Click to Download" data-tooltip_position="bottom"><span class="icon-download w_big"></span></a>';
-	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=restore&file='.encodeBase64($rec['afile']).'" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\n ARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
-	            	$rec['action'].=' <a class="w_link w_block" style="padding:0 3px 0 3px" href="/php/admin.php?_menu=backups&func=rename&file='.encodeBase64($rec['afile']).'" onclick="return renameBackup(this);" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_grey w_big"></span></a>';
-					$list[]=$rec;
-				}
-				//sort by newest first
-				$list=sortArrayByKey($list,'_cdate_age',SORT_ASC);
-				echo '<div class="backup-card">'.PHP_EOL;
-				echo '	<div class="backup-card-title"><span class="icon-history"></span> Existing Backups <span class="backup-count">'.count($list).'</span></div>'.PHP_EOL;
-				echo databaseListRecords(array(
-					'-list'					=>$list,
-					'-listfields'			=> "name,action,size_verbose,_cdate,_cdate_age_verbose",
-					'-tableclass'			=> "wacss_table is-bordered is-striped is-mobile-responsive",
-					'action_displayname'	=> '<span class="icon-download w_big"></span>  <span class="icon-undo w_big"></span> Actions',
-					'size_verbose_displayname'	=> 'Size',
-					'_cdate_displayname'	=> 'Date Created',
-					'type_align'			=>'center',
-					'_cdate_age_verbose_displayname'	=> 'Age',
-					'_cdate_age_verbose_align'	=> 'right',
-					'name_checkbox'			=>1
-					));
-				echo '	<div class="backup-actions" style="margin-top:14px;">'.buildFormSubmit('Delete','func',"return confirm('Delete selected backup files?');",'icon-cancel w_big is-danger').'</div>'.PHP_EOL;
-				echo '</div>'.PHP_EOL;
-			}
-			echo buildFormEnd();
-			//echo printValue($_REQUEST);
 			break;
 		case 'email':
 			echo '<h2 style="margin:0px;padding:6px;" class="'.configValue('admin_color').'"><span class="icon-email"></span> Email</h2>'.PHP_EOL;
