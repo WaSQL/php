@@ -4,8 +4,8 @@ antigravity_usage.py -- Standalone Antigravity & Gemini usage dashboard.
 
 Parses your Antigravity and Gemini CLI transcripts and databases (~/.gemini/**),
 aggregates token usage (including input, output, prompt cache, and reasoning thoughts),
-activity metrics, tool calls, and projects, writes a self-contained HTML dashboard
-(Chart.js), and opens it in your default browser.
+activity metrics, tool calls, projects, and daily quota limits remaining, writes a
+self-contained HTML dashboard (Chart.js), and opens it in your default browser.
 
 Portable: works for ANY user on Windows / macOS / Linux. No Node, no pip installs --
 just Python 3.8+. Re-run it any time to refresh the dashboard.
@@ -13,12 +13,10 @@ just Python 3.8+. Re-run it any time to refresh the dashboard.
     python antigravity_usage.py                 # parse, write, and open
     python antigravity_usage.py --no-open       # just write the HTML
     python antigravity_usage.py --days 7        # only the last 7 days
+    python antigravity_usage.py --req-limit 2000 # custom daily request limit
+    python antigravity_usage.py --token-limit 100M # custom daily token limit
     python antigravity_usage.py --dir /path/to/.gemini
     python antigravity_usage.py --out report.html
-
-Note on cost: this tool reports TOKENS and ACTIVITY only, never dollars. On a
-subscription / corporate plan or API allowance you manage usage against limits,
-so this focuses on optimization levers, cache reuse, and efficiency.
 """
 import argparse, json, os, sys, glob, datetime, collections, webbrowser, sqlite3
 
@@ -30,7 +28,12 @@ def find_root(explicit=None):
     if explicit:
         return explicit if os.path.isdir(explicit) else None
     candidates = []
-    for env_var in ("ANTIGRAVITY_APP_DATA_DIR", "GEMINI_CONFIG_DIR", "GEMINI_DIR", "ANTIGRAVITY_DIR"):
+    for env_var in (
+        "ANTIGRAVITY_APP_DATA_DIR",
+        "GEMINI_CONFIG_DIR",
+        "GEMINI_DIR",
+        "ANTIGRAVITY_DIR",
+    ):
         val = os.environ.get(env_var)
         if val:
             candidates.append(val)
@@ -172,6 +175,7 @@ def format_model_name(raw_name):
 def parse(root, since=None):
     tot = new_counter()
     by_day = collections.defaultdict(new_counter)
+    by_day_hours = collections.defaultdict(lambda: collections.defaultdict(int))
     by_model = collections.defaultdict(new_counter)
     by_project = collections.defaultdict(new_counter)
     by_hour = collections.Counter()
@@ -342,6 +346,7 @@ def parse(root, since=None):
                                         day = dt.strftime("%Y-%m-%d")
                                         by_hour[dt.hour] += 1
                                         by_dow[dt.weekday()] += 1
+                                        by_day_hours[day][dt.hour] += 1
                                     except Exception:
                                         pass
                                 add_tok(by_day[day])
@@ -480,6 +485,7 @@ def parse(root, since=None):
                                 day = dt.strftime("%Y-%m-%d")
                                 by_hour[dt.hour] += 1
                                 by_dow[dt.weekday()] += 1
+                                by_day_hours[day][dt.hour] += 1
                             except Exception:
                                 pass
                         add_tok2(by_day[day])
@@ -506,6 +512,7 @@ def parse(root, since=None):
     return dict(
         tot=tot,
         by_day=by_day,
+        by_day_hours=by_day_hours,
         by_model=by_model,
         by_project=by_project,
         by_hour=by_hour,
@@ -519,7 +526,7 @@ def parse(root, since=None):
 
 
 # --------------------------------------------------------------------------- #
-#  Shape into JSON + derive token-saving tips
+#  Shape into JSON + derive token-saving tips, remaining limits, and terms
 # --------------------------------------------------------------------------- #
 def C(c):
     return {
@@ -541,6 +548,26 @@ def human(n):
             )
         n /= 1000.0
     return f"{n:.1f}P"
+
+
+def parse_human_num(s, default):
+    if not s:
+        return default
+    try:
+        s = str(s).strip().upper()
+        mult = 1
+        if s.endswith("K"):
+            mult = 1000
+            s = s[:-1]
+        elif s.endswith("M"):
+            mult = 1000000
+            s = s[:-1]
+        elif s.endswith("B"):
+            mult = 1000000000
+            s = s[:-1]
+        return int(float(s) * mult)
+    except Exception:
+        return default
 
 
 def session_duration(s):
@@ -654,7 +681,84 @@ def build_tips(agg):
     return tips
 
 
-def shape(agg):
+def get_terms_legend():
+    return [
+        {
+            "term": "Turn / Assistant Turn",
+            "badge": "Activity",
+            "desc": "A complete AI interaction cycle. Each turn begins when the model receives your prompt or tool result, plans its actions, optionally executes tools, and generates a response.",
+            "note": "More turns per task increase cumulative context re-reading."
+        },
+        {
+            "term": "Tokens",
+            "badge": "Volume",
+            "desc": "The basic atomic unit of text comprehension used by AI models. In English, 1 token is roughly 4 characters or ~0.75 words.",
+            "note": "1,000 tokens ≈ 750 words."
+        },
+        {
+            "term": "Prompt Input Tokens",
+            "badge": "Input",
+            "desc": "Fresh text sent to the model for the first time — including your current prompt, system instructions, and newly read file contents or terminal outputs.",
+            "note": "Subject to initial prompt processing."
+        },
+        {
+            "term": "Prompt Cache Read",
+            "badge": "Optimization",
+            "desc": "Prior conversation context and system instructions re-read directly from Gemini's server-side cache rather than being computed from scratch.",
+            "note": "Dramatic latency and cost reduction (90%+ cheaper than fresh input)."
+        },
+        {
+            "term": "Generated Output Tokens",
+            "badge": "Output",
+            "desc": "The text, markdown, explanations, and code edits generated by the model in its response.",
+            "note": "Output generation is computationally more intensive than input reading."
+        },
+        {
+            "term": "Reasoning Thoughts (CoT)",
+            "badge": "Reasoning",
+            "desc": "Internal 'Thinking' tokens produced during step-by-step chain-of-thought planning before producing the visible response (e.g. Gemini 3.7 Flash).",
+            "note": "Allows deep planning and error-checking without cluttering user output."
+        },
+        {
+            "term": "Cache Reuse %",
+            "badge": "Efficiency",
+            "desc": "The proportion of total input context served from the warm prompt cache: [Cache Reads ÷ (Cache Reads + Fresh Input)] × 100.",
+            "note": "Values above 70% indicate efficient, warm-cache workflow."
+        },
+        {
+            "term": "Session / Trajectory",
+            "badge": "Scope",
+            "desc": "A continuous conversation thread or task focused on a specific project directory with its own context history and scratchpad.",
+            "note": "Starting fresh sessions for distinct tasks prevents context bloat."
+        },
+        {
+            "term": "Tool Calls / Executions",
+            "badge": "Tools",
+            "desc": "Actions performed by the agent on your local machine (e.g., view_file, run_command, replace_file_content, grep_search, write_to_file, MCP calls).",
+            "note": "Targeted file reads reduce unnecessary tool loops."
+        },
+        {
+            "term": "Daily Limit / Quota (RPD)",
+            "badge": "Quota",
+            "desc": "The maximum number of Requests (turns) Per Day permitted by your account plan or tier before rate-limiting occurs.",
+            "note": "Default tier is typically 1,500 RPD."
+        },
+        {
+            "term": "Daily Token Quota (TPD)",
+            "badge": "Quota",
+            "desc": "The total volume of tokens (input + output + cached) permitted across a 24-hour window.",
+            "note": "Tracks cumulative volume against your plan's cap."
+        },
+        {
+            "term": "Burn Rate & Midnight Reset",
+            "badge": "Pacing",
+            "desc": "Average turns consumed per active hour today. Quota limits reset every 24 hours at midnight.",
+            "note": "Helps pace heavy agent workloads across the day."
+        }
+    ]
+
+
+def shape(agg, req_limit=1500, token_limit=50000000):
     days_sorted = sorted(d for d in agg["by_day"] if d != "?")
     sess_list = []
     for s in agg["sessions"].values():
@@ -669,6 +773,55 @@ def shape(agg):
             "model": s["model"],
             "engine": s.get("engine", "Antigravity"),
         })
+
+    # Calculate today's stats & quota limits
+    now = datetime.datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
+    today_data = agg["by_day"].get(today_str, new_counter())
+    today_hours = agg.get("by_day_hours", {}).get(today_str, {})
+
+    t_msgs = today_data.get("msgs", 0)
+    t_in = today_data.get("in", 0)
+    t_out = today_data.get("out", 0)
+    t_cached = today_data.get("cache_read", 0)
+    t_thoughts = today_data.get("thoughts", 0)
+    t_tokens = t_in + t_out + t_cached
+
+    active_hours_today = len(today_hours) or (1 if t_msgs > 0 else 0)
+    burn_rate_hr = round(t_msgs / active_hours_today, 1) if active_hours_today else 0
+    curr_hour_msgs = today_hours.get(now.hour, 0)
+
+    # Midnight reset countdown
+    midnight = (now + datetime.timedelta(days=1)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    seconds_until_reset = max(0, int((midnight - now).total_seconds()))
+    hours_until_reset = round(seconds_until_reset / 3600.0, 1)
+
+    quota = {
+        "today_str": today_str,
+        "today_msgs": t_msgs,
+        "today_tokens": t_tokens,
+        "today_in": t_in,
+        "today_out": t_out,
+        "today_cached": t_cached,
+        "today_thoughts": t_thoughts,
+        "active_hours": active_hours_today,
+        "burn_rate_hr": burn_rate_hr,
+        "curr_hour_msgs": curr_hour_msgs,
+        "hours_until_reset": hours_until_reset,
+        "req_limit": req_limit,
+        "token_limit": token_limit,
+        "req_remaining": max(0, req_limit - t_msgs),
+        "token_remaining": max(0, token_limit - t_tokens),
+        "req_used_pct": round(min(100.0, (t_msgs / req_limit * 100.0)), 1)
+        if req_limit
+        else 0,
+        "token_used_pct": round(min(100.0, (t_tokens / token_limit * 100.0)), 1)
+        if token_limit
+        else 0,
+    }
+
     return {
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         "range": [days_sorted[0], days_sorted[-1]] if days_sorted else ["?", "?"],
@@ -678,6 +831,7 @@ def shape(agg):
         "sessions_count": len(agg["sessions"]),
         "active_days": len(days_sorted),
         "files": agg["files"],
+        "quota": quota,
         "by_day": {d: C(agg["by_day"][d]) for d in days_sorted},
         "by_model": {m: C(agg["by_model"][m]) for m in agg["by_model"]},
         "by_project": {p: C(agg["by_project"][p]) for p in agg["by_project"]},
@@ -688,6 +842,7 @@ def shape(agg):
             sess_list, key=lambda x: x["tokens"], reverse=True
         )[:20],
         "tips": build_tips(agg),
+        "terms": get_terms_legend(),
     }
 
 
@@ -703,17 +858,20 @@ PAGE = r"""<!doctype html>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   :root{
-    --page:#0c0d0e; --surface:#16181a; --surface2:#1f2226; --ink:#f4f5f6; --ink2:#c2c7cc; --muted:#858c94;
+    --page:#0c0d0e; --surface:#16181a; --surface2:#1f2226; --surface3:#282c32;
+    --ink:#f4f5f6; --ink2:#c2c7cc; --muted:#858c94;
     --grid:#282c32; --axis:#343a42; --border:rgba(255,255,255,.10);
     --s1:#4285f4; --s2:#ea4335; --s3:#34a853; --s4:#fbbc04; --s5:#a142f4;
-    --s6:#24c1e0; --s7:#fa7b17; --s8:#f439a0; --good:#34a853;
-    --tipbg:rgba(66,133,244,.08);
+    --s6:#24c1e0; --s7:#fa7b17; --s8:#f439a0; --good:#34a853; --warn:#fbbc04; --danger:#ea4335;
+    --tipbg:rgba(66,133,244,.08); --quotabg:rgba(66,133,244,.05);
   }
   html[data-theme="light"]{
-    --page:#f8f9fa; --surface:#ffffff; --surface2:#f1f3f4; --ink:#202124; --ink2:#4d5156; --muted:#70757a;
+    --page:#f8f9fa; --surface:#ffffff; --surface2:#f1f3f4; --surface3:#e8eaed;
+    --ink:#202124; --ink2:#4d5156; --muted:#70757a;
     --grid:#dadce0; --axis:#bdc1c6; --border:rgba(0,0,0,.10);
     --s1:#1a73e8; --s2:#d93025; --s3:#188038; --s4:#f29900; --s5:#9334e6;
-    --s6:#12b5cb; --s7:#e37400; --s8:#e52592; --tipbg:rgba(26,115,232,.06);
+    --s6:#12b5cb; --s7:#e37400; --s8:#e52592; --good:#188038; --warn:#f29900; --danger:#d93025;
+    --tipbg:rgba(26,115,232,.06); --quotabg:rgba(26,115,232,.04);
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--page);color:var(--ink);
@@ -728,7 +886,8 @@ PAGE = r"""<!doctype html>
   .toggle{background:var(--surface);color:var(--ink2);border:1px solid var(--border);
     border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer;transition:all .15s}
   .toggle:hover{color:var(--ink);background:var(--surface2)}
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:22px 0}
+  
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:22px 0 16px}
   .tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden}
   .tile .lab{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
   .tile .val{font-size:28px;font-weight:650;margin-top:6px;letter-spacing:-.01em}
@@ -736,6 +895,25 @@ PAGE = r"""<!doctype html>
   .accent{color:var(--s1)}
   .accent-green{color:var(--s3)}
   .accent-purple{color:var(--s5)}
+  .accent-gold{color:var(--s4)}
+  .accent-red{color:var(--s2)}
+  
+  /* Quota & Limits Section */
+  .quota-section{background:var(--quotabg);border:1px solid var(--border);border-radius:16px;padding:20px;margin:18px 0}
+  .quota-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+  .quota-title{font-size:16px;font-weight:650;display:flex;align-items:center;gap:8px;margin:0}
+  .quota-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .preset-btn{background:var(--surface);color:var(--ink2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11.5px;cursor:pointer;font-weight:500;transition:all .15s}
+  .preset-btn:hover,.preset-btn.active{color:var(--ink);background:var(--surface2);border-color:var(--s1)}
+  .quota-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .qcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .qcard .qlab{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;display:flex;justify-content:space-between}
+  .qcard .qval{font-size:24px;font-weight:700;margin:6px 0 4px;letter-spacing:-.01em}
+  .qcard .qsub{font-size:12px;color:var(--ink2);margin-bottom:10px}
+  .progress-bg{width:100%;height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;position:relative}
+  .progress-bar{height:100%;border-radius:99px;transition:width .4s ease,background-color .3s ease}
+  .progress-meta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px}
+  
   .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:16px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px 14px}
   .card h2{font-size:14px;font-weight:650;margin:0 0 2px;letter-spacing:-.01em}
@@ -750,6 +928,8 @@ PAGE = r"""<!doctype html>
   .badge-engine{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--ink2)}
   .badge-engine.Antigravity{background:rgba(66,133,244,.15);color:var(--s1)}
   .badge-engine.GeminiCLI{background:rgba(52,168,83,.15);color:var(--s3)}
+  
+  /* Tips */
   .tips{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .tip{background:var(--tipbg);border:1px solid var(--border);border-left:3px solid var(--s1);
     border-radius:10px;padding:12px 14px}
@@ -760,8 +940,18 @@ PAGE = r"""<!doctype html>
     padding:1px 5px;font-size:12px}
   .tip .badge{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
     float:right;font-weight:600}
+
+  /* Terms & Legend */
+  .legend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-top:8px}
+  .legend-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between}
+  .legend-item .lh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .legend-item .ltitle{font-size:13px;font-weight:650;color:var(--ink)}
+  .legend-item .lbadge{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:4px;background:var(--surface3);color:var(--ink2)}
+  .legend-item .ldesc{font-size:12.5px;color:var(--ink2);line-height:1.45;margin:0}
+  .legend-item .lnote{font-size:11.5px;color:var(--muted);margin-top:6px;font-style:italic}
+  
   .foot{color:var(--muted);font-size:11.5px;margin-top:26px;line-height:1.6}
-  @media(max-width:900px){.col-8,.col-7,.col-6,.col-5,.col-4{grid-column:span 12}.tips{grid-template-columns:1fr}}
+  @media(max-width:900px){.col-8,.col-7,.col-6,.col-5,.col-4{grid-column:span 12}.tips,.legend-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -775,6 +965,25 @@ PAGE = r"""<!doctype html>
   </header>
 
   <div class="tiles" id="tiles"></div>
+
+  <!-- Quota & Limit Remaining Section -->
+  <div class="quota-section">
+    <div class="quota-header">
+      <div>
+        <h3 class="quota-title">&#9201; Daily Limit &amp; Usage Remaining</h3>
+        <div class="sub" id="quotaSubtitle">Real-time daily quota tracker &bull; resets at midnight</div>
+      </div>
+      <div class="quota-controls">
+        <span style="font-size:11.5px;color:var(--muted);margin-right:2px">Plan preset:</span>
+        <button class="preset-btn" onclick="setPreset('free', 1500, 20000000)">Free (1.5k / 20M)</button>
+        <button class="preset-btn" onclick="setPreset('pro', 5000, 100000000)">Pro (5k / 100M)</button>
+        <button class="preset-btn" onclick="setPreset('tier2', 20000, 500000000)">Tier 2 (20k / 500M)</button>
+        <button class="preset-btn" onclick="promptCustom()">Custom...</button>
+      </div>
+    </div>
+
+    <div class="quota-cards" id="quotaCards"></div>
+  </div>
 
   <div class="grid">
     <div class="card col-8">
@@ -830,13 +1039,37 @@ PAGE = r"""<!doctype html>
         <th class="num">Duration</th><th class="num">Turns</th><th class="num">Tokens</th>
       </tr></thead><tbody></tbody></table>
     </div>
+
+    <!-- Terms & Concepts Legend -->
+    <div class="card col-12">
+      <h2>&#128218; Terms &amp; Metrics Legend</h2>
+      <div class="cs">Clear definitions of terminology, token categories, and usage metrics</div>
+      <div class="legend-grid" id="legendGrid"></div>
+    </div>
   </div>
 
   <div class="foot" id="foot"></div>
 </div>
 
 <script>
-const DATA = __DATA__;
+let DATA = __DATA__;
+
+// LocalStorage persistent quota preferences
+try {
+  const savedReq = localStorage.getItem('ag_quota_req');
+  const savedTok = localStorage.getItem('ag_quota_tok');
+  if(savedReq) DATA.quota.req_limit = parseInt(savedReq, 10);
+  if(savedTok) DATA.quota.token_limit = parseInt(savedTok, 10);
+  recalcQuota();
+} catch(e){}
+
+function recalcQuota(){
+  const q = DATA.quota;
+  q.req_remaining = Math.max(0, q.req_limit - q.today_msgs);
+  q.token_remaining = Math.max(0, q.token_limit - q.today_tokens);
+  q.req_used_pct = q.req_limit ? Math.min(100, Math.round(q.today_msgs / q.req_limit * 1000)/10) : 0;
+  q.token_used_pct = q.token_limit ? Math.min(100, Math.round(q.today_tokens / q.token_limit * 1000)/10) : 0;
+}
 
 const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const compact = n => Intl.NumberFormat('en',{notation:'compact',maximumFractionDigits:1}).format(n);
@@ -863,12 +1096,15 @@ function renderTiles(){
   const t=DATA.totals, days=DATA.active_days||1;
   const totTok=t.in+t.out+t.cache_read;
   const reuse=(t.cache_read/(t.cache_read+t.in)*100)||0;
+  const q=DATA.quota;
+  const reqLeftPct = Math.max(0, 100 - q.req_used_pct).toFixed(0);
+
   const tiles=[
     {lab:'Total tokens',val:compact(totTok),note:compact(totTok/days)+' per active day',accent:'accent'},
+    {lab:"Today's limit remaining",val:q.req_remaining.toLocaleString()+' turns',note:reqLeftPct+'% quota left today',accent:q.req_used_pct > 80 ? 'accent-red' : 'accent-green'},
     {lab:'Generated output',val:compact(t.out),note:'model response tokens',accent:''},
     {lab:'Reasoning thoughts',val:compact(t.thoughts),note:'Gemini thinking tokens',accent:'accent-purple'},
     {lab:'Assistant turns',val:DATA.assistant_msgs.toLocaleString(),note:DATA.user_msgs.toLocaleString()+' user prompts',accent:''},
-    {lab:'Sessions',val:DATA.sessions_count.toLocaleString(),note:(DATA.assistant_msgs/DATA.sessions_count).toFixed(0)+' turns avg',accent:''},
     {lab:'Cache reuse',val:reuse.toFixed(0)+'%',note:'context served from cache',accent:'accent-green'},
   ];
   document.getElementById('tiles').innerHTML=tiles.map(x=>
@@ -883,10 +1119,111 @@ function renderTiles(){
     `Generated ${DATA.generated} by antigravity_usage.py.`;
 }
 
+function renderQuota(){
+  const q = DATA.quota;
+  const reqColor = q.req_used_pct > 85 ? 'var(--danger)' : q.req_used_pct > 60 ? 'var(--warn)' : 'var(--good)';
+  const tokColor = q.token_used_pct > 85 ? 'var(--danger)' : q.token_used_pct > 60 ? 'var(--warn)' : 'var(--good)';
+  
+  const cards = [
+    {
+      lab: 'Daily Turns / Requests Remaining',
+      val: q.req_remaining.toLocaleString() + ' <span style="font-size:15px;font-weight:500;color:var(--muted)">/ ' + q.req_limit.toLocaleString() + '</span>',
+      sub: `Used <b>${q.today_msgs.toLocaleString()}</b> turns today &bull; <b>${(100 - q.req_used_pct).toFixed(1)}% remaining</b>`,
+      pct: q.req_used_pct,
+      barColor: reqColor,
+      metaLeft: `${q.today_msgs.toLocaleString()} used (${q.req_used_pct}%)`,
+      metaRight: `Resets in ~${q.hours_until_reset}h`
+    },
+    {
+      lab: 'Daily Token Quota Remaining',
+      val: compact(q.token_remaining) + ' <span style="font-size:15px;font-weight:500;color:var(--muted)">/ ' + compact(q.token_limit) + '</span>',
+      sub: `Used <b>${compact(q.today_tokens)}</b> tokens today &bull; <b>${(100 - q.token_used_pct).toFixed(1)}% remaining</b>`,
+      pct: q.token_used_pct,
+      barColor: tokColor,
+      metaLeft: `${compact(q.today_tokens)} used (${q.token_used_pct}%)`,
+      metaRight: `${compact(q.today_cached)} cached`
+    },
+    {
+      lab: "Today's Burn Rate & Pacing",
+      val: `${q.burn_rate_hr} <span style="font-size:15px;font-weight:500;color:var(--muted)">turns / active hr</span>`,
+      sub: `Current hour: <b>${q.curr_hour_msgs} turns</b> &bull; Active hours: <b>${q.active_hours}</b>`,
+      pct: Math.min(100, Math.round(q.curr_hour_msgs / 100 * 100)),
+      barColor: 'var(--s1)',
+      metaLeft: `Pace: ~${Math.round(q.burn_rate_hr * q.hours_until_reset)} turns projected`,
+      metaRight: `Status: Normal`
+    }
+  ];
+
+  document.getElementById('quotaCards').innerHTML = cards.map(c => `
+    <div class="qcard">
+      <div class="qlab"><span>${c.lab}</span></div>
+      <div class="qval">${c.val}</div>
+      <div class="qsub">${c.sub}</div>
+      <div class="progress-bg">
+        <div class="progress-bar" style="width:${c.pct}%;background-color:${c.barColor}"></div>
+      </div>
+      <div class="progress-meta">
+        <span>${c.metaLeft}</span>
+        <span>${c.metaRight}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setPreset(name, req, tok){
+  DATA.quota.req_limit = req;
+  DATA.quota.token_limit = tok;
+  try {
+    localStorage.setItem('ag_quota_req', req);
+    localStorage.setItem('ag_quota_tok', tok);
+  } catch(e){}
+  recalcQuota();
+  renderTiles();
+  renderQuota();
+}
+
+function promptCustom(){
+  const curReq = DATA.quota.req_limit;
+  const curTok = DATA.quota.token_limit;
+  const req = prompt("Enter daily request/turn limit:", curReq);
+  if(req === null) return;
+  const tok = prompt("Enter daily token limit (e.g. 50M or 50000000):", curTok);
+  if(tok === null) return;
+  
+  let rNum = parseInt(req, 10);
+  let tNum = curTok;
+  if(tok){
+    const s = tok.trim().toUpperCase();
+    if(s.endsWith('M')) tNum = parseFloat(s) * 1000000;
+    else if(s.endsWith('K')) tNum = parseFloat(s) * 1000;
+    else if(s.endsWith('B')) tNum = parseFloat(s) * 1000000000;
+    else tNum = parseInt(s, 10);
+  }
+  if(!isNaN(rNum) && rNum > 0 && !isNaN(tNum) && tNum > 0){
+    setPreset('custom', rNum, tNum);
+  }
+}
+
 function renderTips(){
   document.getElementById('tips').innerHTML=DATA.tips.map(t=>
     `<div class="tip ${t.kind}"><p class="tt">${t.title}<span class="badge">${t.kind}</span></p>
      <p class="tb">${t.body}</p></div>`).join('');
+}
+
+function renderLegend(){
+  if(!DATA.terms) return;
+  document.getElementById('legendGrid').innerHTML = DATA.terms.map(item => `
+    <div class="legend-item">
+      <div>
+        <div class="lh">
+          <span class="ltitle">${item.term}</span>
+          <span class="lbadge">${item.badge}</span>
+        </div>
+        <p class="ldesc">${item.desc}</p>
+      </div>
+      <div class="lnote">&#128161; ${item.note}</div>
+    </div>
+  `).join('');
 }
 
 function baseOpts(extra){
@@ -983,7 +1320,7 @@ function toggleTheme(){
   buildAll();
 }
 
-renderHeader(); renderTiles(); renderTips(); renderTable(); buildAll();
+renderHeader(); renderTiles(); renderQuota(); renderTips(); renderTable(); renderLegend(); buildAll();
 </script>
 </body>
 </html>"""
@@ -1062,6 +1399,19 @@ def main():
     )
     ap.add_argument("--days", type=int, help="only include the last N days")
     ap.add_argument(
+        "--req-limit",
+        "--daily-requests",
+        type=int,
+        default=1500,
+        help="daily request/turn limit (default: 1500)",
+    )
+    ap.add_argument(
+        "--token-limit",
+        "--daily-tokens",
+        default="50M",
+        help="daily token limit (e.g. 50M, 100M, default: 50M)",
+    )
+    ap.add_argument(
         "--no-open",
         action="store_true",
         help="write the HTML file but do not open a browser",
@@ -1081,12 +1431,14 @@ def main():
             datetime.datetime.now() - datetime.timedelta(days=args.days)
         ).strftime("%Y-%m-%d")
 
+    tok_limit_val = parse_human_num(args.token_limit, 50000000)
+
     print(f"Reading Antigravity & Gemini data from: {root}")
     agg = parse(root, since=since)
     if agg["assistant_msgs"] == 0:
         sys.exit("No assistant turns or messages found in that directory.")
 
-    data = shape(agg)
+    data = shape(agg, req_limit=args.req_limit, token_limit=tok_limit_val)
     out = args.out or os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "antigravity_usage.html"
     )
@@ -1095,12 +1447,19 @@ def main():
 
     t = data["totals"]
     total = t["in"] + t["out"] + t["cache_read"]
+    q = data["quota"]
     print(
         f"  {agg['assistant_msgs']:,} assistant turns across "
         f"{data['sessions_count']} sessions, {data['active_days']} active days"
     )
     print(
         f"  {human(total)} total tokens ({human(t['out'])} generated output, {human(t['thoughts'])} reasoning thoughts)"
+    )
+    print(
+        f"  Today: {q['today_msgs']:,} / {q['req_limit']:,} turns used ({q['req_remaining']:,} remaining &bull; {100 - q['req_used_pct']:.1f}% left)"
+    )
+    print(
+        f"  Today's tokens: {human(q['today_tokens'])} / {human(q['token_limit'])} ({human(q['token_remaining'])} remaining)"
     )
     print(f"Wrote {out}")
 
