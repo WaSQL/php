@@ -695,6 +695,20 @@ if(isAjax()){
 		case 'export':
 		case 'fonts':
 		case 'postportal':
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+			$htm.=$wasql_debugValueContent;
+			echo $htm;
+			exit;
+		break;
+		//NOTE: 'backup'/'backups' must NOT share the fallthrough list above - it sets
+		//func=backup (triggering a real mysqldump) as a side effect, which every case in
+		//that list would otherwise inherit since PHP case fallthrough has no implicit break.
 		case 'backup':
 			if(!isset($_REQUEST['func'])){$_REQUEST['func']="backup";}
 			$_REQUEST['_menu']="backups";
@@ -1424,6 +1438,20 @@ if(isset($_REQUEST['_menu'])){
 		case 'export':
 		case 'fonts':
 		case 'postportal':
+			$htm=adminViewPage($_REQUEST['_menu']);
+			//check for translate tags
+			$htm=processTranslateTags($htm);
+			//check for chartjs tags
+			$htm=commonProcessChartjsTags($htm);
+			//check for datalist tags
+			$htm=commonProcessDBListRecordsTags($htm);
+    		$htm.=$wasql_debugValueContent;
+			echo $htm;
+			exit;
+		break;
+		//NOTE: 'backup'/'backups' must NOT share the fallthrough list above - it sets
+		//func=backup (triggering a real mysqldump) as a side effect, which every case in
+		//that list would otherwise inherit since PHP case fallthrough has no implicit break.
 		case 'backup':
 			if(!isset($_REQUEST['func'])){$_REQUEST['func']="backup";}
 			$_REQUEST['_menu']="backups";

@@ -186,6 +186,39 @@ function websiteGraderFormatBytes($bytes){
 }
 
 /**
+ * @describe truncate a display string to $max chars (adding an ellipsis) - guards against a single
+ *   pathologically long, whitespace-free token (e.g. a base64 data: URI image src) blowing up
+ *   browser text-layout cost wherever this value later gets rendered (report card or AI prompt).
+ * @param s string, max int
+ * @return string
+ */
+function websiteGraderTruncate($s,$max=200){
+	$s=(string)$s;
+	if(commonStrlen($s) <= $max){return $s;}
+	return substr($s,0,$max).'…';
+}
+
+/**
+ * @describe detect whether a fetched response is a bot-verification challenge page
+ *   (Cloudflare "Just a moment...", etc.) rather than the site's real content - these come
+ *   back as HTTP 403/503 to automated requests (curl has no JS engine to solve the challenge)
+ *   even though a real visitor's browser loads the page fine.
+ * @param res array (a websiteGraderFetch() result)
+ * @return bool
+ */
+function websiteGraderIsBotChallenge($res){
+	$headers=isset($res['headers']) && is_array($res['headers'])?$res['headers']:array();
+	if(isset($headers['cf-mitigated'])){return true;}
+	if(isset($headers['server']) && preg_match('/cloudflare/i',$headers['server']) && $res['http_code']>=400 && preg_match('/just a moment|challenges\.cloudflare\.com/i',$res['body'])){
+		return true;
+	}
+	if(preg_match('/<title>\s*(just a moment|attention required|are you a human|access denied)/i',$res['body'])){
+		return true;
+	}
+	return false;
+}
+
+/**
  * @describe crawl a website starting at $starturl, following same-host links up to $maxpages.
  * @param starturl string, maxpages int
  * @return array [baseurl, scheme, host, pages(array of [url,body]), robots] OR [error]
@@ -199,6 +232,9 @@ function websiteGraderCrawl($starturl,$maxpages){
 	}
 	if(!isNum($start['http_code']) || $start['http_code']==0){
 		return array('error'=>"Could not connect to {$starturl}. Check the URL and try again.");
+	}
+	if($start['http_code'] >= 400 && websiteGraderIsBotChallenge($start)){
+		return array('error'=>"{$starturl} is protected by a bot-verification challenge (e.g. Cloudflare) that blocks automated page grading. This isn't a broken page - real visitors and browsers load it fine, but the grader can't get past the anti-bot check to fetch it.");
 	}
 	if($start['http_code'] >= 400){
 		return array('error'=>"{$starturl} returned HTTP {$start['http_code']}. Cannot grade a page that does not load.");
@@ -218,7 +254,12 @@ function websiteGraderCrawl($starturl,$maxpages){
 	$pages[$finalurl]=array('url'=>$finalurl,'body'=>$start['body'],'headers'=>$start['headers']);
 	$visited[$finalurl]=1;
 	$queue=websiteGraderExtractLinks($start['body'],$finalurl,$baseurl,$host);
-	while(count($pages) < $maxpages && count($queue)){
+	//hard wall-clock cap - each fetch below can take up to ~25s, and a slow/misbehaving site can
+	//queue far more links than $maxpages ever accepts, so bound total crawl time regardless of
+	//page count (session lock is released around this call, but the request/worker thread is
+	//still tied up for as long as this runs).
+	$deadline=microtime(true)+60;
+	while(count($pages) < $maxpages && count($queue) && microtime(true) < $deadline){
 		$url=array_shift($queue);
 		if(isset($visited[$url])){continue;}
 		$visited[$url]=1;
@@ -496,7 +537,7 @@ function websiteGraderRunChecks($baseurl,$pages,$robots,&$excluded=array()){
 				}
 			}
 			if(count($probs)){
-				$label_src=encodeHtml(isset($ia['src'])?$ia['src']:'(no src)');
+				$label_src=encodeHtml(websiteGraderTruncate(isset($ia['src'])?$ia['src']:'(no src)',150));
 				$imgitems[]=$label_src.': '.implode(', ',$probs);
 			}
 		}
@@ -1011,8 +1052,8 @@ function websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social=array
 	$rtn.='<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-copy"></span> Fix with AI</div>'.PHP_EOL;
 	$rtn.='<div class="w_small w_gray" style="margin-bottom:6px;">Copy this summary and paste it into Claude, ChatGPT, or any AI assistant to get the exact fixes for every failed check above.</div>'.PHP_EOL;
 	$rtn.='<div style="position:relative;">'.PHP_EOL;
-	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').textContent,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
-	$rtn.='	<div id="grader_ai_prompt" class="wacss_textarea" style="width:100%;height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;">'.encodeHtml($prompt).'</div>'.PHP_EOL;
+	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').value,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
+	$rtn.='	<textarea id="grader_ai_prompt" class="wacss_textarea" readonly="readonly" rows="18" wrap="soft" style="width:100%;font-family:monospace;font-size:12px;">'.encodeHtml($prompt).'</textarea>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
