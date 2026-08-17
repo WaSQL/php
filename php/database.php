@@ -882,22 +882,38 @@ function dbSetLast($params=array()){
 */
 function dbGetLast($key=''){
 	global $DATABASE;
-	if(!isset($DATABASE['_last_'])){return '';}
+	$last=array();
+	if(isset($DATABASE['_last_']) && is_array($DATABASE['_last_'])){$last=$DATABASE['_last_'];}
+	//the engine files (postgresql, hana, mssql, ...) record into _lastquery, not _last_,
+	//so fall back to it - without this dbGetLastError() could never return anything
+	elseif(isset($DATABASE['_lastquery']) && is_array($DATABASE['_lastquery'])){$last=$DATABASE['_lastquery'];}
+	if(!count($last)){return '';}
 	if(strlen($key)){
-		if(!isset($DATABASE['_last_'][$key])){return '';}
-		return $DATABASE['_last_'][$key];
+		if(!isset($last[$key])){return '';}
+		return $last[$key];
 	}
-	return $DATABASE['_last_'];
+	return $last;
 }
 //---------- begin function dbLastError
 /**
-* @describe returns the last database error
+* @describe returns the last database error. A failed dbQueryResults/dbGetRecords returns
+*	an empty array rather than an error string, so checking this after a db* read is the
+*	only way to tell "query failed" apart from "zero rows".
 * @return string
 * @usage
-*	$err=dbLastError();
+*	$recs=dbQueryResults('mydb','select * from abc');
+*	if(strlen(dbLastError())){echo "Query Error: ".dbLastError();}
 */
 function dbGetLastError(){
-	return dbGetLast('error');
+	$err=dbGetLast('error');
+	//a few engines record the driver's errorInfo array rather than a string (hana, msaccess),
+	//and callers reasonably do strlen(dbLastError()) - always hand back a string
+	if(is_array($err)){$err=implode(': ',array_filter(array_map('strval',$err),'strlen'));}
+	elseif(!is_string($err)){$err=(string)$err;}
+	return $err;
+}
+function dbLastError(){
+	return dbGetLastError();
 }
 function dbGetLastQuery(){
 	return dbGetLast('query');
@@ -5341,6 +5357,29 @@ function dropDBIndex($indexname,$tablename){
 *		);
 *		return addEditDBForm($opts);
 */
+//---------- begin function getDBFormForcedAtts
+/**
+* @describe returns the list of per-field option suffixes addEditDBForm honors as
+*	{fieldname}_{attr} shorthand (e.g. name_class, email_placeholder)
+* @return array
+* @usage $forcedatts=getDBFormForcedAtts();
+* @notes addEditDBForm renders fields in two loops and each used to carry its OWN copy of
+*	this list. The copies drifted - help/autofocus/autocomplete/text/path/autonumber and a
+*	few others existed in one and not the other - so a shorthand worked in one branch and
+*	was silently dropped in the other. One list, used by both. NOTE this is deliberately
+*	finite: it is NOT a general {fieldname}_{anything} passthrough, or a mistyped option key
+*	would be emitted as a real html attribute with no error. {fieldname}_data-{anything} is
+*	handled separately (and generically), and {fieldname}_options takes arbitrary keys.
+*/
+function getDBFormForcedAtts(){
+	return array(
+		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
+		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
+		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','tablename','fieldname','help','autofocus','autocomplete',
+		'group_id','group_class','group_style','checkclass','checkclasschecked',
+		'spellcheck','max','min','pattern','placeholder','step','min_displayname','max_displayname','data-labelmap','text','path','autonumber'
+		);
+}
 function addEditDBForm($params=array(),$customcode=''){
 	if(!isset($params['-table'])){return 'addEditDBForm Error: No table';}
 	if(!isDBTable($params['-table'])){return "addEditDBForm Error: No table named '{$params['-table']}'";}
@@ -5555,13 +5594,7 @@ function addEditDBForm($params=array(),$customcode=''){
 		$rtn .= '<input type="hidden" name="_honeypot" value="'.$honeypot.'">'.PHP_EOL;
 		$rtn .= '<div style="display:none"><input type="text" name="'.$honeypot.'" value=""></div>'.PHP_EOL;
 		}
-	$forcedatts=array(
-		'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onmousedown','onmouseup','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
-		'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
-		'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help','autofocus','autocomplete',
-		'group_id','group_class','group_style','checkclass','checkclasschecked',
-		'spellcheck','max','min','pattern','placeholder','readonly','step','min_displayname','max_displayname','data-labelmap','text','path','autonumber'
-		);
+	$forcedatts=getDBFormForcedAtts();
 	//data opts
 	$dataopts=array();
 	//check for data- options for this field
@@ -5969,13 +6002,7 @@ function addEditDBForm($params=array(),$customcode=''){
 				$dname=str_replace('_',' ',ucfirst($field));
 			}
 			//opts
-			$forcedatts=array(
-				'id','name','class','style','onclick','onchange','onmouseover','onmouseout','onkeypress','onkeyup','onkeydown','onblur','_behavior','data-behavior','display','onfocus','title','alt','tabindex',
-				'accesskey','required','readonly','requiredmsg','mask','maskmsg','displayname','size','maxlength','wrap',
-				'behavior','defaultval','tvals','dvals','width','height','inputtype','message','inputmax','mask','required','tablename','fieldname','help',
-				'group_id','group_class','group_style','checkclass','checkclasschecked',
-				'spellcheck','max','min','pattern','placeholder','readonly','step'
-				);
+			$forcedatts=getDBFormForcedAtts();
 			foreach($forcedatts as $copt){
 				if(isset($params[$field.'_'.$copt])){
 					$opts[$copt]=$params[$field.'_'.$copt];

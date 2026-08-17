@@ -8185,12 +8185,55 @@ function commonReplaceFirst($htm,$find,$replace){
 	if($pos===false){return $htm;}
 	return substr_replace($htm,$replace,$pos,strlen($find));
 }
+//---------- begin function commonMaskHtmlComments
+/**
+* @describe swaps every html comment out for a placeholder so a tag processor's regex cannot
+*	match a tag name that is only being talked about in a comment
+* @param string $htm - the haystack
+* @param array $map - filled with placeholder=>original comment, pass to commonUnmaskHtmlComments
+* @return string - $htm with comments replaced by placeholders
+* @usage
+*	$comments=array();
+*	$htm=commonMaskHtmlComments($htm,$comments);
+*	...process tags...
+*	return commonUnmaskHtmlComments($htm,$comments);
+* @notes the tag processors are plain regexes over the whole rendered document, so
+*	"<!-- builds the chartjs tags -->" was matched as a real opening tag and everything up to
+*	the next genuine closing tag got swallowed into the hidden _data div. Placeholders are
+*	themselves comments, so markup stays valid even if one is never restored.
+*/
+function commonMaskHtmlComments($htm,&$map){
+	$map=array();
+	if(!stringContains($htm,'<!--')){return $htm;}
+	return preg_replace_callback('/\<\!\-\-.*?\-\-\>/s',function($m) use (&$map){
+		$key='<!--wamask'.count($map).'-->';
+		$map[$key]=$m[0];
+		return $key;
+	},$htm);
+}
+//---------- begin function commonUnmaskHtmlComments
+/**
+* @describe puts the real html comments back after commonMaskHtmlComments
+* @param string $htm
+* @param array $map - as filled by commonMaskHtmlComments
+* @return string
+* @usage return commonUnmaskHtmlComments($htm,$comments);
+*/
+function commonUnmaskHtmlComments($htm,$map){
+	if(!is_array($map) || !count($map)){return $htm;}
+	return str_replace(array_keys($map),array_values($map),$htm);
+}
 //---------- begin function commonProcessChartjsTags
 function commonProcessChartjsTags($htm){
 	global $CONFIG;
 	if(!stringContains($htm,'<chartjs')){return $htm;}
 	//loadExtrasJs(array('chart','chartjs-plugin-labels','chartjs-plugin-doughnutlabel'));
-	preg_match_all('/\<chartjs(.*?)\>(.*?)\<\/chartjs\>/ism',$htm,$chartjs,PREG_PATTERN_ORDER);
+	//hide comments first - see commonMaskHtmlComments. Restored on the way out, AFTER the
+	//malformed-tag check below, so a tag name mentioned in a comment cannot trip that either
+	$chartjs_comments=array();
+	$htm=commonMaskHtmlComments($htm,$chartjs_comments);
+	//the (\s[^>]*?)? prefix keeps this from matching a tag that merely STARTS with chartjs
+	preg_match_all('/\<chartjs(\s[^\>]*?)?\>(.*?)\<\/chartjs\>/ism',$htm,$chartjs,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole chartjs tag
 		1 = the chartjs attributes
@@ -8355,8 +8398,10 @@ function commonProcessChartjsTags($htm){
 				$atts=$chartjs_attributes;
 				$atts['data-label']=$dataset;
 				if($values_count > 1){
-					$atts['data-backgroundcolor']=$colors[$i];
-					$atts['data-bordercolor']=$bcolors[$i];
+					//wrap the palette - more datasets than colors is common and used to
+					//emit undefined index warnings and leave later series uncolored
+					$atts['data-backgroundcolor']=$colors[$i % count($colors)];
+					$atts['data-bordercolor']=$bcolors[$i % count($bcolors)];
 				}
 				$replace_str.='<dataset ';
 				$replace_str .= setTagAttributes($atts);
@@ -8530,7 +8575,7 @@ function commonProcessChartjsTags($htm){
 	if(stringContains($htm,'<chartjs')){
     	debugValue("chartjs Tag Error detected - perhaps a malformed 'chartjs' tag");
 	}
-	return $htm;
+	return commonUnmaskHtmlComments($htm,$chartjs_comments);
 }
 //---------- begin function commonProcessDBListRecordsTags
 /**
@@ -8548,8 +8593,11 @@ function commonProcessDBListRecordsTags($htm){
 	global $CONFIG;
 	global $PAGE;
 	if(!stringContains($htm,'<dblistrecords')){return $htm;}
+	//same comment hazard as the chartjs processor - see commonMaskHtmlComments
+	$dblistrecords_comments=array();
+	$htm=commonMaskHtmlComments($htm,$dblistrecords_comments);
 	$htm_ori=$htm;
-	preg_match_all('/\<dblistrecords(.*?)\>(.*?)\<\/dblistrecords\>/ism',$htm,$dblistrecords,PREG_PATTERN_ORDER);
+	preg_match_all('/\<dblistrecords(\s[^\>]*?)?\>(.*?)\<\/dblistrecords\>/ism',$htm,$dblistrecords,PREG_PATTERN_ORDER);
 	/* this returns an array of three arrays
 		0 = the whole datalist tag
 		1 = the datalist attributes
@@ -8648,7 +8696,7 @@ function commonProcessDBListRecordsTags($htm){
 	if(stringContains($htm,'<dblistrecords')){
     	debugValue("dblistrecords Tag Error detected - perhaps a malformed 'dblistrecords' tag");
 	}
-	return $htm;
+	return commonUnmaskHtmlComments($htm,$dblistrecords_comments);
 }
 
 //---------- begin function renderView---------------------------------------
@@ -26383,26 +26431,28 @@ function verboseSize($bytes=0,$format=''){
 * @usage verboseTime($seconds);
 */
 function verboseTime($num=0,$notate=0,$nosecs=0) {
-	$years=0;$days=0;$hrs=0;$min=0;$sec=0;
-	if($num>31536000){
+	$years=0;$months=0;$days=0;$hrs=0;$min=0;$sec=0;
+	//NOTE: these are all >= on purpose - a value sitting exactly on a boundary
+	//belongs to the larger unit (60 is 1 min, not 60 secs; 86400 is 1 day, not 24 hrs)
+	if($num>=31536000){
 		$years=intval($num/31536000);
 		$num=($num-($years*31536000));
 		}
 	//1 month = 2629743 seconds
-	if($num>2629743){
+	if($num>=2629743){
 		$months=intval($num/2629743);
 		$num=($num-($months*2629743));
 		}
 	//1 day = 86400 seconds
-	if($num>86400){
+	if($num>=86400){
 		$days=intval($num/86400);
 		$num=($num-($days*86400));
 		}
-	if($num>3600){
+	if($num>=3600){
 		$hrs=intval($num/3600);
 		$num=($num-($hrs*3600));
 		}
-	if($num>60){
+	if($num>=60){
 		$min=intval($num/60);
 		$num=($num-($min*60));
 		}
@@ -26422,7 +26472,7 @@ function verboseTime($num=0,$notate=0,$nosecs=0) {
 		return $string;
     }
 	if($years){$string .= $years . ' yrs ';}
-	if(isset($months)){$string .= $months . ' months ';}
+	if($months){$string .= $months . ' months ';}
 	if($days){$string .= $days . ' days ';}
 	if(!$days){
 		if($hrs){$string .= $hrs . ' hrs ';}

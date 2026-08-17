@@ -4073,6 +4073,17 @@ const wacss = {
             			}
             		}
 				};
+				//...but turn interaction back on for the types that need it. Only applied to
+				//the defaults - a page that supplied its own <options> gets them verbatim
+				if(wacss.chartjsWantsTooltips(list[i])){
+					delete lconfig.options.events;
+					lconfig.options.tooltips={enabled:true};
+				}
+			}
+			//an explicit inline height means the page wants the chart to fill it - see the
+			//matching guard in initChartJs. Nothing in core sets maintainAspectRatio otherwise
+			if(undefined == lconfig.options.maintainAspectRatio && undefined != list[i].style && list[i].style.height.length){
+				lconfig.options.maintainAspectRatio=false;
 			}
 			//labels
 			let labelsdiv=datadiv.querySelector('labels');
@@ -4284,6 +4295,45 @@ const wacss = {
 		}
 	},
 	/**
+	* @name wacss.chartjsWantsTooltips
+	* @describe should this chart be interactive (hover tooltips)? data-tooltips="1"/"0" wins;
+	*	otherwise only pie is interactive by default
+	* @param object el - the chart div
+	* @return boolean
+	* @usage if(wacss.chartjsWantsTooltips(list[i])){...}
+	* @notes core's default option set is deliberately lightweight (events:false,
+	*	tooltips.enabled:false) for display-only charts. That is harmless for line/bar/
+	*	horizontalbar/doughnut, whose options initChartJs replaces moments later, but a pie is
+	*	built once and never re-optioned - so it was the one type stuck with interaction off,
+	*	and a pie slice carries no value at all until you hover it.
+	*/
+	chartjsWantsTooltips: function(el){
+		if(undefined == el || undefined == el.dataset){return false;}
+		if(undefined != el.dataset.tooltips){
+			let want=String(el.dataset.tooltips).toLowerCase();
+			return (want=='1' || want=='true');
+		}
+		return (String(el.dataset.type || '').toLowerCase() == 'pie');
+	},
+	/**
+	* @name wacss.chartjsAxes
+	* @describe ensures options.scales.xAxes[0]/yAxes[0] and their ticks exist, and returns
+	*	options.scales. data-stacked / data-beginatzero used to dereference this path blind,
+	*	which threw whenever the chart tag supplied no <options> block
+	* @param object options - a chart config options object (modified in place)
+	* @return object - options.scales
+	* @usage let scales=wacss.chartjsAxes(config.options);
+	*/
+	chartjsAxes: function(options){
+		if(undefined == options){return {};}
+		if(undefined == options.scales){options.scales={};}
+		if(undefined == options.scales.xAxes || !options.scales.xAxes.length){options.scales.xAxes=[{}];}
+		if(undefined == options.scales.yAxes || !options.scales.yAxes.length){options.scales.yAxes=[{}];}
+		if(undefined == options.scales.xAxes[0].ticks){options.scales.xAxes[0].ticks={};}
+		if(undefined == options.scales.yAxes[0].ticks){options.scales.yAxes[0].ticks={};}
+		return options.scales;
+	},
+	/**
 	* @name wacss.initChartJs
 	* @describe initializes Chart.js charts on the page
 	* @param string initid
@@ -4346,6 +4396,9 @@ const wacss = {
 	    );
 	    let colors=new Array();
 	    let bcolors=new Array();
+	    //declared here on purpose - without it the assignments below create an implicit
+	    //window.options global that collides with any page variable of the same name
+	    let options={};
 			for(let i=0;i<list.length;i++){
 			if(undefined == list[i].id){
 					continue;
@@ -4400,6 +4453,13 @@ const wacss = {
 				options={
 					responsive:true
 				};
+			}
+			//nothing in core sets maintainAspectRatio, so Chart.js holds its own 2:1 ratio and
+			//ignores a sized box. An explicit inline height means the page wants the chart to
+			//fill it - charts sized by a class or their parent are left alone on purpose, since
+			//maintainAspectRatio:false on an auto-height container collapses the canvas
+			if(undefined == options.maintainAspectRatio && undefined != list[i].style && list[i].style.height.length){
+				options.maintainAspectRatio=false;
 			}
 			let foundchart=0;
 			switch(type){
@@ -4571,17 +4631,27 @@ const wacss = {
 								}
 								//check for fillColor in dataset itself
 								for(let ds=0;ds<udataset.data.length;ds++){
-									if(undefined != udataset.data[ds].pointBackgroundColor){
-										udataset.pointBackgroundColor[ds]=udataset.data[ds].pointBackgroundColor;
+									//a data point is normally a number - only an object carries per-point
+									//colors. null is the usual way to pad a series and reading a property
+									//off it used to throw and abort the whole chart build
+									let dp=udataset.data[ds];
+									if(dp === null || typeof dp !== 'object'){continue;}
+									//accept either casing - the build path below reads the lowercase keys
+									let pbgcolor=dp.pointBackgroundColor || dp.pointbackgroundcolor;
+									let pbdcolor=dp.pointBorderColor || dp.pointbordercolor;
+									let bgcolor=dp.backgroundColor || dp.backgroundcolor;
+									let bdcolor=dp.borderColor || dp.bordercolor;
+									if(undefined != pbgcolor){
+										udataset.pointBackgroundColor[ds]=pbgcolor;
 									}
-									if(undefined != udataset.data[ds].pointBorderColor){
-										udataset.pointBorderColor[ds]=udataset.data[ds].pointBorderColor;
+									if(undefined != pbdcolor){
+										udataset.pointBorderColor[ds]=pbdcolor;
 									}
-									if(undefined != udataset.data[ds].backgroundColor){
-										udataset.backgroundColor[ds]=udataset.data[ds].backgroundColor;
+									if(undefined != bgcolor){
+										udataset.backgroundColor[ds]=bgcolor;
 									}
-									if(undefined != udataset.data[ds].borderColor){
-										udataset.borderColor[ds]=udataset.data[ds].borderColor;
+									if(undefined != bdcolor){
+										udataset.borderColor[ds]=bdcolor;
 									}
 								}
 								wacss.chartjs[list[i].id].config.data.datasets[ud] = udataset;
@@ -4590,31 +4660,18 @@ const wacss = {
 		        			if((undefined == labels || labels.length==0) && undefined != datasetLabels && datasetLabels.length > 0){
 								wacss.chartjs[list[i].id].config.data.labels=datasetLabels;
 							}
-							if(undefined != list[i].getAttribute('data-stacked') && 
+							if(undefined != list[i].getAttribute('data-stacked') &&
 								(list[i].getAttribute('data-stacked')==1 || list[i].getAttribute('data-stacked').toLowerCase()=='true')
 								){
-								if(undefined != wacss.chartjs[list[i].id].config.options.scales.yAxes[0]){
-									wacss.chartjs[list[i].id].config.options.scales.yAxes[0].stacked=true;
-								}
-								if(undefined != wacss.chartjs[list[i].id].config.options.scales.xAxes[0]){
-									wacss.chartjs[list[i].id].config.options.scales.xAxes[0].stacked=true;
-								}
+								let uscales=wacss.chartjsAxes(wacss.chartjs[list[i].id].config.options);
+								uscales.yAxes[0].stacked=true;
+								uscales.xAxes[0].stacked=true;
 							}
-							if(undefined != list[i].getAttribute('data-beginatzero') && 
+							if(undefined != list[i].getAttribute('data-beginatzero') &&
 								(list[i].getAttribute('data-beginatzero')==1 || list[i].getAttribute('data-beginatzero').toLowerCase()=='true')
 								){
-								if(undefined == lconfig.options.scales){
-									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-								}
-								if(undefined == lconfig.options.scales.yAxes[0]){
-									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-								}
-								if(undefined == lconfig.options.scales.yAxes[0].ticks){
-									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-								}
-								if(undefined == lconfig.options.scales.yAxes[0].ticks.beginAtZero){
-									lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-								}
+								let uscales=wacss.chartjsAxes(wacss.chartjs[list[i].id].config.options);
+								uscales.yAxes[0].ticks.beginAtZero=true;
 							}
 		        			wacss.chartjs[list[i].id].update();
 		        			foundchart=1;
@@ -4630,37 +4687,19 @@ const wacss = {
 							options:options
 						};
 						//stacked?
-						if(undefined != list[i].getAttribute('data-stacked') && 
+						if(undefined != list[i].getAttribute('data-stacked') &&
 							(list[i].getAttribute('data-stacked')==1 || list[i].getAttribute('data-stacked').toLowerCase()=='true')
 							){
-							if(undefined != lconfig.options.scales){
-								lconfig.options.scales.yAxes[0].stacked=true;
-								lconfig.options.scales.xAxes[0].stacked=true;	
-							}
-							if(undefined != lconfig.options.scales.yAxes[0]){
-								lconfig.options.scales.yAxes[0].stacked=true;	
-							}
-							if(undefined != lconfig.options.scales.xAxes[0]){
-								lconfig.options.scales.xAxes[0].stacked=true;
-							}
-
+							let lscales=wacss.chartjsAxes(lconfig.options);
+							lscales.yAxes[0].stacked=true;
+							lscales.xAxes[0].stacked=true;
 						}
-								//beginatzero
-						if(undefined != list[i].getAttribute('data-beginatzero') && 
+						//beginatzero
+						if(undefined != list[i].getAttribute('data-beginatzero') &&
 							(list[i].getAttribute('data-beginatzero')==1 || list[i].getAttribute('data-beginatzero').toLowerCase()=='true')
 							){
-							if(undefined != lconfig.options.scales){
-								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-							}
-							if(undefined != lconfig.options.scales.yAxes[0]){
-								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-							}
-							if(undefined != lconfig.options.scales.yAxes[0].ticks){
-								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-							}
-							if(undefined != lconfig.options.scales.yAxes[0].ticks.beginAtZero){
-								lconfig.options.scales.yAxes[0].ticks.beginAtZero=true;	
-							}
+							let lscales=wacss.chartjsAxes(lconfig.options);
+							lscales.yAxes[0].ticks.beginAtZero=true;
 						}
 	        			//look for datasets;
 		        			let datasets=datadiv.querySelectorAll('dataset');
@@ -4736,17 +4775,25 @@ const wacss = {
 							}
 							//check for fillColor in dataset itself
 							for(let ds=0;ds<dataset.data.length;ds++){
-								if(undefined != dataset.data[ds].pointbackgroundcolor){
-									dataset.pointBackgroundColor[ds]=dataset.data[ds].pointbackgroundcolor;
+								//see the matching loop on the update path - null/number points are
+								//skipped, and either casing of the color keys is accepted
+								let dp=dataset.data[ds];
+								if(dp === null || typeof dp !== 'object'){continue;}
+								let pbgcolor=dp.pointBackgroundColor || dp.pointbackgroundcolor;
+								let pbdcolor=dp.pointBorderColor || dp.pointbordercolor;
+								let bgcolor=dp.backgroundColor || dp.backgroundcolor;
+								let bdcolor=dp.borderColor || dp.bordercolor;
+								if(undefined != pbgcolor){
+									dataset.pointBackgroundColor[ds]=pbgcolor;
 								}
-								if(undefined != dataset.data[ds].pointbordercolor){
-									dataset.pointBorderColor[ds]=dataset.data[ds].pointbordercolor;
+								if(undefined != pbdcolor){
+									dataset.pointBorderColor[ds]=pbdcolor;
 								}
-								if(undefined != dataset.data[ds].backgroundcolor){
-									dataset.backgroundColor[ds]=dataset.data[ds].backgroundcolor;
+								if(undefined != bgcolor){
+									dataset.backgroundColor[ds]=bgcolor;
 								}
-								if(undefined != dataset.data[ds].bordercolor){
-									dataset.borderColor[ds]=dataset.data[ds].bordercolor;
+								if(undefined != bdcolor){
+									dataset.borderColor[ds]=bdcolor;
 								}
 							}
 							lconfig.data.datasets.push(dataset);
@@ -4854,7 +4901,6 @@ const wacss = {
 	        				},
 	        				options: {
 	        					responsive: true,
-	                    		events: false,
 	                    		animation: {animateScale:false,animateRotate:true},
 	        					title:{
 	        						display: list[i].dataset.label?true:false,
@@ -4883,6 +4929,12 @@ const wacss = {
 							    }
 	        				}
 	        			};
+	        			//pie is interactive by default - data-tooltips="0" gives back the old
+	        			//display-only chart. Matches the rule in initChartJsBehavior
+	        			if(!wacss.chartjsWantsTooltips(list[i])){
+	        				pconfig.options.events=false;
+	        				pconfig.options.tooltips={enabled:false};
+	        			}
 		        			if(undefined != labels && labels.length > 0){
 							pconfig.data.labels=labels;
 						}
