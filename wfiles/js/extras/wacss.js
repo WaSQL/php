@@ -2209,6 +2209,270 @@ const wacss = {
 		}
 		return false;
 	},
+	/**
+	* @name wacss.formSetFrequency
+	* @describe syncs a buildFormFrequency field (textarea) with the checkboxes in its wizard container. Called with no value it reads the checked boxes and writes the JSON value back to the field. Called with a value it checks the boxes to match.
+	* @param fid string - id of the frequency field (the wizard container is fid_container)
+	* @param [v] mixed - JSON string, object like {minute:[0],hour:[-1],month:[-1],day:[-1],dayname:[-1]}, an object like {reset:['minute','hour']} to clear sections, or an integer count of minutes (1,5,10,15,20,30,60,720,1440,10080,43829). Omit to read the current checkbox state.
+	* @return boolean false
+	* @usage wacss.formSetFrequency('addedit_frequency',wacss.getText('addedit_frequency'));
+	*/
+	formSetFrequency: function(fid,v){
+		let container=document.querySelector('#'+fid+'_container');
+		if(undefined==container){
+			console.log('wacss.formSetFrequency - no container');
+			return false;
+		}
+		let minutes=container.querySelectorAll('input.frequency_minute');
+		let hours=container.querySelectorAll('input.frequency_hour');
+		let months=container.querySelectorAll('input.frequency_month');
+		let days=container.querySelectorAll('input.frequency_day');
+		let daynames=container.querySelectorAll('input.frequency_dayname');
+		let field=container.querySelector('#'+fid);
+		let nv={minute:[],hour:[],month:[],day:[],dayname:[]};
+		//check for every minute 
+		if(undefined != v){
+			if(typeof(v)=='number'){
+				switch(v){
+					case 1:v={minute:[-1],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 5:v={minute:[0,5,10,15,20,25,30,35,40,45,50,55],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 10:v={minute:[0,10,20,30,40,50],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 15:v={minute:[0,15,30,45],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 20:v={minute:[0,20,40],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 30:v={minute:[0,30],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 60:v={minute:[0],hour:[-1],month:[-1],day:[-1],dayname:[-1]};break;
+					case 1440:v={minute:[0],hour:[0],month:[-1],day:[-1],dayname:[-1]};break;
+					case 720:v={minute:[0],hour:[0,12],month:[-1],day:[-1],dayname:[-1]};break;
+					case 10080:v={minute:[0],hour:[0],month:[-1],day:[1,8,15,22],dayname:[-1]};break;
+					case 43829:v={minute:[0],hour:[0],month:[-1],day:[1],dayname:[-1]};break;
+				}
+				//console.log('number');
+				//console.log(v);
+			}
+			if(typeof(v)=='string'){
+				if(v.length > 0){v=JSON.parse(v);}
+				else{v={minute:[],hour:[],month:[],day:[],dayname:[]};}
+			}
+			if(v.reset){
+				for(let y=0;y<v.reset.length;y++){
+					switch(v.reset[y]){
+						case 'minute':
+							for(let x=0;x<minutes.length;x++){minutes[x].checked=false;}
+							let mclear=container.querySelector('span[title="clear minutes"]');
+							if(undefined != mclear){mclear.style.color='#6c757d';}
+						break;
+						case 'hour':
+							for(let x=0;x<hours.length;x++){hours[x].checked=false;}
+							let hclear=container.querySelector('span[title="clear hours"]');
+							if(undefined != hclear){hclear.style.color='#6c757d';}
+						break;
+						case 'day':
+							for(let x=0;x<days.length;x++){days[x].checked=false;}
+							let dclear=container.querySelector('span[title="clear days"]');
+							if(undefined != dclear){dclear.style.color='#6c757d';}
+						break;
+						case 'dayname':
+							for(let x=0;x<daynames.length;x++){daynames[x].checked=false;}
+							let dnclear=container.querySelector('span[title="clear daynames"]');
+							if(undefined != dnclear){dnclear.style.color='#6c757d';}
+						break;
+						case 'month':
+							for(let x=0;x<months.length;x++){months[x].checked=false;}
+							let moclear=container.querySelector('span[title="clear months"]');
+							if(undefined != moclear){moclear.style.color='#6c757d';}
+						break;
+					}
+				}
+				wacss.formSetFrequency(field.id);
+				return false;
+			}
+			/*minutes*/
+			for(let x=0;x<minutes.length;x++){
+				let hval=parseInt(minutes[x].value);
+				if(undefined != v.minute && undefined != v.minute[0] && v.minute[0]==-1){
+					minutes[x].checked=true;
+					nv.minute=[-1];
+				}
+				else if(wacss.in_array(hval,v.minute)){
+					minutes[x].checked=true;
+					nv.minute.push(hval);
+				}
+				else{
+					minutes[x].checked=false;
+				}
+			}
+			/*hours*/
+			for(let x=0;x<hours.length;x++){
+				let hval=parseInt(hours[x].value);
+				if(undefined != v.hour && undefined != v.hour[0] && v.hour[0]==-1){
+					hours[x].checked=true;
+					nv.hour=[-1];
+				}
+				else if(wacss.in_array(hval,v.hour)){
+					hours[x].checked=true;
+					nv.hour.push(hval);
+				}
+				else{
+					hours[x].checked=false;
+				}
+			}
+			/*months*/
+			for(let x=0;x<months.length;x++){
+				let hval=parseInt(months[x].value);
+				if(undefined != v.month && undefined != v.month[0] && v.month[0]==-1){
+					months[x].checked=true;
+					nv.month=[-1];
+				}
+				else if(wacss.in_array(hval,v.month)){
+					months[x].checked=true;
+					nv.month.push(hval)	
+				}
+				else{months[x].checked=false;}
+			}
+			/*days*/
+			for(let x=0;x<days.length;x++){
+				let hval=parseInt(days[x].value);
+				if(undefined != v.day && undefined != v.day[0] && v.day[0]==-1){
+					days[x].checked=true;
+					nv.day=[-1];
+				}
+				else if(wacss.in_array(hval,v.day)){
+					days[x].checked=true;
+					nv.day.push(hval);	
+				}
+				else{days[x].checked=false;}
+			}
+			/*daynames*/
+			//console.log(v);
+			for(let x=0;x<daynames.length;x++){
+				let hval=parseInt(daynames[x].value);
+				if(undefined != v.dayname && undefined != v.dayname[0] && v.dayname[0]==-1){
+					daynames[x].checked=true;
+					nv.dayname=[-1];
+				}
+				else if(wacss.in_array(hval,v.dayname)){
+					daynames[x].checked=true;
+					nv.dayname.push(hval);	
+				}
+				else{daynames[x].checked=false;}
+			}
+			wacss.setText(field,JSON.stringify(nv));
+		}
+		else{
+			/*minutes*/
+			for(let x=0;x<minutes.length;x++){
+				let hval=parseInt(minutes[x].value);
+				if(minutes[x].checked){
+					nv.minute.push(hval);
+				}
+			}
+			if(minutes.length == nv.minute.length){
+				nv.minute=[-1];
+			}
+			else if(nv.minute.length==0){
+				nv.minute=[0];
+			}
+			/*hours*/
+			for(let x=0;x<hours.length;x++){
+				let hval=parseInt(hours[x].value);
+				if(hours[x].checked){
+					nv.hour.push(hval);
+				}
+			}
+			if(hours.length == nv.hour.length){
+				nv.hour=[-1];
+			}
+			else if(nv.hour.length==0){
+				nv.hour=[0];
+			}
+			/*months*/
+			for(let x=0;x<months.length;x++){
+				let hval=parseInt(months[x].value);
+				if(months[x].checked){
+					nv.month.push(hval);
+				}
+			}
+			if(months.length == nv.month.length){
+				nv.month=[-1];
+			}
+			else if(nv.month.length == 0){
+				nv.month=[-1]
+			}
+			/*days*/
+			for(let x=0;x<days.length;x++){
+				let hval=parseInt(days[x].value);
+				if(days[x].checked){
+					nv.day.push(hval);
+				}
+			}
+			if(days.length == nv.day.length){
+				nv.day=[-1];
+			}
+			else if(nv.day.length==0){
+				nv.day=[1];
+			}
+			/*daynames*/
+			for(let x=0;x<daynames.length;x++){
+				let hval=parseInt(daynames[x].value);
+				//console.log(daynames[x]);
+				if(daynames[x].checked){
+					nv.dayname.push(hval);
+				}
+			}
+			if(daynames.length == nv.dayname.length){
+				nv.dayname=[-1];
+			}
+			else if(nv.dayname.length==0){
+				nv.dayname=[1];
+			}
+			wacss.setText(field,JSON.stringify(nv));
+			wacss.formSetFrequency(field.id,field.value);
+		}
+		//set clear icons
+		if(nv.minute.length > 0){
+			container.querySelector('span[title="clear minutes"]').style.color='#c51017';	
+		}
+		if(nv.hour.length > 0){
+			container.querySelector('span[title="clear hours"]').style.color='#c51017';	
+		}
+		if(nv.day.length > 0){
+			container.querySelector('span[title="clear days"]').style.color='#c51017';	
+		}
+		if(nv.dayname.length > 0){
+			container.querySelector('span[title="clear daynames"]').style.color='#c51017';	
+		}
+		if(nv.month.length > 0){
+			container.querySelector('span[title="clear months"]').style.color='#c51017';	
+		}
+		return false;
+	},
+	/**
+	* @name wacss.formSetFrequencyDisplay
+	* @describe shows or hides the wizard (fid_wizard) of a buildFormFrequency field
+	* @param fid string - id of the frequency field
+	* @param s boolean - 1 to show the wizard, 0 to hide it
+	* @return boolean false
+	* @usage wacss.formSetFrequencyDisplay('addedit_frequency',1);
+	*/
+	formSetFrequencyDisplay: function(fid,s){
+		let ev=this.event || window.event;
+		ev.stopPropagation();
+		let fidstr='#'+fid+'_wizard';
+		let wizard=document.querySelector(fidstr);
+		if(undefined==wizard){
+			//console.log(fidstr+' not found');
+			return false;
+		}
+		if(s){
+			wizard.style.display='block';
+			if(wacss.isFunction(window.commonOpenClose)){commonOpenClose(wizard,'display','none');}
+			//console.log('formSetFrequencyDisplay:'+wizard);
+		}
+		else{
+			wizard.style.display='none';
+		}
+		return false;
+	},
 	formValidate: function(frm){   
     	
 	},

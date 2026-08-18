@@ -5288,35 +5288,35 @@ function buildFormFrequency($name,$params=array()){
 	$sectionstr=implode("','",$sections);
 	$rtn=<<<ENDOFRTN
 	<div id="{$params['id']}_container" data-display="block" {$displayif}>
-		<div><textarea name="{$name}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="formSetFrequencyDisplay(this.id,1);" onblur="formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
+		<div><textarea name="{$name}" id="{$params['id']}" class="w_frequency{$class}" {$style}{$placeholder}{$required} onfocus="wacss.formSetFrequencyDisplay(this.id,1);" onblur="wacss.formSetFrequency(this.id,this.value);" wrap="off">{$params['value']}</textarea></div>
 		<div id="{$params['id']}_wizard" data-sections="{$sectionstr}" class="w_frequency_wizard" style="display:none;min-height:100px;">
 			<div style="display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;" data-type="section" style="border-top:0px;">
 ENDOFRTN;
 	
-	$rtn .= '				<span class="icon-frequency w_pointer" title="clear all" onclick="return formSetFrequency('."'{$params['id']}',{reset:['{$sectionstr}']});\"></span>".PHP_EOL;
+	$rtn .= '				<span class="icon-frequency w_pointer" title="clear all" onclick="return wacss.formSetFrequency('."'{$params['id']}',{reset:['{$sectionstr}']});\"></span>".PHP_EOL;
 	if(stringContains($sectionstr,'minute')){
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1],dayname:[-1]});\">Every Minute</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[-1],hour:[-1],month:[-1],day:[-1],dayname:[-1]});\">Every Minute</a>".PHP_EOL;
 	}
 	if(stringContains($sectionstr,'hour')){
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1],dayname:[-1]});\">Hourly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[-1],month:[-1],day:[-1],dayname:[-1]});\">Hourly</a>".PHP_EOL;
 	}
 	if(stringContains($sectionstr,'day') && stringContains($sectionstr,'month')){
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1],dayname:[-1]});\">Daily</a>".PHP_EOL;
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]},dayname:[-1]);\">Weekly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15],dayname:[-1]});\">Bi-Monthly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1],dayname:[-1]});\">Monthly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1],dayname:[-1]});\">Quarterly</a>".PHP_EOL;
-		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1],dayname:[-1]});\">Yearly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[-1],dayname:[-1]});\">Daily</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,8,15,22]},dayname:[-1]);\">Weekly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1,15],dayname:[-1]});\">Bi-Monthly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[-1],day:[1],dayname:[-1]});\">Monthly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1,4,7,10],day:[1],dayname:[-1]});\">Quarterly</a>".PHP_EOL;
+		$rtn .= '				<a href="#" style="margin-left:10px;" class="w_link w_gray" onclick="return wacss.formSetFrequency('."'{$params['id']}',{minute:[0],hour:[0],month:[1],day:[1],dayname:[-1]});\">Yearly</a>".PHP_EOL;
 	}
 	$rtn .= '			</div>'.PHP_EOL;
 	if(stringContains($sectionstr,'minute')){
 	//minutes
-		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Minutes</span><span class="icon-erase w_pointer" title="clear minutes" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'minute\']});"></span></div>'.PHP_EOL;
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Minutes</span><span class="icon-erase w_pointer" title="clear minutes" onclick="return wacss.formSetFrequency(\''.$params['id'].'\',{reset:[\'minute\']});"></span></div>'.PHP_EOL;
 		$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
 		for($x=0;$x<60;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_minute" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="wacss.formSetFrequency(\''.$params['id'].'\');" class="frequency_minute" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
 			if(($x+1)%10==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="minutes">'.PHP_EOL;
@@ -5326,12 +5326,12 @@ ENDOFRTN;
 	}
 	if(stringContains($sectionstr,'hour')){
 		//hours
-		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Hours</span><span class="icon-erase w_pointer" title="clear hours" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'hour\']});"></span></div>'.PHP_EOL;
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Hours</span><span class="icon-erase w_pointer" title="clear hours" onclick="return wacss.formSetFrequency(\''.$params['id'].'\',{reset:[\'hour\']});"></span></div>'.PHP_EOL;
 		$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
 		for($x=0;$x<24;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_hour" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="wacss.formSetFrequency(\''.$params['id'].'\');" class="frequency_hour" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
 			if(($x+1)%12==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="hours">'.PHP_EOL;
@@ -5341,12 +5341,12 @@ ENDOFRTN;
 	}
 	if(stringContains($sectionstr,'day')){
 		//days
-		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Days</span><span class="icon-erase w_pointer" title="clear days" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'day\']});"></span></div>'.PHP_EOL;
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Days</span><span class="icon-erase w_pointer" title="clear days" onclick="return wacss.formSetFrequency(\''.$params['id'].'\',{reset:[\'day\']});"></span></div>'.PHP_EOL;
 		$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
 		for($x=1;$x<29;$x++){
 			$v=$x;
 			if(strlen($v)==1){$v="0{$x}";}
-			$rtn .= '		      	<label><input type="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_day" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" onclick="wacss.formSetFrequency(\''.$params['id'].'\');" class="frequency_day" value="'.$v.'" > '.$v.'</label>'.PHP_EOL;
 			if($x%7==0){
 				$rtn .= '		    </div>'.PHP_EOL;
 				$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
@@ -5356,41 +5356,41 @@ ENDOFRTN;
 	}
 	if(stringContains($sectionstr,'dayname')){
 		//daynames
-		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Daynames</span><span class="icon-erase w_pointer" title="clear daynames" onclick="return formSetFrequency(\''.$params['id'].'\',{reset:[\'dayname\']});"></span></div>'.PHP_EOL;
+		$rtn .= '			<div class="w_frequency_row" data-type="section"><span>Daynames</span><span class="icon-erase w_pointer" title="clear daynames" onclick="return wacss.formSetFrequency(\''.$params['id'].'\',{reset:[\'dayname\']});"></span></div>'.PHP_EOL;
 		$rtn.='			<div class="w_frequency_row" data-type="days">'.PHP_EOL;
 		$daynames=array(0=>'Mon',1=>'Tue',2=>'Wed',3=>'Thu',4=>'Fri',5=>'Sat',6=>'Sun');
 		foreach($daynames as $tval=>$dval){
-			$rtn .= '		      	<label><input type="checkbox" data-inputtype="checkbox" onclick="formSetFrequency(\''.$params['id'].'\');" class="frequency_dayname" value="'.$tval.'" > '.$dval.'</label>'.PHP_EOL;
+			$rtn .= '		      	<label><input type="checkbox" data-inputtype="checkbox" onclick="wacss.formSetFrequency(\''.$params['id'].'\');" class="frequency_dayname" value="'.$tval.'" > '.$dval.'</label>'.PHP_EOL;
 		}
 		$rtn .= '		    </div>'.PHP_EOL;
 	}
 	if(stringContains($sectionstr,'month')){
 		$rtn.=<<<ENDOFRTN
-			<div class="w_frequency_row" data-type="section"><span>Months</span><span class="icon-erase w_pointer" title="clear months" onclick="return formSetFrequency('{$params['id']}',{reset:['month']});"></span></div>
+			<div class="w_frequency_row" data-type="section"><span>Months</span><span class="icon-erase w_pointer" title="clear months" onclick="return wacss.formSetFrequency('{$params['id']}',{reset:['month']});"></span></div>
 		    <div class="w_frequency_row" data-type="months">
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="1" > Jan</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="2" > Feb</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="3" > Mar</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="4" > Apr</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="5" > May</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="6" > Jun</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="1" > Jan</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="2" > Feb</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="3" > Mar</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="4" > Apr</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="5" > May</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="6" > Jun</label>
 		    </div>
 		    <div class="w_frequency_row" style="border-bottom:1px solid #ccc;" data-type="months">      	
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="7" > Jul</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="8" > Aug</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="9" > Sep</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="10" > Oct</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="11" > Nov</label>
-		      	<label><input type="checkbox" onclick="formSetFrequency('{$params['id']}');" class="frequency_month" value="12" > Dec</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="7" > Jul</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="8" > Aug</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="9" > Sep</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="10" > Oct</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="11" > Nov</label>
+		      	<label><input type="checkbox" onclick="wacss.formSetFrequency('{$params['id']}');" class="frequency_month" value="12" > Dec</label>
 		    </div>
 ENDOFRTN;
 	}
 	$rtn.=<<<ENDOFRTN
-	    	<div style="text-align: right;margin-top:5px"><a href="#" class="w_link w_gray" onclick="return formSetFrequencyDisplay('{$params['id']}',0);"><span class="icon-close"></span> done</a></div>
+	    	<div style="text-align: right;margin-top:5px"><a href="#" class="w_link w_gray" onclick="return wacss.formSetFrequencyDisplay('{$params['id']}',0);"><span class="icon-close"></span> done</a></div>
 	    </div>
 	</div>
 ENDOFRTN;
-	$rtn.=buildOnLoad("formSetFrequency('{$params['id']}',getText('{$params['id']}'));");
+	$rtn.=buildOnLoad("wacss.formSetFrequency('{$params['id']}',wacss.getText('{$params['id']}'));");
 	return $rtn;
 
 }

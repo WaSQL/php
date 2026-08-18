@@ -24,7 +24,7 @@ function cronAddEdit($id=0){
 			'inputtype'=>'frequency',
 			'style'=>'width:100%;height:32px;overflow:hidden;'
 		),
-		'frequency_onchange'=>"return formSetFrequency('addedit_run_format',parseInt(this.value));"
+		'frequency_onchange'=>"return wacss.formSetFrequency('addedit_run_format',parseInt(this.value));"
 	);
 	if($id > 0){
 		$opts['_id']=$id;

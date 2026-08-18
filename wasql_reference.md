@@ -717,6 +717,126 @@ A `_cron` table tracks jobs (`run_cmd` URL, `run_every`, `cron_pid`, `running`);
 
 ---
 
+## A reserved word as a column name makes a table unreadable (verified 2026-08-18)
+
+A column called **`cursor`** made `getDBRecord()`/`getDBRecords()` return an **empty
+array** for every row in the table, while `select * from that_table` over raw SQL read
+the rows perfectly.
+
+`CURSOR` is a MySQL reserved word, and WaSQL's read path enumerates column names into the
+SELECT **without backticking them**, so the generated statement is a syntax error. The
+error goes to the DB layer and the helper hands back an empty array — which is
+indistinguishable from "no rows".
+
+That is the expensive part: it presents as *"the record does not exist"*, so you go
+looking at permissions, `-nocache`, and whether the insert committed, and none of that is
+where the problem is.
+
+**Rule: never use a reserved word as a column name.** The ones most likely to be reached
+for in app schema: `cursor`, `order`, `group`, `key`, `range`, `rank`, `system`, `status`
+is fine but `condition`, `interval`, `lead`, `lag`, `usage`, `read`, `write` are not.
+When a table reads as empty through the helpers but fine over raw SQL, check the column
+names before anything else.
+
+Live example: `imago_import_jobs.page_cursor`, renamed from `cursor` (`imago_build.md` §18.3).
+
+## A page's `css`/`js` are page-scoped — shared styles belong in the template
+
+The same rule as `functions`, and just as easy to forget: a page's **`css` and `js` fields
+only load on that page**. Reuse another page's markup and you get the markup with none of
+its styling — no error, no console warning, just an unstyled block.
+
+It presents as "the CSS didn't load", which sends you to `?_menu=clearmin` and the `w_min`
+bundle. The bundle is fine; the rules were never in it for *this* page.
+
+**Where things belong:**
+
+| shared by | put it in |
+|---|---|
+| one page | that page's `css` / `js` / `functions` |
+| two or more pages | the **template's** `css` / `js`, or `functions_common` |
+
+**Move it, don't copy it.** Two copies of a CSS rule drift; two copies of a *function* are
+fatal — `Cannot redeclare` the moment one page loads both (see `imago_build.md` §14.1,
+where `imagoChartOptions()`/`imagoReportCard()` moved to `functions_common` *and* were
+deleted from the reports page).
+
+**Take the media queries with it.** A responsive rule left behind in the page that
+originally owned the layout is a bug waiting for the next page that reuses the markup.
+
+After editing a template's `css`/`js`, clear `css_min`/`js_min` on the template row and
+hit `?_menu=clearmin`, or the old bundle keeps serving.
+
+Live example: Imago's connectors page reused the retrospectives list markup and rendered
+unstyled until the `im-r*` list/card/chip/tile layout moved into the Main template
+(`imago_build.md` §19.4).
+
+## Calling a JSON REST API — use `postJSON()`; its limit is POST-only (verified 2026-08-18)
+
+**`postJSON($url,$json,$params)` sends a raw JSON body.** It is the right first choice and
+it does more than it looks like: it wraps `postBody()`, which handles content-type,
+encoding, timeouts, SSL, cookies, redirects and **HTTP basic auth**:
+
+```php
+$res=postJSON($url,encodeJson($body),array(
+    '-authuser'         => $user,          // basic auth, no manual base64 needed
+    '-authpass'         => $token,
+    '-headers'          => array('Accept: application/json'),
+    '-timeout'          => 60,
+    '-timeout_connect'  => 15
+));
+// $res['body'] is the response; $res['headers'] the parsed response headers
+```
+
+There is also `postXML()` for the same job with an XML body.
+
+**Do NOT reach for `postURL()` for a JSON API** — that one builds its payload with
+`http_build_query()` on the dashless params and has no raw-body option, so it can only
+send form-encoded data.
+
+### The real limitation: one verb
+
+`postBody()` sets `CURLOPT_POST` unconditionally and never sets `CURLOPT_CUSTOMREQUEST`,
+so **`postJSON()` can only POST**. That is fine for a webhook or a one-way push, and not
+enough for a REST *client*, which needs:
+
+| verb | typical use |
+|---|---|
+| GET | every read |
+| PUT | Jira issue update |
+| PATCH | ServiceNow record update |
+| DELETE | removing a sub-resource |
+
+So for a full client, call curl directly from the page layer rather than patching core:
+
+```php
+$ch=curl_init($url);
+curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+curl_setopt($ch,CURLOPT_CUSTOMREQUEST,strtoupper($method));   // the reason for going direct
+curl_setopt($ch,CURLOPT_HTTPHEADER,$headers);
+curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,15);
+curl_setopt($ch,CURLOPT_TIMEOUT,60);      // never let a remote API hang a cron
+if($body!==null){curl_setopt($ch,CURLOPT_POSTFIELDS,encodeJson($body));}
+$raw=curl_exec($ch);
+$status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
+curl_close($ch);
+```
+
+Two things worth copying with it:
+
+- **Always set both timeouts.** A remote API with no timeout is how one slow vendor turns
+  a five-minute cron slot into a hung PHP process.
+- **Translate the vendor's error body into one sentence.** Every API reports errors
+  differently (Jira `errorMessages[]`/`errors{}`, ServiceNow `error.message`, most others
+  `message`), and surfacing a bare `HTTP 400` sends somebody to read a log they cannot
+  reach. See `imagoSyncHttpError()` in the Imago `functions_sync` page.
+
+A `-method` option on `postBody()` would remove the need for any of this — it is a
+one-line change to core and a deliberate decision for the framework developer, not
+something to bundle into site work.
+
+Live example: Imago's connectors (`imago_build.md` §17).
+
 ## PHPDoc / JSDoc convention
 **Every function gets a docblock — PHP in `functions`, JS in the `js` field.** A `/** ... */` block above the signature: a one-line summary, then `@param {type} $name description` for each argument and `@return {type} description`. WaSQL harvests these to build its documentation, and they make the fields self-explanatory. Prefer this over loose `//` comments for describing what a function does (inline `//` notes inside the body are still fine). Keep section-separator comments (`//--Members--`) — put the docblock below the separator, above the function. Mark an internal helper to leave OUT of the generated manual with an `@exclude` tag (`/** @exclude - excluded from the manual */`).
 ```php
