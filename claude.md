@@ -55,6 +55,7 @@ Full mechanics, every flag's gotchas, and the manual fallback if the script fail
 11. **`sendMail` body key is `'message'`** (not `body`/`html`) or mail sends empty silently.
 12. **Don't invent class names or DOM helpers** — use `wacss_v2.css`/Bulma classes and `wacss.*` JS (see below).
 13. **PostEdit screenshots:** after edit→auto-sync→refresh, **nudge the window 1px before screenshotting** so the layout settles (baked into the `shot.js` helper in `postedit.md` — use it).
+14. **An inline `<script>` inside AJAX/centerpop-loaded content never runs.** `wacss.nav`/`wacss.ajaxGet`/`wacss.ajaxPost` and the centerpop opener all insert the response via `innerHTML`, which browsers never execute embedded `<script>` tags from — only `data-onload="…"` (a separate, real mechanism) runs. Any per-request PHP data a fragment's own JS needs (a "current value" object, a preset to load, etc.) must travel through the DOM itself — a hidden `<input value="…">`/`data-*` attribute the JS reads on init — never a `<script>var x=…;</script>` block in that fragment's HTML. Symptom: the static parts of a fragment render fine, but anything gated on JS reading that inline-script global silently no-ops (looks like "the JS never ran" with no console error).
 
 ## Page-field roles — think MVC (thin controller)
 - **`controller` = Controller.** Keep it THIN: route on `$PASSTHRU`, check auth, pick the view with `setView()`, call functions to fetch/build data. Reads like a table of contents.

@@ -6361,18 +6361,11 @@ function buildFormWYSIWYG($name,$params=array()){
 function buildHtmlBegin($params=array()){
 	$rtn='';
 	$rtn .= '<!DOCTYPE HTML>'.PHP_EOL;
-	$attrs = '';
-	if(function_exists('wasqlUserThemeAttrs')){
-		$attrs = wasqlUserThemeAttrs();
-	}
 	if(isset($_SERVER['LANG'])){
-		$rtn .= '<html lang="'.$_SERVER['LANG'].'"'.$attrs.'>'.PHP_EOL;
+		$rtn .= '<html lang="'.$_SERVER['LANG'].'">'.PHP_EOL;
 		}
-	else{$rtn .= '<html lang="en" style="max-width:100%; overflow-x:hidden;"'.$attrs.'>'.PHP_EOL;}
+	else{$rtn .= '<html lang="en" style="max-width:100%; overflow-x:hidden;">'.PHP_EOL;}
 	$rtn .= '<head>'.PHP_EOL;
-	if(function_exists('wasqlUserThemeAttrs')){
-		$rtn .= ' 	<script>(function(){var h=document.documentElement;var m=h.getAttribute("data-wasql-mode")||"system";if(m!=="system"){h.setAttribute("data-wasql-resolved",m);return;}function a(){var d=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;h.setAttribute("data-wasql-resolved",d?"dark":"light");}a();if(window.matchMedia){var q=window.matchMedia("(prefers-color-scheme: dark)");if(q.addEventListener){q.addEventListener("change",a);}else if(q.addListener){q.addListener(a);}}})();</script>'.PHP_EOL;
-	}
 	$rtn .= ' 	<link rel="icon" href="/wfiles/favicon.ico" type="image/x-icon" >'.PHP_EOL;
 	$rtn .= ' 	<link rel="shortcut icon" href="/wfiles/favicon.ico" type="image/x-icon" >'.PHP_EOL;
 	$title=setValue(array($params['title'],"WaSQL - {$_SERVER['HTTP_HOST']}"));

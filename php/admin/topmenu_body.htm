@@ -1,36 +1,8 @@
 <view:default>
-<!-- Theme Boot Script: Resolves system dark/light mode before paint -->
-<script type="text/javascript">
-(function(){
-	var h = document.documentElement;
-	var mode = h.getAttribute('data-wasql-mode') || 'system';
-	function resolveMode(){
-		if(mode === 'system'){
-			var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-			h.setAttribute('data-wasql-resolved', isDark ? 'dark' : 'light');
-		} else {
-			h.setAttribute('data-wasql-resolved', mode);
-		}
-	}
-	resolveMode();
-	if(window.matchMedia){
-		var mq = window.matchMedia('(prefers-color-scheme: dark)');
-		if(mq.addEventListener){ mq.addEventListener('change', resolveMode); }
-		else if(mq.addListener){ mq.addListener(resolveMode); }
-	}
-})();
-</script>
-
 <style>
-/* ==================== WASQL USER THEMES & TOKENS ==================== */
 :root {
 	--wa-accent: #3b5bfd;
-	--wa-accent-hover: #2544e8;
-	--wa-accent-2: #6d5cf7;
-	--wa-accent-ink: #1e3a8a;
 	--wa-accent-soft: #eff6ff;
-	--wa-accent-ring: rgba(59, 91, 253, 0.2);
-	--wa-bg: #f8fafc;
 	--wa-card: #ffffff;
 	--wa-ink: #0f172a;
 	--wa-ink-2: #334155;
@@ -41,245 +13,48 @@
 	--wa-nav-bg-2: #1e293b;
 	--wa-nav-ink: #f1f5f9;
 	--wa-nav-border: rgba(255, 255, 255, 0.08);
+	--wa-nav-overlay-1: rgba(255, 255, 255, 0.06);
+	--wa-nav-overlay-2: rgba(255, 255, 255, 0.08);
+	--wa-nav-overlay-3: rgba(255, 255, 255, 0.16);
+	--wa-nav-overlay-4: rgba(255, 255, 255, 0.18);
 }
 
-/* Light Palettes */
-html[data-wasql-theme="indigo"]:not([data-wasql-resolved="dark"]) {
-	--wa-accent: #3b5bfd; --wa-accent-hover: #2544e8; --wa-accent-2: #6d5cf7; --wa-accent-ink: #1e3a8a; --wa-accent-soft: #eff6ff; --wa-bg: #f8fafc; --wa-card: #ffffff;
+/* Admin Color Variants - topmenu background follows $CONFIG['admin_color'] (see topmenuGetColorClass()) */
+#admin_menu.wacss_navbar.is-black {
+	--wa-nav-bg: #050505; --wa-nav-bg-2: #1a1a1a;
 }
-html[data-wasql-theme="ocean"]:not([data-wasql-resolved="dark"]) {
-	--wa-accent: #0e7490; --wa-accent-hover: #086178; --wa-accent-2: #0891b2; --wa-accent-ink: #155e75; --wa-accent-soft: #ecfeff; --wa-bg: #f0fdfa; --wa-card: #ffffff;
+#admin_menu.wacss_navbar.is-gray, #admin_menu.wacss_navbar.is-grey {
+	--wa-nav-bg: #5f5f5f; --wa-nav-bg-2: #7a7a7a;
 }
-html[data-wasql-theme="forest"]:not([data-wasql-resolved="dark"]) {
-	--wa-accent: #15803d; --wa-accent-hover: #116731; --wa-accent-2: #059669; --wa-accent-ink: #166534; --wa-accent-soft: #f0fdf5; --wa-bg: #f3f8f4; --wa-card: #ffffff;
+#admin_menu.wacss_navbar.is-light {
+	--wa-nav-bg: #e2e2e2; --wa-nav-bg-2: #f5f5f5;
+	--wa-nav-ink: #363636; --wa-nav-border: rgba(0, 0, 0, 0.08);
+	--wa-nav-overlay-1: rgba(0, 0, 0, 0.05); --wa-nav-overlay-2: rgba(0, 0, 0, 0.07);
+	--wa-nav-overlay-3: rgba(0, 0, 0, 0.12); --wa-nav-overlay-4: rgba(0, 0, 0, 0.14);
 }
-html[data-wasql-theme="sunset"]:not([data-wasql-resolved="dark"]) {
-	--wa-accent: #c2410c; --wa-accent-hover: #9c340a; --wa-accent-2: #ea580c; --wa-accent-ink: #9a3412; --wa-accent-soft: #fff7ed; --wa-bg: #fef7f2; --wa-card: #ffffff;
+#admin_menu.wacss_navbar.is-link {
+	--wa-nav-bg: #3a4da3; --wa-nav-bg-2: #485fc7;
 }
-html[data-wasql-theme="plum"]:not([data-wasql-resolved="dark"]) {
-	--wa-accent: #9333ea; --wa-accent-hover: #7925c4; --wa-accent-2: #c026d3; --wa-accent-ink: #6b21a8; --wa-accent-soft: #faf5ff; --wa-bg: #fbf5fc; --wa-card: #ffffff;
+#admin_menu.wacss_navbar.is-info {
+	--wa-nav-bg: #3275ad; --wa-nav-bg-2: #3e8ed0;
 }
-
-/* Dark Palettes (Complete palettes keyed on data-wasql-resolved) */
-html[data-wasql-resolved="dark"] {
-	--wa-accent: #7f96ff;
-	--wa-accent-hover: #98abff;
-	--wa-accent-2: #a5b4fc;
-	--wa-accent-ink: #c7d2fe;
-	--wa-accent-soft: rgba(127, 150, 255, 0.14);
-	--wa-accent-ring: rgba(127, 150, 255, 0.28);
-	--wa-bg: #0b0f17;
-	--wa-card: #131b26;
-	--wa-ink: #f1f5f9;
-	--wa-ink-2: #cbd5e1;
-	--wa-ink-3: #94a3b8;
-	--wa-line: #1e293b;
-	--wa-line-soft: #141f2e;
-	--wa-nav-bg: #070a0f;
-	--wa-nav-bg-2: #0f172a;
-	--wa-nav-ink: #f8fafc;
-	--wa-nav-border: rgba(255, 255, 255, 0.06);
+#admin_menu.wacss_navbar.is-success {
+	--wa-nav-bg: #379870; --wa-nav-bg-2: #48c78e;
 }
-
-/* Midnight Dark */
-html[data-wasql-resolved="dark"][data-wasql-dark="midnight"],
-html[data-wasql-resolved="dark"]:not([data-wasql-dark]) {
-	--wa-accent: #7f96ff; --wa-accent-hover: #98abff; --wa-accent-2: #6366f1; --wa-bg: #090d16; --wa-card: #111827; --wa-line: #1f2937; --wa-line-soft: #162032;
-	--wa-nav-bg: #0c0f16; --wa-nav-bg-2: #161c28;
+#admin_menu.wacss_navbar.is-orange {
+	--wa-nav-bg: #cc7a00; --wa-nav-bg-2: #ff9800;
 }
-/* Nord Dark */
-html[data-wasql-resolved="dark"][data-wasql-dark="nord"] {
-	--wa-accent: #88c0d0; --wa-accent-hover: #9ecfdc; --wa-accent-2: #81a1c1; --wa-accent-ink: #d8dee9; --wa-accent-soft: rgba(136, 192, 208, 0.16);
-	--wa-bg: #242933; --wa-card: #2e3440; --wa-ink: #eceff4; --wa-ink-2: #e5e9f0; --wa-ink-3: #d8dee9; --wa-line: #3b4252; --wa-line-soft: #323846;
-	--wa-nav-bg: #1e222a; --wa-nav-bg-2: #2e3440;
+#admin_menu.wacss_navbar.is-warning {
+	--wa-nav-bg: #f0c94d; --wa-nav-bg-2: #ffe08a;
+	--wa-nav-ink: #3b3110; --wa-nav-border: rgba(0, 0, 0, 0.08);
+	--wa-nav-overlay-1: rgba(0, 0, 0, 0.05); --wa-nav-overlay-2: rgba(0, 0, 0, 0.07);
+	--wa-nav-overlay-3: rgba(0, 0, 0, 0.12); --wa-nav-overlay-4: rgba(0, 0, 0, 0.14);
 }
-/* Dracula Dark */
-html[data-wasql-resolved="dark"][data-wasql-dark="dracula"] {
-	--wa-accent: #bd93f9; --wa-accent-hover: #caa5fa; --wa-accent-2: #ff79c6; --wa-accent-ink: #f8f8f2; --wa-accent-soft: rgba(189, 147, 249, 0.16);
-	--wa-bg: #1e1f29; --wa-card: #282a36; --wa-ink: #f8f8f2; --wa-ink-2: #e2e8f0; --wa-ink-3: #6272a4; --wa-line: #44475a; --wa-line-soft: #343746;
-	--wa-nav-bg: #191a21; --wa-nav-bg-2: #282a36;
+#admin_menu.wacss_navbar.is-danger {
+	--wa-nav-bg: #c53152; --wa-nav-bg-2: #f14668;
 }
-/* Solarized Dark */
-html[data-wasql-resolved="dark"][data-wasql-dark="solarized"] {
-	--wa-accent: #268bd2; --wa-accent-hover: #3ea0e5; --wa-accent-2: #2aa198; --wa-accent-ink: #93a1a1; --wa-accent-soft: rgba(38, 139, 210, 0.16);
-	--wa-bg: #00212b; --wa-card: #002b36; --wa-ink: #eee8d5; --wa-ink-2: #93a1a1; --wa-ink-3: #657b83; --wa-line: #073642; --wa-line-soft: #052630;
-	--wa-nav-bg: #001a22; --wa-nav-bg-2: #002b36;
-}
-/* Carbon Dark */
-html[data-wasql-resolved="dark"][data-wasql-dark="carbon"] {
-	--wa-accent: #e4e4e7; --wa-accent-hover: #ffffff; --wa-accent-2: #a1a1aa; --wa-accent-ink: #ffffff; --wa-accent-soft: rgba(255, 255, 255, 0.1);
-	--wa-bg: #000000; --wa-card: #09090b; --wa-ink: #f4f4f5; --wa-ink-2: #d4d4d8; --wa-ink-3: #71717a; --wa-line: #27272a; --wa-line-soft: #18181b;
-	--wa-nav-bg: #000000; --wa-nav-bg-2: #18181b;
-}
-
-/* No-JS fallback */
-@media(prefers-color-scheme: dark) {
-	html:not([data-wasql-resolved]):not([data-wasql-mode="light"]) {
-		--wa-accent: #7f96ff;
-		--wa-bg: #090d16;
-		--wa-card: #111827;
-		--wa-ink: #f1f5f9;
-		--wa-ink-2: #cbd5e1;
-		--wa-ink-3: #94a3b8;
-		--wa-line: #1f2937;
-		--wa-nav-bg: #070a0f;
-		--wa-nav-bg-2: #0f172a;
-	}
-}
-
-/* ==================== GLOBAL WASQL ADMIN COMPONENT TOKENS ==================== */
-html {
-	background-color: var(--wa-bg) !important;
-	color: var(--wa-ink) !important;
-}
-
-body {
-	background-color: var(--wa-bg) !important;
-	color: var(--wa-ink) !important;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Typography & Headings */
-h1, h2, h3, h4, h5, h6,
-.wadmin-head, .w_centerpop_title, .w_big {
-	color: var(--wa-ink) !important;
-}
-
-.w_gray, .w_grey, .text-muted, .help-block, .w_small {
-	color: var(--wa-ink-3) !important;
-}
-
-/* Links */
-a {
-	color: var(--wa-accent);
-	transition: color 0.12s ease;
-}
-a:hover {
-	color: var(--wa-accent-hover);
-}
-
-/* Inputs, Textareas, Selects */
-.wacss_input, .wacss_select, .wacss_textarea,
-input[type="text"], input[type="password"], input[type="number"],
-input[type="search"], input[type="email"], input[type="url"],
-select, textarea {
-	background-color: var(--wa-card) !important;
-	color: var(--wa-ink) !important;
-	border: 1px solid var(--wa-line) !important;
-	border-radius: 6px;
-	padding: 6px 10px;
-	transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-}
-
-.wacss_input:focus, .wacss_select:focus, .wacss_textarea:focus,
-input:focus, select:focus, textarea:focus {
-	border-color: var(--wa-accent) !important;
-	box-shadow: 0 0 0 3px var(--wa-accent-ring) !important;
-	outline: none;
-}
-
-/* Primary & Action Buttons */
-.wacss_button.is-primary, .wacss_button.is-link, .wacss_button.is-info,
-button[type="submit"]:not(.w_danger):not(.is-danger):not(.is-outlined),
-.btn-primary, .wacss_button:not([class*="is-"]):not([class*="w_"]) {
-	background-color: var(--wa-accent) !important;
-	border-color: var(--wa-accent) !important;
-	color: #ffffff !important;
-	transition: all 0.15s ease;
-}
-
-.wacss_button.is-primary:hover, .wacss_button.is-link:hover, .wacss_button.is-info:hover,
-button[type="submit"]:not(.w_danger):not(.is-danger):not(.is-outlined):hover,
-.btn-primary:hover, .wacss_button:not([class*="is-"]):not([class*="w_"]):hover {
-	background-color: var(--wa-accent-hover) !important;
-	border-color: var(--wa-accent-hover) !important;
-	color: #ffffff !important;
-}
-
-/* Outlined Buttons */
-.wacss_button.is-outlined {
-	background-color: transparent !important;
-	border-color: var(--wa-accent) !important;
-	color: var(--wa-accent) !important;
-}
-.wacss_button.is-outlined:hover {
-	background-color: var(--wa-accent-soft) !important;
-	color: var(--wa-accent) !important;
-}
-
-/* Tabs */
-.wacss_button.is-tab.is-active, .nav-tabs > li.active > a {
-	background-color: var(--wa-card) !important;
-	color: var(--wa-accent) !important;
-	border-bottom-color: var(--wa-accent) !important;
-	box-shadow: 0 -2px 0 0 var(--wa-accent) inset;
-}
-
-/* Tables */
-table.w_table, table.table, .wacss_table {
-	background-color: var(--wa-card) !important;
-	color: var(--wa-ink) !important;
-	border-color: var(--wa-line) !important;
-	border-radius: 6px;
-	overflow: hidden;
-}
-
-table.w_table tr th, table.table tr th, .wacss_table tr th,
-.table_header_background {
-	background-color: var(--wa-accent) !important;
-	color: #ffffff !important;
-	border-color: var(--wa-accent-hover) !important;
-	font-weight: 600;
-}
-table.w_table tr th a, table.table tr th a {
-	color: #ffffff !important;
-}
-
-html[data-wasql-resolved="dark"] table.w_table tr th,
-html[data-wasql-resolved="dark"] table.table tr th,
-html[data-wasql-resolved="dark"] .wacss_table tr th {
-	background-color: var(--wa-card) !important;
-	color: var(--wa-accent) !important;
-	border-bottom: 2px solid var(--wa-accent) !important;
-}
-html[data-wasql-resolved="dark"] table.w_table tr th a,
-html[data-wasql-resolved="dark"] table.table tr th a {
-	color: var(--wa-accent) !important;
-}
-
-table.w_table tr td, table.table tr td, .wacss_table tr td {
-	background-color: transparent !important;
-	color: var(--wa-ink) !important;
-	border-color: var(--wa-line) !important;
-}
-
-table.w_table tr:nth-child(even), table.table tr:nth-child(even), .wacss_table tr:nth-child(even) {
-	background-color: var(--wa-line-soft) !important;
-}
-
-table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
-	background-color: var(--wa-accent-soft) !important;
-}
-
-/* Cards & Modals */
-.wacss_card, .wacss_panel, .card, .panel, .w_card,
-.w_centerpop_content, .modal-content, .wacss_modal {
-	background-color: var(--wa-card) !important;
-	color: var(--wa-ink) !important;
-	border: 1px solid var(--wa-line) !important;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-	border-radius: 8px;
-}
-
-.w_centerpop_title, .modal-header, .panel-heading {
-	background-color: var(--wa-line-soft) !important;
-	color: var(--wa-ink) !important;
-	border-bottom: 1px solid var(--wa-line) !important;
-}
-
-/* Code Mirror & Prompt areas */
-.CodeMirror, pre, code {
-	border-color: var(--wa-line) !important;
+#admin_menu.wacss_navbar.is-primary {
+	--wa-nav-bg: #00a68d; --wa-nav-bg-2: #00d1b2;
 }
 
 /* ==================== WASQL TOP MENU STYLES ==================== */
@@ -339,8 +114,8 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 	box-sizing: border-box;
 }
 #admin_menu .topmenu-nav > li:hover > a.topmenu-trigger {
-	background: rgba(255, 255, 255, 0.08);
-	color: #ffffff;
+	background: var(--wa-nav-overlay-2);
+	color: var(--wa-nav-ink);
 	border-bottom-color: var(--wa-accent);
 }
 
@@ -400,11 +175,11 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 	text-decoration: none;
 	font-size: 14px;
 	transition: all 0.15s ease;
-	background: rgba(255, 255, 255, 0.06);
+	background: var(--wa-nav-overlay-1);
 }
 #admin_menu .topmenu-quick-action:hover {
-	background: rgba(255, 255, 255, 0.16);
-	color: #ffffff;
+	background: var(--wa-nav-overlay-3);
+	color: var(--wa-nav-ink);
 	transform: translateY(-1px);
 }
 
@@ -493,8 +268,8 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 	font-weight: 600;
 	padding: 1px 5px;
 	border-radius: 8px;
-	background: rgba(255, 255, 255, 0.18);
-	color: #ffffff;
+	background: var(--wa-nav-overlay-4);
+	color: var(--wa-nav-ink);
 	margin-left: 2px;
 	line-height: 1.2;
 }
@@ -561,96 +336,6 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 	overflow-x: hidden;
 }
 
-/* ==================== THEME PICKER STYLES ==================== */
-.wasql-theme-picker {
-	padding: 10px 14px 12px;
-	min-width: 230px;
-	user-select: none;
-}
-.wasql-theme-header {
-	font-size: 11px;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: var(--wa-ink-3);
-	margin-bottom: 8px;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-.wasql-theme-modes {
-	display: flex;
-	background: var(--wa-bg);
-	border: 1px solid var(--wa-line);
-	border-radius: 6px;
-	padding: 2px;
-	gap: 2px;
-	margin-bottom: 10px;
-}
-.wasql-mode-btn {
-	flex: 1 1 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 4px;
-	padding: 5px 4px;
-	font-size: 11.5px;
-	font-weight: 600;
-	color: var(--wa-ink-3);
-	background: transparent;
-	border: none;
-	border-radius: 4px;
-	cursor: pointer;
-	transition: all 0.12s ease;
-}
-.wasql-mode-btn:hover { color: var(--wa-ink); }
-.wasql-mode-btn.is-active {
-	background: var(--wa-card);
-	color: var(--wa-accent);
-	box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-}
-.wasql-theme-section-title {
-	font-size: 10.5px;
-	font-weight: 600;
-	color: var(--wa-ink-3);
-	margin: 6px 0 5px;
-}
-.wasql-swatch-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 6px;
-	margin-bottom: 6px;
-}
-.wasql-swatch {
-	width: 28px;
-	height: 28px;
-	border-radius: 50%;
-	border: 1px solid var(--wa-line);
-	background: linear-gradient(135deg, var(--sw-1) 0 50%, var(--sw-2) 50% 100%);
-	cursor: pointer;
-	position: relative;
-	transition: transform 0.15s ease, box-shadow 0.15s ease;
-	padding: 0;
-	margin: 0;
-}
-.wasql-swatch:hover { transform: scale(1.12); }
-.wasql-swatch.is-active {
-	box-shadow: 0 0 0 2px var(--wa-card), 0 0 0 4px var(--wa-accent);
-}
-.wasql-swatch.is-active::after {
-	content: "";
-	position: absolute;
-	left: 8px;
-	top: 5px;
-	width: 7px;
-	height: 12px;
-	border: solid #fff;
-	border-width: 0 2px 2px 0;
-	transform: rotate(45deg);
-	filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.7));
-}
-
 /* Burger Button */
 #admin_menu .topmenu-burger {
 	display: none;
@@ -659,13 +344,13 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 	width: 36px;
 	position: relative;
 	border: none;
-	background: rgba(255, 255, 255, 0.08);
-	color: #ffffff;
+	background: var(--wa-nav-overlay-2);
+	color: var(--wa-nav-ink);
 	border-radius: 6px;
 	padding: 0;
 	margin: 0;
 }
-#admin_menu .topmenu-burger:hover { background: rgba(255, 255, 255, 0.16); }
+#admin_menu .topmenu-burger:hover { background: var(--wa-nav-overlay-3); }
 #admin_menu .topmenu-burger span {
 	background-color: currentColor;
 	display: block;
@@ -715,7 +400,7 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 		background: var(--wa-nav-bg-2);
 		border-radius: 8px;
 		overflow: hidden;
-		border: 1px solid rgba(255, 255, 255, 0.06);
+		border: 1px solid var(--wa-nav-overlay-1);
 	}
 	#admin_menu.is-active .topmenu-brand-item { display: block !important; }
 	#admin_menu.is-active .topmenu-left-wrap ul.left > li { display: block !important; }
@@ -726,7 +411,7 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 		padding: 12px 14px;
 		height: auto;
 		font-size: 14px;
-		color: #f8fafc;
+		color: var(--wa-nav-ink);
 	}
 	#admin_menu.is-active ul.topmenu-dropdown {
 		display: none;
@@ -757,7 +442,7 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 		background: var(--wa-nav-bg-2);
 		border-radius: 8px;
 		overflow: hidden;
-		border: 1px solid rgba(255, 255, 255, 0.06);
+		border: 1px solid var(--wa-nav-overlay-1);
 	}
 }
 </style>
@@ -811,113 +496,20 @@ table.w_table tr:hover, table.table tr:hover, .wacss_table tr:hover {
 </nav>
 
 <script type="text/javascript">
-/* ==================== THEME CONTROLS & APPEARANCE JS ==================== */
-var wasqlAppearancePrev = {};
-
-function wasqlAppearanceAttr(pref){
-	if(pref === 'theme'){ return 'data-wasql-theme'; }
-	if(pref === 'dark'){ return 'data-wasql-dark'; }
-	if(pref === 'mode'){ return 'data-wasql-mode'; }
-	return 'data-wasql-' + pref;
-}
-
-function wasqlAppearanceResolve(){
-	var h = document.documentElement;
-	var mode = h.getAttribute('data-wasql-mode') || 'system';
-	var dark = (mode === 'dark');
-	if(mode === 'system'){
-		dark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-	}
-	h.setAttribute('data-wasql-resolved', dark ? 'dark' : 'light');
-}
-
-function wasqlAppearanceApply(pref, value){
-	var h = document.documentElement;
-	var attr = wasqlAppearanceAttr(pref);
-	h.setAttribute(attr, value);
-	if(pref === 'mode'){
-		wasqlAppearanceResolve();
-	}
-	// Update active state in UI pickers
-	var selector = '[data-pref="' + pref + '"]';
-	var buttons = document.querySelectorAll(selector);
-	for(var i = 0; i < buttons.length; i++){
-		var val = buttons[i].getAttribute('data-value');
-		var isActive = (val === value);
-		buttons[i].classList.toggle('is-active', isActive);
-		buttons[i].setAttribute('aria-checked', isActive ? 'true' : 'false');
-	}
-	try {
-		localStorage.setItem('wasql_pref_' + pref, value);
-	} catch(e){}
-}
-
-function wasqlAppearanceSet(btn){
-	var pref = btn.getAttribute('data-pref');
-	var value = btn.getAttribute('data-value');
-	var attr = wasqlAppearanceAttr(pref);
-	var prev = document.documentElement.getAttribute(attr) || '';
-	if(value === prev){ return; }
-
-	wasqlAppearancePrev[pref] = prev;
-	wasqlAppearanceApply(pref, value);
-
-	// Optimistic Save to server
-	var formData = new FormData();
-	formData.append('_menu', 'topmenu');
-	formData.append('func', 'theme_save');
-	formData.append('what', pref);
-	formData.append('value', value);
-
-	fetch('/php/admin.php', {
-		method: 'POST',
-		body: formData
-	}).then(function(resp){
-		return resp.json();
-	}).then(function(data){
-		if(data && data.status === 'error'){
-			wasqlThemeRevert(data.message);
-		} else if(data && data.message && window.wacss && wacss.toast){
-			wacss.toast(data.message);
-		}
-	}).catch(function(err){
-		// Keep optimistic setting or handle silent error
-	});
-}
-
-function wasqlThemeRevert(msg){
-	for(var pref in wasqlAppearancePrev){
-		if(wasqlAppearancePrev[pref]){
-			wasqlAppearanceApply(pref, wasqlAppearancePrev[pref]);
-		}
-	}
-	wasqlAppearancePrev = {};
-	if(window.wacss && wacss.toast){
-		wacss.toast(msg || 'Unable to save appearance setting');
-	}
-}
-
-// Initialize Menu & Accordions
+// Initialize Menu Accordions (mobile burger toggle itself is wired by wacss.initNavbars(), since
+// this button also carries the .wacss_navbar-burger class - do not attach a second listener here,
+// or each click toggles is-active twice and the menu appears to do nothing)
 (function(){
 	function initTopMenu(){
 		var menu = document.getElementById('admin_menu');
 		if(!menu || menu.dataset.topmenu_init === '1'){ return; }
 		menu.dataset.topmenu_init = '1';
 
-		var burger = menu.querySelector('.topmenu-burger');
-		if(burger){
-			burger.addEventListener('click', function(e){
-				e.preventDefault();
-				var isActive = menu.classList.toggle('is-active');
-				burger.setAttribute('aria-expanded', isActive ? 'true' : 'false');
-			});
-		}
-
 		// Mobile Accordion toggles
 		var triggers = menu.querySelectorAll('.topmenu-trigger.dropdown, .topmenu-sub-trigger');
 		for(var i = 0; i < triggers.length; i++){
 			triggers[i].addEventListener('click', function(e){
-				if(window.innerWidth <= 1023 || this.closest('.topmenu-has-sub')){
+				if(window.innerWidth <= 1023){
 					var parentLi = this.parentElement;
 					if(parentLi){
 						var wasOpen = parentLi.classList.contains('is-open');
@@ -939,6 +531,7 @@ function wasqlThemeRevert(msg){
 		document.addEventListener('click', function(e){
 			if(menu.classList.contains('is-active') && !menu.contains(e.target)){
 				menu.classList.remove('is-active');
+				var burger = menu.querySelector('.topmenu-burger');
 				if(burger){ burger.setAttribute('aria-expanded', 'false'); }
 			}
 		});
@@ -948,6 +541,7 @@ function wasqlThemeRevert(msg){
 			if(e.key === 'Escape' || e.keyCode === 27){
 				if(menu.classList.contains('is-active')){
 					menu.classList.remove('is-active');
+					var burger = menu.querySelector('.topmenu-burger');
 					if(burger){ burger.setAttribute('aria-expanded', 'false'); }
 				}
 				var openSubs = menu.querySelectorAll('.is-open');
@@ -1141,7 +735,7 @@ global $totalTableCount, $rendered_tables, $rendered_pages, $rendered_templates,
 
 <view:admin_menu_right>
 <?php
-global $is_stage, $admin_color_class, $GITREPO, $USER, $rendered_appearance;
+global $is_stage, $admin_color_class, $GITREPO, $USER;
 ?>
 	<view:stage_badge>
 	<div class="topmenu-badge-stage" title="Staging Database Environment"><span class="icon-mark"></span> STAGE</div>
@@ -1155,16 +749,6 @@ global $is_stage, $admin_color_class, $GITREPO, $USER, $rendered_appearance;
 
 	<!-- Tools & User Menus -->
 	<ul class="topmenu-nav right">
-		<!-- Appearance / Theme Dropdown -->
-		<li class="topmenu-item topmenu-item-right">
-			<a href="#appearance" class="topmenu-trigger dropdown" onclick="return false;" title="Change Theme &amp; Appearance">
-				<span class="icon-brush"></span> <span class="topmenu-label">Theme</span>
-			</a>
-			<ul class="topmenu-dropdown topmenu-dropdown-right">
-				<?=$rendered_appearance;?>
-			</ul>
-		</li>
-
 		<!-- Tools Dropdown -->
 		<li class="topmenu-item topmenu-item-right">
 			<a href="#tools" class="topmenu-trigger dropdown" onclick="return false;">
