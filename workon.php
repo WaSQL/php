@@ -10,15 +10,20 @@
  *      tab of the current Windows Terminal window when there is one. Done
  *      before the Chrome step so its background re-sync overlaps Chrome
  *      booting/confirming instead of running back-to-back with it.
- *   3. Ensure a debug browser is up on the debug port and showing the page
- *      (reuse an already-running debug instance; only launch if none). Chrome
- *      by default; --browser=firefox drives a resident broker instead (see
- *      the FIREFOX SUPPORT section in usage() - Firefox allows only one BiDi
- *      session per process, ever, so a per-call script like Chrome's would
- *      wedge it on any interrupted call).
- *   4. Confirm the page's browser target exists (retrying the tab-open for
- *      Chrome, polling the broker + resolving for Firefox; printing the open
- *      Chrome tabs if it still fails).
+ *   3. (opt-in: --browse/--shot/--reshoot) Ensure a debug browser is up on the
+ *      debug port and showing the page (reuse an already-running debug
+ *      instance; only launch if none). Chrome by default; --browser=firefox
+ *      drives a resident broker instead (see the FIREFOX SUPPORT section in
+ *      usage() - Firefox allows only one BiDi session per process, ever, so a
+ *      per-call script like Chrome's would wedge it on any interrupted call).
+ *      SKIPPED BY DEFAULT: launching + confirming a browser is the slowest,
+ *      most expensive part of startup and the developer usually already has
+ *      the page open, so a plain run assumes the browser is there and only
+ *      does the watcher/inventory work. Ask for a browser explicitly (or
+ *      implicitly, by asking for a screenshot) when you actually need to look.
+ *   4. (same opt-in) Confirm the page's browser target exists (retrying the
+ *      tab-open for Chrome, polling the broker + resolving for Firefox;
+ *      printing the open Chrome tabs if it still fails).
  *   5. (optional) Capture a mobile screenshot with a 1px reflow nudge -
  *      Chrome via a short-lived Node+CDP helper, Firefox via the broker -
  *      creating the output directory if needed.
@@ -83,14 +88,18 @@ WHAT IT DOES
      When launched from inside Windows Terminal the watcher goes in a NEW TAB
      of the current window (focus is handed straight back), so the whole
      session stays in one window - see --no-tab / --no-chase.
-  3. Ensures a debug browser is up on the debug port and showing the page.
+  3. ONLY WITH --browse (or --shot / --reshoot, which imply it): ensures a
+     debug browser is up on the debug port and showing the page. Without one of
+     those flags NO browser is launched, contacted or confirmed - the run
+     assumes the page is already open in front of you, which is what makes a
+     plain startup cheap. Ask for --browse when you actually need to look.
      Chrome/Edge (Edge is Chromium-based - identical CDP flow, different exe):
      reuses an already-running debug instance (opens a tab in it via PUT on
      /json/new, with GET + curl fallbacks); only launches the browser if none.
      Firefox (--browser=firefox): launches Firefox + a resident Node "broker"
      process that holds Firefox's ONE-per-process WebDriver BiDi session (see
      the Firefox section below) and reuses both if already up.
-  4. Confirms the page's browser target exists. Chrome/Edge: retries the
+  4. (same opt-in as 3) Confirms the page's browser target exists. Chrome/Edge: retries the
      tab-open once, and if it still fails, PRINTS THE OPEN TABS so you can
      diagnose without a curl. Firefox: polls the broker until its session is
      ready, then asks it to resolve (find-or-create) the tab. Either way the
@@ -150,7 +159,13 @@ OPTIONS
   --profile=PATH     browser profile dir (default: temp/wasql-chrome-debug,
                      temp/wasql-firefox-debug, or temp/wasql-edge-debug,
                      matching --browser)
-  --shot[=PATH]      write a screenshot PNG (bare --shot -> a temp path)
+  --browse           launch/confirm the debug browser on the page (steps 3+4).
+                     OFF BY DEFAULT - a plain run assumes the browser is
+                     already open. --open is a synonym. Implied by --shot and
+                     --reshoot, so you never need both.
+  --open             synonym for --browse
+  --shot[=PATH]      write a screenshot PNG (bare --shot -> a temp path).
+                     Implies --browse.
   --no-shot          never screenshot (the default when --shot is absent)
   --width=N          screenshot viewport width (default: 390 = mobile)
   --reshoot=URL      lightweight follow-up shot during an already-open session:
@@ -159,10 +174,10 @@ OPTIONS
                      --shot (falls back to a temp path). Use this instead of a
                      standalone screenshot script for "did my edit work" checks
                      after the initial "work on" call.
-  --no-chrome        skip the browser entirely - a pure alias/watcher status
-                     check (is the watcher still running?), no tab, no
-                     screenshot. Mutually exclusive with --reshoot. Applies
-                     regardless of --browser; --no-browser is a clearer synonym.
+  --no-chrome        pure alias/watcher status check: no browser (already the
+                     default) AND no mirror inventory - just "is the watcher
+                     still running?". Overrides --browse/--shot. Mutually
+                     exclusive with --reshoot. --no-browser is a clearer synonym.
   --no-browser       synonym for --no-chrome (browser-agnostic name)
   --no-watcher       do not launch the PostEdit watcher if it's missing
   --no-tab           always give the watcher its OWN console window, even when
@@ -195,7 +210,9 @@ GOTCHAS
     SUPPORT section above. Always prefer --ff-shutdown / Ctrl-C on the broker
     over killing Firefox directly; an unclean kill still needs a manual
     taskkill + relaunch (there's no API to un-wedge a session from outside).
-  * Exit code: 0 = target confirmed, 2 = not confirmed, 1 = usage/setup error.
+  * Exit code: 0 = target confirmed (or no browser was asked for), 2 = a
+    browser WAS asked for but its target could not be confirmed, 1 = usage/setup
+    error.
 TXT
 	);
 }
@@ -593,9 +610,18 @@ $width   = isset($opts['width']) ? (int)$opts['width'] : 390;
 $reshootGiven = isset($opts['reshoot']) && $opts['reshoot'] !== true;
 if(isset($opts['reshoot']) && !$reshootGiven){ fail('--reshoot needs a URL, e.g. --reshoot=https://host/page'); }
 // --no-browser is a clearer name now that Chrome isn't the only option;
-// --no-chrome stays as the original, still-working name.
-$noChrome = isset($opts['no-chrome']) || isset($opts['no-browser']);
-if($noChrome && $reshootGiven){ fail('--no-chrome/--no-browser and --reshoot are contradictory (reshoot needs a browser).'); }
+// --no-chrome stays as the original, still-working name. It now means "status
+// check only" (no browser AND no inventory), since skipping the browser is the
+// default rather than something you have to ask for.
+$noBrowserGiven = isset($opts['no-chrome']) || isset($opts['no-browser']);
+if($noBrowserGiven && $reshootGiven){ fail('--no-chrome/--no-browser and --reshoot are contradictory (reshoot needs a browser).'); }
+// The browser is OPT-IN: launching it and confirming its target is the slowest
+// part of startup, and the developer normally already has the page open. So a
+// plain run does watcher + inventory only, and the browser steps happen when
+// they're actually asked for - explicitly (--browse/--open) or implicitly by
+// asking for a picture (--shot/--reshoot).
+$wantBrowser = isset($opts['browse']) || isset($opts['open']) || isset($opts['shot']) || $reshootGiven;
+$noChrome = $noBrowserGiven || !$wantBrowser;
 $doShot  = (isset($opts['shot']) || $reshootGiven) && !isset($opts['no-shot']) && !$noChrome;
 // `--shot` with no =PATH still means "take one" - fall back to a temp file
 // rather than using the boolean `true` as a filename.
@@ -826,7 +852,9 @@ $confirmed     = null;                  // null = not attempted (--no-chrome/--n
 $chromeUp      = false;                 // "the debug browser was already up" (kept named for JSON-field compat)
 $ffBrokerUrl   = "http://127.0.0.1:$ffBrokerPort";
 if($noChrome){
-	step("• browser : skipped (--no-chrome/--no-browser - watcher status only)");
+	step($noBrowserGiven
+		? "• browser : skipped (--no-chrome/--no-browser - watcher status only)"
+		: "• browser : not launched (default - assuming it's already open; add --browse to launch/confirm it, or --shot=PATH to also capture it)");
 } elseif($browser === 'firefox'){
 	// See workon_firefox.md / usage()'s FIREFOX SUPPORT section: Firefox allows
 	// exactly ONE BiDi session per process, ever, so a resident broker holds it
@@ -1358,7 +1386,10 @@ JS);
 // Mirror layout: postEditFiles/{alias}/{table}/{record}/{record}.{table}.{field}.{id}.{ext}
 $inventory = ['page' => [], 'others' => [], 'truncated' => 0, 'root' => null];
 $invMax    = isset($opts['inv-max']) ? (int)$opts['inv-max'] : 40;
-if(!$localMode && !isset($opts['no-inventory']) && !$reshootGiven && !$noChrome){
+// Gated on $noBrowserGiven, not $noChrome: the inventory is the whole point of a
+// default (browser-less) run - only an explicit --no-chrome/--no-browser status
+// check skips it.
+if(!$localMode && !isset($opts['no-inventory']) && !$reshootGiven && !$noBrowserGiven){
 	$mirror = $ROOT . DIRECTORY_SEPARATOR . 'postedit' . DIRECTORY_SEPARATOR
 	        . 'postEditFiles' . DIRECTORY_SEPARATOR . $alias;
 	$inventory['root'] = $mirror;
@@ -1455,6 +1486,9 @@ step($localMode
 	. "   if '$alias' isn't found, list ids with the wamcp `databases` tool.)");
 if(!$noChrome){
 	step("Then read the screenshot" . ($shotWritten ? " at:\n  $shotWritten" : " (re-run with --shot=PATH)."));
+} elseif(!$noBrowserGiven){
+	step("No browser was launched (the default). To look at the page, re-run with --browse,\n"
+		. "  or --shot=PATH to launch it and capture a screenshot too.");
 }
 if($LOGFILE){ step("Output copied to: $LOGFILE"); }
 
@@ -1466,7 +1500,9 @@ if($jsonMode){
 		'watcher_pid' => $watcherPid, 'watcher_launched' => (!$watcherPid && $doWatch && !$localMode),
 		'watcher_launch' => $watcherLaunch,                  // 'wt-tab' | 'window' | null (not launched)
 		'filters' => $filters, 'watcher_running_filters' => $watcherRunningFilters,
-		'target_confirmed' => $confirmed, 'chrome_skipped' => $noChrome, 'shot' => $shotWritten,
+		'target_confirmed' => $confirmed, 'chrome_skipped' => $noChrome,
+		'browser_requested' => $wantBrowser && !$noBrowserGiven,   // false = default browser-less run
+		'shot' => $shotWritten,
 			'tab_id' => $matchedTarget ? ($matchedTarget['id'] ?? null) : null, 'tab_state_file' => $tabStateFile,
 		'log' => $LOGFILE, 'inventory' => $inventory,
 	]));

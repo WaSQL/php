@@ -9,11 +9,14 @@ prompt, in a single process:
   1. Resolve {alias} -> host from postedit/postedit.xml (build the site URL).
   2. Ensure the PostEdit watcher for {alias} is running (launch if not,
      filtered to the named page), in a new Windows Terminal tab when possible.
-  3. Ensure a debug browser is up on the debug port and showing the page.
-     Chrome by default; --browser=firefox drives a resident broker instead
-     (Firefox allows only one BiDi session per process, ever).
-  4. Confirm the page's browser target exists (retry once for Chrome, else
-     print the open tabs; poll + resolve via the broker for Firefox).
+  3. (opt-in: --browse/--shot/--reshoot) Ensure a debug browser is up on the
+     debug port and showing the page. Chrome by default; --browser=firefox
+     drives a resident broker instead (Firefox allows only one BiDi session per
+     process, ever). SKIPPED BY DEFAULT: launching + confirming a browser is the
+     slowest part of startup and the developer usually already has the page
+     open, so a plain run does the watcher/inventory work only.
+  4. (same opt-in) Confirm the page's browser target exists (retry once for
+     Chrome, else print the open tabs; poll + resolve via the broker for Firefox).
   5. (optional) Capture a mobile screenshot with a 1px reflow nudge - Chrome
      via a short-lived Node+CDP helper, Firefox via the broker.
   6. Print a mirror inventory: the named page's record id and the local path
@@ -109,14 +112,18 @@ WHAT IT DOES
      When launched from inside Windows Terminal the watcher goes in a NEW TAB
      of the current window (focus is handed straight back), so the whole
      session stays in one window - see --no-tab / --no-chase.
-  3. Ensures a debug browser is up on the debug port and showing the page.
+  3. ONLY WITH --browse (or --shot / --reshoot, which imply it): ensures a
+     debug browser is up on the debug port and showing the page. Without one of
+     those flags NO browser is launched, contacted or confirmed - the run
+     assumes the page is already open in front of you, which is what makes a
+     plain startup cheap. Ask for --browse when you actually need to look.
      Chrome/Edge (Edge is Chromium-based - identical CDP flow, different exe):
      reuses an already-running debug instance (opens a tab in it via PUT on
      /json/new, with GET + curl fallbacks); only launches the browser if none.
      Firefox (--browser=firefox): launches Firefox + a resident Node "broker"
      process that holds Firefox's ONE-per-process WebDriver BiDi session (see
      the Firefox section below) and reuses both if already up.
-  4. Confirms the page's browser target exists. Chrome/Edge: retries the
+  4. (same opt-in as 3) Confirms the page's browser target exists. Chrome/Edge: retries the
      tab-open once, and if it still fails, PRINTS THE OPEN TABS so you can
      diagnose without a curl. Firefox: polls the broker until its session is
      ready, then asks it to resolve (find-or-create) the tab. Either way the
@@ -176,7 +183,13 @@ OPTIONS
   --profile=PATH     browser profile dir (default: temp/wasql-chrome-debug,
                      temp/wasql-firefox-debug, or temp/wasql-edge-debug,
                      matching --browser)
-  --shot[=PATH]      write a screenshot PNG (bare --shot -> a temp path)
+  --browse           launch/confirm the debug browser on the page (steps 3+4).
+                     OFF BY DEFAULT - a plain run assumes the browser is
+                     already open. --open is a synonym. Implied by --shot and
+                     --reshoot, so you never need both.
+  --open             synonym for --browse
+  --shot[=PATH]      write a screenshot PNG (bare --shot -> a temp path).
+                     Implies --browse.
   --no-shot          never screenshot (the default when --shot is absent)
   --width=N          screenshot viewport width (default: 390 = mobile)
   --reshoot=URL      lightweight follow-up shot during an already-open session:
@@ -185,10 +198,10 @@ OPTIONS
                      --shot (falls back to a temp path). Use this instead of a
                      standalone screenshot script for "did my edit work" checks
                      after the initial "work on" call.
-  --no-chrome        skip the browser entirely - a pure alias/watcher status
-                     check (is the watcher still running?), no tab, no
-                     screenshot. Mutually exclusive with --reshoot. Applies
-                     regardless of --browser; --no-browser is a clearer synonym.
+  --no-chrome        pure alias/watcher status check: no browser (already the
+                     default) AND no mirror inventory - just "is the watcher
+                     still running?". Overrides --browse/--shot. Mutually
+                     exclusive with --reshoot. --no-browser is a clearer synonym.
   --no-browser       synonym for --no-chrome (browser-agnostic name)
   --no-watcher       do not launch the PostEdit watcher if it's missing
   --no-tab           always give the watcher its OWN console window, even when
@@ -221,7 +234,9 @@ GOTCHAS
     SUPPORT section above. Always prefer --ff-shutdown / Ctrl-C on the broker
     over killing Firefox directly; an unclean kill still needs a manual
     taskkill + relaunch (there's no API to un-wedge a session from outside).
-  * Exit code: 0 = target confirmed, 2 = not confirmed, 1 = usage/setup error.
+  * Exit code: 0 = target confirmed (or no browser was asked for), 2 = a
+    browser WAS asked for but its target could not be confirmed, 1 = usage/setup
+    error.
 """
     )
 
@@ -619,10 +634,19 @@ def main():
     if "reshoot" in opts and not reshoot_given:
         fail("--reshoot needs a URL, e.g. --reshoot=https://host/page")
     # --no-browser is a clearer name now that Chrome isn't the only option;
-    # --no-chrome stays as the original, still-working name.
-    no_chrome = "no-chrome" in opts or "no-browser" in opts
-    if no_chrome and reshoot_given:
+    # --no-chrome stays as the original, still-working name. It now means
+    # "status check only" (no browser AND no inventory), since skipping the
+    # browser is the default rather than something you have to ask for.
+    no_browser_given = "no-chrome" in opts or "no-browser" in opts
+    if no_browser_given and reshoot_given:
         fail("--no-chrome/--no-browser and --reshoot are contradictory (reshoot needs a browser).")
+    # The browser is OPT-IN: launching it and confirming its target is the
+    # slowest part of startup, and the developer normally already has the page
+    # open. So a plain run does watcher + inventory only, and the browser steps
+    # happen when they're actually asked for - explicitly (--browse/--open) or
+    # implicitly by asking for a picture (--shot/--reshoot).
+    want_browser = "browse" in opts or "open" in opts or "shot" in opts or reshoot_given
+    no_chrome = no_browser_given or not want_browser
     do_shot = ("shot" in opts or reshoot_given) and "no-shot" not in opts and not no_chrome
     if not do_shot:
         shot_out = None
@@ -805,7 +829,9 @@ def main():
     targets = None
     ff_broker_url = "http://127.0.0.1:%s" % ff_broker_port
     if no_chrome:
-        step("\u2022 browser : skipped (--no-chrome/--no-browser - watcher status only)")
+        step("\u2022 browser : skipped (--no-chrome/--no-browser - watcher status only)"
+             if no_browser_given else
+             "\u2022 browser : not launched (default - assuming it's already open; add --browse to launch/confirm it, or --shot=PATH to also capture it)")
     elif browser == "firefox":
         # See workon_firefox.md / usage()'s FIREFOX SUPPORT section: Firefox
         # allows exactly ONE BiDi session per process, ever, so a resident
@@ -1313,7 +1339,10 @@ main().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1
     # ---- 6. mirror inventory --------------------------------------------------
     inventory = {"page": [], "others": [], "truncated": 0, "root": None}
     inv_max = int_opt(opts, "inv-max", 40)
-    if not local_mode and "no-inventory" not in opts and not reshoot_given and not no_chrome:
+    # Gated on no_browser_given, not no_chrome: the inventory is the whole point
+    # of a default (browser-less) run - only an explicit --no-chrome/--no-browser
+    # status check skips it.
+    if not local_mode and "no-inventory" not in opts and not reshoot_given and not no_browser_given:
         mirror = os.path.join(ROOT, "postedit", "postEditFiles", alias)
         inventory["root"] = mirror
         step("")
@@ -1394,6 +1423,9 @@ main().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1
              "   if '%s' isn't found, list ids with the wamcp `databases` tool.)" % (alias, alias, alias))
     if not no_chrome:
         step("Then read the screenshot" + ((" at:\n  %s" % shot_written) if shot_written else " (re-run with --shot=PATH)."))
+    elif not no_browser_given:
+        step("No browser was launched (the default). To look at the page, re-run with --browse,\n"
+             "  or --shot=PATH to launch it and capture a screenshot too.")
     if LOGFILE:
         step("Output copied to: %s" % LOGFILE)
 
@@ -1405,7 +1437,9 @@ main().then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1
             "watcher_pid": watcher_pid, "watcher_launched": bool(not watcher_pid and do_watch and not local_mode),
             "watcher_launch": watcher_launch,
             "filters": filters, "watcher_running_filters": watcher_running_filters,
-            "target_confirmed": confirmed, "chrome_skipped": no_chrome, "shot": shot_written,
+            "target_confirmed": confirmed, "chrome_skipped": no_chrome,
+            "browser_requested": bool(want_browser and not no_browser_given),  # False = default browser-less run
+            "shot": shot_written,
             "tab_id": (matched_target.get("id") if matched_target else None), "tab_state_file": tab_state_file,
             "log": LOGFILE, "inventory": inventory,
         }))
