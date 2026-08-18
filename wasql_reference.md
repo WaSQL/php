@@ -17,6 +17,7 @@ This is the companion to `CLAUDE.md`. `CLAUDE.md` holds the always-relevant rule
 | Adding a chart | [Chart.js extra](#chartjs-the-chartjs-extra) |
 | Building a server/DB health or monitoring page | [Server / system health in PHP](#server--system-health-in-php) |
 | Writing DB record hooks / crons / query consoles | [_triggers](#_triggers--db-record-lifecycle-hooks) · [cron_*](#cron_-pages) · [_prompts](#_prompts--saved-querycode-console-not-ai-prompts) |
+| Resizing/converting/compressing an uploaded image | [File upload processing](#file-upload-processing-resize--convert--maxkb--reencode) |
 | Documenting functions | [PHPDoc / JSDoc convention](#phpdoc--jsdoc-convention) |
 | Want copy-paste starters | [Common scenarios](#common-scenarios-copy-paste-starters) |
 
@@ -506,6 +507,21 @@ function manageThingsAddedit($id=0){
 <view:things_addedit_fields> ...layout with [field] placeholders, root has data-onload="wacss.centerpopCenter();"... </view:things_addedit_fields>
 ```
 Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **global save** fires and the response re-renders `{tab}_list` into `#things_list`; because that list view's root carries `data-onload="wacss.centerpopClose();"`, a **successful** save closes the modal while a validation failure re-renders the form inside the still-open centerpop. The full page's `#manage_content` starts on the first tab with `<?=renderView('things');?>`. Tabs are `wacss.nav` + `data-tab="1"` anchors. **Do not** reintroduce a single shared `panel`/`form` view or per-cell `_onclick` edit handlers — the per-tab views + whole-row `-tr_data-nav` are the pattern.
+
+---
+
+## File upload processing (resize / convert / maxkb / reencode)
+`commonProcessFileActions($name,$afile)` in `php/common.php` runs on every upload and chains four independent, opt-in steps in this order: **process → convert → resize → maxkb → reencode**. Each step reads its trigger from (in priority order) `$_REQUEST['{fieldname}_{step}']`, then `$_REQUEST['data-{step}']`, then `$CONFIG['{step}']` — so a form field can override a site-wide default set in `config.xml`. Every step that fires overwrites `$afile`/`$_REQUEST['{name}_size']`/`_abspath` and deletes the prior intermediate file.
+
+- **`convert`** — format conversion via ImageMagick `convert`, e.g. `data-convert="heic-jpg,bmp-jpg"` (comma list of `from-to` pairs). This is generic — **`jpg-webp`/`png-webp` already works** with no extra code, as long as the server's ImageMagick was built with the WebP delegate (`convert -list format | grep -i webp`).
+- **`resize`** — dimension-only, via `convert -thumbnail`, e.g. `data-resize="1920x1920>"`. Does **not** control file size — a correctly-dimensioned photo can still be several hundred KB.
+- **`maxkb`** — targets a **byte-size budget** for lossy formats, e.g. `data-maxkb="300"` → ≤300KB. Only applies when the current file (after any resize/convert already ran) is `jpg`/`jpeg` or `webp`; other formats are left untouched with `{name}_maxkb_applied` set to an explanatory string instead of a command result. Implementation is ImageMagick's quality-search defines rather than a fixed `-quality` guess:
+  - JPEG: `-define jpeg:extent=300kb`
+  - WebP: `-define webp:target-size=307200` (bytes, not KB)
+  Both make `convert` iterate quality settings until the encode fits the budget, so you get the best quality achievable for that size rather than an arbitrary fixed compression level. PNG has no lossy quality knob, so there's no equivalent — convert to `webp` first if a PNG needs a byte-size cap.
+- **`reencode`** — audio/video via `ffmpeg`, e.g. `data-reencode="wav-mp3"`.
+
+**SEO-driven web images:** to land an upload under a KB budget as WebP, combine resize + convert + maxkb on the field: `data-resize="1920x1920>" data-convert="jpg-webp,png-webp" data-maxkb="300"` — dimensions first, then format, then the byte-size search runs last against the already-converted file.
 
 ---
 

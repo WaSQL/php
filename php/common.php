@@ -24907,7 +24907,50 @@ function commonProcessFileActions($name,$afile){
     		$_REQUEST[$name.'_size']=filesize($afile);
     		$_REQUEST[$name.'_abspath']=$afile;
 		}
-    	$_REQUEST[$name.'_resized']=$ok;       	
+    	$_REQUEST[$name.'_resized']=$ok;
+	}
+	//maxkb - target a max file size (in KB) for lossy image formats, keeping quality as high as the size budget allows
+	$maxkb='';
+	if(isset($_REQUEST[$name.'_maxkb']) && strlen($_REQUEST[$name.'_maxkb'])){
+		$maxkb=$_REQUEST[$name.'_maxkb'];
+	}
+	elseif(isset($_REQUEST['data-maxkb']) && strlen($_REQUEST['data-maxkb'])){
+		$maxkb=$_REQUEST['data-maxkb'];
+	}
+	elseif(isset($CONFIG['maxkb']) && strlen($CONFIG['maxkb'])){
+		$maxkb=$CONFIG['maxkb'];
+	}
+	if(strlen($maxkb) && stringContains($mimetype,'image')){
+		$curext=strtolower(getFileExtension($afile));
+		//jpeg:extent and webp:target-size make ImageMagick search quality settings to hit a byte budget instead of a fixed -quality guess
+		$define='';
+		if($curext=='jpg' || $curext=='jpeg'){
+			$define="jpeg:extent={$maxkb}kb";
+		}
+		elseif($curext=='webp'){
+			$define="webp:target-size=".((int)$maxkb*1024);
+		}
+		if(strlen($define)){
+			if(!isset($CONFIG['maxkb_command'])){
+				$CONFIG['maxkb_command']="convert";
+			}
+			$cmd=$CONFIG['maxkb_command'];
+			$fname=getFileName($afile,1);
+			$mkfile=str_replace($fname,$fname.'_maxkb',$afile);
+			$cmd="{$cmd} \"{$afile}\" -auto-orient -define {$define} \"{$mkfile}\"";
+			$ok=cmdResults($cmd);
+			if(is_file($mkfile) && filesize($mkfile) > 0){
+				unlink($afile);
+				$afile=$mkfile;
+				$_REQUEST[$name.'_size_original']=$_REQUEST[$name.'_size'];
+	    		$_REQUEST[$name.'_size']=filesize($afile);
+	    		$_REQUEST[$name.'_abspath']=$afile;
+			}
+	    	$_REQUEST[$name.'_maxkb_applied']=$ok;
+		}
+		else{
+			$_REQUEST[$name.'_maxkb_applied']="maxkb is only supported for jpg/jpeg/webp (byte-size targeting needs a lossy codec) - {$curext} left as-is";
+		}
 	}
 	//reencode?
 	$reencode='';
