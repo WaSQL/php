@@ -206,19 +206,30 @@ ENDOFWHERE;
 								if(isset($json['day'][0])){
 									$cday=date('j');
 									if($json['day'][0]==-1 || in_array($cday,$json['day'])){
-										//day passed. check hour
-										//echo $rec['name']." day passed";exit;
-										if(isset($json['hour'][0])){
-											$chour=date('G');
-											//echo $rec['name'].$chour.printValue($json['hour']);exit;
-											if($json['hour'][0]==-1 || in_array($chour,$json['hour'])){
-												//hour passed. check minute
-												//echo $rec['name']." hour passed";exit;
-												if(isset($json['minute'][0])){
-													$cmin=(int)date('i');
-													if($json['minute'][0]==-1 || in_array($cmin,$json['minute'])){
-														//minute passed
-														$run=1;
+										//day passed. check dayname
+										$daynameok=1;
+										if(isset($json['dayname'][0])){
+											//buildFormFrequency numbers Mon=0..Sun=6; date('N') is Mon=1..Sun=7
+											$cdayname=(int)date('N')-1;
+											if($json['dayname'][0]!=-1 && !in_array($cdayname,$json['dayname'])){
+												$daynameok=0;
+											}
+										}
+										if($daynameok){
+											//dayname passed. check hour
+											//echo $rec['name']." day passed";exit;
+											if(isset($json['hour'][0])){
+												$chour=date('G');
+												//echo $rec['name'].$chour.printValue($json['hour']);exit;
+												if($json['hour'][0]==-1 || in_array($chour,$json['hour'])){
+													//hour passed. check minute
+													//echo $rec['name']." hour passed";exit;
+													if(isset($json['minute'][0])){
+														$cmin=(int)date('i');
+														if($json['minute'][0]==-1 || in_array($cmin,$json['minute'])){
+															//minute passed
+															$run=1;
+														}
 													}
 												}
 											}

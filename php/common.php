@@ -219,6 +219,20 @@ function commonStrlen($s){
 	if(is_array($s) || is_object($s)){$s=encodeJson($s);}
 	return strlen($s);
 }
+//---------- begin function commonSubstr
+/**
+* @describe multibyte-safe wrapper for substr, matches commonStrlen's precedent
+* @param params str string, start integer, length integer
+* @return string
+* @usage
+*	$short=commonSubstr($x,0,50);
+*/
+function commonSubstr($str,$start,$length=null){
+	if(function_exists('mb_substr')){
+		return ($length===null)?mb_substr($str,$start):mb_substr($str,$start,$length);
+	}
+	return ($length===null)?substr($str,$start):substr($str,$start,$length);
+}
 //---------- begin function commonBuildTerminal
 /**
 * @describe returns an HTML5 based terminal window to the server. requires websocketd path to be set in config.xml
@@ -1110,7 +1124,7 @@ function commonSearchFiltersForm($params=array()){
 				}
 				else{
 					$filter=$str;
-					$btn .=' onclick="wacss.pagingAddFilters(getParent(this,\'form\'),this.dataset.filter,1);"';
+					$btn .=' onclick="wacss.pagingAddFilters(wacss.getParent(this,\'form\'),this.dataset.filter,1);"';
 				}
 				if(isset($str['name'])){
 					$cname=$str['name'];
@@ -1436,7 +1450,7 @@ function commonSearchFiltersForm($params=array()){
         	$rtn .= '<div class="w_pagingfilter" data-field="'.encodeHtml($field).'" data-operator="'.encodeHtml($oper).'" data-value="'.encodeHtml($val).'" id="'.$fid.'">'.$dstr.' <span class="icon-cancel w_danger w_pointer" onclick="removeId(\''.$fid.'\');"></span></div>'.PHP_EOL;
 		}
 		if(count($sets)){
-			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="wacss.pagingClearFilters(getParent(this,\'form\'));"></div>'.PHP_EOL;
+			$rtn .= '<div id="paging_clear_filters" class="w_pagingfilter icon-erase w_big w_danger" title="Clear All Filters" onclick="wacss.pagingClearFilters(wacss.getParent(this,\'form\'));"></div>'.PHP_EOL;
 		}
 	}
 	$rtn .= '	</div>'.PHP_EOL;
@@ -22545,8 +22559,15 @@ function postBody($url='',$body='',$params=array()) {
 		curl_setopt($process, CURLOPT_PORT, $params['-port']);
 	}
     curl_setopt($process, CURLOPT_HEADER, true);
-    curl_setopt($process,CURLOPT_POST, true);
-    curl_setopt($process,CURLOPT_TIMEOUT, 600);
+    if(isset($params['-method']) && strlen($params['-method'])){
+        curl_setopt($process,CURLOPT_CUSTOMREQUEST,strtoupper($params['-method']));
+    }
+    else{
+        curl_setopt($process,CURLOPT_POST, true);
+    }
+    if(!isset($params['-timeout'])){
+        curl_setopt($process,CURLOPT_TIMEOUT, 600);
+    }
     curl_setopt($process,CURLOPT_RETURNTRANSFER, true);
     curl_setopt($process, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($process, CURLINFO_HEADER_OUT, true);

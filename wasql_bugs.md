@@ -25,17 +25,14 @@ surprises whoever hits it.
 
 ## Still open
 
-Eight. Bugs 1, 2 and 3 are one family and worth reading together: **the data layer's
-failure mode is an empty result**, so a broken query, a syntax error and "no rows" are the
-same value. Bug 4 is unrelated and much smaller.
+Four (1, 2, 3, 7 — 4, 5, 6 and 8 were fixed 2026-08-18, see below). Bugs 1, 2 and 3 are
+one family and worth reading together: **the data layer's failure mode is an empty
+result**, so a broken query, a syntax error and "no rows" are the same value.
 
 Bugs 1 and 3 are deliberate decisions rather than defects — read the reasoning before
 "fixing" them. Bug 2 is a straightforward defect and, notably, would be *survivable* if
-1 and 3 were addressed: it only costs hours because it fails silently. Bugs 4 and 5 are
-independent: 4 is a missing option, 5 is a UI collecting a value nothing reads. 6 is the
-one to fix first of the rest — a documented timeout that does nothing is the difference
-between a slow third party being an annoyance and being an outage. 7 and 8 are latent:
-neither is biting today, both will bite whoever hits them next.
+1 and 3 were addressed: it only costs hours because it fails silently. 7 is latent: it
+isn't biting today, but will bite whoever hits it next.
 
 ### 1. `dbQueryResults()` reports a failed SELECT as an empty result set — severity A (arguably by design)
 
@@ -152,147 +149,6 @@ with them.
 
 ---
 
-### 4. `postBody()`/`postJSON()` can only POST — severity B
-
-**Where:** `php/common.php:22453` `postBody()` — line **22548**
-`curl_setopt($process,CURLOPT_POST, true);`, and no `CURLOPT_CUSTOMREQUEST` anywhere in the
-function. `postJSON()` (22383) and `postXML()` both route through it.
-
-**Symptom:** a full REST **client** cannot be built on core. `postJSON()` is otherwise
-exactly right — raw JSON body, content-type, encoding, timeouts, SSL, cookies, redirects,
-and HTTP basic auth via `-authuser`/`-authpass` — but four of the five verbs a REST API
-needs are unreachable:
-
-| verb | needed for |
-|---|---|
-| GET | every read |
-| PUT | Jira issue update |
-| PATCH | ServiceNow record update |
-| DELETE | removing a sub-resource |
-
-**Consequence:** Imago's connectors call curl directly in the page layer
-(`imagoSyncHttp()`), duplicating auth, timeout and error handling that `postBody()` already
-does properly. Not a hardship for one app; it is the wrong default for the framework, and
-the next integration will duplicate it again.
-
-**Fix (genuinely one line, plus a guard):** honour a `-method` param —
-
-```php
-if(isset($params['-method']) && strlen($params['-method'])){
-    curl_setopt($process,CURLOPT_CUSTOMREQUEST,strtoupper($params['-method']));
-}
-else{
-    curl_setopt($process,CURLOPT_POST, true);   // unchanged default
-}
-```
-
-Defaulting to POST when `-method` is absent keeps every existing caller behaving exactly
-as it does now, so this is additive rather than a behaviour change.
-
-**Note:** `postURL()` is a separate thing and is *not* the one to extend for this — it
-builds its payload with `http_build_query()` and is correct as a form-encoded poster.
-
----
-
-### 5. `buildFormFrequency()` collects daynames that `cron.php` never reads — severity A
-
-**Where:** `php/cron.php:196-229` evaluates the `run_format` JSON and checks
-**month → day → hour → minute**. It never looks at `dayname`.
-
-`php/common.php:5248` `buildFormFrequency()` renders a **Daynames** row (Mon-Sun
-checkboxes, `class="frequency_dayname"`) and writes them into the JSON as
-`"dayname":[...]`, so the value is collected and stored and then ignored.
-
-*(The widget itself was namespaced to `wacss.formSetFrequency` on 2026-08-18 — markup and
-JS now agree — but that change is **local and not yet committed**, so a fresh clone will
-not have it. This entry is only about the scheduler half, which is unaffected either way:
-re-checked against the working copy and `cron.php` still contains no `dayname`.)*
-
-**Symptom:** a schedule of "weekdays only, every 10 minutes" ticks Mon-Fri in the UI,
-saves without complaint, and then **runs every day**. Nothing reports anything: the job
-fires, the log looks healthy, and the only clue is that it also ran on Sunday.
-
-Every `run_format` WaSQL writes carries a `dayname` key, so the data model advertises
-weekday scheduling that does not exist.
-
-**Cause:** the check was never added. Note `day` in the JSON is `date('j')` — day of the
-**month** — so it is not a substitute; there is currently no way to express a weekday at
-all through the JSON path. (The third scheduling mode, `run_format` as a `date()` format
-plus `run_values`, can match a weekday with format `N` and values `1,2,3,4,5`, but it is
-whole-value matching, so it cannot be combined with "every 10 minutes".)
-
-**Fix (small, and symmetrical with the checks either side of it):** add a dayname branch
-inside the existing nest, between day and hour —
-
-```php
-if(isset($json['dayname'][0])){
-    // buildFormFrequency numbers Mon=0..Sun=6; date('N') is Mon=1..Sun=7
-    $cdayname=(int)date('N')-1;
-    if($json['dayname'][0]==-1 || in_array($cdayname,$json['dayname'])){
-        // ... existing hour check goes here
-    }
-}
-else{ /* ... existing hour check, unchanged, for rows with no dayname key ... */ }
-```
-
-⚠ **Mind the numbering.** `buildFormFrequency()` emits `0=>Mon … 6=>Sun`
-(`common.php:5361`), which matches neither `date('w')` (Sun=0) nor `date('N')` (Mon=1).
-Getting this off by one would silently shift every weekday schedule by a day, which is
-worse than the current bug because it would look like it worked.
-
-**Also check:** rows written before the fix carry `"dayname":[-1]`, which the branch above
-treats as "any day" — so existing schedules keep their current behaviour.
-
-**Workaround until then:** do not tick daynames; they do nothing. Imago's connector
-schedule card says so in the UI rather than letting somebody set one and trust it.
-
----
-
-### 6. `postBody()` throws away the caller's `-timeout` — severity B
-
-**Where:** `php/common.php:22453` `postBody()`. Line **22478** honours the parameter —
-
-```php
-if(isset($params['-timeout'])){
-    curl_setopt($process, CURLOPT_TIMEOUT, $params['-timeout']);
-}
-```
-
-— and then line **22549**, near the end of the same function, overrides it
-unconditionally:
-
-```php
-curl_setopt($process,CURLOPT_TIMEOUT, 600);
-```
-
-**Symptom:** every call gets a **ten minute** timeout no matter what it asked for.
-`postJSON($url,$json,array('-timeout'=>30))` documents a 30 second limit, sets it, and
-then waits ten minutes. Because `postJSON()` and `postXML()` both route through
-`postBody()`, this affects every JSON and XML poster in the framework.
-
-**Why it matters more than it looks:** a timeout is the one thing standing between a slow
-third party and a wedged process. A cron scheduled every five minutes that calls a
-hanging endpoint will pile up runs for ten minutes each. The parameter existing and being
-documented makes it worse, not better — the caller believes they are protected.
-
-`CURLOPT_CONNECTTIMEOUT` (line 22474) is **not** overridden, so `-timeout_connect` does
-work. Only the total-time limit is lost, which is the one that matters for a server that
-accepts the connection and then stalls.
-
-**Fix:** make the late line a default rather than an override —
-
-```php
-if(!isset($params['-timeout'])){
-    curl_setopt($process,CURLOPT_TIMEOUT, 600);
-}
-```
-
-Ten minutes is a long default for a fallback, but changing it is a separate decision;
-this fix alone makes the documented parameter work without altering any existing
-behaviour that did not pass one.
-
----
-
 ### 7. `cron.php` lowercases `run_cmd`, so a cron's passthru loses its case — severity C
 
 **Where:** `php/cron.php:332` `$lcmd=strtolower(trim($cmd));`, then line **345**
@@ -327,41 +183,38 @@ so it is unaffected. This is recorded because the next cron that passes an ident
 be bitten, and the symptom (a job that runs and quietly does the wrong thing) is expensive
 to trace back to here.
 
----
-
-### 8. `commonStrlen()` has no `commonSubstr()` counterpart — severity C
-
-**Where:** `php/common.php`. `commonStrlen()` exists and is the documented,
-multibyte-safe way to measure a string. There is no matching substring helper — a grep
-for `function commonSubstr` finds nothing.
-
-**Symptom:** any app that needs to truncate a string safely writes its own
-`mb_substr`-with-fallback wrapper. Imago now has one (`commonSubstr_imagoSync()`), named
-awkwardly precisely to avoid colliding with the core function if it ever arrives.
-
-**Fix:** add the obvious sibling —
-
-```php
-function commonSubstr($str,$start,$length=null){
-    if(function_exists('mb_substr')){
-        return ($length===null)?mb_substr($str,$start):mb_substr($str,$start,$length);
-    }
-    return ($length===null)?substr($str,$start):substr($str,$start,$length);
-}
-```
-
-Not urgent, and worth doing next time the string helpers are touched: an app that reaches
-for plain `substr()` on user text because no framework helper exists will cut a multibyte
-character in half, and that only shows up in the one language nobody tested in.
-
----
-
 ## Already fixed in core (for context, do not re-fix)
 
 These were the same class of problem and were repaired earlier; listed so nobody chases
 them again from an old bug report or an out-of-date site. **A site whose core predates
 these dates will still show them, and `wacss.min.js` must be re-minified for the JS ones
 to take effect.**
+
+### 2026-08-18 (later same day)
+
+- **`postBody()`/`postJSON()` could only POST** (formerly bug 4). `php/common.php`
+  `postBody()` now honours a `-method` param via `CURLOPT_CUSTOMREQUEST`, falling back to
+  the unchanged `CURLOPT_POST` default when `-method` is absent — GET/PUT/PATCH/DELETE are
+  now reachable through `postJSON()`/`postXML()`. `postURL()` is unaffected (separate,
+  form-encoded function, not the one to extend for this).
+- **`postBody()` threw away the caller's `-timeout`** (formerly bug 6). The unconditional
+  `curl_setopt($process,CURLOPT_TIMEOUT, 600);` near the end of `postBody()` is now guarded
+  by `if(!isset($params['-timeout']))`, so a caller-supplied `-timeout` (set earlier in the
+  same function) is no longer clobbered. The 600s default is unchanged for callers that
+  don't pass one.
+- **`commonStrlen()` had no `commonSubstr()` counterpart** (formerly bug 8). Added
+  `commonSubstr($str,$start,$length=null)` in `php/common.php` immediately after
+  `commonStrlen()` — multibyte-safe via `mb_substr` with a plain `substr` fallback, matching
+  the exact shape proposed when the bug was logged.
+- **`buildFormFrequency()` collected daynames that `cron.php` never read** (formerly bug 5).
+  `php/cron.php`'s `run_format` JSON check (month → day → hour → minute) now has a dayname
+  branch between day and hour: `$daynameok` defaults to `1` (so rows written before the fix,
+  which carry `"dayname":[-1]`, and any row with no `dayname` key at all, keep running exactly
+  as before) and is set to `0` only when `dayname[0]!=-1` and the current weekday isn't in the
+  list. Numbering handled per the original write-up — `buildFormFrequency()` emits `0=>Mon …
+  6=>Sun`, converted from `date('N')` (Mon=1..Sun=7) via `(int)date('N')-1`, not `date('w')`.
+  A "weekdays only, every 10 minutes" schedule now actually skips the weekend instead of
+  silently running every day.
 
 ### 2026-08-17
 
