@@ -509,7 +509,20 @@ def launch_wt_tab(cmd, title, cwd, chase=True):
 def launch_detached(cmd, is_win, title=""):
     """Launch a detached process: `start` on Windows, `nohup ... &` elsewhere.
     stdio is redirected to the null device so a long-lived grandchild (Chrome,
-    the watcher) never inherits a handle to this process's caller's pipe."""
+    the watcher) never inherits a handle to this process's caller's pipe - which
+    would leave `python workon.py ... | tail` waiting for an EOF that only comes
+    when the watcher exits, i.e. never.
+
+    NOTE - deliberate asymmetry with workon.php, which does the same job via
+    PowerShell's Start-Process: do NOT "sync" that mechanism back into here, and
+    do not simplify this to os.system/popen. subprocess passes close_fds=True and
+    makes ONLY the three redirected std handles inheritable, so the caller's pipe
+    is never duplicated into the child and `start`'s grandchild cannot get it.
+    PHP's proc_open has no such control - it calls CreateProcess with
+    bInheritHandles=TRUE, duplicating every inheritable handle - so the PHP twin
+    needs the extra Start-Process hop to get the behaviour this already has.
+    Verified: an immortal `cmd /k` grandchild launched from here releases the
+    caller's pipe at once; the same launch from the pre-fix workon.php hung."""
     if is_win:
         full = 'start "%s" %s' % (title, cmd)
     else:

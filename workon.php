@@ -478,7 +478,8 @@ function wtExe($isWin, &$why = null){
  * Two advantages over `start` in a separate window:
  *   - The tab's process is a child of WindowsTerminal.exe, not of this script,
  *     so it cannot inherit a duplicate handle to the caller's stdio pipe - the
- *     hazard launchDetached() below has to work around with NUL redirection.
+ *     hazard launchDetached() below has to sidestep by launching via
+ *     PowerShell's Start-Process (NUL-ing the child's own stdio is not enough).
  *   - `; focus-tab -p` hands focus straight back, so the new tab doesn't yank
  *     the user out of the session they're typing in. This part IS a heuristic:
  *     the new tab is appended last and focused, so "previous" is whichever tab
@@ -522,31 +523,77 @@ function launchWtTab($cmd, $title, $cwd, $chase = true, &$why = null){
 }
 
 /**
- * Launch a detached process on Windows via `start`, or `nohup ... &` elsewhere.
- * Explicitly redirects the spawned process's own stdio to the null device via
- * proc_open() instead of popen(), which shares THIS PHP process's real stdio.
- * On Windows that stdio is the CALLER's pipe (e.g. the tool that ran
- * `php workon.php ...`); plain `start` doesn't sever it, so a long-lived
- * grandchild (Chrome, the watcher) inherits a duplicate handle to that pipe
- * and keeps it open forever - the caller's read never sees EOF, which is why
- * callers used to have to redirect workon.php's own output to a file. Routing
- * the immediate child's stdio to NUL/dev-null here means anything it spawns
- * inherits NUL, not the caller's pipe, so the caller gets a clean EOF.
+ * Launch a detached process: Windows via PowerShell's Start-Process, everything
+ * else via `nohup ... &`.
+ *
+ * Windows is the interesting case. The hazard is that a long-lived grandchild
+ * (the watcher, Chrome, the Firefox broker) can hold a duplicate handle to the
+ * CALLER's stdout pipe - the pipe `php workon.php ... | tail` hands us - and
+ * keep it open for its whole life. The caller's read then never sees EOF, so
+ * workon.php looks like it hangs forever even though it finished its work and
+ * exited. That is what made piped/tool-driven runs hang on the FIRST run for an
+ * alias - the only run where the watcher still has to be launched.
+ *
+ * Pointing the immediate child's OWN stdio at NUL - what this function used to
+ * do - does NOT fix that. proc_open() calls CreateProcess with
+ * bInheritHandles=TRUE, which duplicates EVERY inheritable handle in this PHP
+ * process into the child, not just the three it designates as std handles. So
+ * the caller's pipe rides along regardless, and `start`'s grandchild inherits it
+ * in turn. Measured with the NUL specs in place: a `cmd /k` grandchild (one that
+ * never exits - i.e. the watcher) left `php workon.php imago | tail` hanging
+ * indefinitely, while an otherwise identical `cmd /c` grandchild released the
+ * pipe the moment it exited.
+ *
+ * Start-Process is the fix: PowerShell launches the target itself without
+ * passing our handles down, so nothing that outlives this script can hold the
+ * caller's pipe. The powershell.exe hop is short-lived and Start-Process does
+ * not wait on what it started, so proc_close() below returns in about a second
+ * rather than blocking for the life of the watcher. The one-liner goes through a
+ * temp .ps1 file to dodge nested-quote mangling via `cmd /c` - the same trick
+ * the watcher launch uses for its .bat. Requires powershell.exe, which this
+ * script already depends on for watcher detection.
+ *
+ * $title is kept for call-site compatibility but is no longer applied: it only
+ * ever set a `start "title"` console title, and the one launch that gets a
+ * visible console (the watcher) already titles its own window from its .bat.
  */
 function launchDetached($cmd, $isWin, $title = ''){
-	if($isWin){
-		// `start "title" program args` - the empty/first quoted arg is the window
-		// title. No `/b`: the watcher deliberately gets its own visible console
-		// window, and Chrome is a GUI app that ignores the window-title anyway.
-		$full = 'start "' . $title . '" ' . $cmd;
-		$null = 'NUL';
-	} else {
-		$full = 'nohup ' . $cmd . ' >/dev/null 2>&1 &';
-		$null = '/dev/null';
+	if(!$isWin){
+		$spec = [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']];
+		$p = @proc_open('nohup ' . $cmd . ' >/dev/null 2>&1 &', $spec, $pipes);
+		if(is_resource($p)){ proc_close($p); }
+		return;
 	}
-	$spec = [0 => ['file', $null, 'r'], 1 => ['file', $null, 'w'], 2 => ['file', $null, 'w']];
-	$p = @proc_open($full, $spec, $pipes);
+	list($exe, $args) = splitExeArgs($cmd);
+	if($exe === ''){ return; }
+	// Single-quoted PowerShell strings are literal, so nothing in a path or a
+	// browser flag gets expanded on the way through (a .bat wrapper would expand
+	// %VAR%). '' is the escape for an embedded single quote.
+	$q = function($s){ return "'" . str_replace("'", "''", $s) . "'"; };
+	$ps = 'Start-Process -FilePath ' . $q($exe) . ($args === '' ? '' : ' -ArgumentList ' . $q($args));
+	$psFile = tempnam(sys_get_temp_dir(), 'wld') . '.ps1';
+	file_put_contents($psFile, $ps . "\r\n");
+	$spec = [0 => ['file', 'NUL', 'r'], 1 => ['file', 'NUL', 'w'], 2 => ['file', 'NUL', 'w']];
+	$p = @proc_open('powershell -NoProfile -ExecutionPolicy Bypass -File "' . $psFile . '"', $spec, $pipes);
+	// proc_close waits only for powershell, so the temp file is safe to drop here.
 	if(is_resource($p)){ proc_close($p); }
+	@unlink($psFile);
+}
+
+/**
+ * Split a Windows command line into [exe, argument-string] for Start-Process.
+ * Call sites pass the executable first, usually quoted ('"C:\...\chrome.exe"
+ * --flags'), but the watcher passes it bare ('cmd /k "...bat"').
+ */
+function splitExeArgs($cmd){
+	$cmd = trim($cmd);
+	if($cmd === ''){ return ['', '']; }
+	if($cmd[0] === '"'){
+		$end = strpos($cmd, '"', 1);
+		if($end !== false){ return [substr($cmd, 1, $end - 1), ltrim(substr($cmd, $end + 1))]; }
+	}
+	$sp = strpos($cmd, ' ');
+	return $sp === false ? [$cmd, ''] : [substr($cmd, 0, $sp), ltrim(substr($cmd, $sp + 1))];
 }
 
 // ---- parse args -----------------------------------------------------------
