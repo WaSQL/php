@@ -1222,6 +1222,17 @@ function websiteGraderClip($str,$max,$fallback=''){
 }
 
 /**
+ * @describe append a cache-busting query param to a preview image URL so the browser re-fetches it on every grade run instead of serving a stale cached copy of an og:image the site owner just replaced at the same filename.
+ * @param url string
+ * @return string
+ */
+function websiteGraderCacheBustURL($url){
+	if(!strlen($url)){return $url;}
+	$sep=(strpos($url,'?')===false)?'?':'&';
+	return $url.$sep.'_wgcb='.time();
+}
+
+/**
  * @describe placeholder box shown in a card when there is no share image.
  * @return string HTML
  */
@@ -1241,7 +1252,7 @@ function websiteGraderRenderSocialPreview($social){
 	$og_title=encodeHtml(websiteGraderClip($social['og_title'],88,'(no title)'));
 	$og_desc=encodeHtml(websiteGraderClip($social['og_desc'],200,'(no description)'));
 	if($social['img_ok']){
-		$ogimg='<div style="height:260px;overflow:hidden;background:#e9ebee;"><img src="'.htmlspecialchars($social['og_image'],ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="og image" /></div>';
+		$ogimg='<div style="height:260px;overflow:hidden;background:#e9ebee;"><img src="'.htmlspecialchars(websiteGraderCacheBustURL($social['og_image']),ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="og image" /></div>';
 	}
 	else{$ogimg=websiteGraderNoImageBox();}
 	$ogcard='<div style="width:500px;max-width:100%;border:1px solid #dadde1;border-radius:8px;overflow:hidden;background:#fff;font-family:Helvetica,Arial,sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.1);">';
@@ -1260,7 +1271,7 @@ function websiteGraderRenderSocialPreview($social){
 	$twcard='<div style="width:500px;max-width:100%;border:1px solid #cfd9de;border-radius:16px;overflow:hidden;background:#fff;font-family:Helvetica,Arial,sans-serif;">';
 	if($is_large){
 		if($tw_has_img){
-			$twcard.='<div style="height:250px;overflow:hidden;background:#e9ebee;position:relative;"><img src="'.htmlspecialchars($twimg_url,ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="twitter image" /><span style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.75);color:#fff;font-size:13px;padding:2px 6px;border-radius:4px;">'.$tw_title.'</span></div>';
+			$twcard.='<div style="height:250px;overflow:hidden;background:#e9ebee;position:relative;"><img src="'.htmlspecialchars(websiteGraderCacheBustURL($twimg_url),ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="twitter image" /><span style="position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.75);color:#fff;font-size:13px;padding:2px 6px;border-radius:4px;">'.$tw_title.'</span></div>';
 		}
 		else{$twcard.=websiteGraderNoImageBox();}
 		$twcard.='<div style="padding:8px 12px;color:#536471;font-size:13px;">'.$hostlc.'</div>';
@@ -1268,7 +1279,7 @@ function websiteGraderRenderSocialPreview($social){
 	else{
 		$twcard.='<div style="display:flex;align-items:stretch;">';
 		if($tw_has_img){
-			$twcard.='<div style="width:130px;flex:0 0 130px;overflow:hidden;background:#e9ebee;"><img src="'.htmlspecialchars($twimg_url,ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="twitter image" /></div>';
+			$twcard.='<div style="width:130px;flex:0 0 130px;overflow:hidden;background:#e9ebee;"><img src="'.htmlspecialchars(websiteGraderCacheBustURL($twimg_url),ENT_QUOTES).'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="twitter image" /></div>';
 		}
 		$twcard.='<div style="padding:10px 12px;">';
 		$twcard.='<div style="color:#536471;font-size:13px;">'.$hostlc.'</div>';
