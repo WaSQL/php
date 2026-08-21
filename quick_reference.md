@@ -9,7 +9,7 @@
 // Get one record by criteria
 $user = getDBRecord([
     '-table' => 'users',
-    'id' => 123
+    '_id' => 123
 ]);
 
 // Get one record by ID (shorthand)
@@ -25,7 +25,7 @@ $newId = addDBRecord([
 // Update existing record
 editDBRecord([
     '-table' => 'users',
-    '-where' => 'id=123',
+    '-where' => '_id=123',
     'name' => 'Jane Doe',
     'email' => 'jane@example.com'
 ]);
@@ -39,7 +39,7 @@ editDBRecordById('users', 123, [
 // Delete record
 delDBRecord([
     '-table' => 'users',
-    '-where' => 'id=123'
+    '-where' => '_id=123'
 ]);
 
 // Delete by ID (shorthand)
@@ -89,7 +89,7 @@ $content = getView('header_template');
 renderViewIf($isAdmin, 'admin_panel', $adminData, 'data');
 
 // If/else rendering
-renderViewIfElse($isLoggedIn, 'dashboard', 'login_form', $userData, 'data');
+renderViewIfElse(isUser(), 'dashboard', 'login_form', $userData, 'data');
 
 // Switch-style rendering
 renderViewSwitch($userRole, [
@@ -103,7 +103,8 @@ renderViewSwitch($userRole, [
 ### Data Management (Variables)
 ```php
 // In Controller: Set variables directly (no setValue function)
-$username = $user['name'];
+global $USER;
+$username = $USER['firstname'].' '.$USER['lastname'];
 $states = getDBRecords(['-table' => 'states', '-order' => 'name']);
 $error = 'Invalid login credentials';
 
@@ -159,17 +160,11 @@ if(isUser()) {
 
 // Access user data (built-in global variable)
 global $USER;
-$userName = $USER['name'];
-$userRole = $USER['role'];
+$userName = $USER['firstname'].' '.$USER['lastname'];
 $userEmail = $USER['email'];
 
-// Also available (alternative check)
-if(isLoggedIn()) {
-    // User is authenticated
-}
-
-// Check user permissions
-if(hasPermission('admin')) {
+// Check admin rights (utype 0 = admin; there is no 'role' field)
+if(isAdmin()) {
     // User has admin rights
 }
 
@@ -303,25 +298,25 @@ switch(strtolower($PASSTHRU[0])){
 ```php
 // In controller field:
 global $USER;
-if(!isLoggedIn()) {
+if(!isUser()) {
     setView('login_required');
     return;
 }
 
 // User is logged in, continue with page logic
 $currentUser = $USER;
-$isAdmin = ($USER['role'] == 'admin');
+$isAdmin = isAdmin(); // utype 0 = admin; there is no 'role' field
 ```
 
 ### AJAX Navigation
 ```html
-<!-- Basic AJAX link -->
-<a href="#" data-div="content" data-nav="/page/list" onclick="return wacss.nav(this);">
+<!-- Basic AJAX link (note the /t/1/ blank-template prefix - required for AJAX partials) -->
+<a href="#" data-div="content" data-nav="/t/1/page/list" onclick="return wacss.nav(this);">
     Load Content
 </a>
 
-<!-- AJAX form -->
-<form data-div="result" data-nav="/page/process" onsubmit="return wacss.nav(this);">
+<!-- AJAX form (forms use wacss.ajaxPost, not wacss.nav) -->
+<form action="/t/1/page/process" onsubmit="return wacss.ajaxPost(this,'result');">
     <input type="text" name="data">
     <button type="submit">Submit</button>
 </form>
@@ -372,7 +367,7 @@ $action = $PASSTHRU[0];
 
 // Use global $USER for authentication
 global $USER;
-$userName = $USER['name'];
+$userName = $USER['firstname'].' '.$USER['lastname'];
 
 // Use $_REQUEST for form data
 $name = $_REQUEST['name'];
