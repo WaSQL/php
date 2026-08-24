@@ -292,6 +292,24 @@ Gotchas, all real:
 - **The first arg can be a string (one view) OR an array (multiple views)** — `setView(['header','content','footer'])` sets several at once (combine with `1`: `setView(['header','content'], 1)`).
 - For AJAX/partial responses and login/error short-circuits use `setView($name, 1)` so only that one view renders; always follow with `return;`. (The chrome-less output for AJAX comes from the `/t/1/` blank template, not from this arg.)
 
+### ⚠️ Controller variables do NOT reach a NESTED view — pass them under their own name
+A view selected by `setView()` renders in the body's scope, so it reads controller variables directly (`$myModel`). A view reached through `renderView()` from inside another view does **not** — `renderView` evaluates the view in its own scope where only `$params` (plus any `-alias`) exists. The symptom is silent: no error, no "no view named X", just an **empty block where `renderEach` should have output rows**, because the array it was handed was undefined.
+
+This bites hardest on the standard "one partial, two routes" shape — a `tiles` view rendered inline on the full page AND returned on its own for an AJAX refresh. Make it work in both paths by aliasing the params back to **the same name the controller used**:
+```php
+// controller — the model's variable name is the contract
+$rearviewModel = ['periods'=>..., 'extras'=>...];
+setView('tiles',1); return;                     // AJAX: body scope, $rearviewModel is visible
+```
+```php
+<view:default>
+  <div id="tiles_div">
+    <?=renderView('tiles',$rearviewModel,'rearviewModel');?>  <!-- alias == controller var name -->
+  </div>
+</view:default>
+```
+Now the `tiles` view body reads `$rearviewModel` unchanged in both paths. Without the third argument it would have to say `$params` — which then breaks the `setView` route.
+
 ### Templates
 - A page is wrapped by the `_templates` record named in its `template_id` field. Templates have the same `body`/`functions`/`css`/`js` fields and drop the page in with `<?=pageValue('body');?>`.
 - Template meta helpers (`templateMetaTitle/Description/Keywords/Image/Site`, `templateActiveMenu`) are **per-site copies defined in each template's `functions`**, not framework built-ins — they read from `global $PAGE`.
