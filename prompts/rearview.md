@@ -99,13 +99,15 @@ The content script also stamps `data-rearview="<version>"` on `<html>` at `docum
   ],
   "action": {
     "default_title": "Rearview - open the history dashboard",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "64": "icons/icon64.png" }
   },
-  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "64": "icons/icon64.png" }
 }
 ```
 
 Two things people miss: without an `"action"` block the extension has **no toolbar button at all** and cannot be pinned; and `chrome.tabs.query({url:…})` silently returns nothing without `host_permissions`, because Chrome hides tab urls otherwise.
+
+The icon sizes are **16/32/64**, not Chrome's usual 16/32/48/128, because that is what the source iconset ships (see below). Chrome accepts any set of sizes and scales for the slots you omit. Whatever you declare, make sure every referenced png actually exists: Chrome **refuses to load an unpacked extension** whose manifest names an icon file it cannot find.
 
 ### `bridge.js` (content script)
 
@@ -196,13 +198,15 @@ Forgetting `return true` in an async case is the classic MV3 bug: the callback f
 
 ### Icon
 
-A rearview mirror on a windshield mount with motion trails inside. Render the sizes with ImageMagick:
+No drawing and no build step — reuse an icon **already in your WaSQL repo**. `wfiles/iconsets/` is a stock icon set bundled with the framework, so the file you need is on disk the moment you clone WaSQL. From the extension folder:
 
 ```bash
-for S in 16 32 48 128; do magick -background none rearview.svg -resize ${S}x${S} icon${S}.png; done
+WASQL=/c/wasql                      # your repo root
+mkdir -p icons
+for S in 16 32 64; do cp "$WASQL/wfiles/iconsets/$S/info.png" "icons/icon$S.png"; done
 ```
 
-Design notes if you redraw it: a stem *below* the mirror reads as a signpost or speech bubble, and left-aligned interior lines read as text. Put the mount **above**, make the mirror wide and flat (roughly 2.5:1), and right-anchor the interior trails so they read as motion.
+That set has no 48 or 128, which is why the manifest declares 16/32/64. Any other name in `wfiles/iconsets/64/` works the same way — `history.png` (a clock with a rewind arrow) fits this tool better than `info.png` if you would rather it looked purpose-built.
 
 ### Loading it
 

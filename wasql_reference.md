@@ -158,8 +158,27 @@ if(strlen(dbLastError())){ /* real failure - report it */ }   // '' = genuinely 
 - Enumerate configured connections via `global $DATABASE; foreach($DATABASE as $name=>$info){ /* $info['dbtype'],['dbhost'],['dbname']… — NEVER print ['dbpass'] */ }`. Active connection = `$CONFIG['db']`.
 - (Legacy: `getDBRecords(['-dbname'=>'x',...])` also exists — older ODBC-oriented path; prefer the `db*` wrappers in new code.)
 
-### c-tree (FairCom) connections go through Groovy/JDBC — with two hard limits
-A `dbtype="ctree"` connection has **no PHP driver**. `dbQueryResults()` does not reach it; the working idiom is to build a `<?groovy … ?>` island and hand it to `evalPHP()`, which shells out to `groovy` (or `groovyclient`) → `groovy/db.groovy` → `groovy/ctreedb.groovy` → the FairCom JDBC jar in `groovy/lib`:
+### c-tree (FairCom): two separate paths — PHP/ODBC or Groovy/JDBC
+
+A `dbtype="ctree"` connection can be reached **two** ways, and they share nothing:
+
+1. **PHP over ODBC** — `php/extras/databases/ctree.php` (`ctreeQueryResults`/`ctreeExecuteSQL`, reached normally via `dbQueryResults($conn,$sql)`). Works wherever the **FairCom ODBC Driver** is installed and the `<database>` tag carries a full `connect="Driver={Faircom ODBC Driver};Host=…;Port=6597;…"` string. This is what `php/admin/sqlprompt*` uses.
+2. **Groovy/JDBC** — the `<?groovy … ?>` island below. Use it when there is no ODBC driver on the box, or when you want ctreedb's stream-to-CSV behaviour.
+
+> ⚠️ **PHP 8.4 turned every `odbc_*` handle into an object** (`Odbc\Connection` / `Odbc\Result`) instead of a resource, and a handle that has been **freed or closed stays an object**. So the framework's `commonIsResourceOrObject($h)` guard — used all over `ctree.php`, `hana.php`, `odbc.php`, `snowflake.php` — no longer tells you whether a handle is still *open*, and the second `odbc_free_result()`/`odbc_close()` now **throws** `Error: ODBC result has already been closed` (or `…connection has already been closed`) where PHP ≤8.3 quietly returned false. Two consequences:
+> - **Never free a result in both the enumerator and its caller.** `ctreeQueryResults` did exactly that (it freed the handle `ctreeEnumQueryResults` had already freed) and every query fatal'd at `ctree.php:991`. Free through **`ctreeFreeResult()`**, which try/catches the double free.
+> - **Always null the cached global after closing it.** `$dbh_ctree` is memoised by `ctreeDBConnect()` (`if(commonIsResourceOrObject($dbh_ctree)){return $dbh_ctree;}`), so a close that leaves the closed object in place hands the *next* caller a dead connection and `odbc_prepare()` throws on it.
+> The same double-free shape is still present in `hana.php` (caller at ~327 frees what the enumerator at ~1813 already freed) — expect the identical fatal there under 8.4.
+
+**Connection reuse on the PHP/ODBC path is opt-in per connection.** By default every `ctreeQueryResults()`/`ctreeExecuteSQL()` call opens its own `odbc_connect()` and closes it on the way out. To try pooling, add `persistent="1"` to that one `<database>` tag in `config.xml` (every attribute on the tag arrives in the driver as `-{attr}`); `ctreeReleaseConnection()` then leaves the handle open for the next request instead of closing it, and a reused handle is liveness-probed with `SQLTables` before being handed back.
+
+> ⚠️ **The ceiling is workers × connections, not concurrent queries.** FairCom licenses concurrent *sessions*, and a persistent handle is held for the whole life of the php worker whether or not it is being used — so 50 apache/php-fpm workers against a 20-seat licence gives you `Maximum users exceeded` on an idle system. (That is what `ctree.php` writes `C:\bin\ctree_failed.txt` for.) Only turn it on where the worker count is at or below the seat count, and turn it on for one connection at a time.
+
+> Also note `ctreeDBConnect()`'s legacy `odbc_pconnect()` block is **unreachable**, and not the way to enable this: `ctreeParseConnectParams()` sets `-single` unconditionally to `0`, and the branch above it tests `isset($params['-single'])` — which is true for a `0`. "Fixing" that `isset()` would silently flip every c-tree query on every site to a pooled connection. Use the `persistent="1"` attribute.
+
+**The Groovy/JDBC path — with two hard limits.**
+
+Where the FairCom ODBC driver is not installed, `dbQueryResults()` cannot reach the connection at all. The idiom there is to build a `<?groovy … ?>` island and hand it to `evalPHP()`, which shells out to `groovy` (or `groovyclient`) → `groovy/db.groovy` → `groovy/ctreedb.groovy` → the FairCom JDBC jar in `groovy/lib`:
 ```php
 // NOTE: the tags MUST be built by concatenation - a literal php close tag anywhere
 // in a page field silently truncates the rest of that field (CLAUDE.md gotcha #2b).
