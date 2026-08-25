@@ -151,12 +151,85 @@ function ctreeDBConnect($params=array()){
 		$connect_name=$params['-dbname'];
 	}
 	else{
-		echo "ctreeDBConnect error: no dbname or connect param".printValue($params);
-		exit;
+		//report through dbSetLast rather than echo+exit - callers already test dbGetLast('error')
+		//	right after connecting, and killing the request here just dumps raw text into whatever
+		//	page (or ajax/json response) asked for the query
+		$ok=dbSetLast(array('error'=>'ctreeDBConnect error: no dbname or connect param'));
+		//mask the password first - debugValue() feeds the debug buffer that callers such as
+		//	php/admin/sqlprompt render straight into the error they show the user
+		if(isset($params['-dbpass'])){$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);}
+		debugValue($params);
+		return null;
 	}
 	//ctree does not support pooling do it in the ODBC Connection manager
 	//$params['-single']=1;
 	//echo printValue($params);exit;
+	//----- persistent connections: OPT IN PER CONNECTION, off by default -----
+	//Add persistent="1" to the <database> tag in config.xml to try it on one connection at a time
+	//	(every attribute on that tag arrives here as -{attr}).
+	//Why it is opt-in, and why it bit us before:
+	//	1. FairCom licenses CONCURRENT SESSIONS. A persistent handle is held by the php worker for
+	//	   the life of that worker, idle or not, so the ceiling is (workers x connections), NOT
+	//	   (simultaneous queries). More apache/php-fpm workers than licensed seats gives you
+	//	   "Maximum users exceeded" - the failure this file already writes a flag file for.
+	//	   Only enable this where the worker count is at or under the seat count.
+	//	2. Pooling only pays off if we STOP closing per query. odbc_close() drops a persistent
+	//	   handle out of php's persistent list, so pconnect+close-per-query is all cost and no
+	//	   benefit - and on PHP 8.4 it hands the NEXT request a closed handle. So the close sites
+	//	   in ctreeQueryResults()/ctreeExecuteSQL() go through ctreeReleaseConnection(), which
+	//	   skips the close when the handle is persistent.
+	//	3. A pooled handle outlives server restarts and idle timeouts, so a reused one is probed
+	//	   for liveness before it is handed back (see ctreeConnectionIsLive).
+	$persistent=0;
+	if(!empty($params['-persistent'])){$persistent=1;}
+	if(!empty($params['-dbpersistent'])){$persistent=1;}
+	if($persistent){
+		global $dbh_ctree;
+		global $dbh_ctree_persistent;
+		global $dbh_ctree_name;
+		//reuse only a LIVE handle that belongs to the connection actually being asked for - the
+		//	global is shared by every ctree connection in the request, so the name has to match
+		if(commonIsResourceOrObject($dbh_ctree) && $dbh_ctree_name==$connect_name){
+			if(ctreeConnectionIsLive($dbh_ctree)){
+				$dbh_ctree_persistent=1;
+				return $dbh_ctree;
+			}
+			//dead handle out of the pool - drop it and reconnect below
+			$ok=ctreeCloseConnection($dbh_ctree);
+			$dbh_ctree=null;
+		}
+		if(isset($params['-cursor'])){
+			$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor']);
+		}
+		else{
+			$dbh_ctree = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass']);
+		}
+		if(!commonIsResourceOrObject($dbh_ctree)){
+			$err=odbc_errormsg();
+			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
+			$ok=dbSetLast(array('error'=>"ctreeDBConnect persistent connect error: {$err}"));
+			debugValue($params);
+			if(is_dir('c:/bin') && stringContains($err,'Maximum users exceeded')){
+				//more workers holding persistent handles than the FairCom licence allows - see (1)
+				$ok=file_put_contents("C:\bin\ctree_failed.txt", $err);
+			}
+			$dbh_ctree=null;
+			$dbh_ctree_persistent=0;
+			$dbh_ctree_name='';
+			return null;
+		}
+		$ok=ctreeSetTimeouts($dbh_ctree);
+		$dbh_ctree_persistent=1;
+		$dbh_ctree_name=$connect_name;
+		return $dbh_ctree;
+	}
+	//----- default: a fresh non-persistent connection, closed at the end of every query -----
+	//NOTE this is isset(), not a truthiness test, and ctreeParseConnectParams() always sets
+	//	-single (to 0), so with persistent off EVERY connection lands here and gets its own
+	//	odbc_connect(). The odbc_pconnect() block further down is legacy and unreachable - the
+	//	supported way to get a persistent handle is persistent="1" in config.xml, handled above.
+	global $dbh_ctree_persistent;
+	$dbh_ctree_persistent=0;
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
 			$dbh_ctree_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
@@ -167,12 +240,13 @@ function ctreeDBConnect($params=array()){
 		if(!commonIsResourceOrObject($dbh_ctree_single)){
 			$err=odbc_errormsg();
 			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-			echo "ctreeDBConnect single connect error:{$err}".printValue($params);
+			$ok=dbSetLast(array('error'=>"ctreeDBConnect single connect error: {$err}"));
+			debugValue($params);
 			if(is_dir('c:/bin') && stringContains($err,'Maximum users exceeded')){
 				//Maximum users exceeded
 				$ok=file_put_contents("C:\bin\ctree_failed.txt", $err);
 			}
-			exit;
+			return null;
 		}
 		$ok=ctreeSetTimeouts($dbh_ctree_single);
 		return $dbh_ctree_single;
@@ -199,16 +273,18 @@ function ctreeDBConnect($params=array()){
 			if(!commonIsResourceOrObject($dbh_ctree)){
 				$err=odbc_errormsg();
 				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-				echo "ctreeDBConnect error:{$err}".printValue($params);
-				exit;
+				$ok=dbSetLast(array('error'=>"ctreeDBConnect error: {$err}"));
+				debugValue($params);
+				return null;
 			}
 		}
 		$ok=ctreeSetTimeouts($dbh_ctree);
 		return $dbh_ctree;
 	}
 	catch (Exception $e) {
-		echo "ctreeDBConnect exception" . printValue($e);
-		exit;
+		$ok=dbSetLast(array('error'=>'ctreeDBConnect exception: '.$e->getMessage()));
+		debugValue($e->getMessage());
+		return null;
 
 	}
 }
@@ -256,6 +332,7 @@ function ctreeExecuteSQL($query,$return_error=1){
 	global $USER;
 	$ok=dbSetLast(array(
 		'function'=>'ctreeExecuteSQL',
+		'error'=>'',
 		'p1'=>$query,
 		'p2'=>$return_error,
 	));
@@ -266,15 +343,15 @@ function ctreeExecuteSQL($query,$return_error=1){
 	if($resource = odbc_prepare($dbh_ctree, $query)){
 		odbc_setoption($resource, 2, 0, 1800);  // SQL_QUERY_TIMEOUT = 30min on statement handle (FairCom may ignore; rely on QUERY_TIMEOUT in connection string)
 		if(odbc_execute($resource)){
-			if(commonIsResourceOrObject($resource)){odbc_free_result($resource);}
+			$ok=ctreeFreeResult($resource);
 			$resource=null;
-			if(commonIsResourceOrObject($dbh_ctree)){odbc_close($dbh_ctree);}
-			$dbh_ctree=null;
+			ctreeReleaseConnection();
 			return true;
 		}
 	}
-	odbc_close($dbh_ctree);
-	$ok=dbSetLast(array('error'=>odbc_errormsg()));
+	//grab the error BEFORE closing - odbc_errormsg() has no connection to report on afterwards
+	$ok=dbSetLast(array('error'=>odbc_errormsg($dbh_ctree)));
+	ctreeReleaseConnection();
 	debugValue(dbGetLast());
 	return null;
 }
@@ -781,6 +858,9 @@ function ctreeParseConnectParams($params=array()){
 		}
 	}
 	//echo "HERE".printValue($params);exit;
+	//NOTE: this is unconditional, and ctreeDBConnect() gates on isset(-single) - so setting it to
+	//	0 here does not turn single/non-persistent connections OFF, it turns them permanently ON.
+	//	See the WARNING in ctreeDBConnect() before touching either side.
 	$params['-single']=0;
 	if(isset($CONFIG['dbpool'])){
 		$params['-dbpool']=$CONFIG['dbpool'];
@@ -948,6 +1028,10 @@ function ctreeQueryResults($query='',$params=array()){
 	}
 	$ok=dbSetLast(array(
 		'function'=>'ctreeQueryResults',
+		//dbSetLast() MERGES into a request-global that never clears 'error' on its own, so an
+		//	error left behind by ANY earlier db call would make the bail-out below return an empty
+		//	array without ever running this query. Start each call with a clean slate.
+		'error'=>'',
 		'p1'=>$query,
 		'p2'=>$params,
 	));
@@ -965,6 +1049,13 @@ function ctreeQueryResults($query='',$params=array()){
 	$skip=0;
 	$top=10000;
 	if(isset($params['-batch_count'])){$top=(int)$params['-batch_count'];}
+	if($top < 1){$top=10000;}
+	//SELECTPAGINATE paging is driven entirely by the rows the server hands back, so a source that
+	//	ignores SKIP would return the same batch forever and grow $allrecs until the request dies.
+	//	-maxrows caps it explicitly; -batch_limit caps the number of round trips.
+	$maxrows=isset($params['-maxrows']) ? (int)$params['-maxrows'] : 0;
+	$batchlimit=isset($params['-batch_limit']) ? (int)$params['-batch_limit'] : 10000;
+	$batches=0;
 	$ctreeQueryResultsTemp['-linecount']=0;
 	$ctreeQueryResultsTemp['-header']=0;
 	$ctreeQueryResultsTemp['-showsql']=1;
@@ -988,7 +1079,7 @@ function ctreeQueryResults($query='',$params=array()){
 			odbc_setoption($resource, 2, 0, 1800);  // SQL_QUERY_TIMEOUT = 30min on statement handle (FairCom may ignore; rely on QUERY_TIMEOUT in connection string)
 			if(odbc_execute($resource)){
 				$crecs = ctreeEnumQueryResults($resource,$params,$cquery);
-				if(commonIsResourceOrObject($resource)){odbc_free_result($resource);}
+				$ok=ctreeFreeResult($resource);
 				$resource=null;
 				//echo "HERE:{$crecs}:".$cquery.printValue($params);exit;
 				if(isset($params['-filename']) || isset($params['-webhook_url']) || isset($params['-process'])){
@@ -1003,12 +1094,14 @@ function ctreeQueryResults($query='',$params=array()){
 						$breakout=1;
 						break;
 					}
-					$ccnt=0;
+					$ccnt=count($crecs);
 					foreach($crecs as $crec){
 						$allrecs[]=$crec;
-						$ccnt+=1;
-						$allcounts+=1;
 					}
+					$allcounts+=$ccnt;
+					//drop the batch NOW - otherwise it stays live while the next {$top} rows are
+					//	fetched, so peak memory carries two full batches on top of $allrecs
+					unset($crecs,$crec);
 					if($ccnt < $top){
 						$breakout=1;
 						break;
@@ -1016,20 +1109,38 @@ function ctreeQueryResults($query='',$params=array()){
 				}
 			}
 			else{
-				$ok=dbSetLast(array('error'=>odbc_errormsg()));
+				$ok=dbSetLast(array('error'=>odbc_errormsg($dbh_ctree)));
 				debugValue(dbGetLast());
+				//the statement prepared but never ran - it still holds a handle, so free it here
+				$ok=ctreeFreeResult($resource);
+				$resource=null;
 				$breakout=1;
 				break;
 			}
 		}
 		else{
-			$ok=dbSetLast(array('error'=>odbc_errormsg()));
+			$ok=dbSetLast(array('error'=>odbc_errormsg($dbh_ctree)));
 			debugValue(dbGetLast());
 			$breakout=1;
 			break;
 		}
 		//echo "HERE:{$breakout}:".printValue($recs);exit;
 		if($breakout==1){
+			break;
+		}
+		$batches+=1;
+		if($batchlimit>0 && $batches>=$batchlimit){
+			$ok=dbSetLast(array('error'=>"ctreeQueryResults: stopped after {$batches} batches (-batch_limit) at {$allcounts} rows - the source may be ignoring SKIP"));
+			debugValue(dbGetLast());
+			break;
+		}
+		if($maxrows>0 && $allcounts>=$maxrows){
+			break;
+		}
+		//bail with a real error rather than letting the accumulator hit the OOM fatal
+		if(ctreeMemoryPressure()){
+			$ok=dbSetLast(array('error'=>"ctreeQueryResults: stopped at {$allcounts} rows - approaching the PHP memory_limit. Use -filename to stream to CSV, -process for a row callback, or raise -batch_count/memory_limit."));
+			debugValue(dbGetLast());
 			break;
 		}
 		if(strlen($selecttop)){
@@ -1039,8 +1150,7 @@ function ctreeQueryResults($query='',$params=array()){
 			break;
 		}
 	}
-	if(commonIsResourceOrObject($dbh_ctree)){odbc_close($dbh_ctree);}
-	$dbh_ctree=null;
+	ctreeReleaseConnection();
 	if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 		//unlink($params['-logfile']);
 	}
@@ -1048,6 +1158,175 @@ function ctreeQueryResults($query='',$params=array()){
 		return $allcounts;
 	}
 	return $allrecs;
+}
+//---------- begin function ctreeReleaseConnection ----------
+/**
+* @describe ends a query's use of $dbh_ctree - closes and nulls a normal connection, but LEAVES a
+*	persistent (pooled) one open so the next request can reuse it.
+* @exclude - used for internal use only
+* @return boolean - true if the connection was actually closed
+* @usage ctreeReleaseConnection();
+* NOTE: closing a persistent handle drops it out of php's persistent list, so pooling would cost
+*	more than it saves, and on PHP 8.4 the next request would be handed a closed handle.
+*/
+function ctreeReleaseConnection(){
+	global $dbh_ctree;
+	global $dbh_ctree_persistent;
+	if(!empty($dbh_ctree_persistent)){return false;}
+	$ok=ctreeCloseConnection($dbh_ctree);
+	//null the cached global - PHP 8.4 leaves a CLOSED Odbc\Connection object here, which
+	//	ctreeDBConnect() would happily hand back, and the next odbc_prepare() on it throws
+	//	"ODBC connection has already been closed"
+	$dbh_ctree=null;
+	return $ok;
+}
+//---------- begin function ctreeConnectionIsLive ----------
+/**
+* @describe returns true if an odbc connection handle still answers. Used before handing a POOLED
+*	(persistent) handle back out - it may be left over from an earlier request and since have been
+*	dropped by a server restart or an idle timeout.
+* @exclude - used for internal use only
+* @param dbh mixed - odbc connection handle
+* @return boolean
+* @usage if(!ctreeConnectionIsLive($dbh)){...reconnect...}
+*/
+function ctreeConnectionIsLive($dbh){
+	if(!commonIsResourceOrObject($dbh)){return false;}
+	if(version_compare(PHP_VERSION,'7.0','>=')){
+		return ctreeConnectionIsLiveCatch($dbh);
+	}
+	return ctreeConnectionProbe($dbh);
+}
+//---------- begin function ctreeConnectionIsLiveCatch ----------
+/**
+* @describe PHP 7+ only - probes a connection inside a try/catch. Call ctreeConnectionIsLive().
+* @exclude - used for internal use only
+* @param dbh mixed - odbc connection handle
+* @return boolean
+* @usage $ok=ctreeConnectionIsLiveCatch($dbh);
+*/
+function ctreeConnectionIsLiveCatch($dbh){
+	try{
+		return ctreeConnectionProbe($dbh);
+	}
+	catch(Throwable $e){
+		//8.4 throws when the handle is already closed - which is exactly what we are testing for
+		return false;
+	}
+}
+//---------- begin function ctreeConnectionProbe ----------
+/**
+* @describe the actual liveness probe. Call ctreeConnectionIsLive() instead.
+* @exclude - used for internal use only
+* @param dbh mixed - odbc connection handle
+* @return boolean
+* @usage $ok=ctreeConnectionProbe($dbh);
+*/
+function ctreeConnectionProbe($dbh){
+	//SQLTables rather than a SELECT on purpose - it needs no table, no schema and no SQL dialect,
+	//	and the driver answers it without materialising rows. Freed immediately.
+	$res=@odbc_tables($dbh);
+	if(!commonIsResourceOrObject($res)){return false;}
+	$ok=ctreeFreeResult($res);
+	return true;
+}
+//---------- begin function ctreeMemoryPressure ----------
+
+/**
+* @describe returns true when this request is close enough to the PHP memory_limit that
+*	accumulating another batch of rows would risk the fatal "Allowed memory size exhausted"
+* @param pct float - fraction of memory_limit that counts as too close. Defaults to .85
+* @return boolean
+* @usage if(ctreeMemoryPressure()){...}
+*/
+function ctreeMemoryPressure($pct=.85){
+	$limit=trim(ini_get('memory_limit'));
+	//-1 means unlimited, and an empty value means we cannot tell - either way, do not interfere
+	if(!commonStrlen($limit) || $limit=='-1'){return false;}
+	$bytes=(float)$limit;
+	switch(strtolower(substr($limit,-1))){
+		case 'g': $bytes=$bytes*1024*1024*1024; break;
+		case 'm': $bytes=$bytes*1024*1024; break;
+		case 'k': $bytes=$bytes*1024; break;
+	}
+	if($bytes <= 0){return false;}
+	return (memory_get_usage(true) > ($bytes*$pct));
+}
+//---------- begin function ctreeFreeResult ----------
+/**
+* @describe frees an odbc result handle, tolerating one that has already been freed
+* @exclude - used for internal use only
+* @param resource mixed - odbc result handle
+* @return boolean - true if this call freed it, false if there was nothing to free
+* @usage $ok=ctreeFreeResult($resource);
+* NOTE: as of PHP 8.4 odbc_prepare/odbc_exec return an Odbc\Result OBJECT rather than a
+*	resource, and a freed result stays an object - so commonIsResourceOrObject() can no longer
+*	tell you whether it is still open, and a second odbc_free_result() throws
+*	"Error: ODBC result has already been closed" instead of quietly failing like it did on 8.3.
+*	Always free through this so double-frees stay harmless. Safe back to PHP 5.
+*/
+function ctreeFreeResult($resource){
+	if(!commonIsResourceOrObject($resource)){return false;}
+	//PHP 7+ can THROW here, so it needs a try/catch - but naming Throwable in a catch block
+	//	would be a fatal on PHP 5 if it ever had to match, so that lives in its own function
+	//	that PHP 5 never calls. On PHP 5 an odbc result is a plain resource and freeing a stale
+	//	one is only a warning, so @ is all it takes.
+	if(version_compare(PHP_VERSION,'7.0','>=')){
+		return ctreeFreeResultCatch($resource);
+	}
+	return @odbc_free_result($resource);
+}
+//---------- begin function ctreeFreeResultCatch ----------
+/**
+* @describe PHP 7+ only - frees an odbc result inside a try/catch. Call ctreeFreeResult() instead.
+* @exclude - used for internal use only
+* @param resource mixed - odbc result handle
+* @return boolean
+* @usage $ok=ctreeFreeResultCatch($resource);
+*/
+function ctreeFreeResultCatch($resource){
+	try{
+		return @odbc_free_result($resource);
+	}
+	catch(Throwable $e){
+		//already closed (or no longer a live result) - nothing to do
+		return false;
+	}
+}
+//---------- begin function ctreeCloseConnection ----------
+/**
+* @describe closes an odbc connection handle, tolerating one that is already closed
+* @exclude - used for internal use only
+* @param dbh mixed - odbc connection handle
+* @return boolean - true if this call closed it
+* @usage $ok=ctreeCloseConnection($dbh_ctree); $dbh_ctree=null;
+* NOTE: always null the caller's handle afterwards - see ctreeFreeResult().
+*/
+function ctreeCloseConnection($dbh){
+	if(!commonIsResourceOrObject($dbh)){return false;}
+	if(version_compare(PHP_VERSION,'7.0','>=')){
+		return ctreeCloseConnectionCatch($dbh);
+	}
+	@odbc_close($dbh);
+	return true;
+}
+//---------- begin function ctreeCloseConnectionCatch ----------
+/**
+* @describe PHP 7+ only - closes an odbc connection inside a try/catch. Call ctreeCloseConnection() instead.
+* @exclude - used for internal use only
+* @param dbh mixed - odbc connection handle
+* @return boolean
+* @usage $ok=ctreeCloseConnectionCatch($dbh);
+*/
+function ctreeCloseConnectionCatch($dbh){
+	try{
+		@odbc_close($dbh);
+		return true;
+	}
+	catch(Throwable $e){
+		//already closed - nothing to do
+		return false;
+	}
 }
 //---------- begin function ctreeEnumQueryResults ----------
 /**
@@ -1082,6 +1361,9 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		if(!isset($params['-webhook_format'])){
 			$params['-webhook_format']='json';
 		}
+		if(!isset($params['-webhook_count'])){
+			$params['-webhook_count']=0;
+		}
 	}
 	$i=0;
 	while(1){
@@ -1105,7 +1387,10 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 				$rec[$key]=trim($val);
 				$rec[$key]=preg_replace('/[\r\n]+/',' ', $rec[$key]);
 				$rec[$key]=str_replace(chr(8),'',$rec[$key]);
-				$rec[$key]=trim($val);
+				//re-trim the CLEANED value - trimming $val again here would throw away the
+				//	newline and chr(8) scrubbing above, which then breaks CSV output for any row
+				//	with an embedded newline
+				$rec[$key]=trim($rec[$key]);
 				if(preg_match('/\_(id|rank)$/is',$key) && preg_match('/^([0-9\.]+)/',$rec[$key],$m)){
 					//these are integers
 					$rec[$key]=$m[1];
@@ -1126,7 +1411,6 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
     	$ctreeQueryResultsTemp['-linecount']+=1;
     	if(isset($params['-process'])){
 			$ok=call_user_func($params['-process'],$rec);
-			$x++;
 			continue;
 		}
 		elseif(isset($params['-index']) && isset($rec[$params['-index']])){
@@ -1136,7 +1420,9 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			$recs[]=$rec;
 		}
 		$rec_count=count($recs);
-		if(isset($params['-filename']) && $rec_count==$params['-filename_writecount']){
+		//>= not == : with -index in play $recs can jump past the threshold (or stall on repeated
+		//	keys), and a missed flush means $recs grows for the whole result set
+		if(isset($params['-filename']) && $rec_count>=$params['-filename_writecount']){
 			
 			if($ctreeQueryResultsTemp['-header']==0){
             	$csv=arrays2CSV($recs);
@@ -1159,8 +1445,12 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 			}
 			$recs=array();
 		}
-		if(isset($params['-webhook_url']) && $rec_count==$params['-webhook_rowcount']){
-			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+		if(isset($params['-webhook_url']) && $rec_count>=$params['-webhook_rowcount']){
+			//JSON_INVALID_UTF8_SUBSTITUTE is PHP 7.2+ - on anything older an undefined constant is
+			//	treated as its own name (a string), and OR-ing two strings yields garbage flags
+			$jsonflags=JSON_UNESCAPED_UNICODE;
+			if(defined('JSON_INVALID_UTF8_SUBSTITUTE')){$jsonflags=$jsonflags|JSON_INVALID_UTF8_SUBSTITUTE;}
+			$payload=json_encode($recs,$jsonflags);
 			$params['-webhook_count']+=count($recs);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling webhook".PHP_EOL);
@@ -1174,7 +1464,7 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 		}
 	}
 	@odbc_fetch_row($result, 0);   // reset cursor
-	if(commonIsResourceOrObject($result)){odbc_free_result($result);}
+	$ok=ctreeFreeResult($result);
 	$result=null;
 	$rec_count=count($recs);
 	if(isset($params['-filename']) && $rec_count>0){
@@ -1201,7 +1491,11 @@ function ctreeEnumQueryResults($result,$params=array(),$query=''){
 	//send last payload to webhook if specified
 	if(isset($params['-webhook_url'])){
 		if(count($recs)){
-			$payload=json_encode($recs,JSON_INVALID_UTF8_SUBSTITUTE|JSON_UNESCAPED_UNICODE);
+			//JSON_INVALID_UTF8_SUBSTITUTE is PHP 7.2+ - on anything older an undefined constant is
+			//	treated as its own name (a string), and OR-ing two strings yields garbage flags
+			$jsonflags=JSON_UNESCAPED_UNICODE;
+			if(defined('JSON_INVALID_UTF8_SUBSTITUTE')){$jsonflags=$jsonflags|JSON_INVALID_UTF8_SUBSTITUTE;}
+			$payload=json_encode($recs,$jsonflags);
 			$params['-webhook_count']+=count($recs);
 			if(isset($params['-logfile']) && file_exists($params['-logfile'])){
 				appendFileContents($params['-logfile'],date('H:i:s').",{$i},Calling webhook".PHP_EOL);
