@@ -667,138 +667,22 @@ function amazonGetDocument($docid,$params=array()){
 //----------------------------------------------------------
 
 /**
- * Sends SMS message using AWS SNS via cURL with Signature Version 4
- * 
+ * Sends an SMS message using AWS SNS (Publish action, signed with SigV4)
+ *
+ * @param string $phone destination phone number in E.164 format (e.g. +18015551234)
  * @param string $message SMS message content
- * @param array $awsConfig AWS configuration array with keys: accessKey, secretKey, region, phoneNumber
- * @return string AWS SNS response
- * @throws Exception If SMS sending fails
+ * @param string $region optional AWS region override (defaults to $CONFIG['aws_region'], falling back to us-east-1) - useful since $CONFIG['aws_region'] may be set for a different AWS service (e.g. an S3 bucket) than the one SNS SMS is configured in
+ * @return array ['status'=>'SUCCESS','message_id'=>...,'request_id'=>...] or ['status'=>'FAILED',...error detail]
  */
-function amazonSMSSendSMSWithCurl($message, $awsConfig) {
-    $service = 'sns';
-    $region = $awsConfig['region'];
-    $host = $service . '.' . $region . '.amazonaws.com';
-    $endpoint = 'https://' . $host . '/';
-    
-    // Request body for SNS Publish
-    $requestBody = http_build_query([
-        'Action' => 'Publish',
-        'Message' => $message,
-        'PhoneNumber' => $awsConfig['phoneNumber'],
-        'Version' => '2010-03-31'
-    ]);
-    
-    // Create AWS Signature Version 4
-    $signature = amazonSMSCreateAWSSignatureV4($requestBody, $awsConfig, $host, $service);
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $endpoint);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBody);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/x-www-form-urlencoded',
-        'Host: ' . $host,
-        'X-Amz-Date: ' . $signature['amzDate'],
-        'Authorization: ' . $signature['authHeader']
-    ]);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    if ($httpCode !== 200) {
-        throw new Exception('SMS send failed: ' . $httpCode . ' - ' . $response);
-    }
-    
-    echo "SMS sent successfully!\n";
-    return $response;
-}
-
-/**
- * Creates AWS Signature Version 4 for SNS API requests
- * 
- * @param string $requestBody The HTTP request body
- * @param array $awsConfig AWS configuration array with keys: accessKey, secretKey, region
- * @param string $host AWS service host
- * @param string $service AWS service name (sns)
- * @return array Array with authHeader and amzDate keys
- */
-function amazonSMSCreateAWSSignatureV4($requestBody, $awsConfig, $host, $service) {
-    $accessKey = $awsConfig['accessKey'];
-    $secretKey = $awsConfig['secretKey'];
-    $region = $awsConfig['region'];
-    
-    // Create timestamp
-    $timestamp = gmdate('Ymd\THis\Z');
-    $dateStamp = gmdate('Ymd');
-    
-    // Step 1: Create canonical request
-    $method = 'POST';
-    $canonicalUri = '/';
-    $canonicalQueryString = '';
-    
-    // Canonical headers
-    $canonicalHeaders = "content-type:application/x-www-form-urlencoded\n";
-    $canonicalHeaders .= "host:" . $host . "\n";
-    $canonicalHeaders .= "x-amz-date:" . $timestamp . "\n";
-    
-    $signedHeaders = 'content-type;host;x-amz-date';
-    
-    // Create payload hash
-    $payloadHash = hash('sha256', $requestBody);
-    
-    // Create canonical request
-    $canonicalRequest = $method . "\n" . $canonicalUri . "\n" . $canonicalQueryString . "\n" . 
-                       $canonicalHeaders . "\n" . $signedHeaders . "\n" . $payloadHash;
-    
-    // Step 2: Create string to sign
-    $algorithm = 'AWS4-HMAC-SHA256';
-    $credentialScope = $dateStamp . '/' . $region . '/' . $service . '/aws4_request';
-    $stringToSign = $algorithm . "\n" . $timestamp . "\n" . $credentialScope . "\n" . 
-                   hash('sha256', $canonicalRequest);
-    
-    // Step 3: Calculate signature
-    $signingKey = amazonSMSGetSignatureKey($secretKey, $dateStamp, $region, $service);
-    $signature = hash_hmac('sha256', $stringToSign, $signingKey);
-    
-    // Step 4: Create authorization header
-    $authorizationHeader = $algorithm . ' ' . 'Credential=' . $accessKey . '/' . $credentialScope . ', ' .
-                          'SignedHeaders=' . $signedHeaders . ', ' . 'Signature=' . $signature;
-    
-    return [
-        'authHeader' => $authorizationHeader,
-        'amzDate' => $timestamp
-    ];
-}
-
-/**
- * Derives AWS signing key for Signature Version 4
- * 
- * @param string $key AWS secret access key
- * @param string $dateStamp Date in YYYYMMDD format
- * @param string $regionName AWS region name
- * @param string $serviceName AWS service name
- * @return string Binary signing key
- */
-function amazonSMSGetSignatureKey($key, $dateStamp, $regionName, $serviceName) {
-    $kDate = hash_hmac('sha256', $dateStamp, 'AWS4' . $key, true);
-    $kRegion = hash_hmac('sha256', $regionName, $kDate, true);
-    $kService = hash_hmac('sha256', $serviceName, $kRegion, true);
-    $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
-    return $kSigning;
-}
-
-function amazonSendTextMsg($phone, $message) {
+function amazonSendTextMsg($phone, $message, $region=null) {
     global $CONFIG;
     $service = 'sns';
-    $host = "sns.{$region}.amazonaws.com";
 
     // Trim credentials to remove hidden characters
     $accessKey = trim($CONFIG['aws_accesskey']);
     $secretKey = trim($CONFIG['aws_secretkey']);
-    $region=commonCoalesce($CONFIG['aws_region'],'us-east-1');
+    $region=commonCoalesce($region,$CONFIG['aws_region'],'us-east-1');
+    $host = "sns.{$region}.amazonaws.com";
 
     $method = 'POST';
     $uri = '/';
@@ -849,15 +733,11 @@ function amazonSendTextMsg($phone, $message) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Not recommended for production
-    curl_setopt($ch, CURLOPT_VERBOSE, true);
-    $verbose = fopen('curl_debug.log', 'a+');
-    curl_setopt($ch, CURLOPT_STDERR, $verbose);
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     $curlErrno = curl_errno($ch);
-    fclose($verbose);
     curl_close($ch);
 
     if ($httpCode == 200) {

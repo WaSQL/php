@@ -25,14 +25,15 @@ surprises whoever hits it.
 
 ## Still open
 
-Four (1, 2, 3, 7 — 4, 5, 6 and 8 were fixed 2026-08-18, see below). Bugs 1, 2 and 3 are
+Five (1, 2, 3, 7, 9 — 4, 5, 6 and 8 were fixed 2026-08-18, see below). Bugs 1, 2 and 3 are
 one family and worth reading together: **the data layer's failure mode is an empty
 result**, so a broken query, a syntax error and "no rows" are the same value.
 
 Bugs 1 and 3 are deliberate decisions rather than defects — read the reasoning before
 "fixing" them. Bug 2 is a straightforward defect and, notably, would be *survivable* if
 1 and 3 were addressed: it only costs hours because it fails silently. 7 is latent: it
-isn't biting today, but will bite whoever hits it next.
+isn't biting today, but will bite whoever hits it next. 9 is a client-side sibling of the
+same "convenient loop, unscoped substring" shape as bug 2, just in JS instead of SQL.
 
 ### 1. `dbQueryResults()` reports a failed SELECT as an empty result set — severity A (arguably by design)
 
@@ -182,6 +183,40 @@ foreach($parts as $part){
 so it is unaffected. This is recorded because the next cron that passes an identifier will
 be bitten, and the symptom (a job that runs and quietly does the wrong thing) is expensive
 to trace back to here.
+
+### 9. `wacss.speak()`'s `params.gender` voice match isn't scoped to English — severity C
+
+**Where:** `wfiles/js/extras/wacss.js` ~10649-10688, `speak()`'s `else if(undefined !=
+params.gender)` branch — the male hint list includes `name.includes('man')` (line
+**10665**), the female list includes `name.includes('woman')` (line **10681**), checked
+against every installed voice's full name with no language filter.
+
+**Symptom:** on a machine that has any non-English voice installed whose name merely
+*contains* one of the hint substrings, `wacss.speak(txt,{gender:'male'})` picks that voice
+instead of an English one — the utterance is still the English text handed in, but it's
+read by a foreign-language voice/engine, so it comes out mispronounced or in a noticeably
+wrong accent. `'german'.includes('man')` is true (the last three letters), so is
+`'romanian'`/`'turkmen'` — any locale name ending in "-man" silently outranks every real
+English male voice that sorts after it in `speechSynthesis.getVoices()`. First hit: the
+Flashcard Game's "Hear about them" button (byuwards' `/portal` Members tab), reported as
+"the audio isn't in English."
+
+**Cause:** the hint-matching loop checks `voices[i].name` only — never `voices[i].lang` —
+so a substring that's meant to catch an English voice named e.g. "Microsoft David
+Desktop - English" also catches any other voice whose *name* happens to contain the same
+letters, regardless of what language it actually speaks.
+
+**Fix (small):** filter `voices` to `voices[i].lang.toLowerCase().indexOf('en')===0` before
+running the gender-hint loop (or take it as a `params.lang` prefix instead of hardcoding
+`'en'`, since a non-English site would want the same guard for its own language).
+
+**Workaround (site-layer, does not touch core):** don't rely on `params.gender` alone —
+resolve the voice yourself from `speechSynthesis.getVoices()` filtered to English first,
+then pass the exact match via `params.name` (checked *before* `params.gender` in `speak()`,
+so it bypasses the buggy path entirely). See `portalFlashcardVoiceName()` in byuwards'
+`portal._pages.js` for the pattern.
+
+---
 
 ## Already fixed in core (for context, do not re-fix)
 

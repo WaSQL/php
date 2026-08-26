@@ -33,8 +33,8 @@
 			}
 			//how many pages to crawl
 			$maxpages=(int)$_REQUEST['maxpages'];
-			if($maxpages < 1){$maxpages=20;}
-			if($maxpages > 50){$maxpages=50;}
+			if($maxpages < 1){$maxpages=50;}
+			if($maxpages > 300){$maxpages=300;}
 			//this crawl is synchronous and can legitimately run for minutes (many page fetches +
 			//image HEAD checks). session.save_path is file-based here (database_sessions=0 in
 			//config.xml), which locks the session file for the life of the script - release that
@@ -42,7 +42,9 @@
 			//while we crawl. Reacquired below, right before we need to write to $_SESSION again.
 			session_write_close();
 			//crawl the live site
+			$crawlstart=microtime(true);
 			$crawl=websiteGraderCrawl($starturl,$maxpages);
+			$crawlseconds=round(microtime(true)-$crawlstart,1);
 			if(isset($crawl['error'])){
 				session_start();
 				$grader_error=$crawl['error'];
@@ -55,10 +57,10 @@
 			$checks=websiteGraderRunChecks($baseurl,$pages,$crawl['robots'],$excludedpages);
 			$grade=websiteGraderGrade($checks);
 			$social=count($pages)?websiteGraderSocialData($pages[0],$baseurl):array();
-			$tech=websiteGraderDetectTech($pages,$crawl['robots']);
+			$tech=websiteGraderDetectTech($pages,$crawl['robots'],(string)parse_url($baseurl,PHP_URL_HOST));
 			//reacquire the session so we can stash the report for the email/download steps
 			session_start();
-			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech,$excludedpages);
+			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech,$excludedpages,$crawlseconds);
 			setView('result',1);
 		break;
 		case 'emailform':

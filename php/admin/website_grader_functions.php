@@ -135,6 +135,28 @@ function websiteGraderExtractLinks($body,$pageurl,$baseurl,$host){
 }
 
 /**
+ * @describe filter a list of same-host URLs down to the ones robots.txt allows crawling (user-agent
+ *   "*"). Used to keep the crawler itself from ever fetching a Disallow'd path - the per-page
+ *   exclusion in websiteGraderRunChecks only stops a fetched page from being GRADED, it can't undo
+ *   the fact that the crawl already spent a page slot fetching something a real crawler never would.
+ * @param links array of absolute URLs, robots string
+ * @return array of absolute URLs (same order, disallowed ones removed)
+ */
+function websiteGraderCrawlableLinks($links,$robots){
+	if(!strlen(trim($robots))){return $links;}
+	$out=array();
+	foreach($links as $l){
+		$path=(string)parse_url($l,PHP_URL_PATH);
+		if(!strlen($path)){$path='/';}
+		$query=(string)parse_url($l,PHP_URL_QUERY);
+		if(strlen($query)){$path.='?'.$query;}
+		if(websiteGraderRobotsDisallowsPath($robots,$path)){continue;}
+		$out[]=$l;
+	}
+	return $out;
+}
+
+/**
  * @describe detect whether a fetched body is actually an HTML page rather than the plain-text/XML
  *   file it was requested as. Needed because many sites/frameworks (WaSQL included, via a
  *   configured "missing page" fallback - see php/index.php) return HTTP 200 with the site's
@@ -225,7 +247,7 @@ function websiteGraderIsBotChallenge($res){
  */
 function websiteGraderCrawl($starturl,$maxpages){
 	if($maxpages < 1){$maxpages=1;}
-	if($maxpages > 50){$maxpages=50;}
+	if($maxpages > 300){$maxpages=300;}
 	$start=websiteGraderFetch($starturl);
 	if(strlen($start['error'])){
 		return array('error'=>"Could not reach {$starturl}: {$start['error']}");
@@ -248,17 +270,23 @@ function websiteGraderCrawl($starturl,$maxpages){
 	$host=isset($parts['host'])?$parts['host']:'';
 	$port=isset($parts['port'])?':'.$parts['port']:'';
 	$baseurl="{$scheme}://{$host}{$port}";
+	//fetch robots.txt BEFORE crawling (not after) so Disallow rules can actually stop the crawler
+	//from fetching those paths in the first place - a real search/AI crawler consults robots.txt
+	//before requesting a URL, not after. The explicit start URL is still fetched regardless (the
+	//user asked to check that exact page); only links discovered while spidering are filtered.
+	$rres=websiteGraderFetch("{$baseurl}/robots.txt");
+	$robots=($rres['http_code'] >= 200 && $rres['http_code'] < 300 && strlen(trim($rres['body'])) && !websiteGraderLooksLikeHtmlPage($rres['body']))?$rres['body']:'';
 	$finalurl=websiteGraderCanonicalURL($finalurl);
 	$pages=array();
 	$visited=array();
 	$pages[$finalurl]=array('url'=>$finalurl,'body'=>$start['body'],'headers'=>$start['headers']);
 	$visited[$finalurl]=1;
-	$queue=websiteGraderExtractLinks($start['body'],$finalurl,$baseurl,$host);
+	$queue=websiteGraderCrawlableLinks(websiteGraderExtractLinks($start['body'],$finalurl,$baseurl,$host),$robots);
 	//hard wall-clock cap - each fetch below can take up to ~25s, and a slow/misbehaving site can
 	//queue far more links than $maxpages ever accepts, so bound total crawl time regardless of
 	//page count (session lock is released around this call, but the request/worker thread is
 	//still tied up for as long as this runs).
-	$deadline=microtime(true)+60;
+	$deadline=microtime(true)+180;
 	while(count($pages) < $maxpages && count($queue) && microtime(true) < $deadline){
 		$url=array_shift($queue);
 		if(isset($visited[$url])){continue;}
@@ -268,13 +296,11 @@ function websiteGraderCrawl($starturl,$maxpages){
 		if(!preg_match('/html/i',$res['content_type']) && !preg_match('/<html/i',$res['body'])){continue;}
 		$pages[$url]=array('url'=>$url,'body'=>$res['body'],'headers'=>$res['headers']);
 		if(count($pages) >= $maxpages){break;}
-		$newlinks=websiteGraderExtractLinks($res['body'],$url,$baseurl,$host);
+		$newlinks=websiteGraderCrawlableLinks(websiteGraderExtractLinks($res['body'],$url,$baseurl,$host),$robots);
 		foreach($newlinks as $l){
 			if(!isset($visited[$l]) && !in_array($l,$queue)){$queue[]=$l;}
 		}
 	}
-	$rres=websiteGraderFetch("{$baseurl}/robots.txt");
-	$robots=($rres['http_code'] >= 200 && $rres['http_code'] < 300 && strlen(trim($rres['body'])) && !websiteGraderLooksLikeHtmlPage($rres['body']))?$rres['body']:'';
 	return array(
 		'baseurl'=>$baseurl,
 		'scheme'=>$scheme,
@@ -386,7 +412,14 @@ function websiteGraderTermsGlossary(){
 		'robots'=>array('term'=>'robots.txt','def'=>"A small text file that tells search engines and AI crawlers which parts of your site they're allowed to read."),
 		'sitemap'=>array('term'=>'sitemap.xml','def'=>"A file listing every page on your site, so search engines can find and index all of them."),
 		'llms'=>array('term'=>'llms.txt','def'=>"A newer file, similar to robots.txt, aimed at AI systems — it describes your site's content so AI assistants can find and understand it."),
-		'aiaccess'=>array('term'=>'AI crawlers','def'=>"Automated visitors from AI systems (like the ones behind ChatGPT or Claude) that read your pages so they can reference or cite your content in answers.")
+		'aiaccess'=>array('term'=>'AI crawlers','def'=>"Automated visitors from AI systems (like the ones behind ChatGPT or Claude) that read your pages so they can reference or cite your content in answers."),
+		'robotssitemap'=>array('term'=>'Sitemap in robots.txt','def'=>"A line in robots.txt pointing crawlers straight at your sitemap.xml, so they don't have to guess where it lives."),
+		'favicon'=>array('term'=>'Favicon','def'=>"The small icon shown in browser tabs, bookmarks, and some search results — a basic sign of a real, maintained site."),
+		'richschema'=>array('term'=>'Breadcrumb / FAQ schema','def'=>"Structured data marking up a page's breadcrumb trail or Q&A content — the two schema types AI answer engines rely on most when citing a source."),
+		'headinghierarchy'=>array('term'=>'Heading hierarchy','def'=>"The nesting order of a page's headings (H1, H2, H3...). Skipping a level (H1 straight to H3) makes it harder for search/AI engines to tell how the content is organized."),
+		'dupcontent'=>array('term'=>'Duplicate titles/descriptions','def'=>"Two or more pages using the exact same title or meta description, which makes it harder for search engines to tell the pages apart."),
+		'httpsredirect'=>array('term'=>'HTTP&rarr;HTTPS redirect','def'=>"Whether the plain http:// version of your site automatically forwards visitors to the secure https:// version, instead of serving the same content at both."),
+		'wwwcanonical'=>array('term'=>'www / non-www canonicalization','def'=>"Whether the www and non-www versions of your domain both work but one properly redirects to the other, instead of serving the same content at two separate addresses.")
 	);
 }
 
@@ -431,8 +464,60 @@ function websiteGraderRunChecks($baseurl,$pages,$robots,&$excluded=array()){
 		'element'=>'<xmp style="margin:0px;">robots.txt</xmp>',
 		'suggestion'=>'robots.txt blocks these AI crawlers, so your content will NOT be read or cited by them: '.encodeHtml(implode(', ',$blocked)).'. Remove the Disallow rules for any AI engine you want to appear in.'
 	));
+	//sitemap referenced in robots.txt - only meaningful when robots.txt itself is present (already
+	//flagged separately above if not), so a crawler that reads robots.txt can discover the sitemap
+	//without having to guess/probe for it.
+	if($robots_ok){
+		$robots_sitemap_ok=(bool)preg_match('/^\s*Sitemap\s*:\s*\S+/mi',$robots);
+		websiteGraderAddCheck($checks,'robotssitemap','Sitemap listed in robots.txt','Misc',$robots_sitemap_ok,$robots_sitemap_ok?null:array(
+			'element'=>'<xmp style="margin:0px;">Sitemap: '.encodeHtml(rtrim($baseurl,'/')).'/sitemap.xml</xmp>','suggestion'=>'robots.txt has no "Sitemap:" line. Add one pointing at your sitemap.xml so crawlers can discover it without having to guess the URL.'
+		));
+	}
+	//favicon - check the homepage's <link rel="icon"> first, then fall back to /favicon.ico
+	$homebody=(count($pages) && isset($pages[0]['body']))?$pages[0]['body']:'';
+	$favicon_ok=(bool)preg_match('/<link[^>]*\brel\s*=\s*["\'](?:shortcut icon|icon|apple-touch-icon)["\'][^>]*>/si',$homebody);
+	if(!$favicon_ok){
+		$favres=websiteGraderFetch(rtrim($baseurl,'/').'/favicon.ico');
+		$favicon_ok=(isNum($favres['http_code']) && $favres['http_code']>=200 && $favres['http_code']<300 && strlen($favres['body']));
+	}
+	websiteGraderAddCheck($checks,'favicon','Favicon present','Misc',$favicon_ok,$favicon_ok?null:array(
+		'element'=>'<xmp style="margin:0px;"><link rel="icon" href="/favicon.ico" /></xmp>','suggestion'=>'No favicon found (neither a &lt;link rel="icon"&gt; tag nor a working /favicon.ico). Add one - it shows in browser tabs, bookmarks, and some search/AI result listings.'
+	));
+	//rich schema types (AIO) - BreadcrumbList/FAQPage are the schema types that most directly drive
+	//AI Overview / rich-result citation, so check for them site-wide rather than per-page (most
+	//individual pages have no reason to carry either type).
+	$richschema_ok=false;
+	foreach($pages as $rp){
+		if(preg_match('/"@type"\s*:\s*"(BreadcrumbList|FAQPage)"/si',isset($rp['body'])?$rp['body']:'')){$richschema_ok=true;break;}
+	}
+	websiteGraderAddCheck($checks,'richschema','Breadcrumb/FAQ schema present','AIO',$richschema_ok,$richschema_ok?null:array(
+		'element'=>'<xmp style="margin:0px;">{ "@type": "BreadcrumbList", ... }</xmp>','suggestion'=>'No BreadcrumbList or FAQPage structured data found on any crawled page. These are the schema types AI answer engines rely on most for rich-result citation - add BreadcrumbList to category/product pages and FAQPage anywhere you answer common questions.'
+	));
+	$host=(string)parse_url($baseurl,PHP_URL_HOST);
+	$scheme=(string)parse_url($baseurl,PHP_URL_SCHEME);
+	//HTTP -> HTTPS redirect - only meaningful when the site supports https at all (already flagged
+	//separately above if not); confirms the plain-http origin doesn't ALSO serve duplicate content.
+	if($ssl_ok && strlen($host)){
+		$httpres=websiteGraderFetch('http://'.$host.'/');
+		$httpsredirect_ok=stringBeginsWith(strtolower($httpres['final_url']),'https://');
+		websiteGraderAddCheck($checks,'httpsredirect','HTTP redirects to HTTPS','Misc',$httpsredirect_ok,$httpsredirect_ok?null:array(
+			'suggestion'=>'http://'.encodeHtml($host).'/ does not redirect to https. Add a 301 redirect from http to https so the two don\'t serve duplicate content under separate URLs.'
+		));
+	}
+	//www / non-www canonicalization - fetch the "other" host variant and confirm it either doesn't
+	//resolve (no risk) or 301s to the canonical host, rather than serving duplicate content itself.
+	if(strlen($host)){
+		$althost=stringBeginsWith(strtolower($host),'www.')?substr($host,4):('www.'.$host);
+		$altres=websiteGraderFetch($scheme.'://'.$althost.'/');
+		$altfinalhost=strtolower((string)parse_url($altres['final_url'],PHP_URL_HOST));
+		$wwwcanonical_ok=(!isNum($altres['http_code']) || $altres['http_code']==0 || strlen($altres['error']) || $altfinalhost===strtolower($host));
+		websiteGraderAddCheck($checks,'wwwcanonical','www/non-www canonicalization','Misc',$wwwcanonical_ok,$wwwcanonical_ok?null:array(
+			'suggestion'=>$scheme.'://'.encodeHtml($althost).'/ serves content without redirecting to '.encodeHtml($host).'. Add a redirect from one host to the other so the same content isn\'t reachable at two separate URLs.'
+		));
+	}
 
 	//===== per-page =====
+	$titlemap=array();$descmap=array();
 	foreach($pages as $gpage){
 		$url=$gpage['url'];
 		$body=$gpage['body'];
@@ -488,6 +573,13 @@ function websiteGraderRunChecks($baseurl,$pages,$robots,&$excluded=array()){
 		websiteGraderAddCheck($checks,'description','Meta description (140-160 chars)','SEO',$desc_ok,$desc_ok?null:array(
 			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="description" content="'.encodeHtml((string)$desc).'" /></xmp>','suggestion'=>$d_sugg
 		));
+		//track titles/descriptions across pages for the site-wide duplicate-content check below
+		$normtitle=strtolower(trim((string)$title));
+		if(strlen($normtitle)){$titlemap[$normtitle][]=$url;}
+		if($desc!==null){
+			$normdesc=strtolower(trim($desc));
+			if(strlen($normdesc)){$descmap[$normdesc][]=$url;}
+		}
 		//meta robots - a noindex page was already bucketed into $excluded above and never
 		//reaches here, so the only remaining failure case is the tag being missing entirely.
 		$rob_ok=($rob!==null);
@@ -529,7 +621,17 @@ function websiteGraderRunChecks($baseurl,$pages,$robots,&$excluded=array()){
 					$pp=parse_url($url);
 					$src="{$pp['scheme']}://{$pp['host']}".(isset($pp['port'])?":{$pp['port']}":'').$src;
 				}
-				if(preg_match('#^https?://#i',$src) && websiteGraderImgCheckAllowed()){
+				//skip the size fetch for a same-host image robots.txt disallows - a real crawler
+				//would never fetch it either, so flagging its size would be misleading.
+				$img_disallowed=false;
+				if(preg_match('#^https?://#i',$src) && strlen(trim($robots)) && strtolower((string)parse_url($src,PHP_URL_HOST))===strtolower((string)parse_url($baseurl,PHP_URL_HOST))){
+					$imgpath=(string)parse_url($src,PHP_URL_PATH);
+					if(!strlen($imgpath)){$imgpath='/';}
+					$imgquery=(string)parse_url($src,PHP_URL_QUERY);
+					if(strlen($imgquery)){$imgpath.='?'.$imgquery;}
+					$img_disallowed=websiteGraderRobotsDisallowsPath($robots,$imgpath);
+				}
+				if(!$img_disallowed && preg_match('#^https?://#i',$src) && websiteGraderImgCheckAllowed()){
 					$hinfo=websiteGraderGetURLHeader($src);
 					if(isset($hinfo['download_content_length']) && $hinfo['download_content_length'] > 300000){
 						$probs[]=websiteGraderFormatBytes($hinfo['download_content_length']).' &mdash; too large (keep under ~300 KB)';
@@ -581,7 +683,48 @@ function websiteGraderRunChecks($baseurl,$pages,$robots,&$excluded=array()){
 		websiteGraderAddCheck($checks,'authorship','Authorship / E-E-A-T signal','AIO',$author_ok,$author_ok?null:array(
 			'page'=>$link,'element'=>'<xmp style="margin:0px;"><meta name="author" content="..." /></xmp>','suggestion'=>'No authorship signal (meta author or Person/Organization schema). AI engines weigh authorship &amp; authority (E-E-A-T) when choosing sources to cite.'
 		));
+		//heading hierarchy - flag a skipped level (e.g. H1 straight to H3, or a page that starts at
+		//H2+ with no H1 at all); AI engines chunk pages by heading structure when extracting
+		//answers, so a broken hierarchy makes that harder.
+		preg_match_all('/<h([1-6])[\s>]/si',$body,$hlm);
+		$hlevels=array_map('intval',$hlm[1]);
+		$hier_ok=true;$hier_sugg='';
+		if(count($hlevels)){
+			if($hlevels[0]!=1){
+				$hier_ok=false;$hier_sugg="The first heading on the page is H{$hlevels[0]}, not H1.";
+			}
+			else{
+				$hprev=$hlevels[0];
+				foreach(array_slice($hlevels,1) as $hlvl){
+					if($hlvl > $hprev+1){
+						$hier_ok=false;$hier_sugg="Heading level jumps from H{$hprev} to H{$hlvl}, skipping a level in between.";break;
+					}
+					$hprev=$hlvl;
+				}
+			}
+		}
+		websiteGraderAddCheck($checks,'headinghierarchy','Heading hierarchy (no skipped levels)','AIO',$hier_ok,$hier_ok?null:array(
+			'page'=>$link,'element'=>'<xmp style="margin:0px;"><h1>...</h1><h2>...</h2></xmp>','suggestion'=>$hier_sugg
+		));
 	}
+	//duplicate titles/descriptions across pages - a real issue only when more than one page shares
+	//the exact same title or description (each row in $titlemap/$descmap collected during the loop
+	//above lists every URL that shares one normalized value).
+	$dupfails=array();
+	foreach($titlemap as $t=>$urls){
+		if(count($urls) > 1){
+			$dupfails[]='Title "'.encodeHtml(websiteGraderTruncate($t,80)).'" is used on '.count($urls).' pages: '.implode(', ',array_map('websiteGraderPageLink',$urls));
+		}
+	}
+	foreach($descmap as $d=>$urls){
+		if(count($urls) > 1){
+			$dupfails[]='Description "'.encodeHtml(websiteGraderTruncate($d,80)).'" is used on '.count($urls).' pages: '.implode(', ',array_map('websiteGraderPageLink',$urls));
+		}
+	}
+	$dupcontent_ok=count($dupfails)==0;
+	websiteGraderAddCheck($checks,'dupcontent','No duplicate titles/descriptions','SEO',$dupcontent_ok,$dupcontent_ok?null:array(
+		'suggestion'=>count($dupfails).' duplicate title/description issue(s) found across crawled pages. Each page should have a unique title and description.','items'=>$dupfails
+	));
 	return $checks;
 }
 
@@ -599,13 +742,24 @@ function websiteGraderGradeColor($pct){
 }
 
 /**
- * @describe compute the overall grade (percent + description) from all check instances.
+ * @describe compute the overall grade (percent + description) from all checks. Graded per
+ *   CHECK TYPE, not per instance: a check counts as passed only if it passed on every instance
+ *   (every page, for a per-page check) - the same pass==total test each check's own row uses to
+ *   show Pass/Fail (see websiteGraderRenderChecksTable). Grading by instance instead would let a
+ *   check that runs once per crawled page (e.g. heading hierarchy) outweigh a check that only
+ *   ever runs once site-wide (e.g. sitemap.xml present) in direct proportion to page count,
+ *   which has nothing to do with how important either check is.
  * @param checks array
- * @return array [percent, pass, total, label, letter, color]
+ * @return array [percent, pass, total, label, letter, color] - pass/total count check TYPES, e.g.
+ *   "18 of 25 checks passed" (not check instances)
  */
 function websiteGraderGrade($checks){
 	$pass=0;$total=0;
-	foreach($checks as $c){$pass+=$c['pass'];$total+=$c['total'];}
+	foreach($checks as $c){
+		if($c['total']==0){continue;}
+		$total++;
+		if($c['pass']==$c['total'] && !count($c['fails'])){$pass++;}
+	}
 	$pct=$total?(int)round($pass/$total*100):0;
 	if($pct >= 90){$label='Excellent &mdash; well optimized';$letter='A';}
 	elseif($pct >= 80){$label='Good but could use some tweaks';$letter='B';}
@@ -616,15 +770,16 @@ function websiteGraderGrade($checks){
 }
 
 /**
- * @describe grade for a single category.
+ * @describe grade for a single category. Same per-check-type semantics as websiteGraderGrade().
  * @param checks array, cat string
- * @return array [percent, pass, total]
+ * @return array [percent, pass, total] - pass/total count check TYPES in this category
  */
 function websiteGraderCategoryGrade($checks,$cat){
 	$pass=0;$total=0;
 	foreach($checks as $c){
-		if($c['category']!=$cat){continue;}
-		$pass+=$c['pass'];$total+=$c['total'];
+		if($c['category']!=$cat || $c['total']==0){continue;}
+		$total++;
+		if($c['pass']==$c['total'] && !count($c['fails'])){$pass++;}
 	}
 	$pct=$total?(int)round($pass/$total*100):100;
 	return array('percent'=>$pct,'pass'=>$pass,'total'=>$total);
@@ -642,6 +797,11 @@ function websiteGraderCategoryGrade($checks,$cat){
 function websiteGraderTechSignatures(){
 	return array(
 		//--- CMS / Platform ---
+		//WaSQL listed FIRST: websiteGraderDetectPrimaryPlatform() returns the first tech['CMS'] name
+		//it finds notes for, so a genuine WaSQL hit always wins over any other CMS pattern that
+		//happens to also match (e.g. via an outbound citation link in article body text - see
+		//websiteGraderDetectTech()'s foreign-host stripping, which is the other half of this fix).
+		array('category'=>'CMS','name'=>'WaSQL','type'=>'body','pattern'=>'#/w_min/minify_[0-9a-f]{8,}_[0-9a-f]{8,}\.(?:css|js)|\bwacss\.(?:nav|ajaxGet|ajaxPost|centerpopClose|toast)\s*\(#i'),
 		array('category'=>'CMS','name'=>'WordPress','type'=>'body','pattern'=>'#/wp-content/|/wp-includes/|<meta[^>]+name=["\']generator["\'][^>]+content=["\']WordPress#i'),
 		array('category'=>'CMS','name'=>'Drupal','type'=>'body','pattern'=>'#Drupal\.settings|/sites/default/files/|<meta[^>]+name=["\']generator["\'][^>]+content=["\']Drupal#i'),
 		array('category'=>'CMS','name'=>'Joomla','type'=>'body','pattern'=>'#/media/jui/|<meta[^>]+name=["\']generator["\'][^>]+content=["\']Joomla#i'),
@@ -727,10 +887,12 @@ function websiteGraderTechSignatures(){
  *   framework/library, CSS framework, analytics, tag manager, CDN, hosting, web server,
  *   language, fonts, chat widgets, payment) by matching page bodies + response headers
  *   against websiteGraderTechSignatures(). No external API is called.
- * @param pages array of [url,body,headers], robots string
+ * @param pages array of [url,body,headers], robots string, host string - the crawled site's own
+ *   hostname (from parse_url($baseurl,PHP_URL_HOST)), used to keep outbound links from false-firing
+ *   a signature - see the foreign-host stripping below
  * @return array category => array of technology names (deduped, unsorted)
  */
-function websiteGraderDetectTech($pages,$robots){
+function websiteGraderDetectTech($pages,$robots,$host=''){
 	$body='';
 	$headerlist=array();
 	foreach($pages as $p){
@@ -738,6 +900,16 @@ function websiteGraderDetectTech($pages,$robots){
 		if(isset($p['headers']) && is_array($p['headers'])){$headerlist[]=$p['headers'];}
 	}
 	$body.="\n".$robots;
+	//neutralize href/src values that point at a DIFFERENT host before signature matching - a page's
+	//own outbound link/citation to another site (e.g. an article citing a Drupal-powered .gov PDF)
+	//must never make a body-type signature fire for THIS site. Only same-host/relative asset paths
+	//(untouched here, since they don't match the http(s):// form) are real platform signal.
+	if(strlen($host)){
+		$body=preg_replace_callback('#(href|src)(\s*=\s*)(["\'])\s*(https?://[^"\']+)\3#i',function($m) use ($host){
+			$urlhost=(string)parse_url($m[4],PHP_URL_HOST);
+			return (strcasecmp($urlhost,$host)===0)?$m[0]:($m[1].$m[2].$m[3].$m[3]);
+		},$body);
+	}
 	$found=array();
 	foreach(websiteGraderTechSignatures() as $sig){
 		$hit=false;
@@ -820,15 +992,28 @@ function websiteGraderTechCount($tech){
 	return $n;
 }
 
+/**
+ * @describe format a duration in seconds as a short human string ("42.3s" or "1m 12s").
+ * @param seconds float
+ * @return string
+ */
+function websiteGraderFormatSeconds($seconds){
+	$seconds=(float)$seconds;
+	if($seconds < 60){return round($seconds,1).'s';}
+	$m=floor($seconds/60);
+	$s=round($seconds-($m*60));
+	return $m.'m '.$s.'s';
+}
+
 //---------- output builders ----------
 
 /**
  * @describe FORM 1 (report card): grade hero + social preview + all checks (Pass/Fail) + technology + AI prompt panel.
  * @param grade array, checks array, social array, baseurl string, pages array, tech array, error string,
- *   excluded array of [url,reason] - pages skipped from on-page checks (robots.txt/noindex)
+ *   excluded array of [url,reason] - pages skipped from on-page checks (robots.txt/noindex), crawlseconds float
  * @return string HTML
  */
-function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array()){
+function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array(),$crawlseconds=0){
 	if(strlen($error)){
 		return '<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> '.encodeHtml($error).'</div>';
 	}
@@ -849,7 +1034,7 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech
 	$rtn.='.wg_tabs a:hover{color:#1a5fb4;}'.PHP_EOL;
 	$rtn.='.wg_tabs a.is-active,.wg_tabs a.active{color:#1a5fb4;border-bottom-color:#1a5fb4;}'.PHP_EOL;
 	$rtn.='.wg_tabpill{font-size:11px;padding:1px 6px;border-radius:9px;color:#fff;}'.PHP_EOL;
-	$rtn.='#grader_ai_prompt{max-width:100%;box-sizing:border-box;overflow:auto;white-space:pre-wrap;}'.PHP_EOL;
+	$rtn.='#grader_ai_prompt{max-width:100%;max-height:420px;box-sizing:border-box;overflow-y:auto;white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;line-height:1.5;border:1px solid #dbdbdb;border-radius:4px;padding:12px;background:#fff;color:#363636;}'.PHP_EOL;
 	$rtn.='@media (max-width:820px){.wg_results td xmp{max-width:56vw;font-size:11px;}}'.PHP_EOL;
 	$rtn.='@media (max-width:560px){.wg_tablewrap table{min-width:600px;}.wg_results td xmp{max-width:320px;font-size:11px;}.wg_cards{gap:16px;}.wg_hero{padding:14px;}.wg_tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}}'.PHP_EOL;
 	$rtn.='</style>'.PHP_EOL;
@@ -858,7 +1043,7 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech
 	$rtn.='<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">'.PHP_EOL;
 	$rtn.='<div style="flex:1 1 auto;min-width:0;">'.PHP_EOL;
 	$rtn.='<div class="w_bigger w_bold w_gray">Scanned <span class="w_dblue">'.htmlspecialchars($baseurl).'</span></div>'.PHP_EOL;
-	$rtn.='<div class="w_gray" style="margin-bottom:8px;">Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site.</div>'.PHP_EOL;
+	$rtn.='<div class="w_gray" style="margin-bottom:8px;">Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):'').'.</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
 	$rtn.='<div style="flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;">'.websiteGraderEmailButton().websiteGraderDownloadButton().'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
@@ -882,7 +1067,7 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech
 	$rtn.='<div class="wg_panel" id="wg_misc" style="display:none;">'.websiteGraderRenderChecksTable($checks,'Misc','Misc / Technical').'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_tech" style="display:none;">'.websiteGraderRenderTechTable($tech).'</div>'.PHP_EOL;
 	$rtn.='<div class="wg_panel" id="wg_preview" style="display:none;">'.websiteGraderRenderSocialPreview($social).'</div>'.PHP_EOL;
-	$rtn.='<div class="wg_panel" id="wg_ai" style="display:none;">'.websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social).'</div>'.PHP_EOL;
+	$rtn.='<div class="wg_panel" id="wg_ai" style="display:none;">'.websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social,$tech).'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;//.wg_tabwrapper
 	$rtn.='</div>'.PHP_EOL;//.wg_results
 	return $rtn;
@@ -1042,28 +1227,71 @@ function websiteGraderList($recs,$listopts=array()){
 //---------- Fix with AI (FORM 2) ----------
 
 /**
+ * @describe per-platform notes for the "Fix with AI" prompt: how a site owner on that platform
+ *   actually makes changes (theme editor vs. code injection vs. no template access, etc.), so the
+ *   AI assistant's fixes are things the reader can actually apply rather than generic raw-HTML edits.
+ *   Keyed by the tech-signature 'name' from websiteGraderTechSignatures() (CMS + Ecommerce categories).
+ * @return array name => note string
+ */
+function websiteGraderPlatformNotes(){
+	return array(
+		'WaSQL'=>"This site runs on WaSQL, a database-driven PHP framework - page logic (body/controller/functions/css/js) lives in _pages table records, not template files, and site-wide chrome/meta lives in the active _templates record's own functions field. Give fixes as: the exact PHP/HTML to add to the relevant page's controller or functions field (e.g. a title/meta-description helper), or - for something that should apply site-wide (Open Graph tags, JSON-LD, robots meta) - the template's functions field (the function that builds <head>, commonly named like templateMeta*/templateJsonLd). Also mention robots.txt/sitemap.xml if relevant, since on WaSQL those are typically their own _pages records rather than framework-generated files. Avoid assuming static template files on disk (.twig/.liquid/etc.) - WaSQL sites are developer-maintained through the database.",
+		'WordPress'=>"This site runs on WordPress. Give fixes as: (a) exact field values to enter into the active SEO plugin if one is detected among the technologies (Yoast SEO, Rank Math, All in One SEO) — title/meta description/OG fields, or (b) if no SEO plugin is evident, the exact PHP/HTML to add to the active theme's header.php or functions.php (wp_head hook), or (c) plain text/HTML for anything edited directly in the block editor. Avoid assuming shell/FTP access to core files unless the fix requires editing the active theme.",
+		'Squarespace'=>"This site runs on Squarespace, a hosted builder with NO access to server files or arbitrary templates. Give fixes only as things doable inside the Squarespace editor: per-page SEO fields (Page Settings > SEO tab: title, description, social image), site-wide settings (Settings > Marketing > SEO), and Settings > Advanced > Code Injection (Header/Footer) for meta tags, JSON-LD structured data, or analytics/verification scripts. Do not suggest editing template files, .htaccess, robots.txt directly, or server config — Squarespace manages those (robots.txt/sitemap.xml are auto-generated; note if a fix isn't achievable on Squarespace at all).",
+		'Wix'=>"This site runs on Wix, a hosted builder with NO access to server files or template source. Give fixes as: per-page SEO panel entries (Wix SEO settings: title tag, meta description, URL slug, social share image), the site-wide SEO Settings, and Wix's Custom Code feature (Settings > Custom Code, or Velo dev mode) for injecting meta tags/JSON-LD into <head> or <body>. Do not suggest editing server files, robots.txt, or .htaccess directly — Wix manages robots.txt/sitemap.xml itself (note if a fix isn't achievable on Wix at all).",
+		'Webflow'=>"This site runs on Webflow. Give fixes as: per-page Settings > SEO panel fields (title, description, OG image), the Custom Code embed (Page Settings > Custom Code, or Project Settings > Custom Code for site-wide head/body code) for meta tags and JSON-LD, and note that Webflow auto-generates robots.txt/sitemap.xml under Project Settings > SEO unless a custom robots.txt is set there.",
+		'Shopify'=>"This site runs on Shopify. Give fixes as: per-product/page/collection SEO fields in the Shopify admin (Search engine listing preview: title/description), theme.liquid or the relevant section/snippet's Liquid code (Online Store > Themes > Edit code) for meta tags/JSON-LD not covered by admin fields, and note that robots.txt is editable via a robots.txt.liquid template in newer Shopify themes.",
+		'WooCommerce'=>"This site runs on WordPress + WooCommerce. Give fixes as SEO-plugin field values (Yoast/Rank Math product SEO tab) where possible, otherwise WooCommerce template overrides or functions.php hooks (woocommerce_ hooks) — avoid suggesting core WooCommerce file edits.",
+		'Ghost'=>"This site runs on Ghost. Give fixes as: per-post/page Settings > Meta Data fields (title/description/OG/Twitter card), the site-wide Settings > Code injection (Header/Footer) for meta tags and JSON-LD, and note Ghost auto-generates robots.txt/sitemap.xml.",
+		'HubSpot CMS'=>"This site runs on HubSpot CMS. Give fixes as: the page's Settings > Advanced Options SEO fields (meta description, page title), and the page's Head HTML field for custom meta tags/JSON-LD. Avoid suggesting raw server file edits.",
+		'Drupal'=>"This site runs on Drupal. Give fixes as: field values for the Metatag/Yoast SEO for Drupal module if evident, or the specific .html.twig template / hook_preprocess to edit, since Drupal sites are typically developer-maintained.",
+		'Joomla'=>"This site runs on Joomla. Give fixes as: the Global Configuration / article Metadata tab fields where possible, or the specific template override (templates/<template>/...) to edit for anything not covered by admin fields.",
+		'BigCommerce'=>"This site runs on BigCommerce. Give fixes as: per-product/page Search Engine Optimization fields in the BigCommerce admin, and Stencil theme template edits (Storefront > My Themes > Advanced > Edit Theme Files) for anything not covered by admin fields."
+	);
+}
+
+/**
+ * @describe pick the single most relevant detected platform for AI-prompt guidance: prefer a CMS
+ *   hit (WordPress, Wix, Squarespace, ...), falling back to an Ecommerce platform (Shopify, ...)
+ *   when no CMS was detected (e.g. a Shopify store with no separate CMS signature).
+ * @param tech array category => array of names (from websiteGraderDetectTech)
+ * @return string platform name, or '' if none of the known platforms were detected
+ */
+function websiteGraderDetectPrimaryPlatform($tech){
+	$notes=websiteGraderPlatformNotes();
+	foreach(array('CMS','Ecommerce') as $cat){
+		if(!isset($tech[$cat])){continue;}
+		foreach($tech[$cat] as $name){
+			if(isset($notes[$name])){return $name;}
+		}
+	}
+	return '';
+}
+
+/**
  * @describe render the copy/paste AI prompt inside a read-only textarea with a copy button.
- * @param baseurl string, pages array, checks array, grade array, social array
+ * @param baseurl string, pages array, checks array, grade array, social array, tech array
  * @return string HTML
  */
-function websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social=array()){
-	$prompt=websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social);
+function websiteGraderRenderAIPanel($baseurl,$pages,$checks,$grade,$social=array(),$tech=array()){
+	$prompt=websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social,$tech);
+	$platform=websiteGraderDetectPrimaryPlatform($tech);
 	$rtn='';
 	$rtn.='<div class="w_bigger w_bold w_gray w_padtop"><span class="icon-copy"></span> Fix with AI</div>'.PHP_EOL;
-	$rtn.='<div class="w_small w_gray" style="margin-bottom:6px;">Copy this summary and paste it into Claude, ChatGPT, or any AI assistant to get the exact fixes for every failed check above.</div>'.PHP_EOL;
+	$rtn.='<div class="w_small w_gray" style="margin-bottom:6px;">Copy this summary and paste it into Claude, ChatGPT, or any AI assistant to get the exact fixes for every failed check above'.(strlen($platform)?' &mdash; tailored to <b>'.encodeHtml($platform).'</b>, the platform detected for this site':'').'.</div>'.PHP_EOL;
 	$rtn.='<div style="position:relative;">'.PHP_EOL;
-	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').value,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
-	$rtn.='	<textarea id="grader_ai_prompt" class="wacss_textarea" readonly="readonly" rows="18" wrap="soft" style="width:100%;font-family:monospace;font-size:12px;">'.encodeHtml($prompt).'</textarea>'.PHP_EOL;
+	$rtn.='	<button type="button" class="wacss_button is-small" style="position:absolute;top:6px;right:6px;z-index:2;" onclick="wacss.copy2Clipboard(document.getElementById(\'grader_ai_prompt\').textContent,\'Copied &mdash; paste into your AI assistant\');return false;"><span class="icon-copy"></span> Copy</button>'.PHP_EOL;
+	$rtn.='	<div id="grader_ai_prompt">'.encodeHtml($prompt).'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
 	return $rtn;
 }
 
 /**
  * @describe build the plain-text AI prompt: overall grade + social summary + every FAILED check.
- * @param baseurl string, pages array, checks array, grade array, social array
+ * @param baseurl string, pages array, checks array, grade array, social array, tech array
  * @return string plain text (markdown)
  */
-function websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social=array()){
+function websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social=array(),$tech=array()){
 	$lines=array();
 	$lines[]="# SEO & AI Optimization (AIO) audit for {$baseurl}";
 	$lines[]="";
@@ -1071,6 +1299,13 @@ function websiteGraderAIPrompt($baseurl,$pages,$checks,$grade,$social=array()){
 	$lines[]="Overall grade: {$grade['percent']}% (".$grade['letter'].") - {$gradeplain}. {$grade['pass']} of {$grade['total']} checks passed across ".count($pages)." crawled page(s).";
 	$lines[]="";
 	$lines[]="Please fix the FAILED checks listed below. For each, I give the check name, the affected page(s), an example element, and the problem. Provide the exact HTML, meta tags, JSON-LD structured data, robots.txt rules, or file contents to add or change. Where an issue repeats across pages, give one reusable solution.";
+	$platform=websiteGraderDetectPrimaryPlatform($tech);
+	if(strlen($platform)){
+		$notes=websiteGraderPlatformNotes();
+		$lines[]="";
+		$lines[]="## Platform: {$platform}";
+		$lines[]=$notes[$platform];
+	}
 	//social summary
 	$soclines=websiteGraderSocialPromptLines($social);
 	if(count($soclines)){
@@ -1465,7 +1700,7 @@ function websiteGraderDownloadReport(){
 	$reportdoc='<!doctype html>'.PHP_EOL.'<html><head><meta charset="utf-8" /><title>SEO &amp; AIO Report: '.encodeHtml((string)$host).'</title></head><body style="margin:0;padding:20px;background:#fff;">'.PHP_EOL.$reporthtml.'</body></html>';
 	$zip->addFromString('report.html',$reportdoc);
 	if(websiteGraderHasFailures($rep['checks'])){
-		$prompt=websiteGraderAIPrompt($rep['baseurl'],$rep['pages'],$rep['checks'],$rep['grade'],$rep['social']);
+		$prompt=websiteGraderAIPrompt($rep['baseurl'],$rep['pages'],$rep['checks'],$rep['grade'],$rep['social'],isset($rep['tech'])?$rep['tech']:array());
 		$zip->addFromString('fixes.md',$prompt);
 	}
 	$zip->close();
@@ -1478,10 +1713,10 @@ function websiteGraderDownloadReport(){
  *   rebuild it without re-crawling (guarantees the emailed/downloaded report matches what is
  *   on screen).
  * @param baseurl string, checks array, grade array, social array, pages array of [url,body], tech array,
- *   excluded array of [url,reason]
+ *   excluded array of [url,reason], crawlseconds float
  * @return void
  */
-function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array()){
+function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array(),$crawlseconds=0){
 	$urls=array();
 	foreach($pages as $p){if(isset($p['url'])){$urls[]=$p['url'];}}
 	$_SESSION['websiteGraderReport']=array(
@@ -1492,6 +1727,7 @@ function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=a
 		'pages'=>$urls,
 		'tech'=>$tech,
 		'excluded'=>$excluded,
+		'crawlseconds'=>$crawlseconds,
 		'when'=>date('M j, Y g:i a')
 	);
 	return;
@@ -1516,17 +1752,27 @@ function websiteGraderEmailForm(){
 	//$rtn='<div class="w_centerpop_title"><span class="icon-mail"></span> Email SEO &amp; AIO Report</div>'.PHP_EOL;
 	//$rtn.='<div class="w_centerpop_content" style="min-width:300px;max-width:460px;">'.PHP_EOL;
 	$rtn.='<div class="w_small w_gray" style="margin-bottom:10px;">Send the '.encodeHtml($rep['grade']['percent']).'% report for <span class="w_dblue">'.encodeHtml($host).'</span> ('.count($rep['pages']).' page'.(count($rep['pages'])==1?'':'s').' crawled) as a formatted email.</div>'.PHP_EOL;
-	$rtn.='<form method="post" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,\'grader_email_status\');">'.PHP_EOL;
+	$rtn.='<form method="post" action="/php/admin.php" data-setprocessing="grader_email_status" onsubmit="return wacss.ajaxPost(this,\'grader_email_status\');">'.PHP_EOL;
 	$rtn.='	<input type="hidden" name="_menu" value="website_grader" />'.PHP_EOL;
 	$rtn.='	<input type="hidden" name="func" value="email" />'.PHP_EOL;
-	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Send to (email)</label>'.PHP_EOL;
-	$rtn.='		<input type="email" class="wacss_input" name="to" required="required" placeholder="name@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
-	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Recipient name <span class="w_gray w_small">(optional, for the greeting)</span></label>'.PHP_EOL;
-	$rtn.='		<input type="text" class="wacss_input" name="toname" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
-	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Your name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='		<input type="text" class="wacss_input" name="fromname" value="'.encodeHtml($myname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
-	$rtn.='	<div style="margin-bottom:8px;"><label class="w_bold">Reply-to <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='		<input type="email" class="wacss_input" name="replyto" value="'.encodeHtml($myemail).'" placeholder="you@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;display:flex;gap:8px;">'.PHP_EOL;
+	$rtn.='		<div style="flex:1;"><label class="w_bold">Send to (email)</label>'.PHP_EOL;
+	$rtn.='			<input type="email" class="wacss_input" name="to" required="required" placeholder="name@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='		<div style="flex:1;"><label class="w_bold">Recipient name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="toname" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	</div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;display:flex;gap:8px;">'.PHP_EOL;
+	$rtn.='		<div style="flex:1;"><label class="w_bold">Your name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="fromname" value="'.encodeHtml($myname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='		<div style="flex:1;"><label class="w_bold">Reply-to <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='			<input type="email" class="wacss_input" name="replyto" value="'.encodeHtml($myemail).'" placeholder="you@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	</div>'.PHP_EOL;
+	$rtn.='	<div style="margin-bottom:8px;display:flex;gap:8px;">'.PHP_EOL;
+	$rtn.='		<div style="flex:1;"><label class="w_bold">Cc <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="cc" placeholder="name@example.com, name2@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='		<div style="flex:1;"><label class="w_bold">Bcc <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="bcc" placeholder="name@example.com, name2@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='	</div>'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:10px;"><label class="w_bold">Note <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
 	$rtn.='		<textarea class="wacss_textarea" name="note" rows="3" placeholder="Add a short message&hellip;" style="width:100%;box-sizing:border-box;"></textarea></div>'.PHP_EOL;
 	$rtn.='	<div style="display:flex;gap:8px;justify-content:flex-end;">'.PHP_EOL;
@@ -1586,6 +1832,8 @@ function websiteGraderSendReport(){
 	$toname=trim(isset($_REQUEST['toname'])?$_REQUEST['toname']:'');
 	$fromname=trim(isset($_REQUEST['fromname'])?$_REQUEST['fromname']:'');
 	$replyto=trim(isset($_REQUEST['replyto'])?$_REQUEST['replyto']:'');
+	$cc=trim(isset($_REQUEST['cc'])?$_REQUEST['cc']:'');
+	$bcc=trim(isset($_REQUEST['bcc'])?$_REQUEST['bcc']:'');
 	$host=parse_url($rep['baseurl'],PHP_URL_HOST);
 	//from address: config email_from is the deliverable sender; reply-to routes replies to the admin
 	$from=isset($CONFIG['email_from'])?$CONFIG['email_from']:(isset($USER['email'])?$USER['email']:'');
@@ -1597,10 +1845,12 @@ function websiteGraderSendReport(){
 	$message=websiteGraderEmailHTML($rep,$note,$fromname,$toname);
 	$mailopts=array('to'=>$to,'from'=>$fromheader,'subject'=>$subject,'message'=>$message);
 	if(isEmail($replyto)){$mailopts['reply-to']=$replyto;}
+	if(strlen($cc)){$mailopts['cc']=$cc;}
+	if(strlen($bcc)){$mailopts['bcc']=$bcc;}
 	//attach the AI-ready fix file only when there are issues to fix
 	$fixfile='';
 	if(websiteGraderHasFailures($rep['checks'])){
-		$prompt=websiteGraderAIPrompt($rep['baseurl'],$rep['pages'],$rep['checks'],$rep['grade'],$rep['social']);
+		$prompt=websiteGraderAIPrompt($rep['baseurl'],$rep['pages'],$rep['checks'],$rep['grade'],$rep['social'],isset($rep['tech'])?$rep['tech']:array());
 		$fixfile=websiteGraderWriteFixFile($host,$prompt);
 		if(strlen($fixfile)){$mailopts['attach']=array($fixfile);}
 	}
@@ -1639,7 +1889,8 @@ function websiteGraderEmailHTML($rep,$note='',$fromname='',$toname=''){
 	$h.='<div style="font-size:12px;letter-spacing:.5px;color:#8a9099;text-transform:uppercase;">SEO &amp; AI Optimization Report</div>';
 	$h.='<div style="font-size:22px;font-weight:700;color:#1d2129;">'.encodeHtml($host).'</div>';
 	$excluded=isset($rep['excluded']) && is_array($rep['excluded'])?$rep['excluded']:array();
-	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled'.(count($excluded)?(' ('.count($excluded).' excluded via robots.txt/noindex)'):'').' &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
+	$crawlseconds=isset($rep['crawlseconds'])?(float)$rep['crawlseconds']:0;
+	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):'').(count($excluded)?(' ('.count($excluded).' excluded via robots.txt/noindex)'):'').' &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
 	$h.='</div>'.PHP_EOL;
 	//warm, personal greeting
 	$h.='<div style="margin-bottom:14px;">Hi '.(strlen($toname)?encodeHtml($toname):'there').',</div>'.PHP_EOL;
