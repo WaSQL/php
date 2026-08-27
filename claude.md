@@ -20,6 +20,7 @@ Known bugs in **core files shared by every WaSQL site** (`php/common.php`, `php/
 
 - **Recording a new core bug you hit, or updating an existing one:** do it on the `/bugs` page (`http://localhost/bugs`), or by writing `wasql_bugs.db` directly (`sqlite3`/PDO). **Never** append prose to a Markdown file — this replaces the old "add it to `wasql_bugs.md`" rule. Machine-readable dump for triage: `curl http://localhost/bugs/json`.
 - **Before concluding your page/site code is at fault**, check the tracker for a matching known core bug (`/bugs/json`, or query `wasql_bugs.db`).
+- **"fix bug #N"** (or the `/bugs` page's per-bug **Copy fix prompt** button) means: read that bug's row from `/bugs/json`, implement the fix in the core file it names (this is "work on wasql" mode — core edits expected), verify it, then mark it complete on `/bugs`. JS fixes in `wacss.js` also need the developer to re-minify `wacss.min.js`.
 - **When the developer says "review wasql bugs":** this is a "work on wasql" local-framework session (core edits are expected). In the same turn — ACT, don't narrate — run `php workon.php wasql bugs --browse` (or `python workon.py wasql bugs --browse`) to launch localhost at `/bugs`, **and** review the open bugs yourself (`curl http://localhost/bugs/json` is the cheapest read): read each open bug's symptom / cause / fix, then be ready to start fixing them. Don't screenshot unless asked — the browser launch is the act.
 
 ## Session working modes — how "work on …" starts a session
