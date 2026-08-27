@@ -10647,9 +10647,18 @@ const wacss = {
 					}
 				}
 				else if(undefined != params.gender){
-					/* if params.gender then pick a voice with that gender */
+					/* if params.gender then pick a voice with that gender - but only
+					   among voices that actually speak the requested language
+					   (params.lang prefix, else 'en'), so a foreign voice whose NAME
+					   merely contains a hint substring ('German' contains 'man',
+					   'Romanian' contains 'man') can't outrank a real English voice.
+					   Pass 1 is an unfiltered fallback for when no voice matches the
+					   language at all. wasql_bugs #9. */
 					let gender=params.gender.toLowerCase();
+					let langpre=(undefined != params.lang ? params.lang : 'en').toLowerCase().substring(0,2);
+					for(let pass=0;pass<2 && undefined == msg.voice;pass++){
 					for(let i=0;i<voices.length;i++){
+						if(pass == 0 && (voices[i].lang || '').toLowerCase().substring(0,2) != langpre){continue;}
 						let name = voices[i].name.toLowerCase();
 						if (gender === 'male' && (
 						   name.includes('male') ||
@@ -10684,6 +10693,7 @@ const wacss = {
 						   msg.voice = voices[i];
 						   break;
 						}
+					}
 					}
 				}
 				//check for lang
