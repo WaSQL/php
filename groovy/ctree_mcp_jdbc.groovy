@@ -20,6 +20,14 @@ if (instrFile) {
 Class.forName('ctree.jdbc.ctreeDriver')
 @Field Connection conn = null
 
+//---------- begin function getConn
+/**
+* @describe returns the shared JDBC connection, opening a new one if it is null or closed
+* @return object
+*	java.sql.Connection
+* @usage
+*	c = getConn()
+*/
 Connection getConn() {
     try {
         if (conn != null && !conn.isClosed()) return conn
@@ -28,6 +36,14 @@ Connection getConn() {
     return conn
 }
 
+//---------- begin function schemaTable
+/**
+* @describe splits a possibly schema-qualified name into a [schema, table] pair (schema is null when absent)
+* @param params name string
+* @return list
+* @usage
+*	def (schema, table) = schemaTable('admin.dstdb')
+*/
 def schemaTable(String name) {
     if (name?.contains('.')) {
         def parts = name.split('\\.', 2)
@@ -37,6 +53,14 @@ def schemaTable(String name) {
 }
 
 // ── Tool implementations ─────────────────────────────────────────────────────
+
+//---------- begin function toolTestConnection
+/**
+* @describe MCP tool - tests the JDBC connection and returns a markdown table of server/driver metadata
+* @return string
+* @usage
+*	handleToolCall('test_connection', [:])
+*/
 def toolTestConnection() {
     def c = getConn()
     def m = c.getMetaData()
@@ -52,14 +76,36 @@ Connection successful
 | url | ${jdbcUrl} |"""
 }
 
+//---------- begin function toolListConnections
+/**
+* @describe MCP tool - returns a summary of the single configured JDBC connection
+* @return string
+* @usage
+*	handleToolCall('list_connections', [:])
+*/
 def toolListConnections() {
     "Connections:\n- ctree (default)\n  URL: ${jdbcUrl}\n  User: ${jdbcUser}\n  Max rows: ${maxRows}"
 }
 
+//---------- begin function toolListDsns
+/**
+* @describe MCP tool - returns the JDBC URL currently in use
+* @return string
+* @usage
+*	handleToolCall('list_dsns', [:])
+*/
 def toolListDsns() {
     "JDBC URL in use: ${jdbcUrl}"
 }
 
+//---------- begin function toolListTables
+/**
+* @describe MCP tool - lists tables in the cTree database, optionally filtered by schema
+* @param params schema string
+* @return string
+* @usage
+*	handleToolCall('list_tables', [schema: 'admin'])
+*/
 def toolListTables(String schema) {
     def c = getConn()
     def rs = c.getMetaData().getTables(null, schema ?: null, '%', ['TABLE'] as String[])
@@ -73,6 +119,15 @@ def toolListTables(String schema) {
     tables.isEmpty() ? 'No tables found' : "Tables (${tables.size()}):\n" + tables.sort().join('\n')
 }
 
+//---------- begin function toolDescribeTable
+/**
+* @describe MCP tool - returns a formatted list of a table's columns (name, type, size, nullable)
+* @param params tableName string
+*	tableName: table name, optionally schema-qualified
+* @return string
+* @usage
+*	handleToolCall('describe_table', [table_name: 'admin.dstdb'])
+*/
 def toolDescribeTable(String tableName) {
     def (schema, table) = schemaTable(tableName)
     def c = getConn()
@@ -95,6 +150,15 @@ def toolDescribeTable(String tableName) {
     sb.toString()
 }
 
+//---------- begin function toolGetPrimaryKeys
+/**
+* @describe MCP tool - lists the primary-key columns for a table
+* @param params tableName string
+*	tableName: table name, optionally schema-qualified
+* @return string
+* @usage
+*	handleToolCall('get_primary_keys', [table_name: 'admin.dstdb'])
+*/
 def toolGetPrimaryKeys(String tableName) {
     def (schema, table) = schemaTable(tableName)
     def c = getConn()
@@ -105,6 +169,15 @@ def toolGetPrimaryKeys(String tableName) {
     keys.isEmpty() ? "No primary keys found for ${tableName}" : "Primary keys for ${tableName}:\n" + keys.join('\n')
 }
 
+//---------- begin function toolGetForeignKeys
+/**
+* @describe MCP tool - lists the foreign-key relationships for a table
+* @param params tableName string
+*	tableName: table name, optionally schema-qualified
+* @return string
+* @usage
+*	handleToolCall('get_foreign_keys', [table_name: 'admin.dstdb'])
+*/
 def toolGetForeignKeys(String tableName) {
     def (schema, table) = schemaTable(tableName)
     def c = getConn()
@@ -117,6 +190,15 @@ def toolGetForeignKeys(String tableName) {
     keys.isEmpty() ? "No foreign keys found for ${tableName}" : "Foreign keys for ${tableName}:\n" + keys.join('\n')
 }
 
+//---------- begin function toolExecuteQuery
+/**
+* @describe MCP tool - runs a read-only SELECT/WITH query and returns the rows as a markdown table (rejects any other statement)
+* @param params query string, qMax integer
+*	qMax: maximum rows to return
+* @return string
+* @usage
+*	toolExecuteQuery('SELECT * FROM admin.dstdb', 100)
+*/
 def toolExecuteQuery(String query, int qMax) {
     def trimmed = query?.trim()?.toUpperCase() ?: ''
     if (!trimmed.startsWith('SELECT') && !trimmed.startsWith('WITH')) {
@@ -150,6 +232,16 @@ def toolExecuteQuery(String query, int qMax) {
     sb.toString()
 }
 
+//---------- begin function handleToolCall
+/**
+* @describe dispatches an MCP tools/call request to the matching tool implementation
+* @param params name string, args map
+*	name: MCP tool name (execute_query, list_tables, describe_table, ...)
+*	args: the tool's arguments object
+* @return string
+* @usage
+*	result = handleToolCall(toolName, toolArgs)
+*/
 def handleToolCall(String name, Map args) {
     switch (name) {
         case 'execute_query':
@@ -217,6 +309,14 @@ def tools = [
 def slurper  = new JsonSlurper()
 def stdout   = new PrintStream(System.out, true, 'UTF-8')
 
+//---------- begin function send
+/**
+* @describe writes a single JSON-RPC message to stdout as one line and flushes
+* @param params msg map
+* @return void
+* @usage
+*	send([jsonrpc: '2.0', id: id, result: [...]])
+*/
 def send = { Map msg ->
     stdout.println(JsonOutput.toJson(msg))
     stdout.flush()

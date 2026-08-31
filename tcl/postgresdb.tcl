@@ -1,6 +1,14 @@
 package require Tcl
 package require tdbc::postgres
 
+#----------
+# begin function postgresQueryResults
+# @describe connects to PostgreSQL via tdbc::postgres using the given config, runs query, and returns all rows in the standard results-array form (NULLs normalized to "")
+# @param cfg list - "array get" config list; requires dbhost, dbuser, dbpass, dbname; optional dbport
+# @param query string - the SQL statement to execute
+# @return list - results array ("array get" form): columns (list), rows (int), and <row>,<column> => value entries; raises an error on connect/query failure
+# @usage array set res [postgresQueryResults [array get cfg] {SELECT * FROM users}]
+#----------
 proc postgresQueryResults {cfg query} {
     # Convert cfg list back to array
     array set cfgArray $cfg

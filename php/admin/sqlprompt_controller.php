@@ -1304,6 +1304,88 @@ ENDOFQUERY;
 						}
 					}
 				}
+				/*
+					Bug #29: a write statement (INSERT/UPDATE/DELETE/REPLACE) or DDL
+					(CREATE/DROP/ALTER/TRUNCATE) runs fine but produces no result set, so the
+					engine never writes the -filename CSV. The SELECT-oriented paging code below
+					would then fopen() a file that isn't there ("getCSVRecords error: failed to
+					open ...") and still show the Prev/Next/Export links. When the run produced no
+					error and no result file, report affected rows instead of paging a CSV.
+				*/
+				if(!is_file($afile)){
+					$dml_affected=isNum($recs_count)?(int)$recs_count:0;
+					/*
+						mysqlQueryResults() returns mysqli_insert_id() for an INSERT that hit an
+						auto_increment column (else affected rows), and affected rows for
+						UPDATE/DELETE/REPLACE. DDL returns 0. Word the message to match so an
+						INSERT doesn't claim "47 rows affected" when 47 is the new id.
+					*/
+					$dml_verb=strtolower(preg_replace('/^\s*(\w+).*/s',"$1",(string)$_SESSION['sql_last']));
+					if($dml_verb=='insert'){
+						$dml_message=$dml_affected>0?"Query OK - inserted (id / rows: {$dml_affected})":'Query OK';
+					}
+					elseif(in_array($dml_verb,array('update','delete','replace'))){
+						$dml_message="Query OK - {$dml_affected} ".($dml_affected==1?'row':'rows').' affected';
+					}
+					else{
+						$dml_message='Query OK';
+					}
+					$qtime=isset($lastquery['time'])?$lastquery['time']:0;
+					$qtime_verbose=($qtime < 1)?number_format($qtime,3).' seconds':verboseTime($qtime);
+					//keep the History panel accurate
+					if(isset($USER['_id'])){
+						$id=addDBRecord(array(
+							'-table'=>'_queries',
+							'page_id'=>0,
+							'query'=>$_SESSION['sql_last'],
+							'function_name'=>'sql_prompt',
+							'run_length'=>$qtime,
+							'row_count'=>$dml_affected,
+							'user_id'=>$USER['_id'],
+							'tablename'=>"DB:{$db['name']}"
+						));
+					}
+					if(isset($_REQUEST['format'])){
+						$dml_status=array('status'=>'OK','affected_rows'=>$dml_affected);
+						switch(strtolower($_REQUEST['format'])){
+							case 'json':
+								echo encodeJson($dml_status);
+								exit;
+							break;
+							case 'xml':
+								echo arrays2XML(array($dml_status));
+								exit;
+							break;
+							case 'table':
+								echo databaseListRecords(array(
+									'-list'=>array($dml_status),
+									'-hidesearch'=>1,
+									'-tableclass'=>'wacss_table striped bordered condensed'
+								));
+								exit;
+							break;
+							case 'html':
+								echo sqlpromptHTMLHead();
+								echo databaseListRecords(array(
+									'-list'=>array($dml_status),
+									'-hidesearch'=>1,
+									'-tableclass'=>'wacss_table striped bordered condensed'
+								));
+								echo '</div>'.PHP_EOL;
+								echo '</body>'.PHP_EOL;
+								echo '</html>'.PHP_EOL;
+								exit;
+							break;
+							case 'csv':
+							case 'dos':
+								echo $dml_message;
+								exit;
+							break;
+						}
+					}
+					setView('dml_success',1);
+					return;
+				}
 				if($recs_count==0){
 					$recs=array();
 					if(isset($_REQUEST['format'])){

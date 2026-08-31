@@ -31,6 +31,13 @@ if (!jvmFlags.any { it.contains('enable-native-access') }) {
 
 // ── Auto-load JDBC driver from ./lib if not already on classpath ───────────────
 
+//---------- begin function loadCtreeDriver
+/**
+* @describe ensures the cTree JDBC driver is on the classpath, searching ./lib, ../lib and . for a ctree*.jar and exiting with a hint if none is found
+* @return void
+* @usage
+*	loadCtreeDriver()
+*/
 def loadCtreeDriver = {
     // Already on classpath — nothing to do
     try { Class.forName('ctree.jdbc.ctreeDriver'); return } catch (ClassNotFoundException ignored) {}
@@ -86,6 +93,15 @@ def state = [
 
 def stdinReader = new BufferedReader(new InputStreamReader(System.in))
 
+//---------- begin function readLine
+/**
+* @describe prints a prompt to stdout and reads one line from stdin
+* @param params prompt string
+* @return string
+*	the line read, or null at end of input
+* @usage
+*	line = readLine('sql> ')
+*/
 def readLine = { String prompt ->
     System.out.print(prompt)
     System.out.flush()
@@ -94,12 +110,28 @@ def readLine = { String prompt ->
 
 // ── Config loading ─────────────────────────────────────────────────────────────
 
+//---------- begin function findConfigFile
+/**
+* @describe returns the first existing WaSQL config.xml (../config.xml or c:/wasql/config.xml)
+* @return object
+*	a canonical File, or null if none exists
+* @usage
+*	configFile = findConfigFile()
+*/
 def findConfigFile = {
     [new File('../config.xml'), new File('c:/wasql/config.xml')]
         .find { it.canonicalFile.exists() }
         ?.canonicalFile
 }
 
+//---------- begin function parseDbNode
+/**
+* @describe converts a <database> XML node into a params map (name, dbhost, dbuser, dbpass, dbname, dbport, connect, dbtype)
+* @param params node object
+* @return map
+* @usage
+*	params = parseDbNode(db)
+*/
 def parseDbNode = { node ->
     [
         name:        node.@name.text(),
@@ -114,8 +146,13 @@ def parseDbNode = { node ->
     ]
 }
 
-// XmlSlurper moved from groovy.util (Groovy ≤3.x) to groovy.xml (Groovy 4+);
-// load it reflectively so this runs on any Groovy version.
+//---------- begin function newXmlSlurper
+/**
+* @describe creates an XmlSlurper, resolving the class reflectively so it runs on any Groovy version (groovy.util in <=3.x, groovy.xml in 4+)
+* @return object
+* @usage
+*	xml = newXmlSlurper().parse(configFile)
+*/
 def newXmlSlurper = {
     def cls
     try { cls = Class.forName('groovy.xml.XmlSlurper') }
@@ -123,6 +160,15 @@ def newXmlSlurper = {
     cls.getDeclaredConstructor().newInstance()
 }
 
+//---------- begin function loadConfig
+/**
+* @describe loads a single named database's params from config.xml
+* @param params dbName string
+* @return map
+*	the params map for that database, or null if not found
+* @usage
+*	dbParams = loadConfig('mydb')
+*/
 def loadConfig = { String dbName ->
     def configFile = findConfigFile()
     if (!configFile) { println "Error: config.xml not found"; return null }
@@ -132,6 +178,13 @@ def loadConfig = { String dbName ->
     found
 }
 
+//---------- begin function loadAllCtreeDbs
+/**
+* @describe loads the params maps for every database in config.xml whose dbtype is 'ctree'
+* @return list
+* @usage
+*	dbs = loadAllCtreeDbs()
+*/
 def loadAllCtreeDbs = {
     def configFile = findConfigFile()
     if (!configFile) return []
@@ -143,6 +196,14 @@ def loadAllCtreeDbs = {
 
 // ── Connection ─────────────────────────────────────────────────────────────────
 
+//---------- begin function buildJdbcUrl
+/**
+* @describe builds a jdbc:ctree:// URL from a params map, parsing an ODBC-style connect string when present
+* @param params params map
+* @return string
+* @usage
+*	url = buildJdbcUrl(params)
+*/
 def buildJdbcUrl = { Map params ->
     def conn = params.connect
     if (conn) {
@@ -168,6 +229,15 @@ def buildJdbcUrl = { Map params ->
     "jdbc:ctree://${host}:${port}" + (db ? "/${db}" : '')
 }
 
+//---------- begin function connectDb
+/**
+* @describe opens a Sql connection to a cTree database from a params map
+* @param params params map
+* @return object
+*	a groovy.sql.Sql instance, or null on failure (error printed)
+* @usage
+*	sql = connectDb(params)
+*/
 def connectDb = { Map params ->
     def url  = buildJdbcUrl(params)
     def user = params.dbuser ?: ''
@@ -182,6 +252,14 @@ def connectDb = { Map params ->
 
 // ── Output formatting ─────────────────────────────────────────────────────────
 
+//---------- begin function escapeCSV
+/**
+* @describe escapes a value for CSV output (quotes it if it contains a comma, quote, or newline)
+* @param params v string
+* @return string
+* @usage
+*	println row.collect { escapeCSV(it) }.join(',')
+*/
 def escapeCSV = { String v ->
     if (!v) return ''
     (v.contains(',') || v.contains('"') || v.contains('\n') || v.contains('\r'))
@@ -189,6 +267,15 @@ def escapeCSV = { String v ->
         : v
 }
 
+//---------- begin function cleanRows
+/**
+* @describe stringifies result rows for display - trims values, truncates to MAX_COL_WIDTH, and tracks which columns are all-numeric
+* @param params columns list, rows list
+* @return list
+*	[strRows, numeric] - the stringified rows and a per-column boolean list
+* @usage
+*	def (strRows, numeric) = cleanRows(columns, rows)
+*/
 def cleanRows = { List columns, List rows ->
     def numeric = ([true] * columns.size()) as List<Boolean>
     def strRows = rows.collect { row ->
@@ -207,6 +294,15 @@ def cleanRows = { List columns, List rows ->
     [strRows, numeric]
 }
 
+//---------- begin function printTable
+/**
+* @describe prints a result set to stdout as a DOS-style bordered table or as CSV, per st.outputFmt
+* @param params columns list, rows list, st map
+*	st: session state (st.outputFmt is 'dos' or 'csv')
+* @return void
+* @usage
+*	printTable(cols, rows, st)
+*/
 def printTable = { List columns, List rows, Map st ->
     if (!columns) return
     def (strRows, numeric) = cleanRows(columns, rows)
@@ -241,6 +337,16 @@ def printTable = { List columns, List rows, Map st ->
 
 // ── Query execution ───────────────────────────────────────────────────────────
 
+//---------- begin function executeQuery
+/**
+* @describe runs one SQL statement - prints a result table for queries, or a row-count/OK message for updates
+* @param params sql object, query string, st map
+*	sql: the open groovy.sql.Sql connection
+*	st: session state
+* @return void
+* @usage
+*	executeQuery(st.sql, sqlStr, st)
+*/
 def executeQuery = { Sql sql, String query, Map st ->
     query = query?.trim()
     if (!query) return
@@ -273,6 +379,14 @@ def executeQuery = { Sql sql, String query, Map st ->
 
 // ── Backslash command handlers ────────────────────────────────────────────────
 
+//---------- begin function formatBytes
+/**
+* @describe formats a byte count as a human-readable string (B, KB, MB, GB)
+* @param params n long
+* @return string
+* @usage
+*	pretty = formatBytes(1048576)
+*/
 def formatBytes = { long n ->
     if (n >= 1024L ** 3) return String.format('%.2f GB', n / (1024.0 ** 3))
     if (n >= 1024L ** 2) return String.format('%.1f MB', n / (1024.0 ** 2))
@@ -280,6 +394,15 @@ def formatBytes = { long n ->
     return "${n} B"
 }
 
+//---------- begin function cmdStats
+/**
+* @describe calls a FairCom stats stored procedure and prints its Description/Value rows, auto-formatting large numbers as KB/MB/GB
+* @param params sql object, proc string, st map
+*	proc: stored procedure name (e.g. 'fc_get_connstats')
+* @return void
+* @usage
+*	cmdStats(st.sql, 'fc_get_memstats', st)
+*/
 def cmdStats = { Sql sql, String proc, Map st ->
     def stmt = null
     try {
@@ -315,6 +438,14 @@ def cmdStats = { Sql sql, String proc, Map st ->
     }
 }
 
+//---------- begin function cmdListTables
+/**
+* @describe prints the tables visible to the connection (schema, table, type), optionally filtered by schema
+* @param params sql object, schema string, st map
+* @return void
+* @usage
+*	cmdListTables(st.sql, 'admin', st)
+*/
 def cmdListTables = { Sql sql, String schema, Map st ->
     try {
         def meta = sql.connection.metaData
@@ -334,6 +465,15 @@ def cmdListTables = { Sql sql, String schema, Map st ->
     }
 }
 
+//---------- begin function cmdDescribe
+/**
+* @describe prints the columns of a table (name, type, size, nullable, default)
+* @param params sql object, tableArg string, st map
+*	tableArg: table name, optionally schema-qualified (schema.table)
+* @return void
+* @usage
+*	cmdDescribe(st.sql, 'admin.dstdb', st)
+*/
 def cmdDescribe = { Sql sql, String tableArg, Map st ->
     if (!tableArg?.trim()) { println "Usage: \\d [schema.]<table_name>"; return }
     def parts  = tableArg.trim().split('\\.', 2)
@@ -364,6 +504,14 @@ def cmdDescribe = { Sql sql, String tableArg, Map st ->
     }
 }
 
+//---------- begin function cmdExecFile
+/**
+* @describe reads a file, splits it on semicolons, and runs each statement in turn (echoing a truncated preview of each)
+* @param params sql object, filepath string, st map
+* @return void
+* @usage
+*	cmdExecFile(st.sql, 'setup.sql', st)
+*/
 def cmdExecFile = { Sql sql, String filepath, Map st ->
     filepath = filepath.trim().replaceAll(/^['"]|['"]$/, '')
     def f = new File(filepath)
@@ -375,6 +523,14 @@ def cmdExecFile = { Sql sql, String filepath, Map st ->
     }
 }
 
+//---------- begin function cmdNames
+/**
+* @describe prints the cTree database entries defined in config.xml (name, displayname, dbhost, dbuser, dbport)
+* @param params st map
+* @return void
+* @usage
+*	cmdNames(st)
+*/
 def cmdNames = { Map st ->
     def dbs = loadAllCtreeDbs()
     if (!dbs) { println "No cTree databases found in config.xml."; return }
@@ -422,16 +578,29 @@ SQL is executed when the statement ends with a semicolon (;).
 Use \\g on its own line to execute without a trailing semicolon.
 """
 
-// Hard exit — skips JDBC finalizers that hang on stale idle connections.
-// Runtime.halt() is the JVM equivalent of os._exit(): no shutdown hooks,
-// no GC, no JDBC driver disconnect attempt.
+//---------- begin function quitClean
+/**
+* @describe hard-exits the JVM with Runtime.halt(0) - skips JDBC finalizers that hang on stale idle connections (no shutdown hooks, no GC, no driver disconnect)
+* @return void
+* @usage
+*	quitClean()
+*/
 def quitClean = {
     Runtime.runtime.halt(0)
 }
 
 // ── Meta command handler ──────────────────────────────────────────────────────
-// Returns null normally, or a Map {sql, dbParams, promptName} on reconnect.
 
+//---------- begin function handleMetaCommand
+/**
+* @describe handles a backslash meta-command (\dt, \d, \i, \s, \name=, \output=, \q, ...) by dispatching to the matching command closure
+* @param params line string, st map
+*	line: the raw input line (must start with a backslash)
+* @return map
+*	null normally, or a map {sql, dbParams, promptName} when the command reconnected to a different database
+* @usage
+*	result = handleMetaCommand(stripped, st)
+*/
 def handleMetaCommand = { String line, Map st ->
     line = line.trim()
     if (!line.startsWith('\\')) return null
@@ -515,6 +684,14 @@ def handleMetaCommand = { String line, Map st ->
 
 // ── REPL ──────────────────────────────────────────────────────────────────────
 
+//---------- begin function repl
+/**
+* @describe the read-eval-print loop - reads lines, buffers multi-line SQL until a terminating semicolon (or \g), routes backslash commands to handleMetaCommand, and swaps the connection on reconnect
+* @param params st map
+* @return void
+* @usage
+*	repl(state)
+*/
 def repl = { Map st ->
     def buffer = []
 
@@ -576,6 +753,13 @@ def repl = { Map st ->
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
+//---------- begin function usage
+/**
+* @describe prints CLI usage plus the list of cTree databases from config.xml, then exits with status 1
+* @return void
+* @usage
+*	usage()
+*/
 def usage = {
     println "Usage: groovy ctreesql.groovy <db_name>"
     println ""

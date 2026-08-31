@@ -10373,6 +10373,8 @@ const wacss = {
 	* @usage <img ... data-fullscreen data-download data-caption="My photo" onclick="wacss.showFilePreview(this);">
 	*/
 	showFilePreview: function(el,z){
+		//neutralize onclick="return wacss.showFilePreview(this)" - a falsy/false return would navigate/submit; kill the default here so no call site has to
+		if(window.event && typeof window.event.preventDefault === 'function'){window.event.preventDefault();}
 		el=wacss.getObject(el);
 		if(undefined == el){return false;}
 		//determine the media type: explicit data-mediatype wins, then the element's tag, then the source file extension

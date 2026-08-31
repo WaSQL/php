@@ -24,12 +24,12 @@ const CACHE_LOCK = ReentrantLock()
 const MAX_RETRIES = 3
 const RETRY_DELAY = 0.5  # seconds
 
-"""
-    validate_params(params::Dict)
-
-Validates connection parameters for SQLite.
-Returns (is_valid, error_message).
-"""
+#---------- begin function validate_params
+# @describe Validates connection parameters for SQLite (requires a dbname file path)
+# @param params Dict Connection parameters to validate
+# @return Tuple{Bool,String} (is_valid, error_message); error_message is "" when valid
+# @usage
+#   (ok, err) = validate_params(params)
 function validate_params(params::Dict)
     if !haskey(params, "dbname") || isempty(get(params, "dbname", ""))
         return (false, "Database file path (dbname) is required")
@@ -37,11 +37,12 @@ function validate_params(params::Dict)
     return (true, "")
 end
 
-"""
-    sanitize_error_message(err)
-
-Sanitizes error messages to prevent information disclosure in production.
-"""
+#---------- begin function sanitize_error_message
+# @describe Sanitizes an error into a generic message to prevent information disclosure in production
+# @param err Any error or exception (anything stringifiable)
+# @return String safe, generalized error message
+# @usage
+#   msg = sanitize_error_message(err)
 function sanitize_error_message(err)
     err_str = string(err)
     if occursin("no such table", lowercase(err_str))
@@ -59,26 +60,16 @@ function sanitize_error_message(err)
     end
 end
 
-"""
-    connect(params::Dict)
-
-Creates and returns a database connection to SQLite with connection caching.
-
-# Arguments
-- `params::Dict`: Connection parameters
-  - `dbname`: Path to SQLite database file (required)
-  - `readonly`: Open database in read-only mode (default: false)
-  - `cache`: Use connection caching (default: true)
-
-# Returns
-- SQLite connection object or nothing on failure
-
-# Example
-```julia
-params = Dict("dbname" => "d:/data/mydb.sqlite")
-conn = sqlitedb.connect(params)
-```
-"""
+#---------- begin function connect
+# @describe Creates and returns a cached database connection to SQLite, reusing a cached connection for the same file when available
+# @param params Dict Connection parameters:
+#   dbname   - path to the SQLite database file (required)
+#   readonly - open the database in read-only mode (default: false)
+#   cache    - use connection caching (default: true)
+# @return SQLite.DB on success, or nothing on failure
+# @usage
+#   params = Dict("dbname" => "d:/data/mydb.sqlite")
+#   conn = sqlitedb.connect(params)
 function connect(params::Dict)
     # Validate parameters
     (is_valid, error_msg) = validate_params(params)
@@ -134,31 +125,17 @@ function connect(params::Dict)
     return conn
 end
 
-"""
-    executeSQL(query::String, params::Dict=Dict())
-
-Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
-
-⚠️  SECURITY WARNING: This function executes raw SQL queries and is vulnerable to SQL injection.
-Use executePS() with prepared statements for user input.
-
-# Arguments
-- `query::String`: SQL query to execute (should not contain user input)
-- `params::Dict`: Connection parameters
-
-# Returns
-- `true` on success, error message string on failure
-
-# Example
-```julia
-# Safe - static query
-ok = sqlitedb.executeSQL("DELETE FROM temp_table", params)
-
-# UNSAFE - use executePS instead!
-# bad_query = "INSERT INTO users (name) VALUES ('" * user_input * "')"
-# ok = sqlitedb.executeSQL(bad_query, params)  # DON'T DO THIS!
-```
-"""
+#---------- begin function executeSQL
+# @describe Executes a raw SQL query (INSERT, UPDATE, DELETE, etc.) against SQLite
+# @warning Vulnerable to SQL injection - use executePS() for anything containing user input; reserve this for static or administrative queries
+# @param query String SQL query to execute (should not contain user input)
+# @param params Dict Connection parameters (see connect)
+# @return true on success, an error message String on failure
+# @usage
+#   # Safe - static query
+#   ok = sqlitedb.executeSQL("DELETE FROM temp_table", params)
+#   # UNSAFE - use executePS instead:
+#   # ok = sqlitedb.executeSQL("INSERT INTO users (name) VALUES ('" * user_input * "')", params)
 function executeSQL(query::String, params::Dict=Dict())
     # Validate query is not empty
     if isempty(strip(query))
@@ -195,32 +172,15 @@ function executeSQL(query::String, params::Dict=Dict())
     end
 end
 
-"""
-    executePS(query::String, args::Vector, params::Dict=Dict())
-
-Executes a prepared statement with parameters (SQL injection safe).
-
-This is the recommended way to execute queries with user input.
-Uses parameterized queries to prevent SQL injection attacks.
-
-# Arguments
-- `query::String`: SQL query with ? placeholders
-- `args::Vector`: Parameters for prepared statement
-- `params::Dict`: Connection parameters
-
-# Returns
-- `true` on success, error message string on failure
-
-# Example
-```julia
-query = "INSERT INTO users (name, email) VALUES (?, ?)"
-ok = sqlitedb.executePS(query, ["John Doe", "john@example.com"], params)
-
-# Update example
-query = "UPDATE users SET status = ? WHERE id = ?"
-ok = sqlitedb.executePS(query, ["active", 123], params)
-```
-"""
+#---------- begin function executePS
+# @describe Executes a prepared statement with bound parameters against SQLite (SQL-injection safe); the recommended way to run queries with user input
+# @param query String SQL query with ? placeholders
+# @param args Vector Parameters bound to the placeholders (count must match)
+# @param params Dict Connection parameters (see connect)
+# @return true on success, an error message String on failure
+# @usage
+#   ok = sqlitedb.executePS("INSERT INTO users (name, email) VALUES (?, ?)", ["John Doe", "john@example.com"], params)
+#   ok = sqlitedb.executePS("UPDATE users SET status = ? WHERE id = ?", ["active", 123], params)
 function executePS(query::String, args::Vector, params::Dict=Dict())
     # Validate query is not empty
     if isempty(strip(query))
@@ -267,30 +227,20 @@ function executePS(query::String, args::Vector, params::Dict=Dict())
     end
 end
 
-"""
-    queryResults(query::String, params::Dict=Dict())
-
-Executes a query and returns results
-
-# Arguments
-- `query::String`: SQL query to execute
-- `params::Dict`: Connection parameters and optional:
-  - `filename`: If provided, writes results to CSV file
-  - `format`: "json" (default) or "dataframe" for native DataFrame
-  - `max_rows`: Maximum number of rows to return (default: 10000, 0 for unlimited)
-  - `lowercase_columns`: Convert column names to lowercase (default: true)
-
-# Returns
-- JSON string (default), DataFrame if format="dataframe", filename if filename provided, or error message
-
-# Example
-```julia
-json = sqlitedb.queryResults("SELECT * FROM users", params)
-df = sqlitedb.queryResults("SELECT * FROM users", merge(params, Dict("format" => "dataframe")))
-file = sqlitedb.queryResults("SELECT * FROM users", merge(params, Dict("filename" => "output.csv")))
-limited = sqlitedb.queryResults("SELECT * FROM logs", merge(params, Dict("max_rows" => 1000)))
-```
-"""
+#---------- begin function queryResults
+# @describe Executes a SELECT query against SQLite and returns the rows as JSON, a DataFrame, or a written CSV file
+# @param query String SQL query to execute
+# @param params Dict Connection parameters (see connect) plus optional:
+#   filename          - if provided, writes results to this CSV file and returns the path
+#   format            - "json" (default) or "dataframe" for a native DataFrame
+#   max_rows          - maximum rows to return (default: 10000, 0 for unlimited)
+#   lowercase_columns - convert column names to lowercase (default: true)
+# @return String JSON (default), a DataFrame when format="dataframe", the filename when filename is given, or an error message String
+# @usage
+#   json = sqlitedb.queryResults("SELECT * FROM users", params)
+#   df = sqlitedb.queryResults("SELECT * FROM users", merge(params, Dict("format" => "dataframe")))
+#   file = sqlitedb.queryResults("SELECT * FROM users", merge(params, Dict("filename" => "output.csv")))
+#   limited = sqlitedb.queryResults("SELECT * FROM logs", merge(params, Dict("max_rows" => 1000)))
 function queryResults(query::String, params::Dict=Dict())
     # Validate query is not empty
     if isempty(strip(query))
@@ -397,17 +347,11 @@ function queryResults(query::String, params::Dict=Dict())
     end
 end
 
-"""
-    clear_connection_cache()
-
-Clears all cached SQLite connections.
-Useful for cleanup during application shutdown or testing.
-
-# Example
-```julia
-sqlitedb.clear_connection_cache()
-```
-"""
+#---------- begin function clear_connection_cache
+# @describe Clears every cached SQLite connection; useful for shutdown or testing
+# @return Integer count of cached connections that were cleared
+# @usage
+#   sqlitedb.clear_connection_cache()
 function clear_connection_cache()
     lock(CACHE_LOCK) do
         cleared_count = length(CONNECTION_CACHE)
@@ -417,20 +361,12 @@ function clear_connection_cache()
     end
 end
 
-"""
-    get_cache_stats()
-
-Returns statistics about the connection cache.
-
-# Returns
-- Dict with keys: total_connections, database_files
-
-# Example
-```julia
-stats = sqlitedb.get_cache_stats()
-println("Cached connections: ", stats["total_connections"])
-```
-"""
+#---------- begin function get_cache_stats
+# @describe Returns statistics about the current SQLite connection cache
+# @return Dict with keys total_connections, database_files
+# @usage
+#   stats = sqlitedb.get_cache_stats()
+#   println("Cached connections: ", stats["total_connections"])
 function get_cache_stats()
     lock(CACHE_LOCK) do
         return Dict(
@@ -440,29 +376,13 @@ function get_cache_stats()
     end
 end
 
-"""
-    test_connection(params::Dict)
-
-Tests database connection parameters without executing any queries.
-Useful for validating configuration before use.
-
-# Arguments
-- `params::Dict`: Connection parameters to test
-
-# Returns
-- `(true, "Connected successfully")` on success
-- `(false, error_message)` on failure
-
-# Example
-```julia
-(success, message) = sqlitedb.test_connection(params)
-if success
-    println("Connection OK: ", message)
-else
-    println("Connection failed: ", message)
-end
-```
-"""
+#---------- begin function test_connection
+# @describe Tests connection parameters by connecting (without caching) and running SELECT 1; useful for validating config before use
+# @param params Dict Connection parameters to test (see connect)
+# @return Tuple{Bool,String} (true, "Connection successful") on success, or (false, error_message) on failure
+# @usage
+#   (success, message) = sqlitedb.test_connection(params)
+#   success ? println("Connection OK: ", message) : println("Connection failed: ", message)
 function test_connection(params::Dict)
     # Validate parameters first
     (is_valid, error_msg) = validate_params(params)

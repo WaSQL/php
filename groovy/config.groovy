@@ -8,10 +8,13 @@ Installation:
     Groovy includes XmlSlurper by default - no additional dependencies needed
 */
 
-// XmlSlurper lived in groovy.util through Groovy 3.x and moved to groovy.xml in
-// Groovy 4. Load it reflectively so this script compiles and runs on any version
-// (a hard `import groovy.xml.XmlSlurper` fails to compile on Groovy 2.5/3.x).
-// GPathResult is only referenced in a doc comment below, so it needs no import.
+//---------- begin function newXmlSlurper
+/**
+* @describe creates an XmlSlurper instance, resolving the class reflectively so the script runs on any Groovy version (groovy.util through 3.x, groovy.xml in 4+)
+* @return object
+* @usage
+*	xml = newXmlSlurper().parseText(xmlText)
+*/
 def newXmlSlurper = {
     def cls
     try { cls = Class.forName('groovy.xml.XmlSlurper') }          // Groovy 4+
@@ -150,11 +153,14 @@ if (ALLCONFIG.host) {
     }
 }
 
+//---------- begin function xmlToMap
 /**
- * Helper function to recursively convert XML GPathResult to Map
- * @param node GPathResult node
- * @return Map representation of XML
- */
+* @describe recursively converts an XML GPathResult node to a map (or a string for a pure text leaf)
+* @param params node object
+* @return mixed
+* @usage
+*	ALLCONFIG = xmlToMap(xml)
+*/
 def xmlToMap(node) {
     def map = [:]
 
@@ -191,13 +197,15 @@ def xmlToMap(node) {
     return map
 }
 
+//---------- begin function value
 /**
- * Returns a specific key value or the whole config map
- * @param k String key (optional)
- * @return Mixed - value for key if key is passed in, else returns the config map
- * @usage v = config.value('name')
- * @usage c = config.value()
- */
+* @describe returns a specific key value from CONFIG, or the whole CONFIG map when no key is passed
+* @param params k string
+* @return mixed
+* @usage
+*	v = config.value('name')
+*	c = config.value()
+*/
 def value(k = '') {
     if (k && CONFIG.containsKey(k)) {
         return CONFIG[k]
@@ -205,15 +213,18 @@ def value(k = '') {
     return CONFIG
 }
 
+//---------- begin function database
 /**
- * Returns a specific key value or the whole DATABASE map
- * @param k String key (optional)
- * @param sk String sub-key (optional)
- * @return Mixed - value for key if key is passed in, else returns the DATABASE map
- * @usage v = config.database('name')
- * @usage c = config.database()
- * @usage v = config.database('dbname', 'dbuser')
- */
+* @describe returns a database entry (or sub-key) from the DATABASE map, or the whole map when no key is passed
+* @param params k string, sk string
+*	k: database name
+*	sk: sub-key within that database entry (optional)
+* @return mixed
+* @usage
+*	v = config.database('name')
+*	c = config.database()
+*	v = config.database('dbname', 'dbuser')
+*/
 def database(k = '', sk = '') {
     if (k && DATABASE.containsKey(k)) {
         if (sk && DATABASE[k] instanceof Map && DATABASE[k].containsKey(sk)) {

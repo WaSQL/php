@@ -11,6 +11,14 @@ if {[info exists env(LIBPATH)]} {
 
 package require tdbc::mysql 1.1.5
 
+#----------
+# begin function mysqlQueryResults
+# @describe connects to MySQL via tdbc::mysql using the given config, runs query, and returns all rows in the standard results-array form
+# @param cfg list - "array get" config list; must supply dbhost, dbuser, dbpass, dbname
+# @param query string - the SQL statement to execute
+# @return list - results array ("array get" form): columns (list), rows (int), and <row>,<column> => value entries; raises an error on connect/query failure
+# @usage array set res [mysqlQueryResults [array get cfg] {SELECT * FROM users}]
+#----------
 proc mysqlQueryResults {cfg query} {
     # Convert cfg list back to array
     array set cfgArray $cfg

@@ -13,17 +13,17 @@ using Pkg
 # These will be defined by the calling script
 # WASQL_DATABASE, WASQL_CONFIG, etc.
 
-"""
-    ensure_packages_installed(dbtypes::Vector{String})
+# Shared helpers + config.xml reader (ports of common.R/common.tcl, config.R/config.tcl).
+# db.R sources common.R/config.R/db.R together; this is the Julia equivalent.
+include(joinpath(@__DIR__, "common.jl"))
+include(joinpath(@__DIR__, "config.jl"))
 
-Checks if required Julia packages are installed and returns installation instructions if needed
-
-# Arguments
-- `dbtypes::Vector{String}`: List of database types to check packages for
-
-# Returns
-- `nothing` if all packages are installed, or error message with installation instructions
-"""
+#---------- begin function ensure_packages_installed
+# @describe Checks if required Julia packages are installed and returns installation instructions if needed
+# @param dbtypes Vector{String} List of database types to check packages for
+# @return Nothing when all packages are installed, otherwise a String of installation instructions
+# @usage
+#   msg = ensure_packages_installed(["mysql", "sqlite"])
 function ensure_packages_installed(dbtypes::Vector{String})
     # Map database types to required Julia packages
     package_map = Dict(
@@ -102,20 +102,15 @@ Or install individually from command line:
     return nothing
 end
 
-"""
-    load_module(dbtype::String)
-
-Loads the appropriate database driver functions for the given database type
-
-# Arguments
-- `dbtype::String`: Database type (mysql, postgres, oracle, etc.)
-
-# Returns
-- NamedTuple with database functions (queryResults, executeSQL, executePS) or nothing
-"""
 # Cache for loaded modules - stores which files have been included
 const LOADED_DB_FILES = Set{String}()
 
+#---------- begin function load_module
+# @describe Loads the appropriate database driver functions for the given database type
+# @param dbtype String Database type (mysql, postgres, oracle, etc.)
+# @return NamedTuple of database functions (queryResults, executeSQL, executePS), or nothing when the type is unsupported or the module file is missing
+# @usage
+#   funcs = load_module("mysql")
 function load_module(dbtype::String)
     dbtype_lower = lowercase(dbtype)
 
@@ -162,25 +157,15 @@ function load_module(dbtype::String)
     end
 end
 
-"""
-    queryResults(dbname::String, query::String, params::Dict=Dict())
-
-Executes a query and returns results
-
-# Arguments
-- `dbname::String`: Database name from config
-- `query::String`: SQL query to execute
-- `params::Dict`: Optional parameters to override config
-
-# Returns
-- JSON string (default) or other format based on params
-
-# Example
-```julia
-json = db.queryResults("mydb", "SELECT * FROM users")
-df = db.queryResults("mydb", "SELECT * FROM users", Dict("format" => "dataframe"))
-```
-"""
+#---------- begin function queryResults
+# @describe Executes a query against a configured database and returns results
+# @param dbname String Database name from config
+# @param query String SQL query to execute
+# @param params Dict Optional parameters to override config (e.g. "format" => "dataframe")
+# @return String JSON (default) or other format based on params; an error message String on failure
+# @usage
+#   json = db.queryResults("mydb", "SELECT * FROM users")
+#   df = db.queryResults("mydb", "SELECT * FROM users", Dict("format" => "dataframe"))
 function queryResults(dbname::String, query::String, params::Dict=Dict())
     # Check if database exists in configuration
     if !isdefined(Main, :WASQL_DATABASE) || !haskey(Main.WASQL_DATABASE, dbname)
@@ -228,24 +213,14 @@ function queryResults(dbname::String, query::String, params::Dict=Dict())
     end
 end
 
-"""
-    executeSQL(dbname::String, query::String, params::Dict=Dict())
-
-Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
-
-# Arguments
-- `dbname::String`: Database name from config
-- `query::String`: SQL query to execute
-- `params::Dict`: Optional parameters to override config
-
-# Returns
-- `true` on success, error message on failure
-
-# Example
-```julia
-ok = db.executeSQL("mydb", "INSERT INTO users (name) VALUES ('John')")
-```
-"""
+#---------- begin function executeSQL
+# @describe Executes a SQL query (INSERT, UPDATE, DELETE, etc.) against a configured database
+# @param dbname String Database name from config
+# @param query String SQL query to execute
+# @param params Dict Optional parameters to override config
+# @return true on success, an error message String on failure
+# @usage
+#   ok = db.executeSQL("mydb", "INSERT INTO users (name) VALUES ('John')")
 function executeSQL(dbname::String, query::String, params::Dict=Dict())
     # Check if database exists in configuration
     if !isdefined(Main, :WASQL_DATABASE) || !haskey(Main.WASQL_DATABASE, dbname)
@@ -290,25 +265,15 @@ function executeSQL(dbname::String, query::String, params::Dict=Dict())
     end
 end
 
-"""
-    executePS(dbname::String, query::String, args::Vector, params::Dict=Dict())
-
-Executes a prepared statement with parameters
-
-# Arguments
-- `dbname::String`: Database name from config
-- `query::String`: SQL query with placeholders
-- `args::Vector`: Query parameters
-- `params::Dict`: Optional parameters to override config
-
-# Returns
-- `true` on success, error message on failure
-
-# Example
-```julia
-ok = db.executePS("mydb", "INSERT INTO users (name, email) VALUES (?, ?)", ["John", "john@example.com"])
-```
-"""
+#---------- begin function executePS
+# @describe Executes a prepared statement with bound parameters against a configured database
+# @param dbname String Database name from config
+# @param query String SQL query with placeholders
+# @param args Vector Query parameters bound to the placeholders
+# @param params Dict Optional parameters to override config
+# @return true on success, an error message String on failure
+# @usage
+#   ok = db.executePS("mydb", "INSERT INTO users (name, email) VALUES (?, ?)", ["John", "john@example.com"])
 function executePS(dbname::String, query::String, args::Vector, params::Dict=Dict())
     # Check if database exists in configuration
     if !isdefined(Main, :WASQL_DATABASE) || !haskey(Main.WASQL_DATABASE, dbname)
@@ -355,5 +320,7 @@ end
 
 # Module exports
 export queryResults, executeSQL, executePS, ensure_packages_installed
+export configParse, wasqlConfigFile
+export convertExtendedCharacters, commonStrlen, commonFormatPhone, parseHtmlTagAttributes
 
 end # module WaSQLDb

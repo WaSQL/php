@@ -12,7 +12,14 @@
  * ?>
  */
 
-// Find WaSQL root directory
+//---------- begin function findWasqlRoot
+/**
+* @describe finds the WaSQL root directory by locating the folder that contains groovy/db.groovy (current dir, then parents, then common install paths)
+* @return string
+*	absolute path to the WaSQL root, or null if it cannot be found
+* @usage
+*	root = findWasqlRoot()
+*/
 def findWasqlRoot() {
     def currentDir = new File('.').absoluteFile
 
@@ -57,7 +64,15 @@ if (!wasqlRoot) {
 
 def groovyPath = new File(wasqlRoot, 'groovy').absolutePath
 
-// Simple module loader function
+//---------- begin function loadModule
+/**
+* @describe parses a WaSQL Groovy module file and returns the evaluated script object
+* @param params moduleName string
+*	moduleName: module name without the .groovy extension (e.g. 'db')
+* @return object
+* @usage
+*	db = loadModule('db')
+*/
 def loadModule(moduleName) {
     def moduleFile = new File(groovyPath, "${moduleName}.groovy")
     if (!moduleFile.exists()) {

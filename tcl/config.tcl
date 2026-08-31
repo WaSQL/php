@@ -1,6 +1,13 @@
 #http://tdom.org/downloads/
 package require tdom
 
+#----------
+# begin function configParse
+# @describe reads the WaSQL config XML (wasqlConfigFile) and returns the attributes of the <database name="..."> node matching dbname
+# @param dbname string - the database connection name as it appears in config.xml
+# @return list - flat attr/value pairs (suitable for "array set"); raises an error if the file or database node is missing
+# @usage array set cfg [configParse $db_name]
+#----------
 proc configParse {dbname} {
     set config_file [wasqlConfigFile]
     # Initialize the return array

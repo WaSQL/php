@@ -51,6 +51,14 @@ import java.util.concurrent.atomic.AtomicLong
 @Field def DATE_FMT = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd')
 @Field def TIME_FMT = java.time.format.DateTimeFormatter.ofPattern('HH:mm:ss')
 
+//---------- begin function JSON
+/**
+* @describe immediately-invoked builder for the shared JsonGenerator - registers converters for SQL/java.time temporal types, CLOB/BLOB, arrays and PostgreSQL JSON so result sets serialize to readable JSON
+* @return object
+*	the configured, reusable JsonGenerator (assigned to JSON)
+* @usage
+*	respond(ex, 200, JSON.toJson(result))
+*/
 @Field def JSON = {
     def opts = new JsonGenerator.Options()
         .disableUnicodeEscaping()
@@ -114,10 +122,26 @@ import java.util.concurrent.atomic.AtomicLong
 
 // ── Methods ───────────────────────────────────────────────────────────────────
 
+//---------- begin function log
+/**
+* @describe writes a timestamped line to stderr
+* @param params msg string
+* @return void
+* @usage
+*	log("Listening on port ${PORT}")
+*/
 void log(String msg) {
     System.err.println("[wasql-groovy] ${new Date().format('HH:mm:ss')} $msg")
 }
 
+//---------- begin function readBody
+/**
+* @describe reads the request body as a trimmed UTF-8 string, enforcing the MAX_BODY_MB size limit (throws IllegalArgumentException if exceeded)
+* @param params ex HttpExchange
+* @return string
+* @usage
+*	query = readBody(ex)
+*/
 String readBody(HttpExchange ex) {
     long max = MAX_BODY_MB * 1024L * 1024L
     def len = ex.requestHeaders.getFirst('Content-Length')
@@ -132,7 +156,15 @@ String readBody(HttpExchange ex) {
     return new String(bytes, 'UTF-8').trim()
 }
 
-// Reads up to `cap` bytes from the stream (Java 8 safe; no readNBytes/readAllBytes).
+//---------- begin function readUpTo
+/**
+* @describe reads up to cap bytes from a stream (Java 8 safe - no readNBytes/readAllBytes)
+* @param params is InputStream, cap integer
+* @return mixed
+*	byte array of the bytes read (may be shorter than cap if the stream ends first)
+* @usage
+*	bytes = readUpTo(ex.requestBody, 1024)
+*/
 byte[] readUpTo(InputStream is, int cap) {
     def buf = new ByteArrayOutputStream()
     byte[] chunk = new byte[8192]
@@ -147,6 +179,15 @@ byte[] readUpTo(InputStream is, int cap) {
     return buf.toByteArray()
 }
 
+//---------- begin function loadModule
+/**
+* @describe compiles and evaluates a .groovy module from SCRIPT_DIR, caching the result so each module compiles only once (until /reload clears the cache)
+* @param params name string
+*	name: module name without the .groovy extension (e.g. 'mysqldb')
+* @return object
+* @usage
+*	driver = loadModule('mysqldb')
+*/
 Object loadModule(String name) {
     def f = new File(SCRIPT_DIR, "${name}.groovy")
     if (!f.exists()) throw new RuntimeException("${name}.groovy not found in ${SCRIPT_DIR}")
@@ -162,6 +203,16 @@ Object loadModule(String name) {
     }
 }
 
+//---------- begin function resolveDriver
+/**
+* @describe resolves a configured database name to its driver module and connection params (throws IllegalArgumentException if unknown or unsupported dbtype)
+* @param params dbname string
+*	dbname: database name from a database tag in config.xml
+* @return map
+*	[driver: module object, params: connection param map]
+* @usage
+*	drv = resolveDriver('mydb'); drv.driver.queryResults(sql, drv.params)
+*/
 Map resolveDriver(String dbname) {
     def dbconf = DATABASE[dbname]
     if (!dbconf) throw new IllegalArgumentException("Database '${dbname}' not found in config.xml. Available: ${DATABASE.keySet().sort().join(', ')}")
@@ -171,13 +222,26 @@ Map resolveDriver(String dbname) {
     return [driver: loadModule(modName), params: [:] + dbconf]
 }
 
-// Extracts the path segment after a known prefix, URL-decoded.
-// e.g. pathParam(ex, '/query/') on '/query/my_db' → 'my_db'
+//---------- begin function pathParam
+/**
+* @describe extracts the URL-decoded path segment after a known prefix, e.g. pathParam(ex, '/query/') on '/query/my_db' returns 'my_db'
+* @param params ex HttpExchange, prefix string
+* @return string
+* @usage
+*	dbname = pathParam(ex, '/query/')
+*/
 String pathParam(HttpExchange ex, String prefix) {
     URLDecoder.decode(ex.requestURI.path.substring(prefix.length()), 'UTF-8').trim()
 }
 
-// Parses the request's query string into a map (URL-decoded).
+//---------- begin function queryParams
+/**
+* @describe parses the request's query string into a URL-decoded map (values default to '' when absent)
+* @param params ex HttpExchange
+* @return map
+* @usage
+*	q = queryParams(ex); op = q.op
+*/
 Map queryParams(HttpExchange ex) {
     def out = [:]
     def raw = ex.requestURI.rawQuery
@@ -191,6 +255,16 @@ Map queryParams(HttpExchange ex) {
 // ── JDBC DatabaseMetaData helpers (ODBC-free schema introspection) ─────────────
 // A blank/absent schema means "all schemas" (null pattern).
 
+//---------- begin function metaTables
+/**
+* @describe lists table names via JDBC DatabaseMetaData (blank/null schema = all schemas)
+* @param params md object, schema string
+*	md: DatabaseMetaData from the JDBC connection
+* @return list
+*	table names, sorted
+* @usage
+*	tables = metaTables(md, 'dbo')
+*/
 List metaTables(md, String schema) {
     def rs = md.getTables(null, (schema ?: null), '%', ['TABLE'] as String[])
     def out = []
@@ -198,11 +272,19 @@ List metaTables(md, String schema) {
     out.sort()
 }
 
-// Column introspection via ResultSetMetaData of "SELECT * FROM t WHERE 1=0".
-// This is 100x faster than DatabaseMetaData.getColumns() on some drivers
-// (e.g. the FairCom ctree driver, where getColumns() does a full catalog scan
-// taking ~27s vs ~0.4s here) and works for every JDBC driver. The trade-off is
-// that column DEFAULT values are not available from ResultSetMetaData.
+//---------- begin function metaColumns
+/**
+* @describe introspects a table's columns via the ResultSetMetaData of "SELECT * FROM t WHERE 1=0" - far faster than DatabaseMetaData.getColumns() on some drivers and works for every JDBC driver, but column DEFAULT values are not available
+* @param params conn object, md object, schema string, table string
+*	conn: the JDBC connection
+*	md: DatabaseMetaData from the connection (used to resolve the schema)
+*	schema: schema name, or blank/null to auto-resolve
+*	table: table name (required)
+* @return list
+*	list of maps [name, type, size, scale, nullable, default, position]
+* @usage
+*	cols = metaColumns(sql.connection, md, null, 'users')
+*/
 List metaColumns(conn, md, String schema, String table) {
     if (!table) throw new IllegalArgumentException("meta columns: 'table' is required")
     // resolve the schema (needed to qualify the table) when the caller didn't supply one
@@ -238,6 +320,17 @@ List metaColumns(conn, md, String schema, String table) {
     out
 }
 
+//---------- begin function metaPrimaryKey
+/**
+* @describe returns a table's primary-key name and columns via JDBC DatabaseMetaData
+* @param params md object, schema string, table string
+*	md: DatabaseMetaData from the JDBC connection
+*	schema: schema to filter by, or blank/null for all schemas
+* @return map
+*	[name: pk name or null, cols: ordered set of column names]
+* @usage
+*	pk = metaPrimaryKey(md, null, 'users')
+*/
 Map metaPrimaryKey(md, String schema, String table) {
     def rs = md.getPrimaryKeys(null, (schema ?: null), table)
     def name = null
@@ -246,6 +339,18 @@ Map metaPrimaryKey(md, String schema, String table) {
     [name: name, cols: cols]
 }
 
+//---------- begin function metaIndexes
+/**
+* @describe lists a table's indexes via JDBC DatabaseMetaData, flagging primary and unique keys (throws IllegalArgumentException if table is missing)
+* @param params md object, schema string, table string
+*	md: DatabaseMetaData from the JDBC connection
+*	schema: schema to filter by, or blank/null for all schemas
+*	table: table name (required)
+* @return list
+*	list of maps [key_name, column_name, seq_in_index, is_unique, is_primary, index_type]
+* @usage
+*	idx = metaIndexes(md, null, 'users')
+*/
 List metaIndexes(md, String schema, String table) {
     if (!table) throw new IllegalArgumentException("meta indexes: 'table' is required")
     def pk = metaPrimaryKey(md, schema, table)
@@ -268,6 +373,18 @@ List metaIndexes(md, String schema, String table) {
     out
 }
 
+//---------- begin function metaDDL
+/**
+* @describe builds a best-effort CREATE TABLE statement from column and primary-key metadata (column DEFAULTs are unavailable - see metaColumns)
+* @param params conn object, md object, schema string, table string
+*	conn: the JDBC connection
+*	md: DatabaseMetaData from the connection
+*	schema: schema name, or blank/null
+* @return string
+*	the CREATE TABLE DDL, or a "-- table not found" comment
+* @usage
+*	ddl = metaDDL(sql.connection, md, null, 'users')
+*/
 String metaDDL(conn, md, String schema, String table) {
     def cols = metaColumns(conn, md, schema, table)
     if (!cols) return "-- table not found: ${schema ? schema + '.' : ''}${table}"
@@ -287,10 +404,26 @@ String metaDDL(conn, md, String schema, String table) {
     "CREATE TABLE ${name} (\n" + lines.join(',\n') + "\n)"
 }
 
+//---------- begin function respond
+/**
+* @describe sends a JSON response with the given HTTP status code
+* @param params ex HttpExchange, code integer, json string
+* @return void
+* @usage
+*	respond(ex, 200, wrapOk(result))
+*/
 void respond(HttpExchange ex, int code, String json) {
     respondAs(ex, code, 'application/json; charset=UTF-8', json)
 }
 
+//---------- begin function respondAs
+/**
+* @describe sends a response with an explicit content type and HTTP status code
+* @param params ex HttpExchange, code integer, contentType string, body string
+* @return void
+* @usage
+*	respondAs(ex, 200, 'text/html; charset=UTF-8', html)
+*/
 void respondAs(HttpExchange ex, int code, String contentType, String body) {
     byte[] b = body.getBytes('UTF-8')
     ex.responseHeaders.set('Content-Type', contentType)
@@ -299,7 +432,15 @@ void respondAs(HttpExchange ex, int code, String contentType, String body) {
     try { os.write(b) } finally { os.close() }
 }
 
-// If the driver already returned a JSON string embed it raw; otherwise serialize.
+//---------- begin function wrapOk
+/**
+* @describe wraps a successful result in the { "success": true, "data": ... } envelope (raw JSON strings are embedded as-is, everything else is serialized)
+* @param params result mixed
+*	result: the driver result (JSON string, list, map, number, etc.)
+* @return string
+* @usage
+*	respond(ex, 200, wrapOk(rows))
+*/
 String wrapOk(Object result) {
     if (result instanceof String) {
         def t = result.trim()
@@ -310,23 +451,56 @@ String wrapOk(Object result) {
     return JSON.toJson([success: true, data: result])
 }
 
+//---------- begin function wrapErr
+/**
+* @describe wraps an error message in the { "success": false, "error": ... } envelope
+* @param params msg string
+* @return string
+* @usage
+*	respond(ex, 500, wrapErr(e.message))
+*/
 String wrapErr(String msg) {
     return JsonOutput.toJson([success: false, error: msg])
 }
 
-// 400 for caller errors (bad SQL, missing params), 500 for server/driver errors.
+//---------- begin function errorCode
+/**
+* @describe maps an exception to an HTTP status code - 400 for caller errors (bad SQL, missing params), 500 for server/driver errors
+* @param params e Exception
+* @return integer
+* @usage
+*	respond(ex, errorCode(e), wrapErr(e.message))
+*/
 int errorCode(Exception e) {
     (e instanceof IllegalArgumentException
   || e instanceof java.sql.SQLSyntaxErrorException
   || e instanceof UnsupportedOperationException) ? 400 : 500
 }
 
+//---------- begin function checkAuth
+/**
+* @describe checks the X-WaSQL-Token request header against the server token - on failure it has already written a 401 response
+* @param params ex HttpExchange
+* @return boolean
+*	true if authorized, false if a 401 was sent
+* @usage
+*	if (!checkAuth(ex)) return
+*/
 boolean checkAuth(HttpExchange ex) {
     if (ex.requestHeaders.getFirst('X-WaSQL-Token') == TOKEN) return true
     respond(ex, 401, wrapErr('Unauthorized'))
     return false
 }
 
+//---------- begin function doShutdown
+/**
+* @describe gracefully shuts the daemon down - deletes the pid/token files, stops the HTTP server and scheduler, then exits the JVM
+* @param params reason string
+*	reason: reason for shutdown, written to the log
+* @return void
+* @usage
+*	doShutdown('idle timeout')
+*/
 void doShutdown(String reason) {
     log("Shutting down: ${reason}")
     PID_FILE.delete()
@@ -408,6 +582,13 @@ def scheduler = Executors.newSingleThreadScheduledExecutor()
 // CallerRunsPolicy applies backpressure when the queue is full rather than dropping requests.
 def scriptCL    = getClass().classLoader
 def threadCount = new java.util.concurrent.atomic.AtomicInteger(0)
+//---------- begin function threadFactory
+/**
+* @describe thread factory for the request thread pool - names each thread and pins the script's class loader as its context class loader
+* @param params r Runnable
+* @return object
+*	a configured, unstarted handler thread
+*/
 def threadFactory = { Runnable r ->
     def t = new Thread(r, "wasql-handler-${threadCount.incrementAndGet()}")
     t.contextClassLoader = scriptCL
@@ -658,8 +839,12 @@ server.createContext('/reload') { HttpExchange ex ->
     }
 }
 
-// POST /shutdown  (or GET — accepts any method)
-// POST /exit      — alias
+//---------- begin function shutdownHandler
+/**
+* @describe HTTP handler for POST/GET /shutdown and its /exit alias - acknowledges the request, then triggers a graceful shutdown on a short delay
+* @param params ex HttpExchange
+* @return void
+*/
 def shutdownHandler = { HttpExchange ex ->
     if (!checkAuth(ex)) return
     try { respond(ex, 200, JsonOutput.toJson([status: 'shutting down', pid: PID])) } catch (Exception ignored) {}
@@ -668,7 +853,14 @@ def shutdownHandler = { HttpExchange ex ->
 server.createContext('/shutdown', shutdownHandler)
 server.createContext('/exit',     shutdownHandler)
 
-// GET /openapi — OpenAPI 3.0 JSON spec (unauthenticated)
+//---------- begin function buildSpec
+/**
+* @describe builds the OpenAPI 3.0 specification for the server's endpoints, with the configured database names filled into the dbname path-parameter enums
+* @return map
+*	the OpenAPI spec, ready to serialize to JSON
+* @usage
+*	respond(ex, 200, JSON.toJson(buildSpec()))
+*/
 Closure buildSpec = {
     def dbNames = DATABASE.keySet().sort()
     def dbNameEnum = dbNames ?: ['mydb']

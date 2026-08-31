@@ -1,5 +1,13 @@
 # db.tcl
 
+#----------
+# begin function dbQueryResults
+# @describe generic query dispatcher - resolves db_name via configParse, then sources and calls the driver-specific *QueryResults proc based on dbtype (mysql/mysqli, postgres, sqlite, mssql, snowflake)
+# @param db_name string - the config.xml database connection name
+# @param query string - the SQL statement to execute
+# @return list - the driver's results array in "array get" form (keys: columns, rows, <row>,<column>); raises an error for an unsupported dbtype
+# @usage array set res [dbQueryResults mydb {SELECT * FROM users}]
+#----------
 proc dbQueryResults {db_name query} {
   set db_config [configParse $db_name]
   array set cfg $db_config

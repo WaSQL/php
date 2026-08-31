@@ -1,5 +1,11 @@
 # db.R
 
+# ---------- begin function dbQueryResults
+# @describe runs a query against a named connection in config.xml, dispatching to the driver for its dbtype
+# @param db_name string - the database name/key as defined in config.xml
+# @param query string - the SQL query to run
+# @return data.frame - the query result rows (supports mysql, mysqli, postgres, sqlite, mssql, snowflake)
+# @usage rows <- dbQueryResults('mydb', 'SELECT * FROM users')
 dbQueryResults <- function(db_name,query) {
   cfg <- configParse(db_name)
   if(tolower(cfg$dbtype)=='mysql' || tolower(cfg$dbtype)=='mysqli' ){

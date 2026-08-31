@@ -1,6 +1,11 @@
 #Rscript -e "install.packages('jsonlite', repos='https://cran.r-project.org')"
 suppressPackageStartupMessages(library(jsonlite, quietly = TRUE))
 
+# ---------- begin function convertExtendedCharacters
+# @describe normalizes accented/extended Latin characters to their plain ASCII equivalents
+# @param string string - the text to normalize
+# @return string - the text with extended Latin characters folded to ASCII (accents stripped, ligatures expanded)
+# @usage clean <- convertExtendedCharacters(name)
 convertExtendedCharacters <- function(string) {
   # Define the character mapping
   normalizeChars <- c(
@@ -95,11 +100,11 @@ commonFormatPhone <- function(phone) {
   )
 }
 
-# ---------- begin function parseAttributes ----------
-# @describe parses an html tag attributes
-# @param txt html tag string
-# @return array key/value pairs for each attribute found in the html tag
-# @usage attrs=parseHtmlTagAttributes($tag)
+# ---------- begin function parseHtmlTagAttributes
+# @describe parses the attributes out of an html tag
+# @param text string - the html tag string
+# @return list - key/value pairs for each attribute found in the html tag (names lowercased, quotes stripped)
+# @usage attrs <- parseHtmlTagAttributes(tag)
 parseHtmlTagAttributes <- function(text) {
   attributes <- list()
   

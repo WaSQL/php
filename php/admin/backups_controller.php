@@ -56,10 +56,16 @@ switch($func){
 		$file = isset($_REQUEST['file']) ? decodeBase64($_REQUEST['file']) : (isset($_REQUEST['filename']) ? $_REQUEST['filename'] : '');
 		$res = backupsRestoreBackup($file);
 		if(isset($res['success']) && $res['success']){
+			if(isset($res['table']) && strlen($res['table'])){
+				$restoreMsg = "Table <b>" . encodeHtml($res['table']) . "</b> restored successfully from backup <b>" . encodeHtml($res['file']) . "</b>. Other tables were not modified.";
+			}
+			else{
+				$restoreMsg = "Database <b>" . encodeHtml($CONFIG['dbname']) . "</b> restored successfully from backup <b>" . encodeHtml($res['file']) . "</b>.";
+			}
 			$_SESSION['backups_status'] = array(
 				'type' => 'success',
 				'title' => 'Restore Successful',
-				'message' => "Database <b>" . encodeHtml($CONFIG['dbname']) . "</b> restored successfully from backup <b>" . encodeHtml($res['file']) . "</b>."
+				'message' => $restoreMsg
 			);
 		}
 		else{

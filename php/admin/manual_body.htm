@@ -1,96 +1,202 @@
 <view:default>
 <style type="text/css">
-	xmp{margin:2px 5px;}
-	div.row{margin-bottom:5px;}
-	.well{overflow:auto;}
-	.manual-layout{display:flex;gap:16px;align-items:stretch;height:82vh;}
-	.manual-side{flex:0 0 270px;display:flex;}
-	.manual-side .wadmin-card{display:flex;flex-direction:column;flex:1;overflow:auto;margin-bottom:0;}
-	.manual-results{flex:1;overflow:auto;margin-bottom:0;}
+	/* ---- WaSQL Documentation (admin) ---------------------------------------- */
+	.manual-wrap{--mn-border:rgba(0,0,0,.09);--mn-muted:#7a7a7a;--mn-ink:#363636;--mn-accent:#3273dc;--mn-soft:#f6f8fa;}
+	.manual-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin:22px 0 16px;}
+	.manual-head h1{display:flex;align-items:center;gap:10px;margin:0;font-size:1.5rem;font-weight:700;color:var(--mn-ink);}
+	.manual-head h1 [class*="icon-"]{opacity:.55;}
+	.manual-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-left:auto;}
+	.manual-stats{display:flex;flex-wrap:wrap;gap:6px;}
+	.manual-stat{display:inline-flex;align-items:baseline;gap:5px;padding:4px 10px;border:1px solid var(--mn-border);border-radius:999px;background:#fff;font-size:.78rem;color:var(--mn-muted);white-space:nowrap;}
+	.manual-stat b{font-size:.9rem;font-weight:700;color:var(--mn-ink);}
+	.manual-rebuild{display:inline-flex;align-items:center;gap:7px;}
+	.manual-rebuild[disabled]{opacity:.65;cursor:progress;}
+
+	.manual-layout{display:flex;gap:16px;align-items:stretch;height:78vh;min-height:420px;}
+	.manual-side{flex:0 0 288px;display:flex;min-width:0;}
+	.manual-panel{display:flex;flex-direction:column;flex:1;min-width:0;background:#fff;border:1px solid var(--mn-border);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:16px;overflow:auto;}
+	.manual-results{flex:1;min-width:0;}
+
 	.manual-search{display:flex;gap:8px;margin-bottom:14px;}
-	.manual-search input{flex:1;}
-	#ul_files{list-style:none;margin:4px 0 0;padding:0;}
-	#ul_files li{margin:2px 0;}
-	@media (max-width:820px){.manual-layout{flex-direction:column;height:auto;}.manual-side{flex:1 1 auto;}}
+	.manual-search input{flex:1;min-width:0;}
+	.manual-side-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--mn-muted);margin:4px 0 6px;}
+
+	#ul_files{list-style:none;margin:0;padding:0;}
+	#ul_files > li{margin:0 0 2px;}
+	.manual-cat{display:flex;align-items:center;gap:8px;width:100%;padding:7px 9px;border:0;border-radius:8px;background:transparent;color:var(--mn-ink);font-size:.9rem;font-weight:600;text-align:left;cursor:pointer;text-decoration:none;}
+	.manual-cat:hover{background:var(--mn-soft);}
+	.manual-cat .manual-cat-count{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--mn-muted);background:var(--mn-soft);border-radius:999px;padding:1px 8px;}
+	.manual-cat [class*="icon-"],.manual-cat [class*="brand-"]{opacity:.8;}
+	.manual-subtree{margin:2px 0 6px 14px;padding-left:10px;border-left:2px solid var(--mn-border);}
+	.manual-subtree:empty{display:none;}
+	.manual-file{display:block;width:100%;text-align:left;padding:5px 8px;margin:2px 0;border:1px solid var(--mn-border);border-radius:7px;background:#fff;color:var(--mn-ink);font-size:.82rem;cursor:pointer;text-decoration:none;word-break:break-all;}
+	.manual-file:hover{border-color:var(--mn-accent);color:var(--mn-accent);}
+	.manual-file .manual-cat-count{color:var(--mn-muted);}
+	.manual-namelist{margin:2px 0 4px 12px;}
+	.manual-name{display:block;padding:3px 6px;border-radius:6px;color:var(--mn-accent);font-size:.82rem;text-decoration:none;cursor:pointer;}
+	.manual-name:hover{background:var(--mn-soft);text-decoration:underline;}
+	.manual-name.is-undocumented{color:#c03434;}
+
+	.manual-hint{color:var(--mn-muted);font-size:.9rem;line-height:1.55;}
+	.manual-hint code{background:var(--mn-soft);border-radius:4px;padding:1px 5px;font-size:.85em;}
+
+	.manual-doc + .manual-doc{margin-top:22px;padding-top:22px;border-top:1px solid var(--mn-border);}
+	.manual-doc-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;}
+	.manual-doc-name{font-size:1.15rem;font-weight:700;color:var(--mn-ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+	.manual-badge{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--mn-soft);color:var(--mn-muted);}
+	.manual-doc-loc{width:100%;font-size:.76rem;color:var(--mn-muted);}
+	.manual-doc-loc code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+	.manual-doc-desc{margin:10px 0 4px;color:var(--mn-ink);line-height:1.55;}
+	.manual-sig{margin:10px 0;padding:9px 12px;background:#1e222a;color:#e6e6e6;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;overflow-x:auto;white-space:pre;}
+	.manual-sec{margin-top:14px;}
+	.manual-sec h4{margin:0 0 5px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mn-muted);}
+	.manual-sec ul{margin:0;padding-left:18px;}
+	.manual-sec li{margin:2px 0;font-size:.86rem;line-height:1.5;}
+	.manual-pre{margin:0;padding:9px 12px;background:var(--mn-soft);border:1px solid var(--mn-border);border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;word-break:break-word;}
+
+	.manual-flash{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:9px;font-size:.9rem;margin-bottom:8px;}
+	.manual-flash.is-success{background:#effaf3;color:#257942;border:1px solid #b8e6c8;}
+	.manual-flash.is-warning{background:#fffaeb;color:#946c00;border:1px solid #f4e0a1;}
+
+	@media (max-width:900px){
+		.manual-layout{flex-direction:column;height:auto;min-height:0;}
+		.manual-side{flex:1 1 auto;}
+		.manual-panel{max-height:60vh;}
+		.manual-toolbar{margin-left:0;width:100%;}
+	}
 </style>
-<div class="wadmin-head"><span class="icon-wasql-doc"></span> WaSQL Documentation</div>
-<div class="manual-layout">
-	<div class="manual-side">
-		<div class="wadmin-card">
-			<form method="post" name="manualsearchform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results');">
-				<input type="hidden" name="_menu" value="manual" />
-				<input type="hidden" name="func" value="search" />
-				<div class="manual-search">
-					<input type="text" autofocus="true" class="wacss_input is-mobile-responsive" name="search" placeholder="Search the docs&hellip;" required="required" />
-					<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-search"></span> Search</button>
-				</div>
-			</form>
-			<div class="wadmin-label">Code Files</div>
-			<ul class="nav-list buttons <?=configValue('admin_color');?>" id="ul_files">
-				<?=renderEach('category',$categories,'rec');?>
-			</ul>
+<div class="manual-wrap">
+	<div class="manual-head">
+		<h1><span class="icon-wasql-doc"></span> WaSQL Documentation</h1>
+		<div class="manual-toolbar">
+			<div class="manual-stats">
+				<span class="manual-stat"><b><?=number_format($manual_stats['functions']);?></b> functions</span>
+				<span class="manual-stat"><b><?=encodeHtml($manual_stats['languages']);?></b> languages</span>
+				<?=renderViewIf(strlen($manual_stats['updated_verbose']),'stat_updated',$manual_stats);?>
+			</div>
+			<button type="button" id="manual_rebuild_btn" class="wacss_button is-small is-mobile-responsive <?=configValue('admin_color');?> manual-rebuild" onclick="return manualRebuild(this);"><span class="icon-refresh"></span> Rebuild index</button>
 		</div>
 	</div>
-	<div class="wadmin-card manual-results" id="results">
-		<?=buildOnLoad("wacss.loadScript('/php/admin/manual_js.js');wacss.init();");?>
+
+	<div class="manual-layout">
+		<div class="manual-side">
+			<div class="manual-panel">
+				<form method="post" name="manualsearchform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'results');">
+					<input type="hidden" name="_menu" value="manual" />
+					<input type="hidden" name="func" value="search" />
+					<div class="manual-search">
+						<input type="text" autofocus="true" class="wacss_input is-mobile-responsive" name="search" placeholder="Search functions&hellip;" required="required" />
+						<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-search"></span></button>
+					</div>
+				</form>
+				<div class="manual-side-label">Browse by language</div>
+				<ul id="ul_files">
+					<?=renderEach('category',$categories,'rec');?>
+				</ul>
+			</div>
+		</div>
+		<div class="manual-panel manual-results" id="results">
+			<div class="manual-hint">
+				<p>Search for a function by name, or pick a language to browse its files and functions.</p>
+				<p>The index is parsed from every framework code file (PHP, JavaScript, Python, Groovy, Julia, R, Tcl, Lua&hellip;) plus page and template <code>functions</code>. Hit <b>Rebuild index</b> after adding or documenting functions.</p>
+			</div>
+		</div>
 	</div>
 </div>
+<?=buildOnLoad("wacss.loadScript('/php/admin/manual_js.js');wacss.init();");?>
 </view:default>
 
-<view:category>
-	<li><a href="#" onclick="return manualNav(this);" data-div="filenames_<?=encodeHtml($rec['category']);?>" data-func="filenames" data-category="<?=encodeHtml($rec['category']);?>"><icon class="<?=encodeHtml($rec['icon']);?>"></icon> <?=encodeHtml($rec['category']);?> (<?=encodeHtml($rec['cnt']);?>)</a>
-		<div id="filenames_<?=encodeHtml($rec['category']);?>" style="margin-left:20px;padding-left:5px;border-left:1px solid #ccc;"></div>
+<view:stat_updated>
+	<span class="manual-stat">updated <b><?=encodeHtml($params['updated_verbose']);?></b></span>
+</view:stat_updated>
 
+<view:flash>
+	<div class="manual-flash is-success">
+		<span class="icon-mark"></span>
+		<span>Rebuilt <b><?=number_format($manual_stats['functions']);?></b> functions across <b><?=encodeHtml($manual_stats['languages']);?></b> languages in <?=encodeHtml($manual_stats['seconds']);?>s.</span>
+	</div>
+	<?=buildOnLoad("manualRebuildDone();");?>
+</view:flash>
+
+<view:category>
+	<li>
+		<a href="#" class="manual-cat" onclick="return manualNav(this);" data-div="filenames_<?=encodeHtml(sha1($rec['category']));?>" data-func="filenames" data-category="<?=encodeHtml($rec['category']);?>">
+			<span class="<?=encodeHtml($rec['icon']);?>"></span>
+			<span><?=encodeHtml($rec['category']);?></span>
+			<span class="manual-cat-count"><?=encodeHtml($rec['cnt']);?></span>
+		</a>
+		<div class="manual-subtree" id="filenames_<?=encodeHtml(sha1($rec['category']));?>"></div>
 	</li>
 </view:category>
 
 <view:filenames>
 	<view:filename>
-		<div>
-			<a href="#" onclick="return manualNav(this);" data-div="names_<?=encodeHtml(sha1($rec['afile']));?>" data-func="names" data-afile="<?=encodeHtml($rec['afile']);?>" class="wacss_button is-mobile-responsive" style="margin-bottom:3px;"><?=encodeHtml(base64_decode($rec['afile']));?> (<?=encodeHtml($rec['cnt']);?>)</a>
-			<div id="names_<?=encodeHtml(sha1($rec['afile']));?>" style="margin-left:20px;"></div>
-		</div>
+		<a href="#" class="manual-file" onclick="return manualNav(this);" data-div="names_<?=encodeHtml(sha1($rec['afile']));?>" data-func="names" data-afile="<?=encodeHtml($rec['afile']);?>">
+			<?=encodeHtml($rec['file_name']);?> <span class="manual-cat-count"><?=encodeHtml($rec['cnt']);?></span>
+		</a>
+		<div class="manual-namelist" id="names_<?=encodeHtml(sha1($rec['afile']));?>"></div>
 	</view:filename>
 	<?=renderEach('filename',$filenames,'rec');?>
 </view:filenames>
 
 <view:names>
 	<view:name>
-		<div><a href="#" data-docid="<?=encodeHtml($rec['_id']);?>" onclick="return manualNav(this);" data-div="results" data-func="docid" class="<?=encodeHtml($rec['class']);?> w_link w_block" style="margin-bottom:3px;"><?=encodeHtml($rec['name']);?> (Line <?=encodeHtml($rec['afile_line']);?>)</a></div>
+		<a href="#" class="manual-name <?=encodeHtml($rec['class']);?>" data-docid="<?=encodeHtml($rec['_id']);?>" onclick="return manualNav(this);" data-div="results" data-func="docid"><?=encodeHtml($rec['name']);?> <span style="opacity:.6;">&middot; line <?=encodeHtml($rec['afile_line']);?></span></a>
 	</view:name>
 	<?=renderEach('name',$names,'rec');?>
 </view:names>
 
 <view:search_results>
 	<view:rec>
-	<div style="display:flex;justify-content:space-between;flex-wrap: wrap;align-content: flex-start;">
-		<div class="w_bold w_bigger"><span class="w_biggest brand-<?=encodeHtml(strtolower($rec['category']));?>"></span> <?=encodeHtml($rec['name']);?></div>
-		<div class="w_gray w_smaller">found on line <?=encodeHtml($rec['afile_line']);?> in <?=encodeHtml(base64_decode($rec['afile']));?></div>
-	</div>
-	<div style="margin-left:30px;">
-		<div class="w_gray" style="margin:0 0 10px 20px;"><?=$rec['describe'];?></div>
-		<div class="w_bold w_big">Usage</div>
-		<div class="well">
-			<view:usage>
-			<div><?=base64_decode($usage);?></div>
-			</view:usage>
-			<?=renderEach('usage',$rec['info_ex']['usage'],'usage');?>
+		<div class="manual-doc">
+			<div class="manual-doc-head">
+				<span class="manual-doc-name"><?=encodeHtml($rec['name']);?></span>
+				<span class="manual-badge"><?=encodeHtml($rec['category']);?></span>
+				<span class="manual-doc-loc">line <?=encodeHtml($rec['afile_line']);?> in <code><?=encodeHtml($rec['file_decoded']);?></code></span>
+			</div>
+			<?=renderViewIf(strlen(trim($rec['describe'])),'rec_desc',$rec);?>
+			<?=renderViewIf(strlen(trim($rec['caller_text'])),'rec_sig',$rec);?>
+			<?=renderViewIf(count($rec['params']),'rec_params',$rec);?>
+			<?=renderViewIf(count($rec['returns']),'rec_returns',$rec);?>
+			<?=renderViewIf(count($rec['usage']) || count($rec['examples']),'rec_usage',$rec);?>
+			<?=renderViewIf(strlen(trim($rec['notes'])),'rec_notes',$rec);?>
+			<?=renderViewIf(strlen(trim($rec['comments_text'])),'rec_comments',$rec);?>
 		</div>
-		<div class="w_bold w_big">Return</div>
-		<div class="well">
-		<view:return>
-			<div><?=base64_decode($return);?></div>
-		</view:return>
-		<?=renderEach('return',$rec['info_ex']['return'],'return');?>
-		</div>
-		<div class="w_bold w_bigger">Comments</div>
-		<div class="well"><?=nl2br(base64_decode($rec['comments']));?></div>
-	</div>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
 </view:search_results>
 
-<view:no_results>
-	<div class="w_red w_big">No Search Results</div>
-</view:no_results>
+<view:rec_desc>
+	<p class="manual-doc-desc"><?=encodeHtml($params['describe']);?></p>
+</view:rec_desc>
 
+<view:rec_sig>
+	<div class="manual-sig"><?=encodeHtml($params['caller_text']);?></div>
+</view:rec_sig>
+
+<view:rec_params>
+	<view:rec_param><li><?=encodeHtml($rec_param);?></li></view:rec_param>
+	<div class="manual-sec"><h4>Parameters</h4><ul><?=renderEach('rec_param',$params['params'],'rec_param');?></ul></div>
+</view:rec_params>
+
+<view:rec_returns>
+	<view:rec_return><li><?=encodeHtml($rec_return);?></li></view:rec_return>
+	<div class="manual-sec"><h4>Returns</h4><ul><?=renderEach('rec_return',$params['returns'],'rec_return');?></ul></div>
+</view:rec_returns>
+
+<view:rec_usage>
+	<view:rec_usageline><div><?=encodeHtml($rec_usageline);?></div></view:rec_usageline>
+	<div class="manual-sec"><h4>Usage</h4><div class="manual-pre"><?=renderEach('rec_usageline',array_merge($params['usage'],$params['examples']),'rec_usageline');?></div></div>
+</view:rec_usage>
+
+<view:rec_notes>
+	<div class="manual-sec"><h4>Notes</h4><div class="manual-hint" style="margin:0;"><?=encodeHtml($params['notes']);?></div></div>
+</view:rec_notes>
+
+<view:rec_comments>
+	<div class="manual-sec"><h4>Doc comment</h4><pre class="manual-pre"><?=encodeHtml(trim($params['comments_text']));?></pre></div>
+</view:rec_comments>
+
+<view:no_results>
+	<div class="manual-hint"><span class="icon-search" style="opacity:.5;"></span> No matching functions. Try a different name, or <b>Rebuild index</b> if you just added it.</div>
+</view:no_results>

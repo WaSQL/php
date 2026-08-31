@@ -231,6 +231,14 @@
 	</div>
 </view:results>
 
+<view:dml_success>
+	<?=buildOnLoad("sqlpromptSetSha('');setText('results_count','');['export_link','prev_link','next_link'].forEach(function(id){var el=document.getElementById(id);if(el){el.style.display='none';}});wacss.centerpopClose();");?>
+	<div class="w_padtop w_small">
+		<span class="icon-check-circle w_green"></span> <?=encodeHtml($dml_message);?>
+		<span class="w_gray">&nbsp; (<?=$qtime_verbose;?>)</span>
+	</div>
+</view:dml_success>
+
 <view:fieldsx>
 	<ul class="nav-list <?=configValue('admin_color');?>">
 	<view:field>

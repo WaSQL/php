@@ -1,0 +1,91 @@
+<view:default>
+<?=buildOnLoad("wacss.loadScript('/php/admin/about_js.js');");?>
+<style>
+.about-wrap{max-width:1120px;}
+.about-grid{
+	display:grid;
+	grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+	gap:14px;
+	margin-bottom:14px;
+}
+.about-card{
+	position:relative;
+	overflow:hidden;
+	background:#fff;
+	border:1px solid rgba(0,0,0,.08);
+	border-radius:14px;
+	box-shadow:0 6px 20px rgba(0,0,0,.06);
+	padding:15px 17px;
+}
+.about-card-ico{position:absolute;top:9px;right:12px;font-size:1.7rem;opacity:.16;}
+.about-card-k{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a8a8a;}
+.about-card-v{font-size:1.45rem;font-weight:700;color:#363636;margin:3px 0 2px;word-break:break-word;line-height:1.2;}
+.about-card-sub{font-size:.78rem;color:#9a9a9a;word-break:break-word;}
+.about-env-stage{color:#c9820a;}
+.about-env-prod{color:#3aa76d;}
+.about-quick{display:flex;flex-wrap:wrap;gap:9px;margin:4px 0 2px;}
+.about-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:2px 0 12px;}
+.about-toolbar .about-search{min-width:220px;max-width:340px;flex:1;}
+.about-toolbar-count{font-size:.8rem;color:#9a9a9a;white-space:nowrap;}
+.about-note{font-size:.8rem;color:#9a9a9a;margin:0 0 10px;}
+.about-kv-k{white-space:nowrap;vertical-align:top;color:#4a4a4a;width:1%;}
+.about-kv-v{vertical-align:top;}
+.about-kv .about-val{word-break:break-word;}
+.about-empty{color:#c4c4c4;}
+.about-copy{border:0;background:transparent;cursor:pointer;opacity:.3;font-size:.85rem;padding:1px 5px;color:#666;}
+.about-copy:hover{opacity:.9;}
+.about-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.about-chip{
+	background:#f2f4f8;
+	border:1px solid rgba(0,0,0,.06);
+	border-radius:999px;
+	padding:3px 11px;
+	font-size:.8rem;
+	color:#4a4a4a;
+}
+.about-chip-v{color:#9a9a9a;font-size:.72rem;}
+</style>
+<div class="about-wrap">
+<div class="wadmin-head"><span class="icon-wasql-about"></span> About WaSQL</div>
+<ul class="wacss_tabs is-boxed <?=configValue('admin_color');?>" style="margin-bottom:16px;">
+	<li class="is-active"><a href="#about_overview" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="about" data-div="about_content" data-func="about_overview"><span class="icon-rocket wacss_right5"></span> Overview</a></li>
+	<li><a href="#about_versions" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="about" data-div="about_content" data-func="about_versions"><span class="icon-list wacss_right5"></span> Versions</a></li>
+	<li><a href="#about_server" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="about" data-div="about_content" data-func="about_server"><span class="icon-server wacss_right5"></span> Server</a></li>
+	<li><a href="#about_php" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="about" data-div="about_content" data-func="about_php"><span class="icon-php wacss_right5"></span> PHP</a></li>
+	<li><a href="#about_extensions" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="about" data-div="about_content" data-func="about_extensions"><span class="icon-plug wacss_right5"></span> Extensions</a></li>
+	<li><a href="#about_config" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="about" data-div="about_content" data-func="about_config"><span class="icon-wasql-config wacss_right5"></span> config.xml</a></li>
+</ul>
+<div id="about_content" class="wadmin-card" style="margin-bottom:0;">
+	<?=renderView('about_overview');?>
+</div>
+</div>
+</view:default>
+
+<view:about_overview>
+	<?=aboutFactCards();?>
+</view:about_overview>
+
+<view:about_versions>
+	<div class="wadmin-card-title"><span class="icon-list"></span> Version Information</div>
+	<?=aboutKvTable('about_versions_tbl',aboutVersionRows(),'Database engine, PHP libraries and driver versions detected on this server.');?>
+</view:about_versions>
+
+<view:about_server>
+	<div class="wadmin-card-title"><span class="icon-server"></span> Server &amp; Operating System</div>
+	<?=aboutKvTable('about_server_tbl',aboutServerRows());?>
+</view:about_server>
+
+<view:about_php>
+	<div class="wadmin-card-title"><span class="icon-php"></span> PHP Runtime, Paths &amp; Limits</div>
+	<?=aboutKvTable('about_php_tbl',aboutPhpRows());?>
+</view:about_php>
+
+<view:about_extensions>
+	<div class="wadmin-card-title"><span class="icon-plug"></span> Loaded PHP Extensions</div>
+	<?=aboutExtensionsHtml();?>
+</view:about_extensions>
+
+<view:about_config>
+	<div class="wadmin-card-title"><span class="icon-wasql-config"></span> config.xml Settings for <?=encodeHtml($_SERVER['HTTP_HOST']);?></div>
+	<?=aboutKvTable('about_config_tbl',aboutConfigRows(),'Password, token and secret values are masked. Internal (underscore-prefixed) and array values are hidden.');?>
+</view:about_config>

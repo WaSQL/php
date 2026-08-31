@@ -26,11 +26,12 @@ const CONNECTION_TIMEOUT = 300  # 5 minutes before connection expires
 const MAX_RETRIES = 3
 const RETRY_DELAY = 1.0  # seconds
 
-"""
-    get_connection_key(params::Dict)
-
-Generates a unique key for connection pooling based on connection parameters.
-"""
+#---------- begin function get_connection_key
+# @describe Generates a unique key for connection pooling based on connection parameters
+# @param params Dict Connection parameters (dbhost, dbport, dbuser, dbname)
+# @return String pool key of the form "dbhost:dbport:dbuser:dbname"
+# @usage
+#   key = get_connection_key(params)
 function get_connection_key(params::Dict)
     dbhost = get(params, "dbhost", "localhost")
     dbport = get(params, "dbport", 3306)
@@ -39,11 +40,12 @@ function get_connection_key(params::Dict)
     return "$dbhost:$dbport:$dbuser:$dbname"
 end
 
-"""
-    is_connection_valid(conn)
-
-Checks if a database connection is still valid.
-"""
+#---------- begin function is_connection_valid
+# @describe Checks if a database connection is still alive by running a trivial SELECT
+# @param conn MySQL.Connection connection object to test
+# @return Bool true if the connection responds, false otherwise
+# @usage
+#   if is_connection_valid(conn) ... end
 function is_connection_valid(conn)
     try
         # Simple query to test connection
@@ -54,12 +56,12 @@ function is_connection_valid(conn)
     end
 end
 
-"""
-    validate_params(params::Dict)
-
-Validates connection parameters for security and completeness.
-Returns (is_valid, error_message).
-"""
+#---------- begin function validate_params
+# @describe Validates connection parameters for security and completeness (host, user, name, port range)
+# @param params Dict Connection parameters to validate
+# @return Tuple{Bool,String} (is_valid, error_message); error_message is "" when valid
+# @usage
+#   (ok, err) = validate_params(params)
 function validate_params(params::Dict)
     # Check required parameters
     if !haskey(params, "dbhost") || isempty(get(params, "dbhost", ""))
@@ -91,11 +93,12 @@ function validate_params(params::Dict)
     return (true, "")
 end
 
-"""
-    sanitize_error_message(err)
-
-Sanitizes error messages to prevent information disclosure in production.
-"""
+#---------- begin function sanitize_error_message
+# @describe Sanitizes an error into a generic message to prevent information disclosure in production
+# @param err Any error or exception (anything stringifiable)
+# @return String safe, generalized error message
+# @usage
+#   msg = sanitize_error_message(err)
 function sanitize_error_message(err)
     err_str = string(err)
     # Remove potential sensitive information from error messages
@@ -114,32 +117,22 @@ function sanitize_error_message(err)
     end
 end
 
-"""
-    connect(params::Dict)
-
-Creates and returns a database connection to MySQL with connection pooling.
-
-# Arguments
-- `params::Dict`: Connection parameters
-  - `dbhost`: Database host (required)
-  - `dbport`: Database port (default: 3306)
-  - `dbuser`: Database username (required)
-  - `dbpass`: Database password (required)
-  - `dbname`: Database name (required)
-  - `use_ssl`: Use SSL/TLS connection (default: false)
-  - `connect_timeout`: Connection timeout in seconds (default: 10)
-  - `read_timeout`: Read timeout in seconds (default: 30)
-  - `pool`: Use connection pooling (default: true)
-
-# Returns
-- MySQL connection object or nothing on failure
-
-# Example
-```julia
-params = Dict("dbhost" => "localhost", "dbuser" => "root", "dbpass" => "password", "dbname" => "test")
-conn = mysqldb.connect(params)
-```
-"""
+#---------- begin function connect
+# @describe Creates and returns a pooled database connection to MySQL, reusing a live pooled connection when available
+# @param params Dict Connection parameters:
+#   dbhost          - database host (required)
+#   dbport          - database port (default: 3306)
+#   dbuser          - database username (required)
+#   dbpass          - database password (required)
+#   dbname          - database name (required)
+#   use_ssl         - use SSL/TLS connection (default: false)
+#   connect_timeout - connection timeout in seconds (default: 10)
+#   read_timeout    - read timeout in seconds (default: 30)
+#   pool            - use connection pooling (default: true)
+# @return MySQL.Connection on success, or nothing on failure
+# @usage
+#   params = Dict("dbhost" => "localhost", "dbuser" => "root", "dbpass" => "password", "dbname" => "test")
+#   conn = mysqldb.connect(params)
 function connect(params::Dict)
     # Validate parameters
     (is_valid, error_msg) = validate_params(params)
@@ -251,32 +244,17 @@ function connect(params::Dict)
     end
 end
 
-"""
-    executeSQL(query::String, params::Dict=Dict())
-
-Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
-
-⚠️  SECURITY WARNING: This function executes raw SQL queries and is vulnerable to SQL injection.
-Use executePS() with prepared statements for user input. This function should only be used
-for static queries or administrative tasks.
-
-# Arguments
-- `query::String`: SQL query to execute (should not contain user input)
-- `params::Dict`: Connection parameters
-
-# Returns
-- `true` on success, error message string on failure
-
-# Example
-```julia
-# Safe - static query
-ok = mysqldb.executeSQL("TRUNCATE TABLE temp_table", params)
-
-# UNSAFE - use executePS instead!
-# bad_query = "INSERT INTO users (name) VALUES ('" * user_input * "')"
-# ok = mysqldb.executeSQL(bad_query, params)  # DON'T DO THIS!
-```
-"""
+#---------- begin function executeSQL
+# @describe Executes a raw SQL query (INSERT, UPDATE, DELETE, etc.) against MySQL
+# @warning Vulnerable to SQL injection - use executePS() for anything containing user input; reserve this for static or administrative queries
+# @param query String SQL query to execute (should not contain user input)
+# @param params Dict Connection parameters (see connect)
+# @return true on success, an error message String on failure
+# @usage
+#   # Safe - static query
+#   ok = mysqldb.executeSQL("TRUNCATE TABLE temp_table", params)
+#   # UNSAFE - use executePS instead:
+#   # ok = mysqldb.executeSQL("INSERT INTO users (name) VALUES ('" * user_input * "')", params)
 function executeSQL(query::String, params::Dict=Dict())
     # Validate query is not empty
     if isempty(strip(query))
@@ -327,32 +305,15 @@ function executeSQL(query::String, params::Dict=Dict())
     end
 end
 
-"""
-    executePS(query::String, args::Vector, params::Dict=Dict())
-
-Executes a prepared statement with parameters (SQL injection safe).
-
-This is the recommended way to execute queries with user input.
-Uses parameterized queries to prevent SQL injection attacks.
-
-# Arguments
-- `query::String`: SQL query with ? placeholders
-- `args::Vector`: Parameters for prepared statement
-- `params::Dict`: Connection parameters
-
-# Returns
-- `true` on success, error message string on failure
-
-# Example
-```julia
-query = "INSERT INTO users (name, email) VALUES (?, ?)"
-ok = mysqldb.executePS(query, ["John Doe", "john@example.com"], params)
-
-# Update example
-query = "UPDATE users SET status = ? WHERE id = ?"
-ok = mysqldb.executePS(query, ["active", 123], params)
-```
-"""
+#---------- begin function executePS
+# @describe Executes a prepared statement with bound parameters against MySQL (SQL-injection safe); the recommended way to run queries with user input
+# @param query String SQL query with ? placeholders
+# @param args Vector Parameters bound to the placeholders (count must match)
+# @param params Dict Connection parameters (see connect)
+# @return true on success, an error message String on failure
+# @usage
+#   ok = mysqldb.executePS("INSERT INTO users (name, email) VALUES (?, ?)", ["John Doe", "john@example.com"], params)
+#   ok = mysqldb.executePS("UPDATE users SET status = ? WHERE id = ?", ["active", 123], params)
 function executePS(query::String, args::Vector, params::Dict=Dict())
     # Validate query is not empty
     if isempty(strip(query))
@@ -417,30 +378,20 @@ function executePS(query::String, args::Vector, params::Dict=Dict())
     end
 end
 
-"""
-    queryResults(query::String, params::Dict=Dict())
-
-Executes a query and returns results
-
-# Arguments
-- `query::String`: SQL query to execute
-- `params::Dict`: Connection parameters and optional:
-  - `filename`: If provided, writes results to CSV file
-  - `format`: "json" (default) or "dataframe" for native DataFrame
-  - `max_rows`: Maximum number of rows to return (default: 10000, 0 for unlimited)
-  - `lowercase_columns`: Convert column names to lowercase (default: true)
-
-# Returns
-- JSON string (default), DataFrame if format="dataframe", filename if filename provided, or error message
-
-# Example
-```julia
-json = mysqldb.queryResults("SELECT * FROM users", params)
-df = mysqldb.queryResults("SELECT * FROM users", merge(params, Dict("format" => "dataframe")))
-file = mysqldb.queryResults("SELECT * FROM users", merge(params, Dict("filename" => "output.csv")))
-limited = mysqldb.queryResults("SELECT * FROM logs", merge(params, Dict("max_rows" => 1000)))
-```
-"""
+#---------- begin function queryResults
+# @describe Executes a SELECT query against MySQL and returns the rows as JSON, a DataFrame, or a written CSV file
+# @param query String SQL query to execute
+# @param params Dict Connection parameters (see connect) plus optional:
+#   filename          - if provided, writes results to this CSV file and returns the path
+#   format            - "json" (default) or "dataframe" for a native DataFrame
+#   max_rows          - maximum rows to return (default: 10000, 0 for unlimited)
+#   lowercase_columns - convert column names to lowercase (default: true)
+# @return String JSON (default), a DataFrame when format="dataframe", the filename when filename is given, or an error message String
+# @usage
+#   json = mysqldb.queryResults("SELECT * FROM users", params)
+#   df = mysqldb.queryResults("SELECT * FROM users", merge(params, Dict("format" => "dataframe")))
+#   file = mysqldb.queryResults("SELECT * FROM users", merge(params, Dict("filename" => "output.csv")))
+#   limited = mysqldb.queryResults("SELECT * FROM logs", merge(params, Dict("max_rows" => 1000)))
 function queryResults(query::String, params::Dict=Dict())
     # Validate query is not empty
     if isempty(strip(query))
@@ -557,17 +508,11 @@ function queryResults(query::String, params::Dict=Dict())
     end
 end
 
-"""
-    close_pooled_connections()
-
-Closes all connections in the connection pool.
-Useful for cleanup during application shutdown or testing.
-
-# Example
-```julia
-mysqldb.close_pooled_connections()
-```
-"""
+#---------- begin function close_pooled_connections
+# @describe Closes every connection in the pool and empties it; useful for shutdown or testing
+# @return Integer count of connections that were closed
+# @usage
+#   mysqldb.close_pooled_connections()
 function close_pooled_connections()
     lock(POOL_LOCK) do
         closed_count = 0
@@ -585,17 +530,11 @@ function close_pooled_connections()
     end
 end
 
-"""
-    clean_expired_connections()
-
-Removes expired connections from the pool.
-Automatically called by connect(), but can be called manually for cleanup.
-
-# Example
-```julia
-mysqldb.clean_expired_connections()
-```
-"""
+#---------- begin function clean_expired_connections
+# @describe Removes expired or invalid connections from the pool; also callable manually for cleanup
+# @return Integer count of connections that were cleaned
+# @usage
+#   mysqldb.clean_expired_connections()
 function clean_expired_connections()
     lock(POOL_LOCK) do
         cleaned_count = 0
@@ -626,20 +565,12 @@ function clean_expired_connections()
     end
 end
 
-"""
-    get_pool_stats()
-
-Returns statistics about the connection pool.
-
-# Returns
-- Dict with keys: total_connections, connection_details
-
-# Example
-```julia
-stats = mysqldb.get_pool_stats()
-println("Active connections: ", stats["total_connections"])
-```
-"""
+#---------- begin function get_pool_stats
+# @describe Returns statistics about the current connection pool
+# @return Dict with keys total_connections, connection_details, timeout_seconds
+# @usage
+#   stats = mysqldb.get_pool_stats()
+#   println("Active connections: ", stats["total_connections"])
 function get_pool_stats()
     lock(POOL_LOCK) do
         details = []
@@ -662,29 +593,13 @@ function get_pool_stats()
     end
 end
 
-"""
-    test_connection(params::Dict)
-
-Tests database connection parameters without executing any queries.
-Useful for validating configuration before use.
-
-# Arguments
-- `params::Dict`: Connection parameters to test
-
-# Returns
-- `(true, "Connected successfully")` on success
-- `(false, error_message)` on failure
-
-# Example
-```julia
-(success, message) = mysqldb.test_connection(params)
-if success
-    println("Connection OK: ", message)
-else
-    println("Connection failed: ", message)
-end
-```
-"""
+#---------- begin function test_connection
+# @describe Tests connection parameters by connecting (without pooling) and running SELECT 1; useful for validating config before use
+# @param params Dict Connection parameters to test (see connect)
+# @return Tuple{Bool,String} (true, "Connection successful") on success, or (false, error_message) on failure
+# @usage
+#   (success, message) = mysqldb.test_connection(params)
+#   success ? println("Connection OK: ", message) : println("Connection failed: ", message)
 function test_connection(params::Dict)
     # Validate parameters first
     (is_valid, error_msg) = validate_params(params)

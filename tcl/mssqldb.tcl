@@ -1,5 +1,13 @@
 package require tdbc::mssql
 
+#----------
+# begin function mssqlQueryResults
+# @describe connects to Microsoft SQL Server via tdbc::mssql with user/password auth, runs query, and returns all rows in the standard results-array form
+# @param cfg list - "array get" config list; requires dbhost, dbname, dbuser, dbpass
+# @param query string - the SQL statement to execute
+# @return list - results array ("array get" form): columns (list), rows (int), and <row>,<column> => value entries; raises an error on connect/query failure
+# @usage array set res [mssqlQueryResults [array get cfg] {SELECT * FROM Users}]
+#----------
 proc mssqlQueryResults {cfg query} {
 
     # Convert cfg list back to array
@@ -108,7 +116,14 @@ proc mssqlQueryResults {cfg query} {
 #     puts "Microsoft SQL Server Error: $err"
 # }
 
-# Alternative connection method for Windows Authentication
+#----------
+# begin function mssqlQueryResultsWindowsAuth
+# @describe same as mssqlQueryResults but connects to SQL Server with a trusted (Windows Authentication) connection - no user/password
+# @param cfg list - "array get" config list; requires dbhost, dbname
+# @param query string - the SQL statement to execute
+# @return list - results array ("array get" form): columns (list), rows (int), and <row>,<column> => value entries; raises an error on connect/query failure
+# @usage array set res [mssqlQueryResultsWindowsAuth [array get cfg] {SELECT * FROM Users}]
+#----------
 proc mssqlQueryResultsWindowsAuth {cfg query} {
 
     # Convert cfg list back to array

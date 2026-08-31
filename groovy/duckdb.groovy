@@ -18,17 +18,19 @@ import groovy.sql.Sql
 import groovy.json.JsonGenerator
 import java.sql.SQLException
 
+//---------- begin function addIndex
 /**
- * Adds an index to a DuckDB table
- * @param params Map containing:
- *   -table: table name (required)
- *   -fields: field(s) to add to index, comma-separated (required)
- *   -unique: if present, creates a unique index
- *   -name: specific name for index (optional)
- * @return boolean true on success
- * @usage
- *   def ok = duckdb.addIndex(['-table': 'events', '-fields': 'user_id'])
- */
+* @describe adds an index to a DuckDB table
+* @param params params map
+*	-table: table name (required)
+*	-fields: field(s) to add to index, comma-separated (required)
+*	-unique: if present, creates a unique index
+*	-name: specific name for index (optional)
+* @return boolean
+*	true on success
+* @usage
+*	ok = duckdb.addIndex(['-table': 'events', '-fields': 'user_id'])
+*/
 def addIndex(Map params) {
 	if (!params.containsKey('-table'))  return "duckdb.addIndex error: No Table Specified"
 	if (!params.containsKey('-fields')) return "duckdb.addIndex error: No Fields Specified"
@@ -44,14 +46,16 @@ def addIndex(Map params) {
 	return executeSQL(query, params)
 }
 
+//---------- begin function connect
 /**
- * Creates and returns a DuckDB connection
- * @param params Map containing:
- *   dbname: path to .ddb file, or ':memory:' for in-memory (default: ':memory:')
- * @return Sql connection object
- * @usage
- *   def sql = duckdb.connect(params)
- */
+* @describe creates and returns a DuckDB connection
+* @param params params map
+*	dbname: path to .ddb file, or ':memory:' for in-memory (default: ':memory:')
+* @return object
+*	connection object
+* @usage
+*	sql = duckdb.connect(params)
+*/
 def connect(Map params) {
 	def dbname = params.dbname ?: ':memory:'
 	try {
@@ -63,14 +67,15 @@ def connect(Map params) {
 	}
 }
 
+//---------- begin function executeSQL
 /**
- * Executes a SQL statement (INSERT, UPDATE, DELETE, CREATE, etc.)
- * @param query  String SQL statement
- * @param params Map containing connection parameters
- * @return boolean true on success
- * @usage
- *   def ok = duckdb.executeSQL("CREATE TABLE t (id INTEGER)", params)
- */
+* @describe executes a SQL statement (INSERT, UPDATE, DELETE, CREATE, etc.)
+* @param params query string, params map
+* @return boolean
+*	true on success
+* @usage
+*	ok = duckdb.executeSQL("CREATE TABLE t (id INTEGER)", params)
+*/
 def executeSQL(String query, Map params = [:]) {
 	def sql = null
 	try {
@@ -84,15 +89,15 @@ def executeSQL(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function executePS
 /**
- * Executes a parameterized statement
- * @param query  SQL with ? placeholders
- * @param args   List or Map of parameter values
- * @param params Map containing connection parameters
- * @return boolean true on success
- * @usage
- *   duckdb.executePS("INSERT INTO t VALUES (?, ?)", [1, 'hello'], params)
- */
+* @describe executes a parameterized statement
+* @param params query string, args mixed, params map
+* @return boolean
+*	true on success
+* @usage
+*	duckdb.executePS("INSERT INTO t VALUES (?, ?)", [1, 'hello'], params)
+*/
 def executePS(String query, def args, Map params = [:]) {
 	def sql = null
 	try {
@@ -107,21 +112,22 @@ def executePS(String query, def args, Map params = [:]) {
 	}
 }
 
+//---------- begin function queryResults
 /**
- * Executes a SELECT query and returns results
- * @param query  String SQL query
- * @param params Map containing connection parameters and optional:
- *   filename:   write results to CSV file instead of returning data
- *   format:     'json' (default) or 'list' for native Groovy list
- *   skiperrors: skip problem rows and continue (default: false)
- *   fetchsize:  rows to fetch per batch (default: 1000)
- *   batchsize:  rows to buffer before writing CSV (default: 100)
- *   notrim:     skip whitespace trimming (default: false)
- * @return JSON string, List of Maps, or filename string (CSV mode)
- * @usage
- *   def rows = duckdb.queryResults("SELECT * FROM events", params)
- *   def rows = duckdb.queryResults("SELECT * FROM events", params + [format: 'list'])
- */
+* @describe executes a SELECT query and returns results
+* @param params query string, params map
+*	filename:   write results to CSV file instead of returning data
+*	format:     'json' (default) or 'list' for native Groovy list
+*	skiperrors: skip problem rows and continue (default: false)
+*	fetchsize:  rows to fetch per batch (default: 1000)
+*	batchsize:  rows to buffer before writing CSV (default: 100)
+*	notrim:     skip whitespace trimming (default: false)
+* @return mixed
+*	JSON string, List of Maps, or filename string (CSV mode)
+* @usage
+*	rows = duckdb.queryResults("SELECT * FROM events", params)
+*	rows = duckdb.queryResults("SELECT * FROM events", params + [format: 'list'])
+*/
 def queryResults(String query, Map params = [:]) {
 	def sql          = null
 	def skipErrors   = params.getOrDefault('skiperrors', false)
@@ -245,9 +251,11 @@ def queryResults(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function escapeCSV
 /**
- * Escapes a value for CSV output
- */
+* @describe escapes a value for CSV output
+* @param params value string
+*/
 private def escapeCSV(String value) {
 	if (value == null) return ''
 	if (value.contains(',') || value.contains('"') || value.contains('\n') || value.contains('\r')) {

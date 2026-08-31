@@ -125,14 +125,16 @@ try {
     ]
 }
 
+//---------- begin function queryResults
 /**
- * Returns the results of a query
- * @param dbname String database name from database tag in config.xml
- * @param query String SQL query to run
- * @param params Map parameters to override
- * @return List of Maps (recordsets)
- * @usage recs = db.queryResults('dbtest', 'select * from states')
- */
+* @describe runs a SELECT query, routing to the driver for the database's dbtype
+* @param params dbname string, query string, params map
+*	dbname: database name from a database tag in config.xml
+*	params: connection/driver parameters to override
+* @return list
+* @usage
+*	recs = db.queryResults('dbtest', 'select * from states')
+*/
 def queryResults(String dbname, String query, Map params = [:]) {
     // Ensure DATABASE is loaded
     ensureDatabaseLoaded()
@@ -213,14 +215,17 @@ def queryResults(String dbname, String query, Map params = [:]) {
     }
 }
 
+//---------- begin function executeSQL
 /**
- * Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
- * @param dbname String database name from database tag in config.xml
- * @param query String SQL query to run
- * @param params Map parameters to override
- * @return boolean true on success, error message on failure
- * @usage ok = db.executeSQL('dbtest', 'INSERT INTO users...')
- */
+* @describe executes a non-SELECT SQL statement (INSERT/UPDATE/DELETE/DDL), routing to the driver for the database's dbtype
+* @param params dbname string, query string, params map
+*	dbname: database name from a database tag in config.xml
+*	params: connection/driver parameters to override
+* @return boolean
+*	true on success, or an error message string on failure
+* @usage
+*	ok = db.executeSQL('dbtest', 'INSERT INTO users...')
+*/
 def executeSQL(String dbname, String query, Map params = [:]) {
     // Ensure DATABASE is loaded
     ensureDatabaseLoaded()
@@ -287,15 +292,18 @@ def executeSQL(String dbname, String query, Map params = [:]) {
     }
 }
 
+//---------- begin function executePS
 /**
- * Executes a prepared statement with parameters
- * @param dbname String database name from database tag in config.xml
- * @param query String SQL query to run
- * @param args Map query arguments
- * @param params Map connection parameters to override
- * @return boolean true on success, error message on failure
- * @usage ok = db.executePS('dbtest', 'INSERT INTO users VALUES (?, ?)', [name: 'John', email: 'john@example.com'])
- */
+* @describe executes a prepared statement with parameters, routing to the driver for the database's dbtype
+* @param params dbname string, query string, args map, params map
+*	dbname: database name from a database tag in config.xml
+*	args: query arguments
+*	params: connection/driver parameters to override
+* @return boolean
+*	true on success, or an error message string on failure
+* @usage
+*	ok = db.executePS('dbtest', 'INSERT INTO users VALUES (?, ?)', [name: 'John', email: 'john@example.com'])
+*/
 def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
     // Ensure DATABASE is loaded
     ensureDatabaseLoaded()
@@ -361,13 +369,17 @@ def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
     }
 }
 
+//---------- begin function connect
 /**
- * Returns a database connection
- * @param dbname String database name from database tag in config.xml
- * @param params Map parameters to override
- * @return Sql connection object
- * @usage sql = db.connect('dbtest')
- */
+* @describe returns a database connection, routing to the driver for the database's dbtype
+* @param params dbname string, params map
+*	dbname: database name from a database tag in config.xml
+*	params: connection/driver parameters to override
+* @return object
+*	Sql connection object, or null if the database is unknown or unsupported
+* @usage
+*	sql = db.connect('dbtest')
+*/
 def connect(String dbname, Map params = [:]) {
     // Ensure DATABASE is loaded
     ensureDatabaseLoaded()
@@ -446,10 +458,13 @@ def connect(String dbname, Map params = [:]) {
     }
 }
 
+//---------- begin function ensureDatabaseLoaded
 /**
- * Ensures DATABASE is loaded - helper function
- * @return void
- */
+* @describe lazily loads the DATABASE map from config.xml if it has not been populated yet
+* @return void
+* @usage
+*	ensureDatabaseLoaded()
+*/
 private def ensureDatabaseLoaded() {
     if (DATABASE != null && DATABASE.size() > 0) {
         return // Already loaded
@@ -539,22 +554,28 @@ private def ensureDatabaseLoaded() {
     }
 }
 
+//---------- begin function convertStr
 /**
- * Converts an object to string (helper for JSON serialization)
- * @param o Object to convert
- * @return String representation
- * @usage db.convertStr(o)
- */
+* @describe converts an object to its string representation (helper for JSON serialization)
+* @param params o mixed
+* @return string
+* @usage
+*	db.convertStr(o)
+*/
 def convertStr(Object o) {
     if (o == null) return null
     return o.toString()
 }
 
+//---------- begin function loadModule
 /**
- * Loads a database module dynamically
- * @param moduleName String name of module file (without .groovy extension)
- * @return Module object
- */
+* @describe dynamically parses a database driver module from the script directory
+* @param params moduleName string
+*	moduleName: module file name without the .groovy extension
+* @return object
+* @usage
+*	def mysqldb = loadModule('mysqldb')
+*/
 private def loadModule(String moduleName) {
     def moduleFile = new File(new File(getClass().protectionDomain.codeSource.location.path).parent, "${moduleName}.groovy")
     if (moduleFile.exists()) {

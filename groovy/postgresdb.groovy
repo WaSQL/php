@@ -18,22 +18,24 @@ import java.sql.SQLException
 import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
+//---------- begin function addIndex
 /**
- * Adds an index to a PostgreSQL table
- * @param params Map containing:
- *   -table: table name (required)
- *   -fields: field(s) to add to index, comma-separated (required)
- *   -unique: if present, creates unique index
- *   -fulltext: if present, creates fulltext index
- *   -name: specific name for index (optional)
- * @return boolean true on success, error message string on failure
- * @usage
- *   def params = [
- *     '-table': 'states',
- *     '-fields': 'code'
- *   ]
- *   def ok = postgresdb.addIndex(params)
- */
+* @describe adds an index to a PostgreSQL table
+* @param params params map
+*	-table: table name (required)
+*	-fields: field(s) to add to index, comma-separated (required)
+*	-unique: if present, creates unique index
+*	-fulltext: if present, creates fulltext index
+*	-name: specific name for index (optional)
+* @return boolean
+*	true on success, error message string on failure
+* @usage
+*	params = [
+*	'-table': 'states',
+*	'-fields': 'code'
+*	]
+*	ok = postgresdb.addIndex(params)
+*/
 def addIndex(Map params) {
 	// Check required parameters
 	if (!params.containsKey('-table')) {
@@ -68,22 +70,24 @@ def addIndex(Map params) {
 	return executeSQL(query, params)
 }
 
+//---------- begin function connect
 /**
- * Creates and returns a database connection
- * @param params Map containing connection parameters:
- *   dbhost: database host
- *   dbuser: database username
- *   dbpass: database password
- *   dbname: database name
- *   dbport: database port (default: 5432)
- *   dbkeepalives: keepalive setting (optional)
- *   dbkeepalives_idle: keepalive idle time (optional)
- *   dbkeepalives_interval: keepalive interval (optional)
- *   dbkeepalives_count: keepalive count (optional)
- * @return Sql connection object
- * @usage
- *   def sql = postgresdb.connect(params)
- */
+* @describe creates and returns a database connection
+* @param params params map
+*	dbhost: database host
+*	dbuser: database username
+*	dbpass: database password
+*	dbname: database name
+*	dbport: database port (default: 5432)
+*	dbkeepalives: keepalive setting (optional)
+*	dbkeepalives_idle: keepalive idle time (optional)
+*	dbkeepalives_interval: keepalive interval (optional)
+*	dbkeepalives_count: keepalive count (optional)
+* @return object
+*	connection object
+* @usage
+*	sql = postgresdb.connect(params)
+*/
 def connect(Map params) {
 	if (!params.dbhost) {
 		System.err.println("Missing dbhost attribute in database tag named '${params.name}'")
@@ -114,14 +118,15 @@ def connect(Map params) {
 	}
 }
 
+//---------- begin function executeSQL
 /**
- * Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
- * @param query String SQL query to execute
- * @param params Map containing connection parameters
- * @return boolean true on success, error message string on failure
- * @usage
- *   def ok = postgresdb.executeSQL(query, params)
- */
+* @describe executes a SQL query (INSERT, UPDATE, DELETE, etc.)
+* @param params query string, params map
+* @return boolean
+*	true on success, error message string on failure
+* @usage
+*	ok = postgresdb.executeSQL(query, params)
+*/
 def executeSQL(String query, Map params = [:]) {
 	def sql = null
 	try {
@@ -142,16 +147,16 @@ def executeSQL(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function executePS
 /**
- * Executes a prepared statement with parameters
- * @param query String SQL query with ? placeholders
- * @param args List of parameters for prepared statement
- * @param params Map containing connection parameters
- * @return boolean true on success, error message string on failure
- * @usage
- *   def query = "INSERT INTO users (name, email) VALUES (?, ?)"
- *   def ok = postgresdb.executePS(query, ['John Doe', 'john@example.com'], params)
- */
+* @describe executes a prepared statement with parameters
+* @param params query string, args list, params map
+* @return boolean
+*	true on success, error message string on failure
+* @usage
+*	query = "INSERT INTO users (name, email) VALUES (?, ?)"
+*	ok = postgresdb.executePS(query, ['John Doe', 'john@example.com'], params)
+*/
 def executePS(String query, List args, Map params = [:]) {
 	def sql = null
 	try {
@@ -172,22 +177,23 @@ def executePS(String query, List args, Map params = [:]) {
 	}
 }
 
+//---------- begin function queryResults
 /**
- * Executes a query and returns list of records as maps
- * @param query String SQL query to execute
- * @param params Map containing connection parameters and optional:
- *   filename: if provided, writes results to CSV file instead of returning list
- *   format: 'json' (default) or 'list' for native Groovy list format
- *   skiperrors: if true, skips problematic rows and continues processing (default: false)
- *   fetchsize: number of rows to fetch at once from database (default: 1000, 0 for driver default)
- *   batchsize: number of rows to buffer before writing to file (default: 100)
- *   notrim: if true, skips trimming whitespace from values (faster, default: false)
- * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
- * @usage
- *   def json = postgresdb.queryResults(query, params)
- *   def recs = postgresdb.queryResults(query, params + [format: 'list'])
- *   def csv = postgresdb.queryResults(query, params + [filename: 'output.csv', fetchsize: 5000])
- */
+* @describe executes a query and returns list of records as maps
+* @param params query string, params map
+*	filename: if provided, writes results to CSV file instead of returning list
+*	format: 'json' (default) or 'list' for native Groovy list format
+*	skiperrors: if true, skips problematic rows and continues processing (default: false)
+*	fetchsize: number of rows to fetch at once from database (default: 1000, 0 for driver default)
+*	batchsize: number of rows to buffer before writing to file (default: 100)
+*	notrim: if true, skips trimming whitespace from values (faster, default: false)
+* @return mixed
+*	JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
+* @usage
+*	json = postgresdb.queryResults(query, params)
+*	recs = postgresdb.queryResults(query, params + [format: 'list'])
+*	csv = postgresdb.queryResults(query, params + [filename: 'output.csv', fetchsize: 5000])
+*/
 def queryResults(String query, Map params = [:]) {
 	def sql = null
 	def skipErrors = params.getOrDefault('skiperrors', false)
@@ -368,11 +374,13 @@ def queryResults(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function escapeCSV
 /**
- * Helper function to escape CSV values
- * @param value String to escape
- * @return String escaped value
- */
+* @describe helper function to escape CSV values
+* @param params value string
+* @return string
+*	escaped value
+*/
 private def escapeCSV(String value) {
 	if (value == null) {
 		return ''

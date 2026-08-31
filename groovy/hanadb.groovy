@@ -21,19 +21,21 @@ import java.sql.SQLException
 import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
+//---------- begin function connect
 /**
- * Creates and returns a database connection to SAP HANA
- * @param params Map containing connection parameters:
- *   dbhost: SAP HANA server hostname or IP
- *   dbport: SAP HANA server port (default: 30015)
- *   dbuser: database username
- *   dbpass: database password
- *   dbname: database name (optional)
- *   connect: full JDBC URL if provided (overrides other params)
- * @return Sql connection object
- * @usage
- *   def sql = hanadb.connect(params)
- */
+* @describe creates and returns a database connection to SAP HANA
+* @param params params map
+*	dbhost: SAP HANA server hostname or IP
+*	dbport: SAP HANA server port (default 30015)
+*	dbuser: database username
+*	dbpass: database password
+*	dbname: database name (optional)
+*	connect: full JDBC URL or ODBC-style connection string (overrides other params)
+* @return object
+*	Sql connection object
+* @usage
+*	sql = hanadb.connect(params)
+*/
 def connect(Map params) {
 	def dbuser = params.dbuser ?: ''
 	def dbpass = params.dbpass ?: ''
@@ -142,14 +144,16 @@ def connect(Map params) {
 	}
 }
 
+//---------- begin function executeSQL
 /**
- * Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
- * @param query String SQL query to execute
- * @param params Map containing connection parameters
- * @return boolean true on success, error message string on failure
- * @usage
- *   def ok = hanadb.executeSQL(query, params)
- */
+* @describe executes a non-SELECT SQL statement (INSERT, UPDATE, DELETE, DDL, etc.)
+* @param params query string, params map
+*	params: connection parameters (see connect)
+* @return boolean
+*	true on success, or an error is thrown on failure
+* @usage
+*	ok = hanadb.executeSQL(query, params)
+*/
 def executeSQL(String query, Map params = [:]) {
 	def sql = null
 	try {
@@ -170,16 +174,18 @@ def executeSQL(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function executePS
 /**
- * Executes a prepared statement with parameters
- * @param query String SQL query with ? placeholders
- * @param args List of parameters for prepared statement
- * @param params Map containing connection parameters
- * @return boolean true on success, error message string on failure
- * @usage
- *   def query = "INSERT INTO users (name, email) VALUES (?, ?)"
- *   def ok = hanadb.executePS(query, ['John Doe', 'john@example.com'], params)
- */
+* @describe executes a prepared statement with positional parameters
+* @param params query string, args list, params map
+*	query: SQL with ? placeholders
+*	args: values to bind to the placeholders
+*	params: connection parameters (see connect)
+* @return boolean
+*	true on success, or an error is thrown on failure
+* @usage
+*	ok = hanadb.executePS("INSERT INTO users (name, email) VALUES (?, ?)", ['John Doe', 'john@example.com'], params)
+*/
 def executePS(String query, List args, Map params = [:]) {
 	def sql = null
 	try {
@@ -200,22 +206,23 @@ def executePS(String query, List args, Map params = [:]) {
 	}
 }
 
+//---------- begin function queryResults
 /**
- * Executes a query and returns list of records as maps
- * @param query String SQL query to execute
- * @param params Map containing connection parameters and optional:
- *   filename: if provided, writes results to CSV file instead of returning list
- *   format: 'json' (default) or 'list' for native Groovy list format
- *   skiperrors: if true, skips problematic rows and continues processing (default: false)
- *   fetchsize: number of rows to fetch at once from database (default: 1000, 0 for driver default)
- *   batchsize: number of rows to buffer before writing to file (default: 100)
- *   notrim: if true, skips trimming whitespace from values (faster, default: false)
- * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
- * @usage
- *   def json = hanadb.queryResults(query, params)
- *   def recs = hanadb.queryResults(query, params + [format: 'list'])
- *   def csv = hanadb.queryResults(query, params + [filename: 'output.csv', fetchsize: 5000])
- */
+* @describe executes a SELECT query and returns the records (as JSON, a native list, or streamed to a CSV file)
+* @param params query string, params map
+*	filename: if provided, writes results to this CSV file instead of returning a list
+*	format: 'json' (default) or 'list' for a native Groovy list
+*	skiperrors: if true, skips problematic rows and continues (default false)
+*	fetchsize: rows to fetch at once from the database (default 1000, 0 for driver default)
+*	batchsize: rows to buffer before writing to file (default 100)
+*	notrim: if true, skips trimming whitespace from values (faster, default false)
+* @return mixed
+*	JSON string (default), list of maps if format='list', the filename if filename was provided, or an error is thrown on failure
+* @usage
+*	json = hanadb.queryResults(query, params)
+*	recs = hanadb.queryResults(query, params + [format: 'list'])
+*	csv = hanadb.queryResults(query, params + [filename: 'output.csv', fetchsize: 5000])
+*/
 def queryResults(String query, Map params = [:]) {
 	def sql = null
 	def skipErrors = params.getOrDefault('skiperrors', false)
@@ -396,11 +403,14 @@ def queryResults(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function escapeCSV
 /**
- * Helper function to escape CSV values
- * @param value String to escape
- * @return String escaped value
- */
+* @describe escapes a value for CSV output (quotes it if it contains a comma, quote, or newline)
+* @param params value string
+* @return string
+* @usage
+*	line.append(escapeCSV(strValue))
+*/
 private def escapeCSV(String value) {
 	if (value == null) {
 		return ''

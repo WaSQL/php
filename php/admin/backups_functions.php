@@ -59,7 +59,69 @@ function backupsValidateFilePath($file){
 }
 
 /**
+ * Classify a backup filename as a full-database or single-table backup.
+ *
+ * dumpDB() (php/database.php) writes full-database backups as
+ *   "{dbname}__{date}.sql[.gz]"
+ * and single-table backups as
+ *   "{dbname}.{table}_{date}.sql[.gz]".
+ *
+ * @param string $name   Bare filename (no path).
+ * @param string $dbname Optional database name; defaults to $CONFIG['dbname'].
+ * @return array|false   array('is_table'=>0|1,'table'=>string,'scope'=>string,'ext'=>string)
+ *                       or false when the file does not belong to this database.
+ */
+function backupsParseFile($name, $dbname = ''){
+	global $CONFIG;
+	if(!strlen($dbname)){$dbname = $CONFIG['dbname'];}
+	$dbq = preg_quote($dbname, '/');
+	$out = array('is_table' => 0, 'table' => '', 'scope' => 'Full Database', 'ext' => '.sql');
+
+	if(preg_match('/\.sql\.gz$/i', $name)){$out['ext'] = '.sql.gz';}
+	elseif(preg_match('/\.gz$/i', $name)){$out['ext'] = '.gz';}
+	elseif(preg_match('/\.sql$/i', $name)){$out['ext'] = '.sql';}
+
+	// full-database backup
+	if(preg_match('/^' . $dbq . '__/', $name)){
+		return $out;
+	}
+	// single-table backup: "{dbname}.<middle>.sql[.gz]"
+	if(!preg_match('/^' . $dbq . '\.(.+?)(\.sql\.gz|\.sql|\.gz)$/i', $name, $m)){
+		return false;
+	}
+	$middle = $m[1];
+	$table = $middle;
+	if(preg_match('/^(.+)_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/', $middle, $mm)){
+		// still carries the original date stamp
+		$table = $mm[1];
+	}
+	else{
+		// renamed table backup - recover the real table name by matching known tables
+		static $known = null;
+		if($known === null){
+			$known = getDBTables();
+			if(!is_array($known)){$known = array();}
+			usort($known, function($a, $b){return strlen($b) - strlen($a);});
+		}
+		foreach($known as $t){
+			if($middle === $t || stringBeginsWith($middle, $t . '_')){
+				$table = $t;
+				break;
+			}
+		}
+	}
+	$out['is_table'] = 1;
+	$out['table'] = $table;
+	$out['scope'] = $table;
+	return $out;
+}
+
+/**
  * Get the list of existing database backup files.
+ *
+ * Returns BOTH full-database backups ("{dbname}__*") and single-table backups
+ * ("{dbname}.{table}_*"), each tagged with is_table / backup_table / scope and
+ * given scope-appropriate action links.
  *
  * @param array $params Optional filters and parameters.
  * @return array List of file record arrays sorted newest first.
@@ -68,9 +130,10 @@ function backupsGetFiles($params = array()){
 	global $CONFIG;
 	$backupdir = backupsGetDir();
 	$dbname = isset($params['dbname']) ? $params['dbname'] : $CONFIG['dbname'];
-	$prefix = isset($params['prefix']) ? $params['prefix'] : "{$dbname}__";
 
-	$files = listFilesEx($backupdir, array('name' => $prefix));
+	// substring match on the db name catches both "{dbname}__..." and
+	// "{dbname}.{table}_..."; backupsParseFile() below does the precise filtering.
+	$files = listFilesEx($backupdir, array('name' => $dbname));
 	if(!is_array($files) || !count($files)){
 		return array();
 	}
@@ -79,8 +142,21 @@ function backupsGetFiles($params = array()){
 	$filecnt = count($files);
 	for($x = 0; $x < $filecnt; $x++){
 		$rec = $files[$x];
-		if(strlen($prefix) && !stringBeginsWith($rec['name'], $prefix)){
+		$pinfo = backupsParseFile($rec['name'], $dbname);
+		if($pinfo === false){
+			// belongs to a different database (e.g. "{dbname}2__...")
 			continue;
+		}
+
+		$isTable = $pinfo['is_table'] ? 1 : 0;
+		$tableName = $pinfo['table'];
+		$rec['is_table'] = $isTable;
+		$rec['backup_table'] = $tableName;
+		if($isTable){
+			$rec['scope'] = '<span class="icon-table w_grey"></span> ' . encodeHtml($tableName);
+		}
+		else{
+			$rec['scope'] = '<span class="icon-database w_grey"></span> Full Database';
 		}
 
 		$encodedFile = encodeBase64($rec['afile']);
@@ -90,7 +166,13 @@ function backupsGetFiles($params = array()){
 
 		$actions = array();
 		$actions[] = '<a class="w_link w_block" style="padding:0 3px 0 3px" href="' . $downloadUrl . '" data-tooltip="Click to Download" data-tooltip_position="bottom"><span class="icon-download w_big"></span></a>';
-		$actions[] = '<a class="w_link w_block" style="padding:0 3px 0 3px" href="' . $restoreUrl . '" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\nARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
+		if($isTable){
+			$confirmMsg = 'This will DROP and re-import the "' . addslashes($tableName) . '" table from this backup.\\r\\n\\r\\nOther tables are left untouched. Continue?';
+			$actions[] = '<a class="w_link w_block" style="padding:0 3px 0 3px" href="' . $restoreUrl . '" onclick="return confirm(\'' . $confirmMsg . '\');" data-tooltip="Restore this table" data-tooltip_position="bottom"><span class="icon-undo w_warning w_big"></span></a>';
+		}
+		else{
+			$actions[] = '<a class="w_link w_block" style="padding:0 3px 0 3px" href="' . $restoreUrl . '" onclick="return confirm(\'This will restore the entire database back to this point.\\r\\n\\r\\nARE YOU ABSOLUTELY SURE? If so, click OK.\');" data-tooltip="Restore Database" data-tooltip_position="bottom"><span class="icon-undo w_danger w_big"></span></a>';
+		}
 		$actions[] = '<a class="w_link w_block" style="padding:0 3px 0 3px" href="' . $renameUrl . '" onclick="return backupsRename(this);" data-tooltip="Rename Backup File" data-tooltip_position="bottom"><span class="icon-rename w_grey w_big"></span></a>';
 
 		$rec['action'] = implode(' ', $actions);
@@ -115,18 +197,24 @@ function backupsGetStats($files = null){
 	$totalBytes = 0;
 	$newestDate = '-';
 	$count = count($files);
+	$tableCount = 0;
+	$databaseCount = 0;
 
 	if($count > 0){
 		foreach($files as $file){
 			if(isset($file['size'])){
 				$totalBytes += (int)$file['size'];
 			}
+			if(!empty($file['is_table'])){$tableCount++;}
+			else{$databaseCount++;}
 		}
 		$newestDate = isset($files[0]['_cdate']) ? $files[0]['_cdate'] : '-';
 	}
 
 	return array(
 		'count' => $count,
+		'database_count' => $databaseCount,
+		'table_count' => $tableCount,
 		'total_size' => $totalBytes,
 		'total_size_verbose' => verboseSize($totalBytes),
 		'newest_date' => $newestDate
@@ -150,9 +238,11 @@ function backupsListBackups($files = null){
 
 	return databaseListRecords(array(
 		'-list' => $files,
-		'-listfields' => 'name,action,size_verbose,_cdate,_cdate_age_verbose',
+		'-listfields' => 'name,scope,action,size_verbose,_cdate,_cdate_age_verbose',
 		'-tableclass' => 'wacss_table is-bordered is-striped is-mobile-responsive',
 		'name_displayname' => 'Filename',
+		'scope_displayname' => 'Scope',
+		'scope_align' => 'center',
 		'action_displayname' => 'Actions',
 		'action_align' => 'center',
 		'size_verbose_displayname' => 'Size',
@@ -254,10 +344,23 @@ function backupsRestoreBackup($file){
 		$passArg = stringContains($pass, '$') ? " -p'{$pass}'" : " -p\"{$pass}\"";
 	}
 
-	$cmds = array(
-		"{$mysqlCmd} -h {$host}{$port} -u {$user}{$passArg} --execute=\"DROP DATABASE {$dbname}; CREATE DATABASE {$dbname} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
-		"{$mysqlCmd} -h {$host}{$port} -u {$user}{$passArg} --max_allowed_packet=128M --default-character-set=utf8 {$dbname} < \"{$realFile}\""
-	);
+	// A single-table backup dump only contains DROP TABLE / CREATE TABLE / INSERTs for
+	// that one table, so it must be imported straight into the existing database - the
+	// DROP DATABASE / CREATE DATABASE step used for a full restore would wipe every
+	// other table.
+	$pinfo = backupsParseFile(getFileName($realFile), $dbname);
+	$restoreTable = (is_array($pinfo) && $pinfo['is_table']) ? $pinfo['table'] : '';
+
+	$importCmd = "{$mysqlCmd} -h {$host}{$port} -u {$user}{$passArg} --max_allowed_packet=128M --default-character-set=utf8 {$dbname} < \"{$realFile}\"";
+	if(strlen($restoreTable)){
+		$cmds = array($importCmd);
+	}
+	else{
+		$cmds = array(
+			"{$mysqlCmd} -h {$host}{$port} -u {$user}{$passArg} --execute=\"DROP DATABASE {$dbname}; CREATE DATABASE {$dbname} CHARACTER SET utf8 COLLATE utf8_general_ci;\"",
+			$importCmd
+		);
+	}
 
 	$results = array();
 	foreach($cmds as $cmd){
@@ -277,6 +380,7 @@ function backupsRestoreBackup($file){
 	return array(
 		'success' => true,
 		'file' => getFileName($realFile),
+		'table' => $restoreTable,
 		'results' => $results
 	);
 }
@@ -295,24 +399,38 @@ function backupsRenameBackup($file, $newname){
 		return array('success' => false, 'error' => 'Source file not found or invalid.');
 	}
 
+	$filename = getFileName($realFile);
+
+	// Preserve the backup's scope through the rename. A full-database backup keeps the
+	// "{dbname}__" prefix; a single-table backup keeps "{dbname}.{table}_" so it stays
+	// recognisable as a table backup (and never gets mistaken for a full one, which
+	// would make "Restore" wipe the whole database).
+	$pinfo = backupsParseFile($filename, $CONFIG['dbname']);
+	$isTable = (is_array($pinfo) && $pinfo['is_table']);
+	$srcTable = $isTable ? $pinfo['table'] : '';
+	$prefix = $isTable ? "{$CONFIG['dbname']}.{$srcTable}_" : "{$CONFIG['dbname']}__";
+
 	$newname = trim($newname);
 	$newname = str_replace(' ', '_', $newname);
 	$newname = preg_replace('/[^a-z0-9_\-\.]/i', '', $newname);
 	$newname = preg_replace('/_+/', '_', $newname);
 	$newname = preg_replace('/\.sql(\.gz)?$/i', '', $newname);
 	$newname = preg_replace('/\.gz$/i', '', $newname);
+	// strip any leading copy of the scope prefix the user may have typed back in
+	$newname = preg_replace('/^' . preg_quote($CONFIG['dbname'], '/') . '(__|\.)/i', '', $newname);
+	if($isTable && strlen($srcTable)){
+		$newname = preg_replace('/^' . preg_quote($srcTable, '/') . '_/i', '', $newname);
+	}
 	$newname = trim($newname, '._-');
 
 	if(!strlen($newname)){
 		return array('success' => false, 'error' => 'New filename cannot be empty.');
 	}
 
-	$prefix = "{$CONFIG['dbname']}__";
 	if(!stringBeginsWith($newname, $prefix)){
 		$newname = $prefix . $newname;
 	}
 
-	$filename = getFileName($realFile);
 	$ext = '.sql';
 	if(preg_match('/\.sql\.gz$/i', $filename)){
 		$ext = '.sql.gz';
@@ -355,13 +473,14 @@ function backupsDeleteBackups($names){
 
 	$backupdir = backupsGetDir();
 	$deleted = 0;
-	$prefix = "{$CONFIG['dbname']}__";
 
 	foreach($names as $name){
 		if(!backupsValidateFileName($name)){
 			continue;
 		}
-		if(!stringBeginsWith($name, $prefix)){
+		// only touch files that are a backup for THIS database - full ("{dbname}__")
+		// or single-table ("{dbname}.{table}_")
+		if(backupsParseFile($name, $CONFIG['dbname']) === false){
 			continue;
 		}
 		$target = $backupdir . DIRECTORY_SEPARATOR . $name;

@@ -2,7 +2,11 @@
 # Rscript -e "install.packages('odbc', repos='https://cran.r-project.org')"
 suppressPackageStartupMessages(library(odbc, quietly = TRUE))
 
-# Function to connect to the Microsoft SQL Server database
+# ---------- begin function mssqlConnect
+# @describe opens a Microsoft SQL Server connection via ODBC (defaults host to localhost, port to 1433)
+# @param cfg list - connection settings from configParse (dbhost, dbport, dbuser, dbpass, dbname)
+# @return DBIConnection - an open odbc connection (needs "ODBC Driver 17 for SQL Server")
+# @usage dbh <- mssqlConnect(cfg)
 mssqlConnect <- function(cfg) {
   # Use localhost if cfg$dbhost is NULL or NA
   host <- ifelse(!is.null(cfg$dbhost) && !is.na(cfg$dbhost), cfg$dbhost, 'localhost')
@@ -19,7 +23,12 @@ mssqlConnect <- function(cfg) {
   )
 }
 
-# Function to fetch data from a specified query
+# ---------- begin function mssqlQueryResults
+# @describe connects, runs a query against SQL Server, disconnects, and returns the rows
+# @param cfg list - connection settings from configParse
+# @param query string - the SQL query to run
+# @return data.frame - the query result rows
+# @usage rows <- mssqlQueryResults(cfg, 'SELECT * FROM users')
 mssqlQueryResults <- function(cfg, query) {
   # Get the database connection using mssqlConnect
   dbh_r <- mssqlConnect(cfg)

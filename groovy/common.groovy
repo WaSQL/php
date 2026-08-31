@@ -22,62 +22,69 @@ def VIEWS = [:]
 def VIEW = [:]
 def DEBUG = []
 
+//---------- begin function abort
 /**
- * Aborts execution with error message
- * @param err Exception object
- * @usage common.abort(err)
- */
+* @describe aborts execution with an error message and a non-zero exit code
+* @param params err Exception
+* @return void
+* @usage
+*	common.abort(err)
+*/
 def abort(Exception err) {
     System.err.println("Error: ${err.message}")
     err.printStackTrace()
     System.exit(123)
 }
 
+//---------- begin function debug
 /**
- * Returns error debug string without aborting
- * @param err Exception object
- * @return String error message
- * @usage msg = common.debug(err)
- */
+* @describe returns error debug string (message + stack trace) without aborting
+* @param params err Exception
+* @return string
+* @usage
+*	msg = common.debug(err)
+*/
 def debug(Exception err) {
     def sw = new StringWriter()
     err.printStackTrace(new PrintWriter(sw))
     return "Error: ${err.message}\n${sw.toString()}"
 }
 
+//---------- begin function arrayAverage
 /**
- * Returns average of all elements in a list
- * @param lst List
- * @return Number average
- * @usage avg = common.arrayAverage([12, 3, 4, 7])
- */
+* @describe returns the average of all elements in a list
+* @param params lst list
+* @return number
+* @usage
+*	avg = common.arrayAverage([12, 3, 4, 7])
+*/
 def arrayAverage(List lst) {
     if (!lst || lst.size() == 0) return 0
     return lst.sum() / lst.size()
 }
 
+//---------- begin function buildDir
 /**
- * Recursive folder creator
- * @param path String path to create
- * @param mode Integer create mode (optional)
- * @return boolean
- * @usage common.buildDir('/var/www/mystuff/temp/test')
- */
+* @describe recursive folder creator
+* @param params path string, mode integer
+* @return boolean
+* @usage
+*	common.buildDir('/var/www/mystuff/temp/test')
+*/
 def buildDir(String path, int mode = 0777) {
     def dir = new File(path)
     return dir.mkdirs()
 }
 
+//---------- begin function calculateDistance
 /**
- * Calculates distance between two longitude & latitude points
- * @param lat1 Double first latitude
- * @param lon1 Double first longitude
- * @param lat2 Double second latitude
- * @param lon2 Double second longitude
- * @param unit Char unit of measure - K=kilometers, N=nautical miles, M=miles
- * @return Double distance
- * @usage dist = common.calculateDistance(lat1, lon1, lat2, lon2)
- */
+* @describe calculates the distance between two longitude and latitude points
+* @param params lat1 double, lon1 double, lat2 double, lon2 double, unit string
+*	unit: K=kilometers, N=nautical miles, M=miles (default M)
+* @return double
+* @usage
+*	dist = common.calculateDistance(lat1, lon1, lat2, lon2)
+*/
 def calculateDistance(double lat1, double lon1, double lat2, double lon2, String unit = 'M') {
     // Approximate radius of earth in km
     def R = 6373.0
@@ -102,12 +109,14 @@ def calculateDistance(double lat1, double lon1, double lat2, double lon2, String
     return distance
 }
 
+//---------- begin function coalesce
 /**
- * Returns the first non-null, non-blank value in arguments
- * @param values Variable arguments
- * @return Mixed first non-empty value
- * @usage privateToken = common.coalesce(params.token, vals.gitlab_token, '')
- */
+* @describe returns the first non-null, non-blank value in the arguments
+* @param params values mixed
+* @return mixed
+* @usage
+*	privateToken = common.coalesce(params.token, vals.gitlab_token, '')
+*/
 def coalesce(Object... values) {
     for (v in values) {
         if (v != null) {
@@ -120,42 +129,50 @@ def coalesce(Object... values) {
     return ''
 }
 
+//---------- begin function decodeBase64
 /**
- * Decodes a base64 encoded string
- * @param str String base64 string to decode
- * @return String decoded string
- * @usage dec = common.decodeBase64(encoded_string)
- */
+* @describe decodes a base64 encoded string
+* @param params str string
+* @return string
+* @usage
+*	dec = common.decodeBase64(encoded_string)
+*/
 def decodeBase64(String str) {
     return new String(str.decodeBase64())
 }
 
+//---------- begin function decodeURL
 /**
- * Decodes a URL encoded string
- * @param str String to decode
- * @return String decoded string
- * @usage dec = common.decodeURL(str)
- */
+* @describe decodes a URL encoded string
+* @param params str string
+* @return string
+* @usage
+*	dec = common.decodeURL(str)
+*/
 def decodeURL(String str) {
     return URLDecoder.decode(URLDecoder.decode(str, 'UTF-8'), 'UTF-8')
 }
 
+//---------- begin function encodeBase64
 /**
- * Encodes a string to base64
- * @param str String to encode
- * @return String base64 encoded string
- * @usage enc = common.encodeBase64(str)
- */
+* @describe encodes a string to base64
+* @param params str string
+* @return string
+* @usage
+*	enc = common.encodeBase64(str)
+*/
 def encodeBase64(String str) {
     return str.bytes.encodeBase64().toString()
 }
 
+//---------- begin function encodeHtml
 /**
- * Encodes HTML special characters
- * @param str String to encode
- * @return String encoded string
- * @usage html = common.encodeHtml(str)
- */
+* @describe encodes HTML special characters
+* @param params str string
+* @return string
+* @usage
+*	html = common.encodeHtml(str)
+*/
 def encodeHtml(String str = '') {
     if (!str || str.length() == 0) return str
 
@@ -166,41 +183,50 @@ def encodeHtml(String str = '') {
               .replace("'", '&#39;')
 }
 
+//---------- begin function encodeURL
 /**
- * Encodes a URL string
- * @param str String to encode
- * @return String encoded string
- * @usage enc = common.encodeURL(str)
- */
+* @describe encodes a URL string
+* @param params str string
+* @return string
+* @usage
+*	enc = common.encodeURL(str)
+*/
 def encodeURL(String str) {
     return URLEncoder.encode(str, 'UTF-8')
 }
 
+//---------- begin function encodeJson
 /**
- * Encodes an object to JSON
- * @param obj Object to encode
- * @return String JSON encoded string
- * @usage json = common.encodeJson(obj)
- */
+* @describe encodes an object to JSON
+* @param params obj mixed
+* @return string
+* @usage
+*	json = common.encodeJson(obj)
+*/
 def encodeJson(Object obj) {
     return new JsonBuilder(obj).toString()
 }
 
+//---------- begin function decodeJson
 /**
- * Decodes a JSON string
- * @param str String JSON string to decode
- * @return Object decoded object
- * @usage obj = common.decodeJson(str)
- */
+* @describe decodes a JSON string
+* @param params str string
+* @return mixed
+* @usage
+*	obj = common.decodeJson(str)
+*/
 def decodeJson(String str) {
     return new JsonSlurper().parseText(str)
 }
 
+//---------- begin function echo
 /**
- * Prints output (wrapper for println)
- * @param str String to print
- * @usage common.echo('hello')
- */
+* @describe prints output (wrapper for println) - appends <br /> when not on the CLI
+* @param params str string
+* @return void
+* @usage
+*	common.echo('hello')
+*/
 def echo(String str) {
     if (isCLI()) {
         println(str)
@@ -209,12 +235,14 @@ def echo(String str) {
     }
 }
 
+//---------- begin function formatPhone
 /**
- * Formats a phone number
- * @param phone String phone number
- * @return String formatted phone number
- * @usage ph = common.formatPhone('8014584741')
- */
+* @describe formats a phone number
+* @param params phone string
+* @return string
+* @usage
+*	ph = common.formatPhone('8014584741')
+*/
 def formatPhone(String phone) {
     def clean = phone.replaceAll('[^0-9]', '')
     if (clean.length() == 10) {
@@ -225,23 +253,27 @@ def formatPhone(String phone) {
     return phone
 }
 
+//---------- begin function getFileContents
 /**
- * Gets the contents of a file
- * @param filename String full path to file
- * @return String file contents
- * @usage content = common.getFileContents('/var/tmp/abc.txt')
- */
+* @describe gets the contents of a file
+* @param params filename string
+* @return string
+* @usage
+*	content = common.getFileContents('/var/tmp/abc.txt')
+*/
 def getFileContents(String filename) {
     return new File(filename).text
 }
 
+//---------- begin function setFileContents
 /**
- * Sets the contents of a file
- * @param filename String full path to file
- * @param data String data to write
- * @param append Boolean set to true to append (defaults to false)
- * @usage common.setFileContents(file, data)
- */
+* @describe sets the contents of a file
+* @param params filename string, data string, append boolean
+*	append: set to true to append (defaults to false)
+* @return void
+* @usage
+*	common.setFileContents(file, data)
+*/
 def setFileContents(String filename, String data, boolean append = false) {
     def file = new File(filename)
     if (append) {
@@ -251,23 +283,28 @@ def setFileContents(String filename, String data, boolean append = false) {
     }
 }
 
+//---------- begin function getParentPath
 /**
- * Gets the parent path
- * @param path String path
- * @return String parent path
- * @usage parent = common.getParentPath(path)
- */
+* @describe gets the parent path of a file or directory
+* @param params path string
+* @return string
+* @usage
+*	parent = common.getParentPath(path)
+*/
 def getParentPath(String path) {
     return new File(path).parentFile.absolutePath
 }
 
+//---------- begin function getRandomString
 /**
- * Returns a random string
- * @param size Integer size of string (default 6)
- * @param chars String characters to use (optional)
- * @return String random string
- * @usage id = common.getRandomString(6)
- */
+* @describe returns a random string
+* @param params size integer, chars string
+*	size: length of string (default 6)
+*	chars: characters to pick from (optional)
+* @return string
+* @usage
+*	id = common.getRandomString(6)
+*/
 def getRandomString(int size = 6, String chars = null) {
     if (!chars) {
         chars = (('A'..'Z') + ('0'..'9')).join()
@@ -276,13 +313,16 @@ def getRandomString(int size = 6, String chars = null) {
     return (1..size).collect { chars[random.nextInt(chars.length())] }.join()
 }
 
+//---------- begin function getCSVRecords
 /**
- * Reads CSV file and returns records as list of maps
- * @param afile String full path to CSV file
- * @param params Map parameters (optional)
- * @return List of Maps (records)
- * @usage recs = common.getCSVRecords(afile)
- */
+* @describe reads a CSV file and returns records as a list of maps
+* @param params afile string, params map
+*	params.start: first data row index (default 1)
+*	params.stop: last data row index (default end of file)
+* @return list
+* @usage
+*	recs = common.getCSVRecords(afile)
+*/
 def getCSVRecords(String afile, Map params = [:]) {
     def recs = []
     def file = new File(afile)
@@ -317,12 +357,15 @@ def getCSVRecords(String afile, Map params = [:]) {
     return recs
 }
 
+//---------- begin function getWasqlPath
 /**
- * Returns WaSQL path
- * @param str String subdirectory (optional)
- * @return String path
- * @usage wpath = common.getWasqlPath('wfiles')
- */
+* @describe returns the WaSQL root path, optionally with a subdirectory appended
+* @param params str string
+*	str: subdirectory to append (optional)
+* @return string
+* @usage
+*	wpath = common.getWasqlPath('wfiles')
+*/
 def getWasqlPath(String str = '') {
     def wpath = getParentPath(scriptPath())
     if (str) {
@@ -331,12 +374,14 @@ def getWasqlPath(String str = '') {
     return wpath
 }
 
+//---------- begin function hex2RGB
 /**
- * Converts hex string to RGB tuple
- * @param hexvalue String hex color value
- * @return List [r, g, b]
- * @usage rgb = common.hex2RGB('#9495a3')
- */
+* @describe converts a hex color string to an [r, g, b] list
+* @param params hexvalue string
+* @return list
+* @usage
+*	rgb = common.hex2RGB('#9495a3')
+*/
 def hex2RGB(String hexvalue) {
     def hex = hexvalue.replaceAll('#', '')
     def r = Integer.parseInt(hex[0..1], 16)
@@ -345,32 +390,38 @@ def hex2RGB(String hexvalue) {
     return [r, g, b]
 }
 
+//---------- begin function rgb2HEX
 /**
- * Converts RGB tuple to hex string
- * @param rgb List [r, g, b]
- * @return String hex color value
- * @usage hex = common.rgb2HEX([148, 149, 163])
- */
+* @describe converts an [r, g, b] list to a hex color string
+* @param params rgb list
+* @return string
+* @usage
+*	hex = common.rgb2HEX([148, 149, 163])
+*/
 def rgb2HEX(List rgb) {
     return String.format('#%02x%02x%02x', rgb[0], rgb[1], rgb[2])
 }
 
+//---------- begin function isCLI
 /**
- * Returns true if script is running from command line
- * @return boolean
- * @usage if (common.isCLI())
- */
+* @describe returns true if the script is running from the command line
+* @return boolean
+* @usage
+*	if (common.isCLI()) { ... }
+*/
 def isCLI() {
     return System.console() != null
 }
 
+//---------- begin function isDate
 /**
- * Returns true if string is a valid date
- * @param string String to check
- * @param format String date format (default: yyyy-MM-dd)
- * @return boolean
- * @usage if (common.isDate('2024-10-11'))
- */
+* @describe returns true if the string is a valid date for the given format
+* @param params string string, format string
+*	format: date format (default yyyy-MM-dd)
+* @return boolean
+* @usage
+*	if (common.isDate('2024-10-11')) { ... }
+*/
 def isDate(String string, String format = 'yyyy-MM-dd') {
     try {
         new SimpleDateFormat(format).parse(string)
@@ -380,33 +431,39 @@ def isDate(String string, String format = 'yyyy-MM-dd') {
     }
 }
 
+//---------- begin function isEmail
 /**
- * Returns true if specified string is a valid email address
- * @param str String to check
- * @return boolean
- * @usage if (common.isEmail(str))
- */
+* @describe returns true if the string is a valid email address
+* @param params str string
+* @return boolean
+* @usage
+*	if (common.isEmail(str)) { ... }
+*/
 def isEmail(String str) {
     def pattern = /^[\w\.\+\-]+\@[\w]+\.[a-z]{2,10}$/
     return str ==~ pattern
 }
 
+//---------- begin function isEven
 /**
- * Returns true if specified number is an even number
- * @param num Number to check
- * @return boolean
- * @usage if (common.isEven(num))
- */
+* @describe returns true if the number is even
+* @param params num integer
+* @return boolean
+* @usage
+*	if (common.isEven(num)) { ... }
+*/
 def isEven(int num) {
     return num % 2 == 0
 }
 
+//---------- begin function isJson
 /**
- * Returns true if specified object is JSON
- * @param obj Object to check
- * @return boolean
- * @usage if (common.isJson(obj))
- */
+* @describe returns true if the object is a valid JSON string
+* @param params obj mixed
+* @return boolean
+* @usage
+*	if (common.isJson(obj)) { ... }
+*/
 def isJson(Object obj) {
     if (obj instanceof String) {
         try {
@@ -419,33 +476,40 @@ def isJson(Object obj) {
     return false
 }
 
+//---------- begin function isWindows
 /**
- * Returns true if script is running on Windows platform
- * @return boolean
- * @usage if (common.isWindows())
- */
+* @describe returns true if the script is running on a Windows platform
+* @return boolean
+* @usage
+*	if (common.isWindows()) { ... }
+*/
 def isWindows() {
     def os = System.getProperty('os.name').toLowerCase()
     return os.contains('win')
 }
 
+//---------- begin function nl2BR
 /**
- * Converts new lines to <br /> tags in string
- * @param string String to convert
- * @return String converted string
- * @usage print(common.nl2br(str))
- */
+* @describe converts new lines to <br /> tags in a string
+* @param params string string
+* @return string
+* @usage
+*	print(common.nl2BR(str))
+*/
 def nl2BR(String string) {
     return string.replaceAll('\n', '<br />\n')
 }
 
+//---------- begin function scriptPath
 /**
- * Returns script path
- * @param d String subdirectory (optional)
- * @return String path
- * @usage path = common.scriptPath()
- * @usage path = common.scriptPath('/temp')
- */
+* @describe returns the script directory, optionally with a subdirectory appended
+* @param params d string
+*	d: subdirectory to append (optional)
+* @return string
+* @usage
+*	path = common.scriptPath()
+*	path = common.scriptPath('/temp')
+*/
 def scriptPath(String d = '') {
     def scriptDir = new File(getClass().protectionDomain.codeSource.location.path).parent
     if (d) {
@@ -454,75 +518,85 @@ def scriptPath(String d = '') {
     return scriptDir
 }
 
+//---------- begin function sleep
 /**
- * Sleeps for x seconds
- * @param x Number seconds
- * @usage common.sleep(3)
- */
+* @describe sleeps for x seconds
+* @param params x integer
+* @return void
+* @usage
+*	common.sleep(3)
+*/
 def sleep(int x) {
     Thread.sleep(x * 1000)
 }
 
+//---------- begin function stringContains
 /**
- * Returns true if string contains substr
- * @param str String to check
- * @param substr String substring to find
- * @return boolean
- * @usage if (common.stringContains(str, val))
- */
+* @describe returns true if str contains substr
+* @param params str string, substr string
+* @return boolean
+* @usage
+*	if (common.stringContains(str, val)) { ... }
+*/
 def stringContains(String str, String substr) {
     return str.contains(substr)
 }
 
+//---------- begin function stringEndsWith
 /**
- * Returns true if string ends with substr
- * @param str String to check
- * @param substr String substring to find
- * @return boolean
- * @usage if (common.stringEndsWith(str, val))
- */
+* @describe returns true if str ends with substr
+* @param params str string, substr string
+* @return boolean
+* @usage
+*	if (common.stringEndsWith(str, val)) { ... }
+*/
 def stringEndsWith(String str, String substr) {
     return str.endsWith(substr)
 }
 
+//---------- begin function stringBeginsWith
 /**
- * Returns true if string begins with substr
- * @param str String to check
- * @param substr String substring to find
- * @return boolean
- * @usage if (common.stringBeginsWith(str, val))
- */
+* @describe returns true if str begins with substr
+* @param params str string, substr string
+* @return boolean
+* @usage
+*	if (common.stringBeginsWith(str, val)) { ... }
+*/
 def stringBeginsWith(String str, String substr) {
     return str.startsWith(substr)
 }
 
+//---------- begin function str_replace
 /**
- * Replaces str with str2 in str3
- * @param str String to find
- * @param str2 String replacement
- * @param str3 String source
- * @return String result
- * @usage newstr = common.str_replace('a', 'b', 'abb')
- */
+* @describe replaces str with str2 in str3
+* @param params str string, str2 string, str3 string
+* @return string
+* @usage
+*	newstr = common.str_replace('a', 'b', 'abb')
+*/
 def str_replace(String str, String str2, String str3) {
     return str3.replace(str, str2)
 }
 
+//---------- begin function time
 /**
- * Returns unix timestamp
- * @return Long timestamp
- * @usage t = common.time()
- */
+* @describe returns the current unix timestamp (seconds)
+* @return long
+* @usage
+*	t = common.time()
+*/
 def time() {
     return System.currentTimeMillis() / 1000
 }
 
+//---------- begin function strtotime
 /**
- * Converts a string to unix timestamp (mimics PHP's strtotime)
- * @param str String to parse
- * @return Long unix timestamp
- * @usage ts = common.strtotime('2024-01-15')
- */
+* @describe converts a string to a unix timestamp (mimics PHP's strtotime)
+* @param params str string
+* @return long
+* @usage
+*	ts = common.strtotime('2024-01-15')
+*/
 def strtotime(String str) {
     try {
         def date = Date.parse('yyyy-MM-dd HH:mm:ss', str)
@@ -537,12 +611,14 @@ def strtotime(String str) {
     }
 }
 
+//---------- begin function listFiles
 /**
- * Lists files in a directory
- * @param adir String directory path
- * @return List of filenames
- * @usage files = common.listFiles(mypath)
- */
+* @describe lists file names in a directory
+* @param params adir string
+* @return list
+* @usage
+*	files = common.listFiles(mypath)
+*/
 def listFiles(String adir) {
     def dir = new File(adir)
     if (!dir.exists() || !dir.isDirectory()) {
@@ -551,12 +627,14 @@ def listFiles(String adir) {
     return dir.listFiles()*.name
 }
 
+//---------- begin function listFilesEx
 /**
- * Lists files in a directory with extended information
- * @param adir String directory path
- * @return List of Maps with file information
- * @usage files = common.listFilesEx(mypath)
- */
+* @describe lists files in a directory with extended information (name, path, size, mtime, ...)
+* @param params adir string
+* @return list
+* @usage
+*	files = common.listFilesEx(mypath)
+*/
 def listFilesEx(String adir) {
     def dir = new File(adir)
     if (!dir.exists() || !dir.isDirectory()) {
@@ -576,11 +654,14 @@ def listFilesEx(String adir) {
     }
 }
 
+//---------- begin function printValue
 /**
- * Prints value in a formatted way
- * @param obj Object to print
- * @usage common.printValue(recs)
- */
+* @describe prints a value in a formatted <pre> block (universal debug helper)
+* @param params obj mixed
+* @return void
+* @usage
+*	common.printValue(recs)
+*/
 def printValue(Object obj) {
     if (isJson(obj)) {
         println('<pre class="printvalue" type="JSON">')
@@ -593,11 +674,14 @@ def printValue(Object obj) {
     }
 }
 
+//---------- begin function parseViews
 /**
- * Parses views from HTML string
- * @param str String containing view tags
- * @return boolean
- */
+* @describe parses <view:name>...</view:name> blocks from an HTML string into the VIEWS map
+* @param params str string
+* @return boolean
+* @usage
+*	common.parseViews(PAGE.body)
+*/
 def parseViews(String str) {
     VIEWS.clear()
     def pattern = ~/<view:(.*?)>(.+?)<\/view:\1>/
@@ -612,11 +696,15 @@ def parseViews(String str) {
     return true
 }
 
+//---------- begin function setView
 /**
- * Sets a view for rendering
- * @param name String view name
- * @param clear Integer clear existing views (default 0)
- */
+* @describe selects a parsed view for rendering, optionally clearing previously selected views
+* @param params name string, clear integer
+*	clear: pass 1 to clear other selected views first (default 0, cumulative)
+* @return void
+* @usage
+*	common.setView('default')
+*/
 def setView(String name, int clear = 0) {
     if (clear == 1) {
         VIEW.clear()
@@ -626,13 +714,15 @@ def setView(String name, int clear = 0) {
     }
 }
 
+//---------- begin function cmdResults
 /**
- * Executes a command and returns results
- * @param cmd String command to execute
- * @param args String arguments (optional)
- * @return String command output
- * @usage out = common.cmdResults('ls', '-al')
- */
+* @describe executes a shell command and returns its output
+* @param params cmd string, args string
+*	args: command arguments (optional)
+* @return string
+* @usage
+*	out = common.cmdResults('ls', '-al')
+*/
 def cmdResults(String cmd, String args = '') {
     def command = args ? "${cmd} ${args}" : cmd
     def process = command.execute()
@@ -640,12 +730,14 @@ def cmdResults(String cmd, String args = '') {
     return process.text
 }
 
+//---------- begin function md5
 /**
- * Converts MD5 hash of string
- * @param str String to hash
- * @return String MD5 hash
- * @usage hash = common.md5(str)
- */
+* @describe returns the MD5 hash of a string
+* @param params str string
+* @return string
+* @usage
+*	hash = common.md5(str)
+*/
 def md5(String str) {
     MessageDigest.getInstance("MD5").digest(str.bytes).encodeHex().toString()
 }

@@ -1,7 +1,21 @@
+#----------
+# begin function tclVersion
+# @describe returns the full Tcl patchlevel string for the running interpreter
+# @param (none)
+# @return string - e.g. "8.6.13"
+# @usage set v [tclVersion]
+#----------
 proc tclVersion {} {
     return [info patchlevel]
 }
-# Procedure to list built-in namespaces and their variables
+
+#----------
+# begin function listBuiltinNamespaces
+# @describe inspects known built-in Tcl namespaces and collects their variables/values into a dict
+# @param (none)
+# @return dict - keyed by namespace name (::tcl_platform, ::env, ::errorCode, ::errorInfo, ::auto_path)
+# @usage set info [listBuiltinNamespaces]
+#----------
 proc listBuiltinNamespaces {} {
     # Known built-in Tcl namespaces
     set builtinNamespaces {
@@ -51,7 +65,13 @@ proc listBuiltinNamespaces {} {
     return $results
 }
 
-# Procedure to explore auto_path in more detail
+#----------
+# begin function exploreAutoPath
+# @describe prints the contents of ::auto_path plus the sub-directories found under each existing path
+# @param (none)
+# @return void - writes a report to stdout via puts
+# @usage exploreAutoPath
+#----------
 proc exploreAutoPath {} {
     puts "Auto Path Details:"
     puts "----------------"
@@ -65,7 +85,13 @@ proc exploreAutoPath {} {
     }
 }
 
-# Procedure to explore environment variables
+#----------
+# begin function exploreEnvVars
+# @describe prints every environment variable (::env) as an aligned "KEY : VALUE" list
+# @param (none)
+# @return void - writes to stdout via puts
+# @usage exploreEnvVars
+#----------
 proc exploreEnvVars {} {
     puts "Environment Variables:"
     puts "--------------------"
@@ -74,7 +100,13 @@ proc exploreEnvVars {} {
     }
 }
 
-# Comprehensive Tcl variable exploration
+#----------
+# begin function tclVariableInfo
+# @describe gathers a snapshot of interpreter state - global vars, loaded packages, platform config and cwd
+# @param (none)
+# @return dict - keys: global_vars, loaded_packages, config, pwd
+# @usage set snapshot [tclVariableInfo]
+#----------
 proc tclVariableInfo {} {
     set info [dict create]
     
@@ -93,7 +125,13 @@ proc tclVariableInfo {} {
     return $info
 }
 
-# Demonstration procedure
+#----------
+# begin function demonstrateTclVariables
+# @describe demo/diagnostic routine that prints platform info, the first 10 env vars, auto_path and error vars
+# @param (none)
+# @return void - writes to stdout via puts/parray
+# @usage demonstrateTclVariables
+#----------
 proc demonstrateTclVariables {} {
     puts "===== Tcl Built-in Namespaces and Variables ====="
     
@@ -115,6 +153,13 @@ proc demonstrateTclVariables {} {
     puts "Error Code: \$::errorCode"
     puts "Error Info: \$::errorInfo"
 }
+#----------
+# begin function resultsAsCSV
+# @describe converts a query-results array (as returned by *QueryResults) into a CSV string, quoting fields containing commas
+# @param results list - the "array get" list form of a results array (keys: columns, rows, <row>,<column>)
+# @return string - CSV text with a header row, or "No results found" when rows == 0
+# @usage puts [resultsAsCSV [sqliteQueryResults $cfg $query]]
+#----------
 proc resultsAsCSV {results} {
     # Convert results list back to array
     array set resultsArray $results
@@ -162,6 +207,13 @@ proc resultsAsCSV {results} {
 # puts $fileId $csv
 # close $fileId
 # 
+#----------
+# begin function resultsAsTable
+# @describe converts a query-results array into an HTML <table> (class "table bordered striped"), HTML-escaping every cell
+# @param results list - the "array get" list form of a results array (keys: columns, rows, <row>,<column>)
+# @return string - HTML markup, or "<p>No results found</p>" when rows == 0
+# @usage puts [resultsAsTable [sqliteQueryResults $cfg $query]]
+#----------
 proc resultsAsTable {results} {
     # Convert results list back to array
     array set resultsArray $results
@@ -202,7 +254,13 @@ proc resultsAsTable {results} {
     return $html
 }
 
-# Helper function to escape HTML special characters
+#----------
+# begin function htmlEscape
+# @describe escapes HTML special characters (& < > " ') in a string so it is safe to embed in markup
+# @param text string - raw text
+# @return string - the escaped text
+# @usage append html "<td>[htmlEscape $value]</td>"
+#----------
 proc htmlEscape {text} {
     set escapes {
         & &amp;
@@ -232,7 +290,13 @@ proc htmlEscape {text} {
 # set fileId [open "results.html" w]
 # puts $fileId $html
 # close $fileId
-# Function to convert extended characters
+#----------
+# begin function convertExtendedCharacters
+# @describe transliterates accented / extended Latin characters to their plain ASCII equivalents (e.g. "e" -> "e", "ss" -> "ss")
+# @param string string - text that may contain accented characters
+# @return string - the normalized ASCII text
+# @usage set clean [convertExtendedCharacters $name]
+#----------
 proc convertExtendedCharacters {string} {
     # Define the character mapping
     set normalizeChars {
@@ -286,7 +350,13 @@ proc convertExtendedCharacters {string} {
     return $string
 }
 
-# Function to calculate the string length
+#----------
+# begin function commonStrlen
+# @describe wrapper for string length that also handles list/object-ish input by flattening it first
+# @param s mixed - a string, or a space-separated list
+# @return integer - the character length (0 for an empty string)
+# @usage if {[commonStrlen $x]} {...}
+#----------
 proc commonStrlen {s} {
     if {$s eq ""} {
         return 0
@@ -301,7 +371,13 @@ proc commonStrlen {s} {
     return [string length $s]
 }
 
-# Function to format a phone number
+#----------
+# begin function commonFormatPhone
+# @describe strips non-digits from a phone number and formats it by length (7 -> nnn-nnnn, 10 -> (nnn) nnn-nnnn, 11 -> n(nnn) nnn-nnnn)
+# @param phone string - a raw phone number in any format
+# @return string - the formatted number, "" if shorter than 4 chars, or the digit string unchanged for other lengths
+# @usage set pretty [commonFormatPhone $row(phone)]
+#----------
 proc commonFormatPhone {phone} {
     # Making sure we have something
     if {[string length $phone] < 4} {
@@ -328,7 +404,13 @@ proc commonFormatPhone {phone} {
     }
 }
 
-# Function to parse HTML tag attributes
+#----------
+# begin function parseHtmlTagAttributes
+# @describe extracts name/value attribute pairs from an HTML tag string, lowercasing names and stripping surrounding quotes from values
+# @param text string - an HTML tag or attribute fragment
+# @return dict - attribute name => value (value "" for valueless attributes)
+# @usage set attrs [parseHtmlTagAttributes {<a href="/x" target="_blank">}]
+#----------
 proc parseHtmlTagAttributes {text} {
     set attributes [dict create]
     

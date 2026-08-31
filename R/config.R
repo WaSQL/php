@@ -2,6 +2,11 @@
 #Rscript -e "install.packages('xml2', repos='https://cran.r-project.org')"
 suppressPackageStartupMessages(library(xml2, quietly = TRUE))
 
+# ---------- begin function configParse
+# @describe reads config.xml and returns the connection settings for a named database
+# @param db_name string - the value of the database node's name attribute in config.xml
+# @return list - dbtype, dbhost, dbuser, dbpass, dbname, connect, dbschema (stops if the file or node is missing)
+# @usage cfg <- configParse('mydb')
 configParse <- function(db_name) {
   # Construct the path to the config.xml in the parent directory
   config_file <- wasqlConfigFile()

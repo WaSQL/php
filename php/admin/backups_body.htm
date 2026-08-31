@@ -58,6 +58,25 @@ function backupsRename(obj){
 }
 
 /**
+ * Filter the existing-backups grid rows by a plain substring match.
+ *
+ * @param {HTMLElement} input The filter text box.
+ */
+function backupsFilterGrid(input){
+	var q = (input.value || '').toLowerCase().trim();
+	var rows = document.querySelectorAll('#backups_grid_content table tbody tr');
+	var shown = 0;
+	for(var i = 0; i < rows.length; i++){
+		var hay = (rows[i].textContent || '').toLowerCase();
+		var match = (q === '' || hay.indexOf(q) !== -1);
+		rows[i].style.display = match ? '' : 'none';
+		if(match){ shown++; }
+	}
+	var c = document.getElementById('backups_filter_count');
+	if(c){ c.textContent = shown; }
+}
+
+/**
  * Toggle visibility of the manual CLI backup command panel.
  *
  * @return {boolean} False to prevent default action.
@@ -198,9 +217,21 @@ if(isset($status) && is_array($status)){
 
 	<div class="backup-card">
 		<div class="backup-card-title">
-			<span class="icon-history"></span> Existing Backups 
+			<span class="icon-history"></span> Existing Backups
 			<span class="backup-count"><?=count($files);?></span>
+			<?php
+			if(isset($stats['table_count']) && $stats['table_count'] > 0){
+				echo '<span class="backup-count" style="background:#fff3e0;color:#b26a00;">' . (int)$stats['database_count'] . ' full &middot; ' . (int)$stats['table_count'] . ' table</span>';
+			}
+			?>
 		</div>
+
+		<?php
+		if(is_array($files) && count($files)){
+			echo '<input type="text" class="wacss_input is-small" placeholder="Filter backups by filename, scope or date&hellip;" onkeyup="backupsFilterGrid(this);" style="margin-bottom:12px;max-width:360px;">';
+			echo '<span class="w_small w_grey" style="margin-left:8px;"><span id="backups_filter_count">' . count($files) . '</span> shown</span>';
+		}
+		?>
 
 		<div id="backups_grid_content">
 			<?=backupsListBackups($files);?>

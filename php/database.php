@@ -3793,7 +3793,15 @@ ENDOFPRETABLE;
 			}
 			
 			if(isset($params['-editfields']) && isset($params['-table']) && in_array($fld,$params['-editfields'])){
-				if(isset($params['-editfunction'])){
+				//an explicit {field}_icon (e.g. {field}_options=>array('icon'=>'icon-new-tab'), which
+				//the thead builder flattens to {field}_icon) opts the cell out of in-cell editing:
+				//show that icon instead of the icon-edit pencil. The cell is typically already a link
+				//via {field}_href/_onclick, where the pencil is both wrong and non-functional.
+				$fldicon=!empty($params[$fld.'_icon'])?$params[$fld.'_icon']:(isset($params[$fld.'_options']['icon'])?$params[$fld.'_options']['icon']:'');
+				if(strlen($fldicon)){
+					$rtn .= ' <sup class="'.$fldicon.' w_right w_smallest w_gray" style="margin-left:4px;"></sup>';
+				}
+				elseif(isset($params['-editfunction'])){
 					$editv=$params['-editfunction'];
 					$editv=str_replace('%fieldname%',$fld,$editv);
 					foreach($rec as $recfld=>$recval){
@@ -3807,7 +3815,7 @@ ENDOFPRETABLE;
 				else{
 					$rtn .= ' <sup class="icon-edit w_right w_smallest w_gray w_pointer" style="margin-left:4px;" onclick="ajaxEditField(\''.$params['-table'].'\',\''.$recid.'\',\''.$fld.'\',{div:\''.$atts['id'].'\'});"></sup>';
 				}
-				
+
 			}
 			$rtn .=$value;
 			$rtn .='</td>'.PHP_EOL;

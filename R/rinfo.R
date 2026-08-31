@@ -11,8 +11,11 @@ r_version <- R.version.string
 # Get list of installed packages
 installed_packages <- installed.packages()
 
-# Function to generate package metadata
-# Function to generate package metadata
+# ---------- begin function get_package_metadata
+# @describe builds an HTML table-row fragment of the DESCRIPTION fields for one installed package
+# @param package_name string - the name of the installed package
+# @return string - HTML <tr> rows for each DESCRIPTION field, or a "Metadata not available" row
+# @usage html <- get_package_metadata('jsonlite')
 get_package_metadata <- function(package_name) {
   description_file <- file.path(installed.packages()[package_name, "LibPath"],
                                package_name, "DESCRIPTION")

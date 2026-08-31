@@ -690,6 +690,7 @@ if(isAjax()){
 		case 'tables':
 		case 'config':
 		case 'dashboard':
+		case 'about':
 		case 'cron':
 		case 'schtasks':
 		case 'export':
@@ -1433,6 +1434,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'tables':
 		case 'config':
 		case 'dashboard':
+		case 'about':
 		case 'cron':
 		case 'schtasks':
 		case 'export':
@@ -1897,66 +1899,9 @@ ENDOFX;
 				echo "Update Failed - cron.php does not seem to be running";
 			}
 		break;
-		case 'about':
-			//show DB Info, Current User, Link to WaSQL, Version
-			global $CONFIG;
-			echo '<div class="wadmin-head"><span class="icon-wasql-about"></span> About WaSQL</div>'.PHP_EOL;
-			echo '<div class="wadmin-card" style="max-width:940px;">'.PHP_EOL;
-			echo '<table class="wacss_table is-striped">'.PHP_EOL;
-			//versions
-			$versions=getAllVersions();
-			echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Version Information</th></tr>'.PHP_EOL;
-			foreach($versions as $key=>$version){
-				if(!strlen($version)){continue;}
-				echo "<tr><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
-            }
-			//Version Information
-			//$cver=curl_version();
-            //Server information
-            $versions=array(
-				'OS'			=> php_uname('s'),
-				'Host'			=> php_uname('n'),
-				'Release'		=> php_uname('r'),
-				'Version'		=> php_uname('v'),
-				'Machine Type'	=> php_uname('m'),
-			);
-			ksort($versions);
-            echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Server Information</th></tr>'.PHP_EOL;
-            foreach($versions as $key=>$version){
-				if(!strlen($version)){continue;}
-				echo "<tr><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
-            }
-            //Loaded Extensions
-         //   $exts=get_loaded_extensions();
-            //Other information
-            $versions=array(
-            	'Current Path'	=> dirname(__FILE__),
-				'Current User'	=> $USER['username'],
-				'PHP Include Path'	=> get_include_path(),
-				'PHP Script Owner'	=> get_current_user(),
-				'PHP Temp Dir'		=> sys_get_temp_dir(),
-				'PHP SAPI Name'		=> php_sapi_name(),
-				'PHP Ini Path'		=> php_ini_loaded_file()
-			);
-			ksort($versions);
-            echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Other Information</th></tr>'.PHP_EOL;
-            foreach($versions as $key=>$version){
-				if(!strlen($version)){continue;}
-				echo "<tr valign=\"top\"><th align=\"left\">{$key}:</th><td>{$version}</td></tr>\n";
-            }
-            //CONFIG Information
-			echo '<tr style="border-bottom:2px solid;border-top:2px solid;"><th colspan="2">Config.xml Settings for '.$_SERVER['HTTP_HOST'].'</th></tr>'.PHP_EOL;
-			ksort($CONFIG);
-			foreach($CONFIG as $key=>$val){
-				if(preg_match('/^\_/',$key)){continue;}
-				if(preg_match('/pass$/i',$key)){
-					$val=preg_replace('/./','*',$val);
-				}
-				echo "<tr><th align=\"left\">{$key}:</th><td>{$val}</td></tr>\n";
-            	}
-            echo '</table>'.PHP_EOL;
-            echo '</div>'.PHP_EOL;
-			break;
+		//NOTE: 'about' is handled by the file-based admin page at php/admin/about_* (see
+		//the adminViewPage fallthrough lists above) - it is an interactive dashboard, not
+		//the old flat table that used to live here.
 		case 'stats':
 			//Site Stats from the _access table
 			if(!isDBTable('_access')){$ok=createWasqlTable('_access');}
@@ -2439,7 +2384,8 @@ LIST_TABLE:
 						$recopts['name_options']=array(
 							'href'=>"/%name%",
 							'target'=>'blank',
-							'title'=>"open in new tab"
+							'icon'=>'icon-new-tab',
+							'title'=>"open in new tabx"
 						);
 					break;
 					case '_queries':echo '<span class="icon-database-empty w_danger w_big"></span>';break;

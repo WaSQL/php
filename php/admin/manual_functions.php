@@ -1,6 +1,43 @@
 <?php
 function manualRebuildDocs(){
 	// Rebuild all documentation by parsing all code files
+	//groovy
+	$path=getWasqlPath('groovy');
+	$files=listFilesEx($path,array('ext'=>'groovy'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+		//echo "groovy".printValue($ok);exit;
+	}
+	//julia
+	$path=getWasqlPath('julia');
+	$files=listFilesEx($path,array('ext'=>'jl'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//R
+	$path=getWasqlPath('R');
+	$files=listFilesEx($path,array('ext'=>'R'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//sh
+	$path=getWasqlPath('sh');
+	$files=listFilesEx($path,array('ext'=>'sh'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//tcl
+	$path=getWasqlPath('tcl');
+	$files=listFilesEx($path,array('ext'=>'tcl'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
+	//lua
+	$path=getWasqlPath('lua');
+	$files=listFilesEx($path,array('ext'=>'lua'));
+	foreach($files as $file){
+		$ok=manualParseFile($file['afile']);
+	}
 	//php
 	$path=getWasqlPath('php');
 	$files=listFilesEx($path,array('ext'=>'php'));
@@ -90,6 +127,9 @@ ENDOFQUERY;
 	if(!is_array($recs)){
 		return array();
 	}
+	//languages that ship a brand glyph in brands.css - anything else falls back to a
+	//generic code icon so a category is never rendered with a blank icon slot
+	$brandable=array('php','python','javascript','groovy','lua','r','ruby','perl','go','rust','swift','kotlin','node','nodejs');
 	foreach($recs as $i=>$rec){
 		switch(strtolower($rec['category'])){
 			case 'template php':
@@ -103,11 +143,65 @@ ENDOFQUERY;
 				$recs[$i]['icon']='icon-file-doc';
 			break;
 			default:
-				$recs[$i]['icon']='brand-'.strtolower($rec['category']);
+				$lang=strtolower(trim($rec['category']));
+				$recs[$i]['icon']=in_array($lang,$brandable)?"brand-{$lang}":'icon-code';
 			break;
 		}
 	}
 	return $recs;
+}
+//---------- begin function manualStats
+/**
+* @exclude - internal helper for the manual dashboard header
+*/
+function manualStats(){
+	$rec=getDBRecord("SELECT COUNT(*) AS functions, COUNT(DISTINCT category) AS languages, MAX(_edate) AS updated FROM _docs");
+	if(!is_array($rec)){$rec=array('functions'=>0,'languages'=>0,'updated'=>'');}
+	$rec['functions']=(int)$rec['functions'];
+	$rec['languages']=(int)$rec['languages'];
+	$rec['updated_verbose']='';
+	if(strlen($rec['updated']) && !stringBeginsWith($rec['updated'],'0000')){
+		$age=time()-strtotime($rec['updated']);
+		if($age<0){$age=0;}
+		$rec['updated_verbose']=verboseTime($age).' ago';
+	}
+	return $rec;
+}
+//---------- begin function manualDecodeInfo
+/**
+* @exclude - internal helper for the manual dashboard
+*/
+function manualDecodeInfo($info_ex,$key){
+	//a phpdoc key in _docs.info is stored as an array of base64-encoded lines
+	//(occasionally a bare base64 string) - decode it back to plain text
+	if(!is_array($info_ex) || !isset($info_ex[$key])){return array();}
+	$val=$info_ex[$key];
+	if(is_string($val)){$val=array($val);}
+	if(!is_array($val)){return array();}
+	$out=array();
+	foreach($val as $line){
+		if(is_string($line) && strlen($line)){$out[]=base64_decode($line);}
+	}
+	return $out;
+}
+//---------- begin function manualPrepareDoc
+/**
+* @exclude - internal helper: flattens a _docs row's info blob into ready-to-render fields
+*/
+function manualPrepareDoc(&$rec){
+	if(!isset($rec['info_ex']) || !is_array($rec['info_ex'])){
+		$rec['info_ex']=decodeJson(isset($rec['info'])?$rec['info']:'{}',true);
+	}
+	$rec['describe']=implode(' ',manualDecodeInfo($rec['info_ex'],'describe'));
+	$rec['params']=manualDecodeInfo($rec['info_ex'],'param');
+	$rec['returns']=manualDecodeInfo($rec['info_ex'],'return');
+	$rec['usage']=manualDecodeInfo($rec['info_ex'],'usage');
+	$rec['examples']=manualDecodeInfo($rec['info_ex'],'example');
+	$rec['notes']=implode(' ',manualDecodeInfo($rec['info_ex'],'notes'));
+	$rec['caller_text']=isset($rec['caller'])?trim(str_replace(array('&nbsp;','...}','...'),array(' ',''),$rec['caller'])):'';
+	$rec['file_decoded']=isset($rec['afile'])?base64_decode($rec['afile']):'';
+	$rec['comments_text']=isset($rec['comments'])?base64_decode($rec['comments']):'';
+	return $rec;
 }
 function manualGetFileNames($category){
 	// Escape category to prevent SQL injection
@@ -129,7 +223,7 @@ ENDOFQUERY;
 		$recs[$i]['file_path']=getFilePath($recs[$i]['afile_decoded']);
 		$recs[$i]['file_name']=getFileName($recs[$i]['afile_decoded']);
 	}
-	$recs=sortArrayByKeys($recs,array('afile_path'=>SORT_ASC,'afile_name'=>SORT_ASC));
+	$recs=sortArrayByKeys($recs,array('file_path'=>SORT_ASC,'file_name'=>SORT_ASC));
 	return $recs;
 }
 function manualGetNames($afile){
@@ -152,12 +246,12 @@ ENDOFQUERY;
 	}
 	foreach($recs as $i=>$rec){
 		if(isset($rec['info_length']) && $rec['info_length'] < 10 ){
-			$recs[$i]['class']='w_red';
+			$recs[$i]['class']='is-undocumented';
 		}
 		else{
 			$rec['info_ex']=decodeJson($rec['info'],true);
 			if(!isset($rec['info_ex']['usage'])){
-				$recs[$i]['class']='w_red';
+				$recs[$i]['class']='is-undocumented';
 			}
 			else{
 				$recs[$i]['class']='';
@@ -272,6 +366,42 @@ function manualParseFile($file){
 			$lang['category']='Javascript';
 			$lang['caller_end']='...}';
 		break;
+		case 'jl':
+			//function queryResults(dbname::String, query::String, params::Dict=Dict())
+			$lang['function_begin']='/^function\ (.+?)\((.*)\)/';
+			$lang['function_end']='/^end/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Julia';
+			$lang['caller_end']='...}';
+		break;
+		case 'groovy':
+			//def abort(Exception err) {  -- groovydoc comments are // and /* * */, not #
+			$lang['function_begin']='/^(?:(?:public|private|protected|static)\ +)*def\ (.+?)\((.*?)\)\ *\{/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\/\*]/';
+			$lang['comment_more']='/^[\/\*]+(.*)$/';
+			$lang['category']='Groovy';
+			$lang['caller_end']='...';
+		break;
+		case 'r':
+			//dbQueryResults <- function(db_name,query) {
+			$lang['function_begin']='/^([a-z0-9_.]+?)\s*(?:<-|=)\s*function\s*\((.*?)\)/i';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='R';
+			$lang['caller_end']='...}';
+		break;
+		case 'tcl':
+			//proc dbQueryResults {db_name query} {
+			$lang['function_begin']='/^proc\s+(\S+)\s+\{?(.*?)\}?\s*\{$/';
+			$lang['function_end']='/^\}/';
+			$lang['comment']='/^[\#]/';
+			$lang['comment_more']='/^[\#]+(.*)$/';
+			$lang['category']='Tcl';
+			$lang['caller_end']='...}';
+		break;
 		case 'php':
 			$lang['function_begin']='/^function\ (.+?)\((.*?)\)\ *\{/';
 			$lang['function_end']='/^\}/';
@@ -321,7 +451,8 @@ function manualParseFile($file){
 			$lang['caller_end']='...}';
 		break;
 		case 'lua':
-			$lang['function_begin']='/^function\ (.+?)\((.*?)\)/';
+			//local function dbQueryResults(db_name, query)   /   function _G.wasqlLuaPath()
+			$lang['function_begin']='/^(?:local\s+)?function\ (?:_G\.)?(.+?)\((.*?)\)/';
 			$lang['function_end']='/^end/';
 			$lang['comment']='/^\-\-/';
 			$lang['comment_more']='/^\-\-(.*)$/';
@@ -337,6 +468,7 @@ function manualParseFile($file){
 			$lang['caller_end']='...}';
 		break;
 	}
+	//echo implode('<br>',$lines);exit;
 	for($x=0;$x<$cnt;$x++){
 		$line=trim($lines[$x]);
 		//echo $ext.'<br>'.$re;exit;
@@ -385,7 +517,8 @@ function manualParseFile($file){
 				}
 				elseif(strlen($key) && preg_match($lang['comment_more'],$cline,$c)){
 					$v=trim($c[1]);
-					if(strlen($v)){
+					//skip separator-only continuation lines (e.g. tcl "#----------", "// ======")
+					if(strlen($v) && !preg_match('/^[-=_*#\/\s]+$/',$v)){
 						$rec['info'][$key][]=base64_encode($v);
 					}
 				}
@@ -449,7 +582,8 @@ function manualParseFile($file){
 				}
 				elseif(strlen($key) && preg_match($lang['comment_more'],$cline,$c)){
 					$v=trim($c[1]);
-					if(strlen($v)){
+					//skip separator-only continuation lines (e.g. tcl "#----------", "// ======")
+					if(strlen($v) && !preg_match('/^[-=_*#\/\s]+$/',$v)){
 						$rec['info'][$key][]=base64_encode($v);
 					}
 				}

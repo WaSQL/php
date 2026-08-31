@@ -19,19 +19,21 @@ import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
 
+//---------- begin function connect
 /**
- * Creates and returns a database connection to FairCom c-treeACE
- * @param params Map containing connection parameters:
- *   dbhost: c-treeACE server hostname or IP (default: localhost)
- *   dbport: c-treeACE server port (default: 6597)
- *   dbuser: database username
- *   dbpass: database password
- *   dbname: database name (optional)
- *   connect: full JDBC URL if provided (overrides other params)
- * @return Sql connection object
- * @usage
- *   def sql = ctreedb.connect(params)
- */
+* @describe creates and returns a database connection to FairCom c-treeACE
+* @param params params map
+*	dbhost: c-treeACE server hostname or IP (default: localhost)
+*	dbport: c-treeACE server port (default: 6597)
+*	dbuser: database username
+*	dbpass: database password
+*	dbname: database name (optional)
+*	connect: full JDBC URL if provided (overrides other params)
+* @return object
+*	connection object
+* @usage
+*	sql = ctreedb.connect(params)
+*/
 def connect(Map params) {
 	def dbuser = params.dbuser ?: ''
 	def dbpass = params.dbpass ?: ''
@@ -112,14 +114,15 @@ def connect(Map params) {
 	}
 }
 
+//---------- begin function executeSQL
 /**
- * Executes a SQL query (INSERT, UPDATE, DELETE, etc.)
- * @param query String SQL query to execute
- * @param params Map containing connection parameters
- * @return boolean true on success, error message string on failure
- * @usage
- *   def ok = ctreedb.executeSQL(query, params)
- */
+* @describe executes a SQL query (INSERT, UPDATE, DELETE, etc.)
+* @param params query string, params map
+* @return boolean
+*	true on success, error message string on failure
+* @usage
+*	ok = ctreedb.executeSQL(query, params)
+*/
 def executeSQL(String query, Map params = [:]) {
 	def sql = null
 	try {
@@ -140,16 +143,16 @@ def executeSQL(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function executePS
 /**
- * Executes a prepared statement with parameters
- * @param query String SQL query with ? placeholders
- * @param args List of parameters for prepared statement
- * @param params Map containing connection parameters
- * @return boolean true on success, error message string on failure
- * @usage
- *   def query = "INSERT INTO users (name, email) VALUES (?, ?)"
- *   def ok = ctreedb.executePS(query, ['John Doe', 'john@example.com'], params)
- */
+* @describe executes a prepared statement with parameters
+* @param params query string, args list, params map
+* @return boolean
+*	true on success, error message string on failure
+* @usage
+*	query = "INSERT INTO users (name, email) VALUES (?, ?)"
+*	ok = ctreedb.executePS(query, ['John Doe', 'john@example.com'], params)
+*/
 def executePS(String query, List args, Map params = [:]) {
 	def sql = null
 	try {
@@ -170,25 +173,26 @@ def executePS(String query, List args, Map params = [:]) {
 	}
 }
 
+//---------- begin function queryResults
 /**
- * Executes a query and returns list of records as maps
- * @param query String SQL query to execute
- * @param params Map containing connection parameters and optional:
- *   filename: if provided, writes results to CSV file instead of returning list
- *   format: 'json' (default) or 'list' for native Groovy list format
- *   skiperrors: if true, skips problematic rows and continues processing (default: false)
- *   fetchsize: number of rows to fetch at once from database (default: 1000, 0 for driver default)
- *   batchsize: number of rows to buffer before writing to file (default: 100)
- *   maxerrors: max consecutive errors before aborting (default: 100, only applies when skiperrors=true)
- *   notrim: if true, skips trimming whitespace from values (faster, default: false)
- *   querytimeout: seconds the JDBC driver will let the statement run (default: 600, 0 for no limit)
- * @return JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
- * @usage
- *   def json = ctreedb.queryResults(query, params)
- *   def recs = ctreedb.queryResults(query, params + [format: 'list'])
- *   def csv = ctreedb.queryResults(query, params + [filename: 'output.csv', skiperrors: true, fetchsize: 5000, batchsize: 500])
- *   def slow = ctreedb.queryResults(query, params + [querytimeout: 3600])
- */
+* @describe executes a query and returns list of records as maps
+* @param params query string, params map
+*	filename: if provided, writes results to CSV file instead of returning list
+*	format: 'json' (default) or 'list' for native Groovy list format
+*	skiperrors: if true, skips problematic rows and continues processing (default: false)
+*	fetchsize: number of rows to fetch at once from database (default: 1000, 0 for driver default)
+*	batchsize: number of rows to buffer before writing to file (default: 100)
+*	maxerrors: max consecutive errors before aborting (default: 100, only applies when skiperrors=true)
+*	notrim: if true, skips trimming whitespace from values (faster, default: false)
+*	querytimeout: seconds the JDBC driver will let the statement run (default: 600, 0 for no limit)
+* @return mixed
+*	JSON string (default), List of Maps if format='list', filename string if filename provided, or error message on failure
+* @usage
+*	json = ctreedb.queryResults(query, params)
+*	recs = ctreedb.queryResults(query, params + [format: 'list'])
+*	csv = ctreedb.queryResults(query, params + [filename: 'output.csv', skiperrors: true, fetchsize: 5000, batchsize: 500])
+*	slow = ctreedb.queryResults(query, params + [querytimeout: 3600])
+*/
 def queryResults(String query, Map params = [:]) {
 	// Ensure stdout uses UTF-8 so raw Unicode characters in JSON output are not
 	// corrupted to '?' when Groovy runs as a PHP subprocess on Linux.
@@ -489,11 +493,13 @@ def queryResults(String query, Map params = [:]) {
 	}
 }
 
+//---------- begin function escapeCSV
 /**
- * Helper function to escape CSV values
- * @param value String to escape
- * @return String escaped value
- */
+* @describe helper function to escape CSV values
+* @param params value string
+* @return string
+*	escaped value
+*/
 private def escapeCSV(String value) {
 	if (value == null) {
 		return ''

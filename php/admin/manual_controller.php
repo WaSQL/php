@@ -29,6 +29,7 @@ switch(strtolower($_REQUEST['func'])){
 			return;
 		}
 		$rec['info_ex']=decodeJson($rec['info']);
+		manualPrepareDoc($rec);
 		$recs=array($rec);
 		//echo printValue($sdocs);exit;
 		setView('search_results',1);
@@ -43,11 +44,12 @@ switch(strtolower($_REQUEST['func'])){
 		}
 		// Use parameterized query to prevent SQL injection
 		$search_escaped=addslashes($search);
-		$wheres=array();
+		$ors=array();
 		$ors[]="(name like '%{$search_escaped}%')";
 		$opts=array(
 			'-table'=>'_docs',
-			'-where'=>implode(' or ',$ors)
+			'-where'=>implode(' or ',$ors),
+			'-order'=>'name,category'
 		);
 		$recs=getDBRecords($opts);
 		if(!is_array($recs) || !count($recs)){
@@ -56,23 +58,7 @@ switch(strtolower($_REQUEST['func'])){
 		}
 		foreach($recs as $i=>$rec){
 			$recs[$i]['info_ex']=decodeJSON($rec['info']);
-			if(!isset($recs[$i]['info_ex']) || !isset($recs[$i]['info_ex']['describe'])){
-				$recs[$i]['info_ex']['describe']='';
-				continue;
-			}
-			if(isset($recs[$i]['info_ex']['describe'][0])){
-				$recs[$i]['describe']=array();
-				foreach($recs[$i]['info_ex']['describe'] as $str){
-					$recs[$i]['describe'][]=base64_decode($str);
-				}
-				$recs[$i]['describe']=implode('<br>',$recs[$i]['describe']);
-			}
-			elseif(is_string($recs[$i]['info_ex']['describe'])){
-				$recs[$i]['describe']=base64_decode($recs[$i]['info_ex']['describe']);
-			}
-			else{
-				$recs[$i]['describe']='';
-			}
+			manualPrepareDoc($recs[$i]);
 		}
 		setView('search_results',1);
 		return;
@@ -109,17 +95,21 @@ switch(strtolower($_REQUEST['func'])){
 		return;
 	break;
 	case 'rebuild':
-		// Only allow rebuild if explicitly requested
+		// The Rebuild button confirms client-side and sends confirm=yes; the guard keeps
+		// a stray GET (prefetch, crawler) from kicking off a multi-minute parse.
 		if(!isset($_REQUEST['confirm']) || $_REQUEST['confirm'] !== 'yes'){
-			echo '<div class="w_warning">To rebuild documentation, add &confirm=yes to the URL. Warning: This may take several minutes.</div>';
-			exit;
+			echo '<div class="manual-flash is-warning"><span class="icon-warning"></span> Add <code>&amp;confirm=yes</code> to rebuild the documentation index.</div>';
+			return;
 		}
-		// Set time limit for long-running rebuild operation
-		set_time_limit(300); // 5 minutes
+		if(!isDBTable('_docs')){$ok=createWasqlTable('_docs');}
+		if(!isDBTable('_docs_files')){$ok=createWasqlTable('_docs_files');}
+		set_time_limit(600);
+		$manual_rebuild_started=microtime(true);
 		manualRebuildDocs();
-		$categories=manualGetCategories();
-		setView('default',1);
-		echo '<div class="w_success">Documentation rebuilt successfully.</div>';
+		$manual_stats=manualStats();
+		$manual_stats['seconds']=round(microtime(true)-$manual_rebuild_started,1);
+		setView('flash',1);
+		return;
 	break;
 	default:
 		// Create tables if they don't exist
@@ -130,16 +120,8 @@ switch(strtolower($_REQUEST['func'])){
 			$ok=createWasqlTable('_docs_files');
 		}
 
-		// Check if documentation exists, if not suggest rebuild
-		$doc_count=getDBCount(array('-table'=>'_docs'));
-		if($doc_count == 0){
-			echo '<div class="w_info">Documentation database is empty. <a href="?_menu=manual&func=rebuild&confirm=yes">Click here to build documentation</a> (this may take several minutes).</div>';
-			exit;
-		}
-
-		//get categories
+		$manual_stats=manualStats();
 		$categories=manualGetCategories();
-		setView('default',1);
 	break;
 }
 setView('default',1);
