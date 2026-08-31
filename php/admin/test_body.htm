@@ -1,17 +1,5 @@
 <view:default>
-<script src="/wfiles/js/extras/c3.js" type="text/javascript"></script>
 <script type="text/javascript">
-	function c3LineChart(){
-		var chart = c3.generate({
-			bindto:'#c3_line',
-		    data: {
-		        json: {
-		        	'data1': [30, 200, 100, 400, 150, 250],
-		            'data2': [50, 20, 10, 40, 15, 25]
-		        }
-		    }
-		});
-	}
 	function chartJsOnclick(p){
 		wacss.toast(JSON.stringify(p,null,'<br>'));
 	}
@@ -505,22 +493,6 @@
 	</div>
 </view:behaviors>
 
-<view:javascript>
-	<div><a href="#toast" accesskey="s" onclick="return wacss.toast(getText('steve'),{timer:3});">From Steve</a></div>
-	<div id="steve" style="display:none">
-		<span class="icon-user w_green"></span> Steve: Bob are you around? I have a burning question for you.
-	</div>
-	<div class="w_padtop"><a accesskey="b" href="#toast" onclick="return wacss.toast(getText('bob'),{params:3});">From bob</a></div>
-	<div id="bob" style="display:none">
-		<span class="icon-user w_yellow"></span> Bob: I am at lunch right now but will be back soon.
-	</div>
-	<div class="w_padtop"><a href="#toast" onclick="return wacss.toast(getText('sally'),{timer:3});">From sally</a></div>
-	<div id="sally" style="display:none">
-		<span class="icon-user w_red"></span> Sally: The build failed. Looks like Bob broke it again.  Hurry back bob!
-	</div>
-	<?=loremIpsum(10000);?>
-</view:javascript> 
-
 <view:flexbutton>
 	<div class="flexbutton">
 		<a href="#delete" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/delete/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-close"></span></a>
@@ -567,10 +539,6 @@
 		<a href="#edit" data-section_id="<?=$rec['section_id'];?>" data-challenge_id="<?=$rec['challenge_id'];?>" data-challenge_action="plan/plan_template/edit/<?=$rec['_id'];?>" onclick="return pageSetChallengeAction(this);"><span class="icon-edit"></span></a>
 	</div>
 </view:flexbutton>
-
-<view:c3charts>
-<div id="c3_line"><?=buildOnLoad("c3LineChart();");?></div>
-</view:c3charts>
 
 <view:chartjs>
 	<!-- Doughnut Chart with border -->
@@ -756,168 +724,12 @@ LIMIT 10
 </view:chartjs>
 
 <view:languages>
-<table class="wacss_table striped bordered">
-	<tr>
-		<th>Language</th>
-		<th>Sample Code</th>
-		<th>Output</th>
-	</tr>
-	<tr>
-		<th>
-			<h3>PHP</h3>
-v<?=phpversion();?>
-		</th>
-		<td class="w_nowrap">
-&lt;?php<br>
-	echo &#39;Hello, world!&lt;br&gt;&#39;;<br>
-	echo userValue(&#39;username&#39;);<br>
-?&gt;
-		</td>
-		<td>
-			<div class="w_pre w_nowrap">
-<?php
-echo 'Hello, world!<br>';
-echo userValue('username');
-?>
-			</div>
-		</td>
-	</tr>
-	<tr>
-		<th>
-			<h3>Python</h3>
-v<?python
-import platform
-print(platform.python_version())
-?>
-			<div class="align-right">
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'python'});">Show Includes</button>
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'python'});">Show Full Script</button>
-			</div>
-		</th>
-		<td class="w_nowrap">
-&lt;?python<br>
-	print (&#39;Hello, world!&#39;)<br>
-	print(wasql.user(&#39;username&#39;))<br>
-?&gt;
-		</td>
-		<td>
-			<div class="w_pre w_nowrap">
-<?python
-print ('Hello, world!')
-print(wasql.user('username'))
-?>
-			</div>
-		</td>
-	</tr>
-	<tr>
-		<th>
-			<h3>NodeJs</h3>
-<?node
-	console.log(process.version);
-?>
-			<div class="align-right">
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'nodejs'});">Show Includes</button>
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'nodejs'});">Show Full Script</button>
-			</div>
-		</th>
-		<td class="w_nowrap">
-&lt;?node<br>
-	console.log(&#39;Hello, world!&#39;);<br>
-	let v2=wasql.user(&#39;username&#39;);<br>
-	console.log(v2);<br>
-?&gt;
-		</td>
-		<td>
-			<div class="w_pre w_nowrap">
-<?node
-	console.log('Hello, world!');
-	let v2=wasql.user('username');
-	console.log(v2);
-?>
-			</div>
-		</td>
-	</tr>
-	<tr>
-		<th>
-			<h3>Perl</h3>
-<?perl
-	print "v".$];
-?>
-			<div class="align-right">
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'perl'});">Show Includes</button>
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'perl'});">Show Full Script</button>
-			</div>
-		</th>
-		<td class="w_nowrap">
-&lt;?perl<br>
-	print (&#39;Hello, world!&lt;br&gt;&#39;);<br>
-	print wasqlUser(&#39;username&#39;);<br>
-?&gt;
-		</td>
-		<td>
-			<div class="w_pre w_nowrap">
-<?perl
-	print ('Hello, world!<br>');
-	print wasqlUser('username');
-?>
-			</div>
-		</td>
-	</tr>
-	<tr>
-		<th>
-			<h3>Lua</h3>
-<?lua
-	print(_VERSION);
-?>
-		<div class="align-right">
-			<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'lua'});">Show Includes</button>
-			<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'lua'});">Show Full Script</button>
-		</div>
-		</th>
-		<td class="w_nowrap">
-&lt;?lua<br>
-	print (&#39;Hello, world!&#39;);<br>
-	var2=wasqlUser(&#39;username&#39;);<br>
-	print(var2);<br>
-?&gt;
-		</td>
-		<td>
-			<div class="w_pre w_nowrap">
-<?lua
-	print('Hello, world!');
-	var2=wasqlUser('username');
-	print(var2);
-?>
-			</div>
-		</td>
-	</tr>
-	<tr>
-		<th>
-			<h3>Ruby</h3>
-v<?ruby
-	puts RUBY_VERSION
-?>
-			<div class="align-right">
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'language_includes',lang:'ruby'});">Show Includes</button>
-				<button class="wacss_button is-mobile-responsive is-small" onclick="return wacss.ajaxGet('/php/admin.php','centerpop',{_menu:'test',test:'script',lang:'ruby'});">Show Full Script</button>
-			</div>
-		</th>
-		<td class="w_nowrap">
-&lt;?ruby<br>
-	puts &#39;Hello, world!&#39;<br>
-?&gt;
-		</td>
-		<td>
-			<div class="w_pre w_nowrap">
-<?ruby
-	puts 'Hello, world!'
-?>
-			</div>
-		</td>
-	</tr>
-</table>
-
+<?=testLanguagesTab();?>
 </view:languages>
+
+<view:language_panel>
+<?=testLanguagePanel(isset($langkey)?$langkey:'php');?>
+</view:language_panel>
 
 <view:language_includes>
 <div class="w_centerpop_title"><?=$lang['name'];?> Includes</div>

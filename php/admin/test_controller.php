@@ -9,27 +9,22 @@
 		setView($_REQUEST['test'],1);
 		switch(strtolower($_REQUEST['test'])){
 			case 'chartjs':
-				
+
+			break;
+			case 'languages':
+				//sub-tab click: render just the one language panel into #languages_content
+				if(isset($_REQUEST['lang'])){
+					$langkey=strtolower($_REQUEST['lang']);
+					setView('language_panel',1);
+				}
+				return;
 			break;
 			case 'script':
+				//"Show full generated script" popup - wrap the panel's bridge snippet the way evalPHP would
 				$lang=commonGetLangInfo($_REQUEST['lang']);
-				switch(strtolower($lang['name'])){
-					case 'python':
-						$lang['code']="print ('Hello, world!')".PHP_EOL."print(wasql.user('username'))".PHP_EOL;
-					break;
-					case 'nodejs':
-						$lang['code']="console.log(process.version);".PHP_EOL;
-					break;
-					case 'perl':
-						$lang['code']="print ('Hello, world!<br>');".PHP_EOL."print wasqlUser('username');".PHP_EOL;
-					break;
-					case 'lua':
-						$lang['code']="print('Hello, world!');".PHP_EOL."var2=wasqlUser('username');".PHP_EOL."print(var2);".PHP_EOL;
-					break;
-					case 'ruby':
-						$lang['code']="puts 'Hello, world!'".PHP_EOL;
-					break;
-				}
+				$testdefs=testLanguageDefs();
+				$testkey=strtolower($_REQUEST['lang']);
+				$lang['code']=isset($testdefs[$testkey])?trim($testdefs[$testkey]['bridge']).PHP_EOL:'';
 				setView('script',1);
 				return;
 			break;

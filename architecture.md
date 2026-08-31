@@ -21,7 +21,7 @@ MVC pattern, `$PASSTHRU` routing, view/render functions, data-access functions, 
 
 ## Multi-Language Support
 
-Shortcode islands let a page mix languages beyond PHP within the same field — `<?py ... ?>` (Python), `<?js ... ?>` (Node.js), and others (Perl, Ruby, VBScript, Lua, Bash) are dispatched similarly to the `<?groovy ... ?>` island documented in `wasql_reference.md`'s c-tree section. All languages receive the same `$_REQUEST`/`$_SESSION`/`$_SERVER`/`$USER`. Verify exact language support against a running instance before relying on one you haven't used — this list isn't independently re-verified per language.
+Shortcode islands let a page mix languages beyond PHP within the same field — `<?py ... ?>` (Python), `<?ruby ... ?>` (Ruby), `<?js ... ?>` (Node.js), plus Perl, Lua, R, Tcl, Julia, Groovy, PowerShell, Bash and VBScript. Each receives the WaSQL globals (`USER`/`CONFIG`/`PAGE`/`PASSTHRU`/`REQUEST`/`SESSION`/`SERVER`/…) as native values, and the ones with a sibling driver directory (`ruby/`, `python/`, `R/`, `Tcl/`, `lua/`, `julia/`, `groovy/`) also get `dbQueryResults(conn, sql)`. Full detail — recognized tokens, how stdout is spliced back, DB access, per-language driver-install lines — is in **`wasql_reference.md` → "Polyglot islands"**. The interpreter must be on the server `PATH`; nothing is auto-installed.
 
 ## Page Lifecycle
 

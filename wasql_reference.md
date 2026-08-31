@@ -245,6 +245,57 @@ Gotchas, all real:
 
 ---
 
+## Polyglot islands — running another language inside a page field
+
+Any page field that `evalPHP()` processes (`body`, `functions`, `controller`, a view) can contain an island in a language **other than PHP**. Syntax: the language token is the first word inside the `<? … ?>` block.
+
+```
+<?ruby
+  puts "hello from ruby #{RUBY_VERSION}, logged in as " + wasqlUser("username")
+?>
+```
+
+- **Recognized tokens** (regex in `php/common.php` ~L10597): `python`/`py`, `perl`/`pl`, `ruby`/`rb`, `lua`, `node`/`nodejs`, `R`/`rscript`, `tcl`, `julia`/`jl`, `groovy`, `bash`, `sh`, `powershell`/`pwsh`/`ps1`, `vbscript`/`vbs`. `<script type="php">…</script>` is also accepted as a PHP island.
+- **How it runs:** `evalPHP` strips the token, calls `commonGetLangInfo()` for `{exe, ext, comment, shebang}`, then dispatches to a per-language `eval<Lang>Code()` (Julia, Tcl, R, **Ruby**, Python, Perl, Lua, Node, Bash, PowerShell, Groovy, VBScript). Anything without a dedicated function falls through to a generic "write temp file, shell out to `exe`, splice `stdout` back in" runner. **The island's stdout replaces the `<? … ?>` block** — so `print`/`puts`/`println`, not `return`.
+- **WaSQL globals are injected** as native values before your code runs: `USER`, `CONFIG`, `PAGE`, `TEMPLATE`, `PASSTHRU`, `DATABASE`, `REQUEST`, `SESSION`, `SERVER`, `CRONTHRU` (JSON-serialized in PHP, base64'd onto the script, decoded there). Convenience accessors `wasqlUser("k")`, `wasqlConfig("k")`, `wasqlPage("k")`, `wasqlPassthru(0)`, … are defined too. Add more with `$CONFIG['eval_globals']`.
+- **Prerequisite:** the interpreter must be on the server's `PATH` (`ruby`, `python3`, `julia`, `groovy`, …). Not installed by WaSQL — same bar as the Julia/Groovy ports.
+- **Cost:** a fresh interpreter process per island, per request (no daemon). Fine for glue; don't put one in a tight loop.
+- **`$CONFIG['includes'][<ext>]`** lets a site preload one script file into every island of that language (imported as `page`).
+- **Single-pass scan:** `evalPHP` matches every `<? … ?>` island in a field *once*, up front, then substitutes results. An island **emitted by a helper's return value** (e.g. a `functions` builder that returns a string containing `<?python … ?>`) is spliced in *after* the scan and is **never executed** — it renders as literal text. To run another language from model code, call `commonGetLangInfo($tag)` + the matching `eval<Lang>Code($lang,$code)` directly (set `$lang['evalcode_md5']` first). The admin Tests → Languages tab (`php/admin/test_functions.php` → `testLangRun()`) does exactly this.
+
+### Database access from an island
+
+Each language that ships a driver set has a sibling directory — `ruby/`, `python/`, `R/`, `Tcl/`, `lua/`, `julia/`, `groovy/` — with the same shape: `common` (helpers), `config` (`config.xml` reader), `db` (dispatcher), `{mysql,postgres,sqlite,mssql,snowflake}db` drivers, `<lang>info`. The dispatcher resolves `conn_name` against `config.xml` and loads the driver for that `dbtype` **on demand**, so a page that never queries needs none of the driver libraries installed. **The call name and return shape are NOT uniform across the ports** (verified against the source):
+
+| lang | call | returns |
+|---|---|---|
+| Ruby | `dbQueryResults(conn, sql)` / `db_query_results` | `{ "columns"=>[…], "rows"=>[{col=>val},…], "count"=>n }` — plus `results_as_table` / `results_as_csv` |
+| Lua | `dbQueryResults(conn, sql)` | `{ columns={…}, rows={{…}}, count=n }` |
+| R | `dbQueryResults(conn, sql)` | a `data.frame` (`rows$colname`) |
+| Tcl | `dbQueryResults conn sql` | `array get` form: `$res(rows)` = count, `$res(<i>,<col>)` = value |
+| Python | `db.queryResults(conn, sql)` | a `list` of row `dict`s (`db`, `common`, `config` are auto-imported) |
+| Julia | `db.queryResults(conn, sql)` | a JSON **string** by default → `JSON3.read(res)` |
+| Groovy | `db.queryResults(conn, sql, [:])` | a JSON **string** by default → `new JsonSlurper().parseText(json)` |
+
+```
+<?ruby
+  res = dbQueryResults("mydb", "SELECT username, email FROM _users ORDER BY _cdate DESC LIMIT 10")
+  puts results_as_table(res)          # or results_as_csv(res)
+?>
+```
+
+The admin **Tests → Languages** tab (`/php/admin.php?_menu=test`) has a live, per-language sub-tab demonstrating each of these against `_users`.
+
+Driver libraries are **not** bundled (same as R's `install.packages` / Lua's `luarocks`):
+
+| lang | mysql | postgres | sqlite | mssql | snowflake |
+|---|---|---|---|---|---|
+| Ruby | `gem install mysql2` | `gem install pg` | `gem install sqlite3` | `gem install tiny_tds` | `gem install ruby-odbc` |
+
+> ⚠️ A failed island returns an HTML error block (red banner + the generated script), not your data — check for it the way the c-tree/Groovy note above describes. A **DB** call inside the island raises in that language and surfaces in that block.
+
+---
+
 ## Views & templates (deep)
 - A `body` field is a set of named `<view:name>...</view:name>` blocks. **Defining a view never outputs it** — WaSQL extracts every block into a registry and the block text is removed from where it sits. It only appears when a `renderView`/`renderViewIf`/`renderEach` call names it, or `setView()` selects it as the page output.
 - **Nesting `<view:>` blocks is purely cosmetic** (for readability). An inner block still only renders where something explicitly calls it. Don't expect an inline nested view to appear in place.

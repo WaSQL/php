@@ -10625,6 +10625,11 @@ function evalPHP($strings){
 						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
 						$c=1;
 					break;
+					case 'ruby':
+						$val=evalRubyCode($lang,$evalcode);
+						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+						$c=1;
+					break;
 					case 'lua':
 						//https://www.educba.com/lua-json/
 						$val=evalLuaCode($lang,$evalcode);
@@ -13514,6 +13519,185 @@ ENDOFCONTENT;
 		$code=commonShowCode($content);
 		$err=<<<ENDOFERR
 <div style="color:#d70000;">!! Embedded R Script Error. Return Code: {$out['rtncode']} !!</div>
+<div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
+	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
+	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
+</div>
+<pre style="color:#5f5f5f;white-space:break-spaces;font-size:0.8rem;color:#d70000;">
+{$out['stdout']}
+{$out['stderr']}
+</pre>
+{$code}
+ENDOFERR;
+		return $err;
+	}
+}
+//---------- begin function evalRubyCode
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function evalRubyCode($lang,$evalcode){
+	global $USER;
+	global $CONFIG;
+	global $PAGE;
+	global $TEMPLATE;
+	global $PASSTHRU;
+	global $DATABASE;
+	global $CRONTHRU;
+	//remove postportal history if any.
+	if(isset($USER['_postportal'])){
+		unset($USER['_postportal']);
+	}
+	$CRONTHRU['pid']=getmypid();
+	$wasqlTempPath=getWasqlTempPath();
+	$wasqlTempPath=str_replace("\\","/",$wasqlTempPath);
+	$wasqlPath=getWasqlPath();
+	$wasqlPath=str_replace("\\","/",$wasqlPath);
+	$wasqlRubyPath=getWasqlPath('ruby');
+	$wasqlRubyPath=str_replace("\\","/",$wasqlRubyPath);
+	$files=array(
+		'main'=>"{$wasqlTempPath}/main_{$lang['evalcode_md5']}.rb",
+		'wasql'=>"{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.rb",
+	);
+	$pagecode='';
+	if(isset($CONFIG['includes'][$lang['ext']][0]) && is_file($CONFIG['includes'][$lang['ext']][0])){
+		$files['include']=$CONFIG['includes'][$lang['ext']][0];
+		$code=getFileContents($files['include']);
+		$code=preg_replace('/^\<\?(rb|ruby)/is','',rtrim($code));
+		$code=preg_replace('/\?\>$/is','',ltrim($code));
+		$code=trim($code);
+		$files['page']="{$wasqlTempPath}/page_{$lang['evalcode_md5']}.rb";
+		$pagecode="require \"{$wasqlTempPath}/page_{$lang['evalcode_md5']}.rb\"";
+		$content=<<<ENDOFCONTENT
+#!/usr/bin/env ruby
+
+{$code}
+ENDOFCONTENT;
+		setFileContents($files['page'],$content);
+	}
+	//resolve the active database connection (if any)
+	if(isset($CONFIG['database']) && isset($DATABASE[$CONFIG['database']])){
+		$db=$DATABASE[$CONFIG['database']];
+	}
+	else{
+		$db=array();
+	}
+	$removes=array('body','functions','controller','js','js_min','css','css_min');
+	$p=$PAGE;
+	foreach($removes as $fld){
+		if(isset($p[$fld])){unset($p[$fld]);}
+	}
+	$t=$TEMPLATE;
+	foreach($removes as $fld){
+		if(isset($t[$fld])){unset($t[$fld]);}
+	}
+	if(!isset($_SESSION)){$_SESSION=[];}
+	//base64-encode the JSON payloads to sidestep every shell/string escaping issue
+	$rubyGlobal=function($v){
+		return base64_encode(json_encode(evalCleanupGlobal($v),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE));
+	};
+	$wasql=array(
+		'USER'=>'USER = JSON.parse("'.$rubyGlobal($USER).'".unpack1("m"))',
+		'CONFIG'=>'CONFIG = JSON.parse("'.$rubyGlobal($CONFIG).'".unpack1("m"))',
+		'PAGE'=>'PAGE = JSON.parse("'.$rubyGlobal($p).'".unpack1("m"))',
+		'TEMPLATE'=>'TEMPLATE = JSON.parse("'.$rubyGlobal($t).'".unpack1("m"))',
+		'PASSTHRU'=>'PASSTHRU = JSON.parse("'.$rubyGlobal($PASSTHRU).'".unpack1("m"))',
+		'DATABASE'=>'DATABASE = JSON.parse("'.$rubyGlobal($db).'".unpack1("m"))',
+		'REQUEST'=>'REQUEST = JSON.parse("'.$rubyGlobal($_REQUEST).'".unpack1("m"))',
+		'SESSION'=>'SESSION = JSON.parse("'.$rubyGlobal($_SESSION).'".unpack1("m"))',
+		'SERVER'=>'SERVER = JSON.parse("'.$rubyGlobal($_SERVER).'".unpack1("m"))',
+		'CRONTHRU'=>'CRONTHRU = JSON.parse("'.$rubyGlobal($CRONTHRU).'".unpack1("m"))',
+	);
+	//add any additional globals
+	if(isset($CONFIG['eval_globals'])){
+		if(is_string($CONFIG['eval_globals'])){
+			$CONFIG['eval_globals']=preg_split('/\,/',$CONFIG['eval_globals']);
+		}
+		foreach($CONFIG['eval_globals'] as $var){
+			global $$var;
+			$wasql[$var]="{$var} = JSON.parse(\"".$rubyGlobal($$var)."\".unpack1(\"m\"))";
+		}
+	}
+	$content=<<<ENDOFCONTENT
+#!/usr/bin/env ruby
+
+require "json"
+
+# WaSQL global variables (decoded from base64-encoded JSON)
+{$wasql['USER']}
+{$wasql['CONFIG']}
+{$wasql['PAGE']}
+{$wasql['TEMPLATE']}
+{$wasql['PASSTHRU']}
+{$wasql['DATABASE']}
+{$wasql['REQUEST']}
+{$wasql['SESSION']}
+{$wasql['SERVER']}
+{$wasql['CRONTHRU']}
+
+def wasqlRubyPath
+	"{$wasqlRubyPath}"
+end
+
+def wasqlConfigFile
+	"{$wasqlPath}/config.xml"
+end
+
+def wasqlTempPath
+	"{$wasqlTempPath}"
+end
+
+def wasqlUser(k); USER.key?(k) ? USER[k] : ""; end
+def wasqlConfig(k); CONFIG.key?(k) ? CONFIG[k] : ""; end
+def wasqlPage(k); PAGE.key?(k) ? PAGE[k] : ""; end
+def wasqlTemplate(k); TEMPLATE.key?(k) ? TEMPLATE[k] : ""; end
+def wasqlPassthru(k); PASSTHRU.is_a?(Array) ? (PASSTHRU[k] || "") : (PASSTHRU.key?(k) ? PASSTHRU[k] : ""); end
+def wasqlDatabase(k); DATABASE.key?(k) ? DATABASE[k] : ""; end
+def wasqlRequest(k); REQUEST.key?(k) ? REQUEST[k] : ""; end
+def wasqlSession(k); SESSION.key?(k) ? SESSION[k] : ""; end
+def wasqlServer(k); SERVER.key?(k) ? SERVER[k] : ""; end
+def wasqlCronthru(k); CRONTHRU.key?(k) ? CRONTHRU[k] : ""; end
+ENDOFCONTENT;
+	setFileContents($files['wasql'],$content);
+	$content=<<<ENDOFCONTENT
+#!/usr/bin/env ruby
+
+require "{$wasqlTempPath}/wasql_{$lang['evalcode_md5']}.rb"
+require "{$wasqlRubyPath}/common.rb"
+require "{$wasqlRubyPath}/config.rb"
+require "{$wasqlRubyPath}/db.rb"
+{$pagecode}
+
+{$evalcode}
+ENDOFCONTENT;
+	$content=str_replace("\r","",$content);
+	setFileContents($files['main'],$content);
+	$filename=getFileName($files['main']);
+	$command="{$lang['exe']} \"{$filename}\" 2>&1";
+	$out=cmdResults($command,'',$wasqlTempPath);
+	if(!is_array($out)){$out=array();}
+	//remove any stale ruby temp files older than a day
+	$ok=cleanupDirectory($wasqlTempPath,1,'days','rb');
+	if(isset($out['rtncode']) && isNum($out['rtncode']) && $out['rtncode']==0){
+		//remove the temp files on success
+		foreach($files as $name=>$afile){
+			unlink($afile);
+		}
+		if(isset($out['stdout']) && commonStrlen($out['stdout'])){
+			return $out['stdout'];
+		}
+		if(isset($out['stderr']) && commonStrlen($out['stderr'])){
+			return $out['stderr'];
+		}
+		return '';
+	}
+	else{
+		$out['rtncode']=isset($out['rtncode'])?$out['rtncode']:'';
+		$out['stdout']=isset($out['stdout'])?$out['stdout']:'';
+		$out['stderr']=isset($out['stderr'])?$out['stderr']:'';
+		$code=commonShowCode($content);
+		$err=<<<ENDOFERR
+<div style="color:#d70000;">!! Embedded Ruby Script Error. Return Code: {$out['rtncode']} !!</div>
 <div style="display:inline-flex;background:#333;color:#ccc;padding:5px 7px;border-radius:3px;font-size:0.9rem;">
 	<div style="align-self:center;justify-self:center;margin-right:3px;">{$wasqlTempPath}&gt;</div>
 	<div style="align-self:center;justify-self:center;color:#FFF;">{$command}</div>
