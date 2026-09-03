@@ -910,7 +910,14 @@ There is also `postXML()` for the same job with an XML body.
 
 **Do NOT reach for `postURL()` for a JSON API** — that one builds its payload with
 `http_build_query()` on the dashless params and has no raw-body option, so it can only
-send form-encoded data.
+send form-encoded data. It also has a silent footgun even when you only want it as a
+GET/PUT/DELETE client: **any option key without a leading `-` is treated as a query
+param.** Pass `'skip_error'=>1` (no dash — it's checked dashless at the bottom of the
+function) alongside a URL that already contains `?a=b` and `postURL` appends
+`?skip_error=1`, producing `...?a=b?skip_error=1` — a malformed request the remote
+rejects with 400/500. Every key you pass must start with `-` (`-method`, `-headers`,
+`-nossl`, `-timeout`, `-timeout_connect`); to suppress the connection-error `echo`+`exit`,
+just *omit* `skip_error` entirely (it only exits when explicitly set falsy).
 
 ### The real limitation: one verb
 
