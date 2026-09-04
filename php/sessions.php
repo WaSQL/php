@@ -67,7 +67,7 @@ function sessionRead($session_id) {
 		return $rec['session_data'];
 	}
 	//no session found  - add a blank record
-	$cuser=(int)$CUSER['_id'];
+	$cuser=(int)$USER['_id'];
 	$ok=executeSQL("INSERT IGNORE INTO _sessions (_cuser,_cdate,session_id,touchtime,json) VALUES ('{$cuser}',now(),'{$session_id}', UNIX_TIMESTAMP(now()),1);");
 	return '';
 }

@@ -1,9 +1,7 @@
 <?php
 //--Set upload size
-//Set Post Max Size
-ini_set('POST_MAX_SIZE', '34M');
-ini_set('UPLOAD_MAX_FILESIZE', '30M');
-ini_set('max_execution_time', 5000);
+//Post Max Size / Upload Max Filesize are PHP_INI_PERDIR - ini_set() here is a no-op.
+//Set post_max_size/upload_max_filesize in php.ini (or php_admin_value) instead - see bug #42.
 set_time_limit(5500);
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);

@@ -7,8 +7,11 @@
 		https://docs.faircom.com/doc/sqlref/sqlref.pdf
 */
 
-ini_set('max_execution_time', 1800);
-set_time_limit(1800);
+//PHP timeout must stay ABOVE the DB-side query_timeout (see ctreeParseConnectParams()) so the
+//database gives up first and the user gets a clean "query timed out" error instead of a PHP
+//fatal mid-fetch. Was 1800s, which killed legitimate 30-min reporting queries at the boundary - see bug #41.
+ini_set('max_execution_time', 4200);
+set_time_limit(4200);
 
 //---------- begin function ctreeGetAllTableFields ----------
 /**
@@ -543,6 +546,21 @@ function ctreeGetDBIndexes($tablename=''){
 }
 function ctreeGetDBTableIndexes($tablename=''){
 	//key_name,column_name,seq_in_index,non_unique
+	//admin.sysindexes keys the table name in `tbl` (unqualified) and the schema/owner
+	//	in `tblowner`. Callers pass a schema-qualified name here - dbGetTableIndexes and
+	//	the sqlprompt `idx {table}` command both hand this "admin.dstdb", and
+	//	ctreeGetDBRecords qualifies bare names via ctreeGetDBSchema() - so a raw
+	//	WHERE tbl='admin.dstdb' matches nothing. Split it (postgresqlGetDBTableIndexes
+	//	does the same) and filter tbl + tblowner separately.
+	$owner='';
+	if(stringContains($tablename,'.')){
+		list($owner,$tablename)=preg_split('/\./',$tablename,2);
+	}
+	else{
+		$owner=ctreeGetDBSchema();
+	}
+	$where="tbl='{$tablename}'";
+	if(commonStrlen($owner)){$where.=" AND tblowner='{$owner}'";}
 	$query=<<<ENDOFQUERY
 		SELECT
 			idxname as key_name,
@@ -550,7 +568,7 @@ function ctreeGetDBTableIndexes($tablename=''){
 			idxtype as index_type,
 			idxseq as seq_in_index
 		FROM admin.sysindexes
-		WHERE tbl='{$tablename}'
+		WHERE {$where}
 		ORDER BY idxname,idxseq
 ENDOFQUERY;
 	return ctreeQueryResults($query);
@@ -997,17 +1015,24 @@ function ctreeParseConnectParams($params=array()){
 			//ODBC;DSN=REPL01;HOST=repl01.dot.infotraxsys.com;UID=dot_dels;DATABASE=liveSQL;SERVICE=6597;CHARSET NAME=;MAXROWS=;OPTIONS=;;PRSRVCUR=OFF;;FILEDSN=;SAVEFILE=;FETCH_SIZE=;QUERY_TIMEOUT=;SCROLLCUR=OF
 			$params['-connect']="odbc:Driver={c-treeACE ODBC Driver};Host={$CONFIG['ctree_dbhost']};Database={$CONFIG['ctree_dbname']};Port={$CONFIG['ctree_dbport']}";
 		}
-		//add connect_timeout (connection establishment timeout)
-		if(!stringContains($params['-connect'],'CONNECT_TIMEOUT') && !stringContains($params['-connect'],'connect_timeout')){
-			$params['-connect'].=";CONNECT_TIMEOUT=30";
-		}
-		//add query_timeout - FairCom ODBC driver honors this in the connection string (odbc_setoption is ignored)
-		if(!stringContains($params['-connect'],'QUERY_TIMEOUT') && !stringContains($params['-connect'],'query_timeout')){
-			$params['-connect'].=";QUERY_TIMEOUT=1800";
-		}
 	}
 	else{
 		//$params['-connect_source']="passed in";
+	}
+	//add connect_timeout/query_timeout - applies to EVERY connect string, however it was obtained,
+	//including one supplied via config.xml's connect="..." attribute. Bug #40: this used to live
+	//INSIDE the "if(!isset($params['-connect']))" branch above, which is unreachable once config.xml
+	//supplies a connect string (the normal case - every <database> tag has one), so no cTREE query
+	//ever actually got a timeout.
+	if(!stringContains($params['-connect'],'CONNECT_TIMEOUT') && !stringContains($params['-connect'],'connect_timeout')){
+		$params['-connect'].=";CONNECT_TIMEOUT=30";
+	}
+	//query_timeout defaults HIGH on purpose - legitimate reporting queries on this system run 30+
+	//minutes. Per-database override: add query_timeout="..." to the <database> tag in config.xml;
+	//the attribute loop above already surfaces it here as -query_timeout.
+	$querytimeout=isset($params['-query_timeout']) ? (int)$params['-query_timeout'] : 3600;
+	if(!stringContains($params['-connect'],'QUERY_TIMEOUT') && !stringContains($params['-connect'],'query_timeout')){
+		$params['-connect'].=";QUERY_TIMEOUT={$querytimeout}";
 	}
 	//echo printValue($params);exit;
 	return $params;

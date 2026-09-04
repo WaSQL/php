@@ -565,6 +565,7 @@ ENDOFQUERY;
 					exit;
 				}
 				$str='<?'.'php'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
+				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
 				echo evalPHP($str);
 				exit;
 			}
@@ -574,6 +575,7 @@ ENDOFQUERY;
 					exit;
 				}
 				$str='<?'.'py'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
+				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
 				echo evalPHP($str);
 				exit;
 			}
@@ -583,6 +585,7 @@ ENDOFQUERY;
 					exit;
 				}
 				$str='<?'.'lua'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
+				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
 				echo evalPHP($str);
 				exit;
 			}
@@ -596,6 +599,7 @@ ENDOFQUERY;
 					echo "You must have admin rights to execute commands on this server";
 					exit;
 				}
+				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
 				$out=cmdResults($m[1]);
 				echo "CMD: {$out['cmd']}".PHP_EOL;
 				echo "DIR: {$out['dir']}".PHP_EOL;
@@ -1083,6 +1087,7 @@ ENDOFQUERY;
 			}
 			if($skip==0 && isset($_REQUEST['py']) && $_REQUEST['py']==1){
 				$qstart=microtime(true);
+				session_write_close(); //release the session lock before the query - see bug #38
 				$afile=pyQueryResults($db['name'],$_SESSION['sql_last'],array('-csv'=>1));
 				$qstop=microtime(true);
 				$lastquery=array();
@@ -1120,6 +1125,7 @@ ENDOFQUERY;
 				$recs_show=30;
 				$recs=array();
 				$qstart=microtime(true);
+				session_write_close(); //release the session lock before the query - see bug #38
 				$result=dbGroovyQueryResults($db['name'],$_SESSION['sql_last'],array('-filename'=>$afile));
 				$qstop=microtime(true);
 				$lastquery=array();
@@ -1172,7 +1178,10 @@ ENDOFQUERY;
 				//The Groovy driver writes a header row and terminates every row (incl. the
 				//last) with a newline, so the raw line count is (data rows + header + a
 				//trailing empty line). Subtract 2 to get the real row count.
-				$recs_count=$_SESSION['sql_last_count']=max(0,getFileLineCount($afile)-2);
+				$recs_count=max(0,getFileLineCount($afile)-2);
+				session_start(); //reopen briefly to persist the result count - see bug #38
+				$_SESSION['sql_last_count']=$recs_count;
+				session_write_close();
 				if($recs_count < 1){
 					$recs_count=0;
 					$recs=array();
@@ -1240,9 +1249,18 @@ ENDOFQUERY;
 				$qstart=microtime(true);
 				$_SESSION['debugValue_lastm']=array();
 				//echo printValue($params);exit;
-				$recs_count=$_SESSION['sql_last_count']=dbGetRecords($db['name'],$params);
+				session_write_close(); //release the session lock before the query (can run 30+ min) - see bug #38
+				$recs_count=dbGetRecords($db['name'],$params);
 				$qstop=microtime(true);
-				
+
+				//capture what accumulated in $_SESSION while it was closed (debugValue() writes
+				//straight into $_SESSION['debugValue_lastm'] - see wasql.php:542) BEFORE reopening,
+				//since session_start() below repopulates $_SESSION from the persisted store and
+				//would otherwise discard it.
+				$debugvalue_lastm=$_SESSION['debugValue_lastm'];
+				session_start(); //reopen briefly to persist the results
+				$_SESSION['sql_last_count']=$recs_count;
+				$_SESSION['debugValue_lastm']=$debugvalue_lastm;
 
 				$lastquery=dbGetLast();
 
@@ -1252,6 +1270,7 @@ ENDOFQUERY;
 				if(strlen($_SESSION['debugValue_lastm']) && $_SESSION['debugValue_lastm'] != '[]'){
 					$lastquery['error']=$_SESSION['debugValue_lastm'];
 				}
+				session_write_close(); //done writing - release the lock again
 				//echo printValue($lastquery);exit;
 				if(isset($lastquery['error']) && strlen($lastquery['error'])){
 					if(isset($_REQUEST['format'])){
@@ -1664,6 +1683,7 @@ ENDOFQUERY;
 				'-query'=>$_SESSION['sql_last'],
 			);
 			$recs=array();
+			session_write_close(); //release the session lock before the query (can run 30+ min) - see bug #38
 			//groovy dbs stream the export to disk via the Groovy/JDBC server
 			if(isset($db['groovy']) && $db['groovy']==1){
 				$gf=dbGroovyQueryResults($db['name'],$_SESSION['sql_last'],array('-filename'=>$afile));
