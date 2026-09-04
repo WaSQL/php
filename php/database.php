@@ -5310,6 +5310,7 @@ function dropDBIndex($indexname,$tablename){
 	$query="drop index {$indexname} on {$tablename}";
 	$ok=executeSQL($query);
 	//echo $query.printValue($ok);exit;
+	return $ok;
 }
 //---------- begin function addEditDBForm--------------------
 /**

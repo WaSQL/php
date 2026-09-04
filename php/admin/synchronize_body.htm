@@ -102,7 +102,7 @@
 			<view:action_properties>
 			<a href="/php/admin.php?_menu=properties&_table_=<?=$rec['tablename'];?>" title="Properties" style="display:inline;" ><span class="icon-properties w_bigger w_primary"></span></a>
 			</view:action_properties>
-			<?=renderViewIfElse($rec['marker']=='schema','action_properties','action_edit',$rec,'rec');?>
+			<?=renderViewIfElse(in_array($rec['marker'],array('schema','indexes')),'action_properties','action_edit',$rec,'rec');?>
 		</td>
 	</tr>
 	</view:rec>

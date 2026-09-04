@@ -31,6 +31,7 @@ include_once("{$progpath}/database.php");
 include_once("{$progpath}/sessions.php");
 include_once("{$progpath}/schema.php");
 include_once("{$progpath}/admin/topmenu_functions.php");
+include_once("{$progpath}/admin/synchronize_functions.php");
 $_SESSION['debugValue_lastm']='';
 global $TEMPLATE;
 global $PAGE;
@@ -453,6 +454,67 @@ ENDOFQUERY;
 			echo base64_encode(json_encode($out));
 			exit;
 		break;
+		case 'get_indexes':
+			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>"get_indexes: User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
+			if(!isset($json['table'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			$info=adminGetTableIndexInfo($json['table']);
+			echo base64_encode(json_encode($info));
+			exit;
+		break;
+		case 'update_indexes':
+			global $USER;
+			if(!isUser()){
+				echo base64_encode(json_encode(array('error'=>"Not logged in")));
+				foreach($_SESSION as $k=>$v){
+					if(preg_match('/^(sync\_|git\_)/i',$k)){
+						unset($_SESSION[$k]);
+					}
+				}
+				exit;
+			}
+			if(!isAdmin()){
+				echo base64_encode(json_encode(array('error'=>"update_indexes:User '{$USER['username']}' is not an admin [{$USER['_id']},{$USER['utype']}]")));
+				exit;
+			}
+			if(!isset($json['records'])){
+				echo base64_encode(json_encode(array('error'=>'missing params')));
+				exit;
+			}
+			$out=array();
+			foreach($json['records'] as $table=>$desired){
+				$results=synchronizeApplyTableIndexes($table,$desired);
+				if(!count($results)){
+					$out[]="<span class=\"icon-mark w_success\"></span> {$table}: no index changes needed";
+					continue;
+				}
+				foreach($results as $r){
+					$out[]="<span class=\"icon-mark w_success\"></span> {$table}: {$r}";
+				}
+			}
+			echo base64_encode(json_encode($out));
+			exit;
+		break;
 		case 'get_changes':
 			if(!isset($json['fields']) || !isset($json['username'])){
 				echo base64_encode(json_encode(array('error'=>'missing info')));
@@ -499,6 +561,7 @@ ENDOFQUERY;
 				foreach($info as $field=>$f){
 				$rtn['_schema_'][$table][$field]=$f['_dbtype_ex'];
 				}
+				$rtn['_indexes_'][$table]=adminGetTableIndexInfo($table);
 			}
 			echo base64_encode(json_encode($rtn));
 			exit;

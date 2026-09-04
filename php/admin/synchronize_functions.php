@@ -76,6 +76,113 @@ function synchronizeUpdateTargetSchemas($schemas){
 	);
 	return synchronizePost($load,0);
 }
+function synchronizeGetTargetIndexes($table){
+	//build the load
+	$load=array(
+		'func'		=> 'get_indexes',
+		'table'		=> $table
+	);
+	return synchronizePost($load,0);
+}
+function synchronizeUpdateTargetIndexes($indexes){
+	//build the load
+	$load=array(
+		'func'		=> 'update_indexes',
+		'table'		=> 'indexes',
+		'records'	=> $indexes
+	);
+	return synchronizePost($load,0);
+}
+/**
+* @describe returns the non-primary indexes on $table, grouped by index name
+* @param table string
+* @return array keyed by index name: array('unique'=>0/1,'fulltext'=>0/1,'columns'=>array(...))
+* @usage $info=adminGetTableIndexInfo('_pages');
+*/
+function adminGetTableIndexInfo($table){
+	$rows=getDBTableIndexes($table);
+	$info=array();
+	if(!is_array($rows)){return $info;}
+	foreach($rows as $row){
+		$keyname=$row['key_name'];
+		if(strtoupper($keyname)=='PRIMARY'){continue;}
+		if(!isset($info[$keyname])){
+			$info[$keyname]=array(
+				'unique'	=> (isset($row['non_unique']) && $row['non_unique']==0)?1:0,
+				'fulltext'	=> (isset($row['index_type']) && strtoupper($row['index_type'])=='FULLTEXT')?1:0,
+				'columns'	=> array()
+			);
+		}
+		$seq=isset($row['seq_in_index']) && isNum($row['seq_in_index'])?(int)$row['seq_in_index']:(count($info[$keyname]['columns'])+1);
+		$info[$keyname]['columns'][$seq]=$row['column_name'];
+	}
+	foreach($info as $keyname=>$data){
+		ksort($info[$keyname]['columns']);
+		$info[$keyname]['columns']=array_values($info[$keyname]['columns']);
+	}
+	ksort($info);
+	return $info;
+}
+/**
+* @describe formats one index's info into a comparable display/definition string
+* @param keyname string - index name
+* @param data array - array('unique'=>0/1,'fulltext'=>0/1,'columns'=>array(...))
+* @return string
+* @usage $def=adminFormatIndexDef('uidx_pages_name',$data);
+*/
+function adminFormatIndexDef($keyname,$data){
+	$type=!empty($data['fulltext'])?'FULLTEXT':(!empty($data['unique'])?'UNIQUE':'INDEX');
+	$columns=isset($data['columns'])?$data['columns']:array();
+	return "{$keyname} {$type} (".implode(',',$columns).")";
+}
+/**
+* @describe returns adminGetTableIndexInfo() formatted as an array of definition strings, suitable for diffText()
+* @param table string
+* @param [info] array - pass a previously fetched adminGetTableIndexInfo()/synchronizeGetTargetIndexes() result to avoid refetching
+* @return array
+* @usage $defs=adminGetTableIndexDefs('_pages');
+*/
+function adminGetTableIndexDefs($table,$info=null){
+	if(!is_array($info)){$info=adminGetTableIndexInfo($table);}
+	$defs=array();
+	foreach($info as $keyname=>$data){
+		$defs[]=adminFormatIndexDef($keyname,$data);
+	}
+	return $defs;
+}
+/**
+* @describe reconciles a table's actual indexes to match $desired (adds missing/changed indexes, drops indexes not in $desired) - used on both sides of a sync: the target applies the source's desired indexes, and a revert applies the target's indexes back onto the source
+* @param table string
+* @param desired array - adminGetTableIndexInfo()-shaped array of the indexes that should exist
+* @return array of result strings, one per add/drop performed
+* @usage $results=synchronizeApplyTableIndexes('_pages',$desired);
+*/
+function synchronizeApplyTableIndexes($table,$desired){
+	if(!is_array($desired)){$desired=array();}
+	$current=adminGetTableIndexInfo($table);
+	$results=array();
+	//drop indexes that no longer exist (or whose definition changed - readded below)
+	foreach($current as $keyname=>$cdata){
+		if(!isset($desired[$keyname]) || adminFormatIndexDef($keyname,$desired[$keyname]) != adminFormatIndexDef($keyname,$cdata)){
+			$ok=dropDBIndex($keyname,$table);
+			$results[]="Dropped index {$keyname} on {$table}: ".printValue($ok);
+		}
+	}
+	//add indexes that are new or changed
+	foreach($desired as $keyname=>$ddata){
+		if(isset($current[$keyname]) && adminFormatIndexDef($keyname,$current[$keyname])==adminFormatIndexDef($keyname,$ddata)){continue;}
+		$params=array(
+			'-table'	=> $table,
+			'-name'		=> $keyname,
+			'-fields'	=> $ddata['columns']
+		);
+		if(!empty($ddata['unique'])){$params['-unique']=true;}
+		if(!empty($ddata['fulltext'])){$params['-fulltext']=true;}
+		$ok=addDBIndex($params);
+		$results[]="Added index {$keyname} on {$table}: ".printValue($ok);
+	}
+	return $results;
+}
 function synchronizePost($load,$plain=0){
 	global $USER;
 	//unset($_SESSION['sync_target_url']);
@@ -310,6 +417,36 @@ function synchronizeGetChanges($tables){
 				'tablename'=>$table,
 				'tabname'=>'schema',
 				'marker'=>'schema',
+				'changes'=>implode('<br />'.PHP_EOL,$changes),
+			);
+		}
+	}
+	//compare indexes
+	foreach($tables as $table){
+		$changes=array();
+		$sindexes=adminGetTableIndexInfo($table);
+		$tindexes=isset($target_recs['_indexes_'][$table]) && is_array($target_recs['_indexes_'][$table])?$target_recs['_indexes_'][$table]:array();
+		foreach($sindexes as $keyname=>$sdata){
+			$sdef=adminFormatIndexDef($keyname,$sdata);
+			if(!isset($tindexes[$keyname])){
+				//index is new
+				$changes[]="New Index: {$sdef}";
+			}
+			else{
+				$tdef=adminFormatIndexDef($keyname,$tindexes[$keyname]);
+				if($tdef != $sdef){
+					//index has changed
+					$changes[]="Changed Index: {$sdef}";
+				}
+			}
+		}
+		if(count($changes)){
+			if(!is_array($recs['indexes'])){$recs['indexes']=array();}
+			$recs['indexes'][]=array(
+				'id'=>$table,
+				'tablename'=>$table,
+				'tabname'=>'indexes',
+				'marker'=>'indexes',
 				'changes'=>implode('<br />'.PHP_EOL,$changes),
 			);
 		}

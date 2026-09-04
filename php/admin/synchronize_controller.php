@@ -108,6 +108,25 @@
 				setView('sync_diffs',1);
 				return;
 			}
+			if($table=='indexes'){
+				$title="{$marker} - {$id}";
+				$target_info=synchronizeGetTargetIndexes($id);
+				$source_info=adminGetTableIndexInfo($id);
+				$target_fields=adminGetTableIndexDefs($id,$target_info);
+				$source_fields=adminGetTableIndexDefs($id,$source_info);
+				$diff = diffText($source_fields,$target_fields, $id,'',300);
+				if(!strlen($diff) || preg_match('/No differences found/i',$diff)){
+					$diff=array(
+						'source'=>$source_fields,
+						'target'=>$target_fields
+					);
+					setView('sync_diffs_none',1);
+					return;
+				}
+				$diffs[$id]=$diff;
+				setView('sync_diffs',1);
+				return;
+			}
 			$fields=adminGetSynchronizeFields($table);
 			$target_rec=synchronizeGetTargetRecord($table,$id,$fields);
 			if(isset($target_rec['error'])){
@@ -174,6 +193,15 @@
 					$results[]="Table {$id} schema reverted";
 				}
 			}
+			elseif($table=='indexes'){
+				$results=array("Reverting {$table} records");
+				foreach($ids as $id){
+					$target_info=synchronizeGetTargetIndexes($id);
+					$r=synchronizeApplyTableIndexes($id,$target_info);
+					$results=array_merge($results,$r);
+					$results[]="Table {$id} indexes reverted";
+				}
+			}
 			else{
 				$results=array("Reverting {$table} records");
 				$fields=adminGetSynchronizeFields($table);
@@ -235,6 +263,13 @@
 					}
 				}
 				$results=synchronizeUpdateTargetSchemas($schemas);
+			}
+			elseif($table=='indexes'){
+				$indexes=array();
+				foreach($ids as $id){
+					$indexes[$id]=adminGetTableIndexInfo($id);
+				}
+				$results=synchronizeUpdateTargetIndexes($indexes);
 			}
 			else{
 				$idstr=implode(',',$ids);
