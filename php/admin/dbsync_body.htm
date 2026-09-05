@@ -13,9 +13,10 @@
 .dbsync-diffs{display:flex;align-items:center;gap:7px;font-size:.9rem;color:#4a4a4a;margin-bottom:8px;cursor:pointer;white-space:nowrap;}
 .dbsync-diffs input{width:16px;height:16px;cursor:pointer;}
 .dbsync-content{margin-top:18px;}
+.dbsync-summary{margin:2px 0 14px;font-size:.85rem;font-weight:600;color:#5a5a5a;}
 </style>
 <div class="dbsync-head"><span class="icon-database"></span> DB Sync Tool</div>
-<form method="post" name="dbsync_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'dbsync_content');">
+<form method="post" name="dbsync_form" action="/php/admin.php" data-setprocessing="dbsync_content" onsubmit="this.dataset.setprocessing='dbsync_content';this.tab.value='compare';return wacss.ajaxPost(this,'dbsync_content');">
 	<input type="hidden" name="_menu" value="dbsync" />
 	<input type="hidden" name="func" value="compare" />
 	<input type="hidden" name="tab" value="compare" />
@@ -88,8 +89,3 @@
 	<pre><?=encodeHtml($ddl);?></pre>
 </div>
 </view:ddl>
-
-<view:showlist>
-	<?=dbsyncShowlist($recs,$listopts);?>
-</view:showlist>
-

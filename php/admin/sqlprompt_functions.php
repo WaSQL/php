@@ -437,6 +437,12 @@ function sqlpromptBuildQuery($db,$name,$str=''){
 			loadExtras('elastic');
 			return trim(elasticNamedQuery($name,$str));
 		break;
+		case 'msaccess':
+			loadExtras('msaccess');
+			global $dbh_msaccess;
+			$dbh_msaccess='';
+			return trim(msaccessNamedQuery($name,$str));
+		break;
 		default:
 			loadExtras('mysql');
 			global $dbh_mysql;

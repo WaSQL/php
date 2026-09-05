@@ -37,11 +37,73 @@ function dbsyncValidateProcedureType($type){
 }
 
 function dbsyncValidateViewName($view){
-	//Only allow specific view names
-	$allowed=array('default','compare','tables_indexes','compare_tables_indexes','compare_functions_procedures','view_diff','view_sync','ddl','showlist');
+	//Only the tab names actually reachable via the user-controlled 'tab' request param.
+	//Other views (view_diff, view_sync, ddl, ...) are only ever selected internally via setView() and never come from user input here.
+	$allowed=array('compare','compare_tables_indexes','compare_functions_procedures');
 	return in_array(strtolower($view),$allowed);
 }
 
+/**
+ * @describe Returns the lowercased dbtype configured in config.xml for a database name (mysql is the
+ *           implicit default, matching dbFunctionCall()'s own switch default in database.php).
+ * @param string $dbname database name as configured in config.xml
+ * @return string lowercased dbtype, e.g. 'mysql','postgresql','oracle'
+ * @usage $type=dbsyncEngineType('mydb');
+ */
+function dbsyncEngineType($dbname){
+	global $DATABASE;
+	if(isset($DATABASE[$dbname]['dbtype']) && strlen($DATABASE[$dbname]['dbtype'])){
+		return strtolower($DATABASE[$dbname]['dbtype']);
+	}
+	return 'mysql';
+}
+/**
+ * @describe True only when both databases run an engine that implements getAllTableConstraints()/getProcedureText()/
+ *           getAllProcedures() (currently oracle and postgresql only - see php/extras/databases/*.php). Calling these
+ *           functions for an unsupported engine hits WaSQL's "function does not exist" path, which calls debugValue()
+ *           and - in debug/staging mode - echoes directly into the output buffer, tripping evalPHP's
+ *           "return value and echo value both found" check. Always check this BEFORE calling those functions.
+ * @param string $source source database name
+ * @param string $target target database name
+ * @return bool
+ * @usage if(dbsyncEngineSupportsConstraintsAndProcedures($source,$target)){ ... }
+ */
+function dbsyncEngineSupportsConstraintsAndProcedures($source,$target){
+	$supported=array('oracle','postgresql','postgres');
+	return in_array(dbsyncEngineType($source),$supported) && in_array(dbsyncEngineType($target),$supported);
+}
+/**
+ * @describe Calls a function while discarding any output it (or something it calls, e.g. a core debugValue()
+ *           notice) echoes directly - these data-fetch functions should never legitimately produce output, and
+ *           a stray echo landing in the same buffer evalPHP() inspects can trip its "return value and echo
+ *           value both found" check when the caller is a <?=...?> short-echo tag. dbsync already surfaces
+ *           failures through each function's own return value / $_SESSION['debugValue_lastm'], so the raw
+ *           echoed notice is redundant noise here, not lost information.
+ * @param callable $func function name to call
+ * @param array $args positional arguments to pass
+ * @return mixed whatever $func returns
+ * @usage $recs=dbsyncSuppressedCall('dbGetAllTableConstraints',array($source));
+ */
+function dbsyncSuppressedCall($func,$args){
+	ob_start();
+	$result=call_user_func_array($func,$args);
+	ob_end_clean();
+	return $result;
+}
+/**
+ * @describe Unpacks the return value of dbAddIndex()/dbDropIndex() into [ok,query]. Both functions return
+ *           either an error string, or an array shaped ['query'=>...,'result'=>...] on success - never a
+ *           plain [ok,query] tuple, so list()-destructuring the raw return silently yields nulls.
+ * @param mixed $result the raw return value of dbAddIndex()/dbDropIndex()
+ * @return array [$ok,$query]
+ * @usage list($ok,$query)=dbsyncUnpackIndexResult(dbAddIndex($db,$params));
+ */
+function dbsyncUnpackIndexResult($result){
+	if(is_array($result)){
+		return array(isset($result['result'])?$result['result']:$result,isset($result['query'])?$result['query']:'');
+	}
+	return array($result,'');
+}
 function dbsyncSyncIndexes($sync){
 	$recs=array();
 	//source
@@ -74,7 +136,7 @@ function dbsyncSyncIndexes($sync){
 	if(count($drops)){
 		foreach($drops as $name=>$rec){
 			$_SESSION['debugValue_lastm']='';
-			list($ok,$query)=dbDropIndex($sync['target']['name'],$name,$sync['table']);
+			list($ok,$query)=dbsyncUnpackIndexResult(dbDropIndex($sync['target']['name'],$name,$sync['table']));
 			if(strlen($_SESSION['debugValue_lastm'])){
 				$ok="<pre><xmp>{$_SESSION['debugValue_lastm']}</xmp></pre>";
 			}
@@ -93,14 +155,14 @@ function dbsyncSyncIndexes($sync){
 				'-name'=>$name,
 				'-fields'=>json_decode($rec['index_keys'],true)
 			);
-			if($rec['is_unique']==1){
+			if(isset($rec['is_unique']) && $rec['is_unique']==1){
 				$params['-unique']=true;
 			}
-			if($rec['is_fulltext']==1){
+			if(isset($rec['is_fulltext']) && $rec['is_fulltext']==1){
 				$params['-fulltext']=true;
 			}
 			$_SESSION['debugValue_lastm']='';
-			list($ok,$query)=dbAddIndex($sync['target']['name'],$params);
+			list($ok,$query)=dbsyncUnpackIndexResult(dbAddIndex($sync['target']['name'],$params));
 			if(strlen($_SESSION['debugValue_lastm'])){
 				$ok="<pre><xmp>{$_SESSION['debugValue_lastm']}</xmp></pre>";
 			}
@@ -138,16 +200,28 @@ function dbsyncSyncFields($sync){
 			$fields[$rec['field_name']]=$rec['type_name'];
 		}
 		$rtn['fields']=nl2br(json_encode($fields,JSON_PRETTY_PRINT));
+		$_SESSION['debugValue_lastm']='';
 		$ok=dbAlterTable($sync['target']['name'],$sync['table'],$fields);
-		$rtn['result']=printValue($ok);	
+		if(strlen($_SESSION['debugValue_lastm'])){
+			$rtn['result']="<pre><xmp>{$_SESSION['debugValue_lastm']}</xmp></pre>";
+		}
+		else{
+			$rtn['result']=printValue($ok);
+		}
 	}
 	return $rtn;
 }
 function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
+	if(!dbsyncEngineSupportsConstraintsAndProcedures($source,$target)){
+		return '<div class="w_bold w_danger">Comparing functions/procedures isn\'t supported for one of these database engines (requires Oracle or PostgreSQL).</div>';
+	}
 	$procedures=array(
-		'source'=>dbGetAllProcedures($source),
-		'target'=>dbGetAllProcedures($target),
+		'source'=>dbsyncSuppressedCall('dbGetAllProcedures',array($source)),
+		'target'=>dbsyncSuppressedCall('dbGetAllProcedures',array($target)),
 	);
+	if(!is_array($procedures['source']) || !is_array($procedures['target'])){
+		return '<div class="w_bold w_danger">Failed to retrieve functions/procedures from one of these databases.</div>';
+	}
 	if(!count($procedures['source'])){
 		return "Failed to get source functions from [{$source}]";
 	}
@@ -192,6 +266,7 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 		}
 	}
 	foreach($recs as $key=>$rec){
+		$recs[$key]['status']='';
 		$cols=array();
 		$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="'.$recs[$key]['diff'].'" data-func="view_procedure" data-name="'.$recs[$key]['object_name'].'" data-type="'.$recs[$key]['object_type'].'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 		switch(strtolower($recs[$key]['diff'])){
@@ -224,8 +299,21 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 		}
 	}
 	
+	$counts=array('new'=>0,'missing'=>0,'args'=>0,'content'=>0,'same'=>0);
+	foreach($recs as $rec){
+		if(isset($counts[$rec['diff']])){
+			$counts[$rec['diff']]++;
+		}
+	}
+	$summary='<div class="dbsync-summary">'.count($recs).' object'.(count($recs)==1?'':'s')
+		.' &middot; '.$counts['new'].' new'
+		.' &middot; '.$counts['missing'].' missing'
+		.' &middot; '.$counts['args'].' args different'
+		.' &middot; '.$counts['content'].' content different'
+		.' &middot; '.$counts['same'].' same</div>';
+
 	if($diffs==1){
-		foreach($recs as $key=>$rec){	
+		foreach($recs as $key=>$rec){
 			if($recs[$key]['diff']=='same'){
 				unset($recs[$key]);
 			}
@@ -241,44 +329,54 @@ function dbsyncCompareFunctionsAndProcedures($source,$target,$diffs=0){
 		'-hidesearch'=>1
 	);
 
-	return databaseListRecords($listopts);
+	return $summary.dbsyncSuppressedCall('databaseListRecords',array($listopts));
 }
 function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 	$tableindexes=array(
-		'source'=>dbGetAllTableIndexes($source),
-		'target'=>dbGetAllTableIndexes($target),
+		'source'=>dbsyncSuppressedCall('dbGetAllTableIndexes',array($source)),
+		'target'=>dbsyncSuppressedCall('dbGetAllTableIndexes',array($target)),
 	);
-	//remove any indexes that are auto-generated
+	if(!is_array($tableindexes['source'])){$tableindexes['source']=array();}
+	if(!is_array($tableindexes['target'])){$tableindexes['target']=array();}
+	//remove any indexes that are auto-generated (not every engine's index record includes a 'generated' column - mysql's doesn't)
 	foreach($tableindexes['source'] as $name=>$indexes){
 		foreach($indexes as $i=>$index){
-			if(in_array($index['generated'],array('Y',1))){
+			if(isset($index['generated']) && in_array($index['generated'],array('Y',1))){
 				unset($tableindexes['source'][$name][$i]);
 			}
 		}
 	}
 	foreach($tableindexes['target'] as $name=>$indexes){
 		foreach($indexes as $i=>$index){
-			if(in_array($index['generated'],array('Y',1))){
+			if(isset($index['generated']) && in_array($index['generated'],array('Y',1))){
 				unset($tableindexes['target'][$name][$i]);
 			}
 		}
 	}
 	$tablefields=array(
-		'source'=>dbGetAllTableFields($source),
-		'target'=>dbGetAllTableFields($target),
+		'source'=>dbsyncSuppressedCall('dbGetAllTableFields',array($source)),
+		'target'=>dbsyncSuppressedCall('dbGetAllTableFields',array($target)),
 	);
-	if(!count($tablefields['source'])){
+	if(!is_array($tablefields['source']) || !count($tablefields['source'])){
 		return "Failed to get source tables from [{$source}]";
 	}
-	elseif(!count($tablefields['target'])){
+	elseif(!is_array($tablefields['target']) || !count($tablefields['target'])){
 		return "Failed to get target tables from [{$target}]";
 	}
-	//constraints
-	$tableconstraints=array(
-		'source'=>dbGetAllTableConstraints($source),
-		'target'=>dbGetAllTableConstraints($target),
-	);
-	
+	//constraints - not every database engine has an implementation (currently only oracle/postgresql); check
+	//engine support up front so we never call the missing function (which would echo a core debug notice).
+	$constraintsSupported=dbsyncEngineSupportsConstraintsAndProcedures($source,$target);
+	if($constraintsSupported){
+		$tableconstraints=array(
+			'source'=>dbsyncSuppressedCall('dbGetAllTableConstraints',array($source)),
+			'target'=>dbsyncSuppressedCall('dbGetAllTableConstraints',array($target)),
+		);
+		$constraintsSupported=is_array($tableconstraints['source']) && is_array($tableconstraints['target']);
+	}
+	if(!$constraintsSupported){
+		$tableconstraints=array('source'=>array(),'target'=>array());
+	}
+
 	$recs=array();
 	foreach($tablefields['source'] as $table=>$fields){
 		$recs[$table]=array(
@@ -309,15 +407,15 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 	foreach($recs as $table=>$rec){
 		$recs[$table]['source']=array(
 			'name'=>$source,
-			'fields'=>$tablefields['source'][$table],
-			'indexes'=>$tableindexes['source'][$table],
-			'constraints'=>$tableconstraints['source'][$table]
+			'fields'=>isset($tablefields['source'][$table])?$tablefields['source'][$table]:array(),
+			'indexes'=>isset($tableindexes['source'][$table])?$tableindexes['source'][$table]:array(),
+			'constraints'=>isset($tableconstraints['source'][$table])?$tableconstraints['source'][$table]:array()
 		);
 		$recs[$table]['target']=array(
 			'name'=>$target,
-			'fields'=>$tablefields['target'][$table],
-			'indexes'=>$tableindexes['target'][$table],
-			'constraints'=>$tableconstraints['target'][$table]
+			'fields'=>isset($tablefields['target'][$table])?$tablefields['target'][$table]:array(),
+			'indexes'=>isset($tableindexes['target'][$table])?$tableindexes['target'][$table]:array(),
+			'constraints'=>isset($tableconstraints['target'][$table])?$tableconstraints['target'][$table]:array()
 		);
 		if(strlen($rec['schema'])){continue;}
 		//check for field differences
@@ -366,13 +464,16 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 		else{
 			$recs[$table]['constraints']='none';
 		}
+		if(!$constraintsSupported){
+			$recs[$table]['constraints']='unsupported';
+		}
 	}
 	if($diffs==1){
 		foreach($recs as $table=>$rec){	
 			$diff=0;
 			if($recs[$table]['schema']!='same'){$diff+=1;} 
 			if(!in_array($recs[$table]['indexes'],array('same','none'))){$diff+=1;}
-			if(!in_array($recs[$table]['constraints'],array('same','none'))){
+			if(!in_array($recs[$table]['constraints'],array('same','none','unsupported'))){
 				$diff+=1;
 			}
 			if($diff==0){
@@ -382,8 +483,20 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 	}
 	//echo printValue($recs);exit;
 	$_SESSION['dbsync']=$recs;
+	//summary counts, computed before the raw status strings below get overwritten with display HTML
+	$schemaCounts=array('new'=>0,'missing'=>0,'different'=>0,'same'=>0);
+	foreach($recs as $rec){
+		if(isset($schemaCounts[$rec['schema']])){
+			$schemaCounts[$rec['schema']]++;
+		}
+	}
+	$summary='<div class="dbsync-summary">'.count($recs).' table'.(count($recs)==1?'':'s')
+		.' &middot; '.$schemaCounts['new'].' new'
+		.' &middot; '.$schemaCounts['missing'].' missing'
+		.' &middot; '.$schemaCounts['different'].' different'
+		.' &middot; '.$schemaCounts['same'].' same</div>';
 	//now to pretty up the messages
-	foreach($recs as $table=>$rec){	
+	foreach($recs as $table=>$rec){
 		//schema
 		$lines=array();
 		$cols=array();
@@ -532,6 +645,9 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 				//pull from target
 				$cols[]='<button type="button" class="wacss_button is-mobile-responsive" onclick="dbsyncFunc(this);"  data-div="centerpop" data-status="missing" data-func="view_constraints" data-table="'.$table.'" data-source="'.$source.'" data-target="'.$target.'"><span class="icon-eye"></span> View</button>';
 			break;
+			case 'unsupported':
+				$cols[]='<span class="icon-minus w_gray"></span> <span class="w_gray">Not supported by this database engine</span>';
+			break;
 		}
 		$recs[$table]['constraints']='';
 		if(count($cols)==1){
@@ -549,12 +665,11 @@ function dbsyncCompareTablesAndIndexes($source,$target,$diffs=0){
 	$listopts=array(
 		'-list'=>$xrecs,
 		'-listfields'=>'table,schema,indexes,constraints',
-		//'-pretable'=>'<hr size="1" style="margin:0px;" />',
 		'-tableclass'=>'wacss_table bordered striped is-sticky',
 		'-hidesearch'=>1
 	);
 
-	return databaseListRecords($listopts);
+	return $summary.dbsyncSuppressedCall('databaseListRecords',array($listopts));
 }
 function dbsyncDiff($srecs,$trecs){
 	if(!is_array($srecs)){$srecs=array();}
@@ -575,7 +690,7 @@ function dbsyncDiff($srecs,$trecs){
 		}
 	}
 	if(!count($diffs)){
-		return 'Error';
+		return '<div class="w_gray">No records to compare.</div>';
 	}
 	foreach($diffs as $key=>$diff){
 		if(isset($diff['source'])){
@@ -589,7 +704,7 @@ function dbsyncDiff($srecs,$trecs){
 	//echo printValue($diffs).printValue($srecs).printValue($trecs);exit;
 	$blank=array();
 	foreach($fields as $field){
-		$blank[$field]='<div class="align-center"><span class="icon-block w_smaller w_danger"></span></';
+		$blank[$field]='<div class="align-center"><span class="icon-block w_smaller w_danger"></span></div>';
 	}
 	$recs=array();
 	foreach($diffs as $key=>$diff){
@@ -614,10 +729,10 @@ function dbsyncDiff($srecs,$trecs){
 }
 
 function dbsyncShowDifferent($source,$target){
-	$rtn='<div style="max-height:70vh;overflow:auto;"><table>';
+	$rtn='<div style="max-height:70vh;overflow:auto;"><table class="wacss_table">';
 	$rtn.='<thead><tr><th>Source</th><th>Target</th></tr></thead>';
-	$rtn.='<tbody><tr><td style="padding-right:10px;">'.dbsyncShowDifferentList($source).'</td><td style="padding-left:10px;">'.dbsyncShowDifferentList($target).'</th></tr></tbody>';
-	$rtn.='</table></';
+	$rtn.='<tbody><tr><td style="padding-right:10px;">'.dbsyncShowDifferentList($source).'</td><td style="padding-left:10px;">'.dbsyncShowDifferentList($target).'</td></tr></tbody>';
+	$rtn.='</table></div>';
 	return $rtn;
 }
 function dbsyncShowDifferentList($recs){
@@ -632,7 +747,7 @@ function dbsyncShowDifferentList($recs){
 		$dbsyncShowDifferentListCenter=1;
 		$listopts['-posttable']=buildOnLoad("centerObject('wacss_modal');");
 	}
-	return databaseListRecords($listopts);
+	return dbsyncSuppressedCall('databaseListRecords',array($listopts));
 }
 function dbsyncFormField($field){
 	global $DATABASE;

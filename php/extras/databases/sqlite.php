@@ -1847,30 +1847,134 @@ function sqliteNamedQueryList(){
 			'code'=>'tables',
 			'icon'=>'icon-table',
 			'name'=>'Tables'
+		),
+		array(
+			'code'=>'views',
+			'icon'=>'icon-table',
+			'name'=>'Views'
+		),
+		array(
+			'code'=>'indexes',
+			'icon'=>'icon-marker',
+			'name'=>'Indexes'
+		),
+		array(
+			'code'=>'triggers',
+			'icon'=>'icon-flow-branch',
+			'name'=>'Triggers'
+		),
+		array(
+			'code'=>'database_info',
+			'icon'=>'icon-database',
+			'name'=>'Database Info'
 		)
 	);
 }
 //---------- begin function sqliteNamedQuery ----------
 /**
-* @describe returns pre-build queries based on name
+* @describe returns pre-build queries based on name - SQLite is a file-based, single-connection
+*	embedded engine: no server process means no running-queries/sessions/table-locks, and no
+*	stored functions/procedures exist to list. What IS queryable comes straight out of
+*	sqlite_master (tables/views/indexes/triggers) and the pragma_*() table-valued functions
+*	(database_info) - see sqliteGetDBTableIndexes() for the same sqlite_master+pragma_index_list
+*	pattern used elsewhere in this file.
 * @param name string
-*	[running_queries]
-*	[table_locks]
+*	[tables]
+*	[views]
+*	[indexes]
+*	[triggers]
+*	[database_info]
 * @return query string
 */
-function sqliteNamedQuery($name){
+function sqliteNamedQuery($name,$str=''){
 	$schema=sqliteGetDBSchema();
 	switch(strtolower($name)){
 		case 'tables':
 			return <<<ENDOFQUERY
-SELECT 
+SELECT
     name as table_name
-FROM 
-    sqlite_master 
-WHERE 
-    type ='table' AND 
+FROM
+    sqlite_master
+WHERE
+    type ='table' AND
     name NOT LIKE 'sqlite_%'
 ORDER BY name
+ENDOFQUERY;
+		break;
+		case 'views':
+			return <<<ENDOFQUERY
+-- ----------------- Views --------------------------------
+-- listopts:definition_options={"class":"w_pre w_smaller"}
+-- ------------------ SQL -------------------------------
+SELECT
+	name,
+	sql AS definition
+FROM sqlite_master
+WHERE
+	type='view'
+ORDER BY name
+ENDOFQUERY;
+		break;
+		case 'indexes':
+			return <<<ENDOFQUERY
+-- ----------------- Indexes --------------------------------
+-- listopts:is_unique_options={"checkmark":"1","checkmark_icon":"icon-mark w_blue"}
+-- listopts:is_primary_options={"checkmark":"1","checkmark_icon":"icon-mark w_red"}
+-- ------------------ SQL -------------------------------
+SELECT
+	m.tbl_name AS table_name,
+	il.name AS name,
+	ii.name AS column_name,
+	CASE il.origin WHEN 'pk' THEN 1 ELSE 0 END AS is_primary,
+	il.[unique] AS is_unique,
+	il.seq AS seq_in_index
+FROM sqlite_master AS m,
+    pragma_index_list(m.name) AS il,
+    pragma_index_info(il.name) AS ii
+WHERE
+	m.type = 'table'
+ORDER BY 1,2,6
+ENDOFQUERY;
+		break;
+		case 'triggers':
+			return <<<ENDOFQUERY
+-- ----------------- Triggers --------------------------------
+-- listopts:definition_options={"class":"w_pre w_smaller"}
+-- ------------------ SQL -------------------------------
+SELECT
+	name,
+	tbl_name AS table_name,
+	sql AS definition
+FROM sqlite_master
+WHERE
+	type='trigger'
+ORDER BY tbl_name,name
+ENDOFQUERY;
+		break;
+		case 'database_info':
+		case 'database':
+		case 'info':
+			return <<<ENDOFQUERY
+-- ----------------- Database Info --------------------------------
+-- listopts:value_options={"class":"align-right"}
+-- ------------------ SQL -------------------------------
+SELECT 'sqlite_version' AS name, sqlite_version() AS value
+UNION ALL
+SELECT 'database_file', file FROM pragma_database_list() WHERE name='main'
+UNION ALL
+SELECT 'page_size', (SELECT page_size FROM pragma_page_size())
+UNION ALL
+SELECT 'page_count', (SELECT page_count FROM pragma_page_count())
+UNION ALL
+SELECT 'database_size_mb', CAST(ROUND((SELECT page_size FROM pragma_page_size())*(SELECT page_count FROM pragma_page_count())/1024.0/1024.0,2) AS TEXT)
+UNION ALL
+SELECT 'freelist_count', (SELECT freelist_count FROM pragma_freelist_count())
+UNION ALL
+SELECT 'encoding', (SELECT encoding FROM pragma_encoding())
+UNION ALL
+SELECT 'journal_mode', (SELECT journal_mode FROM pragma_journal_mode())
+UNION ALL
+SELECT 'foreign_keys', (SELECT foreign_keys FROM pragma_foreign_keys())
 ENDOFQUERY;
 		break;
 	}

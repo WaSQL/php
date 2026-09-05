@@ -214,6 +214,23 @@ function msaccessDBConnect(){
 	}
 	return $dbh_msaccess;
 }
+//---------- begin function msaccessDBClose ----------
+/**
+* @describe closes the current msaccess ODBC connection (if open) and clears the global handle.
+*	msaccessDBConnect() opens a new native ODBC connection on every call; the Jet/ACE driver has a
+*	hard limit on concurrent connections ("Too many client tasks") that a leaked handle counts against
+*	for the life of the Apache worker process, so every function that connects must call this on every
+*	exit path (success, error, and exception) rather than just clearing the PHP variable.
+* @return void
+* @usage msaccessDBClose();
+*/
+function msaccessDBClose(){
+	global $dbh_msaccess;
+	if(commonIsResourceOrObject($dbh_msaccess)){
+		odbc_close($dbh_msaccess);
+	}
+	$dbh_msaccess='';
+}
 //---------- begin function msaccessExecuteSQL ----------
 /**
 * @describe executes a query and returns without parsing the results
@@ -239,20 +256,22 @@ function msaccessExecuteSQL($query,$return_error=1){
 		if(!$stmt){
 			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_msaccess);
 			debugValue($DATABASE['_lastquery']);
+			msaccessDBClose();
 			return 0;
 		}
 		$result = odbc_execute($stmt);
 		if(!$result){
 			$DATABASE['_lastquery']['error']=odbc_errormsg($dbh_msaccess);
 			debugValue($DATABASE['_lastquery']);
+			msaccessDBClose();
 			return 0;
 		}
-		odbc_close($dbh_msaccess);
-		$dbh_msaccess = null;
+		msaccessDBClose();
 	}
 	catch (Exception $e) {
 		$DATABASE['_lastquery']['error']='try/catch failed: '.$e->getMessage();
 		debugValue($DATABASE['_lastquery']);
+		msaccessDBClose();
 		return 0;
 	}
 	$DATABASE['_lastquery']['stop']=microtime(true);
@@ -325,16 +344,16 @@ function msaccessGetDBFields($table,$allfields=0){
       		$name = odbc_field_name($cols, $n);
      		$fields[]=$name;
     	}
-		$dbh_msaccess='';
+		msaccessDBClose();
 		return $fields;
 	}
 	catch (Exception $e) {
 		$error=array("msaccessGetDBFields Exception",$e,$params);
 	    debugValue($error);
-	    $dbh_msaccess='';
+	    msaccessDBClose();
 	    return json_encode($error);
 	}
-	$dbh_msaccess='';
+	msaccessDBClose();
 	return array();
 }
 //---------- begin function msaccessGetDBFieldInfo ----------
@@ -360,6 +379,7 @@ function msaccessGetDBFieldInfo($table){
 			$e=odbc_errormsg($dbh_msaccess);
 			$error=array("odbcQueryResults Error",$e,$query);
 			debugValue($error);
+			msaccessDBClose();
 			return json_encode($error);
 		}
 		$recs=array();
@@ -381,46 +401,96 @@ function msaccessGetDBFieldInfo($table){
 			$recs[$field]['_dblength']=$recs[$field]['length'];
 	    }
 	    odbc_free_result($result);
-	    $dbh_msaccess='';
+	    msaccessDBClose();
 		return $recs;
 	}
 	catch (Exception $e) {
 		$error=array("msaccessGetDBFieldInfo Exception",$e,$params);
 	    debugValue($error);
-	    $dbh_msaccess='';
+	    msaccessDBClose();
 	    return json_encode($error);
 	}
-	$dbh_msaccess='';
+	msaccessDBClose();
 	return array();
 }
 function msaccessGetDBIndexes($table=''){
 	return msaccessGetDBTableIndexes($table);
 }
 function msaccessGetDBTableIndexes($table=''){
-	$table=strtolower($table);
+	//key_name,column_name,is_primary,is_unique,seq_in_index - the normalized shape every *GetDBTableIndexes() engine returns (see postgresqlGetDBTableIndexes)
 	$params=msaccessParseConnectParams();
 	//echo "msaccessDBConnect".printValue($params);exit;
 	global $dbh_msaccess;
 	$dbh_msaccess='';
-	$fields=array();
+	$recs=array();
+	$diag=array();
 	try{
 		$dbh_msaccess=msaccessDBConnect();
 		if(!commonIsResourceOrObject($dbh_msaccess)){return array();}
 		$statistics = odbc_statistics($dbh_msaccess, '', '', $table, SQL_INDEX_ALL, SQL_QUICK);
-		while (($row = odbc_fetch_array($statistics))) {
-		    $fields[]=$row;
+		if($statistics){
+			$statrows=0;
+			while (($row = odbc_fetch_array($statistics))) {
+				$statrows++;
+				//TYPE==0 (SQL_TABLE_STAT) is a cardinality/pages summary row, not an index
+				if(!isset($row['TYPE']) || (int)$row['TYPE']===0 || !strlen((string)($row['INDEX_NAME']??''))){continue;}
+				$recs[]=array(
+					'key_name'		=> $row['INDEX_NAME'],
+					'column_name'	=> $row['COLUMN_NAME'],
+					'is_unique'		=> (isset($row['NON_UNIQUE']) && (int)$row['NON_UNIQUE']===0)?1:0,
+					'is_primary'	=> (strtolower($row['INDEX_NAME'])=='primarykey')?1:0,
+					'seq_in_index'	=> $row['ORDINAL_POSITION']??0,
+					'index_type'	=> $row['TYPE']??''
+				);
+			}
+			odbc_free_result($statistics);
+			$diag['odbc_statistics']="ok, {$statrows} raw row(s), ".count($recs)." after filtering table-stat rows";
 		}
-		
-		$dbh_msaccess='';
-		return $fields;
+		else{
+			$diag['odbc_statistics']="failed: ".odbc_errormsg($dbh_msaccess);
+		}
+		//the MS Access ODBC driver's SQLStatistics is documented as unreliable for index/PK info -
+		//odbc_primarykeys is the reliable fallback for at least the primary key
+		//see https://stackoverflow.com/questions/29786865/showing-primary-key-via-php-and-ms-access-2010
+		if(!count($recs)){
+			$pkresult = odbc_primarykeys($dbh_msaccess, '', '', $table);
+			if($pkresult){
+				$pkrows=0;
+				while (($row = odbc_fetch_array($pkresult))) {
+					$pkrows++;
+					$recs[]=array(
+						'key_name'		=> strlen((string)($row['PK_NAME']??''))?$row['PK_NAME']:'PrimaryKey',
+						'column_name'	=> $row['COLUMN_NAME'],
+						'is_unique'		=> 1,
+						'is_primary'	=> 1,
+						'seq_in_index'	=> $row['KEY_SEQ']??0,
+						'index_type'	=> ''
+					);
+				}
+				odbc_free_result($pkresult);
+				$diag['odbc_primarykeys']="ok, {$pkrows} row(s)";
+			}
+			else{
+				$diag['odbc_primarykeys']="failed: ".odbc_errormsg($dbh_msaccess);
+			}
+		}
+		msaccessDBClose();
+		if(!count($recs)){
+			//known driver limitation, not a bug: some builds of the MS Access ODBC driver (ACEODBC.DLL)
+			//return HYC00 "Optional feature not implemented" / "Driver does not support this function"
+			//for both SQLStatistics and SQLPrimaryKeys - there is no ODBC-level workaround for this.
+			//Logged to the console for troubleshooting rather than shown in place of "No indexes defined".
+			debugValue(array('msaccessGetDBTableIndexes: no index data available',$table,$diag));
+		}
+		return $recs;
 	}
-	catch (Exception $e) {
+	catch (Throwable $e) {
 		$error=array("msaccessGetDBTableIndexes Exception",$e,$params);
 	    debugValue($error);
-	    $dbh_msaccess='';
+	    msaccessDBClose();
 	    return json_encode($error);
 	}
-	$dbh_msaccess='';
+	msaccessDBClose();
 	return array();
 }
 //---------- begin function msaccessGetDBRecord ----------
@@ -620,16 +690,16 @@ function msaccessGetDBTables($params=array()){
 		  	}  
 		}
 		sort($tables);
-		$dbh_msaccess='';
+		msaccessDBClose();
 		return $tables;
 	}
 	catch (Exception $e) {
 		$error=array("msaccessGetDBTables Exception",$e,$params);
 	    debugValue($error);
-	    $dbh_msaccess='';
+	    msaccessDBClose();
 	    return json_encode($error);
 	}
-	$dbh_msaccess='';
+	msaccessDBClose();
 	return array();
 }
 //---------- begin function msaccessGetDBTablePrimaryKeys ----------
@@ -890,9 +960,11 @@ function msaccessQueryResults($query='',$params=array()){
 			$e=odbc_errormsg($dbh_msaccess);
 			$error=array("odbcQueryResults Error",$e,$query);
 			debugValue($error);
+			msaccessDBClose();
 			return json_encode($error);
 		}
 		$results=msaccessEnumQueryResults($result,$params);
+		msaccessDBClose();
 		$DATABASE['_lastquery']['stop']=microtime(true);
 		$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 		return $results;
@@ -900,8 +972,10 @@ function msaccessQueryResults($query='',$params=array()){
 	catch (Exception $e) {
 		$DATABASE['_lastquery']['error']=$e->errorInfo;
 		debugValue($DATABASE['_lastquery']);
+	    msaccessDBClose();
 	    return array();
 	}
+	msaccessDBClose();
 	$DATABASE['_lastquery']['stop']=microtime(true);
 	$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
 	return array();
@@ -996,45 +1070,22 @@ function msaccessEnumQueryResults($result,$params=array(),$query=''){
 	}
 	return $recs;
 }
+//intentionally empty: Admin Tools entries execute as raw SQL (see sqlpromptBuildQuery()/sqlpromptMonitor()),
+//and Jet/ACE SQL has no schema-introspection surface (no information_schema, no SHOW statements) and no
+//SQL-queryable concept of sessions/running queries/table locks/stored functions/procedures at all - Access
+//is a file-based single-engine database, not a server with those concepts. MSysObjects/MSysQueries (the
+//system catalog tables that would carry this info) are also hard-blocked by the OLE DB/ODBC provider
+//regardless of permissions (see bug #45 on /bugs). A PHP-built table/view list (via odbc_tables()) was
+//tried and abandoned - see bug #45 - so this stays empty and sqlpromptMonitorTools() hides the section.
 function msaccessNamedQueryList(){
-	return array(
-		
-	);
+	return array();
 }
 //---------- begin function msaccessNamedQuery ----------
 /**
-* @describe returns pre-build queries based on name
+* @describe returns pre-build queries based on name - see msaccessNamedQueryList() comment: unimplementable for this engine
 * @param name string
-*	[running_queries]
-*	[table_locks]
 * @return query string
 */
-function msaccessNamedQuery($name){
-	switch(strtolower($name)){
-		case 'running_queries':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'sessions':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'table_locks':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'functions':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-		case 'procedures':
-			return <<<ENDOFQUERY
-
-ENDOFQUERY;
-		break;
-	}
+function msaccessNamedQuery($name,$str=''){
+	return '';
 }

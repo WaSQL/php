@@ -9,39 +9,8 @@
 	global $DATABASE;
 	global $USER;
 
+	try{
 	switch(strtolower($_REQUEST['func'])){
-		case 'table_push_table':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'table_push_diff':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'table_pull_table':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'table_pull_diff':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'indexes_push_table':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'indexes_push_diff':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'indexes_pull_table':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
-		case 'indexes_pull_diff':
-			echo '<div class="w_bold w_danger">Function not yet implemented</div>';
-			return;
-		break;
 		case 'compare':
 			$_SESSION['dbsync']=array();
 
@@ -200,8 +169,16 @@
 			$status=isset($_REQUEST['status']) && in_array($_REQUEST['status'],$allowedStatus)?$_REQUEST['status']:'different';
 
 			$title=encodeHtml("{$type} - {$name}");
-			$s=dbGetProcedureText($source,$name,$type);
-			$t=dbGetProcedureText($target,$name,$type);
+			if(!dbsyncEngineSupportsConstraintsAndProcedures($source,$target)){
+				echo '<div class="w_bold w_danger">Viewing '.encodeHtml($type).'s isn\'t supported for one of these database engines (requires Oracle or PostgreSQL).</div>';
+				return;
+			}
+			$s=dbsyncSuppressedCall('dbGetProcedureText',array($source,$name,$type));
+			$t=dbsyncSuppressedCall('dbGetProcedureText',array($target,$name,$type));
+			if(!is_array($s) || !is_array($t)){
+				echo '<div class="w_bold w_danger">Could not retrieve '.encodeHtml($type).' source from one of these databases (check that a valid schema is configured in config.xml).</div>';
+				return;
+			}
 			$diff=diffText($s,$t);
 			setView('view_diff',1);
 			if($status != 'same'){
@@ -235,12 +212,12 @@
 			$title=encodeHtml("Sync Fields for {$table}");
 			$recs=array();
 			$recs[]=dbsyncSyncFields($_SESSION['dbsync'][$table]);
-			$sync=databaseListRecords(array(
+			$sync=dbsyncSuppressedCall('databaseListRecords',array(array(
 				'-list'=>$recs,
 				'-hidesearch'=>1,
 				'-tableclass'=>'wacss_table bordered striped sticky',
 				'-tableheight'=>'80vh',
-			));
+			)));
 			setView('view_sync',1);
 			return;
 		break;
@@ -298,12 +275,12 @@
 
 			$title=encodeHtml("Sync Indexes for {$table}");
 			$recs=dbsyncSyncIndexes($_SESSION['dbsync'][$table]);
-			$sync=databaseListRecords(array(
+			$sync=dbsyncSuppressedCall('databaseListRecords',array(array(
 				'-list'=>$recs,
 				'-hidesearch'=>1,
 				'-tableclass'=>'wacss_table bordered striped sticky',
 				'-tableheight'=>'80vh',
-			));
+			)));
 			setView('view_sync',1);
 			return;
 		break;
@@ -331,10 +308,16 @@
 			$target=$_REQUEST['target'];
 
 			$title=encodeHtml("Sync {$type} - {$name}");
-			$ddl=dbGetProcedureText($source,$name,$type);
-			if(is_array($ddl)){
-				$ddl=implode(PHP_EOL,$ddl);
+			if(!dbsyncEngineSupportsConstraintsAndProcedures($source,$target)){
+				echo '<div class="w_bold w_danger">Syncing '.encodeHtml($type).'s isn\'t supported for one of these database engines (requires Oracle or PostgreSQL).</div>';
+				return;
 			}
+			$ddl=dbsyncSuppressedCall('dbGetProcedureText',array($source,$name,$type));
+			if(!is_array($ddl)){
+				echo '<div class="w_bold w_danger">Could not retrieve '.encodeHtml($type).' source from the source database (check that a valid schema is configured in config.xml).</div>';
+				return;
+			}
+			$ddl=implode(PHP_EOL,$ddl);
 			$_SESSION['debugValue_lastm']='';
 			$ok=dbExecuteSQL($target,$ddl);
 			if(strlen($_SESSION['debugValue_lastm'])){
@@ -348,28 +331,15 @@
 			return;
 		break;
 
-		case 'fields':
-			//Validate table name
-			if(!isset($_REQUEST['table']) || !dbsyncValidateTableName($_REQUEST['table'])){
-				echo '<div class="w_bold w_danger">Invalid table name</div>';
-				return;
-			}
-			$table=$_REQUEST['table'];
-
-			//Note: $db variable needs to be defined somewhere for this to work
-			if(!isset($db['name'])){
-				echo '<div class="w_bold w_danger">Database not specified</div>';
-				return;
-			}
-			$fields=dbGetTableFields($db['name'],$table);
-			$indexes=dbGetTableIndexes($db['name'],$table);
-			setView('tabledetails',1);
-			return;
-		break;
 		default:
-			
+
 			setView('default',1);
 		break;
 	}
 	setView('default',1);
+	}
+	catch(\Throwable $e){
+		echo '<div class="w_bold w_danger">DB Sync error: '.encodeHtml($e->getMessage()).'</div>';
+		return;
+	}
 ?>
