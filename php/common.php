@@ -27310,13 +27310,25 @@ function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged'){
 			':uri'=>substr((string)$uri,0,1000), ':ua'=>substr((string)$ua,0,500), ':now'=>$now
 		));
 		$db->commit();
-		$cachefile=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_ips.snapshot';
-		if(is_file($cachefile)){@unlink($cachefile);}
+		commonBlockedIpsFlush();
 	}
 	catch(\Throwable $e){
 		try{if($db->inTransaction()){$db->rollBack();}}catch(\Throwable $e2){}
 		error_log('commonBlockedIpsFlag: '.$e->getMessage());
 	}
+}
+//---------- begin function commonBlockedIpsFlush--------------------
+/**
+* @describe drops the snapshot cache (php/temp/blocked_ips.snapshot) so the next
+*	request rebuilds the active-IP list straight from blocked_ips.db. Call after
+*	any write to the table made from OUTSIDE the firewall - e.g. the /firewall
+*	admin page (unblock / delete / add / purge).
+* @return void
+* @usage commonBlockedIpsFlush();
+*/
+function commonBlockedIpsFlush(){
+	$f=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_ips.snapshot';
+	if(is_file($f)){@unlink($f);}
 }
 //---------- begin function commonBlockedIpsForbidden--------------------
 /**

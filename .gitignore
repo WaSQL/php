@@ -29,3 +29,4 @@ blocked_ips.db-wal
 blocked_ips.db.bak-*
 blocked_ips_build.php
 blocked_ips_test.php
+firewall_test.php

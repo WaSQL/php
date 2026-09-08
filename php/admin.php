@@ -729,6 +729,7 @@ if(isAjax()){
 
 	switch(strtolower($_REQUEST['_menu'])){
 		case 'tempfiles':
+		case 'firewall':
 		case 'git':
 		case 'reports':
 		case 'htmlbox':
@@ -1476,6 +1477,7 @@ echo '<div id="admin_body" style="position:relative;padding:0 10px 3px 15px;">'.
 if(isset($_REQUEST['_menu'])){
 	switch(strtolower($_REQUEST['_menu'])){
 		case 'tempfiles':
+		case 'firewall':
 		case 'git':
 		case 'reports':
 		case 'htmlbox':

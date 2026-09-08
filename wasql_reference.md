@@ -1026,8 +1026,10 @@ commonBlockedIpsCheck();   // 403s a blocked/probing client before any page work
 - Probe detection (`commonBlockedIpsDetect()`): URI substring list (`xmlrpc.php`, `.env`, `.git/`, `wp-login`, `shell.php`, path traversal, …) + scanner User-Agents (`sqlmap`, `nikto`, …). Override the URI list per-site with `$CONFIG['blocked_ips_patterns']`. Ported from the swanprints `functions_common` firewall, trimmed of the false-positive-prone bare tokens (`cgi-bin`, `joomla`, `typo3`, `jenkins`, `wp-content` still in — watch slugs).
 - Client IP: first valid `X-Forwarded-For` hop, else `REMOTE_ADDR` (matches swanprints; assumes a trusted proxy/CDN in front).
 
-**Rebuilding the db** from a CSV export (`_cdate_utime,ip_addr,reason,user_agent`): `php blocked_ips_build.php [input.csv] [output.db] [source]` at the repo root (gitignored, not core). `blocked_ips_test.php` is a standalone 25-check harness for the `commonBlockedIps*` functions.
-**Not yet built:** a `/firewall` management page (search / unblock via `active=0` / annotate / history charts), auto-expiry of stale entries, CIDR matching.
+**Rebuilding the db** from a CSV export (`_cdate_utime,ip_addr,reason,user_agent`): `php blocked_ips_build.php [input.csv] [output.db] [source]` at the repo root (gitignored, not core). `blocked_ips_test.php` is a standalone harness for the `commonBlockedIps*` functions.
+
+**Management UI:** backend admin → **System Maintenance → Blocked IPs Firewall** (`/php/admin.php?_menu=firewall`; files `php/admin/firewall_{functions.php,controller.php,body.htm}`, `case 'firewall':` added to admin.php's two fallthrough menu switches). Because the db is server-local, not per-domain, the admin backend (also core, also server-local) is the right home — the page opens the file through `commonBlockedIpsDb()`, the same path the firewall uses. It shows stat cards, a 30-day activity chart + top-patterns doughnut (chartjs JSON tags), a searchable/sortable/paged `blocked_ips` grid with per-row block/unblock + delete + inline notes, bulk unblock/delete, manual Add IP, an Event Log tab (`blocked_history`), and Purge-non-blocking / Prune-history maintenance. Any write calls `commonBlockedIpsFlush()` so the live firewall snapshot rebuilds. `firewall_test.php` at the repo root is its harness.
+**Not yet built:** auto-expiry of stale entries, CIDR matching.
 
 ## Common scenarios (copy-paste starters)
 
