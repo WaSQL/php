@@ -1734,8 +1734,44 @@ function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=a
 }
 
 /**
+ * @describe read website_grader.ini from the WaSQL root and return prefill values for the
+ *   email form. The file uses [section] headers whose following lines (up to the next
+ *   [section] or EOF) are that field's value - so [note] can span multiple lines/blank lines.
+ *   Recognized sections map 1:1 to email-form field names: fromname, replyto, cc, bcc,
+ *   toname, to, note. Unknown sections and empty values are ignored.
+ * @return array field => trimmed value (only for sections present and non-empty); array() if no file
+ */
+function websiteGraderEmailDefaults(){
+	$file=getWasqlPath('website_grader.ini');
+	if(!is_file($file)){return array();}
+	$raw=(string)getFileContents($file);
+	if(!strlen(trim($raw))){return array();}
+	$allowed=array('fromname','replyto','cc','bcc','toname','to','note');
+	$lines=preg_split('/\r\n|\r|\n/',$raw);
+	$buckets=array();
+	$cur='';
+	foreach($lines as $ln){
+		if(preg_match('/^\s*\[([a-z0-9_\-]+)\]\s*$/i',$ln,$m)){
+			$cur=strtolower($m[1]);
+			if(!isset($buckets[$cur])){$buckets[$cur]='';}
+			continue;
+		}
+		if($cur===''){continue;}
+		$buckets[$cur].=$ln."\n";
+	}
+	$rtn=array();
+	foreach($buckets as $k=>$v){
+		if(!in_array($k,$allowed)){continue;}
+		$v=trim($v);
+		if(strlen($v)){$rtn[$k]=$v;}
+	}
+	return $rtn;
+}
+
+/**
  * @describe render the email form (loaded into the centerpop modal). Recipient + optional
- *   note; from/reply-to default to the logged-in admin. Submits to func=email via ajaxPost.
+ *   note; from/reply-to default to values in website_grader.ini (WaSQL root), then to the
+ *   logged-in admin. Submits to func=email via ajaxPost.
  * @return string HTML
  */
 function websiteGraderEmailForm(){
@@ -1749,32 +1785,41 @@ function websiteGraderEmailForm(){
 	$myemail=(isset($USER['email']) && isEmail($USER['email']))?$USER['email']:'';
 	$myname=trim((isset($USER['firstname'])?$USER['firstname']:'').' '.(isset($USER['lastname'])?$USER['lastname']:''));
 	if(!strlen($myname) && isset($USER['username'])){$myname=$USER['username'];}
+	//prefill defaults from website_grader.ini (WaSQL root) - falls back to the admin's own name/email
+	$ini=websiteGraderEmailDefaults();
+	$v_to=isset($ini['to'])?$ini['to']:'';
+	$v_toname=isset($ini['toname'])?$ini['toname']:'';
+	$v_fromname=isset($ini['fromname'])?$ini['fromname']:$myname;
+	$v_replyto=isset($ini['replyto'])?$ini['replyto']:$myemail;
+	$v_cc=isset($ini['cc'])?$ini['cc']:'';
+	$v_bcc=isset($ini['bcc'])?$ini['bcc']:'';
+	$v_note=isset($ini['note'])?$ini['note']:'';
 	//$rtn='<div class="w_centerpop_title"><span class="icon-mail"></span> Email SEO &amp; AIO Report</div>'.PHP_EOL;
 	//$rtn.='<div class="w_centerpop_content" style="min-width:300px;max-width:460px;">'.PHP_EOL;
-	$rtn.='<div class="w_small w_gray" style="margin-bottom:10px;">Send the '.encodeHtml($rep['grade']['percent']).'% report for <span class="w_dblue">'.encodeHtml($host).'</span> ('.count($rep['pages']).' page'.(count($rep['pages'])==1?'':'s').' crawled) as a formatted email.</div>'.PHP_EOL;
+	$rtn.='<div class="w_small w_gray" style="margin-bottom:10px;">Send the '.encodeHtml($rep['grade']['percent']).'% report for <span class="w_dblue">'.encodeHtml($host).'</span> ('.count($rep['pages']).' page'.(count($rep['pages'])==1?'':'s').' crawled) as a formatted email.'.(count($ini)?' <span class="w_success">Prefilled from website_grader.ini</span> ('.encodeHtml(implode(', ',array_keys($ini))).').':'').'</div>'.PHP_EOL;
 	$rtn.='<form method="post" action="/php/admin.php" data-setprocessing="grader_email_status" onsubmit="return wacss.ajaxPost(this,\'grader_email_status\');">'.PHP_EOL;
 	$rtn.='	<input type="hidden" name="_menu" value="website_grader" />'.PHP_EOL;
 	$rtn.='	<input type="hidden" name="func" value="email" />'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:8px;display:flex;gap:8px;">'.PHP_EOL;
 	$rtn.='		<div style="flex:1;"><label class="w_bold">Send to (email)</label>'.PHP_EOL;
-	$rtn.='			<input type="email" class="wacss_input" name="to" required="required" placeholder="name@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='			<input type="email" class="wacss_input" name="to" value="'.encodeHtml($v_to).'" required="required" placeholder="name@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='		<div style="flex:1;"><label class="w_bold">Recipient name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='			<input type="text" class="wacss_input" name="toname" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="toname" value="'.encodeHtml($v_toname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='	</div>'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:8px;display:flex;gap:8px;">'.PHP_EOL;
 	$rtn.='		<div style="flex:1;"><label class="w_bold">Your name <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='			<input type="text" class="wacss_input" name="fromname" value="'.encodeHtml($myname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="fromname" value="'.encodeHtml($v_fromname).'" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='		<div style="flex:1;"><label class="w_bold">Reply-to <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='			<input type="email" class="wacss_input" name="replyto" value="'.encodeHtml($myemail).'" placeholder="you@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='			<input type="email" class="wacss_input" name="replyto" value="'.encodeHtml($v_replyto).'" placeholder="you@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='	</div>'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:8px;display:flex;gap:8px;">'.PHP_EOL;
 	$rtn.='		<div style="flex:1;"><label class="w_bold">Cc <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='			<input type="text" class="wacss_input" name="cc" placeholder="name@example.com, name2@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="cc" value="'.encodeHtml($v_cc).'" placeholder="name@example.com, name2@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='		<div style="flex:1;"><label class="w_bold">Bcc <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='			<input type="text" class="wacss_input" name="bcc" placeholder="name@example.com, name2@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
+	$rtn.='			<input type="text" class="wacss_input" name="bcc" value="'.encodeHtml($v_bcc).'" placeholder="name@example.com, name2@example.com" style="width:100%;box-sizing:border-box;" /></div>'.PHP_EOL;
 	$rtn.='	</div>'.PHP_EOL;
 	$rtn.='	<div style="margin-bottom:10px;"><label class="w_bold">Note <span class="w_gray w_small">(optional)</span></label>'.PHP_EOL;
-	$rtn.='		<textarea class="wacss_textarea" name="note" rows="3" placeholder="Add a short message&hellip;" style="width:100%;box-sizing:border-box;"></textarea></div>'.PHP_EOL;
+	$rtn.='		<textarea class="wacss_textarea" name="note" rows="'.(strlen($v_note)?'8':'3').'" placeholder="Add a short message&hellip;" style="width:100%;box-sizing:border-box;">'.encodeHtml($v_note).'</textarea></div>'.PHP_EOL;
 	$rtn.='	<div style="display:flex;gap:8px;justify-content:flex-end;">'.PHP_EOL;
 	$rtn.='		<button type="button" class="wacss_button" onclick="wacss.centerpopClose();return false;">Cancel</button>'.PHP_EOL;
 	$rtn.='		<button type="submit" class="wacss_button '.configValue('admin_color').'"><span class="icon-mail"></span> Send Report</button>'.PHP_EOL;
