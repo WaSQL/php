@@ -145,6 +145,8 @@ $loadtimes['sessions']=number_format((microtime(true)-$stime),3);
 $stime=microtime(true);
 include_once("$progpath/user.php");
 $loadtimes['user']=number_format((microtime(true)-$stime),3);
+//IP firewall - turn away blocked / probing clients before any page work (logged-in users exempt, fail-open)
+commonBlockedIpsCheck();
 global $CONFIG;
 if(isset($CONFIG['allow_origin']) && strlen($CONFIG['allow_origin'])){
 	switch(strtolower($CONFIG['allow_origin'])){

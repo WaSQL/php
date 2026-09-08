@@ -27055,3 +27055,312 @@ function xmlHeader($params=array()){
 	$encoding=isset($params['encoding'])?$params['encoding']:"ISO-8859-1";
 	return '<?xml version="'.$version.'" encoding="'.$encoding.'"?>'."\r\n";
 }
+
+/*
+	============================================================================
+	 IP FIREWALL - shared blocked-ips list  (functions prefixed commonBlockedIps*)
+	============================================================================
+	 A per-server SQLite database (blocked_ips.db, at the WaSQL root, gitignored)
+	 holds IPs that have probed any participating site for security holes, plus a
+	 history log for reporting. commonBlockedIpsCheck() runs once early in
+	 index.php: it 403s an already-listed IP, and scans every other request for
+	 probe / vuln-scanner signatures - recording and 403ing on a hit.
+
+	 Design rules:
+	  - Fail-open: a missing / locked / broken db never breaks a request.
+	  - Logged-in users are never firewalled (guards against a shared-list
+	    false positive locking an admin out of every site).
+	  - The request path reads a mtime-checked snapshot, not SQLite directly.
+	  - ON by default. blocked_ips.db is auto-created (empty, schema only) on the
+	    first non-allowlisted request, then builds itself from probe hits. SFTP a
+	    prebuilt db in to seed it with a known list. Force OFF entirely with
+	    $CONFIG['blocked_ips']=0 in config.xml.
+	============================================================================
+*/
+//---------- begin function commonBlockedIpsPath--------------------
+/**
+* @describe absolute path to the shared blocked-ips SQLite firewall database.
+*	Lives at the WaSQL root and is per-server: never committed (.gitignore),
+*	refreshed by SFTPing in a rebuilt blocked_ips.db.
+* @return string
+* @usage $path=commonBlockedIpsPath();
+*/
+function commonBlockedIpsPath(){
+	return getWasqlPath('blocked_ips.db');
+}
+//---------- begin function commonBlockedIpsEnabled--------------------
+/**
+* @describe true unless the firewall is explicitly switched off with
+*	$CONFIG['blocked_ips']=0 (also accepts false/off/no) in config.xml. The
+*	blocked_ips.db file does NOT need to exist first - it is auto-created.
+* @return boolean
+* @usage if(commonBlockedIpsEnabled()){...}
+*/
+function commonBlockedIpsEnabled(){
+	global $CONFIG;
+	if(isset($CONFIG['blocked_ips'])){
+		$v=strtolower(trim((string)$CONFIG['blocked_ips']));
+		if($v==='0' || $v==='false' || $v==='off' || $v==='no'){return false;}
+	}
+	return true;
+}
+//---------- begin function commonBlockedIpsDb--------------------
+/**
+* @describe shared PDO handle to blocked_ips.db (WAL, 2s busy timeout). Opening
+*	the connection CREATES the file (at the WaSQL root) if missing, and the
+*	blocked_ips / blocked_history schema is ensured on every open (idempotent,
+*	cached per-request). Returns null when SQLite is unavailable or the root is
+*	not writable - callers MUST treat null as "firewall unavailable, keep serving".
+* @return object|null PDO
+* @usage $db=commonBlockedIpsDb();
+*/
+function commonBlockedIpsDb(){
+	static $pdo=false;
+	if($pdo!==false){return $pdo;}
+	if(!class_exists('PDO')){$pdo=null;return $pdo;}
+	$path=commonBlockedIpsPath();
+	try{
+		$db=new PDO('sqlite:'.$path);
+		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$db->exec('PRAGMA journal_mode=WAL');
+		$db->exec('PRAGMA busy_timeout=2000');
+		$db->exec("CREATE TABLE IF NOT EXISTS blocked_ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL UNIQUE, reason TEXT DEFAULT '', pattern TEXT DEFAULT '', user_agent TEXT DEFAULT '', source TEXT DEFAULT '', last_source TEXT DEFAULT '', hit_count INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, first_seen INTEGER NOT NULL DEFAULT 0, last_seen INTEGER NOT NULL DEFAULT 0, notes TEXT DEFAULT '')");
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_active ON blocked_ips (active)');
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_lastseen ON blocked_ips (last_seen)');
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_pattern ON blocked_ips (pattern)');
+		$db->exec("CREATE TABLE IF NOT EXISTS blocked_history (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL, source TEXT DEFAULT '', event TEXT NOT NULL DEFAULT 'flagged', reason TEXT DEFAULT '', pattern TEXT DEFAULT '', request_uri TEXT DEFAULT '', user_agent TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_created ON blocked_history (created_at)');
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_ip ON blocked_history (ip_addr)');
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_source ON blocked_history (source)');
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_pattern ON blocked_history (pattern)');
+		$pdo=$db;
+	}
+	catch(\Throwable $e){
+		error_log('commonBlockedIpsDb: '.$e->getMessage());
+		$pdo=null;
+	}
+	return $pdo;
+}
+//---------- begin function commonBlockedIpsList--------------------
+/**
+* @describe lookup map (ip_addr => 1) of every ACTIVE blocked IP, read from a
+*	snapshot cache in the WaSQL temp dir so the request path only touches SQLite
+*	when blocked_ips.db has changed since the snapshot was written. Returns an
+*	empty array when the firewall is unavailable (fail-open).
+* @param force boolean - rebuild the snapshot even if it looks current
+* @return array
+* @usage if(isset(commonBlockedIpsList()[$ip])){...}
+*/
+function commonBlockedIpsList($force=false){
+	static $list=null;
+	if($list!==null && !$force){return $list;}
+	$list=array();
+	$path=commonBlockedIpsPath();
+	$cachefile=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_ips.snapshot';
+	if(!$force && is_file($path) && is_file($cachefile) && filemtime($cachefile) >= filemtime($path)){
+		$raw=@file_get_contents($cachefile);
+		$data=strlen($raw)?json_decode($raw,true):null;
+		if(is_array($data)){$list=$data;return $list;}
+	}
+	$db=commonBlockedIpsDb();
+	if($db===null){return $list;}
+	try{
+		$q=$db->query('SELECT ip_addr FROM blocked_ips WHERE active=1');
+		foreach($q as $row){$list[$row['ip_addr']]=1;}
+		$tmp=$cachefile.'.'.getmypid().'.tmp';
+		if(@file_put_contents($tmp,json_encode($list))!==false){@rename($tmp,$cachefile);}
+	}
+	catch(\Throwable $e){
+		error_log('commonBlockedIpsList: '.$e->getMessage());
+	}
+	return $list;
+}
+//---------- begin function commonBlockedIpsClientIp--------------------
+/**
+* @describe best-guess client IP for the firewall: the first valid address in
+*	X-Forwarded-For when present (proxy / CDN), else REMOTE_ADDR. '' when nothing
+*	valid is available (e.g. CLI / cron), which callers treat as "allow".
+* @return string
+* @usage $ip=commonBlockedIpsClientIp();
+*/
+function commonBlockedIpsClientIp(){
+	if(isset($_SERVER['HTTP_X_FORWARDED_FOR']) && strlen($_SERVER['HTTP_X_FORWARDED_FOR'])){
+		$first=trim(explode(',',$_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+		if(filter_var($first,FILTER_VALIDATE_IP)){return $first;}
+	}
+	$remote=isset($_SERVER['REMOTE_ADDR'])?trim($_SERVER['REMOTE_ADDR']):'';
+	if(filter_var($remote,FILTER_VALIDATE_IP)){return $remote;}
+	return '';
+}
+//---------- begin function commonBlockedIpsAllowed--------------------
+/**
+* @describe true when an IP must never be firewalled: empty, loopback, RFC1918 /
+*	reserved ranges, or listed in $CONFIG['blocked_ips_allow'] (comma / space
+*	separated exact IPs). Keeps health checks and office IPs safe from a
+*	shared-list false positive.
+* @param ip string
+* @return boolean
+* @usage if(commonBlockedIpsAllowed($ip)){return;}
+*/
+function commonBlockedIpsAllowed($ip){
+	if(!strlen($ip)){return true;}
+	if($ip==='127.0.0.1' || $ip==='::1'){return true;}
+	if(filter_var($ip,FILTER_VALIDATE_IP)
+		&& !filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)){
+		return true;
+	}
+	global $CONFIG;
+	if(isset($CONFIG['blocked_ips_allow']) && strlen(trim($CONFIG['blocked_ips_allow']))){
+		$allow=preg_split('/[\s,;]+/',trim($CONFIG['blocked_ips_allow']));
+		if(in_array($ip,$allow,true)){return true;}
+	}
+	return false;
+}
+//---------- begin function commonBlockedIpsDetect--------------------
+/**
+* @describe scans a request URI + User-Agent for probe / vuln-scanner signatures.
+*	Returns array('pattern'=>.., 'reason'=>..) on the first match, else null.
+*	Ported and extended from the swanprints functions_common firewall. Override
+*	the URI list with $CONFIG['blocked_ips_patterns'] (comma / space separated)
+*	if a site legitimately serves one of these strings.
+* @param uri string - request URI (lower-cased internally)
+* @param ua string - User-Agent header
+* @return array|null
+* @usage $hit=commonBlockedIpsDetect($_SERVER['REQUEST_URI'],$_SERVER['HTTP_USER_AGENT']);
+*/
+function commonBlockedIpsDetect($uri,$ua=''){
+	global $CONFIG;
+	$uri=strtolower((string)$uri);
+	if(isset($CONFIG['blocked_ips_patterns']) && strlen(trim($CONFIG['blocked_ips_patterns']))){
+		$patterns=preg_split('/[\s,;]+/',strtolower(trim($CONFIG['blocked_ips_patterns'])));
+	}
+	else{
+		$patterns=array(
+			'wp-admin','wp-login','wp-content','wp-includes','xmlrpc.php',
+			'.env','.git/','.git ','.htaccess','.htpasswd','web.config','dockerfile',
+			'config.php.bak','setup-config.php','local.xml','settings.php.bak','database.yml',
+			'phpmyadmin','/pma/','/adminer','dbadmin','/setup.php',
+			'c99.php','r57.php','/cmd.php','shell.php','wso.php','alfa.php','b374k','eval-stdin.php',
+			'../','..%2f','%2e%2e%2f','%252e%252e',
+			'etc/passwd','etc/shadow','proc/self','win.ini','boot.ini',
+			'/administrator/','jmx-console','web-console','invoker/jmxinvokerservlet',
+			'/solr/admin',
+		);
+	}
+	foreach($patterns as $p){
+		if(strlen($p) && strpos($uri,$p)!==false){
+			$p=trim($p);
+			return array('pattern'=>$p,'reason'=>'Fishing for: '.$p);
+		}
+	}
+	$ua=strtolower((string)$ua);
+	if(strlen($ua)){
+		$agents=array('sqlmap','nikto','nmap','masscan','zgrab','nuclei','dirbuster','dirb ','gobuster','wfuzz','hydra','metasploit','havij','acunetix','nessus','openvas');
+		foreach($agents as $a){
+			if(strpos($ua,$a)!==false){
+				return array('pattern'=>trim($a),'reason'=>'Scanner UA: '.trim($a));
+			}
+		}
+	}
+	return null;
+}
+//---------- begin function commonBlockedIpsFlag--------------------
+/**
+* @describe records a firewall event: upserts the blocked_ips row (bumps
+*	hit_count, refreshes last_seen / last_source, and reason / pattern when a
+*	non-empty one is supplied) and appends a blocked_history row, then busts the
+*	snapshot cache. Fully fail-safe - any error is logged and swallowed.
+* @param ip string
+* @param reason string - '' to leave the stored reason unchanged
+* @param pattern string - '' to leave the stored pattern unchanged
+* @param uri string
+* @param ua string
+* @param event string - 'flagged' (new detection) or 'blocked' (known IP turned away)
+* @return void
+* @usage commonBlockedIpsFlag($ip,$hit['reason'],$hit['pattern'],$uri,$ua,'flagged');
+*/
+function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged'){
+	if(!strlen($ip)){return;}
+	$db=commonBlockedIpsDb();
+	if($db===null){return;}
+	$source=isset($_SERVER['HTTP_HOST'])?strtolower(trim($_SERVER['HTTP_HOST'])):'';
+	$now=time();
+	try{
+		$db->beginTransaction();
+		$up=$db->prepare("UPDATE blocked_ips SET hit_count=hit_count+1, last_seen=:now, last_source=:src,
+			reason=CASE WHEN :hasr=1 THEN :reason ELSE reason END,
+			pattern=CASE WHEN :hasp=1 THEN :pattern ELSE pattern END
+			WHERE ip_addr=:ip");
+		$up->execute(array(
+			':now'=>$now, ':src'=>$source,
+			':hasr'=>strlen($reason)?1:0, ':reason'=>$reason,
+			':hasp'=>strlen($pattern)?1:0, ':pattern'=>$pattern,
+			':ip'=>$ip
+		));
+		if($up->rowCount()==0){
+			$ins=$db->prepare("INSERT OR IGNORE INTO blocked_ips (ip_addr,reason,pattern,user_agent,source,last_source,hit_count,active,first_seen,last_seen)
+				VALUES (:ip,:reason,:pattern,:ua,:src,:src,1,1,:now,:now)");
+			$ins->execute(array(':ip'=>$ip,':reason'=>$reason,':pattern'=>$pattern,':ua'=>substr((string)$ua,0,500),':src'=>$source,':now'=>$now));
+		}
+		$h=$db->prepare("INSERT INTO blocked_history (ip_addr,source,event,reason,pattern,request_uri,user_agent,created_at)
+			VALUES (:ip,:src,:event,:reason,:pattern,:uri,:ua,:now)");
+		$h->execute(array(
+			':ip'=>$ip, ':src'=>$source, ':event'=>$event,
+			':reason'=>$reason, ':pattern'=>$pattern,
+			':uri'=>substr((string)$uri,0,1000), ':ua'=>substr((string)$ua,0,500), ':now'=>$now
+		));
+		$db->commit();
+		$cachefile=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_ips.snapshot';
+		if(is_file($cachefile)){@unlink($cachefile);}
+	}
+	catch(\Throwable $e){
+		try{if($db->inTransaction()){$db->rollBack();}}catch(\Throwable $e2){}
+		error_log('commonBlockedIpsFlag: '.$e->getMessage());
+	}
+}
+//---------- begin function commonBlockedIpsForbidden--------------------
+/**
+* @describe emits a bare 403 and exits - a blocked client gets no page chrome and
+*	no framework work.
+* @return void
+* @usage commonBlockedIpsForbidden();
+*/
+function commonBlockedIpsForbidden(){
+	http_response_code(403);
+	@header('Content-Type: text/html; charset=utf-8');
+	echo '<h1>403 Forbidden</h1>Access denied.';
+	exit;
+}
+//---------- begin function commonBlockedIpsCheck--------------------
+/**
+* @describe request firewall. Call once early in index.php, after user.php loads
+*	so logged-in users are exempt. When the shared blocked_ips.db firewall is
+*	enabled: 403 an already-blocked IP, otherwise scan the request for probe /
+*	scanner signatures and, on a hit, record the IP and 403. Fail-open - a
+*	missing or broken firewall db serves the request normally.
+* @return void  (calls exit on a block)
+* @usage commonBlockedIpsCheck();
+*/
+function commonBlockedIpsCheck(){
+	if(!commonBlockedIpsEnabled()){return;}
+	if(function_exists('isUser') && isUser()){return;}
+	try{
+		$ip=commonBlockedIpsClientIp();
+		if(commonBlockedIpsAllowed($ip)){return;}
+		$uri=isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:'';
+		$ua=isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:'';
+		$list=commonBlockedIpsList();
+		if(isset($list[$ip])){
+			commonBlockedIpsFlag($ip,'','',$uri,$ua,'blocked');
+			commonBlockedIpsForbidden();
+		}
+		$hit=commonBlockedIpsDetect($uri,$ua);
+		if($hit!==null){
+			commonBlockedIpsFlag($ip,$hit['reason'],$hit['pattern'],$uri,$ua,'flagged');
+			commonBlockedIpsForbidden();
+		}
+	}
+	catch(\Throwable $e){
+		error_log('commonBlockedIpsCheck: '.$e->getMessage());
+	}
+}

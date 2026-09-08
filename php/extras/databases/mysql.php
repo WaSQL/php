@@ -77,6 +77,9 @@ function mysqlDropDBFields($table,$fields=array()){
 *	[-recs] array - array of records to insert into specified table
 *	[-csv] array - csv file of records to insert into specified table
 *	[-map] array - old/new field map  'old_field'=>'new_field'
+*	[-skiperrors] bool - drop rows missing a required (NOT NULL / no-default) field and import
+*		the rest instead of rejecting the whole batch. Skipped rows are listed in the global
+*		$mysqlAddDBRecordsResults['skipped'] (which is populated even without this flag).
 * @return count int
 * @usage $ok=mysqlAddDBRecords('comments',array('-csv'=>$afile);
 * @usage $ok=mysqlAddDBRecords('comments',array('-recs'=>$recs);
@@ -219,9 +222,17 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		break;
 	}
 	//check to confirm requried fields have a value. Fix if possible.
+	//  _cuser/_euser/_cdate/_edate are auto-filled. Any other NOT NULL / no-default field with
+	//  an empty value is an error: by default the whole batch is rejected (return 0). With
+	//  -skiperrors set, the offending rows are dropped and the rest of the batch still imports.
+	//  Either way, every bad row is recorded in $mysqlAddDBRecordsResults['skipped'] so callers
+	//  can report exactly which row/field failed.
+	$skiperrors=(isset($params['-skiperrors']) && strlen(trim((string)$params['-skiperrors'])) && !in_array(strtolower(trim((string)$params['-skiperrors'])),array('0','false','no','off')));
 	if(count($rfields)){
+		$skiprows=array();
 		foreach($rfields as $rfld){
 			foreach($recs as $i=>$rec){
+				if(isset($skiprows[$i])){continue;}
 				if(!isset($rec[$rfld]) || !strlen($rec[$rfld])){
 					switch(strtolower($rfld)){
 						case '_cuser':
@@ -241,6 +252,12 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 							if(!in_array($rfld,$fields)){$fields[]=$rfld;}
 						break;
 						default:
+							$mysqlAddDBRecordsResults['skipped'][]=array(
+								'field'=>$rfld,
+								'message'=>$rfld.' cannot be null',
+								'rec'=>$rec
+							);
+							if($skiperrors){$skiprows[$i]=1;break;}
 							debugValue(array(
 								'function'=>'mysqlAddDBRecordsProcess',
 								'message'=>$rfld.' cannot be null',
@@ -252,6 +269,12 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 					}
 				}
 			}
+		}
+		//-skiperrors: drop the offending rows, keep importing the rest of the batch
+		if($skiperrors && count($skiprows)){
+			foreach(array_keys($skiprows) as $si){unset($recs[$si]);}
+			$recs=array_values($recs);
+			if(!count($recs)){return 0;}
 		}
 	}
 	//confirm there are fields
@@ -383,8 +406,16 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 				//echo "Execute failed: ".printValue($err);exit;
 				$DATABASE['_lastquery']['error']=$err;
 				debugValue($DATABASE['_lastquery']);
+				//-skiperrors: the bulk statement is all-or-nothing, so one bad row (duplicate
+				//unique key, FK violation, strict-mode value error) loses the whole batch.
+				//Retry row-by-row, skipping only the rows that actually fail.
+				if($skiperrors){
+					@mysqli_stmt_close($stmt);
+					return mysqlAddDBRecordsRowByRow($dbh_mysql,$table,$fields,$fieldinfo,$recs,$ignore,$params);
+				}
 				return 0;
 			}
+			$mysqlAddDBRecordsResults['inserted']=(isset($mysqlAddDBRecordsResults['inserted'])?$mysqlAddDBRecordsResults['inserted']:0)+count($recs);
 			return count($recs);
 		}
 		//echo "No failures but not recs".printValue($DATABASE['_lastquery']);exit;
@@ -483,10 +514,104 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 	}
 	//echo "HERE".printValue($stmt).mysqli_error($dbh_mysql).printValue($types).printValue($values);exit;
 	if(mysqli_stmt_bind_param($stmt, implode('',$types),...$values)){
-		mysqli_stmt_execute($stmt);
-		return count($recs);
+		try{
+			mysqli_stmt_execute($stmt);
+			$mysqlAddDBRecordsResults['inserted']=(isset($mysqlAddDBRecordsResults['inserted'])?$mysqlAddDBRecordsResults['inserted']:0)+count($recs);
+			return count($recs);
+		}
+		catch (Throwable $e) {
+			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
+			debugValue(array($DATABASE['_lastquery']['error'],$query));
+			//-skiperrors: retry row-by-row so one bad row doesn't lose the whole batch
+			if($skiperrors){
+				@mysqli_stmt_close($stmt);
+				return mysqlAddDBRecordsRowByRow($dbh_mysql,$table,$fields,$fieldinfo,$recs,$ignore,$params);
+			}
+			return 0;
+		}
 	}
 	return 0;
+}
+//---------- begin function mysqlAddDBRecordsRowByRow--------------------
+/**
+* @describe -skiperrors fallback for mysqlAddDBRecordsProcess. The bulk INSERT paths are
+*   all-or-nothing, so a single bad row (duplicate unique key, FK violation, strict-mode
+*   value error) loses the entire batch. This re-inserts the batch one row at a time,
+*   recording every row that still fails in the global $mysqlAddDBRecordsResults['skipped']
+*   (message + rec) and importing the rest.
+* @param dbh_mysql resource, table string, fields array, fieldinfo array, recs array,
+*   ignore string (' IGNORE' or ''), params array
+* @return int number of rows actually inserted
+*/
+function mysqlAddDBRecordsRowByRow($dbh_mysql,$table,$fields,$fieldinfo,$recs,$ignore='',$params=array()){
+	global $mysqlAddDBRecordsResults;
+	if(!commonIsResourceOrObject($dbh_mysql)){$dbh_mysql=mysqlDBConnect($params);}
+	if(!commonIsResourceOrObject($dbh_mysql)){
+		$mysqlAddDBRecordsResults['errors'][]='mysqlAddDBRecordsRowByRow: no db connection';
+		return 0;
+	}
+	if(!is_array($fields) || !count($fields) || !is_array($recs) || !count($recs)){return 0;}
+	$fieldstr=implode(',',$fields);
+	$qmarks=array();
+	foreach($fields as $k){$qmarks[]='?';}
+	$query="INSERT{$ignore} INTO {$table} ({$fieldstr}) VALUES (".implode(',',$qmarks).")";
+	//upsert clause - mirror the bulk paths
+	if(isset($params['-upsert'][0])){
+		$upserts=$params['-upsert'];
+		$version_recs=mysqlQueryResults('SELECT VERSION() AS value');
+		$version=isset($version_recs[0]['value'])?$version_recs[0]['value']:'8.0.0';
+		list($v1,$v2,$v3)=preg_split('/\./',$version.'.0.0',3);
+		if((int)$v1>8 || ((int)$v1==8 && (int)$v2 > 0) || ((int)$v1==8 && (int)$v2==0 && (int)$v3 >=20)){
+			$flds=array();
+			foreach($upserts as $fld){$flds[]="{$fld}=new.{$fld}";}
+			$query.=" AS new ON DUPLICATE KEY UPDATE ".implode(', ',$flds);
+		}
+		else{
+			$flds=array();
+			foreach($upserts as $fld){$flds[]="{$fld}=VALUES({$fld})";}
+			$query.=" ON DUPLICATE KEY UPDATE ".implode(', ',$flds);
+		}
+	}
+	$stmt=mysqli_prepare($dbh_mysql,$query);
+	if(!commonIsResourceOrObject($stmt)){
+		$mysqlAddDBRecordsResults['errors'][]='mysqlAddDBRecordsRowByRow prepare failed: '.mysqli_error($dbh_mysql);
+		return 0;
+	}
+	$cnt=0;
+	foreach($recs as $rec){
+		$values=array();
+		$types='';
+		foreach($fields as $k){
+			$v=isset($rec[$k])?$rec[$k]:'';
+			if(!commonStrlen($v)){
+				$values[]=(isset($fieldinfo[$k]['default']) && commonStrlen($fieldinfo[$k]['default']))?$fieldinfo[$k]['default']:null;
+			}
+			else{
+				switch(isset($fieldinfo[$k]['_dbtype'])?$fieldinfo[$k]['_dbtype']:''){
+					case 'datetime':	$v=date('Y-m-d H:i:s',strtotime($v));	break;
+					case 'date':		$v=date('Y-m-d',strtotime($v));			break;
+					case 'time':		$v=date('H:i:s',strtotime($v));			break;
+				}
+				$values[]=is_string($v)?trim($v):$v;
+			}
+			$types.='s';
+		}
+		try{
+			mysqli_stmt_bind_param($stmt,$types,...$values);
+			mysqli_stmt_execute($stmt);
+			$cnt+=1;
+		}
+		catch (Throwable $e) {
+			$dberr=mysqli_error($dbh_mysql);
+			$mysqlAddDBRecordsResults['skipped'][]=array(
+				'message'=>commonStrlen($dberr)?$dberr:$e->getMessage(),
+				'rec'=>$rec
+			);
+		}
+	}
+	@mysqli_stmt_close($stmt);
+	$mysqlAddDBRecordsResults['inserted']=(isset($mysqlAddDBRecordsResults['inserted'])?$mysqlAddDBRecordsResults['inserted']:0)+$cnt;
+	return $cnt;
 }
 //---------- begin function mysqlGetDDL ----------
 /**

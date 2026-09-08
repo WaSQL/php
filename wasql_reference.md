@@ -38,6 +38,7 @@ This is the companion to `CLAUDE.md`. `CLAUDE.md` holds the always-relevant rule
 - `-query` — supply full raw SQL, bypassing the `-table`/`-where` builder.
 - `-relate` — array `fk_column => related_table`; auto-expands foreign keys into the result.
 - `-upsert` / `-upserton` — comma list of columns; turns add/edit into an upsert keyed on them.
+- `-skiperrors` (**`addDBRecords`/`dbAddRecords` bulk insert only**) — import the good rows and skip the bad ones instead of rejecting the whole batch. Covers **both** failure modes: (a) a row missing a required (`NOT NULL`, no-default) column is dropped before the insert; (b) if the bulk `INSERT` itself then fails (duplicate unique key, FK violation, strict-mode value error — all-or-nothing), the batch is automatically retried **row-by-row** via `mysqlAddDBRecordsRowByRow`, inserting every row that works. Every skipped row lands in the global `$mysqlAddDBRecordsResults['skipped']` (`message`, `rec`), the real insert count in `$mysqlAddDBRecordsResults['inserted']`. `['skipped']` is populated **even without the flag** for case (a), so a failed import can still report which row/field aborted it. The Admin ▸ Import CSV form exposes this as a "Skip error rows" checkbox.
 - `-nocache` — bypass the query cache (use in crons and after writes).
 - `-debug` — dump the generated SQL.
 - `-results_eval` / `-results_eval_params` — callback run over the result set to compute extra columns.
@@ -54,6 +55,10 @@ function pageScriptsGrid(){
 $grid = pageScriptsGrid();
 ```
 
+**⚠ A `{field}_eval` that queries per row is an N+1.** Each grid row runs `{field}_eval` once (`return renderCell('%_id%');`), so a helper that does its own `getDBRecord`/`dbGetRecord` inside fires once per visible row — 50 rows ≈ 50+ extra queries, which reads as "this grid is slow" even on a tiny table (it is *not* a missing-index problem). Fix: add `-results_eval => 'gridPrime'`, have `gridPrime($recs)` stash whatever the cells need (e.g. a decoded JSON column) into a request-level cache keyed by `_id` **and return `$recs` unchanged**, then have the `_eval` helper read the cache. `-results_eval` runs once, before any row renders. The grid's `SELECT` has no `-fields` restriction by default, so a JSON/blob column the cells need is already in each `$rec`.
+
+**Quick-filter operators are two-letter codes, and client vs. server disagree.** `-quickfilters` / `wacss.pagingAddFilters(frm,"field oper value")` store `field-oper-value` in the chip; `databaseParseFilters` (server) understands `ct nct ca nca eq neq ea nea gt lt egt elt ib nb db` — note **`egt`/`elt`** for `>=`/`<=`, there is no `ge`/`le`/`ie`/`sw`/`ew`. The client-side chip-label switch in `wacss.js` only prettifies `ct/eq/gt/lt/ge/le/...`, so an `egt` filter works but the chip shows the raw `egt`. For a polished bar, skip `-quickfilters` and drive filtering from the controller: read your own request params, build `-where`, and pass the raw params back as **dashless scalar keys** — `commonSearchFiltersForm` emits every dashless non-searchfield scalar as a hidden `<textarea>`, so the filter rides along with the grid's own search & paging.
+
 ### System tables & audit columns
 - **Leading-underscore tables are framework/system tables:** `_pages`, `_templates`, `_users`, `_cron`, `_fielddata`, `_translations`, `_tabledata`. App/business tables have no leading underscore, and are often module-prefixed (`sb_task`, `modq_scripts`, `wcommerce_orders`).
 - **Every record carries audit columns:** `_id` (PK), `_cdate` (created), `_edate` (edited), `_cuser` (creating user id), `_euser` (editing user id).
@@ -69,6 +74,7 @@ function sqlOk($ret){ return is_array($ret) || isNum($ret); }
 Two more traps in the same area, both of which fail **silently**:
 - **MySQL error 1093** — `UPDATE t SET c=(SELECT count(*) FROM t WHERE …)` is rejected outright ("can't specify target table for update in FROM clause"). Wrap the aggregate in a derived table and JOIN it: `UPDATE t o JOIN (SELECT k, count(*) n FROM t GROUP BY k) x ON x.k=o.k SET o.c=x.n`. Reset the column first — a JOIN only touches rows that still match. Combined with the `isNum` bug above, this left a counter column at 0 for every row with no error anywhere.
 - **A multi-row `INSERT` is all-or-nothing.** One oversized value (a `varchar(600)` handed 900 characters) aborts the whole statement under strict mode, so a 200-row batch loses 200 rows. Clamp values to the column width before building the SQL — `information_schema.columns` gives you `data_type` and `character_maximum_length` at runtime, so no hardcoded map is needed — and on failure retry the batch row-by-row to identify the offender instead of dropping the batch.
+- **`addDBRecords` / `dbAddRecords` reject the whole batch on the first problem row** — two places: a pre-insert required-field check in `mysqlAddDBRecordsProcess` (`_cuser`/`_euser`/`_cdate`/`_edate` auto-filled; anything else empty → `return 0`, logged only to the browser console via `debugValue`), and the bulk `INSERT ... SELECT JSON_TABLE(...)` itself (one duplicate-key/FK/strict-mode row aborts all of it). Pass `-skiperrors` to survive both: bad required-field rows are dropped up front, and a failed bulk insert is retried row-by-row. Skipped rows → global `$mysqlAddDBRecordsResults['skipped']`, real count → `['inserted']` (see the `-skiperrors` option key above).
 
 ### DB result keys are always lowercased
 WaSQL's MySQL layer lowercases **every** result-row key before returning it (`php/extras/databases/mysql.php`: `$key=strtolower($key); $rec[$key]=$val;`), regardless of the SQL's column casing. This matters most for raw `SHOW COLUMNS FROM t` results: the column name comes back as `$c['field']`, NOT `$c['Field']` — also `$c['null']`, `$c['key']`, `$c['default']`, `$c['extra']`, all lowercase. Reading the wrong case doesn't error, it just returns `null`, which silently breaks any guard built on it (see "Self-healing DB columns" below for the concrete failure mode).
@@ -692,6 +698,7 @@ Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **
   - The converse also bites: `columns is-multiline is-mobile` with **bare** `.column` children (no width class) gives equal-flex columns that **do not wrap** — with 7-8 tiles the last one is clipped at the box edge on a desktop. Bare `.column` is fine up to ~5 items; past that, size them.
 - **Check how the site styles a bare HTML tag before using one inside a sentence.** Site bundles here set several inline-by-default tags to `display:block`, which silently breaks a paragraph into pieces: `<code>` inside a sentence renders as its own full-width band (add `display:inline` in the page `css`), and a `<a>` inside a table cell pushes an adjacent inline icon onto its own line (a `.mybox table td a{display:inline;}` rule in the page `css` is the fix). Same lesson as the `.title`/`.subtitle` `!important` trap in `CLAUDE.md`: when markup misbehaves, look at the bundle before adding your own layout.
 - **`<progress class="progress is-small">` is the cheap in-table bar** — real Bulma, colour it with the same `is-danger`/`is-warning`/`is-success` modifier the rest of your states use, and give it a `min-width` or it collapses in a narrow column. Drop the whole cell on phones with `is-hidden-mobile` rather than letting a 6-column table squeeze.
+- **A `<select>` on a Bulma site takes `class="select"`, NOT `class="input"`.** `input` is only for text `<input>`/`<textarea>`; on a `<select>` it renders an unstyled/mis-sized control. Bulma's canonical form is a wrapping `<div class="select"><select>…</select></div>`; a bare `class="select"` on the element is the shorthand this project accepts. For framework-built selects pass `'class'=>'select'` in the `*_options` (`buildFormSelect`, `addEditDBForm`). (Non-Bulma sites: `wacss_select`.)
 
 ## Chart.js (the `chartjs` extra)
 The bundled chart library is **`/wfiles/js/extras/chart.min.js` — Chart.js v2.8.0** (use v2 option syntax: `options.legend`, `options.title`, `scales.yAxes:[{ticks:{beginAtZero,max}}]`, `cutoutPercentage`, `maintainAspectRatio`; NOT v3+). There is **no PHP charting engine** — rendering is client-side.
@@ -1000,6 +1007,27 @@ function indexActivityAddFiles(files){ ... }
 ```
 
 ---
+
+## Core function naming — prefix by the file it lives in (convention, 2026-09)
+New functions added to a WaSQL **core** file are prefixed with that file's name: `common.php` → `common*`, `wasql.php` → `wasql*`, `database.php` → `database*` (its short aliases like `getDBRecord` stay), etc. Makes it obvious at a call site which core file owns a helper. Applies going forward — existing functions are **not** retro-renamed.
+
+## IP firewall — shared `blocked_ips.db` (core, 2026-09)
+A request-level firewall lives in `php/common.php` (functions `commonBlockedIps*`) and is invoked once from `php/index.php`, right after `user.php` loads:
+```php
+commonBlockedIpsCheck();   // 403s a blocked/probing client before any page work
+```
+**Storage:** a per-server SQLite file at `getWasqlPath('blocked_ips.db')` (WaSQL root). It is **gitignored** and never committed — each server keeps its own. `commonBlockedIpsDb()` **auto-creates** the file (empty, schema only) on the first non-allowlisted request and ensures the schema on every open; SFTP a prebuilt db in to seed it with a known list. Two tables: `blocked_ips` (dedup/lookup — `ip_addr` UNIQUE, `reason`, `pattern`, `source` = first site to flag it, `last_source`, `hit_count`, `active`, `first_seen`, `last_seen`, `notes`) and `blocked_history` (append-only event log for charts — `event` is `flagged` or `blocked`, plus `pattern`/`source`/`request_uri`/`created_at`).
+
+**Behavior (all fail-open — a missing/locked/broken db, or a non-writable root, never breaks a request):**
+- **On by default.** Force off entirely with `$CONFIG['blocked_ips']=0` (also `false`/`off`/`no`) in `config.xml`.
+- **Logged-in users are never firewalled** (`isUser()` short-circuit) — protects admins from a shared-list false positive.
+- Allowlist: loopback, RFC1918/reserved ranges, and `$CONFIG['blocked_ips_allow']` (space/comma list of exact IPs) are skipped entirely.
+- The request path reads a **mtime-checked snapshot** (`php/temp/blocked_ips.snapshot`), not SQLite directly; `commonBlockedIpsFlag()` busts it on write.
+- Probe detection (`commonBlockedIpsDetect()`): URI substring list (`xmlrpc.php`, `.env`, `.git/`, `wp-login`, `shell.php`, path traversal, …) + scanner User-Agents (`sqlmap`, `nikto`, …). Override the URI list per-site with `$CONFIG['blocked_ips_patterns']`. Ported from the swanprints `functions_common` firewall, trimmed of the false-positive-prone bare tokens (`cgi-bin`, `joomla`, `typo3`, `jenkins`, `wp-content` still in — watch slugs).
+- Client IP: first valid `X-Forwarded-For` hop, else `REMOTE_ADDR` (matches swanprints; assumes a trusted proxy/CDN in front).
+
+**Rebuilding the db** from a CSV export (`_cdate_utime,ip_addr,reason,user_agent`): `php blocked_ips_build.php [input.csv] [output.db] [source]` at the repo root (gitignored, not core). `blocked_ips_test.php` is a standalone 25-check harness for the `commonBlockedIps*` functions.
+**Not yet built:** a `/firewall` management page (search / unblock via `active=0` / annotate / history charts), auto-expiry of stale entries, CIDR matching.
 
 ## Common scenarios (copy-paste starters)
 

@@ -23,3 +23,9 @@ vendor/
 nul
 .env
 migrations/
+blocked_ips.db
+blocked_ips.db-shm
+blocked_ips.db-wal
+blocked_ips.db.bak-*
+blocked_ips_build.php
+blocked_ips_test.php
