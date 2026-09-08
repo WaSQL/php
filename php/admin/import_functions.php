@@ -137,13 +137,59 @@ function importProcessCSV($params){
 			$cparams['-chunk']=$chunk;
 		}
 	}
+
+	//skip error rows - drop rows missing a required (NOT NULL / no-default) field and import
+	//the rest, instead of letting one bad row abort the whole import
+	$skiperrors=(!empty($params['csvtable_skiperrors']));
+	if($skiperrors){
+		$cparams['-skiperrors']=1;
+	}
+
 	//import
+	global $mysqlAddDBRecordsResults;
+	$mysqlAddDBRecordsResults=array();
 	$stime=microtime(true);
 	//echo $params['csvtable_name'].printValue($cparams);exit;
 	$importrecs_total=dbAddRecords($params['csvtable_db'],$params['csvtable_name'],$cparams);
 	$etime=round((microtime(true)-$stime),4);
+
+	//surface what the driver recorded. 'skipped' holds every row that could not be inserted
+	//(missing required field, duplicate unique key, FK/strict-mode error) - populated whether
+	//or not -skiperrors was set, so a failed import shows exactly which rows/why. 'inserted'
+	//is the real count of rows written; $importrecs_total from processCSVLines is only the
+	//number of data rows read from the file.
+	$skipped=(isset($mysqlAddDBRecordsResults['skipped']) && is_array($mysqlAddDBRecordsResults['skipped']))?$mysqlAddDBRecordsResults['skipped']:array();
+	$adderrors=(isset($mysqlAddDBRecordsResults['errors']) && is_array($mysqlAddDBRecordsResults['errors']))?$mysqlAddDBRecordsResults['errors']:array();
+	$insertedcount=isset($mysqlAddDBRecordsResults['inserted'])?(int)$mysqlAddDBRecordsResults['inserted']:0;
+	$skiplist=array();
+	foreach($skipped as $s){
+		$rec=(isset($s['rec']) && is_array($s['rec']))?$s['rec']:array();
+		$bits=array();
+		foreach($rec as $k=>$v){
+			if(substr($k,0,1)==='_'){continue;}
+			$bits[]=$k.'='.$v;
+		}
+		$msg=isset($s['message'])?$s['message']:'validation error';
+		$skiplist[]=$msg.'  ->  '.implode(', ',$bits);
+	}
+
 	array_unshift($results,"Total imported time: {$etime} seconds");
-	array_unshift($results,"Total imported record count: {$importrecs_total}");
+	array_unshift($results,"Rows read from file: {$importrecs_total}");
+	if(count($skipped)){
+		if($skiperrors){
+			array_unshift($results,"Rows imported: {$insertedcount}   (".count($skipped)." skipped)");
+		}
+		else{
+			array_unshift($results,"IMPORT FAILED - ".count($skipped)." row(s) could not be inserted and the batch was rejected ({$insertedcount} imported). Re-run with 'Skip error rows' checked to skip the bad rows and import the rest.");
+		}
+		array_unshift($results,array('skipped_rows'=>$skiplist));
+	}
+	else{
+		array_unshift($results,"Rows imported: {$insertedcount}");
+	}
+	if(count($adderrors)){
+		array_unshift($results,array('errors'=>$adderrors));
+	}
 	array_unshift($results,"Database: {$params['csvtable_db']}");
 	array_unshift($results,"Tablename: {$params['csvtable_name']}");
     return $results;
@@ -218,6 +264,14 @@ function importBuildFormField($name){
 		case 'csvtable_where':
 			$params=array('class'=>'wacss_textarea is-mobile-responsive','placeholder'=>'where clause','value'=>isset($_REQUEST['csvtable_where'])?$_REQUEST['csvtable_where']:'');
 			return buildFormTextarea('csvtable_where',$params);
+		break;
+		case 'csvtable_skiperrors':
+			$checked=(!empty($_REQUEST['csvtable_skiperrors']))?' checked="checked"':'';
+			return '<label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;text-transform:none;letter-spacing:0;color:#363636;cursor:pointer;">'
+				.'<input type="checkbox" name="csvtable_skiperrors" value="1"'.$checked.' style="margin-top:3px;" />'
+				.'<span>Skip rows that fail validation (missing a required / NOT NULL field) and import the rest. '
+				.'Skipped rows are listed in the import results. When unchecked, a single bad row aborts the whole import.</span>'
+				.'</label>';
 		break;
 	}
 }

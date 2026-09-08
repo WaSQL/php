@@ -51,6 +51,7 @@
 				<div class="import-field narrow"><label>Upsert On</label><?=importBuildFormField('csvtable_upserton');?></div>
 			</div>
 			<div class="import-field"><label>Where</label><?=importBuildFormField('csvtable_where');?></div>
+			<div class="import-field"><?=importBuildFormField('csvtable_skiperrors');?></div>
 			<div class="import-actions"><button type="submit" onclick="document.importform.filetype.value='csv';" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-file-txt"></span> Import CSV File</button></div>
 		</div>
 		<div class="import-card">
