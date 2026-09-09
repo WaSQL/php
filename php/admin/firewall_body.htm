@@ -1,0 +1,140 @@
+<view:default>
+<script type="text/javascript">
+	function firewallFilters(){
+		var f=document.forms.firewall_form;
+		return {
+			_menu:'firewall',
+			fw_search:f.fw_search.value, fw_status:f.fw_status.value,
+			fw_sort:f.fw_sort.value, fw_page:f.fw_page.value, setprocessing:0
+		};
+	}
+	function firewallSet(name,val){
+		var f=document.forms.firewall_form;
+		if(f && f[name]!==undefined){ f[name].value=val; }
+	}
+	function firewallReloadGrid(){
+		return wacss.ajaxGet('/php/admin.php','firewall_content',firewallFilters());
+	}
+	function firewallSearch(){ firewallSet('fw_page',1); return firewallReloadGrid(); }
+	function firewallStatus(sel){ firewallSet('fw_status',sel.value); firewallSet('fw_page',1); return firewallReloadGrid(); }
+	function firewallSort(key){ firewallSet('fw_sort',key); firewallSet('fw_page',1); return firewallReloadGrid(); }
+	function firewallCheckAll(cb){
+		var list=document.querySelectorAll('.fw-check');
+		for(var i=0;i<list.length;i++){ list[i].checked=cb.checked; }
+	}
+	function firewallCheckedIds(){
+		var ids=[], list=document.querySelectorAll('.fw-check:checked');
+		for(var i=0;i<list.length;i++){ ids.push(list[i].value); }
+		return ids;
+	}
+	function firewallRow(action,id){
+		if(action==='delete' && !confirm('Delete this record? (its history stays)')){ return false; }
+		var p=firewallFilters(); p.func=action; p.id=id;
+		wacss.ajaxGet('/php/admin.php','firewall_content',p);
+		return false;
+	}
+	function firewallBulk(action){
+		var ids=firewallCheckedIds();
+		if(!ids.length){ alert('Tick some rows first.'); return false; }
+		if(action==='delete' && !confirm('Delete '+ids.length+' record(s)?')){ return false; }
+		var p=firewallFilters(); p.func=action; p.ids=ids.join(',');
+		wacss.ajaxGet('/php/admin.php','firewall_content',p);
+		return false;
+	}
+	function firewallEditNote(id,el){
+		var cur=el.innerText.trim(); if(cur==='+ note'){ cur=''; }
+		var v=prompt('Note for this address:',cur);
+		if(v===null){ return; }
+		var p=firewallFilters(); p.func='note'; p.id=id; p.notes=v;
+		wacss.ajaxGet('/php/admin.php','firewall_content',p);
+	}
+	function firewallAddIp(){
+		var ip=prompt('IP address to block:'); if(!ip){ return false; }
+		var reason=prompt('Reason (optional):')||'';
+		var p=firewallFilters(); p.func='add'; p.ip=ip.trim(); p.reason=reason;
+		wacss.ajaxGet('/php/admin.php','firewall_content',p);
+		return false;
+	}
+	function firewallPruneHistory(){
+		var d=prompt('Delete history events older than how many days?','180');
+		d=parseInt(d,10); if(!(d>0)){ return false; }
+		if(!confirm('Delete history older than '+d+' days?')){ return false; }
+		window.location='/php/admin.php?_menu=firewall&func=prune_history&days='+d;
+		return false;
+	}
+	function firewallShowTab(which){
+		var tabs=document.querySelectorAll('#firewall_tabs li');
+		for(var i=0;i<tabs.length;i++){ tabs[i].className=''; }
+		document.getElementById('firewall_tab_'+which).className='active';
+		if(which==='blocked'){ firewallReloadGrid(); }
+		else{ wacss.ajaxGet('/php/admin.php','firewall_content',{_menu:'firewall',func:'history',setprocessing:0}); }
+		return false;
+	}
+</script>
+
+<div class="wadmin-head"><span class="icon-lock"></span> Blocked IPs Firewall</div>
+<?php
+if(isset($_SESSION['firewall_message'])){
+	echo $_SESSION['firewall_message'];
+	unset($_SESSION['firewall_message']);
+}
+echo firewallStatCards($stats,$info);
+?>
+
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:18px;">
+	<div class="wadmin-card" style="flex:2 1 420px;margin:0;">
+		<div class="w_bold" style="margin-bottom:8px;">Blocked activity &mdash; last 30 days</div>
+		<div style="height:240px;"><?=$timeline;?></div>
+	</div>
+	<div class="wadmin-card" style="flex:1 1 260px;margin:0;">
+		<div class="w_bold" style="margin-bottom:8px;">Top probe patterns</div>
+		<div style="height:240px;"><?=$patterns;?></div>
+	</div>
+</div>
+
+<div class="wadmin-card">
+	<form name="firewall_form" onsubmit="return firewallSearch();" action="/php/admin.php" style="margin-bottom:12px;">
+		<input type="hidden" name="_menu" value="firewall">
+		<input type="hidden" name="fw_sort" value="last_seen">
+		<input type="hidden" name="fw_page" value="1">
+		<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;">
+			<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+				<ul id="firewall_tabs" class="nav-tabs <?=configValue('admin_color');?>" style="margin:0;">
+					<li id="firewall_tab_blocked" class="active"><a href="#blocked" onclick="return firewallShowTab('blocked');">Blocked list</a></li>
+					<li id="firewall_tab_history"><a href="#history" onclick="return firewallShowTab('history');">Event log</a></li>
+				</ul>
+			</div>
+			<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+				<input type="text" name="fw_search" class="wacss_input" style="width:190px;" placeholder="ip / pattern / site" value="">
+				<select name="fw_status" class="wacss_select" onchange="firewallStatus(this);">
+					<option value="all">All</option>
+					<option value="active">Blocking</option>
+					<option value="inactive">Not blocking</option>
+				</select>
+				<a href="#search" class="wacss_button is-light" onclick="return firewallSearch();"><span class="icon-search"></span></a>
+				<a href="#add" class="wacss_button is-link" onclick="return firewallAddIp();"><span class="icon-plus wacss_right5"></span> Add IP</a>
+			</div>
+		</div>
+	</form>
+
+	<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+		<a href="#unblock" class="wacss_button is-small is-light" onclick="return firewallBulk('unblock');"><span class="icon-eye wacss_right5"></span> Stop blocking checked</a>
+		<a href="#delete" class="wacss_button is-small is-warning" onclick="return firewallBulk('delete');"><span class="icon-erase wacss_right5"></span> Delete checked</a>
+		<span style="flex:1;"></span>
+		<a href="/php/admin.php?_menu=firewall&func=purge_inactive" class="wacss_button is-small is-light" onclick="return confirm('Delete every record that is not currently blocking?');"><span class="icon-erase wacss_right5"></span> Purge non-blocking</a>
+		<a href="#prune" class="wacss_button is-small is-light" onclick="return firewallPruneHistory();"><span class="icon-history wacss_right5"></span> Prune history&hellip;</a>
+	</div>
+
+	<div id="firewall_content">
+		<?=$grid;?>
+	</div>
+</div>
+</view:default>
+
+<view:grid>
+	<?=$grid;?>
+</view:grid>
+
+<view:history>
+	<?=$grid;?>
+</view:history>
