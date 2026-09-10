@@ -577,6 +577,18 @@ Also accepts the aliases `centerpop_processing` / `centerpop1_processing` … wh
 ```
 Reserve `buildOnLoad()` for load-time JS that isn't tied to a specific element you're rendering (e.g. a one-off `window.history.pushState(...)`, or initializing something global). If the natural host element doesn't exist yet, add a minimal wrapper `<div data-onload="…">` rather than a bare script block.
 
+**`data-onload` string gotchas (`wacss.initOnloads`):** the attribute value is split on `;` and each piece is run as `new Function(piece)`, after a literal **`replaceAll('this', <a document.querySelector for this element>)`**. So:
+- `this` resolves to the element — `this.dataset.foo`, `this.value`, `this.closest('tr')` all work.
+- But `replaceAll` is dumb string replacement: any other occurrence of the substring `this` (e.g. a word like `"this ward"` in a message) gets mangled. **Never inline user/parametrized text into the onload string** — put it in a sibling attribute and read it via `this.dataset.*`.
+- No `;` inside a single call's arguments (it's a statement separator here).
+- Runs once per element — `initOnloads` stamps `data-onload-ex` and skips stamped nodes; freshly AJAX-injected nodes have none, so they fire.
+
+**Firing a toast (or any one-shot JS) from AJAX-swapped content:** an inline `<script>` in `wacss.nav`/`ajaxGet`/`ajaxPost` HTML never runs (see core gotcha #14), but `initOnloads` runs after every injection. Return a hidden marker node whose message travels in an attribute:
+```php
+return $freshCellHtml.'<span hidden data-onload="wacss.toast(this.dataset.msg)" data-msg="'.encodeHtml($msg).'"></span>';
+```
+This is how a click-to-toggle grid cell (`data-div` = the cell's own `<span id>`, route flips the column and returns the new pill) shows "Enabled/Disabled" feedback — see the byuward `/sites` `toggle` route.
+
 ## Read-only detail popup (centerpop)
 To let a value/row **open a modal showing more detail** (a drill-down list, a query result, a record's full data) — no form, just display — pair a `wacss.nav` link with the self-creating `centerpop` div and an AJAX partial that renders a functions-built HTML string. This is the read-only sibling of the CRUD-tab pattern (which puts a *form* in the centerpop).
 - **Link:** `data-nav="/t/1/{page}/{action}"` + `data-div="centerpop"` + `onclick="return wacss.nav(this);"`. Add **`data-title="…"`** — `wacss.nav` reads it off the anchor and passes it to `wacss.createCenterpop` as the modal's title bar; the modal self-provides its ✕ close, so a pure viewer needs **no** `centerpopClose` wiring (that's only for closing after a successful *form* submit — see Section-refresh).
@@ -1029,6 +1041,9 @@ commonBlockedIpsCheck();   // 403s a blocked/probing client before any page work
 **Rebuilding the db** from a CSV export (`_cdate_utime,ip_addr,reason,user_agent`): `php blocked_ips_build.php [input.csv] [output.db] [source]` at the repo root (gitignored, not core). `blocked_ips_test.php` is a standalone harness for the `commonBlockedIps*` functions.
 
 **Management UI:** backend admin → **System Maintenance → Blocked IPs Firewall** (`/php/admin.php?_menu=firewall`; files `php/admin/firewall_{functions.php,controller.php,body.htm}`, `case 'firewall':` added to admin.php's two fallthrough menu switches). Because the db is server-local, not per-domain, the admin backend (also core, also server-local) is the right home — the page opens the file through `commonBlockedIpsDb()`, the same path the firewall uses. It shows stat cards, a 30-day activity chart + top-patterns doughnut (chartjs JSON tags), a searchable/sortable/paged `blocked_ips` grid with per-row block/unblock + delete + inline notes, bulk unblock/delete, manual Add IP, an Event Log tab (`blocked_history`), and Purge-non-blocking / Prune-history maintenance. Any write calls `commonBlockedIpsFlush()` so the live firewall snapshot rebuilds. `firewall_test.php` at the repo root is its harness.
+
+**"The firewall database is not available" after a deploy** — the file being present is not enough; `commonBlockedIpsDb()` returns `null` whenever the PDO *open* throws, and the admin notice now prints the real reason (`commonBlockedIpsLastError()`, also surfaced via `firewallDbInfo()['error']` / `['dir_writable']` / `['writable']`). Two usual causes: (1) **`pdo_sqlite` not installed** — `class_exists('PDO')` is true but `PDO::getAvailableDrivers()` lacks `sqlite`; `apt-get install php-sqlite3` + restart php-fpm. (2) **Parent dir not writable by PHP** — WAL mode creates `blocked_ips.db-wal` / `-shm` *next to* the db and any write needs a lock file there, so chowning just the copied `.db` isn't enough; the WaSQL-root directory itself must be writable by the web user.
+
 **Not yet built:** auto-expiry of stale entries, CIDR matching.
 
 ## Common scenarios (copy-paste starters)

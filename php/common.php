@@ -27117,7 +27117,14 @@ function commonBlockedIpsEnabled(){
 function commonBlockedIpsDb(){
 	static $pdo=false;
 	if($pdo!==false){return $pdo;}
-	if(!class_exists('PDO')){$pdo=null;return $pdo;}
+	if(!class_exists('PDO')){
+		commonBlockedIpsLastError('PDO is not loaded on this server.');
+		$pdo=null;return $pdo;
+	}
+	if(!in_array('sqlite',PDO::getAvailableDrivers(),true)){
+		commonBlockedIpsLastError('The PDO SQLite driver (pdo_sqlite) is not installed on this server.');
+		$pdo=null;return $pdo;
+	}
 	$path=commonBlockedIpsPath();
 	try{
 		$db=new PDO('sqlite:'.$path);
@@ -27133,13 +27140,34 @@ function commonBlockedIpsDb(){
 		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_ip ON blocked_history (ip_addr)');
 		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_source ON blocked_history (source)');
 		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_pattern ON blocked_history (pattern)');
+		commonBlockedIpsLastError('');
 		$pdo=$db;
 	}
 	catch(\Throwable $e){
+		$msg=$e->getMessage();
+		if(stripos($msg,'unable to open')!==false || stripos($msg,'readonly')!==false || stripos($msg,'disk i/o')!==false){
+			$msg.=' (PHP must be able to write both blocked_ips.db AND its parent directory '.dirname($path).' - WAL mode creates -wal / -shm sidecar files there.)';
+		}
+		commonBlockedIpsLastError($msg);
 		error_log('commonBlockedIpsDb: '.$e->getMessage());
 		$pdo=null;
 	}
 	return $pdo;
+}
+//---------- begin function commonBlockedIpsLastError--------------------
+/**
+* @describe get / set the reason commonBlockedIpsDb() last returned null (missing
+*	driver, unwritable root, corrupt file...). '' once a handle opens cleanly.
+*	Pass a string to set it; call with no argument to read it. Surfaced in the
+*	backend firewall admin's "unavailable" notice.
+* @param msg string|null - when a string, stores it; when null, returns the stored value
+* @return string
+* @usage $why=commonBlockedIpsLastError();
+*/
+function commonBlockedIpsLastError($msg=null){
+	static $error='';
+	if($msg!==null){$error=(string)$msg;}
+	return $error;
 }
 //---------- begin function commonBlockedIpsList--------------------
 /**

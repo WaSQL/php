@@ -33,11 +33,14 @@ function firewallDbInfo(){
 	$path=function_exists('commonBlockedIpsPath')?commonBlockedIpsPath():getWasqlPath('blocked_ips.db');
 	$exists=is_file($path);
 	return array(
-		'path'    => $path,
-		'exists'  => $exists,
-		'size'    => $exists?filesize($path):0,
-		'mtime'   => $exists?filemtime($path):0,
-		'enabled' => function_exists('commonBlockedIpsEnabled')?commonBlockedIpsEnabled():false,
+		'path'         => $path,
+		'exists'       => $exists,
+		'size'         => $exists?filesize($path):0,
+		'mtime'        => $exists?filemtime($path):0,
+		'enabled'      => function_exists('commonBlockedIpsEnabled')?commonBlockedIpsEnabled():false,
+		'writable'     => $exists?is_writable($path):null,
+		'dir_writable' => is_writable(dirname($path)),
+		'error'        => function_exists('commonBlockedIpsLastError')?commonBlockedIpsLastError():'',
 	);
 }
 //---------- begin function firewallStats ----
@@ -416,13 +419,26 @@ function firewallBytes($n){
 //---------- begin function firewallUnavailableNotice ----
 /** @exclude */
 function firewallUnavailableNotice(){
+	//ensure a connection attempt has run so commonBlockedIpsLastError() is populated
+	if(function_exists('commonBlockedIpsDb')){commonBlockedIpsDb();}
 	$info=firewallDbInfo();
-	return '<div class="wadmin-card"><div class="w_bold w_warning"><span class="icon-warning"></span> The firewall database is not available.</div>'
+	$out='<div class="wadmin-card"><div class="w_bold w_warning"><span class="icon-warning"></span> The firewall database is not available.</div>'
 		.'<div class="w_small w_gray" style="margin-top:6px;">Expected at <code>'.encodeHtml($info['path']).'</code>. '
 		.'It is created automatically on the first non-allowlisted request once PHP can write to the WaSQL root, '
-		.'or SFTP a prebuilt <code>blocked_ips.db</code> into place. '
-		.(class_exists('PDO')?'':'PDO is not loaded on this server. ')
-		.'</div></div>';
+		.'or SFTP a prebuilt <code>blocked_ips.db</code> into place.';
+	if(!class_exists('PDO')){$out.=' PDO is not loaded on this server.';}
+	$out.='</div>';
+	if(strlen($info['error'])){
+		$out.='<div class="w_small" style="margin-top:8px;"><span class="w_bold">PDO error:</span> '
+			.'<code style="white-space:normal;">'.encodeHtml($info['error']).'</code></div>';
+	}
+	$out.='<div class="w_small w_gray" style="margin-top:6px;">'
+		.'File exists: '.($info['exists']?'yes':'no')
+		.(($info['exists'] && $info['writable']!==null)?' &nbsp;|&nbsp; File writable by PHP: '.($info['writable']?'yes':'<span class="w_warning">no</span>'):'')
+		.' &nbsp;|&nbsp; Parent dir writable by PHP: '.($info['dir_writable']?'yes':'<span class="w_warning">no</span> ('.encodeHtml(dirname($info['path'])).')')
+		.'</div>';
+	$out.='</div>';
+	return $out;
 }
 //---------- begin function firewallWhen ----
 /** @exclude */
