@@ -10,10 +10,20 @@
 		in a command prompt type: p {alias} where alias is the name in your tag
 */
 //set timer to 0 to turn off auto sync.  Otherwise set it to the seconds
+//pull --ignore-editor out of argv (can appear anywhere) before positional args are parsed
+$posteditIgnoreEditor=0;
+foreach($argv as $i=>$arg){
+	if($i > 0 && strtolower($arg) == '--ignore-editor'){
+		$posteditIgnoreEditor=1;
+		unset($argv[$i]);
+	}
+}
+$argv=array_values($argv);
 if(!isset($argv[1]) || in_array($argv[1],array('?','--help'))){
 	echo "postEdit Usage: ".PHP_EOL;
 	echo " - from a CMD prompt in the WaSQL direcory".PHP_EOL;
-	echo " - p {alias name} [{filter1} {filter2}...]".PHP_EOL;
+	echo " - p {alias name} [{filter1} {filter2}...] [--ignore-editor]".PHP_EOL;
+	echo " - --ignore-editor skips running the <editor> command from postedit.xml after each sync".PHP_EOL;
 	echo PHP_EOL;
 	exit;
 }
@@ -63,6 +73,7 @@ if(!isset($hosts[$argv[1]])){
 }
 $postedit=$hosts[$argv[1]];
 $postedit['host']=$argv[1];
+$postedit['ignoreeditor']=$posteditIgnoreEditor;
 $postedit['filters']=array();
 if(isset($argv[2])){
 	$postedit['filters']=$argv;
@@ -545,7 +556,10 @@ function writeFiles(){
 		}
 	}
 	//check for editor command to run after writing files
-	if(isset($postedit['editor']['command']) && is_array($postedit['editor']['command'])){
+	if(!empty($postedit['ignoreeditor'])){
+		//--ignore-editor was passed on the command line - skip launching the editor
+	}
+	elseif(isset($postedit['editor']['command']) && is_array($postedit['editor']['command'])){
 
 		foreach($postedit['editor']['command'] as $c=>$cmd){
 			if(!strlen($cmd)){continue;}

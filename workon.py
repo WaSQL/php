@@ -541,7 +541,7 @@ def filter_token(s):
 
 
 def running_filters(cmdline, alias):
-    """Filter args of a running watcher: tokens after 'postedit.php {alias}'.
+    """Filter args of a running watcher: tokens after 'postedit.php {alias}', minus --ignore-editor.
     None means the command line couldn't be parsed."""
     m = re.search(r'postedit\.php["\']?\s+' + re.escape(alias) + r"(?:\s+(.*))?$", cmdline.strip(), re.IGNORECASE)
     if not m:
@@ -549,7 +549,7 @@ def running_filters(cmdline, alias):
     rest = (m.group(1) or "").strip()
     if rest == "":
         return []
-    return [t.lower() for t in re.split(r"\s+", rest) if t]
+    return [t.lower() for t in re.split(r"\s+", rest) if t and t.lower() != "--ignore-editor"]
 
 
 def filter_label(f):
@@ -796,7 +796,9 @@ def main():
             step("\u2022 watcher : NOT running (left alone; --no-watcher)")
         else:
             php_bin = shutil.which("php") or "php"
-            filter_args = (" " + " ".join(filters)) if filters else ""
+            # --ignore-editor: workon-launched watchers run unattended, so never pop
+            # Sublime (or whatever <editor> is configured) on every sync.
+            filter_args = ((" " + " ".join(filters)) if filters else "") + " --ignore-editor"
             tab_why = None
             ok = False
             if IS_WIN:

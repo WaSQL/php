@@ -781,14 +781,15 @@ if(is_file($tabStateFile)){
 // Launched before Chrome: the watcher's startup re-sync runs in its own
 // detached process, so starting it first lets that background work overlap
 // with the Chrome boot/confirm wait below instead of running back-to-back.
-/** Filter args of a running watcher: the tokens after "postedit.php {alias}". null = couldn't parse. */
+/** Filter args of a running watcher: the tokens after "postedit.php {alias}", minus --ignore-editor. null = couldn't parse. */
 function runningFilters($cmdline, $alias){
 	if(!preg_match('/postedit\.php["\']?\s+' . preg_quote($alias, '/') . '(?:\s+(.*))?$/i', trim($cmdline), $m)){
 		return null;
 	}
 	$rest = isset($m[1]) ? trim($m[1]) : '';
 	if($rest === ''){ return []; }
-	return array_values(array_filter(array_map('strtolower', preg_split('/\s+/', $rest)), 'strlen'));
+	$tokens = array_values(array_filter(array_map('strtolower', preg_split('/\s+/', $rest)), 'strlen'));
+	return array_values(array_filter($tokens, function($t){ return $t !== '--ignore-editor'; }));
 }
 /** Human-readable filter list. */
 function filterLabel($f){ return count($f) ? implode(', ', $f) : 'none (all records)'; }
@@ -842,6 +843,9 @@ if($watcherPid){
 	// Filters are appended positionally after the alias; already reduced to safe
 	// tokens above, so no quoting is needed (and postedit.php wants them split).
 	$filterArgs = count($filters) ? ' ' . implode(' ', $filters) : '';
+	// --ignore-editor: workon-launched watchers run unattended, so never pop
+	// Sublime (or whatever <editor> is configured) on every sync.
+	$filterArgs .= ' --ignore-editor';
 	if($IS_WIN){
 		// Nesting quotes through popen -> cmd /c -> start -> cmd /k is fragile:
 		// a quoted php path combined with '&&' on one line trips cmd's quote
