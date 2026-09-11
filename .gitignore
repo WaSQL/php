@@ -15,8 +15,14 @@ s.bat
 php.bat
 php_errors.log
 dasql.ini
-# Claude Code configuration
-.claude/
+# Claude Code configuration (settings/permissions are machine-local; skills/commands/agents are project config, check those in)
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+!.claude/commands/
+!.claude/commands/**
+!.claude/agents/
+!.claude/agents/**
 composer.json
 php/admin/git.log
 vendor/
