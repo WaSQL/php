@@ -68,19 +68,120 @@ def addIndex(params):
 	#execute query
 	return executeSQL(query) 
 
+#---------- begin function certFileCheck ----------
+# @describe verifies a private key / cert file exists and can be read by the current user
+# @param path str - path to the key or cert file
+# @return
+#	str - empty string if the file is usable, otherwise the reason it is not
+# @usage
+#	err = snowflakedb.certFileCheck('/etc/wasql/certs/snowflake.p8')
+#	if len(err): print(err)
+def certFileCheck(path):
+	if path == None or not len(str(path).strip()):
+		return "snowflake dbcert error: no path set"
+	path = str(path).strip()
+	if not os.path.isfile(path):
+		return "snowflake dbcert error: file not found - {}".format(path)
+	if not os.access(path,os.R_OK):
+		return "snowflake dbcert error: file is not readable by this user - {}".format(path)
+	return ""
+
+#---------- begin function maskConnectParams ----------
+# @describe masks passwords/keys in a connect params dict so it is safe to log
+# @param params dict
+# @return
+#	dict - the params with every secret replaced by asterisks
+# @usage print(snowflakedb.maskConnectParams(params))
+def maskConnectParams(params):
+	if not isinstance(params,dict):
+		return params
+	masked = dict(params)
+	for k in ('dbpass','dbcertpass','password','private_key_file_pwd'):
+		if k in masked and masked[k] != None and len(str(masked[k])):
+			masked[k] = '*' * len(str(masked[k]))
+	if 'private_key' in masked:
+		masked['private_key'] = '****'
+	return masked
+
+#---------- begin function certValue ----------
+# @describe resolves dbcert/dbcertpass from the params, falling back to config.CONFIG
+#	using the same key names the php extra uses: <key>_snowflake then snowflake_<key>
+# @param params dict - the database tag attributes
+# @param key str - dbcert or dbcertpass
+# @return
+#	str - the value, or an empty string if it is not set anywhere
+# @usage dbcert = snowflakedb.certValue(params,'dbcert')
+def certValue(params,key):
+	if isinstance(params,dict) and key in params and params[key] != None and len(str(params[key]).strip()):
+		return str(params[key]).strip()
+	try:
+		CONFIG = config.CONFIG
+	except Exception:
+		CONFIG = {}
+	for ckey in ("{}_snowflake".format(key),"snowflake_{}".format(key)):
+		if ckey in CONFIG and CONFIG[ckey] != None and len(str(CONFIG[ckey]).strip()):
+			return str(CONFIG[ckey]).strip()
+	return ''
+
+#---------- begin function loadPrivateKey ----------
+# @describe reads a PKCS#8 private key (rsa_key.p8) and returns it as the DER bytes
+#	that snowflake.connector wants for key-pair (JWT) auth.
+#	the matching public key must be registered on the snowflake user:
+#	ALTER USER x SET RSA_PUBLIC_KEY=<public key>
+# @param path str - path to the private key file
+# @param [passphrase] str - passphrase protecting the key. omit for an unencrypted key
+# @return
+#	(bytes,str) - the DER encoded key and an empty error, or (None,error)
+# @usage der,err = snowflakedb.loadPrivateKey('/etc/wasql/certs/snowflake.p8','')
+def loadPrivateKey(path,passphrase=''):
+	try:
+		from cryptography.hazmat.backends import default_backend
+		from cryptography.hazmat.primitives import serialization
+	except Exception as err:
+		return None,"snowflake dbcert error: the cryptography module is required to load the private key - {}".format(err)
+	try:
+		with open(path,'rb') as fh:
+			keydata = fh.read()
+	except Exception as err:
+		return None,"snowflake dbcert error: unable to read {} - {}".format(path,err)
+	pwd = None
+	if passphrase != None and len(str(passphrase)):
+		pwd = str(passphrase).encode()
+	pkey = None
+	try:
+		pkey = serialization.load_pem_private_key(keydata,password=pwd,backend=default_backend())
+	except Exception as err:
+		#not PEM - try DER before giving up
+		try:
+			pkey = serialization.load_der_private_key(keydata,password=pwd,backend=default_backend())
+		except Exception:
+			return None,"snowflake dbcert error: unable to load private key {} - {}".format(path,err)
+	try:
+		der = pkey.private_bytes(
+			encoding=serialization.Encoding.DER,
+			format=serialization.PrivateFormat.PKCS8,
+			encryption_algorithm=serialization.NoEncryption()
+		)
+	except Exception as err:
+		return None,"snowflake dbcert error: unable to encode private key {} - {}".format(path,err)
+	return der,''
+
 #---------- begin function connect ----------
 # @describe returns a database connection
 # @param params tuple - parameters to override
-# @return 
+#	[dbcert] - path to the PKCS#8 private key used for key-pair (JWT) auth. replaces dbpass
+#	[dbcertpass] - passphrase protecting that key. omit for an unencrypted key
+#	[dbauth] - authenticator. defaults to SNOWFLAKE_JWT whenever a dbcert is in play
+# @return
 #	cur_mssql, conn_mssql array
-# @usage 
+# @usage
 #	cur_mssql, conn_mssql =  snowflakedb.connect(params)
 def connect(params):
 	dbconfig = {}
 	#need account,user,password,database,schema,warehouse,role
 
 	#check config.CONFIG
-	
+
 	#check params and override any that are passed in
 	if 'dbaccount' in params:
 		dbconfig['account'] = params['dbaccount'].replace(".snowflakecomputing.com","",1)
@@ -110,8 +211,40 @@ def connect(params):
 	if 'dbrole' in params:
 		dbconfig['role'] = params['dbrole']
 
+	#dbcert - path to the PKCS#8 private key (rsa_key.p8) used for snowflake key-pair (JWT) auth.
+	#	key-pair auth replaces the password entirely
+	dbcert = certValue(params,'dbcert')
+	dbcertpass = certValue(params,'dbcertpass')
+	usecert = 0
+	if len(dbcert):
+		certerr = certFileCheck(dbcert)
+		if len(certerr):
+			print(certerr)
+			sys.exit(123)
+		der,keyerr = loadPrivateKey(dbcert,dbcertpass)
+		if der != None:
+			dbconfig['private_key'] = der
+		elif keyerr.find('cryptography module') > -1:
+			#no cryptography module - let the connector read the key file itself (needs connector 3.6+)
+			dbconfig['private_key_file'] = dbcert
+			if len(dbcertpass):
+				dbconfig['private_key_file_pwd'] = dbcertpass
+		else:
+			print(keyerr)
+			sys.exit(123)
+		if 'dbauth' in params and params['dbauth'] != None and len(str(params['dbauth'])):
+			dbconfig['authenticator'] = params['dbauth']
+		else:
+			dbconfig['authenticator'] = 'SNOWFLAKE_JWT'
+		#a password alongside a key confuses the connector - drop it
+		dbconfig.pop('password',None)
+		usecert = 1
+
 	try:
-		conn_snowflake = sfc.connect(account=params['account'], user=params['user'],
+		if usecert == 1:
+			conn_snowflake = sfc.connect(**dbconfig)
+		else:
+			conn_snowflake = sfc.connect(account=params['account'], user=params['user'],
                password=params['password'], database=params['database'],
                schema=params['schema'], warehouse=params['warehouse'], role=params['role'])
 	except Exception as err:
