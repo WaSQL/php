@@ -22,7 +22,7 @@ No browser and no `--shot` by default — startup launches the PostEdit watcher 
 **wamcp has no `setdb`/session-default database.** Call the wamcp `databases` tool to resolve `{alias}` (or `localhost` for `wasql`) to a `db_id`, then pass that `db_id` explicitly on every subsequent wamcp call (`query`, `schema`, `pagesrc`, `tables`, `fields`, `ddl`, `indexes`, `getdb`).
 
 ## Alias resolution is literal, not semantic
-`{alias}` in "work on {alias} [page]" is looked up against `postedit.xml`'s `alias` list first, exactly as typed — don't pattern-match on wording. `postedit.xml` can have an alias literally named `localhost` — a real PostEdit-mirrored site, distinct from the `wasql` local-framework trigger even though both ultimately serve from `http://localhost`. "work on localhost" means that PostEdit alias; only the exact phrase "work on wasql" selects local framework mode.
+`{alias}` in "work on {alias} [page]" is looked up against `postedit/postedit.xml`'s `alias` list first, exactly as typed — don't pattern-match on wording. `postedit/postedit.xml` can have an alias literally named `localhost` — a real PostEdit-mirrored site, distinct from the `wasql` local-framework trigger even though both ultimately serve from `http://localhost`. "work on localhost" means that PostEdit alias; only the exact phrase "work on wasql" selects local framework mode.
 
 ## After startup: which mode you're now in
 
@@ -41,4 +41,3 @@ Navigate the debug browser to `/php/admin.php?_menu=synchronize` once the task i
 ## Deeper reference
 - **`workon.md`** — every flag (`--no-watcher`, `--filter`, `--reshoot`, `--width`, `--port`, Firefox's `--ff-*` flags, …), the full browser-choice precedence chain, gotchas (wamcp db_id ≠ alias, tab-memory behavior, the `tail`/`head` hang fix, missing-permission troubleshooting), and the manual fallback if the script itself fails.
 - **`postedit.md`** — the PostEdit edit loop once a session has started (mirror files, auto-sync, refresh, screenshot).
-- **`workon_firefox.md`** — raw BiDi protocol findings behind Firefox's one-session-per-process limit, if the Firefox broker needs debugging.

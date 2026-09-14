@@ -684,6 +684,27 @@ Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **
 
 ---
 
+## Sending a file to the browser — and the PDF question (verified 2026-09)
+**`pushData($data,$ext,$name)`** (`php/common.php`) is the normal way a page hands the user a file: it sets `Content-Disposition: attachment`, `Content-Length`, and **exits**. Two limits decide whether you can use it:
+- It sets **`Content-Type: text/{$ext}`** from the extension you pass, so `pushData($bytes,'pdf',…)` sends `text/pdf` — wrong, and some viewers refuse it.
+- It does **not clear the output buffers** the framework has open. For CSV that is harmless; for **binary** a single stray byte ahead of the payload makes the file unopenable.
+
+For anything binary, copy what core's own **`pushFile()`** does — `while(ob_get_level()){ob_end_clean();}` first, then `header('Content-Type: application/pdf')` + `Content-Disposition` + `Content-Length`, `echo`, `exit`. `pushFile($path)` itself is the right call when the bytes are already a file on disk.
+
+**⚠️ There is no PDF engine in a stock WaSQL install.** `php/extras/tcpdf.php` reads like one — it exposes `tcpdfHTML($html,$params)` and `tcpdfXML()` — but it is only a **wrapper**: TCPDF is GNU-licensed and is deliberately *not* shipped, so the file `abort()`s with "you need to download it yourself and add the tcpdf folder to extras" unless `php/extras/tcpdf/` exists. Check before designing around it (`ls -d php/extras/tcpdf` on the target host, not on your dev box), and note `tcpdfHTML()` ends with `Output($filename,'I')` — **inline, not a download**; pass the HTML to your own `Output(...,'D')` call if you need a save dialog. `php/extras/pdf/` is unrelated — it holds `class.pdf2text.php`, which reads PDFs.
+- Adding the library is a change to the **shared `php/extras` tree every WaSQL site inherits**, so it is the framework developer's deliberate call — not something a site feature should quietly assume. Same for `wkhtmltopdf` or a headless Chrome on the server.
+- **For a report somebody has to hand over, print CSS is usually the better answer anyway** and needs nothing installed: the page is the document, and *Save as PDF* in the browser's print dialog produces the file. What makes the saved copy readable:
+  - `@page{size:letter landscape;margin:12mm;}` — wide tables do not fit portrait.
+  - **`thead{display:table-header-group;}`** — this is the one that matters: it repeats the column headings on every printed page. Without it page 3 of a table is unlabelled columns.
+  - `tr{break-inside:avoid;page-break-inside:avoid;}` so no row is split down the middle, and `break-after:avoid` on headings so none is orphaned above its table.
+  - **`.ad-tablewrap{overflow:visible !important;}`** (whatever the site's scroll wrapper is) — an `overflow-x:auto` container that scrolls on screen **clips** the right-hand columns off the paper.
+  - `print-color-adjust:exact` to keep zebra striping and coloured tags, and tell the user to tick *Background graphics* — the browser default drops both.
+  - A template-wide `@media print{.ad-card{break-inside:avoid;}}` is right for a dashboard card and **wrong for a long table**: override it to `auto` for the report, or the browser either overflows the page or ignores you.
+  - Hide the app around it (`.ad-topbar`,`.ad-nav`,`.ad-footer`,`.button`) and give the document a print-only covering note — the reader has never seen the application.
+- **⚠️ A page's `css`/`js` edit made outside the admin form leaves `_pages.css_min`/`js_min` stale.** Those columns are regenerated only on the `$_REQUEST` save path in `php/common.php` (~23603, ~24028), and the minify bundle is keyed on `page_id`, not on the content — so a PostEdit-synced stylesheet change serves the *old* bundle. Bust it with **`?_menu=clearmin`** and reload with the cache disabled.
+
+---
+
 ## Core helper traps (verified)
 - **PHP close-tag truncation / unclosed-final-block — full mechanism in CLAUDE.md gotchas #2b/#2d** (truncation on any literal close tag incl. in strings/`//` comments; an unclosed final `<?php` gets echoed as literal text with no PHP error). Not covered there: **a `/* … */` BLOCK comment is safe** — the PHP lexer ignores a close tag inside one, which is why `@usage <?=pageFooBar($x);?>` lines in PHPDoc blocks are fine as-is; don't "fix" those. Copy-paste-safe XML declaration: `'<'.'?xml encoding="UTF-8" ?'.'>'`.
 - **`verboseTime()` returns a TRAILING SPACE.** Harmless where HTML collapses whitespace (`verboseTime($s).' ago'`), but visible the moment punctuation follows — `'every '.verboseTime($s).'.'` renders `every 21 days .` — and it doubles up inside a `title`/`alt` attribute, where whitespace is *not* collapsed. `trim(verboseTime($s))` whenever you concatenate punctuation or build an attribute.
