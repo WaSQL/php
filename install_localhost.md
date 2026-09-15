@@ -263,9 +263,29 @@ Detected package manager → packages:
 
 ### macOS
 
-Homebrew `httpd`, `php` and `mysql` (Homebrew itself is installed if absent).
-Apache is moved to port 80 and run via `sudo brew services`, using Homebrew
-PHP's `libphp.so` as an Apache module with the prefork MPM.
+Homebrew `httpd`, `php` and `mysql` (Homebrew itself is installed if absent),
+under whichever prefix `brew --prefix` reports — `/opt/homebrew` on Apple
+silicon, `/usr/local` on Intel.
+
+* **Every `brew` call runs as you, never as root.** The script re-execs under
+  `sudo`, and Homebrew refuses to run as root, so each `brew` invocation is
+  dropped back to `$SUDO_USER` — or, if you started from an already-root shell,
+  to the owner of the `brew` binary itself.
+* Apache is moved to port 80 and started with `sudo brew services restart
+  httpd`, which is the only way it gets to bind a privileged port. If that
+  fails the script falls back to `apachectl -k start`.
+* **macOS' own Apache is stopped first.** `/usr/sbin/httpd` ships with the OS;
+  while it holds port 80 Homebrew's httpd cannot bind, and you end up staring
+  at the system welcome page. If `lsof` shows `/usr/sbin/httpd` on the port,
+  the installer runs `apachectl stop` and `launchctl bootout
+  system/org.apache.httpd`.
+* MySQL is started as a **user** service (`brew services start mysql`), because
+  root-owned files in a user-owned datadir break the next user-level start. A
+  sudo'd terminal does not always have a launchd bootstrap domain to put a
+  LaunchAgent in, so the script falls back to `mysql.server start`, still run
+  as you.
+* Homebrew PHP's `libphp.so` is loaded as an Apache module, with the MPM
+  switched to **prefork** (mod_php is not safe under event/worker).
 
 ---
 
@@ -313,8 +333,10 @@ usual reason `localhost` keeps serving somebody else's welcome page:
   `<VirtualHost>`, so a stock `ServerName localhost` vhost included further down
   can no longer take the site over — and every module we reference is loaded by
   the time our directives are read.
-* the main server's `DocumentRoot` is repointed at yours too, so a request that
-  never reaches the vhost still lands in the right tree.
+* the main server's `DocumentRoot` is repointed at yours too (Windows and
+  macOS — on Linux the distro's own vhost layout owns it), so a request that
+  never reaches our vhost still lands in the right tree rather than on
+  Apache's "It works!" page.
 
 After writing the config the installer runs `httpd -S` and names the file that
 actually owns `localhost:<port>`, warning you if it is not the WaSQL one.
@@ -325,6 +347,14 @@ missing, with `extension_dir` set and the extensions WaSQL needs uncommented).
 Settings applied: `memory_limit 512M`, `post_max_size 128M`,
 `upload_max_filesize 120M`, `max_execution_time 600`, `max_input_vars 10000`,
 `log_errors On`, `display_errors Off`, `date.timezone`.
+
+On Linux and macOS a second drop-in, `99-wasql-mysql.ini`, is written once
+MySQL is up: PHP turns the host name `localhost` into a *unix socket*
+connection, and its compiled-in default (`/tmp/mysql.sock`) is not where
+Homebrew, MariaDB or every distro package puts that socket. The installer asks
+the running server (`SELECT @@socket`) and pins `mysqli.default_socket` /
+`pdo_mysql.default_socket` at the real path — which is the usual reason a
+correct `config.xml` still cannot connect.
 
 Required extensions (verified, warned about if missing): `mysqli`, `curl`,
 `mbstring`, `simplexml`, `zip`, `json`, `openssl`, `fileinfo`. Recommended and
@@ -465,6 +495,13 @@ served, another vhost is answering first; run with `--verbose` to see the
 `wacss` sample site's own index page (`_pages` record `index`). Log into
 <http://localhost/php/admin.php> (admin / admin) and edit it.
 
+**403 Forbidden on macOS, and the permissions look fine** — the checkout is
+probably under `~/Desktop`, `~/Documents` or `~/Downloads`. macOS privacy
+protection (TCC) denies the `_www` user those folders no matter what `chmod`
+says, and there is no file mode that fixes it. Move the checkout somewhere
+plain (`~/wasql`, `~/Sites`) and re-run. The installer warns when it spots
+this.
+
 **403 Forbidden** — on Linux, Apache cannot traverse into the checkout
 (permissions on a `/home` path) or SELinux is blocking it. Re-run the installer
 as root so it can fix both, and check `/var/log/audit/audit.log` for SELinux
@@ -473,9 +510,15 @@ connect. To reach the site from another machine, change that to
 `Require all granted` in the generated conf.
 
 **Port 80 already in use** — on Windows this is usually IIS
-(`net stop W3SVC`) or another Apache; on macOS the built-in Apache
-(`sudo apachectl stop`). Or just use `--port 8080` — the installer adds the
+(`net stop W3SVC`) or another Apache. On macOS the built-in Apache is stopped
+for you; anything else on the port (`sudo lsof -nP -iTCP:80 -sTCP:LISTEN` names
+it) you stop yourself. Or just use `--port 8080` — the installer adds the
 matching `localhost:8080` host entry to `config.xml` for you.
+
+**macOS: `Error: Running Homebrew as root…`** — you started the script with
+`sudo python3 install_localhost.py` from a shell that had already dropped
+`SUDO_USER`, or Homebrew is owned by root. Run it as your normal user
+(`python3 install_localhost.py`) and let it sudo itself.
 
 **PHP cannot reach the database** — check `config.xml` credentials against what
 was created, confirm MySQL is running, and remember the grants are created for
@@ -504,6 +547,8 @@ place for your platform.
   and `--dry-run`.
 * Internet access, unless everything is already installed and you use
   `--skip-install`.
+* macOS: the Xcode command line tools, which Homebrew installs itself on first
+  run if they are missing (it is a large download — the first run is slow).
 * Intended for **local development only**. It configures a permissive,
   convenience-first stack (`Require local`, relaxed `sql_mode`, `admin/admin`,
   well-known database credentials). Do not point it at a server that is

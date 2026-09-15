@@ -899,6 +899,26 @@ class Stack:
         elif not wrote:
             warn("no php.ini or scan directory found; PHP limits left at defaults")
 
+    def php_write_extra_ini(self, settings: dict, filename: str) -> bool:
+        """A second drop-in, for values only known once the rest of the install
+        has run (the MySQL socket). Same placement rules as php_write_ini."""
+        body = "\n".join(f"{k} = {v}" for k, v in settings.items())
+        payload = f"; {SENTINEL_BEGIN}\n[PHP]\n{body}\n; {SENTINEL_END}\n"
+        for d in self.php.ini_dirs:
+            if d and d.is_dir():
+                write_text(d / filename, payload)
+                ok(f"wrote {d / filename}")
+                return True
+        if self.php.ini:
+            backup(self.php.ini)
+            text = read_text(self.php.ini)
+            for k, v in settings.items():
+                text = set_ini_value(text, k, v)
+            write_text(self.php.ini, text)
+            ok(f"updated {self.php.ini}")
+            return True
+        return False
+
 
 def posix(p: Path | str) -> str:
     """Apache config wants forward slashes, even on Windows."""
@@ -1436,26 +1456,49 @@ class MacStack(Stack):
 
     def __init__(self, s: Settings):
         super().__init__(s)
-        self.user = invoking_user()
         self.brew = first_existing("/opt/homebrew/bin/brew",
                                    "/usr/local/bin/brew") or which("brew")
+        # the script is root by this point, but brew must never be
+        self.user = invoking_user() or self._brew_owner()
         self.prefix = Path("/opt/homebrew") if self.brew and \
             str(self.brew).startswith("/opt/homebrew") else Path("/usr/local")
+        self.mysql_server: Optional[Path] = None
+
+    def _brew_owner(self) -> Optional[str]:
+        """Who owns the Homebrew install. SUDO_USER is empty when the script is
+        started from an already-root shell (`sudo -i`, a root login), so fall
+        back to the owner of brew itself - brew refuses to run as root."""
+        if not self.brew:
+            return None
+        try:
+            import pwd
+            name = pwd.getpwuid(self.brew.stat().st_uid).pw_name
+        except Exception:
+            return None
+        return name if name != "root" else None
 
     # brew refuses to run as root, so bounce back to the invoking user
-    def _brew(self, *args: str, timeout: int = 2400) -> Result:
+    def _brew(self, *args: str, timeout: int = 2400, quiet: bool = False,
+              allow_dry: bool = True) -> Result:
         if not self.brew:
             return Result(127, "", "brew not found")
+        cmd = [str(self.brew), *args]
         if os.geteuid() == 0 and self.user:
-            return run(["sudo", "-u", self.user, "-H", str(self.brew), *args],
-                       timeout=timeout)
-        return run([str(self.brew), *args], timeout=timeout)
+            cmd = ["sudo", "-u", self.user, "-H"] + cmd
+        return run(cmd, timeout=timeout, quiet=quiet, allow_dry=allow_dry)
+
+    def _brew_root(self, *args: str, timeout: int = 600) -> Result:
+        """`sudo brew services` is how a service gets to bind port 80, so these
+        stay root on purpose instead of dropping back to the invoking user."""
+        if not self.brew:
+            return Result(127, "", "brew not found")
+        return run([str(self.brew), *args], timeout=timeout, quiet=True)
 
     def detect(self):
         if self.brew:
-            r = run([str(self.brew), "--prefix"], quiet=True, allow_dry=False)
-            if r.good and r.out:
-                self.prefix = Path(r.out.strip())
+            r = self._brew("--prefix", quiet=True, allow_dry=False)
+            if r.good and r.out.strip():
+                self.prefix = Path(r.out.strip().splitlines()[-1].strip())
         pfx = self.prefix
         a = self.apache
         a.binary = first_existing(pfx / "opt/httpd/bin/httpd", pfx / "bin/httpd")
@@ -1488,6 +1531,8 @@ class MacStack(Stack):
         m.conf_file = first_existing(pfx / "etc/my.cnf")
         m.conf_dir = first_existing(pfx / "etc/my.cnf.d")
         m.service = "mysql"
+        self.mysql_server = first_existing(pfx / "opt/mysql/bin/mysql.server",
+                                           pfx / "bin/mysql.server")
 
     def install(self):
         if not self.brew:
@@ -1534,31 +1579,76 @@ class MacStack(Stack):
 
     def apache_prepare_main(self, text: str) -> str:
         text = super().apache_prepare_main(text)
-        return prefer_prefork(text)
+        text = prefer_prefork(text)
+        # homebrew's stock DocumentRoot is <prefix>/var/www (the "It works!"
+        # page); make the main server fall back to ours instead
+        return set_documentroot(text, self.s.docroot)
+
+    # -- services -----------------------------------------------------------
+    def stop_system_apache(self):
+        """macOS ships its own Apache at /usr/sbin/httpd. While that one holds
+        the port Homebrew's httpd cannot bind, and the install finishes with
+        the system's welcome page still being served."""
+        sys_ctl = Path("/usr/sbin/apachectl")
+        if not sys_ctl.is_file() or not port_in_use(self.s.port):
+            return
+        who = run(["bash", "-c",
+                   f"lsof -nP -iTCP:{self.s.port} -sTCP:LISTEN 2>/dev/null"],
+                  quiet=True, allow_dry=False)
+        if "/usr/sbin/httpd" not in who.out:
+            return
+        info("stopping the built-in macOS Apache so Homebrew's can take "
+             f"port {self.s.port}")
+        run([str(sys_ctl), "stop"], quiet=True)
+        run(["launchctl", "bootout", "system/org.apache.httpd"], quiet=True)
+        time.sleep(2)
 
     def apache_restart(self) -> Result:
+        if DRY_RUN:
+            info(f"{C.DIM}[dry-run] sudo brew services restart httpd{C.OFF}")
+            return Result(0, "", "")
+        self.stop_system_apache()
         # `sudo brew services` is the documented way to run httpd on port 80,
         # so this one stays as root instead of dropping to the invoking user
-        r = run([str(self.brew), "services", "restart", "httpd"], quiet=True) \
-            if self.brew else Result(1, "", "brew not found")
+        r = self._brew_root("services", "restart", "httpd")
         if not r.good and self.apache.ctl:
             run([str(self.apache.ctl), "-k", "stop"], quiet=True)
             time.sleep(1)
             r = run([str(self.apache.ctl), "-k", "start"])
+        for _ in range(15):
+            if port_in_use(self.s.port):
+                return Result(0, "apache up", "")
+            time.sleep(1)
         return r
 
-    def mysql_start(self) -> Result:
-        r = self._brew("services", "start", "mysql")
-        if not r.good:
-            warn("brew services start mysql failed; trying mysql.server")
-            srv = first_existing(self.prefix / "opt/mysql/bin/mysqld_safe")
-            if srv:
-                run(["bash", "-c", f"{srv} --user=mysql &"], quiet=True)
-                time.sleep(5)
-        for _ in range(20):
+    def _wait_for_mysql(self, seconds: int) -> bool:
+        for _ in range(seconds):
             if port_in_use(3306):
-                return Result(0, "mysql up", "")
+                return True
             time.sleep(1)
+        return False
+
+    def mysql_start(self) -> Result:
+        if DRY_RUN:
+            info(f"{C.DIM}[dry-run] brew services start mysql{C.OFF}")
+            return Result(0, "", "")
+        if port_in_use(3306):
+            return Result(0, "mysql already running", "")
+        r = self._brew("services", "start", "mysql", timeout=300)
+        if not r.good or not self._wait_for_mysql(10):
+            # a user LaunchAgent needs a GUI bootstrap domain, which a sudo'd
+            # terminal does not always have; mysql.server does not care
+            info("brew services could not start mysql; trying mysql.server")
+            srv = self.mysql_server or first_existing(
+                self.prefix / "opt/mysql/bin/mysql.server")
+            if srv:
+                cmd = [str(srv), "start"]
+                if os.geteuid() == 0 and self.user:
+                    # the datadir belongs to the brew user, not to root
+                    cmd = ["sudo", "-u", self.user, "-H"] + cmd
+                r = run(cmd, timeout=300)
+        if self._wait_for_mysql(25):
+            return Result(0, "mysql up", "")
         return r
 
 
@@ -2073,6 +2163,28 @@ def tune_mysql(s: Settings, admin: MySQLAdmin, stack: Stack) -> None:
              "(WaSQL may complain about strict mode)")
 
 
+def php_mysql_socket(s: Settings, stack: Stack, admin: MySQLAdmin) -> None:
+    """PHP turns the host name 'localhost' into a unix-socket connection, and
+    its compiled-in default (/tmp/mysql.sock) is not where every server puts
+    that socket - Homebrew, MariaDB and the distro packages all differ, which
+    is the usual reason a correct config.xml still cannot connect. Pin the
+    real path so mysqli_connect('localhost', ...) works."""
+    if IS_WIN or DRY_RUN:
+        return
+    r = admin.sql("SELECT @@socket;")
+    if not r.good or not r.out.strip():
+        return
+    sock = r.out.strip().splitlines()[-1].strip()
+    if not sock or sock == "@@socket" or not Path(sock).exists():
+        return
+    if sock == "/tmp/mysql.sock":
+        return                      # already PHP's built-in default
+    if stack.php_write_extra_ini({"mysqli.default_socket": sock,
+                                  "pdo_mysql.default_socket": sock},
+                                 "99-wasql-mysql.ini"):
+        ok(f"PHP pointed at the MySQL socket {sock}")
+
+
 # ---------------------------------------------------------------------------
 # WaSQL side of the install
 # ---------------------------------------------------------------------------
@@ -2136,6 +2248,22 @@ def wasql_config_xml(s: Settings) -> None:
     ok(f"created {cfg}")
 
 
+MAC_TCC_DIRS = ("Desktop", "Documents", "Downloads", "Movies", "Music",
+                "Pictures", "Library")
+
+
+def warn_mac_protected(path: Path) -> None:
+    """macOS privacy protection (TCC) refuses the _www user access to
+    ~/Desktop, ~/Documents and friends no matter what the file modes say, so
+    Apache answers 403 for a checkout that lives in one of them."""
+    parts = path.resolve().parts
+    if len(parts) >= 4 and parts[1] == "Users" and parts[3] in MAC_TCC_DIRS:
+        warn(f"{path} is inside a macOS privacy-protected folder "
+             f"(~/{parts[3]}). Apache runs as _www and gets 403 there no "
+             f"matter the permissions - move it to /Users/{parts[2]}/wasql "
+             "(or ~/Sites) and re-run.")
+
+
 def wasql_filesystem(s: Settings, stack: Stack) -> None:
     """Directories, permissions and .htaccess WaSQL expects to exist."""
     web_user = stack.apache.user if not IS_WIN else None
@@ -2153,6 +2281,10 @@ def wasql_filesystem(s: Settings, stack: Stack) -> None:
     ensure_traversable(s.wasql)
     if s.docroot != s.wasql:
         ensure_traversable(s.docroot)
+    if IS_MAC:
+        warn_mac_protected(s.wasql)
+        if s.docroot != s.wasql:
+            warn_mac_protected(s.docroot)
 
     ht = s.docroot / ".htaccess"
     sample = s.wasql / "sample.htaccess"
@@ -2627,6 +2759,7 @@ def main(argv: list[str]) -> int:
         if setup_database(s, admin):
             report_mysql_datadir(s, admin, stack)
             tune_mysql(s, admin, stack)
+            php_mysql_socket(s, stack, admin)
 
     step("Starting Apache")
     if s.port != 80 and port_in_use(s.port):
