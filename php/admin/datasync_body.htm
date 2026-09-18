@@ -75,13 +75,13 @@
 		<div class="w_padtop w_bigger text-center w_nowrap"><label class="w_primary">Are you sure? This CANNOT be undone!</label></div>
 	</view:sync_from_target>
 	<?=renderView($func,$table,'table');?>
-	<form method="post" name="datasync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'actions_<?=$table;?>');">
+	<form method="post" name="datasync_verify_form" action="/php/admin.php" data-setprocessing="centerpop_processing" onsubmit="return wacss.ajaxPost(this,'actions_<?=$table;?>');">
 		<input type="hidden" name="_menu" value="datasync" />
 		<input type="hidden" name="func" value="<?=$func;?>_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />
 		<div class="w_padtop text-right">
 			<button type="submit" class="wacss_button is-success is-mobile-responsive" id="confirm">YES</button>
-			<button type="button" class="wacss_button is-danger is-mobile-responsive" onclick="removeId('centerpop');">NO</button>
+			<button type="button" class="wacss_button is-danger is-mobile-responsive" onclick="wacss.centerpopClose();">NO</button>
 		</div>
 	</form>
 	<?=buildOnLoad("centerObject('centerpop');");?>
@@ -89,7 +89,7 @@
 
 <view:results>
 	<?=$results;?>
-	<?=buildOnLoad("removeDiv('centerpop');");?>
+	<?=buildOnLoad("wacss.centerpopClose();");?>
 </view:results>
 
 <view:error>
