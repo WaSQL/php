@@ -1013,7 +1013,7 @@ function websiteGraderFormatSeconds($seconds){
  *   excluded array of [url,reason] - pages skipped from on-page checks (robots.txt/noindex), crawlseconds float
  * @return string HTML
  */
-function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array(),$crawlseconds=0){
+function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array(),$crawlseconds=0,$redirectnotice=''){
 	if(strlen($error)){
 		return '<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> '.encodeHtml($error).'</div>';
 	}
@@ -1039,6 +1039,9 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech
 	$rtn.='@media (max-width:560px){.wg_tablewrap table{min-width:600px;}.wg_results td xmp{max-width:320px;font-size:11px;}.wg_cards{gap:16px;}.wg_hero{padding:14px;}.wg_tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}}'.PHP_EOL;
 	$rtn.='</style>'.PHP_EOL;
 	$rtn.='<div class="wg_results">'.PHP_EOL;
+	if(strlen($redirectnotice)){
+		$rtn.='<div class="w_warning" style="padding:10px;margin-bottom:12px;"><span class="icon-warning"></span> '.encodeHtml($redirectnotice).'</div>'.PHP_EOL;
+	}
 	//scan summary + share/email action (always visible)
 	$rtn.='<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">'.PHP_EOL;
 	$rtn.='<div style="flex:1 1 auto;min-width:0;">'.PHP_EOL;
@@ -1713,10 +1716,10 @@ function websiteGraderDownloadReport(){
  *   rebuild it without re-crawling (guarantees the emailed/downloaded report matches what is
  *   on screen).
  * @param baseurl string, checks array, grade array, social array, pages array of [url,body], tech array,
- *   excluded array of [url,reason], crawlseconds float
+ *   excluded array of [url,reason], crawlseconds float, redirectnotice string
  * @return void
  */
-function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array(),$crawlseconds=0){
+function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array(),$crawlseconds=0,$redirectnotice=''){
 	$urls=array();
 	foreach($pages as $p){if(isset($p['url'])){$urls[]=$p['url'];}}
 	$_SESSION['websiteGraderReport']=array(
@@ -1728,6 +1731,7 @@ function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=a
 		'tech'=>$tech,
 		'excluded'=>$excluded,
 		'crawlseconds'=>$crawlseconds,
+		'redirectnotice'=>$redirectnotice,
 		'when'=>date('M j, Y g:i a')
 	);
 	return;
@@ -1937,6 +1941,9 @@ function websiteGraderEmailHTML($rep,$note='',$fromname='',$toname=''){
 	$crawlseconds=isset($rep['crawlseconds'])?(float)$rep['crawlseconds']:0;
 	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):'').(count($excluded)?(' ('.count($excluded).' excluded via robots.txt/noindex)'):'').' &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
 	$h.='</div>'.PHP_EOL;
+	if(isset($rep['redirectnotice']) && strlen($rep['redirectnotice'])){
+		$h.='<div style="background:#fdf3e0;border:1px solid #f0ad4e;border-radius:8px;padding:10px 14px;margin-bottom:16px;color:#8a5a00;">'.encodeHtml($rep['redirectnotice']).'</div>'.PHP_EOL;
+	}
 	//warm, personal greeting
 	$h.='<div style="margin-bottom:14px;">Hi '.(strlen($toname)?encodeHtml($toname):'there').',</div>'.PHP_EOL;
 	$h.='<div style="margin-bottom:16px;">Here'."'".'s a look at how <b>'.encodeHtml($host).'</b> is doing for search engines and AI visibility'.(strlen($fromname)?(', put together by '.encodeHtml($fromname)):'').'. It scored <b>'.$grade['percent'].'%</b> ('.$grade['pass'].' of '.$grade['total'].' checks passed) &mdash; details are below, along with plain-language explanations for any terms that might be new to you.</div>'.PHP_EOL;

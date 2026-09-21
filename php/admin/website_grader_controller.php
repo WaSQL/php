@@ -12,6 +12,7 @@
 			//defaults so the result view can always render safely
 			$grader_error='';
 			$baseurl='';
+			$redirectnotice='';
 			$pages=array();
 			$checks=array();
 			$grade=array('percent'=>0,'pass'=>0,'total'=>0,'label'=>'','letter'=>'','color'=>'#888');
@@ -53,6 +54,15 @@
 			}
 			$baseurl=$crawl['baseurl'];
 			$pages=$crawl['pages'];
+			//the start URL can redirect to a different host (e.g. a "dev" subdomain that bounces
+			//anonymous visitors to the production domain) - -follow is on in websiteGraderFetch,
+			//so the crawl silently ends up grading whatever host it landed on. Flag that clearly
+			//rather than showing a report labeled with the site the caller actually typed in.
+			$requestedhost=(string)parse_url($starturl,PHP_URL_HOST);
+			$finalhost=(string)parse_url($baseurl,PHP_URL_HOST);
+			if(strlen($requestedhost) && strlen($finalhost) && strcasecmp($requestedhost,$finalhost)!==0){
+				$redirectnotice="You requested {$starturl} — it redirected to a different host. These results are for {$baseurl}, not {$requestedhost}.";
+			}
 			//run all checks, grade them, gather the social preview data, and fingerprint the tech stack
 			$checks=websiteGraderRunChecks($baseurl,$pages,$crawl['robots'],$excludedpages);
 			$grade=websiteGraderGrade($checks);
@@ -60,7 +70,7 @@
 			$tech=websiteGraderDetectTech($pages,$crawl['robots'],(string)parse_url($baseurl,PHP_URL_HOST));
 			//reacquire the session so we can stash the report for the email/download steps
 			session_start();
-			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech,$excludedpages,$crawlseconds);
+			websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech,$excludedpages,$crawlseconds,$redirectnotice);
 			setView('result',1);
 		break;
 		case 'emailform':

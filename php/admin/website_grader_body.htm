@@ -25,7 +25,7 @@
 
 <view:result>
 <div data-onload="wacss.centerpopClose();">
-<?=websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech,$grader_error,$excludedpages,isset($crawlseconds)?$crawlseconds:0);?>
+<?=websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech,$grader_error,$excludedpages,isset($crawlseconds)?$crawlseconds:0,isset($redirectnotice)?$redirectnotice:'');?>
 </div>
 </view:result>
 
