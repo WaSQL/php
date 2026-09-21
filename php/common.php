@@ -22399,7 +22399,8 @@ function postURL($url,$params=array()) {
 		curl_setopt( $process, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
 	}
 	if(!isset($params['-user_agent'])){
-		$params['-user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36';
+		$curl_version = curl_version();
+		$params['-user_agent'] = isset($curl_version['version']) ? "curl/{$curl_version['version']}" : 'curl/8.0.0';
 	}
 	if(isset($params['-contenttype'])){
 		if(!isset($params['-headers'][0])){$params['-headers']=array();}
@@ -22622,7 +22623,7 @@ function postJSON($url='',$json='',$params=array()) {
 */
 function postXML($url='',$xml='',$params=array()) {
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-type: text/xml; charset=UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='text/xml; charset=UTF-8';}
 	if(!isset($params['-xml'])){$params['-xml']=1;}
 	if(isset($params['username']) && isset($params['apikey'])){
 		if(!is_array($params['-headers'])){$params['-headers']=array();}
@@ -22651,9 +22652,10 @@ function postXML($url='',$xml='',$params=array()) {
 function postBody($url='',$body='',$params=array()) {
 	//defaults
 	if(!isset($params['-encoding'])){$params['-encoding']='UTF-8';}
-	if(!isset($params['-contenttype'])){$params['-contenttype']='Content-Type: text/xml; charset=UTF-8';}
+	if(!isset($params['-contenttype'])){$params['-contenttype']='text/xml; charset=UTF-8';}
 	if(!isset($params['-user_agent'])){
-		$params['-user_agent'] = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; Media Center PC 4.0)';
+		$curl_version = curl_version();
+		$params['-user_agent'] = isset($curl_version['version']) ? "curl/{$curl_version['version']}" : 'curl/8.0.0';
 	}
 	//init
 	$rtn=array('_debug'=>array(),'body'=>'','headers'=>array());
