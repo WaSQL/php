@@ -951,7 +951,16 @@ function wamcpToolWebsiteGrade($url, $maxpages = 20) {
     $grade   = websiteGraderGrade($checks);
     $social  = count($pages) ? websiteGraderSocialData($pages[0], $baseurl) : array();
 
-    return wamcpToolText(websiteGraderAIPrompt($baseurl, $pages, $checks, $grade, $social));
+    //the start URL can redirect to a different host (-follow is on in websiteGraderFetch) -
+    //flag that so the AI prompt isn't silently labeled with a host the caller never asked for
+    $requestedhost = (string)parse_url($starturl, PHP_URL_HOST);
+    $finalhost     = (string)parse_url($baseurl, PHP_URL_HOST);
+    $notice = '';
+    if (strlen($requestedhost) && strlen($finalhost) && strcasecmp($requestedhost, $finalhost) !== 0) {
+        $notice = "Note: {$starturl} redirected to a different host. These results are for {$baseurl}, not {$requestedhost}.\n\n";
+    }
+
+    return wamcpToolText($notice . websiteGraderAIPrompt($baseurl, $pages, $checks, $grade, $social));
 }
 
 // ── Response Helpers ──────────────────────────────────────────────────────────
