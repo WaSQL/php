@@ -2027,6 +2027,7 @@ function databaseListRecords($params=array()){
 		$efile="{$epath}/".$ename;
 		setFileContents($efile,$csv);
 		$url='/php/index.php?-destroy=1&_pushfile='.encodeBase64($efile);
+		$pretable='';
 		if(isset($params['-export']) && $params['-export']==1){
 			$pretable=<<<ENDOFPRETABLE
 		<div style="display:flex;justify-content:flex-end;">
@@ -8594,8 +8595,11 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 				if(is_array($val)){$val=implode(':',$val);}
 				$val=databaseEscapeString($val);
 				if(strlen($val)==0){
-					if(isset($info[$key]['default']) && strlen($info[$key]['default'])){
+					if(isset($info[$key]['default'])){
 						$val=$info[$key]['default'];
+					}
+					elseif(isset($info[$key]['_dbflags']) && strlen($info[$key]['_dbflags']) && stristr("not_null",$info[$key]['_dbflags'])){
+						$val='';
 					}
 					else{
 						$val='NULL';
