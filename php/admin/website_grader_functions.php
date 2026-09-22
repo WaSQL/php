@@ -311,6 +311,48 @@ function websiteGraderCrawl($starturl,$maxpages){
 }
 
 /**
+ * @describe build a single-page "crawl" result from a saved copy of a page already sitting
+ *   somewhere on local disk (browser "Save Page As") instead of fetching it live - the escape
+ *   hatch for sites behind a bot-verification challenge (see websiteGraderIsBotChallenge) that a
+ *   real visitor's browser can load fine but curl cannot. Only that one page is graded (no further
+ *   crawling is possible since we don't have the rest of the site's HTML); robots.txt is still
+ *   fetched live since a challenge usually gates HTML pages, not plain-text well-known files, but
+ *   if the whole domain blocks automated requests those site-wide checks will still fail here.
+ * @param localpath string (full local filesystem path to the saved .html file),
+ *   starturl string (the site URL the developer typed in - used only for host/scheme context)
+ * @return array [baseurl, scheme, host, pages(array of one [url,body,headers]), robots] OR [error]
+ */
+function websiteGraderCrawlFromLocalFile($localpath,$starturl){
+	$body=@file_get_contents($localpath);
+	if($body===false || !strlen(trim((string)$body))){
+		return array('error'=>"The local file is empty or could not be read: {$localpath}");
+	}
+	if(!websiteGraderLooksLikeHtmlPage($body)){
+		return array('error'=>"The file at {$localpath} does not look like a saved HTML page (no &lt;html&gt; tag found). In your browser, use File &rarr; Save Page As &rarr; \"Webpage, HTML only\" (or similar) and point to that saved file.");
+	}
+	$parts=parse_url($starturl);
+	$scheme=isset($parts['scheme'])?strtolower($parts['scheme']):'https';
+	$host=isset($parts['host'])?$parts['host']:'';
+	if(!strlen($host)){
+		return array('error'=>'Enter the website URL the page was saved from, in addition to the local file path.');
+	}
+	$port=isset($parts['port'])?':'.$parts['port']:'';
+	$baseurl="{$scheme}://{$host}{$port}";
+	$pageurl=websiteGraderCanonicalURL(rtrim($baseurl,'/').(isset($parts['path'])?$parts['path']:'/'));
+	//robots.txt is fetched live (best-effort) exactly like websiteGraderCrawl() - a challenge that
+	//gates the HTML page often leaves plain-text well-known files reachable.
+	$rres=websiteGraderFetch(rtrim($baseurl,'/').'/robots.txt');
+	$robots=($rres['http_code'] >= 200 && $rres['http_code'] < 300 && strlen(trim($rres['body'])) && !websiteGraderLooksLikeHtmlPage($rres['body']))?$rres['body']:'';
+	return array(
+		'baseurl'=>$baseurl,
+		'scheme'=>$scheme,
+		'host'=>$host,
+		'pages'=>array(array('url'=>$pageurl,'body'=>$body,'headers'=>array())),
+		'robots'=>$robots
+	);
+}
+
+/**
  * @describe HEAD request for a URL - returns curl_getinfo (http_code, download_content_length, ...).
  * @param url string
  * @return array
@@ -1010,10 +1052,12 @@ function websiteGraderFormatSeconds($seconds){
 /**
  * @describe FORM 1 (report card): grade hero + social preview + all checks (Pass/Fail) + technology + AI prompt panel.
  * @param grade array, checks array, social array, baseurl string, pages array, tech array, error string,
- *   excluded array of [url,reason] - pages skipped from on-page checks (robots.txt/noindex), crawlseconds float
+ *   excluded array of [url,reason] - pages skipped from on-page checks (robots.txt/noindex), crawlseconds float,
+ *   redirectnotice string, fromlocalfile bool - true when $pages came from a local saved copy
+ *   (websiteGraderCrawlFromLocalFile) rather than a live crawl (websiteGraderCrawl)
  * @return string HTML
  */
-function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array(),$crawlseconds=0,$redirectnotice=''){
+function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech=array(),$error='',$excluded=array(),$crawlseconds=0,$redirectnotice='',$fromlocalfile=false){
 	if(strlen($error)){
 		return '<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> '.encodeHtml($error).'</div>';
 	}
@@ -1046,7 +1090,7 @@ function websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech
 	$rtn.='<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;">'.PHP_EOL;
 	$rtn.='<div style="flex:1 1 auto;min-width:0;">'.PHP_EOL;
 	$rtn.='<div class="w_bigger w_bold w_gray">Scanned <span class="w_dblue">'.htmlspecialchars($baseurl).'</span></div>'.PHP_EOL;
-	$rtn.='<div class="w_gray" style="margin-bottom:8px;">Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):'').'.</div>'.PHP_EOL;
+	$rtn.='<div class="w_gray" style="margin-bottom:8px;">'.($fromlocalfile?'Checked 1 page from a local copy':('Crawled '.$cnt.' page'.($cnt==1?'':'s').' from the live site'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):''))).'.</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
 	$rtn.='<div style="flex:0 0 auto;display:flex;gap:6px;flex-wrap:wrap;">'.websiteGraderEmailButton().websiteGraderDownloadButton().'</div>'.PHP_EOL;
 	$rtn.='</div>'.PHP_EOL;
@@ -1716,10 +1760,10 @@ function websiteGraderDownloadReport(){
  *   rebuild it without re-crawling (guarantees the emailed/downloaded report matches what is
  *   on screen).
  * @param baseurl string, checks array, grade array, social array, pages array of [url,body], tech array,
- *   excluded array of [url,reason], crawlseconds float, redirectnotice string
+ *   excluded array of [url,reason], crawlseconds float, redirectnotice string, fromlocalfile bool
  * @return void
  */
-function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array(),$crawlseconds=0,$redirectnotice=''){
+function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=array(),$excluded=array(),$crawlseconds=0,$redirectnotice='',$fromlocalfile=false){
 	$urls=array();
 	foreach($pages as $p){if(isset($p['url'])){$urls[]=$p['url'];}}
 	$_SESSION['websiteGraderReport']=array(
@@ -1732,6 +1776,7 @@ function websiteGraderStoreResult($baseurl,$checks,$grade,$social,$pages,$tech=a
 		'excluded'=>$excluded,
 		'crawlseconds'=>$crawlseconds,
 		'redirectnotice'=>$redirectnotice,
+		'fromlocalfile'=>$fromlocalfile,
 		'when'=>date('M j, Y g:i a')
 	);
 	return;
@@ -1939,7 +1984,8 @@ function websiteGraderEmailHTML($rep,$note='',$fromname='',$toname=''){
 	$h.='<div style="font-size:22px;font-weight:700;color:#1d2129;">'.encodeHtml($host).'</div>';
 	$excluded=isset($rep['excluded']) && is_array($rep['excluded'])?$rep['excluded']:array();
 	$crawlseconds=isset($rep['crawlseconds'])?(float)$rep['crawlseconds']:0;
-	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.$pagecnt.' page'.($pagecnt==1?'':'s').' crawled'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):'').(count($excluded)?(' ('.count($excluded).' excluded via robots.txt/noindex)'):'').' &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
+	$fromlocalfile=isset($rep['fromlocalfile'])?(bool)$rep['fromlocalfile']:false;
+	$h.='<div style="font-size:12px;color:#8a9099;">'.encodeHtml($baseurl).' &nbsp;&middot;&nbsp; '.($fromlocalfile?'checked from a local copy':($pagecnt.' page'.($pagecnt==1?'':'s').' crawled'.($crawlseconds>0?(' in '.websiteGraderFormatSeconds($crawlseconds)):''))).(count($excluded)?(' ('.count($excluded).' excluded via robots.txt/noindex)'):'').' &nbsp;&middot;&nbsp; '.encodeHtml($rep['when']).'</div>';
 	$h.='</div>'.PHP_EOL;
 	if(isset($rep['redirectnotice']) && strlen($rep['redirectnotice'])){
 		$h.='<div style="background:#fdf3e0;border:1px solid #f0ad4e;border-radius:8px;padding:10px 14px;margin-bottom:16px;color:#8a5a00;">'.encodeHtml($rep['redirectnotice']).'</div>'.PHP_EOL;

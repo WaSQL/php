@@ -19,13 +19,20 @@
 			<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-search"></span> Check Site</button>
 		</div>
 	</div>
+	<details style="margin-top:10px;">
+		<summary class="w_link w_pointer">Site blocked by a bot-verification challenge (Cloudflare, etc.)?</summary>
+		<div class="w_gray w_small" style="padding:8px 0 4px;">
+			The grader can't get past an anti-bot check that a real browser passes fine. In your own browser, open the URL above, use File &rarr; Save Page As (choose "Webpage, HTML only" or similar), then enter the FULL local path to the saved file below &mdash; the report will grade that saved copy instead of fetching the page live. Site-wide checks (robots.txt, sitemap.xml, etc.) are still tested against the live site.
+		</div>
+		<input type="text" class="wacss_input is-mobile-responsive" name="localpath" placeholder="C:\Users\you\Downloads\Home - Example.html" style="width:100%;box-sizing:border-box;" />
+	</details>
 </form>
 <div id="grader_results" style="margin-top:18px;"></div>
 </view:default>
 
 <view:result>
 <div data-onload="wacss.centerpopClose();">
-<?=websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech,$grader_error,$excludedpages,isset($crawlseconds)?$crawlseconds:0,isset($redirectnotice)?$redirectnotice:'');?>
+<?=websiteGraderRenderResults($grade,$checks,$social,$baseurl,$pages,$tech,$grader_error,$excludedpages,isset($crawlseconds)?$crawlseconds:0,isset($redirectnotice)?$redirectnotice:'',isset($fromlocalfile)?$fromlocalfile:false);?>
 </div>
 </view:result>
 
