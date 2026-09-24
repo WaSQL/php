@@ -157,6 +157,47 @@ def new_counter():
     return collections.Counter()
 
 
+# Tool-call names that produce a work product (a file change) vs. ones that
+# only gather information -- classified by substring since Antigravity and
+# Gemini CLI each use their own free-text tool-name vocabulary
+# (write_to_file/replace_file_content vs. edit/write, etc). run/command/shell
+# calls are ambiguous and are instead checked for a `git commit` invocation.
+WRITE_NAME_HINTS = ("write", "edit", "replace", "create_file", "str_replace")
+READ_NAME_HINTS = ("read", "view", "grep", "search", "list", "glob", "find_file")
+
+
+def find_command_text(d):
+    """Best-effort extraction of a shell command string from a step or a
+    tool_call dict. Real brain-transcript run_command calls carry it as
+    args.CommandLine (PascalCase); this also tries the more obvious
+    lowercase variants and falls back to scanning string values, tolerant
+    of schema drift."""
+    for key in ("CommandLine", "command", "cmd", "commandLine", "command_line"):
+        v = d.get(key)
+        if isinstance(v, str):
+            return v
+    for key in ("params", "args", "input", "tool_input"):
+        v = d.get(key)
+        if isinstance(v, dict):
+            for k2 in ("CommandLine", "command", "cmd", "commandLine", "command_line"):
+                v2 = v.get(k2)
+                if isinstance(v2, str):
+                    return v2
+    parts = [v for v in d.values() if isinstance(v, str)]
+    return " ".join(parts)[:2000]
+
+
+def to_local_day(ts):
+    if not ts:
+        return "?"
+    try:
+        return datetime.datetime.fromisoformat(
+            ts.replace("Z", "+00:00")
+        ).astimezone().strftime("%Y-%m-%d")
+    except Exception:
+        return "?"
+
+
 def format_model_name(raw_name):
     if not raw_name or raw_name in ("<synthetic>", "unknown"):
         return "Gemini 3.7 Flash"
@@ -274,6 +315,9 @@ def parse(root, since=None):
                 s_end = None
                 s_msgs = 0
                 s_tokens = 0
+                s_write = 0
+                s_read = 0
+                s_commits = 0
 
                 try:
                     with open(tfile, "r", encoding="utf-8", errors="replace") as fh:
@@ -359,6 +403,40 @@ def parse(root, since=None):
                                     )
                                     tool_counts[tname] += 1
 
+                                    tnl = tname.lower()
+                                    is_write = any(h in tnl for h in WRITE_NAME_HINTS)
+                                    is_read = (not is_write) and any(
+                                        h in tnl for h in READ_NAME_HINTS
+                                    )
+                                    is_commit = False
+                                    if not (is_write or is_read) and (
+                                        "run" in tnl or "command" in tnl or "shell" in tnl
+                                    ):
+                                        tc_args = tc.get("args") or {}
+                                        cmd_text = find_command_text(tc_args) if isinstance(tc_args, dict) else ""
+                                        is_commit = "git commit" in cmd_text.lower()
+
+                                    if is_write:
+                                        s_write += 1
+                                    if is_read:
+                                        s_read += 1
+                                    if is_commit:
+                                        s_commits += 1
+
+                                    if is_write or is_read or is_commit:
+                                        for c in (
+                                            tot,
+                                            by_model[model_name],
+                                            by_project[proj_name],
+                                            by_day[day],
+                                        ):
+                                            if is_write:
+                                                c["write_calls"] += 1
+                                            if is_read:
+                                                c["read_calls"] += 1
+                                            if is_commit:
+                                                c["commits"] += 1
+
                             if stype in (
                                 "RUN_COMMAND",
                                 "VIEW_FILE",
@@ -381,6 +459,9 @@ def parse(root, since=None):
                             "tokens": s_tokens,
                             "model": model_name,
                             "engine": "Antigravity",
+                            "write_calls": s_write,
+                            "read_calls": s_read,
+                            "commits": s_commits,
                         }
                 except Exception:
                     pass
@@ -411,6 +492,8 @@ def parse(root, since=None):
                 s_msgs = 0
                 s_tokens = 0
                 s_model = "Gemini 3.7 Flash"
+                s_write = 0
+                s_read = 0
 
                 entries = []
                 if fname.endswith(".jsonl"):
@@ -495,6 +578,21 @@ def parse(root, since=None):
                         ):
                             tname = tc.get("name") or "tool"
                             tool_counts[tname] += 1
+                            tnl = tname.lower()
+                            is_write = any(h in tnl for h in WRITE_NAME_HINTS)
+                            is_read = (not is_write) and any(
+                                h in tnl for h in READ_NAME_HINTS
+                            )
+                            if is_write:
+                                s_write += 1
+                            if is_read:
+                                s_read += 1
+                            if is_write or is_read:
+                                for c in (tot, by_model[model], by_project[proj_name], by_day[day]):
+                                    if is_write:
+                                        c["write_calls"] += 1
+                                    if is_read:
+                                        c["read_calls"] += 1
 
                 if s_msgs > 0:
                     sessions[sid] = {
@@ -507,6 +605,9 @@ def parse(root, since=None):
                         "tokens": s_tokens,
                         "model": s_model,
                         "engine": "Gemini CLI",
+                        "write_calls": s_write,
+                        "read_calls": s_read,
+                        "commits": 0,
                     }
 
     return dict(
@@ -535,6 +636,9 @@ def C(c):
         "cache_read": c["cache_read"],
         "thoughts": c["thoughts"],
         "msgs": c["msgs"],
+        "write_calls": c["write_calls"],
+        "read_calls": c["read_calls"],
+        "commits": c["commits"],
     }
 
 
@@ -678,6 +782,36 @@ def build_tips(agg):
         ),
     })
 
+    writes, reads, commits = tot["write_calls"], tot["read_calls"], tot["commits"]
+    denom = writes + reads
+    out_ratio = (writes / denom * 100) if denom else 0
+    changed_sessions = sum(1 for s in agg["sessions"].values() if s.get("write_calls"))
+    changed_pct = (changed_sessions / nsess * 100) if nsess else 0
+
+    if denom > 0:
+        tips.append({
+            "kind": "insight" if out_ratio >= 40 else "tip",
+            "title": f"Output ratio: {out_ratio:.0f}% of file actions were writes",
+            "body": (
+                f"<b>{writes:,}</b> file writes/edits vs. <b>{reads:,}</b> reads/searches "
+                f"(view file, grep, list dir). Token and turn counts show how much you talked "
+                f"to the model -- this ratio is a rough proxy for how much of it turned into "
+                f"actual file changes rather than exploration."
+            ),
+        })
+
+    tips.append({
+        "kind": "insight" if changed_pct >= 40 else "tip",
+        "title": f"{changed_sessions} of {nsess} sessions ({changed_pct:.0f}%) actually changed a file",
+        "body": (
+            f"The rest were pure investigation/chat -- not necessarily wasted, but worth "
+            f"noticing if that ratio is lower than you'd expect. <b>{commits:,}</b> commit "
+            f"commands were detected (Antigravity sessions only, from the shell command text "
+            f"the agent ran -- Gemini CLI's tool-call schema doesn't expose that text reliably, "
+            f"so treat this as a floor, not a ceiling)."
+        ),
+    })
+
     return tips
 
 
@@ -738,6 +872,18 @@ def get_terms_legend():
             "note": "Targeted file reads reduce unnecessary tool loops."
         },
         {
+            "term": "Output Ratio",
+            "badge": "Outcome",
+            "desc": "The share of file-affecting actions that were writes/edits rather than reads/searches: Writes ÷ (Writes + Reads) × 100.",
+            "note": "A rough proxy for whether activity turned into changes, not just exploration."
+        },
+        {
+            "term": "Sessions With Changes",
+            "badge": "Outcome",
+            "desc": "The count and share of sessions that contained at least one file write or edit action.",
+            "note": "More reliable than commit-counting when commits happen manually outside the agent."
+        },
+        {
             "term": "Daily Limit / Quota (RPD)",
             "badge": "Quota",
             "desc": "The maximum number of Requests (turns) Per Day permitted by your account plan or tier before rate-limiting occurs.",
@@ -772,7 +918,25 @@ def shape(agg, req_limit=1500, token_limit=50000000):
             "tokens": s["tokens"],
             "model": s["model"],
             "engine": s.get("engine", "Antigravity"),
+            "write_calls": s.get("write_calls", 0),
+            "read_calls": s.get("read_calls", 0),
+            "commits": s.get("commits", 0),
         })
+
+    nsess = max(1, len(agg["sessions"]))
+    writes, reads, commits = agg["tot"]["write_calls"], agg["tot"]["read_calls"], agg["tot"]["commits"]
+    denom = writes + reads
+    changed_sessions = sum(1 for s in agg["sessions"].values() if s.get("write_calls"))
+    committed_sessions = sum(1 for s in agg["sessions"].values() if s.get("commits"))
+    outcomes = {
+        "write_calls": writes,
+        "read_calls": reads,
+        "commits": commits,
+        "output_ratio": round(writes / denom * 100, 1) if denom else 0,
+        "sessions_changed": changed_sessions,
+        "sessions_changed_pct": round(changed_sessions / nsess * 100, 1),
+        "sessions_committed": committed_sessions,
+    }
 
     # Calculate today's stats & quota limits
     now = datetime.datetime.now()
@@ -843,6 +1007,7 @@ def shape(agg, req_limit=1500, token_limit=50000000):
         )[:20],
         "tips": build_tips(agg),
         "terms": get_terms_legend(),
+        "outcomes": outcomes,
     }
 
 
@@ -1004,6 +1169,12 @@ PAGE = r"""<!doctype html>
     </div>
 
     <div class="card col-12">
+      <h2>Output activity per day</h2>
+      <div class="cs">Writes/edits vs. reads/searches vs. detected git commits &mdash; whether activity turned into shipped work</div>
+      <div class="chartbox" style="height:250px"><canvas id="outcomeDay"></canvas></div>
+    </div>
+
+    <div class="card col-12">
       <h2>Token efficiency &amp; optimization tips</h2>
       <div class="cs">Insights and best practices derived from your actual usage</div>
       <div class="tips" id="tips"></div>
@@ -1037,6 +1208,7 @@ PAGE = r"""<!doctype html>
       <table id="sessTable"><thead><tr>
         <th>Session</th><th>Engine</th><th>Project / Topic</th><th>Started</th>
         <th class="num">Duration</th><th class="num">Turns</th><th class="num">Tokens</th>
+        <th class="num">Writes</th><th class="num">Changed</th>
       </tr></thead><tbody></tbody></table>
     </div>
 
@@ -1098,6 +1270,7 @@ function renderTiles(){
   const reuse=(t.cache_read/(t.cache_read+t.in)*100)||0;
   const q=DATA.quota;
   const reqLeftPct = Math.max(0, 100 - q.req_used_pct).toFixed(0);
+  const o=DATA.outcomes||{};
 
   const tiles=[
     {lab:'Total tokens',val:compact(totTok),note:compact(totTok/days)+' per active day',accent:'accent'},
@@ -1106,6 +1279,8 @@ function renderTiles(){
     {lab:'Reasoning thoughts',val:compact(t.thoughts),note:'Gemini thinking tokens',accent:'accent-purple'},
     {lab:'Assistant turns',val:DATA.assistant_msgs.toLocaleString(),note:DATA.user_msgs.toLocaleString()+' user prompts',accent:''},
     {lab:'Cache reuse',val:reuse.toFixed(0)+'%',note:'context served from cache',accent:'accent-green'},
+    {lab:'Output ratio',val:(o.output_ratio||0).toFixed(0)+'%',note:compact(o.write_calls||0)+' writes vs '+compact(o.read_calls||0)+' reads',accent:''},
+    {lab:'Sessions with changes',val:(o.sessions_changed||0)+' / '+DATA.sessions_count,note:(o.sessions_committed||0)+' also ran git commit',accent:''},
   ];
   document.getElementById('tiles').innerHTML=tiles.map(x=>
     `<div class="tile"><div class="lab">${x.lab}</div>
@@ -1272,6 +1447,15 @@ function buildAll(){
       scales:{x:{stacked:true,grid:{display:false},ticks:{color:c.muted,maxTicksLimit:15,font:{size:10}},border:{color:c.axis}},
         y:{stacked:true,grid:{color:c.grid},ticks:{color:c.muted,callback:compact,font:{size:11}},border:{display:false}}}})}));
 
+  const stack2=[['Writes/edits','write_calls',S[2]],['Reads/searches','read_calls',S[0]],['Commits','commits',S[3]]];
+  charts.push(new Chart(outcomeDay,{type:'bar',data:{labels:days,datasets:stack2.map(([lab,k,col])=>({
+      label:lab,data:days.map(d=>DATA.by_day[d][k]),backgroundColor:col,borderColor:c.surface,borderWidth:1,borderRadius:2,stack:k==='commits'?'c':'o'}))},
+    options:baseOpts({plugins:{legend:{display:true,position:'top',align:'end',
+        labels:{color:c.ink2,font:{size:11},boxWidth:12,padding:12}},
+      tooltip:{callbacks:{label:x=>x.dataset.label+' '+x.parsed.y}}},
+      scales:{x:{grid:{display:false},ticks:{color:c.muted,maxTicksLimit:15,font:{size:10}},border:{color:c.axis}},
+        y:{grid:{color:c.grid},ticks:{color:c.muted,font:{size:11}},border:{display:false}}}})}));
+
   const projs=Object.entries(DATA.by_project).map(([k,v])=>[k,v.in+v.out+v.cache_read])
     .sort((a,b)=>b[1]-a[1]).slice(0,10);
   charts.push(new Chart(byProj,{type:'bar',data:{labels:projs.map(p=>projShort(p[0])),datasets:[{
@@ -1311,7 +1495,9 @@ function renderTable(){
       <td>${when}</td>
       <td class="num">${durfmt(s.dur_s)}</td>
       <td class="num">${s.msgs}</td>
-      <td class="num">${compact(s.tokens)}</td></tr>`;}).join('');
+      <td class="num">${compact(s.tokens)}</td>
+      <td class="num">${s.write_calls||0}</td>
+      <td class="num">${s.write_calls?'&#10003;'+(s.commits?' ('+s.commits+' commit)':''):'&mdash;'}</td></tr>`;}).join('');
 }
 
 function toggleTheme(){

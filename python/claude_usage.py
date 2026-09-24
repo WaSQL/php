@@ -48,6 +48,14 @@ def new_counter():
     return collections.Counter()
 
 
+# Tool calls that produce a work product (a file change) vs. ones that only
+# gather information. Bash is judged by its command text (see below) since it
+# can do either. Everything else (TodoWrite, AskUserQuestion, Task, ...) is
+# left uncounted -- it's neither a clear "output" nor a clear "exploration".
+WRITE_TOOLS = {"Write", "Edit", "NotebookEdit", "MultiEdit"}
+READ_TOOLS = {"Read", "Grep", "Glob", "WebFetch", "WebSearch"}
+
+
 def parse(root, since=None):
     tot = new_counter()
     by_day = collections.defaultdict(new_counter)
@@ -129,17 +137,15 @@ def parse(root, since=None):
                 if eff:
                     by_effort[eff] += 1
 
-                for block in msg.get("content", []) or []:
-                    if isinstance(block, dict) and block.get("type") == "tool_use":
-                        tool_counts[block.get("name", "?")] += 1
-
                 sid = e.get("sessionId") or e.get("session_id")
+                s = None
                 if sid:
                     s = sessions.get(sid)
                     if not s:
                         s = sessions[sid] = {
                             "sid": sid, "proj": folder, "start": ts, "end": ts,
-                            "msgs": 0, "tokens": 0, "model": model}
+                            "msgs": 0, "tokens": 0, "model": model,
+                            "write_calls": 0, "read_calls": 0, "commits": 0}
                     s["msgs"] += 1
                     s["tokens"] += inp + out + cr + cc
                     if ts:
@@ -147,6 +153,36 @@ def parse(root, since=None):
                             s["start"] = ts
                         if not s["end"] or ts > s["end"]:
                             s["end"] = ts
+
+                for block in msg.get("content", []) or []:
+                    if not (isinstance(block, dict) and block.get("type") == "tool_use"):
+                        continue
+                    tname = block.get("name", "?")
+                    tool_counts[tname] += 1
+
+                    is_write = tname in WRITE_TOOLS
+                    is_read = tname in READ_TOOLS
+                    is_commit = False
+                    if tname == "Bash":
+                        cmd = ((block.get("input") or {}).get("command") or "")
+                        is_commit = "git commit" in cmd.lower()
+
+                    if not (is_write or is_read or is_commit):
+                        continue
+                    for c in (tot, by_model[model], by_project[folder], by_day[day]):
+                        if is_write:
+                            c["write_calls"] += 1
+                        if is_read:
+                            c["read_calls"] += 1
+                        if is_commit:
+                            c["commits"] += 1
+                    if s is not None:
+                        if is_write:
+                            s["write_calls"] += 1
+                        if is_read:
+                            s["read_calls"] += 1
+                        if is_commit:
+                            s["commits"] += 1
 
     return dict(tot=tot, by_day=by_day, by_model=by_model, by_project=by_project,
                 by_hour=by_hour, by_dow=by_dow, by_effort=by_effort,
@@ -160,7 +196,9 @@ def parse(root, since=None):
 # --------------------------------------------------------------------------- #
 def C(c):
     return {"in": c["in"], "out": c["out"], "cache_read": c["cache_read"],
-            "cache_create": c["cache_create"], "msgs": c["msgs"]}
+            "cache_create": c["cache_create"], "msgs": c["msgs"],
+            "write_calls": c["write_calls"], "read_calls": c["read_calls"],
+            "commits": c["commits"]}
 
 
 def human(n):
@@ -284,6 +322,32 @@ def build_tips(agg):
                  "already has in the conversation.")
     })
 
+    writes, reads, commits = tot["write_calls"], tot["read_calls"], tot["commits"]
+    denom = writes + reads
+    out_ratio = (writes / denom * 100) if denom else 0
+    changed_sessions = sum(1 for s in agg["sessions"].values() if s.get("write_calls"))
+    changed_pct = (changed_sessions / nsess * 100) if nsess else 0
+
+    if denom > 0:
+        tips.append({
+            "kind": "insight" if out_ratio >= 40 else "tip",
+            "title": f"Output ratio: {out_ratio:.0f}% of file tool calls were writes",
+            "body": (f"<b>{writes:,}</b> file edits/writes vs. <b>{reads:,}</b> reads/searches "
+                     f"(Grep, Glob, WebFetch, WebSearch). Activity volume alone doesn't say "
+                     f"whether a session produced anything -- this ratio is a rough proxy for "
+                     f"how much of the work turned into actual changes rather than exploration.")
+        })
+
+    tips.append({
+        "kind": "insight" if changed_pct >= 40 else "tip",
+        "title": f"{changed_sessions} of {nsess} sessions ({changed_pct:.0f}%) actually changed a file",
+        "body": (f"The rest were pure investigation/Q&amp;A -- not necessarily wasted, but worth "
+                 f"noticing if that ratio is lower than you'd expect. Separately, Claude ran "
+                 f"<code>git commit</code> itself <b>{commits:,}</b> times -- on a workflow where "
+                 f"commits are made manually (never by Claude), that staying at 0 is expected, not "
+                 f"a sign nothing shipped; the write-call ratio above is the more reliable signal here.")
+    })
+
     return tips
 
 
@@ -294,7 +358,27 @@ def shape(agg):
         sess_list.append({
             "sid": s["sid"][:8], "proj": s["proj"], "start": s["start"],
             "dur_s": session_duration(s), "msgs": s["msgs"],
-            "tokens": s["tokens"], "model": s["model"]})
+            "tokens": s["tokens"], "model": s["model"],
+            "write_calls": s.get("write_calls", 0),
+            "read_calls": s.get("read_calls", 0),
+            "commits": s.get("commits", 0)})
+
+    tot = agg["tot"]
+    writes, reads, commits = tot["write_calls"], tot["read_calls"], tot["commits"]
+    denom = writes + reads
+    nsess = max(1, len(agg["sessions"]))
+    changed_sessions = sum(1 for s in agg["sessions"].values() if s.get("write_calls"))
+    committed_sessions = sum(1 for s in agg["sessions"].values() if s.get("commits"))
+    outcomes = {
+        "write_calls": writes,
+        "read_calls": reads,
+        "commits": commits,
+        "output_ratio": round(writes / denom * 100, 1) if denom else 0,
+        "sessions_changed": changed_sessions,
+        "sessions_changed_pct": round(changed_sessions / nsess * 100, 1),
+        "sessions_committed": committed_sessions,
+    }
+
     return {
         "generated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
         "range": [days_sorted[0], days_sorted[-1]] if days_sorted else ["?", "?"],
@@ -314,6 +398,7 @@ def shape(agg):
         "top_sessions": sorted(sess_list, key=lambda x: x["tokens"],
                                reverse=True)[:15],
         "tips": build_tips(agg),
+        "outcomes": outcomes,
     }
 
 
@@ -413,6 +498,12 @@ PAGE = r"""<!doctype html>
     </div>
 
     <div class="card col-12">
+      <h2>Output activity per day</h2>
+      <div class="cs">Writes/edits vs. reads/searches vs. git commits &mdash; whether activity turned into shipped work</div>
+      <div class="chartbox" style="height:250px"><canvas id="outcomeDay"></canvas></div>
+    </div>
+
+    <div class="card col-12">
       <h2>How to use fewer tokens</h2>
       <div class="cs">Tips from best practice + insights derived from your own usage</div>
       <div class="tips" id="tips"></div>
@@ -446,6 +537,7 @@ PAGE = r"""<!doctype html>
       <table id="sessTable"><thead><tr>
         <th>Session</th><th>Project</th><th>Started</th>
         <th class="num">Duration</th><th class="num">Turns</th><th class="num">Tokens</th>
+        <th class="num">Writes</th><th class="num">Changed</th>
       </tr></thead><tbody></tbody></table>
     </div>
   </div>
@@ -481,6 +573,7 @@ function renderTiles(){
   const t=DATA.totals, days=DATA.active_days||1;
   const totTok=t.in+t.out+t.cache_read+t.cache_create;
   const reuse=(t.cache_read/(t.cache_read+t.in+t.cache_create)*100)||0;
+  const o=DATA.outcomes||{};
   const tiles=[
     {lab:'Total tokens',val:compact(totTok),note:compact(totTok/days)+' per active day',accent:1},
     {lab:'Generated by Claude',val:compact(t.out),note:'output tokens'},
@@ -488,6 +581,8 @@ function renderTiles(){
     {lab:'Sessions',val:DATA.sessions_count.toLocaleString(),note:(DATA.assistant_msgs/DATA.sessions_count).toFixed(0)+' turns each avg'},
     {lab:'Active days',val:days.toString(),note:DATA.range[0]+' → '+DATA.range[1]},
     {lab:'Cache reuse',val:reuse.toFixed(0)+'%',note:'of input served from cache'},
+    {lab:'Output ratio',val:(o.output_ratio||0).toFixed(0)+'%',note:compact(o.write_calls||0)+' writes vs '+compact(o.read_calls||0)+' reads'},
+    {lab:'Sessions with changes',val:(o.sessions_changed||0)+' / '+DATA.sessions_count,note:(o.sessions_committed||0)+' also ran git commit'},
   ];
   document.getElementById('tiles').innerHTML=tiles.map(x=>
     `<div class="tile"><div class="lab">${x.lab}</div>
@@ -549,6 +644,15 @@ function buildAll(){
       scales:{x:{stacked:true,grid:{display:false},ticks:{color:c.muted,maxTicksLimit:15,font:{size:10}},border:{color:c.axis}},
         y:{stacked:true,grid:{color:c.grid},ticks:{color:c.muted,callback:compact,font:{size:11}},border:{display:false}}}})}));
 
+  const stack2=[['Writes/edits','write_calls',S[2]],['Reads/searches','read_calls',S[0]],['Commits','commits',S[3]]];
+  charts.push(new Chart(outcomeDay,{type:'bar',data:{labels:days,datasets:stack2.map(([lab,k,col])=>({
+      label:lab,data:days.map(d=>DATA.by_day[d][k]),backgroundColor:col,borderColor:c.surface,borderWidth:1,borderRadius:2,stack:k==='commits'?'c':'o'}))},
+    options:baseOpts({plugins:{legend:{display:true,position:'top',align:'end',
+        labels:{color:c.ink2,font:{size:11},boxWidth:12,padding:12}},
+      tooltip:{callbacks:{label:x=>x.dataset.label+' '+x.parsed.y}}},
+      scales:{x:{grid:{display:false},ticks:{color:c.muted,maxTicksLimit:15,font:{size:10}},border:{color:c.axis}},
+        y:{grid:{color:c.grid},ticks:{color:c.muted,font:{size:11}},border:{display:false}}}})}));
+
   const projs=Object.entries(DATA.by_project).map(([k,v])=>[k,v.in+v.out+v.cache_read+v.cache_create])
     .sort((a,b)=>b[1]-a[1]).slice(0,10);
   charts.push(new Chart(byProj,{type:'bar',data:{labels:projs.map(p=>projShort(p[0])),datasets:[{
@@ -582,7 +686,9 @@ function renderTable(){
     const when=d?d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'?';
     return `<tr><td>${s.sid}</td><td>${projShort(s.proj)}</td><td>${when}</td>
       <td class="num">${durfmt(s.dur_s)}</td><td class="num">${s.msgs}</td>
-      <td class="num">${compact(s.tokens)}</td></tr>`;}).join('');
+      <td class="num">${compact(s.tokens)}</td>
+      <td class="num">${s.write_calls||0}</td>
+      <td class="num">${s.write_calls?'&#10003;'+(s.commits?' ('+s.commits+' commit)':''):'&mdash;'}</td></tr>`;}).join('');
 }
 
 function toggleTheme(){
