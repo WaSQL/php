@@ -26,6 +26,7 @@ This is the companion to `CLAUDE.md`. `CLAUDE.md` holds the always-relevant rule
 | A table/column that reads back empty for no reason | [Reserved word as a column name](#a-reserved-word-as-a-column-name-makes-a-table-unreadable-verified-2026-08-18) |
 | A page's own css/js not applying where expected | [Page css/js are page-scoped](#a-pages-cssjs-are-page-scoped--shared-styles-belong-in-the-template) |
 | Calling an external JSON REST API from PHP | [Calling a JSON REST API](#calling-a-json-rest-api--use-postjson-its-limit-is-post-only-verified-2026-08-18) |
+| Building/finishing a new site — SEO & AI-optimization baseline | [SEO & AI-Optimization (AIO) baseline](#seo--ai-optimization-aio-baseline-for-every-new-site) |
 
 ---
 
@@ -173,7 +174,7 @@ $grid = databaseListRecords(['-table'=>'otherdb.members','-where'=>$where,
 $rows = getDBRecords(['-query'=>"SELECT m.* FROM otherdb.members m JOIN otherdb.sites s ON s.site_id=m.site_id WHERE s.stake=4"]);
 ```
 Full grid machinery (SQL paging, search, `-quickfilters`, `-listview` token substitution, `-results_eval`) works unchanged. **Do NOT wrap these in `siteScope()`** on a multi-tenant site — the other schema's tables aren't your local tenant tables. A **dashless non-column key** you pass (e.g. `'ward_site'=>$id`) is ignored by the WHERE builder but still echoed as a hidden field on the grid's paging form, so a cross-DB filter survives paging/search without extra wiring.
-- **Cross-origin assets** (member photos etc. served by the other site) are still blocked by the calling site's `img-src`/CSP — serve them same-origin instead (a filesystem symlink into the docroot, or a proxy route), don't try to widen CSP from a page.
+- **Cross-origin assets** (member photos etc. served by the other site) are still blocked by the calling site's `img-src`/CSP — serve them same-origin instead (a filesystem symlink into the docroot, or a proxy route), don't try to widen CSP from a page. **Unless the CSP itself is the thing you can edit** (an Apache `Header always set Content-Security-Policy` directive in a vhost conf you control, as with byuward/byustakes): then just add the other site's origin to `img-src`, e.g. `https://*.byustake.us` — a wildcard subdomain entry, matching the existing `https://*.paypal.com`/`https://*.venmo.com` style, covers every stake subdomain rather than one. **Diagnosing this**: a cross-origin image that loads fine via a direct/server-side fetch (curl, `file_get_contents`) but shows broken in the browser is the CSP-not-404 signature — confirm in browser devtools Network tab (Status column shows a blocked icon / "(blocked:csp)", not a 4xx/5xx) before chasing an upload/timing bug.
 - **Prod caveat:** the production DB user needs the same `GRANT SELECT ON otherdb.*` — a dev grant doesn't imply prod.
 
 ### Merging a second event source into `getCalendar()`'s month grid — `-events`, not `-event_table` hacking
@@ -747,6 +748,7 @@ For anything binary, copy what core's own **`pushFile()`** does — `while(ob_ge
 - **Check how the site styles a bare HTML tag before using one inside a sentence.** Site bundles here set several inline-by-default tags to `display:block`, which silently breaks a paragraph into pieces: `<code>` inside a sentence renders as its own full-width band (add `display:inline` in the page `css`), and a `<a>` inside a table cell pushes an adjacent inline icon onto its own line (a `.mybox table td a{display:inline;}` rule in the page `css` is the fix). Same lesson as the `.title`/`.subtitle` `!important` trap in `CLAUDE.md`: when markup misbehaves, look at the bundle before adding your own layout.
 - **`<progress class="progress is-small">` is the cheap in-table bar** — real Bulma, colour it with the same `is-danger`/`is-warning`/`is-success` modifier the rest of your states use, and give it a `min-width` or it collapses in a narrow column. Drop the whole cell on phones with `is-hidden-mobile` rather than letting a 6-column table squeeze.
 - **A `<select>` on a Bulma site takes `class="select"`, NOT `class="input"`.** `input` is only for text `<input>`/`<textarea>`; on a `<select>` it renders an unstyled/mis-sized control. Bulma's canonical form is a wrapping `<div class="select"><select>…</select></div>`; a bare `class="select"` on the element is the shorthand this project accepts. For framework-built selects pass `'class'=>'select'` in the `*_options` (`buildFormSelect`, `addEditDBForm`). (Non-Bulma sites: `wacss_select`.)
+- **A page's own `max-width` rule on a `.container` div can silently lose to Bulma's own `.container{max-width:960px}` desktop media-query rule** — both are single-class selectors (equal specificity), so it comes down to bundle load order, and Bulma's often wins even when the page's own `css` field looks like it should apply last. Symptom: content that should be a narrow centered column (e.g. a `max-width:640px` reading/detail layout) instead stretches wide on desktop, and anything meant to stack vertically below a fixed-width image wraps beside it instead. Fix by raising specificity rather than fighting load order: scope the rule under a parent class already on the page, e.g. `.book-section .book-container{max-width:640px;}` instead of bare `.book-container{...}` (verified 2026-09-28, apptly `/book/{slug}/{class-slug}` class detail page).
 
 ## Chart.js (the `chartjs` extra)
 The bundled chart library is **`/wfiles/js/extras/chart.min.js` — Chart.js v2.8.0** (use v2 option syntax: `options.legend`, `options.title`, `scales.yAxes:[{ticks:{beginAtZero,max}}]`, `cutoutPercentage`, `maintainAspectRatio`; NOT v3+). There is **no PHP charting engine** — rendering is client-side.
@@ -1081,6 +1083,124 @@ commonBlockedIpsCheck();   // 403s a blocked/probing client before any page work
 **"The firewall database is not available" after a deploy** — the file being present is not enough; `commonBlockedIpsDb()` returns `null` whenever the PDO *open* throws, and the admin notice now prints the real reason (`commonBlockedIpsLastError()`, also surfaced via `firewallDbInfo()['error']` / `['dir_writable']` / `['writable']`). Two usual causes: (1) **`pdo_sqlite` not installed** — `class_exists('PDO')` is true but `PDO::getAvailableDrivers()` lacks `sqlite`; `apt-get install php-sqlite3` + restart php-fpm. (2) **Parent dir not writable by PHP** — WAL mode creates `blocked_ips.db-wal` / `-shm` *next to* the db and any write needs a lock file there, so chowning just the copied `.db` isn't enough; the WaSQL-root directory itself must be writable by the web user.
 
 **Not yet built:** auto-expiry of stale entries, CIDR matching.
+
+## SEO & AI-Optimization (AIO) baseline for every new site
+Verified against a real third-party SEO/AIO audit run on a freshly-scaffolded site (apptly, 2026-09) that scored 54% (13/24) on default admin-UI stub content — every failure below is a real, common gap in a brand-new WaSQL site, not a hypothetical. **Treat this as a checklist to close out before calling a new site "done,"** the same way you'd check auth or responsive layout. All fixes are page/template-level (data + code), nothing in `php/`.
+
+### The checklist
+- [ ] `<title>` 40–80 chars, page-specific (not "Home")
+- [ ] `<meta name="description">` 140–160 chars
+- [ ] `<meta name="robots" content="index, follow">`
+- [ ] `<meta name="author" content="...">`
+- [ ] Open Graph: `og:title/description/site_name/url/type`, plus a **real, loading** `og:image` at **1200×630** with `og:image:width`/`og:image:height`
+- [ ] Twitter/X: `twitter:card` = `summary_large_image` (not `summary`), `twitter:image` (not the legacy `twitter:image:src`), `twitter:title/description/site`
+- [ ] JSON-LD `Organization` + `WebSite` (site-wide), `FAQPage` on any page that answers common questions, `BreadcrumbList` on any page with real hierarchy (category/product-style — skip it on a single flat marketing page, it isn't a real gap there)
+- [ ] `/robots.txt`, `/sitemap.xml`, `/llms.txt` all resolve (not 404)
+- [ ] `www` → bare host (or vice versa, pick one) actually redirects
+
+### Title / description / robots / author — template functions + per-page data
+Give the template's `functions` field real fallbacks (not `return '';`) so a page that never got custom SEO fields still passes, and fix the specific page's `_pages.title`/`meta_description` columns (these are plain columns, not something the PostEdit file mirror carries — see the self-heal pattern below for how to set them from code):
+```php
+// template functions — realistic fallbacks, not empty strings
+function templateMetaTitle(){ global $PAGE; return strlen($PAGE['title']) ? $PAGE['title'] : 'Your Brand — What You Do, In Six Words'; }
+function templateMetaDescription(){ global $PAGE; return strlen($PAGE['meta_description']) ? $PAGE['meta_description'] : 'A 140-160 character description of the product, written for a human, not stuffed with keywords.'; }
+function templateMetaRobots(){ global $PAGE; return strlen($PAGE['meta_robots'] ?? '') ? $PAGE['meta_robots'] : 'index, follow'; }
+function templateMetaAuthor(){ return 'Your Brand'; }
+```
+```html
+<meta name="robots" content="<?=templateMetaRobots();?>" />
+<meta name="author" content="<?=templateMetaAuthor();?>" />
+```
+A brand-new site's key page (usually `index`) typically still has the admin-UI default `title` ("Home") and an empty `meta_description` — fix those columns from the page's own controller, self-heal style, so it's correct on the very next request without a manual DB edit:
+```php
+global $PAGE;
+if(trim($PAGE['title'] ?? '')==='' || $PAGE['title']==='Home'){
+	$t='Your Brand — What You Do, In Six Words';
+	$d='A 140-160 character description...';
+	editDBRecord(array('-table'=>'_pages','-where'=>"_id={$PAGE['_id']}",'title'=>$t,'meta_description'=>$d));
+	$PAGE['title']=$t; $PAGE['meta_description']=$d; //so THIS request's render is already correct
+}
+```
+
+### Open Graph / Twitter — get the tag names right
+The two most common mistakes: leaving `twitter:card` at `summary` (small thumbnail) instead of `summary_large_image`, and using the legacy `twitter:image:src` instead of `twitter:image` (some crawlers/audits don't recognize the `:src` variant at all — this is a real "missing tag" finding, not a false positive). Also: `og:image` **must actually load** — a broken/placeholder path (`/images/logo.svg` pointing at nothing) fails the check even though the tag is present, and it must be **1200×630** with matching `og:image:width`/`height` hints:
+```html
+<meta property="og:image" content="<?=templateMetaImage();?>" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="<?=templateMetaImage();?>" />
+```
+No image-generation tool can produce the actual PNG — build a 1200×630 SVG (brand colors, logo mark, one line of copy) and hand it to the developer to convert/upload (a free tool like realfavicongenerator.net or any SVG→PNG converter works), same handoff pattern as a favicon.
+
+### JSON-LD — Organization + WebSite site-wide, FAQPage where it fits
+Site-wide, in the template's `functions` field, echoed once in `<head>`:
+```php
+function templateJsonLd(){
+	$host=$_SERVER['HTTP_HOST'];
+	$data=array('@context'=>'https://schema.org','@graph'=>array(
+		array('@type'=>'Organization','@id'=>"//{$host}/#organization",'name'=>'Your Brand','url'=>"//{$host}/",'logo'=>templateMetaImage()),
+		array('@type'=>'WebSite','@id'=>"//{$host}/#website",'name'=>'Your Brand','url'=>"//{$host}/",'publisher'=>array('@id'=>"//{$host}/#organization")),
+	));
+	return json_encode($data);
+}
+```
+```html
+<script type="application/ld+json"><?=templateJsonLd();?></script>
+```
+If a page already answers a handful of real questions (a marketing homepage's FAQ section is the common case), give it `FAQPage` schema built from the **same array** that renders the visible Q&A — two functions reading one data function, so the visible copy and the schema can never drift:
+```php
+function pageFaqItems(){ return array(array('q'=>'...','a'=>'...'), /* ... */); }
+function pageFaqJsonLd(){
+	$items=array();
+	foreach(pageFaqItems() as $f){ $items[]=array('@type'=>'Question','name'=>$f['q'],'acceptedAnswer'=>array('@type'=>'Answer','text'=>$f['a'])); }
+	return json_encode(array('@context'=>'https://schema.org','@type'=>'FAQPage','mainEntity'=>$items));
+}
+```
+`BreadcrumbList` is for pages with real hierarchy (category → product); don't force it onto a flat single-page site just to check a box.
+
+### `robots.txt` / `sitemap.xml` / `llms.txt` — each is its own `_pages` record with a `permalink`
+Not framework-generated files — create each with `mcp__wamcp__addpage` (`permalink` param) or the admin UI, `_template` = the blank template, and a controller that sets its own `Content-Type` and `exit`s before any template wrapping happens:
+```php
+// robots — controller
+header('Content-Type: text/plain; charset=utf-8');
+echo "User-agent: *\nAllow: /\n\nSitemap: https://{$_SERVER['HTTP_HOST']}/sitemap.xml\n";
+exit;
+```
+```php
+// sitemap — controller. Build it from real data (every active/public record), not a hand-maintained static list.
+header('Content-Type: application/xml; charset=utf-8');
+echo '<'.'?xml version="1.0" encoding="UTF-8"'.'?'.'>'."\n".'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
+echo "\t<url>\n\t\t<loc>https://{$_SERVER['HTTP_HOST']}/</loc>\n\t\t<priority>1.0</priority>\n\t</url>\n";
+// foreach(...) additional <url> entries from the DB...
+echo '</urlset>';
+exit;
+```
+(Note the `'<'.'?xml ... ?'.'>'` string concatenation — a literal `<?xml ... ?>` in a page field trips CLAUDE.md gotcha 2b, the close-tag-truncates-the-field trap.)
+```php
+// llms — controller. A short markdown description + links to the pages that matter.
+header('Content-Type: text/plain; charset=utf-8');
+echo "# Your Brand\n\n> One paragraph describing what this is and who it's for.\n\n## Key Pages\n\n- [Home](https://{$_SERVER['HTTP_HOST']}/): ...\n";
+exit;
+```
+
+### `www` / non-www canonicalization
+Two different failure modes, and they need two different fixes:
+1. **The host resolves to your app, but doesn't redirect.** Fix in the template, first thing evaluated (before `<!DOCTYPE`), as its own PHP island so it can `header()`+`exit` before any output:
+   ```php
+   function templateCanonicalRedirect(){
+   	$host=$_SERVER['HTTP_HOST'] ?? '';
+   	if(stripos($host,'www.')!==0){return;}
+   	$scheme=isSSL() ? 'https' : 'http';
+   	header("Location: {$scheme}://".substr($host,4).$_SERVER['REQUEST_URI'],true,301);
+   	exit;
+   }
+   ```
+   ```html
+   <?php templateCanonicalRedirect();?>
+   <!DOCTYPE HTML>
+   ```
+2. **The host doesn't resolve to your app at all** — it hits WaSQL's own bootstrap error ("Configuration Error: missing dbname attribute in config.xml for '{host}'") *before* any template/page code runs, because the host-to-site registry has no entry for the `www` variant. No page-level fix reaches this — it needs a `www` alias added wherever that host lookup lives, or an Apache-level redirect in front of it. Recognize this failure by curling the `www` host directly: a WaSQL "Configuration Error" page (not your site's own 404/error handling) means it's registry-level, not code-level — hand it to the developer rather than chasing it in page code.
 
 ## Common scenarios (copy-paste starters)
 
