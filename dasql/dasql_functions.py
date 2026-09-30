@@ -157,6 +157,214 @@ def previewMarkdown(markdown_file, browser_path=None):
 
     subprocess.Popen([browser_exe, html_file], shell=False)
 
+#---------- function previewCSV
+# @description Renders a CSV/TSV file as a Bulma-styled HTML table and opens it in a browser.
+#              The header row stays fixed while the body scrolls, and a search box filters
+#              rows as you type (every whitespace-separated term must match somewhere in the row).
+#              Clicking a column header sorts by it (click again to reverse); numeric columns
+#              sort by value. The delimiter is sniffed, so comma, tab, semicolon and pipe files
+#              all work. Files over max_mb or max_rows are refused, since the browser would choke.
+# @param csv_file: Path to the CSV file to preview
+# @type csv_file: str
+# @param browser_path: Custom path to browser executable (optional)
+# @type browser_path: str or None
+# @param max_mb: Largest file size, in MB, that will be rendered
+# @type max_mb: int
+# @param max_rows: Most data rows that will be rendered
+# @type max_rows: int
+# @return: None
+def previewCSV(csv_file, browser_path=None, max_mb=25, max_rows=50000):
+    import html as htmllib
+
+    file_mb = os.path.getsize(csv_file) / 1048576.0
+    if file_mb > max_mb:
+        print("⚠️ {} is too large to preview: {:,.1f} MB (limit is {:,} MB).".format(os.path.basename(csv_file), file_mb, max_mb))
+        sys.exit(1)
+
+    with open(csv_file, 'rb') as f:
+        raw_data = f.read()
+    encoding = 'UTF-8'
+    try:
+        content = raw_data.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        # Excel exports are often cp1252; let chardet guess, and never die on a stray byte
+        encoding = detect(raw_data)['encoding'] or 'cp1252'
+        content = raw_data.decode(encoding, errors='replace')
+
+    try:
+        dialect = csv.Sniffer().sniff(content[:65536], delimiters=',\t;|')
+    except csv.Error:
+        dialect = csv.excel
+    rows = list(csv.reader(content.splitlines(), dialect))
+    rows = [r for r in rows if any(c.strip() for c in r)]
+    if len(rows) - 1 > max_rows:
+        print("⚠️ {} is too large to preview: {:,} rows (limit is {:,} rows).".format(os.path.basename(csv_file), len(rows) - 1, max_rows))
+        sys.exit(1)
+
+    header = rows[0] if rows else []
+    data = rows[1:]
+    colcount = max([len(header)] + [len(r) for r in data]) if rows else 0
+    header = header + [''] * (colcount - len(header))
+
+    # Right-align columns whose non-empty values are all numeric
+    numeric_re = re.compile(r'^[\s$€£-]*[\d,]*\.?\d+%?\s*$')
+    numeric = []
+    for i in range(colcount):
+        values = [r[i] for r in data if i < len(r) and r[i].strip()]
+        numeric.append(bool(values) and all(numeric_re.match(v) for v in values))
+
+    # Stat tiles
+    cells = len(data) * colcount
+    blanks = sum(1 for r in data for i in range(colcount) if i >= len(r) or not r[i].strip())
+    size = len(raw_data)
+    for unit in ('B', 'KB', 'MB', 'GB'):
+        if size < 1024 or unit == 'GB':
+            size_label = ('{:,.0f} {}' if unit == 'B' else '{:,.1f} {}').format(size, unit)
+            break
+        size /= 1024.0
+    delimiter_names = {',': 'Comma', '\t': 'Tab', ';': 'Semicolon', '|': 'Pipe'}
+    stats = [
+        ('Rows', '{:,}'.format(len(data))),
+        ('Showing', '<span id="shown">{:,}</span>'.format(len(data))),
+        ('Columns', '{:,}'.format(colcount)),
+        ('Numeric cols', '{:,}'.format(sum(numeric))),
+        ('Blank cells', '{:.1f}%'.format(100.0 * blanks / cells) if cells else '0%'),
+        ('Size', size_label),
+        ('Delimiter', delimiter_names.get(dialect.delimiter, repr(dialect.delimiter))),
+        ('Encoding', encoding.upper()),
+    ]
+
+    esc = htmllib.escape
+    tiles = ''.join(
+        '<div class="stat"><p class="heading">{}</p><p class="value">{}</p></div>'.format(label, value)
+        for label, value in stats
+    )
+    thead = ''.join(
+        '<th data-col="{}"{}{}>{}<span class="sort"></span></th>'.format(
+            i, ' data-numeric="1"' if numeric[i] else '', ' class="has-text-right"' if numeric[i] else '', esc(h))
+        for i, h in enumerate(header)
+    )
+    tbody = []
+    for r in data:
+        r = r + [''] * (colcount - len(r))
+        tbody.append('<tr>' + ''.join(
+            '<td{}>{}</td>'.format(' class="has-text-right"' if numeric[i] else '', esc(c))
+            for i, c in enumerate(r)
+        ) + '</tr>')
+
+    html_content = """<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+<style>
+    html, body { height: 100%; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+    .toolbar { padding: 0.75rem 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .toolbar .control { flex: 1 1 20rem; }
+    .toolbar .file-name { font-weight: 600; }
+    .stats { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 1rem 0; }
+    .stat { flex: 1 1 7rem; padding: 0.4rem 0.75rem; border: 1px solid var(--bulma-border-weak); border-radius: 4px; background: var(--bulma-scheme-main-bis); }
+    .stat .heading { margin: 0; font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--bulma-text-weak); }
+    .stat .value { font-size: 1.15rem; font-weight: 600; color: var(--bulma-text-strong); white-space: nowrap; }
+    .table-wrap { flex: 1 1 auto; overflow: auto; margin: 0 1rem 1rem; border: 1px solid var(--bulma-border-weak); border-radius: 4px; }
+    .table-wrap table { margin: 0; }
+    .table-wrap thead th { position: sticky; top: 0; z-index: 1; background: var(--bulma-scheme-main-ter); box-shadow: inset 0 -2px 0 var(--bulma-border); white-space: nowrap; cursor: pointer; user-select: none; }
+    .table-wrap thead th:hover { background: var(--bulma-scheme-main-bis); }
+    .table-wrap thead th .sort { display: inline-block; width: 1em; margin-left: 0.25em; color: var(--bulma-link); }
+    .table-wrap td { white-space: nowrap; }
+    .table-wrap tbody tr.stripe { background: var(--bulma-scheme-main-bis); }
+    .table-wrap tbody tr.is-hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="stats">__TILES__</div>
+<div class="toolbar">
+    <span class="file-name">__TITLE__</span>
+    <div class="control">
+        <input id="search" class="input is-small" type="search" placeholder="Filter rows... (Esc clears)" autofocus>
+    </div>
+</div>
+<div class="table-wrap">
+    <table class="table is-narrow is-hoverable is-fullwidth">
+        <thead><tr>__THEAD__</tr></thead>
+        <tbody id="rows">__TBODY__</tbody>
+    </table>
+</div>
+<script>
+(function(){
+    var input = document.getElementById('search');
+    var count = document.getElementById('shown');
+    var tbody = document.getElementById('rows');
+    var items = Array.prototype.slice.call(tbody.rows).map(function(r, i){
+        return { row: r, text: r.textContent.toLowerCase(), order: i };
+    });
+    var total = items.length;
+    var timer = null;
+    var sortCol = -1, sortDir = 1;
+    var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+    function apply(){
+        var terms = input.value.toLowerCase().split(/\\s+/).filter(Boolean);
+        var shown = 0;
+        for (var i = 0; i < total; i++) {
+            var it = items[i];
+            var ok = terms.every(function(t){ return it.text.indexOf(t) !== -1; });
+            it.row.classList.toggle('is-hidden', !ok);
+            if (ok) { it.row.classList.toggle('stripe', shown % 2 === 1); shown++; }
+        }
+        count.textContent = shown.toLocaleString();
+    }
+
+    // Click a header: sort ascending, click again: descending. Blanks always sort last.
+    function sortBy(th){
+        var col = +th.getAttribute('data-col');
+        var isNum = th.hasAttribute('data-numeric');
+        sortDir = (col === sortCol) ? -sortDir : 1;
+        sortCol = col;
+        items.forEach(function(it){
+            var v = it.row.cells[col].textContent.trim();
+            it.key = v === '' ? null : (isNum ? parseFloat(v.replace(/[^0-9.\\-]/g, '')) : v);
+        });
+        items.sort(function(a, b){
+            if (a.key === null || b.key === null) {
+                return (a.key === null) - (b.key === null) || a.order - b.order;
+            }
+            var c = isNum ? a.key - b.key : collator.compare(a.key, b.key);
+            return c * sortDir || a.order - b.order;
+        });
+        var frag = document.createDocumentFragment();
+        items.forEach(function(it){ frag.appendChild(it.row); });
+        tbody.appendChild(frag);
+        document.querySelectorAll('thead th .sort').forEach(function(s){ s.textContent = ''; });
+        th.querySelector('.sort').textContent = sortDir === 1 ? '\\u25B2' : '\\u25BC';
+        apply();
+    }
+    document.querySelectorAll('thead th').forEach(function(th){
+        th.addEventListener('click', function(){ sortBy(th); });
+    });
+    input.addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(apply, total > 5000 ? 150 : 0); });
+    input.addEventListener('keydown', function(e){ if (e.key === 'Escape') { input.value = ''; apply(); } });
+    apply();
+})();
+</script>
+</body>
+</html>
+"""
+    html_content = (html_content
+        .replace('__TITLE__', esc(os.path.basename(csv_file)))
+        .replace('__TILES__', tiles)
+        .replace('__THEAD__', thead)
+        .replace('__TBODY__', '\n'.join(tbody)))
+
+    html_file = os.path.join(tempfile.gettempdir(), 'dasql_csv_preview.html')
+    with open(html_file, 'w', encoding='utf-8') as tmp:
+        tmp.write(html_content)
+
+    previewHTML(html_file, browser_path)
+
 #---------- function markdownToText
 # @description Converts a Markdown file into clean, speech-friendly plain text.
 #              Renders the Markdown to HTML, then strips tags and drops fenced
@@ -312,7 +520,9 @@ def getInterpreter(filename):
         '.md': 'markdown',
         '.markdown':'markdown',
         '.html':'html',
-        '.htm':'html'
+        '.htm':'html',
+        '.csv':'csv',
+        '.tsv':'csv'
     }
 
     _, ext = os.path.splitext(filename.lower())

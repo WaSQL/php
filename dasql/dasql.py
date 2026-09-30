@@ -141,6 +141,8 @@ if remote_prefix is None and interpreter:
             df.previewMarkdown(sys.argv[1])
     elif interpreter == 'html':
         df.previewHTML(sys.argv[1])
+    elif interpreter == 'csv':
+        df.previewCSV(sys.argv[1])
     else:
         rtn = df.runScript(sys.argv[1])
         print(rtn)
