@@ -27142,6 +27142,9 @@ function commonBlockedIpsDb(){
 		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_ip ON blocked_history (ip_addr)');
 		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_source ON blocked_history (source)');
 		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_pattern ON blocked_history (pattern)');
+		$db->exec("CREATE TABLE IF NOT EXISTS blocked_traffic (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL, source TEXT DEFAULT '', request_uri TEXT DEFAULT '', user_agent TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_ip_created ON blocked_traffic (ip_addr, created_at)');
+		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_created ON blocked_traffic (created_at)');
 		commonBlockedIpsLastError('');
 		$pdo=$db;
 	}
@@ -27275,6 +27278,7 @@ function commonBlockedIpsDetect($uri,$ua=''){
 			'etc/passwd','etc/shadow','proc/self','win.ini','boot.ini',
 			'/administrator/','jmx-console','web-console','invoker/jmxinvokerservlet',
 			'/solr/admin',
+			'wp-links-opml','pearcmd','peclcmd','rest_route=','wp-json',
 		);
 	}
 	foreach($patterns as $p){
@@ -27347,6 +27351,41 @@ function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged'){
 		error_log('commonBlockedIpsFlag: '.$e->getMessage());
 	}
 }
+//---------- begin function commonBlockedIpsLogRequest--------------------
+/**
+* @describe records a request that passed the signature checks in the blocked_traffic
+*	table (kept 10 days, pruned at random ~1 in 500 requests) and returns how many
+*	DISTINCT user-agents this IP has used in the last $window seconds, including
+*	this request. Used to spot bots that rotate browser user-agents. Fail-safe:
+*	returns 0 on any error.
+* @param ip string
+* @param uri string
+* @param ua string
+* @param window int - seconds to look back (default 600)
+* @return int
+* @usage $agents=commonBlockedIpsLogRequest($ip,$uri,$ua);
+*/
+function commonBlockedIpsLogRequest($ip,$uri,$ua,$window=600){
+	if(!strlen($ip)){return 0;}
+	$db=commonBlockedIpsDb();
+	if($db===null){return 0;}
+	$source=isset($_SERVER['HTTP_HOST'])?strtolower(trim($_SERVER['HTTP_HOST'])):'';
+	$now=time();
+	try{
+		$ins=$db->prepare("INSERT INTO blocked_traffic (ip_addr,source,request_uri,user_agent,created_at) VALUES (:ip,:src,:uri,:ua,:now)");
+		$ins->execute(array(':ip'=>$ip,':src'=>$source,':uri'=>substr((string)$uri,0,1000),':ua'=>substr((string)$ua,0,500),':now'=>$now));
+		if(mt_rand(1,500)==1){
+			$db->exec('DELETE FROM blocked_traffic WHERE created_at < '.($now-864000));
+		}
+		$q=$db->prepare("SELECT COUNT(DISTINCT user_agent) FROM blocked_traffic WHERE ip_addr=:ip AND created_at >= :since");
+		$q->execute(array(':ip'=>$ip,':since'=>$now-(int)$window));
+		return (int)$q->fetchColumn();
+	}
+	catch(\Throwable $e){
+		error_log('commonBlockedIpsLogRequest: '.$e->getMessage());
+		return 0;
+	}
+}
 //---------- begin function commonBlockedIpsFlush--------------------
 /**
 * @describe drops the snapshot cache (php/temp/blocked_ips.snapshot) so the next
@@ -27399,6 +27438,12 @@ function commonBlockedIpsCheck(){
 		$hit=commonBlockedIpsDetect($uri,$ua);
 		if($hit!==null){
 			commonBlockedIpsFlag($ip,$hit['reason'],$hit['pattern'],$uri,$ua,'flagged');
+			commonBlockedIpsForbidden();
+		}
+		//user-agent rotation: one IP presenting 5+ different browsers in 10 minutes is a bot
+		$agents=commonBlockedIpsLogRequest($ip,$uri,$ua,600);
+		if($agents>=5){
+			commonBlockedIpsFlag($ip,'UA rotation: '.$agents.' agents in 10 min','ua-rotation',$uri,$ua,'flagged');
 			commonBlockedIpsForbidden();
 		}
 	}

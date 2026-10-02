@@ -83,6 +83,7 @@ switch($func){
 		$stats    = firewallStats();
 		$timeline = firewallTimelineChart(30);
 		$patterns = firewallPatternChart();
+		$traffic  = firewallTrafficChart(10);
 		$grid     = firewallListGrid();
 		setView('default');
 	break;

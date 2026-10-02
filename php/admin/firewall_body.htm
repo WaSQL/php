@@ -92,6 +92,11 @@ echo firewallStatCards($stats,$info);
 	</div>
 </div>
 
+<div class="wadmin-card" style="margin-bottom:18px;">
+	<div class="w_bold" style="margin-bottom:8px;">All activity &mdash; last 10 days</div>
+	<div style="height:240px;"><?=$traffic;?></div>
+</div>
+
 <div class="wadmin-card">
 	<form name="firewall_form" onsubmit="return firewallSearch();" action="/php/admin.php" style="margin-bottom:12px;">
 		<input type="hidden" name="_menu" value="firewall">

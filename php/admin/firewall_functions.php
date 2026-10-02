@@ -53,7 +53,7 @@ function firewallStats(){
 	$out=array(
 		'total'=>0,'active'=>0,'inactive'=>0,'sources'=>0,
 		'hits_24h'=>0,'hits_7d'=>0,'hits_30d'=>0,'events_total'=>0,
-		'top_source'=>'','last_hit'=>0,
+		'top_source'=>'','last_hit'=>0,'traffic_total'=>0,'traffic_24h'=>0,
 	);
 	$db=firewallDb();
 	if($db===null){return $out;}
@@ -74,6 +74,8 @@ function firewallStats(){
 		$out['hits_30d']=(int)$db->query("SELECT COUNT(*) FROM blocked_history WHERE created_at >= ".($now-2592000))->fetchColumn();
 		$out['events_total']=(int)$db->query("SELECT COUNT(*) FROM blocked_history")->fetchColumn();
 		$out['last_hit']=(int)$db->query("SELECT COALESCE(MAX(created_at),0) FROM blocked_history")->fetchColumn();
+		$out['traffic_total']=(int)$db->query("SELECT COUNT(*) FROM blocked_traffic")->fetchColumn();
+		$out['traffic_24h']=(int)$db->query("SELECT COUNT(*) FROM blocked_traffic WHERE created_at >= ".($now-86400))->fetchColumn();
 		$ts=$db->query("SELECT source, COUNT(*) c FROM blocked_history WHERE source<>'' GROUP BY source ORDER BY c DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 		if(is_array($ts)){$out['top_source']=$ts['source'].' ('.$ts['c'].')';}
 	}
@@ -157,6 +159,72 @@ function firewallTimelineChart($days=30){
 	<labels>{$labels}</labels>
 	<colors>["rgba(255,159,64,0.55)","rgba(75,192,192,0.55)"]</colors>
 	<bcolors>["rgb(255,159,64)","rgb(75,192,192)"]</bcolors>
+	<options>{"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
+</chartjs>
+HTML;
+}
+//---------- begin function firewallTrafficData ----
+/**
+* @exclude
+* @describe daily counts of ALL requests for the last $days days: requests that
+*	passed the firewall (blocked_traffic) plus those it turned away or flagged
+*	(blocked_history). Days with no activity are filled with 0.
+* @param days int
+* @return array  array('labels'=>[], 'passed'=>[], 'blocked'=>[], 'flagged'=>[])
+*/
+function firewallTrafficData($days=10){
+	$days=max(1,min(10,(int)$days));
+	$labels=array(); $passed=array(); $blocked=array(); $flagged=array(); $idx=array();
+	for($i=$days-1;$i>=0;$i--){
+		$d=date('Y-m-d',strtotime("-{$i} days"));
+		$labels[]=$d; $passed[]=0; $blocked[]=0; $flagged[]=0; $idx[$d]=count($labels)-1;
+	}
+	$out=array('labels'=>$labels,'passed'=>$passed,'blocked'=>$blocked,'flagged'=>$flagged);
+	$db=firewallDb();
+	if($db===null){return $out;}
+	try{
+		$since=strtotime(date('Y-m-d',strtotime('-'.($days-1).' days')).' 00:00:00');
+		$q=$db->prepare("SELECT date(created_at,'unixepoch','localtime') d, COUNT(*) c FROM blocked_traffic WHERE created_at >= :since GROUP BY d");
+		$q->execute(array(':since'=>$since));
+		foreach($q as $row){
+			if(isset($idx[$row['d']])){$out['passed'][$idx[$row['d']]]=(int)$row['c'];}
+		}
+		$q=$db->prepare("SELECT date(created_at,'unixepoch','localtime') d, event, COUNT(*) c FROM blocked_history WHERE created_at >= :since GROUP BY d, event");
+		$q->execute(array(':since'=>$since));
+		foreach($q as $row){
+			if(!isset($idx[$row['d']])){continue;}
+			$key=$row['event']==='blocked'?'blocked':'flagged';
+			$out[$key][$idx[$row['d']]]=(int)$row['c'];
+		}
+	}
+	catch(\Throwable $e){error_log('firewallTrafficData: '.$e->getMessage());}
+	return $out;
+}
+//---------- begin function firewallTrafficChart ----
+/**
+* @exclude
+* @describe <chartjs> stacked bar tag for all request activity (allowed + blocked
+*	+ newly flagged) over the last 10 days, same style as firewallTimelineChart.
+* @param days int
+* @return string
+*/
+function firewallTrafficChart($days=10){
+	$d=firewallTrafficData($days);
+	if(!array_sum($d['passed']) && !array_sum($d['blocked']) && !array_sum($d['flagged'])){
+		return '<div class="w_gray" style="padding:30px;text-align:center;">No requests logged yet.</div>';
+	}
+	$labels=json_encode($d['labels']);
+	$passed=json_encode($d['passed']);
+	$blocked=json_encode($d['blocked']);
+	$flagged=json_encode($d['flagged']);
+	return <<<HTML
+<chartjs data-type="bar" data-id="fw_traffic" class="fw-chart-box">
+	<dataset data-label="Allowed requests">{$passed}</dataset>
+	<dataset data-label="Repeat blocks">{$blocked}</dataset>
+	<dataset data-label="New detections">{$flagged}</dataset>
+	<labels>{$labels}</labels>
+	<colors>["rgba(54,162,235,0.55)","rgba(75,192,192,0.55)","rgba(255,159,64,0.55)"]</colors>
+	<bcolors>["rgb(54,162,235)","rgb(75,192,192)","rgb(255,159,64)"]</bcolors>
 	<options>{"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
 </chartjs>
 HTML;
@@ -389,6 +457,7 @@ function firewallStatCards($stats,$info){
 		array('Hits, last 7d', number_format($stats['hits_7d']), 'icon-history', ''),
 		array('Contributing sites', number_format($stats['sources']), 'icon-website', ''),
 		array('Events logged', number_format($stats['events_total']), 'icon-list', ''),
+		array('Requests logged (10d)', number_format($stats['traffic_total']).'<div class="w_small w_gray" style="font-weight:400;">'.number_format($stats['traffic_24h']).' in last 24h</div>', 'icon-chart-line', 'is-info'),
 	);
 	$h='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">';
 	foreach($cards as $c){
