@@ -153,13 +153,13 @@ function firewallTimelineChart($days=30){
 	$flagged=json_encode($d['flagged']);
 	$blocked=json_encode($d['blocked']);
 	return <<<HTML
-<chartjs data-type="bar" data-id="fw_timeline" class="fw-chart-box">
+<chartjs data-type="bar" data-id="fw_timeline" data-tooltips="1" class="fw-chart-box">
 	<dataset data-label="New detections">{$flagged}</dataset>
 	<dataset data-label="Repeat blocks">{$blocked}</dataset>
 	<labels>{$labels}</labels>
 	<colors>["rgba(255,159,64,0.55)","rgba(75,192,192,0.55)"]</colors>
 	<bcolors>["rgb(255,159,64)","rgb(75,192,192)"]</bcolors>
-	<options>{"plugins":{"datalabels":{"display":false}},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
+	<options>{"plugins":{"datalabels":{"display":false}},"events":["mousemove","mouseout","click","touchstart","touchmove"],"tooltips":{"enabled":true,"mode":"index","intersect":false},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
 </chartjs>
 HTML;
 }
@@ -218,14 +218,14 @@ function firewallTrafficChart($days=10){
 	$blocked=json_encode($d['blocked']);
 	$flagged=json_encode($d['flagged']);
 	return <<<HTML
-<chartjs data-type="bar" data-id="fw_traffic" class="fw-chart-box">
+<chartjs data-type="bar" data-id="fw_traffic" data-tooltips="1" class="fw-chart-box">
 	<dataset data-label="Allowed requests">{$passed}</dataset>
 	<dataset data-label="Repeat blocks">{$blocked}</dataset>
 	<dataset data-label="New detections">{$flagged}</dataset>
 	<labels>{$labels}</labels>
 	<colors>["rgba(54,162,235,0.55)","rgba(75,192,192,0.55)","rgba(255,159,64,0.55)"]</colors>
 	<bcolors>["rgb(54,162,235)","rgb(75,192,192)","rgb(255,159,64)"]</bcolors>
-	<options>{"plugins":{"datalabels":{"display":false}},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
+	<options>{"plugins":{"datalabels":{"display":false}},"events":["mousemove","mouseout","click","touchstart","touchmove"],"tooltips":{"enabled":true,"mode":"index","intersect":false},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
 </chartjs>
 HTML;
 }
@@ -243,10 +243,10 @@ function firewallPatternChart(){
 	$labels=json_encode($d['labels']);
 	$values=json_encode($d['values']);
 	return <<<HTML
-<chartjs data-type="doughnut" data-id="fw_patterns" class="fw-chart-box">
+<chartjs data-type="doughnut" data-id="fw_patterns" data-tooltips="1" class="fw-chart-box">
 	<dataset data-label="Hits">{$values}</dataset>
 	<labels>{$labels}</labels>
-	<options>{"plugins":{"datalabels":{"display":false}},"responsive":true,"maintainAspectRatio":false,"legend":{"position":"right"}}</options>
+	<options>{"plugins":{"datalabels":{"display":false}},"events":["mousemove","mouseout","click","touchstart","touchmove"],"tooltips":{"enabled":true,"mode":"index","intersect":false},"responsive":true,"maintainAspectRatio":false,"legend":{"position":"right"}}</options>
 </chartjs>
 HTML;
 }
