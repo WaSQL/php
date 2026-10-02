@@ -27418,7 +27418,7 @@ function commonBlockedIpsFlush(){
 function commonBlockedIpsForbidden(){
 	http_response_code(403);
 	@header('Content-Type: text/html; charset=utf-8');
-	echo '<h1>403 Forbidden</h1>Access denied.';
+	echo '<h1>403 Forbidden</h1>Access denied.<br><br>If you think this is a mistake, please contact the site owner.';
 	exit;
 }
 //---------- begin function commonBlockedIpsCheck--------------------
