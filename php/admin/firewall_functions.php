@@ -159,7 +159,7 @@ function firewallTimelineChart($days=30){
 	<labels>{$labels}</labels>
 	<colors>["rgba(255,159,64,0.55)","rgba(75,192,192,0.55)"]</colors>
 	<bcolors>["rgb(255,159,64)","rgb(75,192,192)"]</bcolors>
-	<options>{"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
+	<options>{"plugins":{"datalabels":{"display":false}},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
 </chartjs>
 HTML;
 }
@@ -225,7 +225,7 @@ function firewallTrafficChart($days=10){
 	<labels>{$labels}</labels>
 	<colors>["rgba(54,162,235,0.55)","rgba(75,192,192,0.55)","rgba(255,159,64,0.55)"]</colors>
 	<bcolors>["rgb(54,162,235)","rgb(75,192,192)","rgb(255,159,64)"]</bcolors>
-	<options>{"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
+	<options>{"plugins":{"datalabels":{"display":false}},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
 </chartjs>
 HTML;
 }
@@ -246,7 +246,7 @@ function firewallPatternChart(){
 <chartjs data-type="doughnut" data-id="fw_patterns" class="fw-chart-box">
 	<dataset data-label="Hits">{$values}</dataset>
 	<labels>{$labels}</labels>
-	<options>{"responsive":true,"maintainAspectRatio":false,"legend":{"position":"right"}}</options>
+	<options>{"plugins":{"datalabels":{"display":false}},"responsive":true,"maintainAspectRatio":false,"legend":{"position":"right"}}</options>
 </chartjs>
 HTML;
 }
