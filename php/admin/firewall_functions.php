@@ -54,6 +54,7 @@ function firewallStats(){
 		'total'=>0,'active'=>0,'inactive'=>0,'sources'=>0,
 		'hits_24h'=>0,'hits_7d'=>0,'hits_30d'=>0,'events_total'=>0,
 		'top_source'=>'','last_hit'=>0,'traffic_total'=>0,'traffic_24h'=>0,
+		'fw_avg'=>0,'fw_p95'=>0,'fw_slow'=>0,'fw_samples'=>0,
 	);
 	$db=firewallDb();
 	if($db===null){return $out;}
@@ -76,6 +77,12 @@ function firewallStats(){
 		$out['last_hit']=(int)$db->query("SELECT COALESCE(MAX(created_at),0) FROM blocked_history")->fetchColumn();
 		$out['traffic_total']=(int)$db->query("SELECT COUNT(*) FROM blocked_traffic")->fetchColumn();
 		$out['traffic_24h']=(int)$db->query("SELECT COUNT(*) FROM blocked_traffic WHERE created_at >= ".($now-86400))->fetchColumn();
+		$pf=$db->query("SELECT COUNT(ms) n, COALESCE(AVG(ms),0) a, COALESCE(SUM(CASE WHEN ms>50 THEN 1 ELSE 0 END),0) slow FROM blocked_traffic WHERE ms IS NOT NULL AND created_at >= ".($now-86400))->fetch(PDO::FETCH_ASSOC);
+		if(is_array($pf) && (int)$pf['n']>0){
+			$out['fw_samples']=(int)$pf['n']; $out['fw_avg']=(float)$pf['a']; $out['fw_slow']=(int)$pf['slow'];
+			$off=(int)floor($out['fw_samples']*0.95);
+			$out['fw_p95']=(float)$db->query("SELECT ms FROM blocked_traffic WHERE ms IS NOT NULL AND created_at >= ".($now-86400)." ORDER BY ms LIMIT 1 OFFSET ".$off)->fetchColumn();
+		}
 		$ts=$db->query("SELECT source, COUNT(*) c FROM blocked_history WHERE source<>'' GROUP BY source ORDER BY c DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
 		if(is_array($ts)){$out['top_source']=$ts['source'].' ('.$ts['c'].')';}
 	}
@@ -114,27 +121,6 @@ function firewallTimelineData($days=30){
 	}
 	catch(\Throwable $e){error_log('firewallTimelineData: '.$e->getMessage());}
 	return array('labels'=>$labels,'flagged'=>$flagged,'blocked'=>$blocked);
-}
-//---------- begin function firewallTopPatternsData ----
-/**
-* @exclude
-* @describe the most-hit probe patterns across blocked_history (what attackers
-*	are fishing for), for the doughnut chart.
-* @param limit int
-* @return array  array('labels'=>[], 'values'=>[])
-*/
-function firewallTopPatternsData($limit=8){
-	$limit=max(3,min(20,(int)$limit));
-	$labels=array(); $values=array();
-	$db=firewallDb();
-	if($db===null){return array('labels'=>$labels,'values'=>$values);}
-	try{
-		$q=$db->query("SELECT CASE WHEN pattern='' THEN '(none)' ELSE pattern END p, COUNT(*) c
-			FROM blocked_history GROUP BY p ORDER BY c DESC LIMIT {$limit}");
-		foreach($q as $row){$labels[]=$row['p']; $values[]=(int)$row['c'];}
-	}
-	catch(\Throwable $e){error_log('firewallTopPatternsData: '.$e->getMessage());}
-	return array('labels'=>$labels,'values'=>$values);
 }
 //---------- begin function firewallTimelineChart ----
 /**
@@ -226,27 +212,6 @@ function firewallTrafficChart($days=10){
 	<colors>["rgba(54,162,235,0.55)","rgba(75,192,192,0.55)","rgba(255,159,64,0.55)"]</colors>
 	<bcolors>["rgb(54,162,235)","rgb(75,192,192)","rgb(255,159,64)"]</bcolors>
 	<options>{"plugins":{"datalabels":{"display":false}},"events":["mousemove","mouseout","click","touchstart","touchmove"],"tooltips":{"enabled":true,"mode":"index","intersect":false},"responsive":true,"maintainAspectRatio":false,"scales":{"xAxes":[{"stacked":true}],"yAxes":[{"stacked":true,"ticks":{"beginAtZero":true,"precision":0}}]}}</options>
-</chartjs>
-HTML;
-}
-//---------- begin function firewallPatternChart ----
-/**
-* @exclude
-* @describe <chartjs> doughnut tag for the top probe patterns.
-* @return string
-*/
-function firewallPatternChart(){
-	$d=firewallTopPatternsData(8);
-	if(!count($d['labels'])){
-		return '<div class="w_gray" style="padding:30px;text-align:center;">Nothing recorded yet.</div>';
-	}
-	$labels=json_encode($d['labels']);
-	$values=json_encode($d['values']);
-	return <<<HTML
-<chartjs data-type="doughnut" data-id="fw_patterns" data-tooltips="1" class="fw-chart-box">
-	<dataset data-label="Hits">{$values}</dataset>
-	<labels>{$labels}</labels>
-	<options>{"plugins":{"datalabels":{"display":false}},"events":["mousemove","mouseout","click","touchstart","touchmove"],"tooltips":{"enabled":true,"mode":"index","intersect":false},"responsive":true,"maintainAspectRatio":false,"legend":{"position":"right"}}</options>
 </chartjs>
 HTML;
 }
@@ -455,13 +420,15 @@ function firewallStatCards($stats,$info){
 		array('Not blocking (kept)', number_format($stats['inactive']), 'icon-eye', ''),
 		array('Hits, last 24h', number_format($stats['hits_24h']), 'icon-clock', 'is-warning'),
 		array('Hits, last 7d', number_format($stats['hits_7d']), 'icon-history', ''),
-		array('Contributing sites', number_format($stats['sources']), 'icon-website', ''),
+		array('Contributing sites', number_format($stats['sources']), 'icon-website', '', array('Contributing sites','sites')),
 		array('Events logged', number_format($stats['events_total']), 'icon-list', ''),
 		array('Requests logged (10d)', number_format($stats['traffic_total']).'<div class="w_small w_gray" style="font-weight:400;">'.number_format($stats['traffic_24h']).' in last 24h</div>', 'icon-chart-line', 'is-info'),
+		array('Firewall time (24h)', ($stats['fw_samples']?number_format($stats['fw_avg'],1).' ms':'-').'<div class="w_small w_gray" style="font-weight:400;">'.($stats['fw_samples']?('p95 '.number_format($stats['fw_p95'],1).' ms &middot; '.number_format($stats['fw_slow']).' over 50 ms'):'no timings yet').'</div>', 'icon-clock', ($stats['fw_samples'] && $stats['fw_p95']>50)?'is-danger':'is-success', array('Firewall check time','speed')),
 	);
 	$h='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;">';
 	foreach($cards as $c){
-		$h.='<div class="wadmin-card" style="flex:1 1 150px;margin:0;padding:12px 14px;">'
+		$click=isset($c[4])?(' data-nav="/php/admin.php?_menu=firewall&func='.encodeHtml($c[4][1]).'" data-div="centerpop" data-title="'.encodeHtml($c[4][0]).'" onclick="return wacss.nav(this);" title="Click for details" style="flex:1 1 150px;margin:0;padding:12px 14px;cursor:pointer;"'):' style="flex:1 1 150px;margin:0;padding:12px 14px;"';
+		$h.='<div class="wadmin-card"'.$click.'>'
 			.'<div class="w_small w_gray" style="text-transform:uppercase;letter-spacing:.03em;"><span class="'.$c[2].' '.($c[3]?:'w_gray').'"></span> '.encodeHtml($c[0]).'</div>'
 			.'<div style="font-size:1.6rem;font-weight:700;line-height:1.3;">'.$c[1].'</div>'
 			.'</div>';
@@ -476,6 +443,70 @@ function firewallStatCards($stats,$info){
 	$h.='<div class="w_small w_gray" style="margin-bottom:14px;">Firewall: '.$state.' &nbsp;|&nbsp; '.$file
 		.($stats['top_source']!==''?(' &nbsp;|&nbsp; most active site: '.encodeHtml($stats['top_source'])):'').'</div>';
 	return $h;
+}
+//---------- begin function firewallSitesList ----
+/**
+* @exclude
+* @describe popup table of every site feeding the firewall: IPs first flagged there,
+*	events logged, requests allowed through (last 10 days) and last activity.
+* @return string HTML
+*/
+function firewallSitesList(){
+	$db=firewallDb();
+	if($db===null){return firewallUnavailableNotice();}
+	$sites=array();
+	try{
+		foreach($db->query("SELECT source, COUNT(*) c FROM blocked_ips WHERE source<>'' GROUP BY source") as $r){$sites[$r['source']]['ips']=(int)$r['c'];}
+		foreach($db->query("SELECT source, COUNT(*) c, MAX(created_at) l FROM blocked_history WHERE source<>'' GROUP BY source") as $r){$sites[$r['source']]['events']=(int)$r['c'];$sites[$r['source']]['last']=(int)$r['l'];}
+		foreach($db->query("SELECT source, COUNT(*) c, MAX(created_at) l FROM blocked_traffic WHERE source<>'' GROUP BY source") as $r){
+			$sites[$r['source']]['allowed']=(int)$r['c'];
+			if((int)$r['l']>(isset($sites[$r['source']]['last'])?$sites[$r['source']]['last']:0)){$sites[$r['source']]['last']=(int)$r['l'];}
+		}
+	}
+	catch(\Throwable $e){error_log('firewallSitesList: '.$e->getMessage());return '<div class="w_bold w_danger">Query failed - see the error log.</div>';}
+	uasort($sites,function($a,$b){return (isset($b['events'])?$b['events']:0)<=>(isset($a['events'])?$a['events']:0);});
+	$h='<div style="padding:14px;max-height:75vh;overflow:auto;"><div class="w_bold" style="margin-bottom:8px;">Contributing sites ('.count($sites).')</div>';
+	$h.='<table class="wacss_table is-striped is-fullwidth is-sticky"><thead><tr><th>Site</th><th style="text-align:right;">IPs first flagged here</th><th style="text-align:right;">Blocked / flagged events</th><th style="text-align:right;">Requests allowed (10d)</th><th>Last activity</th></tr></thead><tbody>';
+	foreach($sites as $name=>$d){
+		$h.='<tr><td>'.encodeHtml($name).'</td>'
+			.'<td style="text-align:right;">'.number_format(isset($d['ips'])?$d['ips']:0).'</td>'
+			.'<td style="text-align:right;">'.number_format(isset($d['events'])?$d['events']:0).'</td>'
+			.'<td style="text-align:right;">'.number_format(isset($d['allowed'])?$d['allowed']:0).'</td>'
+			.'<td>'.encodeHtml(firewallAgo(isset($d['last'])?$d['last']:0)).'</td></tr>';
+	}
+	return $h.'</tbody></table></div>';
+}
+//---------- begin function firewallSpeedReport ----
+/**
+* @exclude
+* @describe popup showing how long the firewall check itself takes: last-hour and
+*	last-24h average / p95 / max and the 10 slowest requests (blocked_traffic.ms).
+* @return string HTML
+*/
+function firewallSpeedReport(){
+	$db=firewallDb();
+	if($db===null){return firewallUnavailableNotice();}
+	$now=time();
+	$h='<div style="padding:14px;max-height:75vh;overflow:auto;"><div class="w_bold" style="margin-bottom:8px;">Firewall check time</div>';
+	try{
+		$h.='<table class="wacss_table is-striped" style="margin-bottom:14px;"><thead><tr><th>Window</th><th style="text-align:right;">Requests timed</th><th style="text-align:right;">Average</th><th style="text-align:right;">p95</th><th style="text-align:right;">Max</th></tr></thead><tbody>';
+		foreach(array('Last hour'=>3600,'Last 24 hours'=>86400) as $label=>$secs){
+			$since=$now-$secs;
+			$r=$db->query("SELECT COUNT(ms) n, COALESCE(AVG(ms),0) a, COALESCE(MAX(ms),0) m FROM blocked_traffic WHERE ms IS NOT NULL AND created_at >= {$since}")->fetch(PDO::FETCH_ASSOC);
+			$n=(int)$r['n'];
+			$p95=$n?(float)$db->query("SELECT ms FROM blocked_traffic WHERE ms IS NOT NULL AND created_at >= {$since} ORDER BY ms LIMIT 1 OFFSET ".(int)floor($n*0.95))->fetchColumn():0;
+			$h.='<tr><td>'.$label.'</td><td style="text-align:right;">'.number_format($n).'</td><td style="text-align:right;">'.number_format($r['a'],1).' ms</td><td style="text-align:right;">'.number_format($p95,1).' ms</td><td style="text-align:right;">'.number_format($r['m'],1).' ms</td></tr>';
+		}
+		$h.='</tbody></table><div class="w_bold" style="margin-bottom:6px;">10 slowest (last 24h)</div>';
+		$h.='<table class="wacss_table is-striped is-fullwidth"><thead><tr><th style="text-align:right;">ms</th><th>When</th><th>IP</th><th>Site</th><th>URI</th></tr></thead><tbody>';
+		$q=$db->query("SELECT ms, created_at, ip_addr, source, request_uri FROM blocked_traffic WHERE ms IS NOT NULL AND created_at >= ".($now-86400)." ORDER BY ms DESC LIMIT 10");
+		foreach($q as $r){
+			$h.='<tr><td style="text-align:right;">'.number_format($r['ms'],1).'</td><td>'.encodeHtml(firewallAgo($r['created_at'])).'</td><td>'.encodeHtml($r['ip_addr']).'</td><td>'.encodeHtml($r['source']).'</td><td>'.encodeHtml(substr($r['request_uri'],0,80)).'</td></tr>';
+		}
+		$h.='</tbody></table>';
+	}
+	catch(\Throwable $e){error_log('firewallSpeedReport: '.$e->getMessage());return '<div class="w_bold w_danger">Query failed - see the error log.</div>';}
+	return $h.'<div class="w_small w_gray" style="margin-top:8px;">Timing covers the whole check (list lookup, signature scan, logging). Only requests that passed are timed; requests turned away exit earlier.</div></div>';
 }
 //---------- begin function firewallBytes ----
 /** @exclude */

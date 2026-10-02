@@ -81,15 +81,9 @@ if(isset($_SESSION['firewall_message'])){
 echo firewallStatCards($stats,$info);
 ?>
 
-<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:18px;">
-	<div class="wadmin-card" style="flex:2 1 420px;margin:0;">
-		<div class="w_bold" style="margin-bottom:8px;">Blocked activity &mdash; last 30 days</div>
-		<div style="height:240px;"><?=$timeline;?></div>
-	</div>
-	<div class="wadmin-card" style="flex:1 1 260px;margin:0;">
-		<div class="w_bold" style="margin-bottom:8px;">Top probe patterns</div>
-		<div style="height:240px;"><?=$patterns;?></div>
-	</div>
+<div class="wadmin-card" style="margin-bottom:18px;">
+	<div class="w_bold" style="margin-bottom:8px;">Blocked activity &mdash; last 30 days</div>
+	<div style="height:240px;"><?=$timeline;?></div>
 </div>
 
 <div class="wadmin-card" style="margin-bottom:18px;">

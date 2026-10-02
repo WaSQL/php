@@ -36,6 +36,16 @@ switch($func){
 		setView('grid',1);
 		return;
 
+	case 'sites':
+		$grid=firewallSitesList();
+		setView('grid',1);
+		return;
+
+	case 'speed':
+		$grid=firewallSpeedReport();
+		setView('grid',1);
+		return;
+
 	case 'history':
 		$grid=firewallHistoryGrid();
 		setView('history',1);
@@ -82,7 +92,6 @@ switch($func){
 		$info     = firewallDbInfo();
 		$stats    = firewallStats();
 		$timeline = firewallTimelineChart(30);
-		$patterns = firewallPatternChart();
 		$traffic  = firewallTrafficChart(10);
 		$grid     = firewallListGrid();
 		setView('default');

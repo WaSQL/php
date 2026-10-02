@@ -27131,20 +27131,26 @@ function commonBlockedIpsDb(){
 	try{
 		$db=new PDO('sqlite:'.$path);
 		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$db->exec('PRAGMA journal_mode=WAL');
-		$db->exec('PRAGMA busy_timeout=2000');
-		$db->exec("CREATE TABLE IF NOT EXISTS blocked_ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL UNIQUE, reason TEXT DEFAULT '', pattern TEXT DEFAULT '', user_agent TEXT DEFAULT '', source TEXT DEFAULT '', last_source TEXT DEFAULT '', hit_count INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, first_seen INTEGER NOT NULL DEFAULT 0, last_seen INTEGER NOT NULL DEFAULT 0, notes TEXT DEFAULT '')");
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_active ON blocked_ips (active)');
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_lastseen ON blocked_ips (last_seen)');
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_pattern ON blocked_ips (pattern)');
-		$db->exec("CREATE TABLE IF NOT EXISTS blocked_history (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL, source TEXT DEFAULT '', event TEXT NOT NULL DEFAULT 'flagged', reason TEXT DEFAULT '', pattern TEXT DEFAULT '', request_uri TEXT DEFAULT '', user_agent TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_created ON blocked_history (created_at)');
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_ip ON blocked_history (ip_addr)');
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_source ON blocked_history (source)');
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_pattern ON blocked_history (pattern)');
-		$db->exec("CREATE TABLE IF NOT EXISTS blocked_traffic (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL, source TEXT DEFAULT '', request_uri TEXT DEFAULT '', user_agent TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_ip_created ON blocked_traffic (ip_addr, created_at)');
-		$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_created ON blocked_traffic (created_at)');
+		$db->exec('PRAGMA busy_timeout=250');
+		$db->exec('PRAGMA synchronous=NORMAL');
+		//schema work only when the file's user_version is behind - saves ~12 statements on every request
+		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 2){
+			$db->exec('PRAGMA journal_mode=WAL');
+			$db->exec("CREATE TABLE IF NOT EXISTS blocked_ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL UNIQUE, reason TEXT DEFAULT '', pattern TEXT DEFAULT '', user_agent TEXT DEFAULT '', source TEXT DEFAULT '', last_source TEXT DEFAULT '', hit_count INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, first_seen INTEGER NOT NULL DEFAULT 0, last_seen INTEGER NOT NULL DEFAULT 0, notes TEXT DEFAULT '')");
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_active ON blocked_ips (active)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_lastseen ON blocked_ips (last_seen)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_pattern ON blocked_ips (pattern)');
+			$db->exec("CREATE TABLE IF NOT EXISTS blocked_history (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL, source TEXT DEFAULT '', event TEXT NOT NULL DEFAULT 'flagged', reason TEXT DEFAULT '', pattern TEXT DEFAULT '', request_uri TEXT DEFAULT '', user_agent TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_created ON blocked_history (created_at)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_ip ON blocked_history (ip_addr)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_source ON blocked_history (source)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_pattern ON blocked_history (pattern)');
+			$db->exec("CREATE TABLE IF NOT EXISTS blocked_traffic (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL, source TEXT DEFAULT '', request_uri TEXT DEFAULT '', user_agent TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_ip_created ON blocked_traffic (ip_addr, created_at)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_created ON blocked_traffic (created_at)');
+			try{$db->exec('ALTER TABLE blocked_traffic ADD COLUMN ms REAL');}catch(\Throwable $e0){}//already there
+			$db->exec('PRAGMA user_version=2');
+		}
 		commonBlockedIpsLastError('');
 		$pdo=$db;
 	}
@@ -27362,10 +27368,12 @@ function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged'){
 * @param uri string
 * @param ua string
 * @param window int - seconds to look back (default 600)
+* @param rowid int - (by reference) set to the new blocked_traffic row id, 0 on failure
 * @return int
-* @usage $agents=commonBlockedIpsLogRequest($ip,$uri,$ua);
+* @usage $agents=commonBlockedIpsLogRequest($ip,$uri,$ua,600,$rowid);
 */
-function commonBlockedIpsLogRequest($ip,$uri,$ua,$window=600){
+function commonBlockedIpsLogRequest($ip,$uri,$ua,$window=600,&$rowid=0){
+	$rowid=0;
 	if(!strlen($ip)){return 0;}
 	$db=commonBlockedIpsDb();
 	if($db===null){return 0;}
@@ -27374,6 +27382,7 @@ function commonBlockedIpsLogRequest($ip,$uri,$ua,$window=600){
 	try{
 		$ins=$db->prepare("INSERT INTO blocked_traffic (ip_addr,source,request_uri,user_agent,created_at) VALUES (:ip,:src,:uri,:ua,:now)");
 		$ins->execute(array(':ip'=>$ip,':src'=>$source,':uri'=>substr((string)$uri,0,1000),':ua'=>substr((string)$ua,0,500),':now'=>$now));
+		$rowid=(int)$db->lastInsertId();
 		if(mt_rand(1,500)==1){
 			$db->exec('DELETE FROM blocked_traffic WHERE created_at < '.($now-864000));
 		}
@@ -27425,6 +27434,7 @@ function commonBlockedIpsForbidden(){
 function commonBlockedIpsCheck(){
 	if(!commonBlockedIpsEnabled()){return;}
 	if(function_exists('isUser') && isUser()){return;}
+	$t0=microtime(true);
 	try{
 		$ip=commonBlockedIpsClientIp();
 		if(commonBlockedIpsAllowed($ip)){return;}
@@ -27441,10 +27451,21 @@ function commonBlockedIpsCheck(){
 			commonBlockedIpsForbidden();
 		}
 		//user-agent rotation: one IP presenting 5+ different browsers in 10 minutes is a bot
-		$agents=commonBlockedIpsLogRequest($ip,$uri,$ua,600);
+		$rowid=0;
+		$agents=commonBlockedIpsLogRequest($ip,$uri,$ua,600,$rowid);
 		if($agents>=5){
 			commonBlockedIpsFlag($ip,'UA rotation: '.$agents.' agents in 10 min','ua-rotation',$uri,$ua,'flagged');
 			commonBlockedIpsForbidden();
+		}
+		//record how long the firewall itself took, so the admin page can show whether it slows real visitors
+		if($rowid>0){
+			$ms=round((microtime(true)-$t0)*1000,2);
+			try{
+				$db=commonBlockedIpsDb();
+				if($db!==null){$db->prepare('UPDATE blocked_traffic SET ms=:ms WHERE id=:id')->execute(array(':ms'=>$ms,':id'=>$rowid));}
+			}
+			catch(\Throwable $e2){}
+			if($ms>100){error_log('commonBlockedIpsCheck: slow firewall check '.$ms.'ms for '.$ip);}
 		}
 	}
 	catch(\Throwable $e){
