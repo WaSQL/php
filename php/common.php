@@ -27073,6 +27073,10 @@ function xmlHeader($params=array()){
 	  - Logged-in users are never firewalled (guards against a shared-list
 	    false positive locking an admin out of every site).
 	  - The request path reads a mtime-checked snapshot, not SQLite directly.
+	  - UA-rotation blocks are TEMPORARY: $CONFIG['blocked_ips_ua_limit'] (distinct
+	    agents in 10 min, default 10) and $CONFIG['blocked_ips_ua_ttl'] (seconds,
+	    default 3600). Signature hits stay permanent.
+	  - $CONFIG['blocked_ips_allow'] accepts exact IPs and CIDR ranges.
 	  - ON by default. blocked_ips.db is auto-created (empty, schema only) on the
 	    first non-allowlisted request, then builds itself from probe hits. SFTP a
 	    prebuilt db in to seed it with a known list. Force OFF entirely with
@@ -27134,7 +27138,7 @@ function commonBlockedIpsDb(){
 		$db->exec('PRAGMA busy_timeout=250');
 		$db->exec('PRAGMA synchronous=NORMAL');
 		//schema work only when the file's user_version is behind - saves ~12 statements on every request
-		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 2){
+		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 3){
 			$db->exec('PRAGMA journal_mode=WAL');
 			$db->exec("CREATE TABLE IF NOT EXISTS blocked_ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL UNIQUE, reason TEXT DEFAULT '', pattern TEXT DEFAULT '', user_agent TEXT DEFAULT '', source TEXT DEFAULT '', last_source TEXT DEFAULT '', hit_count INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, first_seen INTEGER NOT NULL DEFAULT 0, last_seen INTEGER NOT NULL DEFAULT 0, notes TEXT DEFAULT '')");
 			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_active ON blocked_ips (active)');
@@ -27149,7 +27153,9 @@ function commonBlockedIpsDb(){
 			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_ip_created ON blocked_traffic (ip_addr, created_at)');
 			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_traffic_created ON blocked_traffic (created_at)');
 			try{$db->exec('ALTER TABLE blocked_traffic ADD COLUMN ms REAL');}catch(\Throwable $e0){}//already there
-			$db->exec('PRAGMA user_version=2');
+			//v3: expires_at - NULL/0 = permanent block, else unix time a temporary (UA-rotation) block lapses
+			try{$db->exec('ALTER TABLE blocked_ips ADD COLUMN expires_at INTEGER');}catch(\Throwable $e0){}//already there
+			$db->exec('PRAGMA user_version=3');
 		}
 		commonBlockedIpsLastError('');
 		$pdo=$db;
@@ -27182,10 +27188,11 @@ function commonBlockedIpsLastError($msg=null){
 }
 //---------- begin function commonBlockedIpsList--------------------
 /**
-* @describe lookup map (ip_addr => 1) of every ACTIVE blocked IP, read from a
+* @describe lookup map (ip_addr => 1) of every ACTIVE, non-expired blocked IP, read from a
 *	snapshot cache in the WaSQL temp dir so the request path only touches SQLite
-*	when blocked_ips.db has changed since the snapshot was written. Returns an
-*	empty array when the firewall is unavailable (fail-open).
+*	when blocked_ips.db has changed since the snapshot was written. The snapshot
+*	stores each IP's expires_at (0 = permanent); expiry is evaluated at read time.
+*	Returns an empty array when the firewall is unavailable (fail-open).
 * @param force boolean - rebuild the snapshot even if it looks current
 * @return array
 * @usage if(isset(commonBlockedIpsList()[$ip])){...}
@@ -27194,23 +27201,33 @@ function commonBlockedIpsList($force=false){
 	static $list=null;
 	if($list!==null && !$force){return $list;}
 	$list=array();
+	$raw=null;
 	$path=commonBlockedIpsPath();
 	$cachefile=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_ips.snapshot';
 	if(!$force && is_file($path) && is_file($cachefile) && filemtime($cachefile) >= filemtime($path)){
-		$raw=@file_get_contents($cachefile);
-		$data=strlen($raw)?json_decode($raw,true):null;
-		if(is_array($data)){$list=$data;return $list;}
+		$json=@file_get_contents($cachefile);
+		$data=strlen($json)?json_decode($json,true):null;
+		if(is_array($data)){$raw=$data;}
 	}
-	$db=commonBlockedIpsDb();
-	if($db===null){return $list;}
-	try{
-		$q=$db->query('SELECT ip_addr FROM blocked_ips WHERE active=1');
-		foreach($q as $row){$list[$row['ip_addr']]=1;}
-		$tmp=$cachefile.'.'.getmypid().'.tmp';
-		if(@file_put_contents($tmp,json_encode($list))!==false){@rename($tmp,$cachefile);}
+	if($raw===null){
+		$db=commonBlockedIpsDb();
+		if($db===null){return $list;}
+		try{
+			$raw=array();
+			$q=$db->query('SELECT ip_addr,expires_at FROM blocked_ips WHERE active=1');
+			foreach($q as $row){$raw[$row['ip_addr']]=(int)$row['expires_at'];}
+			$tmp=$cachefile.'.'.getmypid().'.tmp';
+			if(@file_put_contents($tmp,json_encode($raw))!==false){@rename($tmp,$cachefile);}
+		}
+		catch(\Throwable $e){
+			error_log('commonBlockedIpsList: '.$e->getMessage());
+			return $list;
+		}
 	}
-	catch(\Throwable $e){
-		error_log('commonBlockedIpsList: '.$e->getMessage());
+	$now=time();
+	foreach($raw as $ip=>$exp){
+		//legacy snapshots stored ip=>1 (permanent); a real expiry is a unix time
+		if($exp==1 || $exp==0 || $exp>$now){$list[$ip]=1;}
 	}
 	return $list;
 }
@@ -27235,8 +27252,8 @@ function commonBlockedIpsClientIp(){
 /**
 * @describe true when an IP must never be firewalled: empty, loopback, RFC1918 /
 *	reserved ranges, or listed in $CONFIG['blocked_ips_allow'] (comma / space
-*	separated exact IPs). Keeps health checks and office IPs safe from a
-*	shared-list false positive.
+*	separated exact IPs or CIDR ranges such as 128.187.0.0/16). Keeps health
+*	checks, office IPs and campus networks safe from a shared-list false positive.
 * @param ip string
 * @return boolean
 * @usage if(commonBlockedIpsAllowed($ip)){return;}
@@ -27252,8 +27269,35 @@ function commonBlockedIpsAllowed($ip){
 	if(isset($CONFIG['blocked_ips_allow']) && strlen(trim($CONFIG['blocked_ips_allow']))){
 		$allow=preg_split('/[\s,;]+/',trim($CONFIG['blocked_ips_allow']));
 		if(in_array($ip,$allow,true)){return true;}
+		foreach($allow as $entry){
+			if(strpos($entry,'/')!==false && commonBlockedIpsInCidr($ip,$entry)){return true;}
+		}
 	}
 	return false;
+}
+//---------- begin function commonBlockedIpsInCidr--------------------
+/**
+* @describe true when an IP (v4 or v6) falls inside a CIDR range. Returns false for a
+*	malformed range or an address-family mismatch.
+* @param ip string
+* @param cidr string - e.g. 128.187.0.0/16 or 2001:db8::/32
+* @return boolean
+* @usage if(commonBlockedIpsInCidr('128.187.4.5','128.187.0.0/16')){...}
+*/
+function commonBlockedIpsInCidr($ip,$cidr){
+	$parts=explode('/',trim($cidr),2);
+	if(count($parts)!=2 || !isNum($parts[1])){return false;}
+	$a=@inet_pton($ip);
+	$b=@inet_pton($parts[0]);
+	if($a===false || $b===false || strlen($a)!=strlen($b)){return false;}
+	$bits=(int)$parts[1];
+	if($bits<0 || $bits>strlen($a)*8){return false;}
+	$bytes=intdiv($bits,8);
+	if($bytes>0 && substr($a,0,$bytes)!==substr($b,0,$bytes)){return false;}
+	$rem=$bits%8;
+	if($rem==0){return true;}
+	$mask=(0xFF << (8-$rem)) & 0xFF;
+	return (ord($a[$bytes]) & $mask)===(ord($b[$bytes]) & $mask);
 }
 //---------- begin function commonBlockedIpsDetect--------------------
 /**
@@ -27316,31 +27360,39 @@ function commonBlockedIpsDetect($uri,$ua=''){
 * @param uri string
 * @param ua string
 * @param event string - 'flagged' (new detection) or 'blocked' (known IP turned away)
+* @param ttl int - seconds a TEMPORARY block lasts (UA rotation); 0 = permanent. A temporary
+*	flag never downgrades an already-permanent block; a permanent flag (non-empty reason, ttl 0)
+*	upgrades a temporary one; an empty-reason 'blocked' event never changes the expiry.
 * @return void
 * @usage commonBlockedIpsFlag($ip,$hit['reason'],$hit['pattern'],$uri,$ua,'flagged');
 */
-function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged'){
+function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged',$ttl=0){
 	if(!strlen($ip)){return;}
 	$db=commonBlockedIpsDb();
 	if($db===null){return;}
 	$source=isset($_SERVER['HTTP_HOST'])?strtolower(trim($_SERVER['HTTP_HOST'])):'';
 	$now=time();
+	$ttl=(int)$ttl;
+	$exp=$ttl>0?$now+$ttl:null;
 	try{
 		$db->beginTransaction();
 		$up=$db->prepare("UPDATE blocked_ips SET hit_count=hit_count+1, last_seen=:now, last_source=:src,
-			reason=CASE WHEN :hasr=1 THEN :reason ELSE reason END,
-			pattern=CASE WHEN :hasp=1 THEN :pattern ELSE pattern END
+			reason=CASE WHEN CAST(:hasr AS INTEGER)=1 THEN :reason ELSE reason END,
+			pattern=CASE WHEN CAST(:hasp AS INTEGER)=1 THEN :pattern ELSE pattern END,
+			expires_at=CASE WHEN CAST(:ttl AS INTEGER)>0 THEN (CASE WHEN expires_at IS NULL OR expires_at=0 THEN expires_at ELSE :exp END)
+				WHEN CAST(:hasr AS INTEGER)=1 THEN NULL ELSE expires_at END
 			WHERE ip_addr=:ip");
 		$up->execute(array(
 			':now'=>$now, ':src'=>$source,
 			':hasr'=>strlen($reason)?1:0, ':reason'=>$reason,
 			':hasp'=>strlen($pattern)?1:0, ':pattern'=>$pattern,
+			':ttl'=>$ttl, ':exp'=>$exp,
 			':ip'=>$ip
 		));
 		if($up->rowCount()==0){
-			$ins=$db->prepare("INSERT OR IGNORE INTO blocked_ips (ip_addr,reason,pattern,user_agent,source,last_source,hit_count,active,first_seen,last_seen)
-				VALUES (:ip,:reason,:pattern,:ua,:src,:src,1,1,:now,:now)");
-			$ins->execute(array(':ip'=>$ip,':reason'=>$reason,':pattern'=>$pattern,':ua'=>substr((string)$ua,0,500),':src'=>$source,':now'=>$now));
+			$ins=$db->prepare("INSERT OR IGNORE INTO blocked_ips (ip_addr,reason,pattern,user_agent,source,last_source,hit_count,active,first_seen,last_seen,expires_at)
+				VALUES (:ip,:reason,:pattern,:ua,:src,:src,1,1,:now,:now,:exp)");
+			$ins->execute(array(':ip'=>$ip,':reason'=>$reason,':pattern'=>$pattern,':ua'=>substr((string)$ua,0,500),':src'=>$source,':now'=>$now,':exp'=>$exp));
 		}
 		$h=$db->prepare("INSERT INTO blocked_history (ip_addr,source,event,reason,pattern,request_uri,user_agent,created_at)
 			VALUES (:ip,:src,:event,:reason,:pattern,:uri,:ua,:now)");
@@ -27450,11 +27502,15 @@ function commonBlockedIpsCheck(){
 			commonBlockedIpsFlag($ip,$hit['reason'],$hit['pattern'],$uri,$ua,'flagged');
 			commonBlockedIpsForbidden();
 		}
-		//user-agent rotation: one IP presenting 5+ different browsers in 10 minutes is a bot
+		//user-agent rotation: one IP presenting many different browsers in 10 minutes is likely a bot.
+		//The block is TEMPORARY (a shared campus/apartment NAT must not stay blocked forever).
+		global $CONFIG;
+		$limit=(isset($CONFIG['blocked_ips_ua_limit']) && isNum($CONFIG['blocked_ips_ua_limit']) && (int)$CONFIG['blocked_ips_ua_limit']>0)?(int)$CONFIG['blocked_ips_ua_limit']:10;
+		$ttl=(isset($CONFIG['blocked_ips_ua_ttl']) && isNum($CONFIG['blocked_ips_ua_ttl']) && (int)$CONFIG['blocked_ips_ua_ttl']>0)?(int)$CONFIG['blocked_ips_ua_ttl']:3600;
 		$rowid=0;
 		$agents=commonBlockedIpsLogRequest($ip,$uri,$ua,600,$rowid);
-		if($agents>=5){
-			commonBlockedIpsFlag($ip,'UA rotation: '.$agents.' agents in 10 min','ua-rotation',$uri,$ua,'flagged');
+		if($agents>=$limit){
+			commonBlockedIpsFlag($ip,'UA rotation: '.$agents.' agents in 10 min','ua-rotation',$uri,$ua,'flagged',$ttl);
 			commonBlockedIpsForbidden();
 		}
 		//record how long the firewall itself took, so the admin page can show whether it slows real visitors
