@@ -27073,9 +27073,9 @@ function xmlHeader($params=array()){
 	  - Logged-in users are never firewalled (guards against a shared-list
 	    false positive locking an admin out of every site).
 	  - The request path reads a mtime-checked snapshot, not SQLite directly.
-	  - UA-rotation blocks are TEMPORARY: $CONFIG['blocked_ips_ua_limit'] (distinct
-	    agents in 10 min, default 10) and $CONFIG['blocked_ips_ua_ttl'] (seconds,
-	    default 3600). Signature hits stay permanent.
+	  - The 403 page shows a reference code (FW-XXXXXXXX, commonBlockedIpsCode) that
+	    can be pasted into the admin Firewall search box to find the IP + reason.
+	  - UA-rotation blocking was removed (it flagged real people on shared IPs).
 	  - $CONFIG['blocked_ips_allow'] accepts exact IPs and CIDR ranges.
 	  - ON by default. blocked_ips.db is auto-created (empty, schema only) on the
 	    first non-allowlisted request, then builds itself from probe hits. SFTP a
@@ -27470,8 +27470,20 @@ function commonBlockedIpsFlush(){
 function commonBlockedIpsForbidden(){
 	http_response_code(403);
 	@header('Content-Type: text/html; charset=utf-8');
-	echo '<h1>403 Forbidden</h1>Access denied.<br><br>If you think this is a mistake, please contact the site owner.';
+	$code=commonBlockedIpsCode(commonBlockedIpsClientIp());
+	echo '<h1>403 Forbidden</h1>Access denied.<br><br>If you think this is a mistake, please contact the site owner and give them this code: <b>'.$code.'</b>';
 	exit;
+}
+//---------- begin function commonBlockedIpsCode--------------------
+/**
+* @describe short reference code for an IP, shown on the 403 page. Paste it into the
+*	search box on the admin Firewall page to find the IP and the reason it was blocked.
+* @param ip string
+* @return string  e.g. FW-1A2B3C4D
+* @usage $code=commonBlockedIpsCode($ip);
+*/
+function commonBlockedIpsCode($ip){
+	return 'FW-'.strtoupper(substr(md5('wasql-firewall|'.$ip),0,8));
 }
 //---------- begin function commonBlockedIpsCheck--------------------
 /**
@@ -27502,17 +27514,9 @@ function commonBlockedIpsCheck(){
 			commonBlockedIpsFlag($ip,$hit['reason'],$hit['pattern'],$uri,$ua,'flagged');
 			commonBlockedIpsForbidden();
 		}
-		//user-agent rotation: one IP presenting many different browsers in 10 minutes is likely a bot.
-		//The block is TEMPORARY (a shared campus/apartment NAT must not stay blocked forever).
-		global $CONFIG;
-		$limit=(isset($CONFIG['blocked_ips_ua_limit']) && isNum($CONFIG['blocked_ips_ua_limit']) && (int)$CONFIG['blocked_ips_ua_limit']>0)?(int)$CONFIG['blocked_ips_ua_limit']:10;
-		$ttl=(isset($CONFIG['blocked_ips_ua_ttl']) && isNum($CONFIG['blocked_ips_ua_ttl']) && (int)$CONFIG['blocked_ips_ua_ttl']>0)?(int)$CONFIG['blocked_ips_ua_ttl']:3600;
+		//log the request for the admin traffic stats / timing (no UA-rotation blocking: it flagged real people)
 		$rowid=0;
-		$agents=commonBlockedIpsLogRequest($ip,$uri,$ua,600,$rowid);
-		if($agents>=$limit){
-			commonBlockedIpsFlag($ip,'UA rotation: '.$agents.' agents in 10 min','ua-rotation',$uri,$ua,'flagged',$ttl);
-			commonBlockedIpsForbidden();
-		}
+		commonBlockedIpsLogRequest($ip,$uri,$ua,600,$rowid);
 		//record how long the firewall itself took, so the admin page can show whether it slows real visitors
 		if($rowid>0){
 			$ms=round((microtime(true)-$t0)*1000,2);

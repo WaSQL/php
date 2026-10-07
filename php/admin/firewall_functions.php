@@ -253,7 +253,15 @@ function firewallListGrid(){
 	$where=array(); $args=array();
 	if($p['status']==='active'){$where[]='active=1';}
 	elseif($p['status']==='inactive'){$where[]='active=0';}
-	if(strlen($p['search'])){
+	if(preg_match('/^FW-[0-9A-F]{8}$/i',$p['search'])){
+		//403 reference code: match it against every known IP
+		$codeips=array();
+		foreach($db->query('SELECT DISTINCT ip_addr FROM blocked_ips')->fetchAll(PDO::FETCH_COLUMN) as $codeip){
+			if(strcasecmp(commonBlockedIpsCode($codeip),$p['search'])==0){$codeips[]=$db->quote($codeip);}
+		}
+		$where[]=count($codeips)?'ip_addr IN ('.implode(',',$codeips).')':'0=1';
+	}
+	elseif(strlen($p['search'])){
 		$where[]='(ip_addr LIKE :s OR pattern LIKE :s OR source LIKE :s OR reason LIKE :s OR notes LIKE :s)';
 		$args[':s']='%'.$p['search'].'%';
 	}
@@ -363,7 +371,15 @@ function firewallHistoryGrid(){
 	$p=firewallHistoryParams();
 	$where=array(); $args=array();
 	if($p['event']!=='all'){$where[]='event=:e'; $args[':e']=$p['event'];}
-	if(strlen($p['search'])){
+	if(preg_match('/^FW-[0-9A-F]{8}$/i',$p['search'])){
+		//403 reference code: match it against every known IP
+		$codeips=array();
+		foreach($db->query('SELECT DISTINCT ip_addr FROM blocked_ips')->fetchAll(PDO::FETCH_COLUMN) as $codeip){
+			if(strcasecmp(commonBlockedIpsCode($codeip),$p['search'])==0){$codeips[]=$db->quote($codeip);}
+		}
+		$where[]=count($codeips)?'ip_addr IN ('.implode(',',$codeips).')':'0=1';
+	}
+	elseif(strlen($p['search'])){
 		$where[]='(ip_addr LIKE :s OR pattern LIKE :s OR source LIKE :s OR request_uri LIKE :s)';
 		$args[':s']='%'.$p['search'].'%';
 	}
