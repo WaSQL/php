@@ -1041,6 +1041,10 @@ function oracleAddDBRecord($params){
     }
 	//connect
 	$dbh_oracle=oracleDBConnect($params);
+	if(!commonIsResourceOrObject($dbh_oracle)){
+		global $DATABASE;
+		return $DATABASE['_lastquery']['error'];
+	}
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	//populate cdate and cuser fields
 	if(isset($fields['cdate']) && !isset($params['cdate'])){
@@ -1319,6 +1323,7 @@ function oracleDBConnect($params=array()){
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
 		debugValue("oracleDBConnect error: no connect params".printValue($params));
+		oracleSetConnectError('no connect params');
 		return null;
 	}
 	// Inject CONNECT_TIMEOUT into TNS descriptor if not already set.
@@ -1333,6 +1338,7 @@ function oracleDBConnect($params=array()){
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
 			debugValue("oracleDBConnect single connect error:{$err}".printValue($params));
+			oracleSetConnectError($err);
 			return null;
 		}
 		if(isset($params['-timeout'])){
@@ -1349,6 +1355,7 @@ function oracleDBConnect($params=array()){
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
 			debugValue("oracleDBConnect resource error. ".printValue($err).printValue($params));
+			oracleSetConnectError(json_encode($err));
 			return null;
 
 		}
@@ -1359,8 +1366,23 @@ function oracleDBConnect($params=array()){
 	}
 	catch (Exception $e) {
 		debugValue("oracleDBConnect exception" . printValue($e));
+		oracleSetConnectError($e->getMessage());
 		return null;
 	}
+}
+//---------- begin function oracleSetConnectError ----------
+/**
+* @describe records an Oracle connection failure in $DATABASE['_lastquery']['error'] so callers
+*	(and dbLastError()) can see why a query returned nothing instead of the request fataling
+* @param err string - error message or JSON from oci_error()
+* @return boolean false
+* @usage oracleSetConnectError(json_encode(oci_error()));
+*/
+function oracleSetConnectError($err){
+	global $DATABASE;
+	if(!isset($DATABASE['_lastquery']) || !is_array($DATABASE['_lastquery'])){$DATABASE['_lastquery']=array();}
+	$DATABASE['_lastquery']['error']='oracle connect failed: '.$err;
+	return false;
 }
 //---------- begin function oracleEditDBRecord ----------
 /**
@@ -1409,6 +1431,10 @@ function oracleEditDBRecord($params,$id=0,$opts=array()){
 	global $USER;
 	//get the database handle
 	$dbh_oracle=oracleDBConnect($params);
+	if(!commonIsResourceOrObject($dbh_oracle)){
+		global $DATABASE;
+		return $DATABASE['_lastquery']['error'];
+	}
 	$fields=oracleGetDBFieldInfo($params['-table'],$params);
 	$values=array();
 	$bindars=array();
@@ -1604,6 +1630,10 @@ function oracleExecuteSQL($query='',$params=array()){
 	global $USER;
 	//connect
 	$dbh_oracle=oracleDBConnect($params);
+	if(!commonIsResourceOrObject($dbh_oracle)){
+		debugValue($DATABASE['_lastquery']);
+		return 0;
+	}
 	if(!isset($params['setmodule'])){$params['setmodule']=true;}
 	$stid = oci_parse($dbh_oracle, $query);
 	if(!$stid){
@@ -1806,6 +1836,7 @@ function oracleGetDBFields($table,$params=array()){
 function oracleGetDBFieldInfo($table,$params=array()){
 	//connect
 	$dbh_oracle=oracleDBConnect($params);
+	if(!commonIsResourceOrObject($dbh_oracle)){return array();}
 	//primary keys
 	$pkeys=oracleGetDBTablePrimaryKeys($table,$params);
 	//echo $table.printValue($pkeys);exit;
@@ -2537,6 +2568,10 @@ function oracleQueryResults($query='',$params=array()){
 	global $USER;
 	//connect
 	$dbh_oracle=oracleDBConnect($params);
+	if(!commonIsResourceOrObject($dbh_oracle)){
+		debugValue($DATABASE['_lastquery']);
+		return 0;
+	}
 	//check for -process
 	if(isset($params['-process']) && !function_exists($params['-process'])){
 		$DATABASE['_lastquery']['error']='invalid process';

@@ -37,6 +37,12 @@
 		<span class="icon-prompt"></span> 
 		SQL Prompt
 	</h2>
+	<div style="align-self:center;display:flex;align-items:center;gap:10px;">
+	<span id="sqlprompt_ping_summary" class="w_small w_gray"></span>
+	<label class="w_small w_nowrap" id="sqlprompt_ping_filter" style="display:none;"><input type="checkbox" onchange="sqlpromptPingFilter(this.checked);"> Show only failing</label>
+	<button type="button" id="sqlprompt_ping_export" style="display:none;font-size:0.9rem;padding:0.20rem 0.5rem;" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" onclick="return sqlpromptPingExport();"><span class="icon-export" style="margin-right:3px;"></span> Export All</button>
+	<button type="button" id="sqlprompt_ping_export_failed" style="display:none;font-size:0.9rem;padding:0.20rem 0.5rem;" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" onclick="return sqlpromptPingExport(true);"><span class="icon-export" style="margin-right:3px;"></span> Export Failed</button>
+	<button type="button" id="sqlprompt_ping_btn" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" style="font-size:0.9rem;padding:0.20rem 0.5rem;" onclick="return sqlpromptPingAll();"><span class="icon-database" style="margin-right:3px;"></span> Check connections</button>
 	<view:history>
 	<div style="align-self: center;">
 		<span class="icon-circle w_red" title="Query Logging is On" style="margin-right:10px;"></span>
@@ -44,6 +50,7 @@
 	</div>
 	</view:history>
 	<?=renderViewIf($CONFIG['log_queries']==1,'history');?>
+	</div>
 </div>
 <div style="display:flex;justify-content: flex-start;align-items: flex-start;width:100%;">
 	<div data-content="tables and fields">

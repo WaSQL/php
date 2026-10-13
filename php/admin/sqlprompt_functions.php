@@ -18,6 +18,71 @@ function sqlpromptQueryResults($dbname,$query,$params=array()){
 	}
 	return dbQueryResults($dbname,$query,$params);
 }
+//---------- begin function sqlpromptTestConnection ----------
+/**
+* @describe Tests whether a configured database connection is reachable by running a trivial
+*	query and timing it. A failed db* read returns an empty array (not an error string), so
+*	dbLastError() is checked afterward to tell a failure from a genuine result.
+* @param dbname string - database name as configured in config.xml
+* @return array - ['db'=>name,'dbtype'=>string,'dbhost'=>string,'ok'=>bool,'ms'=>int,'error'=>string,'skipped'=>bool]
+* @usage $res=sqlpromptTestConnection('mydb');
+*/
+function sqlpromptTestConnection($dbname){
+	global $DATABASE;
+	$res=array('db'=>$dbname,'ok'=>false,'ms'=>0,'error'=>'','skipped'=>false);
+	if(!isset($DATABASE[$dbname])){
+		$res['error']='Unknown database';
+		return $res;
+	}
+	$type=strtolower($DATABASE[$dbname]['dbtype']);
+	$res['dbtype']=$type;
+	$res['dbhost']=isset($DATABASE[$dbname]['dbhost'])?$DATABASE[$dbname]['dbhost']:'';
+	switch($type){
+		case 'oracle':$sql='SELECT 1 FROM DUAL';break;
+		case 'hana':$sql='SELECT 1 FROM DUMMY';break;
+		case 'db2':case 'ibm':$sql='SELECT 1 FROM sysibm.sysdummy1';break;
+		case 'firebird':$sql='SELECT 1 FROM RDB$DATABASE';break;
+		case 'memgraph':$sql='RETURN 1 AS ok';break;
+		case 'msaccess':case 'msexcel':case 'mscsv':
+			//file-based ODBC sources: no FROM-less SELECT, so verify the file/folder then list its tables
+			$path=isset($DATABASE[$dbname]['dbname'])?$DATABASE[$dbname]['dbname']:'';
+			$res['dbhost']=$path;
+			$start=microtime(true);
+			if($type=='mscsv'){$found=is_dir($path);}
+			else{$found=is_file($path);}
+			if(!$found){
+				$res['error']='Not found: '.$path;
+			}
+			else{
+				$tables=dbGetTables($dbname);
+				$err=dbLastError();
+				if(strlen($err)){$res['error']=$err;}
+				else{$res['ok']=true;}
+			}
+			$res['ms']=(int)round((microtime(true)-$start)*1000);
+			return $res;
+		break;
+		case 'elastic':case 'splunk':case 'gigya':case 'ccv2':
+			//REST APIs, not SQL - a query could fail on a healthy service, so no generic ping
+			$res['skipped']=true;
+			$res['error']='Not tested ('.$type.' is a REST API)';
+			return $res;
+		break;
+		default:$sql='SELECT 1 AS ok';break;
+	}
+	$start=microtime(true);
+	$recs=sqlpromptQueryResults($dbname,$sql);
+	$res['ms']=(int)round((microtime(true)-$start)*1000);
+	if(is_string($recs) && strlen($recs)){
+		$res['error']=$recs;
+	}
+	elseif(!is_array($recs) || !count($recs)){
+		$err=dbLastError();
+		$res['error']=strlen($err)?$err:'No result returned';
+	}
+	else{$res['ok']=true;}
+	return $res;
+}
 function sqlpromptHTMLHead($title=''){
 	$cssfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyCssFile('wacss,bulma');
 	$jsfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyJsFile('wacss,bulma');

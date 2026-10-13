@@ -50,6 +50,25 @@
 		$_SESSION['db']=$db;
 	}
 	switch(strtolower($_REQUEST['func'])){
+		case 'ping':
+			//connection health check for one database tab - returns JSON
+			session_write_close();
+			$ping=array('db'=>$_REQUEST['dbname'],'ok'=>false,'ms'=>0,'error'=>'Access denied','skipped'=>false);
+			$pdb=isset($DATABASE[$_REQUEST['dbname']])?$DATABASE[$_REQUEST['dbname']]:array();
+			$allowed=count($pdb)?true:false;
+			if($allowed && isset($pdb['access']) && strtolower($pdb['access']) != 'all'){
+				$allowed=in_array($USER['username'],preg_split('/\,/',strtolower($pdb['access'])));
+			}
+			if($allowed){
+				if(isset($pdb["dbuser_{$USER['username']}"])){$DATABASE[$pdb['name']]['dbuser']=$pdb["dbuser_{$USER['username']}"];}
+				if(isset($pdb["dbpass_{$USER['username']}"])){$DATABASE[$pdb['name']]['dbpass']=$pdb["dbpass_{$USER['username']}"];}
+				$ping=sqlpromptTestConnection($pdb['name']);
+			}
+			while(ob_get_level()){ob_end_clean();}
+			header('Content-Type: application/json');
+			echo json_encode($ping);
+			exit;
+		break;
 		case 'show_history':
 			$db=$_REQUEST['db'];
 			setView('show_history',1);

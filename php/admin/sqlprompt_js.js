@@ -86,6 +86,150 @@ function sqlpromptSetDB(db,schema){
 	else{document.sqlprompt.schema.value='';}
 	return wacss.ajaxGet('/php/admin.php','table_fields',params)
 }
+/**
+* @describe Tests every database tab (current + dropdown entries) and marks each with a status dot.
+*/
+function sqlpromptPingAll(){
+	let btn=document.getElementById('sqlprompt_ping_btn');
+	let sum=document.getElementById('sqlprompt_ping_summary');
+	let els=Array.from(document.querySelectorAll('button.is-active[data-db], a[data-db]'));
+	let names=[];
+	els.forEach(function(el){if(names.indexOf(el.dataset.db)==-1){names.push(el.dataset.db);}});
+	if(!names.length){return false;}
+	btn.disabled=true;
+	sum.textContent='Checking 0/'+names.length+'...';
+	let results={},done=0,queue=names.slice();
+	function finish(){
+		btn.disabled=false;
+		let ok=0,fail=0,skip=0;
+		names.forEach(function(n){let r=results[n];if(r.skipped){skip++;}else if(r.ok){ok++;}else{fail++;}});
+		sum.textContent=ok+' ok, '+fail+' failed'+(skip?', '+skip+' skipped':'');
+		sum.style.color=fail?'#c0392b':'#27ae60';
+		document.getElementById('sqlprompt_ping_filter').style.display=fail?'':'none';
+		window.sqlpromptPingResults=results;
+		document.getElementById('sqlprompt_ping_export').style.display='';
+		document.getElementById('sqlprompt_ping_export_failed').style.display=fail?'':'none';
+		sqlpromptPingPaint(els,results);
+	}
+	function next(){
+		let n=queue.shift();
+		if(n===undefined){return;}
+		let ctl=new AbortController();
+		let timer=setTimeout(function(){ctl.abort();},8000);
+		fetch('/php/admin.php?_menu=sqlprompt&func=ping&AjaxRequestUniqueId=1&dbname='+encodeURIComponent(n),{signal:ctl.signal,credentials:'same-origin'})
+			.then(function(r){return r.text();})
+			.then(function(t){
+				let a=t.indexOf('{'),z=t.lastIndexOf('}');
+				try{return JSON.parse(t.substring(a,z+1));}
+				catch(e){return {db:n,ok:false,ms:0,skipped:false,error:'Unexpected response: '+t.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().substring(0,200)};}
+			})
+			.then(function(r){results[n]=r;})
+			.catch(function(e){results[n]={db:n,ok:false,ms:8000,skipped:false,error:(e&&e.name=='AbortError')?'Timed out after 8s':'Request failed: '+e};})
+			.finally(function(){
+				clearTimeout(timer);
+				done++;
+				sum.textContent='Checking '+done+'/'+names.length+'...';
+				if(done==names.length){finish();}else{next();}
+			});
+	}
+	for(let i=0;i<4&&i<names.length;i++){next();}
+	return false;
+}
+/**
+* @describe Builds the sorted (dbtype,name) row list from the last connection check.
+* @return array - [{name,dbtype,dbhost,status,ms,state}] where state is ok|failed|skipped
+*/
+function sqlpromptPingRows(){
+	let res=window.sqlpromptPingResults||{};
+	let rows=Object.keys(res).map(function(n){
+		let r=res[n];
+		let info=sqlpromptDbInfo(n);
+		let state=r.skipped?'skipped':(r.ok?'ok':'failed');
+		return {name:n,dbtype:r.dbtype||info.dbtype,dbhost:r.dbhost||info.dbhost,status:r.skipped?'skipped':(r.ok?'ok':'failed: '+(r.error||'unknown')),ms:r.ms||0,state:state};
+	});
+	rows.sort(function(a,b){return a.dbtype.localeCompare(b.dbtype)||a.name.localeCompare(b.name);});
+	return rows;
+}
+/**
+* @describe Downloads the last connection check as CSV: name,dbtype,dbhost,connection_status sorted by dbtype,name. Pass true to export only failed connections.
+*/
+function sqlpromptPingExport(failedOnly){
+	let rows=sqlpromptPingRows();
+	if(failedOnly){rows=rows.filter(function(r){return r.state=='failed';});}
+	function q(v){v=String(v);return v.search(/[",\r\n]/)>-1?'"'+v.replace(/"/g,'""')+'"':v;}
+	let NL=String.fromCharCode(13,10);
+	let csv='name,dbtype,dbhost,connection_status'+NL+rows.map(function(r){return [r.name,r.dbtype,r.dbhost,r.status].map(q).join(',');}).join(NL)+NL;
+	let a=document.createElement('a');
+	a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+	a.download=failedOnly?'db_connections_failed.csv':'db_connections.csv';
+	document.body.appendChild(a);a.click();a.remove();
+	return false;
+}
+/**
+* @describe Reads DBType/DBHost for a database from the details tooltip tables already on the page.
+*/
+function sqlpromptDbInfo(name){
+	let info={dbtype:'',dbhost:''};
+	let box=document.getElementById(name+'_details')||document.getElementById('current_db_details');
+	if(!box){return info;}
+	box.querySelectorAll('tr').forEach(function(tr){
+		let td=tr.querySelectorAll('td');
+		if(td.length<2){return;}
+		let k=td[0].textContent.trim().toLowerCase();
+		if(k=='dbtype'){info.dbtype=td[1].textContent.trim();}
+		if(k=='dbhost'){info.dbhost=td[1].textContent.trim();}
+	});
+	return info;
+}
+function sqlpromptPingPaint(els,results){
+	let groupFail={};
+	els.forEach(function(el){
+		let r=results[el.dataset.db];
+		if(!r){return;}
+		let dot=el.querySelector('.sqlprompt-dot');
+		if(!dot){
+			dot=document.createElement('span');
+			dot.className='sqlprompt-dot';
+			dot.style.cssText='display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;';
+			el.insertBefore(dot,el.firstChild);
+		}
+		dot.style.background=r.skipped?'#aaa':(r.ok?'#27ae60':'#c0392b');
+		dot.title=r.skipped?r.error:(r.ok?'OK ('+r.ms+' ms)':'FAILED: '+r.error);
+		el.dataset.pingfail=(!r.ok&&!r.skipped)?'1':'0';
+		let dd=el.closest('.wacss_dropdown');
+		if(dd&&el.dataset.pingfail=='1'){
+			let key=dd.querySelector(':scope > button').dataset.pinggroup;
+			groupFail[key]=(groupFail[key]||0)+1;
+		}
+	});
+	document.querySelectorAll('.wacss_dropdown > button').forEach(function(gb){
+		if(!gb.dataset.pinggroup){gb.dataset.pinggroup=gb.textContent.trim();}
+		let old=gb.querySelector('.sqlprompt-badge');
+		if(old){old.remove();}
+		let cnt=groupFail[gb.dataset.pinggroup];
+		if(cnt){
+			let b=document.createElement('span');
+			b.className='sqlprompt-badge';
+			b.style.cssText='background:#c0392b;color:#fff;border-radius:8px;padding:0 6px;margin-left:5px;font-size:0.75rem;';
+			b.textContent=cnt+' failing';
+			gb.appendChild(b);
+		}
+	});
+	let filt=document.querySelector('#sqlprompt_ping_filter input');
+	if(filt&&filt.checked){sqlpromptPingFilter(true);}
+}
+function sqlpromptPingFilter(on){
+	document.querySelectorAll('.wacss_dropdown').forEach(function(dd){
+		let any=false;
+		dd.querySelectorAll('a[data-db]').forEach(function(a){
+			let row=a.parentNode.parentNode;
+			let show=!on||a.dataset.pingfail=='1';
+			row.style.display=show?'':'none';
+			if(show){any=true;}
+		});
+		dd.style.display=(!on||any)?'':'none';
+	});
+}
 function sqlpromptShowHistory(){
 	let params={_menu:'sqlprompt',func:'show_history',db:document.sqlprompt.db.value,schema:document.sqlprompt.schema.value};
 	params.title='User History: '+params.db;
