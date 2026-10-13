@@ -259,10 +259,10 @@ function sqlpromptSubmit(frm){
 			//console.log('section selected: length:'+str.length);
 			//console.log(str);
 			frm.sql_select.value=str;
-			return wacss.ajaxPost(frm,'sqlprompt_results');
+			return sqlpromptRun(frm);
 		}
 		frm.sql_select.value='';
-		return wacss.ajaxPost(frm,'sqlprompt_results');
+		return sqlpromptRun(frm);
 	}
 	else if(undefined != obj.editor){
 		//store editor_content
@@ -281,11 +281,88 @@ function sqlpromptSubmit(frm){
 			//console.log('section selected: length:'+str.length);
 			//console.log(str);
 			frm.sql_select.value=str;
-			return wacss.ajaxPost(frm,'sqlprompt_results');
+			return sqlpromptRun(frm);
 		}
 		frm.sql_select.value='';
-		return wacss.ajaxPost(frm,'sqlprompt_results');
+		return sqlpromptRun(frm);
 	}
+	return false;
+}
+/**
+* @name sqlpromptRun
+* @describe Runs the SQL Prompt form like wacss.ajaxPost, but never fails silently: shows a live elapsed timer with a
+*	Cancel button, after 15s automatically tests the selected database connection and reports why it may be stuck, and turns an
+*	empty/cut-off response or network error into a visible message instead of a blank results area.
+* @param frm object - the sqlprompt form
+* @return boolean false
+* @usage return sqlpromptRun(document.sqlprompt);
+*/
+function sqlpromptRun(frm){
+	let div=document.getElementById('sqlprompt_results');
+	if(!div){return false;}
+	if(window.sqlpromptRunning){window.sqlpromptRunning.cancel(true);}
+	let dbname=frm.db.value;
+	function esc(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+	function fmt(s){return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
+	let started=Date.now(),timer=null,checked=false,finished=false;
+	let ctl=new AbortController();
+	div.innerHTML='<div class="w_padtop" style="padding:10px;">'
+		+'<div><span class="icon-spin4 spin"></span> Running on <b>'+esc(dbname)+'</b> &mdash; <span id="sqlprompt_elapsed">0:00</span> '
+		+'<a href="#" id="sqlprompt_cancel" style="margin-left:10px;">cancel</a></div>'
+		+'<div id="sqlprompt_diag" class="w_small" style="margin-top:8px;"></div></div>';
+	function diag(html){let d=document.getElementById('sqlprompt_diag');if(d){d.innerHTML=html;}}
+	function stop(){finished=true;if(timer){clearInterval(timer);timer=null;}if(window.sqlpromptRunning===handle){window.sqlpromptRunning=null;}}
+	function checkConnection(){
+		diag('<span class="w_gray">Testing the connection to '+esc(dbname)+'...</span>');
+		fetch('/php/admin.php?_menu=sqlprompt&func=ping&AjaxRequestUniqueId=1&dbname='+encodeURIComponent(dbname),{credentials:'same-origin'})
+			.then(function(r){return r.text();})
+			.then(function(t){
+				if(finished){return;}
+				let r;
+				try{r=JSON.parse(t.substring(t.indexOf('{'),t.lastIndexOf('}')+1));}catch(e){r=null;}
+				if(!r){diag('<span class="w_red">Connection test returned an unexpected response: '+esc(t.replace(/<[^>]*>/g,' ').substring(0,200))+'</span>');return;}
+				if(r.skipped){diag('<span class="w_gray">'+esc(r.error)+'</span>');return;}
+				if(r.ok){diag('<span class="w_green">&#10003; The connection to '+esc(dbname)+' is fine ('+r.ms+' ms), so this query itself is slow or blocked (locks, large scan, or a limit on the server). Cancel and try a smaller query.</span>');}
+				else{diag('<span class="w_red">&#10007; Connection to '+esc(dbname)+' failed: '+esc(r.error)+'</span>');}
+			})
+			.catch(function(e){diag('<span class="w_red">Connection test failed to run: '+esc(e)+'</span>');});
+	}
+	let handle={cancel:function(silent){
+		ctl.abort();stop();
+		if(!silent){div.innerHTML='<div style="padding:10px;" class="w_orange">&#9888; Cancelled in the browser after '+fmt(Math.round((Date.now()-started)/1000))+'. The server may keep running the query until it finishes.</div>';}
+	}};
+	window.sqlpromptRunning=handle;
+	document.getElementById('sqlprompt_cancel').onclick=function(){handle.cancel();return false;};
+	timer=setInterval(function(){
+		let s=Math.round((Date.now()-started)/1000);
+		let el=document.getElementById('sqlprompt_elapsed');
+		if(el){el.textContent=fmt(s);}
+		if(s>=15 && !checked){checked=true;checkConnection();}
+	},1000);
+	let data=new FormData(frm);
+	data.append('AjaxRequestUniqueId',wacss.ajaxUniqueID());
+	fetch(frm.getAttribute('action'),{method:'POST',body:data,signal:ctl.signal,credentials:'same-origin'})
+		.then(function(r){return r.text().then(function(t){return {status:r.status,text:t};});})
+		.then(function(r){
+			if(finished){return;}
+			let secs=Math.round((Date.now()-started)/1000);
+			stop();
+			if(!r.text.trim().length || r.status>=400){
+				div.innerHTML='<div style="padding:10px;" class="w_red">&#9888; '
+					+(r.status>=400?'The server answered HTTP '+r.status:'The server returned an empty response')+' after '+fmt(secs)+'.<br>'
+					+'This usually means the request was cut off before it finished: PHP hit max_execution_time (or crashed), or Apache/a proxy timed out. '
+					+'Check the PHP and Apache error logs, and try <code>checkdbs name='+esc(dbname)+'</code> to test the connection itself.</div>';
+				return;
+			}
+			wacss.ajaxProcessResponse({div:'sqlprompt_results',processing:undefined,recenter:'',ajaxevent:'load',ajaxtext:r.text,responseText:r.text});
+		})
+		.catch(function(e){
+			if(finished || (e&&e.name==='AbortError')){return;}
+			let secs=Math.round((Date.now()-started)/1000);
+			stop();
+			div.innerHTML='<div style="padding:10px;" class="w_red">&#9888; The connection to the web server was lost after '+fmt(secs)+' ('+esc(e)+'). '
+				+'The web server or PHP stopped the request; check the PHP/Apache error logs, and try <code>checkdbs name='+esc(dbname)+'</code>.</div>';
+		});
 	return false;
 }
 function sqlpromptExport(){
