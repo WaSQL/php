@@ -71,8 +71,8 @@ function sqlpromptTestConnection($dbname){
 		default:$sql='SELECT 1 AS ok';break;
 	}
 	$start=microtime(true);
-	//sqlpromptQueryResults routes groovy="1" databases through the Groovy server; its default 300s timeout is too long for a health check
-	$recs=sqlpromptQueryResults($dbname,$sql,array('-timeout'=>10));
+	//sqlpromptQueryResults routes groovy="1" databases through the Groovy server; its default 300s timeout is too long for a health check (18s stays under the 20s checkdbs allows per database)
+	$recs=sqlpromptQueryResults($dbname,$sql,array('-timeout'=>18));
 	$res['ms']=(int)round((microtime(true)-$start)*1000);
 	if(is_string($recs) && strlen($recs)){
 		$res['error']=$recs;
@@ -117,12 +117,12 @@ function sqlpromptCheckDbsParseArgs($str){
 *	go out so the pings are not serialized behind the session lock.
 * @param filters array [optional] - attribute=>value pairs a database's config must match to be tested (case-insensitive,
 *	comma list = any of, * wildcards allowed). Password attributes cannot be filtered on.
-* @param timeout int [optional] - seconds to wait for each database before calling it timed out. Default 10
+* @param timeout int [optional] - seconds to wait for each database before calling it timed out. Default 20
 * @param parallel int [optional] - how many databases to test at once. Default 8
 * @return array - rows of name,dbtype,dbhost,connection_status,ms sorted by dbtype,name
 * @usage $recs=sqlpromptCheckDbs();
 */
-function sqlpromptCheckDbs($filters=array(),$timeout=10,$parallel=8){
+function sqlpromptCheckDbs($filters=array(),$timeout=20,$parallel=8){
 	global $DATABASE;
 	global $CONFIG;
 	global $USER;
