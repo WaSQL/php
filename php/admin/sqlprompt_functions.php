@@ -84,6 +84,30 @@ function sqlpromptTestConnection($dbname){
 	else{$res['ok']=true;}
 	return $res;
 }
+//---------- begin function sqlpromptCheckDbsParseArgs ----------
+/**
+* @describe Parses the arguments after the checkdbs keyword into a status filter and attribute filters.
+*	Bare words fail/failed/ok select the result to keep; attribute=value pairs limit which databases are tested.
+* @param str string - i.e. "fail dbtype=ctree,mssql dbhost=*.doterra.net"
+* @return array - ['status'=>'failed'|'ok'|'','filters'=>[attribute=>value,...]]
+* @usage $args=sqlpromptCheckDbsParseArgs('fail dbtype=ctree');
+*/
+function sqlpromptCheckDbsParseArgs($str){
+	$out=array('status'=>'','filters'=>array());
+	$str=trim($str);
+	if(!strlen($str)){return $out;}
+	if(preg_match_all('/([A-Za-z0-9_\-]+)\s*=\s*("[^"]*"|\'[^\']*\'|\S+)/',$str,$ms,PREG_SET_ORDER)){
+		foreach($ms as $m){
+			$out['filters'][strtolower($m[1])]=trim($m[2],'"\'');
+		}
+		$str=preg_replace('/([A-Za-z0-9_\-]+)\s*=\s*("[^"]*"|\'[^\']*\'|\S+)/','',$str);
+	}
+	foreach(preg_split('/\s+/',strtolower(trim($str))) as $word){
+		if($word=='fail' || $word=='failed'){$out['status']='failed';}
+		elseif($word=='ok'){$out['status']='ok';}
+	}
+	return $out;
+}
 //---------- begin function sqlpromptCheckDbs ----------
 /**
 * @describe Tests every database connection the current user can see (same tab/access rules as the SQL Prompt)
@@ -91,12 +115,14 @@ function sqlpromptTestConnection($dbname){
 *	func=ping endpoint over loopback (cURL multi), forwarding the caller's session cookie and auth
 *	params so it works from the browser and from dasql alike. Closes the session before the requests
 *	go out so the pings are not serialized behind the session lock.
+* @param filters array [optional] - attribute=>value pairs a database's config must match to be tested (case-insensitive,
+*	comma list = any of, * wildcards allowed). Password attributes cannot be filtered on.
 * @param timeout int [optional] - seconds to wait for each database before calling it timed out. Default 10
 * @param parallel int [optional] - how many databases to test at once. Default 8
 * @return array - rows of name,dbtype,dbhost,connection_status,ms sorted by dbtype,name
 * @usage $recs=sqlpromptCheckDbs();
 */
-function sqlpromptCheckDbs($timeout=10,$parallel=8){
+function sqlpromptCheckDbs($filters=array(),$timeout=10,$parallel=8){
 	global $DATABASE;
 	global $CONFIG;
 	global $USER;
@@ -118,6 +144,17 @@ function sqlpromptCheckDbs($timeout=10,$parallel=8){
 			$access_users=preg_split('/\,/',strtolower($cdb['access']));
 			if(!in_array($USER['username'],$access_users)){continue;}
 		}
+		$match=true;
+		foreach($filters as $attr=>$want){
+			if(stripos($attr,'pass')!==false){continue;} //never let a filter probe secrets
+			$have=isset($cdb[$attr])?strtolower((string)$cdb[$attr]):null;
+			$hit=false;
+			foreach(preg_split('/\,/',strtolower($want)) as $pattern){
+				if($have !== null && fnmatch(trim($pattern),$have)){$hit=true;break;}
+			}
+			if(!$hit){$match=false;break;}
+		}
+		if(!$match){continue;}
 		$names[]=$d;
 	}
 	//build the loopback request

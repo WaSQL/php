@@ -635,6 +635,12 @@ ENDOFQUERY;
 			}
 			$skip=0;
 			$lcq=strtolower(trim($_SESSION['sql_last']));
+			//checkdbs takes optional arguments (status word and attr=value filters) - keep them aside so the switch below matches on the bare keyword
+			$checkdbs_args='';
+			if(preg_match('/^checkdbs(?:\s+(.*))?$/is',$lcq,$cm)){
+				$checkdbs_args=isset($cm[1])?trim($cm[1]):'';
+				$lcq='checkdbs';
+			}
 			switch($lcq){
 				case 'help':
 				case 'commands':
@@ -656,8 +662,8 @@ ENDOFQUERY;
 							'description'=>'Display database connection info'
 						),
 						array(
-							'command'=>'checkdbs [fail|ok]',
-							'description'=>'Test every database connection you can see and list ok/failed status. Use checkdbs fail for only failures, checkdbs ok for only successes (works in dasql too)'
+							'command'=>'checkdbs [fail|ok] [{attribute}={value} ...]',
+							'description'=>'Test every database connection you can see and list ok/failed status. Add fail or ok to filter by result, and any config attribute to limit which databases are tested, i.e. checkdbs fail dbtype=ctree. Values can be a comma list or use * wildcards. Works in dasql too'
 						),
 						array(
 							'command'=>'versions',
@@ -932,13 +938,10 @@ ENDOFQUERY;
 					$recs_count=count($recs);
 				break;
 				case 'checkdbs':
-				case 'checkdbs fail':
-				case 'checkdbs failed':
-				case 'checkdbs ok':
-					$recs=sqlpromptCheckDbs();
-					//optional filter: 'checkdbs fail' keeps only failed, 'checkdbs ok' only ok
-					if($lcq != 'checkdbs'){
-						$want=($lcq=='checkdbs ok')?'ok':'failed';
+					$checkargs=sqlpromptCheckDbsParseArgs($checkdbs_args);
+					$recs=sqlpromptCheckDbs($checkargs['filters']);
+					if(strlen($checkargs['status'])){
+						$want=$checkargs['status'];
 						$recs=array_values(array_filter($recs,function($r) use ($want){return strpos($r['connection_status'],$want)===0;}));
 					}
 					$csv=arrays2CSV($recs);
