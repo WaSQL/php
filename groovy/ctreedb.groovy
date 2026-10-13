@@ -19,6 +19,32 @@ import groovy.json.JsonOutput
 import groovy.json.JsonGenerator
 
 
+//---------- begin function preflightTcp
+/**
+* @describe opens (and immediately closes) a TCP socket to host:port so a network problem is reported
+*	clearly and quickly, instead of as a JDBC login that hangs
+* @param host string, port int, timeoutMs int
+* @return null if reachable, otherwise a message that says what is wrong and how to fix it
+* @usage err = preflightTcp('dbhost', 6597, 5000)
+*/
+def preflightTcp(String host, int port, int timeoutMs) {
+	def sock = new java.net.Socket()
+	try {
+		sock.connect(new java.net.InetSocketAddress(host, port), timeoutMs)
+		return null
+	} catch (java.net.UnknownHostException e) {
+		return "Cannot resolve host '${host}'. Fix: check dbhost spelling in config.xml, DNS, or connect the VPN."
+	} catch (java.net.SocketTimeoutException e) {
+		return "No response from ${host}:${port} after ${timeoutMs / 1000}s - packets are being dropped. Fix: connect the VPN, open the firewall for port ${port}, or confirm the c-treeACE server is up."
+	} catch (java.net.ConnectException e) {
+		return "${host}:${port} refused the connection (${e.message}). Fix: the c-treeACE service is not running or dbport is wrong in config.xml."
+	} catch (Exception e) {
+		return "Cannot connect to ${host}:${port}: ${e.message}"
+	} finally {
+		try { sock.close() } catch (Exception ignore) {}
+	}
+}
+
 //---------- begin function connect
 /**
 * @describe creates and returns a database connection to FairCom c-treeACE
@@ -97,6 +123,18 @@ def connect(Map params) {
 		}
 
 		def driver = 'ctree.jdbc.ctreeDriver'
+
+		// Fail fast with a useful message instead of letting the JDBC login hang for minutes.
+		// 1) is the driver jar loadable?  2) can we reach host:port?  3) cap the login wait.
+		try { Class.forName(driver) } catch (ClassNotFoundException cnf) {
+			throw new SQLException("c-treeACE JDBC driver ${driver} not found. Fix: place ctreeJDBC.jar in the groovy/lib folder and restart the Groovy server (/reload).")
+		}
+		def hm = (url =~ /^jdbc:ctree:\/\/([^:\/]+):?(\d*)/)
+		if (hm.find()) {
+			def tcpErr = preflightTcp(hm.group(1), hm.group(2) ? hm.group(2) as int : 6597, 5000)
+			if (tcpErr) { throw new SQLException(tcpErr) }
+		}
+		java.sql.DriverManager.setLoginTimeout(15)
 
 		// Pass charset as a connection property so multi-byte characters
 		// (Japanese, Korean, etc.) are not corrupted to '?' by the driver.

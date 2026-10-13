@@ -1134,7 +1134,13 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		$timeout=isset($params['-timeout'])?(int)$params['-timeout']:300;
 		$json=dbGroovyHttp('POST',"{$baseUrl}{$endpoint}".rawurlencode($db),$token,$reqbody,$reqtype,$timeout);
 		if($json===false){
-			return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}";
+			global $dbGroovyHttpError;
+			if(is_array($dbGroovyHttpError) && $dbGroovyHttpError['errno']==28){
+				//the Groovy server is up (ping passed) but this request never finished - the connect or query is hanging
+				return "dbGroovyQueryResults error: no answer from the Groovy server for database '{$db}' after {$dbGroovyHttpError['timeout']}s. "
+				      ."The Groovy server itself is running, so the connection or query is hanging. ".dbGroovyDiagnose($db);
+			}
+			return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}".(is_array($dbGroovyHttpError)?" ({$dbGroovyHttpError['error']})":'');
 		}
 		$resp=json_decode($json,true);
 		if(!is_array($resp)){return 'dbGroovyQueryResults error: invalid JSON from Groovy server';}
@@ -1339,6 +1345,44 @@ function dbIsGroovy($db){
 	return isset($DATABASE[$db]['groovy']) && $DATABASE[$db]['groovy']==1;
 }
 // ── Groovy server internal helpers ────────────────────────────────────────────
+//---------- begin function dbGroovyDiagnose
+/**
+* @describe runs quick checks on a Groovy-routed database and returns a plain-English explanation of what is wrong
+*	and how to fix it. Checks, in order: dbhost configured, DNS, TCP reachability of dbhost:dbport from this server,
+*	then points at the Groovy log. Used to turn a bare timeout into something actionable.
+* @param db string - database name as configured in config.xml
+* @return string - findings and fixes
+* @usage $why=dbGroovyDiagnose('ctree_remote_repl_groovy');
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyDiagnose($db){
+	global $DATABASE;
+	$cfg=isset($DATABASE[$db])?$DATABASE[$db]:array();
+	$host=isset($cfg['dbhost'])?trim($cfg['dbhost']):'';
+	$type=isset($cfg['dbtype'])?strtolower($cfg['dbtype']):'';
+	$ports=array('ctree'=>6597,'mysql'=>3306,'mysqli'=>3306,'postgres'=>5432,'postgresql'=>5432,'mssql'=>1433,'oracle'=>1521,'hana'=>30015);
+	$port=isset($cfg['dbport']) && (int)$cfg['dbport']?(int)$cfg['dbport']:(isset($ports[$type])?$ports[$type]:0);
+	$log=dbGroovyLogFile();
+	if(!strlen($host) || !$port){
+		return "Could not run network checks (dbhost/dbport not set for this database). Check the Groovy log: {$log}";
+	}
+	$ip=gethostbyname($host);
+	if($ip===$host && !preg_match('/^[0-9\.]+$/',$host) && !stringContains($host,':')){
+		return "DNS: this server cannot resolve '{$host}'. Fix: check the dbhost spelling in config.xml, the server's DNS settings, or connect the VPN that provides that name.";
+	}
+	$errno=0;$errstr='';
+	$start=microtime(true);
+	$fp=@fsockopen($host,$port,$errno,$errstr,3);
+	$secs=round(microtime(true)-$start,1);
+	if(!$fp){
+		if($errno==10060 || $errno==110 || $errno==0 || $secs>=2.9){
+			return "Network: {$host}:{$port} ({$ip}) did not answer within 3s - the packets are being dropped. Fix: connect the VPN, open the firewall for port {$port}, or confirm the database server is up and the IP is correct.";
+		}
+		return "Network: {$host}:{$port} ({$ip}) refused the connection ({$errstr}). Fix: the database service is not running or dbport is wrong in config.xml.";
+	}
+	fclose($fp);
+	return "Network: DNS and TCP to {$host}:{$port} ({$ip}) are fine, so the hang is inside the database login or query. Likely causes: bad credentials or an account lockout, the database's connection/licence limit is full, or a long-running query. Fix: try the same login from another client, and read the Groovy log for the last request: {$log}";
+}
 /**
 * Returns the full path to the Groovy server's startup/runtime log.
 * Lives in the WaSQL logs directory alongside the other framework logs
@@ -1734,6 +1778,9 @@ function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec){
 		if($body!==null){curl_setopt($ch,CURLOPT_POSTFIELDS,$body);}
 		$resp=curl_exec($ch);
 		$ok=!curl_errno($ch);
+		//remember why it failed so callers can tell a timeout (server up, query/connect hanging) from a refused connection (server down)
+		global $dbGroovyHttpError;
+		$dbGroovyHttpError=$ok?null:array('errno'=>curl_errno($ch),'error'=>curl_error($ch),'timeout'=>$timeoutSec);
 		curl_close($ch);
 		return $ok?$resp:false;
 	}
