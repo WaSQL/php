@@ -83,6 +83,112 @@ function sqlpromptTestConnection($dbname){
 	else{$res['ok']=true;}
 	return $res;
 }
+//---------- begin function sqlpromptCheckDbs ----------
+/**
+* @describe Tests every database connection the current user can see (same tab/access rules as the SQL Prompt)
+*	and returns one row per database. Runs the checks in parallel by calling this page's own
+*	func=ping endpoint over loopback (cURL multi), forwarding the caller's session cookie and auth
+*	params so it works from the browser and from dasql alike. Closes the session before the requests
+*	go out so the pings are not serialized behind the session lock.
+* @param timeout int [optional] - seconds to wait for each database before calling it timed out. Default 10
+* @param parallel int [optional] - how many databases to test at once. Default 8
+* @return array - rows of name,dbtype,dbhost,connection_status,ms sorted by dbtype,name
+* @usage $recs=sqlpromptCheckDbs();
+*/
+function sqlpromptCheckDbs($timeout=10,$parallel=8){
+	global $DATABASE;
+	global $CONFIG;
+	global $USER;
+	set_time_limit(600);
+	$showtabs=array();
+	if(isset($CONFIG['sql_prompt_dbs']) && strlen($CONFIG['sql_prompt_dbs'])){
+		$showtabs=preg_split('/[\:\,]+/',$CONFIG['sql_prompt_dbs']);
+	}
+	elseif(isset($CONFIG['databases']) && strlen($CONFIG['databases'])){
+		$showtabs=preg_split('/[\:\,]+/',$CONFIG['databases']);
+	}
+	$names=array();
+	foreach($DATABASE as $d=>$cdb){
+		if(!is_array($cdb) || !isset($cdb['dbtype']) || $d=='_lastquery'){continue;}
+		if(count($showtabs) && !in_array($d,$showtabs) && $CONFIG['database'] != $d){continue;}
+		if(isset($cdb['access']) && strtolower($cdb['access']) != 'all'){
+			$access_users=preg_split('/\,/',strtolower($cdb['access']));
+			if(!in_array($USER['username'],$access_users)){continue;}
+		}
+		$names[]=$d;
+	}
+	//build the loopback request
+	$host=preg_replace('/\:\d+$/','',$_SERVER['HTTP_HOST']);
+	$port=(int)$_SERVER['SERVER_PORT'];
+	$https=(!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'])!='off') || $port==443;
+	$base=($https?'https':'http')."://{$host}:{$port}/php/admin.php";
+	$cookies=array();
+	foreach($_COOKIE as $k=>$v){$cookies[]=$k.'='.rawurlencode($v);}
+	if(session_id() != '' && !isset($_COOKIE[session_name()])){$cookies[]=session_name().'='.session_id();}
+	$auth=array();
+	foreach(array('_auth','apikey','_tauth') as $k){
+		if(isset($_REQUEST[$k])){$auth[$k]=$_REQUEST[$k];}
+	}
+	session_write_close(); //release the session lock or the parallel pings would queue behind this request
+	$results=array();
+	$mh=curl_multi_init();
+	$queue=$names;
+	$active=array();
+	$start=function($name) use ($base,$host,$port,$cookies,$auth,$timeout,$mh,&$active){
+		$q=array_merge(array('_menu'=>'sqlprompt','func'=>'ping','AjaxRequestUniqueId'=>1,'dbname'=>$name),$auth);
+		$ch=curl_init($base.'?'.http_build_query($q));
+		curl_setopt_array($ch,array(
+			CURLOPT_RETURNTRANSFER=>true,
+			CURLOPT_TIMEOUT=>$timeout,
+			CURLOPT_CONNECTTIMEOUT=>3,
+			CURLOPT_SSL_VERIFYPEER=>false,
+			CURLOPT_SSL_VERIFYHOST=>0,
+			CURLOPT_RESOLVE=>array("{$host}:{$port}:127.0.0.1"),
+			CURLOPT_COOKIE=>implode('; ',$cookies)
+		));
+		curl_multi_add_handle($mh,$ch);
+		$active[(int)$ch]=array('ch'=>$ch,'name'=>$name);
+	};
+	while(count($queue) || count($active)){
+		while(count($queue) && count($active) < $parallel){
+			$start(array_shift($queue));
+		}
+		curl_multi_exec($mh,$running);
+		curl_multi_select($mh,0.5);
+		while($info=curl_multi_info_read($mh)){
+			$ch=$info['handle'];
+			$name=$active[(int)$ch]['name'];
+			$body=curl_multi_getcontent($ch);
+			$res=json_decode($body,true);
+			if(!is_array($res)){
+				$err=curl_errno($ch)==28?"Timed out after {$timeout}s":(curl_error($ch)?curl_error($ch):'Unexpected response: '.substr(trim(strip_tags($body)),0,150));
+				$res=array('ok'=>false,'skipped'=>false,'ms'=>$timeout*1000,'error'=>$err);
+			}
+			$results[$name]=$res;
+			curl_multi_remove_handle($mh,$ch);
+			curl_close($ch);
+			unset($active[(int)$ch]);
+		}
+	}
+	curl_multi_close($mh);
+	$recs=array();
+	foreach($names as $name){
+		$r=$results[$name];
+		$status=!empty($r['skipped'])?'skipped':(!empty($r['ok'])?'ok':'failed: '.(isset($r['error'])?$r['error']:'unknown'));
+		$recs[]=array(
+			'name'=>$name,
+			'dbtype'=>strtolower($DATABASE[$name]['dbtype']),
+			'dbhost'=>isset($r['dbhost']) && strlen($r['dbhost'])?$r['dbhost']:(isset($DATABASE[$name]['dbhost'])?$DATABASE[$name]['dbhost']:$DATABASE[$name]['dbname']),
+			'connection_status'=>$status,
+			'ms'=>!empty($r['skipped'])?'':(int)$r['ms']
+		);
+	}
+	usort($recs,function($a,$b){
+		$c=strcmp($a['dbtype'],$b['dbtype']);
+		return $c?$c:strcmp($a['name'],$b['name']);
+	});
+	return $recs;
+}
 function sqlpromptHTMLHead($title=''){
 	$cssfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyCssFile('wacss,bulma');
 	$jsfile=$_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].minifyJsFile('wacss,bulma');

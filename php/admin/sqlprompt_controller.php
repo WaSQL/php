@@ -656,6 +656,10 @@ ENDOFQUERY;
 							'description'=>'Display database connection info'
 						),
 						array(
+							'command'=>'checkdbs [fail|ok]',
+							'description'=>'Test every database connection you can see and list ok/failed status. Use checkdbs fail for only failures, checkdbs ok for only successes (works in dasql too)'
+						),
+						array(
 							'command'=>'versions',
 							'description'=>'Show software versions on server'
 						),
@@ -926,6 +930,28 @@ ENDOFQUERY;
 					$ok=setFileContents($afile,$csv);
 					$skip=1;
 					$recs_count=count($recs);
+				break;
+				case 'checkdbs':
+				case 'checkdbs fail':
+				case 'checkdbs failed':
+				case 'checkdbs ok':
+					$recs=sqlpromptCheckDbs();
+					//optional filter: 'checkdbs fail' keeps only failed, 'checkdbs ok' only ok
+					if($lcq != 'checkdbs'){
+						$want=($lcq=='checkdbs ok')?'ok':'failed';
+						$recs=array_values(array_filter($recs,function($r) use ($want){return strpos($r['connection_status'],$want)===0;}));
+					}
+					$csv=arrays2CSV($recs);
+					$tpath=getWasqlPath('php/temp');
+					$shastr=sha1($_SESSION['sql_last']);
+					$uid=isset($USER['_id'])?$USER['_id']:'unknown';
+					$filename="sqlprompt_{$db['name']}_u{$uid}_{$shastr}.csv";
+					$afile="{$tpath}/{$filename}";
+					if(is_file($afile)){unlink($afile);}
+					$ok=setFileContents($afile,$csv);
+					$skip=1;
+					$recs_count=count($recs);
+					$_SESSION['sql_last_count']=$recs_count;
 				break;
 				case 'db':
 					$recs=array();
