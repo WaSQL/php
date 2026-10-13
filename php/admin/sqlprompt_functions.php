@@ -71,7 +71,8 @@ function sqlpromptTestConnection($dbname){
 		default:$sql='SELECT 1 AS ok';break;
 	}
 	$start=microtime(true);
-	$recs=sqlpromptQueryResults($dbname,$sql);
+	//sqlpromptQueryResults routes groovy="1" databases through the Groovy server; its default 300s timeout is too long for a health check
+	$recs=sqlpromptQueryResults($dbname,$sql,array('-timeout'=>10));
 	$res['ms']=(int)round((microtime(true)-$start)*1000);
 	if(is_string($recs) && strlen($recs)){
 		$res['error']=$recs;
@@ -110,6 +111,8 @@ function sqlpromptCheckDbs($timeout=10,$parallel=8){
 	$names=array();
 	foreach($DATABASE as $d=>$cdb){
 		if(!is_array($cdb) || !isset($cdb['dbtype']) || $d=='_lastquery'){continue;}
+		//api connections are not databases - nothing to test
+		if(strtolower($cdb['dbtype'])=='api'){continue;}
 		if(count($showtabs) && !in_array($d,$showtabs) && $CONFIG['database'] != $d){continue;}
 		if(isset($cdb['access']) && strtolower($cdb['access']) != 'all'){
 			$access_users=preg_split('/\,/',strtolower($cdb['access']));
