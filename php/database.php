@@ -1638,6 +1638,21 @@ function dbGroovyLaunchServer($groovyDir){
 	$pidFile  =$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.pid';
 	$tokenFile=$tempDir.DIRECTORY_SEPARATOR.'wasql-groovy-server.token';
 
+	//Pre-flight: the shell redirect (>log 2>&1) fails silently when the logs dir is not
+	//writable, so the JVM never starts and the caller only sees a 60s "never started" timeout.
+	//Report the exact path and the web-server user up front instead.
+	$webUser=function_exists('posix_getpwuid')&&function_exists('posix_geteuid')?(posix_getpwuid(posix_geteuid())['name']??''):get_current_user();
+	$logDir=dirname($logFile);
+	if(is_file($logFile)?!is_writable($logFile):!is_writable($logDir)){
+		$bad=is_file($logFile)?$logFile:$logDir;
+		return "dbGroovyQueryResults error: cannot write the Groovy server log - '{$bad}' is not writable by the web-server user"
+		      .(strlen($webUser)?" ({$webUser})":'').". Fix: make it writable, e.g. `chown -R {$webUser}: {$logDir}` or `chmod u+w {$bad}`.";
+	}
+	if(!is_writable($tempDir)){
+		return "dbGroovyQueryResults error: cannot write Groovy server runtime files - '{$tempDir}' is not writable by the web-server user"
+		      .(strlen($webUser)?" ({$webUser})":'').". Fix: `chown -R {$webUser}: {$tempDir}`.";
+	}
+
 	if(PHP_OS_FAMILY==='Windows'){
 		// proc_open with create_process_group breaks the child out of IIS's Job Object,
 		// preventing the Groovy JVM from being killed when the HTTP request ends.
