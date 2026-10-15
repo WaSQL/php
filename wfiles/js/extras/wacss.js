@@ -944,6 +944,7 @@ const wacss = {
 	*/
 	createCenterpop: function(title,x,nopadding=0){
 		if(undefined==x){x='';}
+		if(undefined==title || null===title){title='Information';}
 		let cp=wacss.getObject('wacss_centerpop'+x);
 		if(undefined != cp){
 			let cpt_txt=cp.querySelector('.wacss_centerpop_title_text');

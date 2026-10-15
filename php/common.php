@@ -8129,7 +8129,7 @@ function removeViews($htm){
 		$sha=sha1($htm);
 		$depth++;
 		unset($removeViewMatches);
-		preg_match_all('/\<view\:([a-z0-9\-\_]+?)\>(.+?)\<\/view\:\1\>/ism',$htm,$removeViewMatches,PREG_PATTERN_ORDER);
+		preg_match_all('/\<view\:([a-z0-9\-\_]+?)\>(.*?)\<\/view\:\1\>/ism',$htm,$removeViewMatches,PREG_PATTERN_ORDER);
 		/* this returns an array of three arrays
 			0 = the whole tag
 			1 = the view name
@@ -10555,213 +10555,215 @@ function evalPHP_ob($string, $flags) {
 *	eval result or errors
 * @usage $rtn=evalPHP($str);
 */
-function evalPHP($strings){
+//NOTE: every local in evalPHP() is prefixed __ep_ on purpose. Island code (views, bodies, controllers) is eval()'d in THIS scope,
+//so a short local like $g/$c/$e would collide with a renderView/renderEach alias of the same name and blank the view silently (bug #53).
+function evalPHP($__ep_strings){
 	global $CONFIG;
 	global $PAGE;
 	//set the pid if ajaxRequestId is present
-	$pidfile='';
+	$__ep_pidfile='';
 	if(isset($_REQUEST['AjaxRequestUniqueId'])){
-		$tpath=getWasqlTempPath();
-		$pid=getmypid();
-		$pidfile="{$tpath}/{$_REQUEST['AjaxRequestUniqueId']}.pid";
-		setFileContents($pidfile,$pid);
+		$__ep_tpath=getWasqlTempPath();
+		$__ep_pid=getmypid();
+		$__ep_pidfile="{$__ep_tpath}/{$_REQUEST['AjaxRequestUniqueId']}.pid";
+		setFileContents($__ep_pidfile,$__ep_pid);
 	}
 	//allow for both echo and return values but not both
-	if(!is_array($strings)){$strings=array($strings);}
+	if(!is_array($__ep_strings)){$__ep_strings=array($__ep_strings);}
 	//ob_start('evalPHP_ob');
-	$buffer_level_start = ob_get_level();
+	$__ep_buffer_level_start = ob_get_level();
 	ob_start();
 	
-	$cntA=count($strings);
-	for($sIndex=0;$sIndex<$cntA;$sIndex++){
-		unset($evalmatches);
-		unset($ex);
-		if($sIndex == 1 || $cntA==1){
-			$strings[$sIndex]=removeViews($strings[$sIndex]);
-			$strings[$sIndex]=processForeach($strings[$sIndex]);
+	$__ep_cntA=count($__ep_strings);
+	for($__ep_sIndex=0;$__ep_sIndex<$__ep_cntA;$__ep_sIndex++){
+		unset($__ep_evalmatches);
+		unset($__ep_ex);
+		if($__ep_sIndex == 1 || $__ep_cntA==1){
+			$__ep_strings[$__ep_sIndex]=removeViews($__ep_strings[$__ep_sIndex]);
+			$__ep_strings[$__ep_sIndex]=processForeach($__ep_strings[$__ep_sIndex]);
 			}
-		if(!isset($strings[$sIndex]) || is_null($strings[$sIndex]) ||  trim($strings[$sIndex])=='<??>'){
-			$strings[$sIndex]='';
+		if(!isset($__ep_strings[$__ep_sIndex]) || is_null($__ep_strings[$__ep_sIndex]) ||  trim($__ep_strings[$__ep_sIndex])=='<??>'){
+			$__ep_strings[$__ep_sIndex]='';
 			continue;
 		}
-		preg_match_all('/\<\?(.+?)\?\>/sm',$strings[$sIndex],$evalmatches,PREG_PATTERN_ORDER);
-		preg_match_all('/<script type\="php">(.+?)<\/script>/ism',$strings[$sIndex],$evalmatches2,PREG_PATTERN_ORDER);
-		if(count($evalmatches2[1])){
-			$evalmatches[0]=array_merge($evalmatches[0],$evalmatches2[0]);
-			$evalmatches[1]=array_merge($evalmatches[1],$evalmatches2[1]);
+		preg_match_all('/\<\?(.+?)\?\>/sm',$__ep_strings[$__ep_sIndex],$__ep_evalmatches,PREG_PATTERN_ORDER);
+		preg_match_all('/<script type\="php">(.+?)<\/script>/ism',$__ep_strings[$__ep_sIndex],$__ep_evalmatches2,PREG_PATTERN_ORDER);
+		if(count($__ep_evalmatches2[1])){
+			$__ep_evalmatches[0]=array_merge($__ep_evalmatches[0],$__ep_evalmatches2[0]);
+			$__ep_evalmatches[1]=array_merge($__ep_evalmatches[1],$__ep_evalmatches2[1]);
 		}
-		$cntB=count($evalmatches[1]);
-		for($ex=0;$ex<$cntB;$ex++){
-			$evalcode=$evalmatches[1][$ex];
+		$__ep_cntB=count($__ep_evalmatches[1]);
+		for($__ep_ex=0;$__ep_ex<$__ep_cntB;$__ep_ex++){
+			$__ep_evalcode=$__ep_evalmatches[1][$__ep_ex];
 			//check for other supported languages: python, perl, ruby, bash, sh (bourne shell), powershell, groovy
-			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua|R|rscript|tcl|julia|jl|powershell|pwsh|ps1|groovy)[\ \r\n]+(.+)/ism',$evalcode,$g)){
-				$evalcode=preg_replace('/^'.$g[1].'/i','',$evalcode);
-				$lang=commonGetLangInfo($g[1]);
-				$lang['evalcode_md5']=md5($evalcode);
-				$c=0;
-				switch(strtolower($lang['name'])){
+			if(preg_match('/^(python|py|perl|pl|ruby|rb|vbscript|vbs|bash|sh|node|nodejs|lua|R|rscript|tcl|julia|jl|powershell|pwsh|ps1|groovy)[\ \r\n]+(.+)/ism',$__ep_evalcode,$__ep_g)){
+				$__ep_evalcode=preg_replace('/^'.$__ep_g[1].'/i','',$__ep_evalcode);
+				$__ep_lang=commonGetLangInfo($__ep_g[1]);
+				$__ep_lang['evalcode_md5']=md5($__ep_evalcode);
+				$__ep_c=0;
+				switch(strtolower($__ep_lang['name'])){
 					case 'julia':
-						$val=evalJuliaCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalJuliaCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'tcl':
-						$val=evalTclCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalTclCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'r':
-						$val=evalRCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalRCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'python':
-						$val=evalPythonCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalPythonCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'perl':
-						$val=evalPerlCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalPerlCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'ruby':
-						$val=evalRubyCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalRubyCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'lua':
 						//https://www.educba.com/lua-json/
-						$val=evalLuaCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalLuaCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'nodejs':
 						//https://www.educba.com/lua-json/
-						$val=evalNodejsCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalNodejsCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'bash':
-						$val=evalBashCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalBashCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'powershell':
-						$val=evalPowershellCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalPowershellCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'groovy':
-						$val=evalGroovyCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalGroovyCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 					case 'vbscript':
 					case 'vbs':
-						$val=evalVBScriptCode($lang,$evalcode);
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
-						$c=1;
+						$__ep_val=evalVBScriptCode($__ep_lang,$__ep_evalcode);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
+						$__ep_c=1;
 					break;
 				}
-				if($c==1){continue;}
+				if($__ep_c==1){continue;}
 				//handle other languages
-				$page=isset($PAGE['_id'])?$PAGE['_id']:0;
-				$pageid="p".$page;
-				$tmpfile="{$CONFIG['name']}_{$pageid}_".md5($evalcode).".{$lang['ext']}";
-				$evalcode=commonAddPrecode($lang,$evalcode);
+				$__ep_page=isset($PAGE['_id'])?$PAGE['_id']:0;
+				$__ep_pageid="p".$__ep_page;
+				$__ep_tmpfile="{$CONFIG['name']}_{$__ep_pageid}_".md5($__ep_evalcode).".{$__ep_lang['ext']}";
+				$__ep_evalcode=commonAddPrecode($__ep_lang,$__ep_evalcode);
 				//run the script:
-				if(is_file($evalcode)){
-					$pfile=$evalcode;
-					$command = "{$lang['exe']} \"{$pfile}\"";
-					$out = cmdResults($command);
-					if($out['rtncode']==0){$val=$out['stdout'];}	
-					else{$val="ERROR: {$lang['exe']} embeded script failed";}
+				if(is_file($__ep_evalcode)){
+					$__ep_pfile=$__ep_evalcode;
+					$__ep_command = "{$__ep_lang['exe']} \"{$__ep_pfile}\"";
+					$__ep_out = cmdResults($__ep_command);
+					if($__ep_out['rtncode']==0){$__ep_val=$__ep_out['stdout'];}	
+					else{$__ep_val="ERROR: {$__ep_lang['exe']} embeded script failed";}
 				}
 				else{
-					$tmppath=getWasqlTempPath();
+					$__ep_tmppath=getWasqlTempPath();
 					
-					if($lang['ext'] != 'vbs' && !stringBeginsWith($evalcode,'#!')){
-						$evalcode="{$lang['shebang']}".PHP_EOL.PHP_EOL.$evalcode;
+					if($__ep_lang['ext'] != 'vbs' && !stringBeginsWith($__ep_evalcode,'#!')){
+						$__ep_evalcode="{$__ep_lang['shebang']}".PHP_EOL.PHP_EOL.$__ep_evalcode;
 					}
 					if(isWindows()){
-						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
-						$command = "{$lang['exe']} \"{$tmppath}\\{$tmpfile}\"";
+						setFileContents("{$__ep_tmppath}/{$__ep_tmpfile}",$__ep_evalcode);
+						$__ep_command = "{$__ep_lang['exe']} \"{$__ep_tmppath}\\{$__ep_tmpfile}\"";
 					}
 					else{
-						setFileContents("{$tmppath}/{$tmpfile}",$evalcode);
-						@chmod("{$tmppath}/{$tmpfile}", 0755);
-						$command = "{$lang['exe']} \"{$tmppath}/{$tmpfile}\"";	
+						setFileContents("{$__ep_tmppath}/{$__ep_tmpfile}",$__ep_evalcode);
+						@chmod("{$__ep_tmppath}/{$__ep_tmpfile}", 0755);
+						$__ep_command = "{$__ep_lang['exe']} \"{$__ep_tmppath}/{$__ep_tmpfile}\"";	
 					}
-					$out = cmdResults($command);
-					if($out['rtncode']==0){
-						@unlink("{$tmppath}/{$tmpfile}");
-						$val=$out['stdout'];
+					$__ep_out = cmdResults($__ep_command);
+					if($__ep_out['rtncode']==0){
+						@unlink("{$__ep_tmppath}/{$__ep_tmpfile}");
+						$__ep_val=$__ep_out['stdout'];
 					}	
 					else{
-						$val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$lang['exe']} embeded script failed".PHP_EOL.json_encode($out,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT).'</pre>';
+						$__ep_val="<pre style=\"font-size:12px;text-align:left;\">ERROR: {$__ep_lang['exe']} embeded script failed".PHP_EOL.json_encode($__ep_out,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT).'</pre>';
 					// Clean up temp file on error
-						@unlink("{$tmppath}/{$tmpfile}");
+						@unlink("{$__ep_tmppath}/{$__ep_tmpfile}");
 					}
 				}
-				$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+				$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
 				continue;
 			}
 			//assume PHP code
-			$evalcode=preg_replace('/^php/i','',$evalcode);
-			if(preg_match('/^xml version/i',$evalcode)){continue;}
+			$__ep_evalcode=preg_replace('/^php/i','',$__ep_evalcode);
+			if(preg_match('/^xml version/i',$__ep_evalcode)){continue;}
 			//  remove =/*...*/
-			$evalcode=preg_replace('/^\=\/\*(.+?)\*\//','',$evalcode);
-			$evalcode=preg_replace('/^\=/','return ',$evalcode);
-			$evalcheck="error_reporting(E_ERROR | E_PARSE);\nreturn true;\n". trim($evalcode);
-			//echo "<pre>{$evalcheck}</pre><hr>".PHP_EOL;
+			$__ep_evalcode=preg_replace('/^\=\/\*(.+?)\*\//','',$__ep_evalcode);
+			$__ep_evalcode=preg_replace('/^\=/','return ',$__ep_evalcode);
+			$__ep_evalcheck="error_reporting(E_ERROR | E_PARSE);\nreturn true;\n". trim($__ep_evalcode);
+			//echo "<pre>{$__ep_evalcheck}</pre><hr>".PHP_EOL;
 			@trigger_error('');
-			@eval($evalcheck);
-			$e=error_get_last();
-			if(isset($e['message']) && $e['message']!==''){
-				$e['code']="<pre>\n".trim($evalmatches[1][$ex])."\n</pre>\n";
-				setWasqlError(array($e),"EvalPHP Error");
-	    		$error=showWasqlErrors();
-	    		$strings[$sIndex]=str_replace($evalmatches[0][$ex],$error,$strings[$sIndex]);
+			@eval($__ep_evalcheck);
+			$__ep_e=error_get_last();
+			if(isset($__ep_e['message']) && $__ep_e['message']!==''){
+				$__ep_e['code']="<pre>\n".trim($__ep_evalmatches[1][$__ep_ex])."\n</pre>\n";
+				setWasqlError(array($__ep_e),"EvalPHP Error");
+	    		$__ep_error=showWasqlErrors();
+	    		$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_error,$__ep_strings[$__ep_sIndex]);
 			}
 			else{
 				@trigger_error('');
-				$val=@eval($evalcode);
-				if(is_null($val)){$val='';}
-				$ob=(ob_get_level() > 0) ? ob_get_contents() : "";
+				$__ep_val=@eval($__ep_evalcode);
+				if(is_null($__ep_val)){$__ep_val='';}
+				$__ep_ob=(ob_get_level() > 0) ? ob_get_contents() : "";
 				if(ob_get_level() > 0){ob_clean();}
-				if(strlen(trim($ob)) && strlen(trim($val))){
-					if(stringContains($ob,'wasqlDebug')){
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],$ob,$strings[$sIndex]);
+				if(strlen(trim($__ep_ob)) && strlen(trim($__ep_val))){
+					if(stringContains($__ep_ob,'wasqlDebug')){
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_ob,$__ep_strings[$__ep_sIndex]);
 					}
 					else{
-						$strings[$sIndex]=str_replace($evalmatches[0][$ex],'evalPHP Error: return value and echo value both found',$strings[$sIndex]);
+						$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],'evalPHP Error: return value and echo value both found',$__ep_strings[$__ep_sIndex]);
 					}
 				}
-				elseif(strlen(trim($ob))){
-					if(!is_string($ob)){
-						$ob=json_encode($ob,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+				elseif(strlen(trim($__ep_ob))){
+					if(!is_string($__ep_ob)){
+						$__ep_ob=json_encode($__ep_ob,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
-					$strings[$sIndex]=str_replace($evalmatches[0][$ex],$ob,$strings[$sIndex]);
+					$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_ob,$__ep_strings[$__ep_sIndex]);
 				}
 				else{
-					if(is_null($val)){$val='';}
-					if(!is_string($val)){
-						$val=json_encode($val,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
+					if(is_null($__ep_val)){$__ep_val='';}
+					if(!is_string($__ep_val)){
+						$__ep_val=json_encode($__ep_val,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 					}
-					$strings[$sIndex]=str_replace($evalmatches[0][$ex],$val,$strings[$sIndex]);
+					$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_val,$__ep_strings[$__ep_sIndex]);
 		        }
 			}
 		}
 	}
 	// Close the output buffer we started
-	if(ob_get_level() > $buffer_level_start){
+	if(ob_get_level() > $__ep_buffer_level_start){
 		ob_end_clean();
 	}
 	showAllErrors();
-	$rtn=implode('',$strings);
-	if(strlen($pidfile) && file_exists($pidfile)){
-		unlink($pidfile);
+	$rtn=implode('',$__ep_strings);
+	if(strlen($__ep_pidfile) && file_exists($__ep_pidfile)){
+		unlink($__ep_pidfile);
 	}
 	return $rtn;
 }
@@ -25286,8 +25288,17 @@ function pushData($data='',$ext='txt',$name=''){
 		exit;
 		}
 	if(!strlen($name)){$name=md5($data) . ".{$ext}";}
+	//text types keep text/{ext}; everything else (pdf, xlsx, zip, png...) gets its real mime type
+	$ext=strtolower(trim($ext,'. '));
+	$ctype="text/{$ext}";
+	if(!in_array($ext,array('txt','csv','tsv','html','htm','xml','json','css','js','log','sql'))){
+		$ctype=getFileContentType("pushdata.{$ext}");
+		if(!strlen($ctype) || stripos($ctype,'text/')===0){$ctype='application/octet-stream';}
+	}
+	//clear open output buffers so stray bytes never prefix the payload (same as pushFile)
+	while(ob_get_level()){ob_end_clean();}
 	header('Content-Description: File Transfer');
-	header("Content-Type: text/{$ext}");
+	header("Content-Type: {$ctype}");
     header('Content-Disposition: attachment; filename='.basename($name));
     header("Accept-Ranges: bytes");
 	header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
@@ -25807,7 +25818,7 @@ function truncateWords($wordstr,$maxlen,$dots=0){
 		if(strlen($rtn) > $maxlen){break;}
 	}
 	$rtn=trim($rtn);
-	if($dots && !preg_match('/(\.|\?|\!)$/',$rtn)){$rtn .= "...";}
+	if($dots && $rtn !== trim($wordstr) && !preg_match('/(\.|\?|\!)$/',$rtn)){$rtn .= "...";}
 	return $rtn;
 }
 //---------- begin function splitWords

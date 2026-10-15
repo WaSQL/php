@@ -42,6 +42,8 @@ delDBRecord([
     '-where' => '_id=123'
 ]);
 
+// NOTE: delDBRecord needs -where; dashless filter keys (e.g. '_id'=>123) are NOT used and the delete silently no-ops
+
 // Delete by ID (shorthand)
 delDBRecordById('users', 123);
 ```

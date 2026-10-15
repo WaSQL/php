@@ -68,7 +68,7 @@ function pageSamplePagesGrid(){
 ```
 
 ## Data access (essentials)
-Options are ONE associative array. **Keys starting with `-` are directives; keys without a dash are data** — an implicit `column = value` WHERE filter for reads/counts/deletes, or the column values to write for add/edit.
+Options are ONE associative array. **Keys starting with `-` are directives; keys without a dash are data** — an implicit `column = value` WHERE filter for reads/counts (**not deletes** — `delDBRecord` needs an explicit `-where`, else it no-ops and returns an error string), or the column values to write for add/edit.
 ```php
 $rec  = getDBRecord(['-table'=>'items','_id'=>$id]);                 // dashless _id = WHERE filter
 $ok   = editDBRecord(['-table'=>'items','-where'=>"_id={$id}",'status_id'=>3]); // dashless = columns written

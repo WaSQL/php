@@ -40,6 +40,7 @@ This is the companion to `CLAUDE.md`. `CLAUDE.md` holds the always-relevant rule
 - `-relate` — array `fk_column => related_table`; auto-expands foreign keys into the result.
 - `-upsert` / `-upserton` — comma list of columns; turns add/edit into an upsert keyed on them.
 - `-skiperrors` (**`addDBRecords`/`dbAddRecords` bulk insert only**) — import the good rows and skip the bad ones instead of rejecting the whole batch. Covers **both** failure modes: (a) a row missing a required (`NOT NULL`, no-default) column is dropped before the insert; (b) if the bulk `INSERT` itself then fails (duplicate unique key, FK violation, strict-mode value error — all-or-nothing), the batch is automatically retried **row-by-row** via `mysqlAddDBRecordsRowByRow`, inserting every row that works. Every skipped row lands in the global `$mysqlAddDBRecordsResults['skipped']` (`message`, `rec`), the real insert count in `$mysqlAddDBRecordsResults['inserted']`. `['skipped']` is populated **even without the flag** for case (a), so a failed import can still report which row/field aborted it. The Admin ▸ Import CSV form exposes this as a "Skip error rows" checkbox.
+- **`delDBRecord` is the one exception to dashless-key filtering:** `delDBRecord(['-table'=>'x','_id'=>5])` deletes nothing and returns an error STRING (page code usually discards it, so it looks like the Delete button "did nothing"). Always pass `-where`: `delDBRecord(['-table'=>'x','-where'=>"_id={$id} AND owner_id={$owner_id}"])` — cast/escape interpolated values — and check the return value (core bug #51, documented rather than changed so a delete can never widen its match).
 - `-nocache` — bypass the query cache (use in crons and after writes).
 - `-debug` — dump the generated SQL.
 - `-results_eval` / `-results_eval_params` — callback run over the result set to compute extra columns.
@@ -391,7 +392,7 @@ Driver libraries are **not** bundled (same as R's `install.packages` / Lua's `lu
 <?=renderViewIfElse(strlen($info['1st_counselor']['picture']),'leader_picture','avatar',$info['1st_counselor'],'info');?>
 ```
 - **⚠️ The closing tag MUST be the named form `</view:name>`, NOT a generic `</view>`.** The parser matches `<view:name>(.+?)</view:\1>` with a backreference (`php/common.php` ~L8043), so a bare `</view>` silently fails to register the block and you get `renderView Error: There is no view named X`.
-- **⚠️ An EMPTY view (`<view:none></view:none>`) is never registered — the same `(.+?)` needs at least one character.** The literal tags stay in the field and get **echoed into the page** as raw `<view:none></view:none>` text wherever they sit, and naming it as the else-branch of `renderViewIfElse` can't work. Don't create a blank "else" view: use `renderViewIf` (which already returns `''` when false). Observed 2026-10-15 on dev-jira — the stray tag showed up inside an AJAX partial's HTML.
+- **FIXED 2026-10-15 in core (bug #55) — an EMPTY view (`<view:none></view:none>`) used to never register.** The extraction regex's contents group was `(.+?)`, so the literal tags stayed in the field and were echoed into the page (seen 2026-10-15 on dev-jira inside an AJAX partial), and naming it as the else-branch of `renderViewIfElse` failed with 'no view named X'. It is now `(.*?)`: an empty view registers as `''` and renders nothing. On an older core, use `renderViewIf` (returns `''` when false) rather than a blank else view.
 - **Reuse one generic view for many callers.** Because the alias renames the passed data, a single `<view:avatar>`/`<view:leader_picture>` can serve all four bishopric cards — pass each person as the params and let the view read `$info` (or whatever alias). Don't clone a near-identical view per card.
 
 ### `setView($name)` vs `setView($name, 1)`
@@ -705,8 +706,7 @@ Why it composes: the add/edit form posts to `/t/1/manage/things/list`, so the **
 
 ## Sending a file to the browser — and the PDF question (verified 2026-09)
 **`pushData($data,$ext,$name)`** (`php/common.php`) is the normal way a page hands the user a file: it sets `Content-Disposition: attachment`, `Content-Length`, and **exits**. Two limits decide whether you can use it:
-- It sets **`Content-Type: text/{$ext}`** from the extension you pass, so `pushData($bytes,'pdf',…)` sends `text/pdf` — wrong, and some viewers refuse it.
-- It does **not clear the output buffers** the framework has open. For CSV that is harmless; for **binary** a single stray byte ahead of the payload makes the file unopenable.
+- *(Fixed 2026-10-15, bug #56.)* It used to send **`Content-Type: text/{$ext}`** for everything (`text/pdf`) and left the framework's output buffers open, so a stray byte could corrupt binary. Text extensions (`txt csv tsv html xml json css js log sql`) still get `text/{ext}`; anything else gets its real MIME type via `getFileContentType()`, and buffers are cleared first. On an older core, copy `pushFile()`'s header/ob handling below.
 
 For anything binary, copy what core's own **`pushFile()`** does — `while(ob_get_level()){ob_end_clean();}` first, then `header('Content-Type: application/pdf')` + `Content-Disposition` + `Content-Length`, `echo`, `exit`. `pushFile($path)` itself is the right call when the bytes are already a file on disk.
 
@@ -733,9 +733,9 @@ For anything binary, copy what core's own **`pushFile()`** does — `while(ob_ge
 - **Hand-rolled HTML5 drag-and-drop: bind the handlers by DELEGATION, never as inline `ondragstart`/`ondrop` attributes.** The drag source is whichever descendant the user actually grabbed, and `<a href>` / `<img>` are **natively draggable** — so grabbing a card's title link starts a *link* drag whose `dragstart` fires on the anchor. An `ondragstart` on the card element never runs, your drag-id stays 0, and the drop silently bails: the lane highlights (that's just `dragover`), the card snaps back, and **no request is ever sent**, so there's no error anywhere to find. Fix: `document.addEventListener('dragstart', …)` + `e.target.closest('.card')`, and put `draggable="false"` on inner links. Delegation also survives the AJAX refresh that replaces the list.
   - **Testing this needs a *real* drag.** Calling `myDragStart(fakeEvent, el)` / `myDrop(fakeEvent, col)` directly passes happily while the feature is broken in the browser, because it skips the part that's actually wrong (which element becomes the drag source). Drive it over CDP instead: `Input.setInterceptDrags{enabled:true}`, `Input.dispatchMouseEvent` mousePressed + two mouseMoved to start the drag, catch the `Input.dragIntercepted` event for its `data`, then `Input.dispatchDragEvent` dragEnter/dragOver/drop at the target. Both the source and target must be **inside the viewport** — emulate a tall enough window or the press never starts a drag.
 - **`truncateWords($str,$maxlen)`'s 2nd arg is a MAX CHARACTER count, not a word count** (despite the name — it just avoids cutting mid-word). `truncateWords($summary,6)` fits no whole word and returns an **empty string**, which looks like a missing value rather than a truncation bug. Pass a character budget (`truncateWords($summary,40)`).
-  - **The 3rd arg (`$dots`) appends `...` UNCONDITIONALLY** — it only checks whether the result already ends in `.?!`, *not* whether anything was actually cut. So `truncateWords('Engineering home',40,1)` returns `Engineering home...`, and every short title in a breadcrumb or `<option>` grows a false ellipsis. Only pass `1` where the string is known to be long; otherwise wrap it: `if(commonStrlen($s)<=$max){return $s;} return truncateWords($s,$max).'…';`
+  - *(Fixed 2026-10-15, bug #57.)* The 3rd arg (`$dots`) used to append `...` UNCONDITIONALLY, so `truncateWords('Engineering home',40,1)` grew a false ellipsis. It now appends only when the text was actually cut. On an older core, guard it yourself: `if(commonStrlen($s)<=$max){return $s;} return truncateWords($s,$max).'…';`
 - **`loadDBFunctions($name)` loads the page's `body` field, not `functions`** — see *Cross-page includes & shared functions* above. Helpers written into `functions` are silently never loaded.
-- **Always pass a `title` when opening a centerpop, or the header literally reads "undefined".** `wacss.ajaxGet(url,'centerpop')` reaches `wacss.createCenterpop(params.title)` with `params` defaulted to `{}`, so the missing title is rendered as the string `undefined` in the popup's header bar. Pass it as the third argument: `wacss.ajaxGet(url,'centerpop',{title:'New sprint'})`. (`wacss.ajaxPost` is safer — it falls back to the form's `data-title` and then to `'Information'` — but set `data-title` anyway.) Since the header now carries the title, drop any duplicate heading from the partial you inject.
+- **A centerpop with no title used to read "undefined" in its header (fixed 2026-10-15, bug #58).** `wacss.createCenterpop()` now defaults a missing title to `'Information'` (needs `wacss.min.js` re-minified). Still pass a real title — `wacss.ajaxGet(url,'centerpop',{title:'New sprint'})` or `data-title` on a `wacss.nav` link — since 'Information' is only a fallback; and drop any duplicate heading from the partial you inject. `wacss.ajaxPost` falls back to the form's `data-title`.
 - **`setView('partial',1)` on a page whose body has no `<view:partial>` renders an EMPTY STRING — silently.** No warning, no error, HTTP 200. The AJAX target div is simply blanked, which reads as "the action deleted my content" or "the server returned nothing". Easy to hit when you add AJAX routes to a page that previously only had full-page views. If an AJAX route comes back empty, check the **body has the view you selected** before debugging the controller or the SQL.
 - **A page's own `functions` field is in scope for THAT PAGE ONLY.** The moment a second page needs a helper it must move to the shared `functions_common`-style page — and be **deleted from the original**, or the page that loads both fatals on `Cannot redeclare`. Worth knowing because of how the failure presents: the fatal usually happens inside an **AJAX partial**, so it never reaches the browser as a visible error page — `wacss` injects the `PHP Uncaught Error` block straight into your target div, which typically reads as "the feature silently did nothing" or "my list disappeared". When an AJAX action mysteriously blanks its target, dump that div's `innerHTML` before theorising.
 - **A bare top-level `function name(){…}` in a page's `body`/`controller` ALWAYS fatals with "Cannot redeclare", on every single request — not intermittent.** `evalPHP()` (`php/common.php` ~10716-10729) runs each `<?php ?>` block through TWO eval() calls: a syntax-check dry run (`$evalcheck = "return true;\n".$evalcode; eval($evalcheck);`) meant to catch parse errors before anything executes, then — if that was clean — the real `eval($evalcode)`. The `return true;` is supposed to make the dry run a no-op, but PHP hoists (pre-registers) an *unconditionally* top-level function declaration at compile time regardless of unreachable code after a `return` — so the dry run silently declares the function anyway, and the real run's identical declaration then collides. Confirmed by isolating the exact two-eval pattern standalone. This is unrelated to (and easy to confuse with) the cross-page `loadDBFunctions` collision two bullets up — this one fires from a SINGLE page's own body/controller, with no second page involved, and 100% reproducibly rather than only when two pages both load the same helper. **Not affected:** a page's `functions` field (and any page loaded via `loadDBFunctions`) — those run through `includeDBOnce`/`commonIncludeFunctionCode`, a single-pass `include_once`, so ordinary top-level function declarations there are fine. Fix in body/controller: guard it — `if(!function_exists('name')){ function name(){...} }` — a conditional declaration is never hoisted, so the dry run's dead-code path never touches it. Logged as core bug #49 (unfixed in core — the real fix belongs in `evalPHP()`, e.g. drop the dry-run pass in favor of wrapping the single real eval in `try/catch(\Throwable)`). Found fixing wired's `/cron_send_article` after `cronSendArticleToSubscribers()` was refactored into a named top-level function in the page body.
@@ -999,47 +999,32 @@ rejects with 400/500. Every key you pass must start with `-` (`-method`, `-heade
 `-nossl`, `-timeout`, `-timeout_connect`); to suppress the connection-error `echo`+`exit`,
 just *omit* `skip_error` entirely (it only exits when explicitly set falsy).
 
-### The real limitation: one verb
+### Other verbs: pass `-method`
 
-`postBody()` sets `CURLOPT_POST` unconditionally and never sets `CURLOPT_CUSTOMREQUEST`,
-so **`postJSON()` can only POST**. That is fine for a webhook or a one-way push, and not
-enough for a REST *client*, which needs:
-
-| verb | typical use |
-|---|---|
-| GET | every read |
-| PUT | Jira issue update |
-| PATCH | ServiceNow record update |
-| DELETE | removing a sub-resource |
-
-So for a full client, call curl directly from the page layer rather than patching core:
+`postBody()` (and so `postJSON()`/`postXML()`, which hand their `$params` straight to it) honours
+**`-method`**: when set it calls `CURLOPT_CUSTOMREQUEST` with the upper-cased verb instead of `CURLOPT_POST`.
+That covers a REST client's PUT / PATCH / DELETE with the same basic-auth, timeout and header handling:
 
 ```php
-$ch=curl_init($url);
-curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-curl_setopt($ch,CURLOPT_CUSTOMREQUEST,strtoupper($method));   // the reason for going direct
-curl_setopt($ch,CURLOPT_HTTPHEADER,$headers);
-curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,15);
-curl_setopt($ch,CURLOPT_TIMEOUT,60);      // never let a remote API hang a cron
-if($body!==null){curl_setopt($ch,CURLOPT_POSTFIELDS,encodeJson($body));}
-$raw=curl_exec($ch);
-$status=(int)curl_getinfo($ch,CURLINFO_HTTP_CODE);
-curl_close($ch);
+$res=postJSON($url,encodeJson($body),array(
+    '-method'          => 'PATCH',      // ServiceNow record update; PUT for Jira, DELETE, ...
+    '-authuser'        => $user,
+    '-authpass'        => $token,
+    '-timeout'         => 60,
+    '-timeout_connect' => 15
+));
 ```
 
-Two things worth copying with it:
+(Older notes said `postJSON()` could only POST and recommended raw `curl_*` calls — that is no longer true.)
+Two habits worth keeping either way:
 
 - **Always set both timeouts.** A remote API with no timeout is how one slow vendor turns
   a five-minute cron slot into a hung PHP process.
 - **Translate the vendor's error body into one sentence.** Every API reports errors
   differently (Jira `errorMessages[]`/`errors{}`, ServiceNow `error.message`, most others
   `message`), and surfacing a bare `HTTP 400` sends somebody to read a log they cannot
-  reach. Write one `…SyncHttpError()` helper that maps each vendor's error shape to a
+  reach. Write one `...SyncHttpError()` helper that maps each vendor's error shape to a
   sentence, and call it from every request.
-
-A `-method` option on `postBody()` would remove the need for any of this — it is a
-one-line change to core and a deliberate decision for the framework developer, not
-something to bundle into site work.
 
 
 ## PHPDoc / JSDoc convention
