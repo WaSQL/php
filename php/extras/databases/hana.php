@@ -1233,6 +1233,11 @@ function hanaParseConnectParams($params=array()){
 			$params['-dbuser']=$CONFIG['hana_dbuser'];
 			$params['-dbuser_source']="CONFIG hana_dbuser";
 		}
+		elseif(isset($params['-dbcert']) && commonStrlen($params['-dbcert'])){
+			//X.509 auth - the user comes from the certificate mapping
+			$params['-dbuser']='';
+			$params['-dbuser_source']="dbcert";
+		}
 		else{return 'hanaParseConnectParams Error: No dbuser set';}
 	}
 	else{
@@ -1247,6 +1252,11 @@ function hanaParseConnectParams($params=array()){
 			$params['-dbpass']=$CONFIG['hana_dbpass'];
 			$params['-dbpass_source']="CONFIG hana_dbpass";
 		}
+		elseif(isset($params['-dbcert']) && commonStrlen($params['-dbcert'])){
+			//X.509 auth connects without a password
+			$params['-dbpass']='';
+			$params['-dbpass_source']="dbcert";
+		}
 		else{return 'hanaParseConnectParams Error: No dbpass set';}
 	}
 	else{
@@ -1258,6 +1268,92 @@ function hanaParseConnectParams($params=array()){
 			case 'SQL_CUR_USE_IF_NEEDED':$params['-cursor']=SQL_CUR_USE_IF_NEEDED;break;
 			case 'SQL_CUR_USE_DRIVER':$params['-cursor']=SQL_CUR_USE_DRIVER;break;
 		}
+	}
+	//TLS / X.509 client certificate options - additive only, so a hand written connect attribute is never overridden
+	$params=hanaAddConnectSSL($params);
+	return $params;
+}
+//---------- begin function hanaCertFileCheck ----------
+/**
+* @describe verifies a cert / CA file exists and can be read by the web server user
+* @param $path string - path to the file
+* @param $label string - which attribute it came from, used in the message
+* @return string - empty string if the file is usable, otherwise the reason it is not
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage
+*	$err=hanaCertFileCheck($params['-dbcert'],'dbcert');
+*	if(strlen($err)){echo $err;}
+*/
+function hanaCertFileCheck($path,$label='dbcert'){
+	if(!commonStrlen($path)){return "hana {$label} error: no path set";}
+	if(!is_file($path)){return "hana {$label} error: file not found - {$path}";}
+	if(!is_readable($path)){return "hana {$label} error: file is not readable by the web server user - {$path}";}
+	return '';
+}
+//---------- begin function hanaAddConnectSSL ----------
+/**
+* @describe adds TLS / X.509 client certificate options to the ODBC connect string.
+*	Does nothing unless a TLS attribute is set. A bare DSN name is turned into DSN={name}; so the driver
+*	options can ride along. Only ever ADDS - anything already named in the connect string wins.
+*	dbcert=PEM file holding the client cert AND its private key (HANA reads both from one file),
+*	dbcertpass=private key passphrase, dbca=trust store (CA bundle), dbssl=1 forces TLS with no client cert,
+*	dbsslverify=0 skips server cert validation. Requires HANA 2.0 server side X.509 setup and a HANA client 2.4+.
+* @param $params array - parsed connect params
+* @return array - the params with -connect set to the extended connect string
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $params=hanaAddConnectSSL($params);
+*/
+function hanaAddConnectSSL($params=array()){
+	$vals=array();
+	foreach(array('dbcert','dbkey','dbcertpass','dbca','dbssl','dbsslverify') as $k){
+		$vals[$k]=isset($params["-{$k}"]) && commonStrlen($params["-{$k}"]) ? $params["-{$k}"] : '';
+	}
+	$forcessl=$vals['dbssl']==1 ? 1 : 0;
+	if($forcessl==0 && !commonStrlen($vals['dbcert'].$vals['dbca'].$vals['dbsslverify'])){return $params;}
+	if(commonStrlen($vals['dbkey']) && $vals['dbkey'] != $vals['dbcert']){
+		debugValue("hanaAddConnectSSL: dbkey is ignored - HANA reads the cert and private key from one PEM file. Combine them into the dbcert file.");
+	}
+	//log an unusable file but still pass it through so the driver reports the failure too
+	foreach(array('dbcert','dbca') as $k){
+		if(!commonStrlen($vals[$k])){continue;}
+		$err=hanaCertFileCheck($vals[$k],$k);
+		if(commonStrlen($err)){debugValue("hanaAddConnectSSL: {$err}");}
+	}
+	$connect=isset($params['-connect']) ? $params['-connect'] : $params['-dbname'];
+	if(!stringContains($connect,'=')){$connect="DSN={$connect}";}
+	$connect=rtrim($connect,'; ');
+	$opts=array('encrypt'=>'TRUE');
+	if(commonStrlen($vals['dbsslverify'])){
+		$opts['sslValidateCertificate']=$vals['dbsslverify']==0 ? 'FALSE' : 'TRUE';
+	}
+	elseif(commonStrlen($vals['dbca'])){
+		$opts['sslValidateCertificate']='TRUE';
+	}
+	if(commonStrlen($vals['dbca'])){$opts['sslTrustStore']=$vals['dbca'];}
+	if(commonStrlen($vals['dbcert'])){$opts['authenticationX509']=$vals['dbcert'];}
+	if(commonStrlen($vals['dbcertpass'])){$opts['authenticationX509Password']=$vals['dbcertpass'];}
+	foreach($opts as $key=>$val){
+		//already named in the connect string - leave it alone
+		if(preg_match('/(^|;)\s*'.$key.'\s*=/i',$connect)){continue;}
+		$connect.=";{$key}={$val}";
+	}
+	$params['-connect']=$connect;
+	return $params;
+}
+//---------- begin function hanaMaskConnectParams ----------
+/**
+* @describe masks the password and key passphrase in connect params so they can be shown in an error
+* @param $params array - parsed connect params
+* @return array - copy of the params with secrets masked
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage echo printValue(hanaMaskConnectParams($params));
+*/
+function hanaMaskConnectParams($params=array()){
+	foreach(array('-dbpass','-dbcertpass') as $k){
+		if(isset($params[$k])){$params[$k]=preg_replace('/./','*',$params[$k]);}
+	}
+	if(isset($params['-connect'])){
+		$params['-connect']=preg_replace('/((^|;)\s*(pwd|password|authenticationX509Password)\s*=)[^;]*/i','$1****',$params['-connect']);
 	}
 	return $params;
 }
@@ -1308,8 +1404,7 @@ function hanaDBConnect($params=array()){
 		}
 		if(!commonIsResourceOrObject($dbh_hana_single)){
 			$err=odbc_errormsg();
-			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-			echo "hanaDBConnect single connect error:{$err}".printValue($params);
+			echo "hanaDBConnect single connect error:{$err}".printValue(hanaMaskConnectParams($params));
 			exit;
 		}
 		return $dbh_hana_single;
@@ -1335,8 +1430,7 @@ function hanaDBConnect($params=array()){
 			}
 			if(!commonIsResourceOrObject($dbh_hana)){
 				$err=odbc_errormsg();
-				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-				echo "hanaDBConnect error:{$err}".printValue($params);
+				echo "hanaDBConnect error:{$err}".printValue(hanaMaskConnectParams($params));
 				exit;
 			}
 		}

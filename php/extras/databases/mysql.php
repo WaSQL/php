@@ -1021,6 +1021,10 @@ function mysqlParseConnectParams($params=array()){
 		if(isset($CONFIG['dbconnect'])){
 			$params['-connect']=$CONFIG['dbconnect'];
 		}
+		//TLS / client certificate attributes
+		foreach(array('dbcert','dbkey','dbca','dbcapath','dbcipher','dbssl','dbsslverify') as $k){
+			if(isset($CONFIG[$k])){$params["-{$k}"]=$CONFIG[$k];}
+		}
 	}
 	//dbhost
 	if(!isset($params['-dbhost'])){

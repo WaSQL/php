@@ -37,6 +37,21 @@ oci8.statement_cache_size= 20
 | `dbuser` / `dbpass` | credentials |
 | `dbsysdba` | connect as SYSDBA (passed as OCI8's session mode) |
 | `charset` | character set passed to `oci_connect` |
+| `dbwallet` | wallet directory (client cert + trusted CAs, auto-login `cwallet.sso`) → `(SECURITY=(MY_WALLET_DIRECTORY=…))`. Switches a built descriptor to `TCPS` / port `2484` |
+| `dbssl` | `1` → `TCPS` with no wallet |
+| `dbsslverify` | `0` → `SSL_SERVER_DN_MATCH=FALSE` (default `TRUE`) |
+| `dbcertdn` | expected server cert DN → `SSL_SERVER_CERT_DN` |
+| `protocol` | override the descriptor protocol. Before the cert work this attribute was silently ignored |
+
+### Wallet / certificate auth
+```xml
+<database name="erp_ora" dbtype="oracle" dbhost="ora01.x.com" dbport="2484"
+    dbservice_name="XEPDB1" dbwallet="/etc/wasql/wallets/erp" />
+```
+- `oracleAddConnectSSL()` appends a `SECURITY` section to any `(DESCRIPTION=…)` string, built or hand-written, unless one is already there. Easy Connect strings (`host:port/service`) are left alone with a logged note, so use a descriptor.
+- **With `dbwallet` and no `dbuser`/`dbpass`** the connect uses `OCI_CRED_EXT` (external credentials). The DB user must be `IDENTIFIED EXTERNALLY AS 'CN=…'`. The server's `sqlnet.ora` needs `SSL_CLIENT_AUTHENTICATION=TRUE` and `TCPS` in `SQLNET.AUTHENTICATION_SERVICES`, and the client's `sqlnet.ora` needs `SQLNET.AUTHENTICATION_SERVICES=(TCPS)`. **PHP does not support `OCI_CRED_EXT` on Windows.**
+- With `dbwallet` **plus** `dbuser`/`dbpass`, the wallet is used only for TLS and the login is still a password.
+- `dbport` is honored now. `oracleDBConnect` used to force `-port=1521`, which shadowed the `dbport` attribute.
 
 If no `dbhost` can be resolved from attributes or `CONFIG`, `oracleParseConnectParams` returns the params **unchanged** — the connect then fails with no descriptor, which is the usual cause of a silent Oracle failure.
 

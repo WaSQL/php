@@ -41,6 +41,8 @@ With TLS / a client certificate:
 | `dbssl` | `1` forces TLS with no client cert |
 | `dbsslverify` | `0` accepts a self-signed server cert |
 
+For a site whose main DB is MySQL, the same TLS keys are read from the top-level `CONFIG` too. But the site's own connection (`databaseConnect()` in `php/database.php`) is a plain `mysqli_connect()` and **does not use them**. Only connections that go through `mysqlDBConnect()` get TLS.
+
 Per-user overrides (`dbuser_slloyd="…"`) and `CONFIG` fallbacks (`dbuser_mysql` / `mysql_dbuser`) both work, same as the other drivers.
 
 ## Calling it

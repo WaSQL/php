@@ -22574,6 +22574,10 @@ function postURL($url,$params=array()) {
 *	[-headers] - headers to set
 *	[-crlf] - post using carriage returns for windows servers
 *	[-ssl] - ignore SSL is set to true
+*	[-ssl_cert] - CA bundle used to verify the server
+*	[-certfile] - client certificate for mutual TLS
+*	[-keyfile] - client private key for mutual TLS
+*	[-keypass] - client private key passphrase
 *	[-timeout]  - The maximum number of seconds to allow cURL functions to execute.
 *	[-timeout_connect]  - The maximum number of seconds to allow cURL to connect.
 * @return array
@@ -22743,6 +22747,16 @@ function postBody($url='',$body='',$params=array()) {
 	//alernate port?
 	if(isset($params['-port']) && isNum($params['-port'])){
 		curl_setopt($process, CURLOPT_PORT, $params['-port']);
+	}
+	//client certificate (mutual TLS)
+	if(isset($params['-certfile']) && strlen($params['-certfile'])){
+		curl_setopt($process, CURLOPT_SSLCERT, $params['-certfile']);
+	}
+	if(isset($params['-keyfile']) && strlen($params['-keyfile'])){
+		curl_setopt($process, CURLOPT_SSLKEY, $params['-keyfile']);
+	}
+	if(isset($params['-keypass']) && strlen($params['-keypass'])){
+		curl_setopt($process, CURLOPT_SSLKEYPASSWD, $params['-keypass']);
 	}
     curl_setopt($process, CURLOPT_HEADER, true);
     if(isset($params['-method']) && strlen($params['-method'])){

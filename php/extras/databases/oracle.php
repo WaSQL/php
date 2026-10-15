@@ -1309,7 +1309,7 @@ function oracleCommit($conn=''){
 */
 function oracleDBConnect($params=array()){
 	if(!is_array($params)){$params=array();}
-	if(!isset($params['-port'])){$params['-port']=1521;}
+	//port defaults (1521, or 2484 for TCPS) are set in oracleParseConnectParams so a dbport attribute is honored
 	if(!isset($params['-charset'])){$params['-charset']='AL32UTF8';}
 	$params=oracleParseConnectParams($params);
 	if(!isset($params['-dbsysdba'])){
@@ -1318,6 +1318,16 @@ function oracleDBConnect($params=array()){
 	elseif($params['-dbsysdba']==1){
 		$params['-dbsysdba']=OCI_SYSDBA;
 		ini_set('oci8.privileged_connect','on');
+	}
+	//wallet cert auth with no user/pass - external credentials (users IDENTIFIED EXTERNALLY AS 'CN=...')
+	//OCI_CRED_EXT is not supported by PHP on Windows
+	if(isset($params['-dbwallet']) && commonStrlen($params['-dbwallet']) && !commonStrlen($params['-dbuser']) && !commonStrlen($params['-dbpass'])){
+		if(defined('OCI_CRED_EXT')){
+			$params['-dbsysdba']=is_null($params['-dbsysdba']) ? OCI_CRED_EXT : ($params['-dbsysdba'] | OCI_CRED_EXT);
+		}
+		else{
+			debugValue("oracleDBConnect error: OCI_CRED_EXT is not available - wallet cert auth needs it");
+		}
 	}
 	if(!isset($params['-connect'])){
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
@@ -2447,6 +2457,11 @@ function oracleParseConnectParams($params=array()){
 			$params['-dbuser']=$CONFIG['oracle_dbuser'];
 			$params['-dbuser_source']="CONFIG oracle_dbuser";
 		}
+		elseif(isset($params['-dbwallet']) && commonStrlen($params['-dbwallet'])){
+			//wallet cert auth - the user comes from the certificate (IDENTIFIED EXTERNALLY)
+			$params['-dbuser']='';
+			$params['-dbuser_source']="dbwallet";
+		}
 		else{return "oracleParseConnectParams Error: No dbuser set. DB:{$CONFIG['db']}";}
 	}
 	else{
@@ -2460,6 +2475,11 @@ function oracleParseConnectParams($params=array()){
 		elseif(isset($CONFIG['oracle_dbpass'])){
 			$params['-dbpass']=$CONFIG['oracle_dbpass'];
 			$params['-dbpass_source']="CONFIG oracle_dbpass";
+		}
+		elseif(isset($params['-dbwallet']) && commonStrlen($params['-dbwallet'])){
+			//wallet cert auth connects without a password
+			$params['-dbpass']='';
+			$params['-dbpass_source']="dbwallet";
 		}
 		else{return 'oracleParseConnectParams Error: No dbpass set';}
 	}
@@ -2485,11 +2505,13 @@ function oracleParseConnectParams($params=array()){
 			elseif(isset($CONFIG['oracle_dbhost'])){$dbhost=$CONFIG['oracle_dbhost'];}
 			elseif(isset($CONFIG['dbhost_oracle'])){$dbhost=$CONFIG['dbhost_oracle'];}
 			if(!strlen($dbhost)){return $params;}
-			$protocol='TCP';
-			if(isset($params['-protocol'])){$tcp=$params['-protocol'];}
-			elseif(isset($CONFIG['oracle_protocol'])){$tcp=$CONFIG['oracle_protocol'];}
-			elseif(isset($CONFIG['protocol_oracle'])){$tcp=$CONFIG['protocol_oracle'];}
-			$port='1521';
+			//TCPS when a wallet or dbssl is set
+			$usessl=oracleUsesSSL($params);
+			$protocol=$usessl ? 'TCPS' : 'TCP';
+			if(isset($params['-protocol'])){$protocol=$params['-protocol'];}
+			elseif(isset($CONFIG['oracle_protocol'])){$protocol=$CONFIG['oracle_protocol'];}
+			elseif(isset($CONFIG['protocol_oracle'])){$protocol=$CONFIG['protocol_oracle'];}
+			$port=$usessl ? '2484' : '1521';
 			if(isset($params['-port'])){$port=$params['-port'];}
 			elseif(isset($params['-dbport'])){$port=$params['-dbport'];}
 			elseif(isset($CONFIG['oracle_port'])){$port=$CONFIG['oracle_port'];}
@@ -2533,6 +2555,59 @@ function oracleParseConnectParams($params=array()){
 	else{
 		$params['-connect_source']="passed in";
 	}
+	//TLS / wallet options - additive only, so a hand written connect attribute is never overridden
+	$params=oracleAddConnectSSL($params);
+	return $params;
+}
+//---------- begin function oracleUsesSSL ----------
+/**
+* @describe returns true when a TLS attribute (dbwallet or dbssl=1) is set on the connection
+* @param $params array - parsed connect params
+* @return boolean
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage if(oracleUsesSSL($params)){...}
+*/
+function oracleUsesSSL($params=array()){
+	if(isset($params['-dbwallet']) && commonStrlen($params['-dbwallet'])){return true;}
+	if(isset($params['-dbssl']) && $params['-dbssl']==1){return true;}
+	return false;
+}
+//---------- begin function oracleAddConnectSSL ----------
+/**
+* @describe adds a SECURITY section (wallet / server cert matching) to a TNS descriptor connect string.
+*	Does nothing unless a TLS attribute is set, or when the descriptor already has a SECURITY section.
+*	dbwallet=wallet directory holding the client cert + trusted CAs (auto-login cwallet.sso),
+*	dbssl=1 forces TCPS with no wallet, dbsslverify=0 turns off server DN matching,
+*	dbcertdn=expected server cert DN. Easy Connect strings are left alone - use a descriptor.
+* @param $params array - parsed connect params
+* @return array - the params with -connect extended
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $params=oracleAddConnectSSL($params);
+*/
+function oracleAddConnectSSL($params=array()){
+	if(!isset($params['-connect']) || !is_string($params['-connect'])){return $params;}
+	if(!oracleUsesSSL($params)){return $params;}
+	if(stripos($params['-connect'],'(DESCRIPTION')===false){
+		debugValue("oracleAddConnectSSL: TLS attributes are only applied to a (DESCRIPTION=...) connect string");
+		return $params;
+	}
+	//already has a security section - leave it alone
+	if(preg_match('/\(\s*SECURITY\s*=/i',$params['-connect'])){return $params;}
+	$security='';
+	if(isset($params['-dbwallet']) && commonStrlen($params['-dbwallet'])){
+		//log an unusable wallet but still pass it through so OCI reports the failure too
+		if(!is_dir($params['-dbwallet'])){
+			debugValue("oracleAddConnectSSL: dbwallet directory not found - {$params['-dbwallet']}");
+		}
+		$security.="(MY_WALLET_DIRECTORY={$params['-dbwallet']})";
+	}
+	$dnmatch=isset($params['-dbsslverify']) && $params['-dbsslverify']==0 ? 'FALSE' : 'TRUE';
+	$security.="(SSL_SERVER_DN_MATCH={$dnmatch})";
+	if(isset($params['-dbcertdn']) && commonStrlen($params['-dbcertdn'])){
+		$security.="(SSL_SERVER_CERT_DN=\"{$params['-dbcertdn']}\")";
+	}
+	//append inside the closing paren of the DESCRIPTION
+	$params['-connect']=preg_replace('/\)\s*$/',"(SECURITY={$security}))",$params['-connect']);
 	return $params;
 }
 

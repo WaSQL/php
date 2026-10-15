@@ -24,9 +24,14 @@ Queries Elasticsearch **with SQL** through its `_sql` REST endpoint, so an ES cl
 
 | attribute | used for |
 |---|---|
-| `dbhost` | cluster base URL |
+| `dbhost` | cluster host. **The code prepends `https://`**, so give the bare host, not a URL |
 | `dbport` | port |
-| `dbuser` / `dbpass` | basic auth |
+| `dbuser` / `dbpass` | basic auth. Omit them to use a client cert alone |
+| `dbcert` / `dbkey` / `dbcertpass` | client cert, key, and key passphrase for the Elasticsearch **PKI realm** (passed to `postJSON` as `-certfile` / `-keyfile` / `-keypass`) |
+| `dbca` | CA bundle. Turns server verification **on** (`-ssl_cert`) |
+| `dbsslverify` | `1` verifies the server against the bundled CA list. Default is still no verification (`-nossl`), as before |
+
+`elasticAddConnectSSL($opts,$db)` builds these options. `-certfile`/`-keyfile`/`-keypass` are general `postJSON`/`postBody` options in `php/common.php`.
 
 ## Calling it
 Indices are the "tables":

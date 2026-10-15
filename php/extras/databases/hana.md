@@ -23,6 +23,21 @@ Queries SAP HANA over ODBC. One of the heavier drivers: alongside the usual CRUD
 | `connect` | a full ODBC connect string, used instead of `dbname` |
 | `dbuser` / `dbpass` | credentials |
 | `cursor` | `SQL_CUR_USE_ODBC` / `SQL_CUR_USE_IF_NEEDED` / `SQL_CUR_USE_DRIVER` |
+| `dbcert` | **one PEM file holding the client cert AND its private key** → `authenticationX509`. With no `dbuser`/`dbpass`, both default to `''` (X.509 auth) |
+| `dbcertpass` | private key passphrase → `authenticationX509Password` |
+| `dbca` | trust store (CA bundle) → `sslTrustStore` + `sslValidateCertificate=TRUE` |
+| `dbssl` | `1` → `encrypt=TRUE` with no client cert |
+| `dbsslverify` | `0` → `sslValidateCertificate=FALSE`, `1` → `TRUE` |
+
+### X.509 / TLS
+```xml
+<database name="hana_t1" dbtype="hana" dbname="HANA_T1_DSN"
+    dbcert="/etc/wasql/certs/hana_svc.pem" dbca="/etc/wasql/certs/ca.pem" />
+```
+`hanaAddConnectSSL()` turns a bare DSN into `DSN=HANA_T1_DSN;` and appends `encrypt=TRUE;sslTrustStore=…;authenticationX509=…`. It is **additive only**: a key already named in `connect` (case-insensitive) is never overridden. `dbkey` is ignored with a logged warning, because HANA reads the cert and key from one file (`cat client.crt client.key > hana_svc.pem`).
+- **Server side:** HANA 2.0 needs an X.509 PSE / certificate collection with purpose `X509`, and the user mapped with `CREATE USER svc WITH IDENTITY 'CN=svc' ISSUER 'CN=…' FOR X509` (or `ALTER USER … ADD IDENTITY`).
+- **Client side:** `authenticationX509` needs **HANA client 2.4+**. On older drivers it is an unknown keyword and the connect fails.
+- Connect errors now go through `hanaMaskConnectParams()`, which masks `dbpass`, `dbcertpass`, and `PWD=`/`authenticationX509Password=` inside the connect string.
 
 `CONFIG` fallbacks exist in both spellings (`dbuser_hana` / `hana_dbuser`), and per-user attribute overrides work.
 

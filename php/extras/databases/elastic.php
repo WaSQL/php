@@ -16,10 +16,51 @@
 	        dbuser="{username}"
 	        dbpass="{password}"
 	    />
+		With a client certificate (Elasticsearch PKI realm) instead of user/pass:
+		<database
+	        name="elasticsearch_dev"
+	        dbhost="logs.abccompany.com"
+	        dbport="8200"
+	        dbtype="elastic"
+	        dbcert="/etc/wasql/certs/elastic.crt"
+	        dbkey="/etc/wasql/certs/elastic.key"
+	        dbca="/etc/wasql/certs/ca.crt"
+	    />
 
 
 */
 
+//---------- begin function elasticAddConnectSSL ----------
+/**
+* @describe adds client certificate (PKI realm) and server verification options to the postJSON options.
+*	dbcert=client cert, dbkey=client private key, dbcertpass=key passphrase, dbca=CA bundle used to verify the server,
+*	dbsslverify=1 verifies the server against the default CA bundle. Server verification stays OFF unless dbca
+*	or dbsslverify=1 is set, matching the old behavior. With a cert and no dbuser/dbpass no basic auth is sent.
+* @param $opts array - postJSON options
+* @param $db array - the database attributes from config.xml
+* @return array - the options extended with the TLS settings
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $opts=elasticAddConnectSSL($opts,$db);
+*/
+function elasticAddConnectSSL($opts=array(),$db=array()){
+	$map=array('dbcert'=>'-certfile','dbkey'=>'-keyfile','dbcertpass'=>'-keypass');
+	foreach($map as $k=>$opt){
+		if(!isset($db[$k]) || !commonStrlen($db[$k])){continue;}
+		//log an unusable file but still pass it through so curl reports the failure too
+		if($k != 'dbcertpass' && !is_readable($db[$k])){
+			debugValue("elasticAddConnectSSL: {$k} file not found or not readable by the web server user - {$db[$k]}");
+		}
+		$opts[$opt]=$db[$k];
+	}
+	if(isset($db['dbca']) && commonStrlen($db['dbca'])){
+		$opts['-ssl_cert']=$db['dbca'];
+		unset($opts['-nossl']);
+	}
+	elseif(isset($db['dbsslverify']) && $db['dbsslverify']==1){
+		unset($opts['-nossl']);
+	}
+	return $opts;
+}
 //---------- begin function elasticGetTableDDL ----------
 /**
 * @describe returns create script for specified table
@@ -150,14 +191,16 @@ function elasticQueryResults($query,$params=array()){
 	);
 	$json=encodeJSON($payload);
 	$recs_count=0;
-	$post=postJSON($url,$json,array(
-		'-authuser'=>$db['dbuser'],
-		'-authpass'=>$db['dbpass'],
+	$postopts=array(
+		'-authuser'=>isset($db['dbuser']) ? $db['dbuser'] : '',
+		'-authpass'=>isset($db['dbpass']) ? $db['dbpass'] : '',
 		'-port'=>$db['dbport'],
 		'-nossl'=>1,
 		'format'=>'json',
 		'-method'=>'POST'
-	));
+	);
+	$postopts=elasticAddConnectSSL($postopts,$db);
+	$post=postJSON($url,$json,$postopts);
 	if(isset($post['json_array']['error']['root_cause'][0]['reason'])){
 		return "ERROR: ".$post['json_array']['error']['root_cause'][0]['reason'];
 	}

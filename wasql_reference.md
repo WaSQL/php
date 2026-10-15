@@ -243,21 +243,23 @@ Then walk the file with `fgetcsv()` — you get an exact row count for the cost 
 > This is also why `ORDER BY` is where a c-tree statement timeout bites: it forces the engine to sort the entire result before yielding row one, so the timeout fires inside `executeQuery` rather than partway through the fetch loop.
 
 ### TLS / certificate authentication on a connection
-Every attribute on a `<database>` tag is copied into the driver's params as `-{attr}` (`snowflakeParseConnectParams`, `postgresqlParseConnectParams`, `mysqlParseConnectParams`), so cert auth is pure `config.xml` — no code per site. Shared attribute vocabulary:
+Every attribute on a `<database>` tag is copied into the driver's params as `-{attr}` (`snowflakeParseConnectParams`, `postgresqlParseConnectParams`, `mysqlParseConnectParams`, `hanaParseConnectParams`, `oracleParseConnectParams`; elastic reads `$DATABASE[...]` directly), so cert auth is pure `config.xml`, with no code per site. Shared attribute vocabulary:
 
 | attribute | meaning |
 |---|---|
-| `dbcert` | client cert (mysql/pg) **or** the PKCS#8 private key (snowflake key-pair/JWT) |
-| `dbkey` | client private key, when the driver wants cert and key separately (mysql/pg) |
+| `dbcert` | client cert (mysql/pg/elastic), **or** cert+key in ONE PEM (hana `authenticationX509`), **or** the PKCS#8 private key (snowflake key-pair/JWT) |
+| `dbkey` | client private key, when the driver wants cert and key separately (mysql/pg/elastic). Ignored by hana, with a warning |
 | `dbcertpass` | passphrase protecting the key |
-| `dbca` | CA bundle used to verify the *server* |
+| `dbca` | CA bundle used to verify the *server* (hana → `sslTrustStore`; elastic → turns verification on) |
 | `dbcapath` | directory of CA certs (mysql only) |
 | `dbcipher` | cipher list (mysql only) |
 | `dbauth` | snowflake authenticator — defaults to `SNOWFLAKE_JWT` whenever `dbcert` is set |
 | `dbsslmode` | pg `sslmode`. Auto: `verify-full` if `dbca` set, `require` if only cert/key set, else the old `disable` |
-| `dbssl` / `dbsslverify` | mysql: `dbssl="1"` forces TLS with no client cert; `dbsslverify="0"` accepts a self-signed server cert |
+| `dbssl` / `dbsslverify` | `dbssl="1"` forces TLS with no client cert (mysql, hana `encrypt=TRUE`, oracle `TCPS`). `dbsslverify="0"` relaxes server cert checking (mysql self-signed, hana `sslValidateCertificate=FALSE`, oracle `SSL_SERVER_DN_MATCH=FALSE`); on elastic, `dbsslverify="1"` turns verification on |
+| `dbwallet` | oracle only: wallet directory → `(SECURITY=(MY_WALLET_DIRECTORY=…))`, built descriptor switches to TCPS/2484, and with no user/pass the login uses `OCI_CRED_EXT` |
+| `dbcertdn` | oracle only: expected server DN → `SSL_SERVER_CERT_DN` |
 
-**A hand-written `connect` attribute always wins.** Both snowflake and postgres only *add* keys the connect string doesn't already name (case-insensitive), so existing `connect="…"` connections behave exactly as before.
+**A hand-written `connect` attribute always wins.** snowflake, postgres, hana and oracle only *add* keys the connect string doesn't already name (case-insensitive; oracle skips a descriptor that already has a `SECURITY` section), so existing `connect="…"` connections behave exactly as before.
 
 ```xml
 <!-- snowflake key-pair auth: dbpass is no longer required -->
@@ -276,7 +278,11 @@ Gotchas, all real:
 - **MySQL:** mysqli has no connect string, so `mysqli_ssl_set()` runs between `mysqli_init()` and `mysqli_real_connect()` (`mysqlSetConnectSSL`). Client-cert *auth* also needs `ALTER USER … REQUIRE X509`. mysqlnd does **not** read `[client]` from `my.cnf`, so the attributes are the only route.
 - Passwords/passphrases are masked in snowflake's connect-error dumps (`snowflakeMaskConnectParams`) — keep using it if you add error paths.
 - **Python side (`python/snowflakedb.py`)** mirrors the same `dbcert`/`dbcertpass`/`dbauth` attributes, but the connector is `snowflake-connector-python`, not ODBC: the key is loaded with `cryptography` and handed over as DER bytes in `private_key` (plus `authenticator=SNOWFLAKE_JWT`, and `password` is dropped). If `cryptography` isn't installed it falls back to `private_key_file`/`private_key_file_pwd`, which needs connector 3.6+. Helpers match the php names — `certFileCheck`, `certValue` (params, then `CONFIG['dbcert_snowflake']`/`CONFIG['snowflake_dbcert']`), `loadPrivateKey`, `maskConnectParams`.
-- **Not covered:** the *main* site DB connection for mysql (`databaseConnect()` in `php/database.php`) takes only host/user/pass/dbname and has no TLS support. Named connections only. Also untouched: hana/mssql/oracle (each needs a different mechanism), and file-based drivers where certs are meaningless.
+- **HANA:** `hanaAddConnectSSL` rewrites a bare DSN to `DSN=…;` so the driver keywords can ride along. Needs HANA client **2.4+** for `authenticationX509`, plus a server-side X.509 PSE and `CREATE USER … WITH IDENTITY 'CN=…' ISSUER '…' FOR X509`. With no `dbuser`/`dbpass` both become `''`, which is the same empty-string rule as snowflake's ODBC path.
+- **Oracle:** external (cert-only) auth needs `IDENTIFIED EXTERNALLY AS 'CN=…'`, `SSL_CLIENT_AUTHENTICATION=TRUE` on the server, and `SQLNET.AUTHENTICATION_SERVICES=(TCPS)` in the *client* `sqlnet.ora`. **PHP refuses `OCI_CRED_EXT` on Windows.** Easy Connect strings get no TLS keys; use a descriptor.
+- **Elastic:** client certs are general `postJSON`/`postBody` options in `php/common.php` (`-certfile`/`-keyfile`/`-keypass`). Server verification stays off unless `dbca` or `dbsslverify="1"` is set, to keep existing behavior.
+- **MSSQL has no client-cert login**, so there is nothing to add. TLS already exists (`encrypt`, `trust_server_certificate` attributes), and the passwordless route is Kerberos/Windows auth: omit `dbuser`/`dbpass` and `sqlsrv_connect` uses integrated auth (on Linux it needs a `kinit`/keytab ticket for the apache user).
+- **Not covered:** the *main* site DB connection for mysql (`databaseConnect()` in `php/database.php`) takes only host/user/pass/dbname and has no TLS support. Its TLS keys are parsed but unused, so named connections only. Also untouched: firebird/memgraph/ctree (no cert-auth mechanism), generic `odbc` (put driver cert keywords in the DSN/`connect` yourself), and file-based drivers where certs are meaningless.
 
 ---
 
@@ -385,6 +391,7 @@ Driver libraries are **not** bundled (same as R's `install.packages` / Lua's `lu
 <?=renderViewIfElse(strlen($info['1st_counselor']['picture']),'leader_picture','avatar',$info['1st_counselor'],'info');?>
 ```
 - **⚠️ The closing tag MUST be the named form `</view:name>`, NOT a generic `</view>`.** The parser matches `<view:name>(.+?)</view:\1>` with a backreference (`php/common.php` ~L8043), so a bare `</view>` silently fails to register the block and you get `renderView Error: There is no view named X`.
+- **⚠️ An EMPTY view (`<view:none></view:none>`) is never registered — the same `(.+?)` needs at least one character.** The literal tags stay in the field and get **echoed into the page** as raw `<view:none></view:none>` text wherever they sit, and naming it as the else-branch of `renderViewIfElse` can't work. Don't create a blank "else" view: use `renderViewIf` (which already returns `''` when false). Observed 2026-10-15 on dev-jira — the stray tag showed up inside an AJAX partial's HTML.
 - **Reuse one generic view for many callers.** Because the alias renames the passed data, a single `<view:avatar>`/`<view:leader_picture>` can serve all four bishopric cards — pass each person as the params and let the view read `$info` (or whatever alias). Don't clone a near-identical view per card.
 
 ### `setView($name)` vs `setView($name, 1)`
