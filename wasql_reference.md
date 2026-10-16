@@ -914,6 +914,12 @@ foreach($recs as $rec){
 ```
 A `_cron` table tracks jobs (`run_cmd` URL, `run_every`, `cron_pid`, `running`); `cron_check_crons` is a watchdog that resets dead jobs.
 
+- **A page cron is an anonymous HTTP GET** (`cron.php` → `postURL("https://{name}/{run_cmd}")`), so a `cron_*` page must NOT have the stub's `if(!isUser())` login gate. To lock it down, check the params cron.php appends to the URL: `$_REQUEST['cron_id']` + `$_REQUEST['cron_pid']` must match a `_cron` row with `running=1` (also `cron_guid`, `cron_name`). Set `run_as` on the `_cron` row instead if the job truly needs a logged-in `$USER`.
+- In that web request `commonCronLog()` can't find the job (it looks up by the *web server's* pid), so it just echoes — which is fine, the response body is what lands in the cron log. Return/echo a plain-text log from the page.
+- **Share logic with a sibling page** via `loadDBFunctions('otherpage','functions')` — the 2nd arg picks the field (default `body`, which is right for `functions_common`).
+- **Emails rendered from `<view:>` blocks must be built during BODY render** (gotcha #4) — so have the controller just pick a `run` view and let `<view:run><?=myCronRun();?></view:run>` do the work and call `renderView('email_x',…)`.
+- Example: dis `cron_awardco` (hourly; claim-before-send dedupe table, stage redirect of all mail).
+
 ---
 
 ## A reserved word as a column name makes a table unreadable (verified 2026-08-18)
