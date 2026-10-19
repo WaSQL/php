@@ -8462,8 +8462,8 @@ function commonProcessChartjsTags($htm){
 		$replace_str .= '></div>'.PHP_EOL;
 		$replace_str .= '<div id="'.$chartjs_attributes['id'].'_data" style="display:none">'.PHP_EOL;
 		$labels=array();
-		$colors=array();
-		$bcolors=array();
+		$inline_colors=array();
+		$inline_bcolors=array();
 		foreach($chartjs_inner[0] as $t=>$chartjs_innertag){
 			$innertag_name=$chartjs_inner[1][$t];
 			$innertag_attributes=parseHtmlTagAttributes($chartjs_inner[2][$t]);
@@ -8527,10 +8527,10 @@ function commonProcessChartjsTags($htm){
 							$vals[]=isset($rec['value'])?$rec['value']:0;
 						}
 						if(isset($rec['color'])){
-							$colors[]=$rec['color'];
+							$inline_colors[]=$rec['color'];
 						}
 						if(isset($rec['bcolor'])){
-							$bcolors[]=$rec['bcolor'];
+							$inline_bcolors[]=$rec['bcolor'];
 						}
 					}
 					$replace_str.=json_encode($vals,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
@@ -8561,14 +8561,14 @@ function commonProcessChartjsTags($htm){
 		if(count($labels)){
 			$replace_str .= '<labels>'.json_encode(array_values($labels),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</labels>'.PHP_EOL;
 		}
-		if(count($colors)){
-			$replace_str .= '<colors>'.json_encode(array_values($colors),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</colors>'.PHP_EOL;
+		if(count($inline_colors)){
+			$replace_str .= '<colors>'.json_encode(array_values($inline_colors),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</colors>'.PHP_EOL;
 		}
 		elseif(strlen($colorstr)){
 			$replace_str.='<colors>'.$colorstr.'</colors>'.PHP_EOL;
 		}
-		if(count($bcolors)){
-			$replace_str .= '<bcolors>'.json_encode(array_values($bcolors),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</bcolors>'.PHP_EOL;
+		if(count($inline_bcolors)){
+			$replace_str .= '<bcolors>'.json_encode(array_values($inline_bcolors),JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE).'</bcolors>'.PHP_EOL;
 		}
 		elseif(strlen($bcolorstr)){
 			$replace_str.='<bcolors>'.$bcolorstr.'</bcolors>'.PHP_EOL;
