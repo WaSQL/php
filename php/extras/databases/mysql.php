@@ -383,13 +383,19 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		}
 		//echo "<pre>{$query}</pre>".$jsonstr.printValue($fieldinfo);exit;
 		//prepare and execute
-		$stmt=mysqli_prepare($dbh_mysql,$query);
-		if(!commonIsResourceOrObject($stmt) &&  !commonIsResourceOrObject($dbh_mysql)){
-			$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
-			debugValue(array($DATABASE['_lastquery']['error'],$query,$fieldinfo));
-			return 0;
+		//  mysqli throws on prepare errors (PHP 8.1+ default report mode). A server without JSON_TABLE
+		//  (MySQL < 8.0.4, MariaDB < 10.6) fails here with a syntax error - fall through to the VALUES method below.
+		$stmt=false;
+		try{
+			$stmt=mysqli_prepare($dbh_mysql,$query);
 		}
-		if(mysqli_stmt_bind_param($stmt, 's',$jsonstr)){
+		catch (Throwable $e) {
+			$stmt=false;
+		}
+		if(!commonIsResourceOrObject($stmt)){
+			$stmt=false;
+		}
+		elseif(mysqli_stmt_bind_param($stmt, 's',$jsonstr)){
 			try{
 				mysqli_stmt_execute($stmt);
 			}
@@ -419,7 +425,7 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 			return count($recs);
 		}
 		//echo "No failures but not recs".printValue($DATABASE['_lastquery']);exit;
-		return 0;
+		if($stmt !== false){return 0;}
 	}
 	//JSON method did not work, try standard prepared statement method	
 	$query="INSERT{$ignore} INTO {$table} ({$fieldstr}) VALUES ";
@@ -499,15 +505,22 @@ function mysqlAddDBRecordsProcess($recs,$params=array()){
 		//if(mysqli_ping($dbh_mysql)){mysqli_close($dbh_mysql);}
 	}
 
-	$dbh_mysql='';
-	$dbh_mysql=mysqlDBConnect();
+	if(!commonIsResourceOrObject($dbh_mysql)){
+		$dbh_mysql=mysqlDBConnect($params);
+	}
 	if(!commonIsResourceOrObject($dbh_mysql)){
 		$mysqlAddDBRecordsResults['errors'][]=mysqli_connect_error();
 		debugValue(mysqli_connect_error());
     		return 0;
 	}
-	$stmt=mysqli_prepare($dbh_mysql,$query);
-	if(!commonIsResourceOrObject($stmt) &&  !commonIsResourceOrObject($dbh_mysql)){
+	$stmt=false;
+	try{
+		$stmt=mysqli_prepare($dbh_mysql,$query);
+	}
+	catch (Throwable $e) {
+		$stmt=false;
+	}
+	if(!commonIsResourceOrObject($stmt)){
 		$DATABASE['_lastquery']['error']=mysqli_error($dbh_mysql);
 		debugValue(array($DATABASE['_lastquery']['error'],$query));
 		return 0;
