@@ -49,7 +49,7 @@
 		wacss.ajaxGet('/php/admin.php','firewall_content',p);
 	}
 	function firewallAddIp(){
-		var ip=prompt('IP address to block:'); if(!ip){ return false; }
+		var ip=prompt('IP address or CIDR range to block (e.g. 45.138.12.0/24):'); if(!ip){ return false; }
 		var reason=prompt('Reason (optional):')||'';
 		var p=firewallFilters(); p.func='add'; p.ip=ip.trim(); p.reason=reason;
 		wacss.ajaxGet('/php/admin.php','firewall_content',p);

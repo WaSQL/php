@@ -27324,6 +27324,43 @@ function commonBlockedIpsInCidr($ip,$cidr){
 	$mask=(0xFF << (8-$rem)) & 0xFF;
 	return (ord($a[$bytes]) & $mask)===(ord($b[$bytes]) & $mask);
 }
+//---------- begin function commonBlockedIpsNormalizeCidr--------------------
+/**
+* @describe validates a CIDR range and returns it in canonical form with the host bits
+*	zeroed (45.138.12.77/24 => 45.138.12.0/24). Returns '' when malformed.
+* @param cidr string - e.g. 45.138.12.0/24 or 2001:db8::/32
+* @return string
+* @usage $cidr=commonBlockedIpsNormalizeCidr('45.138.12.0/24');
+*/
+function commonBlockedIpsNormalizeCidr($cidr){
+	$parts=explode('/',trim($cidr),2);
+	if(count($parts)!=2 || !isNum($parts[1])){return '';}
+	$bin=@inet_pton($parts[0]);
+	if($bin===false){return '';}
+	$bits=(int)$parts[1];
+	if($bits<0 || $bits>strlen($bin)*8){return '';}
+	for($i=0;$i<strlen($bin);$i++){
+		$keep=max(0,min(8,$bits-($i*8)));
+		$mask=$keep==0?0:((0xFF << (8-$keep)) & 0xFF);
+		$bin[$i]=chr(ord($bin[$i]) & $mask);
+	}
+	return inet_ntop($bin).'/'.$bits;
+}
+//---------- begin function commonBlockedIpsInRange--------------------
+/**
+* @describe returns the first blocked CIDR range (an ip_addr entry containing a slash in the
+*	active blocked list) that contains the IP, or '' when none does.
+* @param ip string
+* @param list array - map from commonBlockedIpsList()
+* @return string
+* @usage $range=commonBlockedIpsInRange($ip,commonBlockedIpsList());
+*/
+function commonBlockedIpsInRange($ip,$list){
+	foreach($list as $entry=>$v){
+		if(strpos($entry,'/')!==false && commonBlockedIpsInCidr($ip,$entry)){return $entry;}
+	}
+	return '';
+}
 //---------- begin function commonBlockedIpsDetect--------------------
 /**
 * @describe scans a request URI + User-Agent for probe / vuln-scanner signatures.
@@ -27532,6 +27569,12 @@ function commonBlockedIpsCheck(){
 		$list=commonBlockedIpsList();
 		if(isset($list[$ip])){
 			commonBlockedIpsFlag($ip,'','',$uri,$ua,'blocked');
+			commonBlockedIpsForbidden();
+		}
+		$range=commonBlockedIpsInRange($ip,$list);
+		if(strlen($range)){
+			//count the hit against the range row itself
+			commonBlockedIpsFlag($range,'','',$uri,$ua,'blocked');
 			commonBlockedIpsForbidden();
 		}
 		$hit=commonBlockedIpsDetect($uri,$ua);

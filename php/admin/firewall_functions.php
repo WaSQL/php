@@ -629,15 +629,19 @@ function firewallActionDelete($ids){
 //---------- begin function firewallActionAdd ----
 /**
 * @exclude
-* @describe manually add (or re-activate) a blocked IP.
-* @param ip string
+* @describe manually add (or re-activate) a blocked IP or CIDR range (e.g. 45.138.12.0/24).
+* @param ip string - IP address or CIDR range
 * @param reason string
 * @return string ''=ok, else an error message
 */
 function firewallActionAdd($ip,$reason=''){
 	$db=firewallDb(); if($db===null){return 'Firewall database unavailable.';}
 	$ip=trim((string)$ip);
-	if(!filter_var($ip,FILTER_VALIDATE_IP)){return 'That is not a valid IP address.';}
+	if(strpos($ip,'/')!==false){
+		$ip=commonBlockedIpsNormalizeCidr($ip);
+		if($ip===''){return 'That is not a valid CIDR range (e.g. 45.138.12.0/24).';}
+	}
+	elseif(!filter_var($ip,FILTER_VALIDATE_IP)){return 'That is not a valid IP address or CIDR range.';}
 	$reason=trim((string)$reason); if($reason===''){$reason='Added manually';}
 	$now=time();
 	global $USER;
