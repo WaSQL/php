@@ -1,11 +1,9 @@
 #! python
 """
 Installation
-    python3 -m pip install setuptools
-        if pip is not installed run the following first to install pip
-            python3 -m ensurepip --upgrade
+    No extra packages required - uses the standard library importlib.metadata (Python 3.8+)
 """
-import pkg_resources
+import importlib.metadata
 import sys
 import io
 import codecs
@@ -27,17 +25,19 @@ if sys.stdin.encoding != 'UTF-8':
         sys.stdin = codecs.getreader('utf-8')(sys.stdin.buffer)
 
 prows = ''
-for p in pkg_resources.working_set:
+seen = set()
+for dist in importlib.metadata.distributions():
+    name = dist.metadata['Name']
+    # skip nameless entries and duplicates (the same distribution can appear twice on sys.path)
+    if not name or name.lower() in seen:
+        continue
+    seen.add(name.lower())
     prow = '''
         <section>
         <h2><a name="module_{}">{}</a></h2>
         <table>
-        '''.format(p.project_name, p.project_name)
-    info = ''
-    try:
-        info = pkg_resources.get_distribution(p.project_name).get_metadata('PKG-INFO')
-    except Exception as err:
-        info = pkg_resources.get_distribution(p.project_name).get_metadata('METADATA')
+        '''.format(name, name)
+    info = dist.read_text('METADATA') or dist.read_text('PKG-INFO') or ''
 
     for line in info.splitlines():
         parts = line.split(':', 1)
