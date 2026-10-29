@@ -17,6 +17,8 @@ else
 fi
 MyUSER=$dbuser     # USERNAME
 MyPASS=$dbpass       # PASSWORD
+#pass the password via the environment so it never appears on the command line, in ps output, or in echoed commands
+export MYSQL_PWD="$MyPASS"
 MyHOST=$dbhost          # Hostname
 # check for databases to skip in the db_settings file
 IGGY=$skipdbs
@@ -24,7 +26,7 @@ IGGY=$skipdbs
 MYSQL="$(which mysql)"
 
 
-mysql -u $MyUSER -h $MyHOST -p$MyPASS -NBe "SHOW DATABASES;" | grep -v 'lost+found' | while read database ; do
+mysql -u $MyUSER -h $MyHOST -NBe "SHOW DATABASES;" | grep -v 'lost+found' | while read database ; do
 	#skip databases found in skipdbs
 	skipdb=-1
     if [ "$IGGY" != "" ]; then
@@ -35,7 +37,7 @@ mysql -u $MyUSER -h $MyHOST -p$MyPASS -NBe "SHOW DATABASES;" | grep -v 'lost+fou
     if [ "$skipdb" != "-1" ] ; then
     	continue
     fi
-	mysql -u $MyUSER -h $MyHOST -p$MyPASS -NBe "SHOW TABLE STATUS;" $database | while read name engine version rowformat rows avgrowlength datalength maxdatalength indexlength datafree autoincrement createtime updatetime checktime collation checksum createoptions comment ; do
+	mysql -u $MyUSER -h $MyHOST -NBe "SHOW TABLE STATUS;" $database | while read name engine version rowformat rows avgrowlength datalength maxdatalength indexlength datafree autoincrement createtime updatetime checktime collation checksum createoptions comment ; do
 		#skip views
         if [ "$datafree" = "NULL" ] ; then
             continue
@@ -43,7 +45,7 @@ mysql -u $MyUSER -h $MyHOST -p$MyPASS -NBe "SHOW DATABASES;" | grep -v 'lost+fou
 		if [ "$datafree" -gt 0 ] ; then
    			fragmentation=$(($datafree * 100 / $datalength))
    			echo "$database.$name is $fragmentation% fragmented."
-   			mysql -u $MyUSER -h $MyHOST -p$MyPASS -NBe "OPTIMIZE TABLE $name;" "$database"
+   			mysql -u $MyUSER -h $MyHOST -NBe "OPTIMIZE TABLE $name;" "$database"
   		fi
 	done
 done

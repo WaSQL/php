@@ -18,6 +18,8 @@ fi
 
 MyUSER=$dbuser     # USERNAME
 MyPASS=$dbpass     # PASSWORD
+#pass the password via the environment so it never appears on the command line, in ps output, or in echoed commands
+export MYSQL_PWD="$MyPASS"
 MyHOST=$dbhost     # Hostname
 OS=$(uname -s)
 echo -e "OS=$OS and OSTYPE=$OSTYPE"
@@ -46,6 +48,6 @@ db=$1
 NOW="$(date +"%m-%d-%Y")"
 DASH="__"
 FILE="$BackupDir/$db$DASH$NOW.sql.gz"
-echo -e "$MYSQLDUMP --single-transaction=TRUE --user=$MyUSER --host=$MyHOST --password=$MyPASS --max_allowed_packet=128M $db > $FILE\n"
-"$MYSQLDUMP" --single-transaction=TRUE --user=$MyUSER --host=$MyHOST --password=$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE
+echo -e "$MYSQLDUMP --single-transaction=TRUE --user=$MyUSER --host=$MyHOST --max_allowed_packet=128M $db > $FILE\n"
+"$MYSQLDUMP" --single-transaction=TRUE --user=$MyUSER --host=$MyHOST --max_allowed_packet=128M $db | gzip -9 > $FILE
 

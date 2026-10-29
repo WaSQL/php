@@ -18,6 +18,8 @@ fi
 
 MyUSER=$dbuser     # USERNAME
 MyPASS=$dbpass       # PASSWORD
+#pass the password via the environment so it never appears on the command line, in ps output, or in echoed commands
+export MYSQL_PWD="$MyPASS"
 MyHOST=$dbhost          # Hostname
 
 # Linux bin paths, change this if it can't be autodetected via which command
@@ -37,7 +39,7 @@ IGGY=$skipdbs
 [ ! -d $BackupDir ] && mkdir -p $BackupDir || :
 
 # Get all database list first
-DBS="$($MYSQL -u $MyUSER -h $MyHOST -p$MyPASS -Bse 'show databases')"
+DBS="$($MYSQL -u $MyUSER -h $MyHOST -Bse 'show databases')"
  
 for db in $DBS
 do

@@ -18,6 +18,8 @@ fi
 #set some variables
 MyUSER=$dbuser     # USERNAME
 MyPASS=$dbpass     # PASSWORD
+#pass the password via the environment so it never appears on the command line, in ps output, or in echoed commands
+export MYSQL_PWD="$MyPASS"
 MyHOST=$dbhost     # Hostname
 #get the OS name
 OS=$(uname -s)
@@ -61,7 +63,7 @@ IGGY=$skipdbs
 [ ! -d $BackupDir ] && mkdir -p $BackupDir || :
 
 # Get all database list first
-DBS="$("$MYSQL" -u $MyUSER -h $MyHOST -p$MyPASS -Bse 'show databases')"
+DBS="$("$MYSQL" -u $MyUSER -h $MyHOST -Bse 'show databases')"
 DASH="__"
 for db in $DBS
 do
@@ -79,8 +81,8 @@ do
 	# do all inone job in pipe,
 	# connect to mysql using mysqldump for select mysql database
 	# and pipe it out to gz file in backup dir :)
-        echo -e "mysqldump --single-transaction=TRUE -u $MyUSER -h $MyHOST -p$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE\n"
-        mysqldump --single-transaction=TRUE -u $MyUSER -h $MyHOST -p$MyPASS --max_allowed_packet=128M $db | gzip -9 > $FILE
+        echo -e "mysqldump --single-transaction=TRUE -u $MyUSER -h $MyHOST --max_allowed_packet=128M $db | gzip -9 > $FILE\n"
+        mysqldump --single-transaction=TRUE -u $MyUSER -h $MyHOST --max_allowed_packet=128M $db | gzip -9 > $FILE
     fi
 done
 #remove backups older than 90 days
