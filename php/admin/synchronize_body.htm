@@ -3,6 +3,7 @@
 .sync_target{display:inline-block;border:1px solid #ccc;border-radius:4px;padding:6px 10px;max-width:100%;}
 .sync_target_label{font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#777;margin-bottom:4px;}
 .sync_target_row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sync_nothing{padding:30px 10px;text-align:center;font-size:1.2em;color:#555;}
 .sync_target_url{word-break:break-all;}
 .sync_actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;background:#fff;border-top:1px solid #ddd;padding:10px 0;margin-top:10px;}
 </style>
@@ -29,7 +30,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="row">
+	<view:nothing>
+	<div class="sync_nothing"><span class="icon-sync w_success"></span> Nothing to synchronize. This site and the target site are already in sync.<div style="margin-top:12px;"><button type="button" class="wacss_button" onclick="location.href='/php/admin.php?_menu=synchronize';"><span class="icon-refresh"></span> Refresh</button></div></div>
+	</view:nothing>
+	<?=renderViewIf(!count($changes),'nothing');?>
+	<div class="row"<?=count($changes)?'':' style="display:none;"';?>>
 		<div class="col-sm-12">
 			<ul class="nav-tabs <?=configValue('admin_color');?>">
 				<view:tab>
@@ -42,7 +47,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="sync_actions">
+	<div class="sync_actions"<?=count($changes)?'':' style="display:none;"';?>>
 		<button class="wacss_button is-primary" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync"></span> Synchronize Selected <span class="sync_count"></span></button>
 		<button class="wacss_button is-danger" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward"></span> Revert Selected <span class="sync_count"></span></button>
 		<button class="wacss_button" type="button" onclick="location.href='/php/admin.php?_menu=synchronize';"><span class="icon-refresh"></span> Refresh</button>
