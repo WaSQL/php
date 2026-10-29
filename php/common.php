@@ -25857,6 +25857,23 @@ function splitWords($sentence,$maxlen){
 	}
 	return $parts;
 }
+//---------- begin function commonEmailFrom---------------------------------------
+/**
+* @describe returns the default sender from config.xml: email_from, formatted as "Name <email>" when email_from_name is also set
+* @return string - sender address, or empty string if email_from is not configured
+* @usage $from=commonEmailFrom();
+*/
+function commonEmailFrom(){
+	global $CONFIG;
+	if(!isset($CONFIG['email_from']) || !strlen($CONFIG['email_from'])){return '';}
+	$from=$CONFIG['email_from'];
+	if(isset($CONFIG['email_from_name']) && strlen(trim($CONFIG['email_from_name'])) && strpos($from,'<')===false){
+		$name=trim(str_replace(array('"','<','>',"\r","\n"),'',$CONFIG['email_from_name']));
+		if(preg_match('/[^a-z0-9 ]/i',$name)){$name='"'.$name.'"';}
+		$from="{$name} <{$from}>";
+	}
+	return $from;
+}
 //---------- begin function sendMail---------------------------------------
 /**
 * @describe sends an email and returns null on success or the error string
@@ -25897,7 +25914,7 @@ function sendMail($params=array()){
     foreach($flds as $fld){
     	if(!isset($params[$fld]) && isset($CONFIG[$fld])){$params[$fld]=$CONFIG[$fld];}
     }
-    if(!isset($params['from']) && isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
+    if(!isset($params['from']) && isset($CONFIG['email_from'])){$params['from']=commonEmailFrom();}
     if(!isset($params['encrypt']) && isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
     if(!isset($params['-timeout']) && isset($CONFIG['email_timeout'])){$params['-timeout']=$CONFIG['email_timeout'];}
 
@@ -26340,7 +26357,7 @@ function wasqlMail($opts=array(),$debug=0){
 		}
 
 	if(!isset($opts['from']) && isset($CONFIG['email_from'])){
-		$opts['from']=$CONFIG['email_from'];
+		$opts['from']=commonEmailFrom();
 		}
 	if(!isset($opts['url']) && isset($CONFIG['wasqlmail'])){
 		$opts['url']=$CONFIG['wasqlmail'];

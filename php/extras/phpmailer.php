@@ -9,6 +9,7 @@
         smtppass="YOURPASSWORD"
         smtpport="465"
         email_from="your@email.com"
+        email_from_name="Your Name"  (optional - sends as "Your Name <your@email.com>")
         email_encrypt="TLS"
     To user Office 365
     	smtp="smtp.office365.com"
@@ -56,7 +57,10 @@ function phpmailerSendMail($params=array()){
     foreach($flds as $fld){
     	if(!isset($params[$fld]) && isset($CONFIG[$fld])){$params[$fld]=$CONFIG[$fld];}
     }
-    if(!isset($params['from']) && isset($CONFIG['email_from'])){$params['from']=$CONFIG['email_from'];}
+    if(!isset($params['from']) && isset($CONFIG['email_from'])){
+    	//email_from_name is skipped when the caller passes fromname, which would otherwise be applied to a "Name <email>" string
+    	$params['from']=isset($params['fromname'])?$CONFIG['email_from']:commonEmailFrom();
+    }
     if(!isset($params['encrypt']) && isset($CONFIG['email_encrypt'])){$params['encrypt']=$CONFIG['email_encrypt'];}
     if(!isset($params['-timeout']) && isset($CONFIG['email_timeout'])){$params['-timeout']=$CONFIG['email_timeout'];}
     //defaults
@@ -185,14 +189,14 @@ function phpmailerSendMail($params=array()){
 	//list-unsubscribe?
 	if(isset($params['-unsubscribe_link'])){
 		if(!isset($params['-unsubscribe_email'])){
-			$params['-unsubscribe_email']=$params['from'];
+			$params['-unsubscribe_email']=preg_match('/<(.+?)>/',$params['from'],$fm)?trim($fm[1]):$params['from'];
 		}
 		$params['-unsubscribe_link']=str_replace('%email%',$params['to'],$params['-unsubscribe_link']);
 		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe From {$_SERVER['HTTP_HOST']}>, <{$params['-unsubscribe_link']}>");
 	}
 	else{
 		if(!isset($params['-unsubscribe_email'])){
-			$params['-unsubscribe_email']=$params['from'];
+			$params['-unsubscribe_email']=preg_match('/<(.+?)>/',$params['from'],$fm)?trim($fm[1]):$params['from'];
 		}
 		$mail->AddCustomHeader("List-Unsubscribe: <mailto:{$params['-unsubscribe_email']}?subject=Unsubscribe From {$_SERVER['HTTP_HOST']}>");
 	}
