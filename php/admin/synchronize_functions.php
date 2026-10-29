@@ -1,7 +1,7 @@
 <?php
 function synchronizeSetActive($key){
 	global $setactive;
-	if(isset($setactive) && strlen($setactive)){return '';}
+	if(isset($setactive) && strlen($setactive)){return $key===$setactive?' active':'';}
 	$setactive=$key;
 	return ' active';
 }

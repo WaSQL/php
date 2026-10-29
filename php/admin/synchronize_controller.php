@@ -222,6 +222,7 @@
 				'notes'		=> $notes,
 				'results'	=> json_encode($results)
 			));
+			$_SESSION['sync_flash']=implode('<br>',(array)$results);
 			setView('sync_verified',1);
 			return;
 		break;
@@ -286,6 +287,7 @@
 				'notes'		=> $notes,
 				'results'	=> json_encode($results)
 			));
+			$_SESSION['sync_flash']=implode('<br>',(array)$results);
 			setView('sync_verified',1);
 			return;
 		break;
@@ -307,6 +309,10 @@
 				setView('error',1);
 				return;
 			}
+			//reselect the tab that was just synchronized (set by the sync_verified view's redirect)
+			if(isset($_REQUEST['tab']) && isset($changes[$_REQUEST['tab']])){$setactive=$_REQUEST['tab'];}
+			$flash=isset($_SESSION['sync_flash'])?$_SESSION['sync_flash']:'';
+			unset($_SESSION['sync_flash']);
 			setView('default',1);
 		break;
 	}

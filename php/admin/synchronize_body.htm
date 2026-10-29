@@ -3,6 +3,7 @@
 .sync_target{display:inline-block;border:1px solid #ccc;border-radius:4px;padding:6px 10px;max-width:100%;}
 .sync_target_label{font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#777;margin-bottom:4px;}
 .sync_target_row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sync_flash{border:1px solid #ccc;border-left:4px solid #2e7d32;border-radius:4px;padding:8px 12px;margin:8px 0;}
 .sync_nothing{padding:30px 10px;text-align:center;font-size:1.2em;color:#555;}
 .sync_target_url{word-break:break-all;}
 .sync_actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;background:#fff;border-top:1px solid #ddd;padding:10px 0;margin-top:10px;}
@@ -30,6 +31,10 @@
 			</div>
 		</div>
 	</div>
+	<view:flash>
+	<div class="sync_flash"><?=$params;?></div>
+	</view:flash>
+	<?=renderViewIf(strlen($flash),'flash',$flash);?>
 	<view:nothing>
 	<div class="sync_nothing"><span class="icon-sync w_success"></span> Nothing to synchronize. This site and the target site are already in sync.<div style="margin-top:12px;"><button type="button" class="wacss_button" onclick="location.href='/php/admin.php?_menu=synchronize';"><span class="icon-refresh"></span> Refresh</button></div></div>
 	</view:nothing>
@@ -237,8 +242,8 @@ function syncCount(){
 
 <view:sync_verified>
 	<div class="w_success"><?=implode('<br>',$results);?></div>
-	<div class="w_padtop"><button type="button" class="wacss_button" onclick="location.href='/php/admin.php?_menu=synchronize';"><span class="icon-refresh"></span> Refresh</button></div>
-	<?=buildOnLoad("wacss.modalTitle('Synchronize Verified');");?>
+	<div class="w_padtop"><button type="button" class="wacss_button" onclick="location.href='/php/admin.php?_menu=synchronize&tab=<?=urlencode($table);?>';"><span class="icon-refresh"></span> Refresh</button></div>
+	<?=buildOnLoad("wacss.modalClose();location.href='/php/admin.php?_menu=synchronize&tab=".urlencode($table)."';");?>
 </view:sync_verified>
 
 <view:edit_record>
