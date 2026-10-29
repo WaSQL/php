@@ -1,5 +1,12 @@
 <view:default>
-<form method="post" name="syncform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'modal');">
+<style>
+.sync_target{display:inline-block;border:1px solid #ccc;border-radius:4px;padding:6px 10px;max-width:100%;}
+.sync_target_label{font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#777;margin-bottom:4px;}
+.sync_target_row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sync_target_url{word-break:break-all;}
+.sync_actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;background:#fff;border-top:1px solid #ddd;padding:10px 0;margin-top:10px;}
+</style>
+<form method="post" name="syncform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'modal');" onclick="setTimeout(syncCount,0);" onchange="syncCount();">
 <input type="hidden" name="_menu" value="synchronize" />
 <input type="hidden" name="func" value="sync" />
 <div class="container-fluid">
@@ -8,29 +15,25 @@
 			<div class="wadmin-head"><span class="icon-sync w_warning"></span> Synchronize</div>
 			<div class="w_smallest w_gray"><?=implode(', ',$synctables);?></div>
 		</div>
-		<div class="col-sm-5 align-right">
-			<table class="wacss_table table-condensed table-striped" style="border:1px solid #ccc;">
-				<tr>
-					<th class="align-left">Target Site</th>
-				</tr>
-				<tr>
-					<td class="align-left w_big">
-						<view:unauth><a href="/php/admin.php?_menu=synchronize&func=unauth" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?> w_right"><span class="icon-user-admin"></span> logout</a></view:unauth>
-						<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
-						<view:secure><span class="icon-lock w_warning w_biggest"></span> </view:secure>
-						<view:insecure><span class="icon-lock w_danger w_biggest"></span> </view:insecure>
-						<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
-						<a class="w_link" style="display:inline-block;" href="<?=$_SESSION['sync_target_url'];?>?_menu=synchronize" target="_blank"><?=$_SESSION['sync_target_url'];?></a>
-					</td>
-				</tr>
-			</table>
+		<div class="col-sm-5">
+			<div class="sync_target">
+				<div class="sync_target_label">Target Site</div>
+				<div class="sync_target_row">
+					<view:secure><span class="icon-lock w_warning"></span></view:secure>
+					<view:insecure><span class="icon-lock w_danger"></span></view:insecure>
+					<?=renderViewIfElse(stringBeginsWith($_SESSION['sync_target_url'],'https:'),'secure','insecure');?>
+					<a class="w_link sync_target_url" href="<?=$_SESSION['sync_target_url'];?>?_menu=synchronize" target="_blank"><?=$_SESSION['sync_target_url'];?></a>
+					<view:unauth><button type="button" class="wacss_button is-small" onclick="location.href='/php/admin.php?_menu=synchronize&amp;func=unauth';"><span class="icon-user-admin"></span> Logout</button></view:unauth>
+					<?=renderViewIf(isset($_SESSION['sync_target_auth']),'unauth');?>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
 			<ul class="nav-tabs <?=configValue('admin_color');?>">
 				<view:tab>
-				<li <?=synchronizeSetActive($key);?>"><a href="#" onclick="setText('synchronize_results',getText('changes_<?=$key;?>'));return false;"><?=$key;?> (<?=count($recs);?>)</a></li>
+				<li <?=synchronizeSetActive($key);?>><a href="#" onclick="setText('synchronize_results',getText('changes_<?=$key;?>'));syncCount();return false;"><?=$key;?> (<?=count($recs);?>)</a></li>
 				</view:tab>
 				<?=renderEach('tab',$changes,'recs');?>
 			</ul>
@@ -39,15 +42,21 @@
 			</div>
 		</div>
 	</div>
-	<div class="row" style="margin-bottom:20px;">
-		<div class="col-sm-12">
-			<button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync"></span> Syncronize Selected</button>
-			<button class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward"></span> Revert Selected</button>
-			<a href="/php/admin.php?_menu=synchronize" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-refresh"></span> Refresh</a>
-		</div>
+	<div class="sync_actions">
+		<button class="wacss_button is-primary" type="submit" onclick="document.syncform.func.value='sync';"><span class="icon-sync"></span> Synchronize Selected <span class="sync_count"></span></button>
+		<button class="wacss_button is-danger" type="submit" onclick="document.syncform.func.value='revert';"><span class="icon-backward"></span> Revert Selected <span class="sync_count"></span></button>
+		<button class="wacss_button" type="button" onclick="location.href='/php/admin.php?_menu=synchronize';"><span class="icon-refresh"></span> Refresh</button>
 	</div>
 </div>
 </form>
+<script>
+/** Shows how many checked rows are in the visible tab on the Synchronize/Revert buttons. */
+function syncCount(){
+	var n=document.querySelectorAll('#synchronize_results input[name="id[]"]:checked').length;
+	var els=document.querySelectorAll('.sync_count');
+	for(var i=0;i<els.length;i++){els[i].textContent=n?'('+n+')':'';}
+}
+</script>
 <div style="display:none;">
 	<view:change>
 		<div id="changes_<?=$key;?>">
@@ -223,7 +232,7 @@
 
 <view:sync_verified>
 	<div class="w_success"><?=implode('<br>',$results);?></div>
-	<div class="w_padtop"><a href="/php/admin.php?_menu=synchronize" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-refresh"></span> Refresh</a></div>
+	<div class="w_padtop"><button type="button" class="wacss_button" onclick="location.href='/php/admin.php?_menu=synchronize';"><span class="icon-refresh"></span> Refresh</button></div>
 	<?=buildOnLoad("wacss.modalTitle('Synchronize Verified');");?>
 </view:sync_verified>
 
