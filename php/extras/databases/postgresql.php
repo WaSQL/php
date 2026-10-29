@@ -1411,7 +1411,7 @@ function postgresExceptionErrorHandler($errno, $errstr, $errfile, $errline ) {
 function postgresqlDBConnect(){
 	$params=postgresqlParseConnectParams();
 	if(!isset($params['-connect'])){
-		debugValue("postgresqlDBConnect error: No connect params".printValue($params));
+		debugValue("postgresqlDBConnect error: No connect params".printValue(commonScrubDBParams($params)));
 		return '';
 	}
 	// Guarantee connect_timeout regardless of how the connection string was built
@@ -1428,8 +1428,7 @@ function postgresqlDBConnect(){
 	catch (Exception $e) {
 		$err=$e->getMessage();
 		restore_error_handler();
-		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 1 second" . printValue($params));
+		debugValue("postgresqlDBConnect exception: {$err}. Will retry in 1 second" . printValue(commonScrubDBParams($params)));
 		sleep(1);
 		set_error_handler('postgresExceptionErrorHandler');
 		try{
@@ -1438,8 +1437,7 @@ function postgresqlDBConnect(){
 		catch (Exception $e) {
 			$err=$e->getMessage();
 			restore_error_handler();
-			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-			debugValue("postgresqlDBConnect exception: {$err}. Will retry in 3 seconds" . printValue($params));
+			debugValue("postgresqlDBConnect exception: {$err}. Will retry in 3 seconds" . printValue(commonScrubDBParams($params)));
 			sleep(3);
 			set_error_handler('postgresExceptionErrorHandler');
 			try{
@@ -1448,8 +1446,7 @@ function postgresqlDBConnect(){
 			catch (Exception $e) {
 				$err=$e->getMessage();
 				restore_error_handler();
-				$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
-				debugValue("postgresqlDBConnect Failed after 3 tries : {$err}" . printValue($params));
+				debugValue("postgresqlDBConnect Failed after 3 tries : {$err}" . printValue(commonScrubDBParams($params)));
 			}
 		}
 	}
@@ -1458,7 +1455,8 @@ function postgresqlDBConnect(){
 		return '';
 	}
 	//set log_error_verbosity for better error messages
-	pg_query($dbh_postgresql, "SET log_error_verbosity = 'verbose'");
+	//only superusers (or roles granted SET) may change it - ignore the failure instead of logging a warning on every connect
+	@pg_query($dbh_postgresql, "SET log_error_verbosity = 'verbose'");
 	//pg_query($dbh_postgresql, "SET log_statement = 'all'");
 	return $dbh_postgresql;
 	

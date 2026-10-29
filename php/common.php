@@ -9081,6 +9081,27 @@ function stringContains($string, $search){
 	if(!strlen($string) || !strlen($search)){return false;}
 	return strpos(strtolower($string),strtolower($search)) !== false;
 	}
+//---------- begin function commonScrubDBParams--------------------
+/**
+* @describe returns a copy of DB connection params that is safe to print: masks any password-like key (-dbpass, etc.) and any password=/pwd= value inside -connect style strings
+* @param params array - connection params (as passed to *DBConnect)
+* @return array
+* @usage debugValue("postgresqlDBConnect error".printValue(commonScrubDBParams($params)));
+*/
+function commonScrubDBParams($params){
+	if(!is_array($params)){return $params;}
+	foreach($params as $k=>$v){
+		if(!is_string($v)){continue;}
+		if(preg_match('/pass|pwd|secret|token|apikey/i',$k)){
+			$params[$k]=strlen($v)?'********':'';
+		}
+		elseif(stringContains($k,'connect')){
+			//libpq: password=xxx or password='x y'; ODBC: PWD=xxx;
+			$params[$k]=preg_replace("/(password|pwd)\s*=\s*('[^']*'|[^\s;]+)/i",'$1=********',$v);
+		}
+	}
+	return $params;
+}
 //---------- begin function stringEquals--------------------
 /**
 * @describe returns true if $str equals $search (ignores case)

@@ -911,7 +911,7 @@ function sqliteDBConnect($params=array()){
 	$params=sqliteParseConnectParams($params);
 	if(!isset($params['-dbname'])){
 		$CONFIG['sqlite_error']="dbname not set";
-		debugValue("sqliteDBConnect error: no dbname set".printValue($params));
+		debugValue("sqliteDBConnect error: no dbname set".printValue(commonScrubDBParams($params)));
 		return null;
 	}
 	if(!isset($params['-mode'])){$params['-mode']=0666;}

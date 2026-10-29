@@ -87,8 +87,7 @@ function memgraphDBConnect($params=array()){
 		return $dbh_memgraph;
 	}
 	catch (Exception $e) {
-		$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-		debugValue("memgraphDBConnect error: " . $e->getMessage() . printValue($params));
+		debugValue("memgraphDBConnect error: " . $e->getMessage() . printValue(commonScrubDBParams($params)));
 		return null;
 	}
 }

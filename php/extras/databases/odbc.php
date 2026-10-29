@@ -328,8 +328,9 @@ function odbcDBConnect($params=array()){
 		$connect_name=$params['-dbname'];
 	}
 	else{
-		echo "odbcDBConnect error: no dbname or connect param".printValue($params);
-		exit;
+		$error="odbcDBConnect error: no dbname or connect param";
+		debugValue($error.printValue(commonScrubDBParams($params)));
+		return $error;
 	}
 	if(isset($params['-single'])){
 		if(isset($params['-cursor'])){
@@ -367,8 +368,7 @@ function odbcDBConnect($params=array()){
 			}
 			if(!commonIsResourceOrObject($dbh_odbc)){
 				$e=odbc_errormsg();
-				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
-				$error=array("odbcDBConnect Error",$e,$params);
+				$error=array("odbcDBConnect Error",$e,commonScrubDBParams($params));
 			    debugValue($error);
 			    return json_encode($error);
 			}

@@ -1332,7 +1332,7 @@ function oracleDBConnect($params=array()){
 	if(!isset($params['-connect'])){
 		$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 		$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-		debugValue("oracleDBConnect error: no connect params".printValue($params));
+		debugValue("oracleDBConnect error: no connect params".printValue(commonScrubDBParams($params)));
 		oracleSetConnectError('no connect params');
 		return null;
 	}
@@ -1347,7 +1347,7 @@ function oracleDBConnect($params=array()){
 			$err=json_encode(oci_error());
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			debugValue("oracleDBConnect single connect error:{$err}".printValue($params));
+			debugValue("oracleDBConnect single connect error:{$err}".printValue(commonScrubDBParams($params)));
 			oracleSetConnectError($err);
 			return null;
 		}
@@ -1364,7 +1364,7 @@ function oracleDBConnect($params=array()){
 			$err=oci_error();
 			$params['-dbpass']=preg_replace('/./','*',$params['-dbpass']);
 			$params['-dbuser']=preg_replace('/./','*',$params['-dbuser']);
-			debugValue("oracleDBConnect resource error. ".printValue($err).printValue($params));
+			debugValue("oracleDBConnect resource error. ".printValue($err).printValue(commonScrubDBParams($params)));
 			oracleSetConnectError(json_encode($err));
 			return null;
 

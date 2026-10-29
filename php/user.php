@@ -812,7 +812,11 @@ function userDecodeLDAPAuth($user,$pass){
   	else{
   		$ok=commonLogMessage('user',"userDecodeLDAPAuth passed for {$ldap['username']}. Fields updated: {$addopts['-upsert']}");
   	}
-  	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>"username='{$ldap['username']}' or email='{$ldap['email']}'"));
+  	//only match on email when the LDAP record has one - an empty email would match any other user with a blank email
+  	$ldap_email=isset($ldap['email'])?$ldap['email']:'';
+  	$ldap_where="username='{$ldap['username']}'";
+  	if(strlen($ldap_email)){$ldap_where.=" or email='{$ldap_email}'";}
+  	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'-where'=>$ldap_where));
   	if(isset($rec['_id'])){
   		//$ok=commonLogMessage('user',"userDecodeLDAPAuth Passed for {$rec['username']}");
   		return $rec;

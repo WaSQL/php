@@ -893,7 +893,7 @@ function duckdbDBConnect($params=array()){
 	$params=duckdbParseConnectParams($params);
 	if(!isset($params['-dbname'])){
 		$CONFIG['duckdb_error']="dbname not set";
-		debugValue("duckdbDBConnect error: no dbname set".printValue($params));
+		debugValue("duckdbDBConnect error: no dbname set".printValue(commonScrubDBParams($params)));
 		return null;
 	}
 	if(!isset($params['-mode'])){$params['-mode']=0666;}

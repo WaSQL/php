@@ -1334,7 +1334,7 @@ function mysqlDBConnect($params=array()){
 	$params=mysqlParseConnectParams($params);
 	if(!isset($params['-dbname'])){
 		$CONFIG['mysql_error']="dbname not set";
-		debugValue("mysqlDBConnect error: no dbname set".printValue($params));
+		debugValue("mysqlDBConnect error: no dbname set".printValue(commonScrubDBParams($params)));
 		return null;
 	}
 	global $dbh_mysql;

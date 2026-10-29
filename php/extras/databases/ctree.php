@@ -160,8 +160,7 @@ function ctreeDBConnect($params=array()){
 		$ok=dbSetLast(array('error'=>'ctreeDBConnect error: no dbname or connect param'));
 		//mask the password first - debugValue() feeds the debug buffer that callers such as
 		//	php/admin/sqlprompt render straight into the error they show the user
-		if(isset($params['-dbpass'])){$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);}
-		debugValue($params);
+		debugValue(commonScrubDBParams($params));
 		return null;
 	}
 	//ctree does not support pooling do it in the ODBC Connection manager
@@ -209,9 +208,8 @@ function ctreeDBConnect($params=array()){
 		}
 		if(!commonIsResourceOrObject($dbh_ctree)){
 			$err=odbc_errormsg();
-			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			$ok=dbSetLast(array('error'=>"ctreeDBConnect persistent connect error: {$err}"));
-			debugValue($params);
+			debugValue(commonScrubDBParams($params));
 			if(is_dir('c:/bin') && stringContains($err,'Maximum users exceeded')){
 				//more workers holding persistent handles than the FairCom licence allows - see (1)
 				$ok=file_put_contents("C:\bin\ctree_failed.txt", $err);
@@ -242,9 +240,8 @@ function ctreeDBConnect($params=array()){
 		}
 		if(!commonIsResourceOrObject($dbh_ctree_single)){
 			$err=odbc_errormsg();
-			$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 			$ok=dbSetLast(array('error'=>"ctreeDBConnect single connect error: {$err}"));
-			debugValue($params);
+			debugValue(commonScrubDBParams($params));
 			if(is_dir('c:/bin') && stringContains($err,'Maximum users exceeded')){
 				//Maximum users exceeded
 				$ok=file_put_contents("C:\bin\ctree_failed.txt", $err);
@@ -275,9 +272,8 @@ function ctreeDBConnect($params=array()){
 			}
 			if(!commonIsResourceOrObject($dbh_ctree)){
 				$err=odbc_errormsg();
-				$params['-dbpass']=preg_replace('/[a-z0-9]/i','*',$params['-dbpass']);
 				$ok=dbSetLast(array('error'=>"ctreeDBConnect error: {$err}"));
-				debugValue($params);
+			debugValue(commonScrubDBParams($params));
 				return null;
 			}
 		}

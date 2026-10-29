@@ -1381,8 +1381,9 @@ function hanaDBConnect($params=array()){
 		$connect_name=$params['-dbname'];
 	}
 	else{
-		echo "hanaDBConnect error: no dbname or connect param".printValue($params);
-		exit;
+		$error="hanaDBConnect error: no dbname or connect param";
+		debugValue($error.printValue(commonScrubDBParams($params)));
+		return $error;
 	}
 	
 	//echo printValue($params);exit;

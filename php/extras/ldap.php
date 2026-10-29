@@ -88,7 +88,7 @@ function ldapAuth($params=array()){
 		$ldap_base_dn[]="dc={$part}";
 	}
 	$params['basedn']=implode(',',$ldap_base_dn);
-	if($params['-secure']){
+	if(!empty($params['-secure'])){
 		$params['-host']='ldaps://'.$params['-host'];
 	}
 	else{
@@ -717,7 +717,7 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
             case 'pwdlastset':
                 $rec[$key]=ldapValue($val);
                 $rec["{$key}_unix"]=ldapTimestamp($val[0]);
-                $rec["{$key}_date"]=date('Y-m-d h:i a',$rec["{$key}_unix"]);
+                $rec["{$key}_date"]=$rec["{$key}_unix"] > 0 ? date('Y-m-d h:i a',$rec["{$key}_unix"]) : '';
             break;
             case 'memberof':
             	$rec[$key]=ldapValue($val);
@@ -727,7 +727,7 @@ function ldapParseEntry($lrec=array(),$checkmemberof=1){
                 	if(!stringContains($part,'=')){continue;}
 					list($k,$v)=preg_split('/\=/',$part,2);
 					if(!strlen($k) || !strlen($v)){continue;}
-					if(!is_array($parts[$k])){$parts[$k]=array();}
+					if(!isset($parts[$k]) || !is_array($parts[$k])){$parts[$k]=array();}
                     if(!in_array($v,$parts[$k])){$parts[$k][]=$v;}
 				}
 				foreach($parts as $k=>$v){
@@ -997,9 +997,9 @@ function ldapDisable($objectguid){
 }
 //---------- begin function ldapTimestamp--------------------
 /**
-* @describe returns an ldap timestamp
+* @describe converts an ldap/AD timestamp to a unix timestamp. AD's "not set / never" values (0 and 9223372036854775807, as in accountExpires) return 0
 * @param datestr string
-* @return string
+* @return int unix timestamp, or 0 when the value means never/not set
 * @usage $ts=ldapTimestamp($datestr);
 * @exclude - internal use only
 */
@@ -1007,13 +1007,15 @@ function ldapTimestamp($ad) {
 	if(stringContains($ad,'.')){
      	//YYYYMMDDHHIISS
      	$str=substr($ad,0,4).'-'.substr($ad,4,2).'-'.substr($ad,6,2).' '.substr($ad,8,2).':'.substr($ad,10,2).':'.substr($ad,12,2);
-		return strtotime($str);
+		return (int)strtotime($str);
 	}
+	//0 = not set (never logged on, never expires); 9223372036854775807 (max int64) = never expires
+	if(!(float)$ad || (float)$ad >= 9.2e18){return 0;}
   $seconds_ad = $ad / (10000000);
    //86400 -- seconds in 1 day
    $unix = ((1970-1601) * 365 - 3 + round((1970-1601)/4) ) * 86400;
    $timestamp = $seconds_ad - $unix;
-   return $timestamp;
+   return (int)$timestamp;
 }
 //---------- begin function ldapValue--------------------
 /**
