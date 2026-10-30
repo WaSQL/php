@@ -234,9 +234,9 @@ function systemStatTiles($tiles){
 	if(!is_array($tiles) || !count($tiles)){return '';}
 	$html='<div style="display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px 0;">';
 	foreach($tiles as $t){
-		$html.='<div style="flex:1 1 170px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;min-width:150px;">'
+		$html.='<div style="flex:1 1 170px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;min-width:150px;overflow:hidden;">'
 			.'<div style="font-size:12px;text-transform:uppercase;opacity:.7;">'.encodeHtml($t['label']).'</div>'
-			.'<div style="font-size:24px;font-weight:bold;margin:2px 0;">'.encodeHtml($t['value']).'</div>'
+			.'<div title="'.encodeHtml($t['value']).'" style="font-size:24px;font-weight:bold;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'.encodeHtml($t['value']).'</div>'
 			.'<div style="font-size:11px;opacity:.7;">'.encodeHtml($t['note']).'</div></div>';
 	}
 	return $html.'</div>';
