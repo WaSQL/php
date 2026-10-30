@@ -198,8 +198,15 @@ function fileChanged($afile){
 	if(!commonStrlen($content) && isWindows()){
 		$content=getContents($afile);
 		if(!commonStrlen($content)){
-    		$ok=errorMessage(" - failed to get content");
-    		return;
+			//a zero-byte file is a legitimately blank field, not a read failure
+			clearstatcache(true,$afile);
+			if(file_exists($afile) && filesize($afile)===0){
+				$content='';
+			}
+			else{
+    			$ok=errorMessage(" - failed to get content");
+    			return;
+			}
 		}
 	}
 	$idx=preg_replace('/\//',"\\",$afile);
