@@ -370,6 +370,14 @@ switch($tab){
 			'-listfields'=>'model,size,status,activity_pcnt,total_iops,total_throughput,read_latency_ms,write_latency_ms,current_disk_queue_length',
 			'-results_eval'=>'systemGetDiskStatsExtra'
 		);
+		if(!isWindows()){
+			// The options above are Windows/WMIC fields. On Linux those fields don't exist, so the
+			// %field% evals collapse to e.g. number_format(,1) and cause a PHP syntax error.
+			$listopts=array(
+				'tab'=>'diskstats',
+				'-listfields'=>'major_number,minor_number,device_name,reads_completed_successfully,sectors_read,reading_ms,writes_completed,sectors_written,time_spent_writing_ms,ios_currently_in_progress'
+			);
+		}
 		setView('list',1);
 		return;
 	break;
