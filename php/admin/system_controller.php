@@ -84,8 +84,6 @@ switch($tab){
 		$recs=array($rec);
 		$listopts=array(
 			'tab'=>'memory',
-			// sticky nests two scroll containers (table + tbody) = double horizontal scrollbar; a 1-row table doesn't need it
-			'-tableclass'=>'wacss_table bordered striped fullwidth',
 			'total_options'=>array(
 				'class'=>'align-right',
 				'eval'=>"return verboseSize(%total%);"

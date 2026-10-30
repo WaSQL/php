@@ -350,7 +350,7 @@ function systemShowList($recs,$listopts=array()){
 		'_menu'=>'system',
 		'-onsubmit'=>"return pagingSubmit(this,'system_content');",
 		'-formname'=>'systemlist',
-		'-tableclass'=>'wacss_table bordered striped fullwidth sticky',
+		'-tableclass'=>'wacss_table bordered striped fullwidth',
 	);
 	foreach($listopts as $k=>$v){
 		if(is_array($v)){$opts[$k]=$v;}
@@ -374,10 +374,10 @@ function systemShowList($recs,$listopts=array()){
 		}
 	}
 	$html=databaseListRecords($opts);
-	// a sticky table scrolls itself; any other table gets one scroll wrapper so a wide grid shows a single scrollbar
-	if(isset($opts['-tableclass']) && !preg_match('/sticky/',$opts['-tableclass'])){
-		$html='<div style="overflow-x:auto;">'.$html.'</div>';
-	}
+	// wacss_table.sticky nests two scroll containers (table + tbody) = double horizontal scrollbar, so use ONE wrapper
+	// that scrolls both ways and pin the header row with position:sticky instead
+	$html='<style>.system_scroll{overflow:auto;max-height:70vh;}.system_scroll thead th{position:sticky;top:0;z-index:2;background:#f2f2f2;}</style>'
+		.'<div class="system_scroll">'.$html.'</div>';
 	return $html;
 }
 ?>
