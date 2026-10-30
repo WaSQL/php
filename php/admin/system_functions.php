@@ -373,6 +373,11 @@ function systemShowList($recs,$listopts=array()){
 			$opts['-list']=sortArrayByKey($recs,$fld,$sort);
 		}
 	}
-	return databaseListRecords($opts);
+	$html=databaseListRecords($opts);
+	// a sticky table scrolls itself; any other table gets one scroll wrapper so a wide grid shows a single scrollbar
+	if(isset($opts['-tableclass']) && !preg_match('/sticky/',$opts['-tableclass'])){
+		$html='<div style="overflow-x:auto;">'.$html.'</div>';
+	}
+	return $html;
 }
 ?>

@@ -56,8 +56,10 @@
 </view:default>
 
 <view:list>
+<div style="padding:16px 12px 0 12px;">
 	<?=systemStatTiles(isset($tiles)?$tiles:array());?>
 	<?=isset($charts)?$charts:'';?>
 	<?=systemShowList($recs,$listopts);?>
+</div>
 </view:list>
 
