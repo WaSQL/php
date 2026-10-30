@@ -21,6 +21,9 @@ No browser and no `--shot` by default — startup launches the PostEdit watcher 
 
 **wamcp has no `setdb`/session-default database.** Call the wamcp `databases` tool to resolve `{alias}` (or `localhost` for `wasql`) to a `db_id`, then pass that `db_id` explicitly on every subsequent wamcp call (`query`, `schema`, `pagesrc`, `tables`, `fields`, `ddl`, `indexes`, `getdb`).
 
+## Auto-read the site briefing
+After the startup command, if `D:\wasql\{alias}.md` exists (e.g. `wired.md` for "work on wired"), Read it in the same turn and follow any standing check it defines. This is in addition to the normal startup, not a replacement — `{alias}` is still a valid site. `{alias}.md` is also where extra site-specific notes the developer asks you to save go (create it if missing). No such file → continue normally. See `workon.md` → "Auto-read a site briefing".
+
 ## Alias resolution is literal, not semantic
 `{alias}` in "work on {alias} [page]" is looked up against `postedit/postedit.xml`'s `alias` list first, exactly as typed — don't pattern-match on wording. `postedit/postedit.xml` can have an alias literally named `localhost` — a real PostEdit-mirrored site, distinct from the `wasql` local-framework trigger even though both ultimately serve from `http://localhost`. "work on localhost" means that PostEdit alias; only the exact phrase "work on wasql" selects local framework mode.
 

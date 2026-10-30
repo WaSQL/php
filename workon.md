@@ -38,6 +38,10 @@ So Firefox is driven through a **resident broker** (`node`, written to `temp/was
 
 `work on {site} [page] using {browser}` (e.g. "work on dexpdq using firefox") maps `{browser}` (chrome/firefox/edge, case-insensitive) straight onto `--browser={browser}` on the same command line — see `CLAUDE.md`'s trigger recognition for the exact phrasing this covers. Omit "using ..." to fall back to the precedence chain above.
 
+## Auto-read a site briefing: `{alias}.md`
+
+On any "work on {alias} [page]" phrase, after running the startup command, check whether **`D:\wasql\{alias}.md`** exists (repo root, same folder as `workon.php`; `{alias}` exactly as typed, case-insensitive match is fine). If it does, **Read it in the same turn** — it's that site's standing briefing (e.g. `work on wired` → `wired.md`, `work on clickbooks` → `clickbooks.md`), and follow any "standing check" it defines. No need for the developer to say "read {alias}.md". The file is **in addition to** the normal startup, never instead of it: `{alias}` is still treated as a valid site/alias (resolved against `postedit.xml`, workon command run as usual). The `.md` is where the developer keeps extra site-specific notes, so when they say "save that about {alias}" (or you learn something durable about the site), append it to `{alias}.md` — create the file if it doesn't exist. If there is no such file, just continue normally; don't go looking for near-matches. Doesn't apply to `work on wasql` unless a `wasql.md` happens to exist (it's a plain file check like any other alias).
+
 ## Gotchas
 
 - **The wamcp db id is often NOT the postedit alias** (`dexpdq` → **`dexpdq_mysql`**). Call the wamcp `databases` tool to find the matching id, then pass it as `db_id` on every wamcp call — there's no session default to set once.
