@@ -148,6 +148,9 @@ switch($tab){
 				'eval'=>"return '%pcnt_cached%'.'%';"
 			);
 		}
+		$membreak=systemMemoryBreakdown($rec);
+		$tiles=systemMemoryTiles($membreak);
+		$charts=systemMemoryCharts($membreak);
 		setView('list',1);
 		return;
 	break;
@@ -186,6 +189,14 @@ switch($tab){
 			),
 			'-results_eval'=>'systemGetProcessListExtra'
 		);
+		$tiles=systemProcessTiles($recs);
+		if(!isWindows()){
+			// ps columns: vsz/rss are KB; stat is decoded to words in systemGetProcessListExtra
+			$listopts['rss_options']=array('class'=>'align-right w_nowrap','displayname'=>'Memory (RSS)','eval'=>"return verboseSize(%rss%*1024);");
+			$listopts['vsz_options']=array('class'=>'align-right w_nowrap','displayname'=>'Virtual (VSZ)','eval'=>"return verboseSize(%vsz%*1024);");
+			$listopts['stat_options']=array('displayname'=>'State');
+			$listopts['-listfields']='user,pid,pcpu,pmem,rss,vsz,stat,start,time,command';
+		}
 		setView('list',1);
 		return;
 	break;
@@ -284,23 +295,7 @@ switch($tab){
 			}
 		}
 		else{
-			$fieldstr='major_number,minor_number,device_name,reads_completed_successfully,reads_merged,sectors_read,time_spent,reading_ms,writes_completed,writes_merged,sectors_written,time_spent_writing_ms,ios_currently_in_progress,time_spent_doing_i/os_ms,weighted_time_spent_doing_ios_ms,discards_completed_successfully,discards_merged,sectors_discarded,time_spent_discarding,flush_requests_completed_successfully,time_spent_flushing';
-			$fields=preg_split('/\,/is',$fieldstr);
-			$out=cmdResults('cat --show-ends /proc/diskstats');
-			$lines=preg_split('/\$/ism',$out['stdout']);
-			$recs=array();
-			foreach($lines as $line){
-				$line=trim($line);
-				$line=str_replace('$','',$line);
-				$line=trim($line);
-				if(!strlen($line)){continue;}
-				$parts=preg_split('/[^a-zA-Z0-9\-]+/ism',$line);
-				$rec=array();
-				foreach($fields as $i=>$field){
-					$rec[$field]=$parts[$i];
-				}
-				$recs[]=$rec;
-			}
+			list($recs,$tiles)=systemGetLinuxDiskStats();
 		}
 		$listopts=array(
 			'tab'=>'diskstats',
@@ -371,11 +366,19 @@ switch($tab){
 			'-results_eval'=>'systemGetDiskStatsExtra'
 		);
 		if(!isWindows()){
-			// The options above are Windows/WMIC fields. On Linux those fields don't exist, so the
-			// %field% evals collapse to e.g. number_format(,1) and cause a PHP syntax error.
+			// Linux: /proc/diskstats records (see systemGetLinuxDiskStats); Windows options above don't apply
 			$listopts=array(
 				'tab'=>'diskstats',
-				'-listfields'=>'major_number,minor_number,device_name,reads_completed_successfully,sectors_read,reading_ms,writes_completed,sectors_written,time_spent_writing_ms,ios_currently_in_progress'
+				'device_options'=>array('class'=>'w_bold'),
+				'read_bytes_options'=>array('class'=>'align-right','displayname'=>'Data Read','eval'=>"return verboseSize(%read_bytes%);"),
+				'written_bytes_options'=>array('class'=>'align-right','displayname'=>'Data Written','eval'=>"return verboseSize(%written_bytes%);"),
+				'reads_options'=>array('class'=>'align-right','displayname'=>'Read Requests','eval'=>"return number_format(%reads%);"),
+				'writes_options'=>array('class'=>'align-right','displayname'=>'Write Requests','eval'=>"return number_format(%writes%);"),
+				'avg_read_ms_options'=>array('class'=>'align-right','displayname'=>'Avg Read (ms)'),
+				'avg_write_ms_options'=>array('class'=>'align-right','displayname'=>'Avg Write (ms)'),
+				'busy_pcnt_options'=>array('class'=>'align-right','displayname'=>'Busy %'),
+				'in_flight_options'=>array('class'=>'align-right','displayname'=>'In Flight'),
+				'-listfields'=>'device,type,read_bytes,written_bytes,reads,writes,avg_read_ms,avg_write_ms,busy_pcnt,in_flight'
 			);
 		}
 		setView('list',1);
