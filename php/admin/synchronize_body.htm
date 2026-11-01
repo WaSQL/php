@@ -3,12 +3,11 @@
 .sync_target{display:inline-block;border:1px solid #ccc;border-radius:4px;padding:6px 10px;max-width:100%;}
 .sync_target_label{font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#777;margin-bottom:4px;}
 .sync_target_row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.sync_flash{border:1px solid #ccc;border-left:4px solid #2e7d32;border-radius:4px;padding:8px 12px;margin:8px 0;}
 .sync_nothing{padding:30px 10px;text-align:center;font-size:1.2em;color:#555;}
 .sync_target_url{word-break:break-all;}
 .sync_actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;z-index:5;background:#fff;border-top:1px solid #ddd;padding:10px 0;margin-top:10px;}
 </style>
-<form method="post" name="syncform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'modal');" onclick="setTimeout(syncCount,0);" onchange="syncCount();">
+<form method="post" name="syncform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,syncTarget());" onclick="setTimeout(syncCount,0);" onchange="syncCount();">
 <input type="hidden" name="_menu" value="synchronize" />
 <input type="hidden" name="func" value="sync" />
 <div class="container-fluid">
@@ -32,7 +31,8 @@
 		</div>
 	</div>
 	<view:flash>
-	<div class="sync_flash"><?=$params;?></div>
+	<div id="sync_toast_msg" style="display:none;"><?=$params;?></div>
+	<?=buildOnLoad("wacss.toast('id:sync_toast_msg',{color:'w_green',timer:8});");?>
 	</view:flash>
 	<?=renderViewIf(strlen($flash),'flash',$flash);?>
 	<view:nothing>
@@ -59,7 +59,12 @@
 	</div>
 </div>
 </form>
+<div id="nulldiv" style="display:none;"></div>
 <script>
+/** Returns the ajax target div: the modal when rows are checked, otherwise a hidden nulldiv so the "None selected" toast shows without flicker. */
+function syncTarget(){
+	return document.querySelectorAll('#synchronize_results input[name="id[]"]:checked').length?'modal':'nulldiv';
+}
 /** Shows how many checked rows are in the visible tab on the Synchronize/Revert buttons. */
 function syncCount(){
 	var n=document.querySelectorAll('#synchronize_results input[name="id[]"]:checked').length;
@@ -227,7 +232,7 @@ function syncCount(){
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
-	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'toast');">
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'nulldiv');">
 		<input type="hidden" name="_menu" value="synchronize" />
 		<input type="hidden" name="func" value="sync_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />
@@ -241,8 +246,6 @@ function syncCount(){
 </view:sync_verify>
 
 <view:sync_verified>
-	<div class="w_success"><?=implode('<br>',$results);?></div>
-	<div class="w_padtop"><button type="button" class="wacss_button" onclick="location.href='/php/admin.php?_menu=synchronize&tab=<?=urlencode($table);?>';"><span class="icon-refresh"></span> Refresh</button></div>
 	<?=buildOnLoad("wacss.modalClose();location.href='/php/admin.php?_menu=synchronize&tab=".urlencode($table)."';");?>
 </view:sync_verified>
 
@@ -252,8 +255,8 @@ function syncCount(){
 </view:edit_record>
 
 <view:error>
-	<h3 class="w_danger"><?=$error;?></h3>
-	<?=buildOnLoad("wacss.modalTitle('Error');");?>
+	<div id="sync_toast_msg" style="display:none;"><?=$error;?></div>
+	<?=buildOnLoad("wacss.modalClose();wacss.toast('id:sync_toast_msg',{color:'w_red',timer:10});");?>
 </view:error>
 
 <view:revert_verify>
@@ -263,7 +266,7 @@ function syncCount(){
 		<tr><th>Table/Group</th><td><?=$table;?></td></tr>
 		<tr><th>Items</th><td><?=implode(', ',$ids);?></td></tr>
 	</table>
-	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'toast');">
+	<form method="post" name="sync_verify_form" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'nulldiv');">
 		<input type="hidden" name="_menu" value="synchronize" />
 		<input type="hidden" name="func" value="revert_verified" />
 		<input type="hidden" name="table" value="<?=$table;?>" />

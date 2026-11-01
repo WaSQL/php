@@ -453,4 +453,20 @@ function synchronizeGetChanges($tables){
 	}
 	return $recs;
 }
+
+//---------- begin function synchronizeErrorText
+/**
+* @describe converts a database error (string or error array from editDBRecord) into short html-safe text for a toast
+* @param err mixed - error string or array with an error key
+* @return string
+* @usage $msg=synchronizeErrorText($r);
+*/
+function synchronizeErrorText($err){
+	if(is_array($err)){
+		$msg=isset($err['error'])?$err['error']:json_encode($err);
+		if(!empty($err['query'])){$msg.=' - '.substr($err['query'],0,200).'...';}
+	}
+	else{$msg=(string)$err;}
+	return encodeHtml($msg);
+}
 ?>

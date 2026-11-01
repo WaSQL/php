@@ -182,6 +182,7 @@
 			}
 			$ids=$_REQUEST['id'];
 			$table=addslashes($_REQUEST['table']);
+			$errors=array();
 			//push to target
 			if($table=='schema'){
 				$schemas=array();
@@ -209,7 +210,12 @@
 					$target_rec=synchronizeGetTargetRecord($table,$id,$fields);
 					$target_rec['-table']=$table;
 					$target_rec['-where']="_id={$id}";
-					$results[]=editDBRecord($target_rec);
+					$r=editDBRecord($target_rec);
+					if(is_array($r) || (is_string($r) && strlen($r) && !isNum($r))){
+						$errors[]="Record {$id}: ".synchronizeErrorText($r);
+						$results[]="Record {$id} FAILED";
+					}
+					else{$results[]=$r;}
 				}
 			}
 			$notes="reverted local changes";
@@ -222,6 +228,11 @@
 				'notes'		=> $notes,
 				'results'	=> json_encode($results)
 			));
+			if(count($errors)){
+				$error=implode('<br>',$errors);
+				setView('error',1);
+				return;
+			}
 			$_SESSION['sync_flash']=implode('<br>',(array)$results);
 			setView('sync_verified',1);
 			return;

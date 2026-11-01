@@ -89,7 +89,8 @@
   background-color:#FFF;
   padding: .475rem .75rem;
   max-width: 350px;
-  overflow:auto;
+  overflow-y:auto;
+  max-height:80vh;
   opacity: 100;
   margin-bottom: 5px;
   transition: all 0.55s ease;
