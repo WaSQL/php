@@ -27201,7 +27201,7 @@ function commonBlockedIpsDb(){
 		$db->exec('PRAGMA busy_timeout=250');
 		$db->exec('PRAGMA synchronous=NORMAL');
 		//schema work only when the file's user_version is behind - saves ~12 statements on every request
-		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 3){
+		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 4){
 			$db->exec('PRAGMA journal_mode=WAL');
 			$db->exec("CREATE TABLE IF NOT EXISTS blocked_ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL UNIQUE, reason TEXT DEFAULT '', pattern TEXT DEFAULT '', user_agent TEXT DEFAULT '', source TEXT DEFAULT '', last_source TEXT DEFAULT '', hit_count INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, first_seen INTEGER NOT NULL DEFAULT 0, last_seen INTEGER NOT NULL DEFAULT 0, notes TEXT DEFAULT '')");
 			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_active ON blocked_ips (active)');
@@ -27218,7 +27218,9 @@ function commonBlockedIpsDb(){
 			try{$db->exec('ALTER TABLE blocked_traffic ADD COLUMN ms REAL');}catch(\Throwable $e0){}//already there
 			//v3: expires_at - NULL/0 = permanent block, else unix time a temporary (UA-rotation) block lapses
 			try{$db->exec('ALTER TABLE blocked_ips ADD COLUMN expires_at INTEGER');}catch(\Throwable $e0){}//already there
-			$db->exec('PRAGMA user_version=3');
+			//v4: blocked_allow - allowlist (exact IPs / CIDR ranges) managed from the admin Firewall page, merged with $CONFIG['blocked_ips_allow']
+			$db->exec("CREATE TABLE IF NOT EXISTS blocked_allow (id INTEGER PRIMARY KEY AUTOINCREMENT, entry TEXT NOT NULL UNIQUE, note TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
+			$db->exec('PRAGMA user_version=4');
 		}
 		commonBlockedIpsLastError('');
 		$pdo=$db;
@@ -27328,15 +27330,63 @@ function commonBlockedIpsAllowed($ip){
 		&& !filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)){
 		return true;
 	}
-	global $CONFIG;
-	if(isset($CONFIG['blocked_ips_allow']) && strlen(trim($CONFIG['blocked_ips_allow']))){
-		$allow=preg_split('/[\s,;]+/',trim($CONFIG['blocked_ips_allow']));
-		if(in_array($ip,$allow,true)){return true;}
-		foreach($allow as $entry){
-			if(strpos($entry,'/')!==false && commonBlockedIpsInCidr($ip,$entry)){return true;}
-		}
+	$allow=commonBlockedIpsAllowList();
+	if(in_array($ip,$allow,true)){return true;}
+	foreach($allow as $entry){
+		if(strpos($entry,'/')!==false && commonBlockedIpsInCidr($ip,$entry)){return true;}
 	}
 	return false;
+}
+//---------- begin function commonBlockedIpsAllowList--------------------
+/**
+* @describe every allowlisted entry (exact IPs and CIDR ranges): $CONFIG['blocked_ips_allow']
+*	merged with the blocked_allow table managed on the admin Firewall page. The table
+*	part is read from a snapshot file in the WaSQL temp dir, so a normal request never
+*	opens SQLite for this; the snapshot is rebuilt only after commonBlockedIpsFlushAllow().
+* @return array
+* @usage $entries=commonBlockedIpsAllowList();
+*/
+function commonBlockedIpsAllowList(){
+	static $list=null;
+	if($list!==null){return $list;}
+	global $CONFIG;
+	$list=array();
+	if(isset($CONFIG['blocked_ips_allow']) && strlen(trim($CONFIG['blocked_ips_allow']))){
+		$list=preg_split('/[\s,;]+/',trim($CONFIG['blocked_ips_allow']));
+	}
+	$cachefile=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_allow.snapshot';
+	$rows=null;
+	if(is_file($cachefile)){
+		$data=json_decode((string)@file_get_contents($cachefile),true);
+		if(is_array($data)){$rows=$data;}
+	}
+	if($rows===null){
+		$rows=array();
+		if(is_file(commonBlockedIpsPath())){
+			$db=commonBlockedIpsDb();
+			if($db!==null){
+				try{
+					foreach($db->query('SELECT entry FROM blocked_allow') as $r){$rows[]=$r['entry'];}
+					$tmp=$cachefile.'.'.getmypid().'.tmp';
+					if(@file_put_contents($tmp,json_encode($rows))!==false){@rename($tmp,$cachefile);}
+				}
+				catch(\Throwable $e){error_log('commonBlockedIpsAllowList: '.$e->getMessage());}
+			}
+		}
+	}
+	$list=array_merge($list,$rows);
+	return $list;
+}
+//---------- begin function commonBlockedIpsFlushAllow--------------------
+/**
+* @describe drops the allowlist snapshot so the next request re-reads blocked_allow.
+*	Called by the admin Firewall page after the allowlist changes.
+* @return void
+* @usage commonBlockedIpsFlushAllow();
+*/
+function commonBlockedIpsFlushAllow(){
+	$f=getWasqlTempPath().DIRECTORY_SEPARATOR.'blocked_allow.snapshot';
+	if(is_file($f)){@unlink($f);}
 }
 //---------- begin function commonBlockedIpsInCidr--------------------
 /**

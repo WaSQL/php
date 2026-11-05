@@ -582,6 +582,124 @@ function firewallSpeedReport(){
 	catch(\Throwable $e){error_log('firewallSpeedReport: '.$e->getMessage());return '<div class="w_bold w_danger">Query failed - see the error log.</div>';}
 	return $h.'<div class="w_small w_gray" style="margin-top:8px;">Timing covers the whole check (list lookup, signature scan, logging). Only requests that passed are timed; requests turned away exit earlier.</div></div>';
 }
+//---------- begin function firewallAllowParse ----
+/**
+* @exclude
+* @describe split pasted text into validated allowlist entries. Accepts one per line or
+*	separated by commas / spaces / semicolons, tolerates leading "-" / "*" bullets, and
+*	normalises CIDR ranges (host bits zeroed).
+* @param text string
+* @return array  array('ok'=>[entries], 'bad'=>[rejected tokens])
+*/
+function firewallAllowParse($text){
+	$ok=array(); $bad=array();
+	foreach(preg_split('/[\s,;]+/',trim((string)$text)) as $t){
+		$t=trim(ltrim($t,'-*'));
+		if($t===''){continue;}
+		if(strpos($t,'/')!==false){$n=commonBlockedIpsNormalizeCidr($t);}
+		else{$n=filter_var($t,FILTER_VALIDATE_IP)?$t:'';}
+		if($n===''){$bad[]=$t;}else{$ok[$n]=$n;}
+	}
+	return array('ok'=>array_values($ok),'bad'=>$bad);
+}
+//---------- begin function firewallAllowAdd ----
+/**
+* @exclude
+* @describe add entries to the allowlist AND purge every blocked_ips row they cover
+*	(an exact IP row, or any row - single IP or CIDR - that falls inside an allowed range).
+* @param text string - pasted list
+* @return array  array('added'=>int,'purged'=>int,'bad'=>[tokens])
+*/
+function firewallAllowAdd($text){
+	$out=array('added'=>0,'purged'=>0,'bad'=>array());
+	$db=firewallDb(); if($db===null){return $out;}
+	$p=firewallAllowParse($text);
+	$out['bad']=$p['bad'];
+	if(!count($p['ok'])){return $out;}
+	try{
+		$now=time();
+		$ins=$db->prepare("INSERT OR IGNORE INTO blocked_allow (entry,note,created_at) VALUES (:e,'',:now)");
+		foreach($p['ok'] as $e){
+			$ins->execute(array(':e'=>$e,':now'=>$now));
+			$out['added']+=$ins->rowCount();
+		}
+		//purge: load every blocked ip_addr once and test against the new entries
+		$ids=array();
+		foreach($db->query('SELECT id, ip_addr FROM blocked_ips') as $r){
+			$ip=$r['ip_addr']; $net=$ip; $bits=null;
+			if(strpos($ip,'/')!==false){list($net,$bits)=explode('/',$ip,2); $bits=(int)$bits;}
+			foreach($p['ok'] as $e){
+				if(strpos($e,'/')===false){
+					if($bits===null && $ip===$e){$ids[]=(int)$r['id']; break;}
+					continue;
+				}
+				$ebits=(int)substr($e,strpos($e,'/')+1);
+				if(commonBlockedIpsInCidr($net,$e) && ($bits===null || $bits>=$ebits)){$ids[]=(int)$r['id']; break;}
+			}
+		}
+		foreach(array_chunk($ids,500) as $chunk){
+			$out['purged']+=(int)$db->exec('DELETE FROM blocked_ips WHERE id IN ('.implode(',',$chunk).')');
+		}
+		commonBlockedIpsFlushAllow();
+		commonBlockedIpsFlush();
+	}
+	catch(\Throwable $e){error_log('firewallAllowAdd: '.$e->getMessage());}
+	return $out;
+}
+//---------- begin function firewallAllowDelete ----
+/** @exclude */
+function firewallAllowDelete($id){
+	$db=firewallDb(); if($db===null || !isNum($id)){return false;}
+	try{
+		$db->prepare('DELETE FROM blocked_allow WHERE id=:id')->execute(array(':id'=>(int)$id));
+		commonBlockedIpsFlushAllow();
+		return true;
+	}catch(\Throwable $e){error_log('firewallAllowDelete: '.$e->getMessage()); return false;}
+}
+//---------- begin function firewallAllowPanel ----
+/**
+* @exclude
+* @describe the Allowlist popup: paste box (adds + purges), Google-crawler preset, and the
+*	current list (table entries removable; $CONFIG entries shown read-only).
+* @param message string - HTML flash shown at the top
+* @param wrap boolean - true on first load (adds the wrapper div the form posts back into)
+* @return string HTML
+*/
+function firewallAllowPanel($message='',$wrap=true){
+	$db=firewallDb();
+	if($db===null){return firewallUnavailableNotice();}
+	$google="66.249.64.0/19\n66.102.0.0/20\n74.125.0.0/16\n64.233.160.0/19\n72.14.192.0/18\n209.85.128.0/17\n216.239.32.0/19\n142.250.0.0/15\n172.217.0.0/16\n173.194.0.0/16\n192.178.0.0/15";
+	$rows=array();
+	try{$rows=$db->query('SELECT id,entry,created_at FROM blocked_allow ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);}
+	catch(\Throwable $e){error_log('firewallAllowPanel: '.$e->getMessage());}
+	global $CONFIG;
+	$cfg=array();
+	if(isset($CONFIG['blocked_ips_allow']) && strlen(trim($CONFIG['blocked_ips_allow']))){$cfg=preg_split('/[\s,;]+/',trim($CONFIG['blocked_ips_allow']));}
+	$h=$wrap?'<div id="firewall_allow_panel" style="padding:14px;max-height:75vh;overflow:auto;">':'';
+	$h.=$message;
+	$h.='<div class="w_bold" style="margin-bottom:6px;">Allow IPs / ranges</div>';
+	$h.='<div class="w_small w_gray" style="margin-bottom:6px;">One per line (or comma separated): single IPs or CIDR ranges. Adding also <b>removes</b> any matching entries from the blocked list, and they are never blocked again.</div>';
+	$h.='<form action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,\'firewall_allow_panel\');">'
+		.'<input type="hidden" name="_menu" value="firewall"><input type="hidden" name="func" value="allow_add"><input type="hidden" name="setprocessing" value="0">'
+		.'<textarea name="ips" id="firewall_allow_ips" class="wacss_textarea" rows="8" style="width:100%;font-family:monospace;" placeholder="66.249.64.0/19&#10;203.0.113.7"></textarea>'
+		.'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'
+		.'<button type="submit" class="wacss_button is-link"><span class="icon-plus wacss_right5"></span> Allow &amp; purge</button>'
+		.'<a href="#google" class="wacss_button is-light" onclick="document.getElementById(\'firewall_allow_ips\').value='.encodeHtml(json_encode($google)).';return false;">Fill in Google crawler ranges</a>'
+		.'</div></form>';
+	$h.='<div class="w_bold" style="margin:16px 0 6px;">Current allowlist ('.(count($rows)+count($cfg)).')</div>';
+	$h.='<table class="wacss_table is-striped is-fullwidth"><thead><tr><th>Entry</th><th>Source</th><th>Added</th><th></th></tr></thead><tbody>';
+	if(!count($rows) && !count($cfg)){$h.='<tr><td colspan="4" class="w_gray" style="text-align:center;">Nothing allowlisted yet (private / loopback addresses are always allowed).</td></tr>';}
+	foreach($rows as $r){
+		$h.='<tr><td><code>'.encodeHtml($r['entry']).'</code></td><td class="w_small">this page</td><td class="w_small">'.encodeHtml(firewallWhen($r['created_at'])).'</td>'
+			.'<td><a href="#rm" title="remove from allowlist" onclick="wacss.ajaxGet(\'/php/admin.php\',\'firewall_allow_panel\',{_menu:\'firewall\',func:\'allow_del\',id:'.(int)$r['id'].',setprocessing:0});return false;"><span class="icon-erase w_danger"></span></a></td></tr>';
+	}
+	foreach($cfg as $e){
+		$h.='<tr><td><code>'.encodeHtml($e).'</code></td><td class="w_small">config ($CONFIG[blocked_ips_allow])</td><td></td><td></td></tr>';
+	}
+	$h.='</tbody></table>';
+	if($wrap){$h.='</div>';}
+	return $h;
+}
 //---------- begin function firewallBytes ----
 /** @exclude */
 function firewallBytes($n){
