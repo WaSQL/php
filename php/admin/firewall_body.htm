@@ -111,6 +111,7 @@ echo firewallStatCards($stats,$info);
 					<option value="inactive">Not blocking</option>
 				</select>
 				<a href="#search" class="wacss_button is-light" onclick="return firewallSearch();"><span class="icon-search"></span></a>
+				<a href="#allow" class="wacss_button is-light" data-nav="/php/admin.php?_menu=firewall&func=allow" data-div="centerpop" data-title="Allowlist" onclick="return wacss.nav(this);"><span class="icon-eye wacss_right5"></span> Allowlist</a>
 				<a href="#add" class="wacss_button is-link" onclick="return firewallAddIp();"><span class="icon-plus wacss_right5"></span> Add IP</a>
 			</div>
 		</div>

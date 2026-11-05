@@ -51,6 +51,25 @@ switch($func){
 		setView('history',1);
 		return;
 
+	case 'allow':
+		$grid=firewallAllowPanel();
+		setView('grid',1);
+		return;
+
+	case 'allow_add':
+		$r=firewallAllowAdd(isset($_REQUEST['ips'])?$_REQUEST['ips']:'');
+		$msg='<div class="w_bold w_success" style="margin-bottom:8px;"><span class="icon-success"></span> Allowed '.(int)$r['added'].' new entr'.($r['added']==1?'y':'ies').'; removed '.(int)$r['purged'].' blocked record(s).</div>';
+		if(count($r['bad'])){$msg.='<div class="w_bold w_danger" style="margin-bottom:8px;"><span class="icon-warning"></span> Skipped (not a valid IP/CIDR): '.encodeHtml(implode(', ',$r['bad'])).'</div>';}
+		$grid=firewallAllowPanel($msg,false);
+		setView('grid',1);
+		return;
+
+	case 'allow_del':
+		firewallAllowDelete(isset($_REQUEST['id'])?$_REQUEST['id']:0);
+		$grid=firewallAllowPanel('',false);
+		setView('grid',1);
+		return;
+
 	//--- row / bulk actions: act, then return the refreshed grid ----------
 	case 'toggle':
 		firewallActionToggle($_REQUEST['id']);
