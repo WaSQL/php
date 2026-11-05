@@ -27503,6 +27503,11 @@ function commonBlockedIpsFlag($ip,$reason,$pattern,$uri,$ua,$event='flagged',$tt
 		));
 		$db->commit();
 		commonBlockedIpsFlush();
+		//automatic retention: keep 180 days of history, pruned at random (~1 in 2000 flag events),
+		//in small batches so no single request does a huge delete
+		if(mt_rand(1,2000)==1){
+			$db->exec('DELETE FROM blocked_history WHERE id IN (SELECT id FROM blocked_history WHERE created_at < '.($now-15552000).' LIMIT 5000)');
+		}
 	}
 	catch(\Throwable $e){
 		try{if($db->inTransaction()){$db->rollBack();}}catch(\Throwable $e2){}

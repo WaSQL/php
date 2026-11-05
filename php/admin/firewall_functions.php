@@ -22,6 +22,51 @@ function firewallDb(){
 	if(!function_exists('commonBlockedIpsDb')){return null;}
 	return commonBlockedIpsDb();
 }
+//---------- begin function firewallEnsureIndexes ----
+/**
+* @exclude
+* @describe one-time self-heal: adds covering indexes the dashboard aggregates need
+*	(created_at+event on blocked_history, created_at+source on blocked_traffic) so the
+*	charts no longer do ~millions of random table lookups. Cheap check against
+*	sqlite_master once per request; the build itself happens only once.
+* @param db PDO
+*/
+function firewallEnsureIndexes($db){
+	static $done=false;
+	if($done){return;}
+	$done=true;
+	try{
+		$have=$db->query("SELECT name FROM sqlite_master WHERE type='index'")->fetchAll(PDO::FETCH_COLUMN);
+		if(!in_array('ix_blocked_history_created_event',$have)){
+			@set_time_limit(0);
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_created_event ON blocked_history (created_at, event)');
+			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_history_source_created ON blocked_history (source, created_at)');
+		}
+	}
+	catch(\Throwable $e){error_log('firewallEnsureIndexes: '.$e->getMessage());}
+}
+//---------- begin function firewallCached ----
+/**
+* @exclude
+* @describe run $fn and cache its (serialized) result in php/temp for $ttl seconds,
+*	so heavy aggregates over millions of history rows are not recomputed on every load.
+*	Add &nocache=1 to the URL to force a refresh.
+* @param key string
+* @param ttl int seconds
+* @param fn callable
+* @return mixed
+*/
+function firewallCached($key,$ttl,$fn){
+	$dir=getWasqlPath('php/temp');
+	$file=$dir.'/firewall_cache_'.preg_replace('/[^a-z0-9_]/i','_',$key).'.ser';
+	if(empty($_REQUEST['nocache']) && is_file($file) && (time()-filemtime($file))<$ttl){
+		$c=@unserialize((string)@file_get_contents($file));
+		if($c!==false){return $c;}
+	}
+	$v=$fn();
+	if(is_dir($dir)){@file_put_contents($file,serialize($v),LOCK_EX);}
+	return $v;
+}
 //---------- begin function firewallDbInfo ----
 /**
 * @exclude
@@ -58,6 +103,7 @@ function firewallStats(){
 	);
 	$db=firewallDb();
 	if($db===null){return $out;}
+	firewallEnsureIndexes($db);
 	try{
 		$r=$db->query("SELECT
 			COUNT(*) total,
@@ -83,8 +129,10 @@ function firewallStats(){
 			$off=(int)floor($out['fw_samples']*0.95);
 			$out['fw_p95']=(float)$db->query("SELECT ms FROM blocked_traffic WHERE ms IS NOT NULL AND created_at >= ".($now-86400)." ORDER BY ms LIMIT 1 OFFSET ".$off)->fetchColumn();
 		}
-		$ts=$db->query("SELECT source, COUNT(*) c FROM blocked_history WHERE source<>'' GROUP BY source ORDER BY c DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
-		if(is_array($ts)){$out['top_source']=$ts['source'].' ('.$ts['c'].')';}
+		$out['top_source']=firewallCached('top_source',600,function() use ($db){
+			$ts=$db->query("SELECT source, COUNT(*) c FROM blocked_history WHERE source<>'' GROUP BY source ORDER BY c DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+			return is_array($ts)?($ts['source'].' ('.$ts['c'].')'):'';
+		});
 	}
 	catch(\Throwable $e){error_log('firewallStats: '.$e->getMessage());}
 	return $out;
@@ -100,6 +148,11 @@ function firewallStats(){
 */
 function firewallTimelineData($days=30){
 	$days=max(7,min(180,(int)$days));
+	return firewallCached('timeline_'.$days.'_'.date('Ymd'),300,function() use ($days){return firewallTimelineDataRaw($days);});
+}
+//---------- begin function firewallTimelineDataRaw ----
+/** @exclude */
+function firewallTimelineDataRaw($days){
 	$labels=array(); $flagged=array(); $blocked=array(); $idx=array();
 	for($i=$days-1;$i>=0;$i--){
 		$d=date('Y-m-d',strtotime("-{$i} days"));
@@ -160,6 +213,11 @@ HTML;
 */
 function firewallTrafficData($days=10){
 	$days=max(1,min(10,(int)$days));
+	return firewallCached('traffic_'.$days.'_'.date('Ymd'),120,function() use ($days){return firewallTrafficDataRaw($days);});
+}
+//---------- begin function firewallTrafficDataRaw ----
+/** @exclude */
+function firewallTrafficDataRaw($days){
 	$labels=array(); $passed=array(); $blocked=array(); $flagged=array(); $idx=array();
 	for($i=$days-1;$i>=0;$i--){
 		$d=date('Y-m-d',strtotime("-{$i} days"));
