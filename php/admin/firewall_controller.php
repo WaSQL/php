@@ -56,6 +56,25 @@ switch($func){
 		setView('grid',1);
 		return;
 
+	case 'allow_preset':
+		$r=firewallAllowApplyPreset(isset($_REQUEST['name'])?$_REQUEST['name']:'');
+		$grid=firewallAllowPanel('<div class="w_bold '.($r['ok']?'w_success':'w_danger').'" style="margin-bottom:8px;">'.encodeHtml($r['message']).'</div>',false);
+		setView('grid',1);
+		return;
+
+	case 'allow_refresh':
+		$msgs=firewallAllowRefreshPresets();
+		$msg=count($msgs)?('<div class="w_small" style="margin-bottom:8px;">'.implode('<br>',array_map('encodeHtml',$msgs)).'</div>'):'<div class="w_bold w_danger" style="margin-bottom:8px;">No presets are on the allowlist yet - click one above first.</div>';
+		$grid=firewallAllowPanel($msg,false);
+		setView('grid',1);
+		return;
+
+	case 'allow_clear':
+		$n=firewallAllowClear(isset($_REQUEST['which'])?$_REQUEST['which']:'all');
+		$grid=firewallAllowPanel('<div class="w_bold w_success" style="margin-bottom:8px;">Removed '.(int)$n.' allowlist entr'.($n==1?'y':'ies').'.</div>',false);
+		setView('grid',1);
+		return;
+
 	case 'allow_add':
 		$r=firewallAllowAdd(isset($_REQUEST['ips'])?$_REQUEST['ips']:'');
 		$msg='<div class="w_bold w_success" style="margin-bottom:8px;"><span class="icon-success"></span> Allowed '.(int)$r['added'].' new entr'.($r['added']==1?'y':'ies').'; removed '.(int)$r['purged'].' blocked record(s).</div>';

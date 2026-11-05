@@ -608,33 +608,50 @@ function firewallAllowParse($text){
 * @describe add entries to the allowlist AND purge every blocked_ips row they cover
 *	(an exact IP row, or any row - single IP or CIDR - that falls inside an allowed range).
 * @param text string - pasted list
+* @param preset string - preset key the entries came from ('' = typed/pasted by hand)
 * @return array  array('added'=>int,'purged'=>int,'bad'=>[tokens])
 */
-function firewallAllowAdd($text){
+function firewallAllowAdd($text,$preset=''){
 	$out=array('added'=>0,'purged'=>0,'bad'=>array());
 	$db=firewallDb(); if($db===null){return $out;}
+	firewallAllowEnsureColumn($db);
 	$p=firewallAllowParse($text);
 	$out['bad']=$p['bad'];
 	if(!count($p['ok'])){return $out;}
 	try{
 		$now=time();
-		$ins=$db->prepare("INSERT OR IGNORE INTO blocked_allow (entry,note,created_at) VALUES (:e,'',:now)");
+		$db->beginTransaction();
+		$ins=$db->prepare("INSERT OR IGNORE INTO blocked_allow (entry,note,created_at,preset) VALUES (:e,'',:now,:preset)");
 		foreach($p['ok'] as $e){
-			$ins->execute(array(':e'=>$e,':now'=>$now));
+			$ins->execute(array(':e'=>$e,':now'=>$now,':preset'=>(string)$preset));
 			$out['added']+=$ins->rowCount();
 		}
-		//purge: load every blocked ip_addr once and test against the new entries
+		$db->commit();
+		//purge: load every blocked ip_addr once and test against the new entries (IPv4 via integer masks - presets can add hundreds of ranges)
+		@set_time_limit(0);
+		$v4=array(); $v6=array(); $exact=array();
+		foreach($p['ok'] as $e){
+			if(strpos($e,'/')===false){$exact[$e]=1; continue;}
+			list($enet,$ebits)=explode('/',$e,2); $ebits=(int)$ebits;
+			if(strpos($e,':')!==false){$v6[]=array($e,$ebits); continue;}
+			$mask=$ebits==0?0:((-1 << (32-$ebits)) & 0xFFFFFFFF);
+			$v4[]=array(ip2long($enet) & $mask,$mask,$ebits);
+		}
 		$ids=array();
 		foreach($db->query('SELECT id, ip_addr FROM blocked_ips') as $r){
 			$ip=$r['ip_addr']; $net=$ip; $bits=null;
 			if(strpos($ip,'/')!==false){list($net,$bits)=explode('/',$ip,2); $bits=(int)$bits;}
-			foreach($p['ok'] as $e){
-				if(strpos($e,'/')===false){
-					if($bits===null && $ip===$e){$ids[]=(int)$r['id']; break;}
-					continue;
+			if($bits===null && isset($exact[$ip])){$ids[]=(int)$r['id']; continue;}
+			if(strpos($net,':')!==false){
+				foreach($v6 as $x){
+					if(commonBlockedIpsInCidr($net,$x[0]) && ($bits===null || $bits>=$x[1])){$ids[]=(int)$r['id']; break;}
 				}
-				$ebits=(int)substr($e,strpos($e,'/')+1);
-				if(commonBlockedIpsInCidr($net,$e) && ($bits===null || $bits>=$ebits)){$ids[]=(int)$r['id']; break;}
+				continue;
+			}
+			$n=ip2long($net);
+			if($n===false){continue;}
+			foreach($v4 as $x){
+				if((($n & $x[1])===$x[0]) && ($bits===null || $bits>=$x[2])){$ids[]=(int)$r['id']; break;}
 			}
 		}
 		foreach(array_chunk($ids,500) as $chunk){
@@ -643,8 +660,29 @@ function firewallAllowAdd($text){
 		commonBlockedIpsFlushAllow();
 		commonBlockedIpsFlush();
 	}
-	catch(\Throwable $e){error_log('firewallAllowAdd: '.$e->getMessage());}
+	catch(\Throwable $e){
+		try{if($db->inTransaction()){$db->rollBack();}}catch(\Throwable $e2){}
+		error_log('firewallAllowAdd: '.$e->getMessage());
+	}
 	return $out;
+}
+//---------- begin function firewallAllowEnsureColumn ----
+/**
+* @exclude
+* @describe self-heal: blocked_allow.preset (which crawler preset an entry came from) is
+*	missing on a db opened before it existed.
+* @param db PDO
+*/
+function firewallAllowEnsureColumn($db){
+	static $done=false;
+	if($done){return;}
+	$done=true;
+	try{
+		$has=false;
+		foreach($db->query('PRAGMA table_info(blocked_allow)') as $c){if(strtolower($c['name'])==='preset'){$has=true;}}
+		if(!$has){$db->exec("ALTER TABLE blocked_allow ADD COLUMN preset TEXT DEFAULT ''");}
+	}
+	catch(\Throwable $e){error_log('firewallAllowEnsureColumn: '.$e->getMessage());}
 }
 //---------- begin function firewallAllowDelete ----
 /** @exclude */
@@ -656,11 +694,119 @@ function firewallAllowDelete($id){
 		return true;
 	}catch(\Throwable $e){error_log('firewallAllowDelete: '.$e->getMessage()); return false;}
 }
+//---------- begin function firewallAllowClear ----
+/**
+* @exclude
+* @describe purge the allowlist table. $which='all' empties it; 'presets' removes only the
+*	entries that came from a crawler preset (keeps hand-entered ones); any preset key
+*	removes just that preset. Entries from $CONFIG are untouched.
+* @param which string
+* @return int rows removed
+*/
+function firewallAllowClear($which='all'){
+	$db=firewallDb(); if($db===null){return 0;}
+	firewallAllowEnsureColumn($db);
+	try{
+		if($which==='all'){$n=$db->exec('DELETE FROM blocked_allow');}
+		elseif($which==='presets'){$n=$db->exec("DELETE FROM blocked_allow WHERE preset<>''");}
+		else{$q=$db->prepare('DELETE FROM blocked_allow WHERE preset=:p'); $q->execute(array(':p'=>(string)$which)); $n=$q->rowCount();}
+		commonBlockedIpsFlushAllow();
+		return (int)$n;
+	}catch(\Throwable $e){error_log('firewallAllowClear: '.$e->getMessage()); return 0;}
+}
+//---------- begin function firewallAllowPresets ----
+/**
+* @exclude
+* @describe crawler presets for the Allowlist popup: key => array(label, [published IP-range JSON urls]).
+*	The ranges are fetched live from the publishers each time a preset is applied or refreshed
+*	(see firewallAllowApplyPreset), never stored in code, so they cannot go stale.
+*	Meta and Anthropic (ClaudeBot) publish no machine-readable range list, so they are not here.
+* @return array
+*/
+function firewallAllowPresets(){
+	return array(
+		'google'=>array('Google',array(
+			'https://developers.google.com/static/search/apis/ipranges/googlebot.json',
+			'https://developers.google.com/static/search/apis/ipranges/special-crawlers.json',
+			'https://developers.google.com/static/search/apis/ipranges/user-triggered-fetchers.json')),
+		'bing'=>array('Bing',array('https://www.bing.com/toolbox/bingbot.json')),
+		'openai'=>array('OpenAI',array('https://openai.com/gptbot.json','https://openai.com/searchbot.json','https://openai.com/chatgpt-user.json')),
+		'perplexity'=>array('Perplexity',array('https://www.perplexity.com/perplexitybot.json','https://www.perplexity.com/perplexity-user.json')),
+		'apple'=>array('Applebot',array('https://search.developer.apple.com/applebot.json')),
+		'duckduckgo'=>array('DuckDuckGo',array('https://duckduckgo.com/duckduckbot.json')),
+	);
+}
+//---------- begin function firewallAllowFetchPreset ----
+/**
+* @exclude
+* @describe fetch a preset's published ranges NOW (JSON with prefixes[].ipv4Prefix / ipv6Prefix),
+*	using WaSQL's getURL (bundled CA file). A preset spans several URLs; if any one fails the
+*	whole fetch is treated as failed so a refresh never replaces a good list with a partial one.
+* @param key string - preset key from firewallAllowPresets()
+* @return array  array('ranges'=>[...], 'error'=>'')
+*/
+function firewallAllowFetchPreset($key){
+	$presets=firewallAllowPresets();
+	if(!isset($presets[$key])){return array('ranges'=>array(),'error'=>'Unknown preset.');}
+	$ranges=array();
+	foreach($presets[$key][1] as $url){
+		$res=getURL($url,array('-follow'=>1,'-timeout'=>20,'-user_agent'=>'Mozilla/5.0 (WaSQL firewall admin)'));
+		$body=is_array($res)?(isset($res['body'])?$res['body']:''):(string)$res;
+		$j=strlen(trim($body))?json_decode($body,true):null;
+		if(!is_array($j) || !isset($j['prefixes']) || !is_array($j['prefixes']) || !count($j['prefixes'])){
+			error_log('firewallAllowFetchPreset: bad response from '.$url);
+			return array('ranges'=>array(),'error'=>'Could not fetch '.$url);
+		}
+		foreach($j['prefixes'] as $x){
+			$v=isset($x['ipv4Prefix'])?$x['ipv4Prefix']:(isset($x['ipv6Prefix'])?$x['ipv6Prefix']:'');
+			if($v!==''){$ranges[$v]=$v;}
+		}
+	}
+	return array('ranges'=>array_values($ranges),'error'=>'');
+}
+//---------- begin function firewallAllowApplyPreset ----
+/**
+* @exclude
+* @describe fetch a preset's current ranges, REPLACE any entries previously stored for that
+*	preset (so ranges the publisher dropped disappear), and purge matching blocked rows.
+*	Used both for the first "Allow Google" click and for refreshing.
+* @param key string
+* @return array  array('ok'=>bool,'message'=>string,'added'=>int,'purged'=>int)
+*/
+function firewallAllowApplyPreset($key){
+	$presets=firewallAllowPresets();
+	$label=isset($presets[$key])?$presets[$key][0]:$key;
+	$f=firewallAllowFetchPreset($key);
+	if(strlen($f['error']) || !count($f['ranges'])){
+		return array('ok'=>false,'message'=>$label.': '.($f['error']?$f['error']:'no ranges returned').' - the existing list was left unchanged.','added'=>0,'purged'=>0);
+	}
+	firewallAllowClear($key);
+	$r=firewallAllowAdd(implode("\n",$f['ranges']),$key);
+	return array('ok'=>true,'message'=>$label.': '.count($f['ranges']).' current ranges allowed; removed '.(int)$r['purged'].' blocked record(s).','added'=>(int)$r['added'],'purged'=>(int)$r['purged']);
+}
+//---------- begin function firewallAllowRefreshPresets ----
+/**
+* @exclude
+* @describe re-fetch every preset that is currently in the allowlist (can also be run from a cron page).
+* @return array  list of per-preset message strings (HTML-safe text)
+*/
+function firewallAllowRefreshPresets(){
+	$db=firewallDb(); $msgs=array();
+	if($db===null){return $msgs;}
+	firewallAllowEnsureColumn($db);
+	try{$keys=$db->query("SELECT DISTINCT preset FROM blocked_allow WHERE preset<>''")->fetchAll(PDO::FETCH_COLUMN);}
+	catch(\Throwable $e){error_log('firewallAllowRefreshPresets: '.$e->getMessage()); return $msgs;}
+	foreach($keys as $k){
+		$r=firewallAllowApplyPreset($k);
+		$msgs[]=($r['ok']?'OK - ':'FAILED - ').$r['message'];
+	}
+	return $msgs;
+}
 //---------- begin function firewallAllowPanel ----
 /**
 * @exclude
-* @describe the Allowlist popup: paste box (adds + purges), Google-crawler preset, and the
-*	current list (table entries removable; $CONFIG entries shown read-only).
+* @describe the Allowlist popup: paste box (adds + purges), live crawler presets (apply / refresh /
+*	remove), hand-entered entries, and $CONFIG entries (read-only).
 * @param message string - HTML flash shown at the top
 * @param wrap boolean - true on first load (adds the wrapper div the form posts back into)
 * @return string HTML
@@ -668,30 +814,55 @@ function firewallAllowDelete($id){
 function firewallAllowPanel($message='',$wrap=true){
 	$db=firewallDb();
 	if($db===null){return firewallUnavailableNotice();}
-	$google="66.249.64.0/19\n66.102.0.0/20\n74.125.0.0/16\n64.233.160.0/19\n72.14.192.0/18\n209.85.128.0/17\n216.239.32.0/19\n142.250.0.0/15\n172.217.0.0/16\n173.194.0.0/16\n192.178.0.0/15";
-	$rows=array();
-	try{$rows=$db->query('SELECT id,entry,created_at FROM blocked_allow ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);}
+	firewallAllowEnsureColumn($db);
+	$manual=array(); $groups=array();
+	try{
+		$manual=$db->query("SELECT id,entry,created_at FROM blocked_allow WHERE preset='' ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+		foreach($db->query("SELECT preset, COUNT(*) c, MAX(created_at) t FROM blocked_allow WHERE preset<>'' GROUP BY preset") as $g){$groups[$g['preset']]=$g;}
+	}
 	catch(\Throwable $e){error_log('firewallAllowPanel: '.$e->getMessage());}
 	global $CONFIG;
 	$cfg=array();
 	if(isset($CONFIG['blocked_ips_allow']) && strlen(trim($CONFIG['blocked_ips_allow']))){$cfg=preg_split('/[\s,;]+/',trim($CONFIG['blocked_ips_allow']));}
+	$presets=firewallAllowPresets();
+	$act=function($label,$params,$confirm='',$class='wacss_button is-light is-small'){
+		$js="wacss.ajaxGet('/php/admin.php','firewall_allow_panel',".json_encode(array_merge(array('_menu'=>'firewall','setprocessing'=>0),$params)).");return false;";
+		if(strlen($confirm)){$js="if(!confirm(".json_encode($confirm).")){return false;}".$js;}
+		return '<a href="#" class="'.$class.'" onclick="'.encodeHtml($js).'">'.$label.'</a>';
+	};
 	$h=$wrap?'<div id="firewall_allow_panel" style="padding:14px;max-height:75vh;overflow:auto;">':'';
 	$h.=$message;
-	$h.='<div class="w_bold" style="margin-bottom:6px;">Allow IPs / ranges</div>';
+	$h.='<div class="w_bold" style="margin-bottom:6px;">Crawler presets <span class="w_small w_gray" style="font-weight:400;">&mdash; ranges are fetched live from each publisher when you click</span></div>';
+	$h.='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">';
+	foreach($presets as $k=>$pr){
+		$h.=$act((isset($groups[$k])?'Refresh ':'Allow ').encodeHtml($pr[0]),array('func'=>'allow_preset','name'=>$k),'Fetch the current '.$pr[0].' ranges now, allow them, and remove matching blocked records?');
+	}
+	$h.='</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">'
+		.$act('<span class="icon-history wacss_right5"></span> Rebuild all presets from current ranges',array('func'=>'allow_refresh'),'Re-fetch every preset that is on the allowlist and replace its stored ranges?','wacss_button is-link is-small')
+		.$act('Clear presets',array('func'=>'allow_clear','which'=>'presets'),'Remove every crawler-preset range from the allowlist? (hand-entered entries stay)')
+		.$act('Clear entire allowlist',array('func'=>'allow_clear','which'=>'all'),'Remove EVERY entry from the allowlist (presets and hand-entered)? Blocked records already purged stay purged.','wacss_button is-warning is-small')
+		.'</div>';
+	if(count($groups)){
+		$h.='<table class="wacss_table is-striped is-fullwidth" style="margin-bottom:14px;"><thead><tr><th>Preset</th><th style="text-align:right;">Ranges</th><th>Fetched</th><th></th></tr></thead><tbody>';
+		foreach($groups as $k=>$g){
+			$h.='<tr><td>'.encodeHtml(isset($presets[$k])?$presets[$k][0]:$k).'</td><td style="text-align:right;">'.number_format((int)$g['c']).'</td><td class="w_small">'.encodeHtml(firewallWhen($g['t'])).'</td>'
+				.'<td>'.$act('<span class="icon-erase w_danger"></span>',array('func'=>'allow_clear','which'=>$k),'Remove the '.$k.' preset ranges from the allowlist?','').'</td></tr>';
+		}
+		$h.='</tbody></table>';
+	}
+	$h.='<div class="w_bold" style="margin-bottom:6px;">Allow IPs / ranges by hand</div>';
 	$h.='<div class="w_small w_gray" style="margin-bottom:6px;">One per line (or comma separated): single IPs or CIDR ranges. Adding also <b>removes</b> any matching entries from the blocked list, and they are never blocked again.</div>';
 	$h.='<form action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,\'firewall_allow_panel\');">'
 		.'<input type="hidden" name="_menu" value="firewall"><input type="hidden" name="func" value="allow_add"><input type="hidden" name="setprocessing" value="0">'
-		.'<textarea name="ips" id="firewall_allow_ips" class="wacss_textarea" rows="8" style="width:100%;font-family:monospace;" placeholder="66.249.64.0/19&#10;203.0.113.7"></textarea>'
-		.'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'
-		.'<button type="submit" class="wacss_button is-link"><span class="icon-plus wacss_right5"></span> Allow &amp; purge</button>'
-		.'<a href="#google" class="wacss_button is-light" onclick="document.getElementById(\'firewall_allow_ips\').value='.encodeHtml(json_encode($google)).';return false;">Fill in Google crawler ranges</a>'
-		.'</div></form>';
-	$h.='<div class="w_bold" style="margin:16px 0 6px;">Current allowlist ('.(count($rows)+count($cfg)).')</div>';
+		.'<textarea name="ips" class="wacss_textarea" rows="5" style="width:100%;font-family:monospace;" placeholder="203.0.113.0/24&#10;198.51.100.7"></textarea>'
+		.'<div style="margin-top:8px;"><button type="submit" class="wacss_button is-link"><span class="icon-plus wacss_right5"></span> Allow &amp; purge</button></div>'
+		.'</form>';
+	$h.='<div class="w_bold" style="margin:16px 0 6px;">Hand-entered &amp; config entries ('.(count($manual)+count($cfg)).')</div>';
 	$h.='<table class="wacss_table is-striped is-fullwidth"><thead><tr><th>Entry</th><th>Source</th><th>Added</th><th></th></tr></thead><tbody>';
-	if(!count($rows) && !count($cfg)){$h.='<tr><td colspan="4" class="w_gray" style="text-align:center;">Nothing allowlisted yet (private / loopback addresses are always allowed).</td></tr>';}
-	foreach($rows as $r){
+	if(!count($manual) && !count($cfg)){$h.='<tr><td colspan="4" class="w_gray" style="text-align:center;">None (private / loopback addresses are always allowed).</td></tr>';}
+	foreach($manual as $r){
 		$h.='<tr><td><code>'.encodeHtml($r['entry']).'</code></td><td class="w_small">this page</td><td class="w_small">'.encodeHtml(firewallWhen($r['created_at'])).'</td>'
-			.'<td><a href="#rm" title="remove from allowlist" onclick="wacss.ajaxGet(\'/php/admin.php\',\'firewall_allow_panel\',{_menu:\'firewall\',func:\'allow_del\',id:'.(int)$r['id'].',setprocessing:0});return false;"><span class="icon-erase w_danger"></span></a></td></tr>';
+			.'<td>'.$act('<span class="icon-erase w_danger"></span>',array('func'=>'allow_del','id'=>(int)$r['id']),'','').'</td></tr>';
 	}
 	foreach($cfg as $e){
 		$h.='<tr><td><code>'.encodeHtml($e).'</code></td><td class="w_small">config ($CONFIG[blocked_ips_allow])</td><td></td><td></td></tr>';

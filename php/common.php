@@ -27201,7 +27201,7 @@ function commonBlockedIpsDb(){
 		$db->exec('PRAGMA busy_timeout=250');
 		$db->exec('PRAGMA synchronous=NORMAL');
 		//schema work only when the file's user_version is behind - saves ~12 statements on every request
-		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 4){
+		if((int)$db->query('PRAGMA user_version')->fetchColumn() < 5){
 			$db->exec('PRAGMA journal_mode=WAL');
 			$db->exec("CREATE TABLE IF NOT EXISTS blocked_ips (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_addr TEXT NOT NULL UNIQUE, reason TEXT DEFAULT '', pattern TEXT DEFAULT '', user_agent TEXT DEFAULT '', source TEXT DEFAULT '', last_source TEXT DEFAULT '', hit_count INTEGER NOT NULL DEFAULT 1, active INTEGER NOT NULL DEFAULT 1, first_seen INTEGER NOT NULL DEFAULT 0, last_seen INTEGER NOT NULL DEFAULT 0, notes TEXT DEFAULT '')");
 			$db->exec('CREATE INDEX IF NOT EXISTS ix_blocked_ips_active ON blocked_ips (active)');
@@ -27219,8 +27219,9 @@ function commonBlockedIpsDb(){
 			//v3: expires_at - NULL/0 = permanent block, else unix time a temporary (UA-rotation) block lapses
 			try{$db->exec('ALTER TABLE blocked_ips ADD COLUMN expires_at INTEGER');}catch(\Throwable $e0){}//already there
 			//v4: blocked_allow - allowlist (exact IPs / CIDR ranges) managed from the admin Firewall page, merged with $CONFIG['blocked_ips_allow']
-			$db->exec("CREATE TABLE IF NOT EXISTS blocked_allow (id INTEGER PRIMARY KEY AUTOINCREMENT, entry TEXT NOT NULL UNIQUE, note TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0)");
-			$db->exec('PRAGMA user_version=4');
+			$db->exec("CREATE TABLE IF NOT EXISTS blocked_allow (id INTEGER PRIMARY KEY AUTOINCREMENT, entry TEXT NOT NULL UNIQUE, note TEXT DEFAULT '', created_at INTEGER NOT NULL DEFAULT 0, preset TEXT DEFAULT '')");
+			try{$db->exec("ALTER TABLE blocked_allow ADD COLUMN preset TEXT DEFAULT ''");}catch(\Throwable $e0){}//already there
+			$db->exec('PRAGMA user_version=5');
 		}
 		commonBlockedIpsLastError('');
 		$pdo=$db;
@@ -27332,8 +27333,23 @@ function commonBlockedIpsAllowed($ip){
 	}
 	$allow=commonBlockedIpsAllowList();
 	if(in_array($ip,$allow,true)){return true;}
+	//the list can hold hundreds of ranges (crawler presets), so IPv4 uses a cheap integer
+	//compare and IPv6 only runs the (slower) binary compare against IPv6 entries
+	$v6=strpos($ip,':')!==false;
+	$n=$v6?false:ip2long($ip);
 	foreach($allow as $entry){
-		if(strpos($entry,'/')!==false && commonBlockedIpsInCidr($ip,$entry)){return true;}
+		$slash=strpos($entry,'/');
+		if($slash===false){continue;}
+		if($v6){
+			if(strpos($entry,':')!==false && commonBlockedIpsInCidr($ip,$entry)){return true;}
+			continue;
+		}
+		if($n===false || strpos($entry,':')!==false){continue;}
+		$net=ip2long(substr($entry,0,$slash));
+		$bits=(int)substr($entry,$slash+1);
+		if($net===false || $bits<0 || $bits>32){continue;}
+		$mask=$bits==0?0:((-1 << (32-$bits)) & 0xFFFFFFFF);
+		if((($n & $mask)===($net & $mask))){return true;}
 	}
 	return false;
 }
