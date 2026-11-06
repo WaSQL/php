@@ -110,6 +110,7 @@ file_put_contents($postedit['alock'],$postedit['pid']);
 //echo "success".PHP_EOL;
 //release our lock on ANY exit, including CTRL-C / CTRL-BREAK (previously these orphaned the lock file).
 register_shutdown_function('posteditReleaseLock');
+register_shutdown_function('posteditShutdownAnnounce');
 if(function_exists('sapi_windows_set_ctrl_handler')){
 	//Windows console CTRL-C / CTRL-BREAK: a handler suppresses the default kill, so we clean up and exit ourselves.
 	sapi_windows_set_ctrl_handler(function($event){ posteditReleaseLock(); exit(0); });
@@ -155,7 +156,7 @@ echo " - writing local files".PHP_EOL;
 writeFiles();
 $countdown=$postedit['timer'];
 echo "Listening to files in {$postedit['afolder']} for changes...".PHP_EOL;
-$ok=sounder('success.wav');
+$ok=posteditSay('success.wav',posteditSpokenName().' ready');
 $cliname="postedit - ".getFileName($postedit['afolder']);
 cli_set_process_title($cliname);
 while(1){
@@ -176,6 +177,8 @@ exit;
 function checkForChanges(){
 	global $postedit;
 	$files=listFilesEx($postedit['afolder'],array('-md5'=>1,'-sha'=>1,'-recurse'=>1));
+	//collect every file's outcome for this pass so ONE sound/announcement covers them all (see posteditAnnounce)
+	$postedit['pass']=array();
 	foreach($files as $file){
 		$afile=$file['afile'];
 		$idx=preg_replace('/\//',"\\",$afile);
@@ -188,11 +191,19 @@ function checkForChanges(){
 			fileChanged($afile);
 		}
 	}
+	$results=$postedit['pass'];
+	unset($postedit['pass']);
+	if(count($results)){
+		posteditAnnounce($results);
+	}
 	return true;
 }
 function fileChanged($afile){
 	global $postedit;
 	$filename=getFileName($afile);
+	//spoken label for this file in the pass announcement: "{name} {field}"
+	$parts=preg_split('/\./',$filename);
+	$postedit['pass_current']=count($parts) >= 5?"{$parts[0]} {$parts[2]}":$filename;
 	echo "  {$filename}";
 	$content=@file_get_contents($afile);
 	if(!commonStrlen($content) && isWindows()){
@@ -252,7 +263,8 @@ POSTFILE:
     	abortMessage($error);
 	}
 	elseif(isset($xml['refresh_error'])){
-		$ok=errorMessage($xml['refresh_error']." attention required");
+		//alert=true: a Y/N prompt is waiting on the developer, so sound now rather than after the pass
+		$ok=errorMessage($xml['refresh_error']." attention required",true);
     	echo "   Refresh Now? Y or N: ";
 		$s = stream_get_line(STDIN, 1024, PHP_EOL);
 		$s=strtolower($s);
@@ -261,7 +273,7 @@ POSTFILE:
 		}
 	}
 	elseif(isset($xml['error'])){
-		$ok=errorMessage($xml['error']. "attention required");
+		$ok=errorMessage($xml['error']. "attention required",true);
     	echo "   Overwrite Anyway? Y or N: ";
 		$s = stream_get_line(STDIN, 1024, PHP_EOL);
 		$s=strtolower($s);
@@ -655,44 +667,192 @@ function abortMessage($msg){
 	if(!is_string($msg)){$msg=json_encode($msg);}
 	$msg=trim($msg);
 	echo "Fatal Error: {$msg}".PHP_EOL;
-	if(isWindows()){
-		//$ok=posteditBeep(3);
-		$ok=sounder('failure.wav');
-	}
-	if(isset($postedit['alock']) && is_file($postedit['alock'])){
-		unlink($postedit['alock']);
-	}
+	//speak the first few words of the reason; wait for it - the watcher is exiting anyway and blocking guarantees it is heard in full
+	$reason=preg_replace('/^(fatal\s+error\s*\:?\s*)+/i','',$msg);
+	//first sentence only, capped at 10 words
+	$reason=preg_replace('/^(.+?[\.\!\?])\s.*$/s','$1',$reason);
+	$reason=implode(' ',array_slice(preg_split('/\s+/',$reason),0,10));
+	$postedit['died_spoken']=1;
+	$ok=posteditSay('failure.wav',posteditSpokenName()." stopped. {$reason}",true);
+	//only removes the lock if it is still ours - on a takeover the lock now belongs to the NEW instance,
+	//and deleting it made that instance abort a second later too
+	posteditReleaseLock();
 	exit;
 }
-function errorMessage($msg){
+/**
+* @describe registered as a shutdown function: announces a PHP fatal error (an exit abortMessage did not report).
+*	A CTRL-C or a normal exit says nothing.
+* @return null
+*/
+function posteditShutdownAnnounce(){
+	global $postedit;
+	if(!empty($postedit['died_spoken'])){return;}
+	$err=error_get_last();
+	if(!is_array($err) || !in_array($err['type'],array(E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR))){return;}
+	$ok=posteditSay('failure.wav',posteditSpokenName().' crashed. PHP fatal error',true);
+	return;
+}
+/**
+* @describe the alias as it should be spoken ("serviceterra live" for serviceterra-live)
+* @return string
+*/
+function posteditSpokenName($prefix='postedit '){
+	global $postedit;
+	//a host's spokenname="" attribute overrides the alias when the alias reads badly aloud (e.g. "dex p d q")
+	if(!empty($postedit['spokenname'])){$name=$postedit['spokenname'];}
+	else{$name=isset($postedit['host'])?$postedit['host']:'';}
+	$name=trim(preg_replace('/[\_\-\.]+/',' ',$name));
+	return strlen($name)?"{$prefix}{$name}":trim($prefix);
+}
+/**
+* @describe plays a wav then (in speak mode, the default) speaks text after it; beep/wav modes just play the wav
+* @param wav string - wav file name in the postedit folder
+* @param text string - text to speak
+* @param wait boolean - block until finished (default false: background)
+* @return null
+*/
+function posteditSay($wav,$text,$wait=false){
+	global $postedit;
+	$mode=isset($postedit['sound']['mode'])?strtolower(trim($postedit['sound']['mode'])):'speak';
+	$play=posteditSoundPlay($wav);
+	if($mode != 'speak' || !strlen(trim($text))){
+		return posteditPowershell($play,$wait);
+	}
+	//keep the spoken text free of anything that could break the quoted powershell command
+	$text=preg_replace('/[^a-z0-9\ \,\.]+/i',' ',$text);
+	$text=trim(preg_replace('/\s+/',' ',$text));
+	return posteditPowershell("{$play}; Add-Type -AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('{$text}')",$wait);
+}
+/**
+* @describe prints an error. Inside a checkForChanges() pass the failure is recorded for the single end-of-pass
+*	announcement instead of sounding per file; outside a pass it sounds immediately (non-blocking)
+* @param msg string - error text
+* @param alert boolean - sound immediately even inside a pass (use when a prompt is about to wait on the developer)
+* @return null
+*/
+function errorMessage($msg,$alert=false){
+	global $postedit;
 	$msg=trim($msg);
 	echo " - Error: {$msg}".PHP_EOL;
-	if(isWindows()){
-		//$ok=posteditBeep(2);
+	if(isset($postedit['pass'])){
+		$postedit['pass'][$postedit['pass_current']]=0;
+		if($alert){$ok=sounder('failure.wav');}
+	}
+	else{
 		$ok=sounder('failure.wav');
 	}
 	return;
 }
+/**
+* @describe prints a success. Inside a checkForChanges() pass it is recorded for the single end-of-pass
+*	announcement; outside a pass it sounds immediately (non-blocking)
+* @param msg string - success text
+* @return null
+*/
 function successMessage($msg){
-	global $settings;
-	global $progpath;
-	global $chost;
+	global $postedit;
 	$msg=trim($msg);
 	$msg .= ' - ' . date('g:i:s a');
 	echo " - Success: {$msg}".PHP_EOL;
-	if(isWindows()){
-		//$ok=posteditBeep(1);
+	if(isset($postedit['pass'])){
+		//keyed by file label: a later outcome for the same file (e.g. after a Y/N retry) replaces the earlier one
+		$postedit['pass'][$postedit['pass_current']]=1;
+	}
+	else{
 		$ok=sounder('success.wav');
 	}
 	return;
 }
-function sounder($sound){
+/**
+* @describe announces the outcome of one checkForChanges() pass with a single background sound.
+*	One file sounds exactly as before (success.wav / failure.wav). Several files depend on the <sound mode=""> setting:
+*		speak (default) - result wav, then a spoken summary: "10 saved", "9 saved, index body failed", "8 saved, 2 failed"
+*		beep - one short beep per file (high = saved, low = failed), then the result wav
+*		wav  - the result wav once per file, back to back
+* @param results array - file label => 1 (saved) or 0 (failed)
+* @return null
+*/
+function posteditAnnounce($results){
+	global $postedit;
+	$failed=array_keys($results,0,true);
+	$saved=count($results)-count($failed);
+	$wav=count($failed)?'failure.wav':'success.wav';
+	$mode=isset($postedit['sound']['mode'])?strtolower(trim($postedit['sound']['mode'])):'speak';
+	if(count($results)==1 && $mode != 'speak'){
+		$ok=sounder($wav);
+		return;
+	}
+	$play=posteditSoundPlay($wav);
+	switch($mode){
+		case 'wav':
+			$cmds=array();
+			foreach($results as $label=>$ok){
+				$cmds[]=posteditSoundPlay($ok?'success.wav':'failure.wav');
+			}
+			$ok=posteditPowershell(implode('; ',$cmds));
+		break;
+		case 'beep':
+			$cmds=array();
+			foreach($results as $label=>$ok){
+				$cmds[]=$ok?'[console]::Beep(1200,120)':'[console]::Beep(400,250)';
+			}
+			$cmds[]=$play;
+			$ok=posteditPowershell(implode('; ',$cmds));
+		break;
+		default:
+			//speak - always led by the project name, since several postedits may be running at once
+			$parts=array();
+			if(count($results)==1){
+				//one file: "dexpdq saved" / "dexpdq index body failed"
+				$parts[]=$saved?'saved':"{$failed[0]} failed";
+			}
+			else{
+				//several: "dexpdq 10 saved" / "dexpdq 9 saved, index body failed" / "dexpdq 8 saved, 2 failed"
+				if($saved > 0){$parts[]="{$saved} saved";}
+				if(count($failed)==1){$parts[]="{$failed[0]} failed";}
+				elseif(count($failed) > 1){$parts[]=count($failed)." failed";}
+			}
+			$ok=posteditSay($wav,posteditSpokenName('').' '.implode(', ',$parts));
+		break;
+	}
+	return;
+}
+/**
+* @describe builds the powershell snippet that plays a wav from the postedit folder to completion
+* @param sound string - wav file name in the postedit folder
+* @return string
+*/
+function posteditSoundPlay($sound){
 	global $progpath;
-	if(isWindows()){
-		$cmd="powershell -c (New-Object Media.SoundPlayer '{$progpath}\\{$sound}').PlaySync();";
+	$path=str_replace("'","''","{$progpath}\\{$sound}");
+	return "(New-Object Media.SoundPlayer '{$path}').PlaySync()";
+}
+/**
+* @describe runs a powershell command (Windows only). Default is fire-and-forget: a detached process plays the
+*	sound while postedit carries on (~0.04s vs ~1.7s blocking). -NoProfile skips the profile load to cut startup lag.
+* @param ps string - powershell command (use single quotes inside; no double quotes)
+* @param wait boolean - block until it finishes
+* @return null
+*/
+function posteditPowershell($ps,$wait=false){
+	if(!isWindows()){return;}
+	$cmd="powershell -NoProfile -NonInteractive -c \"{$ps}\"";
+	if($wait){
 		$out=cmdResults($cmd);
 	}
-	
+	else{
+		pclose(popen("start \"\" /B {$cmd} >NUL 2>&1",'r'));
+	}
+	return;
+}
+/**
+* @describe plays a wav from the postedit folder (Windows only)
+* @param sound string - wav file name in the postedit folder
+* @param wait boolean - block until it finishes (default false: plays in the background)
+* @return null
+*/
+function sounder($sound,$wait=false){
+	$ok=posteditPowershell(posteditSoundPlay($sound),$wait);
 	return;
 }
 

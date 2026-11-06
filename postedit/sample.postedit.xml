@@ -13,11 +13,20 @@
 			username - username on this
 			apikey - apikey of username
 			tables - defaults to getting _models, _pages, _tables
+			spokenname - optional; how the project is spoken in sound mode="speak" (defaults to the alias, e.g. spokenname="dex p d q")
 			groupby - name,field, type, or extension.  Groups files by file name, field(body,controller,functions,js,css), type(models, views, controllers), or extension (html,php,js,css)
 -->
 <settings>
-	<!-- sound tag will say things -->
+	<!-- sound tag will say things
+		mode - how saves are announced:
+			speak - (default) result sound, then a spoken summary led by the project (host spokenname, else alias):
+					"dexpdq saved", "dexpdq 10 saved", "dexpdq 9 saved, index body failed".
+					Also says "postedit dexpdq ready" at startup and "postedit dexpdq stopped. {reason}" when it dies.
+			beep  - no speech; several files get one short beep each (high=saved, low=failed), then the result sound
+			wav   - no speech; the result sound once per file, back to back
+	-->
 	<sound
+		mode="speak"
 		success="Ok"
 		fail="Error!"
 		gender="m"
