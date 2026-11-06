@@ -37,7 +37,8 @@ Key-pair (JWT) auth — `dbpass` is not required:
 | `dbcert` | path to the PKCS#8 private key (`rsa_key.p8`) for key-pair auth |
 | `dbcertpass` | passphrase protecting that key. Omit for an unencrypted key |
 | `dbauth` | authenticator. Defaults to `SNOWFLAKE_JWT` whenever `dbcert` is set |
-| `cursor` | `SQL_CUR_USE_ODBC` (default) / `SQL_CUR_USE_IF_NEEDED` / `SQL_CUR_USE_DRIVER` |
+| `cursor` | `SQL_CUR_USE_DRIVER` (default) / `SQL_CUR_USE_IF_NEEDED` / `SQL_CUR_USE_ODBC`. Avoid `SQL_CUR_USE_ODBC` — it loads the unixODBC cursor library, which segfaults the process at shutdown with the Snowflake driver (php-fpm worker dies → 503) |
+| `default_varchar_size` | appended to the connect string as `default_varchar_size=N` unless the connect string already names it. Default `16384` (CONFIG fallback `snowflake_default_varchar_size`); `0` leaves the driver default. The driver's own default is 128M chars, which makes every unsized VARCHAR a 512 MB fetch buffer in PHP ODBC → "Allowed memory size … exhausted". Values longer than N may be truncated — raise it for long-text columns |
 | `dbaccount` | Snowflake account name. Falls back to `dbhost` with `.snowflakecomputing.com` stripped |
 | `dbschema` | default schema. Also used by `snowflakeGetDBFieldInfo`/table lookups to filter `table_schema` |
 | `dbwarehouse`, `dbrole` | used by the `snowsql` path and useful documentation for the ODBC DSN |
@@ -89,6 +90,7 @@ $grid = dbListRecords('snowflake_prod', ['-query'=>"SELECT …"]);
 | `snowflakeDBConnect($params)` | returns the ODBC resource, or a JSON error string. `-single` uses a non-persistent connection. Retries once after a 5s sleep |
 | `snowflakeClearConnection()` | drops the cached handle |
 | `snowflakeCertConnectString($params)` | builds the key-pair ODBC connect string |
+| `snowflakeConnectStringAdd($connect,$adds)` | appends `key=value` attributes to a connect string (bare DSN → `DSN=name`), skipping keys already present. Used for the key-pair attributes and `default_varchar_size` |
 | `snowflakeCertFileCheck($path)` | returns why a key file is unusable (missing vs. unreadable), or `''` |
 | `snowflakeMaskConnectParams($params)` | masks `-dbpass`, `-dbcertpass` and `PRIV_KEY_FILE_PWD` before logging |
 | `snowflakeEscapeString()`, `snowflakeConvert2UTF8()` | — |

@@ -317,9 +317,6 @@ function snowflakeCertConnectString($params=array()){
 		$connect=trim($params['-dbname']);
 	}
 	if(!commonStrlen($connect)){return '';}
-	//a bare DSN name has to become DSN=name so the driver manager reads it as a connect string
-	if(!stringContains($connect,'=')){$connect="DSN={$connect}";}
-	$connect=rtrim($connect,'; ');
 	$adds=array();
 	if(isset($params['-dbuser']) && commonStrlen($params['-dbuser'])){
 		$adds['UID']=$params['-dbuser'];
@@ -331,6 +328,24 @@ function snowflakeCertConnectString($params=array()){
 	if(isset($params['-dbcertpass']) && commonStrlen($params['-dbcertpass'])){
 		$adds['PRIV_KEY_FILE_PWD']=$params['-dbcertpass'];
 	}
+	return snowflakeConnectStringAdd($connect,$adds);
+}
+//---------- begin function snowflakeConnectStringAdd ----------
+/**
+* @describe appends key=value attributes to an ODBC connect string, skipping any key the string already names.
+*	A bare DSN name is turned into DSN=name first so the driver manager reads it as a connect string.
+* @param $connect string - a DSN name or an ODBC connect string
+* @param $adds array - key=>value attributes to append
+* @return string - the ODBC connect string, or an empty string if $connect is empty
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage $connect=snowflakeConnectStringAdd('snowflake_prod',array('default_varchar_size'=>16384));
+*/
+function snowflakeConnectStringAdd($connect,$adds=array()){
+	$connect=trim((string)$connect);
+	if(!commonStrlen($connect)){return '';}
+	//a bare DSN name has to become DSN=name so the driver manager reads it as a connect string
+	if(!stringContains($connect,'=')){$connect="DSN={$connect}";}
+	$connect=rtrim($connect,'; ');
 	foreach($adds as $k=>$v){
 		if(preg_match('/(^|;)\s*'.preg_quote($k,'/').'\s*=/i',$connect)){continue;}
 		$connect.=";{$k}={$v}";
@@ -469,6 +484,25 @@ function snowflakeParseConnectParams($params=array()){
 			case 'SQL_CUR_USE_DRIVER':$params['-cursor']=SQL_CUR_USE_DRIVER;break;
 		}
 	}
+	//cursor - default to SQL_CUR_USE_DRIVER. SQL_CUR_USE_ODBC loads the unixODBC cursor library, which
+	//	segfaults the process at shutdown with the Snowflake driver (php-fpm worker dies -> 503)
+	if(!isset($params['-cursor'])){
+		$params['-cursor']=SQL_CUR_USE_DRIVER;
+		$params['-cursor_source']="default";
+	}
+	//default_varchar_size - the driver defaults to 128M chars, so every unsized VARCHAR reports a 512 MB
+	//	display size and PHP ODBC allocates a fetch buffer that big per column (memory exhausted).
+	//	set default_varchar_size="0" on the database tag to leave the driver default alone
+	if(!isset($params['-default_varchar_size'])){
+		if(isset($CONFIG['snowflake_default_varchar_size'])){
+			$params['-default_varchar_size']=$CONFIG['snowflake_default_varchar_size'];
+			$params['-default_varchar_size_source']="CONFIG snowflake_default_varchar_size";
+		}
+		else{
+			$params['-default_varchar_size']=16384;
+			$params['-default_varchar_size_source']="default";
+		}
+	}
 	return $params;
 }
 //---------- begin function snowflakeDBConnect ----------
@@ -512,13 +546,13 @@ function snowflakeDBConnect($params=array()){
 		$dbuser='';
 		$dbpass='';
 	}
+	//cap the size the driver reports for unsized VARCHAR columns (see snowflakeParseConnectParams)
+	if(isset($params['-default_varchar_size']) && isNum($params['-default_varchar_size']) && (int)$params['-default_varchar_size'] > 0){
+		$params['-connect']=$connect_name=snowflakeConnectStringAdd($connect_name,array('default_varchar_size'=>(int)$params['-default_varchar_size']));
+	}
+	$cursor=isset($params['-cursor']) ? $params['-cursor'] : SQL_CUR_USE_DRIVER;
 	if(isset($params['-single'])){
-		if(isset($params['-cursor'])){
-			$dbh_snowflake_single = odbc_connect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
-		}
-		else{
-			$dbh_snowflake_single = odbc_connect($connect_name,$dbuser,$dbpass,SQL_CUR_USE_ODBC);
-		}
+		$dbh_snowflake_single = odbc_connect($connect_name,$dbuser,$dbpass,$cursor);
 		if(!snowflakeIsResourceOrObject($dbh_snowflake_single)){
 			$e=odbc_errormsg();
 			$error=array("snowflakeDBConnect Error",$e);
@@ -531,21 +565,11 @@ function snowflakeDBConnect($params=array()){
 	if(snowflakeIsResourceOrObject($dbh_snowflake)){return $dbh_snowflake;}
 
 	try{
-		if(isset($params['-cursor'])){
-			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
-		}
-		else{
-			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,SQL_CUR_USE_ODBC);
-		}
+		$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$cursor);
 		if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 			//wait a few seconds and try again
 			sleep(5);
-			if(isset($params['-cursor'])){
-				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
-			}
-			else{
-				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass );
-			}
+			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$cursor);
 			if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 				$e=odbc_errormsg();
 				$error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
@@ -556,12 +580,7 @@ function snowflakeDBConnect($params=array()){
 		if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 			//wait a few seconds and try a third time
 			sleep(5);
-			if(isset($params['-cursor'])){
-				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$params['-cursor'] );
-			}
-			else{
-				$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass );
-			}
+			$dbh_snowflake = @odbc_pconnect($connect_name,$dbuser,$dbpass,$cursor);
 			if(!snowflakeIsResourceOrObject($dbh_snowflake)){
 				$e=odbc_errormsg();
 				$error=array("snowflakeDBConnect Error",$e,snowflakeMaskConnectParams($params));
