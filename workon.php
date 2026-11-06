@@ -856,6 +856,11 @@ if($watcherPid){
 		file_put_contents($bat,
 			"@echo off\r\n"
 			. 'cd /d "' . $ROOT . '"' . "\r\n"
+				// Put the repo root on PATH too: the tab is spawned by
+				// WindowsTerminal.exe, not the developer's shell, so after Ctrl-C
+				// `p {alias}` (C:\wasql\p.bat) must resolve on its own. `cmd /k`
+				// keeps this env for the rest of the tab's life.
+				. 'set "PATH=' . $ROOT . ';%PATH%"' . "\r\n"
 			. 'title postedit-' . $alias . "\r\n"
 			. '"' . $php . '" postedit\\postedit.php ' . $alias . $filterArgs . "\r\n"
 		);

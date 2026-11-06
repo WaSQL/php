@@ -806,6 +806,11 @@ def main():
                 with open(bat, "w", encoding="utf-8") as f:
                     f.write("@echo off\r\n")
                     f.write('cd /d "%s"\r\n' % ROOT)
+                    # Put the repo root on PATH too: the tab is spawned by
+                    # WindowsTerminal.exe, not the developer's shell, so after Ctrl-C
+                    # `p {alias}` (C:\wasql\p.bat) must resolve on its own. `cmd /k`
+                    # keeps this env for the rest of the tab's life.
+                    f.write('set "PATH=%s;%%PATH%%"\r\n' % ROOT)
                     f.write("title postedit-%s\r\n" % alias)
                     f.write('"%s" postedit\\postedit.php %s%s\r\n' % (php_bin, alias, filter_args))
                 run_cmd = 'cmd /k "%s"' % bat
