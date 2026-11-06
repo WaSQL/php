@@ -74,6 +74,8 @@ groovy -cp "groovy\lib\jar1.jar;groovy\lib\jar2.jar" groovy\server.groovy
 - **Log tab:** the tail of `logs/groovy-server.log` (100–5000 lines), filtered to all lines, STUCK reports with their stacks, errors and warnings, or requests only.
 - **Auto-refresh** every 10 seconds (paused while a stack trace is open).
 
+**Who ran it:** PHP's `dbGroovyHttp` sends `X-WaSQL-User` (the logged-in username, or `cli` for cron/command-line scripts) and `X-WaSQL-Host` (the site) with every request. The server reduces both to safe characters and records them. Every request log line ends `| user (host)`, and so do the error, STUCK and CANCEL lines. They also appear in the in-flight table, slowest/errors lists and the **Users** tile, and **By user** counts every distinct caller since start. `/errors` accepts `&user=`. Callers that don't send the headers show as `-`.
+
 The page reads `/status` and `/stats` with a 3-second timeout, so a hung server shows as **Not responding** instead of hanging the page. An older `server.groovy` that only has `/ping` shows as **Running (older version)**; Restart loads the current one.
 
 ## Stopping the Server

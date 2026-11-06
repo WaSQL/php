@@ -1811,13 +1811,33 @@ function dbGroovyCheckVersions($exe){
 	return null;
 }
 /**
+* Who is calling the Groovy server: X-WaSQL-User (logged-in username, "cli" for cron/command-line
+* scripts) and X-WaSQL-Host (the site). The server logs them on every request and shows them in the
+* admin Groovy Manager (in-flight requests, per-user stats). Values are reduced to safe header characters.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyIdentityHeaders(){
+	global $USER;
+	$user='';
+	if(isset($USER['username']) && strlen($USER['username'])){$user=$USER['username'];}
+	elseif(function_exists('isCLI') && isCLI()){$user='cli';}
+	$host=isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+	$headers=array();
+	$user=substr(preg_replace('/[^A-Za-z0-9\.\_\@\-]+/','',$user),0,64);
+	$host=substr(preg_replace('/[^A-Za-z0-9\.\_\-\:]+/','',$host),0,100);
+	if(strlen($user)){$headers[]="X-WaSQL-User: {$user}";}
+	if(strlen($host)){$headers[]="X-WaSQL-Host: {$host}";}
+	return $headers;
+}
+/**
 * Makes an HTTP GET or POST to the Groovy server.
 * Prefers cURL; falls back to file_get_contents (requires allow_url_fopen=On).
 * Returns the response body string, or false on connection failure.
 */
 function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec){
+	$identity=dbGroovyIdentityHeaders();
 	if(function_exists('curl_init')){
-		$headers=["X-WaSQL-Token: {$token}"];
+		$headers=array_merge(["X-WaSQL-Token: {$token}"],$identity);
 		if($contentType){$headers[]="Content-Type: {$contentType}";}
 		$ch=curl_init($url);
 		curl_setopt_array($ch,[
@@ -1838,6 +1858,7 @@ function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec){
 	}
 	//fallback: stream context (requires allow_url_fopen=On)
 	$hdrs="X-WaSQL-Token: {$token}";
+	foreach($identity as $line){$hdrs.="\r\n{$line}";}
 	if($contentType){$hdrs.="\r\nContent-Type: {$contentType}";}
 	$opts=['http'=>[
 		'method'       =>$method,

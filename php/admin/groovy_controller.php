@@ -18,8 +18,17 @@ switch($func){
 		return;
 	break;
 	case 'errors':
-		$errors=groovyAdminErrors(isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : '',isset($_REQUEST['db']) ? $_REQUEST['db'] : '');
+		$errors=groovyAdminErrors(isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : '',isset($_REQUEST['db']) ? $_REQUEST['db'] : '',isset($_REQUEST['user']) ? $_REQUEST['user'] : '');
 		setView('errors_popup',1);
+		return;
+	break;
+	case 'help':
+		$help=groovyAdminHelp(isset($_REQUEST['topic']) ? $_REQUEST['topic'] : '');
+		if(!count($help)){
+			echo '<div class="w_bold w_danger">Unknown help topic</div>';
+			exit;
+		}
+		setView('help_popup',1);
 		return;
 	break;
 	case 'cancel':

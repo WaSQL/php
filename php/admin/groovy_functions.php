@@ -214,19 +214,42 @@ function groovyAdminFacts($d,$cfg){
 		array('label'=>'Threads busy','value'=>"{$pool['active']} / {$pool['max']}",'sub'=>"peak {$pool['largest']}"),
 		array('label'=>'Queued','value'=>$pool['queued'],'sub'=>"of {$c['queue_cap']} max"),
 		array('label'=>'Requests served','value'=>number_format((float)$pool['completed']),'sub'=>'idle for '.groovyAdminDuration($d['idle_ms']).', '.$idle),
-		array('label'=>'JVM memory','value'=>"{$mem['used_mb']} MB",'sub'=>"of {$mem['total_mb']} MB allocated, {$mem['max_mb']} MB max"),
+		array('label'=>'JVM memory','value'=>"{$mem['used_mb']} MB",'sub'=>"of {$mem['total_mb']} MB allocated, {$mem['max_mb']} MB max",'help'=>'jvm'),
 		array('label'=>'Versions','value'=>'Groovy '.$d['versions']['groovy'],'sub'=>'Java '.$d['versions']['java'].' on '.$d['versions']['os']),
-		array('label'=>'Stuck threshold','value'=>(int)$c['stuck_minutes'] > 0 ? "{$c['stuck_minutes']} min" : 'disabled','sub'=>'max body '.$c['max_body_mb'].' MB'),
+		array('label'=>'Stuck threshold','value'=>(int)$c['stuck_minutes'] > 0 ? "{$c['stuck_minutes']} min" : 'disabled','sub'=>'max body '.$c['max_body_mb'].' MB','help'=>'stuck'),
 		array('label'=>'Log','value'=>$logSize,'sub'=>(int)$c['log_max_mb'] > 0 && strlen($c['log_file']) ? "rolls at {$c['log_max_mb']} MB" : 'no size cap'),
 		array('label'=>'Modules','value'=>count($d['modules']),'sub'=>implode(', ',$d['modules']))
 	);
+}
+
+//---------- begin function groovyAdminHelp
+/**
+* @describe data for a tile's "how do I change this" popup: which environment variable sets it, an example value and the current value
+* @param $topic string - jvm or stuck
+* @return array - topic, title, var, example, current, default (empty array for an unknown topic)
+* @usage $help=groovyAdminHelp('jvm');
+*/
+function groovyAdminHelp($topic){
+	$r=groovyAdminCall('/status');
+	$d=$r['ok'] ? $r['data'] : array();
+	switch($topic){
+		case 'jvm':
+			$current=isset($d['memory']['max_mb']) ? "{$d['memory']['max_mb']} MB max heap ({$d['memory']['used_mb']} MB in use)" : 'unknown - the server is not answering';
+			return array('topic'=>'jvm','title'=>'JVM memory','var'=>'JAVA_OPTS','example'=>'-Xmx2g','current'=>$current,
+				'default'=>'Java picks a maximum heap of about a quarter of the machine\'s RAM');
+		case 'stuck':
+			$current=isset($d['config']['stuck_minutes']) ? ((int)$d['config']['stuck_minutes'] > 0 ? "{$d['config']['stuck_minutes']} minutes" : 'disabled') : 'unknown - the server is not answering';
+			return array('topic'=>'stuck','title'=>'Stuck threshold','var'=>'WASQL_GROOVY_STUCK_MINUTES','example'=>'10','current'=>$current,
+				'default'=>'5 minutes');
+	}
+	return array();
 }
 
 //---------- begin function groovyAdminInflightRows
 /**
 * @describe shapes /status inflight entries for the in-flight table: age as text, stack as one string
 * @param $inflight array - inflight list from /status
-* @return array - rows of thread, path, detail, age, state, stuck, stack
+* @return array - rows of thread, user, host, path, detail, age, state, stuck, stack
 * @usage $rows=groovyAdminInflightRows($d['inflight']);
 */
 function groovyAdminInflightRows($inflight){
@@ -235,6 +258,8 @@ function groovyAdminInflightRows($inflight){
 	foreach($inflight as $req){
 		$rows[]=array(
 			'thread'=>$req['thread'],
+			'user'  =>isset($req['user']) ? $req['user'] : '',
+			'host'  =>isset($req['host']) ? $req['host'] : '',
 			'path'  =>$req['path'],
 			'detail'=>$req['detail'],
 			'age'   =>groovyAdminDuration($req['age_ms']),
@@ -250,11 +275,11 @@ function groovyAdminInflightRows($inflight){
 /**
 * @describe request statistics from /stats, shaped for the stats view
 * @param $reset bool - reset the server's counters first
-* @return array - ok, error, since, cards (label/value/sub), endpoints, dbs, slowest, errors (rows ready to render)
+* @return array - ok, error, since, cards (label/value/sub), endpoints, dbs, users, slowest, errors (rows ready to render)
 * @usage $stats=groovyAdminStats();
 */
 function groovyAdminStats($reset=false){
-	$stats=array('ok'=>false,'error'=>'','since'=>'','cards'=>array(),'endpoints'=>array(),'dbs'=>array(),'slowest'=>array(),'errors'=>array(),'checked'=>date('H:i:s'));
+	$stats=array('ok'=>false,'error'=>'','since'=>'','cards'=>array(),'endpoints'=>array(),'dbs'=>array(),'users'=>array(),'slowest'=>array(),'errors'=>array(),'checked'=>date('H:i:s'));
 	$r=groovyAdminCall($reset ? '/stats?reset=1' : '/stats');
 	if(!$r['ok'] || !isset($r['data']['totals'])){
 		$stats['error']=$r['ok']
@@ -270,14 +295,16 @@ function groovyAdminStats($reset=false){
 	$errPct=$t['requests'] ? round(100*$t['errors']/$t['requests'],1) : 0;
 	$stats['cards']=array(
 		array('label'=>'Requests','value'=>number_format((float)$t['requests']),'sub'=>'queries, executes, meta and eval'),
+		array('label'=>'Users','value'=>number_format((float)(isset($t['users']) ? $t['users'] : 0)),'sub'=>'distinct callers since '.date('H:i',$since)),
 		array('label'=>'Errors','value'=>number_format((float)$t['errors']),'sub'=>"{$errPct}% of requests"),
 		array('label'=>'Average time','value'=>groovyAdminDuration($t['avg_ms']),'sub'=>'per request'),
 		array('label'=>'Last minute','value'=>number_format((float)$t['last_1m']),'sub'=>'requests'),
 		array('label'=>'Last 5 / 15 min','value'=>number_format((float)$t['last_5m']).' / '.number_format((float)$t['last_15m']),'sub'=>'requests'),
 		array('label'=>'Last hour','value'=>number_format((float)$t['last_60m']),'sub'=>'requests')
 	);
-	$stats['endpoints']=groovyAdminCounterRows($d['by_endpoint']);
-	$stats['dbs']=groovyAdminCounterRows($d['by_db']);
+	$stats['endpoints']=groovyAdminCounterRows($d['by_endpoint'],'endpoint');
+	$stats['dbs']=groovyAdminCounterRows($d['by_db'],'db');
+	$stats['users']=groovyAdminCounterRows(isset($d['by_user']) ? $d['by_user'] : array(),'user');
 	$stats['slowest']=groovyAdminRequestRows($d['slowest']);
 	$stats['errors']=groovyAdminRequestRows($d['errors']);
 	return $stats;
@@ -287,14 +314,16 @@ function groovyAdminStats($reset=false){
 /**
 * @describe shapes /stats counter entries (by_endpoint / by_db) into table rows
 * @param $counters array - counter list from /stats
-* @return array - rows of name, count, errors, avg, max, last
-* @usage $rows=groovyAdminCounterRows($d['by_db']);
+* @param $kind string - endpoint, db or user: which /errors filter the row's error-count link uses
+* @return array - rows of kind, name, count, errors, avg, max, last
+* @usage $rows=groovyAdminCounterRows($d['by_db'],'db');
 */
-function groovyAdminCounterRows($counters){
+function groovyAdminCounterRows($counters,$kind){
 	$rows=array();
 	if(!is_array($counters)){return $rows;}
 	foreach($counters as $c){
 		$rows[]=array(
+			'kind'  =>$kind,
 			'name'  =>$c['name'],
 			'count' =>number_format((float)$c['count']),
 			'errors'=>number_format((float)$c['errors']),
@@ -311,7 +340,7 @@ function groovyAdminCounterRows($counters){
 /**
 * @describe shapes /stats slowest / errors entries into table rows
 * @param $requests array - request list from /stats
-* @return array - rows of at, endpoint, db, time, code, detail, error
+* @return array - rows of at, endpoint, db, user, host, time, code, detail, error
 * @usage $rows=groovyAdminRequestRows($d['slowest']);
 */
 function groovyAdminRequestRows($requests){
@@ -322,6 +351,8 @@ function groovyAdminRequestRows($requests){
 			'at'      =>date('m/d H:i:s',(int)($req['at']/1000)),
 			'endpoint'=>$req['endpoint'],
 			'db'      =>$req['db'],
+			'user'    =>isset($req['user']) ? $req['user'] : '',
+			'host'    =>isset($req['host']) ? $req['host'] : '',
 			'time'    =>groovyAdminDuration($req['ms']),
 			'code'    =>$req['code'],
 			'detail'  =>$req['detail'],
@@ -456,15 +487,17 @@ function groovyAdminCancel($thread){
 * @describe recent errors for one endpoint or database (/errors), shaped for the error popup
 * @param $endpoint string - e.g. /query (blank = any)
 * @param $db string - database name (blank = any)
-* @return array - ok, error, title, kept, rows (at, endpoint, db, time, code, detail, error)
+* @param $user string - caller username (blank = any)
+* @return array - ok, error, title, kept, rows (at, endpoint, db, user, time, code, detail, error)
 * @usage $errors=groovyAdminErrors('/query','');
 */
-function groovyAdminErrors($endpoint,$db){
+function groovyAdminErrors($endpoint,$db,$user=''){
 	$q=array();
 	if(strlen($endpoint)){$q['endpoint']=$endpoint;}
 	if(strlen($db)){$q['db']=$db;}
+	if(strlen($user)){$q['user']=$user;}
 	$r=groovyAdminCall('/errors'.(count($q) ? '?'.http_build_query($q) : ''));
-	$errors=array('ok'=>false,'error'=>'','title'=>strlen($db) ? "database {$db}" : "endpoint {$endpoint}",'kept'=>200,'rows'=>array());
+	$errors=array('ok'=>false,'error'=>'','title'=>strlen($user) ? "user {$user}" : (strlen($db) ? "database {$db}" : "endpoint {$endpoint}"),'kept'=>200,'rows'=>array());
 	if(!$r['ok'] || !isset($r['data']['errors'])){
 		$errors['error']=$r['ok'] ? 'This server predates the /errors endpoint. Restart it to load the current server.groovy.' : "The server is not answering ({$r['error']}).";
 		return $errors;

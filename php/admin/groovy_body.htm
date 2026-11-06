@@ -33,6 +33,12 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 .groovy-card-k{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a8a8a;}
 .groovy-card-v{font-size:1.3rem;font-weight:700;color:#363636;margin:3px 0 2px;word-break:break-word;line-height:1.2;}
 .groovy-card-sub{font-size:.76rem;color:#9a9a9a;word-break:break-word;}
+.groovy-card.is-help{cursor:pointer;}
+.groovy-card.is-help:hover{border-color:rgba(0,86,179,.35);box-shadow:0 4px 16px rgba(0,86,179,.12);}
+.groovy-help-icon{color:#0056b3;font-size:.8rem;}
+.groovy-help{max-width:760px;font-size:.88rem;line-height:1.5;}
+.groovy-help pre{font-size:.8rem;padding:8px 10px;background:#f6f7f9;border-radius:6px;margin:4px 0 10px;}
+.groovy-help code{font-size:.82rem;}
 .groovy-section{font-size:.95rem;font-weight:700;color:#4a4a4a;margin:18px 0 8px;display:flex;align-items:center;gap:8px;}
 .groovy-empty{color:#9a9a9a;font-size:.85rem;padding:6px 0 4px;}
 .groovy-sql{font-family:monospace;font-size:.8rem;word-break:break-all;}
@@ -97,12 +103,55 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 </view:action>
 
 <view:fact>
+	<?=renderViewIfElse(!empty($fact['help']),'fact_help','fact_plain',$fact,'fact');?>
+</view:fact>
+
+<view:fact_plain>
 	<div class="groovy-card">
 		<div class="groovy-card-k"><?=encodeHtml($fact['label']);?></div>
 		<div class="groovy-card-v"><?=encodeHtml($fact['value']);?></div>
 		<div class="groovy-card-sub"><?=encodeHtml($fact['sub']);?></div>
 	</div>
-</view:fact>
+</view:fact_plain>
+
+<view:fact_help>
+	<div class="groovy-card is-help" title="How to change this" data-nav="/php/admin.php" data-_menu="groovy" data-func="help" data-topic="<?=encodeHtml($fact['help']);?>" data-div="centerpop" data-title="<?=encodeHtml($fact['label']);?>" onclick="return wacss.nav(this);">
+		<div class="groovy-card-k"><?=encodeHtml($fact['label']);?> <span class="icon-help-circled groovy-help-icon"></span></div>
+		<div class="groovy-card-v"><?=encodeHtml($fact['value']);?></div>
+		<div class="groovy-card-sub"><?=encodeHtml($fact['sub']);?></div>
+	</div>
+</view:fact_help>
+
+<view:help_popup>
+	<div class="groovy-popup groovy-help">
+		<p><b>Current:</b> <?=encodeHtml($help['current']);?><br><b>Default:</b> <?=encodeHtml($help['default']);?></p>
+		<?=renderViewIfElse($help['topic']=='jvm','help_what_jvm','help_what_stuck',$help,'help');?>
+		<p>Set it with the <code><?=encodeHtml($help['var']);?></code> environment variable. The Groovy server inherits its environment from the web server process that starts it, so set the variable <b>for the web server</b>, restart the web server, then use <b>Restart</b> on this page so the Groovy server starts again with the new value.</p>
+
+		<div class="groovy-section">Linux - Apache (httpd) running PHP itself (mod_php)</div>
+		<p>Run <code>sudo systemctl edit httpd</code>, add these lines, save, then run <code>sudo systemctl restart httpd</code>:</p>
+		<pre>[Service]
+Environment="<?=encodeHtml($help['var']);?>=<?=encodeHtml($help['example']);?>"</pre>
+
+		<div class="groovy-section">Linux - PHP-FPM</div>
+		<p>PHP-FPM clears the environment of the processes it starts, so set it in the pool file (usually <code>/etc/php-fpm.d/www.conf</code>), then run <code>sudo systemctl restart php-fpm</code>:</p>
+		<pre>env[<?=encodeHtml($help['var']);?>] = <?=encodeHtml($help['example']);?></pre>
+
+		<div class="groovy-section">Windows</div>
+		<p>System Properties &rarr; Advanced &rarr; Environment Variables &rarr; System variables &rarr; New: name <code><?=encodeHtml($help['var']);?></code>, value <code><?=encodeHtml($help['example']);?></code>. Then restart the Apache service.</p>
+
+		<p class="groovy-empty">After the Groovy server restarts, this tile shows the new value.</p>
+	</div>
+	<div data-onload="wacss.centerObject('wacss_centerpop');"></div>
+</view:help_popup>
+
+<view:help_what_jvm>
+	<p>The JVM's maximum heap is the memory ceiling for the Groovy server: every query result it builds in memory counts against it. WaSQL does not set it, so Java uses its default. To change it, pass <code>-Xmx</code> in <code>JAVA_OPTS</code>, for example <code>-Xmx2g</code> for 2 GB or <code>-Xmx512m</code> for 512 MB. The <code>groovy</code> launcher passes <code>JAVA_OPTS</code> to Java, so it also applies to any other Groovy command run as the web server user. Leave room for the database, the web server and PHP: on a shared server, stay well under half the RAM.</p>
+</view:help_what_jvm>
+
+<view:help_what_stuck>
+	<p>A request still running after this many minutes is written to the server log once as <code>STUCK</code>, with its SQL and the thread's stack trace, and is highlighted in the in-flight table. It only reports: nothing is cancelled or killed. Lower it to spot slow queries sooner, raise it if long exports are normal, or set it to <code>0</code> to turn the reports off.</p>
+</view:help_what_stuck>
 
 <view:inflight_section>
 	<div class="groovy-section"><span class="icon-clock"></span> In-flight requests</div>
@@ -115,7 +164,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 
 <view:inflight_table>
 	<table class="wacss_table is-striped is-narrow groovy-table">
-		<thead><tr><th>Thread</th><th>Endpoint</th><th>Database / SQL</th><th>Running for</th><th>State</th><th>Stack</th><th></th></tr></thead>
+		<thead><tr><th>Thread</th><th>User</th><th>Endpoint</th><th>Database / SQL</th><th>Running for</th><th>State</th><th>Stack</th><th></th></tr></thead>
 		<tbody><?=renderEach('inflight_row',$status['inflight'],'row');?></tbody>
 	</table>
 </view:inflight_table>
@@ -123,6 +172,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 <view:inflight_row>
 	<tr class="<?=$row['stuck'] ? 'is-stuck' : '';?>">
 		<td class="nowrap"><?=encodeHtml($row['thread']);?></td>
+		<td class="nowrap" title="<?=encodeHtml($row['host']);?>"><?=encodeHtml(strlen($row['user']) ? $row['user'] : '-');?></td>
 		<td class="nowrap"><?=encodeHtml($row['path']);?></td>
 		<td class="groovy-sql"><?=encodeHtml($row['detail']);?></td>
 		<td class="nowrap"><?=encodeHtml($row['age']);?> <?=$row['stuck'] ? '<span class="groovy-badge is-danger">STUCK</span>' : '';?></td>
@@ -168,6 +218,9 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 	<div class="groovy-section"><span class="icon-database"></span> By database</div>
 	<?=renderViewIfElse(count($stats['dbs']),'counter_table','stats_none',array('rows'=>$stats['dbs'],'name'=>'Database','kind'=>'db'),'counter');?>
 
+	<div class="groovy-section"><span class="icon-user"></span> By user</div>
+	<?=renderViewIfElse(count($stats['users']),'counter_table','stats_none',array('rows'=>$stats['users'],'name'=>'User','kind'=>'user'),'counter');?>
+
 	<div class="groovy-section"><span class="icon-list"></span> By endpoint</div>
 	<?=renderViewIfElse(count($stats['endpoints']),'counter_table','stats_none',array('rows'=>$stats['endpoints'],'name'=>'Endpoint','kind'=>'endpoint'),'counter');?>
 
@@ -185,7 +238,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 <view:counter_table>
 	<table class="wacss_table is-bordered is-striped is-narrow groovy-table">
 		<thead><tr><th><?=encodeHtml($counter['name']);?></th><th class="groovy-num">Requests</th><th class="groovy-num">Errors</th><th class="groovy-num">Avg</th><th class="groovy-num">Max</th><th>Last used</th></tr></thead>
-		<tbody><?=renderEach('counter_row',$counter['rows'],array('-alias'=>'row','kind'=>$counter['kind']));?></tbody>
+		<tbody><?=renderEach('counter_row',$counter['rows'],'row');?></tbody>
 	</table>
 </view:counter_table>
 
@@ -201,7 +254,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 </view:counter_row>
 
 <view:error_count_link>
-	<a href="#errors" class="groovy-badge is-danger groovy-badge-link" title="Show these errors" data-nav="/php/admin.php" data-_menu="groovy" data-func="errors" data-<?=$row['kind']=='db' ? 'db' : 'endpoint';?>="<?=encodeHtml($row['name']);?>" data-div="centerpop" data-title="Errors: <?=encodeHtml($row['name']);?>" onclick="return wacss.nav(this);"><?=encodeHtml($row['errors']);?></a>
+	<a href="#errors" class="groovy-badge is-danger groovy-badge-link" title="Show these errors" data-nav="/php/admin.php" data-_menu="groovy" data-func="errors" data-<?=in_array($row['kind'],array('db','user')) ? $row['kind'] : 'endpoint';?>="<?=encodeHtml($row['name']);?>" data-div="centerpop" data-title="Errors: <?=encodeHtml($row['name']);?>" onclick="return wacss.nav(this);"><?=encodeHtml($row['errors']);?></a>
 </view:error_count_link>
 
 <view:error_count_zero>0</view:error_count_zero>
@@ -224,7 +277,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 
 <view:request_table>
 	<table class="wacss_table is-bordered is-striped is-narrow groovy-table">
-		<thead><tr><th>When</th><th>Endpoint</th><th>Database</th><th class="groovy-num">Time</th><th>SQL</th><?=$requests['errors'] ? '<th>Error</th>' : '';?></tr></thead>
+		<thead><tr><th>When</th><th>Endpoint</th><th>Database</th><th>User</th><th class="groovy-num">Time</th><th>SQL</th><?=$requests['errors'] ? '<th>Error</th>' : '';?></tr></thead>
 		<tbody><?=renderEach($requests['errors'] ? 'error_row' : 'request_row',$requests['rows'],'row');?></tbody>
 	</table>
 </view:request_table>
@@ -234,6 +287,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 		<td class="nowrap"><?=encodeHtml($row['at']);?></td>
 		<td class="nowrap"><?=encodeHtml($row['endpoint']);?></td>
 		<td class="nowrap"><?=encodeHtml($row['db']);?></td>
+		<td class="nowrap" title="<?=encodeHtml($row['host']);?>"><?=encodeHtml(strlen($row['user']) ? $row['user'] : '-');?></td>
 		<td class="groovy-num nowrap"><?=encodeHtml($row['time']);?></td>
 		<td class="groovy-sql"><?=encodeHtml($row['detail']);?></td>
 	</tr>
@@ -244,6 +298,7 @@ a.groovy-badge-link:hover{filter:brightness(1.12);}
 		<td class="nowrap"><?=encodeHtml($row['at']);?></td>
 		<td class="nowrap"><?=encodeHtml($row['endpoint']);?></td>
 		<td class="nowrap"><?=encodeHtml($row['db']);?></td>
+		<td class="nowrap" title="<?=encodeHtml($row['host']);?>"><?=encodeHtml(strlen($row['user']) ? $row['user'] : '-');?></td>
 		<td class="groovy-num nowrap"><?=encodeHtml($row['time']);?></td>
 		<td class="groovy-sql"><?=encodeHtml($row['detail']);?></td>
 		<td class="groovy-sql"><?=encodeHtml($row['error']);?></td>

@@ -7,7 +7,7 @@
  *   GET  /ping               — health check
  *   GET  /status             — versions, config, thread pool, memory, in-flight requests (+stacks)
  *   GET  /stats[?reset=1]    — request statistics: totals, per endpoint/db, slowest, recent errors
- *   GET  /errors?endpoint=&db= — error log (last 200 failures), filtered, newest first
+ *   GET  /errors?endpoint=&db=&user= — error log (last 200 failures), filtered, newest first
  *   GET  /cancel?thread=     — cancel an in-flight request (aborts its JDBC connection, interrupts it)
  *   (these feed the WaSQL admin page Database > Groovy Manager and do not reset the idle timer)
  *   POST /query/{dbname}     — body = raw SQL        → queryResults → JSON
@@ -577,6 +577,9 @@ def route(String path, Closure handler) {
         entry.code     = 0      // set by respondAs; still 0 if the handler died without responding
         entry.conns    = new java.util.concurrent.CopyOnWriteArrayList()   // JDBC connections opened by this request (trackConnection)
         entry.cancelled = false
+        // who is calling - sent by PHP's dbGroovyHttp (blank for callers that do not send them)
+        entry.user     = cleanIdentity(ex.requestHeaders.getFirst('X-WaSQL-User'), 64)
+        entry.host     = cleanIdentity(ex.requestHeaders.getFirst('X-WaSQL-Host'), 100)
         INFLIGHT[t] = entry
         try { handler.call(ex) } finally {
             INFLIGHT.remove(t)
@@ -610,6 +613,7 @@ void resetStats() {
             totals     : [requests: 0L, errors: 0L, total_ms: 0L],
             by_endpoint: [:],
             by_db      : [:],
+            by_user    : [:],     // work requests per caller (X-WaSQL-User)
             minute_n   : new long[60],     // requests per minute, ring buffer
             minute_key : new long[60],     // which epoch-minute each slot holds
             slowest    : [],
@@ -655,7 +659,7 @@ void recordStats(Map entry, long ms) {
         if (ctx.endsWith('/') && entry.path.length() > ctx.length()) {
             try { db = URLDecoder.decode(entry.path.substring(ctx.length()), 'UTF-8').trim() } catch (Exception ignored) {}
         }
-        def rec = [at: System.currentTimeMillis(), endpoint: endpoint, db: db, ms: ms, code: code, detail: entry.detail ?: '']
+        def rec = [at: System.currentTimeMillis(), endpoint: endpoint, db: db, user: entry.user ?: '', host: entry.host ?: '', ms: ms, code: code, detail: entry.detail ?: '']
         if (failed) {
             rec.error = (entry.error ?: (code == 0 ? 'no response sent (handler died)' : "HTTP ${code}")).toString()
             STATS.error_log << rec
@@ -670,6 +674,7 @@ void recordStats(Map entry, long ms) {
         if (STATS.minute_key[slot] != minute) { STATS.minute_key[slot] = minute; STATS.minute_n[slot] = 0L }
         STATS.minute_n[slot]++
         if (db) bumpCounter(STATS.by_db, db, ms, failed)
+        if (entry.user) bumpCounter(STATS.by_user, entry.user as String, ms, failed)
         STATS.slowest << rec
         STATS.slowest.sort { -it.ms }
         if (STATS.slowest.size() > 10) STATS.slowest = STATS.slowest.take(10)
@@ -701,10 +706,11 @@ Map statsSnapshot() {
             status     : 'ok',
             since      : STATS.since,
             now        : now,
-            totals     : [requests: t.requests, errors: t.errors, avg_ms: t.requests ? t.total_ms.intdiv(t.requests) : 0,
+            totals     : [requests: t.requests, errors: t.errors, avg_ms: t.requests ? t.total_ms.intdiv(t.requests) : 0, users: STATS.by_user.size(),
                           last_1m: lastN(1), last_5m: lastN(5), last_15m: lastN(15), last_60m: lastN(60)],
             by_endpoint: counters(STATS.by_endpoint),
             by_db      : counters(STATS.by_db),
+            by_user    : counters(STATS.by_user),
             slowest    : STATS.slowest.collect { it.clone() },
             errors     : STATS.error_log.takeRight(10).reverse().collect { it.clone() },
             error_log_size: STATS.error_log.size()
@@ -714,7 +720,7 @@ Map statsSnapshot() {
 
 //---------- begin function errorsMatching
 /**
-* @describe the error log (newest first) filtered by endpoint and/or database - for the error popups in Groovy Manager
+* @describe the error log (newest first) filtered by endpoint, database and/or user - for the error popups in Groovy Manager
 * @param params endpoint string, db string
 *	endpoint: e.g. '/query' (blank = any)
 *	db: database name (blank = any)
@@ -723,9 +729,9 @@ Map statsSnapshot() {
 * @usage
 *	errorsMatching('/query', '')
 */
-Map errorsMatching(String endpoint, String db) {
+Map errorsMatching(String endpoint, String db, String user = '') {
     synchronized (STATS_LOCK) {
-        def list = STATS.error_log.findAll { e -> (!endpoint || e.endpoint == endpoint) && (!db || e.db == db) }
+        def list = STATS.error_log.findAll { e -> (!endpoint || e.endpoint == endpoint) && (!db || e.db == db) && (!user || e.user == user) }
         return [status: 'ok', errors: list.reverse().collect { it.clone() }, kept: ERROR_LOG_MAX]
     }
 }
@@ -741,6 +747,31 @@ Map errorsMatching(String endpoint, String db) {
 void trackDetail(String detail) {
     def entry = INFLIGHT[Thread.currentThread()]
     if (entry != null && detail != null) entry.detail = detail.replaceAll(/\s+/, ' ').trim().take(100)
+}
+
+//---------- begin function cleanIdentity
+/**
+* @describe reduces a caller-supplied identity header (user / host) to safe characters so it cannot forge log lines
+* @param params value string, max integer
+* @return string
+*/
+String cleanIdentity(String value, int max) {
+    if (!value) return ''
+    return value.replaceAll(/[^A-Za-z0-9._@:\-]/, '').take(max)
+}
+
+//---------- begin function who
+/**
+* @describe " | user (host)" for log lines - who made the current request (empty if the caller did not say)
+* @param params entry Map (optional - defaults to the current thread's request)
+* @return string
+* @usage
+*	log("/query ${dbname} - ${ms}ms${who()}")
+*/
+String who(Map entry = null) {
+    def e = entry ?: INFLIGHT[Thread.currentThread()]
+    if (e == null || !e.user) return ''
+    return " | ${e.user}${e.host ? ' (' + e.host + ')' : ''}".toString()
 }
 
 //---------- begin function trackConnection
@@ -814,7 +845,7 @@ Map cancelRequest(String threadName) {
         t.interrupt()
         interrupted = true
     }
-    log("CANCEL requested for ${threadName}: ${e.path}${e.detail ? ' | ' + e.detail : ''} | connections: ${outcomes ? outcomes.join(', ') : 'none tracked'}${interrupted ? ' | thread interrupted' : ''}")
+    log("CANCEL requested for ${threadName}: ${e.path}${who(e)}${e.detail ? ' | ' + e.detail : ''} | connections: ${outcomes ? outcomes.join(', ') : 'none tracked'}${interrupted ? ' | thread interrupted' : ''}")
     [cancelled: true, thread: threadName, path: e.path, detail: e.detail, connections: outcomes, interrupted: interrupted]
 }
 
@@ -854,7 +885,7 @@ void reportStuckRequests() {
         if (e.reported) return
         e.reported = true
         def sb = new StringBuilder()
-        sb << "STUCK request on ${t.name} for ${ms / 60000 as long} min: ${e.path}"
+        sb << "STUCK request on ${t.name} for ${ms / 60000 as long} min: ${e.path}${who(e)}"
         if (e.detail) sb << " | ${e.detail}"
         sb << " | state=${t.state}"
         filteredStack(t, 25).each { sb << "\n        at ${it}" }
@@ -1032,6 +1063,8 @@ route('/status') { HttpExchange ex ->
             long age = now - (e.started as long)
             [
                 thread: t.name,
+                user  : e.user ?: '',
+                host  : e.host ?: '',
                 path  : e.path,
                 detail: e.detail,
                 age_ms: age,
@@ -1107,7 +1140,7 @@ route('/errors') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     try {
         def q = queryParams(ex)
-        respond(ex, 200, JSON.toJson(errorsMatching((q.endpoint ?: '').trim(), (q.db ?: '').trim())))
+        respond(ex, 200, JSON.toJson(errorsMatching((q.endpoint ?: '').trim(), (q.db ?: '').trim(), (q.user ?: '').trim())))
     } catch (Exception e) {
         log("/errors error: ${e.message}")
         try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
@@ -1141,9 +1174,9 @@ route('/query/') { HttpExchange ex ->
         def drv    = resolveDriver(dbname)
         def result = drv.driver.queryResults(query, drv.params + [format: 'list'])
         respond(ex, 200, wrapOk(result))
-        log("/query ${dbname} - ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms")
+        log("/query ${dbname} - ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
-        log("/query error: ${e.message}")
+        log("/query error: ${e.message}${who()}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
@@ -1172,9 +1205,9 @@ route('/queryfile/') { HttpExchange ex ->
         if (req.skiperrors != null) extra.skiperrors = req.skiperrors as boolean
         def result = drv.driver.queryResults(req.query as String, drv.params + extra)
         respond(ex, 200, wrapOk([filename: result]))
-        log("/queryfile ${dbname} -> ${result} ${System.currentTimeMillis()-t0}ms")
+        log("/queryfile ${dbname} -> ${result} ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
-        log("/queryfile error: ${e.message}")
+        log("/queryfile error: ${e.message}${who()}")
         // a cancelled query leaves a half-written CSV - remove it so it cannot be mistaken for a result
         if (isCancelled() && req?.filename) {
             try { if (new File(req.filename as String).delete()) log("/queryfile removed partial file ${req.filename}") } catch (Exception ignored) {}
@@ -1210,9 +1243,9 @@ route('/meta/') { HttpExchange ex ->
             default: throw new IllegalArgumentException("Unknown meta op: '${op}' (use tables|columns|indexes|ddl)")
         }
         respond(ex, 200, wrapOk(result))
-        log("/meta ${dbname} op=${op}${table ? ' table=' + table : ''} - ${System.currentTimeMillis()-t0}ms")
+        log("/meta ${dbname} op=${op}${table ? ' table=' + table : ''} - ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
-        log("/meta error: ${e.message}")
+        log("/meta error: ${e.message}${who()}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     } finally {
         if (sql != null) try { sql.close() } catch (Exception ignored) {}
@@ -1233,9 +1266,9 @@ route('/execute/') { HttpExchange ex ->
         def drv    = resolveDriver(dbname)
         def result = drv.driver.executeSQL(query, drv.params)
         respond(ex, 200, wrapOk(result))
-        log("/execute ${dbname} - ${System.currentTimeMillis()-t0}ms")
+        log("/execute ${dbname} - ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
-        log("/execute error: ${e.message}")
+        log("/execute error: ${e.message}${who()}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
@@ -1245,6 +1278,7 @@ route('/executeps/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
+        def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/executeps/')
         def req    = new JsonSlurper().parseText(readBody(ex))
         if (!dbname)    throw new IllegalArgumentException("URL must be /executeps/{dbname}")
@@ -1259,8 +1293,9 @@ route('/executeps/') { HttpExchange ex ->
             throw new UnsupportedOperationException("executePS not implemented for this driver")
         }
         respond(ex, 200, wrapOk(result))
+        log("/executeps ${dbname} - ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
-        log("/executeps error: ${e.message}")
+        log("/executeps error: ${e.message}${who()}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
@@ -1273,6 +1308,7 @@ route('/eval') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
+        def t0     = System.currentTimeMillis()
         def script = readBody(ex)
         if (!script) throw new IllegalArgumentException("Request body must contain a Groovy script")
         trackDetail("eval: ${script}")
@@ -1302,16 +1338,17 @@ route('/eval') { HttpExchange ex ->
         def output = baos.toString('UTF-8')
 
         if (evalErr) {
-            log("/eval error: ${evalErr.message}")
+            log("/eval error: ${evalErr.message}${who()}")
             respond(ex, 500, JsonOutput.toJson([success: false, error: evalErr.message, output: output]))
         } else {
             def resultJson
             try   { resultJson = JSON.toJson(result) }
             catch (Exception ignored) { resultJson = JSON.toJson(result?.toString()) }
             respond(ex, 200, "{\"success\":true,\"output\":${JsonOutput.toJson(output)},\"result\":${resultJson}}")
+            log("/eval - ${System.currentTimeMillis()-t0}ms${who()}")
         }
     } catch (Exception e) {
-        log("/eval error: ${e.message}")
+        log("/eval error: ${e.message}${who()}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
@@ -1437,7 +1474,8 @@ Closure buildSpec = {
                     operationId: 'errors',
                     parameters : [
                         [ name: 'endpoint', in: 'query', required: false, schema: [type:'string'], description: "e.g. /query" ],
-                        [ name: 'db', in: 'query', required: false, schema: [type:'string'], description: 'database name' ]
+                        [ name: 'db', in: 'query', required: false, schema: [type:'string'], description: 'database name' ],
+                        [ name: 'user', in: 'query', required: false, schema: [type:'string'], description: 'caller username (X-WaSQL-User)' ]
                     ],
                     responses  : [ '200': [ description: 'Matching errors' ] ]
                 ]
