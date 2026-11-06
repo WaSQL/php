@@ -10563,6 +10563,30 @@ function evalPHP_ob($string, $flags) {
 	return $string;
 	return '';
 	}
+//---------- begin function evalPHPCloseTrailingBlock
+/**
+* @describe closes an unterminated final PHP block so evalPHP runs it instead of echoing it as text (bug #59).
+*	Only a real opener counts - an open tag followed by "php" and whitespace, or a short echo open tag. The xml
+*	declaration and other processing instructions are left alone. A debugValue note is logged when it fires.
+* @param $str string - controller source
+* @return string - $str, with a close tag appended when its last block was left open
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @usage $controller=evalPHPCloseTrailingBlock($controller);
+*/
+function evalPHPCloseTrailingBlock($str){
+	if(!is_string($str) || strpos($str,'<?')===false){return $str;}
+	//built by concatenation so this source never holds a literal close tag
+	$close='?'.'>';
+	$lastclose=strrpos($str,$close);
+	$start=($lastclose===false) ? 0 : $lastclose+2;
+	if(!preg_match('/\<\?(php\s|\=)/i',$str,$m,PREG_OFFSET_CAPTURE,$start)){return $str;}
+	//nothing but whitespace after the opener - nothing to run
+	if(!strlen(trim(substr($str,$m[0][1]+strlen($m[0][0]))))){return $str;}
+	global $PAGE;
+	$name=isset($PAGE['name']) ? $PAGE['name'] : '';
+	debugValue("evalPHP: closed an unterminated final PHP block in the controller of page '{$name}' - add the closing tag to the field");
+	return rtrim($str).PHP_EOL.$close;
+}
 //---------- begin function evalPHP
 /**
 * @describe
@@ -10606,6 +10630,14 @@ function evalPHP($__ep_strings){
 		if(!isset($__ep_strings[$__ep_sIndex]) || is_null($__ep_strings[$__ep_sIndex]) ||  trim($__ep_strings[$__ep_sIndex])=='<??>'){
 			$__ep_strings[$__ep_sIndex]='';
 			continue;
+		}
+		//bug #59: an unterminated final <?php or <?= block in a CONTROLLER runs to the end of the field, like a PHP file
+		//	with no closing tag - without this the island regex below never matches it and the source is echoed as text.
+		//	controller only: callers always pass array($controller,$body), and the controller is the only string that is
+		//	pure field source. the body string is the template-rendered document (index.php evals the template first, then
+		//	evals that output again), so a trailing open tag there is followed by template markup and cannot be closed safely.
+		if($__ep_cntA > 1 && $__ep_sIndex==0){
+			$__ep_strings[$__ep_sIndex]=evalPHPCloseTrailingBlock($__ep_strings[$__ep_sIndex]);
 		}
 		preg_match_all('/\<\?(.+?)\?\>/sm',$__ep_strings[$__ep_sIndex],$__ep_evalmatches,PREG_PATTERN_ORDER);
 		preg_match_all('/<script type\="php">(.+?)<\/script>/ism',$__ep_strings[$__ep_sIndex],$__ep_evalmatches2,PREG_PATTERN_ORDER);
@@ -10736,18 +10768,11 @@ function evalPHP($__ep_strings){
 			//  remove =/*...*/
 			$__ep_evalcode=preg_replace('/^\=\/\*(.+?)\*\//','',$__ep_evalcode);
 			$__ep_evalcode=preg_replace('/^\=/','return ',$__ep_evalcode);
-			$__ep_evalcheck="error_reporting(E_ERROR | E_PARSE);\nreturn true;\n". trim($__ep_evalcode);
-			//echo "<pre>{$__ep_evalcheck}</pre><hr>".PHP_EOL;
-			@trigger_error('');
-			@eval($__ep_evalcheck);
-			$__ep_e=error_get_last();
-			if(isset($__ep_e['message']) && $__ep_e['message']!==''){
-				$__ep_e['code']="<pre>\n".trim($__ep_evalmatches[1][$__ep_ex])."\n</pre>\n";
-				setWasqlError(array($__ep_e),"EvalPHP Error");
-	    		$__ep_error=showWasqlErrors();
-	    		$__ep_strings[$__ep_sIndex]=str_replace($__ep_evalmatches[0][$__ep_ex],$__ep_error,$__ep_strings[$__ep_sIndex]);
-			}
-			else{
+			//single pass (bug #49): there used to be a "return true;" dry-run eval here as a syntax precheck, but PHP
+			//	hoists top-level function/class declarations at compile time, so the dry run declared them and the
+			//	real eval then fataled with "Cannot redeclare". The dry run caught nothing the real eval does not:
+			//	a syntax error throws ParseError at compile time, before any statement runs, either way.
+			{
 				@trigger_error('');
 				$__ep_val=@eval($__ep_evalcode);
 				if(is_null($__ep_val)){$__ep_val='';}
