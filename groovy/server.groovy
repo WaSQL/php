@@ -5,6 +5,11 @@
  *
  * Endpoints
  *   GET  /ping               — health check
+ *   GET  /status             — versions, config, thread pool, memory, in-flight requests (+stacks)
+ *   GET  /stats[?reset=1]    — request statistics: totals, per endpoint/db, slowest, recent errors
+ *   GET  /errors?endpoint=&db= — error log (last 200 failures), filtered, newest first
+ *   GET  /cancel?thread=     — cancel an in-flight request (aborts its JDBC connection, interrupts it)
+ *   (these feed the WaSQL admin page Database > Groovy Manager and do not reset the idle timer)
  *   POST /query/{dbname}     — body = raw SQL        → queryResults → JSON
  *   POST /execute/{dbname}   — body = raw SQL        → executeSQL   → JSON
  *   POST /executeps/{dbname} — body = JSON { "query":"...", "args":{} }
@@ -209,7 +214,14 @@ Object loadModule(String name) {
         log("Compiling ${n}.groovy")
         def savedCL = Thread.currentThread().contextClassLoader
         try {
-            new GroovyShell(parentCL).evaluate(new File(SCRIPT_DIR, "${n}.groovy"))
+            // wasqlTrackConnection: a driver module's connect() hands its JDBC connection to the server
+            // so /cancel can abort it. Only present inside the server - a module run from the CLI skips it.
+            // wasqlCancelled: row loops ask it between rows and stop once /cancel has flagged their request -
+            // the dependable cancel, since some drivers (c-tree) accept Connection.abort() but keep fetching
+            def moduleBinding = new Binding()
+            moduleBinding.setVariable('wasqlTrackConnection', { conn -> trackConnection(conn) })
+            moduleBinding.setVariable('wasqlCancelled', { -> isCancelled() })
+            new GroovyShell(parentCL, moduleBinding).evaluate(new File(SCRIPT_DIR, "${n}.groovy"))
         } finally {
             Thread.currentThread().contextClassLoader = savedCL
         }
@@ -438,6 +450,24 @@ void respond(HttpExchange ex, int code, String json) {
 *	respondAs(ex, 200, 'text/html; charset=UTF-8', html)
 */
 void respondAs(HttpExchange ex, int code, String contentType, String body) {
+    // a leftover interrupt flag (from /cancel) would make the NIO socket write below close the connection
+    // with ClosedByInterruptException - the caller would get an empty reply instead of this response
+    Thread.interrupted()
+    // note the outcome on the in-flight entry for /stats (error text for failures)
+    def entry = INFLIGHT[Thread.currentThread()]
+    if (entry != null) {
+        entry.code = code
+        if (code >= 400) {
+            def msg = body
+            try { def j = new JsonSlurper().parseText(body); if (j instanceof Map && j.error) msg = j.error.toString() } catch (Exception ignored) {}
+            if (entry.cancelled) {
+                // the driver error from an aborted connection is cryptic - say what really happened
+                msg  = "Cancelled from Groovy Manager (${msg})".toString()
+                body = wrapErr(msg)
+            }
+            entry.error = msg.replaceAll(/\s+/, ' ').trim().take(300)
+        }
+    }
     byte[] b = body.getBytes('UTF-8')
     ex.responseHeaders.set('Content-Type', contentType)
     ex.sendResponseHeaders(code, b.length)
@@ -539,13 +569,165 @@ def route(String path, Closure handler) {
     serverRef.createContext(path, { HttpExchange ex ->
         def t = Thread.currentThread()
         def entry = new java.util.concurrent.ConcurrentHashMap<String, Object>()
+        entry.ctx      = path
         entry.path     = ex.requestURI.path
         entry.started  = System.currentTimeMillis()
         entry.detail   = ''
         entry.reported = false
+        entry.code     = 0      // set by respondAs; still 0 if the handler died without responding
+        entry.conns    = new java.util.concurrent.CopyOnWriteArrayList()   // JDBC connections opened by this request (trackConnection)
+        entry.cancelled = false
         INFLIGHT[t] = entry
-        try { handler.call(ex) } finally { INFLIGHT.remove(t) }
+        try { handler.call(ex) } finally {
+            INFLIGHT.remove(t)
+            try { recordStats(entry, System.currentTimeMillis() - (entry.started as long)) } catch (Exception ignored) {}
+        }
     } as com.sun.net.httpserver.HttpHandler)
+}
+
+// ── Request statistics (/stats) ─────────────────────────────────────────────────
+// Counted when each request finishes (route's finally). "Work" endpoints feed the totals,
+// per-database counters, per-minute buckets, slowest list and error list; monitoring
+// endpoints are only counted per endpoint, and /status + /stats are not counted at all.
+@Field final Object STATS_LOCK = new Object()
+@Field Map STATS = null
+@Field List WORK_ENDPOINTS = ['/query/', '/queryfile/', '/execute/', '/executeps/', '/meta/', '/eval']
+// the monitoring/admin calls Groovy Manager itself makes - never counted
+@Field List UNCOUNTED_ENDPOINTS = ['/status', '/stats', '/errors', '/cancel']
+@Field int  ERROR_LOG_MAX = 200
+
+//---------- begin function resetStats
+/**
+* @describe clears all request statistics and restarts the "since" clock
+* @return void
+* @usage
+*	resetStats()
+*/
+void resetStats() {
+    synchronized (STATS_LOCK) {
+        STATS = [
+            since      : System.currentTimeMillis(),
+            totals     : [requests: 0L, errors: 0L, total_ms: 0L],
+            by_endpoint: [:],
+            by_db      : [:],
+            minute_n   : new long[60],     // requests per minute, ring buffer
+            minute_key : new long[60],     // which epoch-minute each slot holds
+            slowest    : [],
+            error_log  : []     // last ERROR_LOG_MAX failures, every counted endpoint, oldest first
+        ]
+    }
+}
+
+//---------- begin function bumpCounter
+/**
+* @describe adds one finished request to a named counter in a stats map (caller holds STATS_LOCK)
+* @param params map Map, key string, ms long, failed boolean
+* @return void
+*/
+void bumpCounter(Map map, String key, long ms, boolean failed) {
+    def c = map[key]
+    if (c == null) { c = [count: 0L, errors: 0L, total_ms: 0L, max_ms: 0L, last_at: 0L]; map[key] = c }
+    c.count++
+    if (failed) c.errors++
+    c.total_ms += ms
+    if (ms > c.max_ms) c.max_ms = ms
+    c.last_at = System.currentTimeMillis()
+}
+
+//---------- begin function recordStats
+/**
+* @describe records a finished request in STATS - called from route()'s finally block
+* @param params entry Map, ms long
+*	entry: the request's INFLIGHT entry (ctx, path, detail, code, error)
+*	ms: how long the request took
+* @return void
+*/
+void recordStats(Map entry, long ms) {
+    String ctx = entry.ctx
+    if (ctx in UNCOUNTED_ENDPOINTS) return
+    int code = (entry.code ?: 0) as int
+    boolean failed = (code == 0 || code >= 400)
+    String endpoint = ctx.length() > 1 ? ctx.replaceAll('/$', '') : ctx
+    synchronized (STATS_LOCK) {
+        if (STATS == null) return
+        bumpCounter(STATS.by_endpoint, endpoint, ms, failed)
+        String db = ''
+        if (ctx.endsWith('/') && entry.path.length() > ctx.length()) {
+            try { db = URLDecoder.decode(entry.path.substring(ctx.length()), 'UTF-8').trim() } catch (Exception ignored) {}
+        }
+        def rec = [at: System.currentTimeMillis(), endpoint: endpoint, db: db, ms: ms, code: code, detail: entry.detail ?: '']
+        if (failed) {
+            rec.error = (entry.error ?: (code == 0 ? 'no response sent (handler died)' : "HTTP ${code}")).toString()
+            STATS.error_log << rec
+            if (STATS.error_log.size() > ERROR_LOG_MAX) STATS.error_log = STATS.error_log.drop(STATS.error_log.size() - ERROR_LOG_MAX)
+        }
+        if (!(ctx in WORK_ENDPOINTS)) return
+        STATS.totals.requests++
+        if (failed) STATS.totals.errors++
+        STATS.totals.total_ms += ms
+        long minute = System.currentTimeMillis().intdiv(60000L)
+        int slot = (int) (minute % 60)
+        if (STATS.minute_key[slot] != minute) { STATS.minute_key[slot] = minute; STATS.minute_n[slot] = 0L }
+        STATS.minute_n[slot]++
+        if (db) bumpCounter(STATS.by_db, db, ms, failed)
+        STATS.slowest << rec
+        STATS.slowest.sort { -it.ms }
+        if (STATS.slowest.size() > 10) STATS.slowest = STATS.slowest.take(10)
+    }
+}
+
+//---------- begin function statsSnapshot
+/**
+* @describe a JSON-ready copy of STATS: totals with averages and 1/5/15/60-minute request counts, per-endpoint and per-database counters (busiest first), slowest requests and recent errors (newest first)
+* @return map
+* @usage
+*	respond(ex, 200, JSON.toJson(statsSnapshot()))
+*/
+Map statsSnapshot() {
+    synchronized (STATS_LOCK) {
+        long now = System.currentTimeMillis()
+        long minute = now.intdiv(60000L)
+        def lastN = { int n ->
+            long sum = 0L
+            for (int i = 0; i < 60; i++) { if (STATS.minute_key[i] > minute - n) sum += STATS.minute_n[i] }
+            sum
+        }
+        def counters = { Map m ->
+            m.collect { k, c -> [name: k, count: c.count, errors: c.errors, avg_ms: c.count ? c.total_ms.intdiv(c.count) : 0, max_ms: c.max_ms, total_ms: c.total_ms, last_at: c.last_at] }
+             .sort { -it.count }
+        }
+        def t = STATS.totals
+        return [
+            status     : 'ok',
+            since      : STATS.since,
+            now        : now,
+            totals     : [requests: t.requests, errors: t.errors, avg_ms: t.requests ? t.total_ms.intdiv(t.requests) : 0,
+                          last_1m: lastN(1), last_5m: lastN(5), last_15m: lastN(15), last_60m: lastN(60)],
+            by_endpoint: counters(STATS.by_endpoint),
+            by_db      : counters(STATS.by_db),
+            slowest    : STATS.slowest.collect { it.clone() },
+            errors     : STATS.error_log.takeRight(10).reverse().collect { it.clone() },
+            error_log_size: STATS.error_log.size()
+        ]
+    }
+}
+
+//---------- begin function errorsMatching
+/**
+* @describe the error log (newest first) filtered by endpoint and/or database - for the error popups in Groovy Manager
+* @param params endpoint string, db string
+*	endpoint: e.g. '/query' (blank = any)
+*	db: database name (blank = any)
+* @return map
+*	[errors: list, kept: ERROR_LOG_MAX]
+* @usage
+*	errorsMatching('/query', '')
+*/
+Map errorsMatching(String endpoint, String db) {
+    synchronized (STATS_LOCK) {
+        def list = STATS.error_log.findAll { e -> (!endpoint || e.endpoint == endpoint) && (!db || e.db == db) }
+        return [status: 'ok', errors: list.reverse().collect { it.clone() }, kept: ERROR_LOG_MAX]
+    }
 }
 
 //---------- begin function trackDetail
@@ -559,6 +741,99 @@ def route(String path, Closure handler) {
 void trackDetail(String detail) {
     def entry = INFLIGHT[Thread.currentThread()]
     if (entry != null && detail != null) entry.detail = detail.replaceAll(/\s+/, ' ').trim().take(100)
+}
+
+//---------- begin function trackConnection
+/**
+* @describe registers a JDBC connection with the current request so cancelRequest can abort it. Driver modules call it from connect() through the wasqlTrackConnection binding variable
+* @param params conn java.sql.Connection
+* @return void
+* @usage
+*	trackConnection(sql.connection)
+*/
+void trackConnection(conn) {
+    def entry = INFLIGHT[Thread.currentThread()]
+    if (entry != null && conn != null) entry.conns << conn
+}
+
+//---------- begin function isCancelled
+/**
+* @describe true once /cancel has flagged the current thread's request - driver row loops check it via the wasqlCancelled binding variable
+* @return boolean
+* @usage
+*	if (isCancelled()) throw new java.sql.SQLException('request cancelled')
+*/
+boolean isCancelled() {
+    def entry = INFLIGHT[Thread.currentThread()]
+    return entry != null && entry.cancelled
+}
+
+// daemon threads that run connection aborts, so a driver that blocks on abort/close cannot hang /cancel
+@Field def CANCEL_POOL = java.util.concurrent.Executors.newCachedThreadPool({ Runnable r ->
+    def t = new Thread(r, 'wasql-cancel')
+    t.daemon = true
+    t
+} as java.util.concurrent.ThreadFactory)
+
+//---------- begin function cancelRequest
+/**
+* @describe cancels an in-flight request: aborts its tracked JDBC connections (Connection.abort, falling back to close - each capped at 5s so a blocking driver cannot hang this call) and interrupts its thread (ends sleeps/waits, e.g. in /eval). The request then fails with "Cancelled from Groovy Manager". Whether a blocked driver read actually ends depends on the driver honouring abort/close
+* @param params threadName string
+*	threadName: handler thread name from /status, e.g. 'wasql-handler-7'
+* @return map
+*	[cancelled: boolean, thread, path, detail, connections: list of per-connection outcomes] or [cancelled: false, error]
+* @usage
+*	respond(ex, 200, JSON.toJson(cancelRequest('wasql-handler-7')))
+*/
+Map cancelRequest(String threadName) {
+    def found = INFLIGHT.find { Thread t, Map e -> t.name == threadName }
+    if (found == null) return [cancelled: false, error: "No request is running on thread ${threadName} - it may already have finished"]
+    Thread t = found.key
+    Map e = found.value
+    e.cancelled = true
+    def outcomes = []
+    (e.conns ?: []).each { conn ->
+        // abort, then close as well: some drivers (c-tree) accept abort() without stopping anything
+        def future = CANCEL_POOL.submit({
+            def done = []
+            try { conn.abort(CANCEL_POOL); done << 'aborted' } catch (Throwable notSupported) {}
+            try { conn.close(); done << 'closed' } catch (Throwable c) { if (!done) done << "close failed: ${c.message}".toString() }
+            return done ? done.join('+') : 'abort and close both unsupported'
+        } as java.util.concurrent.Callable)
+        try { outcomes << future.get(5, TimeUnit.SECONDS) }
+        catch (java.util.concurrent.TimeoutException te) { outcomes << 'driver did not release the connection within 5s' }
+        catch (Exception x) { outcomes << "failed: ${x.message}".toString() }
+    }
+    // Interrupt only as a fallback - when no connection could be aborted/closed (e.g. /eval, or nothing tracked).
+    // An aborted connection already makes the driver throw, and an interrupt flag left set on the handler thread
+    // would close the HTTP socket when the error response is written (NIO ClosedByInterruptException), so the
+    // caller got "Empty reply from server" instead of the cancelled error. respondAs also clears the flag.
+    boolean released = outcomes.any { it.contains('aborted') || it.contains('closed') }
+    boolean interrupted = false
+    if (!released && INFLIGHT[t].is(e)) {     // only if the thread is still on THIS request
+        t.interrupt()
+        interrupted = true
+    }
+    log("CANCEL requested for ${threadName}: ${e.path}${e.detail ? ' | ' + e.detail : ''} | connections: ${outcomes ? outcomes.join(', ') : 'none tracked'}${interrupted ? ' | thread interrupted' : ''}")
+    [cancelled: true, thread: threadName, path: e.path, detail: e.detail, connections: outcomes, interrupted: interrupted]
+}
+
+//---------- begin function filteredStack
+/**
+* @describe a thread's current stack with Groovy/JVM call-dispatch plumbing removed, so the frames shown are real code (driver, socket, script)
+* @param params t Thread, max integer
+*	max: number of frames to return
+* @return list
+*	stack frame strings
+* @usage
+*	filteredStack(t, 25).each { sb << "\n        at ${it}" }
+*/
+List filteredStack(Thread t, int max) {
+    t.stackTrace.findAll { f ->
+        !(f.className.startsWith('java.lang.invoke.') || f.className.startsWith('org.codehaus.groovy.vmplugin.')
+          || f.className.startsWith('org.codehaus.groovy.runtime.callsite.') || f.className.startsWith('jdk.internal.reflect.')
+          || f.className.startsWith('sun.reflect.'))
+    }.take(max).collect { it.toString() }
 }
 
 //---------- begin function reportStuckRequests
@@ -582,12 +857,7 @@ void reportStuckRequests() {
         sb << "STUCK request on ${t.name} for ${ms / 60000 as long} min: ${e.path}"
         if (e.detail) sb << " | ${e.detail}"
         sb << " | state=${t.state}"
-        // skip Groovy/JVM call-dispatch plumbing so the 25 lines show real code (driver, socket, script)
-        t.stackTrace.findAll { f ->
-            !(f.className.startsWith('java.lang.invoke.') || f.className.startsWith('org.codehaus.groovy.vmplugin.')
-              || f.className.startsWith('org.codehaus.groovy.runtime.callsite.') || f.className.startsWith('jdk.internal.reflect.')
-              || f.className.startsWith('sun.reflect.'))
-        }.take(25).each { sb << "\n        at ${it}" }
+        filteredStack(t, 25).each { sb << "\n        at ${it}" }
         log(sb.toString())
     }
     if (stuck > 0 && poolRef != null) {
@@ -727,6 +997,7 @@ server.setExecutor(pool)
 serverRef    = server
 schedulerRef = scheduler
 poolRef      = pool
+resetStats()
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
@@ -744,6 +1015,115 @@ route('/ping') { HttpExchange ex ->
     } catch (Exception e) {
         log("/ping error: ${e.message}")
         e.printStackTrace(System.err)
+    }
+}
+
+// GET /status  — everything the WaSQL admin "Groovy Manager" page shows: versions, config,
+// thread-pool usage, JVM memory and every in-flight request (with its filtered stack).
+// Deliberately does NOT update lastActivity: a monitoring page left open must not keep an
+// otherwise idle server alive past its idle timeout.
+route('/status') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    try {
+        def self = Thread.currentThread()
+        long now = System.currentTimeMillis()
+        def rt = Runtime.runtime
+        def inflight = INFLIGHT.findAll { t, e -> t != self }.collect { Thread t, Map e ->
+            long age = now - (e.started as long)
+            [
+                thread: t.name,
+                path  : e.path,
+                detail: e.detail,
+                age_ms: age,
+                state : t.state.toString(),
+                stuck : (STUCK_MS > 0 && age >= STUCK_MS),
+                stack : filteredStack(t, 25)
+            ]
+        }.sort { -it.age_ms }
+        respond(ex, 200, JSON.toJson([
+            status   : 'ok',
+            pid      : PID,
+            started  : startedAt,
+            uptime_ms: now - startedAt,
+            idle_ms  : now - lastActivity.get(),
+            versions : [
+                groovy   : GroovySystem.version,
+                java     : System.getProperty('java.version'),
+                java_vm  : "${System.getProperty('java.vm.name')} ${System.getProperty('java.vm.version')}".toString(),
+                java_home: System.getProperty('java.home'),
+                os       : "${System.getProperty('os.name')} ${System.getProperty('os.version')}".toString()
+            ],
+            config   : [
+                port         : PORT,
+                threads      : THREADS,
+                queue_cap    : 512,
+                max_body_mb  : MAX_BODY_MB,
+                idle_minutes : IDLE_TIMEOUT_MS.intdiv(60000),
+                stuck_minutes: STUCK_MS.intdiv(60000),
+                log_file     : LOG_FILE?.path,
+                log_max_mb   : LOG_MAX_BYTES.intdiv(1048576),
+                script_dir   : SCRIPT_DIR
+            ],
+            pool     : poolRef == null ? null : [
+                active   : Math.max(0, poolRef.activeCount - 1),   // minus this /status request itself
+                max      : poolRef.maximumPoolSize,
+                largest  : poolRef.largestPoolSize,
+                queued   : poolRef.queue.size(),
+                completed: poolRef.completedTaskCount
+            ],
+            memory   : [
+                used_mb : (rt.totalMemory() - rt.freeMemory()).intdiv(1048576),
+                total_mb: rt.totalMemory().intdiv(1048576),
+                max_mb  : rt.maxMemory().intdiv(1048576)
+            ],
+            modules  : modules.keySet().sort(),
+            inflight : inflight
+        ]))
+    } catch (Exception e) {
+        log("/status error: ${e.message}")
+        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+    }
+}
+
+// GET /stats[?reset=1]  — request statistics since start (or the last reset): totals, requests in
+// the last 1/5/15/60 min, per-endpoint and per-database counters, slowest 10, last 10 errors.
+// Like /status it does not count as activity for the idle timeout.
+route('/stats') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    try {
+        if (queryParams(ex).reset in ['1', 'true']) {
+            resetStats()
+            log('Stats reset')
+        }
+        respond(ex, 200, JSON.toJson(statsSnapshot()))
+    } catch (Exception e) {
+        log("/stats error: ${e.message}")
+        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+    }
+}
+
+// GET /errors[?endpoint=/query][&db=name]  — the error log (last 200 failures, newest first), filtered
+route('/errors') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    try {
+        def q = queryParams(ex)
+        respond(ex, 200, JSON.toJson(errorsMatching((q.endpoint ?: '').trim(), (q.db ?: '').trim())))
+    } catch (Exception e) {
+        log("/errors error: ${e.message}")
+        try { respond(ex, 500, wrapErr(e.message)) } catch (Exception ignored) {}
+    }
+}
+
+// GET/POST /cancel?thread=wasql-handler-N  — cancel an in-flight request (see cancelRequest)
+route('/cancel') { HttpExchange ex ->
+    if (!checkAuth(ex)) return
+    try {
+        def thread = (queryParams(ex).thread ?: '').trim()
+        if (!thread) throw new IllegalArgumentException("thread is required, e.g. /cancel?thread=wasql-handler-7")
+        respond(ex, 200, JSON.toJson(cancelRequest(thread)))
+    } catch (Exception e) {
+        log("/cancel error: ${e.message}")
+        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
 
@@ -776,10 +1156,11 @@ route('/query/') { HttpExchange ex ->
 route('/queryfile/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
+    def req = null
     try {
         def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/queryfile/')
-        def req    = new JsonSlurper().parseText(readBody(ex))
+        req        = new JsonSlurper().parseText(readBody(ex))
         if (!dbname)       throw new IllegalArgumentException("URL must be /queryfile/{dbname}")
         if (!req.query)    throw new IllegalArgumentException("Body must include 'query'")
         if (!req.filename) throw new IllegalArgumentException("Body must include 'filename'")
@@ -794,6 +1175,10 @@ route('/queryfile/') { HttpExchange ex ->
         log("/queryfile ${dbname} -> ${result} ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/queryfile error: ${e.message}")
+        // a cancelled query leaves a half-written CSV - remove it so it cannot be mistaken for a result
+        if (isCancelled() && req?.filename) {
+            try { if (new File(req.filename as String).delete()) log("/queryfile removed partial file ${req.filename}") } catch (Exception ignored) {}
+        }
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
 }
@@ -1025,6 +1410,44 @@ Closure buildSpec = {
                     responses  : [
                         '200': [ description: 'Server status', content: [ 'application/json': [ schema: [ type: 'object', properties: [ status: [type:'string'], pid: [type:'string'], uptime: [type:'integer'], modules: [type:'array', items:[type:'string']] ] ] ] ] ]
                     ]
+                ]
+            ],
+            '/status': [
+                get: [
+                    summary    : 'Monitoring snapshot: versions, config, thread pool, JVM memory and in-flight requests with stacks (does not count as activity for the idle timeout)',
+                    operationId: 'status',
+                    responses  : [
+                        '200': [ description: 'Server status', content: [ 'application/json': [ schema: [ type: 'object', properties: [ status:[type:'string'], pid:[type:'string'], uptime_ms:[type:'integer'], idle_ms:[type:'integer'], versions:[type:'object'], config:[type:'object'], pool:[type:'object'], memory:[type:'object'], modules:[type:'array', items:[type:'string']], inflight:[type:'array', items:[type:'object']] ] ] ] ] ]
+                    ]
+                ]
+            ],
+            '/stats': [
+                get: [
+                    summary    : 'Request statistics since start or last reset: totals, 1/5/15/60-minute counts, per endpoint, per database, slowest 10, last 10 errors',
+                    operationId: 'stats',
+                    parameters : [[ name: 'reset', in: 'query', required: false, schema: [type:'string', enum:['1']], description: 'reset all counters' ]],
+                    responses  : [
+                        '200': [ description: 'Statistics', content: [ 'application/json': [ schema: [ type: 'object', properties: [ since:[type:'integer'], totals:[type:'object'], by_endpoint:[type:'array', items:[type:'object']], by_db:[type:'array', items:[type:'object']], slowest:[type:'array', items:[type:'object']], errors:[type:'array', items:[type:'object']] ] ] ] ] ]
+                    ]
+                ]
+            ],
+            '/errors': [
+                get: [
+                    summary    : 'Error log - the last 200 failed requests (any endpoint), newest first, optionally filtered',
+                    operationId: 'errors',
+                    parameters : [
+                        [ name: 'endpoint', in: 'query', required: false, schema: [type:'string'], description: "e.g. /query" ],
+                        [ name: 'db', in: 'query', required: false, schema: [type:'string'], description: 'database name' ]
+                    ],
+                    responses  : [ '200': [ description: 'Matching errors' ] ]
+                ]
+            ],
+            '/cancel': [
+                get: [
+                    summary    : 'Cancel an in-flight request: aborts its JDBC connection(s) and interrupts its thread',
+                    operationId: 'cancel',
+                    parameters : [[ name: 'thread', in: 'query', required: true, schema: [type:'string'], description: 'handler thread name from /status, e.g. wasql-handler-7' ]],
+                    responses  : [ '200': [ description: 'Outcome per tracked connection' ], '400': [ description: 'thread missing' ] ]
                 ]
             ],
             '/query/{dbname}': [

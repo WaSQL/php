@@ -83,6 +83,8 @@ def connect(Map params) {
 		def driver = 'org.sqlite.JDBC'
 
 		def sql = Sql.newInstance(url, null, null, driver)
+		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
+		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
 		return sql
 	} catch (Exception err) {
 		throw err
@@ -223,6 +225,8 @@ def queryResults(String query, Map params = [:]) {
 
 					// Process each row with optimized string building
 					while (true) {
+						// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+						if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 						try {
 							if (!rs.next()) break
 
@@ -312,6 +316,8 @@ def queryResults(String query, Map params = [:]) {
 			def recs = []
 
 			sql.eachRow(query) { row ->
+				// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+				if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 				def rec = [:]
 				def rowResult = row.toRowResult()
 

@@ -61,7 +61,10 @@ def connect(Map params) {
 	try {
 		def url    = "jdbc:duckdb:${dbname == ':memory:' ? '' : dbname}"
 		def driver = 'org.duckdb.DuckDBDriver'
-		return Sql.newInstance(url, '', '', driver)
+		def sql = Sql.newInstance(url, '', '', driver)
+		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
+		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
+		return sql
 	} catch (Exception err) {
 		throw err
 	}
@@ -167,6 +170,8 @@ def queryResults(String query, Map params = [:]) {
 					def batchCount  = 0
 
 					while (true) {
+						// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+						if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 						try {
 							if (!rs.next()) break
 							def line = new StringBuilder(columnCount * 30)
@@ -233,6 +238,8 @@ def queryResults(String query, Map params = [:]) {
 		// ── In-memory result mode ─────────────────────────────────────────────
 		def recs = []
 		sql.eachRow(query) { row ->
+			// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+			if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 			def rec = [:]
 			row.toRowResult().each { k, v -> rec[k.toLowerCase()] = v }
 			recs << rec

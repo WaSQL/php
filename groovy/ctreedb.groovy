@@ -146,6 +146,8 @@ def connect(Map params) {
 
 		def sql = Sql.newInstance(url, props, driver)
 
+		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
+		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
 		return sql
 	} catch (Exception err) {
 		throw err
@@ -300,6 +302,8 @@ def queryResults(String query, Map params = [:]) {
 
 					// Process each row with optimized string building
 					while (true) {
+						// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+						if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 						try {
 							if (!rs.next()) break
 
@@ -422,6 +426,8 @@ def queryResults(String query, Map params = [:]) {
 					def fieldNames = (1..columnCount).collect { rsmd.getColumnName(it).toLowerCase() }
 					// Process each row with error handling
 					while (true) {
+						// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+						if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 						try {
 							if (!rs.next()) break
 
@@ -492,6 +498,8 @@ def queryResults(String query, Map params = [:]) {
 					def fieldNames2 = (1..columnCount2).collect { rsmd2.getColumnName(it).toLowerCase() }
 
 					while (rs2.next()) {
+						// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+						if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 						def rec = [:]
 						for (int i = 1; i <= columnCount2; i++) {
 							def fieldName = fieldNames2[i - 1]

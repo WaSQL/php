@@ -62,6 +62,20 @@ groovy -cp "groovy\lib\jar1.jar;groovy\lib\jar2.jar" groovy\server.groovy
 
 > **Note:** List JDBC JARs explicitly — Groovy's `-cp` handler does not expand the `*` wildcard. WaSQL's auto-start does this automatically via `glob()`.
 
+## Groovy Manager (admin page)
+
+**WaSQL admin → Database → Groovy Manager** (`/php/admin.php?_menu=groovy`, admins only) monitors and controls the auto-started server. Its files are `php/admin/groovy_*`.
+
+- **Status tab:** state, plus PID, uptime, threads busy/queued, requests served, JVM memory, versions, stuck threshold, log size and loaded modules. Below that, the **in-flight requests** (thread, endpoint, SQL, age, thread state, expandable stack; STUCK ones highlighted) and the databases the server can query. Each in-flight row has a **Cancel** button (see `/cancel`). Actions depend on the state:
+  - **Start**, when stopped.
+  - **Restart**, **Reload Modules** and **Stop**, when it is running.
+  - **Force Kill**, when there is a pid file. Use it for a hung server that ignores `/shutdown`; it also removes the pid/token files.
+- **Stats tab:** totals, error rate, average time and requests in the last 1/5/15/60 minutes; counters per database and per endpoint; the 10 slowest requests; the last 10 errors with their messages; **Reset Stats**. Every non-zero error count is a link that opens that endpoint's or database's errors in a popup (from `/errors`).
+- **Log tab:** the tail of `logs/groovy-server.log` (100–5000 lines), filtered to all lines, STUCK reports with their stacks, errors and warnings, or requests only.
+- **Auto-refresh** every 10 seconds (paused while a stack trace is open).
+
+The page reads `/status` and `/stats` with a 3-second timeout, so a hung server shows as **Not responding** instead of hanging the page. An older `server.groovy` that only has `/ping` shows as **Running (older version)**; Restart loads the current one.
+
 ## Stopping the Server
 
 ```bash
@@ -513,6 +527,65 @@ Health check. Returns server status, PID, uptime in milliseconds, and loaded mod
   "uptime": 43200000,
   "modules": ["common", "config", "db", "mysqldb"]
 }
+```
+
+---
+
+### `GET /status`
+
+Monitoring snapshot used by the Groovy Manager page. Unlike `/ping`, it does **not** count as activity, so a monitoring page left open never keeps an idle server alive past `WASQL_GROOVY_IDLE_MINUTES`.
+
+Returns `pid`, `started`, `uptime_ms`, `idle_ms`, plus:
+- `versions`: groovy, java, java_vm, java_home, os
+- `config`: port, threads, queue_cap, max_body_mb, idle_minutes, stuck_minutes, log_file, log_max_mb, script_dir
+- `pool`: active (excluding this request), max, largest, queued, completed
+- `memory`: used_mb, total_mb, max_mb
+- `modules`
+- `inflight`: one entry per running request, longest first: thread, path, detail (db + first 100 chars of the SQL), age_ms, state, stuck, stack (filtered, top 25 frames)
+
+---
+
+### `GET /stats[?reset=1]`
+
+Request statistics since server start, or since the last `?reset=1`. These don't count as activity for the idle timeout either.
+
+- **`totals`:** requests, errors, avg_ms, and last_1m / last_5m / last_15m / last_60m. Only the work endpoints count here: `/query`, `/queryfile`, `/execute`, `/executeps`, `/meta`, `/eval`.
+- **`by_endpoint`** and **`by_db`:** name, count, errors, avg_ms, max_ms, total_ms, last_at; busiest first. Monitoring endpoints like `/ping` show up in `by_endpoint` only. `/status` and `/stats` aren't counted.
+- **`slowest`:** the 10 slowest requests (at, endpoint, db, ms, code, detail).
+- **`errors`:** the last 10 failures, newest first, with the error message. A failure is any HTTP 400+ response, or a handler that died without responding.
+
+---
+
+### `GET /errors[?endpoint=/query][&db=name]`
+
+The error log: the last 200 failed requests across every counted endpoint, newest first, optionally filtered by endpoint and/or database. Each entry has at, endpoint, db, ms, code, detail and error. Groovy Manager's clickable error counts use it.
+
+---
+
+### `GET /cancel?thread=wasql-handler-N`
+
+Cancels an in-flight request (thread names come from `/status` → `inflight`).
+
+1. **Aborts the request's JDBC connections** with `Connection.abort()`, falling back to `close()`. Each connection gets a 5-second limit on a separate daemon thread, so a driver that blocks on close can't hang `/cancel` itself.
+2. **Interrupts the request's thread**, which ends sleeps and waits (for example in `/eval`).
+3. **Labels the failure.** The request then fails with `Cancelled from Groovy Manager (...)`, and a `CANCEL requested` line goes to the log.
+
+The response lists the outcome for each connection, for example `aborted+closed`, or `driver did not release the connection within 5s`.
+
+**What actually stops a query:** every driver module's row loop checks `wasqlCancelled` between rows and throws `request cancelled` once its request has been flagged. That's the dependable part. The c-tree driver, for example, reports `aborted+closed` but keeps fetching, and the row check stops it within a row. Abort/close covers the other case: a query still blocked in `executeQuery` before its first row. Whether that ends depends on the driver. If it doesn't, the request stays in flight; Restart or Force Kill the server. A cancelled `/queryfile` deletes its partial CSV.
+
+**How connections are tracked:** `loadModule` evaluates each driver module with a `wasqlTrackConnection` binding variable, and every driver's `connect()` calls it with its JDBC connection. A module run outside the server (the CLI `evalPHP` path) doesn't have the variable, so the call does nothing. **A new driver module should include the same two lines before `return sql` in its `connect()`**:
+
+```groovy
+// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
+if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
+```
+
+Its row loops (`while (rs.next())`, `while (true) { if (!rs.next()) break ...`, `sql.eachRow { row -> ...`) should start with the cancel check. Put it **outside** any per-row `try` that swallows errors (`skiperrors`):
+
+```groovy
+// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
+if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
 ```
 
 ---

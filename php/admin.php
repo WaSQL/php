@@ -758,6 +758,7 @@ if(isAjax()){
 		case 'export':
 		case 'fonts':
 		case 'postportal':
+		case 'groovy':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);
@@ -1503,6 +1504,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'export':
 		case 'fonts':
 		case 'postportal':
+		case 'groovy':
 			$htm=adminViewPage($_REQUEST['_menu']);
 			//check for translate tags
 			$htm=processTranslateTags($htm);

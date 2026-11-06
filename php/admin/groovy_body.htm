@@ -1,0 +1,282 @@
+<view:default>
+<?=buildOnLoad("wacss.loadScript('/php/admin/groovy_js.js');");?>
+<style>
+.groovy-wrap{max-width:1280px;}
+.groovy-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
+.groovy-toolbar .wacss_tabs{margin-bottom:0;}
+.groovy-refresh{display:flex;align-items:center;gap:10px;font-size:.85rem;color:#666;}
+.groovy-state{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:12px 16px;border-radius:12px;margin-bottom:14px;border:1px solid rgba(0,0,0,.08);background:#f6f7f9;}
+.groovy-state-dot{width:12px;height:12px;border-radius:50%;background:#9a9a9a;flex:0 0 auto;}
+.groovy-state.is-running .groovy-state-dot{background:#3aa76d;box-shadow:0 0 0 4px rgba(58,167,109,.18);}
+.groovy-state.is-warning .groovy-state-dot{background:#e0a106;box-shadow:0 0 0 4px rgba(224,161,6,.18);}
+.groovy-state.is-danger .groovy-state-dot{background:#d9534f;box-shadow:0 0 0 4px rgba(217,83,79,.18);}
+.groovy-state.is-danger{background:#fdf1f0;}
+.groovy-state.is-warning{background:#fdf8ea;}
+.groovy-state-label{font-size:1.15rem;font-weight:700;color:#363636;}
+.groovy-state-hint{flex:1 1 320px;font-size:.85rem;color:#666;}
+.groovy-checked{font-size:.75rem;color:#9a9a9a;white-space:nowrap;}
+.groovy-message{padding:9px 14px;border-radius:8px;margin-bottom:12px;font-size:.9rem;white-space:pre-wrap;}
+.groovy-message.is-success{background:#eaf7ef;color:#226b43;}
+.groovy-message.is-danger{background:#fdf1f0;color:#a12f2b;}
+.groovy-message.is-warning{background:#fdf8ea;color:#7a5a00;}
+a.groovy-badge-link,a.groovy-badge-link:hover{text-decoration:none;cursor:pointer;}
+/* wacss_v2 sets .wacss_table a{display:block}, which stretches the badge across the cell - keep it a round pill */
+.groovy-table a.groovy-badge-link{display:inline-block;}
+a.groovy-badge-link:hover{filter:brightness(1.12);}
+/* the error popup opens in wacss's centerpop, outside .groovy-wrap */
+.groovy-popup{width:min(1100px,90vw);max-height:70vh;overflow:auto;}
+.groovy-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px;}
+.groovy-wrap a.wacss_button,.groovy-wrap a.wacss_button:hover,.groovy-wrap a.wacss_button:focus{text-decoration:none;}
+.groovy-processing{display:inline-flex;align-items:center;font-size:.85rem;color:#666;}
+.groovy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px;}
+.groovy-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.05);padding:12px 15px;}
+.groovy-card-k{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a8a8a;}
+.groovy-card-v{font-size:1.3rem;font-weight:700;color:#363636;margin:3px 0 2px;word-break:break-word;line-height:1.2;}
+.groovy-card-sub{font-size:.76rem;color:#9a9a9a;word-break:break-word;}
+.groovy-section{font-size:.95rem;font-weight:700;color:#4a4a4a;margin:18px 0 8px;display:flex;align-items:center;gap:8px;}
+.groovy-empty{color:#9a9a9a;font-size:.85rem;padding:6px 0 4px;}
+.groovy-sql{font-family:monospace;font-size:.8rem;word-break:break-all;}
+.groovy-table td{vertical-align:top;}
+.groovy-num{text-align:right;white-space:nowrap;}
+/* .wacss_table th sets text-align:left - match it so number headers sit over their right-aligned values */
+.groovy-table th.groovy-num{text-align:right;}
+.groovy-table tr.is-stuck td{background:#fdf1f0;}
+.groovy-badge{display:inline-block;font-size:.7rem;font-weight:700;padding:1px 8px;border-radius:999px;background:#eceef2;color:#555;}
+.groovy-badge.is-danger{background:#d9534f;color:#fff;}
+.groovy-stack summary{cursor:pointer;font-size:.78rem;color:#0056b3;}
+.groovy-stack pre{font-size:.72rem;max-height:320px;overflow:auto;margin:6px 0 0;padding:8px;background:#f6f7f9;border-radius:6px;}
+.groovy-log-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:10px;font-size:.85rem;color:#666;}
+.groovy-log-controls select{width:auto;}
+.groovy-log{font-size:.75rem;line-height:1.45;max-height:65vh;overflow:auto;background:#1e2228;color:#d6dae0;padding:10px 12px;border-radius:8px;margin:0;}
+.groovy-log code{display:block;background:transparent;color:inherit;padding:0;white-space:pre-wrap;word-break:break-all;}
+.groovy-log code.is-stuck{color:#ff8a80;font-weight:700;}
+.groovy-log code.is-stack{color:#e0a8a4;}
+.groovy-log code.is-error{color:#ff8a80;}
+.groovy-log code.is-warn{color:#ffd27a;}
+.groovy-log code.is-start{color:#8fd19e;}
+</style>
+<div class="groovy-wrap">
+	<div class="wadmin-head"><span class="icon-server"></span> Groovy Manager</div>
+	<div class="groovy-toolbar">
+		<ul id="groovy_tabs" class="wacss_tabs is-boxed <?=configValue('admin_color');?>">
+			<li class="is-active"><a href="#status" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="groovy" data-div="groovy_content" data-func="status"><span class="icon-server wacss_right5"></span> Status</a></li>
+			<li><a href="#stats" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="groovy" data-div="groovy_content" data-func="stats"><span class="icon-list wacss_right5"></span> Stats</a></li>
+			<li><a href="#log" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="groovy" data-div="groovy_content" data-func="log"><span class="icon-history wacss_right5"></span> Log</a></li>
+		</ul>
+		<div class="groovy-refresh">
+			<label><input type="checkbox" id="groovy_auto" onchange="groovyAutoRefresh(this);"> Auto-refresh every 10s</label>
+			<a href="#refresh" onclick="return groovyRefresh(1);" class="wacss_button is-small is-link" title="Refresh this tab"><span class="icon-refresh"></span></a>
+		</div>
+	</div>
+	<div id="groovy_content" class="wadmin-card">
+		<?=renderView('status_panel',$status,'status');?>
+	</div>
+</div>
+</view:default>
+
+<view:status_panel>
+	<div class="groovy-state <?=encodeHtml($status['class']);?>">
+		<span class="groovy-state-dot"></span>
+		<span class="groovy-state-label"><?=encodeHtml($status['label']);?></span>
+		<span class="groovy-state-hint"><?=encodeHtml($status['hint']);?></span>
+		<span class="groovy-checked">checked <?=encodeHtml($status['checked']);?></span>
+	</div>
+	<?=renderViewIf(strlen($status['message']),'status_message',$status,'status');?>
+	<div class="groovy-actions"><?=renderEach('action',$status['actions'],'action');?><span id="groovy_processing" class="groovy-processing"></span></div>
+	<div class="groovy-grid"><?=renderEach('fact',$status['facts'],'fact');?></div>
+	<?=renderViewIf(in_array($status['state'],array('running','legacy')),'inflight_section',$status,'status');?>
+	<?=renderViewIf(count($status['databases']),'databases_section',$status,'status');?>
+</view:status_panel>
+
+<view:status_message>
+	<div class="groovy-message <?=encodeHtml($status['message_class']);?>"><?=encodeHtml($status['message']);?></div>
+</view:status_message>
+
+<view:action>
+	<a href="#<?=encodeHtml($action['func']);?>" class="wacss_button is-small <?=encodeHtml($action['class']);?>" data-nav="/php/admin.php" data-_menu="groovy" data-func="<?=encodeHtml($action['func']);?>" data-div="groovy_content" data-setprocessing="groovy_processing" data-confirm="<?=encodeHtml($action['confirm']);?>" onclick="return wacss.nav(this);"><span class="<?=encodeHtml($action['icon']);?> wacss_right5"></span> <?=encodeHtml($action['label']);?></a>
+</view:action>
+
+<view:fact>
+	<div class="groovy-card">
+		<div class="groovy-card-k"><?=encodeHtml($fact['label']);?></div>
+		<div class="groovy-card-v"><?=encodeHtml($fact['value']);?></div>
+		<div class="groovy-card-sub"><?=encodeHtml($fact['sub']);?></div>
+	</div>
+</view:fact>
+
+<view:inflight_section>
+	<div class="groovy-section"><span class="icon-clock"></span> In-flight requests</div>
+	<?=renderViewIfElse(count($status['inflight']),'inflight_table','inflight_none',$status,'status');?>
+</view:inflight_section>
+
+<view:inflight_none>
+	<div class="groovy-empty">No requests running right now.</div>
+</view:inflight_none>
+
+<view:inflight_table>
+	<table class="wacss_table is-striped is-narrow groovy-table">
+		<thead><tr><th>Thread</th><th>Endpoint</th><th>Database / SQL</th><th>Running for</th><th>State</th><th>Stack</th><th></th></tr></thead>
+		<tbody><?=renderEach('inflight_row',$status['inflight'],'row');?></tbody>
+	</table>
+</view:inflight_table>
+
+<view:inflight_row>
+	<tr class="<?=$row['stuck'] ? 'is-stuck' : '';?>">
+		<td class="nowrap"><?=encodeHtml($row['thread']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['path']);?></td>
+		<td class="groovy-sql"><?=encodeHtml($row['detail']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['age']);?> <?=$row['stuck'] ? '<span class="groovy-badge is-danger">STUCK</span>' : '';?></td>
+		<td class="nowrap"><span class="groovy-badge"><?=encodeHtml($row['state']);?></span></td>
+		<td><details class="groovy-stack"><summary>show</summary><pre><?=encodeHtml($row['stack']);?></pre></details></td>
+		<td class="nowrap"><a href="#cancel" class="wacss_button is-small is-danger is-light" title="Abort this request's database connection and interrupt it" data-nav="/php/admin.php" data-_menu="groovy" data-func="cancel" data-thread="<?=encodeHtml($row['thread']);?>" data-div="groovy_content" data-setprocessing="groovy_processing" data-confirm="Cancel this request on <?=encodeHtml($row['thread']);?>? Its database connection is aborted and the caller gets an error." onclick="return wacss.nav(this);"><span class="icon-cancel wacss_right5"></span> Cancel</a></td>
+	</tr>
+</view:inflight_row>
+
+<view:databases_section>
+	<div class="groovy-section"><span class="icon-database"></span> Databases the server can query</div>
+	<table class="wacss_table is-striped is-narrow groovy-table">
+		<thead><tr><th>Type</th><th>Databases</th></tr></thead>
+		<tbody><?=renderEach('database_row',$status['databases'],'row');?></tbody>
+	</table>
+</view:databases_section>
+
+<view:database_row>
+	<tr><td class="nowrap"><?=encodeHtml($row['type']);?></td><td><?=encodeHtml($row['names']);?></td></tr>
+</view:database_row>
+
+<view:stats_panel>
+	<?=renderViewIfElse($stats['ok'],'stats_body','stats_error',$stats,'stats');?>
+</view:stats_panel>
+
+<view:stats_error>
+	<div class="groovy-state is-warning">
+		<span class="groovy-state-dot"></span>
+		<span class="groovy-state-hint"><?=encodeHtml($stats['error']);?></span>
+		<span class="groovy-checked">checked <?=encodeHtml($stats['checked']);?></span>
+	</div>
+</view:stats_error>
+
+<view:stats_body>
+	<div class="groovy-state">
+		<span class="groovy-state-hint">Counting since <b><?=encodeHtml($stats['since']);?></b> - counters reset when the server restarts.</span>
+		<a href="#reset_stats" class="wacss_button is-small is-light" data-nav="/php/admin.php" data-_menu="groovy" data-func="reset_stats" data-div="groovy_content" data-setprocessing="groovy_stats_processing" data-confirm="Reset all Groovy server statistics?" onclick="return wacss.nav(this);"><span class="icon-erase wacss_right5"></span> Reset Stats</a>
+		<span id="groovy_stats_processing" class="groovy-processing"></span>
+		<span class="groovy-checked">checked <?=encodeHtml($stats['checked']);?></span>
+	</div>
+	<div class="groovy-grid"><?=renderEach('fact',$stats['cards'],'fact');?></div>
+
+	<div class="groovy-section"><span class="icon-database"></span> By database</div>
+	<?=renderViewIfElse(count($stats['dbs']),'counter_table','stats_none',array('rows'=>$stats['dbs'],'name'=>'Database','kind'=>'db'),'counter');?>
+
+	<div class="groovy-section"><span class="icon-list"></span> By endpoint</div>
+	<?=renderViewIfElse(count($stats['endpoints']),'counter_table','stats_none',array('rows'=>$stats['endpoints'],'name'=>'Endpoint','kind'=>'endpoint'),'counter');?>
+
+	<div class="groovy-section"><span class="icon-clock"></span> Slowest requests</div>
+	<?=renderViewIfElse(count($stats['slowest']),'request_table','stats_none',array('rows'=>$stats['slowest'],'errors'=>false),'requests');?>
+
+	<div class="groovy-section"><span class="icon-warning"></span> Recent errors</div>
+	<?=renderViewIfElse(count($stats['errors']),'request_table','stats_none',array('rows'=>$stats['errors'],'errors'=>true),'requests');?>
+</view:stats_body>
+
+<view:stats_none>
+	<div class="groovy-empty">Nothing recorded yet.</div>
+</view:stats_none>
+
+<view:counter_table>
+	<table class="wacss_table is-bordered is-striped is-narrow groovy-table">
+		<thead><tr><th><?=encodeHtml($counter['name']);?></th><th class="groovy-num">Requests</th><th class="groovy-num">Errors</th><th class="groovy-num">Avg</th><th class="groovy-num">Max</th><th>Last used</th></tr></thead>
+		<tbody><?=renderEach('counter_row',$counter['rows'],array('-alias'=>'row','kind'=>$counter['kind']));?></tbody>
+	</table>
+</view:counter_table>
+
+<view:counter_row>
+	<tr>
+		<td class="nowrap"><?=encodeHtml($row['name']);?></td>
+		<td class="groovy-num"><?=encodeHtml($row['count']);?></td>
+		<td class="groovy-num"><?=renderViewIfElse($row['has_errors'],'error_count_link','error_count_zero',$row,'row');?></td>
+		<td class="groovy-num nowrap"><?=encodeHtml($row['avg']);?></td>
+		<td class="groovy-num nowrap"><?=encodeHtml($row['max']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['last']);?></td>
+	</tr>
+</view:counter_row>
+
+<view:error_count_link>
+	<a href="#errors" class="groovy-badge is-danger groovy-badge-link" title="Show these errors" data-nav="/php/admin.php" data-_menu="groovy" data-func="errors" data-<?=$row['kind']=='db' ? 'db' : 'endpoint';?>="<?=encodeHtml($row['name']);?>" data-div="centerpop" data-title="Errors: <?=encodeHtml($row['name']);?>" onclick="return wacss.nav(this);"><?=encodeHtml($row['errors']);?></a>
+</view:error_count_link>
+
+<view:error_count_zero>0</view:error_count_zero>
+
+<view:errors_popup>
+	<?=renderViewIfElse($errors['ok'],'errors_popup_list','errors_popup_error',$errors,'errors');?>
+	<div data-onload="wacss.centerObject('wacss_centerpop');"></div>
+</view:errors_popup>
+
+<view:errors_popup_error>
+	<div class="groovy-message is-danger"><?=encodeHtml($errors['error']);?></div>
+</view:errors_popup_error>
+
+<view:errors_popup_list>
+	<div class="groovy-popup">
+		<div class="groovy-empty">Errors for <?=encodeHtml($errors['title']);?>, newest first. The server keeps the last <?=encodeHtml($errors['kept']);?> failures across all endpoints, so older ones may have rolled off.</div>
+		<?=renderViewIfElse(count($errors['rows']),'request_table','stats_none',array('rows'=>$errors['rows'],'errors'=>true),'requests');?>
+	</div>
+</view:errors_popup_list>
+
+<view:request_table>
+	<table class="wacss_table is-bordered is-striped is-narrow groovy-table">
+		<thead><tr><th>When</th><th>Endpoint</th><th>Database</th><th class="groovy-num">Time</th><th>SQL</th><?=$requests['errors'] ? '<th>Error</th>' : '';?></tr></thead>
+		<tbody><?=renderEach($requests['errors'] ? 'error_row' : 'request_row',$requests['rows'],'row');?></tbody>
+	</table>
+</view:request_table>
+
+<view:request_row>
+	<tr>
+		<td class="nowrap"><?=encodeHtml($row['at']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['endpoint']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['db']);?></td>
+		<td class="groovy-num nowrap"><?=encodeHtml($row['time']);?></td>
+		<td class="groovy-sql"><?=encodeHtml($row['detail']);?></td>
+	</tr>
+</view:request_row>
+
+<view:error_row>
+	<tr>
+		<td class="nowrap"><?=encodeHtml($row['at']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['endpoint']);?></td>
+		<td class="nowrap"><?=encodeHtml($row['db']);?></td>
+		<td class="groovy-num nowrap"><?=encodeHtml($row['time']);?></td>
+		<td class="groovy-sql"><?=encodeHtml($row['detail']);?></td>
+		<td class="groovy-sql"><?=encodeHtml($row['error']);?></td>
+	</tr>
+</view:error_row>
+
+<view:log_panel>
+	<div class="groovy-log-controls">
+		<span class="icon-history"></span>
+		<b><?=encodeHtml($log['file']);?></b>
+		<?=$log['exists'] ? '('.encodeHtml($log['size']).')' : '<span class="w_danger">(no log file yet)</span>';?>
+		<span style="flex:1;"></span>
+		Show
+		<select id="groovy_log_filter" class="wacss_select is-small" onchange="return groovyRefresh(1);">
+			<option value="all" <?=$log['filter']=='all' ? 'selected' : '';?>>all lines</option>
+			<option value="stuck" <?=$log['filter']=='stuck' ? 'selected' : '';?>>STUCK reports</option>
+			<option value="errors" <?=$log['filter']=='errors' ? 'selected' : '';?>>errors and warnings</option>
+			<option value="requests" <?=$log['filter']=='requests' ? 'selected' : '';?>>requests only</option>
+		</select>
+		last
+		<select id="groovy_log_lines" class="wacss_select is-small" onchange="return groovyRefresh(1);">
+			<option value="100" <?=$log['count']==100 ? 'selected' : '';?>>100</option>
+			<option value="300" <?=$log['count']==300 ? 'selected' : '';?>>300</option>
+			<option value="1000" <?=$log['count']==1000 ? 'selected' : '';?>>1000</option>
+			<option value="5000" <?=$log['count']==5000 ? 'selected' : '';?>>5000</option>
+		</select>
+		lines
+		<a href="#copy" class="wacss_button is-small is-light" title="copy to clipboard" onclick="wacss.copy2Clipboard(document.querySelector('#groovy_log').innerText);return false;"><span class="icon-copy"></span></a>
+	</div>
+	<pre id="groovy_log" class="groovy-log" data-onload="groovyLogScroll();"><?=renderEach('log_line',$log['lines'],'line');?></pre>
+	<?=count($log['lines']) ? '' : '<div class="groovy-empty">No matching lines.</div>';?>
+</view:log_panel>
+
+<view:log_line>
+<code class="<?=encodeHtml($line['class']);?>"><?=encodeHtml($line['text']);?></code>
+</view:log_line>
