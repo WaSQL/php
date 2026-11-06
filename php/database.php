@@ -1393,6 +1393,28 @@ function dbGroovyLogFile(){
 	return getWaSQLPath('logs').DIRECTORY_SEPARATOR.'groovy-server.log';
 }
 /**
+* Rolling-log cap for the Groovy server log: when the file is larger than $maxBytes, drops the
+* oldest lines and keeps the newest half ($maxBytes/2), starting at a full line. No-op when
+* $maxBytes is 0 or the file is missing/small. Called at launch, before the server opens the file.
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyTrimLog($logFile,$maxBytes){
+	if($maxBytes<=0 || !is_file($logFile)){return;}
+	clearstatcache(true,$logFile);
+	$len=filesize($logFile);
+	if($len===false || $len<=$maxBytes){return;}
+	$keep=(int)floor($maxBytes/2);
+	$fh=@fopen($logFile,'rb');
+	if($fh===false){return;}
+	fseek($fh,$len-$keep);
+	$tail=stream_get_contents($fh);
+	fclose($fh);
+	if($tail===false){return;}
+	$nl=strpos($tail,"\n");
+	if($nl!==false){$tail=substr($tail,$nl+1);}
+	@file_put_contents($logFile,'--- '.date('Y-m-d H:i:s').' log trimmed: dropped the oldest '.(int)(($len-strlen($tail))/1024).' KB ---'.PHP_EOL.$tail,LOCK_EX);
+}
+/**
 * Returns the last $maxLines lines of the Groovy server log, or a short
 * placeholder string when the log is missing/empty. Used to surface the
 * real JVM/Groovy startup error in dbGroovy* error messages.
@@ -1612,6 +1634,7 @@ function dbGroovyPing($baseUrl,$tokenFile){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function dbGroovyLaunchServer($groovyDir){
+	global $CONFIG;
 	$exe=dbGroovyFindExe();
 	if($exe===null){
 		return "dbGroovyQueryResults error: 'groovy' executable not found. "
@@ -1653,16 +1676,27 @@ function dbGroovyLaunchServer($groovyDir){
 		      .(strlen($webUser)?" ({$webUser})":'').". Fix: `chown -R {$webUser}: {$tempDir}`.";
 	}
 
+	//The log is APPENDED across restarts (it used to be overwritten, which wiped the evidence of
+	//whatever made the previous server hang), so cap it as a rolling log: <groovy_log_max_mb>
+	//in config.xml, default 10, 0 = no cap. Trimmed here at launch; the running server trims it
+	//again every minute (Linux/macOS) via WASQL_GROOVY_LOG_FILE / WASQL_GROOVY_LOG_MAX_MB.
+	$logMaxMb=isset($CONFIG['groovy_log_max_mb'])&&strlen(trim($CONFIG['groovy_log_max_mb']))?(int)$CONFIG['groovy_log_max_mb']:10;
+	if($logMaxMb<0){$logMaxMb=0;}
+	dbGroovyTrimLog($logFile,$logMaxMb*1024*1024);
+	@file_put_contents($logFile,PHP_EOL.'--- '.date('Y-m-d H:i:s').' starting Groovy server ---'.PHP_EOL,FILE_APPEND);
+
 	if(PHP_OS_FAMILY==='Windows'){
 		// proc_open with create_process_group breaks the child out of IIS's Job Object,
 		// preventing the Groovy JVM from being killed when the HTTP request ends.
 		// stdout/stderr go to server-start.log so startup errors are diagnosable.
 		$q=function($s){return '"'.str_replace('"','""',$s).'"';};
 		$cpArg=!empty($jars)?' -cp "'.implode(';',$jars).'"':'';
-		$desc=[0=>['file','NUL','r'],1=>['file',$logFile,'w'],2=>['file',$logFile,'a']];
+		$desc=[0=>['file','NUL','r'],1=>['file',$logFile,'a'],2=>['file',$logFile,'a']];
 		$env=array_merge(getenv()?:[],[
 			'WASQL_GROOVY_PID_FILE'   =>$pidFile,
 			'WASQL_GROOVY_TOKEN_FILE' =>$tokenFile,
+			'WASQL_GROOVY_LOG_FILE'   =>$logFile,
+			'WASQL_GROOVY_LOG_MAX_MB' =>(string)$logMaxMb,
 		]);
 		$ph=@proc_open(
 			$q($exe).$cpArg.' '.$q($script),
@@ -1682,11 +1716,14 @@ function dbGroovyLaunchServer($groovyDir){
 		$setsid=is_executable('/usr/bin/setsid')?'/usr/bin/setsid '
 		       :(is_executable('/bin/setsid')?'/bin/setsid ':'');
 		$envPrefix='WASQL_GROOVY_PID_FILE='.escapeshellarg($pidFile)
-		          .' WASQL_GROOVY_TOKEN_FILE='.escapeshellarg($tokenFile).' ';
+		          .' WASQL_GROOVY_TOKEN_FILE='.escapeshellarg($tokenFile)
+		          .' WASQL_GROOVY_LOG_FILE='.escapeshellarg($logFile)
+		          .' WASQL_GROOVY_LOG_MAX_MB='.escapeshellarg((string)$logMaxMb).' ';
+		//>> (append, O_APPEND): keeps the previous run's log AND lets the server trim the file in place
 		$cmd=$envPrefix.$setsid.'nohup '.escapeshellarg($exe)
 		    .$cpArg
 		    .' '.escapeshellarg($script)
-		    .' >'.escapeshellarg($logFile).' 2>&1 &';
+		    .' >>'.escapeshellarg($logFile).' 2>&1 &';
 		@exec($cmd);
 	}
 	return null;

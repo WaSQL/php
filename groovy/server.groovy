@@ -46,6 +46,16 @@ import java.util.concurrent.atomic.AtomicLong
 @Field volatile Map DATABASE   = [:]
 @Field def    serverRef       = null
 @Field def    schedulerRef    = null
+@Field def    poolRef         = null
+// Rolling log cap: only when the launcher tells us which file stdout/stderr point at.
+// A manual start (no WASQL_GROOVY_LOG_FILE) never trims anything.
+@Field File   LOG_FILE        = System.getenv('WASQL_GROOVY_LOG_FILE') ? new File(System.getenv('WASQL_GROOVY_LOG_FILE')) : null
+@Field long   LOG_MAX_BYTES   = (System.getenv('WASQL_GROOVY_LOG_MAX_MB') ?: '10').toLong() * 1024L * 1024L
+@Field final Object LOG_LOCK  = new Object()
+// Stuck-request watchdog: a request running longer than this is logged with its thread's stack.
+@Field long   STUCK_MS        = (System.getenv('WASQL_GROOVY_STUCK_MINUTES') ?: '5').toLong() * 60_000L
+// In-flight requests, keyed by the handler thread: [path, started, detail, reported]
+@Field def    INFLIGHT        = new java.util.concurrent.ConcurrentHashMap<Thread, Map>()
 
 @Field def DT_FMT   = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 @Field def DATE_FMT = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd')
@@ -131,7 +141,10 @@ import java.util.concurrent.atomic.AtomicLong
 *	log("Listening on port ${PORT}")
 */
 void log(String msg) {
-    System.err.println("[wasql-groovy] ${new Date().format('HH:mm:ss')} $msg")
+    // LOG_LOCK: trimLogIfNeeded holds it while rewriting the file, so no line lands mid-trim
+    synchronized (LOG_LOCK) {
+        System.err.println("[wasql-groovy] ${new Date().format('HH:mm:ss')} $msg")
+    }
 }
 
 //---------- begin function readBody
@@ -511,6 +524,115 @@ void doShutdown(String reason) {
     System.exit(0)
 }
 
+//---------- begin function route
+/**
+* @describe registers an endpoint whose handler is tracked in INFLIGHT while it runs, so the watchdog can report requests that never finish
+* @param params path string, handler Closure
+*	path: context path, e.g. '/query/'
+*	handler: closure taking the HttpExchange
+* @return object
+*	the HttpContext
+* @usage
+*	route('/ping') { HttpExchange ex -> respond(ex, 200, '{}') }
+*/
+def route(String path, Closure handler) {
+    serverRef.createContext(path, { HttpExchange ex ->
+        def t = Thread.currentThread()
+        def entry = new java.util.concurrent.ConcurrentHashMap<String, Object>()
+        entry.path     = ex.requestURI.path
+        entry.started  = System.currentTimeMillis()
+        entry.detail   = ''
+        entry.reported = false
+        INFLIGHT[t] = entry
+        try { handler.call(ex) } finally { INFLIGHT.remove(t) }
+    } as com.sun.net.httpserver.HttpHandler)
+}
+
+//---------- begin function trackDetail
+/**
+* @describe records what the current request is doing (db name + start of the SQL/script) for the stuck-request watchdog
+* @param params detail string
+* @return void
+* @usage
+*	trackDetail("${dbname}: ${query}")
+*/
+void trackDetail(String detail) {
+    def entry = INFLIGHT[Thread.currentThread()]
+    if (entry != null && detail != null) entry.detail = detail.replaceAll(/\s+/, ' ').trim().take(100)
+}
+
+//---------- begin function reportStuckRequests
+/**
+* @describe called by the watchdog every minute - logs each request running longer than STUCK_MS once, with its thread's stack trace, plus thread-pool usage while any are stuck
+* @return void
+* @usage
+*	reportStuckRequests()
+*/
+void reportStuckRequests() {
+    if (STUCK_MS <= 0) return
+    long now = System.currentTimeMillis()
+    int stuck = 0
+    INFLIGHT.each { Thread t, Map e ->
+        long ms = now - (e.started as long)
+        if (ms < STUCK_MS) return
+        stuck++
+        if (e.reported) return
+        e.reported = true
+        def sb = new StringBuilder()
+        sb << "STUCK request on ${t.name} for ${ms / 60000 as long} min: ${e.path}"
+        if (e.detail) sb << " | ${e.detail}"
+        sb << " | state=${t.state}"
+        // skip Groovy/JVM call-dispatch plumbing so the 25 lines show real code (driver, socket, script)
+        t.stackTrace.findAll { f ->
+            !(f.className.startsWith('java.lang.invoke.') || f.className.startsWith('org.codehaus.groovy.vmplugin.')
+              || f.className.startsWith('org.codehaus.groovy.runtime.callsite.') || f.className.startsWith('jdk.internal.reflect.')
+              || f.className.startsWith('sun.reflect.'))
+        }.take(25).each { sb << "\n        at ${it}" }
+        log(sb.toString())
+    }
+    if (stuck > 0 && poolRef != null) {
+        log("STUCK summary: ${stuck} request(s) over ${STUCK_MS / 60000 as long} min | threads busy ${poolRef.activeCount}/${poolRef.maximumPoolSize} | queued ${poolRef.queue.size()}")
+    }
+}
+
+//---------- begin function trimLogIfNeeded
+/**
+* @describe called by the watchdog every minute - rolling log: when LOG_FILE exceeds LOG_MAX_BYTES, drops the oldest lines and keeps the newest half (LOG_MAX_BYTES/2), rewritten in place.
+*	Linux/macOS only: the launcher opens the log in append mode there, so writes after the trim land at the new end. Windows trims only at launch (in PHP).
+* @return void
+* @usage
+*	trimLogIfNeeded()
+*/
+void trimLogIfNeeded() {
+    if (LOG_FILE == null || LOG_MAX_BYTES <= 0) return
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) return
+    if (!LOG_FILE.isFile() || LOG_FILE.length() <= LOG_MAX_BYTES) return
+    long keep = LOG_MAX_BYTES.intdiv(2)
+    long dropped
+    synchronized (LOG_LOCK) {
+        System.err.flush()
+        System.out.flush()
+        new RandomAccessFile(LOG_FILE, 'rw').withCloseable { raf ->
+            long len = raf.length()
+            if (len <= LOG_MAX_BYTES) { dropped = 0; return }
+            // read the newest `keep` bytes, then start at the first full line
+            byte[] tail = new byte[(int) keep]
+            raf.seek(len - keep)
+            raf.readFully(tail)
+            int start = 0
+            while (start < tail.length && tail[start] != (byte) 10) start++
+            start = Math.min(start + 1, tail.length)
+            // rewrite in place: the launcher opened the log in append mode, so the
+            // server's later writes land at the new end of the file
+            raf.setLength(0)
+            raf.seek(0)
+            raf.write(tail, start, tail.length - start)
+            dropped = len - (tail.length - start)
+        }
+    }
+    if (dropped > 0) log("Log trimmed: dropped the oldest ${dropped.intdiv(1024)} KB to stay under ${LOG_MAX_BYTES.intdiv(1048576)} MB")
+}
+
 // ── Initialise ────────────────────────────────────────────────────────────────
 
 // Write the pid file and register cleanup BEFORE the (slow) module preload so the
@@ -550,7 +672,7 @@ DATABASE.each { dbname, dbconf ->
             loadModule(modName)
             log("Pre-loaded '${modName}' for database '${dbname}'")
         } catch (Exception e) {
-            log("Warning: driver '${modName}' not available — skipping database '${dbname}'")
+            log("Warning: driver '${modName}' not available - skipping database '${dbname}'")
         }
     } else {
         log("Warning: no driver mapped for dbtype='${dbtype}' (database '${dbname}')")
@@ -558,10 +680,10 @@ DATABASE.each { dbname, dbconf ->
 }
 if (missingJarDrivers) log("Skipped (jar not found): ${missingJarDrivers.sort().join(', ')}")
 
-try { loadModule('common'); log("Pre-loaded 'common'") } catch (Exception e) { log("Warning: could not pre-load common — ${e.message}") }
-try { loadModule('db');     log("Pre-loaded 'db'")     } catch (Exception e) { log("Warning: could not pre-load db — ${e.message}") }
+try { loadModule('common'); log("Pre-loaded 'common'") } catch (Exception e) { log("Warning: could not pre-load common - ${e.message}") }
+try { loadModule('db');     log("Pre-loaded 'db'")     } catch (Exception e) { log("Warning: could not pre-load db - ${e.message}") }
 
-log("Ready: ${modules.size()} module(s) — ${modules.keySet().sort().join(', ')}")
+log("Ready: ${modules.size()} module(s) - ${modules.keySet().sort().join(', ')}")
 
 // Suppress groovy.sql WARNING logs — errors are returned as JSON; stack traces are noise.
 // Must run AFTER modules are loaded so groovy.sql.Sql's static LOG field holds a strong
@@ -594,20 +716,22 @@ def threadFactory = { Runnable r ->
     t.contextClassLoader = scriptCL
     return t
 } as java.util.concurrent.ThreadFactory
-server.setExecutor(new java.util.concurrent.ThreadPoolExecutor(
+def pool = new java.util.concurrent.ThreadPoolExecutor(
     THREADS, THREADS, 60L, TimeUnit.SECONDS,
     new java.util.concurrent.LinkedBlockingQueue<Runnable>(512),
     threadFactory,
     new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy()
-))
+)
+server.setExecutor(pool)
 
 serverRef    = server
 schedulerRef = scheduler
+poolRef      = pool
 
 // ── Endpoints ─────────────────────────────────────────────────────────────────
 
 // GET /ping
-server.createContext('/ping') { HttpExchange ex ->
+route('/ping') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -624,7 +748,7 @@ server.createContext('/ping') { HttpExchange ex ->
 }
 
 // POST /query/{dbname}  — body is raw SQL, returns queryResults as JSON
-server.createContext('/query/') { HttpExchange ex ->
+route('/query/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -633,10 +757,11 @@ server.createContext('/query/') { HttpExchange ex ->
         def query  = readBody(ex)
         if (!dbname) throw new IllegalArgumentException("URL must be /query/{dbname}")
         if (!query)  throw new IllegalArgumentException("Request body must contain a SQL query")
+        trackDetail("${dbname}: ${query}")
         def drv    = resolveDriver(dbname)
         def result = drv.driver.queryResults(query, drv.params + [format: 'list'])
         respond(ex, 200, wrapOk(result))
-        log("/query ${dbname} — ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms")
+        log("/query ${dbname} - ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/query error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
@@ -648,7 +773,7 @@ server.createContext('/query/') { HttpExchange ex ->
 // returning rows in the response — use for large result sets. The driver's
 // queryResults(...) writes the file and returns its path; we echo that back as
 // { filename: "..." }. PHP counts the rows from the file it now owns.
-server.createContext('/queryfile/') { HttpExchange ex ->
+route('/queryfile/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -658,6 +783,7 @@ server.createContext('/queryfile/') { HttpExchange ex ->
         if (!dbname)       throw new IllegalArgumentException("URL must be /queryfile/{dbname}")
         if (!req.query)    throw new IllegalArgumentException("Body must include 'query'")
         if (!req.filename) throw new IllegalArgumentException("Body must include 'filename'")
+        trackDetail("${dbname}: ${req.query}")
         def drv   = resolveDriver(dbname)
         def extra = [filename: req.filename as String]
         if (req.fetchsize  != null) extra.fetchsize  = req.fetchsize as int
@@ -665,7 +791,7 @@ server.createContext('/queryfile/') { HttpExchange ex ->
         if (req.skiperrors != null) extra.skiperrors = req.skiperrors as boolean
         def result = drv.driver.queryResults(req.query as String, drv.params + extra)
         respond(ex, 200, wrapOk([filename: result]))
-        log("/queryfile ${dbname} → ${result} ${System.currentTimeMillis()-t0}ms")
+        log("/queryfile ${dbname} -> ${result} ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/queryfile error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
@@ -674,7 +800,7 @@ server.createContext('/queryfile/') { HttpExchange ex ->
 
 // GET /meta/{dbname}?op=tables|columns|indexes|ddl[&table=..&schema=..]
 // ODBC-free schema introspection via JDBC DatabaseMetaData. Blank schema = all schemas.
-server.createContext('/meta/') { HttpExchange ex ->
+route('/meta/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     def sql = null
@@ -686,6 +812,7 @@ server.createContext('/meta/') { HttpExchange ex ->
         def op     = (q.op ?: 'tables').toLowerCase()
         def table  = q.table
         def schema = (q.schema != null && q.schema != '') ? q.schema : null
+        trackDetail("${dbname}: meta op=${op}${table ? ' table=' + table : ''}")
         def drv    = resolveDriver(dbname)
         sql        = drv.driver.connect(drv.params)
         def md     = sql.connection.metaData
@@ -698,7 +825,7 @@ server.createContext('/meta/') { HttpExchange ex ->
             default: throw new IllegalArgumentException("Unknown meta op: '${op}' (use tables|columns|indexes|ddl)")
         }
         respond(ex, 200, wrapOk(result))
-        log("/meta ${dbname} op=${op}${table ? ' table=' + table : ''} — ${System.currentTimeMillis()-t0}ms")
+        log("/meta ${dbname} op=${op}${table ? ' table=' + table : ''} - ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/meta error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
@@ -708,7 +835,7 @@ server.createContext('/meta/') { HttpExchange ex ->
 }
 
 // POST /execute/{dbname}  — body is raw SQL, returns executeSQL as JSON
-server.createContext('/execute/') { HttpExchange ex ->
+route('/execute/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -717,10 +844,11 @@ server.createContext('/execute/') { HttpExchange ex ->
         def query  = readBody(ex)
         if (!dbname) throw new IllegalArgumentException("URL must be /execute/{dbname}")
         if (!query)  throw new IllegalArgumentException("Request body must contain a SQL statement")
+        trackDetail("${dbname}: ${query}")
         def drv    = resolveDriver(dbname)
         def result = drv.driver.executeSQL(query, drv.params)
         respond(ex, 200, wrapOk(result))
-        log("/execute ${dbname} — ${System.currentTimeMillis()-t0}ms")
+        log("/execute ${dbname} - ${System.currentTimeMillis()-t0}ms")
     } catch (Exception e) {
         log("/execute error: ${e.message}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
@@ -728,7 +856,7 @@ server.createContext('/execute/') { HttpExchange ex ->
 }
 
 // POST /executeps/{dbname}  — body is JSON { "query": "...", "args": {} }
-server.createContext('/executeps/') { HttpExchange ex ->
+route('/executeps/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -736,8 +864,9 @@ server.createContext('/executeps/') { HttpExchange ex ->
         def req    = new JsonSlurper().parseText(readBody(ex))
         if (!dbname)    throw new IllegalArgumentException("URL must be /executeps/{dbname}")
         if (!req.query) throw new IllegalArgumentException("Body must include 'query'")
+        trackDetail("${dbname}: ${req.query}")
         def drv    = resolveDriver(dbname)
-        def args   = req.args instanceof Map ? req.args : [:]
+        def args  = req.args instanceof Map ? req.args : [:]
         def result
         try {
             result = drv.driver.executePS(req.query as String, args, drv.params)
@@ -755,12 +884,13 @@ server.createContext('/executeps/') { HttpExchange ex ->
 // Runs arbitrary Groovy with db, common, config modules in binding.
 // "output" = stdout captured via binding 'out' (PrintWriter per request — fully concurrent).
 // "result" = return value of the script.
-server.createContext('/eval') { HttpExchange ex ->
+route('/eval') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
         def script = readBody(ex)
         if (!script) throw new IllegalArgumentException("Request body must contain a Groovy script")
+        trackDetail("eval: ${script}")
 
         def baos    = new ByteArrayOutputStream()
         def capture = new PrintWriter(new OutputStreamWriter(baos, 'UTF-8'), true)
@@ -802,7 +932,7 @@ server.createContext('/eval') { HttpExchange ex ->
 }
 
 // GET /databases  — list all configured databases grouped by dbtype
-server.createContext('/databases') { HttpExchange ex ->
+route('/databases') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -823,7 +953,7 @@ server.createContext('/databases') { HttpExchange ex ->
 }
 
 // GET/POST /reload  — flush module cache; next request recompiles from disk
-server.createContext('/reload') { HttpExchange ex ->
+route('/reload') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     try {
@@ -850,8 +980,8 @@ def shutdownHandler = { HttpExchange ex ->
     try { respond(ex, 200, JsonOutput.toJson([status: 'shutting down', pid: PID])) } catch (Exception ignored) {}
     Thread.start { Thread.sleep(200); doShutdown("HTTP ${ex.requestURI.path} request") }
 }
-server.createContext('/shutdown', shutdownHandler)
-server.createContext('/exit',     shutdownHandler)
+route('/shutdown', shutdownHandler)
+route('/exit',     shutdownHandler)
 
 //---------- begin function buildSpec
 /**
@@ -974,13 +1104,13 @@ Closure buildSpec = {
     ]
 }
 
-server.createContext('/openapi') { HttpExchange ex ->
+route('/openapi') { HttpExchange ex ->
     lastActivity.set(System.currentTimeMillis())
     respond(ex, 200, JSON.toJson(buildSpec()))
 }
 
 // GET /  — RapidDoc UI (unauthenticated)
-server.createContext('/') { HttpExchange ex ->
+route('/') { HttpExchange ex ->
     if (ex.requestURI.path != '/') { respond(ex, 404, wrapErr('Not found')); return }
     lastActivity.set(System.currentTimeMillis())
     def html = """\
@@ -1038,14 +1168,19 @@ log("Listening on 127.0.0.1:${PORT}  PID ${PID}")
 log("Token file: ${TOKEN_FILE.path}")
 log("Threads: ${THREADS}  Queue: 512  Max body: ${MAX_BODY_MB} MB")
 log("Auto-shutdown: ${IDLE_TIMEOUT_MS > 0 ? "${IDLE_TIMEOUT_MS / 60000 as long} min idle" : 'disabled'}")
+log("Stuck-request report: ${STUCK_MS > 0 ? "after ${STUCK_MS / 60000 as long} min" : 'disabled'}")
+log("Log cap: ${LOG_FILE && LOG_MAX_BYTES > 0 ? "${LOG_FILE.path} rolls at ${LOG_MAX_BYTES / 1048576 as long} MB (keeps the newest half)" : 'disabled'}")
 
 // ── Idle watchdog ─────────────────────────────────────────────────────────────
 scheduler.scheduleAtFixedRate({
+    // each check in its own try so one failing never stops the others
+    try { reportStuckRequests() } catch (Exception e) { log("Stuck-request check error: ${e.message}") }
+    try { trimLogIfNeeded() }    catch (Exception e) { log("Log trim error: ${e.message}") }
     try {
         if (IDLE_TIMEOUT_MS > 0) {
             long idleMs = System.currentTimeMillis() - lastActivity.get()
             if (idleMs >= IDLE_TIMEOUT_MS) {
-                log("Idle for ${idleMs / 60000 as long} min — shutting down")
+                log("Idle for ${idleMs / 60000 as long} min - shutting down")
                 doShutdown('idle timeout')
             }
         }

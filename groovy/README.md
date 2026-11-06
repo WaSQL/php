@@ -94,6 +94,9 @@ All settings are controlled via environment variables. None are required — the
 | `WASQL_GROOVY_TOKEN` | *(random UUID)* | Fix the auth token to a specific value (useful when a process supervisor restarts the server and PHP must not re-read a new token) |
 | `WASQL_GROOVY_PID_FILE` | `groovy/server.pid` | Path where the server writes its PID |
 | `WASQL_GROOVY_TOKEN_FILE` | `groovy/server.token` | Path where the server writes its auth token |
+| `WASQL_GROOVY_STUCK_MINUTES` | `5` | A request still running after this many minutes is logged once as `STUCK`, with its thread's stack trace; `0` disables |
+| `WASQL_GROOVY_LOG_FILE` | *(unset)* | The file stdout/stderr are redirected to. When set, the server trims it as a rolling log (Linux/macOS). WaSQL's auto-start sets it |
+| `WASQL_GROOVY_LOG_MAX_MB` | `10` | Rolling-log cap for `WASQL_GROOVY_LOG_FILE`; `0` = no cap |
 
 WaSQL's auto-start sets `WASQL_GROOVY_PID_FILE` and `WASQL_GROOVY_TOKEN_FILE` to `php/temp/wasql-groovy-server.{pid,token}` so the web server user (which typically cannot write to the `groovy/` source directory) can create them.
 
@@ -106,7 +109,27 @@ On start the server logs its active configuration:
 [wasql-groovy] 11:56:21 Token file: /var/www/wasql/php/temp/wasql-groovy-server.token
 [wasql-groovy] 11:56:21 Threads: 32  Queue: 512  Max body: 16 MB
 [wasql-groovy] 11:56:21 Auto-shutdown: 60 min idle
+[wasql-groovy] 11:56:21 Stuck-request report: after 5 min
+[wasql-groovy] 11:56:21 Log cap: /var/www/wasql/logs/groovy-server.log rolls at 10 MB (keeps the newest half)
 ```
+
+### Server log (auto-start)
+
+WaSQL's auto-start writes stdout/stderr to **`logs/groovy-server.log`** and **appends** across restarts, so a restart no longer wipes the log of the run that hung. Each launch writes a `--- {date} starting Groovy server ---` marker.
+
+The log is a **rolling log** capped by `<groovy_log_max_mb>` in `config.xml` (default `10`, `0` = no cap). Once it passes the cap, the oldest lines are dropped and the newest half is kept. That happens at launch (PHP) and once a minute while the server runs (Linux/macOS only; on Windows the trim happens only at launch).
+
+### Stuck-request watchdog
+
+Every request is tracked while it runs. Once a minute the watchdog logs any request older than `WASQL_GROOVY_STUCK_MINUTES` (default 5), **once per request**, with the endpoint, the database and the first 100 characters of the SQL, plus the handler thread's stack trace (top 25 frames, with Groovy dispatch plumbing filtered out). While anything is stuck it also logs a pool summary:
+
+```
+[wasql-groovy] 14:42:36 STUCK request on wasql-handler-3 for 6 min: /query/mydb | mydb: SELECT ... | state=RUNNABLE
+        at ...the driver / socket frames it is blocked in...
+[wasql-groovy] 14:42:36 STUCK summary: 1 request(s) over 5 min | threads busy 1/32 | queued 0
+```
+
+If the server stops answering, `grep STUCK logs/groovy-server.log` shows what each thread was blocked on, with no thread dump needed. The watchdog only reports; it never kills a request.
 
 ### PHP query timeout
 
