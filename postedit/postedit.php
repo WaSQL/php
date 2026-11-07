@@ -765,7 +765,7 @@ function successMessage($msg){
 }
 /**
 * @describe announces the outcome of one checkForChanges() pass with a single background sound.
-*	One file sounds exactly as before (success.wav / failure.wav). Several files depend on the <sound mode=""> setting:
+*	One file plays just the chime (success.wav / failure.wav) in every mode - no speech. Several files depend on the <sound mode=""> setting:
 *		speak (default) - result wav, then a spoken summary: "10 saved", "9 saved, index body failed", "8 saved, 2 failed"
 *		beep - one short beep per file (high = saved, low = failed), then the result wav
 *		wav  - the result wav once per file, back to back
@@ -778,7 +778,8 @@ function posteditAnnounce($results){
 	$saved=count($results)-count($failed);
 	$wav=count($failed)?'failure.wav':'success.wav';
 	$mode=isset($postedit['sound']['mode'])?strtolower(trim($postedit['sound']['mode'])):'speak';
-	if(count($results)==1 && $mode != 'speak'){
+	//one file: just the chime in every mode, no speech - success.wav / failure.wav already says how it went
+	if(count($results)==1){
 		$ok=sounder($wav);
 		return;
 	}
@@ -800,18 +801,12 @@ function posteditAnnounce($results){
 			$ok=posteditPowershell(implode('; ',$cmds));
 		break;
 		default:
-			//speak - always led by the project name, since several postedits may be running at once
+			//speak (several files) - always led by the project name, since several postedits may be running at once:
+			//	"dexpdq 10 saved" / "dexpdq 9 saved, index body failed" / "dexpdq 8 saved, 2 failed"
 			$parts=array();
-			if(count($results)==1){
-				//one file: "dexpdq saved" / "dexpdq index body failed"
-				$parts[]=$saved?'saved':"{$failed[0]} failed";
-			}
-			else{
-				//several: "dexpdq 10 saved" / "dexpdq 9 saved, index body failed" / "dexpdq 8 saved, 2 failed"
-				if($saved > 0){$parts[]="{$saved} saved";}
-				if(count($failed)==1){$parts[]="{$failed[0]} failed";}
-				elseif(count($failed) > 1){$parts[]=count($failed)." failed";}
-			}
+			if($saved > 0){$parts[]="{$saved} saved";}
+			if(count($failed)==1){$parts[]="{$failed[0]} failed";}
+			elseif(count($failed) > 1){$parts[]=count($failed)." failed";}
 			$ok=posteditSay($wav,posteditSpokenName('').' '.implode(', ',$parts));
 		break;
 	}

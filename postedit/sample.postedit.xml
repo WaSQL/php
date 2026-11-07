@@ -19,8 +19,9 @@
 <settings>
 	<!-- sound tag will say things
 		mode - how saves are announced:
-			speak - (default) result sound, then a spoken summary led by the project (host spokenname, else alias):
-					"dexpdq saved", "dexpdq 10 saved", "dexpdq 9 saved, index body failed".
+			speak - (default) result sound; when several files saved at once it then speaks a summary led by the
+					project (host spokenname, else alias): "dexpdq 10 saved", "dexpdq 9 saved, index body failed".
+					A single file plays just the chime (success or failure) - no speech - in every mode.
 					Also says "postedit dexpdq ready" at startup and "postedit dexpdq stopped. {reason}" when it dies.
 			beep  - no speech; several files get one short beep each (high=saved, low=failed), then the result sound
 			wav   - no speech; the result sound once per file, back to back
