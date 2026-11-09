@@ -1151,6 +1151,13 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 				dbGroovyHttp('GET',"{$baseUrl}/reload",$token,null,null,10);
 				continue;
 			}
+			//credentials changed in config.xml but the server still holds the old ones ("Invalid user id" on cTREE
+			//	until a manual /reload) - reload and retry once, but only if config.xml changed since the last such
+			//	reload, so a genuinely wrong password does not reload the server (and its pools) on every query
+			if($attempt===0 && dbGroovyIsAuthError($msg) && dbGroovyConfigChangedSinceReload($tempDir)){
+				dbGroovyHttp('GET',"{$baseUrl}/reload",$token,null,null,10);
+				continue;
+			}
 			if(stripos($msg,'not found in config.xml')!==false){
 				return "dbGroovyQueryResults error: {$msg}";
 			}
@@ -1190,6 +1197,41 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		return $out;
 	}
 	return $recs;
+}
+//---------- begin function dbGroovyIsAuthError
+/**
+* @describe true if a Groovy/JDBC error message looks like a rejected login (cTREE "Invalid user id",
+*	MSSQL "Login failed", Postgres "password authentication failed", MySQL "Access denied for user", ...)
+* @param msg string - error message from the Groovy server
+* @return boolean
+* @exclude - internal helper for dbGroovyQueryResults
+* @usage if(dbGroovyIsAuthError($msg)){...}
+*/
+function dbGroovyIsAuthError($msg){
+	return preg_match('/invalid user ?id|login failed|password authentication failed|access denied for user|invalid (user ?name|password)|authentication failed/i',(string)$msg) ? true : false;
+}
+//---------- begin function dbGroovyConfigChangedSinceReload
+/**
+* @describe true (and records it) when config.xml was modified after the last credential-triggered Groovy reload.
+*	The stamp file php/temp/wasql-groovy-authreload.stamp holds the config.xml mtime seen at that reload.
+* @param tempDir string - php/temp path
+* @return boolean
+* @exclude - internal helper for dbGroovyQueryResults
+* @usage if(dbGroovyConfigChangedSinceReload($tempDir)){...reload...}
+*/
+function dbGroovyConfigChangedSinceReload($tempDir){
+	$cfgfile='';
+	foreach(array(getWasqlPath('php').'/config.xml',getWasqlPath().'/config.xml') as $cfile){
+		if(is_file($cfile)){$cfgfile=$cfile;break;}
+	}
+	if(!strlen($cfgfile)){return false;}
+	clearstatcache(true,$cfgfile);
+	$mtime=(int)filemtime($cfgfile);
+	$stamp=rtrim($tempDir,'/\\').DIRECTORY_SEPARATOR.'wasql-groovy-authreload.stamp';
+	$last=is_file($stamp) ? (int)trim((string)@file_get_contents($stamp)) : 0;
+	if($mtime <= $last){return false;}
+	@file_put_contents($stamp,(string)$mtime);
+	return true;
 }
 //---------- begin function dbGroovyMeta
 /**
@@ -6706,7 +6748,10 @@ function addDBRecord($params=array()){
     		$vals[]="'".json_encode($tvals,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE)."'";
     	}
     }
-    $fieldstr=implode(",",$fields);
+    //bug #2: quote real columns (reserved-word names like rank/order/cursor broke the insert)
+    $qfields=array();
+    foreach($fields as $field){$qfields[]=databaseQuoteColumn($field,$info);}
+    $fieldstr=implode(",",$qfields);
     $valstr=implode(",",$vals);
     $table=$params['-table'];
     if(isMssql()){$table="[{$table}]";}
@@ -6738,10 +6783,11 @@ function addDBRecord($params=array()){
 			$flds=array();
 			
 			foreach($upserts as $k=>$v){
+				$qk=databaseQuoteColumn($k,$info);
 				switch(strtolower($k)){
-					case '_edate':$flds[]="{$k}=now()";break;
-					case '_euser':$flds[]="{$k}={$euser}";break;
-					default:$flds[]="{$k}=new.{$k}";break;
+					case '_edate':$flds[]="{$qk}=now()";break;
+					case '_euser':$flds[]="{$qk}={$euser}";break;
+					default:$flds[]="{$qk}=new.{$qk}";break;
 				}
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
@@ -6752,10 +6798,11 @@ function addDBRecord($params=array()){
 			$query.=PHP_EOL." ON DUPLICATE KEY UPDATE";
 			$flds=array();
 			foreach($upserts as $k=>$v){
+				$qk=databaseQuoteColumn($k,$info);
 				switch(strtolower($k)){
-					case '_edate':$flds[]="{$k}=now()";break;
-					case '_euser':$flds[]="{$k}={$euser}";break;
-					default:$flds[]="{$k}=VALUES({$k})";break;
+					case '_edate':$flds[]="{$qk}=now()";break;
+					case '_euser':$flds[]="{$qk}={$euser}";break;
+					default:$flds[]="{$qk}=VALUES({$qk})";break;
 				}
 			}
 			$query.=PHP_EOL.implode(', ',$flds);
@@ -8579,6 +8626,8 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 	foreach($params as $key=>$val){
 		//skip keys that begin with a dash
 		if(preg_match('/^\-/',$key)){continue;}
+		//bug #2: quote a real column (reserved-word names like rank/order/cursor broke the update)
+		$qkey=databaseQuoteColumn($key,$info);
 		//ignore params that do not match a field
 		if(!isset($info[$key]['_dbtype'])){
 			if(isset($params["{$key}_field"])){
@@ -8624,7 +8673,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 			}
 		}
 		elseif(!is_array($val) && preg_match('/^<sql>(.+)<\/sql>$/i',$val,$pm)){
-			array_push($updates,"{$key}={$pm[1]}");
+			array_push($updates,"{$qkey}={$pm[1]}");
 			}
 		else{
 			$noticks=0;
@@ -8708,7 +8757,7 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 						$val='NULL';
 					}
 				}
-				array_push($updates,"{$key}=$val");
+				array_push($updates,"{$qkey}=$val");
 			}
 			else{
 				//echo "[{$key}]".printValue($val)."\n".PHP_EOL;
@@ -8726,13 +8775,13 @@ function editDBRecord($params=array(),$id=0,$opts=array()){
 					}
 				}
 				if($val=='NULLDATE' || $val=='NULL'){
-					array_push($updates,"{$key}=NULL");
+					array_push($updates,"{$qkey}=NULL");
 				}
 				elseif($noticks==1){
-					array_push($updates,"{$key}={$val}");
+					array_push($updates,"{$qkey}={$val}");
 				}
 				else{
-					array_push($updates,"{$key}='{$val}'");
+					array_push($updates,"{$qkey}='{$val}'");
 				}
 	        }
 	        //add sha and size if needed
@@ -11221,12 +11270,14 @@ function getDBQuery($params=array()){
     //if($params['-table']=='events_data' && count($loopfields)>1){echo printValue($loopfields);exit;}
     $fields=array();
     foreach ($loopfields as $field){
-		array_push($fields,$field);
+		//bug #2: a real column whose name is a reserved word (cursor, rank, order...) broke the whole select
+		$qfield=databaseQuoteColumn($field,$info);
+		array_push($fields,$qfield);
 		//add timestamp unless $params['-notimestamp'] is set
 		if(!isset($params['-notimestamp']) && isset($info[$field]['_dbtype'])){
 			if(preg_match('/^(datetime|date|timestamp)$/i',$info[$field]['_dbtype'])){
 				if(isMysqli() || isMysql()){
-					array_push($fields,'UNIX_TIMESTAMP('.$field.') as '.$field.'_utime');
+					array_push($fields,'UNIX_TIMESTAMP('.$qfield.') as '.$field.'_utime');
 				}
 				elseif(isPostgreSQL()){
 					array_push($fields,$field.'::abstime::int4 as '.$field.'_utime');
@@ -11238,7 +11289,7 @@ function getDBQuery($params=array()){
 			}
 			elseif(preg_match('/^time$/i',$info[$field]['_dbtype'])){
 				if(isMysqli() || isMysql()){
-					array_push($fields,'TIME_TO_SEC('.$field.') as '.$field.'_seconds');
+					array_push($fields,'TIME_TO_SEC('.$qfield.') as '.$field.'_seconds');
 				}
 				elseif(isMssql()){
 					//MS SQL Unix_timestamp equivilent: select datediff(s, '19700101', <fieldname>)
@@ -11262,6 +11313,25 @@ function getDBQuery($params=array()){
     if(isset($params['-offset'])){$query .= ' offset '.$params['-offset'];}
     //if($params['-table']=='events_data' && count($loopfields)>1){echo printValue($loopfields).$query;exit;}
     return $query;
+}
+//---------- begin function databaseQuoteColumn--------------------
+/**
+* @describe backtick-quotes a column name for the generated MySQL SELECT/WHERE in getDBQuery/getDBWhere, so a
+*	column named with a reserved word (cursor, rank, order, key, range, system...) no longer turns every
+*	getDBRecord(s) read of the table into a silent empty result (bug #2). Deliberately narrow: only on MySQL
+*	(the only engine that reaches these builders), only a plain identifier, and only one that is a REAL column
+*	of the table - so expressions (count(*) as n), qualified names (a.b) and keywords pass through unchanged.
+* @param field string - column name
+* @param info array - getDBFieldInfo() of the table
+* @return string
+* @usage $qfield=databaseQuoteColumn($field,$info);
+*/
+function databaseQuoteColumn($field,$info){
+	if(!is_string($field) || !is_array($info)){return $field;}
+	if(!(isMysqli() || isMysql())){return $field;}
+	if(!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/',$field)){return $field;}
+	if(!isset($info[$field]) && !isset($info[strtolower($field)])){return $field;}
+	return "`{$field}`";
 }
 //---------- begin function getDBWhere--------------------
 /**
@@ -11289,6 +11359,7 @@ function getDBWhere($params,$info=array()){
 		if(!strlen(trim($params[$k]))){continue;}
         $params[$k]=str_replace("'","''",$params[$k]);
         $v=databaseEscapeString($params[$k]);
+        $qk=databaseQuoteColumn($k,$info);
         switch(strtolower($info[$k]['_dbtype'])){
         	case 'int':
         	case 'integer':
@@ -11296,11 +11367,11 @@ function getDBWhere($params,$info=array()){
         	case 'number':
         	case 'float':
         		if(isNum($v)){
-        			$ands[]="{$k}={$v}";
+        			$ands[]="{$qk}={$v}";
         		}
         	break;
         	default:
-        		$ands[]="{$k}='{$v}'";
+        		$ands[]="{$qk}='{$v}'";
         	break;
         } 
 	}
@@ -13123,7 +13194,8 @@ function isDBTable($table='',$force=0){
 	elseif(isMssql()){return mssqlIsDBTable($table,$force);}
 	global $databaseCache;
 	$table=strtolower($table);
-	if(isset($databaseCache['isDBTable'][$table])){return $databaseCache['isDBTable'][$table];}
+	//honor $force - a table created earlier in this request is otherwise still cached as missing
+	if(!$force && isset($databaseCache['isDBTable'][$table])){return $databaseCache['isDBTable'][$table];}
 	$databaseCache['isDBTable']=array();
 	$table_parts=preg_split('/\./', $table);
 	$dbname='';

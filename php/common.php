@@ -8747,20 +8747,21 @@ function renderView($view, $params=array(), $opts=array()){
 	if(!count($opts) && isset($params['-format'])){
         $opts=$params;
 	}
-	$view_code  = isset($VIEWS[$view]) ? $VIEWS[$view] : $VIEWS['_'.$view];
+	$view_code  = isset($VIEWS[$view]) ? $VIEWS[$view] : (isset($VIEWS['_'.$view]) ? $VIEWS['_'.$view] : null);
 	if($view_code == null) {
 		debugValue("renderView Error: There is no view named {$view}");
 		return '';
 	}
 	foreach($opts as $k=>$v){
-        if(!stringBeginsWith($k,'-') && !strlen($params[$k])){
-			if(strtolower($opts['-format'])=='email' && in_array($k,array('to','from','subject','inline','debug','attach','maildebug'))){continue;}
+        //bug #66: isset first - reading a missing key warns on PHP 8, and strlen(null)/strlen(array) is deprecated/fatal
+        if(!stringBeginsWith($k,'-') && (!isset($params[$k]) || (is_scalar($params[$k]) && !strlen((string)$params[$k])))){
+			if(isset($opts['-format']) && strtolower($opts['-format'])=='email' && in_array($k,array('to','from','subject','inline','debug','attach','maildebug'))){continue;}
 			$params[$k]=$v;
 		}
 	}
 	$view_code = removeViews($view_code);
 	$VIEW_PARAMS = $params;
-	$VIEW_KEY = $opts['-key'];
+	$VIEW_KEY = isset($opts['-key']) ? $opts['-key'] : null;
 	$alias = isset($opts['-alias']) ? " = $".$opts['-alias'] : "";
 	$view_data = '<?'."php\n".'global $VIEW_PARAMS;'.PHP_EOL;
 	$view_data .= 'global $USER;'.PHP_EOL;
@@ -8964,7 +8965,8 @@ function renderEach($view, $rows, $opts=array()){
 	foreach($rows as $key=>$params){
 		$opts['-key']=$key;
 		foreach($opts as $k=>$v){
-        	if(!stringBeginsWith($k,'-') && !strlen($params[$k])){$params[$k]=$v;}
+        	//bug #66: isset first - reading a missing key warns on PHP 8
+        	if(!stringBeginsWith($k,'-') && (!isset($params[$k]) || (is_scalar($params[$k]) && !strlen((string)$params[$k])))){$params[$k]=$v;}
 		}
 		$rtn .= renderView($view, $params, $opts);
 	}
@@ -10587,6 +10589,34 @@ function evalPHPCloseTrailingBlock($str){
 	debugValue("evalPHP: closed an unterminated final PHP block in the controller of page '{$name}' - add the closing tag to the field");
 	return rtrim($str).PHP_EOL.$close;
 }
+//---------- begin function evalPHPThrowableMessage
+/**
+* @describe formats an Error/Exception caught by evalPHP into the same "PHP Uncaught Error" block gracefulShutdown prints,
+*	and writes it to the PHP error log so cron/CLI runs still leave a trace.
+* @param $throwable Throwable - the caught error
+* @return string - html error block to show in place of the failed island
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @usage echo evalPHPThrowableMessage($e);
+*/
+function evalPHPThrowableMessage($throwable){
+	$label=($throwable instanceof \ParseError) ? 'PHP Syntax Error' : 'PHP Uncaught Error';
+	$error=array(
+		'type'=>get_class($throwable),
+		'message'=>str_replace("\\",'/',$throwable->getMessage()),
+		'file'=>str_replace("\\",'/',$throwable->getFile()),
+		'line'=>$throwable->getLine(),
+		'trace'=>$throwable->getTraceAsString()
+	);
+	if(preg_match('/^Call to undefined function (.+?)\(\)/',$error['message'],$m)){
+		$error['solution']="{$m[1]}() is not defined - is the PHP extension that provides it installed, or does it need loadExtras()?";
+	}
+	if(strpos(strtolower($error['file']),'/php/temp/') !== false){
+		$link="/php/admin.php?_menu=tempfiles&func=view_file&AjaxRequestUniqueId=123456&line={$error['line']}&file=".getFileName($error['file']);
+		$error['link']='<a target="_blank" href="'.$link.'">Goto file</a>';
+	}
+	error_log("evalPHP caught {$error['type']}: {$error['message']} in {$error['file']}:{$error['line']}");
+	return "<b>{$label}:</b><br>".PHP_EOL.printValue($error);
+}
 //---------- begin function evalPHP
 /**
 * @describe
@@ -10774,8 +10804,20 @@ function evalPHP($__ep_strings){
 			//	a syntax error throws ParseError at compile time, before any statement runs, either way.
 			{
 				@trigger_error('');
-				$__ep_val=@eval($__ep_evalcode);
+				//an Error/Exception thrown by island code (undefined function, TypeError, ParseError...) used to escape
+				//	evalPHP uncaught and kill the request (fatal / 255 exit / Server Unavailable). Catch it here, render
+				//	the error in place of this island (after any output it already echoed), and keep going.
+				try{
+					$__ep_val=@eval($__ep_evalcode);
+				}
+				catch(\Throwable $__ep_throwable){
+					echo evalPHPThrowableMessage($__ep_throwable);
+					$__ep_val='';
+				}
 				if(is_null($__ep_val)){$__ep_val='';}
+				//a block that returns a non-string (<?= of an array/bool/number) - stringify it here: trim() below
+				//	is a TypeError on PHP 8 for an array. Same encoding the output branch below already uses.
+				if(!is_string($__ep_val)){$__ep_val=json_encode($__ep_val,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);}
 				$__ep_ob=(ob_get_level() > 0) ? ob_get_contents() : "";
 				if(ob_get_level() > 0){ob_clean();}
 				if(strlen(trim($__ep_ob)) && strlen(trim($__ep_val))){
@@ -16620,6 +16662,22 @@ function getRemoteEnv(){
 	$xml .= '<env>'.PHP_EOL;
 	return $xml;
 }
+//---------- begin function commonCurlConnectTimeout--------------------
+/**
+* @describe default cURL CONNECT timeout in seconds for WaSQL's HTTP helpers: $CONFIG['curl_connect_timeout'],
+*	else 30. Without one, curl waits its built-in 300s on an unreachable host (a trigger that posted to a dead
+*	URL hung ~300s per save). Only the connect phase - total transfer timeouts are unchanged, so long downloads
+*	still work. A per-call -timeout_connect still wins.
+* @return int
+* @usage curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, commonCurlConnectTimeout());
+*/
+function commonCurlConnectTimeout(){
+	global $CONFIG;
+	if(isset($CONFIG['curl_connect_timeout']) && (int)$CONFIG['curl_connect_timeout'] > 0){
+		return (int)$CONFIG['curl_connect_timeout'];
+	}
+	return 30;
+}
 //---------- begin function getRemoteFileInfo--------------------
 /**
 * @describe returns an array of information about a remote (url based) file based on the header information returned
@@ -16629,6 +16687,8 @@ function getRemoteEnv(){
 */
 function getRemoteFileInfo($url){
 	$ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, commonCurlConnectTimeout());
+    curl_setopt($ch, CURLOPT_TIMEOUT, 120);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
@@ -16900,6 +16960,43 @@ function getStoredValue($evalstr, $force=0, $hrs=1, $debug=0, $serialize=1){
         }
     }
 }
+// ---------- begin function getCachedValueProducerKey ----------
+/**
+* @describe builds a cache key for a non-string getCachedValue producer that is stable ACROSS requests.
+*	It used to be spl_object_hash(), which is unique per object instance - a closure is a new object every
+*	request, so a closure producer never hit the cache. A closure is now keyed on where it is defined (file,
+*	start/end line) plus its bound use() variables, so the same closure with the same inputs shares a key.
+*	Exception: closures defined in eval'd islands (controller/body) still don't cache - put them in functions.
+*	Other callables (named function string arrays, [class,method]) are keyed on their name.
+* @param $producer mixed - callable producer
+* @return string
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @usage $key=getCachedValueProducerKey(function() use ($id){ return slowThing($id); });
+*/
+function getCachedValueProducerKey($producer){
+	if($producer instanceof \Closure){
+		try{
+			$ref=new \ReflectionFunction($producer);
+			$file=(string)$ref->getFileName();
+			//a closure defined in an eval'd island (controller/body) reports the same pseudo-file for every island
+			//	and page, so file+line could collide with a different closure - don't share a key; no caching
+			//	(the old behavior). Closures in page functions live in php/temp/{host}_php_{md5}.php and are unique.
+			if(stripos($file,"eval()'d code")!==false){return spl_object_hash($producer);}
+			$key='closure|'.$file.'|'.$ref->getStartLine().'|'.$ref->getEndLine();
+			$vars=$ref->getStaticVariables();
+			if(count($vars)){
+				try{$key.='|'.serialize($vars);}
+				catch(\Throwable $e){$key.='|'.json_encode($vars,JSON_PARTIAL_OUTPUT_ON_ERROR);}
+			}
+			return $key;
+		}
+		catch(\Throwable $e){
+			return spl_object_hash($producer);
+		}
+	}
+	if(is_callable($producer,true,$name)){return 'callable|'.$name;}
+	return var_export($producer,true);
+}
 // ---------- begin function getCachedValue (fast/safer) ----------
 /**
  * Sets or returns a previously set stored value. Values persist like sessions but across users.
@@ -16938,7 +17035,7 @@ function getCachedValue(
     $namespace = $namespace ?? 'gsv';
 
     // normalize producer and key
-    $producerKey = is_string($producer) ? $producer : (is_callable($producer) ? spl_object_hash((object)$producer) : var_export($producer, true));
+    $producerKey = is_string($producer) ? $producer : getCachedValueProducerKey($producer);
     $key = hash('sha256', $namespace . '|' . $producerKey);
 
     // --- APCu fast path
@@ -20824,7 +20921,7 @@ function loadExtrasJs($extras){
 	foreach($extras as $extra){
 		switch(strtolower($extra)){
         	case 'angularjs':
-        		if($CONFIG['minify_js']){
+        		if(!empty($CONFIG['minify_js'])){
         			$extra='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js';
 				}
 				else{
@@ -22397,7 +22494,7 @@ function postURL($url,$params=array()) {
 		unset($params['-noguid']);
 	}
 	if(!isset($params['-timeout'])){$params['-timeout']=3600;}
-	if(!isset($params['-timeout_connect'])){$params['-timeout_connect']=600;}
+	if(!isset($params['-timeout_connect'])){$params['-timeout_connect']=commonCurlConnectTimeout();}
 	//Build data stream from params
 	$query=array();
 	foreach($params as $key=>$val){
@@ -22721,10 +22818,9 @@ function postBody($url='',$body='',$params=array()) {
 		//$rtn['_debug'][]='set user agent to' . $params['-user_agent'];
 		curl_setopt($process, CURLOPT_USERAGENT, $params['-user_agent']);
 	}
-	//timeout_connect?
-	if(isset($params['-timeout_connect'])){
-		curl_setopt($process, CURLOPT_CONNECTTIMEOUT, $params['-timeout_connect'] );
-	}
+	//timeout_connect - default commonCurlConnectTimeout() (curl's own default is 300s)
+	if(!isset($params['-timeout_connect'])){$params['-timeout_connect']=commonCurlConnectTimeout();}
+	curl_setopt($process, CURLOPT_CONNECTTIMEOUT, $params['-timeout_connect'] );
 	//timeout?
 	if(isset($params['-timeout'])){
 		curl_setopt($process, CURLOPT_TIMEOUT, $params['-timeout']);
@@ -26459,6 +26555,7 @@ function wget($url,$localfile='',$params=array()){
 	// make sure to set timeout to a high enough value
 	// if this is too low the download will be interrupted
 	curl_setopt($ch, CURLOPT_TIMEOUT, 1200);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, commonCurlConnectTimeout());
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 	//in a protected directory
@@ -26501,7 +26598,8 @@ function getRemoteImage($remote_url, $target){
 		CURLOPT_FILE => $fp,
 		CURLOPT_HEADER => 0,
 		CURLOPT_FOLLOWLOCATION => 1,
-		CURLOPT_TIMEOUT => 600); // 5 minute timeout
+		CURLOPT_CONNECTTIMEOUT => commonCurlConnectTimeout(),
+		CURLOPT_TIMEOUT => 600); // 10 minute timeout
 	curl_setopt_array($ch, $options);
 	curl_exec($ch);
 	curl_close($ch);

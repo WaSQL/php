@@ -121,6 +121,31 @@ foreach($checkhosts as $env){
 		break;
 	}
 }
+//command-line bootstrap (cron.php, cron_worker.php, cron_scheduler.php, backup.php, dbclean.php): those scripts set
+//	HTTP_HOST='localhost' only so this file loads, then loop over every host themselves. Without a <host name="localhost">
+//	entry that used to abort with "missing dbname attribute in config.xml for 'localhost'". On the CLI, with no host
+//	matched, fall back to the first host that has a dbname (prefer one with cron="1") for the bootstrap connection.
+if(!strlen($chost) && php_sapi_name()==='cli' && isset($_SERVER['HTTP_HOST']) && strtolower($_SERVER['HTTP_HOST'])=='localhost'){
+	$cli_fallback='';
+	foreach(array(1,0) as $cli_wantcron){
+		foreach($ConfigXml as $cli_name=>$cli_host){
+			$cli_dbname=isset($cli_host['dbname']) ? $cli_host['dbname'] : '';
+			if(!strlen($cli_dbname) && isset($cli_host['sameas']) && isset($ConfigXml[$cli_host['sameas']]['dbname'])){
+				$cli_dbname=$ConfigXml[$cli_host['sameas']]['dbname'];
+			}
+			if(!strlen($cli_dbname) && isset($allhost['dbname'])){$cli_dbname=$allhost['dbname'];}
+			if(!strlen($cli_dbname)){continue;}
+			if($cli_wantcron==1 && (!isset($cli_host['cron']) || $cli_host['cron']!=1)){continue;}
+			$cli_fallback=$cli_name;
+			break 2;
+		}
+	}
+	if(strlen($cli_fallback)){
+		$chost=$cli_fallback;
+		$CONFIG['_source']='cli_fallback';
+	}
+	unset($cli_fallback,$cli_wantcron,$cli_name,$cli_host,$cli_dbname);
+}
 //allhost, then sameas, then chost
 foreach($allhost as $key=>$val){
 	$CONFIG[$key]=$val;

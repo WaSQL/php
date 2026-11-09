@@ -317,15 +317,11 @@ function minifyFiles($path,$names){
 			);
 			continue;
 		}
-		if($CONFIG['minify_css'] && is_file("{$path}/{$name}.min.css")){
+		if(!empty($CONFIG['minify_css']) && is_file("{$path}/{$name}.min.css")){
 			$file=realpath("{$path}/{$name}.min.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}
-		elseif($CONFIG['minify_css'] && is_file("{$path}/{$name}/{$name}.min.css")){
-			$file=realpath("{$path}/{$name}/{$name}.min.css");
-			if(!in_array($file,$files)){$files[]=$file;}
-		}
-		elseif($CONFIG['minify_css'] && is_file("{$path}/{$name}/{$name}.min.css")){
+		elseif(!empty($CONFIG['minify_css']) && is_file("{$path}/{$name}/{$name}.min.css")){
 			$file=realpath("{$path}/{$name}/{$name}.min.css");
 			if(!in_array($file,$files)){$files[]=$file;}
 		}

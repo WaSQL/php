@@ -831,7 +831,7 @@ function minifyCssFile($v=''){
 		'extras'=>$_SESSION['w_MINIFY']['extras_css'],
 		'tid'=>$TEMPLATE['_id'],
 		'pid'=>$PAGE['_id'],
-		'min'=>(int)$CONFIG['minify_css']
+		'min'=>(int)($CONFIG['minify_css'] ?? 0)
 	);
 	if(isset($_SESSION['w_MINIFY']['cssfiles'][0])){
 		$css['cssfiles']=$_SESSION['w_MINIFY']['cssfiles'];
@@ -851,7 +851,7 @@ function minifyCssFile($v=''){
 	$afile="{$docroot}/w_min/{$hash}_css.json";
 	setFileContents($afile,$csstr);
 	$_SESSION['w_MINIFY']['css_filename']="minify_{$prefix}_{$hash}.css";
-	return "/w_min/minify_{$prefix}_{$hash}.css";
+	return "/w_min/minify_{$prefix}_{$hash}.css?v=".minifyGenerationToken($prefix);
 }
 //---------- begin function minifyJsFile ----
 /**
@@ -940,7 +940,7 @@ function minifyJsFile($v=''){
 		'extras'=>$_SESSION['w_MINIFY']['extras_js'],
 		'tid'=>$TEMPLATE['_id'],
 		'pid'=>$PAGE['_id'],
-		'min'=>(int)$CONFIG['minify_js']
+		'min'=>(int)($CONFIG['minify_js'] ?? 0)
 	);
 	if(isset($_SESSION['w_MINIFY']['jsfiles'][0])){
 		$js['jsfiles']=$_SESSION['w_MINIFY']['jsfiles'];
@@ -962,7 +962,29 @@ function minifyJsFile($v=''){
 	$afile="{$docroot}/w_min/{$hash}_js.json";
 	setFileContents($afile,$jstr);
 	$_SESSION['w_MINIFY']['js_filename']="minify_{$prefix}_{$hash}.js";
-	return "/w_min/minify_{$prefix}_{$hash}.js";
+	return "/w_min/minify_{$prefix}_{$hash}.js?v=".minifyGenerationToken($prefix);
+}
+/**
+* @describe returns a cache-busting token for this site's w_min bundle URLs. The bundle URL hash only describes
+*	WHICH template/page/files are bundled, not their content, so after a css/js edit the URL stayed the same and
+*	browsers kept a cached copy (gotcha: edits invisible until the cache was disabled). The token lives in
+*	w_min/{prefix}.gen; minifyCleanMin() (run on every _pages/_templates edit, PostEdit included) and
+*	wasqlClearMinCache() delete it, so the next request writes a new one and the URL changes.
+* @param prefix string - the site prefix used in the bundle file names
+* @return string
+* @exclude  - this function is for internal use only- excluded from docs
+* @usage $url="/w_min/minify_{$prefix}_{$hash}.css?v=".minifyGenerationToken($prefix);
+*/
+function minifyGenerationToken($prefix){
+	$docroot=$_SERVER['DOCUMENT_ROOT'];
+	$gfile="{$docroot}/w_min/{$prefix}.gen";
+	if(is_file($gfile)){
+		$token=trim((string)@file_get_contents($gfile));
+		if(strlen($token)){return $token;}
+	}
+	$token=str_replace('.','',sprintf('%.4F',microtime(true)));
+	@file_put_contents($gfile,$token);
+	return $token;
 }
 /**
 * @exclude  - this function is for internal use only- excluded from docs

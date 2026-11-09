@@ -1152,7 +1152,7 @@ ENDOFQUERY;
 		debugValue(array(
 			'function'=>'postgresqlAddDBRecord',
 			'message'=>'connect failed',
-			'error'=>pg_last_error(),
+			'error'=>postgresqlConnectError(),
 			'query'=>$query,
 			'params'=>$params
 		));
@@ -1421,6 +1421,7 @@ function postgresqlDBConnect(){
 	}
 	global $dbh_postgresql;
 	//if(commonIsResourceOrObject($dbh_postgresql)){return $dbh_postgresql;}
+	$GLOBALS['postgresql_connect_error']='';
 	set_error_handler('postgresExceptionErrorHandler');
 	try{
 		$dbh_postgresql = pg_connect($params['-connect']);
@@ -1452,6 +1453,9 @@ function postgresqlDBConnect(){
 	}
 	restore_error_handler();
 	if(!commonIsResourceOrObject($dbh_postgresql)){
+		//keep the reason for postgresqlConnectError() - pg_last_error() cannot be asked without a connection
+		$reason=isset($err) ? $err : 'unable to connect';
+		$GLOBALS['postgresql_connect_error']=preg_replace('/password\s*=\s*\S+/i','password=*****',(string)$reason);
 		return '';
 	}
 	//set log_error_verbosity for better error messages
@@ -1586,7 +1590,7 @@ ENDOFQUERY;
 		debugValue(array(
 			'function'=>'postgresqlEditDBRecord',
 			'message'=>'connect failed',
-			'error'=>pg_last_error(),
+			'error'=>postgresqlConnectError(),
 			'query'=>$query
 		));
     	return;
@@ -1598,7 +1602,7 @@ ENDOFQUERY;
 		debugValue(array(
 			'function'=>'postgresqlEditDBRecord',
 			'message'=>'pg_prepare failed',
-			'error'=>pg_last_error(),
+			'error'=>pg_last_error($dbh_postgresql),
 			'query'=>$query
 		));
 		pg_close($dbh_postgresql);
@@ -1621,6 +1625,18 @@ ENDOFQUERY;
 	pg_close($dbh_postgresql);
 	return $recs;
 }
+//---------- begin function postgresqlConnectError ----------
+/**
+* @describe returns why the last postgresqlDBConnect() failed. Use it instead of a bare pg_last_error() on the
+*	connect-failed path: with no connection, pg_last_error() throws "No PostgreSQL connection opened yet" on PHP 8
+*	and turns a reportable failure into a fatal. Any password= in the message is masked.
+* @return string
+* @usage if(!$dbh_postgresql){$err='connect failed: '.postgresqlConnectError();}
+*/
+function postgresqlConnectError(){
+	$err=isset($GLOBALS['postgresql_connect_error']) ? trim((string)$GLOBALS['postgresql_connect_error']) : '';
+	return strlen($err) ? $err : 'unable to connect';
+}
 //---------- begin function postgresqlExecuteSQL ----------
 /**
 * @describe executes a query and returns without parsing the results
@@ -1642,7 +1658,7 @@ function postgresqlExecuteSQL($query,$return_error=1){
 
 	$dbh_postgresql=postgresqlDBConnect();
 	if(!$dbh_postgresql){
-		$DATABASE['_lastquery']['error']='connect failed: '.pg_last_error();
+		$DATABASE['_lastquery']['error']='connect failed: '.postgresqlConnectError();
 		debugValue($DATABASE['_lastquery']);
 		if($return_error==1){return $DATABASE['_lastquery'];}
 		return 0;
