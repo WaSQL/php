@@ -82,9 +82,13 @@ The user usually has Chrome open on the page being edited; after a save they can
 
 The watcher mirrors DB→disk on startup and then watches the files it wrote. A record field that was `NULL`/empty when it synced produces **no file**, and PostEdit has no idea that field exists — so **creating that file yourself does nothing**: the file sits on disk unsynced and a `wamcp` query shows the column still empty. (Verified: a brand-new `…_pages.css.6.css` never reached the DB, while an edit to an already-mirrored file synced within seconds.)
 
+> **Fixed 2026-11-09 (tracker #82):** a watcher started from the current `postedit.php` adopts a new file for a field that was empty at mirror time, provided it is named exactly `{name}.{table}.{field}.{id}.{ext}` and another field of the same record is already mirrored. A watcher started from an older `postedit.php`, and a whole page created mid-session, still need the workarounds below.
+
 So when you have new `_pages`/`_templates` records created for you, ask for a **placeholder in every field you intend to use** (`<!-- stub -->`, `//stub`, `.stub{}`) before the watcher starts. If you discover a missing field mid-session: put a stub in it via the admin UI (the running watcher pulls the change down and creates the file), then edit the file. Restarting the watcher also works, but remember it re-syncs destructively.
 
 ### ⚠️ `css`/`js` edits need the `w_min` bundle busted (a page `?cb=1` does NOT do it)
+
+> **Fixed in core 2026-11-09 (tracker #77).** Bundle URLs now end in `?v=<token>`; any `_pages`/`_templates` save (PostEdit included — verified on localhost, the save DID run `minifyCleanMin()`) changes the token, so the next page load requests a new URL and gets fresh css/js with no manual steps. Everything below still applies to **sites running an older core** — check whether the live `<link>` href carries `?v=`.
 
 A page's own `css`/`js` fields are compiled into a hashed minified bundle (`/w_min/minify_<a>_<b>.css` / `.js`), **not inlined**. Two caches sit in front of your edit and a cache-buster on the *page* URL defeats neither:
 

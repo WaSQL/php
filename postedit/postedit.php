@@ -183,7 +183,11 @@ function checkForChanges(){
 		$afile=$file['afile'];
 		$idx=preg_replace('/\//',"\\",$afile);
 		if(!isset($postedit['md5sha'][$idx])){
-			continue;
+			//a field that was EMPTY at mirror time has no file and no hash, so a file created for it later used to be
+			//	ignored forever (it never reached the DB). Adopt it if it is clearly a PostEdit field file of a record
+			//	we already mirror - posteditAdoptNewFile() checks - registering the hash of empty content, which is
+			//	exactly what the server compares against for an empty field.
+			if(!posteditAdoptNewFile($afile,$idx)){continue;}
 		}
 		$md5sha=$file['md5'].$file['sha'];
 		if($postedit['md5sha'][$idx] != $md5sha){
@@ -196,6 +200,40 @@ function checkForChanges(){
 	if(count($results)){
 		posteditAnnounce($results);
 	}
+	return true;
+}
+/**
+* @describe decides whether an unindexed file in the mirror is a new PostEdit field file for a field that was empty
+*	when the mirror was written, and if so registers it with the hash of empty content so checkForChanges posts it.
+*	Strict on purpose - editor backups, swap files and stray files must never be posted:
+*	exactly {name}.{table}.{field}.{id}.{ext}, no leading dot, numeric id, an extension PostEdit itself writes,
+*	and another field of the SAME record (same name, table and id) already mirrored.
+* @param afile string - absolute file path
+* @param idx string - md5sha index key for the file
+* @return boolean - true if adopted
+* @usage if(!posteditAdoptNewFile($afile,$idx)){continue;}
+*/
+function posteditAdoptNewFile($afile,$idx){
+	global $postedit;
+	$filename=getFileName($afile);
+	if(substr($filename,0,1)=='.'){return false;}
+	$parts=preg_split('/\./',$filename);
+	if(count($parts)!=5){return false;}
+	list($fname,$table,$field,$id,$ext)=$parts;
+	if(!strlen($fname) || !preg_match('/^_?[a-z0-9_]+$/i',$table) || !preg_match('/^[a-z0-9_]+$/i',$field) || !preg_match('/^[0-9]+$/',$id)){return false;}
+	if(!in_array(strtolower($ext),array('html','php','js','css','json','py','sql','txt','xml','md','rb','pl','sh','lua','ps1','vbs','r','groovy'))){return false;}
+	//a sibling field of the same record must already be mirrored (proves the record is ours)
+	$prefix=strtolower("{$fname}.{$table}.");
+	$suffix=strtolower(".{$id}.");
+	$sibling=false;
+	foreach($postedit['md5sha'] as $kidx=>$ksha){
+		$kname=strtolower(getFileName($kidx));
+		if(strpos($kname,$prefix)===0 && strpos($kname,$suffix)!==false){$sibling=true;break;}
+	}
+	if(!$sibling){return false;}
+	//the server compares _md5sha with the hash of the field's current content - empty for this field
+	$postedit['md5sha'][$idx]=md5('').sha1('');
+	echo PHP_EOL."  new field file: {$filename}";
 	return true;
 }
 function fileChanged($afile){
