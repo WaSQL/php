@@ -64,7 +64,10 @@ function wamcpRemoteSql($conf, $sql, $format = 'json') {
         'offset'              => 0,
         '_menu'               => 'sqlprompt',
         'AjaxRequestUniqueId' => 'wamcp',
-        'sql_full'            => $sql,
+        // double every backslash and say so (bug #71): older cores always stripslashes() sql_full,
+        // newer cores only when bs_escaped=1 - either way the remote sees exactly this SQL
+        'bs_escaped'          => 1,
+        'sql_full'            => str_replace('\\', '\\\\', $sql),
         '-nossl'              => 1,
         '-follow'             => 1,
         '-timeout'            => 120,
@@ -260,7 +263,8 @@ function wamcpGetToolsList() {
                     'maxrows'  => array('type' => 'integer', 'description' => 'Max rows to return (default 50)'),
                     'maxchars' => array('type' => 'integer', 'description' => 'Max output characters (default 4000)'),
                     'maxcell'  => array('type' => 'integer', 'description' => 'Max characters per cell before truncation (default 2000)'),
-                    'all'      => array('type' => 'boolean', 'description' => 'Return the full result, ignoring the caps above (default false)')
+                    'all'      => array('type' => 'boolean', 'description' => 'Return the full result, ignoring the caps above (default false)'),
+                    'timeout'  => array('type' => 'integer', 'description' => 'Server-side statement timeout in seconds (default 120, or the db wamcp_timeout / config wamcp_query_timeout). Postgres and MySQL/MariaDB cancel the query on the database when it expires, so a slow query does not keep running after the tool gives up.')
                 ),
                 'required'   => array('sql')
             )
@@ -394,7 +398,8 @@ function wamcpDispatchTool($name, $args, $db_id) {
                 isset($args['maxrows'])  ? (int)$args['maxrows']  : 50,
                 isset($args['maxchars']) ? (int)$args['maxchars'] : 4000,
                 isset($args['maxcell'])  ? (int)$args['maxcell']  : 2000,
-                !empty($args['all'])
+                !empty($args['all']),
+                isset($args['timeout'])  ? (int)$args['timeout']  : 0
             );
         case 'schema':
             return wamcpToolSchema(
@@ -682,7 +687,83 @@ function wamcpToolHelp() {
     return wamcpToolText(implode("\n", $lines));
 }
 
-function wamcpToolQuery($db_id, $sql, $maxrows = 50, $maxchars = 4000, $maxcell = 2000, $all = false) {
+/**
+ * Default server-side timeout (seconds) for a wamcp query: the database's wamcp_timeout attribute in
+ * config.xml, else $CONFIG['wamcp_query_timeout'], else 120.
+ * @param string $db_id
+ * @return int
+ * @usage $timeout = wamcpQueryTimeoutDefault($db_id);
+ */
+function wamcpQueryTimeoutDefault($db_id) {
+    global $CONFIG;
+    $db = wamcpGetDatabase($db_id);
+    if (is_array($db) && isset($db['wamcp_timeout']) && (int)$db['wamcp_timeout'] > 0) return (int)$db['wamcp_timeout'];
+    if (isset($CONFIG['wamcp_query_timeout']) && (int)$CONFIG['wamcp_query_timeout'] > 0) return (int)$CONFIG['wamcp_query_timeout'];
+    return 120;
+}
+
+/**
+ * Runs a read-only query with a SERVER-SIDE statement timeout, so a query the MCP client gave up on does not
+ * keep running on the database (it once blocked a purge on prod PDQ). Postgres: "SET statement_timeout = N; "
+ * prepended in the same pg_query call (the engine closes its connection after every call). MySQL: an optimizer hint
+ * /*+ MAX_EXECUTION_TIME(ms) * / on a leading SELECT. MariaDB: SET STATEMENT max_statement_time=N FOR ...
+ * Other engines run unchanged.
+ * @param string $db_id
+ * @param string $sql
+ * @param int $timeout - seconds
+ * @return array - ['rows'=>array|string, 'error'=>string]
+ * @usage $result = wamcpQueryRowsTimed($db_id, $sql, 120);
+ */
+function wamcpQueryRowsTimed($db_id, $sql, $timeout) {
+    global $DATABASE;
+    $db   = wamcpGetDatabase($db_id);
+    $type = is_array($db) && isset($db['dbtype']) ? strtolower($db['dbtype']) : '';
+    $ms   = max(1, (int)$timeout) * 1000;
+    if (in_array($type, array('postgres', 'postgresql'))) {
+        // same pg_query call as the query: the engine opens and pg_close()s a connection per call, so a separate
+        // SET would land on a different session. pg_query runs both and returns the last result; the setting
+        // dies with the connection, so there is nothing to reset. SELECT/WITH/EXPLAIN only (not SHOW/shortcuts).
+        if (preg_match('/^\s*(SELECT|WITH|EXPLAIN)\b/i', $sql)) {
+            $sql = "SET statement_timeout = {$ms}; " . ltrim($sql);
+        }
+    }
+    elseif (in_array($type, array('mysql', 'mysqli'))) {
+        $ver = dbQueryResults($db_id, 'SELECT VERSION() AS v');
+        $ver = (is_array($ver) && isset($ver[0]['v'])) ? $ver[0]['v'] : '';
+        if (stripos($ver, 'mariadb') !== false) {
+            if (preg_match('/^\s*(SELECT|WITH)\b/i', $sql)) {
+                $sql = 'SET STATEMENT max_statement_time=' . (int)$timeout . ' FOR ' . ltrim($sql);
+            }
+        }
+        elseif (strlen($ver)) {
+            $sql = preg_replace('/^\s*SELECT\b/i', 'SELECT /*+ MAX_EXECUTION_TIME(' . $ms . ') */', $sql, 1);
+        }
+    }
+    // clear the last-query record so dbLastError() can only report THIS query's error
+    unset($DATABASE['_last_'], $DATABASE['_lastquery']);
+    $error = '';
+    $rows  = wamcpQueryRows($db_id, $sql);
+    if (is_string($rows)) {
+        $error = $rows;
+    }
+    elseif (!is_array($rows) || empty($rows)) {
+        $error = function_exists('dbLastError') ? (string) dbLastError() : '';
+    }
+    return array('rows' => $rows, 'error' => $error);
+}
+
+/**
+ * Formats the time since $started (a microtime(true) value) for tool output: "850 ms" or "12.4 s".
+ * @param float $started
+ * @return string
+ * @usage $elapsed = wamcpElapsed($started);
+ */
+function wamcpElapsed($started) {
+    $ms = (microtime(true) - $started) * 1000;
+    return $ms < 1000 ? round($ms) . ' ms' : round($ms / 1000, 1) . ' s';
+}
+
+function wamcpToolQuery($db_id, $sql, $maxrows = 50, $maxchars = 4000, $maxcell = 2000, $all = false, $timeout = 0) {
     $keyword = strtoupper(preg_match('/^\s*(\w+)/', $sql, $m) ? $m[1] : '');
     $allowed = array('SELECT', 'SHOW', 'EXPLAIN', 'WITH', 'DESCRIBE', 'DESC');
     if (!in_array($keyword, $allowed)) {
@@ -693,9 +774,25 @@ function wamcpToolQuery($db_id, $sql, $maxrows = 50, $maxchars = 4000, $maxcell 
     if ($maxcell <= 0)  $maxcell  = 2000;
 
     try {
-        $rows = wamcpQueryRows($db_id, $sql);
+        $timeout = $timeout > 0 ? $timeout : wamcpQueryTimeoutDefault($db_id);
+        $started = microtime(true);
+        $result  = wamcpQueryRowsTimed($db_id, $sql, $timeout);
+        $rows    = $result['rows'];
+        $elapsed = wamcpElapsed($started);
+        // a failed db* SELECT returns an empty array, the same as "0 rows" - check the driver error
+        // before claiming success (a bad column name used to come back as "Query OK. No rows returned.")
+        if (is_string($rows) && strlen(trim($rows))) {
+            return wamcpToolError("Query failed ({$elapsed}): {$rows}");
+        }
         if (!is_array($rows) || empty($rows)) {
-            return wamcpToolText('Query OK. No rows returned.');
+            $err = trim((string) $result['error']);
+            if (strlen($err)) {
+                if (preg_match('/statement timeout|max_statement_time|maximum statement execution time|MAX_EXECUTION_TIME/i', $err)) {
+                    return wamcpToolError("Query cancelled on the server after {$timeout}s timeout ({$elapsed}). Narrow it, run EXPLAIN first, or pass a larger timeout. Driver said: {$err}");
+                }
+                return wamcpToolError("Query failed ({$elapsed}): {$err}");
+            }
+            return wamcpToolText("Query OK. No rows returned ({$elapsed}).");
         }
         $total = count($rows);
 
@@ -715,7 +812,7 @@ function wamcpToolQuery($db_id, $sql, $maxrows = 50, $maxchars = 4000, $maxcell 
 
         $shown   = $all ? $rows : array_slice($rows, 0, $maxrows);
         $cellCap = $all ? null : $maxcell;
-        $out     = $total . " rows returned.\n\n" . wamcpToMarkdownTable($shown, $cellCap);
+        $out     = $total . " rows returned ({$elapsed}).\n\n" . wamcpToMarkdownTable($shown, $cellCap);
 
         if (!$all) {
             $rowsCut  = $total > count($shown);
