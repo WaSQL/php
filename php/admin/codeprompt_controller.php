@@ -223,7 +223,8 @@
 			return;
 		break;
 		case 'code':
-			$code_full=stripslashes($_REQUEST['code_full']);
+			//only un-double backslashes when the client says it doubled them (bs_escaped=1) - see sqlpromptRequestText()
+			$code_full=(isset($_REQUEST['bs_escaped']) && (int)$_REQUEST['bs_escaped']==1)?stripslashes($_REQUEST['code_full']):$_REQUEST['code_full'];
 			$ok=codepromptSetValue($code_full);
 			$results=evalPHP($code_full);
 			setView('results',1);

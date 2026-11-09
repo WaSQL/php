@@ -32,7 +32,11 @@ def postToWaSQL(params, sql_full):
         'AjaxRequestUniqueId':'dasql.py',
         '_auth': params.get('authkey',''),
         '_menu': 'sqlprompt',
-        'sql_full':sql_full
+        #double every backslash and say so (bs_escaped=1): older WaSQL cores always stripslashes() sql_full,
+        #which un-doubles it; newer cores only stripslashes() when bs_escaped=1. Either way the server sees
+        #exactly what was typed - before this the SQL path sent backslashes undoubled and lost them.
+        'bs_escaped':1,
+        'sql_full':sql_full.replace('\\', '\\\\')
     }
     #WaSQL supports multiple authentication methods: set auth method based on params
     if 'apikey' in params:
@@ -194,8 +198,6 @@ else:
                 if _c.rstrip().endswith('?>'):
                     _c = _c.rstrip()[:-2]
                 remote_query = _c.strip()
-        #double backslashes so the server's stripslashes() doesn't eat them
-        remote_query = remote_query.replace('\\', '\\\\')
         output = postToWaSQL(params, remote_prefix+remote_query).replace('\r\n', '\n').replace('\r', '\n')
         if remote_prefix == 'cmd>':
             # reformat the single-line header "CMD: x, DIR: y, RUNTIME: z, RTNCODE: n" onto separate lines
@@ -486,9 +488,9 @@ else:
         #run PHP/python/lua code on the REMOTE WaSQL server (admins only), the same way a
         #.cli's cmd> runs a shell command there - the server evals the code server-side.
         #normalise "lang> code" -> "lang>code" so a space after > doesn't become a leading
-        #indent (which breaks python/lua). double backslashes so stripslashes() keeps escapes.
+        #indent (which breaks python/lua). backslash doubling is done in postToWaSQL().
         _m = re.match(r'(?is)^(php|py|lua)\>\s*(.*)$', params['query'])
-        remote_code = (_m.group(1).lower()+'>'+_m.group(2)).replace('\\', '\\\\')
+        remote_code = _m.group(1).lower()+'>'+_m.group(2)
         output = postToWaSQL(params, remote_code).replace('\r\n', '\n').replace('\r', '\n')
         print(output.rstrip())
     elif len(params['query']) > 0 and params['query'].lower().startswith(("running","fld","idx","help","commands","history","db","versions","grade","ddl","tables","fields","cal ","running_queries","sessions","views","indexes","kill ","uptime","memory","server","processes","df","top","mem","os","ps","explain","select","insert","update","delete","with","create","alter","drop","truncate","grant","revoke","comment","explain","analyze","describe","desc","show","use","set","reset","call","execute","exec","do","declare","fetch","copy","load","import","export","merge","lock","unload","begin","start transaction","start","commit","rollback","savepoint","release","end","reindex","pragma","vacuum","refresh","checkpoint")):

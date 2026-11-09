@@ -18,6 +18,85 @@ function sqlpromptQueryResults($dbname,$query,$params=array()){
 	}
 	return dbQueryResults($dbname,$query,$params);
 }
+//---------- begin function sqlpromptRequestText ----------
+/**
+* @describe Returns a SQL/code text field from $_REQUEST exactly as sent. Backslashes are only un-doubled
+*	(stripslashes) when the client says it doubled them by sending bs_escaped=1 - dasql.py does, so it works
+*	against both this and older cores that always stripslashes(). The browser UI does not, so a backslash in
+*	SQL (regex, E'\n', LIKE escapes) now survives instead of being silently eaten.
+* @param key string - $_REQUEST key (sql_full, sql_select, code_full)
+* @return string
+* @usage $sql_full=sqlpromptRequestText('sql_full');
+*/
+function sqlpromptRequestText($key){
+	if(!isset($_REQUEST[$key]) || !is_string($_REQUEST[$key])){return '';}
+	if(isset($_REQUEST['bs_escaped']) && (int)$_REQUEST['bs_escaped']==1){
+		return stripslashes($_REQUEST[$key]);
+	}
+	return $_REQUEST[$key];
+}
+//---------- begin function sqlpromptSplitStatements ----------
+/**
+* @describe Splits SQL on statement-ending semicolons, ignoring a ; inside quotes ('..', "..", `..`, [..]),
+*	-- line comments, block comments, and postgres dollar-quoted bodies ($$..$$, $tag$..$tag$).
+*	Returns segments WITHOUT the ; like preg_split('/;/') did, so segment N starts at the sum of the earlier
+*	segment lengths plus one per earlier ; - callers mapping a cursor position must add that 1.
+* @param sql string
+* @return array - list of statement strings
+* @usage $queries=sqlpromptSplitStatements($sql_full);
+*/
+function sqlpromptSplitStatements($sql){
+	$sql=(string)$sql;
+	$len=strlen($sql);
+	$parts=array();
+	$start=0;
+	$i=0;
+	while($i < $len){
+		$ch=$sql[$i];
+		$next=($i+1 < $len) ? $sql[$i+1] : '';
+		//line comment: -- (not #, which is an operator in postgres: jsonb #> and #>>)
+		if($ch=='-' && $next=='-'){
+			$eol=strpos($sql,"\n",$i);
+			$i=($eol===false) ? $len : $eol+1;
+			continue;
+		}
+		//block comment
+		if($ch=='/' && $next=='*'){
+			$close=strpos($sql,'*'.'/',$i+2);
+			$i=($close===false) ? $len : $close+2;
+			continue;
+		}
+		//quoted strings / identifiers - a doubled closing quote is an escaped quote
+		if($ch=="'" || $ch=='"' || $ch=='`' || $ch=='['){
+			$q=($ch=='[') ? ']' : $ch;
+			$i++;
+			while($i < $len){
+				if($sql[$i]=='\\' && $q!=']' && $q!='`'){$i+=2;continue;}
+				if($sql[$i]==$q){
+					if($q!=']' && $i+1 < $len && $sql[$i+1]==$q){$i+=2;continue;}
+					break;
+				}
+				$i++;
+			}
+			$i++;
+			continue;
+		}
+		//postgres dollar quote: $$ or $tag$
+		if($ch=='$' && preg_match('/\G\$([A-Za-z_][A-Za-z0-9_]*)?\$/',$sql,$m,0,$i)){
+			$tag=$m[0];
+			$close=strpos($sql,$tag,$i+strlen($tag));
+			$i=($close===false) ? $len : $close+strlen($tag);
+			continue;
+		}
+		if($ch==';'){
+			$parts[]=substr($sql,$start,$i-$start);
+			$start=$i+1;
+		}
+		$i++;
+	}
+	$parts[]=(string)substr($sql,$start);
+	return $parts;
+}
 //---------- begin function sqlpromptTestConnection ----------
 /**
 * @describe Tests whether a configured database connection is reachable by running a trivial

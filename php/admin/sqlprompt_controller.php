@@ -435,8 +435,8 @@
 		case 'explain':
 			$view='block_results';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
-			$sql_select=stripslashes($_REQUEST['sql_select']);
-			$sql_full=stripslashes($_REQUEST['sql_full']);
+			$sql_select=sqlpromptRequestText('sql_select');
+			$sql_full=sqlpromptRequestText('sql_full');
 			if(strlen($sql_select) && $sql_select != $sql_full){
 				$_SESSION['sql_last']=$sql_select;
 			}
@@ -515,8 +515,8 @@ ENDOFQUERY;
 		case 'sql':
 			$view='block_results';
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
-			$sql_select=stripslashes($_REQUEST['sql_select']);
-			$sql_full=stripslashes($_REQUEST['sql_full']);
+			$sql_select=sqlpromptRequestText('sql_select');
+			$sql_full=sqlpromptRequestText('sql_full');
 			if(strlen($sql_full)){
 				$prompt='sql_prompt_'.$db['name'];
 				$editor_content=$_REQUEST['editor_content'];
@@ -538,7 +538,7 @@ ENDOFQUERY;
 			else{
 				$_SESSION['sql_last']=$sql_full;
 				//run the query where the cursor position is
-				$queries=preg_split('/\;/',$sql_full);
+				$queries=sqlpromptSplitStatements($sql_full);
 				//echo printValue($queries);exit;
 				$cpos=$_REQUEST['cursor_pos'];
 				if(count($queries) > 1){
@@ -550,7 +550,7 @@ ENDOFQUERY;
 							$view='block_results';
 							break;
 						}
-						$p=$end;
+						$p=$end+1; //+1 for the ; the split removed
 					}
 				}
 				else{
@@ -1679,8 +1679,8 @@ ENDOFQUERY;
 			}
 
 			$_SESSION['sql_full']=$_REQUEST['sql_full'];
-			$sql_select=stripslashes($_REQUEST['sql_select']);
-			$sql_full=stripslashes($_REQUEST['sql_full']);
+			$sql_select=sqlpromptRequestText('sql_select');
+			$sql_full=sqlpromptRequestText('sql_full');
 			if(strlen($sql_select) && $sql_select != $sql_full){
 				$_SESSION['sql_last']=$sql_select;
 				$view='block_results';
@@ -1688,7 +1688,7 @@ ENDOFQUERY;
 			else{
 				$_SESSION['sql_last']=$sql_full;
 				//run the query where the cursor position is
-				$queries=preg_split('/\;/',$sql_full);
+				$queries=sqlpromptSplitStatements($sql_full);
 				//echo printValue($queries);exit;
 				$cpos=$_REQUEST['cursor_pos'];
 				if(count($queries) > 1){
@@ -1700,7 +1700,7 @@ ENDOFQUERY;
 							$view='block_results';
 							break;
 						}
-						$p=$end;
+						$p=$end+1; //+1 for the ; the split removed
 					}
 				}
 				else{
