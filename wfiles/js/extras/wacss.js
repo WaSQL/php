@@ -10,6 +10,8 @@ const wacss = {
 	//retry budget for the async chart.min.js load in initChartJs/initChartJsBehavior
 	chartjsWaits:0,
 	chartjsWaitsMax:20,
+	//lazy-load state for chart.min.js + plugins: '' (not started), 'loading', 'ready', 'failed' - see wacss.chartjsLoad
+	chartjsLib:'',
 	EOL: '\n',
 	CRLF: '\r\n',
 	hoverDiv:'',
@@ -465,6 +467,9 @@ const wacss = {
         		obj.processing.innerHTML=obj.processing.previous;
         	}
         	div.innerHTML = txt;
+        	//the old content's charts are gone from the DOM - destroy them so they don't leak, and so an
+        	//initChartJs() for the new content rebuilds a same-id chart instead of updating a dead canvas
+        	try{wacss.chartjsPrune();}catch(e){}
         	if(undefined != obj.recenter && obj.recenter.length > 0){
         		wacss.centerObject(obj.recenter);
         	}
@@ -480,6 +485,92 @@ const wacss = {
         	}
         } 
         wacss.initOnloads();
+        //wacss.init() only runs on page load, so charts in AJAX-loaded content were never built unless the
+        //fragment called wacss.initChartJs() itself. Build them now - after the onloads, and only if one is
+        //still unbuilt, so a fragment that already inits its own charts is not built twice.
+        try{
+        	if(undefined != div && undefined != div.querySelectorAll && wacss.chartjsHasUnbuilt(div)){
+        		wacss.initChartJs();
+        	}
+        }catch(e){}
+	},
+	/**
+	* @name wacss.chartjsLoad
+	* @describe lazy-loads Chart.js for initChartJs/initChartJsBehavior exactly once: chart.min.js first, then the
+	*	datalabels and doughnutlabel plugins from its onload (they need Chart defined when they run). Reports ready
+	*	only after both plugins have loaded (or failed), so no chart is built before the plugins register.
+	*	A page that already includes chart.min.js is ready immediately and nothing extra is loaded.
+	*	Callers retry on a timer while this returns false; repeat calls never append the scripts again.
+	* @return boolean - true when charts can be built now
+	* @usage if(!wacss.chartjsLoad()){setTimeout(retry,250);return false;}
+	*/
+	chartjsLoad: function(){
+		if(wacss.chartjsLib=='ready'){return true;}
+		if(wacss.chartjsLib=='' && typeof Chart !== 'undefined'){
+			wacss.chartjsLib='ready';
+			return true;
+		}
+		if(wacss.chartjsLib!=''){return false;}
+		wacss.chartjsLib='loading';
+		let path='/wfiles/js/extras/';
+		let add=function(file,done){
+			let script=document.createElement('script');
+			script.src=path+file;
+			script.async=false;
+			script.onload=function(){done(true);};
+			script.onerror=function(){done(false);};
+			document.head.appendChild(script);
+		};
+		add('chart.min.js',function(ok){
+			if(!ok || typeof Chart === 'undefined'){
+				wacss.chartjsLib='failed';
+				return;
+			}
+			let plugins=['chartjs-plugin-datalabels.min.js','chartjs-plugin-doughnutlabel.min.js'];
+			let pending=plugins.length;
+			let pluginDone=function(){
+				pending-=1;
+				if(pending<=0){wacss.chartjsLib='ready';}
+			};
+			for(let i=0;i<plugins.length;i++){add(plugins[i],pluginDone);}
+		});
+		return false;
+	},
+	/**
+	* @name wacss.chartjsPrune
+	* @describe destroys Chart.js instances in wacss.chartjs whose canvas is no longer in the document
+	*	(their content was replaced by an AJAX load) and removes them from wacss.chartjs.
+	* @return integer - number of charts destroyed
+	* @usage wacss.chartjsPrune();
+	*/
+	chartjsPrune: function(){
+		let cnt=0;
+		for(let id in wacss.chartjs){
+			let chart=wacss.chartjs[id];
+			let canvas=(undefined != chart && undefined != chart.canvas)?chart.canvas:null;
+			if(null != canvas && canvas.isConnected){continue;}
+			try{if(undefined != chart && typeof chart.destroy === 'function'){chart.destroy();}}catch(e){}
+			delete wacss.chartjs[id];
+			cnt+=1;
+		}
+		return cnt;
+	},
+	/**
+	* @name wacss.chartjsHasUnbuilt
+	* @describe true if the element contains a chartjs div that has no live chart yet
+	* @param mixed el DOM element or id to search in
+	* @return boolean
+	* @usage if(wacss.chartjsHasUnbuilt(div)){wacss.initChartJs();}
+	*/
+	chartjsHasUnbuilt: function(el){
+		el=wacss.getObject(el);
+		if(undefined == el || undefined == el.querySelectorAll){return false;}
+		let list=el.querySelectorAll('div.chartjs,div[data-behavior="chartjs"]');
+		for(let i=0;i<list.length;i++){
+			let chart=wacss.chartjs[list[i].id];
+			if(undefined == chart || undefined == chart.canvas || !chart.canvas.isConnected){return true;}
+		}
+		return false;
 	},
 	ajaxUniqueID: function(){
 		return "10000000000000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
@@ -4229,13 +4320,8 @@ const wacss = {
 			list=document.querySelectorAll('#'+chartid);
 		}
 		if(list.length==0){return false;}
-		//load Chart is it is not already loaded
-		if (typeof Chart === 'undefined') {
-				wacss.loadScript('/wfiles/js/extras/chart.min.js');
-			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
-			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
-		}
-		if (typeof Chart === 'undefined') {
+		//load Chart.js (once, then its plugins) if it is not already loaded - see wacss.chartjsLoad
+		if (!wacss.chartjsLoad()) {
 				//loadScript is async, so Chart is never defined on the call that requested
 				//it - come back once it has landed instead of silently drawing nothing
 				if(wacss.chartjsWaits < wacss.chartjsWaitsMax){
@@ -4609,13 +4695,8 @@ const wacss = {
 		wacss.initChartJsBehavior();
 		let list=document.querySelectorAll('div.chartjs,div[data-behavior="chartjs"]');
 		if(undefined==list || list.length==0){return false;}
-		//load Chart is it is not already loaded
-		if (typeof Chart === 'undefined') {
-				wacss.loadScript('/wfiles/js/extras/chart.min.js');
-			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-datalabels.min.js');
-			wacss.loadScript('/wfiles/js/extras/chartjs-plugin-doughnutlabel.min.js');
-		}
-		if (typeof Chart === 'undefined') {
+		//load Chart.js (once, then its plugins) if it is not already loaded - see wacss.chartjsLoad
+		if (!wacss.chartjsLoad()) {
 				//loadScript is async, so Chart is never defined on the call that requested
 				//it - come back once it has landed instead of silently drawing nothing
 				if(wacss.chartjsWaits < wacss.chartjsWaitsMax){
@@ -9864,6 +9945,14 @@ const wacss = {
 	setActiveTab: function(element){
 		element=wacss.getObject(element);
 		if(undefined == element){return false;}
+		//tab group: data-tab="1" (or any number) keeps the classic behavior - only siblings are cleared.
+		//data-tab="name" joins every [data-tab="name"] on the page into one group, so tabs split across
+		//several menu boxes (different parents) still leave only one item active.
+		let tabgroup=(undefined != element.dataset && undefined != element.dataset.tab)?String(element.dataset.tab).trim():'';
+		let groupActiveClass='';
+		if(tabgroup.length && !/^[0-9]+$/.test(tabgroup)){
+			groupActiveClass=wacss.setActiveTabGroupClear(tabgroup);
+		}
 		let parent = element.parentElement;
 	    let tagName = element.tagName.toLowerCase();
 	    let siblingSelector='';
@@ -9911,11 +10000,37 @@ const wacss = {
 	    let siblings = parent.querySelectorAll(siblingSelector);
 	    //determine the activeClassName by checking the siblings
 		let activeClassName = Array.from(siblings).some(el => el.classList.contains('is-active')) ? 'is-active' : 'active';
+		//the group clear above already removed the classes, so use the class it found
+		if(groupActiveClass.length){activeClassName=groupActiveClass;}
 		//remove any active classnames in any siblings
 		siblings.forEach(el => el.classList.remove(activeClassName));
 		//add the classname to the current element
 		element.classList.add(activeClassName);
 	    return false;
+	},
+	/**
+	* @name wacss.setActiveTabGroupClear
+	* @describe removes active/is-active from every tab in a named data-tab group, wherever it sits on the page.
+	*	For a tab anchor inside an li, the li is the tab (same rule as setActiveTab).
+	* @param string group - the data-tab value shared by the group
+	* @return string - the active class the group used ('is-active' or 'active'), or '' if none was active
+	* @usage <a data-tab="mainmenu" data-nav="/t/1/page/x" onclick="return wacss.nav(this);">X</a>
+	*/
+	setActiveTabGroupClear: function(group){
+		let found='';
+		let members=document.querySelectorAll('[data-tab]');
+		for(let i=0;i<members.length;i++){
+			if(String(members[i].dataset.tab).trim() !== group){continue;}
+			let tab=members[i];
+			if(tab.tagName.toLowerCase()=='a'){
+				let pli=wacss.getParent(tab,'li');
+				if(undefined != pli){tab=pli;}
+			}
+			if(tab.classList.contains('is-active')){found='is-active';}
+			else if(found=='' && tab.classList.contains('active')){found='active';}
+			tab.classList.remove('active','is-active');
+		}
+		return found;
 	},
 	/**
 	* @name wacss.setProcessingTimer
