@@ -738,7 +738,19 @@ function userOktaAuth(){
 function userDecodeLDAPAuth($user,$pass){
 	global $CONFIG;
 	loadExtras('ldap');
- 	$host=isset($CONFIG['authldap'])?$CONFIG['authldap']:$CONFIG['authldaps'];
+ 	//authldaps is the secure (ldaps://) form of authldap
+ 	$secure=0;
+ 	if(isset($CONFIG['authldap']) && strlen($CONFIG['authldap'])){
+ 		$host=$CONFIG['authldap'];
+ 	}
+ 	elseif(isset($CONFIG['authldaps']) && strlen($CONFIG['authldaps'])){
+ 		$host=$CONFIG['authldaps'];
+ 		$secure=1;
+ 	}
+ 	else{
+ 		$host='';
+ 	}
+ 	if(!empty($CONFIG['authldap_secure'])){$secure=1;}
  	if(!strlen($host)){
  		$ok=commonLogMessage('user',"userDecodeLDAPAuth Failed -no host. user {$user}");
  		$_REQUEST['_login_error']="userDecodeLDAPAuth Failed -no host";
@@ -752,6 +764,9 @@ function userDecodeLDAPAuth($user,$pass){
 	);
 	if(isset($CONFIG['authldap_domain'])){
     	$authopts['-domain']=$CONFIG['authldap_domain'];
+	}
+	if($secure){
+    	$authopts['-secure']=1;
 	}
 	if(isset($CONFIG['authldap_checkmemberof'])){
     	$authopts['-checkmemberof']=$CONFIG['authldap_checkmemberof'];
