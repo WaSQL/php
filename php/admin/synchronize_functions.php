@@ -224,7 +224,13 @@ function synchronizePost($load,$plain=0){
 		);
 	} 
 	//echo $plain.$_SESSION['sync_target_url'].printValue($postopts);exit;
-	$post=postURL($_SESSION['sync_target_url'],$postopts);
+	$target_url=$_SESSION['sync_target_url'];
+	//collect the secrets in this request so error output can mask them
+	$secrets=array();
+	if(isset($load['password'])){$secrets[]=$load['password'];}
+	if(isset($postopts['load'])){$secrets[]=$postopts['load'];}
+	if(isset($_SESSION['sync_target_auth'])){$secrets[]=$_SESSION['sync_target_auth'];}
+	$post=postURL($target_url,$postopts);
 	//echo printValue($load).printValue($postopts).$post['body'];exit;
 	if(isset($post['error'])){
 		foreach($_SESSION as $k=>$v){
@@ -232,7 +238,7 @@ function synchronizePost($load,$plain=0){
 				unset($_SESSION[$k]);
 			}
 		}
-		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
+		return array('error'=>$target_url.synchronizeMaskSecrets($post['error'],$secrets));
 	}
 	elseif(!strlen($post['body'])){
 		foreach($_SESSION as $k=>$v){
@@ -240,7 +246,7 @@ function synchronizePost($load,$plain=0){
 				unset($_SESSION[$k]);
 			}
 		}
-		return array('error'=>$_SESSION['sync_target_url'].printValue($post));
+		return array('error'=>$target_url.printValue(synchronizeMaskSecrets($post,$secrets)));
 	}
 	else{
 		//remove debug errors if they exist
@@ -272,11 +278,16 @@ function synchronizePost($load,$plain=0){
 						unset($_SESSION[$k]);
 					}
 				}
+				$post_body=synchronizeMaskSecrets($post['body'],$secrets);
 				return array(
 					'error'=>"Failed to decode response",
-					'post_body'=>"<xmp>{$post['body']}</xmp>",
+					'post_body'=>"<xmp>{$post_body}</xmp>",
 				);
 			}
+		}
+		//older target cores echo the submitted password back in their error response
+		if(isset($json['error'])){
+			$json=synchronizeMaskSecrets($json,$secrets);
 		}
 		return $json;
 	}
@@ -285,7 +296,43 @@ function synchronizePost($load,$plain=0){
 			unset($_SESSION[$k]);
 		}
 	}
-	return array('error'=>$_SESSION['sync_target_url'].'<br>'.json_encode($post));
+	return array('error'=>$target_url.'<br>'.json_encode(synchronizeMaskSecrets($post,$secrets)));
+}
+/**
+* @describe masks credentials in a synchronize request/response before it is shown in an error.
+*	Values under password/auth/load keys are replaced outright, and any known secret value
+*	(plus its url-encoded and json-escaped forms) is replaced wherever it appears in a string,
+*	which covers _postfields, headers_out (WaSQL-Auth) and curl_info.
+* @param data mixed - the postURL() result (or any string/array) to sanitize
+* @param secrets array - raw secret values to scrub (password, base64 load, auth token)
+* @return mixed - the same structure with secrets replaced by *****
+* @usage $safe=synchronizeMaskSecrets($post,array($load['password']));
+*/
+function synchronizeMaskSecrets($data,$secrets=array()){
+	$mask='*****';
+	if(is_array($data)){
+		foreach($data as $k=>$v){
+			if(is_string($k) && preg_match('/(pass|pwd|^_?auth$|^load$)/i',$k) && !is_array($v)){
+				$data[$k]=$mask;
+				continue;
+			}
+			$data[$k]=synchronizeMaskSecrets($v,$secrets);
+		}
+		return $data;
+	}
+	if(!is_string($data) || !strlen($data)){return $data;}
+	$finds=array();
+	foreach($secrets as $secret){
+		if(!is_string($secret) || !strlen($secret)){continue;}
+		$finds[]=urlencode($secret);
+		$finds[]=rawurlencode($secret);
+		$finds[]=trim(json_encode($secret),'"');
+		$finds[]=$secret;
+	}
+	$finds=array_unique($finds);
+	//replace longest first so an encoded form is not partially masked by a shorter one
+	usort($finds,function($a,$b){return strlen($b)-strlen($a);});
+	return str_replace($finds,$mask,$data);
 }
 function synchronizeGetChanges($tables){
 	global $USER;

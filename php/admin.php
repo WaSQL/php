@@ -120,7 +120,8 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 	switch(strtolower($json['func'])){
 		case 'auth':
 			if(!isUser()){
-				//$json['password']=preg_replace('/./','*',$json['password']);
+				//never echo the submitted password back (fixed-width mask so its length is not leaked either)
+				if(isset($json['password'])){$json['password']='*****';}
 				echo json_encode(array('error'=>"Login Failed",'user'=>$USER,'request'=>$json));
 				foreach($_SESSION as $k=>$v){
 					if(preg_match('/^(sync\_|git\_)/i',$k)){
@@ -130,7 +131,7 @@ if(isset($_REQUEST['_menu']) && (strtolower($_REQUEST['_menu'])=='synchronize' |
 				exit;
 			}
 			if(!isAdmin()){
-				$json['password']=preg_replace('/./','*',$json['password']);
+				if(isset($json['password'])){$json['password']='*****';}
 				echo json_encode(array('error'=>"auth: User '{$USER['username']}' is not an admin",'user'=>$USER,'request'=>$json));
 				foreach($_SESSION as $k=>$v){
 					if(preg_match('/^(sync\_|git\_)/i',$k)){
@@ -523,7 +524,12 @@ ENDOFQUERY;
 			//request to get sync changes
 			if(!isUser()){
 				//echo printValue($_REQUEST);exit;
-				echo base64_encode(json_encode(array('error'=>"Login Failed. Please try again.".printValue($_REQUEST))));
+				//mask credentials before echoing the request back
+				$request=$_REQUEST;
+				foreach($request as $rk=>$rv){
+					if(preg_match('/(pass|pwd|^_?auth$|^load$)/i',$rk)){$request[$rk]='*****';}
+				}
+				echo base64_encode(json_encode(array('error'=>"Login Failed. Please try again.".printValue($request))));
 				foreach($_SESSION as $k=>$v){
 					if(preg_match('/^(sync\_|git\_)/i',$k)){
 						unset($_SESSION[$k]);
