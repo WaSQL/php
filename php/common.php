@@ -599,17 +599,7 @@ function commonCronLog($msg,$echomsg=1,$field=''){
 	}
 	//echo "commonCronLog".printValue($cron);exit;
 	if(isset($cron['stop_now']) && $cron['stop_now']==1){
-		$editopts=array();
-		$editopts['run_result'].="processed stop_now action".PHP_EOL;
-		$editopts['stop_now']=0;
-		$editopts['running']=0;
-		$editopts['cron_pid']=0;
-		$editopts['cronlog_id']=0;
-		$run_memory=memory_get_usage();
-		$editopts['run_memory']=$run_memory;
-		$editopts['run_length']=microtime(true)-$CRONTHRU['start'];
-		$ok=editDBRecordById('_cron',$cron['_id'],$editopts);
-		exit;
+		commonCronProcessStopNow($cron);
 	}
 	if(!isset($cron['cronlog_id']) || !isNum($cron['cronlog_id'])){
 		if($echomsg==1){
@@ -680,9 +670,62 @@ function commonCronGetCronByPid(){
 	return getDBRecord(array(
 		'-table'=>'_cron',
 		'-where'=>"cron_pid={$cron_pid}",
-		'-fields'=>'_id,run_cmd,cron_pid,cronlog_id,stop_now',
+		'-fields'=>'_id,run_cmd,cron_pid,cronlog_id,stop_now,run_date',
 		'-nocache'=>1
 	));
+}
+//---------- begin function commonCronProcessStopNow
+/**
+* @describe honors stop_now=1 on the current cron: releases the _cron row (running, cron_pid,
+*	stop_now, cronlog_id all reset to 0), stamps the _cron_log footer, then exits the process.
+*	run_length is measured from the row's run_date (set by cron_worker when it claimed the run)
+*	using DB time on both ends, and clamped to the column range, so the UPDATE can never be
+*	rejected under STRICT_TRANS_TABLES. If the full UPDATE still fails, a minimal one releases the row.
+* @param cron array - the _cron record (needs _id; uses run_date, cronlog_id if present)
+* @return n/a - always exits
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage
+*	if($cron['stop_now']==1){commonCronProcessStopNow($cron);}
+*/
+function commonCronProcessStopNow($cron){
+	if(!isset($cron['_id']) || !isNum($cron['_id'])){exit;}
+	$current_time=getDBTime();
+	$run_length=0;
+	if(!empty($cron['run_date'])){
+		$started=strtotime($cron['run_date']);
+		$now=strtotime($current_time);
+		if($started && $now){$run_length=$now-$started;}
+	}
+	//_cron.run_length is float(10,2): keep it in range
+	if($run_length < 0 || $run_length > 99999999){$run_length=0;}
+	$editopts=array(
+		'stop_now'=>0,
+		'running'=>0,
+		'cron_pid'=>0,
+		'cronlog_id'=>0,
+		'run_memory'=>memory_get_usage(),
+		'run_length'=>$run_length
+	);
+	//close out the cron log so it does not look like it is still running
+	if(isset($cron['cronlog_id']) && isNum($cron['cronlog_id']) && $cron['cronlog_id'] > 0){
+		$footer=array(
+			'timestamp'=>$current_time,
+			'stop_now'=>1,
+			'message'=>'processed stop_now action'
+		);
+		$ok=editDBRecordById('_cron_log',$cron['cronlog_id'],array('footer'=>encodeJson($footer)));
+	}
+	$ok=editDBRecordById('_cron',$cron['_id'],$editopts);
+	if(!isNum($ok)){
+		debugValue(array('commonCronProcessStopNow _cron update failed - retrying minimal',$ok));
+		$ok=editDBRecordById('_cron',$cron['_id'],array(
+			'running'=>0,
+			'cron_pid'=>0,
+			'stop_now'=>0,
+			'cronlog_id'=>0
+		));
+	}
+	exit;
 }
 //---------- begin function commonCronCheckStopNow
 /**
@@ -699,16 +742,7 @@ function commonCronCheckStopNow($cron=array()){
 		return false;
 	}
 	if($cron['stop_now']==1){
-		$editopts=array();
-		$editopts['run_result'].="processed stop_now action".PHP_EOL;
-		$editopts['stop_now']=0;
-		$editopts['running']=0;
-		$editopts['cron_pid']=0;
-		$run_memory=memory_get_usage();
-		$editopts['run_memory']=$run_memory;
-		$editopts['run_length']=microtime(true)-$CRONTHRU['start'];
-		$ok=editDBRecordById('_cron',$rec['_id'],$editopts);
-		exit;
+		commonCronProcessStopNow($cron);
 	}
 }
 //---------- begin function commonCronPause

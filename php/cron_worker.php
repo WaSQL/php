@@ -213,7 +213,8 @@ ENDOFSQL;
 		cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, cronlog_id:{$cronrec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
 		$ok=cronLogUpdate(array('header'=>encodeJson($header)));
 		//start the job
-		$start=microtime(true);
+		//per-job timer for _cron.run_length ($starttime is the worker start / 60s loop budget)
+		$cron_job_start=microtime(true);
 		$CRONTHRU['cron_guid']=generateGUID();
 		if(strtolower($crontype)=='page'){
 	    	//cron is a page.
@@ -307,7 +308,7 @@ ENDOFSQL;
 		);
 		$ok=cronLogUpdate(array('footer'=>encodeJson($footer)));
     	
-		$run_length=microtime(true)-$starttime;
+		$run_length=microtime(true)-$cron_job_start;
 		$run_memory=memory_get_usage();
 		$eopts=array(
 			'running'		=> 0,
