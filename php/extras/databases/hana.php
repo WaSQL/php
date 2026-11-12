@@ -178,7 +178,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			debugValue(array(
 				'function'=>'hanaAddDBRecordsProcess',
 				'message'=>'hanaDBConnect error',
-				'error'=>odbc_errormsg(),
+				'error'=>hanaDBConnectError(),
 				'query'=>$query,
 				'params'=>$params
 			));
@@ -512,7 +512,7 @@ function hanaAddDBRecordsProcess($recs,$params=array()){
 			debugValue(array(
 				'function'=>'hanaAddDBRecordsProcess',
 				'message'=>'hanaDBConnect error',
-				'error'=>odbc_errormsg(),
+				'error'=>hanaDBConnectError(),
 				'query'=>$query,
 				'params'=>$params
 			));
@@ -1152,6 +1152,9 @@ ENDOFQUERY;
 	//set to a single so we can turn off autocommit
 	$params['-single']=1;
 	$conn=hanaDBConnect($params);
+	if(!$conn){
+		return array(hanaDBConnectError());
+	}
 	odbc_autocommit($conn, FALSE);
 	$result=odbc_exec($conn, $query);
 	if(commonIsResourceOrObject($result)){odbc_commit($conn);}
@@ -1365,13 +1368,18 @@ function hanaMaskConnectParams($params=array()){
 * 	[-dbuser] - username
 * 	[-dbpass] - password
 *   [-single] - if you pass in -single it will connect using odbc_connect instead of odbc_pconnect and return the connection
-* @return $dbh_hana resource - returns the odbc connection resource
+* @return $dbh_hana resource - returns the odbc connection resource, or false on failure.
+*	On failure the error is logged via debugValue and kept in global $hanaDBConnectError (see hanaDBConnectError()).
+*	Never echoes or exits - a CLI cron_worker must survive a failed connect so it can clear running/cron_pid.
 * @exclude  - this function is for internal use and thus excluded from the manual
-* @usage 
+* @usage
 *	loadExtras('hana');
 *	$dbh_hana=hanaDBConnect($params);
+*	if(!$dbh_hana){$error=hanaDBConnectError();}
 */
 function hanaDBConnect($params=array()){
+	global $hanaDBConnectError;
+	$hanaDBConnectError='';
 	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
 	$params=hanaParseConnectParams($params);
 	if(isset($params['-connect'])){
@@ -1381,9 +1389,9 @@ function hanaDBConnect($params=array()){
 		$connect_name=$params['-dbname'];
 	}
 	else{
-		$error="hanaDBConnect error: no dbname or connect param";
-		debugValue($error.printValue(commonScrubDBParams($params)));
-		return $error;
+		$hanaDBConnectError="hanaDBConnect error: no dbname or connect param";
+		debugValue($hanaDBConnectError.printValue(commonScrubDBParams($params)));
+		return false;
 	}
 	
 	//echo printValue($params);exit;
@@ -1398,15 +1406,15 @@ function hanaDBConnect($params=array()){
 			odbc_close($dbh_hana_single);
 		}
 		if(isset($params['-cursor'])){
-			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
+			$dbh_hana_single = @odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'],$params['-cursor'] );
 		}
 		else{
-			$dbh_hana_single = odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
+			$dbh_hana_single = @odbc_connect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 		}
 		if(!commonIsResourceOrObject($dbh_hana_single)){
-			$err=odbc_errormsg();
-			echo "hanaDBConnect single connect error:{$err}".printValue(hanaMaskConnectParams($params));
-			exit;
+			$hanaDBConnectError="hanaDBConnect single connect error:".odbc_errormsg();
+			debugValue($hanaDBConnectError.printValue(hanaMaskConnectParams($params)));
+			return false;
 		}
 		return $dbh_hana_single;
 	}
@@ -1430,18 +1438,33 @@ function hanaDBConnect($params=array()){
 				$dbh_hana = @odbc_pconnect($connect_name,$params['-dbuser'],$params['-dbpass'] );
 			}
 			if(!commonIsResourceOrObject($dbh_hana)){
-				$err=odbc_errormsg();
-				echo "hanaDBConnect error:{$err}".printValue(hanaMaskConnectParams($params));
-				exit;
+				$hanaDBConnectError="hanaDBConnect error:".odbc_errormsg();
+				debugValue($hanaDBConnectError.printValue(hanaMaskConnectParams($params)));
+				$dbh_hana=false;
+				return false;
 			}
 		}
 		return $dbh_hana;
 	}
-	catch (Exception $e) {
-		echo "hanaDBConnect exception" . printValue($e);
-		exit;
-
+	catch (Throwable $e) {
+		$hanaDBConnectError="hanaDBConnect exception: ".$e->getMessage();
+		debugValue($hanaDBConnectError.printValue(hanaMaskConnectParams($params)));
+		$dbh_hana=false;
+		return false;
 	}
+}
+//---------- begin function hanaDBConnectError ----------
+/**
+* @describe returns the error from the last failed hanaDBConnect() call ('' if it succeeded), falling back to odbc_errormsg()
+* @return string
+* @exclude  - this function is for internal use and thus excluded from the manual
+* @usage
+*	if(!$dbh_hana){$err=hanaDBConnectError();}
+*/
+function hanaDBConnectError(){
+	global $hanaDBConnectError;
+	if(isset($hanaDBConnectError) && strlen($hanaDBConnectError)){return $hanaDBConnectError;}
+	return odbc_errormsg();
 }
 //---------- begin function hanaIsDBTable ----------
 /**
@@ -1537,7 +1560,7 @@ function hanaExecuteSQL($query,$params=array()){
 		$dbh_hana=hanaDBConnect($params);
 	}
 	if(!$dbh_hana){
-		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
+		$DATABASE['_lastquery']['error']='connect failed: '.hanaDBConnectError();
 		debugValue($DATABASE['_lastquery']);
     	return 0;
 	}
@@ -1575,6 +1598,11 @@ function hanaExecuteSQL($query,$params=array()){
 				sleep(1);
 				$dbh_hana='';
 				$dbh_hana=hanaDBConnect($params);
+				if(!$dbh_hana){
+					$DATABASE['_lastquery']['error']='connect failed: '.hanaDBConnectError();
+					debugValue($DATABASE['_lastquery']);
+					return 0;
+				}
 				$success=0;
 				if(isset($params['-timeout']) && isNum($params['-timeout'])){
 					//sets the query to timeout after X seconds
@@ -1682,7 +1710,7 @@ function hanaAddDBRecord($params){
 ENDOFQUERY;
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
-    	$e=odbc_errormsg();
+    	$e=hanaDBConnectError();
     	debugValue(array("hanaAddDBRecord Connect Error",$e));
     	return "hanaAddDBRecord Connect Error".printValue($e);
 	}
@@ -1793,7 +1821,7 @@ ENDOFQUERY;
 		$dbh_hana=hanaDBConnect($params);
 	}
 	if(!$dbh_hana){
-    	$e=odbc_errormsg();
+    	$e=hanaDBConnectError();
     	debugValue(array("hanaEditDBRecord2 Connect Error",$e));
     	return;
 	}
@@ -1887,7 +1915,7 @@ function hanaReplaceDBRecord($params){
 ENDOFQUERY;
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
-    	$e=odbc_errormsg();
+    	$e=hanaDBConnectError();
     	debugValue(array("hanaReplaceDBRecord Connect Error",$e));
     	return;
 	}
@@ -2290,7 +2318,7 @@ function hanaGetDBCount($params=array()){
 function hanaQueryHeader($query,$params=array()){
 	$dbh_hana=hanaDBConnect($params);
 	if(!$dbh_hana){
-    	$e=odbc_errormsg();
+    	$e=hanaDBConnectError();
     	debugValue(array("hanaQueryHeader Connect Error",$e));
     	return;
 	}
@@ -2376,13 +2404,11 @@ function hanaQueryResults($query,$params=array()){
 	);
 	global $hanaStopProcess;
 	global $dbh_hana;
+	//hanaDBConnect reuses the pooled handle and retries once itself - do not call it twice (doubles failed auth attempts)
 	$dbh_hana=hanaDBConnect($params);
 	$starttime=microtime(true);
-	if(!commonIsResourceOrObject($dbh_hana)){
-		$dbh_hana=hanaDBConnect($params);
-	}
 	if(!$dbh_hana){
-		$DATABASE['_lastquery']['error']='connect failed: '.odbc_errormsg();
+		$DATABASE['_lastquery']['error']='connect failed: '.hanaDBConnectError();
 		debugValue($DATABASE['_lastquery']);
     	return array();
 	}
