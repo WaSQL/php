@@ -237,7 +237,14 @@ def queryResults(String query, Map params = [:]) {
 	// Ensure stdout uses UTF-8 so raw Unicode characters in JSON output are not
 	// corrupted to '?' when Groovy runs as a PHP subprocess on Linux.
 	// System.setOut is a JVM-global change and remains active for the caller's println.
-	System.setOut(new java.io.PrintStream(System.out, true, 'UTF-8'))
+	// Only ONCE per JVM: in the long-running Groovy server, re-wrapping on every query stacked one more
+	// PrintStream per call - stdout writes got slower and slower and would end in a StackOverflowError.
+	synchronized (System) {
+		if (System.getProperty('wasql.ctreedb.utf8out') == null) {
+			System.setOut(new java.io.PrintStream(System.out, true, 'UTF-8'))
+			System.setProperty('wasql.ctreedb.utf8out', '1')
+		}
+	}
 
 	def sql = null
 	def skipErrors = params.getOrDefault('skiperrors', false)
@@ -248,7 +255,10 @@ def queryResults(String query, Map params = [:]) {
 	// 10 minutes with no way to ask for longer. Callers pass querytimeout to override;
 	// note db.groovy copies the connection's config.xml attributes over params AFTER
 	// the caller's, so a querytimeout attribute on the <database> tag wins over both.
-	def queryTimeout = (params.getOrDefault('querytimeout', 600) as String) as Integer
+	// The Groovy server sets querytimeout from the caller's own timeout (X-WaSQL-Timeout) when the
+	// config does not, so a query PHP has stopped waiting for is cancelled instead of running on.
+	def qtRaw = params.querytimeout?.toString()?.trim()
+	def queryTimeout = qtRaw?.isInteger() ? (qtRaw as Integer) : 600
 
 	try {
 		// Connect
@@ -397,7 +407,10 @@ def queryResults(String query, Map params = [:]) {
 
 		} else {
 			// Return list of maps
-			def recs = []
+			// Streaming (Groovy server /query): params.rowsink takes each row as it is read (rowsink << rec) and sends it
+			// straight to the caller, so the result set is never held in memory. It also answers size(). Without it,
+			// rows collect in a list as before. Only used with format: 'list' (the server's own calls).
+			def recs = params.rowsink != null ? params.rowsink : []
 			def errorCount = 0
 			def consecutiveErrors = 0
 			def maxConsecutiveErrors = params.getOrDefault('maxerrors', 100) // Allow override, default 100

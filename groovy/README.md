@@ -104,7 +104,8 @@ All settings are controlled via environment variables. None are required — the
 | Variable | Default | Description |
 |---|---|---|
 | `WASQL_GROOVY_PORT` | `7070` | HTTP port the server listens on |
-| `WASQL_GROOVY_THREADS` | `32` | Max concurrent request handler threads |
+| `WASQL_GROOVY_THREADS` | `128` | Request handler threads. Generous on purpose: a request waiting for a connection slot holds one, so this must stay well above the connection caps. Idle threads exit after 60 s. When all are busy and 512 more requests are queued, extra requests run on one-off overflow threads (logged), never on the server's dispatcher thread |
+| `WASQL_GROOVY_CTREE_MAX_CONNECTIONS` | `16` | Default connection cap for **c-tree** databases (see *Connection caps*). Set it within your FairCom licence; a `max_connections` attribute on a `<database>` tag overrides it |
 | `WASQL_GROOVY_MAX_BODY_MB` | `16` | Max request body size in megabytes (protects against runaway SQL) |
 | `WASQL_GROOVY_IDLE_MINUTES` | `60` | Minutes of inactivity before auto-shutdown; `0` disables auto-shutdown |
 | `WASQL_GROOVY_TOKEN` | *(random UUID)* | Fix the auth token to a specific value (useful when a process supervisor restarts the server and PHP must not re-read a new token) |
@@ -123,7 +124,8 @@ On start the server logs its active configuration:
 ```
 [wasql-groovy] 11:56:21 Listening on 127.0.0.1:7070  PID 12345
 [wasql-groovy] 11:56:21 Token file: /var/www/wasql/php/temp/wasql-groovy-server.token
-[wasql-groovy] 11:56:21 Threads: 32  Queue: 512  Max body: 16 MB
+[wasql-groovy] 11:56:21 Threads: 128  Queue: 512  Max body: 16 MB
+[wasql-groovy] 11:56:21 Connection caps: ctree_remote_repl_groovy=16 (per caller 4)
 [wasql-groovy] 11:56:21 Auto-shutdown: 60 min idle
 [wasql-groovy] 11:56:21 Stuck-request report: after 5 min
 [wasql-groovy] 11:56:21 Log cap: /var/www/wasql/logs/groovy-server.log rolls at 10 MB (keeps the newest half)
@@ -142,22 +144,74 @@ Every request is tracked while it runs. Once a minute the watchdog logs any requ
 ```
 [wasql-groovy] 14:42:36 STUCK request on wasql-handler-3 for 6 min: /query/mydb | mydb: SELECT ... | state=RUNNABLE
         at ...the driver / socket frames it is blocked in...
-[wasql-groovy] 14:42:36 STUCK summary: 1 request(s) over 5 min | threads busy 1/32 | queued 0
+[wasql-groovy] 14:42:36 STUCK summary: 1 request(s) past their stuck threshold | threads busy 1/32 | queued 0
 ```
+
+When the caller sent its own timeout (`X-WaSQL-Timeout`, see below), the threshold for that request is the longer of the two, so a query that's expected to run 30 minutes isn't reported at 5. A request still running after its caller gave up is reported with `caller gave up after Ns - still running for nobody`.
 
 If the server stops answering, `grep STUCK logs/groovy-server.log` shows what each thread was blocked on, with no thread dump needed. The watchdog only reports; it never kills a request.
 
-### PHP query timeout
+### Query timeout (PHP ↔ server ↔ database)
 
-The PHP helper `dbGroovyQueryResults()` defaults to a **300-second** HTTP timeout. Override per-call with `-timeout`:
+`dbGroovyQueryResults()` waits **300 seconds** by default. Raise it per call with `-timeout`, or per connection with a `timeout` attribute on the `<database>` tag in `config.xml`. A per-call `-timeout` wins:
 
 ```php
-// Default — 300 seconds
+// Default — 300 seconds (or the connection's timeout="N")
 $recs = dbGroovyQueryResults('mydb', $sql);
 
-// Large export — 600 seconds
-$recs = dbGroovyQueryResults('mydb', $sql, ['-timeout' => 600]);
+// Long report — 30 minutes
+$recs = dbGroovyQueryResults('mydb', $sql, ['-timeout' => 1800]);
 ```
+```xml
+<database name="ctree_reports" dbtype="ctree" groovy="1" timeout="1800" ... />
+```
+
+PHP sends that number to the server as the `X-WaSQL-Timeout` header. The server then sets the JDBC statement's `querytimeout` a little lower (10%, between 1 and 10 s), so the database cancels a query the caller is no longer waiting for, rather than it running on. A `querytimeout` attribute on the `<database>` tag overrides this. Without the header (older PHP cores), the drivers keep their old behavior: ctree 600 s, CSV exports 600 s, other drivers' list queries unlimited.
+
+The server never shuts itself down for idleness while a query is running. If the caller hangs up before the reply is sent, the log says `client disconnected before the response was sent - request ran Ns, caller timeout was Ms`, and `/stats` counts it as a 499.
+
+A web page should not wait half an hour, because Apache/PHP-FPM proxy timeouts and browsers give up first. Run long queries from cron, or stream them to disk with `-filename`.
+
+### Streamed results (`X-WaSQL-Stream: 1`)
+
+A `/query` request carrying `X-WaSQL-Stream: 1` (which `dbGroovyQueryResults` sends) gets its rows streamed while they're read, rather than collected into one JSON document first. The server holds one row at a time, so a million-row result costs it no more memory than a five-row one.
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/x-ndjson; charset=UTF-8
+Transfer-Encoding: chunked
+
+{"tbl":"sys_chk_constrs","col":"owner","coltype":"nvarchar"}
+{"tbl":"sys_chk_constrs","col":"tblname","coltype":"nvarchar"}
+["end",2]
+```
+
+- One JSON object per line per row, using the same converters as a normal response (dates, NULLs, LOBs are unchanged).
+- Exactly one control line at the end, always a JSON **array**: `["end", rowCount]`, or `["error", "message"]` if the query failed after rows had already been sent. The caller must discard those rows. **No control line = the stream was cut off and is incomplete.**
+- An error before the first row is an ordinary `{"success":false,"error":"..."}` reply with a 4xx/5xx status.
+- If the caller hangs up, the next row write fails and the query stops right there. The log shows `client disconnected after N rows were sent`.
+- Without the header (curl by hand, older PHP cores) you get the classic `{"success":true,"data":[...]}` reply.
+
+On the PHP side, the rows from a stream are collected into the usual array, **except**:
+- `'-process'=>'functionName'`: each row is passed to `functionName($row)` as it arrives and nothing is kept, so any number of rows fits in memory. The return value is the row count, as on the native c-tree path. If the query fails part-way, rows already processed stay processed and an error string is returned.
+- Without `-process`/`-filename`, a result that brings the PHP request to 85% of `memory_limit` is stopped. The transfer is aborted, the server sees the hang-up and stops the query, and an error string names both options, instead of the page dying with *Allowed memory size exhausted*.
+
+### Connection caps
+
+FairCom licenses concurrent c-tree sessions, and every query opens one. Going over the licence fails **everyone's** queries with *Maximum users exceeded*. So the server allows only so many concurrent requests per database (`/query`, `/queryfile`, `/execute`, `/executeps`, `/meta`; `/eval` is not capped):
+
+```xml
+<database name="ctree_remote_repl_groovy" dbtype="ctree" groovy="1" max_connections="16" max_user_connections="4" ... />
+```
+
+| attribute | default | meaning |
+|---|---|---|
+| `max_connections` | c-tree: `WASQL_GROOVY_CTREE_MAX_CONNECTIONS` (16); other types: `0` = no cap | concurrent connections to this database |
+| `max_user_connections` | a quarter of `max_connections`, at least 1 | one caller's share, keyed by `X-WaSQL-User` + `X-WaSQL-Host`. **All cron/CLI scripts share the user `cli`.** |
+
+A request first waits for its caller's share, then for a free connection, both in arrival order. While it waits, `/status` shows it with a `phase` such as *waiting for a free connection to X (16 max, 3 waiting)*, and `slots` lists in-use/waiting per database. If no slot frees up before the caller's own timeout (or 300 s if it sent none), it gets **HTTP 503** with a plain message such as *Busy: all 16 connections to 'X' are in use (5 more requests waiting) - waited 290s*. Any wait over 5 s is logged. The time spent waiting comes out of the statement's `querytimeout`. Startup logs every cap (`Connection caps: ...`) so a wrong number shows up immediately.
+
+Drivers take part through `params.rowsink`: their list path starts with `def recs = params.rowsink != null ? params.rowsink : []`, so `recs << rec` sends the row on. A driver without that line still works: the server streams the list it returns, but it gets no memory saving.
 
 ---
 

@@ -11,6 +11,7 @@
  *   GET  /cancel?thread=     — cancel an in-flight request (aborts its JDBC connection, interrupts it)
  *   (these feed the WaSQL admin page Database > Groovy Manager and do not reset the idle timer)
  *   POST /query/{dbname}     — body = raw SQL        → queryResults → JSON
+ *                              (header X-WaSQL-Stream: 1 → rows streamed as NDJSON while read, see RowStream)
  *   POST /execute/{dbname}   — body = raw SQL        → executeSQL   → JSON
  *   POST /executeps/{dbname} — body = JSON { "query":"...", "args":{} }
  *   POST /eval               — body = raw Groovy script
@@ -37,7 +38,10 @@ import java.util.concurrent.atomic.AtomicLong
 // ── Shared state (@Field = Script instance field, visible from methods + threads) ──
 
 @Field int    PORT            = (System.getenv('WASQL_GROOVY_PORT')    ?: '7070').toInteger()
-@Field int    THREADS         = (System.getenv('WASQL_GROOVY_THREADS') ?: '32').toInteger()
+// Handler threads. Generous on purpose: a request waiting for a database connection slot (see withDbSlot) holds a
+// thread, so the pool must be big enough that those waits never delay quick queries, other databases or /status.
+// Idle threads exit after 60s, so a large number costs nothing while the server is quiet.
+@Field int    THREADS         = (System.getenv('WASQL_GROOVY_THREADS') ?: '128').toInteger()
 @Field int    MAX_BODY_MB     = (System.getenv('WASQL_GROOVY_MAX_BODY_MB') ?: '16').toInteger()
 @Field long   IDLE_TIMEOUT_MS = { def m = System.getenv('WASQL_GROOVY_IDLE_MINUTES'); m ? m.toLong() * 60_000L : 60L * 60_000L }()
 @Field String SCRIPT_DIR      = new File(getClass().protectionDomain.codeSource.location.path).parent
@@ -61,6 +65,14 @@ import java.util.concurrent.atomic.AtomicLong
 @Field long   STUCK_MS        = (System.getenv('WASQL_GROOVY_STUCK_MINUTES') ?: '5').toLong() * 60_000L
 // In-flight requests, keyed by the handler thread: [path, started, detail, reported]
 @Field def    INFLIGHT        = new java.util.concurrent.ConcurrentHashMap<Thread, Map>()
+// Database connection caps (see withDbSlot). Per <database> tag: max_connections="N" (0 = no cap) and
+// max_user_connections="N" (one caller's share). Defaults: c-tree is capped, because FairCom licenses concurrent
+// sessions and running out fails EVERYONE's queries; other database types are not capped unless configured.
+@Field int    DEFAULT_CTREE_MAX_CONN = (System.getenv('WASQL_GROOVY_CTREE_MAX_CONNECTIONS') ?: '16').toInteger()
+// how long a caller that sent no X-WaSQL-Timeout may wait for a connection slot before getting a "busy" error
+@Field long   SLOT_WAIT_DEFAULT_MS   = 300_000L
+@Field def    DB_SLOTS        = new java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.Semaphore>()
+@Field def    USER_SLOTS      = new java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.Semaphore>()
 
 @Field def DT_FMT   = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss')
 @Field def DATE_FMT = java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd')
@@ -455,6 +467,9 @@ void respondAs(HttpExchange ex, int code, String contentType, String body) {
     Thread.interrupted()
     // note the outcome on the in-flight entry for /stats (error text for failures)
     def entry = INFLIGHT[Thread.currentThread()]
+    // the caller already hung up (a handler's catch block answering the disconnect below) - nothing can be
+    // delivered, and the 499 + reason recorded when the disconnect was detected must not be overwritten
+    if (entry != null && entry.clientGone) return
     if (entry != null) {
         entry.code = code
         if (code >= 400) {
@@ -469,10 +484,142 @@ void respondAs(HttpExchange ex, int code, String contentType, String body) {
         }
     }
     byte[] b = body.getBytes('UTF-8')
-    ex.responseHeaders.set('Content-Type', contentType)
-    ex.sendResponseHeaders(code, b.length)
-    def os = ex.responseBody
-    try { os.write(b) } finally { os.close() }
+    try {
+        ex.responseHeaders.set('Content-Type', contentType)
+        ex.sendResponseHeaders(code, b.length)
+        def os = ex.responseBody
+        os.write(b)
+        os.close()
+    } catch (IOException ioe) {
+        // The caller closed the connection before the reply went out - almost always PHP's curl timeout
+        // (dbGroovyQueryResults -timeout) firing while the query was still running. Do NOT close the
+        // fixed-length stream in a finally: its close() throws "insufficient bytes written to stream",
+        // which used to replace this real cause in the log.
+        throw clientGone(ex, ioe, 'before the response was sent')
+    }
+}
+
+//---------- begin function clientGone
+/**
+* @describe records that the caller hung up (code 499 + reason on the in-flight entry, so respondAs sends nothing more and
+*	/stats counts it as a failure), closes the exchange, and returns an IOException whose message says what happened
+* @param params ex HttpExchange, ioe IOException, when string
+*	when: e.g. 'before the response was sent', 'after 1200 of the rows were sent'
+* @return object
+*	IOException to throw
+* @usage
+*	throw clientGone(ex, ioe, 'before the response was sent')
+*/
+IOException clientGone(HttpExchange ex, IOException ioe, String when) {
+    def entry = INFLIGHT[Thread.currentThread()]
+    long ranS = entry != null ? (System.currentTimeMillis() - (entry.started as long)).intdiv(1000) : -1L
+    int callerTimeout = entry != null ? ((entry.timeout ?: 0) as int) : 0
+    def msg = "client disconnected ${when} - request ran ${ranS}s"
+    msg += callerTimeout > 0 ? ", caller timeout was ${callerTimeout}s" : ''
+    msg += " (${ioe.class.simpleName}: ${ioe.message})"
+    if (entry != null) {
+        entry.clientGone = true
+        entry.code  = 499      // nginx's "client closed request" - counted as a failure in /stats
+        entry.error = msg.toString().take(300)
+    }
+    try { ex.close() } catch (Exception ignored) {}
+    return new IOException(msg.toString(), ioe)
+}
+
+//---------- begin class RowStream
+/**
+* @describe streams a query's rows to the caller as they are read, so the server never holds a result set in memory.
+*	Wire format (Content-Type application/x-ndjson, chunked): one JSON object per line per row, then exactly one
+*	control line, which is a JSON ARRAY so it can never be mistaken for a row:
+*	  ["end", rowCount]      the result is complete
+*	  ["error", "message"]   the query failed after rows were already sent - the caller must discard them
+*	A stream with no control line was cut off and is incomplete. Headers are only sent with the first row (or at
+*	finish), so an error before any row still gets a normal JSON error response with a 4xx/5xx status.
+*	Drivers use it through params.rowsink: their row loop's `recs << rec` lands in leftShift.
+* @usage
+*	def stream = new RowStream(ex, JSON, { IOException ioe, String when -> clientGone(ex, ioe, when) })
+*	drv.driver.queryResults(query, params + [format: 'list', rowsink: stream]); stream.finish()
+*/
+class RowStream {
+    final HttpExchange ex
+    final def json                // the server's JsonGenerator - same date/LOB/array conversion as a normal response
+    final Closure onGone          // (IOException, String when) -> IOException, see clientGone
+    OutputStream out = null
+    long count = 0
+    static final byte[] NL = [10] as byte[]
+
+    RowStream(HttpExchange ex, def json, Closure onGone) {
+        this.ex = ex
+        this.json = json
+        this.onGone = onGone
+    }
+    /** true once headers (and possibly rows) have gone out - after that, errors must go in-stream */
+    boolean isStarted() { out != null }
+    int size() { count as int }
+
+    private void start() {
+        ex.responseHeaders.set('Content-Type', 'application/x-ndjson; charset=UTF-8')
+        ex.sendResponseHeaders(200, 0)                       // 0 = chunked: length unknown until the last row
+        out = new BufferedOutputStream(ex.responseBody, 65536)
+    }
+    private void writeLine(Object value) {
+        try {
+            if (out == null) start()
+            out.write(json.toJson(value).getBytes('UTF-8'))
+            out.write(NL)
+        } catch (IOException ioe) {
+            // the caller hung up: stop the query now, instead of reading the rest of the result for nobody
+            throw onGone.call(ioe, count > 0 ? "after ${count} rows were sent".toString() : 'before the response was sent')
+        }
+    }
+    /** a driver's `recs << rec` */
+    RowStream leftShift(Object row) {
+        writeLine(row)
+        count++
+        return this
+    }
+    /** completes the stream with ["end", rowCount] */
+    void finish() {
+        writeLine(['end', count])
+        try { out.close() } catch (IOException ioe) { throw onGone.call(ioe, 'before the end of the result was sent') }
+    }
+    /** ends a started stream with ["error", message] - the caller discards any rows it already received */
+    void fail(String message) {
+        try {
+            if (out == null) start()
+            out.write(json.toJson(['error', message ?: 'unknown error']).getBytes('UTF-8'))
+            out.write(NL)
+            out.close()
+        } catch (IOException ignored) {
+            // the caller is gone as well - nothing more can be delivered
+        }
+    }
+}
+
+//---------- begin function callerTimeout
+/**
+* @describe applies the caller's own timeout (X-WaSQL-Timeout header, seconds) as the statement's querytimeout, just under it,
+*	so the database cancels a query the caller has stopped waiting for instead of running on for nobody. A querytimeout
+*	attribute on the database tag in config.xml wins. No header (older PHP cores) = params unchanged, driver defaults apply.
+* @param params params Map
+*	params: the driver params from resolveDriver (a private copy - safe to change)
+* @return map
+*	the same params map
+* @usage
+*	def result = drv.driver.queryResults(query, callerTimeout(drv.params) + [format: 'list'])
+*/
+Map callerTimeout(Map params) {
+    def entry = INFLIGHT[Thread.currentThread()]
+    int t = entry != null ? ((entry.timeout ?: 0) as int) : 0
+    if (t <= 0) return params
+    def configured = params.querytimeout?.toString()?.trim()
+    if (configured) return params
+    // only the time the caller has LEFT counts - waiting for a connection slot (withDbSlot) used some of it - minus a
+    // margin for connecting and sending the reply: 10% of the timeout, between 1 and 10 seconds
+    int margin = Math.min(10, Math.max(1, t.intdiv(10)))
+    int elapsed = ((System.currentTimeMillis() - (entry.started as long)).intdiv(1000)) as int
+    params.querytimeout = Math.max(1, t - elapsed - margin)
+    return params
 }
 
 //---------- begin function wrapOk
@@ -515,9 +662,112 @@ String wrapErr(String msg) {
 *	respond(ex, errorCode(e), wrapErr(e.message))
 */
 int errorCode(Exception e) {
+    if (e instanceof BusyException) return 503
     (e instanceof IllegalArgumentException
   || e instanceof java.sql.SQLSyntaxErrorException
   || e instanceof UnsupportedOperationException) ? 400 : 500
+}
+
+//---------- begin class BusyException
+/**
+* @describe thrown when a request could not get a database connection slot in time (withDbSlot) - answered with HTTP 503
+*/
+class BusyException extends RuntimeException {
+    BusyException(String msg) { super(msg) }
+}
+
+//---------- begin function dbSlotLimits
+/**
+* @describe connection caps for a database: [db: total concurrent connections (0 = no cap), user: one caller's share]
+*	from the max_connections / max_user_connections attributes on its database tag. c-tree defaults to
+*	DEFAULT_CTREE_MAX_CONN (env WASQL_GROOVY_CTREE_MAX_CONNECTIONS); other types are uncapped by default.
+*	A caller's share defaults to a quarter of the cap (at least 1).
+* @param params dbconf Map
+* @return map
+* @usage
+*	def caps = dbSlotLimits(DATABASE['mydb'])
+*/
+Map dbSlotLimits(Map dbconf) {
+    def raw = dbconf?.max_connections?.toString()?.trim()
+    boolean isCtree = (dbconf?.dbtype ?: '').toString().toLowerCase().startsWith('ctree')
+    int dbLimit = raw?.isInteger() ? Math.max(0, raw as int) : (isCtree ? DEFAULT_CTREE_MAX_CONN : 0)
+    if (dbLimit <= 0) return [db: 0, user: 0]
+    def rawUser = dbconf?.max_user_connections?.toString()?.trim()
+    int userLimit = rawUser?.isInteger() ? (rawUser as int) : Math.max(1, dbLimit.intdiv(4))
+    userLimit = Math.max(1, Math.min(userLimit, dbLimit))
+    return [db: dbLimit, user: userLimit]
+}
+
+//---------- begin function withDbSlot
+/**
+* @describe runs body while holding one of the database's connection slots, so no more than max_connections requests
+*	use that database at once (a FairCom c-tree licence counts concurrent sessions - running out fails everyone's
+*	queries). A caller first waits for its own share (max_user_connections) and then for a free connection, both in
+*	arrival order, so one person firing many queries cannot crowd out everyone else. If no slot frees up before the
+*	caller's own timeout (X-WaSQL-Timeout, else SLOT_WAIT_DEFAULT_MS) it throws BusyException (HTTP 503) with a clear
+*	message, instead of the caller timing out with no explanation. Uncapped databases run body straight away.
+* @param params dbname string, body Closure
+* @return mixed
+*	whatever body returns
+* @usage
+*	def rows = withDbSlot(dbname) { drv.driver.queryResults(query, callerTimeout(drv.params)) }
+*/
+def withDbSlot(String dbname, Closure body) {
+    def caps = dbSlotLimits(DATABASE[dbname] as Map)
+    if (caps.db <= 0) return body.call()
+    def entry = INFLIGHT[Thread.currentThread()]
+    String caller = "${entry?.user ?: 'anonymous'}@${entry?.host ?: ''}".toString()
+    // keyed by the limit too: when config.xml changes the cap (/reload), new requests get a fresh semaphore and
+    // the old one simply drains as its holders finish
+    def dbSem   = DB_SLOTS.computeIfAbsent("${dbname}|${caps.db}".toString()) { new java.util.concurrent.Semaphore(caps.db as int, true) }
+    def userSem = USER_SLOTS.computeIfAbsent("${dbname}|${caller}|${caps.user}".toString()) { new java.util.concurrent.Semaphore(caps.user as int, true) }
+    long now = System.currentTimeMillis()
+    int callerWait = entry != null ? ((entry.timeout ?: 0) as int) : 0
+    long started = entry != null ? (entry.started as long) : now
+    // give up a little before the caller does, so the "busy" answer still reaches it
+    long deadline = callerWait > 0 ? started + (callerWait - Math.min(10, Math.max(1, callerWait.intdiv(10)))) * 1000L
+                                   : now + SLOT_WAIT_DEFAULT_MS
+    long t0 = now
+    if (entry != null) entry.phase = "waiting for your turn on ${dbname} (max ${caps.user} at once per caller)".toString()
+    if (!userSem.tryAcquire(Math.max(0L, deadline - System.currentTimeMillis()), TimeUnit.MILLISECONDS)) {
+        if (entry != null) entry.phase = ''
+        throw new BusyException("Busy: you already have ${caps.user} queries running on '${dbname}' - waited ${(System.currentTimeMillis() - t0).intdiv(1000)}s for one of them to finish. Wait for those to complete, or raise max_user_connections on the <database> tag in config.xml.".toString())
+    }
+    try {
+        if (entry != null) entry.phase = "waiting for a free connection to ${dbname} (${caps.db} max, ${dbSem.queueLength} waiting)".toString()
+        if (!dbSem.tryAcquire(Math.max(0L, deadline - System.currentTimeMillis()), TimeUnit.MILLISECONDS)) {
+            throw new BusyException("Busy: all ${caps.db} connections to '${dbname}' are in use (${dbSem.queueLength} more requests waiting) - waited ${(System.currentTimeMillis() - t0).intdiv(1000)}s. Try again shortly; max_connections on the <database> tag in config.xml sets the cap (keep it within the database licence).".toString())
+        }
+        try {
+            long waited = System.currentTimeMillis() - t0
+            if (entry != null) { entry.phase = ''; entry.slot_wait_ms = waited }
+            if (waited >= 5000) log("Waited ${waited.intdiv(1000)}s for a ${dbname} connection slot (cap ${caps.db})${who()}")
+            return body.call()
+        } finally {
+            dbSem.release()
+        }
+    } finally {
+        if (entry != null) entry.phase = ''
+        userSem.release()
+    }
+}
+
+//---------- begin function slotStatus
+/**
+* @describe current connection-slot use per capped database, for /status: [db, max, in_use, waiting]
+* @return list
+* @usage
+*	slotStatus()
+*/
+List slotStatus() {
+    DB_SLOTS.collect { String key, sem ->
+        def parts = key.split('\\|')
+        int max = parts[1] as int
+        [db: parts[0], max: max, in_use: max - sem.availablePermits(), waiting: sem.queueLength]
+    }.findAll { s ->
+        // a semaphore left over from an older cap (config.xml changed) only matters while it still has holders
+        s.in_use > 0 || s.waiting > 0 || (DATABASE[s.db] != null && dbSlotLimits(DATABASE[s.db] as Map).db == s.max)
+    }.sort { it.db }
 }
 
 //---------- begin function checkAuth
@@ -580,9 +830,17 @@ def route(String path, Closure handler) {
         // who is calling - sent by PHP's dbGroovyHttp (blank for callers that do not send them)
         entry.user     = cleanIdentity(ex.requestHeaders.getFirst('X-WaSQL-User'), 64)
         entry.host     = cleanIdentity(ex.requestHeaders.getFirst('X-WaSQL-Host'), 100)
+        // how long the caller will wait, in seconds (PHP's -timeout, sent by dbGroovyQueryResults; 0 = not sent).
+        // Drives the statement querytimeout (callerTimeout) and when the watchdog calls the request stuck.
+        def callerWait = (ex.requestHeaders.getFirst('X-WaSQL-Timeout') ?: '').trim()
+        entry.timeout  = callerWait.isInteger() ? Math.max(0, callerWait as int) : 0
+        entry.clientGone = false
         INFLIGHT[t] = entry
         try { handler.call(ex) } finally {
             INFLIGHT.remove(t)
+            // a long query counts as activity until it ENDS - otherwise a 50-minute query leaves only 10 minutes
+            // of the 60-minute idle window, and the server could shut down right under the caller's next request
+            if (path in WORK_ENDPOINTS) lastActivity.set(System.currentTimeMillis())
             try { recordStats(entry, System.currentTimeMillis() - (entry.started as long)) } catch (Exception ignored) {}
         }
     } as com.sun.net.httpserver.HttpHandler)
@@ -880,20 +1138,41 @@ void reportStuckRequests() {
     int stuck = 0
     INFLIGHT.each { Thread t, Map e ->
         long ms = now - (e.started as long)
-        if (ms < STUCK_MS) return
+        if (ms < stuckThresholdMs(e)) return
         stuck++
         if (e.reported) return
         e.reported = true
+        int callerWait = (e.timeout ?: 0) as int
         def sb = new StringBuilder()
         sb << "STUCK request on ${t.name} for ${ms / 60000 as long} min: ${e.path}${who(e)}"
+        // past the caller's own timeout = the caller has already given up; the result can no longer be delivered
+        if (callerWait > 0) sb << " | caller gave up after ${callerWait}s - still running for nobody"
+        if (e.phase) sb << " | ${e.phase}"
         if (e.detail) sb << " | ${e.detail}"
         sb << " | state=${t.state}"
         filteredStack(t, 25).each { sb << "\n        at ${it}" }
         log(sb.toString())
     }
     if (stuck > 0 && poolRef != null) {
-        log("STUCK summary: ${stuck} request(s) over ${STUCK_MS / 60000 as long} min | threads busy ${poolRef.activeCount}/${poolRef.maximumPoolSize} | queued ${poolRef.queue.size()}")
+        log("STUCK summary: ${stuck} request(s) past their stuck threshold | threads busy ${poolRef.activeCount}/${poolRef.maximumPoolSize} | queued ${poolRef.queue.size()}")
     }
+}
+
+//---------- begin function stuckThresholdMs
+/**
+* @describe how long a request may run before the watchdog reports it stuck: the caller's own timeout (X-WaSQL-Timeout)
+*	when it sent one and that is longer than STUCK_MS, otherwise STUCK_MS - so a query a caller expects to run 30 minutes
+*	is not reported at 5, but one still running after its caller gave up always is
+* @param params e Map
+*	e: the in-flight entry
+* @return integer
+*	milliseconds
+* @usage
+*	if (ms >= stuckThresholdMs(e)) ...
+*/
+long stuckThresholdMs(Map e) {
+    long callerMs = ((e.timeout ?: 0) as long) * 1000L
+    return Math.max(STUCK_MS, callerMs)
 }
 
 //---------- begin function trimLogIfNeeded
@@ -1017,12 +1296,24 @@ def threadFactory = { Runnable r ->
     t.contextClassLoader = scriptCL
     return t
 } as java.util.concurrent.ThreadFactory
+// When every thread is busy AND the queue is full, the request runs on a one-off overflow thread. It must NOT use
+// CallerRunsPolicy (as it used to): the "caller" is the HttpServer's single dispatcher thread, so one 30-minute query
+// run there stopped the server accepting ANY request - /ping and /status included - until it finished.
+def overflowCount = new java.util.concurrent.atomic.AtomicInteger(0)
+def overflowPolicy = { Runnable r, java.util.concurrent.ThreadPoolExecutor p ->
+    def t = new Thread(r, "wasql-overflow-${overflowCount.incrementAndGet()}")
+    t.contextClassLoader = scriptCL
+    t.daemon = true
+    log("Thread pool full (${p.maximumPoolSize} threads busy, ${p.queue.size()} queued) - running a request on overflow thread ${t.name}")
+    t.start()
+} as java.util.concurrent.RejectedExecutionHandler
 def pool = new java.util.concurrent.ThreadPoolExecutor(
     THREADS, THREADS, 60L, TimeUnit.SECONDS,
     new java.util.concurrent.LinkedBlockingQueue<Runnable>(512),
     threadFactory,
-    new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy()
+    overflowPolicy
 )
+pool.allowCoreThreadTimeOut(true)   // idle threads exit after 60s - a large pool costs nothing while quiet
 server.setExecutor(pool)
 
 serverRef    = server
@@ -1068,8 +1359,11 @@ route('/status') { HttpExchange ex ->
                 path  : e.path,
                 detail: e.detail,
                 age_ms: age,
+                timeout_s: (e.timeout ?: 0) as int,
+                phase : e.phase ?: '',                          // e.g. "waiting for a free connection to X" (withDbSlot)
+                slot_wait_ms: (e.slot_wait_ms ?: 0) as long,
                 state : t.state.toString(),
-                stuck : (STUCK_MS > 0 && age >= STUCK_MS),
+                stuck : (STUCK_MS > 0 && age >= stuckThresholdMs(e)),
                 stack : filteredStack(t, 25)
             ]
         }.sort { -it.age_ms }
@@ -1104,6 +1398,9 @@ route('/status') { HttpExchange ex ->
                 queued   : poolRef.queue.size(),
                 completed: poolRef.completedTaskCount
             ],
+            // connection caps per database (withDbSlot): max, in use, waiting
+            slots    : slotStatus(),
+            ctree_max_connections_default: DEFAULT_CTREE_MAX_CONN,
             memory   : [
                 used_mb : (rt.totalMemory() - rt.freeMemory()).intdiv(1048576),
                 total_mb: rt.totalMemory().intdiv(1048576),
@@ -1161,9 +1458,13 @@ route('/cancel') { HttpExchange ex ->
 }
 
 // POST /query/{dbname}  — body is raw SQL, returns queryResults as JSON
+// With request header X-WaSQL-Stream: 1 (sent by PHP's dbGroovyQueryResults) the rows are streamed as NDJSON while they
+// are read - see RowStream - so a big result set is never held in the server's memory. Without the header (older PHP
+// cores, curl by hand) the whole result is returned as one { "success": true, "data": [...] } document, as before.
 route('/query/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
+    RowStream stream = null
     try {
         def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/query/')
@@ -1172,12 +1473,38 @@ route('/query/') { HttpExchange ex ->
         if (!query)  throw new IllegalArgumentException("Request body must contain a SQL query")
         trackDetail("${dbname}: ${query}")
         def drv    = resolveDriver(dbname)
-        def result = drv.driver.queryResults(query, drv.params + [format: 'list'])
-        respond(ex, 200, wrapOk(result))
-        log("/query ${dbname} - ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms${who()}")
+        if ((ex.requestHeaders.getFirst('X-WaSQL-Stream') ?: '').trim() == '1') {
+            stream = new RowStream(ex, JSON, { IOException ioe, String when -> clientGone(ex, ioe, when) })
+            def sink = stream
+            withDbSlot(dbname) {
+                def result = drv.driver.queryResults(query, callerTimeout(drv.params) + [format: 'list', rowsink: sink])
+                // a driver without rowsink support hands back a plain list - send it through the stream all the same
+                if (result instanceof List) result.each { sink << it }
+            }
+            stream.finish()
+            def entry = INFLIGHT[Thread.currentThread()]
+            if (entry != null) entry.code = 200
+            log("/query ${dbname} - ${stream.count} rows streamed ${System.currentTimeMillis()-t0}ms${who()}")
+        } else {
+            def result = withDbSlot(dbname) { drv.driver.queryResults(query, callerTimeout(drv.params) + [format: 'list']) }
+            respond(ex, 200, wrapOk(result))
+            log("/query ${dbname} - ${result instanceof List ? result.size() + ' rows' : ''} ${System.currentTimeMillis()-t0}ms${who()}")
+        }
     } catch (Exception e) {
-        log("/query error: ${e.message}${who()}")
-        try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
+        def entry = INFLIGHT[Thread.currentThread()]
+        // a driver whose connection was aborted by /cancel can fail with a bare NullPointerException (c-tree does) - say what really happened
+        def msg = entry?.cancelled ? "Cancelled from Groovy Manager${e.message ? ' (' + e.message + ')' : ''}".toString()
+                                   : (e.message ?: e.class.simpleName).toString()
+        log("/query error: ${msg}${who()}")
+        if (stream != null && stream.started) {
+            // rows already went out with a 200 - report the failure in-stream so the caller discards them
+            if (entry == null || !entry.clientGone) {
+                if (entry != null) { entry.code = 500; entry.error = msg.replaceAll(/\s+/, ' ').trim().take(300) }
+                stream.fail(msg)
+            }
+        } else {
+            try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
+        }
     }
 }
 
@@ -1203,7 +1530,7 @@ route('/queryfile/') { HttpExchange ex ->
         if (req.fetchsize  != null) extra.fetchsize  = req.fetchsize as int
         if (req.batchsize  != null) extra.batchsize  = req.batchsize as int
         if (req.skiperrors != null) extra.skiperrors = req.skiperrors as boolean
-        def result = drv.driver.queryResults(req.query as String, drv.params + extra)
+        def result = withDbSlot(dbname) { drv.driver.queryResults(req.query as String, callerTimeout(drv.params) + extra) }
         respond(ex, 200, wrapOk([filename: result]))
         log("/queryfile ${dbname} -> ${result} ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
@@ -1221,7 +1548,6 @@ route('/queryfile/') { HttpExchange ex ->
 route('/meta/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
-    def sql = null
     try {
         def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/meta/')
@@ -1232,23 +1558,27 @@ route('/meta/') { HttpExchange ex ->
         def schema = (q.schema != null && q.schema != '') ? q.schema : null
         trackDetail("${dbname}: meta op=${op}${table ? ' table=' + table : ''}")
         def drv    = resolveDriver(dbname)
-        sql        = drv.driver.connect(drv.params)
-        def md     = sql.connection.metaData
-        def result
-        switch (op) {
-            case 'tables':  result = metaTables(md, schema);                      break
-            case 'columns': result = metaColumns(sql.connection, md, schema, table); break
-            case 'indexes': result = metaIndexes(md, schema, table);              break
-            case 'ddl':     result = metaDDL(sql.connection, md, schema, table);  break
-            default: throw new IllegalArgumentException("Unknown meta op: '${op}' (use tables|columns|indexes|ddl)")
+        if (!(op in ['tables', 'columns', 'indexes', 'ddl'])) throw new IllegalArgumentException("Unknown meta op: '${op}' (use tables|columns|indexes|ddl)")
+        // the connection is opened AND closed while holding a connection slot
+        def result = withDbSlot(dbname) {
+            def sql = drv.driver.connect(drv.params)
+            try {
+                def md = sql.connection.metaData
+                switch (op) {
+                    case 'tables':  return metaTables(md, schema)
+                    case 'columns': return metaColumns(sql.connection, md, schema, table)
+                    case 'indexes': return metaIndexes(md, schema, table)
+                    default:        return metaDDL(sql.connection, md, schema, table)
+                }
+            } finally {
+                try { sql.close() } catch (Exception ignored) {}
+            }
         }
         respond(ex, 200, wrapOk(result))
         log("/meta ${dbname} op=${op}${table ? ' table=' + table : ''} - ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
         log("/meta error: ${e.message}${who()}")
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
-    } finally {
-        if (sql != null) try { sql.close() } catch (Exception ignored) {}
     }
 }
 
@@ -1264,7 +1594,7 @@ route('/execute/') { HttpExchange ex ->
         if (!query)  throw new IllegalArgumentException("Request body must contain a SQL statement")
         trackDetail("${dbname}: ${query}")
         def drv    = resolveDriver(dbname)
-        def result = drv.driver.executeSQL(query, drv.params)
+        def result = withDbSlot(dbname) { drv.driver.executeSQL(query, callerTimeout(drv.params)) }
         respond(ex, 200, wrapOk(result))
         log("/execute ${dbname} - ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
@@ -1288,7 +1618,7 @@ route('/executeps/') { HttpExchange ex ->
         def args  = req.args instanceof Map ? req.args : [:]
         def result
         try {
-            result = drv.driver.executePS(req.query as String, args, drv.params)
+            result = withDbSlot(dbname) { drv.driver.executePS(req.query as String, args, callerTimeout(drv.params)) }
         } catch (MissingMethodException ignored) {
             throw new UnsupportedOperationException("executePS not implemented for this driver")
         }
@@ -1570,7 +1900,8 @@ route('/openapi') { HttpExchange ex ->
     respond(ex, 200, JSON.toJson(buildSpec()))
 }
 
-// GET /  — RapidDoc UI (unauthenticated)
+// GET /  — RapidDoc UI (unauthenticated). It must NOT embed TOKEN: this page needs no auth, and the token unlocks
+// /eval (arbitrary Groovy). To use "try it", paste the token from php/temp/wasql-groovy-server.token into the UI.
 route('/') { HttpExchange ex ->
     if (ex.requestURI.path != '/') { respond(ex, 404, wrapErr('Not found')); return }
     lastActivity.set(System.currentTimeMillis())
@@ -1597,7 +1928,6 @@ route('/') { HttpExchange ex ->
   show-curl-before-try="true"
   api-key-name="X-WaSQL-Token"
   api-key-location="header"
-  api-key-value="${TOKEN}"
   theme="light"
   bg-color="#ffffff"
   text-color="#111827"
@@ -1628,6 +1958,9 @@ server.start()
 log("Listening on 127.0.0.1:${PORT}  PID ${PID}")
 log("Token file: ${TOKEN_FILE.path}")
 log("Threads: ${THREADS}  Queue: 512  Max body: ${MAX_BODY_MB} MB")
+// show the connection caps up front, so a wrong licence-sized number is noticed at startup, not under load
+def capLines = DATABASE.findAll { k, v -> v instanceof Map }.collect { String k, Map v -> def c = dbSlotLimits(v); c.db > 0 ? "${k}=${c.db} (per caller ${c.user})" : null }.findAll { it }
+log("Connection caps: ${capLines ? capLines.join(', ') : 'none'}")
 log("Auto-shutdown: ${IDLE_TIMEOUT_MS > 0 ? "${IDLE_TIMEOUT_MS / 60000 as long} min idle" : 'disabled'}")
 log("Stuck-request report: ${STUCK_MS > 0 ? "after ${STUCK_MS / 60000 as long} min" : 'disabled'}")
 log("Log cap: ${LOG_FILE && LOG_MAX_BYTES > 0 ? "${LOG_FILE.path} rolls at ${LOG_MAX_BYTES / 1048576 as long} MB (keeps the newest half)" : 'disabled'}")
@@ -1640,7 +1973,10 @@ scheduler.scheduleAtFixedRate({
     try {
         if (IDLE_TIMEOUT_MS > 0) {
             long idleMs = System.currentTimeMillis() - lastActivity.get()
-            if (idleMs >= IDLE_TIMEOUT_MS) {
+            // never shut down under a running query - System.exit would kill it mid-fetch and the caller gets
+            // an empty reply. Monitoring calls (/status, /stats...) are not work and do not hold the server up.
+            boolean working = INFLIGHT.values().any { it.ctx in WORK_ENDPOINTS }
+            if (idleMs >= IDLE_TIMEOUT_MS && !working) {
                 log("Idle for ${idleMs / 60000 as long} min - shutting down")
                 doShutdown('idle timeout')
             }

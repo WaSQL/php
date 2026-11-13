@@ -1078,7 +1078,15 @@ function dbQueryResults($db,$query,$params=array()){
 *	-fetchsize int  JDBC fetch size (only used with -filename)
 *	-batchsize int  rows buffered before each disk write (only used with -filename)
 *	-skiperrors bool  skip unreadable rows instead of aborting (only used with -filename)
-*	-timeout int  HTTP timeout in seconds (default 300)
+*	-process string  name of a function called once per row (call_user_func($fn,$row)) as rows arrive - nothing is
+*		kept, so any number of rows fits in memory; returns the row count instead of the rows (same as the native
+*		c-tree path). If the query fails part-way, the rows already processed stay processed and an error string is returned.
+*	Without -filename/-process, a result that would push this request near the PHP memory_limit is stopped with an
+*	error string (naming both options) instead of a fatal "Allowed memory size exhausted".
+*	-timeout int  seconds to wait for the answer (default: the timeout attribute on the <database> tag in
+*		config.xml, else 300). Also sent to the Groovy server, which cancels the query just before this
+*		runs out. For queries longer than a few minutes, run them from cron or use -filename - a web
+*		request that long also hits Apache/PHP-FPM proxy timeouts and the user's patience.
 * @return array|string  array of record-arrays on success; the CSV filename when
 *	-filename is set; error string on failure (test with is_file() in -filename mode)
 * @usage
@@ -1129,16 +1137,62 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		$reqbody=$query;
 	}
 
+	//how long to wait for the answer: -timeout, else timeout="N" on the <database> tag in config.xml, else 300s.
+	//The value is also sent to the Groovy server (X-WaSQL-Timeout), which sets the statement's querytimeout
+	//just under it - so a query this caller has stopped waiting for is cancelled instead of running on.
+	$timeout=dbGroovyTimeout($db,$params);
+	$timeoutHeader=array("X-WaSQL-Timeout: {$timeout}");
+
+	//row queries are streamed (NDJSON, see dbGroovyHttpStream) so neither the Groovy server nor this process ever
+	//holds the whole result as one JSON document - rows are decoded one at a time as they arrive. Needs curl;
+	//-filename mode already streams to disk on the server side.
+	$canStream=!$tofile && function_exists('curl_init');
+	//-process: hand each row to a callback as it arrives instead of returning them (like the native c-tree path)
+	$process=null;
+	if(!$tofile && isset($params['-process']) && strlen((string)$params['-process'])){
+		if(!function_exists($params['-process'])){
+			return "dbGroovyQueryResults error: -process function '{$params['-process']}' is not loaded";
+		}
+		$process=$params['-process'];
+	}
+
 	$resp=null;
 	for($attempt=0;$attempt<2;$attempt++){
-		$timeout=isset($params['-timeout'])?(int)$params['-timeout']:300;
-		$json=dbGroovyHttp('POST',"{$baseUrl}{$endpoint}".rawurlencode($db),$token,$reqbody,$reqtype,$timeout);
+		$streamed=null;
+		if($canStream){
+			$sr=dbGroovyHttpStream("{$baseUrl}{$endpoint}".rawurlencode($db),$token,$reqbody,$reqtype,$timeout,$timeoutHeader,$process);
+			if($sr===false){$json=false;}
+			elseif($sr['stream']){$streamed=$sr;$json=null;}
+			else{$json=$sr['body'];}   //an ordinary JSON reply: an error raised before any row, or an older server
+			unset($sr);
+		}
+		else{
+			$json=dbGroovyHttp('POST',"{$baseUrl}{$endpoint}".rawurlencode($db),$token,$reqbody,$reqtype,$timeout,$timeoutHeader);
+		}
+		if($streamed!==null){
+			if($streamed['error']!==null){
+				//the query failed after rows had started arriving - those rows are discarded
+				return "dbGroovyQueryResults error: {$streamed['error']}";
+			}
+			if(!$streamed['end']){
+				//no ["end",n] line: the connection closed mid-result (server stopped/restarted) - never return a partial result
+				return "dbGroovyQueryResults error: the result stream from the Groovy server for database '{$db}' was cut off after "
+				      .$streamed['count']." rows (the server may have stopped or restarted), so the result is incomplete. Log: ".dbGroovyLogFile();
+			}
+			if($process!==null){return $streamed['count'];}
+			$resp=array('success'=>true,'data'=>$streamed['recs']);
+			unset($streamed);
+			break;
+		}
 		if($json===false){
 			global $dbGroovyHttpError;
 			if(is_array($dbGroovyHttpError) && $dbGroovyHttpError['errno']==28){
-				//the Groovy server is up (ping passed) but this request never finished - the connect or query is hanging
+				//the Groovy server is up (ping passed) but this request never finished - the connect or query is hanging,
+				//or it is simply a long query: say how to allow more time
 				return "dbGroovyQueryResults error: no answer from the Groovy server for database '{$db}' after {$dbGroovyHttpError['timeout']}s. "
-				      ."The Groovy server itself is running, so the connection or query is hanging. ".dbGroovyDiagnose($db);
+				      ."The Groovy server itself is running, so the connection or query is hanging or just needs longer - "
+				      ."if the query is expected to run longer, pass '-timeout'=>seconds or set timeout=\"seconds\" on the <database> tag in config.xml. "
+				      .dbGroovyDiagnose($db);
 			}
 			return "dbGroovyQueryResults error: cannot reach Groovy server on port {$port}".(is_array($dbGroovyHttpError)?" ({$dbGroovyHttpError['error']})":'');
 		}
@@ -1187,6 +1241,12 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		}
 	}
 
+	//-process on the non-streamed path (no curl, or a server that predates streaming): same result, rows were in memory
+	if($process!==null){
+		foreach($recs as $rec){call_user_func($process,$rec);}
+		return count($recs);
+	}
+
 	if(!empty($params['-index'])){
 		$idx=$params['-index'];
 		$out=array();
@@ -1197,6 +1257,49 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		return $out;
 	}
 	return $recs;
+}
+//---------- begin function dbGroovyTimeout
+/**
+* @describe seconds dbGroovyQueryResults waits for an answer: '-timeout' param, else the timeout attribute on the
+*	database tag in config.xml (e.g. timeout="1800" for a connection used for long reports), else 300
+* @param db string - database name as configured in config.xml
+* @param params array - the caller's params
+* @return integer seconds (at least 1)
+* @exclude - internal helper for dbGroovyQueryResults
+* @usage $timeout=dbGroovyTimeout('ctree_remote_repl_groovy',$params);
+*/
+function dbGroovyTimeout($db,$params=array()){
+	global $DATABASE;
+	if(isset($params['-timeout']) && isNum($params['-timeout']) && (int)$params['-timeout']>0){
+		return (int)$params['-timeout'];
+	}
+	$key=strtolower(trim($db));
+	if(isset($DATABASE[$key]['timeout']) && isNum($DATABASE[$key]['timeout']) && (int)$DATABASE[$key]['timeout']>0){
+		return (int)$DATABASE[$key]['timeout'];
+	}
+	return 300;
+}
+//---------- begin function dbGroovyMemoryPressure
+/**
+* @describe true when this request is close enough to the PHP memory_limit that collecting more rows risks the fatal
+*	"Allowed memory size exhausted" (same rule as ctreeMemoryPressure on the native c-tree path)
+* @param pct float - fraction of memory_limit that counts as too close. Defaults to .85
+* @return boolean
+* @exclude - internal helper for dbGroovyHttpStream
+* @usage if(dbGroovyMemoryPressure()){...}
+*/
+function dbGroovyMemoryPressure($pct=.85){
+	$limit=trim((string)ini_get('memory_limit'));
+	//-1 means unlimited, and an empty value means we cannot tell - either way, do not interfere
+	if(!strlen($limit) || $limit=='-1'){return false;}
+	$bytes=(float)$limit;
+	switch(strtolower(substr($limit,-1))){
+		case 'g': $bytes=$bytes*1024*1024*1024; break;
+		case 'm': $bytes=$bytes*1024*1024; break;
+		case 'k': $bytes=$bytes*1024; break;
+	}
+	if($bytes <= 0){return false;}
+	return (memory_get_usage(true) > ($bytes*$pct));
 }
 //---------- begin function dbGroovyIsAuthError
 /**
@@ -1875,9 +1978,12 @@ function dbGroovyIdentityHeaders(){
 * Makes an HTTP GET or POST to the Groovy server.
 * Prefers cURL; falls back to file_get_contents (requires allow_url_fopen=On).
 * Returns the response body string, or false on connection failure.
+* $extraHeaders: optional list of "Name: value" lines (e.g. X-WaSQL-Timeout).
 */
-function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec){
-	$identity=dbGroovyIdentityHeaders();
+function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec,$extraHeaders=array()){
+	$identity=array_merge(dbGroovyIdentityHeaders(),is_array($extraHeaders)?$extraHeaders:array());
+	global $dbGroovyHttpError;
+	$dbGroovyHttpError=null;
 	if(function_exists('curl_init')){
 		$headers=array_merge(["X-WaSQL-Token: {$token}"],$identity);
 		if($contentType){$headers[]="Content-Type: {$contentType}";}
@@ -1910,6 +2016,105 @@ function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec){
 	]];
 	if($body!==null){$opts['http']['content']=$body;}
 	return @file_get_contents($url,false,stream_context_create($opts));
+}
+/**
+* POSTs a query to the Groovy server asking for a streamed result (X-WaSQL-Stream: 1) and decodes the rows as they
+* arrive, one NDJSON line at a time - only one partial line is ever buffered. Wire format (see RowStream in
+* groovy/server.groovy): one JSON object per row, then a control line that is a JSON array: ["end",n] or ["error","msg"].
+* Returns false on a transport failure (curl error, incl. timeout errno 28 - $dbGroovyHttpError says which; any rows
+* already received are dropped), otherwise an array:
+*	stream => true when the reply was NDJSON; false when it was an ordinary JSON reply (an error raised before any row,
+*		or an older server that ignores X-WaSQL-Stream) - that reply is in 'body' for the caller to parse as before
+*	recs   => decoded rows (stream mode)
+*	end    => true only if the ["end",n] line arrived - false means the result is incomplete
+*	error  => message from an ["error",...] line, else null
+*	body   => the raw reply (non-stream mode)
+* $process: optional callable - each row is handed to it (call_user_func($process,$row)) and NOT kept, so any number of
+*	rows fits in memory; 'count' says how many were processed. Without it, rows collect in 'recs', and if that brings the
+*	request near the PHP memory_limit the transfer is aborted - which also stops the query on the server - and 'error'
+*	explains, instead of the request dying with "Allowed memory size exhausted".
+* @exclude  - this function is for internal use only and thus excluded from the manual
+*/
+function dbGroovyHttpStream($url,$token,$body,$contentType,$timeoutSec,$extraHeaders=array(),$process=null){
+	global $dbGroovyHttpError;
+	$dbGroovyHttpError=null;
+	$headers=array_merge(
+		array("X-WaSQL-Token: {$token}","X-WaSQL-Stream: 1"),
+		dbGroovyIdentityHeaders(),
+		is_array($extraHeaders)?$extraHeaders:array()
+	);
+	if($contentType){$headers[]="Content-Type: {$contentType}";}
+	$st=array('ndjson'=>false,'buf'=>'','recs'=>array(),'body'=>'','end'=>false,'error'=>null,'count'=>0,'aborted'=>false,'process'=>$process);
+	$ch=curl_init($url);
+	curl_setopt_array($ch,array(
+		CURLOPT_CUSTOMREQUEST =>'POST',
+		CURLOPT_POSTFIELDS    =>$body,
+		CURLOPT_TIMEOUT       =>$timeoutSec,
+		CURLOPT_CONNECTTIMEOUT=>min($timeoutSec,5),
+		CURLOPT_HTTPHEADER    =>$headers,
+		//the Content-Type of the FINAL response decides the mode (a status line resets it, so an interim
+		//"100 Continue" block cannot leave a stale value behind)
+		CURLOPT_HEADERFUNCTION=>function($ch,$line) use (&$st){
+			if(stripos($line,'HTTP/')===0){$st['ndjson']=false;}
+			elseif(stripos($line,'Content-Type:')===0){$st['ndjson']=stripos($line,'ndjson')!==false;}
+			return strlen($line);
+		},
+		CURLOPT_WRITEFUNCTION=>function($ch,$chunk) use (&$st){
+			if(!$st['ndjson']){$st['body'].=$chunk;return strlen($chunk);}
+			$st['buf'].=$chunk;
+			$start=0;
+			while(($nl=strpos($st['buf'],"\n",$start))!==false){
+				$line=substr($st['buf'],$start,$nl-$start);
+				$start=$nl+1;
+				if($line===''){continue;}
+				if($line[0]==='{'){
+					$rec=json_decode($line,true);
+					if(!is_array($rec)){
+						if($st['error']===null){$st['error']='invalid row JSON from the Groovy server: '.json_last_error_msg();}
+						continue;
+					}
+					$st['count']++;
+					if($st['process']!==null){
+						call_user_func($st['process'],$rec);
+						continue;
+					}
+					$st['recs'][]=$rec;
+					//every 500 rows: stop cleanly before the memory_limit fatal. Returning 0 makes curl abort the
+					//transfer, the Groovy server sees the hang-up and stops the query too.
+					if(($st['count'] % 500)==0 && dbGroovyMemoryPressure()){
+						$st['error']="stopped at {$st['count']} rows - this request is close to the PHP memory_limit (".ini_get('memory_limit')."). "
+						            ."For a result this large use '-filename'=>\$csvfile (streamed to a CSV file) or '-process'=>'functionName' (called once per row, nothing kept in memory).";
+						$st['aborted']=true;
+						$st['recs']=array();
+						return 0;
+					}
+				}
+				elseif($line[0]==='['){
+					$ctl=json_decode($line,true);
+					if(isset($ctl[0]) && $ctl[0]==='end'){$st['end']=true;}
+					elseif(isset($ctl[0]) && $ctl[0]==='error'){$st['error']=isset($ctl[1])?(string)$ctl[1]:'unknown error';}
+				}
+			}
+			$st['buf']=(string)substr($st['buf'],$start);
+			return strlen($chunk);
+		},
+	));
+	curl_exec($ch);
+	if($st['aborted']){
+		//we stopped the transfer ourselves (memory guard) - not a transport failure
+		curl_close($ch);
+		return array('stream'=>true,'recs'=>array(),'count'=>$st['count'],'end'=>false,'error'=>$st['error'],'body'=>'');
+	}
+	if(curl_errno($ch)){
+		$dbGroovyHttpError=array('errno'=>curl_errno($ch),'error'=>curl_error($ch),'timeout'=>$timeoutSec);
+		curl_close($ch);
+		return false;
+	}
+	curl_close($ch);
+	if(!$st['ndjson']){
+		return array('stream'=>false,'recs'=>array(),'count'=>0,'end'=>false,'error'=>null,'body'=>$st['body']);
+	}
+	return array('stream'=>true,'recs'=>$st['recs'],'count'=>$st['count'],'end'=>$st['end'],'error'=>$st['error'],'body'=>'');
 }
 //---------- begin function pyQueryResults
 /**

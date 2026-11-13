@@ -140,6 +140,12 @@ def queryResults(String query, Map params = [:]) {
 
 	try {
 		sql = connect(params)
+		// Statement timeout in seconds (querytimeout param, 0 = none). The Groovy server sets it just under the
+		// caller's own timeout (X-WaSQL-Timeout), so a query the caller stopped waiting for gets cancelled.
+		// CSV mode keeps its old 600s default; list mode has never had a cap and still has none unless asked.
+		def qtRaw = params.querytimeout?.toString()?.trim()
+		int queryTimeout = qtRaw?.isInteger() ? (qtRaw as int) : (params.containsKey('filename') ? 600 : 0)
+		if (queryTimeout > 0) sql.withStatement { it.queryTimeout = queryTimeout }
 
 		// ── CSV export mode ───────────────────────────────────────────────────
 		if (params.containsKey('filename')) {
@@ -150,7 +156,7 @@ def queryResults(String query, Map params = [:]) {
 
 				def stmt = sql.connection.createStatement()
 				if (fetchSize > 0) stmt.setFetchSize(fetchSize)
-				stmt.setQueryTimeout(600)
+				if (queryTimeout > 0) stmt.setQueryTimeout(queryTimeout)
 				def rs = stmt.executeQuery(query)
 
 				def errorCount       = 0
@@ -236,7 +242,10 @@ def queryResults(String query, Map params = [:]) {
 		}
 
 		// ── In-memory result mode ─────────────────────────────────────────────
-		def recs = []
+		// Streaming (Groovy server /query): params.rowsink takes each row as it is read (rowsink << rec) and sends it
+		// straight to the caller, so the result set is never held in memory. It also answers size(). Without it,
+		// rows collect in a list as before. Only used with format: 'list' (the server's own calls).
+		def recs = params.rowsink != null ? params.rowsink : []
 		sql.eachRow(query) { row ->
 			// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
 			if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
