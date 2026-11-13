@@ -17429,6 +17429,8 @@ function getGUID($force=0){
 */
 function commonSetCookie($name,$value,$expire=''){
 	global $CONFIG;
+	//cookies are headers: nothing to set from CLI/cron, and a cookie after output only raises a warning
+	if(PHP_SAPI==='cli' || headers_sent()){return false;}
 	if(!strlen($expire)){
 		$expire=time()+(3600*24*365);
 	}
