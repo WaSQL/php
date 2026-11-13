@@ -209,10 +209,12 @@ Environment="<?=encodeHtml($help['var']);?>=<?=encodeHtml($help['example']);?>"<
 <view:stats_body>
 	<div class="groovy-state">
 		<span class="groovy-state-hint">Counting since <b><?=encodeHtml($stats['since']);?></b> - counters reset when the server restarts.</span>
-		<a href="#reset_stats" class="wacss_button is-small is-light" data-nav="/php/admin.php" data-_menu="groovy" data-func="reset_stats" data-div="groovy_content" data-setprocessing="groovy_stats_processing" data-confirm="Reset all Groovy server statistics?" onclick="return wacss.nav(this);"><span class="icon-erase wacss_right5"></span> Reset Stats</a>
+		<a href="#reset_stats" class="wacss_button is-small is-light" title="Zero the counters and empty the recent-errors list" data-nav="/php/admin.php" data-_menu="groovy" data-func="reset_stats" data-div="groovy_content" data-setprocessing="groovy_stats_processing" data-confirm="Reset all Groovy server statistics and recent errors?" onclick="return wacss.nav(this);"><span class="icon-erase wacss_right5"></span> Reset Stats</a>
+		<a href="#start_fresh" class="wacss_button is-small is-warning" title="Reset stats and recent errors AND clear the log - for checking a fix" data-nav="/php/admin.php" data-_menu="groovy" data-func="start_fresh" data-panel="stats" data-div="groovy_content" data-setprocessing="groovy_stats_processing" data-confirm="Start fresh? This resets the statistics and recent errors AND clears the server log (the old log is kept as a .prev file)." onclick="return wacss.nav(this);"><span class="icon-refresh wacss_right5"></span> Start Fresh</a>
 		<span id="groovy_stats_processing" class="groovy-processing"></span>
 		<span class="groovy-checked">checked <?=encodeHtml($stats['checked']);?></span>
 	</div>
+	<?=renderViewIf(!empty($stats['message']),'panel_message',$stats,'panel');?>
 	<div class="groovy-grid"><?=renderEach('fact',$stats['cards'],'fact');?></div>
 
 	<div class="groovy-section"><span class="icon-database"></span> By database</div>
@@ -327,10 +329,18 @@ Environment="<?=encodeHtml($help['var']);?>=<?=encodeHtml($help['example']);?>"<
 		</select>
 		lines
 		<a href="#copy" class="wacss_button is-small is-light" title="copy to clipboard" onclick="wacss.copy2Clipboard(document.querySelector('#groovy_log').innerText);return false;"><span class="icon-copy"></span></a>
+		<a href="#clear_log" class="wacss_button is-small is-light" title="Empty the log (the old contents are kept as a .prev file)" data-nav="/php/admin.php" data-_menu="groovy" data-func="clear_log" data-filter="<?=encodeHtml($log['filter']);?>" data-lines="<?=encodeHtml($log['count']);?>" data-div="groovy_content" data-setprocessing="groovy_log_processing" data-confirm="Clear the Groovy server log? The current contents are saved as a .prev file next to it." onclick="return wacss.nav(this);"><span class="icon-erase wacss_right5"></span> Clear Log</a>
+		<a href="#start_fresh" class="wacss_button is-small is-warning" title="Clear the log AND reset stats and recent errors - for checking a fix" data-nav="/php/admin.php" data-_menu="groovy" data-func="start_fresh" data-panel="log" data-filter="<?=encodeHtml($log['filter']);?>" data-lines="<?=encodeHtml($log['count']);?>" data-div="groovy_content" data-setprocessing="groovy_log_processing" data-confirm="Start fresh? This clears the server log (the old log is kept as a .prev file) AND resets the statistics and recent errors." onclick="return wacss.nav(this);"><span class="icon-refresh wacss_right5"></span> Start Fresh</a>
+		<span id="groovy_log_processing" class="groovy-processing"></span>
 	</div>
+	<?=renderViewIf(!empty($log['message']),'panel_message',$log,'panel');?>
 	<pre id="groovy_log" class="groovy-log" data-onload="groovyLogScroll();"><?=renderEach('log_line',$log['lines'],'line');?></pre>
 	<?=count($log['lines']) ? '' : '<div class="groovy-empty">No matching lines.</div>';?>
 </view:log_panel>
+
+<view:panel_message>
+	<div class="groovy-message <?=encodeHtml($panel['message_class']);?>"><?=encodeHtml($panel['message']);?></div>
+</view:panel_message>
 
 <view:log_line>
 <code class="<?=encodeHtml($line['class']);?>"><?=encodeHtml($line['text']);?></code>

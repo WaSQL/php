@@ -40,8 +40,32 @@ switch($func){
 		return;
 	break;
 	case 'log':
+	case 'clear_log':
+		$message=array('message'=>'','class'=>'');
+		if($func=='clear_log'){
+			$err=groovyAdminClearLog();
+			$message=strlen($err) ? array('message'=>$err,'class'=>'is-danger') : array('message'=>'Log cleared - showing only what happens from now on. The previous log was saved alongside it with a .prev extension.','class'=>'is-success');
+		}
 		$log=groovyAdminLog(isset($_REQUEST['lines']) ? $_REQUEST['lines'] : 300,isset($_REQUEST['filter']) ? $_REQUEST['filter'] : 'all');
+		$log['message']=$message['message'];
+		$log['message_class']=$message['class'];
 		setView('log_panel',1);
+		return;
+	break;
+	case 'start_fresh':
+		//clear the log AND reset stats/errors, then redraw whichever tab the button was on
+		$result=groovyAdminStartFresh();
+		if(isset($_REQUEST['panel']) && $_REQUEST['panel']=='log'){
+			$log=groovyAdminLog(isset($_REQUEST['lines']) ? $_REQUEST['lines'] : 300,isset($_REQUEST['filter']) ? $_REQUEST['filter'] : 'all');
+			$log['message']=$result['message'];
+			$log['message_class']=$result['class'];
+			setView('log_panel',1);
+			return;
+		}
+		$stats=groovyAdminStats(false);
+		$stats['message']=$result['message'];
+		$stats['message_class']=$result['class'];
+		setView('stats_panel',1);
 		return;
 	break;
 	case 'start':

@@ -583,4 +583,57 @@ function groovyAdminLog($lines=300,$filter='all'){
 	}
 	return $log;
 }
+
+//---------- begin function groovyAdminClearLog
+/**
+* @describe empties the Groovy server log so only what happens from now on shows. The old contents are kept in
+*	{log}.prev (replacing the previous .prev), so clearing by mistake loses nothing. The file is truncated IN PLACE,
+*	never deleted: the running server holds it open in append mode, and a deleted/recreated file would silently stop
+*	receiving its lines (Linux) or fail (Windows). A marker line records who cleared it and when.
+* @return string - empty on success, otherwise the error text
+* @usage $err=groovyAdminClearLog();
+*/
+function groovyAdminClearLog(){
+	global $USER;
+	$cfg=groovyAdminConfig();
+	$file=$cfg['log_file'];
+	if(!is_file($file)){return '';}
+	$prev=$file.'.prev';
+	if(!@copy($file,$prev)){
+		return "Could not save the current log to {$prev} - the log was NOT cleared. Check that the web server user can write to ".dirname($file).'.';
+	}
+	$fh=@fopen($file,'r+');
+	if($fh===false){return "Could not open {$file} for writing - the log was NOT cleared (the previous contents are also in {$prev}).";}
+	$ok=flock($fh,LOCK_EX) && ftruncate($fh,0);
+	if($ok){
+		$who=isset($USER['username']) && strlen($USER['username']) ? $USER['username'] : 'admin';
+		rewind($fh);
+		fwrite($fh,'--- '.date('Y-m-d H:i:s')." log cleared by {$who} from Groovy Manager - the previous log is in ".basename($prev)." ---".PHP_EOL);
+		fflush($fh);
+	}
+	flock($fh,LOCK_UN);
+	fclose($fh);
+	clearstatcache(true,$file);
+	if(!$ok){return "Could not truncate {$file} - the log was NOT cleared (a copy is in {$prev}).";}
+	return '';
+}
+
+//---------- begin function groovyAdminStartFresh
+/**
+* @describe "I fixed it - show me only what is new": clears the log (see groovyAdminClearLog) AND resets the server's
+*	statistics, which also empties its recent-errors list. The stats reset needs the server running; the log clear does not.
+* @return array - message, class (is-success / is-warning / is-danger)
+* @usage $result=groovyAdminStartFresh();
+*/
+function groovyAdminStartFresh(){
+	$logErr=groovyAdminClearLog();
+	$r=groovyAdminCall('/stats?reset=1');
+	$parts=array();
+	$parts[]=strlen($logErr) ? $logErr : 'Log cleared (previous log saved as '.basename(groovyAdminConfig()['log_file']).'.prev).';
+	$parts[]=$r['ok'] ? 'Statistics and recent errors reset.' : "Statistics not reset - the server is not answering ({$r['error']}); they start empty when it next starts anyway.";
+	if(strlen($logErr)){$class='is-danger';}
+	elseif(!$r['ok']){$class='is-warning';}
+	else{$class='is-success';}
+	return array('message'=>implode(' ',$parts),'class'=>$class);
+}
 ?>
