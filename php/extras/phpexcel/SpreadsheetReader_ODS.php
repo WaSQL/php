@@ -43,7 +43,7 @@
 		 *	TempDir => string Temporary directory path
 		 *	ReturnDateTimeObjects => bool True => dates and times will be returned as PHP DateTime objects, false => as strings
 		 */
-		public function __construct($Filepath, array $Options = null)
+		public function __construct($Filepath, ?array $Options = null)
 		{
 			if (!is_readable($Filepath))
 			{

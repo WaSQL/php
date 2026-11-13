@@ -34,7 +34,7 @@
 		 *	Enclosure => string CSV enclosure
 		 *	Separator => string CSV separator
 		 */
-		public function __construct($Filepath, array $Options = null)
+		public function __construct($Filepath, ?array $Options = null)
 		{
 			$this -> Filepath = $Filepath;
 

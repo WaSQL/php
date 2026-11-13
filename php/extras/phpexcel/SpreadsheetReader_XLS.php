@@ -56,7 +56,7 @@
 		 * @param string Path to file
 		 * @param array Options
 		 */
-		public function __construct($Filepath, array $Options = null)
+		public function __construct($Filepath, ?array $Options = null)
 		{
 			if (!is_readable($Filepath))
 			{
