@@ -847,7 +847,12 @@ function userDecodeLDAPAuth($user,$pass){
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function userDecodeUsernameAuth($user,$pass){
+	global $CONFIG;
 	$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'username'=>addslashes($user)));
+	//optional: allow an email address to be entered in the username field (config.xml: login_allow_email=1)
+	if(!isset($rec['_id']) && !empty($CONFIG['login_allow_email']) && isEmail($user)){
+		$rec=getDBRecord(array('-table'=>'_users','-relate'=>1,'email'=>addslashes($user)));
+	}
 	if(!isset($rec['_id'])){
 		//$ok=commonLogMessage('user',"userDecodeUsernameAuth Failed - no rec for user {$user}");
 		$_REQUEST['_login_error']="userDecodeUsernameAuth Failed - no rec";
@@ -1845,6 +1850,10 @@ function userLoginForm($params=array()){
 		'-login_id'				=> '',
 		'-login_title'			=> ''
 	);
+	//username or email allowed (config.xml: login_allow_email=1): friendlier placeholder
+	if(!empty($CONFIG['login_allow_email']) && strtolower($params['-username_name'])=='username' && !isset($params['-username_text']) && !isset($CONFIG['username_text'])){
+		$params['-username_text']='Username or Email';
+	}
 	//check for email and phone names
 	switch(strtolower($params['-username_name'])){
 		case 'email':

@@ -151,6 +151,15 @@ function datasyncToTarget($table){
 	}
 	return "{$cnt} records from here to target";
 }
+/**
+* clears all cached sync/git session state (target auth, url, etc.) so the next request shows the login form.
+* Called whenever the target rejects our auth, so a stale _auth code can never leave the page stuck.
+*/
+function datasyncResetSession(){
+	foreach(array_keys($_SESSION) as $k){
+		if(preg_match('/^(sync|git)_/i',$k)){unset($_SESSION[$k]);}
+	}
+}
 function datasyncPost($load,$plain=0){
 	global $USER;
 	if(!isset($_SESSION['sync_target_url']) || !strlen($_SESSION['sync_target_url'])){
@@ -190,23 +199,32 @@ function datasyncPost($load,$plain=0){
 	$postopts['_noguid']=1;
 	$post=postURL($_SESSION['sync_target_url'],$postopts);
 	//echo $_SESSION['sync_target_url'].printValue($postopts).printValue($load).$post['body'];exit;
+	$target_url=$_SESSION['sync_target_url'];
 	if(isset($post['error'])){
-		return array('error'=>$_SESSION['sync_target_url'].$post['error']);
+		datasyncResetSession();
+		return array('error'=>$target_url.$post['error']);
 	}
 	elseif(!strlen($post['body'])){
-		return array('error'=>$_SESSION['sync_target_url'].printValue($post));
+		datasyncResetSession();
+		return array('error'=>$target_url.printValue($post));
 	}
 	else{
 		$json=json_decode(base64_decode($post['body']),true);
 		if(!is_array($json)){
 			$json=json_decode($post['body'],true);
 			if(!is_array($json)){
-				return array('error'=>$_SESSION['sync_target_url'].$post['body']);
+				//target returned a non-JSON page (e.g. Login Failed) - drop the stale auth so the next request re-prompts
+				datasyncResetSession();
+				return array('error'=>$target_url.$post['body']);
 			}
+		}
+		if(isset($json['error']) && preg_match('/login failed|not logged in|not an admin|rec auth failed/i',(string)$json['error'])){
+			datasyncResetSession();
 		}
 		return $json;
 	}
-	return array('error'=>$_SESSION['sync_target_url'].json_encode($post));
+	datasyncResetSession();
+	return array('error'=>$target_url.json_encode($post));
 }
 
 ?>

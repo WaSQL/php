@@ -42,7 +42,15 @@
 				$fields[$i]=trim($field);
 			}
 			$url="https://{$rec['source_domain']}/php/admin.php";
-			$srec=sync_sourcePost($url,$_SESSION['sync_source_postopts']);
+			$srec=sync_sourcePost($url,isset($_SESSION['sync_source_postopts'])?$_SESSION['sync_source_postopts']:array());
+			if(!is_array($srec) || isset($srec['error'])){
+				//stale/rejected auth - reset cached state and send the user back to re-authorize rather than saving an error response
+				unset($_SESSION['sync_check_postopts']);
+				unset($_SESSION['sync_source_postopts']);
+				unset($_SESSION['sync_source_rec']);
+				setView(array('authorize','failed'),1);
+				return;
+			}
 			foreach($srec as $k=>$v){
 				if(strlen(trim($v))){
 					$srec[$k]=base64_decode($v);
@@ -151,6 +159,10 @@
 				}
 			}
 			else{
+				//auth failed - drop cached credentials/auth so the next attempt re-prompts instead of replaying stale ones
+				unset($_SESSION['sync_check_postopts']);
+				unset($_SESSION['sync_source_postopts']);
+				unset($_SESSION['sync_source_rec']);
 				setView(array('authorize','failed'),1);
 				return;
 			}

@@ -287,6 +287,12 @@ function synchronizePost($load,$plain=0){
 		}
 		//older target cores echo the submitted password back in their error response
 		if(isset($json['error'])){
+			//target rejected our auth - drop stale session state so the next request re-prompts for login
+			if($plain != 1 && preg_match('/login failed|not logged in|not an admin|rec auth failed/i',(string)$json['error'])){
+				foreach(array_keys($_SESSION) as $k){
+					if(preg_match('/^(sync|git)_/i',$k)){unset($_SESSION[$k]);}
+				}
+			}
 			$json=synchronizeMaskSecrets($json,$secrets);
 		}
 		return $json;
