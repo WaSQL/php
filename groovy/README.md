@@ -113,6 +113,7 @@ All settings are controlled via environment variables. None are required — the
 | `WASQL_GROOVY_PID_FILE` | `groovy/server.pid` | Path where the server writes its PID |
 | `WASQL_GROOVY_TOKEN_FILE` | `groovy/server.token` | Path where the server writes its auth token |
 | `WASQL_GROOVY_STUCK_MINUTES` | `5` | A request still running after this many minutes is logged once as `STUCK`, with its thread's stack trace; `0` disables |
+| `WASQL_GROOVY_AUTOCANCEL_GRACE_SECONDS` | `60` | Cancel a request still running this many seconds after its caller's timeout (`X-WaSQL-Timeout`); `0` = report only |
 | `WASQL_GROOVY_LOG_FILE` | *(unset)* | The file stdout/stderr are redirected to. When set, the server trims it as a rolling log (Linux/macOS). WaSQL's auto-start sets it |
 | `WASQL_GROOVY_LOG_MAX_MB` | `10` | Rolling-log cap for `WASQL_GROOVY_LOG_FILE`; `0` = no cap |
 
@@ -129,6 +130,7 @@ On start the server logs its active configuration:
 [wasql-groovy] 11:56:21 Connection caps: ctree_remote_repl_groovy=16 (per caller 4)
 [wasql-groovy] 11:56:21 Auto-shutdown: 60 min idle
 [wasql-groovy] 11:56:21 Stuck-request report: after 5 min
+[wasql-groovy] 11:56:21 Auto-cancel: 60s after the caller's timeout
 [wasql-groovy] 11:56:21 Log cap: /var/www/wasql/logs/groovy-server.log rolls at 10 MB (keeps the newest half)
 ```
 
@@ -150,14 +152,16 @@ Every request is tracked while it runs. Once a minute the watchdog logs any requ
 
 When the caller sent its own timeout (`X-WaSQL-Timeout`, see below), the threshold for that request is the longer of the two, so a query that's expected to run 30 minutes isn't reported at 5. A request still running after its caller gave up is reported with `caller gave up after Ns - still running for nobody`.
 
-If the server stops answering, `grep STUCK logs/groovy-server.log` shows what each thread was blocked on, with no thread dump needed. The watchdog only reports; it never kills a request.
+If the server stops answering, `grep STUCK logs/groovy-server.log` shows what each thread was blocked on, with no thread dump needed. The STUCK report itself only logs. The stack trace is a diagnostic, not a Java error.
+
+**Auto-cancel.** A request still running `WASQL_GROOVY_AUTOCANCEL_GRACE_SECONDS` (default 60) after its caller's own timeout is cancelled by the watchdog, the same way the Groovy Manager **Cancel** button does it, and logged as `CANCEL (Auto-cancelled: caller gave up after Ns) for wasql-handler-N`. The caller has already hung up, so the result could never be delivered. This mostly matters for c-tree, whose JDBC driver ignores `setQueryTimeout`: without it, a slow c-tree query runs on for nobody and keeps a FairCom licence slot and a handler thread busy. Requests without a caller timeout (`X-WaSQL-Timeout`) are never auto-cancelled. `0` disables auto-cancel.
 
 ### Query timeout (PHP ↔ server ↔ database)
 
-`dbGroovyQueryResults()` waits **300 seconds** by default. Raise it per call with `-timeout`, or per connection with a `timeout` attribute on the `<database>` tag in `config.xml`. A per-call `-timeout` wins:
+`dbGroovyQueryResults()` waits **600 seconds** by default. Raise it per call with `-timeout`, or per connection with a `timeout` attribute on the `<database>` tag in `config.xml`. A per-call `-timeout` wins:
 
 ```php
-// Default — 300 seconds (or the connection's timeout="N")
+// Default — 600 seconds (or the connection's timeout="N")
 $recs = dbGroovyQueryResults('mydb', $sql);
 
 // Long report — 30 minutes

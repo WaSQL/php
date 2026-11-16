@@ -63,6 +63,10 @@ import java.util.concurrent.atomic.AtomicLong
 @Field final Object LOG_LOCK  = new Object()
 // Stuck-request watchdog: a request running longer than this is logged with its thread's stack.
 @Field long   STUCK_MS        = (System.getenv('WASQL_GROOVY_STUCK_MINUTES') ?: '5').toLong() * 60_000L
+// Auto-cancel: a request still running this many seconds AFTER its caller's own timeout (X-WaSQL-Timeout) is cancelled
+// by the watchdog, since nobody can receive the result. Needed for c-tree, whose driver ignores setQueryTimeout and
+// keeps a FairCom licence slot busy for nobody. 0 = disabled (report only).
+@Field long   AUTOCANCEL_GRACE_MS = (System.getenv('WASQL_GROOVY_AUTOCANCEL_GRACE_SECONDS') ?: '60').toLong() * 1000L
 // In-flight requests, keyed by the handler thread: [path, started, detail, reported]
 @Field def    INFLIGHT        = new java.util.concurrent.ConcurrentHashMap<Thread, Map>()
 // Database connection caps (see withDbSlot). Per <database> tag: max_connections="N" (0 = no cap) and
@@ -477,7 +481,7 @@ void respondAs(HttpExchange ex, int code, String contentType, String body) {
             try { def j = new JsonSlurper().parseText(body); if (j instanceof Map && j.error) msg = j.error.toString() } catch (Exception ignored) {}
             if (entry.cancelled) {
                 // the driver error from an aborted connection is cryptic - say what really happened
-                msg  = "Cancelled from Groovy Manager (${msg})".toString()
+                msg  = "${entry.cancelReason ?: 'Cancelled from Groovy Manager'} (${msg})".toString()
                 body = wrapErr(msg)
             }
             entry.error = msg.replaceAll(/\s+/, ' ').trim().take(300)
@@ -1074,11 +1078,12 @@ boolean isCancelled() {
 * @usage
 *	respond(ex, 200, JSON.toJson(cancelRequest('wasql-handler-7')))
 */
-Map cancelRequest(String threadName) {
+Map cancelRequest(String threadName, String reason = 'Cancelled from Groovy Manager') {
     def found = INFLIGHT.find { Thread t, Map e -> t.name == threadName }
     if (found == null) return [cancelled: false, error: "No request is running on thread ${threadName} - it may already have finished"]
     Thread t = found.key
     Map e = found.value
+    e.cancelReason = reason
     e.cancelled = true
     def outcomes = []
     (e.conns ?: []).each { conn ->
@@ -1103,7 +1108,7 @@ Map cancelRequest(String threadName) {
         t.interrupt()
         interrupted = true
     }
-    log("CANCEL requested for ${threadName}: ${e.path}${who(e)}${e.detail ? ' | ' + e.detail : ''} | connections: ${outcomes ? outcomes.join(', ') : 'none tracked'}${interrupted ? ' | thread interrupted' : ''}")
+    log("CANCEL (${reason}) for ${threadName}:${e.path}${who(e)}${e.detail ? ' | ' + e.detail : ''} | connections: ${outcomes ? outcomes.join(', ') : 'none tracked'}${interrupted ? ' | thread interrupted' : ''}")
     [cancelled: true, thread: threadName, path: e.path, detail: e.detail, connections: outcomes, interrupted: interrupted]
 }
 
@@ -1155,6 +1160,33 @@ void reportStuckRequests() {
     }
     if (stuck > 0 && poolRef != null) {
         log("STUCK summary: ${stuck} request(s) past their stuck threshold | threads busy ${poolRef.activeCount}/${poolRef.maximumPoolSize} | queued ${poolRef.queue.size()}")
+    }
+}
+
+//---------- begin function autoCancelAbandoned
+/**
+* @describe called by the watchdog every minute - cancels each request still running AUTOCANCEL_GRACE_MS after its caller's
+*	own timeout (X-WaSQL-Timeout), once per request. The caller has already hung up, so the result can never be delivered;
+*	without this a c-tree query (its driver ignores setQueryTimeout) runs on for nobody, holding a licence slot and a thread.
+*	Requests without a caller timeout are never auto-cancelled.
+* @return void
+* @usage
+*	autoCancelAbandoned()
+*/
+void autoCancelAbandoned() {
+    if (AUTOCANCEL_GRACE_MS <= 0) return
+    long now = System.currentTimeMillis()
+    // collect first, cancel after - cancelRequest can block up to 5s per connection
+    def abandoned = []
+    INFLIGHT.each { Thread t, Map e ->
+        long callerMs = ((e.timeout ?: 0) as long) * 1000L
+        if (callerMs <= 0 || e.cancelled || e.autoCancelTried) return
+        if (now - (e.started as long) < callerMs + AUTOCANCEL_GRACE_MS) return
+        e.autoCancelTried = true
+        abandoned << [name: t.name, timeout: e.timeout]
+    }
+    abandoned.each { a ->
+        cancelRequest(a.name as String, "Auto-cancelled: caller gave up after ${a.timeout}s".toString())
     }
 }
 
@@ -1493,7 +1525,7 @@ route('/query/') { HttpExchange ex ->
     } catch (Exception e) {
         def entry = INFLIGHT[Thread.currentThread()]
         // a driver whose connection was aborted by /cancel can fail with a bare NullPointerException (c-tree does) - say what really happened
-        def msg = entry?.cancelled ? "Cancelled from Groovy Manager${e.message ? ' (' + e.message + ')' : ''}".toString()
+        def msg = entry?.cancelled ? "${entry.cancelReason ?: 'Cancelled from Groovy Manager'}${e.message ? ' (' + e.message + ')' : ''}".toString()
                                    : (e.message ?: e.class.simpleName).toString()
         log("/query error: ${msg}${who()}")
         if (stream != null && stream.started) {
@@ -1963,12 +1995,14 @@ def capLines = DATABASE.findAll { k, v -> v instanceof Map }.collect { String k,
 log("Connection caps: ${capLines ? capLines.join(', ') : 'none'}")
 log("Auto-shutdown: ${IDLE_TIMEOUT_MS > 0 ? "${IDLE_TIMEOUT_MS / 60000 as long} min idle" : 'disabled'}")
 log("Stuck-request report: ${STUCK_MS > 0 ? "after ${STUCK_MS / 60000 as long} min" : 'disabled'}")
+log("Auto-cancel: ${AUTOCANCEL_GRACE_MS > 0 ? "${AUTOCANCEL_GRACE_MS / 1000 as long}s after the caller's timeout" : 'disabled'}")
 log("Log cap: ${LOG_FILE && LOG_MAX_BYTES > 0 ? "${LOG_FILE.path} rolls at ${LOG_MAX_BYTES / 1048576 as long} MB (keeps the newest half)" : 'disabled'}")
 
 // ── Idle watchdog ─────────────────────────────────────────────────────────────
 scheduler.scheduleAtFixedRate({
     // each check in its own try so one failing never stops the others
     try { reportStuckRequests() } catch (Exception e) { log("Stuck-request check error: ${e.message}") }
+    try { autoCancelAbandoned() } catch (Exception e) { log("Auto-cancel check error: ${e.message}") }
     try { trimLogIfNeeded() }    catch (Exception e) { log("Log trim error: ${e.message}") }
     try {
         if (IDLE_TIMEOUT_MS > 0) {

@@ -1084,7 +1084,7 @@ function dbQueryResults($db,$query,$params=array()){
 *	Without -filename/-process, a result that would push this request near the PHP memory_limit is stopped with an
 *	error string (naming both options) instead of a fatal "Allowed memory size exhausted".
 *	-timeout int  seconds to wait for the answer (default: the timeout attribute on the <database> tag in
-*		config.xml, else 300). Also sent to the Groovy server, which cancels the query just before this
+*		config.xml, else 600). Also sent to the Groovy server, which cancels the query just before this
 *		runs out. For queries longer than a few minutes, run them from cron or use -filename - a web
 *		request that long also hits Apache/PHP-FPM proxy timeouts and the user's patience.
 * @return array|string  array of record-arrays on success; the CSV filename when
@@ -1137,7 +1137,7 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 		$reqbody=$query;
 	}
 
-	//how long to wait for the answer: -timeout, else timeout="N" on the <database> tag in config.xml, else 300s.
+	//how long to wait for the answer: -timeout, else timeout="N" on the <database> tag in config.xml, else 600s.
 	//The value is also sent to the Groovy server (X-WaSQL-Timeout), which sets the statement's querytimeout
 	//just under it - so a query this caller has stopped waiting for is cancelled instead of running on.
 	$timeout=dbGroovyTimeout($db,$params);
@@ -1261,7 +1261,7 @@ function dbGroovyQueryResults($db,$query,$params=array()){
 //---------- begin function dbGroovyTimeout
 /**
 * @describe seconds dbGroovyQueryResults waits for an answer: '-timeout' param, else the timeout attribute on the
-*	database tag in config.xml (e.g. timeout="1800" for a connection used for long reports), else 300
+*	database tag in config.xml (e.g. timeout="1800" for a connection used for long reports), else 600
 * @param db string - database name as configured in config.xml
 * @param params array - the caller's params
 * @return integer seconds (at least 1)
@@ -1277,7 +1277,7 @@ function dbGroovyTimeout($db,$params=array()){
 	if(isset($DATABASE[$key]['timeout']) && isNum($DATABASE[$key]['timeout']) && (int)$DATABASE[$key]['timeout']>0){
 		return (int)$DATABASE[$key]['timeout'];
 	}
-	return 300;
+	return 600;
 }
 //---------- begin function dbGroovyMemoryPressure
 /**
