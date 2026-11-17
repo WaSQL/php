@@ -907,7 +907,10 @@ function sqliteParseConnectParams($params=array()){
 */
 function sqliteDBConnect($params=array()){
 	global $CONFIG;
-	if(!is_array($params) && $params=='single'){$params=array('-single'=>1);}
+	if(!is_array($params)){
+		//bug #91: dbExecuteSQL passes its $return_error flag (int) into this slot - treat any non-array other than 'single' as no params
+		$params=($params==='single')?array('-single'=>1):array();
+	}
 	$params=sqliteParseConnectParams($params);
 	if(!isset($params['-dbname'])){
 		$CONFIG['sqlite_error']="dbname not set";
