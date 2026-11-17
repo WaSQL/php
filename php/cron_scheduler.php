@@ -59,6 +59,10 @@ include_once("{$progpath}/database.php");
 include_once("{$progpath}/user.php");
 include_once("{$progpath}/extras/system.php");
 
+//launch a detached backup.php if any <database backup="daily|weekly|monthly"> is due (no separate cron needed)
+include_once("{$progpath}/backup.php");
+$ok=backupSchedulerCheck();
+
 //this cron requires mysql version 5.7 or newer
 $dbversion=getDBVersion();
 //cronMessage("Mysql Version: {$dbversion}");
