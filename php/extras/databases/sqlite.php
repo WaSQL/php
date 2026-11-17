@@ -113,9 +113,14 @@ function sqliteAddDBIndex($params=array()){
 * @param params array - 
 *	[-recs] array - array of records to insert into specified table
 *	[-csv] array - csv file of records to insert into specified table
-* @return count int
+*	[-upsert] string|array - columns to update when a row conflicts, or 'ignore' to skip conflicting rows.
+*		Without -upsert, conflicting rows are replaced (INSERT OR REPLACE).
+*	[-upserton] string|array - conflict-target columns (a PRIMARY KEY or UNIQUE index); required unless -upsert is 'ignore'
+*	[-upsertwhere] string - optional WHERE condition on the DO UPDATE
+* @return count int - rows inserted or updated (rows skipped by 'ignore' are not counted); 0 on failure - check dbLastError()
 * @usage $ok=sqliteAddDBRecords('comments',array('-csv'=>$afile);
 * @usage $ok=sqliteAddDBRecords('comments',array('-recs'=>$recs);
+* @usage $ok=sqliteAddDBRecords('comments',array('-recs'=>$recs,'-upsert'=>'body,status','-upserton'=>'comment_id'));
 */
 function sqliteAddDBRecords($table='',$params=array()){
 	if(!strlen($table)){
@@ -143,28 +148,110 @@ function sqliteAddDBRecords($table='',$params=array()){
 		return sqliteAddDBRecordsProcess($params['-recs'],$params);
 	}
 }
+//---------- begin function sqliteBuildUpsertClause--------------------
+/**
+* @describe builds the ON CONFLICT clause for sqliteAddDBRecordsProcess from -upsert/-upserton/-upsertwhere
+*	Column names are matched case-insensitively against $fieldinfo and quoted. -upsert fields that are not
+*	columns are skipped (same as postgresqlAddDBRecords). -upsertwhere is raw SQL from the caller.
+* @param params array
+*	[-upsert] string|array - comma list of columns to update on conflict, or 'ignore' to skip conflicting rows
+*	[-upserton] string|array - comma list of conflict-target columns (required unless -upsert is 'ignore')
+*	[-upsertwhere] string - optional WHERE for the DO UPDATE
+* @param fieldinfo array - from sqliteGetDBFieldInfo (lowercase column => info)
+* @return string - '' when -upsert is not set, the clause on success, or a string starting
+*	'sqliteBuildUpsertClause Error' on bad input
+* @usage $clause=sqliteBuildUpsertClause(array('-upsert'=>'amt,qty','-upserton'=>'emp'),$fieldinfo);
+*/
+function sqliteBuildUpsertClause($params,$fieldinfo){
+	if(!isset($params['-upsert']) || (!is_array($params['-upsert']) && !strlen(trim($params['-upsert'])))){
+		return '';
+	}
+	$upsert=is_array($params['-upsert'])?$params['-upsert']:preg_split('/\,/',$params['-upsert']);
+	$upsert=array_values(array_filter(array_map('trim',$upsert),'strlen'));
+	//conflict target
+	$target='';
+	if(isset($params['-upserton'])){
+		$on=is_array($params['-upserton'])?$params['-upserton']:preg_split('/\,/',$params['-upserton']);
+		$safe_on=array();
+		foreach($on as $fld){
+			$fld=trim($fld);
+			if(!strlen($fld)){continue;}
+			$lk=strtolower($fld);
+			$safe=isset($fieldinfo[$lk])?sqliteQuoteIdentifier($fieldinfo[$lk]['name']):false;
+			if($safe===false){
+				return "sqliteBuildUpsertClause Error: -upserton column '{$fld}' is not a column in this table";
+			}
+			$safe_on[]=$safe;
+		}
+		if(count($safe_on)){$target='('.implode(',',$safe_on).')';}
+	}
+	if(count($upsert) && strtolower($upsert[0])=='ignore'){
+		//SQLite allows DO NOTHING with no conflict target (ignores any uniqueness conflict)
+		return strlen($target)?"ON CONFLICT {$target} DO NOTHING":"ON CONFLICT DO NOTHING";
+	}
+	if(!strlen($target)){
+		return "sqliteBuildUpsertClause Error: -upserton is required when -upsert lists columns to update";
+	}
+	$sets=array();
+	foreach($upsert as $fld){
+		$lk=strtolower($fld);
+		if(!isset($fieldinfo[$lk])){continue;}
+		$safe=sqliteQuoteIdentifier($fieldinfo[$lk]['name']);
+		if($safe===false){continue;}
+		$sets[]="{$safe}=excluded.{$safe}";
+	}
+	if(!count($sets)){
+		return "sqliteBuildUpsertClause Error: none of the -upsert columns (".implode(',',$upsert).") are columns in this table";
+	}
+	$clause="ON CONFLICT {$target} DO UPDATE SET ".implode(', ',$sets);
+	if(isset($params['-upsertwhere']) && strlen(trim($params['-upsertwhere']))){
+		$clause.=" WHERE {$params['-upsertwhere']}";
+	}
+	return $clause;
+}
+/**
+* @describe inserts a batch of records into $params['-table'] - worker for sqliteAddDBRecords
+*	Record keys are matched to table columns case-insensitively; keys with no matching column are ignored.
+*	Failures are recorded in $DATABASE['_lastquery']['error'] so dbLastError() reports them.
+* @param recs array - records to insert
+* @param params array - -table (required), plus optional -map, -map2json, -upsert, -upserton, -upsertwhere
+* @return int number of rows inserted (0 on failure - check dbLastError())
+* @usage $cnt=sqliteAddDBRecordsProcess($recs,array('-table'=>'comments'));
+*/
 function sqliteAddDBRecordsProcess($recs,$params=array()){
-	//echo 'sqliteAddDBRecordsProcess'.count($recs).printValue($params);exit;
+	global $DATABASE;
+	global $CONFIG;
+	$DATABASE['_lastquery']=array(
+		'start'=>microtime(true),
+		'stop'=>0,
+		'time'=>0,
+		'error'=>'',
+		'query'=>'',
+		'function'=>'sqliteAddDBRecordsProcess'
+	);
 	if(!isset($params['-table'])){
-		return debugValue("sqliteAddDBRecordsProcess Error: no table"); 
+		$DATABASE['_lastquery']['error']="sqliteAddDBRecordsProcess Error: no table";
+		debugValue($DATABASE['_lastquery']['error']);
+		return 0;
 	}
 	if(!is_array($recs) || !count($recs)){
-		return debugValue("sqliteAddDBRecordsProcess Error: recs is empty"); 
+		$DATABASE['_lastquery']['error']="sqliteAddDBRecordsProcess Error: recs is empty";
+		debugValue($DATABASE['_lastquery']['error']);
+		return 0;
 	}
 	$table=$params['-table'];
 
 	// Validate and quote table name
 	$safe_table = sqliteQuoteIdentifier($table);
 	if($safe_table === false){
-		return debugValue("sqliteAddDBRecordsProcess Error: Invalid table name");
+		$DATABASE['_lastquery']['error']="sqliteAddDBRecordsProcess Error: Invalid table name";
+		debugValue($DATABASE['_lastquery']['error']);
+		return 0;
 	}
 
 	$fieldinfo=sqliteGetDBFieldInfo($table,1);
 	//indexes must be normal - fix if not
-	$xrecs=array();
-	foreach($recs as $rec){$xrecs[]=$rec;}
-	$recs=$xrecs;
-	unset($xrecs);
+	$recs=array_values($recs);
 	//if -map then remap specified fields
 	if(isset($params['-map'])){
 		foreach($recs as $i=>$rec){
@@ -184,22 +271,21 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 			$recs[$i]=array($jsonkey=>$rec);
 		}
 	}
-	//fields
+	//fields: record key => real column name, taken from the first record.
+	//fieldinfo keys are lowercased, so match case-insensitively and write to the column's real name
 	$fields=array();
-	foreach($recs as $i=>$first_rec){
-		foreach($first_rec as $k=>$v){
-			if(!isset($fieldinfo[$k])){
-				unset($recs[$i][$k]);
-				continue;
-			}
-			if(!in_array($k,$fields)){$fields[]=$k;}
-		}
-		break;
+	$first_rec=$recs[0];
+	foreach($first_rec as $k=>$v){
+		$lk=strtolower($k);
+		if(!isset($fieldinfo[$lk])){continue;}
+		if(in_array($fieldinfo[$lk]['name'],$fields)){continue;}
+		$fields[$k]=$fieldinfo[$lk]['name'];
 	}
 	if(!count($fields)){
+		$DATABASE['_lastquery']['error']="sqliteAddDBRecordsProcess Error: no keys in the first record match a column in {$table}";
 		debugValue(array(
 			'function'=>'sqliteAddDBRecordsProcess',
-			'message'=>'No fields in first_rec that match fieldinfo',
+			'message'=>$DATABASE['_lastquery']['error'],
 			'first_rec'=>$first_rec,
 			'fieldinfo_keys'=>array_keys($fieldinfo)
 		));
@@ -208,40 +294,63 @@ function sqliteAddDBRecordsProcess($recs,$params=array()){
 
 	// Validate and quote field names
 	$safe_fields = array();
-	foreach($fields as $fld){
+	foreach($fields as $k=>$fld){
 		$safe_field = sqliteQuoteIdentifier($fld);
 		if($safe_field === false){
-			return debugValue("sqliteAddDBRecordsProcess Error: Invalid field name: {$fld}");
+			$DATABASE['_lastquery']['error']="sqliteAddDBRecordsProcess Error: Invalid field name: {$fld}";
+			debugValue($DATABASE['_lastquery']['error']);
+			return 0;
 		}
-		$safe_fields[$fld] = $safe_field;
+		$safe_fields[$k] = $safe_field;
 	}
 	$fieldstr = implode(',', array_values($safe_fields));
+	//-upsert/-upserton -> ON CONFLICT clause ('' when not upserting); shared by the JSON and fallback paths
+	$upsert=sqliteBuildUpsertClause($params,$fieldinfo);
+	if(stringBeginsWith($upsert,'sqliteBuildUpsertClause Error')){
+		$DATABASE['_lastquery']['error']=$upsert;
+		debugValue($upsert);
+		return 0;
+	}
 
 	//if possible use the JSON way so we can insert more efficiently
 	$jsonstr=encodeJSON($recs,JSON_UNESCAPED_UNICODE);
 	if(strlen($jsonstr)){
-
 		$extracts=array();
-		foreach($fields as $fld){
-			$extracts[]="JSON_EXTRACT(value,'\$.{$fld}') as {$safe_fields[$fld]}";
+		foreach($safe_fields as $k=>$safe_field){
+			//quote the JSON path key so keys with spaces/dots still resolve; escape for the SQL literal
+			$jsonpath=str_replace(array('\\','"'),array('\\\\','\\"'),$k);
+			$jsonpath=str_replace("'","''",$jsonpath);
+			$extracts[]="JSON_EXTRACT(value,'\$.\"{$jsonpath}\"') as {$safe_field}";
 		}
 		$extractstr=implode(','.PHP_EOL,$extracts);
-		$query=<<<ENDOFQUERY
-			INSERT OR REPLACE INTO {$safe_table} ($fieldstr)
+		//no RETURNING: it needs SQLite 3.35+ (bug #92), and PHP's SQLite3Stmt::execute() steps the
+		//statement then resets it, so a RETURNING insert re-ran on the first fetchArray() - every row went in twice
+		if(strlen($upsert)){
+			//INSERT ... SELECT needs a WHERE before ON CONFLICT, else SQLite parses ON as a join constraint
+			$query=<<<ENDOFQUERY
+			INSERT INTO {$safe_table} ({$fieldstr})
 			  SELECT
 			    {$extractstr}
 			  FROM JSON_EACH(?)
-			RETURNING *;
+			  WHERE true
+			{$upsert}
 ENDOFQUERY;
+		}
+		else{
+			$query=<<<ENDOFQUERY
+			INSERT OR REPLACE INTO {$safe_table} ({$fieldstr})
+			  SELECT
+			    {$extractstr}
+			  FROM JSON_EACH(?)
+ENDOFQUERY;
+		}
+		$DATABASE['_lastquery']['query']=$query;
 		$dbh_sqlite=sqliteDBConnect($params);
 		if(!$dbh_sqlite){
-			$err=array(
-				'msg'=>"sqliteAddDBRecordsProcess error",
-				'error'	=> $dbh_sqlite->lastErrorMsg(),
-				'query'	=> $query
-			);
-	    	debugValue(array("sqliteAddDBRecord Connect Error",$err));
-	    	return 0;
+			$err=isset($CONFIG['sqlite_error'])?$CONFIG['sqlite_error']:'unknown';
+			$DATABASE['_lastquery']['error']="sqliteAddDBRecordsProcess connect error: {$err}";
+			debugValue($DATABASE['_lastquery']);
+			return 0;
 		}
 		//enable exceptions
 		$dbh_sqlite->enableExceptions(true);
@@ -250,66 +359,51 @@ ENDOFQUERY;
 			//bind the jsonstring to the prepared statement
 			$stmt->bindParam(1,$jsonstr,SQLITE3_TEXT);
 			$results=$stmt->execute();
-			$recs=sqliteEnumQueryResults($results,$params);
-			return count($recs);
+			$count=$dbh_sqlite->changes();
+			if(is_object($results)){$results->finalize();}
+			$stmt->close();
+			$DATABASE['_lastquery']['stop']=microtime(true);
+			$DATABASE['_lastquery']['time']=$DATABASE['_lastquery']['stop']-$DATABASE['_lastquery']['start'];
+			return $count;
 		}
 		catch (Exception $e) {
-			$msg=$e->getMessage();
+			$DATABASE['_lastquery']['error']=$e->getMessage();
+			$DATABASE['_lastquery']['stop']=microtime(true);
 			debugValue(array(
 				'function'=>'sqliteAddDBRecordsProcess',
 				'message'=>'query failed',
-				'error'=>$msg,
-				'query'=>$query,
-				'params'=>$params
+				'error'=>$DATABASE['_lastquery']['error'],
+				'query'=>$query
 			));
 			return 0;
 		}
 	}
-	//JSON method did not work, try standard prepared statement method
+	//JSON encoding failed (e.g. invalid UTF-8) - fall back to a literal multi-row INSERT
 	$query="INSERT INTO {$safe_table} ({$fieldstr}) VALUES ".PHP_EOL;
 	$values=array();
-	foreach($recs as $i=>$rec){
-		foreach($rec as $k=>$v){
-			if(!in_array($k,$fields)){
-				unset($rec[$k]);
-				continue;
-			}
-			if(!strlen($v)){
-				$rec[$k]='NULL';
+	foreach($recs as $rec){
+		//build each row in $fields order so values always line up with the column list
+		$row=array();
+		foreach($fields as $k=>$fld){
+			$v=isset($rec[$k])?$rec[$k]:null;
+			if(is_array($v)){$v=json_encode($v);}
+			if(is_null($v) || !strlen((string)$v)){
+				$row[]='NULL';
 			}
 			else{
 				$v=sqliteEscapeString($v);
-				$rec[$k]="'{$v}'";
+				$row[]="'{$v}'";
 			}
 		}
-		$values[]='('.implode(',',array_values($rec)).')';
+		$values[]='('.implode(',',$row).')';
 	}
 	$query.=implode(','.PHP_EOL,$values);
-	if(isset($params['-upsert']) && isset($params['-upserton'])){
-		if(!is_array($params['-upsert'])){
-			$params['-upsert']=preg_split('/\,/',$params['-upsert']);
-		}
-		/*
-			ON CONFLICT (id) DO UPDATE SET 
-			  id=excluded.id, username=excluded.username,
-			  password=excluded.password, level=excluded.level,email=excluded.email
-		*/
-		if(strtolower($params['-upsert'][0])=='ignore'){
-			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO NOTHING";
-		}
-		else{
-			$query.=PHP_EOL."ON CONFLICT ({$params['-upserton']}) DO UPDATE SET";
-			$flds=array();
-			foreach($params['-upsert'] as $fld){
-				$flds[]="{$fld}=excluded.{$fld}";
-			}
-			$query.=PHP_EOL.implode(', ',$flds);
-			if(isset($params['-upsertwhere'])){
-				$query.=" WHERE {$params['-upsertwhere']}";
-			}
-		}
+	if(strlen($upsert)){
+		$query.=PHP_EOL.$upsert;
 	}
+	//sqliteExecuteSQL records its own _lastquery (incl. error) for dbLastError()
 	$ok=sqliteExecuteSQL($query);
+	if(!$ok){return 0;}
 	return count($values);
 }
 //---------- begin function sqliteAddDBFields--------------------
@@ -820,6 +914,7 @@ function sqliteListRecords($params=array()){
 * @usage $params=sqliteParseConnectParams($params);
 */
 function sqliteParseConnectParams($params=array()){
+	if(!is_array($params)){$params=array();}
 	global $CONFIG;
 	global $DATABASE;
 	global $USER;
