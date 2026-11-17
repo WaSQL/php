@@ -104,12 +104,12 @@ function backupPolicy(){
 }
 //---------- begin function backupMessage ----------
 /**
-* @describe echo and append a line to php/backup.log (rotates at 1MB). Never pass secrets in $msg.
+* @describe echo and append a line to logs/backup.log (rotates at 1MB). Never pass secrets in $msg.
 * @param msg string
 * @exclude  - this function is for internal use only and thus excluded from the manual
 */
 function backupMessage($msg){
-	$logfile=dirname(__FILE__).'/backup.log';
+	$logfile=dirname(dirname(__FILE__)).'/logs/backup.log';
 	$ctime=time();
 	$cdate=date('Y-m-d H:i:s',$ctime);
 	$msg="{$cdate},{$ctime},{$msg}".PHP_EOL;
@@ -419,7 +419,7 @@ function backupNotify($job,$err){
 	$ok=sendMail(array(
 		'to'=>$job['email'],
 		'subject'=>"Backup FAILED: {$job['name']}",
-		'message'=>"The {$job['freq']} backup of database '{$job['name']}' failed on {$host}.".PHP_EOL.PHP_EOL.$err.PHP_EOL.PHP_EOL."It will be retried hourly. See php/backup.log."
+		'message'=>"The {$job['freq']} backup of database '{$job['name']}' failed on {$host}.".PHP_EOL.PHP_EOL.$err.PHP_EOL.PHP_EOL."It will be retried hourly. See logs/backup.log."
 	));
 	return true;
 }
