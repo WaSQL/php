@@ -1698,7 +1698,6 @@ function firebirdOptimizations($params=array()){
 	$recs=firebirdQueryResults("SELECT IFNULL(SUM(INDEX_LENGTH),0) AS val FROM information_schema.TABLES WHERE ENGINE='MyISAM'");
 	$results['myisam_index_length']=$recs[0]['val'];
 	
-	echo printValue($results);exit;
 	$recs=array();
 	//order by priority
 	$recs=sortArrayByKeys($recs,array('priority'=>SORT_ASC));

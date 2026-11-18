@@ -72,7 +72,7 @@ def addIndex(Map params) {
 			// Index doesn't exist, create it
 			def query = "CREATE ${unique} INDEX ${params['-name']} ON ${params['-table']} (${params['-fields']})"
 			sql.execute(query)
-			sql.commit()
+			if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		}
 		sql.close()
 		return true
@@ -99,8 +99,8 @@ def addIndex(Map params) {
 */
 def connect(Map params) {
 	if (!params.dbhost) {
-		System.err.println("Missing dbhost attribute in database tag named '${params.name}'")
-		System.exit(123)
+		// throw, never System.exit: inside the Groovy server an exit would kill the daemon and every in-flight query
+		throw new IllegalArgumentException("Missing dbhost attribute in database tag named '${params.name}'")
 	}
 
 	def dbhost = params.dbhost
@@ -137,7 +137,10 @@ def connect(Map params) {
 		}
 
 		def driver = 'oracle.jdbc.OracleDriver'
-		def sql = Sql.newInstance(url, dbuser, dbpass, driver)
+		// credentials as connection properties so the connection can come from the optional pool (see wasqlOpenSql in server.groovy)
+		def props = new java.util.Properties()
+		props.setProperty('user', (dbuser ?: '').toString()); props.setProperty('password', (dbpass ?: '').toString())
+		def sql = binding.hasVariable('wasqlOpenSql') ? binding.getVariable('wasqlOpenSql').call(url, props, driver, params) : Sql.newInstance(url, props, driver)
 
 		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
 		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
@@ -164,7 +167,7 @@ def executeSQL(String query, Map params = [:]) {
 
 		// Execute the query
 		sql.execute(query)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {
@@ -194,7 +197,7 @@ def executePS(String query, List args, Map params = [:]) {
 
 		// Execute the prepared statement
 		sql.executeUpdate(query, args)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {
@@ -380,19 +383,21 @@ def queryResults(String query, Map params = [:]) {
 			// rows collect in a list as before. Only used with format: 'list' (the server's own calls).
 			def recs = params.rowsink != null ? params.rowsink : []
 
-			sql.eachRow(query) { row ->
-				// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
-				if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
-				def rec = [:]
-				def rowResult = row.toRowResult()
-
-				// Convert to lowercase field names for consistency
-				rowResult.each { key, value ->
-					rec[key.toLowerCase()] = value
-				}
-
+			// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them.
+			// The lookup is done once, not per row. Column names are lower-cased once from the result's metadata (the meta closure
+			// runs before the first row) instead of building a Map with toRowResult() and copying it into a second one for every row.
+			def cancelled = binding.hasVariable('wasqlCancelled') ? binding.getVariable('wasqlCancelled') : null
+			def keys = null
+			sql.eachRow(query, { meta ->
+				int n = meta.columnCount
+				keys = new String[n]
+				for (int i = 0; i < n; i++) keys[i] = meta.getColumnLabel(i + 1).toLowerCase()
+			}, { row ->
+				if (cancelled != null && cancelled.call()) throw new java.sql.SQLException('request cancelled')
+				def rec = new LinkedHashMap()
+				for (int i = 0; i < keys.length; i++) rec[keys[i]] = row[i]
 				recs << rec
-			}
+			})
 
 			// Return JSON by default, or native format if requested
 			def format = params.getOrDefault('format', 'json')

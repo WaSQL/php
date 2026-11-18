@@ -220,6 +220,33 @@ Drivers take part through `params.rowsink`: their list path starts with `def rec
 
 ---
 
+### Connection pooling (opt-in)
+
+By default every request opens its own database connection and closes it afterwards - simple and safe, but a login per
+query is the main cost for a busy site on a remote database. Add `pool="1"` to a `<database>` tag in `config.xml` and that
+database's connections come from a HikariCP pool shared by all callers instead (then `/reload`).
+
+| Attribute | Default | Meaning |
+|---|---|---|
+| `pool` | off | `1` turns pooling on for this database |
+| `pool_max` | `max_connections` if set, else 20 | most connections the pool will ever hold - keep it within what the database allows |
+| `pool_min_idle` | 0 | connections kept open while idle |
+| `pool_idle_seconds` | 300 | an idle connection above `pool_min_idle` is closed after this long |
+| `pool_lifetime_seconds` | 1800 | a connection is replaced after this long (keep it below the database's own connection timeout) |
+| `pool_wait_seconds` | 30 | how long a request waits for a free connection before it gets HTTP 503 "Busy" |
+| `pool_test_query` | - | only for a driver without JDBC4 `isValid()` |
+| `pool_writes` | off | `1` also pools `/execute` and `/executeps` |
+
+Things to know:
+- **Writes are not pooled by default.** A statement can leave session state on its connection (`SET`, `USE`, temp tables) which the next caller
+  would inherit, so `/execute` and `/executeps` always use a fresh connection unless `pool_writes="1"`.
+- **c-tree:** FairCom licenses concurrent sessions and an idle pooled connection still holds one. Leave c-tree unpooled, or keep `pool_idle_seconds` short.
+  `max_connections` / `max_user_connections` keep working in front of the pool.
+- **File databases** (SQLite, DuckDB, Access, CSV): pooling is possible but rarely useful; never pool `:memory:` databases (each connection is a different database).
+- **Cancel** (`/cancel`, auto-cancel) discards the pooled connection instead of returning it, so a cancelled query can never be handed to the next caller.
+- **/reload** retires every pool; new ones are built from the new config on demand. `/status` lists each pool (`max`, `active`, `idle`, `total`, `waiting`).
+- Needs `HikariCP-*.jar` and `slf4j-api-*.jar` in `lib/`. If they are missing the server logs one line and the database runs unpooled.
+
 ## Keeping the Server Running
 
 By default the server shuts itself down after **60 minutes of idle** to conserve resources. There are two approaches depending on how you want to manage it.

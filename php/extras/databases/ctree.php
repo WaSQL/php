@@ -1681,11 +1681,28 @@ function ctreeJsonDBGetAuthToken($params=array()){
  		$ctreeJsonDBGetAuthTokenCache=$post['json_array']['authToken'];
  		return $ctreeJsonDBGetAuthTokenCache;
 	}
-	else{
-		echo "Failed to get authtoken";
-	}
-	echo printValue($post);
-	exit;
+	//no token: record why and hand back '' - never echo+exit, that killed the whole process (a cron_worker died
+	//	here and left its _cron row running=1 with a dead pid, with the message going to stdout instead of the log)
+	$code=isset($post['code'])?$post['code']:'';
+	ctreeJsonDBSetError("ctreeJsonDBGetAuthToken: failed to get an authToken (HTTP {$code})",$post);
+	return '';
+}
+//---------- begin function ctreeJsonDBSetError ----------
+/**
+* @describe records a c-tree JSON-DB API failure where dbLastError() and the engine's _lastquery record can both see it,
+*	and writes the detail to the debug log. Replaces the echo+exit error handling these functions used to have.
+* @param msg string - what failed
+* @param detail mixed - extra detail (response, request) for the debug log only
+* @return string the message
+* @exclude - internal helper
+* @usage ctreeJsonDBSetError('ctreeJsonDBCallAPI: invalid json',$json);
+*/
+function ctreeJsonDBSetError($msg,$detail=null){
+	global $DATABASE;
+	$DATABASE['_lastquery']['error']=$msg;
+	if(function_exists('dbSetLast')){dbSetLast(array('error'=>$msg));}
+	debugValue(array($msg,$detail));
+	return $msg;
 }
 function ctreeJsonDBBaseURL(){
 	$params=ctreeParseConnectParams($params);
@@ -1715,7 +1732,10 @@ function ctreeJsonDBQueryResults($query='',$params=array()){
 		'forceRecordCount'=>true
 	));
 	if(!isset($post['cursorId'])){
-		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);exit;
+		//no cursor: the server's own message if it sent one (the error array CallAPI hands back), else say so
+		$why=(isset($post['errorMessage']) && strlen($post['errorMessage']))?$post['errorMessage']:'no cursor was returned';
+		ctreeJsonDBSetError("ctreeJsonDBQueryResults error: {$why}",$post);
+		return array();
 	}
 	$cursorid=$post['cursorId'];
 	$total_cnt=commonCoalesce($post['totalRecordCount'],0);
@@ -1734,7 +1754,12 @@ function ctreeJsonDBQueryResults($query='',$params=array()){
 	);
 	do {
 		$xrecs=ctreeJsonDBCallAPI('db','getRecordsFromCursor',$options,$response_options);
-		if(isset($recs['errorMessage'])){echo printValue($xrecs);exit;}
+		//(this used to test $recs, which never holds an error - the failed fetch was never noticed)
+		if(isset($xrecs['errorMessage']) && strlen($xrecs['errorMessage'])){
+			ctreeJsonDBSetError("ctreeJsonDBQueryResults error: {$xrecs['errorMessage']}",$xrecs);
+			$ok=ctreeJsonDBCloseCursor();
+			return array();
+		}
 		if(!is_array($xrecs)){$recs=array();}
 		$xrecs_cnt = count($xrecs);
 		$recs=array_merge($recs,$xrecs);
@@ -1787,8 +1812,10 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 	$cursorid=commonCoalesce($post['result']['cursorId'],$post['cursorId'],'');
 	//echo printValue($recs);exit;
 	if(!strlen($cursorid)){
-		echo "ctreeJsonDBQueryResults Error - no cursor".printValue($post);
-		exit;
+		$why=(isset($post['errorMessage']) && strlen($post['errorMessage']))?$post['errorMessage']:'no cursor was returned';
+		ctreeJsonDBSetError("ctreeJsonDBDumpTable error: {$why}",$post);
+		$ok=appendFileContents($logfile,"{$ctime} -- Error: {$why}".PHP_EOL);
+		return '';
 	}
 	$total_cnt=commonCoalesce($post['result']['totalRecordCount'],$post['totalRecordCount'],0);
 	if($total_cnt > 0 && $total_cnt < $fetch){$fetch=$total_cnt;}
@@ -1854,10 +1881,15 @@ function ctreeJsonDBDumpTable($tablename,$params=array()){
 }
 function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array()){
 	$url=ctreeJsonDBBaseURL();
+	$authToken=ctreeJsonDBGetAuthToken($params);
+	if(!strlen((string)$authToken)){
+		//ctreeJsonDBGetAuthToken already recorded why; callers test errorMessage on the array we return
+		return array('errorCode'=>'AUTH','errorMessage'=>dbGetLastError());
+	}
 	$json=array(
 		'api'=>$api,
 		'action'=>$action,
-		'authToken'=>ctreeJsonDBGetAuthToken($params),
+		'authToken'=>$authToken,
 		'requestId'=>ctreeJsonDBRequestId()
 	);
 	//echo printValue($json);
@@ -1874,13 +1906,14 @@ function ctreeJsonDBCallAPI($api,$action,$params=array(),$responseOptions=array(
 
 	$jsonstr=encodeJSON($json,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);
 	if(!strlen($jsonstr)){
-		echo "ctreeJsonDBCallAPI ERROR: invalid json".printValue($json);exit;
+		$msg=ctreeJsonDBSetError("ctreeJsonDBCallAPI error: could not encode the {$action} request as JSON",$action);
+		return array('errorCode'=>'JSON','errorMessage'=>$msg);
 	}
 	$post=postJSON($url,$jsonstr,$params);
-	//if($action=='getRecordsByTable'){echo printValue($post);exit;}
-	if($post['code']==400){
-		//$ok=fmqDeleteSession();
-		echo "ctreeJsonDBCallAPI ERROR: ".PHP_EOL.PHP_EOL.$jsonstr.PHP_EOL.PHP_EOL.printValue($post);exit;
+	if(isset($post['code']) && $post['code']==400){
+		//the request carries the auth token - keep it out of the debug detail, log the response only
+		$msg=ctreeJsonDBSetError("ctreeJsonDBCallAPI error: HTTP 400 from the server for {$action}",$post);
+		return array('errorCode'=>'HTTP400','errorMessage'=>$msg);
 	}
 	//echo printValue($post['json_array']);
 	if(!isset($post['json_array'])){

@@ -24,13 +24,15 @@ def DEBUG = []
 
 //---------- begin function abort
 /**
-* @describe aborts execution with an error message and a non-zero exit code
+* @describe aborts execution with an error message and a non-zero exit code. Inside the Groovy server (detected by the
+*	wasqlTrackConnection binding variable) it rethrows instead of exiting, so one bad request cannot kill the daemon
 * @param params err Exception
 * @return void
 * @usage
 *	common.abort(err)
 */
 def abort(Exception err) {
+    if (binding.hasVariable('wasqlTrackConnection')) throw err
     System.err.println("Error: ${err.message}")
     err.printStackTrace()
     System.exit(123)

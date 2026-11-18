@@ -134,7 +134,6 @@ def connect(Map params) {
 			def tcpErr = preflightTcp(hm.group(1), hm.group(2) ? hm.group(2) as int : 6597, 5000)
 			if (tcpErr) { throw new SQLException(tcpErr) }
 		}
-		java.sql.DriverManager.setLoginTimeout(15)
 
 		// Pass charset as a connection property so multi-byte characters
 		// (Japanese, Korean, etc.) are not corrupted to '?' by the driver.
@@ -144,7 +143,19 @@ def connect(Map params) {
 		props.setProperty('password', dbpass)
 		props.setProperty('charSet', params.charset ?: 'UTF-8')
 
-		def sql = Sql.newInstance(url, props, driver)
+		// The login timeout is JVM-global (DriverManager) and other drivers read it as their default, so it used to cap
+		// EVERY database's login at 15s from the first c-tree call on. Apply it for this login only and put the old value
+		// back; the lock keeps two overlapping c-tree logins from restoring each other's value.
+		def sql
+		synchronized (java.sql.DriverManager) {
+			int previousTimeout = java.sql.DriverManager.getLoginTimeout()
+			java.sql.DriverManager.setLoginTimeout(15)
+			try {
+				sql = binding.hasVariable('wasqlOpenSql') ? binding.getVariable('wasqlOpenSql').call(url, props, driver, params) : Sql.newInstance(url, props, driver)
+			} finally {
+				java.sql.DriverManager.setLoginTimeout(previousTimeout)
+			}
+		}
 
 		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
 		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
@@ -171,7 +182,7 @@ def executeSQL(String query, Map params = [:]) {
 
 		// Execute the query
 		sql.execute(query)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {
@@ -201,7 +212,7 @@ def executePS(String query, List args, Map params = [:]) {
 
 		// Execute the prepared statement
 		sql.executeUpdate(query, args)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {

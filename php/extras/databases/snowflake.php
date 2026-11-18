@@ -1376,6 +1376,29 @@ function snowflakeQueryHeader($query,$params=array()){
 */
 function snowflakeQueryResults($query,$params=array()){
 	global $DATABASE;
+	//the failure paths of snowflakeQueryResultsRun write $DATABASE['_lastquery']['error'] (or return an error string),
+	//but dbLastError() reads the dbSetLast() record - copy the failure there so it can tell "query failed" from "zero rows"
+	if(function_exists('dbSetLast')){dbSetLast(array('error'=>'','function'=>'snowflakeQueryResults'));}
+	$res=snowflakeQueryResultsRun($query,$params);
+	if(function_exists('dbSetLast')){
+		$err='';
+		if(isset($DATABASE['_lastquery']['error'])){
+			$err=$DATABASE['_lastquery']['error'];
+			if(is_array($err)){$err=json_encode($err);}
+		}
+		if(!strlen((string)$err) && is_string($res) && !(isset($params['-filename']) && is_file($res))){$err=$res;}
+		if(strlen((string)$err)){dbSetLast(array('error'=>(string)$err));}
+	}
+	return $res;
+}
+//---------- begin function snowflakeQueryResultsRun ----------
+/**
+* @describe does the work for snowflakeQueryResults(); kept separate so the wrapper can record failures in dbLastError()
+* @exclude - internal helper for snowflakeQueryResults
+* @usage $res=snowflakeQueryResultsRun($query,$params);
+*/
+function snowflakeQueryResultsRun($query,$params=array()){
+	global $DATABASE;
 	global $CONFIG;
 	$DATABASE['_lastquery']=array(
 		'start'=>microtime(true),

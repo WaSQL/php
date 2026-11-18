@@ -61,7 +61,8 @@ def connect(Map params) {
 	try {
 		def url    = "jdbc:duckdb:${dbname == ':memory:' ? '' : dbname}"
 		def driver = 'org.duckdb.DuckDBDriver'
-		def sql = Sql.newInstance(url, '', '', driver)
+		def props = new java.util.Properties()
+		def sql = binding.hasVariable('wasqlOpenSql') ? binding.getVariable('wasqlOpenSql').call(url, props, driver, params) : Sql.newInstance(url, props, driver)
 		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
 		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
 		return sql
@@ -246,13 +247,19 @@ def queryResults(String query, Map params = [:]) {
 		// straight to the caller, so the result set is never held in memory. It also answers size(). Without it,
 		// rows collect in a list as before. Only used with format: 'list' (the server's own calls).
 		def recs = params.rowsink != null ? params.rowsink : []
-		sql.eachRow(query) { row ->
-			// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
-			if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
-			def rec = [:]
-			row.toRowResult().each { k, v -> rec[k.toLowerCase()] = v }
+		// column names are lower-cased once from the result's metadata, and the cancel lookup is done once, not per row
+		def cancelled = binding.hasVariable('wasqlCancelled') ? binding.getVariable('wasqlCancelled') : null
+		def keys = null
+		sql.eachRow(query, { meta ->
+			int n = meta.columnCount
+			keys = new String[n]
+			for (int i = 0; i < n; i++) keys[i] = meta.getColumnLabel(i + 1).toLowerCase()
+		}, { row ->
+			if (cancelled != null && cancelled.call()) throw new java.sql.SQLException('request cancelled')
+			def rec = new LinkedHashMap()
+			for (int i = 0; i < keys.length; i++) rec[keys[i]] = row[i]
 			recs << rec
-		}
+		})
 
 		def format = params.getOrDefault('format', 'json')
 		if (format == 'json') {

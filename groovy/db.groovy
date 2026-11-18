@@ -15,6 +15,8 @@ import groovy.transform.Field
 @Field DATABASE = null
 @Field CONFIG = null
 @Field common = null
+// compiled driver modules, see loadModule
+@Field MODULE_CACHE = new java.util.concurrent.ConcurrentHashMap<String, Map>()
 
 try {
     // First try to use PHP-provided variables (when running embedded)
@@ -203,7 +205,7 @@ def queryResults(String dbname, String query, Map params = [:]) {
             def msexceldb = loadModule('msexceldb')
             return msexceldb.queryResults(query, params)
         }
-        else if (dbtype?.startswith('firebird')) {
+        else if (dbtype?.startsWith('firebird')) {
             def firebirddb = loadModule('firebirddb')
             return firebirddb.queryResults(query, params)
         }
@@ -280,7 +282,19 @@ def executeSQL(String dbname, String query, Map params = [:]) {
             def postgresdb = loadModule('postgresdb')
             return postgresdb.executeSQL(query, params)
         }
-        else if (dbtype?.startswith('firebird')) {
+        else if (dbtype?.startsWith('msaccess')) {
+            def msaccessdb = loadModule('msaccessdb')
+            return msaccessdb.executeSQL(query, params)
+        }
+        else if (dbtype?.startsWith('mscsv')) {
+            def mscsvdb = loadModule('mscsvdb')
+            return mscsvdb.executeSQL(query, params)
+        }
+        else if (dbtype?.startsWith('msexcel')) {
+            def msexceldb = loadModule('msexceldb')
+            return msexceldb.executeSQL(query, params)
+        }
+        else if (dbtype?.startsWith('firebird')) {
             def firebirddb = loadModule('firebirddb')
             return firebirddb.executeSQL(query, params)
         }
@@ -360,6 +374,14 @@ def executePS(String dbname, String query, Map args = [:], Map params = [:]) {
         else if (dbtype?.startsWith('postgre')) {
             def postgresdb = loadModule('postgresdb')
             return postgresdb.executePS(query, args, params)
+        }
+        else if (dbtype?.startsWith('msaccess')) {
+            def msaccessdb = loadModule('msaccessdb')
+            return msaccessdb.executePS(query, args, params)
+        }
+        else if (dbtype?.startsWith('firebird')) {
+            def firebirddb = loadModule('firebirddb')
+            return firebirddb.executePS(query, args, params)
         }
         else {
             return "Unsupported database type: ${dbtype}"
@@ -445,7 +467,7 @@ def connect(String dbname, Map params = [:]) {
             def msexceldb = loadModule('msexceldb')
             return msexceldb.connect(params)
         }
-        else if (dbtype?.startswith('firebird')) {
+        else if (dbtype?.startsWith('firebird')) {
             def firebirddb = loadModule('firebirddb')
             return firebirddb.connect(params)
         }
@@ -578,11 +600,17 @@ def convertStr(Object o) {
 */
 private def loadModule(String moduleName) {
     def moduleFile = new File(new File(getClass().protectionDomain.codeSource.location.path).parent, "${moduleName}.groovy")
-    if (moduleFile.exists()) {
-        return new GroovyShell().parse(moduleFile)
-    } else {
+    if (!moduleFile.exists()) {
         throw new FileNotFoundException("Module not found: ${moduleName}.groovy")
     }
+    // Compile once and reuse: parsing on every call recompiled the driver for each query (slow, and every compile
+    // leaves a fresh classloader and its classes in metaspace). The entry is rebuilt if the file changes on disk.
+    long stamp = moduleFile.lastModified()
+    def cached = MODULE_CACHE.get(moduleName)
+    if (cached != null && cached.stamp == stamp) return cached.script
+    def script = new GroovyShell().parse(moduleFile)
+    MODULE_CACHE.put(moduleName, [stamp: stamp, script: script])
+    return script
 }
 
 // Export for use as module

@@ -29,6 +29,7 @@ import com.sun.net.httpserver.HttpExchange
 import groovy.json.JsonGenerator
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import groovy.sql.Sql
 import groovy.transform.Field
 import java.lang.management.ManagementFactory
 import java.util.concurrent.Executors
@@ -148,6 +149,8 @@ import java.util.concurrent.atomic.AtomicLong
     oracledb   : 'oracle.jdbc.OracleDriver',
     postgresdb : 'org.postgresql.Driver',
     snowflakedb: 'net.snowflake.client.jdbc.SnowflakeDriver',
+    firebirddb : 'org.firebirdsql.jdbc.FBDriver',
+    mscsvdb    : 'org.relique.jdbc.csv.CsvDriver',
     sqlitedb   : 'org.sqlite.JDBC',
 ]
 
@@ -237,6 +240,9 @@ Object loadModule(String name) {
             def moduleBinding = new Binding()
             moduleBinding.setVariable('wasqlTrackConnection', { conn -> trackConnection(conn) })
             moduleBinding.setVariable('wasqlCancelled', { -> isCancelled() })
+            // wasqlOpenSql: every driver's connect() opens its connection through this - a pooled one when the <database> tag
+            // says pool="1", otherwise a plain new connection exactly as before (see openSql)
+            moduleBinding.setVariable('wasqlOpenSql', { url, props, driverClass, params -> openSql(url as String, props as Properties, driverClass as String, params as Map) })
             new GroovyShell(parentCL, moduleBinding).evaluate(new File(SCRIPT_DIR, "${n}.groovy"))
         } finally {
             Thread.currentThread().contextClassLoader = savedCL
@@ -600,6 +606,27 @@ class RowStream {
     }
 }
 
+//---------- begin class CappedOutputStream
+/**
+* @describe in-memory output stream that keeps at most max bytes and silently drops the rest (truncated is set), used for /eval output
+*/
+class CappedOutputStream extends ByteArrayOutputStream {
+    final int max
+    boolean truncated = false
+    CappedOutputStream(int max) { this.max = max }
+    @Override synchronized void write(int b) {
+        if (count >= max) { truncated = true; return }
+        super.write(b)
+    }
+    @Override synchronized void write(byte[] b, int off, int len) {
+        int room = max - count
+        if (room <= 0) { truncated = true; return }
+        if (len > room) { len = room; truncated = true }
+        super.write(b, off, len)
+    }
+}
+@Field int EVAL_OUTPUT_MAX_BYTES = (System.getenv('WASQL_GROOVY_EVAL_OUTPUT_MAX_MB') ?: '5').toInteger() * 1024 * 1024
+
 //---------- begin function callerTimeout
 /**
 * @describe applies the caller's own timeout (X-WaSQL-Timeout header, seconds) as the statement's querytimeout, just under it,
@@ -666,7 +693,7 @@ String wrapErr(String msg) {
 *	respond(ex, errorCode(e), wrapErr(e.message))
 */
 int errorCode(Exception e) {
-    if (e instanceof BusyException) return 503
+    if (e instanceof BusyException || e instanceof java.sql.SQLTransientConnectionException) return 503
     (e instanceof IllegalArgumentException
   || e instanceof java.sql.SQLSyntaxErrorException
   || e instanceof UnsupportedOperationException) ? 400 : 500
@@ -774,6 +801,30 @@ List slotStatus() {
     }.sort { it.db }
 }
 
+// USER_SLOTS keys that were fully idle at the previous sweep (see pruneUserSlots)
+@Field Set USER_SLOTS_IDLE = new HashSet<String>()
+
+//---------- begin function pruneUserSlots
+/**
+* @describe called by the watchdog every minute - drops per-caller semaphores nobody holds or waits on, so USER_SLOTS does not
+*	grow by one entry per distinct user@host forever. A semaphore is removed only after it was idle at two sweeps in a row
+*	(about a minute apart), which keeps the window where a request holds a just-fetched semaphore it has not acquired yet
+*	practically closed.
+* @return void
+* @usage
+*	pruneUserSlots()
+*/
+void pruneUserSlots() {
+    Set idleNow = new HashSet<String>()
+    USER_SLOTS.each { String key, sem ->
+        int limit = key.substring(key.lastIndexOf('|') + 1) as int
+        boolean idle = sem.availablePermits() == limit && !sem.hasQueuedThreads()
+        if (!idle) return
+        if (USER_SLOTS_IDLE.contains(key)) USER_SLOTS.remove(key, sem) else idleNow << key
+    }
+    USER_SLOTS_IDLE = idleNow
+}
+
 //---------- begin function checkAuth
 /**
 * @describe checks the X-WaSQL-Token request header against the server token - on failure it has already written a 401 response
@@ -784,7 +835,9 @@ List slotStatus() {
 *	if (!checkAuth(ex)) return
 */
 boolean checkAuth(HttpExchange ex) {
-    if (ex.requestHeaders.getFirst('X-WaSQL-Token') == TOKEN) return true
+    // constant-time comparison: String.equals stops at the first differing character, which leaks how much of the token matched
+    def sent = ex.requestHeaders.getFirst('X-WaSQL-Token')
+    if (sent != null && java.security.MessageDigest.isEqual(sent.getBytes('UTF-8'), TOKEN.getBytes('UTF-8'))) return true
     respond(ex, 401, wrapErr('Unauthorized'))
     return false
 }
@@ -798,11 +851,16 @@ boolean checkAuth(HttpExchange ex) {
 * @usage
 *	doShutdown('idle timeout')
 */
+@Field final java.util.concurrent.atomic.AtomicBoolean SHUTTING_DOWN = new java.util.concurrent.atomic.AtomicBoolean(false)
+
 void doShutdown(String reason) {
+    // /shutdown and the idle watchdog can fire together - only the first one runs the shutdown
+    if (!SHUTTING_DOWN.compareAndSet(false, true)) return
     log("Shutting down: ${reason}")
     PID_FILE.delete()
     TOKEN_FILE.delete()
     serverRef?.stop(5)
+    closeAllPools('shutdown')
     schedulerRef?.shutdown()
     schedulerRef?.awaitTermination(5, TimeUnit.SECONDS)
     System.exit(0)
@@ -830,6 +888,7 @@ def route(String path, Closure handler) {
         entry.reported = false
         entry.code     = 0      // set by respondAs; still 0 if the handler died without responding
         entry.conns    = new java.util.concurrent.CopyOnWriteArrayList()   // JDBC connections opened by this request (trackConnection)
+        entry.pooledDs = new java.util.concurrent.ConcurrentHashMap()      // connection -> its pool, for the ones borrowed from a pool (openSql)
         entry.cancelled = false
         // who is calling - sent by PHP's dbGroovyHttp (blank for callers that do not send them)
         entry.user     = cleanIdentity(ex.requestHeaders.getFirst('X-WaSQL-User'), 64)
@@ -841,6 +900,8 @@ def route(String path, Closure handler) {
         entry.clientGone = false
         INFLIGHT[t] = entry
         try { handler.call(ex) } finally {
+            // a handler that died without answering would leave the connection open until the client gives up
+            if (entry.code == 0) { try { ex.close() } catch (Exception ignored) {} }
             INFLIGHT.remove(t)
             // a long query counts as activity until it ENDS - otherwise a 50-minute query leaves only 10 minutes
             // of the 60-minute idle window, and the server could shut down right under the caller's next request
@@ -860,6 +921,7 @@ def route(String path, Closure handler) {
 // the monitoring/admin calls Groovy Manager itself makes - never counted
 @Field List UNCOUNTED_ENDPOINTS = ['/status', '/stats', '/errors', '/cancel']
 @Field int  ERROR_LOG_MAX = 200
+@Field int  STATS_MAX_USERS = 500     // distinct callers tracked in by_user until the next reset
 
 //---------- begin function resetStats
 /**
@@ -935,8 +997,11 @@ void recordStats(Map entry, long ms) {
         int slot = (int) (minute % 60)
         if (STATS.minute_key[slot] != minute) { STATS.minute_key[slot] = minute; STATS.minute_n[slot] = 0L }
         STATS.minute_n[slot]++
-        if (db) bumpCounter(STATS.by_db, db, ms, failed)
-        if (entry.user) bumpCounter(STATS.by_user, entry.user as String, ms, failed)
+        // the db name comes from the URL and the user from a header, both caller-controlled (and recorded even for
+        // requests that failed authentication) - only count configured databases and cap the user list, so junk
+        // names cannot grow these maps without bound
+        if (db && DATABASE.containsKey(db)) bumpCounter(STATS.by_db, db, ms, failed)
+        if (entry.user && (STATS.by_user.containsKey(entry.user) || STATS.by_user.size() < STATS_MAX_USERS)) bumpCounter(STATS.by_user, entry.user as String, ms, failed)
         STATS.slowest << rec
         STATS.slowest.sort { -it.ms }
         if (STATS.slowest.size() > 10) STATS.slowest = STATS.slowest.take(10)
@@ -1061,6 +1126,167 @@ boolean isCancelled() {
     return entry != null && entry.cancelled
 }
 
+// ── Optional connection pooling (HikariCP) ───────────────────────────────────────
+// OFF unless the <database> tag says pool="1". Every request otherwise opens (and closes) its own connection, which is
+// simple and safe but costs a login per query - the dominant cost for a busy site on a remote database. Pooled
+// connections are reused across requests and callers, so:
+//   * the pool maximum should be at most what the database allows (it defaults to max_connections when that is set);
+//   * c-tree (FairCom licenses concurrent sessions) holds licence slots while connections sit idle - leave it unpooled
+//     unless you also keep pool_idle_seconds short;
+//   * session state a statement leaves behind (SET, USE, temp tables) stays on the connection for the next caller, so
+//     the write endpoints (/execute, /executeps) bypass the pool unless pool_writes="1".
+// Tag attributes: pool="1", pool_max (default = max_connections, else 20), pool_min_idle (0), pool_idle_seconds (300),
+// pool_lifetime_seconds (1800), pool_wait_seconds (30: how long a request waits for a free connection before a 503),
+// pool_test_query (only for drivers without JDBC4 isValid()), pool_writes ("1" = also pool /execute and /executeps).
+@Field def POOLS = new java.util.concurrent.ConcurrentHashMap<String, Object>()   // "name|fingerprint" -> HikariDataSource
+@Field boolean POOL_JAR_WARNED = false
+
+//---------- begin function poolSettings
+/**
+* @describe the pool settings of a database, or null when the database is not pooled (no pool="1" on its tag)
+* @param params params Map - the driver params (the database tag's attributes)
+* @return map
+*	[max, minIdle, idleMs, lifeMs, waitMs, testQuery, writes] or null
+* @usage
+*	def s = poolSettings(params)
+*/
+Map poolSettings(Map params) {
+    if (!(params?.pool?.toString()?.trim()?.toLowerCase() in ['1', 'true', 'yes', 'on'])) return null
+    def num = { String key, long dflt, long min ->
+        def raw = params[key]?.toString()?.trim()
+        raw?.isLong() ? Math.max(min, raw.toLong()) : dflt
+    }
+    def caps = dbSlotLimits(params)
+    long dfltMax = caps.db > 0 ? caps.db : 20L
+    int max = num('pool_max', dfltMax, 1) as int
+    return [
+        max      : max,
+        minIdle  : Math.min(max, num('pool_min_idle', 0L, 0) as int),
+        idleMs   : num('pool_idle_seconds', 300L, 10) * 1000L,
+        lifeMs   : num('pool_lifetime_seconds', 1800L, 30) * 1000L,
+        waitMs   : num('pool_wait_seconds', 30L, 1) * 1000L,
+        testQuery: params.pool_test_query?.toString()?.trim() ?: null,
+        writes   : (params.pool_writes?.toString()?.trim() in ['1', 'true', 'yes'])
+    ]
+}
+
+//---------- begin function openSql
+/**
+* @describe opens the connection a driver's connect() asks for: borrowed from the database's pool when it is pooled, otherwise a
+*	plain new connection (the original behaviour). Either way the result is a groovy.sql.Sql whose close() ends the
+*	connection (for a pooled one, returns it to the pool). The write endpoints always get a plain connection unless pool_writes="1".
+*	A pool that has no free connection within pool_wait_seconds answers BusyException (HTTP 503).
+* @param params url string, props Properties, driverClass string, params Map
+* @return object
+*	groovy.sql.Sql
+* @usage
+*	def sql = openSql(url, props, 'org.postgresql.Driver', params)
+*/
+Sql openSql(String url, Properties props, String driverClass, Map params) {
+    def entry = INFLIGHT[Thread.currentThread()]
+    def s = poolSettings(params)
+    boolean writeCall = entry != null && (entry.ctx in ['/execute/', '/executeps/'])
+    if (s == null || (writeCall && !s.writes)) return Sql.newInstance(url, props, driverClass)
+    def ds = poolFor(params.name as String, url, props, driverClass, s)
+    if (ds == null) return Sql.newInstance(url, props, driverClass)     // HikariCP jar missing - warned once, runs unpooled
+    def conn
+    try {
+        conn = ds.getConnection()
+    } catch (java.sql.SQLTransientConnectionException te) {
+        if (te.cause != null) throw new java.sql.SQLException("Cannot connect to '${params.name}': ${te.cause.message ?: te.message}".toString(), te.cause)   // a real connect failure
+        throw new BusyException("Busy: all ${s.max} pooled connections to '${params.name}' are in use - waited ${s.waitMs.intdiv(1000)}s. Try again shortly; pool_max on the <database> tag in config.xml sets the size (keep it within what the database allows).".toString())
+    }
+    if (entry != null) entry.pooledDs[conn] = ds
+    return new Sql(conn)
+}
+
+//---------- begin function poolFor
+/**
+* @describe the HikariDataSource for a database, created on first use. The pool is keyed by name plus a fingerprint of the URL,
+*	credentials and pool settings, so a changed config.xml (after /reload) gets a fresh pool and the old one is retired.
+*	HikariCP is looked up by name, so the server still starts when its jar is absent: null + one log line, and the
+*	database runs unpooled.
+* @param params name string, url string, props Properties, driverClass string, s Map
+* @return object
+*	HikariDataSource, or null when HikariCP is not on the classpath
+*/
+def poolFor(String name, String url, Properties props, String driverClass, Map s) {
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    digest.update("${url}|${new TreeMap(props)}|${s}".toString().getBytes('UTF-8'))
+    String key = "${name}|${digest.digest().encodeHex().toString().take(16)}".toString()
+    def existing = POOLS.get(key)
+    if (existing != null) return existing
+    Class cfgClass, dsClass
+    try {
+        cfgClass = Class.forName('com.zaxxer.hikari.HikariConfig')
+        dsClass  = Class.forName('com.zaxxer.hikari.HikariDataSource')
+    } catch (ClassNotFoundException cnf) {
+        if (!POOL_JAR_WARNED) { POOL_JAR_WARNED = true; log("pool=\"1\" is set on '${name}' but HikariCP is not on the classpath (groovy/lib/HikariCP-*.jar, slf4j-api-*.jar) - running unpooled") }
+        return null
+    }
+    def made = null
+    synchronized (POOLS) {
+        existing = POOLS.get(key)
+        if (existing != null) return existing
+        def cfg = cfgClass.getDeclaredConstructor().newInstance()
+        cfg.poolName = "wasql-${name}".toString()
+        cfg.jdbcUrl = url
+        cfg.driverClassName = driverClass
+        cfg.dataSourceProperties = props
+        cfg.maximumPoolSize = s.max
+        cfg.minimumIdle = s.minIdle
+        cfg.idleTimeout = s.minIdle >= s.max ? 0L : (s.idleMs as long)    // idle reaping only applies when the pool can shrink
+        cfg.maxLifetime = s.lifeMs as long
+        cfg.connectionTimeout = Math.max(250L, s.waitMs as long)
+        cfg.initializationFailTimeout = -1L      // never fail at startup: the pool fills on demand, a down database fails the request instead
+        cfg.registerMbeans = false
+        if (s.testQuery) cfg.connectionTestQuery = s.testQuery
+        made = dsClass.getDeclaredConstructor(cfgClass).newInstance(cfg)
+        POOLS.put(key, made)
+    }
+    log("Pool created for '${name}': max ${s.max}, min idle ${s.minIdle}, idle ${s.idleMs.intdiv(1000)}s, lifetime ${s.lifeMs.intdiv(1000)}s, wait ${s.waitMs.intdiv(1000)}s")
+    // retire this database's pools built from an older config (their connections close as their users finish)
+    POOLS.keySet().findAll { it.startsWith("${name}|") && it != key }.each { stale -> closePoolAsync(POOLS.remove(stale), "'${name}' config changed") }
+    return made
+}
+
+//---------- begin function closePoolAsync
+/**
+* @describe closes a pool on a background thread - HikariDataSource.close() can wait for the pool to wind down, which must not hold up /reload or a request
+* @param params ds object, why string
+* @return void
+*/
+void closePoolAsync(ds, String why) {
+    if (ds == null) return
+    CANCEL_POOL.submit({ try { ds.close(); log("Pool closed (${why})") } catch (Throwable t) { log("Pool close error: ${t}") } } as Runnable)
+}
+
+//---------- begin function closeAllPools
+/**
+* @describe retires every pool - /reload (new config, new pools on demand) and shutdown
+* @param params why string
+* @return void
+*/
+void closeAllPools(String why) {
+    def all = POOLS.values().toList()
+    POOLS.clear()
+    all.each { closePoolAsync(it, why) }
+}
+
+//---------- begin function poolStatus
+/**
+* @describe per-pool counts for /status: [db, max, active, idle, total, waiting]
+* @return list
+*/
+List poolStatus() {
+    POOLS.collect { String key, ds ->
+        def mx = null
+        try { mx = ds.hikariPoolMXBean } catch (Throwable ignored) {}
+        [db: key.substring(0, key.lastIndexOf('|')), max: ds.maximumPoolSize,
+         active: mx?.activeConnections ?: 0, idle: mx?.idleConnections ?: 0, total: mx?.totalConnections ?: 0, waiting: mx?.threadsAwaitingConnection ?: 0]
+    }.sort { it.db }
+}
+
 // daemon threads that run connection aborts, so a driver that blocks on abort/close cannot hang /cancel
 @Field def CANCEL_POOL = java.util.concurrent.Executors.newCachedThreadPool({ Runnable r ->
     def t = new Thread(r, 'wasql-cancel')
@@ -1087,11 +1313,24 @@ Map cancelRequest(String threadName, String reason = 'Cancelled from Groovy Mana
     e.cancelled = true
     def outcomes = []
     (e.conns ?: []).each { conn ->
+        // A POOLED connection must never simply be close()d: that hands it back to the pool while its query is still
+        // running, and the next caller would be given a busy connection. So tell the pool to discard it, then kill the
+        // physical connection underneath the pool's wrapper. A pooled connection this request has already returned
+        // (isClosed) is left alone - it may be in use by someone else by now.
+        def pool = e.pooledDs?.get(conn)
+        def target = conn
+        if (pool != null) {
+            try {
+                if (conn.isClosed()) return
+                pool.evictConnection(conn)
+                target = conn.unwrap(java.sql.Connection)
+            } catch (Throwable ignored) {}
+        }
         // abort, then close as well: some drivers (c-tree) accept abort() without stopping anything
         def future = CANCEL_POOL.submit({
             def done = []
-            try { conn.abort(CANCEL_POOL); done << 'aborted' } catch (Throwable notSupported) {}
-            try { conn.close(); done << 'closed' } catch (Throwable c) { if (!done) done << "close failed: ${c.message}".toString() }
+            try { target.abort(CANCEL_POOL); done << 'aborted' } catch (Throwable notSupported) {}
+            try { target.close(); done << 'closed' } catch (Throwable c) { if (!done) done << "close failed: ${c.message}".toString() }
             return done ? done.join('+') : 'abort and close both unsupported'
         } as java.util.concurrent.Callable)
         try { outcomes << future.get(5, TimeUnit.SECONDS) }
@@ -1432,6 +1671,8 @@ route('/status') { HttpExchange ex ->
             ],
             // connection caps per database (withDbSlot): max, in use, waiting
             slots    : slotStatus(),
+            // connection pools (databases with pool="1"): size limit, borrowed, idle, open, and requests waiting for one
+            pools    : poolStatus(),
             ctree_max_connections_default: DEFAULT_CTREE_MAX_CONN,
             memory   : [
                 used_mb : (rt.totalMemory() - rt.freeMemory()).intdiv(1048576),
@@ -1549,6 +1790,7 @@ route('/queryfile/') { HttpExchange ex ->
     if (!checkAuth(ex)) return
     lastActivity.set(System.currentTimeMillis())
     def req = null
+    long requestStartedAt = System.currentTimeMillis() - 1000L   // a second of slack for coarse file-system timestamps
     try {
         def t0     = System.currentTimeMillis()
         def dbname = pathParam(ex, '/queryfile/')
@@ -1567,9 +1809,14 @@ route('/queryfile/') { HttpExchange ex ->
         log("/queryfile ${dbname} -> ${result} ${System.currentTimeMillis()-t0}ms${who()}")
     } catch (Exception e) {
         log("/queryfile error: ${e.message}${who()}")
-        // a cancelled query leaves a half-written CSV - remove it so it cannot be mistaken for a result
-        if (isCancelled() && req?.filename) {
-            try { if (new File(req.filename as String).delete()) log("/queryfile removed partial file ${req.filename}") } catch (Exception ignored) {}
+        // a failed or cancelled query leaves a half-written CSV - remove it so it cannot be mistaken for a result.
+        // Only a file this request wrote (modified since it started): a failure before the driver opened the file must
+        // not delete an older, good file the caller reuses under the same name.
+        if (req?.filename) {
+            try {
+                def partial = new File(req.filename as String)
+                if (partial.isFile() && partial.lastModified() >= requestStartedAt && partial.delete()) log("/queryfile removed partial file ${req.filename}")
+            } catch (Exception ignored) {}
         }
         try { respond(ex, errorCode(e), wrapErr(e.message)) } catch (Exception ignored) {}
     }
@@ -1647,7 +1894,12 @@ route('/executeps/') { HttpExchange ex ->
         if (!req.query) throw new IllegalArgumentException("Body must include 'query'")
         trackDetail("${dbname}: ${req.query}")
         def drv    = resolveDriver(dbname)
-        def args  = req.args instanceof Map ? req.args : [:]
+        // drivers bind positional "?" placeholders from a List (executePS(String, List, Map)). A JSON array is passed
+        // through as is; a JSON object is bound in its key order (the same rule duckdb's executePS applies).
+        // Before, an array was silently replaced by [:] and a Map matched no driver signature at all.
+        List args = req.args instanceof List ? (req.args as List)
+                  : req.args instanceof Map  ? (req.args as Map).values().toList()
+                  : []
         def result
         try {
             result = withDbSlot(dbname) { drv.driver.executePS(req.query as String, args, callerTimeout(drv.params)) }
@@ -1675,7 +1927,8 @@ route('/eval') { HttpExchange ex ->
         if (!script) throw new IllegalArgumentException("Request body must contain a Groovy script")
         trackDetail("eval: ${script}")
 
-        def baos    = new ByteArrayOutputStream()
+        // the script's println output is held in memory until the reply - cap it so a runaway loop cannot exhaust the heap
+        def baos    = new CappedOutputStream(EVAL_OUTPUT_MAX_BYTES)
         def capture = new PrintWriter(new OutputStreamWriter(baos, 'UTF-8'), true)
 
         def binding = new Binding()
@@ -1697,7 +1950,7 @@ route('/eval') { HttpExchange ex ->
             capture.flush()
         }
 
-        def output = baos.toString('UTF-8')
+        def output = baos.toString('UTF-8') + (baos.truncated ? "\n[output truncated at ${EVAL_OUTPUT_MAX_BYTES.intdiv(1048576)} MB]" : '')
 
         if (evalErr) {
             log("/eval error: ${evalErr.message}${who()}")
@@ -1742,9 +1995,20 @@ route('/reload') { HttpExchange ex ->
     lastActivity.set(System.currentTimeMillis())
     try {
         def cleared = modules.keySet().sort()
+        def previousDatabase = DATABASE
         modules.clear()
         cfg = loadModule('config')
-        DATABASE = cfg.DATABASE as Map
+        def reloaded = (cfg.DATABASE ?: [:]) as Map
+        // config.xml caught mid-edit (or unparseable) loads as NO databases - swapping that in would make every query
+        // answer "database not found" until the next reload, so keep the working config and say what happened
+        if (reloaded.isEmpty() && !previousDatabase.isEmpty()) {
+            log("/reload: config.xml produced no databases (unparseable or mid-edit?) - kept the previous ${previousDatabase.size()} database(s)")
+            respond(ex, 500, wrapErr("config.xml produced no <database> entries - not applied, the previous configuration was kept. Check config.xml and reload again."))
+            return
+        }
+        DATABASE = reloaded
+        // pooled connections carry the old credentials/URLs - retire the pools, they are rebuilt on demand from the new config
+        closeAllPools('reload')
         log("Module cache cleared and config reloaded: ${cleared.join(', ') ?: '(none)'}")
         respond(ex, 200, JsonOutput.toJson([status: 'reloaded', cleared: cleared, databases: DATABASE.keySet().sort()]))
     } catch (Exception e) {
@@ -1776,8 +2040,7 @@ route('/exit',     shutdownHandler)
 *	respond(ex, 200, JSON.toJson(buildSpec()))
 */
 Closure buildSpec = {
-    def dbNames = DATABASE.keySet().sort()
-    def dbNameEnum = dbNames ?: ['mydb']
+    // /openapi needs no token (the docs page loads it without one), so it must not list the configured database names
     return [
         openapi: '3.0.3',
         info: [
@@ -1854,7 +2117,7 @@ Closure buildSpec = {
                 post: [
                     summary    : 'Run a SELECT query, returns rows as JSON array',
                     operationId: 'query',
-                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string', enum: dbNameEnum] ]],
+                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string'] ]],
                     requestBody: [ required: true, content: [ 'text/plain': [ schema: [type:'string', example:'SELECT * FROM users LIMIT 10'] ] ] ],
                     responses  : [
                         '200': [ description: 'Query results', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], data:[type:'array'] ] ] ] ] ],
@@ -1867,7 +2130,7 @@ Closure buildSpec = {
                 post: [
                     summary    : 'Execute a non-SELECT statement (INSERT/UPDATE/DELETE/DDL)',
                     operationId: 'execute',
-                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string', enum: dbNameEnum] ]],
+                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string'] ]],
                     requestBody: [ required: true, content: [ 'text/plain': [ schema: [type:'string', example:'DELETE FROM sessions WHERE expired = 1'] ] ] ],
                     responses  : [
                         '200': [ description: 'Rows affected', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], data:[type:'integer'] ] ] ] ] ],
@@ -1878,10 +2141,10 @@ Closure buildSpec = {
             ],
             '/executeps/{dbname}': [
                 post: [
-                    summary    : 'Execute a parameterised statement',
+                    summary    : 'Execute a parameterised statement - "?" placeholders bound positionally from args (a JSON array, or an object taken in key order)',
                     operationId: 'executeps',
-                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string', enum: dbNameEnum] ]],
-                    requestBody: [ required: true, content: [ 'application/json': [ schema: [ type:'object', required:['query'], properties: [ query:[type:'string', example:'UPDATE users SET name=:name WHERE id=:id'], args:[type:'object', example:[name:'Alice', id:1]] ] ] ] ] ],
+                    parameters : [[ name: 'dbname', in: 'path', required: true, schema: [type:'string'] ]],
+                    requestBody: [ required: true, content: [ 'application/json': [ schema: [ type:'object', required:['query'], properties: [ query:[type:'string', example:'UPDATE users SET name=? WHERE id=?'], args:[type:'array', example:['Alice', 1]] ] ] ] ] ],
                     responses  : [
                         '200': [ description: 'Result', content: [ 'application/json': [ schema: [ type:'object', properties: [ success:[type:'boolean'], data:[type:'integer'] ] ] ] ] ],
                         '400': [ description: 'Bad SQL or missing params' ],
@@ -1986,6 +2249,10 @@ route('/') { HttpExchange ex ->
 // only now, once startup succeeded, so a caller never authenticates against a
 // half-initialised server.
 TOKEN_FILE.text = "${TOKEN}\n"
+// the token unlocks /eval (arbitrary Groovy) and every query - keep the file readable by its owner only
+// (a no-op on Windows, where the file inherits its folder's ACL)
+TOKEN_FILE.setReadable(false, false); TOKEN_FILE.setWritable(false, false)
+TOKEN_FILE.setReadable(true, true);   TOKEN_FILE.setWritable(true, true)
 server.start()
 log("Listening on 127.0.0.1:${PORT}  PID ${PID}")
 log("Token file: ${TOKEN_FILE.path}")
@@ -2001,9 +2268,12 @@ log("Log cap: ${LOG_FILE && LOG_MAX_BYTES > 0 ? "${LOG_FILE.path} rolls at ${LOG
 // ── Idle watchdog ─────────────────────────────────────────────────────────────
 scheduler.scheduleAtFixedRate({
     // each check in its own try so one failing never stops the others
-    try { reportStuckRequests() } catch (Exception e) { log("Stuck-request check error: ${e.message}") }
-    try { autoCancelAbandoned() } catch (Exception e) { log("Auto-cancel check error: ${e.message}") }
-    try { trimLogIfNeeded() }    catch (Exception e) { log("Log trim error: ${e.message}") }
+    // Throwable, not Exception: an Error (OutOfMemoryError, StackOverflowError) escaping a scheduleAtFixedRate task
+    // silently cancels every later run - stuck reports, auto-cancel and the idle shutdown would stop for good
+    try { reportStuckRequests() } catch (Throwable e) { log("Stuck-request check error: ${e}") }
+    try { autoCancelAbandoned() } catch (Throwable e) { log("Auto-cancel check error: ${e}") }
+    try { trimLogIfNeeded() }    catch (Throwable e) { log("Log trim error: ${e}") }
+    try { pruneUserSlots() }     catch (Throwable e) { log("Slot prune error: ${e}") }
     try {
         if (IDLE_TIMEOUT_MS > 0) {
             long idleMs = System.currentTimeMillis() - lastActivity.get()
@@ -2015,7 +2285,7 @@ scheduler.scheduleAtFixedRate({
                 doShutdown('idle timeout')
             }
         }
-    } catch (Exception e) {
-        log("Watchdog error: ${e.message}")
+    } catch (Throwable e) {
+        log("Watchdog error: ${e}")
     }
 }, 60, 60, TimeUnit.SECONDS)

@@ -59,16 +59,47 @@ def addIndex(Map params) {
 	}
 
 	// Build index name if not passed in
+	def fieldstr = params['-fields'].toString().replaceAll(/\s+/, '').replace(',', '_')
 	if (!params.containsKey('-name')) {
-		params['-name'] = "${prefix}_${params['-table']}_"
+		params['-name'] = "${prefix}_${params['-table']}_${fieldstr}".take(64) // MySQL identifier limit
 	}
 
-	// Create query
-	def fieldstr = params['-fields'].replace(',', '_')
-	def query = "CREATE ${unique}${fulltext} INDEX IF NOT EXISTS ${params['-name']} ON ${params['-table']} (${params['-fields']})"
+	// MySQL has no CREATE INDEX IF NOT EXISTS, so look for the index first
+	def sql = null
+	try {
+		sql = connect(params)
+		def row = sql.firstRow(
+			'SELECT COUNT(*) AS cnt FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?',
+			[params['-table'].toString(), params['-name'].toString()])
+		if (row.cnt > 0) return true
+		sql.execute("CREATE${unique}${fulltext} INDEX ${params['-name']} ON ${params['-table']} (${params['-fields']})".toString())
+		return true
+	} finally {
+		if (sql != null) sql.close()
+	}
+}
 
-	// Execute query
-	return executeSQL(query, params)
+//---------- begin function executePS
+/**
+* @describe executes a prepared statement with positional "?" parameters
+* @param params query string, args list, params map
+* @return boolean
+*	true on success (throws on failure)
+* @usage
+*	ok = mysqldb.executePS("INSERT INTO users (name, email) VALUES (?, ?)", ['John Doe', 'john@example.com'], params)
+*/
+def executePS(String query, List args, Map params = [:]) {
+	def sql = null
+	try {
+		sql = connect(params)
+		sql.executeUpdate(query, args)
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
+		return true
+	} finally {
+		if (sql != null) {
+			sql.close()
+		}
+	}
 }
 
 //---------- begin function connect
@@ -92,10 +123,16 @@ def connect(Map params) {
 	def dbport = params.dbport ?: '3306'
 
 	try {
-		def url = "jdbc:mysql://${dbhost}:${dbport}/${dbname}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+		def url = "jdbc:mysql://${dbhost}:${dbport}/${dbname}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useCursorFetch=true"
+			// useCursorFetch: without it Connector/J ignores setFetchSize and buffers the ENTIRE result set in memory
+			// before returning the first row, which defeats row streaming and risks OutOfMemoryError on big results.
+			// With it, a statement whose fetch size is > 0 reads through a server-side cursor in fetch-size batches.
 		def driver = 'com.mysql.cj.jdbc.Driver'
 
-		def sql = Sql.newInstance(url, dbuser, dbpass, driver)
+		// credentials as connection properties so the connection can come from the optional pool (see wasqlOpenSql in server.groovy)
+		def props = new java.util.Properties()
+		props.setProperty('user', (dbuser ?: '').toString()); props.setProperty('password', (dbpass ?: '').toString())
+		def sql = binding.hasVariable('wasqlOpenSql') ? binding.getVariable('wasqlOpenSql').call(url, props, driver, params) : Sql.newInstance(url, props, driver)
 		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
 		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
 		return sql
@@ -122,7 +159,7 @@ def executeSQL(String query, Map params = [:]) {
 
 		// Execute the query
 		sql.execute(query)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {
@@ -166,7 +203,14 @@ def queryResults(String query, Map params = [:]) {
 		// CSV mode keeps its old 600s default; list mode has never had a cap and still has none unless asked.
 		def qtRaw = params.querytimeout?.toString()?.trim()
 		int queryTimeout = qtRaw?.isInteger() ? (qtRaw as int) : (params.containsKey('filename') ? 600 : 0)
-		if (queryTimeout > 0) sql.withStatement { it.queryTimeout = queryTimeout }
+		// Fetch size applies to the statements Sql creates for eachRow (list mode); the CSV branch sets its own below.
+		int fetchRows = fetchSize as int
+		if (queryTimeout > 0 || fetchRows > 0) {
+			sql.withStatement { st ->
+				if (queryTimeout > 0) st.queryTimeout = queryTimeout
+				if (fetchRows > 0) st.fetchSize = fetchRows
+			}
+		}
 
 
 		// Check if we should write to CSV file
@@ -309,19 +353,21 @@ def queryResults(String query, Map params = [:]) {
 			// rows collect in a list as before. Only used with format: 'list' (the server's own calls).
 			def recs = params.rowsink != null ? params.rowsink : []
 
-			sql.eachRow(query) { row ->
-				// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
-				if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
-				def rec = [:]
-				def rowResult = row.toRowResult()
-
-				// Convert to lowercase field names for consistency
-				rowResult.each { key, value ->
-					rec[key.toLowerCase()] = value
-				}
-
+			// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them.
+			// The lookup is done once, not per row. Column names are lower-cased once from the result's metadata (the meta closure
+			// runs before the first row) instead of building a Map with toRowResult() and copying it into a second one for every row.
+			def cancelled = binding.hasVariable('wasqlCancelled') ? binding.getVariable('wasqlCancelled') : null
+			def keys = null
+			sql.eachRow(query, { meta ->
+				int n = meta.columnCount
+				keys = new String[n]
+				for (int i = 0; i < n; i++) keys[i] = meta.getColumnLabel(i + 1).toLowerCase()
+			}, { row ->
+				if (cancelled != null && cancelled.call()) throw new java.sql.SQLException('request cancelled')
+				def rec = new LinkedHashMap()
+				for (int i = 0; i < keys.length; i++) rec[keys[i]] = row[i]
 				recs << rec
-			}
+			})
 
 			// Return JSON by default, or native format if requested
 			def format = params.getOrDefault('format', 'json')

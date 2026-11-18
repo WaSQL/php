@@ -24,6 +24,8 @@ No additional configuration or classpath setup is needed.
 | `mssql-jdbc-*.jar` | Microsoft SQL Server JDBC Driver | mssqldb.groovy |
 | `ojdbc11-*.jar` | Oracle JDBC Driver (Thin) — only one version needed, see note below | oracledb.groovy |
 | `snowflake-jdbc-*.jar` | Snowflake JDBC Driver | snowflakedb.groovy |
+| `jaybird-*.jar` | Firebird JDBC Driver (Jaybird 6 needs Java 17+) | firebirddb.groovy (module not written yet) |
+| `csvjdbc-*.jar` | CsvJdbc - read CSV files via SQL (`org.relique.jdbc.csv.CsvDriver`) | mscsvdb.groovy (module not written yet) |
 | `sqlite-jdbc-*.jar` | SQLite JDBC Driver | sqlitedb.groovy |
 | `duckdb_jdbc-*.jar` | DuckDB JDBC Driver | duckdb.groovy |
 | `ucanaccess-*.jar` | MS Access / CSV / Excel JDBC Driver | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
@@ -31,6 +33,8 @@ No additional configuration or classpath setup is needed.
 | `hsqldb-*.jar` | Dependency for UCanAccess | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
 | `commons-lang3-*.jar` | Apache Commons (dependency) | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
 | `commons-logging-*.jar` | Apache Commons Logging (dependency) | msaccessdb.groovy, mscsvdb.groovy, msexceldb.groovy |
+| `HikariCP-*.jar` | Connection pool for databases with `pool="1"` (needs Java 11+) | server.groovy |
+| `slf4j-api-*.jar` | Logging API HikariCP needs (paired with `slf4j-nop` below) | HikariCP |
 | `slf4j-nop-*.jar` | SLF4J No-Op Logger — suppresses noisy logging from drivers | Various |
 
 ## Obtaining Missing JAR Files
@@ -279,3 +283,5 @@ To add support for a new database type:
 | SLF4J | MIT |
 
 Ensure you comply with the license terms for any drivers you use.
+
+`lib/disabled/` holds jars that are NOT loaded (the folder is not on the classpath): duplicate older drivers and a corrupt download moved aside on 2026-11-18.

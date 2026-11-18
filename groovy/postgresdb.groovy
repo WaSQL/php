@@ -90,8 +90,8 @@ def addIndex(Map params) {
 */
 def connect(Map params) {
 	if (!params.dbhost) {
-		System.err.println("Missing dbhost attribute in database tag named '${params.name}'")
-		System.exit(123)
+		// throw, never System.exit: inside the Groovy server an exit would kill the daemon and every in-flight query
+		throw new IllegalArgumentException("Missing dbhost attribute in database tag named '${params.name}'")
 	}
 
 	def dbhost = params.dbhost
@@ -103,14 +103,17 @@ def connect(Map params) {
 	try {
 		// Build connection URL with optional parameters
 		def url = "jdbc:postgresql://${dbhost}:${dbport}/${dbname}"
-		def props = [:]
+		// (the keepalive setting used to be put in a map that was never passed to the driver)
+		def props = new java.util.Properties()
+		props.setProperty('user', dbuser.toString())
+		props.setProperty('password', dbpass.toString())
 
 		if (params.dbkeepalives) {
-			props['tcpKeepAlive'] = params.dbkeepalives
+			props.setProperty('tcpKeepAlive', params.dbkeepalives.toString())
 		}
 
 		def driver = 'org.postgresql.Driver'
-		def sql = Sql.newInstance(url, dbuser, dbpass, driver)
+		def sql = binding.hasVariable('wasqlOpenSql') ? binding.getVariable('wasqlOpenSql').call(url, props, driver, params) : Sql.newInstance(url, props, driver)
 
 		// Groovy server only: register the connection so Groovy Manager can cancel this request (no-op from the CLI)
 		if (binding.hasVariable('wasqlTrackConnection')) { binding.getVariable('wasqlTrackConnection').call(sql.connection) }
@@ -137,7 +140,7 @@ def executeSQL(String query, Map params = [:]) {
 
 		// Execute the query
 		sql.execute(query)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {
@@ -167,7 +170,7 @@ def executePS(String query, List args, Map params = [:]) {
 
 		// Execute the prepared statement
 		sql.executeUpdate(query, args)
-		sql.commit()
+		if (!sql.connection.autoCommit) sql.commit()   // commit() throws on an autocommit connection (MySQL, PostgreSQL, Oracle, SQLite)
 		return true
 
 	} catch (Exception err) {
@@ -202,6 +205,8 @@ def queryResults(String query, Map params = [:]) {
 	def fetchSize = params.getOrDefault('fetchsize', 1000)
 	def batchSize = params.getOrDefault('batchsize', 100)
 	def noTrim = params.getOrDefault('notrim', false)
+	boolean cursorRead = false   // autocommit switched off for cursor-based reading, see below
+	boolean failed = false
 
 	try {
 		// Connect
@@ -211,7 +216,18 @@ def queryResults(String query, Map params = [:]) {
 		// CSV mode keeps its old 600s default; list mode has never had a cap and still has none unless asked.
 		def qtRaw = params.querytimeout?.toString()?.trim()
 		int queryTimeout = qtRaw?.isInteger() ? (qtRaw as int) : (params.containsKey('filename') ? 600 : 0)
-		if (queryTimeout > 0) sql.withStatement { it.queryTimeout = queryTimeout }
+		// The PostgreSQL driver only honours fetch size (a cursor read in batches) when autocommit is OFF - with autocommit
+		// on it pulls the ENTIRE result set into memory first, defeating row streaming and risking OutOfMemoryError.
+		// Autocommit off opens a transaction for the read; it is committed after a successful read (so a SELECT that
+		// calls a writing function still persists) and rolled back by close() on failure.
+		int fetchRows = fetchSize as int
+		if (fetchRows > 0) { sql.connection.autoCommit = false; cursorRead = true }
+		if (queryTimeout > 0 || fetchRows > 0) {
+			sql.withStatement { st ->
+				if (queryTimeout > 0) st.queryTimeout = queryTimeout
+				if (fetchRows > 0) st.fetchSize = fetchRows
+			}
+		}
 
 		// Check if we should write to CSV file
 		if (params.containsKey('filename')) {
@@ -353,19 +369,21 @@ def queryResults(String query, Map params = [:]) {
 			// rows collect in a list as before. Only used with format: 'list' (the server's own calls).
 			def recs = params.rowsink != null ? params.rowsink : []
 
-			sql.eachRow(query) { row ->
-				// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them
-				if (binding.hasVariable('wasqlCancelled') && binding.getVariable('wasqlCancelled').call()) throw new java.sql.SQLException('request cancelled')
-				def rec = [:]
-				def rowResult = row.toRowResult()
-
-				// Convert to lowercase field names for consistency
-				rowResult.each { key, value ->
-					rec[key.toLowerCase()] = value
-				}
-
+			// Groovy Manager cancel: stop between rows - some drivers (c-tree) ignore Connection.abort, so this is what stops them.
+			// The lookup is done once, not per row. Column names are lower-cased once from the result's metadata (the meta closure
+			// runs before the first row) instead of building a Map with toRowResult() and copying it into a second one for every row.
+			def cancelled = binding.hasVariable('wasqlCancelled') ? binding.getVariable('wasqlCancelled') : null
+			def keys = null
+			sql.eachRow(query, { meta ->
+				int n = meta.columnCount
+				keys = new String[n]
+				for (int i = 0; i < n; i++) keys[i] = meta.getColumnLabel(i + 1).toLowerCase()
+			}, { row ->
+				if (cancelled != null && cancelled.call()) throw new java.sql.SQLException('request cancelled')
+				def rec = new LinkedHashMap()
+				for (int i = 0; i < keys.length; i++) rec[keys[i]] = row[i]
 				recs << rec
-			}
+			})
 
 			// Return JSON by default, or native format if requested
 			def format = params.getOrDefault('format', 'json')
@@ -380,10 +398,13 @@ def queryResults(String query, Map params = [:]) {
 			}
 		}
 
-	} catch (Exception err) {
+	} catch (Throwable err) {
+		failed = true
 		throw err
 	} finally {
 		if (sql != null) {
+			// end the read transaction cleanly; on failure close() discards it
+			if (cursorRead && !failed) { try { sql.commit() } catch (Exception ignored) {} }
 			sql.close()
 		}
 	}

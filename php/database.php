@@ -1095,6 +1095,25 @@ function dbQueryResults($db,$query,$params=array()){
 *	$file=dbGroovyQueryResults('mydb','SELECT * FROM big_table',['-filename'=>'/tmp/out.csv']);
 */
 function dbGroovyQueryResults($db,$query,$params=array()){
+	//dbLastError() is documented as the way to tell "query failed" from "zero rows", so every failure here has to land
+	//in it too - the failure paths below return an error STRING, which nothing else records
+	dbSetLast(array('error'=>'','function'=>'dbGroovyQueryResults'));
+	$res=dbGroovyQueryResultsRun($db,$query,$params);
+	if(is_string($res)){
+		//a string is a failure, except -filename mode where it is the CSV path (the caller's is_file() test)
+		if(empty($params['-filename']) || !is_file($res)){
+			dbSetLast(array('error'=>$res));
+		}
+	}
+	return $res;
+}
+//---------- begin function dbGroovyQueryResultsRun
+/**
+* @describe does the work for dbGroovyQueryResults(); kept separate so the wrapper can record failures in dbLastError()
+* @exclude - internal helper for dbGroovyQueryResults
+* @usage $res=dbGroovyQueryResultsRun($db,$query,$params);
+*/
+function dbGroovyQueryResultsRun($db,$query,$params=array()){
 	global $CONFIG;
 	//Mirror dbQueryResults input handling so this is a drop-in replacement.
 	//The duckdb passthrough and the fields/idx/tables shortcuts are metadata
@@ -1864,8 +1883,20 @@ function dbGroovyLaunchServer($groovyDir){
 		          .' WASQL_GROOVY_TOKEN_FILE='.escapeshellarg($tokenFile)
 		          .' WASQL_GROOVY_LOG_FILE='.escapeshellarg($logFile)
 		          .' WASQL_GROOVY_LOG_MAX_MB='.escapeshellarg((string)$logMaxMb).' ';
+		//The shell, nohup and the JVM inherit EVERY file descriptor this web request has open (PHP opens plain files
+		//without close-on-exec), so a lock/temp file or socket a page held while a groovy query started the server stayed
+		//open in the JVM for its whole life - e.g. a per-user flock that then blocked that user forever. Close everything
+		//above stdin/stdout/stderr before exec'ing the server. Needs bash (multi-digit fds) and /dev/fd (Linux, macOS);
+		//without them the launch is unchanged.
+		$closer='';
+		$bash=is_executable('/bin/bash')?'/bin/bash':(is_executable('/usr/bin/bash')?'/usr/bin/bash':'');
+		if(strlen($bash) && is_dir('/dev/fd')){
+			$closer=escapeshellarg($bash).' -c '
+			       .escapeshellarg('for f in /dev/fd/*; do n=${f##*/}; if [ "$n" -gt 2 ] 2>/dev/null; then eval "exec $n>&-" 2>/dev/null; fi; done; exec "$@"')
+			       .' _ ';
+		}
 		//>> (append, O_APPEND): keeps the previous run's log AND lets the server trim the file in place
-		$cmd=$envPrefix.$setsid.'nohup '.escapeshellarg($exe)
+		$cmd=$envPrefix.$setsid.$closer.'nohup '.escapeshellarg($exe)
 		    .$cpArg
 		    .' '.escapeshellarg($script)
 		    .' >>'.escapeshellarg($logFile).' 2>&1 &';
