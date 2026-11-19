@@ -38,6 +38,10 @@
 .git-bar .wacss_button{white-space:nowrap;}
 .git-panel{border:1px solid #dfe3e8;border-radius:6px;background:#fff;}
 .git-panel .git-info{padding:10px;font-family:Consolas,Menlo,monospace;font-size:.82rem;max-height:60vh;overflow:auto;white-space:normal;word-break:break-all;}
+.git-result{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;margin:12px 0 6px;font-weight:600;border:1px solid transparent;}
+.git-result-success{background:#e3f6e8;color:#1f6b33;border-color:#b6e2c0;}
+.git-result-error{background:#fde1e1;color:#9b1c1c;border-color:#f3b4b4;}
+.git-result-warning{background:#fff1d6;color:#8a5a00;border-color:#f0d399;}
 .git-empty{padding:28px;text-align:center;color:#777;}
 </style>
 <div class="git-wrap">
@@ -262,8 +266,9 @@
 </view:git_log>
 
 <view:git_details>
-	<div data-onload="<?=isset($git['deleted_sha'])?'gitRemoveDeletedRow(\''.$git['deleted_sha'].'\')':'';?>">
-	<view:rec>
+	<div data-onload="<?=(isset($git['deleted_sha'])?'gitRemoveDeletedRow(\''.$git['deleted_sha'].'\');':'').'gitResultShown();';?>">
+		<?php $__rt=!empty($git['error'])?'error':(!empty($git['warning'])?'warning':(!empty($git['success'])?'success':''));if($__rt===''){return '';}$__rm=($__rt=='error')?$git['error']:(($__rt=='warning')?$git['warning']:$git['success']);return '<div class="git-result git-result-'.$__rt.'" id="git_result"><span class="git-result-msg">'.encodeHtml($__rm).'</span>'.(($__rt=='success')?' <a href="/php/admin.php?_menu=git&current_repo='.(isset($_REQUEST['current_repo'])?urlencode($_REQUEST['current_repo']):'').'" class="wacss_button is-small">Reload file list</a>':'').'</div>';?>
+<view:rec>
 		<div><?=encodeHtml($rec);?></div>
 	</view:rec>
 	<?=renderEach('rec',$recs,'rec');?>
@@ -297,6 +302,13 @@ document.addEventListener('DOMContentLoaded',function(){
 	if(cb){cb.checked=show;}
 	gitToggleUntracked(show);
 });
+/** Called when an AJAX git action returns: bring the result into view and toast it. */
+function gitResultShown(){
+	var r=document.getElementById('git_result');
+	if(!r){return;}
+	r.scrollIntoView({behavior:'smooth',block:'center'});
+	try{wacss.toast(r.querySelector('.git-result-msg').textContent);}catch(e){}
+}
 function gitRemoveDeletedRow(sha){
 	// Find the checkbox with this sha
 	var checkbox = document.getElementById('id_' + sha);
