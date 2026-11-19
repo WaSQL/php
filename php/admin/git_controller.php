@@ -169,7 +169,7 @@ switch($func){
 		// Pull latest changes from remote repository using git command
 		$result = gitapiPull(array('auto_stash' => false));
 		if($result['success']){
-			$recs = array('Pull completed successfully');
+			$recs = array();
 			if(isset($result['output']) && strlen($result['output'])){
 				// Show git pull output
 				$output_lines = explode("\n", $result['output']);
@@ -462,6 +462,19 @@ switch($func){
 					if($sync_errors === 0){
 						$recs[] = "All pushed files synced successfully";
 						gitLog("Synced {$push_count} pushed files locally", 'info');
+
+						// The API push created commits on the remote only, so local HEAD is now behind and the pushed files
+						// would keep showing as "modified" (re-committing them then looks like a failure). Fast-forward HEAD
+						// to the remote; --ff-only never creates a merge commit and refuses if it would clobber other local edits.
+						exec(gitCmd("merge --ff-only origin/{$branch}").' 2>&1', $ff_output, $ff_code);
+						if($ff_code === 0){
+							$recs[] = "Local branch fast-forwarded to origin/{$branch}";
+							gitLog("Fast-forwarded local {$branch} to origin/{$branch} after API push", 'info');
+						}
+						else{
+							$recs[] = "Note: could not fast-forward local {$branch} (".trim(implode(' ', $ff_output))."). Use Pull to bring the local branch up to date.";
+							gitLog("ff-only merge failed after API push: ".trim(implode(' ', $ff_output)), 'warning');
+						}
 					} else {
 						$recs[] = "Some files could not be synced locally";
 						gitLog("Partial sync: {$sync_errors} files failed", 'warning');
