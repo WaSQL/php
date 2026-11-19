@@ -1135,7 +1135,7 @@ function commonSearchFiltersForm($params=array()){
 	//default class to wacss_input is-mobile-responsive
 	if(empty($params['class'])){$params['class']='wacss_input is-mobile-responsive';}
 	//if(empty($params['style'])){$params['style']='min-width:75px';}
-	$btnclass=commonCoalesce($params['-search_button_class'],'wacss_button is-mobile-responsive');
+	$btnclass=commonCoalesce($params['-search_button_class']??'','wacss_button is-mobile-responsive');
 	if(isset($params['-quickfilters'])){
 		//button => filter_field filter_operator filter_value, ...
 		$buttons=array();
@@ -1254,7 +1254,7 @@ function commonSearchFiltersForm($params=array()){
 		if(!isset($params['-simplesearch'])){
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
-			$cparams['class']=commonCoalesce($params['-search_select_class'],'wacss_select is-mobile-responsive');
+			$cparams['class']=commonCoalesce($params['-search_select_class']??'','wacss_select is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -1295,7 +1295,7 @@ function commonSearchFiltersForm($params=array()){
 				}
 			}
 			$cparams=array();
-			$cparams['class']=commonCoalesce($params['-search_select_class'],'wacss_select is-mobile-responsive');
+			$cparams['class']=commonCoalesce($params['-search_select_class']??'','wacss_select is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -1304,7 +1304,7 @@ function commonSearchFiltersForm($params=array()){
 
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
-			$cparams['class']=commonCoalesce($params['-search_input_class'],'wacss_input is-mobile-responsive');
+			$cparams['class']=commonCoalesce($params['-search_input_class']??'','wacss_input is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -1332,7 +1332,7 @@ function commonSearchFiltersForm($params=array()){
 					$vals["{$fld} desc"]="{$orderbyname} {$dname} DESC";
 				}
 				$cparams=array();
-				$cparams['class']=commonCoalesce($params['-search_select_class'],'wacss_select is-mobile-responsive');
+				$cparams['class']=commonCoalesce($params['-search_select_class']??'','wacss_select is-mobile-responsive');
 				if(isset($params['-formname'])){
 					$cparams['-formname']=$params['-formname'];
 				}
@@ -1348,7 +1348,7 @@ function commonSearchFiltersForm($params=array()){
 			$rtn .='<input type="hidden" name="filter_operator" value="ct" >'.PHP_EOL;
 			$rtn .= '			<div style="margin:0 4px 4px 0;">'.PHP_EOL;
 			$cparams=array();
-			$cparams['class']=commonCoalesce($params['-search_input_class'],'wacss_input is-mobile-responsive');
+			$cparams['class']=commonCoalesce($params['-search_input_class']??'','wacss_input is-mobile-responsive');
 			if(isset($params['-formname'])){
 				$cparams['-formname']=$params['-formname'];
 			}
@@ -5520,7 +5520,7 @@ function buildFormSelect($name,$pairs=array(),$params=array()){
 		$params['style']="pointer-events: none;cursor: not-allowed;color:#a8a8a8;".$params['style'];
 	}
 	$rtn  = '<div style="display:flex;"';
-	if(strlen($sval) && isset($params['onchange']) && isset($params['-trigger']) && $params['-trigger']==1){
+	if(strlen((string)($params['value']??'')) && isset($params['onchange']) && isset($params['-trigger']) && $params['-trigger']==1){
     	$rtn .= " data-onload=\"commonEmulateEvent('{$params['id']}','change');\"";	
     }
 	$rtn .= '>'.PHP_EOL;
@@ -17736,7 +17736,7 @@ function processCSVLines($file,$func_name,$params=array()){
 				}
 			}
 		}
-		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose'],'\\') ) !== FALSE ) {
 			if(is_null($lineparts[0])){continue;}
 			if($bomchecked==0){
 				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
@@ -17989,7 +17989,7 @@ function getCSVSchema($file,$params=array()){
 		else{
 			$fields=array();
 		}
-		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose']) ) !== FALSE ) {
+		while ( ($lineparts = fgetcsv($fh, $params['-maxlen'], $params['-separator'],$params['-enclose'],'\\') ) !== FALSE ) {
 			if($bomchecked==0){
 				$lineparts[0]=str_replace("\xEF\xBB\xBF",'',$lineparts[0]);
 				$bomchecked=1;
@@ -18369,7 +18369,7 @@ function getCSVFileContents($file,$params=array()){
 	}
 	if(!isset($params['separator'])){$params['separator']=',';}
 	if(isset($params['fields']) && is_array($params['fields'])){$xfields=$params['fields'];}
-	else{$xfields = fgetcsv($handle, $params['maxlen'], $params['separator'],$params['-enclose']);}
+	else{$xfields = fgetcsv($handle, $params['maxlen'], $params['separator'],$params['-enclose'],'\\');}
 	//echo printValue($xfields);exit;
 	if(!is_array($xfields) || count($xfields)==0){
 		$results['error']="No Fields found: " . printValue($xfields);
@@ -18379,7 +18379,7 @@ function getCSVFileContents($file,$params=array()){
 	//skip rows if requested
 	if(isset($params['skiprows']) && isNum($params['skiprows'])){
 		for($x=0;$x<$params['skiprows'];$x++){
-			$junk = fgetcsv($handle, $params['maxlen'], $params['separator'],$params['-enclose']);
+			$junk = fgetcsv($handle, $params['maxlen'], $params['separator'],$params['-enclose'],'\\');
 			}
 		}
 	$fields=array();
@@ -18407,7 +18407,7 @@ function getCSVFileContents($file,$params=array()){
     $row_ptr=0;
     if(isset($params['unique'])){$unique=array();}
 
-	while (($data = fgetcsv($handle, $params['maxlen'],$params['separator'],$params['-enclose'])) !== FALSE) {
+	while (($data = fgetcsv($handle, $params['maxlen'],$params['separator'],$params['-enclose'],'\\')) !== FALSE) {
 		//$data=csvParseLine($data,$params['separator'],$params['enclose']);
 		//echo "data".printValue($data);exit;
 		if($results['count'] > $params['maxrows']){break;}
@@ -19023,8 +19023,8 @@ function getPHPVersion(){
 * @usage $uhost=getUniqueHost("login.mydomain.com"); - returns mydomain.com
 */
 function getUniqueHost($inhost=''){
-	if(strlen($inhost)==0){$inhost=$_SERVER['HTTP_HOST'];}
-	if(strlen($inhost)==0){$inhost=$_SERVER['SERVER_NAME'];}
+	if(strlen((string)$inhost)==0){$inhost=$_SERVER['HTTP_HOST']??'';}
+	if(strlen((string)$inhost)==0){$inhost=$_SERVER['SERVER_NAME']??'';}
 	//check for ip address
 	if(preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',$inhost)){return $inhost;}
 	$parts=preg_split('/\./',$inhost);
@@ -19044,8 +19044,8 @@ function getUniqueHost($inhost=''){
 * @usage $subdomain=getSubdomain("login.mydomain.com"); - returns login
 */
 function getSubdomain($inhost=''){
-	if(strlen($inhost)==0){$inhost=$_SERVER['HTTP_HOST'];}
-	if(strlen($inhost)==0){$inhost=$_SERVER['SERVER_NAME'];}
+	if(strlen((string)$inhost)==0){$inhost=$_SERVER['HTTP_HOST']??'';}
+	if(strlen((string)$inhost)==0){$inhost=$_SERVER['SERVER_NAME']??'';}
 	//return inhost if it is an ip address
 	if(preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/',$inhost)){return '';}
 	$parts=preg_split('/\./',$inhost);
@@ -19658,7 +19658,7 @@ function commonIncludeFunctionCode($content,$name=''){
 */
 function isAdmin(){
 	global $USER;
-	if(isset($USER) && is_array($USER) && isset($USER['_id']) && isNum($USER['_id']) && $USER['utype']==0){return true;}
+	if(isset($USER) && is_array($USER) && isset($USER['_id']) && isNum($USER['_id']) && isset($USER['utype']) && $USER['utype']==0){return true;}
 	return false;
 	}
 //---------- begin function isAjax ----------
@@ -22675,12 +22675,12 @@ function postURL($url,$params=array()) {
 		//break it up into header and body
 		$parts=preg_split('/\r\n\r\n/',trim($return),2);
 		$rtn['header']=trim($parts[0]);
-		$rtn['body']=trim($parts[1]);
+		$rtn['body']=trim($parts[1]??'');
 		//check for redirect cases with two headers
 		if(preg_match('/^HTTP\//is',$rtn['body'])){
 			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
 			$rtn['header']=trim($parts[0]);
-			$rtn['body']=trim($parts[1]);
+			$rtn['body']=trim($parts[1]??'');
 		}
 		//parse the header into an array
 		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
