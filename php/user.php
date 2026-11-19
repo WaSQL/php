@@ -89,7 +89,7 @@ if(
 	}
 	else{
 		$_REQUEST['login_failed']=1;
-		$ok=commonLogMessage('user',"Apikey Auth failed for user {$_REQUEST['username']}");
+		$ok=commonLogMessage('user',"Apikey Auth failed for user ".($_REQUEST['username']??''));
 	}
 }
 // Check for postedit read
@@ -112,7 +112,7 @@ elseif(
 	}
 	else{
 		$_REQUEST['login_failed']=1;
-		$ok=commonLogMessage('user',"Apikey Auth failed for user {$_REQUEST['username']}");
+		$ok=commonLogMessage('user',"Apikey Auth failed for user ".($_REQUEST['username']??''));
 	}
 }
 // Check for Okta SSO user/session
@@ -147,7 +147,7 @@ elseif(
 	}
 	else{
 		$_REQUEST['login_failed']=1;
-		$ok=commonLogMessage('user',"Apikey Auth failed for user {$_REQUEST['username']}");
+		$ok=commonLogMessage('user',"Apikey Auth failed for user ".($_REQUEST['username']??''));
 	}
 }
 elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
@@ -161,7 +161,7 @@ elseif(isset($_REQUEST['_auth']) && strlen($_REQUEST['_auth'])){
 	}
 	else{
 		$_REQUEST['login_failed']=1;
-		$ok=commonLogMessage('user',"Auth failed for user {$_REQUEST['username']}");
+		$ok=commonLogMessage('user',"Auth failed for user ".($_REQUEST['username']??''));
 	}
 }
 elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
@@ -175,7 +175,7 @@ elseif(isset($_REQUEST['_tauth']) && strlen($_REQUEST['_tauth'])){
 	}
 	else{
 		$_REQUEST['login_failed']=1;
-		$ok=commonLogMessage('user',"Temp Auth failed for user {$_REQUEST['username']}");
+		$ok=commonLogMessage('user',"Temp Auth failed for user ".($_REQUEST['username']??''));
 	}
 }
 elseif(isset($_REQUEST['_sessionid']) && strlen($_REQUEST['_sessionid'])){
@@ -204,7 +204,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 		//use ldap?
 		if(isset($CONFIG['authldap']) || isset($CONFIG['authldaps'])){
 			//ldap auth
-			$ok=commonLogMessage('user',"LDAP Auth Request from {$_REQUEST['username']}");
+			$ok=commonLogMessage('user',"LDAP Auth Request from ".($_REQUEST['username']??''));
 			$rec=userDecodeLDAPAuth($_REQUEST['username'],$_REQUEST['password']);
 			//confirm record is valid and active
 			if(isset($rec['_id']) && (!isset($rec['active']) || $rec['active']==1)){
@@ -217,7 +217,7 @@ elseif(isset($_REQUEST['_login']) && $_REQUEST['_login']==1 && isset($_REQUEST['
 			}
 			else{
 				$_REQUEST['login_failed']=1;
-				$ok=commonLogMessage('user',"LDAP Auth failed for user {$_REQUEST['username']}");
+				$ok=commonLogMessage('user',"LDAP Auth failed for user ".($_REQUEST['username']??''));
 			}
 		}
 		else{
@@ -396,7 +396,7 @@ function userGetAuthCode($rec=array()){
 function userDecodeAuthCode($authcode){
 	//decode authcode to id.auth
 	$str=decodeBase64($authcode);
-	list($id,$auth)=preg_split('/\./',$str,2);
+	list($id,$auth)=array_pad(preg_split('/\./',$str,2),2,'');
 	if(!isNum($id)){
 		//$ok=commonLogMessage('user',"userDecodeAuthCode Failed - id is not a num.");
 		$_REQUEST['_login_error']="userDecodeAuthCode Failed - id is not a num.";
@@ -455,7 +455,7 @@ function userDecodeTempAuthCode($authcode){
 	global $CONFIG;
 	//decode authcode to id.auth
 	$str=decodeBase64($authcode);
-	list($id,$auth)=preg_split('/\./',$str,2);
+	list($id,$auth)=array_pad(preg_split('/\./',$str,2),2,'');
 	if(!isNum($id)){
 		//$ok=commonLogMessage('user',"userDecodeTempAuthCode Failed - id is not a number.");
 		$_REQUEST['_login_error']="userDecodeTempAuthCode Failed - id";
@@ -554,7 +554,7 @@ function userDecodeSessionAuthCode($authcode){
 	global $CONFIG;
 	//decode authcode to id.auth
 	$str=decodeBase64($authcode);
-	list($id,$auth)=preg_split('/\./',$str,2);
+	list($id,$auth)=array_pad(preg_split('/\./',$str,2),2,'');
 	if(!isNum($id)){
 		//$ok=commonLogMessage('user',"userDecodeSessionAuthCode Failed - id is not a number.");
 		$_REQUEST['_login_error']="userDecodeSessionAuthCode Failed - id";
@@ -1079,7 +1079,7 @@ function userDecodeCookieCode($code){
 	global $CONFIG;
 	//decode authcode to id.auth
 	$str=decodeBase64($code);
-	list($id,$auth)=preg_split('/\./',$str,2);
+	list($id,$auth)=array_pad(preg_split('/\./',$str,2),2,'');
 	if(!isNum($id)){return null;}
 	//get user record with that id
 	$rec=getDBRecordById('_users',$id,1);
