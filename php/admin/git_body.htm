@@ -1,6 +1,46 @@
  <view:default>
 <div class="wadmin-head"><span class="icon-git"></span> Git Repos</div>
-<div class="container-fluid">
+<style>
+.git-wrap{max-width:1600px;margin:0 auto;padding:0 12px 24px;}
+.git-path{font-family:Consolas,Menlo,monospace;font-size:.95rem;color:#555;margin:6px 0 10px;word-break:break-all;}
+.git-summary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px;font-size:.9rem;color:#555;}
+.git-summary b{color:#222;}
+.git-layout{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;margin-top:8px;}
+.git-main{flex:1 1 640px;min-width:0;}
+.git-side{flex:0 1 320px;min-width:260px;}
+@media (max-width:900px){.git-side{flex:1 1 100%;}}
+.git-scroll{max-height:62vh;overflow:auto;border:1px solid #dfe3e8;border-radius:6px;background:#fff;}
+.git-table{width:100%;min-width:680px;border-collapse:collapse;font-size:.92rem;margin:0;}
+.git-hide-new tr[data-gitstatus=new]{display:none;}
+.git-toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-left:auto;padding:3px 10px;border:1px solid #dfe3e8;border-radius:14px;background:#fff;}
+.git-toggle input{margin:0;}
+.git-table th{position:sticky;top:0;z-index:2;background:#f3f5f7;text-align:left;padding:8px 10px;border-bottom:1px solid #dfe3e8;white-space:nowrap;}
+.git-table td{padding:6px 10px;border-bottom:1px solid #eef0f2;vertical-align:middle;}
+.git-table tr:hover td{background:#f8fbff;}
+.git-table td.git-num{text-align:right;white-space:nowrap;color:#666;font-variant-numeric:tabular-nums;}
+.git-table td.git-msg{min-width:260px;}
+.git-table td.git-msg input{width:100%;padding:4px 8px;height:auto;min-height:0;font-size:.88rem;}
+.git-table th.git-num{text-align:right;}
+.git-file{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.git-file label{font-family:Consolas,Menlo,monospace;font-size:.88rem;word-break:break-word;overflow-wrap:anywhere;cursor:pointer;margin:0;min-width:160px;}
+.git-file .git-dir{color:#8a919a;}
+.git-file .git-base{font-weight:600;color:#222;}
+.git-file .git-tools{display:flex;gap:6px;flex:0 0 auto;}
+.git-badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.78rem;font-weight:600;text-decoration:none;background:#e8eaed;color:#444;}
+.git-badge-modified{background:#fff1d6;color:#8a5a00;}
+.git-badge-new{background:#dff5e3;color:#1f6b33;}
+.git-badge-deleted{background:#fde1e1;color:#9b1c1c;}
+.git-badge-renamed{background:#e3e9fd;color:#2a3f9b;}
+.git-msgall{margin:12px 0 8px;}
+.git-msgall input{width:100%;}
+.git-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.git-bar .git-grow{flex:1 1 40px;min-width:40px;}
+.git-bar .wacss_button{white-space:nowrap;}
+.git-panel{border:1px solid #dfe3e8;border-radius:6px;background:#fff;}
+.git-panel .git-info{padding:10px;font-family:Consolas,Menlo,monospace;font-size:.82rem;max-height:60vh;overflow:auto;white-space:normal;word-break:break-all;}
+.git-empty{padding:28px;text-align:center;color:#777;}
+</style>
+<div class="git-wrap">
 	<ul class="nav-tabs w_blue">
 		<view:gitrepo>
 		<li class="<?=$repo['class'];?>">
@@ -9,13 +49,14 @@
 		</view:gitrepo>
 		<?=renderEach('gitrepo',$GITREPO,'repo');?>
 	</ul>
-	<div class="w_bold w_biggest w_pad"><?=isset($current_repo['path'])?$current_repo['path']:$current_repo['gitapi_path'];?></div>
+<div class="git-path"><span class="icon-folder"></span> <?=isset($current_repo['path'])?$current_repo['path']:$current_repo['gitapi_path'];?></div>
 	<?=renderViewIf(isset($git['error']),'error_message',$git);?>
 	<?=renderViewIf(isset($git['success']),'success_message',$git);?>
 	<?=renderViewIf(isset($git['warning']),'warning_message',$git);?>
 
-	<div class="row wacss_top10">
-		<div class="col-sm-9 w_padtop">
+	<div class="git-summary"><?php $__gc=array_count_values(array_column($git['files'],'status'));$__gs='<b>'.count($git['files']).'</b> changed file'.(count($git['files'])==1?'':'s');foreach($__gc as $__k=>$__v){$__gs.=' &middot; <span class="git-badge git-badge-'.encodeHtml($__k).'">'.$__v.' '.encodeHtml($__k).'</span>';}return $__gs;?><?php $__n=isset($__gc['new'])?$__gc['new']:0;return $__n?'<label class="git-toggle" title="Untracked files are hidden so you only see changes to tracked files"><input type="checkbox" id="git_show_new" onchange="gitToggleUntracked(this.checked);"> Show '.$__n.' untracked</label>':'';?></div>
+	<div class="git-layout">
+		<div class="git-main">
 			<form method="post" name="gitform" id="gitform" action="/php/admin.php" onsubmit="return wacss.ajaxPost(this,'git_details');">
 			<input type="hidden" name="_menu" value="git">
 			<input type="hidden" name="func" value="">
@@ -24,52 +65,57 @@
 			<input type="hidden" name="confirm_remove" value="0">
 			<input type="hidden" name="confirm_revert" value="0">
 			<input type="hidden" name="sort" value="<?=isset($_REQUEST['sort'])?$_REQUEST['sort']:'';?>">
-			<table class="wacss_table striped bordered hover condensed">
+<div class="git-scroll">
+				<table class="git-table git-hide-new" id="git_table">
 				<tr>
 					<th><?=buildFormCheckAll('data-class','file',array('-label'=>''));?></th>
 					<th>File Name</th>
 					<th>Status</th>
-					<th>Edited</th>
-					<th>Lines</th>
-					<th>Commit Message</th>
+					<th class="git-num">Edited</th>
+					<th class="git-num">Lines</th>
+<th>Commit Message</th>
 				</tr>
 				<view:file>
-				<tr>
+				<tr class="git-row" data-gitstatus="<?=encodeHtml($file['status']);?>">
 					<td>
 						<input type="checkbox" data-type="checkbox" _required="1" requiredmsg="No Files selected" id="id_<?=$file['sha'];?>" data-status="<?=$file['status'];?>" data-class="file" name="files[]" value="<?=$file['b64'];?>">
 					</td>
-					<td>
-						<view:compare>
-						<div class="w_right">
+						<td>
+							<div class="git-file">
+							<view:compare>
+							<div class="git-tools">
 							<a href="#" class="w_link w_padright" data-nav="/php/admin.php" data-div="centerpop" data-title="Compare Changes - <?=getFileName($file['name']);?>" data-func="diff" data-file="<?=$file['b64'];?>" data-form="gitform" onclick="return wacss.nav(this);" title="compare"><span class="icon-compare w_orange w_big"></span></a>
 							<a href="#" class="w_link w_padright" data-nav="/php/admin.php" data-div="centerpop" data-title="Commit History" data-form="gitform" data-func="log" data-file="<?=$file['b64'];?>" onclick="return wacss.nav(this);" title="view history log"><span class="icon-history w_big w_blue"></span></a>
 						</div>
 						</view:compare>
-						<view:delete_new>
-						<div class="w_right">
+							<view:delete_new>
+							<div class="git-tools">
 							<a href="#" class="w_link w_padright" data-nav="/php/admin.php" data-div="git_details" data-form="gitform" data-func="add_to_gitignore" data-file="<?=$file['b64'];?>" onclick="if(!confirm('Add <?=encodeHtml($file['name']);?> to .gitignore? File will remain but git will ignore it.')){return false;}return wacss.nav(this);" title="add to .gitignore"><span class="icon-block w_gray w_big"></span></a>
 							<a href="#" class="w_link w_padright" data-nav="/php/admin.php" data-div="git_details" data-form="gitform" data-func="delete_file" data-file="<?=$file['b64'];?>" onclick="if(!confirm('Delete local file <?=encodeHtml($file['name']);?>? This cannot be undone.')){return false;}return wacss.nav(this);" title="delete local file"><span class="icon-checkbox-delete w_red w_big"></span></a>
 						</div>
 						</view:delete_new>
-						<?=renderViewIf($file['status'] != 'new','compare',$file,'file');?>
-						<?=renderViewIf($file['status'] == 'new','delete_new',$file,'file');?>
-						<label for="id_<?=$file['sha'];?>" title="<?=$file['afile'];?>" class="w_pointer" style="font-weight:normal;display:inline;"><?=encodeHtml($file['name']);?></label>
-					</td>
-					<td><a href="#" title="Check all of this status" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=encodeHtml($file['status']);?></a></td>
-					<td class="text-right"><?=isset($file['age_verbose'])?$file['age_verbose']:'';?></td>
-					<td class="text-right"><?=isset($file['lines'])?$file['lines']:'';?></td>
-					<td><input type="text" name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?encodeHtml($_REQUEST[$key]):'';?>" class="wacss_input is-mobile-responsive" placeholder="commit message (3-500 chars)" maxlength="500"></td>
+							<label for="id_<?=$file['sha'];?>" title="<?=$file['afile'];?>"><?php $__d=dirname($file['name']);return ($__d=='.'||$__d=='')?'<span class="git-base">'.encodeHtml(basename($file['name'])).'</span>':'<span class="git-dir">'.encodeHtml($__d).'/</span><span class="git-base">'.encodeHtml(basename($file['name'])).'</span>';?></label>
+							<?=renderViewIf($file['status'] != 'new','compare',$file,'file');?>
+							<?=renderViewIf($file['status'] == 'new','delete_new',$file,'file');?>
+							</div>
+						</td>
+<td><a href="#" class="git-badge git-badge-<?=encodeHtml($file['status']);?>" title="Check all <?=encodeHtml($file['status']);?> files" onclick="return checkAllElements('data-status','<?=$file['status'];?>',1);"><?=encodeHtml($file['status']);?></a></td>
+						<td class="git-num"><?=isset($file['age_verbose'])?$file['age_verbose']:'';?></td>
+						<td class="git-num"><?=isset($file['lines'])?$file['lines']:'';?></td>
+						<td class="git-msg"><input type="text"name="msg_<?=$file['sha'];?>" value="<?$key='msg_'.$file['sha'];return isset($_REQUEST[$key])?encodeHtml($_REQUEST[$key]):'';?>" class="wacss_input is-mobile-responsive" placeholder="message (3-500 chars)" maxlength="500"></td>
 				</tr>
 				</view:file>
-				<?=renderEach('file',$git['files'],'file');?>
-			</table>
-			<input type="text" name="msg" value="<?=isset($_REQUEST['msg'])?encodeHtml($_REQUEST['msg']):'';?>" class="wacss_input is-mobile-responsive" placeholder="global commit message (3-500 chars)" maxlength="500">
-			<div class="w_padtop" style="display:flex;gap:10px;">
+					<?=renderEach('file',$git['files'],'file');?>
+				</table>
+				<?=count($git['files'])?'':'<div class="git-empty"><span class="icon-check"></span> Working tree clean - nothing to commit.</div>';?>
+				</div>
+			<div class="git-msgall"><input type="text" name="msg" value="<?=isset($_REQUEST['msg'])?encodeHtml($_REQUEST['msg']):'';?>" class="wacss_input is-mobile-responsive" placeholder="global commit message (3-500 chars) - used for any selected file without its own message" maxlength="500"></div>
+				<div class="git-bar">
 				<button class="wacss_button is-mobile-responsive is-info" type="submit" onclick="document.gitform.func.value='add';"><span class="icon-plus"></span> Add</button>
 				<button class="wacss_button is-mobile-responsive is-danger" type="submit" onclick="if(!confirm('Remove selected files from git tracking? This cannot be undone.')){return false;}else{document.gitform.func.value='remove';document.gitform.confirm_remove.value='1';return true;}"><span class="icon-minus"></span> Remove</button>
 				<button class="wacss_button is-mobile-responsive is-warning" type="submit" onclick="if(!confirm('Revert selected files, losing all changes? This cannot be undone.')){return false;}else{document.gitform.func.value='revert';document.gitform.confirm_revert.value='1';return true;}"><span class="icon-backward"></span> Revert</button>
 				<button class="wacss_button is-mobile-responsive is-success" type="submit" onclick="return gitConfirmCommitPush();"><span class="icon-git-push-commit"><span class="icon-mail-forward"></span></span> Commit and Push</button>
-				<div id="gitform_processing" style="flex:1;"></div>
+<div id="gitform_processing" class="git-grow"></div>
 				<a href="/php/admin.php?_menu=git" class="wacss_button is-mobile-responsive"><span class="icon-refresh w_big"></span> Refresh</a>
 				<a href="#" class="wacss_button is-mobile-responsive is-primary" data-nav="/php/admin.php" data-div="git_details" data-form="gitform" data-func="pull" onclick="return wacss.nav(this);"><span class="icon-download"></span> Pull</a>
 			</div>
@@ -78,14 +124,12 @@
 				<?=renderViewIf(isset($recs[0]),'git_details',$recs,'recs');?>
 			</div>
 		</div>
-		<div class="col-sm-3 w_padtop">
+		<div class="git-side">
 			<ul class="nav nav-tabs">
 				<li class="active w_pointer"><a href="#" data-tab="1" data-nav="/php/admin.php" data-div="git_info" data-form="gitform" data-func="status" onclick="return wacss.nav(this);">Status</a></li>
 				<li class="w_pointer"><a href="#" data-tab="1" data-nav="/php/admin.php" data-div="git_info" data-form="gitform" data-func="config" onclick="return wacss.nav(this);">Config</a></li>
 			</ul>
-			<div id="git_info" class="well w_nowrap" style="overflow:auto;">
-				<?=isset($git['status'])?nl2br(encodeHtml($git['status'])):'';?>
-			</div>
+<div id="git_info" class="git-panel git-info"><?=isset($git['status'])?nl2br(encodeHtml($git['status'])):'';?></div>
 		</div>
 	</div>
 </div>
@@ -101,19 +145,19 @@
 
 <view:error_message>
 	<div class="alert alert-danger w_top10">
-		<strong><span class="icon-warning"></span> Error:</strong> <?=encodeHtml($git['error']);?>
+		<strong><span class="icon-warning"></span> Error:</strong> <?=encodeHtml($params['error']);?>
 	</div>
 </view:error_message>
 
 <view:success_message>
 	<div class="alert alert-success w_top10">
-		<strong><span class="icon-check"></span> Success:</strong> <?=encodeHtml($git['success']);?>
+		<strong><span class="icon-check"></span> Success:</strong> <?=encodeHtml($params['success']);?>
 	</div>
 </view:success_message>
 
 <view:warning_message>
 	<div class="alert alert-warning w_top10">
-		<strong><span class="icon-warning"></span> Warning:</strong> <?=encodeHtml($git['warning']);?>
+		<strong><span class="icon-warning"></span> Warning:</strong> <?=encodeHtml($params['warning']);?>
 	</div>
 </view:warning_message>
 
@@ -231,6 +275,28 @@
 </view:git_error>
 
 <script>
+/** Show/hide untracked ('new') rows. Hidden rows are also disabled so they can never be added/committed unseen. */
+function gitToggleUntracked(show){
+	var t=document.getElementById('git_table');
+	if(!t){return;}
+	t.classList.toggle('git-hide-new',!show);
+	var rows=t.querySelectorAll('tr[data-gitstatus="new"]');
+	for(var i=0;i<rows.length;i++){
+		var inputs=rows[i].querySelectorAll('input');
+		for(var k=0;k<inputs.length;k++){
+			inputs[k].disabled=!show;
+			if(!show){inputs[k].checked=false;}
+		}
+	}
+	try{localStorage.setItem('git_show_untracked',show?'1':'0');}catch(e){}
+}
+document.addEventListener('DOMContentLoaded',function(){
+	var show=false;
+	try{show=localStorage.getItem('git_show_untracked')==='1';}catch(e){}
+	var cb=document.getElementById('git_show_new');
+	if(cb){cb.checked=show;}
+	gitToggleUntracked(show);
+});
 function gitRemoveDeletedRow(sha){
 	// Find the checkbox with this sha
 	var checkbox = document.getElementById('id_' + sha);
