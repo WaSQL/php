@@ -37,7 +37,7 @@ function geoipInfo($ip_addr=''){
 	$geoip_info=array();
 	foreach($record as $key=>$val){
 		$key=(string)$key;
-		if(isNum((string)$val)){$geoip_info[$key]=(real)$val;}
+		if(isNum((string)$val)){$geoip_info[$key]=(float)$val;}
 		else{$geoip_info[$key]=removeCdata((string)$val);}
 		}
 	if(isset($GEOIP_REGION_NAME[$record->country_code][$record->region])){

@@ -226,7 +226,7 @@ function weatherGetStationList($force=0,$try=0){
 			$crec=array();
 			foreach($station as $citem=>$val){
 				$key=(string)$citem;
-				if(isNum((string)$val)){$crec[$key]=(real)$val;}
+				if(isNum((string)$val)){$crec[$key]=(float)$val;}
 				else{$crec[$key]=removeCdata((string)$val);}
 				}
 			array_push($list,$crec);
