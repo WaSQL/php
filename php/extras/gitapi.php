@@ -66,7 +66,7 @@ function gitExecCommand($command, $repo_path = null){
 
 	$output = array();
 	$exit_code = 0;
-	$git_command = "git {$command} 2>&1";
+	$git_command = "git -c safe.directory=".escapeshellarg(str_replace(chr(92),'/',$repo_path))." {$command} 2>&1";
 	exec($git_command, $output, $exit_code);
 
 	// Check for dubious ownership error and auto-fix it
