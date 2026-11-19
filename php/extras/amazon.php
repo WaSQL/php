@@ -681,7 +681,7 @@ function amazonSendTextMsg($phone, $message, $region=null) {
     // Trim credentials to remove hidden characters
     $accessKey = trim($CONFIG['aws_accesskey']);
     $secretKey = trim($CONFIG['aws_secretkey']);
-    $region=commonCoalesce($region,$CONFIG['aws_region'],'us-east-1');
+    $region=commonCoalesce($region,$CONFIG['aws_region']??'','us-east-1');
     $host = "sns.{$region}.amazonaws.com";
 
     $method = 'POST';
