@@ -252,11 +252,11 @@ switch($func){
 
 		$original_dir = getcwd();
 		if(chdir($CONFIG['gitapi_path'])){
-			exec('git fetch origin 2>&1', $fetch_output, $fetch_code);
+			exec(gitCmd('fetch origin').' 2>&1', $fetch_output, $fetch_code);
 
 			if($fetch_code === 0){
 				$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
-				exec("git rev-list HEAD..origin/{$branch} --count 2>&1", $behind_output, $behind_code);
+				exec(gitCmd("rev-list HEAD..origin/{$branch} --count").' 2>&1', $behind_output, $behind_code);
 
 				if($behind_code === 0 && isset($behind_output[0])){
 					$commits_behind = intval(trim($behind_output[0]));
@@ -440,7 +440,7 @@ switch($func){
 			$original_dir = getcwd();
 			if(chdir($CONFIG['gitapi_path'])){
 				// Fetch latest from remote
-				exec('git fetch origin 2>&1', $fetch_output, $fetch_code);
+				exec(gitCmd('fetch origin').' 2>&1', $fetch_output, $fetch_code);
 
 				if($fetch_code === 0){
 					$branch = isset($CONFIG['gitapi_branch']) ? $CONFIG['gitapi_branch'] : 'master';
@@ -449,7 +449,7 @@ switch($func){
 					// Sync each successfully pushed file
 					foreach($pushed_files as $file){
 						$safe_file = escapeshellarg($file);
-						exec("git checkout origin/{$branch} -- {$safe_file} 2>&1", $checkout_output, $checkout_code);
+						exec(gitCmd("checkout origin/{$branch} -- {$safe_file}").' 2>&1', $checkout_output, $checkout_code);
 
 						if($checkout_code === 0){
 							$recs[] = "Synced locally: {$file}";
