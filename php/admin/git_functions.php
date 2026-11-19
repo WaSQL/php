@@ -47,6 +47,23 @@ $progpath = dirname(__FILE__);
 require_once("{$progpath}/../extras/gitapi.php");
 
 /**
+ * Builds a git command line that works when the web server runs as a different OS user than the repo owner
+ *
+ * Apache often runs as SYSTEM/www-data, and git refuses repos owned by another user ("detected dubious ownership").
+ * Passing safe.directory with -c applies only to this one command, so no global git config is modified.
+ *
+ * @param string $args Git arguments, already escaped (e.g. 'status -s')
+ * @param string $path Repository path (default: $CONFIG['gitapi_path'])
+ * @return string Command line starting with git
+ */
+function gitCmd($args, $path = ''){
+	global $CONFIG;
+	if($path === ''){$path = isset($CONFIG['gitapi_path']) ? $CONFIG['gitapi_path'] : getcwd();}
+	$path = str_replace(chr(92), '/', $path);
+	return 'git -c safe.directory='.escapeshellarg($path).' '.$args;
+}
+
+/**
  * Execute local git status command
  *
  * Executes 'git status -s' locally to see what files have changed.
@@ -70,14 +87,24 @@ function gitLocalStatus(){
 
 	$output = array();
 	$exit_code = 0;
-	exec('git status -s 2>&1', $output, $exit_code);
+	exec(gitCmd('status -s').' 2>&1', $output, $exit_code);
 
 	chdir($original_dir);
+
+	$error = '';
+	if($exit_code !== 0){
+		$error = trim(implode("\n", $output));
+		if($error === ''){
+			//git printed nothing - say why (exit code, user, git location) so the page never shows a blank error
+			$gitbin = trim((string)@shell_exec(isWindows() ? 'where git 2>&1' : 'which git 2>&1'));
+			$error = "git exited with code {$exit_code} and no output in {$CONFIG['gitapi_path']} (php user: ".get_current_user().", git: {$gitbin})";
+		}
+	}
 
 	return array(
 		'success' => $exit_code === 0,
 		'output' => implode("\n", $output),
-		'error' => $exit_code !== 0 ? implode("\n", $output) : ''
+		'error' => $error
 	);
 }
 
