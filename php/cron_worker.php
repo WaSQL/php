@@ -75,6 +75,43 @@ if(!count($ConfigXml)){exit;}
 $tpath=getWaSQLPath('php/temp');
 $cron_tail_log="{$tpath}/cron_tail.log";
 $cron_pid=getmypid();
+/*
+	Child-process isolation: a page cron defines its functions in the PHP process that runs it, and PHP can never
+	undeclare a function. When one worker ran jobs for several sites the second site's same-named function was a
+	"Cannot redeclare" fatal that killed the worker for every site. So each Page/eval job now runs in its own child
+	process: `php cron_worker.php --child={cron_id} --host={hostname} --ppid={parent pid}`.
+	If the OS/PHP cannot spawn children (proc_open disabled or no php binary) we fall back to running in-process
+	but stop the worker as soon as it would move to a different host after loading page code (a fresh worker is
+	started by cron_worker.sh every few seconds and picks up the rest).
+*/
+global $cronChildren;
+$cronChildren=array();
+$cron_child_id=0;
+$cron_child_host='';
+$cron_child_ppid=0;
+if(isset($argv) && is_array($argv)){
+	foreach($argv as $__arg){
+		if(preg_match('/^--child=(\d+)$/',$__arg,$__m)){$cron_child_id=(int)$__m[1];}
+		elseif(preg_match('/^--host=(.+)$/',$__arg,$__m)){$cron_child_host=$__m[1];}
+		elseif(preg_match('/^--ppid=(\d+)$/',$__arg,$__m)){$cron_child_ppid=(int)$__m[1];}
+	}
+}
+if($cron_child_id && (!strlen($cron_child_host) || !$cron_child_ppid)){
+	cronMessage("child worker started without --host/--ppid - exiting");
+	exit(2);
+}
+$cron_child_ok=$cron_child_id?false:cronChildSupported();
+$cron_inproc_host='';
+if(!$cron_child_id){
+	if($cron_child_ok){register_shutdown_function('cronChildrenKill');}
+	else{cronMessage("NOTICE - child processes are not supported here; page crons run in-process and the worker exits when it would switch hosts");}
+	if($cron_child_ok && function_exists('pcntl_async_signals') && function_exists('pcntl_signal')){
+		//make SIGTERM/SIGINT run the shutdown function so running children are terminated
+		pcntl_async_signals(true);
+		pcntl_signal(SIGTERM,function(){exit(143);});
+		pcntl_signal(SIGINT,function(){exit(130);});
+	}
+}
 
 //should switch to ALLCONFIG
 foreach($ConfigXml as $name=>$host){
@@ -90,8 +127,15 @@ foreach($ConfigXml as $name=>$host){
     	$CONFIG[$k]=$v;
 	}
 	if(!isset($CONFIG['cron'])){$CONFIG['cron']=0;}
+	//a child worker only ever handles its one host
+	if($cron_child_id && $CONFIG['name'] !== $cron_child_host){continue;}
 	if($CONFIG['cron']==0){
 		continue;
+	}
+	//in-process fallback: never mix page code from two hosts in one process (see note above)
+	if(!$cron_child_id && strlen($cron_inproc_host) && $cron_inproc_host !== $CONFIG['name']){
+		cronMessage("pid {$cron_pid} exiting before switching from {$cron_inproc_host} to {$CONFIG['name']} - page functions already loaded; a new worker will continue");
+		exit;
 	}	
 	//connect to this database.
 	$dbh='';
@@ -107,7 +151,13 @@ foreach($ConfigXml as $name=>$host){
 		if no records to run check for apache_access_log 
 	*/
 	while($etime <= 60){
-		//secure a cron record with run_now set to 1
+		//secure a cron record with run_now set to 1 (a child instead takes over the row its parent already secured)
+		if($cron_child_id){
+			$secureWhere="_id={$cron_child_id} and running=1 and cron_pid={$cron_child_ppid}";
+		}
+		else{
+			$secureWhere="run_now=1 and cron_pid=0 and running=0";
+		}
 		$secureSQL=<<<ENDOFSQL
 		UPDATE _cron 
 		SET 
@@ -116,10 +166,8 @@ foreach($ConfigXml as $name=>$host){
 			run_now=0,
 			stop_now=0,
 			run_date=NOW()
-		WHERE 
-			run_now=1 
-			and cron_pid=0 
-			and running=0 
+		WHERE
+			{$secureWhere}
 		LIMIT 1
 ENDOFSQL;
 		$ok=executeSQL($secureSQL);
@@ -133,9 +181,10 @@ ENDOFSQL;
 		//break if no records to run
 		if(!isset($cronrec['_id'])){
 			//$ok=cronMessage("{$CONFIG['name']} - no crons are ready");
+			if($cron_child_id){cronMessage("child pid {$cron_pid} could not take over cron {$cron_child_id} for {$CONFIG['name']} - exiting");}
 			break;
 		}
-		//add a cronlog
+		//add a cronlog (a child reuses the cronlog its parent already created)
 		$header=array(
 			'timestamp'=>getDBTime(),
 			'cron_name'=>$cronrec['name'],
@@ -143,17 +192,19 @@ ENDOFSQL;
 			'user_id'=>0,
 			'cron_pid'=>$cron_pid
 		);
-		$cronrec['cronlog_id']=addDBRecord(array(
-			'-table'=>'_cron_log',
-			'cron_id'=>$cronrec['_id'],
-			'delete_me'=>0,
-			'header'=>encodeJson($header)
-		));
-		if(isNum($cronrec['cronlog_id'])){
-			$ok=editDBRecordById('_cron',$cronrec['_id'],array('cronlog_id'=>$cronrec['cronlog_id']));
+		if(!$cron_child_id){
+			$cronrec['cronlog_id']=addDBRecord(array(
+				'-table'=>'_cron_log',
+				'cron_id'=>$cronrec['_id'],
+				'delete_me'=>0,
+				'header'=>encodeJson($header)
+			));
+			if(isNum($cronrec['cronlog_id'])){
+				$ok=editDBRecordById('_cron',$cronrec['_id'],array('cronlog_id'=>$cronrec['cronlog_id']));
+			}
+			//only keep the last x records
+			$ok=cronCleanRecords($cronrec);
 		}
-		//only keep the last x records
-		$ok=cronCleanRecords($cronrec);
 		//set cmd
 		$cmd=$cronrec['run_cmd'];
 		$lcmd=strtolower(trim($cmd));
@@ -212,6 +263,25 @@ ENDOFSQL;
 		$header['crontype']=$crontype;
 		cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, cronlog_id:{$cronrec['cronlog_id']}, crontype:{$crontype}, cmd:{$cmd}, cron_pid:{$cron_pid}");
 		$ok=cronLogUpdate(array('header'=>encodeJson($header)));
+		//Page and eval jobs define functions in the running process, so give each its own child process
+		if(!$cron_child_id && $cron_child_ok && in_array(strtolower($crontype),array('page','eval'))){
+			$cron_job_start=microtime(true);
+			$child=cronRunChild($cronrec['_id'],$CONFIG['name'],$cron_pid);
+			if($child['started']){
+				cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, child pid {$child['pid']} finished with exit code {$child['code']} in ".round(microtime(true)-$cron_job_start,2)."s");
+				//if the child died without releasing the cron row (fatal, killed) release it here so it is not stuck running
+				$left=getDBRecord(array('-table'=>'_cron','_id'=>$cronrec['_id'],'-fields'=>'_id,running,cron_pid','-nocache'=>1));
+				if(isset($left['_id']) && $left['running']==1 && ($left['cron_pid']==$child['pid'] || $left['cron_pid']==$cron_pid)){
+					cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, child pid {$child['pid']} exited with code {$child['code']} without finishing - releasing the cron");
+					$ok=editDBRecordById('_cron',$cronrec['_id'],array('running'=>0,'cron_pid'=>0,'cronlog_id'=>0,'run_length'=>round(microtime(true)-$cron_job_start,4)));
+				}
+				$etime=(int)(microtime(true)-$starttime);
+				continue;
+			}
+			//could not spawn - fall back to in-process for the rest of this worker's life
+			cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, child process failed to start ({$child['error']}) - running in-process and disabling children");
+			$cron_child_ok=false;
+		}
 		//start the job
 		//per-job timer for _cron.run_length ($starttime is the worker start / 60s loop budget)
 		$cron_job_start=microtime(true);
@@ -301,6 +371,7 @@ ENDOFSQL;
 	    	$ok=commonCronLog("<b>RETURNED:</b> Rtncode: {$out['rtncode']}. Runtime:{$out['runtime']}");
 	    	$ok=cronLogUpdate(array('body'=>encodeJson($out)));
 		}
+		if(in_array(strtolower($crontype),array('page','eval'))){$cron_inproc_host=$CONFIG['name'];}
 		//update record to show we are now finished
 		$footer=array(
 			'timestamp'=>getDBTime(),
@@ -322,11 +393,83 @@ ENDOFSQL;
 		$etime=(int)$etime;
 		$cron_pid=getmypid();
 		cronMessage("Cron ID:{$cronrec['_id']} - Name:{$cronrec['name']}, process_pid: {$cron_pid} finished");
+		//a child runs exactly one job
+		if($cron_child_id){exit(0);}
 	}
 	if($etime > 60){break;}
 }
 exit;
 
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+* returns true if this PHP can launch child worker processes (proc_open enabled and a php binary available)
+*/
+function cronChildSupported(){
+	if(!function_exists('proc_open') || !function_exists('proc_get_status') || !function_exists('proc_close')){return false;}
+	$disabled=array_map('trim',explode(',',strtolower((string)ini_get('disable_functions'))));
+	foreach(array('proc_open','proc_get_status','proc_close','proc_terminate') as $fn){
+		if(in_array($fn,$disabled)){return false;}
+	}
+	if(!defined('PHP_BINARY') || !strlen(PHP_BINARY) || !is_file(PHP_BINARY)){return false;}
+	if(!defined('STDOUT') || !defined('STDERR')){return false;}
+	return true;
+}
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+* runs one cron in a child worker process and waits for it. the child inherits our stdout/stderr so its log lines
+* land in the same cron_worker log. returns array(started,pid,code,error)
+*/
+function cronRunChild($cron_id,$host,$ppid){
+	global $cronChildren;
+	global $progpath;
+	$cmd=array(PHP_BINARY,__FILE__,"--child={$cron_id}","--host={$host}","--ppid={$ppid}");
+	$spec=array(0=>array('pipe','r'),1=>STDOUT,2=>STDERR);
+	$pipes=array();
+	$proc=@proc_open($cmd,$spec,$pipes,$progpath);
+	if(!is_resource($proc)){
+		return array('started'=>false,'pid'=>0,'code'=>-1,'error'=>'proc_open failed');
+	}
+	if(isset($pipes[0]) && is_resource($pipes[0])){fclose($pipes[0]);}
+	$status=proc_get_status($proc);
+	$pid=$status['pid'];
+	$cronChildren[$pid]=$proc;
+	cronMessage("Cron ID:{$cron_id} - started child pid {$pid} for {$host}");
+	$code=-1;
+	while(true){
+		$status=proc_get_status($proc);
+		if(!$status['running']){
+			//exitcode is only reported on the first call after the process ends
+			$code=$status['exitcode'];
+			break;
+		}
+		usleep(100000);
+	}
+	proc_close($proc);
+	unset($cronChildren[$pid]);
+	return array('started'=>true,'pid'=>$pid,'code'=>$code,'error'=>'');
+}
+/**
+* @exclude  - this function is for internal use only- excluded from docs
+* shutdown handler: terminate any child still running if the parent worker exits or is signalled
+*/
+function cronChildrenKill(){
+	global $cronChildren;
+	if(!is_array($cronChildren)){return;}
+	foreach($cronChildren as $pid=>$proc){
+		if(is_resource($proc)){
+			$st=proc_get_status($proc);
+			if($st['running']){
+				cronMessage("parent worker exiting - terminating child pid {$pid}");
+				@proc_terminate($proc);
+				usleep(500000);
+				$st=proc_get_status($proc);
+				if($st['running']){@proc_terminate($proc,9);}
+			}
+			@proc_close($proc);
+		}
+		unset($cronChildren[$pid]);
+	}
+}
 /**
 * @exclude  - this function is for internal use only- excluded from docs
 */
