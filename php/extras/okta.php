@@ -56,7 +56,7 @@ class Okta {
 		}
 		foreach ($required_params as $required_param) {
 			if (!isset($params[$required_param])) {
-				throw new Exception("Error: A value is required for ${required_param} to instantiate the Okta singleton.");
+				throw new Exception("Error: A value is required for {$required_param} to instantiate the Okta singleton.");
 			}
 		}
 		// Set the class properties for the specified authorization method
@@ -98,7 +98,7 @@ class Okta {
 
 	protected function __clone() {} // Declared as protected to prevent cloning
 
-	protected function __wakeup() {} //Declared as protected to prevent restore
+	public function __wakeup() {} //Declared as protected to prevent restore
 
 	/**
 	 * Get a single instance of the Okta class
