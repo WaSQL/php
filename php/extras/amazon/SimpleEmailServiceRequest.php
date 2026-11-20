@@ -139,7 +139,7 @@ final class SimpleEmailServiceRequest
 			);
 		}
 
-		@curl_close($curl);
+		if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 		// Parse body into XML
 		if ($this->response->error === false && !empty($this->response->body)) {
