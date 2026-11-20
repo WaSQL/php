@@ -78,7 +78,7 @@
 			if (empty($this -> Handle -> sheets))
 			{
 				$this -> Error = true;
-				return null;
+				return;
 			}
 
 			$this -> ChangeSheet(0);
