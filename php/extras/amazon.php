@@ -449,7 +449,7 @@ function amazonUploadFileS3($params=array()){
         	else{$rtn['headers'][$k]=$v;}
 		}
     }
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	$rtn['url']=$url;
 	$rtn['postfields_file_length']=strlen($postfields['file']);
 	unset($postfields['file']);
@@ -738,7 +738,7 @@ function amazonSendTextMsg($phone, $message, $region=null) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     $curlErrno = curl_errno($ch);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
     if ($httpCode == 200) {
         $xml = simplexml_load_string($response);
@@ -984,7 +984,7 @@ function amazonListFilesS3($params=array()){
 			else{$rtn['headers'][$k]=$v;}
 		}
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	$rtn['url']=$url;
 
 	// RESPONSE PROCESSING WITH DATE FILTERING
@@ -1368,7 +1368,7 @@ function amazonGetFileS3($params=array()){
 			else{$rtn['headers'][$k]=$v;}
 		}
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	$rtn['url']=$url;
 
 	// RESPONSE
