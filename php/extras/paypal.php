@@ -579,7 +579,7 @@ function paypalGetAccessToken($scope=''){
     ));
 
 	$result = curl_exec($ch);
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
     //echo "url:{$url},result:{$result}";exit;
 	if(empty($result)){return '';}
 	else{
