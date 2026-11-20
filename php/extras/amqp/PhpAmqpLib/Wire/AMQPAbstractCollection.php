@@ -103,7 +103,7 @@ abstract class AMQPAbstractCollection implements \Iterator
      */
     protected $data = array();
 
-    public function __construct(array $data = null)
+    public function __construct(?array $data = null)
     {
         if (!empty($data)) {
             $this->data = $this->encodeCollection($data);
