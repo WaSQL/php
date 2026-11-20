@@ -180,7 +180,7 @@ function postportalSendRequest($url, $method = 'GET', $headers = array(), $body 
 			}
 		}
 		// Close cURL handle
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	} catch(Exception $e){
 		$response['error'] = $e->getMessage();
 	}
