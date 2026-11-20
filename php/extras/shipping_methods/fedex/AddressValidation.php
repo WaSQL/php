@@ -175,7 +175,7 @@ XML;
 		$result = curl_exec($ch);
 		
 		//close our cURL connection
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		
 		//replace colons so we can convert to simplexml
 		$result = str_replace(":", "xmlcolon", $result);
