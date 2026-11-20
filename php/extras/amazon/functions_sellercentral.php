@@ -295,7 +295,7 @@ ENDOFXML;
     curl_setopt($ch, CURLOPT_POSTFIELDS, $amazon_feed);
     $response = curl_exec($ch);
     $info = curl_getinfo($ch);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
     
     /*
 		Normal output:
