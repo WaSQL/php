@@ -160,10 +160,10 @@ function ebanxQuery($params=array()){
 
 	if (curl_errno($ch) > 0){
 		$error= curl_error($ch);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return "ebanxQuery: {$error}";
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// The response is a JSON expression, so we can decode it
 	$response = json_decode($response, true);
@@ -187,10 +187,10 @@ function ebanxCheckCPF($cpf){
 		// Calculates the numbers to see if the CPF is true
 		for ($t = 9; $t < 11; $t++) {
 			for ($d = 0, $c = 0; $c < $t; $c++) {
-				$d += $cpf{$c} * (($t + 1) - $c);
+				$d += $cpf[$c] * (($t + 1) - $c);
 			}
 			$d = ((10 * $d) % 11) % 10;
-			if ($cpf{$c} != $d) {
+			if ($cpf[$c] != $d) {
 				return false;
 			}
 		}
@@ -241,10 +241,10 @@ function ebanxRefund($params=array()){
 
 	if (curl_errno($ch) > 0){
 		$error= curl_error($ch);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return "ebanxRefund: {$error}";
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// The response is a JSON expression, so we can decode it
 	$response = json_decode($response, true);
@@ -312,10 +312,10 @@ function ebanxCapture($params=array()){
 
 	if (curl_errno($ch) > 0){
 		$error= curl_error($ch);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return "ebanxCapture: {$error}";
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// The response is a JSON expression, so we can decode it
 	$response = json_decode($response, true);
@@ -438,10 +438,10 @@ function ebanxAuthorize($params=array()){
 	// Checks if there was a problem with cURL
 	if (curl_errno($ch) > 0){
 		$error= curl_error($ch);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return "ebanxAuthorize error: {$error}";
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	$result = json_decode($result, true);
 	return $result;
 }
