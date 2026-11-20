@@ -55,7 +55,7 @@ class AMQPReader extends AbstractClient
      * @param AbstractIO $io
      * @param int $timeout
      */
-    public function __construct($str, AbstractIO $io = null, $timeout = 0)
+    public function __construct($str, ?AbstractIO $io = null, $timeout = 0)
     {
         parent::__construct();
 
