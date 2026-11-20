@@ -46,7 +46,7 @@ function ai_anthropicAsk($question,$max_tokens=1000) {
     if (curl_errno($ch)) {
         return 'Error: ' . curl_error($ch);
     }
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
     $result = json_decode($response, true);
     if(isset($result['content'][0]['text'])){
         return $result['content'][0]['text'];
@@ -75,7 +75,7 @@ function ai_anthropicAccount() {
     }
 
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
     if ($httpCode != 200) {
         return 'HTTP Error: ' . $httpCode;
