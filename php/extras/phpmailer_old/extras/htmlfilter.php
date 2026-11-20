@@ -348,7 +348,7 @@ function tln_getnxtag($body, $offset)
                 }
                 //intentional fall-through
             case '>':
-                $attary{$attname} = '"yes"';
+                $attary[$attname] = '"yes"';
                 return array($tagname, $attary, $tagtype, $lt, $pos);
                 break;
             default:
@@ -382,7 +382,7 @@ function tln_getnxtag($body, $offset)
                         }
                         list($pos, $attval, $match) = $regary;
                         $pos++;
-                        $attary{$attname} = '\'' . $attval . '\'';
+                        $attary[$attname] = '\'' . $attval . '\'';
                     } else {
                         if ($quot == '"') {
                             $regary = tln_findnxreg($body, $pos + 1, '\"');
@@ -391,7 +391,7 @@ function tln_getnxtag($body, $offset)
                             }
                             list($pos, $attval, $match) = $regary;
                             $pos++;
-                            $attary{$attname} = '"' . $attval . '"';
+                            $attary[$attname] = '"' . $attval . '"';
                         } else {
                             /**
                              * These are hateful. Look for \s, or >.
@@ -405,7 +405,7 @@ function tln_getnxtag($body, $offset)
                              * If it's ">" it will be caught at the top.
                              */
                             $attval = preg_replace('/\"/s', '&quot;', $attval);
-                            $attary{$attname} = '"' . $attval . '"';
+                            $attary[$attname] = '"' . $attval . '"';
                         }
                     }
                 } else {
@@ -413,7 +413,7 @@ function tln_getnxtag($body, $offset)
                         /**
                          * That was attribute type 4.
                          */
-                        $attary{$attname} = '"yes"';
+                        $attary[$attname] = '"yes"';
                     } else {
                         /**
                          * An illegal character. Find next '>' and return.
@@ -449,7 +449,7 @@ function tln_deent(&$attvalue, $regex, $hex = false)
             if ($hex) {
                 $numval = hexdec($numval);
             }
-            $repl{$matches[0][$i]} = chr($numval);
+            $repl[$matches[0][$i]] = chr($numval);
         }
         $attvalue = strtr($attvalue, $repl);
         return true;
@@ -559,7 +559,7 @@ function tln_fixatts(
                         list($valmatch, $valrepl) = $valary;
                         $newvalue = preg_replace($valmatch, $valrepl, $attvalue);
                         if ($newvalue != $attvalue) {
-                            $attary{$attname} = $newvalue;
+                            $attary[$attname] = $newvalue;
                         }
                     }
                 }
@@ -637,10 +637,10 @@ function tln_sanitize(
                     $skip_content = false;
                 } else {
                     if ($skip_content == false) {
-                        if (isset($open_tags{$tagname}) &&
-                            $open_tags{$tagname} > 0
+                        if (isset($open_tags[$tagname]) &&
+                            $open_tags[$tagname] > 0
                         ) {
-                            $open_tags{$tagname}--;
+                            $open_tags[$tagname]--;
                         } else {
                             $tagname = false;
                         }
@@ -678,10 +678,10 @@ function tln_sanitize(
                             $tagname = false;
                         } else {
                             if ($tagtype == 1) {
-                                if (isset($open_tags{$tagname})) {
-                                    $open_tags{$tagname}++;
+                                if (isset($open_tags[$tagname])) {
+                                    $open_tags[$tagname]++;
                                 } else {
-                                    $open_tags{$tagname} = 1;
+                                    $open_tags[$tagname] = 1;
                                 }
                             }
                             /**
@@ -838,19 +838,19 @@ function HTMLFilter($body, $trans_image_path, $block_external_images = false)
 
     if ($block_external_images) {
         array_push(
-            $bad_attvals{'/.*/'}{'/^src|background/i'}[0],
+            $bad_attvals['/.*/']['/^src|background/i'][0],
             '/^([\'\"])\s*https*:.*([\'\"])/si'
         );
         array_push(
-            $bad_attvals{'/.*/'}{'/^src|background/i'}[1],
+            $bad_attvals['/.*/']['/^src|background/i'][1],
             "\\1$trans_image_path\\1"
         );
         array_push(
-            $bad_attvals{'/.*/'}{'/^style/i'}[0],
+            $bad_attvals['/.*/']['/^style/i'][0],
             '/url\(([\'\"])\s*https*:.*([\'\"])\)/si'
         );
         array_push(
-            $bad_attvals{'/.*/'}{'/^style/i'}[1],
+            $bad_attvals['/.*/']['/^style/i'][1],
             "url(\\1$trans_image_path\\1)"
         );
     }
