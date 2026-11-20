@@ -41,7 +41,7 @@ function googleTranslate($apikey,$text,$target,$source='en'){
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($handle);
     $responseDecoded = json_decode($response, true);
-    curl_close($handle);
+    if(PHP_VERSION_ID < 80000){curl_close($handle);}
 	return $responseDecoded['data']['translations'][0]['translatedText'];
 }
 //------------------
@@ -69,82 +69,6 @@ function googleGetLatLon($address){
 		}
 	if(isset($latlon['lat'])){return $latlon;}
 	return $post;
-	}
-//------------------
-function adwordsTargetingIdea($params=array()){
-	if(!isset($params['-email'])){return "No email" . printValue($params);}
-	if(!isset($params['-password'])){return "No password";}
-	if(!isset($params['-devtoken'])){return "No devtoken";}
-	if(!isset($params['-apptoken'])){return "No apptoken";}
-	if(!isset($params['-apptoken'])){return "No apptoken";}
-	if(!isset($params['keyword'])){return "No keyword";}
-	$progpath=dirname(__FILE__);
-	require_once "{$progpath}/google/AdWords/Lib/AdWordsUser.php";
-	try {
-		// Credentials
-		$user = new AdWordsUser(NULL, $params['-email'], $params['-password'], $params['-devtoken'],
-			$params['-apptoken'],"WaSQL API for Google Adwords");
-		if(!is_object($user)){return "Authentication failure";}
-		$user->LogDefaults();
-		// Get the TargetingIdeaService.
-		$targetingIdeaService = $user->GetTargetingIdeaService('v200909');
-		// Set keyword(s) to look for
-		$keywords=array();
-		if(is_array($params['keyword'])){
-			foreach($params['keyword'] as $word){
-				$keywords[]=new Keyword($word, 'EXACT');
-            	}
-        	}
-        else{
-			$keywords[] = new Keyword($params['keyword'], 'EXACT');
-			}
-		// Set language.
-		$language = new LanguageTarget('en');
-		// Set country.
-		$country = new CountryTarget('US');
-		// Create selector to get related keywords.
-		$selector = new TargetingIdeaSelector();
-		$selector->requestType = 'STATS';
-		$selector->ideaType = 'KEYWORD';
-		$selector->searchParameters = array(
-			new RelatedToKeywordSearchParameter($keywords),
-			new KeywordMatchTypeSearchParameter('EXACT'),
-			new LanguageTargetSearchParameter(array($language)),
-			new CountryTargetSearchParameter(array($country))
-			);
-		$selector->requestedAttributeTypes = array(
-			'KEYWORD',
-			'AVERAGE_TARGETED_MONTHLY_SEARCHES',
-			'GLOBAL_MONTHLY_SEARCHES'
-			);
-		// Increase paging for more results.
-		$selector->paging = new Paging(0, count($keywords));
-		// Get targeting ideas.
-		$page = $targetingIdeaService->get($selector);
-		//parse and return only the data we want.
-		$entries=array();
-		if(isset($page->entries)){
-			foreach($page->entries as $entryobj){
-				$entry=array();
-				foreach($entryobj->data as $dataobj){
-
-					$key=strtolower((string)$dataobj->key);
-					if(isset($dataobj->value->value->text)){
-						$val=strtolower((string)$dataobj->value->value->text);
-						}
-					else{
-						$val=strtolower((int)$dataobj->value->value);
-                    	}
-                    $entry[$key]=$val;
-                	}
-                $entries[$entry['keyword']]=$entry;
-            	}
-        	}
-		return $entries;
-		}
-	catch(Exception $e){
-		return $e;
-		}
 	}
 //------------------
 function adwordsTargetingIdeaNS($params=array()){
