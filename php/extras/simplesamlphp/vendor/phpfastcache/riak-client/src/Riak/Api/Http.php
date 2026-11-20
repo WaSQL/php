@@ -130,7 +130,7 @@ class Http extends Api implements ApiInterface
     public function closeConnection()
     {
         if ($this->connection) {
-            curl_close($this->connection);
+            if(PHP_VERSION_ID < 80000){curl_close($this->connection);}
             $this->connection = null;
         }
     }
@@ -178,7 +178,7 @@ class Http extends Api implements ApiInterface
         if (version_compare(PHP_VERSION, '5.5.0') >= 0) {
             curl_reset($this->connection);
         } else {
-            curl_close($this->connection);
+            if(PHP_VERSION_ID < 80000){curl_close($this->connection);}
             $this->connection = null;
         }
     }
