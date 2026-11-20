@@ -184,7 +184,7 @@ function gitapiRequest($endpoint, $params = array()) {
     $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     $error = curl_error($ch);
 
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
     // Parse response
     $responseHeaders = substr($response, 0, $headerSize);
