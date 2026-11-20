@@ -395,7 +395,7 @@ class Config
                         $latest = json_decode($response, true);
                         $this->session->setData(self::LATEST_VERSION_STATE_KEY, 'version', $latest);
                     }
-                    curl_close($ch);
+                    if(PHP_VERSION_ID < 80000){curl_close($ch);}
                 }
 
 
