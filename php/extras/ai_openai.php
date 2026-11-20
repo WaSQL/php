@@ -46,7 +46,7 @@ function ai_openaiAsk($question) {
         return 'Error: ' . curl_error($ch);
     }
 
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
      $result = json_decode($response, true);
     if(isset($result['choices'][0]['message']['content'])){
         return $result['choices'][0]['message']['content'];
@@ -74,7 +74,7 @@ function openaiUsage($startDate, $endDate) {
     }
 
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
     if ($httpCode != 200) {
         return 'HTTP Error: ' . $httpCode;
@@ -110,7 +110,7 @@ function ai_openaiAccount() {
     }
 
     $httpCode = curl_getinfo($ch, CURLOPT_HTTP_CODE);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
     if ($httpCode != 200) {
         return 'HTTP Error: ' . $httpCode;
