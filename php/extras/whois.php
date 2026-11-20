@@ -60,7 +60,7 @@ function whoisCheckDomain($domain){
 	$info['whois_request']="{$domain}\r\n";
 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $info['whois_request']); // Query
 	$data = curl_exec ($ch); 
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	$data=trim($data);
 	if(
 		stringContains($data,'invalid request') || 
