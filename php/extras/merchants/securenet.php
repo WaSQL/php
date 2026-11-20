@@ -319,10 +319,10 @@ function securenetCharge($params=array()){
 
 	if (curl_errno($ch) > 0){
 		$error= curl_error($ch);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return "securenetAuthorize Error: {$error}";
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// The response is a JSON expression, so we can decode it
 	$response = json_decode($response, true);
@@ -479,10 +479,10 @@ function securenetRefund($params=array()){
 
 	if (curl_errno($ch) > 0){
 		$error= curl_error($ch);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return "securenetAuthorize Error: {$error}";
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// The response is a JSON expression, so we can decode it
 	$response = json_decode($response, true);
