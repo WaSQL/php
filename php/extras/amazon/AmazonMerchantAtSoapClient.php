@@ -112,7 +112,7 @@ class AmazonMerchantAtSoapClient {
       }
 
       // convert XML to object for use
-      $parser = & new XML_Unserializer();
+      $parser = new XML_Unserializer();
       $rc = $parser->unserialize($xml);
 
       return ($parser->getUnserializedData());
