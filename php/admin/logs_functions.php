@@ -417,11 +417,7 @@ function logsUserLogStats($userlog){
 	usort($fail7,function($a,$b){return $b['attempts']-$a['attempts'];});
 	$s['topfail']=array_slice($fail7,0,10);
 	$s['failing_now']=0;
-	//unresolved failures from the last 7 days - older ones are history, not something to act on
-	$since=date('Y-m-d H:i:s',$now-7*86400);
-	foreach(logsUserLogFailures($userlog) as $f){
-		if(!$f['recovered'] && $f['last'] >= $since){$s['failing_now']++;}
-	}
+	$s['failing_now']=count(logsUserLogUnresolved(logsUserLogFailures($userlog)));
 	return $s;
 }
 //---------- begin function logsUserLogUsers ----
@@ -523,6 +519,22 @@ function logsUserLogFailures($userlog){
 	}
 	usort($rows,function($a,$b){return strcmp($b['last'],$a['last']);});
 	$cache=$rows;
+	return $rows;
+}
+//---------- begin function logsUserLogUnresolved ----
+/**
+* @describe narrows logsUserLogFailures() rows to the "Still failing" set: no successful login since the
+*	last failure, and that failure was within the last 7 days (older ones are history, not actionable)
+* @param failures array - from logsUserLogFailures()
+* @return array
+* @usage $failing=logsUserLogUnresolved(logsUserLogFailures($userlog));
+*/
+function logsUserLogUnresolved($failures){
+	$since=date('Y-m-d H:i:s',time()-7*86400);
+	$rows=array();
+	foreach($failures as $f){
+		if(!$f['recovered'] && $f['last'] >= $since){$rows[]=$f;}
+	}
 	return $rows;
 }
 //---------- begin function logsUserLogErrors ----

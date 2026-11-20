@@ -33,6 +33,11 @@
 				break;
 				case 'failures':
 					$failures=logsUserLogFailures($userlog);
+					//only=unresolved: the "Still failing" tile - no successful login since failing, last 7 days
+					$failures_filtered=(($_REQUEST['only'] ?? '')=='unresolved');
+					if($failures_filtered){
+						$failures=logsUserLogUnresolved($failures);
+					}
 					setView('userlog_failures',1);
 				break;
 				case 'errors':
