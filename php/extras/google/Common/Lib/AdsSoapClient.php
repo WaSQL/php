@@ -151,10 +151,11 @@ abstract class AdsSoapClient extends SoapClient {
    * @param string $version the SOAP version
    * @return string the XML SOAP response
    */
-  function __doRequest($request, $location, $action, $version) {
+  #[ReturnTypeWillChange]
+  function __doRequest($request, $location, $action, $version, $oneWay = false, $uriParserClass = null) {
     $this->lastRequest = $this->PrepareRequest($request, $this->lastArguments);
     return parent::__doRequest($this->lastRequest,
-        $location, $action, $version);
+        $location, $action, $version, $oneWay, $uriParserClass);
   }
 
   /**
@@ -168,6 +169,7 @@ abstract class AdsSoapClient extends SoapClient {
    * @return mixed the return from the parent __soapCall
    * @throws SOAPFault if there was an exception making the request
    */
+  #[ReturnTypeWillChange]
   function __soapCall($function_name, $arguments, $options = NULL,
       $input_headers = NULL, &$output_headers = NULL) {
     try {
@@ -194,7 +196,7 @@ abstract class AdsSoapClient extends SoapClient {
    * @access private
    */
   private function ProcessResponse($request, $response, $method,
-      SoapFault $e = NULL) {
+      ?SoapFault $e = NULL) {
     $this->lastSoapFault = $e;
     $this->lastRequestDom = NULL;
     $this->lastResponseDom = NULL;
