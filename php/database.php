@@ -2032,7 +2032,7 @@ function dbGroovyHttp($method,$url,$token,$body,$contentType,$timeoutSec,$extraH
 		//remember why it failed so callers can tell a timeout (server up, query/connect hanging) from a refused connection (server down)
 		global $dbGroovyHttpError;
 		$dbGroovyHttpError=$ok?null:array('errno'=>curl_errno($ch),'error'=>curl_error($ch),'timeout'=>$timeoutSec);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return $ok?$resp:false;
 	}
 	//fallback: stream context (requires allow_url_fopen=On)
@@ -2133,15 +2133,15 @@ function dbGroovyHttpStream($url,$token,$body,$contentType,$timeoutSec,$extraHea
 	curl_exec($ch);
 	if($st['aborted']){
 		//we stopped the transfer ourselves (memory guard) - not a transport failure
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return array('stream'=>true,'recs'=>array(),'count'=>$st['count'],'end'=>false,'error'=>$st['error'],'body'=>'');
 	}
 	if(curl_errno($ch)){
 		$dbGroovyHttpError=array('errno'=>curl_errno($ch),'error'=>curl_error($ch),'timeout'=>$timeoutSec);
-		curl_close($ch);
+		if(PHP_VERSION_ID < 80000){curl_close($ch);}
 		return false;
 	}
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	if(!$st['ndjson']){
 		return array('stream'=>false,'recs'=>array(),'count'=>0,'end'=>false,'error'=>null,'body'=>$st['body']);
 	}
