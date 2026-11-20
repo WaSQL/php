@@ -2221,7 +2221,7 @@ function addMetaData($table=''){
 				));
 			break;
 		//_history
-		case '_history';
+		case '_history':
 			$id=addDBRecord(array('-table'=>"_fielddata",
 				'tablename'		=> '_history',
 				'fieldname'		=> 'record_id',
