@@ -23,7 +23,7 @@ class WC_API_Client_HTTP_Exception extends WC_API_Client_Exception {
 	 * @param stdClass $request request class
 	 * @param stdClass $response response class
 	 */
-	public function __construct( $message, $code = 0, $request, $response ) {
+	public function __construct( $message, $code, $request, $response ) {
 
 		parent::__construct( $message, $code );
 
