@@ -3280,7 +3280,7 @@ function toggleDisplay(id, type) {
       curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
       curl_setopt($ch, CURLOPT_TIMEOUT, 30);
       $result = $this->curl_exec($ch);
-      curl_close($ch);
+      if(PHP_VERSION_ID < 80000){curl_close($ch);}
     } else {
       $content_type = 'application/x-www-form-urlencoded';
       $content = $post_string;
@@ -3320,7 +3320,7 @@ function toggleDisplay(id, type) {
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
       curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
       $result = $this->curl_exec($ch);
-      curl_close($ch);
+      if(PHP_VERSION_ID < 80000){curl_close($ch);}
     } else {
       $result = $this->run_multipart_http_transaction($method, $post,
                                                       $file, $url_with_get);
