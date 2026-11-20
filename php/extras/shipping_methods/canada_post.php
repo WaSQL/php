@@ -251,7 +251,7 @@ function cpGetShipmentLabel($params=array()){
 	$curl_error = curl_error($curl);
 	$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 	$contentType = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 	// Handle cURL errors
 	if($curl_error){
@@ -452,7 +452,7 @@ CANADAPOSTXML;
 	$curl_response = curl_exec($curl);
 	$curl_error = curl_error($curl);
 	$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 	// Handle cURL errors
 	if($curl_error){
@@ -890,7 +890,7 @@ CANADAPOSTXML;
 	$curl_response = curl_exec($curl);
 	$curl_error = curl_error($curl);
 	$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 	// Handle cURL errors
 	if($curl_error){
@@ -1091,7 +1091,7 @@ function cpGetManifest($params=array()){
 	$curl_response = curl_exec($curl);
 	$curl_error = curl_error($curl);
 	$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 	// Handle cURL errors
 	if($curl_error){
@@ -1234,7 +1234,7 @@ function cpGetManifestArtifact($params=array()){
 	$curl_error = curl_error($curl);
 	$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 	$contentType = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 	// Handle cURL errors
 	if($curl_error){
@@ -1601,7 +1601,7 @@ CANADAPOSTXML;
 	$curl_response = curl_exec($curl);
 	$curl_error = curl_error($curl);
 	$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 
 	// Handle cURL errors
 	if($curl_error){
