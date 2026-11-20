@@ -108,6 +108,6 @@ class AuthToken {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     $this->res = curl_exec($ch);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
   }
 }
