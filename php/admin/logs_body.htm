@@ -51,5 +51,256 @@
 	<div class="w_nowrap" style="background:#272f36;color:#fcfcfc;padding:10px 5px 15px 5px;font-size:0.93rem;"><?=nl2br($tail['data']);?></div>
 </view:tail_refresh>
 
+<!-- ==================== User Log viewer (func=userlog) ==================== -->
+<view:userlog>
+<style>
+.ulog-wrap{width:min(1250px,94vw);}
+.ulog-meta{font-size:.8rem;color:#888;margin-bottom:10px;}
+.ulog-tiles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.ulog-tile{flex:1 1 140px;margin:0;padding:10px 12px;}
+.ulog-tile-label{font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.03em;}
+.ulog-tile-num{font-size:1.5rem;font-weight:700;line-height:1.3;}
+.ulog-tile-sub{font-size:.75rem;color:#888;}
+.ulog-cols{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;}
+.ulog-cols > div{flex:1 1 360px;min-width:0;}
+.ulog-h{font-weight:600;margin:4px 0 6px 0;}
+.ulog-scroll{max-height:58vh;overflow:auto;}
+.ulog-scroll table, .ulog-cols table{width:100%;font-size:.85rem;}
+.ulog-num{text-align:right;white-space:nowrap;}
+.ulog-nowrap{white-space:nowrap;}
+.ulog-bad{color:#c0392b;font-weight:600;}
+.ulog-muted{color:#999;}
+.ulog-badge{display:inline-block;padding:1px 7px;border-radius:9px;font-size:.72rem;font-weight:600;background:#e8e8e8;color:#444;white-space:nowrap;}
+.ulog-badge.is-success{background:#dff3e4;color:#1e7b34;}
+.ulog-badge.is-danger{background:#fbe3e1;color:#b3261e;}
+.ulog-badge.is-warning{background:#fdf0d5;color:#8a5a00;}
+.ulog-badge.is-info{background:#e1ecfb;color:#1d4f91;}
+.ulog-reason{font-size:.78rem;color:#a0522d;}
+.ulog-hint{font-size:.78rem;color:#8a5a00;}
+.ulog-form{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px;}
+.ulog-form .wacss_input, .ulog-form .wacss_select{width:auto;}
+.ulog-detail summary{cursor:pointer;font-size:.75rem;color:#1d4f91;}
+.ulog-detail pre{white-space:pre-wrap;word-break:break-all;font-size:.75rem;max-height:240px;overflow:auto;margin:4px 0 0 0;}
+.ulog-raw{background:#272f36;color:#fcfcfc;padding:10px;font-size:.8rem;white-space:pre-wrap;word-break:break-all;max-height:62vh;overflow:auto;}
+</style>
+<div class="ulog-wrap">
+	<div class="ulog-meta">
+		<?=encodeHtml($userlog['file']);?> &middot; <?=$userlog['size_verbose'];?> &middot; <?=number_format($userlog['raw_lines']);?> lines &middot; updated <?=$userlog['age_verbose'];?> ago &middot; covers <?=encodeHtml($stats['first']);?> to <?=encodeHtml($stats['last']);?>
+	</div>
+	<ul class="wacss_tabs is-boxed" style="margin-bottom:12px;">
+		<li class="is-active"><a href="#" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="overview" data-div="userlog_content"><span class="icon-chart-line"></span> Overview</a></li>
+		<li><a href="#" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="search" data-div="userlog_content"><span class="icon-search"></span> Search</a></li>
+		<li><a href="#" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="users" data-div="userlog_content"><span class="icon-users"></span> Users</a></li>
+		<li><a href="#" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="failures" data-div="userlog_content"><span class="icon-lock"></span> Failed logins <span class="ulog-badge is-danger"><?=number_format($stats['failing_now']);?></span></a></li>
+		<li><a href="#" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="errors" data-div="userlog_content"><span class="icon-warning"></span> Errors <span class="ulog-badge <?=$stats['errors']?'is-warning':'';?>"><?=number_format($stats['errors']);?></span></a></li>
+		<li><a href="#" data-tab="1" onclick="return wacss.nav(this);" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="raw" data-div="userlog_content"><span class="icon-file-txt"></span> Raw log</a></li>
+	</ul>
+	<div id="userlog_content"><?=renderView('userlog_overview',$stats,'stats');?></div>
+</div>
+</view:userlog>
+
+<view:userlog_overview>
+<div class="ulog-tiles">
+		<div class="wadmin-card ulog-tile" title="_auth token, apikey, session and temp-code checks - these run on every API/AJAX request"><div class="ulog-tile-label"><span class="icon-key w_gray"></span> Token / API auths</div><div class="ulog-tile-num"><?=number_format($stats['token']);?></div><div class="ulog-tile-sub"><?=number_format($stats['token_24']);?> in last 24h</div></div>
+	<div class="wadmin-card ulog-tile"><div class="ulog-tile-label"><span class="icon-users w_info"></span> Distinct users</div><div class="ulog-tile-num"><?=number_format($stats['users']);?></div><div class="ulog-tile-sub"><?=number_format($stats['users_24']);?> in last 24h</div></div>
+	<div class="wadmin-card ulog-tile"><div class="ulog-tile-label"><span class="icon-lock w_danger"></span> Failed logins</div><div class="ulog-tile-num"><?=number_format($stats['failed']);?></div><div class="ulog-tile-sub"><?=number_format($stats['failed_24']);?> in last 24h</div></div>
+	<div class="wadmin-card ulog-tile"><div class="ulog-tile-label"><span class="icon-user w_danger"></span> Still failing</div><div class="ulog-tile-num <?=$stats['failing_now']?'ulog-bad':'';?>"><?=number_format($stats['failing_now']);?></div><div class="ulog-tile-sub">not resolved, last 7 days</div></div>
+	<div class="wadmin-card ulog-tile"><div class="ulog-tile-label"><span class="icon-warning w_warning"></span> System errors</div><div class="ulog-tile-num <?=$stats['errors_24']?'ulog-bad':'';?>"><?=number_format($stats['errors']);?></div><div class="ulog-tile-sub"><?=number_format($stats['errors_24']);?> in last 24h</div></div>
+	<div class="wadmin-card ulog-tile"><div class="ulog-tile-label"><span class="icon-logout w_gray"></span> Logouts</div><div class="ulog-tile-num"><?=number_format($stats['logouts']);?></div><div class="ulog-tile-sub">&nbsp;</div></div>
+</div>
+<div class="ulog-cols">
+	<div>
+		<div class="ulog-h">Last 14 days</div>
+		<table class="wacss_table is-striped is-narrow">
+			<thead><tr><th>Day</th><th class="ulog-num">Sign-ins</th><th class="ulog-num">Token auths</th><th class="ulog-num">Users</th><th class="ulog-num">Failed</th><th class="ulog-num">Errors</th></tr></thead>
+			<tbody><?=renderEach('userlog_day_row',$stats['days'],'day');?></tbody>
+		</table>
+	</div>
+	<div>
+		<div class="ulog-h">By method</div>
+		<table class="wacss_table is-striped is-narrow" style="margin-bottom:14px;">
+			<thead><tr><th>Method</th><th class="ulog-num">Passed</th><th class="ulog-num">Failed</th></tr></thead>
+			<tbody><?=renderEach('userlog_method_row',$stats['methods'],'row');?></tbody>
+		</table>
+		<div class="ulog-h">Most failed usernames, last 7 days</div>
+		<table class="wacss_table is-striped is-narrow">
+			<thead><tr><th>Username</th><th class="ulog-num">Attempts</th><th>Last</th><th>Reason</th></tr></thead>
+			<tbody><?=count($stats['topfail'])?renderEach('userlog_topfail_row',$stats['topfail'],'row'):'<tr><td colspan="4" class="ulog-muted">No failed logins in the last 7 days.</td></tr>';?></tbody>
+		</table>
+	</div>
+</div>
+</view:userlog_overview>
+
+<view:userlog_day_row>
+<tr>
+	<td class="ulog-nowrap"><?=encodeHtml($day['day']);?></td>
+	<td class="ulog-num"><?=number_format($day['passed']);?></td>
+	<td class="ulog-num"><?=number_format($day['users']);?></td>
+	<td class="ulog-num <?=$day['failed']?'ulog-bad':'ulog-muted';?>"><?=number_format($day['failed']);?></td>
+	<td class="ulog-num <?=$day['errors']?'ulog-bad':'ulog-muted';?>"><?=number_format($day['errors']);?></td>
+</tr>
+</view:userlog_day_row>
+
+<view:userlog_method_row>
+<tr>
+	<td><?=encodeHtml($row['method']);?></td>
+	<td class="ulog-num"><?=number_format($row['passed']);?></td>
+	<td class="ulog-num <?=$row['failed']?'ulog-bad':'ulog-muted';?>"><?=number_format($row['failed']);?></td>
+</tr>
+</view:userlog_method_row>
+
+<view:userlog_topfail_row>
+<tr>
+	<td><?=renderView('userlog_userlink',$row,'row');?></td>
+	<td class="ulog-num ulog-bad"><?=number_format($row['attempts']);?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['last']);?></td>
+	<td class="ulog-reason"><?=encodeHtml($row['reason']);?></td>
+</tr>
+</view:userlog_topfail_row>
+
+<view:userlog_userlink>
+<a href="#" title="Show this user's events" data-nav="/php/admin.php" data-_menu="logs" data-func="userlog" data-view="search" data-user="<?=encodeHtml($row['user']);?>" data-div="userlog_content" onclick="return wacss.nav(this);"><?=encodeHtml($row['user']);?></a>
+</view:userlog_userlink>
+
+<view:userlog_search>
+<form class="ulog-form" method="post" action="/php/admin.php" data-setprocessing="userlog_processing" onsubmit="return wacss.ajaxPost(this,'userlog_results');">
+	<input type="hidden" name="_menu" value="logs" />
+	<input type="hidden" name="func" value="userlog" />
+	<input type="hidden" name="view" value="results" />
+	<input type="search" name="q" class="wacss_input" style="width:200px;" placeholder="Search text, IP, reason..." value="<?=encodeHtml($filters['q']);?>" />
+	<input type="search" name="user" list="userlog_userlist" class="wacss_input" style="width:170px;" placeholder="Username" value="<?=encodeHtml($filters['user']);?>" />
+	<datalist id="userlog_userlist"><?=renderEach('userlog_user_option',$options['users'],'opt');?></datalist>
+	<select name="type" class="wacss_select"><?=renderEach('userlog_option',$options['types'],'opt');?></select>
+	<select name="method" class="wacss_select"><?=renderEach('userlog_option',$options['methods'],'opt');?></select>
+	<input type="date" name="from" class="wacss_input" title="From date" value="<?=encodeHtml($filters['from']);?>" />
+	<input type="date" name="to" class="wacss_input" title="To date" value="<?=encodeHtml($filters['to']);?>" />
+	<select name="limit" class="wacss_select"><?=renderEach('userlog_option',$options['limits'],'opt');?></select>
+	<label class="ulog-nowrap" style="font-size:.8rem;" title="LDAP request, calling host and fields-updated lines"><input type="checkbox" name="trace" value="1" <?=$filters['trace']?'checked':'';?> /> trace lines</label>
+	<button type="submit" class="wacss_button is-primary"><span class="icon-search"></span> Search</button>
+	<span id="userlog_processing"></span>
+</form>
+<div id="userlog_results"><?=renderView('userlog_results',$search,'search');?></div>
+</view:userlog_search>
+
+<view:userlog_option>
+<option value="<?=encodeHtml($opt['value']);?>" <?=$opt['selected'];?>><?=encodeHtml($opt['label']);?></option>
+</view:userlog_option>
+
+<view:userlog_user_option>
+<option value="<?=encodeHtml($opt['value']);?>"></option>
+</view:userlog_user_option>
+
+<view:userlog_results>
+<div class="ulog-meta">
+	<?=number_format($search['total']);?> matching event<?=$search['total']==1?'':'s';?><?=$search['total']>$search['shown']?(' &middot; showing the newest '.number_format($search['shown'])):'';?> &middot; repeats within 2 seconds are collapsed (&times;N)
+</div>
+<div class="ulog-scroll">
+	<table class="wacss_table is-striped is-sticky is-narrow">
+		<thead><tr><th>When</th><th>Event</th><th>Method</th><th>User</th><th>IP</th><th>Message</th></tr></thead>
+		<tbody><?=count($search['rows'])?renderEach('userlog_result_row',$search['rows'],'row'):'<tr><td colspan="6" class="ulog-muted">No events match.</td></tr>';?></tbody>
+	</table>
+</div>
+</view:userlog_results>
+
+<view:userlog_result_row>
+<tr>
+	<td class="ulog-nowrap"><?=encodeHtml($row['when']);?></td>
+	<td class="ulog-nowrap"><span class="ulog-badge <?=$row['class'];?>"><?=$row['label'];?></span><?=$row['count']>1?' <span class="ulog-muted" title="repeated">&times;'.$row['count'].'</span>':'';?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['method']);?></td>
+	<td><?=strlen($row['user'])?renderView('userlog_userlink',$row,'row'):'';?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['ip']);?></td>
+	<td>
+		<?=encodeHtml($row['msg']);?>
+		<?=strlen($row['reason']) && $row['type']=='failed'?'<div class="ulog-reason">'.encodeHtml($row['reason']).'</div>':'';?>
+		<?=strlen($row['detail'])?'<details class="ulog-detail"><summary>details</summary><pre>'.encodeHtml($row['detail']).'</pre></details>':'';?>
+	</td>
+</tr>
+</view:userlog_result_row>
+
+<view:userlog_users>
+<form class="ulog-form" method="post" action="/php/admin.php" data-setprocessing="userlog_processing" onsubmit="return wacss.ajaxPost(this,'userlog_content');">
+	<input type="hidden" name="_menu" value="logs" />
+	<input type="hidden" name="func" value="userlog" />
+	<input type="hidden" name="view" value="users" />
+	<input type="search" name="q" class="wacss_input" style="width:220px;" placeholder="Filter usernames..." value="<?=encodeHtml($userlog_q);?>" />
+	<button type="submit" class="wacss_button is-primary"><span class="icon-filter"></span> Filter</button>
+	<span id="userlog_processing"></span>
+	<span class="ulog-meta" style="margin:0;"><?=number_format(count($users));?> username<?=count($users)==1?'':'s';?> &middot; click a name to see their events</span>
+</form>
+<div class="ulog-scroll">
+	<table class="wacss_table is-striped is-sticky is-narrow">
+		<thead><tr><th>Username</th><th class="ulog-num">Passed</th><th class="ulog-num">Failed</th><th>Last success</th><th>Last failure</th><th>Methods</th><th>Account</th><th>Status</th></tr></thead>
+		<tbody><?=count($users)?renderEach('userlog_user_row',$users,'row'):'<tr><td colspan="8" class="ulog-muted">No users match.</td></tr>';?></tbody>
+	</table>
+</div>
+</view:userlog_users>
+
+<view:userlog_user_row>
+<tr>
+	<td><?=renderView('userlog_userlink',$row,'row');?></td>
+	<td class="ulog-num"><?=number_format($row['passed']);?></td>
+	<td class="ulog-num <?=$row['failed']?'ulog-bad':'ulog-muted';?>"><?=number_format($row['failed']);?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['last_pass']);?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['last_fail']);?></td>
+	<td><?=encodeHtml($row['methods']);?></td>
+	<td class="ulog-nowrap <?=$row['account']=='active'?'':'ulog-hint';?>"><?=encodeHtml($row['account']);?></td>
+	<td class="ulog-nowrap"><span class="ulog-badge <?=$row['status_class'];?>"><?=encodeHtml($row['status']);?></span><?=strlen($row['reason']) && $row['status_class']=='is-danger'?'<div class="ulog-reason">'.encodeHtml($row['reason']).'</div>':'';?></td>
+</tr>
+</view:userlog_user_row>
+
+<view:userlog_failures>
+<div class="ulog-meta">Failed logins grouped by the username that was typed, newest first. "Not resolved" means that username has not logged in successfully since its last failure.</div>
+<div class="ulog-scroll">
+	<table class="wacss_table is-striped is-sticky is-narrow">
+		<thead><tr><th>Username typed</th><th class="ulog-num">Attempts</th><th class="ulog-num">24h</th><th>Last attempt</th><th>Why</th><th>IPs</th><th>Status</th></tr></thead>
+		<tbody><?=count($failures)?renderEach('userlog_failure_row',$failures,'row'):'<tr><td colspan="7" class="ulog-muted">No failed logins.</td></tr>';?></tbody>
+	</table>
+</div>
+</view:userlog_failures>
+
+<view:userlog_failure_row>
+<tr>
+	<td><?=renderView('userlog_userlink',$row,'row');?><div class="ulog-muted" style="font-size:.75rem;"><?=encodeHtml($row['methods']);?></div></td>
+	<td class="ulog-num ulog-bad"><?=number_format($row['attempts']);?></td>
+	<td class="ulog-num"><?=number_format($row['attempts_24']);?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['last']);?></td>
+	<td><div class="ulog-reason"><?=encodeHtml($row['reasons']);?></div><?=strlen($row['hints'])?'<div class="ulog-hint">'.encodeHtml($row['hints']).'</div>':'';?></td>
+	<td style="font-size:.78rem;"><?=encodeHtml($row['ips']);?></td>
+	<td class="ulog-nowrap"><span class="ulog-badge <?=$row['status_class'];?>"><?=encodeHtml($row['status']);?></span></td>
+</tr>
+</view:userlog_failure_row>
+
+<view:userlog_errors>
+<div class="ulog-meta">Server-side problems (LDAP unreachable or timing out, the _users record failing to save...), grouped by cause. Wrong passwords are not counted here - see Failed logins.</div>
+<div class="ulog-scroll">
+	<table class="wacss_table is-striped is-sticky is-narrow">
+		<thead><tr><th>Error</th><th class="ulog-num">Count</th><th>Last</th><th>First</th><th>Users affected</th></tr></thead>
+		<tbody><?=count($errors)?renderEach('userlog_error_row',$errors,'row'):'<tr><td colspan="5" class="ulog-muted">No system errors in the log.</td></tr>';?></tbody>
+	</table>
+</div>
+</view:userlog_errors>
+
+<view:userlog_error_row>
+<tr>
+	<td>
+		<span class="ulog-bad"><?=encodeHtml($row['reason']);?></span>
+		<?=strlen($row['detail'])?'<details class="ulog-detail"><summary>latest details</summary><pre>'.encodeHtml($row['detail']).'</pre></details>':'';?>
+	</td>
+	<td class="ulog-num"><?=number_format($row['count']);?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['last']);?></td>
+	<td class="ulog-nowrap"><?=encodeHtml($row['first']);?></td>
+	<td style="font-size:.8rem;"><?=encodeHtml($row['users']);?></td>
+</tr>
+</view:userlog_error_row>
+
+<view:userlog_raw>
+<div class="ulog-meta">Last 1,000 lines, newest at the bottom. Passwords and SQL values are masked.</div>
+<div class="ulog-raw"><?=encodeHtml($raw);?></div>
+</view:userlog_raw>
+
+<view:userlog_error>
+<div class="w_danger" style="padding:10px;"><span class="icon-warning"></span> <?=encodeHtml($userlog_error);?></div>
+</view:userlog_error>
+
 
 

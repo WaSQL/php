@@ -1449,6 +1449,7 @@ if(isset($_REQUEST['_menu']) && $_REQUEST['_menu']=='logs'){
 		case 'tail':
 		case 'tail_refresh':
 		case 'filter':
+		case 'userlog':
 			echo adminViewPage($_REQUEST['_menu']);
 			echo $wasql_debugValueContent;
 			exit;
@@ -2396,7 +2397,7 @@ LIST_TABLE:
 								'icon'=>'icon-file-txt w_gray',
 								'title'=>'view log',
 								'class'=>'wacss_button is-white',
-								'onclick'=>"return ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'tail','name':'user',title:'User Log'});",
+								'onclick'=>"return wacss.ajaxGet('/php/admin.php','modal',{setprocessing:0,_menu:'logs',func:'userlog',title:'User Log'});",
 							),
 							array(
 								'name'=>'',

@@ -266,7 +266,12 @@ function commonLogMessage($name,$msg,$separate=0,$echo=0){
 	$logpath=getWasqlPath('logs');
 	$logfile="{$logpath}/{$name}.log";
 	$mypid=commonGetMyPid();
-	$cdate=date('Y-m-d h:i:s');
+	//24-hour clock - 'h' had no AM/PM, so 00:09 and 12:09 were indistinguishable
+	$cdate=date('Y-m-d H:i:s');
+	//the user (auth) log also records the client IP - read by the admin User Log viewer (logs_functions.php)
+	if($name=='user' && !empty($_SERVER['REMOTE_ADDR'])){
+		$msg="ip:{$_SERVER['REMOTE_ADDR']}, {$msg}";
+	}
 	$msg="time:{$cdate}, {$msg}".PHP_EOL;
 	if($separate==1){
 		$msg = PHP_EOL.$msg.PHP_EOL;

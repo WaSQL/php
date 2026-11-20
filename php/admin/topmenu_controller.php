@@ -12,7 +12,7 @@ global $rendered_templates;
 global $rendered_users;
 global $prebuilt;
 
-if(isset($_REQUEST['_menu']) && $_REQUEST['_menu'] == 'logs' && isset($_REQUEST['func']) && ($_REQUEST['func'] == 'tail' || $_REQUEST['func'] == 'tail_refresh')){
+if(isset($_REQUEST['_menu']) && $_REQUEST['_menu'] == 'logs' && isset($_REQUEST['func']) && ($_REQUEST['func'] == 'tail' || $_REQUEST['func'] == 'tail_refresh' || $_REQUEST['func'] == 'userlog')){
 	setView('blank', 1);
 	return;
 }

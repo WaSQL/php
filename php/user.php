@@ -712,8 +712,8 @@ function userOktaAuth(){
 		$addopts['-table']='_users';
 		$ok=addDBRecord($addopts);
 		if($ok!=0 && !is_numeric($ok)){
-			$ok=commonLogMessage('user',"userOktaAuth addDBRecord Failed.".printValue($ok));
 			debugValue($ok);
+			$ok=commonLogMessage('user',"userOktaAuth addDBRecord Failed for {$profile['username']}: ".userLogReason($ok));
 			$_REQUEST['_login_error']="userOktaAuth addDBRecord Failed.";
 			return null;
 		}
@@ -774,7 +774,7 @@ function userDecodeLDAPAuth($user,$pass){
  	$ldap=ldapAuth($authopts);
  	//confirm valid ldap record
  	if(!isset($ldap['username'])){
- 		$ok=commonLogMessage('user',"userDecodeLDAPAuth ldapAuth Failed.".printValue($ldap));
+ 		$ok=commonLogMessage('user',"userDecodeLDAPAuth ldapAuth Failed for {$user}: ".userLogReason($ldap));
  		$_REQUEST['_login_error']="userDecodeLDAPAuth ldapAuth Failed";
  		return null;
  	}
@@ -822,7 +822,7 @@ function userDecodeLDAPAuth($user,$pass){
   	$addopts['-table']='_users';
   	$ok=addDBRecord($addopts);
   	if(!isNum($ok)){
-  		$ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord Failed.".printValue($ok));
+  		$ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord Failed for {$ldap['username']}: ".userLogReason($ok));
   	}
   	else{
   		$ok=commonLogMessage('user',"userDecodeLDAPAuth passed for {$ldap['username']}. Fields updated: {$addopts['-upsert']}");
@@ -1497,6 +1497,25 @@ function setUserInfo(){
 	}
 }
 
+//---------- begin function userLogReason ----
+/**
+* @exclude  - this function is for internal use only and thus excluded from the manual
+* @describe turns a failure result (string or array) into a one-line reason for the user log: drops HTML,
+*	the printValue() dump of the LDAP bind params (which leaked the password length) and any SQL
+*	statement (which leaked the password hash), and caps the length
+* @param val mixed - error string or array
+* @return string
+* @usage $ok=commonLogMessage('user',"userDecodeLDAPAuth addDBRecord Failed for {$user}: ".userLogReason($ok));
+*/
+function userLogReason($val){
+	if(is_array($val)){$val=isset($val['auth_error'])?$val['auth_error']:json_encode($val);}
+	$val=html_entity_decode(strip_tags((string)$val),ENT_QUOTES);
+	$val=preg_replace('/Array object:.*$/is','',$val);
+	$val=preg_replace('/:\s*(INSERT|UPDATE|SELECT|DELETE|REPLACE)\b.*$/is','',$val);
+	$val=trim(preg_replace('/\s+/',' ',$val)," .\t\r\n");
+	if(strlen($val) > 300){$val=substr($val,0,300).'...';}
+	return $val;
+}
 //---------- begin function userLogout ----
 /**
 * Logs the current user out.
