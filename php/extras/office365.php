@@ -41,7 +41,7 @@ function office365GetAuthCookies($token, $host) {
     }
  
     //close connection
-    curl_close($ch);     
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}     
      
     return office365GetCookieValue($result);
 }
@@ -115,7 +115,7 @@ function office365GetSecurityToken($username, $password, $endpoint="https://port
     }
  
     //close connection
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
     // Parse security token from response
     $xml = new DOMDocument();
     $xml->loadXML($result);
