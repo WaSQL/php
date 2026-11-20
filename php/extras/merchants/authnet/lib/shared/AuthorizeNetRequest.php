@@ -112,7 +112,7 @@ abstract class AuthorizeNetRequest
             
             file_put_contents($this->_log_file, "----Response----\n$response\n\n", FILE_APPEND);
         }
-        curl_close($curl_request);
+        if(PHP_VERSION_ID < 80000){curl_close($curl_request);}
         
         return $this->_handleResponse($response);
     }
