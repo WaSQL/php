@@ -373,7 +373,7 @@ function websiteGraderGetURLHeader($url){
 	curl_setopt($curl,CURLOPT_USERAGENT,'Mozilla/5.0 (compatible; WaSQL-WebsiteChecker/1.0)');
 	$header=curl_exec($curl);
 	$info=curl_getinfo($curl);
-	curl_close($curl);
+	if(PHP_VERSION_ID < 80000){curl_close($curl);}
 	return $info;
 }
 
