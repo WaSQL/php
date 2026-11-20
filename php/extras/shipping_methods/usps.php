@@ -99,7 +99,7 @@ function uspsGetAccessToken($params = array()) {
 	$response = curl_exec($ch);
 	$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	$curl_error = curl_error($ch);
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// Handle cURL errors
 	if ($curl_error) {
@@ -198,7 +198,7 @@ function uspsApiRequest($endpoint, $params, $method = 'POST', $data = null) {
 	$response = curl_exec($ch);
 	$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	$curl_error = curl_error($ch);
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 
 	// Handle cURL errors
 	if ($curl_error) {
