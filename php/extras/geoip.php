@@ -116,7 +116,7 @@ function geoipRadiusInfo($mylat,$mylon,$dist){
 		);
 	return $info;
 	}
-function geoipGetTimeZone($geoipCountry='US',$geoipRegion) {
+function geoipGetTimeZone($geoipCountry,$geoipRegion) {
 	switch ($geoipCountry){
 		case "US":
 		switch ($geoipRegion){
