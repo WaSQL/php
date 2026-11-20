@@ -578,62 +578,17 @@ ENDOFQUERY;
 			//echo printValue($nrecs);exit;
 			//Run the Query
 			//if this is code and
-			if(preg_match('/^php\>(.+)/is',trim($_SESSION['sql_last']),$m)){
-				if(!isAdmin()){
-					echo "You must have admin rights to execute php on this server";
+			//php>, py>, lua> and cmd> were removed 2026-11-19 (remote code execution via admin token, see local/wasql_disable.md).
+				if(preg_match('/^(php|py|lua|cmd)\>/i',trim($_SESSION['sql_last']),$m)){
+					echo strtolower($m[1]).'&gt; is disabled. Code execution is no longer available from the SQL Prompt.';
 					exit;
 				}
-				$str='<?'.'php'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
-				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
-				echo evalPHP($str);
-				exit;
-			}
-			elseif(preg_match('/^py\>(.+)/is',trim($_SESSION['sql_last']),$m)){
-				if(!isAdmin()){
-					echo "You must have admin rights to execute python on this server";
-					exit;
-				}
-				$str='<?'.'py'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
-				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
-				echo evalPHP($str);
-				exit;
-			}
-			elseif(preg_match('/^lua\>(.+)/is',trim($_SESSION['sql_last']),$m)){
-				if(!isAdmin()){
-					echo "You must have admin rights to execute lua on this server";
-					exit;
-				}
-				$str='<?'.'lua'.PHP_EOL.$m[1].PHP_EOL.'?'.'>';
-				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
-				echo evalPHP($str);
-				exit;
-			}
-			elseif(preg_match('/^json\>(.+)/is',trim($_SESSION['sql_last']),$m)){
+				elseif(preg_match('/^json\>(.+)/is',trim($_SESSION['sql_last']),$m)){
 				$arr=decodeJSON($m[1]);
 				echo printValue($arr);
 				exit;
 			}
-			elseif(preg_match('/^cmd\>(.+)/',trim($_SESSION['sql_last']),$m)){
-				if(!isAdmin()){
-					echo "You must have admin rights to execute commands on this server";
-					exit;
-				}
-				session_write_close(); //release the session lock before a possibly long-running call - see bug #38
-				$out=cmdResults($m[1]);
-				echo "CMD: {$out['cmd']}".PHP_EOL;
-				echo "DIR: {$out['dir']}".PHP_EOL;
-				echo "RUNTIME: {$out['runtime']}".PHP_EOL;
-				echo "RTNCODE: {$out['rtncode']}".PHP_EOL;
-				echo "=========================================================================================".PHP_EOL;
-				if(isset($out['stdout'])){
-					echo $out['stdout'].PHP_EOL;
-				}
-				if(isset($out['stderr'])){
-					echo $out['stderr'].PHP_EOL;
-				}
-				exit;
-			}
-			$skip=0;
+				$skip=0;
 			$lcq=strtolower(trim($_SESSION['sql_last']));
 			//checkdbs takes optional arguments (status word and attr=value filters) - keep them aside so the switch below matches on the bare keyword
 			$checkdbs_args='';
@@ -708,22 +663,6 @@ ENDOFQUERY;
 						$recs[]=array(
 							'command'=>'kill {sessionID}',
 							'description'=>"kills the query session specified"
-						);
-						$recs[]=array(
-							'command'=>'php>{PHP code}',
-							'description'=>"Admins only: run PHP code on the server and return the results"
-						);
-						$recs[]=array(
-							'command'=>'py>{python code}',
-							'description'=>"Admins only: run python code on the server and return the results"
-						);
-						$recs[]=array(
-							'command'=>'lua>{lua code}',
-							'description'=>"Admins only: run lua code on the server and return the results"
-						);
-						$recs[]=array(
-							'command'=>'cmd>{some command}',
-							'description'=>"Admins only: run command on the server and return the results"
 						);
 						$recs[]=array(
 							'command'=>'drives (df)',

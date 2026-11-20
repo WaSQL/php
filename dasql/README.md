@@ -10,7 +10,7 @@ DaSQL lets you run SQL queries (and scripts, and shell commands) against **any d
 
 **What it is:** `dasql.py` is a single Python bridge. It takes a **filename**, a **directory**, and a **query/selection**, reads `dasql.ini` (always in `dasql.py`'s own folder), matches a `[section]`, and POSTs the query to `{base_url}/php/admin.php` (WaSQL's authenticated SQL prompt). WaSQL runs it against the target database and returns text, which DaSQL prints to stdout.
 
-**Core rule — the filename picks the connection.** The `.sql`/`.cli`/`.php`/`.py`/`.lua` filename (minus extension) must match a `dasql.ini` section name; that section supplies `db`, `base_url`, `authkey`, and `output_format`. If no section matches the filename, DaSQL tries the *directory* name as a section. `[global]` provides defaults for every section.
+**Core rule — the filename picks the connection.** The `.sql` filename (script files too, but those run locally) (minus extension) must match a `dasql.ini` section name; that section supplies `db`, `base_url`, `authkey`, and `output_format`. If no section matches the filename, DaSQL tries the *directory* name as a section. `[global]` provides defaults for every section.
 
 **Invocation:** `python dasql.py <filename-with-ext> <dirname> <query>`. If `<query>` is empty and stdin is piped, the query is read from **stdin**. A single leading `-- ` / `--` / `#` is stripped from the query.
 
@@ -22,14 +22,13 @@ DaSQL lets you run SQL queries (and scripts, and shell commands) against **any d
 - `*.sql` files in the repo are saved query sets, one per section.
 
 **Dispatch decision (the order `dasql.py` actually uses):**
-1. Filename ends in `.cli` → send the line to the server as a shell command (`cmd>`), targeting the matching section's server.
-2. Filename is `.php`/`.py`/`.lua` **AND** lives in the DaSQL dir **AND** its name matches a section → run the **whole file on the server** (`php>`/`py>`/`lua>`, admin-only).
-3. Otherwise, a script file with a known interpreter/shebang (`.php .py .pl .rb .js .lua .r .sh`) → run **locally**; `.md`/`.html` → render/open in browser.
-4. Otherwise treat the input as a query line and apply the prefix rules below; a bare word may resolve to a shortcut (`[section:name]`, else `[global:name]`).
+1. Filename ends in `.cli` → refused ("no longer supported"). Remote command execution was removed 2026-11-19.
+2. A script file with a known interpreter/shebang (`.php .py .pl .rb .js .lua .r .sh`) → run **locally**; `.md`/`.html` → render/open in browser. Nothing is ever executed on the server.
+3. Otherwise treat the input as a query line and apply the prefix rules below; a bare word may resolve to a shortcut (`[section:name]`, else `[global:name]`).
 
-**Query prefixes** — `math>`/`calc>` (local Python eval), `cmd>` (local shell), `C:\path>cmd` (local shell in dir), `http…` (open URL), `{…}`/`[…]` (pretty-print JSON via local PHP), `<?php?>`/`<?py?>`/`<?lua?>` (run locally), `php>`/`py>`/`lua>` (run on the **server**, admin-only). Anything starting with a SQL keyword (select/insert/update/… plus `tables`, `ddl`, `help`, etc.) is sent to the server as SQL.
+**Query prefixes** — `math>`/`calc>` (local Python eval), `cmd>` (local shell), `C:\path>cmd` (local shell in dir), `http…` (open URL), `{…}`/`[…]` (pretty-print JSON via local PHP), `<?php?>`/`<?py?>`/`<?lua?>` (run locally), `php>`/`py>`/`lua>` are **no longer supported** (removed 2026-11-19: they ran code on the server through the admin token). Anything starting with a SQL keyword (select/insert/update/… plus `tables`, `ddl`, `help`, etc.) is sent to the server as SQL.
 
-**Local vs. remote is the critical distinction:** `<?php?>`/`<?py?>`/`<?lua?>` and `cmd>`/`math>` run on the user's machine with no WaSQL access; `php>`/`py>`/`lua>`, `.cli`, and in-dir `.php`/`.py`/`.lua` files run **on the WaSQL server** in the real framework environment and require admin rights.
+**Nothing runs on the server:** `<?php?>`/`<?py?>`/`<?lua?>`, `cmd>` and `math>` run on the user's machine with no WaSQL access. DaSQL only sends SQL and the read-only SQL Prompt commands (`tables`, `ddl`, `help`, …) to the server. `php>`/`py>`/`lua>`/`cmd>` on the server, `.cli` files and in-dir `.php`/`.py`/`.lua` remote execution were removed 2026-11-19 (remote code execution risk) — do not try to re-add them.
 
 **Output formats** (`output_format`): `dos` (fixed-width, most robust — default), `csv`, `json`, `xml`, `html`, `table`.
 
@@ -50,22 +49,18 @@ An AI working on a WaSQL site has **two complementary remote tools**. Use them t
 
 Prefer WaMCP for anything that is a question *about the database*: confirming a column exists, checking a setting stored in a table, reading `commonGetSetting`-style config rows, verifying row counts, inspecting server variables via `SHOW`.
 
-**DaSQL** — *remote execution, outside/around the database.* Answers "what's happening on the box?" It runs OS shell commands and server-side PHP/Python/Lua **on the WaSQL host** (admin auth required):
+**DaSQL** — *remote execution, outside/around the database.* Answers "what's happening on the box?" It sends SQL and the read-only SQL Prompt commands (`tables`, `ddl`, `uptime`, `df`, `top`, …) to the WaSQL host (admin auth required). It can no longer run shell commands or PHP/Python/Lua code on the server (removed 2026-11-19):
 
-- **`.cli` file** (e.g. `myserver.cli`) — each selected line is a **shell command run on the server**. This is the workhorse for OS-level diagnostics.
-- **`php>` / `py>` / `lua>`** prefixes (or a whole in-dir `.php`/`.py`/`.lua` file named after a section) — run server-side code in the real WaSQL environment: call framework functions, read `$CONFIG`/`$DATABASE`, `commonGetSetting()`, check the actual PHP version/extensions, inspect file paths.
+- **SQL Prompt commands** — `drives`/`df`, `uptime`/`top`, `memory`, `os`, `ps`, `server`, `versions`, `sessions`, `running` give read-only OS and server health info.
 
 **What this combination unlocks (concrete diagnostics):**
 
-- **Drive / disk space** — `.cli`: `df -h` (Linux) or `wmic logicaldisk get size,freespace,caption` (Windows).
-- **Read log files** — `.cli`: `tail -n 200 /var/log/wasql/error.log`, `grep -i error …`.
-- **Server reports / health** — `.cli`: `free -m`, `top -bn1`, `ps aux | grep php`, `uptime`, `systemctl status …`.
-- **Confirm database settings** — WaMCP `getdb` + `query "SHOW VARIABLES LIKE 'max_connections'"`; or DaSQL `php>` to dump `$DATABASE['DBNAME']` / `$CONFIG['...']` as WaSQL actually sees it.
-- **Confirm framework/site config** — DaSQL `php>echo printValue($CONFIG);` or `php>echo commonGetSetting('company','name');` to read live config the DB alone won't show.
-- **Verify files on disk** — `.cli`: `ls -la`, `cat config.xml` (careful with secrets), check that an uploaded/generated file exists and its size.
-- **Check running crons / processes** — WaMCP `query` against the `_cron` table for job state, plus `.cli` `ps`/`pgrep` to see if the process is actually alive.
+- **Drive / disk space, load, memory, processes** — DaSQL `df`, `uptime`, `memory`, `ps`.
+- **Confirm database settings** — WaMCP `getdb` + `query "SHOW VARIABLES LIKE 'max_connections'"`.
+- **Check running crons** — WaMCP `query` against the `_cron` table for job state.
+- **Logs, config files, files on disk, framework config** — no longer reachable through DaSQL; ask the developer or use the server directly.
 
-**Rule of thumb:** if the answer lives *in a table or the schema*, reach for **WaMCP** (read-only, safe, structured). If it lives *on the operating system, the filesystem, or in the running PHP process* — disk, logs, memory, config files, process list — reach for **DaSQL** (`.cli` for shell, `php>`/`py>`/`lua>` for server code). Both target the server chosen by the active DB / matched section, so confirm you're pointed at the intended environment (watch for staging vs. prod) before running anything with side effects. Keep DaSQL diagnostics **read-only** unless the user explicitly asks for a change.
+**Rule of thumb:** if the answer lives *in a table or the schema*, reach for **WaMCP** (read-only, safe, structured). If it lives *on the operating system, the filesystem, or in the running PHP process* — disk, logs, memory, config files, process list — reach for **DaSQL**'s read-only SQL Prompt commands (`df`, `uptime`, `memory`, `ps`); anything beyond those needs the developer on the server. Both target the server chosen by the active DB / matched section, so confirm you're pointed at the intended environment (watch for staging vs. prod) before running anything with side effects. Keep DaSQL diagnostics **read-only** unless the user explicitly asks for a change.
 
 ---
 
@@ -88,7 +83,6 @@ Prefer WaMCP for anything that is a question *about the database*: confirming a 
   - [From an editor](#from-an-editor)
 - [Special commands](#special-commands)
 - [Running scripts and files](#running-scripts-and-files)
-- [`.cli` — run commands on the WaSQL host](#cli--run-commands-on-the-wasql-host)
 - [Editor setup](#editor-setup)
   - [Sublime Text](#sublime-text)
   - [Notepad++](#notepad)
@@ -317,18 +311,8 @@ These prefixes work on any line, in any file, regardless of the matched section.
 | `<?php ... ?>` | Execute a PHP snippet | Local | `<?php echo date('Y-m-d'); ?>` |
 | `<?py ... ?>` | Execute a Python snippet | Local | `<?py print(2**32) ?>` |
 | `<?lua ... ?>` | Execute a Lua snippet | Local | `<?lua print(os.time()) ?>` |
-| `php>` | Run PHP on the **server** | Remote | `php> echo phpversion();` |
-| `py>` | Run Python on the **server** | Remote | `py> import sys; print(sys.version)` |
-| `lua>` | Run Lua on the **server** | Remote | `lua> print(_VERSION)` |
 
-### Local vs. remote code (`<?php?>` vs. `php>`)
-
-The two look similar but run in completely different places:
-
-- **`<?php ?>` / `<?py ?>` / `<?lua ?>`** run **locally**, using your machine's own `php`/`python`/`lua`. They have no access to WaSQL — no framework functions, no database, no server config.
-- **`php>` / `py>` / `lua>`** run **on the WaSQL server** (the one your section's `base_url` points to), in the real WaSQL environment. Server-side PHP can call framework functions (`getDBRecords()`, `commonGetSetting()`, …), reach the database, and see the actual PHP version, extensions, and config. **These require admin rights** — WaSQL rejects them otherwise. They run the code the same way a `.cli` file runs a shell command remotely.
-
-> `lua>` needs the matching server-side handler in `sqlprompt_controller.php`. `php>` and `py>` are built into WaSQL already.
+> `php>`, `py>`, `lua>` (and `cmd>` on the server) used to run code on the WaSQL server. They were **removed 2026-11-19** because an admin token could be used to run arbitrary code on production. The server now answers them with "is disabled". `<?php ?>`/`<?py ?>`/`<?lua ?>` still run locally.
 
 ---
 
@@ -350,22 +334,6 @@ If you press F8 on a **script file** (not a `.sql`), DaSQL runs it through the r
 
 These run **locally**, using your machine's interpreters.
 
-### `.php` / `.py` / `.lua` files in the DaSQL directory run on the server
-
-There's one exception: if the `.php`, `.py`, or `.lua` file lives **in the DaSQL directory** (next to `dasql.py`) **and its name matches a configured section**, pressing F8 runs its **entire contents on the WaSQL server** instead of locally — the same way a `.cli` file runs remotely. The filename selects the target (`sales.php` → `[sales]` → that section's `base_url`), and it uses the server's `php>`/`py>`/`lua>` runner, so it needs admin rights.
-
-This mirrors the local behavior (a local script runs the whole file) but executes it in the real WaSQL environment — with framework functions, the database, and the server's actual interpreter versions.
-
-The section-match requirement is deliberate: it targets the right server and keeps DaSQL's own files (`dasql.py`, the `*_installer.py` scripts, …) running locally rather than being shipped to a server. A `.php`/`.py`/`.lua` file **anywhere else**, or one with no matching section, still runs locally.
-
----
-
-## `.cli` — run commands on the WaSQL host
-
-Files ending in `.cli` send the selected line to the **remote WaSQL server** as a shell command. Select a command, press F8, and DaSQL prints the server-side output, the return code, and a `STATUS: Success`/`Failure` line — handy for server maintenance without opening a separate SSH session.
-
-The `.cli` file's name selects the target the same way `.sql` files do: `sales.cli` runs its commands on the server defined by the `[sales]` section (`dev.example.com`), not on your local machine.
-
 ---
 
 ## Editor setup
@@ -377,7 +345,7 @@ cd C:\wasql\dasql
 python <installer_name>.py
 ```
 
-Every integration passes the **filename with its extension** to `dasql.py`, so `.sql` sections, `.cli` files, and script files are all detected correctly.
+Every integration passes the **filename with its extension** to `dasql.py`, so `.sql` sections and script files are all detected correctly.
 
 ### Sublime Text
 
@@ -507,7 +475,7 @@ python zed_installer.py
 
 It adds two DaSQL tasks to Zed's global `tasks.json` and binds them in `keymap.json`, then points them at the current DaSQL directory. Restart Zed.
 
-The tasks pass Zed's `$ZED_FILE` (the full path, *with* extension), `$ZED_DIRNAME`, and `$ZED_SELECTED_TEXT`, so `.sql` sections, `.cli` files, and script files all resolve correctly.
+The tasks pass Zed's `$ZED_FILE` (the full path, *with* extension), `$ZED_DIRNAME`, and `$ZED_SELECTED_TEXT`, so `.sql` sections and script files all resolve correctly.
 
 **Usage:**
 
@@ -551,7 +519,7 @@ The filename (with its extension) still selects the `dasql.ini` section, exactly
 - **Geany** — *Edit → Format → Send Selection to → Set Custom Commands*, or a Build command that pipes the selection.
 - **gedit** — enable the built-in **External Tools** plugin, set *Input: Current selection* and *Output: Bottom pane*, and call `dasql.py` with `$GEDIT_CURRENT_DOCUMENT_NAME` and its directory.
 
-Because the filename is passed through, `.cli` files and scripts are detected here too.
+Because the filename is passed through, scripts are detected here too.
 
 ---
 
@@ -568,9 +536,6 @@ The server didn't respond in time — check server health and network.
 
 **`DaSQL: not sure what to do with this`**
 The line didn't start with a recognized SQL keyword or special prefix. Check for a typo at the start, or a comment marker deeper than one level (DaSQL strips only one leading `--`/`#`).
-
-**A `.cli` command ran on my computer instead of the server**
-The `.cli` file's name must match a section in `dasql.ini`, and your editor integration must pass the filename **with** its `.cli` extension. Re-run your editor's installer if you set it up before this was fixed.
 
 **Results look garbled (encoding issues)**
 Set `output_format = dos` — it's the most robust for editor output panels.
