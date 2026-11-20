@@ -285,7 +285,7 @@ function sqlpromptCheckDbs($filters=array(),$timeout=20,$parallel=8){
 			}
 			$results[$name]=$res;
 			curl_multi_remove_handle($mh,$ch);
-			curl_close($ch);
+			if(PHP_VERSION_ID < 80000){curl_close($ch);}
 			unset($active[(int)$ch]);
 		}
 	}
@@ -677,7 +677,7 @@ function sqlpromptBuildQuery($db,$name,$str=''){
 		break;
 		case 'postgresql':
 		case 'postgres':
-		case 'postgre';
+		case 'postgre':
 			loadExtras('postgresql');
 			global $dbh_postgresql;
 			$dbh_postgresql='';
@@ -760,7 +760,7 @@ function sqlpromptNamedQueries(){
 		break;
 		case 'postgresql':
 		case 'postgres':
-		case 'postgre';
+		case 'postgre':
 			loadExtras('postgresql');
 			global $dbh_postgresql;
 			$dbh_postgresql='';
