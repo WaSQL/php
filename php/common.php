@@ -16728,7 +16728,7 @@ function getRemoteFileInfo($url){
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     $data = curl_exec($ch);
-    curl_close($ch);
+    if(PHP_VERSION_ID < 80000){curl_close($ch);}
     $parts=preg_split('/[\r\n]+/',trim($data));
 	$info=array();
 	foreach($parts as $part){
@@ -22697,7 +22697,7 @@ function postURL($url,$params=array()) {
 		}
     }
     //close the handle
-	curl_close($process);
+	if(PHP_VERSION_ID < 80000){curl_close($process);}
 	//echo printValue($rtn);exit;
     //decode it if gzipped
 	if(isset($rtn['headers']['content-encoding']) && $rtn['headers']['content-encoding']=='gzip'){
@@ -23061,7 +23061,7 @@ function postBody($url='',$body='',$params=array()) {
         }
     }
     //close the handle
-	curl_close($process);
+	if(PHP_VERSION_ID < 80000){curl_close($process);}
 	if(isset($params['-filename']) && $fh){fclose($fh);}
 	$rtn['body']=trim($rtn['body']);
 	if($ofx==1){
@@ -26608,7 +26608,7 @@ function wget($url,$localfile='',$params=array()){
 	curl_exec($ch); 
 	// Get the HTTP status code
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	fclose($fp);
 	if($content==1){
 		return file_get_contents($localfile);
@@ -26638,7 +26638,7 @@ function getRemoteImage($remote_url, $target){
 		CURLOPT_TIMEOUT => 600); // 10 minute timeout
 	curl_setopt_array($ch, $options);
 	curl_exec($ch);
-	curl_close($ch);
+	if(PHP_VERSION_ID < 80000){curl_close($ch);}
 	fclose($fp);
 }
 //---------- begin function writeJavascript
@@ -27006,7 +27006,7 @@ function xml2Array($contents, $get_attributes=1, $priority = 'tag') {
     xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
 	try{
     	xml_parse_into_struct($parser, trim($contents), $xml_values);
-    	xml_parser_free($parser);
+    	if(PHP_VERSION_ID < 80000){xml_parser_free($parser);}
     }
 	catch(Exception $e){
     	debugValue($e);
