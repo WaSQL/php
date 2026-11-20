@@ -80,7 +80,7 @@ if ($config->getBoolean('admin.checkforupdates', true) && $current !== 'master')
                 $latest = json_decode(strval($response), true);
                 $session->setData("core:latest_simplesamlphp_version", "version", $latest);
             }
-            curl_close($ch);
+            if(PHP_VERSION_ID < 80000){curl_close($ch);}
         }
 
         if ($latest && version_compare($current, ltrim($latest['tag_name'], 'v'), 'lt')) {
