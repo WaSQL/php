@@ -16,7 +16,7 @@ require_once("{$progpath}/git/Git.php");
 *		diff
 *		raw - raw lines returned before parsing
 */
-function gitDiff($dir='',$file){
+function gitDiff($dir,$file){
 	$repo = Git::open($dir);
 	return $repo->diff($file);
 }
@@ -31,7 +31,7 @@ function gitDiff($dir='',$file){
 *		diff
 *		raw - raw lines returned before parsing
 */
-function gitLog($dir='',$file){
+function gitLog($dir,$file){
 	$repo = Git::open($dir);
 	return $repo->log($file);
 }
@@ -84,7 +84,7 @@ function gitCheckout($dir='',$files=array()){
 * @param files array -  files to add
 * @return array
 */
-function gitCommit($dir='',$msg,$file){
+function gitCommit($dir,$msg,$file){
 	$repo = Git::open($dir);
 	$config=gitConfigList($dir);
 	if(!isset($config['user.name']) && isset($_REQUEST['name'])){
