@@ -497,7 +497,7 @@ class WebAuthn {
             \curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             \curl_setopt($ch, CURLOPT_USERAGENT, 'github.com/lbuchs/WebAuthn - A simple PHP WebAuthn server library');
             $raw = \curl_exec($ch);
-            \curl_close($ch);
+            if(PHP_VERSION_ID < 80000){curl_close($ch);}
         } else {
             $raw = \file_get_contents($url);
         }
