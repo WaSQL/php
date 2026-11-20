@@ -223,7 +223,7 @@ class BuiltInServer
             list($name, $value) = explode(':', $header, 2);
             $headers[trim($name)] = trim($value);
         }
-        curl_close($ch);
+        if(PHP_VERSION_ID < 80000){curl_close($ch);}
         return [
             'code' => $code,
             'headers' => $headers,
