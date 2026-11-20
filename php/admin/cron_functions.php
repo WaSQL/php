@@ -182,8 +182,8 @@ function cronList(){
 		'-formname'=>'cronlistform',
 		'-searchfields'=>'name,groupname,_id,cron_pid,active,paused,running,run_now,stop_now',
 		'-searchopers'=>'ct,eq,neq,ca,ea,ib,nb',
-		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,logcount,last_run,run_length,run_memory,run_format,frequency_max',
-		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_length,run_format,frequency_max',
+		'-listfields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,logcount,last_run,next_run,run_format,frequency_max',
+		'-fields'=>'_id,groupname,name,active,cron_pid,paused,running,stop_now,run_now,run_date,unix_timestamp(now())-unix_timestamp(run_date) as last_run,run_format,run_values,frequency,begin_date,end_date,frequency_max',
 		'-tableclass'=>'wacss_table striped bordered',
 		'-action'=>$url,
 		'_menu'=>'cron',
@@ -194,20 +194,14 @@ function cronList(){
 		'func'=>'list',
 		'-onsubmit'=>"return pagingSubmit(this,'cron_results');",
 		'run_date_dateage'=>1,
-		'run_length_class'=>'align-right',
-		'run_length_options'=>array(
-			'verbosetime'=>1,
-			'displayname'=>'Runtime'
-		),
 		'last_run_options'=>array(
 			'class'=>'align-right',
 			'verbosetime'=>1
 		),
-		'run_memory_options'=>array(
-			'displayname'=>'Mem',
-			'title'=>'Memory Used',
-			'class'=>'w_nowrap align-right',
-			'eval'=>"return verboseSize('%run_memory%');"
+		'next_run_options'=>array(
+			'class'=>'w_nowrap',
+			'displayname'=>'Next Run',
+			'title'=>'When this cron is next scheduled to run'
 		),
 		'cron_pid_options'=>array(
 			'class'=>'align-right',
@@ -325,6 +319,74 @@ function cronList(){
 	}
 	return databaseListRecords($opts);
 }
+/**
+* @describe returns when a cron is next scheduled to run, mirroring the schedule rules in php/cron.php
+* @param $rec array cron record (active,paused,run_date,run_format,run_values,frequency,begin_date,end_date)
+* @return string verbose time until the next run (e.g. '32 min', '12 hours'; exact date in the title tooltip), or a short status ('paused','inactive','-') when there is no upcoming run
+*/
+function cronNextRun($rec){
+	if(isset($rec['active']) && (int)$rec['active']!=1){return '<span class="w_gray">inactive</span>';}
+	if(isset($rec['paused']) && (int)$rec['paused']==1){return '<span class="w_gray">paused</span>';}
+	$now=time();
+	$last=(isset($rec['run_date']) && strlen($rec['run_date']))?strtotime($rec['run_date']):0;
+	//cron.php never runs a cron twice within a minute
+	$earliest=max($now,$last+60);
+	if(isset($rec['begin_date']) && strlen($rec['begin_date'])){
+		$earliest=max($earliest,strtotime(date('Y-m-d',strtotime($rec['begin_date']))));
+	}
+	$next=0;
+	$format=isset($rec['run_format'])?trim($rec['run_format']):'';
+	if(strlen($format) && strpos($format,'{')!==false){
+		$json=json_decode($format,true);
+		if(is_array($json)){
+			foreach(array('month','day','hour','minute') as $k){
+				if(!isset($json[$k][0])){return '-';}
+			}
+			$start=strtotime(date('Y-m-d H:i:00',$earliest));
+			if($start < $earliest){$start+=60;}
+			$hours=$json['hour'][0]==-1?range(0,23):array_map('intval',$json['hour']);
+			$mins=$json['minute'][0]==-1?range(0,59):array_map('intval',$json['minute']);
+			sort($hours);sort($mins);
+			for($d=0;$d<=732 && !$next;$d++){
+				$day=strtotime(date('Y-m-d',$start).' +'.$d.' day');
+				if($json['month'][0]!=-1 && !in_array((int)date('n',$day),$json['month'])){continue;}
+				if($json['day'][0]!=-1 && !in_array((int)date('j',$day),$json['day'])){continue;}
+				if(isset($json['dayname'][0]) && $json['dayname'][0]!=-1 && !in_array((int)date('N',$day)-1,$json['dayname'])){continue;}
+				foreach($hours as $h){
+					foreach($mins as $m){
+						$ts=strtotime(date('Y-m-d',$day).sprintf(' %02d:%02d:00',$h,$m));
+						if($ts >= $start){$next=$ts;break 2;}
+					}
+				}
+			}
+		}
+	}
+	elseif(isset($rec['frequency']) && (int)$rec['frequency'] > 0){
+		$next=max($earliest,$last+((int)$rec['frequency']*60)+1);
+	}
+	elseif(strlen($format) && isset($rec['run_values']) && strlen($rec['run_values'])){
+		$values=preg_split('/\,/',$rec['run_values']);
+		$start=strtotime(date('Y-m-d H:i:00',$earliest));
+		if($start < $earliest){$start+=60;}
+		//step minute by minute (bounded to one week) until date(run_format) matches one of the values
+		for($ts=$start;$ts <= $start+604800;$ts+=60){
+			if(in_array(date($format,$ts),$values)){$next=$ts;break;}
+		}
+	}
+	if(!$next){return '-';}
+	if(isset($rec['end_date']) && strlen($rec['end_date']) && date('Y-m-d',$next) > date('Y-m-d',strtotime($rec['end_date']))){return '-';}
+	$secs=max(0,$next-$now);
+	if($secs < 60){$verbose='< 1 min';}
+	elseif($secs < 3600){$verbose=round($secs/60).' min';}
+	elseif($secs < 86400){$h=round($secs/3600);$verbose=$h.($h==1?' hour':' hours');}
+	elseif($secs < 2629743){$d=round($secs/86400);$verbose=$d.($d==1?' day':' days');}
+	else{$mo=round($secs/2629743);$verbose=$mo.($mo==1?' month':' months');}
+	$title=date('m/d/Y h:i a',$next);
+	if(isset($rec['running']) && (int)$rec['running']==1){
+		return '<span class="w_gray" title="'.$title.' (currently running)">'.$verbose.'</span>';
+	}
+	return '<span title="'.$title.'">'.$verbose.'</span>';
+}
 function cronListExtra($recs){
 	$ids=array();
 	$cron_ids=array();
@@ -357,6 +419,7 @@ function cronListExtra($recs){
 		$id=$recs[$i]['_id_ori']=$recs[$i]['_id'];
 		$pid=$recs[$i]['cron_pid_ori']=(int)$recs[$i]['cron_pid'];
 		$name=$rec['name'];
+		$recs[$i]['next_run']=cronNextRun($rec);
 		//if cron_pid and not running something is wrong.
 		if($pid != 0 && (int)$rec['running']==0){
 			$recs[$i]['cron_pid']='<span class="w_danger">'.$rec['cron_pid'].'</span>';
