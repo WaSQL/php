@@ -172,7 +172,7 @@ class WC_API_Client_HTTP_Request {
 		// response headers
 		$this->response->headers = $this->get_response_headers();
 
-		curl_close( $this->ch );
+		if(PHP_VERSION_ID < 80000){curl_close( $this->ch );}
 
 		$parsed_response = $this->get_parsed_response( $this->response->body );
 
