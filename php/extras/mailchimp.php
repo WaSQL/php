@@ -275,7 +275,7 @@ class Mailchimp {
     }
 
     public function __destruct() {
-        curl_close($this->ch);
+        if(PHP_VERSION_ID < 80000){curl_close($this->ch);}
     }
 
     public function call($url, $params) {
