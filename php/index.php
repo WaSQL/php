@@ -357,13 +357,12 @@ if(isset($_REQUEST['ping']) && $request_count==1){
 		$json['uptime_verbose']=verboseTime($json['uptime']);
 	}
 	else{
-		$out=cmdResults('wmic os get lastbootuptime');
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$boottime=(int)$lines[1];
-		$bootdate=substr($boottime, 0,4).'-'.substr($boottime, 4,2).'-'.substr($boottime, 6,2);
-		$bootdate .= ' '.substr($boottime, 8,2).':'.substr($boottime, 10,2).':'.substr($boottime, 12,2);
+		//Get-CimInstance replaces wmic (removed from Windows 11 24H2+)
+		loadExtras('system');
+		$cimrows=systemWinCim('Win32_OperatingSystem',array("@{n='bootdate';e={\$_.LastBootUpTime.ToString('yyyy-MM-dd HH:mm:ss')}}"));
+		$bootdate=isset($cimrows[0]['bootdate'])?$cimrows[0]['bootdate']:'';
 		$json['bootdate']=$bootdate;
-		$json['uptime']=time()-strtotime($bootdate);
+		$json['uptime']=strlen($bootdate)?time()-strtotime($bootdate):0;
 		$json['uptime_verbose']=verboseTime($json['uptime']);
 	}
 	$json=json_encode($json);

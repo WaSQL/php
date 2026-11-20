@@ -3,6 +3,76 @@
 	Server/System functions to get information about the server we are running on
 	https://www.computerhope.com/wmic.htm
 */
+//---------- begin function systemWinCim ----
+/**
+* @describe Windows only: queries WMI/CIM through PowerShell Get-CimInstance and returns the rows. Replaces the old
+*	`wmic` calls - wmic.exe was removed from Windows 11 24H2+ / Server 2025 (and is deprecated everywhere).
+* @param class string - CIM class name, e.g. 'Win32_OperatingSystem'
+* @param props array - properties to select. A plain name, or a PowerShell calculated property such as
+*	"@{n='bootdate';e={$_.LastBootUpTime.ToString('yyyy-MM-dd HH:mm:ss')}}" (use these for dates, which json badly)
+* @param [filter] string - optional WQL filter, e.g. "DriveType=3"
+* @return array - list of records with lowercase keys. Array-valued properties (IPAddress...) are joined with ';'.
+*	Empty array on failure - check systemWinCimError() for the reason.
+* @usage $rows=systemWinCim('Win32_Processor',array('Name','LoadPercentage'));
+*/
+function systemWinCim($class,$props,$filter=''){
+	$ps="\$ErrorActionPreference='Stop';Get-CimInstance -ClassName {$class}";
+	if(strlen($filter)){
+		$ps.=" -Filter '".str_replace("'","''",$filter)."'";
+	}
+	$ps.=' | Select-Object '.implode(',',$props).' | ConvertTo-Json -Compress -Depth 3';
+	return systemWinPs($ps);
+}
+//---------- begin function systemWinPs ----
+/**
+* @describe Windows only: runs a PowerShell script and returns its JSON output as rows. The script must end by piping
+*	objects to `ConvertTo-Json -Compress`. Used by systemWinCim() and the network stats helpers.
+* @param ps string - PowerShell source (any quoting is fine - it is sent base64 encoded)
+* @return array - list of records with lowercase keys, array-valued properties joined with ';'. Empty array on failure
+*	(see systemWinCimError()).
+* @usage $rows=systemWinPs("Get-Process | Select-Object Name,Id | ConvertTo-Json -Compress");
+*/
+function systemWinPs($ps){
+	global $systemWinCimError;
+	$systemWinCimError='';
+	$ps="\$ProgressPreference='SilentlyContinue';".$ps;
+	//-EncodedCommand (UTF-16LE base64) sidesteps all quoting problems, cmdResults runs with bypass_shell on Windows
+	$cmd='powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand '.base64_encode(mb_convert_encoding($ps,'UTF-16LE','UTF-8'));
+	$out=cmdResults($cmd);
+	$json=isset($out['stdout'])?trim($out['stdout']):'';
+	if(!strlen($json)){
+		$systemWinCimError=trim(isset($out['stderr'])?$out['stderr']:'')?:'no output from PowerShell (is powershell.exe available?)';
+		return array();
+	}
+	//strip a UTF-8 BOM if powershell emitted one
+	$json=preg_replace('/^\xEF\xBB\xBF/','',$json);
+	$data=json_decode($json,true);
+	if(!is_array($data)){
+		$systemWinCimError='invalid json from PowerShell: '.substr($json,0,120);
+		return array();
+	}
+	//a single object comes back as an assoc array, not a list
+	if(!isset($data[0])){$data=array($data);}
+	$recs=array();
+	foreach($data as $row){
+		$rec=array();
+		foreach($row as $k=>$v){
+			if(is_array($v)){$v=implode(';',$v);}
+			$rec[strtolower($k)]=$v;
+		}
+		$recs[]=$rec;
+	}
+	return $recs;
+}
+//---------- begin function systemWinCimError ----
+/**
+* @describe returns the error message from the last systemWinCim() call ('' if it worked)
+* @return string
+*/
+function systemWinCimError(){
+	global $systemWinCimError;
+	return (string)$systemWinCimError;
+}
 function systemGetMemory(){
 	global $systemGetMemoryCache;
 	if(is_array($systemGetMemoryCache)){
@@ -10,24 +80,14 @@ function systemGetMemory(){
 	}
 	$systemGetMemoryCache=array();
 	if(isWindows()){
-		$cmd='wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$os=array();
-		foreach($lines as $line){
-			list($k,$v)=preg_split('/\=/',trim($line),2);
-			if(!strlen($v)){continue;}
-			if(in_array(strtolower($v),array('true','false'))){
-				continue;
-			}
-			$k=strtolower($k);
-			$os[$k]=$v;
-		}
-		$systemGetMemoryCache['total']=(int)$os['totalvisiblememorysize']*1024;
-		$systemGetMemoryCache['free']=(int)$os['freephysicalmemory']*1024;
+		$rows=systemWinCim('Win32_OperatingSystem',array('TotalVisibleMemorySize','FreePhysicalMemory'));
+		$os=isset($rows[0])?$rows[0]:array();
+		$systemGetMemoryCache['total']=(int)(isset($os['totalvisiblememorysize'])?$os['totalvisiblememorysize']:0)*1024;
+		$systemGetMemoryCache['free']=(int)(isset($os['freephysicalmemory'])?$os['freephysicalmemory']:0)*1024;
 		$systemGetMemoryCache['used']=$systemGetMemoryCache['total']-$systemGetMemoryCache['free'];
-		$systemGetMemoryCache['pcnt_used']=(int)(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100);
-		$systemGetMemoryCache['pcnt_free']=100-$systemGetMemoryCache['pcnt_used'];
+		//total is 0 when the CIM query failed - report 0% instead of throwing DivisionByZeroError
+		$systemGetMemoryCache['pcnt_used']=$systemGetMemoryCache['total']>0?(int)(($systemGetMemoryCache['used']/$systemGetMemoryCache['total'])*100):0;
+		$systemGetMemoryCache['pcnt_free']=$systemGetMemoryCache['total']>0?100-$systemGetMemoryCache['pcnt_used']:0;
 		//$systemGetMemoryCache['pcnt_used']=number_format($systemGetMemoryCache['pcnt_used'],2);
 	}
 	else{
@@ -114,29 +174,22 @@ function systemUnixMemsize($str){
 }
 function systemGetLoadAverage(){
 	if(isWindows()){
-		$cmd='wmic cpu get loadpercentage';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		return trim($lines[1]);
+		$rows=systemWinCim('Win32_Processor',array('LoadPercentage'));
+		return isset($rows[0]['loadpercentage'])?trim((string)$rows[0]['loadpercentage']):'';
 	}
 	return $systemGetMemoryCache;
 }
 function systemGetDriveSpace($nohtml=0){
 	$space=array();
 	if(isWindows()){
-		$cmd='wmic logicaldisk get Caption,Description,Size,Freespace /format:csv';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$rows=systemWinCim('Win32_LogicalDisk',array('Caption','Description','Size','FreeSpace','VolumeName','FileSystem'));
 		$recs=array();
-		foreach($lines as $line){
-			$parts=csvParseLine($line);
-			$rec=array();
-			foreach($fields as $i=>$field){
-				$rec[$field]=$parts[$i];
-			}
+		foreach($rows as $rec){
+			//"Windows-SSD (NTFS)" says more than the generic "Local Fixed Disk"
+			$label=strlen(trim((string)$rec['volumename']))?trim($rec['volumename']):$rec['description'];
+			if(strlen(trim((string)$rec['filesystem']))){$label.=' ('.trim($rec['filesystem']).')';}
 			$recs[]=array(
-				'filesystem'=>$rec['description'],
+				'filesystem'=>$label,
 				'size'=>$rec['size'],
 				'used'=>'',
 				'available'=>$rec['freespace'],
@@ -245,25 +298,17 @@ function systemGetNetworkAdapters(){
 
 	$space=array();
 	if(isWindows()){
-		$cmd='wmic NICCONFIG GET IPEnabled, IPAddress, MacAddress, Description, DHCPServer, IPSubnet /format:csv';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$rows=systemWinCim('Win32_NetworkAdapterConfiguration',array('IPEnabled','IPAddress','MACAddress','Description','DHCPServer','IPSubnet'));
 		$recs=array();
-		foreach($lines as $line){
-			$parts=csvParseLine($line);
-			$rec=array();
-			foreach($fields as $i=>$field){
-				$rec[$field]=$parts[$i];
-			}
+		foreach($rows as $rec){
 			//if(!strlen($rec['adaptertype'])){continue;}
 			$recs[]=array(
 				'name'=>$rec['description'],
-				'enabled'=>strtolower($rec['ipenabled'])=='true'?1:0,
-				'mac_address'=>$rec['macaddress'],
-				'ip_address'=>preg_replace('/[\{\}]+/is','',$rec['ipaddress']),
-				'ip_subnet'=>preg_replace('/[\{\}]+/is','',$rec['ipsubnet']),
-				'dhcp_server'=>preg_replace('/[\{\}]+/is','',$rec['dhcpserver'])
+				'enabled'=>(isset($rec['ipenabled']) && ($rec['ipenabled']===true || strtolower((string)$rec['ipenabled'])=='true'))?1:0,
+				'mac_address'=>(string)$rec['macaddress'],
+				'ip_address'=>(string)$rec['ipaddress'],
+				'ip_subnet'=>(string)$rec['ipsubnet'],
+				'dhcp_server'=>(string)$rec['dhcpserver']
 			);
 		}
 	}
@@ -323,56 +368,382 @@ function systemGetNetworkAdapters(){
 	}
 	return $recs;
 }
+//---------- begin function systemCpuInfo ----
+/**
+* @describe processor model and size
+* @return array name, cores (physical), threads (logical processors), mhz
+* @usage $cpu=systemCpuInfo();
+*/
+function systemCpuInfo(){
+	global $systemCpuInfoCache;
+	if(is_array($systemCpuInfoCache)){return $systemCpuInfoCache;}
+	$info=array('name'=>'','cores'=>0,'threads'=>0,'mhz'=>0);
+	if(isWindows()){
+		foreach(systemWinCim('Win32_Processor',array('Name','NumberOfCores','NumberOfLogicalProcessors','MaxClockSpeed')) as $r){
+			if(!strlen($info['name'])){$info['name']=trim($r['name']);}
+			$info['cores']+=(int)$r['numberofcores'];
+			$info['threads']+=(int)$r['numberoflogicalprocessors'];
+			$info['mhz']=max($info['mhz'],(int)$r['maxclockspeed']);
+		}
+	}
+	else{
+		$ids=array();
+		foreach((array)@file('/proc/cpuinfo',FILE_IGNORE_NEW_LINES) as $line){
+			if(strpos($line,':')===false){continue;}
+			list($k,$v)=array_map('trim',explode(':',$line,2));
+			if($k=='model name' && !strlen($info['name'])){$info['name']=$v;}
+			elseif($k=='processor'){$info['threads']++;}
+			elseif($k=='cpu MHz'){$info['mhz']=max($info['mhz'],(int)$v);}
+			elseif($k=='core id'){$ids[$v]=1;}
+		}
+		$info['cores']=count($ids)?count($ids):$info['threads'];
+	}
+	$systemCpuInfoCache=$info;
+	return $info;
+}
+//---------- begin function systemCpuLoad ----
+/**
+* @describe current CPU utilisation, overall and per logical processor (a snapshot, not an average since boot)
+*	Linux samples /proc/stat twice 0.5s apart; Windows reads the performance counters.
+* @return array total (0-100), cores (list of 0-100, one per logical processor)
+* @usage $load=systemCpuLoad();
+*/
+function systemCpuLoad(){
+	$out=array('total'=>0,'cores'=>array());
+	if(isWindows()){
+		foreach(systemWinCim('Win32_PerfFormattedData_PerfOS_Processor',array('Name','PercentProcessorTime')) as $r){
+			if($r['name']=='_Total'){$out['total']=(int)$r['percentprocessortime'];}
+			elseif(is_numeric($r['name'])){$out['cores'][(int)$r['name']]=(int)$r['percentprocessortime'];}
+		}
+		ksort($out['cores']);
+		$out['cores']=array_values($out['cores']);
+		return $out;
+	}
+	$read=function(){
+		$rows=array();
+		foreach((array)@file('/proc/stat',FILE_IGNORE_NEW_LINES) as $line){
+			if(!preg_match('/^(cpu\d*)\s+(.*)$/',$line,$m)){continue;}
+			$v=array_map('floatval',preg_split('/\s+/',trim($m[2])));
+			$idle=$v[3]+(isset($v[4])?$v[4]:0);
+			$rows[$m[1]]=array(array_sum($v),$idle);
+		}
+		return $rows;
+	};
+	$a=$read();usleep(500000);$b=$read();
+	foreach($b as $name=>$cur){
+		if(!isset($a[$name])){continue;}
+		$dt=$cur[0]-$a[$name][0];$di=$cur[1]-$a[$name][1];
+		$pct=$dt>0?(int)round((1-$di/$dt)*100):0;
+		if($name=='cpu'){$out['total']=$pct;}else{$out['cores'][]=$pct;}
+	}
+	return $out;
+}
+//---------- begin function systemUptimeInfo ----
+/**
+* @describe when the server booted and how long it has been up
+* @return array booted (Y-m-d H:i:s), seconds, verbose ("4 days, 10 hours, 17 minutes"), time (server time), timezone
+* @usage $up=systemUptimeInfo();
+*/
+function systemUptimeInfo(){
+	$seconds=0;$booted='';
+	if(isWindows()){
+		$rows=systemWinCim('Win32_OperatingSystem',array("@{n='bootdate';e={\$_.LastBootUpTime.ToString('yyyy-MM-dd HH:mm:ss')}}"));
+		if(isset($rows[0]['bootdate'])){
+			$booted=$rows[0]['bootdate'];
+			$seconds=max(0,time()-strtotime($booted));
+		}
+	}
+	else{
+		$raw=trim((string)@file_get_contents('/proc/uptime'));
+		if(strlen($raw)){
+			$seconds=(int)explode(' ',$raw)[0];
+			$booted=date('Y-m-d H:i:s',time()-$seconds);
+		}
+	}
+	$d=intdiv($seconds,86400);$h=intdiv($seconds%86400,3600);$m=intdiv($seconds%3600,60);
+	$parts=array();
+	if($d){$parts[]=$d.' day'.($d==1?'':'s');}
+	if($h || $d){$parts[]=$h.' hour'.($h==1?'':'s');}
+	$parts[]=$m.' minute'.($m==1?'':'s');
+	return array(
+		'booted'=>$booted,
+		'seconds'=>$seconds,
+		'verbose'=>implode(', ',$parts),
+		'time'=>date('Y-m-d H:i:s'),
+		'timezone'=>date_default_timezone_get()
+	);
+}
+//---------- begin function systemWinProcessPerf ----
+/**
+* @describe Windows only: current per-process CPU and size counters keyed by pid. CPU is normalised to the whole machine
+*	(100 = every logical processor fully busy) so the column adds up to real utilisation.
+* @return array pid => array(cpu, private_bytes, threads, handles)
+* @usage $perf=systemWinProcessPerf();
+*/
+function systemWinProcessPerf(){
+	$threads=max(1,(int)systemCpuInfo()['threads']);
+	$perf=array();
+	foreach(systemWinCim('Win32_PerfFormattedData_PerfProc_Process',array('IDProcess','Name','PercentProcessorTime','WorkingSetPrivate','ThreadCount','HandleCount')) as $r){
+		if($r['name']=='_Total'){continue;}
+		$pid=(int)$r['idprocess'];
+		//the Idle pseudo-process (pid 0) is "unused CPU", not usage
+		$cpu=$pid==0?0:round((float)$r['percentprocessortime']/$threads,2);
+		$perf[$pid]=array('cpu'=>$cpu,'private_bytes'=>(float)$r['workingsetprivate'],'threads'=>(int)$r['threadcount'],'handles'=>(int)$r['handlecount']);
+	}
+	return $perf;
+}
+//---------- begin function systemWinExtraInfo ----
+/**
+* @describe Windows only: graphics adapters, BIOS, page file and commit figures for the OS and Memory tabs
+* @return array gpus (list of name+vram), bios, pagefile_total/pagefile_used (bytes), commit_total/commit_used (bytes)
+* @usage $x=systemWinExtraInfo();
+*/
+function systemWinExtraInfo(){
+	$x=array('gpus'=>array(),'bios'=>'','pagefile_total'=>0,'pagefile_used'=>0,'commit_total'=>0,'commit_used'=>0);
+	foreach(systemWinCim('Win32_VideoController',array('Name','AdapterRAM')) as $r){
+		$x['gpus'][]=trim($r['name']);
+	}
+	foreach(systemWinCim('Win32_BIOS',array('SMBIOSBIOSVersion','Manufacturer')) as $r){
+		$x['bios']=trim($r['manufacturer'].' '.$r['smbiosbiosversion']);
+	}
+	foreach(systemWinCim('Win32_PageFileUsage',array('AllocatedBaseSize','CurrentUsage')) as $r){
+		$x['pagefile_total']+=(float)$r['allocatedbasesize']*1048576;
+		$x['pagefile_used']+=(float)$r['currentusage']*1048576;
+	}
+	foreach(systemWinCim('Win32_OperatingSystem',array('TotalVirtualMemorySize','FreeVirtualMemory')) as $r){
+		$x['commit_total']=(float)$r['totalvirtualmemorysize']*1024;
+		$x['commit_used']=$x['commit_total']-(float)$r['freevirtualmemory']*1024;
+	}
+	return $x;
+}
+//---------- begin function systemNetStats ----
+/**
+* @describe per-adapter network details plus live traffic: link status/speed, addresses, gateway, DNS, byte/packet/error
+*	counters (since boot / adapter reset) and current rx/tx rate. The rate comes from sampling the counters twice
+*	about one second apart, so this call takes ~1s.
+* @return array - one record per adapter: name, description, status (up|down), speed (bits/s, 0 unknown), mac_address,
+*	ipv4, ipv6 (global only), gateway, dns, rx_bytes, tx_bytes, rx_packets, tx_packets, rx_errors, tx_errors, rx_drops,
+*	tx_drops, rx_rate, tx_rate (bytes/s). Sorted: up adapters first, busiest first.
+* @usage $nics=systemNetStats();
+*/
+function systemNetStats(){
+	$recs=array();
+	if(isWindows()){
+		$ps=<<<'PS'
+$s0=@{}
+Get-NetAdapterStatistics | ForEach-Object { $s0[$_.Name]=$_ }
+$t0=[DateTime]::UtcNow
+Start-Sleep -Milliseconds 1000
+$s1=@{}
+Get-NetAdapterStatistics | ForEach-Object { $s1[$_.Name]=$_ }
+$secs=([DateTime]::UtcNow-$t0).TotalSeconds
+$ips=@(Get-NetIPAddress)
+$gws=@(Get-NetRoute -DestinationPrefix '0.0.0.0/0')
+$dns=@(Get-DnsClientServerAddress -AddressFamily IPv4)
+@(Get-NetAdapter | ForEach-Object {
+	$n=$_.Name; $a=$s0[$n]; $b=$s1[$n]
+	$mine=@($ips | Where-Object { $_.InterfaceAlias -eq $n })
+	[pscustomobject][ordered]@{
+		name=$n
+		description=[string]$_.InterfaceDescription
+		status=[string]$_.Status
+		speed=[int64]$_.Speed
+		mac_address=[string]$_.MacAddress
+		ipv4=(@($mine | Where-Object { $_.AddressFamily -eq 'IPv4' } | ForEach-Object { "$($_.IPAddress)/$($_.PrefixLength)" }) -join ';')
+		ipv6=(@($mine | Where-Object { $_.AddressFamily -eq 'IPv6' -and $_.IPAddress -notlike 'fe80*' } | ForEach-Object { $_.IPAddress }) -join ';')
+		gateway=(@($gws | Where-Object { $_.InterfaceAlias -eq $n } | ForEach-Object { $_.NextHop }) -join ';')
+		dns=(@($dns | Where-Object { $_.InterfaceAlias -eq $n } | ForEach-Object { $_.ServerAddresses }) -join ';')
+		rx_bytes=[int64]$b.ReceivedBytes
+		tx_bytes=[int64]$b.SentBytes
+		rx_packets=[int64]$b.ReceivedUnicastPackets
+		tx_packets=[int64]$b.SentUnicastPackets
+		rx_errors=[int64]$b.ReceivedPacketErrors
+		tx_errors=[int64]$b.OutboundPacketErrors
+		rx_drops=[int64]$b.ReceivedDiscardedPackets
+		tx_drops=[int64]$b.OutboundDiscardedPackets
+		rx_bytes0=[int64]$a.ReceivedBytes
+		tx_bytes0=[int64]$a.SentBytes
+		secs=[double]$secs
+	}
+}) | ConvertTo-Json -Compress -Depth 3
+PS;
+		foreach(systemWinPs($ps) as $r){
+			$secs=max(0.1,(float)$r['secs']);
+			$r['status']=strtolower($r['status'])=='up'?'up':'down';
+			$r['rx_rate']=(int)max(0,($r['rx_bytes']-$r['rx_bytes0'])/$secs);
+			$r['tx_rate']=(int)max(0,($r['tx_bytes']-$r['tx_bytes0'])/$secs);
+			unset($r['rx_bytes0'],$r['tx_bytes0'],$r['secs']);
+			$recs[]=$r;
+		}
+	}
+	else{
+		//Linux: counters from /proc/net/dev sampled twice, details from net_get_interfaces() + /sys + /proc/net/route
+		$read=function(){
+			$out=array();
+			foreach((array)@file('/proc/net/dev',FILE_IGNORE_NEW_LINES) as $line){
+				if(strpos($line,':')===false){continue;}
+				list($name,$vals)=explode(':',$line,2);
+				$v=preg_split('/\s+/',trim($vals));
+				if(count($v)<16){continue;}
+				$out[trim($name)]=array(
+					'rx_bytes'=>(float)$v[0],'rx_packets'=>(float)$v[1],'rx_errors'=>(float)$v[2],'rx_drops'=>(float)$v[3],
+					'tx_bytes'=>(float)$v[8],'tx_packets'=>(float)$v[9],'tx_errors'=>(float)$v[10],'tx_drops'=>(float)$v[11]
+				);
+			}
+			return $out;
+		};
+		$t0=microtime(true);
+		$s0=$read();
+		usleep(1000000);
+		$s1=$read();
+		$secs=max(0.1,microtime(true)-$t0);
+		$gateways=array();
+		foreach((array)@file('/proc/net/route',FILE_IGNORE_NEW_LINES) as $i=>$line){
+			$f=preg_split('/\s+/',trim($line));
+			if($i==0 || count($f)<3 || $f[1]!='00000000'){continue;}
+			$gateways[$f[0]]=long2ip(hexdec(bin2hex(strrev(hex2bin(str_pad($f[2],8,'0',STR_PAD_LEFT))))));
+		}
+		$dns=array();
+		foreach((array)@file('/etc/resolv.conf',FILE_IGNORE_NEW_LINES) as $line){
+			if(preg_match('/^\s*nameserver\s+(\S+)/',$line,$m)){$dns[]=$m[1];}
+		}
+		$nics=function_exists('net_get_interfaces')?@net_get_interfaces():array();
+		if(!is_array($nics)){$nics=array();}
+		foreach($s1 as $name=>$c){
+			if($name=='lo'){continue;}
+			$nic=isset($nics[$name])?$nics[$name]:array();
+			$ipv4=array();$ipv6=array();
+			if(isset($nic['unicast']) && is_array($nic['unicast'])){
+				foreach($nic['unicast'] as $u){
+					if(!isset($u['address'])){continue;}
+					if(strpos($u['address'],':')===false){
+						$bits=isset($u['netmask'])?substr_count(decbin((int)ip2long($u['netmask'])),'1'):'';
+						$ipv4[]=$u['address'].(strlen($bits)?'/'.$bits:'');
+					}
+					elseif(stripos($u['address'],'fe80')!==0){$ipv6[]=$u['address'];}
+				}
+			}
+			$state=trim((string)@file_get_contents("/sys/class/net/{$name}/operstate"));
+			$speed=(int)trim((string)@file_get_contents("/sys/class/net/{$name}/speed"));
+			$p=isset($s0[$name])?$s0[$name]:$c;
+			$recs[]=array(
+				'name'=>$name,
+				'description'=>$name,
+				'status'=>($state=='up' || (isset($nic['up']) && $nic['up']))?'up':'down',
+				'speed'=>$speed>0?$speed*1000000:0,
+				'mac_address'=>isset($nic['mac'])?$nic['mac']:trim((string)@file_get_contents("/sys/class/net/{$name}/address")),
+				'ipv4'=>implode(';',$ipv4),
+				'ipv6'=>implode(';',$ipv6),
+				'gateway'=>isset($gateways[$name])?$gateways[$name]:'',
+				'dns'=>isset($gateways[$name])?implode(';',$dns):'',
+				'rx_bytes'=>$c['rx_bytes'],'tx_bytes'=>$c['tx_bytes'],
+				'rx_packets'=>$c['rx_packets'],'tx_packets'=>$c['tx_packets'],
+				'rx_errors'=>$c['rx_errors'],'tx_errors'=>$c['tx_errors'],
+				'rx_drops'=>$c['rx_drops'],'tx_drops'=>$c['tx_drops'],
+				'rx_rate'=>(int)max(0,($c['rx_bytes']-$p['rx_bytes'])/$secs),
+				'tx_rate'=>(int)max(0,($c['tx_bytes']-$p['tx_bytes'])/$secs)
+			);
+		}
+	}
+	//up adapters first, then busiest (total bytes) first
+	usort($recs,function($a,$b){
+		if($a['status']!=$b['status']){return $a['status']=='up'?-1:1;}
+		return ($b['rx_bytes']+$b['tx_bytes'])<=>($a['rx_bytes']+$a['tx_bytes']);
+	});
+	return $recs;
+}
+//---------- begin function systemNetConnections ----
+/**
+* @describe lists TCP connections/listeners and UDP endpoints with the owning process.
+*	Linux note: process names only show for sockets the web user owns unless it can run `ss -p` as root.
+* @return array - records: proto (TCP|UDP), process, pid, local (addr:port), remote (addr:port, '' for listeners),
+*	remote_address, state (Established|Listen|TimeWait|CloseWait|... or UDP)
+* @usage $conns=systemNetConnections();
+*/
+function systemNetConnections(){
+	$recs=array();
+	if(isWindows()){
+		$ps=<<<'PS'
+$p=@{}
+Get-Process | ForEach-Object { $p[[int]$_.Id]=$_.ProcessName }
+$rows=@()
+$rows+=@(Get-NetTCPConnection | ForEach-Object { [pscustomobject]@{ proto='TCP'; local_address=[string]$_.LocalAddress; local_port=[int]$_.LocalPort; remote_address=[string]$_.RemoteAddress; remote_port=[int]$_.RemotePort; state=[string]$_.State; pid=[int]$_.OwningProcess; process=[string]$p[[int]$_.OwningProcess] } })
+$rows+=@(Get-NetUDPEndpoint | ForEach-Object { [pscustomobject]@{ proto='UDP'; local_address=[string]$_.LocalAddress; local_port=[int]$_.LocalPort; remote_address=''; remote_port=0; state='UDP'; pid=[int]$_.OwningProcess; process=[string]$p[[int]$_.OwningProcess] } })
+$rows | ConvertTo-Json -Compress -Depth 3
+PS;
+		foreach(systemWinPs($ps) as $r){
+			$recs[]=$r;
+		}
+	}
+	else{
+		$out=cmdResults('ss -H -tunap');
+		if($out['rtncode'] > 0 && !strlen((string)$out['stdout'])){
+			$out=cmdResults('ss -tunap');
+		}
+		$states=array('ESTAB'=>'Established','LISTEN'=>'Listen','TIME-WAIT'=>'TimeWait','CLOSE-WAIT'=>'CloseWait','SYN-SENT'=>'SynSent','SYN-RECV'=>'SynReceived','FIN-WAIT-1'=>'FinWait1','FIN-WAIT-2'=>'FinWait2','LAST-ACK'=>'LastAck','CLOSING'=>'Closing','UNCONN'=>'UDP');
+		$splitaddr=function($a){
+			$i=strrpos($a,':');
+			if($i===false){return array($a,0);}
+			//drop the scope suffix ss prints on link-local/loopback addresses (127.0.0.53%lo)
+			return array(preg_replace('/%.*$/','',trim(substr($a,0,$i),'[]')),(int)substr($a,$i+1));
+		};
+		foreach(preg_split('/[\r\n]+/',(string)$out['stdout']) as $line){
+			$f=preg_split('/\s+/',trim($line),7);
+			if(count($f)<6 || !in_array($f[0],array('tcp','udp'))){continue;}
+			list($la,$lp)=$splitaddr($f[4]);
+			list($ra,$rp)=$splitaddr($f[5]);
+			$proc='';$pid=0;
+			if(isset($f[6]) && preg_match('/\(\("([^"]+)",pid=(\d+)/',$f[6],$m)){$proc=$m[1];$pid=(int)$m[2];}
+			$st=isset($states[$f[1]])?$states[$f[1]]:$f[1];
+			$recs[]=array('proto'=>strtoupper($f[0]),'local_address'=>$la,'local_port'=>$lp,'remote_address'=>($rp==0 || $ra=='*')?'':$ra,'remote_port'=>$rp,'state'=>$f[0]=='udp'?'UDP':$st,'pid'=>$pid,'process'=>$proc);
+		}
+	}
+	foreach($recs as $i=>$r){
+		$r['local']=$r['local_address'].':'.$r['local_port'];
+		$r['remote']=(strlen($r['remote_address']) && $r['remote_port']>0 && !in_array($r['remote_address'],array('0.0.0.0','::','*')))?$r['remote_address'].':'.$r['remote_port']:'';
+		if(!strlen($r['remote'])){$r['remote_address']='';}
+		$recs[$i]=$r;
+	}
+	return $recs;
+}
 function systemGetOSInfo(){
 	$space=array();
 	if(isWindows()){
 		//get cpu name
-		$out=cmdResults('wmic cpu get Name');
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$cpu=$lines[1];
+		$rows=systemWinCim('Win32_Processor',array('Name'));
+		$cpu=isset($rows[0]['name'])?trim($rows[0]['name']):'';
 		//model
-		$cmd='wmic computersystem get model,manufacturer /format:csv';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$fields=csvParseLine(strtolower(array_shift($lines)));
-		$model=array();
-		foreach($lines as $line){
-			$parts=csvParseLine($line);
-			foreach($fields as $i=>$field){
-				$model[$field]=$parts[$i];
-			}
-			break;
-		}
-		$cmd='wmic os get Caption,FreePhysicalMemory,FreeSpaceInPagingFiles,FreeVirtualMemory,InstallDate, LocalDateTime,OSArchitecture,RegisteredUser,TotalVirtualMemorySize,TotalVisibleMemorySize,Version /format:csv';
-		$out=cmdResults($cmd);
-		$lines=preg_split('/[\r\n]+/',$out['stdout']);
-		$fields=csvParseLine(strtolower(array_shift($lines)));
+		$rows=systemWinCim('Win32_ComputerSystem',array('Model','Manufacturer'));
+		$model=isset($rows[0])?$rows[0]:array('manufacturer'=>'','model'=>'');
+		$rows=systemWinCim('Win32_OperatingSystem',array(
+			'Caption','FreePhysicalMemory','FreeSpaceInPagingFiles','FreeVirtualMemory',
+			"@{n='installdate';e={\$_.InstallDate.ToString('yyyy-MM-dd HH:mm:ss')}}",
+			"@{n='localdatetime';e={\$_.LocalDateTime.ToString('yyyy-MM-dd HH:mm:ss')}}",
+			'OSArchitecture','RegisteredUser','TotalVirtualMemorySize','TotalVisibleMemorySize','Version','CSName'
+		));
 		$recs=array();
-		foreach($lines as $line){
-			$parts=csvParseLine($line);
-			$rec=array();
-			foreach($fields as $i=>$field){
-				$rec[$field]=$parts[$i];
-			}
-			//yyyymmddHHMMSS
-			$it=substr($rec['installdate'],0,12);
-			$lt=substr($rec['localdatetime'],0,12);
+		foreach($rows as $rec){
+			$cpuinfo=systemCpuInfo();
+			$extra=systemWinExtraInfo();
 			$xrec=array(
 				'processor'=>$cpu,
+				'cores_threads'=>$cpuinfo['cores'].' cores / '.$cpuinfo['threads'].' threads @ '.round($cpuinfo['mhz']/1000,2).' GHz',
+				'graphics'=>count($extra['gpus'])?implode(', ',$extra['gpus']):'n/a',
+				'bios'=>strlen($extra['bios'])?$extra['bios']:'n/a',
 				'os_name'=>$rec['caption'],
 				'os_version'=>$rec['version'],
 				'os_architecture'=>$rec['osarchitecture'],
-				'os_install_date'=>date('Y-m-d H:i a',strtotime($it)),
+				'os_install_date'=>date('Y-m-d g:i a',strtotime($rec['installdate'])),
 				'manufacturer'=>"{$model['manufacturer']} Model {$model['model']}",
 				'physical_memory'=>verboseSize($rec['totalvisiblememorysize']*1000),
 				'virtual_memory'=>verboseSize($rec['totalvirtualmemorysize']*1000),
-				'current_date'=>date('Y-m-d H:i a',strtotime($lt)),
-				'computer_name'=>$rec['node'],
+				'current_date'=>date('Y-m-d g:i a',strtotime($rec['localdatetime'])),
+				'computer_name'=>$rec['csname'],
 				'registered_user'=>$rec['registereduser']
 			);
 			foreach($xrec as $k=>$v){
 				$recs[]=array(
-					'name'=>ucwords(str_replace('_',' ',$k)),
+					'name'=>str_replace(array('Cores Threads','Bios'),array('Cores / Threads','BIOS'),preg_replace('/^Os /','OS ',ucwords(str_replace('_',' ',$k)))),
 					'value'=>$v
 				);
 			}
@@ -477,31 +848,42 @@ function systemGetProcessList(){
 		$fieldline=str_replace('user_name','user',$fieldline);
 	    $fields=csvParseLine($fieldline);
 		$recs=array();
-		$totals=array();
+		$totals=array('mem'=>0,'cpu'=>0);
 		$mem=systemGetMemory();
 		foreach($lines as $line){
+			if(!strlen(trim($line))){continue;}
 			$parts=csvParseLine($line);
 			$rec=array();
 			foreach($fields as $i=>$field){
-				$rec[$field]=$parts[$i];
+				$rec[$field]=isset($parts[$i])?$parts[$i]:'';
 			}
-			//mem_usage is given in k with commas
-			$rec['mem_usage']=str_replace(',','',$rec['mem_usage']);
-			$rec['mem_usage']=str_replace(' k','',$rec['mem_usage']);
+			//mem_usage is given in K with commas ("12,345 K", or "N/A") - keep digits only (PHP 8 warns on "12345 K")
+			$rec['mem_usage']=(int)preg_replace('/[^0-9]+/','',$rec['mem_usage']);
 			$rec['mem_usage']=$rec['mem_usage']*1000;
 			$totals['mem']+=$rec['mem_usage'];
 			//cpu_time is given in hh:mm:ss. Need to convert to %cpu.  (TotalProcessRuntime / CpuTime) / 100
-			$parts=preg_split('/\:/',$rec['cpu_time'],3);
-			$rec['cpu_time']=$parts[0]*3600+$parts[1]*60+$parts[2];
+			$parts=array_pad(preg_split('/\:/',$rec['cpu_time'],3),3,0);
+			$rec['cpu_time']=(int)$parts[0]*3600+(int)$parts[1]*60+(int)$parts[2];
 			$totals['cpu']+=$rec['cpu_time'];
 			ksort($rec);
 			$recs[]=$rec;
 		}
-		//calculate pcpu
+		//pcpu = CURRENT cpu as a share of the whole machine, from the performance counters. (tasklist only knows cumulative
+		//	cpu time since each process started, so a share of THAT made System Idle Process read 98% and the total ~100%.)
+		//	If the counters are unavailable fall back to the cumulative share.
+		$perf=systemWinProcessPerf();
 		foreach($recs as $i=>$rec){
-			$recs[$i]['pcpu']=round(($rec['cpu_time']/$totals['cpu'])*100,2);
+			$pid=(int)$rec['pid'];
+			if(count($perf)){
+				$recs[$i]['pcpu']=isset($perf[$pid])?$perf[$pid]['cpu']:0;
+				$recs[$i]['threads']=isset($perf[$pid])?$perf[$pid]['threads']:'';
+				$recs[$i]['handles']=isset($perf[$pid])?$perf[$pid]['handles']:'';
+			}
+			else{
+				$recs[$i]['pcpu']=$totals['cpu']>0?round(($rec['cpu_time']/$totals['cpu'])*100,2):0;
+			}
 			$recs[$i]['pcpu']=number_format($recs[$i]['pcpu'],2);
-			$recs[$i]['pmem']=round(($rec['mem_usage']/$mem['total'])*100,2);
+			$recs[$i]['pmem']=$mem['total']>0?round(($rec['mem_usage']/$mem['total'])*100,2):0;
 			$recs[$i]['pmem']=number_format($recs[$i]['pmem'],2);
 		}
 		return $recs;

@@ -14,7 +14,7 @@ if(!isset($ADMINPAGE['ajaxdiv'])){
 }
 
 // Validate tab parameter - whitelist only
-$valid_tabs = array('info', 'uptime', 'os', 'drives', 'memory', 'network', 'processes', 'diskstats');
+$valid_tabs = array('info', 'uptime', 'os', 'drives', 'memory', 'network', 'connections', 'processes', 'diskstats');
 
 // If tab is not set or invalid, go to default case (initial page load)
 if(!isset($_REQUEST['tab'])){
@@ -27,16 +27,23 @@ else{
 	$tab = ''; // Invalid tab - go to default
 }
 
+// Tab requests are AJAX partials loaded into #system_content. If a tab's code below throws, evalPHP prints the error
+// and abandons the rest of this controller - setView() never runs and the DEFAULT view (the whole System page, menu
+// and tabs) renders nested inside the tab div, duplicating ids so every tab breaks until a refresh.
+// Pre-select an empty 'list' view so a failing tab shows its error + an empty list instead.
+if(strlen($tab)){
+	$recs=array();
+	$listopts=array('tab'=>$tab);
+	setView('list',1);
+}
 switch($tab){
 	case 'info':
-		$info=getServerUptime();
+		// tiles + per-core chart say it all; the old since/since_timestamp/since_date/time/time_date dump was redundant
+		$cpuinfo=systemCpuInfo();
+		$cpuload=systemCpuLoad();
+		$tiles=systemUptimeTiles(systemUptimeInfo(),$cpuload,$cpuinfo);
+		$charts=systemUptimeCharts($cpuload);
 		$recs=array();
-		foreach($info as $k=>$v){
-			$recs[]=array(
-				'name'=>$k,
-				'value'=>$v
-			);
-		}
 		$listopts=array('tab'=>'info',);
 		setView('list',1);
 		return;
@@ -49,6 +56,7 @@ switch($tab){
 	break;
 	case 'os':
 		$recs=systemGetOSInfo();
+		$tiles=systemOSTiles($recs);
 		$listopts=array('tab'=>'os',);
 		setView('list',1);
 		return;
@@ -76,6 +84,8 @@ switch($tab){
 			'use%_class'=>'align-left w_nowrap',
 			'-results_eval'=>'systemGetDriveSpaceExtra'
 		);
+		$tiles=systemDriveTiles($recs);
+		$charts=systemDriveCharts($recs);
 		setView('list',1);
 		return;
 	break;
@@ -149,22 +159,50 @@ switch($tab){
 			);
 		}
 		$membreak=systemMemoryBreakdown($rec);
-		$tiles=systemMemoryTiles($membreak);
+		$tiles=array_merge(systemMemoryTiles($membreak),systemMemoryExtraTiles());
 		$charts=systemMemoryCharts($membreak);
+		$recs=array();	// the tiles + charts above say everything the one-row table did
 		setView('list',1);
 		return;
 	break;
 	case 'network':
-		$recs=systemGetNetworkAdapters();
+		// systemNetStats() samples the counters twice ~1s apart for the live rates, so this tab takes a few seconds
+		$nics=systemNetStats();
+		$recs=systemNetworkRows($nics);
+		$tiles=systemNetworkTiles($nics);
+		$charts=systemNetworkCharts($nics);
 		$listopts=array(
 			'tab'=>'network',
-			'speed_options'=>array(
-				'class'=>'align-right'
-			),
-			'mac_address_options'=>array(
-				'class'=>'align-right'
-			),
-			'enabled_checkmark'=>1,
+			'-listfields'=>'name,status,speed,ipv4,ipv6,gateway,dns,mac_address,rx_bytes,tx_bytes,rx_rate,tx_rate,errors,drops',
+			'name_class'=>'w_bold',
+			'status_class'=>'align-center',
+			'speed_options'=>array('class'=>'align-right w_nowrap','eval'=>"return systemFormatSpeed(%speed%);"),
+			'ipv4_options'=>array('displayname'=>'IPv4'),
+			'ipv6_options'=>array('displayname'=>'IPv6 (global)'),
+			'dns_options'=>array('displayname'=>'DNS'),
+			'mac_address_options'=>array('class'=>'w_nowrap'),
+			'rx_bytes_options'=>array('class'=>'align-right w_nowrap','displayname'=>'Received','eval'=>"return verboseSize(%rx_bytes%);"),
+			'tx_bytes_options'=>array('class'=>'align-right w_nowrap','displayname'=>'Sent','eval'=>"return verboseSize(%tx_bytes%);"),
+			'rx_rate_options'=>array('class'=>'align-right w_nowrap','displayname'=>'Down Now','eval'=>"return verboseSize(%rx_rate%).'/s';"),
+			'tx_rate_options'=>array('class'=>'align-right w_nowrap','displayname'=>'Up Now','eval'=>"return verboseSize(%tx_rate%).'/s';"),
+			'errors_options'=>array('class'=>'align-right'),
+			'drops_options'=>array('class'=>'align-right'),
+		);
+		setView('list',1);
+		return;
+	break;
+	case 'connections':
+		$conns=systemNetConnections();
+		$recs=systemConnectionRows($conns);
+		$tiles=systemConnectionTiles($conns);
+		$charts=systemConnectionCharts($conns);
+		$listopts=array(
+			'tab'=>'connections',
+			'-listfields'=>'proto,process,pid,local,remote,state',
+			'process_class'=>'w_bold',
+			'pid_class'=>'align-right',
+			'local_options'=>array('class'=>'w_nowrap'),
+			'remote_options'=>array('class'=>'w_nowrap'),
 		);
 		setView('list',1);
 		return;
@@ -190,6 +228,14 @@ switch($tab){
 			'-results_eval'=>'systemGetProcessListExtra'
 		);
 		$tiles=systemProcessTiles($recs);
+		$charts=systemProcessCharts($recs);
+		if(isWindows()){
+			// session_name/session_num/status/window_title are the same value on nearly every row
+			$listopts['-listfields']='command,pid,user,pcpu,mem_usage,threads,handles,cpu_time';
+			$listopts['threads_options']=array('class'=>'align-right');
+			$listopts['handles_options']=array('class'=>'align-right');
+			$listopts['cpu_time_options']=array('class'=>'align-right w_nowrap','displayname'=>'CPU Time','eval'=>"return verboseTime(%cpu_time%);");
+		}
 		if(!isWindows()){
 			// ps columns: vsz/rss are KB; stat is decoded to words in systemGetProcessListExtra
 			$listopts['rss_options']=array('class'=>'align-right w_nowrap','displayname'=>'Memory (RSS)','eval'=>"return verboseSize(%rss%*1024);");
@@ -202,29 +248,11 @@ switch($tab){
 	break;
 	case 'diskstats':
 		if(isWindows()){
-			// Windows: Use WMIC to get disk I/O statistics
-			$out=cmdResults('wmic diskdrive get DeviceID,Model,Size,Status,BytesPerSector /format:csv');
-			$lines=preg_split('/[\r\n]+/',$out['stdout']);
+			// Windows: Get-CimInstance Win32_DiskDrive (wmic.exe no longer ships with Windows 11 24H2+)
+			$cimrows=systemWinCim('Win32_DiskDrive',array('DeviceID','Model','Size','Status','BytesPerSector'));
 			$recs=array();
-			$headers=array();
-			foreach($lines as $idx=>$line){
-				$line=trim($line);
-				if(!strlen($line)){continue;}
-				$parts=preg_split('/\,/',$line);
-				if($idx==0){
-					// First line is headers
-					foreach($parts as $i=>$part){
-						$headers[$i]=strtolower(trim($part));
-					}
-					continue;
-				}
-				if(count($parts)<2){continue;}
-				$rec=array();
-				foreach($parts as $i=>$part){
-					if(isset($headers[$i])){
-						$rec[$headers[$i]]=trim($part);
-					}
-				}
+			foreach($cimrows as $rec){
+				foreach($rec as $rk=>$rv){$rec[$rk]=trim((string)$rv);}
 				if(isset($rec['deviceid']) && strlen($rec['deviceid'])){
 					// Get additional I/O stats using PowerShell
 					$deviceNum=preg_replace('/[^0-9]+/','',$rec['deviceid']);
@@ -296,6 +324,10 @@ switch($tab){
 		}
 		else{
 			list($recs,$tiles)=systemGetLinuxDiskStats();
+		}
+		if(isWindows()){
+			$tiles=systemDiskStatTiles($recs);
+			$charts=systemDiskStatCharts($recs);
 		}
 		$listopts=array(
 			'tab'=>'diskstats',
@@ -407,6 +439,8 @@ switch($tab){
 			'use%_class'=>'align-left w_nowrap',
 			'-results_eval'=>'systemGetDriveSpaceExtra'
 		);
+		$tiles=systemDriveTiles($recs);
+		$charts=systemDriveCharts($recs);
 		setView('default');
 	break;
 }

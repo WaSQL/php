@@ -40,6 +40,11 @@
 		</a>
 	</li>
 	<li>
+		<a href="#" onclick="return systemNavTab(this);" data-tab="connections">
+			Connections
+		</a>
+	</li>
+	<li>
 		<a href="#" onclick="return systemNavTab(this);" data-tab="processes">
 			Processes
 		</a>
@@ -51,7 +56,11 @@
 	</li>
 </ul>
 <div id="system_content">
-	<?=systemShowList($recs,$listopts);?>
+	<div style="padding:16px 12px 32px 12px;">
+		<?=systemStatTiles(isset($tiles)?$tiles:array());?>
+		<?=isset($charts)?$charts:'';?>
+		<?=systemShowList($recs,$listopts);?>
+	</div>
 </div>
 </view:default>
 
@@ -59,7 +68,7 @@
 <div style="padding:16px 12px 32px 12px;">
 	<?=systemStatTiles(isset($tiles)?$tiles:array());?>
 	<?=isset($charts)?$charts:'';?>
-	<?=systemShowList($recs,$listopts);?>
+	<?=(is_array($recs) && count($recs))?systemShowList($recs,$listopts):'';?>
 </div>
 </view:list>
 
