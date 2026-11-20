@@ -714,7 +714,7 @@ ENDOFJSON;
 	$response = curl_exec($handle);
 	//echo printValue($response);
 	$responseDecoded = json_decode($response, true);
-	curl_close($handle);
+	if(PHP_VERSION_ID < 80000){curl_close($handle);}
 	if(isset($responseDecoded['data']['translations'][0]['translatedText'])){
 		commonLogMessage('translate',"translateGoogle - returned {$responseDecoded['data']['translations'][0]['translatedText']}");
 		return $responseDecoded['data']['translations'][0]['translatedText'];
