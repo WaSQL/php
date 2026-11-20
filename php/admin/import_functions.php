@@ -200,7 +200,7 @@ function importProcessAPPS($params){
 function importBuildFormField($name){
 	global $CONFIG;
 	switch(strtolower($name)){
-		case 'file';
+		case 'file':
 			$params=array(
 				'accept'=>'.xml,.csv',
 				'path'=>'wasql_temp_path',
