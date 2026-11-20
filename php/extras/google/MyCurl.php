@@ -51,7 +51,7 @@ class MyCurl
 
   function destroy()
   {
-    return curl_close($this->fSocket);
+    return if(PHP_VERSION_ID < 80000){curl_close($this->fSocket);}
   }
 
   function head($url)
