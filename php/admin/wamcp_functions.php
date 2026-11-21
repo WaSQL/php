@@ -998,16 +998,28 @@ function wamcpToolAddPage($db_id, $name, $template_id = 1, $permalink = '') {
         }
         $newId = reset($check[0]);
     } else {
-        $newId = dbAddRecord($db_id, array_merge($stub, array(
-            '-table'    => '_pages',
-            'name'      => $name,
-            'title'     => $name,
-            '_template' => $template_id,
-            'permalink' => $permalink,
-        )));
-        if (!isNum($newId)) {
-            return wamcpToolError(is_string($newId) ? $newId : 'Insert failed.');
+        // NOTE: do NOT use dbAddRecord() here — it routes to core addDBRecord(), which
+        // writes through the *default* connection and ignores the named db_id for
+        // mysqli entries (rows landed in the wrong database). dbExecuteSQL() goes
+        // through mysqlExecuteSQL() which honors the named connection.
+        $sql = "INSERT INTO _pages (name, title, _template, permalink, body, controller, functions, css, js, _cuser, _cdate) VALUES ("
+             . wamcpQ($name) . ", " . wamcpQ($name) . ", {$template_id}, " . wamcpQ($permalink) . ", "
+             . wamcpQ($stub['body']) . ", " . wamcpQ($stub['controller']) . ", "
+             . wamcpQ($stub['functions']) . ", " . wamcpQ($stub['css']) . ", " . wamcpQ($stub['js'])
+             . ", 0, CURRENT_TIMESTAMP)";
+        $res = dbExecuteSQL($db_id, $sql);
+        if (is_string($res) && strlen($res)) {
+            return wamcpToolError($res);
         }
+        try {
+            $check = wamcpQueryRows($db_id, 'SELECT _id FROM _pages WHERE name = ' . wamcpQ($name));
+        } catch (Exception $e) {
+            return wamcpToolError($e->getMessage());
+        }
+        if (!is_array($check) || empty($check)) {
+            return wamcpToolError("Insert did not appear to succeed — no _pages record found for '{$name}' afterward.");
+        }
+        $newId = reset($check[0]);
     }
 
     $permalinkNote = $permalink !== '' ? ", permalink '{$permalink}'" : '';
