@@ -38,9 +38,6 @@ After the startup command, if `D:\wasql\{alias}.md` exists (e.g. `wired.md` for 
 
 **"review wasql bugs"** → a "work on wasql" session. Run `php workon.php wasql bugs --browse` (or the `.py` equivalent) to launch localhost at `/bugs`, and in the same turn review the open bugs (`curl http://localhost/bugs/json` is the cheapest read) so you're ready to start fixing them. Don't screenshot unless asked — the browser launch is the act.
 
-## When you finish a task
-Navigate the debug browser to `/php/admin.php?_menu=synchronize` once the task is done (edited, and QA'd or explicitly skipped per the developer's answer to "Ask before doing post-change QA"). This is a sanctioned, deliberate exception to "never use the backend admin UI" — not a general invitation to browse it.
-
 ## Deeper reference
 - **`workon.md`** — every flag (`--no-watcher`, `--filter`, `--reshoot`, `--width`, `--port`, Firefox's `--ff-*` flags, …), the full browser-choice precedence chain, gotchas (wamcp db_id ≠ alias, tab-memory behavior, the `tail`/`head` hang fix, missing-permission troubleshooting), and the manual fallback if the script itself fails.
 - **`postedit.md`** — the PostEdit edit loop once a session has started (mirror files, auto-sync, refresh, screenshot).

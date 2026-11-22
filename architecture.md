@@ -35,7 +35,7 @@ Shortcode islands let a page mix languages beyond PHP within the same field — 
 
 ## Development Workflow — PostEdit
 
-Local files synced to DB records for editing with normal tools. Full mechanics, file-naming convention, config format, and the edit loop → **`postedit.md`** (authoritative — don't duplicate here). The **`?_menu=synchronize`** admin action promotes changes between environments (see `workon.md`).
+Local files synced to DB records for editing with normal tools. Full mechanics, file-naming convention, config format, and the edit loop → **`postedit.md`** (authoritative — don't duplicate here).
 
 ## File Structure
 

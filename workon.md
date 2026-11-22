@@ -9,14 +9,7 @@ python workon.py {alias|wasql} [page]
 ```
 If both `php` and `python` are on PATH, prefer `workon.php` (it's the original; `workon.py` is a port kept in sync with it) unless the user's environment favors Python. **`workon.php --help` / `workon.py --help` is the authoritative option/capability list** for either — it documents every flag (`--no-watcher`, `--filter=a,b`, `--no-filter`, `--browse`/`--open`, `--shot`, `--width=N`, `--port=N`, `--chrome=PATH`, `--reshoot=URL`, `--no-chrome`/`--no-browser`, `--inv-max=N`, `--no-inventory`, `--log=PATH`, `--json`, plus the Firefox flags below) and is kept current in the script itself — this file explains *why* and *when*, `--help` explains *what*.
 
-**⚠️ Whenever you change `workon.php` or `workon.py`, make the same change in the other.** They must stay behaviorally identical (flags, defaults, output text, exit codes, temp-file names) — a fix or new flag added to only one silently breaks parity and whichever script the next session picks depends on the machine, not on which one you happened to edit. Port the change immediately, in the same turn, not as a follow-up.
-
 ## What it does
-
-```
-php workon.php {alias|wasql} [page]
-python workon.py {alias|wasql} [page]
-```
 
 It resolves `{alias}` → host from `postedit/postedit.xml` (or handles the local `wasql` case: `http://localhost/php/admin.php`, no watcher), ensures the PostEdit watcher for the alias is running (PostEdit sites only; it warns about the destructive startup re-sync) **filtered to the named page** — `work on dexpdq sapcc` starts `postedit.php dexpdq sapcc --ignore-editor`, so only records whose name contains `sapcc` are synced/watched (fast startup, no unrelated files; a watcher that's already running is reported, never restarted; it goes in a **new tab of the current Windows Terminal window**, and when it can't, the output says why), then prints the mirror inventory. Use `--no-filter` when you also need the page's `_templates` record or other pages. **`--ignore-editor` is always appended** to a workon-launched watcher — it's the flag `postedit.php` uses to skip running the `<editor>` command from `postedit.xml` after every sync, so a workon session never pops Sublime (or whatever editor is configured) unattended; it's stripped back out before comparing filters against an already-running watcher.
 
@@ -42,6 +35,10 @@ So Firefox is driven through a **resident broker** (`node`, written to `temp/was
 
 On any "work on {alias} [page]" phrase, after running the startup command, check whether **`D:\wasql\{alias}.md`** exists (repo root, same folder as `workon.php`; `{alias}` exactly as typed, case-insensitive match is fine). If it does, **Read it in the same turn** — it's that site's standing briefing (e.g. `work on wired` → `wired.md`, `work on clickbooks` → `clickbooks.md`), and follow any "standing check" it defines. No need for the developer to say "read {alias}.md". The file is **in addition to** the normal startup, never instead of it: `{alias}` is still treated as a valid site/alias (resolved against `postedit.xml`, workon command run as usual). The `.md` is where the developer keeps extra site-specific notes, so when they say "save that about {alias}" (or you learn something durable about the site), append it to `{alias}.md` — create the file if it doesn't exist. If there is no such file, just continue normally; don't go looking for near-matches. Doesn't apply to `work on wasql` unless a `wasql.md` happens to exist (it's a plain file check like any other alias).
 
+## Site coding standards
+
+Coding standards for building/changing sites (CSS, MVC controllers, function naming, email/SMS queues, SEO/AIO) live in **`standards.md`** — read it before writing site code.
+
 ## Gotchas
 
 - **The wamcp db id is often NOT the postedit alias** (`dexpdq` → **`dexpdq_mysql`**). Call the wamcp `databases` tool to find the matching id, then pass it as `db_id` on every wamcp call — there's no session default to set once.
@@ -52,10 +49,6 @@ On any "work on {alias} [page]" phrase, after running the startup command, check
 - **It remembers its browser tab.** The confirmed tab/context id is saved per alias (`%TEMP%/wasql-workon-tab-{alias}.json`), so a later run for the same alias reliably comes back to the same tab even when other "work on" sessions have other tabs open in the same shared debug instance — screenshots target that exact id instead of guessing "the first page tab" in the whole instance.
 - **`--reshoot=URL`** is the lightweight follow-up for "did my edit work" checks later in the same session — it reuses the tab already confirmed this session and just re-navigates + screenshots, skipping the watcher/inventory steps. Prefer it over hand-rolling a separate screenshot script. **`--no-chrome`/`--no-browser`** is now a pure *status* check — it also skips the mirror inventory, leaving just "is the watcher still alive?" (the browser itself is skipped by default anyway, so you only need this flag when you want the inventory suppressed too).
 - **Firefox only ever gets ONE BiDi session per process.** If `--ff-shutdown` reports it can't reach the broker, it's already stopped (not an error to chase). If a broker crashed uncleanly and left Firefox wedged (a fresh `session.new` fails with "Maximum number of active sessions"), the only fix is killing the Firefox debug process and letting the next `work on ... --browser=firefox` relaunch it fresh — there's no API-level recovery, by design of the protocol, not a bug in these scripts.
-
-## When you finish a task
-
-**Navigate the debug browser to `/php/admin.php?_menu=synchronize`** once the task itself is done (edits made, and QA'd or explicitly skipped per the developer's answer to CLAUDE.md's "Ask before doing post-change QA"). This is the second sanctioned exception to CLAUDE.md's "never use the backend admin UI" rule (the first being `?_menu=clearmin`) — it's a deliberate end-of-task step, not general admin-UI browsing, so it doesn't reopen that door for anything else.
 
 ## Manual fallback (only if the script fails)
 
