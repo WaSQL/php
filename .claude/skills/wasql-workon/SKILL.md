@@ -9,6 +9,7 @@ description: Starts a WaSQL development session with the one-command workon.php/
 Recognizing a "work on ..." (or "review wasql bugs") phrase means *doing* the startup command in the SAME turn — before asking the user what to work on. Do not reply with only a description of the mode ("I'm in X mode, here's how it works...") — that wastes a round-trip. No browser launch at startup (see below), so there's nothing to screenshot yet either.
 
 ## The command
+**Never pipe it into `head`/`tail`/`Select-Object -First`** — a truncating pipe can kill the watcher, and unsynced mirror edits are then overwritten by the next resync. Redirect to a file (`> /tmp/workon.log 2>&1`, run in background if you like) and read the file instead.
 ```
 php workon.php {alias|wasql} [page]
 python workon.py {alias|wasql} [page]
