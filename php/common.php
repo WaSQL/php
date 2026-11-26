@@ -22554,6 +22554,30 @@ function postEditCheck($tables=array()){
     $xml .= "</xmlroot>\n";
     return $xml;
 	}
+//---------- begin function commonHttpBodyIsBinary--------------------
+/**
+* @describe decides whether an HTTP response body is binary (must be kept byte-for-byte) or text.
+*	Textual content types (text/*, json, xml incl. svg, javascript, form data, csv, yaml, html) are text.
+*	Image/audio/video/font and known binary application types (pdf, zip, gzip, icons, office vnd.*, ...)
+*	are binary. Anything else - no content type, application/octet-stream, unknown types - is sniffed:
+*	a NUL byte anywhere in the body means binary (text never contains NUL; nearly every binary format does).
+* @param body string - the response body
+* @param content_type string|array - the Content-Type header value (an array of repeated headers uses the last)
+* @return boolean - true if binary
+* @usage if(!commonHttpBodyIsBinary($body,$headers['content-type'])){$body=trim($body);}
+*/
+function commonHttpBodyIsBinary($body,$content_type=''){
+	if(is_array($content_type)){$content_type=end($content_type);}
+	$parts=explode(';',(string)$content_type);
+	$mime=strtolower(trim($parts[0]));
+	if(strlen($mime)){
+		if(preg_match('#^text/#',$mime)){return false;}
+		if(preg_match('#(json|xml|javascript|ecmascript|x-www-form-urlencoded|csv|yaml|graphql|html)#',$mime)){return false;}
+		if(preg_match('#^(image|audio|video|font)/#',$mime)){return true;}
+		if(preg_match('#^application/(pdf|zip|gzip|x-gzip|x-tar|x-7z-compressed|x-rar-compressed|x-bzip|x-bzip2|x-icon|java-archive|wasm|protobuf|x-protobuf|msgpack|x-msgpack|vnd\.)#',$mime)){return true;}
+	}
+	return strpos((string)$body,"\0")!==false;
+}
 //---------- begin function postURL--------------------
 /**
 * @describe HTML URL POST using curl and return the result in an array
@@ -22742,15 +22766,28 @@ function postURL($url,$params=array()) {
 		$rtn['error'] = curl_error($process);
 		}
 	else{
-		//break it up into header and body
-		$parts=preg_split('/\r\n\r\n/',trim($return),2);
-		$rtn['header']=trim($parts[0]);
-		$rtn['body']=trim($parts[1]??'');
-		//check for redirect cases with two headers
-		if(preg_match('/^HTTP\//is',$rtn['body'])){
-			$parts=preg_split('/\r\n\r\n/',trim($rtn['body']),2);
+		//break it up into header and body.
+		//Split at curl's own header_size rather than on the first blank line of a trim()med
+		//response: trim() stripped NUL/whitespace bytes off the ends of binary bodies (every .ico
+		//starts with 00 00) - bug #95. header_size covers ALL header blocks received (-follow
+		//redirects, 100-continue, proxy CONNECT), so the final response's block is the last one.
+		$header_size=isset($rtn['curl_info']['header_size'])?(int)$rtn['curl_info']['header_size']:0;
+		if($header_size > 0 && $header_size <= strlen((string)$return)){
+			$header_blocks=preg_split('/\r?\n\r?\n/',trim(substr($return,0,$header_size)));
+			$rtn['header']=trim(end($header_blocks));
+			$rtn['body']=(string)substr($return,$header_size);
+		}
+		else{
+			//fallback (no header_size reported): the original blank-line split, body left untrimmed here
+			$parts=preg_split('/\r\n\r\n/',ltrim((string)$return),2);
 			$rtn['header']=trim($parts[0]);
-			$rtn['body']=trim($parts[1]??'');
+			$rtn['body']=$parts[1]??'';
+			//check for redirect cases with two headers
+			if(preg_match('/^HTTP\//is',ltrim($rtn['body']))){
+				$parts=preg_split('/\r\n\r\n/',ltrim($rtn['body']),2);
+				$rtn['header']=trim($parts[0]);
+				$rtn['body']=$parts[1]??'';
+			}
 		}
 		//parse the header into an array
 		$parts=preg_split('/[\r\n]+/',trim($rtn['header']));
@@ -22764,6 +22801,13 @@ function postURL($url,$params=array()) {
         foreach($headers as $k=>$v){
         	if(count($v)==1){$rtn['headers'][$k]=$v[0];}
         	else{$rtn['headers'][$k]=$v;}
+		}
+		//text bodies are trim()med exactly as before (backward compatible); binary bodies are
+		//returned byte-for-byte. Gzip-encoded bodies are decoded below from the raw bytes and,
+		//as before, are not trimmed.
+		$is_gzip=isset($rtn['headers']['content-encoding']) && $rtn['headers']['content-encoding']=='gzip';
+		if(!$is_gzip && !commonHttpBodyIsBinary($rtn['body'],$rtn['headers']['content-type']??'')){
+			$rtn['body']=trim($rtn['body']);
 		}
     }
     //close the handle
