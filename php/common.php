@@ -20288,7 +20288,8 @@ function isSpamBot($agent='',$return_name=0){
 * @usage if(isSpider()){...}
 */
 function isSpider($agent='',$return_name=0){
-	$agent = strtolower($agent ? $agent : $_SERVER['HTTP_USER_AGENT']);
+	$original_agent = trim((string)($agent ? $agent : ($_SERVER['HTTP_USER_AGENT'] ?? '')));
+	$agent = strtolower($original_agent);
 	if(!$agent){return false;}
 	$bots_contains=array(
 		'abachobot','abcdatos_botlink','acoon robot','adsbot-google','aesop_com_spiderman','ah-ha.com crawler','antibot','architextspider','ask jeeves/teoma',
@@ -20325,7 +20326,9 @@ function isSpider($agent='',$return_name=0){
 		'flipboardproxy','skypeuripreview','vkshare','qwantify','w3c_validator',
 		//--- generic automation / scraping clients ---
 		'python-requests','python-urllib','scrapy','go-http-client','okhttp','node-fetch','axios','headlesschrome',
-		'phantomjs','libwww-perl','apache-httpclient','guzzlehttp','zgrab','masscan'
+		'phantomjs','libwww-perl','apache-httpclient','guzzlehttp','zgrab','masscan',
+		//--- generic scanner / research / status-check tokens (bug #94) ---
+		'fingerprint','research','scanner','finder/','-finder','status-check'
 		);
 	$bots_beginswith=array(
 		'BlackWidow','Bot mailto:craftbot@yahoo.com',
@@ -20394,6 +20397,68 @@ function isSpider($agent='',$return_name=0){
 	foreach($bots_beginswith as $bot){
 		if(stringBeginsWith($agent,$bot)){
         	if($return_name==1){return $bot;}
+			return true;
+		}
+	}
+	//--- heuristic 1 (bug #94): 'Mozilla/5.0 (compatible; X)' with no real browser engine is a bot.
+	//    Only old IE (MSIE/Trident) and Konqueror legitimately use the compatible token.
+	if(preg_match('~^mozilla/\d+\.\d+ \(compatible;\s*([^;)]+)~i',$original_agent,$m)
+		&& !preg_match('~msie|trident|konqueror~i',$agent)){
+		if($return_name==1){return trim($m[1]);}
+		return true;
+	}
+	//--- heuristic 2 (bug #94): a UA containing a URL or a domain name is a bot.
+	//    Real browser tokens are Name/version (Chrome/131.0, Safari/604.1, Build/TQ3A.230805.001);
+	//    letters are required after the last dot, so version numbers never match.
+	//    Reverse-DNS app package ids (com.google.android.gm) are skipped - some in-app webviews include them.
+	if(preg_match('~https?://[^\s;)]+~i',$original_agent,$m)){
+		if($return_name==1){return $m[0];}
+		return true;
+	}
+	if(preg_match_all('~(?<![a-z0-9.-])[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?=[/;)\s]|$)~i',$original_agent,$matches)){
+		foreach($matches[0] as $domain){
+			if(preg_match('~^(?:com|org|net|io|android|google|apple|microsoft)\.~i',$domain)){continue;}
+			if($return_name==1){return $domain;}
+			return true;
+		}
+	}
+	return false;
+}
+//---------- begin function isReferrerSpam ----------
+/**
+* @describe returns true if the referrer is a known referrer-spam domain. The referrer IS the advertisement for these
+*	sites, so hits carrying them should be treated as bots in traffic stats. Kept separate from isSpider(), which stays agent-only.
+*	Sites can extend the built-in list without a core edit via config.xml: referrer_spam="a.com,b.net"
+* @param ref string
+*	optional referrer URL or host. If not provided it will use $_SERVER['HTTP_REFERER']
+* @param return_name boolean
+*	if true will return the matched spam domain instead of boolean
+* @return boolean/string
+*	true (or the matched domain) if the referrer host is, or is a subdomain of, a listed spam domain
+* @usage $bot = (isSpider($ua) || isReferrerSpam($ref)) ? 1 : 0;
+*/
+function isReferrerSpam($ref='',$return_name=0){
+	global $CONFIG;
+	$ref = trim((string)($ref ? $ref : ($_SERVER['HTTP_REFERER'] ?? '')));
+	if(!strlen($ref)){return false;}
+	if(!preg_match('~^[a-z][a-z0-9+.-]*://~i',$ref)){$ref='http://'.$ref;}
+	$host = rtrim(strtolower((string)parse_url($ref,PHP_URL_HOST)),'.');
+	if(!strlen($host)){return false;}
+	$spam_domains = array(
+		'aimanhunt.online','openarticle.in',
+		'semalt.com','buttons-for-website.com','buttons-for-your-website.com','darodar.com','best-seo-offer.com',
+		'free-share-buttons.com','get-free-traffic-now.com','ilovevitaly.com','priceg.com','hulfingtonpost.com',
+		'social-buttons.com','trafficmonetize.org','webmonetizer.net','simple-share-buttons.com','event-tracking.com'
+	);
+	if(!empty($CONFIG['referrer_spam'])){
+		foreach(preg_split('/[\s,;]+/',strtolower((string)$CONFIG['referrer_spam'])) as $domain){
+			$domain = trim($domain,". \t");
+			if(strlen($domain)){$spam_domains[]=$domain;}
+		}
+	}
+	foreach($spam_domains as $domain){
+		if($host === $domain || stringEndsWith($host,'.'.$domain)){
+			if($return_name==1){return $domain;}
 			return true;
 		}
 	}
