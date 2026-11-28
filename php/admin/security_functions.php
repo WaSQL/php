@@ -74,7 +74,7 @@ function securityPatterns(){
 			truncatewords preg_quote utf8_decode utf8_encode mb_convert_encoding iconv
 			getfileextension pathinfo basename'),
 		'sql_strong'=>'~\bselect\b[\s\S]+?\bfrom\b|\bupdate\s+[`\w.]+\s+set\b|\binsert\s+(?:ignore\s+)?into\b|\bdelete\s+from\b|\breplace\s+into\b|\btruncate\s+(?:table\s+)?[`\w]~i',
-		'sql_weak'=>'~\b(?:where|and|or|having|on)\s+\(?[`\w.()]+\s*(?:=|<>|!=|<=|>=|<|>|\blike\b|\bin\s*\(|\bis\b|\bbetween\b|\bregexp\b)|\border\s+by\b|\bgroup\s+by\b|\blimit\s+[\d{$]|[\w}\]`\'"]\s*(?:=|<>|!=)\s*\'\{?\$|\blike\s*\'%?\{?\$~i',
+		'sql_weak'=>'~\b(?:where|and|or|having|on)\s+\(?[`\w.()]+\s*(?:=|<>|!=|<=|>=|<|>|\blike\b|\bin\s*\(|\bis\b|\bbetween\b|\bregexp\b)|\border\s+by\b|\bgroup\s+by\b|\blimit\s+[\d{$]|[\w}\]`\'"]\s*(?:=|<>|!=|<=|>=|<|>)\s*\'%?\{?\$|\blike\s*\'%?\{?\$~i',
 		'sql_colassign'=>'~^\s*\(?\s*[`\w.]+\s*(?:=|<>|!=|\blike\b|\bin\s*\()\s*\'?%?$~i',
 		'html_like'=>'~<[a-zA-Z/!]|\b(?:href|src|value|onclick|style|class)\s*=~i',
 		'sql_keys'=>array('-where'=>1,'-filter'=>1,'-order'=>1,'-query'=>1,'-fields'=>1,'-group'=>1,'-having'=>1,'-limit'=>1,'-offset'=>1,'-search'=>1),
@@ -457,7 +457,7 @@ function securityScanNewPage($record,$files){
 	$pg=array('record'=>$record,'files'=>array(),'stmts'=>array(),'funcs'=>array(),'guarded'=>array(),
 		'taint'=>array(),'mixed'=>array(),'weak'=>array(),'findings'=>array(),
 		'cleaned'=>array('all'=>array(),'sql'=>array(),'html'=>array(),'mail'=>array(),'path'=>array()),'mailpage'=>false,
-		'globals'=>array(),'cur'=>'','firm'=>array(),'suppressed'=>0,'keyonly'=>array(),'srcguarded'=>array(),'hasauth'=>false,'nonhtml'=>false);
+		'globals'=>array(),'cur'=>'','firm'=>array(),'suppressed'=>0,'keyonly'=>array(),'srcguarded'=>array(),'hasauth'=>false,'nonhtml'=>false,'nonhtmlranges'=>array());
 	$raw=array();
 	foreach($files as $fi=>$f){
 		$pg['files'][$fi]=$f;
@@ -530,7 +530,48 @@ function securityScanNewPage($record,$files){
 		foreach($st['segs'] as $sg){$txt.=$sg[0]=='code'?$sg[1]:"'".$sg[1]."'";}
 		if(preg_match($p['nonhtml'],$txt)){$pg['nonhtml']=true;break;}
 	}
+	securityScanFindNonHtmlViews($pg);
 	return $pg;
+}
+
+//---------- begin function securityScanFindNonHtmlViews
+/**
+* @describe WaSQL routes a request to a view with setView(). When a controller case block sends a
+*	text/plain / JSON / CSV Content-Type and selects view X, text echoed inside <view:X> is not run as
+*	HTML. Records the byte ranges of those views (per file) in $pg['nonhtmlranges'].
+* @return void
+* @usage securityScanFindNonHtmlViews($pg);
+*/
+function securityScanFindNonHtmlViews(&$pg){
+	$p=securityPatterns();
+	$views=array();
+	$block=array('header'=>false,'views'=>array());
+	$flush=function() use (&$block,&$views){
+		if($block['header']){foreach($block['views'] as $v){$views[$v]=1;}}
+		$block=array('header'=>false,'views'=>array());
+	};
+	foreach($pg['stmts'] as $st){
+		if($st['echo'] || $st['scope']!==''){continue;}
+		$txt='';
+		foreach($st['segs'] as $sg){$txt.=$sg[0]=='code'?$sg[1]:"'".$sg[1]."'";}
+		//each case/default label starts a new block
+		if(preg_match('~^\s*(?:case|default)\b~i',$txt)){$flush();}
+		if(preg_match($p['nonhtml'],$txt)){$block['header']=true;}
+		if(preg_match_all('~\bsetView\s*\(\s*[\'"]([\w\-]+)[\'"]~i',$txt,$vm)){
+			foreach($vm[1] as $v){$block['views'][]=strtolower($v);}
+		}
+	}
+	$flush();
+	if(!count($views)){return;}
+	foreach($pg['files'] as $fi=>$f){
+		if(stripos($f['text'],'<view:')===false){continue;}
+		if(!preg_match_all('~<view:([\w\-]+)>.*?</view:\1>~si',$f['text'],$ms,PREG_SET_ORDER|PREG_OFFSET_CAPTURE)){continue;}
+		foreach($ms as $m){
+			if(isset($views[strtolower($m[1][0])])){
+				$pg['nonhtmlranges'][$fi][]=array($m[0][1],$m[0][1]+strlen($m[0][0]));
+			}
+		}
+	}
 }
 
 //---------- begin function securityScanLine
@@ -1326,7 +1367,11 @@ function securityScanSinks(&$pg,$st){
 	if(!is_null($hrange)){
 		foreach(securityScanOccurrences($pg,$segs,'html',true,$hrange) as $o){
 			$direct=$o[2]=='direct';
-			if($pg['nonhtml'] && !strlen($o[4])){$o[4]='this page sends a text/plain or JSON Content-Type, so echoed text is not run as HTML';}
+			$plain=$pg['nonhtml'];
+			if(!$plain && isset($pg['nonhtmlranges'][$fi])){
+				foreach($pg['nonhtmlranges'][$fi] as $rg){if($o[0]>=$rg[0] && $o[0]<$rg[1]){$plain=true;break;}}
+			}
+			if($plain && !strlen($o[4])){$o[4]='this view is sent with a text/plain or JSON Content-Type, so echoed text is not run as HTML';}
 			securityScanAdd($pg,securityScanSeverity($direct?'high':'medium',$o[3],$o[4],$direct),'xss',$fi,$o[0],$o[1],$o[2],$o[4]);
 		}
 	}
