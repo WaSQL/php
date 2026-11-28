@@ -89,7 +89,7 @@ function securityPatterns(){
 			//allow-list rejection: if(!isset($voices[$lang])){return;} (a plain isset() is just a key lookup)
 			'~!\s*isset\s*\(\s*\$\w+(?:\[[^\]]*\])*\s*\[\s*\$([A-Za-z_]\w*)\s*\]\s*\)~i',
 		),
-		'exec'=>'~(?<![$\w>:])(?:eval|evalPHP|system|exec|shell_exec|passthru|popen|proc_open|unserialize|assert|create_function|file_put_contents|file_get_contents|fopen|readfile|unlink|move_uploaded_file|copy|rename|extract|parse_str|setFileContents|getFileContents|cmdResults|cmdResults2|streamCmdResults|evalPythonCode)\s*\(|(?<![$\w>:])(?:include|include_once|require|require_once)\b~i',
+		'exec'=>'~(?<![$\w>:])(?:eval|evalPHP|system|exec|shell_exec|passthru|popen|proc_open|unserialize|assert|create_function|file_put_contents|file_get_contents|fopen|readfile|unlink|move_uploaded_file|copy|rename|extract|parse_str|setFileContents|getFileContents|cmdResults|cmdResults2|streamCmdResults|evalPythonCode|getCSVRecords|getCSVFileContents|getCSVSchema|processCSVLines|processFileLines|getEncodedFileContents|getFileContentsPartial|headFile|tailFile|readXML|xml2Arrays|exportFile2Array|fopen_utf8|pushFile|includeFile)\s*\(|(?<![$\w>:])(?:include|include_once|require|require_once)\b~i',
 		'include'=>'~(?<![$\w>:])(?:includePage|loadDBFunctions|includeDBOnce)\s*\(~i',
 		'header'=>'~(?<![$\w>:])header\s*\(~i',
 		'sql_exec_call'=>'~\b(?:executeSQL|dbExecuteSQL|dbQueryResults|dbGetRecords?|getDBRecords?|databaseQuery|mysqli_query|query)\s*\(~i',
@@ -123,7 +123,15 @@ function securityPatterns(){
 		//file functions whose danger is the path argument(s) only: name => allowed argument indexes
 		'path_args'=>array('file_put_contents'=>array(0),'setfilecontents'=>array(0),'file_get_contents'=>array(0),
 			'getfilecontents'=>array(0),'fopen'=>array(0),'readfile'=>array(0),'unlink'=>array(0),
-			'move_uploaded_file'=>array(1),'copy'=>array(0,1),'rename'=>array(0,1)),
+			'move_uploaded_file'=>array(1),'copy'=>array(0,1),'rename'=>array(0,1),
+			'getcsvrecords'=>array(0),'getcsvfilecontents'=>array(0),'getcsvschema'=>array(0),'processcsvlines'=>array(0),
+			'processfilelines'=>array(0),'getencodedfilecontents'=>array(0),'getfilecontentspartial'=>array(0),
+			'headfile'=>array(0),'tailfile'=>array(0),'readxml'=>array(0),'xml2arrays'=>array(0),'exportfile2array'=>array(0),
+			'fopen_utf8'=>array(0),'pushfile'=>array(0),'includefile'=>array(0)),
+		//WaSQL upload keys: core sets {name}_abspath etc. only after a real upload, but a request can post them itself
+		'upload_key'=>'~\[\s*[\'"]?\w+_(?:abspath|path|webpath|tmp_name)[\'"]?\s*\]~i',
+		//pages that declare a non-HTML response can't run script from echoed text
+		'nonhtml'=>'~\bheader\s*\(\s*[\'"]\s*Content-?Type\s*:\s*(?:text/plain|application/json|text/csv)~i',
 		'common_san_names'=>'~^(?:'.$common.')$~i',
 		//$_FILES keys PHP fills in itself (only name/type/full_path come from the client)
 		'files_safe'=>'~^(?:\s*\[[^\]]*\])?\s*\[\s*[\'"](?:tmp_name|error|size)[\'"]~',
@@ -204,6 +212,74 @@ function securityScanTokenize($code,$base){
 	}
 	if($n>$cs){$segs[]=array('code',substr($code,$cs),$base+$cs);}
 	return $segs;
+}
+
+//---------- begin function securityScanIslands
+/**
+* @describe the PHP blocks in a field: list of array(tag, body start, body end) where tag is 'php',
+*	'=' (short echo) or ''. A block ends at the first ?> that is in code - not inside a quoted string,
+*	heredoc or block comment (a // or # comment does end at ?>, as in PHP). A regex split would stop at
+*	'<?xml ... ?>' inside a string and hide everything after it.
+* @param text string
+* @return array
+* @usage foreach(securityScanIslands($text) as $isl){...}
+*/
+function securityScanIslands($text){
+	$p=securityPatterns();
+	$out=array();
+	$n=strlen($text);
+	$pos=0;
+	while($pos<$n && ($o=strpos($text,'<?',$pos))!==false){
+		if(strtolower(substr($text,$o,5))=='<?php'){$tag='php';$start=$o+5;}
+		elseif(substr($text,$o+2,1)=='='){$tag='=';$start=$o+3;}
+		elseif(strtolower(substr($text,$o,5))=='<?xml'){$pos=$o+5;continue;}
+		else{$tag='';$start=$o+2;}
+		$i=$start;
+		$end=$n;
+		while($i<$n){
+			if(!preg_match('~[\'"`#/<?]~',$text,$m,PREG_OFFSET_CAPTURE,$i)){break;}
+			$i=$m[0][1];
+			$c=$text[$i];
+			if($c=='?' ){
+				if(substr($text,$i,2)=='?>'){$end=$i;break;}
+				$i++;
+				continue;
+			}
+			if($c=="'" || $c=='"' || $c=='`'){
+				$j=$i+1;
+				while($j<$n){
+					if($text[$j]=='\\'){$j+=2;continue;}
+					if($text[$j]==$c){break;}
+					$j++;
+				}
+				$i=$j+1;
+				continue;
+			}
+			if($c=='#' || substr($text,$i,2)=='//'){
+				//a line comment ends at the newline - or at a php close tag, which ends PHP mode even inside it
+				$nl=strpos($text,"\n",$i);
+				$cl=strpos($text,'?>',$i);
+				if($cl!==false && ($nl===false || $cl<$nl)){$end=$cl;break;}
+				$i=$nl===false?$n:$nl;
+				continue;
+			}
+			if(substr($text,$i,2)=='/*'){
+				$j=strpos($text,'*/',$i+2);
+				$i=$j===false?$n:$j+2;
+				continue;
+			}
+			if(substr($text,$i,3)=='<<<' && preg_match($p['heredoc'],$text,$hm,0,$i)){
+				$bs=$i+strlen($hm[0]);
+				if(preg_match('~^[ \t]*'.preg_quote($hm[2],'~').'\b~m',$text,$em,PREG_OFFSET_CAPTURE,$bs)){$i=$em[0][1]+strlen($em[0][0]);}
+				else{$i=$n;}
+				continue;
+			}
+			$i++;
+		}
+		$out[]=array($tag,$start,$end);
+		$pos=$end+2;
+	}
+	return $out;
 }
 
 //---------- begin function securityScanStatements
@@ -331,6 +407,8 @@ function securityScanFlatten($segs){
 function securityScanEnclosingCalls($before){
 	$stack=array();
 	if(strpos($before,'(')===false){return $stack;}
+	//a cast in front of a parenthesised expression - (int)($PASSTHRU[2] ?? 0) - sanitizes like intval(...)
+	$before=preg_replace('~\(\s*(?:int|integer|float|double|bool|boolean)\s*\)\s*(?=\()~i','intval',$before);
 	preg_match_all('~([A-Za-z_]\w*)?\s*\(|\)~',$before,$ms,PREG_SET_ORDER);
 	foreach($ms as $m){
 		if($m[0]==')'){array_pop($stack);}
@@ -378,19 +456,18 @@ function securityScanNewPage($record,$files){
 	$p=securityPatterns();
 	$pg=array('record'=>$record,'files'=>array(),'stmts'=>array(),'funcs'=>array(),'guarded'=>array(),
 		'taint'=>array(),'mixed'=>array(),'weak'=>array(),'findings'=>array(),
-		'cleaned'=>array('all'=>array(),'sql'=>array(),'html'=>array(),'mail'=>array()),'mailpage'=>false,
-		'globals'=>array(),'cur'=>'','srcguarded'=>array(),'hasauth'=>false);
+		'cleaned'=>array('all'=>array(),'sql'=>array(),'html'=>array(),'mail'=>array(),'path'=>array()),'mailpage'=>false,
+		'globals'=>array(),'cur'=>'','srcguarded'=>array(),'hasauth'=>false,'nonhtml'=>false);
 	$raw=array();
 	foreach($files as $fi=>$f){
 		$pg['files'][$fi]=$f;
 		$raw[]=$f['text'];
 		if(strpos($f['text'],'<?')===false){continue;}
-		preg_match_all($p['island'],$f['text'],$ms,PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
-		foreach($ms as $m){
-			$tag=isset($m[1]) && $m[1][1]>=0?$m[1][0]:'';
-			$body=$m[2][0];
+		foreach(securityScanIslands($f['text']) as $isl){
+			list($tag,$bstart,$bend)=$isl;
+			$body=substr($f['text'],$bstart,$bend-$bstart);
 			if(!strlen(trim($body))){continue;}
-			$segs=securityScanTokenize($body,$m[2][1]);
+			$segs=securityScanTokenize($body,$bstart);
 			if($tag=='='){
 				$pg['stmts'][]=array('segs'=>$segs,'file'=>$fi,'echo'=>true,'scope'=>'');
 				continue;
@@ -444,6 +521,7 @@ function securityScanNewPage($record,$files){
 	}
 	$pg['cur']='';
 	$pg['hasauth']=preg_match($p['auth_call'],$raw)==1;
+	$pg['nonhtml']=preg_match($p['nonhtml'],$raw)==1;
 	return $pg;
 }
 
@@ -599,6 +677,9 @@ function securityScanOccurrences(&$pg,$segs,$ctx,$callfilter=true,$concatonly=fa
 function securityScanAdd(&$pg,$severity,$type,$fi,$offset,$var,$origin,$reason=''){
 	$p=securityPatterns();
 	if(strlen($reason)){$origin="{$origin} [{$reason}]";}
+	if(preg_match($p['upload_key'],$var.' '.$origin)){
+		$origin.=' [WaSQL sets *_abspath/*_path only after a real upload, but a request can post that key itself - check that a real upload for this field arrived in this request (is_uploaded_file / the file is inside php/temp) before reading or deleting it]';
+	}
 	$line=securityScanLine($pg,$fi,$offset);
 	$key="{$fi}|{$line}|{$type}|{$var}";
 	if(isset($pg['findings'][$key]) && $p['severities'][$pg['findings'][$key]['severity']] >= $p['severities'][$severity]){return;}
@@ -729,8 +810,7 @@ function securityScanRhs(&$pg,$st){
 */
 function securityScanForeachSubject($st){
 	$p=securityPatterns();
-	$text='';
-	foreach($st['segs'] as $s){$text.=$s[0]=='code'?$s[1]:'""';}
+	$text=securityScanFlatten($st['segs']);
 	if(stripos($text,'foreach')===false || !preg_match($p['foreach'],$text,$m)){return null;}
 	return array($m[1],$m[2],isset($m[3])?$m[3]:'');
 }
@@ -762,6 +842,8 @@ function securityScanPropagate(&$pg){
 					if(isset($pg['taint'][securityScanQ($pg,$v[0])])){$hit=array($pg['taint'][securityScanQ($pg,$v[0])]['level'],$pg['taint'][securityScanQ($pg,$v[0])]['origin']);break;}
 				}
 				if(!is_null($hit)){
+					//foreach($_FILES['x']['name'] as $i=>$name): $i is just the upload's position in the list
+					if(strlen($fe[2]) && strpos($hit[1],'$_FILES')===0){$fe[1]='';}
 					foreach(array($fe[1],$fe[2]) as $lv){
 						if(strlen($lv) && securityScanSetTaint($pg,$lv,true,true,$hit[0],'foreach over '.$hit[1])){$changed=true;}
 					}
@@ -887,6 +969,8 @@ function securityScanFindCleaned(&$pg){
 			if(preg_match($p['cast_end'],$before)){$pg['cleaned']['all'][$ql]=1;break;}
 			foreach(securityScanEnclosingCalls($before) as $c){
 				if(preg_match($p['common_san_names'],$c) || ($c=='preg_replace' && $whitelist)){$pg['cleaned']['all'][$ql]=1;}
+				//basename() drops any directory part: safe as a file name, not for SQL/HTML
+				elseif($c=='basename'){$pg['cleaned']['path'][$ql]=1;}
 				elseif(preg_match($p['sql_san_names'],$c)){$pg['cleaned']['sql'][$ql]=1;}
 				elseif(preg_match($p['html_san_names'],$c)){$pg['cleaned']['html'][$ql]=1;}
 			}
@@ -907,6 +991,8 @@ function securityScanIsCleaned($pg,$name,$ctx){
 	if($ctx=='sql' && isset($pg['cleaned']['sql'][$name])){return true;}
 	if($ctx=='html' && isset($pg['cleaned']['html'][$name])){return true;}
 	if($ctx=='mail' && isset($pg['cleaned']['mail'][$name])){return true;}
+	//exec/include/redirect findings are about paths and names
+	if($ctx=='any' && isset($pg['cleaned']['path'][$name])){return true;}
 	return false;
 }
 
@@ -928,7 +1014,7 @@ function securityScanFindWeak(&$pg){
 			$allweak=true;
 			foreach($r[4] as $cn){
 				//only real validation or in-place cleaning counts here - a reused name is too weak to vouch for values built from it
-				if(isset($pg['guarded'][$cn]) || isset($pg['weak'][$cn]) || isset($pg['cleaned']['all'][$cn])){continue;}
+				if(isset($pg['guarded'][$cn]) || isset($pg['weak'][$cn]) || isset($pg['cleaned']['all'][$cn]) || isset($pg['cleaned']['path'][$cn])){continue;}
 				$allweak=false;
 				break;
 			}
@@ -1017,7 +1103,7 @@ function securityScanFilesSafe($pg,$name,$rest,$src){
 
 //---------- begin function securityScanWhitelistReplace
 /**
-* @describe true if the segments contain preg_replace('/[^allowed]/','',...), which strips everything outside an allow-listed character class
+* @describe true if the segments contain preg_replace('/[^allowed]/','' or '_',...), which removes or replaces everything outside an allow-listed character class
 * @param segs array
 * @return boolean
 * @usage $ok=securityScanWhitelistReplace($segs);
@@ -1029,7 +1115,7 @@ function securityScanWhitelistReplace($segs){
 		if($segs[$i][0]=='code' && preg_match('~preg_replace\s*\(\s*$~i',$segs[$i][1])
 			&& ($segs[$i+1][0]=='sq' || $segs[$i+1][0]=='dq') && preg_match($p['whitelist_re'],$segs[$i+1][1])
 			&& $segs[$i+2][0]=='code' && preg_match('~^\s*,\s*$~',$segs[$i+2][1])
-			&& ($segs[$i+3][0]=='sq' || $segs[$i+3][0]=='dq') && $segs[$i+3][1]===''){
+			&& ($segs[$i+3][0]=='sq' || $segs[$i+3][0]=='dq') && preg_match('~^[\w\- .]*$~',$segs[$i+3][1])){
 			return true;
 		}
 	}
@@ -1158,6 +1244,7 @@ function securityScanSinks(&$pg,$st){
 	if(!is_null($hrange)){
 		foreach(securityScanOccurrences($pg,$segs,'html',true,$hrange) as $o){
 			$direct=$o[2]=='direct';
+			if($pg['nonhtml'] && !strlen($o[4])){$o[4]='this page sends a text/plain or JSON Content-Type, so echoed text is not run as HTML';}
 			securityScanAdd($pg,securityScanSeverity($direct?'high':'medium',$o[3],$o[4],$direct),'xss',$fi,$o[0],$o[1],$o[2],$o[4]);
 		}
 	}
@@ -1626,6 +1713,7 @@ function securityAIPrompt($scan,$site=''){
 	$lines[]='- include/eval/file functions: never pass request data. Map the input to an allow-listed value first.';
 	$lines[]='- Redirects: only redirect to relative paths or an allow-listed host.';
 	$lines[]='- Access checks: pages that run commands, raw SQL, or expose schema/admin data need `if(!isAdmin()){setView(\'no_access\',1);return;}` (or isUser()/a permission check) at the top of the controller, with a matching <view:no_access> block in the body. In conditions, compare with `==`, never `=`: `if($USER[\'_id\']==$post[\'_cuser\'])`.';
+	$lines[]='- Uploaded files: never trust `$_REQUEST[\'{name}_abspath\']` (or _path/_webpath) by itself. WaSQL sets it after a real upload, but a request can post that key directly to point at any server file. Confirm a real upload for that field arrived in this request and the path is inside php/temp before reading, importing or unlinking it. Save uploads under the web root only with an allow-listed extension.';
 	$lines[]='- Shell commands (cmdResults, exec, shell_exec...): never build them from request data. Allow-list each value (strict regex for ids, fixed lists for options) and wrap arguments in escapeshellarg().';
 	$lines[]='- Email headers (from, subject, to, cc, bcc, reply-to in sendMail/commonSendMail options): strip line breaks, e.g. `str_replace(array("\\r","\\n"),\' \',$v)`, and check addresses with `isEmail()`. WaSQL cores from 2026-11-28 on strip line breaks centrally in sendMail (commonMailSanitizeParams), but servers on an older core copy these values into the mail headers as-is, so fix the page too.';
 	$lines[]='- Return errors with WaSQL conventions: a DB write returns the new id or an error string, so test it with `isNum()`.';
