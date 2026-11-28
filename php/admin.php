@@ -740,6 +740,7 @@ if(isAjax()){
 		case 'reports':
 		case 'htmlbox':
 		case 'website_grader':
+		case 'security':
 		case 'favicon':
 		case 'settings':
 		case 'synchronize':
@@ -1495,6 +1496,7 @@ if(isset($_REQUEST['_menu'])){
 		case 'checktables':
 		case 'logs':
 		case 'website_grader':
+		case 'security':
 		case 'favicon':
 		case 'dbsync':
 		case 'ref':

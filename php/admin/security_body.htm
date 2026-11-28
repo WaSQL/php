@@ -1,0 +1,26 @@
+<view:default>
+<div style="display:flex;flex-wrap:nowrap;" class="w_padtop">
+	<div class="wadmin-head" style="flex:15;margin:16px 0;"><span class="icon-lock w_danger"></span> Security Scanner</div>
+</div>
+<div class="w_gray" style="margin-bottom:12px;max-width:900px;">Scans this site's page code (the controller, functions and body of every <b>_pages</b> record, and every <b>_templates</b> record) for places where request data, such as $_REQUEST, $PASSTHRU or cookies, reaches SQL, HTML output, or code and file execution without validation or escaping. The scan only reads code; it changes nothing. Results show what to fix, plus a "Fix with AI" prompt you can hand to an assistant.</div>
+<form method="post" action="/php/admin.php" data-setprocessing="security_results" onsubmit="return wacss.ajaxPost(this,'security_results');">
+	<input type="hidden" name="_menu" value="security" />
+	<input type="hidden" name="func" value="run" />
+	<button type="submit" class="wacss_button is-mobile-responsive <?=configValue('admin_color');?>"><span class="icon-search"></span> Scan Site Code</button>
+</form>
+<details style="margin-top:10px;max-width:900px;">
+	<summary class="w_link w_pointer">What gets flagged, and what doesn't</summary>
+	<div class="w_gray w_small" style="padding:8px 0 4px;line-height:1.6;">
+		<b>SQL injection</b>: request data inside SQL text, or in a -where, -filter, -order, -query, -fields, -group, -having, -limit, -offset or -search value. Plain filter keys such as 'name'=&gt;$_REQUEST['name'] are not flagged, because WaSQL escapes those itself.<br />
+		<b>Cross-site scripting</b>: request data written into the page through &lt;?=...?&gt;, echo, or an HTML string, without encodeHtml(), htmlspecialchars() or a numeric cast.<br />
+		<b>Code / file execution</b>: request data reaching eval, include/require, shell functions, unserialize, file reads/writes, or extract. <b>Page inclusion</b>: request data choosing includePage() or loadDBFunctions(). <b>Open redirect</b>: request data in a Location: header.<br />
+		<b>Low</b> findings are worth a look but often fine: the value is validated (isNum, in_array, preg_match, switch...) somewhere on the same page, so check that the validation covers the flagged line.<br />
+		The scan is heuristic. Expect some false positives, and it can't follow code across pages (functions_common) or catch stored XSS from database values.
+	</div>
+</details>
+<div id="security_results" style="margin-top:18px;"></div>
+</view:default>
+
+<view:result>
+<?=securityRenderResults($scan);?>
+</view:result>
