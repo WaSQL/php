@@ -80,7 +80,7 @@ function securityPatterns(){
 		'sql_keys'=>array('-where'=>1,'-filter'=>1,'-order'=>1,'-query'=>1,'-fields'=>1,'-group'=>1,'-having'=>1,'-limit'=>1,'-offset'=>1,'-search'=>1),
 		'guards'=>array(
 			'~\b(?:isNum|is_numeric|ctype_digit|ctype_alnum|in_array|isEmail|isDate|array_key_exists|intval|filter_var)\s*\(\s*\$([A-Za-z_]\w*)\s*[,)]~i',
-			'~\bpreg_match\s*\([^,]+,\s*(?:\(\s*string\s*\)\s*)?\$([A-Za-z_]\w*)\s*\)~i',
+			'~\bpreg_match\s*\([^,]+,\s*(?:\(\s*string\s*\)\s*)?\$([A-Za-z_]\w*)\s*[,)]~i',
 			'~\$([A-Za-z_]\w*)\s*=\s*'.$cast.'\$\1\b~i',
 			'~\bswitch\s*\(\s*\$([A-Za-z_]\w*)\s*\)~i',
 			//comparison with a non-empty literal: if($ext=='stl' || $ext=='3mf')
@@ -457,7 +457,7 @@ function securityScanNewPage($record,$files){
 	$pg=array('record'=>$record,'files'=>array(),'stmts'=>array(),'funcs'=>array(),'guarded'=>array(),
 		'taint'=>array(),'mixed'=>array(),'weak'=>array(),'findings'=>array(),
 		'cleaned'=>array('all'=>array(),'sql'=>array(),'html'=>array(),'mail'=>array(),'path'=>array()),'mailpage'=>false,
-		'globals'=>array(),'cur'=>'','srcguarded'=>array(),'hasauth'=>false,'nonhtml'=>false);
+		'globals'=>array(),'cur'=>'','firm'=>array(),'suppressed'=>0,'keyonly'=>array(),'srcguarded'=>array(),'hasauth'=>false,'nonhtml'=>false);
 	$raw=array();
 	foreach($files as $fi=>$f){
 		$pg['files'][$fi]=$f;
@@ -469,7 +469,7 @@ function securityScanNewPage($record,$files){
 			if(!strlen(trim($body))){continue;}
 			$segs=securityScanTokenize($body,$bstart);
 			if($tag=='='){
-				$pg['stmts'][]=array('segs'=>$segs,'file'=>$fi,'echo'=>true,'scope'=>'');
+				$pg['stmts'][]=array('segs'=>$segs,'file'=>$fi,'echo'=>true,'scope'=>'','depth'=>0);
 				continue;
 			}
 			//follow { } nesting so each statement knows the named function it is in
@@ -481,7 +481,8 @@ function securityScanNewPage($record,$files){
 					$stack[]=array(strtolower($fm[1]),$depth);
 				}
 				$scope=count($stack)?$stack[count($stack)-1][0]:'';
-				if(count($s)){$pg['stmts'][]=array('segs'=>$s,'file'=>$fi,'echo'=>false,'scope'=>$scope);}
+				$reldepth=count($stack)?$depth-($stack[count($stack)-1][1]+1):$depth;
+				if(count($s)){$pg['stmts'][]=array('segs'=>$s,'file'=>$fi,'echo'=>false,'scope'=>$scope,'depth'=>$reldepth);}
 				if($delim=='{'){$depth++;}
 				elseif($delim=='}'){
 					$depth--;
@@ -521,7 +522,14 @@ function securityScanNewPage($record,$files){
 	}
 	$pg['cur']='';
 	$pg['hasauth']=preg_match($p['auth_call'],$raw)==1;
-	$pg['nonhtml']=preg_match($p['nonhtml'],$raw)==1;
+	//non-HTML response only when the Content-Type header is sent unconditionally at the top level
+	//(a JSON endpoint inside one case of a switch says nothing about the page's HTML views)
+	foreach($pg['stmts'] as $st){
+		if($st['scope']!=='' || $st['depth']!==0 || $st['echo']){continue;}
+		$txt='';
+		foreach($st['segs'] as $sg){$txt.=$sg[0]=='code'?$sg[1]:"'".$sg[1]."'";}
+		if(preg_match($p['nonhtml'],$txt)){$pg['nonhtml']=true;break;}
+	}
 	return $pg;
 }
 
@@ -657,11 +665,14 @@ function securityScanOccurrences(&$pg,$segs,$ctx,$callfilter=true,$concatonly=fa
 			$t=$pg['taint'][securityScanQ($pg,$name)];
 			if($ctx=='sql' && !$t['sql']){continue;}
 			if($ctx=='html' && !$t['html']){continue;}
+			//cleaned unconditionally earlier in this function ($id=(int)$id; at the top) - not a finding
+			if(isset($pg['curfile']) && securityScanFirmlyCleaned($pg,$name,$ctx,$pg['curfile'],$start+$idx)){continue;}
 			$reason='';
 			if(isset($pg['guarded'][securityScanQ($pg,$name)])){$reason='validated elsewhere in the same function - check it covers this line';}
 			elseif(securityScanIsCleaned($pg,$name,$ctx)){$reason='escaped or validated in place in this function - check it happens before this line';}
 			elseif(isset($pg['mixed'][securityScanQ($pg,$name)])){$reason='this variable also holds non-request data in this function';}
 			elseif(isset($pg['weak'][securityScanQ($pg,$name)])){$reason='built from values that are validated in this function';}
+			elseif(isset($pg['keyonly'][securityScanQ($pg,$name)])){$reason='MEDIUM:only request keys matching a pattern reach here, but the value itself is still request data';}
 			$out[]=array($start+$idx,'$'.$name,$t['origin'],$t['level'],$reason);
 		}
 	}
@@ -676,12 +687,21 @@ function securityScanOccurrences(&$pg,$segs,$ctx,$callfilter=true,$concatonly=fa
 */
 function securityScanAdd(&$pg,$severity,$type,$fi,$offset,$var,$origin,$reason=''){
 	$p=securityPatterns();
+	if(strpos($reason,'MEDIUM:')===0){$reason=substr($reason,7);}
 	if(strlen($reason)){$origin="{$origin} [{$reason}]";}
 	if(preg_match($p['upload_key'],$var.' '.$origin)){
 		$origin.=' [WaSQL sets *_abspath/*_path only after a real upload, but a request can post that key itself - check that a real upload for this field arrived in this request (is_uploaded_file / the file is inside php/temp) before reading or deleting it]';
 	}
 	$line=securityScanLine($pg,$fi,$offset);
 	$key="{$fi}|{$line}|{$type}|{$var}";
+	//a reviewed false positive marked with "seccheck:ok <reason>" on this line or the line above
+	$lines=explode("\n",$pg['files'][$fi]['text']);
+	$here=isset($lines[$line-1])?$lines[$line-1]:'';
+	$above=$line>1 && isset($lines[$line-2])?$lines[$line-2]:'';
+	if(preg_match('~seccheck\s*:\s*ok\b~i',$here.' '.$above)){
+		if(!isset($pg['suppressedkeys'][$key])){$pg['suppressedkeys'][$key]=1;$pg['suppressed']++;}
+		return;
+	}
 	if(isset($pg['findings'][$key]) && $p['severities'][$pg['findings'][$key]['severity']] >= $p['severities'][$severity]){return;}
 	$lines=explode("\n",$pg['files'][$fi]['text']);
 	$snippet=isset($lines[$line-1])?trim($lines[$line-1]):'';
@@ -943,12 +963,12 @@ function securityScanFindCleaned(&$pg){
 		//$x=$_REQUEST['x'] where that request value was validated in this scope
 		if(preg_match('~^\s*(?:\(\s*string\s*\)\s*)?(?:trim\s*\(\s*)?(\$(?:_REQUEST|_GET|_POST|_COOKIE|PASSTHRU)\s*\[[^\]]*\])\s*\)?\s*$~i',$flat,$sm)
 			&& isset($pg['srcguarded'][$st['scope'].'|'.securityScanSrcKey($sm[1])])){
-			$pg['cleaned']['all'][$ql]=1;
+			securityScanMarkClean($pg,'all',$ql,$st);
 			continue;
 		}
 		//array_filter($x,'isEmail') keeps only values that pass a validator
 		if(preg_match('~\barray_filter\s*\(\s*\$'.preg_quote($lhs,'~').'\s*,\s*\'(?:isEmail|isNum|is_numeric|ctype_digit|ctype_alnum|isDate)\'~i',$flat)){
-			$pg['cleaned']['all'][$ql]=1;
+			securityScanMarkClean($pg,'all',$ql,$st);
 			continue;
 		}
 		//line breaks stripped (str_replace/preg_replace/strtr around every request value): safe for mail headers
@@ -962,21 +982,56 @@ function securityScanFindCleaned(&$pg){
 			foreach($calls as $c){if(isset($p['mail_strip'][$c])){$stripped=true;break;}}
 			$allstripped=($allstripped===null?true:$allstripped) && $stripped;
 		}
-		if($allstripped){$pg['cleaned']['mail'][$ql]=1;}
+		if($allstripped){securityScanMarkClean($pg,'mail',$ql,$st);}
 		foreach(securityScanVars($flat,false) as $v){
 			if($v[0]!=$lhs){continue;}
 			$before=substr($flat,0,$v[1]);
-			if(preg_match($p['cast_end'],$before)){$pg['cleaned']['all'][$ql]=1;break;}
+			if(preg_match($p['cast_end'],$before)){securityScanMarkClean($pg,'all',$ql,$st);break;}
 			foreach(securityScanEnclosingCalls($before) as $c){
-				if(preg_match($p['common_san_names'],$c) || ($c=='preg_replace' && $whitelist)){$pg['cleaned']['all'][$ql]=1;}
+				if(preg_match($p['common_san_names'],$c) || ($c=='preg_replace' && $whitelist)){securityScanMarkClean($pg,'all',$ql,$st);}
 				//basename() drops any directory part: safe as a file name, not for SQL/HTML
-				elseif($c=='basename'){$pg['cleaned']['path'][$ql]=1;}
-				elseif(preg_match($p['sql_san_names'],$c)){$pg['cleaned']['sql'][$ql]=1;}
-				elseif(preg_match($p['html_san_names'],$c)){$pg['cleaned']['html'][$ql]=1;}
+				elseif($c=='basename'){securityScanMarkClean($pg,'path',$ql,$st);}
+				elseif(preg_match($p['sql_san_names'],$c)){securityScanMarkClean($pg,'sql',$ql,$st);}
+				elseif(preg_match($p['html_san_names'],$c)){securityScanMarkClean($pg,'html',$ql,$st);}
 			}
 			break;
 		}
 	}
+}
+
+//---------- begin function securityScanMarkClean
+/**
+* @describe marks a variable cleaned for a context; when the cleaning statement runs unconditionally
+*	at the top level of its function (not inside an if/case/loop), remembers where it happened so
+*	later uses in the same field can be dropped instead of only lowered
+* @return void
+* @usage securityScanMarkClean($pg,'all',$ql,$st);
+*/
+function securityScanMarkClean(&$pg,$ctx,$ql,$st){
+	$pg['cleaned'][$ctx][$ql]=1;
+	if(isset($st['depth']) && $st['depth']===0){
+		$at=array($st['file'],$st['segs'][0][2]);
+		if(!isset($pg['firm'][$ctx][$ql]) || ($pg['firm'][$ctx][$ql][0]==$at[0] && $at[1]<$pg['firm'][$ctx][$ql][1])){
+			$pg['firm'][$ctx][$ql]=$at;
+		}
+	}
+}
+
+//---------- begin function securityScanFirmlyCleaned
+/**
+* @describe true when $name was cleaned unconditionally earlier in the same field and scope as this use
+* @return boolean
+* @usage if(securityScanFirmlyCleaned($pg,'id','sql',$fi,$offset)){continue;}
+*/
+function securityScanFirmlyCleaned($pg,$name,$ctx,$fi,$offset){
+	$q=securityScanQ($pg,$name);
+	$ctxs=array('all');
+	if($ctx=='sql' || $ctx=='html' || $ctx=='mail'){$ctxs[]=$ctx;}
+	if($ctx=='any'){$ctxs[]='path';}
+	foreach($ctxs as $c){
+		if(isset($pg['firm'][$c][$q]) && $pg['firm'][$c][$q][0]==$fi && $pg['firm'][$c][$q][1]<$offset){return true;}
+	}
+	return false;
 }
 
 //---------- begin function securityScanIsCleaned
@@ -994,6 +1049,32 @@ function securityScanIsCleaned($pg,$name,$ctx){
 	//exec/include/redirect findings are about paths and names
 	if($ctx=='any' && isset($pg['cleaned']['path'][$name])){return true;}
 	return false;
+}
+
+//---------- begin function securityScanFindGuardedLoops
+/**
+* @describe foreach($_REQUEST as $key=>$val) where $key must pass a check (preg_match, in_array,
+*	switch...) in the same function: only specific keys get through, so $val is marked weak (low)
+* @return void
+* @usage securityScanFindGuardedLoops($pg);
+*/
+function securityScanFindGuardedLoops(&$pg){
+	foreach($pg['stmts'] as $st){
+		$pg['cur']=$st['scope'];
+		if($st['echo']){continue;}
+		$fe=securityScanForeachSubject($st);
+		if(!is_array($fe) || !strlen($fe[1]) || !strlen($fe[2])){continue;}
+		if(!isset($pg['guarded'][securityScanQ($pg,$fe[1])])){continue;}
+		//checking only the key name (e.g. /_abspath$/) still trusts the value; checking it against
+		//$_FILES (a real upload) in the same function is what makes the value trustworthy
+		$checksfiles=false;
+		foreach($pg['stmts'] as $s2){
+			if($s2['scope']===$st['scope'] && strpos(securityScanFlatten($s2['segs']),'$_FILES')!==false){$checksfiles=true;break;}
+		}
+		if($checksfiles){$pg['weak'][securityScanQ($pg,$fe[2])]=1;}
+		else{$pg['keyonly'][securityScanQ($pg,$fe[2])]=1;}
+	}
+	$pg['cur']='';
 }
 
 //---------- begin function securityScanFindWeak
@@ -1129,6 +1210,7 @@ function securityScanWhitelistReplace($segs){
 * @usage $sev=securityScanSeverity('high','param','',false);
 */
 function securityScanSeverity($base,$level,$reason,$direct){
+	if(strpos($reason,'MEDIUM:')===0){return $base=='low'?'low':'medium';}
 	if(strlen($reason)){return 'low';}
 	if($direct){return $base;}
 	if($level=='param'){
@@ -1439,15 +1521,17 @@ function securityScanGroups($groups){
 		securityScanPropagate($pg);
 		securityScanFindMixed($pg);
 		securityScanFindCleaned($pg);
+		securityScanFindGuardedLoops($pg);
 		securityScanFindWeak($pg);
 		//a helper parameter fed only validated values by every caller counts as validated too
 		for($round=0;$round<8;$round++){
 			if(!securityScanWeakParams($pg)){break;}
 			securityScanFindWeak($pg);
 		}
-		foreach($pg['stmts'] as $st){$pg['cur']=$st['scope'];securityScanSinks($pg,$st);}
+		foreach($pg['stmts'] as $st){$pg['cur']=$st['scope'];$pg['curfile']=$st['file'];securityScanSinks($pg,$st);}
 		securityScanNoAuth($pg);
 		foreach($pg['findings'] as $f){$findings[]=$f;}
+		securityScanSuppressed($pg['suppressed']);
 	}
 	usort($findings,function($a,$b) use ($p){
 		$s=$p['severities'][$b['severity']]-$p['severities'][$a['severity']];
@@ -1457,6 +1541,20 @@ function securityScanGroups($groups){
 		return $a['line']-$b['line'];
 	});
 	return $findings;
+}
+
+//---------- begin function securityScanSuppressed
+/**
+* @describe running count of findings skipped because the code carries a "seccheck:ok <reason>" comment
+* @param add int - amount to add (0 just reads); pass -1 to reset
+* @return int - the count
+* @usage securityScanSuppressed(-1); $findings=securityScanGroups($groups); $n=securityScanSuppressed();
+*/
+function securityScanSuppressed($add=0){
+	static $count=0;
+	if($add<0){$count=0;}
+	else{$count+=$add;}
+	return $count;
 }
 
 //---------- begin function securityLoadSiteSources
@@ -1505,6 +1603,7 @@ function securityLoadSiteSources(){
 function securityScanSite(){
 	$start=microtime(true);
 	$groups=securityLoadSiteSources();
+	securityScanSuppressed(-1);
 	$findings=securityScanGroups($groups);
 	$counts=array('high'=>0,'medium'=>0,'low'=>0);
 	foreach($findings as $f){$counts[$f['severity']]++;}
@@ -1512,7 +1611,8 @@ function securityScanSite(){
 		'findings'=>$findings,
 		'records'=>count($groups),
 		'seconds'=>round(microtime(true)-$start,2),
-		'counts'=>$counts
+		'counts'=>$counts,
+		'suppressed'=>securityScanSuppressed()
 	);
 }
 
@@ -1586,7 +1686,8 @@ function securityRenderResults($scan){
 	$rtn.='#security_ai_prompt{max-width:100%;max-height:460px;box-sizing:border-box;overflow-y:auto;white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;line-height:1.5;border:1px solid #dbdbdb;border-radius:4px;padding:12px;background:#fff;color:#363636;}'.PHP_EOL;
 	$rtn.='</style>'.PHP_EOL;
 	$rtn.='<div class="sec_results">'.PHP_EOL;
-	$rtn.='<div class="w_gray">Scanned '.(int)$scan['records'].' page/template record'.($scan['records']==1?'':'s').' in '.encodeHtml($scan['seconds']).'s.</div>'.PHP_EOL;
+	$supp=isset($scan['suppressed'])?(int)$scan['suppressed']:0;
+	$rtn.='<div class="w_gray">Scanned '.(int)$scan['records'].' page/template record'.($scan['records']==1?'':'s').' in '.encodeHtml($scan['seconds']).'s.'.($supp?' '.$supp.' reviewed finding'.($supp==1?' is':'s are').' marked <code>seccheck:ok</code> in the code and hidden.':'').'</div>'.PHP_EOL;
 	$rtn.='<div class="sec_stats">'.PHP_EOL;
 	foreach(array('high'=>'High','medium'=>'Medium','low'=>'Low (review)') as $sev=>$label){
 		$rtn.='<div class="sec_stat"><b style="color:'.securitySeverityColor($sev).';">'.(int)$counts[$sev].'</b><span class="w_gray w_small">'.$label.'</span></div>'.PHP_EOL;
@@ -1701,6 +1802,9 @@ function securityAIPrompt($scan,$site=''){
 	$lines[]="# Security fixes for {$site} (WaSQL page code)";
 	$lines[]='';
 	$lines[]="A static scan of this WaSQL site's _pages and _templates code found {$counts['high']} high, {$counts['medium']} medium and {$counts['low']} low findings where request data (\$_REQUEST, \$_GET, \$_POST, \$_COOKIE, \$PASSTHRU, \$_SERVER headers) reaches SQL, HTML output, or code/file execution.";
+	$lines[]='';
+	$lines[]='When you confirm a finding is a false positive, add a short comment on that line or the line above so later scans skip it: `//seccheck:ok (int) cast at top of function` (use `<!-- seccheck:ok ... -->` in HTML). Only mark lines you have actually checked.';
+	$lines[]='Doubling quotes (str_replace("\'","\'\'",$x)) is NOT safe escaping in MySQL: a trailing backslash breaks out. Use databaseEscapeString() or a dashless filter key.';
 	$lines[]='';
 	$lines[]='Please fix every HIGH and MEDIUM finding below. For each one, show the corrected code for that record and field. Confirm the finding is real first: the scanner is heuristic, so say so if a finding is a false positive and explain why.';
 	$lines[]='';

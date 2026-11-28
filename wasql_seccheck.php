@@ -155,6 +155,8 @@ else{
 		}
 		echo "\n";
 	}
-	printf("TOTAL %d finding(s)  high=%d medium=%d low=%d  across %d target(s)\n",count($all),$tot['high'],$tot['medium'],$tot['low'],count($targets));
+	$supp=securityScanSuppressed();
+	printf("TOTAL %d finding(s)  high=%d medium=%d low=%d  across %d target(s)%s\n",count($all),$tot['high'],$tot['medium'],$tot['low'],count($targets),
+		$supp?"  ({$supp} marked seccheck:ok, not shown)":'');
 }
 exit(count($all)?1:0);
